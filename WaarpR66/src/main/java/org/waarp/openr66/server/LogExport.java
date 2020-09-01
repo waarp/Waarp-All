@@ -69,9 +69,10 @@ public class LogExport implements Runnable {
   protected final NetworkTransaction networkTransaction;
   protected DbHostAuth host;
 
-  public LogExport(R66Future future, boolean purgeLog, boolean clean,
-                   Timestamp start, Timestamp stop,
-                   NetworkTransaction networkTransaction) {
+  public LogExport(final R66Future future, final boolean purgeLog,
+                   final boolean clean, final Timestamp start,
+                   final Timestamp stop,
+                   final NetworkTransaction networkTransaction) {
     this.future = future;
     this.purgeLog = purgeLog;
     this.clean = clean;
@@ -84,7 +85,7 @@ public class LogExport implements Runnable {
     }
   }
 
-  public void setHost(DbHostAuth host) {
+  public void setHost(final DbHostAuth host) {
     this.host = host;
   }
 
@@ -102,8 +103,8 @@ public class LogExport implements Runnable {
     final String lstop = stop != null? stop.toString() : null;
     final byte type = purgeLog? LocalPacketFactory.LOGPURGEPACKET :
         LocalPacketFactory.LOGPACKET;
-    ValidPacket valid = new ValidPacket(lstart, lstop, type);
-    LocalChannelReference localChannelReference =
+    final ValidPacket valid = new ValidPacket(lstart, lstop, type);
+    final LocalChannelReference localChannelReference =
         AbstractTransfer.tryConnect(host, future, networkTransaction);
     if (localChannelReference == null) {
       return;
@@ -134,7 +135,7 @@ public class LogExport implements Runnable {
   protected static boolean sclean;
   protected static String stohost;
 
-  protected static boolean getParams(String[] args) {
+  protected static boolean getParams(final String[] args) {
     if (logger == null) {
       logger = WaarpLoggerFactory.getLogger(LogExport.class);
     }
@@ -183,7 +184,7 @@ public class LogExport implements Runnable {
     return true;
   }
 
-  public static void main(String[] args) {
+  public static void main(final String[] args) {
     WaarpLoggerFactory
         .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));
     if (logger == null) {

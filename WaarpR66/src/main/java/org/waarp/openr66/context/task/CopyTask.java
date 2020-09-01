@@ -44,13 +44,21 @@ public class CopyTask extends AbstractTask {
    * @param argTransfer
    * @param session
    */
-  public CopyTask(String argRule, int delay, String argTransfer,
-                  R66Session session) {
+  public CopyTask(final String argRule, final int delay,
+                  final String argTransfer, final R66Session session) {
     super(TaskType.COPY, delay, argRule, argTransfer, session);
   }
 
   @Override
   public void run() {
+    if (argRule == null) {
+      logger.error(
+          "Copy cannot be done with " + argRule + ':' + argTransfer + " and " +
+          session);
+      futureCompletion.setFailure(
+          new OpenR66ProtocolSystemException("Copy cannot be done"));
+      return;
+    }
     logger
         .info("Copy with " + argRule + ':' + argTransfer + " and {}", session);
     final File from = session.getFile().getTrueFile();

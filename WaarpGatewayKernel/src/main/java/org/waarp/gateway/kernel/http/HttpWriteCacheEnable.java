@@ -116,8 +116,10 @@ public final class HttpWriteCacheEnable {
    * @param filename
    * @param cookieNameToRemove
    */
-  public static void writeFile(HttpRequest request, ChannelHandlerContext ctx,
-                               String filename, String cookieNameToRemove) {
+  public static void writeFile(final HttpRequest request,
+                               final ChannelHandlerContext ctx,
+                               final String filename,
+                               final String cookieNameToRemove) {
     // Convert the response content to a ByteBuf.
     HttpResponse response;
     final boolean keepAlive = HttpUtil.isKeepAlive(request);
@@ -147,17 +149,18 @@ public final class HttpWriteCacheEnable {
         // nothing
       }
     }
-    int fileLength = (int) file.length();
-    ByteBuf byteBuf = ByteBufAllocator.DEFAULT.buffer(fileLength, fileLength);
+    final int fileLength = (int) file.length();
+    final ByteBuf byteBuf =
+        ByteBufAllocator.DEFAULT.buffer(fileLength, fileLength);
     FileInputStream inputStream = null;
     try {
       inputStream = new FileInputStream(file);
       byteBuf.writeBytes(inputStream, fileLength);
-    } catch (FileNotFoundException e) {
+    } catch (final FileNotFoundException e) {
       byteBuf.release();
       sendError(request, ctx, cookieNameToRemove, keepAlive);
       return;
-    } catch (IOException e) {
+    } catch (final IOException e) {
       byteBuf.release();
       sendError(request, ctx, cookieNameToRemove, keepAlive);
       return;
@@ -178,7 +181,7 @@ public final class HttpWriteCacheEnable {
     }
 
     // Write the initial line and the header.
-    ChannelFuture sendFileFuture = ctx.writeAndFlush(response);
+    final ChannelFuture sendFileFuture = ctx.writeAndFlush(response);
 
     // Decide whether to close the connection or not.
     if (!keepAlive) {
@@ -193,7 +196,8 @@ public final class HttpWriteCacheEnable {
    * @param response HTTP response
    * @param file file to extract content type
    */
-  private static void setContentTypeHeader(HttpResponse response, File file) {
+  private static void setContentTypeHeader(final HttpResponse response,
+                                           final File file) {
     response.headers().set(HttpHeaderNames.CONTENT_TYPE,
                            mimetypesFileTypeMap.getContentType(file.getPath()));
   }
@@ -204,12 +208,12 @@ public final class HttpWriteCacheEnable {
    * @param response HTTP response
    * @param fileToCache file to extract content type
    */
-  private static void setDateAndCacheHeaders(HttpResponse response,
-                                             File fileToCache,
-                                             DateFormat rfc1123Format,
-                                             Date lastModifDate) {
+  private static void setDateAndCacheHeaders(final HttpResponse response,
+                                             final File fileToCache,
+                                             final DateFormat rfc1123Format,
+                                             final Date lastModifDate) {
     // Date header
-    Calendar time = new GregorianCalendar();
+    final Calendar time = new GregorianCalendar();
     response.headers()
             .set(HttpHeaderNames.DATE, rfc1123Format.format(time.getTime()));
 
@@ -225,7 +229,7 @@ public final class HttpWriteCacheEnable {
   private static void sendError(final HttpRequest request,
                                 final ChannelHandlerContext ctx,
                                 final String cookieNameToRemove,
-                                boolean keepAlive) {
+                                final boolean keepAlive) {
     final HttpResponse response;
     response =
         new DefaultFullHttpResponse(HTTP_1_1, HttpResponseStatus.NOT_FOUND);
@@ -238,7 +242,7 @@ public final class HttpWriteCacheEnable {
               .set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
     }
     handleCookies(request, response, cookieNameToRemove);
-    ChannelFuture sendFileFuture = ctx.writeAndFlush(response);
+    final ChannelFuture sendFileFuture = ctx.writeAndFlush(response);
     // Decide whether to close the connection or not.
     if (!keepAlive) {
       // Close the connection when the whole content is written out.
@@ -253,8 +257,9 @@ public final class HttpWriteCacheEnable {
    * @param response
    * @param cookieNameToRemove
    */
-  public static void handleCookies(HttpRequest request, HttpResponse response,
-                                   String cookieNameToRemove) {
+  public static void handleCookies(final HttpRequest request,
+                                   final HttpResponse response,
+                                   final String cookieNameToRemove) {
     final String cookieString = request.headers().get(HttpHeaderNames.COOKIE);
     if (cookieString != null) {
       final Set<Cookie> cookies = ServerCookieDecoder.LAX.decode(cookieString);

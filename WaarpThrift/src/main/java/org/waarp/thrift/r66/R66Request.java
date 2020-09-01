@@ -168,7 +168,7 @@ public class R66Request
      * Find the _Fields constant that matches fieldId, or null if its not
      * found.
      */
-    public static _Fields findByThriftId(int fieldId) {
+    public static _Fields findByThriftId(final int fieldId) {
       switch (fieldId) {
         case 1: // MODE
           return MODE;
@@ -206,7 +206,7 @@ public class R66Request
      * if
      * it is not found.
      */
-    public static _Fields findByThriftIdOrThrow(int fieldId) {
+    public static _Fields findByThriftIdOrThrow(final int fieldId) {
       final _Fields fields = findByThriftId(fieldId);
       if (fields == null) {
         throw new IllegalArgumentException(
@@ -219,14 +219,14 @@ public class R66Request
      * Find the _Fields constant that matches name, or null if its not
      * found.
      */
-    public static _Fields findByName(String name) {
+    public static _Fields findByName(final String name) {
       return byName.get(name);
     }
 
     private final short thriftId;
     private final String fieldName;
 
-    _Fields(short thriftId, String fieldName) {
+    _Fields(final short thriftId, final String fieldName) {
       this.thriftId = thriftId;
       this.fieldName = fieldName;
     }
@@ -304,7 +304,7 @@ public class R66Request
 
   }
 
-  public R66Request(RequestMode mode) {
+  public R66Request(final RequestMode mode) {
     this();
     this.mode = mode;
   }
@@ -312,7 +312,7 @@ public class R66Request
   /**
    * Performs a deep copy on <i>other</i>.
    */
-  public R66Request(R66Request other) {
+  public R66Request(final R66Request other) {
     issetBitfield = other.issetBitfield;
     if (other.isSetMode()) {
       mode = other.mode;
@@ -383,7 +383,7 @@ public class R66Request
   /**
    * @see RequestMode
    */
-  public R66Request setMode(RequestMode mode) {
+  public R66Request setMode(final RequestMode mode) {
     this.mode = mode;
     return this;
   }
@@ -400,7 +400,7 @@ public class R66Request
     return mode != null;
   }
 
-  public void setModeIsSet(boolean value) {
+  public void setModeIsSet(final boolean value) {
     if (!value) {
       mode = null;
     }
@@ -410,7 +410,7 @@ public class R66Request
     return fromuid;
   }
 
-  public R66Request setFromuid(String fromuid) {
+  public R66Request setFromuid(final String fromuid) {
     this.fromuid = fromuid;
     return this;
   }
@@ -428,7 +428,7 @@ public class R66Request
     return fromuid != null;
   }
 
-  public void setFromuidIsSet(boolean value) {
+  public void setFromuidIsSet(final boolean value) {
     if (!value) {
       fromuid = null;
     }
@@ -438,7 +438,7 @@ public class R66Request
     return destuid;
   }
 
-  public R66Request setDestuid(String destuid) {
+  public R66Request setDestuid(final String destuid) {
     this.destuid = destuid;
     return this;
   }
@@ -456,7 +456,7 @@ public class R66Request
     return destuid != null;
   }
 
-  public void setDestuidIsSet(boolean value) {
+  public void setDestuidIsSet(final boolean value) {
     if (!value) {
       destuid = null;
     }
@@ -466,7 +466,7 @@ public class R66Request
     return file;
   }
 
-  public R66Request setFile(String file) {
+  public R66Request setFile(final String file) {
     this.file = file;
     return this;
   }
@@ -483,7 +483,7 @@ public class R66Request
     return file != null;
   }
 
-  public void setFileIsSet(boolean value) {
+  public void setFileIsSet(final boolean value) {
     if (!value) {
       file = null;
     }
@@ -493,7 +493,7 @@ public class R66Request
     return rule;
   }
 
-  public R66Request setRule(String rule) {
+  public R66Request setRule(final String rule) {
     this.rule = rule;
     return this;
   }
@@ -510,7 +510,7 @@ public class R66Request
     return rule != null;
   }
 
-  public void setRuleIsSet(boolean value) {
+  public void setRuleIsSet(final boolean value) {
     if (!value) {
       rule = null;
     }
@@ -520,7 +520,7 @@ public class R66Request
     return info;
   }
 
-  public R66Request setInfo(String info) {
+  public R66Request setInfo(final String info) {
     this.info = info;
     return this;
   }
@@ -537,7 +537,7 @@ public class R66Request
     return info != null;
   }
 
-  public void setInfoIsSet(boolean value) {
+  public void setInfoIsSet(final boolean value) {
     if (!value) {
       info = null;
     }
@@ -547,7 +547,7 @@ public class R66Request
     return md5;
   }
 
-  public R66Request setMd5(boolean md5) {
+  public R66Request setMd5(final boolean md5) {
     this.md5 = md5;
     setMd5IsSet(true);
     return this;
@@ -565,7 +565,7 @@ public class R66Request
     return EncodingUtils.testBit(issetBitfield, MD_5_ISSET_ID);
   }
 
-  public void setMd5IsSet(boolean value) {
+  public void setMd5IsSet(final boolean value) {
     issetBitfield = EncodingUtils.setBit(issetBitfield, MD_5_ISSET_ID, value);
   }
 
@@ -573,7 +573,7 @@ public class R66Request
     return blocksize;
   }
 
-  public R66Request setBlocksize(int blocksize) {
+  public R66Request setBlocksize(final int blocksize) {
     this.blocksize = blocksize;
     setBlocksizeIsSet(true);
     return this;
@@ -591,7 +591,7 @@ public class R66Request
     return EncodingUtils.testBit(issetBitfield, BLOCKSIZE_ISSET_ID);
   }
 
-  public void setBlocksizeIsSet(boolean value) {
+  public void setBlocksizeIsSet(final boolean value) {
     issetBitfield =
         EncodingUtils.setBit(issetBitfield, BLOCKSIZE_ISSET_ID, value);
   }
@@ -600,7 +600,7 @@ public class R66Request
     return start;
   }
 
-  public R66Request setStart(String start) {
+  public R66Request setStart(final String start) {
     this.start = start;
     return this;
   }
@@ -617,7 +617,7 @@ public class R66Request
     return start != null;
   }
 
-  public void setStartIsSet(boolean value) {
+  public void setStartIsSet(final boolean value) {
     if (!value) {
       start = null;
     }
@@ -627,7 +627,7 @@ public class R66Request
     return delay;
   }
 
-  public R66Request setDelay(String delay) {
+  public R66Request setDelay(final String delay) {
     this.delay = delay;
     return this;
   }
@@ -644,7 +644,7 @@ public class R66Request
     return delay != null;
   }
 
-  public void setDelayIsSet(boolean value) {
+  public void setDelayIsSet(final boolean value) {
     if (!value) {
       delay = null;
     }
@@ -654,7 +654,7 @@ public class R66Request
     return notrace;
   }
 
-  public R66Request setNotrace(boolean notrace) {
+  public R66Request setNotrace(final boolean notrace) {
     this.notrace = notrace;
     setNotraceIsSet(true);
     return this;
@@ -673,7 +673,7 @@ public class R66Request
     return EncodingUtils.testBit(issetBitfield, NOTRACE_ISSET_ID);
   }
 
-  public void setNotraceIsSet(boolean value) {
+  public void setNotraceIsSet(final boolean value) {
     issetBitfield =
         EncodingUtils.setBit(issetBitfield, NOTRACE_ISSET_ID, value);
   }
@@ -682,7 +682,7 @@ public class R66Request
     return tid;
   }
 
-  public R66Request setTid(long tid) {
+  public R66Request setTid(final long tid) {
     this.tid = tid;
     setTidIsSet(true);
     return this;
@@ -700,7 +700,7 @@ public class R66Request
     return EncodingUtils.testBit(issetBitfield, TID_ISSET_ID);
   }
 
-  public void setTidIsSet(boolean value) {
+  public void setTidIsSet(final boolean value) {
     issetBitfield = EncodingUtils.setBit(issetBitfield, TID_ISSET_ID, value);
   }
 
@@ -714,7 +714,7 @@ public class R66Request
   /**
    * @see Action
    */
-  public R66Request setAction(Action action) {
+  public R66Request setAction(final Action action) {
     this.action = action;
     return this;
   }
@@ -731,14 +731,14 @@ public class R66Request
     return action != null;
   }
 
-  public void setActionIsSet(boolean value) {
+  public void setActionIsSet(final boolean value) {
     if (!value) {
       action = null;
     }
   }
 
   @Override
-  public void setFieldValue(_Fields field, Object value) {
+  public void setFieldValue(final _Fields field, final Object value) {
     switch (field) {
       case MODE:
         if (value == null) {
@@ -848,7 +848,7 @@ public class R66Request
   }
 
   @Override
-  public Object getFieldValue(_Fields field) {
+  public Object getFieldValue(final _Fields field) {
     switch (field) {
       case MODE:
         return getMode();
@@ -899,7 +899,7 @@ public class R66Request
    * value) and false otherwise
    */
   @Override
-  public boolean isSet(_Fields field) {
+  public boolean isSet(final _Fields field) {
     if (field == null) {
       throw new IllegalArgumentException();
     }
@@ -936,7 +936,7 @@ public class R66Request
   }
 
   @Override
-  public boolean equals(Object that) {
+  public boolean equals(final Object that) {
     if (that == null) {
       return false;
     }
@@ -946,7 +946,7 @@ public class R66Request
     return false;
   }
 
-  public boolean equals(R66Request that) {
+  public boolean equals(final R66Request that) {
     if (that == null) {
       return false;
     }
@@ -1247,24 +1247,23 @@ public class R66Request
   }
 
   @Override
-  public _Fields fieldForId(int fieldId) {
+  public _Fields fieldForId(final int fieldId) {
     return _Fields.findByThriftId(fieldId);
   }
 
   @Override
-  public void read(TProtocol iprot) throws TException {
+  public void read(final TProtocol iprot) throws TException {
     schemes.get(iprot.getScheme()).getScheme().read(iprot, this);
   }
 
   @Override
-  public void write(TProtocol oprot) throws TException {
+  public void write(final TProtocol oprot) throws TException {
     schemes.get(oprot.getScheme()).getScheme().write(oprot, this);
   }
 
   @Override
   public String toString() {
     final StringBuilder sb = new StringBuilder("R66Request(");
-    boolean first = true;
 
     sb.append("mode:");
     if (mode == null) {
@@ -1272,123 +1271,87 @@ public class R66Request
     } else {
       sb.append(mode);
     }
-    first = false;
     if (isSetFromuid()) {
-      if (!first) {
-        sb.append(", ");
-      }
+      sb.append(", ");
       sb.append("fromuid:");
       if (fromuid == null) {
         sb.append("null");
       } else {
         sb.append(fromuid);
       }
-      first = false;
     }
     if (isSetDestuid()) {
-      if (!first) {
-        sb.append(", ");
-      }
+      sb.append(", ");
       sb.append("destuid:");
       if (destuid == null) {
         sb.append("null");
       } else {
         sb.append(destuid);
       }
-      first = false;
     }
     if (isSetFile()) {
-      if (!first) {
-        sb.append(", ");
-      }
+      sb.append(", ");
       sb.append("file:");
       if (file == null) {
         sb.append("null");
       } else {
         sb.append(file);
       }
-      first = false;
     }
     if (isSetRule()) {
-      if (!first) {
-        sb.append(", ");
-      }
+      sb.append(", ");
       sb.append("rule:");
       if (rule == null) {
         sb.append("null");
       } else {
         sb.append(rule);
       }
-      first = false;
     }
     if (isSetInfo()) {
-      if (!first) {
-        sb.append(", ");
-      }
+      sb.append(", ");
       sb.append("info:");
       if (info == null) {
         sb.append("null");
       } else {
         sb.append(info);
       }
-      first = false;
     }
     if (isSetMd5()) {
-      if (!first) {
-        sb.append(", ");
-      }
+      sb.append(", ");
       sb.append("md5:").append(md5);
-      first = false;
     }
     if (isSetBlocksize()) {
-      if (!first) {
-        sb.append(", ");
-      }
+      sb.append(", ");
       sb.append("blocksize:").append(blocksize);
-      first = false;
     }
     if (isSetStart()) {
-      if (!first) {
-        sb.append(", ");
-      }
+      sb.append(", ");
       sb.append("start:");
       if (start == null) {
         sb.append("null");
       } else {
         sb.append(start);
       }
-      first = false;
     }
     if (isSetDelay()) {
-      if (!first) {
-        sb.append(", ");
-      }
+      sb.append(", ");
       sb.append("delay:");
       if (delay == null) {
         sb.append("null");
       } else {
         sb.append(delay);
       }
-      first = false;
     }
     if (isSetNotrace()) {
-      if (!first) {
-        sb.append(", ");
-      }
+      sb.append(", ");
       sb.append("notrace:").append(notrace);
-      first = false;
     }
     if (isSetTid()) {
-      if (!first) {
-        sb.append(", ");
-      }
+      sb.append(", ");
       sb.append("tid:").append(tid);
-      first = false;
     }
     if (isSetAction()) {
-      if (!first) {
-        sb.append(", ");
-      }
+      sb.append(", ");
       sb.append("action:");
       if (action == null) {
         sb.append("null");
@@ -1409,7 +1372,7 @@ public class R66Request
     // check for sub-struct validity
   }
 
-  private void writeObject(ObjectOutputStream out) throws IOException {
+  private void writeObject(final ObjectOutputStream out) throws IOException {
     try {
       write(new TCompactProtocol(new TIOStreamTransport(out)));
     } catch (final TException te) {
@@ -1417,7 +1380,7 @@ public class R66Request
     }
   }
 
-  private void readObject(ObjectInputStream in)
+  private void readObject(final ObjectInputStream in)
       throws IOException, ClassNotFoundException {
     try {
       // it doesn't seem like you should have to do this, but java serialization is wacky, and
@@ -1441,7 +1404,8 @@ public class R66Request
       extends StandardScheme<R66Request> {
 
     @Override
-    public void read(TProtocol iprot, R66Request struct) throws TException {
+    public void read(final TProtocol iprot, final R66Request struct)
+        throws TException {
       TField schemeField;
       iprot.readStructBegin();
       while (true) {
@@ -1567,7 +1531,8 @@ public class R66Request
     }
 
     @Override
-    public void write(TProtocol oprot, R66Request struct) throws TException {
+    public void write(final TProtocol oprot, final R66Request struct)
+        throws TException {
       struct.validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
@@ -1652,7 +1617,8 @@ public class R66Request
   private static class R66RequestTupleScheme extends TupleScheme<R66Request> {
 
     @Override
-    public void write(TProtocol prot, R66Request struct) throws TException {
+    public void write(final TProtocol prot, final R66Request struct)
+        throws TException {
       final TTupleProtocol oprot = (TTupleProtocol) prot;
       oprot.writeI32(struct.mode.getValue());
       final BitSet optionals = new BitSet();
@@ -1732,7 +1698,8 @@ public class R66Request
     }
 
     @Override
-    public void read(TProtocol prot, R66Request struct) throws TException {
+    public void read(final TProtocol prot, final R66Request struct)
+        throws TException {
       final TTupleProtocol iprot = (TTupleProtocol) prot;
       struct.mode = RequestMode.findByValue(iprot.readI32());
       struct.setModeIsSet(true);

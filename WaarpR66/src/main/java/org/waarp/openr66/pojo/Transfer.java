@@ -73,7 +73,7 @@ public class Transfer {
       taskNo = task;
     }
 
-    public static TASKSTEP valueOf(int taskStep) {
+    public static TASKSTEP valueOf(final int taskStep) {
       return map.get(taskStep);
     }
 
@@ -186,7 +186,7 @@ public class Transfer {
     return start.getTime();
   }
 
-  public void setXmlStart(long xml) {
+  public void setXmlStart(final long xml) {
     start = new Timestamp(xml);
   }
 
@@ -196,7 +196,7 @@ public class Transfer {
     return stop.getTime();
   }
 
-  public void setXmlStop(long xml) {
+  public void setXmlStop(final long xml) {
     stop = new Timestamp(xml);
   }
 
@@ -226,13 +226,17 @@ public class Transfer {
    * @param stop
    * @param updatedInfo
    */
-  public Transfer(long id, String rule, int mode, String filename,
-                  String originalName, String fileInfo, boolean isMoved,
-                  int blockSize, boolean retrieveMode, String ownerReq,
-                  String requester, String requested, String transferInfo,
-                  TASKSTEP globalStep, TASKSTEP lastGlobalStep, int step,
-                  ErrorCode stepStatus, ErrorCode infoStatus, int rank,
-                  Timestamp start, Timestamp stop, UpdatedInfo updatedInfo) {
+  public Transfer(final long id, final String rule, final int mode,
+                  final String filename, final String originalName,
+                  final String fileInfo, final boolean isMoved,
+                  final int blockSize, final boolean retrieveMode,
+                  final String ownerReq, final String requester,
+                  final String requested, final String transferInfo,
+                  final TASKSTEP globalStep, final TASKSTEP lastGlobalStep,
+                  final int step, final ErrorCode stepStatus,
+                  final ErrorCode infoStatus, final int rank,
+                  final Timestamp start, final Timestamp stop,
+                  final UpdatedInfo updatedInfo) {
     this(id, rule, mode, filename, originalName, fileInfo, isMoved, blockSize,
          retrieveMode, ownerReq, requester, requested, transferInfo, globalStep,
          lastGlobalStep, step, stepStatus, infoStatus, rank, start, stop);
@@ -264,13 +268,16 @@ public class Transfer {
    * @param start
    * @param stop
    */
-  public Transfer(long id, String rule, int mode, String filename,
-                  String originalName, String fileInfo, boolean isMoved,
-                  int blockSize, boolean retrieveMode, String ownerReq,
-                  String requester, String requested, String transferInfo,
-                  TASKSTEP globalStep, TASKSTEP lastGlobalStep, int step,
-                  ErrorCode stepStatus, ErrorCode infoStatus, int rank,
-                  Timestamp start, Timestamp stop) {
+  public Transfer(final long id, final String rule, final int mode,
+                  final String filename, final String originalName,
+                  final String fileInfo, final boolean isMoved,
+                  final int blockSize, final boolean retrieveMode,
+                  final String ownerReq, final String requester,
+                  final String requested, final String transferInfo,
+                  final TASKSTEP globalStep, final TASKSTEP lastGlobalStep,
+                  final int step, final ErrorCode stepStatus,
+                  final ErrorCode infoStatus, final int rank,
+                  final Timestamp start, final Timestamp stop) {
     this.id = id;
     this.rule = rule;
     transferMode = mode;
@@ -303,9 +310,10 @@ public class Transfer {
    * @param fileInfo
    * @param blockSize
    */
-  public Transfer(String remote, String rule, int ruleMode,
-                  boolean retrieveMode, String file, String fileInfo,
-                  int blockSize, Timestamp start) {
+  public Transfer(final String remote, final String rule, final int ruleMode,
+                  final boolean retrieveMode, final String file,
+                  final String fileInfo, final int blockSize,
+                  final Timestamp start) {
     ownerRequest = Configuration.configuration.getHostId();
     requester = Configuration.configuration.getHostId();
     requested = remote;
@@ -328,9 +336,9 @@ public class Transfer {
    * @param fileInfo
    * @param blockSize
    */
-  public Transfer(String remote, String rule, int ruleMode,
-                  boolean retrieveMode, String file, String fileInfo,
-                  int blockSize) {
+  public Transfer(final String remote, final String rule, final int ruleMode,
+                  final boolean retrieveMode, final String file,
+                  final String fileInfo, final int blockSize) {
     this(remote, rule, ruleMode, retrieveMode, file, fileInfo, blockSize,
          new Timestamp(new Date().getTime()));
   }
@@ -346,7 +354,7 @@ public class Transfer {
     return id;
   }
 
-  public void setId(long id) {
+  public void setId(final long id) {
     logger.trace("TRACE ID {}", id);
     this.id = id;
   }
@@ -355,7 +363,7 @@ public class Transfer {
     return retrieveMode;
   }
 
-  public void setRetrieveMode(boolean retrieveMode) {
+  public void setRetrieveMode(final boolean retrieveMode) {
     this.retrieveMode = retrieveMode;
   }
 
@@ -363,7 +371,7 @@ public class Transfer {
     return rule;
   }
 
-  public void setRule(String rule) {
+  public void setRule(final String rule) {
     this.rule = rule;
   }
 
@@ -371,7 +379,7 @@ public class Transfer {
     return transferMode;
   }
 
-  public void setTransferMode(int mode) {
+  public void setTransferMode(final int mode) {
     transferMode = mode;
   }
 
@@ -379,7 +387,7 @@ public class Transfer {
     return filename;
   }
 
-  public void setFilename(String filename) {
+  public void setFilename(final String filename) {
     this.filename = filename;
   }
 
@@ -387,7 +395,7 @@ public class Transfer {
     return originalName;
   }
 
-  public void setOriginalName(String originalName) {
+  public void setOriginalName(final String originalName) {
     this.originalName = originalName;
   }
 
@@ -395,7 +403,7 @@ public class Transfer {
     return fileInfo;
   }
 
-  public void setFileInfo(String fileInfo) {
+  public void setFileInfo(final String fileInfo) {
     this.fileInfo = fileInfo;
   }
 
@@ -403,7 +411,7 @@ public class Transfer {
     return isMoved;
   }
 
-  public void setIsMoved(boolean isMoved) {
+  public void setIsMoved(final boolean isMoved) {
     this.isMoved = isMoved;
   }
 
@@ -411,7 +419,7 @@ public class Transfer {
     return blockSize;
   }
 
-  public void setBlockSize(int blockSize) {
+  public void setBlockSize(final int blockSize) {
     this.blockSize = blockSize;
   }
 
@@ -419,7 +427,7 @@ public class Transfer {
     return ownerRequest;
   }
 
-  public void setOwnerRequest(String ownerRequest) {
+  public void setOwnerRequest(final String ownerRequest) {
     this.ownerRequest = ownerRequest;
   }
 
@@ -427,7 +435,7 @@ public class Transfer {
     return requester;
   }
 
-  public void setRequester(String requester) {
+  public void setRequester(final String requester) {
     this.requester = requester;
   }
 
@@ -435,7 +443,7 @@ public class Transfer {
     return requested;
   }
 
-  public void setRequested(String requested) {
+  public void setRequested(final String requested) {
     this.requested = requested;
   }
 
@@ -443,7 +451,7 @@ public class Transfer {
     return transferInfo;
   }
 
-  public void setTransferInfo(String transferInfo) {
+  public void setTransferInfo(final String transferInfo) {
     this.transferInfo = transferInfo;
   }
 
@@ -451,7 +459,7 @@ public class Transfer {
     return globalStep;
   }
 
-  public void setGlobalStep(TASKSTEP globalStep) {
+  public void setGlobalStep(final TASKSTEP globalStep) {
     this.globalStep = globalStep;
   }
 
@@ -459,7 +467,7 @@ public class Transfer {
     return lastGlobalStep;
   }
 
-  public void setLastGlobalStep(TASKSTEP lastGlobalStep) {
+  public void setLastGlobalStep(final TASKSTEP lastGlobalStep) {
     this.lastGlobalStep = lastGlobalStep;
   }
 
@@ -467,7 +475,7 @@ public class Transfer {
     return step;
   }
 
-  public void setStep(int step) {
+  public void setStep(final int step) {
     this.step = step;
   }
 
@@ -475,7 +483,7 @@ public class Transfer {
     return stepStatus;
   }
 
-  public void setStepStatus(ErrorCode stepStatus) {
+  public void setStepStatus(final ErrorCode stepStatus) {
     this.stepStatus = stepStatus;
   }
 
@@ -483,7 +491,7 @@ public class Transfer {
     return infoStatus;
   }
 
-  public void setInfoStatus(ErrorCode infoStatus) {
+  public void setInfoStatus(final ErrorCode infoStatus) {
     this.infoStatus = infoStatus;
   }
 
@@ -491,7 +499,7 @@ public class Transfer {
     return rank;
   }
 
-  public void setRank(int rank) {
+  public void setRank(final int rank) {
     this.rank = rank;
   }
 
@@ -499,7 +507,7 @@ public class Transfer {
     return start;
   }
 
-  public void setStart(Timestamp start) {
+  public void setStart(final Timestamp start) {
     this.start = start;
   }
 
@@ -507,7 +515,7 @@ public class Transfer {
     return stop;
   }
 
-  public void setStop(Timestamp stop) {
+  public void setStop(final Timestamp stop) {
     this.stop = stop;
   }
 
@@ -515,7 +523,7 @@ public class Transfer {
     return updatedInfo;
   }
 
-  public void setUpdatedInfo(UpdatedInfo info) {
+  public void setUpdatedInfo(final UpdatedInfo info) {
     updatedInfo = info;
   }
 }

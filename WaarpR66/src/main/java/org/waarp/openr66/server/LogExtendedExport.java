@@ -106,13 +106,15 @@ public class LogExtendedExport implements Runnable {
    * @param networkTransaction
    * @param host
    */
-  public LogExtendedExport(R66Future future, boolean clean, boolean purgeLog,
-                           Timestamp start, Timestamp stop, String startid,
-                           String stopid, String rule, String request,
-                           boolean statuspending, boolean statustransfer,
-                           boolean statusdone, boolean statuserror,
-                           NetworkTransaction networkTransaction,
-                           DbHostAuth host) {
+  public LogExtendedExport(final R66Future future, final boolean clean,
+                           final boolean purgeLog, final Timestamp start,
+                           final Timestamp stop, final String startid,
+                           final String stopid, final String rule,
+                           final String request, final boolean statuspending,
+                           final boolean statustransfer,
+                           final boolean statusdone, final boolean statuserror,
+                           final NetworkTransaction networkTransaction,
+                           final DbHostAuth host) {
     this.future = future;
     this.clean = clean;
     this.purgeLog = purgeLog;
@@ -140,15 +142,15 @@ public class LogExtendedExport implements Runnable {
    * @param ruleDownload
    * @param tryimport
    */
-  public void setDownloadTryImport(String ruleDownload, boolean tryimport) {
+  public void setDownloadTryImport(final String ruleDownload,
+                                   final boolean tryimport) {
     this.ruleDownload = ruleDownload;
-    if (ruleDownload != null && tryimport &&
-        !host.getHostid().equals(Configuration.configuration.getHostId()) &&
-        !host.getHostid().equals(Configuration.configuration.getHostSslId())) {
-      this.tryimport = tryimport;
-    } else {
-      this.tryimport = false;
-    }
+    this.tryimport = ruleDownload != null && tryimport && !host.getHostid()
+                                                               .equals(
+                                                                   Configuration.configuration
+                                                                       .getHostId()) &&
+                     !host.getHostid()
+                          .equals(Configuration.configuration.getHostSslId());
   }
 
   /**
@@ -186,10 +188,10 @@ public class LogExtendedExport implements Runnable {
     node.setStatuserror(statuserror);
     node.setStatusdone(statusdone);
 
-    JsonCommandPacket valid = new JsonCommandPacket(node, type);
+    final JsonCommandPacket valid = new JsonCommandPacket(node, type);
     logger.debug("ExtendedLogCommand: " + valid.getRequest());
     final R66Future newFuture = new R66Future(true);
-    LocalChannelReference localChannelReference =
+    final LocalChannelReference localChannelReference =
         AbstractTransfer.tryConnect(host, newFuture, networkTransaction);
     if (localChannelReference == null) {
       future.setResult(newFuture.getResult());
@@ -236,7 +238,7 @@ public class LogExtendedExport implements Runnable {
     localChannelReference.close();
   }
 
-  public void importLog(R66Future future)
+  public void importLog(final R66Future future)
       throws OpenR66ProtocolBusinessException {
     if (future.isSuccess()) {
       final JsonCommandPacket packet =
@@ -257,7 +259,7 @@ public class LogExtendedExport implements Runnable {
                                  Configuration.configuration.getBlockSize(),
                                  ILLEGALVALUE, networkTransaction);
           transfer.run();
-          File logsFile;
+          final File logsFile;
           if (!futuretemp.isSuccess()) {
             if (futuretemp.getCause() != null) {
               throw new OpenR66ProtocolBusinessException(futuretemp.getCause());
@@ -310,7 +312,7 @@ public class LogExtendedExport implements Runnable {
   protected static String sruleDownload;
   protected static boolean stryimport;
 
-  protected static boolean getParams(String[] args) {
+  protected static boolean getParams(final String[] args) {
     if (logger == null) {
       logger = WaarpLoggerFactory.getLogger(LogExtendedExport.class);
     }
@@ -387,7 +389,7 @@ public class LogExtendedExport implements Runnable {
     return true;
   }
 
-  public static void main(String[] args) {
+  public static void main(final String[] args) {
     WaarpLoggerFactory
         .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));
     if (logger == null) {

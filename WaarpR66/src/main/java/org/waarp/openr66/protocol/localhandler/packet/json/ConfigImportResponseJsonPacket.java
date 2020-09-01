@@ -48,7 +48,7 @@ public class ConfigImportResponseJsonPacket extends ConfigImportJsonPacket {
   /**
    * @param command the command to set
    */
-  public void setCommand(byte command) {
+  public void setCommand(final byte command) {
     this.command = command;
   }
 
@@ -62,7 +62,7 @@ public class ConfigImportResponseJsonPacket extends ConfigImportJsonPacket {
   /**
    * @param purgedhost the purgedhost to set
    */
-  public void setPurgedhost(boolean purgedhost) {
+  public void setPurgedhost(final boolean purgedhost) {
     this.purgedhost = purgedhost;
   }
 
@@ -76,7 +76,7 @@ public class ConfigImportResponseJsonPacket extends ConfigImportJsonPacket {
   /**
    * @param purgedrule the purgedrule to set
    */
-  public void setPurgedrule(boolean purgedrule) {
+  public void setPurgedrule(final boolean purgedrule) {
     this.purgedrule = purgedrule;
   }
 
@@ -90,7 +90,7 @@ public class ConfigImportResponseJsonPacket extends ConfigImportJsonPacket {
   /**
    * @param purgedbusiness the purgedbusiness to set
    */
-  public void setPurgedbusiness(boolean purgedbusiness) {
+  public void setPurgedbusiness(final boolean purgedbusiness) {
     this.purgedbusiness = purgedbusiness;
   }
 
@@ -104,7 +104,7 @@ public class ConfigImportResponseJsonPacket extends ConfigImportJsonPacket {
   /**
    * @param purgedalias the purgedalias to set
    */
-  public void setPurgedalias(boolean purgedalias) {
+  public void setPurgedalias(final boolean purgedalias) {
     this.purgedalias = purgedalias;
   }
 
@@ -118,7 +118,7 @@ public class ConfigImportResponseJsonPacket extends ConfigImportJsonPacket {
   /**
    * @param purgedroles the purgedroles to set
    */
-  public void setPurgedroles(boolean purgedroles) {
+  public void setPurgedroles(final boolean purgedroles) {
     this.purgedroles = purgedroles;
   }
 
@@ -132,7 +132,7 @@ public class ConfigImportResponseJsonPacket extends ConfigImportJsonPacket {
   /**
    * @param importedhost the importedhost to set
    */
-  public void setImportedhost(boolean importedhost) {
+  public void setImportedhost(final boolean importedhost) {
     this.importedhost = importedhost;
   }
 
@@ -146,7 +146,7 @@ public class ConfigImportResponseJsonPacket extends ConfigImportJsonPacket {
   /**
    * @param importedrule the importedrule to set
    */
-  public void setImportedrule(boolean importedrule) {
+  public void setImportedrule(final boolean importedrule) {
     this.importedrule = importedrule;
   }
 
@@ -160,7 +160,7 @@ public class ConfigImportResponseJsonPacket extends ConfigImportJsonPacket {
   /**
    * @param importedbusiness the importedbusiness to set
    */
-  public void setImportedbusiness(boolean importedbusiness) {
+  public void setImportedbusiness(final boolean importedbusiness) {
     this.importedbusiness = importedbusiness;
   }
 
@@ -174,7 +174,7 @@ public class ConfigImportResponseJsonPacket extends ConfigImportJsonPacket {
   /**
    * @param importedalias the importedalias to set
    */
-  public void setImportedalias(boolean importedalias) {
+  public void setImportedalias(final boolean importedalias) {
     this.importedalias = importedalias;
   }
 
@@ -188,7 +188,7 @@ public class ConfigImportResponseJsonPacket extends ConfigImportJsonPacket {
   /**
    * @param importedroles the importedroles to set
    */
-  public void setImportedroles(boolean importedroles) {
+  public void setImportedroles(final boolean importedroles) {
     this.importedroles = importedroles;
   }
 

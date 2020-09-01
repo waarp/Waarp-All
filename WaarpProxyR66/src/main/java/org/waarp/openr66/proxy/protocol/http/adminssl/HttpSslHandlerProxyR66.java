@@ -71,7 +71,7 @@ public class HttpSslHandlerProxyR66 extends HttpSslHandler {
      *
      * @param uniquefile
      */
-    REQUEST(String uniquefile) {
+    REQUEST(final String uniquefile) {
       header = uniquefile;
     }
 
@@ -80,14 +80,14 @@ public class HttpSslHandlerProxyR66 extends HttpSslHandler {
      *
      * @return the content of the unique file
      */
-    public String readFileUnique(HttpSslHandlerProxyR66 handler) {
+    public String readFileUnique(final HttpSslHandlerProxyR66 handler) {
       return handler
           .readFileHeaderInternal(configuration.getHttpBasePath() + header);
     }
   }
 
-  private String readFileHeaderInternal(String filename) {
-    String value;
+  private String readFileHeaderInternal(final String filename) {
+    final String value;
     try {
       value = WaarpStringUtils.readFileException(filename);
     } catch (final InvalidArgumentException e) {
@@ -149,7 +149,7 @@ public class HttpSslHandlerProxyR66 extends HttpSslHandler {
   /**
    * @param builder
    */
-  private void replaceStringSystem(StringBuilder builder) {
+  private void replaceStringSystem(final StringBuilder builder) {
     WaarpStringUtils
         .replace(builder, REPLACEMENT.XXXXSESSIONLIMITWXXX.toString(),
                  Long.toString(configuration.getServerChannelWriteLimit()));
@@ -249,7 +249,7 @@ public class HttpSslHandlerProxyR66 extends HttpSslHandler {
           forceClose = true;
           return logon;
         } else if ("Shutdown".equalsIgnoreCase(act)) {
-          String error;
+          final String error;
           if (configuration.getShutdownConfiguration().serviceFuture != null) {
             error =
                 error(Messages.getString("HttpSslHandler.38")); //$NON-NLS-1$
@@ -373,7 +373,7 @@ public class HttpSslHandlerProxyR66 extends HttpSslHandler {
     }
   }
 
-  private void checkAuthentProxy(ChannelHandlerContext ctx) {
+  private void checkAuthentProxy(final ChannelHandlerContext ctx) {
     newSession = true;
     if (request.method() == HttpMethod.GET) {
       String logon = logon();
@@ -472,8 +472,8 @@ public class HttpSslHandlerProxyR66 extends HttpSslHandler {
   }
 
   @Override
-  protected void channelRead0(ChannelHandlerContext ctx, FullHttpRequest msg)
-      throws Exception {
+  protected void channelRead0(final ChannelHandlerContext ctx,
+                              final FullHttpRequest msg) throws Exception {
     final FullHttpRequest request = this.request = msg;
     final QueryStringDecoder queryStringDecoder =
         new QueryStringDecoder(request.uri());
@@ -508,13 +508,10 @@ public class HttpSslHandlerProxyR66 extends HttpSslHandler {
           logger.debug("NotFound: " + find + ':' + uriRequest);
         }
       }
-      switch (req) {
-        case System:
-          responseContent.append(System());
-          break;
-        default:
-          responseContent.append(indexProxy());
-          break;
+      if (req == REQUEST.System) {
+        responseContent.append(System());
+      } else {
+        responseContent.append(indexProxy());
       }
       writeResponse(ctx);
     } finally {

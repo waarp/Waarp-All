@@ -35,7 +35,8 @@ public class MariaDBTransferDAO extends DBTransferDAO {
   private static final String SQL_UPDATE_ID =
       "UPDATE Sequences SET seq = ? " + "WHERE name='RUNSEQ'";
 
-  public MariaDBTransferDAO(Connection con) throws DAOConnectionException {
+  public MariaDBTransferDAO(final Connection con)
+      throws DAOConnectionException {
     super(con);
   }
 
@@ -47,7 +48,7 @@ public class MariaDBTransferDAO extends DBTransferDAO {
     try {
       ps = connection.prepareStatement(SQL_GET_ID);
       rs = ps.executeQuery();
-      long res;
+      final long res;
       if (rs.next()) {
         res = rs.getLong(1);
         ps2 = connection.prepareStatement(SQL_UPDATE_ID);
@@ -65,7 +66,7 @@ public class MariaDBTransferDAO extends DBTransferDAO {
         if (rs != null) {
           rs.close();
         }
-      } catch (SQLException e) {
+      } catch (final SQLException e) {
         // ignore
       }
       closeStatement(ps);

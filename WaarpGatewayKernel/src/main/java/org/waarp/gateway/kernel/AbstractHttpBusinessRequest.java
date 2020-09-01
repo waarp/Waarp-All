@@ -36,7 +36,8 @@ public abstract class AbstractHttpBusinessRequest {
    * @param page
    */
   protected AbstractHttpBusinessRequest(
-      LinkedHashMap<String, AbstractHttpField> fields, HttpPage page) {
+      final LinkedHashMap<String, AbstractHttpField> fields,
+      final HttpPage page) {
     this.fields = fields;
     this.page = page;
   }

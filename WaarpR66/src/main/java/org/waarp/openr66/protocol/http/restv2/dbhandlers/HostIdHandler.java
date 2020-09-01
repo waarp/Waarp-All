@@ -80,7 +80,7 @@ public class HostIdHandler extends AbstractRestDbHandler {
    *
    * @param crud the CRUD mask for this handler
    */
-  public HostIdHandler(byte crud) {
+  public HostIdHandler(final byte crud) {
     super(crud);
   }
 
@@ -96,8 +96,8 @@ public class HostIdHandler extends AbstractRestDbHandler {
   @GET
   @Consumes(WILDCARD)
   @RequiredRole(READONLY)
-  public void getHost(HttpRequest request, HttpResponder responder,
-                      @PathParam(URI_ID) String id) {
+  public void getHost(final HttpRequest request, final HttpResponder responder,
+                      @PathParam(URI_ID) final String id) {
 
     HostDAO hostDAO = null;
     try {
@@ -132,8 +132,9 @@ public class HostIdHandler extends AbstractRestDbHandler {
   @PUT
   @Consumes(APPLICATION_JSON)
   @RequiredRole(HOST)
-  public void updateHost(HttpRequest request, HttpResponder responder,
-                         @PathParam(URI_ID) String id) {
+  public void updateHost(final HttpRequest request,
+                         final HttpResponder responder,
+                         @PathParam(URI_ID) final String id) {
 
     HostDAO hostDAO = null;
     try {
@@ -175,8 +176,9 @@ public class HostIdHandler extends AbstractRestDbHandler {
   @DELETE
   @Consumes(WILDCARD)
   @RequiredRole(HOST)
-  public void deleteHost(HttpRequest request, HttpResponder responder,
-                         @PathParam(URI_ID) String id) {
+  public void deleteHost(final HttpRequest request,
+                         final HttpResponder responder,
+                         @PathParam(URI_ID) final String id) {
 
     HostDAO hostDAO = null;
     try {
@@ -210,8 +212,8 @@ public class HostIdHandler extends AbstractRestDbHandler {
   @OPTIONS
   @Consumes(WILDCARD)
   @RequiredRole(NOACCESS)
-  public void options(HttpRequest request, HttpResponder responder,
-                      @PathParam(URI_ID) String id) {
+  public void options(final HttpRequest request, final HttpResponder responder,
+                      @PathParam(URI_ID) final String id) {
     responder.sendStatus(OK, OPTIONS_HEADERS);
   }
 }

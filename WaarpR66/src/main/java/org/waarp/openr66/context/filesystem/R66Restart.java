@@ -32,13 +32,14 @@ public class R66Restart extends FilesystemBasedRestartImpl {
   /**
    * @param session
    */
-  public R66Restart(R66Session session) {
+  public R66Restart(final R66Session session) {
     super(session);
   }
 
   @Override
-  public boolean restartMarker(String marker) throws CommandAbstractException {
-    long newposition;
+  public boolean restartMarker(final String marker)
+      throws CommandAbstractException {
+    final long newposition;
     try {
       newposition = Long.parseLong(marker);
     } catch (final NumberFormatException e) {
@@ -55,7 +56,7 @@ public class R66Restart extends FilesystemBasedRestartImpl {
    *
    * @return True if OK
    */
-  public boolean restartMarker(long newposition) {
+  public boolean restartMarker(final long newposition) {
     position = newposition;
     setSet(true);
     return true;

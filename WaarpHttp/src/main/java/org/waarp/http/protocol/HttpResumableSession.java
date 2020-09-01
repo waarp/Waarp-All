@@ -74,9 +74,9 @@ public class HttpResumableSession extends HttpSessionAbstract {
     super(authent);
     this.httpResumableInfo = resumableInfo;
     if (!DetectionUtils.isJunit()) {
-      R66BusinessInterface business =
+      final R66BusinessInterface business =
           checkAuthentR66Business(this, session, authent);
-      DbTaskRunner runner =
+      final DbTaskRunner runner =
           getDbTaskRunner(authent.getUserId(), rulename, comment, business);
       preTasks(business, runner);
     }
@@ -95,7 +95,7 @@ public class HttpResumableSession extends HttpSessionAbstract {
   private DbTaskRunner getDbTaskRunner(final String user, final String rulename,
                                        final String comment,
                                        final R66BusinessInterface business) {
-    long uuid =
+    final long uuid =
         UUID.nameUUIDFromBytes(httpResumableInfo.getIdentifier().getBytes())
             .getMostSignificantBits();
     return getDbTaskRunner(user, httpResumableInfo.getFilename(), rulename,
@@ -120,8 +120,8 @@ public class HttpResumableSession extends HttpSessionAbstract {
    *
    * @throws IOException
    */
-  public boolean tryWrite(HttpResumableInfo resumableInfo, InputStream stream)
-      throws IOException {
+  public boolean tryWrite(final HttpResumableInfo resumableInfo,
+                          final InputStream stream) throws IOException {
     if (!session.isAuthenticated() || !session.isReady()) {
       logger.error("Not authenticated or not Ready");
       return false;
@@ -129,7 +129,7 @@ public class HttpResumableSession extends HttpSessionAbstract {
     if (!valid(resumableInfo)) {
       return false;
     }
-    HttpResumableChunkNumber chunkNumber =
+    final HttpResumableChunkNumber chunkNumber =
         new HttpResumableChunkNumber(resumableInfo.getChunkNumber());
     if (uploadedChunks.contains(chunkNumber)) {
       return false;
@@ -147,7 +147,7 @@ public class HttpResumableSession extends HttpSessionAbstract {
    *
    * @return true if ok
    */
-  public boolean valid(HttpResumableInfo resumableInfo) {
+  public boolean valid(final HttpResumableInfo resumableInfo) {
     return (resumableInfo.getChunkSize() > 0 &&
             resumableInfo.getTotalSize() > 0 &&
             resumableInfo.getChunkNumber() > 0 &&
@@ -165,17 +165,17 @@ public class HttpResumableSession extends HttpSessionAbstract {
    *
    * @throws IOException
    */
-  private void write(HttpResumableInfo info, InputStream stream)
+  private void write(final HttpResumableInfo info, final InputStream stream)
       throws IOException {
-    File file = session.getFile().getTrueFile();
+    final File file = session.getFile().getTrueFile();
     RandomAccessFile raf = null;
     try {
       raf = new RandomAccessFile(file, "rw");
       //Seek to position
       raf.seek((info.getChunkNumber() - 1) * (long) info.getChunkSize());
-      byte[] bytes = new byte[info.getChunkSize()];
+      final byte[] bytes = new byte[info.getChunkSize()];
       while (true) {
-        int r = stream.read(bytes);
+        final int r = stream.read(bytes);
         if (r < 0) {
           break;
         }
@@ -198,8 +198,8 @@ public class HttpResumableSession extends HttpSessionAbstract {
    *
    * @return True if contained
    */
-  public boolean contains(HttpResumableInfo resumableInfo) {
-    HttpResumableChunkNumber chunkNumber =
+  public boolean contains(final HttpResumableInfo resumableInfo) {
+    final HttpResumableChunkNumber chunkNumber =
         new HttpResumableChunkNumber(resumableInfo.getChunkNumber());
     return uploadedChunks.contains(chunkNumber);
   }
@@ -211,7 +211,7 @@ public class HttpResumableSession extends HttpSessionAbstract {
    *
    * @return True if finished
    */
-  public boolean checkIfUploadFinished(String sha256) {
+  public boolean checkIfUploadFinished(final String sha256) {
     logger.debug("Write until now: {} for {}", size,
                  httpResumableInfo.getTotalSize());
     //check if upload finished
@@ -224,13 +224,13 @@ public class HttpResumableSession extends HttpSessionAbstract {
     logger.debug("Final block received! {}", session);
     session.newState(ENDTRANSFERS);
     //Upload finished, change filename.
-    R66File r66File = session.getFile();
-    File file = r66File.getTrueFile();
+    final R66File r66File = session.getFile();
+    final File file = r66File.getTrueFile();
     if (file.isFile()) {
       // Now if sha256 is given, compute it and compare
       if (!Strings.isNullOrEmpty(sha256)) {
         try {
-          byte[] bin =
+          final byte[] bin =
               FilesystemBasedDigest.getHash(file, false, DigestAlgo.SHA256);
           if (!FilesystemBasedDigest.digestEquals(sha256, bin)) {
             logger.error("Digests differs: {} {}", sha256,
@@ -239,13 +239,13 @@ public class HttpResumableSession extends HttpSessionAbstract {
                   session.getBusinessObject());
           }
           logger.info("Digest OK");
-        } catch (IOException ignore) {
+        } catch (final IOException ignore) {
           logger.warn(ignore);
         }
       } else {
         logger.info("NO DIGEST given");
       }
-      DbTaskRunner runner = session.getRunner();
+      final DbTaskRunner runner = session.getRunner();
       try {
         final String finalpath = R66Dir.getFinalUniqueFilename(r66File);
         logger.debug("File to move from {} to {}",
@@ -258,11 +258,11 @@ public class HttpResumableSession extends HttpSessionAbstract {
         runner.saveStatus();
         runPostTask();
         authent.finalizeTransfer(this, session);
-      } catch (OpenR66RunnerErrorException e) {
+      } catch (final OpenR66RunnerErrorException e) {
         error(e, session.getBusinessObject());
-      } catch (OpenR66ProtocolSystemException e) {
+      } catch (final OpenR66ProtocolSystemException e) {
         error(e, session.getBusinessObject());
-      } catch (CommandAbstractException e) {
+      } catch (final CommandAbstractException e) {
         error(e, session.getBusinessObject());
       }
       return true;

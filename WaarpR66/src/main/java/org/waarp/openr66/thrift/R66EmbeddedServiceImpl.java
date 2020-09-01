@@ -64,10 +64,10 @@ public class R66EmbeddedServiceImpl implements R66Service.Iface {
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(R66EmbeddedServiceImpl.class);
 
-  private DbTaskRunner initRequest(R66Request request) {
+  private DbTaskRunner initRequest(final R66Request request) {
     Timestamp ttimestart = null;
     if (request.isSetStart()) {
-      Date date;
+      final Date date;
       try {
         final SimpleDateFormat dateFormat =
             new SimpleDateFormat("yyyyMMddHHmmss");
@@ -84,7 +84,7 @@ public class R66EmbeddedServiceImpl implements R66Service.Iface {
         ttimestart = new Timestamp(Long.parseLong(request.getDelay()));
       }
     }
-    DbRule rule;
+    final DbRule rule;
     try {
       rule = new DbRule(request.getRule());
     } catch (final WaarpDatabaseException e) {
@@ -95,7 +95,7 @@ public class R66EmbeddedServiceImpl implements R66Service.Iface {
     if (request.isMd5()) {
       mode = RequestPacket.getModeMD5(mode);
     }
-    DbTaskRunner taskRunner;
+    final DbTaskRunner taskRunner;
     long tid = ILLEGALVALUE;
     if (request.isSetTid()) {
       tid = request.getTid();
@@ -131,7 +131,8 @@ public class R66EmbeddedServiceImpl implements R66Service.Iface {
   }
 
   @Override
-  public R66Result transferRequestQuery(R66Request request) throws TException {
+  public R66Result transferRequestQuery(final R66Request request)
+      throws TException {
     final DbTaskRunner runner = initRequest(request);
     if (runner != null) {
       runner.changeUpdatedInfo(AbstractDbData.UpdatedInfo.TOSUBMIT);
@@ -186,7 +187,8 @@ public class R66EmbeddedServiceImpl implements R66Service.Iface {
     }
   }
 
-  private void setResultFromRunner(DbTaskRunner runner, R66Result result) {
+  private void setResultFromRunner(final DbTaskRunner runner,
+                                   final R66Result result) {
     result.setDestuid(runner.getRequested());
     result.setFromuid(runner.getRequester());
     result.setTid(runner.getSpecialId());
@@ -205,7 +207,8 @@ public class R66EmbeddedServiceImpl implements R66Service.Iface {
     result.setResultinfo(runner.getFileInformation());
   }
 
-  private void setResultFromLCR(LocalChannelReference lcr, R66Result result) {
+  private void setResultFromLCR(final LocalChannelReference lcr,
+                                final R66Result result) {
     final R66Session session = lcr.getSession();
     DbTaskRunner runner = null;
     if (session != null) {
@@ -221,8 +224,9 @@ public class R66EmbeddedServiceImpl implements R66Service.Iface {
     }
   }
 
-  private int stopOrCancelRunner(long id, String reqd, String reqr,
-                                 org.waarp.openr66.context.ErrorCode code) {
+  private int stopOrCancelRunner(final long id, final String reqd,
+                                 final String reqr,
+                                 final org.waarp.openr66.context.ErrorCode code) {
     try {
       final DbTaskRunner taskRunner =
           new DbTaskRunner(null, null, id, reqr, reqd);
@@ -235,10 +239,11 @@ public class R66EmbeddedServiceImpl implements R66Service.Iface {
     return -1;
   }
 
-  private R66Result stopOrCancel(R66Request request, LocalChannelReference lcr,
-                                 org.waarp.openr66.context.ErrorCode r66code) {
+  private R66Result stopOrCancel(final R66Request request,
+                                 final LocalChannelReference lcr,
+                                 final org.waarp.openr66.context.ErrorCode r66code) {
     // stop the current transfer
-    R66Result resulttest;
+    final R66Result resulttest;
     if (lcr != null) {
       int rank = 0;
       if (r66code == org.waarp.openr66.context.ErrorCode.StoppedTransfer &&
@@ -280,7 +285,8 @@ public class R66EmbeddedServiceImpl implements R66Service.Iface {
     return resulttest;
   }
 
-  private R66Result restart(R66Request request, LocalChannelReference lcr) {
+  private R66Result restart(final R66Request request,
+                            final LocalChannelReference lcr) {
     // Try to validate a restarting transfer
     // validLimit on requested side
     if (Configuration.configuration.getConstraintLimitHandler()
@@ -294,7 +300,7 @@ public class R66EmbeddedServiceImpl implements R66Service.Iface {
     }
     // Try to validate a restarting transfer
     // header = ?; middle = requested+blank+requester+blank+specialId
-    DbTaskRunner taskRunner;
+    final DbTaskRunner taskRunner;
     try {
       taskRunner =
           new DbTaskRunner(null, null, request.getTid(), request.getFromuid(),
@@ -312,7 +318,8 @@ public class R66EmbeddedServiceImpl implements R66Service.Iface {
   }
 
   @Override
-  public R66Result infoTransferQuery(R66Request request) throws TException {
+  public R66Result infoTransferQuery(final R66Request request)
+      throws TException {
     final RequestMode mode = request.getMode();
     if (mode != RequestMode.INFOREQUEST) {
       // error
@@ -334,7 +341,7 @@ public class R66EmbeddedServiceImpl implements R66Service.Iface {
         Configuration.configuration.getLocalTransaction().getFromRequest(
             request.getDestuid() + ' ' + request.getFromuid() + ' ' +
             request.getTid());
-    org.waarp.openr66.context.ErrorCode r66code;
+    final org.waarp.openr66.context.ErrorCode r66code;
     switch (request.getAction()) {
       case Detail: {
         final R66Result result =
@@ -351,9 +358,7 @@ public class R66EmbeddedServiceImpl implements R66Service.Iface {
             final DbTaskRunner runner =
                 new DbTaskRunner(null, null, request.getTid(),
                                  request.getFromuid(), request.getDestuid());
-            if (runner != null) {
-              setResultFromRunner(runner, result);
-            }
+            setResultFromRunner(runner, result);
           } catch (final WaarpDatabaseException e) {
             result.setCode(ErrorCode.FileNotFound);
           }
@@ -376,8 +381,8 @@ public class R66EmbeddedServiceImpl implements R66Service.Iface {
   }
 
   @Override
-  public boolean isStillRunning(String fromuid, String touid, long tid)
-      throws TException {
+  public boolean isStillRunning(final String fromuid, final String touid,
+                                final long tid) throws TException {
     // now check if enough arguments are provided
     if (fromuid == null || touid == null || tid == ILLEGALVALUE) {
       // error
@@ -392,7 +397,8 @@ public class R66EmbeddedServiceImpl implements R66Service.Iface {
   }
 
   @Override
-  public List<String> infoListQuery(R66Request request) throws TException {
+  public List<String> infoListQuery(final R66Request request)
+      throws TException {
     List<String> list = new ArrayList<String>();
     final RequestMode mode = request.getMode();
     if (mode != RequestMode.INFOFILE) {
@@ -411,7 +417,7 @@ public class R66EmbeddedServiceImpl implements R66Service.Iface {
     final R66Session session = new R66Session();
     session.getAuth().specialNoSessionAuth(false, Configuration.configuration
         .getHostId());
-    DbRule rule;
+    final DbRule rule;
     try {
       rule = new DbRule(request.getRule());
     } catch (final WaarpDatabaseException e) {

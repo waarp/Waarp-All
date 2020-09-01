@@ -43,14 +43,14 @@ public class HttpHelper {
    *
    * @return the long value or def is null or empty or not parsable
    */
-  public static long toLong(String value, long def) {
+  public static long toLong(final String value, final long def) {
     if (Strings.isNullOrEmpty(value)) {
       return def;
     }
 
     try {
       return Long.parseLong(value);
-    } catch (NumberFormatException e) {
+    } catch (final NumberFormatException e) {
       logger.warn(e);
       return def;
     }
@@ -64,13 +64,13 @@ public class HttpHelper {
    *
    * @return the int value or def is null or empty or not parsable
    */
-  public static int toInt(String value, int def) {
+  public static int toInt(final String value, final int def) {
     if (Strings.isNullOrEmpty(value)) {
       return def;
     }
     try {
       return Integer.parseInt(value);
-    } catch (NumberFormatException e) {
+    } catch (final NumberFormatException e) {
       logger.warn(e);
       return def;
     }

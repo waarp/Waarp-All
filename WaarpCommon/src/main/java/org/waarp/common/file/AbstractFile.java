@@ -54,7 +54,7 @@ public abstract class AbstractFile implements FileInterface {
   }
 
   @Override
-  public boolean restartMarker(Restart restart)
+  public boolean restartMarker(final Restart restart)
       throws CommandAbstractException {
     try {
       final long newposition = restart.getPosition();

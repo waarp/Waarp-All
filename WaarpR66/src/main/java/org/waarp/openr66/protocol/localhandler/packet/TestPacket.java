@@ -40,8 +40,10 @@ public class TestPacket extends AbstractLocalPacket {
 
   private int code;
 
-  public static TestPacket createFromBuffer(int headerLength, int middleLength,
-                                            int endLength, ByteBuf buf) {
+  public static TestPacket createFromBuffer(final int headerLength,
+                                            final int middleLength,
+                                            final int endLength,
+                                            final ByteBuf buf) {
     final byte[] bheader = new byte[headerLength - 1];
     final byte[] bmiddle = new byte[middleLength];
     if (headerLength - 1 > 0) {
@@ -54,7 +56,7 @@ public class TestPacket extends AbstractLocalPacket {
                           buf.readInt());
   }
 
-  public TestPacket(String header, String middle, int code) {
+  public TestPacket(final String header, final String middle, final int code) {
     sheader = header;
     smiddle = middle;
     this.code = code;
@@ -67,7 +69,7 @@ public class TestPacket extends AbstractLocalPacket {
 
   @Override
   public void createAllBuffers(final LocalChannelReference lcr,
-                               int networkHeader)
+                               final int networkHeader)
       throws OpenR66ProtocolPacketException {
     final byte[] headerBytes =
         sheader != null? sheader.getBytes() : EMPTY_ARRAY;
@@ -91,20 +93,20 @@ public class TestPacket extends AbstractLocalPacket {
   }
 
   @Override
-  public void createEnd(LocalChannelReference lcr)
+  public void createEnd(final LocalChannelReference lcr)
       throws OpenR66ProtocolPacketException {
     end = ByteBufAllocator.DEFAULT.buffer(4, 4);
     end.writeInt(code);
   }
 
   @Override
-  public void createHeader(LocalChannelReference lcr)
+  public void createHeader(final LocalChannelReference lcr)
       throws OpenR66ProtocolPacketException {
     header = Unpooled.wrappedBuffer(sheader.getBytes());
   }
 
   @Override
-  public void createMiddle(LocalChannelReference lcr)
+  public void createMiddle(final LocalChannelReference lcr)
       throws OpenR66ProtocolPacketException {
     middle = Unpooled.wrappedBuffer(smiddle.getBytes());
   }

@@ -32,8 +32,8 @@ public class FtpShutdownHook extends WaarpShutdownHook {
   /**
    * @param configuration
    */
-  public FtpShutdownHook(ShutdownConfiguration configuration,
-                         FtpConfiguration ftpconfiguration) {
+  public FtpShutdownHook(final ShutdownConfiguration configuration,
+                         final FtpConfiguration ftpconfiguration) {
     super(configuration);
     FtpShutdownHook.configuration = ftpconfiguration;
   }

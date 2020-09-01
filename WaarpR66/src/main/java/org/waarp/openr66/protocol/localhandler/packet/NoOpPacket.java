@@ -42,8 +42,10 @@ public class NoOpPacket extends AbstractLocalPacket {
    *
    * @throws OpenR66ProtocolPacketException
    */
-  public static NoOpPacket createFromBuffer(int headerLength, int middleLength,
-                                            int endLength, ByteBuf buf)
+  public static NoOpPacket createFromBuffer(final int headerLength,
+                                            final int middleLength,
+                                            final int endLength,
+                                            final ByteBuf buf)
       throws OpenR66ProtocolPacketException {
     return new NoOpPacket();
   }
@@ -54,7 +56,8 @@ public class NoOpPacket extends AbstractLocalPacket {
   }
 
   @Override
-  public void createAllBuffers(LocalChannelReference lcr, int networkHeader)
+  public void createAllBuffers(final LocalChannelReference lcr,
+                               final int networkHeader)
       throws OpenR66ProtocolPacketException {
     final int globalSize = networkHeader + LOCAL_HEADER_SIZE;
     global = ByteBufAllocator.DEFAULT.buffer(globalSize, globalSize);
@@ -64,17 +67,17 @@ public class NoOpPacket extends AbstractLocalPacket {
   }
 
   @Override
-  public void createEnd(LocalChannelReference lcr) {
+  public void createEnd(final LocalChannelReference lcr) {
     end = Unpooled.EMPTY_BUFFER;
   }
 
   @Override
-  public void createHeader(LocalChannelReference lcr) {
+  public void createHeader(final LocalChannelReference lcr) {
     header = Unpooled.EMPTY_BUFFER;
   }
 
   @Override
-  public void createMiddle(LocalChannelReference lcr) {
+  public void createMiddle(final LocalChannelReference lcr) {
     middle = Unpooled.EMPTY_BUFFER;
   }
 

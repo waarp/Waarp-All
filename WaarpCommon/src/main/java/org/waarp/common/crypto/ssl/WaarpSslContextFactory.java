@@ -66,7 +66,7 @@ public class WaarpSslContextFactory {
    *
    * @param ggSecureKeyStore
    */
-  public WaarpSslContextFactory(WaarpSecureKeyStore ggSecureKeyStore) {
+  public WaarpSslContextFactory(final WaarpSecureKeyStore ggSecureKeyStore) {
     // Both construct Client and Server mode
     serverContext = initSslContextFactory(ggSecureKeyStore, true);
     clientContext = initSslContextFactory(ggSecureKeyStore, false);
@@ -78,13 +78,13 @@ public class WaarpSslContextFactory {
    * @param ggSecureKeyStore
    * @param serverMode
    */
-  public WaarpSslContextFactory(WaarpSecureKeyStore ggSecureKeyStore,
-                                boolean serverMode) {
+  public WaarpSslContextFactory(final WaarpSecureKeyStore ggSecureKeyStore,
+                                final boolean serverMode) {
     if (serverMode) {
-      serverContext = initSslContextFactory(ggSecureKeyStore, serverMode);
+      serverContext = initSslContextFactory(ggSecureKeyStore, true);
       clientContext = null;
     } else {
-      clientContext = initSslContextFactory(ggSecureKeyStore, serverMode);
+      clientContext = initSslContextFactory(ggSecureKeyStore, false);
       serverContext = null;
     }
   }
@@ -93,7 +93,8 @@ public class WaarpSslContextFactory {
    * @param cacheSize default being 1024
    * @param timeOutInSeconds default being 60s
    */
-  public void setSessionCacheTime(int cacheSize, int timeOutInSeconds) {
+  public void setSessionCacheTime(final int cacheSize,
+                                  final int timeOutInSeconds) {
     if (serverContext != null) {
       final SSLSessionContext sslSessionContext =
           serverContext.getServerSessionContext();
@@ -110,8 +111,8 @@ public class WaarpSslContextFactory {
    *
    * @return the SSLContext
    */
-  private SSLContext initSslContextFactory(WaarpSecureKeyStore ggSecureKeyStore,
-                                           boolean serverMode) {
+  private SSLContext initSslContextFactory(
+      final WaarpSecureKeyStore ggSecureKeyStore, final boolean serverMode) {
     String algorithm = Security.getProperty("ssl.KeyManagerFactory.algorithm");
     if (algorithm == null) {
       algorithm = "“X509";
@@ -119,13 +120,13 @@ public class WaarpSslContextFactory {
         if (KeyManagerFactory.getInstance(algorithm) == null) {
           algorithm = "SunX509";
         }
-      } catch (NoSuchAlgorithmException e) {
+      } catch (final NoSuchAlgorithmException e) {
         algorithm = "SunX509";
       }
     }
 
-    SSLContext serverContextNew;
-    SSLContext clientContextNew;
+    final SSLContext serverContextNew;
+    final SSLContext clientContextNew;
     if (serverMode) {
       try {
         // Initialize the SSLContext to work with our key managers.
@@ -216,10 +217,10 @@ public class WaarpSslContextFactory {
    *
    * @return the sslhandler
    */
-  public WaarpSslHandler initInitializer(boolean serverMode,
-                                         boolean needClientAuth) {
+  public WaarpSslHandler initInitializer(final boolean serverMode,
+                                         final boolean needClientAuth) {
     // Add SSL handler first to encrypt and decrypt everything.
-    SSLEngine engine;
+    final SSLEngine engine;
     logger.debug("Has TrustManager? " + needClientAuth + " Is ServerMode? " +
                  serverMode);
     if (serverMode) {
@@ -248,11 +249,11 @@ public class WaarpSslContextFactory {
    *
    * @return the sslhandler
    */
-  public WaarpSslHandler initInitializer(boolean serverMode,
-                                         boolean needClientAuth, String host,
-                                         int port) {
+  public WaarpSslHandler initInitializer(final boolean serverMode,
+                                         final boolean needClientAuth,
+                                         final String host, final int port) {
     // Add SSL handler first to encrypt and decrypt everything.
-    SSLEngine engine;
+    final SSLEngine engine;
     logger.debug("Has TrustManager? " + needClientAuth + " Is ServerMode? " +
                  serverMode);
     if (serverMode) {

@@ -229,7 +229,7 @@ public final class HttpXmlDefinition {
   private HttpXmlDefinition() {
   }
 
-  static AbstractHttpField loadHttpPage(XmlValue[] xmlValue)
+  static AbstractHttpField loadHttpPage(final XmlValue[] xmlValue)
       throws InvalidArgumentException {
     final XmlHash hash = new XmlHash(xmlValue);
     XmlValue value = hash.get(XML_HTTP_FIELDNAME);
@@ -246,7 +246,7 @@ public final class HttpXmlDefinition {
           UNABLE_TO_FIND_FIELD + XML_HTTP_FIELDTYPE);
     }
     final String fieldtype = value.getString();
-    FieldRole fieldRole;
+    final FieldRole fieldRole;
     try {
       fieldRole = FieldRole.valueOf(fieldtype);
     } catch (final IllegalArgumentException e) {
@@ -301,7 +301,7 @@ public final class HttpXmlDefinition {
                                 fieldtovalidate, fieldposition, fieldrank);
   }
 
-  static HttpPage loadHttpConfiguration(XmlValue[] xmlValue)
+  static HttpPage loadHttpConfiguration(final XmlValue[] xmlValue)
       throws InvalidArgumentException, ClassNotFoundException,
              InstantiationException, IllegalAccessException {
     final XmlHash hash = new XmlHash(xmlValue);
@@ -355,7 +355,7 @@ public final class HttpXmlDefinition {
           UNABLE_TO_FIND_FIELD + XML_HTTP_PAGEROLE);
     }
     final String pagerole = value.getString();
-    PageRole pageRole;
+    final PageRole pageRole;
     try {
       pageRole = PageRole.valueOf(pagerole);
     } catch (final IllegalArgumentException e) {
@@ -380,8 +380,8 @@ public final class HttpXmlDefinition {
     // now getting Fields
     value = hash.get(XML_HTTP_FIELD);
     @SuppressWarnings("unchecked")
-    List<XmlValue[]> list = (List<XmlValue[]>) value.getList();
-    List<AbstractHttpField> listFields =
+    final List<XmlValue[]> list = (List<XmlValue[]>) value.getList();
+    final List<AbstractHttpField> listFields =
         new ArrayList<AbstractHttpField>(list.size());
     // Now read the configuration
     for (final XmlValue[] fieldValue : list) {
@@ -413,9 +413,10 @@ public final class HttpXmlDefinition {
    * @throws InstantiationException
    */
   public static HttpPageHandler setConfigurationHttpServerFromXml(
-      String filename) throws InvalidArgumentException, ClassNotFoundException,
-                              InstantiationException, IllegalAccessException {
-    Document document;
+      final String filename)
+      throws InvalidArgumentException, ClassNotFoundException,
+             InstantiationException, IllegalAccessException {
+    final Document document;
     // Open config file
     try {
       document = XmlUtil.getNewSaxReader().read(filename);
@@ -429,13 +430,13 @@ public final class HttpXmlDefinition {
       throw new InvalidArgumentException(
           "Unable to parse XML file: " + filename);
     }
-    XmlValue[] values = XmlUtil.read(document, configHttpPages);
+    final XmlValue[] values = XmlUtil.read(document, configHttpPages);
     if (values.length <= 0) {
       throw new InvalidArgumentException("XML file is empty");
     }
     final XmlValue value = values[0];
     @SuppressWarnings("unchecked")
-    List<XmlValue[]> list = (List<XmlValue[]>) value.getList();
+    final List<XmlValue[]> list = (List<XmlValue[]>) value.getList();
     final HashMap<String, HttpPage> pages =
         new HashMap<String, HttpPage>(list.size());
     // Now read the configuration
@@ -455,7 +456,7 @@ public final class HttpXmlDefinition {
    *
    * @return the new Element
    */
-  private static Element newElement(String name, String value) {
+  private static Element newElement(final String name, final String value) {
     final Element node = new DefaultElement(name);
     if (value != null && value.length() > 0) {
       node.addText(value);
@@ -463,7 +464,7 @@ public final class HttpXmlDefinition {
     return node;
   }
 
-  static void addToField(Element root, AbstractHttpField field) {
+  static void addToField(final Element root, final AbstractHttpField field) {
     root.add(newElement(XML_HTTP_FIELDNAME, field.getFieldname()));
     root.add(newElement(XML_HTTP_FIELDTYPE, field.getFieldtype().name()));
     root.add(newElement(XML_HTTP_FIELDINFO, field.getFieldinfo()));
@@ -482,7 +483,7 @@ public final class HttpXmlDefinition {
         newElement(XML_HTTP_FIELDRANK, Integer.toString(field.getFieldrank())));
   }
 
-  static void addToElement(Element root, HttpPage page) {
+  static void addToElement(final Element root, final HttpPage page) {
     root.add(newElement(XML_HTTP_PAGENAME, page.getPagename()));
     root.add(newElement(XML_HTTP_FILEFORM, page.getFileform()));
     root.add(newElement(XML_HTTP_HEADER, page.getHeader()));
@@ -501,8 +502,8 @@ public final class HttpXmlDefinition {
     }
   }
 
-  public static void exportConfiguration(HttpPageHandler httpPageHandler,
-                                         String filename)
+  public static void exportConfiguration(final HttpPageHandler httpPageHandler,
+                                         final String filename)
       throws HttpIncorrectRequestException {
     final Document document = DocumentHelper.createDocument();
     final Element root = document.addElement(XML_ROOT_NAME);

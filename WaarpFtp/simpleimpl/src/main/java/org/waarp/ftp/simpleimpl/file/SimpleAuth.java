@@ -59,7 +59,8 @@ public class SimpleAuth {
    * @param password
    * @param accounts
    */
-  public SimpleAuth(String user, String password, String[] accounts) {
+  public SimpleAuth(final String user, final String password,
+                    final String[] accounts) {
     this.user = user;
     this.password = password;
     this.accounts = accounts;
@@ -72,7 +73,7 @@ public class SimpleAuth {
    *
    * @return True if the password is valid (or any password is valid)
    */
-  public boolean isPasswordValid(String newpassword) {
+  public boolean isPasswordValid(final String newpassword) {
     if (password == null) {
       return true;
     }
@@ -89,7 +90,7 @@ public class SimpleAuth {
    *
    * @return True if the account is valid (or any account is valid)
    */
-  public boolean isAccountValid(String account) {
+  public boolean isAccountValid(final String account) {
     if (accounts == null) {
       logger.debug("No account needed");
       return true;
@@ -111,7 +112,7 @@ public class SimpleAuth {
   /**
    * @param isAdmin True if the user should be an administrator
    */
-  public void setAdmin(boolean isAdmin) {
+  public void setAdmin(final boolean isAdmin) {
     this.isAdmin = isAdmin;
   }
 

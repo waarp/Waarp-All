@@ -75,7 +75,7 @@ public class DBHostDAO extends StatementExecutor<Host> implements HostDAO {
       HOSTID_FIELD + " = ?";
 
 
-  public DBHostDAO(Connection con) throws DAOConnectionException {
+  public DBHostDAO(final Connection con) throws DAOConnectionException {
     super(con);
   }
 
@@ -138,7 +138,7 @@ public class DBHostDAO extends StatementExecutor<Host> implements HostDAO {
   }
 
   @Override
-  public Host getFromResultSet(ResultSet set) throws SQLException {
+  public Host getFromResultSet(final ResultSet set) throws SQLException {
     return new Host(set.getString(HOSTID_FIELD), set.getString(ADDRESS_FIELD),
                     set.getInt(PORT_FIELD), set.getBytes(HOSTKEY_FIELD),
                     set.getBoolean(IS_SSL_FIELD),

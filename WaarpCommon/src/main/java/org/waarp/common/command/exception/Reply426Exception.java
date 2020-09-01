@@ -36,7 +36,7 @@ public class Reply426Exception extends CommandAbstractException {
    *
    * @param message
    */
-  public Reply426Exception(String message) {
+  public Reply426Exception(final String message) {
     super(ReplyCode.REPLY_426_CONNECTION_CLOSED_TRANSFER_ABORTED, message);
   }
 

@@ -40,21 +40,22 @@ public class OpenR66ProtocolBusinessStopException
    * @param arg0
    * @param arg1
    */
-  public OpenR66ProtocolBusinessStopException(String arg0, Throwable arg1) {
+  public OpenR66ProtocolBusinessStopException(final String arg0,
+                                              final Throwable arg1) {
     super(arg0, arg1);
   }
 
   /**
    * @param arg0
    */
-  public OpenR66ProtocolBusinessStopException(String arg0) {
+  public OpenR66ProtocolBusinessStopException(final String arg0) {
     super(arg0);
   }
 
   /**
    * @param arg0
    */
-  public OpenR66ProtocolBusinessStopException(Throwable arg0) {
+  public OpenR66ProtocolBusinessStopException(final Throwable arg0) {
     super(arg0);
   }
 

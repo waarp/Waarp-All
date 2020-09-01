@@ -129,7 +129,7 @@ class FtpDataTypeCodec extends MessageToMessageCodec<DataBlock, DataBlock> {
    * @param type
    * @param subType
    */
-  FtpDataTypeCodec(TransferType type, TransferSubType subType) {
+  FtpDataTypeCodec(final TransferType type, final TransferSubType subType) {
     setCharset(null);
     this.type = type;
     this.subType = subType;
@@ -146,7 +146,8 @@ class FtpDataTypeCodec extends MessageToMessageCodec<DataBlock, DataBlock> {
    * @param type the type to set
    * @param subType the subType to set
    */
-  public void setFullType(TransferType type, TransferSubType subType) {
+  public void setFullType(final TransferType type,
+                          final TransferSubType subType) {
     this.type = type;
     this.subType = subType;
   }
@@ -163,7 +164,7 @@ class FtpDataTypeCodec extends MessageToMessageCodec<DataBlock, DataBlock> {
    *
    * @param charset
    */
-  private void setCharset(Charset charset) {
+  private void setCharset(final Charset charset) {
     if (charset == null) {
       charsetName = Charset.defaultCharset();
     } else {
@@ -172,8 +173,8 @@ class FtpDataTypeCodec extends MessageToMessageCodec<DataBlock, DataBlock> {
   }
 
   @Override
-  protected void decode(ChannelHandlerContext ctx, DataBlock msg,
-                        List<Object> out) throws Exception {
+  protected void decode(final ChannelHandlerContext ctx, final DataBlock msg,
+                        final List<Object> out) throws Exception {
     // Is an ASCII or EBCDIC mode or IMAGE mode
     if (type == TransferType.IMAGE) {
       out.add(msg);
@@ -197,13 +198,13 @@ class FtpDataTypeCodec extends MessageToMessageCodec<DataBlock, DataBlock> {
    *
    * @throws Exception
    */
-  protected ByteBuf decode(ByteBuf byteBuf) throws Exception {
+  protected ByteBuf decode(final ByteBuf byteBuf) throws Exception {
     return Unpooled.copiedBuffer(byteBuf.toString(type.charset), charsetName);
   }
 
   @Override
-  protected void encode(ChannelHandlerContext ctx, DataBlock msg,
-                        List<Object> out) throws Exception {
+  protected void encode(final ChannelHandlerContext ctx, final DataBlock msg,
+                        final List<Object> out) throws Exception {
     // Is an ASCII or EBCDIC mode or IMAGE mode
     if (type == TransferType.IMAGE) {
       out.add(msg);
@@ -227,7 +228,7 @@ class FtpDataTypeCodec extends MessageToMessageCodec<DataBlock, DataBlock> {
    *
    * @throws Exception
    */
-  protected ByteBuf encode(ByteBuf byteBuf) throws Exception {
+  protected ByteBuf encode(final ByteBuf byteBuf) throws Exception {
     final String chString = byteBuf.toString(charsetName);
     return Unpooled.copiedBuffer(chString, type.charset);
   }

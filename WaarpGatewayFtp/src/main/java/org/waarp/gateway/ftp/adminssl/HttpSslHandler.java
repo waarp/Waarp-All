@@ -103,7 +103,6 @@ public class HttpSslHandler
   private final StringBuilder responseContent = new StringBuilder();
   private String uriRequest;
   private Map<String, List<String>> params;
-  private QueryStringDecoder queryStringDecoder;
   private volatile boolean forceClose;
   private volatile boolean shutdown;
 
@@ -125,7 +124,7 @@ public class HttpSslHandler
      *
      * @param uniquefile
      */
-    REQUEST(String uniquefile) {
+    REQUEST(final String uniquefile) {
       header = uniquefile;
       body = null;
       end = null;
@@ -136,7 +135,7 @@ public class HttpSslHandler
      * @param body
      * @param end
      */
-    REQUEST(String header, String body, String end) {
+    REQUEST(final String header, final String body, final String end) {
       this.header = header;
       this.body = body;
       this.end = end;
@@ -181,7 +180,7 @@ public class HttpSslHandler
    */
   private DbSession dbSession;
 
-  private String getTrimValue(String varname) {
+  private String getTrimValue(final String varname) {
     String value = params.get(varname).get(0).trim();
     if (value.length() == 0) {
       value = null;
@@ -218,7 +217,7 @@ public class HttpSslHandler
     return builder.toString();
   }
 
-  private String error(String mesg) {
+  private String error(final String mesg) {
     final String index = REQUEST.error.readFileUnique();
     return index.replace("XXXERRORMESGXXX", mesg);
   }
@@ -484,9 +483,9 @@ public class HttpSslHandler
         String file = getTrimValue("file");
         final String exportImport = getTrimValue("export");
         String message = "";
-        boolean purge;
+        final boolean purge;
         purge = params.containsKey("purge");
-        boolean replace;
+        final boolean replace;
         replace = params.containsKey("replace");
         if (file == null) {
           file = filedefault;
@@ -559,7 +558,7 @@ public class HttpSslHandler
     dbSession = null;
   }
 
-  private void checkAuthent(ChannelHandlerContext ctx) {
+  private void checkAuthent(final ChannelHandlerContext ctx) {
     newSession = true;
     if (request.method() == HttpMethod.GET) {
       final String logon = logon();
@@ -582,28 +581,24 @@ public class HttpSslHandler
       String name = null;
       String password = null;
       List<String> values;
-      if (!params.isEmpty()) {
-        // get values
-        if (params.containsKey("name")) {
-          values = params.get("name");
-          if (values != null) {
-            name = values.get(0);
-            if (name == null || name.length() == 0) {
-              getMenu = true;
-            }
-          }
-        } else {
-          getMenu = true;
-        }
-        // search the nb param
-        if (!getMenu && params.containsKey("passwd")) {
-          values = params.get("passwd");
-          if (values != null) {
-            password = values.get(0);
-            getMenu = password == null || password.length() == 0;
-          } else {
+      // get values
+      if (params.containsKey("name")) {
+        values = params.get("name");
+        if (values != null) {
+          name = values.get(0);
+          if (name == null || name.length() == 0) {
             getMenu = true;
           }
+        }
+      } else {
+        getMenu = true;
+      }
+      // search the nb param
+      if (!getMenu && params.containsKey("passwd")) {
+        values = params.get("passwd");
+        if (values != null) {
+          password = values.get(0);
+          getMenu = password == null || password.length() == 0;
         } else {
           getMenu = true;
         }
@@ -652,10 +647,11 @@ public class HttpSslHandler
   }
 
   @Override
-  protected void channelRead0(ChannelHandlerContext ctx, FullHttpRequest msg)
-      throws Exception {
+  protected void channelRead0(final ChannelHandlerContext ctx,
+                              final FullHttpRequest msg) throws Exception {
     request = msg;
-    queryStringDecoder = new QueryStringDecoder(request.uri());
+    final QueryStringDecoder queryStringDecoder =
+        new QueryStringDecoder(request.uri());
     uriRequest = queryStringDecoder.path();
     if (uriRequest.contains("gre/") || uriRequest.contains("img/") ||
         uriRequest.contains("res/")) {
@@ -707,7 +703,7 @@ public class HttpSslHandler
     }
   }
 
-  private void checkSession(Channel channel) {
+  private void checkSession(final Channel channel) {
     final String cookieString = request.headers().get(HttpHeaderNames.COOKIE);
     if (cookieString != null) {
       final Set<Cookie> cookies = ServerCookieDecoder.LAX.decode(cookieString);
@@ -739,7 +735,7 @@ public class HttpSslHandler
     }
   }
 
-  private void handleCookies(HttpResponse response) {
+  private void handleCookies(final HttpResponse response) {
     final String cookieString = request.headers().get(HttpHeaderNames.COOKIE);
     if (cookieString != null) {
       final Set<Cookie> cookies = ServerCookieDecoder.LAX.decode(cookieString);
@@ -779,7 +775,7 @@ public class HttpSslHandler
    *
    * @param ctx
    */
-  private void writeResponse(ChannelHandlerContext ctx) {
+  private void writeResponse(final ChannelHandlerContext ctx) {
     // Convert the response content to a ByteBuf.
     final ByteBuf buf = Unpooled
         .copiedBuffer(responseContent.toString(), WaarpStringUtils.UTF8);
@@ -832,7 +828,8 @@ public class HttpSslHandler
    * @param ctx
    * @param status
    */
-  private void sendError(ChannelHandlerContext ctx, HttpResponseStatus status) {
+  private void sendError(final ChannelHandlerContext ctx,
+                         final HttpResponseStatus status) {
     responseContent.setLength(0);
     responseContent.append(error(status.toString()));
     final FullHttpResponse response =
@@ -847,8 +844,8 @@ public class HttpSslHandler
   }
 
   @Override
-  public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
-      throws Exception {
+  public void exceptionCaught(final ChannelHandlerContext ctx,
+                              final Throwable cause) throws Exception {
     if (!(cause instanceof CommandAbstractException)) {
       if (cause instanceof IOException) {
         // Nothing to do
@@ -862,7 +859,7 @@ public class HttpSslHandler
   }
 
   @Override
-  public void channelActive(ChannelHandlerContext ctx) throws Exception {
+  public void channelActive(final ChannelHandlerContext ctx) throws Exception {
     final Channel channel = ctx.channel();
     logger.debug("Add channel to ssl");
     FileBasedConfiguration.fileBasedConfiguration.getHttpChannelGroup()

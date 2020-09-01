@@ -83,7 +83,7 @@ public class RuleIdHandler extends AbstractRestDbHandler {
    *
    * @param crud the CRUD mask for this handler
    */
-  public RuleIdHandler(byte crud) {
+  public RuleIdHandler(final byte crud) {
     super(crud);
   }
 
@@ -99,8 +99,8 @@ public class RuleIdHandler extends AbstractRestDbHandler {
   @GET
   @Consumes(WILDCARD)
   @RequiredRole(NOACCESS)
-  public void getRule(HttpRequest request, HttpResponder responder,
-                      @PathParam(URI_ID) String id) {
+  public void getRule(final HttpRequest request, final HttpResponder responder,
+                      @PathParam(URI_ID) final String id) {
 
     RuleDAO ruleDAO = null;
     try {
@@ -134,8 +134,9 @@ public class RuleIdHandler extends AbstractRestDbHandler {
   @PUT
   @Consumes(APPLICATION_JSON)
   @RequiredRole(RULE)
-  public void updateRule(HttpRequest request, HttpResponder responder,
-                         @PathParam(URI_ID) String id) {
+  public void updateRule(final HttpRequest request,
+                         final HttpResponder responder,
+                         @PathParam(URI_ID) final String id) {
 
     RuleDAO ruleDAO = null;
     try {
@@ -178,15 +179,17 @@ public class RuleIdHandler extends AbstractRestDbHandler {
   @DELETE
   @Consumes(WILDCARD)
   @RequiredRole(RULE)
-  public void deleteRule(HttpRequest request, HttpResponder responder,
-                         @PathParam(URI_ID) String id) {
+  public void deleteRule(final HttpRequest request,
+                         final HttpResponder responder,
+                         @PathParam(URI_ID) final String id) {
     TransferDAO transferDAO = null;
     try {
       transferDAO = DAO_FACTORY.getTransferDAO();
-      List<Filter> filters = new ArrayList<Filter>();
-      Filter filter = new Filter(DbTaskRunner.Columns.IDRULE.name(), "=", id);
+      final List<Filter> filters = new ArrayList<Filter>();
+      final Filter filter =
+          new Filter(DbTaskRunner.Columns.IDRULE.name(), "=", id);
       filters.add(filter);
-      List<Transfer> transferList = transferDAO.find(filters);
+      final List<Transfer> transferList = transferDAO.find(filters);
       if (!transferList.isEmpty()) {
         transferList.clear();
         responder.sendStatus(NOT_FOUND);
@@ -228,8 +231,8 @@ public class RuleIdHandler extends AbstractRestDbHandler {
   @OPTIONS
   @Consumes(WILDCARD)
   @RequiredRole(NOACCESS)
-  public void options(HttpRequest request, HttpResponder responder,
-                      @PathParam(URI_ID) String id) {
+  public void options(final HttpRequest request, final HttpResponder responder,
+                      @PathParam(URI_ID) final String id) {
     responder.sendStatus(OK, OPTIONS_HEADERS);
   }
 }

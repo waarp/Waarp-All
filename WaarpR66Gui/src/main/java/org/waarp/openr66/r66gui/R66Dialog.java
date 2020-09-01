@@ -72,7 +72,7 @@ class R66Dialog extends JDialog {
         final JButton okButton = new JButton("OK");
         okButton.addActionListener(new ActionListener() {
           @Override
-          public void actionPerformed(ActionEvent e) {
+          public void actionPerformed(final ActionEvent e) {
             R66ClientGui.window.enableAllButtons();
             dispose();
           }

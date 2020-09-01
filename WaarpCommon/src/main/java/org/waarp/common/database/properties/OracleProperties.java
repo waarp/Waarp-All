@@ -56,7 +56,8 @@ public class OracleProperties implements DbProperties {
   }
 
   @Override
-  public int getMaximumConnections(Connection connection) throws SQLException {
+  public int getMaximumConnections(final Connection connection)
+      throws SQLException {
     Statement stm = null;
     ResultSet rs = null;
     try {
@@ -70,14 +71,14 @@ public class OracleProperties implements DbProperties {
       if (rs != null) {
         try {
           rs.close();
-        } catch (SQLException ignored) {
+        } catch (final SQLException ignored) {
           // nothing
         }
       }
       if (stm != null) {
         try {
           stm.close();
-        } catch (SQLException ignored) {
+        } catch (final SQLException ignored) {
           // nothing
         }
       }

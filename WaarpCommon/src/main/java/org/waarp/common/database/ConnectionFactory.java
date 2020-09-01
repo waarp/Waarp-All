@@ -97,7 +97,7 @@ public class ConnectionFactory {
    * @throws UnsupportedOperationException if the requested database
    *     is not supported
    */
-  protected static DbProperties propertiesFor(String server)
+  protected static DbProperties propertiesFor(final String server)
       throws UnsupportedOperationException {
     if (server.contains(H2Properties.getProtocolID())) {
       return new H2Properties();
@@ -123,7 +123,8 @@ public class ConnectionFactory {
    * @throws SQLException if a error occurs while connecting to the
    *     database
    */
-  public static void initialize(String server, String user, String password)
+  public static void initialize(final String server, final String user,
+                                final String password)
       throws SQLException, UnsupportedOperationException {
     if (instance == null) {
       instance =
@@ -164,8 +165,9 @@ public class ConnectionFactory {
    * @param user
    * @param password
    */
-  private ConnectionFactory(DbProperties properties, String server, String user,
-                            String password) throws SQLException {
+  private ConnectionFactory(final DbProperties properties, final String server,
+                            final String user, final String password)
+      throws SQLException {
     this.server = server;
     this.user = user;
     this.password = password;
@@ -210,7 +212,7 @@ public class ConnectionFactory {
    *
    * @param max
    */
-  public void setMaxConnections(int max) {
+  public void setMaxConnections(final int max) {
     // Minimal value should be 2
     maxConnections = Math.max(max, MAX_IDLE_DEFAULT);
     ds.setMaxActive(maxConnections);

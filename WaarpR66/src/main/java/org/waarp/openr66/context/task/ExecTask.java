@@ -50,8 +50,8 @@ public class ExecTask extends AbstractExecTask {
    * @param argTransfer
    * @param session
    */
-  public ExecTask(String argRule, int delay, String argTransfer,
-                  R66Session session) {
+  public ExecTask(final String argRule, final int delay,
+                  final String argTransfer, final R66Session session) {
     super(TaskType.EXEC, delay, argRule, argTransfer, session);
   }
 
@@ -77,18 +77,19 @@ public class ExecTask extends AbstractExecTask {
       } // else continue
     }
 
-    PrepareCommandExec prepareCommandExec =
+    final PrepareCommandExec prepareCommandExec =
         new PrepareCommandExec(finalname, true, waitForValidation).invoke();
     if (prepareCommandExec.isError()) {
       return;
     }
-    CommandLine commandLine = prepareCommandExec.getCommandLine();
-    DefaultExecutor defaultExecutor = prepareCommandExec.getDefaultExecutor();
-    PipedInputStream inputStream = prepareCommandExec.getInputStream();
-    PipedOutputStream outputStream = prepareCommandExec.getOutputStream();
-    PumpStreamHandler pumpStreamHandler =
+    final CommandLine commandLine = prepareCommandExec.getCommandLine();
+    final DefaultExecutor defaultExecutor =
+        prepareCommandExec.getDefaultExecutor();
+    final PipedInputStream inputStream = prepareCommandExec.getInputStream();
+    final PipedOutputStream outputStream = prepareCommandExec.getOutputStream();
+    final PumpStreamHandler pumpStreamHandler =
         prepareCommandExec.getPumpStreamHandler();
-    ExecuteWatchdog watchdog = prepareCommandExec.getWatchdog();
+    final ExecuteWatchdog watchdog = prepareCommandExec.getWatchdog();
 
     if (!waitForValidation) {
       // Do not wait for validation
@@ -96,7 +97,7 @@ public class ExecTask extends AbstractExecTask {
       logger.info("Exec will start but no WAIT with {}", commandLine);
     }
 
-    ExecuteCommand executeCommand =
+    final ExecuteCommand executeCommand =
         new ExecuteCommand(commandLine, defaultExecutor, inputStream,
                            outputStream, pumpStreamHandler, null).invoke();
     if (executeCommand.isError()) {
@@ -129,8 +130,8 @@ public class ExecTask extends AbstractExecTask {
   }
 
   @Override
-  void finalizeFromError(Runnable threadReader, int status,
-                         CommandLine commandLine, Exception e) {
+  void finalizeFromError(final Runnable threadReader, final int status,
+                         final CommandLine commandLine, final Exception e) {
     try {
       Thread.sleep(Configuration.RETRYINMS);
     } catch (final InterruptedException e2) {//NOSONAR

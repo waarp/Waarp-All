@@ -96,8 +96,8 @@ public class NetworkChannelReference {
    */
   private final boolean isSSL;
 
-  public NetworkChannelReference(Channel networkChannel, WaarpLock lock,
-                                 boolean isSSL) {
+  public NetworkChannelReference(final Channel networkChannel,
+                                 final WaarpLock lock, final boolean isSSL) {
     channel = networkChannel;
     networkAddress = channel.remoteAddress();
     hostAddress =
@@ -106,8 +106,8 @@ public class NetworkChannelReference {
     this.isSSL = isSSL;
   }
 
-  public NetworkChannelReference(SocketAddress address, WaarpLock lock,
-                                 boolean isSSL) {
+  public NetworkChannelReference(final SocketAddress address,
+                                 final WaarpLock lock, final boolean isSSL) {
     channel = null;
     networkAddress = address;
     hostAddress =
@@ -120,7 +120,7 @@ public class NetworkChannelReference {
     return isSSL;
   }
 
-  public void add(LocalChannelReference localChannel)
+  public void add(final LocalChannelReference localChannel)
       throws OpenR66ProtocolRemoteShutdownException {
     // lock is of no use since caller is itself in locked situation for the very same lock
     if (isShuttingDown) {
@@ -158,7 +158,7 @@ public class NetworkChannelReference {
    *
    * @param localChannel
    */
-  public void closeAndRemove(LocalChannelReference localChannel) {
+  public void closeAndRemove(final LocalChannelReference localChannel) {
     if (!localChannel.getFutureRequest().isDone()) {
       localChannel.close();
     }
@@ -170,7 +170,7 @@ public class NetworkChannelReference {
    *
    * @param localChannel
    */
-  public void remove(LocalChannelReference localChannel) {
+  public void remove(final LocalChannelReference localChannel) {
     localChannelReferences.remove(localChannel);
     // Do not since it prevents shutdown: lastTimeUsed = System.currentTimeMillis()
   }
@@ -232,10 +232,10 @@ public class NetworkChannelReference {
    * @return True if at least one LocalChannel is not yet finished (OK or Error)
    */
   public boolean isSomeLocalChannelsActive() {
-    for (LocalChannelReference localChannelReference : localChannelReferences) {
-      R66Session session = localChannelReference.getSession();
+    for (final LocalChannelReference localChannelReference : localChannelReferences) {
+      final R66Session session = localChannelReference.getSession();
       if (session != null) {
-        DbTaskRunner runner = session.getRunner();
+        final DbTaskRunner runner = session.getRunner();
         if (runner != null && !runner.isFinished() &&
             runner.getGlobalStep() != TASKSTEP.NOTASK) {
           return true;
@@ -252,7 +252,7 @@ public class NetworkChannelReference {
   }
 
   @Override
-  public boolean equals(Object obj) {
+  public boolean equals(final Object obj) {
     if (obj instanceof NetworkChannelReference) {
       final NetworkChannelReference obj2 = (NetworkChannelReference) obj;
       if (obj2.channel == null || channel == null) {
@@ -297,7 +297,7 @@ public class NetworkChannelReference {
    * @return <= 0 if OK, else > 0 (should send a KeepAlive or wait that time
    *     in ms)
    */
-  public long checkLastTime(long delay) {
+  public long checkLastTime(final long delay) {
     return lastTimeUsed + delay - System.currentTimeMillis();
   }
 
@@ -325,7 +325,7 @@ public class NetworkChannelReference {
   /**
    * @param hostId the hostId to set
    */
-  public void setHostId(String hostId) {
+  public void setHostId(final String hostId) {
     this.hostId = hostId;
   }
 

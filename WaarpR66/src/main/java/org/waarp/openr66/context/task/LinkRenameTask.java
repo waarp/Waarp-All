@@ -50,8 +50,8 @@ public class LinkRenameTask extends AbstractTask {
    * @param argTransfer
    * @param session
    */
-  public LinkRenameTask(String argRule, int delay, String argTransfer,
-                        R66Session session) {
+  public LinkRenameTask(final String argRule, final int delay,
+                        final String argTransfer, final R66Session session) {
     super(TaskType.LINKRENAME, delay, argRule, argTransfer, session);
   }
 

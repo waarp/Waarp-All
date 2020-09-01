@@ -47,9 +47,10 @@ public class ThreadPoolRunnerExecutor extends ThreadPoolExecutor {
       implements RejectedExecutionHandler {
 
     @Override
-    public void rejectedExecution(Runnable arg0, ThreadPoolExecutor arg1) {
+    public void rejectedExecution(final Runnable arg0,
+                                  final ThreadPoolExecutor arg1) {
       if (arg0 instanceof ClientRunner) {
-        ClientRunner runner = (ClientRunner) arg0;
+        final ClientRunner runner = (ClientRunner) arg0;
         runner.changeUpdatedInfo(AbstractDbData.UpdatedInfo.INERROR,
                                  ErrorCode.Unknown, true);
       } else {
@@ -66,9 +67,10 @@ public class ThreadPoolRunnerExecutor extends ThreadPoolExecutor {
    * @param unit
    * @param workQueue
    */
-  public ThreadPoolRunnerExecutor(int corePoolSize, int maximumPoolSize,
-                                  long keepAliveTime, TimeUnit unit,
-                                  BlockingQueue<Runnable> workQueue) {
+  public ThreadPoolRunnerExecutor(final int corePoolSize,
+                                  final int maximumPoolSize,
+                                  final long keepAliveTime, final TimeUnit unit,
+                                  final BlockingQueue<Runnable> workQueue) {
     super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue);
     setRejectedExecutionHandler(new RunnerRejectedExecutionHandler());
   }
@@ -81,10 +83,11 @@ public class ThreadPoolRunnerExecutor extends ThreadPoolExecutor {
    * @param workQueue
    * @param threadFactory
    */
-  public ThreadPoolRunnerExecutor(int corePoolSize, int maximumPoolSize,
-                                  long keepAliveTime, TimeUnit unit,
-                                  BlockingQueue<Runnable> workQueue,
-                                  ThreadFactory threadFactory) {
+  public ThreadPoolRunnerExecutor(final int corePoolSize,
+                                  final int maximumPoolSize,
+                                  final long keepAliveTime, final TimeUnit unit,
+                                  final BlockingQueue<Runnable> workQueue,
+                                  final ThreadFactory threadFactory) {
     super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue,
           threadFactory);
     setRejectedExecutionHandler(new RunnerRejectedExecutionHandler());
@@ -98,10 +101,11 @@ public class ThreadPoolRunnerExecutor extends ThreadPoolExecutor {
    * @param workQueue
    * @param handler
    */
-  public ThreadPoolRunnerExecutor(int corePoolSize, int maximumPoolSize,
-                                  long keepAliveTime, TimeUnit unit,
-                                  BlockingQueue<Runnable> workQueue,
-                                  RejectedExecutionHandler handler) {
+  public ThreadPoolRunnerExecutor(final int corePoolSize,
+                                  final int maximumPoolSize,
+                                  final long keepAliveTime, final TimeUnit unit,
+                                  final BlockingQueue<Runnable> workQueue,
+                                  final RejectedExecutionHandler handler) {
     super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue,
           handler);
     setRejectedExecutionHandler(handler);
@@ -116,11 +120,12 @@ public class ThreadPoolRunnerExecutor extends ThreadPoolExecutor {
    * @param threadFactory
    * @param handler
    */
-  public ThreadPoolRunnerExecutor(int corePoolSize, int maximumPoolSize,
-                                  long keepAliveTime, TimeUnit unit,
-                                  BlockingQueue<Runnable> workQueue,
-                                  ThreadFactory threadFactory,
-                                  RejectedExecutionHandler handler) {
+  public ThreadPoolRunnerExecutor(final int corePoolSize,
+                                  final int maximumPoolSize,
+                                  final long keepAliveTime, final TimeUnit unit,
+                                  final BlockingQueue<Runnable> workQueue,
+                                  final ThreadFactory threadFactory,
+                                  final RejectedExecutionHandler handler) {
     super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue,
           threadFactory, handler);
     setRejectedExecutionHandler(handler);

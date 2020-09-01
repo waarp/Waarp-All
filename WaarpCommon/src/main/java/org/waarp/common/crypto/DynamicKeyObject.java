@@ -60,7 +60,7 @@ public class DynamicKeyObject extends KeyObject {
 
     final int size;
 
-    INSTANCES(int size) {
+    INSTANCES(final int size) {
       this.size = size;
     }
   }
@@ -79,7 +79,7 @@ public class DynamicKeyObject extends KeyObject {
 
     final int size;
 
-    INSTANCESMAX(int size) {
+    INSTANCESMAX(final int size) {
       this.size = size;
     }
   }
@@ -110,8 +110,8 @@ public class DynamicKeyObject extends KeyObject {
    * @param iNSTANCE example DES: DES/ECB/PKCS5Padding
    * @param eXTENSION example DES: des
    */
-  public DynamicKeyObject(int kEYSIZE, String aLGO, String iNSTANCE,
-                          String eXTENSION) {
+  public DynamicKeyObject(final int kEYSIZE, final String aLGO,
+                          final String iNSTANCE, final String eXTENSION) {
     keySize = kEYSIZE;
     algo = aLGO;
     instance = iNSTANCE;
@@ -122,7 +122,7 @@ public class DynamicKeyObject extends KeyObject {
    * @param instance the minimal default instance
    * @param eXTENSION to use for files
    */
-  public DynamicKeyObject(INSTANCES instance, String eXTENSION) {
+  public DynamicKeyObject(final INSTANCES instance, final String eXTENSION) {
     keySize = instance.size;
     algo = instance.name();
     this.instance = instance.name();
@@ -133,7 +133,7 @@ public class DynamicKeyObject extends KeyObject {
    * @param instance the maximal default instance
    * @param eXTENSION to use for files
    */
-  public DynamicKeyObject(INSTANCESMAX instance, String eXTENSION) {
+  public DynamicKeyObject(final INSTANCESMAX instance, final String eXTENSION) {
     keySize = instance.size;
     algo = instance.name();
     this.instance = instance.name();

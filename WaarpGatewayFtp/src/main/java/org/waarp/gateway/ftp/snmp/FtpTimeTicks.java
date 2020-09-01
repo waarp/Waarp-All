@@ -33,13 +33,13 @@ class FtpTimeTicks extends WaarpTimeTicks {
   private int type = 1;
   private final int entry;
 
-  FtpTimeTicks(int type, int entry) {
+  FtpTimeTicks(final int type, final int entry) {
     this.type = type;
     this.entry = entry;
     setInternalValue();
   }
 
-  FtpTimeTicks(int type, int entry, long value) {
+  FtpTimeTicks(final int type, final int entry, final long value) {
     this.type = type;
     this.entry = entry;
     setInternalValue(value);
@@ -52,7 +52,7 @@ class FtpTimeTicks extends WaarpTimeTicks {
   }
 
   @Override
-  protected void setInternalValue(long value) {
+  protected void setInternalValue(final long value) {
     setValue(value);
   }
 }

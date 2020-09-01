@@ -585,7 +585,7 @@ public class FileBasedConfiguration extends FtpConfiguration {
   /**
    * All authentications
    */
-  private ConcurrentHashMap<String, SimpleAuth> authentications =
+  private final ConcurrentHashMap<String, SimpleAuth> authentications =
       new ConcurrentHashMap<String, SimpleAuth>();
 
   /**
@@ -638,10 +638,6 @@ public class FileBasedConfiguration extends FtpConfiguration {
    */
   private ChannelGroup httpChannelGroup;
   /**
-   * Bootstrap for Https server
-   */
-  private ServerBootstrap httpsBootstrap;
-  /**
    * Worker Group for Http
    */
   private EventLoopGroup workerGroup;
@@ -675,15 +671,14 @@ public class FileBasedConfiguration extends FtpConfiguration {
    *     DataBusinessHandler
    * @param fileParameter the FileParameter to use
    */
-  public FileBasedConfiguration(Class<?> classtype,
-                                Class<? extends BusinessHandler> businessHandler,
-                                Class<? extends DataBusinessHandler> dataBusinessHandler,
-                                FileParameterInterface fileParameter) {
+  public FileBasedConfiguration(final Class<?> classtype,
+                                final Class<? extends BusinessHandler> businessHandler,
+                                final Class<? extends DataBusinessHandler> dataBusinessHandler,
+                                final FileParameterInterface fileParameter) {
     super(classtype, businessHandler, dataBusinessHandler, fileParameter);
     computeNbThreads();
   }
 
-  private static XmlValue[] configuration;
   private static XmlHash hashConfig;
 
   private boolean loadIdentity() {
@@ -719,8 +714,8 @@ public class FileBasedConfiguration extends FtpConfiguration {
       setUseLocalExec(value.getBoolean());
       if (isUseLocalExec()) {
         value = hashConfig.get(XML_LEXECADDR);
-        String saddr;
-        InetAddress addr;
+        final String saddr;
+        final InetAddress addr;
         if (value != null && !value.isEmpty()) {
           saddr = value.getString();
           try {
@@ -739,7 +734,7 @@ public class FileBasedConfiguration extends FtpConfiguration {
           }
         }
         value = hashConfig.get(XML_LEXECPORT);
-        int port;
+        final int port;
         if (value != null && !value.isEmpty()) {
           port = value.getInteger();
         } else {
@@ -759,7 +754,7 @@ public class FileBasedConfiguration extends FtpConfiguration {
       logger.error("Unable to find Crypto Key in Config file");
       return false;
     }
-    String passwd;
+    final String passwd;
     value = hashConfig.get(XML_SERVER_PASSWD);
     if (value != null && !value.isEmpty()) {
       passwd = value.getString();
@@ -767,7 +762,7 @@ public class FileBasedConfiguration extends FtpConfiguration {
       logger.error("Unable to find Password in Config file");
       return false;
     }
-    byte[] decodedByteKeys;
+    final byte[] decodedByteKeys;
     try {
       decodedByteKeys = getCryptoKey().decryptHexInBytes(passwd);
     } catch (final Exception e) {
@@ -885,7 +880,7 @@ public class FileBasedConfiguration extends FtpConfiguration {
     return true;
   }
 
-  private boolean loadLimit(boolean updateLimit) {
+  private boolean loadLimit(final boolean updateLimit) {
     XmlValue value = hashConfig.get(XML_LIMITGLOBAL);
     if (value != null && !value.isEmpty()) {
       serverGlobalReadLimit = value.getLong();
@@ -1018,7 +1013,7 @@ public class FileBasedConfiguration extends FtpConfiguration {
 
   private boolean loadNetworkServer() {
     XmlValue value = hashConfig.get(XML_SERVER_PORT);
-    int port;
+    final int port;
     if (value != null && !value.isEmpty()) {
       port = value.getInteger();
     } else {
@@ -1274,8 +1269,8 @@ public class FileBasedConfiguration extends FtpConfiguration {
    *
    * @return True if OK
    */
-  public boolean setConfigurationServerFromXml(String filename) {
-    Document document;
+  public boolean setConfigurationServerFromXml(final String filename) {
+    final Document document;
     // Open config file
     try {
       document = XmlUtil.getNewSaxReader().read(filename);
@@ -1287,7 +1282,7 @@ public class FileBasedConfiguration extends FtpConfiguration {
       logger.error("Unable to read the XML Config file: " + filename);
       return false;
     }
-    configuration = XmlUtil.read(document, configServer);
+    XmlValue[] configuration = XmlUtil.read(document, configServer);
     hashConfig = new XmlHash(configuration);
     // Now read the configuration
     if (!loadIdentity()) {
@@ -1342,7 +1337,10 @@ public class FileBasedConfiguration extends FtpConfiguration {
     logger.debug("Start HTTPS");
     // Now start the HTTPS support
     // Configure the server.
-    httpsBootstrap = new ServerBootstrap();
+    /**
+     * Bootstrap for Https server
+     */
+    final ServerBootstrap httpsBootstrap = new ServerBootstrap();
     httpExecutor = new NioEventLoopGroup(getServerThread() * 10,
                                          new WaarpThreadFactory(
                                              "HttpExecutor"));
@@ -1416,7 +1414,7 @@ public class FileBasedConfiguration extends FtpConfiguration {
   /**
    * @param serverkey the SERVERADMINKEY to set
    */
-  public void setSERVERKEY(byte[] serverkey) {
+  public void setSERVERKEY(final byte[] serverkey) {
     serverAdminKey = serverkey;
   }
 
@@ -1428,7 +1426,7 @@ public class FileBasedConfiguration extends FtpConfiguration {
    * @return True if the password is OK
    */
   @Override
-  public boolean checkPassword(String password) {
+  public boolean checkPassword(final String password) {
     if (password == null) {
       return false;
     }
@@ -1448,9 +1446,9 @@ public class FileBasedConfiguration extends FtpConfiguration {
    * @return True if OK
    */
   @SuppressWarnings("unchecked")
-  public boolean initializeAuthent(String filename, boolean purge) {
+  public boolean initializeAuthent(final String filename, final boolean purge) {
     logger.debug("Load authent");
-    Document document;
+    final Document document;
     try {
       document = XmlUtil.getNewSaxReader().read(filename);
     } catch (final DocumentException e) {
@@ -1462,7 +1460,7 @@ public class FileBasedConfiguration extends FtpConfiguration {
       logger.error("Unable to read the XML Authentication file: " + filename);
       return false;
     }
-    XmlValue[] configurationXml = XmlUtil.read(document, authentElements);
+    final XmlValue[] configurationXml = XmlUtil.read(document, authentElements);
     XmlHash hashConfigXml = new XmlHash(configurationXml);
 
     XmlValue value = hashConfigXml.get(XML_AUTHENTIFICATION_ENTRY);
@@ -1482,7 +1480,7 @@ public class FileBasedConfiguration extends FtpConfiguration {
         logger.error("Unable to find a Account in Config file: " + user);
         continue;
       }
-      String[] account;
+      final String[] account;
       final List<String> listaccount = (List<String>) value.getList();
       if (!listaccount.isEmpty()) {
         account = new String[listaccount.size()];
@@ -1524,7 +1522,7 @@ public class FileBasedConfiguration extends FtpConfiguration {
       if (value != null && !value.isEmpty()) {
         stordelay = (value.getLong() / 10) * 10;
       }
-      String passwd;
+      final String passwd;
       value = hashConfigXml.get(XML_AUTHENTICATION_PASSWDFILE);
       if (value != null && !value.isEmpty()) {
         // load key from file
@@ -1545,7 +1543,7 @@ public class FileBasedConfiguration extends FtpConfiguration {
         value = hashConfigXml.get(XML_AUTHENTICATION_PASSWD);
         if (value != null && !value.isEmpty()) {
           final String encrypted = value.getString();
-          byte[] byteKeys;
+          final byte[] byteKeys;
           try {
             byteKeys = getCryptoKey().decryptHexInBytes(encrypted);
             passwd = new String(byteKeys, WaarpStringUtils.UTF8);
@@ -1583,7 +1581,7 @@ public class FileBasedConfiguration extends FtpConfiguration {
    *
    * @return True if successful
    */
-  public boolean saveAuthenticationFile(String filename) {
+  public boolean saveAuthenticationFile(final String filename) {
     final Document document = XmlUtil.createEmptyDocument();
     final XmlValue[] roots = new XmlValue[1];
     final XmlValue root = new XmlValue(authentElements[0]);
@@ -1639,7 +1637,7 @@ public class FileBasedConfiguration extends FtpConfiguration {
    *
    * @return the SimpleAuth if any for this user
    */
-  public SimpleAuth getSimpleAuth(String user) {
+  public SimpleAuth getSimpleAuth(final String user) {
     return authentications.get(user);
   }
 
@@ -1649,8 +1647,8 @@ public class FileBasedConfiguration extends FtpConfiguration {
    * @return the Html String containing the table of all Authentication
    *     entries
    */
-  public String getHtmlAuth(String format) {
-    String result;
+  public String getHtmlAuth(final String format) {
+    final String result;
     final StringBuilder builder = new StringBuilder();
     /*
      * XXXUSERXXX XXXPWDXXX XXXACTSXXX XXXADMXXX XXXSTCXXX XXXSTDXXX XXXRTCXXX XXXRTDXXX
@@ -1698,8 +1696,8 @@ public class FileBasedConfiguration extends FtpConfiguration {
    *
    * @return the Html String containing the table of all Transfer entries
    */
-  public String getHtmlTransfer(String format, int limit) {
-    String result;
+  public String getHtmlTransfer(final String format, final int limit) {
+    final String result;
     final StringBuilder builder = new StringBuilder();
     /*
      * XXXIDXXX XXXUSERXXX XXXACCTXXX XXXFILEXXX XXXMODEXXX XXXSTATUSXXX XXXINFOXXX XXXUPINFXXX XXXSTARTXXX
@@ -1764,7 +1762,7 @@ public class FileBasedConfiguration extends FtpConfiguration {
    * @param rangePort the range of available ports for Passive
    *     connections
    */
-  private void setRangePort(CircularIntValue rangePort) {
+  private void setRangePort(final CircularIntValue rangePort) {
     setProperty(RANGE_PORT, rangePort);
   }
 
@@ -1790,14 +1788,15 @@ public class FileBasedConfiguration extends FtpConfiguration {
     final EventExecutorGroup executorWorker;
     final String name;
 
-    private GgChannelGroupFutureListener(String name,
-                                         EventExecutorGroup executorWorker) {
+    private GgChannelGroupFutureListener(final String name,
+                                         final EventExecutorGroup executorWorker) {
       this.name = name;
       this.executorWorker = executorWorker;
     }
 
     @Override
-    public void operationComplete(ChannelGroupFuture future) throws Exception {
+    public void operationComplete(final ChannelGroupFuture future)
+        throws Exception {
       if (executorWorker != null) {
         executorWorker.shutdownGracefully();
       }
@@ -1848,7 +1847,7 @@ public class FileBasedConfiguration extends FtpConfiguration {
   /**
    * @param authenticationFile the authenticationFile to set
    */
-  public void setAuthenticationFile(String authenticationFile) {
+  public void setAuthenticationFile(final String authenticationFile) {
     this.authenticationFile = authenticationFile;
   }
 
@@ -1862,7 +1861,7 @@ public class FileBasedConfiguration extends FtpConfiguration {
   /**
    * @param httpBasePath the httpBasePath to set
    */
-  public void setHttpBasePath(String httpBasePath) {
+  public void setHttpBasePath(final String httpBasePath) {
     this.httpBasePath = httpBasePath;
   }
 
@@ -1876,7 +1875,7 @@ public class FileBasedConfiguration extends FtpConfiguration {
   /**
    * @param useHttpCompression the useHttpCompression to set
    */
-  public void setUseHttpCompression(boolean useHttpCompression) {
+  public void setUseHttpCompression(final boolean useHttpCompression) {
     this.useHttpCompression = useHttpCompression;
   }
 
@@ -1890,7 +1889,7 @@ public class FileBasedConfiguration extends FtpConfiguration {
   /**
    * @param useLocalExec the useLocalExec to set
    */
-  public void setUseLocalExec(boolean useLocalExec) {
+  public void setUseLocalExec(final boolean useLocalExec) {
     this.useLocalExec = useLocalExec;
   }
 
@@ -1904,7 +1903,7 @@ public class FileBasedConfiguration extends FtpConfiguration {
   /**
    * @param cryptoKey the cryptoKey to set
    */
-  public void setCryptoKey(Des cryptoKey) {
+  public void setCryptoKey(final Des cryptoKey) {
     this.cryptoKey = cryptoKey;
   }
 
@@ -1918,7 +1917,7 @@ public class FileBasedConfiguration extends FtpConfiguration {
   /**
    * @param hostId the hostId to set
    */
-  public void setHostId(String hostId) {
+  public void setHostId(final String hostId) {
     this.hostId = hostId;
   }
 
@@ -1932,7 +1931,7 @@ public class FileBasedConfiguration extends FtpConfiguration {
   /**
    * @param adminName the adminName to set
    */
-  public void setAdminName(String adminName) {
+  public void setAdminName(final String adminName) {
     this.adminName = adminName;
   }
 
@@ -1947,7 +1946,7 @@ public class FileBasedConfiguration extends FtpConfiguration {
    * @param constraintLimitHandler the constraintLimitHandler to set
    */
   public void setConstraintLimitHandler(
-      FtpConstraintLimitHandler constraintLimitHandler) {
+      final FtpConstraintLimitHandler constraintLimitHandler) {
     this.constraintLimitHandler = constraintLimitHandler;
   }
 
@@ -1961,7 +1960,7 @@ public class FileBasedConfiguration extends FtpConfiguration {
   /**
    * @param snmpConfig the snmpConfig to set
    */
-  public void setSnmpConfig(String snmpConfig) {
+  public void setSnmpConfig(final String snmpConfig) {
     this.snmpConfig = snmpConfig;
   }
 
@@ -1975,7 +1974,7 @@ public class FileBasedConfiguration extends FtpConfiguration {
   /**
    * @param agentSnmp the agentSnmp to set
    */
-  public void setAgentSnmp(WaarpSnmpAgent agentSnmp) {
+  public void setAgentSnmp(final WaarpSnmpAgent agentSnmp) {
     this.agentSnmp = agentSnmp;
   }
 
@@ -1989,7 +1988,7 @@ public class FileBasedConfiguration extends FtpConfiguration {
   /**
    * @param ftpMib the ftpMib to set
    */
-  public void setFtpMib(FtpPrivateMib ftpMib) {
+  public void setFtpMib(final FtpPrivateMib ftpMib) {
     this.ftpMib = ftpMib;
   }
 
@@ -2003,7 +2002,7 @@ public class FileBasedConfiguration extends FtpConfiguration {
   /**
    * @param monitoring the monitoring to set
    */
-  public void setMonitoring(FtpMonitoring monitoring) {
+  public void setMonitoring(final FtpMonitoring monitoring) {
     this.monitoring = monitoring;
   }
 }

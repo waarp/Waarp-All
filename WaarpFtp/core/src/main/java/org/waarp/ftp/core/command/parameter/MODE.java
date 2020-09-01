@@ -41,7 +41,7 @@ public class MODE extends AbstractCommand {
                                 FtpArgumentCode.TransferMode.STREAM.name());
       return;
     }
-    FtpArgumentCode.TransferMode transferMode;
+    final FtpArgumentCode.TransferMode transferMode;
     try {
       transferMode = FtpArgumentCode.getTransferMode(getArg().charAt(0));
     } catch (final InvalidArgumentException e) {

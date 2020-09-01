@@ -31,17 +31,17 @@ public class SimpleLRUCache<K, V> extends LinkedHashMap<K, V> {
   private static final long serialVersionUID = -3505777964745783339L;
   private final int capacity; // Maximum number of items in the cache.
 
-  public static <K, V> Map<K, V> create(int capacity) {
+  public static <K, V> Map<K, V> create(final int capacity) {
     return Collections.synchronizedMap(new SimpleLRUCache<K, V>(capacity));
   }
 
-  public SimpleLRUCache(int capacity) {
+  public SimpleLRUCache(final int capacity) {
     super(capacity + 1, 1.0f, true); // Pass 'true' for accessOrder.
     this.capacity = capacity;
   }
 
   @Override
-  protected boolean removeEldestEntry(Entry<K, V> entry) {
+  protected boolean removeEldestEntry(final Entry<K, V> entry) {
     return size() > capacity;
   }
 }

@@ -152,8 +152,9 @@ public class RescheduleTransferTask extends AbstractTask {
    * @param argTransfer
    * @param session
    */
-  public RescheduleTransferTask(String argRule, int delay, String argTransfer,
-                                R66Session session) {
+  public RescheduleTransferTask(final String argRule, final int delay,
+                                final String argTransfer,
+                                final R66Session session) {
     super(TaskType.RESCHEDULE, delay, argRule, argTransfer, session);
   }
 
@@ -254,7 +255,7 @@ public class RescheduleTransferTask extends AbstractTask {
     futureCompletion.setSuccess();
   }
 
-  protected void resetInformation(int value) {
+  protected void resetInformation(final int value) {
     final Map<String, Object> root = runner.getTransferMap();
     root.put(CPTLIMIT, value);
     try {
@@ -268,7 +269,7 @@ public class RescheduleTransferTask extends AbstractTask {
     runner.setTransferMap(root);
   }
 
-  protected boolean validateArgs(String[] args) {
+  protected boolean validateArgs(final String[] args) {
     boolean validCode = false;
     for (int i = 0; i < args.length; i++) {
       if ("-delay".equalsIgnoreCase(args[i])) {
@@ -301,7 +302,7 @@ public class RescheduleTransferTask extends AbstractTask {
           return false;
         }
         final Map<String, Object> root = runner.getTransferMap();
-        Integer limit;
+        final Integer limit;
         try {
           limit = (Integer) root.get(CPTLIMIT);
         } catch (final Exception e) {
@@ -451,7 +452,7 @@ public class RescheduleTransferTask extends AbstractTask {
    * @return the Calendar if any specification, or null if no calendar
    *     specified
    */
-  private Calendar getCalendar(String[] values) {
+  private Calendar getCalendar(final String[] values) {
     final Calendar newcal = Calendar.getInstance();
     boolean isModified = false;
     for (final String value2 : values) {

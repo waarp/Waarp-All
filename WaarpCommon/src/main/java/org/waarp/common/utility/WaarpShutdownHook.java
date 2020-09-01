@@ -76,7 +76,7 @@ public abstract class WaarpShutdownHook extends Thread {
   private static volatile boolean shouldRestart;
   private ShutdownConfiguration shutdownConfiguration;
 
-  protected WaarpShutdownHook(ShutdownConfiguration configuration) {
+  protected WaarpShutdownHook(final ShutdownConfiguration configuration) {
     if (initialized) {
       shutdownHook.shutdownConfiguration = configuration;
       setName("WaarpShutdownHook");
@@ -137,9 +137,9 @@ public abstract class WaarpShutdownHook extends Thread {
    *
    * @param immediateSet
    */
-  public static void terminate(boolean immediateSet) {
+  public static void terminate(final boolean immediateSet) {
     if (immediateSet) {
-      immediate = immediateSet;
+      immediate = true;
     }
     if (shutdownHook != null) {
       removeShutdownHook();
@@ -234,8 +234,8 @@ public abstract class WaarpShutdownHook extends Thread {
    * @param thread
    * @param stacks
    */
-  private static void printStackTrace(Thread thread,
-                                      StackTraceElement[] stacks) {
+  private static void printStackTrace(final Thread thread,
+                                      final StackTraceElement[] stacks) {
     SysErrLogger.FAKE_LOGGER.syserrNoLn(thread + " : ");
     for (int i = 0; i < stacks.length - 1; i++) {
       SysErrLogger.FAKE_LOGGER.syserrNoLn(stacks[i] + " ");
@@ -366,7 +366,7 @@ public abstract class WaarpShutdownHook extends Thread {
    *
    * @param toRestart
    */
-  public static void setRestart(boolean toRestart) {
+  public static void setRestart(final boolean toRestart) {
     shouldRestart = toRestart;
   }
 
@@ -376,13 +376,13 @@ public abstract class WaarpShutdownHook extends Thread {
    * @param main
    * @param args
    */
-  public static void registerMain(Class<?> main, String[] args) {
+  public static void registerMain(final Class<?> main, final String[] args) {
     if (main == null) {
       applArgs = getArgs();
       return;
     }
-    String path = ManagementFactory.getRuntimeMXBean().getClassPath();
-    StringBuilder newArgs = new StringBuilder();
+    final String path = ManagementFactory.getRuntimeMXBean().getClassPath();
+    final StringBuilder newArgs = new StringBuilder();
     if (path != null && !path.isEmpty()) {
       newArgs.append("-cp ").append(path);
     }

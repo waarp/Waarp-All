@@ -41,14 +41,14 @@ public class RenameTask extends AbstractTask {
    * @param argTransfer
    * @param session
    */
-  public RenameTask(String argRule, int delay, String argTransfer,
-                    R66Session session) {
+  public RenameTask(final String argRule, final int delay,
+                    final String argTransfer, final R66Session session) {
     super(TaskType.RENAME, delay, argRule, argTransfer, session);
   }
 
   @Override
   public void run() {
-    boolean success;
+    final boolean success;
     String finalname = argRule;
     finalname = getReplacedValue(finalname, BLANK.split(argTransfer)).trim()
                                                                      .replace(

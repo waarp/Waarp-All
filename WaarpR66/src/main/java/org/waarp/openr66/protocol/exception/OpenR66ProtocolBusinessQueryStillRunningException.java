@@ -40,22 +40,23 @@ public class OpenR66ProtocolBusinessQueryStillRunningException
    * @param arg0
    * @param arg1
    */
-  public OpenR66ProtocolBusinessQueryStillRunningException(String arg0,
-                                                           Throwable arg1) {
+  public OpenR66ProtocolBusinessQueryStillRunningException(final String arg0,
+                                                           final Throwable arg1) {
     super(arg0, arg1);
   }
 
   /**
    * @param arg0
    */
-  public OpenR66ProtocolBusinessQueryStillRunningException(String arg0) {
+  public OpenR66ProtocolBusinessQueryStillRunningException(final String arg0) {
     super(arg0);
   }
 
   /**
    * @param arg0
    */
-  public OpenR66ProtocolBusinessQueryStillRunningException(Throwable arg0) {
+  public OpenR66ProtocolBusinessQueryStillRunningException(
+      final Throwable arg0) {
     super(arg0);
   }
 

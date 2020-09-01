@@ -88,7 +88,7 @@ public class HostsHandler extends AbstractRestDbHandler {
    *
    * @param crud the CRUD mask for this handler
    */
-  public HostsHandler(byte crud) {
+  public HostsHandler(final byte crud) {
     super(crud);
   }
 
@@ -118,16 +118,17 @@ public class HostsHandler extends AbstractRestDbHandler {
   @GET
   @Consumes(APPLICATION_FORM_URLENCODED)
   @RequiredRole(ROLE.READONLY)
-  public void filterHosts(HttpRequest request, HttpResponder responder,
+  public void filterHosts(final HttpRequest request,
+                          final HttpResponder responder,
                           @QueryParam(LIMIT) @DefaultValue("20")
-                              String limit_str,
+                          final String limit_str,
                           @QueryParam(OFFSET) @DefaultValue("0")
-                              String offset_str,
+                          final String offset_str,
                           @QueryParam(ORDER) @DefaultValue("ascId")
-                              String order_str,
-                          @QueryParam(ADDRESS) String address,
-                          @QueryParam(IS_SSL) String isSSL_str,
-                          @QueryParam(IS_ACTIVE) String isActive_str) {
+                          final String order_str,
+                          @QueryParam(ADDRESS) final String address,
+                          @QueryParam(IS_SSL) final String isSSL_str,
+                          @QueryParam(IS_ACTIVE) final String isActive_str) {
 
     final List<RestError> errors = new ArrayList<RestError>();
 
@@ -225,7 +226,8 @@ public class HostsHandler extends AbstractRestDbHandler {
   @POST
   @Consumes(APPLICATION_JSON)
   @RequiredRole(ROLE.HOST)
-  public void addHost(HttpRequest request, HttpResponder responder) {
+  public void addHost(final HttpRequest request,
+                      final HttpResponder responder) {
 
     final ObjectNode requestObject = JsonUtils.deserializeRequest(request);
     final Host host = HostConverter.nodeToNewHost(requestObject);
@@ -267,7 +269,8 @@ public class HostsHandler extends AbstractRestDbHandler {
   @OPTIONS
   @Consumes(WILDCARD)
   @RequiredRole(ROLE.NOACCESS)
-  public void options(HttpRequest request, HttpResponder responder) {
+  public void options(final HttpRequest request,
+                      final HttpResponder responder) {
     responder.sendStatus(OK, OPTIONS_HEADERS);
   }
 }

@@ -75,7 +75,7 @@ public class HmacSha1 extends KeyObject {
   }
 
   @Override
-  public byte[] crypt(byte[] plaintext) throws Exception {
+  public byte[] crypt(final byte[] plaintext) throws Exception {
     final Mac mac = Mac.getInstance(ALGO);
     mac.init(secretKey);
     return mac.doFinal(plaintext);
@@ -87,7 +87,7 @@ public class HmacSha1 extends KeyObject {
   }
 
   @Override
-  public byte[] decrypt(byte[] ciphertext) throws Exception {
+  public byte[] decrypt(final byte[] ciphertext) throws Exception {
     throw new IllegalArgumentException(CANNOT_BE_USED_FOR_HMAC_SHA1);
   }
 

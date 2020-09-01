@@ -32,7 +32,7 @@ public final class HttpGerenateJsonConfiguration {
   /**
    * @param args
    */
-  public static void main(String[] args) {
+  public static void main(final String[] args) {
     if (args.length < 1) {
       SysErrLogger.FAKE_LOGGER
           .syserr("Not enough argument: filepath for output");

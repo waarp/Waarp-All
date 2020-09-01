@@ -43,7 +43,7 @@ public class DataBlockSizeEstimator implements MessageSizeEstimator {
     }
 
     @Override
-    public int size(Object msg) {
+    public int size(final Object msg) {
       if (!(msg instanceof DataBlock)) {
         // Type unimplemented
         if (msg instanceof ByteBuf) {

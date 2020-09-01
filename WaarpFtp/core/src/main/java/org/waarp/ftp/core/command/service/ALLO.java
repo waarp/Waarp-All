@@ -37,7 +37,7 @@ public class ALLO extends AbstractCommand {
       throw new Reply501Exception("Need a size as argument");
     }
     final String[] args = getArgs();
-    int size;
+    final int size;
     try {
       size = getValue(args[0]);
     } catch (final InvalidArgumentException e) {

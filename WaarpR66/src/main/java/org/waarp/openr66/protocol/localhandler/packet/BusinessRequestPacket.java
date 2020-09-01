@@ -46,10 +46,10 @@ public class BusinessRequestPacket extends AbstractLocalPacket {
 
   private byte way;
 
-  public static BusinessRequestPacket createFromBuffer(int headerLength,
-                                                       int middleLength,
-                                                       int endLength,
-                                                       ByteBuf buf)
+  public static BusinessRequestPacket createFromBuffer(final int headerLength,
+                                                       final int middleLength,
+                                                       final int endLength,
+                                                       final ByteBuf buf)
       throws OpenR66ProtocolPacketException {
     final byte[] bheader = new byte[headerLength - 1];
     if (headerLength - 1 > 0) {
@@ -66,13 +66,14 @@ public class BusinessRequestPacket extends AbstractLocalPacket {
     return new BusinessRequestPacket(new String(bheader), delay, valid);
   }
 
-  public BusinessRequestPacket(String header, int delay, byte way) {
+  public BusinessRequestPacket(final String header, final int delay,
+                               final byte way) {
     sheader = header;
     this.delay = delay;
     this.way = way;
   }
 
-  public BusinessRequestPacket(String header, int delay) {
+  public BusinessRequestPacket(final String header, final int delay) {
     sheader = header;
     this.delay = delay;
     way = ASKVALIDATE;
@@ -84,7 +85,8 @@ public class BusinessRequestPacket extends AbstractLocalPacket {
   }
 
   @Override
-  public void createAllBuffers(LocalChannelReference lcr, int networkHeader)
+  public void createAllBuffers(final LocalChannelReference lcr,
+                               final int networkHeader)
       throws OpenR66ProtocolPacketException {
     final byte[] headerBytes = sheader.getBytes();
     final int headerSize = headerBytes.length;
@@ -106,7 +108,7 @@ public class BusinessRequestPacket extends AbstractLocalPacket {
   }
 
   @Override
-  public void createEnd(LocalChannelReference lcr)
+  public void createEnd(final LocalChannelReference lcr)
       throws OpenR66ProtocolPacketException {
     end = ByteBufAllocator.DEFAULT.buffer(1, 1);
     end.writeByte(way);
@@ -114,14 +116,14 @@ public class BusinessRequestPacket extends AbstractLocalPacket {
   }
 
   @Override
-  public void createHeader(LocalChannelReference lcr)
+  public void createHeader(final LocalChannelReference lcr)
       throws OpenR66ProtocolPacketException {
     header = Unpooled.wrappedBuffer(sheader.getBytes());
     header.retain();
   }
 
   @Override
-  public void createMiddle(LocalChannelReference lcr)
+  public void createMiddle(final LocalChannelReference lcr)
       throws OpenR66ProtocolPacketException {
     middle = ByteBufAllocator.DEFAULT.buffer(4, 4);
     middle.writeInt(delay);
@@ -178,7 +180,7 @@ public class BusinessRequestPacket extends AbstractLocalPacket {
   /**
    * @param delay the delay to set
    */
-  public void setDelay(int delay) {
+  public void setDelay(final int delay) {
     this.delay = delay;
     WaarpNettyUtil.release(middle);
     middle = null;

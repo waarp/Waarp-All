@@ -43,7 +43,7 @@ public class TYPE extends AbstractCommand {
                                 ' ' + TransferSubType.NONPRINT);
       return;
     }
-    FtpArgumentCode.TransferType transferType;
+    final FtpArgumentCode.TransferType transferType;
     final String[] types = getArgs();
     try {
       transferType = FtpArgumentCode.getTransferType(types[0].charAt(0));

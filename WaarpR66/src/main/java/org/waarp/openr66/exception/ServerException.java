@@ -26,11 +26,11 @@ public class ServerException extends Exception {
    */
   private static final long serialVersionUID = -7053923090368307795L;
 
-  public ServerException(String message) {
+  public ServerException(final String message) {
     super(message);
   }
 
-  public ServerException(String message, Throwable cause) {
+  public ServerException(final String message, final Throwable cause) {
     super(message, cause);
   }
 }

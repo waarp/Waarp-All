@@ -37,8 +37,8 @@ public class WaarpMOScalar extends MOScalar<Variable> {
    * @param access
    * @param value
    */
-  public WaarpMOScalar(OID id, MOAccess access, Variable value,
-                       WaarpMORow row) {
+  public WaarpMOScalar(final OID id, final MOAccess access,
+                       final Variable value, final WaarpMORow row) {
     super(id, access, value);
     this.row = row;
     setVolatile(true);
@@ -53,7 +53,7 @@ public class WaarpMOScalar extends MOScalar<Variable> {
    * @see MOScalar#get(SubRequest)
    */
   @Override
-  public void get(SubRequest request) {
+  public void get(final SubRequest request) {
     row.mib.updateServices(this);
     super.get(request);
   }
@@ -66,7 +66,7 @@ public class WaarpMOScalar extends MOScalar<Variable> {
    * @see MOScalar#find(MOScope)
    */
   @Override
-  public OID find(MOScope range) {
+  public OID find(final MOScope range) {
     row.mib.updateServices(range);
     return super.find(range);
   }

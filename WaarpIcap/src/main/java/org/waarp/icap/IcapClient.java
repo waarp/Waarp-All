@@ -203,25 +203,25 @@ public class IcapClient implements Closeable {
       }
       logger.debug("Connected with Preview Size = {}", stdPreviewSize);
       return this;
-    } catch (SocketTimeoutException e) {
+    } catch (final SocketTimeoutException e) {
       close();
       logger.error(TIMEOUT_OCCURS_WITH_THE_SERVER_SINCE, serverIP, port,
                    e.getMessage());
       throw new IcapException(TIMEOUT_OCCURS_WITH_THE_SERVER, e,
                               IcapError.ICAP_TIMEOUT_ERROR);
-    } catch (ConnectException e) {
+    } catch (final ConnectException e) {
       close();
       logger.error("Could not connect to server {}:{} since {}", serverIP, port,
                    e.getMessage());
       throw new IcapException("Could not connect with the server", e,
                               IcapError.ICAP_CANT_CONNECT);
-    } catch (IOException e) {
+    } catch (final IOException e) {
       close();
       logger.error("Could not connect to server {}:{} since {}", serverIP, port,
                    e.getMessage());
       throw new IcapException("Could not connect with the server", e,
                               IcapError.ICAP_NETWORK_ERROR);
-    } catch (IcapException e) {
+    } catch (final IcapException e) {
       close();
       throw e;
     }
@@ -234,10 +234,10 @@ public class IcapClient implements Closeable {
    */
   private void getFromServerPreviewSize() throws IcapException {
     // Check the preview size from the ICAP Server response to OPTIONS
-    String parseMe = getOptions();
+    final String parseMe = getOptions();
     finalResult = parseHeader(parseMe);
     if (checkAgainstIcapHeader(finalResult, STATUS_CODE, "200", false)) {
-      String tempString = finalResult.get(PREVIEW);
+      final String tempString = finalResult.get(PREVIEW);
       if (tempString != null) {
         stdPreviewSize = Integer.parseInt(tempString);
         if (stdPreviewSize < 0) {
@@ -271,7 +271,7 @@ public class IcapClient implements Closeable {
     if (client != null) {
       try {
         client.close();
-      } catch (IOException ignored) {
+      } catch (final IOException ignored) {
         // Nothing
       }
       client = null;
@@ -279,7 +279,7 @@ public class IcapClient implements Closeable {
     if (in != null) {
       try {
         in.close();
-      } catch (IOException ignored) {
+      } catch (final IOException ignored) {
         // Nothing
       }
       in = null;
@@ -287,7 +287,7 @@ public class IcapClient implements Closeable {
     if (out != null) {
       try {
         out.close();
-      } catch (IOException ignored) {
+      } catch (final IOException ignored) {
         // Nothing
       }
       out = null;
@@ -320,9 +320,8 @@ public class IcapClient implements Closeable {
       finalResult.clear();
       finalResult = null;
     }
-    String originalFilename = filename;
     InputStream inputStream = null;
-    long length;
+    final long length;
     if (EICARTEST.equals(filename)) {
       // Special file to test from EICAR Test file
       final ClassLoader classLoader = IcapClient.class.getClassLoader();
@@ -339,7 +338,7 @@ public class IcapClient implements Closeable {
           System.arraycopy(array2, 0, array, array1.length, array2.length);
           inputStream = new ByteArrayInputStream(array);
           length = array.length;
-        } catch (IOException e) {
+        } catch (final IOException e) {
           logger.error("File EICAR TEST does not exist", e);
           throw new IcapException("File EICAR TEST cannot be found",
                                   IcapError.ICAP_ARGUMENT_ERROR);
@@ -350,7 +349,7 @@ public class IcapClient implements Closeable {
                                 IcapError.ICAP_ARGUMENT_ERROR);
       }
     } else {
-      File file = new File(filename);
+      final File file = new File(filename);
       if (!file.canRead()) {
         logger.error("File does not exist: {}", file.getAbsolutePath());
         throw new IcapException(
@@ -367,20 +366,20 @@ public class IcapClient implements Closeable {
       }
       try {
         inputStream = new FileInputStream(file);
-      } catch (FileNotFoundException e) {
-        logger.error("Could not find file {} since {}", originalFilename,
-                     e.getMessage());
-        throw new IcapException("File cannot be found: " + originalFilename, e,
+      } catch (final FileNotFoundException e) {
+        logger
+            .error("Could not find file {} since {}", filename, e.getMessage());
+        throw new IcapException("File cannot be found: " + filename, e,
                                 IcapError.ICAP_ARGUMENT_ERROR);
       }
     }
     try {
-      return scanFile(originalFilename, inputStream, length);
+      return scanFile(filename, inputStream, length);
     } finally {
       if (inputStream != null) {
         try {
           inputStream.close();
-        } catch (IOException ignored) {
+        } catch (final IOException ignored) {
           // Nothing
         }
       }
@@ -697,9 +696,9 @@ public class IcapClient implements Closeable {
   private String getOptions() throws IcapException {
     // Send OPTIONS header and receive response
     // Sending
-    StringBuilder builder = new StringBuilder();
+    final StringBuilder builder = new StringBuilder();
     addIcapUri(builder, OPTIONS);
-    String requestHeader =
+    final String requestHeader =
         builder.append(ENCAPSULATED_NULL_BODY).append(ICAP_TERMINATOR)
                .toString();
 
@@ -723,26 +722,26 @@ public class IcapClient implements Closeable {
   private boolean scanFile(final String originalFilename,
                            final InputStream fileInStream, final long fileSize)
       throws IcapException {
-    int previewSize = sendIcapHttpScanRequest(originalFilename, fileSize);
+    final int previewSize = sendIcapHttpScanRequest(originalFilename, fileSize);
 
     // Sending preview or, if smaller than previewSize, the whole file.
     if (previewSize == 0) {
       // Send an empty preview
       logger.debug("Empty PREVIEW");
-      StringBuilder builder = new StringBuilder();
+      final StringBuilder builder = new StringBuilder();
       builder.append(Integer.toHexString(previewSize)).append(TERMINATOR);
       builder.append(HTTP_TERMINATOR);
       sendString(builder.toString(), true);
     } else {
       logger.debug("PREVIEW of {}", previewSize);
-      byte[] chunk = new byte[previewSize];
-      int read = readChunk(fileInStream, chunk, previewSize);
+      final byte[] chunk = new byte[previewSize];
+      final int read = readChunk(fileInStream, chunk, previewSize);
       if (read != previewSize) {
         logger.warn("Read file size {} is less than preview size {}", read,
                     previewSize);
       }
       // Send the preview
-      StringBuilder builder = new StringBuilder();
+      final StringBuilder builder = new StringBuilder();
       builder.append(Integer.toHexString(read)).append(TERMINATOR);
       sendString(builder.toString());
       sendBytes(chunk, read);
@@ -783,8 +782,8 @@ public class IcapClient implements Closeable {
                                       final long fileSize)
       throws IcapException {
     // HTTP part of header
-    String resHeader;
-    StringBuilder builder = new StringBuilder(GET_REQUEST);
+    final String resHeader;
+    final StringBuilder builder = new StringBuilder(GET_REQUEST);
     try {
       builder
           .append(URLEncoder.encode(originalFilename, WaarpStringUtils.UTF_8))
@@ -792,14 +791,14 @@ public class IcapClient implements Closeable {
       builder.append(HOST_HEADER).append(serverIP).append(":").append(port)
              .append(ICAP_TERMINATOR);
       resHeader = builder.toString();
-    } catch (UnsupportedEncodingException e) {
+    } catch (final UnsupportedEncodingException e) {
       logger.error("Unsupported Encoding: {}", e.getMessage());
       throw new IcapException(e.getMessage(), e, IcapError.ICAP_INTERNAL_ERROR);
     }
     builder.append("HTTP/1.1 200 OK").append(TERMINATOR);
     builder.append("Transfer-Encoding: chunked").append(TERMINATOR);
     builder.append("Content-Length: ").append(fileSize).append(ICAP_TERMINATOR);
-    String resBody = builder.toString();
+    final String resBody = builder.toString();
 
     int previewSize = stdPreviewSize;
     if (fileSize < stdPreviewSize) {
@@ -814,7 +813,7 @@ public class IcapClient implements Closeable {
            .append(resHeader.length()).append(", res-body=")
            .append(resBody.length()).append(ICAP_TERMINATOR);
     builder.append(resBody);
-    String requestBuffer = builder.toString();
+    final String requestBuffer = builder.toString();
 
     sendString(requestBuffer);
     return previewSize;
@@ -845,10 +844,10 @@ public class IcapClient implements Closeable {
    */
   private int checkPreview() throws IcapException {
     final int status;
-    String parseMe = getHeaderIcap();
+    final String parseMe = getHeaderIcap();
     finalResult = parseHeader(parseMe);
 
-    String tempString = finalResult.get(STATUS_CODE);
+    final String tempString = finalResult.get(STATUS_CODE);
     if (tempString != null) {
       status = Integer.parseInt(tempString);
       switch (status) {
@@ -890,7 +889,7 @@ public class IcapClient implements Closeable {
     String parseMe = getHeaderIcap();
     finalResult = parseHeader(parseMe);
 
-    String tempString = finalResult.get(STATUS_CODE);
+    final String tempString = finalResult.get(STATUS_CODE);
     if (tempString != null) {
       status = Integer.parseInt(tempString);
 
@@ -942,7 +941,7 @@ public class IcapClient implements Closeable {
                                          final String subValue,
                                          final boolean defaultValue) {
     if (key != null && subValue != null) {
-      String value = responseMap.get(key);
+      final String value = responseMap.get(key);
       return value != null && value.contains(subValue);
     }
     return defaultValue;
@@ -959,7 +958,7 @@ public class IcapClient implements Closeable {
   private void sendNextFileChunks(final InputStream fileInStream)
       throws IcapException {
     // Sending remaining part of file
-    byte[] buffer = new byte[sendLength];
+    final byte[] buffer = new byte[sendLength];
     int len = readChunk(fileInStream, buffer, sendLength);
     while (len != -1) {
       sendString(Integer.toHexString(len) + TERMINATOR);
@@ -1023,7 +1022,7 @@ public class IcapClient implements Closeable {
     final byte[] buffer = new byte[receiveLength];
     try {
       return getHeader(HTTP_TERMINATOR, buffer);
-    } catch (IcapException e) {
+    } catch (final IcapException e) {
       final String finalHeaders =
           new String(buffer, 0, offset, WaarpStringUtils.UTF8);
       switch (e.getError()) {
@@ -1066,9 +1065,9 @@ public class IcapClient implements Closeable {
    */
   private String getHeader(final String terminator, final byte[] buffer)
       throws IcapException {
-    byte[] endOfHeader = terminator.getBytes(WaarpStringUtils.UTF8);
-    int[] endOfHeaderInt = new int[endOfHeader.length];
-    int[] marks = new int[endOfHeader.length];
+    final byte[] endOfHeader = terminator.getBytes(WaarpStringUtils.UTF8);
+    final int[] endOfHeaderInt = new int[endOfHeader.length];
+    final int[] marks = new int[endOfHeader.length];
     for (int i = 0; i < endOfHeader.length; i++) {
       endOfHeaderInt[i] = endOfHeader[i];
       marks[i] = -1;
@@ -1102,12 +1101,12 @@ public class IcapClient implements Closeable {
           return finalHeaders;
         }
       }
-    } catch (SocketTimeoutException e) {
+    } catch (final SocketTimeoutException e) {
       logger.error(TIMEOUT_OCCURS_WITH_THE_SERVER_SINCE, serverIP, port,
                    e.getMessage());
       throw new IcapException(TIMEOUT_OCCURS_WITH_THE_SERVER, e,
                               IcapError.ICAP_TIMEOUT_ERROR);
-    } catch (IOException e) {
+    } catch (final IOException e) {
       logger.error("Response cannot be read: {}", e.getMessage());
       throw new IcapException("Response cannot be read", e,
                               IcapError.ICAP_NETWORK_ERROR);
@@ -1129,7 +1128,7 @@ public class IcapClient implements Closeable {
    * Given a raw response header as a String, it will parse through it and return a HashMap of the result
    */
   private Map<String, String> parseHeader(final String response) {
-    Map<String, String> headers = new HashMap<String, String>();
+    final Map<String, String> headers = new HashMap<String, String>();
 
     /*
      * SAMPLE:
@@ -1140,9 +1139,9 @@ public class IcapClient implements Closeable {
      */
     // The status code is located between the first 2 whitespaces.
     // Read status code
-    int x = response.indexOf(' ');
-    int y = response.indexOf(' ', x + 2);
-    String statusCode = response.substring(x + 1, y);
+    final int x = response.indexOf(' ');
+    final int y = response.indexOf(' ', x + 2);
+    final String statusCode = response.substring(x + 1, y);
     headers.put(STATUS_CODE, statusCode);
 
     // Each line in the sample is ended with "\r\n".
@@ -1153,11 +1152,11 @@ public class IcapClient implements Closeable {
     i += 2;
     while (i + 2 < response.length() && response.substring(i).contains(":")) {
       int n = response.indexOf(':', i);
-      String key = response.substring(i, n).trim();
+      final String key = response.substring(i, n).trim();
 
       n += 2;
       i = response.indexOf(TERMINATOR, n);
-      String value = response.substring(n, i).trim();
+      final String value = response.substring(n, i).trim();
 
       headers.put(key, value);
       i += 2;
@@ -1193,12 +1192,12 @@ public class IcapClient implements Closeable {
         out.flush();
       }
       logger.trace("SEND Request:\n{}", requestHeader);
-    } catch (SocketTimeoutException e) {
+    } catch (final SocketTimeoutException e) {
       logger.error(TIMEOUT_OCCURS_WITH_THE_SERVER_SINCE, serverIP, port,
                    e.getMessage());
       throw new IcapException(TIMEOUT_OCCURS_WITH_THE_SERVER, e,
                               IcapError.ICAP_TIMEOUT_ERROR);
-    } catch (IOException e) {
+    } catch (final IOException e) {
       logger.error("Client cannot communicate with ICAP Server: {}",
                    e.getMessage());
       throw new IcapException("Client cannot communicate with ICAP Server", e,
@@ -1218,12 +1217,12 @@ public class IcapClient implements Closeable {
     try {
       out.write(chunk, 0, length);
       logger.trace("SEND {} bytes", length);
-    } catch (SocketTimeoutException e) {
+    } catch (final SocketTimeoutException e) {
       logger.error(TIMEOUT_OCCURS_WITH_THE_SERVER_SINCE, serverIP, port,
                    e.getMessage());
       throw new IcapException(TIMEOUT_OCCURS_WITH_THE_SERVER, e,
                               IcapError.ICAP_TIMEOUT_ERROR);
-    } catch (IOException e) {
+    } catch (final IOException e) {
       logger.error("Client cannot communicate with ICAP Server: {}",
                    e.getMessage());
       throw new IcapException("Writing to ICAP Server cannot be done", e,

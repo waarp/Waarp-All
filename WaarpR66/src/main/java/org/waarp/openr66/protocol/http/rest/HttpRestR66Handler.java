@@ -100,12 +100,12 @@ public class HttpRestR66Handler extends HttpRestHandler {
     public final Class clasz;
 
     @SuppressWarnings("rawtypes")
-    RESTHANDLERS(String uri, Class clasz) {
+    RESTHANDLERS(final String uri, final Class clasz) {
       this.uri = uri;
       this.clasz = clasz;
     }
 
-    public static RESTHANDLERS getRESTHANDLER(String baseUri) {
+    public static RESTHANDLERS getRESTHANDLER(final String baseUri) {
       for (final RESTHANDLERS resthandler : RESTHANDLERS.values()) {
         if (resthandler.uri.equals(baseUri)) {
           return resthandler;
@@ -178,12 +178,12 @@ public class HttpRestR66Handler extends HttpRestHandler {
     }
   }
 
-  public HttpRestR66Handler(RestConfiguration config) {
+  public HttpRestR66Handler(final RestConfiguration config) {
     super(config);
     restHashMap = config.restHashMap;
   }
 
-  protected static METHOD[] getMethods(byte check) {
+  protected static METHOD[] getMethods(final byte check) {
     final List<METHOD> methods = new ArrayList<METHOD>();
     if (RestConfiguration.CRUD.CREATE.isValid(check)) {
       methods.add(METHOD.POST);
@@ -200,7 +200,8 @@ public class HttpRestR66Handler extends HttpRestHandler {
     return methods.toArray(METHOD_0_LENGTH);
   }
 
-  public static void instantiateHandlers(RestConfiguration restConfiguration) {
+  public static void instantiateHandlers(
+      final RestConfiguration restConfiguration) {
     defaultHandlers();
     byte check =
         restConfiguration.getResthandlersCrud()[RESTHANDLERS.DbTaskRunner
@@ -308,10 +309,10 @@ public class HttpRestR66Handler extends HttpRestHandler {
   private final ServerActions serverHandler = new ServerActions();
 
   @Override
-  protected void checkConnection(ChannelHandlerContext ctx)
+  protected void checkConnection(final ChannelHandlerContext ctx)
       throws HttpInvalidAuthenticationException {
     logger.debug("Request: {} ### {}", arguments, response);
-    String user;
+    final String user;
     String key = null;
     if (restConfiguration.isRestAuthenticated()) {
       user = arguments.getXAuthUser();
@@ -319,7 +320,7 @@ public class HttpRestR66Handler extends HttpRestHandler {
         status = HttpResponseStatus.UNAUTHORIZED;
         throw new HttpInvalidAuthenticationException("Empty Authentication");
       }
-      DbHostAuth host;
+      final DbHostAuth host;
       try {
         host = new DbHostAuth(user);
         key = new String(host.getHostkey(), WaarpStringUtils.UTF8);
@@ -392,7 +393,8 @@ public class HttpRestR66Handler extends HttpRestHandler {
   }
 
   @Override
-  public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+  public void channelInactive(final ChannelHandlerContext ctx)
+      throws Exception {
     super.channelInactive(ctx);
     getServerHandler().channelClosed();
   }
@@ -412,7 +414,8 @@ public class HttpRestR66Handler extends HttpRestHandler {
    *
    * @param restConfiguration
    */
-  public static void initializeService(RestConfiguration restConfiguration) {
+  public static void initializeService(
+      final RestConfiguration restConfiguration) {
     instantiateHandlers(restConfiguration);
     if (group == null) {
       group = Configuration.configuration.getHttpChannelGroup();
@@ -431,7 +434,7 @@ public class HttpRestR66Handler extends HttpRestHandler {
           new HttpRestR66Initializer(false, null, restConfiguration));
     }
     // Bind and start to accept incoming connections.
-    ChannelFuture future;
+    final ChannelFuture future;
     if (restConfiguration != null &&
         restConfiguration.getRestAddress() != null &&
         !restConfiguration.getRestAddress().isEmpty()) {

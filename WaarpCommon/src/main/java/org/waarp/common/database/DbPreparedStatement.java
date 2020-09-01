@@ -76,7 +76,7 @@ public class DbPreparedStatement {
    *
    * @throws WaarpDatabaseNoConnectionException
    */
-  public DbPreparedStatement(DbSession ls)
+  public DbPreparedStatement(final DbSession ls)
       throws WaarpDatabaseNoConnectionException {
     if (ls == null) {
       logger.error(SQL_EXCEPTION_PREPARED_STATEMENT_NO_SESSION);
@@ -102,7 +102,7 @@ public class DbPreparedStatement {
    * @throws WaarpDatabaseNoConnectionException
    * @throws WaarpDatabaseSqlException
    */
-  public DbPreparedStatement(DbSession ls, String request)
+  public DbPreparedStatement(final DbSession ls, final String request)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
     if (ls == null) {
       logger.error(SQL_EXCEPTION_PREPARED_STATEMENT_NO_SESSION);
@@ -153,7 +153,8 @@ public class DbPreparedStatement {
    * @throws WaarpDatabaseNoConnectionException
    * @throws WaarpDatabaseSqlException
    */
-  public DbPreparedStatement(DbSession ls, String request, int nbFetch)
+  public DbPreparedStatement(final DbSession ls, final String request,
+                             final int nbFetch)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
     if (ls == null) {
       logger.error(SQL_EXCEPTION_PREPARED_STATEMENT_NO_SESSION);
@@ -204,7 +205,7 @@ public class DbPreparedStatement {
    * @throws WaarpDatabaseNoConnectionException
    * @throws WaarpDatabaseSqlException
    */
-  public void createPrepareStatement(String requestarg)
+  public void createPrepareStatement(final String requestarg)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
     if (requestarg == null) {
       logger.error(PREPARED_STATEMENT_NO_REQUEST);
@@ -316,7 +317,7 @@ public class DbPreparedStatement {
           "Request cannot be executed since connection was recreated between:" +
           request);
     }
-    int retour;
+    final int retour;
     try {
       retour = preparedStatement.executeUpdate();
     } catch (final SQLException e) {
@@ -442,7 +443,7 @@ public class DbPreparedStatement {
   /**
    * @param isReady the isReady to set
    */
-  private void setReady(boolean isReady) {
+  private void setReady(final boolean isReady) {
     this.isReady = isReady;
   }
 

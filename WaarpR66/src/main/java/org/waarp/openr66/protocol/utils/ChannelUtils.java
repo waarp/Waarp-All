@@ -78,7 +78,7 @@ public class ChannelUtils extends Thread {
    *
    * @return the remote InetAddress
    */
-  public static final InetAddress getRemoteInetAddress(Channel channel) {
+  public static final InetAddress getRemoteInetAddress(final Channel channel) {
     InetSocketAddress socketAddress =
         (InetSocketAddress) channel.remoteAddress();
     if (socketAddress == null) {
@@ -94,7 +94,7 @@ public class ChannelUtils extends Thread {
    *
    * @return the local InetAddress
    */
-  public static final InetAddress getLocalInetAddress(Channel channel) {
+  public static final InetAddress getLocalInetAddress(final Channel channel) {
     final InetSocketAddress socketAddress =
         (InetSocketAddress) channel.localAddress();
     return socketAddress.getAddress();
@@ -108,7 +108,7 @@ public class ChannelUtils extends Thread {
    * @return the remote InetSocketAddress
    */
   public static final InetSocketAddress getRemoteInetSocketAddress(
-      Channel channel) {
+      final Channel channel) {
     return (InetSocketAddress) channel.remoteAddress();
   }
 
@@ -120,7 +120,7 @@ public class ChannelUtils extends Thread {
    * @return the local InetSocketAddress
    */
   public static final InetSocketAddress getLocalInetSocketAddress(
-      Channel channel) {
+      final Channel channel) {
     return (InetSocketAddress) channel.localAddress();
   }
 
@@ -179,7 +179,7 @@ public class ChannelUtils extends Thread {
    *
    * @return the current number of network connections
    */
-  public static final int nbCommandChannels(Configuration configuration) {
+  public static final int nbCommandChannels(final Configuration configuration) {
     int nb = 0;
     if (Configuration.configuration.getServerConnectedChannelGroup() != null) {
       nb += configuration.getServerConnectedChannelGroup().size();
@@ -200,8 +200,8 @@ public class ChannelUtils extends Thread {
    * @throws OpenR66ProtocolPacketException
    */
   public static ChannelFuture writeBackDataBlock(
-      LocalChannelReference localChannelReference,
-      FilesystemBasedDigest digestGlobal, DataBlock block)
+      final LocalChannelReference localChannelReference,
+      final FilesystemBasedDigest digestGlobal, final DataBlock block)
       throws OpenR66ProtocolPacketException {
     byte[] md5 = {};
     final DbTaskRunner runner = localChannelReference.getSession().getRunner();
@@ -233,7 +233,7 @@ public class ChannelUtils extends Thread {
    * @throws OpenR66ProtocolPacketException
    */
   public static final void writeEndTransfer(
-      LocalChannelReference localChannelReference)
+      final LocalChannelReference localChannelReference)
       throws OpenR66ProtocolPacketException {
     final EndTransferPacket packet =
         new EndTransferPacket(LocalPacketFactory.REQUESTPACKET);
@@ -250,7 +250,7 @@ public class ChannelUtils extends Thread {
    * @throws OpenR66ProtocolPacketException
    */
   public static final void writeEndTransfer(
-      LocalChannelReference localChannelReference, String hash)
+      final LocalChannelReference localChannelReference, final String hash)
       throws OpenR66ProtocolPacketException {
     final EndTransferPacket packet =
         new EndTransferPacket(LocalPacketFactory.REQUESTPACKET, hash);
@@ -271,7 +271,7 @@ public class ChannelUtils extends Thread {
    */
   public static ChannelFuture writeAbstractLocalPacket(
       final LocalChannelReference localChannelReference,
-      AbstractLocalPacket packet, boolean wait)
+      final AbstractLocalPacket packet, final boolean wait)
       throws OpenR66ProtocolPacketException {
     final NetworkPacket networkPacket;
     try {
@@ -286,23 +286,23 @@ public class ChannelUtils extends Thread {
                    e);
       throw e;
     }
-    boolean addListener = packet instanceof ErrorPacket &&
-                          ((ErrorPacket) packet).getCode() ==
-                          ErrorPacket.FORWARDCLOSECODE;
-    ChannelFuture future =
+    final boolean addListener = packet instanceof ErrorPacket &&
+                                ((ErrorPacket) packet).getCode() ==
+                                ErrorPacket.FORWARDCLOSECODE;
+    final ChannelFuture future =
         localChannelReference.getNetworkChannel().writeAndFlush(networkPacket);
     if (addListener) {
       future.addListener(new GenericFutureListener<Future<? super Void>>() {
 
         @Override
-        public void operationComplete(Future<? super Void> future)
+        public void operationComplete(final Future<? super Void> future)
             throws Exception {
           localChannelReference.close();
         }
       });
     }
     if (wait) {
-      NetworkServerHandler nsh =
+      final NetworkServerHandler nsh =
           localChannelReference.getNetworkServerHandler();
       if (nsh != null) {
         nsh.resetKeepAlive();
@@ -330,8 +330,8 @@ public class ChannelUtils extends Thread {
     long delay = Configuration.configuration.getTimeoutCon();
     // Inform others that shutdown
     if (Configuration.configuration.getLocalTransaction() != null) {
-      int nb = Configuration.configuration.getLocalTransaction()
-                                          .getNumberLocalChannel();
+      final int nb = Configuration.configuration.getLocalTransaction()
+                                                .getNumberLocalChannel();
       Configuration.configuration.getLocalTransaction().shutdownLocalChannels();
       if (nb == 1) {
         delay /= 3;

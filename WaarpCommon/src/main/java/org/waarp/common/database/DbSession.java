@@ -97,8 +97,9 @@ public class DbSession {
   private final Set<DbPreparedStatement> listPreparedStatement =
       ConcurrentUtility.newConcurrentSet();
 
-  private void initialize(DbModel dbModel, String server, String user,
-                          String passwd, boolean isReadOnly, boolean autoCommit)
+  private void initialize(final DbModel dbModel, final String server,
+                          final String user, final String passwd,
+                          final boolean isReadOnly, final boolean autoCommit)
       throws WaarpDatabaseNoConnectionException {
     if (!DbModelFactory.classLoaded.contains(dbModel.getDbType().name())) {
       throw new WaarpDatabaseNoConnectionException("DbAdmin not initialzed");
@@ -149,7 +150,7 @@ public class DbSession {
    *
    * @throws WaarpDatabaseSqlException
    */
-  public DbSession(DbAdmin admin, boolean isReadOnly)
+  public DbSession(final DbAdmin admin, final boolean isReadOnly)
       throws WaarpDatabaseNoConnectionException {
     try {
       setAdmin(admin);
@@ -184,7 +185,8 @@ public class DbSession {
    *
    * @throws WaarpDatabaseSqlException
    */
-  public DbSession(DbAdmin admin, boolean isReadOnly, boolean autoCommit)
+  public DbSession(final DbAdmin admin, final boolean isReadOnly,
+                   final boolean autoCommit)
       throws WaarpDatabaseNoConnectionException {
     try {
       setAdmin(admin);
@@ -214,7 +216,7 @@ public class DbSession {
    *
    * @throws WaarpDatabaseNoConnectionException
    */
-  public void setAutoCommit(boolean autoCommit)
+  public void setAutoCommit(final boolean autoCommit)
       throws WaarpDatabaseNoConnectionException {
     if (getConn() != null) {
       this.autoCommit = autoCommit;
@@ -249,7 +251,7 @@ public class DbSession {
   /**
    * @param admin the admin to set
    */
-  protected void setAdmin(DbAdmin admin) {
+  protected void setAdmin(final DbAdmin admin) {
     this.admin = admin;
   }
 
@@ -258,7 +260,7 @@ public class DbSession {
    *
    * @param ex
    */
-  public static void error(SQLException ex) {
+  public static void error(final SQLException ex) {
     // handle any errors
     logger.error(
         "SQLException: " + ex.getMessage() + " SQLState: " + ex.getSQLState() +
@@ -318,12 +320,12 @@ public class DbSession {
   private static class TryDisconnectDbSession implements TimerTask {
     private final DbSession dbSession;
 
-    private TryDisconnectDbSession(DbSession dbSession) {
+    private TryDisconnectDbSession(final DbSession dbSession) {
       this.dbSession = dbSession;
     }
 
     @Override
-    public void run(Timeout timeout) throws Exception {
+    public void run(final Timeout timeout) throws Exception {
       final int val = dbSession.nbThread.get();
       if (val <= 0) {
         dbSession.disconnect();
@@ -339,7 +341,7 @@ public class DbSession {
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(final Object o) {
     if (!(o instanceof DbSession)) {
       return false;
     }
@@ -454,7 +456,7 @@ public class DbSession {
    *
    * @param longterm
    */
-  public void addLongTermPreparedStatement(DbPreparedStatement longterm) {
+  public void addLongTermPreparedStatement(final DbPreparedStatement longterm) {
     listPreparedStatement.add(longterm);
   }
 
@@ -507,7 +509,8 @@ public class DbSession {
    *
    * @param longterm
    */
-  public void removeLongTermPreparedStatements(DbPreparedStatement longterm) {
+  public void removeLongTermPreparedStatements(
+      final DbPreparedStatement longterm) {
     listPreparedStatement.remove(longterm);
   }
 
@@ -547,7 +550,7 @@ public class DbSession {
    * @throws WaarpDatabaseNoConnectionException
    * @throws WaarpDatabaseSqlException
    */
-  public void rollback(Savepoint savepoint)
+  public void rollback(final Savepoint savepoint)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
     if (getConn() == null) {
       logger.warn("Cannot rollback since connection is null");
@@ -605,7 +608,7 @@ public class DbSession {
    * @throws WaarpDatabaseNoConnectionException
    * @throws WaarpDatabaseSqlException
    */
-  public void releaseSavepoint(Savepoint savepoint)
+  public void releaseSavepoint(final Savepoint savepoint)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
     if (getConn() == null) {
       logger.warn("Cannot release savepoint since connection is null");
@@ -634,7 +637,7 @@ public class DbSession {
   /**
    * @param isReadOnly the isReadOnly to set
    */
-  public void setReadOnly(boolean isReadOnly) {
+  public void setReadOnly(final boolean isReadOnly) {
     this.isReadOnly = isReadOnly;
   }
 
@@ -655,7 +658,7 @@ public class DbSession {
   /**
    * @param conn the conn to set
    */
-  public void setConn(Connection conn) {
+  public void setConn(final Connection conn) {
     this.conn = conn;
   }
 
@@ -669,7 +672,7 @@ public class DbSession {
   /**
    * @param internalId the internalId to set
    */
-  private void setInternalId(GUID internalId) {
+  private void setInternalId(final GUID internalId) {
     this.internalId = internalId;
   }
 
@@ -683,7 +686,7 @@ public class DbSession {
   /**
    * @param isDisActive the isDisActive to set
    */
-  public void setDisActive(boolean isDisActive) {
+  public void setDisActive(final boolean isDisActive) {
     this.isDisActive = isDisActive;
   }
 }

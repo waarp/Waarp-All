@@ -48,9 +48,10 @@ public class KeepAlivePacket extends AbstractLocalPacket {
    *
    * @throws OpenR66ProtocolPacketException
    */
-  public static KeepAlivePacket createFromBuffer(int headerLength,
-                                                 int middleLength,
-                                                 int endLength, ByteBuf buf)
+  public static KeepAlivePacket createFromBuffer(final int headerLength,
+                                                 final int middleLength,
+                                                 final int endLength,
+                                                 final ByteBuf buf)
       throws OpenR66ProtocolPacketException {
     if (middleLength != 1) {
       throw new OpenR66ProtocolPacketException("Not enough data");
@@ -62,7 +63,7 @@ public class KeepAlivePacket extends AbstractLocalPacket {
   /**
    * @param valid
    */
-  private KeepAlivePacket(byte valid) {
+  private KeepAlivePacket(final byte valid) {
     way = valid;
   }
 
@@ -79,10 +80,11 @@ public class KeepAlivePacket extends AbstractLocalPacket {
   }
 
   @Override
-  public void createAllBuffers(LocalChannelReference lcr, int networkHeader)
+  public void createAllBuffers(final LocalChannelReference lcr,
+                               final int networkHeader)
       throws OpenR66ProtocolPacketException {
     final int globalSize = networkHeader + LOCAL_HEADER_SIZE + 1;
-    int offset = networkHeader + LOCAL_HEADER_SIZE;
+    final int offset = networkHeader + LOCAL_HEADER_SIZE;
     global = ByteBufAllocator.DEFAULT.buffer(globalSize, globalSize);
     middle = WaarpNettyUtil.slice(global, offset, 1);
     middle.writeByte(way);
@@ -91,17 +93,17 @@ public class KeepAlivePacket extends AbstractLocalPacket {
   }
 
   @Override
-  public void createEnd(LocalChannelReference lcr) {
+  public void createEnd(final LocalChannelReference lcr) {
     end = Unpooled.EMPTY_BUFFER;
   }
 
   @Override
-  public void createHeader(LocalChannelReference lcr) {
+  public void createHeader(final LocalChannelReference lcr) {
     header = Unpooled.EMPTY_BUFFER;
   }
 
   @Override
-  public void createMiddle(LocalChannelReference lcr) {
+  public void createMiddle(final LocalChannelReference lcr) {
     final byte[] newbytes = { way };
     middle = Unpooled.wrappedBuffer(newbytes);
   }

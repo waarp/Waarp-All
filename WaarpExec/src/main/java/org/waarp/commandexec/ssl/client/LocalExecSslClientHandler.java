@@ -42,19 +42,20 @@ public class LocalExecSslClientHandler extends LocalExecClientHandler {
   /**
    * @param factory
    */
-  public LocalExecSslClientHandler(LocalExecClientInitializer factory) {
+  public LocalExecSslClientHandler(final LocalExecClientInitializer factory) {
     super(factory);
   }
 
   @Override
-  public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
+  public void channelRegistered(final ChannelHandlerContext ctx)
+      throws Exception {
     WaarpSslUtility.addSslOpenedChannel(ctx.channel());
     super.channelRegistered(ctx);
   }
 
   @Override
-  public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
-      throws Exception {
+  public void exceptionCaught(final ChannelHandlerContext ctx,
+                              final Throwable cause) throws Exception {
     logger.warn("Unexpected exception from Outband while get information: " +
                 firstMessage, cause);
     if (firstMessage) {

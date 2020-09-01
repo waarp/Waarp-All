@@ -64,12 +64,12 @@ public class DbModelFactoryR66 extends DbModelFactory {
    *
    * @throws WaarpDatabaseNoConnectionException
    */
-  public static DbAdmin initialize(String dbdriver, String dbserver,
-                                   String dbuser, String dbpasswd,
-                                   boolean write)
+  public static DbAdmin initialize(final String dbdriver, final String dbserver,
+                                   final String dbuser, final String dbpasswd,
+                                   final boolean write)
       throws WaarpDatabaseNoConnectionException {
     final DbType type = DbType.getFromDriver(dbdriver);
-    DbModel dbModel;
+    final DbModel dbModel;
     switch (type) {
       case H2:
         dbModel = new DbModelH2R66(dbserver, dbuser, dbpasswd);
@@ -287,7 +287,7 @@ public class DbModelFactoryR66 extends DbModelFactory {
       action.append(", ");
     }
     // Several columns for primary key
-    action.append(" CONSTRAINT runner_pk " + primaryKey + '(');
+    action.append(" CONSTRAINT runner_pk ").append(primaryKey).append('(');
     for (int i = DbTaskRunner.NBPRKEY; i > 1; i--) {
       action.append(acolumns[acolumns.length - i].name()).append(',');
     }
@@ -331,7 +331,7 @@ public class DbModelFactoryR66 extends DbModelFactory {
     final String createTableH2 = "CREATE TABLE IF NOT EXISTS ";
     final String primaryKey = " PRIMARY KEY ";
     final String notNull = " NOT NULL ";
-    DbRequest request =
+    final DbRequest request =
         subCreateTableMariaDbMySQLPostgreSQL(dbTypeResolver, session,
                                              createTableH2, primaryKey,
                                              notNull);
@@ -387,7 +387,7 @@ public class DbModelFactoryR66 extends DbModelFactory {
       final String notNull = " NOT NULL ";
 
       // HostConfiguration
-      StringBuilder action =
+      final StringBuilder action =
           new StringBuilder(createTableH2 + DbHostConfiguration.table + '(');
       final DbHostConfiguration.Columns[] chcolumns =
           DbHostConfiguration.Columns.values();

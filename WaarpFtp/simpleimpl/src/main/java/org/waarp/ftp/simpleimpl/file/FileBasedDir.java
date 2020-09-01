@@ -31,12 +31,12 @@ public class FileBasedDir extends FilesystemBasedFtpDir {
   /**
    * @param session
    */
-  public FileBasedDir(FtpSession session) {
+  public FileBasedDir(final FtpSession session) {
     super(session);
   }
 
   @Override
-  public FtpFile newFile(String path, boolean append)
+  public FtpFile newFile(final String path, final boolean append)
       throws CommandAbstractException {
     return new FileBasedFile((FtpSession) getSession(), this, path, append);
   }

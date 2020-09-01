@@ -37,7 +37,7 @@ public enum XmlType {
   /**
    * @param classType
    */
-  XmlType(Class<?> classType) {
+  XmlType(final Class<?> classType) {
     this.classType = classType;
   }
 
@@ -53,7 +53,7 @@ public enum XmlType {
    *
    * @return True if the Object is natively compatible with the internal Type
    */
-  public boolean isNativelyCompatible(Object value) {
+  public boolean isNativelyCompatible(final Object value) {
     final Class<?> type = value.getClass();
     switch (this) {
       case BOOLEAN:

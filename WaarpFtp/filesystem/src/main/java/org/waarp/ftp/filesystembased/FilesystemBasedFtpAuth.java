@@ -43,7 +43,7 @@ public abstract class FilesystemBasedFtpAuth extends FilesystemBasedAuthImpl
   /**
    * @param session
    */
-  protected FilesystemBasedFtpAuth(FtpSession session) {
+  protected FilesystemBasedFtpAuth(final FtpSession session) {
     super(session);
   }
 
@@ -92,7 +92,7 @@ public abstract class FilesystemBasedFtpAuth extends FilesystemBasedAuthImpl
    * @throws Reply502Exception
    */
   @Override
-  public NextCommandReply setAccount(String account)
+  public NextCommandReply setAccount(final String account)
       throws Reply421Exception, Reply530Exception, Reply502Exception {
     final NextCommandReply next = setBusinessAccount(account);
     this.account = account;

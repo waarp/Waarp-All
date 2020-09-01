@@ -35,7 +35,7 @@ public class WaarpThreadFactory implements ThreadFactory {
    *
    * @param globalName
    */
-  public WaarpThreadFactory(String globalName) {
+  public WaarpThreadFactory(final String globalName) {
     this.globalName = globalName + '-';
   }
 
@@ -44,13 +44,13 @@ public class WaarpThreadFactory implements ThreadFactory {
    * @param isDaemon (Default is True, meaning system can exit if only
    *     Daemon threads left)
    */
-  public WaarpThreadFactory(String globalName, boolean isDaemon) {
+  public WaarpThreadFactory(final String globalName, final boolean isDaemon) {
     this.globalName = globalName + '-';
     this.isDaemon = isDaemon;
   }
 
   @Override
-  public Thread newThread(Runnable arg0) {
+  public Thread newThread(final Runnable arg0) {
     final Thread thread =
         new Thread(arg0, globalName + counter.incrementAndGet());
     thread.setDaemon(isDaemon);

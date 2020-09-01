@@ -36,7 +36,7 @@ public class Reply553Exception extends CommandAbstractException {
    *
    * @param message
    */
-  public Reply553Exception(String message) {
+  public Reply553Exception(final String message) {
     super(ReplyCode.REPLY_553_REQUESTED_ACTION_NOT_TAKEN_FILE_NAME_NOT_ALLOWED,
           message);
   }

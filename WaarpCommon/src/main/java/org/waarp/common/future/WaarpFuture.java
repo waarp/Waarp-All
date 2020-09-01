@@ -54,7 +54,7 @@ public class WaarpFuture {
    * @param cancellable {@code true} if and only if this future can be
    *     canceled
    */
-  public WaarpFuture(boolean cancellable) {
+  public WaarpFuture(final boolean cancellable) {
     this.cancellable = cancellable;
   }
 
@@ -156,7 +156,7 @@ public class WaarpFuture {
    *
    * @return True if the Future is done or False if interrupted
    */
-  public boolean awaitOrInterruptible(long timeoutMilliseconds) {
+  public boolean awaitOrInterruptible(final long timeoutMilliseconds) {
     return awaitOrInterruptible(MILLISECONDS.toNanos(timeoutMilliseconds),
                                 false);
   }
@@ -167,7 +167,7 @@ public class WaarpFuture {
    *
    * @return True if the Future is done or False if interrupted
    */
-  public boolean awaitOrInterruptible(long timeout, TimeUnit unit) {
+  public boolean awaitOrInterruptible(final long timeout, final TimeUnit unit) {
     return awaitOrInterruptible(unit.toNanos(timeout), false);
   }
 
@@ -177,8 +177,8 @@ public class WaarpFuture {
    *
    * @return True if the Future is done or False if interrupted
    */
-  private boolean awaitOrInterruptible(long timeoutNanos,
-                                       boolean interruptable) {
+  private boolean awaitOrInterruptible(final long timeoutNanos,
+                                       final boolean interruptable) {
     try {
       if (await0(timeoutNanos, interruptable) && !Thread.interrupted()) {
         return true;
@@ -189,7 +189,7 @@ public class WaarpFuture {
     return false;
   }
 
-  private boolean await0(long timeoutNanos, boolean interruptable)
+  private boolean await0(final long timeoutNanos, final boolean interruptable)
       throws InterruptedException {
     if (done) {
       return done;
@@ -201,7 +201,7 @@ public class WaarpFuture {
       throw new InterruptedException();
     }
 
-    long startTime = System.nanoTime();
+    final long startTime = System.nanoTime();
     long waitTime = timeoutNanos;
     boolean interrupted = false;
 
@@ -215,7 +215,7 @@ public class WaarpFuture {
 
           try {
             wait(waitTime / 1000000, (int) (waitTime % 1000000));
-          } catch (InterruptedException e) {//NOSONAR
+          } catch (final InterruptedException e) {//NOSONAR
             SysErrLogger.FAKE_LOGGER.ignoreLog(e);
             if (interruptable) {
               throw e;
@@ -274,7 +274,7 @@ public class WaarpFuture {
    *     because this future is already marked as either a success or a
    *     failure.
    */
-  public boolean setFailure(Throwable cause) {
+  public boolean setFailure(final Throwable cause) {
     synchronized (this) {
       // Allow only once.
       if (done) {

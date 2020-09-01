@@ -39,11 +39,11 @@ public class RestFuture extends WaarpFuture {
   /**
    * @param cancellable
    */
-  public RestFuture(boolean cancellable) {
+  public RestFuture(final boolean cancellable) {
     super(cancellable);
   }
 
-  public void setRestArgument(RestArgument arg) {
+  public void setRestArgument(final RestArgument arg) {
     result = arg;
   }
 
@@ -61,7 +61,7 @@ public class RestFuture extends WaarpFuture {
   /**
    * @param otherObject the otherObject to set
    */
-  public void setOtherObject(Object otherObject) {
+  public void setOtherObject(final Object otherObject) {
     this.otherObject = otherObject;
   }
 

@@ -175,7 +175,8 @@ public class Monitoring implements WaarpInterfaceMonitor {
    * @param minimalDelay
    * @param session
    */
-  public Monitoring(long pastLimit, long minimalDelay, DbSession session) {
+  public Monitoring(final long pastLimit, final long minimalDelay,
+                    final DbSession session) {
     this.pastLimit = pastLimit;
     this.minimalDelay = minimalDelay;
     if (session != null) {
@@ -332,7 +333,7 @@ public class Monitoring implements WaarpInterfaceMonitor {
   /**
    * @param nbSecond as specific PastLimit
    */
-  public void run(long nbSecond) {
+  public void run(final long nbSecond) {
     run(nbSecond, false);
   }
 
@@ -341,7 +342,7 @@ public class Monitoring implements WaarpInterfaceMonitor {
    *
    * @param detail as to get detailed information
    */
-  public void run(boolean detail) {
+  public void run(final boolean detail) {
     run(-1, detail);
   }
 
@@ -362,10 +363,10 @@ public class Monitoring implements WaarpInterfaceMonitor {
    * @param nbSecond as specific PastLimit
    * @param detail as to get detailed information
    */
-  public void run(long nbSecond, boolean detail) {
+  public void run(final long nbSecond, final boolean detail) {
     synchronized (trafficCounter) {
       long limitDate = System.currentTimeMillis();
-      long nbMs;
+      final long nbMs;
       if (nbSecond <= 0) {
         nbMs = pastLimit;
       } else {
@@ -648,7 +649,7 @@ public class Monitoring implements WaarpInterfaceMonitor {
    *
    * @return The XML representation of the current status
    */
-  public String exportXml(boolean detail) {
+  public String exportXml(final boolean detail) {
     final StringBuilder builder = new StringBuilder("<STATUS>")
         // Global Informations
         .append("<HostID>").append(Configuration.configuration.getHostId())
@@ -763,7 +764,7 @@ public class Monitoring implements WaarpInterfaceMonitor {
    *
    * @return The Json representation of the current status
    */
-  public String exportJson(boolean detail) {
+  public String exportJson(final boolean detail) {
     return JsonHandler.prettyPrint(exportAsJson(detail));
   }
 
@@ -772,7 +773,7 @@ public class Monitoring implements WaarpInterfaceMonitor {
    *
    * @return The Json representation of the current status
    */
-  public ObjectNode exportAsJson(boolean detail) {
+  public ObjectNode exportAsJson(final boolean detail) {
     ObjectNode node = JsonHandler.createObjectNode();
     node = node.putObject("STATUS");
     // Global Informations
@@ -858,7 +859,7 @@ public class Monitoring implements WaarpInterfaceMonitor {
   }
 
   @Override
-  public void setAgent(WaarpSnmpAgent agent) {
+  public void setAgent(final WaarpSnmpAgent agent) {
     this.agent = agent;
     lastInActiveTransfer = this.agent.getUptimeSystemTime();
     lastOutActiveTransfer = this.agent.getUptimeSystemTime();
@@ -870,7 +871,7 @@ public class Monitoring implements WaarpInterfaceMonitor {
    * @param type
    * @param entry
    */
-  public void run(int type, int entry) {
+  public void run(final int type, final int entry) {
     final long nbMs =
         Configuration.configuration.getAgentSnmp().getUptime() + 100;
     final MibLevel level = MibLevel.values()[type];
@@ -903,7 +904,7 @@ public class Monitoring implements WaarpInterfaceMonitor {
    * @param rank
    * @param value
    */
-  protected void updateGlobalValue(int rank, long value) {
+  protected void updateGlobalValue(final int rank, final long value) {
     ((R66PrivateMib) agent.getMib()).rowGlobal.setValue(rank, value);
   }
 
@@ -913,7 +914,7 @@ public class Monitoring implements WaarpInterfaceMonitor {
    * @param rank
    * @param value
    */
-  protected void updateDetailedValue(int rank, long value) {
+  protected void updateDetailedValue(final int rank, final long value) {
     ((R66PrivateMib) agent.getMib()).rowDetailed.setValue(rank, value);
   }
 
@@ -923,7 +924,7 @@ public class Monitoring implements WaarpInterfaceMonitor {
    * @param rank
    * @param value
    */
-  protected void updateErrorValue(int rank, long value) {
+  protected void updateErrorValue(final int rank, final long value) {
     ((R66PrivateMib) agent.getMib()).rowError.setValue(rank, value);
   }
 
@@ -933,7 +934,7 @@ public class Monitoring implements WaarpInterfaceMonitor {
    * @param nbMs
    * @param entry
    */
-  protected void run(long nbMs, WaarpGlobalValuesIndex entry) {
+  protected void run(final long nbMs, final WaarpGlobalValuesIndex entry) {
     synchronized (trafficCounter) {
       long val;
       final long limitDate = System.currentTimeMillis() - nbMs;
@@ -1179,7 +1180,7 @@ public class Monitoring implements WaarpInterfaceMonitor {
    * @param nbMs
    * @param entry
    */
-  protected void run(long nbMs, WaarpDetailedValuesIndex entry) {
+  protected void run(final long nbMs, final WaarpDetailedValuesIndex entry) {
     synchronized (trafficCounter) {
       final long limitDate = System.currentTimeMillis() - nbMs;
       if (dbSession == null || dbSession.isDisActive()) {
@@ -1354,7 +1355,7 @@ public class Monitoring implements WaarpInterfaceMonitor {
    * @param nbMs
    * @param entry
    */
-  protected void run(long nbMs, WaarpErrorValuesIndex entry) {
+  protected void run(final long nbMs, final WaarpErrorValuesIndex entry) {
     synchronized (trafficCounter) {
       final long limitDate = System.currentTimeMillis() - nbMs;
       if (dbSession == null || dbSession.isDisActive()) {

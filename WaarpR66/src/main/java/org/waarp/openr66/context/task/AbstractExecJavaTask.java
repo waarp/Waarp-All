@@ -66,7 +66,7 @@ public abstract class AbstractExecJavaTask implements R66Runnable {
    *
    * @return True if feedback is done
    */
-  public boolean validate(BusinessRequestPacket packet) {
+  public boolean validate(final BusinessRequestPacket packet) {
     status = 0;
     packet.validate();
     if (callFromBusiness) {
@@ -95,7 +95,7 @@ public abstract class AbstractExecJavaTask implements R66Runnable {
    *
    * @param object special object to get back
    */
-  public void finalValidate(Object object) {
+  public void finalValidate(final Object object) {
     status = 0;
     if (callFromBusiness) {
       final LocalChannelReference localChannelReference =
@@ -151,20 +151,18 @@ public abstract class AbstractExecJavaTask implements R66Runnable {
         validate(packet);
       }
     }
-    final StringBuilder builder =
-        new StringBuilder(getClass().getSimpleName()).append(':')
-                                                     .append("args(")
-                                                     .append(fullarg)
-                                                     .append(')');
-    logger.warn(builder.toString());
+    final String builder =
+        getClass().getSimpleName() + ':' + "args(" + fullarg + ')';
+    logger.warn(builder);
     status = 0;
   }
 
   @Override
-  public void setArgs(R66Session session, boolean waitForValidation,
-                      boolean useLocalExec, int delay, String classname,
-                      String arg, boolean callFromBusiness,
-                      boolean isToValidate) {
+  public void setArgs(final R66Session session, final boolean waitForValidation,
+                      final boolean useLocalExec, final int delay,
+                      final String classname, final String arg,
+                      final boolean callFromBusiness,
+                      final boolean isToValidate) {
     this.session = session;
     this.waitForValidation = waitForValidation;
     this.useLocalExec = useLocalExec;
@@ -183,11 +181,8 @@ public abstract class AbstractExecJavaTask implements R66Runnable {
   @Override
   public String toString() {
     if (status == -1 || finalInformation == null) {
-      final StringBuilder builder =
-          new StringBuilder(getClass().getSimpleName()).append(": [")
-                                                       .append(fullarg)
-                                                       .append(']');
-      return builder.toString();
+      final String builder = getClass().getSimpleName() + ": [" + fullarg + ']';
+      return builder;
     } else {
       return finalInformation;
     }

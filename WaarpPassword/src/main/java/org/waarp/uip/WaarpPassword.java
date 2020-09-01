@@ -74,7 +74,7 @@ public class WaarpPassword {
    *
    * @throws Exception
    */
-  public static void main(String[] args) throws Exception {
+  public static void main(final String[] args) throws Exception {
     if (!loadOptions(args)) {
       // Bad options
       if (DetectionUtils.isJunit()) {
@@ -116,7 +116,7 @@ public class WaarpPassword {
     }
   }
 
-  public static boolean loadOptions(String[] args) {
+  public static boolean loadOptions(final String[] args) {
     desModel = true;
     clearPasswordView = false;
     ki = null;
@@ -289,7 +289,7 @@ public class WaarpPassword {
    *
    * @throws CryptoException
    */
-  public void loadKey(File file) throws CryptoException {
+  public void loadKey(final File file) throws CryptoException {
     keyFile = file;
     try {
       currentKey.setSecretKey(file);
@@ -303,7 +303,7 @@ public class WaarpPassword {
    *
    * @throws CryptoException
    */
-  public void saveKey(File file) throws CryptoException {
+  public void saveKey(final File file) throws CryptoException {
     if (file != null) {
       keyFile = file;
     }
@@ -335,7 +335,7 @@ public class WaarpPassword {
    *
    * @throws Exception
    */
-  public void setClearPassword(String passwd) throws Exception {
+  public void setClearPassword(final String passwd) throws Exception {
     clearPassword = passwd;
     cryptedPassword = currentKey.cryptToHex(clearPassword);
   }
@@ -352,7 +352,7 @@ public class WaarpPassword {
    *
    * @throws IOException
    */
-  public void setPasswordFile(File passwordFile) {
+  public void setPasswordFile(final File passwordFile) {
     this.passwordFile = passwordFile;
   }
 
@@ -379,7 +379,7 @@ public class WaarpPassword {
     if (passwordFile.canRead()) {
       final int len = (int) passwordFile.length();
       final byte[] key = new byte[len];
-      FileInputStream inputStream;
+      final FileInputStream inputStream;
       inputStream = new FileInputStream(passwordFile);
       DataInputStream dis = null;
       try {
@@ -410,7 +410,8 @@ public class WaarpPassword {
    *
    * @throws Exception
    */
-  public void setCryptedPassword(String cryptedPassword) throws Exception {
+  public void setCryptedPassword(final String cryptedPassword)
+      throws Exception {
     this.cryptedPassword = cryptedPassword;
     clearPassword = currentKey.decryptHexInString(cryptedPassword);
   }

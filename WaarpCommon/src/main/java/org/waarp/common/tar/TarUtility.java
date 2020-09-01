@@ -55,13 +55,13 @@ public final class TarUtility {
    *
    * @return True if OK
    */
-  public static boolean createTarFromDirectory(String directory,
-                                               String filename,
-                                               boolean absolute) {
+  public static boolean createTarFromDirectory(final String directory,
+                                               final String filename,
+                                               final boolean absolute) {
     final File rootDir = new File(directory);
     final File saveFile = new File(filename);
     // recursive call
-    TarArchiveOutputStream taos;
+    final TarArchiveOutputStream taos;
     try {
       taos = new TarArchiveOutputStream(new FileOutputStream(saveFile));
     } catch (final FileNotFoundException e) {
@@ -93,9 +93,9 @@ public final class TarUtility {
    *
    * @throws IOException
    */
-  private static void recurseFiles(File root, File file,
-                                   TarArchiveOutputStream taos,
-                                   boolean absolute) throws IOException {
+  private static void recurseFiles(final File root, final File file,
+                                   final TarArchiveOutputStream taos,
+                                   final boolean absolute) throws IOException {
     if (file.isDirectory()) {
       // recursive call
       final File[] files = file.listFiles();
@@ -104,7 +104,7 @@ public final class TarUtility {
       }
     } else if (!file.getName().endsWith(".tar") &&
                !file.getName().endsWith(".TAR")) {
-      String filename;
+      final String filename;
       if (absolute) {
         filename =
             file.getAbsolutePath().substring(root.getAbsolutePath().length());
@@ -128,7 +128,8 @@ public final class TarUtility {
    *
    * @return True if OK
    */
-  public static boolean createTarFromFiles(List<File> files, String filename) {
+  public static boolean createTarFromFiles(final List<File> files,
+                                           final String filename) {
     return createTarFromFiles(files.toArray(FILE_0_LENGTH), filename);
   }
 
@@ -140,10 +141,11 @@ public final class TarUtility {
    *
    * @return True if OK
    */
-  public static boolean createTarFromFiles(File[] files, String filename) {
+  public static boolean createTarFromFiles(final File[] files,
+                                           final String filename) {
     final File saveFile = new File(filename);
     // recursive call
-    TarArchiveOutputStream taos;
+    final TarArchiveOutputStream taos;
     try {
       taos = new TarArchiveOutputStream(new FileOutputStream(saveFile));
     } catch (final FileNotFoundException e) {
@@ -175,9 +177,10 @@ public final class TarUtility {
    *
    * @throws IOException
    */
-  private static void addFile(File file, TarArchiveOutputStream taos)
+  private static void addFile(final File file,
+                              final TarArchiveOutputStream taos)
       throws IOException {
-    String filename;
+    final String filename;
     filename = file.getName();
     final TarArchiveEntry tae = new TarArchiveEntry(filename);
     tae.setSize(file.length());
@@ -197,7 +200,7 @@ public final class TarUtility {
    *
    * @throws IOException
    */
-  public static List<String> unTar(File tarFile, File directory)
+  public static List<String> unTar(final File tarFile, final File directory)
       throws IOException {
     final List<String> result = new ArrayList<String>();
     final InputStream inputStream = new FileInputStream(tarFile);
@@ -229,7 +232,7 @@ public final class TarUtility {
     return result;
   }
 
-  public static void main(String[] args) {
+  public static void main(final String[] args) {
     if (args.length < 3) {
       SysErrLogger.FAKE_LOGGER.syserr("You need to provide 3 arguments:\n" +
                                       "   option filedest.tar \"source\"\n" +
@@ -241,7 +244,7 @@ public final class TarUtility {
     final int option = Integer.parseInt(args[0]);
     final String tarfile = args[1];
     final String tarsource = args[2];
-    String[] tarfiles;
+    final String[] tarfiles;
     if (option == 3) {
       tarfiles = args[2].split(",");
       final File[] files = new File[tarfiles.length];

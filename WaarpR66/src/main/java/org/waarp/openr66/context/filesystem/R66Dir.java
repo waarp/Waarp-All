@@ -45,12 +45,12 @@ public class R66Dir extends FilesystemBasedDirImpl {
   /**
    * @param session
    */
-  public R66Dir(R66Session session) {
+  public R66Dir(final R66Session session) {
     super(session, new FilesystemBasedOptsMLSxImpl());
   }
 
   @Override
-  public R66File newFile(String path, boolean append)
+  public R66File newFile(final String path, final boolean append)
       throws CommandAbstractException {
     return new R66File((R66Session) getSession(), this, path, append);
   }
@@ -66,10 +66,11 @@ public class R66Dir extends FilesystemBasedDirImpl {
    *
    * @throws CommandAbstractException
    */
-  public synchronized R66File setUniqueFile(long prefix, String filename)
+  public synchronized R66File setUniqueFile(final long prefix,
+                                            final String filename)
       throws CommandAbstractException {
     checkIdentify();
-    File file;
+    final File file;
     String prename = prefix + "_";
     if (prename.length() < 3) {
       prename = "xx_" + prename;
@@ -97,7 +98,7 @@ public class R66Dir extends FilesystemBasedDirImpl {
    *
    * @return the final unique basename without the temporary extension
    */
-  public static String getFinalUniqueFilename(R66File file) {
+  public static String getFinalUniqueFilename(final R66File file) {
     String finalpath = file.getBasename();
     final int pos = finalpath.lastIndexOf(Configuration.EXT_R66);
     if (pos > 0) {
@@ -124,7 +125,7 @@ public class R66Dir extends FilesystemBasedDirImpl {
    *
    * @throws CommandAbstractException
    */
-  protected List<String> wildcardFilesNoCheck(String pathWithWildcard)
+  protected List<String> wildcardFilesNoCheck(final String pathWithWildcard)
       throws CommandAbstractException {
     final List<String> resultPaths = new ArrayList<String>();
     // First check if pathWithWildcard contains wildcards
@@ -139,7 +140,7 @@ public class R66Dir extends FilesystemBasedDirImpl {
       throw new Reply553Exception("Wildcards in pathname is not allowed");
     }
     File wildcardFile = new File(pathWithWildcard);
-    File rootFile;
+    final File rootFile;
     if (ISUNIX) {
       rootFile = new File("/");
     } else {
@@ -198,7 +199,8 @@ public class R66Dir extends FilesystemBasedDirImpl {
    *
    * @throws CommandAbstractException
    */
-  public R66File setFileNoCheck(String path) throws CommandAbstractException {
+  public R66File setFileNoCheck(final String path)
+      throws CommandAbstractException {
     checkIdentify();
     final String newpath = consolidatePath(path);
     final List<String> paths = wildcardFilesNoCheck(newpath);

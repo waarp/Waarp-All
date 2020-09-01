@@ -47,7 +47,7 @@ public class ServerInitDatabase {
   private ServerInitDatabase() {
   }
 
-  protected static boolean getParams(String[] args) {
+  protected static boolean getParams(final String[] args) {
     if (args.length < 1) {
       logger.error(
           "Need at least the configuration file as first argument then optionally\n" +
@@ -68,7 +68,7 @@ public class ServerInitDatabase {
    * @param args as config_database file [rules_directory host_authent
    *     limit_configuration]
    */
-  public static void main(String[] args) {
+  public static void main(final String[] args) {
     WaarpLoggerFactory
         .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));
     if (logger == null) {

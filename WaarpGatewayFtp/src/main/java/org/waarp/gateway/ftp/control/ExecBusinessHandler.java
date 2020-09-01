@@ -84,7 +84,7 @@ public class ExecBusinessHandler extends BusinessHandler {
   private boolean internalDb;
 
   @Override
-  public void afterTransferDoneBeforeAnswer(FtpTransfer transfer)
+  public void afterTransferDoneBeforeAnswer(final FtpTransfer transfer)
       throws CommandAbstractException {
     // if Admin, do nothing
     if (getFtpSession() == null || getFtpSession().getAuth() == null) {
@@ -129,7 +129,7 @@ public class ExecBusinessHandler extends BusinessHandler {
         args[0] = auth.getUser();
         args[1] = auth.getAccount();
         args[2] = auth.getBaseDirectory();
-        FtpFile file;
+        final FtpFile file;
         try {
           file = transfer.getFtpFile();
         } catch (final FtpNoFileException e1) {
@@ -225,7 +225,7 @@ public class ExecBusinessHandler extends BusinessHandler {
   }
 
   @Override
-  public void afterRunCommandKo(CommandAbstractException e) {
+  public void afterRunCommandKo(final CommandAbstractException e) {
     final String message =
         "ExecHandler: KO: " + getFtpSession() + ' ' + e.getMessage();
     final long specialId =
@@ -378,9 +378,9 @@ public class ExecBusinessHandler extends BusinessHandler {
   }
 
   @Override
-  public void exceptionLocalCaught(Throwable cause) {
+  public void exceptionLocalCaught(final Throwable cause) {
     if (FileBasedConfiguration.fileBasedConfiguration.getFtpMib() != null) {
-      String mesg;
+      final String mesg;
       if (cause != null && cause.getMessage() != null) {
         mesg = cause.getMessage();
       } else {
@@ -416,7 +416,7 @@ public class ExecBusinessHandler extends BusinessHandler {
   }
 
   @Override
-  public void executeChannelConnected(Channel channel) {
+  public void executeChannelConnected(final Channel channel) {
     if (AbstractExecutor.useDatabase) {
       if (org.waarp.common.database.DbConstant.admin != null) {
         try {
@@ -461,7 +461,7 @@ public class ExecBusinessHandler extends BusinessHandler {
   }
 
   @Override
-  public String getHelpMessage(String arg) {
+  public String getHelpMessage(final String arg) {
     return
         "This FTP server is only intend as a Gateway. RETRieve actions may be unallowed.\n" +
         "This FTP server refers to RFC 959, 775, 2389, 2428, 3659 and " +
@@ -487,7 +487,8 @@ public class ExecBusinessHandler extends BusinessHandler {
   }
 
   @Override
-  public String getOptsMessage(String[] args) throws CommandAbstractException {
+  public String getOptsMessage(final String[] args)
+      throws CommandAbstractException {
     if (args.length > 0) {
       if (args[0].equalsIgnoreCase(FtpCommandCode.MLST.name()) ||
           args[0].equalsIgnoreCase(FtpCommandCode.MLSD.name())) {
@@ -499,8 +500,8 @@ public class ExecBusinessHandler extends BusinessHandler {
   }
 
   @Override
-  public AbstractCommand getSpecializedSiteCommand(FtpSession session,
-                                                   String line) {
+  public AbstractCommand getSpecializedSiteCommand(final FtpSession session,
+                                                   final String line) {
     if (getFtpSession() == null || getFtpSession().getAuth() == null) {
       return null;
     }
@@ -510,7 +511,7 @@ public class ExecBusinessHandler extends BusinessHandler {
     if (line == null) {
       return null;
     }
-    String command;
+    final String command;
     String arg;
     if (line.indexOf(' ') == -1) {
       command = line;

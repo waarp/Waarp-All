@@ -68,7 +68,7 @@ public final class JsonUtils {
    * @throws InternalServerErrorException if an unexpected error
    *     occurred
    */
-  public static String nodeToString(ObjectNode object) {
+  public static String nodeToString(final ObjectNode object) {
     try {
       final ObjectMapper mapper = new ObjectMapper();
       return mapper.writeValueAsString(object);
@@ -90,7 +90,7 @@ public final class JsonUtils {
    * @throws InternalServerErrorException if an unexpected error
    *     occurred
    */
-  public static ObjectNode deserializeRequest(HttpRequest request) {
+  public static ObjectNode deserializeRequest(final HttpRequest request) {
     if (!(request instanceof FullHttpRequest)) {
       throw new RestErrorException(MISSING_BODY());
     }
@@ -100,7 +100,7 @@ public final class JsonUtils {
           ((FullHttpRequest) request).content().toString(UTF8_CHARSET);
       try {
         ParametersChecker.checkSanityString(body);
-      } catch (InvalidArgumentException e) {
+      } catch (final InvalidArgumentException e) {
         throw new RestErrorException(MALFORMED_JSON(0, 0,
                                                     "The root JSON element contains invalid data"));
       }

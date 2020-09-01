@@ -75,7 +75,7 @@ public final class XmlUtils {
    * @throws InternalServerErrorException if an unexpected error
    *     occurred
    */
-  public static String objectToXml(XmlSerializable object) {
+  public static String objectToXml(final XmlSerializable object) {
     try {
       final StringWriter writer = new StringWriter();
       final JAXBContext context = JAXBContext.newInstance(object.getClass());
@@ -100,11 +100,11 @@ public final class XmlUtils {
    * @throws InternalServerErrorException if an unexpected error
    *     occurred
    */
-  public static <T extends XmlSerializable> T xmlToObject(String xml,
-                                                          Class<T> clazz) {
+  public static <T extends XmlSerializable> T xmlToObject(final String xml,
+                                                          final Class<T> clazz) {
     try {
       ParametersChecker.checkSanityString(xml);
-    } catch (InvalidArgumentException e) {
+    } catch (final InvalidArgumentException e) {
       throw new InternalServerErrorException(e);
     }
     try {
@@ -128,10 +128,10 @@ public final class XmlUtils {
    * @throws InternalServerErrorException if an unexpected error
    *     occurred
    */
-  public static void saveXML(String xml, String filePath) {
+  public static void saveXML(final String xml, final String filePath) {
     try {
       ParametersChecker.checkSanityString(xml);
-    } catch (InvalidArgumentException e) {
+    } catch (final InvalidArgumentException e) {
       throw new InternalServerErrorException(e);
     }
     FileWriter fileWriter = null;
@@ -157,7 +157,7 @@ public final class XmlUtils {
    * @throws InternalServerErrorException if an unexpected error
    *     occurred
    */
-  public static String loadXML(String filePath) {
+  public static String loadXML(final String filePath) {
     FileReader fr = null;
     BufferedReader buff = null;
     try {
@@ -188,7 +188,8 @@ public final class XmlUtils {
    * @throws InternalServerErrorException if an unexpected error
    *     occurred
    */
-  public static void saveObject(XmlSerializable object, String filePath) {
+  public static void saveObject(final XmlSerializable object,
+                                final String filePath) {
 
     final String xml = objectToXml(object);
     saveXML(xml, filePath);
@@ -205,8 +206,8 @@ public final class XmlUtils {
    * @throws InternalServerErrorException if an unexpected error
    *     occurred
    */
-  public static <T extends XmlSerializable> T loadObject(String filePath,
-                                                         Class<T> clazz) {
+  public static <T extends XmlSerializable> T loadObject(final String filePath,
+                                                         final Class<T> clazz) {
 
     final String xml = loadXML(filePath);
     return xmlToObject(xml, clazz);
@@ -224,7 +225,7 @@ public final class XmlUtils {
    * @throws InternalServerErrorException if an unexpected error
    *     occurred
    */
-  private static String pretty(String input) {
+  private static String pretty(final String input) {
     try {
       final Source xmlInput = new StreamSource(new StringReader(input));
       final StringWriter stringWriter = new StringWriter();

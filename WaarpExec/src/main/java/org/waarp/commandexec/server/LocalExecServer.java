@@ -56,11 +56,11 @@ public class LocalExecServer {
    *
    * @throws Exception
    */
-  public static void main(String[] args) throws Exception {
+  public static void main(final String[] args) throws Exception {
     WaarpLoggerFactory
         .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));
     int port = 9999;
-    InetAddress addr;
+    final InetAddress addr;
     long delay = LocalExecDefaultResult.MAXWAITPROCESS;
     if (args.length >= 2) {
       addr = InetAddress.getByName(args[0]);

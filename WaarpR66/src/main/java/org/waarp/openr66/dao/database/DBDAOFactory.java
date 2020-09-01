@@ -50,7 +50,7 @@ public class DBDAOFactory extends DAOFactory {
 
   private final ConnectionFactory connectionFactory;
 
-  public DBDAOFactory(ConnectionFactory factory) {
+  public DBDAOFactory(final ConnectionFactory factory) {
     connectionFactory = factory;
   }
 

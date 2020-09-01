@@ -58,7 +58,7 @@ public abstract class WaarpCompletedFuture extends WaarpFuture {
   }
 
   @Override
-  public boolean setFailure(Throwable cause) {
+  public boolean setFailure(final Throwable cause) {
     return false;
   }
 

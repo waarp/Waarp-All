@@ -63,7 +63,7 @@ public class AddDigestJavaTask extends AbstractExecJavaTask {
   public void run() {
     logger.debug(toString());
     final String[] args = BLANK.split(fullarg);
-    String fileInfo;
+    final String fileInfo;
     String format = "-##DIGEST##";
     String algo = "MD5";
     int way = -1;
@@ -83,7 +83,7 @@ public class AddDigestJavaTask extends AbstractExecJavaTask {
         i++;
       }
     }
-    DigestAlgo digest;
+    final DigestAlgo digest;
     try {
       digest = DigestAlgo.valueOf(algo);
     } catch (final Exception e) {
@@ -91,7 +91,7 @@ public class AddDigestJavaTask extends AbstractExecJavaTask {
       status = 3;
       return;
     }
-    String key;
+    final String key;
     try {
       key = FilesystemBasedDigest.getHex(FilesystemBasedDigest.getHash(
           session.getFile().getTrueFile(), true, digest));
@@ -102,7 +102,7 @@ public class AddDigestJavaTask extends AbstractExecJavaTask {
     }
     logger.debug("Replace Digest in {} way: {} digest: {} key: {}", format, way,
                  algo, key);
-    if (format == null || format.isEmpty()) {
+    if (format.isEmpty()) {
       fileInfo = session.getRunner().getFileInformation();
     } else {
       if (way < 0) {

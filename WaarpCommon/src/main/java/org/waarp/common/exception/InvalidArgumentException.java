@@ -32,7 +32,7 @@ public class InvalidArgumentException extends Exception {
   /**
    * @param message
    */
-  public InvalidArgumentException(String message) {
+  public InvalidArgumentException(final String message) {
     super(message);
   }
 
@@ -40,7 +40,7 @@ public class InvalidArgumentException extends Exception {
    * @param message
    * @param cause
    */
-  public InvalidArgumentException(String message, Throwable cause) {
+  public InvalidArgumentException(final String message, final Throwable cause) {
     super(message, cause);
   }
 

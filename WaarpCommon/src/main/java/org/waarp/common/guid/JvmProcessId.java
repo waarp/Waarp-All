@@ -152,7 +152,8 @@ public final class JvmProcessId {
    * @return positive - current is better, 0 - cannot tell from MAC addr,
    *     negative - candidate is better.
    */
-  private static int compareAddresses(byte[] current, byte[] candidate) {
+  private static int compareAddresses(final byte[] current,
+                                      final byte[] candidate) {
     if (candidate == null) {
       return 1;
     }
@@ -200,12 +201,12 @@ public final class JvmProcessId {
    *     candidate
    *     is better
    */
-  private static int compareAddresses(InetAddress current,
-                                      InetAddress candidate) {
+  private static int compareAddresses(final InetAddress current,
+                                      final InetAddress candidate) {
     return scoreAddress(current) - scoreAddress(candidate);
   }
 
-  private static int scoreAddress(InetAddress addr) {
+  private static int scoreAddress(final InetAddress addr) {
     if (addr.isAnyLocalAddress()) {
       return 0;
     }
@@ -242,7 +243,7 @@ public final class JvmProcessId {
    *
    * @return the processId
    */
-  private static int parseProcessId(int oldProcessId,
+  private static int parseProcessId(final int oldProcessId,
                                     final String customProcessId) {
     int processId = oldProcessId;
     try {
@@ -351,7 +352,7 @@ public final class JvmProcessId {
         continue;
       }
 
-      byte[] macAddr;
+      final byte[] macAddr;
       try {
         macAddr = iface.getHardwareAddress();
       } catch (final SocketException e) {

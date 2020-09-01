@@ -32,14 +32,14 @@ public class HttpIncorrectRequestException extends Exception {
   /**
    * @param s
    */
-  public HttpIncorrectRequestException(String s) {
+  public HttpIncorrectRequestException(final String s) {
     super(s);
   }
 
   /**
    * @param throwable
    */
-  public HttpIncorrectRequestException(Throwable throwable) {
+  public HttpIncorrectRequestException(final Throwable throwable) {
     super(throwable);
   }
 
@@ -47,7 +47,8 @@ public class HttpIncorrectRequestException extends Exception {
    * @param s
    * @param throwable
    */
-  public HttpIncorrectRequestException(String s, Throwable throwable) {
+  public HttpIncorrectRequestException(final String s,
+                                       final Throwable throwable) {
     super(s, throwable);
   }
 

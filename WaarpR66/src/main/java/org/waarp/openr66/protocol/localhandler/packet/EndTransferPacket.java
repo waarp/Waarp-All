@@ -55,9 +55,10 @@ public class EndTransferPacket extends AbstractLocalPacket {
    *
    * @throws OpenR66ProtocolPacketException
    */
-  public static EndTransferPacket createFromBuffer(int headerLength,
-                                                   int middleLength,
-                                                   int endLength, ByteBuf buf)
+  public static EndTransferPacket createFromBuffer(final int headerLength,
+                                                   final int middleLength,
+                                                   final int endLength,
+                                                   final ByteBuf buf)
       throws OpenR66ProtocolPacketException {
     if (headerLength - 1 != 1) {
       throw new OpenR66ProtocolPacketException("Not enough data");
@@ -67,7 +68,7 @@ public class EndTransferPacket extends AbstractLocalPacket {
     }
     final byte bheader = buf.readByte();
     final byte valid = buf.readByte();
-    String optional;
+    final String optional;
     if (endLength > 0) {
       optional =
           buf.toString(buf.readerIndex(), endLength, Charset.defaultCharset());
@@ -82,7 +83,8 @@ public class EndTransferPacket extends AbstractLocalPacket {
    * @param valid
    * @param hashOptional
    */
-  private EndTransferPacket(byte request, byte valid, String hashOptional) {
+  private EndTransferPacket(final byte request, final byte valid,
+                            final String hashOptional) {
     this.request = request;
     way = valid;
     this.hashOptional = hashOptional;
@@ -92,7 +94,7 @@ public class EndTransferPacket extends AbstractLocalPacket {
    * @param request
    * @param valid
    */
-  private EndTransferPacket(byte request, byte valid) {
+  private EndTransferPacket(final byte request, final byte valid) {
     this.request = request;
     way = valid;
   }
@@ -100,7 +102,7 @@ public class EndTransferPacket extends AbstractLocalPacket {
   /**
    * @param request
    */
-  public EndTransferPacket(byte request) {
+  public EndTransferPacket(final byte request) {
     this.request = request;
     way = ASKVALIDATE;
   }
@@ -109,7 +111,7 @@ public class EndTransferPacket extends AbstractLocalPacket {
    * @param request
    * @param hashOptional
    */
-  public EndTransferPacket(byte request, String hashOptional) {
+  public EndTransferPacket(final byte request, final String hashOptional) {
     this.request = request;
     way = ASKVALIDATE;
     this.hashOptional = hashOptional;
@@ -121,7 +123,8 @@ public class EndTransferPacket extends AbstractLocalPacket {
   }
 
   @Override
-  public void createAllBuffers(LocalChannelReference lcr, int networkHeader)
+  public void createAllBuffers(final LocalChannelReference lcr,
+                               final int networkHeader)
       throws OpenR66ProtocolPacketException {
     final int headerSize = 1;
     final int middleSize = 1;
@@ -146,7 +149,7 @@ public class EndTransferPacket extends AbstractLocalPacket {
   }
 
   @Override
-  public void createEnd(LocalChannelReference lcr) {
+  public void createEnd(final LocalChannelReference lcr) {
     if (hashOptional == null) {
       end = Unpooled.EMPTY_BUFFER;
     } else {
@@ -155,13 +158,13 @@ public class EndTransferPacket extends AbstractLocalPacket {
   }
 
   @Override
-  public void createHeader(LocalChannelReference lcr) {
+  public void createHeader(final LocalChannelReference lcr) {
     final byte[] newbytes = { request };
     header = Unpooled.wrappedBuffer(newbytes);
   }
 
   @Override
-  public void createMiddle(LocalChannelReference lcr) {
+  public void createMiddle(final LocalChannelReference lcr) {
     final byte[] newbytes = { way };
     middle = Unpooled.wrappedBuffer(newbytes);
   }
@@ -209,7 +212,7 @@ public class EndTransferPacket extends AbstractLocalPacket {
   /**
    * @param optional the optional to set
    */
-  public void setOptional(String optional) {
+  public void setOptional(final String optional) {
     hashOptional = optional;
   }
 }

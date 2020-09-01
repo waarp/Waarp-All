@@ -44,12 +44,11 @@ public class RuleTask {
   @XmlElement(name = TASK_DELAY)
   private int delay;
 
-  @SuppressWarnings("unused")
   public RuleTask() {
     // Nothing
   }
 
-  public RuleTask(String type, String path, int delay) {
+  public RuleTask(final String type, final String path, final int delay) {
     this.type = type;
     this.path = path;
     this.delay = delay;
@@ -67,7 +66,7 @@ public class RuleTask {
     return type;
   }
 
-  public void setType(String type) {
+  public void setType(final String type) {
     this.type = type;
   }
 
@@ -75,7 +74,7 @@ public class RuleTask {
     return path;
   }
 
-  public void setPath(String path) {
+  public void setPath(final String path) {
     this.path = path;
   }
 
@@ -83,7 +82,7 @@ public class RuleTask {
     return delay;
   }
 
-  public void setDelay(int delay) {
+  public void setDelay(final int delay) {
     this.delay = delay;
   }
 }

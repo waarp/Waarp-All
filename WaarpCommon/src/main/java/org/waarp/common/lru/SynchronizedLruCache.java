@@ -46,8 +46,9 @@ public class SynchronizedLruCache<K, V> extends AbstractLruCache<K, V> {
    * @param initialCapacity initial cache capacity
    * @param loadFactor
    */
-  public SynchronizedLruCache(int capacity, long ttl, int initialCapacity,
-                              float loadFactor) {
+  public SynchronizedLruCache(final int capacity, final long ttl,
+                              final int initialCapacity,
+                              final float loadFactor) {
     super(ttl);
     cacheMap =
         new CapacityLruLinkedHashMap<K, InterfaceLruCacheEntry<V>>(capacity,
@@ -62,7 +63,8 @@ public class SynchronizedLruCache<K, V> extends AbstractLruCache<K, V> {
    * @param ttl time to live in milliseconds
    * @param initialCapacity initial cache capacity
    */
-  public SynchronizedLruCache(int capacity, long ttl, int initialCapacity) {
+  public SynchronizedLruCache(final int capacity, final long ttl,
+                              final int initialCapacity) {
     this(capacity, ttl, initialCapacity, DEFAULT_LOAD_FACTOR);
   }
 
@@ -73,7 +75,7 @@ public class SynchronizedLruCache<K, V> extends AbstractLruCache<K, V> {
    * @param capacity max cache capacity
    * @param ttl time to live in milliseconds
    */
-  public SynchronizedLruCache(int capacity, long ttl) {
+  public SynchronizedLruCache(final int capacity, final long ttl) {
     this(capacity, ttl, DEFAULT_INITIAL_CAPACITY, DEFAULT_LOAD_FACTOR);
   }
 
@@ -83,7 +85,7 @@ public class SynchronizedLruCache<K, V> extends AbstractLruCache<K, V> {
   }
 
   @Override
-  public synchronized V get(K key) {
+  public synchronized V get(final K key) {
     return super.get(key);
   }
 
@@ -93,7 +95,7 @@ public class SynchronizedLruCache<K, V> extends AbstractLruCache<K, V> {
   }
 
   @Override
-  protected InterfaceLruCacheEntry<V> getEntry(K key) {
+  protected InterfaceLruCacheEntry<V> getEntry(final K key) {
     return cacheMap.get(key);
   }
 
@@ -103,17 +105,17 @@ public class SynchronizedLruCache<K, V> extends AbstractLruCache<K, V> {
   }
 
   @Override
-  public synchronized void put(K key, V value, long ttl) {
+  public synchronized void put(final K key, final V value, final long ttl) {
     super.put(key, value, ttl);
   }
 
   @Override
-  protected void putEntry(K key, InterfaceLruCacheEntry<V> entry) {
+  protected void putEntry(final K key, final InterfaceLruCacheEntry<V> entry) {
     cacheMap.put(key, entry);
   }
 
   @Override
-  public synchronized V remove(K key) {
+  public synchronized V remove(final K key) {
     final InterfaceLruCacheEntry<V> cv = cacheMap.remove(key);
     if (cv != null) {
       return cv.getValue();

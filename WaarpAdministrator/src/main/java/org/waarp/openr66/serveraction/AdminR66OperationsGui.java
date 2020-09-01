@@ -154,7 +154,7 @@ public class AdminR66OperationsGui extends JFrame {
   /**
    * @throws HeadlessException
    */
-  public AdminR66OperationsGui(JFrame adminGui) throws HeadlessException {
+  public AdminR66OperationsGui(final JFrame adminGui) throws HeadlessException {
     super(Messages.getString("AdminR66OperationsGui.0") +
           Configuration.configuration.getHostId()); //$NON-NLS-1$
     setMinimumSize(new Dimension(1100, 700));
@@ -163,7 +163,7 @@ public class AdminR66OperationsGui extends JFrame {
     mainPanel = new JSplitPane(JSplitPane.VERTICAL_SPLIT, true);
     mainPanel.addComponentListener(new ComponentAdapter() {
       @Override
-      public void componentResized(ComponentEvent arg0) {
+      public void componentResized(final ComponentEvent arg0) {
         mainPanel.setDividerLocation(mainPanel.getHeight() / 3);
       }
     });
@@ -264,7 +264,7 @@ public class AdminR66OperationsGui extends JFrame {
         Messages.getString("AdminR66OperationsGui.Close")); //$NON-NLS-1$
     btnCancel.addActionListener(new ActionListener() {
       @Override
-      public void actionPerformed(ActionEvent e) {
+      public void actionPerformed(final ActionEvent e) {
         close();
       }
     });
@@ -347,7 +347,7 @@ public class AdminR66OperationsGui extends JFrame {
   private JCheckBox chckbxRestart;
   private final ButtonGroup buttonGroup = new ButtonGroup();
 
-  private void initBandwidth(JTabbedPane tabbedPane) {
+  private void initBandwidth(final JTabbedPane tabbedPane) {
     final JPanel bandwidthPanel = new JPanel();
     tabbedPane.addTab(Messages.getString("AdminR66OperationsGui.5"), null,
                       bandwidthPanel, null); //$NON-NLS-1$
@@ -363,7 +363,7 @@ public class AdminR66OperationsGui extends JFrame {
           Messages.getString("AdminR66OperationsGui.6")); //$NON-NLS-1$
       btnGetBandwidthCurrent.addActionListener(new ActionListener() {
         @Override
-        public void actionPerformed(ActionEvent e) {
+        public void actionPerformed(final ActionEvent e) {
           final R66AdminGuiActions action =
               new R66AdminGuiActions(R66AdminGuiActions.BANDWIDTHGET);
           action.execute();
@@ -484,7 +484,7 @@ public class AdminR66OperationsGui extends JFrame {
           Messages.getString("AdminR66OperationsGui.13")); //$NON-NLS-1$
       btnSetBandwidthConfiguration.addActionListener(new ActionListener() {
         @Override
-        public void actionPerformed(ActionEvent arg0) {
+        public void actionPerformed(final ActionEvent arg0) {
           final R66AdminGuiActions action =
               new R66AdminGuiActions(R66AdminGuiActions.BANDWIDTHSET);
           action.execute();
@@ -502,7 +502,7 @@ public class AdminR66OperationsGui extends JFrame {
 
   }
 
-  private void initConfig(JTabbedPane tabbedPane) {
+  private void initConfig(final JTabbedPane tabbedPane) {
     final String[] srulesSend = R66Environment.getRules(true);
     final String[] srulesRecv = R66Environment.getRules(false);
 
@@ -590,7 +590,7 @@ public class AdminR66OperationsGui extends JFrame {
           Messages.getString("AdminR66OperationsGui.21")); //$NON-NLS-1$
       btnGetConfigCurrent.addActionListener(new ActionListener() {
         @Override
-        public void actionPerformed(ActionEvent e) {
+        public void actionPerformed(final ActionEvent e) {
           final R66AdminGuiActions action =
               new R66AdminGuiActions(R66AdminGuiActions.CONFIGEXPORT);
           action.execute();
@@ -627,7 +627,7 @@ public class AdminR66OperationsGui extends JFrame {
         Messages.getString("AdminR66OperationsGui.22")); //$NON-NLS-1$
     btnHostsFile.addActionListener(new ActionListener() {
       @Override
-      public void actionPerformed(ActionEvent e) {
+      public void actionPerformed(final ActionEvent e) {
         final File result = openFile(textFieldHosts.getText(), Messages
                                                                    .getString(
                                                                        ADMIN_R_66_OPERATIONS_GUI_CHOOSE) +
@@ -659,7 +659,7 @@ public class AdminR66OperationsGui extends JFrame {
         Messages.getString("AdminR66OperationsGui.25")); //$NON-NLS-1$
     btnRulesFile.addActionListener(new ActionListener() {
       @Override
-      public void actionPerformed(ActionEvent e) {
+      public void actionPerformed(final ActionEvent e) {
         final File result = openFile(textFieldRules.getText(), Messages
                                                                    .getString(
                                                                        ADMIN_R_66_OPERATIONS_GUI_CHOOSE) +
@@ -692,7 +692,7 @@ public class AdminR66OperationsGui extends JFrame {
           Messages.getString("AdminR66OperationsGui.28")); //$NON-NLS-1$
       btnBusinessFile.addActionListener(new ActionListener() {
         @Override
-        public void actionPerformed(ActionEvent e) {
+        public void actionPerformed(final ActionEvent e) {
           final File result = openFile(textFieldBusiness.getText(), Messages
                                                                         .getString(
                                                                             ADMIN_R_66_OPERATIONS_GUI_CHOOSE) +
@@ -730,7 +730,7 @@ public class AdminR66OperationsGui extends JFrame {
           Messages.getString("AdminR66OperationsGui.31")); //$NON-NLS-1$
       btnAliasFile.addActionListener(new ActionListener() {
         @Override
-        public void actionPerformed(ActionEvent e) {
+        public void actionPerformed(final ActionEvent e) {
           final File result = openFile(textFieldAlias.getText(), Messages
                                                                      .getString(
                                                                          ADMIN_R_66_OPERATIONS_GUI_CHOOSE) +
@@ -765,7 +765,7 @@ public class AdminR66OperationsGui extends JFrame {
           Messages.getString("AdminR66OperationsGui.34")); //$NON-NLS-1$
       btnRolesFile.addActionListener(new ActionListener() {
         @Override
-        public void actionPerformed(ActionEvent e) {
+        public void actionPerformed(final ActionEvent e) {
           final File result = openFile(textFieldRoles.getText(), Messages
                                                                      .getString(
                                                                          ADMIN_R_66_OPERATIONS_GUI_CHOOSE) +
@@ -870,7 +870,7 @@ public class AdminR66OperationsGui extends JFrame {
         Messages.getString("AdminR66OperationsGui.43")); //$NON-NLS-1$
     btnSetConfigConfiguration.addActionListener(new ActionListener() {
       @Override
-      public void actionPerformed(ActionEvent arg0) {
+      public void actionPerformed(final ActionEvent arg0) {
         final R66AdminGuiActions action =
             new R66AdminGuiActions(R66AdminGuiActions.CONFIGIMPORT);
         action.execute();
@@ -887,7 +887,7 @@ public class AdminR66OperationsGui extends JFrame {
 
   }
 
-  private void initLog(JTabbedPane tabbedPane) {
+  private void initLog(final JTabbedPane tabbedPane) {
     final String[] srulesRecv = R66Environment.getRules(false);
     final JPanel logPanel = new JPanel();
     tabbedPane
@@ -1048,7 +1048,7 @@ public class AdminR66OperationsGui extends JFrame {
           Messages.getString("AdminR66OperationsGui.55")); //$NON-NLS-1$
       btnExportLogs.addActionListener(new ActionListener() {
         @Override
-        public void actionPerformed(ActionEvent e) {
+        public void actionPerformed(final ActionEvent e) {
           final R66AdminGuiActions action =
               new R66AdminGuiActions(R66AdminGuiActions.LOGEXPORT);
           action.execute();
@@ -1095,7 +1095,7 @@ public class AdminR66OperationsGui extends JFrame {
 
   }
 
-  private void initShutdown(JTabbedPane tabbedPane) {
+  private void initShutdown(final JTabbedPane tabbedPane) {
     final JPanel shutdownPanel = new JPanel();
     tabbedPane.addTab(Messages.getString("AdminR66OperationsGui.57"), null,
                       shutdownPanel, null); //$NON-NLS-1$
@@ -1113,7 +1113,7 @@ public class AdminR66OperationsGui extends JFrame {
           Messages.getString("AdminR66OperationsGui.Shutdown")); //$NON-NLS-1$
       btnShutdown.addActionListener(new ActionListener() {
         @Override
-        public void actionPerformed(ActionEvent arg0) {
+        public void actionPerformed(final ActionEvent arg0) {
           final R66AdminGuiActions action =
               new R66AdminGuiActions(R66AdminGuiActions.SHUTDOWN);
           action.execute();
@@ -1151,7 +1151,7 @@ public class AdminR66OperationsGui extends JFrame {
           Messages.getString("AdminR66OperationsGui.Shutdown")); //$NON-NLS-1$
       rdbtnShutdown.addActionListener(new ActionListener() {
         @Override
-        public void actionPerformed(ActionEvent arg0) {
+        public void actionPerformed(final ActionEvent arg0) {
           if (rdbtnShutdown.isSelected()) {
             chckbxRestart.setEnabled(true);
             chckbxBlockUnblock.setEnabled(false);
@@ -1183,7 +1183,7 @@ public class AdminR66OperationsGui extends JFrame {
           Messages.getString("AdminR66OperationsGui.Block")); //$NON-NLS-1$
       rdbtnBlock.addActionListener(new ActionListener() {
         @Override
-        public void actionPerformed(ActionEvent arg0) {
+        public void actionPerformed(final ActionEvent arg0) {
           if (rdbtnBlock.isSelected()) {
             chckbxRestart.setEnabled(false);
             chckbxBlockUnblock.setEnabled(true);
@@ -1233,7 +1233,7 @@ public class AdminR66OperationsGui extends JFrame {
 
     final int method;
 
-    R66AdminGuiActions(int method) {
+    R66AdminGuiActions(final int method) {
       this.method = method;
     }
 
@@ -1271,7 +1271,8 @@ public class AdminR66OperationsGui extends JFrame {
     }
   }
 
-  private File openFile(String currentValue, String text, String extension) {
+  private File openFile(final String currentValue, final String text,
+                        final String extension) {
     JFileChooser chooser = null;
     if (currentValue != null) {
       final File ffile = new File(currentValue).getParentFile();
@@ -1312,7 +1313,7 @@ public class AdminR66OperationsGui extends JFrame {
     dialog.requestFocus();
   }
 
-  private void setStatus(String mesg) {
+  private void setStatus(final String mesg) {
     textFieldStatus.setText(mesg);
   }
 
@@ -1375,7 +1376,7 @@ public class AdminR66OperationsGui extends JFrame {
     final long time2 = System.currentTimeMillis();
     final long delay = time2 - time1;
     final R66Result result = future.getResult();
-    String message;
+    final String message;
     final boolean useJson = PartnerConfiguration.useJson(host.getHostid());
     logger.debug("UseJson: " + useJson);
     if (future.isSuccess()) {
@@ -1461,7 +1462,7 @@ public class AdminR66OperationsGui extends JFrame {
     final long time2 = System.currentTimeMillis();
     final long delay = time2 - time1;
     final R66Result result = future.getResult();
-    String message;
+    final String message;
     final boolean useJson = PartnerConfiguration.useJson(host.getHostid());
     logger.debug("UseJson: " + useJson);
     if (future.isSuccess()) {
@@ -1919,7 +1920,7 @@ public class AdminR66OperationsGui extends JFrame {
     if (ruleToPut == null || ruleToPut.isEmpty()) {
       error = Messages.getString("AdminR66OperationsGui.135"); //$NON-NLS-1$
     }
-    String message;
+    final String message;
     if (error.length() > 1) {
       // error
       message = Messages.getString(REQUEST_INFORMATION_FAILURE) +
@@ -2232,7 +2233,7 @@ public class AdminR66OperationsGui extends JFrame {
           (AbstractLocalPacket) result.getOther();
       String value = null;
       if (packet != null) {
-        String fileExported;
+        final String fileExported;
         if (useJson) {
           value = ((JsonCommandPacket) packet).getRequest();
           final LogResponseJsonPacket node =
@@ -2320,7 +2321,7 @@ public class AdminR66OperationsGui extends JFrame {
           Messages.getString("AdminR66OperationsGui.164"); //$NON-NLS-1$
       return;
     }
-    String skey;
+    final String skey;
     try {
       final char[] pwd = passwordField.getPassword();
       if (pwd == null || pwd.length == 0) {
@@ -2335,10 +2336,10 @@ public class AdminR66OperationsGui extends JFrame {
       return;
     }
     final long time1 = System.currentTimeMillis();
-    byte[] key;
+    final byte[] key;
     key =
         FilesystemBasedDigest.passwdCrypt(skey.getBytes(WaarpStringUtils.UTF8));
-    AbstractLocalPacket packet;
+    final AbstractLocalPacket packet;
     if (rdbtnShutdown.isSelected()) {
       if (chckbxRestart.isSelected()) {
         packet = new ShutdownPacket(key, (byte) 1);
@@ -2360,7 +2361,7 @@ public class AdminR66OperationsGui extends JFrame {
       AdminGui.getEnvironnement().guiResultat = message;
       return;
     }
-    LocalChannelReference localChannelReference;
+    final LocalChannelReference localChannelReference;
     localChannelReference = AdminGui.getEnvironnement().networkTransaction
         .createConnectionWithRetry(socketServerAddress, host.isSsl(), null);
     if (localChannelReference == null) {
@@ -2431,23 +2432,23 @@ public class AdminR66OperationsGui extends JFrame {
   /**
    * @param window the window to set
    */
-  public static void setWindow(AdminR66OperationsGui window) {
+  public static void setWindow(final AdminR66OperationsGui window) {
     AdminR66OperationsGui.window = window;
   }
 
   private static class JTextAreaOutputStream extends OutputStream {
     final JTextArea ta;
 
-    public JTextAreaOutputStream(JTextArea t) {
+    public JTextAreaOutputStream(final JTextArea t) {
       ta = t;
     }
 
     @Override
-    public void write(int i) {
+    public void write(final int i) {
       ta.append(Character.toString((char) i));
     }
 
-    public void write(char[] buf, int off, int len) {
+    public void write(final char[] buf, final int off, final int len) {
       final String s = new String(buf, off, len);
       ta.append(s);
     }

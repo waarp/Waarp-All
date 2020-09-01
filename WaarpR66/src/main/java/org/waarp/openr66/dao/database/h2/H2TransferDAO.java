@@ -32,7 +32,7 @@ public class H2TransferDAO extends DBTransferDAO {
 
   protected static final String SQL_GET_ID = "SELECT NEXTVAL('RUNSEQ')";
 
-  public H2TransferDAO(Connection con) throws DAOConnectionException {
+  public H2TransferDAO(final Connection con) throws DAOConnectionException {
     super(con);
   }
 
@@ -56,7 +56,7 @@ public class H2TransferDAO extends DBTransferDAO {
         if (rs != null) {
           rs.close();
         }
-      } catch (SQLException e) {
+      } catch (final SQLException e) {
         // ignore
       }
       closeStatement(ps);

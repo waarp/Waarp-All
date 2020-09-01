@@ -88,8 +88,9 @@ public abstract class DbModelMariadb extends DbModelCommonMariadbMySql {
    *
    * @throws WaarpDatabaseNoConnectionException
    */
-  protected DbModelMariadb(String dbserver, String dbuser, String dbpasswd,
-                           Timer timer, long delay)
+  protected DbModelMariadb(final String dbserver, final String dbuser,
+                           final String dbpasswd, final Timer timer,
+                           final long delay)
       throws WaarpDatabaseNoConnectionException {
     this();
     mysqlConnectionPoolDataSource = new MariaDbDataSource();
@@ -127,7 +128,8 @@ public abstract class DbModelMariadb extends DbModelCommonMariadbMySql {
    *
    * @throws WaarpDatabaseNoConnectionException
    */
-  protected DbModelMariadb(String dbserver, String dbuser, String dbpasswd)
+  protected DbModelMariadb(final String dbserver, final String dbuser,
+                           final String dbpasswd)
       throws WaarpDatabaseNoConnectionException {
     this(dbserver, dbuser, dbpasswd, null, 0);
   }
@@ -155,8 +157,8 @@ public abstract class DbModelMariadb extends DbModelCommonMariadbMySql {
   }
 
   @Override
-  public Connection getDbConnection(String server, String user, String passwd)
-      throws SQLException {
+  public Connection getDbConnection(final String server, final String user,
+                                    final String passwd) throws SQLException {
     synchronized (this) {
       if (pool != null) {
         try {

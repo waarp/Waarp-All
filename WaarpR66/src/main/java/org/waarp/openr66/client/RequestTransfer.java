@@ -103,7 +103,7 @@ public class RequestTransfer implements Runnable {
    *
    * @return True if all parameters were found and correct
    */
-  protected static boolean getParams(String[] args) {
+  protected static boolean getParams(final String[] args) {
     if (logger == null) {
       logger = WaarpLoggerFactory.getLogger(RequestTransfer.class);
     }
@@ -209,10 +209,11 @@ public class RequestTransfer implements Runnable {
    * @param restart
    * @param networkTransaction
    */
-  public RequestTransfer(R66Future future, long specialId, String requested,
-                         String requester, boolean cancel, boolean stop,
-                         boolean restart,
-                         NetworkTransaction networkTransaction) {
+  public RequestTransfer(final R66Future future, final long specialId,
+                         final String requested, final String requester,
+                         final boolean cancel, final boolean stop,
+                         final boolean restart,
+                         final NetworkTransaction networkTransaction) {
     this(future, specialId, requested, requester, cancel, stop, restart, null,
          networkTransaction);
   }
@@ -228,10 +229,11 @@ public class RequestTransfer implements Runnable {
    * @param restarttime in yyyyMMddHHmmss format
    * @param networkTransaction
    */
-  public RequestTransfer(R66Future future, long specialId, String requested,
-                         String requester, boolean cancel, boolean stop,
-                         boolean restart, String restarttime,
-                         NetworkTransaction networkTransaction) {
+  public RequestTransfer(final R66Future future, final long specialId,
+                         final String requested, final String requester,
+                         final boolean cancel, final boolean stop,
+                         final boolean restart, final String restarttime,
+                         final NetworkTransaction networkTransaction) {
     this.future = future;
     this.specialId = specialId;
     this.requested = requested;
@@ -447,14 +449,14 @@ public class RequestTransfer implements Runnable {
    *
    * @param runner
    */
-  private void setDone(DbTaskRunner runner) {
+  private void setDone(final DbTaskRunner runner) {
     if (runner.getUpdatedInfo() != UpdatedInfo.DONE) {
       runner.changeUpdatedInfo(UpdatedInfo.DONE);
       runner.forceSaveStatus();
     }
   }
 
-  private ErrorCode sendValid(DbTaskRunner runner, byte code) {
+  private ErrorCode sendValid(final DbTaskRunner runner, final byte code) {
     DbHostAuth host;
     host = R66Auth.getServerAuth(requester);
     if (host == null) {
@@ -518,14 +520,14 @@ public class RequestTransfer implements Runnable {
       }
     }
 
-    LocalChannelReference localChannelReference =
+    final LocalChannelReference localChannelReference =
         AbstractTransfer.tryConnect(host, future, networkTransaction);
     if (localChannelReference == null) {
       return ErrorCode.ConnectionImpossible;
     }
     final boolean useJson = PartnerConfiguration.useJson(host.getHostid());
     logger.debug("UseJson: " + useJson);
-    AbstractLocalPacket packet;
+    final AbstractLocalPacket packet;
     if (useJson) {
       final RestartTransferJsonPacket node = new RestartTransferJsonPacket();
       node.setComment(REQUEST_ON_TRANSFER);
@@ -574,8 +576,9 @@ public class RequestTransfer implements Runnable {
     return ErrorCode.Internal;
   }
 
-  private ErrorCode sendStopOrCancel(DbTaskRunner runner, byte code) {
-    DbHostAuth host;
+  private ErrorCode sendStopOrCancel(final DbTaskRunner runner,
+                                     final byte code) {
+    final DbHostAuth host;
     host = R66Auth.getServerAuth(requester);
     if (host == null) {
       logger.error(
@@ -588,7 +591,7 @@ public class RequestTransfer implements Runnable {
       return ErrorCode.Internal;
     }
 
-    LocalChannelReference localChannelReference =
+    final LocalChannelReference localChannelReference =
         AbstractTransfer.tryConnect(host, future, networkTransaction);
     if (localChannelReference == null) {
       return ErrorCode.ConnectionImpossible;
@@ -596,7 +599,7 @@ public class RequestTransfer implements Runnable {
 
     final boolean useJson = PartnerConfiguration.useJson(host.getHostid());
     logger.debug("UseJson: " + useJson);
-    AbstractLocalPacket packet;
+    final AbstractLocalPacket packet;
     if (useJson) {
       final StopOrCancelJsonPacket node = new StopOrCancelJsonPacket();
       node.setComment(REQUEST_ON_TRANSFER);
@@ -627,7 +630,7 @@ public class RequestTransfer implements Runnable {
   /**
    * @param args
    */
-  public static void main(String[] args) {
+  public static void main(final String[] args) {
     WaarpLoggerFactory
         .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));
     if (logger == null) {

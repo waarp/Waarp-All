@@ -49,8 +49,8 @@ public class RestartServerTask extends AbstractTask {
    * @param argTransfer
    * @param session
    */
-  public RestartServerTask(String argRule, int delay, String argTransfer,
-                           R66Session session) {
+  public RestartServerTask(final String argRule, final int delay,
+                           final String argTransfer, final R66Session session) {
     super(TaskType.RESTART, delay, argRule, argTransfer, session);
   }
 

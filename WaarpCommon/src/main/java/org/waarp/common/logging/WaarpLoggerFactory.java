@@ -99,7 +99,7 @@ public abstract class WaarpLoggerFactory {
    */
   public static void setDefaultFactoryIfNotSame(
       final WaarpLoggerFactory factory) {
-    WaarpLoggerFactory current = getDefaultFactory();
+    final WaarpLoggerFactory current = getDefaultFactory();
     if (current != null && current.getClass() == factory.getClass()) {
       current.seLevelSpecific(factory.getLevelSpecific());
     } else {
@@ -203,7 +203,7 @@ public abstract class WaarpLoggerFactory {
   /**
    * @param localNameNew if set, will be added to each line of log
    */
-  public static void setLocalName(String localNameNew) {
+  public static void setLocalName(final String localNameNew) {
     localName = localNameNew;
   }
 

@@ -43,12 +43,13 @@ public class History {
   final String path;
   final String label;
 
-  public History(String path) {
+  public History(final String path) {
     this.path = path.replace('\\', '/');
     label = abbreviatePath(this.path, MAX_LABEL_LENGTH);
   }
 
-  public static String abbreviatePath(String path, int limitLength) {
+  public static String abbreviatePath(final String path,
+                                      final int limitLength) {
     if (path.length() <= limitLength) {
       return path;
     }
@@ -81,7 +82,7 @@ public class History {
   }
 
   @Override
-  public boolean equals(Object obj) {
+  public boolean equals(final Object obj) {
     if (!(obj instanceof History)) {
       return false;
     }
@@ -97,7 +98,7 @@ public class History {
     return label;
   }
 
-  public History put(String childPath) {
+  public History put(final String childPath) {
     if (items == null) {
       items = new ArrayList<History>();
     }
@@ -120,7 +121,7 @@ public class History {
     return items.get(0);
   }
 
-  public void remove(String childPath) {
+  public void remove(final String childPath) {
     if (items == null) {
       items = new ArrayList<History>();
     }

@@ -100,7 +100,7 @@ public class R66ClientGui {
   /**
    * Launch the application.
    */
-  public static void main(String[] args) {
+  public static void main(final String[] args) {
     WaarpLoggerFactory
         .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));
     if (logger == null) {
@@ -137,7 +137,7 @@ public class R66ClientGui {
   /**
    * Create the application.
    */
-  public R66ClientGui(String[] args) {
+  public R66ClientGui(final String[] args) {
     if (logger == null) {
       logger = WaarpLoggerFactory.getLogger(R66ClientGui.class);
       environnement.initLog();
@@ -156,7 +156,7 @@ public class R66ClientGui {
     frmRClientGui = new JFrame();
     frmRClientGui.addWindowListener(new WindowAdapter() {
       @Override
-      public void windowClosing(WindowEvent e) {
+      public void windowClosing(final WindowEvent e) {
         if (extended) {
           frmRClientGui.dispose();
         } else {
@@ -184,7 +184,7 @@ public class R66ClientGui {
         new JMenuItem(Messages.getString("R66ClientGui.2")); //$NON-NLS-1$
     menuItemExit.addActionListener(new ActionListener() {
       @Override
-      public void actionPerformed(ActionEvent e) {
+      public void actionPerformed(final ActionEvent e) {
         if (extended) {
           frmRClientGui.dispose();
         } else {
@@ -202,7 +202,7 @@ public class R66ClientGui {
         new JMenuItem(Messages.getString("R66ClientGui.3")); //$NON-NLS-1$
     menuItemHelp.addActionListener(new ActionListener() {
       @Override
-      public void actionPerformed(ActionEvent e) {
+      public void actionPerformed(final ActionEvent e) {
         environnement.about();
         showDialog();
       }
@@ -223,7 +223,7 @@ public class R66ClientGui {
         .setToolTipText(Messages.getString("R66ClientGui.5")); //$NON-NLS-1$
     buttonCheckConnection.addActionListener(new ActionListener() {
       @Override
-      public void actionPerformed(ActionEvent e) {
+      public void actionPerformed(final ActionEvent e) {
         final R66ClientGuiActions action =
             new R66ClientGuiActions(R66ClientGuiActions.CHECKCONNECTION);
         action.execute();
@@ -248,7 +248,7 @@ public class R66ClientGui {
     comboBoxHosts = new JComboBox<String>(shosts);
     comboBoxHosts.addActionListener(new ActionListener() {
       @Override
-      public void actionPerformed(ActionEvent e) {
+      public void actionPerformed(final ActionEvent e) {
         environnement.guiResultat =
             R66Environment.getHost((String) comboBoxHosts.getSelectedItem());
         setStatus(environnement.guiResultat);
@@ -275,7 +275,7 @@ public class R66ClientGui {
     comboBoxRules = new JComboBox<String>(srules);
     comboBoxRules.addActionListener(new ActionListener() {
       @Override
-      public void actionPerformed(ActionEvent e) {
+      public void actionPerformed(final ActionEvent e) {
         environnement.guiResultat =
             R66Environment.getRule((String) comboBoxRules.getSelectedItem());
         setStatus(environnement.guiResultat);
@@ -336,7 +336,7 @@ public class R66ClientGui {
     textFieldFile = new JTextField();
     textFieldFile.addFocusListener(new FocusAdapter() {
       @Override
-      public void focusLost(FocusEvent e) {
+      public void focusLost(final FocusEvent e) {
         setFindFile();
       }
     });
@@ -357,7 +357,7 @@ public class R66ClientGui {
         .setToolTipText(Messages.getString("R66ClientGui.17")); //$NON-NLS-1$
     buttonFileFind.addActionListener(new ActionListener() {
       @Override
-      public void actionPerformed(ActionEvent e) {
+      public void actionPerformed(final ActionEvent e) {
         final R66ClientGuiActions action =
             new R66ClientGuiActions(R66ClientGuiActions.FILESELECT);
         action.execute();
@@ -375,7 +375,7 @@ public class R66ClientGui {
         .setToolTipText(Messages.getString("R66ClientGui.19")); //$NON-NLS-1$
     buttonTransferStart.addActionListener(new ActionListener() {
       @Override
-      public void actionPerformed(ActionEvent e) {
+      public void actionPerformed(final ActionEvent e) {
         final R66ClientGuiActions action =
             new R66ClientGuiActions(R66ClientGuiActions.STARTTRANSFER);
         action.execute();
@@ -392,7 +392,7 @@ public class R66ClientGui {
         new JCheckBox(Messages.getString("R66ClientGui.20")); //$NON-NLS-1$
     checkBoxDebug.addActionListener(new ActionListener() {
       @Override
-      public void actionPerformed(ActionEvent e) {
+      public void actionPerformed(final ActionEvent e) {
         environnement.debug(checkBoxDebug.isSelected());
       }
     });
@@ -473,7 +473,7 @@ public class R66ClientGui {
     static final int FILESELECT = 3;
     final int method;
 
-    R66ClientGuiActions(int method) {
+    R66ClientGuiActions(final int method) {
       this.method = method;
       if (logger == null) {
         logger = WaarpLoggerFactory.getLogger(R66ClientGui.class);
@@ -527,7 +527,7 @@ public class R66ClientGui {
     dialog.requestFocus();
   }
 
-  private void setStatus(String mesg) {
+  private void setStatus(final String mesg) {
     textFieldStatus.setText(mesg);
   }
 
@@ -691,16 +691,16 @@ public class R66ClientGui {
   public static class JTextAreaOutputStream extends OutputStream {
     final JTextArea ta;
 
-    public JTextAreaOutputStream(JTextArea t) {
+    public JTextAreaOutputStream(final JTextArea t) {
       ta = t;
     }
 
     @Override
-    public void write(int i) {
+    public void write(final int i) {
       ta.append(Character.toString((char) i));
     }
 
-    public void write(char[] buf, int off, int len) {
+    public void write(final char[] buf, final int off, final int len) {
       final String s = new String(buf, off, len);
       ta.append(s);
     }

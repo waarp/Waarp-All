@@ -42,7 +42,7 @@ public class BandwidthJsonPacket extends JsonPacket {
   /**
    * @param setter the setter to set
    */
-  public void setSetter(boolean setter) {
+  public void setSetter(final boolean setter) {
     this.setter = setter;
   }
 
@@ -56,7 +56,7 @@ public class BandwidthJsonPacket extends JsonPacket {
   /**
    * @param writeglobal the writeglobal to set
    */
-  public void setWriteglobal(long writeglobal) {
+  public void setWriteglobal(final long writeglobal) {
     this.writeglobal = writeglobal;
   }
 
@@ -70,7 +70,7 @@ public class BandwidthJsonPacket extends JsonPacket {
   /**
    * @param readglobal the readglobal to set
    */
-  public void setReadglobal(long readglobal) {
+  public void setReadglobal(final long readglobal) {
     this.readglobal = readglobal;
   }
 
@@ -84,7 +84,7 @@ public class BandwidthJsonPacket extends JsonPacket {
   /**
    * @param writesession the writesession to set
    */
-  public void setWritesession(long writesession) {
+  public void setWritesession(final long writesession) {
     this.writesession = writesession;
   }
 
@@ -98,12 +98,12 @@ public class BandwidthJsonPacket extends JsonPacket {
   /**
    * @param readsession the readsession to set
    */
-  public void setReadsession(long readsession) {
+  public void setReadsession(final long readsession) {
     this.readsession = readsession;
   }
 
   @Override
-  public void fromJson(JsonPacket other) {
+  public void fromJson(final JsonPacket other) {
     super.fromJson(other);
     if (other instanceof BandwidthJsonPacket) {
       final BandwidthJsonPacket other2 = (BandwidthJsonPacket) other;

@@ -74,7 +74,7 @@ public final class HostConfigConverter {
    *
    * @return the converted ObjectNode
    */
-  public static ObjectNode businessToNode(Business hostConfig) {
+  public static ObjectNode businessToNode(final Business hostConfig) {
     final ArrayNode business = getBusinessArray(hostConfig);
     final ArrayNode roles = getRolesArray(hostConfig);
     final ArrayNode aliasArray = getAliasArray(hostConfig);
@@ -98,7 +98,7 @@ public final class HostConfigConverter {
    * @throws RestErrorException if the given ObjectNode does not
    *     represent a Business object
    */
-  public static Business nodeToNewBusiness(ObjectNode object) {
+  public static Business nodeToNewBusiness(final ObjectNode object) {
     final Business emptyBusiness =
         new Business(serverName(), "", "<roles></roles>", "<aliases></aliases>",
                      "<root><version></version></root>");
@@ -121,8 +121,8 @@ public final class HostConfigConverter {
    * @throws RestErrorException if the given ObjectNode does not
    *     represent a Business object
    */
-  public static Business nodeToUpdatedBusiness(ObjectNode object,
-                                               Business oldBusiness) {
+  public static Business nodeToUpdatedBusiness(final ObjectNode object,
+                                               final Business oldBusiness) {
     final List<RestError> errors = new ArrayList<RestError>();
 
     final Iterator<Map.Entry<String, JsonNode>> fields = object.fields();
@@ -200,7 +200,7 @@ public final class HostConfigConverter {
    * @throws InternalServerErrorException if an unexpected error
    *     occurred
    */
-  public static List<ROLE> getRoles(String hostName) {
+  public static List<ROLE> getRoles(final String hostName) {
     ArrayNode array;
     BusinessDAO businessDAO = null;
     try {
@@ -235,7 +235,7 @@ public final class HostConfigConverter {
    *
    * @return the server's list of known aliases
    */
-  private static ArrayNode getAliasArray(Business hostConfig) {
+  private static ArrayNode getAliasArray(final Business hostConfig) {
     final ArrayNode array = new ArrayNode(JsonNodeFactory.instance);
     if (hostConfig.getAliases() != null) {
       try {
@@ -255,7 +255,7 @@ public final class HostConfigConverter {
 
           array.add(node);
         }
-      } catch (InternalServerErrorException ignore) { //NOSONAR
+      } catch (final InternalServerErrorException ignore) { //NOSONAR
         SysErrLogger.FAKE_LOGGER.syserr("No Alias definition");
       }
     }
@@ -270,7 +270,7 @@ public final class HostConfigConverter {
    *
    * @return the server's list of known aliases
    */
-  private static ArrayNode getRolesArray(Business hostConfig) {
+  private static ArrayNode getRolesArray(final Business hostConfig) {
     final ArrayNode array = new ArrayNode(JsonNodeFactory.instance);
     if (hostConfig.getRoles() != null) {
       try {
@@ -290,7 +290,7 @@ public final class HostConfigConverter {
 
           array.add(node);
         }
-      } catch (InternalServerErrorException ignore) {//NOSONAR
+      } catch (final InternalServerErrorException ignore) {//NOSONAR
         SysErrLogger.FAKE_LOGGER.syserr("No Roles definition");
       }
     }
@@ -306,7 +306,7 @@ public final class HostConfigConverter {
    *
    * @return the server's list of known aliases
    */
-  private static ArrayNode getBusinessArray(Business hostConfig) {
+  private static ArrayNode getBusinessArray(final Business hostConfig) {
     final ArrayNode array = new ArrayNode(JsonNodeFactory.instance);
     if (hostConfig.getBusiness() != null) {
       try {
@@ -316,7 +316,7 @@ public final class HostConfigConverter {
         for (final String businessId : business.business) {
           array.add(businessId);
         }
-      } catch (InternalServerErrorException ignore) {//NOSONAR
+      } catch (final InternalServerErrorException ignore) {//NOSONAR
         SysErrLogger.FAKE_LOGGER.syserr("No Business definition");
       }
     }
@@ -333,7 +333,7 @@ public final class HostConfigConverter {
    * @throws RestErrorException if the given ArrayNode does not
    *     represent a list of aliases
    */
-  private static Aliases nodeToAliasList(ArrayNode array) {
+  private static Aliases nodeToAliasList(final ArrayNode array) {
     final List<AliasEntry> aliases = new ArrayList<AliasEntry>();
     final List<RestError> errors = new ArrayList<RestError>();
 
@@ -405,7 +405,7 @@ public final class HostConfigConverter {
    * @throws RestErrorException if the given ArrayNode does not
    *     represent a list of roles
    */
-  private static Roles nodeToRoles(ArrayNode array) {
+  private static Roles nodeToRoles(final ArrayNode array) {
     final List<RoleEntry> roles = new ArrayList<RoleEntry>();
     final List<RestError> errors = new ArrayList<RestError>();
 

@@ -25,7 +25,7 @@ package org.waarp.common.database.model;
 public enum DbType {
   Oracle, MySQL, PostGreSQL, H2, MariaDB, none;
 
-  public static DbType getFromDriver(String driver) {
+  public static DbType getFromDriver(final String driver) {
     if (driver.contains("oracle")) {
       return Oracle;
     } else if (driver.contains("mysql")) {

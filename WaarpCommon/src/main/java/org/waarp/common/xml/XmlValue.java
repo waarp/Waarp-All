@@ -51,7 +51,7 @@ public class XmlValue {
 
   private XmlValue[] subXml;
 
-  public XmlValue(XmlDecl decl) {
+  public XmlValue(final XmlDecl decl) {
     this.decl = decl;
     if (this.decl.isSubXml()) {
       if (this.decl.isMultiple()) {
@@ -95,7 +95,7 @@ public class XmlValue {
   }
 
   @SuppressWarnings("unchecked")
-  public XmlValue(XmlValue from) {
+  public XmlValue(final XmlValue from) {
     this(from.decl);
     if (decl.isSubXml()) {
       if (decl.isMultiple()) {
@@ -209,7 +209,7 @@ public class XmlValue {
    * @throws InvalidArgumentException
    */
   @SuppressWarnings("unchecked")
-  public void addFromString(String valueOrig)
+  public void addFromString(final String valueOrig)
       throws InvalidObjectException, InvalidArgumentException {
     final String valueNew = XmlUtil.getExtraTrimed(valueOrig);
     switch (getType()) {
@@ -274,7 +274,7 @@ public class XmlValue {
    * @throws InvalidObjectException
    */
   @SuppressWarnings("unchecked")
-  public void addValue(Object value) throws InvalidObjectException {
+  public void addValue(final Object value) throws InvalidObjectException {
     if (getType().isNativelyCompatible(value)) {
       switch (getType()) {
         case BOOLEAN:
@@ -348,7 +348,7 @@ public class XmlValue {
    *
    * @throws InvalidObjectException
    */
-  public static Object getCloneValue(XmlType type, Object value)
+  public static Object getCloneValue(final XmlType type, final Object value)
       throws InvalidObjectException {
     if (value == null) {
       throw new InvalidObjectException(
@@ -356,21 +356,21 @@ public class XmlValue {
     }
     switch (type) {
       case BOOLEAN:
-        return new Boolean((Boolean) value);
+        return value;
       case INTEGER:
-        return new Integer((Integer) value);
+        return value;
       case FLOAT:
-        return new Float((Float) value);
+        return value;
       case CHARACTER:
-        return new Character((Character) value);
+        return value;
       case BYTE:
-        return new Byte((Byte) value);
+        return value;
       case LONG:
-        return new Long((Long) value);
+        return value;
       case DOUBLE:
-        return new Double((Double) value);
+        return value;
       case SHORT:
-        return new Short((Short) value);
+        return value;
       case SQLDATE:
         return new Date(((Date) value).getTime());
       case TIMESTAMP:
@@ -529,7 +529,8 @@ public class XmlValue {
    *
    * @throws InvalidArgumentException
    */
-  public void setFromString(String value) throws InvalidArgumentException {
+  public void setFromString(final String value)
+      throws InvalidArgumentException {
     this.value = convert(getClassType(), XmlUtil.getExtraTrimed(value));
   }
 
@@ -580,7 +581,7 @@ public class XmlValue {
    * @throws NumberFormatException
    */
   @SuppressWarnings("unchecked")
-  public void setValue(Object value) throws InvalidObjectException {
+  public void setValue(final Object value) throws InvalidObjectException {
     if (getType().isNativelyCompatible(value)) {
       switch (getType()) {
         case BOOLEAN:
@@ -644,7 +645,7 @@ public class XmlValue {
    *
    * @throws InvalidArgumentException
    */
-  protected static Object convert(Class<?> type, String value)
+  protected static Object convert(final Class<?> type, final String value)
       throws InvalidArgumentException {
     try {
       // test from specific to general
@@ -762,7 +763,7 @@ public class XmlValue {
   }
 
   public String toFullString() {
-    StringBuilder detail = new StringBuilder("Val: " + (isMultiple()?
+    final StringBuilder detail = new StringBuilder("Val: " + (isMultiple()?
         values.size() + " elements" : value != null? value.toString() :
         subXml != null? "subXml" : "no value") + ' ' + decl);
     if (decl.isSubXml()) {

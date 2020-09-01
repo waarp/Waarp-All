@@ -100,7 +100,8 @@ public class DbMultipleMonitor extends AbstractDbDataDao<MultipleMonitor> {
    * @param ch count for Host
    * @param cr count for Rule
    */
-  public DbMultipleMonitor(String hostid, int cc, int ch, int cr) {
+  public DbMultipleMonitor(final String hostid, final int cc, final int ch,
+                           final int cr) {
     pojo = new MultipleMonitor(hostid, cc, ch, cr);
   }
 
@@ -109,7 +110,7 @@ public class DbMultipleMonitor extends AbstractDbDataDao<MultipleMonitor> {
    *
    * @throws WaarpDatabaseException
    */
-  public DbMultipleMonitor(String hostid) throws WaarpDatabaseException {
+  public DbMultipleMonitor(final String hostid) throws WaarpDatabaseException {
     MultipleMonitorDAO monitorAccess = null;
     try {
       monitorAccess = DAOFactory.getInstance().getMultipleMonitorDAO();
@@ -129,7 +130,7 @@ public class DbMultipleMonitor extends AbstractDbDataDao<MultipleMonitor> {
     if (value == null) {
       return;
     }
-    for (Columns column : Columns.values()) {
+    for (final Columns column : Columns.values()) {
       if (column.name().equalsIgnoreCase(field)) {
         int len;
         switch (column) {
@@ -168,7 +169,7 @@ public class DbMultipleMonitor extends AbstractDbDataDao<MultipleMonitor> {
    * @throws WaarpDatabaseSqlException
    */
   public static DbMultipleMonitor getFromStatement(
-      DbPreparedStatement preparedStatement)
+      final DbPreparedStatement preparedStatement)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
     final DbMultipleMonitor dbMm = new DbMultipleMonitor();
     AbstractDAO<MultipleMonitor> multipleDAO = null;
@@ -177,10 +178,10 @@ public class DbMultipleMonitor extends AbstractDbDataDao<MultipleMonitor> {
       dbMm.pojo = ((StatementExecutor<MultipleMonitor>) multipleDAO)
           .getFromResultSet(preparedStatement.getResultSet());
       return dbMm;
-    } catch (SQLException e) {
+    } catch (final SQLException e) {
       DbSession.error(e);
       throw new WaarpDatabaseSqlException("Getting values in error", e);
-    } catch (DAOConnectionException e) {
+    } catch (final DAOConnectionException e) {
       throw new WaarpDatabaseSqlException("Getting values in error", e);
     } finally {
       DAOFactory.closeDAO(multipleDAO);
@@ -194,7 +195,8 @@ public class DbMultipleMonitor extends AbstractDbDataDao<MultipleMonitor> {
    * @throws WaarpDatabaseNoConnectionException
    * @throws WaarpDatabaseSqlException
    */
-  public static DbPreparedStatement getUpdatedPrepareStament(DbSession session)
+  public static DbPreparedStatement getUpdatedPrepareStament(
+      final DbSession session)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
     final DbMultipleMonitor multipleMonitor =
         new DbMultipleMonitor(Configuration.configuration.getHostId(), 0, 0, 0);
@@ -264,7 +266,7 @@ public class DbMultipleMonitor extends AbstractDbDataDao<MultipleMonitor> {
   }
 
   @Override
-  public void changeUpdatedInfo(UpdatedInfo info) {
+  public void changeUpdatedInfo(final UpdatedInfo info) {
     // ignore
   }
 
@@ -287,7 +289,7 @@ public class DbMultipleMonitor extends AbstractDbDataDao<MultipleMonitor> {
   /**
    * @param countConfig the countConfig to set
    */
-  private void setCountConfig(int countConfig) {
+  private void setCountConfig(final int countConfig) {
     pojo.setCountConfig(countConfig);
   }
 
@@ -301,7 +303,7 @@ public class DbMultipleMonitor extends AbstractDbDataDao<MultipleMonitor> {
   /**
    * @param countHost the countHost to set
    */
-  private void setCountHost(int countHost) {
+  private void setCountHost(final int countHost) {
     pojo.setCountHost(countHost);
   }
 
@@ -315,7 +317,7 @@ public class DbMultipleMonitor extends AbstractDbDataDao<MultipleMonitor> {
   /**
    * @param countRule the countRule to set
    */
-  private void setCountRule(int countRule) {
+  private void setCountRule(final int countRule) {
     pojo.setCountRule(countRule);
   }
 }

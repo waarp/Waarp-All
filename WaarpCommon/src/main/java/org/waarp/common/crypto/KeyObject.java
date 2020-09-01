@@ -130,14 +130,14 @@ public abstract class KeyObject {
    *
    * @param secretKey
    */
-  public void setSecretKey(Key secretKey) {
+  public void setSecretKey(final Key secretKey) {
     this.secretKey = secretKey;
   }
 
   /**
    * Reconstruct a key from an array of bytes
    */
-  public void setSecretKey(byte[] keyData) {
+  public void setSecretKey(final byte[] keyData) {
     secretKey = new SecretKeySpec(keyData, getAlgorithm());
   }
 
@@ -149,11 +149,12 @@ public abstract class KeyObject {
    * @throws CryptoException
    * @throws IOException
    */
-  public void setSecretKey(File file) throws CryptoException, IOException {
+  public void setSecretKey(final File file)
+      throws CryptoException, IOException {
     if (file.canRead()) {
       final int len = (int) file.length();
       final byte[] key = new byte[len];
-      FileInputStream inputStream;
+      final FileInputStream inputStream;
       inputStream = new FileInputStream(file);
       final DataInputStream dis = new DataInputStream(inputStream);
       try {
@@ -175,7 +176,8 @@ public abstract class KeyObject {
    * @throws CryptoException
    * @throws IOException
    */
-  public void saveSecretKey(File file) throws CryptoException, IOException {
+  public void saveSecretKey(final File file)
+      throws CryptoException, IOException {
     if (keyReady() && (!file.exists() || file.canWrite())) {
       final byte[] key = getSecretKeyInBytes();
       final FileOutputStream outputStream = new FileOutputStream(file);
@@ -213,7 +215,7 @@ public abstract class KeyObject {
    *     method or key is incorrect
    */
   public Cipher toCrypt() {
-    Cipher cipher;
+    final Cipher cipher;
     try {
       cipher = Cipher.getInstance(getInstance());
       cipher.init(Cipher.ENCRYPT_MODE, secretKey);
@@ -233,7 +235,7 @@ public abstract class KeyObject {
    *
    * @throws Exception
    */
-  public byte[] crypt(byte[] plaintext) throws Exception {
+  public byte[] crypt(final byte[] plaintext) throws Exception {
     if (!keyReady()) {
       throw new CryptoException("Key not Ready");
     }
@@ -256,7 +258,7 @@ public abstract class KeyObject {
    *
    * @throws Exception
    */
-  public String cryptToHex(byte[] plaintext) throws Exception {
+  public String cryptToHex(final byte[] plaintext) throws Exception {
     final byte[] result = crypt(plaintext);
     return encodeHex(result);
   }
@@ -270,7 +272,7 @@ public abstract class KeyObject {
    *
    * @throws Exception
    */
-  public byte[] crypt(String plaintext) throws Exception {
+  public byte[] crypt(final String plaintext) throws Exception {
     return crypt(plaintext.getBytes(WaarpStringUtils.UTF8));
   }
 
@@ -283,7 +285,7 @@ public abstract class KeyObject {
    *
    * @throws Exception
    */
-  public String cryptToHex(String plaintext) throws Exception {
+  public String cryptToHex(final String plaintext) throws Exception {
     return cryptToHex(plaintext.getBytes(WaarpStringUtils.UTF8));
   }
 
@@ -294,7 +296,7 @@ public abstract class KeyObject {
    *     method or key is incorrect
    */
   public Cipher toDecrypt() {
-    Cipher cipher;
+    final Cipher cipher;
     try {
       cipher = Cipher.getInstance(getAlgorithm());
       cipher.init(Cipher.DECRYPT_MODE, secretKey);
@@ -314,7 +316,7 @@ public abstract class KeyObject {
    *
    * @throws Exception
    */
-  public byte[] decrypt(byte[] ciphertext) throws Exception {
+  public byte[] decrypt(final byte[] ciphertext) throws Exception {
     if (!keyReady()) {
       throw new CryptoException("Key not Ready");
     }
@@ -337,7 +339,7 @@ public abstract class KeyObject {
    *
    * @throws Exception
    */
-  public String decryptInString(byte[] ciphertext) throws Exception {
+  public String decryptInString(final byte[] ciphertext) throws Exception {
     return new String(decrypt(ciphertext), WaarpStringUtils.UTF8);
   }
 
@@ -352,7 +354,7 @@ public abstract class KeyObject {
    *
    * @throws Exception
    */
-  public byte[] decryptHexInBytes(String ciphertext) throws Exception {
+  public byte[] decryptHexInBytes(final String ciphertext) throws Exception {
     final byte[] arrayBytes = decodeHex(ciphertext);
     return decrypt(arrayBytes);
   }
@@ -368,7 +370,7 @@ public abstract class KeyObject {
    *
    * @throws Exception
    */
-  public byte[] decryptHexInBytes(byte[] ciphertext) throws Exception {
+  public byte[] decryptHexInBytes(final byte[] ciphertext) throws Exception {
     final byte[] arrayBytes =
         decodeHex(new String(ciphertext, WaarpStringUtils.UTF8));
     return decrypt(arrayBytes);
@@ -384,7 +386,7 @@ public abstract class KeyObject {
    *
    * @throws Exception
    */
-  public String decryptHexInString(String ciphertext) throws Exception {
+  public String decryptHexInString(final String ciphertext) throws Exception {
     return new String(decryptHexInBytes(ciphertext), WaarpStringUtils.UTF8);
   }
 
@@ -398,7 +400,7 @@ public abstract class KeyObject {
    *
    * @throws Exception
    */
-  public String decryptHexInString(byte[] ciphertext) throws Exception {
+  public String decryptHexInString(final byte[] ciphertext) throws Exception {
     return new String(decryptHexInBytes(ciphertext), WaarpStringUtils.UTF8);
   }
 
@@ -411,7 +413,7 @@ public abstract class KeyObject {
    *
    * @throws Exception
    */
-  public byte[] decryptHexFile(File file) throws Exception {
+  public byte[] decryptHexFile(final File file) throws Exception {
     if (file.length() > Integer.MAX_VALUE) {
       throw new IOException(
           "File too big to be decoded into an array of bytes");
@@ -439,7 +441,7 @@ public abstract class KeyObject {
    *
    * @return the array of bytes from encoded String (HEX)
    */
-  public byte[] decodeHex(String encoded) {
+  public byte[] decodeHex(final String encoded) {
     return FilesystemBasedDigest.getFromHex(encoded);
   }
 
@@ -448,7 +450,7 @@ public abstract class KeyObject {
    *
    * @return The encoded array of bytes in HEX
    */
-  public String encodeHex(byte[] bytes) {
+  public String encodeHex(final byte[] bytes) {
     return FilesystemBasedDigest.getHex(bytes);
   }
 }

@@ -67,9 +67,10 @@ public final class WaarpSslUtility {
       new ChannelFutureListener() {
 
         @Override
-        public void operationComplete(ChannelFuture future) throws Exception {
+        public void operationComplete(final ChannelFuture future)
+            throws Exception {
           if (future.channel().isActive()) {
-            SSLTHREAD thread = new SSLTHREAD(future.channel());
+            final SSLTHREAD thread = new SSLTHREAD(future.channel());
             thread.start();
           }
         }
@@ -83,7 +84,7 @@ public final class WaarpSslUtility {
    *
    * @param channel
    */
-  public static void addSslOpenedChannel(Channel channel) {
+  public static void addSslOpenedChannel(final Channel channel) {
     sslChannelGroup.add(channel);
   }
 
@@ -98,7 +99,7 @@ public final class WaarpSslUtility {
    * @param listener action once the handshake is done
    */
   @SuppressWarnings({ "unchecked", "rawtypes" })
-  public static void addSslHandler(ChannelFuture future,
+  public static void addSslHandler(final ChannelFuture future,
                                    final ChannelPipeline pipeline,
                                    final ChannelHandler sslHandler,
                                    final GenericFutureListener<? extends Future<? super Channel>> listener) {
@@ -109,7 +110,7 @@ public final class WaarpSslUtility {
     } else {
       future.addListener(new GenericFutureListener() {
         @Override
-        public void operationComplete(Future future) throws Exception {
+        public void operationComplete(final Future future) throws Exception {
           logger.debug("Add SslHandler: " + pipeline.channel());
           pipeline.addFirst("SSL", sslHandler);
           ((SslHandler) sslHandler).handshakeFuture().addListener(listener);
@@ -128,7 +129,7 @@ public final class WaarpSslUtility {
    *
    * @return True if the Handshake is done correctly
    */
-  public static boolean waitForHandshake(Channel channel) {
+  public static boolean waitForHandshake(final Channel channel) {
     final ChannelHandler handler = channel.pipeline().first();
     if (handler instanceof SslHandler) {
       logger.debug("Start handshake SSL: " + channel);
@@ -160,7 +161,7 @@ public final class WaarpSslUtility {
    *
    * @return the channel if correctly associated, else return null
    */
-  public static Channel waitforChannelReady(ChannelFuture future) {
+  public static Channel waitforChannelReady(final ChannelFuture future) {
     // Wait until the connection attempt succeeds or fails.
     WaarpNettyUtil.awaitOrInterrupted(future);
     if (!future.isSuccess()) {
@@ -179,7 +180,7 @@ public final class WaarpSslUtility {
    */
   public static void forceCloseAllSslChannels() {
     if (SSL_EVENT_EXECUTOR.isShutdown()) {
-      for (Channel channel : sslChannelGroup) {
+      for (final Channel channel : sslChannelGroup) {
         closingSslChannel(channel);
       }
       WaarpNettyUtil.awaitOrInterrupted(sslChannelGroup.close());
@@ -192,7 +193,7 @@ public final class WaarpSslUtility {
    *
    * @param channel
    */
-  public static ChannelFuture closingSslChannel(Channel channel) {
+  public static ChannelFuture closingSslChannel(final Channel channel) {
     if (channel.isActive()) {
       removingSslHandler(null, channel, true);
       logger
@@ -213,7 +214,7 @@ public final class WaarpSslUtility {
    * @param close True to close the channel, else to only remove it
    */
   @SuppressWarnings({ "rawtypes", "unchecked" })
-  public static void removingSslHandler(ChannelFuture future,
+  public static void removingSslHandler(final ChannelFuture future,
                                         final Channel channel,
                                         final boolean close) {
     if (channel.isActive()) {
@@ -224,16 +225,17 @@ public final class WaarpSslUtility {
         if (future != null) {
           future.addListener(new GenericFutureListener() {
             @Override
-            public void operationComplete(Future future) throws Exception {
+            public void operationComplete(final Future future)
+                throws Exception {
               logger.debug("Found SslHandler and wait for Ssl.close()");
-              ChannelHandlerContext cht =
+              final ChannelHandlerContext cht =
                   channel.pipeline().context(sslHandler);
               if (cht.channel().isActive()) {
                 cht.close().addListener(
                     new GenericFutureListener<Future<? super Void>>() {
                       @Override
-                      public void operationComplete(Future<? super Void> future)
-                          throws Exception {
+                      public void operationComplete(
+                          final Future<? super Void> future) throws Exception {
                         logger.debug("Ssl closed");
                         if (!close) {
                           channel.pipeline().remove(sslHandler);
@@ -250,13 +252,14 @@ public final class WaarpSslUtility {
         } else {
           logger
               .debug("Found SslHandler and wait for Ssl.close() : " + channel);
-          ChannelHandlerContext cht = channel.pipeline().context(sslHandler);
+          final ChannelHandlerContext cht =
+              channel.pipeline().context(sslHandler);
           if (cht.channel().isActive()) {
             cht.close()
                .addListener(new GenericFutureListener<Future<? super Void>>() {
                  @Override
-                 public void operationComplete(Future<? super Void> future)
-                     throws Exception {
+                 public void operationComplete(
+                     final Future<? super Void> future) throws Exception {
                    logger.debug("Ssl closed: " + channel);
                    if (!close) {
                      channel.pipeline().remove(sslHandler);
@@ -285,7 +288,8 @@ public final class WaarpSslUtility {
    *
    * @return True if an error occurs as an interruption
    */
-  public static boolean waitForClosingSslChannel(Channel channel, long delay) {
+  public static boolean waitForClosingSslChannel(final Channel channel,
+                                                 final long delay) {
     if (!WaarpNettyUtil.awaitOrInterrupted(channel.closeFuture(), delay)) {
       try {
         channel.pipeline().remove(WaarpSslHandler.class);
@@ -313,7 +317,7 @@ public final class WaarpSslUtility {
     /**
      * @param channel
      */
-    private SSLTHREAD(Channel channel) {
+    private SSLTHREAD(final Channel channel) {
       this.channel = channel;
       setDaemon(true);
       setName("SSLTHREAD_" + getName());

@@ -147,7 +147,7 @@ public abstract class DBTransferDAO extends StatementExecutor<Transfer>
     return SQL_UPDATE;
   }
 
-  protected DBTransferDAO(Connection con) {
+  protected DBTransferDAO(final Connection con) {
     super(con);
   }
 
@@ -187,7 +187,7 @@ public abstract class DBTransferDAO extends StatementExecutor<Transfer>
   }
 
   @Override
-  public void delete(Transfer transfer)
+  public void delete(final Transfer transfer)
       throws DAOConnectionException, DAONoDataException {
     PreparedStatement stm = null;
     final Object[] params = {
@@ -209,7 +209,8 @@ public abstract class DBTransferDAO extends StatementExecutor<Transfer>
     }
   }
 
-  private String prepareFindQuery(List<Filter> filters, Object[] params) {
+  private String prepareFindQuery(final List<Filter> filters,
+                                  final Object[] params) {
     final StringBuilder query = new StringBuilder(getGetAllRequest());
     final Iterator<Filter> it = filters.listIterator();
     if (it.hasNext()) {
@@ -220,7 +221,7 @@ public abstract class DBTransferDAO extends StatementExecutor<Transfer>
     while (it.hasNext()) {
       query.append(prefix);
       final Filter filter = it.next();
-      query.append(filter.key + ' ' + filter.operand + " ?");
+      query.append(filter.key).append(' ').append(filter.operand).append(" ?");
       params[i] = filter.value;
       i++;
       prefix = " AND ";
@@ -229,7 +230,7 @@ public abstract class DBTransferDAO extends StatementExecutor<Transfer>
   }
 
   @Override
-  public List<Transfer> find(List<Filter> filters, int limit)
+  public List<Transfer> find(final List<Filter> filters, final int limit)
       throws DAOConnectionException {
     final ArrayList<Transfer> transfers = new ArrayList<Transfer>();
     // Create the SQL query
@@ -238,7 +239,7 @@ public abstract class DBTransferDAO extends StatementExecutor<Transfer>
         new StringBuilder(prepareFindQuery(filters, params));
     // Set LIMIT
     if (limit > 0) {
-      query.append(LIMIT2 + limit);
+      query.append(LIMIT2).append(limit);
     }
     // Execute query
     PreparedStatement stm = null;
@@ -260,8 +261,8 @@ public abstract class DBTransferDAO extends StatementExecutor<Transfer>
   }
 
   @Override
-  public List<Transfer> find(List<Filter> filters, int limit, int offset)
-      throws DAOConnectionException {
+  public List<Transfer> find(final List<Filter> filters, final int limit,
+                             final int offset) throws DAOConnectionException {
     final ArrayList<Transfer> transfers = new ArrayList<Transfer>();
     // Create the SQL query
     final Object[] params = new Object[filters.size()];
@@ -269,11 +270,11 @@ public abstract class DBTransferDAO extends StatementExecutor<Transfer>
         new StringBuilder(prepareFindQuery(filters, params));
     // Set LIMIT
     if (limit > 0) {
-      query.append(LIMIT2 + limit);
+      query.append(LIMIT2).append(limit);
     }
     // Set OFFSET
     if (limit > 0) {
-      query.append(" OFFSET " + offset);
+      query.append(" OFFSET ").append(offset);
     }
     // Execute query
     PreparedStatement stm = null;
@@ -295,8 +296,9 @@ public abstract class DBTransferDAO extends StatementExecutor<Transfer>
   }
 
   @Override
-  public List<Transfer> find(List<Filter> filters, String column,
-                             boolean ascend) throws DAOConnectionException {
+  public List<Transfer> find(final List<Filter> filters, final String column,
+                             final boolean ascend)
+      throws DAOConnectionException {
     final ArrayList<Transfer> transfers = new ArrayList<Transfer>();
     // Create the SQL query
     final Object[] params = new Object[filters.size()];
@@ -304,7 +306,7 @@ public abstract class DBTransferDAO extends StatementExecutor<Transfer>
         new StringBuilder(prepareFindQuery(filters, params));
     // Set ORDER BY
     if (column != null && !column.isEmpty()) {
-      query.append(" ORDER BY " + column);
+      query.append(" ORDER BY ").append(column);
       if (!ascend) {
         query.append(" DESC");
       }
@@ -330,8 +332,8 @@ public abstract class DBTransferDAO extends StatementExecutor<Transfer>
   }
 
   @Override
-  public List<Transfer> find(List<Filter> filters, String column,
-                             boolean ascend, int limit)
+  public List<Transfer> find(final List<Filter> filters, final String column,
+                             final boolean ascend, final int limit)
       throws DAOConnectionException {
     final ArrayList<Transfer> transfers = new ArrayList<Transfer>();
     // Create the SQL query
@@ -340,14 +342,14 @@ public abstract class DBTransferDAO extends StatementExecutor<Transfer>
         new StringBuilder(prepareFindQuery(filters, params));
     // Set ORDER BY
     if (column != null && !column.isEmpty()) {
-      query.append(" ORDER BY " + column);
+      query.append(" ORDER BY ").append(column);
       if (!ascend) {
         query.append(" DESC");
       }
     }
     // Set LIMIT
     if (limit > 0) {
-      query.append(LIMIT2 + limit);
+      query.append(LIMIT2).append(limit);
     }
     // Execute query
     PreparedStatement stm = null;
@@ -369,26 +371,26 @@ public abstract class DBTransferDAO extends StatementExecutor<Transfer>
   }
 
   @Override
-  public List<Transfer> find(List<Filter> filters, String column,
-                             boolean ascend, int limit, int offset)
-      throws DAOConnectionException {
+  public List<Transfer> find(final List<Filter> filters, final String column,
+                             final boolean ascend, final int limit,
+                             final int offset) throws DAOConnectionException {
     final ArrayList<Transfer> transfers = new ArrayList<Transfer>();
     // Create the SQL query
     final Object[] params = new Object[filters.size()];
     final StringBuilder query =
         new StringBuilder(prepareFindQuery(filters, params));
     // Set ORDER BY
-    query.append(" ORDER BY " + column);
+    query.append(" ORDER BY ").append(column);
     if (!ascend) {
       query.append(" DESC");
     }
     // Set LIMIT
     if (limit > 0) {
-      query.append(LIMIT2 + limit);
+      query.append(LIMIT2).append(limit);
     }
     // Set OFFSET
     if (limit > 0) {
-      query.append(" OFFSET " + offset);
+      query.append(" OFFSET ").append(offset);
     }
     // Execute query
     PreparedStatement stm = null;
@@ -410,8 +412,9 @@ public abstract class DBTransferDAO extends StatementExecutor<Transfer>
   }
 
   @Override
-  public boolean exist(long id, String requester, String requested,
-                       String owner) throws DAOConnectionException {
+  public boolean exist(final long id, final String requester,
+                       final String requested, final String owner)
+      throws DAOConnectionException {
     PreparedStatement stm = null;
     ResultSet res = null;
     final Object[] params = { id, requester, requested, owner };
@@ -429,8 +432,8 @@ public abstract class DBTransferDAO extends StatementExecutor<Transfer>
   }
 
   @Override
-  public Transfer select(long id, String requester, String requested,
-                         String owner)
+  public Transfer select(final long id, final String requester,
+                         final String requested, final String owner)
       throws DAOConnectionException, DAONoDataException {
     PreparedStatement stm = null;
     ResultSet res = null;
@@ -455,7 +458,7 @@ public abstract class DBTransferDAO extends StatementExecutor<Transfer>
   protected abstract long getNextId() throws DAOConnectionException;
 
   @Override
-  public void insert(Transfer transfer) throws DAOConnectionException {
+  public void insert(final Transfer transfer) throws DAOConnectionException {
     if (transfer.getId() == ILLEGALVALUE) {
       transfer.setId(getNextId());
     }
@@ -464,7 +467,7 @@ public abstract class DBTransferDAO extends StatementExecutor<Transfer>
   }
 
   @Override
-  public Transfer getFromResultSet(ResultSet set) throws SQLException {
+  public Transfer getFromResultSet(final ResultSet set) throws SQLException {
     return new Transfer(set.getLong(ID_FIELD), set.getString(ID_RULE_FIELD),
                         set.getInt(TRANSFER_MODE_FIELD),
                         set.getString(FILENAME_FIELD),

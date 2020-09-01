@@ -32,7 +32,7 @@ public class OracleTransferDAO extends DBTransferDAO {
 
   protected static final String SQL_GET_ID = "SELECT runseq.nextval FROM DUAL";
 
-  public OracleTransferDAO(Connection con) throws DAOConnectionException {
+  public OracleTransferDAO(final Connection con) throws DAOConnectionException {
     super(con);
   }
 
@@ -56,7 +56,7 @@ public class OracleTransferDAO extends DBTransferDAO {
         if (rs != null) {
           rs.close();
         }
-      } catch (SQLException e) {
+      } catch (final SQLException e) {
         // ignore
       }
       closeStatement(ps);

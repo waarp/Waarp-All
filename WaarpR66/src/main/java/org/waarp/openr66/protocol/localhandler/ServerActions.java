@@ -147,7 +147,7 @@ public class ServerActions extends ConnectionActions {
    * @throws OpenR66ProtocolNotAuthenticatedException
    * @throws OpenR66ProtocolPacketException
    */
-  public void test(TestPacket packet)
+  public void test(final TestPacket packet)
       throws OpenR66ProtocolNotAuthenticatedException,
              OpenR66ProtocolPacketException {
     if (!session.isAuthenticated()) {
@@ -189,7 +189,7 @@ public class ServerActions extends ConnectionActions {
    * @throws OpenR66ProtocolNoDataException
    * @throws OpenR66ProtocolPacketException
    */
-  public void information(InformationPacket packet)
+  public void information(final InformationPacket packet)
       throws OpenR66ProtocolNotAuthenticatedException,
              OpenR66ProtocolNoDataException, OpenR66ProtocolPacketException {
     final byte request = packet.getRequest();
@@ -206,7 +206,7 @@ public class ServerActions extends ConnectionActions {
       }
     }
     final boolean isTo = "1".equals(filename);
-    ValidPacket validPacket;
+    final ValidPacket validPacket;
     if (request == REQUEST_CHECK) {
       validPacket = informationRequest(id, isTo, rulename, false);
     } else {
@@ -238,7 +238,7 @@ public class ServerActions extends ConnectionActions {
    * @throws OpenR66ProtocolSystemException
    * @throws OpenR66ProtocolBusinessException
    */
-  public void valid(ValidPacket packet)
+  public void valid(final ValidPacket packet)
       throws OpenR66ProtocolNotAuthenticatedException,
              OpenR66RunnerErrorException, OpenR66ProtocolSystemException,
              OpenR66ProtocolBusinessException {
@@ -311,7 +311,7 @@ public class ServerActions extends ConnectionActions {
         // header = ?; middle = requested+blank+requester+blank+specialId
         // note: might contains one more argument = time to reschedule in yyyyMMddHHmmss format
         final String[] keys = packet.getSmiddle().split(" ");
-        ValidPacket valid;
+        final ValidPacket valid;
         if (keys.length < 3) {
           // not enough args
           valid = new ValidPacket(packet.getSmiddle(),
@@ -477,7 +477,7 @@ public class ServerActions extends ConnectionActions {
         session.newState(VALIDOTHER);
         final String[] sresult =
             configExport(bhost, brule, false, false, false);
-        R66Result result;
+        final R66Result result;
         if (sresult[0] != null || sresult[1] != null) {
           result = new R66Result(session, true, ErrorCode.CompleteOk, null);
         } else {
@@ -602,7 +602,7 @@ public class ServerActions extends ConnectionActions {
             }
           }
         }
-        R66Result result;
+        final R66Result result;
         if (brule || bhost) {
           result = new R66Result(session, true, ErrorCode.CompleteOk, null);
         } else {
@@ -638,7 +638,7 @@ public class ServerActions extends ConnectionActions {
         packet.clear();
         final R66Result result =
             new R66Result(session, true, ErrorCode.CompleteOk, null);
-        ValidPacket valid;
+        final ValidPacket valid;
         if (splitglobal.length < 2 || splitsession.length < 2) {
           // request of current values
           session.newState(VALIDOTHER);
@@ -699,7 +699,7 @@ public class ServerActions extends ConnectionActions {
    * @throws OpenR66ProtocolPacketException
    * @throws OpenR66ProtocolNoDataException
    */
-  public void jsonCommand(JsonCommandPacket packet)
+  public void jsonCommand(final JsonCommandPacket packet)
       throws OpenR66ProtocolNotAuthenticatedException,
              OpenR66RunnerErrorException, OpenR66ProtocolSystemException,
              OpenR66ProtocolBusinessException, OpenR66ProtocolShutdownException,
@@ -713,7 +713,7 @@ public class ServerActions extends ConnectionActions {
       throw new OpenR66ProtocolNotAuthenticatedException(
           "Not authenticated while Valid received");
     }
-    JsonPacket json = packet.getJsonRequest();
+    final JsonPacket json = packet.getJsonRequest();
     if (json == null) {
       jsonCommandEmptyJson(packet);
       return;
@@ -786,13 +786,13 @@ public class ServerActions extends ConnectionActions {
     final R66Result resulttest =
         new R66Result(session, true, ErrorCode.CompleteOk, null);
     resulttest.setOther(packet);
-    JsonCommandPacket valid =
+    final JsonCommandPacket valid =
         new JsonCommandPacket(json, resulttest.getCode().getCode(),
                               LocalPacketFactory.REQUESTUSERPACKET);
     localChannelReference.validateRequest(resulttest);
     try {
       ChannelUtils.writeAbstractLocalPacket(localChannelReference, valid, true);
-    } catch (OpenR66ProtocolPacketException ignored) {
+    } catch (final OpenR66ProtocolPacketException ignored) {
       // ignore
     }
     localChannelReference.close();
@@ -801,22 +801,21 @@ public class ServerActions extends ConnectionActions {
   private void jsonCommandBandwidth(final BandwidthJsonPacket json)
       throws OpenR66ProtocolNotAuthenticatedException {
     // setter, writeglobal, readglobal, writesession, readsession
-    final BandwidthJsonPacket node = json;
-    final boolean setter = node.isSetter();
+    final boolean setter = json.isSetter();
     // request of current values or set new values
     session.newState(VALIDOTHER);
     final long[] lresult =
-        bandwidth(setter, node.getWriteglobal(), node.getReadglobal(),
-                  node.getWritesession(), node.getReadsession());
+        bandwidth(setter, json.getWriteglobal(), json.getReadglobal(),
+                  json.getWritesession(), json.getReadsession());
     // Now answer
-    node.setWriteglobal(lresult[0]);
-    node.setReadglobal(lresult[1]);
-    node.setWritesession(lresult[2]);
-    node.setReadsession(lresult[3]);
+    json.setWriteglobal(lresult[0]);
+    json.setReadglobal(lresult[1]);
+    json.setWritesession(lresult[2]);
+    json.setReadsession(lresult[3]);
     final R66Result result =
         new R66Result(session, true, ErrorCode.CompleteOk, null);
     final JsonCommandPacket valid =
-        new JsonCommandPacket(node, result.getCode().getCode(),
+        new JsonCommandPacket(json, result.getCode().getCode(),
                               LocalPacketFactory.REQUESTUSERPACKET);
     localChannelReference.validateRequest(result);
     try {
@@ -831,7 +830,7 @@ public class ServerActions extends ConnectionActions {
       throws OpenR66ProtocolNotAuthenticatedException,
              OpenR66ProtocolSystemException {
     final ConfigImportResponseJsonPacket resp = configImport(json);
-    R66Result result;
+    final R66Result result;
     if (resp.isImportedhost() || resp.isImportedrule() ||
         resp.isImportedbusiness() || resp.isImportedalias() ||
         resp.isImportedroles()) {
@@ -855,25 +854,24 @@ public class ServerActions extends ConnectionActions {
   private void jsonCommandConfigExport(final ConfigExportJsonPacket json)
       throws OpenR66ProtocolNotAuthenticatedException {
     // host, rule, business, alias, roles
-    final ConfigExportJsonPacket node = json;
-    final boolean bhost = node.isHost();
-    final boolean brule = node.isRule();
-    final boolean bbusiness = node.isBusiness();
-    final boolean balias = node.isAlias();
-    final boolean broles = node.isRoles();
+    final boolean bhost = json.isHost();
+    final boolean brule = json.isRule();
+    final boolean bbusiness = json.isBusiness();
+    final boolean balias = json.isAlias();
+    final boolean broles = json.isRoles();
     session.newState(VALIDOTHER);
     final String[] sresult =
         configExport(bhost, brule, bbusiness, balias, broles);
     // Now answer
     final ConfigExportResponseJsonPacket resp =
         new ConfigExportResponseJsonPacket();
-    resp.fromJson(node);
+    resp.fromJson(json);
     resp.setFilehost(sresult[0]);
     resp.setFilerule(sresult[1]);
     resp.setFilebusiness(sresult[2]);
     resp.setFilealias(sresult[3]);
     resp.setFileroles(sresult[4]);
-    R66Result result;
+    final R66Result result;
     if (resp.getFilerule() != null || resp.getFilehost() != null ||
         resp.getFilebusiness() != null || resp.getFilealias() != null ||
         resp.getFileroles() != null) {
@@ -896,21 +894,20 @@ public class ServerActions extends ConnectionActions {
   private void jsonCommandLog(final JsonCommandPacket packet,
                               final LogJsonPacket json)
       throws OpenR66ProtocolBusinessException {
-    final LogJsonPacket node = json;
-    final boolean purge = node.isPurge();
-    final boolean clean = node.isClean();
-    final Timestamp start = node.getStart() == null? null :
-        new Timestamp(node.getStart().getTime());
+    final boolean purge = json.isPurge();
+    final boolean clean = json.isClean();
+    final Timestamp start = json.getStart() == null? null :
+        new Timestamp(json.getStart().getTime());
     final Timestamp stop =
-        node.getStop() == null? null : new Timestamp(node.getStop().getTime());
-    final String startid = node.getStartid();
-    final String stopid = node.getStopid();
-    final String rule = node.getRule();
-    final String request = node.getRequest();
-    final boolean pending = node.isStatuspending();
-    final boolean transfer = node.isStatustransfer();
-    final boolean done = node.isStatusdone();
-    final boolean error = node.isStatuserror();
+        json.getStop() == null? null : new Timestamp(json.getStop().getTime());
+    final String startid = json.getStartid();
+    final String stopid = json.getStopid();
+    final String rule = json.getRule();
+    final String request = json.getRequest();
+    final boolean pending = json.isStatuspending();
+    final boolean transfer = json.isStatustransfer();
+    final boolean done = json.isStatusdone();
+    final boolean error = json.isStatuserror();
     final boolean isPurge =
         packet.getTypeValid() == LocalPacketFactory.LOGPURGEPACKET || purge;
     session.newState(VALIDOTHER);
@@ -918,7 +915,7 @@ public class ServerActions extends ConnectionActions {
         logPurge(purge, clean, start, stop, startid, stopid, rule, request,
                  pending, transfer, done, error, isPurge);
     final LogResponseJsonPacket newjson = new LogResponseJsonPacket();
-    newjson.fromJson(node);
+    newjson.fromJson(json);
     // Now answer
     newjson.setCommand(packet.getTypeValid());
     newjson.setFilename(sresult[0]);
@@ -969,14 +966,13 @@ public class ServerActions extends ConnectionActions {
   private void jsonCommandValid(final JsonCommandPacket packet,
                                 final RestartTransferJsonPacket json)
       throws OpenR66ProtocolNotAuthenticatedException {
-    final RestartTransferJsonPacket node = json;
     session.newState(VALIDOTHER);
     final R66Result result =
-        requestRestart(node.getRequested(), node.getRequester(),
-                       node.getSpecialid(), node.getRestarttime());
+        requestRestart(json.getRequested(), json.getRequester(),
+                       json.getSpecialid(), json.getRestarttime());
     result.setOther(packet);
     final JsonCommandPacket valid =
-        new JsonCommandPacket(node, result.getCode().getCode(),
+        new JsonCommandPacket(json, result.getCode().getCode(),
                               LocalPacketFactory.REQUESTUSERPACKET);
     if (isCodeValid(result.getCode())) {
       localChannelReference.validateRequest(result);
@@ -996,7 +992,7 @@ public class ServerActions extends ConnectionActions {
                                        final JsonPacket json)
       throws OpenR66ProtocolNotAuthenticatedException {
     final StopOrCancelJsonPacket node = (StopOrCancelJsonPacket) json;
-    R66Result resulttest;
+    final R66Result resulttest;
     if (node.getRequested() == null || node.getRequester() == null ||
         node.getSpecialid() == ILLEGALVALUE) {
       final ErrorCode code = ErrorCode.CommandNotFound;
@@ -1058,15 +1054,14 @@ public class ServerActions extends ConnectionActions {
   private void jsonCommandInformation(final InformationJsonPacket json)
       throws OpenR66ProtocolNotAuthenticatedException,
              OpenR66ProtocolNoDataException, OpenR66ProtocolPacketException {
-    final InformationJsonPacket node = json;
-    ValidPacket validPacket;
-    if (node.isIdRequest()) {
+    final ValidPacket validPacket;
+    if (json.isIdRequest()) {
       validPacket =
-          informationRequest(node.getId(), node.isTo(), node.getRulename(),
+          informationRequest(json.getId(), json.isTo(), json.getRulename(),
                              false);
     } else {
-      validPacket = informationFile(node.getRequest(), node.getRulename(),
-                                    node.getFilename(), false);
+      validPacket = informationFile(json.getRequest(), json.getRulename(),
+                                    json.getFilename(), false);
     }
     if (validPacket != null) {
       ChannelUtils
@@ -1074,7 +1069,7 @@ public class ServerActions extends ConnectionActions {
       localChannelReference.close();
     } else {
       session.newState(ERROR);
-      final ErrorPacket error = new ErrorPacket("Error while Request " + node,
+      final ErrorPacket error = new ErrorPacket("Error while Request " + json,
                                                 ErrorCode.Internal.getCode(),
                                                 ErrorPacket.FORWARDCLOSECODE);
       ChannelUtils.writeAbstractLocalPacket(localChannelReference, error, true);
@@ -1086,30 +1081,30 @@ public class ServerActions extends ConnectionActions {
   private void jsonCommandBusinessCommand(final BusinessRequestJsonPacket json)
       throws OpenR66ProtocolNotAuthenticatedException,
              OpenR66ProtocolPacketException {
-    final BusinessRequestJsonPacket node = json;
-    if (node.isToApplied()) {
+    if (json.isToApplied()) {
       session.newState(BUSINESSD);
     }
     final R66Future future =
-        businessRequest(node.isToApplied(), node.getClassName(),
-                        node.getArguments(), node.getExtraArguments(),
-                        node.getDelay());
+        businessRequest(json.isToApplied(), json.getClassName(),
+                        json.getArguments(), json.getExtraArguments(),
+                        json.getDelay());
     if (future != null && !future.isSuccess()) {
       R66Result result = future.getResult();
       if (result == null) {
         result = new R66Result(session, false, ErrorCode.ExternalOp,
                                session.getRunner());
       }
-      wrongResult(node, result);
+      wrongResult(json, result);
     } else if (future == null) {
-      R66Result result = new R66Result(session, false, ErrorCode.ExternalOp,
-                                       session.getRunner());
-      wrongResult(node, result);
+      final R66Result result =
+          new R66Result(session, false, ErrorCode.ExternalOp,
+                        session.getRunner());
+      wrongResult(json, result);
     } else {
       logger.debug("BusinessRequest part 2");
-      R66Result result = future.getResult();
-      JsonCommandPacket valid =
-          new JsonCommandPacket(node, result.getCode().getCode(),
+      final R66Result result = future.getResult();
+      final JsonCommandPacket valid =
+          new JsonCommandPacket(json, result.getCode().getCode(),
                                 LocalPacketFactory.REQUESTUSERPACKET);
       if (isCodeValid(result.getCode())) {
         localChannelReference.validateRequest(result);
@@ -1120,7 +1115,7 @@ public class ServerActions extends ConnectionActions {
       try {
         ChannelUtils
             .writeAbstractLocalPacket(localChannelReference, valid, true);
-      } catch (OpenR66ProtocolPacketException ignored) {
+      } catch (final OpenR66ProtocolPacketException ignored) {
         // ignore
       }
       localChannelReference.close();
@@ -1174,10 +1169,9 @@ public class ServerActions extends ConnectionActions {
   private void jsonCommandShutdown(final JsonCommandPacket packet,
                                    final ShutdownRequestJsonPacket json)
       throws OpenR66RunnerErrorException, OpenR66ProtocolSystemException {
-    final ShutdownRequestJsonPacket node = json;
     int rank = -1;
     if (session.getRunner() != null && session.getRunner().isInTransfer()) {
-      rank = node.getRank();
+      rank = json.getRank();
     }
     final R66Result result =
         new R66Result(new OpenR66ProtocolShutdownException(), session, true,
@@ -1185,9 +1179,9 @@ public class ServerActions extends ConnectionActions {
     result.setOther(packet);
     rank = shutdownRequest(result, rank);
     if (rank >= 0) {
-      node.setRank(rank);
+      json.setRank(rank);
       final JsonCommandPacket valid =
-          new JsonCommandPacket(node, result.getCode().getCode(),
+          new JsonCommandPacket(json, result.getCode().getCode(),
                                 LocalPacketFactory.SHUTDOWNPACKET);
       try {
         ChannelUtils
@@ -1254,7 +1248,7 @@ public class ServerActions extends ConnectionActions {
    * @throws OpenR66RunnerErrorException
    * @throws OpenR66ProtocolSystemException
    */
-  private int shutdownRequest(R66Result result, int rank)
+  private int shutdownRequest(final R66Result result, final int rank)
       throws OpenR66RunnerErrorException, OpenR66ProtocolSystemException {
     session.newState(SHUTDOWN);
     logger.warn(
@@ -1297,9 +1291,9 @@ public class ServerActions extends ConnectionActions {
    *
    * @throws OpenR66ProtocolNotAuthenticatedException
    */
-  public final long[] bandwidth(boolean setter, long writeglobal,
-                                long readglobal, long writesession,
-                                long readsession)
+  public final long[] bandwidth(final boolean setter, final long writeglobal,
+                                final long readglobal, final long writesession,
+                                final long readsession)
       throws OpenR66ProtocolNotAuthenticatedException {
     // Authentication must be the local server or LIMIT authorization
     try {
@@ -1363,7 +1357,7 @@ public class ServerActions extends ConnectionActions {
    * @throws OpenR66ProtocolSystemException
    */
   public final ConfigImportResponseJsonPacket configImport(
-      ConfigImportJsonPacket json)
+      final ConfigImportJsonPacket json)
       throws OpenR66ProtocolNotAuthenticatedException,
              OpenR66ProtocolSystemException {
     session.newState(VALIDOTHER);
@@ -1416,7 +1410,7 @@ public class ServerActions extends ConnectionActions {
     }
     if (shost != null || hostid != ILLEGALVALUE && local != null) {
       DbHostAuth[] oldHosts = null;
-      DbTaskRunner runner;
+      final DbTaskRunner runner;
       if (hostid != ILLEGALVALUE && local != null) {
         // need to find the local filename
         try {
@@ -1462,7 +1456,7 @@ public class ServerActions extends ConnectionActions {
     }
     if (srule != null || ruleid != ILLEGALVALUE && local != null) {
       DbRule[] oldRules = null;
-      DbTaskRunner runner;
+      final DbTaskRunner runner;
       if (ruleid != ILLEGALVALUE && local != null) {
         // need to find the local filename
         try {
@@ -1522,7 +1516,7 @@ public class ServerActions extends ConnectionActions {
         bbusinessPurge || baliasPurge || brolesPurge ||
         (businessid != ILLEGALVALUE || aliasid != ILLEGALVALUE ||
          roleid != ILLEGALVALUE) && local != null) {
-      DbHostConfiguration host;
+      final DbHostConfiguration host;
       try {
         host = new DbHostConfiguration(Configuration.configuration.getHostId());
         DbTaskRunner runner;
@@ -1662,9 +1656,9 @@ public class ServerActions extends ConnectionActions {
    *
    * @throws OpenR66ProtocolNotAuthenticatedException
    */
-  public final String[] configExport(boolean bhost, boolean brule,
-                                     boolean bbusiness, boolean balias,
-                                     boolean broles)
+  public final String[] configExport(final boolean bhost, final boolean brule,
+                                     final boolean bbusiness,
+                                     final boolean balias, final boolean broles)
       throws OpenR66ProtocolNotAuthenticatedException {
     // Authentication must be the local server or CONFIGADMIN authorization
     try {
@@ -1699,7 +1693,7 @@ public class ServerActions extends ConnectionActions {
    *
    * @return filenames in order
    */
-  public static String[] staticConfigExport(String dir, boolean bhost,
+  public static String[] staticConfigExport(final String dir, boolean bhost,
                                             boolean brule, boolean bbusiness,
                                             boolean balias, boolean broles) {
     String shost = null;
@@ -1836,8 +1830,8 @@ public class ServerActions extends ConnectionActions {
    *
    * @throws OpenR66ProtocolNotAuthenticatedException
    */
-  public final R66Result requestRestart(String reqd, String reqr, long id,
-                                        Date date)
+  public final R66Result requestRestart(final String reqd, final String reqr,
+                                        final long id, final Date date)
       throws OpenR66ProtocolNotAuthenticatedException {
     ErrorCode returnCode = ErrorCode.Internal;
     R66Result resulttest;
@@ -1879,7 +1873,7 @@ public class ServerActions extends ConnectionActions {
         try {
           localChannelReference.getDbSession();
           taskRunner = new DbTaskRunner(session, null, id, reqr, reqd);
-          Timestamp timestart;
+          final Timestamp timestart;
           if (date != null) {
             // time to reschedule in yyyyMMddHHmmss format
             logger.debug("Debug: restart with " + date);
@@ -1909,7 +1903,7 @@ public class ServerActions extends ConnectionActions {
    *
    * @return True if the code is an OK code and not an error
    */
-  public final boolean isCodeValid(ErrorCode code) {
+  public final boolean isCodeValid(final ErrorCode code) {
     switch (code) {
       case CompleteOk:
       case InitOk:
@@ -1973,11 +1967,13 @@ public class ServerActions extends ConnectionActions {
    * @throws OpenR66ProtocolNotAuthenticatedException
    * @throws OpenR66ProtocolBusinessException
    */
-  public final String[] logPurge(boolean purge, boolean clean, Timestamp start,
-                                 Timestamp stop, String startid, String stopid,
-                                 String rule, String request, boolean pending,
-                                 boolean transfer, boolean done, boolean error,
-                                 boolean isPurge)
+  public final String[] logPurge(final boolean purge, final boolean clean,
+                                 final Timestamp start, final Timestamp stop,
+                                 final String startid, String stopid,
+                                 final String rule, final String request,
+                                 final boolean pending, final boolean transfer,
+                                 final boolean done, final boolean error,
+                                 final boolean isPurge)
       throws OpenR66ProtocolNotAuthenticatedException,
              OpenR66ProtocolBusinessException {
     // should be from the local server or from an authorized hosts: LOGCONTROL
@@ -2079,8 +2075,8 @@ public class ServerActions extends ConnectionActions {
    *
    * @throws OpenR66ProtocolNotAuthenticatedException
    */
-  public final R66Result stopOrCancel(byte type, String reqd, String reqr,
-                                      long id)
+  public final R66Result stopOrCancel(final byte type, final String reqd,
+                                      final String reqr, final long id)
       throws OpenR66ProtocolNotAuthenticatedException {
     // should be from the local server or from an authorized hosts: SYSTEM
     try {
@@ -2094,7 +2090,7 @@ public class ServerActions extends ConnectionActions {
       throw new OpenR66ProtocolNotAuthenticatedException(
           NOT_CORRECTLY_AUTHENTICATED_SINCE_SSL_IS_NOT_SUPPORTED, e1);
     }
-    R66Result resulttest;
+    final R66Result resulttest;
     final String key = reqd + ' ' + reqr + ' ' + id;
     // header = ?; middle = requested+blank+requester+blank+specialId
     final LocalChannelReference lcr =
@@ -2137,7 +2133,8 @@ public class ServerActions extends ConnectionActions {
     return resulttest;
   }
 
-  private LocalChannelReference getLocalChannelReference(Transfer transfer) {
+  private LocalChannelReference getLocalChannelReference(
+      final Transfer transfer) {
     final String key =
         transfer.getRequested() + ' ' + transfer.getRequester() + ' ' +
         transfer.getId();
@@ -2150,7 +2147,7 @@ public class ServerActions extends ConnectionActions {
    *
    * @return
    */
-  public R66Result stopTransfer(Transfer transfer) {
+  public R66Result stopTransfer(final Transfer transfer) {
     final ErrorCode code = ErrorCode.StoppedTransfer;
     final LocalChannelReference lcr = getLocalChannelReference(transfer);
     if (lcr == null) {
@@ -2182,7 +2179,7 @@ public class ServerActions extends ConnectionActions {
    *
    * @return
    */
-  public R66Result cancelTransfer(Transfer transfer) {
+  public R66Result cancelTransfer(final Transfer transfer) {
     final ErrorCode code = ErrorCode.CanceledTransfer;
     final LocalChannelReference lcr = getLocalChannelReference(transfer);
     if (lcr == null) {
@@ -2219,8 +2216,8 @@ public class ServerActions extends ConnectionActions {
    *
    * @return True if correctly stopped or canceled
    */
-  private boolean stopOrCancelRunner(long id, String reqd, String reqr,
-                                     ErrorCode code) {
+  private boolean stopOrCancelRunner(final long id, final String reqd,
+                                     final String reqr, final ErrorCode code) {
     try {
       localChannelReference.getDbSession();
       final DbTaskRunner taskRunner =
@@ -2241,7 +2238,7 @@ public class ServerActions extends ConnectionActions {
    * @throws OpenR66ProtocolNotAuthenticatedException
    * @throws OpenR66ProtocolBusinessException
    */
-  public void shutdown(ShutdownPacket packet)
+  public void shutdown(final ShutdownPacket packet)
       throws OpenR66ProtocolShutdownException,
              OpenR66ProtocolNotAuthenticatedException,
              OpenR66ProtocolBusinessException {
@@ -2260,7 +2257,7 @@ public class ServerActions extends ConnectionActions {
    * @throws OpenR66ProtocolNotAuthenticatedException
    * @throws OpenR66ProtocolBusinessException
    */
-  public final void shutdown(byte[] key, boolean isRestart)
+  public final void shutdown(final byte[] key, final boolean isRestart)
       throws OpenR66ProtocolShutdownException,
              OpenR66ProtocolNotAuthenticatedException,
              OpenR66ProtocolBusinessException {
@@ -2307,7 +2304,7 @@ public class ServerActions extends ConnectionActions {
    * @throws OpenR66ProtocolNotAuthenticatedException
    * @throws OpenR66ProtocolPacketException
    */
-  public void businessRequest(BusinessRequestPacket packet)
+  public void businessRequest(final BusinessRequestPacket packet)
       throws OpenR66ProtocolNotAuthenticatedException,
              OpenR66ProtocolPacketException {
     final String argRule = packet.getSheader();
@@ -2325,20 +2322,21 @@ public class ServerActions extends ConnectionActions {
       }
       wrongResult(packet, argRule, result);
     } else if (future == null) {
-      R66Result result = new R66Result(session, false, ErrorCode.ExternalOp,
-                                       session.getRunner());
+      final R66Result result =
+          new R66Result(session, false, ErrorCode.ExternalOp,
+                        session.getRunner());
       wrongResult(packet, argRule, result);
     } else {
       logger.debug("BusinessRequest part 2");
-      R66Result result = future.getResult();
-      LocalChannelReference localChannelReference =
+      final R66Result result = future.getResult();
+      final LocalChannelReference localChannelReference =
           session.getLocalChannelReference();
       if (localChannelReference != null) {
         localChannelReference.validateRequest(result);
         try {
           ChannelUtils
               .writeAbstractLocalPacket(localChannelReference, packet, true);
-        } catch (OpenR66ProtocolPacketException ignored) {
+        } catch (final OpenR66ProtocolPacketException ignored) {
           // ignore
         }
         localChannelReference.close();
@@ -2384,9 +2382,11 @@ public class ServerActions extends ConnectionActions {
    * @throws OpenR66ProtocolNotAuthenticatedException
    * @throws OpenR66ProtocolPacketException
    */
-  public final R66Future businessRequest(boolean isToApplied, String className,
-                                         String arguments,
-                                         String extraArguments, int delay)
+  public final R66Future businessRequest(final boolean isToApplied,
+                                         final String className,
+                                         final String arguments,
+                                         final String extraArguments,
+                                         final int delay)
       throws OpenR66ProtocolNotAuthenticatedException,
              OpenR66ProtocolPacketException {
     if (!session.isAuthenticated()) {
@@ -2427,7 +2427,7 @@ public class ServerActions extends ConnectionActions {
    * @throws OpenR66ProtocolPacketException
    * @throws OpenR66ProtocolBusinessException
    */
-  public void blockRequest(BlockRequestPacket packet)
+  public void blockRequest(final BlockRequestPacket packet)
       throws OpenR66ProtocolPacketException, OpenR66ProtocolBusinessException {
     final R66Result result = blockRequest(packet.getKey(), packet.getBlock());
     final ValidPacket valid = new ValidPacket(
@@ -2453,7 +2453,8 @@ public class ServerActions extends ConnectionActions {
    * @throws OpenR66ProtocolPacketException
    * @throws OpenR66ProtocolBusinessException
    */
-  public final R66Result blockRequest(byte[] key, boolean isBlocking)
+  public final R66Result blockRequest(final byte[] key,
+                                      final boolean isBlocking)
       throws OpenR66ProtocolBusinessException {
     if (!session.isAuthenticated()) {
       throw new OpenR66ProtocolNotAuthenticatedException(
@@ -2499,8 +2500,10 @@ public class ServerActions extends ConnectionActions {
    * @throws OpenR66ProtocolNoDataException
    * @throws OpenR66ProtocolPacketException
    */
-  public final ValidPacket informationFile(byte request, String rulename,
-                                           String filename, boolean jsonOutput)
+  public final ValidPacket informationFile(final byte request,
+                                           final String rulename,
+                                           final String filename,
+                                           final boolean jsonOutput)
       throws OpenR66ProtocolNotAuthenticatedException,
              OpenR66ProtocolNoDataException, OpenR66ProtocolPacketException {
     if (!session.isAuthenticated()) {
@@ -2508,7 +2511,7 @@ public class ServerActions extends ConnectionActions {
           "Not authenticated while Information received");
     }
     localChannelReference.getDbSession();
-    DbRule rule;
+    final DbRule rule;
     try {
       rule = new DbRule(rulename);
     } catch (final WaarpDatabaseException e) {
@@ -2521,7 +2524,7 @@ public class ServerActions extends ConnectionActions {
       if (request == InformationPacket.ASKENUM.ASKLIST.ordinal() ||
           request == InformationPacket.ASKENUM.ASKMLSLIST.ordinal()) {
         // ls or mls from current directory
-        List<String> list;
+        final List<String> list;
         if (request == InformationPacket.ASKENUM.ASKLIST.ordinal()) {
           list = session.getDir().list(filename);
         } else {
@@ -2627,9 +2630,9 @@ public class ServerActions extends ConnectionActions {
    * @throws OpenR66ProtocolNoDataException
    * @throws OpenR66ProtocolPacketException
    */
-  public final ValidPacket informationRequest(long id, boolean isTo,
-                                              String remoteHost,
-                                              boolean jsonOutput)
+  public final ValidPacket informationRequest(final long id, final boolean isTo,
+                                              final String remoteHost,
+                                              final boolean jsonOutput)
       throws OpenR66ProtocolNotAuthenticatedException,
              OpenR66ProtocolNoDataException, OpenR66ProtocolPacketException {
     if (!session.isAuthenticated()) {
@@ -2640,14 +2643,14 @@ public class ServerActions extends ConnectionActions {
     if (jsonOutput && remoteHost != null && !remoteHost.isEmpty()) {
       remote = remoteHost;
     }
-    String local;
+    final String local;
     try {
       local = Configuration.configuration.getHostId(remote);
     } catch (final WaarpDatabaseException e1) {
       logger.error("Remote Host is unknown", e1);
       throw new OpenR66ProtocolNoDataException("Remote Host is unknown", e1);
     }
-    DbTaskRunner runner;
+    final DbTaskRunner runner;
     if (isTo) {
       logger.info("{} {} {}", id, remote, local);
       try {
@@ -2674,7 +2677,7 @@ public class ServerActions extends ConnectionActions {
     if (!jsonOutput) {
       session.newState(VALIDOTHER);
     }
-    ValidPacket validPacket;
+    final ValidPacket validPacket;
     try {
       validPacket =
           new ValidPacket(jsonOutput? runner.asJson() : runner.asXML(), "",
@@ -2701,7 +2704,8 @@ public class ServerActions extends ConnectionActions {
    *
    * @return the result associated with the new transfer request
    */
-  public final R66Result transferRequest(TransferRequestJsonPacket request) {
+  public final R66Result transferRequest(
+      final TransferRequestJsonPacket request) {
     final DbTaskRunner runner = initTransferRequest(request);
     if (runner != null) {
       runner.changeUpdatedInfo(AbstractDbData.UpdatedInfo.TOSUBMIT);
@@ -2723,7 +2727,7 @@ public class ServerActions extends ConnectionActions {
       return result;
     } else {
       logger.warn("ERROR: Transfer NOT scheduled");
-      return new R66Result(session, false, ErrorCode.Internal, runner);
+      return new R66Result(session, false, ErrorCode.Internal, null);
     }
   }
 
@@ -2734,7 +2738,8 @@ public class ServerActions extends ConnectionActions {
    *
    * @return the associated DbTaskRunner
    */
-  private DbTaskRunner initTransferRequest(TransferRequestJsonPacket request) {
+  private DbTaskRunner initTransferRequest(
+      final TransferRequestJsonPacket request) {
     Timestamp ttimestart = null;
     final Date date = request.getStart();
     if (date != null) {
@@ -2747,7 +2752,7 @@ public class ServerActions extends ConnectionActions {
         ttimestart = new Timestamp(request.getDelay());
       }
     }
-    DbRule rule;
+    final DbRule rule;
     try {
       rule = new DbRule(request.getRulename());
     } catch (final WaarpDatabaseException e) {
@@ -2758,7 +2763,7 @@ public class ServerActions extends ConnectionActions {
     if (RequestPacket.isMD5Mode(request.getMode())) {
       mode = RequestPacket.getModeMD5(mode);
     }
-    DbTaskRunner taskRunner;
+    final DbTaskRunner taskRunner;
     long tid = ILLEGALVALUE;
     if (request.getSpecialId() != 0 || request.getSpecialId() == ILLEGALVALUE) {
       tid = request.getSpecialId();

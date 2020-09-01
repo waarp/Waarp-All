@@ -53,8 +53,8 @@ public class ValidFilePathTask extends AbstractTask {
    * @param argTransfer
    * @param session
    */
-  public ValidFilePathTask(String argRule, int delay, String argTransfer,
-                           R66Session session) {
+  public ValidFilePathTask(final String argRule, final int delay,
+                           final String argTransfer, final R66Session session) {
     super(TaskType.VALIDFILEPATH, delay, argRule, argTransfer, session);
   }
 

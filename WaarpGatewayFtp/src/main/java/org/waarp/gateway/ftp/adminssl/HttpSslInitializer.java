@@ -39,12 +39,12 @@ public class HttpSslInitializer extends ChannelInitializer<SocketChannel> {
   public static WaarpSecureKeyStore waarpSecureKeyStore;
   private final boolean useHttpCompression;
 
-  public HttpSslInitializer(boolean useHttpCompression) {
+  public HttpSslInitializer(final boolean useHttpCompression) {
     this.useHttpCompression = useHttpCompression;
   }
 
   @Override
-  protected void initChannel(SocketChannel ch) {
+  protected void initChannel(final SocketChannel ch) {
     final ChannelPipeline pipeline = ch.pipeline();
     // Add SSL handler first to encrypt and decrypt everything.
     final SslHandler sslhandler =

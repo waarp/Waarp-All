@@ -37,8 +37,8 @@ import java.util.List;
  */
 public class NetworkPacketCodec extends ByteToMessageCodec<NetworkPacket> {
   @Override
-  protected void decode(ChannelHandlerContext ctx, ByteBuf buf,
-                        List<Object> out) throws Exception {
+  protected void decode(final ChannelHandlerContext ctx, final ByteBuf buf,
+                        final List<Object> out) throws Exception {
     // Make sure if the length field was received.
     if (buf.readableBytes() < 4) {
       // The length field was not received yet - return null.
@@ -86,8 +86,9 @@ public class NetworkPacketCodec extends ByteToMessageCodec<NetworkPacket> {
   }
 
   @Override
-  protected void encode(ChannelHandlerContext ctx, NetworkPacket msg,
-                        ByteBuf out) throws Exception {
+  protected void encode(final ChannelHandlerContext ctx,
+                        final NetworkPacket msg, final ByteBuf out)
+      throws Exception {
     final ByteBuf finalBuf = msg.getNetworkPacket();
     out.writeBytes(finalBuf);
     WaarpNettyUtil.releaseCompletely(finalBuf);

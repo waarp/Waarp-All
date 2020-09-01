@@ -33,7 +33,7 @@ public class FileEndOfTransferException extends Exception {
   /**
    * @param message
    */
-  public FileEndOfTransferException(String message) {
+  public FileEndOfTransferException(final String message) {
     super(message);
   }
 
@@ -41,7 +41,8 @@ public class FileEndOfTransferException extends Exception {
    * @param message
    * @param cause
    */
-  public FileEndOfTransferException(String message, Throwable cause) {
+  public FileEndOfTransferException(final String message,
+                                    final Throwable cause) {
     super(message, cause);
   }
 

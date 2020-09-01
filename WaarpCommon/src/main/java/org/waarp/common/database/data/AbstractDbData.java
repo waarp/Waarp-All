@@ -109,7 +109,7 @@ public abstract class AbstractDbData {
    *
    * @param dbSession Deprecated for Waarp R66
    */
-  protected AbstractDbData(DbSession dbSession) {
+  protected AbstractDbData(final DbSession dbSession) {
     this.dbSession = dbSession;
     initObject();
   }
@@ -324,7 +324,8 @@ public abstract class AbstractDbData {
    *
    * @throws WaarpDatabaseSqlException
    */
-  public static void setTrueValue(PreparedStatement ps, DbValue value, int rank)
+  public static void setTrueValue(final PreparedStatement ps,
+                                  final DbValue value, final int rank)
       throws WaarpDatabaseSqlException {
     try {
       switch (value.type) {
@@ -449,7 +450,8 @@ public abstract class AbstractDbData {
    * @throws WaarpDatabaseNoConnectionException
    * @throws WaarpDatabaseSqlException
    */
-  protected void setValue(DbPreparedStatement preparedStatement, DbValue value)
+  protected void setValue(final DbPreparedStatement preparedStatement,
+                          final DbValue value)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
     final PreparedStatement ps = preparedStatement.getPreparedStatement();
     setTrueValue(ps, value, 1);
@@ -464,8 +466,8 @@ public abstract class AbstractDbData {
    * @throws WaarpDatabaseNoConnectionException
    * @throws WaarpDatabaseSqlException
    */
-  protected void setValues(DbPreparedStatement preparedStatement,
-                           DbValue[] values)
+  protected void setValues(final DbPreparedStatement preparedStatement,
+                           final DbValue[] values)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
     final PreparedStatement ps = preparedStatement.getPreparedStatement();
     for (int i = 0; i < values.length; i++) {
@@ -482,7 +484,7 @@ public abstract class AbstractDbData {
    *
    * @throws WaarpDatabaseSqlException
    */
-  public static void getTrueValue(ResultSet rs, DbValue value)
+  public static void getTrueValue(final ResultSet rs, final DbValue value)
       throws WaarpDatabaseSqlException {
     try {
       switch (value.type) {
@@ -548,7 +550,8 @@ public abstract class AbstractDbData {
    * @throws WaarpDatabaseNoConnectionException
    * @throws WaarpDatabaseSqlException
    */
-  protected void getValue(DbPreparedStatement preparedStatement, DbValue value)
+  protected void getValue(final DbPreparedStatement preparedStatement,
+                          final DbValue value)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
     final ResultSet rs = preparedStatement.getResultSet();
     getTrueValue(rs, value);
@@ -563,8 +566,8 @@ public abstract class AbstractDbData {
    * @throws WaarpDatabaseNoConnectionException
    * @throws WaarpDatabaseSqlException
    */
-  protected void getValues(DbPreparedStatement preparedStatement,
-                           DbValue[] values)
+  protected void getValues(final DbPreparedStatement preparedStatement,
+                           final DbValue[] values)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
     final ResultSet rs = preparedStatement.getResultSet();
     for (final DbValue value : values) {
@@ -580,7 +583,7 @@ public abstract class AbstractDbData {
    *
    * @return True if OK, else False
    */
-  public boolean get(DbPreparedStatement preparedStatement) {
+  public boolean get(final DbPreparedStatement preparedStatement) {
     try {
       getValues(preparedStatement, allFields);
     } catch (final WaarpDatabaseNoConnectionException e1) {
@@ -662,7 +665,7 @@ public abstract class AbstractDbData {
    *
    * @throws WaarpDatabaseSqlException
    */
-  public void setFromJson(ObjectNode node, boolean ignorePrimaryKey)
+  public void setFromJson(final ObjectNode node, final boolean ignorePrimaryKey)
       throws WaarpDatabaseSqlException {
     DbValue[] list = allFields;
     if (ignorePrimaryKey) {

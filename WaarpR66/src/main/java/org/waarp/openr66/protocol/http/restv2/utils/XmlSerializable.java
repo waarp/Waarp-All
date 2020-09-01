@@ -84,7 +84,7 @@ public interface XmlSerializable {
     public Roles() {
     }
 
-    public Roles(List<RoleEntry> roles) {
+    public Roles(final List<RoleEntry> roles) {
       this.roles = roles;
     }
 
@@ -123,7 +123,7 @@ public interface XmlSerializable {
     public Aliases() {
     }
 
-    public Aliases(List<AliasEntry> aliases) {
+    public Aliases(final List<AliasEntry> aliases) {
       this.aliases = aliases;
     }
 
@@ -162,7 +162,7 @@ public interface XmlSerializable {
     public Hosts() {
     }
 
-    public Hosts(List<Host> hosts) {
+    public Hosts(final List<Host> hosts) {
       this.hosts = hosts;
     }
   }
@@ -181,7 +181,7 @@ public interface XmlSerializable {
     public Rules() {
     }
 
-    public Rules(List<Rule> rules) {
+    public Rules(final List<Rule> rules) {
       this.rules = rules;
     }
 
@@ -201,7 +201,7 @@ public interface XmlSerializable {
       public Tasks() {
       }
 
-      public Tasks(List<RuleTask> tasks) {
+      public Tasks(final List<RuleTask> tasks) {
         this.tasks = tasks;
       }
     }
@@ -218,7 +218,7 @@ public interface XmlSerializable {
     public Transfers() {
     }
 
-    public Transfers(List<Transfer> transfers) {
+    public Transfers(final List<Transfer> transfers) {
       this.transfers = transfers;
     }
   }

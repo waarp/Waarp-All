@@ -51,12 +51,12 @@ public class DbModelFactoryGateway extends DbModelFactory {
    *
    * @throws WaarpDatabaseNoConnectionException
    */
-  public static DbAdmin initialize(String dbdriver, String dbserver,
-                                   String dbuser, String dbpasswd,
-                                   boolean write)
+  public static DbAdmin initialize(final String dbdriver, final String dbserver,
+                                   final String dbuser, final String dbpasswd,
+                                   final boolean write)
       throws WaarpDatabaseNoConnectionException {
     final DbType type = DbType.getFromDriver(dbdriver);
-    DbModel dbModel;
+    final DbModel dbModel;
     switch (type) {
       case H2:
         dbModel = new DbModelH2Kernel(dbserver, dbuser, dbpasswd);

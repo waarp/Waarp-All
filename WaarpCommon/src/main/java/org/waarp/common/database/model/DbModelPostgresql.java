@@ -115,12 +115,12 @@ public abstract class DbModelPostgresql extends DbModelAbstract {
 
     public final String constructor;
 
-    DBType(int type, String constructor) {
+    DBType(final int type, final String constructor) {
       this.type = type;
       this.constructor = constructor;
     }
 
-    public static String getType(int sqltype) {
+    public static String getType(final int sqltype) {
       switch (sqltype) {
         case Types.CHAR:
           return CHAR.constructor;
@@ -157,7 +157,7 @@ public abstract class DbModelPostgresql extends DbModelAbstract {
   }
 
   @Override
-  public void resetSequence(DbSession session, long newvalue)
+  public void resetSequence(final DbSession session, final long newvalue)
       throws WaarpDatabaseNoConnectionException {
     final String action =
         "ALTER SEQUENCE " + DbDataModel.fieldseq + " MINVALUE " +
@@ -176,7 +176,7 @@ public abstract class DbModelPostgresql extends DbModelAbstract {
   }
 
   @Override
-  public long nextSequence(DbSession dbSession)
+  public long nextSequence(final DbSession dbSession)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException,
              WaarpDatabaseNoDataException {
     long result = DbConstant.ILLEGALVALUE;
@@ -209,7 +209,8 @@ public abstract class DbModelPostgresql extends DbModelAbstract {
   }
 
   @Override
-  public String limitRequest(String allfields, String request, int nb) {
+  public String limitRequest(final String allfields, final String request,
+                             final int nb) {
     if (nb == 0) {
       return request;
     }

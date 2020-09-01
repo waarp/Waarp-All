@@ -49,7 +49,8 @@ public abstract class DataBusinessHandler {
    *
    * @param dataNetworkHandler the dataNetworkHandler to set
    */
-  public void setDataNetworkHandler(DataNetworkHandler dataNetworkHandler) {
+  public void setDataNetworkHandler(
+      final DataNetworkHandler dataNetworkHandler) {
     this.dataNetworkHandler = dataNetworkHandler;
   }
 
@@ -65,7 +66,7 @@ public abstract class DataBusinessHandler {
    *
    * @param session the session to set
    */
-  public void setFtpSession(FtpSession session) {
+  public void setFtpSession(final FtpSession session) {
     this.session = session;
   }
 

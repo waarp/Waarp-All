@@ -58,7 +58,7 @@ public interface WaarpInterfaceMib extends MOGroup {
      */
     AllEvents;
 
-    public boolean isLevelValid(int level) {
+    public boolean isLevelValid(final int level) {
       return level >= ordinal();
     }
   }

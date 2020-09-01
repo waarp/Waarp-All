@@ -41,7 +41,8 @@ public class DbModelMysqlFtp extends DbModelMysql {
    *
    * @throws WaarpDatabaseNoConnectionException
    */
-  public DbModelMysqlFtp(String dbserver, String dbuser, String dbpasswd)
+  public DbModelMysqlFtp(final String dbserver, final String dbuser,
+                         final String dbpasswd)
       throws WaarpDatabaseNoConnectionException {
     super(dbserver, dbuser, dbpasswd);
   }
@@ -49,33 +50,33 @@ public class DbModelMysqlFtp extends DbModelMysql {
   private final ReentrantLock lock = new ReentrantLock();
 
   @Override
-  public void createTables(DbSession session)
+  public void createTables(final DbSession session)
       throws WaarpDatabaseNoConnectionException {
     DbModelMysqlKernel.createTableMonitoring(session);
   }
 
   @Override
-  public void resetSequence(DbSession session, long newvalue)
+  public void resetSequence(final DbSession session, final long newvalue)
       throws WaarpDatabaseNoConnectionException {
     DbModelMysqlKernel.resetSequenceMonitoring(session, newvalue);
   }
 
   @Override
-  public synchronized long nextSequence(DbSession dbSession)
+  public synchronized long nextSequence(final DbSession dbSession)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException,
              WaarpDatabaseNoDataException {
     return DbModelMysqlKernel.nextSequenceMonitoring(dbSession, lock);
   }
 
   @Override
-  public boolean upgradeDb(DbSession session, String version)
+  public boolean upgradeDb(final DbSession session, final String version)
       throws WaarpDatabaseNoConnectionException {
     return true;
   }
 
   @Override
-  public boolean needUpgradeDb(DbSession session, String version,
-                               boolean tryFix)
+  public boolean needUpgradeDb(final DbSession session, final String version,
+                               final boolean tryFix)
       throws WaarpDatabaseNoConnectionException {
     return false;
   }

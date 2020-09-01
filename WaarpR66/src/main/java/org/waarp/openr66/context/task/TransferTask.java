@@ -84,8 +84,8 @@ public class TransferTask extends AbstractExecTask {
    * @param argTransfer
    * @param session
    */
-  public TransferTask(String argRule, int delay, String argTransfer,
-                      R66Session session) {
+  public TransferTask(final String argRule, final int delay,
+                      final String argTransfer, final R66Session session) {
     super(TaskType.TRANSFER, delay, argRule, argTransfer, session);
   }
 
@@ -105,27 +105,27 @@ public class TransferTask extends AbstractExecTask {
           new OpenR66RunnerErrorException("Not enough argument in Transfer"));
       return;
     }
-    TransferArgs transferArgs = TransferArgs.getParamsInternal(0, args, false);
+    final TransferArgs transferArgs =
+        TransferArgs.getParamsInternal(0, args, false);
     if (transferArgs != null) {
       String copied = null;
-      for (int i = 0; i < args.length; i++) {
-        if ("-copyinfo".equalsIgnoreCase(args[i])) {
+      for (final String arg : args) {
+        if ("-copyinfo".equalsIgnoreCase(arg)) {
           copied = argTransfer;
           break;
         }
       }
       // Force to get follow Id if present (and other elements from map) if
       // not already copied
-      DbTaskRunner taskRunner = session.getRunner();
-      String follow = taskRunner.getFollowId();
+      final DbTaskRunner taskRunner = session.getRunner();
+      final String follow = taskRunner.getFollowId();
       if (copied == null && follow != null && !follow.isEmpty() &&
           !transferArgs.getTransferInfo()
                        .contains(TransferArgs.FOLLOW_JSON_KEY)) {
         transferArgs.setFollowId(follow);
-        Map<String, String> map = new HashMap<String, String>();
+        final Map<String, String> map = new HashMap<String, String>();
         map.put(TransferArgs.FOLLOW_JSON_KEY, follow);
-        final String smap = JsonHandler.writeAsStringEscaped(map);
-        copied = smap;
+        copied = JsonHandler.writeAsStringEscaped(map);
       }
       TransferArgs.getAllInfo(transferArgs, 0, args, copied);
     } else {

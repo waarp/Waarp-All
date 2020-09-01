@@ -1367,9 +1367,9 @@ public enum FtpCommandCode {
    */
   public final Class<?>[] nextValids;
 
-  FtpCommandCode(Class<? extends AbstractCommand> command,
-                 Class<? extends AbstractCommand> previousValid,
-                 Class<?>... nextValids) {
+  FtpCommandCode(final Class<? extends AbstractCommand> command,
+                 final Class<? extends AbstractCommand> previousValid,
+                 final Class<?>... nextValids) {
     this.command = command;
     this.previousValid = previousValid;
     this.nextValids = nextValids;
@@ -1385,14 +1385,15 @@ public enum FtpCommandCode {
    *
    * @return the AbstractCommand from the line received from the client
    */
-  public static AbstractCommand getFromLine(FtpSession session, String line) {
+  public static AbstractCommand getFromLine(final FtpSession session,
+                                            final String line) {
     FtpCommandCode ftpCommandCode;
     String newline = line;
     if (newline == null) {
       ftpCommandCode = Unknown;
       newline = "";
     }
-    String command;
+    final String command;
     String arg;
     if (newline.indexOf(' ') == -1) {
       command = newline;
@@ -1434,7 +1435,7 @@ public enum FtpCommandCode {
    * @return True if the command is a Store like operation (APPE, STOR, STOU,
    *     ...)
    */
-  public static boolean isStoreLikeCommand(FtpCommandCode command) {
+  public static boolean isStoreLikeCommand(final FtpCommandCode command) {
     return command == APPE || command == STOR || command == STOU;
   }
 
@@ -1445,7 +1446,7 @@ public enum FtpCommandCode {
    *
    * @return True if the command is a Retrieve like operation (RETR, ...)
    */
-  public static boolean isRetrLikeCommand(FtpCommandCode command) {
+  public static boolean isRetrLikeCommand(final FtpCommandCode command) {
     return command == RETR;
   }
 
@@ -1456,7 +1457,7 @@ public enum FtpCommandCode {
    *
    * @return True if the command is a Retrieve or Store like operation
    */
-  public static boolean isStorOrRetrLikeCommand(FtpCommandCode command) {
+  public static boolean isStorOrRetrLikeCommand(final FtpCommandCode command) {
     return isRetrLikeCommand(command) || isStoreLikeCommand(command);
   }
 
@@ -1469,7 +1470,7 @@ public enum FtpCommandCode {
    * @return True if the command is a List like operation (LIST, NLST, MLSD,
    *     MLST, ...)
    */
-  public static boolean isListLikeCommand(FtpCommandCode command) {
+  public static boolean isListLikeCommand(final FtpCommandCode command) {
     return command == LIST || command == NLST || command == MLSD ||
            command == MLST;
   }
@@ -1481,7 +1482,8 @@ public enum FtpCommandCode {
    *
    * @return True if the command is using a Data Connection
    */
-  public static boolean isDataConnectionUsageCommand(FtpCommandCode command) {
+  public static boolean isDataConnectionUsageCommand(
+      final FtpCommandCode command) {
     return isRetrLikeCommand(command) || isStoreLikeCommand(command) ||
            isListLikeCommand(command);
   }
@@ -1495,7 +1497,7 @@ public enum FtpCommandCode {
    *     STAT,
    *     ...)
    */
-  public static boolean isSpecialCommand(FtpCommandCode command) {
+  public static boolean isSpecialCommand(final FtpCommandCode command) {
     return command == QUIT || command == ABOR || command == NOOP ||
            command == STAT;
   }
@@ -1508,7 +1510,7 @@ public enum FtpCommandCode {
    * @return True if the command is Ssl related (AUTH, PBSZ, PROT, USER, PASS,
    *     ACCT)
    */
-  public static boolean isSslOrAuthCommand(FtpCommandCode command) {
+  public static boolean isSslOrAuthCommand(final FtpCommandCode command) {
     return command == AUTH || command == PBSZ || command == PROT ||
            command == PASS || command == ACCT;
   }
@@ -1521,7 +1523,7 @@ public enum FtpCommandCode {
    * @return True if the command is an extension operation (XMD5, XCRC, XSHA1,
    *     ...)
    */
-  public static boolean isExtensionCommand(FtpCommandCode command) {
+  public static boolean isExtensionCommand(final FtpCommandCode command) {
     return command == XMD5 || command == XCRC || command == XSHA1 ||
            command == XDIGEST || command == INTERNALSHUTDOWN ||
            command == LIMITBANDWIDTH;

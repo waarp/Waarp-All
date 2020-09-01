@@ -30,7 +30,7 @@ public class MLST extends AbstractCommand {
   @Override
   public void exec() throws CommandAbstractException {
     // First Check if any argument
-    String path;
+    final String path;
     if (!hasArg()) {
       path = getSession().getDir().getPwd();
     } else {

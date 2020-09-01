@@ -59,7 +59,8 @@ public class ServerShutdown {
    *
    * @throws OpenR66ProtocolPacketException
    */
-  public static void main(String[] args) throws OpenR66ProtocolPacketException {
+  public static void main(final String[] args)
+      throws OpenR66ProtocolPacketException {
     WaarpLoggerFactory
         .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));
     final WaarpLogger logger =
@@ -104,7 +105,7 @@ public class ServerShutdown {
         }
       }
     }
-    DbHostAuth host;
+    final DbHostAuth host;
     if (useSsl) {
       host = Configuration.configuration.getHostSslAuth();
     } else {
@@ -134,7 +135,7 @@ public class ServerShutdown {
       System.exit(1);//NOSONAR
       return;
     }
-    byte[] key;
+    final byte[] key;
     key = FilesystemBasedDigest
         .passwdCrypt(Configuration.configuration.getServerAdminKey());
     final AbstractLocalPacket packet;

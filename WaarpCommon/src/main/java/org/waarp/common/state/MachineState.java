@@ -54,7 +54,8 @@ public class MachineState<E extends Enum<E>> {
    *     following
    *     states
    */
-  public MachineState(E initialState, ConcurrentMap<E, EnumSet<E>> map) {
+  public MachineState(final E initialState,
+                      final ConcurrentMap<E, EnumSet<E>> map) {
     statemap = map;
     currentState = initialState;
   }
@@ -65,7 +66,7 @@ public class MachineState<E extends Enum<E>> {
    *
    * @param initialState initial MachineState
    */
-  public MachineState(E initialState) {
+  public MachineState(final E initialState) {
     statemap = new ConcurrentHashMap<E, EnumSet<E>>();
     currentState = initialState;
   }
@@ -80,7 +81,7 @@ public class MachineState<E extends Enum<E>> {
    *
    * @return the previous association if any
    */
-  public EnumSet<E> addNewAssociation(E state, EnumSet<E> set) {
+  public EnumSet<E> addNewAssociation(final E state, final EnumSet<E> set) {
     return statemap.put(state, set);
   }
 
@@ -93,7 +94,7 @@ public class MachineState<E extends Enum<E>> {
    *
    * @return the previous association if any
    */
-  public EnumSet<E> addNewAssociation(Transition<E> elt) {
+  public EnumSet<E> addNewAssociation(final Transition<E> elt) {
     return statemap.put(elt.getState(), elt.getSet());
   }
 
@@ -104,7 +105,7 @@ public class MachineState<E extends Enum<E>> {
    *
    * @return the previous association if any
    */
-  public EnumSet<E> removeAssociation(E state) {
+  public EnumSet<E> removeAssociation(final E state) {
     return statemap.remove(state);
   }
 
@@ -126,7 +127,7 @@ public class MachineState<E extends Enum<E>> {
    *
    * @throws IllegalFiniteStateException if the state is not allowed
    */
-  public E setCurrent(E desiredState) throws IllegalFiniteStateException {
+  public E setCurrent(final E desiredState) throws IllegalFiniteStateException {
     if (!isReachable(desiredState)) {
       logger.debug(
           "State " + desiredState + " not reachable from: " + currentState);
@@ -143,7 +144,7 @@ public class MachineState<E extends Enum<E>> {
    *
    * @return the requested state, even if it was not reachable
    */
-  public E setDryCurrent(E desiredState) {
+  public E setDryCurrent(final E desiredState) {
     return setAsFinal(desiredState);
   }
 
@@ -154,7 +155,7 @@ public class MachineState<E extends Enum<E>> {
    *
    * @return True if the desiredState is valid from currentState
    */
-  private boolean isReachable(E desiredState) {
+  private boolean isReachable(final E desiredState) {
     if (currentState == null || statemap == null) {
       return false;
     }
@@ -172,7 +173,7 @@ public class MachineState<E extends Enum<E>> {
    *
    * @return the requested state
    */
-  private E setAsFinal(E desiredState) {
+  private E setAsFinal(final E desiredState) {
     logger.debug("New State: " + desiredState + " from " + currentState);
     currentState = desiredState;
     return currentState;

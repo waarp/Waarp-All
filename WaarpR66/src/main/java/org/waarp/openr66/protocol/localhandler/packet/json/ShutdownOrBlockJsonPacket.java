@@ -44,7 +44,7 @@ public class ShutdownOrBlockJsonPacket extends JsonPacket {
   /**
    * @param key the key to set
    */
-  public void setKey(byte[] key) {
+  public void setKey(final byte[] key) {
     this.key = key;
   }
 
@@ -58,7 +58,7 @@ public class ShutdownOrBlockJsonPacket extends JsonPacket {
   /**
    * @param isRestart the isRestart to set
    */
-  public void setRestartOrBlock(boolean isRestart) {
+  public void setRestartOrBlock(final boolean isRestart) {
     isRestartOrBlock = isRestart;
   }
 
@@ -72,7 +72,7 @@ public class ShutdownOrBlockJsonPacket extends JsonPacket {
   /**
    * @param isShutdown the isShutdown to set
    */
-  public void setShutdownOrBlock(boolean isShutdown) {
+  public void setShutdownOrBlock(final boolean isShutdown) {
     isShutdownOrBlock = isShutdown;
   }
 }

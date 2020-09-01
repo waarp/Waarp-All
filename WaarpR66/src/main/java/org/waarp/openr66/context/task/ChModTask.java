@@ -73,8 +73,8 @@ public class ChModTask extends AbstractTask {
    * @param argTransfer
    * @param session
    */
-  public ChModTask(String argRule, int delay, String argTransfer,
-                   R66Session session) {
+  public ChModTask(final String argRule, final int delay,
+                   final String argTransfer, final R66Session session) {
     super(TaskType.CHMOD, delay, argRule, argTransfer, session);
   }
 
@@ -120,7 +120,9 @@ public class ChModTask extends AbstractTask {
         // ignore
         continue;
       }
-      boolean isr, isw, isx;
+      final boolean isr;
+      final boolean isw;
+      final boolean isx;
       isr = chmod.indexOf('r') >= 0;
       isw = chmod.indexOf('w') >= 0;
       isx = chmod.indexOf('x') >= 0;

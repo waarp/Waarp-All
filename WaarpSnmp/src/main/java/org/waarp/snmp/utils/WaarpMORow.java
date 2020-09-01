@@ -59,8 +59,8 @@ public class WaarpMORow implements MOGroup {
    * @param entries
    * @param mibLevel this integer identifies this Row in the MIB
    */
-  public WaarpMORow(WaarpInterfaceMib mib, OID reference, WaarpEntry[] entries,
-                    int mibLevel) {
+  public WaarpMORow(final WaarpInterfaceMib mib, final OID reference,
+                    final WaarpEntry[] entries, final int mibLevel) {
     this.mib = mib;
     this.reference = reference;
     this.mibLevel = mibLevel;
@@ -90,7 +90,7 @@ public class WaarpMORow implements MOGroup {
    *
    * @throws IllegalArgumentException
    */
-  public void setValue(int index, Object value)
+  public void setValue(final int index, final Object value)
       throws IllegalArgumentException {
     if (index >= getRow().length) {
       throw new IllegalArgumentException("Index exceed Row size");
@@ -100,7 +100,7 @@ public class WaarpMORow implements MOGroup {
   }
 
   @Override
-  public void registerMOs(MOServer server, OctetString context)
+  public void registerMOs(final MOServer server, final OctetString context)
       throws DuplicateRegistrationException {
     for (int i = 0; i < getRow().length; i++) {
       final WaarpMOScalar scalar = getRow()[i];
@@ -109,7 +109,7 @@ public class WaarpMORow implements MOGroup {
   }
 
   @Override
-  public void unregisterMOs(MOServer server, OctetString context) {
+  public void unregisterMOs(final MOServer server, final OctetString context) {
     for (int i = 0; i < getRow().length; i++) {
       final WaarpMOScalar scalar = getRow()[i];
       server.unregister(scalar, context);
@@ -126,7 +126,7 @@ public class WaarpMORow implements MOGroup {
   /**
    * @param row the row to set
    */
-  void setRow(WaarpMOScalar[] row) {
+  void setRow(final WaarpMOScalar[] row) {
     this.row = row;
   }
 }

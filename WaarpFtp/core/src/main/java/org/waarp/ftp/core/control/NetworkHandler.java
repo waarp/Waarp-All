@@ -90,7 +90,7 @@ public class NetworkHandler extends SimpleChannelInboundHandler<String> {
    *
    * @param session
    */
-  public NetworkHandler(FtpSession session) {
+  public NetworkHandler(final FtpSession session) {
     this.session = session;
     businessHandler = session.getBusinessHandler();
     businessHandler.setNetworkHandler(this);
@@ -121,7 +121,8 @@ public class NetworkHandler extends SimpleChannelInboundHandler<String> {
    * Run firstly executeChannelClosed.
    */
   @Override
-  public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+  public void channelInactive(final ChannelHandlerContext ctx)
+      throws Exception {
     if (session == null || session.getDataConn() == null ||
         session.getDataConn().getFtpTransferControl() == null) {
       super.channelInactive(ctx);
@@ -150,7 +151,7 @@ public class NetworkHandler extends SimpleChannelInboundHandler<String> {
    * Initialize the Handler.
    */
   @Override
-  public void channelActive(ChannelHandlerContext ctx) throws Exception {
+  public void channelActive(final ChannelHandlerContext ctx) throws Exception {
     this.ctx = ctx;
     final Channel channel = ctx.channel();
     controlChannel = channel;
@@ -175,7 +176,7 @@ public class NetworkHandler extends SimpleChannelInboundHandler<String> {
    * @return True if the service is alive, else False if the system is going
    *     down
    */
-  private boolean isStillAlive(ChannelHandlerContext ctx) {
+  private boolean isStillAlive(final ChannelHandlerContext ctx) {
     if (session.getConfiguration().isShutdown()) {
       session.setExitErrorCode("Service is going down: disconnect");
       writeFinalAnswer(ctx);
@@ -190,8 +191,8 @@ public class NetworkHandler extends SimpleChannelInboundHandler<String> {
    * possible the current replyCode.
    */
   @Override
-  public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
-      throws Exception {
+  public void exceptionCaught(final ChannelHandlerContext ctx,
+                              final Throwable cause) throws Exception {
     this.ctx = ctx;
     final Channel channel = ctx.channel();
     if (session == null) {
@@ -229,13 +230,11 @@ public class NetworkHandler extends SimpleChannelInboundHandler<String> {
       final NullPointerException e2 = (NullPointerException) cause;
       logger.warn("Null pointer Exception: " + ctx.channel(), e2);
       try {
-        if (session != null) {
-          session.setExitErrorCode(INTERNAL_ERROR_DISCONNECT);
-          if (businessHandler != null && session.getDataConn() != null) {
-            businessHandler.exceptionLocalCaught(cause);
-            if (channel.isActive()) {
-              writeFinalAnswer(ctx);
-            }
+        session.setExitErrorCode(INTERNAL_ERROR_DISCONNECT);
+        if (businessHandler != null && session.getDataConn() != null) {
+          businessHandler.exceptionLocalCaught(cause);
+          if (channel.isActive()) {
+            writeFinalAnswer(ctx);
           }
         }
       } catch (final NullPointerException ignored) {
@@ -266,7 +265,7 @@ public class NetworkHandler extends SimpleChannelInboundHandler<String> {
    * Simply call messageRun with the received message
    */
   @Override
-  public void channelRead0(ChannelHandlerContext ctx, String e) {
+  public void channelRead0(final ChannelHandlerContext ctx, final String e) {
     this.ctx = ctx;
     if (isStillAlive(ctx)) {
       // First wait for the initialization to be fully done
@@ -336,7 +335,7 @@ public class NetworkHandler extends SimpleChannelInboundHandler<String> {
    *
    * @return True if the channel is closed due to the code
    */
-  private boolean writeFinalAnswer(ChannelHandlerContext ctx) {
+  private boolean writeFinalAnswer(final ChannelHandlerContext ctx) {
     if (session.getReplyCode() ==
         ReplyCode.REPLY_421_SERVICE_NOT_AVAILABLE_CLOSING_CONTROL_CONNECTION ||
         session.getReplyCode() ==
@@ -356,7 +355,8 @@ public class NetworkHandler extends SimpleChannelInboundHandler<String> {
    *
    * @return the ChannelFuture associated with the write
    */
-  public ChannelFuture writeIntermediateAnswer(ChannelHandlerContext ctx) {
+  public ChannelFuture writeIntermediateAnswer(
+      final ChannelHandlerContext ctx) {
     logger.debug("Answer: " + session.getAnswer());
     return ctx.writeAndFlush(session.getAnswer());
   }
@@ -377,7 +377,7 @@ public class NetworkHandler extends SimpleChannelInboundHandler<String> {
    * @param error1
    * @param error2
    */
-  protected void callForSnmp(String error1, String error2) {
+  protected void callForSnmp(final String error1, final String error2) {
     // ignore
   }
 
@@ -438,7 +438,7 @@ public class NetworkHandler extends SimpleChannelInboundHandler<String> {
                                         new GenericFutureListener<Future<? super Channel>>() {
                                           @Override
                                           public void operationComplete(
-                                              Future<? super Channel> future)
+                                              final Future<? super Channel> future)
                                               throws Exception {
                                             if (!future.isSuccess()) {
                                               final String error2 =

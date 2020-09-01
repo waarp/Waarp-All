@@ -65,7 +65,7 @@ public final class RuleConverter {
      */
     ascName(new Comparator<Rule>() {
       @Override
-      public int compare(Rule t1, Rule t2) {
+      public int compare(final Rule t1, final Rule t2) {
         return t1.getName().compareTo(t2.getName());
       }
     }),
@@ -74,7 +74,7 @@ public final class RuleConverter {
      */
     descName(new Comparator<Rule>() {
       @Override
-      public int compare(Rule t1, Rule t2) {
+      public int compare(final Rule t1, final Rule t2) {
         return -t1.getName().compareTo(t2.getName());
       }
     });
@@ -84,7 +84,7 @@ public final class RuleConverter {
      */
     public final Comparator<Rule> comparator;
 
-    Order(Comparator<Rule> comparator) {
+    Order(final Comparator<Rule> comparator) {
       this.comparator = comparator;
     }
   }
@@ -133,7 +133,7 @@ public final class RuleConverter {
      */
     public final int code;
 
-    ModeTrans(int code) {
+    ModeTrans(final int code) {
       this.code = code;
     }
 
@@ -147,7 +147,7 @@ public final class RuleConverter {
      * @throws IllegalArgumentException if the code does not
      *     correspond to a ModeTrans value
      */
-    public static ModeTrans fromCode(int code) {
+    public static ModeTrans fromCode(final int code) {
       for (final ModeTrans mode : values()) {
         if (mode.code == code) {
           return mode;
@@ -166,7 +166,7 @@ public final class RuleConverter {
    *
    * @return the converted ObjectNode
    */
-  public static ObjectNode ruleToNode(Rule rule) {
+  public static ObjectNode ruleToNode(final Rule rule) {
     final ObjectNode node = new ObjectNode(JsonNodeFactory.instance);
     node.put(RULE_NAME, rule.getName());
     node.putArray(HOST_IDS).addAll(getHostIdsArray(rule.getHostids()));
@@ -195,7 +195,7 @@ public final class RuleConverter {
    * @throws RestErrorException If the given ObjectNode does not
    *     represent a Rule object.
    */
-  public static Rule nodeToNewRule(ObjectNode object) {
+  public static Rule nodeToNewRule(final ObjectNode object) {
     final Rule emptyRule =
         new Rule(null, -1, new ArrayList<String>(), "", "", "", "",
                  new ArrayList<RuleTask>(), new ArrayList<RuleTask>(),
@@ -219,7 +219,8 @@ public final class RuleConverter {
    * @throws RestErrorException if the given ObjectNode does not
    *     represent a Rule object
    */
-  public static Rule nodeToUpdatedRule(ObjectNode object, Rule oldRule) {
+  public static Rule nodeToUpdatedRule(final ObjectNode object,
+                                       final Rule oldRule) {
     final List<RestError> errors = new ArrayList<RestError>();
 
     final Iterator<Map.Entry<String, JsonNode>> fields = object.fields();
@@ -348,7 +349,7 @@ public final class RuleConverter {
    *
    * @return the corresponding ArrayNode
    */
-  private static ArrayNode getHostIdsArray(List<String> hostIds) {
+  private static ArrayNode getHostIdsArray(final List<String> hostIds) {
     final ArrayNode array = new ArrayNode(JsonNodeFactory.instance);
     for (final String host : hostIds) {
       array.add(host);
@@ -363,7 +364,7 @@ public final class RuleConverter {
    *
    * @return the corresponding ArrayNode
    */
-  private static ArrayNode getTaskArray(List<RuleTask> tasks) {
+  private static ArrayNode getTaskArray(final List<RuleTask> tasks) {
     final ArrayNode array = new ArrayNode(JsonNodeFactory.instance);
     for (final RuleTask task : tasks) {
       final ObjectNode object = new ObjectNode(JsonNodeFactory.instance);
@@ -386,7 +387,7 @@ public final class RuleConverter {
    *
    * @return the list of encountered errors
    */
-  private static List<RestError> checkRequiredFields(Rule rule) {
+  private static List<RestError> checkRequiredFields(final Rule rule) {
     final List<RestError> errors = new ArrayList<RestError>();
     if (rule.getName() == null || rule.getName().isEmpty()) {
       errors.add(MISSING_FIELD(RULE_NAME));
@@ -408,7 +409,8 @@ public final class RuleConverter {
    * @throws RestErrorException ff the ArrayNode does not represent a
    *     list of RuleTask objects
    */
-  private static List<RuleTask> parseTasks(ArrayNode array, String fieldName) {
+  private static List<RuleTask> parseTasks(final ArrayNode array,
+                                           final String fieldName) {
     final List<RuleTask> result = new ArrayList<RuleTask>();
     final List<RestError> errors = new ArrayList<RestError>();
 

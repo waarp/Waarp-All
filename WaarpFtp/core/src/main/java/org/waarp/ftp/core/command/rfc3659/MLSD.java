@@ -30,7 +30,7 @@ import java.util.List;
 public class MLSD extends AbstractCommand {
   @Override
   public void exec() throws CommandAbstractException {
-    String path;
+    final String path;
     if (!hasArg()) {
       path = getSession().getDir().getPwd();
     } else {

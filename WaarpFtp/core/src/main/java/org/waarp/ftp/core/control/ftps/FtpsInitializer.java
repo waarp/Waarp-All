@@ -45,8 +45,8 @@ public class FtpsInitializer extends FtpInitializer {
    * @param businessHandler
    * @param configuration
    */
-  public FtpsInitializer(Class<? extends BusinessHandler> businessHandler,
-                         FtpConfiguration configuration) {
+  public FtpsInitializer(final Class<? extends BusinessHandler> businessHandler,
+                         final FtpConfiguration configuration) {
     super(businessHandler, configuration);
   }
 
@@ -54,7 +54,7 @@ public class FtpsInitializer extends FtpInitializer {
    * Create the pipeline with Handler, ObjectDecoder, ObjectEncoder.
    */
   @Override
-  public void initChannel(SocketChannel ch) throws Exception {
+  public void initChannel(final SocketChannel ch) throws Exception {
     final ChannelPipeline pipeline = ch.pipeline();
     // Server: no renegotiation still, but possible clientAuthent
     final SslHandler handler = waarpSslContextFactory.initInitializer(true,

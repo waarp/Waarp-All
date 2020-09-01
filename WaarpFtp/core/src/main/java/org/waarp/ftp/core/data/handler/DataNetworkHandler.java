@@ -104,8 +104,9 @@ public class DataNetworkHandler extends SimpleChannelInboundHandler<DataBlock> {
    * @param handler
    * @param active
    */
-  public DataNetworkHandler(FtpConfiguration configuration,
-                            DataBusinessHandler handler, boolean active) {
+  public DataNetworkHandler(final FtpConfiguration configuration,
+                            final DataBusinessHandler handler,
+                            final boolean active) {
     this.configuration = configuration;
     dataBusinessHandler = handler;
     dataBusinessHandler.setDataNetworkHandler(this);
@@ -145,7 +146,8 @@ public class DataNetworkHandler extends SimpleChannelInboundHandler<DataBlock> {
    * @throws Exception
    */
   @Override
-  public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+  public void channelInactive(final ChannelHandlerContext ctx)
+      throws Exception {
     logger.debug("Data Channel closed with a session ? " + (session != null));
     if (session != null) {
       if (session.getDataConn().checkCorrectChannel(ctx.channel())) {
@@ -169,7 +171,7 @@ public class DataNetworkHandler extends SimpleChannelInboundHandler<DataBlock> {
     super.channelInactive(ctx);
   }
 
-  protected void setSession(Channel channel) {
+  protected void setSession(final Channel channel) {
     // First get the ftpSession from inetaddresses
     for (int i = 0; i < FtpInternalConfiguration.RETRYNB; i++) {
       session = configuration.getFtpSession(channel, isActive);
@@ -198,7 +200,7 @@ public class DataNetworkHandler extends SimpleChannelInboundHandler<DataBlock> {
    * Initialize the Handler.
    */
   @Override
-  public void channelActive(ChannelHandlerContext ctx) throws Exception {
+  public void channelActive(final ChannelHandlerContext ctx) throws Exception {
     final Channel channel = ctx.channel();
     channel.config().setAutoRead(false);
     if (session == null) {
@@ -284,8 +286,8 @@ public class DataNetworkHandler extends SimpleChannelInboundHandler<DataBlock> {
    * exceptionLocalCaught.
    */
   @Override
-  public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
-      throws Exception {
+  public void exceptionCaught(final ChannelHandlerContext ctx,
+                              final Throwable cause) throws Exception {
     if (session == null) {
       logger.debug("Error without any session active {}", cause);
       return;
@@ -347,7 +349,7 @@ public class DataNetworkHandler extends SimpleChannelInboundHandler<DataBlock> {
     }
   }
 
-  public void setFtpTransfer(FtpTransfer ftpTransfer) {
+  public void setFtpTransfer(final FtpTransfer ftpTransfer) {
     this.ftpTransfer = ftpTransfer;
   }
 
@@ -355,7 +357,8 @@ public class DataNetworkHandler extends SimpleChannelInboundHandler<DataBlock> {
    * Act as needed according to the receive DataBlock message
    */
   @Override
-  public void channelRead0(ChannelHandlerContext ctx, DataBlock dataBlock) {
+  public void channelRead0(final ChannelHandlerContext ctx,
+                           final DataBlock dataBlock) {
     if (ftpTransfer == null) {
       for (int i = 0; i < 10; i++) {
         try {
@@ -407,11 +410,11 @@ public class DataNetworkHandler extends SimpleChannelInboundHandler<DataBlock> {
    *
    * @return True if the message is correctly written
    */
-  public boolean writeMessage(String message) {
+  public boolean writeMessage(final String message) {
     final DataBlock dataBlock = new DataBlock();
     dataBlock.setEOF(true);
     dataBlock.setBlock(message.getBytes(WaarpStringUtils.UTF8));
-    ChannelFuture future;
+    final ChannelFuture future;
     if (logger.isDebugEnabled()) {
       logger.debug("Will write: {}", message);
     }

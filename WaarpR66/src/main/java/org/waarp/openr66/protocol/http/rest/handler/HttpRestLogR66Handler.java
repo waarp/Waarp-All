@@ -58,14 +58,16 @@ public class HttpRestLogR66Handler extends HttpRestAbstractR66Handler {
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(HttpRestLogR66Handler.class);
 
-  public HttpRestLogR66Handler(RestConfiguration config, METHOD... methods) {
+  public HttpRestLogR66Handler(final RestConfiguration config,
+                               final METHOD... methods) {
     super(BASEURI, config, METHOD.OPTIONS);
     setIntersectionMethods(methods, METHOD.GET);
   }
 
   @Override
-  public void endParsingRequest(HttpRestHandler handler, RestArgument arguments,
-                                RestArgument result, Object body)
+  public void endParsingRequest(final HttpRestHandler handler,
+                                final RestArgument arguments,
+                                final RestArgument result, final Object body)
       throws HttpIncorrectRequestException, HttpInvalidAuthenticationException {
     logger.debug("debug: {} ### {}", arguments, result);
     if (body != null) {
@@ -137,7 +139,7 @@ public class HttpRestLogR66Handler extends HttpRestAbstractR66Handler {
       node3.setStop(new Date());
       node3.setStartid("Start id - long -");
       node3.setStopid("Stop id - long -");
-      ObjectNode node2;
+      final ObjectNode node2;
       final LogResponseJsonPacket resp = new LogResponseJsonPacket();
       resp.setComment("Log export response");
       resp.setFilename("filepath");

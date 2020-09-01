@@ -107,7 +107,7 @@ public class DbAdmin {
   /**
    * @param session the session to set
    */
-  public void setSession(DbSession session) {
+  public void setSession(final DbSession session) {
     this.session = session;
   }
 
@@ -159,7 +159,8 @@ public class DbAdmin {
    *
    * @throws WaarpDatabaseNoConnectionException
    */
-  public DbAdmin(DbModel model, String server, String user, String passwd)
+  public DbAdmin(final DbModel model, final String server, final String user,
+                 final String passwd)
       throws WaarpDatabaseNoConnectionException {
     this.server = server;
     this.user = user;
@@ -206,8 +207,9 @@ public class DbAdmin {
    * @throws WaarpDatabaseSqlException
    * @throws WaarpDatabaseNoConnectionException
    */
-  public DbAdmin(DbModel model, String server, String user, String passwd,
-                 boolean write) throws WaarpDatabaseNoConnectionException {
+  public DbAdmin(final DbModel model, final String server, final String user,
+                 final String passwd, final boolean write)
+      throws WaarpDatabaseNoConnectionException {
     this.server = server;
     this.user = user;
     this.passwd = passwd;
@@ -368,7 +370,7 @@ public class DbAdmin {
    * @param id
    * @param session
    */
-  public static void addConnection(GUID id, DbSession session) {
+  public static void addConnection(final GUID id, final DbSession session) {
     listConnection.put(id, session);
   }
 
@@ -377,7 +379,7 @@ public class DbAdmin {
    *
    * @param id Id of the connection
    */
-  public static void removeConnection(GUID id) {
+  public static void removeConnection(final GUID id) {
     listConnection.remove(id);
   }
 
@@ -395,7 +397,7 @@ public class DbAdmin {
     for (final DbSession session : listConnection.values()) {
       logger.debug("Close (all) Db Conn: " + session.getInternalId());
       try {
-        Connection connection = session.getConn();
+        final Connection connection = session.getConn();
         if (connection != null) {
           connection.close();
         }

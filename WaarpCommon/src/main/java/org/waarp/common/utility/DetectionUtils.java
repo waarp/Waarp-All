@@ -60,7 +60,7 @@ public final class DetectionUtils {
    *
    * @param value
    */
-  public static void systemExit(int value) {
+  public static void systemExit(final int value) {
     if (!isJunit()) {
       System.exit(value);//NOSONAR
     }
@@ -71,7 +71,7 @@ public final class DetectionUtils {
    *
    * @param value
    */
-  public static void runtimeGetRuntimeHalt(int value) {
+  public static void runtimeGetRuntimeHalt(final int value) {
     if (!isJunit()) {
       Runtime.getRuntime().halt(value);//NOSONAR
     }
@@ -91,7 +91,7 @@ public final class DetectionUtils {
    *
    * @param isJunit
    */
-  public static void setJunit(boolean isJunit) {
+  public static void setJunit(final boolean isJunit) {
     DetectionUtils.isJunit = isJunit;
   }
 

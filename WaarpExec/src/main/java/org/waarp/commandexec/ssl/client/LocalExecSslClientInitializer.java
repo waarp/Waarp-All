@@ -38,12 +38,12 @@ public class LocalExecSslClientInitializer extends LocalExecClientInitializer {
   private final WaarpSslContextFactory waarpSslContextFactory;
 
   public LocalExecSslClientInitializer(
-      WaarpSslContextFactory waarpSslContextFactory) {
+      final WaarpSslContextFactory waarpSslContextFactory) {
     this.waarpSslContextFactory = waarpSslContextFactory;
   }
 
   @Override
-  protected void initChannel(SocketChannel ch) throws Exception {
+  protected void initChannel(final SocketChannel ch) throws Exception {
     // Create a default pipeline implementation.
     final ChannelPipeline pipeline = ch.pipeline();
 

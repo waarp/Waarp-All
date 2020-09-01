@@ -44,13 +44,13 @@ public class GgFTree extends FTree {
   /**
    * @param root
    */
-  public GgFTree(TreeNode root) {
+  public GgFTree(final TreeNode root) {
     super(root);
   }
 
   // Change print on main window
   @Override
-  void drawTree(Graphics g) {
+  void drawTree(final Graphics g) {
     Rectangle r = g.getClipBounds();
     if (r == null) {
       r = new Rectangle(getSize());
@@ -58,7 +58,7 @@ public class GgFTree extends FTree {
     g.setColor(bgColor);
     g.fillRect(r.x, r.y, r.width, r.height);
     if (r.y < 20) {
-      String s = "XML GoldenGate Editor: F Golubov & F Bregier 2010";
+      final String s = "XML GoldenGate Editor: F Golubov & F Bregier 2010";
       g.setColor(Color.white);
       g.drawString(s, 11, 14);
       g.setColor(Color.black);
@@ -72,7 +72,7 @@ public class GgFTree extends FTree {
     }
   }
 
-  private int[] findItemIndex(int index, int y) {
+  private int[] findItemIndex(int index, final int y) {
     if (index >= itemsCount) {
       index = itemsCount - 1;
     }

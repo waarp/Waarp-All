@@ -36,12 +36,12 @@ public class HttpReponsiveSslInitializer
     extends ChannelInitializer<SocketChannel> {
   private final boolean useHttpCompression;
 
-  public HttpReponsiveSslInitializer(boolean useHttpCompression) {
+  public HttpReponsiveSslInitializer(final boolean useHttpCompression) {
     this.useHttpCompression = useHttpCompression;
   }
 
   @Override
-  protected void initChannel(SocketChannel ch) throws Exception {
+  protected void initChannel(final SocketChannel ch) throws Exception {
     final ChannelPipeline pipeline = ch.pipeline();
     // Add SSL handler first to encrypt and decrypt everything.
     final SslHandler sslhandler =

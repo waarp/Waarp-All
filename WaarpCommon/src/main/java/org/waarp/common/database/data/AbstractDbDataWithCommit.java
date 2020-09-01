@@ -53,7 +53,7 @@ public abstract class AbstractDbDataWithCommit extends AbstractDbData {
    *
    * @param dbSession
    */
-  protected AbstractDbDataWithCommit(DbSession dbSession) {
+  protected AbstractDbDataWithCommit(final DbSession dbSession) {
     super(dbSession);
     initObject();
   }

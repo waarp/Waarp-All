@@ -32,7 +32,8 @@ public class PostgreSQLTransferDAO extends DBTransferDAO {
 
   protected static final String SQL_GET_ID = "SELECT NEXTVAL('runseq')";
 
-  public PostgreSQLTransferDAO(Connection con) throws DAOConnectionException {
+  public PostgreSQLTransferDAO(final Connection con)
+      throws DAOConnectionException {
     super(con);
   }
 
@@ -56,7 +57,7 @@ public class PostgreSQLTransferDAO extends DBTransferDAO {
         if (rs != null) {
           rs.close();
         }
-      } catch (SQLException e) {
+      } catch (final SQLException e) {
         // ignore
       }
       closeStatement(ps);

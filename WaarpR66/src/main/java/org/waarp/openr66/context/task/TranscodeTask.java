@@ -74,14 +74,14 @@ public class TranscodeTask extends AbstractTask {
    * @param argTransfer
    * @param session
    */
-  public TranscodeTask(String argRule, int delay, String argTransfer,
-                       R66Session session) {
+  public TranscodeTask(final String argRule, final int delay,
+                       final String argTransfer, final R66Session session) {
     super(TaskType.TRANSCODE, delay, argRule, argTransfer, session);
   }
 
   @Override
   public void run() {
-    boolean success;
+    final boolean success;
     final DbTaskRunner runner = session.getRunner();
     String arg = argRule;
     arg = getReplacedValue(arg, BLANK.split(argTransfer));

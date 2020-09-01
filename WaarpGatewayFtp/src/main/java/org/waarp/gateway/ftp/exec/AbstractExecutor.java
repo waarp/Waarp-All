@@ -129,8 +129,8 @@ public abstract class AbstractExecutor {
      * @param store
      * @param storDelay
      */
-    public CommandExecutor(String retrieve, long retrDelay, String store,
-                           long storDelay) {
+    public CommandExecutor(final String retrieve, final long retrDelay,
+                           final String store, final long storDelay) {
       if (retrieve == null || retrieve.trim().length() == 0) {
         pretrCMD = commandExecutor.pretrCMD;
         pretrType = commandExecutor.pretrType;
@@ -185,40 +185,40 @@ public abstract class AbstractExecutor {
       setPstorDelay(storDelay);
     }
 
-    private static String getNone(String cmd) {
+    private static String getNone(final String cmd) {
       return cmd.substring(NONE.length()).trim();
     }
 
-    private static String getExecuteCmd(String cmd) {
+    private static String getExecuteCmd(final String cmd) {
       return cmd.substring(EXECUTE.length()).trim();
     }
 
-    private static String getJavaExecuteCmd(String cmd) {
+    private static String getJavaExecuteCmd(final String cmd) {
       return cmd.substring(JAVAEXECUTE.length()).trim();
     }
 
-    private static String getR66PrepareTransferCmd(String cmd) {
+    private static String getR66PrepareTransferCmd(final String cmd) {
       return cmd.substring(R66PREPARETRANSFER.length()).trim();
     }
 
-    private static boolean isRefused(String cmd) {
+    private static boolean isRefused(final String cmd) {
       return cmd.startsWith(REFUSED);
     }
 
-    private static boolean isExecute(String cmd) {
+    private static boolean isExecute(final String cmd) {
       return cmd.startsWith(EXECUTE);
     }
 
-    private static boolean isJavaExecute(String cmd) {
+    private static boolean isJavaExecute(final String cmd) {
       return cmd.startsWith(JAVAEXECUTE);
     }
 
-    private static boolean isR66PrepareTransfer(String cmd) {
+    private static boolean isR66PrepareTransfer(final String cmd) {
       return cmd.startsWith(R66PREPARETRANSFER);
     }
 
     @Override
-    public boolean isValidOperation(boolean isStore) {
+    public boolean isValidOperation(final boolean isStore) {
       if (isStore && isPstorRefused()) {
         logger.info("STORe like operations REFUSED");
         return false;
@@ -271,7 +271,7 @@ public abstract class AbstractExecutor {
     /**
      * @param pretrRefused the pretrRefused to set
      */
-    public void setPretrRefused(boolean pretrRefused) {
+    public void setPretrRefused(final boolean pretrRefused) {
       this.pretrRefused = pretrRefused;
     }
 
@@ -285,7 +285,7 @@ public abstract class AbstractExecutor {
     /**
      * @param pretrDelay the pretrDelay to set
      */
-    public void setPretrDelay(long pretrDelay) {
+    public void setPretrDelay(final long pretrDelay) {
       this.pretrDelay = pretrDelay;
     }
 
@@ -299,7 +299,7 @@ public abstract class AbstractExecutor {
     /**
      * @param pstorRefused the pstorRefused to set
      */
-    public void setPstorRefused(boolean pstorRefused) {
+    public void setPstorRefused(final boolean pstorRefused) {
       this.pstorRefused = pstorRefused;
     }
 
@@ -313,7 +313,7 @@ public abstract class AbstractExecutor {
     /**
      * @param pstorDelay the pstorDelay to set
      */
-    public void setPstorDelay(long pstorDelay) {
+    public void setPstorDelay(final long pstorDelay) {
       this.pstorDelay = pstorDelay;
     }
   }
@@ -326,8 +326,10 @@ public abstract class AbstractExecutor {
    * @param store
    * @param storDelay
    */
-  public static void initializeExecutor(String retrieve, long retrDelay,
-                                        String store, long storDelay) {
+  public static void initializeExecutor(final String retrieve,
+                                        final long retrDelay,
+                                        final String store,
+                                        final long storDelay) {
     commandExecutor =
         new CommandExecutor(retrieve, retrDelay, store, storDelay);
     logger.info(
@@ -346,7 +348,7 @@ public abstract class AbstractExecutor {
    *
    * @return True if allowed, else False
    */
-  public static boolean isValidOperation(boolean isStore) {
+  public static boolean isValidOperation(final boolean isStore) {
     return commandExecutor.isValidOperation(isStore);
   }
 
@@ -358,10 +360,9 @@ public abstract class AbstractExecutor {
    * @param isStore True for a STORE like operation, else False
    * @param futureCompletion
    */
-  public static AbstractExecutor createAbstractExecutor(HttpAuthInterface auth,
-                                                        String[] args,
-                                                        boolean isStore,
-                                                        WaarpFuture futureCompletion) {
+  public static AbstractExecutor createAbstractExecutor(
+      final HttpAuthInterface auth, final String[] args, final boolean isStore,
+      final WaarpFuture futureCompletion) {
     if (isStore) {
       CommandExecutor executor = (CommandExecutor) auth.getCommandExecutor();
       if (executor == null) {
@@ -441,7 +442,8 @@ public abstract class AbstractExecutor {
    *
    * @return the prepared command
    */
-  public static String getPreparedCommand(String command, String[] args) {
+  public static String getPreparedCommand(final String command,
+                                          final String[] args) {
     final StringBuilder builder = new StringBuilder(command);
     logger.debug("Will replace value in " + command + " with User=" + args[0] +
                  ":Acct=" + args[1] + ":Base=" + args[2] + ":File=" + args[3] +
@@ -467,8 +469,8 @@ public abstract class AbstractExecutor {
    * @param find
    * @param replace
    */
-  public static boolean replace(StringBuilder builder, String find,
-                                String replace) {
+  public static boolean replace(final StringBuilder builder, final String find,
+                                final String replace) {
     final int start = builder.indexOf(find);
     if (start == -1) {
       return false;
@@ -486,8 +488,8 @@ public abstract class AbstractExecutor {
    * @param find
    * @param replace
    */
-  public static void replaceAll(StringBuilder builder, String find,
-                                String replace) {
+  public static void replaceAll(final StringBuilder builder, final String find,
+                                final String replace) {
     while (replace(builder, find, replace)) {
       // nothing
     }

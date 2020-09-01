@@ -204,10 +204,10 @@ public abstract class FtpConfiguration {
    *     DataBusinessHandler
    * @param fileParameter the FileParameterInterface to used
    */
-  protected FtpConfiguration(Class<?> classtype,
-                             Class<? extends BusinessHandler> businessHandler,
-                             Class<? extends DataBusinessHandler> dataBusinessHandler,
-                             FileParameterInterface fileParameter) {
+  protected FtpConfiguration(final Class<?> classtype,
+                             final Class<? extends BusinessHandler> businessHandler,
+                             final Class<? extends DataBusinessHandler> dataBusinessHandler,
+                             final FileParameterInterface fileParameter) {
     fromClass = classtype;
     this.dataBusinessHandler = dataBusinessHandler;
     this.businessHandler = businessHandler;
@@ -222,7 +222,8 @@ public abstract class FtpConfiguration {
    *
    * @throws FtpUnknownFieldException
    */
-  public String getStringProperty(String key) throws FtpUnknownFieldException {
+  public String getStringProperty(final String key)
+      throws FtpUnknownFieldException {
     final String s = (String) properties.get(key);
     if (s == null) {
       throw new FtpUnknownFieldException(PROPERTY_HAS_NO_VALUE + key);
@@ -237,7 +238,7 @@ public abstract class FtpConfiguration {
    *
    * @throws FtpUnknownFieldException
    */
-  public int getIntProperty(String key) throws FtpUnknownFieldException {
+  public int getIntProperty(final String key) throws FtpUnknownFieldException {
     final Integer i = (Integer) properties.get(key);
     if (i == null) {
       throw new FtpUnknownFieldException(PROPERTY_HAS_NO_VALUE + key);
@@ -252,7 +253,8 @@ public abstract class FtpConfiguration {
    *
    * @throws FtpUnknownFieldException
    */
-  public File getFileProperty(String key) throws FtpUnknownFieldException {
+  public File getFileProperty(final String key)
+      throws FtpUnknownFieldException {
     final File f = (File) properties.get(key);
     if (f == null) {
       throw new FtpUnknownFieldException(PROPERTY_HAS_NO_VALUE + key);
@@ -267,7 +269,7 @@ public abstract class FtpConfiguration {
    *
    * @throws FtpUnknownFieldException
    */
-  public Object getProperty(String key) throws FtpUnknownFieldException {
+  public Object getProperty(final String key) throws FtpUnknownFieldException {
     final Object o = properties.get(key);
     if (o == null) {
       throw new FtpUnknownFieldException(PROPERTY_HAS_NO_VALUE + key);
@@ -333,8 +335,8 @@ public abstract class FtpConfiguration {
    *
    * @return True if the password is OK
    */
-  public boolean checkPassword(String password) {
-    String serverpassword;
+  public boolean checkPassword(final String password) {
+    final String serverpassword;
     try {
       serverpassword = getStringProperty(FTP_PASSWORD);
     } catch (final FtpUnknownFieldException e) {
@@ -361,7 +363,7 @@ public abstract class FtpConfiguration {
    * @param key
    * @param s
    */
-  public void setStringProperty(String key, String s) {
+  public void setStringProperty(final String key, final String s) {
     properties.put(key, s);
   }
 
@@ -369,15 +371,15 @@ public abstract class FtpConfiguration {
    * @param key
    * @param i
    */
-  public void setIntProperty(String key, int i) {
-    properties.put(key, Integer.valueOf(i));
+  public void setIntProperty(final String key, final int i) {
+    properties.put(key, i);
   }
 
   /**
    * @param key
    * @param f
    */
-  public void setFileProperty(String key, File f) {
+  public void setFileProperty(final String key, final File f) {
     properties.put(key, f);
   }
 
@@ -385,35 +387,35 @@ public abstract class FtpConfiguration {
    * @param key
    * @param o
    */
-  public void setProperty(String key, Object o) {
+  public void setProperty(final String key, final Object o) {
     properties.put(key, o);
   }
 
   /**
    * @param port the new port
    */
-  public void setServerPort(int port) {
+  public void setServerPort(final int port) {
     serverPort = port;
   }
 
   /**
    * @param address the address to use while answering for address
    */
-  public void setServerAddress(String address) {
+  public void setServerAddress(final String address) {
     serverAddress = address;
   }
 
   /**
    * @param dir the new base directory
    */
-  public void setBaseDirectory(String dir) {
+  public void setBaseDirectory(final String dir) {
     baseDirectory = dir;
   }
 
   /**
    * @param password the new password for shutdown
    */
-  public void setPassword(String password) {
+  public void setPassword(final String password) {
     setStringProperty(FTP_PASSWORD, password);
   }
 
@@ -444,7 +446,7 @@ public abstract class FtpConfiguration {
    * @param writeLimit
    * @param readLimit
    */
-  public void changeNetworkLimit(long writeLimit, long readLimit) {
+  public void changeNetworkLimit(final long writeLimit, final long readLimit) {
     long newWriteLimit = writeLimit > 1024? writeLimit : serverGlobalWriteLimit;
     if (writeLimit <= 0) {
       newWriteLimit = 0;
@@ -516,8 +518,9 @@ public abstract class FtpConfiguration {
    * @param fullIp
    * @param session
    */
-  public void setNewFtpSession(InetAddress ipOnly, InetSocketAddress fullIp,
-                               FtpSession session) {
+  public void setNewFtpSession(final InetAddress ipOnly,
+                               final InetSocketAddress fullIp,
+                               final FtpSession session) {
     internalConfiguration.setNewFtpSession(ipOnly, fullIp, session);
   }
 
@@ -529,7 +532,7 @@ public abstract class FtpConfiguration {
    *
    * @return the FtpSession if it exists associated to this channel
    */
-  public FtpSession getFtpSession(Channel channel, boolean active) {
+  public FtpSession getFtpSession(final Channel channel, final boolean active) {
     return internalConfiguration.getFtpSession(channel, active, true);
   }
 
@@ -541,7 +544,8 @@ public abstract class FtpConfiguration {
    *
    * @return the FtpSession if it exists associated to this channel
    */
-  public FtpSession getFtpSessionNoRemove(Channel channel, boolean active) {
+  public FtpSession getFtpSessionNoRemove(final Channel channel,
+                                          final boolean active) {
     return internalConfiguration.getFtpSession(channel, active, false);
   }
 
@@ -551,7 +555,8 @@ public abstract class FtpConfiguration {
    * @param ipOnly
    * @param fullIp
    */
-  public void delFtpSession(InetAddress ipOnly, InetSocketAddress fullIp) {
+  public void delFtpSession(final InetAddress ipOnly,
+                            final InetSocketAddress fullIp) {
     internalConfiguration.delFtpSession(ipOnly, fullIp);
   }
 
@@ -563,7 +568,8 @@ public abstract class FtpConfiguration {
    *
    * @return True if the couple is present
    */
-  public boolean hasFtpSession(InetAddress ipOnly, InetSocketAddress fullIp) {
+  public boolean hasFtpSession(final InetAddress ipOnly,
+                               final InetSocketAddress fullIp) {
     return internalConfiguration.hasFtpSession(ipOnly, fullIp);
   }
 
@@ -601,7 +607,7 @@ public abstract class FtpConfiguration {
   /**
    * @param isShutdown the isShutdown to set
    */
-  public void setShutdown(boolean isShutdown) {
+  public void setShutdown(final boolean isShutdown) {
     this.isShutdown = isShutdown;
   }
 
@@ -615,7 +621,7 @@ public abstract class FtpConfiguration {
   /**
    * @param serverThread0 the sERVER_THREAD to set
    */
-  public void setServerThread(int serverThread0) {
+  public void setServerThread(final int serverThread0) {
     serverThread = serverThread0;
   }
 
@@ -629,7 +635,7 @@ public abstract class FtpConfiguration {
   /**
    * @param clientThread0 the cLIENT_THREAD to set
    */
-  public void setClientThread(int clientThread0) {
+  public void setClientThread(final int clientThread0) {
     clientThread = clientThread0;
   }
 
@@ -643,7 +649,7 @@ public abstract class FtpConfiguration {
   /**
    * @param tIMEOUTCON the tIMEOUTCON to set
    */
-  public void setTimeoutCon(long tIMEOUTCON) {
+  public void setTimeoutCon(final long tIMEOUTCON) {
     timeoutCon = tIMEOUTCON;
   }
 
@@ -657,7 +663,7 @@ public abstract class FtpConfiguration {
   /**
    * @param bLOCKSIZE the bLOCKSIZE to set
    */
-  public void setBlocksize(int bLOCKSIZE) {
+  public void setBlocksize(final int bLOCKSIZE) {
     blocksize = bLOCKSIZE;
   }
 
@@ -671,7 +677,7 @@ public abstract class FtpConfiguration {
   /**
    * @param deleteOnAbort the deleteOnAbort to set
    */
-  public void setDeleteOnAbort(boolean deleteOnAbort) {
+  public void setDeleteOnAbort(final boolean deleteOnAbort) {
     this.deleteOnAbort = deleteOnAbort;
   }
 
@@ -685,7 +691,7 @@ public abstract class FtpConfiguration {
   /**
    * @param dATATIMEOUTCON the dATATIMEOUTCON to set
    */
-  public static void setDataTimeoutCon(long dATATIMEOUTCON) {
+  public static void setDataTimeoutCon(final long dATATIMEOUTCON) {
     dataTimeoutCon = dATATIMEOUTCON;
   }
 
@@ -699,7 +705,7 @@ public abstract class FtpConfiguration {
   /**
    * @param maxGlobalMemory the maxGlobalMemory to set
    */
-  public void setMaxGlobalMemory(int maxGlobalMemory) {
+  public void setMaxGlobalMemory(final int maxGlobalMemory) {
     this.maxGlobalMemory = maxGlobalMemory;
   }
 

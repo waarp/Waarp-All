@@ -44,8 +44,8 @@ public class DeleteTask extends AbstractTask {
    * @param argTransfer
    * @param session
    */
-  public DeleteTask(String argRule, int delay, String argTransfer,
-                    R66Session session) {
+  public DeleteTask(final String argRule, final int delay,
+                    final String argTransfer, final R66Session session) {
     super(TaskType.DELETE, delay, argRule, argTransfer, session);
   }
 

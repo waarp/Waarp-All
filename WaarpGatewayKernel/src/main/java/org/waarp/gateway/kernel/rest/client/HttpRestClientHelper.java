@@ -69,11 +69,6 @@ public class HttpRestClientHelper {
 
   private static WaarpLogger logger;
 
-  /**
-   * ExecutorService Worker Boss
-   */
-  private final EventLoopGroup workerGroup;
-
   private final Bootstrap bootstrap;
 
   private final HttpHeaders headers;
@@ -87,8 +82,9 @@ public class HttpRestClientHelper {
    * @param timeout timeout used in connection
    * @param Initializer the associated client pipeline factory
    */
-  public HttpRestClientHelper(String baseUri, int nbclient, long timeout,
-                              ChannelInitializer<SocketChannel> Initializer) {
+  public HttpRestClientHelper(final String baseUri, final int nbclient,
+                              final long timeout,
+                              final ChannelInitializer<SocketChannel> Initializer) {
     if (logger == null) {
       logger = WaarpLoggerFactory.getLogger(HttpRestClientHelper.class);
     }
@@ -97,8 +93,14 @@ public class HttpRestClientHelper {
     }
     // Configure the client.
     bootstrap = new Bootstrap();
-    workerGroup = new NioEventLoopGroup(nbclient, new WaarpThreadFactory(
-        "Rest_" + baseUri + '_'));
+    /**
+     * ExecutorService Worker Boss
+     */
+    final EventLoopGroup workerGroup = new NioEventLoopGroup(nbclient,
+                                                             new WaarpThreadFactory(
+                                                                 "Rest_" +
+                                                                 baseUri +
+                                                                 '_'));
     WaarpNettyUtil.setBootstrap(bootstrap, workerGroup, 30000);
     // Configure the pipeline factory.
     bootstrap.handler(Initializer);
@@ -131,7 +133,7 @@ public class HttpRestClientHelper {
    *
    * @return the channel if connected or Null if not
    */
-  public Channel getChannel(String host, int port) {
+  public Channel getChannel(final String host, final int port) {
     // Start the connection attempt.
     final ChannelFuture future =
         bootstrap.connect(new InetSocketAddress(host, port));
@@ -169,15 +171,17 @@ public class HttpRestClientHelper {
    *
    * @return the RestFuture associated with this request
    */
-  public RestFuture sendQuery(HmacSha256 hmacSha256, Channel channel,
-                              HttpMethod method, String host, String addedUri,
-                              String user, String pwd,
-                              Map<String, String> uriArgs, String json) {
+  public RestFuture sendQuery(final HmacSha256 hmacSha256,
+                              final Channel channel, final HttpMethod method,
+                              final String host, final String addedUri,
+                              final String user, final String pwd,
+                              final Map<String, String> uriArgs,
+                              final String json) {
     // Prepare the HTTP request.
     logger.debug("Prepare request: " + method + ':' + addedUri + ':' + json);
     final RestFuture future =
         channel.attr(HttpRestClientSimpleResponseHandler.RESTARGUMENT).get();
-    QueryStringEncoder encoder;
+    final QueryStringEncoder encoder;
     if (addedUri != null) {
       encoder = new QueryStringEncoder(baseUri + addedUri);
     } else {
@@ -189,7 +193,7 @@ public class HttpRestClientHelper {
         encoder.addParam(elt.getKey(), elt.getValue());
       }
     }
-    String[] result;
+    final String[] result;
     try {
       result = RestArgument.getBaseAuthent(hmacSha256, encoder, user, pwd);
       logger.debug("Authent encoded");
@@ -198,7 +202,7 @@ public class HttpRestClientHelper {
       future.setFailure(e);
       return future;
     }
-    URI uri;
+    final URI uri;
     try {
       uri = encoder.toUri();
     } catch (final URISyntaxException e) {
@@ -208,7 +212,7 @@ public class HttpRestClientHelper {
     }
     logger.debug("Uri ready: " + uri.toASCIIString());
 
-    FullHttpRequest request;
+    final FullHttpRequest request;
     if (json != null) {
       logger.debug("Add body");
       final ByteBuf buffer =
@@ -263,14 +267,16 @@ public class HttpRestClientHelper {
    *
    * @return the RestFuture associated with this request
    */
-  public RestFuture sendQuery(Channel channel, HttpMethod method, String host,
-                              String addedUri, String user,
-                              Map<String, String> uriArgs, String json) {
+  public RestFuture sendQuery(final Channel channel, final HttpMethod method,
+                              final String host, final String addedUri,
+                              final String user,
+                              final Map<String, String> uriArgs,
+                              final String json) {
     // Prepare the HTTP request.
     logger.debug("Prepare request: " + method + ':' + addedUri + ':' + json);
     final RestFuture future =
         channel.attr(HttpRestClientSimpleResponseHandler.RESTARGUMENT).get();
-    QueryStringEncoder encoder;
+    final QueryStringEncoder encoder;
     if (addedUri != null) {
       encoder = new QueryStringEncoder(baseUri + addedUri);
     } else {
@@ -282,7 +288,7 @@ public class HttpRestClientHelper {
         encoder.addParam(elt.getKey(), elt.getValue());
       }
     }
-    URI uri;
+    final URI uri;
     try {
       uri = encoder.toUri();
     } catch (final URISyntaxException e) {
@@ -292,7 +298,7 @@ public class HttpRestClientHelper {
     }
     logger.debug("Uri ready: " + uri.toASCIIString());
 
-    FullHttpRequest request;
+    final FullHttpRequest request;
     if (json != null) {
       logger.debug("Add body");
       final ByteBuf buffer =
@@ -335,7 +341,7 @@ public class HttpRestClientHelper {
    * @param args as uri (http://host:port/uri method user pwd
    *     sign=path|nosign [json])
    */
-  public static void main(String[] args) {
+  public static void main(final String[] args) {
     WaarpLoggerFactory
         .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));
     logger = WaarpLoggerFactory.getLogger(HttpRestClientHelper.class);
@@ -371,8 +377,8 @@ public class HttpRestClientHelper {
     }
     final HttpMethod method = HttpMethod.valueOf(meth);
     int port = -1;
-    String host;
-    String path;
+    final String host;
+    final String path;
     try {
       final URI realUri = new URI(uri);
       port = realUri.getPort();
@@ -390,7 +396,7 @@ public class HttpRestClientHelper {
       logger.error("Cannot connect to " + host + " on port " + port);
       return;
     }
-    RestFuture future;
+    final RestFuture future;
     if (sign) {
       future = client
           .sendQuery(hmacSha256, channel, method, host, null, user, pwd, null,

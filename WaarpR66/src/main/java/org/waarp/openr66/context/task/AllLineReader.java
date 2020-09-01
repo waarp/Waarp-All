@@ -37,7 +37,7 @@ class AllLineReader extends Thread {
    */
   private final StringBuilder lastLine = new StringBuilder();
 
-  AllLineReader(PipedInputStream inputStream) {
+  AllLineReader(final PipedInputStream inputStream) {
     reader = new BufferedReader(new InputStreamReader(inputStream));
   }
 

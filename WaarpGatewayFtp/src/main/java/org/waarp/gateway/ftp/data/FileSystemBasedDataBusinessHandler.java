@@ -33,7 +33,7 @@ public class FileSystemBasedDataBusinessHandler extends DataBusinessHandler {
   }
 
   @Override
-  public void exceptionLocalCaught(Throwable e) {
+  public void exceptionLocalCaught(final Throwable e) {
     // nothing
   }
 
@@ -43,7 +43,7 @@ public class FileSystemBasedDataBusinessHandler extends DataBusinessHandler {
   }
 
   @Override
-  public void executeChannelConnected(Channel channel) {
+  public void executeChannelConnected(final Channel channel) {
     // nothing
   }
 }

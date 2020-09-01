@@ -52,7 +52,7 @@ public class ExecGatewayFtpServer {
    *
    * @param args
    */
-  public static void main(String[] args) {
+  public static void main(final String[] args) {
     if (args.length < 1) {
       SysErrLogger.FAKE_LOGGER.syserr(
           "Usage: " + ExecGatewayFtpServer.class.getName() +
@@ -65,7 +65,7 @@ public class ExecGatewayFtpServer {
     initialize(args[0], args.length > 1? args[1] : null);
   }
 
-  public static boolean initialize(String config, String r66file) {
+  public static boolean initialize(final String config, final String r66file) {
     boolean asAService = false;
     if (logger == null) {
       // Called as a service

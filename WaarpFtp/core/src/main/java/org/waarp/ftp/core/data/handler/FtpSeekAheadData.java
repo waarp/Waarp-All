@@ -45,7 +45,7 @@ class FtpSeekAheadData {
   /**
    * @param buffer
    */
-  FtpSeekAheadData(ByteBuf buffer) throws SeekAheadNoBackArrayException {
+  FtpSeekAheadData(final ByteBuf buffer) throws SeekAheadNoBackArrayException {
     if (!buffer.hasArray()) {
       throw new SeekAheadNoBackArrayException();
     }
@@ -60,7 +60,7 @@ class FtpSeekAheadData {
    *     set the
    *     current readerIndex in the buffer.
    */
-  void setReadPosition(int minus) {
+  void setReadPosition(final int minus) {
     pos -= minus;
     readerIndex = pos;
     buffer.readerIndex(readerIndex);

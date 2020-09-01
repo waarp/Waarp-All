@@ -65,7 +65,7 @@ public class JsonPacket {
   /**
    * @param requestUserPacket the requestUserPacket to set
    */
-  public void setRequestUserPacket(byte requestUserPacket) {
+  public void setRequestUserPacket(final byte requestUserPacket) {
     this.requestUserPacket = requestUserPacket;
   }
 
@@ -86,7 +86,7 @@ public class JsonPacket {
   /**
    * @param comment the comment to set
    */
-  public void setComment(String comment) {
+  public void setComment(final String comment) {
     this.comment = comment;
   }
 
@@ -104,7 +104,7 @@ public class JsonPacket {
    * @throws JsonMappingException
    * @throws JsonParseException
    */
-  public static JsonPacket createFromBuffer(String value)
+  public static JsonPacket createFromBuffer(final String value)
       throws JsonParseException, JsonMappingException, IOException {
     if (value != null && !value.isEmpty()) {
       return JsonHandler.mapper.readValue(value, JsonPacket.class);
@@ -117,7 +117,7 @@ public class JsonPacket {
    *
    * @param json
    */
-  public void fromJson(JsonPacket json) {
+  public void fromJson(final JsonPacket json) {
     comment = json.comment;
     requestUserPacket = json.requestUserPacket;
   }

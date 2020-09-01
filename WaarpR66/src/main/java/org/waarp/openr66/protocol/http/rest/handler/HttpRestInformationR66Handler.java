@@ -57,15 +57,16 @@ public class HttpRestInformationR66Handler extends HttpRestAbstractR66Handler {
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(HttpRestInformationR66Handler.class);
 
-  public HttpRestInformationR66Handler(RestConfiguration config,
-                                       METHOD... methods) {
+  public HttpRestInformationR66Handler(final RestConfiguration config,
+                                       final METHOD... methods) {
     super(BASEURI, config, METHOD.OPTIONS);
     setIntersectionMethods(methods, METHOD.GET);
   }
 
   @Override
-  public void endParsingRequest(HttpRestHandler handler, RestArgument arguments,
-                                RestArgument result, Object body)
+  public void endParsingRequest(final HttpRestHandler handler,
+                                final RestArgument arguments,
+                                final RestArgument result, final Object body)
       throws HttpIncorrectRequestException, HttpInvalidAuthenticationException {
     logger.debug("debug: {} ### {}", arguments, result);
     if (body != null) {
@@ -91,7 +92,7 @@ public class HttpRestInformationR66Handler extends HttpRestAbstractR66Handler {
         } else {
           result.setCommand(ACTIONS_TYPE.GetInformation.name());
         }
-        ValidPacket validPacket;
+        final ValidPacket validPacket;
         if (node.isIdRequest()) {
           validPacket = serverHandler
               .informationRequest(node.getId(), node.isTo(), node.getRulename(),
@@ -164,7 +165,7 @@ public class HttpRestInformationR66Handler extends HttpRestAbstractR66Handler {
       node1 = JsonHandler.createArrayNode();
       final ObjectNode node1b = JsonHandler.createObjectNode();
       node1b.put(AbstractDbData.JSON_MODEL, DbTaskRunner.class.getSimpleName());
-      for (DbTaskRunner.Columns column : DbTaskRunner.Columns.values()) {
+      for (final DbTaskRunner.Columns column : DbTaskRunner.Columns.values()) {
         node1b.put(column.name(), DbTaskRunner.dbTypes[column.ordinal()]);
       }
       node1.add(node1b);

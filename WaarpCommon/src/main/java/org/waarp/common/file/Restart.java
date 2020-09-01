@@ -45,7 +45,7 @@ public abstract class Restart {
    *
    * @param session
    */
-  protected Restart(SessionInterface session) {
+  protected Restart(final SessionInterface session) {
     isSet = false;
     this.session = session;
   }
@@ -60,7 +60,7 @@ public abstract class Restart {
   /**
    * @param isSet the isSet to set
    */
-  public void setSet(boolean isSet) {
+  public void setSet(final boolean isSet) {
     this.isSet = isSet;
   }
 

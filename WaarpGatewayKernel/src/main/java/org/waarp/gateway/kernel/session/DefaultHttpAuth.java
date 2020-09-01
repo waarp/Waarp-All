@@ -61,7 +61,7 @@ public class DefaultHttpAuth implements HttpAuthInterface {
   /**
    * @param session
    */
-  public DefaultHttpAuth(SessionInterface session) {
+  public DefaultHttpAuth(final SessionInterface session) {
     this.session = session;
     isIdentified = true;
   }
@@ -72,7 +72,7 @@ public class DefaultHttpAuth implements HttpAuthInterface {
   }
 
   @Override
-  public NextCommandReply setUser(String user)
+  public NextCommandReply setUser(final String user)
       throws Reply421Exception, Reply530Exception {
     this.user = user;
     return null;
@@ -84,7 +84,7 @@ public class DefaultHttpAuth implements HttpAuthInterface {
   }
 
   @Override
-  public NextCommandReply setPassword(String password)
+  public NextCommandReply setPassword(final String password)
       throws Reply421Exception, Reply530Exception {
     this.password = password;
     return null;
@@ -101,7 +101,7 @@ public class DefaultHttpAuth implements HttpAuthInterface {
   }
 
   @Override
-  public boolean isBusinessPathValid(String newPath) {
+  public boolean isBusinessPathValid(final String newPath) {
     return true;
   }
 
@@ -116,7 +116,7 @@ public class DefaultHttpAuth implements HttpAuthInterface {
   }
 
   @Override
-  public String getRelativePath(String file) {
+  public String getRelativePath(final String file) {
     return file;
   }
 
@@ -131,7 +131,7 @@ public class DefaultHttpAuth implements HttpAuthInterface {
   }
 
   @Override
-  public NextCommandReply setAccount(String account)
+  public NextCommandReply setAccount(final String account)
       throws Reply421Exception, Reply530Exception, Reply502Exception {
     this.account = account;
     return null;

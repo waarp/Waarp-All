@@ -56,13 +56,13 @@ public final class ZipUtility {
    *
    * @return True if OK
    */
-  public static boolean createZipFromDirectory(String directory,
-                                               String filename,
-                                               boolean absolute) {
+  public static boolean createZipFromDirectory(final String directory,
+                                               final String filename,
+                                               final boolean absolute) {
     final File rootDir = new File(directory);
     final File saveFile = new File(filename);
     // recursive call
-    ZipArchiveOutputStream zaos;
+    final ZipArchiveOutputStream zaos;
     try {
       zaos = new ZipArchiveOutputStream(new FileOutputStream(saveFile));
     } catch (final FileNotFoundException e) {
@@ -93,9 +93,9 @@ public final class ZipUtility {
    *
    * @throws IOException
    */
-  private static void recurseFiles(File root, File file,
-                                   ZipArchiveOutputStream zaos,
-                                   boolean absolute) throws IOException {
+  private static void recurseFiles(final File root, final File file,
+                                   final ZipArchiveOutputStream zaos,
+                                   final boolean absolute) throws IOException {
     if (file.isDirectory()) {
       // recursive call
       final File[] files = file.listFiles();
@@ -104,7 +104,7 @@ public final class ZipUtility {
       }
     } else if (!file.getName().endsWith(".zip") &&
                !file.getName().endsWith(".ZIP")) {
-      String filename;
+      final String filename;
       if (absolute) {
         filename =
             file.getAbsolutePath().substring(root.getAbsolutePath().length());
@@ -128,7 +128,8 @@ public final class ZipUtility {
    *
    * @return True if OK
    */
-  public static boolean createZipFromFiles(List<File> files, String filename) {
+  public static boolean createZipFromFiles(final List<File> files,
+                                           final String filename) {
     return createZipFromFiles(files.toArray(FILE_0_LENGTH), filename);
   }
 
@@ -140,9 +141,10 @@ public final class ZipUtility {
    *
    * @return True if OK
    */
-  public static boolean createZipFromFiles(File[] files, String filename) {
+  public static boolean createZipFromFiles(final File[] files,
+                                           final String filename) {
     final File saveFile = new File(filename);
-    ZipArchiveOutputStream zaos;
+    final ZipArchiveOutputStream zaos;
     try {
       zaos = new ZipArchiveOutputStream(new FileOutputStream(saveFile));
     } catch (final FileNotFoundException e) {
@@ -173,9 +175,10 @@ public final class ZipUtility {
    *
    * @throws IOException
    */
-  private static void addFile(File file, ZipArchiveOutputStream zaos)
+  private static void addFile(final File file,
+                              final ZipArchiveOutputStream zaos)
       throws IOException {
-    String filename;
+    final String filename;
     filename = file.getName();
     final ZipArchiveEntry zae = new ZipArchiveEntry(filename);
     zae.setSize(file.length());
@@ -195,7 +198,7 @@ public final class ZipUtility {
    *
    * @throws IOException
    */
-  public static List<String> unZip(File tarFile, File directory)
+  public static List<String> unZip(final File tarFile, final File directory)
       throws IOException {
     final List<String> result = new ArrayList<String>();
     final InputStream inputStream = new FileInputStream(tarFile);
@@ -227,7 +230,7 @@ public final class ZipUtility {
     return result;
   }
 
-  public static void main(String[] args) {
+  public static void main(final String[] args) {
     if (args.length < 3) {
       SysErrLogger.FAKE_LOGGER.syserr("You need to provide 3 arguments:\n" +
                                       "   option filedest.tar \"source\"\n" +
@@ -239,7 +242,7 @@ public final class ZipUtility {
     final int option = Integer.parseInt(args[0]);
     final String tarfile = args[1];
     final String tarsource = args[2];
-    String[] tarfiles;
+    final String[] tarfiles;
     if (option == 3) {
       tarfiles = args[2].split(",");
       final File[] files = new File[tarfiles.length];

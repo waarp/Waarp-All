@@ -56,10 +56,12 @@ public final class FileUtils {
    *
    * @throws OpenR66RunnerErrorException
    */
-  public static final R66File getFile(WaarpLogger logger, R66Session session,
-                                      String filenameSrc, boolean isPreStart,
-                                      boolean isSender, boolean isThrough,
-                                      R66File file)
+  public static final R66File getFile(final WaarpLogger logger,
+                                      final R66Session session,
+                                      final String filenameSrc,
+                                      final boolean isPreStart,
+                                      final boolean isSender,
+                                      final boolean isThrough, R66File file)
       throws OpenR66RunnerErrorException {
     String filename;
     logger.debug("PreStart: " + isPreStart);
@@ -118,24 +120,25 @@ public final class FileUtils {
    *
    * @return the hash from the given Buffer
    */
-  public static final byte[] getHash(byte[] buffer, DigestAlgo algo,
-                                     FilesystemBasedDigest digestGlobal) {
+  public static final byte[] getHash(final byte[] buffer, final DigestAlgo algo,
+                                     final FilesystemBasedDigest digestGlobal) {
     if (buffer == null || buffer.length == 0) {
       return EMPTY_ARRAY;
     }
-    byte[] newkey;
+    final byte[] newkey;
     try {
       if (digestGlobal == null) {
         newkey = FilesystemBasedDigest.getHash(buffer, algo);
       } else {
-        FilesystemBasedDigest digestPacket = new FilesystemBasedDigest(algo);
+        final FilesystemBasedDigest digestPacket =
+            new FilesystemBasedDigest(algo);
         digestPacket.Update(buffer, 0, buffer.length);
         newkey = digestPacket.Final();
         digestGlobal.Update(buffer, 0, buffer.length);
       }
     } catch (final IOException e) {
       return EMPTY_ARRAY;
-    } catch (NoSuchAlgorithmException e) {
+    } catch (final NoSuchAlgorithmException e) {
       return EMPTY_ARRAY;
     }
     return newkey;

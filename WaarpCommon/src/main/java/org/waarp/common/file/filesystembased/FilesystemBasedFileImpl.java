@@ -107,9 +107,9 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
    *
    * @throws CommandAbstractException
    */
-  protected FilesystemBasedFileImpl(SessionInterface session,
-                                    FilesystemBasedDirImpl dir, String path,
-                                    boolean append)
+  protected FilesystemBasedFileImpl(final SessionInterface session,
+                                    final FilesystemBasedDirImpl dir,
+                                    final String path, final boolean append)
       throws CommandAbstractException {
     this.session = session;
     auth = (FilesystemBasedAuthImpl) session.getAuth();
@@ -141,8 +141,9 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
    * @param dir It is not necessary the directory that owns this file.
    * @param path
    */
-  protected FilesystemBasedFileImpl(SessionInterface session,
-                                    FilesystemBasedDirImpl dir, String path) {
+  protected FilesystemBasedFileImpl(final SessionInterface session,
+                                    final FilesystemBasedDirImpl dir,
+                                    final String path) {
     this.session = session;
     auth = (FilesystemBasedAuthImpl) session.getAuth();
     this.dir = dir;
@@ -178,7 +179,8 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
    *
    * @throws CommandAbstractException
    */
-  protected File getFileFromPath(String path) throws CommandAbstractException {
+  protected File getFileFromPath(final String path)
+      throws CommandAbstractException {
     final String newdir = getDir().validatePath(path);
     if (dir.isAbsolute(newdir)) {
       return new File(newdir);
@@ -196,7 +198,7 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
    *
    * @return the relative path
    */
-  protected String getRelativePath(File file) {
+  protected String getRelativePath(final File file) {
     return auth
         .getRelativePath(AbstractDir.normalizePath(file.getAbsolutePath()));
   }
@@ -322,7 +324,7 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
   }
 
   @Override
-  public boolean renameTo(String path) throws CommandAbstractException {
+  public boolean renameTo(final String path) throws CommandAbstractException {
     checkIdentify();
     if (!isReady) {
       logger.warn("File not ready: {}", this);
@@ -363,7 +365,7 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
       throws FileTransferException, FileEndOfTransferException {
     if (isReady) {
       final DataBlock dataBlock = new DataBlock();
-      byte[] buffer = getByteBlock(getSession().getBlockSize());
+      final byte[] buffer = getByteBlock(getSession().getBlockSize());
       if (buffer != null) {
         dataBlock.setBlock(buffer);
         if (dataBlock.getByteCount() < getSession().getBlockSize()) {
@@ -376,7 +378,8 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
   }
 
   @Override
-  public void writeDataBlock(DataBlock dataBlock) throws FileTransferException {
+  public void writeDataBlock(final DataBlock dataBlock)
+      throws FileTransferException {
     if (isReady) {
       if (dataBlock.isEOF()) {
         writeBlockEnd(dataBlock.getByteBlock(), dataBlock.getOffset(),
@@ -410,7 +413,7 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
    * @throws IOException
    */
   @Override
-  public void setPosition(long position) throws IOException {
+  public void setPosition(final long position) throws IOException {
     if (this.position != position) {
       this.position = position;
       if (fileInputStream != null) {
@@ -440,8 +443,8 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
    *
    * @throws FileTransferException
    */
-  private void writeBlock(byte[] buffer, int offset, int length)
-      throws FileTransferException {
+  private void writeBlock(final byte[] buffer, final int offset,
+                          final int length) throws FileTransferException {
     if (length > 0 && !isReady) {
       throw new FileTransferException(NO_FILE_IS_READY);
     }
@@ -455,9 +458,8 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
     if (fileOutputStream == null) {
       throw new FileTransferException(INTERNAL_ERROR_FILE_IS_NOT_READY);
     }
-    final int bufferSize = length;
     try {
-      fileOutputStream.write(buffer, offset, bufferSize);
+      fileOutputStream.write(buffer, offset, length);
     } catch (final IOException e2) {
       logger.error("Error during write:", e2);
       try {
@@ -469,7 +471,7 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
       // REDO
       throw new FileTransferException(INTERNAL_ERROR_FILE_IS_NOT_READY);
     }
-    position += bufferSize;
+    position += length;
   }
 
   /**
@@ -482,8 +484,8 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
    *
    * @throws FileTransferException
    */
-  private void writeBlockEnd(byte[] buffer, int offset, int length)
-      throws FileTransferException {
+  private void writeBlockEnd(final byte[] buffer, final int offset,
+                             final int length) throws FileTransferException {
     writeBlock(buffer, offset, length);
     try {
       closeFile();
@@ -492,7 +494,7 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
     }
   }
 
-  private void checkByteBufSize(int size) {
+  private void checkByteBufSize(final int size) {
     if (reusableBytes == null || reusableBytes.length != size) {
       reusableBytes = new byte[size];
     }
@@ -572,7 +574,7 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
     if (!isReady) {
       return null;
     }
-    File trueFile;
+    final File trueFile;
     try {
       trueFile = getFileFromPath(currentFile);
     } catch (final CommandAbstractException e1) {
@@ -606,13 +608,13 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
     if (!isReady) {
       return null;
     }
-    File trueFile;
+    final File trueFile;
     try {
       trueFile = getFileFromPath(currentFile);
     } catch (final CommandAbstractException e1) {
       return null;
     }
-    RandomAccessFile raf;
+    final RandomAccessFile raf;
     try {
       raf = new RandomAccessFile(trueFile, "rw");//NOSONAR
       raf.seek(position);
@@ -635,11 +637,11 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
    *
    * @return the FileOutputStream (OUT)
    */
-  protected FileOutputStream getFileOutputStream(boolean append) {
+  protected FileOutputStream getFileOutputStream(final boolean append) {
     if (!isReady) {
       return null;
     }
-    File trueFile;
+    final File trueFile;
     try {
       trueFile = getFileFromPath(currentFile);
     } catch (final CommandAbstractException e1) {
@@ -661,7 +663,7 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
       }
       logger.debug("New size: " + trueFile.length() + " : " + position);
     }
-    FileOutputStream fos;
+    final FileOutputStream fos;
     try {
       fos = new FileOutputStream(trueFile, append);
     } catch (final FileNotFoundException e) {

@@ -74,7 +74,7 @@ public class RetrieveRunner extends Thread {
   /**
    * @param session
    */
-  public RetrieveRunner(R66Session session) {
+  public RetrieveRunner(final R66Session session) {
     this.session = session;
     localChannelReference = this.session.getLocalChannelReference();
     nameThread = "RetrieveRunner: " + localChannelReference.getLocalId();
@@ -254,7 +254,7 @@ public class RetrieveRunner extends Thread {
     }
   }
 
-  private void transferInError(OpenR66Exception e) {
+  private void transferInError(final OpenR66Exception e) {
     final R66Result result =
         new R66Result(e, session, true, ErrorCode.TransferError,
                       session.getRunner());
@@ -286,9 +286,9 @@ public class RetrieveRunner extends Thread {
    * @throws OpenR66RunnerErrorException
    * @throws OpenR66ProtocolSystemException
    */
-  public static ChannelFuture writeWhenPossible(DataBlock block,
-                                                LocalChannelReference localChannelReference,
-                                                FilesystemBasedDigest digestGlobal)
+  public static ChannelFuture writeWhenPossible(final DataBlock block,
+                                                final LocalChannelReference localChannelReference,
+                                                final FilesystemBasedDigest digestGlobal)
       throws OpenR66ProtocolPacketException, OpenR66RunnerErrorException,
              OpenR66ProtocolSystemException {
     return ChannelUtils

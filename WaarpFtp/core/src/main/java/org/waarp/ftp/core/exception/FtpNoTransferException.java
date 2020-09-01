@@ -32,7 +32,7 @@ public class FtpNoTransferException extends Exception {
   /**
    * @param message
    */
-  public FtpNoTransferException(String message) {
+  public FtpNoTransferException(final String message) {
     super(message);
   }
 
@@ -40,7 +40,7 @@ public class FtpNoTransferException extends Exception {
    * @param message
    * @param cause
    */
-  public FtpNoTransferException(String message, Throwable cause) {
+  public FtpNoTransferException(final String message, final Throwable cause) {
     super(message, cause);
   }
 

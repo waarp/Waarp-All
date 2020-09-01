@@ -41,7 +41,7 @@ public class LogResponseJsonPacket extends LogJsonPacket {
   /**
    * @param command the command to set
    */
-  public void setCommand(byte command) {
+  public void setCommand(final byte command) {
     this.command = command;
   }
 
@@ -55,7 +55,7 @@ public class LogResponseJsonPacket extends LogJsonPacket {
   /**
    * @param filename the filename to set
    */
-  public void setFilename(String filename) {
+  public void setFilename(final String filename) {
     this.filename = filename;
   }
 
@@ -69,7 +69,7 @@ public class LogResponseJsonPacket extends LogJsonPacket {
   /**
    * @param exported the exported to set
    */
-  public void setExported(long exported) {
+  public void setExported(final long exported) {
     this.exported = exported;
   }
 
@@ -83,7 +83,7 @@ public class LogResponseJsonPacket extends LogJsonPacket {
   /**
    * @param purged the purged to set
    */
-  public void setPurged(long purged) {
+  public void setPurged(final long purged) {
     this.purged = purged;
   }
 

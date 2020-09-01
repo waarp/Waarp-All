@@ -115,7 +115,7 @@ public class HttpFormattedHandler
      *
      * @param uniquefile
      */
-    REQUEST(String uniquefile) {
+    REQUEST(final String uniquefile) {
       header = uniquefile;
       end = uniquefile;
     }
@@ -124,7 +124,7 @@ public class HttpFormattedHandler
      * @param header
      * @param end
      */
-    REQUEST(String header, String end) {
+    REQUEST(final String header, final String end) {
       this.header = header;
       this.end = end;
     }
@@ -134,12 +134,12 @@ public class HttpFormattedHandler
      *
      * @return the content of the unique file
      */
-    public String readFileUnique(HttpFormattedHandler handler) {
+    public String readFileUnique(final HttpFormattedHandler handler) {
       return handler.readFileHeader(
           Configuration.configuration.getHttpBasePath() + MONITOR + header);
     }
 
-    public String readHeader(HttpFormattedHandler handler) {
+    public String readHeader(final HttpFormattedHandler handler) {
       return handler.readFileHeader(
           Configuration.configuration.getHttpBasePath() + MONITOR + header);
     }
@@ -178,7 +178,7 @@ public class HttpFormattedHandler
    * The Database connection attached to this NetworkChannelReference shared
    * among all associated LocalChannels
    */
-  private DbSession dbSession = admin.getSession();
+  private final DbSession dbSession = admin.getSession();
 
   /**
    * Does this dbSession is private and so should be closed
@@ -189,8 +189,8 @@ public class HttpFormattedHandler
 
   protected Map<String, List<String>> params;
 
-  private String readFileHeader(String filename) {
-    String value;
+  private String readFileHeader(final String filename) {
+    final String value;
     try {
       value = WaarpStringUtils.readFileException(filename);
     } catch (final InvalidArgumentException e) {
@@ -225,7 +225,7 @@ public class HttpFormattedHandler
     return builder.toString();
   }
 
-  protected String getTrimValue(String varname) {
+  protected String getTrimValue(final String varname) {
     String value;
     try {
       value = params.get(varname).get(0).trim();
@@ -239,8 +239,8 @@ public class HttpFormattedHandler
   }
 
   @Override
-  protected void channelRead0(ChannelHandlerContext ctx, FullHttpRequest msg)
-      throws Exception {
+  protected void channelRead0(final ChannelHandlerContext ctx,
+                              final FullHttpRequest msg) throws Exception {
     isCurrentRequestXml = false;
     isCurrentRequestJson = false;
     status = HttpResponseStatus.OK;
@@ -297,11 +297,11 @@ public class HttpFormattedHandler
       }
       params = queryStringDecoder.parameters();
       boolean invalidEntry = false;
-      for (Entry<String, List<String>> paramCheck : params.entrySet()) {
+      for (final Entry<String, List<String>> paramCheck : params.entrySet()) {
         try {
           ParametersChecker.checkSanityString(paramCheck.getValue().toArray(
               ParametersChecker.ZERO_ARRAY_STRING));
-        } catch (InvalidArgumentException e) {
+        } catch (final InvalidArgumentException e) {
           logger.error(
               "Arguments incompatible with Security: " + paramCheck.getKey(),
               e);
@@ -309,7 +309,7 @@ public class HttpFormattedHandler
         }
       }
       if (invalidEntry) {
-        for (Entry<String, List<String>> paramCheck : params.entrySet()) {
+        for (final Entry<String, List<String>> paramCheck : params.entrySet()) {
           paramCheck.getValue().clear();
         }
         params.clear();
@@ -415,7 +415,8 @@ public class HttpFormattedHandler
    * @throws WaarpDatabaseNoConnectionException
    * @throws WaarpDatabaseSqlException
    */
-  private void addRunners(List<Transfer> transfers, String type, int nb) {
+  private void addRunners(final List<Transfer> transfers, final String type,
+                          final int nb) {
     responseContent
         .append("<style>td{font-size: 8pt;}</style><table border=\"2\">")
         .append("<tr><td>").append(type).append("</td>")
@@ -448,7 +449,7 @@ public class HttpFormattedHandler
    * @param ctx
    * @param nb
    */
-  private void active(ChannelHandlerContext ctx, int nb) {
+  private void active(final ChannelHandlerContext ctx, final int nb) {
     responseContent.append(REQUEST.active.readHeader(this));
 
     TransferDAO transferAccess = null;
@@ -550,7 +551,7 @@ public class HttpFormattedHandler
    * @param ctx
    * @param nb
    */
-  private void error(ChannelHandlerContext ctx, int nb) {
+  private void error(final ChannelHandlerContext ctx, final int nb) {
     responseContent.append(REQUEST.error.readHeader(this));
     TransferDAO transferAccess = null;
     final List<Filter> filters = new ArrayList<Filter>();
@@ -610,11 +611,11 @@ public class HttpFormattedHandler
    * @param ctx
    * @param nb
    */
-  private void done(ChannelHandlerContext ctx, int nb) {
+  private void done(final ChannelHandlerContext ctx, final int nb) {
     responseContent.append(REQUEST.done.readHeader(this));
 
     TransferDAO transferAccess = null;
-    List<Transfer> transfers;
+    final List<Transfer> transfers;
     try {
       transferAccess = DAOFactory.getInstance().getTransferDAO();
 
@@ -643,11 +644,11 @@ public class HttpFormattedHandler
    * @param ctx
    * @param nb
    */
-  private void all(ChannelHandlerContext ctx, int nb) {
+  private void all(final ChannelHandlerContext ctx, final int nb) {
     responseContent.append(REQUEST.all.readHeader(this));
 
     TransferDAO transferAccess = null;
-    List<Transfer> transfers;
+    final List<Transfer> transfers;
     try {
       transferAccess = DAOFactory.getInstance().getTransferDAO();
 
@@ -674,7 +675,7 @@ public class HttpFormattedHandler
    * @param ctx
    * @param nb
    */
-  private void status(ChannelHandlerContext ctx, int nb) {
+  private void status(final ChannelHandlerContext ctx, final int nb) {
     responseContent.append(REQUEST.status.readHeader(this));
 
     TransferDAO transferAccess = null;
@@ -744,7 +745,8 @@ public class HttpFormattedHandler
    * @param ctx
    * @param nb
    */
-  protected void statusxml(ChannelHandlerContext ctx, long nb, boolean detail) {
+  protected void statusxml(final ChannelHandlerContext ctx, final long nb,
+                           final boolean detail) {
     Configuration.configuration.getMonitoring().run(nb, detail);
     responseContent
         .append(Configuration.configuration.getMonitoring().exportXml(detail));
@@ -756,15 +758,15 @@ public class HttpFormattedHandler
    * @param ctx
    * @param nb
    */
-  protected void statusjson(ChannelHandlerContext ctx, long nb,
-                            boolean detail) {
+  protected void statusjson(final ChannelHandlerContext ctx, final long nb,
+                            final boolean detail) {
     Configuration.configuration.getMonitoring().run(nb, detail);
     responseContent
         .append(Configuration.configuration.getMonitoring().exportJson(detail));
   }
 
-  private void spooled(ChannelHandlerContext ctx, boolean detail, String name,
-                       int istatus) {
+  private void spooled(final ChannelHandlerContext ctx, final boolean detail,
+                       final String name, final int istatus) {
     responseContent.append(REQUEST.status.readHeader(this)).append(
         "<p><table border='0' cellpadding='0' cellspacing='0' >").append(
         "<tr style='background-image:url(gre/gresm.png);background-repeat:repeat-x;background-position:left top;'><td class='col_MenuHaut'>")
@@ -825,7 +827,7 @@ public class HttpFormattedHandler
    *
    * @param ctx
    */
-  protected void writeResponse(ChannelHandlerContext ctx) {
+  protected void writeResponse(final ChannelHandlerContext ctx) {
     // Convert the response content to a ByteBuf.
     final ByteBuf buf = Unpooled
         .copiedBuffer(responseContent.toString(), WaarpStringUtils.UTF8);
@@ -902,8 +904,8 @@ public class HttpFormattedHandler
    * @param ctx
    * @param status
    */
-  protected void sendError(ChannelHandlerContext ctx,
-                           HttpResponseStatus status) {
+  protected void sendError(final ChannelHandlerContext ctx,
+                           final HttpResponseStatus status) {
     responseContent.setLength(0);
     responseContent.append(REQUEST.error.readHeader(this))
                    .append("OpenR66 Web Failure: ").append(status)
@@ -921,8 +923,8 @@ public class HttpFormattedHandler
   }
 
   @Override
-  public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
-      throws Exception {
+  public void exceptionCaught(final ChannelHandlerContext ctx,
+                              final Throwable cause) throws Exception {
     final OpenR66Exception exception = OpenR66ExceptionTrappedFactory
         .getExceptionFromTrappedException(ctx.channel(), cause);
     if (exception != null) {
@@ -940,13 +942,14 @@ public class HttpFormattedHandler
   }
 
   @Override
-  public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+  public void channelInactive(final ChannelHandlerContext ctx)
+      throws Exception {
     super.channelInactive(ctx);
     logger.debug("Closed");
   }
 
   @Override
-  public void channelActive(ChannelHandlerContext ctx) throws Exception {
+  public void channelActive(final ChannelHandlerContext ctx) throws Exception {
     logger.debug("Connected");
     getAuthentHttp().getAuth().specialNoSessionAuth(false,
                                                     Configuration.configuration

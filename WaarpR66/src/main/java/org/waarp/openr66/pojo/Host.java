@@ -86,16 +86,18 @@ public class Host {
     // Nothing
   }
 
-  public Host(String hostid, String address, int port, byte[] hostkey,
-              boolean ssl, boolean client, boolean proxified, boolean admin,
-              boolean active, UpdatedInfo updatedInfo) {
+  public Host(final String hostid, final String address, final int port,
+              final byte[] hostkey, final boolean ssl, final boolean client,
+              final boolean proxified, final boolean admin,
+              final boolean active, final UpdatedInfo updatedInfo) {
     this(hostid, address, port, hostkey, ssl, client, proxified, admin, active);
     this.updatedInfo = updatedInfo;
   }
 
-  public Host(String hostid, String address, int port, byte[] hostkey,
-              boolean ssl, boolean client, boolean proxified, boolean admin,
-              boolean active) {
+  public Host(final String hostid, final String address, final int port,
+              final byte[] hostkey, final boolean ssl, final boolean client,
+              final boolean proxified, final boolean admin,
+              final boolean active) {
     this.hostid = hostid;
     this.hostkey = hostkey;
     // Force client status if unvalid port
@@ -108,13 +110,14 @@ public class Host {
     this.active = active;
   }
 
-  public Host(String hostid, String address, int port, byte[] hostkey,
-              boolean ssl, boolean client, boolean proxified, boolean admin) {
+  public Host(final String hostid, final String address, final int port,
+              final byte[] hostkey, final boolean ssl, final boolean client,
+              final boolean proxified, final boolean admin) {
     this(hostid, address, port, hostkey, ssl, client, proxified, admin, true);
   }
 
-  public Host(String hostid, String address, int port, byte[] hostkey,
-              boolean ssl, boolean client) {
+  public Host(final String hostid, final String address, final int port,
+              final byte[] hostkey, final boolean ssl, final boolean client) {
     this(hostid, address, port, hostkey, ssl, client, false, true);
   }
 
@@ -122,7 +125,7 @@ public class Host {
     return hostid;
   }
 
-  public void setHostid(String hostid) {
+  public void setHostid(final String hostid) {
     this.hostid = hostid;
   }
 
@@ -130,7 +133,7 @@ public class Host {
     return address;
   }
 
-  public void setAddress(String address) {
+  public void setAddress(final String address) {
     this.address = address;
   }
 
@@ -138,7 +141,7 @@ public class Host {
     return port;
   }
 
-  public void setPort(int port) {
+  public void setPort(final int port) {
     this.port = port;
   }
 
@@ -152,11 +155,11 @@ public class Host {
     return new String(hostkey);
   }
 
-  public void setKey(String key) {
+  public void setKey(final String key) {
     hostkey = key.getBytes();
   }
 
-  public void setHostkey(byte[] hostkey) {
+  public void setHostkey(final byte[] hostkey) {
     this.hostkey = hostkey;
   }
 
@@ -164,7 +167,7 @@ public class Host {
     return ssl;
   }
 
-  public void setSSL(boolean ssl) {
+  public void setSSL(final boolean ssl) {
     this.ssl = ssl;
   }
 
@@ -172,7 +175,7 @@ public class Host {
     return client;
   }
 
-  public void setClient(boolean client) {
+  public void setClient(final boolean client) {
     this.client = client;
   }
 
@@ -180,7 +183,7 @@ public class Host {
     return admin;
   }
 
-  public void setAdmin(boolean admin) {
+  public void setAdmin(final boolean admin) {
     this.admin = admin;
   }
 
@@ -188,7 +191,7 @@ public class Host {
     return proxified;
   }
 
-  public void setProxified(boolean proxified) {
+  public void setProxified(final boolean proxified) {
     this.proxified = proxified;
   }
 
@@ -196,7 +199,7 @@ public class Host {
     return active;
   }
 
-  public void setActive(boolean active) {
+  public void setActive(final boolean active) {
     this.active = active;
   }
 
@@ -204,7 +207,7 @@ public class Host {
     return updatedInfo;
   }
 
-  public void setUpdatedInfo(UpdatedInfo info) {
+  public void setUpdatedInfo(final UpdatedInfo info) {
     updatedInfo = info;
   }
 }

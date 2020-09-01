@@ -40,8 +40,8 @@ public class MultipleMonitor {
     // Nothing
   }
 
-  public MultipleMonitor(String hostid, int countConfig, int countHost,
-                         int countRule) {
+  public MultipleMonitor(final String hostid, final int countConfig,
+                         final int countHost, final int countRule) {
     this.hostid = hostid;
     this.countConfig = countConfig;
     this.countHost = countHost;
@@ -52,7 +52,7 @@ public class MultipleMonitor {
     return hostid;
   }
 
-  public void setHostid(String hostid) {
+  public void setHostid(final String hostid) {
     this.hostid = hostid;
   }
 
@@ -60,7 +60,7 @@ public class MultipleMonitor {
     return countConfig;
   }
 
-  public void setCountConfig(int countConfig) {
+  public void setCountConfig(final int countConfig) {
     this.countConfig = countConfig;
   }
 
@@ -68,7 +68,7 @@ public class MultipleMonitor {
     return countHost;
   }
 
-  public void setCountHost(int countHost) {
+  public void setCountHost(final int countHost) {
     this.countHost = countHost;
   }
 
@@ -76,7 +76,7 @@ public class MultipleMonitor {
     return countRule;
   }
 
-  public void setCountRule(int countRule) {
+  public void setCountRule(final int countRule) {
     this.countRule = countRule;
   }
 }

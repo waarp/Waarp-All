@@ -45,19 +45,19 @@ public abstract class StatementExecutor<E> implements AbstractDAO<E> {
   public abstract E getFromResultSet(ResultSet set)
       throws SQLException, DAOConnectionException;
 
-  protected StatementExecutor(Connection con) {
+  protected StatementExecutor(final Connection con) {
     connection = con;
   }
 
-  public void setParameters(PreparedStatement stm, Object... values)
+  public void setParameters(final PreparedStatement stm, final Object... values)
       throws SQLException {
     for (int i = 0; i < values.length; i++) {
       stm.setObject(i + 1, values[i]);
     }
   }
 
-  public void executeUpdate(PreparedStatement stm) throws SQLException {
-    int res;
+  public void executeUpdate(final PreparedStatement stm) throws SQLException {
+    final int res;
     res = stm.executeUpdate();
     if (res < 1) {
       logger.error("Update failed, no record updated.");
@@ -68,15 +68,16 @@ public abstract class StatementExecutor<E> implements AbstractDAO<E> {
     }
   }
 
-  public void executeAction(PreparedStatement stm) throws SQLException {
+  public void executeAction(final PreparedStatement stm) throws SQLException {
     stm.executeUpdate();
   }
 
-  public ResultSet executeQuery(PreparedStatement stm) throws SQLException {
+  public ResultSet executeQuery(final PreparedStatement stm)
+      throws SQLException {
     return stm.executeQuery();
   }
 
-  public void closeStatement(Statement stm) {
+  public void closeStatement(final Statement stm) {
     if (stm == null) {
       return;
     }
@@ -87,7 +88,7 @@ public abstract class StatementExecutor<E> implements AbstractDAO<E> {
     }
   }
 
-  public void closeResultSet(ResultSet rs) {
+  public void closeResultSet(final ResultSet rs) {
     if (rs == null) {
       return;
     }
@@ -127,7 +128,8 @@ public abstract class StatementExecutor<E> implements AbstractDAO<E> {
   protected abstract String getDeleteAllRequest();
 
   @Override
-  public void delete(E e1) throws DAOConnectionException, DAONoDataException {
+  public void delete(final E e1)
+      throws DAOConnectionException, DAONoDataException {
     PreparedStatement stm = null;
     try {
       stm = connection.prepareStatement(getDeleteRequest());
@@ -178,7 +180,8 @@ public abstract class StatementExecutor<E> implements AbstractDAO<E> {
   }
 
   @Override
-  public List<E> find(List<Filter> filters) throws DAOConnectionException {
+  public List<E> find(final List<Filter> filters)
+      throws DAOConnectionException {
     final ArrayList<E> es = new ArrayList<E>();
     // Create the SQL query
     final StringBuilder query = new StringBuilder(getGetAllRequest());
@@ -192,7 +195,7 @@ public abstract class StatementExecutor<E> implements AbstractDAO<E> {
     while (it.hasNext()) {
       query.append(prefix);
       final Filter filter = it.next();
-      query.append(filter.key + ' ' + filter.operand + " ?");
+      query.append(filter.key).append(' ').append(filter.operand).append(" ?");
       params[i] = filter.value;
       i++;
       prefix = " AND ";
@@ -217,7 +220,7 @@ public abstract class StatementExecutor<E> implements AbstractDAO<E> {
   }
 
   @Override
-  public boolean exist(String id) throws DAOConnectionException {
+  public boolean exist(final String id) throws DAOConnectionException {
     PreparedStatement stm = null;
     ResultSet res = null;
     try {
@@ -234,7 +237,8 @@ public abstract class StatementExecutor<E> implements AbstractDAO<E> {
   }
 
   @Override
-  public E select(String id) throws DAOConnectionException, DAONoDataException {
+  public E select(final String id)
+      throws DAOConnectionException, DAONoDataException {
     PreparedStatement stm = null;
     ResultSet res = null;
     try {
@@ -255,7 +259,7 @@ public abstract class StatementExecutor<E> implements AbstractDAO<E> {
   }
 
   @Override
-  public void insert(E e1) throws DAOConnectionException {
+  public void insert(final E e1) throws DAOConnectionException {
     final Object[] params = getInsertValues(e1);
 
     PreparedStatement stm = null;
@@ -271,7 +275,8 @@ public abstract class StatementExecutor<E> implements AbstractDAO<E> {
   }
 
   @Override
-  public void update(E e1) throws DAOConnectionException, DAONoDataException {
+  public void update(final E e1)
+      throws DAOConnectionException, DAONoDataException {
     final Object[] params = getUpdateValues(e1);
 
     PreparedStatement stm = null;

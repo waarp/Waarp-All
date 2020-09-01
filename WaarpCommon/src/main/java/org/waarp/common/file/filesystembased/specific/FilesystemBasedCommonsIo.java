@@ -44,7 +44,7 @@ public final class FilesystemBasedCommonsIo {
    *
    * @return the free space of the given pathname
    */
-  public static long freeSpace(String pathname) {
+  public static long freeSpace(final String pathname) {
     try {
       return FileSystemUtils.freeSpaceKb(pathname) << 10;
     } catch (final IOException e) {
@@ -57,7 +57,7 @@ public final class FilesystemBasedCommonsIo {
    *
    * @return The associated FileFilter
    */
-  public static FileFilter getWildcardFileFilter(String dir) {
+  public static FileFilter getWildcardFileFilter(final String dir) {
     return new WildcardFileFilter(dir);
   }
 }

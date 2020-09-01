@@ -39,21 +39,22 @@ public class WaarpDatabaseNoConnectionException extends WaarpDatabaseException {
    * @param arg0
    * @param arg1
    */
-  public WaarpDatabaseNoConnectionException(String arg0, Throwable arg1) {
+  public WaarpDatabaseNoConnectionException(final String arg0,
+                                            final Throwable arg1) {
     super(arg0, arg1);
   }
 
   /**
    * @param arg0
    */
-  public WaarpDatabaseNoConnectionException(String arg0) {
+  public WaarpDatabaseNoConnectionException(final String arg0) {
     super(arg0);
   }
 
   /**
    * @param arg0
    */
-  public WaarpDatabaseNoConnectionException(Throwable arg0) {
+  public WaarpDatabaseNoConnectionException(final Throwable arg0) {
     super(arg0);
   }
 

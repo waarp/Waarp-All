@@ -39,21 +39,21 @@ public class WaarpDatabaseSqlException extends WaarpDatabaseException {
    * @param arg0
    * @param arg1
    */
-  public WaarpDatabaseSqlException(String arg0, Throwable arg1) {
+  public WaarpDatabaseSqlException(final String arg0, final Throwable arg1) {
     super(arg0, arg1);
   }
 
   /**
    * @param arg0
    */
-  public WaarpDatabaseSqlException(String arg0) {
+  public WaarpDatabaseSqlException(final String arg0) {
     super(arg0);
   }
 
   /**
    * @param arg0
    */
-  public WaarpDatabaseSqlException(Throwable arg0) {
+  public WaarpDatabaseSqlException(final Throwable arg0) {
     super(arg0);
   }
 

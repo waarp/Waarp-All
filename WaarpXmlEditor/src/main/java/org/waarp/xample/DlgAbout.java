@@ -72,7 +72,7 @@ public class DlgAbout extends JDialog implements ActionListener {
   final String comments = "Helper for XML Configuration editing";
   transient Border border1;
 
-  public DlgAbout(Frame parent) {
+  public DlgAbout(final Frame parent) {
     super(parent);
     enableEvents(AWTEvent.WINDOW_EVENT_MASK);
     try {
@@ -114,7 +114,7 @@ public class DlgAbout extends JDialog implements ActionListener {
   }
 
   @Override
-  protected void processWindowEvent(WindowEvent e) {
+  protected void processWindowEvent(final WindowEvent e) {
     if (e.getID() == WindowEvent.WINDOW_CLOSING) {
       dispose();
     }
@@ -122,7 +122,7 @@ public class DlgAbout extends JDialog implements ActionListener {
   }
 
   @Override
-  public void actionPerformed(ActionEvent e) {
+  public void actionPerformed(final ActionEvent e) {
     if (e.getSource() == button1) {
       dispose();
     }

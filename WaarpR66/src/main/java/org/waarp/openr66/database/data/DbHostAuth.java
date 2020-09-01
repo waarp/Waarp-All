@@ -146,8 +146,9 @@ public class DbHostAuth extends AbstractDbDataDao<Host> {
    * @param adminrole
    * @param isClient
    */
-  public DbHostAuth(String hostid, String address, int port, boolean isSSL,
-                    byte[] hostkey, boolean adminrole, boolean isClient) {
+  public DbHostAuth(final String hostid, final String address, final int port,
+                    final boolean isSSL, final byte[] hostkey,
+                    final boolean adminrole, final boolean isClient) {
     pojo = new Host(hostid, address, port, hostkey, isSSL, isClient, false,
                     adminrole);
     if (hostkey != null) {
@@ -168,7 +169,7 @@ public class DbHostAuth extends AbstractDbDataDao<Host> {
     isSaved = false;
   }
 
-  private DbHostAuth(Host host) {
+  private DbHostAuth(final Host host) {
     if (host == null) {
       throw new IllegalArgumentException(
           "Argument in constructor cannot be null");
@@ -176,13 +177,13 @@ public class DbHostAuth extends AbstractDbDataDao<Host> {
     this.pojo = host;
   }
 
-  public DbHostAuth(ObjectNode source) throws WaarpDatabaseSqlException {
+  public DbHostAuth(final ObjectNode source) throws WaarpDatabaseSqlException {
     pojo = new Host();
     setFromJson(source, false);
   }
 
   @Override
-  public void setFromJson(ObjectNode node, boolean ignorePrimaryKey)
+  public void setFromJson(final ObjectNode node, final boolean ignorePrimaryKey)
       throws WaarpDatabaseSqlException {
     super.setFromJson(node, ignorePrimaryKey);
     if (pojo.getHostkey() == null || pojo.getHostkey().length == 0 ||
@@ -211,7 +212,7 @@ public class DbHostAuth extends AbstractDbDataDao<Host> {
    *
    * @throws WaarpDatabaseException
    */
-  public DbHostAuth(String hostid) throws WaarpDatabaseException {
+  public DbHostAuth(final String hostid) throws WaarpDatabaseException {
     if (hostid == null) {
       throw new WaarpDatabaseException("No host id passed");
     }
@@ -249,7 +250,7 @@ public class DbHostAuth extends AbstractDbDataDao<Host> {
       DAOFactory.closeDAO(hostAccess);
     }
     for (final Host host : hosts) {
-      DbHostAuth hostAuth = new DbHostAuth(host);
+      final DbHostAuth hostAuth = new DbHostAuth(host);
       hostAuth.isSaved = false;
       res.add(hostAuth);
     }
@@ -261,7 +262,7 @@ public class DbHostAuth extends AbstractDbDataDao<Host> {
     if (value == null) {
       return;
     }
-    for (Columns column : Columns.values()) {
+    for (final Columns column : Columns.values()) {
       if (column.name().equalsIgnoreCase(field)) {
         switch (column) {
           case ADDRESS:
@@ -346,7 +347,7 @@ public class DbHostAuth extends AbstractDbDataDao<Host> {
    * @throws WaarpDatabaseSqlException
    */
   public static DbHostAuth getFromStatement(
-      DbPreparedStatement preparedStatement)
+      final DbPreparedStatement preparedStatement)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
     final DbHostAuth dbHostAuth = new DbHostAuth();
     AbstractDAO<Host> hostDAO = null;
@@ -355,10 +356,10 @@ public class DbHostAuth extends AbstractDbDataDao<Host> {
       dbHostAuth.pojo = ((StatementExecutor<Host>) hostDAO)
           .getFromResultSet(preparedStatement.getResultSet());
       return dbHostAuth;
-    } catch (SQLException e) {
+    } catch (final SQLException e) {
       DbSession.error(e);
       throw new WaarpDatabaseSqlException("Getting values in error", e);
-    } catch (DAOConnectionException e) {
+    } catch (final DAOConnectionException e) {
       throw new WaarpDatabaseSqlException("Getting values in error", e);
     } finally {
       DAOFactory.closeDAO(hostDAO);
@@ -402,11 +403,9 @@ public class DbHostAuth extends AbstractDbDataDao<Host> {
    * @throws WaarpDatabaseNoConnectionException
    * @throws WaarpDatabaseSqlException
    */
-  public static DbPreparedStatement getFilterPrepareStament(DbSession session,
-                                                            String host,
-                                                            String addr,
-                                                            boolean ssl,
-                                                            boolean active)
+  public static DbPreparedStatement getFilterPrepareStament(
+      final DbSession session, final String host, final String addr,
+      final boolean ssl, final boolean active)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
     final DbPreparedStatement preparedStatement =
         new DbPreparedStatement(session);
@@ -453,9 +452,8 @@ public class DbHostAuth extends AbstractDbDataDao<Host> {
    * @throws WaarpDatabaseNoConnectionException
    * @throws WaarpDatabaseSqlException
    */
-  public static DbPreparedStatement getFilterPrepareStament(DbSession session,
-                                                            String host,
-                                                            String addr)
+  public static DbPreparedStatement getFilterPrepareStament(
+      final DbSession session, final String host, final String addr)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
     final DbPreparedStatement preparedStatement =
         new DbPreparedStatement(session);
@@ -483,7 +481,7 @@ public class DbHostAuth extends AbstractDbDataDao<Host> {
   }
 
   @Override
-  public void changeUpdatedInfo(UpdatedInfo info) {
+  public void changeUpdatedInfo(final UpdatedInfo info) {
     pojo.setUpdatedInfo(org.waarp.openr66.pojo.UpdatedInfo.fromLegacy(info));
   }
 
@@ -497,7 +495,7 @@ public class DbHostAuth extends AbstractDbDataDao<Host> {
   /**
    * @param isActive the isActive to set
    */
-  public void setActive(boolean isActive) {
+  public void setActive(final boolean isActive) {
     pojo.setActive(isActive);
   }
 
@@ -511,7 +509,7 @@ public class DbHostAuth extends AbstractDbDataDao<Host> {
   /**
    * @param isProxified the isProxified to set
    */
-  public void setProxified(boolean isProxified) {
+  public void setProxified(final boolean isProxified) {
     pojo.setProxified(isProxified);
   }
 
@@ -522,7 +520,7 @@ public class DbHostAuth extends AbstractDbDataDao<Host> {
    *
    * @return True if the key is valid (or any key is valid)
    */
-  public boolean isKeyValid(byte[] newkey) {
+  public boolean isKeyValid(final byte[] newkey) {
     // It is valid to not have a key
     // Check before if any key is passed or if account is active
     if (pojo.getHostkey() == null) {
@@ -628,7 +626,7 @@ public class DbHostAuth extends AbstractDbDataDao<Host> {
     return pojo.getPort();
   }
 
-  private static String getVersion(String host) {
+  private static String getVersion(final String host) {
     String remoteHost = host;
     String alias = "";
     if (Configuration.configuration.getAliases().containsKey(remoteHost)) {
@@ -637,7 +635,7 @@ public class DbHostAuth extends AbstractDbDataDao<Host> {
     }
     if (Configuration.configuration.getReverseAliases()
                                    .containsKey(remoteHost)) {
-      StringBuilder alias2 = new StringBuilder("(ReverseAlias: ");
+      final StringBuilder alias2 = new StringBuilder("(ReverseAlias: ");
       final String[] list =
           Configuration.configuration.getReverseAliases().get(remoteHost);
       boolean found = false;
@@ -688,7 +686,8 @@ public class DbHostAuth extends AbstractDbDataDao<Host> {
    * @throws WaarpDatabaseSqlException
    * @throws OpenR66ProtocolBusinessException
    */
-  public static String getJson(DbPreparedStatement preparedStatement, int limit)
+  public static String getJson(final DbPreparedStatement preparedStatement,
+                               final int limit)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException,
              OpenR66ProtocolBusinessException {
     final ArrayNode arrayNode = JsonHandler.createArrayNode();
@@ -752,8 +751,8 @@ public class DbHostAuth extends AbstractDbDataDao<Host> {
    * @return the runner in Html format specified by body by replacing all
    *     instance of fields
    */
-  public String toSpecializedHtml(R66Session session, String body,
-                                  boolean crypted) {
+  public String toSpecializedHtml(final R66Session session, final String body,
+                                  final boolean crypted) {
     final StringBuilder builder = new StringBuilder(body);
     WaarpStringUtils.replace(builder, "XXXHOSTXXX", getHostid());
     WaarpStringUtils.replace(builder, "XXXADDRXXX", getAddress());

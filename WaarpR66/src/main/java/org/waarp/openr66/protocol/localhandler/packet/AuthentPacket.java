@@ -66,9 +66,10 @@ public class AuthentPacket extends AbstractLocalPacket {
    *
    * @throws OpenR66ProtocolPacketException
    */
-  public static AuthentPacket createFromBuffer(int headerLength,
-                                               int middleLength, int endLength,
-                                               ByteBuf buf)
+  public static AuthentPacket createFromBuffer(final int headerLength,
+                                               final int middleLength,
+                                               final int endLength,
+                                               final ByteBuf buf)
       throws OpenR66ProtocolPacketException {
     if (headerLength - 1 <= 0) {
       throw new OpenR66ProtocolPacketException(NOT_ENOUGH_DATA);
@@ -105,8 +106,9 @@ public class AuthentPacket extends AbstractLocalPacket {
    * @param valid
    * @param version
    */
-  private AuthentPacket(String hostId, byte[] key, Integer newId, byte valid,
-                        String version) {
+  private AuthentPacket(final String hostId, final byte[] key,
+                        final Integer newId, final byte valid,
+                        final String version) {
     this.hostId = hostId;
     this.key = key;
     localId = newId;
@@ -122,7 +124,8 @@ public class AuthentPacket extends AbstractLocalPacket {
    * @param key
    * @param newId
    */
-  public AuthentPacket(String hostId, byte[] key, Integer newId) {
+  public AuthentPacket(final String hostId, final byte[] key,
+                       final Integer newId) {
     this.hostId = hostId;
     this.key = key;
     localId = newId;
@@ -139,12 +142,13 @@ public class AuthentPacket extends AbstractLocalPacket {
   }
 
   @Override
-  public void createAllBuffers(LocalChannelReference lcr, int networkHeader)
+  public void createAllBuffers(final LocalChannelReference lcr,
+                               final int networkHeader)
       throws OpenR66ProtocolPacketException {
     if (hostId == null || key == null) {
       throw new OpenR66ProtocolPacketException(NOT_ENOUGH_DATA);
     }
-    byte[] hostIdByte = hostId.getBytes();
+    final byte[] hostIdByte = hostId.getBytes();
     final int hostIdSize = hostIdByte.length;
     final int keySize = key.length;
     final byte[] bversion = version != null? version.getBytes() : null;
@@ -168,7 +172,7 @@ public class AuthentPacket extends AbstractLocalPacket {
   }
 
   @Override
-  public void createEnd(LocalChannelReference lcr)
+  public void createEnd(final LocalChannelReference lcr)
       throws OpenR66ProtocolPacketException {
     final byte[] bversion = version != null? version.getBytes() : null;
     final int size = 5 + (version != null? bversion.length : 0);
@@ -181,7 +185,7 @@ public class AuthentPacket extends AbstractLocalPacket {
   }
 
   @Override
-  public void createHeader(LocalChannelReference lcr)
+  public void createHeader(final LocalChannelReference lcr)
       throws OpenR66ProtocolPacketException {
     if (hostId == null) {
       throw new OpenR66ProtocolPacketException(NOT_ENOUGH_DATA);
@@ -190,7 +194,7 @@ public class AuthentPacket extends AbstractLocalPacket {
   }
 
   @Override
-  public void createMiddle(LocalChannelReference lcr)
+  public void createMiddle(final LocalChannelReference lcr)
       throws OpenR66ProtocolPacketException {
     if (key == null) {
       throw new OpenR66ProtocolPacketException(NOT_ENOUGH_DATA);
@@ -240,7 +244,7 @@ public class AuthentPacket extends AbstractLocalPacket {
   /**
    * Validate the connection
    */
-  public void validate(boolean isSSL) {
+  public void validate(final boolean isSSL) {
     way = ANSWERVALIDATE;
     DbHostAuth auth = isSSL? Configuration.configuration.getHostSslAuth() :
         Configuration.configuration.getHostAuth();

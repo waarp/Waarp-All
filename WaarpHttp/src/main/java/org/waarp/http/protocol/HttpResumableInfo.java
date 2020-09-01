@@ -89,7 +89,7 @@ public class HttpResumableInfo {
    *     total number of chunks, identifier and current chunk vs max chunk
    *     number)
    */
-  public boolean isCompatible(HttpResumableInfo resumableInfo) {
+  public boolean isCompatible(final HttpResumableInfo resumableInfo) {
     return resumableInfo.getChunkSize() == getChunkSize() &&
            resumableInfo.getTotalSize() == getTotalSize() &&
            resumableInfo.getIdentifier().equals(getIdentifier()) &&

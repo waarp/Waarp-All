@@ -41,7 +41,7 @@ public class R66Proxy {
   /**
    * @param args
    */
-  public static void main(String[] args) {
+  public static void main(final String[] args) {
     WaarpLoggerFactory
         .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));
     logger = WaarpLoggerFactory.getLogger(R66Proxy.class);
@@ -63,7 +63,7 @@ public class R66Proxy {
     }
   }
 
-  public static boolean initialize(String config) {
+  public static boolean initialize(final String config) {
     if (logger == null) {
       logger = WaarpLoggerFactory.getLogger(R66Proxy.class);
     }

@@ -38,7 +38,7 @@ class FtpControlStringDecoder extends StringDecoder {
    *
    * @see StringDecoder
    */
-  FtpControlStringDecoder(String charset) {
+  FtpControlStringDecoder(final String charset) {
     super(Charset.forName(charset));
   }
 
@@ -47,7 +47,7 @@ class FtpControlStringDecoder extends StringDecoder {
    *
    * @see StringDecoder
    */
-  FtpControlStringDecoder(Charset charset) {
+  FtpControlStringDecoder(final Charset charset) {
     super(charset);
   }
 }

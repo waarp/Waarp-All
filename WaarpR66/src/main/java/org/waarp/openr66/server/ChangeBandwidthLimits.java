@@ -68,9 +68,9 @@ public class ChangeBandwidthLimits implements Runnable {
   protected final NetworkTransaction networkTransaction;
   protected DbHostAuth host;
 
-  public ChangeBandwidthLimits(R66Future future, long wgl, long rgl, long wsl,
-                               long rsl,
-                               NetworkTransaction networkTransaction) {
+  public ChangeBandwidthLimits(final R66Future future, final long wgl,
+                               final long rgl, final long wsl, final long rsl,
+                               final NetworkTransaction networkTransaction) {
     this.future = future;
     writeGlobalLimit = wgl;
     readGlobalLimit = rgl;
@@ -83,7 +83,7 @@ public class ChangeBandwidthLimits implements Runnable {
     }
   }
 
-  public void setHost(DbHostAuth host) {
+  public void setHost(final DbHostAuth host) {
     this.host = host;
   }
 
@@ -97,13 +97,13 @@ public class ChangeBandwidthLimits implements Runnable {
     if (logger == null) {
       logger = WaarpLoggerFactory.getLogger(ChangeBandwidthLimits.class);
     }
-    LocalChannelReference localChannelReference =
+    final LocalChannelReference localChannelReference =
         AbstractTransfer.tryConnect(host, future, networkTransaction);
     if (localChannelReference == null) {
       return;
     }
     localChannelReference.sessionNewState(R66FiniteDualStates.VALIDOTHER);
-    AbstractLocalPacket valid;
+    final AbstractLocalPacket valid;
     final boolean useJson = PartnerConfiguration.useJson(host.getHostid());
     logger.debug("UseJson: " + useJson);
     if (useJson) {
@@ -143,7 +143,7 @@ public class ChangeBandwidthLimits implements Runnable {
   protected static long sreadSessionLimit = -1;
   protected static String stohost;
 
-  protected static boolean getParams(String[] args) {
+  protected static boolean getParams(final String[] args) {
     if (logger == null) {
       logger = WaarpLoggerFactory.getLogger(ChangeBandwidthLimits.class);
     }
@@ -186,7 +186,7 @@ public class ChangeBandwidthLimits implements Runnable {
     return true;
   }
 
-  public static void main(String[] args) {
+  public static void main(final String[] args) {
     WaarpLoggerFactory
         .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));
     if (logger == null) {
@@ -230,7 +230,7 @@ public class ChangeBandwidthLimits implements Runnable {
       final boolean useJson = PartnerConfiguration.useJson(stohost);
       logger.debug("UseJson: " + useJson);
       if (future.isSuccess()) {
-        String sresult;
+        final String sresult;
         if (result.getOther() != null) {
           if (useJson) {
             sresult = ((JsonCommandPacket) result.getOther()).getRequest();

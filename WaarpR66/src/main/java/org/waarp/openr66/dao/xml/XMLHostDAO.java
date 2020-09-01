@@ -69,7 +69,7 @@ public class XMLHostDAO implements HostDAO {
 
   private final File file;
 
-  public XMLHostDAO(String filePath) {
+  public XMLHostDAO(final String filePath) {
     file = new File(filePath);
   }
 
@@ -79,7 +79,7 @@ public class XMLHostDAO implements HostDAO {
   }
 
   @Override
-  public void delete(Host host) throws DAOConnectionException {
+  public void delete(final Host host) throws DAOConnectionException {
     dbR66HostAuthHashMap.remove(host.getHostid());
   }
 
@@ -122,7 +122,7 @@ public class XMLHostDAO implements HostDAO {
   }
 
   @Override
-  public boolean exist(String hostid) throws DAOConnectionException {
+  public boolean exist(final String hostid) throws DAOConnectionException {
     if (dbR66HostAuthHashMap.containsKey(hostid)) {
       return true;
     }
@@ -154,17 +154,18 @@ public class XMLHostDAO implements HostDAO {
   }
 
   @Override
-  public List<Host> find(List<Filter> fitlers) throws DAOConnectionException {
+  public List<Host> find(final List<Filter> fitlers)
+      throws DAOConnectionException {
     throw new DAOConnectionException("Operation not supported on XML DAO");
   }
 
   @Override
-  public void insert(Host host) throws DAOConnectionException {
+  public void insert(final Host host) throws DAOConnectionException {
     dbR66HostAuthHashMap.put(host.getHostid(), host);
   }
 
   @Override
-  public Host select(String hostid)
+  public Host select(final String hostid)
       throws DAOConnectionException, DAONoDataException {
     Host host = dbR66HostAuthHashMap.get(hostid);
     if (host != null) {
@@ -204,11 +205,11 @@ public class XMLHostDAO implements HostDAO {
   }
 
   @Override
-  public void update(Host host) throws DAOConnectionException {
+  public void update(final Host host) throws DAOConnectionException {
     dbR66HostAuthHashMap.put(host.getHostid(), host);
   }
 
-  private Host getFromNode(Node parent) {
+  private Host getFromNode(final Node parent) {
     final Host res = new Host();
 
     final NodeList children = parent.getChildNodes();

@@ -49,14 +49,14 @@ public class BusinessRequest extends AbstractBusinessRequest {
   public static final String DEFAULT_CLASS =
       "org.waarp.openr66.context.task.ExecBusinessTask";
 
-  public BusinessRequest(NetworkTransaction networkTransaction,
-                         R66Future future, String remoteHost,
-                         BusinessRequestPacket packet) {
+  public BusinessRequest(final NetworkTransaction networkTransaction,
+                         final R66Future future, final String remoteHost,
+                         final BusinessRequestPacket packet) {
     super(BusinessRequest.class, future, remoteHost, networkTransaction,
           packet);
   }
 
-  public static void main(String[] args) {
+  public static void main(final String[] args) {
     WaarpLoggerFactory
         .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));
     if (logger == null) {

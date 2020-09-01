@@ -37,16 +37,16 @@ public class HttpRestR66Initializer extends ChannelInitializer<SocketChannel> {
   private final WaarpSslContextFactory waarpSslContextFactory;
   private final RestConfiguration restConfiguration;
 
-  public HttpRestR66Initializer(boolean useHttpCompression,
-                                WaarpSslContextFactory waarpSslContextFactory,
-                                RestConfiguration configuration) {
+  public HttpRestR66Initializer(final boolean useHttpCompression,
+                                final WaarpSslContextFactory waarpSslContextFactory,
+                                final RestConfiguration configuration) {
     this.waarpSslContextFactory = waarpSslContextFactory;
     this.useHttpCompression = useHttpCompression;
     restConfiguration = configuration;
   }
 
   @Override
-  protected void initChannel(SocketChannel ch) throws Exception {
+  protected void initChannel(final SocketChannel ch) throws Exception {
     // Create a default pipeline implementation.
     final ChannelPipeline pipeline = ch.pipeline();
 

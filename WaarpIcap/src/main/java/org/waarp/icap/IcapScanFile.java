@@ -20,7 +20,6 @@
 
 package org.waarp.icap;
 
-import com.google.common.io.Files;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
@@ -29,6 +28,8 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.waarp.common.command.exception.Reply550Exception;
+import org.waarp.common.file.FileUtils;
 import org.waarp.common.logging.WaarpLogLevel;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
@@ -304,7 +305,7 @@ public class IcapScanFile {
    * Print to standard output the help of this command
    */
   public static void printHelp() {
-    HelpFormatter formatter = new HelpFormatter();
+    final HelpFormatter formatter = new HelpFormatter();
     formatter.printHelp("IcapScanFile", ICAP_OPTIONS);
   }
 
@@ -362,10 +363,10 @@ public class IcapScanFile {
   private static IcapScanFile getIcapScanFileArgs(final String[] args,
                                                   final Options options)
       throws IcapException {
-    IcapScanFile icapScanFile = new IcapScanFile();
-    CommandLineParser parser = new DefaultParser();
+    final IcapScanFile icapScanFile = new IcapScanFile();
+    final CommandLineParser parser = new DefaultParser();
     try {
-      CommandLine cmd = parser.parse(options, args, true);
+      final CommandLine cmd = parser.parse(options, args, true);
 
       if (options != ICAP_MODEL_OPTIONS && cmd.hasOption(MODEL)) {
         getModelParameters(icapScanFile, cmd);
@@ -378,7 +379,8 @@ public class IcapScanFile {
       getNumbers(icapScanFile, cmd);
       getOtherOptions(icapScanFile, cmd);
       if (cmd.hasOption(LOGGER_ARG)) {
-        String level = cmd.getOptionValue(LOGGER_ARG).trim().toUpperCase();
+        final String level =
+            cmd.getOptionValue(LOGGER_ARG).trim().toUpperCase();
         if (DEBUG_LEVEL.equals(level)) {
           icapScanFile.logLevel = WaarpLogLevel.DEBUG;
         } else if (INFO_LEVEL.equals(level)) {
@@ -391,7 +393,7 @@ public class IcapScanFile {
           logger.warn("Unknown log level {}", level);
         }
       }
-    } catch (ParseException e) {
+    } catch (final ParseException e) {
       throw new IcapException("Parsing error", e,
                               IcapError.ICAP_ARGUMENT_ERROR);
     }
@@ -409,11 +411,11 @@ public class IcapScanFile {
       throws IcapException {
     try {
       icapScanFile.icapModel = IcapModel.valueOf(cmd.getOptionValue(MODEL));
-      IcapScanFile modelIcapScanFile =
+      final IcapScanFile modelIcapScanFile =
           getIcapScanFileArgs(icapScanFile.icapModel.getDefaultArgs(),
                               ICAP_MODEL_OPTIONS);
       icapScanFile.partialSetFrom(modelIcapScanFile);
-    } catch (IllegalArgumentException e) {
+    } catch (final IllegalArgumentException e) {
       throw new IcapException("Parsing error", e,
                               IcapError.ICAP_ARGUMENT_ERROR);
     }
@@ -515,7 +517,7 @@ public class IcapScanFile {
               "Timeout must be greater than " + IcapClient.MINIMAL_SIZE);
         }
       }
-    } catch (NumberFormatException e) {
+    } catch (final NumberFormatException e) {
       throw new IcapException("Incorrect Number Format", e,
                               IcapError.ICAP_ARGUMENT_ERROR);
     }
@@ -538,7 +540,7 @@ public class IcapScanFile {
           throw new NumberFormatException("Port must be positive");
         }
       }
-    } catch (NumberFormatException e) {
+    } catch (final NumberFormatException e) {
       throw new IcapException("Port incorrect", e,
                               IcapError.ICAP_ARGUMENT_ERROR);
     }
@@ -555,7 +557,7 @@ public class IcapScanFile {
     if (icapScanFile == null) {
       throw new IllegalArgumentException(ARGUMENTS_CANNOT_BE_EMPTY_OR_NULL);
     }
-    IcapClient icapClient =
+    final IcapClient icapClient =
         new IcapClient(icapScanFile.serverIP, icapScanFile.port,
                        icapScanFile.icapService, icapScanFile.stdPreviewSize);
     icapClient.setSendLength(icapScanFile.sendLength)
@@ -588,26 +590,35 @@ public class IcapScanFile {
                  icapScanFile.getResult() == null? "No Result" :
                      icapScanFile.getResult());
     if (icapScanFile.deleteOnError) {
-      File file = new File(icapScanFile.filepath);
+      final File file = new File(icapScanFile.filepath);
       if (!file.delete()) {
         logger.error("File cannot be deleted!");
       } else {
         logger.warn("File is deleted");
       }
     } else if (icapScanFile.pathMoveError != null) {
-      File file = new File(icapScanFile.filepath);
-      File dir = new File(icapScanFile.pathMoveError);
+      final File file = new File(icapScanFile.filepath);
+      final File dir = new File(icapScanFile.pathMoveError);
       if (dir.exists()) {
         if (dir.isDirectory()) {
-          Files.move(file, new File(dir, file.getName()));
-          logger.warn("File is moved to " + dir.getAbsolutePath());
+          try {
+            final File to = new File(dir, file.getName());
+            FileUtils.copy(file, to, true, false);
+            logger.warn("File is moved to " + to.getAbsolutePath());
+          } catch (final Reply550Exception e) {
+            logger.error("Cannot move to directory", e);
+          }
         } else {
           logger.error("Move path already exists and is not a directory");
         }
       } else {
         if (dir.getParentFile().isDirectory()) {
-          Files.move(file, dir);
-          logger.warn("File is moved to " + dir.getAbsolutePath());
+          try {
+            FileUtils.copy(file, dir, true, false);
+            logger.warn("File is moved to " + dir.getAbsolutePath());
+          } catch (final Reply550Exception e) {
+            logger.error("Cannot move to file", e);
+          }
         } else {
           logger.error("Move path is not a directory or existing sub-path");
         }
@@ -818,17 +829,17 @@ public class IcapScanFile {
     }
     WaarpLoggerFactory
         .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));
-    IcapScanFile icapScanFile;
+    final IcapScanFile icapScanFile;
     try {
       icapScanFile = getIcapScanFileArgs(args);
-    } catch (IcapException e) {
+    } catch (final IcapException e) {
       printHelp();
       logger.error("Arguments are incorrect", e);
       return STATUS_BAD_ARGUMENT;
     }
     try {
       return icapScanFile.scanFile();
-    } catch (IcapException e) {
+    } catch (final IcapException e) {
       logger.error("Error during scan", e);
       if (e.getError() == IcapError.ICAP_CANT_CONNECT ||
           e.getError() == IcapError.ICAP_NETWORK_ERROR ||
@@ -847,7 +858,7 @@ public class IcapScanFile {
         return STATUS_BAD_ARGUMENT;
       }
       return STATUS_ICAP_ISSUE;
-    } catch (IOException e) {
+    } catch (final IOException e) {
       logger.error("Moving file is in error", e);
       return STATUS_KO_SCAN_POST_ACTION_ERROR;
     }
@@ -863,7 +874,7 @@ public class IcapScanFile {
    *     in error
    */
   public int scanFile() throws IcapException, IOException {
-    WaarpLogLevel waarpLogLevel = getLogLevel();
+    final WaarpLogLevel waarpLogLevel = getLogLevel();
     WaarpLogLevel oldLevel = null;
     try {
       if (waarpLogLevel != null) {
@@ -880,7 +891,7 @@ public class IcapScanFile {
         }
         WaarpLoggerFactory.setLogLevel(waarpLogLevel);
       }
-      IcapClient icapClient = getIcapClient(this);
+      final IcapClient icapClient = getIcapClient(this);
       if (icapClient.scanFile(filepath)) {
         icapClient.close();
         logger.info("File is OK");

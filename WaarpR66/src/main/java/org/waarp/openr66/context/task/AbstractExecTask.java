@@ -77,8 +77,8 @@ public abstract class AbstractExecTask extends AbstractTask {
    * @param argRule
    * @param session
    */
-  AbstractExecTask(TaskType type, int delay, String argRule, String argTransfer,
-                   R66Session session) {
+  AbstractExecTask(final TaskType type, final int delay, final String argRule,
+                   final String argTransfer, final R66Session session) {
     super(type, delay, argRule, argTransfer, session);
   }
 
@@ -89,7 +89,7 @@ public abstract class AbstractExecTask extends AbstractTask {
    *
    * @return the line after substitutions
    */
-  protected String applyTransferSubstitutions(String line) {
+  protected String applyTransferSubstitutions(final String line) {
     final Object[] argFormat = COMPILE_BLANK.split(argTransfer);
     if (argFormat != null && argFormat.length > 0) {
       try {
@@ -107,7 +107,7 @@ public abstract class AbstractExecTask extends AbstractTask {
    *
    * @param line the command to process as a string
    */
-  protected CommandLine buildCommandLine(String line) {
+  protected CommandLine buildCommandLine(final String line) {
     if (line.contains(NOWAIT)) {
       waitForValidation = false;
     }
@@ -411,7 +411,7 @@ public abstract class AbstractExecTask extends AbstractTask {
     private ExecuteWatchdog watchdog;
 
     PrepareCommandExec(final String finalname, final boolean noOutput,
-                       boolean waitForValidation) {
+                       final boolean waitForValidation) {
       this.finalname = finalname;
       this.noOutput = noOutput;
       this.waitForValidation = waitForValidation;
@@ -580,7 +580,7 @@ public abstract class AbstractExecTask extends AbstractTask {
       return this;
     }
 
-    private void closeAllForExecution(boolean interrupt) {
+    private void closeAllForExecution(final boolean interrupt) {
       FileUtils.close(outputStream);
       if (interrupt && thread != null) {
         thread.interrupt();
@@ -594,8 +594,8 @@ public abstract class AbstractExecTask extends AbstractTask {
     }
   }
 
-  void finalizeFromError(Runnable threadReader, int status,
-                         CommandLine commandLine, Exception e) {
+  void finalizeFromError(final Runnable threadReader, final int status,
+                         final CommandLine commandLine, final Exception e) {
     logger.error("Status: " + status + " Exec in error with " + commandLine +
                  " returns " + e.getMessage());
     final OpenR66RunnerErrorException exc = new OpenR66RunnerErrorException(

@@ -129,7 +129,7 @@ public class FtpDataAsyncConn {
    *
    * @param session
    */
-  public FtpDataAsyncConn(FtpSession session) {
+  public FtpDataAsyncConn(final FtpSession session) {
     this.session = session;
     dataChannel = null;
     remoteAddress = FtpChannelUtils
@@ -148,7 +148,7 @@ public class FtpDataAsyncConn {
    * @return True if the given channel is the same as the one currently
    *     registered
    */
-  public boolean checkCorrectChannel(Channel channel) {
+  public boolean checkCorrectChannel(final Channel channel) {
     if (dataChannel == null || channel == null) {
       return false;
     }
@@ -179,7 +179,7 @@ public class FtpDataAsyncConn {
    *
    * @param localPort
    */
-  public void setLocalPort(int localPort) {
+  public void setLocalPort(final int localPort) {
     this.localPort = localPort;
   }
 
@@ -222,7 +222,7 @@ public class FtpDataAsyncConn {
    *
    * @param address remote address
    */
-  public void setActive(InetSocketAddress address) {
+  public void setActive(final InetSocketAddress address) {
     unbindPassive();
     setDefaultLocalPort();
     resetLocalAddress();
@@ -280,7 +280,7 @@ public class FtpDataAsyncConn {
   /**
    * @param transferMode the transferMode to set
    */
-  public void setMode(FtpArgumentCode.TransferMode transferMode) {
+  public void setMode(final FtpArgumentCode.TransferMode transferMode) {
     this.transferMode = transferMode;
     setCorrectCodec();
   }
@@ -296,7 +296,7 @@ public class FtpDataAsyncConn {
    * @param transferStructure the transferStructure to set
    */
   public void setStructure(
-      FtpArgumentCode.TransferStructure transferStructure) {
+      final FtpArgumentCode.TransferStructure transferStructure) {
     this.transferStructure = transferStructure;
     setCorrectCodec();
   }
@@ -311,7 +311,8 @@ public class FtpDataAsyncConn {
   /**
    * @param transferSubType the transferSubType to set
    */
-  public void setSubType(FtpArgumentCode.TransferSubType transferSubType) {
+  public void setSubType(
+      final FtpArgumentCode.TransferSubType transferSubType) {
     this.transferSubType = transferSubType;
     setCorrectCodec();
   }
@@ -326,7 +327,7 @@ public class FtpDataAsyncConn {
   /**
    * @param transferType the transferType to set
    */
-  public void setType(FtpArgumentCode.TransferType transferType) {
+  public void setType(final FtpArgumentCode.TransferType transferType) {
     this.transferType = transferType;
     setCorrectCodec();
   }
@@ -436,7 +437,8 @@ public class FtpDataAsyncConn {
   /**
    * @param dataNetworkHandler the {@link DataNetworkHandler} to set
    */
-  public void setDataNetworkHandler(DataNetworkHandler dataNetworkHandler) {
+  public void setDataNetworkHandler(
+      final DataNetworkHandler dataNetworkHandler) {
     this.dataNetworkHandler = dataNetworkHandler;
   }
 
@@ -445,7 +447,7 @@ public class FtpDataAsyncConn {
    *
    * @return a new Passive Port
    */
-  public static int getNewPassivePort(FtpConfiguration configuration) {
+  public static int getNewPassivePort(final FtpConfiguration configuration) {
     return configuration.getNextRangePort();
   }
 
@@ -488,11 +490,11 @@ public class FtpDataAsyncConn {
    * @throws InterruptedException
    * @throws Reply425Exception
    */
-  public void setNewOpenedDataChannel(Channel dataChannel)
+  public void setNewOpenedDataChannel(final Channel dataChannel)
       throws InterruptedException, Reply425Exception {
     this.dataChannel = dataChannel;
     if (dataChannel == null) {
-      String curmode;
+      final String curmode;
       if (isPassiveMode()) {
         curmode = "passive";
       } else {

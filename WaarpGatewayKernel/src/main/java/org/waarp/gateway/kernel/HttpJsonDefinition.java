@@ -113,8 +113,8 @@ public class HttpJsonDefinition {
     public List<ConfigHttpPage> PAGE;
   }
 
-  protected static AbstractHttpField loadHttpPage(ConfigHttpField fieldValue)
-      throws InvalidArgumentException {
+  protected static AbstractHttpField loadHttpPage(
+      final ConfigHttpField fieldValue) throws InvalidArgumentException {
     return new DefaultHttpField(fieldValue.FIELDNAME, fieldValue.FIELDTYPE,
                                 fieldValue.FIELDINFO, fieldValue.FIELDVALUE,
                                 fieldValue.FIELDVISIBILITY,
@@ -124,7 +124,7 @@ public class HttpJsonDefinition {
                                 fieldValue.FIELDPOSITION, fieldValue.FIELDRANK);
   }
 
-  protected static HttpPage loadHttpConfiguration(ConfigHttpPage cpage)
+  protected static HttpPage loadHttpConfiguration(final ConfigHttpPage cpage)
       throws InvalidArgumentException, ClassNotFoundException,
              InstantiationException, IllegalAccessException {
     List<ConfigHttpField> list = cpage.FIELD;
@@ -156,10 +156,11 @@ public class HttpJsonDefinition {
    * @throws InstantiationException
    */
   public static HttpPageHandler setConfigurationHttpServerFromJson(
-      String filename) throws InvalidArgumentException, ClassNotFoundException,
-                              InstantiationException, IllegalAccessException {
+      final String filename)
+      throws InvalidArgumentException, ClassNotFoundException,
+             InstantiationException, IllegalAccessException {
     final File file = new File(filename);
-    ConfigHttpPages cpages;
+    final ConfigHttpPages cpages;
     try {
       cpages = JsonHandler.mapper.readValue(file, ConfigHttpPages.class);
     } catch (final JsonParseException e) {
@@ -186,8 +187,8 @@ public class HttpJsonDefinition {
     return new HttpPageHandler(pages);
   }
 
-  protected static void addToField(List<ConfigHttpField> fields,
-                                   AbstractHttpField field) {
+  protected static void addToField(final List<ConfigHttpField> fields,
+                                   final AbstractHttpField field) {
     final ConfigHttpField cfield = new ConfigHttpField();
     cfield.FIELDNAME = field.getFieldname();
     cfield.FIELDTYPE = field.getFieldtype();
@@ -202,8 +203,8 @@ public class HttpJsonDefinition {
     fields.add(cfield);
   }
 
-  protected static void addToElement(List<ConfigHttpPage> pages,
-                                     HttpPage page) {
+  protected static void addToElement(final List<ConfigHttpPage> pages,
+                                     final HttpPage page) {
     final ConfigHttpPage cpage = new ConfigHttpPage();
     cpage.PAGENAME = page.getPagename();
     cpage.FILEFORM = page.getFileform();
@@ -223,8 +224,8 @@ public class HttpJsonDefinition {
     pages.add(cpage);
   }
 
-  public static void exportConfiguration(HttpPageHandler httpPageHandler,
-                                         String filename)
+  public static void exportConfiguration(final HttpPageHandler httpPageHandler,
+                                         final String filename)
       throws HttpIncorrectRequestException {
     final ConfigHttpPages cpages = new ConfigHttpPages();
     cpages.PAGE = new ArrayList<ConfigHttpPage>();

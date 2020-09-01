@@ -126,32 +126,32 @@ public class R66Service {
       }
 
       @Override
-      public Client getClient(TProtocol prot) {
+      public Client getClient(final TProtocol prot) {
         return new Client(prot);
       }
 
       @Override
-      public Client getClient(TProtocol iprot, TProtocol oprot) {
+      public Client getClient(final TProtocol iprot, final TProtocol oprot) {
         return new Client(iprot, oprot);
       }
     }
 
-    public Client(TProtocol prot) {
+    public Client(final TProtocol prot) {
       super(prot, prot);
     }
 
-    public Client(TProtocol iprot, TProtocol oprot) {
+    public Client(final TProtocol iprot, final TProtocol oprot) {
       super(iprot, oprot);
     }
 
     @Override
-    public R66Result transferRequestQuery(R66Request request)
+    public R66Result transferRequestQuery(final R66Request request)
         throws TException {
       send_transferRequestQuery(request);
       return recv_transferRequestQuery();
     }
 
-    public void send_transferRequestQuery(R66Request request)
+    public void send_transferRequestQuery(final R66Request request)
         throws TException {
       final transferRequestQuery_args args = new transferRequestQuery_args();
       args.setRequest(request);
@@ -170,12 +170,14 @@ public class R66Service {
     }
 
     @Override
-    public R66Result infoTransferQuery(R66Request request) throws TException {
+    public R66Result infoTransferQuery(final R66Request request)
+        throws TException {
       send_infoTransferQuery(request);
       return recv_infoTransferQuery();
     }
 
-    public void send_infoTransferQuery(R66Request request) throws TException {
+    public void send_infoTransferQuery(final R66Request request)
+        throws TException {
       final infoTransferQuery_args args = new infoTransferQuery_args();
       args.setRequest(request);
       sendBase(INFO_TRANSFER_QUERY, args);
@@ -192,14 +194,14 @@ public class R66Service {
     }
 
     @Override
-    public boolean isStillRunning(String fromuid, String touid, long tid)
-        throws TException {
+    public boolean isStillRunning(final String fromuid, final String touid,
+                                  final long tid) throws TException {
       send_isStillRunning(fromuid, touid, tid);
       return recv_isStillRunning();
     }
 
-    public void send_isStillRunning(String fromuid, String touid, long tid)
-        throws TException {
+    public void send_isStillRunning(final String fromuid, final String touid,
+                                    final long tid) throws TException {
       final isStillRunning_args args = new isStillRunning_args();
       args.setFromuid(fromuid);
       args.setTouid(touid);
@@ -218,12 +220,13 @@ public class R66Service {
     }
 
     @Override
-    public List<String> infoListQuery(R66Request request) throws TException {
+    public List<String> infoListQuery(final R66Request request)
+        throws TException {
       send_infoListQuery(request);
       return recv_infoListQuery();
     }
 
-    public void send_infoListQuery(R66Request request) throws TException {
+    public void send_infoListQuery(final R66Request request) throws TException {
       final infoListQuery_args args = new infoListQuery_args();
       args.setRequest(request);
       sendBase(INFO_LIST_QUERY, args);
@@ -246,27 +249,27 @@ public class R66Service {
       private final TAsyncClientManager clientManager;
       private final TProtocolFactory protocolFactory;
 
-      public Factory(TAsyncClientManager clientManager,
-                     TProtocolFactory protocolFactory) {
+      public Factory(final TAsyncClientManager clientManager,
+                     final TProtocolFactory protocolFactory) {
         this.clientManager = clientManager;
         this.protocolFactory = protocolFactory;
       }
 
       @Override
-      public AsyncClient getAsyncClient(TNonblockingTransport transport) {
+      public AsyncClient getAsyncClient(final TNonblockingTransport transport) {
         return new AsyncClient(protocolFactory, clientManager, transport);
       }
     }
 
-    public AsyncClient(TProtocolFactory protocolFactory,
-                       TAsyncClientManager clientManager,
-                       TNonblockingTransport transport) {
+    public AsyncClient(final TProtocolFactory protocolFactory,
+                       final TAsyncClientManager clientManager,
+                       final TNonblockingTransport transport) {
       super(protocolFactory, clientManager, transport);
     }
 
     @Override
-    public void transferRequestQuery(R66Request request,
-                                     AsyncMethodCallback<transferRequestQuery_call> resultHandler)
+    public void transferRequestQuery(final R66Request request,
+                                     final AsyncMethodCallback<transferRequestQuery_call> resultHandler)
         throws TException {
       checkReady();
       final transferRequestQuery_call transferRequestQueryCall =
@@ -282,18 +285,18 @@ public class R66Service {
           "Method call not finished!";
       private final R66Request request;
 
-      public transferRequestQuery_call(R66Request request,
-                                       AsyncMethodCallback<transferRequestQuery_call> resultHandler,
-                                       TAsyncClient client,
-                                       TProtocolFactory protocolFactory,
-                                       TNonblockingTransport transport)
+      public transferRequestQuery_call(final R66Request request,
+                                       final AsyncMethodCallback<transferRequestQuery_call> resultHandler,
+                                       final TAsyncClient client,
+                                       final TProtocolFactory protocolFactory,
+                                       final TNonblockingTransport transport)
           throws TException {
         super(client, protocolFactory, transport, resultHandler, false);
         this.request = request;
       }
 
       @Override
-      public void write_args(TProtocol prot) throws TException {
+      public void write_args(final TProtocol prot) throws TException {
         prot.writeMessageBegin(
             new TMessage("transferRequestQuery", TMessageType.CALL, 0));
         final transferRequestQuery_args args = new transferRequestQuery_args();
@@ -315,8 +318,8 @@ public class R66Service {
     }
 
     @Override
-    public void infoTransferQuery(R66Request request,
-                                  AsyncMethodCallback<infoTransferQuery_call> resultHandler)
+    public void infoTransferQuery(final R66Request request,
+                                  final AsyncMethodCallback<infoTransferQuery_call> resultHandler)
         throws TException {
       checkReady();
       final infoTransferQuery_call infoTransferQueryCall =
@@ -331,18 +334,18 @@ public class R66Service {
       private static final String INFO_TRANSFER_QUERY = "infoTransferQuery";
       private final R66Request request;
 
-      public infoTransferQuery_call(R66Request request,
-                                    AsyncMethodCallback<infoTransferQuery_call> resultHandler,
-                                    TAsyncClient client,
-                                    TProtocolFactory protocolFactory,
-                                    TNonblockingTransport transport)
+      public infoTransferQuery_call(final R66Request request,
+                                    final AsyncMethodCallback<infoTransferQuery_call> resultHandler,
+                                    final TAsyncClient client,
+                                    final TProtocolFactory protocolFactory,
+                                    final TNonblockingTransport transport)
           throws TException {
         super(client, protocolFactory, transport, resultHandler, false);
         this.request = request;
       }
 
       @Override
-      public void write_args(TProtocol prot) throws TException {
+      public void write_args(final TProtocol prot) throws TException {
         prot.writeMessageBegin(
             new TMessage(INFO_TRANSFER_QUERY, TMessageType.CALL, 0));
         final infoTransferQuery_args args = new infoTransferQuery_args();
@@ -364,8 +367,9 @@ public class R66Service {
     }
 
     @Override
-    public void isStillRunning(String fromuid, String touid, long tid,
-                               AsyncMethodCallback<isStillRunning_call> resultHandler)
+    public void isStillRunning(final String fromuid, final String touid,
+                               final long tid,
+                               final AsyncMethodCallback<isStillRunning_call> resultHandler)
         throws TException {
       checkReady();
       final isStillRunning_call isStillRunningCall =
@@ -381,11 +385,12 @@ public class R66Service {
       private final String touid;
       private final long tid;
 
-      public isStillRunning_call(String fromuid, String touid, long tid,
-                                 AsyncMethodCallback<isStillRunning_call> resultHandler,
-                                 TAsyncClient client,
-                                 TProtocolFactory protocolFactory,
-                                 TNonblockingTransport transport)
+      public isStillRunning_call(final String fromuid, final String touid,
+                                 final long tid,
+                                 final AsyncMethodCallback<isStillRunning_call> resultHandler,
+                                 final TAsyncClient client,
+                                 final TProtocolFactory protocolFactory,
+                                 final TNonblockingTransport transport)
           throws TException {
         super(client, protocolFactory, transport, resultHandler, false);
         this.fromuid = fromuid;
@@ -394,7 +399,7 @@ public class R66Service {
       }
 
       @Override
-      public void write_args(TProtocol prot) throws TException {
+      public void write_args(final TProtocol prot) throws TException {
         prot.writeMessageBegin(
             new TMessage("isStillRunning", TMessageType.CALL, 0));
         final isStillRunning_args args = new isStillRunning_args();
@@ -418,8 +423,8 @@ public class R66Service {
     }
 
     @Override
-    public void infoListQuery(R66Request request,
-                              AsyncMethodCallback<infoListQuery_call> resultHandler)
+    public void infoListQuery(final R66Request request,
+                              final AsyncMethodCallback<infoListQuery_call> resultHandler)
         throws TException {
       checkReady();
       final infoListQuery_call infoListQueryCall =
@@ -433,18 +438,18 @@ public class R66Service {
         extends TAsyncMethodCall<infoListQuery_call> {
       private final R66Request request;
 
-      public infoListQuery_call(R66Request request,
-                                AsyncMethodCallback<infoListQuery_call> resultHandler,
-                                TAsyncClient client,
-                                TProtocolFactory protocolFactory,
-                                TNonblockingTransport transport)
+      public infoListQuery_call(final R66Request request,
+                                final AsyncMethodCallback<infoListQuery_call> resultHandler,
+                                final TAsyncClient client,
+                                final TProtocolFactory protocolFactory,
+                                final TNonblockingTransport transport)
           throws TException {
         super(client, protocolFactory, transport, resultHandler, false);
         this.request = request;
       }
 
       @Override
-      public void write_args(TProtocol prot) throws TException {
+      public void write_args(final TProtocol prot) throws TException {
         prot.writeMessageBegin(
             new TMessage("infoListQuery", TMessageType.CALL, 0));
         final infoListQuery_args args = new infoListQuery_args();
@@ -469,18 +474,18 @@ public class R66Service {
 
   public static class Processor<I extends Iface> extends TBaseProcessor<I> {
 
-    public Processor(I iface) {
+    public Processor(final I iface) {
       super(iface, getProcessMap(
           new HashMap<String, ProcessFunction<I, ? extends TBase>>()));
     }
 
-    protected Processor(I iface,
-                        Map<String, ProcessFunction<I, ? extends TBase>> processMap) {
+    protected Processor(final I iface,
+                        final Map<String, ProcessFunction<I, ? extends TBase>> processMap) {
       super(iface, getProcessMap(processMap));
     }
 
     private static <I extends Iface> Map<String, ProcessFunction<I, ? extends TBase>> getProcessMap(
-        Map<String, ProcessFunction<I, ? extends TBase>> processMap) {
+        final Map<String, ProcessFunction<I, ? extends TBase>> processMap) {
       processMap.put("transferRequestQuery",
                      (ProcessFunction<I, ? extends TBase>) new transferRequestQuery<Iface>());
       processMap.put("infoTransferQuery",
@@ -509,8 +514,8 @@ public class R66Service {
       }
 
       @Override
-      public transferRequestQuery_result getResult(I iface,
-                                                   transferRequestQuery_args args)
+      public transferRequestQuery_result getResult(final I iface,
+                                                   final transferRequestQuery_args args)
           throws TException {
         final transferRequestQuery_result result =
             new transferRequestQuery_result();
@@ -536,8 +541,8 @@ public class R66Service {
       }
 
       @Override
-      public infoTransferQuery_result getResult(I iface,
-                                                infoTransferQuery_args args)
+      public infoTransferQuery_result getResult(final I iface,
+                                                final infoTransferQuery_args args)
           throws TException {
         final infoTransferQuery_result result = new infoTransferQuery_result();
         result.success = iface.infoTransferQuery(args.request);
@@ -562,7 +567,8 @@ public class R66Service {
       }
 
       @Override
-      public isStillRunning_result getResult(I iface, isStillRunning_args args)
+      public isStillRunning_result getResult(final I iface,
+                                             final isStillRunning_args args)
           throws TException {
         final isStillRunning_result result = new isStillRunning_result();
         result.success =
@@ -589,7 +595,8 @@ public class R66Service {
       }
 
       @Override
-      public infoListQuery_result getResult(I iface, infoListQuery_args args)
+      public infoListQuery_result getResult(final I iface,
+                                            final infoListQuery_args args)
           throws TException {
         final infoListQuery_result result = new infoListQuery_result();
         result.success = iface.infoListQuery(args.request);
@@ -657,7 +664,7 @@ public class R66Service {
        * not
        * found.
        */
-      public static _Fields findByThriftId(int fieldId) {
+      public static _Fields findByThriftId(final int fieldId) {
         if (fieldId == 1) { // REQUEST
           return REQUEST;
         }
@@ -669,7 +676,7 @@ public class R66Service {
        * exception
        * if it is not found.
        */
-      public static _Fields findByThriftIdOrThrow(int fieldId) {
+      public static _Fields findByThriftIdOrThrow(final int fieldId) {
         final _Fields fields = findByThriftId(fieldId);
         if (fields == null) {
           throw new IllegalArgumentException(FIELD + fieldId + DOESN_T_EXIST);
@@ -681,14 +688,14 @@ public class R66Service {
        * Find the _Fields constant that matches name, or null if its not
        * found.
        */
-      public static _Fields findByName(String name) {
+      public static _Fields findByName(final String name) {
         return byName.get(name);
       }
 
       private final short thriftId;
       private final String fieldName;
 
-      _Fields(short thriftId, String fieldName) {
+      _Fields(final short thriftId, final String fieldName) {
         this.thriftId = thriftId;
         this.fieldName = fieldName;
       }
@@ -722,7 +729,7 @@ public class R66Service {
     public transferRequestQuery_args() {
     }
 
-    public transferRequestQuery_args(R66Request request) {
+    public transferRequestQuery_args(final R66Request request) {
       this();
       this.request = request;
     }
@@ -730,7 +737,7 @@ public class R66Service {
     /**
      * Performs a deep copy on <i>other</i>.
      */
-    public transferRequestQuery_args(transferRequestQuery_args other) {
+    public transferRequestQuery_args(final transferRequestQuery_args other) {
       if (other.isSetRequest()) {
         request = new R66Request(other.request);
       }
@@ -750,7 +757,7 @@ public class R66Service {
       return request;
     }
 
-    public transferRequestQuery_args setRequest(R66Request request) {
+    public transferRequestQuery_args setRequest(final R66Request request) {
       this.request = request;
       return this;
     }
@@ -767,14 +774,14 @@ public class R66Service {
       return request != null;
     }
 
-    public void setRequestIsSet(boolean value) {
+    public void setRequestIsSet(final boolean value) {
       if (!value) {
         request = null;
       }
     }
 
     @Override
-    public void setFieldValue(_Fields field, Object value) {
+    public void setFieldValue(final _Fields field, final Object value) {
       if (field == _Fields.REQUEST) {
         if (value == null) {
           unsetRequest();
@@ -785,7 +792,7 @@ public class R66Service {
     }
 
     @Override
-    public Object getFieldValue(_Fields field) {
+    public Object getFieldValue(final _Fields field) {
       if (field == _Fields.REQUEST) {
         return getRequest();
       }
@@ -798,7 +805,7 @@ public class R66Service {
      * a value) and false otherwise
      */
     @Override
-    public boolean isSet(_Fields field) {
+    public boolean isSet(final _Fields field) {
       if (field == null) {
         throw new IllegalArgumentException();
       }
@@ -810,7 +817,7 @@ public class R66Service {
     }
 
     @Override
-    public boolean equals(Object that) {
+    public boolean equals(final Object that) {
       if (that == null) {
         return false;
       }
@@ -820,7 +827,7 @@ public class R66Service {
       return false;
     }
 
-    public boolean equals(transferRequestQuery_args that) {
+    public boolean equals(final transferRequestQuery_args that) {
       if (that == null) {
         return false;
       }
@@ -863,17 +870,17 @@ public class R66Service {
     }
 
     @Override
-    public _Fields fieldForId(int fieldId) {
+    public _Fields fieldForId(final int fieldId) {
       return _Fields.findByThriftId(fieldId);
     }
 
     @Override
-    public void read(TProtocol iprot) throws TException {
+    public void read(final TProtocol iprot) throws TException {
       schemes.get(iprot.getScheme()).getScheme().read(iprot, this);
     }
 
     @Override
-    public void write(TProtocol oprot) throws TException {
+    public void write(final TProtocol oprot) throws TException {
       schemes.get(oprot.getScheme()).getScheme().write(oprot, this);
     }
 
@@ -898,7 +905,7 @@ public class R66Service {
       }
     }
 
-    private void writeObject(ObjectOutputStream out) throws IOException {
+    private void writeObject(final ObjectOutputStream out) throws IOException {
       try {
         write(new TCompactProtocol(new TIOStreamTransport(out)));
       } catch (final TException te) {
@@ -906,7 +913,7 @@ public class R66Service {
       }
     }
 
-    private void readObject(ObjectInputStream in)
+    private void readObject(final ObjectInputStream in)
         throws IOException, ClassNotFoundException {
       try {
         read(new TCompactProtocol(new TIOStreamTransport(in)));
@@ -927,7 +934,8 @@ public class R66Service {
         extends StandardScheme<transferRequestQuery_args> {
 
       @Override
-      public void read(TProtocol iprot, transferRequestQuery_args struct)
+      public void read(final TProtocol iprot,
+                       final transferRequestQuery_args struct)
           throws TException {
         TField schemeField;
         iprot.readStructBegin();
@@ -957,7 +965,8 @@ public class R66Service {
       }
 
       @Override
-      public void write(TProtocol oprot, transferRequestQuery_args struct)
+      public void write(final TProtocol oprot,
+                        final transferRequestQuery_args struct)
           throws TException {
         struct.validate();
 
@@ -985,7 +994,8 @@ public class R66Service {
         extends TupleScheme<transferRequestQuery_args> {
 
       @Override
-      public void write(TProtocol prot, transferRequestQuery_args struct)
+      public void write(final TProtocol prot,
+                        final transferRequestQuery_args struct)
           throws TException {
         final TTupleProtocol oprot = (TTupleProtocol) prot;
         final BitSet optionals = new BitSet();
@@ -999,7 +1009,8 @@ public class R66Service {
       }
 
       @Override
-      public void read(TProtocol prot, transferRequestQuery_args struct)
+      public void read(final TProtocol prot,
+                       final transferRequestQuery_args struct)
           throws TException {
         final TTupleProtocol iprot = (TTupleProtocol) prot;
         final BitSet incoming = iprot.readBitSet(1);
@@ -1070,7 +1081,7 @@ public class R66Service {
        * not
        * found.
        */
-      public static _Fields findByThriftId(int fieldId) {
+      public static _Fields findByThriftId(final int fieldId) {
         if (fieldId == 0) { // SUCCESS
           return SUCCESS;
         }
@@ -1082,7 +1093,7 @@ public class R66Service {
        * exception
        * if it is not found.
        */
-      public static _Fields findByThriftIdOrThrow(int fieldId) {
+      public static _Fields findByThriftIdOrThrow(final int fieldId) {
         final _Fields fields = findByThriftId(fieldId);
         if (fields == null) {
           throw new IllegalArgumentException(
@@ -1095,14 +1106,14 @@ public class R66Service {
        * Find the _Fields constant that matches name, or null if its not
        * found.
        */
-      public static _Fields findByName(String name) {
+      public static _Fields findByName(final String name) {
         return byName.get(name);
       }
 
       private final short thriftId;
       private final String fieldName;
 
-      _Fields(short thriftId, String fieldName) {
+      _Fields(final short thriftId, final String fieldName) {
         this.thriftId = thriftId;
         this.fieldName = fieldName;
       }
@@ -1136,7 +1147,7 @@ public class R66Service {
     public transferRequestQuery_result() {
     }
 
-    public transferRequestQuery_result(R66Result success) {
+    public transferRequestQuery_result(final R66Result success) {
       this();
       this.success = success;
     }
@@ -1144,7 +1155,8 @@ public class R66Service {
     /**
      * Performs a deep copy on <i>other</i>.
      */
-    public transferRequestQuery_result(transferRequestQuery_result other) {
+    public transferRequestQuery_result(
+        final transferRequestQuery_result other) {
       if (other.isSetSuccess()) {
         success = new R66Result(other.success);
       }
@@ -1164,7 +1176,7 @@ public class R66Service {
       return success;
     }
 
-    public transferRequestQuery_result setSuccess(R66Result success) {
+    public transferRequestQuery_result setSuccess(final R66Result success) {
       this.success = success;
       return this;
     }
@@ -1181,14 +1193,14 @@ public class R66Service {
       return success != null;
     }
 
-    public void setSuccessIsSet(boolean value) {
+    public void setSuccessIsSet(final boolean value) {
       if (!value) {
         success = null;
       }
     }
 
     @Override
-    public void setFieldValue(_Fields field, Object value) {
+    public void setFieldValue(final _Fields field, final Object value) {
       if (field == _Fields.SUCCESS) {
         if (value == null) {
           unsetSuccess();
@@ -1199,7 +1211,7 @@ public class R66Service {
     }
 
     @Override
-    public Object getFieldValue(_Fields field) {
+    public Object getFieldValue(final _Fields field) {
       if (field == _Fields.SUCCESS) {
         return getSuccess();
       }
@@ -1212,7 +1224,7 @@ public class R66Service {
      * a value) and false otherwise
      */
     @Override
-    public boolean isSet(_Fields field) {
+    public boolean isSet(final _Fields field) {
       if (field == null) {
         throw new IllegalArgumentException();
       }
@@ -1224,7 +1236,7 @@ public class R66Service {
     }
 
     @Override
-    public boolean equals(Object that) {
+    public boolean equals(final Object that) {
       if (that == null) {
         return false;
       }
@@ -1234,7 +1246,7 @@ public class R66Service {
       return false;
     }
 
-    public boolean equals(transferRequestQuery_result that) {
+    public boolean equals(final transferRequestQuery_result that) {
       if (that == null) {
         return false;
       }
@@ -1277,17 +1289,17 @@ public class R66Service {
     }
 
     @Override
-    public _Fields fieldForId(int fieldId) {
+    public _Fields fieldForId(final int fieldId) {
       return _Fields.findByThriftId(fieldId);
     }
 
     @Override
-    public void read(TProtocol iprot) throws TException {
+    public void read(final TProtocol iprot) throws TException {
       schemes.get(iprot.getScheme()).getScheme().read(iprot, this);
     }
 
     @Override
-    public void write(TProtocol oprot) throws TException {
+    public void write(final TProtocol oprot) throws TException {
       schemes.get(oprot.getScheme()).getScheme().write(oprot, this);
     }
 
@@ -1313,7 +1325,7 @@ public class R66Service {
       }
     }
 
-    private void writeObject(ObjectOutputStream out) throws IOException {
+    private void writeObject(final ObjectOutputStream out) throws IOException {
       try {
         write(new TCompactProtocol(new TIOStreamTransport(out)));
       } catch (final TException te) {
@@ -1321,7 +1333,7 @@ public class R66Service {
       }
     }
 
-    private void readObject(ObjectInputStream in)
+    private void readObject(final ObjectInputStream in)
         throws IOException, ClassNotFoundException {
       try {
         read(new TCompactProtocol(new TIOStreamTransport(in)));
@@ -1342,7 +1354,8 @@ public class R66Service {
         extends StandardScheme<transferRequestQuery_result> {
 
       @Override
-      public void read(TProtocol iprot, transferRequestQuery_result struct)
+      public void read(final TProtocol iprot,
+                       final transferRequestQuery_result struct)
           throws TException {
         TField schemeField;
         iprot.readStructBegin();
@@ -1372,7 +1385,8 @@ public class R66Service {
       }
 
       @Override
-      public void write(TProtocol oprot, transferRequestQuery_result struct)
+      public void write(final TProtocol oprot,
+                        final transferRequestQuery_result struct)
           throws TException {
         struct.validate();
 
@@ -1400,7 +1414,8 @@ public class R66Service {
         extends TupleScheme<transferRequestQuery_result> {
 
       @Override
-      public void write(TProtocol prot, transferRequestQuery_result struct)
+      public void write(final TProtocol prot,
+                        final transferRequestQuery_result struct)
           throws TException {
         final TTupleProtocol oprot = (TTupleProtocol) prot;
         final BitSet optionals = new BitSet();
@@ -1414,7 +1429,8 @@ public class R66Service {
       }
 
       @Override
-      public void read(TProtocol prot, transferRequestQuery_result struct)
+      public void read(final TProtocol prot,
+                       final transferRequestQuery_result struct)
           throws TException {
         final TTupleProtocol iprot = (TTupleProtocol) prot;
         final BitSet incoming = iprot.readBitSet(1);
@@ -1481,7 +1497,7 @@ public class R66Service {
        * not
        * found.
        */
-      public static _Fields findByThriftId(int fieldId) {
+      public static _Fields findByThriftId(final int fieldId) {
         if (fieldId == 1) { // REQUEST
           return REQUEST;
         }
@@ -1493,7 +1509,7 @@ public class R66Service {
        * exception
        * if it is not found.
        */
-      public static _Fields findByThriftIdOrThrow(int fieldId) {
+      public static _Fields findByThriftIdOrThrow(final int fieldId) {
         final _Fields fields = findByThriftId(fieldId);
         if (fields == null) {
           throw new IllegalArgumentException(
@@ -1506,14 +1522,14 @@ public class R66Service {
        * Find the _Fields constant that matches name, or null if its not
        * found.
        */
-      public static _Fields findByName(String name) {
+      public static _Fields findByName(final String name) {
         return byName.get(name);
       }
 
       private final short thriftId;
       private final String fieldName;
 
-      _Fields(short thriftId, String fieldName) {
+      _Fields(final short thriftId, final String fieldName) {
         this.thriftId = thriftId;
         this.fieldName = fieldName;
       }
@@ -1547,7 +1563,7 @@ public class R66Service {
     public infoTransferQuery_args() {
     }
 
-    public infoTransferQuery_args(R66Request request) {
+    public infoTransferQuery_args(final R66Request request) {
       this();
       this.request = request;
     }
@@ -1555,7 +1571,7 @@ public class R66Service {
     /**
      * Performs a deep copy on <i>other</i>.
      */
-    public infoTransferQuery_args(infoTransferQuery_args other) {
+    public infoTransferQuery_args(final infoTransferQuery_args other) {
       if (other.isSetRequest()) {
         request = new R66Request(other.request);
       }
@@ -1575,7 +1591,7 @@ public class R66Service {
       return request;
     }
 
-    public infoTransferQuery_args setRequest(R66Request request) {
+    public infoTransferQuery_args setRequest(final R66Request request) {
       this.request = request;
       return this;
     }
@@ -1592,14 +1608,14 @@ public class R66Service {
       return request != null;
     }
 
-    public void setRequestIsSet(boolean value) {
+    public void setRequestIsSet(final boolean value) {
       if (!value) {
         request = null;
       }
     }
 
     @Override
-    public void setFieldValue(_Fields field, Object value) {
+    public void setFieldValue(final _Fields field, final Object value) {
       if (field == _Fields.REQUEST) {
         if (value == null) {
           unsetRequest();
@@ -1610,7 +1626,7 @@ public class R66Service {
     }
 
     @Override
-    public Object getFieldValue(_Fields field) {
+    public Object getFieldValue(final _Fields field) {
       if (field == _Fields.REQUEST) {
         return getRequest();
       }
@@ -1623,7 +1639,7 @@ public class R66Service {
      * a value) and false otherwise
      */
     @Override
-    public boolean isSet(_Fields field) {
+    public boolean isSet(final _Fields field) {
       if (field == null) {
         throw new IllegalArgumentException();
       }
@@ -1635,7 +1651,7 @@ public class R66Service {
     }
 
     @Override
-    public boolean equals(Object that) {
+    public boolean equals(final Object that) {
       if (that == null) {
         return false;
       }
@@ -1645,7 +1661,7 @@ public class R66Service {
       return false;
     }
 
-    public boolean equals(infoTransferQuery_args that) {
+    public boolean equals(final infoTransferQuery_args that) {
       if (that == null) {
         return false;
       }
@@ -1688,17 +1704,17 @@ public class R66Service {
     }
 
     @Override
-    public _Fields fieldForId(int fieldId) {
+    public _Fields fieldForId(final int fieldId) {
       return _Fields.findByThriftId(fieldId);
     }
 
     @Override
-    public void read(TProtocol iprot) throws TException {
+    public void read(final TProtocol iprot) throws TException {
       schemes.get(iprot.getScheme()).getScheme().read(iprot, this);
     }
 
     @Override
-    public void write(TProtocol oprot) throws TException {
+    public void write(final TProtocol oprot) throws TException {
       schemes.get(oprot.getScheme()).getScheme().write(oprot, this);
     }
 
@@ -1723,7 +1739,7 @@ public class R66Service {
       }
     }
 
-    private void writeObject(ObjectOutputStream out) throws IOException {
+    private void writeObject(final ObjectOutputStream out) throws IOException {
       try {
         write(new TCompactProtocol(new TIOStreamTransport(out)));
       } catch (final TException te) {
@@ -1731,7 +1747,7 @@ public class R66Service {
       }
     }
 
-    private void readObject(ObjectInputStream in)
+    private void readObject(final ObjectInputStream in)
         throws IOException, ClassNotFoundException {
       try {
         read(new TCompactProtocol(new TIOStreamTransport(in)));
@@ -1752,8 +1768,8 @@ public class R66Service {
         extends StandardScheme<infoTransferQuery_args> {
 
       @Override
-      public void read(TProtocol iprot, infoTransferQuery_args struct)
-          throws TException {
+      public void read(final TProtocol iprot,
+                       final infoTransferQuery_args struct) throws TException {
         TField schemeField;
         iprot.readStructBegin();
         while (true) {
@@ -1782,8 +1798,8 @@ public class R66Service {
       }
 
       @Override
-      public void write(TProtocol oprot, infoTransferQuery_args struct)
-          throws TException {
+      public void write(final TProtocol oprot,
+                        final infoTransferQuery_args struct) throws TException {
         struct.validate();
 
         oprot.writeStructBegin(STRUCT_DESC);
@@ -1810,8 +1826,8 @@ public class R66Service {
         extends TupleScheme<infoTransferQuery_args> {
 
       @Override
-      public void write(TProtocol prot, infoTransferQuery_args struct)
-          throws TException {
+      public void write(final TProtocol prot,
+                        final infoTransferQuery_args struct) throws TException {
         final TTupleProtocol oprot = (TTupleProtocol) prot;
         final BitSet optionals = new BitSet();
         if (struct.isSetRequest()) {
@@ -1824,8 +1840,8 @@ public class R66Service {
       }
 
       @Override
-      public void read(TProtocol prot, infoTransferQuery_args struct)
-          throws TException {
+      public void read(final TProtocol prot,
+                       final infoTransferQuery_args struct) throws TException {
         final TTupleProtocol iprot = (TTupleProtocol) prot;
         final BitSet incoming = iprot.readBitSet(1);
         if (incoming.get(0)) {
@@ -1886,7 +1902,7 @@ public class R66Service {
        * not
        * found.
        */
-      public static _Fields findByThriftId(int fieldId) {
+      public static _Fields findByThriftId(final int fieldId) {
         if (fieldId == 0) { // SUCCESS
           return SUCCESS;
         }
@@ -1898,7 +1914,7 @@ public class R66Service {
        * exception
        * if it is not found.
        */
-      public static _Fields findByThriftIdOrThrow(int fieldId) {
+      public static _Fields findByThriftIdOrThrow(final int fieldId) {
         final _Fields fields = findByThriftId(fieldId);
         if (fields == null) {
           throw new IllegalArgumentException(
@@ -1911,14 +1927,14 @@ public class R66Service {
        * Find the _Fields constant that matches name, or null if its not
        * found.
        */
-      public static _Fields findByName(String name) {
+      public static _Fields findByName(final String name) {
         return byName.get(name);
       }
 
       private final short thriftId;
       private final String fieldName;
 
-      _Fields(short thriftId, String fieldName) {
+      _Fields(final short thriftId, final String fieldName) {
         this.thriftId = thriftId;
         this.fieldName = fieldName;
       }
@@ -1952,7 +1968,7 @@ public class R66Service {
     public infoTransferQuery_result() {
     }
 
-    public infoTransferQuery_result(R66Result success) {
+    public infoTransferQuery_result(final R66Result success) {
       this();
       this.success = success;
     }
@@ -1960,7 +1976,7 @@ public class R66Service {
     /**
      * Performs a deep copy on <i>other</i>.
      */
-    public infoTransferQuery_result(infoTransferQuery_result other) {
+    public infoTransferQuery_result(final infoTransferQuery_result other) {
       if (other.isSetSuccess()) {
         success = new R66Result(other.success);
       }
@@ -1980,7 +1996,7 @@ public class R66Service {
       return success;
     }
 
-    public infoTransferQuery_result setSuccess(R66Result success) {
+    public infoTransferQuery_result setSuccess(final R66Result success) {
       this.success = success;
       return this;
     }
@@ -1997,14 +2013,14 @@ public class R66Service {
       return success != null;
     }
 
-    public void setSuccessIsSet(boolean value) {
+    public void setSuccessIsSet(final boolean value) {
       if (!value) {
         success = null;
       }
     }
 
     @Override
-    public void setFieldValue(_Fields field, Object value) {
+    public void setFieldValue(final _Fields field, final Object value) {
       if (field == _Fields.SUCCESS) {
         if (value == null) {
           unsetSuccess();
@@ -2015,7 +2031,7 @@ public class R66Service {
     }
 
     @Override
-    public Object getFieldValue(_Fields field) {
+    public Object getFieldValue(final _Fields field) {
       if (field == _Fields.SUCCESS) {
         return getSuccess();
       }
@@ -2028,7 +2044,7 @@ public class R66Service {
      * a value) and false otherwise
      */
     @Override
-    public boolean isSet(_Fields field) {
+    public boolean isSet(final _Fields field) {
       if (field == null) {
         throw new IllegalArgumentException();
       }
@@ -2040,7 +2056,7 @@ public class R66Service {
     }
 
     @Override
-    public boolean equals(Object that) {
+    public boolean equals(final Object that) {
       if (that == null) {
         return false;
       }
@@ -2050,7 +2066,7 @@ public class R66Service {
       return false;
     }
 
-    public boolean equals(infoTransferQuery_result that) {
+    public boolean equals(final infoTransferQuery_result that) {
       if (that == null) {
         return false;
       }
@@ -2093,17 +2109,17 @@ public class R66Service {
     }
 
     @Override
-    public _Fields fieldForId(int fieldId) {
+    public _Fields fieldForId(final int fieldId) {
       return _Fields.findByThriftId(fieldId);
     }
 
     @Override
-    public void read(TProtocol iprot) throws TException {
+    public void read(final TProtocol iprot) throws TException {
       schemes.get(iprot.getScheme()).getScheme().read(iprot, this);
     }
 
     @Override
-    public void write(TProtocol oprot) throws TException {
+    public void write(final TProtocol oprot) throws TException {
       schemes.get(oprot.getScheme()).getScheme().write(oprot, this);
     }
 
@@ -2128,7 +2144,7 @@ public class R66Service {
       }
     }
 
-    private void writeObject(ObjectOutputStream out) throws IOException {
+    private void writeObject(final ObjectOutputStream out) throws IOException {
       try {
         write(new TCompactProtocol(new TIOStreamTransport(out)));
       } catch (final TException te) {
@@ -2136,7 +2152,7 @@ public class R66Service {
       }
     }
 
-    private void readObject(ObjectInputStream in)
+    private void readObject(final ObjectInputStream in)
         throws IOException, ClassNotFoundException {
       try {
         read(new TCompactProtocol(new TIOStreamTransport(in)));
@@ -2157,7 +2173,8 @@ public class R66Service {
         extends StandardScheme<infoTransferQuery_result> {
 
       @Override
-      public void read(TProtocol iprot, infoTransferQuery_result struct)
+      public void read(final TProtocol iprot,
+                       final infoTransferQuery_result struct)
           throws TException {
         TField schemeField;
         iprot.readStructBegin();
@@ -2187,7 +2204,8 @@ public class R66Service {
       }
 
       @Override
-      public void write(TProtocol oprot, infoTransferQuery_result struct)
+      public void write(final TProtocol oprot,
+                        final infoTransferQuery_result struct)
           throws TException {
         struct.validate();
 
@@ -2215,7 +2233,8 @@ public class R66Service {
         extends TupleScheme<infoTransferQuery_result> {
 
       @Override
-      public void write(TProtocol prot, infoTransferQuery_result struct)
+      public void write(final TProtocol prot,
+                        final infoTransferQuery_result struct)
           throws TException {
         final TTupleProtocol oprot = (TTupleProtocol) prot;
         final BitSet optionals = new BitSet();
@@ -2229,7 +2248,8 @@ public class R66Service {
       }
 
       @Override
-      public void read(TProtocol prot, infoTransferQuery_result struct)
+      public void read(final TProtocol prot,
+                       final infoTransferQuery_result struct)
           throws TException {
         final TTupleProtocol iprot = (TTupleProtocol) prot;
         final BitSet incoming = iprot.readBitSet(1);
@@ -2307,7 +2327,7 @@ public class R66Service {
        * not
        * found.
        */
-      public static _Fields findByThriftId(int fieldId) {
+      public static _Fields findByThriftId(final int fieldId) {
         switch (fieldId) {
           case 1: // FROMUID
             return FROMUID;
@@ -2325,7 +2345,7 @@ public class R66Service {
        * exception
        * if it is not found.
        */
-      public static _Fields findByThriftIdOrThrow(int fieldId) {
+      public static _Fields findByThriftIdOrThrow(final int fieldId) {
         final _Fields fields = findByThriftId(fieldId);
         if (fields == null) {
           throw new IllegalArgumentException(
@@ -2338,14 +2358,14 @@ public class R66Service {
        * Find the _Fields constant that matches name, or null if its not
        * found.
        */
-      public static _Fields findByName(String name) {
+      public static _Fields findByName(final String name) {
         return byName.get(name);
       }
 
       private final short thriftId;
       private final String fieldName;
 
-      _Fields(short thriftId, String fieldName) {
+      _Fields(final short thriftId, final String fieldName) {
         this.thriftId = thriftId;
         this.fieldName = fieldName;
       }
@@ -2386,7 +2406,8 @@ public class R66Service {
     public isStillRunning_args() {
     }
 
-    public isStillRunning_args(String fromuid, String touid, long tid) {
+    public isStillRunning_args(final String fromuid, final String touid,
+                               final long tid) {
       this();
       this.fromuid = fromuid;
       this.touid = touid;
@@ -2397,7 +2418,7 @@ public class R66Service {
     /**
      * Performs a deep copy on <i>other</i>.
      */
-    public isStillRunning_args(isStillRunning_args other) {
+    public isStillRunning_args(final isStillRunning_args other) {
       issetBitfield = other.issetBitfield;
       if (other.isSetFromuid()) {
         fromuid = other.fromuid;
@@ -2425,7 +2446,7 @@ public class R66Service {
       return fromuid;
     }
 
-    public isStillRunning_args setFromuid(String fromuid) {
+    public isStillRunning_args setFromuid(final String fromuid) {
       this.fromuid = fromuid;
       return this;
     }
@@ -2442,7 +2463,7 @@ public class R66Service {
       return fromuid != null;
     }
 
-    public void setFromuidIsSet(boolean value) {
+    public void setFromuidIsSet(final boolean value) {
       if (!value) {
         fromuid = null;
       }
@@ -2452,7 +2473,7 @@ public class R66Service {
       return touid;
     }
 
-    public isStillRunning_args setTouid(String touid) {
+    public isStillRunning_args setTouid(final String touid) {
       this.touid = touid;
       return this;
     }
@@ -2470,7 +2491,7 @@ public class R66Service {
       return touid != null;
     }
 
-    public void setTouidIsSet(boolean value) {
+    public void setTouidIsSet(final boolean value) {
       if (!value) {
         touid = null;
       }
@@ -2480,7 +2501,7 @@ public class R66Service {
       return tid;
     }
 
-    public isStillRunning_args setTid(long tid) {
+    public isStillRunning_args setTid(final long tid) {
       this.tid = tid;
       setTidIsSet(true);
       return this;
@@ -2499,12 +2520,12 @@ public class R66Service {
       return EncodingUtils.testBit(issetBitfield, TID_ISSET_ID);
     }
 
-    public void setTidIsSet(boolean value) {
+    public void setTidIsSet(final boolean value) {
       issetBitfield = EncodingUtils.setBit(issetBitfield, TID_ISSET_ID, value);
     }
 
     @Override
-    public void setFieldValue(_Fields field, Object value) {
+    public void setFieldValue(final _Fields field, final Object value) {
       switch (field) {
         case FROMUID:
           if (value == null) {
@@ -2534,7 +2555,7 @@ public class R66Service {
     }
 
     @Override
-    public Object getFieldValue(_Fields field) {
+    public Object getFieldValue(final _Fields field) {
       switch (field) {
         case FROMUID:
           return getFromuid();
@@ -2555,7 +2576,7 @@ public class R66Service {
      * a value) and false otherwise
      */
     @Override
-    public boolean isSet(_Fields field) {
+    public boolean isSet(final _Fields field) {
       if (field == null) {
         throw new IllegalArgumentException();
       }
@@ -2572,7 +2593,7 @@ public class R66Service {
     }
 
     @Override
-    public boolean equals(Object that) {
+    public boolean equals(final Object that) {
       if (that == null) {
         return false;
       }
@@ -2582,7 +2603,7 @@ public class R66Service {
       return false;
     }
 
-    public boolean equals(isStillRunning_args that) {
+    public boolean equals(final isStillRunning_args that) {
       if (that == null) {
         return false;
       }
@@ -2659,17 +2680,17 @@ public class R66Service {
     }
 
     @Override
-    public _Fields fieldForId(int fieldId) {
+    public _Fields fieldForId(final int fieldId) {
       return _Fields.findByThriftId(fieldId);
     }
 
     @Override
-    public void read(TProtocol iprot) throws TException {
+    public void read(final TProtocol iprot) throws TException {
       schemes.get(iprot.getScheme()).getScheme().read(iprot, this);
     }
 
     @Override
-    public void write(TProtocol oprot) throws TException {
+    public void write(final TProtocol oprot) throws TException {
       schemes.get(oprot.getScheme()).getScheme().write(oprot, this);
     }
 
@@ -2701,7 +2722,7 @@ public class R66Service {
       // check for sub-struct validity
     }
 
-    private void writeObject(ObjectOutputStream out) throws IOException {
+    private void writeObject(final ObjectOutputStream out) throws IOException {
       try {
         write(new TCompactProtocol(new TIOStreamTransport(out)));
       } catch (final TException te) {
@@ -2709,7 +2730,7 @@ public class R66Service {
       }
     }
 
-    private void readObject(ObjectInputStream in)
+    private void readObject(final ObjectInputStream in)
         throws IOException, ClassNotFoundException {
       try {
         // it doesn't seem like you should have to do this, but java serialization is wacky,
@@ -2733,7 +2754,7 @@ public class R66Service {
         extends StandardScheme<isStillRunning_args> {
 
       @Override
-      public void read(TProtocol iprot, isStillRunning_args struct)
+      public void read(final TProtocol iprot, final isStillRunning_args struct)
           throws TException {
         TField schemeField;
         iprot.readStructBegin();
@@ -2780,7 +2801,7 @@ public class R66Service {
       }
 
       @Override
-      public void write(TProtocol oprot, isStillRunning_args struct)
+      public void write(final TProtocol oprot, final isStillRunning_args struct)
           throws TException {
         struct.validate();
 
@@ -2816,7 +2837,7 @@ public class R66Service {
         extends TupleScheme<isStillRunning_args> {
 
       @Override
-      public void write(TProtocol prot, isStillRunning_args struct)
+      public void write(final TProtocol prot, final isStillRunning_args struct)
           throws TException {
         final TTupleProtocol oprot = (TTupleProtocol) prot;
         final BitSet optionals = new BitSet();
@@ -2842,7 +2863,7 @@ public class R66Service {
       }
 
       @Override
-      public void read(TProtocol prot, isStillRunning_args struct)
+      public void read(final TProtocol prot, final isStillRunning_args struct)
           throws TException {
         final TTupleProtocol iprot = (TTupleProtocol) prot;
         final BitSet incoming = iprot.readBitSet(3);
@@ -2916,7 +2937,7 @@ public class R66Service {
        * not
        * found.
        */
-      public static _Fields findByThriftId(int fieldId) {
+      public static _Fields findByThriftId(final int fieldId) {
         if (fieldId == 0) { // SUCCESS
           return SUCCESS;
         }
@@ -2928,7 +2949,7 @@ public class R66Service {
        * exception
        * if it is not found.
        */
-      public static _Fields findByThriftIdOrThrow(int fieldId) {
+      public static _Fields findByThriftIdOrThrow(final int fieldId) {
         final _Fields fields = findByThriftId(fieldId);
         if (fields == null) {
           throw new IllegalArgumentException(
@@ -2941,14 +2962,14 @@ public class R66Service {
        * Find the _Fields constant that matches name, or null if its not
        * found.
        */
-      public static _Fields findByName(String name) {
+      public static _Fields findByName(final String name) {
         return byName.get(name);
       }
 
       private final short thriftId;
       private final String fieldName;
 
-      _Fields(short thriftId, String fieldName) {
+      _Fields(final short thriftId, final String fieldName) {
         this.thriftId = thriftId;
         this.fieldName = fieldName;
       }
@@ -2983,7 +3004,7 @@ public class R66Service {
     public isStillRunning_result() {
     }
 
-    public isStillRunning_result(boolean success) {
+    public isStillRunning_result(final boolean success) {
       this();
       this.success = success;
       setSuccessIsSet(true);
@@ -2992,7 +3013,7 @@ public class R66Service {
     /**
      * Performs a deep copy on <i>other</i>.
      */
-    public isStillRunning_result(isStillRunning_result other) {
+    public isStillRunning_result(final isStillRunning_result other) {
       issetBitfield = other.issetBitfield;
       success = other.success;
     }
@@ -3012,7 +3033,7 @@ public class R66Service {
       return success;
     }
 
-    public isStillRunning_result setSuccess(boolean success) {
+    public isStillRunning_result setSuccess(final boolean success) {
       this.success = success;
       setSuccessIsSet(true);
       return this;
@@ -3030,13 +3051,13 @@ public class R66Service {
       return EncodingUtils.testBit(issetBitfield, SUCCESS_ISSET_ID);
     }
 
-    public void setSuccessIsSet(boolean value) {
+    public void setSuccessIsSet(final boolean value) {
       issetBitfield =
           EncodingUtils.setBit(issetBitfield, SUCCESS_ISSET_ID, value);
     }
 
     @Override
-    public void setFieldValue(_Fields field, Object value) {
+    public void setFieldValue(final _Fields field, final Object value) {
       if (field == _Fields.SUCCESS) {
         if (value == null) {
           unsetSuccess();
@@ -3047,7 +3068,7 @@ public class R66Service {
     }
 
     @Override
-    public Object getFieldValue(_Fields field) {
+    public Object getFieldValue(final _Fields field) {
       if (field == _Fields.SUCCESS) {
         return Boolean.valueOf(isSuccess());
       }
@@ -3060,7 +3081,7 @@ public class R66Service {
      * a value) and false otherwise
      */
     @Override
-    public boolean isSet(_Fields field) {
+    public boolean isSet(final _Fields field) {
       if (field == null) {
         throw new IllegalArgumentException();
       }
@@ -3072,7 +3093,7 @@ public class R66Service {
     }
 
     @Override
-    public boolean equals(Object that) {
+    public boolean equals(final Object that) {
       if (that == null) {
         return false;
       }
@@ -3082,7 +3103,7 @@ public class R66Service {
       return false;
     }
 
-    public boolean equals(isStillRunning_result that) {
+    public boolean equals(final isStillRunning_result that) {
       if (that == null) {
         return false;
       }
@@ -3115,17 +3136,17 @@ public class R66Service {
     }
 
     @Override
-    public _Fields fieldForId(int fieldId) {
+    public _Fields fieldForId(final int fieldId) {
       return _Fields.findByThriftId(fieldId);
     }
 
     @Override
-    public void read(TProtocol iprot) throws TException {
+    public void read(final TProtocol iprot) throws TException {
       schemes.get(iprot.getScheme()).getScheme().read(iprot, this);
     }
 
     @Override
-    public void write(TProtocol oprot) throws TException {
+    public void write(final TProtocol oprot) throws TException {
       schemes.get(oprot.getScheme()).getScheme().write(oprot, this);
     }
 
@@ -3142,7 +3163,7 @@ public class R66Service {
       // check for sub-struct validity
     }
 
-    private void writeObject(ObjectOutputStream out) throws IOException {
+    private void writeObject(final ObjectOutputStream out) throws IOException {
       try {
         write(new TCompactProtocol(new TIOStreamTransport(out)));
       } catch (final TException te) {
@@ -3150,7 +3171,7 @@ public class R66Service {
       }
     }
 
-    private void readObject(ObjectInputStream in)
+    private void readObject(final ObjectInputStream in)
         throws IOException, ClassNotFoundException {
       try {
         // it doesn't seem like you should have to do this, but java serialization is wacky,
@@ -3174,8 +3195,8 @@ public class R66Service {
         extends StandardScheme<isStillRunning_result> {
 
       @Override
-      public void read(TProtocol iprot, isStillRunning_result struct)
-          throws TException {
+      public void read(final TProtocol iprot,
+                       final isStillRunning_result struct) throws TException {
         TField schemeField;
         iprot.readStructBegin();
         while (true) {
@@ -3203,8 +3224,8 @@ public class R66Service {
       }
 
       @Override
-      public void write(TProtocol oprot, isStillRunning_result struct)
-          throws TException {
+      public void write(final TProtocol oprot,
+                        final isStillRunning_result struct) throws TException {
         struct.validate();
 
         oprot.writeStructBegin(STRUCT_DESC);
@@ -3231,8 +3252,8 @@ public class R66Service {
         extends TupleScheme<isStillRunning_result> {
 
       @Override
-      public void write(TProtocol prot, isStillRunning_result struct)
-          throws TException {
+      public void write(final TProtocol prot,
+                        final isStillRunning_result struct) throws TException {
         final TTupleProtocol oprot = (TTupleProtocol) prot;
         final BitSet optionals = new BitSet();
         if (struct.isSetSuccess()) {
@@ -3245,7 +3266,7 @@ public class R66Service {
       }
 
       @Override
-      public void read(TProtocol prot, isStillRunning_result struct)
+      public void read(final TProtocol prot, final isStillRunning_result struct)
           throws TException {
         final TTupleProtocol iprot = (TTupleProtocol) prot;
         final BitSet incoming = iprot.readBitSet(1);
@@ -3311,7 +3332,7 @@ public class R66Service {
        * not
        * found.
        */
-      public static _Fields findByThriftId(int fieldId) {
+      public static _Fields findByThriftId(final int fieldId) {
         if (fieldId == 1) { // REQUEST
           return REQUEST;
         }
@@ -3323,7 +3344,7 @@ public class R66Service {
        * exception
        * if it is not found.
        */
-      public static _Fields findByThriftIdOrThrow(int fieldId) {
+      public static _Fields findByThriftIdOrThrow(final int fieldId) {
         final _Fields fields = findByThriftId(fieldId);
         if (fields == null) {
           throw new IllegalArgumentException(
@@ -3336,14 +3357,14 @@ public class R66Service {
        * Find the _Fields constant that matches name, or null if its not
        * found.
        */
-      public static _Fields findByName(String name) {
+      public static _Fields findByName(final String name) {
         return byName.get(name);
       }
 
       private final short thriftId;
       private final String fieldName;
 
-      _Fields(short thriftId, String fieldName) {
+      _Fields(final short thriftId, final String fieldName) {
         this.thriftId = thriftId;
         this.fieldName = fieldName;
       }
@@ -3376,7 +3397,7 @@ public class R66Service {
     public infoListQuery_args() {
     }
 
-    public infoListQuery_args(R66Request request) {
+    public infoListQuery_args(final R66Request request) {
       this();
       this.request = request;
     }
@@ -3384,7 +3405,7 @@ public class R66Service {
     /**
      * Performs a deep copy on <i>other</i>.
      */
-    public infoListQuery_args(infoListQuery_args other) {
+    public infoListQuery_args(final infoListQuery_args other) {
       if (other.isSetRequest()) {
         request = new R66Request(other.request);
       }
@@ -3404,7 +3425,7 @@ public class R66Service {
       return request;
     }
 
-    public infoListQuery_args setRequest(R66Request request) {
+    public infoListQuery_args setRequest(final R66Request request) {
       this.request = request;
       return this;
     }
@@ -3421,14 +3442,14 @@ public class R66Service {
       return request != null;
     }
 
-    public void setRequestIsSet(boolean value) {
+    public void setRequestIsSet(final boolean value) {
       if (!value) {
         request = null;
       }
     }
 
     @Override
-    public void setFieldValue(_Fields field, Object value) {
+    public void setFieldValue(final _Fields field, final Object value) {
       if (field == _Fields.REQUEST) {
         if (value == null) {
           unsetRequest();
@@ -3439,7 +3460,7 @@ public class R66Service {
     }
 
     @Override
-    public Object getFieldValue(_Fields field) {
+    public Object getFieldValue(final _Fields field) {
       if (field == _Fields.REQUEST) {
         return getRequest();
       }
@@ -3452,7 +3473,7 @@ public class R66Service {
      * a value) and false otherwise
      */
     @Override
-    public boolean isSet(_Fields field) {
+    public boolean isSet(final _Fields field) {
       if (field == null) {
         throw new IllegalArgumentException();
       }
@@ -3464,7 +3485,7 @@ public class R66Service {
     }
 
     @Override
-    public boolean equals(Object that) {
+    public boolean equals(final Object that) {
       if (that == null) {
         return false;
       }
@@ -3474,7 +3495,7 @@ public class R66Service {
       return false;
     }
 
-    public boolean equals(infoListQuery_args that) {
+    public boolean equals(final infoListQuery_args that) {
       if (that == null) {
         return false;
       }
@@ -3517,17 +3538,17 @@ public class R66Service {
     }
 
     @Override
-    public _Fields fieldForId(int fieldId) {
+    public _Fields fieldForId(final int fieldId) {
       return _Fields.findByThriftId(fieldId);
     }
 
     @Override
-    public void read(TProtocol iprot) throws TException {
+    public void read(final TProtocol iprot) throws TException {
       schemes.get(iprot.getScheme()).getScheme().read(iprot, this);
     }
 
     @Override
-    public void write(TProtocol oprot) throws TException {
+    public void write(final TProtocol oprot) throws TException {
       schemes.get(oprot.getScheme()).getScheme().write(oprot, this);
     }
 
@@ -3552,7 +3573,7 @@ public class R66Service {
       }
     }
 
-    private void writeObject(ObjectOutputStream out) throws IOException {
+    private void writeObject(final ObjectOutputStream out) throws IOException {
       try {
         write(new TCompactProtocol(new TIOStreamTransport(out)));
       } catch (final TException te) {
@@ -3560,7 +3581,7 @@ public class R66Service {
       }
     }
 
-    private void readObject(ObjectInputStream in)
+    private void readObject(final ObjectInputStream in)
         throws IOException, ClassNotFoundException {
       try {
         read(new TCompactProtocol(new TIOStreamTransport(in)));
@@ -3581,7 +3602,7 @@ public class R66Service {
         extends StandardScheme<infoListQuery_args> {
 
       @Override
-      public void read(TProtocol iprot, infoListQuery_args struct)
+      public void read(final TProtocol iprot, final infoListQuery_args struct)
           throws TException {
         TField schemeField;
         iprot.readStructBegin();
@@ -3611,7 +3632,7 @@ public class R66Service {
       }
 
       @Override
-      public void write(TProtocol oprot, infoListQuery_args struct)
+      public void write(final TProtocol oprot, final infoListQuery_args struct)
           throws TException {
         struct.validate();
 
@@ -3639,7 +3660,7 @@ public class R66Service {
         extends TupleScheme<infoListQuery_args> {
 
       @Override
-      public void write(TProtocol prot, infoListQuery_args struct)
+      public void write(final TProtocol prot, final infoListQuery_args struct)
           throws TException {
         final TTupleProtocol oprot = (TTupleProtocol) prot;
         final BitSet optionals = new BitSet();
@@ -3653,7 +3674,7 @@ public class R66Service {
       }
 
       @Override
-      public void read(TProtocol prot, infoListQuery_args struct)
+      public void read(final TProtocol prot, final infoListQuery_args struct)
           throws TException {
         final TTupleProtocol iprot = (TTupleProtocol) prot;
         final BitSet incoming = iprot.readBitSet(1);
@@ -3720,7 +3741,7 @@ public class R66Service {
        * not
        * found.
        */
-      public static _Fields findByThriftId(int fieldId) {
+      public static _Fields findByThriftId(final int fieldId) {
         if (fieldId == 0) { // SUCCESS
           return SUCCESS;
         }
@@ -3732,7 +3753,7 @@ public class R66Service {
        * exception
        * if it is not found.
        */
-      public static _Fields findByThriftIdOrThrow(int fieldId) {
+      public static _Fields findByThriftIdOrThrow(final int fieldId) {
         final _Fields fields = findByThriftId(fieldId);
         if (fields == null) {
           throw new IllegalArgumentException(
@@ -3745,14 +3766,14 @@ public class R66Service {
        * Find the _Fields constant that matches name, or null if its not
        * found.
        */
-      public static _Fields findByName(String name) {
+      public static _Fields findByName(final String name) {
         return byName.get(name);
       }
 
       private final short thriftId;
       private final String fieldName;
 
-      _Fields(short thriftId, String fieldName) {
+      _Fields(final short thriftId, final String fieldName) {
         this.thriftId = thriftId;
         this.fieldName = fieldName;
       }
@@ -3787,7 +3808,7 @@ public class R66Service {
     public infoListQuery_result() {
     }
 
-    public infoListQuery_result(List<String> success) {
+    public infoListQuery_result(final List<String> success) {
       this();
       this.success = success;
     }
@@ -3795,7 +3816,7 @@ public class R66Service {
     /**
      * Performs a deep copy on <i>other</i>.
      */
-    public infoListQuery_result(infoListQuery_result other) {
+    public infoListQuery_result(final infoListQuery_result other) {
       if (other.isSetSuccess()) {
         success = new ArrayList<String>(other.success);
       }
@@ -3819,7 +3840,7 @@ public class R66Service {
       return success == null? null : success.iterator();
     }
 
-    public void addToSuccess(String elem) {
+    public void addToSuccess(final String elem) {
       if (success == null) {
         success = new ArrayList<String>();
       }
@@ -3830,7 +3851,7 @@ public class R66Service {
       return success;
     }
 
-    public infoListQuery_result setSuccess(List<String> success) {
+    public infoListQuery_result setSuccess(final List<String> success) {
       this.success = success;
       return this;
     }
@@ -3847,14 +3868,14 @@ public class R66Service {
       return success != null;
     }
 
-    public void setSuccessIsSet(boolean value) {
+    public void setSuccessIsSet(final boolean value) {
       if (!value) {
         success = null;
       }
     }
 
     @Override
-    public void setFieldValue(_Fields field, Object value) {
+    public void setFieldValue(final _Fields field, final Object value) {
       if (field == _Fields.SUCCESS) {
         if (value == null) {
           unsetSuccess();
@@ -3865,7 +3886,7 @@ public class R66Service {
     }
 
     @Override
-    public Object getFieldValue(_Fields field) {
+    public Object getFieldValue(final _Fields field) {
       if (field == _Fields.SUCCESS) {
         return getSuccess();
       }
@@ -3878,7 +3899,7 @@ public class R66Service {
      * a value) and false otherwise
      */
     @Override
-    public boolean isSet(_Fields field) {
+    public boolean isSet(final _Fields field) {
       if (field == null) {
         throw new IllegalArgumentException();
       }
@@ -3890,7 +3911,7 @@ public class R66Service {
     }
 
     @Override
-    public boolean equals(Object that) {
+    public boolean equals(final Object that) {
       if (that == null) {
         return false;
       }
@@ -3900,7 +3921,7 @@ public class R66Service {
       return false;
     }
 
-    public boolean equals(infoListQuery_result that) {
+    public boolean equals(final infoListQuery_result that) {
       if (that == null) {
         return false;
       }
@@ -3943,17 +3964,17 @@ public class R66Service {
     }
 
     @Override
-    public _Fields fieldForId(int fieldId) {
+    public _Fields fieldForId(final int fieldId) {
       return _Fields.findByThriftId(fieldId);
     }
 
     @Override
-    public void read(TProtocol iprot) throws TException {
+    public void read(final TProtocol iprot) throws TException {
       schemes.get(iprot.getScheme()).getScheme().read(iprot, this);
     }
 
     @Override
-    public void write(TProtocol oprot) throws TException {
+    public void write(final TProtocol oprot) throws TException {
       schemes.get(oprot.getScheme()).getScheme().write(oprot, this);
     }
 
@@ -3975,7 +3996,7 @@ public class R66Service {
       // check for sub-struct validity
     }
 
-    private void writeObject(ObjectOutputStream out) throws IOException {
+    private void writeObject(final ObjectOutputStream out) throws IOException {
       try {
         write(new TCompactProtocol(new TIOStreamTransport(out)));
       } catch (final TException te) {
@@ -3983,7 +4004,7 @@ public class R66Service {
       }
     }
 
-    private void readObject(ObjectInputStream in)
+    private void readObject(final ObjectInputStream in)
         throws IOException, ClassNotFoundException {
       try {
         read(new TCompactProtocol(new TIOStreamTransport(in)));
@@ -4004,7 +4025,7 @@ public class R66Service {
         extends StandardScheme<infoListQuery_result> {
 
       @Override
-      public void read(TProtocol iprot, infoListQuery_result struct)
+      public void read(final TProtocol iprot, final infoListQuery_result struct)
           throws TException {
         TField schemeField;
         iprot.readStructBegin();
@@ -4019,7 +4040,7 @@ public class R66Service {
                 final TList list0 = iprot.readListBegin();
                 struct.success = new ArrayList<String>(list0.size);
                 for (int _i1 = 0; _i1 < list0.size; ++_i1) {
-                  String elem2; // required
+                  final String elem2; // required
                   elem2 = iprot.readString();
                   struct.success.add(elem2);
                 }
@@ -4042,8 +4063,8 @@ public class R66Service {
       }
 
       @Override
-      public void write(TProtocol oprot, infoListQuery_result struct)
-          throws TException {
+      public void write(final TProtocol oprot,
+                        final infoListQuery_result struct) throws TException {
         struct.validate();
 
         oprot.writeStructBegin(STRUCT_DESC);
@@ -4077,7 +4098,7 @@ public class R66Service {
         extends TupleScheme<infoListQuery_result> {
 
       @Override
-      public void write(TProtocol prot, infoListQuery_result struct)
+      public void write(final TProtocol prot, final infoListQuery_result struct)
           throws TException {
         final TTupleProtocol oprot = (TTupleProtocol) prot;
         final BitSet optionals = new BitSet();
@@ -4096,7 +4117,7 @@ public class R66Service {
       }
 
       @Override
-      public void read(TProtocol prot, infoListQuery_result struct)
+      public void read(final TProtocol prot, final infoListQuery_result struct)
           throws TException {
         final TTupleProtocol iprot = (TTupleProtocol) prot;
         final BitSet incoming = iprot.readBitSet(1);
@@ -4105,7 +4126,7 @@ public class R66Service {
             final TList list = new TList(TType.STRING, iprot.readI32());
             struct.success = new ArrayList<String>(list.size);
             for (int _i6 = 0; _i6 < list.size; ++_i6) {
-              String elem7; // required
+              final String elem7; // required
               elem7 = iprot.readString();
               struct.success.add(elem7);
             }

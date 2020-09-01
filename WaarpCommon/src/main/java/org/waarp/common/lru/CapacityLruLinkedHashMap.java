@@ -44,8 +44,9 @@ class CapacityLruLinkedHashMap<K, V> extends LinkedHashMap<K, V> {
    *
    * @throws IllegalArgumentException if capacity is not positive
    */
-  protected CapacityLruLinkedHashMap(int capacity, int initialCapacity,
-                                     float loadFactor) {
+  protected CapacityLruLinkedHashMap(final int capacity,
+                                     final int initialCapacity,
+                                     final float loadFactor) {
     super(initialCapacity, loadFactor, true);
 
     if (capacity <= 0) {
@@ -56,7 +57,7 @@ class CapacityLruLinkedHashMap<K, V> extends LinkedHashMap<K, V> {
   }
 
   @Override
-  protected boolean removeEldestEntry(Map.Entry<K, V> eldest) {
+  protected boolean removeEldestEntry(final Map.Entry<K, V> eldest) {
     return size() > capacity;
   }
 

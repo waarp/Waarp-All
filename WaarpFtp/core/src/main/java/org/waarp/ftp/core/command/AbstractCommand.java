@@ -65,8 +65,9 @@ public abstract class AbstractCommand implements CommandInterface {
   private FtpCommandCode extraNextCommand;
 
   @Override
-  public void setArgs(SessionInterface session, String command, String arg,
-                      @SuppressWarnings("rawtypes") Enum code) {
+  public void setArgs(final SessionInterface session, final String command,
+                      final String arg,
+                      @SuppressWarnings("rawtypes") final Enum code) {
     this.session = (FtpSession) session;
     this.command = command;
     this.arg = arg;
@@ -75,7 +76,7 @@ public abstract class AbstractCommand implements CommandInterface {
 
   @Override
   public void setExtraNextCommand(
-      @SuppressWarnings("rawtypes") Enum extraNextCommand) {
+      @SuppressWarnings("rawtypes") final Enum extraNextCommand) {
     if (extraNextCommand != FtpCommandCode.NOOP) {
       this.extraNextCommand = (FtpCommandCode) extraNextCommand;
     } else {
@@ -84,7 +85,7 @@ public abstract class AbstractCommand implements CommandInterface {
   }
 
   @Override
-  public boolean isNextCommandValid(CommandInterface newCommandArg) {
+  public boolean isNextCommandValid(final CommandInterface newCommandArg) {
     final AbstractCommand newCommand = (AbstractCommand) newCommandArg;
     final Class<? extends AbstractCommand> newClass = newCommand.getClass();
     // Special commands: QUIT ABORT STAT NOP
@@ -125,7 +126,7 @@ public abstract class AbstractCommand implements CommandInterface {
   }
 
   @Override
-  public void setObject(Object object) {
+  public void setObject(final Object object) {
     this.object = object;
   }
 
@@ -140,8 +141,8 @@ public abstract class AbstractCommand implements CommandInterface {
   }
 
   @Override
-  public int getValue(String argx) throws InvalidArgumentException {
-    int i;
+  public int getValue(final String argx) throws InvalidArgumentException {
+    final int i;
     try {
       i = Integer.parseInt(argx);
     } catch (final NumberFormatException e) {

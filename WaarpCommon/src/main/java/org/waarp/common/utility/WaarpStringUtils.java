@@ -70,7 +70,7 @@ public final class WaarpStringUtils {
    * @throws InvalidArgumentException for File not found
    * @throws FileTransferException for reading exception
    */
-  public static String readFileException(String filename)
+  public static String readFileException(final String filename)
       throws InvalidArgumentException, FileTransferException {
     final File file = new File(filename);
     // Check for size of file
@@ -81,7 +81,7 @@ public final class WaarpStringUtils {
     }
     try {
       return Files.toString(file, UTF8);
-    } catch (IOException e) {
+    } catch (final IOException e) {
       logger.error("Error on File while trying to read: " + filename, e);
       throw new FileTransferException("Error on File while trying to read", e);
     }
@@ -94,7 +94,7 @@ public final class WaarpStringUtils {
    *
    * @return the string associated with the file, or "" if an error occurs
    */
-  public static String readFile(String filename) {
+  public static String readFile(final String filename) {
     try {
       return readFileException(filename);
     } catch (final InvalidArgumentException e) {
@@ -113,12 +113,12 @@ public final class WaarpStringUtils {
    *
    * @return the corresponding Timestamp
    */
-  public static Timestamp fixDate(String date) {
+  public static Timestamp fixDate(final String date) {
     Timestamp tdate = null;
     if (date == null) {
-      return tdate;
+      return null;
     }
-    String ndate = date.replaceAll("/|:|\\.| |-", "");
+    String ndate = date.replaceAll("/|:|\\.|\\s|-", "");
     if (!ndate.isEmpty()) {
       if (ndate.length() < 15) {
         final int len = ndate.length();
@@ -148,12 +148,12 @@ public final class WaarpStringUtils {
    *
    * @return the end date
    */
-  public static Timestamp fixDate(String date, Timestamp before) {
+  public static Timestamp fixDate(final String date, final Timestamp before) {
     Timestamp tdate = null;
     if (date == null) {
-      return tdate;
+      return null;
     }
-    String ndate = date.replaceAll("/|:|\\.| |-", "");
+    String ndate = date.replaceAll("/|:|\\.|\\s|-", "");
     if (!ndate.isEmpty()) {
       if (ndate.length() < 15) {
         final int len = ndate.length();
@@ -192,7 +192,7 @@ public final class WaarpStringUtils {
    *
    * @return the corresponding value
    */
-  public static boolean getBoolean(Node node) {
+  public static boolean getBoolean(final Node node) {
     final String val = node.getText();
     boolean bval;
     try {
@@ -213,12 +213,13 @@ public final class WaarpStringUtils {
    *
    * @throws InvalidArgumentException
    */
-  public static int getInteger(Node node) throws InvalidArgumentException {
+  public static int getInteger(final Node node)
+      throws InvalidArgumentException {
     if (node == null) {
       throw new InvalidArgumentException("Node empty");
     }
     final String val = node.getText();
-    int ival;
+    final int ival;
     try {
       ival = Integer.parseInt(val);
     } catch (final NumberFormatException e) {
@@ -237,8 +238,8 @@ public final class WaarpStringUtils {
    *
    * @return True if one element is found
    */
-  public static boolean replace(StringBuilder builder, String find,
-                                String replace) {
+  public static boolean replace(final StringBuilder builder, final String find,
+                                final String replace) {
     if (find == null) {
       return false;
     }
@@ -263,8 +264,8 @@ public final class WaarpStringUtils {
    * @param find
    * @param replace
    */
-  public static void replaceAll(StringBuilder builder, String find,
-                                String replace) {
+  public static void replaceAll(final StringBuilder builder, final String find,
+                                final String replace) {
     while (replace(builder, find, replace)) {
       // nothing
     }
@@ -278,7 +279,7 @@ public final class WaarpStringUtils {
    *
    * @return the String of length count filled with fillChar
    */
-  public static String fillString(char fillChar, int count) {
+  public static String fillString(final char fillChar, final int count) {
     final char[] chars = new char[count];
     Arrays.fill(chars, fillChar);
     return new String(chars);
@@ -292,7 +293,7 @@ public final class WaarpStringUtils {
    *
    * @return the cleaned String
    */
-  public static String cleanJsonForHtml(String json) {
+  public static String cleanJsonForHtml(final String json) {
     return json.replaceAll("([^\\\\])\\\\n", "$1")
                .replaceAll("([^\\\\])\\\\r", "$1");
   }

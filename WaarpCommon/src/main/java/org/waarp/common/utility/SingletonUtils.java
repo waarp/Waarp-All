@@ -98,7 +98,7 @@ public final class SingletonUtils {
     }
 
     @Override
-    public void mark(int arg0) {//NOSONAR
+    public void mark(final int arg0) {//NOSONAR
       // Empty
     }
 
@@ -108,12 +108,12 @@ public final class SingletonUtils {
     }
 
     @Override
-    public int read(byte[] arg0, int arg1, int arg2) {
+    public int read(final byte[] arg0, final int arg1, final int arg2) {
       return -1;
     }
 
     @Override
-    public int read(byte[] arg0) {
+    public int read(final byte[] arg0) {
       return -1;
     }
 
@@ -123,7 +123,7 @@ public final class SingletonUtils {
     }
 
     @Override
-    public long skip(long arg0) {
+    public long skip(final long arg0) {
       return 0;
     }
   }
@@ -152,17 +152,18 @@ public final class SingletonUtils {
     }
 
     @Override
-    public void write(byte[] arg0, int arg1, int arg2) throws IOException {
+    public void write(final byte[] arg0, final int arg1, final int arg2)
+        throws IOException {
       // Empty
     }
 
     @Override
-    public void write(byte[] arg0) throws IOException {
+    public void write(final byte[] arg0) throws IOException {
       // Empty
     }
 
     @Override
-    public void write(int arg0) throws IOException {
+    public void write(final int arg0) throws IOException {
       // Empty
     }
   }

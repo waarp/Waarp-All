@@ -58,8 +58,8 @@ public class RestExceptionHandler extends ExceptionHandler {
    * @param responder the HttpResponder for the request
    */
   @Override
-  public void handle(Throwable t, HttpRequest request,
-                     HttpResponder responder) {
+  public void handle(final Throwable t, final HttpRequest request,
+                     final HttpResponder responder) {
     if (t instanceof RestErrorException) {
       final RestErrorException userErrors = (RestErrorException) t;
       try {

@@ -32,14 +32,14 @@ public class HttpMethodNotAllowedRequestException extends Exception {
   /**
    * @param arg0
    */
-  public HttpMethodNotAllowedRequestException(String arg0) {
+  public HttpMethodNotAllowedRequestException(final String arg0) {
     super(arg0);
   }
 
   /**
    * @param arg0
    */
-  public HttpMethodNotAllowedRequestException(Throwable arg0) {
+  public HttpMethodNotAllowedRequestException(final Throwable arg0) {
     super(arg0);
   }
 
@@ -47,7 +47,8 @@ public class HttpMethodNotAllowedRequestException extends Exception {
    * @param arg0
    * @param arg1
    */
-  public HttpMethodNotAllowedRequestException(String arg0, Throwable arg1) {
+  public HttpMethodNotAllowedRequestException(final String arg0,
+                                              final Throwable arg1) {
     super(arg0, arg1);
   }
 

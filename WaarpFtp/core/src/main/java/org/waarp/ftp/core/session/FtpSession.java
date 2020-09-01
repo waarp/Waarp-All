@@ -135,7 +135,8 @@ public class FtpSession implements SessionInterface {
    * @param configuration
    * @param handler
    */
-  public FtpSession(FtpConfiguration configuration, BusinessHandler handler) {
+  public FtpSession(final FtpConfiguration configuration,
+                    final BusinessHandler handler) {
     this.configuration = configuration;
     businessHandler = handler;
   }
@@ -197,7 +198,8 @@ public class FtpSession implements SessionInterface {
    * @param dir
    * @param restart
    */
-  public void setSpecialInit(FtpAuth auth, FtpDir dir, Restart restart) {
+  public void setSpecialInit(final FtpAuth auth, final FtpDir dir,
+                             final Restart restart) {
     ftpAuth = auth;
     ftpDir = dir;
     this.restart = restart;
@@ -225,7 +227,7 @@ public class FtpSession implements SessionInterface {
    *
    * @param command
    */
-  public void setNextCommand(CommandInterface command) {
+  public void setNextCommand(final CommandInterface command) {
     previousCommand = currentCommand;
     currentCommand = (AbstractCommand) command;
     isCurrentCommandFinished = false;
@@ -290,7 +292,7 @@ public class FtpSession implements SessionInterface {
    * @param replyCode the replyCode to set
    * @param answer
    */
-  public void setReplyCode(ReplyCode replyCode, String answer) {
+  public void setReplyCode(final ReplyCode replyCode, final String answer) {
     this.replyCode = replyCode;
     if (answer != null) {
       this.answer = ReplyCode.getFinalMsg(replyCode.getCode(), answer);
@@ -302,7 +304,7 @@ public class FtpSession implements SessionInterface {
   /**
    * @param exception
    */
-  public void setReplyCode(CommandAbstractException exception) {
+  public void setReplyCode(final CommandAbstractException exception) {
     setReplyCode(exception.code, exception.message);
   }
 
@@ -311,7 +313,7 @@ public class FtpSession implements SessionInterface {
    *
    * @param answer
    */
-  public void setExitErrorCode(String answer) {
+  public void setExitErrorCode(final String answer) {
     setReplyCode(
         ReplyCode.REPLY_421_SERVICE_NOT_AVAILABLE_CLOSING_CONTROL_CONNECTION,
         answer);
@@ -322,7 +324,7 @@ public class FtpSession implements SessionInterface {
    *
    * @param answer
    */
-  public void setExitNormalCode(String answer) {
+  public void setExitNormalCode(final String answer) {
     setReplyCode(ReplyCode.REPLY_221_CLOSING_CONTROL_CONNECTION, answer);
   }
 
@@ -361,7 +363,7 @@ public class FtpSession implements SessionInterface {
   /**
    * @param isReady the isReady to set
    */
-  public void setReady(boolean isReady) {
+  public void setReady(final boolean isReady) {
     if (isReady) {
       this.isReady.setSuccess();
     } else {
@@ -424,7 +426,7 @@ public class FtpSession implements SessionInterface {
    *
    * @return the basename from the given path
    */
-  public static String getBasename(String path) {
+  public static String getBasename(final String path) {
     final File file = new File(path);
     return file.getName();
   }
@@ -478,7 +480,7 @@ public class FtpSession implements SessionInterface {
     return isSsl;
   }
 
-  public void setSsl(boolean isSsl) {
+  public void setSsl(final boolean isSsl) {
     this.isSsl = isSsl;
     if (waitForSsl != null) {
       if (isSsl) {
@@ -512,7 +514,7 @@ public class FtpSession implements SessionInterface {
     return isDataSsl;
   }
 
-  public void setDataSsl(boolean isDataSsl) {
+  public void setDataSsl(final boolean isDataSsl) {
     this.isDataSsl = isDataSsl;
   }
 

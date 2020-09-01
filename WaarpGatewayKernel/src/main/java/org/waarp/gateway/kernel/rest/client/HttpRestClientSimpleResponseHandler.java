@@ -77,7 +77,7 @@ public class HttpRestClientSimpleResponseHandler
   private ByteBuf cumulativeBody;
   protected JsonNode jsonObject;
 
-  protected void actionFromResponse(Channel channel) {
+  protected void actionFromResponse(final Channel channel) {
     final RestArgument ra = new RestArgument((ObjectNode) jsonObject);
     if (jsonObject == null) {
       logger.warn("Recv: EMPTY");
@@ -98,8 +98,8 @@ public class HttpRestClientSimpleResponseHandler
   }
 
   @Override
-  protected void channelRead0(ChannelHandlerContext ctx, HttpObject msg)
-      throws Exception {
+  protected void channelRead0(final ChannelHandlerContext ctx,
+                              final HttpObject msg) throws Exception {
     if (msg instanceof HttpResponse) {
       final HttpResponse response = (HttpResponse) msg;
       final HttpResponseStatus status = response.status();
@@ -146,8 +146,8 @@ public class HttpRestClientSimpleResponseHandler
   }
 
   @Override
-  public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
-      throws Exception {
+  public void exceptionCaught(final ChannelHandlerContext ctx,
+                              final Throwable cause) throws Exception {
     final RestFuture restFuture = ctx.channel().attr(RESTARGUMENT).get();
     if (cause instanceof ClosedChannelException) {
       restFuture.setFailure(cause);

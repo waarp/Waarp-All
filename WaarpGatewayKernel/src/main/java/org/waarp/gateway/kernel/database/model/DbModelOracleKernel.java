@@ -45,13 +45,14 @@ public class DbModelOracleKernel extends DbModelOracle {
    *
    * @throws WaarpDatabaseNoConnectionException
    */
-  public DbModelOracleKernel(String dbserver, String dbuser, String dbpasswd)
+  public DbModelOracleKernel(final String dbserver, final String dbuser,
+                             final String dbpasswd)
       throws WaarpDatabaseNoConnectionException {
     super(dbserver, dbuser, dbpasswd);
   }
 
   @Override
-  public void createTables(DbSession session)
+  public void createTables(final DbSession session)
       throws WaarpDatabaseNoConnectionException {
     createTableMonitoring(session);
   }
@@ -131,7 +132,7 @@ public class DbModelOracleKernel extends DbModelOracle {
   }
 
   @Override
-  public void resetSequence(DbSession session, long newvalue)
+  public void resetSequence(final DbSession session, final long newvalue)
       throws WaarpDatabaseNoConnectionException {
     resetSequenceMonitoring(session, newvalue);
   }
@@ -161,7 +162,7 @@ public class DbModelOracleKernel extends DbModelOracle {
   }
 
   @Override
-  public long nextSequence(DbSession dbSession)
+  public long nextSequence(final DbSession dbSession)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException,
              WaarpDatabaseNoDataException {
     return nextSequenceMonitoring(dbSession);
@@ -196,14 +197,14 @@ public class DbModelOracleKernel extends DbModelOracle {
   }
 
   @Override
-  public boolean upgradeDb(DbSession session, String version)
+  public boolean upgradeDb(final DbSession session, final String version)
       throws WaarpDatabaseNoConnectionException {
     return false;
   }
 
   @Override
-  public boolean needUpgradeDb(DbSession session, String version,
-                               boolean tryFix)
+  public boolean needUpgradeDb(final DbSession session, final String version,
+                               final boolean tryFix)
       throws WaarpDatabaseNoConnectionException {
     return false;
   }

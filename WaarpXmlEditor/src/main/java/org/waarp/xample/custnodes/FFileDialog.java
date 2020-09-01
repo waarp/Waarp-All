@@ -84,7 +84,7 @@ public class FFileDialog extends JDialog
   }
 
   @Override
-  protected void processWindowEvent(WindowEvent e) {
+  protected void processWindowEvent(final WindowEvent e) {
     if (e.getID() == WindowEvent.WINDOW_CLOSING) {
       cancel();
     }
@@ -96,7 +96,7 @@ public class FFileDialog extends JDialog
   }
 
   @Override
-  public void actionPerformed(ActionEvent e) {
+  public void actionPerformed(final ActionEvent e) {
     if (!(e.getSource() instanceof JButton)) {
       return;
     }
@@ -113,13 +113,14 @@ public class FFileDialog extends JDialog
   }
 
   @Override
-  public void initCellControl(boolean isEditor) {
+  public void initCellControl(final boolean isEditor) {
     fileChooser.addBtnListener(fileChooser);
   }
 
   @Override
-  public void updateCellControl(boolean isEditor, boolean enabled,
-                                boolean editable, Object data, Params params) {
+  public void updateCellControl(final boolean isEditor, final boolean enabled,
+                                final boolean editable, final Object data,
+                                final Params params) {
     pack();
     this.data = data;
     if (data != null) {
@@ -169,7 +170,7 @@ public class FFileDialog extends JDialog
     final HashSet<String> extensions = new HashSet<String>();
     String description = "";
 
-    FileExtFilter(String mask) {
+    FileExtFilter(final String mask) {
       final StringTokenizer st = new StringTokenizer(mask, "|");
       while (st.hasMoreElements()) {
         String token = st.nextToken().trim();
@@ -205,7 +206,7 @@ public class FFileDialog extends JDialog
     }
 
     @Override
-    public boolean accept(File f) {
+    public boolean accept(final File f) {
       if (f.isDirectory()) {
         return true;
       }
@@ -215,7 +216,7 @@ public class FFileDialog extends JDialog
       if (extensions.isEmpty()) {
         return true;
       }
-      String ext;
+      final String ext;
       final String name = f.getName();
       final int i = name.lastIndexOf('.');
       if (i > 0 && i < name.length() - 1) {
@@ -238,7 +239,7 @@ public class FFileDialog extends JDialog
      */
     private static final long serialVersionUID = -4161876854413783100L;
 
-    public void addBtnListener(Component c) {
+    public void addBtnListener(final Component c) {
       if (c instanceof JButton) {
         ((JButton) c).addActionListener(FFileDialog.this);
       }

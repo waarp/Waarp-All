@@ -51,18 +51,20 @@ class FtpsTemporaryFirstHandler extends ChannelDuplexHandler {
    */
   FtpSession session;
 
-  FtpsTemporaryFirstHandler(FtpConfiguration configuration, boolean active) {
+  FtpsTemporaryFirstHandler(final FtpConfiguration configuration,
+                            final boolean active) {
     this.configuration = configuration;
     this.active = active;
   }
 
   @Override
-  public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
+  public void channelRegistered(final ChannelHandlerContext ctx)
+      throws Exception {
     ctx.channel().config().setAutoRead(false);
     super.channelRegistered(ctx);
   }
 
-  protected void setSession(Channel channel) {
+  protected void setSession(final Channel channel) {
     // First get the ftpSession from inetaddresses
     for (int i = 0; i < FtpInternalConfiguration.RETRYNB; i++) {
       session = configuration.getFtpSessionNoRemove(channel, active);
@@ -87,7 +89,8 @@ class FtpsTemporaryFirstHandler extends ChannelDuplexHandler {
     }
   }
 
-  private void superChannelActive(ChannelHandlerContext ctx) throws Exception {
+  private void superChannelActive(final ChannelHandlerContext ctx)
+      throws Exception {
     super.channelActive(ctx);
   }
 
@@ -121,7 +124,7 @@ class FtpsTemporaryFirstHandler extends ChannelDuplexHandler {
                                   new GenericFutureListener<Future<? super Channel>>() {
                                     @Override
                                     public void operationComplete(
-                                        Future<? super Channel> future)
+                                        final Future<? super Channel> future)
                                         throws Exception {
                                       try {
                                         logger.debug(

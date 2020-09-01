@@ -35,12 +35,12 @@ import static org.waarp.openr66.protocol.configuration.Configuration.*;
  */
 public class NetworkServerInitializerProxy extends NetworkServerInitializer {
 
-  public NetworkServerInitializerProxy(boolean server) {
+  public NetworkServerInitializerProxy(final boolean server) {
     super(server);
   }
 
   @Override
-  protected void initChannel(SocketChannel ch) {
+  protected void initChannel(final SocketChannel ch) {
     final ChannelPipeline pipeline = ch.pipeline();
     pipeline.addLast(TIMEOUT, new IdleStateHandler(true, 0, 0, configuration
         .getTimeoutCon(), TimeUnit.MILLISECONDS));

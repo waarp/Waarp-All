@@ -63,15 +63,15 @@ public class LocalExecSslServer {
    *
    * @throws Exception
    */
-  public static void main(String[] args) throws Exception {
+  public static void main(final String[] args) throws Exception {
     WaarpLoggerFactory
         .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));
     int port = 9999;
     InetAddress addr;
     long delay = LocalExecDefaultResult.MAXWAITPROCESS;
-    String keyStoreFilename;
-    String keyStorePasswd;
-    String keyPassword;
+    final String keyStoreFilename;
+    final String keyStorePasswd;
+    final String keyPassword;
     String trustStoreFilename = null;
     String trustStorePasswd = null;
     final byte[] loop = { 127, 0, 0, 1 };

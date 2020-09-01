@@ -323,7 +323,7 @@ public enum ReplyCode {
    * @param code
    * @param mesg
    */
-  ReplyCode(int code, String mesg) {
+  ReplyCode(final int code, final String mesg) {
     this.code = code;
     this.mesg = getFinalMsg(code, mesg);
   }
@@ -337,7 +337,7 @@ public enum ReplyCode {
    *
    * @return the final formatted message
    */
-  public static String getFinalMsg(int code, String msg) {
+  public static String getFinalMsg(final int code, final String msg) {
     final StringBuilder builder = new StringBuilder();
     builder.append(code);
     if (msg.indexOf('\n') == -1) {
@@ -376,7 +376,7 @@ public enum ReplyCode {
    *
    * @param code
    */
-  ReplyCode(int code) {
+  ReplyCode(final int code) {
     this.code = code;
     mesg = name().substring(6).replace('_', ' ') + CRLF;
   }
@@ -402,7 +402,7 @@ public enum ReplyCode {
    *
    * @throws InvalidArgumentException
    */
-  public static ReplyCode getReplyCode(int code)
+  public static ReplyCode getReplyCode(final int code)
       throws InvalidArgumentException {
     switch (code) {
       case 0:

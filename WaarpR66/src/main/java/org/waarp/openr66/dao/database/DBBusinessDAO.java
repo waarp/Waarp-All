@@ -66,7 +66,7 @@ public class DBBusinessDAO extends StatementExecutor<Business>
       OTHERS_FIELD + " = ?, " + UPDATED_INFO_FIELD + " = ? WHERE " +
       HOSTID_FIELD + " = ?";
 
-  public DBBusinessDAO(Connection con) {
+  public DBBusinessDAO(final Connection con) {
     super(con);
   }
 
@@ -129,7 +129,7 @@ public class DBBusinessDAO extends StatementExecutor<Business>
   }
 
   @Override
-  public Business getFromResultSet(ResultSet set) throws SQLException {
+  public Business getFromResultSet(final ResultSet set) throws SQLException {
     return new Business(set.getString(HOSTID_FIELD),
                         set.getString(BUSINESS_FIELD),
                         set.getString(ROLES_FIELD),

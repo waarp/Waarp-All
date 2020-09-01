@@ -181,7 +181,7 @@ public abstract class HttpRestHandler
 
     public final HttpMethod method;
 
-    METHOD(HttpMethod method) {
+    METHOD(final HttpMethod method) {
       this.method = method;
     }
   }
@@ -202,7 +202,7 @@ public abstract class HttpRestHandler
    * @throws IOException
    * @throws CryptoException
    */
-  public static void initialize(String tempPath) {
+  public static void initialize(final String tempPath) {
     TempPath = tempPath;
     final File file = new File(tempPath);
     file.mkdirs();
@@ -250,7 +250,7 @@ public abstract class HttpRestHandler
    */
   protected ByteBuf cumulativeBody;
 
-  protected HttpRestHandler(RestConfiguration config) {
+  protected HttpRestHandler(final RestConfiguration config) {
     restConfiguration = config;
     rootHandler = new RootOptionsRestMethodHandler(config);
   }
@@ -262,18 +262,18 @@ public abstract class HttpRestHandler
     /**
      * @param handler
      */
-    public HttpCleanChannelFutureListener(HttpRestHandler handler) {
+    public HttpCleanChannelFutureListener(final HttpRestHandler handler) {
       this.handler = handler;
     }
 
     @Override
-    public void operationComplete(ChannelFuture future) throws Exception {
+    public void operationComplete(final ChannelFuture future) throws Exception {
       handler.clean();
     }
   }
 
   @Override
-  public void channelActive(ChannelHandlerContext ctx) throws Exception {
+  public void channelActive(final ChannelHandlerContext ctx) throws Exception {
     if (group != null) {
       group.add(ctx.channel());
     }
@@ -349,7 +349,7 @@ public abstract class HttpRestHandler
    *
    * @param httpResponse
    */
-  protected void setCookies(FullHttpResponse httpResponse) {
+  protected void setCookies(final FullHttpResponse httpResponse) {
     if (response == null) {
       return;
     }
@@ -401,8 +401,8 @@ public abstract class HttpRestHandler
   }
 
   @Override
-  protected void channelRead0(ChannelHandlerContext ctx, HttpObject msg)
-      throws Exception {
+  protected void channelRead0(final ChannelHandlerContext ctx,
+                              final HttpObject msg) throws Exception {
     logger.debug("Msg Received");
     try {
       if (msg instanceof HttpRequest) {
@@ -566,7 +566,7 @@ public abstract class HttpRestHandler
    * @throws HttpIncorrectRequestException
    */
   protected void readAllHttpData() throws HttpIncorrectRequestException {
-    List<InterfaceHttpData> datas;
+    final List<InterfaceHttpData> datas;
     try {
       datas = decoder.getBodyHttpDatas();
     } catch (final NotEnoughDataDecoderException e1) {
@@ -587,7 +587,7 @@ public abstract class HttpRestHandler
    *
    * @throws HttpIncorrectRequestException
    */
-  protected void readHttpData(InterfaceHttpData data)
+  protected void readHttpData(final InterfaceHttpData data)
       throws HttpIncorrectRequestException {
     if (data.getHttpDataType() == HttpDataType.Attribute) {
       final ObjectNode body = arguments.getBody();
@@ -617,7 +617,7 @@ public abstract class HttpRestHandler
    *
    * @param ctx
    */
-  protected void forceClosing(ChannelHandlerContext ctx) {
+  protected void forceClosing(final ChannelHandlerContext ctx) {
     if (status == HttpResponseStatus.OK) {
       status = HttpResponseStatus.INTERNAL_SERVER_ERROR;
     }
@@ -642,10 +642,10 @@ public abstract class HttpRestHandler
    * @return the Http Response according to the status and the content if not
    *     null (setting the CONTENT_LENGTH)
    */
-  public FullHttpResponse getResponse(ByteBuf content) {
+  public FullHttpResponse getResponse(final ByteBuf content) {
     // Decide whether to close the connection or not.
     if (request == null) {
-      FullHttpResponse httpResponse;
+      final FullHttpResponse httpResponse;
       if (content == null) {
         httpResponse =
             new DefaultFullHttpResponse(HttpVersion.HTTP_1_0, status);
@@ -669,7 +669,7 @@ public abstract class HttpRestHandler
       keepAlive = false;
     }
     // Build the response object.
-    FullHttpResponse httpResponse;
+    final FullHttpResponse httpResponse;
     if (content != null) {
       httpResponse =
           new DefaultFullHttpResponse(request.protocolVersion(), status,
@@ -698,7 +698,8 @@ public abstract class HttpRestHandler
    * @throws HttpInvalidAuthenticationException
    * @throws HttpNotFoundRequestException
    */
-  protected void bodyChunk(ChannelHandlerContext ctx, HttpContent chunk)
+  protected void bodyChunk(final ChannelHandlerContext ctx,
+                           final HttpContent chunk)
       throws HttpIncorrectRequestException, HttpInvalidAuthenticationException,
              HttpNotFoundRequestException {
     // New chunk is received: only for Post!
@@ -735,8 +736,8 @@ public abstract class HttpRestHandler
     }
   }
 
-  protected void finalizeSend(ChannelHandlerContext ctx) {
-    ChannelFuture future;
+  protected void finalizeSend(final ChannelHandlerContext ctx) {
+    final ChannelFuture future;
     if (arguments.getMethod() == METHOD.OPTIONS) {
       future = handler.sendOptionsResponse(this, ctx, response, status);
     } else {
@@ -757,7 +758,7 @@ public abstract class HttpRestHandler
    *
    * @throws HttpIncorrectRequestException
    */
-  protected Object getBodyJsonArgs(ByteBuf data)
+  protected Object getBodyJsonArgs(final ByteBuf data)
       throws HttpIncorrectRequestException {
     if (data == null || data.readableBytes() == 0) {
       return null;
@@ -786,8 +787,8 @@ public abstract class HttpRestHandler
   }
 
   @Override
-  public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
-      throws Exception {
+  public void exceptionCaught(final ChannelHandlerContext ctx,
+                              final Throwable cause) throws Exception {
     if (ctx.channel().isActive()) {
       if (cause != null && cause.getMessage() != null) {
         logger.warn("Exception {}", cause.getMessage(), cause);
@@ -814,7 +815,8 @@ public abstract class HttpRestHandler
   }
 
   @Override
-  public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+  public void channelInactive(final ChannelHandlerContext ctx)
+      throws Exception {
     super.channelInactive(ctx);
     clean();
   }
@@ -829,7 +831,7 @@ public abstract class HttpRestHandler
   /**
    * @param status the status to set
    */
-  public void setStatus(HttpResponseStatus status) {
+  public void setStatus(final HttpResponseStatus status) {
     this.status = status;
   }
 
@@ -850,7 +852,7 @@ public abstract class HttpRestHandler
   /**
    * @param willClose the willClose to set
    */
-  public void setWillClose(boolean willClose) {
+  public void setWillClose(final boolean willClose) {
     this.willClose = willClose;
   }
 }

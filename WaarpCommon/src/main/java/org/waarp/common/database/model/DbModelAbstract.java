@@ -80,7 +80,7 @@ public abstract class DbModelAbstract implements DbModel {
    *
    * @throws WaarpDatabaseNoConnectionException
    */
-  private void recreateSession(DbSession dbSession)
+  private void recreateSession(final DbSession dbSession)
       throws WaarpDatabaseNoConnectionException {
     DbAdmin admin = dbSession.getAdmin();
     if (admin == null) {
@@ -90,7 +90,7 @@ public abstract class DbModelAbstract implements DbModel {
         admin = DbConstant.noCommitAdmin;
       }
     }
-    DbSession newdbSession;
+    final DbSession newdbSession;
     newdbSession = new DbSession(admin, dbSession.isReadOnly());
     try {
       if (dbSession.getConn() != null) {
@@ -112,7 +112,7 @@ public abstract class DbModelAbstract implements DbModel {
    *
    * @param dbSession
    */
-  protected void closeInternalConnection(DbSession dbSession) {
+  protected void closeInternalConnection(final DbSession dbSession) {
     try {
       if (dbSession.getConn() != null) {
         dbSession.getConn().close();
@@ -127,7 +127,7 @@ public abstract class DbModelAbstract implements DbModel {
   }
 
   @Override
-  public void validConnection(DbSession dbSession)
+  public void validConnection(final DbSession dbSession)
       throws WaarpDatabaseNoConnectionException {
     // try to limit the number of check!
     synchronized (dbSession) {
@@ -190,7 +190,7 @@ public abstract class DbModelAbstract implements DbModel {
     return false;
   }
 
-  protected void validConnectionSelect(DbSession dbSession)
+  protected void validConnectionSelect(final DbSession dbSession)
       throws WaarpDatabaseNoConnectionException {
     // try to limit the number of check!
     synchronized (dbSession) {
@@ -228,7 +228,7 @@ public abstract class DbModelAbstract implements DbModel {
     }
   }
 
-  private void closingStatement(Statement stmt) {
+  private void closingStatement(final Statement stmt) {
     try {
       if (stmt != null) {
         stmt.close();
@@ -298,8 +298,8 @@ public abstract class DbModelAbstract implements DbModel {
   protected abstract String validConnectionString();
 
   @Override
-  public Connection getDbConnection(String server, String user, String passwd)
-      throws SQLException {
+  public Connection getDbConnection(final String server, final String user,
+                                    final String passwd) throws SQLException {
     // Default implementation
     return DriverManager.getConnection(server, user, passwd);
   }

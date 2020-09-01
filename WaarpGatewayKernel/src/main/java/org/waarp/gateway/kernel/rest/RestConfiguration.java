@@ -37,11 +37,11 @@ public class RestConfiguration {
 
     public final byte mask;
 
-    CRUD(int mask) {
+    CRUD(final int mask) {
       this.mask = (byte) mask;
     }
 
-    public boolean isValid(byte tocheck) {
+    public boolean isValid(final byte tocheck) {
       return (tocheck & mask) != 0;
     }
   }
@@ -93,7 +93,7 @@ public class RestConfiguration {
    *
    * @param authentKey
    */
-  public void initializeKey(String authentKey) {
+  public void initializeKey(final String authentKey) {
     setHmacSha256(new HmacSha256());
     getHmacSha256().setSecretKey(authentKey.getBytes(WaarpStringUtils.UTF8));
   }
@@ -106,7 +106,7 @@ public class RestConfiguration {
    * @throws CryptoException
    * @throws IOException
    */
-  public void initializeKey(File authentKey)
+  public void initializeKey(final File authentKey)
       throws CryptoException, IOException {
     setHmacSha256(new HmacSha256());
     getHmacSha256().setSecretKey(authentKey);
@@ -114,7 +114,7 @@ public class RestConfiguration {
 
   @Override
   public String toString() {
-    StringBuilder result = new StringBuilder(
+    final StringBuilder result = new StringBuilder(
         "{address: " + getRestAddress() + ", port: " + getRestPort() +
         ", ssl: " + isRestSsl() + ", time: " + getRestTimeLimit() +
         ", authent:" + isRestAuthenticated() + ", signature: " +
@@ -141,7 +141,7 @@ public class RestConfiguration {
   /**
    * @param restAddress the restAddress to set
    */
-  public void setRestAddress(String restAddress) {
+  public void setRestAddress(final String restAddress) {
     this.restAddress = restAddress;
   }
 
@@ -155,7 +155,7 @@ public class RestConfiguration {
   /**
    * @param restPort the restPort to set
    */
-  public void setRestPort(int restPort) {
+  public void setRestPort(final int restPort) {
     this.restPort = restPort;
   }
 
@@ -169,7 +169,7 @@ public class RestConfiguration {
   /**
    * @param restSsl the restSsl to set
    */
-  public void setRestSsl(boolean restSsl) {
+  public void setRestSsl(final boolean restSsl) {
     this.restSsl = restSsl;
   }
 
@@ -183,7 +183,7 @@ public class RestConfiguration {
   /**
    * @param restTimeLimit the restTimeLimit to set
    */
-  public void setRestTimeLimit(long restTimeLimit) {
+  public void setRestTimeLimit(final long restTimeLimit) {
     this.restTimeLimit = restTimeLimit;
   }
 
@@ -197,7 +197,7 @@ public class RestConfiguration {
   /**
    * @param restAuthenticated the restAuthenticated to set
    */
-  public void setRestAuthenticated(boolean restAuthenticated) {
+  public void setRestAuthenticated(final boolean restAuthenticated) {
     this.restAuthenticated = restAuthenticated;
   }
 
@@ -211,7 +211,7 @@ public class RestConfiguration {
   /**
    * @param restSignature the restSignature to set
    */
-  public void setRestSignature(boolean restSignature) {
+  public void setRestSignature(final boolean restSignature) {
     this.restSignature = restSignature;
   }
 
@@ -225,7 +225,7 @@ public class RestConfiguration {
   /**
    * @param hmacSha256 the hmacSha256 to set
    */
-  public void setHmacSha256(HmacSha256 hmacSha256) {
+  public void setHmacSha256(final HmacSha256 hmacSha256) {
     this.hmacSha256 = hmacSha256;
   }
 
@@ -239,7 +239,7 @@ public class RestConfiguration {
   /**
    * @param resthandlersCrud the resthandlersCrud to set
    */
-  public void setResthandlersCrud(byte[] resthandlersCrud) {
+  public void setResthandlersCrud(final byte[] resthandlersCrud) {
     this.resthandlersCrud = resthandlersCrud;
   }
 }

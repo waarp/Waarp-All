@@ -34,7 +34,7 @@ public class XmlHash {
     hashtable = new Hashtable<String, XmlValue>();
   }
 
-  public XmlHash(XmlValue[] values) {
+  public XmlHash(final XmlValue[] values) {
     hashtable = new Hashtable<String, XmlValue>();
     for (final XmlValue xmlValue : values) {
       if (xmlValue.isMultiple()) {
@@ -47,7 +47,7 @@ public class XmlHash {
     }
   }
 
-  public XmlHash(XmlValue value) {
+  public XmlHash(final XmlValue value) {
     hashtable = new Hashtable<String, XmlValue>();
     if (value == null) {
       return;
@@ -61,11 +61,11 @@ public class XmlHash {
     }
   }
 
-  public XmlValue get(String name) {
+  public XmlValue get(final String name) {
     return hashtable.get(name);
   }
 
-  public XmlValue put(XmlValue value) {
+  public XmlValue put(final XmlValue value) {
     if (value.isMultiple()) {
       return hashtable.put(value.getName(), value);
     } else if (value.isSubXml()) {
@@ -99,19 +99,19 @@ public class XmlHash {
     return hashtable.elements();
   }
 
-  public boolean contains(XmlValue value) {
+  public boolean contains(final XmlValue value) {
     return hashtable.contains(value);
   }
 
-  public boolean containsValue(XmlValue value) {
+  public boolean containsValue(final XmlValue value) {
     return hashtable.containsValue(value);
   }
 
-  public boolean containsKey(String key) {
+  public boolean containsKey(final String key) {
     return hashtable.containsKey(key);
   }
 
-  public XmlValue remove(String key) {
+  public XmlValue remove(final String key) {
     return hashtable.remove(key);
   }
 

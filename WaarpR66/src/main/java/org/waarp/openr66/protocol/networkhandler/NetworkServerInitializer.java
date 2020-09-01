@@ -52,12 +52,12 @@ public class NetworkServerInitializer
 
   protected final boolean server;
 
-  public NetworkServerInitializer(boolean server) {
+  public NetworkServerInitializer(final boolean server) {
     this.server = server;
   }
 
   @Override
-  protected void initChannel(SocketChannel ch) throws Exception {
+  protected void initChannel(final SocketChannel ch) throws Exception {
     final ChannelPipeline pipeline = ch.pipeline();
     logger.debug("Create IdleStateHandler with {} ms",
                  Configuration.configuration.getTimeoutCon());

@@ -45,9 +45,10 @@ public class BlockRequestPacket extends AbstractLocalPacket {
    *
    * @throws OpenR66ProtocolPacketException
    */
-  public static BlockRequestPacket createFromBuffer(int headerLength,
-                                                    int middleLength,
-                                                    int endLength, ByteBuf buf)
+  public static BlockRequestPacket createFromBuffer(final int headerLength,
+                                                    final int middleLength,
+                                                    final int endLength,
+                                                    final ByteBuf buf)
       throws OpenR66ProtocolPacketException {
     if (headerLength - 2 <= 0) {
       throw new OpenR66ProtocolPacketException("Not enough data");
@@ -63,7 +64,7 @@ public class BlockRequestPacket extends AbstractLocalPacket {
    * @param block
    * @param spassword
    */
-  public BlockRequestPacket(boolean block, byte[] spassword) {
+  public BlockRequestPacket(final boolean block, final byte[] spassword) {
     this.block = block;
     key = spassword;
   }
@@ -74,12 +75,13 @@ public class BlockRequestPacket extends AbstractLocalPacket {
   }
 
   @Override
-  public void createAllBuffers(LocalChannelReference lcr, int networkHeader)
+  public void createAllBuffers(final LocalChannelReference lcr,
+                               final int networkHeader)
       throws OpenR66ProtocolPacketException {
     end = Unpooled.EMPTY_BUFFER;
     middle = Unpooled.EMPTY_BUFFER;
     final int globalSize = networkHeader + LOCAL_HEADER_SIZE + 1 + key.length;
-    int offset = networkHeader + LOCAL_HEADER_SIZE;
+    final int offset = networkHeader + LOCAL_HEADER_SIZE;
     global = ByteBufAllocator.DEFAULT.buffer(globalSize, globalSize);
     header = WaarpNettyUtil.slice(global, offset, 1 + key.length);
     header.writeByte(block? 1 : 0);
@@ -87,13 +89,13 @@ public class BlockRequestPacket extends AbstractLocalPacket {
   }
 
   @Override
-  public void createEnd(LocalChannelReference lcr)
+  public void createEnd(final LocalChannelReference lcr)
       throws OpenR66ProtocolPacketException {
     end = Unpooled.EMPTY_BUFFER;
   }
 
   @Override
-  public void createHeader(LocalChannelReference lcr)
+  public void createHeader(final LocalChannelReference lcr)
       throws OpenR66ProtocolPacketException {
     header = ByteBufAllocator.DEFAULT.buffer(1 + key.length, 1 + key.length);
     header.writeByte(block? 1 : 0);
@@ -101,7 +103,7 @@ public class BlockRequestPacket extends AbstractLocalPacket {
   }
 
   @Override
-  public void createMiddle(LocalChannelReference lcr)
+  public void createMiddle(final LocalChannelReference lcr)
       throws OpenR66ProtocolPacketException {
     middle = Unpooled.EMPTY_BUFFER;
   }

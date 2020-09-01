@@ -55,9 +55,10 @@ public class InformationPacket extends AbstractLocalPacket {
    *
    * @throws OpenR66ProtocolPacketException
    */
-  public static InformationPacket createFromBuffer(int headerLength,
-                                                   int middleLength,
-                                                   int endLength, ByteBuf buf)
+  public static InformationPacket createFromBuffer(final int headerLength,
+                                                   final int middleLength,
+                                                   final int endLength,
+                                                   final ByteBuf buf)
       throws OpenR66ProtocolPacketException {
     if (headerLength - 1 <= 0) {
       throw new OpenR66ProtocolPacketException(NOT_ENOUGH_DATA);
@@ -82,7 +83,8 @@ public class InformationPacket extends AbstractLocalPacket {
    * @param request
    * @param filename
    */
-  public InformationPacket(String rulename, byte request, String filename) {
+  public InformationPacket(final String rulename, final byte request,
+                           final String filename) {
     this.rulename = rulename;
     requestedInfo = request;
     this.filename = filename;
@@ -94,13 +96,13 @@ public class InformationPacket extends AbstractLocalPacket {
   }
 
   @Override
-  public void createAllBuffers(LocalChannelReference lcr, int networkHeader)
+  public void createAllBuffers(final LocalChannelReference lcr,
+                               final int networkHeader)
       throws OpenR66ProtocolPacketException {
     if (rulename == null) {
       throw new OpenR66ProtocolPacketException(NOT_ENOUGH_DATA);
     }
-    final byte[] headerBytes =
-        rulename != null? rulename.getBytes() : EMPTY_ARRAY;
+    final byte[] headerBytes = rulename.getBytes();
     final int headerSize = headerBytes.length;
     final int middleSize = 1;
     final byte[] endBytes = filename != null? filename.getBytes() : EMPTY_ARRAY;
@@ -110,9 +112,7 @@ public class InformationPacket extends AbstractLocalPacket {
     int offset = networkHeader + LOCAL_HEADER_SIZE;
     global = ByteBufAllocator.DEFAULT.buffer(globalSize, globalSize);
     header = WaarpNettyUtil.slice(global, offset, headerSize);
-    if (rulename != null) {
-      header.writeBytes(headerBytes);
-    }
+    header.writeBytes(headerBytes);
     offset += headerSize;
     middle = WaarpNettyUtil.slice(global, offset, middleSize);
     middle.writeByte(requestedInfo);
@@ -124,14 +124,14 @@ public class InformationPacket extends AbstractLocalPacket {
   }
 
   @Override
-  public void createEnd(LocalChannelReference lcr) {
+  public void createEnd(final LocalChannelReference lcr) {
     if (filename != null) {
       end = Unpooled.wrappedBuffer(filename.getBytes());
     }
   }
 
   @Override
-  public void createHeader(LocalChannelReference lcr)
+  public void createHeader(final LocalChannelReference lcr)
       throws OpenR66ProtocolPacketException {
     if (rulename == null) {
       throw new OpenR66ProtocolPacketException(NOT_ENOUGH_DATA);
@@ -140,7 +140,7 @@ public class InformationPacket extends AbstractLocalPacket {
   }
 
   @Override
-  public void createMiddle(LocalChannelReference lcr) {
+  public void createMiddle(final LocalChannelReference lcr) {
     final byte[] newbytes = { requestedInfo };
     middle = Unpooled.wrappedBuffer(newbytes);
   }

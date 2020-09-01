@@ -39,7 +39,7 @@ public class Reply550Exception extends CommandAbstractException {
    *
    * @param message
    */
-  public Reply550Exception(String message) {
+  public Reply550Exception(final String message) {
     super(ReplyCode.REPLY_550_REQUESTED_ACTION_NOT_TAKEN, message);
   }
 
@@ -51,7 +51,7 @@ public class Reply550Exception extends CommandAbstractException {
    * @param message
    * @param e
    */
-  public Reply550Exception(String message, Throwable e) {
+  public Reply550Exception(final String message, final Throwable e) {
     super(ReplyCode.REPLY_550_REQUESTED_ACTION_NOT_TAKEN, message, e);
   }
 

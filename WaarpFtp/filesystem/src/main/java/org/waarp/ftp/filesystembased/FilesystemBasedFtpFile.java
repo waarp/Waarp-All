@@ -59,9 +59,9 @@ public abstract class FilesystemBasedFtpFile extends FilesystemBasedFileImpl
    *
    * @throws CommandAbstractException
    */
-  protected FilesystemBasedFtpFile(FtpSession session,
-                                   FilesystemBasedFtpDir dir, String path,
-                                   boolean append)
+  protected FilesystemBasedFtpFile(final FtpSession session,
+                                   final FilesystemBasedFtpDir dir,
+                                   final String path, final boolean append)
       throws CommandAbstractException {
     super(session, dir, path, append);
   }
@@ -98,7 +98,7 @@ public abstract class FilesystemBasedFtpFile extends FilesystemBasedFileImpl
         logger.warn("DataNetworkHandler was not ready", e);
         return;
       }
-      Channel channel;
+      final Channel channel;
       try {
         channel = ((FtpSession) session).getDataConn().getCurrentDataChannel();
       } catch (final FtpNoConnectionException e) {

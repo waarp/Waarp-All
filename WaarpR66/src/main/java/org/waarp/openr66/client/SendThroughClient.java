@@ -123,10 +123,11 @@ public abstract class SendThroughClient extends AbstractTransfer {
    * @param networkTransaction
    * @param id
    */
-  protected SendThroughClient(R66Future future, String remoteHost,
-                              String filename, String rulename, String fileinfo,
-                              boolean isMD5, int blocksize, long id,
-                              NetworkTransaction networkTransaction) {
+  protected SendThroughClient(final R66Future future, final String remoteHost,
+                              final String filename, final String rulename,
+                              final String fileinfo, final boolean isMD5,
+                              final int blocksize, final long id,
+                              final NetworkTransaction networkTransaction) {
     super(SendThroughClient.class, future, filename, rulename, fileinfo, isMD5,
           remoteHost, blocksize, id, null);
     this.networkTransaction = networkTransaction;
@@ -153,7 +154,7 @@ public abstract class SendThroughClient extends AbstractTransfer {
     if (logger == null) {
       logger = WaarpLoggerFactory.getLogger(SendThroughClient.class);
     }
-    DbRule rule;
+    final DbRule rule;
     try {
       rule = new DbRule(transferArgs.getRulename());
     } catch (final WaarpDatabaseException e) {
@@ -246,7 +247,7 @@ public abstract class SendThroughClient extends AbstractTransfer {
       // now start the send from external data
       return true;
     } finally {
-      if (taskRunner != null && future.isFailed() || nolog) {
+      if (taskRunner != null && (future.isFailed() || nolog)) {
         try {
           taskRunner.delete();
         } catch (final WaarpDatabaseException ignored) {
@@ -332,7 +333,7 @@ public abstract class SendThroughClient extends AbstractTransfer {
    *
    * @param e
    */
-  public void transferInError(OpenR66Exception e) {
+  public void transferInError(final OpenR66Exception e) {
     if (!localChannelReference.getFutureEndTransfer().getResult()
                               .isAnswered()) {
       final R66Result result =
@@ -366,7 +367,7 @@ public abstract class SendThroughClient extends AbstractTransfer {
    * @throws OpenR66ProtocolPacketException
    * @throws OpenR66ProtocolSystemException
    */
-  public ChannelFuture writeWhenPossible(DataBlock block)
+  public ChannelFuture writeWhenPossible(final DataBlock block)
       throws OpenR66RunnerErrorException, OpenR66ProtocolPacketException,
              OpenR66ProtocolSystemException {
     return RetrieveRunner.writeWhenPossible(block, localChannelReference, null);
@@ -379,7 +380,7 @@ public abstract class SendThroughClient extends AbstractTransfer {
    *
    * @return the DataBlock associated to the data
    */
-  public DataBlock transformToDataBlock(byte[] data) {
+  public DataBlock transformToDataBlock(final byte[] data) {
     final DataBlock block = new DataBlock();
     if (data == null) {
       // last block

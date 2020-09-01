@@ -73,8 +73,8 @@ public class FHistoryButton extends JComponent
   transient final ArrayList<ActionListener> actionListeners =
       new ArrayList<ActionListener>(1);
 
-  public FHistoryButton(ImageIcon icon, String leftTipText,
-                        String rightTipText) {
+  public FHistoryButton(final ImageIcon icon, final String leftTipText,
+                        final String rightTipText) {
     leftButton.setFocusPainted(false);
     setIcon(icon);
     final ImageIcon icoArrow = FLoader.getIcon(this, "DropDown.gif");
@@ -94,14 +94,14 @@ public class FHistoryButton extends JComponent
     setItems(null);
   }
 
-  public void setIcon(ImageIcon icon) {
+  public void setIcon(final ImageIcon icon) {
     leftButton.setIcon(icon);
     if (icon != null) {
       leftButton.setDisabledIcon(FadingFilter.fade(icon));
     }
   }
 
-  public void setItems(List<History> items) {
+  public void setItems(final List<History> items) {
     popupMenu.removeAll();
     this.items.clear();
     if (items != null) {
@@ -129,7 +129,7 @@ public class FHistoryButton extends JComponent
   }
 
   @Override
-  public void actionPerformed(ActionEvent e) {
+  public void actionPerformed(final ActionEvent e) {
     if (e.getSource() instanceof JMenuItem) {
       final int index = popupMenu.getComponentIndex((Component) e.getSource());
       if (index >= 0 && index < items.size()) {
@@ -153,7 +153,7 @@ public class FHistoryButton extends JComponent
   }
 
   @Override
-  public void addItemListener(ItemListener l) {
+  public void addItemListener(final ItemListener l) {
     if (!itemListeners.contains(l)) {
       itemListeners.add(l);
     }
@@ -165,22 +165,22 @@ public class FHistoryButton extends JComponent
   }
 
   @Override
-  public void removeItemListener(ItemListener l) {
+  public void removeItemListener(final ItemListener l) {
     itemListeners.remove(l);
   }
 
-  public void addActionListener(ActionListener l) {
+  public void addActionListener(final ActionListener l) {
     if (!actionListeners.contains(l)) {
       actionListeners.add(l);
     }
   }
 
-  public void removeActionListener(ActionListener l) {
+  public void removeActionListener(final ActionListener l) {
     actionListeners.remove(l);
   }
 
   @Override
-  public void setEnabled(boolean enabled) {
+  public void setEnabled(final boolean enabled) {
     super.setEnabled(enabled);
     leftButton.setEnabled(enabled);
     rightButton.setEnabled(enabled);
@@ -217,12 +217,12 @@ public class FHistoryButton extends JComponent
     }
 
     @Override
-    public void mouseClicked(MouseEvent e) {
+    public void mouseClicked(final MouseEvent e) {
       // nothing
     }
 
     @Override
-    public void mousePressed(MouseEvent e) {
+    public void mousePressed(final MouseEvent e) {
       if (!isEnabled()) {
         return;
       }
@@ -235,27 +235,27 @@ public class FHistoryButton extends JComponent
     }
 
     @Override
-    public void mouseReleased(MouseEvent e) {
+    public void mouseReleased(final MouseEvent e) {
       // nothing
     }
 
     @Override
-    public void mouseEntered(MouseEvent e) {
+    public void mouseEntered(final MouseEvent e) {
       // nothing
     }
 
     @Override
-    public void mouseExited(MouseEvent e) {
+    public void mouseExited(final MouseEvent e) {
       // nothing
     }
 
     @Override
-    public void popupMenuCanceled(PopupMenuEvent e) {
+    public void popupMenuCanceled(final PopupMenuEvent e) {
       // nothing
     }
 
     @Override
-    public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
+    public void popupMenuWillBecomeInvisible(final PopupMenuEvent e) {
       if (b) {
         b = false;
       } else {
@@ -264,7 +264,7 @@ public class FHistoryButton extends JComponent
     }
 
     @Override
-    public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
+    public void popupMenuWillBecomeVisible(final PopupMenuEvent e) {
       // nothing
     }
   }

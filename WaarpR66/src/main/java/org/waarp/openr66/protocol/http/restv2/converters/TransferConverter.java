@@ -114,7 +114,7 @@ public final class TransferConverter {
      */
     public final boolean ascend;
 
-    Order(String column, boolean ascend) {
+    Order(final String column, final boolean ascend) {
       this.column = column;
       this.ascend = ascend;
     }
@@ -130,7 +130,7 @@ public final class TransferConverter {
    *
    * @return the corresponding ObjectNode
    */
-  public static ObjectNode transferToNode(Transfer transfer) {
+  public static ObjectNode transferToNode(final Transfer transfer) {
     final ObjectNode node = new ObjectNode(JsonNodeFactory.instance);
     node.put(TRANSFER_ID, transfer.getId());
     node.put(GLOBAL_STEP, transfer.getGlobalStep().toString());
@@ -169,7 +169,7 @@ public final class TransferConverter {
    * @throws InternalServerErrorException if an unexpected error
    *     occurred
    */
-  public static Transfer nodeToNewTransfer(ObjectNode object) {
+  public static Transfer nodeToNewTransfer(final ObjectNode object) {
     final Transfer defaultTransfer =
         new Transfer(null, null, -1, false, null, null, ZERO_COPY_CHUNK_SIZE);
     defaultTransfer.setRequester(serverName());
@@ -213,7 +213,7 @@ public final class TransferConverter {
    *
    * @return {@code true} if the rule exists, {@code false} otherwise.
    */
-  private static boolean ruleExists(String rule) {
+  private static boolean ruleExists(final String rule) {
     RuleDAO ruleDAO = null;
     try {
       ruleDAO = DAO_FACTORY.getRuleDAO();
@@ -232,7 +232,7 @@ public final class TransferConverter {
    *
    * @return {@code true} if the host exists, {@code false} otherwise.
    */
-  private static boolean hostExists(String host) {
+  private static boolean hostExists(final String host) {
     HostDAO hostDAO = null;
     try {
       hostDAO = DAO_FACTORY.getHostDAO();
@@ -253,7 +253,7 @@ public final class TransferConverter {
    * @return {@code true} if the host is allowed to use the rule, {@code
    *     false} otherwise
    */
-  private static boolean canUseRule(String host, String rule) {
+  private static boolean canUseRule(final String host, final String rule) {
     RuleDAO ruleDAO = null;
     try {
       ruleDAO = DAO_FACTORY.getRuleDAO();
@@ -278,7 +278,7 @@ public final class TransferConverter {
    *
    * @return the list of all missing fields
    */
-  private static List<RestError> checkRequiredFields(Transfer transfer) {
+  private static List<RestError> checkRequiredFields(final Transfer transfer) {
     final List<RestError> errors = new ArrayList<RestError>();
     if (transfer.getRule() == null || transfer.getRule().isEmpty()) {
       errors.add(MISSING_FIELD(RULE));
@@ -308,7 +308,8 @@ public final class TransferConverter {
    * @throws RestErrorException if the given ObjectNode does not
    *     represent a Transfer object.
    */
-  private static Transfer parseNode(ObjectNode object, Transfer transfer) {
+  private static Transfer parseNode(final ObjectNode object,
+                                    final Transfer transfer) {
     final List<RestError> errors = new ArrayList<RestError>();
 
     final Iterator<Map.Entry<String, JsonNode>> fields = object.fields();
@@ -341,7 +342,7 @@ public final class TransferConverter {
             try {
               transfer.setRequester(
                   Configuration.configuration.getHostId(value.asText()));
-            } catch (WaarpDatabaseException e) {
+            } catch (final WaarpDatabaseException e) {
               // Ignore !!
             }
           } else {

@@ -55,8 +55,8 @@ public class WaarpSecureTrustManagerFactory extends TrustManagerFactorySpi {
    *
    * @throws CryptoException
    */
-  public WaarpSecureTrustManagerFactory(TrustManagerFactory tmf,
-                                        boolean clientAuthent)
+  public WaarpSecureTrustManagerFactory(final TrustManagerFactory tmf,
+                                        final boolean clientAuthent)
       throws CryptoException {
     ggTrustManager = new WaarpX509TrustManager(tmf);
     trustManager = new TrustManager[] { ggTrustManager };
@@ -91,12 +91,12 @@ public class WaarpSecureTrustManagerFactory extends TrustManagerFactorySpi {
   }
 
   @Override
-  protected void engineInit(KeyStore arg0) {
+  protected void engineInit(final KeyStore arg0) {
     // Unused
   }
 
   @Override
-  protected void engineInit(ManagerFactoryParameters arg0) {
+  protected void engineInit(final ManagerFactoryParameters arg0) {
     // Unused
   }
 

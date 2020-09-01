@@ -184,7 +184,7 @@ public final class SystemPropertyUtil {
    * specified
    * {@code key} exists.
    */
-  public static boolean contains(String key) {
+  public static boolean contains(final String key) {
     ParametersChecker.checkParameter("Key", key);
     return PROPS.containsKey(key);
   }
@@ -196,7 +196,7 @@ public final class SystemPropertyUtil {
    *
    * @return the property value or {@code null}
    */
-  public static String get(String key) {
+  public static String get(final String key) {
     return get(key, null);
   }
 
@@ -223,7 +223,7 @@ public final class SystemPropertyUtil {
 
     try {
       value = ParametersChecker.checkSanityString(value);
-    } catch (InvalidArgumentException e) {
+    } catch (final InvalidArgumentException e) {
       SysErrLogger.FAKE_LOGGER.syserr(INVALID_PROPERTY + key, e);
       return def;
     }
@@ -266,7 +266,7 @@ public final class SystemPropertyUtil {
     }
     try {
       ParametersChecker.checkSanityString(value);
-    } catch (InvalidArgumentException e) {
+    } catch (final InvalidArgumentException e) {
       SysErrLogger.FAKE_LOGGER.syserr(INVALID_PROPERTY + key, e);
       return def;
     }
@@ -310,7 +310,7 @@ public final class SystemPropertyUtil {
     }
     try {
       ParametersChecker.checkSanityString(value);
-    } catch (InvalidArgumentException e) {
+    } catch (final InvalidArgumentException e) {
       SysErrLogger.FAKE_LOGGER.syserr(INVALID_PROPERTY + key, e);
       return def;
     }
@@ -354,7 +354,7 @@ public final class SystemPropertyUtil {
     }
     try {
       ParametersChecker.checkSanityString(value);
-    } catch (InvalidArgumentException e) {
+    } catch (final InvalidArgumentException e) {
       SysErrLogger.FAKE_LOGGER.syserr(INVALID_PROPERTY + key, e);
       return def;
     }
@@ -375,7 +375,7 @@ public final class SystemPropertyUtil {
    *     an access to the specified
    *     property is not allowed.
    */
-  public static boolean getBoolean(String key, boolean def) {
+  public static boolean getBoolean(final String key, final boolean def) {
     ParametersChecker.checkParameter("Key", key);
 
     String value = PROPS.getProperty(key);
@@ -412,7 +412,7 @@ public final class SystemPropertyUtil {
    *     an access to the specified
    *     property is not allowed.
    */
-  public static int getInt(String key, int def) {
+  public static int getInt(final String key, final int def) {
     ParametersChecker.checkParameter("Key", key);
 
     String value = PROPS.getProperty(key);
@@ -445,7 +445,7 @@ public final class SystemPropertyUtil {
    *     an access to the specified
    *     property is not allowed.
    */
-  public static long getLong(String key, long def) {
+  public static long getLong(final String key, final long def) {
     ParametersChecker.checkParameter("Key", key);
 
     String value = PROPS.getProperty(key);
@@ -483,7 +483,7 @@ public final class SystemPropertyUtil {
    *
    * @throws IllegalArgumentException key or def null
    */
-  public static String getAndSet(String key, String def) {
+  public static String getAndSet(final String key, final String def) {
     ParametersChecker.checkParameter("Key", key);
     if (def == null) {
       throw new IllegalArgumentException("Def cannot be null");
@@ -510,7 +510,7 @@ public final class SystemPropertyUtil {
    *
    * @throws IllegalArgumentException key null
    */
-  public static boolean getAndSet(String key, boolean def) {
+  public static boolean getAndSet(final String key, final boolean def) {
     ParametersChecker.checkParameter("Key", key);
     if (!PROPS.containsKey(key)) {
       System.setProperty(key, Boolean.toString(def));
@@ -534,7 +534,7 @@ public final class SystemPropertyUtil {
    *
    * @throws IllegalArgumentException key null
    */
-  public static int getAndSet(String key, int def) {
+  public static int getAndSet(final String key, final int def) {
     ParametersChecker.checkParameter("Key", key);
     if (!PROPS.containsKey(key)) {
       System.setProperty(key, Integer.toString(def));
@@ -558,7 +558,7 @@ public final class SystemPropertyUtil {
    *
    * @throws IllegalArgumentException key null
    */
-  public static long getAndSet(String key, long def) {
+  public static long getAndSet(final String key, final long def) {
     ParametersChecker.checkParameter("Key", key);
     if (!PROPS.containsKey(key)) {
       System.setProperty(key, Long.toString(def));
@@ -579,7 +579,7 @@ public final class SystemPropertyUtil {
    *
    * @throws IllegalArgumentException key or def null
    */
-  public static String set(String key, String def) {
+  public static String set(final String key, final String def) {
     ParametersChecker.checkParameter("Key", key);
     if (def == null) {
       throw new IllegalArgumentException("Def cannot be null");
@@ -604,7 +604,7 @@ public final class SystemPropertyUtil {
    *
    * @throws IllegalArgumentException key null
    */
-  public static boolean set(String key, boolean def) {
+  public static boolean set(final String key, final boolean def) {
     ParametersChecker.checkParameter("Key", key);
     boolean old = false;
     if (PROPS.containsKey(key)) {
@@ -626,7 +626,7 @@ public final class SystemPropertyUtil {
    *
    * @throws IllegalArgumentException key null
    */
-  public static int set(String key, int def) {
+  public static int set(final String key, final int def) {
     ParametersChecker.checkParameter("Key", key);
     int old = 0;
     if (PROPS.containsKey(key)) {
@@ -648,7 +648,7 @@ public final class SystemPropertyUtil {
    *
    * @throws IllegalArgumentException key null
    */
-  public static long set(String key, long def) {
+  public static long set(final String key, final long def) {
     ParametersChecker.checkParameter("Key", key);
     long old = 0;
     if (PROPS.containsKey(key)) {
@@ -667,7 +667,7 @@ public final class SystemPropertyUtil {
    *
    * @throws IllegalArgumentException key null
    */
-  public static void clear(String key) {
+  public static void clear(final String key) {
     ParametersChecker.checkParameter("Key", key);
     PROPS.remove(key);
     System.clearProperty(key);
@@ -681,7 +681,7 @@ public final class SystemPropertyUtil {
    *
    * @throws IllegalArgumentException out null
    */
-  public static void debug(PrintStream out) {
+  public static void debug(final PrintStream out) {
     ParametersChecker.checkParameter("Out", out);
     PROPS.list(out);
   }

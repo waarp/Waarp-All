@@ -26,12 +26,13 @@ package org.waarp.icap;
 public class IcapException extends Exception {
   private final IcapError error;
 
-  public IcapException(String message, IcapError error) {
+  public IcapException(final String message, final IcapError error) {
     super(message + "(" + error.getCode() + ":" + error.getMessage() + ")");
     this.error = error;
   }
 
-  public IcapException(String message, Throwable cause, IcapError error) {
+  public IcapException(final String message, final Throwable cause,
+                       final IcapError error) {
     super(message + "(" + error.getCode() + ":" + error.getMessage() + ")",
           cause);
     this.error = error;

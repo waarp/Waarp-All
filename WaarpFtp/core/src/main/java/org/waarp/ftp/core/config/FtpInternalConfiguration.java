@@ -106,11 +106,6 @@ public class FtpInternalConfiguration {
   private final EventLoopGroup execWorker;
 
   /**
-   * Bootstrap for Command server
-   */
-  private ServerBootstrap serverBootstrap;
-
-  /**
    * List of all Data Channels to enable the close call on them using Netty
    * ChannelGroup
    */
@@ -197,7 +192,7 @@ public class FtpInternalConfiguration {
      *
      * @param channel
      */
-    public BindAddress(Channel channel) {
+    public BindAddress(final Channel channel) {
       parent = channel;
       nbBind.set(0);
     }
@@ -220,7 +215,7 @@ public class FtpInternalConfiguration {
    *
    * @param configuration
    */
-  public FtpInternalConfiguration(FtpConfiguration configuration) {
+  public FtpInternalConfiguration(final FtpConfiguration configuration) {
     this.configuration = configuration;
     isUnix = !DetectionUtils.isWindows();
     configuration.getShutdownConfiguration().timeout =
@@ -309,7 +304,10 @@ public class FtpInternalConfiguration {
 
     logger.debug("Start command connections {}", configuration.getServerPort());
     // Main Command server
-    serverBootstrap = new ServerBootstrap();
+    /**
+     * Bootstrap for Command server
+     */
+    final ServerBootstrap serverBootstrap = new ServerBootstrap();
     WaarpNettyUtil.setServerBootstrap(serverBootstrap, execWorker,
                                       (int) configuration.getTimeoutCon(),
                                       configuration.getBlocksize());
@@ -320,12 +318,12 @@ public class FtpInternalConfiguration {
       serverBootstrap.childHandler(
           new FtpInitializer(configuration.businessHandler, configuration));
     }
-    InetSocketAddress socketAddress =
+    final InetSocketAddress socketAddress =
         new InetSocketAddress(configuration.getServerPort());
     ChannelFuture future = serverBootstrap.bind(socketAddress);
     try {
       future = future.sync();
-    } catch (InterruptedException e) {//NOSONAR
+    } catch (final InterruptedException e) {//NOSONAR
       logger.error("Cannot start command conections", e);
       throw new FtpNoConnectionException("Can't initiate the FTP server", e);
     }
@@ -365,8 +363,9 @@ public class FtpInternalConfiguration {
    * @param fullIp
    * @param session
    */
-  public void setNewFtpSession(InetAddress ipOnly, InetSocketAddress fullIp,
-                               FtpSession session) {
+  public void setNewFtpSession(final InetAddress ipOnly,
+                               final InetSocketAddress fullIp,
+                               final FtpSession session) {
     ftpSessionReference.setNewFtpSession(ipOnly, fullIp, session);
   }
 
@@ -378,8 +377,8 @@ public class FtpInternalConfiguration {
    *
    * @return the FtpSession if it exists associated to this channel
    */
-  public FtpSession getFtpSession(Channel channel, boolean active,
-                                  boolean remove) {
+  public FtpSession getFtpSession(final Channel channel, final boolean active,
+                                  final boolean remove) {
     if (active) {
       return ftpSessionReference.getActiveFtpSession(channel, remove);
     } else {
@@ -393,7 +392,8 @@ public class FtpInternalConfiguration {
    * @param ipOnly
    * @param fullIp
    */
-  public void delFtpSession(InetAddress ipOnly, InetSocketAddress fullIp) {
+  public void delFtpSession(final InetAddress ipOnly,
+                            final InetSocketAddress fullIp) {
     ftpSessionReference.delFtpSession(ipOnly, fullIp);
   }
 
@@ -405,7 +405,8 @@ public class FtpInternalConfiguration {
    *
    * @return True if the couple is present
    */
-  public boolean hasFtpSession(InetAddress ipOnly, InetSocketAddress fullIp) {
+  public boolean hasFtpSession(final InetAddress ipOnly,
+                               final InetSocketAddress fullIp) {
     return ftpSessionReference.contains(ipOnly, fullIp);
   }
 
@@ -424,16 +425,16 @@ public class FtpInternalConfiguration {
    *
    * @throws Reply425Exception in case the channel cannot be opened
    */
-  public void bindPassive(InetSocketAddress address, boolean ssl)
+  public void bindPassive(final InetSocketAddress address, final boolean ssl)
       throws Reply425Exception {
     configuration.bindLock();
     try {
       BindAddress bindAddress = hashBindPassiveDataConn.get(address);
       if (bindAddress == null) {
         logger.debug("Bind really to {}", address);
-        Channel parentChannel;
+        final Channel parentChannel;
         try {
-          ChannelFuture future;
+          final ChannelFuture future;
           if (ssl) {
             future = passiveSslBootstrap.bind(address);
           } else {
@@ -475,7 +476,7 @@ public class FtpInternalConfiguration {
    *
    * @param address
    */
-  public void unbindPassive(InetSocketAddress address) {
+  public void unbindPassive(final InetSocketAddress address) {
     configuration.bindLock();
     try {
       final BindAddress bindAddress = hashBindPassiveDataConn.get(address);
@@ -525,7 +526,7 @@ public class FtpInternalConfiguration {
    *
    * @return the ActiveBootstrap
    */
-  public Bootstrap getActiveBootstrap(boolean ssl) {
+  public Bootstrap getActiveBootstrap(final boolean ssl) {
     if (ssl) {
       return activeSslBootstrap;
     } else {
@@ -595,14 +596,14 @@ public class FtpInternalConfiguration {
   /**
    * @param usingNativeSsl the usingNativeSsl to set
    */
-  public void setUsingNativeSsl(boolean usingNativeSsl) {
+  public void setUsingNativeSsl(final boolean usingNativeSsl) {
     this.usingNativeSsl = usingNativeSsl;
   }
 
   /**
    * @param acceptAuthProt the acceptAuthProt to set
    */
-  public void setAcceptAuthProt(boolean acceptAuthProt) {
+  public void setAcceptAuthProt(final boolean acceptAuthProt) {
     this.acceptAuthProt = acceptAuthProt;
   }
 

@@ -68,18 +68,18 @@ public class HttpSessionAbstract implements HttpSession {
    * @throws IllegalArgumentException
    */
   protected R66BusinessInterface checkAuthentR66Business(
-      HttpSession httpSession, R66Session session, final HttpAuthent authent)
-      throws IllegalArgumentException {
+      final HttpSession httpSession, final R66Session session,
+      final HttpAuthent authent) throws IllegalArgumentException {
     session.setBusinessObject(
         Configuration.configuration.getR66BusinessFactory()
                                    .getBusinessInterface(session));
-    R66BusinessInterface business = session.getBusinessObject();
+    final R66BusinessInterface business = session.getBusinessObject();
     session.newState(R66FiniteDualStates.STARTUP);
     try {
       if (business != null) {
         business.checkAtStartup(session);
       }
-    } catch (OpenR66RunnerErrorException e) {
+    } catch (final OpenR66RunnerErrorException e) {
       httpSession.error(e, business);
     }
     authent.checkAuthent(this, session);
@@ -87,7 +87,7 @@ public class HttpSessionAbstract implements HttpSession {
       if (business != null) {
         business.checkAtAuthentication(session);
       }
-    } catch (OpenR66RunnerErrorException e) {
+    } catch (final OpenR66RunnerErrorException e) {
       httpSession.error(e, business);
     }
     session.newState(R66FiniteDualStates.AUTHENTR);
@@ -118,7 +118,7 @@ public class HttpSessionAbstract implements HttpSession {
                                          final String comment,
                                          final int chunkSize,
                                          final R66BusinessInterface business,
-                                         boolean uploadMode)
+                                         final boolean uploadMode)
       throws IllegalArgumentException {
     session.newState(REQUESTR);
     session.setBlockSize(chunkSize);
@@ -131,35 +131,33 @@ public class HttpSessionAbstract implements HttpSession {
       throw new IllegalArgumentException(e);
     }
     final String requested = Configuration.configuration.getHostId();
-    final String requester = user;
     DbTaskRunner runner = null;
     try {
       // Try to reload it
-      runner =
-          new DbTaskRunner(session, rule, identifier, requester, requested);
+      runner = new DbTaskRunner(session, rule, identifier, user, requested);
       runner.setSender(!uploadMode);
-      logger.debug("{} {} {}", identifier, requester, requested);
+      logger.debug("{} {} {}", identifier, user, requested);
       if (runner.isAllDone()) {
         error(new IllegalArgumentException("Already finished"), business);
       }
-    } catch (WaarpDatabaseNoDataException e) {
+    } catch (final WaarpDatabaseNoDataException e) {
       // Not found so create it
-      Transfer transfer =
-          new Transfer(requester, rulename, rule.getMode(), !uploadMode,
-                       filename, comment, chunkSize);
+      final Transfer transfer =
+          new Transfer(user, rulename, rule.getMode(), !uploadMode, filename,
+                       comment, chunkSize);
       transfer.setRequested(requested);
-      transfer.setRequester(requester);
+      transfer.setRequester(user);
       transfer.setId(identifier);
       runner = new DbTaskRunner(transfer);
       try {
         runner.insert();
         runner = new DbTaskRunner(identifier, runner.getRequester(),
                                   runner.getRequested());
-        logger.debug("{} {} {}", identifier, requester, requested);
-      } catch (WaarpDatabaseException ex) {
+        logger.debug("{} {} {}", identifier, user, requested);
+      } catch (final WaarpDatabaseException ex) {
         error(ex, business);
       }
-    } catch (WaarpDatabaseException e) {
+    } catch (final WaarpDatabaseException e) {
       error(e, business);
       throw new IllegalArgumentException(e);
     }
@@ -175,7 +173,7 @@ public class HttpSessionAbstract implements HttpSession {
     try {
       session.setRunner(runner);
       session.setFileBeforePreRunner();
-    } catch (OpenR66RunnerErrorException e) {
+    } catch (final OpenR66RunnerErrorException e) {
       if (runner.getErrorInfo() == ErrorCode.InitOk ||
           runner.getErrorInfo() == ErrorCode.PreProcessingOk ||
           runner.getErrorInfo() == ErrorCode.TransferOk) {
@@ -200,7 +198,7 @@ public class HttpSessionAbstract implements HttpSession {
   }
 
   @Override
-  public void error(Exception e, R66BusinessInterface business)
+  public void error(final Exception e, final R66BusinessInterface business)
       throws IllegalArgumentException {
     logger.error(e);
     if (business != null) {
@@ -208,13 +206,13 @@ public class HttpSessionAbstract implements HttpSession {
     }
     session.newState(R66FiniteDualStates.ERROR);
     if (session.getRunner() != null) {
-      DbTaskRunner runner = session.getRunner();
+      final DbTaskRunner runner = session.getRunner();
       runner.setErrorExecutionStatus(ErrorCode.TransferError);
       runner.setErrorTask();
       try {
         runner.run();
         runner.saveStatus();
-      } catch (OpenR66RunnerErrorException ignore) {
+      } catch (final OpenR66RunnerErrorException ignore) {
         logger.debug(ignore);
       }
     }
@@ -236,7 +234,7 @@ public class HttpSessionAbstract implements HttpSession {
     runner.changeUpdatedInfo(UpdatedInfo.RUNNING);
     try {
       runner.saveStatus();
-    } catch (OpenR66RunnerErrorException e) {
+    } catch (final OpenR66RunnerErrorException e) {
       error(e, business);
     }
     // Now create the associated file
@@ -249,9 +247,9 @@ public class HttpSessionAbstract implements HttpSession {
         runner.saveStatus();
         session.setFileAfterPreRunner(true);
       }
-    } catch (OpenR66RunnerErrorException e) {
+    } catch (final OpenR66RunnerErrorException e) {
       error(e, business);
-    } catch (CommandAbstractException e) {
+    } catch (final CommandAbstractException e) {
       error(e, business);
     }
     session.newState(DATAR);
@@ -280,7 +278,7 @@ public class HttpSessionAbstract implements HttpSession {
    * Run post tasks on finished transfer
    */
   protected void runPostTask() {
-    DbTaskRunner runner = session.getRunner();
+    final DbTaskRunner runner = session.getRunner();
     runner.setPostTask();
     try {
       session.newState(ENDTRANSFERR);
@@ -288,7 +286,7 @@ public class HttpSessionAbstract implements HttpSession {
       runner.run();
       runner.saveStatus();
       session.newState(ENDREQUESTS);
-    } catch (OpenR66RunnerErrorException e) {
+    } catch (final OpenR66RunnerErrorException e) {
       error(e, session.getBusinessObject());
     }
     session.newState(CLOSEDCHANNEL);
@@ -296,7 +294,7 @@ public class HttpSessionAbstract implements HttpSession {
     runner.setAllDone();
     try {
       runner.saveStatus();
-    } catch (OpenR66RunnerErrorException ignored) {
+    } catch (final OpenR66RunnerErrorException ignored) {
       // nothing
     }
     runner.clean();

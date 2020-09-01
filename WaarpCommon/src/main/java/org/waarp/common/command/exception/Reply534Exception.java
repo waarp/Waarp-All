@@ -36,7 +36,7 @@ public class Reply534Exception extends CommandAbstractException {
    *
    * @param message
    */
-  public Reply534Exception(String message) {
+  public Reply534Exception(final String message) {
     super(ReplyCode.REPLY_534_REQUEST_DENIED_FOR_POLICY_REASONS, message);
   }
 

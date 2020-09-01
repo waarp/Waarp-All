@@ -30,15 +30,15 @@ public class DAONoDataException extends DAOException {
    */
   private static final long serialVersionUID = 8255533138751009944L;
 
-  public DAONoDataException(String message) {
+  public DAONoDataException(final String message) {
     super(message);
   }
 
-  public DAONoDataException(Throwable cause) {
+  public DAONoDataException(final Throwable cause) {
     super(cause);
   }
 
-  public DAONoDataException(String message, Throwable cause) {
+  public DAONoDataException(final String message, final Throwable cause) {
     super(message, cause);
   }
 }

@@ -60,14 +60,14 @@ public class HttpSession implements SessionInterface {
   /**
    * @param method the method to set
    */
-  public void setMethod(HttpMethod method) {
+  public void setMethod(final HttpMethod method) {
     this.method = method;
   }
 
   /**
    * @param httpAuth the httpAuth to set
    */
-  public void setHttpAuth(HttpAuthInterface httpAuth) {
+  public void setHttpAuth(final HttpAuthInterface httpAuth) {
     this.httpAuth = httpAuth;
     dir = new CommonDirImpl(this, new FilesystemBasedOptsMLSxImpl());
     try {
@@ -120,7 +120,7 @@ public class HttpSession implements SessionInterface {
   /**
    * @param logid the logid to set
    */
-  public void setLogid(long logid) {
+  public void setLogid(final long logid) {
     this.logid = logid;
   }
 
@@ -139,7 +139,7 @@ public class HttpSession implements SessionInterface {
   /**
    * @param currentCommand the currentCommand to set
    */
-  public void setCurrentCommand(PageRole currentCommand) {
+  public void setCurrentCommand(final PageRole currentCommand) {
     this.currentCommand = currentCommand;
   }
 
@@ -153,7 +153,7 @@ public class HttpSession implements SessionInterface {
   /**
    * @param cookieSession the cookieSession to set
    */
-  public void setCookieSession(String cookieSession) {
+  public void setCookieSession(final String cookieSession) {
     this.cookieSession = cookieSession;
   }
 
@@ -167,7 +167,7 @@ public class HttpSession implements SessionInterface {
   /**
    * @param filename the filename to set
    */
-  public void setFilename(String filename) {
+  public void setFilename(final String filename) {
     this.filename = filename;
   }
 

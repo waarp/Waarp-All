@@ -67,7 +67,7 @@ public class PartnerConfiguration {
     final String name;
     final Object defaultValue;
 
-    FIELDS(Object def) {
+    FIELDS(final Object def) {
       name = name();
       defaultValue = def;
     }
@@ -77,7 +77,7 @@ public class PartnerConfiguration {
   private final ObjectNode root = JsonHandler.createObjectNode();
   private final boolean useJson;
   private boolean changeFileInfoEnabled;
-  private DigestAlgo digestAlgo;
+  private final DigestAlgo digestAlgo;
 
   /**
    * Constructor for an external HostId
@@ -85,11 +85,11 @@ public class PartnerConfiguration {
    * @param id
    * @param json mainly the version information
    */
-  public PartnerConfiguration(String id, String json) {
+  public PartnerConfiguration(final String id, final String json) {
     this.id = id;
     JsonHandler.setValue(root, FIELDS.HOSTID, id);
     final int pos = json.lastIndexOf('{');
-    String version;
+    final String version;
     if (pos > 1) {
       version = json.substring(0, pos - 1);
     } else {
@@ -144,7 +144,7 @@ public class PartnerConfiguration {
    *
    * @param id
    */
-  public PartnerConfiguration(String id) {
+  public PartnerConfiguration(final String id) {
     this.id = id;
     JsonHandler.setValue(root, FIELDS.HOSTID, id);
     JsonHandler.setValue(root, FIELDS.VERSION, Version.ID);
@@ -245,7 +245,7 @@ public class PartnerConfiguration {
     return getVersion() + '.' + JsonHandler.writeAsString(root);
   }
 
-  public static final DigestAlgo getDigestAlgo(String algo) {
+  public static final DigestAlgo getDigestAlgo(final String algo) {
     for (final DigestAlgo alg : DigestAlgo.values()) {
       if (alg.algoName.equals(algo)) {
         return alg;
@@ -264,7 +264,7 @@ public class PartnerConfiguration {
    *
    * @return the separator to be used
    */
-  public static final String getSeparator(String remoteHost) {
+  public static final String getSeparator(final String remoteHost) {
     logger.debug("Versions: search: " + remoteHost + " in {}",
                  Configuration.configuration.getVersions());
     final PartnerConfiguration partner =
@@ -283,21 +283,21 @@ public class PartnerConfiguration {
    *
    * @return True if version2 >= version1
    */
-  public static final boolean isVersion2GEQVersion1(String version1,
-                                                    String version2) {
+  public static final boolean isVersion2GEQVersion1(final String version1,
+                                                    final String version2) {
     if (version1 == null || version2 == null) {
       return false;
     }
-    int major1;
-    int rank1;
-    int subversion1;
+    final int major1;
+    final int rank1;
+    final int subversion1;
     String[] vals = version1.split("\\.");
     major1 = Integer.parseInt(vals[0]);
     rank1 = Integer.parseInt(vals[1]);
     subversion1 = Integer.parseInt(vals[2]);
-    int major2;
-    int rank2;
-    int subversion2;
+    final int major2;
+    final int rank2;
+    final int subversion2;
     vals = version2.split("\\.");
     major2 = Integer.parseInt(vals[0]);
     rank2 = Integer.parseInt(vals[1]);
@@ -320,21 +320,21 @@ public class PartnerConfiguration {
    *
    * @return True if version2 > version1
    */
-  public static final boolean isVersion2GTVersion1(String version1,
-                                                   String version2) {
+  public static final boolean isVersion2GTVersion1(final String version1,
+                                                   final String version2) {
     if (version1 == null || version2 == null) {
       return false;
     }
-    int major1;
-    int rank1;
-    int subversion1;
+    final int major1;
+    final int rank1;
+    final int subversion1;
     String[] vals = version1.split("\\.");
     major1 = Integer.parseInt(vals[0]);
     rank1 = Integer.parseInt(vals[1]);
     subversion1 = Integer.parseInt(vals[2]);
-    int major2;
-    int rank2;
-    int subversion2;
+    final int major2;
+    final int rank2;
+    final int subversion2;
     vals = version2.split("\\.");
     major2 = Integer.parseInt(vals[0]);
     rank2 = Integer.parseInt(vals[1]);
@@ -354,7 +354,7 @@ public class PartnerConfiguration {
    *
    * @return True if this host is referenced as using Json
    */
-  public static final boolean useJson(String host) {
+  public static final boolean useJson(final String host) {
     logger.debug("UseJson host: '" + host + "':" +
                  (Configuration.configuration.getVersions().containsKey(host)?
                      Configuration.configuration.getVersions().get(host)
@@ -376,7 +376,7 @@ public class PartnerConfiguration {
   /**
    * @param separatorFIELD the sEPARATOR_FIELD to set
    */
-  public static void setSEPARATOR_FIELD(String separatorFIELD) {
+  public static void setSEPARATOR_FIELD(final String separatorFIELD) {
     SEPARATOR_FIELD = separatorFIELD;
   }
 }

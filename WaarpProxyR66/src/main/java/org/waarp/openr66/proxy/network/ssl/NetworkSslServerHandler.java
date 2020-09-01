@@ -39,7 +39,7 @@ public class NetworkSslServerHandler extends NetworkServerHandler {
   /**
    * @param isServer
    */
-  public NetworkSslServerHandler(boolean isServer) {
+  public NetworkSslServerHandler(final boolean isServer) {
     super(isServer);
   }
 
@@ -54,12 +54,12 @@ public class NetworkSslServerHandler extends NetworkServerHandler {
    *
    * @return True if the SSL handshake is over and OK, else False
    */
-  public static boolean isSslConnectedChannel(Channel channel) {
+  public static boolean isSslConnectedChannel(final Channel channel) {
     return WaarpSslUtility.waitForHandshake(channel);
   }
 
   @Override
-  public void channelActive(ChannelHandlerContext ctx) throws Exception {
+  public void channelActive(final ChannelHandlerContext ctx) throws Exception {
     final Channel channel = ctx.channel();
     logger.debug("Add channel to ssl");
     WaarpSslUtility.addSslOpenedChannel(channel);
@@ -72,7 +72,7 @@ public class NetworkSslServerHandler extends NetworkServerHandler {
       sslHandler.handshakeFuture().addListener(
           new GenericFutureListener<Future<? super Channel>>() {
             @Override
-            public void operationComplete(Future<? super Channel> future)
+            public void operationComplete(final Future<? super Channel> future)
                 throws Exception {
               if (!future.isSuccess() && configuration.getR66Mib() != null) {
                 configuration.getR66Mib().notifyError("SSL Connection Error",

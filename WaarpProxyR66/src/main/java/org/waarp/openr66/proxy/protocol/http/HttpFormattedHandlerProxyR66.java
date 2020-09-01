@@ -53,7 +53,7 @@ public class HttpFormattedHandlerProxyR66 extends HttpFormattedHandler {
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(HttpFormattedHandlerProxyR66.class);
 
-  private static enum REQUEST {
+  private enum REQUEST {
     index("index.html"), error("monitoring_header.html", "monitoring_end.html"),
     statusxml("");
 
@@ -66,7 +66,7 @@ public class HttpFormattedHandlerProxyR66 extends HttpFormattedHandler {
      *
      * @param uniquefile
      */
-    REQUEST(String uniquefile) {
+    REQUEST(final String uniquefile) {
       header = uniquefile;
       end = uniquefile;
     }
@@ -75,7 +75,7 @@ public class HttpFormattedHandlerProxyR66 extends HttpFormattedHandler {
      * @param header
      * @param end
      */
-    REQUEST(String header, String end) {
+    REQUEST(final String header, final String end) {
       this.header = header;
       this.end = end;
     }
@@ -85,12 +85,12 @@ public class HttpFormattedHandlerProxyR66 extends HttpFormattedHandler {
      *
      * @return the content of the unique file
      */
-    public String readFileUnique(HttpFormattedHandlerProxyR66 handler) {
+    public String readFileUnique(final HttpFormattedHandlerProxyR66 handler) {
       return handler.readFileHeaderInternal(
           configuration.getHttpBasePath() + MONITOR + header);
     }
 
-    public String readHeader(HttpFormattedHandlerProxyR66 handler) {
+    public String readHeader(final HttpFormattedHandlerProxyR66 handler) {
       return handler.readFileHeaderInternal(
           configuration.getHttpBasePath() + MONITOR + header);
     }
@@ -103,8 +103,8 @@ public class HttpFormattedHandlerProxyR66 extends HttpFormattedHandler {
 
   final R66Session authentHttp = new R66Session();
 
-  private String readFileHeaderInternal(String filename) {
-    String value;
+  private String readFileHeaderInternal(final String filename) {
+    final String value;
     try {
       value = WaarpStringUtils.readFileException(filename);
     } catch (final InvalidArgumentException e) {
@@ -141,8 +141,8 @@ public class HttpFormattedHandlerProxyR66 extends HttpFormattedHandler {
   }
 
   @Override
-  protected void channelRead0(ChannelHandlerContext ctx, FullHttpRequest msg)
-      throws Exception {
+  protected void channelRead0(final ChannelHandlerContext ctx,
+                              final FullHttpRequest msg) throws Exception {
     isCurrentRequestXml = false;
     isCurrentRequestJson = false;
     status = HttpResponseStatus.OK;
@@ -200,8 +200,8 @@ public class HttpFormattedHandlerProxyR66 extends HttpFormattedHandler {
   }
 
   @Override
-  public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
-      throws Exception {
+  public void exceptionCaught(final ChannelHandlerContext ctx,
+                              final Throwable cause) throws Exception {
     final OpenR66Exception exception = OpenR66ExceptionTrappedFactory
         .getExceptionFromTrappedException(ctx.channel(), cause);
     if (exception != null) {
@@ -221,13 +221,14 @@ public class HttpFormattedHandlerProxyR66 extends HttpFormattedHandler {
   }
 
   @Override
-  public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+  public void channelInactive(final ChannelHandlerContext ctx)
+      throws Exception {
     super.channelInactive(ctx);
     logger.debug("Closed");
   }
 
   @Override
-  public void channelActive(ChannelHandlerContext ctx) throws Exception {
+  public void channelActive(final ChannelHandlerContext ctx) throws Exception {
     logger.debug("Connected");
     authentHttp.getAuth()
                .specialNoSessionAuth(false, configuration.getHostId());

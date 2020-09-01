@@ -59,7 +59,7 @@ public final class LimitsConverter {
    *
    * @return the converted ObjectNode
    */
-  public static ObjectNode limitToNode(Limit limits) {
+  public static ObjectNode limitToNode(final Limit limits) {
     final ObjectNode node = new ObjectNode(JsonNodeFactory.instance);
     node.put(READ_GLOBAL_LIMIT, limits.getReadGlobalLimit());
     node.put(WRITE_GLOBAL_LIMIT, limits.getWriteGlobalLimit());
@@ -80,7 +80,7 @@ public final class LimitsConverter {
    * @throws RestErrorException if the given ObjectNode does not
    *     represent a Limit object
    */
-  public static Limit nodeToNewLimit(ObjectNode object) {
+  public static Limit nodeToNewLimit(final ObjectNode object) {
     final Limit emptyLimits = new Limit(serverName(), 0, 0, 0, 0, 0);
     return nodeToUpdatedLimit(object, emptyLimits);
   }
@@ -99,7 +99,8 @@ public final class LimitsConverter {
    * @throws RestErrorException if the given ObjectNode does not
    *     represent a Limit object
    */
-  public static Limit nodeToUpdatedLimit(ObjectNode object, Limit oldLimits) {
+  public static Limit nodeToUpdatedLimit(final ObjectNode object,
+                                         final Limit oldLimits) {
     final List<RestError> errors = new ArrayList<RestError>();
 
     while (object.fields().hasNext()) {

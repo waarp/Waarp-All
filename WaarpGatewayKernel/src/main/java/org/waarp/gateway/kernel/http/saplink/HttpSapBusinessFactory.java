@@ -81,7 +81,7 @@ public class HttpSapBusinessFactory extends HttpBusinessFactory {
      */
     public final String value;
 
-    SapField(String value) {
+    SapField(final String value) {
       this.value = value;
     }
 
@@ -221,7 +221,7 @@ public class HttpSapBusinessFactory extends HttpBusinessFactory {
     String nextinform;
     String uri;
     String errorpage;
-    String classname;
+    final String classname;
     PageRole pageRole;
     LinkedHashMap<String, AbstractHttpField> linkedHashMap;
 
@@ -410,8 +410,8 @@ public class HttpSapBusinessFactory extends HttpBusinessFactory {
   }
 
   private static void addDefaultFields(
-      LinkedHashMap<String, AbstractHttpField> linkedHashMap,
-      SapField[][] fields) {
+      final LinkedHashMap<String, AbstractHttpField> linkedHashMap,
+      final SapField[][] fields) {
     String fieldname;
     String fieldinfo;
     String fieldvalue;

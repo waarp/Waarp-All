@@ -63,7 +63,7 @@ public class FtpSessionReference {
      *
      * @param channel
      */
-    public P2PAddress(Channel channel) {
+    public P2PAddress(final Channel channel) {
       ipOnly = FtpChannelUtils.getRemoteInetAddress(channel);
       fullIp = (InetSocketAddress) channel.localAddress();
     }
@@ -74,8 +74,8 @@ public class FtpSessionReference {
      * @param address
      * @param inetSocketAddress
      */
-    public P2PAddress(InetAddress address,
-                      InetSocketAddress inetSocketAddress) {
+    public P2PAddress(final InetAddress address,
+                      final InetSocketAddress inetSocketAddress) {
       ipOnly = address;
       fullIp = inetSocketAddress;
     }
@@ -88,7 +88,7 @@ public class FtpSessionReference {
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(final Object o) {
       if (o == null) {
         return false;
       }
@@ -129,8 +129,9 @@ public class FtpSessionReference {
    * @param fullIp
    * @param session
    */
-  public void setNewFtpSession(InetAddress ipOnly, InetSocketAddress fullIp,
-                               FtpSession session) {
+  public void setNewFtpSession(final InetAddress ipOnly,
+                               final InetSocketAddress fullIp,
+                               final FtpSession session) {
     final P2PAddress pAddress = new P2PAddress(ipOnly, fullIp);
     if (!pAddress.isValid()) {
       logger.error(
@@ -148,7 +149,8 @@ public class FtpSessionReference {
    *
    * @return the FtpSession if it exists associated to this channel
    */
-  public FtpSession getActiveFtpSession(Channel channel, boolean remove) {
+  public FtpSession getActiveFtpSession(final Channel channel,
+                                        final boolean remove) {
     // First check Active connection
     final P2PAddress pAddress = new P2PAddress(
         ((InetSocketAddress) channel.localAddress()).getAddress(),
@@ -173,7 +175,8 @@ public class FtpSessionReference {
    *
    * @return the FtpSession if it exists associated to this channel
    */
-  public FtpSession getPassiveFtpSession(Channel channel, boolean remove) {
+  public FtpSession getPassiveFtpSession(final Channel channel,
+                                         final boolean remove) {
     // First check passive connection
     final P2PAddress pAddress = new P2PAddress(channel);
     if (!pAddress.isValid()) {
@@ -194,7 +197,8 @@ public class FtpSessionReference {
    * @param ipOnly
    * @param fullIp
    */
-  public void delFtpSession(InetAddress ipOnly, InetSocketAddress fullIp) {
+  public void delFtpSession(final InetAddress ipOnly,
+                            final InetSocketAddress fullIp) {
     final P2PAddress pAddress = new P2PAddress(ipOnly, fullIp);
     if (!pAddress.isValid()) {
       logger
@@ -214,7 +218,8 @@ public class FtpSessionReference {
    *
    * @return True if already presents
    */
-  public boolean contains(InetAddress ipOnly, InetSocketAddress fullIp) {
+  public boolean contains(final InetAddress ipOnly,
+                          final InetSocketAddress fullIp) {
     final P2PAddress pAddress = new P2PAddress(ipOnly, fullIp);
     if (!pAddress.isValid()) {
       logger.error("Couple invalid in contains: " + ipOnly + " : " + fullIp);

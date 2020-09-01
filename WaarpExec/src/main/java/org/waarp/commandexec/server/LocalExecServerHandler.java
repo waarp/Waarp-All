@@ -77,7 +77,7 @@ public class LocalExecServerHandler
    *
    * @return True if in Shutdown
    */
-  public static boolean isShutdown(Channel channel) {
+  public static boolean isShutdown(final Channel channel) {
     if (isShutdown) {
       channel.writeAndFlush(
           LocalExecDefaultResult.ConnectionRefused.getStatus() + " " +
@@ -101,8 +101,8 @@ public class LocalExecServerHandler
    * @param thread
    * @param stacks
    */
-  private static void printStackTrace(Thread thread,
-                                      StackTraceElement[] stacks) {
+  private static void printStackTrace(final Thread thread,
+                                      final StackTraceElement[] stacks) {
     SysErrLogger.FAKE_LOGGER.syserrNoLn(thread + " : ");
     for (int i = 0; i < stacks.length - 1; i++) {
       SysErrLogger.FAKE_LOGGER.syserrNoLn(stacks[i] + " ");
@@ -121,13 +121,13 @@ public class LocalExecServerHandler
     static final long DELAY = 3000;
     final LocalExecServerInitializer factory;
 
-    private GGLEThreadShutdown(LocalExecServerInitializer factory) {
+    private GGLEThreadShutdown(final LocalExecServerInitializer factory) {
       this.factory = factory;
     }
 
     @Override
     public void run() {
-      Timer timer;
+      final Timer timer;
       timer = new Timer(true);
       final GGLETimerTask ggleTimerTask = new GGLETimerTask();
       timer.schedule(ggleTimerTask, DELAY);
@@ -154,7 +154,7 @@ public class LocalExecServerHandler
       for (final Entry<Thread, StackTraceElement[]> entry : map.entrySet()) {
         try {
           printStackTrace(entry.getKey(), entry.getValue());
-        } catch (ArrayIndexOutOfBoundsException e) {
+        } catch (final ArrayIndexOutOfBoundsException e) {
           // ignore
         }
       }
@@ -167,14 +167,14 @@ public class LocalExecServerHandler
    *
    * @param newdelay
    */
-  public LocalExecServerHandler(LocalExecServerInitializer factory,
-                                long newdelay) {
+  public LocalExecServerHandler(final LocalExecServerInitializer factory,
+                                final long newdelay) {
     this.factory = factory;
     delay = newdelay;
   }
 
   @Override
-  public void channelActive(ChannelHandlerContext ctx) throws Exception {
+  public void channelActive(final ChannelHandlerContext ctx) throws Exception {
     if (isShutdown(ctx.channel())) {
       answered = true;
       return;
@@ -189,12 +189,12 @@ public class LocalExecServerHandler
    *
    * @param newdelay
    */
-  public void setNewDelay(long newdelay) {
+  public void setNewDelay(final long newdelay) {
     delay = newdelay;
   }
 
   @Override
-  protected void channelRead0(ChannelHandlerContext ctx, String msg)
+  protected void channelRead0(final ChannelHandlerContext ctx, final String msg)
       throws Exception {
     answered = false;
 
@@ -245,7 +245,7 @@ public class LocalExecServerHandler
           commandLine.addArgument(args[cpt]);
         }
         final DefaultExecutor defaultExecutor = new DefaultExecutor();
-        ByteArrayOutputStream outputStream;
+        final ByteArrayOutputStream outputStream;
         outputStream = new ByteArrayOutputStream();
         final PumpStreamHandler pumpStreamHandler =
             new PumpStreamHandler(outputStream);
@@ -359,8 +359,8 @@ public class LocalExecServerHandler
   }
 
   @Override
-  public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
-      throws Exception {
+  public void exceptionCaught(final ChannelHandlerContext ctx,
+                              final Throwable cause) throws Exception {
     if (!answered) {
       logger.error("Unexpected exception from Outband while not answered.",
                    cause);

@@ -86,9 +86,10 @@ public class ConfigImport implements Runnable {
   protected final NetworkTransaction networkTransaction;
   protected DbHostAuth dbhost;
 
-  public ConfigImport(R66Future future, boolean hostPurge, boolean rulePurge,
-                      String host, String rule,
-                      NetworkTransaction networkTransaction) {
+  public ConfigImport(final R66Future future, final boolean hostPurge,
+                      final boolean rulePurge, final String host,
+                      final String rule,
+                      final NetworkTransaction networkTransaction) {
     this.future = future;
     this.host = host;
     this.rule = rule;
@@ -107,11 +108,13 @@ public class ConfigImport implements Runnable {
     }
   }
 
-  public ConfigImport(R66Future future, boolean hostPurge, boolean rulePurge,
-                      boolean businessPurge, boolean aliasPurge,
-                      boolean rolePurge, String host, String rule,
-                      String business, String alias, String role,
-                      NetworkTransaction networkTransaction) {
+  public ConfigImport(final R66Future future, final boolean hostPurge,
+                      final boolean rulePurge, final boolean businessPurge,
+                      final boolean aliasPurge, final boolean rolePurge,
+                      final String host, final String rule,
+                      final String business, final String alias,
+                      final String role,
+                      final NetworkTransaction networkTransaction) {
     this.future = future;
     this.host = host;
     this.rule = rule;
@@ -139,8 +142,9 @@ public class ConfigImport implements Runnable {
    * @param aliasid
    * @param roleid
    */
-  public void setSpecialIds(long hostid, long ruleid, long businessid,
-                            long aliasid, long roleid) {
+  public void setSpecialIds(final long hostid, final long ruleid,
+                            final long businessid, final long aliasid,
+                            final long roleid) {
     this.hostid = hostid;
     this.ruleid = ruleid;
     this.businessid = businessid;
@@ -148,7 +152,7 @@ public class ConfigImport implements Runnable {
     this.roleid = roleid;
   }
 
-  public void setHost(DbHostAuth host) {
+  public void setHost(final DbHostAuth host) {
     dbhost = host;
   }
 
@@ -162,7 +166,7 @@ public class ConfigImport implements Runnable {
     if (logger == null) {
       logger = WaarpLoggerFactory.getLogger(ConfigImport.class);
     }
-    LocalChannelReference localChannelReference =
+    final LocalChannelReference localChannelReference =
         AbstractTransfer.tryConnect(dbhost, future, networkTransaction);
     if (localChannelReference == null) {
       return;
@@ -170,7 +174,7 @@ public class ConfigImport implements Runnable {
     localChannelReference.sessionNewState(R66FiniteDualStates.VALIDOTHER);
     final boolean useJson = PartnerConfiguration.useJson(dbhost.getHostid());
     logger.debug("UseJson: " + useJson);
-    AbstractLocalPacket valid;
+    final AbstractLocalPacket valid;
     if (useJson) {
       final ConfigImportJsonPacket node = new ConfigImportJsonPacket();
       node.setHost(host);
@@ -217,7 +221,7 @@ public class ConfigImport implements Runnable {
   protected static long lalias = ILLEGALVALUE;
   protected static long lrole = ILLEGALVALUE;
 
-  protected static boolean getParams(String[] args) {
+  protected static boolean getParams(final String[] args) {
     if (logger == null) {
       logger = WaarpLoggerFactory.getLogger(ConfigImport.class);
     }
@@ -329,7 +333,7 @@ public class ConfigImport implements Runnable {
     return true;
   }
 
-  public static void main(String[] args) {
+  public static void main(final String[] args) {
     WaarpLoggerFactory
         .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));
     if (logger == null) {
@@ -374,7 +378,7 @@ public class ConfigImport implements Runnable {
       if (future.isSuccess()) {
         final boolean useJson = PartnerConfiguration.useJson(stohost);
         logger.debug("UseJson: " + useJson);
-        String message;
+        final String message;
         if (useJson) {
           message = result.getOther() != null?
               ((JsonCommandPacket) result.getOther()).getRequest() : "no file";

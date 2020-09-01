@@ -37,8 +37,10 @@ public class ProxyEntry {
   private final SocketAddress remoteSocketAddress;
   private final boolean remoteIsSsl;
 
-  public static void add(SocketAddress localAddress, boolean localIsSsl,
-                         SocketAddress remoteAddress, boolean remoteIsSsl)
+  public static void add(final SocketAddress localAddress,
+                         final boolean localIsSsl,
+                         final SocketAddress remoteAddress,
+                         final boolean remoteIsSsl)
       throws OpenR66ProtocolSystemException {
     final String sla = localAddress.toString();
     if (proxyEntries.containsKey(sla)) {
@@ -49,7 +51,7 @@ public class ProxyEntry {
                                          remoteAddress, remoteIsSsl));
   }
 
-  public static ProxyEntry get(String name) {
+  public static ProxyEntry get(final String name) {
     synchronized (proxyEntries) {
       if (proxyEntries.containsKey(name)) {
         return proxyEntries.get(name);
@@ -67,9 +69,10 @@ public class ProxyEntry {
    * @param remoteSocketAddress
    * @param remoteIsSsl
    */
-  private ProxyEntry(String name, SocketAddress localSocketAddress,
-                     boolean localIsSsl, SocketAddress remoteSocketAddress,
-                     boolean remoteIsSsl) {
+  private ProxyEntry(final String name, final SocketAddress localSocketAddress,
+                     final boolean localIsSsl,
+                     final SocketAddress remoteSocketAddress,
+                     final boolean remoteIsSsl) {
     this.name = name;
     this.localSocketAddress = localSocketAddress;
     this.localIsSsl = localIsSsl;

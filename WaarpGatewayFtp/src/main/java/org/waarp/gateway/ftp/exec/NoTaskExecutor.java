@@ -34,8 +34,8 @@ public class NoTaskExecutor extends AbstractExecutor {
    * @param delay
    * @param futureCompletion
    */
-  public NoTaskExecutor(String command, long delay,
-                        WaarpFuture futureCompletion) {
+  public NoTaskExecutor(final String command, final long delay,
+                        final WaarpFuture futureCompletion) {
     this.futureCompletion = futureCompletion;
   }
 

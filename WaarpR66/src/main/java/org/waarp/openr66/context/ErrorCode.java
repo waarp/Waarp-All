@@ -174,13 +174,13 @@ public enum ErrorCode {
    */
   public final char code;
 
-  ErrorCode(char code) {
+  ErrorCode(final char code) {
     this.code = code;
   }
 
   @JsonValue
   public String getJsonRepr() {
-    return String.valueOf(code) + "  ";
+    return code + "  ";
   }
 
   public String getCode() {
@@ -198,7 +198,7 @@ public enum ErrorCode {
    *
    * @return the ErrorCode according to the code
    */
-  public static ErrorCode getFromCode(String code) {
+  public static ErrorCode getFromCode(final String code) {
     if (code.isEmpty()) {
       return Unknown;
     }
@@ -272,7 +272,7 @@ public enum ErrorCode {
       case 'd':
         return SizeNotAllowed;
       default:
-        ErrorCode ecode;
+        final ErrorCode ecode;
         try {
           ecode = valueOf(code.trim());
         } catch (final IllegalArgumentException e) {
@@ -282,7 +282,7 @@ public enum ErrorCode {
     }
   }
 
-  public static boolean isErrorCode(ErrorCode code) {
+  public static boolean isErrorCode(final ErrorCode code) {
     switch (code) {
       case BadAuthent:
       case CanceledTransfer:

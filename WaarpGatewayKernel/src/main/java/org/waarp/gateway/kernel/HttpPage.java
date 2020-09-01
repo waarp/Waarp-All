@@ -83,11 +83,13 @@ public class HttpPage {
    * @throws IllegalAccessException
    * @throws InstantiationException
    */
-  public HttpPage(String pagename, String fileform, String header,
-                  String footer, String beginform, String endform,
-                  String nextinform, String uri, PageRole pagerole,
-                  String errorpage, String classname,
-                  Map<String, AbstractHttpField> fields)
+  public HttpPage(final String pagename, final String fileform,
+                  final String header, final String footer,
+                  final String beginform, final String endform,
+                  final String nextinform, final String uri,
+                  final PageRole pagerole, final String errorpage,
+                  final String classname,
+                  final Map<String, AbstractHttpField> fields)
       throws ClassNotFoundException, InstantiationException,
              IllegalAccessException {
     setPagename(pagename);
@@ -107,13 +109,13 @@ public class HttpPage {
     setFields(fields);
     try {
       ParametersChecker.checkSanityString(classname);
-    } catch (InvalidArgumentException e) {
+    } catch (final InvalidArgumentException e) {
       throw new IllegalArgumentException(e.getMessage());
     }
     @SuppressWarnings("unchecked")
     final Class<HttpBusinessFactory> clasz =
         (Class<HttpBusinessFactory>) Class.forName(classname);//NOSONAR
-    HttpBusinessFactory factory = clasz.newInstance();//NOSONAR
+    final HttpBusinessFactory factory = clasz.newInstance();//NOSONAR
     setHttpBusinessFactory(factory);//NOSONAR
   }
 
@@ -125,7 +127,8 @@ public class HttpPage {
    *
    * @return AbstractHttpBusinessRequest to use during the request
    */
-  public AbstractHttpBusinessRequest newRequest(SocketAddress remoteAddress) {
+  public AbstractHttpBusinessRequest newRequest(
+      final SocketAddress remoteAddress) {
     final LinkedHashMap<String, AbstractHttpField> linkedHashMap =
         new LinkedHashMap<String, AbstractHttpField>(getFields().size());
     for (final AbstractHttpField field : getFields().values()) {
@@ -139,7 +142,7 @@ public class HttpPage {
         .getNewHttpBusinessRequest(remoteAddress, linkedHashMap, this);
   }
 
-  public String getPageValue(String value) {
+  public String getPageValue(final String value) {
     if (getFileform() != null && value != null) {
       try {
         return WaarpStringUtils.readFileException(getFileform() + value);
@@ -159,7 +162,7 @@ public class HttpPage {
    *
    * @throws HttpIncorrectRequestException
    */
-  public String getHtmlPage(AbstractHttpBusinessRequest reference)
+  public String getHtmlPage(final AbstractHttpBusinessRequest reference)
       throws HttpIncorrectRequestException {
     if (getPagerole() == PageRole.HTML) {
       // No handling of variable management, use MENU instead
@@ -168,7 +171,7 @@ public class HttpPage {
       if (value == null || value.length() == 0) {
         value = getPageValue(getHeader());
       }
-      StringBuilder builder;
+      final StringBuilder builder;
       if (value == null) {
         builder = new StringBuilder();
       } else {
@@ -202,7 +205,7 @@ public class HttpPage {
     if (value == null || value.length() == 0) {
       value = getPageValue(getHeader());
     }
-    StringBuilder builder;
+    final StringBuilder builder;
     if (value == null) {
       builder = new StringBuilder();
     } else {
@@ -304,8 +307,9 @@ public class HttpPage {
    *
    * @throws HttpIncorrectRequestException
    */
-  public void setValue(AbstractHttpBusinessRequest reference, String fieldname,
-                       String value, FieldPosition position)
+  public void setValue(final AbstractHttpBusinessRequest reference,
+                       final String fieldname, final String value,
+                       final FieldPosition position)
       throws HttpIncorrectRequestException {
     final Map<String, AbstractHttpField> requestFields =
         reference.getMapHttpFields();
@@ -336,8 +340,8 @@ public class HttpPage {
    *
    * @throws HttpIncorrectRequestException
    */
-  public void setValue(AbstractHttpBusinessRequest reference, String fieldname,
-                       FileUpload fileUpload)
+  public void setValue(final AbstractHttpBusinessRequest reference,
+                       final String fieldname, final FileUpload fileUpload)
       throws HttpIncorrectRequestException {
     final Map<String, AbstractHttpField> requestFields =
         reference.getMapHttpFields();
@@ -355,7 +359,7 @@ public class HttpPage {
    *
    * @return True if the request is fully valid
    */
-  public boolean isRequestValid(AbstractHttpBusinessRequest reference) {
+  public boolean isRequestValid(final AbstractHttpBusinessRequest reference) {
     final Map<String, AbstractHttpField> requestFields =
         reference.getMapHttpFields();
     for (final AbstractHttpField field : requestFields.values()) {
@@ -376,7 +380,7 @@ public class HttpPage {
    * @return the fields list from the current AbstractHttpBusinessRequest
    */
   public Map<String, AbstractHttpField> getFieldsForRequest(
-      AbstractHttpBusinessRequest reference) {
+      final AbstractHttpBusinessRequest reference) {
     return reference.getMapHttpFields();
   }
 
@@ -388,8 +392,8 @@ public class HttpPage {
    *
    * @return the String value
    */
-  public String getValue(AbstractHttpBusinessRequest reference,
-                         String fieldname) {
+  public String getValue(final AbstractHttpBusinessRequest reference,
+                         final String fieldname) {
     final AbstractHttpField field = reference.getMapHttpFields().get(fieldname);
     if (field != null) {
       return field.fieldvalue;
@@ -405,8 +409,8 @@ public class HttpPage {
    *
    * @return the FileUpload value
    */
-  public FileUpload getFileUpload(AbstractHttpBusinessRequest reference,
-                                  String fieldname) {
+  public FileUpload getFileUpload(final AbstractHttpBusinessRequest reference,
+                                  final String fieldname) {
     final AbstractHttpField field = reference.getMapHttpFields().get(fieldname);
     if (field != null) {
       return field.fileUpload;
@@ -422,8 +426,8 @@ public class HttpPage {
    *
    * @return the AbstractHttpField value
    */
-  public AbstractHttpField getField(AbstractHttpBusinessRequest reference,
-                                    String fieldname) {
+  public AbstractHttpField getField(final AbstractHttpBusinessRequest reference,
+                                    final String fieldname) {
     return reference.getMapHttpFields().get(fieldname);
   }
 
@@ -437,7 +441,7 @@ public class HttpPage {
   /**
    * @param pagename the pagename to set
    */
-  private void setPagename(String pagename) {
+  private void setPagename(final String pagename) {
     this.pagename = pagename;
   }
 
@@ -451,7 +455,7 @@ public class HttpPage {
   /**
    * @param fileform the fileform to set
    */
-  private void setFileform(String fileform) {
+  private void setFileform(final String fileform) {
     this.fileform = fileform;
   }
 
@@ -465,7 +469,7 @@ public class HttpPage {
   /**
    * @param header the header to set
    */
-  private void setHeader(String header) {
+  private void setHeader(final String header) {
     this.header = header;
   }
 
@@ -479,7 +483,7 @@ public class HttpPage {
   /**
    * @param footer the footer to set
    */
-  private void setFooter(String footer) {
+  private void setFooter(final String footer) {
     this.footer = footer;
   }
 
@@ -493,7 +497,7 @@ public class HttpPage {
   /**
    * @param beginform the beginform to set
    */
-  private void setBeginform(String beginform) {
+  private void setBeginform(final String beginform) {
     this.beginform = beginform;
   }
 
@@ -507,7 +511,7 @@ public class HttpPage {
   /**
    * @param endform the endform to set
    */
-  private void setEndform(String endform) {
+  private void setEndform(final String endform) {
     this.endform = endform;
   }
 
@@ -521,7 +525,7 @@ public class HttpPage {
   /**
    * @param nextinform the nextinform to set
    */
-  private void setNextinform(String nextinform) {
+  private void setNextinform(final String nextinform) {
     this.nextinform = nextinform;
   }
 
@@ -535,7 +539,7 @@ public class HttpPage {
   /**
    * @param uri the uri to set
    */
-  private void setUri(String uri) {
+  private void setUri(final String uri) {
     this.uri = uri;
   }
 
@@ -549,7 +553,7 @@ public class HttpPage {
   /**
    * @param pagerole the pagerole to set
    */
-  private void setPagerole(PageRole pagerole) {
+  private void setPagerole(final PageRole pagerole) {
     this.pagerole = pagerole;
   }
 
@@ -563,7 +567,7 @@ public class HttpPage {
   /**
    * @param errorpage the errorpage to set
    */
-  private void setErrorpage(String errorpage) {
+  private void setErrorpage(final String errorpage) {
     this.errorpage = errorpage;
   }
 
@@ -577,7 +581,7 @@ public class HttpPage {
   /**
    * @param classname the classname to set
    */
-  private void setClassname(String classname) {
+  private void setClassname(final String classname) {
     this.classname = classname;
   }
 
@@ -591,7 +595,7 @@ public class HttpPage {
   /**
    * @param fields the fields to set
    */
-  private void setFields(Map<String, AbstractHttpField> fields) {
+  private void setFields(final Map<String, AbstractHttpField> fields) {
     this.fields = fields;
   }
 
@@ -605,7 +609,8 @@ public class HttpPage {
   /**
    * @param httpBusinessFactory the httpBusinessFactory to set
    */
-  private void setHttpBusinessFactory(HttpBusinessFactory httpBusinessFactory) {
+  private void setHttpBusinessFactory(
+      final HttpBusinessFactory httpBusinessFactory) {
     this.httpBusinessFactory = httpBusinessFactory;
   }
 }

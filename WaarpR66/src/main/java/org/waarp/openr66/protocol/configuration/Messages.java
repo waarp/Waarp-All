@@ -42,7 +42,7 @@ public class Messages {
         setSlocale("en");
       }
       init(new Locale(getSlocale()));
-    } catch (Throwable ignored) {//NOSONAR
+    } catch (final Throwable ignored) {//NOSONAR
       SysErrLogger.FAKE_LOGGER //NOSONAR
                                .syserr("Error during static execution",//NOSONAR
                                        ignored);//NOSONAR
@@ -62,7 +62,7 @@ public class Messages {
     resourceBundle = ResourceBundle.getBundle(BUNDLE_NAME, locale);
   }
 
-  public static String getString(String key) {
+  public static String getString(final String key) {
     try {
       return resourceBundle.getString(key);
     } catch (final MissingResourceException e) {
@@ -70,7 +70,7 @@ public class Messages {
     }
   }
 
-  public static String getString(String key, Object... args) {
+  public static String getString(final String key, final Object... args) {
     try {
       final String source = resourceBundle.getString(key);
       return MessageFormat.format(source, args);
@@ -89,7 +89,7 @@ public class Messages {
   /**
    * @param slocale the slocale to set
    */
-  public static void setSlocale(String slocale) {
+  public static void setSlocale(final String slocale) {
     Messages.slocale = slocale;
   }
 }

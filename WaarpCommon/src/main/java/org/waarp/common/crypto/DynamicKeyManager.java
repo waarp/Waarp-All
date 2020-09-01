@@ -62,7 +62,7 @@ public class DynamicKeyManager extends KeyManager {
   }
 
   @Override
-  public List<String> initFromList(List<String> keys) {
+  public List<String> initFromList(final List<String> keys) {
     final LinkedList<String> wrong = new LinkedList<String>();
     for (final String filename : keys) {
       final File file = new File(filename);
@@ -85,7 +85,7 @@ public class DynamicKeyManager extends KeyManager {
           wrong.add(filename);
           continue;
         }
-        int read = 0;
+        int read = 1;
         int offset = 0;
         while (read > 0) {
           try {
@@ -154,8 +154,8 @@ public class DynamicKeyManager extends KeyManager {
    *
    * @return the String that should be read
    */
-  private String readString(FileInputStream inputStream) {
-    int len;
+  private String readString(final FileInputStream inputStream) {
+    final int len;
     try {
       len = inputStream.read();
     } catch (final IOException e1) {

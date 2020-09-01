@@ -63,7 +63,8 @@ public class DbRequest {
    *
    * @throws WaarpDatabaseNoConnectionException
    */
-  public DbRequest(DbSession ls) throws WaarpDatabaseNoConnectionException {
+  public DbRequest(final DbSession ls)
+      throws WaarpDatabaseNoConnectionException {
     if (ls.isDisActive()) {
       ls.checkConnection();
     }
@@ -112,7 +113,7 @@ public class DbRequest {
    * @throws WaarpDatabaseSqlException
    * @throws WaarpDatabaseNoConnectionException
    */
-  public void select(String select)
+  public void select(final String select)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
     close();
     stmt = createStatement();
@@ -143,7 +144,7 @@ public class DbRequest {
    * @throws WaarpDatabaseSqlException
    * @throws WaarpDatabaseNoConnectionException
    */
-  public void select(String select, int timeout)
+  public void select(final String select, final int timeout)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
     close();
     stmt = createStatement();
@@ -181,7 +182,7 @@ public class DbRequest {
    * @throws WaarpDatabaseSqlException
    * @throws WaarpDatabaseNoConnectionException
    */
-  public int query(String query)
+  public int query(final String query)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
     close();
     stmt = createStatement();
@@ -248,7 +249,7 @@ public class DbRequest {
       if (rstmp != null) {
         try {
           rstmp.close();
-        } catch (SQLException e) {
+        } catch (final SQLException e) {
           // nothing
         }
       }
@@ -306,7 +307,7 @@ public class DbRequest {
    *
    * @return the string as result
    */
-  public static String getIsNull(String value) {
+  public static String getIsNull(final String value) {
     return value == null? " is NULL" : " = '" + value + '\'';
   }
 }

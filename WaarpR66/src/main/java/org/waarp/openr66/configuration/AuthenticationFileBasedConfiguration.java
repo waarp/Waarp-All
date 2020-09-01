@@ -66,9 +66,9 @@ public class AuthenticationFileBasedConfiguration {
    * @return True if OK
    */
   @SuppressWarnings("unchecked")
-  public static boolean loadAuthentication(Configuration config,
-                                           String filename) {
-    Document document;
+  public static boolean loadAuthentication(final Configuration config,
+                                           final String filename) {
+    final Document document;
     try {
       document = XmlUtil.getNewSaxReader().read(filename);
     } catch (final DocumentException e) {
@@ -80,7 +80,7 @@ public class AuthenticationFileBasedConfiguration {
       logger.error("Unable to read the XML Authentication file: " + filename);
       return false;
     }
-    XmlValue[] values = XmlUtil.read(document, authentElements);
+    final XmlValue[] values = XmlUtil.read(document, authentElements);
     final XmlHash hash = new XmlHash(values);
     XmlValue value = hash.get(XML_AUTHENTIFICATION_ENTRY);
     final List<XmlValue[]> list = (List<XmlValue[]>) value.getList();
@@ -141,7 +141,7 @@ public class AuthenticationFileBasedConfiguration {
         continue;
       }
       final String address = value.getString();
-      int port;
+      final int port;
       value = subHash.get(XML_AUTHENTIFICATION_PORT);
       if (value != null && !value.isEmpty()) {
         port = value.getInteger();
@@ -197,7 +197,7 @@ public class AuthenticationFileBasedConfiguration {
    *
    * @return the new Element
    */
-  private static Element newElement(String name, String value) {
+  private static Element newElement(final String name, final String value) {
     final Element node = new DefaultElement(name);
     node.addText(value);
     return node;
@@ -212,7 +212,7 @@ public class AuthenticationFileBasedConfiguration {
    * @throws WaarpDatabaseNoConnectionException
    * @throws WaarpDatabaseSqlException
    */
-  public static void writeXML(Configuration config, String filename)
+  public static void writeXML(final Configuration config, final String filename)
       throws OpenR66ProtocolSystemException, WaarpDatabaseNoConnectionException,
              WaarpDatabaseSqlException {
     final Document document = DocumentHelper.createDocument();

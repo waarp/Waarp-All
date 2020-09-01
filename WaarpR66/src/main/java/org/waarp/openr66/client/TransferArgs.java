@@ -200,7 +200,7 @@ public class TransferArgs {
    * Print to standard output the help of this command
    */
   public static void printHelp() {
-    HelpFormatter formatter = new HelpFormatter();
+    final HelpFormatter formatter = new HelpFormatter();
     formatter.printHelp("Transfer", TRANSFER_OPTIONS);
   }
 
@@ -233,20 +233,20 @@ public class TransferArgs {
    */
   public static TransferArgs getParamsInternal(final int rank,
                                                final String[] args,
-                                               boolean analyseFollow) {
+                                               final boolean analyseFollow) {
     if (args == null || args.length == 0) {
       logger.error("Arguments cannot be empty or null");
       return null;
     }
-    String[] realArgs = getRealArgs(rank, args);
+    final String[] realArgs = getRealArgs(rank, args);
 
     // Now set default values from configuration
-    TransferArgs transferArgs1 = new TransferArgs();
+    final TransferArgs transferArgs1 = new TransferArgs();
     transferArgs1.setBlockSize(Configuration.configuration.getBlockSize());
 
-    CommandLineParser parser = new DefaultParser();
+    final CommandLineParser parser = new DefaultParser();
     try {
-      CommandLine cmd = parser.parse(TRANSFER_OPTIONS, realArgs, true);
+      final CommandLine cmd = parser.parse(TRANSFER_OPTIONS, realArgs, true);
       if (getTransferMinimalArgs(transferArgs1, cmd)) {
         return null;
       }
@@ -258,7 +258,7 @@ public class TransferArgs {
       }
       checkLog(transferArgs1, cmd);
       checkOutput(cmd);
-    } catch (ParseException e) {
+    } catch (final ParseException e) {
       printHelp();
       logger.error("Arguments are incorrect", e);
       return null;
@@ -288,7 +288,7 @@ public class TransferArgs {
     if (cmd.hasOption(BLOCK)) {
       try {
         transferArgs1.setBlockSize(Integer.parseInt(cmd.getOptionValue(BLOCK)));
-      } catch (NumberFormatException ignored) {
+      } catch (final NumberFormatException ignored) {
         SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
         logger.error(Messages.getString("AbstractTransfer.20") + " block");
         //$NON-NLS-1$
@@ -334,7 +334,7 @@ public class TransferArgs {
     if (cmd.hasOption(ID_FIELD)) {
       try {
         transferArgs1.setId(Long.parseLong(cmd.getOptionValue(ID_FIELD)));
-      } catch (NumberFormatException ignored) {
+      } catch (final NumberFormatException ignored) {
         SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
         logger.error(Messages.getString("AbstractTransfer.20") + " id");
         //$NON-NLS-1$
@@ -467,13 +467,13 @@ public class TransferArgs {
   private static boolean checkDelayStart(final TransferArgs transferArgs1,
                                          final CommandLine cmd) {
     if (cmd.hasOption(START)) {
-      Date date;
+      final Date date;
       final SimpleDateFormat dateFormat =
           new SimpleDateFormat("yyyyMMddHHmmss");
       try {
         date = dateFormat.parse(cmd.getOptionValue(START));
         transferArgs1.setStartTime(new Timestamp(date.getTime()));
-      } catch (java.text.ParseException ignored) {
+      } catch (final java.text.ParseException ignored) {
         SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
         logger.error(Messages.getString("AbstractTransfer.20") + " StartTime");
         //$NON-NLS-1$
@@ -481,7 +481,7 @@ public class TransferArgs {
       }
     }
     if (cmd.hasOption(DELAY)) {
-      String delay = cmd.getOptionValue(DELAY);
+      final String delay = cmd.getOptionValue(DELAY);
       try {
         if (delay.charAt(0) == '+') {
           transferArgs1.setStartTime(new Timestamp(
@@ -489,7 +489,7 @@ public class TransferArgs {
         } else {
           transferArgs1.setStartTime(new Timestamp(Long.parseLong(delay)));
         }
-      } catch (NumberFormatException ignored) {
+      } catch (final NumberFormatException ignored) {
         SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
         logger.error(Messages.getString("AbstractTransfer.20") + " Delay");
         //$NON-NLS-1$
@@ -510,7 +510,7 @@ public class TransferArgs {
   public static void getAllInfo(final TransferArgs transferArgs, final int rank,
                                 final String[] args, final String copiedInfo) {
     if (transferArgs != null) {
-      StringBuilder builder = new StringBuilder();
+      final StringBuilder builder = new StringBuilder();
       if (copiedInfo != null) {
         builder.append(copiedInfo);
       }
@@ -550,7 +550,7 @@ public class TransferArgs {
       if (!abstractTransfer.transferArgs.getTransferInfo()
                                         .contains(FOLLOW_JSON_KEY)) {
         // Add FOLLOW ID to transferArgs
-        Map<String, String> map = new HashMap<String, String>();
+        final Map<String, String> map = new HashMap<String, String>();
         map.put(FOLLOW_JSON_KEY, abstractTransfer.transferArgs.getFollowId());
         abstractTransfer.transferArgs.setTransferInfo(
             abstractTransfer.transferArgs.getTransferInfo() + " " +
@@ -568,13 +568,13 @@ public class TransferArgs {
   public static void analyzeFollow(final TransferArgs transferArgs1) {
     if (transferArgs1.getFollowId() != null &&
         transferArgs1.getTransferInfo() != null) {
-      Map<String, Object> map =
+      final Map<String, Object> map =
           DbTaskRunner.getMapFromString(transferArgs1.getTransferInfo());
       if (map.containsKey(FOLLOW_JSON_KEY)) {
         transferArgs1.setFollowId(map.get(FOLLOW_JSON_KEY).toString());
       }
       if (transferArgs1.getFollowId().isEmpty()) {
-        LongUuid longUuid = new LongUuid();
+        final LongUuid longUuid = new LongUuid();
         map.put(FOLLOW_JSON_KEY, longUuid.getLong());
         transferArgs1.setTransferInfo(transferArgs1.getTransferInfo() + " " +
                                       JsonHandler.writeAsStringEscaped(map));
@@ -611,7 +611,7 @@ public class TransferArgs {
     return filename;
   }
 
-  public TransferArgs setFilename(String filename) {
+  public TransferArgs setFilename(final String filename) {
     this.filename = filename;
     return this;
   }
@@ -620,7 +620,7 @@ public class TransferArgs {
     return rulename;
   }
 
-  public TransferArgs setRulename(String rulename) {
+  public TransferArgs setRulename(final String rulename) {
     this.rulename = rulename;
     return this;
   }
@@ -629,7 +629,7 @@ public class TransferArgs {
     return transferInfo;
   }
 
-  public TransferArgs setTransferInfo(String transferInfo) {
+  public TransferArgs setTransferInfo(final String transferInfo) {
     this.transferInfo = transferInfo;
     return this;
   }
@@ -638,7 +638,7 @@ public class TransferArgs {
     return isMD5;
   }
 
-  public TransferArgs setMD5(boolean md5) {
+  public TransferArgs setMD5(final boolean md5) {
     isMD5 = md5;
     return this;
   }
@@ -647,7 +647,7 @@ public class TransferArgs {
     return remoteHost;
   }
 
-  public TransferArgs setRemoteHost(String remoteHost) {
+  public TransferArgs setRemoteHost(final String remoteHost) {
     this.remoteHost = remoteHost;
     return this;
   }
@@ -656,7 +656,7 @@ public class TransferArgs {
     return blocksize;
   }
 
-  public TransferArgs setBlockSize(int blocksize) {
+  public TransferArgs setBlockSize(final int blocksize) {
     this.blocksize = blocksize;
     return this;
   }
@@ -665,7 +665,7 @@ public class TransferArgs {
     return id;
   }
 
-  public TransferArgs setId(long id) {
+  public TransferArgs setId(final long id) {
     this.id = id;
     return this;
   }
@@ -674,7 +674,7 @@ public class TransferArgs {
     return startTime;
   }
 
-  public TransferArgs setStartTime(Timestamp startTime) {
+  public TransferArgs setStartTime(final Timestamp startTime) {
     this.startTime = startTime;
     return this;
   }
@@ -683,7 +683,7 @@ public class TransferArgs {
     return followId;
   }
 
-  public TransferArgs setFollowId(String followId) {
+  public TransferArgs setFollowId(final String followId) {
     this.followId = followId;
     return this;
   }
@@ -692,7 +692,7 @@ public class TransferArgs {
     return normalInfoAsWarn;
   }
 
-  public TransferArgs setNormalInfoAsWarn(boolean normalInfoAsWarn) {
+  public TransferArgs setNormalInfoAsWarn(final boolean normalInfoAsWarn) {
     this.normalInfoAsWarn = normalInfoAsWarn;
     return this;
   }
@@ -701,7 +701,7 @@ public class TransferArgs {
     return nolog;
   }
 
-  public TransferArgs setNolog(boolean nolog) {
+  public TransferArgs setNolog(final boolean nolog) {
     this.nolog = nolog;
     return this;
   }

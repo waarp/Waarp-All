@@ -58,7 +58,7 @@ public class DbHostAuthR66RestMethodHandler
 
     public final String type;
 
-    FILTER_ARGS(String type) {
+    FILTER_ARGS(final String type) {
       this.type = type;
     }
   }
@@ -67,21 +67,22 @@ public class DbHostAuthR66RestMethodHandler
    * @param config
    * @param method
    */
-  public DbHostAuthR66RestMethodHandler(RestConfiguration config,
-                                        METHOD... method) {
+  public DbHostAuthR66RestMethodHandler(final RestConfiguration config,
+                                        final METHOD... method) {
     super(BASEURI, config, method);
   }
 
   @Override
-  protected DbHostAuth getItem(HttpRestHandler handler, RestArgument arguments,
-                               RestArgument result, Object body)
+  protected DbHostAuth getItem(final HttpRestHandler handler,
+                               final RestArgument arguments,
+                               final RestArgument result, final Object body)
       throws HttpIncorrectRequestException, HttpInvalidAuthenticationException,
              HttpNotFoundRequestException {
     final ObjectNode arg = arguments.getUriArgs().deepCopy();
     arg.setAll(arguments.getBody());
     try {
       final JsonNode node = RestArgument.getId(arg);
-      String id;
+      final String id;
       if (node.isMissingNode()) {
         // shall not be but continue however
         id = arg.path(DbHostAuth.Columns.HOSTID.name()).asText();
@@ -96,9 +97,9 @@ public class DbHostAuthR66RestMethodHandler
   }
 
   @Override
-  protected DbHostAuth createItem(HttpRestHandler handler,
-                                  RestArgument arguments, RestArgument result,
-                                  Object body)
+  protected DbHostAuth createItem(final HttpRestHandler handler,
+                                  final RestArgument arguments,
+                                  final RestArgument result, final Object body)
       throws HttpIncorrectRequestException, HttpInvalidAuthenticationException {
     final ObjectNode arg = arguments.getUriArgs().deepCopy();
     arg.setAll(arguments.getBody());
@@ -111,10 +112,9 @@ public class DbHostAuthR66RestMethodHandler
   }
 
   @Override
-  protected DbPreparedStatement getPreparedStatement(HttpRestHandler handler,
-                                                     RestArgument arguments,
-                                                     RestArgument result,
-                                                     Object body)
+  protected DbPreparedStatement getPreparedStatement(
+      final HttpRestHandler handler, final RestArgument arguments,
+      final RestArgument result, final Object body)
       throws HttpIncorrectRequestException, HttpInvalidAuthenticationException {
     final ObjectNode arg = arguments.getUriArgs().deepCopy();
     arg.setAll(arguments.getBody());
@@ -143,7 +143,8 @@ public class DbHostAuthR66RestMethodHandler
   }
 
   @Override
-  protected DbHostAuth getItemPreparedStatement(DbPreparedStatement statement)
+  protected DbHostAuth getItemPreparedStatement(
+      final DbPreparedStatement statement)
       throws HttpIncorrectRequestException, HttpNotFoundRequestException {
     try {
       return DbHostAuth.getFromStatement(statement);
@@ -162,7 +163,7 @@ public class DbHostAuthR66RestMethodHandler
 
     final ObjectNode node1 = JsonHandler.createObjectNode();
     node1.put(AbstractDbData.JSON_MODEL, DbHostAuth.class.getSimpleName());
-    for (DbHostAuth.Columns column : DbHostAuth.Columns.values()) {
+    for (final DbHostAuth.Columns column : DbHostAuth.Columns.values()) {
       node1.put(column.name(), DbHostAuth.dbTypes[column.ordinal()]);
     }
 
@@ -189,7 +190,7 @@ public class DbHostAuthR66RestMethodHandler
       node3 = JsonHandler.createObjectNode();
       node3.put(DbHostAuth.Columns.HOSTID.name(),
                 HOST_ID_AS_VARCHAR_IN_URI_AS + path + "/id");
-      for (DbHostAuth.Columns column : DbHostAuth.Columns.values()) {
+      for (final DbHostAuth.Columns column : DbHostAuth.Columns.values()) {
         if (column.name().equalsIgnoreCase(DbHostAuth.Columns.HOSTID.name())) {
           continue;
         }
@@ -211,7 +212,7 @@ public class DbHostAuthR66RestMethodHandler
     }
     if (methods.contains(METHOD.POST)) {
       node3 = JsonHandler.createObjectNode();
-      for (DbHostAuth.Columns column : DbHostAuth.Columns.values()) {
+      for (final DbHostAuth.Columns column : DbHostAuth.Columns.values()) {
         node3.put(column.name(), DbHostAuth.dbTypes[column.ordinal()]);
       }
       node2 = RestArgument
@@ -233,9 +234,10 @@ public class DbHostAuthR66RestMethodHandler
   }
 
   @Override
-  protected void checkAuthorization(HttpRestHandler handler,
-                                    RestArgument arguments, RestArgument result,
-                                    METHOD method)
+  protected void checkAuthorization(final HttpRestHandler handler,
+                                    final RestArgument arguments,
+                                    final RestArgument result,
+                                    final METHOD method)
       throws HttpForbiddenRequestException {
     final HttpRestR66Handler r66handler = (HttpRestR66Handler) handler;
     final R66Session session = r66handler.getServerHandler().getSession();

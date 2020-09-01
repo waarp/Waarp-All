@@ -53,11 +53,14 @@ public class FtpConstraintLimitHandler extends WaarpConstraintLimitHandler {
    *     when decreasing bandwidth (low
    *     limit = 4096)
    */
-  public FtpConstraintLimitHandler(long timeoutcon, boolean useJdkCpuLimit,
-                                   double lowcpuLimit, double highcpuLimit,
-                                   double percentageDecrease,
-                                   GlobalTrafficShapingHandler handler,
-                                   long delay, long limitLowBandwidth) {
+  public FtpConstraintLimitHandler(final long timeoutcon,
+                                   final boolean useJdkCpuLimit,
+                                   final double lowcpuLimit,
+                                   final double highcpuLimit,
+                                   final double percentageDecrease,
+                                   final GlobalTrafficShapingHandler handler,
+                                   final long delay,
+                                   final long limitLowBandwidth) {
     super(1000, timeoutcon, useJdkCpuLimit, lowcpuLimit, highcpuLimit,
           percentageDecrease, handler, delay, limitLowBandwidth);
   }
@@ -70,9 +73,11 @@ public class FtpConstraintLimitHandler extends WaarpConstraintLimitHandler {
    *     connections
    * @param channellimit number of connection limit (0<= x)
    */
-  public FtpConstraintLimitHandler(long timeoutcon, boolean useCpuLimit,
-                                   boolean useJdKCpuLimit, double cpulimit,
-                                   int channellimit) {
+  public FtpConstraintLimitHandler(final long timeoutcon,
+                                   final boolean useCpuLimit,
+                                   final boolean useJdKCpuLimit,
+                                   final double cpulimit,
+                                   final int channellimit) {
     super(1000, timeoutcon, useCpuLimit, useJdKCpuLimit, cpulimit,
           channellimit);
   }
@@ -106,13 +111,17 @@ public class FtpConstraintLimitHandler extends WaarpConstraintLimitHandler {
    *     when decreasing bandwidth (low
    *     limit = 4096)
    */
-  public FtpConstraintLimitHandler(long timeoutcon, boolean useCpuLimit,
-                                   boolean useJdKCpuLimit, double cpulimit,
-                                   int channellimit, double lowcpuLimit,
-                                   double highcpuLimit,
-                                   double percentageDecrease,
-                                   GlobalTrafficShapingHandler handler,
-                                   long delay, long limitLowBandwidth) {
+  public FtpConstraintLimitHandler(final long timeoutcon,
+                                   final boolean useCpuLimit,
+                                   final boolean useJdKCpuLimit,
+                                   final double cpulimit,
+                                   final int channellimit,
+                                   final double lowcpuLimit,
+                                   final double highcpuLimit,
+                                   final double percentageDecrease,
+                                   final GlobalTrafficShapingHandler handler,
+                                   final long delay,
+                                   final long limitLowBandwidth) {
     super(1000, timeoutcon, useCpuLimit, useJdKCpuLimit, cpulimit, channellimit,
           lowcpuLimit, highcpuLimit, percentageDecrease, handler, delay,
           limitLowBandwidth);

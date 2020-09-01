@@ -115,8 +115,8 @@ public class R66PreparedTransferExecutor extends AbstractExecutor {
    * @param delay delay
    * @param futureCompletion future for completion
    */
-  public R66PreparedTransferExecutor(String command, long delay,
-                                     WaarpFuture futureCompletion) {
+  public R66PreparedTransferExecutor(final String command, final long delay,
+                                     final WaarpFuture futureCompletion) {
     final String[] args = BLANK.split(command);
     transferArgs = TransferArgs.getParamsInternal(0, args, false);
     if (transferArgs != null) {
@@ -129,7 +129,7 @@ public class R66PreparedTransferExecutor extends AbstractExecutor {
   /**
    * @param dbsession the dbsession to set
    */
-  public void setDbsession(DbSession dbsession) {
+  public void setDbsession(final DbSession dbsession) {
     this.dbsession = dbsession;
   }
 
@@ -156,7 +156,7 @@ public class R66PreparedTransferExecutor extends AbstractExecutor {
         " -nolog: " + nolog + " -isMD5: " + transferArgs.isMD5() + " -info " +
         transferArgs.getTransferInfo();
     logger.debug(message);
-    DbRule rule;
+    final DbRule rule;
     try {
       rule = new DbRule(transferArgs.getRulename());
     } catch (final WaarpDatabaseException e) {
@@ -188,7 +188,7 @@ public class R66PreparedTransferExecutor extends AbstractExecutor {
     // Not isRecv since it is the requester, so send => isRetrieve is true
     final boolean isRetrieve = !RequestPacket.isRecvMode(request.getMode());
     logger.debug("Will prepare: {}", request);
-    DbTaskRunner taskRunner;
+    final DbTaskRunner taskRunner;
     try {
       taskRunner = new DbTaskRunner(rule, isRetrieve, request,
                                     transferArgs.getRemoteHost(),

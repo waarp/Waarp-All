@@ -47,9 +47,9 @@ public class HttpAuthentDefault implements HttpAuthent {
   }
 
   @Override
-  public void initializeAuthent(Map<String, String> arguments) {
+  public void initializeAuthent(final Map<String, String> arguments) {
     user = arguments.get(FIELD_USER);
-    String skey = arguments.get(FIELD_KEY);
+    final String skey = arguments.get(FIELD_KEY);
     key = org.waarp.common.digest.FilesystemBasedDigest.getFromHex(skey);
   }
 
@@ -59,9 +59,9 @@ public class HttpAuthentDefault implements HttpAuthent {
       throws IllegalArgumentException {
     try {
       session.getAuth().connection(user, key, false);
-    } catch (Reply530Exception e) {
+    } catch (final Reply530Exception e) {
       httpSession.error(e, session.getBusinessObject());
-    } catch (Reply421Exception e) {
+    } catch (final Reply421Exception e) {
       httpSession.error(e, session.getBusinessObject());
     }
   }

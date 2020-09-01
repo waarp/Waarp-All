@@ -48,7 +48,8 @@ public class R66ThriftServerService implements Runnable {
   protected TServer server;
   protected final WaarpFuture serviceReady;
 
-  public R66ThriftServerService(WaarpFuture serviceReady, int port) {
+  public R66ThriftServerService(final WaarpFuture serviceReady,
+                                final int port) {
     this.serviceReady = serviceReady;
     this.port = port;
   }

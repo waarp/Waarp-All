@@ -82,7 +82,7 @@ public class RulesHandler extends AbstractRestDbHandler {
     OPTIONS_HEADERS.add(ALLOW, allow);
   }
 
-  public RulesHandler(byte crud) {
+  public RulesHandler(final byte crud) {
     super(crud);
   }
 
@@ -104,15 +104,16 @@ public class RulesHandler extends AbstractRestDbHandler {
   @GET
   @Consumes(APPLICATION_FORM_URLENCODED)
   @RequiredRole(ROLE.READONLY)
-  public void filterRules(HttpRequest request, HttpResponder responder,
+  public void filterRules(final HttpRequest request,
+                          final HttpResponder responder,
                           @QueryParam(LIMIT) @DefaultValue("20")
-                              String limitStr,
+                          final String limitStr,
                           @QueryParam(OFFSET) @DefaultValue("0")
-                              String offsetStr,
+                          final String offsetStr,
                           @QueryParam(ORDER) @DefaultValue("ascName")
-                              String orderStr,
+                          final String orderStr,
                           @QueryParam(MODE_TRANS) @DefaultValue("")
-                              String modeTransStr) {
+                          final String modeTransStr) {
 
     final List<RestError> errors = new ArrayList<RestError>();
 
@@ -194,7 +195,8 @@ public class RulesHandler extends AbstractRestDbHandler {
   @POST
   @Consumes(APPLICATION_JSON)
   @RequiredRole(ROLE.RULE)
-  public void addRule(HttpRequest request, HttpResponder responder) {
+  public void addRule(final HttpRequest request,
+                      final HttpResponder responder) {
 
     final ObjectNode requestObject = deserializeRequest(request);
     final Rule rule = nodeToNewRule(requestObject);
@@ -236,7 +238,8 @@ public class RulesHandler extends AbstractRestDbHandler {
   @OPTIONS
   @Consumes(WILDCARD)
   @RequiredRole(ROLE.NOACCESS)
-  public void options(HttpRequest request, HttpResponder responder) {
+  public void options(final HttpRequest request,
+                      final HttpResponder responder) {
     responder.sendStatus(OK, OPTIONS_HEADERS);
   }
 }

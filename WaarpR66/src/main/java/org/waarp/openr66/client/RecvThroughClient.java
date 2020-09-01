@@ -85,10 +85,13 @@ public class RecvThroughClient extends AbstractTransfer {
    * @param id
    * @param networkTransaction
    */
-  public RecvThroughClient(R66Future future, RecvThroughHandler handler,
-                           String remoteHost, String filename, String rulename,
-                           String fileinfo, boolean isMD5, int blocksize,
-                           long id, NetworkTransaction networkTransaction) {
+  public RecvThroughClient(final R66Future future,
+                           final RecvThroughHandler handler,
+                           final String remoteHost, final String filename,
+                           final String rulename, final String fileinfo,
+                           final boolean isMD5, final int blocksize,
+                           final long id,
+                           final NetworkTransaction networkTransaction) {
     // timestart since immediate
     super(RecvThroughClient.class, future, filename, rulename, fileinfo, isMD5,
           remoteHost, blocksize, id, null);

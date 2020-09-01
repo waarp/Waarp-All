@@ -32,7 +32,7 @@ public class NoRestartException extends Exception {
   /**
    * @param message
    */
-  public NoRestartException(String message) {
+  public NoRestartException(final String message) {
     super(message);
   }
 
@@ -40,7 +40,7 @@ public class NoRestartException extends Exception {
    * @param message
    * @param cause
    */
-  public NoRestartException(String message, Throwable cause) {
+  public NoRestartException(final String message, final Throwable cause) {
     super(message, cause);
   }
 

@@ -207,7 +207,7 @@ public class R66Result
      * Find the _Fields constant that matches fieldId, or null if its not
      * found.
      */
-    public static _Fields findByThriftId(int fieldId) {
+    public static _Fields findByThriftId(final int fieldId) {
       switch (fieldId) {
         case 1: // MODE
           return MODE;
@@ -259,7 +259,7 @@ public class R66Result
      * if
      * it is not found.
      */
-    public static _Fields findByThriftIdOrThrow(int fieldId) {
+    public static _Fields findByThriftIdOrThrow(final int fieldId) {
       final _Fields fields = findByThriftId(fieldId);
       if (fields == null) {
         throw new IllegalArgumentException(
@@ -272,14 +272,14 @@ public class R66Result
      * Find the _Fields constant that matches name, or null if its not
      * found.
      */
-    public static _Fields findByName(String name) {
+    public static _Fields findByName(final String name) {
       return byName.get(name);
     }
 
     private final short thriftId;
     private final String fieldName;
 
-    _Fields(short thriftId, String fieldName) {
+    _Fields(final short thriftId, final String fieldName) {
       this.thriftId = thriftId;
       this.fieldName = fieldName;
     }
@@ -382,7 +382,8 @@ public class R66Result
   public R66Result() {
   }
 
-  public R66Result(RequestMode mode, ErrorCode code, String resultinfo) {
+  public R66Result(final RequestMode mode, final ErrorCode code,
+                   final String resultinfo) {
     this();
     this.mode = mode;
     this.code = code;
@@ -392,7 +393,7 @@ public class R66Result
   /**
    * Performs a deep copy on <i>other</i>.
    */
-  public R66Result(R66Result other) {
+  public R66Result(final R66Result other) {
     issetBitfield = other.issetBitfield;
     if (other.isSetMode()) {
       mode = other.mode;
@@ -486,7 +487,7 @@ public class R66Result
   /**
    * @see RequestMode
    */
-  public R66Result setMode(RequestMode mode) {
+  public R66Result setMode(final RequestMode mode) {
     this.mode = mode;
     return this;
   }
@@ -503,7 +504,7 @@ public class R66Result
     return mode != null;
   }
 
-  public void setModeIsSet(boolean value) {
+  public void setModeIsSet(final boolean value) {
     if (!value) {
       mode = null;
     }
@@ -513,7 +514,7 @@ public class R66Result
     return fromuid;
   }
 
-  public R66Result setFromuid(String fromuid) {
+  public R66Result setFromuid(final String fromuid) {
     this.fromuid = fromuid;
     return this;
   }
@@ -531,7 +532,7 @@ public class R66Result
     return fromuid != null;
   }
 
-  public void setFromuidIsSet(boolean value) {
+  public void setFromuidIsSet(final boolean value) {
     if (!value) {
       fromuid = null;
     }
@@ -541,7 +542,7 @@ public class R66Result
     return destuid;
   }
 
-  public R66Result setDestuid(String destuid) {
+  public R66Result setDestuid(final String destuid) {
     this.destuid = destuid;
     return this;
   }
@@ -559,7 +560,7 @@ public class R66Result
     return destuid != null;
   }
 
-  public void setDestuidIsSet(boolean value) {
+  public void setDestuidIsSet(final boolean value) {
     if (!value) {
       destuid = null;
     }
@@ -569,7 +570,7 @@ public class R66Result
     return file;
   }
 
-  public R66Result setFile(String file) {
+  public R66Result setFile(final String file) {
     this.file = file;
     return this;
   }
@@ -586,7 +587,7 @@ public class R66Result
     return file != null;
   }
 
-  public void setFileIsSet(boolean value) {
+  public void setFileIsSet(final boolean value) {
     if (!value) {
       file = null;
     }
@@ -596,7 +597,7 @@ public class R66Result
     return rule;
   }
 
-  public R66Result setRule(String rule) {
+  public R66Result setRule(final String rule) {
     this.rule = rule;
     return this;
   }
@@ -613,7 +614,7 @@ public class R66Result
     return rule != null;
   }
 
-  public void setRuleIsSet(boolean value) {
+  public void setRuleIsSet(final boolean value) {
     if (!value) {
       rule = null;
     }
@@ -623,7 +624,7 @@ public class R66Result
     return tid;
   }
 
-  public R66Result setTid(long tid) {
+  public R66Result setTid(final long tid) {
     this.tid = tid;
     setTidIsSet(true);
     return this;
@@ -641,7 +642,7 @@ public class R66Result
     return EncodingUtils.testBit(issetBitfield, TID_ISSET_ID);
   }
 
-  public void setTidIsSet(boolean value) {
+  public void setTidIsSet(final boolean value) {
     issetBitfield = EncodingUtils.setBit(issetBitfield, TID_ISSET_ID, value);
   }
 
@@ -655,7 +656,7 @@ public class R66Result
   /**
    * @see Action
    */
-  public R66Result setAction(Action action) {
+  public R66Result setAction(final Action action) {
     this.action = action;
     return this;
   }
@@ -672,7 +673,7 @@ public class R66Result
     return action != null;
   }
 
-  public void setActionIsSet(boolean value) {
+  public void setActionIsSet(final boolean value) {
     if (!value) {
       action = null;
     }
@@ -688,7 +689,7 @@ public class R66Result
   /**
    * @see ErrorCode
    */
-  public R66Result setCode(ErrorCode code) {
+  public R66Result setCode(final ErrorCode code) {
     this.code = code;
     return this;
   }
@@ -705,7 +706,7 @@ public class R66Result
     return code != null;
   }
 
-  public void setCodeIsSet(boolean value) {
+  public void setCodeIsSet(final boolean value) {
     if (!value) {
       code = null;
     }
@@ -715,7 +716,7 @@ public class R66Result
     return resultinfo;
   }
 
-  public R66Result setResultinfo(String resultinfo) {
+  public R66Result setResultinfo(final String resultinfo) {
     this.resultinfo = resultinfo;
     return this;
   }
@@ -732,7 +733,7 @@ public class R66Result
     return resultinfo != null;
   }
 
-  public void setResultinfoIsSet(boolean value) {
+  public void setResultinfoIsSet(final boolean value) {
     if (!value) {
       resultinfo = null;
     }
@@ -742,7 +743,7 @@ public class R66Result
     return globalstep;
   }
 
-  public R66Result setGlobalstep(int globalstep) {
+  public R66Result setGlobalstep(final int globalstep) {
     this.globalstep = globalstep;
     setGlobalstepIsSet(true);
     return this;
@@ -760,7 +761,7 @@ public class R66Result
     return EncodingUtils.testBit(issetBitfield, GLOBALSTEP_ISSET_ID);
   }
 
-  public void setGlobalstepIsSet(boolean value) {
+  public void setGlobalstepIsSet(final boolean value) {
     issetBitfield =
         EncodingUtils.setBit(issetBitfield, GLOBALSTEP_ISSET_ID, value);
   }
@@ -769,7 +770,7 @@ public class R66Result
     return globallaststep;
   }
 
-  public R66Result setGloballaststep(int globallaststep) {
+  public R66Result setGloballaststep(final int globallaststep) {
     this.globallaststep = globallaststep;
     setGloballaststepIsSet(true);
     return this;
@@ -789,7 +790,7 @@ public class R66Result
     return EncodingUtils.testBit(issetBitfield, GLOBALLASTSTEP_ISSET_ID);
   }
 
-  public void setGloballaststepIsSet(boolean value) {
+  public void setGloballaststepIsSet(final boolean value) {
     issetBitfield =
         EncodingUtils.setBit(issetBitfield, GLOBALLASTSTEP_ISSET_ID, value);
   }
@@ -798,7 +799,7 @@ public class R66Result
     return step;
   }
 
-  public R66Result setStep(int step) {
+  public R66Result setStep(final int step) {
     this.step = step;
     setStepIsSet(true);
     return this;
@@ -816,7 +817,7 @@ public class R66Result
     return EncodingUtils.testBit(issetBitfield, STEP_ISSET_ID);
   }
 
-  public void setStepIsSet(boolean value) {
+  public void setStepIsSet(final boolean value) {
     issetBitfield = EncodingUtils.setBit(issetBitfield, STEP_ISSET_ID, value);
   }
 
@@ -824,7 +825,7 @@ public class R66Result
     return rank;
   }
 
-  public R66Result setRank(int rank) {
+  public R66Result setRank(final int rank) {
     this.rank = rank;
     setRankIsSet(true);
     return this;
@@ -842,7 +843,7 @@ public class R66Result
     return EncodingUtils.testBit(issetBitfield, RANK_ISSET_ID);
   }
 
-  public void setRankIsSet(boolean value) {
+  public void setRankIsSet(final boolean value) {
     issetBitfield = EncodingUtils.setBit(issetBitfield, RANK_ISSET_ID, value);
   }
 
@@ -850,7 +851,7 @@ public class R66Result
     return retrievemode;
   }
 
-  public R66Result setRetrievemode(boolean retrievemode) {
+  public R66Result setRetrievemode(final boolean retrievemode) {
     this.retrievemode = retrievemode;
     setRetrievemodeIsSet(true);
     return this;
@@ -869,7 +870,7 @@ public class R66Result
     return EncodingUtils.testBit(issetBitfield, RETRIEVEMODE_ISSET_ID);
   }
 
-  public void setRetrievemodeIsSet(boolean value) {
+  public void setRetrievemodeIsSet(final boolean value) {
     issetBitfield =
         EncodingUtils.setBit(issetBitfield, RETRIEVEMODE_ISSET_ID, value);
   }
@@ -878,7 +879,7 @@ public class R66Result
     return ismoved;
   }
 
-  public R66Result setIsmoved(boolean ismoved) {
+  public R66Result setIsmoved(final boolean ismoved) {
     this.ismoved = ismoved;
     setIsmovedIsSet(true);
     return this;
@@ -897,7 +898,7 @@ public class R66Result
     return EncodingUtils.testBit(issetBitfield, ISMOVED_ISSET_ID);
   }
 
-  public void setIsmovedIsSet(boolean value) {
+  public void setIsmovedIsSet(final boolean value) {
     issetBitfield =
         EncodingUtils.setBit(issetBitfield, ISMOVED_ISSET_ID, value);
   }
@@ -906,7 +907,7 @@ public class R66Result
     return originalfilename;
   }
 
-  public R66Result setOriginalfilename(String originalfilename) {
+  public R66Result setOriginalfilename(final String originalfilename) {
     this.originalfilename = originalfilename;
     return this;
   }
@@ -923,7 +924,7 @@ public class R66Result
     return originalfilename != null;
   }
 
-  public void setOriginalfilenameIsSet(boolean value) {
+  public void setOriginalfilenameIsSet(final boolean value) {
     if (!value) {
       originalfilename = null;
     }
@@ -933,7 +934,7 @@ public class R66Result
     return blocksize;
   }
 
-  public R66Result setBlocksize(int blocksize) {
+  public R66Result setBlocksize(final int blocksize) {
     this.blocksize = blocksize;
     setBlocksizeIsSet(true);
     return this;
@@ -951,7 +952,7 @@ public class R66Result
     return EncodingUtils.testBit(issetBitfield, BLOCKSIZE_ISSET_ID);
   }
 
-  public void setBlocksizeIsSet(boolean value) {
+  public void setBlocksizeIsSet(final boolean value) {
     issetBitfield =
         EncodingUtils.setBit(issetBitfield, BLOCKSIZE_ISSET_ID, value);
   }
@@ -960,7 +961,7 @@ public class R66Result
     return modetransfer;
   }
 
-  public R66Result setModetransfer(int modetransfer) {
+  public R66Result setModetransfer(final int modetransfer) {
     this.modetransfer = modetransfer;
     setModetransferIsSet(true);
     return this;
@@ -979,7 +980,7 @@ public class R66Result
     return EncodingUtils.testBit(issetBitfield, MODETRANSFER_ISSET_ID);
   }
 
-  public void setModetransferIsSet(boolean value) {
+  public void setModetransferIsSet(final boolean value) {
     issetBitfield =
         EncodingUtils.setBit(issetBitfield, MODETRANSFER_ISSET_ID, value);
   }
@@ -988,7 +989,7 @@ public class R66Result
     return start;
   }
 
-  public R66Result setStart(String start) {
+  public R66Result setStart(final String start) {
     this.start = start;
     return this;
   }
@@ -1005,7 +1006,7 @@ public class R66Result
     return start != null;
   }
 
-  public void setStartIsSet(boolean value) {
+  public void setStartIsSet(final boolean value) {
     if (!value) {
       start = null;
     }
@@ -1015,7 +1016,7 @@ public class R66Result
     return stop;
   }
 
-  public R66Result setStop(String stop) {
+  public R66Result setStop(final String stop) {
     this.stop = stop;
     return this;
   }
@@ -1032,14 +1033,14 @@ public class R66Result
     return stop != null;
   }
 
-  public void setStopIsSet(boolean value) {
+  public void setStopIsSet(final boolean value) {
     if (!value) {
       stop = null;
     }
   }
 
   @Override
-  public void setFieldValue(_Fields field, Object value) {
+  public void setFieldValue(final _Fields field, final Object value) {
     switch (field) {
       case MODE:
         if (value == null) {
@@ -1205,7 +1206,7 @@ public class R66Result
   }
 
   @Override
-  public Object getFieldValue(_Fields field) {
+  public Object getFieldValue(final _Fields field) {
     switch (field) {
       case MODE:
         return getMode();
@@ -1277,7 +1278,7 @@ public class R66Result
    * value) and false otherwise
    */
   @Override
-  public boolean isSet(_Fields field) {
+  public boolean isSet(final _Fields field) {
     if (field == null) {
       throw new IllegalArgumentException();
     }
@@ -1328,7 +1329,7 @@ public class R66Result
   }
 
   @Override
-  public boolean equals(Object that) {
+  public boolean equals(final Object that) {
     if (that == null) {
       return false;
     }
@@ -1338,7 +1339,7 @@ public class R66Result
     return false;
   }
 
-  public boolean equals(R66Result that) {
+  public boolean equals(final R66Result that) {
     if (that == null) {
       return false;
     }
@@ -1570,7 +1571,7 @@ public class R66Result
   }
 
   @Override
-  public int compareTo(R66Result other) {
+  public int compareTo(final R66Result other) {
     if (!getClass().equals(other.getClass())) {
       return getClass().getName().compareTo(other.getClass().getName());
     }
@@ -1793,24 +1794,23 @@ public class R66Result
   }
 
   @Override
-  public _Fields fieldForId(int fieldId) {
+  public _Fields fieldForId(final int fieldId) {
     return _Fields.findByThriftId(fieldId);
   }
 
   @Override
-  public void read(TProtocol iprot) throws TException {
+  public void read(final TProtocol iprot) throws TException {
     schemes.get(iprot.getScheme()).getScheme().read(iprot, this);
   }
 
   @Override
-  public void write(TProtocol oprot) throws TException {
+  public void write(final TProtocol oprot) throws TException {
     schemes.get(oprot.getScheme()).getScheme().write(oprot, this);
   }
 
   @Override
   public String toString() {
     final StringBuilder sb = new StringBuilder("R66Result(");
-    boolean first = true;
 
     sb.append("mode:");
     if (mode == null) {
@@ -1818,178 +1818,121 @@ public class R66Result
     } else {
       sb.append(mode);
     }
-    first = false;
     if (isSetFromuid()) {
-      if (!first) {
-        sb.append(", ");
-      }
+      sb.append(", ");
       sb.append("fromuid:");
       if (fromuid == null) {
         sb.append("null");
       } else {
         sb.append(fromuid);
       }
-      first = false;
     }
     if (isSetDestuid()) {
-      if (!first) {
-        sb.append(", ");
-      }
+      sb.append(", ");
       sb.append("destuid:");
       if (destuid == null) {
         sb.append("null");
       } else {
         sb.append(destuid);
       }
-      first = false;
     }
     if (isSetFile()) {
-      if (!first) {
-        sb.append(", ");
-      }
+      sb.append(", ");
       sb.append("file:");
       if (file == null) {
         sb.append("null");
       } else {
         sb.append(file);
       }
-      first = false;
     }
     if (isSetRule()) {
-      if (!first) {
-        sb.append(", ");
-      }
+      sb.append(", ");
       sb.append("rule:");
       if (rule == null) {
         sb.append("null");
       } else {
         sb.append(rule);
       }
-      first = false;
     }
     if (isSetTid()) {
-      if (!first) {
-        sb.append(", ");
-      }
+      sb.append(", ");
       sb.append("tid:").append(tid);
-      first = false;
     }
     if (isSetAction()) {
-      if (!first) {
-        sb.append(", ");
-      }
+      sb.append(", ");
       sb.append("action:");
       if (action == null) {
         sb.append("null");
       } else {
         sb.append(action);
       }
-      first = false;
     }
-    if (!first) {
-      sb.append(", ");
-    }
+    sb.append(", ");
     sb.append("code:");
     if (code == null) {
       sb.append("null");
     } else {
       sb.append(code);
     }
-    first = false;
-    if (!first) {
-      sb.append(", ");
-    }
+    sb.append(", ");
     sb.append("resultinfo:");
     if (resultinfo == null) {
       sb.append("null");
     } else {
       sb.append(resultinfo);
     }
-    first = false;
     if (isSetGlobalstep()) {
-      if (!first) {
-        sb.append(", ");
-      }
+      sb.append(", ");
       sb.append("globalstep:").append(globalstep);
-      first = false;
     }
     if (isSetGloballaststep()) {
-      if (!first) {
-        sb.append(", ");
-      }
+      sb.append(", ");
       sb.append("globallaststep:").append(globallaststep);
-      first = false;
     }
     if (isSetStep()) {
-      if (!first) {
-        sb.append(", ");
-      }
+      sb.append(", ");
       sb.append("step:").append(step);
-      first = false;
     }
     if (isSetRank()) {
-      if (!first) {
-        sb.append(", ");
-      }
+      sb.append(", ");
       sb.append("rank:").append(rank);
-      first = false;
     }
     if (isSetRetrievemode()) {
-      if (!first) {
-        sb.append(", ");
-      }
+      sb.append(", ");
       sb.append("retrievemode:").append(retrievemode);
-      first = false;
     }
     if (isSetIsmoved()) {
-      if (!first) {
-        sb.append(", ");
-      }
+      sb.append(", ");
       sb.append("ismoved:").append(ismoved);
-      first = false;
     }
     if (isSetOriginalfilename()) {
-      if (!first) {
-        sb.append(", ");
-      }
+      sb.append(", ");
       sb.append("originalfilename:");
       if (originalfilename == null) {
         sb.append("null");
       } else {
         sb.append(originalfilename);
       }
-      first = false;
     }
     if (isSetBlocksize()) {
-      if (!first) {
-        sb.append(", ");
-      }
+      sb.append(", ");
       sb.append("blocksize:").append(blocksize);
-      first = false;
     }
     if (isSetModetransfer()) {
-      if (!first) {
-        sb.append(", ");
-      }
+      sb.append(", ");
       sb.append("modetransfer:").append(modetransfer);
-      first = false;
     }
     if (isSetStart()) {
-      if (!first) {
-        sb.append(", ");
-      }
+      sb.append(", ");
       sb.append("start:");
       if (start == null) {
         sb.append("null");
       } else {
         sb.append(start);
       }
-      first = false;
     }
     if (isSetStop()) {
-      if (!first) {
-        sb.append(", ");
-      }
+      sb.append(", ");
       sb.append("stop:");
       if (stop == null) {
         sb.append("null");
@@ -2018,7 +1961,7 @@ public class R66Result
     // check for sub-struct validity
   }
 
-  private void writeObject(ObjectOutputStream out) throws IOException {
+  private void writeObject(final ObjectOutputStream out) throws IOException {
     try {
       write(new TCompactProtocol(new TIOStreamTransport(out)));
     } catch (final TException te) {
@@ -2026,7 +1969,7 @@ public class R66Result
     }
   }
 
-  private void readObject(ObjectInputStream in)
+  private void readObject(final ObjectInputStream in)
       throws IOException, ClassNotFoundException {
     try {
       // it doesn't seem like you should have to do this, but java serialization is wacky, and
@@ -2049,7 +1992,8 @@ public class R66Result
       extends StandardScheme<R66Result> {
 
     @Override
-    public void read(TProtocol iprot, R66Result struct) throws TException {
+    public void read(final TProtocol iprot, final R66Result struct)
+        throws TException {
       TField schemeField;
       iprot.readStructBegin();
       while (true) {
@@ -2231,7 +2175,8 @@ public class R66Result
     }
 
     @Override
-    public void write(TProtocol oprot, R66Result struct) throws TException {
+    public void write(final TProtocol oprot, final R66Result struct)
+        throws TException {
       struct.validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
@@ -2351,7 +2296,8 @@ public class R66Result
   private static class R66ResultTupleScheme extends TupleScheme<R66Result> {
 
     @Override
-    public void write(TProtocol prot, R66Result struct) throws TException {
+    public void write(final TProtocol prot, final R66Result struct)
+        throws TException {
       final TTupleProtocol oprot = (TTupleProtocol) prot;
       oprot.writeI32(struct.mode.getValue());
       oprot.writeI32(struct.code.getValue());
@@ -2463,7 +2409,8 @@ public class R66Result
     }
 
     @Override
-    public void read(TProtocol prot, R66Result struct) throws TException {
+    public void read(final TProtocol prot, final R66Result struct)
+        throws TException {
       final TTupleProtocol iprot = (TTupleProtocol) prot;
       struct.mode = RequestMode.findByValue(iprot.readI32());
       struct.setModeIsSet(true);

@@ -113,8 +113,9 @@ public class RestHandlerHook implements HandlerHook {
    *     a response must be sent immediately.
    */
   @Override
-  public boolean preCall(HttpRequest request, HttpResponder responder,
-                         HandlerInfo handlerInfo) {
+  public boolean preCall(final HttpRequest request,
+                         final HttpResponder responder,
+                         final HandlerInfo handlerInfo) {
 
     try {
       final AbstractRestDbHandler handler = getHandler(handlerInfo);
@@ -167,7 +168,7 @@ public class RestHandlerHook implements HandlerHook {
    * @throws IllegalArgumentException if the given handler does not
    *     exist.
    */
-  private AbstractRestDbHandler getHandler(HandlerInfo handlerInfo) {
+  private AbstractRestDbHandler getHandler(final HandlerInfo handlerInfo) {
     for (final AbstractRestDbHandler h : RestServiceInitializer.handlers) {
       if (h.getClass().getName().equals(handlerInfo.getHandlerName())) {
         return h;
@@ -190,8 +191,8 @@ public class RestHandlerHook implements HandlerHook {
    * @throws IllegalArgumentException if the given method name does
    *     not exist
    */
-  private Method getMethod(AbstractRestDbHandler handler,
-                           HandlerInfo handlerInfo) {
+  private Method getMethod(final AbstractRestDbHandler handler,
+                           final HandlerInfo handlerInfo) {
     Method method = null;
     for (final Method m : handler.getClass().getMethods()) {//NOSONAR
       if (m.getName().equals(handlerInfo.getMethodName()) &&
@@ -220,7 +221,7 @@ public class RestHandlerHook implements HandlerHook {
    *
    * @return the list of all acceptable MediaType
    */
-  private List<MediaType> getExpectedMediaTypes(Method method) {
+  private List<MediaType> getExpectedMediaTypes(final Method method) {
     List<MediaType> consumedTypes = WILDCARD_TYPE_SINGLETON_LIST;
 
     if (method.isAnnotationPresent(Consumes.class)) {
@@ -250,15 +251,15 @@ public class RestHandlerHook implements HandlerHook {
    * @return {@code true} if the request content type is acceptable, {@code
    *     false} otherwise.
    */
-  private boolean checkContentType(HttpRequest request,
-                                   List<MediaType> consumedTypes) {
+  private boolean checkContentType(final HttpRequest request,
+                                   final List<MediaType> consumedTypes) {
 
     final String contentTypeHeader = request.headers().get(CONTENT_TYPE);
     if (contentTypeHeader == null || contentTypeHeader.isEmpty()) {
       return true;
     }
 
-    MediaType requestType;
+    final MediaType requestType;
     try {
       requestType = readAcceptMediaType(contentTypeHeader).get(0);
     } catch (final ParseException e) {
@@ -286,7 +287,7 @@ public class RestHandlerHook implements HandlerHook {
    * @throws NotAllowedException if the user making the request does
    *     not exist
    */
-  protected String checkCredentials(HttpRequest request) {
+  protected String checkCredentials(final HttpRequest request) {
 
     final String authorization = request.headers().get(AUTHORIZATION);
 
@@ -299,7 +300,7 @@ public class RestHandlerHook implements HandlerHook {
 
     if (basicMatcher.find()) {
 
-      String[] credentials;
+      final String[] credentials;
       credentials =
           new String(BaseXx.getFromBase64(basicMatcher.group(2))).split(":", 2);
       if (credentials.length != 2) {
@@ -325,7 +326,7 @@ public class RestHandlerHook implements HandlerHook {
         DAOFactory.closeDAO(hostDAO);
       }
 
-      String key;
+      final String key;
       try {
         key = configuration.getCryptoKey().cryptToHex(pswd);
       } catch (final Exception e) {
@@ -348,7 +349,7 @@ public class RestHandlerHook implements HandlerHook {
     if (hmacMatcher.find() && authUser != null && authDate != null) {
 
       final String authKey = hmacMatcher.group(2);
-      DateTime requestDate;
+      final DateTime requestDate;
       try {
         requestDate = DateTime.parse(authDate);
       } catch (final IllegalArgumentException e) {
@@ -383,10 +384,11 @@ public class RestHandlerHook implements HandlerHook {
     throw new NotAllowedException("Missing credentials.");
   }
 
-  protected void validateHMACCredentials(Host host, String authDate,
-                                         String authUser, String authKey)
+  protected void validateHMACCredentials(final Host host, final String authDate,
+                                         final String authUser,
+                                         final String authKey)
       throws InternalServerErrorException {
-    String pswd;
+    final String pswd;
     try {
       pswd = configuration.getCryptoKey().decryptHexInString(host.getHostkey());
     } catch (final Exception e) {
@@ -394,7 +396,7 @@ public class RestHandlerHook implements HandlerHook {
           "An error occurred when decrypting the password", e);
     }
 
-    String key;
+    final String key;
     try {
       key = hmac.cryptToHex(authDate + authUser + pswd);
     } catch (final Exception e) {
@@ -417,13 +419,13 @@ public class RestHandlerHook implements HandlerHook {
    * @return {@code true} if the user is authorized to make the request,
    *     {@code false} otherwise.
    */
-  protected boolean checkAuthorization(String user, Method method) {
+  protected boolean checkAuthorization(final String user, final Method method) {
     try {
-      DbHostAuth hostAuth = new DbHostAuth(user);
+      final DbHostAuth hostAuth = new DbHostAuth(user);
       if (hostAuth.isAdminrole()) {
         return true;
       }
-    } catch (WaarpDatabaseException e) {
+    } catch (final WaarpDatabaseException e) {
       // ignore and continue
     }
 
@@ -444,13 +446,11 @@ public class RestHandlerHook implements HandlerHook {
 
     final List<ROLE> roles = HostConfigConverter.getRoles(user);
     if (roles != null) {
-      RoleDefault roleDefault = new RoleDefault();
+      final RoleDefault roleDefault = new RoleDefault();
       for (final ROLE roleType : roles) {
         roleDefault.addRole(roleType);
       }
-      if (roleDefault.isContaining(requiredRole)) {
-        return true;
-      }
+      return roleDefault.isContaining(requiredRole);
     }
     return false;
   }
@@ -465,9 +465,9 @@ public class RestHandlerHook implements HandlerHook {
    *     request was sent
    */
   @Override
-  public void postCall(HttpRequest httpRequest,
-                       HttpResponseStatus httpResponseStatus,
-                       HandlerInfo handlerInfo) {
+  public void postCall(final HttpRequest httpRequest,
+                       final HttpResponseStatus httpResponseStatus,
+                       final HandlerInfo handlerInfo) {
     // ignore
   }
 
@@ -481,7 +481,8 @@ public class RestHandlerHook implements HandlerHook {
    * @param hmac the key used for HMAC authentication
    * @param delay the delay for which a HMAC signed request is valid
    */
-  public RestHandlerHook(boolean authenticated, HmacSha256 hmac, long delay) {
+  public RestHandlerHook(final boolean authenticated, final HmacSha256 hmac,
+                         final long delay) {
     this.authenticated = authenticated;
     this.hmac = hmac;
     this.delay = delay;

@@ -74,7 +74,7 @@ public class R66Environment {
     }
   }
 
-  public void initialize(String[] args) {
+  public void initialize(final String[] args) {
     WaarpLoggerFactory
         .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));
     initLog();
@@ -108,7 +108,7 @@ public class R66Environment {
     // System.exit(0)
   }
 
-  public void debug(boolean isDebug) {
+  public void debug(final boolean isDebug) {
     final Logger logger =
         (Logger) LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME);
     if (isDebug) {
@@ -137,8 +137,8 @@ public class R66Environment {
     return result.isSuccess();
   }
 
-  public boolean startsTransfer(JProgressBar progressBar,
-                                JEditorPane textFieldStatus) {
+  public boolean startsTransfer(final JProgressBar progressBar,
+                                final JEditorPane textFieldStatus) {
     logger.debug("start startTransfer2");
     final long time1 = System.currentTimeMillis();
     final R66Future future = new R66Future(true);
@@ -205,8 +205,8 @@ public class R66Environment {
     if (logger == null) {
       logger = WaarpLoggerFactory.getLogger(R66ClientGui.class);
     }
-    String[] results;
-    DbHostAuth[] dbHostAuths;
+    final String[] results;
+    final DbHostAuth[] dbHostAuths;
     try {
       dbHostAuths = DbHostAuth.getAllHosts();
     } catch (final WaarpDatabaseNoConnectionException e) {
@@ -230,8 +230,8 @@ public class R66Environment {
     if (logger == null) {
       logger = WaarpLoggerFactory.getLogger(R66ClientGui.class);
     }
-    String[] results;
-    DbRule[] dbRules;
+    final String[] results;
+    final DbRule[] dbRules;
     try {
       dbRules = DbRule.getAllRules();
     } catch (final WaarpDatabaseNoConnectionException e) {
@@ -251,12 +251,12 @@ public class R66Environment {
     return results;
   }
 
-  public static String[] getRules(boolean sendMode) {
+  public static String[] getRules(final boolean sendMode) {
     if (logger == null) {
       logger = WaarpLoggerFactory.getLogger(R66ClientGui.class);
     }
-    String[] results;
-    DbRule[] dbRules;
+    final String[] results;
+    final DbRule[] dbRules;
     try {
       dbRules = DbRule.getAllRules();
     } catch (final WaarpDatabaseNoConnectionException e) {
@@ -299,7 +299,7 @@ public class R66Environment {
     return results;
   }
 
-  public static String getHost(String id) {
+  public static String getHost(final String id) {
     if (logger == null) {
       logger = WaarpLoggerFactory.getLogger(R66ClientGui.class);
     }
@@ -328,7 +328,7 @@ public class R66Environment {
     return "HostId: " + id;
   }
 
-  public static String getRule(String id) {
+  public static String getRule(final String id) {
     if (logger == null) {
       logger = WaarpLoggerFactory.getLogger(R66ClientGui.class);
     }

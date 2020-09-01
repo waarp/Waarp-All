@@ -36,7 +36,7 @@ public class Reply501Exception extends CommandAbstractException {
    *
    * @param message
    */
-  public Reply501Exception(String message) {
+  public Reply501Exception(final String message) {
     super(ReplyCode.REPLY_501_SYNTAX_ERROR_IN_PARAMETERS_OR_ARGUMENTS, message);
   }
 

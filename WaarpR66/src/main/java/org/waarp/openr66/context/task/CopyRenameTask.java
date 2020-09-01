@@ -44,18 +44,24 @@ public class CopyRenameTask extends AbstractTask {
    * @param argTransfer
    * @param session
    */
-  public CopyRenameTask(String argRule, int delay, String argTransfer,
-                        R66Session session) {
+  public CopyRenameTask(final String argRule, final int delay,
+                        final String argTransfer, final R66Session session) {
     super(TaskType.COPYRENAME, delay, argRule, argTransfer, session);
   }
 
   @Override
   public void run() {
+    if (argRule == null) {
+      logger.error(
+          "Copy and Rename cannot be done with " + argRule + ':' + argTransfer +
+          " and " + session);
+      futureCompletion.setFailure(
+          new OpenR66ProtocolSystemException("Copy and Rename cannot be done"));
+      return;
+    }
     String finalname = argRule;
-    finalname = getReplacedValue(finalname, argTransfer.split(" ")).trim()
-                                                                   .replace(
-                                                                       '\\',
-                                                                       '/');
+    finalname = getReplacedValue(finalname, argTransfer == null? null :
+        argTransfer.split(" ")).trim().replace('\\', '/');
     logger.info("Copy and Rename to " + finalname + " with " + argRule + ':' +
                 argTransfer + " and {}", session);
     final File from = session.getFile().getTrueFile();

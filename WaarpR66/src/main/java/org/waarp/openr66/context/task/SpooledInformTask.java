@@ -73,8 +73,8 @@ public class SpooledInformTask extends AbstractExecJavaTask {
      * @param host
      * @param fileMonitorInformation
      */
-    private SpooledInformation(String host,
-                               FileMonitorInformation fileMonitorInformation) {
+    private SpooledInformation(final String host,
+                               final FileMonitorInformation fileMonitorInformation) {
       this.host = host;
       this.fileMonitorInformation = fileMonitorInformation;
     }
@@ -99,7 +99,7 @@ public class SpooledInformTask extends AbstractExecJavaTask {
           synchronized (spooledInformationMap) {
             if (fileMonitorInformation.removedFileItems == null ||
                 fileMonitorInformation.removedFileItems.isEmpty()) {
-              SpooledInformation old = spooledInformationMap
+              final SpooledInformation old = spooledInformationMap
                   .put(fileMonitorInformation.name,
                        new SpooledInformation(host, fileMonitorInformation));
               if (old != null && old.fileMonitorInformation != null) {
@@ -170,8 +170,9 @@ public class SpooledInformTask extends AbstractExecJavaTask {
    * @return the StringBuilder containing the HTML format as a Table of the
    *     current Spooled information
    */
-  public static StringBuilder buildSpooledTable(boolean detailed, int status,
-                                                String uri) {
+  public static StringBuilder buildSpooledTable(final boolean detailed,
+                                                final int status,
+                                                final String uri) {
     final StringBuilder builder = beginSpooledTable(detailed, uri);
     // get current information
     synchronized (spooledInformationMap) {
@@ -192,7 +193,8 @@ public class SpooledInformTask extends AbstractExecJavaTask {
    * @return the StringBuilder containing the HTML format as a Table of the
    *     current Spooled information
    */
-  public static StringBuilder buildSpooledUniqueTable(String uri, String name) {
+  public static StringBuilder buildSpooledUniqueTable(final String uri,
+                                                      final String name) {
     final StringBuilder builder = beginSpooledTable(false, uri);
     // get current information
     synchronized (spooledInformationMap) {
@@ -211,7 +213,7 @@ public class SpooledInformTask extends AbstractExecJavaTask {
   /**
    * @param builder
    */
-  private static void endSpooledTable(StringBuilder builder) {
+  private static void endSpooledTable(final StringBuilder builder) {
     builder.append("</TBODY></TABLE></small>");
   }
 
@@ -221,7 +223,8 @@ public class SpooledInformTask extends AbstractExecJavaTask {
    *
    * @return the associated StringBuilder as temporary result
    */
-  private static StringBuilder beginSpooledTable(boolean detailed, String uri) {
+  private static StringBuilder beginSpooledTable(final boolean detailed,
+                                                 final String uri) {
     final StringBuilder builder = new StringBuilder();
     builder.append(
         "<small><TABLE class='table table-condensed table-bordered' BORDER=1><CAPTION><A HREF=");
@@ -264,10 +267,9 @@ public class SpooledInformTask extends AbstractExecJavaTask {
    * @param builder
    * @param name
    */
-  private static SpooledInformation buildSpooledTableElement(boolean detailed,
-                                                             int status,
-                                                             StringBuilder builder,
-                                                             String name) {
+  private static SpooledInformation buildSpooledTableElement(
+      final boolean detailed, final int status, final StringBuilder builder,
+      final String name) {
     final SpooledInformation inform = spooledInformationMap.get(name);
     if (inform == null) {
       return null;
@@ -308,7 +310,8 @@ public class SpooledInformTask extends AbstractExecJavaTask {
           .append(inform.fileMonitorInformation.stopFile).append(TD_TD)
           .append(inform.fileMonitorInformation.statusFile).append(TD_TD)
           .append(inform.fileMonitorInformation.scanSubDir).append("</TD>");
-      StringBuilder dirs = new StringBuilder("<ul class='list-unstyled'>");
+      final StringBuilder dirs =
+          new StringBuilder("<ul class='list-unstyled'>");
       for (final File dir : inform.fileMonitorInformation.directories) {
         dirs.append("<li>").append(dir).append("</li>");
       }
@@ -341,8 +344,8 @@ public class SpooledInformTask extends AbstractExecJavaTask {
    * @param builder
    * @param inform
    */
-  private static void buildSpooledTableFiles(StringBuilder builder,
-                                             SpooledInformation inform) {
+  private static void buildSpooledTableFiles(final StringBuilder builder,
+                                             final SpooledInformation inform) {
     builder.append(
         "<small><TABLE class='table table-condensed table-bordered' BORDER=1><THEAD><TR><TH>") //$NON-NLS-1$
            .append(Messages.getString("SpooledInformTask.10")).append(TH_TH)
@@ -384,8 +387,8 @@ public class SpooledInformTask extends AbstractExecJavaTask {
    * @return the String containing the JSON format of the current Spooled
    *     information
    */
-  public static String buildSpooledJson(boolean detailed, int status,
-                                        String uri) {
+  public static String buildSpooledJson(final boolean detailed,
+                                        final int status, final String uri) {
     final ArrayNode array = JsonHandler.createArrayNode();
     // get current information
     synchronized (spooledInformationMap) {
@@ -405,7 +408,8 @@ public class SpooledInformTask extends AbstractExecJavaTask {
    * @return the String containing the JSON format of the current Spooled
    *     information
    */
-  public static String buildSpooledUniqueJson(String uri, String name) {
+  public static String buildSpooledUniqueJson(final String uri,
+                                              final String name) {
     final ArrayNode array = JsonHandler.createArrayNode();
     // get current information
     synchronized (spooledInformationMap) {
@@ -422,8 +426,10 @@ public class SpooledInformTask extends AbstractExecJavaTask {
    * @param array
    * @param name
    */
-  private static void buildSpooledJsonElement(boolean detailed, int status,
-                                              ArrayNode array, String name) {
+  private static void buildSpooledJsonElement(final boolean detailed,
+                                              final int status,
+                                              final ArrayNode array,
+                                              final String name) {
     final SpooledInformation inform = spooledInformationMap.get(name);
     if (inform == null) {
       return;
@@ -443,7 +449,7 @@ public class SpooledInformTask extends AbstractExecJavaTask {
     final ObjectNode elt = JsonHandler.createObjectNode();
     elt.put("NAME", name.replace(',', ' '));
     elt.put("HOST", inform.host);
-    String val;
+    final String val;
     if (time + Configuration.configuration.getTimeoutCon() < curtime) {
       val = "bg-danger";
     } else if (time < curtime) {
@@ -461,8 +467,8 @@ public class SpooledInformTask extends AbstractExecJavaTask {
       elt.put("STOPFILE", inform.fileMonitorInformation.stopFile.getPath());
       elt.put("STATUSFILE", inform.fileMonitorInformation.statusFile.getPath());
       elt.put("SUBDIRS", inform.fileMonitorInformation.scanSubDir);
-      StringBuilder dirs = new StringBuilder();
-      StringBuilder dirs2 = new StringBuilder();
+      final StringBuilder dirs = new StringBuilder();
+      final StringBuilder dirs2 = new StringBuilder();
       int i = 0;
       for (final File dir : inform.fileMonitorInformation.directories) {
         i++;
@@ -490,9 +496,9 @@ public class SpooledInformTask extends AbstractExecJavaTask {
    * @param inform
    * @param dirs
    */
-  private static void buildSpooledJsonFiles(ObjectNode node,
-                                            SpooledInformation inform,
-                                            String[] dirs) {
+  private static void buildSpooledJsonFiles(final ObjectNode node,
+                                            final SpooledInformation inform,
+                                            final String[] dirs) {
     final ArrayNode array = node.putArray("FILES");
     if (inform.fileMonitorInformation.fileItems.isEmpty()) {
       array.add(0);

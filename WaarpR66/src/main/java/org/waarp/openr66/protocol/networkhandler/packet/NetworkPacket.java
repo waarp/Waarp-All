@@ -61,7 +61,8 @@ public class NetworkPacket {
    * @param code
    * @param buffer
    */
-  public NetworkPacket(int localId, int remoteId, byte code, ByteBuf buffer) {
+  public NetworkPacket(final int localId, final int remoteId, final byte code,
+                       final ByteBuf buffer) {
     this.remoteId = remoteId;
     this.localId = localId;
     this.code = code;
@@ -77,8 +78,9 @@ public class NetworkPacket {
    *
    * @throws OpenR66ProtocolPacketException
    */
-  public NetworkPacket(int localId, int remoteId, AbstractLocalPacket packet,
-                       LocalChannelReference lcr)
+  public NetworkPacket(final int localId, final int remoteId,
+                       final AbstractLocalPacket packet,
+                       final LocalChannelReference lcr)
       throws OpenR66ProtocolPacketException {
     this.remoteId = remoteId;
     this.localId = localId;
@@ -115,7 +117,7 @@ public class NetworkPacket {
     return code;
   }
 
-  public void writeNetworkHeader(ByteBuf buf, int capacity) {
+  public void writeNetworkHeader(final ByteBuf buf, final int capacity) {
     buf.writerIndex(0);
     buf.writeInt(capacity + NETWORK_HEADER_SIZE - 4);
     buf.writeInt(remoteId);

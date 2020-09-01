@@ -46,7 +46,7 @@ public abstract class WaarpTimeTicks extends TimeTicks {
     setInternalValue();
   }
 
-  protected WaarpTimeTicks(long value) {
+  protected WaarpTimeTicks(final long value) {
     setInternalValue(value);
   }
 

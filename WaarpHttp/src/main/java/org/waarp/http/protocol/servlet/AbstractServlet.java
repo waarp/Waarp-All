@@ -50,7 +50,7 @@ public class AbstractServlet extends HttpServlet {
   }
 
   @Override
-  public void init(ServletConfig config) throws ServletException {
+  public void init(final ServletConfig config) throws ServletException {
     final String r66Config = config.getInitParameter(R_66_CONFIG);
     logger.warn("Parameter Init: {}", r66Config);
     File file = new File(r66Config);
@@ -58,18 +58,18 @@ public class AbstractServlet extends HttpServlet {
         .debug("Parameter Init: {} {}?", file.getAbsolutePath(), file.exists());
     if (!file.exists()) {
       final ClassLoader classLoader = AbstractServlet.class.getClassLoader();
-      URL url = classLoader.getResource(r66Config);
+      final URL url = classLoader.getResource(r66Config);
       if (url != null) {
         file = new File(url.getFile());
       }
       logger.debug("Parameter Init: {} {}?", file.getAbsolutePath(),
                    file.exists());
     }
-    String sauthent = config.getInitParameter(AUTHENT_CLASSNAME);
+    final String sauthent = config.getInitParameter(AUTHENT_CLASSNAME);
     logger.warn("Parameter Init: {}", sauthent);
     try {
       authentClass = (Class<HttpAuthent>) Class.forName(sauthent);
-    } catch (ClassNotFoundException e) {
+    } catch (final ClassNotFoundException e) {
       logger.error("Cannot find authent class {}", sauthent);
       throw new ServletException("Cannot find authent class");
     }

@@ -75,8 +75,6 @@ public class WaarpSnmpAgent extends BaseAgent {
 
   private String[] address = { SnmpConfiguration.DEFAULTADDRESS };
 
-  private int nbThread = 4;
-
   private final boolean isFilterAccessEnabled;
 
   private boolean useTrap = true;
@@ -110,8 +108,10 @@ public class WaarpSnmpAgent extends BaseAgent {
    *
    * @throws IllegalArgumentException
    */
-  public WaarpSnmpAgent(File configurationFile, WaarpInterfaceMonitor monitor,
-                        WaarpInterfaceMib mib) throws IllegalArgumentException {
+  public WaarpSnmpAgent(final File configurationFile,
+                        final WaarpInterfaceMonitor monitor,
+                        final WaarpInterfaceMib mib)
+      throws IllegalArgumentException {
     /**
      * Creates a base agent with boot-counter, config file, and a CommandProcessor for processing SNMP requests.
      *
@@ -134,7 +134,7 @@ public class WaarpSnmpAgent extends BaseAgent {
       throw new IllegalArgumentException("Cannot load configuration");
     }
     address = SnmpConfiguration.address;
-    nbThread = SnmpConfiguration.nbThread;
+    final int nbThread = SnmpConfiguration.nbThread;
     isFilterAccessEnabled = SnmpConfiguration.isFilterAccessEnabled;
     useTrap = SnmpConfiguration.isUsingTrap;
     setTrapLevel(SnmpConfiguration.trapLevel);
@@ -205,7 +205,7 @@ public class WaarpSnmpAgent extends BaseAgent {
   /**
    * @param moGroup
    */
-  public void unregisterManagedObject(MOGroup moGroup) {
+  public void unregisterManagedObject(final MOGroup moGroup) {
     logger.debug("Unregister " + moGroup);
     moGroup.unregisterMOs(server, getContext(moGroup));
   }
@@ -215,7 +215,7 @@ public class WaarpSnmpAgent extends BaseAgent {
    * V3
    */
   @Override
-  protected void addUsmUser(USM usm) {
+  protected void addUsmUser(final USM usm) {
     for (final UsmUser userlist : listUsmUser) {
       logger.debug("User: " + userlist);
       usm.addUser(userlist.getSecurityName(), usm.getLocalEngineID(), userlist);
@@ -230,8 +230,8 @@ public class WaarpSnmpAgent extends BaseAgent {
    * Adds initial notification targets and filters.
    */
   @Override
-  protected void addNotificationTargets(SnmpTargetMIB targetMIB,
-                                        SnmpNotificationMIB notificationMIB) {
+  protected void addNotificationTargets(final SnmpTargetMIB targetMIB,
+                                        final SnmpNotificationMIB notificationMIB) {
     targetMIB.addDefaultTDomains();
 
     for (final TargetElement element : listTargetElements) {
@@ -281,7 +281,7 @@ public class WaarpSnmpAgent extends BaseAgent {
    * http://www.faqs.org/rfcs/rfc2575.html
    */
   @Override
-  protected void addViews(VacmMIB vacm) {
+  protected void addViews(final VacmMIB vacm) {
     vacm.addGroup(SecurityModel.SECURITY_MODEL_SNMPv1,
                   new OctetString("cpublic"), new OctetString("v1v2group"),
                   StorageType.nonVolatile);
@@ -356,7 +356,7 @@ public class WaarpSnmpAgent extends BaseAgent {
    * We only configure one, "public".
    */
   @Override
-  protected void addCommunities(SnmpCommunityMIB communityMIB) {
+  protected void addCommunities(final SnmpCommunityMIB communityMIB) {
     final Variable[] com2sec = {
         new OctetString("public"), // community name
         new OctetString("cpublic"), // security name
@@ -380,14 +380,15 @@ public class WaarpSnmpAgent extends BaseAgent {
 
   @Override
   protected void initTransportMappings() throws IOException {
-    TransportMapping<?>[] testMappings = new TransportMapping[address.length];
+    final TransportMapping<?>[] testMappings =
+        new TransportMapping[address.length];
     int nb = 0;
     for (final String addres : address) {
       final Address addr = GenericAddress.parse(addres);
       if (addr != null) {
         logger.info("SNMP Agent InitTransport: {} {}",
                     addr.getClass().getSimpleName(), addr);
-        TransportMapping<?> tm;
+        final TransportMapping<?> tm;
         try {
           tm = TransportMappings.getInstance().createTransportMapping(addr);
         } catch (final RuntimeException e) {
@@ -518,21 +519,21 @@ public class WaarpSnmpAgent extends BaseAgent {
   /**
    * @param trapLevel the trapLevel to set
    */
-  public void setTrapLevel(int trapLevel) {
+  public void setTrapLevel(final int trapLevel) {
     this.trapLevel = trapLevel;
   }
 
   /**
    * @param monitor the monitor to set
    */
-  private void setMonitor(WaarpInterfaceMonitor monitor) {
+  private void setMonitor(final WaarpInterfaceMonitor monitor) {
     this.monitor = monitor;
   }
 
   /**
    * @param mib the mib to set
    */
-  private void setMib(WaarpInterfaceMib mib) {
+  private void setMib(final WaarpInterfaceMib mib) {
     this.mib = mib;
   }
 }

@@ -51,9 +51,10 @@ public class JsonCommandPacket extends AbstractLocalPacket {
    *
    * @return the new ValidPacket from buffer
    */
-  public static JsonCommandPacket createFromBuffer(int headerLength,
-                                                   int middleLength,
-                                                   int endLength, ByteBuf buf) {
+  public static JsonCommandPacket createFromBuffer(final int headerLength,
+                                                   final int middleLength,
+                                                   final int endLength,
+                                                   final ByteBuf buf) {
     final byte[] bheader = new byte[headerLength - 1];
     final byte[] bmiddle = new byte[middleLength];
     final byte bend;
@@ -73,7 +74,8 @@ public class JsonCommandPacket extends AbstractLocalPacket {
    * @param sresult
    * @param end
    */
-  public JsonCommandPacket(String srequest, String sresult, byte end) {
+  public JsonCommandPacket(final String srequest, final String sresult,
+                           final byte end) {
     request = srequest;
     result = sresult;
     send = end;
@@ -83,7 +85,7 @@ public class JsonCommandPacket extends AbstractLocalPacket {
    * @param jrequest
    * @param end
    */
-  public JsonCommandPacket(JsonPacket jrequest, byte end) {
+  public JsonCommandPacket(final JsonPacket jrequest, final byte end) {
     request = jrequest.toString();
     result = null;
     send = end;
@@ -94,7 +96,8 @@ public class JsonCommandPacket extends AbstractLocalPacket {
    * @param sresult
    * @param end
    */
-  public JsonCommandPacket(JsonPacket jrequest, String sresult, byte end) {
+  public JsonCommandPacket(final JsonPacket jrequest, final String sresult,
+                           final byte end) {
     request = jrequest.toString();
     result = sresult;
     send = end;
@@ -106,7 +109,8 @@ public class JsonCommandPacket extends AbstractLocalPacket {
   }
 
   @Override
-  public void createAllBuffers(LocalChannelReference lcr, int networkHeader)
+  public void createAllBuffers(final LocalChannelReference lcr,
+                               final int networkHeader)
       throws OpenR66ProtocolPacketException {
     final byte[] headerBytes =
         request != null? request.getBytes() : EMPTY_ARRAY;
@@ -133,14 +137,14 @@ public class JsonCommandPacket extends AbstractLocalPacket {
   }
 
   @Override
-  public void createEnd(LocalChannelReference lcr)
+  public void createEnd(final LocalChannelReference lcr)
       throws OpenR66ProtocolPacketException {
     end = ByteBufAllocator.DEFAULT.buffer(1, 1);
     end.writeByte(send);
   }
 
   @Override
-  public void createHeader(LocalChannelReference lcr)
+  public void createHeader(final LocalChannelReference lcr)
       throws OpenR66ProtocolPacketException {
     if (request != null) {
       header = Unpooled.wrappedBuffer(request.getBytes());
@@ -148,7 +152,7 @@ public class JsonCommandPacket extends AbstractLocalPacket {
   }
 
   @Override
-  public void createMiddle(LocalChannelReference lcr)
+  public void createMiddle(final LocalChannelReference lcr)
       throws OpenR66ProtocolPacketException {
     if (result != null) {
       middle = Unpooled.wrappedBuffer(result.getBytes());
@@ -183,7 +187,7 @@ public class JsonCommandPacket extends AbstractLocalPacket {
   /**
    * @param result
    */
-  public void setResult(String result) {
+  public void setResult(final String result) {
     this.result = result;
     middle = null;
   }

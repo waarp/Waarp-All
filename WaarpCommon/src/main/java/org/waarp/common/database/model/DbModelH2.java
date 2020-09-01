@@ -89,7 +89,8 @@ public abstract class DbModelH2 extends DbModelAbstract {
    *
    * @throws WaarpDatabaseNoConnectionException
    */
-  protected DbModelH2(String dbserver, String dbuser, String dbpasswd)
+  protected DbModelH2(final String dbserver, final String dbuser,
+                      final String dbpasswd)
       throws WaarpDatabaseNoConnectionException {
     this();
     pool = JdbcConnectionPool.create(dbserver, dbuser, dbpasswd);
@@ -139,8 +140,8 @@ public abstract class DbModelH2 extends DbModelAbstract {
   }
 
   @Override
-  public Connection getDbConnection(String server, String user, String passwd)
-      throws SQLException {
+  public Connection getDbConnection(final String server, final String user,
+                                    final String passwd) throws SQLException {
     synchronized (this) {
       if (pool != null) {
         try {
@@ -175,12 +176,12 @@ public abstract class DbModelH2 extends DbModelAbstract {
 
     public final String constructor;
 
-    DBType(int type, String constructor) {
+    DBType(final int type, final String constructor) {
       this.type = type;
       this.constructor = constructor;
     }
 
-    public static String getType(int sqltype) {
+    public static String getType(final int sqltype) {
       switch (sqltype) {
         case Types.CHAR:
           return CHAR.constructor;
@@ -221,7 +222,7 @@ public abstract class DbModelH2 extends DbModelAbstract {
   }
 
   @Override
-  public void resetSequence(DbSession session, long newvalue)
+  public void resetSequence(final DbSession session, final long newvalue)
       throws WaarpDatabaseNoConnectionException {
     final String action =
         "ALTER SEQUENCE " + DbDataModel.fieldseq + " RESTART WITH " + newvalue;
@@ -239,7 +240,7 @@ public abstract class DbModelH2 extends DbModelAbstract {
   }
 
   @Override
-  public long nextSequence(DbSession dbSession)
+  public long nextSequence(final DbSession dbSession)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException,
              WaarpDatabaseNoDataException {
     long result = DbConstant.ILLEGALVALUE;
@@ -272,7 +273,8 @@ public abstract class DbModelH2 extends DbModelAbstract {
   }
 
   @Override
-  public String limitRequest(String allfields, String request, int nb) {
+  public String limitRequest(final String allfields, final String request,
+                             final int nb) {
     if (nb == 0) {
       return request;
     }

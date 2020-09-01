@@ -100,7 +100,7 @@ public final class RestServiceInitializer {
    *
    * @param config The REST API configuration object.
    */
-  private static void initHandlers(RestConfiguration config) {
+  private static void initHandlers(final RestConfiguration config) {
     final byte hostsCRUD = config.getResthandlersCrud()[DbHostAuth.ordinal()];
     final byte rulesCRUD = config.getResthandlersCrud()[DbRule.ordinal()];
     final byte transferCRUD =
@@ -187,7 +187,7 @@ public final class RestServiceInitializer {
                             new ChannelPipelineModifier() {
                               @Override
                               public void modify(
-                                  ChannelPipeline channelPipeline) {
+                                  final ChannelPipeline channelPipeline) {
                                 channelPipeline.addBefore(ROUTER, "aggregator",
                                                           new HttpObjectAggregator(
                                                               Configuration.configuration

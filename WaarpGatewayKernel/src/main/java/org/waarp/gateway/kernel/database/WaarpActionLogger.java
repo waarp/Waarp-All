@@ -51,8 +51,8 @@ public final class WaarpActionLogger {
    * @param message
    * @param session
    */
-  public static void logCreate(DbSession dbSession, String message,
-                               HttpSession session) {
+  public static void logCreate(final DbSession dbSession, final String message,
+                               final HttpSession session) {
     final String sessionContexte = session.toString();
     logger.info(message + ' ' + sessionContexte);
     if (dbSession != null) {
@@ -104,9 +104,10 @@ public final class WaarpActionLogger {
    * @param rcode
    * @param info
    */
-  public static void logAction(DbSession dbSession, HttpSession session,
-                               String message, HttpResponseStatus rcode,
-                               UpdatedInfo info) {
+  public static void logAction(final DbSession dbSession,
+                               final HttpSession session, final String message,
+                               final HttpResponseStatus rcode,
+                               final UpdatedInfo info) {
     final String sessionContexte = session.toString();
     final long specialId = session.getLogid();
     logger.info(message + ' ' + sessionContexte);
@@ -150,8 +151,10 @@ public final class WaarpActionLogger {
    * @param message
    * @param rcode
    */
-  public static void logErrorAction(DbSession dbSession, HttpSession session,
-                                    String message, HttpResponseStatus rcode) {
+  public static void logErrorAction(final DbSession dbSession,
+                                    final HttpSession session,
+                                    final String message,
+                                    final HttpResponseStatus rcode) {
     final String sessionContexte = session.toString();
     final long specialId = session.getLogid();
     logger.error(rcode.code() + ":" + message + ' ' + sessionContexte);

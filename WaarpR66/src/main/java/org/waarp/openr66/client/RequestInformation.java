@@ -88,7 +88,7 @@ public class RequestInformation implements Runnable {
    *
    * @return True if all parameters were found and correct
    */
-  protected static boolean getParams(String[] args) {
+  protected static boolean getParams(final String[] args) {
     _infoArgs = Messages.getString("RequestInformation.0") +
                 Messages.getString("Message.OutputFormat"); //$NON-NLS-1$
     if (args.length < 5) {
@@ -164,10 +164,11 @@ public class RequestInformation implements Runnable {
    *     (false)
    * @param networkTransaction
    */
-  public RequestInformation(R66Future future, String requested, String rulename,
-                            String filename, byte request, long id,
-                            boolean isTo,
-                            NetworkTransaction networkTransaction) {
+  public RequestInformation(final R66Future future, final String requested,
+                            final String rulename, final String filename,
+                            final byte request, final long id,
+                            final boolean isTo,
+                            final NetworkTransaction networkTransaction) {
     this.future = future;
     this.rulename = rulename;
     this.requested = requested;
@@ -183,7 +184,7 @@ public class RequestInformation implements Runnable {
 
   @Override
   public void run() {
-    InformationPacket request;
+    final InformationPacket request;
     if (code != REQUEST_CHECK) {
       request = new InformationPacket(rulename, code, filename);
     } else {
@@ -211,7 +212,7 @@ public class RequestInformation implements Runnable {
       future.cancel();
       return;
     }
-    SocketAddress socketAddress = host.getSocketAddress();
+    final SocketAddress socketAddress = host.getSocketAddress();
     final boolean isSSL = host.isSsl();
 
     final LocalChannelReference localChannelReference = networkTransaction
@@ -243,7 +244,7 @@ public class RequestInformation implements Runnable {
   /**
    * @param args
    */
-  public static void main(String[] args) {
+  public static void main(final String[] args) {
     WaarpLoggerFactory
         .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));
     if (logger == null) {

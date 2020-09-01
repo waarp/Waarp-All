@@ -42,13 +42,14 @@ public final class XMLUtils {
   private XMLUtils() {
   }
 
-  public static Node createNode(Document document, String tag, String text) {
+  public static Node createNode(final Document document, final String tag,
+                                final String text) {
     final Node res = document.createElement(tag);
     res.setTextContent(text);
     return res;
   }
 
-  public static void writeToFile(File file, Document document) {
+  public static void writeToFile(final File file, final Document document) {
     final TransformerFactory factory =//NOSONAR
         TransformerFactory.newInstance();//NOSONAR
     try {

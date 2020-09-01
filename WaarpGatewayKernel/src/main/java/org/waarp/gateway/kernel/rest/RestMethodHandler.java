@@ -72,9 +72,10 @@ public abstract class RestMethodHandler {
    * @param config the associated configuration
    * @param method the associated methods
    */
-  protected RestMethodHandler(String name, String path,
-                              boolean isBodyJsonDecode,
-                              RestConfiguration config, METHOD... method) {
+  protected RestMethodHandler(final String name, final String path,
+                              final boolean isBodyJsonDecode,
+                              final RestConfiguration config,
+                              final METHOD... method) {
     this.name = name;
     this.path = path;
     methods = new HashSet<HttpRestHandler.METHOD>();
@@ -84,7 +85,7 @@ public abstract class RestMethodHandler {
     restConfiguration = config;
   }
 
-  protected void setMethods(METHOD... method) {
+  protected void setMethods(final METHOD... method) {
     Collections.addAll(methods, method);
   }
 
@@ -94,8 +95,8 @@ public abstract class RestMethodHandler {
    * @param selectedMethods the selected Methods among available
    * @param validMethod the validMethod for this handler
    */
-  protected void setIntersectionMethods(METHOD[] selectedMethods,
-                                        METHOD... validMethod) {
+  protected void setIntersectionMethods(final METHOD[] selectedMethods,
+                                        final METHOD... validMethod) {
     final Set<METHOD> set = new HashSet<METHOD>();
     Collections.addAll(set, validMethod);
     final Set<METHOD> set2 = new HashSet<METHOD>();
@@ -118,7 +119,7 @@ public abstract class RestMethodHandler {
    *
    * @return True if the Method is valid for this Handler
    */
-  public boolean isMethodIncluded(METHOD method) {
+  public boolean isMethodIncluded(final METHOD method) {
     return methods.contains(method);
   }
 
@@ -198,10 +199,11 @@ public abstract class RestMethodHandler {
    *
    * @return the status to used in sendReponse
    */
-  public HttpResponseStatus handleException(HttpRestHandler handler,
-                                            RestArgument arguments,
-                                            RestArgument result, Object body,
-                                            Exception exception) {
+  public HttpResponseStatus handleException(final HttpRestHandler handler,
+                                            final RestArgument arguments,
+                                            final RestArgument result,
+                                            final Object body,
+                                            final Exception exception) {
     if (exception instanceof HttpInvalidAuthenticationException) {
       result.setResult(HttpResponseStatus.UNAUTHORIZED);
       return HttpResponseStatus.UNAUTHORIZED;
@@ -242,10 +244,10 @@ public abstract class RestMethodHandler {
                                              RestArgument result, Object body,
                                              HttpResponseStatus status);
 
-  protected ChannelFuture sendOptionsResponse(HttpRestHandler handler,
-                                              ChannelHandlerContext ctx,
-                                              RestArgument result,
-                                              HttpResponseStatus status) {
+  protected ChannelFuture sendOptionsResponse(final HttpRestHandler handler,
+                                              final ChannelHandlerContext ctx,
+                                              final RestArgument result,
+                                              final HttpResponseStatus status) {
     final String list = result.getAllowOption();
     final String answer = result.toString();
     final ByteBuf buffer =
@@ -274,8 +276,9 @@ public abstract class RestMethodHandler {
    * @param arguments
    * @param result
    */
-  protected void optionsCommand(HttpRestHandler handler, RestArgument arguments,
-                                RestArgument result) {
+  protected void optionsCommand(final HttpRestHandler handler,
+                                final RestArgument arguments,
+                                final RestArgument result) {
     result.setCommand(COMMAND_TYPE.OPTIONS);
     final METHOD[] realmethods = METHOD.values();
     final boolean[] allMethods = new boolean[realmethods.length];

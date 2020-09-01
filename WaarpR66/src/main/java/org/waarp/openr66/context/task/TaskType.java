@@ -63,8 +63,10 @@ public enum TaskType {
    *
    * @throws OpenR66RunnerErrorException
    */
-  public static AbstractTask getTaskFromId(TaskType type, String argRule,
-                                           int delay, R66Session session)
+  public static AbstractTask getTaskFromId(final TaskType type,
+                                           final String argRule,
+                                           final int delay,
+                                           final R66Session session)
       throws OpenR66RunnerErrorException {
     switch (type) {
       case LOG:
@@ -174,10 +176,12 @@ public enum TaskType {
    *
    * @throws OpenR66RunnerErrorException
    */
-  public static AbstractTask getTaskFromId(String name, String argRule,
-                                           int delay, R66Session session)
+  public static AbstractTask getTaskFromId(final String name,
+                                           final String argRule,
+                                           final int delay,
+                                           final R66Session session)
       throws OpenR66RunnerErrorException {
-    TaskType type;
+    final TaskType type;
     try {
       type = valueOf(name);
     } catch (final NullPointerException e) {
@@ -202,11 +206,12 @@ public enum TaskType {
    *
    * @throws OpenR66RunnerErrorException
    */
-  public static AbstractTask getTaskFromIdForBusiness(String name,
-                                                      String argRule, int delay,
-                                                      R66Session session)
+  public static AbstractTask getTaskFromIdForBusiness(final String name,
+                                                      final String argRule,
+                                                      final int delay,
+                                                      final R66Session session)
       throws OpenR66RunnerErrorException {
-    TaskType type;
+    final TaskType type;
     try {
       type = valueOf(name);
     } catch (final NullPointerException e) {

@@ -27,15 +27,15 @@ import java.io.File;
  */
 public class FileExtensionFilter extends FileFilter {
   private String description = "All Files";
-  private String extension;
+  private final String extension;
 
-  public FileExtensionFilter(String extension, String description) {
+  public FileExtensionFilter(final String extension, final String description) {
     this.description = description;
     this.extension = extension;
   }
 
   @Override
-  public boolean accept(File f) {
+  public boolean accept(final File f) {
     if (f.isDirectory()) {
       return true;
     }
@@ -59,7 +59,7 @@ public class FileExtensionFilter extends FileFilter {
    *
    * @return the extension
    */
-  public static String getExtension(File f) {
+  public static String getExtension(final File f) {
     String ext = null;
     final String s = f.getName();
     final int i = s.lastIndexOf('.');

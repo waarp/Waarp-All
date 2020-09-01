@@ -137,7 +137,7 @@ public class FileBasedConfiguration {
   protected FileBasedConfiguration() {
   }
 
-  public static void setXmlRootHash(XmlRootHash xmlRootHash) {
+  public static void setXmlRootHash(final XmlRootHash xmlRootHash) {
     hashRootConfig = xmlRootHash;
   }
 
@@ -146,7 +146,7 @@ public class FileBasedConfiguration {
    *
    * @param hashConfig
    */
-  private static void loadLocale(XmlHash hashConfig) {
+  private static void loadLocale(final XmlHash hashConfig) {
     final XmlValue value = hashConfig.get(XML_LOCALE);
     if (value != null && !value.isEmpty()) {
       final String locale = value.getString();
@@ -163,8 +163,8 @@ public class FileBasedConfiguration {
    *
    * @return True if the identity of the server is correctly loaded
    */
-  public static boolean loadIdentity(Configuration config,
-                                     XmlRootHash hashRootConfig) {
+  public static boolean loadIdentity(final Configuration config,
+                                     final XmlRootHash hashRootConfig) {
     XmlHash hashConfig = new XmlHash(hashRootConfig.get(XML_IDENTITY));
     try {
       loadLocale(hashConfig);
@@ -202,7 +202,7 @@ public class FileBasedConfiguration {
    *
    * @return True if the authentication of partners is correctly loaded
    */
-  private static boolean loadAuthentication(Configuration config) {
+  private static boolean loadAuthentication(final Configuration config) {
     XmlHash hashConfig = new XmlHash(hashRootConfig.get(XML_IDENTITY));
     try {
       if (config.isSaveTaskRunnerWithNoDb()) {
@@ -231,7 +231,7 @@ public class FileBasedConfiguration {
    *
    * @return True if the server parameters are correctly loaded
    */
-  private static boolean loadServerParam(Configuration config) {
+  private static boolean loadServerParam(final Configuration config) {
     XmlHash hashConfig = new XmlHash(hashRootConfig.get(XML_SERVER));
     try {
       if (!loadServerConfig(config, hashConfig)) {
@@ -243,8 +243,8 @@ public class FileBasedConfiguration {
         config.setUseLocalExec(value.getBoolean());
         if (config.isUseLocalExec()) {
           value = hashConfig.get(XML_LEXECADDR);
-          String saddr;
-          InetAddress addr;
+          final String saddr;
+          final InetAddress addr;
           if (value != null && !value.isEmpty()) {
             saddr = value.getString();
             try {
@@ -269,7 +269,7 @@ public class FileBasedConfiguration {
             }
           }
           value = hashConfig.get(XML_LEXECPORT);
-          int port;
+          final int port;
           if (value != null && !value.isEmpty()) {
             port = value.getInteger();
           } else {
@@ -318,7 +318,7 @@ public class FileBasedConfiguration {
       if (value != null && !value.isEmpty()) {
         try {
           ParametersChecker.checkSanityString(value.getString());
-        } catch (InvalidArgumentException e) {
+        } catch (final InvalidArgumentException e) {
           logger.error("Bad Business Factory class", e);
           return false;
         }
@@ -375,10 +375,10 @@ public class FileBasedConfiguration {
         hashConfig2 = null;
       }
     }
-    byte[] decodedByteKeys;
+    final byte[] decodedByteKeys;
     value = hashConfig.get(XML_SERVER_PASSWD_FILE);
     if (value == null || value.isEmpty()) {
-      String passwd;
+      final String passwd;
       value = hashConfig.get(XML_SERVER_PASSWD);
       if (value != null && !value.isEmpty()) {
         passwd = value.getString();
@@ -521,8 +521,8 @@ public class FileBasedConfiguration {
    *
    * @return True if the client parameters are correctly loaded
    */
-  private static boolean loadClientParam(Configuration config) {
-    XmlHash hashConfig = new XmlHash(hashRootConfig.get(XML_CLIENT));
+  private static boolean loadClientParam(final Configuration config) {
+    final XmlHash hashConfig = new XmlHash(hashRootConfig.get(XML_CLIENT));
     try {
       XmlValue value = hashConfig.get(XML_SAVE_TASKRUNNERNODB);
       if (admin == null || admin.getTypeDriver() == DbType.none) {
@@ -540,7 +540,7 @@ public class FileBasedConfiguration {
       if (value != null && !value.isEmpty()) {
         try {
           ParametersChecker.checkSanityString(value.getString());
-        } catch (InvalidArgumentException e) {
+        } catch (final InvalidArgumentException e) {
           logger.error("Bad Business Factory class", e);
           return false;
         }
@@ -564,7 +564,7 @@ public class FileBasedConfiguration {
    *
    * @return True if the directory parameters are correctly loaded
    */
-  private static boolean loadDirectory(Configuration config) {
+  private static boolean loadDirectory(final Configuration config) {
     XmlHash hashConfig = new XmlHash(hashRootConfig.get(XML_DIRECTORY));
     try {
       if (loadMinimalDirectory(config, hashConfig)) {
@@ -655,7 +655,8 @@ public class FileBasedConfiguration {
    *
    * @return True if the limit configuration is correctly loaded
    */
-  private static boolean loadLimit(Configuration config, boolean updateLimit) {
+  private static boolean loadLimit(final Configuration config,
+                                   final boolean updateLimit) {
     if (alreadySetLimit) {
       return true;
     }
@@ -731,7 +732,7 @@ public class FileBasedConfiguration {
 
   public static void loadCommonLimit(final Configuration config,
                                      final XmlHash hashConfig,
-                                     boolean updateLimit) {
+                                     final boolean updateLimit) {
     XmlValue value = hashConfig.get(XML_LIMITGLOBAL);
     if (value != null && !value.isEmpty()) {
       config.setServerGlobalReadLimit(value.getLong());
@@ -904,8 +905,8 @@ public class FileBasedConfiguration {
    *
    * @return True if the SSL configuration is correctly loaded
    */
-  public static boolean loadSsl(Configuration config,
-                                XmlRootHash hashRootConfig) {
+  public static boolean loadSsl(final Configuration config,
+                                final XmlRootHash hashRootConfig) {
     XmlHash hashConfig = new XmlHash(hashRootConfig.get(XML_SSL));
     try {
       // StoreKey for Server
@@ -1004,41 +1005,33 @@ public class FileBasedConfiguration {
    *
    * @return True if the network configuration is correctly loaded
    */
-  private static boolean loadNetworkServer(Configuration config) {
+  private static boolean loadNetworkServer(final Configuration config) {
     XmlHash hashConfig = new XmlHash(hashRootConfig.get(XML_NETWORK));
     try {
       XmlValue value = hashConfig.get(XML_SERVER_PORT);
       int port = 6666;
       if (value != null && !value.isEmpty()) {
         port = value.getInteger();
-      } else {
-        port = 6666;
       }
       config.setServerPort(port);
       value = hashConfig.get(XML_SERVER_ADDRESSES);
       String[] ips = null;
       if (value != null && !value.isEmpty()) {
-        String temp = value.getString();
+        final String temp = value.getString();
         ips = temp.split(",");
-      } else {
-        ips = null;
       }
       config.setServerAddresses(ips);
       value = hashConfig.get(XML_SERVER_SSLPORT);
       int sslport = 6667;
       if (value != null && !value.isEmpty()) {
         sslport = value.getInteger();
-      } else {
-        sslport = 6667;
       }
       config.setServerSslPort(sslport);
       value = hashConfig.get(XML_SERVER_SSL_ADDRESSES);
       String[] ipsTls = null;
       if (value != null && !value.isEmpty()) {
-        String temp = value.getString();
+        final String temp = value.getString();
         ipsTls = temp.split(",");
-      } else {
-        ipsTls = null;
       }
       config.setServerSslAddresses(ipsTls);
       value = hashConfig.get(XML_SERVER_HTTPPORT);
@@ -1050,10 +1043,8 @@ public class FileBasedConfiguration {
       value = hashConfig.get(XML_SERVER_HTTP_ADDRESSES);
       String[] ipsHttp = null;
       if (value != null && !value.isEmpty()) {
-        String temp = value.getString();
+        final String temp = value.getString();
         ipsHttp = temp.split(",");
-      } else {
-        ipsHttp = null;
       }
       config.setServerHttpAddresses(ipsHttp);
       value = hashConfig.get(XML_SERVER_HTTPSPORT);
@@ -1065,10 +1056,8 @@ public class FileBasedConfiguration {
       value = hashConfig.get(XML_SERVER_HTTPS_ADDRESSES);
       String[] ipsHttpTls = null;
       if (value != null && !value.isEmpty()) {
-        String temp = value.getString();
+        final String temp = value.getString();
         ipsHttpTls = temp.split(",");
-      } else {
-        ipsHttpTls = null;
       }
       config.setServerHttpsAddresses(ipsHttpTls);
       return true;
@@ -1084,7 +1073,7 @@ public class FileBasedConfiguration {
    * @return True if the REST configuration is correctly loaded
    */
   @SuppressWarnings("unchecked")
-  private static boolean loadRest(Configuration configuration) {
+  private static boolean loadRest(final Configuration configuration) {
     XmlHash hashConfig = new XmlHash(hashRootConfig.get(XML_REST));
     try {
       final XmlValue valueRest = hashConfig.get(XML_REST);
@@ -1172,7 +1161,7 @@ public class FileBasedConfiguration {
                   .getList()) {
                 final XmlHash subHashMethod = new XmlHash(xmlmethod);
                 value = subHashMethod.get(XML_REST_METHOD_NAME);
-                String name;
+                final String name;
                 if (value != null && !value.isEmpty()) {
                   name = value.getString();
                 } else {
@@ -1180,7 +1169,7 @@ public class FileBasedConfiguration {
                   continue;
                 }
                 value = subHashMethod.get(XML_REST_CRUD);
-                String crud;
+                final String crud;
                 if (value != null && !value.isEmpty()) {
                   crud = value.getString().toUpperCase();
                 } else {
@@ -1202,7 +1191,7 @@ public class FileBasedConfiguration {
                   // No more restmethod since ALL was selected
                   break;
                 } else {
-                  final String[] handlers = name.split(" |\\|");
+                  final String[] handlers = name.split("\\s|\\|");
                   for (final String string : handlers) {
                     final RESTHANDLERS handler = RESTHANDLERS.valueOf(string);
                     config.getResthandlersCrud()[handler.ordinal()] = def;
@@ -1240,8 +1229,8 @@ public class FileBasedConfiguration {
    *
    * @return True if OK
    */
-  private static boolean setCryptoKey(Configuration config,
-                                      XmlHash hashConfig) {
+  private static boolean setCryptoKey(final Configuration config,
+                                      final XmlHash hashConfig) {
     final XmlValue value = hashConfig.get(XML_PATH_CRYPTOKEY);
     if (value == null || value.isEmpty()) {
       logger.error("Unable to find CryptoKey in Config file");
@@ -1271,7 +1260,7 @@ public class FileBasedConfiguration {
    *
    * @return True if OK
    */
-  private static boolean loadFromDatabase(Configuration config) {
+  private static boolean loadFromDatabase(final Configuration config) {
     if (!config.isSaveTaskRunnerWithNoDb()) {
       // load from database the limit to apply
       try {
@@ -1321,7 +1310,8 @@ public class FileBasedConfiguration {
    *
    * @return True if OK
    */
-  private static boolean loadDatabase(Configuration config, boolean initdb) {
+  private static boolean loadDatabase(final Configuration config,
+                                      final boolean initdb) {
     XmlHash hashConfig = new XmlHash(hashRootConfig.get(XML_DB));
     try {
       XmlValue value = hashConfig.get(XML_SAVE_TASKRUNNERNODB);
@@ -1424,7 +1414,7 @@ public class FileBasedConfiguration {
           return false;
         }
         // Check if the database is ready (initdb already done before)
-        DbRequest request;
+        final DbRequest request;
         if (!initdb) {
           try {
             request = new DbRequest(admin.getSession());
@@ -1482,7 +1472,7 @@ public class FileBasedConfiguration {
    *
    * @param config
    */
-  private static void loadBusinessWhiteList(Configuration config) {
+  private static void loadBusinessWhiteList(final Configuration config) {
     XmlHash hashConfig =
         new XmlHash(hashRootConfig.get(DbHostConfiguration.XML_BUSINESS));
     try {
@@ -1516,7 +1506,7 @@ public class FileBasedConfiguration {
    * @param config
    */
   @SuppressWarnings("unchecked")
-  private static void loadAliases(Configuration config) {
+  private static void loadAliases(final Configuration config) {
     XmlHash hashConfig =
         new XmlHash(hashRootConfig.get(DbHostConfiguration.XML_ALIASES));
     try {
@@ -1534,7 +1524,7 @@ public class FileBasedConfiguration {
             continue;
           }
           final String aliasset = value.getString();
-          final String[] alias = aliasset.split(" |\\|");
+          final String[] alias = aliasset.split("\\s|\\|");
           for (final String namealias : alias) {
             config.getAliases().put(namealias, refHostId);
           }
@@ -1553,7 +1543,7 @@ public class FileBasedConfiguration {
    *
    * @param config
    */
-  private static void setSelfVersion(Configuration config) {
+  private static void setSelfVersion(final Configuration config) {
     if (config.getHostId() != null) {
       config.getVersions().putIfAbsent(config.getHostId(),
                                        new PartnerConfiguration(
@@ -1573,7 +1563,7 @@ public class FileBasedConfiguration {
    * @param config
    */
   @SuppressWarnings("unchecked")
-  private static void loadRolesList(Configuration config) {
+  private static void loadRolesList(final Configuration config) {
     XmlHash hashConfig =
         new XmlHash(hashRootConfig.get(DbHostConfiguration.XML_ROLES));
     try {
@@ -1591,7 +1581,7 @@ public class FileBasedConfiguration {
             continue;
           }
           final String roleset = value.getString();
-          final String[] roles = roleset.split(" |\\|");
+          final String[] roles = roleset.split("\\s|\\|");
           final RoleDefault newrole = new RoleDefault();
           for (final String role : roles) {
             try {
@@ -1622,7 +1612,7 @@ public class FileBasedConfiguration {
    *
    * @param config
    */
-  private static void finalizeDbHostConfiguration(Configuration config) {
+  private static void finalizeDbHostConfiguration(final Configuration config) {
     // now check in DB
     if (admin != null) {
       DbHostConfiguration hostconfiguration = null;
@@ -1630,7 +1620,7 @@ public class FileBasedConfiguration {
         hostconfiguration = new DbHostConfiguration(config.getHostId());
       } catch (final WaarpDatabaseException e) {
         // ignore
-        Business business = new Business();
+        final Business business = new Business();
         business.setHostid(config.getHostId());
         hostconfiguration = new DbHostConfiguration(business);
       }
@@ -1649,7 +1639,8 @@ public class FileBasedConfiguration {
    *
    * @throws OpenR66ProtocolSystemException
    */
-  private static String getSubPath(Configuration config, String fromXML)
+  private static String getSubPath(final Configuration config,
+                                   final String fromXML)
       throws OpenR66ProtocolSystemException {
     XmlHash hashConfig = new XmlHash(hashRootConfig.get(XML_DIRECTORY));
     try {
@@ -1689,9 +1680,9 @@ public class FileBasedConfiguration {
    *
    * @return True if OK
    */
-  public static boolean setConfigurationLoadLimitFromXml(Configuration config,
-                                                         String filename) {
-    Document document;
+  public static boolean setConfigurationLoadLimitFromXml(
+      final Configuration config, final String filename) {
+    final Document document;
     alreadySetLimit = false;
     // Open config file
     try {
@@ -1736,10 +1727,10 @@ public class FileBasedConfiguration {
    *
    * @return True if OK
    */
-  public static boolean setConfigurationInitDatabase(Configuration config,
-                                                     String filename,
-                                                     boolean initdb) {
-    Document document;
+  public static boolean setConfigurationInitDatabase(final Configuration config,
+                                                     final String filename,
+                                                     final boolean initdb) {
+    final Document document;
     // Open config file
     try {
       document = XmlUtil.getNewSaxReader().read(filename);
@@ -1795,7 +1786,7 @@ public class FileBasedConfiguration {
    * @return True if OK
    */
   public static boolean setConfigurationServerMinimalFromXml(
-      Configuration config, String filename) {
+      final Configuration config, final String filename) {
     if (!SystemPropertyUtil
         .get(R66SystemProperties.OPENR66_STARTUP_DATABASE_CHECK, "")
         .isEmpty()) {
@@ -1811,7 +1802,7 @@ public class FileBasedConfiguration {
                       false);
     }
 
-    Document document;
+    final Document document;
     // Open config file
     try {
       document = XmlUtil.getNewSaxReader().read(filename);
@@ -1879,7 +1870,7 @@ public class FileBasedConfiguration {
    * @return True if OK
    */
   public static boolean setConfigurationServerShutdownFromXml(
-      Configuration config, String filename) {
+      final Configuration config, final String filename) {
     if (!SystemPropertyUtil
         .get(R66SystemProperties.OPENR66_STARTUP_DATABASE_CHECK, "")
         .isEmpty()) {
@@ -1895,7 +1886,7 @@ public class FileBasedConfiguration {
                       false);
     }
 
-    Document document;
+    final Document document;
     // Open config file
     try {
       document = XmlUtil.getNewSaxReader().read(filename);
@@ -1976,9 +1967,9 @@ public class FileBasedConfiguration {
    *
    * @return True if OK
    */
-  public static boolean setConfigurationServerFromXml(Configuration config,
-                                                      String filename) {
-    Document document;
+  public static boolean setConfigurationServerFromXml(
+      final Configuration config, final String filename) {
+    final Document document;
     // Open config file
     try {
       document = XmlUtil.getNewSaxReader().read(filename);
@@ -2069,8 +2060,8 @@ public class FileBasedConfiguration {
    *
    * @return True if OK
    */
-  public static boolean setClientConfigurationFromXml(Configuration config,
-                                                      String filename) {
+  public static boolean setClientConfigurationFromXml(
+      final Configuration config, final String filename) {
     if (!SystemPropertyUtil
         .get(R66SystemProperties.OPENR66_STARTUP_DATABASE_CHECK, "")
         .isEmpty()) {
@@ -2086,7 +2077,7 @@ public class FileBasedConfiguration {
                       false);
     }
 
-    Document document;
+    final Document document;
     // Open config file
     try {
       document = XmlUtil.getNewSaxReader().read(filename);
@@ -2175,7 +2166,7 @@ public class FileBasedConfiguration {
    * @return True if OK
    */
   public static boolean setSubmitClientConfigurationFromXml(
-      Configuration config, String filename) {
+      final Configuration config, final String filename) {
     if (!SystemPropertyUtil
         .get(R66SystemProperties.OPENR66_STARTUP_DATABASE_CHECK, "")
         .isEmpty()) {
@@ -2191,7 +2182,7 @@ public class FileBasedConfiguration {
                       false);
     }
 
-    Document document;
+    final Document document;
     // Open config file
     try {
       document = XmlUtil.getNewSaxReader().read(filename);

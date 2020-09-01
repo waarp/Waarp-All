@@ -38,21 +38,22 @@ public class IllegalFiniteStateException extends Exception {
    * @param message
    * @param cause
    */
-  public IllegalFiniteStateException(String message, Throwable cause) {
+  public IllegalFiniteStateException(final String message,
+                                     final Throwable cause) {
     super(message, cause);
   }
 
   /**
    * @param s
    */
-  public IllegalFiniteStateException(String s) {
+  public IllegalFiniteStateException(final String s) {
     super(s);
   }
 
   /**
    * @param cause
    */
-  public IllegalFiniteStateException(Throwable cause) {
+  public IllegalFiniteStateException(final Throwable cause) {
     super(cause);
   }
 

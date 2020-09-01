@@ -94,7 +94,7 @@ public class RequestPacket extends AbstractLocalPacket {
    *
    * @return the same mode (RECV or SEND) in MD5 version
    */
-  public static final int getModeMD5(int mode) {
+  public static final int getModeMD5(final int mode) {
     switch (mode) {
       case 1:
       case 2:
@@ -112,7 +112,7 @@ public class RequestPacket extends AbstractLocalPacket {
    *
    * @return true if this mode is a RECV(MD5) mode
    */
-  public static final boolean isRecvMode(int mode) {
+  public static final boolean isRecvMode(final int mode) {
     return mode == TRANSFERMODE.RECVMODE.ordinal() ||
            mode == TRANSFERMODE.RECVMD5MODE.ordinal() ||
            mode == TRANSFERMODE.RECVTHROUGHMODE.ordinal() ||
@@ -125,7 +125,8 @@ public class RequestPacket extends AbstractLocalPacket {
    *
    * @return True if this mode is a THROUGH (MD5) mode
    */
-  public static final boolean isSendThroughMode(int mode, boolean isRequested) {
+  public static final boolean isSendThroughMode(final int mode,
+                                                final boolean isRequested) {
     return !isRequested && isSendThroughMode(mode) ||
            isRequested && isRecvThroughMode(mode);
   }
@@ -135,7 +136,7 @@ public class RequestPacket extends AbstractLocalPacket {
    *
    * @return True if this mode is a SEND THROUGH (MD5) mode
    */
-  public static final boolean isSendThroughMode(int mode) {
+  public static final boolean isSendThroughMode(final int mode) {
     return mode == TRANSFERMODE.SENDTHROUGHMODE.ordinal() ||
            mode == TRANSFERMODE.SENDMD5THROUGHMODE.ordinal();
   }
@@ -146,7 +147,8 @@ public class RequestPacket extends AbstractLocalPacket {
    *
    * @return True if this mode is a THROUGH (MD5) mode
    */
-  public static final boolean isRecvThroughMode(int mode, boolean isRequested) {
+  public static final boolean isRecvThroughMode(final int mode,
+                                                final boolean isRequested) {
     return !isRequested && isRecvThroughMode(mode) ||
            isRequested && isSendThroughMode(mode);
   }
@@ -156,12 +158,12 @@ public class RequestPacket extends AbstractLocalPacket {
    *
    * @return True if this mode is a RECV THROUGH (MD5) mode
    */
-  public static final boolean isRecvThroughMode(int mode) {
+  public static final boolean isRecvThroughMode(final int mode) {
     return mode == TRANSFERMODE.RECVTHROUGHMODE.ordinal() ||
            mode == TRANSFERMODE.RECVMD5THROUGHMODE.ordinal();
   }
 
-  public static final boolean isSendMode(int mode) {
+  public static final boolean isSendMode(final int mode) {
     return !isRecvMode(mode);
   }
 
@@ -170,7 +172,7 @@ public class RequestPacket extends AbstractLocalPacket {
    *
    * @return True if this mode is a THROUGH mode (with or without MD5)
    */
-  public static final boolean isThroughMode(int mode) {
+  public static final boolean isThroughMode(final int mode) {
     return mode >= TRANSFERMODE.SENDTHROUGHMODE.ordinal() &&
            mode <= TRANSFERMODE.RECVMD5THROUGHMODE.ordinal();
   }
@@ -180,7 +182,7 @@ public class RequestPacket extends AbstractLocalPacket {
    *
    * @return true if this mode is a MD5 mode
    */
-  public static final boolean isMD5Mode(int mode) {
+  public static final boolean isMD5Mode(final int mode) {
     return mode == TRANSFERMODE.RECVMD5MODE.ordinal() ||
            mode == TRANSFERMODE.SENDMD5MODE.ordinal() ||
            mode == TRANSFERMODE.SENDMD5THROUGHMODE.ordinal() ||
@@ -193,7 +195,8 @@ public class RequestPacket extends AbstractLocalPacket {
    *
    * @return true if both modes are compatible (both send, or both recv)
    */
-  public static final boolean isCompatibleMode(int mode1, int mode2) {
+  public static final boolean isCompatibleMode(final int mode1,
+                                               final int mode2) {
     return isRecvMode(mode1) && isRecvMode(mode2) ||
            !isRecvMode(mode1) && !isRecvMode(mode2);
   }
@@ -208,9 +211,10 @@ public class RequestPacket extends AbstractLocalPacket {
    *
    * @throws OpenR66ProtocolPacketException
    */
-  public static RequestPacket createFromBuffer(int headerLength,
-                                               int middleLength, int endLength,
-                                               ByteBuf buf)
+  public static RequestPacket createFromBuffer(final int headerLength,
+                                               final int middleLength,
+                                               final int endLength,
+                                               final ByteBuf buf)
       throws OpenR66ProtocolPacketException {
     if (headerLength - 1 <= 0) {
       throw new OpenR66ProtocolPacketException(NOT_ENOUGH_DATA);
@@ -221,13 +225,9 @@ public class RequestPacket extends AbstractLocalPacket {
     final byte[] bheader = new byte[headerLength - 1];
     final byte[] bmiddle = new byte[middleLength - 1];// valid is not in bmiddle
     final byte[] bend = new byte[endLength];
-    if (headerLength - 1 > 0) {
-      buf.readBytes(bheader);
-    }
+    buf.readBytes(bheader);
     final byte valid = buf.readByte();
-    if (middleLength > 1) {
-      buf.readBytes(bmiddle);
-    }
+    buf.readBytes(bmiddle);
     if (endLength > 0) {
       buf.readBytes(bend);
     }
@@ -298,10 +298,11 @@ public class RequestPacket extends AbstractLocalPacket {
    * @param code
    * @param originalSize
    */
-  private RequestPacket(String rulename, int mode, String filename,
-                        int blocksize, int rank, long specialId, byte valid,
-                        String transferInformation, char code,
-                        long originalSize, String separator) {
+  private RequestPacket(final String rulename, final int mode,
+                        final String filename, final int blocksize,
+                        final int rank, final long specialId, final byte valid,
+                        final String transferInformation, final char code,
+                        final long originalSize, final String separator) {
     this.rulename = rulename;
     this.mode = mode;
     this.filename = filename;
@@ -328,10 +329,11 @@ public class RequestPacket extends AbstractLocalPacket {
    * @param specialId
    * @param transferInformation
    */
-  public RequestPacket(String rulename, int mode, String filename,
-                       int blocksize, int rank, long specialId,
-                       String transferInformation, long originalSize,
-                       String separator) {
+  public RequestPacket(final String rulename, final int mode,
+                       final String filename, final int blocksize,
+                       final int rank, final long specialId,
+                       final String transferInformation,
+                       final long originalSize, final String separator) {
     this(rulename, mode, filename, blocksize, rank, specialId, REQVALIDATE,
          transferInformation, ErrorCode.InitOk.code, originalSize, separator);
   }
@@ -339,10 +341,12 @@ public class RequestPacket extends AbstractLocalPacket {
   /**
    * Create a Request packet with a speed negociation
    */
-  private RequestPacket(String rulename, int mode, String filename,
-                        int blocksize, int rank, long specialId, byte valid,
-                        String transferInformation, char code,
-                        long originalSize, long limit, String separator) {
+  private RequestPacket(final String rulename, final int mode,
+                        final String filename, final int blocksize,
+                        final int rank, final long specialId, final byte valid,
+                        final String transferInformation, final char code,
+                        final long originalSize, final long limit,
+                        final String separator) {
     this(rulename, mode, filename, blocksize, rank, specialId, valid,
          transferInformation, code, originalSize, separator);
     this.limit = limit;
@@ -354,13 +358,14 @@ public class RequestPacket extends AbstractLocalPacket {
   }
 
   @Override
-  public void createAllBuffers(LocalChannelReference lcr, int networkHeader)
+  public void createAllBuffers(final LocalChannelReference lcr,
+                               final int networkHeader)
       throws OpenR66ProtocolPacketException {
     throw new IllegalStateException("Should not be called");
   }
 
   @Override
-  public void createEnd(LocalChannelReference lcr)
+  public void createEnd(final LocalChannelReference lcr)
       throws OpenR66ProtocolPacketException {
     if (transferInformation != null) {
       end = Unpooled.wrappedBuffer(transferInformation.getBytes());
@@ -368,7 +373,7 @@ public class RequestPacket extends AbstractLocalPacket {
   }
 
   @Override
-  public void createHeader(LocalChannelReference lcr)
+  public void createHeader(final LocalChannelReference lcr)
       throws OpenR66ProtocolPacketException {
     if (rulename == null || mode <= 0) {
       throw new OpenR66ProtocolPacketException(NOT_ENOUGH_DATA);
@@ -389,7 +394,7 @@ public class RequestPacket extends AbstractLocalPacket {
   }
 
   @Override
-  public void createMiddle(LocalChannelReference lcr)
+  public void createMiddle(final LocalChannelReference lcr)
       throws OpenR66ProtocolPacketException {
     if (filename == null) {
       throw new OpenR66ProtocolPacketException(NOT_ENOUGH_DATA);
@@ -488,7 +493,7 @@ public class RequestPacket extends AbstractLocalPacket {
   /**
    * @param rank the rank to set
    */
-  public void setRank(int rank) {
+  public void setRank(final int rank) {
     this.rank = rank;
   }
 
@@ -502,14 +507,14 @@ public class RequestPacket extends AbstractLocalPacket {
   /**
    * @param originalSize the originalSize to set
    */
-  public void setOriginalSize(long originalSize) {
+  public void setOriginalSize(final long originalSize) {
     this.originalSize = originalSize;
   }
 
   /**
    * @param specialId the specialId to set
    */
-  public void setSpecialId(long specialId) {
+  public void setSpecialId(final long specialId) {
     this.specialId = specialId;
   }
 
@@ -538,7 +543,7 @@ public class RequestPacket extends AbstractLocalPacket {
   /**
    * @param filename the filename to set
    */
-  public void setFilename(String filename) {
+  public void setFilename(final String filename) {
     this.filename = filename;
   }
 
@@ -552,7 +557,7 @@ public class RequestPacket extends AbstractLocalPacket {
   /**
    * @param code the code to set
    */
-  public void setCode(char code) {
+  public void setCode(final char code) {
     this.code = code;
   }
 
@@ -560,7 +565,7 @@ public class RequestPacket extends AbstractLocalPacket {
     return limit;
   }
 
-  public void setLimit(long limit) {
+  public void setLimit(final long limit) {
     this.limit = limit;
   }
 }

@@ -55,7 +55,7 @@ public class AdaptativeJsonHandler {
     public final JsonFactory factory;
     public final ObjectMapper mapper;
 
-    JsonCodec(JsonFactory factory) {
+    JsonCodec(final JsonFactory factory) {
       this.factory = factory;
       mapper = new ObjectMapper(factory);
       mapper.configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true);
@@ -101,12 +101,12 @@ public class AdaptativeJsonHandler {
   ObjectMapper mapper;
   private JsonCodec codec;
 
-  public AdaptativeJsonHandler(JsonCodec codec) {
+  public AdaptativeJsonHandler(final JsonCodec codec) {
     this.codec = codec;
     mapper = codec.mapper;
   }
 
-  public AdaptativeJsonHandler(byte[] source) throws IOException {
+  public AdaptativeJsonHandler(final byte[] source) throws IOException {
     final DataFormatMatcher match = detector.findFormat(source);
     if (match == null) {
       codec = JsonCodec.JSON;
@@ -123,7 +123,7 @@ public class AdaptativeJsonHandler {
     }
   }
 
-  public AdaptativeJsonHandler(InputStream source) throws IOException {
+  public AdaptativeJsonHandler(final InputStream source) throws IOException {
     final DataFormatMatcher match = detector.findFormat(source);
     if (match == null) {
       codec = JsonCodec.JSON;
@@ -146,7 +146,7 @@ public class AdaptativeJsonHandler {
    *
    * @param codec
    */
-  public void changeHandler(JsonCodec codec) {
+  public void changeHandler(final JsonCodec codec) {
     this.codec = codec;
     mapper = codec.mapper;
   }
@@ -177,7 +177,7 @@ public class AdaptativeJsonHandler {
    *
    * @return the objectNode or null if an error occurs
    */
-  public final ObjectNode getFromString(String value) {
+  public final ObjectNode getFromString(final String value) {
     try {
       return (ObjectNode) mapper.readTree(value);
     } catch (final JsonProcessingException e) {
@@ -192,7 +192,7 @@ public class AdaptativeJsonHandler {
    *
    * @return the Json representation of the object
    */
-  public final String writeAsString(Object object) {
+  public final String writeAsString(final Object object) {
     try {
       return mapper.writeValueAsString(object);
     } catch (final JsonProcessingException e) {
@@ -206,7 +206,7 @@ public class AdaptativeJsonHandler {
    *
    * @return the String if the field exists, else null
    */
-  public final String getString(ObjectNode node, String field) {
+  public final String getString(final ObjectNode node, final String field) {
     return getValue(node, field, (String) null);
   }
 
@@ -216,7 +216,7 @@ public class AdaptativeJsonHandler {
    *
    * @return the String if the field exists, else null
    */
-  public final String getString(ObjectNode node, Enum<?> field) {
+  public final String getString(final ObjectNode node, final Enum<?> field) {
     return getValue(node, field.name(), (String) null);
   }
 
@@ -227,7 +227,8 @@ public class AdaptativeJsonHandler {
    *
    * @return the String if the field exists, else defValue
    */
-  public final String getValue(ObjectNode node, String field, String defValue) {
+  public final String getValue(final ObjectNode node, final String field,
+                               final String defValue) {
     final JsonNode elt = node.get(field);
     if (elt != null) {
       final String val = elt.asText();
@@ -246,8 +247,8 @@ public class AdaptativeJsonHandler {
    *
    * @return the Boolean if the field exists, else defValue
    */
-  public final Boolean getValue(ObjectNode node, String field,
-                                boolean defValue) {
+  public final Boolean getValue(final ObjectNode node, final String field,
+                                final boolean defValue) {
     return node.path(field).asBoolean(defValue);
   }
 
@@ -258,7 +259,8 @@ public class AdaptativeJsonHandler {
    *
    * @return the Double if the field exists, else defValue
    */
-  public final Double getValue(ObjectNode node, String field, double defValue) {
+  public final Double getValue(final ObjectNode node, final String field,
+                               final double defValue) {
     return node.path(field).asDouble(defValue);
   }
 
@@ -269,7 +271,8 @@ public class AdaptativeJsonHandler {
    *
    * @return the Long if the field exists, else defValue
    */
-  public final Long getValue(ObjectNode node, String field, long defValue) {
+  public final Long getValue(final ObjectNode node, final String field,
+                             final long defValue) {
     return node.path(field).asLong(defValue);
   }
 
@@ -280,7 +283,8 @@ public class AdaptativeJsonHandler {
    *
    * @return the Integer if the field exists, else defValue
    */
-  public final Integer getValue(ObjectNode node, String field, int defValue) {
+  public final Integer getValue(final ObjectNode node, final String field,
+                                final int defValue) {
     return node.path(field).asInt(defValue);
   }
 
@@ -291,7 +295,8 @@ public class AdaptativeJsonHandler {
    *
    * @return the byte array if the field exists, else defValue
    */
-  public final byte[] getValue(ObjectNode node, String field, byte[] defValue) {
+  public final byte[] getValue(final ObjectNode node, final String field,
+                               final byte[] defValue) {
     final JsonNode elt = node.get(field);
     if (elt != null) {
       try {
@@ -308,7 +313,8 @@ public class AdaptativeJsonHandler {
    * @param field
    * @param value
    */
-  public final void setValue(ObjectNode node, String field, boolean value) {
+  public final void setValue(final ObjectNode node, final String field,
+                             final boolean value) {
     node.put(field, value);
   }
 
@@ -317,7 +323,8 @@ public class AdaptativeJsonHandler {
    * @param field
    * @param value
    */
-  public final void setValue(ObjectNode node, String field, double value) {
+  public final void setValue(final ObjectNode node, final String field,
+                             final double value) {
     node.put(field, value);
   }
 
@@ -326,7 +333,8 @@ public class AdaptativeJsonHandler {
    * @param field
    * @param value
    */
-  public final void setValue(ObjectNode node, String field, int value) {
+  public final void setValue(final ObjectNode node, final String field,
+                             final int value) {
     node.put(field, value);
   }
 
@@ -335,7 +343,8 @@ public class AdaptativeJsonHandler {
    * @param field
    * @param value
    */
-  public final void setValue(ObjectNode node, String field, long value) {
+  public final void setValue(final ObjectNode node, final String field,
+                             final long value) {
     node.put(field, value);
   }
 
@@ -344,7 +353,8 @@ public class AdaptativeJsonHandler {
    * @param field
    * @param value
    */
-  public final void setValue(ObjectNode node, String field, String value) {
+  public final void setValue(final ObjectNode node, final String field,
+                             final String value) {
     if (value == null || value.isEmpty()) {
       return;
     }
@@ -356,7 +366,8 @@ public class AdaptativeJsonHandler {
    * @param field
    * @param value
    */
-  public final void setValue(ObjectNode node, String field, byte[] value) {
+  public final void setValue(final ObjectNode node, final String field,
+                             final byte[] value) {
     if (value == null || value.length == 0) {
       return;
     }
@@ -369,7 +380,7 @@ public class AdaptativeJsonHandler {
    *
    * @return True if all fields exist
    */
-  public final boolean exist(ObjectNode node, String... field) {
+  public final boolean exist(final ObjectNode node, final String... field) {
     for (final String string : field) {
       if (!node.has(string)) {
         return false;
@@ -385,8 +396,8 @@ public class AdaptativeJsonHandler {
    *
    * @return the String if the field exists, else defValue
    */
-  public final String getValue(ObjectNode node, Enum<?> field,
-                               String defValue) {
+  public final String getValue(final ObjectNode node, final Enum<?> field,
+                               final String defValue) {
     return getValue(node, field.name(), defValue);
   }
 
@@ -397,8 +408,8 @@ public class AdaptativeJsonHandler {
    *
    * @return the Boolean if the field exists, else defValue
    */
-  public final Boolean getValue(ObjectNode node, Enum<?> field,
-                                boolean defValue) {
+  public final Boolean getValue(final ObjectNode node, final Enum<?> field,
+                                final boolean defValue) {
     return node.path(field.name()).asBoolean(defValue);
   }
 
@@ -409,8 +420,8 @@ public class AdaptativeJsonHandler {
    *
    * @return the Double if the field exists, else defValue
    */
-  public final Double getValue(ObjectNode node, Enum<?> field,
-                               double defValue) {
+  public final Double getValue(final ObjectNode node, final Enum<?> field,
+                               final double defValue) {
     return node.path(field.name()).asDouble(defValue);
   }
 
@@ -421,7 +432,8 @@ public class AdaptativeJsonHandler {
    *
    * @return the Long if the field exists, else defValue
    */
-  public final Long getValue(ObjectNode node, Enum<?> field, long defValue) {
+  public final Long getValue(final ObjectNode node, final Enum<?> field,
+                             final long defValue) {
     return node.path(field.name()).asLong(defValue);
   }
 
@@ -432,7 +444,8 @@ public class AdaptativeJsonHandler {
    *
    * @return the Integer if the field exists, else defValue
    */
-  public final Integer getValue(ObjectNode node, Enum<?> field, int defValue) {
+  public final Integer getValue(final ObjectNode node, final Enum<?> field,
+                                final int defValue) {
     return node.path(field.name()).asInt(defValue);
   }
 
@@ -443,8 +456,8 @@ public class AdaptativeJsonHandler {
    *
    * @return the byte array if the field exists, else defValue
    */
-  public final byte[] getValue(ObjectNode node, Enum<?> field,
-                               byte[] defValue) {
+  public final byte[] getValue(final ObjectNode node, final Enum<?> field,
+                               final byte[] defValue) {
     return getValue(node, field.name(), defValue);
   }
 
@@ -453,7 +466,8 @@ public class AdaptativeJsonHandler {
    * @param field
    * @param value
    */
-  public final void setValue(ObjectNode node, Enum<?> field, boolean value) {
+  public final void setValue(final ObjectNode node, final Enum<?> field,
+                             final boolean value) {
     node.put(field.name(), value);
   }
 
@@ -462,7 +476,8 @@ public class AdaptativeJsonHandler {
    * @param field
    * @param value
    */
-  public final void setValue(ObjectNode node, Enum<?> field, double value) {
+  public final void setValue(final ObjectNode node, final Enum<?> field,
+                             final double value) {
     node.put(field.name(), value);
   }
 
@@ -471,7 +486,8 @@ public class AdaptativeJsonHandler {
    * @param field
    * @param value
    */
-  public final void setValue(ObjectNode node, Enum<?> field, int value) {
+  public final void setValue(final ObjectNode node, final Enum<?> field,
+                             final int value) {
     node.put(field.name(), value);
   }
 
@@ -480,7 +496,8 @@ public class AdaptativeJsonHandler {
    * @param field
    * @param value
    */
-  public final void setValue(ObjectNode node, Enum<?> field, long value) {
+  public final void setValue(final ObjectNode node, final Enum<?> field,
+                             final long value) {
     node.put(field.name(), value);
   }
 
@@ -489,7 +506,8 @@ public class AdaptativeJsonHandler {
    * @param field
    * @param value
    */
-  public final void setValue(ObjectNode node, Enum<?> field, String value) {
+  public final void setValue(final ObjectNode node, final Enum<?> field,
+                             final String value) {
     if (value == null || value.isEmpty()) {
       return;
     }
@@ -501,7 +519,8 @@ public class AdaptativeJsonHandler {
    * @param field
    * @param value
    */
-  public final void setValue(ObjectNode node, Enum<?> field, byte[] value) {
+  public final void setValue(final ObjectNode node, final Enum<?> field,
+                             final byte[] value) {
     if (value == null || value.length == 0) {
       return;
     }
@@ -514,7 +533,7 @@ public class AdaptativeJsonHandler {
    *
    * @return True if all fields exist
    */
-  public final boolean exist(ObjectNode node, Enum<?>... field) {
+  public final boolean exist(final ObjectNode node, final Enum<?>... field) {
     for (final Enum<?> enm : field) {
       if (!node.has(enm.name())) {
         return false;
@@ -528,7 +547,7 @@ public class AdaptativeJsonHandler {
    *
    * @return the corresponding HashMap
    */
-  public final Map<String, Object> getMapFromString(String value) {
+  public final Map<String, Object> getMapFromString(final String value) {
     if (value != null && !value.isEmpty()) {
       Map<String, Object> info = null;
       try {

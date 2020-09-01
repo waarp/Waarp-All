@@ -67,7 +67,7 @@ public class RestError implements Serializable {
    * @param args the message's parameters
    * @param code the error's code
    */
-  RestError(String msgKey, String[] args, int code) {
+  RestError(final String msgKey, final String[] args, final int code) {
     this.msgKey = msgKey;
     this.args = args;
     this.code = code;
@@ -80,7 +80,7 @@ public class RestError implements Serializable {
    *
    * @return the serialized RestError object
    */
-  public ObjectNode makeNode(Locale lang) {
+  public ObjectNode makeNode(final Locale lang) {
     final ResourceBundle bundle =
         ResourceBundle.getBundle("restmessages", lang);
     final String message =

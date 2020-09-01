@@ -63,7 +63,7 @@ public class DBMultipleMonitorDAO extends StatementExecutor<MultipleMonitor>
       COUNT_RULE_FIELD + " = ? WHERE " + HOSTID_FIELD + " = ?";
 
 
-  public DBMultipleMonitorDAO(Connection con) {
+  public DBMultipleMonitorDAO(final Connection con) {
     super(con);
   }
 
@@ -125,7 +125,8 @@ public class DBMultipleMonitorDAO extends StatementExecutor<MultipleMonitor>
   }
 
   @Override
-  public MultipleMonitor getFromResultSet(ResultSet set) throws SQLException {
+  public MultipleMonitor getFromResultSet(final ResultSet set)
+      throws SQLException {
     return new MultipleMonitor(set.getString(HOSTID_FIELD),
                                set.getInt(COUNT_CONFIG_FIELD),
                                set.getInt(COUNT_HOST_FIELD),

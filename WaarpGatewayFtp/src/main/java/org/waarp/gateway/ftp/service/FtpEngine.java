@@ -68,7 +68,7 @@ public class FtpEngine extends EngineAbstract {
     logger.warn("Service started with " + ftpfile);
   }
 
-  private static void exit(FtpConfiguration configuration) {
+  private static void exit(final FtpConfiguration configuration) {
     final FtpChannelUtils util = new FtpChannelUtils(configuration);
     util.run();
   }

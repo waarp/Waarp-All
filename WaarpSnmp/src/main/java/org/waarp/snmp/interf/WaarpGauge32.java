@@ -46,7 +46,7 @@ public abstract class WaarpGauge32 extends Gauge32 {
     setInternalValue();
   }
 
-  protected WaarpGauge32(long value) {
+  protected WaarpGauge32(final long value) {
     setInternalValue(value);
   }
 

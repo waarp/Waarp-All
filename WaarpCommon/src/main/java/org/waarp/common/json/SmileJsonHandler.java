@@ -71,7 +71,7 @@ public class SmileJsonHandler extends JsonHandler {
    *
    * @return the objectNode or null if an error occurs
    */
-  public static ObjectNode getFromString(String value) {
+  public static ObjectNode getFromString(final String value) {
     try {
       return (ObjectNode) mapper.readTree(value);
     } catch (final JsonProcessingException e) {
@@ -86,7 +86,7 @@ public class SmileJsonHandler extends JsonHandler {
    *
    * @return the Json representation of the object
    */
-  public static String writeAsString(Object object) {
+  public static String writeAsString(final Object object) {
     try {
       return mapper.writeValueAsString(object);
     } catch (final JsonProcessingException e) {
@@ -99,7 +99,7 @@ public class SmileJsonHandler extends JsonHandler {
    *
    * @return the corresponding HashMap
    */
-  public static Map<String, Object> getMapFromString(String value) {
+  public static Map<String, Object> getMapFromString(final String value) {
     if (value != null && !value.isEmpty()) {
       Map<String, Object> info = null;
       try {

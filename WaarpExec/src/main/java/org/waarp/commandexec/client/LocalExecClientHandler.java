@@ -55,7 +55,7 @@ public class LocalExecClientHandler
   /**
    * Constructor
    */
-  public LocalExecClientHandler(LocalExecClientInitializer factory) {
+  public LocalExecClientHandler(final LocalExecClientInitializer factory) {
     this.factory = factory;
   }
 
@@ -65,7 +65,7 @@ public class LocalExecClientHandler
    * @param delay
    * @param command
    */
-  public void initExecClient(long delay, String command) {
+  public void initExecClient(final long delay, final String command) {
     result = new LocalExecResult(LocalExecDefaultResult.NoStatus);
     back = new StringBuilder();
     firstMessage = true;
@@ -87,7 +87,7 @@ public class LocalExecClientHandler
   }
 
   @Override
-  public void channelActive(ChannelHandlerContext ctx) throws Exception {
+  public void channelActive(final ChannelHandlerContext ctx) throws Exception {
     channel = ctx.channel();
     factory.addChannel(channel);
     ready.setSuccess();
@@ -102,7 +102,8 @@ public class LocalExecClientHandler
    * Else if no error occurs => Set success to the future<br>
    */
   @Override
-  public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+  public void channelInactive(final ChannelHandlerContext ctx)
+      throws Exception {
     if (future == null || !future.isDone()) {
       // Should not be
       finalizeMessage();
@@ -141,7 +142,7 @@ public class LocalExecClientHandler
    *
    * @return The LocalExecResult
    */
-  public LocalExecResult waitFor(long delay) {
+  public LocalExecResult waitFor(final long delay) {
     if (delay <= 0) {
       future.awaitOrInterruptible();
     } else {
@@ -154,12 +155,12 @@ public class LocalExecClientHandler
   /**
    * Action to do before close
    */
-  public void actionBeforeClose(Channel channel) {
+  public void actionBeforeClose(final Channel channel) {
     // here nothing to do
   }
 
   @Override
-  protected void channelRead0(ChannelHandlerContext ctx, String mesg)
+  protected void channelRead0(final ChannelHandlerContext ctx, String mesg)
       throws Exception {
     // Add the line received from the server.
     // If first message, then take the status and then the message
@@ -197,8 +198,8 @@ public class LocalExecClientHandler
   }
 
   @Override
-  public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
-      throws Exception {
+  public void exceptionCaught(final ChannelHandlerContext ctx,
+                              final Throwable cause) throws Exception {
     logger.warn(command + ':' +
                 "Unexpected exception from Outband while get information: " +
                 firstMessage, cause);

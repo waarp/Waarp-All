@@ -70,7 +70,7 @@ public class DBLimitDAO extends StatementExecutor<Limit> implements LimitDAO {
       " = ?, " + DELAY_LIMIT_FIELD + " = ?, " + UPDATED_INFO_FIELD +
       " = ? WHERE " + HOSTID_FIELD + " = ?";
 
-  public DBLimitDAO(Connection con) {
+  public DBLimitDAO(final Connection con) {
     super(con);
   }
 
@@ -135,7 +135,7 @@ public class DBLimitDAO extends StatementExecutor<Limit> implements LimitDAO {
   }
 
   @Override
-  public Limit getFromResultSet(ResultSet set) throws SQLException {
+  public Limit getFromResultSet(final ResultSet set) throws SQLException {
     return new Limit(set.getString(HOSTID_FIELD),
                      set.getLong(DELAY_LIMIT_FIELD),
                      set.getLong(READ_GLOBAL_LIMIT_FIELD),

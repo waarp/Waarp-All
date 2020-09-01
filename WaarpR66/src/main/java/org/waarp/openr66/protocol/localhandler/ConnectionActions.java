@@ -221,7 +221,8 @@ public abstract class ConnectionActions {
       if (runner != null) {
         runner.clean();
       }
-      LocalTransaction lt = Configuration.configuration.getLocalTransaction();
+      final LocalTransaction lt =
+          Configuration.configuration.getLocalTransaction();
       if (lt != null && localChannelReference != null) {
         localChannelReference.close();
       }
@@ -240,7 +241,7 @@ public abstract class ConnectionActions {
   }
 
   protected void setLocalChannelReference(
-      LocalChannelReference localChannelReference) {
+      final LocalChannelReference localChannelReference) {
     if (localChannelReference != null) {
       this.localChannelReference = localChannelReference;
       if (session != null) {
@@ -256,7 +257,7 @@ public abstract class ConnectionActions {
    *
    * @throws OpenR66ProtocolPacketException
    */
-  public void startup(StartupPacket packet)
+  public void startup(final StartupPacket packet)
       throws OpenR66ProtocolPacketException {
     packet.clear();
     if (localChannelReference == null) {
@@ -293,7 +294,7 @@ public abstract class ConnectionActions {
    *
    * @throws OpenR66ProtocolPacketException
    */
-  private void refusedConnection(AuthentPacket packet, Exception e1)
+  private void refusedConnection(final AuthentPacket packet, Exception e1)
       throws OpenR66ProtocolPacketException {
     logger.error(Messages.getString("LocalServerHandler.6") + //$NON-NLS-1$
                  localChannelReference.getNetworkChannel().remoteAddress() +
@@ -349,7 +350,7 @@ public abstract class ConnectionActions {
    *
    * @throws OpenR66ProtocolPacketException
    */
-  public void authent(AuthentPacket packet, boolean isSsl)
+  public void authent(final AuthentPacket packet, final boolean isSsl)
       throws OpenR66ProtocolPacketException {
     logger.debug("AUTHENT {}", packet);
     if (packet.isToValidate()) {
@@ -412,6 +413,7 @@ public abstract class ConnectionActions {
         !localChannelReference.getPartner().isProxified()) {
       final DbHostAuth host = R66Auth.getServerAuth(packet.getHostId());
       boolean toTest = false;
+      assert host != null;
       if (!host.isProxified()) {
         if (host.isClient()) {
           if (Configuration.configuration.isCheckClientAddress()) {
@@ -491,7 +493,7 @@ public abstract class ConnectionActions {
    *
    * @param packet
    */
-  public void connectionError(ConnectionErrorPacket packet) {
+  public void connectionError(final ConnectionErrorPacket packet) {
     // do something according to the error
     logger.error(localChannelReference.getRequestId() + ": " + packet);
     ErrorCode code = ErrorCode.ConnectionImpossible;
@@ -517,7 +519,7 @@ public abstract class ConnectionActions {
    * @throws OpenR66ProtocolSystemException
    * @throws OpenR66ProtocolBusinessException
    */
-  public void errorMesg(ErrorPacket packet)
+  public void errorMesg(final ErrorPacket packet)
       throws OpenR66RunnerErrorException, OpenR66ProtocolSystemException,
              OpenR66ProtocolBusinessException {
     // do something according to the error
@@ -530,7 +532,7 @@ public abstract class ConnectionActions {
     final ErrorCode code = ErrorCode.getFromCode(packet.getSmiddle());
     session.getLocalChannelReference()
            .setErrorMessage(packet.getSheader(), code);
-    OpenR66ProtocolBusinessException exception;
+    final OpenR66ProtocolBusinessException exception;
     if (code.code == ErrorCode.CanceledTransfer.code) {
       NetworkTransaction.stopRetrieve(session.getLocalChannelReference());
       logger.debug("Stop retrieving file: the transfer has been canceled");
@@ -630,7 +632,7 @@ public abstract class ConnectionActions {
    * @throws OpenR66ProtocolSystemException
    * @throws OpenR66RunnerErrorException
    */
-  public final void tryFinalizeRequest(R66Result errorValue)
+  public final void tryFinalizeRequest(final R66Result errorValue)
       throws OpenR66RunnerErrorException, OpenR66ProtocolSystemException {
     session.tryFinalizeRequest(errorValue);
   }
@@ -644,13 +646,14 @@ public abstract class ConnectionActions {
     private final R66Result result;
 
     private RunnerChannelFutureListener(
-        LocalChannelReference localChannelReference, R66Result result) {
+        final LocalChannelReference localChannelReference,
+        final R66Result result) {
       this.localChannelReference = localChannelReference;
       this.result = result;
     }
 
     @Override
-    public void operationComplete(ChannelFuture future) throws Exception {
+    public void operationComplete(final ChannelFuture future) throws Exception {
       localChannelReference.invalidateRequest(result);
       ChannelCloseTimer
           .closeFutureTransaction(localChannelReference.getServerHandler());

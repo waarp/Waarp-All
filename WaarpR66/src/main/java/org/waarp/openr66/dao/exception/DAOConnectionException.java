@@ -30,15 +30,15 @@ public class DAOConnectionException extends DAOException {
    */
   private static final long serialVersionUID = 6987188239194039082L;
 
-  public DAOConnectionException(String message) {
+  public DAOConnectionException(final String message) {
     super(message);
   }
 
-  public DAOConnectionException(Throwable cause) {
+  public DAOConnectionException(final Throwable cause) {
     super(cause);
   }
 
-  public DAOConnectionException(String message, Throwable cause) {
+  public DAOConnectionException(final String message, final Throwable cause) {
     super(message, cause);
   }
 }

@@ -54,7 +54,7 @@ public class ConfigImportJsonPacket extends JsonPacket {
   /**
    * @param purgehost the purgehost to set
    */
-  public void setPurgehost(boolean purgehost) {
+  public void setPurgehost(final boolean purgehost) {
     this.purgehost = purgehost;
   }
 
@@ -68,7 +68,7 @@ public class ConfigImportJsonPacket extends JsonPacket {
   /**
    * @param purgerule the purgerule to set
    */
-  public void setPurgerule(boolean purgerule) {
+  public void setPurgerule(final boolean purgerule) {
     this.purgerule = purgerule;
   }
 
@@ -82,7 +82,7 @@ public class ConfigImportJsonPacket extends JsonPacket {
   /**
    * @param purgebusiness the purgebusiness to set
    */
-  public void setPurgebusiness(boolean purgebusiness) {
+  public void setPurgebusiness(final boolean purgebusiness) {
     this.purgebusiness = purgebusiness;
   }
 
@@ -96,7 +96,7 @@ public class ConfigImportJsonPacket extends JsonPacket {
   /**
    * @param purgealias the purgealias to set
    */
-  public void setPurgealias(boolean purgealias) {
+  public void setPurgealias(final boolean purgealias) {
     this.purgealias = purgealias;
   }
 
@@ -110,7 +110,7 @@ public class ConfigImportJsonPacket extends JsonPacket {
   /**
    * @param purgeroles the purgeroles to set
    */
-  public void setPurgeroles(boolean purgeroles) {
+  public void setPurgeroles(final boolean purgeroles) {
     this.purgeroles = purgeroles;
   }
 
@@ -124,7 +124,7 @@ public class ConfigImportJsonPacket extends JsonPacket {
   /**
    * @param host the host to set
    */
-  public void setHost(String host) {
+  public void setHost(final String host) {
     this.host = host;
   }
 
@@ -138,7 +138,7 @@ public class ConfigImportJsonPacket extends JsonPacket {
   /**
    * @param rule the rule to set
    */
-  public void setRule(String rule) {
+  public void setRule(final String rule) {
     this.rule = rule;
   }
 
@@ -152,7 +152,7 @@ public class ConfigImportJsonPacket extends JsonPacket {
   /**
    * @param business the business to set
    */
-  public void setBusiness(String business) {
+  public void setBusiness(final String business) {
     this.business = business;
   }
 
@@ -166,7 +166,7 @@ public class ConfigImportJsonPacket extends JsonPacket {
   /**
    * @param alias the alias to set
    */
-  public void setAlias(String alias) {
+  public void setAlias(final String alias) {
     this.alias = alias;
   }
 
@@ -180,7 +180,7 @@ public class ConfigImportJsonPacket extends JsonPacket {
   /**
    * @param roles the roles to set
    */
-  public void setRoles(String roles) {
+  public void setRoles(final String roles) {
     this.roles = roles;
   }
 
@@ -194,7 +194,7 @@ public class ConfigImportJsonPacket extends JsonPacket {
   /**
    * @param hostid the hostid to set
    */
-  public void setHostid(long hostid) {
+  public void setHostid(final long hostid) {
     this.hostid = hostid;
   }
 
@@ -208,7 +208,7 @@ public class ConfigImportJsonPacket extends JsonPacket {
   /**
    * @param ruleid the ruleid to set
    */
-  public void setRuleid(long ruleid) {
+  public void setRuleid(final long ruleid) {
     this.ruleid = ruleid;
   }
 
@@ -222,7 +222,7 @@ public class ConfigImportJsonPacket extends JsonPacket {
   /**
    * @param businessid the businessid to set
    */
-  public void setBusinessid(long businessid) {
+  public void setBusinessid(final long businessid) {
     this.businessid = businessid;
   }
 
@@ -236,7 +236,7 @@ public class ConfigImportJsonPacket extends JsonPacket {
   /**
    * @param aliasid the aliasid to set
    */
-  public void setAliasid(long aliasid) {
+  public void setAliasid(final long aliasid) {
     this.aliasid = aliasid;
   }
 
@@ -250,12 +250,12 @@ public class ConfigImportJsonPacket extends JsonPacket {
   /**
    * @param rolesid the rolesid to set
    */
-  public void setRolesid(long rolesid) {
+  public void setRolesid(final long rolesid) {
     this.rolesid = rolesid;
   }
 
   @Override
-  public void fromJson(JsonPacket other) {
+  public void fromJson(final JsonPacket other) {
     super.fromJson(other);
     if (other instanceof ConfigImportJsonPacket) {
       final ConfigImportJsonPacket other2 = (ConfigImportJsonPacket) other;

@@ -37,7 +37,7 @@ class LastLineReader extends Thread {
    */
   private String lastLine;
 
-  LastLineReader(PipedInputStream inputStream) {
+  LastLineReader(final PipedInputStream inputStream) {
     reader = new BufferedReader(new InputStreamReader(inputStream));
   }
 
@@ -69,7 +69,7 @@ class LastLineReader extends Thread {
   /**
    * @param lastLine the lastLine to set
    */
-  private void setLastLine(String lastLine) {
+  private void setLastLine(final String lastLine) {
     this.lastLine = lastLine;
   }
 

@@ -54,15 +54,16 @@ public class HttpRestBandwidthR66Handler extends HttpRestAbstractR66Handler {
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(HttpRestBandwidthR66Handler.class);
 
-  public HttpRestBandwidthR66Handler(RestConfiguration config,
-                                     METHOD... methods) {
+  public HttpRestBandwidthR66Handler(final RestConfiguration config,
+                                     final METHOD... methods) {
     super(BASEURI, config, METHOD.OPTIONS);
     setIntersectionMethods(methods, METHOD.GET, METHOD.PUT);
   }
 
   @Override
-  public void endParsingRequest(HttpRestHandler handler, RestArgument arguments,
-                                RestArgument result, Object body)
+  public void endParsingRequest(final HttpRestHandler handler,
+                                final RestArgument arguments,
+                                final RestArgument result, final Object body)
       throws HttpIncorrectRequestException, HttpInvalidAuthenticationException {
     logger.debug("debug: {} ### {}", arguments, result);
     if (body != null) {

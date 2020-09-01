@@ -40,7 +40,7 @@ public class RequestJsonPacket extends JsonPacket {
   /**
    * @param filename the filename to set
    */
-  public void setFilename(String filename) {
+  public void setFilename(final String filename) {
     this.filename = filename;
   }
 
@@ -54,7 +54,7 @@ public class RequestJsonPacket extends JsonPacket {
   /**
    * @param filesize the filesize to set
    */
-  public void setFilesize(long filesize) {
+  public void setFilesize(final long filesize) {
     this.filesize = filesize;
   }
 
@@ -68,7 +68,7 @@ public class RequestJsonPacket extends JsonPacket {
   /**
    * @param fileInfo the fileInfo to set
    */
-  public void setFileInfo(String fileInfo) {
+  public void setFileInfo(final String fileInfo) {
     this.fileInfo = fileInfo;
   }
 

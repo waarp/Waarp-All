@@ -45,7 +45,7 @@ public class WaarpBC {
         registerRandomSecure();
         initialized = true;
       }
-    } catch (Throwable throwable) {//NOSONAR
+    } catch (final Throwable throwable) {//NOSONAR
       throwable.printStackTrace();//NOSONAR
       System.err //NOSONAR
                  .println("Error occurs at startup: " +//NOSONAR
@@ -67,7 +67,7 @@ public class WaarpBC {
    */
   private static void registerRandomSecure() {
     if (System.getProperty("os.name").contains("Windows")) {
-      Provider provider = Security.getProvider("SunMSCAPI");
+      final Provider provider = Security.getProvider("SunMSCAPI");
       if (provider != null) {
         Security.removeProvider(provider.getName());
         Security.insertProviderAt(provider, 1);
@@ -75,7 +75,7 @@ public class WaarpBC {
       }
     } else {
       System.setProperty("java.security.egd", "file:/dev/./urandom");
-      Provider provider = Security.getProvider("SUN");
+      final Provider provider = Security.getProvider("SUN");
       final String type = "SecureRandom";
       final String alg = "NativePRNGNonBlocking";
       if (provider != null) {
@@ -104,17 +104,17 @@ public class WaarpBC {
     if (System.getProperty("os.name").contains("Windows")) {
       try {
         return SecureRandom.getInstance("Windows-PRNG", "SunMSCAPI");
-      } catch (NoSuchAlgorithmException e) {
+      } catch (final NoSuchAlgorithmException e) {
         return new SecureRandom();
-      } catch (NoSuchProviderException e) {
+      } catch (final NoSuchProviderException e) {
         return new SecureRandom();
       }
     } else {
       try {
         return SecureRandom.getInstance("NativePRNGNonBlocking", "SUN");
-      } catch (NoSuchAlgorithmException e) {
+      } catch (final NoSuchAlgorithmException e) {
         return new SecureRandom();
-      } catch (NoSuchProviderException e) {
+      } catch (final NoSuchProviderException e) {
         return new SecureRandom();
       }
     }

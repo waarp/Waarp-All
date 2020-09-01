@@ -38,7 +38,7 @@ class FtpControlStringEncoder extends StringEncoder {
    *
    * @see StringEncoder
    */
-  FtpControlStringEncoder(String charset) {
+  FtpControlStringEncoder(final String charset) {
     super(Charset.forName(charset));
   }
 
@@ -47,7 +47,7 @@ class FtpControlStringEncoder extends StringEncoder {
    *
    * @see StringEncoder
    */
-  FtpControlStringEncoder(Charset charset) {
+  FtpControlStringEncoder(final Charset charset) {
     super(charset);
   }
 }
