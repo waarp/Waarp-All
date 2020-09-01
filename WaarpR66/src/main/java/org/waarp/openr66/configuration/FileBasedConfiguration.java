@@ -129,6 +129,7 @@ public class FileBasedConfiguration {
    */
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(FileBasedConfiguration.class);
+  protected static final String REGEX_SEPARATOR = "\\s|\\|";
 
   private static XmlValue[] configuration;
 
@@ -1191,7 +1192,7 @@ public class FileBasedConfiguration {
                   // No more restmethod since ALL was selected
                   break;
                 } else {
-                  final String[] handlers = name.split("\\s|\\|");
+                  final String[] handlers = name.split(REGEX_SEPARATOR);
                   for (final String string : handlers) {
                     final RESTHANDLERS handler = RESTHANDLERS.valueOf(string);
                     config.getResthandlersCrud()[handler.ordinal()] = def;
@@ -1524,7 +1525,7 @@ public class FileBasedConfiguration {
             continue;
           }
           final String aliasset = value.getString();
-          final String[] alias = aliasset.split("\\s|\\|");
+          final String[] alias = aliasset.split(REGEX_SEPARATOR);
           for (final String namealias : alias) {
             config.getAliases().put(namealias, refHostId);
           }
@@ -1581,7 +1582,7 @@ public class FileBasedConfiguration {
             continue;
           }
           final String roleset = value.getString();
-          final String[] roles = roleset.split("\\s|\\|");
+          final String[] roles = roleset.split(REGEX_SEPARATOR);
           final RoleDefault newrole = new RoleDefault();
           for (final String role : roles) {
             try {

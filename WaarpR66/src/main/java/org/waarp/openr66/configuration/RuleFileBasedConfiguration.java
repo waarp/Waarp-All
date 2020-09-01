@@ -30,6 +30,7 @@ import org.waarp.common.database.exception.WaarpDatabaseNoDataException;
 import org.waarp.common.database.exception.WaarpDatabaseSqlException;
 import org.waarp.common.file.DirInterface;
 import org.waarp.common.file.FileUtils;
+import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.xml.XmlDecl;
@@ -158,7 +159,7 @@ public final class RuleFileBasedConfiguration {
           xmlRuleDAO.getAll();
         }
       } catch (final DAOConnectionException e) {
-        e.printStackTrace();
+        SysErrLogger.FAKE_LOGGER.syserr(e);
       } finally {
         if (ruleDAO != null) {
           ruleDAO.close();
@@ -670,7 +671,8 @@ public final class RuleFileBasedConfiguration {
    *
    * @throws OpenR66ProtocolSystemException
    */
-  private static void writeXML(final String filename, final DbRule rule)
+  private static void writeXMLInternal(final String filename,
+                                        final DbRule rule)
       throws OpenR66ProtocolSystemException {
     final Document document = DocumentHelper.createDocument();
     final Element root = document.addElement(ROOT);
@@ -707,7 +709,7 @@ public final class RuleFileBasedConfiguration {
           dir.getAbsolutePath() + File.separator + hostname + '_' +
           rule.getIdRule() + EXT_RULE;
       logger.debug("Will write Rule: " + rule.getIdRule() + " in " + filename);
-      writeXML(filename, rule);
+      writeXMLInternal(filename, rule);
     }
   }
 

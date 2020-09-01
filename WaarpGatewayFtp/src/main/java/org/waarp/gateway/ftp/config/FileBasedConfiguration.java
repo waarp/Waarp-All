@@ -880,7 +880,7 @@ public class FileBasedConfiguration extends FtpConfiguration {
     return true;
   }
 
-  private boolean loadLimit(final boolean updateLimit) {
+  private boolean loadLimit() {
     XmlValue value = hashConfig.get(XML_LIMITGLOBAL);
     if (value != null && !value.isEmpty()) {
       serverGlobalReadLimit = value.getLong();
@@ -1301,7 +1301,7 @@ public class FileBasedConfiguration extends FtpConfiguration {
       logger.error("Cannot load Directory configuration");
       return false;
     }
-    if (!loadLimit(false)) {
+    if (!loadLimit()) {
       logger.error("Cannot load Limit configuration");
       return false;
     }

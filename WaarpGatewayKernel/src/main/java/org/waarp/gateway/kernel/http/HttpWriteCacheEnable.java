@@ -170,7 +170,7 @@ public final class HttpWriteCacheEnable {
         new DefaultFullHttpResponse(HTTP_1_1, HttpResponseStatus.OK, byteBuf);
     response.headers().set(HttpHeaderNames.CONTENT_LENGTH, fileLength);
     setContentTypeHeader(response, file);
-    setDateAndCacheHeaders(response, file, rfc1123Format, lastModifDate);
+    setDateAndCacheHeaders(response, rfc1123Format, lastModifDate);
 
     if (!keepAlive) {
       response.headers()
@@ -209,7 +209,6 @@ public final class HttpWriteCacheEnable {
    * @param fileToCache file to extract content type
    */
   private static void setDateAndCacheHeaders(final HttpResponse response,
-                                             final File fileToCache,
                                              final DateFormat rfc1123Format,
                                              final Date lastModifDate) {
     // Date header

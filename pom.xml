@@ -231,7 +231,7 @@
     <!-- Waarp Versions -->
     <waarp.directory.version>test</waarp.directory.version>
     <waarp.module.version>test</waarp.module.version>
-    <waarp.version>3.5.0-dev</waarp.version>
+    <waarp.version>3.5.0</waarp.version>
     <revision>${waarp.version}</revision>
 
     <!-- Dependencies versions -->
@@ -261,7 +261,7 @@
     <h2.version>1.4.191</h2.version><!--Java6 version -->
     <mariadb.version>1.7.4</mariadb.version><!--1.7.4 last version-->
     <mysql.version>5.1.49</mysql.version>
-    <postgresql.version>42.2.14.jre6</postgresql.version><!--42.2.14.jre6 last
+    <postgresql.version>42.2.16.jre6</postgresql.version><!--42.2.14.jre6 last
     version-->
     <oracle.version>6</oracle.version>
     <jackson.version>2.7.9</jackson.version><!--Java6 version -->
@@ -286,14 +286,14 @@
     version, 3.1.0 Java7     -->
     <ftp4j.version>1.7.2</ftp4j.version>
     <joda-time.version>2.10.6</joda-time.version>
-    <jersey-common.version>2.25.1</jersey-common.version>
+    <jersey-common.version>2.25.1</jersey-common.version><!-- Last 2.25.1 -->
     <bytebuddy.version>1.10.14</bytebuddy.version>
     <jna.version>5.6.0</jna.version>
     <jnr-posix-version>3.0.59</jnr-posix-version>
     <junit.version>4.13</junit.version>
     <javaassist.version>3.25.0-GA</javaassist.version><!--3.25.0-GA last
     version-->
-    <assertj.version>3.16.1</assertj.version>
+    <assertj.version>3.17.1</assertj.version>
     <easymock.version>4.2</easymock.version>
     <rest-assured.version>3.3.0</rest-assured.version>
     <mockito.version>2.28.2</mockito.version>
@@ -302,6 +302,7 @@
     <zjsonpatch.version>0.4.11</zjsonpatch.version>
     <log4j2.version>2.13.3</log4j2.version>
     <assertj-swing.version>3.9.2</assertj-swing.version>
+    <htmlunit.version>2.43.1</htmlunit.version>
 
     <!-- Maven plugins -->
     <maven.rpm-maven-plugin.version>2.2.0</maven.rpm-maven-plugin.version>
@@ -474,7 +475,7 @@
             -->
             <runOrder>alphabetical</runOrder>
             <!-- Non Parallel mode -->
-            <parallel>classes</parallel>
+            <parallel>none</parallel>
             <threadCount>1</threadCount>
             <perCoreThreadCount>false</perCoreThreadCount>
             <forkCount>1</forkCount>
@@ -497,6 +498,9 @@
           <artifactId>maven-failsafe-plugin</artifactId>
           <version>${maven.failsafe.version}</version>
           <configuration>
+            <parallel>none</parallel>
+            <threadCount>1</threadCount>
+            <perCoreThreadCount>false</perCoreThreadCount>
             <forkCount>1</forkCount>
             <reuseForks>false</reuseForks>
           </configuration>
@@ -2602,8 +2606,14 @@
       <dependency>
         <groupId>org.seleniumhq.selenium</groupId>
         <artifactId>htmlunit-driver</artifactId>
-        <version>2.42.0</version>
+        <version>${htmlunit.version}</version>
         <scope>test</scope>
+        <exclusions>
+          <exclusion>
+            <groupId>commons-net</groupId>
+            <artifactId>commons-net</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
       <dependency>
         <groupId>org.assertj</groupId>

@@ -328,7 +328,7 @@ public class RequestTransfer implements Runnable {
           } else {
             // Send a request of cancel
             final ErrorCode code =
-                sendStopOrCancel(runner, LocalPacketFactory.CANCELPACKET);
+                sendStopOrCancel(LocalPacketFactory.CANCELPACKET);
             future.setResult(new R66Result(null, true, code, runner));
             future.getResult().setRunner(runner);
             switch (code) {
@@ -354,7 +354,7 @@ public class RequestTransfer implements Runnable {
           // Just stop the task
           // Send a request
           final ErrorCode code =
-              sendStopOrCancel(runner, LocalPacketFactory.STOPPACKET);
+              sendStopOrCancel(LocalPacketFactory.STOPPACKET);
           future.setResult(new R66Result(null, true, code, runner));
           future.getResult().setRunner(runner);
           switch (code) {
@@ -576,8 +576,7 @@ public class RequestTransfer implements Runnable {
     return ErrorCode.Internal;
   }
 
-  private ErrorCode sendStopOrCancel(final DbTaskRunner runner,
-                                     final byte code) {
+  private ErrorCode sendStopOrCancel(final byte code) {
     final DbHostAuth host;
     host = R66Auth.getServerAuth(requester);
     if (host == null) {

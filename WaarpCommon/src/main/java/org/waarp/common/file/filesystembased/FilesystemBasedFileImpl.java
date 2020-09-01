@@ -581,21 +581,24 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
       return null;
     }
     @SuppressWarnings("resource")
-    FileInputStream fileInputStream = null;
+    FileInputStream fileInputStreamTemp = null;
     try {
-      fileInputStream = new FileInputStream(trueFile);//NOSONAR
+      fileInputStreamTemp = new FileInputStream(trueFile);//NOSONAR
       if (position != 0) {
-        fileInputStream.skip(position);
+        long read = fileInputStreamTemp.skip(position);
+        if (read != position) {
+          logger.warn("Cannot ensure position: {} while is {}", position, read);
+        }
       }
     } catch (final FileNotFoundException e) {
       logger.error("File not found in getFileInputStream:", e);
       return null;
     } catch (final IOException e) {
-      FileUtils.close(fileInputStream);
+      FileUtils.close(fileInputStreamTemp);
       logger.error("Change position in getFileInputStream:", e);
       return null;
     }
-    return fileInputStream;
+    return fileInputStreamTemp;
   }
 
   /**
