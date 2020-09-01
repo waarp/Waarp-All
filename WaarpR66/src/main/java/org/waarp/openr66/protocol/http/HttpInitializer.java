@@ -34,12 +34,12 @@ import org.waarp.openr66.protocol.configuration.Configuration;
 public class HttpInitializer extends ChannelInitializer<SocketChannel> {
   private final boolean useHttpCompression;
 
-  public HttpInitializer(boolean useHttpCompression) {
+  public HttpInitializer(final boolean useHttpCompression) {
     this.useHttpCompression = useHttpCompression;
   }
 
   @Override
-  protected void initChannel(SocketChannel ch) throws Exception {
+  protected void initChannel(final SocketChannel ch) throws Exception {
     final ChannelPipeline pipeline = ch.pipeline();
     pipeline.addLast("decoder", new HttpServerCodec());
     pipeline.addLast("aggregator", new HttpObjectAggregator(

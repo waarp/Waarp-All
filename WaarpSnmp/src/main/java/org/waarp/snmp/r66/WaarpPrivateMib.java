@@ -194,10 +194,12 @@ public abstract class WaarpPrivateMib implements WaarpInterfaceMib {
    * @param saddress the address to show
    * @param iservice the service to show (should be 72)
    */
-  protected WaarpPrivateMib(String sysdesc, int port, int smiPrivateCodeFinal,
-                            int typeWaarpObject, String scontactName,
-                            String stextualName, String saddress,
-                            int iservice) {
+  protected WaarpPrivateMib(final String sysdesc, final int port,
+                            final int smiPrivateCodeFinal,
+                            final int typeWaarpObject,
+                            final String scontactName,
+                            final String stextualName, final String saddress,
+                            final int iservice) {
     textualSysDecr = sysdesc;
     smiPrivateCode = smiPrivateCodeFinal;
     smiTypeWaarp = typeWaarpObject;
@@ -223,7 +225,7 @@ public abstract class WaarpPrivateMib implements WaarpInterfaceMib {
   }
 
   @Override
-  public void setAgent(WaarpSnmpAgent agent) {
+  public void setAgent(final WaarpSnmpAgent agent) {
     this.agent = agent;
   }
 
@@ -330,14 +332,14 @@ public abstract class WaarpPrivateMib implements WaarpInterfaceMib {
   }
 
   @Override
-  public void registerMOs(MOServer server, OctetString context)
+  public void registerMOs(final MOServer server, final OctetString context)
       throws DuplicateRegistrationException {
     agentRegisterSystem();
     agentRegisterWaarpMib();
   }
 
   @Override
-  public void unregisterMOs(MOServer server, OctetString context) {
+  public void unregisterMOs(final MOServer server, final OctetString context) {
     agentUnregisterMibs();
   }
 
@@ -346,7 +348,7 @@ public abstract class WaarpPrivateMib implements WaarpInterfaceMib {
    *
    * @param status
    */
-  public void changeStatus(OperStatus status) {
+  public void changeStatus(final OperStatus status) {
     final WaarpMOScalar statusScalar =
         rowGlobal.getRow()[WaarpGlobalValuesIndex.applOperStatus.ordinal()];
     final Integer32 var = (Integer32) statusScalar.getValue();
@@ -377,15 +379,15 @@ public abstract class WaarpPrivateMib implements WaarpInterfaceMib {
 
     public final int[] oid;
 
-    NotificationElements(int oid) {
+    NotificationElements(final int oid) {
       this.oid = new int[] { oid };
     }
 
-    public OID getOID(OID oidBase) {
+    public OID getOID(final OID oidBase) {
       return new OID(oidBase.getValue(), oid);
     }
 
-    public OID getOID(OID oidBase, int rank) {
+    public OID getOID(final OID oidBase, final int rank) {
       final int[] ids = { oid[0], rank };
       return new OID(oidBase.getValue(), ids);
     }
@@ -709,7 +711,7 @@ public abstract class WaarpPrivateMib implements WaarpInterfaceMib {
 
     public final int status;
 
-    OperStatus(int status) {
+    OperStatus(final int status) {
       this.status = status;
     }
   }

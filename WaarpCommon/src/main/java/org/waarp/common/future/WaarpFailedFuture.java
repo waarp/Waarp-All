@@ -31,7 +31,7 @@ public class WaarpFailedFuture extends WaarpCompletedFuture {
    *
    * @param cause the cause of failure
    */
-  public WaarpFailedFuture(Throwable cause) {
+  public WaarpFailedFuture(final Throwable cause) {
     if (cause == null) {
       throw new NullPointerException("cause");
     }

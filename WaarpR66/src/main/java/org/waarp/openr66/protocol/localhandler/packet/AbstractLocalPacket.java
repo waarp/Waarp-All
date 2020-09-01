@@ -57,7 +57,8 @@ public abstract class AbstractLocalPacket {
 
   protected ByteBuf global = null;
 
-  protected AbstractLocalPacket(ByteBuf header, ByteBuf middle, ByteBuf end) {
+  protected AbstractLocalPacket(final ByteBuf header, final ByteBuf middle,
+                                final ByteBuf end) {
     this.header = header;
     this.middle = middle;
     this.end = end;
@@ -122,7 +123,7 @@ public abstract class AbstractLocalPacket {
    *
    * @throws OpenR66ProtocolPacketException
    */
-  public ByteBuf getLocalPacket(LocalChannelReference lcr)
+  public ByteBuf getLocalPacket(final LocalChannelReference lcr)
       throws OpenR66ProtocolPacketException {
     return getLocalPacketForNetworkPacket(lcr, null);
   }
@@ -134,8 +135,8 @@ public abstract class AbstractLocalPacket {
    *
    * @throws OpenR66ProtocolPacketException
    */
-  public ByteBuf getLocalPacketForNetworkPacket(LocalChannelReference lcr,
-                                                NetworkPacket packet)
+  public ByteBuf getLocalPacketForNetworkPacket(final LocalChannelReference lcr,
+                                                final NetworkPacket packet)
       throws OpenR66ProtocolPacketException {
     final ByteBuf buf;
     final int globalHeader;
@@ -167,7 +168,7 @@ public abstract class AbstractLocalPacket {
       }
     }
     if (packet != null) {
-      int capacity =
+      final int capacity =
           LOCAL_HEADER_SIZE + (header != null? header.capacity() : 0) +
           (middle != null? middle.capacity() : 0) +
           (end != null? end.capacity() : 0);

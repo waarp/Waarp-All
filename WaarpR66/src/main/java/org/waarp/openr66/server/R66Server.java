@@ -43,7 +43,8 @@ public class R66Server {
    *
    * @throws OpenR66ProtocolPacketException
    */
-  public static void main(String[] args) throws OpenR66ProtocolPacketException {
+  public static void main(final String[] args)
+      throws OpenR66ProtocolPacketException {
     WaarpLoggerFactory
         .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));
     logger = WaarpLoggerFactory.getLogger(R66Server.class);
@@ -75,7 +76,7 @@ public class R66Server {
     }
   }
 
-  public static boolean initialize(String config) {
+  public static boolean initialize(final String config) {
     if (logger == null) {
       logger = WaarpLoggerFactory.getLogger(R66Server.class);
     }

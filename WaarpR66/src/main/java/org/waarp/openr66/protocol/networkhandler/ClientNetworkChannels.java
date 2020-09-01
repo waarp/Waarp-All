@@ -40,17 +40,17 @@ public class ClientNetworkChannels {
   private final Set<NetworkChannelReference> networkChannelReferences =
       ConcurrentUtility.newConcurrentSet();
 
-  public ClientNetworkChannels(String hostId) {
+  public ClientNetworkChannels(final String hostId) {
     this.hostId = hostId;
   }
 
-  public void add(NetworkChannelReference networkChannelReference) {
+  public void add(final NetworkChannelReference networkChannelReference) {
     networkChannelReferences.add(networkChannelReference);
     networkChannelReference.clientNetworkChannels = this;
     networkChannelReference.setHostId(hostId);
   }
 
-  public void remove(NetworkChannelReference networkChannelReference) {
+  public void remove(final NetworkChannelReference networkChannelReference) {
     networkChannelReferences.remove(networkChannelReference);
   }
 

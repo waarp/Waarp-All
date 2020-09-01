@@ -188,7 +188,7 @@ public class FilesystemBasedDigest {
    * @return the array corresponding to this buffer (may be copied)
    */
   public final byte[] getBytes(final ByteBuf buffer) {
-    byte[] bytes;
+    final byte[] bytes;
     final int length = buffer.readableBytes();
     if (buffer.hasArray()) {
       bytes = buffer.array();
@@ -218,8 +218,8 @@ public class FilesystemBasedDigest {
    * Update the digest with new buffer
    */
   public void Update(final ByteBuf buffer) {
-    byte[] bytes = getBytes(buffer);
-    int start = getOffset(buffer);
+    final byte[] bytes = getBytes(buffer);
+    final int start = getOffset(buffer);
     final int length = buffer.readableBytes();
     Update(bytes, start, length);
   }
@@ -314,7 +314,7 @@ public class FilesystemBasedDigest {
     public static DigestAlgo getFromName(final String name) {
       try {
         return valueOf(name);
-      } catch (IllegalArgumentException ignore) {//NOSONAR
+      } catch (final IllegalArgumentException ignore) {//NOSONAR
         // ignore
       }
       if ("CRC32".equalsIgnoreCase(name)) {
@@ -453,7 +453,7 @@ public class FilesystemBasedDigest {
           checksum = new Adler32();
           return getBytesCrc(in, buf, checksum);
         case CRC32:
-          return getBytesCrc(in, buf, checksum);
+          return getBytesCrc(in, buf, null);
         case MD5:
         case MD2:
         case SHA1:
@@ -461,7 +461,7 @@ public class FilesystemBasedDigest {
         case SHA384:
         case SHA512:
           final String algoname = algo.algoName;
-          MessageDigest digest;
+          final MessageDigest digest;
           try {
             digest = MessageDigest.getInstance(algoname);
           } catch (final NoSuchAlgorithmException e) {
@@ -532,7 +532,7 @@ public class FilesystemBasedDigest {
       if (nio) { // NIO
         final FileChannel fileChannel = in.getChannel();
         try {
-          ByteBuffer bb = ByteBuffer.wrap(buf);
+          final ByteBuffer bb = ByteBuffer.wrap(buf);
           Checksum checksum = null;
           int size;
           switch (algo) {
@@ -541,7 +541,7 @@ public class FilesystemBasedDigest {
               buf = getBytesCrcFileChannel(buf, fileChannel, bb, checksum);
               break;
             case CRC32:
-              buf = getBytesCrcFileChannel(buf, fileChannel, bb, checksum);
+              buf = getBytesCrcFileChannel(buf, fileChannel, bb, null);
               break;
             case MD5:
             case MD2:
@@ -550,7 +550,7 @@ public class FilesystemBasedDigest {
             case SHA384:
             case SHA512:
               final String algoname = algo.algoName;
-              MessageDigest digest;
+              final MessageDigest digest;
               try {
                 digest = MessageDigest.getInstance(algoname);
               } catch (final NoSuchAlgorithmException e) {
@@ -621,7 +621,7 @@ public class FilesystemBasedDigest {
       return MD5.getHash(stream);
     }
     try {
-      byte[] buf = new byte[ZERO_COPY_CHUNK_SIZE];
+      final byte[] buf = new byte[ZERO_COPY_CHUNK_SIZE];
       // Not NIO
       return getHashNoNio(stream, algo, buf);
     } catch (final IOException e) {
@@ -662,10 +662,10 @@ public class FilesystemBasedDigest {
         checksum = new Adler32();
         return getBytesCrcByteBuf(checksum, bytes, start, length);
       case CRC32:
-        return getBytesCrcByteBuf(checksum, bytes, start, length);
+        return getBytesCrcByteBuf(null, bytes, start, length);
       case MD5:
         if (isUseFastMd5()) {
-          MD5 md5 = new MD5();
+          final MD5 md5 = new MD5();
           md5.Update(bytes, start, length);
           bytes = md5.Final();
           return bytes;
@@ -702,10 +702,10 @@ public class FilesystemBasedDigest {
         checksum = new Adler32();
         return getBytesCrcByteBuf(checksum, buffer, 0, length);
       case CRC32:
-        return getBytesCrcByteBuf(checksum, buffer, 0, length);
+        return getBytesCrcByteBuf(null, buffer, 0, length);
       case MD5:
         if (isUseFastMd5()) {
-          MD5 md5 = new MD5();
+          final MD5 md5 = new MD5();
           md5.Update(buffer, 0, length);
           return md5.Final();
         }
@@ -726,7 +726,7 @@ public class FilesystemBasedDigest {
                                         final byte[] bytes, final int start,
                                         final int length) throws IOException {
     final String algoname = algo.algoName;
-    MessageDigest digest;
+    final MessageDigest digest;
     try {
       digest = MessageDigest.getInstance(algoname);
     } catch (final NoSuchAlgorithmException e) {
@@ -759,7 +759,7 @@ public class FilesystemBasedDigest {
     try {
       return getHash(buffer, DigestAlgo.MD5);
     } catch (final IOException e) {
-      MD5 md5 = new MD5();
+      final MD5 md5 = new MD5();
       md5.Update(buffer);
       return md5.Final();
     }
@@ -833,7 +833,7 @@ public class FilesystemBasedDigest {
     if (isUseFastMd5()) {
       return MD5.passwdCrypt(pwd);
     }
-    MessageDigest digest;
+    final MessageDigest digest;
     try {
       digest = MessageDigest.getInstance(DigestAlgo.MD5.algoName);
     } catch (final NoSuchAlgorithmException e) {
@@ -860,7 +860,7 @@ public class FilesystemBasedDigest {
     if (isUseFastMd5()) {
       return MD5.passwdCrypt(pwd);
     }
-    MessageDigest digest;
+    final MessageDigest digest;
     try {
       digest = MessageDigest.getInstance(DigestAlgo.MD5.algoName);
     } catch (final NoSuchAlgorithmException e) {
@@ -883,7 +883,7 @@ public class FilesystemBasedDigest {
    */
   public static final boolean equalPasswd(final String pwd,
                                           final String cryptPwd) {
-    String asHex;
+    final String asHex;
     asHex = passwdCrypt(pwd);
     return cryptPwd.equals(asHex);
   }
@@ -896,7 +896,7 @@ public class FilesystemBasedDigest {
    */
   public static final boolean equalPasswd(final byte[] pwd,
                                           final byte[] cryptPwd) {
-    byte[] bytes;
+    final byte[] bytes;
     bytes = passwdCrypt(pwd);
     return Arrays.equals(cryptPwd, bytes);
   }

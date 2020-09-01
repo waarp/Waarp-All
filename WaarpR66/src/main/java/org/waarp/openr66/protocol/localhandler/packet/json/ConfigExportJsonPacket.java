@@ -42,7 +42,7 @@ public class ConfigExportJsonPacket extends JsonPacket {
   /**
    * @param host the host to set
    */
-  public void setHost(boolean host) {
+  public void setHost(final boolean host) {
     this.host = host;
   }
 
@@ -56,7 +56,7 @@ public class ConfigExportJsonPacket extends JsonPacket {
   /**
    * @param rule the rule to set
    */
-  public void setRule(boolean rule) {
+  public void setRule(final boolean rule) {
     this.rule = rule;
   }
 
@@ -70,7 +70,7 @@ public class ConfigExportJsonPacket extends JsonPacket {
   /**
    * @param business the business to set
    */
-  public void setBusiness(boolean business) {
+  public void setBusiness(final boolean business) {
     this.business = business;
   }
 
@@ -84,7 +84,7 @@ public class ConfigExportJsonPacket extends JsonPacket {
   /**
    * @param alias the alias to set
    */
-  public void setAlias(boolean alias) {
+  public void setAlias(final boolean alias) {
     this.alias = alias;
   }
 
@@ -98,12 +98,12 @@ public class ConfigExportJsonPacket extends JsonPacket {
   /**
    * @param roles the roles to set
    */
-  public void setRoles(boolean roles) {
+  public void setRoles(final boolean roles) {
     this.roles = roles;
   }
 
   @Override
-  public void fromJson(JsonPacket other) {
+  public void fromJson(final JsonPacket other) {
     super.fromJson(other);
     if (other instanceof ConfigExportJsonPacket) {
       final ConfigExportJsonPacket other2 = (ConfigExportJsonPacket) other;

@@ -67,7 +67,7 @@ public class XMLLimitDAO implements LimitDAO {
 
   private final File file;
 
-  public XMLLimitDAO(String filePath) throws DAOConnectionException {
+  public XMLLimitDAO(final String filePath) throws DAOConnectionException {
     file = new File(filePath);
   }
 
@@ -77,7 +77,7 @@ public class XMLLimitDAO implements LimitDAO {
   }
 
   @Override
-  public void delete(Limit limit) throws DAOConnectionException {
+  public void delete(final Limit limit) throws DAOConnectionException {
     dbR66ConfigurationHashMap.remove(limit.getHostid());
   }
 
@@ -111,7 +111,7 @@ public class XMLLimitDAO implements LimitDAO {
   }
 
   @Override
-  public boolean exist(String hostid) throws DAOConnectionException {
+  public boolean exist(final String hostid) throws DAOConnectionException {
     if (dbR66ConfigurationHashMap.containsKey(hostid)) {
       return true;
     }
@@ -143,17 +143,18 @@ public class XMLLimitDAO implements LimitDAO {
   }
 
   @Override
-  public List<Limit> find(List<Filter> fitlers) throws DAOConnectionException {
+  public List<Limit> find(final List<Filter> fitlers)
+      throws DAOConnectionException {
     throw new DAOConnectionException("Operation not supported on XML DAO");
   }
 
   @Override
-  public void insert(Limit limit) throws DAOConnectionException {
+  public void insert(final Limit limit) throws DAOConnectionException {
     dbR66ConfigurationHashMap.put(limit.getHostid(), limit);
   }
 
   @Override
-  public Limit select(String hostid)
+  public Limit select(final String hostid)
       throws DAOConnectionException, DAONoDataException {
     Limit limit = dbR66ConfigurationHashMap.get(hostid);
     if (limit != null) {
@@ -192,11 +193,11 @@ public class XMLLimitDAO implements LimitDAO {
   }
 
   @Override
-  public void update(Limit limit) throws DAOConnectionException {
+  public void update(final Limit limit) throws DAOConnectionException {
     dbR66ConfigurationHashMap.put(limit.getHostid(), limit);
   }
 
-  private Limit getFromNode(Node parent) {
+  private Limit getFromNode(final Node parent) {
     final Limit res = new Limit();
 
     final NodeList children = parent.getChildNodes();

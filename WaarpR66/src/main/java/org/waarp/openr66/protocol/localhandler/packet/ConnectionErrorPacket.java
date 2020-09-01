@@ -47,10 +47,10 @@ public class ConnectionErrorPacket extends AbstractLocalPacket {
    *
    * @throws OpenR66ProtocolPacketException
    */
-  public static ConnectionErrorPacket createFromBuffer(int headerLength,
-                                                       int middleLength,
-                                                       int endLength,
-                                                       ByteBuf buf)
+  public static ConnectionErrorPacket createFromBuffer(final int headerLength,
+                                                       final int middleLength,
+                                                       final int endLength,
+                                                       final ByteBuf buf)
       throws OpenR66ProtocolPacketException {
     final byte[] bheader = new byte[headerLength - 1];
     final byte[] bmiddle = new byte[middleLength];
@@ -67,7 +67,7 @@ public class ConnectionErrorPacket extends AbstractLocalPacket {
    * @param header
    * @param middle
    */
-  public ConnectionErrorPacket(String header, String middle) {
+  public ConnectionErrorPacket(final String header, final String middle) {
     sheader = header;
     smiddle = middle;
   }
@@ -78,7 +78,8 @@ public class ConnectionErrorPacket extends AbstractLocalPacket {
   }
 
   @Override
-  public void createAllBuffers(LocalChannelReference lcr, int networkHeader)
+  public void createAllBuffers(final LocalChannelReference lcr,
+                               final int networkHeader)
       throws OpenR66ProtocolPacketException {
     end = Unpooled.EMPTY_BUFFER;
     final byte[] sheaderByte =
@@ -103,13 +104,13 @@ public class ConnectionErrorPacket extends AbstractLocalPacket {
   }
 
   @Override
-  public void createEnd(LocalChannelReference lcr)
+  public void createEnd(final LocalChannelReference lcr)
       throws OpenR66ProtocolPacketException {
     end = Unpooled.EMPTY_BUFFER;
   }
 
   @Override
-  public void createHeader(LocalChannelReference lcr)
+  public void createHeader(final LocalChannelReference lcr)
       throws OpenR66ProtocolPacketException {
     if (sheader != null) {
       header = Unpooled.wrappedBuffer(sheader.getBytes());
@@ -117,7 +118,7 @@ public class ConnectionErrorPacket extends AbstractLocalPacket {
   }
 
   @Override
-  public void createMiddle(LocalChannelReference lcr)
+  public void createMiddle(final LocalChannelReference lcr)
       throws OpenR66ProtocolPacketException {
     if (smiddle != null) {
       middle = Unpooled.wrappedBuffer(smiddle.getBytes());

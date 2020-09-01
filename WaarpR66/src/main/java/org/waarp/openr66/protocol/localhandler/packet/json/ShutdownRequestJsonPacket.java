@@ -38,7 +38,7 @@ public class ShutdownRequestJsonPacket extends JsonPacket {
   /**
    * @param rank the rank to set
    */
-  public void setRank(int rank) {
+  public void setRank(final int rank) {
     this.rank = rank;
   }
 

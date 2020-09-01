@@ -41,9 +41,9 @@ public class FileBasedFile extends FilesystemBasedFtpFile {
    *
    * @throws CommandAbstractException
    */
-  public FileBasedFile(FtpSession session, FileBasedDir fileBasedDir,
-                       String path, boolean append)
-      throws CommandAbstractException {
+  public FileBasedFile(final FtpSession session,
+                       final FileBasedDir fileBasedDir, final String path,
+                       final boolean append) throws CommandAbstractException {
     super(session, fileBasedDir, path, append);
   }
 

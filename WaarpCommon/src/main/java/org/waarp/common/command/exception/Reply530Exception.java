@@ -36,7 +36,7 @@ public class Reply530Exception extends CommandAbstractException {
    *
    * @param message
    */
-  public Reply530Exception(String message) {
+  public Reply530Exception(final String message) {
     super(ReplyCode.REPLY_530_NOT_LOGGED_IN, message);
   }
 

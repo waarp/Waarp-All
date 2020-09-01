@@ -81,7 +81,7 @@ public class HmacSha256 extends KeyObject {
   }
 
   @Override
-  public byte[] crypt(byte[] plaintext) throws Exception {
+  public byte[] crypt(final byte[] plaintext) throws Exception {
     final Mac mac = Mac.getInstance(ALGO);
     mac.init(secretKey);
     return mac.doFinal(plaintext);
@@ -93,7 +93,7 @@ public class HmacSha256 extends KeyObject {
   }
 
   @Override
-  public byte[] decrypt(byte[] ciphertext) throws Exception {
+  public byte[] decrypt(final byte[] ciphertext) throws Exception {
     throw new IllegalArgumentException(CANNOT_BE_USED_FOR_HMAC_SHA256);
   }
 
@@ -102,7 +102,7 @@ public class HmacSha256 extends KeyObject {
    *
    * @param args
    */
-  public static void main(String[] args) {
+  public static void main(final String[] args) {
     if (args.length == 0) {
       SysErrLogger.FAKE_LOGGER.syserr("Filename is needed as argument");
     }

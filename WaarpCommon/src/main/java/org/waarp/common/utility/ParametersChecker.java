@@ -85,7 +85,8 @@ public final class ParametersChecker {
    *
    * @throws IllegalArgumentException if null or empty
    */
-  public static void checkParameter(String errorMessage, String... parameters) {
+  public static void checkParameter(final String errorMessage,
+                                    final String... parameters) {
     if (parameters == null) {
       throw new IllegalArgumentException(errorMessage);
     }
@@ -105,8 +106,8 @@ public final class ParametersChecker {
    *
    * @throws IllegalArgumentException if null or empty
    */
-  public static void checkParameterDefault(String errorMessage,
-                                           String... parameters) {
+  public static void checkParameterDefault(final String errorMessage,
+                                           final String... parameters) {
     if (parameters == null) {
       throw new IllegalArgumentException(errorMessage + MANDATORY_PARAMETER);
     }
@@ -124,7 +125,7 @@ public final class ParametersChecker {
    *
    * @return True if not null and not empty neither containing only spaces
    */
-  public static boolean isNotEmpty(String... parameters) {
+  public static boolean isNotEmpty(final String... parameters) {
     if (parameters == null) {
       return false;
     }
@@ -145,8 +146,8 @@ public final class ParametersChecker {
    *
    * @throws IllegalArgumentException if null or empty
    */
-  public static void checkParameterDefault(String errorMessage,
-                                           Object... parameters) {
+  public static void checkParameterDefault(final String errorMessage,
+                                           final Object... parameters) {
     if (parameters == null) {
       throw new IllegalArgumentException(errorMessage + MANDATORY_PARAMETER);
     }
@@ -166,8 +167,8 @@ public final class ParametersChecker {
    *
    * @throws IllegalArgumentException if null
    */
-  public static void checkParameterNullOnly(String errorMessage,
-                                            String... parameters) {
+  public static void checkParameterNullOnly(final String errorMessage,
+                                            final String... parameters) {
     if (parameters == null) {
       throw new IllegalArgumentException(errorMessage);
     }
@@ -187,7 +188,8 @@ public final class ParametersChecker {
    *
    * @throws IllegalArgumentException if null
    */
-  public static void checkParameter(String errorMessage, Object... parameters) {
+  public static void checkParameter(final String errorMessage,
+                                    final Object... parameters) {
     if (parameters == null) {
       throw new IllegalArgumentException(errorMessage);
     }
@@ -205,7 +207,8 @@ public final class ParametersChecker {
    * @param variable the value of variable to check
    * @param minValue the min value
    */
-  public static void checkValue(String name, long variable, long minValue) {
+  public static void checkValue(final String name, final long variable,
+                                final long minValue) {
     if (variable < minValue) {
       throw new IllegalArgumentException(
           "Parameter " + name + " is less than " + minValue);
@@ -219,7 +222,7 @@ public final class ParametersChecker {
    *
    * @throws InvalidArgumentException
    */
-  public static String checkSanityString(String value)
+  public static String checkSanityString(final String value)
       throws InvalidArgumentException {
     checkSanityString(new String[] { value });
     return value;
@@ -232,9 +235,9 @@ public final class ParametersChecker {
    *
    * @throws InvalidArgumentException
    */
-  public static void checkSanityString(String... strings)
+  public static void checkSanityString(final String... strings)
       throws InvalidArgumentException {
-    for (String field : strings) {
+    for (final String field : strings) {
       if (field == null || field.isEmpty()) {
         continue;
       }

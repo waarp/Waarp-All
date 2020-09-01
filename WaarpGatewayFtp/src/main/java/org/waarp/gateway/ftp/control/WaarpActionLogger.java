@@ -57,8 +57,9 @@ public final class WaarpActionLogger {
    * @param file
    * @param handler
    */
-  public static long logCreate(DbSession ftpSession, String message,
-                               String file, BusinessHandler handler) {
+  public static long logCreate(final DbSession ftpSession, final String message,
+                               final String file,
+                               final BusinessHandler handler) {
     final FtpSession session = handler.getFtpSession();
     final String sessionContexte = session.toString();
     logger.info(message + ' ' + sessionContexte);
@@ -105,9 +106,10 @@ public final class WaarpActionLogger {
    * @param rcode
    * @param info
    */
-  public static long logAction(DbSession ftpSession, long specialId,
-                               String message, BusinessHandler handler,
-                               ReplyCode rcode, UpdatedInfo info) {
+  public static long logAction(final DbSession ftpSession, final long specialId,
+                               final String message,
+                               final BusinessHandler handler,
+                               final ReplyCode rcode, final UpdatedInfo info) {
     final FtpSession session = handler.getFtpSession();
     final String sessionContexte = session.toString();
     logger.info(message + ' ' + sessionContexte);
@@ -157,9 +159,11 @@ public final class WaarpActionLogger {
    * @param rcode
    * @param handler
    */
-  public static void logErrorAction(DbSession ftpSession, long specialId,
-                                    FtpTransfer transfer, String message,
-                                    ReplyCode rcode, BusinessHandler handler) {
+  public static void logErrorAction(final DbSession ftpSession,
+                                    final long specialId,
+                                    final FtpTransfer transfer,
+                                    final String message, final ReplyCode rcode,
+                                    final BusinessHandler handler) {
     final FtpSession session = handler.getFtpSession();
     final String sessionContexte = session.toString();
     logger.error(rcode.getCode() + ":" + message + ' ' + sessionContexte);
@@ -176,8 +180,6 @@ public final class WaarpActionLogger {
           } catch (final FtpNoFileException ignored) {
             // nothing
           }
-        } else {
-          file = null;
         }
         final UpdatedInfo info = UpdatedInfo.INERROR;
         try {

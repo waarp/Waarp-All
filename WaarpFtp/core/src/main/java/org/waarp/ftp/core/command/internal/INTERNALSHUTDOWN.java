@@ -49,12 +49,13 @@ public class INTERNALSHUTDOWN extends AbstractCommand {
 
     private final FtpConfiguration configuration;
 
-    protected ShutdownChannelFutureListener(FtpConfiguration configuration) {
+    protected ShutdownChannelFutureListener(
+        final FtpConfiguration configuration) {
       this.configuration = configuration;
     }
 
     @Override
-    public void operationComplete(ChannelFuture arg0) throws Exception {
+    public void operationComplete(final ChannelFuture arg0) throws Exception {
       WaarpSslUtility.closingSslChannel(arg0.channel());
       FtpChannelUtils.teminateServer(configuration);
     }

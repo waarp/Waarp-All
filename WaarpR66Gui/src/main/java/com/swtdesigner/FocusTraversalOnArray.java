@@ -40,7 +40,7 @@ public class FocusTraversalOnArray extends FocusTraversalPolicy {
   // Constructor
   //
   ////////////////////////////////////////////////////////////////////////////
-  public FocusTraversalOnArray(Component[] components) {
+  public FocusTraversalOnArray(final Component[] components) {
     mComponents = components;
   }
 
@@ -49,12 +49,12 @@ public class FocusTraversalOnArray extends FocusTraversalPolicy {
   // Utilities
   //
   ////////////////////////////////////////////////////////////////////////////
-  private int indexCycle(int index, int delta) {
+  private int indexCycle(final int index, final int delta) {
     final int size = mComponents.length;
     return (index + delta + size) % size;
   }
 
-  private Component cycle(Component currentComponent, int delta) {
+  private Component cycle(final Component currentComponent, final int delta) {
     int index = -1;
     loop:
     for (int i = 0; i < mComponents.length; i++) {
@@ -90,32 +90,33 @@ public class FocusTraversalOnArray extends FocusTraversalPolicy {
   //
   ////////////////////////////////////////////////////////////////////////////
   @Override
-  public Component getComponentAfter(Container container, Component component) {
+  public Component getComponentAfter(final Container container,
+                                     final Component component) {
     return cycle(component, 1);
   }
 
   @Override
-  public Component getComponentBefore(Container container,
-                                      Component component) {
+  public Component getComponentBefore(final Container container,
+                                      final Component component) {
     return cycle(component, -1);
   }
 
-  public Component firstComponent(Container container) {
+  public Component firstComponent(final Container container) {
     return mComponents[0];
   }
 
   @Override
-  public Component getLastComponent(Container container) {
+  public Component getLastComponent(final Container container) {
     return mComponents[mComponents.length - 1];
   }
 
   @Override
-  public Component getDefaultComponent(Container container) {
+  public Component getDefaultComponent(final Container container) {
     return firstComponent(container);
   }
 
   @Override
-  public Component getFirstComponent(Container aContainer) {
+  public Component getFirstComponent(final Container aContainer) {
     return firstComponent(aContainer);
   }
 }

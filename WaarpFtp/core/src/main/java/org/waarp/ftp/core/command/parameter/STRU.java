@@ -41,7 +41,7 @@ public class STRU extends AbstractCommand {
                                 FtpArgumentCode.TransferStructure.FILE.name());
       return;
     }
-    FtpArgumentCode.TransferStructure transferStructure;
+    final FtpArgumentCode.TransferStructure transferStructure;
     try {
       transferStructure =
           FtpArgumentCode.getTransferStructure(getArg().charAt(0));

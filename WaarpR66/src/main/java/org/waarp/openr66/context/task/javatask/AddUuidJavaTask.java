@@ -60,7 +60,7 @@ public class AddUuidJavaTask extends AbstractExecJavaTask {
     logger.debug(toString());
     final GUID uuid = new GUID();
     final String[] args = BLANK.split(fullarg);
-    String fileInfo;
+    final String fileInfo;
     String format = "-##UUID##";
     int way = -1;
     for (int i = 0; i < args.length; i++) {
@@ -77,7 +77,7 @@ public class AddUuidJavaTask extends AbstractExecJavaTask {
       }
     }
     logger.debug("Replace UUID in {} way: {}", format, way);
-    if (format == null || format.isEmpty()) {
+    if (format.isEmpty()) {
       fileInfo = session.getRunner().getFileInformation();
     } else {
       if (way < 0) {

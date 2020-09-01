@@ -62,8 +62,10 @@ public class DataPacket extends AbstractLocalPacket {
    *
    * @throws OpenR66ProtocolPacketException
    */
-  public static DataPacket createFromBuffer(int headerLength, int middleLength,
-                                            int endLength, ByteBuf buf)
+  public static DataPacket createFromBuffer(final int headerLength,
+                                            final int middleLength,
+                                            final int endLength,
+                                            final ByteBuf buf)
       throws OpenR66ProtocolPacketException {
     if (headerLength - 1 <= 0) {
       throw new OpenR66ProtocolPacketException("Not enough data");
@@ -87,7 +89,8 @@ public class DataPacket extends AbstractLocalPacket {
    * @param data
    * @param key
    */
-  private DataPacket(int packetRank, ByteBuf data, byte[] key) {
+  private DataPacket(final int packetRank, final ByteBuf data,
+                     final byte[] key) {
     this.packetRank = packetRank;
     this.dataRecv = data;
     this.data = null;
@@ -100,7 +103,7 @@ public class DataPacket extends AbstractLocalPacket {
    * @param data
    * @param key
    */
-  public DataPacket(int packetRank, byte[] data, byte[] key) {
+  public DataPacket(final int packetRank, final byte[] data, final byte[] key) {
     this.packetRank = packetRank;
     this.data = data;
     this.dataRecv = null;
@@ -114,26 +117,27 @@ public class DataPacket extends AbstractLocalPacket {
   }
 
   @Override
-  public void createAllBuffers(LocalChannelReference lcr, int networkHeader)
+  public void createAllBuffers(final LocalChannelReference lcr,
+                               final int networkHeader)
       throws OpenR66ProtocolPacketException {
     throw new IllegalStateException("Should not be called");
   }
 
   @Override
-  public void createEnd(LocalChannelReference lcr)
+  public void createEnd(final LocalChannelReference lcr)
       throws OpenR66ProtocolPacketException {
     end = Unpooled.wrappedBuffer(key);
   }
 
   @Override
-  public void createHeader(LocalChannelReference lcr)
+  public void createHeader(final LocalChannelReference lcr)
       throws OpenR66ProtocolPacketException {
     header = ByteBufAllocator.DEFAULT.buffer(4, 4);
     header.writeInt(packetRank);
   }
 
   @Override
-  public void createMiddle(LocalChannelReference lcr)
+  public void createMiddle(final LocalChannelReference lcr)
       throws OpenR66ProtocolPacketException {
     if (dataRecv != null) {
       middle = dataRecv;
@@ -175,7 +179,7 @@ public class DataPacket extends AbstractLocalPacket {
     return dataRecv;
   }
 
-  public void createByteBufFromRecv(byte[] buffer) {
+  public void createByteBufFromRecv(final byte[] buffer) {
     dataRecv.getBytes(dataRecv.readerIndex(), buffer);
     data = buffer;
   }
@@ -198,7 +202,7 @@ public class DataPacket extends AbstractLocalPacket {
   /**
    * @return True if the Hashed key is valid (or no key is set)
    */
-  public boolean isKeyValid(DigestAlgo algo) {
+  public boolean isKeyValid(final DigestAlgo algo) {
     ParametersChecker.checkParameter("Data is not setup correctly", data);
     if (key == null || key.length == 0) {
       logger.error("Should received a Digest but don't");
@@ -218,8 +222,9 @@ public class DataPacket extends AbstractLocalPacket {
   /**
    * @return True if the Hashed key is valid (or no key is set)
    */
-  public boolean isKeyValid(DigestAlgo algo, FilesystemBasedDigest digestGlobal,
-                            FilesystemBasedDigest digestLocal) {
+  public boolean isKeyValid(final DigestAlgo algo,
+                            final FilesystemBasedDigest digestGlobal,
+                            final FilesystemBasedDigest digestLocal) {
     ParametersChecker.checkParameter("Data is not setup correctly", data);
     if (key == null || key.length == 0) {
       if (digestGlobal != null || digestLocal != null) {

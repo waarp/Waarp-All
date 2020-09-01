@@ -160,21 +160,24 @@ public class Rule {
     return new Tasks(sErrorTasks);
   }
 
-  public Rule(String name, int mode, List<String> hostids, String recvPath,
-              String sendPath, String archivePath, String workPath,
-              List<RuleTask> rPre, List<RuleTask> rPost, List<RuleTask> rError,
-              List<RuleTask> sPre, List<RuleTask> sPost, List<RuleTask> sError,
-              UpdatedInfo updatedInfo) {
+  public Rule(final String name, final int mode, final List<String> hostids,
+              final String recvPath, final String sendPath,
+              final String archivePath, final String workPath,
+              final List<RuleTask> rPre, final List<RuleTask> rPost,
+              final List<RuleTask> rError, final List<RuleTask> sPre,
+              final List<RuleTask> sPost, final List<RuleTask> sError,
+              final UpdatedInfo updatedInfo) {
     this(name, mode, hostids, recvPath, sendPath, archivePath, workPath, rPre,
          rPost, rError, sPre, sPost, sError);
     this.updatedInfo = updatedInfo;
   }
 
-  public Rule(String name, int mode, List<String> hostids, String recvPath,
-              String sendPath, String archivePath, String workPath,
-              List<RuleTask> rPre, List<RuleTask> rPost, List<RuleTask> rError,
-              List<RuleTask> sPre, List<RuleTask> sPost,
-              List<RuleTask> sError) {
+  public Rule(final String name, final int mode, final List<String> hostids,
+              final String recvPath, final String sendPath,
+              final String archivePath, final String workPath,
+              final List<RuleTask> rPre, final List<RuleTask> rPost,
+              final List<RuleTask> rError, final List<RuleTask> sPre,
+              final List<RuleTask> sPost, final List<RuleTask> sError) {
     this.name = name;
     this.mode = mode;
     this.hostids = hostids;
@@ -190,29 +193,30 @@ public class Rule {
     sErrorTasks = sError;
   }
 
-  public Rule(String name, int mode, List<String> hostids, String recvPath,
-              String sendPath, String archivePath, String workPath) {
+  public Rule(final String name, final int mode, final List<String> hostids,
+              final String recvPath, final String sendPath,
+              final String archivePath, final String workPath) {
     this(name, mode, hostids, recvPath, sendPath, archivePath, workPath,
          new ArrayList<RuleTask>(), new ArrayList<RuleTask>(),
          new ArrayList<RuleTask>(), new ArrayList<RuleTask>(),
          new ArrayList<RuleTask>(), new ArrayList<RuleTask>());
   }
 
-  public Rule(String name, int mode, List<String> hostids) {
+  public Rule(final String name, final int mode, final List<String> hostids) {
     this(name, mode, hostids, "", "", "", "");
   }
 
-  public Rule(String name, int mode) {
+  public Rule(final String name, final int mode) {
     this(name, mode, new ArrayList<String>());
   }
 
-  public boolean isAuthorized(String hostid) {
+  public boolean isAuthorized(final String hostid) {
     return hostids.contains(hostid);
   }
 
   @JsonProperty("HOSTIDS")
   public String getXMLHostids() {
-    StringBuilder res = new StringBuilder("<hostids>");
+    final StringBuilder res = new StringBuilder("<hostids>");
     for (final String hostid : hostids) {
       res.append("<hostid>").append(hostid).append("</hostid>");
     }
@@ -249,8 +253,8 @@ public class Rule {
     return getXMLTasks(sErrorTasks);
   }
 
-  private String getXMLTasks(List<RuleTask> tasks) {
-    StringBuilder res = new StringBuilder("<tasks>");
+  private String getXMLTasks(final List<RuleTask> tasks) {
+    final StringBuilder res = new StringBuilder("<tasks>");
     for (final RuleTask task : tasks) {
       res.append(task.getXML());
     }
@@ -261,7 +265,7 @@ public class Rule {
     return name;
   }
 
-  public void setName(String name) {
+  public void setName(final String name) {
     this.name = name;
   }
 
@@ -269,7 +273,7 @@ public class Rule {
     return mode;
   }
 
-  public void setMode(int mode) {
+  public void setMode(final int mode) {
     this.mode = mode;
   }
 
@@ -277,11 +281,11 @@ public class Rule {
     return hostids;
   }
 
-  public void setHostids(List<String> hostids) {
+  public void setHostids(final List<String> hostids) {
     this.hostids = hostids;
   }
 
-  private String checkPath(String path) {
+  private String checkPath(final String path) {
     if (path == null || path.trim().isEmpty()) {
       return "";
     }
@@ -292,7 +296,7 @@ public class Rule {
     return recvPath;
   }
 
-  public void setRecvPath(String recvPath) {
+  public void setRecvPath(final String recvPath) {
     this.recvPath = checkPath(recvPath);
   }
 
@@ -300,7 +304,7 @@ public class Rule {
     return sendPath;
   }
 
-  public void setSendPath(String sendPath) {
+  public void setSendPath(final String sendPath) {
     this.sendPath = checkPath(sendPath);
   }
 
@@ -308,7 +312,7 @@ public class Rule {
     return archivePath;
   }
 
-  public void setArchivePath(String archivePath) {
+  public void setArchivePath(final String archivePath) {
     this.archivePath = checkPath(archivePath);
   }
 
@@ -316,7 +320,7 @@ public class Rule {
     return workPath;
   }
 
-  public void setWorkPath(String workPath) {
+  public void setWorkPath(final String workPath) {
     this.workPath = checkPath(workPath);
   }
 
@@ -325,7 +329,7 @@ public class Rule {
     return rPreTasks;
   }
 
-  public void setRPreTasks(List<RuleTask> rPreTasks) {
+  public void setRPreTasks(final List<RuleTask> rPreTasks) {
     this.rPreTasks = rPreTasks;
   }
 
@@ -334,7 +338,7 @@ public class Rule {
     return rPostTasks;
   }
 
-  public void setRPostTasks(List<RuleTask> rPostTasks) {
+  public void setRPostTasks(final List<RuleTask> rPostTasks) {
     this.rPostTasks = rPostTasks;
   }
 
@@ -343,7 +347,7 @@ public class Rule {
     return rErrorTasks;
   }
 
-  public void setRErrorTasks(List<RuleTask> rErrorTasks) {
+  public void setRErrorTasks(final List<RuleTask> rErrorTasks) {
     this.rErrorTasks = rErrorTasks;
   }
 
@@ -352,7 +356,7 @@ public class Rule {
     return sPreTasks;
   }
 
-  public void setSPreTasks(List<RuleTask> sPreTasks) {
+  public void setSPreTasks(final List<RuleTask> sPreTasks) {
     this.sPreTasks = sPreTasks;
   }
 
@@ -361,7 +365,7 @@ public class Rule {
     return sPostTasks;
   }
 
-  public void setSPostTasks(List<RuleTask> sPostTasks) {
+  public void setSPostTasks(final List<RuleTask> sPostTasks) {
     this.sPostTasks = sPostTasks;
   }
 
@@ -370,7 +374,7 @@ public class Rule {
     return sErrorTasks;
   }
 
-  public void setSErrorTasks(List<RuleTask> sErrorTasks) {
+  public void setSErrorTasks(final List<RuleTask> sErrorTasks) {
     this.sErrorTasks = sErrorTasks;
   }
 
@@ -378,7 +382,7 @@ public class Rule {
     return updatedInfo;
   }
 
-  public void setUpdatedInfo(UpdatedInfo info) {
+  public void setUpdatedInfo(final UpdatedInfo info) {
     updatedInfo = info;
   }
 }

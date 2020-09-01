@@ -59,11 +59,13 @@ public class R66ConstraintLimitHandler extends WaarpConstraintLimitHandler {
    *     when decreasing bandwidth (low
    *     limit = 4096)
    */
-  public R66ConstraintLimitHandler(boolean useJdKCpuLimit, double lowcpuLimit,
-                                   double highcpuLimit,
-                                   double percentageDecrease,
-                                   GlobalTrafficShapingHandler handler,
-                                   long delay, long limitLowBandwidth) {
+  public R66ConstraintLimitHandler(final boolean useJdKCpuLimit,
+                                   final double lowcpuLimit,
+                                   final double highcpuLimit,
+                                   final double percentageDecrease,
+                                   final GlobalTrafficShapingHandler handler,
+                                   final long delay,
+                                   final long limitLowBandwidth) {
     super(1000, Configuration.configuration != null?
               Configuration.configuration.getTimeoutCon() : 30000, useJdKCpuLimit,
           lowcpuLimit, highcpuLimit, percentageDecrease, handler, delay,
@@ -78,8 +80,10 @@ public class R66ConstraintLimitHandler extends WaarpConstraintLimitHandler {
    *     connections
    * @param channellimit number of connection limit (0<= x)
    */
-  public R66ConstraintLimitHandler(boolean useCpuLimit, boolean useJdKCpuLimit,
-                                   double cpulimit, int channellimit) {
+  public R66ConstraintLimitHandler(final boolean useCpuLimit,
+                                   final boolean useJdKCpuLimit,
+                                   final double cpulimit,
+                                   final int channellimit) {
     super(1000, Configuration.configuration != null?
               Configuration.configuration.getTimeoutCon() : 30000, useCpuLimit,
           useJdKCpuLimit, cpulimit, channellimit);
@@ -114,12 +118,16 @@ public class R66ConstraintLimitHandler extends WaarpConstraintLimitHandler {
    *     when decreasing bandwidth (low
    *     limit = 4096)
    */
-  public R66ConstraintLimitHandler(boolean useCpuLimit, boolean useJdKCpuLimit,
-                                   double cpulimit, int channellimit,
-                                   double lowcpuLimit, double highcpuLimit,
-                                   double percentageDecrease,
-                                   GlobalTrafficShapingHandler handler,
-                                   long delay, long limitLowBandwidth) {
+  public R66ConstraintLimitHandler(final boolean useCpuLimit,
+                                   final boolean useJdKCpuLimit,
+                                   final double cpulimit,
+                                   final int channellimit,
+                                   final double lowcpuLimit,
+                                   final double highcpuLimit,
+                                   final double percentageDecrease,
+                                   final GlobalTrafficShapingHandler handler,
+                                   final long delay,
+                                   final long limitLowBandwidth) {
     super(1000, Configuration.configuration != null?
               Configuration.configuration.getTimeoutCon() : 30000, useCpuLimit,
           useJdKCpuLimit, cpulimit, channellimit, lowcpuLimit, highcpuLimit,

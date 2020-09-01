@@ -40,12 +40,13 @@ public class SslNetworkHandler extends NetworkHandler {
   /**
    * @param session
    */
-  public SslNetworkHandler(FtpSession session) {
+  public SslNetworkHandler(final FtpSession session) {
     super(session);
   }
 
   @Override
-  public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
+  public void channelRegistered(final ChannelHandlerContext ctx)
+      throws Exception {
     final Channel channel = ctx.channel();
     logger.debug("Add channel to ssl " + channel);
     WaarpSslUtility.addSslOpenedChannel(channel);
@@ -60,7 +61,7 @@ public class SslNetworkHandler extends NetworkHandler {
    * @param error2
    */
   @Override
-  protected void callForSnmp(String error1, String error2) {
+  protected void callForSnmp(final String error1, final String error2) {
     // ignore
   }
 

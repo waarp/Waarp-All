@@ -41,7 +41,6 @@ public class HttpDeleteSession extends HttpSessionAbstract {
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(HttpDeleteSession.class);
   private final String identifier;
-  private final DbTaskRunner runner;
   private final File file;
 
   /**
@@ -56,18 +55,20 @@ public class HttpDeleteSession extends HttpSessionAbstract {
       throws WaarpDatabaseException, OpenR66RunnerErrorException {
     super(authent);
     this.identifier = identifier;
+    final DbTaskRunner runner;
     if (!DetectionUtils.isJunit()) {
       checkAuthentR66Business(this, session, authent);
       runner = getDbTaskRunner(authent.getUserId(), identifier);
       try {
         session.getDir().changeDirectory(runner.getRule().getRecvPath());
-      } catch (CommandAbstractException e) {
+      } catch (final CommandAbstractException e) {
         // Nothing: ignore
       }
-      String baseDir = runner.getRule().getRecvPath();
-      String path = session.getDir().getFullPath();
-      String filepath_in = runner.getFilename();
-      String finalPath = filepath_in.replace(baseDir, path).replace("//", "/");
+      final String baseDir = runner.getRule().getRecvPath();
+      final String path = session.getDir().getFullPath();
+      final String filepath_in = runner.getFilename();
+      final String finalPath =
+          filepath_in.replace(baseDir, path).replace("//", "/");
       logger.info("From {} to {} using {} gives {}", baseDir, path, filepath_in,
                   finalPath);
       file = new File(finalPath);
@@ -90,23 +91,22 @@ public class HttpDeleteSession extends HttpSessionAbstract {
   private DbTaskRunner getDbTaskRunner(final String user,
                                        final String identifier)
       throws IllegalArgumentException, WaarpDatabaseException {
-    long specialId = Long.parseLong(identifier);
+    final long specialId = Long.parseLong(identifier);
     final String requested = Configuration.configuration.getHostId();
-    final String requester = user;
     DbTaskRunner runner = null;
 
     // Try to reload it
     try {
-      logger.debug("{} {} <-> {}", specialId, requester, requested);
-      runner = new DbTaskRunner(specialId, requester, requested);
-    } catch (WaarpDatabaseException e) {
-      logger.debug("{} {} {}", specialId, requester, requested);
-      runner = new DbTaskRunner(specialId, requested, requester);
+      logger.debug("{} {} <-> {}", specialId, user, requested);
+      runner = new DbTaskRunner(specialId, user, requested);
+    } catch (final WaarpDatabaseException e) {
+      logger.debug("{} {} {}", specialId, user, requested);
+      runner = new DbTaskRunner(specialId, requested, user);
     }
     runner.setSender(true);
     try {
       session.setRunner(runner);
-    } catch (OpenR66RunnerErrorException e) {
+    } catch (final OpenR66RunnerErrorException e) {
       logger.debug(e);
     }
     session.setReady(true);
@@ -128,7 +128,7 @@ public class HttpDeleteSession extends HttpSessionAbstract {
   }
 
   @Override
-  public void error(Exception e, R66BusinessInterface business)
+  public void error(final Exception e, final R66BusinessInterface business)
       throws IllegalArgumentException {
     logger.error(e);
     if (business != null) {

@@ -44,7 +44,7 @@ public class R66Future extends WaarpFuture {
   /**
    * @param cancellable
    */
-  public R66Future(boolean cancellable) {
+  public R66Future(final boolean cancellable) {
     super(cancellable);
   }
 
@@ -58,7 +58,7 @@ public class R66Future extends WaarpFuture {
   /**
    * @param result the result to set
    */
-  public void setResult(R66Result result) {
+  public void setResult(final R66Result result) {
     this.result = result;
   }
 
@@ -79,7 +79,7 @@ public class R66Future extends WaarpFuture {
   /**
    * @param runner the runner to set
    */
-  public void setRunner(DbTaskRunner runner) {
+  public void setRunner(final DbTaskRunner runner) {
     this.runner = runner;
   }
 
@@ -93,7 +93,7 @@ public class R66Future extends WaarpFuture {
   /**
    * @param filesize the filesize to set
    */
-  public void setFilesize(long filesize) {
+  public void setFilesize(final long filesize) {
     this.filesize = filesize;
   }
 }

@@ -178,7 +178,7 @@ public class FtpPrivateMib implements WaarpInterfaceMib {
   /**
    * @param port port used by FTP server
    */
-  public FtpPrivateMib(int port) {
+  public FtpPrivateMib(final int port) {
     srootOIDWaarp = rootEnterpriseMib + "." + SnmpPrivateId + '.' + SnmpFtpId;
     applicationProtocolBase = srootOIDWaarp + ".1.1.4.";
     ggObjectId = new OID(srootOIDWaarp);
@@ -293,19 +293,21 @@ public class FtpPrivateMib implements WaarpInterfaceMib {
   }
 
   @Override
-  public void registerMOs(MOServer moServer, OctetString octetString)
+  public void registerMOs(final MOServer moServer,
+                          final OctetString octetString)
       throws DuplicateRegistrationException {
     agentRegisterSystem();
     agentRegisterWaarpMib();
   }
 
   @Override
-  public void unregisterMOs(MOServer moServer, OctetString octetString) {
+  public void unregisterMOs(final MOServer moServer,
+                            final OctetString octetString) {
     agentUnregisterMibs();
   }
 
   @Override
-  public void setAgent(WaarpSnmpAgent agent) {
+  public void setAgent(final WaarpSnmpAgent agent) {
     this.agent = agent;
   }
 
@@ -320,12 +322,12 @@ public class FtpPrivateMib implements WaarpInterfaceMib {
   }
 
   @Override
-  public void updateServices(WaarpMOScalar scalar) {
+  public void updateServices(final WaarpMOScalar scalar) {
     // Nothing
   }
 
   @Override
-  public void updateServices(MOScope range) {
+  public void updateServices(final MOScope range) {
     // Nothing
   }
 
@@ -334,7 +336,7 @@ public class FtpPrivateMib implements WaarpInterfaceMib {
    *
    * @param status
    */
-  public void changeStatus(OperStatus status) {
+  public void changeStatus(final OperStatus status) {
     final WaarpMOScalar statusScalar =
         rowGlobal.getRow()[WaarpGlobalValuesIndex.applOperStatus.ordinal()];
     final Integer32 var = (Integer32) statusScalar.getValue();
@@ -353,7 +355,7 @@ public class FtpPrivateMib implements WaarpInterfaceMib {
    * @param message
    * @param message2
    */
-  public void notifyStartStop(String message, String message2) {
+  public void notifyStartStop(final String message, final String message2) {
     if (!TrapLevel.StartStop.isLevelValid(agent.getTrapLevel())) {
       return;
     }
@@ -366,7 +368,7 @@ public class FtpPrivateMib implements WaarpInterfaceMib {
    * @param message
    * @param message2
    */
-  public void notifyError(String message, String message2) {
+  public void notifyError(final String message, final String message2) {
     if (!TrapLevel.Alert.isLevelValid(agent.getTrapLevel())) {
       return;
     }
@@ -379,7 +381,7 @@ public class FtpPrivateMib implements WaarpInterfaceMib {
    * @param message
    * @param message2
    */
-  public void notifyOverloaded(String message, String message2) {
+  public void notifyOverloaded(final String message, final String message2) {
     if (!TrapLevel.Warning.isLevelValid(agent.getTrapLevel())) {
       return;
     }
@@ -392,7 +394,7 @@ public class FtpPrivateMib implements WaarpInterfaceMib {
    * @param message
    * @param message2
    */
-  public void notifyWarning(String message, String message2) {
+  public void notifyWarning(final String message, final String message2) {
     if (!TrapLevel.Warning.isLevelValid(agent.getTrapLevel())) {
       return;
     }
@@ -406,7 +408,7 @@ public class FtpPrivateMib implements WaarpInterfaceMib {
    * @param message
    * @param runner
    */
-  public void notifyInfoTask(String message, DbTransferLog runner) {
+  public void notifyInfoTask(final String message, final DbTransferLog runner) {
     if (!TrapLevel.All.isLevelValid(agent.getTrapLevel())) {
       return;
     }
@@ -523,8 +525,8 @@ public class FtpPrivateMib implements WaarpInterfaceMib {
    * @param message
    * @param message2
    */
-  private void notify(NotificationElements element, String message,
-                      String message2) {
+  private void notify(final NotificationElements element, final String message,
+                      final String message2) {
     if (logger.isDebugEnabled()) {
       logger.debug("Notify: " + element + ':' + message + ':' + message2);
     }
@@ -568,15 +570,15 @@ public class FtpPrivateMib implements WaarpInterfaceMib {
 
     public final int[] oid;
 
-    NotificationElements(int oid) {
+    NotificationElements(final int oid) {
       this.oid = new int[] { oid };
     }
 
-    public OID getOID(OID oidBase) {
+    public OID getOID(final OID oidBase) {
       return new OID(oidBase.getValue(), oid);
     }
 
-    public OID getOID(OID oidBase, int rank) {
+    public OID getOID(final OID oidBase, final int rank) {
       final int[] ids = { oid[0], rank };
       return new OID(oidBase.getValue(), ids);
     }
@@ -670,7 +672,7 @@ public class FtpPrivateMib implements WaarpInterfaceMib {
 
     public final ReplyCode code;
 
-    WaarpDetailedValuesIndex(ReplyCode code) {
+    WaarpDetailedValuesIndex(final ReplyCode code) {
       this.code = code;
     }
 
@@ -797,7 +799,7 @@ public class FtpPrivateMib implements WaarpInterfaceMib {
 
     public final ReplyCode code;
 
-    WaarpErrorValuesIndex(ReplyCode code) {
+    WaarpErrorValuesIndex(final ReplyCode code) {
       this.code = code;
     }
 
@@ -888,7 +890,7 @@ public class FtpPrivateMib implements WaarpInterfaceMib {
 
     public final int status;
 
-    OperStatus(int status) {
+    OperStatus(final int status) {
       this.status = status;
     }
   }

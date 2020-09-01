@@ -31,8 +31,8 @@ public class LocalExecSslServerHandler extends LocalExecServerHandler {
    * @param factory
    * @param newdelay
    */
-  public LocalExecSslServerHandler(LocalExecServerInitializer factory,
-                                   long newdelay) {
+  public LocalExecSslServerHandler(final LocalExecServerInitializer factory,
+                                   final long newdelay) {
     super(factory, newdelay);
   }
 

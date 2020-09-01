@@ -36,7 +36,7 @@ public class Reply503Exception extends CommandAbstractException {
    *
    * @param message
    */
-  public Reply503Exception(String message) {
+  public Reply503Exception(final String message) {
     super(ReplyCode.REPLY_503_BAD_SEQUENCE_OF_COMMANDS, message);
   }
 

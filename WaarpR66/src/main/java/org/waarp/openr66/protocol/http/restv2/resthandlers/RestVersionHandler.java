@@ -67,7 +67,7 @@ public class RestVersionHandler
    *
    * @param restConfiguration the RestConfiguration object
    */
-  public RestVersionHandler(RestConfiguration restConfiguration) {
+  public RestVersionHandler(final RestConfiguration restConfiguration) {
     super(false);
     HttpRestR66Handler.instantiateHandlers(restConfiguration);
     restV1Handler = new HttpRestR66Handler(restConfiguration);
@@ -81,8 +81,8 @@ public class RestVersionHandler
    * @param request the incoming request
    */
   @Override
-  protected void channelRead0(ChannelHandlerContext ctx,
-                              FullHttpRequest request) {
+  protected void channelRead0(final ChannelHandlerContext ctx,
+                              final FullHttpRequest request) {
     logger.debug(request.method() + " received on " + request.uri());
 
     if (request.uri().startsWith(VERSION_PREFIX)) {

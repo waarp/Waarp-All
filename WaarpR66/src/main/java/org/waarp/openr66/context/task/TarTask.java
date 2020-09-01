@@ -46,8 +46,8 @@ public class TarTask extends AbstractTask {
    * @param argTransfer
    * @param session
    */
-  public TarTask(String argRule, int delay, String argTransfer,
-                 R66Session session) {
+  public TarTask(final String argRule, final int delay,
+                 final String argTransfer, final R66Session session) {
     super(TaskType.TAR, delay, argRule, argTransfer, session);
   }
 
@@ -57,7 +57,8 @@ public class TarTask extends AbstractTask {
         "TAR with " + argRule + ':' + argTransfer + ':' + delay + " and {}",
         session);
     String finalname = argRule;
-    finalname = getReplacedValue(finalname, argTransfer.split(" "));
+    finalname = getReplacedValue(finalname, argTransfer == null? null :
+        argTransfer.split(" "));
     boolean tar;
     switch (delay) {
       case 2: {

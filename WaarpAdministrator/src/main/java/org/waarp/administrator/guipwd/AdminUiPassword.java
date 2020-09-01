@@ -32,7 +32,7 @@ public class AdminUiPassword extends WaarpUiPassword {
   private static final long serialVersionUID = -7864989527339637852L;
   private final List<AdminUiPassword> list;
 
-  public AdminUiPassword(List<AdminUiPassword> list) throws Exception {
+  public AdminUiPassword(final List<AdminUiPassword> list) throws Exception {
     super(true);
     this.list = list;
     this.list.add(this);
@@ -40,7 +40,7 @@ public class AdminUiPassword extends WaarpUiPassword {
   }
 
   @Override
-  public void exit(ActionEvent evt) {
+  public void exit(final ActionEvent evt) {
     ((AdminUiPassword) myself).list.remove(myself);
     super.exit(evt);
   }

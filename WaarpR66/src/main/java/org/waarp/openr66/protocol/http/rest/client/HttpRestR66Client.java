@@ -68,10 +68,12 @@ public class HttpRestR66Client extends HttpRestClientHelper {
    *
    * @return the RestFuture associated with this request
    */
-  public RestFuture sendQuery(RestConfiguration config, Channel channel,
-                              HttpMethod method, String host, String addedUri,
-                              String user, String pwd,
-                              Map<String, String> uriArgs, String json) {
+  public RestFuture sendQuery(final RestConfiguration config,
+                              final Channel channel, final HttpMethod method,
+                              final String host, final String addedUri,
+                              final String user, final String pwd,
+                              final Map<String, String> uriArgs,
+                              final String json) {
     if (config.isRestSignature()) {
       return sendQuery(config.getHmacSha256(), channel, method, host, addedUri,
                        user, pwd, uriArgs, json);
@@ -89,9 +91,9 @@ public class HttpRestR66Client extends HttpRestClientHelper {
    * @param client limit number of concurrent connected clients
    * @param timeout time out for network connection
    */
-  public HttpRestR66Client(String baseUri,
-                           ChannelInitializer<SocketChannel> initializer,
-                           int client, long timeout) {
+  public HttpRestR66Client(final String baseUri,
+                           final ChannelInitializer<SocketChannel> initializer,
+                           final int client, final long timeout) {
     super(baseUri, client, timeout, initializer);
   }
 
@@ -100,7 +102,7 @@ public class HttpRestR66Client extends HttpRestClientHelper {
    *
    * @return the associated RESTHANDLERS if any, else null
    */
-  public RESTHANDLERS getRestHandler(RestArgument bodyResponse) {
+  public RESTHANDLERS getRestHandler(final RestArgument bodyResponse) {
     final ObjectNode node = bodyResponse.getAnswer();
     final String model = node.path(AbstractDbData.JSON_MODEL).asText();
     try {
@@ -119,7 +121,7 @@ public class HttpRestR66Client extends HttpRestClientHelper {
    * @return the primary property value associated with the Model (from the
    *     bodyResponse), else null
    */
-  public String getPrimaryProperty(RestArgument bodyResponse) {
+  public String getPrimaryProperty(final RestArgument bodyResponse) {
     final ObjectNode answer = bodyResponse.getAnswer();
     final String model = answer.path(AbstractDbData.JSON_MODEL).asText();
     final String property = getPrimaryPropertyName(model);
@@ -134,7 +136,7 @@ public class HttpRestR66Client extends HttpRestClientHelper {
    *
    * @return the primary property name associated with the Model
    */
-  public String getPrimaryPropertyName(String model) {
+  public String getPrimaryPropertyName(final String model) {
     try {
       if (model != null && !model.isEmpty()) {
         final RESTHANDLERS dbdata = RESTHANDLERS.valueOf(model);
@@ -158,8 +160,8 @@ public class HttpRestR66Client extends HttpRestClientHelper {
    * @throws HttpIncorrectRequestException
    */
   @SuppressWarnings("unchecked")
-  public AbstractDbData getDbDataFromFuture(DbSession dbSession,
-                                            RestFuture future)
+  public AbstractDbData getDbDataFromFuture(final DbSession dbSession,
+                                            final RestFuture future)
       throws HttpIncorrectRequestException {
     if (future.getRestArgument() != null) {
       final RestArgument arg = future.getRestArgument();
@@ -190,7 +192,7 @@ public class HttpRestR66Client extends HttpRestClientHelper {
    *
    * @throws HttpIncorrectRequestException
    */
-  public JsonPacket getJsonPacketFromFuture(RestFuture future)
+  public JsonPacket getJsonPacketFromFuture(final RestFuture future)
       throws HttpIncorrectRequestException {
     if (future.getRestArgument() != null) {
       final RestArgument arg = future.getRestArgument();

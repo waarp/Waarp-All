@@ -40,21 +40,22 @@ public class OpenR66ProtocolNotYetConnectionException extends OpenR66Exception {
    * @param arg0
    * @param arg1
    */
-  public OpenR66ProtocolNotYetConnectionException(String arg0, Throwable arg1) {
+  public OpenR66ProtocolNotYetConnectionException(final String arg0,
+                                                  final Throwable arg1) {
     super(arg0, arg1);
   }
 
   /**
    * @param arg0
    */
-  public OpenR66ProtocolNotYetConnectionException(String arg0) {
+  public OpenR66ProtocolNotYetConnectionException(final String arg0) {
     super(arg0);
   }
 
   /**
    * @param arg0
    */
-  public OpenR66ProtocolNotYetConnectionException(Throwable arg0) {
+  public OpenR66ProtocolNotYetConnectionException(final Throwable arg0) {
     super(arg0);
   }
 

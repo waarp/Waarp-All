@@ -128,7 +128,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    * @param limit limit of number of entries in the cache
    * @param ttl time to leave used
    */
-  public static void createLruCache(int limit, long ttl) {
+  public static void createLruCache(final int limit, final long ttl) {
     XMLTransferDAO.createLruCache(limit, ttl);
   }
 
@@ -150,7 +150,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    *
    * @param ttl
    */
-  public static void updateLruCacheTimeout(long ttl) {
+  public static void updateLruCacheTimeout(final long ttl) {
     XMLTransferDAO.updateLruCacheTimeout(ttl);
   }
 
@@ -279,8 +279,8 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    *
    * @return The associated requested Host Id
    */
-  public static String getRequested(R66Session session,
-                                    RequestPacket requestPacket) {
+  public static String getRequested(final R66Session session,
+                                    final RequestPacket requestPacket) {
     if (requestPacket.isToValidate()) {
       // the request is initiated and sent by the requester
       try {
@@ -300,8 +300,8 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    *
    * @return The associated requester Host Id
    */
-  public static String getRequester(R66Session session,
-                                    RequestPacket requestPacket) {
+  public static String getRequester(final R66Session session,
+                                    final RequestPacket requestPacket) {
     if (requestPacket.isToValidate()) {
       return session.getAuth().getUser();
     } else {
@@ -342,7 +342,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
     pojo.setStop(new Timestamp(System.currentTimeMillis()));
   }
 
-  public DbTaskRunner(Transfer transfer) {
+  public DbTaskRunner(final Transfer transfer) {
     if (transfer == null) {
       throw new IllegalArgumentException(
           "Argument in constructor cannot be null");
@@ -364,9 +364,9 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    *
    * @throws WaarpDatabaseException
    */
-  public DbTaskRunner(DbRule rule, boolean isSender,
-                      RequestPacket requestPacket, String requested,
-                      Timestamp startTime) throws WaarpDatabaseException {
+  public DbTaskRunner(final DbRule rule, final boolean isSender,
+                      final RequestPacket requestPacket, final String requested,
+                      final Timestamp startTime) throws WaarpDatabaseException {
     session = null;
     this.rule = rule;
 
@@ -418,8 +418,8 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    *
    * @throws WaarpDatabaseException
    */
-  public DbTaskRunner(R66Session session, DbRule rule, boolean isSender,
-                      RequestPacket requestPacket)
+  public DbTaskRunner(final R66Session session, final DbRule rule,
+                      final boolean isSender, final RequestPacket requestPacket)
       throws WaarpDatabaseException {
     this.session = session;
     localChannelReference = session.getLocalChannelReference();
@@ -456,9 +456,9 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    *
    * @throws WaarpDatabaseException
    */
-  public DbTaskRunner(R66Session session, DbRule rule, long id,
-                      String requester, String requested)
-      throws WaarpDatabaseException {
+  public DbTaskRunner(final R66Session session, final DbRule rule,
+                      final long id, final String requester,
+                      final String requested) throws WaarpDatabaseException {
     this.session = session;
     TransferDAO transferAccess = null;
     try {
@@ -487,8 +487,8 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    *
    * @throws WaarpDatabaseException
    */
-  public DbTaskRunner(long id, String requester, String requested)
-      throws WaarpDatabaseException {
+  public DbTaskRunner(final long id, final String requester,
+                      final String requested) throws WaarpDatabaseException {
     TransferDAO transferAccess = null;
     try {
       transferAccess = DAOFactory.getInstance().getTransferDAO();
@@ -513,7 +513,8 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    *
    * @throws WaarpDatabaseException
    */
-  public DbTaskRunner(long id, String requester, String requested, String owner)
+  public DbTaskRunner(final long id, final String requester,
+                      final String requested, final String owner)
       throws WaarpDatabaseException {
     this(id, requester, requested);
     if (owner == null || owner.isEmpty()) {
@@ -531,7 +532,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    *
    * @throws WaarpDatabaseException
    */
-  public DbTaskRunner(ObjectNode source) throws WaarpDatabaseException {
+  public DbTaskRunner(final ObjectNode source) throws WaarpDatabaseException {
     pojo = new Transfer();
     setFromJson(source, false);
   }
@@ -545,7 +546,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    *
    * @throws WaarpDatabaseException
    */
-  public static DbTaskRunner reloadFromDatabase(DbTaskRunner taskRunner)
+  public static DbTaskRunner reloadFromDatabase(final DbTaskRunner taskRunner)
       throws WaarpDatabaseException {
     if (taskRunner == null) {
       throw new WaarpDatabaseNoDataException("TaskRunner is no defined");
@@ -562,7 +563,8 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
   }
 
   @Override
-  public void setFromJson(ObjectNode source, boolean ignorePrimaryKey)
+  public void setFromJson(final ObjectNode source,
+                          final boolean ignorePrimaryKey)
       throws WaarpDatabaseSqlException {
     if (pojo == null) {
       pojo = new Transfer();
@@ -717,12 +719,13 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    *
    * @throws WaarpDatabaseException
    */
-  public DbTaskRunner(long id, String requested) throws WaarpDatabaseException {
+  public DbTaskRunner(final long id, final String requested)
+      throws WaarpDatabaseException {
     TransferDAO transferAccess = null;
     logger.trace("TRACE ID {}", id);
     try {
       transferAccess = DAOFactory.getInstance().getTransferDAO();
-      String requester = Configuration.configuration.getHostId(requested);
+      final String requester = Configuration.configuration.getHostId(requested);
       pojo = transferAccess.select(id, requester, requested,
                                    Configuration.configuration.getHostId());
     } catch (final DAOConnectionException e) {
@@ -747,7 +750,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    *
    * @param specialId
    */
-  public static final void removeNoDbSpecialId(long specialId) {
+  public static final void removeNoDbSpecialId(final long specialId) {
     XMLTransferDAO.removeNoDbSpecialId(specialId);
   }
 
@@ -756,7 +759,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    *
    * @param specialId
    */
-  public static final void updateUsed(long specialId) {
+  public static final void updateUsed(final long specialId) {
     XMLTransferDAO.updateUsed(specialId);
   }
 
@@ -900,7 +903,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    *
    * @param runner
    */
-  public void setFrom(DbTaskRunner runner) {
+  public void setFrom(final DbTaskRunner runner) {
     if (runner != null) {
       logger.trace("TRACE ID {}", pojo.getId());
       logger.trace("TRACE ID {}", runner.getSpecialId());
@@ -939,7 +942,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    * @param localChannelReference
    */
   public void setLocalChannelReference(
-      LocalChannelReference localChannelReference) {
+      final LocalChannelReference localChannelReference) {
     this.localChannelReference = localChannelReference;
   }
 
@@ -961,7 +964,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    * @throws WaarpDatabaseSqlException
    */
   public static DbTaskRunner getFromStatement(
-      DbPreparedStatement preparedStatement)
+      final DbPreparedStatement preparedStatement)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
     final DbTaskRunner dbTaskRunner = new DbTaskRunner();
     AbstractDAO<Transfer> transferDAO = null;
@@ -980,10 +983,10 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
       }
       dbTaskRunner.checkThroughMode();
       return dbTaskRunner;
-    } catch (SQLException e) {
+    } catch (final SQLException e) {
       DbSession.error(e);
       throw new WaarpDatabaseSqlException("Getting values in error", e);
-    } catch (DAOConnectionException e) {
+    } catch (final DAOConnectionException e) {
       throw new WaarpDatabaseSqlException("Getting values in error", e);
     } finally {
       DAOFactory.closeDAO(transferDAO);
@@ -1003,7 +1006,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    * @throws WaarpDatabaseSqlException
    */
   public static DbTaskRunner getFromStatementNoRule(
-      DbPreparedStatement preparedStatement)
+      final DbPreparedStatement preparedStatement)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
     final DbTaskRunner dbTaskRunner = new DbTaskRunner();
     AbstractDAO<Transfer> transferDAO = null;
@@ -1022,10 +1025,10 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
       }
       dbTaskRunner.checkThroughMode();
       return dbTaskRunner;
-    } catch (SQLException e) {
+    } catch (final SQLException e) {
       DbSession.error(e);
       throw new WaarpDatabaseSqlException("Getting values in error", e);
-    } catch (DAOConnectionException e) {
+    } catch (final DAOConnectionException e) {
       throw new WaarpDatabaseSqlException("Getting values in error", e);
     } finally {
       DAOFactory.closeDAO(transferDAO);
@@ -1043,7 +1046,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    * @throws WaarpDatabaseSqlException
    */
   public static DbTaskRunner getFromStatementNoDbRule(
-      DbPreparedStatement preparedStatement)
+      final DbPreparedStatement preparedStatement)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
     final DbTaskRunner dbTaskRunner = new DbTaskRunner();
     AbstractDAO<Transfer> transferDAO = null;
@@ -1062,10 +1065,10 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
       }
       dbTaskRunner.checkThroughMode();
       return dbTaskRunner;
-    } catch (SQLException e) {
+    } catch (final SQLException e) {
       DbSession.error(e);
       throw new WaarpDatabaseSqlException("Getting values in error", e);
-    } catch (DAOConnectionException e) {
+    } catch (final DAOConnectionException e) {
       throw new WaarpDatabaseSqlException("Getting values in error", e);
     } finally {
       DAOFactory.closeDAO(transferDAO);
@@ -1096,10 +1099,12 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    * @throws WaarpDatabaseSqlException
    */
   private static DbPreparedStatement getFilterCondition(
-      DbPreparedStatement preparedStatement, String srcrequest, int limit,
-      String orderby, String startid, String stopid, Timestamp start,
-      Timestamp stop, String rule, String req, boolean pending,
-      boolean transfer, boolean error, boolean done, boolean all)
+      final DbPreparedStatement preparedStatement, final String srcrequest,
+      final int limit, final String orderby, final String startid,
+      final String stopid, final Timestamp start, final Timestamp stop,
+      final String rule, final String req, final boolean pending,
+      final boolean transfer, final boolean error, final boolean done,
+      final boolean all)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
     String request = srcrequest;
     if (startid == null && stopid == null && start == null && stop == null &&
@@ -1280,20 +1285,12 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    * @throws WaarpDatabaseNoConnectionException
    * @throws WaarpDatabaseSqlException
    */
-  public static DbPreparedStatement getFilterPrepareStatement(DbSession session,
-                                                              int limit,
-                                                              boolean orderBySpecialId,
-                                                              String startid,
-                                                              String stopid,
-                                                              Timestamp start,
-                                                              Timestamp stop,
-                                                              String rule,
-                                                              String req,
-                                                              boolean pending,
-                                                              boolean transfer,
-                                                              boolean error,
-                                                              boolean done,
-                                                              boolean all)
+  public static DbPreparedStatement getFilterPrepareStatement(
+      final DbSession session, final int limit, final boolean orderBySpecialId,
+      final String startid, final String stopid, final Timestamp start,
+      final Timestamp stop, final String rule, final String req,
+      final boolean pending, final boolean transfer, final boolean error,
+      final boolean done, final boolean all)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
     return getFilterPrepareStatement(session, limit, orderBySpecialId, startid,
                                      stopid, start, stop, rule, req, pending,
@@ -1322,21 +1319,12 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    * @throws WaarpDatabaseNoConnectionException
    * @throws WaarpDatabaseSqlException
    */
-  public static DbPreparedStatement getFilterPrepareStatement(DbSession session,
-                                                              int limit,
-                                                              boolean orderBySpecialId,
-                                                              String startid,
-                                                              String stopid,
-                                                              Timestamp start,
-                                                              Timestamp stop,
-                                                              String rule,
-                                                              String req,
-                                                              boolean pending,
-                                                              boolean transfer,
-                                                              boolean error,
-                                                              boolean done,
-                                                              boolean all,
-                                                              String owner)
+  public static DbPreparedStatement getFilterPrepareStatement(
+      final DbSession session, final int limit, final boolean orderBySpecialId,
+      final String startid, final String stopid, final Timestamp start,
+      final Timestamp stop, final String rule, final String req,
+      final boolean pending, final boolean transfer, final boolean error,
+      final boolean done, final boolean all, final String owner)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
     final DbPreparedStatement preparedStatement =
         new DbPreparedStatement(session);
@@ -1371,7 +1359,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    *
    * @return the associated Filter
    */
-  public static Filter getFollowIdFilter(String followId) {
+  public static Filter getFollowIdFilter(final String followId) {
     return new Filter(DBTransferDAO.TRANSFER_INFO_FIELD, "LIKE",
                       "%" + TransferArgs.FOLLOW_JSON_KEY + "%" + followId +
                       "%");
@@ -1389,7 +1377,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    * @throws WaarpDatabaseSqlException
    */
   public static DbTaskRunner[] getSelectSameFollowId(final String followId,
-                                                     boolean orderByStart,
+                                                     final boolean orderByStart,
                                                      final int limit)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
     final List<Filter> filters = new ArrayList<Filter>(1);
@@ -1430,7 +1418,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    * @throws WaarpDatabaseSqlException
    */
   public static DbTaskRunner[] getSelectFromInfoPrepareStatement(
-      UpdatedInfo info, boolean orderByStart, int limit)
+      final UpdatedInfo info, final boolean orderByStart, final int limit)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
     final List<Filter> filters = new ArrayList<Filter>(3);
     filters.add(new Filter(DBTransferDAO.UPDATED_INFO_FIELD, "=",
@@ -1473,7 +1461,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    * @throws WaarpDatabaseSqlException
    */
   public static DbPreparedStatement getCountInfoPrepareStatement(
-      DbSession session)
+      final DbSession session)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
     final String request =
         "SELECT COUNT(" + Columns.SPECIALID.name() + ") FROM " + table +
@@ -1492,9 +1480,8 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    *
    * @return the number of elements (COUNT) from the statement
    */
-  public static long getResultCountPrepareStatement(DbPreparedStatement pstt,
-                                                    UpdatedInfo info,
-                                                    long time) {
+  public static long getResultCountPrepareStatement(
+      final DbPreparedStatement pstt, final UpdatedInfo info, final long time) {
     long result = 0;
     try {
       finishSelectOrCountPrepareStatement(pstt, time);
@@ -1527,7 +1514,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    * @throws WaarpDatabaseSqlException
    */
   public static DbPreparedStatement getCountStepPrepareStatement(
-      DbSession session, TASKSTEP globalstep)
+      final DbSession session, final TASKSTEP globalstep)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
     String request =
         "SELECT COUNT(" + Columns.SPECIALID.name() + ") FROM " + table;
@@ -1556,7 +1543,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    * @throws WaarpDatabaseSqlException
    */
   public static DbPreparedStatement getCountStatusPrepareStatement(
-      DbSession session)
+      final DbSession session)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
     String request =
         "SELECT COUNT(" + Columns.SPECIALID.name() + ") FROM " + table;
@@ -1575,9 +1562,8 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    *
    * @return the number of elements (COUNT) from the statement
    */
-  public static long getResultCountPrepareStatement(DbPreparedStatement pstt,
-                                                    ErrorCode error,
-                                                    long time) {
+  public static long getResultCountPrepareStatement(
+      final DbPreparedStatement pstt, final ErrorCode error, final long time) {
     long result = 0;
     try {
       finishSelectOrCountPrepareStatement(pstt, time);
@@ -1611,7 +1597,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    * @throws WaarpDatabaseSqlException
    */
   public static DbPreparedStatement getCountStatusRunningPrepareStatement(
-      DbSession session, ErrorCode status)
+      final DbSession session, final ErrorCode status)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
     String request =
         "SELECT COUNT(" + Columns.SPECIALID.name() + ") FROM " + table;
@@ -1643,11 +1629,11 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    * @throws WaarpDatabaseSqlException
    */
   public static DbPreparedStatement getCountInOutErrorPrepareStatement(
-      DbSession session, boolean in)
+      final DbSession session, final boolean in)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
     String request =
         "SELECT COUNT(" + Columns.SPECIALID.name() + ") FROM " + table;
-    String requesterd;
+    final String requesterd;
     final String from = Configuration.configuration.getHostId();
     final String sfrom = Configuration.configuration.getHostSslId();
     if (in) {
@@ -1687,11 +1673,11 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    * @throws WaarpDatabaseSqlException
    */
   public static DbPreparedStatement getCountInOutRunningPrepareStatement(
-      DbSession session, boolean in, boolean running)
+      final DbSession session, final boolean in, final boolean running)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
     String request =
         "SELECT COUNT(" + Columns.SPECIALID.name() + ") FROM " + table;
-    String requesterd;
+    final String requesterd;
     final String from = Configuration.configuration.getHostId();
     final String sfrom = Configuration.configuration.getHostSslId();
     if (in) {
@@ -1724,7 +1710,8 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    *
    * @return the number of elements (COUNT) from the statement
    */
-  public static long getResultCountPrepareStatement(DbPreparedStatement pstt) {
+  public static long getResultCountPrepareStatement(
+      final DbPreparedStatement pstt) {
     long result = 0;
     try {
       pstt.executeQuery();
@@ -1752,7 +1739,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    * @throws WaarpDatabaseSqlException
    */
   public static void finishSelectOrCountPrepareStatement(
-      DbPreparedStatement pstt, long time)
+      final DbPreparedStatement pstt, final long time)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
     final Timestamp startlimit = new Timestamp(time);
     try {
@@ -1775,9 +1762,8 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    * @throws WaarpDatabaseNoConnectionException
    * @throws WaarpDatabaseSqlException
    */
-  public static DbPreparedStatement getLogPrepareStatement(DbSession session,
-                                                           Timestamp start,
-                                                           Timestamp stop)
+  public static DbPreparedStatement getLogPrepareStatement(
+      final DbSession session, final Timestamp start, final Timestamp stop)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
     final DbPreparedStatement preparedStatement =
         new DbPreparedStatement(session);
@@ -1838,8 +1824,9 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    * @throws WaarpDatabaseNoConnectionException
    * @throws WaarpDatabaseSqlException
    */
-  public static int purgeLogPrepareStatement(DbSession session, Timestamp start,
-                                             Timestamp stop)
+  public static int purgeLogPrepareStatement(final DbSession session,
+                                             final Timestamp start,
+                                             final Timestamp stop)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
     final DbPreparedStatement preparedStatement =
         new DbPreparedStatement(session);
@@ -1909,16 +1896,22 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    * @throws WaarpDatabaseNoConnectionException
    * @throws WaarpDatabaseSqlException
    */
-  public static int purgeLogPrepareStatement(DbSession session, String startid,
-                                             String stopid, Timestamp start,
-                                             Timestamp stop, String rule,
-                                             String req, boolean pending,
-                                             boolean transfer, boolean error,
-                                             boolean done, boolean all)
+  public static int purgeLogPrepareStatement(final DbSession session,
+                                             final String startid,
+                                             final String stopid,
+                                             final Timestamp start,
+                                             final Timestamp stop,
+                                             final String rule,
+                                             final String req,
+                                             final boolean pending,
+                                             final boolean transfer,
+                                             final boolean error,
+                                             final boolean done,
+                                             final boolean all)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
     DbPreparedStatement preparedStatement = new DbPreparedStatement(session);
     final String request = "DELETE FROM " + table;
-    String orderby;
+    final String orderby;
     if (startid == null && stopid == null && start == null && stop == null &&
         rule == null && req == null && all) {
       orderby = " WHERE (" + Columns.GLOBALLASTSTEP + " = " +
@@ -1965,7 +1958,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    *
    * @throws WaarpDatabaseNoConnectionException
    */
-  public static void resetToSubmit(DbSession session)
+  public static void resetToSubmit(final DbSession session)
       throws WaarpDatabaseNoConnectionException {
     // Change RUNNING and INTERRUPTED to TOSUBMIT since they should be ready
     final String request =
@@ -2106,15 +2099,14 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    *     request is a selfRequested and is
    *     not ready to restart locally
    */
-  public boolean restart(boolean submit) {
+  public boolean restart(final boolean submit) {
     // Restart if not Requested
     if (submit) {
-      if (isSelfRequested() &&
-          (pojo.getLastGlobalStep() != Transfer.TASKSTEP.ALLDONETASK ||
-           pojo.getLastGlobalStep() != Transfer.TASKSTEP.ERRORTASK)) {
-        // nothing
-      }
-      {
+      if (isSelfRequested()) {
+        if (pojo.getLastGlobalStep() != Transfer.TASKSTEP.ALLDONETASK ||
+            pojo.getLastGlobalStep() != Transfer.TASKSTEP.ERRORTASK) {
+          // nothing
+        }
         return false;
       }
     }
@@ -2150,7 +2142,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    *
    * @return True if correctly stopped or canceled
    */
-  public boolean stopOrCancelRunner(ErrorCode code) {
+  public boolean stopOrCancelRunner(final ErrorCode code) {
     if (!isFinished()) {
       reset();
       switch (code) {
@@ -2176,7 +2168,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
   }
 
   @Override
-  public void changeUpdatedInfo(UpdatedInfo info) {
+  public void changeUpdatedInfo(final UpdatedInfo info) {
     setStopNow();
     pojo.setUpdatedInfo(
         org.waarp.openr66.pojo.UpdatedInfo.valueOf(info.ordinal()));
@@ -2187,7 +2179,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    *
    * @param code
    */
-  public void setErrorExecutionStatus(ErrorCode code) {
+  public void setErrorExecutionStatus(final ErrorCode code) {
     setStopNow();
     pojo.setInfoStatus(code);
   }
@@ -2234,7 +2226,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    *
    * @param rank the rank to set
    */
-  public void setRankAtStartup(int rank) {
+  public void setRankAtStartup(final int rank) {
     if (pojo.getRank() > rank) {
       pojo.setRank(rank);
     }
@@ -2243,14 +2235,14 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
   /**
    * @param blocksize the block size to set
    */
-  public void setBlocksize(int blocksize) {
+  public void setBlocksize(final int blocksize) {
     pojo.setBlockSize(blocksize);
   }
 
   /**
    * @param filename the filename to set
    */
-  public void setFilename(String filename) {
+  public void setFilename(final String filename) {
     pojo.setFilename(filename);
   }
 
@@ -2258,7 +2250,8 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    * @param newFilename the new Filename to set
    * @param isFileMoved the isFileMoved to set
    */
-  public void setFileMoved(String newFilename, boolean isFileMoved) {
+  public void setFileMoved(final String newFilename,
+                           final boolean isFileMoved) {
     pojo.setIsMoved(isFileMoved);
     pojo.setFilename(newFilename);
   }
@@ -2266,7 +2259,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
   /**
    * @param originalFilename the originalFilename to set
    */
-  public void setOriginalFilename(String originalFilename) {
+  public void setOriginalFilename(final String originalFilename) {
     pojo.setOriginalName(originalFilename);
   }
 
@@ -2282,7 +2275,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    *
    * @param status
    */
-  public void setExecutionStatus(ErrorCode status) {
+  public void setExecutionStatus(final ErrorCode status) {
     pojo.setStepStatus(status);
   }
 
@@ -2332,8 +2325,10 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    * Utility to get possible Json from File information to Transfer information
    */
   private void setMapFromFileInfo() {
-    Map<String, Object> mapFileInfo = getMapFromString(getFileInformation());
-    Map<String, Object> mapTransferInfo = getMapFromString(getTransferInfo());
+    final Map<String, Object> mapFileInfo =
+        getMapFromString(getFileInformation());
+    final Map<String, Object> mapTransferInfo =
+        getMapFromString(getTransferInfo());
     mapTransferInfo.putAll(mapFileInfo);
     setTransferMap(mapTransferInfo);
   }
@@ -2344,17 +2339,17 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    * @return the Map<String, Object> from the content of the
    *     argument
    */
-  public static Map<String, Object> getMapFromString(String smap) {
-    Pattern pattern = Pattern.compile("\\{[^\\}]*\\}");
-    Matcher matcher = pattern.matcher(JsonHandler.unEscape(smap));
-    StringBuilder map = new StringBuilder("{");
+  public static Map<String, Object> getMapFromString(final String smap) {
+    final Pattern pattern = Pattern.compile("\\{[^\\}]*\\}");
+    final Matcher matcher = pattern.matcher(JsonHandler.unEscape(smap));
+    final StringBuilder map = new StringBuilder("{");
     while (matcher.find()) {
-      String temp = matcher.group(0);
+      final String temp = matcher.group(0);
       if (temp.length() > 5) { // {a:a} = 5
         if (map.length() != 1) {
           map.append(", ");
         }
-        map.append(temp.substring(1, temp.length() - 1));
+        map.append(temp, 1, temp.length() - 1);
       }
     }
     map.append("}");
@@ -2367,7 +2362,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    * @return the String without the Map<String, Object> from the content of the
    *     argument
    */
-  public static String getOutOfMapFromString(String smap) {
+  public static String getOutOfMapFromString(final String smap) {
     return smap.replaceAll("\\{[^\\}]*\\}", "");
   }
 
@@ -2386,8 +2381,8 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
   /**
    * @param map the Map to add as Json string to transferInformation
    */
-  public void setTransferMap(Map<String, Object> map) {
-    String noMap = getOtherInfoOutOfMap().trim();
+  public void setTransferMap(final Map<String, Object> map) {
+    final String noMap = getOtherInfoOutOfMap().trim();
     internalSetNoMapMap(map, noMap);
   }
 
@@ -2403,9 +2398,9 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
   /**
    * @param transferInfo the transfer Information to set
    */
-  public void setTransferInfo(String transferInfo) {
-    String noMap = getOutOfMapFromString(transferInfo).trim();
-    Map<String, Object> map = getMapFromString(transferInfo);
+  public void setTransferInfo(final String transferInfo) {
+    final String noMap = getOutOfMapFromString(transferInfo).trim();
+    final Map<String, Object> map = getMapFromString(transferInfo);
     internalSetNoMapMap(map, noMap);
   }
 
@@ -2415,8 +2410,8 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    * @param key
    * @param value
    */
-  public void addToTransferMap(String key, Object value) {
-    Map<String, Object> map = getTransferMap();
+  public void addToTransferMap(final String key, final Object value) {
+    final Map<String, Object> map = getTransferMap();
     map.put(key, value);
     setTransferMap(map);
   }
@@ -2426,14 +2421,14 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    *
    * @return the associated value or null if it does not exist
    */
-  public Object getFromTransferMap(String key) {
+  public Object getFromTransferMap(final String key) {
     return getTransferMap().get(key);
   }
 
   /**
    * @param size the new size value to set in TransferMap
    */
-  private void setOriginalSizeTransferMap(long size) {
+  private void setOriginalSizeTransferMap(final long size) {
     addToTransferMap(JSON_ORIGINALSIZE, size);
   }
 
@@ -2456,7 +2451,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    * @return the Follow Id or null if not exists
    */
   public String getFollowId() {
-    Object followId = getFromTransferMap(TransferArgs.FOLLOW_JSON_KEY);
+    final Object followId = getFromTransferMap(TransferArgs.FOLLOW_JSON_KEY);
     if (followId != null) {
       return followId.toString();
     }
@@ -2479,7 +2474,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    *
    * @param newFileInformation
    */
-  public void setFileInformation(String newFileInformation) {
+  public void setFileInformation(final String newFileInformation) {
     pojo.setFileInfo(newFileInformation);
     setMapFromFileInfo();
   }
@@ -2628,7 +2623,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    *
    * @param rank
    */
-  public void setTransferTask(int rank) {
+  public void setTransferTask(final int rank) {
     setStopNow();
     pojo.setGlobalStep(Transfer.TASKSTEP.TRANSFERTASK);
     pojo.setLastGlobalStep(Transfer.TASKSTEP.TRANSFERTASK);
@@ -2688,7 +2683,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    *
    * @return the current rank of transfer
    */
-  public int finishTransferTask(ErrorCode code) {
+  public int finishTransferTask(final ErrorCode code) {
     setStopNow();
     if (code == ErrorCode.TransferOk) {
       pojo.setStepStatus(code);
@@ -2728,7 +2723,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    * @throws OpenR66RunnerEndTasksException
    * @throws OpenR66RunnerErrorException
    */
-  private R66Future runNextTask(String[][] tasks)
+  private R66Future runNextTask(final String[][] tasks)
       throws OpenR66RunnerEndTasksException, OpenR66RunnerErrorException {
     logger.debug((session == null) + ":" +
                  (session == null? "norunner" : session.getRunner() == null) +
@@ -2752,7 +2747,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
       }
     }
     session = tempSession;
-    LocalChannelReference lcr = session.getLocalChannelReference();
+    final LocalChannelReference lcr = session.getLocalChannelReference();
     if (lcr != null && lcr.getCurrentCode() == ErrorCode.Unknown) {
       session.getLocalChannelReference()
              .setErrorMessage(getErrorInfo().getMesg(), getErrorInfo());
@@ -2794,11 +2789,12 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    *
    * @throws OpenR66RunnerErrorException
    */
-  public final AbstractTask getTask(String[] task, R66Session tempSession)
+  public final AbstractTask getTask(final String[] task,
+                                    final R66Session tempSession)
       throws OpenR66RunnerErrorException {
     final String name = task[0];
     final String arg = task[1];
-    int delay;
+    final int delay;
     try {
       delay = Integer.parseInt(task[2]);
     } catch (final NumberFormatException e) {
@@ -2890,7 +2886,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
       logger.debug(toLogRunStep() + " Status: " + getStatus() + " Sender: " +
                    isSender() + ' ' +
                    rule.printTasks(isSender(), getGlobalStep()));
-    } catch (NullPointerException ignored) {
+    } catch (final NullPointerException ignored) {
       // Ignored
     }
     if (getStatus() != ErrorCode.Running) {
@@ -2947,9 +2943,9 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    * @throws OpenR66RunnerErrorException
    * @throws OpenR66ProtocolSystemException
    */
-  public void finalizeTransfer(LocalChannelReference localChannelReference,
-                               R66File file, R66Result finalValue,
-                               boolean status)
+  public void finalizeTransfer(
+      final LocalChannelReference localChannelReference, final R66File file,
+      final R66Result finalValue, final boolean status)
       throws OpenR66RunnerErrorException, OpenR66ProtocolSystemException {
     logger.debug("status: " + status + ':' + finalValue);
 
@@ -3140,8 +3136,8 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    *
    * @throws OpenR66RunnerErrorException
    */
-  private void errorTransfer(R66Result finalValue, R66File file,
-                             LocalChannelReference localChannelReference)
+  private void errorTransfer(final R66Result finalValue, final R66File file,
+                             final LocalChannelReference localChannelReference)
       throws OpenR66RunnerErrorException {
     // error or not ?
     final ErrorCode runnerStatus = getErrorInfo();
@@ -3320,7 +3316,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
            ':' + getStatus().getMesg();
   }
 
-  public String toShortNoHtmlString(String newline) {
+  public String toShortNoHtmlString(final String newline) {
     return "{Run: '" + getRuleId() + "', Filename: '" + getFilename() + "'," +
            newline + " STEP: '" + getGlobalStep() + '(' + getLastGlobalStep() +
            "):" + getStep() + ':' + getStatus().getMesg() + "'," + newline +
@@ -3369,7 +3365,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    *
    * @return The associated freespace of the current directory (in MB)
    */
-  public long freespaceMB(R66Session session) {
+  public long freespaceMB(final R66Session session) {
     if (getLastGlobalStep() == TASKSTEP.ALLDONETASK ||
         getLastGlobalStep() == TASKSTEP.POSTTASK) {
       // All finished or Post task
@@ -3388,7 +3384,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    *     if
    *     False) (in B, not MB)
    */
-  public long freespace(R66Session session, boolean isWorkingPath) {
+  public long freespace(final R66Session session, final boolean isWorkingPath) {
     long freespace = -1;
     DbRule dbRule = null;
     try {
@@ -3401,13 +3397,13 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
     }
     if (dbRule != null && !isSender()) {
       try {
-        String sdir;
+        final String sdir;
         if (isWorkingPath) {
           sdir = dbRule.getWorkPath();
         } else {
           sdir = dbRule.getRecvPath();
         }
-        R66Dir dir;
+        final R66Dir dir;
         if (session.getDirsFromSession().containsKey(sdir)) {
           dir = session.getDirsFromSession().get(sdir);
         } else {
@@ -3433,7 +3429,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
   }
 
   private String getHtmlColor() {
-    String color;
+    final String color;
     switch (getGlobalStep()) {
       case NOTASK:
         color = "Orange";
@@ -3460,7 +3456,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
   }
 
   private String getInfoHtmlColor() {
-    String color;
+    final String color;
     switch (getUpdatedInfo()) {
       case DONE:
         color = "Cyan";
@@ -3494,7 +3490,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    * @return the runner in Html format compatible with the header from
    *     headerHtml method
    */
-  public String toHtml(R66Session session, String running) {
+  public String toHtml(final R66Session session, final String running) {
     final long freespace = freespaceMB(session);
     final String color = getHtmlColor();
     final String updcolor = getInfoHtmlColor();
@@ -3521,8 +3517,8 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    * @return the runner in Html format specified by body by replacing all
    *     instance of fields
    */
-  public String toSpecializedHtml(R66Session session, String body,
-                                  String running) {
+  public String toSpecializedHtml(final R66Session session, final String body,
+                                  final String running) {
     final long freespace = freespaceMB(session);
     final StringBuilder builder = new StringBuilder(body);
     WaarpStringUtils
@@ -3626,7 +3622,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
   /**
    * @param start new Start time to apply when reschedule
    */
-  public void setStart(Timestamp start) {
+  public void setStart(final Timestamp start) {
     pojo.setStart(start);
   }
 
@@ -3637,7 +3633,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
     return pojo.getStop();
   }
 
-  public void setStop(Timestamp stop) {
+  public void setStop(final Timestamp stop) {
     pojo.setStop(stop);
   }
 
@@ -3645,7 +3641,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    * @return the associated request
    */
   public RequestPacket getRequest() {
-    String sep;
+    final String sep;
     if (pojo.getRequested().equals(Configuration.configuration.getHostId()) ||
         pojo.getRequested()
             .equals(Configuration.configuration.getHostSslId())) {
@@ -3676,7 +3672,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    *
    * @return the new Element
    */
-  private static Element newElement(String name, String value) {
+  private static Element newElement(final String name, final String value) {
     final Element node = new DefaultElement(name);
     if (value != null) {
       node.addText(value);
@@ -3684,8 +3680,9 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
     return node;
   }
 
-  private static Object getValue(DbTaskRunner runner, String field) {
-    Columns column = Columns.valueOf(field.toUpperCase());
+  private static Object getValue(final DbTaskRunner runner,
+                                 final String field) {
+    final Columns column = Columns.valueOf(field.toUpperCase());
     switch (column) {
       case GLOBALSTEP:
         return runner.pojo.getGlobalStep().ordinal();
@@ -3745,10 +3742,10 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    *
    * @throws WaarpDatabaseSqlException
    */
-  private static Element getElementFromRunner(DbTaskRunner runner)
+  private static Element getElementFromRunner(final DbTaskRunner runner)
       throws WaarpDatabaseSqlException {
     final Element root = new DefaultElement(XMLRUNNER);
-    for (Columns column : Columns.values()) {
+    for (final Columns column : Columns.values()) {
       if (column.name().equals(Columns.UPDATEDINFO.name()) ||
           column.name().equals(Columns.TRANSFERINFO.name())) {
         continue;
@@ -3770,7 +3767,8 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    *
    * @throws WaarpDatabaseSqlException
    */
-  private static void setRunnerFromElement(DbTaskRunner runner, Element root)
+  private static void setRunnerFromElement(final DbTaskRunner runner,
+                                           final Element root)
       throws WaarpDatabaseSqlException {
     setRunnerFromElementNoException(runner, root);
   }
@@ -3788,8 +3786,8 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    * @throws WaarpDatabaseSqlException
    * @throws OpenR66ProtocolBusinessException
    */
-  public static NbAndSpecialId writeXML(DbPreparedStatement preparedStatement,
-                                        XMLWriter xmlWriter)
+  public static NbAndSpecialId writeXML(
+      final DbPreparedStatement preparedStatement, final XMLWriter xmlWriter)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException,
              OpenR66ProtocolBusinessException {
     final Element root = new DefaultElement(XMLRUNNERS);
@@ -3827,7 +3825,8 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    * @throws WaarpDatabaseSqlException
    * @throws OpenR66ProtocolBusinessException
    */
-  public static String getJson(DbPreparedStatement preparedStatement, int limit)
+  public static String getJson(final DbPreparedStatement preparedStatement,
+                               final int limit)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException,
              OpenR66ProtocolBusinessException {
     final ArrayNode arrayNode = JsonHandler.createArrayNode();
@@ -3876,7 +3875,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    * @throws OpenR66ProtocolBusinessException
    */
   public static NbAndSpecialId writeXMLWriter(
-      DbPreparedStatement preparedStatement, String filename)
+      final DbPreparedStatement preparedStatement, final String filename)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException,
              OpenR66ProtocolBusinessException {
     NbAndSpecialId nbAndSpecialId;
@@ -3939,7 +3938,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    * @throws WaarpDatabaseSqlException
    * @throws OpenR66ProtocolBusinessException
    */
-  public static void writeXMLWriter(String filename)
+  public static void writeXMLWriter(final String filename)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException,
              OpenR66ProtocolBusinessException {
     final String request =
@@ -3974,7 +3973,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    * @throws OpenR66ProtocolBusinessException
    */
   public String asXML() throws OpenR66ProtocolBusinessException {
-    Element node;
+    final Element node;
     try {
       node = getElementFromRunner(this);
     } catch (final WaarpDatabaseSqlException e) {
@@ -4000,7 +3999,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
       node.put(JSON_THROUGHMODE, true);
     }
     node.put(JSON_ORIGINALSIZE, originalSize);
-    String followId = getFollowId();
+    final String followId = getFollowId();
     if (followId != null) {
       node.put(TransferArgs.FOLLOW_JSON_KEY, followId);
     } else {
@@ -4014,7 +4013,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
     if (value == null) {
       return;
     }
-    for (Columns column : Columns.values()) {
+    for (final Columns column : Columns.values()) {
       if (column.name().equalsIgnoreCase(field)) {
         switch (column) {
           case BLOCKSZ:
@@ -4130,10 +4129,10 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    * @param runner
    * @param root
    */
-  private static void setRunnerFromElementNoException(DbTaskRunner runner,
-                                                      Element root) {
-    ObjectNode node = JsonHandler.createObjectNode();
-    for (Columns column : Columns.values()) {
+  private static void setRunnerFromElementNoException(final DbTaskRunner runner,
+                                                      final Element root) {
+    final ObjectNode node = JsonHandler.createObjectNode();
+    for (final Columns column : Columns.values()) {
       if (column.name().equals(Columns.UPDATEDINFO.name()) ||
           column.name().equals(Columns.TRANSFERINFO.name())) {
         continue;
@@ -4161,9 +4160,10 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    *
    * @throws OpenR66ProtocolBusinessException
    */
-  public static DbTaskRunner fromStringXml(String xml, boolean reverse)
+  public static DbTaskRunner fromStringXml(final String xml,
+                                           final boolean reverse)
       throws OpenR66ProtocolBusinessException {
-    Document document;
+    final Document document;
     try {
       document = DocumentHelper.parseText(xml);
     } catch (final DocumentException e1) {
@@ -4202,7 +4202,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
       final Element root = new DefaultElement(XMLRUNNERS);
       try {
         xmlWriter.writeOpen(root);
-        Element node;
+        final Element node;
         node = getElementFromRunner(this);
         xmlWriter.write(node);
         xmlWriter.flush();
@@ -4270,7 +4270,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
           "Backend XML file cannot be read");
     }
     final SAXReader reader = XmlUtil.getNewSaxReader();
-    Document document;
+    final Document document;
     try {
       document = reader.read(file);
     } catch (final DocumentException e) {
@@ -4310,20 +4310,19 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    *
    * @throws OpenR66ProtocolBusinessException
    */
-  public static void loadXml(File logsFile)
+  public static void loadXml(final File logsFile)
       throws OpenR66ProtocolBusinessException {
     if (!logsFile.canRead()) {
       throw new OpenR66ProtocolBusinessException("XML file cannot be read");
     }
     final SAXReader reader = XmlUtil.getNewSaxReader();
-    Document document;
+    final Document document;
     try {
       document = reader.read(logsFile);
     } catch (final DocumentException e) {
       throw new OpenR66ProtocolBusinessException(
           "XML file cannot be read as an XML file", e);
     }
-    @SuppressWarnings("unchecked")
     final List<Node> elts =
         document.selectNodes('/' + XMLRUNNERS + '/' + XMLRUNNER);
     boolean error = false;
@@ -4370,7 +4369,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    *
    * @param sender
    */
-  public void setSender(boolean sender) {
+  public void setSender(final boolean sender) {
     pojo.setRetrieveMode(sender);
   }
 
@@ -4381,7 +4380,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    *
    * @return isSender according to request
    */
-  public static boolean getSenderByRequestPacket(RequestPacket request) {
+  public static boolean getSenderByRequestPacket(final RequestPacket request) {
     if (request.isToValidate()) {
       return RequestPacket.isRecvMode(request.getMode());
     }
@@ -4393,7 +4392,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    *
    * @param requestToValidate
    */
-  public void setSenderByRequestToValidate(boolean requestToValidate) {
+  public void setSenderByRequestToValidate(final boolean requestToValidate) {
     pojo.setRetrieveMode(RequestPacket.isRecvMode(pojo.getTransferMode()));
     if (!requestToValidate) {
       pojo.setRetrieveMode(!pojo.getRetrieveMode());
@@ -4419,7 +4418,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
   /**
    * @param originalSize the originalSize to set
    */
-  public void setOriginalSize(long originalSize) {
+  public void setOriginalSize(final long originalSize) {
     this.originalSize = originalSize;
     setOriginalSizeTransferMap(originalSize);
   }

@@ -52,8 +52,9 @@ public class DownloadServlet extends AbstractServlet {
   public static final String X_HASH_SHA_256 = "X-Hash-Sha-256";
 
   @Override
-  protected void doPost(HttpServletRequest request,
-                        HttpServletResponse response) throws ServletException {
+  protected void doPost(final HttpServletRequest request,
+                        final HttpServletResponse response)
+      throws ServletException {
     doGet(request, response);
   }
 
@@ -61,15 +62,16 @@ public class DownloadServlet extends AbstractServlet {
   protected void doHead(final HttpServletRequest request,
                         final HttpServletResponse response)
       throws ServletException, IOException {
-    Map<String, String> arguments = new HashMap<String, String>();
-    Enumeration<String> names = request.getParameterNames();
+    final Map<String, String> arguments = new HashMap<String, String>();
+    final Enumeration<String> names = request.getParameterNames();
     while (names.hasMoreElements()) {
-      String name = names.nextElement();
+      final String name = names.nextElement();
       arguments.put(name, request.getParameter(name));
     }
-    String filename = getFilename(arguments);
+    final String filename = getFilename(arguments);
     logger.debug("RECVHEAD: {}", filename);
-    HttpDownloadSession session = getDownloadSession(arguments, filename, true);
+    final HttpDownloadSession session =
+        getDownloadSession(arguments, filename, true);
     logger.debug("RECVHEAD SESSION: {}", session);
     logger.debug("Check on going");
     response.setHeader("Expires", "0");
@@ -86,32 +88,32 @@ public class DownloadServlet extends AbstractServlet {
       response.setHeader(X_HASH_SHA_256, session.getComputedHadh());
       response.setStatus(200);
     }
-    return;
   }
 
   @Override
-  protected void doGet(HttpServletRequest request, HttpServletResponse response)
+  protected void doGet(final HttpServletRequest request,
+                       final HttpServletResponse response)
       throws ServletException {
-    ExecutorService executor = Executors.newSingleThreadExecutor();
+    final ExecutorService executor = Executors.newSingleThreadExecutor();
     try {
-      Map<String, String> arguments = new HashMap<String, String>();
-      Enumeration<String> names = request.getParameterNames();
+      final Map<String, String> arguments = new HashMap<String, String>();
+      final Enumeration<String> names = request.getParameterNames();
       while (names.hasMoreElements()) {
-        String name = names.nextElement();
+        final String name = names.nextElement();
         arguments.put(name, request.getParameter(name));
       }
-      String filename = getFilename(arguments);
+      final String filename = getFilename(arguments);
       logger.debug("RECVGET: {}", filename);
       final HttpDownloadSession session =
           getDownloadSession(arguments, filename, false);
       logger.debug("SESSION: {}", session);
-      Callable<String> hashCompute = new Callable<String>() {
+      final Callable<String> hashCompute = new Callable<String>() {
         @Override
         public String call() {
           return session.getHash();
         }
       };
-      Future<String> future = executor.submit(hashCompute);
+      final Future<String> future = executor.submit(hashCompute);
       response.setHeader("Content-Disposition",
                          "attachment; filename=\"" + session.getFinalName() +
                          "\"");
@@ -122,7 +124,7 @@ public class DownloadServlet extends AbstractServlet {
       response.setHeader("Cache-Control",
                          "must-revalidate, post-check=0, " + "pre-check=0");
       // Used by javascript downloader
-      Cookie cookie = new Cookie("fileDownload", "true");
+      final Cookie cookie = new Cookie("fileDownload", "true");
       cookie.setHttpOnly(true);
       response.addCookie(cookie);
       response
@@ -130,9 +132,9 @@ public class DownloadServlet extends AbstractServlet {
       String hash = null;
       try {
         hash = future.get();
-      } catch (InterruptedException e) {
+      } catch (final InterruptedException e) {
         logger.debug(e);
-      } catch (ExecutionException e) {
+      } catch (final ExecutionException e) {
         logger.debug(e);
       }
       if (hash != null) {
@@ -148,7 +150,7 @@ public class DownloadServlet extends AbstractServlet {
           logger.info("NOT FOUND: {}", session);
           response.setStatus(HttpServletResponse.SC_NOT_FOUND);
         }
-      } catch (IOException e) {
+      } catch (final IOException e) {
         logger.error("Error: {}", session, e);
         response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
       }
@@ -157,14 +159,14 @@ public class DownloadServlet extends AbstractServlet {
     }
   }
 
-  private String getFilename(Map<String, String> arguments) {
+  private String getFilename(final Map<String, String> arguments) {
     return arguments.get(FILENAME);
   }
 
-  private HttpDownloadSession getDownloadSession(Map<String, String> arguments,
-                                                 String filename, boolean check)
-      throws ServletException {
-    String rulename = arguments.get(RULENAME);
+  private HttpDownloadSession getDownloadSession(
+      final Map<String, String> arguments, final String filename,
+      final boolean check) throws ServletException {
+    final String rulename = arguments.get(RULENAME);
     if (rulename == null) {
       throw new ServletException(INVALID_REQUEST_PARAMS);
     }
@@ -178,23 +180,23 @@ public class DownloadServlet extends AbstractServlet {
     }
 
     try {
-      HttpAuthent authent = authentClass.newInstance();
+      final HttpAuthent authent = authentClass.newInstance();
       authent.initializeAuthent(arguments);
       if (check) {
         try {
           return new HttpDownloadSession(identifier, authent);
-        } catch (WaarpDatabaseException e) {
+        } catch (final WaarpDatabaseException e) {
           logger.debug(e);
           return null;
         }
       }
       return new HttpDownloadSession(filename, rulename, identifier, comment,
                                      authent);
-    } catch (IllegalArgumentException e) {
+    } catch (final IllegalArgumentException e) {
       throw new ServletException(INVALID_REQUEST_PARAMS, e);
-    } catch (IllegalAccessException e) {
+    } catch (final IllegalAccessException e) {
       throw new ServletException(INVALID_REQUEST_PARAMS, e);
-    } catch (InstantiationException e) {
+    } catch (final InstantiationException e) {
       throw new ServletException(INVALID_REQUEST_PARAMS, e);
     }
   }

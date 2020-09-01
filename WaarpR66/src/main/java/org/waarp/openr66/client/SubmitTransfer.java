@@ -43,9 +43,11 @@ import static org.waarp.common.database.DbConstant.*;
  */
 public class SubmitTransfer extends AbstractTransfer {
 
-  public SubmitTransfer(R66Future future, String remoteHost, String filename,
-                        String rulename, String transferInfo, boolean isMD5,
-                        int blocksize, long id, Timestamp starttime) {
+  public SubmitTransfer(final R66Future future, final String remoteHost,
+                        final String filename, final String rulename,
+                        final String transferInfo, final boolean isMD5,
+                        final int blocksize, final long id,
+                        final Timestamp starttime) {
     super(SubmitTransfer.class, future, filename, rulename, transferInfo, isMD5,
           remoteHost, blocksize, id, starttime);
   }
@@ -63,7 +65,7 @@ public class SubmitTransfer extends AbstractTransfer {
       }
       final R66Result result =
           new R66Result(new OpenR66DatabaseGlobalException(), null, true,
-                        ErrorCode.Internal, taskRunner);
+                        ErrorCode.Internal, null);
       future.setResult(result);
       future.setFailure(result.getException());
       return;
@@ -118,7 +120,7 @@ public class SubmitTransfer extends AbstractTransfer {
    *     false(default) and the
    *     blocksize if different than default
    */
-  public static void main(String[] args) {
+  public static void main(final String[] args) {
     WaarpLoggerFactory
         .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));
     if (logger == null) {

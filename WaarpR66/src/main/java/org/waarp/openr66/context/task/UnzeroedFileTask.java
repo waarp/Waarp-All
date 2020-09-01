@@ -56,15 +56,15 @@ public class UnzeroedFileTask extends AbstractTask {
    * @param argTransfer
    * @param session
    */
-  public UnzeroedFileTask(String argRule, int delay, String argTransfer,
-                          R66Session session) {
+  public UnzeroedFileTask(final String argRule, final int delay,
+                          final String argTransfer, final R66Session session) {
     super(TaskType.UNZEROED, delay, argRule, argTransfer, session);
   }
 
   @Override
   public void run() {
     final File currentFile = session.getFile().getTrueFile();
-    final String toWrite = argRule.isEmpty()? " " : argRule;
+    final String toWrite = argRule == null || argRule.isEmpty()? " " : argRule;
     final String curpath =
         AbstractDir.normalizePath(currentFile.getAbsolutePath());
     if (currentFile.exists() && currentFile.length() == 0) {

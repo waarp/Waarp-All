@@ -39,7 +39,7 @@ public class ACCT extends AbstractCommand {
       throw new Reply501Exception("Need an account as argument");
     }
     final String account = getArg();
-    NextCommandReply nextCommandReply;
+    final NextCommandReply nextCommandReply;
     try {
       nextCommandReply = getSession().getAuth().setAccount(account);
     } catch (final Reply530Exception e) {

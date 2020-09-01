@@ -48,7 +48,8 @@ public class LocalExecServerInitializer
    *
    * @param eventExecutorGroup
    */
-  public LocalExecServerInitializer(EventExecutorGroup eventExecutorGroup) {
+  public LocalExecServerInitializer(
+      final EventExecutorGroup eventExecutorGroup) {
     this.eventExecutorGroup = eventExecutorGroup;
     channelGroup =
         new DefaultChannelGroup("LocalExecServer", eventExecutorGroup.next());
@@ -60,8 +61,8 @@ public class LocalExecServerInitializer
    * @param newdelay
    * @param eventExecutorGroup
    */
-  public LocalExecServerInitializer(long newdelay,
-                                    EventExecutorGroup eventExecutorGroup) {
+  public LocalExecServerInitializer(final long newdelay,
+                                    final EventExecutorGroup eventExecutorGroup) {
     delay = newdelay;
     this.eventExecutorGroup = eventExecutorGroup;
     channelGroup =
@@ -69,7 +70,7 @@ public class LocalExecServerInitializer
   }
 
   @Override
-  public void initChannel(SocketChannel ch) throws Exception {
+  public void initChannel(final SocketChannel ch) throws Exception {
     // Create a default pipeline implementation.
     final ChannelPipeline pipeline = ch.pipeline();
 
@@ -90,7 +91,7 @@ public class LocalExecServerInitializer
    *
    * @param channel
    */
-  public void addChannel(Channel channel) {
+  public void addChannel(final Channel channel) {
     channelGroup.add(channel);
   }
 

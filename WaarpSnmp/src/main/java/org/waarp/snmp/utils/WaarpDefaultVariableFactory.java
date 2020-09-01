@@ -40,8 +40,9 @@ public class WaarpDefaultVariableFactory
     implements WaarpInterfaceVariableFactory {
 
   @Override
-  public Variable getVariable(OID oid, int type, int mibLevel, int entry) {
-    Variable var;
+  public Variable getVariable(final OID oid, final int type, final int mibLevel,
+                              final int entry) {
+    final Variable var;
     switch (type) {
       case SMIConstants.SYNTAX_INTEGER:
         // case SMIConstants.SYNTAX_INTEGER32:

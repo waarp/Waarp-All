@@ -42,7 +42,7 @@ public class StopOrCancelJsonPacket extends JsonPacket {
   /**
    * @param requester the requester to set
    */
-  public void setRequester(String requester) {
+  public void setRequester(final String requester) {
     this.requester = requester;
   }
 
@@ -56,7 +56,7 @@ public class StopOrCancelJsonPacket extends JsonPacket {
   /**
    * @param requested the requested to set
    */
-  public void setRequested(String requested) {
+  public void setRequested(final String requested) {
     this.requested = requested;
   }
 
@@ -70,7 +70,7 @@ public class StopOrCancelJsonPacket extends JsonPacket {
   /**
    * @param specialid the specialid to set
    */
-  public void setSpecialid(long specialid) {
+  public void setSpecialid(final long specialid) {
     this.specialid = specialid;
   }
 

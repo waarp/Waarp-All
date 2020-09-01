@@ -55,15 +55,15 @@ public class NetworkSslServerInitializer
   /**
    * @param isClient True if this Factory is to be used in Client mode
    */
-  public NetworkSslServerInitializer(boolean isClient) {
+  public NetworkSslServerInitializer(final boolean isClient) {
     this.isClient = isClient;
   }
 
   @Override
-  protected void initChannel(SocketChannel ch) throws Exception {
+  protected void initChannel(final SocketChannel ch) throws Exception {
     final ChannelPipeline pipeline = ch.pipeline();
     // Add SSL handler first to encrypt and decrypt everything.
-    SslHandler sslHandler;
+    final SslHandler sslHandler;
     if (isClient) {
       // Not server: no clientAuthent, no renegotiation
       sslHandler = getWaarpSslContextFactory().initInitializer(false, false);
@@ -120,7 +120,7 @@ public class NetworkSslServerInitializer
    * @param waarpSslContextFactory the waarpSslContextFactory to set
    */
   public static void setWaarpSslContextFactory(
-      WaarpSslContextFactory waarpSslContextFactory) {
+      final WaarpSslContextFactory waarpSslContextFactory) {
     NetworkSslServerInitializer.waarpSslContextFactory = waarpSslContextFactory;
   }
 
@@ -135,7 +135,7 @@ public class NetworkSslServerInitializer
    * @param waarpSecureKeyStore the waarpSecureKeyStore to set
    */
   public static void setWaarpSecureKeyStore(
-      WaarpSecureKeyStore waarpSecureKeyStore) {
+      final WaarpSecureKeyStore waarpSecureKeyStore) {
     NetworkSslServerInitializer.waarpSecureKeyStore = waarpSecureKeyStore;
   }
 }

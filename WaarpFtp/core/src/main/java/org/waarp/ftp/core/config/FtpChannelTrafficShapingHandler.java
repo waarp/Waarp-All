@@ -31,7 +31,7 @@ public class FtpChannelTrafficShapingHandler
   /**
    * @param checkInterval
    */
-  public FtpChannelTrafficShapingHandler(long checkInterval) {
+  public FtpChannelTrafficShapingHandler(final long checkInterval) {
     super(checkInterval);
   }
 
@@ -39,7 +39,8 @@ public class FtpChannelTrafficShapingHandler
    * @param writeLimit
    * @param readLimit
    */
-  public FtpChannelTrafficShapingHandler(long writeLimit, long readLimit) {
+  public FtpChannelTrafficShapingHandler(final long writeLimit,
+                                         final long readLimit) {
     super(writeLimit, readLimit);
   }
 
@@ -48,8 +49,9 @@ public class FtpChannelTrafficShapingHandler
    * @param readLimit
    * @param checkInterval
    */
-  public FtpChannelTrafficShapingHandler(long writeLimit, long readLimit,
-                                         long checkInterval) {
+  public FtpChannelTrafficShapingHandler(final long writeLimit,
+                                         final long readLimit,
+                                         final long checkInterval) {
     super(writeLimit, readLimit, checkInterval);
   }
 
@@ -59,13 +61,15 @@ public class FtpChannelTrafficShapingHandler
    * @param checkInterval
    * @param maxTime
    */
-  public FtpChannelTrafficShapingHandler(long writeLimit, long readLimit,
-                                         long checkInterval, long maxTime) {
+  public FtpChannelTrafficShapingHandler(final long writeLimit,
+                                         final long readLimit,
+                                         final long checkInterval,
+                                         final long maxTime) {
     super(writeLimit, readLimit, checkInterval, maxTime);
   }
 
   @Override
-  protected long calculateSize(Object msg) {
+  protected long calculateSize(final Object msg) {
     if (msg instanceof DataBlock) {
       return ((DataBlock) msg).getByteCount();
     }

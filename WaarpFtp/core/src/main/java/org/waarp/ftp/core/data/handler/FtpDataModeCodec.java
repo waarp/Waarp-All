@@ -111,7 +111,8 @@ public class FtpDataModeCodec extends ByteToMessageCodec<DataBlock> {
    * @param mode
    * @param structure
    */
-  public FtpDataModeCodec(TransferMode mode, TransferStructure structure) {
+  public FtpDataModeCodec(final TransferMode mode,
+                          final TransferStructure structure) {
     this.mode = mode;
     this.structure = structure;
   }
@@ -124,7 +125,8 @@ public class FtpDataModeCodec extends ByteToMessageCodec<DataBlock> {
     codecLocked.setSuccess();
   }
 
-  protected DataBlock decodeRecordStandard(ByteBuf buf, int length) {
+  protected DataBlock decodeRecordStandard(final ByteBuf buf,
+                                           final int length) {
     final ByteBuf newbuf = ByteBufAllocator.DEFAULT.buffer(length, length);
     if (lastbyte == 0xFF) {
       if (readByteForDataBlock(buf, newbuf)) {
@@ -132,8 +134,8 @@ public class FtpDataModeCodec extends ByteToMessageCodec<DataBlock> {
       }
     }
     try {
-      while (true) { //NOSONAR
-        lastbyte = buf.readByte();
+      while (buf.readableBytes() > 0) {
+        lastbyte = buf.readUnsignedByte();
         if (lastbyte == 0xFF) {
           readByteForDataBlock(buf, newbuf);
         } else {
@@ -150,7 +152,7 @@ public class FtpDataModeCodec extends ByteToMessageCodec<DataBlock> {
 
   private boolean readByteForDataBlock(final ByteBuf buf,
                                        final ByteBuf newbuf) {
-    final int nextbyte = buf.readByte();
+    final int nextbyte = buf.readUnsignedByte();
     if (nextbyte == 0xFF) {
       newbuf.writeByte((byte) (lastbyte & 0xFF));
       return false;
@@ -167,8 +169,8 @@ public class FtpDataModeCodec extends ByteToMessageCodec<DataBlock> {
     }
   }
 
-  protected DataBlock decodeRecord(ByteBuf buf, int length) {
-    FtpSeekAheadData sad;
+  protected DataBlock decodeRecord(final ByteBuf buf, final int length) {
+    final FtpSeekAheadData sad;
     try {
       sad = new FtpSeekAheadData(buf);
     } catch (final SeekAheadNoBackArrayException e1) {
@@ -182,7 +184,7 @@ public class FtpDataModeCodec extends ByteToMessageCodec<DataBlock> {
     }
     try {
       while (sad.pos < sad.limit) {
-        lastbyte = sad.bytes[sad.pos++];
+        lastbyte = sad.bytes[sad.pos++] & 0xFF;
         if (lastbyte == 0xFF) {
           readBytesFromSad(sad, newbuf);
         } else {
@@ -200,7 +202,7 @@ public class FtpDataModeCodec extends ByteToMessageCodec<DataBlock> {
 
   private boolean readBytesFromSad(final FtpSeekAheadData sad,
                                    final ByteBuf newbuf) {
-    final int nextbyte = sad.bytes[sad.pos++];
+    final int nextbyte = sad.bytes[sad.pos++] & 0xFF;
     if (nextbyte == 0xFF) {
       newbuf.writeByte((byte) (lastbyte & 0xFF));
       return false;
@@ -218,8 +220,8 @@ public class FtpDataModeCodec extends ByteToMessageCodec<DataBlock> {
   }
 
   @Override
-  protected void decode(ChannelHandlerContext ctx, ByteBuf buf,
-                        List<Object> out) throws Exception {
+  protected void decode(final ChannelHandlerContext ctx, final ByteBuf buf,
+                        final List<Object> out) throws Exception {
     // First test if the connection is fully ready (block might be
     // transfered
     // by client before connection is ready)
@@ -304,13 +306,14 @@ public class FtpDataModeCodec extends ByteToMessageCodec<DataBlock> {
     throw new InvalidArgumentException("Mode unimplemented: " + mode.name());
   }
 
-  protected ByteBuf encodeRecordStandard(DataBlock msg, ByteBuf buffer) {
+  protected ByteBuf encodeRecordStandard(final DataBlock msg,
+                                         final ByteBuf buffer) {
     final int size = msg.getByteCount();
     final ByteBuf newbuf = ByteBufAllocator.DEFAULT.buffer(size, size);
     int newbyte;
     try {
-      while (true) { //NOSONAR
-        newbyte = buffer.readByte();
+      while (buffer.readableBytes() > 0) {
+        newbyte = buffer.readUnsignedByte();
         if (newbyte == 0xFF) {
           newbuf.writeByte((byte) 0xFF);
         }
@@ -334,8 +337,8 @@ public class FtpDataModeCodec extends ByteToMessageCodec<DataBlock> {
     return newbuf;
   }
 
-  protected ByteBuf encodeRecord(DataBlock msg, ByteBuf buffer) {
-    FtpSeekAheadData sad;
+  protected ByteBuf encodeRecord(final DataBlock msg, final ByteBuf buffer) {
+    final FtpSeekAheadData sad;
     try {
       sad = new FtpSeekAheadData(buffer);
     } catch (final SeekAheadNoBackArrayException e1) {
@@ -346,7 +349,7 @@ public class FtpDataModeCodec extends ByteToMessageCodec<DataBlock> {
     int newbyte;
     try {
       while (sad.pos < sad.limit) {
-        newbyte = sad.bytes[sad.pos++];
+        newbyte = sad.bytes[sad.pos++] & 0xFF;
         if (newbyte == 0xFF) {
           newbuf.writeByte((byte) 0xFF);
         }
@@ -380,7 +383,8 @@ public class FtpDataModeCodec extends ByteToMessageCodec<DataBlock> {
    *
    * @throws InvalidArgumentException
    */
-  protected ByteBuf encode(DataBlock msg) throws InvalidArgumentException {
+  protected ByteBuf encode(final DataBlock msg)
+      throws InvalidArgumentException {
     if (msg.isCleared()) {
       return null;
     }
@@ -467,7 +471,7 @@ public class FtpDataModeCodec extends ByteToMessageCodec<DataBlock> {
   /**
    * @param mode the mode to set
    */
-  public void setMode(TransferMode mode) {
+  public void setMode(final TransferMode mode) {
     this.mode = mode;
   }
 
@@ -481,13 +485,13 @@ public class FtpDataModeCodec extends ByteToMessageCodec<DataBlock> {
   /**
    * @param structure the structure to set
    */
-  public void setStructure(TransferStructure structure) {
+  public void setStructure(final TransferStructure structure) {
     this.structure = structure;
   }
 
   @Override
-  protected void encode(ChannelHandlerContext ctx, DataBlock msg, ByteBuf out)
-      throws Exception {
+  protected void encode(final ChannelHandlerContext ctx, final DataBlock msg,
+                        final ByteBuf out) throws Exception {
     // First test if the connection is fully ready (block might be
     // transfered
     // by client before connection is ready)

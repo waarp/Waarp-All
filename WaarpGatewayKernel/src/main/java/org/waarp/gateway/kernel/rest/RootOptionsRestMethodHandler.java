@@ -40,50 +40,55 @@ public class RootOptionsRestMethodHandler extends RestMethodHandler {
 
   public static final String ROOT = "root";
 
-  public RootOptionsRestMethodHandler(RestConfiguration config) {
+  public RootOptionsRestMethodHandler(final RestConfiguration config) {
     super(ROOT, "/", true, config, METHOD.OPTIONS);
   }
 
   @Override
-  public void checkHandlerSessionCorrectness(HttpRestHandler handler,
-                                             RestArgument arguments,
-                                             RestArgument result)
+  public void checkHandlerSessionCorrectness(final HttpRestHandler handler,
+                                             final RestArgument arguments,
+                                             final RestArgument result)
       throws HttpForbiddenRequestException {
     // nothing
   }
 
   @Override
-  public void getFileUpload(HttpRestHandler handler, FileUpload data,
-                            RestArgument arguments, RestArgument result)
+  public void getFileUpload(final HttpRestHandler handler,
+                            final FileUpload data, final RestArgument arguments,
+                            final RestArgument result)
       throws HttpIncorrectRequestException {
     // nothing
   }
 
   @Override
-  public Object getBody(HttpRestHandler handler, ByteBuf body,
-                        RestArgument arguments, RestArgument result)
+  public Object getBody(final HttpRestHandler handler, final ByteBuf body,
+                        final RestArgument arguments, final RestArgument result)
       throws HttpIncorrectRequestException {
     return null;
   }
 
   @Override
-  public void endParsingRequest(HttpRestHandler handler, RestArgument arguments,
-                                RestArgument result, Object body)
+  public void endParsingRequest(final HttpRestHandler handler,
+                                final RestArgument arguments,
+                                final RestArgument result, final Object body)
       throws HttpIncorrectRequestException, HttpInvalidAuthenticationException {
     // nothing
   }
 
   @Override
-  public ChannelFuture sendResponse(HttpRestHandler handler,
-                                    ChannelHandlerContext ctx,
-                                    RestArgument arguments, RestArgument result,
-                                    Object body, HttpResponseStatus status) {
+  public ChannelFuture sendResponse(final HttpRestHandler handler,
+                                    final ChannelHandlerContext ctx,
+                                    final RestArgument arguments,
+                                    final RestArgument result,
+                                    final Object body,
+                                    final HttpResponseStatus status) {
     return sendOptionsResponse(handler, ctx, result, status);
   }
 
   @Override
-  public void optionsCommand(HttpRestHandler handler, RestArgument arguments,
-                             RestArgument result) {
+  public void optionsCommand(final HttpRestHandler handler,
+                             final RestArgument arguments,
+                             final RestArgument result) {
     result.setCommand(COMMAND_TYPE.OPTIONS);
     final METHOD[] realmethods = METHOD.values();
     final boolean[] allMethods = new boolean[realmethods.length];

@@ -31,7 +31,7 @@ public class FtpUnknownFieldException extends Exception {
   /**
    * @param message
    */
-  public FtpUnknownFieldException(String message) {
+  public FtpUnknownFieldException(final String message) {
     super(message);
   }
 
@@ -39,7 +39,7 @@ public class FtpUnknownFieldException extends Exception {
    * @param message
    * @param cause
    */
-  public FtpUnknownFieldException(String message, Throwable cause) {
+  public FtpUnknownFieldException(final String message, final Throwable cause) {
     super(message, cause);
   }
 

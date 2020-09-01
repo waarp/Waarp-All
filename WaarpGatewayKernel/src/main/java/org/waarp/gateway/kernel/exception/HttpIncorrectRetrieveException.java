@@ -38,14 +38,14 @@ public class HttpIncorrectRetrieveException extends Exception {
   /**
    * @param arg0
    */
-  public HttpIncorrectRetrieveException(String arg0) {
+  public HttpIncorrectRetrieveException(final String arg0) {
     super(arg0);
   }
 
   /**
    * @param arg0
    */
-  public HttpIncorrectRetrieveException(Throwable arg0) {
+  public HttpIncorrectRetrieveException(final Throwable arg0) {
     super(arg0);
   }
 
@@ -53,7 +53,8 @@ public class HttpIncorrectRetrieveException extends Exception {
    * @param arg0
    * @param arg1
    */
-  public HttpIncorrectRetrieveException(String arg0, Throwable arg1) {
+  public HttpIncorrectRetrieveException(final String arg0,
+                                        final Throwable arg1) {
     super(arg0, arg1);
   }
 

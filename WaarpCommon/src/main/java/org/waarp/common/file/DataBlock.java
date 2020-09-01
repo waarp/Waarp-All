@@ -113,7 +113,7 @@ public class DataBlock {
    *
    * @param block the block to set
    */
-  public void setBlock(ByteBuf block) {
+  public void setBlock(final ByteBuf block) {
     if (isRESTART) {
       this.block = null;
       markers = new int[6];
@@ -142,7 +142,7 @@ public class DataBlock {
    *
    * @param block the block to set
    */
-  public void setBlock(byte[] block) {
+  public void setBlock(final byte[] block) {
     if (isRESTART) {
       this.block = null;
       markers = new int[6];
@@ -172,7 +172,7 @@ public class DataBlock {
   /**
    * @param byteCount the byteCount to set
    */
-  public void setByteCount(int byteCount) {
+  public void setByteCount(final int byteCount) {
     this.byteCount = byteCount;
   }
 
@@ -180,7 +180,7 @@ public class DataBlock {
    * @param upper upper byte of the 2 bytes length
    * @param lower lower byte of the 2 bytes length
    */
-  public void setByteCount(byte upper, byte lower) {
+  public void setByteCount(final byte upper, final byte lower) {
     byteCount = upper << 8 | (lower & 0xFF);
   }
 
@@ -208,7 +208,7 @@ public class DataBlock {
   /**
    * @param descriptor the descriptor to set
    */
-  public void setDescriptor(int descriptor) {
+  public void setDescriptor(final int descriptor) {
     this.descriptor = descriptor & 0xFF;
     isEOF = (this.descriptor & EOF) != 0;
     isEOR = (this.descriptor & EOR) != 0;
@@ -226,7 +226,7 @@ public class DataBlock {
   /**
    * @param isEOF the isEOF to set
    */
-  public void setEOF(boolean isEOF) {
+  public void setEOF(final boolean isEOF) {
     this.isEOF = isEOF;
     descriptor |= EOF;
   }
@@ -241,7 +241,7 @@ public class DataBlock {
   /**
    * @param isEOR the isEOR to set
    */
-  public void setEOR(boolean isEOR) {
+  public void setEOR(final boolean isEOR) {
     this.isEOR = isEOR;
     descriptor |= EOR;
   }
@@ -256,7 +256,7 @@ public class DataBlock {
   /**
    * @param isERROR the isERROR to set
    */
-  public void setERROR(boolean isERROR) {
+  public void setERROR(final boolean isERROR) {
     this.isERROR = isERROR;
     descriptor |= ERROR;
   }
@@ -271,7 +271,7 @@ public class DataBlock {
   /**
    * @param isRESTART the isRESTART to set
    */
-  public void setRESTART(boolean isRESTART) {
+  public void setRESTART(final boolean isRESTART) {
     this.isRESTART = isRESTART;
     descriptor |= RESTART;
   }
@@ -305,7 +305,7 @@ public class DataBlock {
    *
    * @param markers the markers to set
    */
-  public void setMarkers(int[] markers) {
+  public void setMarkers(final int[] markers) {
     this.markers = markers;
     byteCount = 6;
   }
@@ -348,7 +348,8 @@ public class DataBlock {
    *
    * @return the string
    */
-  public static String toBinaryString(byte[] bytes, boolean cutted) {
+  public static String toBinaryString(final byte[] bytes,
+                                      final boolean cutted) {
     final StringBuilder buffer = new StringBuilder();
     boolean first = true;
     for (final byte b : bytes) {

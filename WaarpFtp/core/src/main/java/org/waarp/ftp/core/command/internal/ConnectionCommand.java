@@ -35,7 +35,7 @@ public class ConnectionCommand extends AbstractCommand {
    *
    * @param session
    */
-  public ConnectionCommand(FtpSession session) {
+  public ConnectionCommand(final FtpSession session) {
     setArgs(session, "Connection", null, FtpCommandCode.Connection);
   }
 

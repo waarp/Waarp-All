@@ -109,7 +109,7 @@ public class WaarpUiPassword extends JFrame {
   /**
    * Auto-generated main method to display this JFrame
    */
-  public static void main(String[] args) {
+  public static void main(final String[] args) {
     if (!WaarpPassword.loadOptions(args)) {
       // Bad options
       System.exit(2);//NOSONAR
@@ -124,7 +124,7 @@ public class WaarpUiPassword extends JFrame {
     });
   }
 
-  protected WaarpUiPassword(boolean extended_ignore) throws Exception {
+  protected WaarpUiPassword(final boolean extended_ignore) throws Exception {
     extended = true;
     chooserKeyFile = new JFileChooser();
     filterKey = new FileNameExtensionFilter(
@@ -191,7 +191,7 @@ public class WaarpUiPassword extends JFrame {
     }
   }
 
-  public void exit(ActionEvent evt) {
+  public void exit(final ActionEvent evt) {
     if (passwordModified) {
       getSavePaswdAction().actionPerformed(evt);
     }
@@ -208,12 +208,12 @@ public class WaarpUiPassword extends JFrame {
       getContentPane().setLayout(thisLayout);
       addWindowListener(new WindowAdapter() {
         @Override
-        public void windowClosing(WindowEvent evt) {
+        public void windowClosing(final WindowEvent evt) {
           myself.exit(null);
         }
 
         @Override
-        public void windowClosed(WindowEvent evt) {
+        public void windowClosed(final WindowEvent evt) {
           myself.exit(null);
         }
       });
@@ -246,7 +246,7 @@ public class WaarpUiPassword extends JFrame {
             jPasswordFieldTxt = new JTextField();
             jPasswordFieldTxt.addFocusListener(new FocusAdapter() {
               @Override
-              public void focusLost(FocusEvent evt) {
+              public void focusLost(final FocusEvent evt) {
                 final String paswd = jPasswordFieldTxt.getText();
                 if (!paswd.equals(waarpPassword.getClearPassword())) {
                   try {
@@ -264,7 +264,7 @@ public class WaarpUiPassword extends JFrame {
             jPasswordField = new JPasswordField();
             jPasswordField.addFocusListener(new FocusAdapter() {
               @Override
-              public void focusLost(FocusEvent evt) {
+              public void focusLost(final FocusEvent evt) {
                 final String paswd = new String(jPasswordField.getPassword());
                 if (!paswd.equals(waarpPassword.getClearPassword())) {
                   try {
@@ -284,7 +284,7 @@ public class WaarpUiPassword extends JFrame {
           jTextFieldCryptedPassword = new JTextField();
           jTextFieldCryptedPassword.addFocusListener(new FocusAdapter() {
             @Override
-            public void focusLost(FocusEvent evt) {
+            public void focusLost(final FocusEvent evt) {
               final String paswd = jTextFieldCryptedPassword.getText();
               if (!paswd.equals(waarpPassword.getCryptedPassword())) {
                 try {
@@ -472,7 +472,7 @@ public class WaarpUiPassword extends JFrame {
         private static final long serialVersionUID = 7484447837851868127L;
 
         @Override
-        public void actionPerformed(ActionEvent evt) {
+        public void actionPerformed(final ActionEvent evt) {
           myself.exit(evt);
         }
       };
@@ -488,7 +488,7 @@ public class WaarpUiPassword extends JFrame {
     }
   }
 
-  private void setUncryptedPassword(String passwd) {
+  private void setUncryptedPassword(final String passwd) {
     if (WaarpPassword.clearPasswordView) {
       jPasswordFieldTxt.setText(passwd);
     } else {
@@ -521,7 +521,7 @@ public class WaarpUiPassword extends JFrame {
         private static final long serialVersionUID = -3840578648343599999L;
 
         @Override
-        public void actionPerformed(ActionEvent evt) {
+        public void actionPerformed(final ActionEvent evt) {
           jTextFieldPasswordFile.setText("");
           jTextFieldCryptedPassword.setText("");
           chooserKeyFile.setDialogType(JFileChooser.OPEN_DIALOG);
@@ -552,7 +552,7 @@ public class WaarpUiPassword extends JFrame {
         private static final long serialVersionUID = 10107370851157816L;
 
         @Override
-        public void actionPerformed(ActionEvent evt) {
+        public void actionPerformed(final ActionEvent evt) {
           try {
             waarpPassword.createNewKey();
           } catch (final Exception e) {
@@ -575,7 +575,7 @@ public class WaarpUiPassword extends JFrame {
         private static final long serialVersionUID = 4400661431842092244L;
 
         @Override
-        public void actionPerformed(ActionEvent evt) {
+        public void actionPerformed(final ActionEvent evt) {
           try {
             waarpPassword.saveKey(null);
           } catch (final CryptoException e) {
@@ -597,7 +597,7 @@ public class WaarpUiPassword extends JFrame {
         private static final long serialVersionUID = 565842888109816432L;
 
         @Override
-        public void actionPerformed(ActionEvent evt) {
+        public void actionPerformed(final ActionEvent evt) {
           chooserKeyFile.setDialogType(JFileChooser.SAVE_DIALOG);
           final int response = chooserKeyFile.showSaveDialog(rootPane);
           if (response == JFileChooser.APPROVE_OPTION) {
@@ -633,7 +633,7 @@ public class WaarpUiPassword extends JFrame {
         private static final long serialVersionUID = -3100726446117809610L;
 
         @Override
-        public void actionPerformed(ActionEvent evt) {
+        public void actionPerformed(final ActionEvent evt) {
           chooserPwdFile.setDialogType(JFileChooser.OPEN_DIALOG);
           final int response = chooserPwdFile.showOpenDialog(rootPane);
           if (response == JFileChooser.APPROVE_OPTION) {
@@ -667,7 +667,7 @@ public class WaarpUiPassword extends JFrame {
         private static final long serialVersionUID = -5712120697650940845L;
 
         @Override
-        public void actionPerformed(ActionEvent evt) {
+        public void actionPerformed(final ActionEvent evt) {
           chooserPwdFile.setDialogType(JFileChooser.SAVE_DIALOG);
           final int response = chooserPwdFile.showSaveDialog(rootPane);
           if (response == JFileChooser.APPROVE_OPTION) {
@@ -700,7 +700,7 @@ public class WaarpUiPassword extends JFrame {
         private static final long serialVersionUID = -8528091873190483826L;
 
         @Override
-        public void actionPerformed(ActionEvent evt) {
+        public void actionPerformed(final ActionEvent evt) {
           getJDialogHelp().setVisible(true);
         }
       };
@@ -793,7 +793,7 @@ public class WaarpUiPassword extends JFrame {
         private static final long serialVersionUID = -2310092372166868386L;
 
         @Override
-        public void actionPerformed(ActionEvent evt) {
+        public void actionPerformed(final ActionEvent evt) {
           getJDialogHelp().dispose();
         }
       };

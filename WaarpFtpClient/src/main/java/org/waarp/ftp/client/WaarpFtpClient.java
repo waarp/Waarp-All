@@ -61,7 +61,6 @@ public class WaarpFtpClient {
   final int ssl; // -1 native, 1 auth
   protected final FTPClient ftpClient;
   protected String result;
-  private boolean binaryTransfer = true;
 
   /**
    * WARNING: SSL mode (FTPS and FTPSE) are not working due to a bug in Apache
@@ -76,9 +75,10 @@ public class WaarpFtpClient {
    * @param ssl
    * @param timeout
    */
-  public WaarpFtpClient(String server, int port, String user, String pwd,
-                        String acct, boolean isPassive, int ssl,
-                        int controlTimeout, int timeout) {
+  public WaarpFtpClient(final String server, final int port, final String user,
+                        final String pwd, final String acct,
+                        final boolean isPassive, final int ssl,
+                        final int controlTimeout, final int timeout) {
     this.server = server;
     this.port = port;
     this.user = user;
@@ -222,7 +222,7 @@ public class WaarpFtpClient {
    *
    * @return True if created
    */
-  public boolean makeDir(String newDir) {
+  public boolean makeDir(final String newDir) {
     result = null;
     try {
       return ftpClient.makeDirectory(newDir);
@@ -240,7 +240,7 @@ public class WaarpFtpClient {
    *
    * @return True if the change is OK
    */
-  public boolean changeDir(String newDir) {
+  public boolean changeDir(final String newDir) {
     result = null;
     try {
       return ftpClient.changeWorkingDirectory(newDir);
@@ -254,13 +254,12 @@ public class WaarpFtpClient {
   /**
    * Change the FileType of Transfer (Binary true, ASCII false)
    *
-   * @param binaryTransfer1
+   * @param binaryTransfer
    *
    * @return True if the change is OK
    */
-  public boolean changeFileType(boolean binaryTransfer1) {
+  public boolean changeFileType(final boolean binaryTransfer) {
     result = null;
-    binaryTransfer = binaryTransfer1;
     try {
       if (binaryTransfer) {
         return ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
@@ -279,7 +278,7 @@ public class WaarpFtpClient {
    *
    * @param passive
    */
-  public void changeMode(boolean passive) {
+  public void changeMode(final boolean passive) {
     isPassive = passive;
     if (isPassive) {
       ftpClient.enterLocalPassiveMode();
@@ -298,10 +297,10 @@ public class WaarpFtpClient {
    *
    * @return True if the file is correctly transfered
    */
-  public boolean transferFile(String local, String remote,
-                              int getStoreOrAppend) {
+  public boolean transferFile(final String local, final String remote,
+                              final int getStoreOrAppend) {
     result = null;
-    boolean status;
+    final boolean status;
     FileOutputStream output = null;
     FileInputStream fileInputStream = null;
     try {
@@ -363,7 +362,7 @@ public class WaarpFtpClient {
    *
    * @return True if the feature is listed
    */
-  public boolean featureEnabled(String feature) {
+  public boolean featureEnabled(final String feature) {
     try {
       SysErrLogger.FAKE_LOGGER.sysout(ftpClient.features());
       if (ftpClient.featureValue(feature) == null) {
@@ -383,7 +382,7 @@ public class WaarpFtpClient {
    *
    * @return the string lines returned by the command params
    */
-  public String[] executeCommand(String params) {
+  public String[] executeCommand(final String params) {
     result = null;
     try {
       SysErrLogger.FAKE_LOGGER.sysout(params);
@@ -412,7 +411,7 @@ public class WaarpFtpClient {
    *
    * @return the string lines returned by the SITE command params
    */
-  public String[] executeSiteCommand(String params) {
+  public String[] executeSiteCommand(final String params) {
     result = null;
     try {
       SysErrLogger.FAKE_LOGGER.sysout("SITE " + params);

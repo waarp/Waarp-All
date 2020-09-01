@@ -66,7 +66,7 @@ public abstract class FilesystemBasedAuthImpl implements AuthInterface {
   /**
    * @param session
    */
-  protected FilesystemBasedAuthImpl(SessionInterface session) {
+  protected FilesystemBasedAuthImpl(final SessionInterface session) {
     this.session = session;
     isIdentified = false;
   }
@@ -111,7 +111,7 @@ public abstract class FilesystemBasedAuthImpl implements AuthInterface {
    *     authentication
    */
   @Override
-  public NextCommandReply setUser(String user)
+  public NextCommandReply setUser(final String user)
       throws Reply421Exception, Reply530Exception {
     final NextCommandReply next = setBusinessUser(user);
     this.user = user;
@@ -162,7 +162,7 @@ public abstract class FilesystemBasedAuthImpl implements AuthInterface {
    *     authentication
    */
   @Override
-  public NextCommandReply setPassword(String password)
+  public NextCommandReply setPassword(final String password)
       throws Reply421Exception, Reply530Exception {
     final NextCommandReply next = setBusinessPassword(password);
     this.password = password;
@@ -178,7 +178,7 @@ public abstract class FilesystemBasedAuthImpl implements AuthInterface {
    *
    * @param isIdentified
    */
-  protected void setIsIdentified(boolean isIdentified) {
+  protected void setIsIdentified(final boolean isIdentified) {
     this.isIdentified = isIdentified;
   }
 
@@ -253,7 +253,7 @@ public abstract class FilesystemBasedAuthImpl implements AuthInterface {
    *
    * @return the full path as a String
    */
-  public String getAbsolutePath(String path) {
+  public String getAbsolutePath(final String path) {
     if (path == null || path.isEmpty()) {
       return getBaseDirectory();
     }
@@ -269,7 +269,7 @@ public abstract class FilesystemBasedAuthImpl implements AuthInterface {
    * @return the relative path from a file
    */
   @Override
-  public String getRelativePath(String file) {
+  public String getRelativePath(final String file) {
     // Work around Windows path '\'
     return DOUBLE_SLASH.matcher(
         file.replaceFirst(AbstractDir.normalizePath(getBaseDirectory()), ""))

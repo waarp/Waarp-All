@@ -69,11 +69,12 @@ public class MultipleSubmitTransfer extends SubmitTransfer {
   protected final NetworkTransaction networkTransaction;
   private final List<OutputFormat> results = new ArrayList<OutputFormat>();
 
-  public MultipleSubmitTransfer(R66Future future, String remoteHost,
-                                String filename, String rulename,
-                                String fileinfo, boolean isMD5, int blocksize,
-                                long id, Timestamp starttime,
-                                NetworkTransaction networkTransaction) {
+  public MultipleSubmitTransfer(final R66Future future, final String remoteHost,
+                                final String filename, final String rulename,
+                                final String fileinfo, final boolean isMD5,
+                                final int blocksize, final long id,
+                                final Timestamp starttime,
+                                final NetworkTransaction networkTransaction) {
     super(future, remoteHost, filename, rulename, fileinfo, isMD5, blocksize,
           id, starttime);
     this.networkTransaction = networkTransaction;
@@ -116,14 +117,14 @@ public class MultipleSubmitTransfer extends SubmitTransfer {
     }
     for (String host : rhosts) {
       host = host.trim();
-      if (host != null && !host.isEmpty()) {
+      if (!host.isEmpty()) {
         if (!submit && dbrule.isRecvMode()) {
           files =
               getRemoteFiles(dbrule, localfilenames, host, networkTransaction);
         }
         for (String filename : files) {
           filename = filename.trim();
-          if (filename != null && !filename.isEmpty()) {
+          if (!filename.isEmpty()) {
             final R66Future future = new R66Future(true);
             final SubmitTransfer transaction =
                 new SubmitTransfer(future, host, filename,
@@ -177,7 +178,7 @@ public class MultipleSubmitTransfer extends SubmitTransfer {
    *     false(default) and the
    *     blocksize if different than default
    */
-  public static void main(String[] args) {
+  public static void main(final String[] args) {
     WaarpLoggerFactory
         .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));
     if (logger == null) {
@@ -296,7 +297,7 @@ public class MultipleSubmitTransfer extends SubmitTransfer {
   /**
    * @param errorMultiple the errorMultiple to set
    */
-  private void setErrorMultiple(int errorMultiple) {
+  private void setErrorMultiple(final int errorMultiple) {
     this.errorMultiple = errorMultiple;
   }
 
@@ -310,7 +311,7 @@ public class MultipleSubmitTransfer extends SubmitTransfer {
   /**
    * @param doneMultiple the doneMultiple to set
    */
-  private void setDoneMultiple(int doneMultiple) {
+  private void setDoneMultiple(final int doneMultiple) {
     this.doneMultiple = doneMultiple;
   }
 

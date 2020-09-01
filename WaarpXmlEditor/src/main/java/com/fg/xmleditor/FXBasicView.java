@@ -107,7 +107,7 @@ public class FXBasicView extends JComponent implements FXModelStatusListener {
   final JMenuItem mNS;
   SearchDialog searchDialog;
 
-  public FXBasicView(FXModel model) {
+  public FXBasicView(final FXModel model) {
     this.model = null;
     viewListeners = new Vector<FXViewStatusListener>();
     innerListener = new InnerListener();
@@ -182,25 +182,26 @@ public class FXBasicView extends JComponent implements FXModelStatusListener {
     this(null);
   }
 
-  public static void stopCellEditing(JComponent editor) {
+  public static void stopCellEditing(final JComponent editor) {
     FTree.stopCellEditing(editor);
   }
 
-  public static void cancelCellEditing(JComponent editor) {
+  public static void cancelCellEditing(final JComponent editor) {
     FTree.cancelCellEditing(editor);
   }
 
-  public static void cellEditorValueChanged(JComponent editor, Object event) {
+  public static void cellEditorValueChanged(final JComponent editor,
+                                            final Object event) {
     FTree.cellEditorValueChanged(editor, event);
   }
 
-  static boolean hasValue(FToggleNode node) {
+  static boolean hasValue(final FToggleNode node) {
     final XSRef ref = (XSRef) node.getAssociate();
     return ref.hasValue();
   }
 
   @Override
-  public void newDocumentLoaded(FXStatusEvent e) {
+  public void newDocumentLoaded(final FXStatusEvent e) {
     if (e.getStatus()) {
       tree.setNodeExpanded(model.getRoot(), true);
     }
@@ -215,7 +216,7 @@ public class FXBasicView extends JComponent implements FXModelStatusListener {
     setMoveDown(false);
   }
 
-  void setInsert(boolean insert) {
+  void setInsert(final boolean insert) {
     if (insert == this.insert) {
       return;
     }
@@ -228,7 +229,7 @@ public class FXBasicView extends JComponent implements FXModelStatusListener {
 
   }
 
-  void setRemove(boolean remove) {
+  void setRemove(final boolean remove) {
     if (remove == this.remove) {
       return;
     }
@@ -241,7 +242,7 @@ public class FXBasicView extends JComponent implements FXModelStatusListener {
 
   }
 
-  void setMoveUp(boolean moveUp) {
+  void setMoveUp(final boolean moveUp) {
     if (moveUp == this.moveUp) {
       return;
     }
@@ -254,7 +255,7 @@ public class FXBasicView extends JComponent implements FXModelStatusListener {
 
   }
 
-  void setMoveDown(boolean moveDown) {
+  void setMoveDown(final boolean moveDown) {
     if (moveDown == this.moveDown) {
       return;
     }
@@ -268,7 +269,7 @@ public class FXBasicView extends JComponent implements FXModelStatusListener {
   }
 
   @Override
-  public void docValidityStatusChanged(FXStatusEvent fxstatusevent) {
+  public void docValidityStatusChanged(final FXStatusEvent fxstatusevent) {
     // nothing
   }
 
@@ -306,7 +307,7 @@ public class FXBasicView extends JComponent implements FXModelStatusListener {
     mSelect.addActionListener(new ActionListener() {
 
       @Override
-      public void actionPerformed(ActionEvent e) {
+      public void actionPerformed(final ActionEvent e) {
         if (innerListener.treeNode != null) {
           tree.setSelectedPath(innerListener.treeNode.getPath());
         }
@@ -318,7 +319,7 @@ public class FXBasicView extends JComponent implements FXModelStatusListener {
     mUnselect.addActionListener(new ActionListener() {
 
       @Override
-      public void actionPerformed(ActionEvent e) {
+      public void actionPerformed(final ActionEvent e) {
         tree.setSelectedPath(null);
       }
 
@@ -329,7 +330,7 @@ public class FXBasicView extends JComponent implements FXModelStatusListener {
     mInsBefore.addActionListener(new ActionListener() {
 
       @Override
-      public void actionPerformed(ActionEvent e) {
+      public void actionPerformed(final ActionEvent e) {
         insertNodeBefore();
       }
 
@@ -339,7 +340,7 @@ public class FXBasicView extends JComponent implements FXModelStatusListener {
     mInsAfter.addActionListener(new ActionListener() {
 
       @Override
-      public void actionPerformed(ActionEvent e) {
+      public void actionPerformed(final ActionEvent e) {
         insertNodeAfter();
       }
 
@@ -350,7 +351,7 @@ public class FXBasicView extends JComponent implements FXModelStatusListener {
     mRemove.addActionListener(new ActionListener() {
 
       @Override
-      public void actionPerformed(ActionEvent e) {
+      public void actionPerformed(final ActionEvent e) {
         removeNode();
       }
 
@@ -361,7 +362,7 @@ public class FXBasicView extends JComponent implements FXModelStatusListener {
     mMoveUp.addActionListener(new ActionListener() {
 
       @Override
-      public void actionPerformed(ActionEvent e) {
+      public void actionPerformed(final ActionEvent e) {
         moveNodeUp();
       }
 
@@ -371,7 +372,7 @@ public class FXBasicView extends JComponent implements FXModelStatusListener {
     mMoveDown.addActionListener(new ActionListener() {
 
       @Override
-      public void actionPerformed(ActionEvent e) {
+      public void actionPerformed(final ActionEvent e) {
         moveNodeDown();
       }
 
@@ -382,7 +383,7 @@ public class FXBasicView extends JComponent implements FXModelStatusListener {
     mNS.addActionListener(new ActionListener() {
 
       @Override
-      public void actionPerformed(ActionEvent e) {
+      public void actionPerformed(final ActionEvent e) {
         showNSQualifiersDialog();
       }
 
@@ -393,7 +394,7 @@ public class FXBasicView extends JComponent implements FXModelStatusListener {
     mFindInvalid.addActionListener(new ActionListener() {
 
       @Override
-      public void actionPerformed(ActionEvent e) {
+      public void actionPerformed(final ActionEvent e) {
         showInvalidNode();
       }
 
@@ -403,7 +404,7 @@ public class FXBasicView extends JComponent implements FXModelStatusListener {
     mFindNode.addActionListener(new ActionListener() {
 
       @Override
-      public void actionPerformed(ActionEvent e) {
+      public void actionPerformed(final ActionEvent e) {
         showSearchDialog();
       }
 
@@ -411,11 +412,11 @@ public class FXBasicView extends JComponent implements FXModelStatusListener {
     popup.add(mFindNode);
   }
 
-  public void addExternalDialog(String id, JDialog dialog) {
+  public void addExternalDialog(final String id, final JDialog dialog) {
     tree.addDialog(id, dialog);
   }
 
-  public void removeExternalDialog(String id) {
+  public void removeExternalDialog(final String id) {
     tree.removeDialog(id);
   }
 
@@ -424,7 +425,7 @@ public class FXBasicView extends JComponent implements FXModelStatusListener {
   }
 
   @Override
-  public void setBackground(Color color) {
+  public void setBackground(final Color color) {
     super.setBackground(color);
     if (tree != null) {
       tree.setBackground(color);
@@ -438,7 +439,7 @@ public class FXBasicView extends JComponent implements FXModelStatusListener {
     return tree.isReducedView();
   }
 
-  public void setReducedView(boolean reduced) {
+  public void setReducedView(final boolean reduced) {
     tree.setReducedView(reduced);
     final FToggleNode node = (FToggleNode) tree.getSelectedNode();
     if (node == null) {
@@ -450,7 +451,7 @@ public class FXBasicView extends JComponent implements FXModelStatusListener {
     }
   }
 
-  void setEditorFlags(FToggleNode parent, FToggleNode node) {
+  void setEditorFlags(final FToggleNode parent, final FToggleNode node) {
     final int count = parent.getRealChildCount();
     final XSRef ref = (XSRef) parent.getAssociate();
     final boolean b = !tree.isReducedView();
@@ -477,21 +478,21 @@ public class FXBasicView extends JComponent implements FXModelStatusListener {
     return tree.cancelEditing();
   }
 
-  public void showInfoMessage(String message) {
+  public void showInfoMessage(final String message) {
     nodesInfoArea.setText(message);
   }
 
-  public void showErrorMessage(String message) {
+  public void showErrorMessage(final String message) {
     errorInfoArea.setText(message);
   }
 
-  public void addViewStatusListener(FXViewStatusListener l) {
+  public void addViewStatusListener(final FXViewStatusListener l) {
     if (!viewListeners.contains(l)) {
       viewListeners.addElement(l);
     }
   }
 
-  public void removeViewStatusListener(FXViewStatusListener l) {
+  public void removeViewStatusListener(final FXViewStatusListener l) {
     viewListeners.removeElement(l);
   }
 
@@ -624,7 +625,7 @@ public class FXBasicView extends JComponent implements FXModelStatusListener {
     }
   }
 
-  void setDialogLocation(JDialog dlg) {
+  void setDialogLocation(final JDialog dlg) {
     final Dimension scrSize = Toolkit.getDefaultToolkit().getScreenSize();
     final Dimension size = getSize();
     final Dimension dlgSize = dlg.getSize();
@@ -653,7 +654,7 @@ public class FXBasicView extends JComponent implements FXModelStatusListener {
     dlg.setVisible(true);
   }
 
-  int[] createPath(FBasicNode treeNode) {
+  int[] createPath(final FBasicNode treeNode) {
     final Vector<FBasicNode> v = new Vector<FBasicNode>();
     for (FBasicNode node = treeNode; node != null;
          node = (FBasicNode) node.getParent()) {
@@ -672,7 +673,8 @@ public class FXBasicView extends JComponent implements FXModelStatusListener {
     return path;
   }
 
-  FToggleNode getInvalidNode(FToggleNode parent, int[] startPath, int level) {
+  FToggleNode getInvalidNode(final FToggleNode parent, final int[] startPath,
+                             final int level) {
     final int startIndex = startPath[level];
     FToggleNode node;
     for (int i = startIndex; i < parent.getRealChildCount(); i++) {
@@ -761,7 +763,7 @@ public class FXBasicView extends JComponent implements FXModelStatusListener {
     }
 
     @Override
-    public void nodeWillExpand(FTreeNodeEvent e) {
+    public void nodeWillExpand(final FTreeNodeEvent e) {
       FToggleNode node = (FToggleNode) e.getTreeNode();
       node = (FToggleNode) node.getSubstituteNode();
       if (node != null && model.populateNode(node)) {
@@ -772,18 +774,18 @@ public class FXBasicView extends JComponent implements FXModelStatusListener {
     }
 
     @Override
-    public void nodeWillCollapse(FTreeNodeEvent ftreenodeevent) {
+    public void nodeWillCollapse(final FTreeNodeEvent ftreenodeevent) {
       // nothing
     }
 
     @Override
-    public void nodeExpanded(FTreeNodeEvent e) {
+    public void nodeExpanded(final FTreeNodeEvent e) {
       if (isSelectedNodeShowingChanged(e)) {
         selectedNodeShown();
       }
     }
 
-    boolean isSelectedNodeShowingChanged(FTreeNodeEvent expansionEvent) {
+    boolean isSelectedNodeShowingChanged(final FTreeNodeEvent expansionEvent) {
       final FToggleNode selNode = (FToggleNode) tree.getSelectedNode();
       if (selNode == null) {
         return false;
@@ -829,7 +831,7 @@ public class FXBasicView extends JComponent implements FXModelStatusListener {
     }
 
     @Override
-    public void nodeCollapsed(FTreeNodeEvent e) {
+    public void nodeCollapsed(final FTreeNodeEvent e) {
       if (isSelectedNodeShowingChanged(e)) {
         selectedNodeHidden();
       }
@@ -842,7 +844,7 @@ public class FXBasicView extends JComponent implements FXModelStatusListener {
     }
 
     @Override
-    public void enteredExpansBar(FTreeNodeEvent e) {
+    public void enteredExpansBar(final FTreeNodeEvent e) {
       final FToggleNode node = (FToggleNode) e.getTreeNode();
       final FToggleNode parent = (FToggleNode) node.getParent();
       String text = "  Folder: ";
@@ -865,17 +867,17 @@ public class FXBasicView extends JComponent implements FXModelStatusListener {
     }
 
     @Override
-    public void exitedExpansBar(FTreeNodeEvent e) {
+    public void exitedExpansBar(final FTreeNodeEvent e) {
       mouseInfo.setText("  Folder:");
     }
 
     @Override
-    public void cellEditingStarted(FTreeEditorEvent ftreeeditorevent) {
+    public void cellEditingStarted(final FTreeEditorEvent ftreeeditorevent) {
       // nothing
     }
 
     @Override
-    public void cellEditingWillStop(FTreeEditorEvent e) {
+    public void cellEditingWillStop(final FTreeEditorEvent e) {
       if (e.isCanceled()) {
         return;
       }
@@ -899,19 +901,19 @@ public class FXBasicView extends JComponent implements FXModelStatusListener {
       }
     }
 
-    boolean equal(Object a, Object b) {
+    boolean equal(final Object a, final Object b) {
       return a == null && b == null || a != null && a.equals(b);
     }
 
     @Override
-    public void cellEditingStopped(FTreeEditorEvent e) {
+    public void cellEditingStopped(final FTreeEditorEvent e) {
       if (e.isCanceled()) {
         selectedNodeShown();
       }
     }
 
     @Override
-    public void cellEditorValueChanged(FTreeEditorEvent e) {
+    public void cellEditorValueChanged(final FTreeEditorEvent e) {
       FToggleNode node = (FToggleNode) e.getTreeNode();
       node = (FToggleNode) node.getSubstituteNode();
       if (node == null) {
@@ -932,7 +934,7 @@ public class FXBasicView extends JComponent implements FXModelStatusListener {
     }
 
     @Override
-    public void treeActionPerformed(FTreeActionEvent e) {
+    public void treeActionPerformed(final FTreeActionEvent e) {
       if (e.containsAction(1)) {
         final FToggleNode node = (FToggleNode) e.getTreeNode();
         model.toggleSelectionChanged(node);
@@ -940,21 +942,21 @@ public class FXBasicView extends JComponent implements FXModelStatusListener {
     }
 
     @Override
-    public void nodeSelected(FTreeNodeEvent e) {
+    public void nodeSelected(final FTreeNodeEvent e) {
       selectedNodeShown();
     }
 
     @Override
-    public void nodeUnselected(FTreeNodeEvent e) {
+    public void nodeUnselected(final FTreeNodeEvent e) {
       selectedNodeHidden();
     }
 
     @Override
-    public void mousePressed(MouseEvent e) {
+    public void mousePressed(final MouseEvent e) {
       showPopup(e);
     }
 
-    void showPopup(MouseEvent e) {
+    void showPopup(final MouseEvent e) {
       if (e.isPopupTrigger()) {
         treeNode = (FToggleNode) tree.getNodeAt(e.getX(), e.getY());
         final boolean b =
@@ -976,22 +978,22 @@ public class FXBasicView extends JComponent implements FXModelStatusListener {
     }
 
     @Override
-    public void mouseClicked(MouseEvent mouseevent) {
+    public void mouseClicked(final MouseEvent mouseevent) {
       // nothing
     }
 
     @Override
-    public void mouseReleased(MouseEvent e) {
+    public void mouseReleased(final MouseEvent e) {
       showPopup(e);
     }
 
     @Override
-    public void mouseEntered(MouseEvent mouseevent) {
+    public void mouseEntered(final MouseEvent mouseevent) {
       // nothing
     }
 
     @Override
-    public void mouseExited(MouseEvent mouseevent) {
+    public void mouseExited(final MouseEvent mouseevent) {
       // nothing
     }
   }

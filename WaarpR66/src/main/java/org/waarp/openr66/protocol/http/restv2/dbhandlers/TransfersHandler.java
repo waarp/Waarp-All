@@ -88,7 +88,7 @@ public class TransfersHandler extends AbstractRestDbHandler {
    *
    * @param crud the CRUD mask for this handler
    */
-  public TransfersHandler(byte crud) {
+  public TransfersHandler(final byte crud) {
     super(crud);
   }
 
@@ -121,27 +121,28 @@ public class TransfersHandler extends AbstractRestDbHandler {
   @GET
   @Consumes(APPLICATION_FORM_URLENCODED)
   @RequiredRole(ROLE.READONLY)
-  public void filterTransfer(HttpRequest request, HttpResponder responder,
+  public void filterTransfer(final HttpRequest request,
+                             final HttpResponder responder,
                              @QueryParam(LIMIT) @DefaultValue("20")
-                                 String limitStr,
+                             final String limitStr,
                              @QueryParam(OFFSET) @DefaultValue("0")
-                                 String offsetStr,
+                             final String offsetStr,
                              @QueryParam(ORDER) @DefaultValue("ascId")
-                                 String orderStr,
+                             final String orderStr,
                              @QueryParam(RULE_ID) @DefaultValue("")
-                                 String ruleID,
+                             final String ruleID,
                              @QueryParam(PARTNER) @DefaultValue("")
-                                 String partner,
+                             final String partner,
                              @QueryParam(STATUS) @DefaultValue("")
-                                 String statusStr,
+                             final String statusStr,
                              @QueryParam(FILENAME) @DefaultValue("")
-                                 String filename,
+                             final String filename,
                              @QueryParam(START_TRANS) @DefaultValue("")
-                                 String startTrans,
+                             final String startTrans,
                              @QueryParam(STOP_TRANS) @DefaultValue("")
-                                 String stopTrans,
+                             final String stopTrans,
                              @QueryParam(FOLLOW_ID) @DefaultValue("")
-                                 String followId) {
+                             final String followId) {
 
     final ArrayList<RestError> errors = new ArrayList<RestError>();
 
@@ -242,7 +243,8 @@ public class TransfersHandler extends AbstractRestDbHandler {
   @POST
   @Consumes(APPLICATION_JSON)
   @RequiredRole(ROLE.TRANSFER)
-  public void createTransfer(HttpRequest request, HttpResponder responder) {
+  public void createTransfer(final HttpRequest request,
+                             final HttpResponder responder) {
 
     final ObjectNode requestObject = JsonUtils.deserializeRequest(request);
     final Transfer transfer =
@@ -281,7 +283,8 @@ public class TransfersHandler extends AbstractRestDbHandler {
   @OPTIONS
   @Consumes(WILDCARD)
   @RequiredRole(ROLE.NOACCESS)
-  public void options(HttpRequest request, HttpResponder responder) {
+  public void options(final HttpRequest request,
+                      final HttpResponder responder) {
     responder.sendStatus(OK, OPTIONS_HEADERS);
   }
 }

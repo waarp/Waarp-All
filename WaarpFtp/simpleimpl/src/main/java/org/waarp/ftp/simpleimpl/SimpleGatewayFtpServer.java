@@ -35,17 +35,13 @@ import org.waarp.ftp.simpleimpl.data.FileSystemBasedDataBusinessHandler;
  * FileInterface implementation (Filesystem based).
  */
 public class SimpleGatewayFtpServer {
-  /**
-   * Internal Logger
-   */
-  private static WaarpLogger logger;
 
   /**
    * Take a simple XML file as configuration.
    *
    * @param args
    */
-  public static void main(String[] args) {
+  public static void main(final String[] args) {
     if (args.length != 1) {
       SysErrLogger.FAKE_LOGGER.syserr(
           "Usage: " + SimpleGatewayFtpServer.class.getName() +
@@ -54,7 +50,11 @@ public class SimpleGatewayFtpServer {
     }
     WaarpLoggerFactory
         .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));
-    logger = WaarpLoggerFactory.getLogger(SimpleGatewayFtpServer.class);
+    /**
+     * Internal Logger
+     */
+    final WaarpLogger logger =
+        WaarpLoggerFactory.getLogger(SimpleGatewayFtpServer.class);
     final String config = args[0];
     final FileBasedConfiguration configuration =
         new FileBasedConfiguration(SimpleGatewayFtpServer.class,

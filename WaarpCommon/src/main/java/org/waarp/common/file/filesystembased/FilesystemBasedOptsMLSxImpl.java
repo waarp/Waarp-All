@@ -92,11 +92,12 @@ public class FilesystemBasedOptsMLSxImpl implements OptsMLSxInterface {
    * @param optsMediaType
    * @param optsCharset
    */
-  public FilesystemBasedOptsMLSxImpl(byte optsSize, byte optsModify,
-                                     byte optsType, byte optsPerm,
-                                     byte optsCreate, byte optsUnique,
-                                     byte optsLang, byte optsMediaType,
-                                     byte optsCharset) {
+  public FilesystemBasedOptsMLSxImpl(final byte optsSize, final byte optsModify,
+                                     final byte optsType, final byte optsPerm,
+                                     final byte optsCreate,
+                                     final byte optsUnique, final byte optsLang,
+                                     final byte optsMediaType,
+                                     final byte optsCharset) {
     this.optsSize = optsSize;
     this.optsModify = optsModify;
     this.optsType = optsType;
@@ -120,7 +121,7 @@ public class FilesystemBasedOptsMLSxImpl implements OptsMLSxInterface {
    * @param optsCharset the optsCharset to set
    */
   @Override
-  public void setOptsCharset(byte optsCharset) {
+  public void setOptsCharset(final byte optsCharset) {
     this.optsCharset = optsCharset;
   }
 
@@ -136,7 +137,7 @@ public class FilesystemBasedOptsMLSxImpl implements OptsMLSxInterface {
    * @param optsCreate the optsCreate to set
    */
   @Override
-  public void setOptsCreate(byte optsCreate) {
+  public void setOptsCreate(final byte optsCreate) {
     this.optsCreate = optsCreate;
   }
 
@@ -152,7 +153,7 @@ public class FilesystemBasedOptsMLSxImpl implements OptsMLSxInterface {
    * @param optsLang the optsLang to set
    */
   @Override
-  public void setOptsLang(byte optsLang) {
+  public void setOptsLang(final byte optsLang) {
     this.optsLang = optsLang;
   }
 
@@ -168,7 +169,7 @@ public class FilesystemBasedOptsMLSxImpl implements OptsMLSxInterface {
    * @param optsMediaType the optsMediaType to set
    */
   @Override
-  public void setOptsMediaType(byte optsMediaType) {
+  public void setOptsMediaType(final byte optsMediaType) {
     this.optsMediaType = optsMediaType;
   }
 
@@ -184,7 +185,7 @@ public class FilesystemBasedOptsMLSxImpl implements OptsMLSxInterface {
    * @param optsModify the optsModify to set
    */
   @Override
-  public void setOptsModify(byte optsModify) {
+  public void setOptsModify(final byte optsModify) {
     this.optsModify = optsModify;
   }
 
@@ -200,7 +201,7 @@ public class FilesystemBasedOptsMLSxImpl implements OptsMLSxInterface {
    * @param optsPerm the optsPerm to set
    */
   @Override
-  public void setOptsPerm(byte optsPerm) {
+  public void setOptsPerm(final byte optsPerm) {
     this.optsPerm = optsPerm;
   }
 
@@ -216,7 +217,7 @@ public class FilesystemBasedOptsMLSxImpl implements OptsMLSxInterface {
    * @param optsSize the optsSize to set
    */
   @Override
-  public void setOptsSize(byte optsSize) {
+  public void setOptsSize(final byte optsSize) {
     this.optsSize = optsSize;
   }
 
@@ -232,7 +233,7 @@ public class FilesystemBasedOptsMLSxImpl implements OptsMLSxInterface {
    * @param optsType the optsType to set
    */
   @Override
-  public void setOptsType(byte optsType) {
+  public void setOptsType(final byte optsType) {
     this.optsType = optsType;
   }
 
@@ -248,7 +249,7 @@ public class FilesystemBasedOptsMLSxImpl implements OptsMLSxInterface {
    * @param optsUnique the optsUnique to set
    */
   @Override
-  public void setOptsUnique(byte optsUnique) {
+  public void setOptsUnique(final byte optsUnique) {
     this.optsUnique = optsUnique;
   }
 

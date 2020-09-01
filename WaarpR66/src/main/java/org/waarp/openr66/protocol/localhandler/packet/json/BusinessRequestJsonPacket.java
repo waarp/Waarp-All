@@ -43,7 +43,7 @@ public class BusinessRequestJsonPacket extends JsonPacket {
   /**
    * @param isValidated the isValidated to set
    */
-  public void setValidated(boolean isValidated) {
+  public void setValidated(final boolean isValidated) {
     this.isValidated = isValidated;
   }
 
@@ -57,7 +57,7 @@ public class BusinessRequestJsonPacket extends JsonPacket {
   /**
    * @param isToApplied the isToApplied to set
    */
-  public void setToApplied(boolean isToApplied) {
+  public void setToApplied(final boolean isToApplied) {
     this.isToApplied = isToApplied;
   }
 
@@ -71,7 +71,7 @@ public class BusinessRequestJsonPacket extends JsonPacket {
   /**
    * @param className the className to set
    */
-  public void setClassName(String className) {
+  public void setClassName(final String className) {
     this.className = className;
   }
 
@@ -85,7 +85,7 @@ public class BusinessRequestJsonPacket extends JsonPacket {
   /**
    * @param arguments the arguments to set
    */
-  public void setArguments(String arguments) {
+  public void setArguments(final String arguments) {
     this.arguments = arguments;
   }
 
@@ -99,7 +99,7 @@ public class BusinessRequestJsonPacket extends JsonPacket {
   /**
    * @param extraArguments the extraArguments to set
    */
-  public void setExtraArguments(String extraArguments) {
+  public void setExtraArguments(final String extraArguments) {
     this.extraArguments = extraArguments;
   }
 
@@ -113,7 +113,7 @@ public class BusinessRequestJsonPacket extends JsonPacket {
   /**
    * @param delay the delay to set
    */
-  public void setDelay(int delay) {
+  public void setDelay(final int delay) {
     this.delay = delay;
   }
 

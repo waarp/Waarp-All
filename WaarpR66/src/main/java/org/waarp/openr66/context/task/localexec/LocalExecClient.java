@@ -99,8 +99,9 @@ public class LocalExecClient {
    * @param delay
    * @param futureCompletion
    */
-  public void runOneCommand(String command, long delay, boolean waitFor,
-                            WaarpFuture futureCompletion) {
+  public void runOneCommand(final String command, final long delay,
+                            final boolean waitFor,
+                            final WaarpFuture futureCompletion) {
     // Initialize the command context
     final LocalExecClientHandler clientHandler =
         (LocalExecClientHandler) channel.pipeline().last();

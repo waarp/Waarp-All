@@ -62,7 +62,7 @@ public class XMLBusinessDAO implements BusinessDAO {
 
   private final File file;
 
-  public XMLBusinessDAO(String filePath) throws DAOConnectionException {
+  public XMLBusinessDAO(final String filePath) throws DAOConnectionException {
     file = new File(filePath);
   }
 
@@ -72,7 +72,7 @@ public class XMLBusinessDAO implements BusinessDAO {
   }
 
   @Override
-  public void delete(Business business) throws DAOConnectionException {
+  public void delete(final Business business) throws DAOConnectionException {
     dbR66BusinessHashMap.remove(business.getHostid());
   }
 
@@ -115,7 +115,7 @@ public class XMLBusinessDAO implements BusinessDAO {
   }
 
   @Override
-  public boolean exist(String hostid) throws DAOConnectionException {
+  public boolean exist(final String hostid) throws DAOConnectionException {
     if (dbR66BusinessHashMap.containsKey(hostid)) {
       return true;
     }
@@ -147,18 +147,18 @@ public class XMLBusinessDAO implements BusinessDAO {
   }
 
   @Override
-  public List<Business> find(List<Filter> fitlers)
+  public List<Business> find(final List<Filter> fitlers)
       throws DAOConnectionException {
     throw new DAOConnectionException("Operation not supported on XML DAO");
   }
 
   @Override
-  public void insert(Business business) throws DAOConnectionException {
+  public void insert(final Business business) throws DAOConnectionException {
     dbR66BusinessHashMap.put(business.getHostid(), business);
   }
 
   @Override
-  public Business select(String hostid)
+  public Business select(final String hostid)
       throws DAOConnectionException, DAONoDataException {
     Business business = dbR66BusinessHashMap.get(hostid);
     if (business != null) {
@@ -197,11 +197,11 @@ public class XMLBusinessDAO implements BusinessDAO {
   }
 
   @Override
-  public void update(Business business) throws DAOConnectionException {
+  public void update(final Business business) throws DAOConnectionException {
     dbR66BusinessHashMap.put(business.getHostid(), business);
   }
 
-  private Business getFromNode(Node parent) {
+  private Business getFromNode(final Node parent) {
     final Business res = new Business();
 
     final NodeList children = parent.getChildNodes();

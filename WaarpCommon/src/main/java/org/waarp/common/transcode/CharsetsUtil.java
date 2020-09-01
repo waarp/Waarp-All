@@ -61,7 +61,7 @@ public final class CharsetsUtil {
   /**
    * @param args
    */
-  public static void main(String[] args) {
+  public static void main(final String[] args) {
     int format = 1; // TEXT
     boolean transcode = false;
     String fromFilename = null;
@@ -104,7 +104,7 @@ public final class CharsetsUtil {
   /**
    * @param format 0 = html, 1 = text, 2 = csv
    */
-  public static void printOutCharsetsAvailable(int format) {
+  public static void printOutCharsetsAvailable(final int format) {
     final SortedMap<String, Charset> map = Charset.availableCharsets();
     final Set<Entry<String, Charset>> set = map.entrySet();
     switch (format) {
@@ -124,7 +124,7 @@ public final class CharsetsUtil {
     }
     for (final Entry<String, Charset> entry : set) {
       final Charset charset = entry.getValue();
-      StringBuilder aliases = null;
+      final StringBuilder aliases;
       switch (format) {
         case 0:
           aliases = new StringBuilder("<ul>");
@@ -200,9 +200,11 @@ public final class CharsetsUtil {
    *
    * @return True if OK, else False (will log the reason)
    */
-  public static boolean transcode(String srcFilename, String fromCharset,
-                                  String toFilename, String toCharset,
-                                  int bufferSize) {
+  public static boolean transcode(final String srcFilename,
+                                  final String fromCharset,
+                                  final String toFilename,
+                                  final String toCharset,
+                                  final int bufferSize) {
     boolean success = false;
     final File from = new File(srcFilename);
     final File to = new File(toFilename);

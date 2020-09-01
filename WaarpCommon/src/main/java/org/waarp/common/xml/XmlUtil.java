@@ -61,7 +61,7 @@ public final class XmlUtil {
    * @return the newly created SAXReader
    */
   public static SAXReader getNewSaxReader() {
-    SAXReader saxReader = new SAXReader();
+    final SAXReader saxReader = new SAXReader();
     try {
       saxReader.setFeature(
           "http://apache.org/xml/features/nonvalidating/load-dtd-grammar",
@@ -79,7 +79,7 @@ public final class XmlUtil {
                       false);
       saxReader.setFeature(
           "http://apache.org/xml/features/validation/id-idref-checking", false);
-    } catch (SAXException e) {
+    } catch (final SAXException e) {
       //Parse with external resources downloading allowed.
     }
     return saxReader;
@@ -93,7 +93,7 @@ public final class XmlUtil {
    * @throws IOException
    * @throws DocumentException
    */
-  public static Document getDocument(String filename)
+  public static Document getDocument(final String filename)
       throws IOException, DocumentException {
     final File file = new File(filename);
     if (!file.canRead()) {
@@ -110,7 +110,7 @@ public final class XmlUtil {
    * @throws IOException
    * @throws DocumentException
    */
-  public static Document getDocument(File file)
+  public static Document getDocument(final File file)
       throws IOException, DocumentException {
     if (!file.canRead()) {
       throw new IOException("File is not readable: " + file.getPath());
@@ -128,7 +128,7 @@ public final class XmlUtil {
    *
    * @throws DocumentException
    */
-  public static Document readDocument(String document)
+  public static Document readDocument(final String document)
       throws DocumentException {
     return DocumentHelper.parseText(document);
   }
@@ -138,7 +138,7 @@ public final class XmlUtil {
    *
    * @return the document as an XML string
    */
-  public static String writeToString(Document document) {
+  public static String writeToString(final Document document) {
     return document.asXML();
   }
 
@@ -147,7 +147,7 @@ public final class XmlUtil {
    *
    * @return the element as an XML string
    */
-  public static String writeToString(Element element) {
+  public static String writeToString(final Element element) {
     return element.asXML();
   }
 
@@ -166,8 +166,8 @@ public final class XmlUtil {
    *
    * @throws IOException
    */
-  public static void saveDocument(String filename, Document document)
-      throws IOException {
+  public static void saveDocument(final String filename,
+                                  final Document document) throws IOException {
     final File file = new File(filename);
     saveDocument(file, document);
   }
@@ -180,7 +180,7 @@ public final class XmlUtil {
    *
    * @throws IOException
    */
-  public static void saveDocument(File file, Document document)
+  public static void saveDocument(final File file, final Document document)
       throws IOException {
     if (file.exists() && !file.canWrite()) {
       throw new IOException("File is not writable: " + file.getPath());
@@ -197,8 +197,8 @@ public final class XmlUtil {
    *
    * @throws IOException
    */
-  public static void saveDocument(Writer outWriter, Document document)
-      throws IOException {
+  public static void saveDocument(final Writer outWriter,
+                                  final Document document) throws IOException {
     final OutputFormat format = OutputFormat.createPrettyPrint();
     format.setEncoding(WaarpStringUtils.UTF8.name());
     final XMLWriter writer = new XMLWriter(outWriter, format);
@@ -215,7 +215,7 @@ public final class XmlUtil {
    *
    * @throws IOException
    */
-  public static void saveElement(String filename, Element element)
+  public static void saveElement(final String filename, final Element element)
       throws IOException {
     final File file = new File(filename);
     saveElement(file, element);
@@ -229,7 +229,7 @@ public final class XmlUtil {
    *
    * @throws IOException
    */
-  public static void saveElement(File file, Element element)
+  public static void saveElement(final File file, final Element element)
       throws IOException {
     if (file.exists() && !file.canWrite()) {
       throw new IOException("File is not writable: " + file.getPath());
@@ -247,7 +247,7 @@ public final class XmlUtil {
    *
    * @return the root Element from the document
    */
-  public static Element getRootElement(Document document) {
+  public static Element getRootElement(final Document document) {
     return document.getRootElement();
   }
 
@@ -262,8 +262,8 @@ public final class XmlUtil {
    *
    * @return the new added or already existing element with new value
    */
-  public static Element addOrSetElement(Element ref, String path,
-                                        String value) {
+  public static Element addOrSetElement(final Element ref, final String path,
+                                        final String value) {
     final Element current = addOrGetElement(ref, path);
     current.setText(value);
     return current;
@@ -278,7 +278,7 @@ public final class XmlUtil {
    *
    * @return the new added or already existing element
    */
-  public static Element addOrGetElement(Element ref, String path) {
+  public static Element addOrGetElement(final Element ref, final String path) {
     final String[] pathes = path.split("/");
     Element current = ref;
     for (final String nodename : pathes) {
@@ -304,8 +304,9 @@ public final class XmlUtil {
    *
    * @return the new added element with value
    */
-  public static Element addAndSetElementMultiple(Element ref, String path,
-                                                 String value) {
+  public static Element addAndSetElementMultiple(final Element ref,
+                                                 final String path,
+                                                 final String value) {
     final Element current = addAndGetElementMultiple(ref, path);
     current.setText(value);
     return current;
@@ -319,7 +320,8 @@ public final class XmlUtil {
    *
    * @return the new added element
    */
-  public static Element addAndGetElementMultiple(Element ref, String path) {
+  public static Element addAndGetElementMultiple(final Element ref,
+                                                 final String path) {
     final String[] pathes = path.split("/");
     Element current = ref;
     for (int i = 0; i < pathes.length - 1; i++) {
@@ -349,7 +351,7 @@ public final class XmlUtil {
    *
    * @throws DocumentException
    */
-  public static Element getParentElement(Element ref, String path)
+  public static Element getParentElement(final Element ref, final String path)
       throws DocumentException {
     String npath = path;
     while (npath.charAt(0) == '/') {
@@ -371,7 +373,7 @@ public final class XmlUtil {
    *
    * @throws DocumentException
    */
-  public static Element getElement(Element ref, String path)
+  public static Element getElement(final Element ref, final String path)
       throws DocumentException {
     String npath = path;
     while (npath.charAt(0) == '/') {
@@ -393,8 +395,8 @@ public final class XmlUtil {
    *
    * @throws DocumentException
    */
-  @SuppressWarnings("unchecked")
-  public static List<Node> getElementMultiple(Element ref, String path)
+  public static List<Node> getElementMultiple(final Element ref,
+                                              final String path)
       throws DocumentException {
     String npath = path;
     while (npath.charAt(0) == '/') {
@@ -417,8 +419,8 @@ public final class XmlUtil {
    *
    * @return the new added or already existing element with new value
    */
-  public static Element addOrSetElement(Document doc, String path,
-                                        String value) {
+  public static Element addOrSetElement(final Document doc, final String path,
+                                        final String value) {
     final Element current = addOrGetElement(doc, path);
     if (current != null) {
       current.setText(value);
@@ -435,7 +437,7 @@ public final class XmlUtil {
    *
    * @return the new added or already existing element
    */
-  public static Element addOrGetElement(Document doc, String path) {
+  public static Element addOrGetElement(final Document doc, final String path) {
     final String[] pathes = path.split("/");
     int rank;
     for (rank = 0; rank < pathes.length; rank++) {
@@ -474,8 +476,9 @@ public final class XmlUtil {
    *
    * @return the new added element with value
    */
-  public static Element addAndSetElementMultiple(Document doc, String path,
-                                                 String value) {
+  public static Element addAndSetElementMultiple(final Document doc,
+                                                 final String path,
+                                                 final String value) {
     final Element current = addAndGetElementMultiple(doc, path);
     if (current != null) {
       current.setText(value);
@@ -491,7 +494,8 @@ public final class XmlUtil {
    *
    * @return the new added element
    */
-  public static Element addAndGetElementMultiple(Document doc, String path) {
+  public static Element addAndGetElementMultiple(final Document doc,
+                                                 final String path) {
     final String[] pathes = path.split("/");
     int rank;
     for (rank = 0; rank < pathes.length; rank++) {
@@ -538,7 +542,7 @@ public final class XmlUtil {
    *
    * @throws DocumentException
    */
-  public static Element getParentElement(Document doc, String path)
+  public static Element getParentElement(final Document doc, final String path)
       throws DocumentException {
     final Element current = (Element) doc.selectSingleNode(path);
     if (current == null) {
@@ -555,7 +559,7 @@ public final class XmlUtil {
    *
    * @throws DocumentException
    */
-  public static Element getElement(Document doc, String path)
+  public static Element getElement(final Document doc, final String path)
       throws DocumentException {
     final Element current = (Element) doc.selectSingleNode(path);
     if (current == null) {
@@ -572,8 +576,8 @@ public final class XmlUtil {
    *
    * @throws DocumentException
    */
-  @SuppressWarnings("unchecked")
-  public static List<Node> getElementMultiple(Document doc, String path)
+  public static List<Node> getElementMultiple(final Document doc,
+                                              final String path)
       throws DocumentException {
     final List<Node> list = doc.selectNodes(path);
     if (list == null || list.isEmpty()) {
@@ -589,7 +593,7 @@ public final class XmlUtil {
    *
    * @return the trimed string
    */
-  public static String getExtraTrimed(String string) {
+  public static String getExtraTrimed(final String string) {
     return string.replaceAll("^[\\s]*|[\\s]*$", "");
   }
 
@@ -601,8 +605,8 @@ public final class XmlUtil {
    *
    * @return XmlValues
    */
-  public static XmlValue[] read(Document doc, XmlDecl[] decls) {
-    XmlValue[] values;
+  public static XmlValue[] read(final Document doc, final XmlDecl[] decls) {
+    final XmlValue[] values;
     final int len = decls.length;
     values = new XmlValue[len];
     for (int i = 0; i < len; i++) {
@@ -610,7 +614,7 @@ public final class XmlUtil {
       values[i] = value;
       if (decls[i].isSubXml()) {
         if (decls[i].isMultiple()) {
-          List<Node> elts;
+          final List<Node> elts;
           try {
             elts = getElementMultiple(doc, decls[i].getXmlPath());
           } catch (final DocumentException e) {
@@ -629,7 +633,7 @@ public final class XmlUtil {
             }
           }
         } else {
-          Element element;
+          final Element element;
           try {
             element = getElement(doc, decls[i].getXmlPath());
           } catch (final DocumentException e) {
@@ -646,7 +650,7 @@ public final class XmlUtil {
           }
         }
       } else if (decls[i].isMultiple()) {
-        List<Node> elts;
+        final List<Node> elts;
         try {
           elts = getElementMultiple(doc, decls[i].getXmlPath());
         } catch (final DocumentException e) {
@@ -663,7 +667,7 @@ public final class XmlUtil {
           }
         }
       } else {
-        Element element;
+        final Element element;
         try {
           element = getElement(doc, decls[i].getXmlPath());
         } catch (final DocumentException e) {
@@ -688,8 +692,8 @@ public final class XmlUtil {
    *
    * @return XmlValues
    */
-  public static XmlValue[] read(Element ref, XmlDecl[] decls) {
-    XmlValue[] values;
+  public static XmlValue[] read(final Element ref, final XmlDecl[] decls) {
+    final XmlValue[] values;
     final int len = decls.length;
     values = new XmlValue[len];
     for (int i = 0; i < len; i++) {
@@ -697,7 +701,7 @@ public final class XmlUtil {
       values[i] = value;
       if (decls[i].isSubXml()) {
         if (decls[i].isMultiple()) {
-          List<Node> elts;
+          final List<Node> elts;
           try {
             elts = getElementMultiple(ref, decls[i].getXmlPath());
           } catch (final DocumentException e) {
@@ -716,7 +720,7 @@ public final class XmlUtil {
             }
           }
         } else {
-          Element element;
+          final Element element;
           try {
             element = getElement(ref, decls[i].getXmlPath());
           } catch (final DocumentException e) {
@@ -733,7 +737,7 @@ public final class XmlUtil {
           }
         }
       } else if (decls[i].isMultiple()) {
-        List<Node> elts;
+        final List<Node> elts;
         try {
           elts = getElementMultiple(ref, decls[i].getXmlPath());
         } catch (final DocumentException e) {
@@ -750,7 +754,7 @@ public final class XmlUtil {
           }
         }
       } else {
-        Element element;
+        final Element element;
         try {
           element = getElement(ref, decls[i].getXmlPath());
         } catch (final DocumentException e) {
@@ -774,7 +778,7 @@ public final class XmlUtil {
    * @param values
    */
   @SuppressWarnings("unchecked")
-  public static void write(Document doc, XmlValue[] values) {
+  public static void write(final Document doc, final XmlValue[] values) {
     for (final XmlValue value : values) {
       if (value != null) {
         if (value.isSubXml()) {
@@ -809,7 +813,7 @@ public final class XmlUtil {
    * @param values
    */
   @SuppressWarnings("unchecked")
-  public static void write(Element ref, XmlValue[] values) {
+  public static void write(final Element ref, final XmlValue[] values) {
     for (final XmlValue value : values) {
       if (value != null) {
         if (value.isSubXml()) {
@@ -846,15 +850,15 @@ public final class XmlUtil {
    *
    * @throws IOException
    */
-  public static void writeXML(String filename, String encoding,
-                              Document document) throws IOException {
+  public static void writeXML(final String filename, final String encoding,
+                              final Document document) throws IOException {
     final OutputFormat format = OutputFormat.createPrettyPrint();
     if (encoding != null) {
       format.setEncoding(encoding);
     } else {
       format.setEncoding(WaarpStringUtils.UTF8.name());
     }
-    XMLWriter writer;
+    final XMLWriter writer;
     writer = new XMLWriter(new FileWriter(filename), format);
     writer.write(document);
     try {

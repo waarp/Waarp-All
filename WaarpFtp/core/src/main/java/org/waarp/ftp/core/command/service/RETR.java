@@ -54,7 +54,7 @@ public class RETR extends AbstractCommand {
       // FtpFile does not exist
       throw new Reply450Exception("Retrieve operation not allowed");
     }
-    logger.debug("Filename not allowed: " + file);
+    logger.debug("Filename not allowed: " + filename);
     // FtpFile name not allowed
     throw new Reply550Exception("Filename not allowed");
   }

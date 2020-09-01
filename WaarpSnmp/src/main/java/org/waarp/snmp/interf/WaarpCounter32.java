@@ -46,7 +46,7 @@ public abstract class WaarpCounter32 extends Counter32 {
     setInternalValue();
   }
 
-  protected WaarpCounter32(long value) {
+  protected WaarpCounter32(final long value) {
     setInternalValue(value);
   }
 

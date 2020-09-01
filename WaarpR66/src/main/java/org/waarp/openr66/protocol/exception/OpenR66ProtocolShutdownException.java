@@ -39,21 +39,22 @@ public class OpenR66ProtocolShutdownException extends OpenR66Exception {
    * @param arg0
    * @param arg1
    */
-  public OpenR66ProtocolShutdownException(String arg0, Throwable arg1) {
+  public OpenR66ProtocolShutdownException(final String arg0,
+                                          final Throwable arg1) {
     super(arg0, arg1);
   }
 
   /**
    * @param arg0
    */
-  public OpenR66ProtocolShutdownException(String arg0) {
+  public OpenR66ProtocolShutdownException(final String arg0) {
     super(arg0);
   }
 
   /**
    * @param arg0
    */
-  public OpenR66ProtocolShutdownException(Throwable arg0) {
+  public OpenR66ProtocolShutdownException(final Throwable arg0) {
     super(arg0);
   }
 

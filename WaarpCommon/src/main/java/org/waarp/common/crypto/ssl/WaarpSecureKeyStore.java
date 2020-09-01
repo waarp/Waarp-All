@@ -76,7 +76,6 @@ public class WaarpSecureKeyStore {
   private String keyStorePasswd;
   private String keyPassword;
   private WaarpSecureTrustManagerFactory secureTrustManagerFactory;
-  private String trustStoreFilename;
   private KeyStore keyTrustStore;
   private String trustStorePasswd;
 
@@ -88,8 +87,8 @@ public class WaarpSecureKeyStore {
    *
    * @throws CryptoException
    */
-  public WaarpSecureKeyStore(String keyStorePasswd, String keyPassword)
-      throws CryptoException {
+  public WaarpSecureKeyStore(final String keyStorePasswd,
+                             final String keyPassword) throws CryptoException {
     this.keyStorePasswd = keyStorePasswd;
     this.keyPassword = keyPassword;
     try {
@@ -126,8 +125,9 @@ public class WaarpSecureKeyStore {
    *
    * @throws CryptoException
    */
-  public WaarpSecureKeyStore(String keyStoreFilename, String keyStorePasswd,
-                             String keyPassword) throws CryptoException {
+  public WaarpSecureKeyStore(final String keyStoreFilename,
+                             final String keyStorePasswd,
+                             final String keyPassword) throws CryptoException {
     initKeyStore(keyStoreFilename, keyStorePasswd, keyPassword);
   }
 
@@ -146,9 +146,12 @@ public class WaarpSecureKeyStore {
    *
    * @throws CryptoException
    */
-  public WaarpSecureKeyStore(String keyStoreFilename, String keyStorePasswd,
-                             String keyPassword, String trustStoreFilename,
-                             String trustStorePasswd, boolean needClientAuthent)
+  public WaarpSecureKeyStore(final String keyStoreFilename,
+                             final String keyStorePasswd,
+                             final String keyPassword,
+                             final String trustStoreFilename,
+                             final String trustStorePasswd,
+                             final boolean needClientAuthent)
       throws CryptoException {
     // Create the KeyStore
     initKeyStore(keyStoreFilename, keyStorePasswd, keyPassword);
@@ -169,8 +172,9 @@ public class WaarpSecureKeyStore {
    *
    * @throws CryptoException
    */
-  public void initKeyStore(String keystoreFilename, String keystorePasswd,
-                           String keyPasswordNew) throws CryptoException {
+  public void initKeyStore(final String keystoreFilename,
+                           final String keystorePasswd,
+                           final String keyPasswordNew) throws CryptoException {
     keyStoreFilename = keystoreFilename;
     keyStorePasswd = keystorePasswd;
     keyPassword = keyPasswordNew;
@@ -237,7 +241,7 @@ public class WaarpSecureKeyStore {
    *
    * @return True if entry is deleted
    */
-  public boolean deleteKeyFromKeyStore(String alias) {
+  public boolean deleteKeyFromKeyStore(final String alias) {
     try {
       keyStore.deleteEntry(alias);
     } catch (final KeyStoreException e) {
@@ -256,7 +260,8 @@ public class WaarpSecureKeyStore {
    *
    * @return True if entry is added
    */
-  public boolean setKeytoKeyStore(String alias, Key key, Certificate[] chain) {
+  public boolean setKeytoKeyStore(final String alias, final Key key,
+                                  final Certificate[] chain) {
     try {
       keyStore.setKeyEntry(alias, key, getCertificatePassword(), chain);
     } catch (final KeyStoreException e) {
@@ -273,7 +278,7 @@ public class WaarpSecureKeyStore {
    *
    * @return True if keyStore is saved to file
    */
-  public boolean saveKeyStore(String filename) {
+  public boolean saveKeyStore(final String filename) {
     FileOutputStream fos = null;
     try {
       fos = new FileOutputStream(filename);
@@ -312,9 +317,10 @@ public class WaarpSecureKeyStore {
    *
    * @throws CryptoException
    */
-  public void initTrustStore(String truststoreFilename, String truststorePasswd,
-                             boolean needClientAuthent) throws CryptoException {
-    trustStoreFilename = truststoreFilename;
+  public void initTrustStore(final String truststoreFilename,
+                             final String truststorePasswd,
+                             final boolean needClientAuthent)
+      throws CryptoException {
     trustStorePasswd = truststorePasswd;
     try {
       keyTrustStore = KeyStore.getInstance("JKS");
@@ -325,7 +331,7 @@ public class WaarpSecureKeyStore {
     }
     FileInputStream inputStream = null;
     try {
-      inputStream = new FileInputStream(trustStoreFilename);
+      inputStream = new FileInputStream(truststoreFilename);
       keyTrustStore.load(inputStream, getKeyTrustStorePassword());
     } catch (final NoSuchAlgorithmException e) {
       logger.error(CANNOT_CREATE_TRUST_MANAGER_FACTORY_INSTANCE, e);
@@ -346,7 +352,7 @@ public class WaarpSecureKeyStore {
     } finally {
       FileUtils.close(inputStream);
     }
-    TrustManagerFactory trustManagerFactory;
+    final TrustManagerFactory trustManagerFactory;
     try {
       trustManagerFactory = TrustManagerFactory
           .getInstance(KeyManagerFactory.getDefaultAlgorithm());
@@ -413,7 +419,7 @@ public class WaarpSecureKeyStore {
    *
    * @return True if entry is deleted
    */
-  public boolean deleteKeyFromTrustStore(String alias) {
+  public boolean deleteKeyFromTrustStore(final String alias) {
     try {
       keyStore.deleteEntry(alias);
     } catch (final KeyStoreException e) {
@@ -431,7 +437,8 @@ public class WaarpSecureKeyStore {
    *
    * @return True if entry is added
    */
-  public boolean setKeytoTrustStore(String alias, Certificate cert) {
+  public boolean setKeytoTrustStore(final String alias,
+                                    final Certificate cert) {
     try {
       keyStore.setCertificateEntry(alias, cert);
     } catch (final KeyStoreException e) {
@@ -448,7 +455,7 @@ public class WaarpSecureKeyStore {
    *
    * @return True if keyTrustStore is saved to file
    */
-  public boolean saveTrustStore(String filename) {
+  public boolean saveTrustStore(final String filename) {
     FileOutputStream fos = null;
     try {
       fos = new FileOutputStream(filename);
@@ -486,7 +493,7 @@ public class WaarpSecureKeyStore {
    * @throws CertificateException
    * @throws FileNotFoundException
    */
-  public static Certificate loadX509Certificate(String filename)
+  public static Certificate loadX509Certificate(final String filename)
       throws CertificateException, FileNotFoundException {
     final CertificateFactory cf = CertificateFactory.getInstance("X.509");
     final FileInputStream in = new FileInputStream(filename);

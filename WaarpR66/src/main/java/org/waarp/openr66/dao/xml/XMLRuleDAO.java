@@ -87,10 +87,8 @@ public class XMLRuleDAO implements RuleDAO {
   private static final String XML_GET_ALL = "//rule";
   private static final File[] FILE_0_LENGTH = new File[0];
 
-  private final File file;
-
-  public XMLRuleDAO(String filePath) {
-    file = new File(filePath);
+  public XMLRuleDAO(final String filePath) {
+    // Nothing to do
   }
 
   @Override
@@ -116,7 +114,7 @@ public class XMLRuleDAO implements RuleDAO {
   }
 
   @Override
-  public void delete(Rule rule) throws DAOConnectionException {
+  public void delete(final Rule rule) throws DAOConnectionException {
     dbR66RuleHashMap.remove(rule.getName());
   }
 
@@ -161,22 +159,23 @@ public class XMLRuleDAO implements RuleDAO {
   }
 
   @Override
-  public boolean exist(String rulename) throws DAOConnectionException {
+  public boolean exist(final String rulename) throws DAOConnectionException {
     return dbR66RuleHashMap.containsKey(rulename);
   }
 
   @Override
-  public List<Rule> find(List<Filter> fitlers) throws DAOConnectionException {
+  public List<Rule> find(final List<Filter> fitlers)
+      throws DAOConnectionException {
     throw new DAOConnectionException("Operation not supported on XML DAO");
   }
 
   @Override
-  public void insert(Rule rule) throws DAOConnectionException {
+  public void insert(final Rule rule) throws DAOConnectionException {
     dbR66RuleHashMap.put(rule.getName(), rule);
   }
 
   @Override
-  public Rule select(String rulename)
+  public Rule select(final String rulename)
       throws DAOConnectionException, DAONoDataException {
     if (exist(rulename)) {
       return dbR66RuleHashMap.get(rulename);
@@ -185,11 +184,11 @@ public class XMLRuleDAO implements RuleDAO {
   }
 
   @Override
-  public void update(Rule rule) throws DAOConnectionException {
+  public void update(final Rule rule) throws DAOConnectionException {
     dbR66RuleHashMap.put(rule.getName(), rule);
   }
 
-  private Rule getFromNode(Node parent) throws DAOConnectionException {
+  private Rule getFromNode(final Node parent) throws DAOConnectionException {
     final Rule res = new Rule();
 
     final NodeList children = parent.getChildNodes();
@@ -228,7 +227,7 @@ public class XMLRuleDAO implements RuleDAO {
 
   public static final String HOSTID_FIELD = "hostid";
 
-  private List<String> retrieveHostids(String xml)
+  private List<String> retrieveHostids(final String xml)
       throws DAOConnectionException {
     final ArrayList<String> res = new ArrayList<String>();
     if (xml == null || xml.isEmpty()) {
@@ -265,7 +264,8 @@ public class XMLRuleDAO implements RuleDAO {
   public static final String PATH_FIELD = "path";
   public static final String DELAY_FIELD = "delay";
 
-  private List<RuleTask> retrieveTasks(Node src) throws DAOConnectionException {
+  private List<RuleTask> retrieveTasks(final Node src)
+      throws DAOConnectionException {
     final List<RuleTask> res = new ArrayList<RuleTask>();
     final NodeList feed = src.getChildNodes();
     for (int i = 0; i < feed.getLength(); i++) {

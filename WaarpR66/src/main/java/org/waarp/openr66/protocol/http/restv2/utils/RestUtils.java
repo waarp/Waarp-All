@@ -52,7 +52,7 @@ public final class RestUtils {
    *
    * @return the request's language
    */
-  public static Locale getLocale(HttpRequest request) {
+  public static Locale getLocale(final HttpRequest request) {
     final String langHead = request.headers().get(ACCEPT_LANGUAGE);
 
     try {
@@ -80,7 +80,7 @@ public final class RestUtils {
    * @throws IllegalArgumentException If the String does not represent
    *     a valid boolean value.
    */
-  public static boolean stringToBoolean(String string) {
+  public static boolean stringToBoolean(final String string) {
     if ("true".equalsIgnoreCase(string)) {
       return true;
     } else if ("false".equalsIgnoreCase(string)) {

@@ -78,7 +78,7 @@ public class Commander implements CommanderInterface {
    * @throws WaarpDatabaseNoConnectionException
    * @throws WaarpDatabaseSqlException
    */
-  public Commander(InternalRunner runner)
+  public Commander(final InternalRunner runner)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
     internalConstructor(runner);
   }
@@ -92,7 +92,7 @@ public class Commander implements CommanderInterface {
    * @throws WaarpDatabaseNoConnectionException
    * @throws WaarpDatabaseSqlException
    */
-  public Commander(InternalRunner runner, boolean fromStartup)
+  public Commander(final InternalRunner runner, final boolean fromStartup)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
     internalConstructor(runner);
     if (fromStartup) {
@@ -101,7 +101,7 @@ public class Commander implements CommanderInterface {
     }
   }
 
-  private void internalConstructor(InternalRunner runner)
+  private void internalConstructor(final InternalRunner runner)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
     try {
       if (Configuration.configuration.getMultipleMonitors() > 1) {
@@ -422,7 +422,7 @@ public class Commander implements CommanderInterface {
       logger.debug("start runner");
       try {
         // No specific HA mode since the other servers will wait for the commit on Lock
-        int maxRunnable =
+        final int maxRunnable =
             Math.min(Configuration.configuration.getRunnerThread(),
                      internalRunner.allowedToSubmit());
         if (maxRunnable > 0) {

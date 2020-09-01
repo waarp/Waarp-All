@@ -43,8 +43,8 @@ public class FtpsDataInitializer extends FtpDataInitializer {
    * @param active
    */
   public FtpsDataInitializer(
-      Class<? extends DataBusinessHandler> dataBusinessHandler,
-      FtpConfiguration configuration, boolean active) {
+      final Class<? extends DataBusinessHandler> dataBusinessHandler,
+      final FtpConfiguration configuration, final boolean active) {
     super(dataBusinessHandler, configuration, active);
   }
 
@@ -52,7 +52,7 @@ public class FtpsDataInitializer extends FtpDataInitializer {
    * Create the pipeline with Handler, ObjectDecoder, ObjectEncoder.
    */
   @Override
-  public void initChannel(SocketChannel ch) throws Exception {
+  public void initChannel(final SocketChannel ch) throws Exception {
     final ChannelPipeline pipeline = ch.pipeline();
     // SSL will be added in this handler during channelActive
     pipeline.addLast(new FtpsTemporaryFirstHandler(configuration, isActive));

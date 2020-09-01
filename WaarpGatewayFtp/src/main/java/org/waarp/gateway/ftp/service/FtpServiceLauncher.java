@@ -27,19 +27,19 @@ import org.waarp.common.service.ServiceLauncher;
  */
 public class FtpServiceLauncher extends ServiceLauncher {
 
-  public static void main(String[] args) {
+  public static void main(final String[] args) {
     _main(args);
   }
 
-  public static void windowsService(String[] args) throws Exception {
+  public static void windowsService(final String[] args) throws Exception {
     _windowsService(args);
   }
 
-  public static void windowsStart(String[] args) throws Exception {
+  public static void windowsStart(final String[] args) throws Exception {
     _windowsStart(args);
   }
 
-  public static void windowsStop(String[] args) {
+  public static void windowsStop(final String[] args) {
     _windowsStop(args);
   }
 

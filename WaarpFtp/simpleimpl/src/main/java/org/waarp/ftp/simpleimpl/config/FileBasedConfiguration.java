@@ -175,10 +175,10 @@ public class FileBasedConfiguration extends FtpConfiguration {
    *     DataBusinessHandler
    * @param fileParameter the FileParameter to use
    */
-  public FileBasedConfiguration(Class<?> classtype,
-                                Class<? extends BusinessHandler> businessHandler,
-                                Class<? extends DataBusinessHandler> dataBusinessHandler,
-                                FileParameterInterface fileParameter) {
+  public FileBasedConfiguration(final Class<?> classtype,
+                                final Class<? extends BusinessHandler> businessHandler,
+                                final Class<? extends DataBusinessHandler> dataBusinessHandler,
+                                final FileParameterInterface fileParameter) {
     super(classtype, businessHandler, dataBusinessHandler, fileParameter);
     computeNbThreads();
   }
@@ -190,8 +190,7 @@ public class FileBasedConfiguration extends FtpConfiguration {
    *
    * @return True if OK
    */
-  @SuppressWarnings("unchecked")
-  public boolean setConfigurationFromXml(String filename) {
+  public boolean setConfigurationFromXml(final String filename) {
     Document document;
     // Open config file
     try {
@@ -373,7 +372,7 @@ public class FileBasedConfiguration extends FtpConfiguration {
    *
    * @return the SimpleAuth if any for this user
    */
-  public SimpleAuth getSimpleAuth(String user) {
+  public SimpleAuth getSimpleAuth(final String user) {
     return authentications.get(user);
   }
 
@@ -389,7 +388,7 @@ public class FileBasedConfiguration extends FtpConfiguration {
    * @param rangePort the range of available ports for Passive
    *     connections
    */
-  private void setRangePort(CircularIntValue rangePort) {
+  private void setRangePort(final CircularIntValue rangePort) {
     this.rangePort = rangePort;
   }
 

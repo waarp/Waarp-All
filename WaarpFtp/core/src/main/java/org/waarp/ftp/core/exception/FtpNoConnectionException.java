@@ -32,7 +32,7 @@ public class FtpNoConnectionException extends Exception {
   /**
    * @param message
    */
-  public FtpNoConnectionException(String message) {
+  public FtpNoConnectionException(final String message) {
     super(message);
   }
 
@@ -40,7 +40,7 @@ public class FtpNoConnectionException extends Exception {
    * @param message
    * @param cause
    */
-  public FtpNoConnectionException(String message, Throwable cause) {
+  public FtpNoConnectionException(final String message, final Throwable cause) {
     super(message, cause);
   }
 

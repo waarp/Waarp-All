@@ -47,7 +47,7 @@ class CircularIntValue {
    * @param min
    * @param max
    */
-  CircularIntValue(int min, int max) {
+  CircularIntValue(final int min, final int max) {
     this.min = min;
     this.max = max;
     current = new AtomicInteger(this.min - 1);

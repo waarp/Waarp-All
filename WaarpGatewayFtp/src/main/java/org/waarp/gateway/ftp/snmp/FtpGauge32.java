@@ -34,13 +34,13 @@ class FtpGauge32 extends WaarpGauge32 {
   private int type = 1;
   private final int entry;
 
-  FtpGauge32(int type, int entry) {
+  FtpGauge32(final int type, final int entry) {
     this.type = type;
     this.entry = entry;
     setInternalValue();
   }
 
-  FtpGauge32(int type, int entry, long value) {
+  FtpGauge32(final int type, final int entry, final long value) {
     this.type = type;
     this.entry = entry;
     setInternalValue(value);
@@ -53,7 +53,7 @@ class FtpGauge32 extends WaarpGauge32 {
   }
 
   @Override
-  protected void setInternalValue(long value) {
+  protected void setInternalValue(final long value) {
     setValue(value);
   }
 }

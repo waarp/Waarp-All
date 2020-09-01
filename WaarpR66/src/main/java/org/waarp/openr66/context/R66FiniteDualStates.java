@@ -69,7 +69,8 @@ public enum R66FiniteDualStates {
 
     public final Transition<R66FiniteDualStates> elt;
 
-    R66Transition(R66FiniteDualStates state, EnumSet<R66FiniteDualStates> set) {
+    R66Transition(final R66FiniteDualStates state,
+                  final EnumSet<R66FiniteDualStates> set) {
       elt = new Transition<R66FiniteDualStates>(state, set);
     }
   }
@@ -99,7 +100,7 @@ public enum R66FiniteDualStates {
    * @param machine the Session MachineState to release
    */
   public static void endSessionMachineSate(
-      MachineState<R66FiniteDualStates> machine) {
+      final MachineState<R66FiniteDualStates> machine) {
     machine.release();
   }
 }

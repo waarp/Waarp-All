@@ -72,8 +72,8 @@ public class ExecOutputTask extends AbstractExecTask {
    * @param argTransfer
    * @param session
    */
-  public ExecOutputTask(String argRule, int delay, String argTransfer,
-                        R66Session session) {
+  public ExecOutputTask(final String argRule, final int delay,
+                        final String argTransfer, final R66Session session) {
     super(TaskType.EXECOUTPUT, delay, argRule, argTransfer, session);
   }
 
@@ -103,25 +103,26 @@ public class ExecOutputTask extends AbstractExecTask {
       } // else continue
     }
 
-    PrepareCommandExec prepareCommandExec =
+    final PrepareCommandExec prepareCommandExec =
         new PrepareCommandExec(finalname, false, waitForValidation).invoke();
     if (prepareCommandExec.isError()) {
       return;
     }
-    CommandLine commandLine = prepareCommandExec.getCommandLine();
-    DefaultExecutor defaultExecutor = prepareCommandExec.getDefaultExecutor();
-    PipedInputStream inputStream = prepareCommandExec.getInputStream();
-    PipedOutputStream outputStream = prepareCommandExec.getOutputStream();
-    PumpStreamHandler pumpStreamHandler =
+    final CommandLine commandLine = prepareCommandExec.getCommandLine();
+    final DefaultExecutor defaultExecutor =
+        prepareCommandExec.getDefaultExecutor();
+    final PipedInputStream inputStream = prepareCommandExec.getInputStream();
+    final PipedOutputStream outputStream = prepareCommandExec.getOutputStream();
+    final PumpStreamHandler pumpStreamHandler =
         prepareCommandExec.getPumpStreamHandler();
-    ExecuteWatchdog watchdog = prepareCommandExec.getWatchdog();
+    final ExecuteWatchdog watchdog = prepareCommandExec.getWatchdog();
 
     final AllLineReader allLineReader = new AllLineReader(inputStream);
     allLineReader
         .setName("LastLineReader" + session.getRunner().getSpecialId());
     allLineReader.setDaemon(true);
     Configuration.configuration.getExecutorService().execute(allLineReader);
-    ExecuteCommand executeCommand =
+    final ExecuteCommand executeCommand =
         new ExecuteCommand(commandLine, defaultExecutor, inputStream,
                            outputStream, pumpStreamHandler, allLineReader)
             .invoke();
@@ -129,7 +130,7 @@ public class ExecOutputTask extends AbstractExecTask {
       return;
     }
     int status = executeCommand.getStatus();
-    String newname;
+    final String newname;
     if (defaultExecutor.isFailure(status) && watchdog != null &&
         watchdog.killedProcess()) {
       // kill by the watchdoc (time out)
@@ -141,7 +142,8 @@ public class ExecOutputTask extends AbstractExecTask {
     finalizeExec(status, newname, commandLine.toString());
   }
 
-  private void finalizeExec(int status, String newName, String commandLine) {
+  private void finalizeExec(final int status, final String newName,
+                            final String commandLine) {
     String newname = newName;
     if (status == 0) {
       final R66Result result =
@@ -194,8 +196,8 @@ public class ExecOutputTask extends AbstractExecTask {
   }
 
   @Override
-  void finalizeFromError(Runnable threadReader, int status,
-                         CommandLine commandLine, Exception e) {
+  void finalizeFromError(final Runnable threadReader, final int status,
+                         final CommandLine commandLine, final Exception e) {
     try {
       Thread.sleep(Configuration.RETRYINMS);
     } catch (final InterruptedException e2) {//NOSONAR

@@ -42,8 +42,8 @@ public class LIMITBANDWIDTH extends AbstractCommand {
       return;
     }
     final String[] limits = getArgs();
-    long writeLimit;
-    long readLimit;
+    final long writeLimit;
+    final long readLimit;
     try {
       if (limits.length == 1) {
         writeLimit = Long.parseLong(limits[0]);

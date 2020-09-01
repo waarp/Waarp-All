@@ -47,7 +47,8 @@ public class InformationJsonPacket extends JsonPacket {
    * @param isTo
    * @param remoteHost
    */
-  public InformationJsonPacket(long id, boolean isTo, String remoteHost) {
+  public InformationJsonPacket(final long id, final boolean isTo,
+                               final String remoteHost) {
     setId(id);
     setTo(isTo);
     setRulename(remoteHost);
@@ -63,7 +64,8 @@ public class InformationJsonPacket extends JsonPacket {
    * @param rulename
    * @param filename
    */
-  public InformationJsonPacket(byte request, String rulename, String filename) {
+  public InformationJsonPacket(final byte request, final String rulename,
+                               final String filename) {
     setRequest(request);
     setFilename(filename);
     setRulename(rulename);
@@ -83,7 +85,7 @@ public class InformationJsonPacket extends JsonPacket {
    *     else
    *     for File listing
    */
-  public void setIdRequest(boolean isIdRequest) {
+  public void setIdRequest(final boolean isIdRequest) {
     this.isIdRequest = isIdRequest;
   }
 
@@ -97,7 +99,7 @@ public class InformationJsonPacket extends JsonPacket {
   /**
    * @param id the id to set
    */
-  public void setId(long id) {
+  public void setId(final long id) {
     this.id = id;
   }
 
@@ -112,7 +114,7 @@ public class InformationJsonPacket extends JsonPacket {
   /**
    * @param isTo the isTo to set
    */
-  public void setTo(boolean isTo) {
+  public void setTo(final boolean isTo) {
     this.isTo = isTo;
   }
 
@@ -126,7 +128,7 @@ public class InformationJsonPacket extends JsonPacket {
   /**
    * @param request the request to set
    */
-  public void setRequest(byte request) {
+  public void setRequest(final byte request) {
     this.request = request;
   }
 
@@ -141,7 +143,7 @@ public class InformationJsonPacket extends JsonPacket {
    * @param rulename the rulename to set (if Transfer and Json
    *     requester/requested (isTo true/false))
    */
-  public void setRulename(String rulename) {
+  public void setRulename(final String rulename) {
     this.rulename = rulename;
   }
 
@@ -155,7 +157,7 @@ public class InformationJsonPacket extends JsonPacket {
   /**
    * @param filename the filename to set
    */
-  public void setFilename(String filename) {
+  public void setFilename(final String filename) {
     this.filename = filename;
   }
 

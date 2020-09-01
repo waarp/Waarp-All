@@ -47,8 +47,8 @@ public class LocalExecSslServerInitializer extends LocalExecServerInitializer {
    * @param eventExecutorGroup
    */
   public LocalExecSslServerInitializer(
-      WaarpSslContextFactory waarpSslContextFactory,
-      EventExecutorGroup eventExecutorGroup) {
+      final WaarpSslContextFactory waarpSslContextFactory,
+      final EventExecutorGroup eventExecutorGroup) {
     // Default delay
     super(eventExecutorGroup);
     this.waarpSslContextFactory = waarpSslContextFactory;
@@ -61,15 +61,15 @@ public class LocalExecSslServerInitializer extends LocalExecServerInitializer {
    * @param newdelay
    */
   public LocalExecSslServerInitializer(
-      WaarpSslContextFactory waarpSslContextFactory, long newdelay,
-      EventExecutorGroup eventExecutorGroup) {
+      final WaarpSslContextFactory waarpSslContextFactory, final long newdelay,
+      final EventExecutorGroup eventExecutorGroup) {
     super(eventExecutorGroup);
     delay = newdelay;
     this.waarpSslContextFactory = waarpSslContextFactory;
   }
 
   @Override
-  public void initChannel(SocketChannel ch) throws Exception {
+  public void initChannel(final SocketChannel ch) throws Exception {
     // Create a default pipeline implementation.
     final ChannelPipeline pipeline = ch.pipeline();
 

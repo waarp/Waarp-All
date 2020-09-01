@@ -48,7 +48,7 @@ public class SimpleBusinessHandler extends BusinessHandler {
       WaarpLoggerFactory.getLogger(SimpleBusinessHandler.class);
 
   @Override
-  public void afterRunCommandKo(CommandAbstractException e) {
+  public void afterRunCommandKo(final CommandAbstractException e) {
     // TO DO Auto-generated method stub
     if (getFtpSession().getCurrentCommand() instanceof MKD) {
       // do nothing
@@ -76,7 +76,7 @@ public class SimpleBusinessHandler extends BusinessHandler {
   }
 
   @Override
-  public void exceptionLocalCaught(Throwable e) {
+  public void exceptionLocalCaught(final Throwable e) {
     // TO DO Auto-generated method stub
     logger.warn("GBBH: EXCEP: {} {}", getFtpSession(), e.getMessage());
   }
@@ -89,7 +89,7 @@ public class SimpleBusinessHandler extends BusinessHandler {
   }
 
   @Override
-  public void executeChannelConnected(Channel channel) {
+  public void executeChannelConnected(final Channel channel) {
     // TO DO Auto-generated method stub
     // logger.info("GBBH: CONNEC: {}", getFtpSession())
   }
@@ -110,7 +110,7 @@ public class SimpleBusinessHandler extends BusinessHandler {
   }
 
   @Override
-  public String getHelpMessage(String arg) {
+  public String getHelpMessage(final String arg) {
     return "This FTP server is only intend as a Gateway.\n" +
            "This FTP server refers to RFC 959, 775, 2389, 2428, 3659, 4217 " +
            "and supports XDIGEST, XCRC, XMD5 and XSHA1 commands.\n" +
@@ -135,7 +135,8 @@ public class SimpleBusinessHandler extends BusinessHandler {
   }
 
   @Override
-  public String getOptsMessage(String[] args) throws CommandAbstractException {
+  public String getOptsMessage(final String[] args)
+      throws CommandAbstractException {
     if (args.length > 0) {
       if (args[0].equalsIgnoreCase(FtpCommandCode.MLST.name()) ||
           args[0].equalsIgnoreCase(FtpCommandCode.MLSD.name())) {
@@ -147,13 +148,13 @@ public class SimpleBusinessHandler extends BusinessHandler {
   }
 
   @Override
-  public AbstractCommand getSpecializedSiteCommand(FtpSession session,
-                                                   String line) {
+  public AbstractCommand getSpecializedSiteCommand(final FtpSession session,
+                                                   final String line) {
     return null;
   }
 
   @Override
-  public void afterTransferDoneBeforeAnswer(FtpTransfer transfer)
+  public void afterTransferDoneBeforeAnswer(final FtpTransfer transfer)
       throws CommandAbstractException {
     if (transfer.getCommand() == FtpCommandCode.APPE) {
       logger.info(GBBH_TRANSFER + transfer.getStatus() + " {}",

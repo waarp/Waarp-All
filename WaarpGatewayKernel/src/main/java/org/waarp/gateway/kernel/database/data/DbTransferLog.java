@@ -157,10 +157,12 @@ public class DbTransferLog extends AbstractDbData {
    *
    * @throws WaarpDatabaseException
    */
-  public DbTransferLog(DbSession dbSession, String user, String account,
-                       long specialId, boolean isSender, String filename,
-                       String mode, HttpResponseStatus infostatus, String info,
-                       UpdatedInfo updatedInfo) throws WaarpDatabaseException {
+  public DbTransferLog(final DbSession dbSession, final String user,
+                       final String account, final long specialId,
+                       final boolean isSender, final String filename,
+                       final String mode, final HttpResponseStatus infostatus,
+                       final String info, final UpdatedInfo updatedInfo)
+      throws WaarpDatabaseException {
     super(dbSession);
     this.user = user;
     this.account = account;
@@ -188,8 +190,9 @@ public class DbTransferLog extends AbstractDbData {
    *
    * @throws WaarpDatabaseException
    */
-  public DbTransferLog(DbSession dbSession, String user, String account,
-                       long specialId) throws WaarpDatabaseException {
+  public DbTransferLog(final DbSession dbSession, final String user,
+                       final String account, final long specialId)
+      throws WaarpDatabaseException {
     super(dbSession);
     this.user = user;
     this.account = account;
@@ -416,7 +419,7 @@ public class DbTransferLog extends AbstractDbData {
           setValues(find, primaryKey);
           find.executeQuery();
           if (find.getNext()) {
-            long result;
+            final long result;
             try {
               result = find.getResultSet().getLong(1);
             } catch (final SQLException e1) {
@@ -450,7 +453,7 @@ public class DbTransferLog extends AbstractDbData {
    *
    * @param dBsession
    */
-  public DbTransferLog(DbSession dBsession) {
+  public DbTransferLog(final DbSession dBsession) {
     super(dBsession);
   }
 
@@ -465,7 +468,7 @@ public class DbTransferLog extends AbstractDbData {
    * @throws WaarpDatabaseSqlException
    */
   public static DbTransferLog getFromStatement(
-      DbPreparedStatement preparedStatement)
+      final DbPreparedStatement preparedStatement)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
     final DbTransferLog dbTaskRunner =
         new DbTransferLog(preparedStatement.getDbSession());
@@ -487,9 +490,8 @@ public class DbTransferLog extends AbstractDbData {
    * @throws WaarpDatabaseNoConnectionException
    * @throws WaarpDatabaseSqlException
    */
-  public static DbPreparedStatement getStatusPrepareStament(DbSession session,
-                                                            HttpResponseStatus status,
-                                                            int limit)
+  public static DbPreparedStatement getStatusPrepareStament(
+      final DbSession session, final HttpResponseStatus status, final int limit)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
     String request = "SELECT " + selectAllFields + " FROM " + table;
     if (status != null) {
@@ -506,12 +508,9 @@ public class DbTransferLog extends AbstractDbData {
     return new DbPreparedStatement(session, request);
   }
 
-  public static DbPreparedStatement getFilterPrepareStament(DbSession session,
-                                                            String modetrans,
-                                                            String accountid,
-                                                            String userid,
-                                                            String filename,
-                                                            String status)
+  public static DbPreparedStatement getFilterPrepareStament(
+      final DbSession session, final String modetrans, final String accountid,
+      final String userid, final String filename, final String status)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
     String request = "SELECT " + selectAllFields + " FROM " + table;
     String where = null;
@@ -567,9 +566,8 @@ public class DbTransferLog extends AbstractDbData {
    * @throws WaarpDatabaseNoConnectionException
    * @throws WaarpDatabaseSqlException
    */
-  public static DbPreparedStatement getLogPrepareStament(DbSession session,
-                                                         Timestamp start,
-                                                         Timestamp stop)
+  public static DbPreparedStatement getLogPrepareStament(
+      final DbSession session, final Timestamp start, final Timestamp stop)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
     final DbPreparedStatement preparedStatement =
         new DbPreparedStatement(session);
@@ -626,7 +624,7 @@ public class DbTransferLog extends AbstractDbData {
    * @throws WaarpDatabaseSqlException
    */
   public static DbPreparedStatement getCountInfoPrepareStatement(
-      DbSession session)
+      final DbSession session)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
     final String request =
         "SELECT COUNT(" + Columns.SPECIALID.name() + ") FROM " + table +
@@ -645,9 +643,8 @@ public class DbTransferLog extends AbstractDbData {
    *
    * @return the number of elements (COUNT) from the statement
    */
-  public static long getResultCountPrepareStatement(DbPreparedStatement pstt,
-                                                    UpdatedInfo info,
-                                                    long time) {
+  public static long getResultCountPrepareStatement(
+      final DbPreparedStatement pstt, final UpdatedInfo info, final long time) {
     long result = 0;
     try {
       finishSelectOrCountPrepareStatement(pstt, time);
@@ -678,7 +675,7 @@ public class DbTransferLog extends AbstractDbData {
    * @throws WaarpDatabaseSqlException
    */
   public static DbPreparedStatement getCountStatusPrepareStatement(
-      DbSession session)
+      final DbSession session)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
     String request =
         "SELECT COUNT(" + Columns.SPECIALID.name() + ") FROM " + table;
@@ -701,7 +698,7 @@ public class DbTransferLog extends AbstractDbData {
    * @throws WaarpDatabaseSqlException
    */
   public static DbPreparedStatement getCountAllPrepareStatement(
-      DbSession session)
+      final DbSession session)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
     String request =
         "SELECT COUNT(" + Columns.SPECIALID.name() + ") FROM " + table;
@@ -719,9 +716,9 @@ public class DbTransferLog extends AbstractDbData {
    *
    * @return the number of elements (COUNT) from the statement
    */
-  public static long getResultCountPrepareStatement(DbPreparedStatement pstt,
-                                                    HttpResponseStatus error,
-                                                    long time) {
+  public static long getResultCountPrepareStatement(
+      final DbPreparedStatement pstt, final HttpResponseStatus error,
+      final long time) {
     long result = 0;
     try {
       finishSelectOrCountPrepareStatement(pstt, time);
@@ -747,7 +744,8 @@ public class DbTransferLog extends AbstractDbData {
    *
    * @return the number of elements (COUNT) from the statement
    */
-  public static long getResultCountPrepareStatement(DbPreparedStatement pstt) {
+  public static long getResultCountPrepareStatement(
+      final DbPreparedStatement pstt) {
     long result = 0;
     try {
       pstt.executeQuery();
@@ -775,7 +773,7 @@ public class DbTransferLog extends AbstractDbData {
    * @throws WaarpDatabaseSqlException
    */
   public static void finishSelectOrCountPrepareStatement(
-      DbPreparedStatement pstt)
+      final DbPreparedStatement pstt)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
     finishSelectOrCountPrepareStatement(pstt, System.currentTimeMillis());
   }
@@ -789,7 +787,7 @@ public class DbTransferLog extends AbstractDbData {
    * @throws WaarpDatabaseSqlException
    */
   public static void finishSelectOrCountPrepareStatement(
-      DbPreparedStatement pstt, long time)
+      final DbPreparedStatement pstt, final long time)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
     final Timestamp startlimit = new Timestamp(time);
     try {
@@ -813,11 +811,11 @@ public class DbTransferLog extends AbstractDbData {
    * @throws WaarpDatabaseSqlException
    */
   public static DbPreparedStatement getCountInOutErrorPrepareStatement(
-      DbSession session, boolean in)
+      final DbSession session, final boolean in)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
     String request =
         "SELECT COUNT(" + Columns.SPECIALID.name() + ") FROM " + table;
-    String inCond;
+    final String inCond;
     if (in) {
       inCond =
           " (" + Columns.MODETRANS.name() + " = '" + PageRole.DELETE.name() +
@@ -853,11 +851,11 @@ public class DbTransferLog extends AbstractDbData {
    * @throws WaarpDatabaseSqlException
    */
   public static DbPreparedStatement getCountInOutRunningPrepareStatement(
-      DbSession session, boolean in, boolean running)
+      final DbSession session, final boolean in, final boolean running)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
     String request =
         "SELECT COUNT(" + Columns.SPECIALID.name() + ") FROM " + table;
-    String inCond;
+    final String inCond;
     if (in) {
       inCond =
           " (" + Columns.MODETRANS.name() + " = '" + PageRole.DELETE.name() +
@@ -882,7 +880,7 @@ public class DbTransferLog extends AbstractDbData {
   }
 
   @Override
-  public void changeUpdatedInfo(UpdatedInfo info) {
+  public void changeUpdatedInfo(final UpdatedInfo info) {
     updatedInfo = info.ordinal();
     allFields[Columns.UPDATEDINFO.ordinal()].setValue(updatedInfo);
     isSaved = false;
@@ -893,7 +891,7 @@ public class DbTransferLog extends AbstractDbData {
    *
    * @param code
    */
-  public void setReplyCodeExecutionStatus(HttpResponseStatus code) {
+  public void setReplyCodeExecutionStatus(final HttpResponseStatus code) {
     if (infostatus != code) {
       infostatus = code;
       allFields[Columns.INFOSTATUS.ordinal()].setValue(infostatus.code());
@@ -918,7 +916,7 @@ public class DbTransferLog extends AbstractDbData {
   /**
    * @param filename the filename to set
    */
-  public void setFilename(String filename) {
+  public void setFilename(final String filename) {
     if (this.filename == null || !this.filename.equals(filename)) {
       this.filename = filename;
       allFields[Columns.FILENAME.ordinal()].setValue(this.filename);
@@ -957,7 +955,7 @@ public class DbTransferLog extends AbstractDbData {
   /**
    * @param infotransf the infotransf to set
    */
-  public void setInfotransf(String infotransf) {
+  public void setInfotransf(final String infotransf) {
     this.infotransf = infotransf;
   }
 
@@ -978,7 +976,7 @@ public class DbTransferLog extends AbstractDbData {
   /**
    * @param stop the stop to set
    */
-  public void setStop(Timestamp stop) {
+  public void setStop(final Timestamp stop) {
     this.stop = stop;
   }
 
@@ -1100,7 +1098,7 @@ public class DbTransferLog extends AbstractDbData {
    *
    * @return The message for the HTTPS interface
    */
-  public String saveDbTransferLog(String filename) {
+  public String saveDbTransferLog(final String filename) {
     final Document document = XmlUtil.createEmptyDocument();
     final XmlValue[] roots = new XmlValue[1];
     final XmlValue root = new XmlValue(logsElements[0]);
@@ -1145,7 +1143,7 @@ public class DbTransferLog extends AbstractDbData {
    * @return The message for the HTTPS interface
    */
   public static String saveDbTransferLogFile(
-      DbPreparedStatement preparedStatement, String filename) {
+      final DbPreparedStatement preparedStatement, final String filename) {
     final Document document = XmlUtil.createEmptyDocument();
     final XmlValue[] roots = new XmlValue[1];
     final XmlValue root = new XmlValue(logsElements[0]);

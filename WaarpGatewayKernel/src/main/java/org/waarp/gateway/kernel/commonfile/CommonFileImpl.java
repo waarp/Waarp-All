@@ -36,8 +36,8 @@ public class CommonFileImpl extends FilesystemBasedFileImpl {
    *
    * @throws CommandAbstractException
    */
-  public CommonFileImpl(SessionInterface session, CommonDirImpl dir,
-                        String path, boolean append)
+  public CommonFileImpl(final SessionInterface session, final CommonDirImpl dir,
+                        final String path, final boolean append)
       throws CommandAbstractException {
     super(session, dir, path, append);
   }
@@ -47,8 +47,8 @@ public class CommonFileImpl extends FilesystemBasedFileImpl {
    * @param dir
    * @param path
    */
-  public CommonFileImpl(SessionInterface session, CommonDirImpl dir,
-                        String path) {
+  public CommonFileImpl(final SessionInterface session, final CommonDirImpl dir,
+                        final String path) {
     super(session, dir, path);
   }
 

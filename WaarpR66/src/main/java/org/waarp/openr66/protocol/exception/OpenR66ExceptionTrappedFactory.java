@@ -57,7 +57,7 @@ public final class OpenR66ExceptionTrappedFactory {
    *     ignored
    */
   public static OpenR66Exception getExceptionFromTrappedException(
-      Channel channel, Throwable throwable) {
+      final Channel channel, final Throwable throwable) {
     if (throwable instanceof ConnectException) {
       final ConnectException e2 = (ConnectException) throwable;
       logger.debug("Connection impossible since {} with Channel {}",

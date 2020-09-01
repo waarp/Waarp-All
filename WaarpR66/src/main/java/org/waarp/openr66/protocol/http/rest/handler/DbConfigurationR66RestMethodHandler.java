@@ -62,7 +62,7 @@ public class DbConfigurationR66RestMethodHandler
 
     public final String type;
 
-    FILTER_ARGS(String type) {
+    FILTER_ARGS(final String type) {
       this.type = type;
     }
   }
@@ -71,22 +71,23 @@ public class DbConfigurationR66RestMethodHandler
    * @param config
    * @param method
    */
-  public DbConfigurationR66RestMethodHandler(RestConfiguration config,
-                                             METHOD... method) {
+  public DbConfigurationR66RestMethodHandler(final RestConfiguration config,
+                                             final METHOD... method) {
     super(BASEURI, config, method);
   }
 
   @Override
-  protected DbConfiguration getItem(HttpRestHandler handler,
-                                    RestArgument arguments, RestArgument result,
-                                    Object body)
+  protected DbConfiguration getItem(final HttpRestHandler handler,
+                                    final RestArgument arguments,
+                                    final RestArgument result,
+                                    final Object body)
       throws HttpIncorrectRequestException, HttpInvalidAuthenticationException,
              HttpNotFoundRequestException {
     final ObjectNode arg = arguments.getUriArgs().deepCopy();
     arg.setAll(arguments.getBody());
     try {
       final JsonNode node = RestArgument.getId(arg);
-      String id;
+      final String id;
       if (node.isMissingNode()) {
         // shall not be but continue however
         id = arg.path(DbConfiguration.Columns.HOSTID.name()).asText();
@@ -101,9 +102,10 @@ public class DbConfigurationR66RestMethodHandler
   }
 
   @Override
-  protected DbConfiguration createItem(HttpRestHandler handler,
-                                       RestArgument arguments,
-                                       RestArgument result, Object body)
+  protected DbConfiguration createItem(final HttpRestHandler handler,
+                                       final RestArgument arguments,
+                                       final RestArgument result,
+                                       final Object body)
       throws HttpIncorrectRequestException, HttpInvalidAuthenticationException {
     final ObjectNode arg = arguments.getUriArgs().deepCopy();
     arg.setAll(arguments.getBody());
@@ -116,10 +118,9 @@ public class DbConfigurationR66RestMethodHandler
   }
 
   @Override
-  protected DbPreparedStatement getPreparedStatement(HttpRestHandler handler,
-                                                     RestArgument arguments,
-                                                     RestArgument result,
-                                                     Object body)
+  protected DbPreparedStatement getPreparedStatement(
+      final HttpRestHandler handler, final RestArgument arguments,
+      final RestArgument result, final Object body)
       throws HttpIncorrectRequestException, HttpInvalidAuthenticationException {
     final ObjectNode arg = arguments.getUriArgs().deepCopy();
     arg.setAll(arguments.getBody());
@@ -142,7 +143,7 @@ public class DbConfigurationR66RestMethodHandler
 
   @Override
   protected DbConfiguration getItemPreparedStatement(
-      DbPreparedStatement statement)
+      final DbPreparedStatement statement)
       throws HttpIncorrectRequestException, HttpNotFoundRequestException {
     try {
       return DbConfiguration.getFromStatement(statement);
@@ -162,7 +163,8 @@ public class DbConfigurationR66RestMethodHandler
     final ObjectNode node1 = JsonHandler.createObjectNode();
     node1.put(AbstractDbData.JSON_MODEL, DbConfiguration.class.getSimpleName());
 
-    for (DbConfiguration.Columns column : DbConfiguration.Columns.values()) {
+    for (final DbConfiguration.Columns column : DbConfiguration.Columns
+        .values()) {
       node1.put(column.name(), DbConfiguration.dbTypes[column.ordinal()]);
     }
     ObjectNode node2;
@@ -189,7 +191,8 @@ public class DbConfigurationR66RestMethodHandler
       node3 = JsonHandler.createObjectNode();
       node3.put(DbConfiguration.Columns.HOSTID.name(),
                 HOST_ID_AS_VARCHAR_IN_URI_AS + path + "/id");
-      for (DbConfiguration.Columns column : DbConfiguration.Columns.values()) {
+      for (final DbConfiguration.Columns column : DbConfiguration.Columns
+          .values()) {
         if (column.name()
                   .equalsIgnoreCase(DbConfiguration.Columns.HOSTID.name())) {
           continue;
@@ -212,7 +215,8 @@ public class DbConfigurationR66RestMethodHandler
     }
     if (methods.contains(METHOD.POST)) {
       node3 = JsonHandler.createObjectNode();
-      for (DbConfiguration.Columns column : DbConfiguration.Columns.values()) {
+      for (final DbConfiguration.Columns column : DbConfiguration.Columns
+          .values()) {
         node3.put(column.name(), DbConfiguration.dbTypes[column.ordinal()]);
       }
       node2 = RestArgument
@@ -234,8 +238,9 @@ public class DbConfigurationR66RestMethodHandler
   }
 
   @Override
-  protected void put(HttpRestHandler handler, RestArgument arguments,
-                     RestArgument result, Object body)
+  protected void put(final HttpRestHandler handler,
+                     final RestArgument arguments, final RestArgument result,
+                     final Object body)
       throws HttpIncorrectRequestException, HttpInvalidAuthenticationException,
              HttpNotFoundRequestException {
     super.put(handler, arguments, result, body);
@@ -246,9 +251,10 @@ public class DbConfigurationR66RestMethodHandler
   }
 
   @Override
-  protected void checkAuthorization(HttpRestHandler handler,
-                                    RestArgument arguments, RestArgument result,
-                                    METHOD method)
+  protected void checkAuthorization(final HttpRestHandler handler,
+                                    final RestArgument arguments,
+                                    final RestArgument result,
+                                    final METHOD method)
       throws HttpForbiddenRequestException {
     final HttpRestR66Handler r66handler = (HttpRestR66Handler) handler;
     final R66Session session = r66handler.getServerHandler().getSession();

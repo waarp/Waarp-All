@@ -25,7 +25,7 @@ public class Filter {
   public final String operand;
   public final Object value;
 
-  public Filter(String key, String operand, Object value) {
+  public Filter(final String key, final String operand, final Object value) {
     this.key = key;
     this.operand = operand;
     this.value = value;

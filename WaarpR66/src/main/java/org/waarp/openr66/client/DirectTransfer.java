@@ -50,10 +50,11 @@ public class DirectTransfer extends AbstractTransfer {
 
   protected boolean limitRetryConnection = true;
 
-  public DirectTransfer(R66Future future, String remoteHost, String filename,
-                        String rulename, String transferInfo, boolean isMD5,
-                        int blocksize, long id,
-                        NetworkTransaction networkTransaction) {
+  public DirectTransfer(final R66Future future, final String remoteHost,
+                        final String filename, final String rulename,
+                        final String transferInfo, final boolean isMD5,
+                        final int blocksize, final long id,
+                        final NetworkTransaction networkTransaction) {
     // no starttime since it is direct (blocking request, no delay)
     super(DirectTransfer.class, future, filename, rulename, transferInfo, isMD5,
           remoteHost, blocksize, id, null);
@@ -152,7 +153,7 @@ public class DirectTransfer extends AbstractTransfer {
     }
   }
 
-  public static void main(String[] args) {
+  public static void main(final String[] args) {
     WaarpLoggerFactory
         .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));
     if (logger == null) {

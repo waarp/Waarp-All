@@ -36,14 +36,14 @@ public class WaarpUptime extends TimeTicks {
     setValue(type.get().getValue());
   }
 
-  protected void setInternalValue(long value) {
+  protected void setInternalValue(final long value) {
     setValue(type.get().getValue());
   }
 
   /**
    * @param type SysUpTime from SNMPV2
    */
-  public WaarpUptime(SysUpTime type) {
+  public WaarpUptime(final SysUpTime type) {
     this.type = type;
     setInternalValue();
   }

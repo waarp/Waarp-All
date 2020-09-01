@@ -64,8 +64,9 @@ public abstract class DataModelRestMethodHandler<E extends AbstractDbData>
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(DataModelRestMethodHandler.class);
 
-  protected DataModelRestMethodHandler(String name, RestConfiguration config,
-                                       METHOD... method) {
+  protected DataModelRestMethodHandler(final String name,
+                                       final RestConfiguration config,
+                                       final METHOD... method) {
     super(name, name, true, config, METHOD.OPTIONS);
     setMethods(method);
   }
@@ -80,9 +81,9 @@ public abstract class DataModelRestMethodHandler<E extends AbstractDbData>
    * DELETE iff name/id and allowed
    */
   @Override
-  public void checkHandlerSessionCorrectness(HttpRestHandler handler,
-                                             RestArgument arguments,
-                                             RestArgument result)
+  public void checkHandlerSessionCorrectness(final HttpRestHandler handler,
+                                             final RestArgument arguments,
+                                             final RestArgument result)
       throws HttpForbiddenRequestException {
     final METHOD method = arguments.getMethod();
     if (!isMethodIncluded(method)) {
@@ -122,15 +123,16 @@ public abstract class DataModelRestMethodHandler<E extends AbstractDbData>
   }
 
   @Override
-  public void getFileUpload(HttpRestHandler handler, FileUpload data,
-                            RestArgument arguments, RestArgument result)
+  public void getFileUpload(final HttpRestHandler handler,
+                            final FileUpload data, final RestArgument arguments,
+                            final RestArgument result)
       throws HttpIncorrectRequestException {
     throw new HttpIncorrectRequestException("File Upload not allowed");
   }
 
   @Override
-  public Object getBody(HttpRestHandler handler, ByteBuf body,
-                        RestArgument arguments, RestArgument result)
+  public Object getBody(final HttpRestHandler handler, final ByteBuf body,
+                        final RestArgument arguments, final RestArgument result)
       throws HttpIncorrectRequestException {
     // get the Json equivalent of the Body
     ObjectNode node = null;
@@ -150,8 +152,9 @@ public abstract class DataModelRestMethodHandler<E extends AbstractDbData>
   }
 
   @Override
-  public void endParsingRequest(HttpRestHandler handler, RestArgument arguments,
-                                RestArgument result, Object body)
+  public void endParsingRequest(final HttpRestHandler handler,
+                                final RestArgument arguments,
+                                final RestArgument result, final Object body)
       throws HttpIncorrectRequestException, HttpInvalidAuthenticationException,
              HttpNotFoundRequestException {
     final METHOD method = arguments.getMethod();
@@ -260,7 +263,8 @@ public abstract class DataModelRestMethodHandler<E extends AbstractDbData>
    */
   public abstract String getPrimaryPropertyName();
 
-  protected void setOk(HttpRestHandler handler, RestArgument result) {
+  protected void setOk(final HttpRestHandler handler,
+                       final RestArgument result) {
     handler.setStatus(HttpResponseStatus.OK);
     result.setResult(HttpResponseStatus.OK);
   }
@@ -277,8 +281,9 @@ public abstract class DataModelRestMethodHandler<E extends AbstractDbData>
    * @throws HttpInvalidAuthenticationException
    * @throws HttpNotFoundRequestException
    */
-  protected void getAll(HttpRestHandler handler, RestArgument arguments,
-                        RestArgument result, Object body)
+  protected void getAll(final HttpRestHandler handler,
+                        final RestArgument arguments, final RestArgument result,
+                        final Object body)
       throws HttpIncorrectRequestException, HttpInvalidAuthenticationException,
              HttpNotFoundRequestException {
     final long limit = arguments.getLimitFromUri();
@@ -326,8 +331,9 @@ public abstract class DataModelRestMethodHandler<E extends AbstractDbData>
    * @throws HttpInvalidAuthenticationException
    * @throws HttpNotFoundRequestException
    */
-  protected void getOne(HttpRestHandler handler, RestArgument arguments,
-                        RestArgument result, Object body)
+  protected void getOne(final HttpRestHandler handler,
+                        final RestArgument arguments, final RestArgument result,
+                        final Object body)
       throws HttpIncorrectRequestException, HttpInvalidAuthenticationException,
              HttpNotFoundRequestException {
     final E item = getItem(handler, arguments, result, body);
@@ -348,8 +354,9 @@ public abstract class DataModelRestMethodHandler<E extends AbstractDbData>
    * @throws HttpInvalidAuthenticationException
    * @throws HttpNotFoundRequestException
    */
-  protected void put(HttpRestHandler handler, RestArgument arguments,
-                     RestArgument result, Object body)
+  protected void put(final HttpRestHandler handler,
+                     final RestArgument arguments, final RestArgument result,
+                     final Object body)
       throws HttpIncorrectRequestException, HttpInvalidAuthenticationException,
              HttpNotFoundRequestException {
     final E item = getItem(handler, arguments, result, body);
@@ -382,8 +389,9 @@ public abstract class DataModelRestMethodHandler<E extends AbstractDbData>
    * @throws HttpIncorrectRequestException
    * @throws HttpInvalidAuthenticationException
    */
-  protected void post(HttpRestHandler handler, RestArgument arguments,
-                      RestArgument result, Object body)
+  protected void post(final HttpRestHandler handler,
+                      final RestArgument arguments, final RestArgument result,
+                      final Object body)
       throws HttpIncorrectRequestException, HttpInvalidAuthenticationException {
     final E item = createItem(handler, arguments, result, body);
     item.changeUpdatedInfo(UpdatedInfo.TOSUBMIT);
@@ -393,7 +401,7 @@ public abstract class DataModelRestMethodHandler<E extends AbstractDbData>
       // Revert to update
       try {
         item.update();
-      } catch (WaarpDatabaseException ex) {
+      } catch (final WaarpDatabaseException ex) {
         throw new HttpIncorrectRequestException(
             "Issue while inserting to database", e);
       }
@@ -416,8 +424,9 @@ public abstract class DataModelRestMethodHandler<E extends AbstractDbData>
    * @throws HttpInvalidAuthenticationException
    * @throws HttpNotFoundRequestException
    */
-  protected void delete(HttpRestHandler handler, RestArgument arguments,
-                        RestArgument result, Object body)
+  protected void delete(final HttpRestHandler handler,
+                        final RestArgument arguments, final RestArgument result,
+                        final Object body)
       throws HttpIncorrectRequestException, HttpInvalidAuthenticationException,
              HttpNotFoundRequestException {
     final E item = getItem(handler, arguments, result, body);
@@ -433,10 +442,12 @@ public abstract class DataModelRestMethodHandler<E extends AbstractDbData>
   }
 
   @Override
-  public ChannelFuture sendResponse(HttpRestHandler handler,
-                                    ChannelHandlerContext ctx,
-                                    RestArgument arguments, RestArgument result,
-                                    Object body, HttpResponseStatus status) {
+  public ChannelFuture sendResponse(final HttpRestHandler handler,
+                                    final ChannelHandlerContext ctx,
+                                    final RestArgument arguments,
+                                    final RestArgument result,
+                                    final Object body,
+                                    final HttpResponseStatus status) {
     final String answer = result.toString();
     final ByteBuf buffer =
         Unpooled.wrappedBuffer(answer.getBytes(WaarpStringUtils.UTF8));

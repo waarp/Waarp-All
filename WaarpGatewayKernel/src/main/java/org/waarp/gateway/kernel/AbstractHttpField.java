@@ -71,11 +71,14 @@ public abstract class AbstractHttpField implements Cloneable {
    * @param fieldposition
    * @param fieldrank
    */
-  protected AbstractHttpField(String fieldname, FieldRole fieldtype,
-                              String fieldinfo, String fieldvalue,
-                              boolean fieldvisibility, boolean fieldmandatory,
-                              boolean fieldcookieset, boolean fieldtovalidate,
-                              FieldPosition fieldposition, int fieldrank) {
+  protected AbstractHttpField(final String fieldname, final FieldRole fieldtype,
+                              final String fieldinfo, final String fieldvalue,
+                              final boolean fieldvisibility,
+                              final boolean fieldmandatory,
+                              final boolean fieldcookieset,
+                              final boolean fieldtovalidate,
+                              final FieldPosition fieldposition,
+                              final int fieldrank) {
     setFieldname(fieldname);
     setFieldtype(fieldtype);
     setFieldinfo(fieldinfo);
@@ -153,7 +156,7 @@ public abstract class AbstractHttpField implements Cloneable {
   /**
    * @param fieldname the fieldname to set
    */
-  private void setFieldname(String fieldname) {
+  private void setFieldname(final String fieldname) {
     this.fieldname = fieldname;
   }
 
@@ -167,7 +170,7 @@ public abstract class AbstractHttpField implements Cloneable {
   /**
    * @param fieldtype the fieldtype to set
    */
-  private void setFieldtype(FieldRole fieldtype) {
+  private void setFieldtype(final FieldRole fieldtype) {
     this.fieldtype = fieldtype;
   }
 
@@ -181,7 +184,7 @@ public abstract class AbstractHttpField implements Cloneable {
   /**
    * @param fieldinfo the fieldinfo to set
    */
-  private void setFieldinfo(String fieldinfo) {
+  private void setFieldinfo(final String fieldinfo) {
     this.fieldinfo = fieldinfo;
   }
 
@@ -195,7 +198,7 @@ public abstract class AbstractHttpField implements Cloneable {
   /**
    * @param fieldvisibility the fieldvisibility to set
    */
-  public void setFieldvisibility(boolean fieldvisibility) {
+  public void setFieldvisibility(final boolean fieldvisibility) {
     this.fieldvisibility = fieldvisibility;
   }
 
@@ -209,7 +212,7 @@ public abstract class AbstractHttpField implements Cloneable {
   /**
    * @param fieldmandatory the fieldmandatory to set
    */
-  private void setFieldmandatory(boolean fieldmandatory) {
+  private void setFieldmandatory(final boolean fieldmandatory) {
     this.fieldmandatory = fieldmandatory;
   }
 
@@ -223,7 +226,7 @@ public abstract class AbstractHttpField implements Cloneable {
   /**
    * @param fieldcookieset the fieldcookieset to set
    */
-  private void setFieldcookieset(boolean fieldcookieset) {
+  private void setFieldcookieset(final boolean fieldcookieset) {
     this.fieldcookieset = fieldcookieset;
   }
 
@@ -237,7 +240,7 @@ public abstract class AbstractHttpField implements Cloneable {
   /**
    * @param fieldtovalidate the fieldtovalidate to set
    */
-  private void setFieldtovalidate(boolean fieldtovalidate) {
+  private void setFieldtovalidate(final boolean fieldtovalidate) {
     this.fieldtovalidate = fieldtovalidate;
   }
 
@@ -251,7 +254,7 @@ public abstract class AbstractHttpField implements Cloneable {
   /**
    * @param fieldposition the fieldposition to set
    */
-  private void setFieldposition(FieldPosition fieldposition) {
+  private void setFieldposition(final FieldPosition fieldposition) {
     this.fieldposition = fieldposition;
   }
 
@@ -265,7 +268,7 @@ public abstract class AbstractHttpField implements Cloneable {
   /**
    * @param fieldrank the fieldrank to set
    */
-  private void setFieldrank(int fieldrank) {
+  private void setFieldrank(final int fieldrank) {
     this.fieldrank = fieldrank;
   }
 
@@ -279,7 +282,7 @@ public abstract class AbstractHttpField implements Cloneable {
   /**
    * @param present the present to set
    */
-  void setPresent(boolean present) {
+  void setPresent(final boolean present) {
     this.present = present;
   }
 

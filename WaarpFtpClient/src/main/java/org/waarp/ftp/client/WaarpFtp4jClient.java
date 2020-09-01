@@ -91,7 +91,6 @@ public class WaarpFtp4jClient {
   final int ssl; // -1 native, 1 auth
   protected FTPClient ftpClient;
   protected String result;
-  private boolean binaryTransfer = true;
 
   /**
    * @param server
@@ -103,9 +102,11 @@ public class WaarpFtp4jClient {
    * @param ssl -1 native, 1 auth
    * @param timeout
    */
-  public WaarpFtp4jClient(String server, int port, String user, String pwd,
-                          String acct, boolean isPassive, int ssl,
-                          int keepalive, int timeout) {
+  public WaarpFtp4jClient(final String server, final int port,
+                          final String user, final String pwd,
+                          final String acct, final boolean isPassive,
+                          final int ssl, final int keepalive,
+                          final int timeout) {
     this.server = server;
     this.port = port;
     this.user = user;
@@ -126,21 +127,23 @@ public class WaarpFtp4jClient {
             }
 
             @Override
-            public void checkClientTrusted(X509Certificate[] certs, //NOSONAR
-                                           String authType)
+            public void checkClientTrusted(final X509Certificate[] certs,
+//NOSONAR
+                                           final String authType)
                 throws CertificateException {
               // nothing
             }
 
             @Override
-            public void checkServerTrusted(X509Certificate[] certs, //NOSONAR
-                                           String authType)
+            public void checkServerTrusted(final X509Certificate[] certs,
+//NOSONAR
+                                           final String authType)
                 throws CertificateException {
               // nothing
             }
           }
       };
-      SSLContext sslContext;
+      final SSLContext sslContext;
       try {
         sslContext = getInstance();
         sslContext.init(null, trustManager, getSecureRandom());
@@ -148,7 +151,7 @@ public class WaarpFtp4jClient {
         throw new IllegalArgumentException("Bad algorithm", e);
       } catch (final KeyManagementException e) {
         throw new IllegalArgumentException("Bad KeyManagement", e);
-      } catch (NoSuchProviderException e) {
+      } catch (final NoSuchProviderException e) {
         throw new IllegalArgumentException("Bad Provider", e);
       }
       final SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();
@@ -169,12 +172,12 @@ public class WaarpFtp4jClient {
 
     ftpClient.addCommunicationListener(new FTPCommunicationListener() {
       @Override
-      public void sent(String arg0) {
+      public void sent(final String arg0) {
         logger.debug("Command: " + arg0);
       }
 
       @Override
-      public void received(String arg0) {
+      public void received(final String arg0) {
         logger.debug("Answer: " + arg0);
       }
     });
@@ -320,7 +323,7 @@ public class WaarpFtp4jClient {
    *
    * @return True if created
    */
-  public boolean makeDir(String newDir) {
+  public boolean makeDir(final String newDir) {
     result = null;
     try {
       ftpClient.createDirectory(newDir);
@@ -351,7 +354,7 @@ public class WaarpFtp4jClient {
    *
    * @return True if the change is OK
    */
-  public boolean changeDir(String newDir) {
+  public boolean changeDir(final String newDir) {
     result = null;
     try {
       ftpClient.changeDirectory(newDir);
@@ -378,13 +381,12 @@ public class WaarpFtp4jClient {
   /**
    * Change the FileType of Transfer (Binary true, ASCII false)
    *
-   * @param binaryTransfer1
+   * @param binaryTransfer
    *
    * @return True if the change is OK
    */
-  public boolean changeFileType(boolean binaryTransfer1) {
+  public boolean changeFileType(final boolean binaryTransfer) {
     result = null;
-    binaryTransfer = binaryTransfer1;
     try {
       if (binaryTransfer) {
         ftpClient.setType(FTPClient.TYPE_BINARY);
@@ -404,7 +406,7 @@ public class WaarpFtp4jClient {
    *
    * @param passive
    */
-  public void changeMode(boolean passive) {
+  public void changeMode(final boolean passive) {
     isPassive = passive;
     ftpClient.setPassive(passive);
   }
@@ -418,8 +420,8 @@ public class WaarpFtp4jClient {
    *
    * @return True if the file is correctly transfered
    */
-  public boolean transferFile(String local, String remote,
-                              int getStoreOrAppend) {
+  public boolean transferFile(final String local, final String remote,
+                              final int getStoreOrAppend) {
     result = null;
     try {
       if (getStoreOrAppend > 0) {
@@ -569,7 +571,7 @@ public class WaarpFtp4jClient {
    *
    * @return True if the given feature is listed
    */
-  public boolean featureEnabled(String feature) {
+  public boolean featureEnabled(final String feature) {
     try {
       final FTPReply reply = ftpClient.sendCustomCommand("FEAT");
       final String[] msg = reply.getMessages();
@@ -599,7 +601,7 @@ public class WaarpFtp4jClient {
    *
    * @return True if deleted
    */
-  public boolean deleteFile(String remote) {
+  public boolean deleteFile(final String remote) {
     try {
       logger.debug("DELE {}", remote);
       ftpClient.deleteFile(remote);
@@ -628,7 +630,7 @@ public class WaarpFtp4jClient {
    *
    * @return the string lines result for the command params
    */
-  public String[] executeCommand(String params) {
+  public String[] executeCommand(final String params) {
     result = null;
     try {
       logger.debug(params);
@@ -658,7 +660,7 @@ public class WaarpFtp4jClient {
    *
    * @return the string lines result for the SITE command params
    */
-  public String[] executeSiteCommand(String params) {
+  public String[] executeSiteCommand(final String params) {
     result = null;
     try {
       logger.debug("SITE " + params);

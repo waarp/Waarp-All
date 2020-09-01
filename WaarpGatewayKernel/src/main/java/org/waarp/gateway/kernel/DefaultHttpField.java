@@ -39,18 +39,21 @@ public class DefaultHttpField extends AbstractHttpField {
    * @param fieldposition
    * @param fieldrank
    */
-  public DefaultHttpField(String fieldname, FieldRole fieldtype,
-                          String fieldinfo, String fieldvalue,
-                          boolean fieldvisibility, boolean fieldmandatory,
-                          boolean fieldcookieset, boolean fieldtovalidate,
-                          FieldPosition fieldposition, int fieldrank) {
+  public DefaultHttpField(final String fieldname, final FieldRole fieldtype,
+                          final String fieldinfo, final String fieldvalue,
+                          final boolean fieldvisibility,
+                          final boolean fieldmandatory,
+                          final boolean fieldcookieset,
+                          final boolean fieldtovalidate,
+                          final FieldPosition fieldposition,
+                          final int fieldrank) {
     super(fieldname, fieldtype, fieldinfo, fieldvalue, fieldvisibility,
           fieldmandatory, fieldcookieset, fieldtovalidate, fieldposition,
           fieldrank);
   }
 
   @Override
-  public String getHtmlFormField(HttpPage page)
+  public String getHtmlFormField(final HttpPage page)
       throws HttpIncorrectRequestException {
     final StringBuilder builder = new StringBuilder();
     switch (getFieldtype()) {
@@ -60,7 +63,7 @@ public class DefaultHttpField extends AbstractHttpField {
         final AbstractHttpField source = page.getFields().get(getFieldname());
         final String[] values = source.fieldvalue.split(",");
         final String[] finalValues = fieldvalue.split(",");
-        String inputtype;
+        final String inputtype;
         if (getFieldtype() == FieldRole.BUSINESS_INPUT_CHECKBOX) {
           inputtype = ": <INPUT type=CHECKBOX name=";
         } else {
@@ -167,7 +170,7 @@ public class DefaultHttpField extends AbstractHttpField {
   }
 
   @Override
-  public String getHtmlTabField(HttpPage page)
+  public String getHtmlTabField(final HttpPage page)
       throws HttpIncorrectRequestException {
     final StringBuilder builder =
         new StringBuilder().append(getFieldinfo()).append("</TD><TD>");
@@ -187,7 +190,7 @@ public class DefaultHttpField extends AbstractHttpField {
   }
 
   @Override
-  public void setStringValue(String value)
+  public void setStringValue(final String value)
       throws HttpIncorrectRequestException {
     switch (getFieldtype()) {
       case BUSINESS_INPUT_CHECKBOX:
@@ -225,7 +228,7 @@ public class DefaultHttpField extends AbstractHttpField {
   }
 
   @Override
-  public void setFileUpload(FileUpload fileUpload)
+  public void setFileUpload(final FileUpload fileUpload)
       throws HttpIncorrectRequestException {
     if (getFieldtype() == FieldRole.BUSINESS_INPUT_FILE) {
       if (isPresent()) {

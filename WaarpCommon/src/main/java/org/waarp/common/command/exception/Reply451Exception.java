@@ -36,7 +36,7 @@ public class Reply451Exception extends CommandAbstractException {
    *
    * @param message
    */
-  public Reply451Exception(String message) {
+  public Reply451Exception(final String message) {
     super(ReplyCode.REPLY_451_REQUESTED_ACTION_ABORTED, message);
   }
 

@@ -159,7 +159,7 @@ public enum ErrorCode implements TEnum {
 
   private final int value;
 
-  ErrorCode(int value) {
+  ErrorCode(final int value) {
     this.value = value;
   }
 
@@ -176,7 +176,7 @@ public enum ErrorCode implements TEnum {
    *
    * @return null if the value is not found.
    */
-  public static ErrorCode findByValue(int value) {
+  public static ErrorCode findByValue(final int value) {
     switch (value) {
       case 0:
         return InitOk;

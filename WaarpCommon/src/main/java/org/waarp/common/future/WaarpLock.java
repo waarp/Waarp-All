@@ -44,7 +44,7 @@ public class WaarpLock extends ReentrantLock {
   /**
    * @param fair
    */
-  public WaarpLock(boolean fair) {
+  public WaarpLock(final boolean fair) {
     super(fair);
   }
 
@@ -57,7 +57,7 @@ public class WaarpLock extends ReentrantLock {
    * @param timeout
    * @param timeUnit
    */
-  public void lock(long timeout, TimeUnit timeUnit) {
+  public void lock(final long timeout, final TimeUnit timeUnit) {
     try {
       tryLock(timeout, timeUnit);
     } catch (final InterruptedException e) {//NOSONAR

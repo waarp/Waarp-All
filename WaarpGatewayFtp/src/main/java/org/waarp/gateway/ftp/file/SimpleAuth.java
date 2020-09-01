@@ -82,9 +82,10 @@ public class SimpleAuth {
    * @param retrCmd
    * @param retrDelay
    */
-  public SimpleAuth(String user, String password, String[] accounts,
-                    String storCmd, long storDelay, String retrCmd,
-                    long retrDelay) {
+  public SimpleAuth(final String user, final String password,
+                    final String[] accounts, final String storCmd,
+                    final long storDelay, final String retrCmd,
+                    final long retrDelay) {
     setUser(user);
     setPassword(password);
     setAccounts(accounts);
@@ -112,7 +113,7 @@ public class SimpleAuth {
    *
    * @return True if the password is valid (or any password is valid)
    */
-  public boolean isPasswordValid(String newpassword) {
+  public boolean isPasswordValid(final String newpassword) {
     if (getPassword() == null) {
       return true;
     }
@@ -129,7 +130,7 @@ public class SimpleAuth {
    *
    * @return True if the account is valid (or any account is valid)
    */
-  public boolean isAccountValid(String account) {
+  public boolean isAccountValid(final String account) {
     if (getAccounts() == null) {
       logger.debug("No account needed");
       return true;
@@ -151,7 +152,7 @@ public class SimpleAuth {
   /**
    * @param isAdmin True if the user should be an administrator
    */
-  public void setAdmin(boolean isAdmin) {
+  public void setAdmin(final boolean isAdmin) {
     this.isAdmin = isAdmin;
   }
 
@@ -165,7 +166,7 @@ public class SimpleAuth {
   /**
    * @param user the user to set
    */
-  private void setUser(String user) {
+  private void setUser(final String user) {
     this.user = user;
   }
 
@@ -179,7 +180,7 @@ public class SimpleAuth {
   /**
    * @param password the password to set
    */
-  private void setPassword(String password) {
+  private void setPassword(final String password) {
     this.password = password;
   }
 
@@ -193,7 +194,7 @@ public class SimpleAuth {
   /**
    * @param accounts the accounts to set
    */
-  private void setAccounts(String[] accounts) {
+  private void setAccounts(final String[] accounts) {
     this.accounts = accounts;
   }
 
@@ -214,7 +215,7 @@ public class SimpleAuth {
   /**
    * @param storCmd the storCmd to set
    */
-  private void setStorCmd(String storCmd) {
+  private void setStorCmd(final String storCmd) {
     this.storCmd = storCmd;
   }
 
@@ -228,7 +229,7 @@ public class SimpleAuth {
   /**
    * @param storDelay the storDelay to set
    */
-  private void setStorDelay(long storDelay) {
+  private void setStorDelay(final long storDelay) {
     this.storDelay = storDelay;
   }
 
@@ -242,7 +243,7 @@ public class SimpleAuth {
   /**
    * @param retrCmd the retrCmd to set
    */
-  private void setRetrCmd(String retrCmd) {
+  private void setRetrCmd(final String retrCmd) {
     this.retrCmd = retrCmd;
   }
 
@@ -256,7 +257,7 @@ public class SimpleAuth {
   /**
    * @param retrDelay the retrDelay to set
    */
-  private void setRetrDelay(long retrDelay) {
+  private void setRetrDelay(final long retrDelay) {
     this.retrDelay = retrDelay;
   }
 
@@ -270,7 +271,7 @@ public class SimpleAuth {
   /**
    * @param commandExecutor the commandExecutor to set
    */
-  private void setCommandExecutor(CommandExecutor commandExecutor) {
+  private void setCommandExecutor(final CommandExecutor commandExecutor) {
     this.commandExecutor = commandExecutor;
   }
 }

@@ -55,7 +55,8 @@ class FtpTransferExecutor implements Runnable {
    * @param session
    * @param executeTransfer
    */
-  FtpTransferExecutor(FtpSession session, FtpTransfer executeTransfer) {
+  FtpTransferExecutor(final FtpSession session,
+                      final FtpTransfer executeTransfer) {
     this.session = session;
     this.executeTransfer = executeTransfer;
     if (this.executeTransfer == null) {

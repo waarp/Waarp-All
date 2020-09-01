@@ -69,7 +69,7 @@ public abstract class WaarpConstraintLimitHandler implements Runnable {
     long read;
     long write;
 
-    private CurLimits(long read, long write) {
+    private CurLimits(final long read, final long write) {
       this.read = read;
       this.write = write;
     }
@@ -119,12 +119,15 @@ public abstract class WaarpConstraintLimitHandler implements Runnable {
    *     when decreasing bandwidth (low
    *     limit = 4096)
    */
-  public WaarpConstraintLimitHandler(long waitForNetOp, long timeOutCon,
-                                     boolean useJdkCpuLimit, double lowcpuLimit,
-                                     double highcpuLimit,
-                                     double percentageDecrease,
-                                     AbstractTrafficShapingHandler handler,
-                                     long delay, long limitLowBandwidth) {
+  public WaarpConstraintLimitHandler(final long waitForNetOp,
+                                     final long timeOutCon,
+                                     final boolean useJdkCpuLimit,
+                                     final double lowcpuLimit,
+                                     final double highcpuLimit,
+                                     final double percentageDecrease,
+                                     final AbstractTrafficShapingHandler handler,
+                                     final long delay,
+                                     final long limitLowBandwidth) {
     this(waitForNetOp, timeOutCon, true, useJdkCpuLimit, 0, 0, lowcpuLimit,
          highcpuLimit, percentageDecrease, handler, delay, limitLowBandwidth);
   }
@@ -139,10 +142,12 @@ public abstract class WaarpConstraintLimitHandler implements Runnable {
    *     connections
    * @param channellimit number of connection limit (0<= x)
    */
-  public WaarpConstraintLimitHandler(long waitForNetOp, long timeOutCon,
-                                     boolean useCpuLimit,
-                                     boolean useJdKCpuLimit, double cpulimit,
-                                     int channellimit) {
+  public WaarpConstraintLimitHandler(final long waitForNetOp,
+                                     final long timeOutCon,
+                                     final boolean useCpuLimit,
+                                     final boolean useJdKCpuLimit,
+                                     final double cpulimit,
+                                     final int channellimit) {
     this(waitForNetOp, timeOutCon, useCpuLimit, useJdKCpuLimit, cpulimit,
          channellimit, 0, 0, 0.01, null, 1000000, LOWBANDWIDTH_DEFAULT);
   }
@@ -181,14 +186,18 @@ public abstract class WaarpConstraintLimitHandler implements Runnable {
    *     when decreasing bandwidth (low
    *     limit = 4096)
    */
-  public WaarpConstraintLimitHandler(long waitForNetOp2, long timeOutCon2,
-                                     boolean useCpuLimit,
-                                     boolean useJdKCpuLimit, double cpulimit,
-                                     int channellimit, double lowcpuLimit,
-                                     double highcpuLimit,
-                                     double percentageDecrease,
-                                     AbstractTrafficShapingHandler handler,
-                                     long delay, long limitLowBandwidth) {
+  public WaarpConstraintLimitHandler(final long waitForNetOp2,
+                                     final long timeOutCon2,
+                                     final boolean useCpuLimit,
+                                     final boolean useJdKCpuLimit,
+                                     final double cpulimit,
+                                     final int channellimit,
+                                     final double lowcpuLimit,
+                                     final double highcpuLimit,
+                                     final double percentageDecrease,
+                                     final AbstractTrafficShapingHandler handler,
+                                     final long delay,
+                                     final long limitLowBandwidth) {
     useCpuLimits = useCpuLimit;
     waitForNetOp = waitForNetOp2;
     timeoutCon = timeOutCon2;
@@ -255,7 +264,7 @@ public abstract class WaarpConstraintLimitHandler implements Runnable {
    *
    * @param isServer
    */
-  public void setServer(boolean isServer) {
+  public void setServer(final boolean isServer) {
     this.isServer = isServer;
   }
 
@@ -293,7 +302,7 @@ public abstract class WaarpConstraintLimitHandler implements Runnable {
       return true;
     }
     if (channelLimit > 0) {
-      int nb = getNumberLocalChannel();
+      final int nb = getNumberLocalChannel();
       if (channelLimit < nb) {
         lastAlert = "LocalNetwork Constraint: " + nb + " > " + channelLimit;
         logger.debug(lastAlert);
@@ -319,7 +328,7 @@ public abstract class WaarpConstraintLimitHandler implements Runnable {
    * @return True if one of the limit is exceeded. Always False if not a
    *     server mode
    */
-  public boolean checkConstraintsSleep(int step) {
+  public boolean checkConstraintsSleep(final int step) {
     if (!isServer) {
       return false;
     }
@@ -378,7 +387,7 @@ public abstract class WaarpConstraintLimitHandler implements Runnable {
   /**
    * @param cpuLimit the cpuLimit to set
    */
-  public void setCpuLimit(double cpuLimit) {
+  public void setCpuLimit(final double cpuLimit) {
     this.cpuLimit = cpuLimit;
   }
 
@@ -392,7 +401,7 @@ public abstract class WaarpConstraintLimitHandler implements Runnable {
   /**
    * @param channelLimit the channelLimit to set
    */
-  public void setChannelLimit(int channelLimit) {
+  public void setChannelLimit(final int channelLimit) {
     this.channelLimit = channelLimit;
   }
 
@@ -421,7 +430,7 @@ public abstract class WaarpConstraintLimitHandler implements Runnable {
    *
    * @param handler
    */
-  public void setHandler(AbstractTrafficShapingHandler handler) {
+  public void setHandler(final AbstractTrafficShapingHandler handler) {
     this.handler = handler;
     if (!constraintInactive && this.handler != null && useBandwidthLimit) {
       if (executor != null) {
@@ -454,7 +463,7 @@ public abstract class WaarpConstraintLimitHandler implements Runnable {
       return;
     }
     if (curLA > highCpuLimit) {
-      CurLimits curlimit;
+      final CurLimits curlimit;
       if (curLimits.isEmpty()) {
         // get current limit setting
         curlimit = new CurLimits(getReadLimit(), getWriteLimit());
@@ -506,7 +515,7 @@ public abstract class WaarpConstraintLimitHandler implements Runnable {
       }
       nbSinceLastDecrease = 0;
       curLimits.pollLast();
-      CurLimits newlimit;
+      final CurLimits newlimit;
       if (curLimits.isEmpty()) {
         // reset to default limits
         final long newread = getReadLimit();

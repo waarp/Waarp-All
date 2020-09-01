@@ -29,12 +29,12 @@ import java.io.FilenameFilter;
 public class ExtensionFilter implements FilenameFilter {
   final String filter;
 
-  public ExtensionFilter(String filter) {
+  public ExtensionFilter(final String filter) {
     this.filter = filter;
   }
 
   @Override
-  public boolean accept(File file, String s) {
+  public boolean accept(final File file, final String s) {
     return s.endsWith(filter);
   }
 

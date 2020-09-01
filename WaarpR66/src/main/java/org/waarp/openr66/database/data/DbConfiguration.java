@@ -108,12 +108,12 @@ public class DbConfiguration extends AbstractDbDataDao<Limit> {
    * @param ws Write Session Limit
    * @param del Delay Limit
    */
-  public DbConfiguration(String hostid, long rg, long wg, long rs, long ws,
-                         long del) {
+  public DbConfiguration(final String hostid, final long rg, final long wg,
+                         final long rs, final long ws, final long del) {
     pojo = new Limit(hostid, rg, wg, rs, ws, del);
   }
 
-  public DbConfiguration(Limit limit) {
+  public DbConfiguration(final Limit limit) {
     if (limit == null) {
       throw new IllegalArgumentException(
           "Argument in constructor cannot be null");
@@ -128,7 +128,8 @@ public class DbConfiguration extends AbstractDbDataDao<Limit> {
    *
    * @throws WaarpDatabaseSqlException
    */
-  public DbConfiguration(ObjectNode source) throws WaarpDatabaseSqlException {
+  public DbConfiguration(final ObjectNode source)
+      throws WaarpDatabaseSqlException {
     pojo = new Limit();
     setFromJson(source, false);
     if (pojo.getHostid() == null || pojo.getHostid().isEmpty()) {
@@ -146,7 +147,7 @@ public class DbConfiguration extends AbstractDbDataDao<Limit> {
    * @throws WaarpDatabaseSqlException
    */
   @Override
-  public void setFromJson(ObjectNode node, boolean ignorePrimaryKey)
+  public void setFromJson(final ObjectNode node, final boolean ignorePrimaryKey)
       throws WaarpDatabaseSqlException {
     super.setFromJson(node, ignorePrimaryKey);
     if (pojo.getHostid() == null || pojo.getHostid().isEmpty()) {
@@ -160,7 +161,7 @@ public class DbConfiguration extends AbstractDbDataDao<Limit> {
    *
    * @throws WaarpDatabaseException
    */
-  public DbConfiguration(String hostid) throws WaarpDatabaseException {
+  public DbConfiguration(final String hostid) throws WaarpDatabaseException {
     LimitDAO limitAccess = null;
     try {
       limitAccess = DAOFactory.getInstance().getLimitDAO();
@@ -186,7 +187,7 @@ public class DbConfiguration extends AbstractDbDataDao<Limit> {
     if (value == null) {
       return;
     }
-    for (Columns column : Columns.values()) {
+    for (final Columns column : Columns.values()) {
       if (column.name().equalsIgnoreCase(field)) {
         switch (column) {
           case READGLOBALLIMIT:
@@ -261,9 +262,8 @@ public class DbConfiguration extends AbstractDbDataDao<Limit> {
    * @throws WaarpDatabaseNoConnectionException
    * @throws WaarpDatabaseSqlException
    */
-  public static DbPreparedStatement getFilterPrepareStament(DbSession session,
-                                                            String hostid,
-                                                            long limitBandwith)
+  public static DbPreparedStatement getFilterPrepareStament(
+      final DbSession session, final String hostid, final long limitBandwith)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
     final DbPreparedStatement preparedStatement =
         new DbPreparedStatement(session);
@@ -312,10 +312,10 @@ public class DbConfiguration extends AbstractDbDataDao<Limit> {
       dbConfiguration.pojo = ((StatementExecutor<Limit>) limitDAO)
           .getFromResultSet(statement.getResultSet());
       return dbConfiguration;
-    } catch (SQLException e) {
+    } catch (final SQLException e) {
       DbSession.error(e);
       throw new WaarpDatabaseSqlException("Getting values in error", e);
-    } catch (DAOConnectionException e) {
+    } catch (final DAOConnectionException e) {
       throw new WaarpDatabaseSqlException("Getting values in error", e);
     } finally {
       DAOFactory.closeDAO(limitDAO);
@@ -323,7 +323,7 @@ public class DbConfiguration extends AbstractDbDataDao<Limit> {
   }
 
   @Override
-  public void changeUpdatedInfo(UpdatedInfo info) {
+  public void changeUpdatedInfo(final UpdatedInfo info) {
     pojo.setUpdatedInfo(org.waarp.openr66.pojo.UpdatedInfo.fromLegacy(info));
   }
 

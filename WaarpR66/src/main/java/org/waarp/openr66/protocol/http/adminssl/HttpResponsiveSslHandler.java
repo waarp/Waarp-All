@@ -113,7 +113,7 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
      *
      * @param uniquefile
      */
-    REQUEST(String uniquefile) {
+    REQUEST(final String uniquefile) {
       header = uniquefile;
     }
 
@@ -124,8 +124,8 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
      * @param endBody
      * @param end
      */
-    REQUEST(String header, String headerBody, String body, String endBody,
-            String end) {
+    REQUEST(final String header, final String headerBody, final String body,
+            final String endBody, final String end) {
       this.header = header;
     }
 
@@ -134,7 +134,7 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
      *
      * @return the content of the unique file
      */
-    public String read(HttpResponsiveSslHandler handler) {
+    public String read(final HttpResponsiveSslHandler handler) {
       return handler.readFileHeader(
           Configuration.configuration.getHttpBasePath() + header);
     }
@@ -161,12 +161,12 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
   }
 
   @Override
-  protected String error(String mesg) {
+  protected String error(final String mesg) {
     final String index = REQUEST.error.read(this);
     return index.replaceAll(REPLACEMENT.XXXERRORMESGXXX.toString(), mesg);
   }
 
-  private String unallowedResponsive(String mesg) {
+  private String unallowedResponsive(final String mesg) {
     final String index = REQUEST.unallowed.read(this);
     if (index == null || index.isEmpty()) {
       return error(mesg);
@@ -179,13 +179,17 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
     return REQUEST.Logon.read(this);
   }
 
-  private String setDbTaskRunnerJsonData(String head, String errorText,
-                                         String startid, String stopid,
-                                         Timestamp tstart, Timestamp tstop,
-                                         String rule, String req,
-                                         boolean pending, boolean transfer,
-                                         boolean error, boolean done,
-                                         boolean all) {
+  private String setDbTaskRunnerJsonData(final String head, String errorText,
+                                         final String startid,
+                                         final String stopid,
+                                         final Timestamp tstart,
+                                         final Timestamp tstop,
+                                         final String rule, final String req,
+                                         final boolean pending,
+                                         final boolean transfer,
+                                         final boolean error,
+                                         final boolean done,
+                                         final boolean all) {
     final String seeAll = checkAuthorizedToSeeAll();
     DbPreparedStatement preparedStatement = null;
     try {
@@ -258,10 +262,10 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
     String stop = getValue("stop");
     final String rule = getTrimValue("rule");
     final String req = getTrimValue("req");
-    boolean pending;
-    boolean transfer;
-    boolean error;
-    boolean done;
+    final boolean pending;
+    final boolean transfer;
+    final boolean error;
+    final boolean done;
     boolean all;
     pending = params.containsKey("pending");
     transfer = params.containsKey("transfer");
@@ -281,12 +285,10 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
     if (tstop != null) {
       stop = tstop.toString();
     }
-    final Long idstart = null;
     head =
         setDbTaskRunnerJsonData(head, errorText, startid, stopid, tstart, tstop,
                                 rule, req, pending, transfer, error, done, all);
-    head = resetOptionTransfer(head, startid == null?
-                                   idstart != null? idstart.toString() : "" : startid,
+    head = resetOptionTransfer(head, startid == null? "" : startid,
                                stopid == null? "" : stopid, start, stop,
                                rule == null? "" : rule, req == null? "" : req,
                                pending, transfer, error, done, all);
@@ -317,7 +319,7 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
       } else if ("RestartAll".equalsIgnoreCase(parm) ||
                  "StopAll".equalsIgnoreCase(parm) ||
                  "StopCleanAll".equalsIgnoreCase(parm)) {
-        RestartOrStopAll restartOrStopAll =
+        final RestartOrStopAll restartOrStopAll =
             new RestartOrStopAll(head, errorText, seeAll, parm).invoke();
         head = restartOrStopAll.getHead();
         errorText = restartOrStopAll.getErrorText();
@@ -334,7 +336,7 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
                 reqd + ' ' + reqr + ' ' + specid);
         // stop the current transfer
         ErrorCode result;
-        long lspecid;
+        final long lspecid;
         try {
           lspecid = Long.parseLong(specid);
         } catch (final NumberFormatException e) {
@@ -382,8 +384,8 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
           if ("CancelClean".equalsIgnoreCase(parm)) {
             TransferUtils.cleanOneTransfer(taskRunner, null, authentHttp, null);
           }
-          String tstart = taskRunner.getStart().toString();
-          String tstop = taskRunner.getStop().toString();
+          final String tstart = taskRunner.getStart().toString();
+          final String tstop = taskRunner.getStop().toString();
           head = resetOptionTransfer(head, String
                                          .valueOf(taskRunner.getSpecialId() - 1), String.valueOf(
               taskRunner.getSpecialId() + 1), tstart, tstop,
@@ -403,7 +405,7 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
         final String specid = getValue("specid");
         final String reqd = getValue("reqd");
         final String reqr = getValue("reqr");
-        long lspecid;
+        final long lspecid;
         if (specid == null || reqd == null || reqr == null) {
           errorText += "<br><b>" + parm +
                        Messages.getString("HttpSslHandler.3"); //$NON-NLS-2$
@@ -418,7 +420,7 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
           return head.replace(XXXRESULTXXX, errorText)
                      .replace(XXXDATAJSONXXX, "[]");
         }
-        DbTaskRunner taskRunner;
+        final DbTaskRunner taskRunner;
         String comment = "";
         try {
           taskRunner = new DbTaskRunner(authentHttp, null, lspecid, reqr, reqd);
@@ -428,8 +430,8 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
           final R66Result finalResult =
               TransferUtils.restartTransfer(taskRunner, lcr);
           comment = (String) finalResult.getOther();
-          String tstart = taskRunner.getStart().toString();
-          String tstop = taskRunner.getStop().toString();
+          final String tstart = taskRunner.getStart().toString();
+          final String tstop = taskRunner.getStop().toString();
           head = resetOptionTransfer(head, String
                                          .valueOf(taskRunner.getSpecialId() - 1), String.valueOf(
               taskRunner.getSpecialId() + 1), tstart, tstop,
@@ -500,10 +502,10 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
     String stop = getValue("stop");
     final String rule = getTrimValue("rule");
     final String req = getTrimValue("req");
-    boolean pending;
+    final boolean pending;
     boolean transfer;
-    boolean error;
-    boolean done;
+    final boolean error;
+    final boolean done;
     boolean all;
     pending = params.containsKey("pending");
     transfer = params.containsKey("transfer");
@@ -613,9 +615,10 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
            errorMsg; //$NON-NLS-1$
   }
 
-  private String setDbHostAuthJsonData(String head, String errorText,
-                                       String host, String addr, boolean ssl,
-                                       boolean isactive) {
+  private String setDbHostAuthJsonData(final String head, String errorText,
+                                       final String host, final String addr,
+                                       final boolean ssl,
+                                       final boolean isactive) {
     DbPreparedStatement preparedStatement = null;
     try {
       preparedStatement = DbHostAuth
@@ -658,11 +661,11 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
         String addr = getTrimValue("address");
         String port = getTrimValue("port");
         final String key = getTrimValue("hostkey");
-        boolean ssl;
-        boolean admin;
+        final boolean ssl;
+        final boolean admin;
         boolean isclient;
-        boolean isactive;
-        boolean isproxified;
+        final boolean isactive;
+        final boolean isproxified;
         ssl = params.containsKey("ssl");
         admin = params.containsKey("admin");
         isclient = params.containsKey("isclient");
@@ -730,11 +733,11 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
         final String addr = getTrimValue("address");
         final String port = getTrimValue("port");
         final String key = getTrimValue("hostkey");
-        boolean ssl;
-        boolean admin;
-        boolean isclient;
-        boolean isactive;
-        boolean isproxified;
+        final boolean ssl;
+        final boolean admin;
+        final boolean isclient;
+        final boolean isactive;
+        final boolean isproxified;
         ssl = params.containsKey("ssl");
         admin = params.containsKey("admin");
         isclient = params.containsKey("isclient");
@@ -748,7 +751,7 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
           return head.replace(XXXRESULTXXX, errorText)
                      .replace(XXXDATAJSONXXX, "[]");
         }
-        int iport;
+        final int iport;
         try {
           iport = Integer.parseInt(port);
         } catch (final NumberFormatException e1) {
@@ -795,7 +798,7 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
           return head.replace(XXXRESULTXXX, errorText)
                      .replace(XXXDATAJSONXXX, "[]");
         }
-        DbHostAuth dbhost;
+        final DbHostAuth dbhost;
         try {
           dbhost = new DbHostAuth(host);
         } catch (final WaarpDatabaseException e) {
@@ -836,7 +839,7 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
           return head.replace(XXXRESULTXXX, errorText)
                      .replace(XXXDATAJSONXXX, "[]");
         }
-        DbHostAuth dbhost;
+        final DbHostAuth dbhost;
         try {
           dbhost = new DbHostAuth(host);
         } catch (final WaarpDatabaseException e) {
@@ -869,7 +872,7 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
           return head.replace(XXXRESULTXXX, errorText)
                      .replace(XXXDATAJSONXXX, "[]");
         }
-        DbHostAuth dbhost;
+        final DbHostAuth dbhost;
         try {
           dbhost = new DbHostAuth(host);
         } catch (final WaarpDatabaseException e) {
@@ -911,8 +914,9 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
     return head.replace(XXXRESULTXXX, errorText).replace(XXXDATAJSONXXX, "[]");
   }
 
-  private void createExport(HashMap<String, String> rules, String rule,
-                            int mode, int limit) {
+  private void createExport(final HashMap<String, String> rules,
+                            final String rule, final int mode,
+                            final int limit) {
     DbPreparedStatement preparedStatement = null;
     try {
       preparedStatement = DbRule.getFilterPrepareStament(dbSession, rule, mode);
@@ -935,8 +939,8 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
     }
   }
 
-  private String createExport(String head, String errorText, String rule,
-                              int limit) {
+  private String createExport(final String head, String errorText,
+                              final String rule, final int limit) {
     DbPreparedStatement preparedStatement = null;
     try {
       preparedStatement = DbRule.getFilterPrepareStament(dbSession, rule, -1);
@@ -1192,7 +1196,7 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
           return head.replace(XXXRESULTXXX, errorText)
                      .replace(XXXDATAJSONXXX, "[]");
         }
-        DbRule dbrule;
+        final DbRule dbrule;
         try {
           dbrule = new DbRule(rule);
         } catch (final WaarpDatabaseException e) {
@@ -1233,7 +1237,7 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
     return head.replace(XXXRESULTXXX, errorText).replace(XXXDATAJSONXXX, "[]");
   }
 
-  private String spooled(boolean detailed) {
+  private String spooled(final boolean detailed) {
     // XXXSPOOLEDXXX
     if (request.method() == HttpMethod.POST) {
       getParamsResponsive();
@@ -1308,7 +1312,7 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
    * @param builder
    */
   @Override
-  protected void langHandle(StringBuilder builder) {
+  protected void langHandle(final StringBuilder builder) {
     // i18n: add here any new languages
     WaarpStringUtils.replace(builder, REPLACEMENT.XXXCURLANGENXXX.name(),
                              "en".equalsIgnoreCase(lang)? "checked" : "");
@@ -1330,7 +1334,7 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
     return system;
   }
 
-  private void fillHostIds(StringBuilder builder) {
+  private void fillHostIds(final StringBuilder builder) {
     final ArrayList<String> hostsList = new ArrayList<String>();
     try {
       final DbHostAuth[] hosts = DbHostAuth.getAllHosts();
@@ -1462,7 +1466,7 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
           }
           Configuration.configuration.setShutdown(block);
         } else if ("Shutdown".equalsIgnoreCase(act)) {
-          String error;
+          final String error;
           if (Configuration.configuration
                   .getShutdownConfiguration().serviceFuture != null) {
             error =
@@ -1602,11 +1606,11 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
             new QueryStringDecoder("/?" + param);
         params = queryStringDecoder2.parameters();
         boolean invalidEntry = false;
-        for (Entry<String, List<String>> paramCheck : params.entrySet()) {
+        for (final Entry<String, List<String>> paramCheck : params.entrySet()) {
           try {
             ParametersChecker.checkSanityString(paramCheck.getValue().toArray(
                 ParametersChecker.ZERO_ARRAY_STRING));
-          } catch (InvalidArgumentException e) {
+          } catch (final InvalidArgumentException e) {
             logger.error(
                 "Arguments incompatible with Security: " + paramCheck.getKey(),
                 e);
@@ -1614,7 +1618,8 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
           }
         }
         if (invalidEntry) {
-          for (Entry<String, List<String>> paramCheck : params.entrySet()) {
+          for (final Entry<String, List<String>> paramCheck : params
+              .entrySet()) {
             paramCheck.getValue().clear();
           }
           params.clear();
@@ -1666,7 +1671,7 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
     }
   }
 
-  private void checkAuthentResponsive(ChannelHandlerContext ctx) {
+  private void checkAuthentResponsive(final ChannelHandlerContext ctx) {
     newSession = true;
     if (request.method() == HttpMethod.GET) {
       String logon = logon();
@@ -1781,8 +1786,8 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
   }
 
   @Override
-  protected void channelRead0(ChannelHandlerContext ctx, FullHttpRequest msg)
-      throws Exception {
+  protected void channelRead0(final ChannelHandlerContext ctx,
+                              final FullHttpRequest msg) throws Exception {
     final FullHttpRequest request = this.request = msg;
     final QueryStringDecoder queryStringDecoder =
         new QueryStringDecoder(request.uri());
@@ -1927,16 +1932,12 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
       boolean pending;
       boolean transfer;
       boolean error;
-      boolean done;
       boolean all;
       pending = params.containsKey("pending");
       transfer = params.containsKey("transfer");
       error = params.containsKey("error");
-      done = false;
       all = false;
-      if (pending && transfer && error && done) {
-        all = true;
-      } else if (!(pending || transfer || error || done)) {
+      if (!(pending || transfer || error)) {
         all = true;
         pending = true;
         transfer = true;
@@ -1953,7 +1954,7 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
       head = resetOptionTransfer(head, startid == null? "" : startid,
                                  stopid == null? "" : stopid, start, stop,
                                  rule == null? "" : rule, req == null? "" : req,
-                                 pending, transfer, error, done, all);
+                                 pending, transfer, error, false, all);
       final HashMap<String, String> map = new HashMap<String, String>();
       if (stopcommand) {
         if ("StopCleanAll".equalsIgnoreCase(parm)) {
@@ -1973,7 +1974,7 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
           preparedStatement = DbTaskRunner
               .getFilterPrepareStatement(dbSession, 0, false, startid, stopid,
                                          tstart, tstop, rule, req, pending,
-                                         transfer, error, done, all, seeAll);
+                                         transfer, error, false, all, seeAll);
           preparedStatement.executeQuery();
           while (preparedStatement.getNext()) {
             try {
@@ -1994,7 +1995,6 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
               // try to continue if possible
               logger.warn("An error occurs while accessing a Runner: {}",
                           e.getMessage());
-              continue;
             }
           }
           preparedStatement.realClose();

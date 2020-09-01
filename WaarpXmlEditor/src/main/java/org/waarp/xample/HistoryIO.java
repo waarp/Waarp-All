@@ -60,7 +60,7 @@ public final class HistoryIO {
   private HistoryIO() {
   }
 
-  static void populateHistory(History history, Element element) {
+  static void populateHistory(final History history, final Element element) {
     final NodeList lst = element.getChildNodes();
     history.items = new ArrayList<History>();
     for (int i = lst.getLength() - 1; i >= 0; i--) {
@@ -76,12 +76,12 @@ public final class HistoryIO {
     }
   }
 
-  public static void load(History history) {
+  public static void load(final History history) {
     final File file = new File(HISTORY_FILE_NAME);
     if (!file.exists()) {
       return;
     }
-    Element root;
+    final Element root;
     try {
       final DOMParser parser = new DOMParser();
       parser.parse(file.toURI().toURL().toString());
@@ -93,7 +93,7 @@ public final class HistoryIO {
     }
   }
 
-  public static void save(History history) {
+  public static void save(final History history) {
     final Document doc = new DocumentImpl();
     final Element root = doc.createElement(HISTORY);
     doc.appendChild(root);

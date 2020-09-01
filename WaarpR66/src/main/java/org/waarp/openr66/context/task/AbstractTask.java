@@ -233,8 +233,8 @@ public abstract class AbstractTask implements Runnable {
    * @param argTransfer
    * @param session
    */
-  AbstractTask(TaskType type, int delay, String argRule, String argTransfer,
-               R66Session session) {
+  AbstractTask(final TaskType type, final int delay, final String argRule,
+               final String argTransfer, final R66Session session) {
     this.type = type;
     this.delay = delay;
     if (argRule != null) {
@@ -293,7 +293,8 @@ public abstract class AbstractTask implements Runnable {
    *
    * @return The string with replaced values from context and second argument
    */
-  protected String getReplacedValue(String arg, Object[] argFormat) {
+  protected String getReplacedValue(final String arg,
+                                    final Object[] argFormat) {
     final StringBuilder builder = new StringBuilder(arg);
     // check NOWAIT and LOCALEXEC
     if (arg.contains(NOWAIT)) {

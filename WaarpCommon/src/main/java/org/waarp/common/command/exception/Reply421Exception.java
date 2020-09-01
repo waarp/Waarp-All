@@ -41,7 +41,7 @@ public class Reply421Exception extends CommandAbstractException {
    *
    * @param message
    */
-  public Reply421Exception(String message) {
+  public Reply421Exception(final String message) {
     super(ReplyCode.REPLY_421_SERVICE_NOT_AVAILABLE_CLOSING_CONTROL_CONNECTION,
           message);
   }

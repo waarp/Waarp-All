@@ -48,7 +48,7 @@ public class LogImport {
   /**
    * @param args
    */
-  public static void main(String[] args) {
+  public static void main(final String[] args) {
     WaarpLoggerFactory
         .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));
     if (logger == null) {

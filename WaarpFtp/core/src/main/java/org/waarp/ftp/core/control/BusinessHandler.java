@@ -59,7 +59,7 @@ public abstract class BusinessHandler {
    *
    * @param networkHandler the networkHandler to set
    */
-  public void setNetworkHandler(NetworkHandler networkHandler) {
+  public void setNetworkHandler(final NetworkHandler networkHandler) {
     this.networkHandler = networkHandler;
     session = this.networkHandler.getFtpSession();
   }
@@ -114,10 +114,8 @@ public abstract class BusinessHandler {
   public abstract String getFeatMessage();
 
   protected String getSslFeatMessage() {
-    final StringBuilder builder =
-        new StringBuilder().append("AUTH TLS\n").append("AUTH SSL\n")
-                           .append("CCC\n").append("PROT P\n").append("PROT C");
-    return builder.toString();
+    final String builder = "AUTH TLS\nAUTH SSL\nCCC\nPROT P\nPROT C";
+    return builder;
   }
 
   /**
@@ -196,7 +194,7 @@ public abstract class BusinessHandler {
    * @return the string to return to the client for the FEAT command for the
    *     MLSx argument
    */
-  protected String getMLSxOptsMessage(String[] args) {
+  protected String getMLSxOptsMessage(final String[] args) {
     String[] properties = PROPERTIES_0_LENGTH;
     if (args.length >= 2) {
       properties = args[1].split(";");

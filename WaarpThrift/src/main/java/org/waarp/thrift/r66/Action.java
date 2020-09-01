@@ -32,7 +32,7 @@ public enum Action implements TEnum {
 
   private final int value;
 
-  Action(int value) {
+  Action(final int value) {
     this.value = value;
   }
 
@@ -49,7 +49,7 @@ public enum Action implements TEnum {
    *
    * @return null if the value is not found.
    */
-  public static Action findByValue(int value) {
+  public static Action findByValue(final int value) {
     switch (value) {
       case 1:
         return Exist;

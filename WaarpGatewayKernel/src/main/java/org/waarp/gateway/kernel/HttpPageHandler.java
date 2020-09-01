@@ -44,7 +44,7 @@ public class HttpPageHandler {
   /**
    * @param hashmap
    */
-  public HttpPageHandler(Map<String, HttpPage> hashmap) {
+  public HttpPageHandler(final Map<String, HttpPage> hashmap) {
     setHashmap(hashmap);
   }
 
@@ -53,7 +53,7 @@ public class HttpPageHandler {
    *
    * @return an HttpPage according to the error code (400, 404, 500, ...)
    */
-  public HttpPage getHttpPage(int code) {
+  public HttpPage getHttpPage(final int code) {
     final String scode = Integer.toString(code);
     return getHashmap().get(scode);
   }
@@ -67,7 +67,8 @@ public class HttpPageHandler {
    *
    * @throws HttpIncorrectRequestException
    */
-  public HttpPage getHttpPage(String uri, String method, HttpSession session)
+  public HttpPage getHttpPage(final String uri, final String method,
+                              final HttpSession session)
       throws HttpIncorrectRequestException {
     HttpPage page = getHashmap().get(uri);
     if (page == null) {
@@ -81,7 +82,7 @@ public class HttpPageHandler {
               .logErrorAction(DbConstant.admin.getSession(), session,
                               INCORRECT_PAGE + page.getPagerole(),
                               HttpResponseStatus.BAD_REQUEST);
-          if (page.getErrorpage() != null || page.getErrorpage().length() > 1) {
+          if (page.getErrorpage() != null && page.getErrorpage().length() > 1) {
             page = getHashmap().get(page.getErrorpage());
           } else {
             page = null;
@@ -99,7 +100,7 @@ public class HttpPageHandler {
               .logErrorAction(DbConstant.admin.getSession(), session,
                               INCORRECT_PAGE + page.getPagerole(),
                               HttpResponseStatus.BAD_REQUEST);
-          if (page.getErrorpage() != null || page.getErrorpage().length() > 1) {
+          if (page.getErrorpage() != null && page.getErrorpage().length() > 1) {
             page = getHashmap().get(page.getErrorpage());
           } else {
             page = null;
@@ -114,7 +115,7 @@ public class HttpPageHandler {
               .logErrorAction(DbConstant.admin.getSession(), session,
                               INCORRECT_PAGE + page.getPagerole(),
                               HttpResponseStatus.BAD_REQUEST);
-          if (page.getErrorpage() != null || page.getErrorpage().length() > 1) {
+          if (page.getErrorpage() != null && page.getErrorpage().length() > 1) {
             page = getHashmap().get(page.getErrorpage());
           } else {
             page = null;
@@ -128,7 +129,7 @@ public class HttpPageHandler {
               .logErrorAction(DbConstant.admin.getSession(), session,
                               INCORRECT_PAGE + page.getPagerole(),
                               HttpResponseStatus.BAD_REQUEST);
-          if (page.getErrorpage() != null || page.getErrorpage().length() > 1) {
+          if (page.getErrorpage() != null && page.getErrorpage().length() > 1) {
             page = getHashmap().get(page.getErrorpage());
           } else {
             page = null;
@@ -164,7 +165,7 @@ public class HttpPageHandler {
   /**
    * @param hashmap the hashmap to set
    */
-  private void setHashmap(Map<String, HttpPage> hashmap) {
+  private void setHashmap(final Map<String, HttpPage> hashmap) {
     this.hashmap = hashmap;
   }
 }

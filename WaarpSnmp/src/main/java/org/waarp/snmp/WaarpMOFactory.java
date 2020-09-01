@@ -62,9 +62,11 @@ public final class WaarpMOFactory {
    *
    * @return an MOScalar according to the argument
    */
-  public static WaarpMOScalar createReadOnly(OID oid, Object value, int type,
-                                             WaarpMORow row, int mibLevel,
-                                             int entry) {
+  public static WaarpMOScalar createReadOnly(final OID oid, final Object value,
+                                             final int type,
+                                             final WaarpMORow row,
+                                             final int mibLevel,
+                                             final int entry) {
     return new WaarpMOScalar(oid, MOAccessImpl.ACCESS_READ_ONLY,
                              getVariable(oid, value, type, mibLevel, entry),
                              row);
@@ -78,9 +80,10 @@ public final class WaarpMOFactory {
    *
    * @return an MOScalar according to the argument
    */
-  public static WaarpMOScalar create(OID oid, Object value, int type,
-                                     MOAccess access, WaarpMORow row,
-                                     int mibLevel, int entry) {
+  public static WaarpMOScalar create(final OID oid, final Object value,
+                                     final int type, final MOAccess access,
+                                     final WaarpMORow row, final int mibLevel,
+                                     final int entry) {
     return new WaarpMOScalar(oid, access,
                              getVariable(oid, value, type, mibLevel, entry),
                              row);
@@ -97,10 +100,11 @@ public final class WaarpMOFactory {
    *
    * @return a Variable using the arguments
    */
-  public static Variable getVariable(OID oid, Object value, int type,
-                                     int mibLevel, int entry) {
-    Variable var;
-    WaarpInterfaceVariableFactory vf;
+  public static Variable getVariable(final OID oid, final Object value,
+                                     final int type, final int mibLevel,
+                                     final int entry) {
+    final Variable var;
+    final WaarpInterfaceVariableFactory vf;
     if (getFactory() == null) {
       vf = defaultFactory;
     } else {
@@ -134,7 +138,7 @@ public final class WaarpMOFactory {
           break;
         case SMIConstants.SYNTAX_TIMETICKS:
           if (value instanceof TimeTicks) {
-            ((TimeTicks) var).setValue(((TimeTicks) value).toString());
+            ((TimeTicks) var).setValue(value.toString());
           } else {
             ((TimeTicks) var).setValue((Long) value);
           }
@@ -160,7 +164,8 @@ public final class WaarpMOFactory {
    * @param value
    * @param type
    */
-  public static void setVariable(Variable var, Object value, int type) {
+  public static void setVariable(final Variable var, final Object value,
+                                 final int type) {
     if (value != null) {
       switch (type) {
         case SMIConstants.SYNTAX_INTEGER:
@@ -188,7 +193,7 @@ public final class WaarpMOFactory {
           break;
         case SMIConstants.SYNTAX_TIMETICKS:
           if (value instanceof TimeTicks) {
-            ((TimeTicks) var).setValue(((TimeTicks) value).toString());
+            ((TimeTicks) var).setValue(value.toString());
           } else {
             ((TimeTicks) var).setValue((Long) value);
           }
@@ -216,7 +221,7 @@ public final class WaarpMOFactory {
   /**
    * @param factory the factory to set
    */
-  public static void setFactory(WaarpInterfaceVariableFactory factory) {
+  public static void setFactory(final WaarpInterfaceVariableFactory factory) {
     WaarpMOFactory.factory = factory;
   }
 }

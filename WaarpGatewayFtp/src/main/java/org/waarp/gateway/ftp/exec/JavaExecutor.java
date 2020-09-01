@@ -51,8 +51,8 @@ public class JavaExecutor extends AbstractExecutor {
    * @param delay
    * @param futureCompletion
    */
-  public JavaExecutor(String command, long delay,
-                      WaarpFuture futureCompletion) {
+  public JavaExecutor(final String command, final long delay,
+                      final WaarpFuture futureCompletion) {
     args = BLANK.split(command);
     this.futureCompletion = futureCompletion;
     this.delay = delay;
@@ -63,13 +63,13 @@ public class JavaExecutor extends AbstractExecutor {
     final String className = args[0];
     try {
       ParametersChecker.checkSanityString(className);
-    } catch (InvalidArgumentException e) {
+    } catch (final InvalidArgumentException e) {
       SysErrLogger.FAKE_LOGGER.ignoreLog(e);
       logger.error(
           "Status: " + e.getMessage() + "\n\t Exec in error with " + className);
       throw new Reply421Exception("Pre Exec command is not correctly executed");
     }
-    GatewayRunnable runnable;
+    final GatewayRunnable runnable;
     try {
       runnable = (GatewayRunnable) Class.forName(className)//NOSONAR
                                         .newInstance();//NOSONAR

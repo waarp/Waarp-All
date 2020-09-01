@@ -72,7 +72,7 @@ public class R66Dialog extends JDialog {
         final JButton okButton = new JButton("OK");
         okButton.addActionListener(new ActionListener() {
           @Override
-          public void actionPerformed(ActionEvent e) {
+          public void actionPerformed(final ActionEvent e) {
             AdminR66OperationsGui.getWindow().enableAllButtons();
             dispose();
           }
@@ -95,7 +95,7 @@ public class R66Dialog extends JDialog {
   /**
    * @param textPaneDialog the textPaneDialog to set
    */
-  public void setTextPaneDialog(JEditorPane textPaneDialog) {
+  public void setTextPaneDialog(final JEditorPane textPaneDialog) {
     this.textPaneDialog = textPaneDialog;
   }
 

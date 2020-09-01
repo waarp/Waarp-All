@@ -120,7 +120,7 @@ public class FtpTransferControl {
   /**
    * @param session
    */
-  public FtpTransferControl(FtpSession session) {
+  public FtpTransferControl(final FtpSession session) {
     this.session = session;
     endOfCommand = null;
   }
@@ -158,8 +158,8 @@ public class FtpTransferControl {
    * @param channel
    * @param dataNetworkHandler
    */
-  public void setOpenedDataChannel(Channel channel,
-                                   DataNetworkHandler dataNetworkHandler) {
+  public void setOpenedDataChannel(final Channel channel,
+                                   final DataNetworkHandler dataNetworkHandler) {
     logger.debug("SetOpenedDataChannel: " +
                  (channel != null? channel.remoteAddress() : "no channel"));
     if (channel != null) {
@@ -369,7 +369,8 @@ public class FtpTransferControl {
    * @param command
    * @param file
    */
-  public void setNewFtpTransfer(FtpCommandCode command, FtpFile file) {
+  public void setNewFtpTransfer(final FtpCommandCode command,
+                                final FtpFile file) {
     isExecutingCommandFinished = false;
     commandFinishing = new WaarpFuture(true);
     logger.debug("setNewCommand: {}", command);
@@ -395,8 +396,8 @@ public class FtpTransferControl {
    * @param list
    * @param path as Original Path
    */
-  public void setNewFtpTransfer(FtpCommandCode command, List<String> list,
-                                String path) {
+  public void setNewFtpTransfer(final FtpCommandCode command,
+                                final List<String> list, final String path) {
     isExecutingCommandFinished = false;
     commandFinishing = new WaarpFuture(true);
     logger.debug("setNewCommand: {}", command);
@@ -510,7 +511,7 @@ public class FtpTransferControl {
       return false;
     } else if (FtpCommandCode
         .isRetrLikeCommand(executedTransfer.getCommand())) {
-      FtpFile file;
+      final FtpFile file;
       try {
         file = executedTransfer.getFtpFile();
       } catch (final FtpNoFileException e) {
@@ -549,7 +550,7 @@ public class FtpTransferControl {
   private void abortTransfer() {
     logger
         .debug("Will abort transfer and write: ", new Exception("trace only"));
-    FtpFile file;
+    final FtpFile file;
     FtpTransfer current = null;
     try {
       current = getExecutingFtpTransfer();
@@ -586,7 +587,7 @@ public class FtpTransferControl {
    */
   private void closeTransfer() {
     logger.debug("Will close transfer");
-    FtpFile file;
+    final FtpFile file;
     FtpTransfer current = null;
     try {
       current = getExecutingFtpTransfer();
@@ -646,7 +647,7 @@ public class FtpTransferControl {
    * @param write True means the message is write back to the control
    *     command, false it is only prepared
    */
-  public void setTransferAbortedFromInternal(boolean write) {
+  public void setTransferAbortedFromInternal(final boolean write) {
     logger.debug("Set transfer aborted internal {}", write);
     abortTransfer();
     if (write) {

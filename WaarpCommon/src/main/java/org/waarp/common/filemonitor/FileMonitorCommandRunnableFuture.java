@@ -40,18 +40,18 @@ public abstract class FileMonitorCommandRunnableFuture implements Runnable {
   protected FileMonitorCommandRunnableFuture() {
   }
 
-  public void setMonitor(FileMonitor monitor) {
+  public void setMonitor(final FileMonitor monitor) {
     this.monitor = monitor;
   }
 
   /**
    * @param fileItem
    */
-  protected FileMonitorCommandRunnableFuture(FileItem fileItem) {
+  protected FileMonitorCommandRunnableFuture(final FileItem fileItem) {
     setFileItem(fileItem);
   }
 
-  public void setFileItem(FileItem fileItem) {
+  public void setFileItem(final FileItem fileItem) {
     this.fileItem = fileItem;
   }
 
@@ -74,7 +74,7 @@ public abstract class FileMonitorCommandRunnableFuture implements Runnable {
    *
    * @param ignoreAlreadyUsed
    */
-  protected void checkReuse(boolean ignoreAlreadyUsed) {
+  protected void checkReuse(final boolean ignoreAlreadyUsed) {
     if (!ignoreAlreadyUsed && fileItem.used &&
         fileItem.specialId != ILLEGALVALUE &&
         fileItem.status == Status.RESTART) {
@@ -87,7 +87,7 @@ public abstract class FileMonitorCommandRunnableFuture implements Runnable {
            fileItem.specialId != ILLEGALVALUE;
   }
 
-  protected boolean isIgnored(boolean ignoreAlreadyUsed) {
+  protected boolean isIgnored(final boolean ignoreAlreadyUsed) {
     return !ignoreAlreadyUsed && fileItem.used;
   }
 
@@ -99,11 +99,11 @@ public abstract class FileMonitorCommandRunnableFuture implements Runnable {
    * @return True if the file has to be run (or re-run), False in other
    *     conditions (ignored)
    */
-  protected boolean checkFileItemBusiness(FileItem fileItem) {
+  protected boolean checkFileItemBusiness(final FileItem fileItem) {
     return fileItem.status == Status.VALID || fileItem.status == Status.RESTART;
   }
 
-  protected void setValid(FileItem fileItem) {
+  protected void setValid(final FileItem fileItem) {
     fileItem.specialId = ILLEGALVALUE;
     fileItem.used = false;
     fileItem.status = Status.VALID;
@@ -116,7 +116,7 @@ public abstract class FileMonitorCommandRunnableFuture implements Runnable {
    * @param status
    * @param specialId the specialId associated with the task
    */
-  protected void finalizeValidFile(boolean status, long specialId) {
+  protected void finalizeValidFile(final boolean status, final long specialId) {
     if (getMonitor() != null) {
       final Date date = new Date();
       if (date.after(getMonitor().nextDay)) {

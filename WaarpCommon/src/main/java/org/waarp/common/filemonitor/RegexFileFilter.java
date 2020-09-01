@@ -32,22 +32,22 @@ public class RegexFileFilter implements FileFilter {
   protected final Pattern pattern;
   protected long minimalSize;
 
-  public RegexFileFilter(String regex) {
+  public RegexFileFilter(final String regex) {
     pattern = Pattern.compile(regex);
   }
 
-  public RegexFileFilter(String regex, long minimalSize) {
+  public RegexFileFilter(final String regex, final long minimalSize) {
     pattern = Pattern.compile(regex);
     this.minimalSize = minimalSize;
   }
 
-  public RegexFileFilter(long minimalSize) {
+  public RegexFileFilter(final long minimalSize) {
     pattern = null;
     this.minimalSize = minimalSize;
   }
 
   @Override
-  public boolean accept(File pathname) {
+  public boolean accept(final File pathname) {
     if (pathname.isFile()) {
       if (pattern != null) {
         return pattern.matcher(pathname.getPath()).find() &&

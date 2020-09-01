@@ -47,8 +47,7 @@ public final class WaarpNettyUtil {
   }
 
   private static int getSoBufSize(final int maxBufSize) {
-    int so_buf =
-        maxBufSize * 16 < BUFFER_SIZE_1MB? maxBufSize * 16 : BUFFER_SIZE_1MB;
+    int so_buf = Math.min(maxBufSize * 16, BUFFER_SIZE_1MB);
     if (so_buf < maxBufSize * 4) {
       so_buf = maxBufSize * 4;
     }
@@ -86,9 +85,7 @@ public final class WaarpNettyUtil {
     bootstrap.option(ChannelOption.SO_KEEPALIVE, true);
     bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, timeout);
     final int so_buf = getSoBufSize(maxBufSize);
-    final int lowWaterMark =
-        DEFAULT_LOW_WATER_MARK > maxBufSize / 2? maxBufSize / 2 :
-            DEFAULT_LOW_WATER_MARK;
+    final int lowWaterMark = Math.min(DEFAULT_LOW_WATER_MARK, maxBufSize / 2);
     bootstrap.option(ChannelOption.SO_RCVBUF, so_buf);
     bootstrap.option(ChannelOption.SO_SNDBUF, so_buf);
     bootstrap.option(ChannelOption.WRITE_BUFFER_WATER_MARK,
@@ -130,9 +127,7 @@ public final class WaarpNettyUtil {
     bootstrap.childOption(ChannelOption.SO_KEEPALIVE, true);
     bootstrap.childOption(ChannelOption.CONNECT_TIMEOUT_MILLIS, timeout);
     final int so_buf = getSoBufSize(maxBufSize);
-    final int lowWaterMark =
-        DEFAULT_LOW_WATER_MARK > maxBufSize / 2? maxBufSize / 2 :
-            DEFAULT_LOW_WATER_MARK;
+    final int lowWaterMark = Math.min(DEFAULT_LOW_WATER_MARK, maxBufSize / 2);
     bootstrap.childOption(ChannelOption.SO_RCVBUF, so_buf);
     bootstrap.childOption(ChannelOption.SO_SNDBUF, so_buf);
     bootstrap.childOption(ChannelOption.WRITE_BUFFER_WATER_MARK,
@@ -146,7 +141,7 @@ public final class WaarpNettyUtil {
    *
    * @return True if await done, else interruption occurs
    */
-  public static boolean awaitOrInterrupted(Future<?> future) {
+  public static boolean awaitOrInterrupted(final Future<?> future) {
     try {
       while (!Thread.interrupted()) {
         if (future.await(TIMEOUT_MILLIS)) {
@@ -165,8 +160,8 @@ public final class WaarpNettyUtil {
    *
    * @return True if await done, else interruption occurs
    */
-  public static boolean awaitOrInterrupted(Future<?> future,
-                                           long timeMilliseconds) {
+  public static boolean awaitOrInterrupted(final Future<?> future,
+                                           final long timeMilliseconds) {
     try {
       if (future.await(timeMilliseconds)) {
         return !Thread.interrupted();
@@ -183,7 +178,7 @@ public final class WaarpNettyUtil {
    * @return True if await and isSuccess, else interruption or not success
    *     occurs
    */
-  public static boolean awaitIsSuccessOfInterrupted(Future<?> future) {
+  public static boolean awaitIsSuccessOfInterrupted(final Future<?> future) {
     try {
       while (!Thread.interrupted()) {
         if (future.await(TIMEOUT_MILLIS)) {

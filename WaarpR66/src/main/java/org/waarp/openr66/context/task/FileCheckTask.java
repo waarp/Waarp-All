@@ -64,8 +64,8 @@ public class FileCheckTask extends AbstractTask {
    * @param argTransfer
    * @param session
    */
-  public FileCheckTask(String argRule, int delay, String argTransfer,
-                       R66Session session) {
+  public FileCheckTask(final String argRule, final int delay,
+                       final String argTransfer, final R66Session session) {
     super(TaskType.CHKFILE, delay, argRule, argTransfer, session);
   }
 
@@ -102,7 +102,7 @@ public class FileCheckTask extends AbstractTask {
           try {
             final long tocompare = Long.parseLong(commands[current]);
             current++;
-            boolean result;
+            final boolean result;
             switch (arg) {
               case EQ:
                 result = supposelength == tocompare;

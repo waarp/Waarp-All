@@ -36,7 +36,7 @@ public class Reply522Exception extends CommandAbstractException {
    *
    * @param message
    */
-  public Reply522Exception(String message) {
+  public Reply522Exception(final String message) {
     super(ReplyCode.REPLY_522_EXTENDED_PORT_FAILURE_UNKNOWN_NETWORK_PROTOCOL,
           message);
   }

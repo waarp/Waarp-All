@@ -84,7 +84,7 @@ public final class StringUtils {
    *
    * @return the short name of the Class of this object
    */
-  public static String getClassName(Object object) {
+  public static String getClassName(final Object object) {
     final Class<?> clasz = object.getClass();
     String name = clasz.getSimpleName();
     if (name != null && !name.isEmpty()) {

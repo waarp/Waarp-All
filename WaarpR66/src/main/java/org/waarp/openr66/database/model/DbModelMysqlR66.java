@@ -36,27 +36,28 @@ public class DbModelMysqlR66 extends DbModelMysql {
    *
    * @throws WaarpDatabaseNoConnectionException
    */
-  public DbModelMysqlR66(String dbserver, String dbuser, String dbpasswd)
+  public DbModelMysqlR66(final String dbserver, final String dbuser,
+                         final String dbpasswd)
       throws WaarpDatabaseNoConnectionException {
     super(dbserver, dbuser, dbpasswd);
   }
 
   @Override
-  public void createTables(DbSession session)
+  public void createTables(final DbSession session)
       throws WaarpDatabaseNoConnectionException {
     DbModelFactoryR66.createTableMariaDbMySQL(dbTypeResolver, session);
   }
 
   @Override
-  public boolean upgradeDb(DbSession session, String version)
+  public boolean upgradeDb(final DbSession session, final String version)
       throws WaarpDatabaseNoConnectionException {
     return DbModelFactoryR66
         .upgradeDbMariaDbMySQL(dbTypeResolver, session, version);
   }
 
   @Override
-  public boolean needUpgradeDb(DbSession session, String version,
-                               boolean tryFix)
+  public boolean needUpgradeDb(final DbSession session, final String version,
+                               final boolean tryFix)
       throws WaarpDatabaseNoConnectionException {
     return DbModelFactoryR66
         .needUpgradeDbAllDb(dbTypeResolver, session, version);

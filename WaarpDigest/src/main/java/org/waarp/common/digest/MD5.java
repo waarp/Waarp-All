@@ -167,12 +167,12 @@ class MD5 {
    * @param ob Object, ob.toString() is used to update hash after
    *     initialization
    */
-  MD5(Object ob) {
+  MD5(final Object ob) {
     this();
     Update(ob.toString());
   }
 
-  private void Decode(byte[] buffer, int shift, int[] out) {
+  private void Decode(final byte[] buffer, final int shift, final int[] out) {
     // unrolled loop (original loop shown above)
     out[0] = buffer[shift] & 0xff | (buffer[shift + 1] & 0xff) << 8 |
              (buffer[shift + 2] & 0xff) << 16 | buffer[shift + 3] << 24;
@@ -208,8 +208,8 @@ class MD5 {
               (buffer[shift + 62] & 0xff) << 16 | buffer[shift + 63] << 24;
   }
 
-  private void Transform(MD5State stat, byte[] buffer, int shift,
-                         int[] decodeBuf) {
+  private void Transform(final MD5State stat, final byte[] buffer,
+                         final int shift, final int[] decodeBuf) {
     int a = stat.state[0];
     int b = stat.state[1];
     int c = stat.state[2];
@@ -382,11 +382,12 @@ class MD5 {
    * @param length Use at maximum `length' bytes (absolute maximum is
    *     buffer.length)
    */
-  void Update(MD5State stat, byte[] buffer, int offset, int length) {
+  void Update(final MD5State stat, final byte[] buffer, final int offset,
+              final int length) {
     int index;
     int partlen;
     int i;
-    int start;
+    final int start;
     finals = null;
     int newlength = length;
     /* Length can be told to be shorter, but not inter */
@@ -442,7 +443,7 @@ class MD5 {
    * @param length
    */
 
-  void Update(byte[] buffer, int offset, int length) {
+  void Update(final byte[] buffer, final int offset, final int length) {
     Update(state, buffer, offset, length);
   }
 
@@ -452,7 +453,7 @@ class MD5 {
    * @param buffer
    * @param length
    */
-  void Update(byte[] buffer, int length) {
+  void Update(final byte[] buffer, final int length) {
     Update(state, buffer, 0, length);
   }
 
@@ -461,7 +462,7 @@ class MD5 {
    *
    * @param buffer Array of bytes to use for updating the hash
    */
-  void Update(byte[] buffer) {
+  void Update(final byte[] buffer) {
     Update(buffer, 0, buffer.length);
   }
 
@@ -470,7 +471,7 @@ class MD5 {
    *
    * @param b Single byte to update the hash
    */
-  void Update(byte b) {
+  void Update(final byte b) {
     final byte[] buffer = { b };
 
     Update(buffer, 1);
@@ -493,7 +494,7 @@ class MD5 {
    *
    * @param s String to be update to hash (is used as s.getBytes())
    */
-  void Update(String s) {
+  void Update(final String s) {
     final byte[] chars = s.getBytes(FilesystemBasedDigest.UTF8);
     Update(chars, chars.length);
   }
@@ -514,7 +515,7 @@ class MD5 {
    *     is
    *     not supported.
    */
-  void Update(String s, String charsetName)
+  void Update(final String s, final String charsetName)
       throws UnsupportedEncodingException {
     Charset newcharset = FilesystemBasedDigest.UTF8;
     if (charsetName != null) {
@@ -531,7 +532,7 @@ class MD5 {
    *     0xff
    */
 
-  void Update(int i) {
+  void Update(final int i) {
     Update((byte) (i & 0xff));
   }
 
@@ -544,8 +545,8 @@ class MD5 {
    *     buffer will
    *     not be changed
    */
-  void Update(ByteBuf buffer) {
-    byte[] bytes;
+  void Update(final ByteBuf buffer) {
+    final byte[] bytes;
     int start = 0;
     final int len = buffer.readableBytes();
     if (buffer.hasArray()) {
@@ -561,10 +562,10 @@ class MD5 {
     Update(state, bytes, start, len);
   }
 
-  private byte[] Encode(int[] input, int len) {
+  private byte[] Encode(final int[] input, final int len) {
     int i;
     int j;
-    byte[] out;
+    final byte[] out;
 
     out = new byte[len];
 
@@ -588,10 +589,10 @@ class MD5 {
    * @return Array of 16 bytes, the hash of all updated bytes
    */
   synchronized byte[] Final() {
-    byte[] bits;
-    int index;
-    int padlen;
-    MD5State fin;
+    final byte[] bits;
+    final int index;
+    final int padlen;
+    final MD5State fin;
 
     if (finals == null) {
       fin = new MD5State(state);
@@ -626,7 +627,7 @@ class MD5 {
    *
    * @return Generated hex string
    */
-  static final String asHex(byte[] hash) {
+  static final String asHex(final byte[] hash) {
     final char[] buf = new char[hash.length * 2];
     for (int i = 0, x = 0; i < hash.length; i++) {
       buf[x++] = HEX_CHARS[hash[i] >>> 4 & 0xf];
@@ -643,7 +644,7 @@ class MD5 {
    *
    * @return Array of bytes converted from hex-string
    */
-  static final byte[] asByte(String buf) {
+  static final byte[] asByte(final String buf) {
     final byte[] from = buf.getBytes(FilesystemBasedDigest.UTF8);
     final byte[] hash = new byte[from.length / 2];
     for (int i = 0, x = 0; i < hash.length; i++) {
@@ -682,7 +683,7 @@ class MD5 {
    *
    * @throws IOException
    **/
-  static byte[] getHash(File f) throws IOException {
+  static byte[] getHash(final File f) throws IOException {
     FileInputStream in = null;
     try {
       long bufSize = f.length();
@@ -723,7 +724,7 @@ class MD5 {
    *
    * @throws IOException
    **/
-  static byte[] getHashNio(File f) throws IOException {
+  static byte[] getHashNio(final File f) throws IOException {
     if (!f.exists()) {
       throw new FileNotFoundException(f.toString());
     }
@@ -737,13 +738,13 @@ class MD5 {
       if (bufSize > ZERO_COPY_CHUNK_SIZE) {
         bufSize = ZERO_COPY_CHUNK_SIZE;
       }
-      byte[] buf = new byte[(int) bufSize];
+      final byte[] buf = new byte[(int) bufSize];
 
       in = new FileInputStream(f);
       fileChannel = in.getChannel();
-      ByteBuffer bb = ByteBuffer.wrap(buf);
+      final ByteBuffer bb = ByteBuffer.wrap(buf);
       int read;
-      MD5 md5 = new MD5();
+      final MD5 md5 = new MD5();
       read = fileChannel.read(bb);
       while (read > 0) {
         md5.Update(md5.state, buf, 0, read);
@@ -778,10 +779,9 @@ class MD5 {
    *
    * @throws IOException
    **/
-  static byte[] getHash(InputStream stream) throws IOException {
+  static byte[] getHash(final InputStream stream) throws IOException {
     try {
-      final long buf_size = ZERO_COPY_CHUNK_SIZE;
-      byte[] buf = new byte[(int) buf_size];
+      final byte[] buf = new byte[(int) ZERO_COPY_CHUNK_SIZE];
       final MD5 md5 = new MD5();
       int read;
       while ((read = stream.read(buf)) >= 0) {
@@ -811,7 +811,7 @@ class MD5 {
    *     all of their bytes are
    *     equal.
    **/
-  static boolean hashesEqual(byte[] hash1, byte[] hash2) {
+  static boolean hashesEqual(final byte[] hash1, final byte[] hash2) {
     return Arrays.equals(hash1, hash2);
   }
 
@@ -825,7 +825,7 @@ class MD5 {
    *
    * @return the crypted password
    */
-  static final String passwdCrypt(String pwd) {
+  static final String passwdCrypt(final String pwd) {
     final MD5 md5 = new MD5();
     final byte[] bpwd = pwd.getBytes(FilesystemBasedDigest.UTF8);
     for (int i = 0; i < 16; i++) {
@@ -842,7 +842,7 @@ class MD5 {
    *
    * @return the crypted password
    */
-  static final byte[] passwdCrypt(byte[] bpwd) {
+  static final byte[] passwdCrypt(final byte[] bpwd) {
     final MD5 md5 = new MD5();
     for (int i = 0; i < 16; i++) {
       md5.Update(md5.state, bpwd, 0, bpwd.length);
@@ -857,7 +857,7 @@ class MD5 {
    *
    * @return True if the pwd is comparable with the cryptPwd
    */
-  static final boolean equalPasswd(String pwd, String cryptPwd) {
+  static final boolean equalPasswd(final String pwd, final String cryptPwd) {
     final String asHex = passwdCrypt(pwd);
     return cryptPwd.equals(asHex);
   }
@@ -868,7 +868,7 @@ class MD5 {
    *
    * @return True if the pwd is comparable with the cryptPwd
    */
-  static final boolean equalPasswd(byte[] pwd, byte[] cryptPwd) {
+  static final boolean equalPasswd(final byte[] pwd, final byte[] cryptPwd) {
     final byte[] bytes = passwdCrypt(pwd);
     return Arrays.equals(cryptPwd, bytes);
   }

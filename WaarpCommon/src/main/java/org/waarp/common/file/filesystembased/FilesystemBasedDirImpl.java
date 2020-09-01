@@ -102,7 +102,7 @@ public abstract class FilesystemBasedDirImpl extends AbstractDir {
    */
   @Deprecated
   public static void initJdkDependent(
-      FilesystemBasedDirJdkAbstract filesystemBasedFtpDirJdkChoice) {
+      final FilesystemBasedDirJdkAbstract filesystemBasedFtpDirJdkChoice) {
     filesystemBasedFtpDirJdk = filesystemBasedFtpDirJdkChoice;
   }
 
@@ -110,8 +110,8 @@ public abstract class FilesystemBasedDirImpl extends AbstractDir {
    * @param session
    * @param optsMLSx
    */
-  protected FilesystemBasedDirImpl(SessionInterface session,
-                                   OptsMLSxInterface optsMLSx) {
+  protected FilesystemBasedDirImpl(final SessionInterface session,
+                                   final OptsMLSxInterface optsMLSx) {
     this.session = session;
     this.optsMLSx = optsMLSx;
     this.optsMLSx.setOptsModify((byte) 1);
@@ -138,7 +138,7 @@ public abstract class FilesystemBasedDirImpl extends AbstractDir {
    * @throws CommandAbstractException
    */
   @Override
-  protected List<String> wildcardFiles(String pathWithWildcard)
+  protected List<String> wildcardFiles(final String pathWithWildcard)
       throws CommandAbstractException {
     final List<String> resultPaths = new ArrayList<String>();
     // First check if pathWithWildcard contains wildcards
@@ -156,7 +156,7 @@ public abstract class FilesystemBasedDirImpl extends AbstractDir {
       throw new Reply553Exception("Wildcards in pathname is not allowed");
     }
     File wildcardFile;
-    File rootFile;
+    final File rootFile;
     if (!ISUNIX && isAbsolute(pathWithWildcard)) {
       wildcardFile = new File(pathWithWildcard);
       rootFile = getCorrespondingRoot(wildcardFile);
@@ -223,7 +223,8 @@ public abstract class FilesystemBasedDirImpl extends AbstractDir {
    *
    * @throws CommandAbstractException
    */
-  protected File getFileFromPath(String path) throws CommandAbstractException {
+  protected File getFileFromPath(final String path)
+      throws CommandAbstractException {
     final String newdir = validatePath(path);
     if (isAbsolute(newdir)) {
       return new File(newdir);
@@ -242,7 +243,8 @@ public abstract class FilesystemBasedDirImpl extends AbstractDir {
    *
    * @throws CommandAbstractException
    */
-  protected File getTrueFile(String path) throws CommandAbstractException {
+  protected File getTrueFile(final String path)
+      throws CommandAbstractException {
     checkIdentify();
     final String newpath = consolidatePath(path);
     final List<String> paths = wildcardFiles(normalizePath(newpath));
@@ -266,13 +268,14 @@ public abstract class FilesystemBasedDirImpl extends AbstractDir {
    *
    * @return the relative path
    */
-  protected String getRelativePath(File file) {
+  protected String getRelativePath(final File file) {
     return getSession().getAuth()
                        .getRelativePath(normalizePath(file.getAbsolutePath()));
   }
 
   @Override
-  public boolean changeDirectory(String path) throws CommandAbstractException {
+  public boolean changeDirectory(final String path)
+      throws CommandAbstractException {
     checkIdentify();
     final String newpath = consolidatePath(path);
     final List<String> paths = wildcardFiles(newpath);
@@ -291,7 +294,7 @@ public abstract class FilesystemBasedDirImpl extends AbstractDir {
   }
 
   @Override
-  public boolean changeDirectoryNotChecked(String path)
+  public boolean changeDirectoryNotChecked(final String path)
       throws CommandAbstractException {
     checkIdentify();
     final String newpath = consolidatePath(path);
@@ -308,7 +311,7 @@ public abstract class FilesystemBasedDirImpl extends AbstractDir {
   }
 
   @Override
-  public String mkdir(String directory) throws CommandAbstractException {
+  public String mkdir(final String directory) throws CommandAbstractException {
     checkIdentify();
     final String newdirectory = consolidatePath(directory);
     final File dir = new File(newdirectory);
@@ -328,7 +331,7 @@ public abstract class FilesystemBasedDirImpl extends AbstractDir {
   }
 
   @Override
-  public String rmdir(String directory) throws CommandAbstractException {
+  public String rmdir(final String directory) throws CommandAbstractException {
     checkIdentify();
     final String newdirectory = consolidatePath(directory);
     final List<String> paths = wildcardFiles(normalizePath(newdirectory));
@@ -346,20 +349,21 @@ public abstract class FilesystemBasedDirImpl extends AbstractDir {
   }
 
   @Override
-  public boolean isDirectory(String path) throws CommandAbstractException {
+  public boolean isDirectory(final String path)
+      throws CommandAbstractException {
     checkIdentify();
     final File dir = getFileFromPath(path);
     return dir.isDirectory();
   }
 
   @Override
-  public boolean isFile(String path) throws CommandAbstractException {
+  public boolean isFile(final String path) throws CommandAbstractException {
     checkIdentify();
     return getFileFromPath(path).isFile();
   }
 
   @Override
-  public String getModificationTime(String path)
+  public String getModificationTime(final String path)
       throws CommandAbstractException {
     checkIdentify();
     final File file = getFileFromPath(path);
@@ -376,7 +380,7 @@ public abstract class FilesystemBasedDirImpl extends AbstractDir {
    *
    * @return the Modification time as a String YYYYMMDDHHMMSS.sss
    */
-  protected String getModificationTime(File file) {
+  protected String getModificationTime(final File file) {
     final long mstime = file.lastModified();
     final Calendar calendar = Calendar.getInstance();
     calendar.setTimeInMillis(mstime);
@@ -420,7 +424,7 @@ public abstract class FilesystemBasedDirImpl extends AbstractDir {
   }
 
   @Override
-  public List<String> list(String path) throws CommandAbstractException {
+  public List<String> list(final String path) throws CommandAbstractException {
     checkIdentify();
     // First get all base directories
     String newpath = path;
@@ -462,7 +466,7 @@ public abstract class FilesystemBasedDirImpl extends AbstractDir {
   }
 
   @Override
-  public List<String> listFull(String path, boolean lsFormat)
+  public List<String> listFull(final String path, final boolean lsFormat)
       throws CommandAbstractException {
     checkIdentify();
     boolean listAllFiles = false;
@@ -520,7 +524,7 @@ public abstract class FilesystemBasedDirImpl extends AbstractDir {
   }
 
   @Override
-  public String fileFull(String path, boolean lsFormat)
+  public String fileFull(final String path, final boolean lsFormat)
       throws CommandAbstractException {
     checkIdentify();
     final String newpath = consolidatePath(path);
@@ -554,7 +558,7 @@ public abstract class FilesystemBasedDirImpl extends AbstractDir {
    *
    * @return the ls format information
    */
-  protected String lsInfo(File file) {
+  protected String lsInfo(final File file) {
     // Unix FileInterface type,permissions,hard
     // link(?),owner(?),group(?),size,date
     // and filename
@@ -574,7 +578,7 @@ public abstract class FilesystemBasedDirImpl extends AbstractDir {
            .append(file.length())// size
            .append('\t');
     final long lastmod = file.lastModified();
-    String fmt;
+    final String fmt;
     // It seems Full Time is not recognized by some FTP client
     final long currentTime = System.currentTimeMillis();
     if (currentTime > lastmod + 6L * 30L * 24L * 60L * 60L * 1000L // Old.
@@ -603,7 +607,7 @@ public abstract class FilesystemBasedDirImpl extends AbstractDir {
    *
    * @return the MLSx information: ' Fact=facts;...; filename'
    */
-  protected String mlsxInfo(File file) {
+  protected String mlsxInfo(final File file) {
     // don't have create, unique, lang, media-type, charset
     final StringBuilder builder = new StringBuilder(" ");
     if (getOptsMLSx().getOptsSize() == 1) {
@@ -679,7 +683,7 @@ public abstract class FilesystemBasedDirImpl extends AbstractDir {
   @Override
   public FileInterface setUniqueFile() throws CommandAbstractException {
     checkIdentify();
-    File file;
+    final File file;
     try {
       file = File.createTempFile(getSession().getAuth().getUser(),
                                  session.getUniqueExtension(),
@@ -711,7 +715,7 @@ public abstract class FilesystemBasedDirImpl extends AbstractDir {
   }
 
   @Override
-  public long getCRC(String path) throws CommandAbstractException {
+  public long getCRC(final String path) throws CommandAbstractException {
     final File file = getTrueFile(path);
     FileInputStream fis = null;
     CheckedInputStream cis = null;
@@ -737,22 +741,22 @@ public abstract class FilesystemBasedDirImpl extends AbstractDir {
   }
 
   @Override
-  public byte[] getMD5(String path) throws CommandAbstractException {
+  public byte[] getMD5(final String path) throws CommandAbstractException {
     return getDigest(path, DigestAlgo.MD5.name());
   }
 
   @Override
-  public byte[] getSHA1(String path) throws CommandAbstractException {
+  public byte[] getSHA1(final String path) throws CommandAbstractException {
     return getDigest(path, DigestAlgo.SHA1.name());
   }
 
   @Override
-  public byte[] getDigest(String path, String algo)
+  public byte[] getDigest(final String path, final String algo)
       throws CommandAbstractException {
     final DigestAlgo digestAlgo;
     try {
       digestAlgo = DigestAlgo.getFromName(algo);
-    } catch (IllegalArgumentException e) {
+    } catch (final IllegalArgumentException e) {
       throw new Reply553Exception("Algorithme unknown: " + algo);
     }
     final File file = getTrueFile(path);

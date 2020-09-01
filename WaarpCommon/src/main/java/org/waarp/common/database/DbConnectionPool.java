@@ -72,13 +72,13 @@ public class DbConnectionPool {
 
     final long lastRecyle;
 
-    private Con(PooledConnection pooledCon) {
+    private Con(final PooledConnection pooledCon) {
       this.pooledCon = pooledCon;
       lastRecyle = System.currentTimeMillis();
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(final Object o) {
       if (this == o) {
         return true;
       }
@@ -110,8 +110,8 @@ public class DbConnectionPool {
      * @param delay
      * @param pool
      */
-    private TimerTaskCheckConnections(Timer timer, long delay,
-                                      DbConnectionPool pool) {
+    private TimerTaskCheckConnections(final Timer timer, final long delay,
+                                      final DbConnectionPool pool) {
       if (pool == null || timer == null || delay < 1000) {
         throw new IllegalArgumentException(
             "Invalid values. Need pool, timer and delay >= 1000");
@@ -181,7 +181,7 @@ public class DbConnectionPool {
    *
    * @param dataSource the data source for the connections.
    */
-  public DbConnectionPool(ConnectionPoolDataSource dataSource) {
+  public DbConnectionPool(final ConnectionPoolDataSource dataSource) {
     this(dataSource, 0, DbConstant.DELAYMAXCONNECTION);
   }
 
@@ -195,8 +195,8 @@ public class DbConnectionPool {
    *     and
    *     limit to get a new connection
    */
-  public DbConnectionPool(ConnectionPoolDataSource dataSource, Timer timer,
-                          long delay) {
+  public DbConnectionPool(final ConnectionPoolDataSource dataSource,
+                          final Timer timer, final long delay) {
     this(dataSource, 0, (int) (delay / 1000));
     timer.schedule(new TimerTaskCheckConnections(timer, delay, this), delay);
   }
@@ -210,8 +210,8 @@ public class DbConnectionPool {
    *     no
    *     limit
    */
-  public DbConnectionPool(ConnectionPoolDataSource dataSource,
-                          int maxConnections) {
+  public DbConnectionPool(final ConnectionPoolDataSource dataSource,
+                          final int maxConnections) {
     this(dataSource, maxConnections, DbConstant.DELAYMAXCONNECTION);
   }
 
@@ -225,8 +225,8 @@ public class DbConnectionPool {
    * @param timeout the maximum time in seconds to wait for a free
    *     connection.
    */
-  public DbConnectionPool(ConnectionPoolDataSource dataSource,
-                          int maxConnections, int timeout) {
+  public DbConnectionPool(final ConnectionPoolDataSource dataSource,
+                          final int maxConnections, final int timeout) {
     this.dataSource = dataSource;
     this.maxConnections = maxConnections;
     this.timeout = timeout;
@@ -240,7 +240,7 @@ public class DbConnectionPool {
     poolConnectionEventListener = new PoolConnectionEventListener();
   }
 
-  public void resetPoolDataSource(ConnectionPoolDataSource dataSource) {
+  public void resetPoolDataSource(final ConnectionPoolDataSource dataSource) {
     this.dataSource = dataSource;
   }
 
@@ -345,8 +345,8 @@ public class DbConnectionPool {
     }
     // lock
     final long time = System.currentTimeMillis() + timeout * 1000;
-    while (true) {
-      PooledConnection pconn;
+    while (time <= System.currentTimeMillis()) {
+      final PooledConnection pconn;
       if (!recycledConnections.isEmpty()) {
         pconn = recycledConnections.remove().pooledCon;
       } else {
@@ -360,16 +360,12 @@ public class DbConnectionPool {
         assertInnerState();
         return conn;
       }
-      if (time > System.currentTimeMillis()) {
-        // too long
-        break;
-      }
     }
 
     throw new SQLException("Could not get a valid connection before timeout");
   }
 
-  private synchronized void recycleConnection(PooledConnection pconn) {
+  private synchronized void recycleConnection(final PooledConnection pconn) {
     if (isDisposed) {
       disposeConnection(pconn);
       return;
@@ -394,7 +390,7 @@ public class DbConnectionPool {
     assertInnerState();
   }
 
-  private synchronized void disposeConnection(PooledConnection pconn) {
+  private synchronized void disposeConnection(final PooledConnection pconn) {
     if (activeConnections <= 0) {
       throw new AssertionError();
     }
@@ -406,7 +402,7 @@ public class DbConnectionPool {
     assertInnerState();
   }
 
-  private void closeConnectionNoEx(PooledConnection pconn) {
+  private void closeConnectionNoEx(final PooledConnection pconn) {
     try {
       pconn.close();
     } catch (final SQLException e) {
@@ -430,14 +426,14 @@ public class DbConnectionPool {
 
   private class PoolConnectionEventListener implements ConnectionEventListener {
     @Override
-    public void connectionClosed(ConnectionEvent event) {
+    public void connectionClosed(final ConnectionEvent event) {
       final PooledConnection pconn = (PooledConnection) event.getSource();
       pconn.removeConnectionEventListener(this);
       recycleConnection(pconn);
     }
 
     @Override
-    public void connectionErrorOccurred(ConnectionEvent event) {
+    public void connectionErrorOccurred(final ConnectionEvent event) {
       final PooledConnection pconn = (PooledConnection) event.getSource();
       pconn.removeConnectionEventListener(this);
       disposeConnection(pconn);

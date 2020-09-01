@@ -60,8 +60,8 @@ public class LogTask extends AbstractTask {
    * @param argTransfer
    * @param session
    */
-  public LogTask(String argRule, int delay, String argTransfer,
-                 R66Session session) {
+  public LogTask(final String argRule, final int delay,
+                 final String argTransfer, final R66Session session) {
     super(TaskType.LOG, delay, argRule, argTransfer, session);
   }
 
@@ -113,7 +113,7 @@ public class LogTask extends AbstractTask {
       futureCompletion.setSuccess();
       return true;
     }
-    FileOutputStream outputStream;
+    final FileOutputStream outputStream;
     try {
       outputStream = new FileOutputStream(file, true);
     } catch (final FileNotFoundException e) {

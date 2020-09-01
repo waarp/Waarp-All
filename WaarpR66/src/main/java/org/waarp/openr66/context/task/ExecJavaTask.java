@@ -28,6 +28,7 @@ import org.waarp.common.utility.WaarpThreadFactory;
 import org.waarp.openr66.context.ErrorCode;
 import org.waarp.openr66.context.R66Result;
 import org.waarp.openr66.context.R66Session;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolSystemException;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -51,8 +52,8 @@ public class ExecJavaTask extends AbstractTask {
    * @param argTransfer
    * @param session
    */
-  public ExecJavaTask(String argRule, int delay, String argTransfer,
-                      R66Session session) {
+  public ExecJavaTask(final String argRule, final int delay,
+                      final String argTransfer, final R66Session session) {
     super(TaskType.EXECJAVA, delay, argRule, argTransfer, session);
   }
 
@@ -61,12 +62,20 @@ public class ExecJavaTask extends AbstractTask {
    *
    * @param businessRequest
    */
-  public void setBusinessRequest(boolean businessRequest) {
+  public void setBusinessRequest(final boolean businessRequest) {
     this.businessRequest = businessRequest;
   }
 
   @Override
   public void run() {
+    if (argRule == null) {
+      logger.error(
+          "ExecJava cannot be done with " + argRule + ':' + argTransfer +
+          " and " + session);
+      futureCompletion.setFailure(
+          new OpenR66ProtocolSystemException("Exec Java cannot be done"));
+      return;
+    }
     /*
      * First apply all replacements and format to argRule from context and argTransfer. Will call exec (from first
      * element of resulting string) with arguments as the following value from the replacements. Return 0 if OK,
@@ -81,7 +90,7 @@ public class ExecJavaTask extends AbstractTask {
     final String className = args[0];
     try {
       ParametersChecker.checkSanityString(className);
-    } catch (InvalidArgumentException e) {
+    } catch (final InvalidArgumentException e) {
       logger.error("ExecJava command is not correct", e);
       final R66Result result =
           new R66Result(session, false, ErrorCode.CommandNotFound,
@@ -99,7 +108,7 @@ public class ExecJavaTask extends AbstractTask {
       logger.debug("Exec with " + argRule + ':' + argTransfer + " and {}",
                    session);
     }
-    R66Runnable runnable;
+    final R66Runnable runnable;
     try {
       runnable = (R66Runnable) Class.forName(className).newInstance();//NOSONAR
     } catch (final Exception e) {
@@ -130,7 +139,7 @@ public class ExecJavaTask extends AbstractTask {
       futureCompletion.setSuccess();
       logger.info("Exec will start but no WAIT with {}", runnable);
     }
-    int status;
+    final int status;
     if (waitForValidation && delay <= 100) {
       runnable.run();
       status = runnable.getFinalStatus();

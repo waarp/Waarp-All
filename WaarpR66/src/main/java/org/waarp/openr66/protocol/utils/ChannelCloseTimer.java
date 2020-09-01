@@ -43,21 +43,21 @@ public class ChannelCloseTimer implements TimerTask {
   private ConnectionActions connectionActions;
   private DbSession noconcurrencyDbSession;
 
-  public ChannelCloseTimer(Channel channel) {
+  public ChannelCloseTimer(final Channel channel) {
     this.channel = channel;
   }
 
-  public ChannelCloseTimer(Channel channel, ChannelFuture future) {
+  public ChannelCloseTimer(final Channel channel, final ChannelFuture future) {
     this.channel = channel;
     this.future = future;
   }
 
-  public ChannelCloseTimer(ConnectionActions connectionActions) {
+  public ChannelCloseTimer(final ConnectionActions connectionActions) {
     this.connectionActions = connectionActions;
   }
 
   @Override
-  public void run(Timeout timeout) throws Exception {
+  public void run(final Timeout timeout) throws Exception {
     if (future != null) {
       WaarpNettyUtil.awaitOrInterrupted(future);
     }
@@ -80,7 +80,7 @@ public class ChannelCloseTimer implements TimerTask {
    * @param connectionActions
    */
   public static void closeFutureTransaction(
-      ConnectionActions connectionActions) {
+      final ConnectionActions connectionActions) {
     if (Configuration.configuration.isTimerCloseReady()) {
       Configuration.configuration.getTimerClose().newTimeout(
           new ChannelCloseTimer(connectionActions),
@@ -94,10 +94,11 @@ public class ChannelCloseTimer implements TimerTask {
    * @param connectionActions
    * @param noconcurrencyDbSession
    */
-  public static void closeFutureTransaction(ConnectionActions connectionActions,
-                                            DbSession noconcurrencyDbSession) {
+  public static void closeFutureTransaction(
+      final ConnectionActions connectionActions,
+      final DbSession noconcurrencyDbSession) {
     if (Configuration.configuration.isTimerCloseReady()) {
-      ChannelCloseTimer cct = new ChannelCloseTimer(connectionActions);
+      final ChannelCloseTimer cct = new ChannelCloseTimer(connectionActions);
       cct.setDbSession(noconcurrencyDbSession);
       Configuration.configuration.getTimerClose()
                                  .newTimeout(cct, Configuration.WAITFORNETOP,
@@ -105,7 +106,7 @@ public class ChannelCloseTimer implements TimerTask {
     }
   }
 
-  public void setDbSession(DbSession dbSession) {
+  public void setDbSession(final DbSession dbSession) {
     noconcurrencyDbSession = dbSession;
   }
 
@@ -114,7 +115,7 @@ public class ChannelCloseTimer implements TimerTask {
    *
    * @param channel
    */
-  public static void closeFutureChannel(Channel channel) {
+  public static void closeFutureChannel(final Channel channel) {
     if (Configuration.configuration.isTimerCloseReady()) {
       Configuration.configuration.getTimerClose()
                                  .newTimeout(new ChannelCloseTimer(channel),
@@ -129,7 +130,8 @@ public class ChannelCloseTimer implements TimerTask {
    * @param channel
    * @param future future to wait in addition to other constraints
    */
-  public static void closeFutureChannel(Channel channel, ChannelFuture future) {
+  public static void closeFutureChannel(final Channel channel,
+                                        final ChannelFuture future) {
     if (Configuration.configuration.isTimerCloseReady()) {
       Configuration.configuration.getTimerClose().newTimeout(
           new ChannelCloseTimer(channel, future), Configuration.WAITFORNETOP,

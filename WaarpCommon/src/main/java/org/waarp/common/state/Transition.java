@@ -32,7 +32,7 @@ public class Transition<E extends Enum<E>> {
   private E state;
   private EnumSet<E> set;
 
-  public Transition(E state, EnumSet<E> set) {
+  public Transition(final E state, final EnumSet<E> set) {
     setState(state);
     setSet(set);
   }
@@ -47,7 +47,7 @@ public class Transition<E extends Enum<E>> {
   /**
    * @param state the state to set
    */
-  public void setState(E state) {
+  public void setState(final E state) {
     this.state = state;
   }
 
@@ -61,7 +61,7 @@ public class Transition<E extends Enum<E>> {
   /**
    * @param set the set to set
    */
-  public void setSet(EnumSet<E> set) {
+  public void setSet(final EnumSet<E> set) {
     this.set = set;
   }
 }

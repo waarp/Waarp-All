@@ -31,12 +31,12 @@ class HttpCleanChannelFutureListener implements ChannelFutureListener {
   /**
    * @param handler
    */
-  HttpCleanChannelFutureListener(HttpRequestHandler handler) {
+  HttpCleanChannelFutureListener(final HttpRequestHandler handler) {
     this.handler = handler;
   }
 
   @Override
-  public void operationComplete(ChannelFuture future) throws Exception {
+  public void operationComplete(final ChannelFuture future) throws Exception {
     handler.clean();
   }
 

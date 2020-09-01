@@ -97,7 +97,7 @@ class FtpDataStructureCodec
   /**
    * @param structure
    */
-  FtpDataStructureCodec(TransferStructure structure) {
+  FtpDataStructureCodec(final TransferStructure structure) {
     this.structure = structure;
   }
 
@@ -111,13 +111,13 @@ class FtpDataStructureCodec
   /**
    * @param structure the structure to set
    */
-  public void setStructure(TransferStructure structure) {
+  public void setStructure(final TransferStructure structure) {
     this.structure = structure;
   }
 
   @Override
-  protected void encode(ChannelHandlerContext ctx, DataBlock msg,
-                        List<Object> out) throws Exception {
+  protected void encode(final ChannelHandlerContext ctx, final DataBlock msg,
+                        final List<Object> out) throws Exception {
     if (structure == TransferStructure.FILE ||
         structure == TransferStructure.RECORD) {
       out.add(msg);
@@ -130,8 +130,8 @@ class FtpDataStructureCodec
   }
 
   @Override
-  protected void decode(ChannelHandlerContext ctx, DataBlock msg,
-                        List<Object> out) throws Exception {
+  protected void decode(final ChannelHandlerContext ctx, final DataBlock msg,
+                        final List<Object> out) throws Exception {
     if (structure == TransferStructure.FILE ||
         structure == TransferStructure.RECORD) {
       out.add(msg);

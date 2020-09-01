@@ -40,7 +40,7 @@ class SoftReferenceCacheEntry<V> implements InterfaceLruCacheEntry<V> {
    *
    * @throws IllegalArgumentException if ttl is not positive
    */
-  SoftReferenceCacheEntry(V value, long ttl) {
+  SoftReferenceCacheEntry(final V value, final long ttl) {
     if (ttl <= 0) {
       throw new IllegalArgumentException("ttl must be positive");
     }
@@ -69,12 +69,12 @@ class SoftReferenceCacheEntry<V> implements InterfaceLruCacheEntry<V> {
   }
 
   @Override
-  public boolean isStillValid(long timeRef) {
+  public boolean isStillValid(final long timeRef) {
     return timeRef <= expirationTime;
   }
 
   @Override
-  public boolean resetTime(long ttl) {
+  public boolean resetTime(final long ttl) {
     expirationTime = System.currentTimeMillis() + ttl;
     return true;
   }

@@ -36,17 +36,18 @@ public class FilesystemBasedFtpRestart extends FilesystemBasedRestartImpl {
   /**
    * @param session
    */
-  public FilesystemBasedFtpRestart(FtpSession session) {
+  public FilesystemBasedFtpRestart(final FtpSession session) {
     super(session);
   }
 
   @Override
-  public boolean restartMarker(String marker) throws CommandAbstractException {
+  public boolean restartMarker(final String marker)
+      throws CommandAbstractException {
     final FtpDataAsyncConn dataConn = ((FtpSession) getSession()).getDataConn();
     if (dataConn.getStructure() == TransferStructure.FILE &&
         dataConn.getMode() == TransferMode.STREAM &&
         dataConn.getType() != TransferType.LENGTH) {
-      long newposition;
+      final long newposition;
       final String[] args = marker.split(" ");
       try {
         newposition = Long.parseLong(args[0]);

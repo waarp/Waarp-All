@@ -46,7 +46,8 @@ public abstract class CommandAbstractException extends Exception {
    * @param code
    * @param message
    */
-  protected CommandAbstractException(ReplyCode code, String message) {
+  protected CommandAbstractException(final ReplyCode code,
+                                     final String message) {
     super(code.getMesg());
     this.code = code;
     this.message = message;
@@ -59,8 +60,8 @@ public abstract class CommandAbstractException extends Exception {
    * @param message
    * @param e
    */
-  protected CommandAbstractException(ReplyCode code, String message,
-                                     Throwable e) {
+  protected CommandAbstractException(final ReplyCode code, final String message,
+                                     final Throwable e) {
     super(code.getMesg(), e);
     this.code = code;
     this.message = message;

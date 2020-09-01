@@ -62,8 +62,8 @@ public class ExecMoveTask extends AbstractExecTask {
    * @param argTransfer
    * @param session
    */
-  public ExecMoveTask(String argRule, int delay, String argTransfer,
-                      R66Session session) {
+  public ExecMoveTask(final String argRule, final int delay,
+                      final String argTransfer, final R66Session session) {
     super(TaskType.EXECMOVE, delay, argRule, argTransfer, session);
   }
 
@@ -94,24 +94,25 @@ public class ExecMoveTask extends AbstractExecTask {
       } // else continue
     }
 
-    PrepareCommandExec prepareCommandExec =
+    final PrepareCommandExec prepareCommandExec =
         new PrepareCommandExec(finalname, false, waitForValidation).invoke();
     if (prepareCommandExec.isError()) {
       return;
     }
-    CommandLine commandLine = prepareCommandExec.getCommandLine();
-    DefaultExecutor defaultExecutor = prepareCommandExec.getDefaultExecutor();
-    PipedInputStream inputStream = prepareCommandExec.getInputStream();
-    PipedOutputStream outputStream = prepareCommandExec.getOutputStream();
-    PumpStreamHandler pumpStreamHandler =
+    final CommandLine commandLine = prepareCommandExec.getCommandLine();
+    final DefaultExecutor defaultExecutor =
+        prepareCommandExec.getDefaultExecutor();
+    final PipedInputStream inputStream = prepareCommandExec.getInputStream();
+    final PipedOutputStream outputStream = prepareCommandExec.getOutputStream();
+    final PumpStreamHandler pumpStreamHandler =
         prepareCommandExec.getPumpStreamHandler();
-    ExecuteWatchdog watchdog = prepareCommandExec.getWatchdog();
+    final ExecuteWatchdog watchdog = prepareCommandExec.getWatchdog();
     final LastLineReader lastLineReader = new LastLineReader(inputStream);
     lastLineReader
         .setName("LastLineReader" + session.getRunner().getSpecialId());
     lastLineReader.setDaemon(true);
     Configuration.configuration.getExecutorService().execute(lastLineReader);
-    ExecuteCommand executeCommand =
+    final ExecuteCommand executeCommand =
         new ExecuteCommand(commandLine, defaultExecutor, inputStream,
                            outputStream, pumpStreamHandler, lastLineReader)
             .invoke();
@@ -119,7 +120,7 @@ public class ExecMoveTask extends AbstractExecTask {
       return;
     }
     int status = executeCommand.getStatus();
-    String newname;
+    final String newname;
     if (defaultExecutor.isFailure(status) && watchdog != null &&
         watchdog.killedProcess()) {
       // kill by the watchdoc (time out)
@@ -134,7 +135,8 @@ public class ExecMoveTask extends AbstractExecTask {
     move(status, newname, commandLine.toString());
   }
 
-  private void move(int status, String newName, String commandLine) {
+  private void move(final int status, final String newName,
+                    final String commandLine) {
     if (newName == null) {
       logger.error("Status: " + status + " Exec in error with " + commandLine +
                    " returns no line");

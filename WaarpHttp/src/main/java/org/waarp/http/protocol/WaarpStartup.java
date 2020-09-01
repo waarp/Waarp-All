@@ -46,13 +46,13 @@ public class WaarpStartup {
    *
    * @throws ServletException
    */
-  public static void startupWaarp(File configurationFile)
+  public static void startupWaarp(final File configurationFile)
       throws ServletException {
     if (STARTED.compareAndSet(false, true)) {
       try {
         R66Server.main(new String[] { configurationFile.getAbsolutePath() });
         logger.info("Start Done");
-      } catch (OpenR66ProtocolPacketException e) {
+      } catch (final OpenR66ProtocolPacketException e) {
         logger.error(e);
         throw new ServletException("Cannot start R66 Server");
       }

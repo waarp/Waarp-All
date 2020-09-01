@@ -69,37 +69,41 @@ public abstract class HttpRestAbstractR66Handler extends RestMethodHandler {
    * @param path
    * @param method
    */
-  protected HttpRestAbstractR66Handler(String path, RestConfiguration config,
-                                       METHOD... method) {
+  protected HttpRestAbstractR66Handler(final String path,
+                                       final RestConfiguration config,
+                                       final METHOD... method) {
     super(path, path, true, config, method);
   }
 
   @Override
-  public void checkHandlerSessionCorrectness(HttpRestHandler handler,
-                                             RestArgument arguments,
-                                             RestArgument result) {
+  public void checkHandlerSessionCorrectness(final HttpRestHandler handler,
+                                             final RestArgument arguments,
+                                             final RestArgument result) {
     // no check to do here ?
     logger.debug("debug");
   }
 
   @Override
-  public void getFileUpload(HttpRestHandler handler, FileUpload data,
-                            RestArgument arguments, RestArgument result)
+  public void getFileUpload(final HttpRestHandler handler,
+                            final FileUpload data, final RestArgument arguments,
+                            final RestArgument result)
       throws HttpIncorrectRequestException {
     // should not be
     logger.debug(
         "debug: " + data.getName() + ':' + data.getHttpDataType().name());
   }
 
-  protected void setError(HttpRestHandler handler, RestArgument result,
-                          HttpResponseStatus code) {
+  protected void setError(final HttpRestHandler handler,
+                          final RestArgument result,
+                          final HttpResponseStatus code) {
     handler.setStatus(HttpResponseStatus.BAD_REQUEST);
     handler.setWillClose(true);
     result.setResult(code);
   }
 
-  protected void setError(HttpRestHandler handler, RestArgument result,
-                          JsonPacket packet, HttpResponseStatus code) {
+  protected void setError(final HttpRestHandler handler,
+                          final RestArgument result, final JsonPacket packet,
+                          final HttpResponseStatus code) {
     handler.setStatus(HttpResponseStatus.BAD_REQUEST);
     result.setResult(code);
     if (packet != null) {
@@ -111,8 +115,8 @@ public abstract class HttpRestAbstractR66Handler extends RestMethodHandler {
     }
   }
 
-  protected void setOk(HttpRestHandler handler, RestArgument result,
-                       JsonPacket packet, HttpResponseStatus code) {
+  protected void setOk(final HttpRestHandler handler, final RestArgument result,
+                       final JsonPacket packet, final HttpResponseStatus code) {
     handler.setStatus(HttpResponseStatus.OK);
     result.setResult(code);
     if (packet != null) {
@@ -125,20 +129,23 @@ public abstract class HttpRestAbstractR66Handler extends RestMethodHandler {
   }
 
   @Override
-  public HttpResponseStatus handleException(HttpRestHandler handler,
-                                            RestArgument arguments,
-                                            RestArgument result, Object body,
-                                            Exception exception) {
+  public HttpResponseStatus handleException(final HttpRestHandler handler,
+                                            final RestArgument arguments,
+                                            final RestArgument result,
+                                            final Object body,
+                                            final Exception exception) {
     ((HttpRestR66Handler) handler).getServerHandler().getSession()
                                   .newState(ERROR);
     return super.handleException(handler, arguments, result, body, exception);
   }
 
   @Override
-  public ChannelFuture sendResponse(HttpRestHandler handler,
-                                    ChannelHandlerContext ctx,
-                                    RestArgument arguments, RestArgument result,
-                                    Object body, HttpResponseStatus status) {
+  public ChannelFuture sendResponse(final HttpRestHandler handler,
+                                    final ChannelHandlerContext ctx,
+                                    final RestArgument arguments,
+                                    final RestArgument result,
+                                    final Object body,
+                                    final HttpResponseStatus status) {
     final String answer = result.toString();
     final ByteBuf buffer =
         Unpooled.wrappedBuffer(answer.getBytes(WaarpStringUtils.UTF8));
@@ -160,10 +167,10 @@ public abstract class HttpRestAbstractR66Handler extends RestMethodHandler {
   }
 
   @Override
-  public Object getBody(HttpRestHandler handler, ByteBuf body,
-                        RestArgument arguments, RestArgument result)
+  public Object getBody(final HttpRestHandler handler, final ByteBuf body,
+                        final RestArgument arguments, final RestArgument result)
       throws HttpIncorrectRequestException {
-    JsonPacket packet;
+    final JsonPacket packet;
     try {
       final String json = body.toString(WaarpStringUtils.UTF8);
       packet = JsonPacket.createFromBuffer(json);

@@ -84,7 +84,7 @@ public class HostConfigHandler extends AbstractRestDbHandler {
    *
    * @param crud the CRUD mask for this handler
    */
-  public HostConfigHandler(byte crud) {
+  public HostConfigHandler(final byte crud) {
     super(crud);
   }
 
@@ -98,7 +98,8 @@ public class HostConfigHandler extends AbstractRestDbHandler {
   @GET
   @Consumes(WILDCARD)
   @RequiredRole(READONLY)
-  public void getConfig(HttpRequest request, HttpResponder responder) {
+  public void getConfig(final HttpRequest request,
+                        final HttpResponder responder) {
 
     BusinessDAO businessDAO = null;
     try {
@@ -135,7 +136,8 @@ public class HostConfigHandler extends AbstractRestDbHandler {
   @POST
   @Consumes(APPLICATION_FORM_URLENCODED)
   @RequiredRole(CONFIGADMIN)
-  public void initializeConfig(HttpRequest request, HttpResponder responder) {
+  public void initializeConfig(final HttpRequest request,
+                               final HttpResponder responder) {
 
     BusinessDAO businessDAO = null;
     try {
@@ -172,7 +174,8 @@ public class HostConfigHandler extends AbstractRestDbHandler {
   @PUT
   @Consumes(APPLICATION_JSON)
   @RequiredRole(CONFIGADMIN)
-  public void updateConfig(HttpRequest request, HttpResponder responder) {
+  public void updateConfig(final HttpRequest request,
+                           final HttpResponder responder) {
 
     BusinessDAO businessDAO = null;
 
@@ -212,7 +215,8 @@ public class HostConfigHandler extends AbstractRestDbHandler {
   @DELETE
   @Consumes(WILDCARD)
   @RequiredRole(CONFIGADMIN)
-  public void deleteConfig(HttpRequest request, HttpResponder responder) {
+  public void deleteConfig(final HttpRequest request,
+                           final HttpResponder responder) {
 
     BusinessDAO businessDAO = null;
     try {
@@ -244,7 +248,8 @@ public class HostConfigHandler extends AbstractRestDbHandler {
   @OPTIONS
   @Consumes(WILDCARD)
   @RequiredRole(NOACCESS)
-  public void options(HttpRequest request, HttpResponder responder) {
+  public void options(final HttpRequest request,
+                      final HttpResponder responder) {
     responder.sendStatus(OK, OPTIONS_HEADERS);
   }
 }

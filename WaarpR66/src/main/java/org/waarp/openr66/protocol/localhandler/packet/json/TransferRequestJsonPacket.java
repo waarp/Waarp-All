@@ -76,7 +76,7 @@ public class TransferRequestJsonPacket extends JsonPacket {
   /**
    * @param isAdditionalDelay the isAdditionalDelay to set
    */
-  public void setAdditionalDelay(boolean isAdditionalDelay) {
+  public void setAdditionalDelay(final boolean isAdditionalDelay) {
     this.isAdditionalDelay = isAdditionalDelay;
   }
 
@@ -90,7 +90,7 @@ public class TransferRequestJsonPacket extends JsonPacket {
   /**
    * @param delay the delay to set
    */
-  public void setDelay(long delay) {
+  public void setDelay(final long delay) {
     this.delay = delay;
   }
 
@@ -104,7 +104,7 @@ public class TransferRequestJsonPacket extends JsonPacket {
   /**
    * @param start the start to set
    */
-  public void setStart(Date start) {
+  public void setStart(final Date start) {
     this.start = start;
   }
 
@@ -118,7 +118,7 @@ public class TransferRequestJsonPacket extends JsonPacket {
   /**
    * @param requested the requested to set
    */
-  public void setRequested(String requested) {
+  public void setRequested(final String requested) {
     this.requested = requested;
   }
 
@@ -132,7 +132,7 @@ public class TransferRequestJsonPacket extends JsonPacket {
   /**
    * @param rulename the rulename to set
    */
-  public void setRulename(String rulename) {
+  public void setRulename(final String rulename) {
     this.rulename = rulename;
   }
 
@@ -146,7 +146,7 @@ public class TransferRequestJsonPacket extends JsonPacket {
   /**
    * @param mode the mode to set
    */
-  public void setMode(int mode) {
+  public void setMode(final int mode) {
     this.mode = mode;
   }
 
@@ -160,7 +160,7 @@ public class TransferRequestJsonPacket extends JsonPacket {
   /**
    * @param filename the filename to set
    */
-  public void setFilename(String filename) {
+  public void setFilename(final String filename) {
     this.filename = filename;
   }
 
@@ -174,7 +174,7 @@ public class TransferRequestJsonPacket extends JsonPacket {
   /**
    * @param blocksize the blocksize to set
    */
-  public void setBlocksize(int blocksize) {
+  public void setBlocksize(final int blocksize) {
     this.blocksize = blocksize;
   }
 
@@ -188,7 +188,7 @@ public class TransferRequestJsonPacket extends JsonPacket {
   /**
    * @param rank the rank to set
    */
-  public void setRank(int rank) {
+  public void setRank(final int rank) {
     this.rank = rank;
   }
 
@@ -202,7 +202,7 @@ public class TransferRequestJsonPacket extends JsonPacket {
   /**
    * @param specialId the specialId to set
    */
-  public void setSpecialId(long specialId) {
+  public void setSpecialId(final long specialId) {
     this.specialId = specialId;
   }
 
@@ -223,7 +223,7 @@ public class TransferRequestJsonPacket extends JsonPacket {
   /**
    * @param validate the validate to set
    */
-  public void setValidate(byte validate) {
+  public void setValidate(final byte validate) {
     this.validate = validate;
   }
 
@@ -244,7 +244,7 @@ public class TransferRequestJsonPacket extends JsonPacket {
   /**
    * @param originalSize the originalSize to set
    */
-  public void setOriginalSize(long originalSize) {
+  public void setOriginalSize(final long originalSize) {
     this.originalSize = originalSize;
   }
 
@@ -275,7 +275,7 @@ public class TransferRequestJsonPacket extends JsonPacket {
   /**
    * @param separator the separator to set
    */
-  public void setSeparator(String separator) {
+  public void setSeparator(final String separator) {
     this.separator = separator;
   }
 
@@ -285,7 +285,7 @@ public class TransferRequestJsonPacket extends JsonPacket {
    * @param runner
    */
   @JsonIgnore
-  public void setFromDbTaskRunner(DbTaskRunner runner) {
+  public void setFromDbTaskRunner(final DbTaskRunner runner) {
     blocksize = runner.getBlocksize();
     rank = runner.getRank();
     specialId = runner.getSpecialId();

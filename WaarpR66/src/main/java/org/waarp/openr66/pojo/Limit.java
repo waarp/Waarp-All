@@ -55,17 +55,18 @@ public class Limit {
     // Nothing
   }
 
-  public Limit(String hostid, long delayLimit, long readGlobalLimit,
-               long writeGlobalLimit, long readSessionLimit,
-               long writeSessionLimit, UpdatedInfo updatedInfo) {
+  public Limit(final String hostid, final long delayLimit,
+               final long readGlobalLimit, final long writeGlobalLimit,
+               final long readSessionLimit, final long writeSessionLimit,
+               final UpdatedInfo updatedInfo) {
     this(hostid, delayLimit, readGlobalLimit, writeGlobalLimit,
          readSessionLimit, writeSessionLimit);
     this.updatedInfo = updatedInfo;
   }
 
-  public Limit(String hostid, long delayLimit, long readGlobalLimit,
-               long writeGlobalLimit, long readSessionLimit,
-               long writeSessionLimit) {
+  public Limit(final String hostid, final long delayLimit,
+               final long readGlobalLimit, final long writeGlobalLimit,
+               final long readSessionLimit, final long writeSessionLimit) {
     this.hostid = hostid;
     this.delayLimit = delayLimit;
     this.readGlobalLimit = readGlobalLimit;
@@ -74,7 +75,7 @@ public class Limit {
     this.writeSessionLimit = writeSessionLimit;
   }
 
-  public Limit(String hostid, long delayLimit) {
+  public Limit(final String hostid, final long delayLimit) {
     this(hostid, delayLimit, 0, 0, 0, 0);
   }
 
@@ -82,7 +83,7 @@ public class Limit {
     return hostid;
   }
 
-  public void setHostid(String hostid) {
+  public void setHostid(final String hostid) {
     this.hostid = hostid;
   }
 
@@ -90,7 +91,7 @@ public class Limit {
     return readGlobalLimit;
   }
 
-  public void setReadGlobalLimit(long readGlobalLimit) {
+  public void setReadGlobalLimit(final long readGlobalLimit) {
     this.readGlobalLimit = readGlobalLimit;
   }
 
@@ -98,7 +99,7 @@ public class Limit {
     return writeGlobalLimit;
   }
 
-  public void setWriteGlobalLimit(long writeGlobalLimit) {
+  public void setWriteGlobalLimit(final long writeGlobalLimit) {
     this.writeGlobalLimit = writeGlobalLimit;
   }
 
@@ -106,7 +107,7 @@ public class Limit {
     return readSessionLimit;
   }
 
-  public void setReadSessionLimit(long readSessionLimit) {
+  public void setReadSessionLimit(final long readSessionLimit) {
     this.readSessionLimit = readSessionLimit;
   }
 
@@ -114,7 +115,7 @@ public class Limit {
     return writeSessionLimit;
   }
 
-  public void setWriteSessionLimit(long writeSessionLimit) {
+  public void setWriteSessionLimit(final long writeSessionLimit) {
     this.writeSessionLimit = writeSessionLimit;
   }
 
@@ -122,7 +123,7 @@ public class Limit {
     return delayLimit;
   }
 
-  public void setDelayLimit(long delayLimit) {
+  public void setDelayLimit(final long delayLimit) {
     this.delayLimit = delayLimit;
   }
 
@@ -130,7 +131,7 @@ public class Limit {
     return updatedInfo;
   }
 
-  public void setUpdatedInfo(UpdatedInfo info) {
+  public void setUpdatedInfo(final UpdatedInfo info) {
     updatedInfo = info;
   }
 }

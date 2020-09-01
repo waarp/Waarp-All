@@ -43,9 +43,10 @@ public class StartupPacket extends AbstractLocalPacket {
    *
    * @return the new ValidPacket from buffer
    */
-  public static StartupPacket createFromBuffer(int headerLength,
-                                               int middleLength, int endLength,
-                                               ByteBuf buf) {
+  public static StartupPacket createFromBuffer(final int headerLength,
+                                               final int middleLength,
+                                               final int endLength,
+                                               final ByteBuf buf) {
     final Integer newId = buf.readInt();
     final boolean fromSsl = buf.readBoolean();
     return new StartupPacket(newId, fromSsl);
@@ -54,7 +55,7 @@ public class StartupPacket extends AbstractLocalPacket {
   /**
    * @param newId
    */
-  public StartupPacket(Integer newId, boolean fromSsl) {
+  public StartupPacket(final Integer newId, final boolean fromSsl) {
     localId = newId;
     this.fromSsl = fromSsl;
   }
@@ -66,7 +67,7 @@ public class StartupPacket extends AbstractLocalPacket {
 
   @Override
   public void createAllBuffers(final LocalChannelReference lcr,
-                               int networkHeader)
+                               final int networkHeader)
       throws OpenR66ProtocolPacketException {
     final int headerSize = 4;
     final int middleSize = 1;
@@ -84,20 +85,20 @@ public class StartupPacket extends AbstractLocalPacket {
   }
 
   @Override
-  public void createEnd(LocalChannelReference lcr)
+  public void createEnd(final LocalChannelReference lcr)
       throws OpenR66ProtocolPacketException {
     end = Unpooled.EMPTY_BUFFER;
   }
 
   @Override
-  public void createHeader(LocalChannelReference lcr)
+  public void createHeader(final LocalChannelReference lcr)
       throws OpenR66ProtocolPacketException {
     header = ByteBufAllocator.DEFAULT.buffer(4, 4);
     header.writeInt(localId);
   }
 
   @Override
-  public void createMiddle(LocalChannelReference lcr)
+  public void createMiddle(final LocalChannelReference lcr)
       throws OpenR66ProtocolPacketException {
     middle = ByteBufAllocator.DEFAULT.buffer(1, 1);
     middle.writeBoolean(fromSsl);

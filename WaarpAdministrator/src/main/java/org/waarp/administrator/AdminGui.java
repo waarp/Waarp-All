@@ -118,7 +118,7 @@ public class AdminGui {
   /**
    * Launch the application.
    */
-  public static void main(String[] args) {
+  public static void main(final String[] args) {
     WaarpLoggerFactory
         .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));
     if (logger == null) {
@@ -134,7 +134,7 @@ public class AdminGui {
       }
       System.exit(1);//NOSONAR
     }
-    String[] args2;
+    final String[] args2;
 
     final String pwd_gpp = Configuration.configuration.getServerKeyFile();
     if (pwd_gpp == null) {
@@ -214,7 +214,7 @@ public class AdminGui {
     btnEditXml = new JButton("Edit XML");
     btnEditXml.addActionListener(new ActionListener() {
       @Override
-      public void actionPerformed(ActionEvent arg0) {
+      public void actionPerformed(final ActionEvent arg0) {
         AdminXample.start(xamples);
       }
     });
@@ -222,10 +222,10 @@ public class AdminGui {
     btnCheckPartners = new JButton("Check Partners");
     btnCheckPartners.addActionListener(new ActionListener() {
       @Override
-      public void actionPerformed(ActionEvent arg0) {
+      public void actionPerformed(final ActionEvent arg0) {
         // Check all Known Partners
         try {
-          TestPacket packet;
+          final TestPacket packet;
           String myhost;
           try {
             myhost = getEnvironnement().hostId == null?
@@ -238,7 +238,7 @@ public class AdminGui {
               new TestPacket("MSG", "Administrator checking from " + myhost,
                              100);
           packet.retain();
-          StringBuilder result =
+          final StringBuilder result =
               new StringBuilder(Messages.getString("AdminGui.CheckedHosts"));
           for (final DbHostAuth host : DbHostAuth.getAllHosts()) {
             final R66Future future = new R66Future(true);
@@ -268,11 +268,11 @@ public class AdminGui {
     btnEditPassword = new JButton("Edit Password");
     btnEditPassword.addActionListener(new ActionListener() {
       @Override
-      public void actionPerformed(ActionEvent arg0) {
+      public void actionPerformed(final ActionEvent arg0) {
         SwingUtilities.invokeLater(new Runnable() {
           @Override
           public void run() {
-            AdminUiPassword inst;
+            final AdminUiPassword inst;
             try {
               inst = new AdminUiPassword(passwords);
             } catch (final Exception e) {
@@ -289,7 +289,7 @@ public class AdminGui {
 
     frmWaarpRCentral.addWindowListener(new WindowAdapter() {
       @Override
-      public void windowClosing(WindowEvent e) {
+      public void windowClosing(final WindowEvent e) {
         quit();
       }
     });
@@ -299,7 +299,7 @@ public class AdminGui {
     btnQuit = new JButton("QUIT");
     btnQuit.addActionListener(new ActionListener() {
       @Override
-      public void actionPerformed(ActionEvent e) {
+      public void actionPerformed(final ActionEvent e) {
         quit();
       }
     });
@@ -307,7 +307,7 @@ public class AdminGui {
     btnManageConfiguration = new JButton("Manage Configuration");
     btnManageConfiguration.addActionListener(new ActionListener() {
       @Override
-      public void actionPerformed(ActionEvent e) {
+      public void actionPerformed(final ActionEvent e) {
         EventQueue.invokeLater(new Runnable() {
           @Override
           public void run() {
@@ -335,7 +335,7 @@ public class AdminGui {
     btnFileTransfer = new JButton("File Transfer");
     btnFileTransfer.addActionListener(new ActionListener() {
       @Override
-      public void actionPerformed(ActionEvent arg0) {
+      public void actionPerformed(final ActionEvent arg0) {
         EventQueue.invokeLater(new Runnable() {
           @Override
           public void run() {
@@ -359,7 +359,7 @@ public class AdminGui {
     final JButton btnFr = new JButton("");
     btnFr.addActionListener(new ActionListener() {
       @Override
-      public void actionPerformed(ActionEvent e) {
+      public void actionPerformed(final ActionEvent e) {
         Messages.init(new Locale("fr"));
         langReinit();
       }
@@ -381,7 +381,7 @@ public class AdminGui {
     final JButton btnEn = new JButton("");
     btnEn.addActionListener(new ActionListener() {
       @Override
-      public void actionPerformed(ActionEvent e) {
+      public void actionPerformed(final ActionEvent e) {
         Messages.init(new Locale("en"));
         langReinit();
       }

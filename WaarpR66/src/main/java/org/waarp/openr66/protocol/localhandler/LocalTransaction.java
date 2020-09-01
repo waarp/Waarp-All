@@ -95,7 +95,8 @@ public class LocalTransaction {
    *
    * @throws OpenR66ProtocolSystemException
    */
-  public LocalChannelReference getClient(Integer remoteId, Integer localId)
+  public LocalChannelReference getClient(final Integer remoteId,
+                                         final Integer localId)
       throws OpenR66ProtocolSystemException {
     final LocalChannelReference localChannelReference = getFromId(localId);
     if (localChannelReference != null) {
@@ -124,11 +125,11 @@ public class LocalTransaction {
    * @throws OpenR66ProtocolNoConnectionException
    */
   public LocalChannelReference createNewClient(
-      NetworkChannelReference networkChannelReference, Integer remoteId,
-      R66Future futureRequest, boolean fromSsl)
-      throws OpenR66ProtocolSystemException,
-             OpenR66ProtocolRemoteShutdownException,
-             OpenR66ProtocolNoConnectionException {
+      final NetworkChannelReference networkChannelReference,
+      final Integer remoteId, final R66Future futureRequest,
+      final boolean fromSsl) throws OpenR66ProtocolSystemException,
+                                    OpenR66ProtocolRemoteShutdownException,
+                                    OpenR66ProtocolNoConnectionException {
     if (WaarpShutdownHook.isShutdownStarting()) {
       // Do not try since already locally in shutdown
       throw new OpenR66ProtocolNoConnectionException(
@@ -142,11 +143,11 @@ public class LocalTransaction {
     logger.debug("Db connection done and Create LocalChannel entry: {}",
                  localChannelReference);
     // Now simulate sending first a Startup message
-    StartupPacket startup =
+    final StartupPacket startup =
         new StartupPacket(localChannelReference.getLocalId(), fromSsl);
     try {
       localChannelReference.getServerHandler().startup(startup);
-    } catch (OpenR66ProtocolPacketException e) {
+    } catch (final OpenR66ProtocolPacketException e) {
       throw new OpenR66ProtocolNoConnectionException(e);
     }
     return localChannelReference;
@@ -157,7 +158,7 @@ public class LocalTransaction {
    *
    * @return the LocalChannelReference
    */
-  public LocalChannelReference getFromId(Integer id) {
+  public LocalChannelReference getFromId(final Integer id) {
     return localChannelHashMap.get(id);
   }
 
@@ -166,7 +167,7 @@ public class LocalTransaction {
    *
    * @param localChannelReference
    */
-  protected void remove(LocalChannelReference localChannelReference) {
+  protected void remove(final LocalChannelReference localChannelReference) {
     logger.debug("DEBUG remove: " + localChannelReference.getLocalId());
     localChannelHashMap.remove(localChannelReference.getLocalId());
     if (localChannelReference.getRequestId() != null) {
@@ -182,7 +183,8 @@ public class LocalTransaction {
    * @param runner
    * @param lcr
    */
-  public void setFromId(DbTaskRunner runner, LocalChannelReference lcr) {
+  public void setFromId(final DbTaskRunner runner,
+                        final LocalChannelReference lcr) {
     final String key = runner.getKey();
     lcr.setRequestId(key);
     localChannelHashMapIdBased.put(key, lcr);
@@ -193,7 +195,7 @@ public class LocalTransaction {
    *
    * @return the LocalChannelReference
    */
-  public LocalChannelReference getFromRequest(String key) {
+  public LocalChannelReference getFromRequest(final String key) {
     return localChannelHashMapIdBased.get(key);
   }
 
@@ -202,7 +204,7 @@ public class LocalTransaction {
    *
    * @return True if the LocalChannelReference exists
    */
-  public boolean contained(String key) {
+  public boolean contained(final String key) {
     return localChannelHashMapIdBased.containsKey(key);
   }
 
@@ -211,7 +213,7 @@ public class LocalTransaction {
    *
    * @return True if the LocalChannelReference exists
    */
-  public boolean contained(int id) {
+  public boolean contained(final int id) {
     return localChannelHashMap.containsKey(id);
   }
 
@@ -247,7 +249,7 @@ public class LocalTransaction {
     final Iterator<LocalChannelReference> iterator = collection.iterator();
     final ValidPacket packet = new ValidPacket("Shutdown forced", null,
                                                LocalPacketFactory.SHUTDOWNPACKET);
-    ByteBuf buffer = null;
+    final ByteBuf buffer = null;
     while (iterator.hasNext()) {
       final LocalChannelReference localChannelReference = iterator.next();
       logger.info("Inform Shutdown {}", localChannelReference);
@@ -319,7 +321,8 @@ public class LocalTransaction {
    */
   public void closeAll() {
     logger.debug("close All Local Channels");
-    Collection<LocalChannelReference> collection = localChannelHashMap.values();
+    final Collection<LocalChannelReference> collection =
+        localChannelHashMap.values();
     for (final LocalChannelReference localChannelReference : collection) {
       logger.info("Inform Shutdown {}", localChannelReference);
       localChannelReference.close();

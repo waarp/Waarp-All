@@ -223,7 +223,7 @@ public class SpooledDirectoryTransfer implements Runnable {
     setSent(0);
     setError(0);
     // first check if rule is for SEND
-    DbRule dbrule;
+    final DbRule dbrule;
     try {
       dbrule = new DbRule(ruleName);
     } catch (final WaarpDatabaseException e1) {
@@ -313,7 +313,7 @@ public class SpooledDirectoryTransfer implements Runnable {
     final FileMonitorCommandRunnableFuture waarpRemovedCommand =
         new FileMonitorCommandRunnableFuture() {
           @Override
-          public void run(FileItem file) {
+          public void run(final FileItem file) {
             if (normalInfoAsWarn) {
               logger.warn("File removed: {}", file.file);
             } else {
@@ -321,7 +321,7 @@ public class SpooledDirectoryTransfer implements Runnable {
             }
           }
         };
-    FileMonitorCommandRunnableFuture waarpHostCommand;
+    final FileMonitorCommandRunnableFuture waarpHostCommand;
     File dir = new File(directory.get(0));
     monitor = new FileMonitor(name, status, stop, dir, null, elapseTime, filter,
                               recurs, commandValidFile, waarpRemovedCommand,
@@ -347,7 +347,8 @@ public class SpooledDirectoryTransfer implements Runnable {
           new FileMonitorCommandFactory() {
 
             @Override
-            public FileMonitorCommandRunnableFuture create(FileItem fileItem) {
+            public FileMonitorCommandRunnableFuture create(
+                final FileItem fileItem) {
               final SpooledRunner runner = new SpooledRunner(fileItem);
               runner.setMonitor(monitor);
               return runner;
@@ -359,7 +360,7 @@ public class SpooledDirectoryTransfer implements Runnable {
     if (waarpHosts != null && !waarpHosts.isEmpty()) {
       waarpHostCommand = new FileMonitorCommandRunnableFuture() {
         @Override
-        public void run(FileItem notused) {
+        public void run(final FileItem notused) {
           try {
             Thread.currentThread().setName("FileMonitorInformation_" + name);
             if (admin.getSession() != null &&
@@ -450,7 +451,7 @@ public class SpooledDirectoryTransfer implements Runnable {
     private static final String REMOTE2 = "</REMOTE>";
     private static final String REMOTE = "<REMOTE>";
 
-    public SpooledRunner(FileItem fileItem) {
+    public SpooledRunner(final FileItem fileItem) {
       super(fileItem);
       if (logger == null) {
         logger = WaarpLoggerFactory.getLogger(SpooledDirectoryTransfer.class);
@@ -458,7 +459,7 @@ public class SpooledDirectoryTransfer implements Runnable {
     }
 
     @Override
-    public void run(FileItem fileItem) {
+    public void run(final FileItem fileItem) {
       setFileItem(fileItem);
       checkReuse(ignoreAlreadyUsed);
       if (admin.getSession() != null && admin.getSession().isDisActive()) {
@@ -482,14 +483,14 @@ public class SpooledDirectoryTransfer implements Runnable {
           setValid(fileItem);
         } else {
           // Cancel the unique previous transfer
-          String host = remoteHosts.get(0).trim();
+          final String host = remoteHosts.get(0).trim();
           if (host != null && !host.isEmpty()) {
             final String filename = fileItem.file.getAbsolutePath();
-            String text =
+            final String text =
                 "Request Transfer to be cancelled: " + fileItem.specialId +
                 ' ' + filename + ' ';
             try {
-              R66Future r66Future = new R66Future(true);
+              final R66Future r66Future = new R66Future(true);
               final String srequester =
                   Configuration.configuration.getHostId(host);
               // Try restart
@@ -582,7 +583,7 @@ public class SpooledDirectoryTransfer implements Runnable {
             if (r66Future.isSuccess()) {
               finalStatus = true;
               setSent(getSent() + 1);
-              DbTaskRunner runner;
+              final DbTaskRunner runner;
               if (r66result != null) {
                 runner = r66result.getRunner();
                 if (runner != null) {
@@ -648,7 +649,7 @@ public class SpooledDirectoryTransfer implements Runnable {
             } else {
               setError(getError() + 1);
               ko++;
-              DbTaskRunner runner;
+              final DbTaskRunner runner;
               if (r66result != null) {
                 String errMsg = "Unknown Error Message";
                 if (r66Future.getCause() != null) {
@@ -957,11 +958,11 @@ public class SpooledDirectoryTransfer implements Runnable {
   };
 
   @SuppressWarnings("unchecked")
-  protected static boolean getParamsFromConfigFile(String filename) {
+  protected static boolean getParamsFromConfigFile(final String filename) {
     if (logger == null) {
       logger = WaarpLoggerFactory.getLogger(SpooledDirectoryTransfer.class);
     }
-    Document document;
+    final Document document;
     // Open config file
     try {
       document = XmlUtil.getNewSaxReader().read(filename);
@@ -976,10 +977,10 @@ public class SpooledDirectoryTransfer implements Runnable {
                    filename); //$NON-NLS-1$
       return false;
     }
-    XmlValue[] configuration = XmlUtil.read(document, configSpooled);
-    XmlHash hashConfig = new XmlHash(configuration);
+    final XmlValue[] configuration = XmlUtil.read(document, configSpooled);
+    final XmlHash hashConfig = new XmlHash(configuration);
     XmlValue value = hashConfig.get(XML_STOPFILE);
-    String stopfile;
+    final String stopfile;
     if (value == null || value.isEmpty()) {
       return false;
     }
@@ -1121,7 +1122,7 @@ public class SpooledDirectoryTransfer implements Runnable {
    *
    * @return True if all parameters were found and correct
    */
-  protected static boolean getParams(String[] args) {
+  protected static boolean getParams(final String[] args) {
     if (logger == null) {
       logger = WaarpLoggerFactory.getLogger(SpooledDirectoryTransfer.class);
     }
@@ -1266,7 +1267,7 @@ public class SpooledDirectoryTransfer implements Runnable {
     return !arguments.isEmpty();
   }
 
-  public static void main(String[] args) {
+  public static void main(final String[] args) {
     WaarpLoggerFactory
         .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));
     if (logger == null) {
@@ -1287,7 +1288,8 @@ public class SpooledDirectoryTransfer implements Runnable {
    *     else False let the caller do (used
    *     by SpooledEngine)
    */
-  public static boolean initialize(String[] args, boolean normalStart) {
+  public static boolean initialize(final String[] args,
+                                   final boolean normalStart) {
     if (logger == null) {
       logger = WaarpLoggerFactory.getLogger(SpooledDirectoryTransfer.class);
     }
@@ -1358,7 +1360,7 @@ public class SpooledDirectoryTransfer implements Runnable {
   /**
    * @param sent the sent to set
    */
-  private void setSent(long sent) {
+  private void setSent(final long sent) {
     this.sent = sent;
   }
 
@@ -1372,7 +1374,7 @@ public class SpooledDirectoryTransfer implements Runnable {
   /**
    * @param error the error to set
    */
-  private void setError(long error) {
+  private void setError(final long error) {
     this.error = error;
   }
 

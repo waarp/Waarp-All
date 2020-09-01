@@ -152,7 +152,7 @@ public class R66Session implements SessionInterface {
   /**
    * @param businessObject the businessObject to set
    */
-  public void setBusinessObject(R66BusinessInterface businessObject) {
+  public void setBusinessObject(final R66BusinessInterface businessObject) {
     this.businessObject = businessObject;
   }
 
@@ -163,7 +163,7 @@ public class R66Session implements SessionInterface {
    *
    * @throws IllegalFiniteStateException if the new status if not ok
    */
-  public void newState(R66FiniteDualStates desiredstate) {
+  public void newState(final R66FiniteDualStates desiredstate) {
     try {
       state.setCurrent(desiredstate);
     } catch (final IllegalFiniteStateException e) {
@@ -193,7 +193,7 @@ public class R66Session implements SessionInterface {
    *
    * @param stat
    */
-  public void setStatus(int stat) {
+  public void setStatus(final int stat) {
     final StackTraceElement elt = Thread.currentThread().getStackTrace()[2];
     status = '(' + elt.getFileName() + ':' + elt.getLineNumber() + "):" + stat;
   }
@@ -287,7 +287,7 @@ public class R66Session implements SessionInterface {
    *
    * @return the reusable buffer per Session
    */
-  public byte[] getReusableBuffer(int blockSize) {
+  public byte[] getReusableBuffer(final int blockSize) {
     if (reusableBuffer == null || reusableBuffer.length != blockSize) {
       reusableBuffer = null;
       reusableBuffer = new byte[blockSize];
@@ -298,7 +298,7 @@ public class R66Session implements SessionInterface {
   /**
    * @param blocksize the blocksize to set
    */
-  public void setBlockSize(int blocksize) {
+  public void setBlockSize(final int blocksize) {
     blockSize = blocksize;
   }
 
@@ -337,7 +337,7 @@ public class R66Session implements SessionInterface {
   /**
    * @param isReady the isReady for transfer to set
    */
-  public void setReady(boolean isReady) {
+  public void setReady(final boolean isReady) {
     this.isReady = isReady;
   }
 
@@ -352,7 +352,7 @@ public class R66Session implements SessionInterface {
    * @param localChannelReference the localChannelReference to set
    */
   public void setLocalChannelReference(
-      LocalChannelReference localChannelReference) {
+      final LocalChannelReference localChannelReference) {
     this.localChannelReference = localChannelReference;
     this.localChannelReference.setSession(this);
     if (this.localChannelReference.getNetworkChannel() != null) {
@@ -390,8 +390,8 @@ public class R66Session implements SessionInterface {
    * @param runner
    * @param localChannelReference
    */
-  public void setNoSessionRunner(DbTaskRunner runner,
-                                 LocalChannelReference localChannelReference) {
+  public void setNoSessionRunner(final DbTaskRunner runner,
+                                 final LocalChannelReference localChannelReference) {
     this.runner = runner;
     // Warning: the file is not correctly setup
     try {
@@ -462,7 +462,7 @@ public class R66Session implements SessionInterface {
    *     file
    *     cannot be created
    */
-  public void setFileAfterPreRunner(boolean createFile)
+  public void setFileAfterPreRunner(final boolean createFile)
       throws OpenR66RunnerErrorException, CommandAbstractException {
     if (businessObject != null) {
       businessObject.checkAtChangeFilename(this);
@@ -576,7 +576,7 @@ public class R66Session implements SessionInterface {
    * @param runner
    * @param code
    */
-  public void setBadRunner(DbTaskRunner runner, ErrorCode code) {
+  public void setBadRunner(final DbTaskRunner runner, final ErrorCode code) {
     this.runner = runner;
     if (code == ErrorCode.QueryAlreadyFinished) {
       if (this.runner.isSender()) {
@@ -617,7 +617,7 @@ public class R66Session implements SessionInterface {
    *
    * @throws OpenR66RunnerErrorException
    */
-  public void setRunner(DbTaskRunner runner)
+  public void setRunner(final DbTaskRunner runner)
       throws OpenR66RunnerErrorException {
     this.runner = runner;
     logger.debug("Runner to set: {} {}", runner.shallIgnoreSave(), runner);
@@ -671,7 +671,7 @@ public class R66Session implements SessionInterface {
    *
    * @throws OpenR66RunnerErrorException
    */
-  public void startup(boolean checkNotExternal)
+  public void startup(final boolean checkNotExternal)
       throws OpenR66RunnerErrorException {
     if (runner.getRank() > 0) {
       logger.debug("restart at " + runner.getRank() + " {}", runner);
@@ -839,7 +839,7 @@ public class R66Session implements SessionInterface {
    *
    * @throws OpenR66RunnerErrorException
    */
-  public void renameReceiverFile(String newFilename)
+  public void renameReceiverFile(final String newFilename)
       throws OpenR66RunnerErrorException {
     if (runner == null) {
       return;
@@ -876,7 +876,8 @@ public class R66Session implements SessionInterface {
    * @throws OpenR66RunnerErrorException
    * @throws OpenR66ProtocolSystemException
    */
-  public void setFinalizeTransfer(boolean status, R66Result finalValue)
+  public void setFinalizeTransfer(final boolean status,
+                                  final R66Result finalValue)
       throws OpenR66RunnerErrorException, OpenR66ProtocolSystemException {
     logger.debug(status + ":" + finalValue + ':' + runner);
     if (runner == null) {
@@ -933,7 +934,7 @@ public class R66Session implements SessionInterface {
     logger.debug("Transfer " + status + " on {} and {}", file, runner);
     if (!runner.ready()) {
       // Pre task in error (or even before)
-      OpenR66RunnerErrorException runnerErrorException;
+      final OpenR66RunnerErrorException runnerErrorException;
       if (!status && finalValue.getException() != null) {
         runnerErrorException = new OpenR66RunnerErrorException(
             "Pre task in error (or even before)", finalValue.getException());
@@ -978,7 +979,7 @@ public class R66Session implements SessionInterface {
    * @throws OpenR66RunnerErrorException
    * @throws OpenR66ProtocolSystemException
    */
-  public void tryFinalizeRequest(R66Result errorValue)
+  public void tryFinalizeRequest(final R66Result errorValue)
       throws OpenR66RunnerErrorException, OpenR66ProtocolSystemException {
     if (getLocalChannelReference() == null) {
       return;
@@ -1036,7 +1037,7 @@ public class R66Session implements SessionInterface {
    * @return True if the number of Error is still acceptable
    */
   public boolean addError() {
-    int value = numOfError.incrementAndGet();
+    final int value = numOfError.incrementAndGet();
     return value < Configuration.RETRYNB;
   }
 

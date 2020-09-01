@@ -54,7 +54,7 @@ public class DbModelPostgresqlR66 extends DbModelPostgresql {
    *
    * @throws WaarpDatabaseNoConnectionException
    */
-  private int getServerVersion(DbSession session)
+  private int getServerVersion(final DbSession session)
       throws WaarpDatabaseNoConnectionException {
     int serverVersion = 0;
     final DbRequest request = new DbRequest(session);
@@ -76,7 +76,7 @@ public class DbModelPostgresqlR66 extends DbModelPostgresql {
   }
 
   @Override
-  public void createTables(DbSession session)
+  public void createTables(final DbSession session)
       throws WaarpDatabaseNoConnectionException {
     // Create tables: configuration, hosts, rules, runner, cptrunner
     final String createTableH2 = "CREATE TABLE ";
@@ -136,7 +136,7 @@ public class DbModelPostgresqlR66 extends DbModelPostgresql {
   }
 
   @Override
-  public boolean upgradeDb(DbSession session, String version)
+  public boolean upgradeDb(final DbSession session, final String version)
       throws WaarpDatabaseNoConnectionException {
     if (PartnerConfiguration
         .isVersion2GEQVersion1(version, R66Versions.V2_4_13.getVersion())) {
@@ -152,7 +152,7 @@ public class DbModelPostgresqlR66 extends DbModelPostgresql {
       final String notNull = " NOT NULL ";
 
       // HostConfiguration
-      StringBuilder action =
+      final StringBuilder action =
           new StringBuilder(createTableH2 + DbHostConfiguration.table + '(');
       final DbHostConfiguration.Columns[] chcolumns =
           DbHostConfiguration.Columns.values();
@@ -261,8 +261,8 @@ public class DbModelPostgresqlR66 extends DbModelPostgresql {
   }
 
   @Override
-  public boolean needUpgradeDb(DbSession session, String version,
-                               boolean tryFix)
+  public boolean needUpgradeDb(final DbSession session, final String version,
+                               final boolean tryFix)
       throws WaarpDatabaseNoConnectionException {
     // Check if the database is up to date
     return DbModelFactoryR66

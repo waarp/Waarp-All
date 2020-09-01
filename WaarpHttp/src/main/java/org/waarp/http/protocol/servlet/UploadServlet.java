@@ -67,15 +67,16 @@ public class UploadServlet extends AbstractServlet {
 
 
   @Override
-  protected void doPost(HttpServletRequest request,
-                        HttpServletResponse response) throws ServletException {
+  protected void doPost(final HttpServletRequest request,
+                        final HttpServletResponse response)
+      throws ServletException {
     // Check that we have a file upload request
-    boolean isMultipart =
+    final boolean isMultipart =
         request.getHeader("Content-Type").contains("multipart/");
     InputStream inputStream = null;
-    HttpResumableInfo resumableInfo;
-    HttpResumableSession session;
-    Map<String, String> arguments = new HashMap<String, String>();
+    final HttpResumableInfo resumableInfo;
+    final HttpResumableSession session;
+    final Map<String, String> arguments = new HashMap<String, String>();
     logger.debug("MULTIPART MODE? {} {}", isMultipart,
                  request.getHeader("Content-Type"));
     if (isMultipart) {
@@ -83,54 +84,54 @@ public class UploadServlet extends AbstractServlet {
         request.setAttribute(__MULTIPART_CONFIG_ELEMENT, MULTI_PART_CONFIG);
       }
       try {
-        Collection<Part> parts = request.getParts();
+        final Collection<Part> parts = request.getParts();
         if (parts.isEmpty()) {
           logger.warn("MULTIPART MODE BUT EMPTY");
           inputStream = request.getInputStream();
         } else {
-          for (Part part : parts) {
+          for (final Part part : parts) {
 
             if (part.getName().equalsIgnoreCase(FIELD_FILE)) {
               inputStream = part.getInputStream();
             } else {
               final InputStream finalInputStream = part.getInputStream();
-              ByteSource byteSource = new ByteSource() {
+              final ByteSource byteSource = new ByteSource() {
                 @Override
                 public InputStream openStream() {
                   return finalInputStream;
                 }
               };
 
-              String valueText =
+              final String valueText =
                   byteSource.asCharSource(WaarpStringUtils.UTF8).read();
               arguments.put(part.getName(), valueText);
             }
           }
         }
-      } catch (ServletException ignored) {
+      } catch (final ServletException ignored) {
         logger.warn("MULTIPART MODE BUT error", ignored);
         try {
           inputStream = request.getInputStream();
-        } catch (IOException ignore) {
+        } catch (final IOException ignore) {
           throw new ServletException(INVALID_BLOCK, ignore);
         }
-      } catch (IOException ignored) {
+      } catch (final IOException ignored) {
         logger.warn("MULTIPART MODE BUT error", ignored);
         try {
           inputStream = request.getInputStream();
-        } catch (IOException ignore) {
+        } catch (final IOException ignore) {
           throw new ServletException(INVALID_BLOCK, ignore);
         }
       }
     } else {
-      Enumeration<String> names = request.getParameterNames();
+      final Enumeration<String> names = request.getParameterNames();
       while (names.hasMoreElements()) {
-        String name = names.nextElement();
+        final String name = names.nextElement();
         arguments.put(name, request.getParameter(name));
       }
       try {
         inputStream = request.getInputStream();
-      } catch (IOException ignore) {
+      } catch (final IOException ignore) {
         throw new ServletException(INVALID_BLOCK, ignore);
       }
     }
@@ -143,7 +144,7 @@ public class UploadServlet extends AbstractServlet {
       if (!session.tryWrite(resumableInfo, inputStream)) {
         throw new ServletException(INVALID_BLOCK);
       }
-    } catch (IOException e) {
+    } catch (final IOException e) {
       throw new ServletException(INVALID_BLOCK, e);
     }
 
@@ -158,7 +159,7 @@ public class UploadServlet extends AbstractServlet {
       response.setStatus(200);
       try {
         response.getWriter().print("All finished.");
-      } catch (IOException ignore) {
+      } catch (final IOException ignore) {
         logger.debug(ignore);
       }
     } else {
@@ -166,7 +167,7 @@ public class UploadServlet extends AbstractServlet {
       response.setStatus(201);
       try {
         response.getWriter().print("Upload");
-      } catch (IOException ignore) {
+      } catch (final IOException ignore) {
         logger.debug(ignore);
       }
     }
@@ -180,16 +181,17 @@ public class UploadServlet extends AbstractServlet {
    *
    * @return the HttpResumableInfo
    */
-  private HttpResumableInfo getResumableInfo(Map<String, String> arguments) {
-    int resumableChunkNumber =
+  private HttpResumableInfo getResumableInfo(
+      final Map<String, String> arguments) {
+    final int resumableChunkNumber =
         HttpHelper.toInt(arguments.get(RESUMABLE_CHUNK_NUMBER), -1);
-    int resumableChunkSize =
+    final int resumableChunkSize =
         HttpHelper.toInt(arguments.get(RESUMABLE_CHUNK_SIZE), -1);
-    long resumableTotalSize =
+    final long resumableTotalSize =
         HttpHelper.toLong(arguments.get(RESUMABLE_TOTAL_SIZE), -1);
-    String resumableIdentifier = arguments.get(RESUMABLE_IDENTIFIER);
-    String resumableFilename = arguments.get(RESUMABLE_FILENAME);
-    String resumableRelativePath = arguments.get(RESUMABLE_RELATIVE_PATH);
+    final String resumableIdentifier = arguments.get(RESUMABLE_IDENTIFIER);
+    final String resumableFilename = arguments.get(RESUMABLE_FILENAME);
+    final String resumableRelativePath = arguments.get(RESUMABLE_RELATIVE_PATH);
     return new HttpResumableInfo(resumableChunkNumber, resumableChunkSize,
                                  resumableTotalSize, resumableIdentifier,
                                  resumableFilename, resumableRelativePath);
@@ -207,9 +209,9 @@ public class UploadServlet extends AbstractServlet {
    * @throws ServletException
    */
   private HttpResumableSession getResumableSession(
-      Map<String, String> arguments, HttpResumableInfo resumableInfo)
-      throws ServletException {
-    String rulename = arguments.get(RULENAME);
+      final Map<String, String> arguments,
+      final HttpResumableInfo resumableInfo) throws ServletException {
+    final String rulename = arguments.get(RULENAME);
     if (rulename == null) {
       throw new ServletException(INVALID_REQUEST_PARAMS);
     }
@@ -217,12 +219,12 @@ public class UploadServlet extends AbstractServlet {
     if (comment == null) {
       comment = "Web Upload " + resumableInfo.getIdentifier();
     }
-    HttpSessions sessions = HttpSessions.getInstance();
+    final HttpSessions sessions = HttpSessions.getInstance();
 
     try {
-      HttpAuthent authent = authentClass.newInstance();
+      final HttpAuthent authent = authentClass.newInstance();
       authent.initializeAuthent(arguments);
-      HttpResumableSession session = sessions
+      final HttpResumableSession session = sessions
           .getOrCreateResumableSession(resumableInfo, rulename, comment,
                                        authent);
       if (!session.valid(resumableInfo)) {
@@ -230,27 +232,28 @@ public class UploadServlet extends AbstractServlet {
         throw new ServletException(INVALID_REQUEST_PARAMS);
       }
       return session;
-    } catch (IllegalArgumentException e) {
+    } catch (final IllegalArgumentException e) {
       throw new ServletException(INVALID_REQUEST_PARAMS, e);
-    } catch (IllegalAccessException e) {
+    } catch (final IllegalAccessException e) {
       throw new ServletException(INVALID_REQUEST_PARAMS, e);
-    } catch (InstantiationException e) {
+    } catch (final InstantiationException e) {
       throw new ServletException(INVALID_REQUEST_PARAMS, e);
     }
   }
 
   @Override
-  protected void doGet(HttpServletRequest request, HttpServletResponse response)
+  protected void doGet(final HttpServletRequest request,
+                       final HttpServletResponse response)
       throws ServletException {
-    Map<String, String> arguments = new HashMap<String, String>();
-    Enumeration<String> names = request.getParameterNames();
+    final Map<String, String> arguments = new HashMap<String, String>();
+    final Enumeration<String> names = request.getParameterNames();
     while (names.hasMoreElements()) {
-      String name = names.nextElement();
+      final String name = names.nextElement();
       arguments.put(name, request.getParameter(name));
     }
-    HttpResumableInfo resumableInfo = getResumableInfo(arguments);
+    final HttpResumableInfo resumableInfo = getResumableInfo(arguments);
     logger.debug("RECVGET: {}", resumableInfo);
-    HttpResumableSession session =
+    final HttpResumableSession session =
         getResumableSession(arguments, resumableInfo);
     logger.debug("SESSION: {}", session);
     if (session.contains(resumableInfo)) {
@@ -258,7 +261,7 @@ public class UploadServlet extends AbstractServlet {
       response.setStatus(200);
       try {
         response.getWriter().print("Uploaded."); //This Chunk has been Uploaded.
-      } catch (IOException ignore) {
+      } catch (final IOException ignore) {
         logger.debug(ignore);
       }
     } else {

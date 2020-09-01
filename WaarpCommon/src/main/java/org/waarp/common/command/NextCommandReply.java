@@ -46,7 +46,8 @@ public class NextCommandReply {
    * @param reply
    * @param message
    */
-  public NextCommandReply(Enum<?> command, ReplyCode reply, String message) {
+  public NextCommandReply(final Enum<?> command, final ReplyCode reply,
+                          final String message) {
     this.command = command;
     this.reply = reply;
     this.message = message;

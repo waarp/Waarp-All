@@ -97,8 +97,8 @@ public class NetworkTransaction {
    *
    * @return the Channel
    */
-  public Channel createConnectionWithRetry(SocketAddress socketAddress,
-                                           boolean isSSL) {
+  public Channel createConnectionWithRetry(final SocketAddress socketAddress,
+                                           final boolean isSSL) {
     Channel channel = null;
     OpenR66Exception lastException = null;
     for (int i = 0; i < RETRYNB; i++) {
@@ -149,7 +149,8 @@ public class NetworkTransaction {
    * @throws OpenR66ProtocolRemoteShutdownException
    * @throws OpenR66ProtocolNoConnectionException
    */
-  private Channel createConnection(SocketAddress socketAddress, boolean isSSL)
+  private Channel createConnection(final SocketAddress socketAddress,
+                                   final boolean isSSL)
       throws OpenR66ProtocolNetworkException,
              OpenR66ProtocolRemoteShutdownException,
              OpenR66ProtocolNoConnectionException {
@@ -198,8 +199,8 @@ public class NetworkTransaction {
    * @throws OpenR66ProtocolRemoteShutdownException
    * @throws OpenR66ProtocolNoConnectionException
    */
-  private Channel createNewConnection(SocketAddress socketServerAddress,
-                                      boolean isSSL)
+  private Channel createNewConnection(final SocketAddress socketServerAddress,
+                                      final boolean isSSL)
       throws OpenR66ProtocolNetworkException,
              OpenR66ProtocolRemoteShutdownException,
              OpenR66ProtocolNoConnectionException {
@@ -253,7 +254,7 @@ public class NetworkTransaction {
         }
       }
     }
-    Throwable cause = channelFuture == null? null : channelFuture.cause();
+    final Throwable cause = channelFuture == null? null : channelFuture.cause();
     throw new OpenR66ProtocolNetworkException("Cannot connect to remote server",
                                               cause);
   }

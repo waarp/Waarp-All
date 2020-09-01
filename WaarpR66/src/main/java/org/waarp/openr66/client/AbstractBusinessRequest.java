@@ -66,10 +66,11 @@ public abstract class AbstractBusinessRequest implements Runnable {
 
   private LocalChannelReference localChannelReference;
 
-  protected AbstractBusinessRequest(Class<?> clasz, R66Future future,
-                                    String remoteHost,
-                                    NetworkTransaction networkTransaction,
-                                    BusinessRequestPacket packet) {
+  protected AbstractBusinessRequest(final Class<?> clasz,
+                                    final R66Future future,
+                                    final String remoteHost,
+                                    final NetworkTransaction networkTransaction,
+                                    final BusinessRequestPacket packet) {
     if (logger == null) {
       logger = WaarpLoggerFactory.getLogger(clasz);
     }
@@ -145,7 +146,7 @@ public abstract class AbstractBusinessRequest implements Runnable {
    *
    * @param args
    */
-  public static void main(String[] args) {
+  public static void main(final String[] args) {
     WaarpLoggerFactory
         .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));
     if (logger == null) {
@@ -209,7 +210,7 @@ public abstract class AbstractBusinessRequest implements Runnable {
    *
    * @return True if all parameters were found and correct
    */
-  protected static boolean getParams(String[] args) {
+  protected static boolean getParams(final String[] args) {
     if (logger == null) {
       logger = WaarpLoggerFactory.getLogger(AbstractBusinessRequest.class);
     }

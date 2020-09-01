@@ -64,7 +64,7 @@ public class FileBasedAuth extends FilesystemBasedFtpAuth
   /**
    * @param session
    */
-  public FileBasedAuth(FtpSession session) {
+  public FileBasedAuth(final FtpSession session) {
     super(session);
   }
 
@@ -86,7 +86,7 @@ public class FileBasedAuth extends FilesystemBasedFtpAuth
    *     authentication
    */
   @Override
-  protected NextCommandReply setBusinessUser(String user)
+  protected NextCommandReply setBusinessUser(final String user)
       throws Reply421Exception, Reply530Exception {
     final SimpleAuth auth =
         ((FileBasedConfiguration) ((FtpSession) getSession())
@@ -120,7 +120,7 @@ public class FileBasedAuth extends FilesystemBasedFtpAuth
    *     authentication
    */
   @Override
-  protected NextCommandReply setBusinessPassword(String password)
+  protected NextCommandReply setBusinessPassword(final String password)
       throws Reply421Exception, Reply530Exception {
     if (currentAuth == null) {
       setIsIdentified(false);
@@ -152,7 +152,7 @@ public class FileBasedAuth extends FilesystemBasedFtpAuth
    *     authentication
    */
   @Override
-  protected NextCommandReply setBusinessAccount(String account)
+  protected NextCommandReply setBusinessAccount(final String account)
       throws Reply421Exception, Reply530Exception {
     if (currentAuth == null) {
       throw new Reply530Exception("ACCT needs a USER first");
@@ -168,7 +168,7 @@ public class FileBasedAuth extends FilesystemBasedFtpAuth
   }
 
   @Override
-  public boolean isBusinessPathValid(String newPath) {
+  public boolean isBusinessPathValid(final String newPath) {
     if (newPath == null) {
       return false;
     }
@@ -177,7 +177,7 @@ public class FileBasedAuth extends FilesystemBasedFtpAuth
 
   @Override
   protected String setBusinessRootFromAuth() throws Reply421Exception {
-    String path;
+    final String path;
     if (account == null) {
       path = DirInterface.SEPARATOR + user;
     } else {
@@ -204,7 +204,7 @@ public class FileBasedAuth extends FilesystemBasedFtpAuth
    *
    * @param hostid
    */
-  public void specialNoSessionAuth(String hostid) {
+  public void specialNoSessionAuth(final String hostid) {
     isIdentified = true;
     final SimpleAuth auth =
         new SimpleAuth(hostid, hostid, null, null, 0, null, 0);
@@ -235,7 +235,7 @@ public class FileBasedAuth extends FilesystemBasedFtpAuth
   /**
    * @param specialId the specialId to set
    */
-  public void setSpecialId(long specialId) {
+  public void setSpecialId(final long specialId) {
     this.specialId = specialId;
   }
 

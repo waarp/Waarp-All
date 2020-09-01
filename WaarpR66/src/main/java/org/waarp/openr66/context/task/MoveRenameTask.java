@@ -43,8 +43,8 @@ public class MoveRenameTask extends AbstractTask {
    * @param argTransfer
    * @param session
    */
-  public MoveRenameTask(String argRule, int delay, String argTransfer,
-                        R66Session session) {
+  public MoveRenameTask(final String argRule, final int delay,
+                        final String argTransfer, final R66Session session) {
     super(TaskType.MOVERENAME, delay, argRule, argTransfer, session);
   }
 

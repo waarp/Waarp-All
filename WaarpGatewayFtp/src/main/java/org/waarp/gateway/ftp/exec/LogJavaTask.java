@@ -67,8 +67,9 @@ public class LogJavaTask implements GatewayRunnable {
   }
 
   @Override
-  public void setArgs(boolean waitForValidation, boolean useLocalExec,
-                      int delay, String[] args) {
+  public void setArgs(final boolean waitForValidation,
+                      final boolean useLocalExec, final int delay,
+                      final String[] args) {
     this.waitForValidation = waitForValidation;
     this.useLocalExec = useLocalExec;
     this.delay = delay;

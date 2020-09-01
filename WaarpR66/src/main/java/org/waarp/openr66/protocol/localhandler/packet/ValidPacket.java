@@ -46,8 +46,10 @@ public class ValidPacket extends AbstractLocalPacket {
    *
    * @return the new ValidPacket from buffer
    */
-  public static ValidPacket createFromBuffer(int headerLength, int middleLength,
-                                             int endLength, ByteBuf buf) {
+  public static ValidPacket createFromBuffer(final int headerLength,
+                                             final int middleLength,
+                                             final int endLength,
+                                             final ByteBuf buf) {
     final byte[] bheader = new byte[headerLength - 1];
     final byte[] bmiddle = new byte[middleLength];
     final byte bend;
@@ -66,7 +68,7 @@ public class ValidPacket extends AbstractLocalPacket {
    * @param middle
    * @param end
    */
-  public ValidPacket(String header, String middle, byte end) {
+  public ValidPacket(final String header, final String middle, final byte end) {
     sheader = header;
     smiddle = middle;
     send = end;
@@ -79,7 +81,7 @@ public class ValidPacket extends AbstractLocalPacket {
 
   @Override
   public void createAllBuffers(final LocalChannelReference lcr,
-                               int networkHeader)
+                               final int networkHeader)
       throws OpenR66ProtocolPacketException {
     final byte[] headerBytes =
         sheader != null? sheader.getBytes() : EMPTY_ARRAY;
@@ -103,7 +105,7 @@ public class ValidPacket extends AbstractLocalPacket {
   }
 
   @Override
-  public void createEnd(LocalChannelReference lcr)
+  public void createEnd(final LocalChannelReference lcr)
       throws OpenR66ProtocolPacketException {
     if (end != null) {
 
@@ -113,7 +115,7 @@ public class ValidPacket extends AbstractLocalPacket {
   }
 
   @Override
-  public void createHeader(LocalChannelReference lcr)
+  public void createHeader(final LocalChannelReference lcr)
       throws OpenR66ProtocolPacketException {
     if (sheader != null) {
       header = Unpooled.wrappedBuffer(sheader.getBytes());
@@ -121,7 +123,7 @@ public class ValidPacket extends AbstractLocalPacket {
   }
 
   @Override
-  public void createMiddle(LocalChannelReference lcr)
+  public void createMiddle(final LocalChannelReference lcr)
       throws OpenR66ProtocolPacketException {
     if (smiddle != null) {
       middle = Unpooled.wrappedBuffer(smiddle.getBytes());
@@ -155,7 +157,7 @@ public class ValidPacket extends AbstractLocalPacket {
   /**
    * @param smiddle
    */
-  public void setSmiddle(String smiddle) {
+  public void setSmiddle(final String smiddle) {
     this.smiddle = smiddle;
     middle = null;
   }

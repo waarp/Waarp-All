@@ -34,12 +34,13 @@ public class CommonDirImpl extends FilesystemBasedDirImpl {
    * @param session
    * @param optsMLSx
    */
-  public CommonDirImpl(SessionInterface session, OptsMLSxInterface optsMLSx) {
+  public CommonDirImpl(final SessionInterface session,
+                       final OptsMLSxInterface optsMLSx) {
     super(session, optsMLSx);
   }
 
   @Override
-  public FileInterface newFile(String path, boolean append)
+  public FileInterface newFile(final String path, final boolean append)
       throws CommandAbstractException {
     return new CommonFileImpl(session, this, path);
   }

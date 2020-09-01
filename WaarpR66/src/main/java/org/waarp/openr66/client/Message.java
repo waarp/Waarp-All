@@ -77,7 +77,7 @@ public class Message implements Runnable {
    *
    * @return True if all parameters were found and correct
    */
-  protected static boolean getParams(String[] args) {
+  protected static boolean getParams(final String[] args) {
     if (logger == null) {
       logger = WaarpLoggerFactory.getLogger(Message.class);
     }
@@ -114,8 +114,9 @@ public class Message implements Runnable {
     return true;
   }
 
-  public Message(NetworkTransaction networkTransaction, R66Future future,
-                 String requested, TestPacket packet) {
+  public Message(final NetworkTransaction networkTransaction,
+                 final R66Future future, final String requested,
+                 final TestPacket packet) {
     if (logger == null) {
       logger = WaarpLoggerFactory.getLogger(Message.class);
     }
@@ -126,8 +127,9 @@ public class Message implements Runnable {
     hostAuth = null;
   }
 
-  public Message(NetworkTransaction networkTransaction, R66Future future,
-                 DbHostAuth hostAuth, TestPacket packet) {
+  public Message(final NetworkTransaction networkTransaction,
+                 final R66Future future, final DbHostAuth hostAuth,
+                 final TestPacket packet) {
     if (logger == null) {
       logger = WaarpLoggerFactory.getLogger(Message.class);
     }
@@ -144,7 +146,7 @@ public class Message implements Runnable {
       logger = WaarpLoggerFactory.getLogger(Message.class);
     }
     // Connection
-    DbHostAuth host;
+    final DbHostAuth host;
     if (hostAuth == null) {
       host = R66Auth.getServerAuth(requested);
     } else {
@@ -170,7 +172,7 @@ public class Message implements Runnable {
     }
     SocketAddress socketAddress = host.getSocketAddress();
     final boolean isSSL = host.isSsl();
-    LocalChannelReference localChannelReference;
+    final LocalChannelReference localChannelReference;
     localChannelReference = networkTransaction
         .createConnectionWithRetry(socketAddress, isSSL, future);
     socketAddress = null;
@@ -194,7 +196,7 @@ public class Message implements Runnable {
     }
   }
 
-  public static void main(String[] args) {
+  public static void main(final String[] args) {
     WaarpLoggerFactory
         .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));
     if (logger == null) {

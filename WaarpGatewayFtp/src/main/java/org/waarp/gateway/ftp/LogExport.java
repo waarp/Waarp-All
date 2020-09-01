@@ -86,7 +86,7 @@ public class LogExport {
    * @return the result of the initialization. if an error occured at this
    *     stage, return value will be false
    */
-  protected static boolean initialize(String[] args) {
+  protected static boolean initialize(final String[] args) {
     if (!getParams(args)) {
       return false;
     }
@@ -150,7 +150,7 @@ public class LogExport {
    *
    * @return [description]
    */
-  protected static boolean getParams(String[] args) {
+  protected static boolean getParams(final String[] args) {
     if (args.length < 1) {
       SysErrLogger.FAKE_LOGGER.syserr(USAGE);
       return false;
@@ -204,7 +204,7 @@ public class LogExport {
       status = ReplyCode.REPLY_226_CLOSING_DATA_CONNECTION;
     }
 
-    DbPreparedStatement preparedStatement;
+    final DbPreparedStatement preparedStatement;
     try {
       preparedStatement = DbTransferLog
           .getLogPrepareStament(DbConstantFtp.gatewayAdmin.getSession(), start,
@@ -227,7 +227,7 @@ public class LogExport {
    *
    * @param args command line arguments
    */
-  public static void main(String[] args) {
+  public static void main(final String[] args) {
     try {
       if (!initialize(args)) {
         System.exit(1);//NOSONAR

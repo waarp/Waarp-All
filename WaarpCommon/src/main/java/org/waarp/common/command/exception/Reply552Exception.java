@@ -39,7 +39,7 @@ public class Reply552Exception extends CommandAbstractException {
    *
    * @param message
    */
-  public Reply552Exception(String message) {
+  public Reply552Exception(final String message) {
     super(ReplyCode.REPLY_552_REQUESTED_FILE_ACTION_ABORTED_EXCEEDED_STORAGE,
           message);
   }

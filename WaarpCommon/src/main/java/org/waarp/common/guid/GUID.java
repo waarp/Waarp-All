@@ -94,7 +94,7 @@ public class GUID implements Comparable<GUID> {
    *
    * @param size size of the byte representation
    */
-  GUID(int size) {
+  GUID(final int size) {
     bguid = new byte[size];
   }
 
@@ -141,7 +141,8 @@ public class GUID implements Comparable<GUID> {
    * @throws InvalidArgumentException
    */
   @JsonIgnore
-  GUID setBytes(final byte[] bytes, int size) throws InvalidArgumentException {
+  GUID setBytes(final byte[] bytes, final int size)
+      throws InvalidArgumentException {
     if (bytes == null) {
       throw new InvalidArgumentException("Empty argument");
     }
@@ -509,7 +510,7 @@ public class GUID implements Comparable<GUID> {
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(final Object o) {
     if (!(o instanceof GUID)) {
       return false;
     }
@@ -518,8 +519,8 @@ public class GUID implements Comparable<GUID> {
 
   @Override
   public int compareTo(final GUID guid) {
-    int id = getTenantId();
-    int id2 = guid.getTenantId();
+    final int id = getTenantId();
+    final int id2 = guid.getTenantId();
     if (id != id2) {
       return id < id2? -1 : 1;
     }

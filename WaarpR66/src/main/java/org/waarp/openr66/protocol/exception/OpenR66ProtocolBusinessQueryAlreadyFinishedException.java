@@ -39,22 +39,24 @@ public class OpenR66ProtocolBusinessQueryAlreadyFinishedException
    * @param arg0
    * @param arg1
    */
-  public OpenR66ProtocolBusinessQueryAlreadyFinishedException(String arg0,
-                                                              Throwable arg1) {
+  public OpenR66ProtocolBusinessQueryAlreadyFinishedException(final String arg0,
+                                                              final Throwable arg1) {
     super(arg0, arg1);
   }
 
   /**
    * @param arg0
    */
-  public OpenR66ProtocolBusinessQueryAlreadyFinishedException(String arg0) {
+  public OpenR66ProtocolBusinessQueryAlreadyFinishedException(
+      final String arg0) {
     super(arg0);
   }
 
   /**
    * @param arg0
    */
-  public OpenR66ProtocolBusinessQueryAlreadyFinishedException(Throwable arg0) {
+  public OpenR66ProtocolBusinessQueryAlreadyFinishedException(
+      final Throwable arg0) {
     super(arg0);
   }
 

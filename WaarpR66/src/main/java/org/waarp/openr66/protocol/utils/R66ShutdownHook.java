@@ -29,7 +29,7 @@ public class R66ShutdownHook extends WaarpShutdownHook {
   /**
    * @param configuration
    */
-  public R66ShutdownHook(ShutdownConfiguration configuration) {
+  public R66ShutdownHook(final ShutdownConfiguration configuration) {
     super(configuration);
   }
 

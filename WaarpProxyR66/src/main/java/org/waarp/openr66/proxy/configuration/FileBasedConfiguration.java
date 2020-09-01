@@ -174,13 +174,12 @@ public class FileBasedConfiguration {
                   configLimitDecls, false)
   };
 
-  private static XmlValue[] configuration;
   private static XmlHash hashConfig;
 
   private FileBasedConfiguration() {
   }
 
-  private static boolean loadServerParam(Configuration config) {
+  private static boolean loadServerParam(final Configuration config) {
     XmlHash hashConfigSub = new XmlHash(hashConfig.get(XML_SERVER));
     try {
       return org.waarp.openr66.configuration.FileBasedConfiguration
@@ -191,7 +190,7 @@ public class FileBasedConfiguration {
     }
   }
 
-  private static boolean loadDirectory(Configuration config) {
+  private static boolean loadDirectory(final Configuration config) {
     XmlHash hashConfigSub = new XmlHash(hashConfig.get(XML_DIRECTORY));
     try {
       if (loadMinimalDirectory(config, hashConfigSub)) {
@@ -206,11 +205,12 @@ public class FileBasedConfiguration {
 
   private static boolean alreadySetLimit;
 
-  private static void loadLimit(Configuration config, boolean updateLimit) {
+  private static void loadLimit(final Configuration config,
+                                final boolean updateLimit) {
     if (alreadySetLimit) {
       return;
     }
-    XmlHash hashConfigSub = new XmlHash(hashConfig.get(XML_LIMIT));
+    final XmlHash hashConfigSub = new XmlHash(hashConfig.get(XML_LIMIT));
     try {
       loadCommonLimit(config, hashConfigSub, updateLimit);
       if (config.getRunnerThread() < 10) {
@@ -224,7 +224,7 @@ public class FileBasedConfiguration {
   }
 
   @SuppressWarnings("unchecked")
-  private static boolean loadNetworkServer(Configuration config) {
+  private static boolean loadNetworkServer(final Configuration config) {
     config.setServerPort(0);
     config.setServerSslPort(0);
     XmlValue value = hashConfig.get(XML_SERVER_HTTPPORT);
@@ -303,7 +303,7 @@ public class FileBasedConfiguration {
    *
    * @return True if OK
    */
-  private static boolean loadDatabase(Configuration config) {
+  private static boolean loadDatabase(final Configuration config) {
     logger.info("Unable to find DBDriver in Config file");
     admin = new DbAdmin(); // no database support
     noCommitAdmin = admin;
@@ -318,9 +318,9 @@ public class FileBasedConfiguration {
    *
    * @return True if OK
    */
-  public static boolean setConfigurationProxyFromXml(Configuration config,
-                                                     String filename) {
-    Document document;
+  public static boolean setConfigurationProxyFromXml(final Configuration config,
+                                                     final String filename) {
+    final Document document;
     // Open config file
     try {
       document = XmlUtil.getNewSaxReader().read(filename);
@@ -332,9 +332,9 @@ public class FileBasedConfiguration {
       logger.error("Unable to read the XML Config file: " + filename);
       return false;
     }
-    configuration = XmlUtil.read(document, configServer);
+    XmlValue[] configuration = XmlUtil.read(document, configServer);
     hashConfig = new XmlHash(configuration);
-    XmlRootHash xmlRootHash = new XmlRootHash(configuration);
+    final XmlRootHash xmlRootHash = new XmlRootHash(configuration);
     setXmlRootHash(xmlRootHash);
     // Now read the configuration
     if (!loadIdentity(config, xmlRootHash)) {

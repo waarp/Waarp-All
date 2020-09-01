@@ -45,7 +45,7 @@ public abstract class HttpBusinessFactory {
   /**
    * Initialize the Disk support
    */
-  public static void initialize(String tempPath) {
+  public static void initialize(final String tempPath) {
     TempPath = tempPath;
     DiskFileUpload.deleteOnExitTemporaryFile = true; // should delete file
     // on exit (in normal
@@ -82,28 +82,29 @@ public abstract class HttpBusinessFactory {
    *
    * @return True if the default error pages are correctly added
    */
-  public static boolean addDefaultErrorPages(HttpPageHandler pages,
-                                             String title, Class<?> clasz) {
+  public static boolean addDefaultErrorPages(final HttpPageHandler pages,
+                                             final String title,
+                                             final Class<?> clasz) {
     String pagename;
-    String header;
-    String footer;
-    String beginform;
-    String endform;
-    String nextinform;
+    final String header;
+    final String footer;
+    final String beginform;
+    final String endform;
+    final String nextinform;
     String uri;
-    String errorpage;
-    String classname;
-    PageRole pageRole;
+    final String errorpage;
+    final String classname;
+    final PageRole pageRole;
     LinkedHashMap<String, AbstractHttpField> linkedHashMap;
-    String fieldname;
-    String fieldinfo;
+    final String fieldname;
+    final String fieldinfo;
     String fieldvalue;
-    FieldRole fieldRole;
-    boolean fieldvisibility;
-    boolean fieldmandatory;
-    boolean fieldcookieset;
-    boolean fieldtovalidate;
-    int fieldrank;
+    final FieldRole fieldRole;
+    final boolean fieldvisibility;
+    final boolean fieldmandatory;
+    final boolean fieldcookieset;
+    final boolean fieldtovalidate;
+    final int fieldrank;
 
     // Need as default error pages: 400, 401, 403, 404, 406, 500
     try {

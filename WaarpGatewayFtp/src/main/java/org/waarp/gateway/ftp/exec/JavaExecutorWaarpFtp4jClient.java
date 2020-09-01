@@ -310,7 +310,7 @@ public class JavaExecutorWaarpFtp4jClient implements GatewayRunnable {
     final FtpArgs ftpArgs;
     try {
       ftpArgs = FtpArgs.getFtpArgs(args);
-    } catch (OpenR66RunnerErrorException e) {
+    } catch (final OpenR66RunnerErrorException e) {
       status = -2;
       logger.error("Not enough arguments", e);
       return;
@@ -396,8 +396,9 @@ public class JavaExecutorWaarpFtp4jClient implements GatewayRunnable {
   }
 
   @Override
-  public void setArgs(boolean waitForValidation, boolean useLocalExec,
-                      int delay, String[] args) {
+  public void setArgs(final boolean waitForValidation,
+                      final boolean useLocalExec, final int delay,
+                      final String[] args) {
     this.waitForValidation = waitForValidation;
     this.useLocalExec = useLocalExec;
     this.delay = delay;

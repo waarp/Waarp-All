@@ -164,8 +164,9 @@ public class LocalChannelReference {
    *
    * @throws OpenR66ProtocolRemoteShutdownException
    */
-  public LocalChannelReference(NetworkChannelReference networkChannelRef,
-                               Integer remoteId, R66Future futureRequest)
+  public LocalChannelReference(final NetworkChannelReference networkChannelRef,
+                               final Integer remoteId,
+                               final R66Future futureRequest)
       throws OpenR66ProtocolRemoteShutdownException {
     this.networkChannelRef = networkChannelRef;
     networkServerHandler =
@@ -209,7 +210,8 @@ public class LocalChannelReference {
     if (networkChannelRef != null) {
       networkChannelRef.remove(this);
     }
-    LocalTransaction lt = Configuration.configuration.getLocalTransaction();
+    final LocalTransaction lt =
+        Configuration.configuration.getLocalTransaction();
     if (lt != null) {
       lt.remove(this);
     }
@@ -286,7 +288,7 @@ public class LocalChannelReference {
   /**
    * @param remoteId the remoteId to set
    */
-  public void setRemoteId(Integer remoteId) {
+  public void setRemoteId(final Integer remoteId) {
     this.remoteId = remoteId;
   }
 
@@ -300,7 +302,7 @@ public class LocalChannelReference {
   /**
    * @param session the session to set
    */
-  public void setSession(R66Session session) {
+  public void setSession(final R66Session session) {
     this.session = session;
   }
 
@@ -314,7 +316,7 @@ public class LocalChannelReference {
   /**
    * @param errorMessage the errorMessage to set
    */
-  public void setErrorMessage(String errorMessage, ErrorCode code) {
+  public void setErrorMessage(final String errorMessage, final ErrorCode code) {
     this.errorMessage = errorMessage;
     this.code = code;
   }
@@ -331,7 +333,7 @@ public class LocalChannelReference {
    *
    * @param validate
    */
-  public void validateStartup(boolean validate) {
+  public void validateStartup(final boolean validate) {
     if (futureStartup.isDone()) {
       return;
     }
@@ -365,7 +367,8 @@ public class LocalChannelReference {
    *
    * @param validate
    */
-  public void validateConnection(boolean validate, R66Result result) {
+  public void validateConnection(final boolean validate,
+                                 final R66Result result) {
     if (futureConnection.isDone()) {
       logger.debug("LocalChannelReference already validated: " +
                    futureConnection.isSuccess());
@@ -386,7 +389,7 @@ public class LocalChannelReference {
    * @return the futureValidateConnection
    */
   public R66Future getFutureValidateConnection() {
-    R66Result result;
+    final R66Result result;
     final Channel channel = networkChannelRef.channel();
     if (channel != null && channel.isActive()) {
       if (!futureConnection.awaitOrInterruptible()) {
@@ -421,7 +424,7 @@ public class LocalChannelReference {
    *
    * @param finalValue
    */
-  public void validateEndTransfer(R66Result finalValue) {
+  public void validateEndTransfer(final R66Result finalValue) {
     if (!futureEndTransfer.isDone()) {
       futureEndTransfer.setResult(finalValue);
       futureEndTransfer.setSuccess();
@@ -483,7 +486,7 @@ public class LocalChannelReference {
    *
    * @param finalvalue
    */
-  public void invalidateRequest(R66Result finalvalue) {
+  public void invalidateRequest(final R66Result finalvalue) {
     R66Result finalValue = finalvalue;
     if (finalValue == null) {
       finalValue =
@@ -561,7 +564,7 @@ public class LocalChannelReference {
    *
    * @param finalValue
    */
-  public void validateRequest(R66Result finalValue) {
+  public void validateRequest(final R66Result finalValue) {
     setErrorMessage("NoError", null);
     if (!futureEndTransfer.isDone()) {
       logger.debug("Will validate EndTransfer");
@@ -589,7 +592,7 @@ public class LocalChannelReference {
     }
   }
 
-  private long getMinLimit(long a, long b) {
+  private long getMinLimit(final long a, final long b) {
     long res = a;
     if (a <= 0) {
       res = b;
@@ -599,7 +602,7 @@ public class LocalChannelReference {
     return res;
   }
 
-  public void setChannelLimit(boolean isSender, long limit) {
+  public void setChannelLimit(final boolean isSender, final long limit) {
     final ChannelTrafficShapingHandler limitHandler =
         (ChannelTrafficShapingHandler) networkChannelRef.channel().pipeline()
                                                         .get(
@@ -613,9 +616,9 @@ public class LocalChannelReference {
     }
   }
 
-  public long getChannelLimit(boolean isSender) {
-    long global;
-    long channel;
+  public long getChannelLimit(final boolean isSender) {
+    final long global;
+    final long channel;
     if (isSender) {
       global = Configuration.configuration.getServerGlobalWriteLimit();
       channel = Configuration.configuration.getServerChannelWriteLimit();
@@ -653,7 +656,8 @@ public class LocalChannelReference {
   /**
    * @param recvThroughHandler the recvThroughHandler to set
    */
-  public void setRecvThroughHandler(RecvThroughHandler recvThroughHandler) {
+  public void setRecvThroughHandler(
+      final RecvThroughHandler recvThroughHandler) {
     this.recvThroughHandler = recvThroughHandler;
   }
 
@@ -667,7 +671,7 @@ public class LocalChannelReference {
   /**
    * @param isSendThroughMode the isSendThroughMode to set
    */
-  public void setSendThroughMode(boolean isSendThroughMode) {
+  public void setSendThroughMode(final boolean isSendThroughMode) {
     this.isSendThroughMode = isSendThroughMode;
   }
 
@@ -681,7 +685,7 @@ public class LocalChannelReference {
   /**
    * @param clientRunner the clientRunner to set
    */
-  public void setClientRunner(ClientRunner clientRunner) {
+  public void setClientRunner(final ClientRunner clientRunner) {
     this.clientRunner = clientRunner;
   }
 
@@ -690,7 +694,7 @@ public class LocalChannelReference {
    *
    * @param desiredState
    */
-  public void sessionNewState(R66FiniteDualStates desiredState) {
+  public void sessionNewState(final R66FiniteDualStates desiredState) {
     if (session != null) {
       session.newState(desiredState);
     }
@@ -717,7 +721,8 @@ public class LocalChannelReference {
    * @param hashComputeDuringTransfer the hashComputeDuringTransfer to
    *     set
    */
-  public void setHashComputeDuringTransfer(String hashComputeDuringTransfer) {
+  public void setHashComputeDuringTransfer(
+      final String hashComputeDuringTransfer) {
     this.hashComputeDuringTransfer = hashComputeDuringTransfer;
   }
 
@@ -739,7 +744,7 @@ public class LocalChannelReference {
   /**
    * @param hostId the partner to set
    */
-  public void setPartner(String hostId) {
+  public void setPartner(final String hostId) {
     logger.debug("host:" + hostId);
     partner = Configuration.configuration.getVersions().get(hostId);
     if (partner == null) {
@@ -758,7 +763,7 @@ public class LocalChannelReference {
   /**
    * @param requestId the requestId to set
    */
-  public void setRequestId(String requestId) {
+  public void setRequestId(final String requestId) {
     this.requestId = requestId;
   }
 

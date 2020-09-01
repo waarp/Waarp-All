@@ -95,11 +95,9 @@ public final class LocalPacketFactory {
    *
    * @throws OpenR66ProtocolPacketException
    */
-  public static AbstractLocalPacket createPacketFromByteBuf(int headerLength,
-                                                            int middleLength,
-                                                            int endLength,
-                                                            ByteBuf buf)
-      throws OpenR66ProtocolPacketException {
+  public static AbstractLocalPacket createPacketFromByteBuf(
+      final int headerLength, final int middleLength, final int endLength,
+      final ByteBuf buf) throws OpenR66ProtocolPacketException {
     final byte packetType = buf.readByte();
     switch (packetType) {
       case AUTHENTPACKET:
@@ -169,7 +167,7 @@ public final class LocalPacketFactory {
     }
   }
 
-  public static final int estimateSize(Object o) {
+  public static final int estimateSize(final Object o) {
     if (!(o instanceof AbstractLocalPacket)) {
       // Type unimplemented
       return -1;

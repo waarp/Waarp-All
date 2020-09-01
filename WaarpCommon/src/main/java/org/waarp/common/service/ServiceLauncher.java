@@ -101,7 +101,7 @@ public abstract class ServiceLauncher implements Daemon {
    *
    * @param args Command line arguments, all ignored.
    */
-  public static void _main(String[] args) {
+  public static void _main(final String[] args) {
     initStatic();
     // the main routine is only here so I can also run the app from the command line
     engineLauncherInstance.initialize();
@@ -137,7 +137,7 @@ public abstract class ServiceLauncher implements Daemon {
    *
    * @throws Exception
    **/
-  public static void _windowsService(String[] args) throws Exception {
+  public static void _windowsService(final String[] args) throws Exception {
     initStatic();
     String cmd = "start";
     if (args.length > 0) {
@@ -165,7 +165,7 @@ public abstract class ServiceLauncher implements Daemon {
    *
    * @throws Exception
    **/
-  public static void _windowsStart(String[] args) throws Exception {
+  public static void _windowsStart(final String[] args) throws Exception {
     initStatic();
     engineLauncherInstance.windowsStart();
   }
@@ -183,7 +183,7 @@ public abstract class ServiceLauncher implements Daemon {
    *
    * @param args Arguments are ignored
    **/
-  public static void _windowsStop(String[] args) {
+  public static void _windowsStop(final String[] args) {
     initStatic();
     stopCalledCorrectly = true;
     engineLauncherInstance.windowsStop();
@@ -226,7 +226,7 @@ public abstract class ServiceLauncher implements Daemon {
 
   // Implementing the Daemon interface is not required for Windows but is for Linux
   @Override
-  public void init(DaemonContext arg0) throws Exception {
+  public void init(final DaemonContext arg0) throws Exception {
     controller = arg0.getController();
     logger.info("Daemon init");
   }

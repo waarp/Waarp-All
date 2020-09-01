@@ -40,21 +40,21 @@ public abstract class OpenR66Exception extends Exception {
    * @param arg0
    * @param arg1
    */
-  protected OpenR66Exception(String arg0, Throwable arg1) {
+  protected OpenR66Exception(final String arg0, final Throwable arg1) {
     super(arg0, arg1);
   }
 
   /**
    * @param arg0
    */
-  protected OpenR66Exception(String arg0) {
+  protected OpenR66Exception(final String arg0) {
     super(arg0);
   }
 
   /**
    * @param arg0
    */
-  protected OpenR66Exception(Throwable arg0) {
+  protected OpenR66Exception(final Throwable arg0) {
     super(arg0);
   }
 

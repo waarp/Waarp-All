@@ -47,7 +47,7 @@ public class LocalExecClientInitializer
   }
 
   @Override
-  protected void initChannel(SocketChannel ch) throws Exception {
+  protected void initChannel(final SocketChannel ch) throws Exception {
     // Create a default pipeline implementation.
     final ChannelPipeline pipeline = ch.pipeline();
 
@@ -68,7 +68,7 @@ public class LocalExecClientInitializer
    *
    * @param channel
    */
-  public void addChannel(Channel channel) {
+  public void addChannel(final Channel channel) {
     channelGroup.add(channel);
   }
 

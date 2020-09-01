@@ -53,7 +53,7 @@ public class FtpChannelUtils implements Runnable {
    *
    * @return the remote InetAddress
    */
-  public static InetAddress getRemoteInetAddress(Channel channel) {
+  public static InetAddress getRemoteInetAddress(final Channel channel) {
     InetSocketAddress socketAddress =
         (InetSocketAddress) channel.remoteAddress();
     if (socketAddress == null) {
@@ -69,7 +69,7 @@ public class FtpChannelUtils implements Runnable {
    *
    * @return the local InetAddress
    */
-  public static InetAddress getLocalInetAddress(Channel channel) {
+  public static InetAddress getLocalInetAddress(final Channel channel) {
     final InetSocketAddress socketAddress =
         (InetSocketAddress) channel.localAddress();
     return socketAddress.getAddress();
@@ -82,7 +82,8 @@ public class FtpChannelUtils implements Runnable {
    *
    * @return the remote InetSocketAddress
    */
-  public static InetSocketAddress getRemoteInetSocketAddress(Channel channel) {
+  public static InetSocketAddress getRemoteInetSocketAddress(
+      final Channel channel) {
     return (InetSocketAddress) channel.remoteAddress();
   }
 
@@ -93,7 +94,8 @@ public class FtpChannelUtils implements Runnable {
    *
    * @return the local InetSocketAddress
    */
-  public static InetSocketAddress getLocalInetSocketAddress(Channel channel) {
+  public static InetSocketAddress getLocalInetSocketAddress(
+      final Channel channel) {
     return (InetSocketAddress) channel.localAddress();
   }
 
@@ -104,7 +106,7 @@ public class FtpChannelUtils implements Runnable {
    *
    * @return the InetSocketAddress or null if an error occurs
    */
-  public static InetSocketAddress getInetSocketAddress(String arg) {
+  public static InetSocketAddress getInetSocketAddress(final String arg) {
     final String[] elements = arg.split(",");
     if (elements.length != 6) {
       return null;
@@ -125,7 +127,7 @@ public class FtpChannelUtils implements Runnable {
       address[i] = (byte) iElements[i];
     }
     final int port = iElements[4] << 8 | iElements[5];
-    InetAddress inetAddress;
+    final InetAddress inetAddress;
     try {
       inetAddress = InetAddress.getByAddress(address);
     } catch (final UnknownHostException e) {
@@ -142,7 +144,7 @@ public class FtpChannelUtils implements Runnable {
    *
    * @return the String representation of the address
    */
-  public static String getAddress(String address, int port) {
+  public static String getAddress(final String address, final int port) {
     return address.replace('.', ',') + ',' + (port >> 8) + ',' + (port & 0xFF);
   }
 
@@ -153,7 +155,7 @@ public class FtpChannelUtils implements Runnable {
    *
    * @return the String representation of the address
    */
-  public static String getAddress(InetSocketAddress address) {
+  public static String getAddress(final InetSocketAddress address) {
     final InetAddress servAddr = address.getAddress();
     final int servPort = address.getPort();
     return servAddr.getHostAddress().replace('.', ',') + ',' + (servPort >> 8) +
@@ -168,7 +170,7 @@ public class FtpChannelUtils implements Runnable {
    *
    * @return the InetSocketAddress or null if an error occurs
    */
-  public static InetSocketAddress get2428InetSocketAddress(String arg) {
+  public static InetSocketAddress get2428InetSocketAddress(final String arg) {
     // Format: #a#net-addr#tcp-port# where a = 1 IPV4 or 2 IPV6, other will
     // not be supported
     if (arg == null || arg.length() == 0) {
@@ -197,7 +199,7 @@ public class FtpChannelUtils implements Runnable {
       return null;
     }
     start++;
-    InetAddress inetAddress;
+    final InetAddress inetAddress;
     if (isIPV4) {
       // IPV4
       try {
@@ -216,7 +218,7 @@ public class FtpChannelUtils implements Runnable {
       }
     }
     start++;
-    int port;
+    final int port;
     try {
       port = Integer.parseInt(infos[start]);
     } catch (final NumberFormatException e) {
@@ -233,7 +235,7 @@ public class FtpChannelUtils implements Runnable {
    *
    * @return the String representation of the address
    */
-  public static String get2428Address(InetSocketAddress address) {
+  public static String get2428Address(final InetSocketAddress address) {
     final InetAddress servAddr = address.getAddress();
     final int servPort = address.getPort();
     final StringBuilder builder = new StringBuilder();
@@ -288,7 +290,7 @@ public class FtpChannelUtils implements Runnable {
    *
    * @return the current number of command connections
    */
-  public static int nbCommandChannels(FtpConfiguration configuration) {
+  public static int nbCommandChannels(final FtpConfiguration configuration) {
     return configuration.getFtpInternalConfiguration().getCommandChannelGroup()
                         .size();
   }
@@ -300,7 +302,7 @@ public class FtpChannelUtils implements Runnable {
    *
    * @return the current number of data connections
    */
-  public static int nbDataChannels(FtpConfiguration configuration) {
+  public static int nbDataChannels(final FtpConfiguration configuration) {
     return configuration.getFtpInternalConfiguration().getDataChannelGroup()
                         .size();
   }
@@ -312,7 +314,7 @@ public class FtpChannelUtils implements Runnable {
    *
    * @return the number of positive command connections
    */
-  public static int validCommandChannels(FtpConfiguration configuration) {
+  public static int validCommandChannels(final FtpConfiguration configuration) {
     int result = 0;
     Channel channel;
     for (final Channel value : configuration.getFtpInternalConfiguration()
@@ -339,7 +341,7 @@ public class FtpChannelUtils implements Runnable {
    *
    * @param configuration
    */
-  protected static void exit(FtpConfiguration configuration) {
+  protected static void exit(final FtpConfiguration configuration) {
     configuration.setShutdown(true);
     final long delay = configuration.getTimeoutCon() / 2;
     logger.warn("Exit: Give a delay of " + delay + " ms");
@@ -367,7 +369,7 @@ public class FtpChannelUtils implements Runnable {
    *
    * @param configuration
    */
-  public static void teminateServer(FtpConfiguration configuration) {
+  public static void teminateServer(final FtpConfiguration configuration) {
     FtpShutdownHook.configuration = configuration;
     WaarpShutdownHook.terminate(false);
   }
@@ -378,8 +380,8 @@ public class FtpChannelUtils implements Runnable {
    * @param channel
    * @param configuration
    */
-  public static void addCommandChannel(Channel channel,
-                                       FtpConfiguration configuration) {
+  public static void addCommandChannel(final Channel channel,
+                                       final FtpConfiguration configuration) {
     // logger.debug("Add Command Channel {}", channel)
     configuration.getFtpInternalConfiguration().getCommandChannelGroup()
                  .add(channel);
@@ -391,8 +393,8 @@ public class FtpChannelUtils implements Runnable {
    * @param channel
    * @param configuration
    */
-  public static void addDataChannel(Channel channel,
-                                    FtpConfiguration configuration) {
+  public static void addDataChannel(final Channel channel,
+                                    final FtpConfiguration configuration) {
     // logger.debug("Add Data Channel {}", channel)
     configuration.getFtpInternalConfiguration().getDataChannelGroup()
                  .add(channel);
@@ -403,7 +405,7 @@ public class FtpChannelUtils implements Runnable {
    */
   private final FtpConfiguration configuration;
 
-  public FtpChannelUtils(FtpConfiguration configuration) {
+  public FtpChannelUtils(final FtpConfiguration configuration) {
     this.configuration = configuration;
   }
 

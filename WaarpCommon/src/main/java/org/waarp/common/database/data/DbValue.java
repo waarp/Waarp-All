@@ -53,218 +53,218 @@ public class DbValue {
    */
   private String column;
 
-  public DbValue(String value) {
+  public DbValue(final String value) {
     setValue(value);
     type = Types.VARCHAR;
   }
 
-  public DbValue(String value, boolean LONG) {
+  public DbValue(final String value, final boolean LONG) {
     setValue(value);
     type = Types.LONGVARCHAR;
   }
 
-  public DbValue(boolean value) {
+  public DbValue(final boolean value) {
     setValue(value);
     type = Types.BIT;
   }
 
-  public DbValue(byte value) {
+  public DbValue(final byte value) {
     setValue(value);
     type = Types.TINYINT;
   }
 
-  public DbValue(short value) {
+  public DbValue(final short value) {
     setValue(value);
     type = Types.SMALLINT;
   }
 
-  public DbValue(int value) {
+  public DbValue(final int value) {
     setValue(value);
     type = Types.INTEGER;
   }
 
-  public DbValue(long value) {
+  public DbValue(final long value) {
     setValue(value);
     type = Types.BIGINT;
   }
 
-  public DbValue(float value) {
+  public DbValue(final float value) {
     setValue(value);
     type = Types.REAL;
   }
 
-  public DbValue(double value) {
+  public DbValue(final double value) {
     setValue(value);
     type = Types.DOUBLE;
   }
 
-  public DbValue(byte[] value) {
+  public DbValue(final byte[] value) {
     setValue(value);
     type = Types.VARBINARY;
   }
 
-  public DbValue(Date value) {
+  public DbValue(final Date value) {
     setValue(value);
     type = Types.DATE;
   }
 
-  public DbValue(Timestamp value) {
+  public DbValue(final Timestamp value) {
     setValue(value);
     type = Types.TIMESTAMP;
   }
 
-  public DbValue(java.util.Date value) {
+  public DbValue(final java.util.Date value) {
     setValue(new Timestamp(value.getTime()));
     type = Types.TIMESTAMP;
   }
 
-  public DbValue(String value, String name) {
+  public DbValue(final String value, final String name) {
     setValue(value);
     type = Types.VARCHAR;
     setColumn(name);
   }
 
-  public DbValue(String value, String name, boolean LONG) {
+  public DbValue(final String value, final String name, final boolean LONG) {
     setValue(value);
     type = Types.LONGVARCHAR;
     setColumn(name);
   }
 
-  public DbValue(boolean value, String name) {
+  public DbValue(final boolean value, final String name) {
     setValue(value);
     type = Types.BIT;
     setColumn(name);
   }
 
-  public DbValue(byte value, String name) {
+  public DbValue(final byte value, final String name) {
     setValue(value);
     type = Types.TINYINT;
     setColumn(name);
   }
 
-  public DbValue(short value, String name) {
+  public DbValue(final short value, final String name) {
     setValue(value);
     type = Types.SMALLINT;
     setColumn(name);
   }
 
-  public DbValue(int value, String name) {
+  public DbValue(final int value, final String name) {
     setValue(value);
     type = Types.INTEGER;
     setColumn(name);
   }
 
-  public DbValue(long value, String name) {
+  public DbValue(final long value, final String name) {
     setValue(value);
     type = Types.BIGINT;
     setColumn(name);
   }
 
-  public DbValue(float value, String name) {
+  public DbValue(final float value, final String name) {
     setValue(value);
     type = Types.REAL;
     setColumn(name);
   }
 
-  public DbValue(double value, String name) {
+  public DbValue(final double value, final String name) {
     setValue(value);
     type = Types.DOUBLE;
     setColumn(name);
   }
 
-  public DbValue(byte[] value, String name) {
+  public DbValue(final byte[] value, final String name) {
     setValue(value);
     type = Types.VARBINARY;
     setColumn(name);
   }
 
-  public DbValue(Date value, String name) {
+  public DbValue(final Date value, final String name) {
     setValue(value);
     type = Types.DATE;
     setColumn(name);
   }
 
-  public DbValue(Timestamp value, String name) {
+  public DbValue(final Timestamp value, final String name) {
     setValue(value);
     type = Types.TIMESTAMP;
     setColumn(name);
   }
 
-  public DbValue(java.util.Date value, String name) {
+  public DbValue(final java.util.Date value, final String name) {
     setValue(new Timestamp(value.getTime()));
     type = Types.TIMESTAMP;
     setColumn(name);
   }
 
-  public DbValue(Reader value, String name) {
+  public DbValue(final Reader value, final String name) {
     setValue(value);
     type = Types.CLOB;
     setColumn(name);
   }
 
-  public DbValue(InputStream value, String name) {
+  public DbValue(final InputStream value, final String name) {
     setValue(value);
     type = Types.BLOB;
     setColumn(name);
   }
 
-  public void setValue(String value) {
+  public void setValue(final String value) {
     this.value = value;
   }
 
-  public void setValue(boolean value) {
+  public void setValue(final boolean value) {
     this.value = value;
   }
 
-  public void setValue(byte value) {
+  public void setValue(final byte value) {
     this.value = value;
   }
 
-  public void setValue(short value) {
+  public void setValue(final short value) {
     this.value = value;
   }
 
-  public void setValue(int value) {
+  public void setValue(final int value) {
     this.value = value;
   }
 
-  public void setValue(long value) {
+  public void setValue(final long value) {
     this.value = value;
   }
 
-  public void setValue(float value) {
+  public void setValue(final float value) {
     this.value = value;
   }
 
-  public void setValue(double value) {
+  public void setValue(final double value) {
     this.value = value;
   }
 
-  public void setValue(byte[] value) {
+  public void setValue(final byte[] value) {
     this.value = value;
   }
 
-  public void setValue(Date value) {
+  public void setValue(final Date value) {
     this.value = value;
   }
 
-  public void setValue(Timestamp value) {
+  public void setValue(final Timestamp value) {
     this.value = value;
   }
 
-  public void setValue(java.util.Date value) {
+  public void setValue(final java.util.Date value) {
     this.value = new Timestamp(value.getTime());
   }
 
-  public void setValue(Reader value) {
+  public void setValue(final Reader value) {
     this.value = value;
   }
 
-  public void setValue(InputStream value) {
+  public void setValue(final InputStream value) {
     this.value = value;
   }
 
-  public void setValue(Object value) {
+  public void setValue(final Object value) {
     this.value = value;
   }
 
@@ -373,7 +373,7 @@ public class DbValue {
     }
   }
 
-  public void setValueFromString(String svalue)
+  public void setValueFromString(final String svalue)
       throws WaarpDatabaseSqlException {
     switch (type) {
       case Types.VARCHAR:
@@ -461,7 +461,7 @@ public class DbValue {
   /**
    * @param column the column to set
    */
-  private void setColumn(String column) {
+  private void setColumn(final String column) {
     this.column = column;
   }
 }

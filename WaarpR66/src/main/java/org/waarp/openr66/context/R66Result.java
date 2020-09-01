@@ -59,8 +59,9 @@ public class R66Result {
    * @param code
    * @param runner
    */
-  public R66Result(OpenR66Exception exception, R66Session session,
-                   boolean isAnswered, ErrorCode code, DbTaskRunner runner) {
+  public R66Result(final OpenR66Exception exception, final R66Session session,
+                   final boolean isAnswered, final ErrorCode code,
+                   final DbTaskRunner runner) {
     setException(exception);
     setRunner(runner);
     if (session != null) {
@@ -77,8 +78,8 @@ public class R66Result {
    * @param code
    * @param runner
    */
-  public R66Result(R66Session session, boolean isAnswered, ErrorCode code,
-                   DbTaskRunner runner) {
+  public R66Result(final R66Session session, final boolean isAnswered,
+                   final ErrorCode code, final DbTaskRunner runner) {
     setRunner(runner);
     if (session != null) {
       setFile(session.getFile());
@@ -117,7 +118,7 @@ public class R66Result {
   /**
    * @param exception the exception to set
    */
-  public void setException(OpenR66Exception exception) {
+  public void setException(final OpenR66Exception exception) {
     this.exception = exception;
   }
 
@@ -131,7 +132,7 @@ public class R66Result {
   /**
    * @param file the file to set
    */
-  public void setFile(R66File file) {
+  public void setFile(final R66File file) {
     this.file = file;
   }
 
@@ -145,7 +146,7 @@ public class R66Result {
   /**
    * @param runner the runner to set
    */
-  public void setRunner(DbTaskRunner runner) {
+  public void setRunner(final DbTaskRunner runner) {
     this.runner = runner;
   }
 
@@ -159,7 +160,7 @@ public class R66Result {
   /**
    * @param isAnswered the isAnswered to set
    */
-  public void setAnswered(boolean isAnswered) {
+  public void setAnswered(final boolean isAnswered) {
     this.isAnswered = isAnswered;
   }
 
@@ -173,7 +174,7 @@ public class R66Result {
   /**
    * @param code the code to set
    */
-  public void setCode(ErrorCode code) {
+  public void setCode(final ErrorCode code) {
     this.code = code;
   }
 
@@ -187,7 +188,7 @@ public class R66Result {
   /**
    * @param other the other to set
    */
-  public void setOther(Object other) {
+  public void setOther(final Object other) {
     this.other = other;
   }
 }

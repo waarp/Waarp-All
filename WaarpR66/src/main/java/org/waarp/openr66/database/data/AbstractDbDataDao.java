@@ -86,7 +86,7 @@ public abstract class AbstractDbDataDao<E> extends AbstractDbData {
     try {
       abstractDAO = getDao();
       return abstractDAO.exist(getPrimaryKey());
-    } catch (DAOConnectionException e) {
+    } catch (final DAOConnectionException e) {
       throw new WaarpDatabaseNoConnectionException(e);
     } finally {
       if (abstractDAO != null) {
@@ -107,9 +107,9 @@ public abstract class AbstractDbDataDao<E> extends AbstractDbData {
       abstractDAO = getDao();
       pojo = abstractDAO.select(getPrimaryKey());
       isSaved = true;
-    } catch (DAOConnectionException e) {
+    } catch (final DAOConnectionException e) {
       throw new WaarpDatabaseNoConnectionException(e);
-    } catch (DAONoDataException e) {
+    } catch (final DAONoDataException e) {
       throw new WaarpDatabaseNoDataException((e));
     } finally {
       if (abstractDAO != null) {
@@ -133,7 +133,7 @@ public abstract class AbstractDbDataDao<E> extends AbstractDbData {
       abstractDAO = getDao();
       abstractDAO.insert(pojo);
       isSaved = true;
-    } catch (DAOConnectionException e) {
+    } catch (final DAOConnectionException e) {
       throw new WaarpDatabaseNoConnectionException(e);
     } finally {
       if (abstractDAO != null) {
@@ -157,9 +157,9 @@ public abstract class AbstractDbDataDao<E> extends AbstractDbData {
       abstractDAO = getDao();
       abstractDAO.update(pojo);
       isSaved = true;
-    } catch (DAOConnectionException e) {
+    } catch (final DAOConnectionException e) {
       throw new WaarpDatabaseNoConnectionException(e);
-    } catch (DAONoDataException e) {
+    } catch (final DAONoDataException e) {
       throw new WaarpDatabaseNoDataException((e));
     } finally {
       if (abstractDAO != null) {
@@ -180,9 +180,9 @@ public abstract class AbstractDbDataDao<E> extends AbstractDbData {
       abstractDAO = getDao();
       abstractDAO.delete(pojo);
       isSaved = false;
-    } catch (DAOConnectionException e) {
+    } catch (final DAOConnectionException e) {
       throw new WaarpDatabaseNoConnectionException(e);
-    } catch (DAONoDataException e) {
+    } catch (final DAONoDataException e) {
       throw new WaarpDatabaseNoDataException((e));
     } finally {
       if (abstractDAO != null) {
@@ -216,12 +216,14 @@ public abstract class AbstractDbDataDao<E> extends AbstractDbData {
   public ObjectNode getJson() {
     final ObjectNode node = JsonHandler.createObjectNode();
     node.put(JSON_MODEL, getClass().getSimpleName());
-    String json = JsonHandler.writeAsString(pojo);
-    ObjectNode subnode = JsonHandler.getFromString(json);
-    for (Iterator<Entry<String, JsonNode>> it = subnode.fields();
-         it.hasNext(); ) {
-      final Entry<String, JsonNode> entry = it.next();
-      node.set(entry.getKey(), entry.getValue());
+    final String json = JsonHandler.writeAsString(pojo);
+    final ObjectNode subnode = JsonHandler.getFromString(json);
+    if (subnode != null) {
+      for (final Iterator<Entry<String, JsonNode>> it = subnode.fields();
+           it.hasNext(); ) {
+        final Entry<String, JsonNode> entry = it.next();
+        node.set(entry.getKey(), entry.getValue());
+      }
     }
     return node;
   }
@@ -238,10 +240,11 @@ public abstract class AbstractDbDataDao<E> extends AbstractDbData {
    * @throws WaarpDatabaseSqlException
    */
   @Override
-  public void setFromJson(ObjectNode node, boolean ignorePrimaryKey)
+  public void setFromJson(final ObjectNode node, final boolean ignorePrimaryKey)
       throws WaarpDatabaseSqlException {
     boolean foundPrimaryKey = false;
-    for (Iterator<Entry<String, JsonNode>> it = node.fields(); it.hasNext(); ) {
+    for (final Iterator<Entry<String, JsonNode>> it = node.fields();
+         it.hasNext(); ) {
       final Entry<String, JsonNode> entry = it.next();
       logger.debug("{} = {}", entry.getKey(), entry.getValue());
       if ("UPDATEDINFO".equalsIgnoreCase(entry.getKey())) {
@@ -260,10 +263,10 @@ public abstract class AbstractDbDataDao<E> extends AbstractDbData {
     if (!ignorePrimaryKey && foundPrimaryKey) {
       try {
         insert();
-      } catch (WaarpDatabaseException e) {
+      } catch (final WaarpDatabaseException e) {
         try {
           update();
-        } catch (WaarpDatabaseException ex) {
+        } catch (final WaarpDatabaseException ex) {
           logger.error("Cannot save item", ex);
         }
       }
@@ -343,8 +346,8 @@ public abstract class AbstractDbDataDao<E> extends AbstractDbData {
    * {@link UnsupportedOperationException}
    */
   @Override
-  protected void getValues(DbPreparedStatement preparedStatement,
-                           DbValue[] values)
+  protected void getValues(final DbPreparedStatement preparedStatement,
+                           final DbValue[] values)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
     throw new UnsupportedOperationException("Should not be called");
   }

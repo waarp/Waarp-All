@@ -198,10 +198,12 @@ public class DbRule extends AbstractDbDataDao<Rule> {
    * @param spostTasks
    * @param serrorTasks
    */
-  public DbRule(String idRule, String ids, int mode, String recvPath,
-                String sendPath, String archivePath, String workPath,
-                String rpreTasks, String rpostTasks, String rerrorTasks,
-                String spreTasks, String spostTasks, String serrorTasks) {
+  public DbRule(final String idRule, final String ids, final int mode,
+                final String recvPath, final String sendPath,
+                final String archivePath, final String workPath,
+                final String rpreTasks, final String rpostTasks,
+                final String rerrorTasks, final String spreTasks,
+                final String spostTasks, final String serrorTasks) {
     pojo = new Rule(idRule, mode, Arrays.asList(getIdsRule(ids)), recvPath,
                     sendPath, archivePath, workPath,
                     fromLegacyTasks(getTasksRule(rpreTasks)),
@@ -218,7 +220,7 @@ public class DbRule extends AbstractDbDataDao<Rule> {
    *
    * @throws WaarpDatabaseException
    */
-  public DbRule(String idRule) throws WaarpDatabaseException {
+  public DbRule(final String idRule) throws WaarpDatabaseException {
     RuleDAO ruleAccess = null;
     try {
       ruleAccess = DAOFactory.getInstance().getRuleDAO();
@@ -233,7 +235,7 @@ public class DbRule extends AbstractDbDataDao<Rule> {
     checkPath();
   }
 
-  public DbRule(Rule rule) {
+  public DbRule(final Rule rule) {
     if (rule == null) {
       throw new IllegalArgumentException(
           "Argument in constructor cannot be null");
@@ -258,11 +260,15 @@ public class DbRule extends AbstractDbDataDao<Rule> {
    * @param sposttasksArray
    * @param serrortasksArray
    */
-  public DbRule(String idrule, String[] idsArrayRef, int mode, String recvpath,
-                String sendpath, String archivepath, String workpath,
-                String[][] rpretasksArray, String[][] rposttasksArray,
-                String[][] rerrortasksArray, String[][] spretasksArray,
-                String[][] sposttasksArray, String[][] serrortasksArray) {
+  public DbRule(final String idrule, String[] idsArrayRef, final int mode,
+                final String recvpath, final String sendpath,
+                final String archivepath, final String workpath,
+                final String[][] rpretasksArray,
+                final String[][] rposttasksArray,
+                final String[][] rerrortasksArray,
+                final String[][] spretasksArray,
+                final String[][] sposttasksArray,
+                final String[][] serrortasksArray) {
     if (idsArrayRef == null) {
       idsArrayRef = STRING_0_LENGTH;
     }
@@ -284,7 +290,7 @@ public class DbRule extends AbstractDbDataDao<Rule> {
    *
    * @throws WaarpDatabaseSqlException
    */
-  public DbRule(ObjectNode source) throws WaarpDatabaseSqlException {
+  public DbRule(final ObjectNode source) throws WaarpDatabaseSqlException {
     pojo = new Rule();
     setFromJson(source, false);
     if (getIdRule() == null || getIdRule().isEmpty()) {
@@ -295,7 +301,7 @@ public class DbRule extends AbstractDbDataDao<Rule> {
   }
 
   @Override
-  public void setFromJson(ObjectNode node, boolean ignorePrimaryKey)
+  public void setFromJson(final ObjectNode node, final boolean ignorePrimaryKey)
       throws WaarpDatabaseSqlException {
     super.setFromJson(node, ignorePrimaryKey);
     checkPath();
@@ -306,7 +312,7 @@ public class DbRule extends AbstractDbDataDao<Rule> {
     if (value == null) {
       return;
     }
-    for (Columns column : Columns.values()) {
+    for (final Columns column : Columns.values()) {
       if (column.name().equalsIgnoreCase(field)) {
         switch (column) {
           case ARCHIVEPATH:
@@ -375,17 +381,17 @@ public class DbRule extends AbstractDbDataDao<Rule> {
     AbstractDAO<Transfer> transferDAO = null;
     try {
       transferDAO = DAOFactory.getInstance().getTransferDAO();
-      List<Filter> filters = new ArrayList<Filter>();
-      Filter filter =
+      final List<Filter> filters = new ArrayList<Filter>();
+      final Filter filter =
           new Filter(DbTaskRunner.Columns.IDRULE.name(), "=", this.getIdRule());
       filters.add(filter);
-      List<Transfer> transfers = transferDAO.find(filters);
+      final List<Transfer> transfers = transferDAO.find(filters);
       if (!transfers.isEmpty()) {
         transfers.clear();
         throw new WaarpDatabaseNoDataException("Rule " + this.getIdRule() +
                                                " is still used by TaskRunner therefore it cannot be deleted.");
       }
-    } catch (DAOConnectionException e) {
+    } catch (final DAOConnectionException e) {
       throw new WaarpDatabaseNoConnectionException(e);
     } finally {
       if (transferDAO != null) {
@@ -464,7 +470,8 @@ public class DbRule extends AbstractDbDataDao<Rule> {
    * @throws WaarpDatabaseNoConnectionException
    * @throws WaarpDatabaseSqlException
    */
-  public static DbRule getFromStatement(DbPreparedStatement preparedStatement)
+  public static DbRule getFromStatement(
+      final DbPreparedStatement preparedStatement)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
     final DbRule dbRule = new DbRule();
     AbstractDAO<Rule> ruleDAO = null;
@@ -473,10 +480,10 @@ public class DbRule extends AbstractDbDataDao<Rule> {
       dbRule.pojo = ((StatementExecutor<Rule>) ruleDAO)
           .getFromResultSet(preparedStatement.getResultSet());
       return dbRule;
-    } catch (SQLException e) {
+    } catch (final SQLException e) {
       DbSession.error(e);
       throw new WaarpDatabaseSqlException("Getting values in error", e);
-    } catch (DAOConnectionException e) {
+    } catch (final DAOConnectionException e) {
       throw new WaarpDatabaseSqlException("Getting values in error", e);
     } finally {
       DAOFactory.closeDAO(ruleDAO);
@@ -515,7 +522,7 @@ public class DbRule extends AbstractDbDataDao<Rule> {
   }
 
   @Override
-  public void changeUpdatedInfo(UpdatedInfo info) {
+  public void changeUpdatedInfo(final UpdatedInfo info) {
     pojo.setUpdatedInfo(org.waarp.openr66.pojo.UpdatedInfo.fromLegacy(info));
   }
 
@@ -527,13 +534,13 @@ public class DbRule extends AbstractDbDataDao<Rule> {
    *
    * @return True if ok, else False (default values).
    */
-  private String[] getIdsRule(String idsref) {
+  private String[] getIdsRule(final String idsref) {
     if (idsref == null) {
       // No ids so setting to the default!
       return STRING_0_LENGTH;
     }
     final StringReader reader = new StringReader(idsref);
-    Document document;
+    final Document document;
     try {
       document = XmlUtil.getNewSaxReader().read(reader);
       final XmlValue[] values =
@@ -558,13 +565,13 @@ public class DbRule extends AbstractDbDataDao<Rule> {
    *
    * @return Array of tasks or empty array if in error.
    */
-  private String[][] getTasksRule(String tasks) {
+  private String[][] getTasksRule(final String tasks) {
     if (tasks == null) {
       // No tasks so setting to the default!
       return STRINGS_0_0_LENGTH;
     }
     final StringReader reader = new StringReader(tasks);
-    Document document;
+    final Document document;
     try {
       document = XmlUtil.getNewSaxReader().read(reader);
     } catch (final DocumentException e) {
@@ -590,7 +597,7 @@ public class DbRule extends AbstractDbDataDao<Rule> {
    *
    * @throws OpenR66ProtocolSystemException
    */
-  public String setRecvPath(String filename)
+  public String setRecvPath(final String filename)
       throws OpenR66ProtocolSystemException {
     if (pojo.getRecvPath() != null && !pojo.getRecvPath().isEmpty()) {
       return pojo.getRecvPath() + DirInterface.SEPARATOR + filename;
@@ -608,7 +615,7 @@ public class DbRule extends AbstractDbDataDao<Rule> {
    *
    * @throws OpenR66ProtocolSystemException
    */
-  public String setSendPath(String filename)
+  public String setSendPath(final String filename)
       throws OpenR66ProtocolSystemException {
     if (pojo.getSendPath() != null) {
       final File file = new File(filename);
@@ -628,7 +635,7 @@ public class DbRule extends AbstractDbDataDao<Rule> {
    *
    * @throws OpenR66ProtocolSystemException
    */
-  public String setArchivePath(String filename)
+  public String setArchivePath(final String filename)
       throws OpenR66ProtocolSystemException {
     if (pojo.getArchivePath() != null) {
       return pojo.getArchivePath() + DirInterface.SEPARATOR + filename;
@@ -646,7 +653,7 @@ public class DbRule extends AbstractDbDataDao<Rule> {
    *
    * @throws OpenR66ProtocolSystemException
    */
-  public String setWorkingPath(String filename)
+  public String setWorkingPath(final String filename)
       throws OpenR66ProtocolSystemException {
     if (pojo.getWorkPath() != null) {
       return pojo.getWorkPath() + DirInterface.SEPARATOR + filename +
@@ -663,7 +670,7 @@ public class DbRule extends AbstractDbDataDao<Rule> {
    *
    * @return True if allow, else False
    */
-  public boolean checkHostAllow(String hostId) {
+  public boolean checkHostAllow(final String hostId) {
     if (getIdsArray() == null || getIdsArray().length == 0) {
       return true; // always true in this case
     }
@@ -716,7 +723,7 @@ public class DbRule extends AbstractDbDataDao<Rule> {
    *
    * @return a string that prints (debug) the tasks to execute
    */
-  public String printTasks(boolean isSender, TASKSTEP step) {
+  public String printTasks(final boolean isSender, final TASKSTEP step) {
     if (isSender) {
       switch (step) {
         case PRETASK:
@@ -764,9 +771,8 @@ public class DbRule extends AbstractDbDataDao<Rule> {
    * @throws WaarpDatabaseNoConnectionException
    * @throws WaarpDatabaseSqlException
    */
-  public static DbPreparedStatement getFilterPrepareStament(DbSession session,
-                                                            String rule,
-                                                            int mode)
+  public static DbPreparedStatement getFilterPrepareStament(
+      final DbSession session, final String rule, final int mode)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
     final DbPreparedStatement preparedStatement =
         new DbPreparedStatement(session);
@@ -809,7 +815,8 @@ public class DbRule extends AbstractDbDataDao<Rule> {
    * @throws WaarpDatabaseSqlException
    * @throws OpenR66ProtocolBusinessException
    */
-  public static String getJson(DbPreparedStatement preparedStatement, int limit)
+  public static String getJson(final DbPreparedStatement preparedStatement,
+                               final int limit)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException,
              OpenR66ProtocolBusinessException {
     final ArrayNode arrayNode = JsonHandler.createArrayNode();
@@ -886,7 +893,7 @@ public class DbRule extends AbstractDbDataDao<Rule> {
    * @return the runner in Html format specified by body by replacing all
    *     instance of fields
    */
-  public String toSpecializedHtml(R66Session session, String body) {
+  public String toSpecializedHtml(final R66Session session, final String body) {
     final StringBuilder builder = new StringBuilder(body);
     WaarpStringUtils.replace(builder, "XXXRULEXXX", getIdRule());
     WaarpStringUtils.replace(builder, "XXXIDSXXX",
@@ -1077,7 +1084,7 @@ public class DbRule extends AbstractDbDataDao<Rule> {
     return toLegacyTasks(pojo.getSErrorTasks());
   }
 
-  private List<RuleTask> fromLegacyTasks(String[][] tasks) {
+  private List<RuleTask> fromLegacyTasks(final String[][] tasks) {
     final int size = tasks.length;
     final List<RuleTask> res = new ArrayList<RuleTask>(size);
     for (final String[] task : tasks) {
@@ -1086,7 +1093,7 @@ public class DbRule extends AbstractDbDataDao<Rule> {
     return res;
   }
 
-  private String[][] toLegacyTasks(List<RuleTask> tasks) {
+  private String[][] toLegacyTasks(final List<RuleTask> tasks) {
     final int size = tasks.size();
     final String[][] res = new String[size][];
     int i = 0;

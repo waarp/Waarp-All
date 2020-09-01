@@ -32,7 +32,7 @@ public enum RequestMode implements TEnum {
 
   private final int value;
 
-  RequestMode(int value) {
+  RequestMode(final int value) {
     this.value = value;
   }
 
@@ -49,7 +49,7 @@ public enum RequestMode implements TEnum {
    *
    * @return null if the value is not found.
    */
-  public static RequestMode findByValue(int value) {
+  public static RequestMode findByValue(final int value) {
     switch (value) {
       case 1:
         return SYNCTRANSFER;

@@ -71,18 +71,18 @@ public enum UpdatedInfo {
     id = updatedInfo;
   }
 
-  public static UpdatedInfo valueOf(int updatedInfo) {
+  public static UpdatedInfo valueOf(final int updatedInfo) {
     if (!map.containsKey(updatedInfo)) {
       return UNKNOWN;
     }
     return map.get(updatedInfo);
   }
 
-  public boolean equals(AbstractDbData.UpdatedInfo legacy) {
+  public boolean equals(final AbstractDbData.UpdatedInfo legacy) {
     return ordinal() == legacy.ordinal();
   }
 
-  public static UpdatedInfo fromLegacy(AbstractDbData.UpdatedInfo info) {
+  public static UpdatedInfo fromLegacy(final AbstractDbData.UpdatedInfo info) {
     return valueOf(info.name());
   }
 

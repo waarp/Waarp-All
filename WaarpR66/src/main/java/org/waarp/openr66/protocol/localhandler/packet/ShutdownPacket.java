@@ -45,9 +45,10 @@ public class ShutdownPacket extends AbstractLocalPacket {
    *
    * @throws OpenR66ProtocolPacketException
    */
-  public static ShutdownPacket createFromBuffer(int headerLength,
-                                                int middleLength, int endLength,
-                                                ByteBuf buf)
+  public static ShutdownPacket createFromBuffer(final int headerLength,
+                                                final int middleLength,
+                                                final int endLength,
+                                                final ByteBuf buf)
       throws OpenR66ProtocolPacketException {
     if (headerLength - 1 <= 0) {
       throw new OpenR66ProtocolPacketException("Not enough data");
@@ -64,7 +65,7 @@ public class ShutdownPacket extends AbstractLocalPacket {
   /**
    * @param spassword
    */
-  public ShutdownPacket(byte[] spassword) {
+  public ShutdownPacket(final byte[] spassword) {
     key = spassword;
     restart = 0;
   }
@@ -73,7 +74,7 @@ public class ShutdownPacket extends AbstractLocalPacket {
    * @param spassword
    * @param restart
    */
-  public ShutdownPacket(byte[] spassword, byte restart) {
+  public ShutdownPacket(final byte[] spassword, final byte restart) {
     key = spassword;
     this.restart = restart;
   }
@@ -85,11 +86,11 @@ public class ShutdownPacket extends AbstractLocalPacket {
 
   @Override
   public void createAllBuffers(final LocalChannelReference lcr,
-                               int networkHeader)
+                               final int networkHeader)
       throws OpenR66ProtocolPacketException {
     end = Unpooled.EMPTY_BUFFER;
-    int sizeKey = key != null? key.length : 0;
-    int sizeMiddle = restart != 0? 1 : 0;
+    final int sizeKey = key != null? key.length : 0;
+    final int sizeMiddle = restart != 0? 1 : 0;
     final int globalSize =
         networkHeader + LOCAL_HEADER_SIZE + sizeKey + sizeMiddle;
     int offset = networkHeader + LOCAL_HEADER_SIZE;
@@ -110,13 +111,13 @@ public class ShutdownPacket extends AbstractLocalPacket {
   }
 
   @Override
-  public void createEnd(LocalChannelReference lcr)
+  public void createEnd(final LocalChannelReference lcr)
       throws OpenR66ProtocolPacketException {
     end = Unpooled.EMPTY_BUFFER;
   }
 
   @Override
-  public void createHeader(LocalChannelReference lcr)
+  public void createHeader(final LocalChannelReference lcr)
       throws OpenR66ProtocolPacketException {
     if (key != null) {
       header = Unpooled.wrappedBuffer(key);
@@ -124,7 +125,7 @@ public class ShutdownPacket extends AbstractLocalPacket {
   }
 
   @Override
-  public void createMiddle(LocalChannelReference lcr)
+  public void createMiddle(final LocalChannelReference lcr)
       throws OpenR66ProtocolPacketException {
     if (restart != 0) {
       final byte[] array = { restart };

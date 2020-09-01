@@ -39,7 +39,7 @@ public class TestBusinessFactory implements R66BusinessFactoryInterface {
   }
 
   @Override
-  public R66BusinessInterface getBusinessInterface(R66Session session) {
+  public R66BusinessInterface getBusinessInterface(final R66Session session) {
     return new R66BusinessInterface() {
       /**
        * Internal Logger
@@ -49,64 +49,64 @@ public class TestBusinessFactory implements R66BusinessFactoryInterface {
       private String info;
 
       @Override
-      public void setInfo(R66Session session, String info) {
+      public void setInfo(final R66Session session, final String info) {
         logger.warn("setInfo: " + session + " = " + info);
         this.info = info;
       }
 
       @Override
-      public void releaseResources(R66Session session) {
+      public void releaseResources(final R66Session session) {
         logger.warn("releaseResources: " + session);
       }
 
       @Override
-      public String getInfo(R66Session session) {
+      public String getInfo(final R66Session session) {
         return info;
       }
 
       @Override
-      public void checkAtStartup(R66Session session)
+      public void checkAtStartup(final R66Session session)
           throws OpenR66RunnerErrorException {
         logger.warn("checkAtStartup: " + session);
       }
 
       @Override
-      public void checkAtError(R66Session session) {
+      public void checkAtError(final R66Session session) {
         logger.warn("checkAtError: " + session);
       }
 
       @Override
-      public void checkAtConnection(R66Session session)
+      public void checkAtConnection(final R66Session session)
           throws OpenR66RunnerErrorException {
         logger.warn("checkAtConnection: " + session);
       }
 
       @Override
-      public void checkAtChangeFilename(R66Session session)
+      public void checkAtChangeFilename(final R66Session session)
           throws OpenR66RunnerErrorException {
         logger.warn("checkAtChangeFilename: " + session);
       }
 
       @Override
-      public void checkAtAuthentication(R66Session session)
+      public void checkAtAuthentication(final R66Session session)
           throws OpenR66RunnerErrorException {
         logger.warn("checkAtAuthentication: " + session);
       }
 
       @Override
-      public void checkAfterTransfer(R66Session session)
+      public void checkAfterTransfer(final R66Session session)
           throws OpenR66RunnerErrorException {
         logger.warn("checkAfterTransfer: " + session);
       }
 
       @Override
-      public void checkAfterPreCommand(R66Session session)
+      public void checkAfterPreCommand(final R66Session session)
           throws OpenR66RunnerErrorException {
         logger.warn("checkAfterPreCommand: " + session);
       }
 
       @Override
-      public void checkAfterPost(R66Session session)
+      public void checkAfterPost(final R66Session session)
           throws OpenR66RunnerErrorException {
         logger.warn("checkAfterPost: " + session);
       }

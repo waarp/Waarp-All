@@ -32,7 +32,7 @@ public class CryptoException extends Exception {
   /**
    * @param message
    */
-  public CryptoException(String message) {
+  public CryptoException(final String message) {
     super(message);
   }
 
@@ -40,7 +40,7 @@ public class CryptoException extends Exception {
    * @param message
    * @param cause
    */
-  public CryptoException(String message, Throwable cause) {
+  public CryptoException(final String message, final Throwable cause) {
     super(message, cause);
   }
 

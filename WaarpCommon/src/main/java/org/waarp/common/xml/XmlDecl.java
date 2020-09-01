@@ -33,7 +33,7 @@ public class XmlDecl {
 
   private final boolean isMultiple;
 
-  public XmlDecl(String name, String xmlPath) {
+  public XmlDecl(final String name, final String xmlPath) {
     this.name = name;
     type = XmlType.EMPTY;
     this.xmlPath = xmlPath;
@@ -41,7 +41,7 @@ public class XmlDecl {
     subXml = null;
   }
 
-  public XmlDecl(XmlType type, String xmlPath) {
+  public XmlDecl(final XmlType type, final String xmlPath) {
     name = xmlPath;
     this.type = type;
     this.xmlPath = xmlPath;
@@ -49,7 +49,7 @@ public class XmlDecl {
     subXml = null;
   }
 
-  public XmlDecl(String name, XmlType type, String xmlPath) {
+  public XmlDecl(final String name, final XmlType type, final String xmlPath) {
     this.name = name;
     this.type = type;
     this.xmlPath = xmlPath;
@@ -57,8 +57,8 @@ public class XmlDecl {
     subXml = null;
   }
 
-  public XmlDecl(String name, XmlType type, String xmlPath,
-                 boolean isMultiple) {
+  public XmlDecl(final String name, final XmlType type, final String xmlPath,
+                 final boolean isMultiple) {
     this.name = name;
     this.type = type;
     this.xmlPath = xmlPath;
@@ -66,8 +66,8 @@ public class XmlDecl {
     subXml = null;
   }
 
-  public XmlDecl(String name, XmlType type, String xmlPath, XmlDecl[] decls,
-                 boolean isMultiple) {
+  public XmlDecl(final String name, final XmlType type, final String xmlPath,
+                 final XmlDecl[] decls, final boolean isMultiple) {
     this.name = name;
     this.type = type;
     this.xmlPath = xmlPath;
@@ -143,7 +143,7 @@ public class XmlDecl {
    *
    * @return True if compatible
    */
-  public boolean isCompatible(XmlDecl xmlDecl) {
+  public boolean isCompatible(final XmlDecl xmlDecl) {
     if ((isMultiple && xmlDecl.isMultiple ||
          !isMultiple && !xmlDecl.isMultiple) &&
         (isSubXml() && xmlDecl.isSubXml() ||
@@ -151,7 +151,8 @@ public class XmlDecl {
       if (!isSubXml()) {
         return type == xmlDecl.type;
       }
-      if (subXml.length != xmlDecl.subXml.length) {
+      if (subXml == null || xmlDecl.subXml == null ||
+          subXml.length != xmlDecl.subXml.length) {
         return false;
       }
       for (int i = 0; i < subXml.length; i++) {

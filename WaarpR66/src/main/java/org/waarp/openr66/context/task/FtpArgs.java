@@ -121,7 +121,7 @@ public class FtpArgs {
    * Print to standard output the help of this command
    */
   public static void printHelp() {
-    HelpFormatter formatter = new HelpFormatter();
+    final HelpFormatter formatter = new HelpFormatter();
     formatter.printHelp("FtpArgs", FTP_OPTIONS);
   }
 
@@ -134,12 +134,12 @@ public class FtpArgs {
    *
    * @param args must be already replaced values (getReplacedValue)
    */
-  public static FtpArgs getFtpArgs(String[] args)
+  public static FtpArgs getFtpArgs(final String[] args)
       throws OpenR66RunnerErrorException {
-    FtpArgs ftpArgs = new FtpArgs();
-    CommandLineParser parser = new DefaultParser();
+    final FtpArgs ftpArgs = new FtpArgs();
+    final CommandLineParser parser = new DefaultParser();
     try {
-      CommandLine cmd = parser.parse(FTP_OPTIONS, args, true);
+      final CommandLine cmd = parser.parse(FTP_OPTIONS, args, true);
 
       ftpArgs.setFilepath(cmd.getOptionValue("file"));
       ftpArgs.setFilename(new File(ftpArgs.getFilepath()).getName());
@@ -149,7 +149,7 @@ public class FtpArgs {
         if (ftpArgs.getPort() < 0) {
           throw new NumberFormatException("Port must be positive");
         }
-      } catch (NumberFormatException e) {
+      } catch (final NumberFormatException e) {
         throw new OpenR66RunnerErrorException(e);
       }
       ftpArgs.setUser(cmd.getOptionValue("user"));
@@ -162,7 +162,7 @@ public class FtpArgs {
             .setPassive("passive".equalsIgnoreCase(cmd.getOptionValue("mode")));
       }
       if (cmd.hasOption("ssl")) {
-        String ssl = cmd.getOptionValue("ssl");
+        final String ssl = cmd.getOptionValue("ssl");
         if ("implicit".equalsIgnoreCase(ssl)) {
           ftpArgs.setSsl(-1);
         } else if ("explicit".equalsIgnoreCase(ssl)) {
@@ -175,7 +175,7 @@ public class FtpArgs {
         ftpArgs.setCwd(cmd.getOptionValue("cwd"));
       }
       if (cmd.hasOption("digest")) {
-        String digest = cmd.getOptionValue("digest");
+        final String digest = cmd.getOptionValue("digest");
         if ("crc".equalsIgnoreCase(digest)) {
           ftpArgs.setDigest(DigestAlgo.CRC32);
           ftpArgs.setDigestCommand("XCRC " + ftpArgs.getFilename());
@@ -221,7 +221,7 @@ public class FtpArgs {
               "Command not known: " + ftpArgs.getCommand());
         }
       }
-    } catch (ParseException e) {
+    } catch (final ParseException e) {
       throw new OpenR66RunnerErrorException(e);
     }
 
@@ -232,7 +232,7 @@ public class FtpArgs {
     return filepath;
   }
 
-  public FtpArgs setFilepath(String filepath) {
+  public FtpArgs setFilepath(final String filepath) {
     this.filepath = filepath;
     return this;
   }
@@ -241,7 +241,7 @@ public class FtpArgs {
     return filename;
   }
 
-  public FtpArgs setFilename(String filename) {
+  public FtpArgs setFilename(final String filename) {
     this.filename = filename;
     return this;
   }
@@ -250,7 +250,7 @@ public class FtpArgs {
     return requested;
   }
 
-  public FtpArgs setRequested(String requested) {
+  public FtpArgs setRequested(final String requested) {
     this.requested = requested;
     return this;
   }
@@ -259,7 +259,7 @@ public class FtpArgs {
     return port;
   }
 
-  public FtpArgs setPort(int port) {
+  public FtpArgs setPort(final int port) {
     this.port = port;
     return this;
   }
@@ -268,7 +268,7 @@ public class FtpArgs {
     return user;
   }
 
-  public FtpArgs setUser(String user) {
+  public FtpArgs setUser(final String user) {
     this.user = user;
     return this;
   }
@@ -277,7 +277,7 @@ public class FtpArgs {
     return pwd;
   }
 
-  public FtpArgs setPwd(String pwd) {
+  public FtpArgs setPwd(final String pwd) {
     this.pwd = pwd;
     return this;
   }
@@ -286,7 +286,7 @@ public class FtpArgs {
     return acct;
   }
 
-  public FtpArgs setAcct(String acct) {
+  public FtpArgs setAcct(final String acct) {
     this.acct = acct;
     return this;
   }
@@ -295,7 +295,7 @@ public class FtpArgs {
     return isPassive;
   }
 
-  public FtpArgs setPassive(boolean passive) {
+  public FtpArgs setPassive(final boolean passive) {
     isPassive = passive;
     return this;
   }
@@ -304,7 +304,7 @@ public class FtpArgs {
     return ssl;
   }
 
-  public FtpArgs setSsl(int ssl) {
+  public FtpArgs setSsl(final int ssl) {
     this.ssl = ssl;
     return this;
   }
@@ -313,7 +313,7 @@ public class FtpArgs {
     return cwd;
   }
 
-  public FtpArgs setCwd(String cwd) {
+  public FtpArgs setCwd(final String cwd) {
     this.cwd = cwd;
     return this;
   }
@@ -322,7 +322,7 @@ public class FtpArgs {
     return digest;
   }
 
-  public FtpArgs setDigest(DigestAlgo digest) {
+  public FtpArgs setDigest(final DigestAlgo digest) {
     this.digest = digest;
     return this;
   }
@@ -331,7 +331,7 @@ public class FtpArgs {
     return digestCommand;
   }
 
-  public FtpArgs setDigestCommand(String digestCommand) {
+  public FtpArgs setDigestCommand(final String digestCommand) {
     this.digestCommand = digestCommand;
     return this;
   }
@@ -340,7 +340,7 @@ public class FtpArgs {
     return command;
   }
 
-  public FtpArgs setCommand(String command) {
+  public FtpArgs setCommand(final String command) {
     this.command = command;
     return this;
   }
@@ -349,7 +349,7 @@ public class FtpArgs {
     return codeCommand;
   }
 
-  public FtpArgs setCodeCommand(int codeCommand) {
+  public FtpArgs setCodeCommand(final int codeCommand) {
     this.codeCommand = codeCommand;
     return this;
   }
@@ -358,7 +358,7 @@ public class FtpArgs {
     return preArgs;
   }
 
-  public FtpArgs setPreArgs(String preArgs) {
+  public FtpArgs setPreArgs(final String preArgs) {
     this.preArgs = preArgs;
     return this;
   }
@@ -367,7 +367,7 @@ public class FtpArgs {
     return postArgs;
   }
 
-  public FtpArgs setPostArgs(String postArgs) {
+  public FtpArgs setPostArgs(final String postArgs) {
     this.postArgs = postArgs;
     return this;
   }

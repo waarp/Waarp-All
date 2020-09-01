@@ -64,12 +64,12 @@ public class FtpArgumentCode {
      */
     public final Charset charset;
 
-    TransferType(char type) {
+    TransferType(final char type) {
       this.type = type;
       charset = Charset.defaultCharset();
     }
 
-    TransferType(char type, String charsetName) {
+    TransferType(final char type, final String charsetName) {
       this.type = type;
       charset = Charset.forName(charsetName);
     }
@@ -98,7 +98,7 @@ public class FtpArgumentCode {
      */
     public final char subtype;
 
-    TransferSubType(char subtype) {
+    TransferSubType(final char subtype) {
       this.subtype = subtype;
     }
   }
@@ -126,7 +126,7 @@ public class FtpArgumentCode {
      */
     public final char structure;
 
-    TransferStructure(char structure) {
+    TransferStructure(final char structure) {
       this.structure = structure;
     }
   }
@@ -154,7 +154,7 @@ public class FtpArgumentCode {
      */
     public final char mode;
 
-    TransferMode(char mode) {
+    TransferMode(final char mode) {
       this.mode = mode;
     }
   }
@@ -168,7 +168,7 @@ public class FtpArgumentCode {
    *
    * @throws InvalidArgumentException if the type is unknown
    */
-  public static TransferType getTransferType(char type)
+  public static TransferType getTransferType(final char type)
       throws InvalidArgumentException {
     switch (type) {
       case 'A':
@@ -199,7 +199,7 @@ public class FtpArgumentCode {
    * @throws InvalidArgumentException if the TransferSubType is
    *     unknown
    */
-  public static TransferSubType getTransferSubType(char subType)
+  public static TransferSubType getTransferSubType(final char subType)
       throws InvalidArgumentException {
     switch (subType) {
       case 'C':
@@ -227,7 +227,7 @@ public class FtpArgumentCode {
    * @throws InvalidArgumentException if the TransferStructure is
    *     unknown
    */
-  public static TransferStructure getTransferStructure(char structure)
+  public static TransferStructure getTransferStructure(final char structure)
       throws InvalidArgumentException {
     switch (structure) {
       case 'P':
@@ -254,7 +254,7 @@ public class FtpArgumentCode {
    *
    * @throws InvalidArgumentException if the TransferMode is unknown
    */
-  public static TransferMode getTransferMode(char mode)
+  public static TransferMode getTransferMode(final char mode)
       throws InvalidArgumentException {
     switch (mode) {
       case 'B':

@@ -30,46 +30,48 @@ import java.util.concurrent.ScheduledExecutorService;
 public class FtpGlobalTrafficShapingHandler
     extends GlobalChannelTrafficShapingHandler {
 
-  public FtpGlobalTrafficShapingHandler(ScheduledExecutorService executor,
-                                        long writeGlobalLimit,
-                                        long readGlobalLimit,
-                                        long writeChannelLimit,
-                                        long readChannelLimit,
-                                        long checkInterval, long maxTime) {
+  public FtpGlobalTrafficShapingHandler(final ScheduledExecutorService executor,
+                                        final long writeGlobalLimit,
+                                        final long readGlobalLimit,
+                                        final long writeChannelLimit,
+                                        final long readChannelLimit,
+                                        final long checkInterval,
+                                        final long maxTime) {
     super(executor, writeGlobalLimit, readGlobalLimit, writeChannelLimit,
           readChannelLimit, checkInterval, maxTime);
   }
 
-  public FtpGlobalTrafficShapingHandler(ScheduledExecutorService executor,
-                                        long writeGlobalLimit,
-                                        long readGlobalLimit,
-                                        long writeChannelLimit,
-                                        long readChannelLimit,
-                                        long checkInterval) {
+  public FtpGlobalTrafficShapingHandler(final ScheduledExecutorService executor,
+                                        final long writeGlobalLimit,
+                                        final long readGlobalLimit,
+                                        final long writeChannelLimit,
+                                        final long readChannelLimit,
+                                        final long checkInterval) {
     super(executor, writeGlobalLimit, readGlobalLimit, writeChannelLimit,
           readChannelLimit, checkInterval);
   }
 
-  public FtpGlobalTrafficShapingHandler(ScheduledExecutorService executor,
-                                        long writeGlobalLimit,
-                                        long readGlobalLimit,
-                                        long writeChannelLimit,
-                                        long readChannelLimit) {
+  public FtpGlobalTrafficShapingHandler(final ScheduledExecutorService executor,
+                                        final long writeGlobalLimit,
+                                        final long readGlobalLimit,
+                                        final long writeChannelLimit,
+                                        final long readChannelLimit) {
     super(executor, writeGlobalLimit, readGlobalLimit, writeChannelLimit,
           readChannelLimit);
   }
 
-  public FtpGlobalTrafficShapingHandler(ScheduledExecutorService executor,
-                                        long checkInterval) {
+  public FtpGlobalTrafficShapingHandler(final ScheduledExecutorService executor,
+                                        final long checkInterval) {
     super(executor, checkInterval);
   }
 
-  public FtpGlobalTrafficShapingHandler(ScheduledExecutorService executor) {
+  public FtpGlobalTrafficShapingHandler(
+      final ScheduledExecutorService executor) {
     super(executor);
   }
 
   @Override
-  protected long calculateSize(Object msg) {
+  protected long calculateSize(final Object msg) {
     if (msg instanceof DataBlock) {
       return ((DataBlock) msg).getByteCount();
     }

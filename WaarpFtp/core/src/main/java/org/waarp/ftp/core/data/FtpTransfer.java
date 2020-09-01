@@ -65,8 +65,8 @@ public class FtpTransfer {
    * @param fileOrInfo
    * @param path
    */
-  public FtpTransfer(FtpCommandCode command, List<String> fileOrInfo,
-                     String path) {
+  public FtpTransfer(final FtpCommandCode command,
+                     final List<String> fileOrInfo, final String path) {
     this.command = command;
     info = fileOrInfo;
     this.path = path;
@@ -77,7 +77,7 @@ public class FtpTransfer {
    * @param command
    * @param file
    */
-  public FtpTransfer(FtpCommandCode command, FtpFile file) {
+  public FtpTransfer(final FtpCommandCode command, final FtpFile file) {
     this.command = command;
     currentFile = file;
     try {
@@ -131,7 +131,7 @@ public class FtpTransfer {
   /**
    * @param status
    */
-  public void setStatus(boolean status) {
+  public void setStatus(final boolean status) {
     if (!status) {
       logger.debug("Status false", new Exception("Trace only exception"));
     }

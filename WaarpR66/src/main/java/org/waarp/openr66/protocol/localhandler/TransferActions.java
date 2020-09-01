@@ -95,8 +95,10 @@ public class TransferActions extends ServerActions {
    *
    * @throws OpenR66ProtocolPacketException
    */
-  private void endInitRequestInError(ErrorCode code, DbTaskRunner runner,
-                                     OpenR66Exception e1, RequestPacket packet)
+  private void endInitRequestInError(final ErrorCode code,
+                                     final DbTaskRunner runner,
+                                     final OpenR66Exception e1,
+                                     final RequestPacket packet)
       throws OpenR66ProtocolPacketException {
     logger.error("TaskRunner initialisation in error: " + code.getMesg() + ' ' +
                  session + " {} runner {}",
@@ -166,7 +168,7 @@ public class TransferActions extends ServerActions {
     if (checkRequest(packet)) {
       return;
     }
-    DbRule rule;
+    final DbRule rule;
     try {
       rule = new DbRule(packet.getRulename());
     } catch (final WaarpDatabaseException e) {
@@ -181,7 +183,7 @@ public class TransferActions extends ServerActions {
       return;
     }
     packet = computeBlockSizeFromRequest(packet, rule);
-    DbTaskRunner runner;
+    final DbTaskRunner runner;
     // requested
     final boolean isRetrieve = DbTaskRunner.getSenderByRequestPacket(packet);
     if (packet.getSpecialId() != ILLEGALVALUE) {
@@ -215,7 +217,7 @@ public class TransferActions extends ServerActions {
     runner.setBlocksize(packet.getBlocksize());
     try {
       runner.update();
-    } catch (WaarpDatabaseException ignored) {
+    } catch (final WaarpDatabaseException ignored) {
       // Ignore
     }
     logger.debug(
@@ -224,12 +226,8 @@ public class TransferActions extends ServerActions {
     try {
       session.setRunner(runner);
       // Fix to ensure that recv request are not trying to access to not chroot files
-      if (Configuration.configuration.isChrootChecked() &&
-          packet.isToValidate() && runner.isSender()) {
-        session.startup(true);
-      } else {
-        session.startup(false);
-      }
+      session.startup(Configuration.configuration.isChrootChecked() &&
+                      packet.isToValidate() && runner.isSender());
       if (runner.isSender() && !runner.isSendThrough()) {
         if (packet.getOriginalSize() != runner.getOriginalSize()) {
           packet.setOriginalSize(runner.getOriginalSize());
@@ -491,7 +489,9 @@ public class TransferActions extends ServerActions {
       // Try reload
       runner =
           reloadDbTaskRunner(packet, rule, isRetrieve, requested, requester);
-
+      if (runner == null) {
+        return null;
+      }
       final LocalChannelReference lcr =
           Configuration.configuration.getLocalTransaction().getFromRequest(
               requested + ' ' + requester + ' ' + packet.getSpecialId());
@@ -538,9 +538,6 @@ public class TransferActions extends ServerActions {
       // Id should be a reload
       runner = reloadDbTaskRunnerFromId(packet, rule, isRetrieve, requested,
                                         requester);
-      if (runner == null) {
-        return null;
-      }
     }
     return runner;
   }
@@ -567,9 +564,9 @@ public class TransferActions extends ServerActions {
           lcr.getServerHandler().tryFinalizeRequest(
               new R66Result(lcr.getSession(), false, ErrorCode.Internal,
                             runner));
-        } catch (OpenR66RunnerErrorException ignore) {
+        } catch (final OpenR66RunnerErrorException ignore) {
           SysErrLogger.FAKE_LOGGER.ignoreLog(ignore);
-        } catch (OpenR66ProtocolSystemException ignore) {
+        } catch (final OpenR66ProtocolSystemException ignore) {
           SysErrLogger.FAKE_LOGGER.ignoreLog(ignore);
         }
         lcr.close();
@@ -718,9 +715,10 @@ public class TransferActions extends ServerActions {
    *
    * @throws OpenR66ProtocolPacketException
    */
-  private void sendFilenameFilesizeChanging(RequestPacket packet,
-                                            DbTaskRunner runner, String debug,
-                                            String info)
+  private void sendFilenameFilesizeChanging(final RequestPacket packet,
+                                            final DbTaskRunner runner,
+                                            final String debug,
+                                            final String info)
       throws OpenR66ProtocolPacketException {
     logger.debug(debug + runner.getFilename());
     session.newState(VALID);
@@ -740,7 +738,7 @@ public class TransferActions extends ServerActions {
           .writeAbstractLocalPacket(localChannelReference, validPacket, true);
     } else {
       final String infoTransfer = runner.getFileInformation();
-      ValidPacket validPacket;
+      final ValidPacket validPacket;
       if (infoTransfer != null &&
           !infoTransfer.equals(packet.getTransferInformation()) &&
           localChannelReference.getPartner().changeFileInfoEnabled()) {
@@ -769,7 +767,8 @@ public class TransferActions extends ServerActions {
    *
    * @throws OpenR66ProtocolPacketException
    */
-  private void errorToSend(String message, ErrorCode code, int status)
+  private void errorToSend(final String message, final ErrorCode code,
+                           final int status)
       throws OpenR66ProtocolPacketException {
     session.newState(ERROR);
     try {
@@ -799,7 +798,7 @@ public class TransferActions extends ServerActions {
    * @throws OpenR66ProtocolBusinessException
    * @throws OpenR66ProtocolPacketException
    */
-  public void data(DataPacket packet)
+  public void data(final DataPacket packet)
       throws OpenR66ProtocolNotAuthenticatedException,
              OpenR66ProtocolBusinessException, OpenR66ProtocolPacketException {
     logger.trace("receiving data block {}", packet.getPacketRank());
@@ -956,7 +955,7 @@ public class TransferActions extends ServerActions {
         packet.clear();
       }
     } else {
-      DataBlock dataBlock = new DataBlock();
+      final DataBlock dataBlock = new DataBlock();
       dataBlock.setBlock(packet.getData());
       try {
         session.getFile().writeDataBlock(dataBlock);
@@ -1014,7 +1013,7 @@ public class TransferActions extends ServerActions {
    * @throws OpenR66ProtocolSystemException
    * @throws OpenR66ProtocolNotAuthenticatedException
    */
-  public void endTransfer(EndTransferPacket packet)
+  public void endTransfer(final EndTransferPacket packet)
       throws OpenR66RunnerErrorException, OpenR66ProtocolSystemException,
              OpenR66ProtocolNotAuthenticatedException {
     if (!session.isAuthenticated()) {
@@ -1116,7 +1115,7 @@ public class TransferActions extends ServerActions {
         logger.debug("Global digest ok");
       }
     } else if (globalDigest != null) {
-      String localhash;
+      final String localhash;
       if (localDigest != null) {
         localhash = FilesystemBasedDigest.getHex(localDigest.Final());
       } else {
@@ -1175,7 +1174,7 @@ public class TransferActions extends ServerActions {
       session.setFinalizeTransfer(true, result);
     } catch (final OpenR66RunnerErrorException e) {
       session.newState(ERROR);
-      ErrorPacket error;
+      final ErrorPacket error;
       if (localChannelReference.getFutureRequest().getResult() != null) {
         result = localChannelReference.getFutureRequest().getResult();
         error = new ErrorPacket(
@@ -1197,7 +1196,7 @@ public class TransferActions extends ServerActions {
       return true;
     } catch (final OpenR66ProtocolSystemException e) {
       session.newState(ERROR);
-      ErrorPacket error;
+      final ErrorPacket error;
       if (localChannelReference.getFutureRequest().getResult() != null) {
         result = localChannelReference.getFutureRequest().getResult();
         error = new ErrorPacket(
@@ -1230,7 +1229,7 @@ public class TransferActions extends ServerActions {
    * @throws OpenR66ProtocolSystemException
    * @throws OpenR66ProtocolNotAuthenticatedException
    */
-  public void endRequest(EndRequestPacket packet) {
+  public void endRequest(final EndRequestPacket packet) {
     // Validate the last post action on a transfer from receiver remote host
     logger.info("Valid Request {} Packet {}", localChannelReference, packet);
     final DbTaskRunner runner = session.getRunner();
@@ -1302,7 +1301,7 @@ public class TransferActions extends ServerActions {
    *
    * @throws OpenR66RunnerErrorException
    */
-  public void requestChangeFileInfo(String newFileInfo)
+  public void requestChangeFileInfo(final String newFileInfo)
       throws OpenR66RunnerErrorException {
     final DbTaskRunner runner = session.getRunner();
     logger.debug("NewFileInfo " + newFileInfo);
@@ -1349,7 +1348,8 @@ public class TransferActions extends ServerActions {
    *
    * @throws OpenR66RunnerErrorException
    */
-  public void requestChangeNameSize(String newfilename, long newSize)
+  public void requestChangeNameSize(final String newfilename,
+                                    final long newSize)
       throws OpenR66RunnerErrorException {
     session.newState(VALID);
     final DbTaskRunner runner = session.getRunner();

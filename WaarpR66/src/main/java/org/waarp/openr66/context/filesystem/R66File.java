@@ -75,8 +75,8 @@ public class R66File extends FilesystemBasedFileImpl {
    *
    * @throws CommandAbstractException
    */
-  public R66File(R66Session session, R66Dir dir, String path, boolean append)
-      throws CommandAbstractException {
+  public R66File(final R66Session session, final R66Dir dir, final String path,
+                 final boolean append) throws CommandAbstractException {
     super(session, dir, path, append);
   }
 
@@ -87,7 +87,8 @@ public class R66File extends FilesystemBasedFileImpl {
    * @param dir
    * @param path
    */
-  public R66File(R66Session session, R66Dir dir, String path) {
+  public R66File(final R66Session session, final R66Dir dir,
+                 final String path) {
     super(session, dir, path);
     isExternal = true;
   }
@@ -100,7 +101,7 @@ public class R66File extends FilesystemBasedFileImpl {
    * @throws OpenR66RunnerErrorException
    * @throws OpenR66ProtocolSystemException
    */
-  public void retrieveBlocking(AtomicBoolean running)
+  public void retrieveBlocking(final AtomicBoolean running)
       throws OpenR66RunnerErrorException, OpenR66ProtocolSystemException {
     boolean retrieveDone = false;
     final LocalChannelReference localChannelReference =
@@ -134,7 +135,7 @@ public class R66File extends FilesystemBasedFileImpl {
       }
       ChannelFuture future1 = null;
       ChannelFuture future2;
-      if (block != null && running.get() && !Thread.interrupted()) {
+      if (running.get() && !Thread.interrupted()) {
         if (Configuration.configuration.isGlobalDigest()) {
           future1 = RetrieveRunner
               .writeWhenPossible(block, localChannelReference, digest);
@@ -257,7 +258,7 @@ public class R66File extends FilesystemBasedFileImpl {
    *
    * @return the basename from the given path
    */
-  public static String getBasename(String path) {
+  public static String getBasename(final String path) {
     int pos = path.lastIndexOf('/');
     final int pos2 = path.lastIndexOf('\\');
     if (pos2 > pos) {
@@ -358,7 +359,7 @@ public class R66File extends FilesystemBasedFileImpl {
       return null;
     }
     final File trueFile = getTrueFile();
-    RandomAccessFile raf;
+    final RandomAccessFile raf;
     try {
       raf = new RandomAccessFile(trueFile, "rw");//NOSONAR
       raf.seek(getPosition());
@@ -382,7 +383,7 @@ public class R66File extends FilesystemBasedFileImpl {
    * @return the FileOutputStream (OUT)
    */
   @Override
-  protected FileOutputStream getFileOutputStream(boolean append) {
+  protected FileOutputStream getFileOutputStream(final boolean append) {
     if (!isExternal) {
       return super.getFileOutputStream(append);
     }
@@ -405,7 +406,7 @@ public class R66File extends FilesystemBasedFileImpl {
         return null;
       }
     }
-    FileOutputStream fos;
+    final FileOutputStream fos;
     try {
       fos = new FileOutputStream(trueFile, append);
     } catch (final FileNotFoundException e) {
@@ -461,7 +462,7 @@ public class R66File extends FilesystemBasedFileImpl {
   }
 
   @Override
-  public boolean renameTo(String path) throws CommandAbstractException {
+  public boolean renameTo(final String path) throws CommandAbstractException {
     if (!isExternal) {
       return super.renameTo(path);
     }
@@ -526,7 +527,7 @@ public class R66File extends FilesystemBasedFileImpl {
    *
    * @throws CommandAbstractException
    */
-  public boolean renameTo(String path, boolean external)
+  public boolean renameTo(final String path, final boolean external)
       throws CommandAbstractException {
     if (!external) {
       return renameTo(path);
@@ -579,7 +580,7 @@ public class R66File extends FilesystemBasedFileImpl {
    *
    * @throws CommandAbstractException
    */
-  public void replaceFilename(String filename, boolean isExternal)
+  public void replaceFilename(final String filename, final boolean isExternal)
       throws CommandAbstractException {
     closeFile();
     currentFile = filename;

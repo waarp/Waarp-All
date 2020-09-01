@@ -28,6 +28,7 @@ import org.waarp.openr66.context.R66Result;
 import org.waarp.openr66.context.R66Session;
 import org.waarp.openr66.context.task.exception.OpenR66RunnerErrorException;
 import org.waarp.openr66.protocol.configuration.Configuration;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolSystemException;
 
 import java.io.File;
 import java.io.IOException;
@@ -93,8 +94,8 @@ public class FtpTransferTask extends AbstractTask {
    * @param argTransfer
    * @param session
    */
-  public FtpTransferTask(String argRule, int delay, String argTransfer,
-                         R66Session session) {
+  public FtpTransferTask(final String argRule, final int delay,
+                         final String argTransfer, final R66Session session) {
     super(TaskType.FTP, delay, argRule, argTransfer, session);
   }
 
@@ -384,6 +385,14 @@ public class FtpTransferTask extends AbstractTask {
   public void run() {
     logger.info("FtpTransfer with " + argRule + ':' + argTransfer + " and {}",
                 session);
+    if (argRule == null) {
+      logger.error(
+          "FtpTransfer cannot be done with " + argRule + ':' + argTransfer +
+          " and " + session);
+      futureCompletion.setFailure(
+          new OpenR66ProtocolSystemException("FtpTransfer cannot be done"));
+      return;
+    }
     String finalname = argRule;
     final String[] argFormat = BLANK.split(argTransfer);
     if (argFormat != null && argFormat.length > 0) {
@@ -402,7 +411,7 @@ public class FtpTransferTask extends AbstractTask {
     final FtpArgs ftpArgs;
     try {
       ftpArgs = FtpArgs.getFtpArgs(args);
-    } catch (OpenR66RunnerErrorException e) {
+    } catch (final OpenR66RunnerErrorException e) {
       final OpenR66RunnerErrorException exception =
           new OpenR66RunnerErrorException("Not enough argument in Transfer");
       final R66Result result =

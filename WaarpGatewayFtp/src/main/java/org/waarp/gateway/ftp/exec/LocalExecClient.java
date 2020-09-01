@@ -54,15 +54,15 @@ public class LocalExecClient {
   private static Bootstrap bootstrapLocalExec;
   // Configure the pipeline factory.
   private static LocalExecClientInitializer localExecClientInitializer;
-  private static EventLoopGroup localPipelineExecutor;
 
   /**
    * Initialize the LocalExec Client context
    */
-  public static void initialize(int clientThread, long maxGlobalMemory) {
-    localPipelineExecutor = new NioEventLoopGroup(clientThread * 2,
-                                                  new WaarpThreadFactory(
-                                                      "LocalExecutor"));
+  public static void initialize(final int clientThread,
+                                final long maxGlobalMemory) {
+    final EventLoopGroup localPipelineExecutor =
+        new NioEventLoopGroup(clientThread * 2,
+                              new WaarpThreadFactory("LocalExecutor"));
     // Configure the client.
     bootstrapLocalExec = new Bootstrap();
     WaarpNettyUtil.setBootstrap(bootstrapLocalExec, localPipelineExecutor,
@@ -106,8 +106,8 @@ public class LocalExecClient {
    * @param delay
    * @param futureCompletion
    */
-  public void runOneCommand(String command, long delay,
-                            WaarpFuture futureCompletion) {
+  public void runOneCommand(final String command, final long delay,
+                            final WaarpFuture futureCompletion) {
     // Initialize the command context
     final LocalExecClientHandler clientHandler =
         (LocalExecClientHandler) channel.pipeline().last();
@@ -172,7 +172,7 @@ public class LocalExecClient {
   /**
    * @param address the address to set
    */
-  public static void setAddress(InetSocketAddress address) {
+  public static void setAddress(final InetSocketAddress address) {
     LocalExecClient.address = address;
   }
 }

@@ -42,8 +42,8 @@ public class EmptyDbModel implements DbModel {
   }
 
   @Override
-  public Connection getDbConnection(String server, String user, String passwd)
-      throws SQLException {
+  public Connection getDbConnection(final String server, final String user,
+                                    final String passwd) throws SQLException {
     return null;
   }
 
@@ -68,44 +68,45 @@ public class EmptyDbModel implements DbModel {
   }
 
   @Override
-  public void createTables(DbSession session)
+  public void createTables(final DbSession session)
       throws WaarpDatabaseNoConnectionException {
     // nothing
   }
 
   @Override
-  public void resetSequence(DbSession session, long newvalue)
+  public void resetSequence(final DbSession session, final long newvalue)
       throws WaarpDatabaseNoConnectionException {
     // nothing
   }
 
   @Override
-  public long nextSequence(DbSession dbSession)
+  public long nextSequence(final DbSession dbSession)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException,
              WaarpDatabaseNoDataException {
     return DbConstant.ILLEGALVALUE;
   }
 
   @Override
-  public void validConnection(DbSession dbSession)
+  public void validConnection(final DbSession dbSession)
       throws WaarpDatabaseNoConnectionException {
     // nothing
   }
 
   @Override
-  public String limitRequest(String allfields, String request, int limit) {
+  public String limitRequest(final String allfields, final String request,
+                             final int limit) {
     return null;
   }
 
   @Override
-  public boolean upgradeDb(DbSession session, String version)
+  public boolean upgradeDb(final DbSession session, final String version)
       throws WaarpDatabaseNoConnectionException {
     return true;
   }
 
   @Override
-  public boolean needUpgradeDb(DbSession session, String version,
-                               boolean tryFix)
+  public boolean needUpgradeDb(final DbSession session, final String version,
+                               final boolean tryFix)
       throws WaarpDatabaseNoConnectionException {
     return false;
   }

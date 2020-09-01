@@ -46,8 +46,8 @@ public class SnmpTask extends AbstractTask {
    * @param argTransfer
    * @param session
    */
-  public SnmpTask(String argRule, int delay, String argTransfer,
-                  R66Session session) {
+  public SnmpTask(final String argRule, final int delay,
+                  final String argTransfer, final R66Session session) {
     super(TaskType.SNMP, delay, argRule, argTransfer, session);
   }
 
@@ -59,7 +59,8 @@ public class SnmpTask extends AbstractTask {
       return;
     }
     String finalValue = argRule;
-    finalValue = getReplacedValue(finalValue, argTransfer.split(" "));
+    finalValue = getReplacedValue(finalValue, argTransfer == null? null :
+        argTransfer.split(" "));
     switch (delay) {
       case 0:
         Configuration.configuration.getR66Mib().notifyWarning(finalValue,

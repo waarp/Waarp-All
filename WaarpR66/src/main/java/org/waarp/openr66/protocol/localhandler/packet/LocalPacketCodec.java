@@ -39,8 +39,8 @@ public class LocalPacketCodec extends ByteToMessageCodec<AbstractLocalPacket> {
       WaarpLoggerFactory.getLogger(LocalPacketCodec.class);
 
   @Override
-  protected void decode(ChannelHandlerContext ctx, ByteBuf buf,
-                        List<Object> out) throws Exception {
+  protected void decode(final ChannelHandlerContext ctx, final ByteBuf buf,
+                        final List<Object> out) throws Exception {
     // Make sure if the length field was received.
     if (buf.readableBytes() < 4) {
       // The length field was not received yet - return null.
@@ -54,7 +54,7 @@ public class LocalPacketCodec extends ByteToMessageCodec<AbstractLocalPacket> {
     }
   }
 
-  public static AbstractLocalPacket decodeNetworkPacket(ByteBuf buf)
+  public static AbstractLocalPacket decodeNetworkPacket(final ByteBuf buf)
       throws OpenR66ProtocolPacketException {
     // Mark the current buffer position
     buf.markReaderIndex();
@@ -82,8 +82,9 @@ public class LocalPacketCodec extends ByteToMessageCodec<AbstractLocalPacket> {
   }
 
   @Override
-  protected void encode(ChannelHandlerContext ctx, AbstractLocalPacket msg,
-                        ByteBuf out) throws Exception {
+  protected void encode(final ChannelHandlerContext ctx,
+                        final AbstractLocalPacket msg, final ByteBuf out)
+      throws Exception {
     logger.trace("sending local packet {}", msg.getType());
     final ByteBuf buf = msg.getLocalPacket(null);
     out.writeBytes(buf);

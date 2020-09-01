@@ -69,15 +69,16 @@ public class HttpRestControlR66Handler extends HttpRestAbstractR66Handler {
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(HttpRestControlR66Handler.class);
 
-  public HttpRestControlR66Handler(RestConfiguration config,
-                                   METHOD... methods) {
+  public HttpRestControlR66Handler(final RestConfiguration config,
+                                   final METHOD... methods) {
     super(BASEURI, config, METHOD.OPTIONS);
     setIntersectionMethods(methods, METHOD.GET, METHOD.PUT, METHOD.POST);
   }
 
   @Override
-  public void endParsingRequest(HttpRestHandler handler, RestArgument arguments,
-                                RestArgument result, Object body)
+  public void endParsingRequest(final HttpRestHandler handler,
+                                final RestArgument arguments,
+                                final RestArgument result, final Object body)
       throws HttpIncorrectRequestException, HttpInvalidAuthenticationException {
     logger.debug("debug: {} ### {}", arguments, result);
     if (body != null) {
@@ -102,7 +103,7 @@ public class HttpRestControlR66Handler extends HttpRestAbstractR66Handler {
         final InformationJsonPacket node = (InformationJsonPacket) json;
         if (node.isIdRequest()) {
           result.setCommand(ACTIONS_TYPE.GetTransferInformation.name());
-          ValidPacket validPacket;
+          final ValidPacket validPacket;
           if (node.isIdRequest()) {
             validPacket = serverHandler
                 .informationRequest(node.getId(), node.isTo(),
@@ -146,7 +147,7 @@ public class HttpRestControlR66Handler extends HttpRestAbstractR66Handler {
                  method == METHOD.PUT) {//
         result.setCommand(ACTIONS_TYPE.StopOrCancelTransfer.name());
         final StopOrCancelJsonPacket node = (StopOrCancelJsonPacket) json;
-        R66Result resulttest;
+        final R66Result resulttest;
         if (node.getRequested() == null || node.getRequester() == null ||
             node.getSpecialid() == ILLEGALVALUE) {
           final ErrorCode code = ErrorCode.CommandNotFound;
@@ -198,11 +199,11 @@ public class HttpRestControlR66Handler extends HttpRestAbstractR66Handler {
       final ArrayNode node1 = JsonHandler.createArrayNode();
       final ObjectNode node1b = JsonHandler.createObjectNode();
       node1b.put(AbstractDbData.JSON_MODEL, DbTaskRunner.class.getSimpleName());
-      for (DbTaskRunner.Columns column : DbTaskRunner.Columns.values()) {
+      for (final DbTaskRunner.Columns column : DbTaskRunner.Columns.values()) {
         node1b.put(column.name(), DbTaskRunner.dbTypes[column.ordinal()]);
       }
       node1.add(node1b);
-      ObjectNode node2;
+      final ObjectNode node2;
       try {
         node2 = RestArgument.fillDetailedAllow(METHOD.GET, path,
                                                ACTIONS_TYPE.GetTransferInformation

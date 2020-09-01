@@ -37,7 +37,7 @@ public abstract class AbstractLruCache<K, V>
    *
    * @throws IllegalArgumentException if ttl is not positive
    */
-  protected AbstractLruCache(long ttl) {
+  protected AbstractLruCache(final long ttl) {
     if (ttl <= 0) {
       throw new IllegalArgumentException("ttl must be positive");
     }
@@ -46,7 +46,7 @@ public abstract class AbstractLruCache<K, V>
   }
 
   @Override
-  public boolean contains(K key) {
+  public boolean contains(final K key) {
     // can't use contains because of expiration policy
     final V value = get(key);
 
@@ -63,22 +63,24 @@ public abstract class AbstractLruCache<K, V>
    *
    * @return LruCacheEntry<V>
    */
-  protected InterfaceLruCacheEntry<V> createEntry(V value, long ttl) {
+  protected InterfaceLruCacheEntry<V> createEntry(final V value,
+                                                  final long ttl) {
     return new StrongReferenceCacheEntry<V>(value, ttl);
   }
 
   @Override
-  public V get(K key) {
+  public V get(final K key) {
     return getValue(key);
   }
 
   @Override
-  public V get(K key, Callable<V> callback) throws Exception {
+  public V get(final K key, final Callable<V> callback) throws Exception {
     return get(key, callback, ttl);
   }
 
   @Override
-  public V get(K key, Callable<V> callback, long ttl) throws Exception {
+  public V get(final K key, final Callable<V> callback, final long ttl)
+      throws Exception {
     V value = get(key);
 
     // if element doesn't exist create it using callback
@@ -96,7 +98,7 @@ public abstract class AbstractLruCache<K, V>
   }
 
   @Override
-  public void setNewTtl(long ttl) {
+  public void setNewTtl(final long ttl) {
     if (ttl <= 0) {
       throw new IllegalArgumentException("ttl must be positive");
     }
@@ -113,7 +115,7 @@ public abstract class AbstractLruCache<K, V>
   protected abstract InterfaceLruCacheEntry<V> getEntry(K key);
 
   @Override
-  public void updateTtl(K key) {
+  public void updateTtl(final K key) {
     final InterfaceLruCacheEntry<V> cacheEntry = getEntry(key);
     if (cacheEntry != null) {
       cacheEntry.resetTime(ttl);
@@ -129,7 +131,7 @@ public abstract class AbstractLruCache<K, V>
    *
    * @return Value
    */
-  protected V getValue(K key) {
+  protected V getValue(final K key) {
     V value = null;
 
     final InterfaceLruCacheEntry<V> cacheEntry = getEntry(key);
@@ -152,12 +154,12 @@ public abstract class AbstractLruCache<K, V>
   }
 
   @Override
-  public void put(K key, V value) {
+  public void put(final K key, final V value) {
     put(key, value, ttl);
   }
 
   @Override
-  public void put(K key, V value, long ttl) {
+  public void put(final K key, final V value, final long ttl) {
     if (value != null) {
       putEntry(key, createEntry(value, ttl));
     }

@@ -62,7 +62,7 @@ public class CommanderNoDb implements CommanderInterface {
    *
    * @param runner
    */
-  public CommanderNoDb(InternalRunner runner) {
+  public CommanderNoDb(final InternalRunner runner) {
     internalConstructor(runner);
   }
 
@@ -72,7 +72,7 @@ public class CommanderNoDb implements CommanderInterface {
    * @param runner
    * @param fromStartup True if call from startup of the server
    */
-  public CommanderNoDb(InternalRunner runner, boolean fromStartup) {
+  public CommanderNoDb(final InternalRunner runner, final boolean fromStartup) {
     internalConstructor(runner);
     if (fromStartup) {
       ClientRunner.activeRunners = new ConcurrentLinkedQueue<ClientRunner>();
@@ -88,7 +88,7 @@ public class CommanderNoDb implements CommanderInterface {
         if (info.length < 5) {
           continue;
         }
-        DbRule rule;
+        final DbRule rule;
         try {
           rule = new DbRule(info[2]);
         } catch (final WaarpDatabaseException e) {
@@ -112,7 +112,7 @@ public class CommanderNoDb implements CommanderInterface {
     }
   }
 
-  private void internalConstructor(InternalRunner runner) {
+  private void internalConstructor(final InternalRunner runner) {
     internalRunner = runner;
   }
 
@@ -157,7 +157,7 @@ public class CommanderNoDb implements CommanderInterface {
         }
         // Check TaskRunner
         else if (data instanceof DbTaskRunner) {
-          DbTaskRunner taskRunner = (DbTaskRunner) data;
+          final DbTaskRunner taskRunner = (DbTaskRunner) data;
           logger.debug("get a task: {}", taskRunner);
           // Launch if possible this task
           final String key =

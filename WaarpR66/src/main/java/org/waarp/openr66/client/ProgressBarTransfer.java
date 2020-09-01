@@ -46,11 +46,12 @@ public abstract class ProgressBarTransfer extends AbstractTransfer {
   protected long intervalCallback = 100;
   protected long filesize;
 
-  protected ProgressBarTransfer(R66Future future, String remoteHost,
-                                String filename, String rulename,
-                                String fileinfo, boolean isMD5, int blocksize,
-                                long id, NetworkTransaction networkTransaction,
-                                long callbackdelay) {
+  protected ProgressBarTransfer(final R66Future future, final String remoteHost,
+                                final String filename, final String rulename,
+                                final String fileinfo, final boolean isMD5,
+                                final int blocksize, final long id,
+                                final NetworkTransaction networkTransaction,
+                                final long callbackdelay) {
     // no delay so starttime = null
     super(ProgressBarTransfer.class, future, filename, rulename, fileinfo,
           isMD5, remoteHost, blocksize, id, null);

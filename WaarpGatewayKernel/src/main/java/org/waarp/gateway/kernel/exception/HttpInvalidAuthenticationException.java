@@ -32,14 +32,14 @@ public class HttpInvalidAuthenticationException extends Exception {
   /**
    * @param arg0
    */
-  public HttpInvalidAuthenticationException(String arg0) {
+  public HttpInvalidAuthenticationException(final String arg0) {
     super(arg0);
   }
 
   /**
    * @param arg0
    */
-  public HttpInvalidAuthenticationException(Throwable arg0) {
+  public HttpInvalidAuthenticationException(final Throwable arg0) {
     super(arg0);
   }
 
@@ -47,7 +47,8 @@ public class HttpInvalidAuthenticationException extends Exception {
    * @param arg0
    * @param arg1
    */
-  public HttpInvalidAuthenticationException(String arg0, Throwable arg1) {
+  public HttpInvalidAuthenticationException(final String arg0,
+                                            final Throwable arg1) {
     super(arg0, arg1);
   }
 

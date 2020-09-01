@@ -77,8 +77,8 @@ public class InternalRunner {
                                new RejectedExecutionHandler() {
                                  @Override
                                  public void rejectedExecution(
-                                     Runnable runnable,
-                                     ThreadPoolExecutor threadPoolExecutor) {
+                                     final Runnable runnable,
+                                     final ThreadPoolExecutor threadPoolExecutor) {
                                    logger.debug("Task rescheduled");
                                  }
                                });
@@ -96,7 +96,7 @@ public class InternalRunner {
   }
 
   public int allowedToSubmit() {
-    int active = threadPoolExecutor.getActiveCount();
+    final int active = threadPoolExecutor.getActiveCount();
     if ((isRunning || !Configuration.configuration.isShutdown()) &&
         (active < Configuration.configuration.getRunnerThread())) {
       return Configuration.configuration.getRunnerThread() - active;
@@ -109,7 +109,7 @@ public class InternalRunner {
    *
    * @param taskRunner
    */
-  public void submitTaskRunner(DbTaskRunner taskRunner) {
+  public void submitTaskRunner(final DbTaskRunner taskRunner) {
     if (isRunning || !Configuration.configuration.isShutdown()) {
       // last check: number can have raised up since Commander checks
       if (threadPoolExecutor.getActiveCount() <

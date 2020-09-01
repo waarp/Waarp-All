@@ -74,10 +74,6 @@ public class NetworkServerHandler
    */
   private volatile ProxyBridge bridge;
   /**
-   * The associated Local Address
-   */
-  private volatile SocketAddress localAddress;
-  /**
    * Does this Handler is for SSL
    */
   protected volatile boolean isSSL;
@@ -97,14 +93,14 @@ public class NetworkServerHandler
   /**
    * @param isServer
    */
-  public NetworkServerHandler(boolean isServer) {
+  public NetworkServerHandler(final boolean isServer) {
     this.isServer = isServer;
     if (!this.isServer) {
       clientFuture = new R66Future(true);
     }
   }
 
-  public void setBridge(ProxyBridge bridge) {
+  public void setBridge(final ProxyBridge bridge) {
     this.bridge = bridge;
     if (this.bridge != null) {
       proxyChannel = bridge.getSource().getNetworkChannel();
@@ -127,16 +123,20 @@ public class NetworkServerHandler
   }
 
   @Override
-  public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+  public void channelInactive(final ChannelHandlerContext ctx)
+      throws Exception {
     if (proxyChannel != null) {
       WaarpSslUtility.closingSslChannel(proxyChannel);
     }
   }
 
   @Override
-  public void channelActive(ChannelHandlerContext ctx) throws Exception {
+  public void channelActive(final ChannelHandlerContext ctx) throws Exception {
     networkChannel = ctx.channel();
-    localAddress = networkChannel.localAddress();
+    /**
+     * The associated Local Address
+     */
+    final SocketAddress localAddress = networkChannel.localAddress();
     if (isServer) {
       final ProxyEntry entry = ProxyEntry.get(localAddress.toString());
       if (entry == null) {
@@ -170,8 +170,8 @@ public class NetworkServerHandler
   }
 
   @Override
-  public void userEventTriggered(ChannelHandlerContext ctx, Object evt)
-      throws Exception {
+  public void userEventTriggered(final ChannelHandlerContext ctx,
+                                 final Object evt) throws Exception {
     if (configuration.isShutdown()) {
       return;
     }
@@ -205,8 +205,8 @@ public class NetworkServerHandler
   }
 
   @Override
-  public void channelRead0(ChannelHandlerContext ctx, NetworkPacket msg)
-      throws Exception {
+  public void channelRead0(final ChannelHandlerContext ctx,
+                           final NetworkPacket msg) throws Exception {
     if (msg.getCode() == LocalPacketFactory.NOOPPACKET) {
       resetKeepAlive();
       // Will forward
@@ -255,7 +255,8 @@ public class NetworkServerHandler
   }
 
   @Override
-  public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
+  public void exceptionCaught(final ChannelHandlerContext ctx,
+                              final Throwable cause) {
     final Channel channel = ctx.channel();
     logger.debug("Network Channel Exception: {}", channel.id(), cause);
     if (cause instanceof ReadTimeoutException) {
@@ -312,8 +313,8 @@ public class NetworkServerHandler
    * @param localId
    * @param error
    */
-  void writeError(Channel channel, Integer remoteId, Integer localId,
-                  AbstractLocalPacket error) {
+  void writeError(final Channel channel, final Integer remoteId,
+                  final Integer localId, final AbstractLocalPacket error) {
     NetworkPacket networkPacket = null;
     try {
       networkPacket = new NetworkPacket(localId, remoteId, error, null);

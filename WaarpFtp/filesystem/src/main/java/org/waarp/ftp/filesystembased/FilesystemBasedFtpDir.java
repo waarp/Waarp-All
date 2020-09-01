@@ -34,7 +34,7 @@ public abstract class FilesystemBasedFtpDir extends FilesystemBasedDirImpl
   /**
    * @param session
    */
-  protected FilesystemBasedFtpDir(FtpSession session) {
+  protected FilesystemBasedFtpDir(final FtpSession session) {
     super(session, new FilesystemBasedOptsMLSxImpl());
   }
 
@@ -44,7 +44,7 @@ public abstract class FilesystemBasedFtpDir extends FilesystemBasedDirImpl
   }
 
   @Override
-  public FtpFile setFile(String path, boolean append)
+  public FtpFile setFile(final String path, final boolean append)
       throws CommandAbstractException {
     return (FtpFile) super.setFile(path, append);
   }

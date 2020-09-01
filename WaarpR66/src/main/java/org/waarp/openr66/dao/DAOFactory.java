@@ -43,7 +43,7 @@ public abstract class DAOFactory {
     }
   }
 
-  public static void initialize(ConnectionFactory factory) {
+  public static void initialize(final ConnectionFactory factory) {
     if (instance == null) {
       instance = new DBDAOFactory(factory);
     }
@@ -59,29 +59,29 @@ public abstract class DAOFactory {
    * @return the {@link DocumentBuilderFactory} ready
    */
   public static DocumentBuilderFactory getDocumentBuilderFactory() {
-    DocumentBuilderFactory factory = // NOSONAR
+    final DocumentBuilderFactory factory = // NOSONAR
         DocumentBuilderFactory.newInstance(); // NOSONAR
     // disable external entities
     try {
       factory.setFeature(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES,
                          Boolean.FALSE);
-    } catch (ParserConfigurationException ignored) {
+    } catch (final ParserConfigurationException ignored) {
       // nothing
-    } catch (AbstractMethodError ignored) {
+    } catch (final AbstractMethodError ignored) {
       // nothing
     }
     try {
       factory.setFeature(XMLInputFactory.SUPPORT_DTD, Boolean.FALSE);
-    } catch (ParserConfigurationException ignored) {
+    } catch (final ParserConfigurationException ignored) {
       // nothing
-    } catch (AbstractMethodError ignored) {
+    } catch (final AbstractMethodError ignored) {
       // nothing
     }
     try {
       factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, Boolean.TRUE);
-    } catch (ParserConfigurationException ignored) {
+    } catch (final ParserConfigurationException ignored) {
       // nothing
-    } catch (AbstractMethodError ignored) {
+    } catch (final AbstractMethodError ignored) {
       // nothing
     }
     return factory;
@@ -92,7 +92,7 @@ public abstract class DAOFactory {
    *
    * @param dao
    */
-  public static void closeDAO(AbstractDAO<?> dao) {
+  public static void closeDAO(final AbstractDAO<?> dao) {
     if (dao != null) {
       dao.close();
     }

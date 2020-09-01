@@ -43,7 +43,7 @@ public class DbModelPostgresqlKernel extends DbModelPostgresql {
   }
 
   @Override
-  public void createTables(DbSession session)
+  public void createTables(final DbSession session)
       throws WaarpDatabaseNoConnectionException {
     createTableMonitoring(session);
   }
@@ -122,27 +122,27 @@ public class DbModelPostgresqlKernel extends DbModelPostgresql {
   }
 
   @Override
-  public void resetSequence(DbSession session, long newvalue)
+  public void resetSequence(final DbSession session, final long newvalue)
       throws WaarpDatabaseNoConnectionException {
     DbModelFactoryGateway.resetSequenceMonitoring(session, newvalue);
   }
 
   @Override
-  public long nextSequence(DbSession dbSession)
+  public long nextSequence(final DbSession dbSession)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException,
              WaarpDatabaseNoDataException {
     return DbModelFactoryGateway.nextSequenceMonitoring(dbSession);
   }
 
   @Override
-  public boolean upgradeDb(DbSession session, String version)
+  public boolean upgradeDb(final DbSession session, final String version)
       throws WaarpDatabaseNoConnectionException {
     return false;
   }
 
   @Override
-  public boolean needUpgradeDb(DbSession session, String version,
-                               boolean tryFix)
+  public boolean needUpgradeDb(final DbSession session, final String version,
+                               final boolean tryFix)
       throws WaarpDatabaseNoConnectionException {
     return false;
   }

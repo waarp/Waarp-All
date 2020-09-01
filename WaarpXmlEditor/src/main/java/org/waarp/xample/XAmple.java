@@ -264,7 +264,7 @@ public class XAmple extends JFrame
     fileDlg.addChoosableFileFilter(xmlFilter);
   }
 
-  public static void main(String[] args) {
+  public static void main(final String[] args) {
     assignDefaultFont();
     final Properties props = new Properties();
     InputStream in = null;
@@ -375,7 +375,7 @@ public class XAmple extends JFrame
   }
 
   @Override
-  protected void processWindowEvent(WindowEvent e) {
+  protected void processWindowEvent(final WindowEvent e) {
     if (e.getID() == WindowEvent.WINDOW_CLOSING) {
       if (confirmation()) {
         saveRuntimeProperties();
@@ -479,7 +479,7 @@ public class XAmple extends JFrame
   }
 
   @Override
-  public void itemStateChanged(ItemEvent e) {
+  public void itemStateChanged(final ItemEvent e) {
     if (!confirmation()) {
       return;
     }
@@ -494,7 +494,7 @@ public class XAmple extends JFrame
     fileDlg.setCurrentDirectory(file.getParentFile());
   }
 
-  boolean loadXMLSchema(File file) {
+  boolean loadXMLSchema(final File file) {
     try {
       model.newDocument(file.toURI().toURL());
       setSchemaEnabled(true);
@@ -520,7 +520,7 @@ public class XAmple extends JFrame
     }
   }
 
-  boolean loadXMLDocument(File file) {
+  boolean loadXMLDocument(final File file) {
     final History childHistory = history.getFirstChild();
     try {
       final URL url = file.toURI().toURL();
@@ -565,7 +565,7 @@ public class XAmple extends JFrame
     }
   }
 
-  void setSchemaEnabled(boolean enabled) {
+  void setSchemaEnabled(final boolean enabled) {
     btnOpenXML.setEnabled(enabled);
     mOpenXML.setEnabled(enabled);
     btnNewXML.setEnabled(enabled);
@@ -577,13 +577,13 @@ public class XAmple extends JFrame
     setTitle("XAmple-GG  -  " + xsdFileName + "  :  <noname>.xml");
   }
 
-  void setXMLEnabled(boolean enabled) {
+  void setXMLEnabled(final boolean enabled) {
     btnSaveXML.setEnabled(enabled);
     mSaveXML.setEnabled(enabled);
   }
 
   @Override
-  public void actionPerformed(ActionEvent e) {
+  public void actionPerformed(final ActionEvent e) {
     final Object source = e.getSource();
     if (source == btnOpenXSD || source == mOpenXSD) {
       openXSD();
@@ -608,7 +608,7 @@ public class XAmple extends JFrame
     }
   }
 
-  void updateLookAndFeel(String lfName) {
+  void updateLookAndFeel(final String lfName) {
     final LookAndFeel lf = UIManager.getLookAndFeel();
     if (lf != null && lf.getName().equals(lfName)) {
       return;
@@ -713,12 +713,12 @@ public class XAmple extends JFrame
   }
 
   @Override
-  public void newDocumentLoaded(FXStatusEvent e) {
+  public void newDocumentLoaded(final FXStatusEvent e) {
     // Nothing
   }
 
   @Override
-  public void docValidityStatusChanged(FXStatusEvent e) {
+  public void docValidityStatusChanged(final FXStatusEvent e) {
     // Nothing
   }
 
@@ -726,17 +726,17 @@ public class XAmple extends JFrame
     final String extension;
     final String description;
 
-    TheFileFilter(String extension, String description) {
+    TheFileFilter(final String extension, final String description) {
       this.extension = extension;
       this.description = description;
     }
 
     @Override
-    public boolean accept(File f) {
+    public boolean accept(final File f) {
       if (f.isDirectory()) {
         return true;
       }
-      String ext;
+      final String ext;
       final String name = f.getName();
       final int i = name.lastIndexOf('.');
       if (i > 0 && i < name.length() - 1) {
@@ -759,7 +759,7 @@ public class XAmple extends JFrame
      */
     private static final long serialVersionUID = 2143658918908443792L;
 
-    Btn(ImageIcon icon, String toolTipText) {
+    Btn(final ImageIcon icon, final String toolTipText) {
       super(icon);
       setFocusPainted(false);
       setDisabledIcon(FadingFilter.fade(icon));
@@ -778,7 +778,7 @@ public class XAmple extends JFrame
      */
     private static final long serialVersionUID = 4742196038942810167L;
 
-    ToggleBtn(ImageIcon icon, String toolTipText) {
+    ToggleBtn(final ImageIcon icon, final String toolTipText) {
       super(icon);
       setFocusPainted(false);
       setDisabledIcon(FadingFilter.fade(icon));

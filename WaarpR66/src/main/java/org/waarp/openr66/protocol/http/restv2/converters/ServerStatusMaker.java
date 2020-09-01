@@ -59,7 +59,7 @@ public final class ServerStatusMaker {
    *
    * @return the server status ObjectNode
    */
-  public static ObjectNode exportAsJson(Period period) {
+  public static ObjectNode exportAsJson(final Period period) {
     final int seconds = period.toStandardSeconds().getSeconds();
     final Monitoring mon = configuration.getMonitoring();
     mon.run(seconds, true);

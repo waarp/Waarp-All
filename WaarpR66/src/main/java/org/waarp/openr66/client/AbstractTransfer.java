@@ -88,8 +88,8 @@ public abstract class AbstractTransfer implements Runnable {
    * @param future
    * @param transferArgs
    */
-  protected AbstractTransfer(Class<?> clasz, R66Future future,
-                             TransferArgs transferArgs) {
+  protected AbstractTransfer(final Class<?> clasz, final R66Future future,
+                             final TransferArgs transferArgs) {
     this(clasz, future, transferArgs.getFilename(), transferArgs.getRulename(),
          transferArgs.getTransferInfo(), transferArgs.isMD5(),
          transferArgs.getRemoteHost(), transferArgs.getBlockSize(),
@@ -107,10 +107,11 @@ public abstract class AbstractTransfer implements Runnable {
    * @param blocksize
    * @param id
    */
-  protected AbstractTransfer(Class<?> clasz, R66Future future, String filename,
-                             String rulename, String transferInfo,
-                             boolean isMD5, String remoteHost, int blocksize,
-                             long id, Timestamp timestart) {
+  protected AbstractTransfer(final Class<?> clasz, final R66Future future,
+                             final String filename, final String rulename,
+                             final String transferInfo, final boolean isMD5,
+                             final String remoteHost, final int blocksize,
+                             final long id, final Timestamp timestart) {
     if (logger == null) {
       logger = WaarpLoggerFactory.getLogger(clasz);
     }
@@ -138,9 +139,9 @@ public abstract class AbstractTransfer implements Runnable {
    *
    * @return True if OK
    */
-  public static boolean sendValidPacket(DbHostAuth host,
-                                        LocalChannelReference localChannelReference,
-                                        AbstractLocalPacket packet,
+  public static boolean sendValidPacket(final DbHostAuth host,
+                                        final LocalChannelReference localChannelReference,
+                                        final AbstractLocalPacket packet,
                                         final R66Future future) {
     if (logger == null) {
       logger = WaarpLoggerFactory.getLogger(AbstractTransfer.class);
@@ -170,7 +171,7 @@ public abstract class AbstractTransfer implements Runnable {
    * @return null if an error occurs or a DbTaskRunner
    */
   protected DbTaskRunner initRequest() {
-    DbRule dbRule;
+    final DbRule dbRule;
     try {
       dbRule = new DbRule(transferArgs.getRulename());
     } catch (final WaarpDatabaseException e) {
@@ -185,7 +186,7 @@ public abstract class AbstractTransfer implements Runnable {
     if (transferArgs.isMD5()) {
       mode = RequestPacket.getModeMD5(mode);
     }
-    DbTaskRunner taskRunner;
+    final DbTaskRunner taskRunner;
     if (transferArgs.getId() != ILLEGALVALUE) {
       try {
         taskRunner = new DbTaskRunner(transferArgs.getId(),
@@ -261,7 +262,7 @@ public abstract class AbstractTransfer implements Runnable {
     }
     try {
       taskRunner.saveStatus();
-    } catch (OpenR66RunnerErrorException e) {
+    } catch (final OpenR66RunnerErrorException e) {
       logger.error("Cannot save task", e);
       future.setResult(
           new R66Result(new OpenR66DatabaseGlobalException(e), null, true,
@@ -309,7 +310,8 @@ public abstract class AbstractTransfer implements Runnable {
    *
    * @return True if all parameters were found and correct
    */
-  protected static boolean getParams(String[] args, boolean submitOnly) {
+  protected static boolean getParams(final String[] args,
+                                     final boolean submitOnly) {
     if (logger == null) {
       logger = WaarpLoggerFactory.getLogger(AbstractTransfer.class);
     }
@@ -331,7 +333,7 @@ public abstract class AbstractTransfer implements Runnable {
           Messages.getString("Configuration.NeedCorrectConfig")); //$NON-NLS-1$
       return false;
     }
-    TransferArgs transferArgsLocal = getParamsInternal(1, args);
+    final TransferArgs transferArgsLocal = getParamsInternal(1, args);
     if (transferArgsLocal == null) {
       return false;
     }
@@ -374,11 +376,12 @@ public abstract class AbstractTransfer implements Runnable {
    *
    * @return TransferArgs if OK, null if wrong initialization
    */
-  public static TransferArgs getParamsInternal(int rank, String[] args) {
+  public static TransferArgs getParamsInternal(final int rank,
+                                               final String[] args) {
     if (logger == null) {
       logger = WaarpLoggerFactory.getLogger(AbstractTransfer.class);
     }
-    TransferArgs transferArgs1 =
+    final TransferArgs transferArgs1 =
         TransferArgs.getParamsInternal(rank, args, true);
     if (transferArgs1 == null) {
       return null;
@@ -394,9 +397,9 @@ public abstract class AbstractTransfer implements Runnable {
    * @param runner
    * @param taskRunner
    */
-  protected void finalizeInErrorTransferRequest(ClientRunner runner,
-                                                DbTaskRunner taskRunner,
-                                                ErrorCode code) {
+  protected void finalizeInErrorTransferRequest(final ClientRunner runner,
+                                                final DbTaskRunner taskRunner,
+                                                final ErrorCode code) {
     if (runner.getLocalChannelReference() != null) {
       runner.getLocalChannelReference().setErrorMessage(code.getMesg(), code);
     }
@@ -409,13 +412,14 @@ public abstract class AbstractTransfer implements Runnable {
     }
   }
 
-  public void setNormalInfoAsWarn(boolean normalInfoAsWarn1) {
+  public void setNormalInfoAsWarn(final boolean normalInfoAsWarn1) {
     normalInfoAsWarn = normalInfoAsWarn1;
   }
 
-  public List<String> getRemoteFiles(DbRule dbrule, String[] localfilenames,
-                                     String requested,
-                                     NetworkTransaction networkTransaction) {
+  public List<String> getRemoteFiles(final DbRule dbrule,
+                                     final String[] localfilenames,
+                                     final String requested,
+                                     final NetworkTransaction networkTransaction) {
     final List<String> files = new ArrayList<String>();
     for (final String filenameNew : localfilenames) {
       if (!(filenameNew.contains("*") || filenameNew.contains("?") ||
@@ -454,7 +458,8 @@ public abstract class AbstractTransfer implements Runnable {
     return files;
   }
 
-  public List<String> getLocalFiles(DbRule dbrule, String[] localfilenames) {
+  public List<String> getLocalFiles(final DbRule dbrule,
+                                    final String[] localfilenames) {
     final List<String> files = new ArrayList<String>();
     final R66Session session = new R66Session();
     session.getAuth().specialNoSessionAuth(false, Configuration.configuration
@@ -475,7 +480,7 @@ public abstract class AbstractTransfer implements Runnable {
           // local: must check
           logger.info(
               "Local Ask for " + filenameNew + " from " + dir.getFullPath());
-          List<String> list;
+          final List<String> list;
           try {
             list = dir.list(filenameNew);
             if (list != null) {
@@ -501,14 +506,14 @@ public abstract class AbstractTransfer implements Runnable {
    *
    * @return localChannelReference not null if ok
    */
-  public static LocalChannelReference tryConnect(DbHostAuth host,
-                                                 R66Future future,
-                                                 NetworkTransaction networkTransaction) {
+  public static LocalChannelReference tryConnect(final DbHostAuth host,
+                                                 final R66Future future,
+                                                 final NetworkTransaction networkTransaction) {
     if (logger == null) {
       logger = WaarpLoggerFactory.getLogger(AbstractTransfer.class);
     }
     logger.info("Try RequestTransfer to " + host);
-    SocketAddress socketAddress;
+    final SocketAddress socketAddress;
     try {
       socketAddress = host.getSocketAddress();
     } catch (final IllegalArgumentException e) {
@@ -521,7 +526,7 @@ public abstract class AbstractTransfer implements Runnable {
     }
     final boolean isSSL = host.isSsl();
 
-    LocalChannelReference localChannelReference = networkTransaction
+    final LocalChannelReference localChannelReference = networkTransaction
         .createConnectionWithRetry(socketAddress, isSSL, future);
     if (localChannelReference == null) {
       logger.debug("Cannot connect to " + host);

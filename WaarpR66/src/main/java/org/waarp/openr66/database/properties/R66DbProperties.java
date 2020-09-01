@@ -92,7 +92,7 @@ public abstract class R66DbProperties {
 
   }
 
-  public static R66DbProperties getInstance(DbProperties prop) {
+  public static R66DbProperties getInstance(final DbProperties prop) {
     if (prop instanceof H2Properties) {
       return new R66H2Properties();
     } else if (prop instanceof MariaDBProperties) {

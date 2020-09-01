@@ -95,8 +95,8 @@ public class IcapTask extends AbstractExecTask {
    * @param argTransfer
    * @param session
    */
-  public IcapTask(String argRule, int delay, String argTransfer,
-                  R66Session session) {
+  public IcapTask(final String argRule, final int delay,
+                  final String argTransfer, final R66Session session) {
     super(TaskType.ICAP, delay, argRule, argTransfer, session);
   }
 
@@ -116,7 +116,7 @@ public class IcapTask extends AbstractExecTask {
           new OpenR66RunnerErrorException("Not enough argument in ICAP"));
       return;
     }
-    int status = IcapScanFile.scanFile(args);
+    final int status = IcapScanFile.scanFile(args);
     switch (status) {
       case IcapScanFile.STATUS_OK:
         futureCompletion.setSuccess();
@@ -181,12 +181,12 @@ public class IcapTask extends AbstractExecTask {
       if (IcapScanFile.ERROR_SEND_ARG.equalsIgnoreCase(args[i])) {
         for (i++; i < args.length; i++) {
           if (IcapScanFile.SEPARATOR_SEND.equals(args[i])) {
-            StringBuilder newArgs = new StringBuilder();
+            final StringBuilder newArgs = new StringBuilder();
             for (i++; i < args.length; i++) {
               newArgs.append(args[i]).append(' ');
             }
             // Now launch send
-            TransferTask transferTask =
+            final TransferTask transferTask =
                 new TransferTask(newArgs.toString(), 0, argTransfer, session);
             transferTask.run();
             transferTask.futureCompletion.awaitOrInterruptible();

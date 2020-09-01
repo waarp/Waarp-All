@@ -71,8 +71,8 @@ public final class TransferUtils {
    *
    * @throws WaarpDatabaseException
    */
-  public static R66Result restartTransfer(DbTaskRunner taskRunner,
-                                          LocalChannelReference lcr)
+  public static R66Result restartTransfer(final DbTaskRunner taskRunner,
+                                          final LocalChannelReference lcr)
       throws WaarpDatabaseException {
     final R66Result finalResult =
         new R66Result(null, true, ErrorCode.InitOk, taskRunner);
@@ -143,7 +143,7 @@ public final class TransferUtils {
                     finalResult.setOther(
                         Messages.getString("TransferUtils.8")); //$NON-NLS-1$
                     taskRunner.setPostTask();
-                    finalizeTaskWithNoSession(taskRunner, lcr);
+                    finalizeTaskWithNoSession(taskRunner, null);
                     taskRunner.setErrorExecutionStatus(
                         ErrorCode.QueryAlreadyFinished);
                     taskRunner.forceSaveStatus();
@@ -166,7 +166,7 @@ public final class TransferUtils {
             finalResult
                 .setOther(Messages.getString("TransferUtils.11")); //$NON-NLS-1$
             taskRunner.setPostTask();
-            finalizeTaskWithNoSession(taskRunner, lcr);
+            finalizeTaskWithNoSession(taskRunner, null);
             taskRunner.setErrorExecutionStatus(ErrorCode.QueryAlreadyFinished);
             taskRunner.forceSaveStatus();
           }
@@ -188,8 +188,8 @@ public final class TransferUtils {
    *
    * @throws OpenR66RunnerErrorException
    */
-  public static void finalizeTaskWithNoSession(DbTaskRunner taskRunner,
-                                               LocalChannelReference localChannelReference)
+  public static void finalizeTaskWithNoSession(final DbTaskRunner taskRunner,
+                                               final LocalChannelReference localChannelReference)
       throws OpenR66RunnerErrorException {
     final R66Session session = new R66Session();
     session.setStatus(50);
@@ -257,8 +257,10 @@ public final class TransferUtils {
   }
 
   @SuppressWarnings("unchecked")
-  private static void stopOneTransfer(DbTaskRunner taskRunner, Object map,
-                                      R66Session session, String body) {
+  private static void stopOneTransfer(final DbTaskRunner taskRunner,
+                                      final Object map,
+                                      final R66Session session,
+                                      final String body) {
     final LocalChannelReference lcr =
         Configuration.configuration.getLocalTransaction()
                                    .getFromRequest(taskRunner.getKey());
@@ -286,7 +288,7 @@ public final class TransferUtils {
       } else {
         // the database saying it is not stopped
         result = ErrorCode.TransferError;
-        if (taskRunner != null && taskRunner.stopOrCancelRunner(code)) {
+        if (taskRunner.stopOrCancelRunner(code)) {
           result = ErrorCode.StoppedTransfer;
         }
       }
@@ -331,26 +333,36 @@ public final class TransferUtils {
    * @return the associated StringBuilder if the one given as parameter is not
    *     null
    */
-  public static void stopSelectedTransfers(DbSession dbSession, int limit,
-                                           Object map, R66Session session,
-                                           String body, String startid,
-                                           String stopid, Timestamp tstart,
-                                           Timestamp tstop, String rule,
-                                           String req, boolean pending,
-                                           boolean transfer, boolean error) {
+  public static void stopSelectedTransfers(final DbSession dbSession,
+                                           final int limit, final Object map,
+                                           final R66Session session,
+                                           final String body,
+                                           final String startid,
+                                           final String stopid,
+                                           final Timestamp tstart,
+                                           final Timestamp tstop,
+                                           final String rule, final String req,
+                                           final boolean pending,
+                                           final boolean transfer,
+                                           final boolean error) {
     stopSelectedTransfers(dbSession, limit, map, session, body, startid, stopid,
                           tstart, tstop, rule, req, pending, transfer, error,
                           null);
   }
 
-  public static void stopSelectedTransfers(DbSession dbSession, int limit,
-                                           Object map, R66Session session,
-                                           String body, String startid,
-                                           String stopid, Timestamp tstart,
-                                           Timestamp tstop, String rule,
-                                           String req, boolean pending,
-                                           boolean transfer, boolean error,
-                                           String host) {
+  public static void stopSelectedTransfers(final DbSession dbSession,
+                                           final int limit, final Object map,
+                                           final R66Session session,
+                                           final String body,
+                                           final String startid,
+                                           final String stopid,
+                                           final Timestamp tstart,
+                                           final Timestamp tstop,
+                                           final String rule, final String req,
+                                           final boolean pending,
+                                           final boolean transfer,
+                                           final boolean error,
+                                           final String host) {
     if (dbSession == null || dbSession.isDisActive()) {
       // do it without DB
       if (ClientRunner.activeRunners != null) {
@@ -395,8 +407,10 @@ public final class TransferUtils {
    * @param body
    */
   @SuppressWarnings("unchecked")
-  public static void cleanOneTransfer(DbTaskRunner taskRunner, Object map,
-                                      R66Session session, String body) {
+  public static void cleanOneTransfer(final DbTaskRunner taskRunner,
+                                      final Object map,
+                                      final R66Session session,
+                                      final String body) {
     if (!taskRunner.isSender() && !taskRunner.isAllDone()) {
       String name = null;
       try {
@@ -472,26 +486,36 @@ public final class TransferUtils {
    * @return the associated StringBuilder if the one given as parameter is not
    *     null
    */
-  public static void cleanSelectedTransfers(DbSession dbSession, int limit,
-                                            Object map, R66Session session,
-                                            String body, String startid,
-                                            String stopid, Timestamp tstart,
-                                            Timestamp tstop, String rule,
-                                            String req, boolean pending,
-                                            boolean transfer, boolean error) {
+  public static void cleanSelectedTransfers(final DbSession dbSession,
+                                            final int limit, final Object map,
+                                            final R66Session session,
+                                            final String body,
+                                            final String startid,
+                                            final String stopid,
+                                            final Timestamp tstart,
+                                            final Timestamp tstop,
+                                            final String rule, final String req,
+                                            final boolean pending,
+                                            final boolean transfer,
+                                            final boolean error) {
     cleanSelectedTransfers(dbSession, limit, map, session, body, startid,
                            stopid, tstart, tstop, rule, req, pending, transfer,
                            error, null);
   }
 
-  public static void cleanSelectedTransfers(DbSession dbSession, int limit,
-                                            Object map, R66Session session,
-                                            String body, String startid,
-                                            String stopid, Timestamp tstart,
-                                            Timestamp tstop, String rule,
-                                            String req, boolean pending,
-                                            boolean transfer, boolean error,
-                                            String host) {
+  public static void cleanSelectedTransfers(final DbSession dbSession,
+                                            final int limit, final Object map,
+                                            final R66Session session,
+                                            final String body,
+                                            final String startid,
+                                            final String stopid,
+                                            final Timestamp tstart,
+                                            final Timestamp tstop,
+                                            final String rule, final String req,
+                                            final boolean pending,
+                                            final boolean transfer,
+                                            final boolean error,
+                                            final String host) {
     if (dbSession == null || dbSession.isDisActive()) {
       // do it without DB
       if (ClientRunner.activeRunners != null) {

@@ -78,12 +78,12 @@ public class HttpDownloadSession extends HttpSessionAbstract {
     this.comment = comment;
     this.identifier = identifier;
     if (!DetectionUtils.isJunit()) {
-      R66BusinessInterface business =
+      final R66BusinessInterface business =
           checkAuthentR66Business(this, session, authent);
       runner =
           getDbTaskRunner(authent.getUserId(), rulename, identifier, comment,
                           business);
-      File file = session.getFile().getTrueFile();
+      final File file = session.getFile().getTrueFile();
       this.finalFilename = identifier + "_" + file.getName();
       filesize = file.length();
       logger.info("START: {}", this);
@@ -109,17 +109,16 @@ public class HttpDownloadSession extends HttpSessionAbstract {
     this.comment = "nocomment";
     this.identifier = identifier;
     if (!DetectionUtils.isJunit()) {
-      R66BusinessInterface business =
+      final R66BusinessInterface business =
           checkAuthentR66Business(this, session, authent);
 
       runner = getDbTaskRunner(authent.getUserId(), identifier);
       this.finalFilename = identifier + "_" + filename;
-      this.filesize = 0;
     } else {
       runner = null;
       this.finalFilename = "NOID" + "_" + filename;
-      this.filesize = 0;
     }
+    this.filesize = 0;
   }
 
   public boolean isFinished() {
@@ -150,7 +149,7 @@ public class HttpDownloadSession extends HttpSessionAbstract {
                                        final String comment,
                                        final R66BusinessInterface business)
       throws IllegalArgumentException {
-    long specialId = Long.parseLong(identifier);
+    final long specialId = Long.parseLong(identifier);
     return getDbTaskRunner(user, filename, rulename, specialId, comment,
                            Configuration.configuration.getBlockSize(), business,
                            false);
@@ -169,23 +168,22 @@ public class HttpDownloadSession extends HttpSessionAbstract {
   private DbTaskRunner getDbTaskRunner(final String user,
                                        final String identifier)
       throws IllegalArgumentException, WaarpDatabaseException {
-    long specialId = Long.parseLong(identifier);
+    final long specialId = Long.parseLong(identifier);
     final String requested = Configuration.configuration.getHostId();
-    final String requester = user;
     DbTaskRunner runner = null;
 
     // Try to reload it
     try {
-      logger.debug("{} {} <-> {}", specialId, requester, requested);
-      runner = new DbTaskRunner(specialId, requester, requested);
-    } catch (WaarpDatabaseException e) {
-      logger.debug("{} {} {}", specialId, requester, requested);
-      runner = new DbTaskRunner(specialId, requested, requester);
+      logger.debug("{} {} <-> {}", specialId, user, requested);
+      runner = new DbTaskRunner(specialId, user, requested);
+    } catch (final WaarpDatabaseException e) {
+      logger.debug("{} {} {}", specialId, user, requested);
+      runner = new DbTaskRunner(specialId, requested, user);
     }
     runner.setSender(true);
     try {
       session.setRunner(runner);
-    } catch (OpenR66RunnerErrorException e) {
+    } catch (final OpenR66RunnerErrorException e) {
       logger.debug(e);
     }
     session.setReady(true);
@@ -217,19 +215,19 @@ public class HttpDownloadSession extends HttpSessionAbstract {
    * @return the corresponding Hash (SHA 256) or null if not possible
    */
   public String getHash() {
-    File file = session.getFile().getTrueFile();
-    byte[] bin;
+    final File file = session.getFile().getTrueFile();
+    final byte[] bin;
     try {
       bin = FilesystemBasedDigest.getHash(file, false, DigestAlgo.SHA256);
-    } catch (IOException e) {
+    } catch (final IOException e) {
       logger.warn(e);
       return null;
     }
-    String hash = FilesystemBasedDigest.getHex(bin);
+    final String hash = FilesystemBasedDigest.getHex(bin);
     session.getRunner().addToTransferMap(HASH, hash);
     try {
       session.getRunner().saveStatus();
-    } catch (OpenR66RunnerErrorException e) {
+    } catch (final OpenR66RunnerErrorException e) {
       logger.debug(e);
     }
     return hash;
@@ -240,13 +238,13 @@ public class HttpDownloadSession extends HttpSessionAbstract {
    */
   public String getComputedHadh() {
     logger.trace("Runner {}", session.getRunner());
-    String hash = (String) session.getRunner().getFromTransferMap(HASH);
+    final String hash = (String) session.getRunner().getFromTransferMap(HASH);
     logger.debug("Found {}", hash);
     return hash;
   }
 
   @Override
-  public void error(Exception e, R66BusinessInterface business)
+  public void error(final Exception e, final R66BusinessInterface business)
       throws IllegalArgumentException {
     logger.error(e);
     if (business != null) {
@@ -265,7 +263,7 @@ public class HttpDownloadSession extends HttpSessionAbstract {
    *
    * @throws IOException
    */
-  public boolean tryWrite(OutputStream stream) throws IOException {
+  public boolean tryWrite(final OutputStream stream) throws IOException {
     if (!session.isAuthenticated() || !session.isReady()) {
       logger.error("Not authenticated or not Ready");
       return false;
@@ -281,26 +279,26 @@ public class HttpDownloadSession extends HttpSessionAbstract {
    *
    * @throws IOException
    */
-  private void write(OutputStream stream) throws IOException {
+  private void write(final OutputStream stream) throws IOException {
     startTransfer(runner);
-    File file = session.getFile().getTrueFile();
-    FileInputStream inputStream = new FileInputStream(file);
+    final File file = session.getFile().getTrueFile();
+    final FileInputStream inputStream = new FileInputStream(file);
     try {
-      byte[] bytes = new byte[Configuration.configuration.getBlockSize()];
+      final byte[] bytes = new byte[Configuration.configuration.getBlockSize()];
       while (true) {
-        int r = inputStream.read(bytes);
+        final int r = inputStream.read(bytes);
         if (r < 0) {
           break;
         }
         stream.write(bytes, 0, r);
         session.getRunner().incrementRank();
       }
-    } catch (IOException e) {
+    } catch (final IOException e) {
       session.getRunner().setErrorExecutionStatus(ErrorCode.TransferError);
       session.getRunner().setErrorTask();
       try {
         session.getRunner().run();
-      } catch (OpenR66RunnerErrorException ex) {
+      } catch (final OpenR66RunnerErrorException ex) {
         logger.info(e);
       }
       session.newState(R66FiniteDualStates.ERROR);

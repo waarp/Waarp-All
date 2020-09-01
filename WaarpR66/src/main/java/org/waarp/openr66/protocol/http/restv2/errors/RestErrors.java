@@ -53,7 +53,8 @@ public final class RestErrors {
    *
    * @return the corresponding new RestError object
    */
-  public static RestError MALFORMED_JSON(int line, int column, String cause) {
+  public static RestError MALFORMED_JSON(final int line, final int column,
+                                         final String cause) {
     final String[] args =
         { Integer.toString(line), Integer.toString(column), cause };
     return new RestError("BadRequest.MalformedJSON", args, 2);
@@ -66,7 +67,7 @@ public final class RestErrors {
    *
    * @return the corresponding new RestError object
    */
-  public static RestError DUPLICATE_KEY(String field) {
+  public static RestError DUPLICATE_KEY(final String field) {
     final String[] args = { field };
     return new RestError("BadRequest.DuplicateKey", args, 3);
   }
@@ -80,8 +81,8 @@ public final class RestErrors {
    *
    * @return the corresponding new RestError object
    */
-  public static RestError ILLEGAL_PARAMETER_VALUE(String parameter,
-                                                  String value) {
+  public static RestError ILLEGAL_PARAMETER_VALUE(final String parameter,
+                                                  final String value) {
     final String[] args = { value, parameter };
     return new RestError("BadRequest.IllegalParameterValue", args, 4);
   }
@@ -94,7 +95,7 @@ public final class RestErrors {
    *
    * @return the corresponding new RestError object
    */
-  public static RestError UNKNOWN_FIELD(String field) {
+  public static RestError UNKNOWN_FIELD(final String field) {
     final String[] args = { field };
     return new RestError("BadRequest.UnknownField", args, 5);
   }
@@ -108,7 +109,7 @@ public final class RestErrors {
    *
    * @return the corresponding new RestError object
    */
-  public static RestError MISSING_FIELD(String field) {
+  public static RestError MISSING_FIELD(final String field) {
     final String[] args = { field };
     return new RestError("BadRequest.MissingFieldValue", args, 6);
   }
@@ -123,7 +124,8 @@ public final class RestErrors {
    *
    * @return the corresponding new RestError object
    */
-  public static RestError ILLEGAL_FIELD_VALUE(String field, String value) {
+  public static RestError ILLEGAL_FIELD_VALUE(final String field,
+                                              final String value) {
     final String[] args = { value, field };
     return new RestError("BadRequest.IllegalFieldValue", args, 7);
   }
@@ -139,7 +141,7 @@ public final class RestErrors {
    *
    * @return the corresponding new RestError object
    */
-  public static RestError ALREADY_EXISTING(String id) {
+  public static RestError ALREADY_EXISTING(final String id) {
     final String[] args = { id };
     return new RestError("BadRequest.AlreadyExisting", args, 8);
   }
@@ -153,7 +155,7 @@ public final class RestErrors {
    *
    * @return the corresponding new RestError object
    */
-  public static RestError FILE_NOT_FOUND(String path) {
+  public static RestError FILE_NOT_FOUND(final String path) {
     final String[] args = { path };
     return new RestError("BadRequest.FileNotFound", args, 9);
   }
@@ -166,7 +168,7 @@ public final class RestErrors {
    *
    * @return the corresponding new RestError object
    */
-  public static RestError UNKNOWN_RULE(String rule) {
+  public static RestError UNKNOWN_RULE(final String rule) {
     final String[] args = { rule };
     return new RestError("BadRequest.UnknownRule", args, 10);
   }
@@ -180,7 +182,7 @@ public final class RestErrors {
    *
    * @return the corresponding new RestError object
    */
-  public static RestError UNKNOWN_HOST(String host) {
+  public static RestError UNKNOWN_HOST(final String host) {
     final String[] args = { host };
     return new RestError("BadRequest.UnknownHost", args, 11);
   }
@@ -194,7 +196,8 @@ public final class RestErrors {
    *
    * @return the corresponding new RestError object
    */
-  public static RestError RULE_NOT_ALLOWED(String host, String rule) {
+  public static RestError RULE_NOT_ALLOWED(final String host,
+                                           final String rule) {
     final String[] args = { host, rule };
     return new RestError("BadRequest.RuleNotAllowed", args, 12);
   }
@@ -208,7 +211,7 @@ public final class RestErrors {
    *
    * @return the corresponding new RestError object
    */
-  public static RestError FIELD_NOT_ALLOWED(String field) {
+  public static RestError FIELD_NOT_ALLOWED(final String field) {
     final String[] args = { field };
     return new RestError("BadRequest.UnauthorizedField", args, 13);
   }

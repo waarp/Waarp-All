@@ -59,9 +59,10 @@ public class R66PrivateMib extends WaarpPrivateMib {
    * @param saddress
    * @param iservice
    */
-  public R66PrivateMib(String sysdesc, int port, int smiPrivateCodeFinal,
-                       int typeWaarpObject, String scontactName,
-                       String stextualName, String saddress, int iservice) {
+  public R66PrivateMib(final String sysdesc, final int port,
+                       final int smiPrivateCodeFinal, final int typeWaarpObject,
+                       final String scontactName, final String stextualName,
+                       final String saddress, final int iservice) {
     super(sysdesc, port, smiPrivateCodeFinal, typeWaarpObject, scontactName,
           stextualName, saddress, iservice);
   }
@@ -120,7 +121,7 @@ public class R66PrivateMib extends WaarpPrivateMib {
    * @param message
    * @param message2
    */
-  public void notifyStartStop(String message, String message2) {
+  public void notifyStartStop(final String message, final String message2) {
     if (!TrapLevel.StartStop.isLevelValid(agent.getTrapLevel())) {
       return;
     }
@@ -133,7 +134,7 @@ public class R66PrivateMib extends WaarpPrivateMib {
    * @param message
    * @param message2
    */
-  public void notifyError(String message, String message2) {
+  public void notifyError(final String message, final String message2) {
     if (!TrapLevel.Alert.isLevelValid(agent.getTrapLevel())) {
       return;
     }
@@ -146,7 +147,7 @@ public class R66PrivateMib extends WaarpPrivateMib {
    * @param message
    * @param message2
    */
-  public void notifyOverloaded(String message, String message2) {
+  public void notifyOverloaded(final String message, final String message2) {
     if (!TrapLevel.Warning.isLevelValid(agent.getTrapLevel())) {
       return;
     }
@@ -159,7 +160,7 @@ public class R66PrivateMib extends WaarpPrivateMib {
    * @param message
    * @param message2
    */
-  public void notifyWarning(String message, String message2) {
+  public void notifyWarning(final String message, final String message2) {
     if (!TrapLevel.Warning.isLevelValid(agent.getTrapLevel())) {
       return;
     }
@@ -172,7 +173,8 @@ public class R66PrivateMib extends WaarpPrivateMib {
    * @param message
    * @param runner
    */
-  public void notifyInternalTask(String message, DbTaskRunner runner) {
+  public void notifyInternalTask(final String message,
+                                 final DbTaskRunner runner) {
     try {
       long delay =
           (runner.getStart().getTime() - agent.getUptimeSystemTime()) / 10;
@@ -349,7 +351,7 @@ public class R66PrivateMib extends WaarpPrivateMib {
    * @param message
    * @param runner
    */
-  public void notifyInfoTask(String message, DbTaskRunner runner) {
+  public void notifyInfoTask(final String message, final DbTaskRunner runner) {
     if (!TrapLevel.All.isLevelValid(agent.getTrapLevel())) {
       return;
     }
@@ -368,7 +370,7 @@ public class R66PrivateMib extends WaarpPrivateMib {
    * @param message
    * @param runner
    */
-  public void notifyTask(String message, DbTaskRunner runner) {
+  public void notifyTask(final String message, final DbTaskRunner runner) {
     if (!TrapLevel.AllEvents.isLevelValid(agent.getTrapLevel())) {
       return;
     }
@@ -387,8 +389,8 @@ public class R66PrivateMib extends WaarpPrivateMib {
    * @param message
    * @param message2
    */
-  private void notify(NotificationElements element, String message,
-                      String message2) {
+  private void notify(final NotificationElements element, final String message,
+                      final String message2) {
     try {
       if (logger.isDebugEnabled()) {
         logger.debug("Notify: " + element + ':' + message + ':' + message2);
@@ -419,12 +421,12 @@ public class R66PrivateMib extends WaarpPrivateMib {
   }
 
   @Override
-  public void updateServices(WaarpMOScalar scalar) {
+  public void updateServices(final WaarpMOScalar scalar) {
     // nothing
   }
 
   @Override
-  public void updateServices(MOScope range) {
+  public void updateServices(final MOScope range) {
     // nothing
   }
 

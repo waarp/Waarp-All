@@ -49,7 +49,7 @@ public class LogJsonPacket extends JsonPacket {
   /**
    * @param purge the purge to set
    */
-  public void setPurge(boolean purge) {
+  public void setPurge(final boolean purge) {
     this.purge = purge;
   }
 
@@ -63,7 +63,7 @@ public class LogJsonPacket extends JsonPacket {
   /**
    * @param clean the clean to set
    */
-  public void setClean(boolean clean) {
+  public void setClean(final boolean clean) {
     this.clean = clean;
   }
 
@@ -77,7 +77,7 @@ public class LogJsonPacket extends JsonPacket {
   /**
    * @param statuspending the statuspending to set
    */
-  public void setStatuspending(boolean statuspending) {
+  public void setStatuspending(final boolean statuspending) {
     this.statuspending = statuspending;
   }
 
@@ -91,7 +91,7 @@ public class LogJsonPacket extends JsonPacket {
   /**
    * @param statustransfer the statustransfer to set
    */
-  public void setStatustransfer(boolean statustransfer) {
+  public void setStatustransfer(final boolean statustransfer) {
     this.statustransfer = statustransfer;
   }
 
@@ -105,7 +105,7 @@ public class LogJsonPacket extends JsonPacket {
   /**
    * @param statusdone the statusdone to set
    */
-  public void setStatusdone(boolean statusdone) {
+  public void setStatusdone(final boolean statusdone) {
     this.statusdone = statusdone;
   }
 
@@ -119,7 +119,7 @@ public class LogJsonPacket extends JsonPacket {
   /**
    * @param statuserror the statuserror to set
    */
-  public void setStatuserror(boolean statuserror) {
+  public void setStatuserror(final boolean statuserror) {
     this.statuserror = statuserror;
   }
 
@@ -133,7 +133,7 @@ public class LogJsonPacket extends JsonPacket {
   /**
    * @param rule the rule to set
    */
-  public void setRule(String rule) {
+  public void setRule(final String rule) {
     this.rule = rule;
   }
 
@@ -147,7 +147,7 @@ public class LogJsonPacket extends JsonPacket {
   /**
    * @param request the request to set
    */
-  public void setRequest(String request) {
+  public void setRequest(final String request) {
     this.request = request;
   }
 
@@ -161,7 +161,7 @@ public class LogJsonPacket extends JsonPacket {
   /**
    * @param start the start to set
    */
-  public void setStart(Date start) {
+  public void setStart(final Date start) {
     this.start = start;
   }
 
@@ -175,7 +175,7 @@ public class LogJsonPacket extends JsonPacket {
   /**
    * @param stop the stop to set
    */
-  public void setStop(Date stop) {
+  public void setStop(final Date stop) {
     this.stop = stop;
   }
 
@@ -189,7 +189,7 @@ public class LogJsonPacket extends JsonPacket {
   /**
    * @param startid the startid to set
    */
-  public void setStartid(String startid) {
+  public void setStartid(final String startid) {
     this.startid = startid;
   }
 
@@ -203,12 +203,12 @@ public class LogJsonPacket extends JsonPacket {
   /**
    * @param stopid the stopid to set
    */
-  public void setStopid(String stopid) {
+  public void setStopid(final String stopid) {
     this.stopid = stopid;
   }
 
   @Override
-  public void fromJson(JsonPacket other) {
+  public void fromJson(final JsonPacket other) {
     super.fromJson(other);
     if (other instanceof LogJsonPacket) {
       final LogJsonPacket other2 = (LogJsonPacket) other;

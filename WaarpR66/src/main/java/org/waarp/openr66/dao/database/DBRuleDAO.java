@@ -96,7 +96,7 @@ public class DBRuleDAO extends StatementExecutor<Rule> implements RuleDAO {
       S_ERROR_TASKS_FIELD + " = ? ," + UPDATED_INFO_FIELD + " = ? WHERE " +
       ID_FIELD + " = ?";
 
-  public DBRuleDAO(Connection con) {
+  public DBRuleDAO(final Connection con) {
     super(con);
   }
 
@@ -165,7 +165,7 @@ public class DBRuleDAO extends StatementExecutor<Rule> implements RuleDAO {
   }
 
   @Override
-  public Rule getFromResultSet(ResultSet set)
+  public Rule getFromResultSet(final ResultSet set)
       throws SQLException, DAOConnectionException {
     return new Rule(set.getString(ID_FIELD), set.getInt(MODE_TRANS_FIELD),
                     retrieveHostids(set.getString(HOSTIDS_FIELD)),
@@ -182,17 +182,17 @@ public class DBRuleDAO extends StatementExecutor<Rule> implements RuleDAO {
                     UpdatedInfo.valueOf(set.getInt(UPDATED_INFO_FIELD)));
   }
 
-  private List<String> retrieveHostids(String xml)
+  private List<String> retrieveHostids(final String xml)
       throws DAOConnectionException {
     final ArrayList<String> res = new ArrayList<String>();
     if (xml == null || xml.isEmpty()) {
       return res;
     }
-    Document document;
+    final Document document;
     try {
       final InputStream stream =
           new ByteArrayInputStream(xml.getBytes(WaarpStringUtils.UTF8));
-      DocumentBuilderFactory factory = getDocumentBuilderFactory();
+      final DocumentBuilderFactory factory = getDocumentBuilderFactory();
       document = factory.newDocumentBuilder().parse(stream);
     } catch (final Exception e) {
       throw new DAOConnectionException(e);
@@ -206,17 +206,17 @@ public class DBRuleDAO extends StatementExecutor<Rule> implements RuleDAO {
     return res;
   }
 
-  private List<RuleTask> retrieveTasks(String xml)
+  private List<RuleTask> retrieveTasks(final String xml)
       throws DAOConnectionException {
     final ArrayList<RuleTask> res = new ArrayList<RuleTask>();
     if (xml == null || xml.isEmpty()) {
       return res;
     }
-    Document document;
+    final Document document;
     try {
       final InputStream stream =
           new ByteArrayInputStream(xml.getBytes(WaarpStringUtils.UTF8));
-      DocumentBuilderFactory factory = getDocumentBuilderFactory();
+      final DocumentBuilderFactory factory = getDocumentBuilderFactory();
       document = factory.newDocumentBuilder().parse(stream);
     } catch (final Exception e) {
       throw new DAOConnectionException(e);

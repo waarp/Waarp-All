@@ -39,21 +39,22 @@ public class OpenR66RunnerEndTasksException extends OpenR66RunnerException {
    * @param arg0
    * @param arg1
    */
-  public OpenR66RunnerEndTasksException(String arg0, Throwable arg1) {
+  public OpenR66RunnerEndTasksException(final String arg0,
+                                        final Throwable arg1) {
     super(arg0, arg1);
   }
 
   /**
    * @param arg0
    */
-  public OpenR66RunnerEndTasksException(String arg0) {
+  public OpenR66RunnerEndTasksException(final String arg0) {
     super(arg0);
   }
 
   /**
    * @param arg0
    */
-  public OpenR66RunnerEndTasksException(Throwable arg0) {
+  public OpenR66RunnerEndTasksException(final Throwable arg0) {
     super(arg0);
   }
 

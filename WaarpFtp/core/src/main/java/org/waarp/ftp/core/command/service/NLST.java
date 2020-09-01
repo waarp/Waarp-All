@@ -30,8 +30,8 @@ import java.util.List;
 public class NLST extends AbstractCommand {
   @Override
   public void exec() throws CommandAbstractException {
-    String path;
-    List<String> files;
+    final String path;
+    final List<String> files;
     if (!hasArg()) {
       path = getSession().getDir().getPwd();
       files = getSession().getDir().list(path);

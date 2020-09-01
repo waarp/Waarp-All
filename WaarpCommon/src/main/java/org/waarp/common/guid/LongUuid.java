@@ -153,7 +153,7 @@ public final class LongUuid {
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(final Object o) {
     if (!(o instanceof LongUuid)) {
       return false;
     }

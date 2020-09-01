@@ -25,7 +25,7 @@ package org.waarp.common.xml;
  */
 public class XmlRootHash extends XmlHash {
 
-  public XmlRootHash(XmlValue[] values) {
+  public XmlRootHash(final XmlValue[] values) {
     for (final XmlValue xmlValue : values) {
       hashtable.put(xmlValue.getName(), xmlValue);
     }

@@ -92,8 +92,8 @@ public class FtpDataInitializer extends ChannelInitializer<SocketChannel> {
    * @param active
    */
   public FtpDataInitializer(
-      Class<? extends DataBusinessHandler> dataBusinessHandler,
-      FtpConfiguration configuration, boolean active) {
+      final Class<? extends DataBusinessHandler> dataBusinessHandler,
+      final FtpConfiguration configuration, final boolean active) {
     this.dataBusinessHandler = dataBusinessHandler;
     this.configuration = configuration;
     isActive = active;
@@ -103,7 +103,7 @@ public class FtpDataInitializer extends ChannelInitializer<SocketChannel> {
    * Create the pipeline with Handler, ObjectDecoder, ObjectEncoder.
    */
   @Override
-  public void initChannel(SocketChannel ch) throws Exception {
+  public void initChannel(final SocketChannel ch) throws Exception {
     final ChannelPipeline pipeline = ch.pipeline();
     // Add default codec but they will change during the channelConnected
     pipeline.addFirst(CODEC_MODE, new FtpDataModeCodec(TransferMode.STREAM,

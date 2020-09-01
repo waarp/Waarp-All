@@ -52,14 +52,16 @@ public class Business {
     // Nothing
   }
 
-  public Business(String hostid, String business, String roles, String aliases,
-                  String others, UpdatedInfo updatedInfo) {
+  public Business(final String hostid, final String business,
+                  final String roles, final String aliases, final String others,
+                  final UpdatedInfo updatedInfo) {
     this(hostid, business, roles, aliases, others);
     this.updatedInfo = updatedInfo;
   }
 
-  public Business(String hostid, String business, String roles, String aliases,
-                  String others) {
+  public Business(final String hostid, final String business,
+                  final String roles, final String aliases,
+                  final String others) {
     this.hostid = hostid;
     this.business = business;
     this.roles = roles;
@@ -71,7 +73,7 @@ public class Business {
     return hostid;
   }
 
-  public void setHostid(String hostid) {
+  public void setHostid(final String hostid) {
     this.hostid = hostid;
   }
 
@@ -79,7 +81,7 @@ public class Business {
     return business;
   }
 
-  public void setBusiness(String business) {
+  public void setBusiness(final String business) {
     this.business = business;
   }
 
@@ -87,7 +89,7 @@ public class Business {
     return roles;
   }
 
-  public void setRoles(String roles) {
+  public void setRoles(final String roles) {
     this.roles = roles;
   }
 
@@ -95,7 +97,7 @@ public class Business {
     return aliases;
   }
 
-  public void setAliases(String aliases) {
+  public void setAliases(final String aliases) {
     this.aliases = aliases;
   }
 
@@ -103,7 +105,7 @@ public class Business {
     return others;
   }
 
-  public void setOthers(String others) {
+  public void setOthers(final String others) {
     this.others = others;
   }
 
@@ -111,7 +113,7 @@ public class Business {
     return updatedInfo;
   }
 
-  public void setUpdatedInfo(UpdatedInfo info) {
+  public void setUpdatedInfo(final UpdatedInfo info) {
     updatedInfo = info;
   }
 }

@@ -77,7 +77,7 @@ public abstract class AbstractRestDbHandler extends AbstractHttpHandler {
    *
    * @param crud the CRUD mask for this handler
    */
-  protected AbstractRestDbHandler(byte crud) {
+  protected AbstractRestDbHandler(final byte crud) {
     this.crud = crud;
   }
 
@@ -90,7 +90,7 @@ public abstract class AbstractRestDbHandler extends AbstractHttpHandler {
    *
    * @return {@code true} if the request is active, {@code false} otherwise.
    */
-  public boolean checkCRUD(HttpRequest request) {
+  public boolean checkCRUD(final HttpRequest request) {
     final HttpMethod method = request.method();
     if (method.equals(GET)) {
       return CRUD.READ.isValid(crud);

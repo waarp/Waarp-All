@@ -46,8 +46,8 @@ public class ZipTask extends AbstractTask {
    * @param argTransfer
    * @param session
    */
-  public ZipTask(String argRule, int delay, String argTransfer,
-                 R66Session session) {
+  public ZipTask(final String argRule, final int delay,
+                 final String argTransfer, final R66Session session) {
     super(TaskType.ZIP, delay, argRule, argTransfer, session);
   }
 

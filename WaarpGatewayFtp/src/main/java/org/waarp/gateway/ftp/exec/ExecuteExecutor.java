@@ -78,8 +78,8 @@ public class ExecuteExecutor extends AbstractExecutor {
    * @param delay
    * @param futureCompletion
    */
-  public ExecuteExecutor(String command, long delay,
-                         WaarpFuture futureCompletion) {
+  public ExecuteExecutor(final String command, final long delay,
+                         final WaarpFuture futureCompletion) {
     args = BLANK.split(command);
     arg = command;
     this.futureCompletion = futureCompletion;

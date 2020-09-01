@@ -70,7 +70,7 @@ public class TransferIdHandler extends AbstractRestDbHandler {
    *
    * @param crud the CRUD mask for this handler
    */
-  public TransferIdHandler(byte crud) {
+  public TransferIdHandler(final byte crud) {
     super(crud);
   }
 
@@ -94,8 +94,9 @@ public class TransferIdHandler extends AbstractRestDbHandler {
   @GET
   @Consumes(WILDCARD)
   @RequiredRole(READONLY)
-  public void getTransfer(HttpRequest request, HttpResponder responder,
-                          @PathParam(URI_ID) String uri)
+  public void getTransfer(final HttpRequest request,
+                          final HttpResponder responder,
+                          @PathParam(URI_ID) final String uri)
       throws UnsupportedEncodingException {
 
     final String key = URLDecoder.decode(uri, UTF8_CHARSET.name());
@@ -150,8 +151,9 @@ public class TransferIdHandler extends AbstractRestDbHandler {
   @PUT
   @Consumes(WILDCARD)
   @RequiredRole(SYSTEM)
-  public void restartTransfer(HttpRequest request, HttpResponder responder,
-                              @PathParam(URI_ID) String uri)
+  public void restartTransfer(final HttpRequest request,
+                              final HttpResponder responder,
+                              @PathParam(URI_ID) final String uri)
       throws UnsupportedEncodingException {
 
     final String key = URLDecoder.decode(uri, WaarpStringUtils.UTF_8);
@@ -213,8 +215,9 @@ public class TransferIdHandler extends AbstractRestDbHandler {
   @PUT
   @Consumes(WILDCARD)
   @RequiredRole(SYSTEM)
-  public void stopTransfer(HttpRequest request, HttpResponder responder,
-                           @PathParam(URI_ID) String uri)
+  public void stopTransfer(final HttpRequest request,
+                           final HttpResponder responder,
+                           @PathParam(URI_ID) final String uri)
       throws UnsupportedEncodingException {
 
     final String key = URLDecoder.decode(uri, WaarpStringUtils.UTF8.name());
@@ -274,8 +277,9 @@ public class TransferIdHandler extends AbstractRestDbHandler {
   @PUT
   @Consumes(WILDCARD)
   @RequiredRole(SYSTEM)
-  public void cancelTransfer(HttpRequest request, HttpResponder responder,
-                             @PathParam(URI_ID) String uri)
+  public void cancelTransfer(final HttpRequest request,
+                             final HttpResponder responder,
+                             @PathParam(URI_ID) final String uri)
       throws UnsupportedEncodingException {
 
     final String key = URLDecoder.decode(uri, WaarpStringUtils.UTF8.name());
@@ -336,8 +340,8 @@ public class TransferIdHandler extends AbstractRestDbHandler {
   @OPTIONS
   @Consumes(WILDCARD)
   @RequiredRole(NOACCESS)
-  public void options(HttpRequest request, HttpResponder responder,
-                      @PathParam(URI_ID) String uri) {
+  public void options(final HttpRequest request, final HttpResponder responder,
+                      @PathParam(URI_ID) final String uri) {
     final HttpHeaders allow = new DefaultHttpHeaders();
     allow.add(ALLOW, HttpMethod.OPTIONS);
     responder.sendStatus(OK, allow);
@@ -347,9 +351,10 @@ public class TransferIdHandler extends AbstractRestDbHandler {
   @OPTIONS
   @Consumes(WILDCARD)
   @RequiredRole(NOACCESS)
-  public void subOptions(HttpRequest request, HttpResponder responder,
-                         @PathParam(URI_ID) String uri,
-                         @PathParam("ep") String ep) {
+  public void subOptions(final HttpRequest request,
+                         final HttpResponder responder,
+                         @PathParam(URI_ID) final String uri,
+                         @PathParam("ep") final String ep) {
 
     final HttpHeaders allow = new DefaultHttpHeaders();
     final List<HttpMethod> methods = new ArrayList<HttpMethod>();

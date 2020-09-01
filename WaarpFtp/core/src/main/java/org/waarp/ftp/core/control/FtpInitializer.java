@@ -66,8 +66,8 @@ public class FtpInitializer extends ChannelInitializer<SocketChannel> {
    * @param businessHandler
    * @param configuration
    */
-  public FtpInitializer(Class<? extends BusinessHandler> businessHandler,
-                        FtpConfiguration configuration) {
+  public FtpInitializer(final Class<? extends BusinessHandler> businessHandler,
+                        final FtpConfiguration configuration) {
     this.businessHandler = businessHandler;
     this.configuration = configuration;
   }
@@ -76,7 +76,7 @@ public class FtpInitializer extends ChannelInitializer<SocketChannel> {
    * Create the pipeline with Handler, ObjectDecoder, ObjectEncoder.
    */
   @Override
-  public void initChannel(SocketChannel ch) throws Exception {
+  public void initChannel(final SocketChannel ch) throws Exception {
     final ChannelPipeline pipeline = ch.pipeline();
     // Add the text line codec combination first,
     pipeline.addLast("framer", new DelimiterBasedFrameDecoder(8192, delimiter));

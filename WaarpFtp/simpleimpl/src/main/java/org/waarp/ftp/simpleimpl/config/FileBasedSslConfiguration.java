@@ -99,13 +99,12 @@ public class FileBasedSslConfiguration {
       new XmlDecl(XML_SSL, XmlType.XVAL, XML_ROOT + XML_SSL, configSslDecls,
                   false)
   };
-  private static XmlValue[] configuration;
   private static XmlHash hashConfig;
 
   private FileBasedSslConfiguration() {
   }
 
-  protected static boolean loadSsl(FtpConfiguration config) {
+  protected static boolean loadSsl(final FtpConfiguration config) {
     // StoreKey for Server
     XmlValue value = hashConfig.get(XML_PATH_KEYPATH);
     if (value == null || value.isEmpty()) {
@@ -198,9 +197,9 @@ public class FileBasedSslConfiguration {
    *
    * @return True if OK
    */
-  public static boolean setConfigurationServerFromXml(FtpConfiguration config,
-                                                      String filename) {
-    Document document;
+  public static boolean setConfigurationServerFromXml(
+      final FtpConfiguration config, final String filename) {
+    final Document document;
     // Open config file
     try {
       document = XmlUtil.getNewSaxReader().read(filename);
@@ -212,7 +211,7 @@ public class FileBasedSslConfiguration {
       logger.error("Unable to read the XML Config file: " + filename);
       return false;
     }
-    configuration = XmlUtil.read(document, configServer);
+    XmlValue[] configuration = XmlUtil.read(document, configServer);
     hashConfig = new XmlHash(configuration);
     // Now read the configuration
     if (!loadSsl(config)) {

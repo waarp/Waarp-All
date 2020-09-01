@@ -32,7 +32,7 @@ public final class Version {
   /**
    * Prints out the version identifier to stdout.
    */
-  public static void main(String[] args) {
+  public static void main(final String[] args) {
     System.out.println(ID);
   }
 

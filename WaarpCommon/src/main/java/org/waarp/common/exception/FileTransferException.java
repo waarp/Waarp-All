@@ -32,7 +32,7 @@ public class FileTransferException extends Exception {
   /**
    * @param message
    */
-  public FileTransferException(String message) {
+  public FileTransferException(final String message) {
     super(message);
   }
 
@@ -40,7 +40,7 @@ public class FileTransferException extends Exception {
    * @param message
    * @param cause
    */
-  public FileTransferException(String message, Throwable cause) {
+  public FileTransferException(final String message, final Throwable cause) {
     super(message, cause);
   }
 

@@ -47,7 +47,7 @@ public class CommonFileChunkedInput implements ChunkedInput<ByteBuf> {
    *
    * @throws HttpIncorrectRetrieveException
    */
-  public CommonFileChunkedInput(FileInterface document)
+  public CommonFileChunkedInput(final FileInterface document)
       throws HttpIncorrectRetrieveException {
     this.document = document;
     try {
@@ -58,7 +58,7 @@ public class CommonFileChunkedInput implements ChunkedInput<ByteBuf> {
   }
 
   @Override
-  public ByteBuf readChunk(ChannelHandlerContext ctx) throws Exception {
+  public ByteBuf readChunk(final ChannelHandlerContext ctx) throws Exception {
     return readChunk((ByteBufAllocator) null);
   }
 
@@ -94,9 +94,10 @@ public class CommonFileChunkedInput implements ChunkedInput<ByteBuf> {
   }
 
   @Override
-  public ByteBuf readChunk(ByteBufAllocator byteBufAllocator) throws Exception {
+  public ByteBuf readChunk(final ByteBufAllocator byteBufAllocator)
+      throws Exception {
     // Document
-    DataBlock block;
+    final DataBlock block;
     try {
       block = document.readDataBlock();
     } catch (final FileEndOfTransferException e) {

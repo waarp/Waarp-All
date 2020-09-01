@@ -30,8 +30,8 @@ import java.util.Map;
  * implementations)
  */
 public interface HttpAuthent {
-  public static final String FIELD_USER = "user";
-  public static final String FIELD_KEY = "key";
+  String FIELD_USER = "user";
+  String FIELD_KEY = "key";
 
   /**
    * Method to setup authentication using servlet arguments

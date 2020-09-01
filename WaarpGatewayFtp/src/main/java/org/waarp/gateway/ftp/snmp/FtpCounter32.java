@@ -34,13 +34,13 @@ class FtpCounter32 extends WaarpCounter32 {
   private int type = 1;
   private final int entry;
 
-  FtpCounter32(int type, int entry) {
+  FtpCounter32(final int type, final int entry) {
     this.type = type;
     this.entry = entry;
     setInternalValue();
   }
 
-  FtpCounter32(int type, int entry, long value) {
+  FtpCounter32(final int type, final int entry, final long value) {
     this.type = type;
     this.entry = entry;
     setInternalValue(value);
@@ -53,7 +53,7 @@ class FtpCounter32 extends WaarpCounter32 {
   }
 
   @Override
-  protected void setInternalValue(long value) {
+  protected void setInternalValue(final long value) {
     setValue(value);
   }
 }

@@ -33,8 +33,8 @@ public class LocalExecResult {
    * @param exception
    * @param result
    */
-  public LocalExecResult(boolean isSuccess, int status, Exception exception,
-                         String result) {
+  public LocalExecResult(final boolean isSuccess, final int status,
+                         final Exception exception, final String result) {
     setSuccess(isSuccess);
     setStatus(status);
     setException(exception);
@@ -46,7 +46,7 @@ public class LocalExecResult {
    *
    * @param localExecResult
    */
-  public LocalExecResult(LocalExecResult localExecResult) {
+  public LocalExecResult(final LocalExecResult localExecResult) {
     setSuccess(localExecResult.isSuccess());
     setStatus(localExecResult.getStatus());
     setException(localExecResult.getException());
@@ -58,7 +58,7 @@ public class LocalExecResult {
    *
    * @param localExecResult
    */
-  public void set(LocalExecResult localExecResult) {
+  public void set(final LocalExecResult localExecResult) {
     setSuccess(localExecResult.isSuccess());
     setStatus(localExecResult.getStatus());
     setException(localExecResult.getException());
@@ -82,7 +82,7 @@ public class LocalExecResult {
   /**
    * @param status the status to set
    */
-  public void setStatus(int status) {
+  public void setStatus(final int status) {
     this.status = status;
   }
 
@@ -96,7 +96,7 @@ public class LocalExecResult {
   /**
    * @param isSuccess the isSuccess to set
    */
-  public void setSuccess(boolean isSuccess) {
+  public void setSuccess(final boolean isSuccess) {
     this.isSuccess = isSuccess;
   }
 
@@ -110,7 +110,7 @@ public class LocalExecResult {
   /**
    * @param exception the exception to set
    */
-  public void setException(Exception exception) {
+  public void setException(final Exception exception) {
     this.exception = exception;
   }
 
@@ -124,7 +124,7 @@ public class LocalExecResult {
   /**
    * @param result the result to set
    */
-  public void setResult(String result) {
+  public void setResult(final String result) {
     this.result = result;
   }
 

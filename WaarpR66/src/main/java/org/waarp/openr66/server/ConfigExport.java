@@ -69,8 +69,9 @@ public class ConfigExport implements Runnable {
   protected final NetworkTransaction networkTransaction;
   protected DbHostAuth dbhost;
 
-  public ConfigExport(R66Future future, boolean host, boolean rule,
-                      NetworkTransaction networkTransaction) {
+  public ConfigExport(final R66Future future, final boolean host,
+                      final boolean rule,
+                      final NetworkTransaction networkTransaction) {
     this.future = future;
     this.host = host;
     this.rule = rule;
@@ -84,9 +85,10 @@ public class ConfigExport implements Runnable {
     }
   }
 
-  public ConfigExport(R66Future future, boolean host, boolean rule,
-                      boolean business, boolean alias, boolean role,
-                      NetworkTransaction networkTransaction) {
+  public ConfigExport(final R66Future future, final boolean host,
+                      final boolean rule, final boolean business,
+                      final boolean alias, final boolean role,
+                      final NetworkTransaction networkTransaction) {
     this.future = future;
     this.host = host;
     this.rule = rule;
@@ -100,7 +102,7 @@ public class ConfigExport implements Runnable {
     }
   }
 
-  public void setHost(DbHostAuth host) {
+  public void setHost(final DbHostAuth host) {
     dbhost = host;
   }
 
@@ -122,13 +124,13 @@ public class ConfigExport implements Runnable {
       future.setFailure(future.getResult().getException());
       return;
     }
-    LocalChannelReference localChannelReference =
+    final LocalChannelReference localChannelReference =
         AbstractTransfer.tryConnect(dbhost, future, networkTransaction);
     if (localChannelReference == null) {
       return;
     }
     localChannelReference.sessionNewState(R66FiniteDualStates.VALIDOTHER);
-    AbstractLocalPacket valid;
+    final AbstractLocalPacket valid;
     final boolean useJson = PartnerConfiguration.useJson(dbhost.getHostid());
     logger.debug("UseJson: " + useJson);
     if (useJson) {
@@ -177,7 +179,7 @@ public class ConfigExport implements Runnable {
   protected static boolean srole;
   protected static String stohost;
 
-  protected static boolean getParams(String[] args) {
+  protected static boolean getParams(final String[] args) {
     if (logger == null) {
       logger = WaarpLoggerFactory.getLogger(ConfigExport.class);
     }
@@ -213,7 +215,7 @@ public class ConfigExport implements Runnable {
     return true;
   }
 
-  public static void main(String[] args) {
+  public static void main(final String[] args) {
     WaarpLoggerFactory
         .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));
     if (logger == null) {
@@ -256,7 +258,7 @@ public class ConfigExport implements Runnable {
       if (future.isSuccess()) {
         final boolean useJson = PartnerConfiguration.useJson(stohost);
         logger.debug("UseJson: " + useJson);
-        String message;
+        final String message;
         if (useJson) {
           message = result.getOther() != null?
               ((JsonCommandPacket) result.getOther()).getRequest() : "no file";

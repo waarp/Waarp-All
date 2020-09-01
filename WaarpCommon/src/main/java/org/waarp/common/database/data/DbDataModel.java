@@ -180,8 +180,9 @@ public class DbDataModel extends AbstractDbData {
    * @param ws Write Session Limit
    * @param del Delay Limit
    */
-  public DbDataModel(DbSession dbSession, String hostid, long rg, long wg,
-                     long rs, long ws, long del) {
+  public DbDataModel(final DbSession dbSession, final String hostid,
+                     final long rg, final long wg, final long rs, final long ws,
+                     final long del) {
     super(dbSession);
     this.hostid = hostid;
     readgloballimit = rg;
@@ -199,7 +200,7 @@ public class DbDataModel extends AbstractDbData {
    *
    * @throws WaarpDatabaseException
    */
-  public DbDataModel(DbSession dbSession, String hostid)
+  public DbDataModel(final DbSession dbSession, final String hostid)
       throws WaarpDatabaseException {
     super(dbSession);
     this.hostid = hostid;
@@ -348,7 +349,8 @@ public class DbDataModel extends AbstractDbData {
    * @throws WaarpDatabaseNoConnectionException
    * @throws WaarpDatabaseSqlException
    */
-  public static DbPreparedStatement getUpdatedPrepareStament(DbSession session)
+  public static DbPreparedStatement getUpdatedPrepareStament(
+      final DbSession session)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
     String request = SELECT + selectAllFields;
     request += FROM + table + WHERE + Columns.UPDATEDINFO.name() + " = " +
@@ -359,7 +361,7 @@ public class DbDataModel extends AbstractDbData {
   }
 
   @Override
-  public void changeUpdatedInfo(UpdatedInfo info) {
+  public void changeUpdatedInfo(final UpdatedInfo info) {
     if (updatedInfo != info.ordinal()) {
       updatedInfo = info.ordinal();
       allFields[Columns.UPDATEDINFO.ordinal()].setValue(updatedInfo);

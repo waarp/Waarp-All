@@ -117,7 +117,7 @@ public class FtpMonitoring implements WaarpInterfaceMonitor {
   /**
    * @param session
    */
-  public FtpMonitoring(DbSession session) {
+  public FtpMonitoring(final DbSession session) {
     if (session != null) {
       dbSession = session;
     } else {
@@ -127,7 +127,7 @@ public class FtpMonitoring implements WaarpInterfaceMonitor {
   }
 
   @Override
-  public void setAgent(WaarpSnmpAgent agent) {
+  public void setAgent(final WaarpSnmpAgent agent) {
     this.agent = agent;
     lastInActiveTransfer = this.agent.getUptimeSystemTime();
     lastOutActiveTransfer = this.agent.getUptimeSystemTime();
@@ -193,7 +193,7 @@ public class FtpMonitoring implements WaarpInterfaceMonitor {
    *
    * @param code
    */
-  public void updateCodeNoTransfer(ReplyCode code) {
+  public void updateCodeNoTransfer(final ReplyCode code) {
     int i = code.ordinal();
     if (i >= REF421) {
       i -= REF421;
@@ -223,7 +223,7 @@ public class FtpMonitoring implements WaarpInterfaceMonitor {
    * @param type
    * @param entry
    */
-  public void run(int type, int entry) {
+  public void run(final int type, final int entry) {
     final long nbMs =
         FileBasedConfiguration.fileBasedConfiguration.getAgentSnmp()
                                                      .getUptime() + 100;
@@ -255,7 +255,7 @@ public class FtpMonitoring implements WaarpInterfaceMonitor {
    * @param rank
    * @param value
    */
-  protected void updateGlobalValue(int rank, long value) {
+  protected void updateGlobalValue(final int rank, final long value) {
     ((FtpPrivateMib) agent.getMib()).rowGlobal.setValue(rank, value);
   }
 
@@ -265,7 +265,7 @@ public class FtpMonitoring implements WaarpInterfaceMonitor {
    * @param rank
    * @param value
    */
-  protected void updateDetailedValue(int rank, long value) {
+  protected void updateDetailedValue(final int rank, final long value) {
     ((FtpPrivateMib) agent.getMib()).rowDetailed.setValue(rank, value);
   }
 
@@ -275,7 +275,7 @@ public class FtpMonitoring implements WaarpInterfaceMonitor {
    * @param rank
    * @param value
    */
-  protected void updateErrorValue(int rank, long value) {
+  protected void updateErrorValue(final int rank, final long value) {
     ((FtpPrivateMib) agent.getMib()).rowError.setValue(rank, value);
   }
 
@@ -285,7 +285,7 @@ public class FtpMonitoring implements WaarpInterfaceMonitor {
    * @param nbMs
    * @param entry
    */
-  protected void run(long nbMs, WaarpGlobalValuesIndex entry) {
+  protected void run(final long nbMs, final WaarpGlobalValuesIndex entry) {
     synchronized (trafficCounter) {
       long val;
       final long limitDate = System.currentTimeMillis() - nbMs;
@@ -443,7 +443,7 @@ public class FtpMonitoring implements WaarpInterfaceMonitor {
    * @param nbMs
    * @param entry
    */
-  protected void run(long nbMs, WaarpDetailedValuesIndex entry) {
+  protected void run(final long nbMs, final WaarpDetailedValuesIndex entry) {
     synchronized (trafficCounter) {
       final long limitDate = System.currentTimeMillis() - nbMs;
       // Detailed
@@ -460,7 +460,7 @@ public class FtpMonitoring implements WaarpInterfaceMonitor {
    * @param nbMs
    * @param entry
    */
-  protected void run(long nbMs, WaarpErrorValuesIndex entry) {
+  protected void run(final long nbMs, final WaarpErrorValuesIndex entry) {
     synchronized (trafficCounter) {
       final long limitDate = System.currentTimeMillis() - nbMs;
       // Error

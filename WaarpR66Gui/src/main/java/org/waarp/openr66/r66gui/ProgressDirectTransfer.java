@@ -49,12 +49,14 @@ public class ProgressDirectTransfer extends ProgressBarTransfer {
    * @param networkTransaction
    * @param callbackdelay
    */
-  public ProgressDirectTransfer(R66Future future, String remoteHost,
-                                String filename, String rulename,
-                                String fileinfo, boolean isMD5, int blocksize,
-                                long id, NetworkTransaction networkTransaction,
-                                long callbackdelay, JProgressBar progressBar,
-                                JEditorPane textFieldStatus) {
+  public ProgressDirectTransfer(final R66Future future, final String remoteHost,
+                                final String filename, final String rulename,
+                                final String fileinfo, final boolean isMD5,
+                                final int blocksize, final long id,
+                                final NetworkTransaction networkTransaction,
+                                final long callbackdelay,
+                                final JProgressBar progressBar,
+                                final JEditorPane textFieldStatus) {
     super(future, remoteHost, filename, rulename, fileinfo, isMD5, blocksize,
           id, networkTransaction, callbackdelay);
     this.textFieldStatus = textFieldStatus;
@@ -66,7 +68,7 @@ public class ProgressDirectTransfer extends ProgressBarTransfer {
   }
 
   @Override
-  public void callBack(int currentBlock, int blocksize) {
+  public void callBack(final int currentBlock, final int blocksize) {
     if (firstCall) {
       if (filesize != 0) {
         progressBar.setIndeterminate(false);
@@ -93,7 +95,8 @@ public class ProgressDirectTransfer extends ProgressBarTransfer {
   }
 
   @Override
-  public void lastCallBack(boolean success, int currentBlock, int blocksize) {
+  public void lastCallBack(final boolean success, final int currentBlock,
+                           final int blocksize) {
     progressBar.setIndeterminate(false);
     if (filesize != 0) {
       progressBar.setValue(100);

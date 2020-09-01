@@ -36,7 +36,7 @@ public class Reply502Exception extends CommandAbstractException {
    *
    * @param message
    */
-  public Reply502Exception(String message) {
+  public Reply502Exception(final String message) {
     super(ReplyCode.REPLY_502_COMMAND_NOT_IMPLEMENTED, message);
   }
 

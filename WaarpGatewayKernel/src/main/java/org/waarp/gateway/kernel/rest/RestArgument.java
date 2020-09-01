@@ -100,7 +100,7 @@ public class RestArgument {
 
     public final String group;
 
-    REST_GROUP(String group) {
+    REST_GROUP(final String group) {
       this.group = group;
     }
   }
@@ -156,7 +156,7 @@ public class RestArgument {
 
     public final String field;
 
-    REST_ROOT_FIELD(String field) {
+    REST_ROOT_FIELD(final String field) {
       this.field = field;
     }
   }
@@ -168,7 +168,7 @@ public class RestArgument {
 
     public final String field;
 
-    REST_FIELD(String field) {
+    REST_FIELD(final String field) {
       this.field = field;
     }
   }
@@ -179,7 +179,7 @@ public class RestArgument {
 
     public final String field;
 
-    DATAMODEL(String field) {
+    DATAMODEL(final String field) {
       this.field = field;
     }
   }
@@ -192,7 +192,7 @@ public class RestArgument {
    * @param emptyArgument might be null, but might be also already
    *     initialized with some values
    */
-  public RestArgument(ObjectNode emptyArgument) {
+  public RestArgument(final ObjectNode emptyArgument) {
     if (emptyArgument == null) {
       arguments = JsonHandler.createObjectNode();
     } else {
@@ -212,7 +212,7 @@ public class RestArgument {
    *
    * @param request
    */
-  public void setRequest(HttpRequest request) {
+  public void setRequest(final HttpRequest request) {
     arguments.put(REST_ROOT_FIELD.ARG_HASBODY.field,
                   request instanceof FullHttpRequest &&
                   ((FullHttpRequest) request).content() !=
@@ -307,7 +307,7 @@ public class RestArgument {
           // 1
           node.put(key, list.get(0));
         }
-      } catch (InvalidArgumentException e) {
+      } catch (final InvalidArgumentException e) {
         logger.error("Arguments incompatible with Security: " + entry.getKey(),
                      e);
       }
@@ -319,7 +319,7 @@ public class RestArgument {
    *
    * @param source
    */
-  public void setFromArgument(RestArgument source) {
+  public void setFromArgument(final RestArgument source) {
     if (source.arguments.has(REST_ROOT_FIELD.ARG_X_AUTH_USER.field)) {
       arguments.put(REST_ROOT_FIELD.ARG_X_AUTH_USER.field,
                     source.arguments.get(REST_ROOT_FIELD.ARG_X_AUTH_USER.field)
@@ -382,7 +382,7 @@ public class RestArgument {
     return arguments.path(REST_ROOT_FIELD.ARGS_SUBPATH.field).size();
   }
 
-  public void addSubUriToUriArgs(String name, int rank) {
+  public void addSubUriToUriArgs(final String name, final int rank) {
     final ObjectNode node = getUriArgs();
     final JsonNode elt =
         arguments.path(REST_ROOT_FIELD.ARGS_SUBPATH.field).get(rank);
@@ -399,7 +399,7 @@ public class RestArgument {
     return getUriArgs().path(REST_FIELD.JSON_ID.field);
   }
 
-  public static JsonNode getId(ObjectNode node) {
+  public static JsonNode getId(final ObjectNode node) {
     return node.path(REST_FIELD.JSON_ID.field);
   }
 
@@ -419,7 +419,7 @@ public class RestArgument {
     return arguments.path(REST_ROOT_FIELD.ARG_X_AUTH_TIMESTAMP.field).asText();
   }
 
-  public void setXAuthRole(RoleDefault role) {
+  public void setXAuthRole(final RoleDefault role) {
     arguments.put(REST_ROOT_FIELD.ARG_X_AUTH_ROLE.field, role.getRoleAsByte());
   }
 
@@ -461,7 +461,7 @@ public class RestArgument {
    *
    * @throws HttpIncorrectRequestException
    */
-  public void setHeaderArgs(List<Entry<String, String>> list) {
+  public void setHeaderArgs(final List<Entry<String, String>> list) {
     ObjectNode node = (ObjectNode) arguments.get(REST_GROUP.ARGS_HEADER.group);
     if (node == null || node.isMissingNode()) {
       node = arguments.putObject(REST_GROUP.ARGS_HEADER.group);
@@ -489,7 +489,7 @@ public class RestArgument {
           }
           node.put(key, entry.getValue());
         }
-      } catch (InvalidArgumentException e) {
+      } catch (final InvalidArgumentException e) {
         logger.error("Arguments incompatible with Security: " + entry.getKey(),
                      e);
       }
@@ -502,7 +502,7 @@ public class RestArgument {
    * @throws HttpIncorrectRequestException
    */
   public void setHeaderArgs(
-      Iterator<Entry<CharSequence, CharSequence>> iterator) {
+      final Iterator<Entry<CharSequence, CharSequence>> iterator) {
     ObjectNode node = (ObjectNode) arguments.get(REST_GROUP.ARGS_HEADER.group);
     if (node == null || node.isMissingNode()) {
       node = arguments.putObject(REST_GROUP.ARGS_HEADER.group);
@@ -531,7 +531,7 @@ public class RestArgument {
           }
           node.put(key, entry.getValue().toString());
         }
-      } catch (InvalidArgumentException e) {
+      } catch (final InvalidArgumentException e) {
         logger.error("Arguments incompatible with Security: " + entry.getKey(),
                      e);
       }
@@ -576,8 +576,8 @@ public class RestArgument {
   /**
    * set values from Cookies into arguments.path(ARGS_COOKIE)
    */
-  public void setCookieArgs(String cookieString) {
-    Set<Cookie> cookies;
+  public void setCookieArgs(final String cookieString) {
+    final Set<Cookie> cookies;
     if (cookieString == null) {
       cookies = Collections.emptySet();
     } else {
@@ -589,7 +589,7 @@ public class RestArgument {
         try {
           ParametersChecker.checkSanityString(cookie.value());
           node.put(cookie.name(), cookie.value());
-        } catch (InvalidArgumentException e) {
+        } catch (final InvalidArgumentException e) {
           logger.error("Arguments incompatible with Security: " + cookie.name(),
                        e);
         }
@@ -630,11 +630,11 @@ public class RestArgument {
     return (ObjectNode) node;
   }
 
-  public void addAnswer(ObjectNode node) {
+  public void addAnswer(final ObjectNode node) {
     getAnswer().setAll(node);
   }
 
-  public void setResult(HttpResponseStatus status) {
+  public void setResult(final HttpResponseStatus status) {
     arguments
         .put(REST_ROOT_FIELD.JSON_STATUSMESSAGE.field, status.reasonPhrase());
     arguments.put(REST_ROOT_FIELD.JSON_STATUSCODE.field, status.code());
@@ -654,7 +654,7 @@ public class RestArgument {
     return arguments.path(REST_ROOT_FIELD.JSON_STATUSMESSAGE.field).asText();
   }
 
-  public void setDetail(String detail) {
+  public void setDetail(final String detail) {
     arguments.put(REST_ROOT_FIELD.JSON_DETAIL.field, detail);
   }
 
@@ -665,11 +665,11 @@ public class RestArgument {
     return arguments.path(REST_ROOT_FIELD.JSON_DETAIL.field).asText();
   }
 
-  public void setCommand(COMMAND_TYPE command) {
+  public void setCommand(final COMMAND_TYPE command) {
     arguments.put(REST_ROOT_FIELD.JSON_COMMAND.field, command.name());
   }
 
-  public void setCommand(String cmd) {
+  public void setCommand(final String cmd) {
     arguments.put(REST_ROOT_FIELD.JSON_COMMAND.field, cmd);
   }
 
@@ -731,7 +731,7 @@ public class RestArgument {
    * @param result added to the array of results (in DataModel multi
    *     get)
    */
-  public void addResult(ObjectNode result) {
+  public void addResult(final ObjectNode result) {
     getResults().add(result);
   }
 
@@ -739,7 +739,7 @@ public class RestArgument {
    * @param count added to answer if > 0
    * @param limit added to answer
    */
-  public void addCountLimit(long count, long limit) {
+  public void addCountLimit(final long count, final long limit) {
     final ObjectNode node = getAnswer();
     if (count >= 0) {
       node.put(DATAMODEL.JSON_COUNT.field, count);
@@ -765,7 +765,8 @@ public class RestArgument {
    * @param path
    * @param detailedAllow
    */
-  public void addOptions(String allow, String path, ArrayNode detailedAllow) {
+  public void addOptions(final String allow, final String path,
+                         final ArrayNode detailedAllow) {
     final ObjectNode node = getAnswer();
     node.put(HttpHeaderNames.ALLOW.toString(), allow);
     node.put(REST_FIELD.X_ALLOW_URIS.field, path);
@@ -807,9 +808,10 @@ public class RestArgument {
    *     the
    *     authentication failed
    */
-  public static String[] getBaseAuthent(HmacSha256 hmacSha256,
-                                        QueryStringEncoder encoder, String user,
-                                        String extraKey)
+  public static String[] getBaseAuthent(final HmacSha256 hmacSha256,
+                                        final QueryStringEncoder encoder,
+                                        final String user,
+                                        final String extraKey)
       throws HttpInvalidAuthenticationException {
     final QueryStringDecoder decoderQuery =
         new QueryStringDecoder(encoder.toString());
@@ -846,7 +848,7 @@ public class RestArgument {
    *
    * @throws HttpInvalidAuthenticationException
    */
-  public void checkTime(long maxInterval)
+  public void checkTime(final long maxInterval)
       throws HttpInvalidAuthenticationException {
     final DateTime dateTime = new DateTime();
     final String date = getXAuthTimestamp();
@@ -887,8 +889,8 @@ public class RestArgument {
    * @throws HttpInvalidAuthenticationException if the authentication
    *     failed
    */
-  public void checkBaseAuthent(HmacSha256 hmacSha256, String extraKey,
-                               long maxInterval)
+  public void checkBaseAuthent(final HmacSha256 hmacSha256,
+                               final String extraKey, final long maxInterval)
       throws HttpInvalidAuthenticationException {
     final TreeMap<String, String> treeMap = new TreeMap<String, String>();
     final String argPath = getUri();
@@ -911,7 +913,7 @@ public class RestArgument {
       }
       final String keylower = key.toLowerCase();
       if (values != null) {
-        String val;
+        final String val;
         if (values.isArray()) {
           final JsonNode jsonNode = values.get(values.size() - 1);
           val = jsonNode.asText();
@@ -957,9 +959,10 @@ public class RestArgument {
    *
    * @throws HttpInvalidAuthenticationException
    */
-  protected static String computeKey(HmacSha256 hmacSha256, String extraKey,
-                                     TreeMap<String, String> treeMap,
-                                     String argPath)
+  protected static String computeKey(final HmacSha256 hmacSha256,
+                                     final String extraKey,
+                                     final TreeMap<String, String> treeMap,
+                                     final String argPath)
       throws HttpInvalidAuthenticationException {
     final Set<String> keys = treeMap.keySet();
     final StringBuilder builder = new StringBuilder(argPath);
@@ -998,9 +1001,11 @@ public class RestArgument {
     return JsonHandler.prettyPrint(arguments);
   }
 
-  public static ObjectNode fillDetailedAllow(METHOD method, String path,
-                                             String command, ObjectNode body,
-                                             JsonNode result) {
+  public static ObjectNode fillDetailedAllow(final METHOD method,
+                                             final String path,
+                                             final String command,
+                                             final ObjectNode body,
+                                             final JsonNode result) {
     final ObjectNode node = JsonHandler.createObjectNode();
     final ObjectNode node2 = node.putObject(method.name());
     node2.put(REST_FIELD.JSON_PATH.field, '/' + path);

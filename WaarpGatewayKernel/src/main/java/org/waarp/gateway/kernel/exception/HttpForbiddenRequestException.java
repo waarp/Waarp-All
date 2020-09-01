@@ -32,14 +32,14 @@ public class HttpForbiddenRequestException extends Exception {
   /**
    * @param s
    */
-  public HttpForbiddenRequestException(String s) {
+  public HttpForbiddenRequestException(final String s) {
     super(s);
   }
 
   /**
    * @param throwable
    */
-  public HttpForbiddenRequestException(Throwable throwable) {
+  public HttpForbiddenRequestException(final Throwable throwable) {
     super(throwable);
   }
 
@@ -47,7 +47,8 @@ public class HttpForbiddenRequestException extends Exception {
    * @param s
    * @param throwable
    */
-  public HttpForbiddenRequestException(String s, Throwable throwable) {
+  public HttpForbiddenRequestException(final String s,
+                                       final Throwable throwable) {
     super(s, throwable);
   }
 

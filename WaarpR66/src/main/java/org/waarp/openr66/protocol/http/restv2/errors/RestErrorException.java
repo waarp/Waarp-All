@@ -51,7 +51,7 @@ public class RestErrorException extends RuntimeException {
    *
    * @param error The error to add.
    */
-  public RestErrorException(RestError error) {
+  public RestErrorException(final RestError error) {
     errors = new ArrayList<RestError>();
     errors.add(error);
   }
@@ -61,7 +61,7 @@ public class RestErrorException extends RuntimeException {
    *
    * @param errors The errors to add.
    */
-  public RestErrorException(List<RestError> errors) {
+  public RestErrorException(final List<RestError> errors) {
     this.errors = errors;
   }
 
@@ -73,7 +73,7 @@ public class RestErrorException extends RuntimeException {
    *
    * @return the serialized list of errors.
    */
-  public ObjectNode makeNode(Locale lang) {
+  public ObjectNode makeNode(final Locale lang) {
     final ArrayNode errorsArray = new ArrayNode(JsonNodeFactory.instance);
     for (final RestError error : errors) {
       errorsArray.add(error.makeNode(lang));

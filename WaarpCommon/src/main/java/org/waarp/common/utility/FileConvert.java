@@ -23,7 +23,7 @@ package org.waarp.common.utility;
  * Description: Converts Unix files to Dos and vice versa
  */
 
-import com.google.common.io.Files;
+import org.waarp.common.command.exception.Reply550Exception;
 import org.waarp.common.file.FileUtils;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
@@ -56,8 +56,8 @@ public class FileConvert extends Thread {
    *     files
    * @param tmpDir if not null, specific tmp directory
    */
-  public FileConvert(List<File> files, boolean unix2dos, boolean recursive,
-                     File tmpDir) {
+  public FileConvert(final List<File> files, final boolean unix2dos,
+                     final boolean recursive, final File tmpDir) {
     if (logger == null) {
       logger = WaarpLoggerFactory.getLogger(FileConvert.class);
     }
@@ -74,7 +74,7 @@ public class FileConvert extends Thread {
    *
    * @param args
    */
-  public static void main(String[] args) {
+  public static void main(final String[] args) {
     WaarpLoggerFactory
         .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));
     if (logger == null) {
@@ -137,7 +137,7 @@ public class FileConvert extends Thread {
     }
   }
 
-  private void recursive(File directory) {
+  private void recursive(final File directory) {
     final File[] listFiles = directory.listFiles();
     for (final File file : listFiles) {
       if (file.isDirectory()) {
@@ -148,11 +148,11 @@ public class FileConvert extends Thread {
     }
   }
 
-  private boolean copyFile(File source, File destination) {
+  private boolean copyFile(final File source, final File destination) {
     try {
-      Files.copy(source, destination);
+      FileUtils.copy(source, destination, false, false);
       return true;
-    } catch (IOException e) {
+    } catch (final Reply550Exception e) {
       logger.error("FileConvert copy back in error", e);
       return false;
     }
@@ -166,7 +166,7 @@ public class FileConvert extends Thread {
    *
    * @return True if OK
    */
-  public boolean convert(File input, boolean unix2dos) {
+  public boolean convert(final File input, final boolean unix2dos) {
     if (unix2dos) {
       logger.info("unix2Dos conversion of '" + input + "'... ");
     } else {

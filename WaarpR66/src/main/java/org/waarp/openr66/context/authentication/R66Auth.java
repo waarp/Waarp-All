@@ -61,7 +61,7 @@ public class R66Auth extends FilesystemBasedAuthImpl {
   /**
    * @param session
    */
-  public R66Auth(R66Session session) {
+  public R66Auth(final R66Session session) {
     super(session);
   }
 
@@ -78,7 +78,7 @@ public class R66Auth extends FilesystemBasedAuthImpl {
   }
 
   @Override
-  protected NextCommandReply setBusinessPassword(String arg0)
+  protected NextCommandReply setBusinessPassword(final String arg0)
       throws Reply421Exception, Reply530Exception {
     throw new Reply421Exception("Command not valid");
   }
@@ -92,9 +92,10 @@ public class R66Auth extends FilesystemBasedAuthImpl {
    * @throws Reply530Exception if the authentication is wrong
    * @throws Reply421Exception If the service is not available
    */
-  public boolean connection(String hostId, byte[] arg0, boolean isSsl)
+  public boolean connection(final String hostId, final byte[] arg0,
+                            final boolean isSsl)
       throws Reply530Exception, Reply421Exception {
-    DbHostAuth auth;
+    final DbHostAuth auth;
     try {
       auth = new DbHostAuth(hostId);
     } catch (final WaarpDatabaseException e) {
@@ -154,7 +155,7 @@ public class R66Auth extends FilesystemBasedAuthImpl {
    *
    * @return True if the key is valid for the current user
    */
-  public boolean isKeyValid(byte[] key) {
+  public boolean isKeyValid(final byte[] key) {
     return currentAuth.isKeyValid(key);
   }
 
@@ -178,7 +179,7 @@ public class R66Auth extends FilesystemBasedAuthImpl {
   @Override
   protected String setBusinessRootFromAuth() throws Reply421Exception {
     final String path = null;
-    final String fullpath = getAbsolutePath(path);
+    final String fullpath = getAbsolutePath(null);
     final File file = new File(fullpath);
     if (!file.isDirectory()) {
       throw new Reply421Exception("Filesystem not ready");
@@ -187,7 +188,7 @@ public class R66Auth extends FilesystemBasedAuthImpl {
   }
 
   @Override
-  protected NextCommandReply setBusinessUser(String arg0)
+  protected NextCommandReply setBusinessUser(final String arg0)
       throws Reply421Exception, Reply530Exception {
     throw new Reply421Exception("Command not valid");
   }
@@ -202,9 +203,9 @@ public class R66Auth extends FilesystemBasedAuthImpl {
    *
    * @return True if the current role contains the specified role to check
    */
-  public boolean isValidRole(ROLE roleCheck) {
-    ROLE[] roles = roleCheck.getComposingRoles();
-    for (ROLE role1 : roles) {
+  public boolean isValidRole(final ROLE roleCheck) {
+    final ROLE[] roles = roleCheck.getComposingRoles();
+    for (final ROLE role1 : roles) {
       if (!role.isContaining(role1)) {
         return false;
       }
@@ -220,7 +221,7 @@ public class R66Auth extends FilesystemBasedAuthImpl {
   }
 
   @Override
-  public boolean isBusinessPathValid(String newPath) {
+  public boolean isBusinessPathValid(final String newPath) {
     return newPath != null;
   }
 
@@ -236,8 +237,8 @@ public class R66Auth extends FilesystemBasedAuthImpl {
    *
    * @return the SimpleAuth if any for this user
    */
-  public static DbHostAuth getServerAuth(String server) {
-    DbHostAuth auth;
+  public static DbHostAuth getServerAuth(final String server) {
+    final DbHostAuth auth;
     try {
       auth = new DbHostAuth(server);
     } catch (final WaarpDatabaseException e) {
@@ -255,7 +256,7 @@ public class R66Auth extends FilesystemBasedAuthImpl {
    * @param isSSL
    * @param hostid
    */
-  public void specialNoSessionAuth(boolean isSSL, String hostid) {
+  public void specialNoSessionAuth(final boolean isSSL, final String hostid) {
     isIdentified = true;
     DbHostAuth auth = null;
     try {
@@ -297,7 +298,7 @@ public class R66Auth extends FilesystemBasedAuthImpl {
    * @throws Reply530Exception if the authentication is wrong
    * @throws Reply421Exception If the service is not available
    */
-  public boolean connectionHttps(String hostId, byte[] arg0)
+  public boolean connectionHttps(final String hostId, final byte[] arg0)
       throws Reply530Exception, Reply421Exception {
     final DbHostAuth auth = getServerAuth(hostId);
     if (auth == null) {

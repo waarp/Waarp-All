@@ -42,15 +42,15 @@ public class NetworkSslServerInitializerProxy
   /**
    * @param isClient True if this Factory is to be used in Client mode
    */
-  public NetworkSslServerInitializerProxy(boolean isClient) {
+  public NetworkSslServerInitializerProxy(final boolean isClient) {
     super(isClient);
   }
 
   @Override
-  protected void initChannel(SocketChannel ch) throws Exception {
+  protected void initChannel(final SocketChannel ch) throws Exception {
     final ChannelPipeline pipeline = ch.pipeline();
     // Add SSL handler first to encrypt and decrypt everything.
-    SslHandler sslHandler;
+    final SslHandler sslHandler;
     if (isClient) {
       // Not server: no clientAuthent, no renegotiation
       sslHandler = getWaarpSslContextFactory().initInitializer(false, false);

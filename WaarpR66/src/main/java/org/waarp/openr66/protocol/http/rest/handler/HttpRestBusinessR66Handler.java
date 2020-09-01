@@ -60,15 +60,16 @@ public class HttpRestBusinessR66Handler extends HttpRestAbstractR66Handler {
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(HttpRestBusinessR66Handler.class);
 
-  public HttpRestBusinessR66Handler(RestConfiguration config,
-                                    METHOD... methods) {
+  public HttpRestBusinessR66Handler(final RestConfiguration config,
+                                    final METHOD... methods) {
     super(BASEURI, config, METHOD.OPTIONS);
     setIntersectionMethods(methods, METHOD.GET);
   }
 
   @Override
-  public void endParsingRequest(HttpRestHandler handler, RestArgument arguments,
-                                RestArgument result, Object body)
+  public void endParsingRequest(final HttpRestHandler handler,
+                                final RestArgument arguments,
+                                final RestArgument result, final Object body)
       throws HttpIncorrectRequestException, HttpInvalidAuthenticationException {
     logger.debug("debug: {} ### {}", arguments, result);
     if (body != null) {
@@ -103,7 +104,7 @@ public class HttpRestBusinessR66Handler extends HttpRestAbstractR66Handler {
           }
           wrongResult(handler, result, session, node, r66result);
         } else if (future == null) {
-          R66Result r66result =
+          final R66Result r66result =
               new R66Result(session, false, ErrorCode.ExternalOp, null);
           wrongResult(handler, result, session, node, r66result);
         } else {
@@ -150,7 +151,7 @@ public class HttpRestBusinessR66Handler extends HttpRestAbstractR66Handler {
       node3.setClassName("Class name to execute");
       node3.setArguments("Arguments of the execution");
       node3.setExtraArguments("Extra arguments");
-      ObjectNode node2;
+      final ObjectNode node2;
       final ArrayNode node1 = JsonHandler.createArrayNode();
       try {
         node1.add(node3.createObjectNode());

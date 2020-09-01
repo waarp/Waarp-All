@@ -38,7 +38,7 @@ public class PrintOnlyWarningLogbackStatusListener
   private static final int LOG_LEVEL = Status.WARN;
 
   @Override
-  public void addStatusEvent(Status status) {
+  public void addStatusEvent(final Status status) {
     if (status.getLevel() >= LOG_LEVEL) {
       super.addStatusEvent(status);
     }
@@ -48,7 +48,7 @@ public class PrintOnlyWarningLogbackStatusListener
   public void start() {
     final List<Status> statuses =
         context.getStatusManager().getCopyOfStatusList();
-    for (Status status : statuses) {
+    for (final Status status : statuses) {
       if (status.getLevel() == LOG_LEVEL) {
         super.start();
       }

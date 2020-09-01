@@ -52,67 +52,67 @@ public final class FileUtils {
   private FileUtils() {
   }
 
-  public static final void close(Reader stream) {
+  public static final void close(final Reader stream) {
     if (stream == null) {
       return;
     }
     try {
       stream.close();
-    } catch (Exception ignored) {
+    } catch (final Exception ignored) {
       SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
     }
   }
 
-  public static final void close(Writer stream) {
-    if (stream == null) {
-      return;
-    }
-    try {
-      stream.flush();
-    } catch (Exception ignored) {
-      SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
-    }
-    try {
-      stream.close();
-    } catch (Exception ignored) {
-      SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
-    }
-  }
-
-  public static final void close(InputStream stream) {
-    if (stream == null) {
-      return;
-    }
-    try {
-      stream.close();
-    } catch (Exception ignored) {
-      SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
-    }
-  }
-
-  public static final void close(OutputStream stream) {
+  public static final void close(final Writer stream) {
     if (stream == null) {
       return;
     }
     try {
       stream.flush();
-    } catch (Exception ignored) {
+    } catch (final Exception ignored) {
       SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
     }
     try {
       stream.close();
-    } catch (Exception ignored) {
+    } catch (final Exception ignored) {
       SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
     }
   }
 
-  public static final void close(RandomAccessFile accessFile) {
+  public static final void close(final InputStream stream) {
+    if (stream == null) {
+      return;
+    }
+    try {
+      stream.close();
+    } catch (final Exception ignored) {
+      SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
+    }
+  }
+
+  public static final void close(final OutputStream stream) {
+    if (stream == null) {
+      return;
+    }
+    try {
+      stream.flush();
+    } catch (final Exception ignored) {
+      SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
+    }
+    try {
+      stream.close();
+    } catch (final Exception ignored) {
+      SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
+    }
+  }
+
+  public static final void close(final RandomAccessFile accessFile) {
     if (accessFile == null) {
       return;
     }
     try {
       accessFile.close();
-    } catch (Exception ignored) {
+    } catch (final Exception ignored) {
       SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
     }
   }
@@ -124,7 +124,7 @@ public final class FileUtils {
    *
    * @return True if deleted, False else.
    */
-  public static final boolean deleteDir(File directory) {
+  public static final boolean deleteDir(final File directory) {
     if (directory == null) {
       return true;
     }
@@ -144,7 +144,7 @@ public final class FileUtils {
    *
    * @return True if OK, else if not (or if the file never exists).
    */
-  public static final boolean delete(File file) {
+  public static final boolean delete(final File file) {
     if (!file.exists()) {
       return true;
     }
@@ -163,7 +163,8 @@ public final class FileUtils {
    *
    * @throws Reply550Exception
    */
-  public static File[] copyRecursive(File from, File directoryTo, boolean move)
+  public static File[] copyRecursive(final File from, final File directoryTo,
+                                     final boolean move)
       throws Reply550Exception {
     if (from == null || directoryTo == null) {
       return null;
@@ -197,8 +198,8 @@ public final class FileUtils {
    *
    * @throws Reply550Exception
    */
-  public static File[] copy(File[] from, File directoryTo, boolean move)
-      throws Reply550Exception {
+  public static File[] copy(final File[] from, final File directoryTo,
+                            final boolean move) throws Reply550Exception {
     if (from == null || directoryTo == null) {
       return null;
     }
@@ -221,7 +222,7 @@ public final class FileUtils {
    *
    * @return True if created, False else.
    */
-  public static final boolean createDir(File directory) {
+  public static final boolean createDir(final File directory) {
     if (directory == null) {
       return false;
     }
@@ -242,8 +243,8 @@ public final class FileUtils {
    *
    * @throws Reply550Exception
    */
-  private static File copyToDir(File from, File directoryTo, boolean move)
-      throws Reply550Exception {
+  private static File copyToDir(final File from, final File directoryTo,
+                                final boolean move) throws Reply550Exception {
     if (from == null || directoryTo == null) {
       throw new Reply550Exception("Source or Destination is null");
     }
@@ -268,8 +269,8 @@ public final class FileUtils {
    *
    * @throws Reply550Exception
    */
-  public static void copy(File from, File to, boolean move, boolean append)
-      throws Reply550Exception {
+  public static void copy(final File from, final File to, final boolean move,
+                          final boolean append) throws Reply550Exception {
     if (from == null || to == null) {
       throw new Reply550Exception("Source or Destination is null");
     }
@@ -286,17 +287,17 @@ public final class FileUtils {
       try {
         try {
           inputStream = new FileInputStream(from.getPath());
-        } catch (FileNotFoundException e) {
+        } catch (final FileNotFoundException e) {
           throw new Reply550Exception("Cannot read source file");
         }
         try {
           outputStream = new FileOutputStream(to.getPath(), append);
-        } catch (FileNotFoundException e) {
+        } catch (final FileNotFoundException e) {
           throw new Reply550Exception("Cannot write destination file");
         }
         try {
           copy(inputStream, outputStream);
-        } catch (IOException e) {
+        } catch (final IOException e) {
           throw new Reply550Exception("Cannot copy");
         }
       } finally {
@@ -320,7 +321,7 @@ public final class FileUtils {
    *
    * @return True if deleted, False else.
    */
-  private static boolean deleteRecursiveFileDir(File dir) {
+  private static boolean deleteRecursiveFileDir(final File dir) {
     if (dir == null) {
       return true;
     }
@@ -328,19 +329,17 @@ public final class FileUtils {
     if (!dir.exists()) {
       return true;
     }
-    File[] list = dir.listFiles();
+    final File[] list = dir.listFiles();
     if (list == null || list.length == 0) {
       return dir.delete();
     }
-    final int len = list.length;
-    for (int i = 0; i < len; i++) {
-      if (list[i].isDirectory()) {
-        if (!deleteRecursiveFileDir(list[i])) {
+    for (final File file : list) {
+      if (file.isDirectory()) {
+        if (!deleteRecursiveFileDir(file)) {
           retour = false;
         }
       } else {
-        retour = false;
-        return retour;
+        return false;
       }
     }
     if (retour) {
@@ -356,7 +355,7 @@ public final class FileUtils {
    *
    * @return True if all sub directories or files are deleted, False else.
    */
-  private static boolean forceDeleteRecursiveSubDir(File directory) {
+  private static boolean forceDeleteRecursiveSubDir(final File directory) {
     if (directory == null) {
       return true;
     }
@@ -367,7 +366,7 @@ public final class FileUtils {
     if (!directory.isDirectory()) {
       return directory.delete();
     }
-    File[] list = directory.listFiles();
+    final File[] list = directory.listFiles();
     if (list == null || list.length == 0) {
       return true;
     }
@@ -395,7 +394,7 @@ public final class FileUtils {
    *
    * @return True if all sub directories or files are deleted, False else.
    */
-  public static boolean forceDeleteRecursiveDir(File directory) {
+  public static boolean forceDeleteRecursiveDir(final File directory) {
     if (directory == null) {
       return true;
     }
@@ -406,7 +405,7 @@ public final class FileUtils {
     if (!directory.isDirectory()) {
       return false;
     }
-    File[] list = directory.listFiles();
+    final File[] list = directory.listFiles();
     if (list == null || list.length == 0) {
       return true;
     }
@@ -432,7 +431,7 @@ public final class FileUtils {
    *
    * @return True if deleted, False else.
    */
-  public static boolean deleteRecursiveDir(File directory) {
+  public static boolean deleteRecursiveDir(final File directory) {
     if (directory == null) {
       return true;
     }
@@ -443,7 +442,7 @@ public final class FileUtils {
     if (!directory.isDirectory()) {
       return false;
     }
-    File[] list = directory.listFiles();
+    final File[] list = directory.listFiles();
     if (list == null || list.length == 0) {
       retour = directory.delete();
       return retour;
@@ -469,7 +468,8 @@ public final class FileUtils {
    *
    * @return true if the file exist in the specified path
    */
-  public static final boolean fileExist(String fileName, String path) {
+  public static final boolean fileExist(final String fileName,
+                                        final String path) {
     boolean exist = false;
     final String fileString = path + File.separator + fileName;
     final File file = new File(fileString);
@@ -486,7 +486,7 @@ public final class FileUtils {
    *
    * @return the list of files (as an array)
    */
-  public static final File[] getFiles(File directory) {
+  public static final File[] getFiles(final File directory) {
     if (directory == null || !directory.isDirectory()) {
       return FILE_0_LENGTH;
     }
@@ -500,8 +500,8 @@ public final class FileUtils {
    * @param file
    * @param length
    */
-  public static void computeGlobalHash(FilesystemBasedDigest digest, File file,
-                                       int length) {
+  public static void computeGlobalHash(final FilesystemBasedDigest digest,
+                                       final File file, final int length) {
     if (digest == null) {
       return;
     }
@@ -541,7 +541,8 @@ public final class FileUtils {
    *
    * @return the list of files (as an array)
    */
-  public static final File[] getFiles(File directory, FilenameFilter filter) {
+  public static final File[] getFiles(final File directory,
+                                      final FilenameFilter filter) {
     if (directory == null || !directory.isDirectory()) {
       return FILE_0_LENGTH;
     }
@@ -558,7 +559,7 @@ public final class FileUtils {
    *
    * @throws Reply550Exception
    */
-  public static long uncompressedBz2File(File fileIn, File fileOut)
+  public static long uncompressedBz2File(final File fileIn, final File fileOut)
       throws Reply550Exception {
     FileInputStream fin = null;
     CompressorInputStream input = null;
@@ -568,7 +569,7 @@ public final class FileUtils {
       input = new BZip2CompressorInputStream(fin);
       output = new FileOutputStream(fileOut);
       return copy(input, output);
-    } catch (IOException e) {
+    } catch (final IOException e) {
       SysErrLogger.FAKE_LOGGER.syserr(e);
       return -1;
     } finally {
@@ -592,14 +593,14 @@ public final class FileUtils {
    *
    * @throws IOException if an I/O error occurs
    */
-  public static long copy(InputStream from, OutputStream to)
+  public static long copy(final InputStream from, final OutputStream to)
       throws IOException {
     checkNotNull(from);
     checkNotNull(to);
     final byte[] buf = new byte[ZERO_COPY_CHUNK_SIZE];
     long total = 0;
     while (true) {
-      int r = from.read(buf);
+      final int r = from.read(buf);
       if (r == -1) {
         break;
       }

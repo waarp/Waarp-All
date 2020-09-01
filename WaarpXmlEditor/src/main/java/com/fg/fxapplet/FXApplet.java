@@ -149,7 +149,7 @@ public class FXApplet extends JApplet {
     return prmDocName;
   }
 
-  public void setDocName(String docName) {
+  public void setDocName(final String docName) {
     prmDocName = normalize(docName);
   }
 
@@ -157,7 +157,7 @@ public class FXApplet extends JApplet {
     return prmXMLSchema;
   }
 
-  public void setXMLSchema(String xmlSchema) {
+  public void setXMLSchema(final String xmlSchema) {
     prmXMLSchema = normalize(xmlSchema);
   }
 
@@ -165,7 +165,7 @@ public class FXApplet extends JApplet {
     return prmXMLSource;
   }
 
-  public void setXMLSource(String xmlSource) {
+  public void setXMLSource(final String xmlSource) {
     prmXMLSource = normalize(xmlSource);
   }
 
@@ -173,7 +173,7 @@ public class FXApplet extends JApplet {
     return prmBaseURL;
   }
 
-  public void setBaseURL(String baseURL) {
+  public void setBaseURL(final String baseURL) {
     prmBaseURL = baseURL == null? null : baseURL.trim();
   }
 
@@ -181,7 +181,7 @@ public class FXApplet extends JApplet {
     return prmNamespace;
   }
 
-  public void setNamespace(String namespace) {
+  public void setNamespace(final String namespace) {
     prmNamespace = namespace == null? null : namespace.trim();
   }
 
@@ -189,7 +189,7 @@ public class FXApplet extends JApplet {
     return prmElement;
   }
 
-  public void setElement(String rootElementName) {
+  public void setElement(final String rootElementName) {
     prmElement = normalize(rootElementName);
   }
 
@@ -197,7 +197,7 @@ public class FXApplet extends JApplet {
     return prmXMLDest;
   }
 
-  public void setXMLDest(String xmlDest) {
+  public void setXMLDest(final String xmlDest) {
     prmXMLDest = normalize(xmlDest);
   }
 
@@ -307,7 +307,7 @@ public class FXApplet extends JApplet {
       try {
         List lostElements = null;
         File tmp = new File(prmXMLSchema);
-        URL xsdURL;
+        final URL xsdURL;
         if (tmp.exists()) {
           xsdURL = tmp.toURI().toURL();
         } else {
@@ -321,7 +321,7 @@ public class FXApplet extends JApplet {
           lostElements = model.openDocument(xsdURL, src);
         } else if (prmXMLSource != null) {
           tmp = new File(prmXMLSource);
-          URL xmlURL;
+          final URL xmlURL;
           if (tmp.exists()) {
             xmlURL = tmp.toURI().toURL();
           } else {
@@ -406,16 +406,16 @@ public class FXApplet extends JApplet {
     }
   }
 
-  void callJavascriptHandler(String methodName) {
+  void callJavascriptHandler(final String methodName) {
     try {
       final JSObject win = JSObject.getWindow(this);
-      win.call(methodName, new Object[] { this });
+      win.call(methodName, this);
     } catch (final Exception ex) {
       dblView.showErrorMessage(ex.toString());
     }
   }
 
-  public void loadXMLDocument(String xmlContent) {
+  public void loadXMLDocument(final String xmlContent) {
     SwingUtilities.invokeLater(new XMLDocumentLoader(xmlContent));
   }
 
@@ -459,7 +459,7 @@ public class FXApplet extends JApplet {
     prmXMLDest = null;
     if (prmXMLDest == null) {
       final String cur = textFieldXml.getText();
-      JFileChooser fc;
+      final JFileChooser fc;
       if (cur != null && !cur.isEmpty()) {
         final File parent = new File(cur).getParentFile();
         fc = new JFileChooser(parent);
@@ -525,7 +525,7 @@ public class FXApplet extends JApplet {
       serial.serialize(doc);
       reader =
           new BufferedReader(new InputStreamReader(httpConn.getInputStream()));
-      StringBuilder message = new StringBuilder();
+      final StringBuilder message = new StringBuilder();
       String line;
       for (; (line = reader.readLine()) != null;
            message.append(line).append('\n')) {
@@ -554,7 +554,7 @@ public class FXApplet extends JApplet {
     }
   }
 
-  void updateLookAndFeel(String lfName) {
+  void updateLookAndFeel(final String lfName) {
     final LookAndFeel lf = UIManager.getLookAndFeel();
     if (lf != null && lf.getName().equals(lfName)) {
       return;
@@ -626,7 +626,7 @@ public class FXApplet extends JApplet {
      */
     private static final long serialVersionUID = 7556957719356707384L;
 
-    Btn(ImageIcon icon, String toolTipText) {
+    Btn(final ImageIcon icon, final String toolTipText) {
       super(icon);
       setFocusPainted(false);
       setDisabledIcon(FadingFilter.fade(icon));
@@ -646,7 +646,7 @@ public class FXApplet extends JApplet {
      */
     private static final long serialVersionUID = -2731668382902219913L;
 
-    ToggleBtn(ImageIcon icon, String toolTipText) {
+    ToggleBtn(final ImageIcon icon, final String toolTipText) {
       super(icon);
       setFocusPainted(false);
       setDisabledIcon(FadingFilter.fade(icon));
@@ -666,7 +666,7 @@ public class FXApplet extends JApplet {
      */
     private static final long serialVersionUID = -6743687839953167701L;
 
-    MItem(String text, ImageIcon icon) {
+    MItem(final String text, final ImageIcon icon) {
       super(text);
       if (icon != null) {
         setIcon(icon);
@@ -680,7 +680,7 @@ public class FXApplet extends JApplet {
 
     final String xmlContent;
 
-    XMLDocumentLoader(String xmlContent) {
+    XMLDocumentLoader(final String xmlContent) {
       this.xmlContent = xmlContent;
     }
 
@@ -696,7 +696,7 @@ public class FXApplet extends JApplet {
     }
 
     @Override
-    public void actionPerformed(ActionEvent e) {
+    public void actionPerformed(final ActionEvent e) {
       final Object source = e.getSource();
       if (source == btnReload || source == mReload) {
         if (prmOnLoad != null) {
@@ -712,7 +712,7 @@ public class FXApplet extends JApplet {
         }
       } else if (source == btnXmlLoad || source == mXmlLoad) {
         final String cur = textFieldXml.getText();
-        JFileChooser fc;
+        final JFileChooser fc;
         if (cur != null && !cur.isEmpty()) {
           final File parent = new File(cur).getParentFile();
           fc = new JFileChooser(parent);
@@ -728,7 +728,7 @@ public class FXApplet extends JApplet {
         doLoadXMLDocument(null);
       } else if (source == btnXsdLoad || source == mXsdLoad) {
         final String cur = textField.getText();
-        JFileChooser fc;
+        final JFileChooser fc;
         if (cur != null && !cur.isEmpty()) {
           final File parent = new File(cur).getParentFile();
           fc = new JFileChooser(parent);
@@ -754,13 +754,13 @@ public class FXApplet extends JApplet {
     }
 
     @Override
-    public void newDocumentLoaded(FXStatusEvent e) {
+    public void newDocumentLoaded(final FXStatusEvent e) {
       btnSave.setEnabled(dblView.hasDocument() && dblView.isDocValid());
       mSave.setEnabled(dblView.hasDocument() && dblView.isDocValid());
     }
 
     @Override
-    public void docValidityStatusChanged(FXStatusEvent e) {
+    public void docValidityStatusChanged(final FXStatusEvent e) {
       btnSave.setEnabled(dblView.hasDocument() && dblView.isDocValid());
       mSave.setEnabled(dblView.hasDocument() && dblView.isDocValid());
     }

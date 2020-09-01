@@ -57,7 +57,7 @@ public class DbRuleR66RestMethodHandler
 
     public final String type;
 
-    FILTER_ARGS(String type) {
+    FILTER_ARGS(final String type) {
       this.type = type;
     }
   }
@@ -66,21 +66,22 @@ public class DbRuleR66RestMethodHandler
    * @param config
    * @param method
    */
-  public DbRuleR66RestMethodHandler(RestConfiguration config,
-                                    METHOD... method) {
+  public DbRuleR66RestMethodHandler(final RestConfiguration config,
+                                    final METHOD... method) {
     super(BASEURI, config, method);
   }
 
   @Override
-  protected DbRule getItem(HttpRestHandler handler, RestArgument arguments,
-                           RestArgument result, Object body)
+  protected DbRule getItem(final HttpRestHandler handler,
+                           final RestArgument arguments,
+                           final RestArgument result, final Object body)
       throws HttpIncorrectRequestException, HttpInvalidAuthenticationException,
              HttpNotFoundRequestException {
     final ObjectNode arg = arguments.getUriArgs().deepCopy();
     arg.setAll(arguments.getBody());
     try {
       final JsonNode node = RestArgument.getId(arg);
-      String id;
+      final String id;
       if (node.isMissingNode()) {
         // shall not be but continue however
         id = arg.path(DbRule.Columns.IDRULE.name()).asText();
@@ -95,8 +96,9 @@ public class DbRuleR66RestMethodHandler
   }
 
   @Override
-  protected DbRule createItem(HttpRestHandler handler, RestArgument arguments,
-                              RestArgument result, Object body)
+  protected DbRule createItem(final HttpRestHandler handler,
+                              final RestArgument arguments,
+                              final RestArgument result, final Object body)
       throws HttpIncorrectRequestException, HttpInvalidAuthenticationException {
     final ObjectNode arg = arguments.getUriArgs().deepCopy();
     arg.setAll(arguments.getBody());
@@ -109,10 +111,9 @@ public class DbRuleR66RestMethodHandler
   }
 
   @Override
-  protected DbPreparedStatement getPreparedStatement(HttpRestHandler handler,
-                                                     RestArgument arguments,
-                                                     RestArgument result,
-                                                     Object body)
+  protected DbPreparedStatement getPreparedStatement(
+      final HttpRestHandler handler, final RestArgument arguments,
+      final RestArgument result, final Object body)
       throws HttpIncorrectRequestException, HttpInvalidAuthenticationException {
     final ObjectNode arg = arguments.getUriArgs().deepCopy();
     arg.setAll(arguments.getBody());
@@ -133,7 +134,7 @@ public class DbRuleR66RestMethodHandler
   }
 
   @Override
-  protected DbRule getItemPreparedStatement(DbPreparedStatement statement)
+  protected DbRule getItemPreparedStatement(final DbPreparedStatement statement)
       throws HttpIncorrectRequestException, HttpNotFoundRequestException {
     try {
       return DbRule.getFromStatement(statement);
@@ -152,7 +153,7 @@ public class DbRuleR66RestMethodHandler
 
     final ObjectNode node1 = JsonHandler.createObjectNode();
     node1.put(AbstractDbData.JSON_MODEL, DbRule.class.getSimpleName());
-    for (DbRule.Columns column : DbRule.Columns.values()) {
+    for (final DbRule.Columns column : DbRule.Columns.values()) {
       node1.put(column.name(), DbRule.dbTypes[column.ordinal()]);
     }
 
@@ -180,7 +181,7 @@ public class DbRuleR66RestMethodHandler
       node3 = JsonHandler.createObjectNode();
       node3.put(DbRule.Columns.IDRULE.name(),
                 RULE_ID_IN_URI_AS_VARCHAR_AS + path + "/id");
-      for (DbRule.Columns column : DbRule.Columns.values()) {
+      for (final DbRule.Columns column : DbRule.Columns.values()) {
         if (column.name().equalsIgnoreCase(DbRule.Columns.IDRULE.name())) {
           continue;
         }
@@ -202,7 +203,7 @@ public class DbRuleR66RestMethodHandler
     }
     if (methods.contains(METHOD.POST)) {
       node3 = JsonHandler.createObjectNode();
-      for (DbRule.Columns column : DbRule.Columns.values()) {
+      for (final DbRule.Columns column : DbRule.Columns.values()) {
         node3.put(column.name(), DbRule.dbTypes[column.ordinal()]);
       }
       node2 = RestArgument
@@ -224,9 +225,10 @@ public class DbRuleR66RestMethodHandler
   }
 
   @Override
-  protected void checkAuthorization(HttpRestHandler handler,
-                                    RestArgument arguments, RestArgument result,
-                                    METHOD method)
+  protected void checkAuthorization(final HttpRestHandler handler,
+                                    final RestArgument arguments,
+                                    final RestArgument result,
+                                    final METHOD method)
       throws HttpForbiddenRequestException {
     final HttpRestR66Handler r66handler = (HttpRestR66Handler) handler;
     final R66Session session = r66handler.getServerHandler().getSession();

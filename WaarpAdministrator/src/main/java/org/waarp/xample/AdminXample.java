@@ -43,7 +43,7 @@ public class AdminXample extends XAmple {
   private boolean stillLaunched;
   private final List<AdminXample> list;
 
-  public AdminXample(List<AdminXample> list) {
+  public AdminXample(final List<AdminXample> list) {
     this.list = list;
     setStillLaunched(true);
     this.list.add(this);
@@ -61,7 +61,7 @@ public class AdminXample extends XAmple {
   }
 
   @Override
-  protected void processWindowEvent(WindowEvent e) {
+  protected void processWindowEvent(final WindowEvent e) {
     if (e.getID() == WindowEvent.WINDOW_CLOSING && confirmation()) {
       saveRuntimeProperties();
       setStillLaunched(false);
@@ -70,7 +70,7 @@ public class AdminXample extends XAmple {
     }
   }
 
-  public static AdminXample start(List<AdminXample> list) {
+  public static AdminXample start(final List<AdminXample> list) {
     assignDefaultFont();
     final Properties props = new Properties();
     InputStream in = null;
@@ -153,7 +153,7 @@ public class AdminXample extends XAmple {
   /**
    * @param stillLaunched the stillLaunched to set
    */
-  private void setStillLaunched(boolean stillLaunched) {
+  private void setStillLaunched(final boolean stillLaunched) {
     this.stillLaunched = stillLaunched;
   }
 

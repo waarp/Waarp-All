@@ -64,12 +64,12 @@ public abstract class DbModelCommonMariadbMySql extends DbModelAbstract {
 
     public final String constructor;
 
-    DBType(int type, String constructor) {
+    DBType(final int type, final String constructor) {
       this.type = type;
       this.constructor = constructor;
     }
 
-    public static String getType(int sqltype) {
+    public static String getType(final int sqltype) {
       switch (sqltype) {
         case Types.CHAR:
           return CHAR.constructor;
@@ -108,7 +108,7 @@ public abstract class DbModelCommonMariadbMySql extends DbModelAbstract {
   private final ReentrantLock lock = new ReentrantLock();
 
   @Override
-  public void resetSequence(DbSession session, long newvalue)
+  public void resetSequence(final DbSession session, final long newvalue)
       throws WaarpDatabaseNoConnectionException {
     final String action =
         "UPDATE Sequences SET seq = " + newvalue + " WHERE name = '" +
@@ -127,7 +127,7 @@ public abstract class DbModelCommonMariadbMySql extends DbModelAbstract {
   }
 
   @Override
-  public synchronized long nextSequence(DbSession dbSession)
+  public synchronized long nextSequence(final DbSession dbSession)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException,
              WaarpDatabaseNoDataException {
     lock.lock();
@@ -187,7 +187,8 @@ public abstract class DbModelCommonMariadbMySql extends DbModelAbstract {
   }
 
   @Override
-  public String limitRequest(String allfields, String request, int nb) {
+  public String limitRequest(final String allfields, final String request,
+                             final int nb) {
     if (nb == 0) {
       return request;
     }

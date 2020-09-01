@@ -33,14 +33,14 @@ public class ExecutorException extends Exception {
   /**
    * @param s
    */
-  public ExecutorException(String s) {
+  public ExecutorException(final String s) {
     super(s);
   }
 
   /**
    * @param throwable
    */
-  public ExecutorException(Throwable throwable) {
+  public ExecutorException(final Throwable throwable) {
     super(throwable);
   }
 
@@ -48,7 +48,7 @@ public class ExecutorException extends Exception {
    * @param s
    * @param throwable
    */
-  public ExecutorException(String s, Throwable throwable) {
+  public ExecutorException(final String s, final Throwable throwable) {
     super(s, throwable);
   }
 

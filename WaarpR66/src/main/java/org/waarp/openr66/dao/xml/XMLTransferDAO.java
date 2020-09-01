@@ -100,7 +100,7 @@ public class XMLTransferDAO implements TransferDAO {
    * @param limit limit of number of entries in the cache
    * @param ttl time to leave used
    */
-  public static void createLruCache(int limit, long ttl) {
+  public static void createLruCache(final int limit, final long ttl) {
     dbR66TaskHashMap = new SynchronizedLruCache<Long, Transfer>(limit, ttl);
   }
 
@@ -122,7 +122,7 @@ public class XMLTransferDAO implements TransferDAO {
    *
    * @param ttl
    */
-  public static void updateLruCacheTimeout(long ttl) {
+  public static void updateLruCacheTimeout(final long ttl) {
     dbR66TaskHashMap.setNewTtl(ttl);
   }
 
@@ -131,7 +131,7 @@ public class XMLTransferDAO implements TransferDAO {
    *
    * @param specialId
    */
-  public static final void removeNoDbSpecialId(long specialId) {
+  public static final void removeNoDbSpecialId(final long specialId) {
     dbR66TaskHashMap.remove(specialId);
   }
 
@@ -140,13 +140,13 @@ public class XMLTransferDAO implements TransferDAO {
    *
    * @param specialId
    */
-  public static final void updateUsed(long specialId) {
+  public static final void updateUsed(final long specialId) {
     dbR66TaskHashMap.updateTtl(specialId);
   }
 
   private File file;
 
-  public XMLTransferDAO(String filePath) {
+  public XMLTransferDAO(final String filePath) {
     file = new File(filePath);
   }
 
@@ -157,14 +157,15 @@ public class XMLTransferDAO implements TransferDAO {
 
   public static final String XMLEXTENSION = "_singlerunner.xml";
 
-  private File getFile(String requester, String requested, long id) {
+  private File getFile(final String requester, final String requested,
+                       final long id) {
     return new File(Configuration.configuration.getBaseDirectory() +
                     Configuration.configuration.getArchivePath() + '/' +
                     requester + '_' + requested + '_' + id + XMLEXTENSION);
   }
 
   @Override
-  public void delete(Transfer transfer) throws DAOConnectionException {
+  public void delete(final Transfer transfer) throws DAOConnectionException {
     removeNoDbSpecialId(transfer.getId());
   }
 
@@ -212,8 +213,9 @@ public class XMLTransferDAO implements TransferDAO {
   }
 
   @Override
-  public boolean exist(long id, String requester, String requested,
-                       String owner) throws DAOConnectionException {
+  public boolean exist(final long id, final String requester,
+                       final String requested, final String owner)
+      throws DAOConnectionException {
     if (dbR66TaskHashMap.contains(id)) {
       return true;
     }
@@ -227,7 +229,7 @@ public class XMLTransferDAO implements TransferDAO {
    * @return never
    */
   @Override
-  public List<Transfer> find(List<Filter> fitlers)
+  public List<Transfer> find(final List<Filter> fitlers)
       throws DAOConnectionException {
     throw new DAOConnectionException("Operation not supported on XML DAO");
   }
@@ -259,7 +261,7 @@ public class XMLTransferDAO implements TransferDAO {
    * @return never
    */
   @Override
-  public List<Transfer> find(List<Filter> filters, int limit)
+  public List<Transfer> find(final List<Filter> filters, final int limit)
       throws DAOConnectionException {
     throw new DAOConnectionException("Operation not supported on XML DAO");
   }
@@ -270,7 +272,19 @@ public class XMLTransferDAO implements TransferDAO {
    * @return never
    */
   @Override
-  public List<Transfer> find(List<Filter> filters, int limit, int offset)
+  public List<Transfer> find(final List<Filter> filters, final int limit,
+                             final int offset) throws DAOConnectionException {
+    throw new DAOConnectionException("Operation not supported on XML DAO");
+  }
+
+  /**
+   * {@link DAOConnectionException}
+   *
+   * @return never
+   */
+  @Override
+  public List<Transfer> find(final List<Filter> filters, final String column,
+                             final boolean ascend)
       throws DAOConnectionException {
     throw new DAOConnectionException("Operation not supported on XML DAO");
   }
@@ -281,19 +295,8 @@ public class XMLTransferDAO implements TransferDAO {
    * @return never
    */
   @Override
-  public List<Transfer> find(List<Filter> filters, String column,
-                             boolean ascend) throws DAOConnectionException {
-    throw new DAOConnectionException("Operation not supported on XML DAO");
-  }
-
-  /**
-   * {@link DAOConnectionException}
-   *
-   * @return never
-   */
-  @Override
-  public List<Transfer> find(List<Filter> filters, String column,
-                             boolean ascend, int limit)
+  public List<Transfer> find(final List<Filter> filters, final String column,
+                             final boolean ascend, final int limit)
       throws DAOConnectionException {
     throw new DAOConnectionException("Operation not supported on XML DAO");
   }
@@ -304,14 +307,14 @@ public class XMLTransferDAO implements TransferDAO {
    * @return never
    */
   @Override
-  public List<Transfer> find(List<Filter> filters, String column,
-                             boolean ascend, int limit, int offset)
-      throws DAOConnectionException {
+  public List<Transfer> find(final List<Filter> filters, final String column,
+                             final boolean ascend, final int limit,
+                             final int offset) throws DAOConnectionException {
     throw new DAOConnectionException("Operation not supported on XML DAO");
   }
 
   @Override
-  public void insert(Transfer transfer) throws DAOConnectionException {
+  public void insert(final Transfer transfer) throws DAOConnectionException {
     // Set unique Id
     transfer.setId(new LongUuid().getLong());
     dbR66TaskHashMap.put(transfer.getId(), transfer);
@@ -334,8 +337,8 @@ public class XMLTransferDAO implements TransferDAO {
   }
 
   @Override
-  public Transfer select(long id, String requester, String requested,
-                         String owner)
+  public Transfer select(final long id, final String requester,
+                         final String requested, final String owner)
       throws DAOConnectionException, DAONoDataException {
     if (dbR66TaskHashMap.contains(id)) {
       return dbR66TaskHashMap.get(id);
@@ -375,7 +378,7 @@ public class XMLTransferDAO implements TransferDAO {
   }
 
   @Override
-  public void update(Transfer transfer) throws DAOConnectionException {
+  public void update(final Transfer transfer) throws DAOConnectionException {
     file = getFile(transfer.getRequester(), transfer.getRequested(),
                    transfer.getId());
     if (!file.exists()) {
@@ -421,7 +424,7 @@ public class XMLTransferDAO implements TransferDAO {
     }
   }
 
-  private Transfer getFromNode(Node parent) {
+  private Transfer getFromNode(final Node parent) {
     final Transfer res = new Transfer();
     final NodeList children = parent.getChildNodes();
     for (int j = 0; j < children.getLength(); j++) {
@@ -475,7 +478,7 @@ public class XMLTransferDAO implements TransferDAO {
     return res;
   }
 
-  private Node getNode(Document doc, Transfer transfer) {
+  private Node getNode(final Document doc, final Transfer transfer) {
     final Node res = doc.createElement(ROOT_ELEMENT);
     res.appendChild(
         XMLUtils.createNode(doc, ID_FIELD, Long.toString(transfer.getId())));

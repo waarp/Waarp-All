@@ -41,14 +41,14 @@ public class DataTimeOutListener implements FTPDataTransferListener {
 
   private final FTPClient client;
   private final Timer timer;
-  private long timeout;
+  private final long timeout;
   private long last = System.currentTimeMillis();
   private boolean finished;
   private final String command;
   private final String file;
 
-  public DataTimeOutListener(FTPClient client, long timeout, String command,
-                             String file) {
+  public DataTimeOutListener(final FTPClient client, final long timeout,
+                             final String command, final String file) {
     this.client = client;
     timer = new Timer(true);
     this.timeout = timeout;
@@ -89,7 +89,7 @@ public class DataTimeOutListener implements FTPDataTransferListener {
   }
 
   @Override
-  public void transferred(int length) {
+  public void transferred(final int length) {
     last = System.currentTimeMillis();
   }
 

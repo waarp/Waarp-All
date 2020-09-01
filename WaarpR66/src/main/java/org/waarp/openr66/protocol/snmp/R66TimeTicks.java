@@ -34,13 +34,13 @@ class R66TimeTicks extends WaarpTimeTicks {
    */
   private static final long serialVersionUID = -5850987508703222927L;
 
-  R66TimeTicks(int type, int entry) {
+  R66TimeTicks(final int type, final int entry) {
     this.type = type;
     this.entry = entry;
     setInternalValue();
   }
 
-  R66TimeTicks(int type, int entry, long value) {
+  R66TimeTicks(final int type, final int entry, final long value) {
     this.type = type;
     this.entry = entry;
     setInternalValue(value);
@@ -52,7 +52,7 @@ class R66TimeTicks extends WaarpTimeTicks {
   }
 
   @Override
-  protected void setInternalValue(long value) {
+  protected void setInternalValue(final long value) {
     setValue(value);
   }
 

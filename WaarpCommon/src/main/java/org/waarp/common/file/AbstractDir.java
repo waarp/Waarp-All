@@ -85,7 +85,7 @@ public abstract class AbstractDir implements DirInterface {
    *
    * @return The corresponding Root file
    */
-  protected File getCorrespondingRoot(File file) {
+  protected File getCorrespondingRoot(final File file) {
     if (ISUNIX) {
       return new File("/");
     }
@@ -107,7 +107,7 @@ public abstract class AbstractDir implements DirInterface {
    *
    * @return the normalized path
    */
-  public static String normalizePath(String path) {
+  public static String normalizePath(final String path) {
     return path.replace('\\', SEPARATORCHAR);
   }
 
@@ -152,7 +152,8 @@ public abstract class AbstractDir implements DirInterface {
   }
 
   @Override
-  public String validatePath(String path) throws CommandAbstractException {
+  public String validatePath(final String path)
+      throws CommandAbstractException {
     String extDir;
     if (isAbsolute(path)) {
       extDir = path;
@@ -181,7 +182,7 @@ public abstract class AbstractDir implements DirInterface {
    * @return True if the given Path is an absolute one under Windows System or
    *     should be an absolute one on Unix
    */
-  public boolean isAbsolute(String path) {
+  public boolean isAbsolute(final String path) {
     File file = new File(path);
     logger.trace(
         "isAbsolute: " + file + ':' + ISUNIX + ':' + file.isAbsolute() + ':' +
@@ -204,7 +205,7 @@ public abstract class AbstractDir implements DirInterface {
    *
    * @throws CommandAbstractException
    */
-  protected String consolidatePath(String path)
+  protected String consolidatePath(final String path)
       throws CommandAbstractException {
     if (path == null || path.isEmpty()) {
       throw new Reply501Exception("Path must not be empty");
@@ -227,7 +228,7 @@ public abstract class AbstractDir implements DirInterface {
    *
    * @return the canonicalPath
    */
-  protected String getCanonicalPath(File dir) {
+  protected String getCanonicalPath(final File dir) {
     if (ISUNIX) {
       // resolve it without getting symbolic links
       final StringBuilder builder = new StringBuilder();
@@ -285,7 +286,8 @@ public abstract class AbstractDir implements DirInterface {
    *
    * @throws CommandAbstractException
    */
-  protected String validatePath(File dir) throws CommandAbstractException {
+  protected String validatePath(final File dir)
+      throws CommandAbstractException {
     String extDir;
     extDir = normalizePath(getCanonicalPath(dir));
     // Get the relative business path
@@ -299,8 +301,8 @@ public abstract class AbstractDir implements DirInterface {
   }
 
   @Override
-  public boolean isPathInCurrentDir(String path) {
-    String extDir;
+  public boolean isPathInCurrentDir(final String path) {
+    final String extDir;
     if (isAbsolute(path)) {
       extDir = path;
       final File newDir = new File(extDir);
@@ -327,7 +329,7 @@ public abstract class AbstractDir implements DirInterface {
    *
    * @throws CommandAbstractException
    */
-  protected boolean isPathInCurrentDir(File dir) {
+  protected boolean isPathInCurrentDir(final File dir) {
     String extDir;
     extDir = normalizePath(getCanonicalPath(dir));
     // Get the relative business path
@@ -371,7 +373,7 @@ public abstract class AbstractDir implements DirInterface {
   }
 
   @Override
-  public FileInterface setFile(String path, boolean append)
+  public FileInterface setFile(final String path, final boolean append)
       throws CommandAbstractException {
     checkIdentify();
     final String newpath = consolidatePath(path);

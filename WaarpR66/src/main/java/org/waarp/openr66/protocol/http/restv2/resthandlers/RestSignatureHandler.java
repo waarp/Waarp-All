@@ -58,7 +58,7 @@ public class RestSignatureHandler
    *
    * @param hmac The REST HMAC signing key.
    */
-  public RestSignatureHandler(HmacSha256 hmac) {
+  public RestSignatureHandler(final HmacSha256 hmac) {
     this.hmac = hmac;
   }
 
@@ -75,8 +75,8 @@ public class RestSignatureHandler
    * @param request The original HTTP request.
    */
   @Override
-  protected void channelRead0(ChannelHandlerContext ctx,
-                              FullHttpRequest request) {
+  protected void channelRead0(final ChannelHandlerContext ctx,
+                              final FullHttpRequest request) {
 
     // If the request does not have a body, skip the signature checking.
     if (!request.content().isReadable()) {
@@ -90,7 +90,7 @@ public class RestSignatureHandler
     final String method = request.method().toString();
     final String sign = request.headers().get(AUTH_SIGNATURE);
 
-    FullHttpResponse response;
+    final FullHttpResponse response;
 
     if (authent == null || sign == null) {
       response = new DefaultFullHttpResponse(HTTP_1_1, UNAUTHORIZED);
@@ -98,7 +98,7 @@ public class RestSignatureHandler
       return;
     }
 
-    String computedHash;
+    final String computedHash;
     try {
       computedHash = hmac.cryptToHex(authent + body + URI + method);
     } catch (final Exception e) {

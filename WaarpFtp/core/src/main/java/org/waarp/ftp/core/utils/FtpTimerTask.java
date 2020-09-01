@@ -59,7 +59,7 @@ public class FtpTimerTask extends TimerTask {
    *
    * @param type
    */
-  public FtpTimerTask(int type) {
+  public FtpTimerTask(final int type) {
     this.type = type;
   }
 
@@ -90,7 +90,7 @@ public class FtpTimerTask extends TimerTask {
   /**
    * @param configuration the configuration to set
    */
-  public void setConfiguration(FtpConfiguration configuration) {
+  public void setConfiguration(final FtpConfiguration configuration) {
     this.configuration = configuration;
   }
 }

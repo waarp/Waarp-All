@@ -45,7 +45,7 @@ public final class RestConstants {
   static {
     try {
       DAOFactory.initialize(ConnectionFactory.getInstance());
-    } catch (Throwable ignored) {//NOSONAR
+    } catch (final Throwable ignored) {//NOSONAR
       SysErrLogger.FAKE_LOGGER //NOSONAR
                                .syserr("Error during static execution",//NOSONAR
                                        ignored);//NOSONAR
@@ -79,11 +79,11 @@ public final class RestConstants {
    *
    * @return the name of this R66 server according to SSL
    */
-  public static final String serverName(String requested) {
+  public static final String serverName(final String requested) {
     String requester = serverName();
     try {
       requester = Configuration.configuration.getHostId(requested);
-    } catch (WaarpDatabaseException e) {
+    } catch (final WaarpDatabaseException e) {
       // Ignore !!
     }
     return requester;

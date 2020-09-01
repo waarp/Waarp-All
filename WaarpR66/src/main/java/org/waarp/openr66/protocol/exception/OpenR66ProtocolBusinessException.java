@@ -39,21 +39,22 @@ public class OpenR66ProtocolBusinessException extends OpenR66Exception {
    * @param arg0
    * @param arg1
    */
-  public OpenR66ProtocolBusinessException(String arg0, Throwable arg1) {
+  public OpenR66ProtocolBusinessException(final String arg0,
+                                          final Throwable arg1) {
     super(arg0, arg1);
   }
 
   /**
    * @param arg0
    */
-  public OpenR66ProtocolBusinessException(String arg0) {
+  public OpenR66ProtocolBusinessException(final String arg0) {
     super(arg0);
   }
 
   /**
    * @param arg0
    */
-  public OpenR66ProtocolBusinessException(Throwable arg0) {
+  public OpenR66ProtocolBusinessException(final Throwable arg0) {
     super(arg0);
   }
 

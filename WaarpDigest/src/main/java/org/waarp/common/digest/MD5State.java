@@ -121,7 +121,7 @@ class MD5State {
    *
    * @param from
    */
-  MD5State(MD5State from) {
+  MD5State(final MD5State from) {
     this();
     System.arraycopy(from.buffer, 0, buffer, 0, buffer.length);
     System.arraycopy(from.state, 0, state, 0, state.length);

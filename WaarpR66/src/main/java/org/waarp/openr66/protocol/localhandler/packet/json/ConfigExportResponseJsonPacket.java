@@ -43,7 +43,7 @@ public class ConfigExportResponseJsonPacket extends ConfigExportJsonPacket {
   /**
    * @param command the command to set
    */
-  public void setCommand(byte command) {
+  public void setCommand(final byte command) {
     this.command = command;
   }
 
@@ -57,7 +57,7 @@ public class ConfigExportResponseJsonPacket extends ConfigExportJsonPacket {
   /**
    * @param filehost the filehost to set
    */
-  public void setFilehost(String filehost) {
+  public void setFilehost(final String filehost) {
     this.filehost = filehost;
   }
 
@@ -71,7 +71,7 @@ public class ConfigExportResponseJsonPacket extends ConfigExportJsonPacket {
   /**
    * @param filerule the filerule to set
    */
-  public void setFilerule(String filerule) {
+  public void setFilerule(final String filerule) {
     this.filerule = filerule;
   }
 
@@ -85,7 +85,7 @@ public class ConfigExportResponseJsonPacket extends ConfigExportJsonPacket {
   /**
    * @param filebusiness the filebusiness to set
    */
-  public void setFilebusiness(String filebusiness) {
+  public void setFilebusiness(final String filebusiness) {
     this.filebusiness = filebusiness;
   }
 
@@ -99,7 +99,7 @@ public class ConfigExportResponseJsonPacket extends ConfigExportJsonPacket {
   /**
    * @param filealias the filealias to set
    */
-  public void setFilealias(String filealias) {
+  public void setFilealias(final String filealias) {
     this.filealias = filealias;
   }
 
@@ -113,7 +113,7 @@ public class ConfigExportResponseJsonPacket extends ConfigExportJsonPacket {
   /**
    * @param fileroles the fileroles to set
    */
-  public void setFileroles(String fileroles) {
+  public void setFileroles(final String fileroles) {
     this.fileroles = fileroles;
   }
 

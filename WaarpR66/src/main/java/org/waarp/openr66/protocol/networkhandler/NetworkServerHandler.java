@@ -101,12 +101,13 @@ public class NetworkServerHandler
   /**
    * @param isServer
    */
-  public NetworkServerHandler(boolean isServer) {
+  public NetworkServerHandler(final boolean isServer) {
     this.isServer = isServer;
   }
 
   @Override
-  public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+  public void channelInactive(final ChannelHandlerContext ctx)
+      throws Exception {
     try {
       if (Configuration.configuration.getServerConnectedChannelGroup() !=
           null) {
@@ -127,7 +128,7 @@ public class NetworkServerHandler
         }
         try {
           NetworkTransaction.closedNetworkChannel(networkChannelReference);
-        } catch (RejectedExecutionException e) {
+        } catch (final RejectedExecutionException e) {
           logger.debug(e);
         }
       } else {
@@ -136,7 +137,7 @@ public class NetworkServerHandler
         }
         try {
           NetworkTransaction.closedNetworkChannel(remoteAddress);
-        } catch (RejectedExecutionException e) {
+        } catch (final RejectedExecutionException e) {
           logger.debug(e);
         }
       }
@@ -146,13 +147,13 @@ public class NetworkServerHandler
         dbSession.forceDisconnect();
         dbSession = null;
       }
-    } catch (RejectedExecutionException e) {
+    } catch (final RejectedExecutionException e) {
       logger.debug(e);
     }
   }
 
   @Override
-  public void channelActive(ChannelHandlerContext ctx) throws Exception {
+  public void channelActive(final ChannelHandlerContext ctx) throws Exception {
     final Channel netChannel = ctx.channel();
     if (Configuration.configuration.getServerConnectedChannelGroup() != null) {
       Configuration.configuration.getServerConnectedChannelGroup()
@@ -202,8 +203,8 @@ public class NetworkServerHandler
   }
 
   @Override
-  public void userEventTriggered(ChannelHandlerContext ctx, Object evt)
-      throws Exception {
+  public void userEventTriggered(final ChannelHandlerContext ctx,
+                                 final Object evt) throws Exception {
     if (Configuration.configuration.isShutdown()) {
       return;
     }
@@ -269,8 +270,8 @@ public class NetworkServerHandler
   }
 
   @Override
-  public void channelRead0(ChannelHandlerContext ctx, NetworkPacket msg)
-      throws Exception {
+  public void channelRead0(final ChannelHandlerContext ctx,
+                           final NetworkPacket msg) throws Exception {
     if (isBlackListed) {
       // ignore message since close on going
       msg.clear();
@@ -327,7 +328,7 @@ public class NetworkServerHandler
     }
     logger.trace("TRACE ID GET MSG: {}", msg);
     networkChannelReference.use();
-    LocalChannelReference localChannelReference;
+    final LocalChannelReference localChannelReference;
     if (msg.getLocalId() == ChannelUtils.NOCHANNEL) {
       localChannelReference = NetworkTransaction
           .createConnectionFromNetworkChannelStartup(networkChannelReference,
@@ -417,7 +418,8 @@ public class NetworkServerHandler
   }
 
   @Override
-  public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
+  public void exceptionCaught(final ChannelHandlerContext ctx,
+                              final Throwable cause) {
     final Channel channel = ctx.channel();
     if (isBlackListed) {
       logger.info("While partner is blacklisted, Network Channel Exception: {}",
@@ -487,8 +489,9 @@ public class NetworkServerHandler
    * @param localId
    * @param error
    */
-  public static void writeError(Channel channel, Integer remoteId,
-                                Integer localId, AbstractLocalPacket error) {
+  public static void writeError(final Channel channel, final Integer remoteId,
+                                final Integer localId,
+                                final AbstractLocalPacket error) {
     NetworkPacket networkPacket = null;
     try {
       networkPacket = new NetworkPacket(localId, remoteId, error, null);

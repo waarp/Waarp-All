@@ -97,7 +97,7 @@ public enum IcapError {
   private final int code;
   private final String message;
 
-  IcapError(int code, String message) {
+  IcapError(final int code, final String message) {
     this.code = code;
     this.message = message;
   }

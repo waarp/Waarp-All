@@ -65,7 +65,7 @@ public final class HostConverter {
      */
     ascId(new Comparator<Host>() {
       @Override
-      public int compare(Host t1, Host t2) {
+      public int compare(final Host t1, final Host t2) {
         return t1.getHostid().compareTo(t2.getHostid());
       }
     }),
@@ -74,7 +74,7 @@ public final class HostConverter {
      */
     descId(new Comparator<Host>() {
       @Override
-      public int compare(Host t1, Host t2) {
+      public int compare(final Host t1, final Host t2) {
         return -t1.getHostid().compareTo(t2.getHostid());
       }
     }),
@@ -83,7 +83,7 @@ public final class HostConverter {
      */
     ascAddress(new Comparator<Host>() {
       @Override
-      public int compare(Host t1, Host t2) {
+      public int compare(final Host t1, final Host t2) {
         return t1.getAddress().compareTo(t2.getAddress());
       }
     }),
@@ -92,7 +92,7 @@ public final class HostConverter {
      */
     descAddress(new Comparator<Host>() {
       @Override
-      public int compare(Host t1, Host t2) {
+      public int compare(final Host t1, final Host t2) {
         return -t1.getAddress().compareTo(t2.getAddress());
       }
     });
@@ -102,7 +102,7 @@ public final class HostConverter {
      */
     public final Comparator<Host> comparator;
 
-    Order(Comparator<Host> comparator) {
+    Order(final Comparator<Host> comparator) {
       this.comparator = comparator;
     }
   }
@@ -116,7 +116,7 @@ public final class HostConverter {
    *
    * @return the converted ObjectNode
    */
-  public static ObjectNode hostToNode(Host host) {
+  public static ObjectNode hostToNode(final Host host) {
     final ObjectNode node = new ObjectNode(JsonNodeFactory.instance);
     node.put(HOST_NAME, host.getHostid());
     node.put(ADDRESS, host.getAddress());
@@ -143,7 +143,7 @@ public final class HostConverter {
    * @throws InternalServerErrorException if an unexpected error
    *     occurred
    */
-  public static Host nodeToNewHost(ObjectNode object) {
+  public static Host nodeToNewHost(final ObjectNode object) {
     final Host emptyHost =
         new Host(null, null, -1, null, false, false, false, false, true);
 
@@ -166,7 +166,8 @@ public final class HostConverter {
    * @throws InternalServerErrorException if an unexpected error
    *     occurred
    */
-  public static Host nodeToUpdatedHost(ObjectNode object, Host oldHost) {
+  public static Host nodeToUpdatedHost(final ObjectNode object,
+                                       final Host oldHost) {
 
     final List<RestError> errors = new ArrayList<RestError>();
 
@@ -261,7 +262,7 @@ public final class HostConverter {
    * @throws InternalServerErrorException If an error occurred when
    *     encrypting the password.
    */
-  private static byte[] encryptPassword(String password) {
+  private static byte[] encryptPassword(final String password) {
     try {
       return configuration.getCryptoKey().cryptToHex(password).getBytes();
     } catch (final Exception e) {
@@ -281,7 +282,7 @@ public final class HostConverter {
    *
    * @return the list of encountered errors
    */
-  private static List<RestError> checkRequiredFields(Host host) {
+  private static List<RestError> checkRequiredFields(final Host host) {
     final List<RestError> errors = new ArrayList<RestError>();
     if (host.getHostid() == null || host.getHostid().isEmpty()) {
       errors.add(MISSING_FIELD(HOST_NAME));

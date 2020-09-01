@@ -53,7 +53,7 @@ public abstract class KeyManager {
    *
    * @return the list of wrong keys
    */
-  public List<String> initFromList(List<String> keys) {
+  public List<String> initFromList(final List<String> keys) {
     final LinkedList<String> wrong = new LinkedList<String>();
     for (final String filename : keys) {
       final File file = new File(filename);
@@ -67,7 +67,7 @@ public abstract class KeyManager {
         final String firstname = basename.substring(0, lastpos);
         int len = (int) file.length();
         final byte[] key = new byte[len];
-        FileInputStream inputStream;
+        final FileInputStream inputStream;
         try {
           inputStream = new FileInputStream(file);
         } catch (final FileNotFoundException e) {
@@ -123,7 +123,7 @@ public abstract class KeyManager {
    * @param name
    * @param keyObject
    */
-  public void setKey(String name, KeyObject keyObject) {
+  public void setKey(final String name, final KeyObject keyObject) {
     keysConcurrentHashMap.put(name, keyObject);
   }
 
@@ -132,7 +132,7 @@ public abstract class KeyManager {
    *
    * @return the key associated to the given name
    */
-  public KeyObject getKey(String name) {
+  public KeyObject getKey(final String name) {
     return keysConcurrentHashMap.get(name);
   }
 
@@ -146,7 +146,8 @@ public abstract class KeyManager {
    *
    * @throws Exception
    */
-  public String crypt(String keyName, String toBeCrypted) throws Exception {
+  public String crypt(final String keyName, final String toBeCrypted)
+      throws Exception {
     final KeyObject keyObject = getKey(keyName);
     if (keyObject == null) {
       throw new NoSuchAlgorithmException("Key does not exist: " + keyName);
@@ -165,7 +166,8 @@ public abstract class KeyManager {
    *
    * @throws Exception
    */
-  public String decrypt(String keyName, String toBeDecrypted) throws Exception {
+  public String decrypt(final String keyName, final String toBeDecrypted)
+      throws Exception {
     final KeyObject keyObject = getKey(keyName);
     if (keyObject == null) {
       throw new NoSuchAlgorithmException("Key does not exist: " + keyName);

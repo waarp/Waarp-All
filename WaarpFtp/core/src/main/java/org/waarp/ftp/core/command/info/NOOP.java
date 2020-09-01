@@ -36,7 +36,7 @@ public class NOOP extends AbstractCommand {
    *
    * @param session
    */
-  public NOOP(FtpSession session) {
+  public NOOP(final FtpSession session) {
     setArgs(session, FtpCommandCode.NOOP.name(), null, FtpCommandCode.NOOP);
   }
 

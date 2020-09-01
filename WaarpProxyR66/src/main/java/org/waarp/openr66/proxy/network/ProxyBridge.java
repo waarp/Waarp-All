@@ -44,7 +44,8 @@ public class ProxyBridge {
    * @param proxyEntry
    * @param source
    */
-  public ProxyBridge(ProxyEntry proxyEntry, NetworkServerHandler source) {
+  public ProxyBridge(final ProxyEntry proxyEntry,
+                     final NetworkServerHandler source) {
     this.proxyEntry = proxyEntry;
     this.source = source;
   }

@@ -36,7 +36,7 @@ public abstract class FilesystemBasedRestartImpl extends Restart {
   /**
    * @param session
    */
-  protected FilesystemBasedRestartImpl(SessionInterface session) {
+  protected FilesystemBasedRestartImpl(final SessionInterface session) {
     super(session);
   }
 
@@ -65,7 +65,7 @@ public abstract class FilesystemBasedRestartImpl extends Restart {
   }
 
   @Override
-  public void setSet(boolean isSet) {
+  public void setSet(final boolean isSet) {
     super.setSet(isSet);
     limit = -1;
   }

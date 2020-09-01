@@ -62,11 +62,11 @@ public class MultipleDirectTransfer extends DirectTransfer {
   private int doneMultiple;
   private final List<OutputFormat> results = new ArrayList<OutputFormat>();
 
-  public MultipleDirectTransfer(R66Future future, String remoteHost,
-                                String filename, String rulename,
-                                String fileinfo, boolean isMD5, int blocksize,
-                                long id,
-                                NetworkTransaction networkTransaction) {
+  public MultipleDirectTransfer(final R66Future future, final String remoteHost,
+                                final String filename, final String rulename,
+                                final String fileinfo, final boolean isMD5,
+                                final int blocksize, final long id,
+                                final NetworkTransaction networkTransaction) {
     // no starttime since it is direct (blocking request, no delay)
     super(future, remoteHost, filename, rulename, fileinfo, isMD5, blocksize,
           id, networkTransaction);
@@ -82,7 +82,7 @@ public class MultipleDirectTransfer extends DirectTransfer {
     boolean inError = false;
     R66Result resultError = null;
     // first check if filenames contains wildcards
-    DbRule dbrule;
+    final DbRule dbrule;
     try {
       dbrule = new DbRule(transferArgs.getRulename());
     } catch (final WaarpDatabaseException e1) {
@@ -96,14 +96,14 @@ public class MultipleDirectTransfer extends DirectTransfer {
     }
     for (String host : rhosts) {
       host = host.trim();
-      if (host != null && !host.isEmpty()) {
+      if (!host.isEmpty()) {
         if (dbrule.isRecvMode()) {
           files =
               getRemoteFiles(dbrule, localfilenames, host, networkTransaction);
         }
         for (String filename : files) {
           filename = filename.trim();
-          if (filename != null && !filename.isEmpty()) {
+          if (!filename.isEmpty()) {
             logger
                 .info("Launch transfer to " + host + " with file " + filename);
             final long time1 = System.currentTimeMillis();
@@ -159,10 +159,7 @@ public class MultipleDirectTransfer extends DirectTransfer {
               getResults().add(outputFormat);
               setErrorMultiple(getErrorMultiple() + 1);
               inError = true;
-              if (result != null) {
-                inError = true;
-                resultError = result;
-              }
+              resultError = result;
             }
           }
         }
@@ -178,7 +175,7 @@ public class MultipleDirectTransfer extends DirectTransfer {
     }
   }
 
-  public static void main(String[] args) {
+  public static void main(final String[] args) {
     WaarpLoggerFactory
         .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));
     if (logger == null) {
@@ -284,7 +281,7 @@ public class MultipleDirectTransfer extends DirectTransfer {
   /**
    * @param errorMultiple the errorMultiple to set
    */
-  private void setErrorMultiple(int errorMultiple) {
+  private void setErrorMultiple(final int errorMultiple) {
     this.errorMultiple = errorMultiple;
   }
 
@@ -298,7 +295,7 @@ public class MultipleDirectTransfer extends DirectTransfer {
   /**
    * @param doneMultiple the doneMultiple to set
    */
-  private void setDoneMultiple(int doneMultiple) {
+  private void setDoneMultiple(final int doneMultiple) {
     this.doneMultiple = doneMultiple;
   }
 

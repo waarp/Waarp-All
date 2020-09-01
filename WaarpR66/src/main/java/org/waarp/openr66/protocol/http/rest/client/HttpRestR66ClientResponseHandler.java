@@ -84,7 +84,7 @@ public abstract class HttpRestR66ClientResponseHandler
   private ByteBuf cumulativeBody;
   protected JsonNode jsonObject;
 
-  protected void addContent(FullHttpResponse response)
+  protected void addContent(final FullHttpResponse response)
       throws HttpIncorrectRequestException {
     final ByteBuf content = response.content();
     if (content != null && content.isReadable()) {
@@ -113,7 +113,7 @@ public abstract class HttpRestR66ClientResponseHandler
    *
    * @throws HttpInvalidAuthenticationException
    */
-  protected void actionFromResponse(Channel channel)
+  protected void actionFromResponse(final Channel channel)
       throws HttpInvalidAuthenticationException {
     boolean includeValidation = false;
     final RestArgument ra = new RestArgument((ObjectNode) jsonObject);
@@ -255,7 +255,7 @@ public abstract class HttpRestR66ClientResponseHandler
   protected abstract boolean afterError(Channel channel, RestArgument ra)
       throws HttpInvalidAuthenticationException;
 
-  protected boolean get(Channel channel, RestArgument ra)
+  protected boolean get(final Channel channel, final RestArgument ra)
       throws HttpInvalidAuthenticationException {
     if (logger.isDebugEnabled()) {
       logger.debug(ra.prettyPrint());
@@ -275,7 +275,7 @@ public abstract class HttpRestR66ClientResponseHandler
     }
   }
 
-  protected boolean put(Channel channel, RestArgument ra)
+  protected boolean put(final Channel channel, final RestArgument ra)
       throws HttpInvalidAuthenticationException {
     if (logger.isDebugEnabled()) {
       logger.debug(ra.prettyPrint());
@@ -293,7 +293,7 @@ public abstract class HttpRestR66ClientResponseHandler
     }
   }
 
-  protected boolean post(Channel channel, RestArgument ra)
+  protected boolean post(final Channel channel, final RestArgument ra)
       throws HttpInvalidAuthenticationException {
     if (logger.isDebugEnabled()) {
       logger.debug(ra.prettyPrint());
@@ -311,7 +311,7 @@ public abstract class HttpRestR66ClientResponseHandler
     }
   }
 
-  protected boolean delete(Channel channel, RestArgument ra)
+  protected boolean delete(final Channel channel, final RestArgument ra)
       throws HttpInvalidAuthenticationException {
     if (logger.isDebugEnabled()) {
       logger.debug(ra.prettyPrint());
@@ -329,7 +329,7 @@ public abstract class HttpRestR66ClientResponseHandler
     }
   }
 
-  protected boolean options(Channel channel, RestArgument ra)
+  protected boolean options(final Channel channel, final RestArgument ra)
       throws HttpInvalidAuthenticationException {
     if (logger.isDebugEnabled()) {
       logger.debug(ra.prettyPrint());
@@ -348,8 +348,8 @@ public abstract class HttpRestR66ClientResponseHandler
   }
 
   @Override
-  protected void channelRead0(ChannelHandlerContext ctx, HttpObject msg)
-      throws Exception {
+  protected void channelRead0(final ChannelHandlerContext ctx,
+                              final HttpObject msg) throws Exception {
     if (msg instanceof HttpResponse) {
       final HttpResponse response = (HttpResponse) msg;
       final HttpResponseStatus status = response.status();
@@ -430,8 +430,8 @@ public abstract class HttpRestR66ClientResponseHandler
   }
 
   @Override
-  public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
-      throws Exception {
+  public void exceptionCaught(final ChannelHandlerContext ctx,
+                              final Throwable cause) throws Exception {
     final RestFuture restFuture =
         ctx.channel().attr(HttpRestClientSimpleResponseHandler.RESTARGUMENT)
            .get();

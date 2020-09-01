@@ -84,11 +84,11 @@ public final class LocalServerHandler {
   private LocalServerHandler() {
   }
 
-  public static void channelInactive(TransferActions serverHandler) {
+  public static void channelInactive(final TransferActions serverHandler) {
     serverHandler.channelClosed();
   }
 
-  public static void channelActive(TransferActions serverHandler) {
+  public static void channelActive(final TransferActions serverHandler) {
     serverHandler.newSession();
   }
 
@@ -100,15 +100,15 @@ public final class LocalServerHandler {
    */
   public static void channelRead0(
       final LocalChannelReference localChannelReference,
-      NetworkPacket networkPacket) {
+      final NetworkPacket networkPacket) {
     try {
-      AbstractLocalPacket packet =
+      final AbstractLocalPacket packet =
           LocalPacketCodec.decodeNetworkPacket(networkPacket.getBuffer());
       channelRead1(localChannelReference, packet);
-    } catch (OpenR66ProtocolShutdownException e) {
+    } catch (final OpenR66ProtocolShutdownException e) {
       logger.error(e.getMessage());
       exceptionCaught(localChannelReference.getServerHandler(), e);
-    } catch (Exception e) {
+    } catch (final Exception e) {
       logger.error(e);
       exceptionCaught(localChannelReference.getServerHandler(), e);
     } finally {
@@ -118,19 +118,20 @@ public final class LocalServerHandler {
 
   public static void channelRead0(
       final LocalChannelReference localChannelReference,
-      AbstractLocalPacket msg) {
+      final AbstractLocalPacket msg) {
     try {
       channelRead1(localChannelReference, msg);
-    } catch (Exception e) {
+    } catch (final Exception e) {
       exceptionCaught(localChannelReference.getServerHandler(), e);
     }
   }
 
   public static void channelRead1(
       final LocalChannelReference localChannelReference,
-      AbstractLocalPacket packet) throws Exception {
+      final AbstractLocalPacket packet) throws Exception {
     // action as requested and answer if necessary
-    TransferActions serverHandler = localChannelReference.getServerHandler();
+    final TransferActions serverHandler =
+        localChannelReference.getServerHandler();
     logger.trace("TRACE ID Received virtually {} {}", packet,
                  localChannelReference);
     if (packet.getType() == LocalPacketFactory.STARTUPPACKET) {
@@ -364,8 +365,8 @@ public final class LocalServerHandler {
     }
   }
 
-  public static void exceptionCaught(TransferActions serverHandler,
-                                     Throwable cause) {
+  public static void exceptionCaught(final TransferActions serverHandler,
+                                     final Throwable cause) {
     // inform clients
     logger.debug("Exception and isFinished: " +
                  (serverHandler.getLocalChannelReference() != null &&
@@ -378,8 +379,9 @@ public final class LocalServerHandler {
     }
     final OpenR66Exception exception = OpenR66ExceptionTrappedFactory
         .getExceptionFromTrappedException(
-            serverHandler.getLocalChannelReference().getNetworkChannel(),
-            cause);
+            serverHandler.getLocalChannelReference() != null?
+                serverHandler.getLocalChannelReference().getNetworkChannel() :
+                null, cause);
     ErrorCode code;
     if (exception != null) {
       serverHandler.getSession().newState(ERROR);

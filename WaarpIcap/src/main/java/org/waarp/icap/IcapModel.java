@@ -51,7 +51,7 @@ public enum IcapModel {
 
   private final String[] defaultArgs;
 
-  private IcapModel(final String[] args) {
+  IcapModel(final String[] args) {
     defaultArgs = args;
   }
 

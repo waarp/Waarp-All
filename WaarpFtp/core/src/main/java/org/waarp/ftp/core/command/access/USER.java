@@ -37,7 +37,7 @@ public class USER extends AbstractCommand {
       throw new Reply501Exception("Need a username as argument");
     }
     final String username = getArg();
-    NextCommandReply nextCommandReply;
+    final NextCommandReply nextCommandReply;
     try {
       nextCommandReply = getSession().getAuth().setUser(username);
     } catch (final Reply530Exception e) {

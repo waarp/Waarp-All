@@ -67,7 +67,7 @@ public class ServerInitDatabase {
   private ServerInitDatabase() {
   }
 
-  protected static boolean getParams(String[] args) {
+  protected static boolean getParams(final String[] args) {
     if (logger == null) {
       logger = WaarpLoggerFactory.getLogger(ServerInitDatabase.class);
     }
@@ -110,7 +110,7 @@ public class ServerInitDatabase {
    * @param args as config_database file [rules_directory host_authent
    *     limit_configuration]
    */
-  public static void main(String[] args) {
+  public static void main(final String[] args) {
     WaarpLoggerFactory
         .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));
     if (logger == null) {
@@ -296,7 +296,7 @@ public class ServerInitDatabase {
     }
   }
 
-  private static String getXMLFromFile(String path) {
+  private static String getXMLFromFile(final String path) {
     String res = "";
     final File file = new File(path);
     if (file.canRead()) {
@@ -354,7 +354,7 @@ public class ServerInitDatabase {
     return !uptodate;
   }
 
-  public static boolean loadRules(File dirConfig)
+  public static boolean loadRules(final File dirConfig)
       throws WaarpDatabaseException {
     try {
       RuleFileBasedConfiguration.importRules(dirConfig);
@@ -365,7 +365,7 @@ public class ServerInitDatabase {
     return true;
   }
 
-  public static boolean loadHostAuth(String filename) {
+  public static boolean loadHostAuth(final String filename) {
     return AuthenticationFileBasedConfiguration
         .loadAuthentication(Configuration.configuration, filename);
   }

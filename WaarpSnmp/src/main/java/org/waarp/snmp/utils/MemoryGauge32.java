@@ -33,7 +33,7 @@ public class MemoryGauge32 extends WaarpGauge32 {
   /**
    * The different Type of Memory Gauge32 elements
    */
-  public static enum MemoryType {
+  public enum MemoryType {
     TotalMemory, FreeMemory, UsedMemory
   }
 
@@ -51,7 +51,7 @@ public class MemoryGauge32 extends WaarpGauge32 {
     if (type == null) {
       return;
     }
-    long mem;
+    final long mem;
     switch (type) {
       case TotalMemory:
         mem = runtime.totalMemory();
@@ -68,7 +68,7 @@ public class MemoryGauge32 extends WaarpGauge32 {
   }
 
   @Override
-  protected void setInternalValue(long value) {
+  protected void setInternalValue(final long value) {
     // ignored
     setInternalValue();
   }
@@ -76,7 +76,7 @@ public class MemoryGauge32 extends WaarpGauge32 {
   /**
    * @param type the type of MemoryType used
    */
-  public MemoryGauge32(MemoryType type) {
+  public MemoryGauge32(final MemoryType type) {
     this.type = type;
     setInternalValue();
   }

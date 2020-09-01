@@ -707,18 +707,18 @@ public class Configuration {
     }
   }
 
-  private String arrayToString(String[] array) {
-    String ip;
+  private String arrayToString(final String[] array) {
+    final StringBuilder ip;
     if (array != null && array.length > 0) {
-      ip = "[" + array[0];
+      ip = new StringBuilder("[" + array[0]);
       for (int i = 1; i < array.length; i++) {
-        ip += "," + array[i];
+        ip.append(",").append(array[i]);
       }
-      ip += "]";
+      ip.append("]");
     } else {
-      ip = "[All Interfaces]";
+      ip = new StringBuilder("[All Interfaces]");
     }
-    return ip;
+    return ip.toString();
   }
 
   @Override
@@ -736,10 +736,10 @@ public class Configuration {
             .append('\'');
       }
     }
-    String serverIp = arrayToString(getServerIpsAddresses());
-    String serverSslIp = arrayToString(getServerSslAddresses());
-    String serverHttpIp = arrayToString(getServerHttpAddresses());
-    String serverHttpsIp = arrayToString(getServerHttpsAddresses());
+    final String serverIp = arrayToString(getServerIpsAddresses());
+    final String serverSslIp = arrayToString(getServerSslAddresses());
+    final String serverHttpIp = arrayToString(getServerHttpAddresses());
+    final String serverHttpsIp = arrayToString(getServerHttpsAddresses());
     return "Config: { ServerIp: " + serverIp + ", ServerPort: " +
            getServerPort() + ", ServerSslIp: " + serverSslIp +
            ", ServerSslPort: " + getServerSslPort() + ", ServerViewIp: " +
@@ -777,15 +777,15 @@ public class Configuration {
         new RejectedExecutionHandler() {
 
           @Override
-          public void rejectedExecution(Runnable r,
-                                        ThreadPoolExecutor executor) {
+          public void rejectedExecution(final Runnable r,
+                                        final ThreadPoolExecutor executor) {
             if (r instanceof RetrieveRunner) {
-              RetrieveRunner retrieveRunner = (RetrieveRunner) r;
+              final RetrieveRunner retrieveRunner = (RetrieveRunner) r;
               logger.info("Try to reschedule RetrieveRunner: {}",
                           retrieveRunner.getLocalId());
               try {
                 Thread.sleep(WAITFORNETOP * 2);
-              } catch (InterruptedException e) {//NOSONAR
+              } catch (final InterruptedException e) {//NOSONAR
                 SysErrLogger.FAKE_LOGGER.ignoreLog(e);
                 retrieveRunner.notStartRunner();
                 return;
@@ -821,7 +821,7 @@ public class Configuration {
     setConfigured(true);
   }
 
-  public void setConfigured(boolean configured) {
+  public void setConfigured(final boolean configured) {
     this.configured = configured;
   }
 
@@ -884,16 +884,16 @@ public class Configuration {
     }
   }
 
-  private Channel bindTo(String ip, int port,
-                         ServerBootstrap serverBootstrapToBind,
-                         String messageError) throws ServerException {
-    InetSocketAddress inetSocketAddress =
+  private Channel bindTo(final String ip, final int port,
+                         final ServerBootstrap serverBootstrapToBind,
+                         final String messageError) throws ServerException {
+    final InetSocketAddress inetSocketAddress =
         ip == null? new InetSocketAddress(port) :
             new InetSocketAddress(ip, port);
     final ChannelFuture future =
         serverBootstrapToBind.bind(inetSocketAddress).awaitUninterruptibly();
     if (future.isSuccess()) {
-      Channel channel = future.channel();
+      final Channel channel = future.channel();
       serverChannelGroup.add(channel);
       return channel;
     } else {
@@ -902,14 +902,14 @@ public class Configuration {
     }
   }
 
-  private Channel bindTo(String[] ips, int port,
-                         ServerBootstrap serverBootstrapToBind,
-                         String messageError) throws ServerException {
+  private Channel bindTo(final String[] ips, final int port,
+                         final ServerBootstrap serverBootstrapToBind,
+                         final String messageError) throws ServerException {
     if (ips == null || ips.length == 0) {
       return bindTo((String) null, port, serverBootstrapToBind, messageError);
     } else {
       Channel channel = null;
-      for (String ip : ips) {
+      for (final String ip : ips) {
         channel = bindTo(ip, port, serverBootstrapToBind, messageError);
       }
       return channel;
@@ -938,7 +938,7 @@ public class Configuration {
                                         getBlockSize() + 64);
       networkServerInitializer = new NetworkServerInitializer(true);
       serverBootstrap.childHandler(networkServerInitializer);
-      String[] serverIps = getServerIpsAddresses();
+      final String[] serverIps = getServerIpsAddresses();
       bindNoSSL = bindTo(serverIps, getServerPort(), serverBootstrap,
                          Messages.getString("Configuration.R66NotBound"));
     } else {
@@ -954,7 +954,7 @@ public class Configuration {
                                         getBlockSize() + 64);
       networkSslServerInitializer = new NetworkSslServerInitializer(false);
       serverSslBootstrap.childHandler(networkSslServerInitializer);
-      String[] serverIps = getServerSslAddresses();
+      final String[] serverIps = getServerSslAddresses();
       bindSSL = bindTo(serverIps, getServerSslPort(), serverSslBootstrap,
                        Messages.getString("Configuration.R66SSLNotBound"));
     } else {
@@ -995,7 +995,7 @@ public class Configuration {
     httpBootstrap.childHandler(new HttpInitializer(isUseHttpCompression()));
     // Bind and start to accept incoming connections.
     if (getServerHttpport() > 0) {
-      String[] serverIps = getServerHttpAddresses();
+      final String[] serverIps = getServerHttpAddresses();
       bindTo(serverIps, getServerHttpport(), httpBootstrap,
              "Can't start HTTP service");
     }
@@ -1015,7 +1015,7 @@ public class Configuration {
     }
     // Bind and start to accept incoming connections.
     if (getServerHttpsPort() > 0) {
-      String[] serverIps = getServerHttpsAddresses();
+      final String[] serverIps = getServerHttpsAddresses();
       bindTo(serverIps, getServerHttpsPort(), httpsBootstrap,
              "Can't start HTTPS service");
     }
@@ -1058,7 +1058,7 @@ public class Configuration {
     }
   }
 
-  public void startJunitRestSupport(RestConfiguration config) {
+  public void startJunitRestSupport(final RestConfiguration config) {
     HttpRestR66Handler.initializeService(config);
   }
 
@@ -1115,7 +1115,7 @@ public class Configuration {
             .awaitTermination(getTimeoutCon() / 2, TimeUnit.MILLISECONDS)) {
           retrieveRunnerGroup.shutdownNow();
         }
-      } catch (InterruptedException e) {//NOSONAR
+      } catch (final InterruptedException e) {//NOSONAR
         SysErrLogger.FAKE_LOGGER.ignoreLog(e);
         retrieveRunnerGroup.shutdownNow();
         Thread.currentThread().interrupt();
@@ -1189,7 +1189,7 @@ public class Configuration {
    *     the
    *     end of the process
    */
-  public void clientStop(boolean shutdownQuickly) {
+  public void clientStop(final boolean shutdownQuickly) {
     WaarpSslUtility.forceCloseAllSslChannels();
     if (!configuration.isServer()) {
       ChannelUtils.stopLogger();
@@ -1244,7 +1244,8 @@ public class Configuration {
    * @param delay
    * @param unit
    */
-  public void launchInFixedDelay(Thread thread, long delay, TimeUnit unit) {
+  public void launchInFixedDelay(final Thread thread, final long delay,
+                                 final TimeUnit unit) {
     scheduledExecutorService.schedule(thread, delay, unit);
   }
 
@@ -1272,7 +1273,7 @@ public class Configuration {
    */
   public void changeNetworkLimit(long writeGlobalLimit, long readGlobalLimit,
                                  long writeSessionLimit, long readSessionLimit,
-                                 long delayLimit) {
+                                 final long delayLimit) {
     if (writeGlobalLimit <= 0) {
       writeGlobalLimit = 0;
     }
@@ -1439,7 +1440,7 @@ public class Configuration {
    *
    * @return True if the key is valid (or any key is valid)
    */
-  public boolean isKeyValid(byte[] newkey) {
+  public boolean isKeyValid(final byte[] newkey) {
     if (newkey == null) {
       return false;
     }
@@ -1449,7 +1450,7 @@ public class Configuration {
   /**
    * @param serverkey the SERVERADMINKEY to set
    */
-  public void setSERVERKEY(byte[] serverkey) {
+  public void setSERVERKEY(final byte[] serverkey) {
     serverAdminKey = serverkey;
   }
 
@@ -1460,7 +1461,8 @@ public class Configuration {
    *
    * @throws OpenR66ProtocolNoSslException
    */
-  public String getHostId(boolean isSSL) throws OpenR66ProtocolNoSslException {
+  public String getHostId(final boolean isSSL)
+      throws OpenR66ProtocolNoSslException {
     if (isSSL) {
       if (getHostSslId() == null) {
         throw new OpenR66ProtocolNoSslException(
@@ -1479,7 +1481,8 @@ public class Configuration {
    *
    * @throws WaarpDatabaseException
    */
-  public String getHostId(String remoteHost) throws WaarpDatabaseException {
+  public String getHostId(final String remoteHost)
+      throws WaarpDatabaseException {
     final DbHostAuth dbHostAuth = new DbHostAuth(remoteHost);
     try {
       return configuration.getHostId(dbHostAuth.isSsl());
@@ -1498,7 +1501,7 @@ public class Configuration {
    * @deprecated Use getHostId(String remoteHost)
    */
   @Deprecated
-  public String getHostId(DbSession dbSession, String remoteHost)
+  public String getHostId(final DbSession dbSession, final String remoteHost)
       throws WaarpDatabaseException {
     return getHostId(remoteHost);
   }
@@ -1552,7 +1555,7 @@ public class Configuration {
   /**
    * @param nBDBSESSION the nBDBSESSION to set
    */
-  public static void setNbDbSession(int nBDBSESSION) {
+  public static void setNbDbSession(final int nBDBSESSION) {
     nbDbSession = nBDBSESSION;
   }
 
@@ -1566,7 +1569,7 @@ public class Configuration {
   /**
    * @param rANKRESTART the rANKRESTART to set
    */
-  public static void setRankRestart(int rANKRESTART) {
+  public static void setRankRestart(final int rANKRESTART) {
     rankRestart = rANKRESTART;
   }
 
@@ -1580,7 +1583,7 @@ public class Configuration {
   /**
    * @param iSUNIX the iSUNIX to set
    */
-  public static void setIsUnix(boolean iSUNIX) {
+  public static void setIsUnix(final boolean iSUNIX) {
     isUnix = iSUNIX;
   }
 
@@ -1601,7 +1604,7 @@ public class Configuration {
   /**
    * @param extendedProtocol the extendedProtocol to set
    */
-  public void setExtendedProtocol(boolean extendedProtocol) {
+  public void setExtendedProtocol(final boolean extendedProtocol) {
     this.extendedProtocol = extendedProtocol;
   }
 
@@ -1615,7 +1618,7 @@ public class Configuration {
   /**
    * @param globalDigest the globalDigest to set
    */
-  public void setGlobalDigest(boolean globalDigest) {
+  public void setGlobalDigest(final boolean globalDigest) {
     this.globalDigest = globalDigest;
   }
 
@@ -1664,7 +1667,7 @@ public class Configuration {
   /**
    * @param hostID the hOST_ID to set
    */
-  public void setHostId(String hostID) {
+  public void setHostId(final String hostID) {
     hostId = hostID;
     WaarpLoggerFactory.setLocalName(hostId);
   }
@@ -1679,7 +1682,7 @@ public class Configuration {
   /**
    * @param hostSSLID the hOST_SSLID to set
    */
-  public void setHostSslId(String hostSSLID) {
+  public void setHostSslId(final String hostSSLID) {
     hostSslId = hostSSLID;
   }
 
@@ -1693,7 +1696,7 @@ public class Configuration {
   /**
    * @param aDMINNAME the aDMINNAME to set
    */
-  public void setAdminName(String aDMINNAME) {
+  public void setAdminName(final String aDMINNAME) {
     adminName = aDMINNAME;
   }
 
@@ -1707,7 +1710,7 @@ public class Configuration {
   /**
    * @param serverKeyFile the serverKeyFile to set
    */
-  public void setServerKeyFile(String serverKeyFile) {
+  public void setServerKeyFile(final String serverKeyFile) {
     this.serverKeyFile = serverKeyFile;
   }
 
@@ -1721,7 +1724,7 @@ public class Configuration {
   /**
    * @param hostAUTH the hOST_AUTH to set
    */
-  public void setHostAuth(DbHostAuth hostAUTH) {
+  public void setHostAuth(final DbHostAuth hostAUTH) {
     hostAuth = hostAUTH;
   }
 
@@ -1735,7 +1738,7 @@ public class Configuration {
   /**
    * @param hostSSLAUTH the hOST_SSLAUTH to set
    */
-  public void setHostSslAuth(DbHostAuth hostSSLAUTH) {
+  public void setHostSslAuth(final DbHostAuth hostSSLAUTH) {
     hostSslAuth = hostSSLAUTH;
   }
 
@@ -1743,7 +1746,7 @@ public class Configuration {
     return authFile;
   }
 
-  public void setAuthFile(String file) {
+  public void setAuthFile(final String file) {
     authFile = file;
   }
 
@@ -1757,7 +1760,7 @@ public class Configuration {
   /**
    * @param serverTHREAD the sERVER_THREAD to set
    */
-  public void setServerThread(int serverTHREAD) {
+  public void setServerThread(final int serverTHREAD) {
     serverThread = serverTHREAD;
   }
 
@@ -1771,7 +1774,7 @@ public class Configuration {
   /**
    * @param clientTHREAD the cLIENT_THREAD to set
    */
-  public void setClientThread(int clientTHREAD) {
+  public void setClientThread(final int clientTHREAD) {
     clientThread = clientTHREAD;
   }
 
@@ -1799,7 +1802,7 @@ public class Configuration {
   /**
    * @param serverPORT the sERVER_PORT to set
    */
-  public void setServerPort(int serverPORT) {
+  public void setServerPort(final int serverPORT) {
     serverPort = serverPORT;
   }
 
@@ -1813,7 +1816,7 @@ public class Configuration {
   /**
    * @param serverSSLPORT the sERVER_SSLPORT to set
    */
-  public void setServerSslPort(int serverSSLPORT) {
+  public void setServerSslPort(final int serverSSLPORT) {
     serverSslPort = serverSSLPORT;
   }
 
@@ -1827,7 +1830,7 @@ public class Configuration {
   /**
    * @param serverHTTPPORT the sERVER_HTTPPORT to set
    */
-  public void setServerHttpport(int serverHTTPPORT) {
+  public void setServerHttpport(final int serverHTTPPORT) {
     serverHttpport = serverHTTPPORT;
   }
 
@@ -1841,7 +1844,7 @@ public class Configuration {
   /**
    * @param serverHTTPSPORT the sERVER_HTTPSPORT to set
    */
-  public void setServerHttpsPort(int serverHTTPSPORT) {
+  public void setServerHttpsPort(final int serverHTTPSPORT) {
     serverHttpsPort = serverHTTPSPORT;
   }
 
@@ -1855,7 +1858,7 @@ public class Configuration {
   /**
    * @param serverAddresses the sERVER_Addresses to set
    */
-  public void setServerAddresses(String[] serverAddresses) {
+  public void setServerAddresses(final String[] serverAddresses) {
     this.serverAddresses = serverAddresses;
   }
 
@@ -1869,7 +1872,7 @@ public class Configuration {
   /**
    * @param serverSSLAddresses the sERVER_SSLIAddresses to set
    */
-  public void setServerSslAddresses(String[] serverSSLAddresses) {
+  public void setServerSslAddresses(final String[] serverSSLAddresses) {
     serverSslAddresses = serverSSLAddresses;
   }
 
@@ -1883,7 +1886,7 @@ public class Configuration {
   /**
    * @param serverHTTPAddresses the sERVER_HTTPAddresses to set
    */
-  public void setServerHttpAddresses(String[] serverHTTPAddresses) {
+  public void setServerHttpAddresses(final String[] serverHTTPAddresses) {
     serverHttpAddresses = serverHTTPAddresses;
   }
 
@@ -1897,7 +1900,7 @@ public class Configuration {
   /**
    * @param serverHTTPSAddresses the sERVER_HTTPSAddresses to set
    */
-  public void setServerHttpsAddresses(String[] serverHTTPSAddresses) {
+  public void setServerHttpsAddresses(final String[] serverHTTPSAddresses) {
     serverHttpsAddresses = serverHTTPSAddresses;
   }
 
@@ -1911,7 +1914,7 @@ public class Configuration {
   /**
    * @param timeoutCON the timeoutCON to set
    */
-  public void setTimeoutCon(long timeoutCON) {
+  public void setTimeoutCon(final long timeoutCON) {
     timeoutCon = timeoutCON;
   }
 
@@ -1925,7 +1928,7 @@ public class Configuration {
   /**
    * @param blockSIZE the bLOCKSIZE to set
    */
-  public void setBlockSize(int blockSIZE) {
+  public void setBlockSize(final int blockSIZE) {
     blockSize = blockSIZE;
   }
 
@@ -1939,7 +1942,7 @@ public class Configuration {
   /**
    * @param maxGlobalMemory the maxGlobalMemory to set
    */
-  public void setMaxGlobalMemory(int maxGlobalMemory) {
+  public void setMaxGlobalMemory(final int maxGlobalMemory) {
     this.maxGlobalMemory = maxGlobalMemory;
   }
 
@@ -1960,7 +1963,7 @@ public class Configuration {
   /**
    * @param baseDirectory the baseDirectory to set
    */
-  public void setBaseDirectory(String baseDirectory) {
+  public void setBaseDirectory(final String baseDirectory) {
     this.baseDirectory = baseDirectory;
   }
 
@@ -1974,7 +1977,7 @@ public class Configuration {
   /**
    * @param inPath the inPath to set
    */
-  public void setInPath(String inPath) {
+  public void setInPath(final String inPath) {
     this.inPath = inPath;
   }
 
@@ -1988,7 +1991,7 @@ public class Configuration {
   /**
    * @param outPath the outPath to set
    */
-  public void setOutPath(String outPath) {
+  public void setOutPath(final String outPath) {
     this.outPath = outPath;
   }
 
@@ -2002,7 +2005,7 @@ public class Configuration {
   /**
    * @param archivePath the archivePath to set
    */
-  public void setArchivePath(String archivePath) {
+  public void setArchivePath(final String archivePath) {
     this.archivePath = archivePath;
   }
 
@@ -2016,7 +2019,7 @@ public class Configuration {
   /**
    * @param workingPath the workingPath to set
    */
-  public void setWorkingPath(String workingPath) {
+  public void setWorkingPath(final String workingPath) {
     this.workingPath = workingPath;
   }
 
@@ -2030,7 +2033,7 @@ public class Configuration {
   /**
    * @param configPath the configPath to set
    */
-  public void setConfigPath(String configPath) {
+  public void setConfigPath(final String configPath) {
     this.configPath = configPath;
   }
 
@@ -2044,7 +2047,7 @@ public class Configuration {
   /**
    * @param httpBasePath the httpBasePath to set
    */
-  public void setHttpBasePath(String httpBasePath) {
+  public void setHttpBasePath(final String httpBasePath) {
     this.httpBasePath = httpBasePath;
   }
 
@@ -2058,7 +2061,7 @@ public class Configuration {
   /**
    * @param httpModel the httpModel to set
    */
-  public void setHttpModel(int httpModel) {
+  public void setHttpModel(final int httpModel) {
     this.httpModel = httpModel;
   }
 
@@ -2072,7 +2075,7 @@ public class Configuration {
   /**
    * @param isShutdown the isShutdown to set
    */
-  public void setShutdown(boolean isShutdown) {
+  public void setShutdown(final boolean isShutdown) {
     this.isShutdown = isShutdown;
   }
 
@@ -2086,7 +2089,7 @@ public class Configuration {
   /**
    * @param serverGlobalWriteLimit the serverGlobalWriteLimit to set
    */
-  public void setServerGlobalWriteLimit(long serverGlobalWriteLimit) {
+  public void setServerGlobalWriteLimit(final long serverGlobalWriteLimit) {
     this.serverGlobalWriteLimit = serverGlobalWriteLimit;
   }
 
@@ -2100,7 +2103,7 @@ public class Configuration {
   /**
    * @param serverGlobalReadLimit the serverGlobalReadLimit to set
    */
-  public void setServerGlobalReadLimit(long serverGlobalReadLimit) {
+  public void setServerGlobalReadLimit(final long serverGlobalReadLimit) {
     this.serverGlobalReadLimit = serverGlobalReadLimit;
   }
 
@@ -2114,7 +2117,7 @@ public class Configuration {
   /**
    * @param serverChannelWriteLimit the serverChannelWriteLimit to set
    */
-  public void setServerChannelWriteLimit(long serverChannelWriteLimit) {
+  public void setServerChannelWriteLimit(final long serverChannelWriteLimit) {
     this.serverChannelWriteLimit = serverChannelWriteLimit;
   }
 
@@ -2128,7 +2131,7 @@ public class Configuration {
   /**
    * @param serverChannelReadLimit the serverChannelReadLimit to set
    */
-  public void setServerChannelReadLimit(long serverChannelReadLimit) {
+  public void setServerChannelReadLimit(final long serverChannelReadLimit) {
     this.serverChannelReadLimit = serverChannelReadLimit;
   }
 
@@ -2142,7 +2145,7 @@ public class Configuration {
   /**
    * @param delayLimit the delayLimit to set
    */
-  public void setDelayLimit(long delayLimit) {
+  public void setDelayLimit(final long delayLimit) {
     this.delayLimit = delayLimit;
   }
 
@@ -2156,7 +2159,7 @@ public class Configuration {
   /**
    * @param useSSL the useSSL to set
    */
-  public void setUseSSL(boolean useSSL) {
+  public void setUseSSL(final boolean useSSL) {
     this.useSSL = useSSL;
   }
 
@@ -2170,7 +2173,7 @@ public class Configuration {
   /**
    * @param useNOSSL the useNOSSL to set
    */
-  public void setUseNOSSL(boolean useNOSSL) {
+  public void setUseNOSSL(final boolean useNOSSL) {
     this.useNOSSL = useNOSSL;
   }
 
@@ -2184,7 +2187,7 @@ public class Configuration {
   /**
    * @param digest the digest to set
    */
-  public void setDigest(FilesystemBasedDigest.DigestAlgo digest) {
+  public void setDigest(final FilesystemBasedDigest.DigestAlgo digest) {
     this.digest = digest;
   }
 
@@ -2198,7 +2201,7 @@ public class Configuration {
   /**
    * @param useHttpCompression the useHttpCompression to set
    */
-  public void setUseHttpCompression(boolean useHttpCompression) {
+  public void setUseHttpCompression(final boolean useHttpCompression) {
     this.useHttpCompression = useHttpCompression;
   }
 
@@ -2212,7 +2215,7 @@ public class Configuration {
   /**
    * @param cryptoKey the cryptoKey to set
    */
-  public void setCryptoKey(Des cryptoKey) {
+  public void setCryptoKey(final Des cryptoKey) {
     this.cryptoKey = cryptoKey;
   }
 
@@ -2226,7 +2229,7 @@ public class Configuration {
   /**
    * @param cryptoFile the cryptoFile to set
    */
-  public void setCryptoFile(String cryptoFile) {
+  public void setCryptoFile(final String cryptoFile) {
     this.cryptoFile = cryptoFile;
   }
 
@@ -2240,7 +2243,7 @@ public class Configuration {
   /**
    * @param useLocalExec the useLocalExec to set
    */
-  public void setUseLocalExec(boolean useLocalExec) {
+  public void setUseLocalExec(final boolean useLocalExec) {
     this.useLocalExec = useLocalExec;
   }
 
@@ -2254,7 +2257,7 @@ public class Configuration {
   /**
    * @param isServer the isServer to set
    */
-  protected void setServer(boolean isServer) {
+  protected void setServer(final boolean isServer) {
     this.isServer = isServer;
   }
 
@@ -2268,7 +2271,7 @@ public class Configuration {
   /**
    * @param runnerTHREAD the rUNNER_THREAD to set
    */
-  public void setRunnerThread(int runnerTHREAD) {
+  public void setRunnerThread(final int runnerTHREAD) {
     if (runnerTHREAD > Commander.LIMIT_SUBMIT) {
       logger.warn("RunnerThread at {} will be limited to default maximum {}",
                   runnerTHREAD, Commander.LIMIT_SUBMIT);
@@ -2288,7 +2291,7 @@ public class Configuration {
   /**
    * @param delayCommander the delayCommander to set
    */
-  public void setDelayCommander(long delayCommander) {
+  public void setDelayCommander(final long delayCommander) {
     this.delayCommander = delayCommander;
   }
 
@@ -2302,7 +2305,7 @@ public class Configuration {
   /**
    * @param delayRetry the delayRetry to set
    */
-  public void setDelayRetry(long delayRetry) {
+  public void setDelayRetry(final long delayRetry) {
     this.delayRetry = delayRetry;
   }
 
@@ -2317,7 +2320,7 @@ public class Configuration {
    * @param constraintLimitHandler the constraintLimitHandler to set
    */
   public void setConstraintLimitHandler(
-      R66ConstraintLimitHandler constraintLimitHandler) {
+      final R66ConstraintLimitHandler constraintLimitHandler) {
     this.constraintLimitHandler = constraintLimitHandler;
   }
 
@@ -2331,7 +2334,7 @@ public class Configuration {
   /**
    * @param checkRemoteAddress the checkRemoteAddress to set
    */
-  public void setCheckRemoteAddress(boolean checkRemoteAddress) {
+  public void setCheckRemoteAddress(final boolean checkRemoteAddress) {
     this.checkRemoteAddress = checkRemoteAddress;
   }
 
@@ -2345,7 +2348,7 @@ public class Configuration {
   /**
    * @param checkClientAddress the checkClientAddress to set
    */
-  public void setCheckClientAddress(boolean checkClientAddress) {
+  public void setCheckClientAddress(final boolean checkClientAddress) {
     this.checkClientAddress = checkClientAddress;
   }
 
@@ -2359,7 +2362,7 @@ public class Configuration {
   /**
    * @param saveTaskRunnerWithNoDb the saveTaskRunnerWithNoDb to set
    */
-  public void setSaveTaskRunnerWithNoDb(boolean saveTaskRunnerWithNoDb) {
+  public void setSaveTaskRunnerWithNoDb(final boolean saveTaskRunnerWithNoDb) {
     this.saveTaskRunnerWithNoDb = saveTaskRunnerWithNoDb;
   }
 
@@ -2373,7 +2376,7 @@ public class Configuration {
   /**
    * @param multipleMonitors the multipleMonitors to set
    */
-  public void setMultipleMonitors(int multipleMonitors) {
+  public void setMultipleMonitors(final int multipleMonitors) {
     this.multipleMonitors = multipleMonitors;
   }
 
@@ -2387,7 +2390,7 @@ public class Configuration {
   /**
    * @param monitoring the monitoring to set
    */
-  public void setMonitoring(Monitoring monitoring) {
+  public void setMonitoring(final Monitoring monitoring) {
     this.monitoring = monitoring;
   }
 
@@ -2401,7 +2404,7 @@ public class Configuration {
   /**
    * @param pastLimit the pastLimit to set
    */
-  public void setPastLimit(long pastLimit) {
+  public void setPastLimit(final long pastLimit) {
     this.pastLimit = pastLimit;
   }
 
@@ -2415,7 +2418,7 @@ public class Configuration {
   /**
    * @param minimalDelay the minimalDelay to set
    */
-  public void setMinimalDelay(long minimalDelay) {
+  public void setMinimalDelay(final long minimalDelay) {
     this.minimalDelay = minimalDelay;
   }
 
@@ -2429,7 +2432,7 @@ public class Configuration {
   /**
    * @param snmpConfig the snmpConfig to set
    */
-  public void setSnmpConfig(String snmpConfig) {
+  public void setSnmpConfig(final String snmpConfig) {
     this.snmpConfig = snmpConfig;
   }
 
@@ -2443,7 +2446,7 @@ public class Configuration {
   /**
    * @param agentSnmp the agentSnmp to set
    */
-  public void setAgentSnmp(WaarpSnmpAgent agentSnmp) {
+  public void setAgentSnmp(final WaarpSnmpAgent agentSnmp) {
     this.agentSnmp = agentSnmp;
   }
 
@@ -2457,7 +2460,7 @@ public class Configuration {
   /**
    * @param r66Mib the r66Mib to set
    */
-  public void setR66Mib(R66PrivateMib r66Mib) {
+  public void setR66Mib(final R66PrivateMib r66Mib) {
     this.r66Mib = r66Mib;
   }
 
@@ -2472,7 +2475,7 @@ public class Configuration {
    * @param waarpSecureKeyStore the waarpSecureKeyStore to set
    */
   public static void setWaarpSecureKeyStore(
-      WaarpSecureKeyStore waarpSecureKeyStore) {
+      final WaarpSecureKeyStore waarpSecureKeyStore) {
     Configuration.waarpSecureKeyStore = waarpSecureKeyStore;
   }
 
@@ -2487,7 +2490,7 @@ public class Configuration {
    * @param waarpSslContextFactory the waarpSslContextFactory to set
    */
   public static void setWaarpSslContextFactory(
-      WaarpSslContextFactory waarpSslContextFactory) {
+      final WaarpSslContextFactory waarpSslContextFactory) {
     Configuration.waarpSslContextFactory = waarpSslContextFactory;
   }
 
@@ -2501,7 +2504,7 @@ public class Configuration {
   /**
    * @param thriftService the thriftService to set
    */
-  public void setThriftService(R66ThriftServerService thriftService) {
+  public void setThriftService(final R66ThriftServerService thriftService) {
     this.thriftService = thriftService;
   }
 
@@ -2515,7 +2518,7 @@ public class Configuration {
   /**
    * @param thriftport the thriftport to set
    */
-  public void setThriftport(int thriftport) {
+  public void setThriftport(final int thriftport) {
     this.thriftport = thriftport;
   }
 
@@ -2532,7 +2535,7 @@ public class Configuration {
    *     to set
    */
   public void setExecuteErrorBeforeTransferAllowed(
-      boolean isExecuteErrorBeforeTransferAllowed) {
+      final boolean isExecuteErrorBeforeTransferAllowed) {
     this.isExecuteErrorBeforeTransferAllowed =
         isExecuteErrorBeforeTransferAllowed;
   }
@@ -2554,7 +2557,7 @@ public class Configuration {
   /**
    * @param isHostProxyfied the isHostProxyfied to set
    */
-  public void setHostProxyfied(boolean isHostProxyfied) {
+  public void setHostProxyfied(final boolean isHostProxyfied) {
     this.isHostProxyfied = isHostProxyfied;
   }
 
@@ -2568,7 +2571,7 @@ public class Configuration {
   /**
    * @param warnOnStartup the warnOnStartup to set
    */
-  public void setWarnOnStartup(boolean warnOnStartup) {
+  public void setWarnOnStartup(final boolean warnOnStartup) {
     this.warnOnStartup = warnOnStartup;
   }
 
@@ -2582,7 +2585,7 @@ public class Configuration {
   /**
    * @param chrootChecked the chrootChecked to set
    */
-  public void setChrootChecked(boolean chrootChecked) {
+  public void setChrootChecked(final boolean chrootChecked) {
     this.chrootChecked = chrootChecked;
   }
 
@@ -2596,7 +2599,7 @@ public class Configuration {
   /**
    * @param blacklistBadAuthent the blacklistBadAuthent to set
    */
-  public void setBlacklistBadAuthent(boolean blacklistBadAuthent) {
+  public void setBlacklistBadAuthent(final boolean blacklistBadAuthent) {
     this.blacklistBadAuthent = blacklistBadAuthent;
   }
 
@@ -2610,7 +2613,7 @@ public class Configuration {
   /**
    * @param maxfilenamelength the maxfilenamelength to set
    */
-  public void setMaxfilenamelength(int maxfilenamelength) {
+  public void setMaxfilenamelength(final int maxfilenamelength) {
     this.maxfilenamelength = maxfilenamelength;
   }
 
@@ -2624,7 +2627,7 @@ public class Configuration {
   /**
    * @param timeStat the timeStat to set
    */
-  public void setTimeStat(int timeStat) {
+  public void setTimeStat(final int timeStat) {
     this.timeStat = timeStat;
   }
 
@@ -2638,7 +2641,7 @@ public class Configuration {
   /**
    * @param limitCache the limitCache to set
    */
-  public void setLimitCache(int limitCache) {
+  public void setLimitCache(final int limitCache) {
     this.limitCache = limitCache;
   }
 
@@ -2652,7 +2655,7 @@ public class Configuration {
   /**
    * @param timeLimitCache the timeLimitCache to set
    */
-  public void setTimeLimitCache(long timeLimitCache) {
+  public void setTimeLimitCache(final long timeLimitCache) {
     this.timeLimitCache = timeLimitCache;
   }
 
@@ -2660,7 +2663,7 @@ public class Configuration {
    * @param r66BusinessFactory the r66BusinessFactory to set
    */
   public void setR66BusinessFactory(
-      R66BusinessFactoryInterface r66BusinessFactory) {
+      final R66BusinessFactoryInterface r66BusinessFactory) {
     this.r66BusinessFactory = r66BusinessFactory;
   }
 

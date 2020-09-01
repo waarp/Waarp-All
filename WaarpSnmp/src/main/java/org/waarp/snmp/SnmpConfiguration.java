@@ -184,8 +184,6 @@ public final class SnmpConfiguration {
                   configTargetDecls, true)
   };
 
-  private static XmlValue[] configuration;
-
   private static XmlHash hashConfig;
   /**
    * Address from the configuration for the SNMP Agent listening port
@@ -279,7 +277,7 @@ public final class SnmpConfiguration {
 
     public final OID oid;
 
-    SecurityProtocolList(OID oid) {
+    SecurityProtocolList(final OID oid) {
       this.oid = oid;
     }
   }
@@ -293,7 +291,7 @@ public final class SnmpConfiguration {
 
     public final OID oid;
 
-    PrivacyProtocolList(OID oid) {
+    PrivacyProtocolList(final OID oid) {
       this.oid = oid;
     }
   }
@@ -387,7 +385,7 @@ public final class SnmpConfiguration {
 
     public final OID oid;
 
-    TransportDomain(OID oid) {
+    TransportDomain(final OID oid) {
       this.oid = oid;
     }
   }
@@ -422,10 +420,10 @@ public final class SnmpConfiguration {
      * @param params
      * @param storageType
      */
-    private TargetElement(OctetString name, OID transportDomain,
-                          OctetString address, int timeout, int retries,
-                          OctetString tagList, OctetString params,
-                          int storageType) {
+    private TargetElement(final OctetString name, final OID transportDomain,
+                          final OctetString address, final int timeout,
+                          final int retries, final OctetString tagList,
+                          final OctetString params, final int storageType) {
       this.name = name;
       this.transportDomain = transportDomain;
       this.address = address;
@@ -508,7 +506,7 @@ public final class SnmpConfiguration {
         continue;
       }
       targetDomain = value.getString();
-      TransportDomain domain;
+      final TransportDomain domain;
       try {
         domain = TransportDomain.valueOf(targetDomain);
         oTargetDomain = domain.oid;
@@ -597,8 +595,8 @@ public final class SnmpConfiguration {
    *
    * @return True if OK
    */
-  public static boolean setConfigurationFromXml(File file) {
-    Document document;
+  public static boolean setConfigurationFromXml(final File file) {
+    final Document document;
     // Open config file
     try {
       document = XmlUtil.getNewSaxReader().read(file);
@@ -612,7 +610,7 @@ public final class SnmpConfiguration {
           "Unable to read the XML Config file: " + file.getAbsolutePath());
       return false;
     }
-    configuration = XmlUtil.read(document, configSNMP);
+    XmlValue[] configuration = XmlUtil.read(document, configSNMP);
     hashConfig = new XmlHash(configuration);
     address = new String[] { DEFAULTADDRESS };
     nbThread = 4;
