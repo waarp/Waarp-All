@@ -64,7 +64,7 @@ public final class WaarpNettyUtil {
   public static void setBootstrap(final Bootstrap bootstrap,
                                   final EventLoopGroup group,
                                   final int timeout) {
-    setBootstrap(bootstrap, group, timeout, DEFAULT_LOW_WATER_MARK);
+    setBootstrap(bootstrap, group, timeout, DEFAULT_LOW_WATER_MARK, true);
   }
 
   /**
@@ -74,10 +74,12 @@ public final class WaarpNettyUtil {
    * @param group
    * @param timeout
    * @param maxBufSize
+   * @param autoRead
    */
   public static void setBootstrap(final Bootstrap bootstrap,
                                   final EventLoopGroup group, final int timeout,
-                                  final int maxBufSize) {
+                                  final int maxBufSize,
+                                  final boolean autoRead) {
     bootstrap.channel(NioSocketChannel.class);
     bootstrap.group(group);
     bootstrap.option(ChannelOption.TCP_NODELAY, false);
@@ -91,6 +93,9 @@ public final class WaarpNettyUtil {
     bootstrap.option(ChannelOption.WRITE_BUFFER_WATER_MARK,
                      new WriteBufferWaterMark(lowWaterMark, maxBufSize));
     bootstrap.option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
+    if (!autoRead) {
+      bootstrap.option(ChannelOption.AUTO_READ, false);
+    }
   }
 
   /**
@@ -103,7 +108,7 @@ public final class WaarpNettyUtil {
   public static void setServerBootstrap(final ServerBootstrap bootstrap,
                                         final EventLoopGroup group,
                                         final int timeout) {
-    setServerBootstrap(bootstrap, group, timeout, DEFAULT_LOW_WATER_MARK);
+    setServerBootstrap(bootstrap, group, timeout, DEFAULT_LOW_WATER_MARK, true);
   }
 
   /**
@@ -113,11 +118,12 @@ public final class WaarpNettyUtil {
    * @param group
    * @param timeout
    * @param maxBufSize
+   * @param autoRead
    */
   public static void setServerBootstrap(final ServerBootstrap bootstrap,
                                         final EventLoopGroup group,
-                                        final int timeout,
-                                        final int maxBufSize) {
+                                        final int timeout, final int maxBufSize,
+                                        final boolean autoRead) {
     bootstrap.channel(NioServerSocketChannel.class);
     bootstrap.group(group);
     // bootstrap.option(ChannelOption.TCP_NODELAY, true)
@@ -134,6 +140,9 @@ public final class WaarpNettyUtil {
                           new WriteBufferWaterMark(lowWaterMark, maxBufSize));
     bootstrap
         .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
+    if (!autoRead) {
+      bootstrap.childOption(ChannelOption.AUTO_READ, false);
+    }
   }
 
   /**

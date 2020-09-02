@@ -35,6 +35,7 @@ package org.waarp.common.logging;
 import io.netty.util.internal.logging.InternalLoggerFactory;
 import io.netty.util.internal.logging.JdkLoggerFactory;
 import io.netty.util.internal.logging.Slf4JLoggerFactory;
+import org.waarp.common.utility.SystemPropertyUtil;
 
 /**
  * Creates an {@link WaarpLogger} or changes the default factory
@@ -65,6 +66,7 @@ public abstract class WaarpLoggerFactory {
   static String localName = null;
 
   static {
+    SystemPropertyUtil.isFileEncodingCorrect();
     final String name = WaarpLoggerFactory.class.getName();
     WaarpLoggerFactory f;
     try {

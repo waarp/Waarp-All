@@ -135,7 +135,9 @@ public class LogTask extends AbstractTask {
     } catch (final IOException e) {
       // File cannot be written so revert to log
       FileUtils.close(outputStream);
-      file.delete();
+      if (!file.delete()) {
+        logger.debug("Cannot delete log file");
+      }
       session.getRunner().setErrorExecutionStatus(ErrorCode.Warning);
       if (delay == 2) {
         logger.log(finalLevel, finalValue + SPACES + session);

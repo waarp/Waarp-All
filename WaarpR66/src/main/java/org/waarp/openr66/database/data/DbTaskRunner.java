@@ -3905,25 +3905,33 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
         } catch (final SAXException e) {
           FileUtils.close(outputStream);
           final File file = new File(filename);
-          file.delete();
+          if (!file.delete()) {
+            logger.debug("Cannot delete wrong XML file");
+          }
           logger.error("Cannot write XML file", e);
           throw new OpenR66ProtocolBusinessException("Unsupported Encoding");
         } catch (final IOException e) {
           FileUtils.close(outputStream);
           final File file = new File(filename);
-          file.delete();
+          if (!file.delete()) {
+            logger.debug("Cannot delete wrong XML file");
+          }
           logger.error("Cannot write XML file", e);
           throw new OpenR66ProtocolBusinessException("Unsupported Encoding");
         }
         if (!isOk && outputStream != null) {
           FileUtils.close(outputStream);
           final File file = new File(filename);
-          file.delete();
+          if (!file.delete()) {
+            logger.debug("Cannot delete wrong  XML file");
+          }
         }
       } else if (outputStream != null) {
         FileUtils.close(outputStream);
         final File file = new File(filename);
-        file.delete();
+        if (!file.delete()) {
+          logger.debug("Cannot delete not written XML file");
+        }
       }
     }
     return nbAndSpecialId;
@@ -4232,25 +4240,33 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
         } catch (final SAXException e) {
           FileUtils.close(outputStream);
           final File file = new File(filename);
-          file.delete();
+          if (!file.delete()) {
+            logger.debug("Cannot delete wrong XML file");
+          }
           logger.error("Cannot write XML file", e);
           throw new OpenR66ProtocolBusinessException("Cannot write XML file");
         } catch (final IOException e) {
           FileUtils.close(outputStream);
           final File file = new File(filename);
-          file.delete();
+          if (!file.delete()) {
+            logger.debug("Cannot delete wrong XML file");
+          }
           logger.error("Cannot write XML file", e);
           throw new OpenR66ProtocolBusinessException("IO error on XML file", e);
         }
         if (!isOk && outputStream != null) {
           FileUtils.close(outputStream);
           final File file = new File(filename);
-          file.delete();
+          if (!file.delete()) {
+            logger.debug("Cannot delete wrong XML file");
+          }
         }
       } else if (outputStream != null) {
         FileUtils.close(outputStream);
         final File file = new File(filename);
-        file.delete();
+        if (!file.delete()) {
+          logger.debug("Cannot delete unwritten XML file");
+        }
       }
     }
   }
@@ -4361,7 +4377,9 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    */
   public void deleteXmlWorkNoDb() {
     final File file = new File(backendXmlFilename());
-    file.delete();
+    if (!file.delete()) {
+      logger.debug("Cannot delete XML file");
+    }
   }
 
   /**

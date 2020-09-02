@@ -69,7 +69,7 @@ public class NetworkTransaction {
     WaarpNettyUtil
         .setBootstrap(clientBootstrap, configuration.getNetworkWorkerGroup(),
                       (int) configuration.getTimeoutCon(),
-                      configuration.getBlockSize() + 64);
+                      configuration.getBlockSize() + 64, false);
     clientBootstrap.handler(networkServerInitializerProxy);
     clientSslBootstrap = new Bootstrap();
     if (configuration.isUseSSL() && configuration.getHostSslId() != null) {
@@ -78,7 +78,7 @@ public class NetworkTransaction {
       WaarpNettyUtil.setBootstrap(clientSslBootstrap,
                                   configuration.getNetworkWorkerGroup(),
                                   (int) configuration.getTimeoutCon(),
-                                  configuration.getBlockSize() + 64);
+                                  configuration.getBlockSize() + 64, false);
       clientSslBootstrap.handler(networkSslServerInitializerProxy);
     } else {
       if (configuration.isWarnOnStartup()) {

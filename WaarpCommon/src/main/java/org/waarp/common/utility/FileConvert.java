@@ -225,7 +225,9 @@ public class FileConvert extends Thread {
       return false;
     } finally {
       if (tmpFile != null) {
-        tmpFile.delete();
+        if (!tmpFile.delete()) {
+          logger.debug("Cannot delete temp file");
+        }
       }
       FileUtils.close(fis);
       FileUtils.close(fos);

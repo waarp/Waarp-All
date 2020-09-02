@@ -78,6 +78,7 @@ public class NetworkSslServerHandler extends NetworkServerHandler {
                 configuration.getR66Mib().notifyError("SSL Connection Error",
                                                       "During Handshake");
               }
+              ctx.channel().config().setAutoRead(false);
             }
           });
     } else {

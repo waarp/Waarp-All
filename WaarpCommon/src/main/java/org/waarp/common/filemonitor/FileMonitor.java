@@ -315,14 +315,18 @@ public class FileMonitor {
 
   private void createChkFile() {
     try {
-      checkFile.createNewFile();
+      if (!checkFile.createNewFile()) {
+        logger.debug("Cannot create Check File");
+      }
     } catch (final IOException ignored) {
       SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
     }
   }
 
   private void deleteChkFile() {
-    checkFile.delete();
+    if (!checkFile.delete()) {
+      logger.debug("Cannot delete Check File");
+    }
   }
 
   protected void reloadStatus() {

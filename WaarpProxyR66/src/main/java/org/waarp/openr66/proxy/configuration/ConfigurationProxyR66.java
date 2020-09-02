@@ -103,7 +103,7 @@ public class ConfigurationProxyR66 extends Configuration {
       serverBootstrap = new ServerBootstrap();
       WaarpNettyUtil.setServerBootstrap(serverBootstrap, workerGroup,
                                         (int) getTimeoutCon(),
-                                        getBlockSize() + 64);
+                                        getBlockSize() + 64, false);
       networkServerInitializer = new NetworkServerInitializerProxy(true);
       serverBootstrap.childHandler(networkServerInitializer);
       // FIXME take into account multiple address
@@ -136,7 +136,7 @@ public class ConfigurationProxyR66 extends Configuration {
       serverSslBootstrap = new ServerBootstrap();
       WaarpNettyUtil.setServerBootstrap(serverSslBootstrap, workerGroup,
                                         (int) getTimeoutCon(),
-                                        getBlockSize() + 64);
+                                        getBlockSize() + 64, false);
       networkSslServerInitializer = new NetworkSslServerInitializerProxy(false);
       serverSslBootstrap.childHandler(networkSslServerInitializer);
       // FIXME take into account multiple address

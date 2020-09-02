@@ -113,7 +113,8 @@ public abstract class ScenarioBaseLoop extends TestAbstract {
     createBaseR66Directory(r2, "/tmp/R66/scenario_big_file_limitbdw/R2");
     setUp3DbBeforeClass();
     Configuration.configuration.setTimeoutCon(30000);
-    Processes.setJvmArgsDefault("-Xms2048m -Xmx2048m ");
+    //Processes.setJvmArgsDefault("-Xms2048m -Xmx2048m ");
+    Processes.setJvmArgsDefault("-Xms1024m -Xmx1024m ");
     if (!SERVER1_IN_JUNIT) {
       r66Pid1 = startServer(configFile.getAbsolutePath());
     }
