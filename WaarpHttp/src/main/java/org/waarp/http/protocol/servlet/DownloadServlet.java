@@ -71,7 +71,7 @@ public class DownloadServlet extends AbstractServlet {
     final String filename = getFilename(arguments);
     logger.debug("RECVHEAD: {}", filename);
     final HttpDownloadSession session =
-        getDownloadSession(arguments, filename, true);
+        getDownloadSession(arguments, filename, true);//NOSONAR
     logger.debug("RECVHEAD SESSION: {}", session);
     logger.debug("Check on going");
     response.setHeader("Expires", "0");
@@ -126,13 +126,14 @@ public class DownloadServlet extends AbstractServlet {
       // Used by javascript downloader
       final Cookie cookie = new Cookie("fileDownload", "true");
       cookie.setHttpOnly(true);
+      cookie.setSecure(true);
       response.addCookie(cookie);
       response
           .setHeader("Content-Length", Long.toString(session.getFileSize()));
       String hash = null;
       try {
         hash = future.get();
-      } catch (final InterruptedException e) {
+      } catch (final InterruptedException e) {//NOSONAR
         logger.debug(e);
       } catch (final ExecutionException e) {
         logger.debug(e);

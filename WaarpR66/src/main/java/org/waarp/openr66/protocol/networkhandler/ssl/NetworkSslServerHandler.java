@@ -66,16 +66,20 @@ public class NetworkSslServerHandler extends NetworkServerHandler {
     isSSL = true;
     // Check first if allowed
     if (NetworkTransaction.isBlacklisted(networkChannel)) {
-      logger.warn("Connection refused since Partner is in BlackListed from " +
-                  networkChannel.remoteAddress());
-      isBlackListed = true;
-      if (Configuration.configuration.getR66Mib() != null) {
-        Configuration.configuration.getR66Mib().notifyError(
-            "Black Listed connection temptative", "During Handshake");
+      try {
+        logger.warn("Connection refused since Partner is in BlackListed from " +
+                    networkChannel.remoteAddress());
+        isBlackListed = true;
+        if (Configuration.configuration.getR66Mib() != null) {
+          Configuration.configuration.getR66Mib().notifyError(
+              "Black Listed connection temptative", "During Handshake");
+        }
+        // close immediately the connection
+        WaarpSslUtility.closingSslChannel(networkChannel);
+        return;
+      } finally {
+        ctx.read();
       }
-      // close immediately the connection
-      WaarpSslUtility.closingSslChannel(networkChannel);
-      return;
     }
     // Get the SslHandler in the current pipeline.
     // We added it in NetworkSslServerInitializer.
@@ -93,6 +97,7 @@ public class NetworkSslServerHandler extends NetworkServerHandler {
                                            .notifyError("SSL Connection Error",
                                                         "During Handshake");
               }
+              ctx.channel().config().setAutoRead(false);
             }
           });
     } else {

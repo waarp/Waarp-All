@@ -245,7 +245,7 @@ public final class ParametersChecker {
         throw new InvalidArgumentException("Invalid input bytes");
       }
       for (final String rule : RULES) {
-        if (field != null && rule != null && field.contains(rule)) {
+        if (rule != null && field.contains(rule)) {
           throw new InvalidArgumentException("Invalid tag sanity check");
         }
       }

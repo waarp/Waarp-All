@@ -152,7 +152,9 @@ public class ExecBusinessHandler extends BusinessHandler {
           // Here the transfer is successful. If the file does not exist on disk
           // We create it : the transfered file was empty.
           try {
-            newfile.createNewFile();
+            if (!newfile.createNewFile()) {
+              logger.error("Cannot create New Empty File");
+            }
           } catch (final IOException e) {
             throw new Reply421Exception(
                 POST_EXECUTION_IN_ERROR_FOR_TRANSFER_SINCE_NO_FILE_FOUND);

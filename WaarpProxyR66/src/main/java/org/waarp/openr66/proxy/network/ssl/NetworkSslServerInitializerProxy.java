@@ -75,6 +75,6 @@ public class NetworkSslServerInitializerProxy
         configuration.getDelayLimit(), configuration.getTimeoutCon()));
     pipeline.addLast(NETWORK_CODEC, new NetworkPacketCodec());
     pipeline.addLast(configuration.getHandlerGroup(), NETWORK_HANDLER,
-                     new NetworkServerHandler(!isClient));
+                     new NetworkSslServerHandler(!isClient));
   }
 }

@@ -935,7 +935,7 @@ public class Configuration {
       serverBootstrap = new ServerBootstrap();
       WaarpNettyUtil.setServerBootstrap(serverBootstrap, workerGroup,
                                         (int) getTimeoutCon(),
-                                        getBlockSize() + 64);
+                                        getBlockSize() + 64, false);
       networkServerInitializer = new NetworkServerInitializer(true);
       serverBootstrap.childHandler(networkServerInitializer);
       final String[] serverIps = getServerIpsAddresses();
@@ -951,7 +951,7 @@ public class Configuration {
       serverSslBootstrap = new ServerBootstrap();
       WaarpNettyUtil.setServerBootstrap(serverSslBootstrap, workerGroup,
                                         (int) getTimeoutCon(),
-                                        getBlockSize() + 64);
+                                        getBlockSize() + 64, false);
       networkSslServerInitializer = new NetworkSslServerInitializer(false);
       serverSslBootstrap.childHandler(networkSslServerInitializer);
       final String[] serverIps = getServerSslAddresses();
