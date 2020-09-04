@@ -82,24 +82,30 @@ public abstract class AbstractLocalPacket {
    *
    * @throws OpenR66ProtocolPacketException
    */
-  public abstract void createHeader(LocalChannelReference lcr)
-      throws OpenR66ProtocolPacketException;
+  public void createHeader(LocalChannelReference lcr)
+      throws OpenR66ProtocolPacketException {
+    throw new IllegalStateException("Should not be called");
+  }
 
   /**
    * Prepare the Middle buffer
    *
    * @throws OpenR66ProtocolPacketException
    */
-  public abstract void createMiddle(LocalChannelReference lcr)
-      throws OpenR66ProtocolPacketException;
+  public void createMiddle(LocalChannelReference lcr)
+      throws OpenR66ProtocolPacketException {
+    throw new IllegalStateException("Should not be called");
+  }
 
   /**
    * Prepare the End buffer
    *
    * @throws OpenR66ProtocolPacketException
    */
-  public abstract void createEnd(LocalChannelReference lcr)
-      throws OpenR66ProtocolPacketException;
+  public void createEnd(LocalChannelReference lcr)
+      throws OpenR66ProtocolPacketException {
+    throw new IllegalStateException("Should not be called");
+  }
 
   /**
    * @return the type of Packet

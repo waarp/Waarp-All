@@ -111,31 +111,6 @@ public class ShutdownPacket extends AbstractLocalPacket {
   }
 
   @Override
-  public void createEnd(final LocalChannelReference lcr)
-      throws OpenR66ProtocolPacketException {
-    end = Unpooled.EMPTY_BUFFER;
-  }
-
-  @Override
-  public void createHeader(final LocalChannelReference lcr)
-      throws OpenR66ProtocolPacketException {
-    if (key != null) {
-      header = Unpooled.wrappedBuffer(key);
-    }
-  }
-
-  @Override
-  public void createMiddle(final LocalChannelReference lcr)
-      throws OpenR66ProtocolPacketException {
-    if (restart != 0) {
-      final byte[] array = { restart };
-      middle = Unpooled.wrappedBuffer(array);
-    } else {
-      middle = Unpooled.EMPTY_BUFFER;
-    }
-  }
-
-  @Override
   public String toString() {
     return "ShutdownPacket" + (restart != 0? " and restart" : "");
   }

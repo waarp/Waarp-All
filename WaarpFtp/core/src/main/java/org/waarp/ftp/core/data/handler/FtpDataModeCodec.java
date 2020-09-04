@@ -21,7 +21,6 @@ package org.waarp.ftp.core.data.handler;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
-import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageCodec;
 import org.waarp.common.exception.InvalidArgumentException;
@@ -239,7 +238,7 @@ public class FtpDataModeCodec extends ByteToMessageCodec<DataBlock> {
     if (mode == TransferMode.STREAM) {
       dataBlock = new DataBlock();
       if (structure != TransferStructure.RECORD) {
-        final ByteBuf newbuf = Unpooled.wrappedBuffer(buf);
+        final ByteBuf newbuf = buf.slice();
         buf.readerIndex(buf.readableBytes());
         newbuf.retain();
         dataBlock.setBlock(newbuf);

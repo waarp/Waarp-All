@@ -67,21 +67,6 @@ public class NoOpPacket extends AbstractLocalPacket {
   }
 
   @Override
-  public void createEnd(final LocalChannelReference lcr) {
-    end = Unpooled.EMPTY_BUFFER;
-  }
-
-  @Override
-  public void createHeader(final LocalChannelReference lcr) {
-    header = Unpooled.EMPTY_BUFFER;
-  }
-
-  @Override
-  public void createMiddle(final LocalChannelReference lcr) {
-    middle = Unpooled.EMPTY_BUFFER;
-  }
-
-  @Override
   public byte getType() {
     return LocalPacketFactory.NOOPPACKET;
   }

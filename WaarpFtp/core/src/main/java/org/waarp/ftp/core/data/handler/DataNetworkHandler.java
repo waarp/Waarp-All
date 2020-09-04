@@ -150,6 +150,14 @@ public class DataNetworkHandler extends SimpleChannelInboundHandler<DataBlock> {
       throws Exception {
     logger.debug("Data Channel closed with a session ? " + (session != null));
     if (session != null) {
+      if (!session.getDataConn().checkCorrectChannel(ctx.channel())) {
+        for (int i = 0; i < FtpInternalConfiguration.RETRYNB; i++) {
+          Thread.sleep(FtpInternalConfiguration.RETRYINMS);
+          if (session.getDataConn().checkCorrectChannel(ctx.channel())) {
+            break;
+          }
+        }
+      }
       if (session.getDataConn().checkCorrectChannel(ctx.channel())) {
         session.getDataConn().getFtpTransferControl().setPreEndOfTransfer();
       } else {

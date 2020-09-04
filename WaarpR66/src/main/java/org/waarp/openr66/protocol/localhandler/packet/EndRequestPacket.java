@@ -139,27 +139,6 @@ public class EndRequestPacket extends AbstractLocalPacket {
   }
 
   @Override
-  public void createEnd(final LocalChannelReference lcr) {
-    if (optional == null) {
-      end = Unpooled.EMPTY_BUFFER;
-    } else {
-      end = Unpooled.copiedBuffer(optional, Charset.defaultCharset());
-    }
-  }
-
-  @Override
-  public void createHeader(final LocalChannelReference lcr) {
-    header = ByteBufAllocator.DEFAULT.buffer(4, 4);
-    header.writeInt(code);
-  }
-
-  @Override
-  public void createMiddle(final LocalChannelReference lcr) {
-    final byte[] newbytes = { way };
-    middle = Unpooled.wrappedBuffer(newbytes);
-  }
-
-  @Override
   public byte getType() {
     return LocalPacketFactory.ENDREQUESTPACKET;
   }

@@ -108,29 +108,6 @@ public class BusinessRequestPacket extends AbstractLocalPacket {
   }
 
   @Override
-  public void createEnd(final LocalChannelReference lcr)
-      throws OpenR66ProtocolPacketException {
-    end = ByteBufAllocator.DEFAULT.buffer(1, 1);
-    end.writeByte(way);
-    end.retain();
-  }
-
-  @Override
-  public void createHeader(final LocalChannelReference lcr)
-      throws OpenR66ProtocolPacketException {
-    header = Unpooled.wrappedBuffer(sheader.getBytes());
-    header.retain();
-  }
-
-  @Override
-  public void createMiddle(final LocalChannelReference lcr)
-      throws OpenR66ProtocolPacketException {
-    middle = ByteBufAllocator.DEFAULT.buffer(4, 4);
-    middle.writeInt(delay);
-    middle.retain();
-  }
-
-  @Override
   public byte getType() {
     return LocalPacketFactory.BUSINESSREQUESTPACKET;
   }
