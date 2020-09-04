@@ -26,6 +26,7 @@ import org.waarp.common.database.exception.WaarpDatabaseException;
 import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.openr66.client.AbstractTransfer;
 import org.waarp.openr66.commander.ClientRunner;
 import org.waarp.openr66.context.R66Session;
 import org.waarp.openr66.context.filesystem.R66File;
@@ -70,7 +71,7 @@ public class R66EmbeddedServiceImpl implements R66Service.Iface {
       final Date date;
       try {
         final SimpleDateFormat dateFormat =
-            new SimpleDateFormat("yyyyMMddHHmmss");
+            new SimpleDateFormat(AbstractTransfer.TIMESTAMP_FORMAT);
         date = dateFormat.parse(request.getStart());
         ttimestart = new Timestamp(date.getTime());
       } catch (final ParseException ignored) {

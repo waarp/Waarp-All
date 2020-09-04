@@ -75,7 +75,7 @@ public abstract class AbstractExecutor {
   protected static final String FILE = "#FILE#";
   protected static final String COMMAND = "#COMMAND#";
   protected static final String SPECIALID = "#SPECIALID#";
-  protected static final String sUUID = "#sUUID#";
+  protected static final String S_UUID = "#UUID#";
 
   protected static final String REFUSED = "REFUSED";
   protected static final String NONE = "NONE";
@@ -83,11 +83,11 @@ public abstract class AbstractExecutor {
   protected static final String JAVAEXECUTE = "JAVAEXECUTE";
   protected static final String R66PREPARETRANSFER = "R66PREPARETRANSFER";
 
-  protected static final int tREFUSED = -1;
-  protected static final int tNONE = 0;
-  protected static final int tEXECUTE = 1;
-  protected static final int tR66PREPARETRANSFER = 2;
-  protected static final int tJAVAEXECUTE = 3;
+  protected static final int T_REFUSED = -1;
+  protected static final int T_NONE = 0;
+  protected static final int T_EXECUTE = 1;
+  protected static final int T_R_66_PREPARETRANSFER = 2;
+  protected static final int T_JAVAEXECUTE = 3;
 
   protected static CommandExecutor commandExecutor;
 
@@ -137,23 +137,23 @@ public abstract class AbstractExecutor {
         setPretrRefused(commandExecutor.isPretrRefused());
       } else if (isRefused(retrieve)) {
         pretrCMD = REFUSED;
-        pretrType = tREFUSED;
+        pretrType = T_REFUSED;
         setPretrRefused(true);
       } else {
         if (isExecute(retrieve)) {
           pretrCMD = getExecuteCmd(retrieve);
-          pretrType = tEXECUTE;
+          pretrType = T_EXECUTE;
         } else if (isR66PrepareTransfer(retrieve)) {
           pretrCMD = getR66PrepareTransferCmd(retrieve);
-          pretrType = tR66PREPARETRANSFER;
+          pretrType = T_R_66_PREPARETRANSFER;
           useDatabase = true;
         } else if (isJavaExecute(retrieve)) {
           pretrCMD = getJavaExecuteCmd(retrieve);
-          pretrType = tJAVAEXECUTE;
+          pretrType = T_JAVAEXECUTE;
         } else {
           // Default NONE
           pretrCMD = getNone(retrieve);
-          pretrType = tNONE;
+          pretrType = T_NONE;
         }
       }
       setPretrDelay(retrDelay);
@@ -164,22 +164,22 @@ public abstract class AbstractExecutor {
       } else if (isRefused(store)) {
         pstorCMD = REFUSED;
         setPstorRefused(true);
-        pstorType = tREFUSED;
+        pstorType = T_REFUSED;
       } else {
         if (isExecute(store)) {
           pstorCMD = getExecuteCmd(store);
-          pstorType = tEXECUTE;
+          pstorType = T_EXECUTE;
         } else if (isR66PrepareTransfer(store)) {
           pstorCMD = getR66PrepareTransferCmd(store);
-          pstorType = tR66PREPARETRANSFER;
+          pstorType = T_R_66_PREPARETRANSFER;
           useDatabase = true;
         } else if (isJavaExecute(store)) {
           pstorCMD = getJavaExecuteCmd(store);
-          pstorType = tJAVAEXECUTE;
+          pstorType = T_JAVAEXECUTE;
         } else {
           // Default NONE
           pstorCMD = getNone(store);
-          pstorType = tNONE;
+          pstorType = T_NONE;
         }
       }
       setPstorDelay(storDelay);
@@ -232,13 +232,13 @@ public abstract class AbstractExecutor {
     @Override
     public String getRetrType() {
       switch (pretrType) {
-        case tREFUSED:
+        case T_REFUSED:
           return REFUSED;
-        case tEXECUTE:
+        case T_EXECUTE:
           return EXECUTE;
-        case tR66PREPARETRANSFER:
+        case T_R_66_PREPARETRANSFER:
           return R66PREPARETRANSFER;
-        case tJAVAEXECUTE:
+        case T_JAVAEXECUTE:
           return JAVAEXECUTE;
         default:
           return NONE;
@@ -248,13 +248,13 @@ public abstract class AbstractExecutor {
     @Override
     public String getStorType() {
       switch (pstorType) {
-        case tREFUSED:
+        case T_REFUSED:
           return REFUSED;
-        case tEXECUTE:
+        case T_EXECUTE:
           return EXECUTE;
-        case tR66PREPARETRANSFER:
+        case T_R_66_PREPARETRANSFER:
           return R66PREPARETRANSFER;
-        case tJAVAEXECUTE:
+        case T_JAVAEXECUTE:
           return JAVAEXECUTE;
         default:
           return NONE;
@@ -367,7 +367,7 @@ public abstract class AbstractExecutor {
       CommandExecutor executor = (CommandExecutor) auth.getCommandExecutor();
       if (executor == null) {
         executor = commandExecutor;
-      } else if (executor.pstorType == tNONE) {
+      } else if (executor.pstorType == T_NONE) {
         final String replaced = getPreparedCommand(executor.pstorCMD, args);
         return new NoTaskExecutor(replaced, executor.getPstorDelay(),
                                   futureCompletion);
@@ -379,17 +379,17 @@ public abstract class AbstractExecutor {
       }
       final String replaced = getPreparedCommand(executor.pstorCMD, args);
       switch (executor.pstorType) {
-        case tREFUSED:
+        case T_REFUSED:
           logger.error("STORe like operation REFUSED");
           futureCompletion.cancel();
           return null;
-        case tEXECUTE:
+        case T_EXECUTE:
           return new ExecuteExecutor(replaced, executor.getPstorDelay(),
                                      futureCompletion);
-        case tJAVAEXECUTE:
+        case T_JAVAEXECUTE:
           return new JavaExecutor(replaced, executor.getPstorDelay(),
                                   futureCompletion);
-        case tR66PREPARETRANSFER:
+        case T_R_66_PREPARETRANSFER:
           return new R66PreparedTransferExecutor(replaced,
                                                  executor.getPstorDelay(),
                                                  futureCompletion);
@@ -401,7 +401,7 @@ public abstract class AbstractExecutor {
       CommandExecutor executor = (CommandExecutor) auth.getCommandExecutor();
       if (executor == null) {
         executor = commandExecutor;
-      } else if (executor.pretrType == tNONE) {
+      } else if (executor.pretrType == T_NONE) {
         final String replaced = getPreparedCommand(executor.pretrCMD, args);
         return new NoTaskExecutor(replaced, executor.getPretrDelay(),
                                   futureCompletion);
@@ -413,17 +413,17 @@ public abstract class AbstractExecutor {
       }
       final String replaced = getPreparedCommand(executor.pretrCMD, args);
       switch (executor.pretrType) {
-        case tREFUSED:
+        case T_REFUSED:
           logger.error("RETRieve operation REFUSED");
           futureCompletion.cancel();
           return null;
-        case tEXECUTE:
+        case T_EXECUTE:
           return new ExecuteExecutor(replaced, executor.getPretrDelay(),
                                      futureCompletion);
-        case tJAVAEXECUTE:
+        case T_JAVAEXECUTE:
           return new JavaExecutor(replaced, executor.getPretrDelay(),
                                   futureCompletion);
-        case tR66PREPARETRANSFER:
+        case T_R_66_PREPARETRANSFER:
           return new R66PreparedTransferExecutor(replaced,
                                                  executor.getPretrDelay(),
                                                  futureCompletion);
@@ -454,8 +454,8 @@ public abstract class AbstractExecutor {
     replaceAll(builder, FILE, args[3]);
     replaceAll(builder, COMMAND, args[4]);
     replaceAll(builder, SPECIALID, args[5]);
-    if (builder.indexOf(sUUID) > 0) {
-      replaceAll(builder, sUUID, new GUID().toString());
+    if (builder.indexOf(S_UUID) > 0) {
+      replaceAll(builder, S_UUID, new GUID().toString());
     }
     logger.debug("Result: {}", builder);
     return builder.toString();

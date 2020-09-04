@@ -30,12 +30,14 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.sql.Timestamp;
+import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.TimeZone;
 import java.util.regex.Pattern;
 
 /**
@@ -56,6 +58,7 @@ public final class WaarpStringUtils {
 
   public static final String BLANK_REGEX = "\\s+";
   public static final Pattern BLANK = Pattern.compile(BLANK_REGEX);
+  private static final TimeZone z = TimeZone.getTimeZone("GMT");
 
   private WaarpStringUtils() {
   }
@@ -296,5 +299,23 @@ public final class WaarpStringUtils {
   public static String cleanJsonForHtml(final String json) {
     return json.replaceAll("([^\\\\])\\\\n", "$1")
                .replaceAll("([^\\\\])\\\\r", "$1");
+  }
+
+  public static DateFormat getDateFormat() {
+    DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd z");
+    dateFormat.setTimeZone(z);
+    return dateFormat;
+  }
+
+  public static DateFormat getTimeFormat() {
+    DateFormat timeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss z");
+    timeFormat.setTimeZone(z);
+    return timeFormat;
+  }
+
+  public static DateFormat getTimestampFormat() {
+    DateFormat timestampFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    timestampFormat.setTimeZone(z);
+    return timestampFormat;
   }
 }

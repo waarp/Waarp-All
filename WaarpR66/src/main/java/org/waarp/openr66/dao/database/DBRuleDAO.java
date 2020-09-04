@@ -24,8 +24,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.waarp.common.logging.WaarpLogger;
-import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.openr66.dao.RuleDAO;
 import org.waarp.openr66.dao.exception.DAOConnectionException;
@@ -49,9 +47,6 @@ import static org.waarp.openr66.dao.DAOFactory.*;
  */
 public class DBRuleDAO extends StatementExecutor<Rule> implements RuleDAO {
 
-  private static final WaarpLogger logger =
-      WaarpLoggerFactory.getLogger(DBRuleDAO.class);
-
   protected static final String TABLE = "rules";
 
   public static final String ID_FIELD = "idrule";
@@ -71,12 +66,12 @@ public class DBRuleDAO extends StatementExecutor<Rule> implements RuleDAO {
 
   protected static final String SQL_DELETE_ALL = "DELETE FROM " + TABLE;
   protected static final String SQL_DELETE =
-      "DELETE FROM " + TABLE + " WHERE " + ID_FIELD + " = ?";
+      "DELETE FROM " + TABLE + WHERE + ID_FIELD + PARAMETER;
   protected static final String SQL_GET_ALL = "SELECT * FROM " + TABLE;
   protected static final String SQL_EXIST =
-      "SELECT 1 FROM " + TABLE + " WHERE " + ID_FIELD + " = ?";
+      "SELECT 1 FROM " + TABLE + WHERE + ID_FIELD + PARAMETER;
   protected static final String SQL_SELECT =
-      "SELECT * FROM " + TABLE + " WHERE " + ID_FIELD + " = ?";
+      "SELECT * FROM " + TABLE + WHERE + ID_FIELD + PARAMETER;
   protected static final String SQL_INSERT =
       "INSERT INTO " + TABLE + " (" + ID_FIELD + ", " + HOSTIDS_FIELD + ", " +
       MODE_TRANS_FIELD + ", " + RECV_PATH_FIELD + ", " + SEND_PATH_FIELD +
@@ -87,14 +82,15 @@ public class DBRuleDAO extends StatementExecutor<Rule> implements RuleDAO {
       UPDATED_INFO_FIELD + ") VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
   protected static final String SQL_UPDATE =
-      "UPDATE " + TABLE + " SET " + ID_FIELD + " = ?, " + HOSTIDS_FIELD +
-      " = ?, " + MODE_TRANS_FIELD + " = ? ," + RECV_PATH_FIELD + " = ?, " +
-      SEND_PATH_FIELD + " = ?, " + ARCHIVE_PATH_FIELD + " = ? ," +
-      WORK_PATH_FIELD + " = ? ," + R_PRE_TASKS_FIELD + " = ? ," +
-      R_POST_TASKS_FIELD + " = ? ," + R_ERROR_TASKS_FIELD + " = ? ," +
-      S_PRE_TASKS_FIELD + " = ? ," + S_POST_TASKS_FIELD + " = ? ," +
-      S_ERROR_TASKS_FIELD + " = ? ," + UPDATED_INFO_FIELD + " = ? WHERE " +
-      ID_FIELD + " = ?";
+      "UPDATE " + TABLE + " SET " + ID_FIELD + PARAMETER_COMMA + HOSTIDS_FIELD +
+      PARAMETER_COMMA + MODE_TRANS_FIELD + PARAMETER_COMMA + RECV_PATH_FIELD +
+      PARAMETER_COMMA + SEND_PATH_FIELD + PARAMETER_COMMA + ARCHIVE_PATH_FIELD +
+      PARAMETER_COMMA + WORK_PATH_FIELD + PARAMETER_COMMA + R_PRE_TASKS_FIELD +
+      PARAMETER_COMMA + R_POST_TASKS_FIELD + PARAMETER_COMMA +
+      R_ERROR_TASKS_FIELD + PARAMETER_COMMA + S_PRE_TASKS_FIELD +
+      PARAMETER_COMMA + S_POST_TASKS_FIELD + PARAMETER_COMMA +
+      S_ERROR_TASKS_FIELD + PARAMETER_COMMA + UPDATED_INFO_FIELD +
+      " = ? WHERE " + ID_FIELD + PARAMETER;
 
   public DBRuleDAO(final Connection con) {
     super(con);

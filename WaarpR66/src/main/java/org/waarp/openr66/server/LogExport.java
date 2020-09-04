@@ -52,7 +52,7 @@ public class LogExport implements Runnable {
    */
   static volatile WaarpLogger logger;
 
-  protected static final String _INFO_ARGS =
+  protected static final String INFO_ARGS =
       "Need at least the configuration file as first argument then optionally\n" +
       "    -purge\n" + "    -clean\n" +
       "    -start timestamp in format yyyyMMddHHmmssSSS possibly truncated and where one of ':-. ' can be separators\n" +
@@ -140,12 +140,12 @@ public class LogExport implements Runnable {
       logger = WaarpLoggerFactory.getLogger(LogExport.class);
     }
     if (args.length < 1) {
-      logger.error(_INFO_ARGS);
+      logger.error(INFO_ARGS);
       return false;
     }
     if (!FileBasedConfiguration
         .setClientConfigurationFromXml(Configuration.configuration, args[0])) {
-      logger.error(_INFO_ARGS);
+      logger.error(INFO_ARGS);
       return false;
     }
     String ssstart = null;

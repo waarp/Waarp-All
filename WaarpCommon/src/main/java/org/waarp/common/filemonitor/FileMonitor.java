@@ -344,19 +344,21 @@ public class FileMonitor {
           statusFile);
       return;
     }
-    try {
-      final HashMap<String, FileItem> newHashMap = JsonHandler.mapper
-          .readValue(statusFile,
-                     new TypeReference<HashMap<String, FileItem>>() {
-                     });
-      fileItems.putAll(newHashMap);
-      initialized = true;
-    } catch (final JsonParseException ignored) {
-      SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
-    } catch (final JsonMappingException ignored) {
-      SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
-    } catch (final IOException ignored) {
-      SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
+    synchronized (directories) {
+      try {
+        final HashMap<String, FileItem> newHashMap = JsonHandler.mapper
+            .readValue(statusFile,
+                       new TypeReference<HashMap<String, FileItem>>() {
+                       });
+        fileItems.putAll(newHashMap);
+        initialized = true;
+      } catch (final JsonParseException ignored) {
+        SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
+      } catch (final JsonMappingException ignored) {
+        SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
+      } catch (final IOException ignored) {
+        SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
+      }
     }
   }
 
@@ -371,15 +373,17 @@ public class FileMonitor {
     if (statusFile == null) {
       return;
     }
-    try {
-      JsonHandler.mapper.writeValue(statusFile, fileItems);
-      createChkFile();
-    } catch (final JsonGenerationException ignored) {
-      SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
-    } catch (final JsonMappingException ignored) {
-      SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
-    } catch (final IOException ignored) {
-      SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
+    synchronized (directories) {
+      try {
+        JsonHandler.mapper.writeValue(statusFile, fileItems);
+        createChkFile();
+      } catch (final JsonGenerationException ignored) {
+        SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
+      } catch (final JsonMappingException ignored) {
+        SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
+      } catch (final IOException ignored) {
+        SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
+      }
     }
   }
 
@@ -389,8 +393,10 @@ public class FileMonitor {
    *     past)
    */
   public long getCurrentHistoryNb() {
-    if (fileItems != null) {
-      return fileItems.size();
+    synchronized (directories) {
+      if (fileItems != null) {
+        return fileItems.size();
+      }
     }
     return -1;
   }
@@ -409,35 +415,38 @@ public class FileMonitor {
     Set<String> removedFileItems = null;
     final ConcurrentHashMap<String, FileItem> newFileItems =
         new ConcurrentHashMap<String, FileItem>();
-    if (!lastFileItems.isEmpty()) {
-      removedFileItems = ((Map<String, FileItem>) lastFileItems).keySet();
-      removedFileItems.removeAll(((Map<String, FileItem>) fileItems).keySet());
-      for (final Entry<String, FileItem> key : fileItems.entrySet()) {
-        if (!key.getValue().isStrictlySame(lastFileItems.get(key.getKey()))) {
+    synchronized (directories) {
+      if (!lastFileItems.isEmpty()) {
+        removedFileItems = ((Map<String, FileItem>) lastFileItems).keySet();
+        removedFileItems
+            .removeAll(((Map<String, FileItem>) fileItems).keySet());
+        for (final Entry<String, FileItem> key : fileItems.entrySet()) {
+          if (!key.getValue().isStrictlySame(lastFileItems.get(key.getKey()))) {
+            newFileItems.put(key.getKey(), key.getValue());
+          }
+        }
+      } else {
+        for (final Entry<String, FileItem> key : fileItems.entrySet()) {
           newFileItems.put(key.getKey(), key.getValue());
         }
       }
-    } else {
+      final FileMonitorInformation fileMonitorInformation =
+          new FileMonitorInformation(name, newFileItems, removedFileItems,
+                                     directories, stopFile, statusFile,
+                                     elapseTime, scanSubDir, globalok,
+                                     globalerror, todayok, todayerror);
       for (final Entry<String, FileItem> key : fileItems.entrySet()) {
-        newFileItems.put(key.getKey(), key.getValue());
+        final FileItem clone = key.getValue().clone();
+        lastFileItems.put(key.getKey(), clone);
       }
+      createChkFile();
+      final String status = JsonHandler.writeAsString(fileMonitorInformation);
+      if (removedFileItems != null) {
+        removedFileItems.clear();
+      }
+      newFileItems.clear();
+      return status;
     }
-    final FileMonitorInformation fileMonitorInformation =
-        new FileMonitorInformation(name, newFileItems, removedFileItems,
-                                   directories, stopFile, statusFile,
-                                   elapseTime, scanSubDir, globalok,
-                                   globalerror, todayok, todayerror);
-    for (final Entry<String, FileItem> key : fileItems.entrySet()) {
-      final FileItem clone = key.getValue().clone();
-      lastFileItems.put(key.getKey(), clone);
-    }
-    createChkFile();
-    final String status = JsonHandler.writeAsString(fileMonitorInformation);
-    if (removedFileItems != null) {
-      removedFileItems.clear();
-    }
-    newFileItems.clear();
-    return status;
   }
 
   /**
@@ -604,24 +613,26 @@ public class FileMonitor {
     }
     // now check that all existing items are still valid
     final List<FileItem> todel = new LinkedList<FileItem>();
-    for (final FileItem item : fileItems.values()) {
-      if (item.file != null && item.file.isFile()) {
-        continue;
+    synchronized (directories) {
+      for (final FileItem item : fileItems.values()) {
+        if (item.file != null && item.file.isFile()) {
+          continue;
+        }
+        todel.add(item);
       }
-      todel.add(item);
-    }
-    // remove invalid files
-    for (final FileItem fileItem : todel) {
-      final String newName =
-          AbstractDir.normalizePath(fileItem.file.getAbsolutePath());
-      fileItems.remove(newName);
-      toUse.remove(fileItem);
-      if (commandRemovedFile != null) {
-        commandRemovedFile.run(fileItem);
+      // remove invalid files
+      for (final FileItem fileItem : todel) {
+        final String newName =
+            AbstractDir.normalizePath(fileItem.file.getAbsolutePath());
+        fileItems.remove(newName);
+        toUse.remove(fileItem);
+        if (commandRemovedFile != null) {
+          commandRemovedFile.run(fileItem);
+        }
+        fileItem.file = null;
+        fileItem.hash = null;
+        fileItemsChanged = true;
       }
-      fileItem.file = null;
-      fileItem.hash = null;
-      fileItemsChanged = true;
     }
     if (fileItemsChanged) {
       saveStatus();
@@ -701,16 +712,19 @@ public class FileMonitor {
         }
         final String newName =
             AbstractDir.normalizePath(file.getAbsolutePath());
-        final FileItem fileItem = fileItems.get(newName);
-        if (fileItem == null) {
-          // never seen until now
-          fileItems.put(newName, new FileItem(file));
-          fileItemsChanged = true;
-          continue;
-        }
-        if (fileItem.used && ignoreAlreadyUsed) {
-          // already used so ignore
-          continue;
+        final FileItem fileItem;
+        synchronized (directories) {
+          fileItem = fileItems.get(newName);
+          if (fileItem == null) {
+            // never seen until now
+            fileItems.put(newName, new FileItem(file));
+            fileItemsChanged = true;
+            continue;
+          }
+          if (fileItem.used && ignoreAlreadyUsed) {
+            // already used so ignore
+            continue;
+          }
         }
         logger.debug("File check: " + fileItem);
         final long size = fileItem.file.length();

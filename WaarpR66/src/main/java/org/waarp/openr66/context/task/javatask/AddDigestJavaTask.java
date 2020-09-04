@@ -55,9 +55,9 @@ public class AddDigestJavaTask extends AbstractExecJavaTask {
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(AddDigestJavaTask.class);
 
-  private static final String sDIGEST = "#DIGEST#";
+  private static final String S_DIGEST = "#DIGEST#";
   private static final Pattern DIGEST_PATTERN =
-      Pattern.compile(sDIGEST, Pattern.LITERAL);
+      Pattern.compile(S_DIGEST, Pattern.LITERAL);
 
   @Override
   public void run() {

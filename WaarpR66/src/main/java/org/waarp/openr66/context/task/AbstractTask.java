@@ -260,12 +260,6 @@ public abstract class AbstractTask implements Runnable {
   }
 
   /**
-   * This is the only interface to execute an operator.
-   */
-  @Override
-  public abstract void run();
-
-  /**
    * @return True if the operation is in success status
    */
   public boolean isSuccess() {

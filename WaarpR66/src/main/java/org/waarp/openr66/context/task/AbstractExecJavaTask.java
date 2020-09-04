@@ -143,13 +143,11 @@ public abstract class AbstractExecJavaTask implements R66Runnable {
 
   @Override
   public void run() {
-    if (callFromBusiness) {
+    if (callFromBusiness && isToValidate) {
       // Business Request to validate?
-      if (isToValidate) {
-        final BusinessRequestPacket packet =
-            new BusinessRequestPacket(classname + ' ' + fullarg, 0);
-        validate(packet);
-      }
+      final BusinessRequestPacket packet =
+          new BusinessRequestPacket(classname + ' ' + fullarg, 0);
+      validate(packet);
     }
     final String builder =
         getClass().getSimpleName() + ':' + "args(" + fullarg + ')';
@@ -181,8 +179,7 @@ public abstract class AbstractExecJavaTask implements R66Runnable {
   @Override
   public String toString() {
     if (status == -1 || finalInformation == null) {
-      final String builder = getClass().getSimpleName() + ": [" + fullarg + ']';
-      return builder;
+      return getClass().getSimpleName() + ": [" + fullarg + ']';
     } else {
       return finalInformation;
     }

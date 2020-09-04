@@ -20,8 +20,6 @@
 
 package org.waarp.openr66.dao.database;
 
-import org.waarp.common.logging.WaarpLogger;
-import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.openr66.dao.MultipleMonitorDAO;
 import org.waarp.openr66.pojo.MultipleMonitor;
 
@@ -35,9 +33,6 @@ import java.sql.SQLException;
 public class DBMultipleMonitorDAO extends StatementExecutor<MultipleMonitor>
     implements MultipleMonitorDAO {
 
-  private static final WaarpLogger logger =
-      WaarpLoggerFactory.getLogger(DBMultipleMonitorDAO.class);
-
   protected static final String TABLE = "multiplemonitor";
 
   public static final String HOSTID_FIELD = "hostid";
@@ -47,20 +42,21 @@ public class DBMultipleMonitorDAO extends StatementExecutor<MultipleMonitor>
 
   protected static final String SQL_DELETE_ALL = "DELETE FROM " + TABLE;
   protected static final String SQL_DELETE =
-      "DELETE FROM " + TABLE + " WHERE " + HOSTID_FIELD + " = ?";
+      "DELETE FROM " + TABLE + WHERE + HOSTID_FIELD + PARAMETER;
   protected static final String SQL_GET_ALL = "SELECT * FROM " + TABLE;
   protected static final String SQL_EXIST =
-      "SELECT 1 FROM " + TABLE + " WHERE " + HOSTID_FIELD + " = ?";
+      "SELECT 1 FROM " + TABLE + WHERE + HOSTID_FIELD + PARAMETER;
   protected static final String SQL_SELECT =
-      "SELECT * FROM " + TABLE + " WHERE " + HOSTID_FIELD + " = ?";
+      "SELECT * FROM " + TABLE + WHERE + HOSTID_FIELD + PARAMETER;
   protected static final String SQL_INSERT =
       "INSERT INTO " + TABLE + " (" + HOSTID_FIELD + ", " + COUNT_CONFIG_FIELD +
       ", " + COUNT_HOST_FIELD + ", " + COUNT_RULE_FIELD + ") VALUES (?,?,?,?)";
 
   protected static final String SQL_UPDATE =
-      "UPDATE " + TABLE + " SET " + HOSTID_FIELD + " = ?, " +
-      COUNT_CONFIG_FIELD + " = ?, " + COUNT_HOST_FIELD + " = ?, " +
-      COUNT_RULE_FIELD + " = ? WHERE " + HOSTID_FIELD + " = ?";
+      "UPDATE " + TABLE + " SET " + HOSTID_FIELD + PARAMETER_COMMA +
+      COUNT_CONFIG_FIELD + PARAMETER_COMMA + COUNT_HOST_FIELD +
+      PARAMETER_COMMA + COUNT_RULE_FIELD + " = ? WHERE " + HOSTID_FIELD +
+      PARAMETER;
 
 
   public DBMultipleMonitorDAO(final Connection con) {

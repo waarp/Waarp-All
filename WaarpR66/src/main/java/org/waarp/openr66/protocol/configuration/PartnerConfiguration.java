@@ -88,12 +88,12 @@ public class PartnerConfiguration {
   public PartnerConfiguration(final String id, final String json) {
     this.id = id;
     JsonHandler.setValue(root, FIELDS.HOSTID, id);
-    final int pos = json.lastIndexOf('{');
+    final int pos = json == null? -1 : json.lastIndexOf('{');
     final String version;
     if (pos > 1) {
       version = json.substring(0, pos - 1);
     } else {
-      version = json;
+      version = "";
     }
     JsonHandler.setValue(root, FIELDS.VERSION, version);
     if (isVersion2GEQVersion1(R66Versions.V2_4_12.getVersion(), version)) {

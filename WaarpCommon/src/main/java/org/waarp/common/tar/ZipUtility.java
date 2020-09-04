@@ -213,7 +213,7 @@ public final class ZipUtility {
         final File curfile = new File(directory, entry.getName());
         final File parent = curfile.getParentFile();
         if (!parent.exists()) {
-          parent.mkdirs();
+          parent.mkdirs();//NOSONAR
         }
         final OutputStream out = new FileOutputStream(curfile);
         try {

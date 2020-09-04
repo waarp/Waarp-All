@@ -26,6 +26,7 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.role.RoleDefault.ROLE;
+import org.waarp.common.utility.SingletonUtils;
 import org.waarp.openr66.dao.BusinessDAO;
 import org.waarp.openr66.dao.DAOFactory;
 import org.waarp.openr66.dao.exception.DAOConnectionException;
@@ -222,7 +223,7 @@ public final class HostConfigConverter {
         return role.roleList;
       }
     }
-    return null;
+    return SingletonUtils.singletonList();
   }
 
   // ########################## PRIVATE METHODS ###############################

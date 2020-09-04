@@ -671,8 +671,7 @@ public final class RuleFileBasedConfiguration {
    *
    * @throws OpenR66ProtocolSystemException
    */
-  private static void writeXMLInternal(final String filename,
-                                        final DbRule rule)
+  private static void writeXMLInternal(final String filename, final DbRule rule)
       throws OpenR66ProtocolSystemException {
     final Document document = DocumentHelper.createDocument();
     final Element root = document.addElement(ROOT);
@@ -701,7 +700,7 @@ public final class RuleFileBasedConfiguration {
              OpenR66ProtocolSystemException {
     final File dir = new File(directory);
     if (!dir.isDirectory()) {
-      dir.mkdirs();
+      dir.mkdirs();//NOSONAR
     }
     final DbRule[] rules = DbRule.getAllRules();
     for (final DbRule rule : rules) {
@@ -731,7 +730,7 @@ public final class RuleFileBasedConfiguration {
              OpenR66ProtocolSystemException {
     final File dir = new File(directory);
     if (!dir.isDirectory()) {
-      dir.mkdirs();
+      dir.mkdirs();//NOSONAR
     }
     final DbRule[] rules = DbRule.getAllRules();
     final String filename =

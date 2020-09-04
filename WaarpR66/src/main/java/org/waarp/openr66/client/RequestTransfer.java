@@ -71,7 +71,7 @@ public class RequestTransfer implements Runnable {
    */
   static volatile WaarpLogger logger;
 
-  protected static String _infoArgs =
+  protected static String infoArgs =
       Messages.getString("RequestTransfer.0") //$NON-NLS-1$
       + Messages.getString("Message.OutputFormat");
 
@@ -107,10 +107,10 @@ public class RequestTransfer implements Runnable {
     if (logger == null) {
       logger = WaarpLoggerFactory.getLogger(RequestTransfer.class);
     }
-    _infoArgs = Messages.getString("RequestTransfer.0") +
-                Messages.getString("Message.OutputFormat"); //$NON-NLS-1$
+    infoArgs = Messages.getString("RequestTransfer.0") +
+               Messages.getString("Message.OutputFormat"); //$NON-NLS-1$
     if (args.length < 5) {
-      logger.error(_infoArgs);
+      logger.error(infoArgs);
       return false;
     }
     if (!FileBasedConfiguration
@@ -173,7 +173,7 @@ public class RequestTransfer implements Runnable {
       } else if ("-delay".equalsIgnoreCase(args[i])) {
         i++;
         final SimpleDateFormat dateFormat =
-            new SimpleDateFormat("yyyyMMddHHmmss");
+            new SimpleDateFormat(AbstractTransfer.TIMESTAMP_FORMAT);
         if (args[i].charAt(0) == '+') {
           final Date date = new Date(System.currentTimeMillis() +
                                      Long.parseLong(args[i].substring(1)));
@@ -187,12 +187,12 @@ public class RequestTransfer implements Runnable {
     }
     if (scancel && srestart || scancel && sstop || srestart && sstop) {
       logger.error(
-          Messages.getString("RequestTransfer.15") + _infoArgs); //$NON-NLS-1$
+          Messages.getString("RequestTransfer.15") + infoArgs); //$NON-NLS-1$
       return false;
     }
     if (sspecialId == ILLEGALVALUE || srequested == null) {
       logger.error(
-          Messages.getString("RequestTransfer.16") + _infoArgs); //$NON-NLS-1$
+          Messages.getString("RequestTransfer.16") + infoArgs); //$NON-NLS-1$
       return false;
     }
 
@@ -539,7 +539,7 @@ public class RequestTransfer implements Runnable {
         logger.debug("Restart with time: " + restarttime);
         // time to reschedule in yyyyMMddHHmmss format
         final SimpleDateFormat dateFormat =
-            new SimpleDateFormat("yyyyMMddHHmmss");
+            new SimpleDateFormat(AbstractTransfer.TIMESTAMP_FORMAT);
         try {
           final Date date = dateFormat.parse(restarttime);
           node.setRestarttime(date);

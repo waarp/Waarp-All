@@ -117,7 +117,7 @@ public final class HistoryIO {
     final File file = new File(HISTORY_FILE_NAME);
     FileOutputStream out = null;
     try {
-      file.createNewFile();
+      file.createNewFile();//NOSONAR
       out = new FileOutputStream(file);
       final OutputFormat format =
           new OutputFormat(doc, WaarpStringUtils.UTF_8, true);

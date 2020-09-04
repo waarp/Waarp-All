@@ -184,7 +184,7 @@ public abstract class DbModelMariadb extends DbModelCommonMariadbMySql {
   }
 
   @Override
-  public void releaseResources() {
+  public synchronized void releaseResources() {
     if (pool != null) {
       try {
         pool.dispose();

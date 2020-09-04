@@ -115,7 +115,7 @@ public class FileConvert extends Thread {
     }
     final FileConvert fileConvert =
         new FileConvert(files, unix2dos, recursive, tmpDir);
-    fileConvert.run();
+    fileConvert.run();//NOSONAR
   }
 
   /**
@@ -139,11 +139,13 @@ public class FileConvert extends Thread {
 
   private void recursive(final File directory) {
     final File[] listFiles = directory.listFiles();
-    for (final File file : listFiles) {
-      if (file.isDirectory()) {
-        recursive(file);
-      } else {
-        convert(file, unix2dos);
+    if (listFiles != null) {
+      for (final File file : listFiles) {
+        if (file.isDirectory()) {
+          recursive(file);
+        } else {
+          convert(file, unix2dos);
+        }
       }
     }
   }

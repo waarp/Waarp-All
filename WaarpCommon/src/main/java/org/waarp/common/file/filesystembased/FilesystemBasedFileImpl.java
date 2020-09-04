@@ -591,6 +591,7 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
         }
       }
     } catch (final FileNotFoundException e) {
+      FileUtils.close(fileInputStreamTemp);
       logger.error("File not found in getFileInputStream:", e);
       return null;
     } catch (final IOException e) {

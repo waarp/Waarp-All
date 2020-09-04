@@ -54,7 +54,7 @@ public class ChangeBandwidthLimits implements Runnable {
    */
   static volatile WaarpLogger logger;
 
-  protected static final String _INFO_ARGS =
+  protected static final String INFO_ARGS =
       "Need the configuration file as first argument then at least one of\n" +
       "   -wglob limitGlobalWrite\n" + "   -rglob limitGlobalRead\n" +
       "   -wsess limitSessionWrite\n" + "   -rsess limitSessionWrite\n" +
@@ -148,12 +148,12 @@ public class ChangeBandwidthLimits implements Runnable {
       logger = WaarpLoggerFactory.getLogger(ChangeBandwidthLimits.class);
     }
     if (args.length < 3) {
-      logger.error(_INFO_ARGS);
+      logger.error(INFO_ARGS);
       return false;
     }
     if (!FileBasedConfiguration
         .setClientConfigurationFromXml(Configuration.configuration, args[0])) {
-      logger.error(_INFO_ARGS);
+      logger.error(INFO_ARGS);
       return false;
     }
     for (int i = 1; i < args.length; i++) {
@@ -180,7 +180,7 @@ public class ChangeBandwidthLimits implements Runnable {
     }
     if (swriteGlobalLimit == -1 && sreadGlobalLimit == -1 &&
         swriteSessionLimit == -1 && sreadSessionLimit == -1) {
-      logger.error(_INFO_ARGS);
+      logger.error(INFO_ARGS);
       return false;
     }
     return true;

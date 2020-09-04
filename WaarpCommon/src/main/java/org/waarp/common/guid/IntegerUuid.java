@@ -39,6 +39,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Limit is about 4000000/s UUID
  */
 public final class IntegerUuid {
+  private static final Object SYNC_OBJECT = new Object();
   /**
    * Counter part
    */
@@ -61,7 +62,7 @@ public final class IntegerUuid {
   public IntegerUuid() {
     // atomically
     final int count;
-    synchronized (COUNTER) {
+    synchronized (SYNC_OBJECT) {
       count = COUNTER.incrementAndGet();
       if (count == Integer.MAX_VALUE) {
         COUNTER.set(Integer.MIN_VALUE + 1);

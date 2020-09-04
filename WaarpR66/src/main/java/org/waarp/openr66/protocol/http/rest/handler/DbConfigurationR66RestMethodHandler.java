@@ -28,8 +28,6 @@ import org.waarp.common.database.exception.WaarpDatabaseException;
 import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
 import org.waarp.common.database.exception.WaarpDatabaseSqlException;
 import org.waarp.common.json.JsonHandler;
-import org.waarp.common.logging.WaarpLogger;
-import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.role.RoleDefault.ROLE;
 import org.waarp.gateway.kernel.exception.HttpForbiddenRequestException;
 import org.waarp.gateway.kernel.exception.HttpIncorrectRequestException;
@@ -50,8 +48,6 @@ import org.waarp.openr66.protocol.http.rest.HttpRestR66Handler;
  */
 public class DbConfigurationR66RestMethodHandler
     extends DataModelRestMethodHandler<DbConfiguration> {
-  private static final WaarpLogger logger =
-      WaarpLoggerFactory.getLogger(DbConfigurationR66RestMethodHandler.class);
   private static final String HOST_ID_AS_VARCHAR_IN_URI_AS =
       "HostId as VARCHAR in URI as ";
   public static final String BASEURI = "configurations";

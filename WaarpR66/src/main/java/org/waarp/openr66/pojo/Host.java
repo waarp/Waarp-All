@@ -37,9 +37,6 @@ import static org.waarp.openr66.configuration.FileBasedElements.*;
 @XmlType(name = XML_AUTHENTIFICATION_ENTRY)
 @XmlAccessorType(XmlAccessType.FIELD)
 public class Host {
-  private static final String DEFAULT_CLIENT_ADDRESS = "0.0.0.0";
-  private static final int DEFAULT_CLIENT_PORT = 0;
-
   @XmlElement(name = XML_AUTHENTIFICATION_HOSTID)
   @JsonProperty("HOSTID")
   private String hostid;

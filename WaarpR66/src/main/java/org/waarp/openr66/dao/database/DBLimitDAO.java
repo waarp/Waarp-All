@@ -20,8 +20,6 @@
 
 package org.waarp.openr66.dao.database;
 
-import org.waarp.common.logging.WaarpLogger;
-import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.openr66.dao.LimitDAO;
 import org.waarp.openr66.pojo.Limit;
 import org.waarp.openr66.pojo.UpdatedInfo;
@@ -35,9 +33,6 @@ import java.sql.SQLException;
  */
 public class DBLimitDAO extends StatementExecutor<Limit> implements LimitDAO {
 
-  private static final WaarpLogger logger =
-      WaarpLoggerFactory.getLogger(DBLimitDAO.class);
-
   protected static final String TABLE = "configuration";
 
   public static final String HOSTID_FIELD = "hostid";
@@ -50,12 +45,12 @@ public class DBLimitDAO extends StatementExecutor<Limit> implements LimitDAO {
 
   protected static final String SQL_DELETE_ALL = "DELETE FROM " + TABLE;
   protected static final String SQL_DELETE =
-      "DELETE FROM " + TABLE + " WHERE " + HOSTID_FIELD + " = ?";
+      "DELETE FROM " + TABLE + WHERE + HOSTID_FIELD + PARAMETER;
   protected static final String SQL_GET_ALL = "SELECT * FROM " + TABLE;
   protected static final String SQL_EXIST =
-      "SELECT 1 FROM " + TABLE + " WHERE " + HOSTID_FIELD + " = ?";
+      "SELECT 1 FROM " + TABLE + WHERE + HOSTID_FIELD + PARAMETER;
   protected static final String SQL_SELECT =
-      "SELECT * FROM " + TABLE + " WHERE " + HOSTID_FIELD + " = ?";
+      "SELECT * FROM " + TABLE + WHERE + HOSTID_FIELD + PARAMETER;
   protected static final String SQL_INSERT =
       "INSERT INTO " + TABLE + " (" + HOSTID_FIELD + ", " +
       READ_GLOBAL_LIMIT_FIELD + ", " + WRITE_GLOBAL_LIMIT_FIELD + ", " +
@@ -64,11 +59,12 @@ public class DBLimitDAO extends StatementExecutor<Limit> implements LimitDAO {
       ") VALUES (?,?,?,?,?,?,?)";
 
   protected static final String SQL_UPDATE =
-      "UPDATE " + TABLE + " SET " + HOSTID_FIELD + " = ?, " +
-      READ_GLOBAL_LIMIT_FIELD + " = ?, " + WRITE_GLOBAL_LIMIT_FIELD + " = ?, " +
-      READ_SESSION_LIMIT_FIELD + " = ?, " + WRITE_SESSION_LIMIT_FIELD +
-      " = ?, " + DELAY_LIMIT_FIELD + " = ?, " + UPDATED_INFO_FIELD +
-      " = ? WHERE " + HOSTID_FIELD + " = ?";
+      "UPDATE " + TABLE + " SET " + HOSTID_FIELD + PARAMETER_COMMA +
+      READ_GLOBAL_LIMIT_FIELD + PARAMETER_COMMA + WRITE_GLOBAL_LIMIT_FIELD +
+      PARAMETER_COMMA + READ_SESSION_LIMIT_FIELD + PARAMETER_COMMA +
+      WRITE_SESSION_LIMIT_FIELD + PARAMETER_COMMA + DELAY_LIMIT_FIELD +
+      PARAMETER_COMMA + UPDATED_INFO_FIELD + " = ? WHERE " + HOSTID_FIELD +
+      PARAMETER;
 
   public DBLimitDAO(final Connection con) {
     super(con);

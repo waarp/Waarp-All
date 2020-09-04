@@ -26,6 +26,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * propose to the client.
  */
 class CircularIntValue {
+  private final Object syncObject = new Object();
   /**
    * Min value
    */
@@ -59,7 +60,7 @@ class CircularIntValue {
    * @return the next value
    */
   public int getNext() {
-    synchronized (current) {
+    synchronized (syncObject) {
       if (!current.compareAndSet(max, min)) {
         current.incrementAndGet();
       }

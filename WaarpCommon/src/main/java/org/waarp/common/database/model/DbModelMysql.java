@@ -164,7 +164,7 @@ public abstract class DbModelMysql extends DbModelCommonMariadbMySql {
   }
 
   @Override
-  public int currentNumberOfPooledConnections() {
+  public synchronized int currentNumberOfPooledConnections() {
     if (pool != null) {
       return pool.getActiveConnections();
     }

@@ -47,11 +47,11 @@ public final class WaarpNettyUtil {
   }
 
   private static int getSoBufSize(final int maxBufSize) {
-    int so_buf = Math.min(maxBufSize * 16, BUFFER_SIZE_1MB);
-    if (so_buf < maxBufSize * 4) {
-      so_buf = maxBufSize * 4;
+    int soBuf = Math.min(maxBufSize * 16, BUFFER_SIZE_1MB);
+    if (soBuf < maxBufSize * 4) {
+      soBuf = maxBufSize * 4;
     }
-    return so_buf;
+    return soBuf;
   }
 
   /**

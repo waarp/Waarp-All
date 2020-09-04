@@ -1085,12 +1085,12 @@ public class HttpSslHandler
         final String port = getTrimValue("port");
         final String key = getTrimValue("hostkey");
         final boolean ssl;
-        final boolean admin;
+        final boolean adminArg;
         final boolean isclient;
         final boolean isactive;
         final boolean isproxified;
         ssl = params.containsKey("ssl");
-        admin = params.containsKey("admin");
+        adminArg = params.containsKey("admin");
         isclient = params.containsKey("isclient");
         isactive = params.containsKey("isactive");
         isproxified = params.containsKey("isproxified");
@@ -1113,7 +1113,7 @@ public class HttpSslHandler
         final DbHostAuth dbhost = new DbHostAuth(host, addr, iport, ssl,
                                                  key.getBytes(
                                                      WaarpStringUtils.UTF8),
-                                                 admin, isclient);
+                                                 adminArg, isclient);
         dbhost.setActive(isactive);
         dbhost.setProxified(isproxified);
         try {
@@ -1168,12 +1168,12 @@ public class HttpSslHandler
         final String port = getTrimValue("port");
         final String key = getTrimValue("hostkey");
         final boolean ssl;
-        final boolean admin;
+        final boolean adminArg;
         final boolean isclient;
         final boolean isactive;
         final boolean isproxified;
         ssl = params.containsKey("ssl");
-        admin = params.containsKey("admin");
+        adminArg = params.containsKey("admin");
         isclient = params.containsKey("isclient");
         isactive = params.containsKey("isactive");
         isproxified = params.containsKey("isproxified");
@@ -1196,7 +1196,7 @@ public class HttpSslHandler
         final DbHostAuth dbhost = new DbHostAuth(host, addr, iport, ssl,
                                                  key.getBytes(
                                                      WaarpStringUtils.UTF8),
-                                                 admin, isclient);
+                                                 adminArg, isclient);
         dbhost.setActive(isactive);
         dbhost.setProxified(isproxified);
         try {
@@ -2283,18 +2283,18 @@ public class HttpSslHandler
   @Override
   protected void channelRead0(final ChannelHandlerContext ctx,
                               final FullHttpRequest msg) throws Exception {
-    final FullHttpRequest request = this.request = msg;
+    final FullHttpRequest httpRequest = this.request = msg;
     final QueryStringDecoder queryStringDecoder =
-        new QueryStringDecoder(request.uri());
+        new QueryStringDecoder(httpRequest.uri());
     uriRequest = queryStringDecoder.path();
     logger.debug("Msg: " + uriRequest);
     if (uriRequest.contains("gre/") || uriRequest.contains("img/") ||
         uriRequest.contains("res/") || uriRequest.contains("favicon.ico")) {
-      HttpWriteCacheEnable.writeFile(request, ctx, Configuration.configuration
-                                                       .getHttpBasePath() +
-                                                   uriRequest, R66SESSION +
-                                                               Configuration.configuration
-                                                                   .getHostId());
+      HttpWriteCacheEnable.writeFile(httpRequest, ctx,
+                                     Configuration.configuration
+                                         .getHttpBasePath() + uriRequest,
+                                     R66SESSION +
+                                     Configuration.configuration.getHostId());
       return;
     }
     checkSession(ctx.channel());

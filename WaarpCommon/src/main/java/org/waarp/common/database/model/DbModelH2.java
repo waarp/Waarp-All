@@ -132,7 +132,7 @@ public abstract class DbModelH2 extends DbModelAbstract {
   }
 
   @Override
-  public int currentNumberOfPooledConnections() {
+  public synchronized int currentNumberOfPooledConnections() {
     if (pool != null) {
       return pool.getActiveConnections();
     }

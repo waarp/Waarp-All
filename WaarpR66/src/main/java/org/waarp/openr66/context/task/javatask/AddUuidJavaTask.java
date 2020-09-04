@@ -51,9 +51,9 @@ public class AddUuidJavaTask extends AbstractExecJavaTask {
    */
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(AddUuidJavaTask.class);
-  private static final String sUUID = "#UUID#";
+  private static final String S_UUID = "#UUID#";
   private static final Pattern UUID_COMPILE =
-      Pattern.compile(sUUID, Pattern.LITERAL);
+      Pattern.compile(S_UUID, Pattern.LITERAL);
 
   @Override
   public void run() {

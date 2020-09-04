@@ -36,7 +36,7 @@ import java.security.NoSuchAlgorithmException;
  */
 public final class FileUtils {
 
-  private final static byte[] EMPTY_ARRAY = {};
+  private static final byte[] EMPTY_ARRAY = {};
 
   private FileUtils() {
   }

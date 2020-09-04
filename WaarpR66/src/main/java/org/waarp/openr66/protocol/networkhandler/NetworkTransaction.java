@@ -87,6 +87,8 @@ public class NetworkTransaction {
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(NetworkTransaction.class);
 
+  private static final Object SYNC_OBJECT = new Object();
+
   /**
    * To protect access to socketLocks when no address associated
    */
@@ -459,7 +461,7 @@ public class NetworkTransaction {
     }
     try {
       // Ensure networkChannelReference and localChannelReference are linked
-      synchronized (emptyLock) {
+      synchronized (SYNC_OBJECT) {
         networkChannelReference = createNewConnection(socketAddress, isSSL);
         try {
           localChannelReference =
@@ -842,7 +844,8 @@ public class NetworkTransaction {
   private static void shuttingDownNetworkChannelInternal(
       final NetworkChannelReference networkChannelReference) {
     logger.info("Shutdown: {}", networkChannelReference);
-    if (containsShutdownNCR(networkChannelReference)) {
+    if (networkChannelReference != null &&
+        containsShutdownNCR(networkChannelReference)) {
       // already done
       logger.debug("Already set as shutdown");
       return;
@@ -979,17 +982,19 @@ public class NetworkTransaction {
   public static void addClient(
       final NetworkChannelReference networkChannelReference,
       final String requester) {
-    if (networkChannelReference != null && requester != null) {
-      ClientNetworkChannels clientNetworkChannels =
-          clientNetworkChannelsPerHostId.get(requester);
-      if (clientNetworkChannels == null) {
-        clientNetworkChannels = new ClientNetworkChannels(requester);
-        clientNetworkChannelsPerHostId.put(requester, clientNetworkChannels);
+    synchronized (SYNC_OBJECT) {
+      if (networkChannelReference != null && requester != null) {
+        ClientNetworkChannels clientNetworkChannels =
+            clientNetworkChannelsPerHostId.get(requester);
+        if (clientNetworkChannels == null) {
+          clientNetworkChannels = new ClientNetworkChannels(requester);
+          clientNetworkChannelsPerHostId.put(requester, clientNetworkChannels);
+        }
+        clientNetworkChannels.add(networkChannelReference);
+        logger.debug(
+            "AddClient: add count? " + clientNetworkChannels.size() + " for " +
+            requester);
       }
-      clientNetworkChannels.add(networkChannelReference);
-      logger.debug(
-          "AddClient: add count? " + clientNetworkChannels.size() + " for " +
-          requester);
     }
   }
 

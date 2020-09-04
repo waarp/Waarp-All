@@ -45,8 +45,8 @@ import java.util.Map.Entry;
 public abstract class AbstractDbDataDao<E> extends AbstractDbData {
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(AbstractDbDataDao.class);
-  private static final String NO_ROW_FOUND = "No row found";
   public static final String JSON_MODEL = "@model";
+  protected static final String SHOULD_NOT_BE_CALLED = "Should not be called";
 
   protected E pojo;
 
@@ -285,7 +285,7 @@ public abstract class AbstractDbDataDao<E> extends AbstractDbData {
    */
   @Override
   protected String getWherePrimaryKey() {
-    throw new UnsupportedOperationException("Should not be called");
+    throw new UnsupportedOperationException(SHOULD_NOT_BE_CALLED);
   }
 
   /**
@@ -293,7 +293,7 @@ public abstract class AbstractDbDataDao<E> extends AbstractDbData {
    */
   @Override
   protected void setPrimaryKey() {
-    throw new UnsupportedOperationException("Should not be called");
+    throw new UnsupportedOperationException(SHOULD_NOT_BE_CALLED);
   }
 
   /**
@@ -303,7 +303,7 @@ public abstract class AbstractDbDataDao<E> extends AbstractDbData {
    */
   @Override
   protected String getSelectAllFields() {
-    throw new UnsupportedOperationException("Should not be called");
+    throw new UnsupportedOperationException(SHOULD_NOT_BE_CALLED);
   }
 
   /**
@@ -313,7 +313,7 @@ public abstract class AbstractDbDataDao<E> extends AbstractDbData {
    */
   @Override
   protected String getInsertAllValues() {
-    throw new UnsupportedOperationException("Should not be called");
+    throw new UnsupportedOperationException(SHOULD_NOT_BE_CALLED);
   }
 
   /**
@@ -323,7 +323,7 @@ public abstract class AbstractDbDataDao<E> extends AbstractDbData {
    */
   @Override
   protected String getUpdateAllFields() {
-    throw new UnsupportedOperationException("Should not be called");
+    throw new UnsupportedOperationException(SHOULD_NOT_BE_CALLED);
   }
 
   /**
@@ -331,7 +331,7 @@ public abstract class AbstractDbDataDao<E> extends AbstractDbData {
    */
   @Override
   protected void setToArray() {
-    throw new UnsupportedOperationException("Should not be called");
+    throw new UnsupportedOperationException(SHOULD_NOT_BE_CALLED);
   }
 
   /**
@@ -339,7 +339,7 @@ public abstract class AbstractDbDataDao<E> extends AbstractDbData {
    */
   @Override
   protected void setFromArray() throws WaarpDatabaseSqlException {
-    throw new UnsupportedOperationException("Should not be called");
+    throw new UnsupportedOperationException(SHOULD_NOT_BE_CALLED);
   }
 
   /**
@@ -349,6 +349,6 @@ public abstract class AbstractDbDataDao<E> extends AbstractDbData {
   protected void getValues(final DbPreparedStatement preparedStatement,
                            final DbValue[] values)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
-    throw new UnsupportedOperationException("Should not be called");
+    throw new UnsupportedOperationException(SHOULD_NOT_BE_CALLED);
   }
 }

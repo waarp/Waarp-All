@@ -172,7 +172,7 @@ class MD5 {
     Update(ob.toString());
   }
 
-  private void Decode(final byte[] buffer, final int shift, final int[] out) {
+  private void decode(final byte[] buffer, final int shift, final int[] out) {
     // unrolled loop (original loop shown above)
     out[0] = buffer[shift] & 0xff | (buffer[shift + 1] & 0xff) << 8 |
              (buffer[shift + 2] & 0xff) << 16 | buffer[shift + 3] << 24;
@@ -208,14 +208,14 @@ class MD5 {
               (buffer[shift + 62] & 0xff) << 16 | buffer[shift + 63] << 24;
   }
 
-  private void Transform(final MD5State stat, final byte[] buffer,
+  private void transform(final MD5State stat, final byte[] buffer,
                          final int shift, final int[] decodeBuf) {
     int a = stat.state[0];
     int b = stat.state[1];
     int c = stat.state[2];
     int d = stat.state[3];
 
-    Decode(buffer, shift, decodeBuf);
+    decode(buffer, shift, decodeBuf);
 
     /* Round 1 */
     a += (b & c | ~b & d) + decodeBuf[0] + 0xd76aa478; /* 1 */
@@ -412,10 +412,10 @@ class MD5 {
         for (i = 0; i < partlen; i++) {
           stat.buffer[i + index] = buffer[i + offset];
         }
-        Transform(stat, stat.buffer, 0, decodeBuf);
+        transform(stat, stat.buffer, 0, decodeBuf);
       }
       for (i = partlen; i + 63 < newlength; i += 64) {
-        Transform(stat, buffer, i + offset, decodeBuf);
+        transform(stat, buffer, i + offset, decodeBuf);
       }
       index = 0;
     } else {
@@ -562,7 +562,7 @@ class MD5 {
     Update(state, bytes, start, len);
   }
 
-  private byte[] Encode(final int[] input, final int len) {
+  private byte[] encode(final int[] input, final int len) {
     int i;
     int j;
     final byte[] out;
@@ -599,7 +599,7 @@ class MD5 {
 
       final int[] countInts =
           { (int) (fin.count << 3), (int) (fin.count >> 29) };
-      bits = Encode(countInts, 8);
+      bits = encode(countInts, 8);
 
       index = (int) (fin.count & 0x3f);
       padlen = index < 56? 56 - index : 120 - index;
@@ -611,7 +611,7 @@ class MD5 {
       finals = fin;
     }
 
-    return Encode(finals.state, 16);
+    return encode(finals.state, 16);
   }
 
   private static final char[] HEX_CHARS = {

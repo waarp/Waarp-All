@@ -414,7 +414,7 @@ public class TransferArgs {
     logger.error(Messages.getString("AbstractBusinessRequest.NeedMoreArgs",
                                     "(-to -rule -file | -to -id)") +
                  //$NON-NLS-1$
-                 AbstractTransfer._INFO_ARGS);
+                 AbstractTransfer.INFO_ARGS);
     return null;
   }
 
@@ -469,7 +469,7 @@ public class TransferArgs {
     if (cmd.hasOption(START)) {
       final Date date;
       final SimpleDateFormat dateFormat =
-          new SimpleDateFormat("yyyyMMddHHmmss");
+          new SimpleDateFormat(AbstractTransfer.TIMESTAMP_FORMAT);
       try {
         date = dateFormat.parse(cmd.getOptionValue(START));
         transferArgs1.setStartTime(new Timestamp(date.getTime()));

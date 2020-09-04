@@ -75,7 +75,7 @@ public final class HostConverter {
     descId(new Comparator<Host>() {
       @Override
       public int compare(final Host t1, final Host t2) {
-        return -t1.getHostid().compareTo(t2.getHostid());
+        return -t1.getHostid().compareTo(t2.getHostid());//NOSONAR
       }
     }),
     /**
@@ -84,7 +84,7 @@ public final class HostConverter {
     ascAddress(new Comparator<Host>() {
       @Override
       public int compare(final Host t1, final Host t2) {
-        return t1.getAddress().compareTo(t2.getAddress());
+        return t1.getAddress().compareTo(t2.getAddress());//NOSONAR
       }
     }),
     /**
@@ -93,7 +93,7 @@ public final class HostConverter {
     descAddress(new Comparator<Host>() {
       @Override
       public int compare(final Host t1, final Host t2) {
-        return -t1.getAddress().compareTo(t2.getAddress());
+        return -t1.getAddress().compareTo(t2.getAddress());//NOSONAR
       }
     });
 

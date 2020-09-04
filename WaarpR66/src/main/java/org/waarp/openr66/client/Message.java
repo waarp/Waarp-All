@@ -53,8 +53,8 @@ public class Message implements Runnable {
    */
   private static WaarpLogger logger;
 
-  protected static String _infoArgs = Messages.getString("Message.0") + Messages
-      .getString("Message.OutputFormat");
+  protected static String infoArgs = Messages.getString("Message.0") +
+                                     Messages.getString("Message.OutputFormat");
   //$NON-NLS-1$
 
   private final NetworkTransaction networkTransaction;
@@ -81,10 +81,10 @@ public class Message implements Runnable {
     if (logger == null) {
       logger = WaarpLoggerFactory.getLogger(Message.class);
     }
-    _infoArgs = Messages.getString("Message.0") +
-                Messages.getString("Message.OutputFormat"); //$NON-NLS-1$
+    infoArgs = Messages.getString("Message.0") +
+               Messages.getString("Message.OutputFormat"); //$NON-NLS-1$
     if (args.length < 5) {
-      logger.error(_infoArgs);
+      logger.error(infoArgs);
       return false;
     }
     if (!FileBasedConfiguration
@@ -108,7 +108,7 @@ public class Message implements Runnable {
     OutputFormat.getParams(args);
     if (srequested == null) {
       logger.error(Messages.getString("Message.HostIdMustBeSet") +
-                   _infoArgs); //$NON-NLS-1$
+                   infoArgs); //$NON-NLS-1$
       return false;
     }
     return true;
@@ -203,7 +203,7 @@ public class Message implements Runnable {
       logger = WaarpLoggerFactory.getLogger(Message.class);
     }
     if (args.length < 5) {
-      logger.error(_infoArgs);
+      logger.error(infoArgs);
       System.exit(1);//NOSONAR
     }
     if (!getParams(args)) {

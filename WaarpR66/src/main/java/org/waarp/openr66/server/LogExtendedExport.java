@@ -59,7 +59,7 @@ public class LogExtendedExport implements Runnable {
    */
   static volatile WaarpLogger logger;
 
-  protected static final String _INFO_ARGS =
+  protected static final String INFO_ARGS =
       "Need at least the configuration file as first argument then optionally\n" +
       "    -purge\n    -clean\n    -startid id\n    -stopid id\n    -rule rule\n    -request host\n" +
       "    -pending\n    -transfer\n    -done\n    -error\n" +
@@ -317,12 +317,12 @@ public class LogExtendedExport implements Runnable {
       logger = WaarpLoggerFactory.getLogger(LogExtendedExport.class);
     }
     if (args.length < 1) {
-      logger.error(_INFO_ARGS);
+      logger.error(INFO_ARGS);
       return false;
     }
     if (!FileBasedConfiguration
         .setClientConfigurationFromXml(Configuration.configuration, args[0])) {
-      logger.error(_INFO_ARGS);
+      logger.error(INFO_ARGS);
       return false;
     }
     String ssstart = null;

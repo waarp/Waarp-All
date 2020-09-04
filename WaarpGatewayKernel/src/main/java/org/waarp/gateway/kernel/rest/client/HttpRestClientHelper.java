@@ -80,11 +80,11 @@ public class HttpRestClientHelper {
    *     null)
    * @param nbclient max number of client connected at once
    * @param timeout timeout used in connection
-   * @param Initializer the associated client pipeline factory
+   * @param initializer the associated client pipeline factory
    */
   public HttpRestClientHelper(final String baseUri, final int nbclient,
                               final long timeout,
-                              final ChannelInitializer<SocketChannel> Initializer) {
+                              final ChannelInitializer<SocketChannel> initializer) {
     if (logger == null) {
       logger = WaarpLoggerFactory.getLogger(HttpRestClientHelper.class);
     }
@@ -103,7 +103,7 @@ public class HttpRestClientHelper {
                                                                  '_'));
     WaarpNettyUtil.setBootstrap(bootstrap, workerGroup, 30000);
     // Configure the pipeline factory.
-    bootstrap.handler(Initializer);
+    bootstrap.handler(initializer);
 
     // will ignore real request
     final HttpRequest request =

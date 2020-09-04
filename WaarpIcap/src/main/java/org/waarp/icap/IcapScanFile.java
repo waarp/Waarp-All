@@ -593,6 +593,7 @@ public class IcapScanFile {
       final File file = new File(icapScanFile.filepath);
       if (!file.delete()) {
         logger.error("File cannot be deleted!");
+        throw new IOException("File cannot be deleted!");
       } else {
         logger.warn("File is deleted");
       }
@@ -607,9 +608,12 @@ public class IcapScanFile {
             logger.warn("File is moved to " + to.getAbsolutePath());
           } catch (final Reply550Exception e) {
             logger.error("Cannot move to directory", e);
+            throw new IOException("Cannot move to directory", e);
           }
         } else {
           logger.error("Move path already exists and is not a directory");
+          throw new IOException(
+              "Move path already exists and is not a directory");
         }
       } else {
         if (dir.getParentFile().isDirectory()) {
@@ -618,9 +622,12 @@ public class IcapScanFile {
             logger.warn("File is moved to " + dir.getAbsolutePath());
           } catch (final Reply550Exception e) {
             logger.error("Cannot move to file", e);
+            logger.error("Cannot move to file", e);
           }
         } else {
           logger.error("Move path is not a directory or existing sub-path");
+          throw new IOException(
+              "Move path is not a directory or existing sub-path");
         }
       }
     }

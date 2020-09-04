@@ -68,12 +68,13 @@ import static org.waarp.common.database.DbConstant.*;
  */
 public abstract class AbstractTransfer implements Runnable {
   private static final Pattern COMPILE_NEWLINE = Pattern.compile("\n");
+  public static final String TIMESTAMP_FORMAT = "yyyyMMddHHmmss";
   /**
    * Internal Logger
    */
   protected static volatile WaarpLogger logger;
 
-  protected static final String _INFO_ARGS =
+  protected static final String INFO_ARGS =
       Messages.getString("AbstractTransfer.0") //$NON-NLS-1$
       + Messages.getString("Message.OutputFormat");
 
@@ -316,7 +317,7 @@ public abstract class AbstractTransfer implements Runnable {
       logger = WaarpLoggerFactory.getLogger(AbstractTransfer.class);
     }
     if (args.length < 2) {
-      logger.error(_INFO_ARGS);
+      logger.error(INFO_ARGS);
       return false;
     }
     if (submitOnly) {

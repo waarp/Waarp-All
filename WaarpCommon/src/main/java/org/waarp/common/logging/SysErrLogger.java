@@ -40,7 +40,7 @@ public final class SysErrLogger {
    *
    * @param throwable to log ignore
    */
-  public void ignoreLog(final Throwable throwable) {
+  public void ignoreLog(final Throwable throwable) {// NOSONAR
     // Nothing to do
   }
 
@@ -62,6 +62,16 @@ public final class SysErrLogger {
    */
   public void sysout(final Object message) {
     System.out.println(message); // NOSONAR
+  }
+
+  /**
+   * Utility method to log through System.out
+   *
+   * @param format
+   * @param args
+   */
+  public void sysoutFormat(final String format, Object... args) {
+    System.out.format(format, args); // NOSONAR
   }
 
   /**

@@ -160,7 +160,7 @@ public abstract class AbstractFtpClient {
     if (!client.connect()) {
       logger.error("Can't connect");
       FtpClientTest.numberKO.incrementAndGet();
-      Assert.assertTrue("No KO", numberKO.get() == 0);
+      Assert.assertEquals("No KO", 0, numberKO.get());
       return;
     }
     try {
@@ -238,7 +238,7 @@ public abstract class AbstractFtpClient {
         type + " Real: " + (date2 - date1) + " OK: " + numberOK.get() +
         " KO: " + numberKO.get() + " Trf/s: " +
         numberOK.get() * 1000 / (date2 - date1));
-    assertTrue("No KO", numberKO.get() == 0);
+    assertEquals("No KO", 0, numberKO.get());
   }
 
   public static void launchFtpClient(String server, int port, String username,

@@ -80,12 +80,12 @@ public abstract class DBTransferDAO extends StatementExecutor<Transfer>
 
   // CRUD requests
   protected static final String SQL_DELETE =
-      "DELETE FROM " + TABLE + " WHERE " + ID_FIELD + " = ? AND " +
+      "DELETE FROM " + TABLE + WHERE + ID_FIELD + " = ? AND " +
       REQUESTER_FIELD + " = ? AND " + REQUESTED_FIELD + " = ? AND " +
       OWNER_REQUEST_FIELD + " = ?";
   protected static final String SQL_DELETE_ALL = "DELETE FROM " + TABLE;
   protected static final String SQL_EXIST =
-      "SELECT 1 FROM " + TABLE + " WHERE " + ID_FIELD + " = ? AND " +
+      "SELECT 1 FROM " + TABLE + WHERE + ID_FIELD + " = ? AND " +
       REQUESTER_FIELD + " = ? AND " + REQUESTED_FIELD + " = ? AND " +
       OWNER_REQUEST_FIELD + " = ?";
   protected static final String SQL_GET_ALL = "SELECT * FROM " + TABLE;
@@ -101,20 +101,23 @@ public abstract class DBTransferDAO extends StatementExecutor<Transfer>
       ", " + REQUESTER_FIELD + ", " + ID_FIELD + ", " + UPDATED_INFO_FIELD +
       ") VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
   protected static final String SQL_SELECT =
-      "SELECT * FROM " + TABLE + " WHERE " + ID_FIELD + " = ? AND " +
+      "SELECT * FROM " + TABLE + WHERE + ID_FIELD + " = ? AND " +
       REQUESTER_FIELD + " = ? AND " + REQUESTED_FIELD + " = ? AND " +
       OWNER_REQUEST_FIELD + " = ?";
   protected static final String SQL_UPDATE =
-      "UPDATE " + TABLE + " SET " + ID_FIELD + " = ?, " + GLOBAL_STEP_FIELD +
-      " = ?, " + GLOBAL_LAST_STEP_FIELD + " = ?, " + STEP_FIELD + " = ?, " +
-      RANK_FIELD + " = ?, " + STEP_STATUS_FIELD + " = ?, " +
-      RETRIEVE_MODE_FIELD + " = ?, " + FILENAME_FIELD + " = ?, " +
-      IS_MOVED_FIELD + " = ?, " + ID_RULE_FIELD + " = ?, " + BLOCK_SIZE_FIELD +
-      " = ?, " + ORIGINAL_NAME_FIELD + " = ?, " + FILE_INFO_FIELD + " = ?, " +
-      TRANSFER_INFO_FIELD + " = ?, " + TRANSFER_MODE_FIELD + " = ?, " +
-      TRANSFER_START_FIELD + " = ?, " + TRANSFER_STOP_FIELD + " = ?, " +
-      INFO_STATUS_FIELD + " = ?, " + OWNER_REQUEST_FIELD + " = ?, " +
-      REQUESTED_FIELD + " = ?, " + REQUESTER_FIELD + " = ?, " +
+      "UPDATE " + TABLE + " SET " + ID_FIELD + PARAMETER_COMMA +
+      GLOBAL_STEP_FIELD + PARAMETER_COMMA + GLOBAL_LAST_STEP_FIELD +
+      PARAMETER_COMMA + STEP_FIELD + PARAMETER_COMMA + RANK_FIELD +
+      PARAMETER_COMMA + STEP_STATUS_FIELD + PARAMETER_COMMA +
+      RETRIEVE_MODE_FIELD + PARAMETER_COMMA + FILENAME_FIELD + PARAMETER_COMMA +
+      IS_MOVED_FIELD + PARAMETER_COMMA + ID_RULE_FIELD + PARAMETER_COMMA +
+      BLOCK_SIZE_FIELD + PARAMETER_COMMA + ORIGINAL_NAME_FIELD +
+      PARAMETER_COMMA + FILE_INFO_FIELD + PARAMETER_COMMA +
+      TRANSFER_INFO_FIELD + PARAMETER_COMMA + TRANSFER_MODE_FIELD +
+      PARAMETER_COMMA + TRANSFER_START_FIELD + PARAMETER_COMMA +
+      TRANSFER_STOP_FIELD + PARAMETER_COMMA + INFO_STATUS_FIELD +
+      PARAMETER_COMMA + OWNER_REQUEST_FIELD + PARAMETER_COMMA +
+      REQUESTED_FIELD + PARAMETER_COMMA + REQUESTER_FIELD + PARAMETER_COMMA +
       UPDATED_INFO_FIELD + " = ?  WHERE " + OWNER_REQUEST_FIELD + " = ? AND " +
       REQUESTER_FIELD + " = ? AND " + REQUESTED_FIELD + " = ? AND " + ID_FIELD +
       " = ?";
@@ -214,7 +217,7 @@ public abstract class DBTransferDAO extends StatementExecutor<Transfer>
     final StringBuilder query = new StringBuilder(getGetAllRequest());
     final Iterator<Filter> it = filters.listIterator();
     if (it.hasNext()) {
-      query.append(" WHERE ");
+      query.append(WHERE);
     }
     String prefix = "";
     int i = 0;

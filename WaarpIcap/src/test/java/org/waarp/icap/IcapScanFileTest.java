@@ -674,7 +674,12 @@ public class IcapScanFileTest {
       assertEquals(dirNotExist.getAbsolutePath(),
                    icapScanFile.getPathMoveError());
       assertFalse(icapScanFile.isDeleteOnError());
-      IcapScanFile.finalizeOnError(icapScanFile);
+      try {
+        IcapScanFile.finalizeOnError(icapScanFile);
+        fail("Should raised an exception");
+      } catch (IOException e) {
+        // Ignored
+      }
       assertFalse(error.exists());
       assertFalse(dirFileError.exists());
       assertTrue(file.exists());
@@ -945,6 +950,26 @@ public class IcapScanFileTest {
     };
     assertEquals(IcapScanFile.STATUS_KO_SCAN, IcapScanFile.scanFile(fullArgs));
     assertFalse(file.exists());
+
+    File dirNotExist = new File("/tmp/errorNotExists/notExist");
+    dirNotExist.delete();
+    dirNotExist.getParentFile().delete();
+    createFile(file, 1000);
+    // With error on result
+    logger.warn("With wrong move directory");
+    IcapServerHandler.resetJunitStatus();
+    IcapServerHandler.setFinalStatus(200);
+    fullArgs = new String[] {
+        IcapScanFile.FILE_ARG, file.getAbsolutePath(), "-to", "127.0.0.1",
+        "-port", "9999", "-service", "avscan", "-previewSize", "2048",
+        "-blockSize", "2048", "-receiveSize", "2048", "-maxSize", "100000",
+        "-errorMove", dirNotExist.getAbsolutePath(), "-keyPreview", "Methods",
+        "-stringPreview", "RESPMOD", "-key204", "Options-TTL", "-string204",
+        "600", "-key200", "Options-TTL", "-string200", "XXX", "-stringHttp",
+        "WrongWaarpFakeIcap"
+    };
+    assertEquals(IcapScanFile.STATUS_KO_SCAN_POST_ACTION_ERROR, IcapScanFile.scanFile(fullArgs));
+    assertTrue(file.exists());
   }
 
 } 

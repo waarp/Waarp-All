@@ -20,8 +20,6 @@
 
 package org.waarp.openr66.dao.database;
 
-import org.waarp.common.logging.WaarpLogger;
-import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.openr66.dao.BusinessDAO;
 import org.waarp.openr66.pojo.Business;
 import org.waarp.openr66.pojo.UpdatedInfo;
@@ -36,9 +34,6 @@ import java.sql.SQLException;
 public class DBBusinessDAO extends StatementExecutor<Business>
     implements BusinessDAO {
 
-  private static final WaarpLogger logger =
-      WaarpLoggerFactory.getLogger(DBBusinessDAO.class);
-
   protected static final String TABLE = "hostconfig";
 
   public static final String HOSTID_FIELD = "hostid";
@@ -50,21 +45,21 @@ public class DBBusinessDAO extends StatementExecutor<Business>
 
   protected static final String SQL_DELETE_ALL = "DELETE FROM " + TABLE;
   protected static final String SQL_DELETE =
-      "DELETE FROM " + TABLE + " WHERE " + HOSTID_FIELD + " = ?";
+      "DELETE FROM " + TABLE + WHERE + HOSTID_FIELD + PARAMETER;
   protected static final String SQL_GET_ALL = "SELECT * FROM " + TABLE;
   protected static final String SQL_EXIST =
-      "SELECT 1 FROM " + TABLE + " WHERE " + HOSTID_FIELD + " = ?";
+      "SELECT 1 FROM " + TABLE + WHERE + HOSTID_FIELD + PARAMETER;
   protected static final String SQL_SELECT =
-      "SELECT * FROM " + TABLE + " WHERE " + HOSTID_FIELD + " = ?";
+      "SELECT * FROM " + TABLE + WHERE + HOSTID_FIELD + PARAMETER;
   protected static final String SQL_INSERT =
       "INSERT INTO " + TABLE + " (" + HOSTID_FIELD + ", " + BUSINESS_FIELD +
       ", " + ROLES_FIELD + ", " + ALIASES_FIELD + ", " + OTHERS_FIELD + ", " +
       UPDATED_INFO_FIELD + ") VALUES (?,?,?,?,?,?)";
   protected static final String SQL_UPDATE =
-      "UPDATE " + TABLE + " SET " + HOSTID_FIELD + " = ?, " + BUSINESS_FIELD +
-      " = ?, " + ROLES_FIELD + " = ?, " + ALIASES_FIELD + " = ?, " +
-      OTHERS_FIELD + " = ?, " + UPDATED_INFO_FIELD + " = ? WHERE " +
-      HOSTID_FIELD + " = ?";
+      "UPDATE " + TABLE + " SET " + HOSTID_FIELD + PARAMETER_COMMA +
+      BUSINESS_FIELD + PARAMETER_COMMA + ROLES_FIELD + PARAMETER_COMMA +
+      ALIASES_FIELD + PARAMETER_COMMA + OTHERS_FIELD + PARAMETER_COMMA +
+      UPDATED_INFO_FIELD + " = ? WHERE " + HOSTID_FIELD + PARAMETER;
 
   public DBBusinessDAO(final Connection con) {
     super(con);

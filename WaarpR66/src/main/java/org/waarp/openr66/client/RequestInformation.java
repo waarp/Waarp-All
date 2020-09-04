@@ -59,7 +59,7 @@ public class RequestInformation implements Runnable {
 
   public static final byte REQUEST_CHECK = -1;
 
-  protected static String _infoArgs =
+  protected static String infoArgs =
       Messages.getString("RequestInformation.0") //$NON-NLS-1$
       + Messages.getString("Message.OutputFormat");
 
@@ -89,10 +89,10 @@ public class RequestInformation implements Runnable {
    * @return True if all parameters were found and correct
    */
   protected static boolean getParams(final String[] args) {
-    _infoArgs = Messages.getString("RequestInformation.0") +
-                Messages.getString("Message.OutputFormat"); //$NON-NLS-1$
+    infoArgs = Messages.getString("RequestInformation.0") +
+               Messages.getString("Message.OutputFormat"); //$NON-NLS-1$
     if (args.length < 5) {
-      logger.error(_infoArgs);
+      logger.error(infoArgs);
       return false;
     }
     if (!FileBasedConfiguration
@@ -141,13 +141,13 @@ public class RequestInformation implements Runnable {
       scode = (byte) InformationPacket.ASKENUM.ASKEXIST.ordinal();
     }
     if (srulename == null && scode != REQUEST_CHECK || srequested == null) {
-      logger.error(Messages.getString("RequestInformation.12") +
-                   _infoArgs); //$NON-NLS-1$
+      logger.error(
+          Messages.getString("RequestInformation.12") + infoArgs); //$NON-NLS-1$
       return false;
     }
     if (scode != REQUEST_CHECK && sid != ILLEGALVALUE) {
-      logger.error(Messages.getString("RequestInformation.13") +
-                   _infoArgs); //$NON-NLS-1$
+      logger.error(
+          Messages.getString("RequestInformation.13") + infoArgs); //$NON-NLS-1$
       return false;
     }
     return true;

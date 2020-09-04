@@ -33,7 +33,8 @@ public class LogJsonPacket extends JsonPacket {
   protected boolean statustransfer;
   protected boolean statusdone;
   protected boolean statuserror;
-  protected String rule, request;
+  protected String rule;
+  protected String request;
   protected Date start;
   protected Date stop;
   protected String startid;

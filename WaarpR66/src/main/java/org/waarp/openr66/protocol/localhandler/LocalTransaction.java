@@ -19,7 +19,6 @@
  */
 package org.waarp.openr66.protocol.localhandler;
 
-import io.netty.buffer.ByteBuf;
 import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
@@ -249,7 +248,6 @@ public class LocalTransaction {
     final Iterator<LocalChannelReference> iterator = collection.iterator();
     final ValidPacket packet = new ValidPacket("Shutdown forced", null,
                                                LocalPacketFactory.SHUTDOWNPACKET);
-    final ByteBuf buffer = null;
     while (iterator.hasNext()) {
       final LocalChannelReference localChannelReference = iterator.next();
       logger.info("Inform Shutdown {}", localChannelReference);

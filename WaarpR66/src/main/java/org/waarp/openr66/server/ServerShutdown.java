@@ -49,7 +49,7 @@ import static org.waarp.common.database.DbConstant.*;
  */
 public class ServerShutdown {
 
-  protected static final String _INFO_ARGS =
+  protected static final String INFO_ARGS =
       "Needs a correct configuration file as first argument and optionally [-nossl].\n" +
       "If '-block' or '-unblock' is specified, it will only block or unblock new request, but no shutdown will occur.\n" +
       "If '-restart' is specified, the server will shutdown then restart immediately";
@@ -66,7 +66,7 @@ public class ServerShutdown {
     final WaarpLogger logger =
         WaarpLoggerFactory.getLogger(ServerShutdown.class);
     if (args.length < 1) {
-      logger.error(_INFO_ARGS);
+      logger.error(INFO_ARGS);
       if (DetectionUtils.isJunit()) {
         return;
       }
@@ -77,7 +77,7 @@ public class ServerShutdown {
     if (!FileBasedConfiguration
         .setConfigurationServerShutdownFromXml(Configuration.configuration,
                                                args[0])) {
-      logger.error(_INFO_ARGS);
+      logger.error(INFO_ARGS);
       if (admin != null) {
         admin.close();
       }

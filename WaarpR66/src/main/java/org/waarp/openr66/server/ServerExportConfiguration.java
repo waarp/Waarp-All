@@ -81,7 +81,7 @@ public class ServerExportConfiguration {
       logger.info("Start of Export");
       final File dir = new File(directory);
       if (!dir.isDirectory()) {
-        dir.mkdirs();
+        dir.mkdirs();//NOSONAR
       }
       final String[] filenames = ServerActions
           .staticConfigExport(dir.getAbsolutePath(), true, true, true, true,

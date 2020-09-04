@@ -295,6 +295,8 @@ public class SpooledInformTask extends AbstractExecJavaTask {
     } else {
       builder.append("<TD bgcolor=LightGreen>");
     }
+    DateFormat dateFormat =
+        DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.LONG);
     builder.append(dateFormat.format(inform.lastUpdate)).append("</TD>");
     if (inform.fileMonitorInformation != null) {
       builder
@@ -337,9 +339,6 @@ public class SpooledInformTask extends AbstractExecJavaTask {
     return inform;
   }
 
-  private static final DateFormat dateFormat =
-      DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.LONG);
-
   /**
    * @param builder
    * @param inform
@@ -359,6 +358,8 @@ public class SpooledInformTask extends AbstractExecJavaTask {
            .append(TH_TH)
            .append(Messages.getString("SpooledInformTask.15")) //$NON-NLS-1$
            .append("</TH></TR></THEAD><TBODY>");
+    DateFormat dateFormat =
+        DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.LONG);
     for (final FileItem fileItem : inform.fileMonitorInformation.fileItems
         .values()) {
       builder.append("<TR><TD>").append(fileItem.file).append(TD_TD);

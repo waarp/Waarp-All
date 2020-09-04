@@ -20,6 +20,7 @@
 package org.waarp.common.xml;
 
 import org.waarp.common.exception.InvalidArgumentException;
+import org.waarp.common.utility.WaarpStringUtils;
 
 import java.io.InvalidObjectException;
 import java.math.BigDecimal;
@@ -692,15 +693,15 @@ public class XmlValue {
         }
       } else if (Number.class.isAssignableFrom(type)) {
         if (Double.class.isAssignableFrom(type)) {
-          return new Double(value);
+          return Double.valueOf(value);
         } else if (Float.class.isAssignableFrom(type)) {
-          return new Float(value);
+          return Float.valueOf(value);
         } else if (Integer.class.isAssignableFrom(type)) {
-          return new Integer(value);
+          return Integer.valueOf(value);
         } else if (Long.class.isAssignableFrom(type)) {
-          return new Long(value);
+          return Long.valueOf(value);
         } else if (Short.class.isAssignableFrom(type)) {
-          return new Short(value);
+          return Short.valueOf(value);
         }
         // other primitive-like classes
         //
@@ -720,7 +721,8 @@ public class XmlValue {
       // java.sql.Date.toString() and java.sql.Timestamp.toString().
       //
       else if (Date.class.isAssignableFrom(type)) {
-        return new Date(XmlStaticShared.dateFormat.parse(value).getTime());
+        return new Date(
+            WaarpStringUtils.getDateFormat().parse(value).getTime());
       } else if (Timestamp.class.isAssignableFrom(type)) {
         final int dotIndex = value.indexOf('.');
         final int spaceIndex = value.indexOf(' ', dotIndex);
@@ -728,9 +730,12 @@ public class XmlValue {
           throw new IllegalArgumentException(
               CAN_NOT_CONVERT_VALUE + value + TO_TYPE + type);
         }
-        final Timestamp ts = new Timestamp(
-            XmlStaticShared.timestampFormat.parse(value.substring(0, dotIndex))
-                                           .getTime());
+        final Timestamp ts = new Timestamp(WaarpStringUtils.getTimestampFormat()
+                                                           .parse(value
+                                                                      .substring(
+                                                                          0,
+                                                                          dotIndex))
+                                                           .getTime());
         final int nanos =
             Integer.parseInt(value.substring(dotIndex + 1, spaceIndex));
         ts.setNanos(nanos);
@@ -738,7 +743,8 @@ public class XmlValue {
         return ts;
       } else if (java.util.Date.class.isAssignableFrom(type)) {
         // Should not be
-        return new Date(XmlStaticShared.timeFormat.parse(value).getTime());
+        return new Date(
+            WaarpStringUtils.getTimeFormat().parse(value).getTime());
       } else {
         throw new IllegalArgumentException(
             CAN_NOT_CONVERT_VALUE + value + TO_TYPE + type);
