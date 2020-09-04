@@ -1040,21 +1040,21 @@ public class Configuration {
     if (getSnmpConfig() != null) {
       final int snmpPortShow =
           isUseNOSSL()? getServerPort() : getServerSslPort();
-      final R66PrivateMib r66Mib =
+      final R66PrivateMib r66MibTemp =
           new R66PrivateMib(SnmpName, snmpPortShow, SnmpPrivateId, SnmpR66Id,
                             SnmpDefaultAuthor, SnmpVersion,
                             SnmpDefaultLocalization, SnmpService);
       WaarpMOFactory.setFactory(new R66VariableFactory());
       setAgentSnmp(
           new WaarpSnmpAgent(new File(getSnmpConfig()), getMonitoring(),
-                             r66Mib));
+                             r66MibTemp));
       try {
         getAgentSnmp().start();
       } catch (final IOException e) {
         throw new WaarpDatabaseSqlException(
             Messages.getString("Configuration.SNMPError"), e); //$NON-NLS-1$
       }
-      setR66Mib(r66Mib);
+      setR66Mib(r66MibTemp);
     }
   }
 

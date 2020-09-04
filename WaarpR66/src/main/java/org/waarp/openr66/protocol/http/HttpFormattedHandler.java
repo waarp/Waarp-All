@@ -765,8 +765,8 @@ public class HttpFormattedHandler
         .append(Configuration.configuration.getMonitoring().exportJson(detail));
   }
 
-  private void spooled(final boolean detail,
-                       final String name, final int istatus) {
+  private void spooled(final boolean detail, final String name,
+                       final int istatus) {
     responseContent.append(REQUEST.status.readHeader(this)).append(
         "<p><table border='0' cellpadding='0' cellspacing='0' >").append(
         "<tr style='background-image:url(gre/gresm.png);background-repeat:repeat-x;background-position:left top;'><td class='col_MenuHaut'>")

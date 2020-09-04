@@ -33,9 +33,7 @@ import org.waarp.gateway.kernel.rest.HttpRestHandler;
 import org.waarp.gateway.kernel.rest.HttpRestHandler.METHOD;
 import org.waarp.gateway.kernel.rest.RestArgument;
 import org.waarp.gateway.kernel.rest.RestConfiguration;
-import org.waarp.openr66.context.ErrorCode;
 import org.waarp.openr66.context.R66Result;
-import org.waarp.openr66.context.R66Session;
 import org.waarp.openr66.database.data.DbTaskRunner;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolNoDataException;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolNotAuthenticatedException;
@@ -87,7 +85,6 @@ public class HttpRestControlR66Handler extends HttpRestAbstractR66Handler {
     handler.setWillClose(false);
     final ServerActions serverHandler =
         ((HttpRestR66Handler) handler).getServerHandler();
-    final R66Session session = serverHandler.getSession();
     // now action according to body
     final JsonPacket json = (JsonPacket) body;
     if (json == null) {
@@ -150,7 +147,6 @@ public class HttpRestControlR66Handler extends HttpRestAbstractR66Handler {
         final R66Result resulttest;
         if (node.getRequested() == null || node.getRequester() == null ||
             node.getSpecialid() == ILLEGALVALUE) {
-          final ErrorCode code = ErrorCode.CommandNotFound;
           result.setDetail("Not enough argument passed to identify a transfer");
           setError(handler, result, node, HttpResponseStatus.NOT_FOUND);
         } else {

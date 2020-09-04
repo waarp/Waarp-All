@@ -51,7 +51,7 @@ public class ServerInitDatabase {
    */
   static volatile WaarpLogger logger;
 
-  protected static final String _INFO_ARGS =
+  protected static final String INFO_ARGS =
       Messages.getString("ServerInitDatabase.Help");
 
   static String sxml;
@@ -72,7 +72,7 @@ public class ServerInitDatabase {
       logger = WaarpLoggerFactory.getLogger(ServerInitDatabase.class);
     }
     if (args.length < 1) {
-      logger.error(_INFO_ARGS);
+      logger.error(INFO_ARGS);
       return false;
     }
     sxml = args[0];
@@ -117,7 +117,7 @@ public class ServerInitDatabase {
       logger = WaarpLoggerFactory.getLogger(ServerInitDatabase.class);
     }
     if (!getParams(args)) {
-      SysErrLogger.FAKE_LOGGER.sysout(_INFO_ARGS);
+      SysErrLogger.FAKE_LOGGER.sysout(INFO_ARGS);
       if (admin != null) {
         admin.close();
       }
@@ -143,17 +143,18 @@ public class ServerInitDatabase {
       }
       if (database) {
         // Init database
-        System.out
-            .format(Messages.getString("ServerInitDatabase.Create.Start"));
+        SysErrLogger.FAKE_LOGGER.sysoutFormat(
+            Messages.getString("ServerInitDatabase.Create.Start"));
         SysErrLogger.FAKE_LOGGER.sysout();
         initdb();
-        System.out.format(Messages.getString("ServerInitDatabase.Create.Done"));
+        SysErrLogger.FAKE_LOGGER
+            .sysoutFormat(Messages.getString("ServerInitDatabase.Create.Done"));
         SysErrLogger.FAKE_LOGGER.sysout();
       }
       if (upgradeDb) {
         // try to upgrade DB schema
-        System.out
-            .format(Messages.getString("ServerInitDatabase.Upgrade.Start"));
+        SysErrLogger.FAKE_LOGGER.sysoutFormat(
+            Messages.getString("ServerInitDatabase.Upgrade.Start"));
         SysErrLogger.FAKE_LOGGER.sysout();
         // TODO Split check for update and upgrade actions
         if (!upgradedb()) {
@@ -165,8 +166,8 @@ public class ServerInitDatabase {
           }
           System.exit(1);//NOSONAR
         }
-        System.out
-            .format(Messages.getString("ServerInitDatabase.Upgrade.Done"));
+        SysErrLogger.FAKE_LOGGER.sysoutFormat(
+            Messages.getString("ServerInitDatabase.Upgrade.Done"));
         SysErrLogger.FAKE_LOGGER.sysout();
       }
       // Try to load some element directly into database from first
@@ -175,14 +176,14 @@ public class ServerInitDatabase {
           .setConfigurationServerFromXml(Configuration.configuration, args[0]);
       if (sdirconfig != null) {
         // load Rules
-        System.out
-            .format(Messages.getString("ServerInitDatabase.LoadRule.Start"),
-                    sdirconfig);
+        SysErrLogger.FAKE_LOGGER.sysoutFormat(
+            Messages.getString("ServerInitDatabase.LoadRule.Start"),
+            sdirconfig);
         SysErrLogger.FAKE_LOGGER.sysout();
         final File dirConfig = new File(sdirconfig);
         if (dirConfig.isDirectory()) {
           if (!loadRules(dirConfig)) {
-            System.out.format(
+            SysErrLogger.FAKE_LOGGER.sysoutFormat(
                 Messages.getString("ServerInitDatabase.LoadRule.Failed"));
             if (DetectionUtils.isJunit()) {
               return;
@@ -199,8 +200,8 @@ public class ServerInitDatabase {
           }
           System.exit(1);//NOSONAR
         }
-        System.out
-            .format(Messages.getString("ServerInitDatabase.LoadRule.Done"));
+        SysErrLogger.FAKE_LOGGER.sysoutFormat(
+            Messages.getString("ServerInitDatabase.LoadRule.Done"));
         SysErrLogger.FAKE_LOGGER.sysout();
       }
       if (shostauth != null) {

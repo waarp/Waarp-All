@@ -47,12 +47,14 @@ import static org.waarp.openr66.database.DbConstantR66.*;
  * Abstract class for internal Business Request
  */
 public abstract class AbstractBusinessRequest implements Runnable {
+  protected static final String ADMIN_R_66_OPERATIONS_GUI_188 =
+      "AdminR66OperationsGui.188";
   /**
    * Internal Logger
    */
   protected static volatile WaarpLogger logger;
 
-  protected static final String _INFO_ARGS =
+  protected static final String INFO_ARGS =
       Messages.getString("AbstractBusinessRequest.0") //$NON-NLS-1$
       + Messages.getString("Message.OutputFormat");
 
@@ -96,7 +98,7 @@ public abstract class AbstractBusinessRequest implements Runnable {
       future.setResult(null);
       final OpenR66ProtocolNoConnectionException e2 =
           new OpenR66ProtocolNoConnectionException(
-              Messages.getString("AdminR66OperationsGui.188") +
+              Messages.getString(ADMIN_R_66_OPERATIONS_GUI_188) +
               remoteHost); //$NON-NLS-1$
       future.setFailure(e2);
       throw e2;
@@ -108,7 +110,7 @@ public abstract class AbstractBusinessRequest implements Runnable {
       future.setResult(null);
       final OpenR66ProtocolNoConnectionException e2 =
           new OpenR66ProtocolNoConnectionException(
-              Messages.getString("AdminR66OperationsGui.188") +
+              Messages.getString(ADMIN_R_66_OPERATIONS_GUI_188) +
               host); //$NON-NLS-1$
       future.setFailure(e2);
       throw e2;
@@ -120,7 +122,7 @@ public abstract class AbstractBusinessRequest implements Runnable {
       future.setResult(null);
       final OpenR66ProtocolNoConnectionException e =
           new OpenR66ProtocolNoConnectionException(
-              Messages.getString("AdminR66OperationsGui.188") +
+              Messages.getString(ADMIN_R_66_OPERATIONS_GUI_188) +
               host); //$NON-NLS-1$
       future.setFailure(e);
       throw e;
@@ -215,7 +217,7 @@ public abstract class AbstractBusinessRequest implements Runnable {
       logger = WaarpLoggerFactory.getLogger(AbstractBusinessRequest.class);
     }
     if (args.length < 3) {
-      logger.error(_INFO_ARGS);
+      logger.error(INFO_ARGS);
       return false;
     }
     if (!FileBasedConfiguration
@@ -248,7 +250,7 @@ public abstract class AbstractBusinessRequest implements Runnable {
       return true;
     }
     logger.error(Messages.getString("AbstractBusinessRequest.NeedMoreArgs",
-                                    "(-to -class)") + _INFO_ARGS); //$NON-NLS-1$
+                                    "(-to -class)") + INFO_ARGS); //$NON-NLS-1$
     return false;
   }
 

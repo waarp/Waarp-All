@@ -417,7 +417,7 @@ public class XAmple extends JFrame
     OutputStream out = null;
     try {
       final File file = new File(FILE_RUNTIME);
-      file.createNewFile();
+      file.createNewFile();//NOSONAR
       out = new FileOutputStream(file);
       props.store(out, "XAmple-Waarp XML Editor runtime properties");
     } catch (final Exception ex) {
@@ -445,7 +445,7 @@ public class XAmple extends JFrame
       FileOutputStream out = null;
       Writer writer = null;
       try {
-        file.createNewFile();
+        file.createNewFile();//NOSONAR
         out = new FileOutputStream(file);
         final OutputFormat format =
             new OutputFormat(doc, WaarpStringUtils.UTF_8, true);

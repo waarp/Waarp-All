@@ -40,6 +40,9 @@ public abstract class StatementExecutor<E> implements AbstractDAO<E> {
 
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(StatementExecutor.class);
+  protected static final String WHERE = " WHERE ";
+  protected static final String PARAMETER = " = ?";
+  protected static final String PARAMETER_COMMA = " = ?, ";
   protected final Connection connection;
 
   public abstract E getFromResultSet(ResultSet set)

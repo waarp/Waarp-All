@@ -205,7 +205,7 @@ public abstract class HttpRestHandler
   public static void initialize(final String tempPath) {
     TempPath = tempPath;
     final File file = new File(tempPath);
-    file.mkdirs();
+    file.mkdirs();//NOSONAR
     DiskFileUpload.deleteOnExitTemporaryFile = true; // should delete file
     // on exit (in normal
     // exit)

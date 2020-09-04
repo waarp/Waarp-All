@@ -62,8 +62,6 @@ public class ClientRunner extends Thread {
   private static final String CANNOT_CONNECT_TO_SERVER =
       "Cannot connect to server ";
 
-  private static final String NO_RESULT = "no result";
-
   private static final String REQUEST_INFORMATION_FAILURE =
       "RequestInformation.Failure";
 
@@ -113,7 +111,9 @@ public class ClientRunner extends Thread {
   public static String hashStatus() {
     return "ClientRunner: [taskRunnerRetryHashMap: " +
            taskRunnerRetryHashMap.size() + " activeRunners: " +
-           (activeRunners != null? activeRunners.size() : 0) + "] ";
+           (activeRunners != null? activeRunners.size() :
+               Configuration.configuration.getInternalRunner()
+                                          .nbInternalRunner()) + "] ";
   }
 
   /**
@@ -534,9 +534,9 @@ public class ClientRunner extends Thread {
     final SocketAddress socketAddress = host.getSocketAddress();
     final boolean isSSL = host.isSsl();
 
-    final LocalChannelReference localChannelReference;
+    final LocalChannelReference localChannelReferenceTemp;
     try {
-      localChannelReference = networkTransaction
+      localChannelReferenceTemp = networkTransaction
           .createConnectionWithRetryWithAuthenticationException(socketAddress,
                                                                 isSSL,
                                                                 futureRequest);
@@ -547,8 +547,8 @@ public class ClientRunner extends Thread {
           CANNOT_CONNECT_TO_SERVER + host +
           " cannot be authenticated so stop retry here", e1);
     }
-    taskRunner.setLocalChannelReference(localChannelReference);
-    if (localChannelReference == null) {
+    taskRunner.setLocalChannelReference(localChannelReferenceTemp);
+    if (localChannelReferenceTemp == null) {
       // propose to redo
       String retry;
       if (incrementTaskRunnerTry(taskRunner, Configuration.RETRYNB)) {
@@ -587,26 +587,26 @@ public class ClientRunner extends Thread {
       }
     }
     if (handler != null) {
-      localChannelReference.setRecvThroughHandler(handler);
+      localChannelReferenceTemp.setRecvThroughHandler(handler);
     }
-    localChannelReference.setSendThroughMode(isSendThroughMode);
+    localChannelReferenceTemp.setSendThroughMode(isSendThroughMode);
     if (restartPost) {
       final RequestPacket request = taskRunner.getRequest();
       logger.debug("Will send request {} ", request);
-      localChannelReference.setClientRunner(this);
-      localChannelReference.sessionNewState(R66FiniteDualStates.REQUESTR);
+      localChannelReferenceTemp.setClientRunner(this);
+      localChannelReferenceTemp.sessionNewState(R66FiniteDualStates.REQUESTR);
       try {
         ChannelUtils
-            .writeAbstractLocalPacket(localChannelReference, request, true);
+            .writeAbstractLocalPacket(localChannelReferenceTemp, request, true);
       } catch (final OpenR66ProtocolPacketException e) {
         // propose to redo
         logger.warn("Cannot transfer request to " + host);
         changeUpdatedInfo(UpdatedInfo.INTERRUPTED, ErrorCode.Internal, true);
-        localChannelReference.close();
+        localChannelReferenceTemp.close();
         throw e;
       }
       logger.debug("Wait for request to {}", host);
-      return localChannelReference;
+      return localChannelReferenceTemp;
     }
     // If Requester is NOT Sender, and if TransferTask then decrease now if
     // possible the rank
@@ -622,24 +622,25 @@ public class ClientRunner extends Thread {
           " {}", taskRunner);
     }
     final RequestPacket request = taskRunner.getRequest();
-    request
-        .setLimit(localChannelReference.getChannelLimit(taskRunner.isSender()));
-    localChannelReference.setClientRunner(this);
-    logger.debug("Will send request {} {}", request, localChannelReference);
-    localChannelReference.sessionNewState(R66FiniteDualStates.REQUESTR);
+    request.setLimit(
+        localChannelReferenceTemp.getChannelLimit(taskRunner.isSender()));
+    localChannelReferenceTemp.setClientRunner(this);
+    logger.debug("Will send request {} {}", request, localChannelReferenceTemp);
+    localChannelReferenceTemp.sessionNewState(R66FiniteDualStates.REQUESTR);
     try {
       ChannelUtils
-          .writeAbstractLocalPacket(localChannelReference, request, true);
+          .writeAbstractLocalPacket(localChannelReferenceTemp, request, true);
     } catch (final OpenR66ProtocolPacketException e) {
       // propose to redo
       logger.warn("Cannot transfer request to " + host);
       changeUpdatedInfo(UpdatedInfo.INTERRUPTED, ErrorCode.Internal, true);
-      localChannelReference.close();
+      localChannelReferenceTemp.close();
       throw e;
     }
-    logger.debug("Wait for request to {} {} {}", host, localChannelReference,
-                 request);
-    return localChannelReference;
+    logger
+        .debug("Wait for request to {} {} {}", host, localChannelReferenceTemp,
+               request);
+    return localChannelReferenceTemp;
   }
 
   /**

@@ -203,6 +203,9 @@ public class HttpRestR66Handler extends HttpRestHandler {
   public static void instantiateHandlers(
       final RestConfiguration restConfiguration) {
     defaultHandlers();
+    if (restConfiguration == null) {
+      return;
+    }
     byte check =
         restConfiguration.getResthandlersCrud()[RESTHANDLERS.DbTaskRunner
             .ordinal()];

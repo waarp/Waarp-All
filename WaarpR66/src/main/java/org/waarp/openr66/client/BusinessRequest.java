@@ -64,7 +64,7 @@ public class BusinessRequest extends AbstractBusinessRequest {
     }
     if (args.length < 5) {
       logger.error(Messages.getString("BusinessRequest.1") + //$NON-NLS-1$
-                   _INFO_ARGS);
+                   INFO_ARGS);
       return;
     }
     classname = DEFAULT_CLASS;

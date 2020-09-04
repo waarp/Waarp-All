@@ -2943,9 +2943,9 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    * @throws OpenR66RunnerErrorException
    * @throws OpenR66ProtocolSystemException
    */
-  public void finalizeTransfer(
-      final LocalChannelReference localChannelReference, final R66File file,
-      final R66Result finalValue, final boolean status)
+  public void finalizeTransfer(LocalChannelReference localChannelReference,
+                               final R66File file, final R66Result finalValue,
+                               final boolean status)
       throws OpenR66RunnerErrorException, OpenR66ProtocolSystemException {
     logger.debug("status: " + status + ':' + finalValue);
 
@@ -2954,6 +2954,9 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
         return;
       }
       session = localChannelReference.getSession();
+    }
+    if (localChannelReference == null) {
+      localChannelReference = session.getLocalChannelReference();
     }
     if (status) {
       // First move the file

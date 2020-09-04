@@ -34,7 +34,7 @@ public class WaarpPrivateMonitor implements WaarpInterfaceMonitor {
   private static WaarpLogger logger =
       WaarpLoggerFactory.getLogger(WaarpPrivateMonitor.class);
 
-  private static final Object object = new Object();
+  private static final Object OBJECT_SYNC = new Object();
   public WaarpSnmpAgent agent;
 
   /**
@@ -67,19 +67,19 @@ public class WaarpPrivateMonitor implements WaarpInterfaceMonitor {
    *
    */
   public void generalValuesUpdate() {
-    synchronized (object) {
+    synchronized (OBJECT_SYNC) {
       logger.warn("Call");
     }
   }
 
   public void detailedValuesUpdate() {
-    synchronized (object) {
+    synchronized (OBJECT_SYNC) {
       logger.warn("Call");
     }
   }
 
   public void errorValuesUpdate() {
-    synchronized (object) {
+    synchronized (OBJECT_SYNC) {
       logger.warn("Call");
     }
   }

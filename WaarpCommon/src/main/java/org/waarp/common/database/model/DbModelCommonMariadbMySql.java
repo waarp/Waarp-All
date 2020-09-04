@@ -176,8 +176,9 @@ public abstract class DbModelCommonMariadbMySql extends DbModelAbstract {
         dbSession.getConn().setAutoCommit(true);
       } catch (final SQLException ignored) {
         SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
+      } finally {
+        lock.unlock();
       }
-      lock.unlock();
     }
   }
 

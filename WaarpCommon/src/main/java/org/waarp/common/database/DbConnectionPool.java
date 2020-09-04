@@ -55,7 +55,7 @@ public class DbConnectionPool {
 
   private final int timeout;
 
-  private static final long timeOutForceClose = 300000; // 5 minutes
+  private static final long TIME_OUT_FORCE_CLOSE = 300000; // 5 minutes
 
   private Semaphore semaphore;
 
@@ -127,7 +127,7 @@ public class DbConnectionPool {
       final long now = System.currentTimeMillis();
       while (conIterator.hasNext()) {
         final Con c = conIterator.next();
-        if (c.lastRecyle + timeOutForceClose < now) {
+        if (c.lastRecyle + TIME_OUT_FORCE_CLOSE < now) {
           conIterator.remove();
           pool.closeConnectionNoEx(c.pooledCon);
         } else {
@@ -156,7 +156,7 @@ public class DbConnectionPool {
     final long now = System.currentTimeMillis();
     while (conIterator.hasNext()) {
       final Con c = conIterator.next();
-      if (c.lastRecyle + timeOutForceClose < now) {
+      if (c.lastRecyle + TIME_OUT_FORCE_CLOSE < now) {
         conIterator.remove();
         closeConnectionNoEx(c.pooledCon);
       }
@@ -240,7 +240,8 @@ public class DbConnectionPool {
     poolConnectionEventListener = new PoolConnectionEventListener();
   }
 
-  public void resetPoolDataSource(final ConnectionPoolDataSource dataSource) {
+  public synchronized void resetPoolDataSource(
+      final ConnectionPoolDataSource dataSource) {
     this.dataSource = dataSource;
   }
 
@@ -262,7 +263,7 @@ public class DbConnectionPool {
    * @return the Force Close Timeout in ms
    */
   public long getTimeoutForceClose() {
-    return timeOutForceClose;
+    return TIME_OUT_FORCE_CLOSE;
   }
 
   /**

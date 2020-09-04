@@ -22,8 +22,6 @@ package org.waarp.openr66.protocol.localhandler.packet;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.Unpooled;
-import org.waarp.common.logging.WaarpLogger;
-import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.utility.WaarpNettyUtil;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
 import org.waarp.openr66.protocol.localhandler.LocalChannelReference;
@@ -41,11 +39,6 @@ import static org.waarp.openr66.protocol.networkhandler.packet.NetworkPacket.*;
  * End: (End length field bytes) = code status field (4 bytes), ...<br>
  */
 public abstract class AbstractLocalPacket {
-  /**
-   * Internal Logger
-   */
-  private static final WaarpLogger logger =
-      WaarpLoggerFactory.getLogger(AbstractLocalPacket.class);
   protected static final byte[] EMPTY_ARRAY = {};
   protected static final int LOCAL_HEADER_SIZE = 4 * 3 + 1;
 

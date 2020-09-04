@@ -79,8 +79,9 @@ public class IcapServer {
     executor = new DefaultEventExecutorGroup(DetectionUtils.numberThreads(),
                                              new WaarpThreadFactory(
                                                  "IcapServer"));
-    WaarpNettyUtil.setServerBootstrap(bootstrap, workerGroup, 30000,
-                                      ZERO_COPY_CHUNK_SIZE, true);
+    WaarpNettyUtil
+        .setServerBootstrap(bootstrap, workerGroup, 30000, ZERO_COPY_CHUNK_SIZE,
+                            true);
 
     // Configure the pipeline factory.
     icapServerInitializer = new IcapServerInitializer(delay, executor);

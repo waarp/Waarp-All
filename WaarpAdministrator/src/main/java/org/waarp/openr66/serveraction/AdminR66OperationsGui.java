@@ -399,7 +399,7 @@ public class AdminR66OperationsGui extends JFrame {
     {
       globWriteLimit = new JFormattedTextField();
       globWriteLimit.setMinimumSize(new Dimension(100, 20));
-      globWriteLimit.setValue(new Long(0));
+      globWriteLimit.setValue(Long.valueOf(0));
       final GridBagConstraints gbc_globWriteLimit = new GridBagConstraints();
       gbc_globWriteLimit.insets = new Insets(0, 0, 5, 5);
       gbc_globWriteLimit.fill = GridBagConstraints.HORIZONTAL;

@@ -183,30 +183,32 @@ public class XMLTransferDAO implements TransferDAO {
     final File arch = new File(Configuration.configuration.getArchivePath());
     final File[] runnerFiles = arch.listFiles();
     final List<Transfer> res = new ArrayList<Transfer>();
-    for (final File fileNew : runnerFiles) {
-      try {
-        final DocumentBuilderFactory dbf = getDocumentBuilderFactory();
-        final Document document = dbf.newDocumentBuilder().parse(fileNew);
-        // Setup XPath query
-        final XPath xPath = XPathFactory.newInstance().newXPath();
-        final XPathExpression xpe = xPath.compile(XML_GET_ALL);
-        final NodeList listNode =
-            (NodeList) xpe.evaluate(document, XPathConstants.NODESET);
-        // Iterate through all found nodes
-        for (int i = 0; i < listNode.getLength(); i++) {
-          final Node node = listNode.item(i);
-          final Transfer transfer = getFromNode(node);
-          res.add(transfer);
-          dbR66TaskHashMap.put(transfer.getId(), transfer);
+    if (runnerFiles != null) {
+      for (final File fileNew : runnerFiles) {
+        try {
+          final DocumentBuilderFactory dbf = getDocumentBuilderFactory();
+          final Document document = dbf.newDocumentBuilder().parse(fileNew);
+          // Setup XPath query
+          final XPath xPath = XPathFactory.newInstance().newXPath();
+          final XPathExpression xpe = xPath.compile(XML_GET_ALL);
+          final NodeList listNode =
+              (NodeList) xpe.evaluate(document, XPathConstants.NODESET);
+          // Iterate through all found nodes
+          for (int i = 0; i < listNode.getLength(); i++) {
+            final Node node = listNode.item(i);
+            final Transfer transfer = getFromNode(node);
+            res.add(transfer);
+            dbR66TaskHashMap.put(transfer.getId(), transfer);
+          }
+        } catch (final SAXException e) {
+          throw new DAOConnectionException(e);
+        } catch (final XPathExpressionException e) {
+          throw new DAOConnectionException(e);
+        } catch (final ParserConfigurationException e) {
+          throw new DAOConnectionException(e);
+        } catch (final IOException e) {
+          throw new DAOConnectionException(e);
         }
-      } catch (final SAXException e) {
-        throw new DAOConnectionException(e);
-      } catch (final XPathExpressionException e) {
-        throw new DAOConnectionException(e);
-      } catch (final ParserConfigurationException e) {
-        throw new DAOConnectionException(e);
-      } catch (final IOException e) {
-        throw new DAOConnectionException(e);
       }
     }
     return res;

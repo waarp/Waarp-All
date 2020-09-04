@@ -54,7 +54,7 @@ public class ConfigExport implements Runnable {
    */
   static volatile WaarpLogger logger;
 
-  protected static final String _INFO_ARGS =
+  protected static final String INFO_ARGS =
       "Need at least the configuration file as first argument then at least one from\n" +
       "    -hosts\n" + "    -rules\n" + "    -business (if compatible)\n" +
       "    -alias (if compatible)\n" + "    -role (if compatible)\n" +
@@ -184,12 +184,12 @@ public class ConfigExport implements Runnable {
       logger = WaarpLoggerFactory.getLogger(ConfigExport.class);
     }
     if (args.length < 2) {
-      logger.error(_INFO_ARGS);
+      logger.error(INFO_ARGS);
       return false;
     }
     if (!FileBasedConfiguration
         .setClientConfigurationFromXml(Configuration.configuration, args[0])) {
-      logger.error(_INFO_ARGS);
+      logger.error(INFO_ARGS);
       return false;
     }
     for (int i = 1; i < args.length; i++) {

@@ -115,7 +115,7 @@ public class History {
   }
 
   public History getFirstChild() {
-    if (items == null && items.isEmpty()) {
+    if (items == null || items.isEmpty()) {
       return null;
     }
     return items.get(0);

@@ -37,6 +37,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * issues
  */
 public final class LongUuid {
+  private static final Object SYNC_OBJECT = new Object();
   /**
    * Counter part
    */
@@ -60,7 +61,7 @@ public final class LongUuid {
     final long time = System.currentTimeMillis();
     // atomically
     final int count;
-    synchronized (COUNTER) {
+    synchronized (SYNC_OBJECT) {
       count = COUNTER.incrementAndGet();
       if (count == Integer.MAX_VALUE) {
         COUNTER.set(Integer.MIN_VALUE + 1);

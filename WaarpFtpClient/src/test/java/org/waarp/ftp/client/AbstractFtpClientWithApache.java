@@ -160,7 +160,7 @@ public abstract class AbstractFtpClientWithApache extends AbstractFtpClient {
     if (!client.connect()) {
       logger.error("Can't connect");
       FtpClientTest.numberKO.incrementAndGet();
-      assertTrue("No KO", numberKO.get() == 0);
+      assertEquals("No KO", 0, numberKO.get());
       return;
     }
     try {

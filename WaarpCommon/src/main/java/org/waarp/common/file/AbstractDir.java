@@ -62,7 +62,7 @@ public abstract class AbstractDir implements DirInterface {
   /**
    * Hack to say Windows or Unix (root like X:\ or /)
    */
-  protected static final Boolean ISUNIX;
+  protected static final boolean ISUNIX;
   /**
    * Roots for Windows system
    */

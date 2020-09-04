@@ -364,7 +364,8 @@ public class TransferArgsTest extends TestAbstract {
     assertEquals(true, transferArgs.isMD5());
     assertEquals(1000, transferArgs.getBlockSize());
     Date date;
-    final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
+    final SimpleDateFormat dateFormat =
+        new SimpleDateFormat(AbstractTransfer.TIMESTAMP_FORMAT);
     try {
       date = dateFormat.parse("20200601211201");
       assertTrue(

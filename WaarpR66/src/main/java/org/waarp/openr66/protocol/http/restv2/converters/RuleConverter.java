@@ -75,7 +75,7 @@ public final class RuleConverter {
     descName(new Comparator<Rule>() {
       @Override
       public int compare(final Rule t1, final Rule t2) {
-        return -t1.getName().compareTo(t2.getName());
+        return -t1.getName().compareTo(t2.getName());//NOSONAR
       }
     });
 

@@ -27,7 +27,6 @@ import io.netty.handler.traffic.ChannelTrafficShapingHandler;
 import io.netty.handler.traffic.GlobalTrafficShapingHandler;
 import org.waarp.openr66.protocol.networkhandler.ssl.NetworkSslServerInitializer;
 import org.waarp.openr66.proxy.network.NetworkPacketCodec;
-import org.waarp.openr66.proxy.network.NetworkServerHandler;
 
 import java.util.concurrent.TimeUnit;
 

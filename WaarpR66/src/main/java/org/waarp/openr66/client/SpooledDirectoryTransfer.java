@@ -121,7 +121,7 @@ public class SpooledDirectoryTransfer implements Runnable {
    */
   protected static volatile WaarpLogger logger;
 
-  protected static String _infoArgs =
+  protected static String infoArgs =
       Messages.getString("SpooledDirectoryTransfer.0"); //$NON-NLS-1$
 
   protected static final String NO_INFO_ARGS = "noinfo";
@@ -1126,9 +1126,9 @@ public class SpooledDirectoryTransfer implements Runnable {
     if (logger == null) {
       logger = WaarpLoggerFactory.getLogger(SpooledDirectoryTransfer.class);
     }
-    _infoArgs = Messages.getString("SpooledDirectoryTransfer.0"); //$NON-NLS-1$
+    infoArgs = Messages.getString("SpooledDirectoryTransfer.0"); //$NON-NLS-1$
     if (args.length < 1) {
-      logger.error(_infoArgs);
+      logger.error(infoArgs);
       return false;
     }
     if (!FileBasedConfiguration
@@ -1140,7 +1140,7 @@ public class SpooledDirectoryTransfer implements Runnable {
     // Now check if the configuration file contains already elements of specifications
     if (!getParamsFromConfigFile(args[0])) {
       if (args.length < 11) {
-        logger.error(_infoArgs);
+        logger.error(infoArgs);
         return false;
       }
       // Now set default values from configuration
@@ -1261,7 +1261,7 @@ public class SpooledDirectoryTransfer implements Runnable {
       }
       logger.error(Messages.getString("SpooledDirectoryTransfer.56") +
                    //$NON-NLS-1$
-                   _infoArgs);
+                   infoArgs);
       return false;
     }
     return !arguments.isEmpty();

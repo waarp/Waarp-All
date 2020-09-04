@@ -34,6 +34,7 @@ import java.sql.Types;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.TimeZone;
 
 /**
  * Database Value to help getting and setting value from and to database
@@ -406,28 +407,41 @@ public class DbValue {
         break;
       case Types.DATE:
         try {
-          final SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+          final DateFormat format = WaarpStringUtils.getDateFormat();
           setValue(format.parse(svalue));
         } catch (final ParseException e) {
           try {
-            setValue(DateFormat.getDateTimeInstance().parse(svalue));
+            final SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+            setValue(format.parse(svalue));
           } catch (final ParseException e1) {
-            throw new WaarpDatabaseSqlException("Error in Date: " + svalue, e);
+            try {
+              setValue(DateFormat.getDateTimeInstance().parse(svalue));
+            } catch (final ParseException e2) {
+              throw new WaarpDatabaseSqlException("Error in Date: " + svalue,
+                                                  e);
+            }
           }
         }
         break;
       case Types.TIMESTAMP:
         try {
-          final SimpleDateFormat format =
+          final DateFormat format =
               new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+          format.setTimeZone(TimeZone.getTimeZone("GMT"));
           setValue(new Timestamp(format.parse(svalue).getTime()));
         } catch (final ParseException e) {
           try {
-            setValue(new Timestamp(
-                DateFormat.getDateTimeInstance().parse(svalue).getTime()));
+            final SimpleDateFormat format =
+                new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+            setValue(new Timestamp(format.parse(svalue).getTime()));
           } catch (final ParseException e1) {
-            throw new WaarpDatabaseSqlException("Error in Timestamp: " + svalue,
-                                                e);
+            try {
+              setValue(new Timestamp(
+                  DateFormat.getDateTimeInstance().parse(svalue).getTime()));
+            } catch (final ParseException e2) {
+              throw new WaarpDatabaseSqlException(
+                  "Error in Timestamp: " + svalue, e);
+            }
           }
         }
         break;

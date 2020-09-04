@@ -59,6 +59,8 @@ public final class R66SystemProperties {
       "openr66.startup.warning";
   /**
    * Shall the database being check at startup (default is false)
+   *
+   * @deprecated
    */
   @Deprecated
   public static final String OPENR66_STARTUP_DATABASE_CHECK =

@@ -20,8 +20,6 @@
 
 package org.waarp.openr66.dao.database;
 
-import org.waarp.common.logging.WaarpLogger;
-import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.openr66.dao.HostDAO;
 import org.waarp.openr66.dao.exception.DAOConnectionException;
 import org.waarp.openr66.pojo.Host;
@@ -35,9 +33,6 @@ import java.sql.SQLException;
  * Implementation of HostDAO for standard SQL databases
  */
 public class DBHostDAO extends StatementExecutor<Host> implements HostDAO {
-
-  private static final WaarpLogger logger =
-      WaarpLoggerFactory.getLogger(DBHostDAO.class);
 
   protected static final String TABLE = "hosts";
 
@@ -54,12 +49,12 @@ public class DBHostDAO extends StatementExecutor<Host> implements HostDAO {
 
   protected static final String SQL_DELETE_ALL = "DELETE FROM " + TABLE;
   protected static final String SQL_DELETE =
-      "DELETE FROM " + TABLE + " WHERE " + HOSTID_FIELD + " = ?";
+      "DELETE FROM " + TABLE + WHERE + HOSTID_FIELD + PARAMETER;
   protected static final String SQL_GET_ALL = "SELECT * FROM " + TABLE;
   protected static final String SQL_EXIST =
-      "SELECT 1 FROM " + TABLE + " WHERE " + HOSTID_FIELD + " = ?";
+      "SELECT 1 FROM " + TABLE + WHERE + HOSTID_FIELD + PARAMETER;
   protected static final String SQL_SELECT =
-      "SELECT * FROM " + TABLE + " WHERE " + HOSTID_FIELD + " = ?";
+      "SELECT * FROM " + TABLE + WHERE + HOSTID_FIELD + PARAMETER;
   protected static final String SQL_INSERT =
       "INSERT INTO " + TABLE + " (" + HOSTID_FIELD + ", " + ADDRESS_FIELD +
       ", " + PORT_FIELD + ", " + IS_SSL_FIELD + ", " + IS_CLIENT_FIELD + ", " +
@@ -67,12 +62,12 @@ public class DBHostDAO extends StatementExecutor<Host> implements HostDAO {
       ", " + ADMINROLE_FIELD + ", " + UPDATED_INFO_FIELD +
       ") VALUES (?,?,?,?,?,?,?,?,?,?)";
   protected static final String SQL_UPDATE =
-      "UPDATE " + TABLE + " SET " + HOSTID_FIELD + " = ?, " + ADDRESS_FIELD +
-      " = ?, " + PORT_FIELD + " = ?, " + IS_SSL_FIELD + " = ?, " +
-      IS_CLIENT_FIELD + " = ?, " + IS_ACTIVE_FIELD + " = ?, " +
-      IS_PROXIFIED_FIELD + " = ?, " + HOSTKEY_FIELD + " = ?, " +
-      ADMINROLE_FIELD + " = ?, " + UPDATED_INFO_FIELD + " = ? WHERE " +
-      HOSTID_FIELD + " = ?";
+      "UPDATE " + TABLE + " SET " + HOSTID_FIELD + PARAMETER_COMMA +
+      ADDRESS_FIELD + PARAMETER_COMMA + PORT_FIELD + PARAMETER_COMMA +
+      IS_SSL_FIELD + PARAMETER_COMMA + IS_CLIENT_FIELD + PARAMETER_COMMA +
+      IS_ACTIVE_FIELD + PARAMETER_COMMA + IS_PROXIFIED_FIELD + PARAMETER_COMMA +
+      HOSTKEY_FIELD + PARAMETER_COMMA + ADMINROLE_FIELD + PARAMETER_COMMA +
+      UPDATED_INFO_FIELD + " = ? WHERE " + HOSTID_FIELD + PARAMETER;
 
 
   public DBHostDAO(final Connection con) throws DAOConnectionException {

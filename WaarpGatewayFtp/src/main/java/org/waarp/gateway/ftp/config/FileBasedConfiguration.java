@@ -1490,7 +1490,7 @@ public class FileBasedConfiguration extends FtpConfiguration {
           // logger.debug("User: {} Acct: {}", user, account[i])
           final File directory =
               new File(getBaseDirectory() + '/' + user + '/' + account[i]);
-          directory.mkdirs();
+          directory.mkdirs();//NOSONAR
           i++;
         }
       } else {

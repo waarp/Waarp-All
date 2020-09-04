@@ -40,6 +40,7 @@ import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.role.RoleDefault.ROLE;
 import org.waarp.common.utility.WaarpShutdownHook;
 import org.waarp.common.utility.WaarpStringUtils;
+import org.waarp.openr66.client.AbstractTransfer;
 import org.waarp.openr66.configuration.AuthenticationFileBasedConfiguration;
 import org.waarp.openr66.configuration.RuleFileBasedConfiguration;
 import org.waarp.openr66.context.ErrorCode;
@@ -330,7 +331,7 @@ public class ServerActions extends ConnectionActions {
             // time to reschedule in yyyyMMddHHmmss format
             logger.debug("Debug: restart with " + keys[3]);
             final SimpleDateFormat dateFormat =
-                new SimpleDateFormat("yyyyMMddHHmmss");
+                new SimpleDateFormat(AbstractTransfer.TIMESTAMP_FORMAT);
             try {
               date = dateFormat.parse(keys[3]);
             } catch (final ParseException ignored) {
@@ -1794,24 +1795,12 @@ public class ServerActions extends ConnectionActions {
         }
       } catch (final WaarpDatabaseNoConnectionException e1) {
         logger.error("Error", e1);
-        bbusiness = sbusiness != null;
-        balias = salias != null;
-        broles = sroles != null;
       } catch (final WaarpDatabaseSqlException e1) {
         logger.error("Error", e1);
-        bbusiness = sbusiness != null;
-        balias = salias != null;
-        broles = sroles != null;
       } catch (final WaarpDatabaseException e) {
         logger.error("Error", e);
-        bbusiness = sbusiness != null;
-        balias = salias != null;
-        broles = sroles != null;
       } catch (final IOException e) {
         logger.error("Error", e);
-        bbusiness = sbusiness != null;
-        balias = salias != null;
-        broles = sroles != null;
       }
     }
     // Now answer

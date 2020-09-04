@@ -172,14 +172,16 @@ public final class FileUtils {
     final ArrayList<File> to = new ArrayList<File>();
     if (createDir(directoryTo)) {
       final File[] subfrom = from.listFiles();
-      for (final File element : subfrom) {
-        if (element.isFile()) {
-          to.add(copyToDir(element, directoryTo, move));
-        } else {
-          final File newTo = new File(directoryTo, element.getName());
-          newTo.mkdirs();
-          final File[] copied = copyRecursive(element, newTo, move);
-          to.addAll(Arrays.asList(copied));
+      if (subfrom != null) {
+        for (final File element : subfrom) {
+          if (element.isFile()) {
+            to.add(copyToDir(element, directoryTo, move));
+          } else {
+            final File newTo = new File(directoryTo, element.getName());
+            newTo.mkdirs(); //NOSONAR
+            final File[] copied = copyRecursive(element, newTo, move);
+            to.addAll(Arrays.asList(copied));
+          }
         }
       }
     }

@@ -55,7 +55,7 @@ public class HttpSessions {
    *
    * @return the HttpResumableSession
    */
-  public HttpResumableSession getOrCreateResumableSession(
+  public synchronized HttpResumableSession getOrCreateResumableSession(
       final HttpResumableInfo resumableInfo, final String rulename,
       final String comment, final HttpAuthent authent) {
     HttpResumableSession session = sessions.get(resumableInfo.getIdentifier());

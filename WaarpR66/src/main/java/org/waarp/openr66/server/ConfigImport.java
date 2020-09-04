@@ -51,7 +51,7 @@ public class ConfigImport implements Runnable {
    */
   static volatile WaarpLogger logger;
 
-  protected static final String _INFO_ARGS =
+  protected static final String INFO_ARGS =
       "Need at least the configuration file as first argument then at least one from\n" +
       "    -hosts file\n" + "    -rules file\n" +
       "    -business file (if compatible)\n" +
@@ -226,12 +226,12 @@ public class ConfigImport implements Runnable {
       logger = WaarpLoggerFactory.getLogger(ConfigImport.class);
     }
     if (args.length < 3) {
-      logger.error(_INFO_ARGS);
+      logger.error(INFO_ARGS);
       return false;
     }
     if (!FileBasedConfiguration
         .setClientConfigurationFromXml(Configuration.configuration, args[0])) {
-      logger.error(_INFO_ARGS);
+      logger.error(INFO_ARGS);
       return false;
     }
     for (int i = 1; i < args.length; i++) {

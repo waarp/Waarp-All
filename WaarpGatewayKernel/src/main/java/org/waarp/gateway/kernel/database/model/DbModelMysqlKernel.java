@@ -234,8 +234,9 @@ public class DbModelMysqlKernel extends DbModelMysql {
         dbSession.getConn().setAutoCommit(true);
       } catch (final SQLException ignored) {
         // nothing
+      } finally {
+        lock.unlock();
       }
-      lock.unlock();
     }
   }
 
