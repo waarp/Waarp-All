@@ -105,32 +105,6 @@ public class ValidPacket extends AbstractLocalPacket {
   }
 
   @Override
-  public void createEnd(final LocalChannelReference lcr)
-      throws OpenR66ProtocolPacketException {
-    if (end != null) {
-
-    }
-    end = ByteBufAllocator.DEFAULT.buffer(1, 1);
-    end.writeByte(send);
-  }
-
-  @Override
-  public void createHeader(final LocalChannelReference lcr)
-      throws OpenR66ProtocolPacketException {
-    if (sheader != null) {
-      header = Unpooled.wrappedBuffer(sheader.getBytes());
-    }
-  }
-
-  @Override
-  public void createMiddle(final LocalChannelReference lcr)
-      throws OpenR66ProtocolPacketException {
-    if (smiddle != null) {
-      middle = Unpooled.wrappedBuffer(smiddle.getBytes());
-    }
-  }
-
-  @Override
   public String toString() {
     return "ValidPacket: " + sheader + ':' + smiddle + ':' + send;
   }

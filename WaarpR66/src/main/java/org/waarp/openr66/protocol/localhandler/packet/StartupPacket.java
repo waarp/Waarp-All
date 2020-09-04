@@ -85,26 +85,6 @@ public class StartupPacket extends AbstractLocalPacket {
   }
 
   @Override
-  public void createEnd(final LocalChannelReference lcr)
-      throws OpenR66ProtocolPacketException {
-    end = Unpooled.EMPTY_BUFFER;
-  }
-
-  @Override
-  public void createHeader(final LocalChannelReference lcr)
-      throws OpenR66ProtocolPacketException {
-    header = ByteBufAllocator.DEFAULT.buffer(4, 4);
-    header.writeInt(localId);
-  }
-
-  @Override
-  public void createMiddle(final LocalChannelReference lcr)
-      throws OpenR66ProtocolPacketException {
-    middle = ByteBufAllocator.DEFAULT.buffer(1, 1);
-    middle.writeBoolean(fromSsl);
-  }
-
-  @Override
   public String toString() {
     return "StartupPacket: " + localId;
   }

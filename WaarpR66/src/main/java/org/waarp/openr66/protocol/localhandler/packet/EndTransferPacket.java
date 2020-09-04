@@ -21,7 +21,6 @@ package org.waarp.openr66.protocol.localhandler.packet;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
-import io.netty.buffer.Unpooled;
 import org.waarp.common.utility.WaarpNettyUtil;
 import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
@@ -146,27 +145,6 @@ public class EndTransferPacket extends AbstractLocalPacket {
     if (hashOptional != null) {
       end.writeBytes(endBytes);
     }
-  }
-
-  @Override
-  public void createEnd(final LocalChannelReference lcr) {
-    if (hashOptional == null) {
-      end = Unpooled.EMPTY_BUFFER;
-    } else {
-      end = Unpooled.copiedBuffer(hashOptional, Charset.defaultCharset());
-    }
-  }
-
-  @Override
-  public void createHeader(final LocalChannelReference lcr) {
-    final byte[] newbytes = { request };
-    header = Unpooled.wrappedBuffer(newbytes);
-  }
-
-  @Override
-  public void createMiddle(final LocalChannelReference lcr) {
-    final byte[] newbytes = { way };
-    middle = Unpooled.wrappedBuffer(newbytes);
   }
 
   @Override

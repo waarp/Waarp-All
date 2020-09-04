@@ -104,28 +104,6 @@ public class ConnectionErrorPacket extends AbstractLocalPacket {
   }
 
   @Override
-  public void createEnd(final LocalChannelReference lcr)
-      throws OpenR66ProtocolPacketException {
-    end = Unpooled.EMPTY_BUFFER;
-  }
-
-  @Override
-  public void createHeader(final LocalChannelReference lcr)
-      throws OpenR66ProtocolPacketException {
-    if (sheader != null) {
-      header = Unpooled.wrappedBuffer(sheader.getBytes());
-    }
-  }
-
-  @Override
-  public void createMiddle(final LocalChannelReference lcr)
-      throws OpenR66ProtocolPacketException {
-    if (smiddle != null) {
-      middle = Unpooled.wrappedBuffer(smiddle.getBytes());
-    }
-  }
-
-  @Override
   public String toString() {
     return "ConnectionErrorPacket: " + sheader + ':' + smiddle;
   }

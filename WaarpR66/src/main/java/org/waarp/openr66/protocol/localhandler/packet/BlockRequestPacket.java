@@ -89,26 +89,6 @@ public class BlockRequestPacket extends AbstractLocalPacket {
   }
 
   @Override
-  public void createEnd(final LocalChannelReference lcr)
-      throws OpenR66ProtocolPacketException {
-    end = Unpooled.EMPTY_BUFFER;
-  }
-
-  @Override
-  public void createHeader(final LocalChannelReference lcr)
-      throws OpenR66ProtocolPacketException {
-    header = ByteBufAllocator.DEFAULT.buffer(1 + key.length, 1 + key.length);
-    header.writeByte(block? 1 : 0);
-    header.writeBytes(key);
-  }
-
-  @Override
-  public void createMiddle(final LocalChannelReference lcr)
-      throws OpenR66ProtocolPacketException {
-    middle = Unpooled.EMPTY_BUFFER;
-  }
-
-  @Override
   public String toString() {
     return "BlockRequestPacket: " + block;
   }

@@ -93,25 +93,6 @@ public class TestPacket extends AbstractLocalPacket {
   }
 
   @Override
-  public void createEnd(final LocalChannelReference lcr)
-      throws OpenR66ProtocolPacketException {
-    end = ByteBufAllocator.DEFAULT.buffer(4, 4);
-    end.writeInt(code);
-  }
-
-  @Override
-  public void createHeader(final LocalChannelReference lcr)
-      throws OpenR66ProtocolPacketException {
-    header = Unpooled.wrappedBuffer(sheader.getBytes());
-  }
-
-  @Override
-  public void createMiddle(final LocalChannelReference lcr)
-      throws OpenR66ProtocolPacketException {
-    middle = Unpooled.wrappedBuffer(smiddle.getBytes());
-  }
-
-  @Override
   public byte getType() {
     if (code > PINGPONG) {
       return LocalPacketFactory.VALIDPACKET;

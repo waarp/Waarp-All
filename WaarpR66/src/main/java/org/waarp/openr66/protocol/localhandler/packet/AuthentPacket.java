@@ -172,37 +172,6 @@ public class AuthentPacket extends AbstractLocalPacket {
   }
 
   @Override
-  public void createEnd(final LocalChannelReference lcr)
-      throws OpenR66ProtocolPacketException {
-    final byte[] bversion = version != null? version.getBytes() : null;
-    final int size = 5 + (version != null? bversion.length : 0);
-    end = ByteBufAllocator.DEFAULT.buffer(size, size);
-    end.writeInt(localId);
-    end.writeByte(way);
-    if (version != null) {
-      end.writeBytes(bversion);
-    }
-  }
-
-  @Override
-  public void createHeader(final LocalChannelReference lcr)
-      throws OpenR66ProtocolPacketException {
-    if (hostId == null) {
-      throw new OpenR66ProtocolPacketException(NOT_ENOUGH_DATA);
-    }
-    header = Unpooled.wrappedBuffer(hostId.getBytes());
-  }
-
-  @Override
-  public void createMiddle(final LocalChannelReference lcr)
-      throws OpenR66ProtocolPacketException {
-    if (key == null) {
-      throw new OpenR66ProtocolPacketException(NOT_ENOUGH_DATA);
-    }
-    middle = Unpooled.wrappedBuffer(key);
-  }
-
-  @Override
   public byte getType() {
     return LocalPacketFactory.AUTHENTPACKET;
   }
