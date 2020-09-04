@@ -284,7 +284,7 @@ public abstract class AbstractWaarpLogger implements WaarpLogger, Serializable {
   }
 
   private static final int BASELEVEL;
-  private static int LOGLEVEL;
+  private static final int LOGLEVEL;
 
   /**
    * Determine the good level

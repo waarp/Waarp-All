@@ -129,7 +129,7 @@ public class FtpDataAsyncConn {
    *
    * @param session
    */
-<span class="fc" id="L132">  public FtpDataAsyncConn(FtpSession session) {</span>
+<span class="fc" id="L132">  public FtpDataAsyncConn(final FtpSession session) {</span>
 <span class="fc" id="L133">    this.session = session;</span>
 <span class="fc" id="L134">    dataChannel = null;</span>
 <span class="fc" id="L135">    remoteAddress = FtpChannelUtils</span>
@@ -148,7 +148,7 @@ public class FtpDataAsyncConn {
    * @return True if the given channel is the same as the one currently
    *     registered
    */
-  public boolean checkCorrectChannel(Channel channel) {
+  public boolean checkCorrectChannel(final Channel channel) {
 <span class="pc bpc" id="L152" title="2 of 4 branches missed.">    if (dataChannel == null || channel == null) {</span>
 <span class="nc" id="L153">      return false;</span>
     }
@@ -179,7 +179,7 @@ public class FtpDataAsyncConn {
    *
    * @param localPort
    */
-  public void setLocalPort(int localPort) {
+  public void setLocalPort(final int localPort) {
 <span class="fc" id="L183">    this.localPort = localPort;</span>
 <span class="fc" id="L184">  }</span>
 
@@ -222,7 +222,7 @@ public class FtpDataAsyncConn {
    *
    * @param address remote address
    */
-  public void setActive(InetSocketAddress address) {
+  public void setActive(final InetSocketAddress address) {
 <span class="fc" id="L226">    unbindPassive();</span>
 <span class="fc" id="L227">    setDefaultLocalPort();</span>
 <span class="fc" id="L228">    resetLocalAddress();</span>
@@ -280,7 +280,7 @@ public class FtpDataAsyncConn {
   /**
    * @param transferMode the transferMode to set
    */
-  public void setMode(FtpArgumentCode.TransferMode transferMode) {
+  public void setMode(final FtpArgumentCode.TransferMode transferMode) {
 <span class="fc" id="L284">    this.transferMode = transferMode;</span>
 <span class="fc" id="L285">    setCorrectCodec();</span>
 <span class="fc" id="L286">  }</span>
@@ -296,7 +296,7 @@ public class FtpDataAsyncConn {
    * @param transferStructure the transferStructure to set
    */
   public void setStructure(
-      FtpArgumentCode.TransferStructure transferStructure) {
+      final FtpArgumentCode.TransferStructure transferStructure) {
 <span class="fc" id="L300">    this.transferStructure = transferStructure;</span>
 <span class="fc" id="L301">    setCorrectCodec();</span>
 <span class="fc" id="L302">  }</span>
@@ -311,25 +311,26 @@ public class FtpDataAsyncConn {
   /**
    * @param transferSubType the transferSubType to set
    */
-  public void setSubType(FtpArgumentCode.TransferSubType transferSubType) {
-<span class="fc" id="L315">    this.transferSubType = transferSubType;</span>
-<span class="fc" id="L316">    setCorrectCodec();</span>
-<span class="fc" id="L317">  }</span>
+  public void setSubType(
+      final FtpArgumentCode.TransferSubType transferSubType) {
+<span class="fc" id="L316">    this.transferSubType = transferSubType;</span>
+<span class="fc" id="L317">    setCorrectCodec();</span>
+<span class="fc" id="L318">  }</span>
 
   /**
    * @return the transferType
    */
   public FtpArgumentCode.TransferType getType() {
-<span class="fc" id="L323">    return transferType;</span>
+<span class="fc" id="L324">    return transferType;</span>
   }
 
   /**
    * @param transferType the transferType to set
    */
-  public void setType(FtpArgumentCode.TransferType transferType) {
-<span class="fc" id="L330">    this.transferType = transferType;</span>
-<span class="fc" id="L331">    setCorrectCodec();</span>
-<span class="fc" id="L332">  }</span>
+  public void setType(final FtpArgumentCode.TransferType transferType) {
+<span class="fc" id="L331">    this.transferType = transferType;</span>
+<span class="fc" id="L332">    setCorrectCodec();</span>
+<span class="fc" id="L333">  }</span>
 
   /**
    * @return True if the current mode for data connection is FileInterface +
@@ -337,7 +338,7 @@ public class FtpDataAsyncConn {
    *     Image)
    */
   public boolean isFileStreamBlockAsciiImage() {
-<span class="pc bpc" id="L340" title="6 of 10 branches missed.">    return transferStructure == TransferStructure.FILE &amp;&amp;</span>
+<span class="pc bpc" id="L341" title="6 of 10 branches missed.">    return transferStructure == TransferStructure.FILE &amp;&amp;</span>
            (transferMode == TransferMode.STREAM ||
             transferMode == TransferMode.BLOCK) &amp;&amp;
            (transferType == TransferType.ASCII ||
@@ -348,7 +349,7 @@ public class FtpDataAsyncConn {
    * @return True if the current mode for data connection is Stream
    */
   public boolean isStreamFile() {
-<span class="pc bpc" id="L351" title="2 of 4 branches missed.">    return transferMode == TransferMode.STREAM &amp;&amp;</span>
+<span class="pc bpc" id="L352" title="2 of 4 branches missed.">    return transferMode == TransferMode.STREAM &amp;&amp;</span>
            transferStructure == TransferStructure.FILE;
   }
 
@@ -358,33 +359,33 @@ public class FtpDataAsyncConn {
    */
   private void setCorrectCodec() {
     try {
-<span class="nc" id="L361">      getDataNetworkHandler().setCorrectCodec();</span>
-<span class="fc" id="L362">    } catch (final FtpNoConnectionException ignored) {</span>
+<span class="nc" id="L362">      getDataNetworkHandler().setCorrectCodec();</span>
+<span class="fc" id="L363">    } catch (final FtpNoConnectionException ignored) {</span>
       // nothing
-<span class="nc" id="L364">    }</span>
-<span class="fc" id="L365">  }</span>
+<span class="nc" id="L365">    }</span>
+<span class="fc" id="L366">  }</span>
 
   /**
    * Unbind passive connection when close the Data Channel (from
    * channelInactive())
    */
   public void unbindPassive() {
-<span class="fc bfc" id="L372" title="All 4 branches covered.">    if (isBind &amp;&amp; passiveMode) {</span>
-<span class="fc" id="L373">      isBind = false;</span>
-<span class="fc" id="L374">      final InetSocketAddress local = getLocalAddress();</span>
-<span class="pc bpc" id="L375" title="2 of 4 branches missed.">      if (dataChannel != null &amp;&amp; dataChannel.isActive()) {</span>
-<span class="nc" id="L376">        WaarpSslUtility.closingSslChannel(dataChannel);</span>
+<span class="fc bfc" id="L373" title="All 4 branches covered.">    if (isBind &amp;&amp; passiveMode) {</span>
+<span class="fc" id="L374">      isBind = false;</span>
+<span class="fc" id="L375">      final InetSocketAddress local = getLocalAddress();</span>
+<span class="pc bpc" id="L376" title="2 of 4 branches missed.">      if (dataChannel != null &amp;&amp; dataChannel.isActive()) {</span>
+<span class="nc" id="L377">        WaarpSslUtility.closingSslChannel(dataChannel);</span>
       }
-<span class="fc" id="L378">      session.getConfiguration().getFtpInternalConfiguration()</span>
-<span class="fc" id="L379">             .unbindPassive(local);</span>
+<span class="fc" id="L379">      session.getConfiguration().getFtpInternalConfiguration()</span>
+<span class="fc" id="L380">             .unbindPassive(local);</span>
       // Previous mode was Passive so remove the current configuration if
       // any
-<span class="fc" id="L382">      final InetAddress remote = remoteAddress.getAddress();</span>
-<span class="fc" id="L383">      session.getConfiguration().delFtpSession(remote, local);</span>
+<span class="fc" id="L383">      final InetAddress remote = remoteAddress.getAddress();</span>
+<span class="fc" id="L384">      session.getConfiguration().delFtpSession(remote, local);</span>
     }
-<span class="fc" id="L385">    dataChannel = null;</span>
-<span class="fc" id="L386">    dataNetworkHandler = null;</span>
-<span class="fc" id="L387">  }</span>
+<span class="fc" id="L386">    dataChannel = null;</span>
+<span class="fc" id="L387">    dataNetworkHandler = null;</span>
+<span class="fc" id="L388">  }</span>
 
   /**
    * Initialize the socket from Server side (only used in Passive)
@@ -394,16 +395,16 @@ public class FtpDataAsyncConn {
    * @throws Reply425Exception
    */
   public boolean initPassiveConnection() throws Reply425Exception {
-<span class="fc" id="L397">    unbindPassive();</span>
-<span class="pc bpc" id="L398" title="1 of 2 branches missed.">    if (passiveMode) {</span>
+<span class="fc" id="L398">    unbindPassive();</span>
+<span class="pc bpc" id="L399" title="1 of 2 branches missed.">    if (passiveMode) {</span>
       // Connection is enable but the client will do the real connection
-<span class="fc" id="L400">      session.getConfiguration().getFtpInternalConfiguration()</span>
-<span class="fc" id="L401">             .bindPassive(getLocalAddress(), session.isDataSsl());</span>
-<span class="fc" id="L402">      isBind = true;</span>
-<span class="fc" id="L403">      return true;</span>
+<span class="fc" id="L401">      session.getConfiguration().getFtpInternalConfiguration()</span>
+<span class="fc" id="L402">             .bindPassive(getLocalAddress(), session.isDataSsl());</span>
+<span class="fc" id="L403">      isBind = true;</span>
+<span class="fc" id="L404">      return true;</span>
     }
     // Connection is already prepared
-<span class="nc" id="L406">    return true;</span>
+<span class="nc" id="L407">    return true;</span>
   }
 
   /**
@@ -414,10 +415,10 @@ public class FtpDataAsyncConn {
    * @throws FtpNoConnectionException
    */
   public Channel getCurrentDataChannel() throws FtpNoConnectionException {
-<span class="fc bfc" id="L417" title="All 2 branches covered.">    if (dataChannel == null) {</span>
-<span class="fc" id="L418">      throw new FtpNoConnectionException(&quot;No Data Connection active&quot;);</span>
+<span class="fc bfc" id="L418" title="All 2 branches covered.">    if (dataChannel == null) {</span>
+<span class="fc" id="L419">      throw new FtpNoConnectionException(&quot;No Data Connection active&quot;);</span>
     }
-<span class="fc" id="L420">    return dataChannel;</span>
+<span class="fc" id="L421">    return dataChannel;</span>
   }
 
   /**
@@ -427,42 +428,43 @@ public class FtpDataAsyncConn {
    */
   public DataNetworkHandler getDataNetworkHandler()
       throws FtpNoConnectionException {
-<span class="fc bfc" id="L430" title="All 2 branches covered.">    if (dataNetworkHandler == null) {</span>
-<span class="fc" id="L431">      throw new FtpNoConnectionException(&quot;No Data Connection active&quot;);</span>
+<span class="fc bfc" id="L431" title="All 2 branches covered.">    if (dataNetworkHandler == null) {</span>
+<span class="fc" id="L432">      throw new FtpNoConnectionException(&quot;No Data Connection active&quot;);</span>
     }
-<span class="fc" id="L433">    return dataNetworkHandler;</span>
+<span class="fc" id="L434">    return dataNetworkHandler;</span>
   }
 
   /**
    * @param dataNetworkHandler the {@link DataNetworkHandler} to set
    */
-  public void setDataNetworkHandler(DataNetworkHandler dataNetworkHandler) {
-<span class="fc" id="L440">    this.dataNetworkHandler = dataNetworkHandler;</span>
-<span class="fc" id="L441">  }</span>
+  public void setDataNetworkHandler(
+      final DataNetworkHandler dataNetworkHandler) {
+<span class="fc" id="L442">    this.dataNetworkHandler = dataNetworkHandler;</span>
+<span class="fc" id="L443">  }</span>
 
   /**
    * @param configuration
    *
    * @return a new Passive Port
    */
-  public static int getNewPassivePort(FtpConfiguration configuration) {
-<span class="fc" id="L449">    return configuration.getNextRangePort();</span>
+  public static int getNewPassivePort(final FtpConfiguration configuration) {
+<span class="fc" id="L451">    return configuration.getNextRangePort();</span>
   }
 
   /**
    * @return The current status in String of the different parameters
    */
   public String getStatus() {
-<span class="fc" id="L456">    final StringBuilder builder = new StringBuilder(&quot;Data connection: &quot;)</span>
-<span class="pc bpc" id="L457" title="1 of 2 branches missed.">        .append(isActive()? &quot;connected &quot; : &quot;not connected &quot;)</span>
-<span class="pc bpc" id="L458" title="1 of 2 branches missed.">        .append(isBind()? &quot;bind &quot; : &quot;not bind &quot;)</span>
-<span class="fc bfc" id="L459" title="All 2 branches covered.">        .append(isPassiveMode()? &quot;passive mode&quot; : &quot;active mode&quot;).append('\n')</span>
-<span class="fc" id="L460">        .append(&quot;Mode: &quot;).append(transferMode.name()).append(&quot; localPort: &quot;)</span>
-<span class="fc" id="L461">        .append(getLocalPort()).append(&quot; remotePort: &quot;).append(getRemotePort())</span>
-<span class="fc" id="L462">        .append('\n').append(&quot;Structure: &quot;).append(transferStructure.name())</span>
-<span class="fc" id="L463">        .append('\n').append(&quot;Type: &quot;).append(transferType.name()).append(' ')</span>
-<span class="fc" id="L464">        .append(transferSubType.name());</span>
-<span class="fc" id="L465">    return builder.toString();</span>
+<span class="fc" id="L458">    final StringBuilder builder = new StringBuilder(&quot;Data connection: &quot;)</span>
+<span class="pc bpc" id="L459" title="1 of 2 branches missed.">        .append(isActive()? &quot;connected &quot; : &quot;not connected &quot;)</span>
+<span class="pc bpc" id="L460" title="1 of 2 branches missed.">        .append(isBind()? &quot;bind &quot; : &quot;not bind &quot;)</span>
+<span class="fc bfc" id="L461" title="All 2 branches covered.">        .append(isPassiveMode()? &quot;passive mode&quot; : &quot;active mode&quot;).append('\n')</span>
+<span class="fc" id="L462">        .append(&quot;Mode: &quot;).append(transferMode.name()).append(&quot; localPort: &quot;)</span>
+<span class="fc" id="L463">        .append(getLocalPort()).append(&quot; remotePort: &quot;).append(getRemotePort())</span>
+<span class="fc" id="L464">        .append('\n').append(&quot;Structure: &quot;).append(transferStructure.name())</span>
+<span class="fc" id="L465">        .append('\n').append(&quot;Type: &quot;).append(transferType.name()).append(' ')</span>
+<span class="fc" id="L466">        .append(transferSubType.name());</span>
+<span class="fc" id="L467">    return builder.toString();</span>
   }
 
   /**
@@ -470,14 +472,14 @@ public class FtpDataAsyncConn {
    */
   @Override
   public String toString() {
-<span class="fc" id="L473">    return getStatus().replace('\n', ' ');</span>
+<span class="fc" id="L475">    return getStatus().replace('\n', ' ');</span>
   }
 
   /**
    * @return the FtpTransferControl
    */
   public FtpTransferControl getFtpTransferControl() {
-<span class="fc" id="L480">    return transferControl;</span>
+<span class="fc" id="L482">    return transferControl;</span>
   }
 
   /**
@@ -488,21 +490,21 @@ public class FtpDataAsyncConn {
    * @throws InterruptedException
    * @throws Reply425Exception
    */
-  public void setNewOpenedDataChannel(Channel dataChannel)
+  public void setNewOpenedDataChannel(final Channel dataChannel)
       throws InterruptedException, Reply425Exception {
-<span class="fc" id="L493">    this.dataChannel = dataChannel;</span>
-<span class="pc bpc" id="L494" title="1 of 2 branches missed.">    if (dataChannel == null) {</span>
-      String curmode;
-<span class="nc bnc" id="L496" title="All 2 branches missed.">      if (isPassiveMode()) {</span>
-<span class="nc" id="L497">        curmode = &quot;passive&quot;;</span>
+<span class="fc" id="L495">    this.dataChannel = dataChannel;</span>
+<span class="pc bpc" id="L496" title="1 of 2 branches missed.">    if (dataChannel == null) {</span>
+      final String curmode;
+<span class="nc bnc" id="L498" title="All 2 branches missed.">      if (isPassiveMode()) {</span>
+<span class="nc" id="L499">        curmode = &quot;passive&quot;;</span>
       } else {
-<span class="nc" id="L499">        curmode = &quot;active&quot;;</span>
+<span class="nc" id="L501">        curmode = &quot;active&quot;;</span>
       }
       // Cannot open connection
-<span class="nc" id="L502">      throw new Reply425Exception(</span>
+<span class="nc" id="L504">      throw new Reply425Exception(</span>
           &quot;Cannot open &quot; + curmode + &quot; data connection&quot;);
     }
-<span class="fc" id="L505">    isBind = true;</span>
-<span class="fc" id="L506">  }</span>
+<span class="fc" id="L507">    isBind = true;</span>
+<span class="fc" id="L508">  }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

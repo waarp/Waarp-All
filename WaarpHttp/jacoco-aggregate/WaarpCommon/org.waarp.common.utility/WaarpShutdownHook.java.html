@@ -76,7 +76,7 @@ public abstract class WaarpShutdownHook extends Thread {
   private static volatile boolean shouldRestart;
   private ShutdownConfiguration shutdownConfiguration;
 
-<span class="fc" id="L79">  protected WaarpShutdownHook(ShutdownConfiguration configuration) {</span>
+<span class="fc" id="L79">  protected WaarpShutdownHook(final ShutdownConfiguration configuration) {</span>
 <span class="fc bfc" id="L80" title="All 2 branches covered.">    if (initialized) {</span>
 <span class="fc" id="L81">      shutdownHook.shutdownConfiguration = configuration;</span>
 <span class="fc" id="L82">      setName(&quot;WaarpShutdownHook&quot;);</span>
@@ -137,9 +137,9 @@ public abstract class WaarpShutdownHook extends Thread {
    *
    * @param immediateSet
    */
-  public static void terminate(boolean immediateSet) {
+  public static void terminate(final boolean immediateSet) {
 <span class="fc bfc" id="L141" title="All 2 branches covered.">    if (immediateSet) {</span>
-<span class="fc" id="L142">      immediate = immediateSet;</span>
+<span class="fc" id="L142">      immediate = true;</span>
     }
 <span class="pc bpc" id="L144" title="1 of 2 branches missed.">    if (shutdownHook != null) {</span>
 <span class="fc" id="L145">      removeShutdownHook();</span>
@@ -234,8 +234,8 @@ public abstract class WaarpShutdownHook extends Thread {
    * @param thread
    * @param stacks
    */
-  private static void printStackTrace(Thread thread,
-                                      StackTraceElement[] stacks) {
+  private static void printStackTrace(final Thread thread,
+                                      final StackTraceElement[] stacks) {
 <span class="nc" id="L239">    SysErrLogger.FAKE_LOGGER.syserrNoLn(thread + &quot; : &quot;);</span>
 <span class="nc bnc" id="L240" title="All 2 branches missed.">    for (int i = 0; i &lt; stacks.length - 1; i++) {</span>
 <span class="nc" id="L241">      SysErrLogger.FAKE_LOGGER.syserrNoLn(stacks[i] + &quot; &quot;);</span>
@@ -366,7 +366,7 @@ public abstract class WaarpShutdownHook extends Thread {
    *
    * @param toRestart
    */
-  public static void setRestart(boolean toRestart) {
+  public static void setRestart(final boolean toRestart) {
 <span class="fc" id="L370">    shouldRestart = toRestart;</span>
 <span class="fc" id="L371">  }</span>
 
@@ -376,13 +376,13 @@ public abstract class WaarpShutdownHook extends Thread {
    * @param main
    * @param args
    */
-  public static void registerMain(Class&lt;?&gt; main, String[] args) {
+  public static void registerMain(final Class&lt;?&gt; main, final String[] args) {
 <span class="pc bpc" id="L380" title="1 of 2 branches missed.">    if (main == null) {</span>
 <span class="nc" id="L381">      applArgs = getArgs();</span>
 <span class="nc" id="L382">      return;</span>
     }
-<span class="fc" id="L384">    String path = ManagementFactory.getRuntimeMXBean().getClassPath();</span>
-<span class="fc" id="L385">    StringBuilder newArgs = new StringBuilder();</span>
+<span class="fc" id="L384">    final String path = ManagementFactory.getRuntimeMXBean().getClassPath();</span>
+<span class="fc" id="L385">    final StringBuilder newArgs = new StringBuilder();</span>
 <span class="pc bpc" id="L386" title="2 of 4 branches missed.">    if (path != null &amp;&amp; !path.isEmpty()) {</span>
 <span class="fc" id="L387">      newArgs.append(&quot;-cp &quot;).append(path);</span>
     }

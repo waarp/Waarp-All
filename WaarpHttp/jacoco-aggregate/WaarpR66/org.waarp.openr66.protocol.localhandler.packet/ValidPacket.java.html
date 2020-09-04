@@ -20,7 +20,9 @@
 package org.waarp.openr66.protocol.localhandler.packet;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.Unpooled;
+import org.waarp.common.utility.WaarpNettyUtil;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
 import org.waarp.openr66.protocol.localhandler.LocalChannelReference;
 
@@ -44,19 +46,21 @@ public class ValidPacket extends AbstractLocalPacket {
    *
    * @return the new ValidPacket from buffer
    */
-  public static ValidPacket createFromBuffer(int headerLength, int middleLength,
-                                             int endLength, ByteBuf buf) {
-<span class="fc" id="L49">    final byte[] bheader = new byte[headerLength - 1];</span>
-<span class="fc" id="L50">    final byte[] bmiddle = new byte[middleLength];</span>
+  public static ValidPacket createFromBuffer(final int headerLength,
+                                             final int middleLength,
+                                             final int endLength,
+                                             final ByteBuf buf) {
+<span class="fc" id="L53">    final byte[] bheader = new byte[headerLength - 1];</span>
+<span class="fc" id="L54">    final byte[] bmiddle = new byte[middleLength];</span>
     final byte bend;
-<span class="fc bfc" id="L52" title="All 2 branches covered.">    if (headerLength - 1 &gt; 0) {</span>
-<span class="fc" id="L53">      buf.readBytes(bheader);</span>
+<span class="fc bfc" id="L56" title="All 2 branches covered.">    if (headerLength - 1 &gt; 0) {</span>
+<span class="fc" id="L57">      buf.readBytes(bheader);</span>
     }
-<span class="fc bfc" id="L55" title="All 2 branches covered.">    if (middleLength &gt; 0) {</span>
-<span class="fc" id="L56">      buf.readBytes(bmiddle);</span>
+<span class="fc bfc" id="L59" title="All 2 branches covered.">    if (middleLength &gt; 0) {</span>
+<span class="fc" id="L60">      buf.readBytes(bmiddle);</span>
     }
-<span class="fc" id="L58">    bend = buf.readByte();</span>
-<span class="fc" id="L59">    return new ValidPacket(new String(bheader), new String(bmiddle), bend);</span>
+<span class="fc" id="L62">    bend = buf.readByte();</span>
+<span class="fc" id="L63">    return new ValidPacket(new String(bheader), new String(bmiddle), bend);</span>
   }
 
   /**
@@ -64,72 +68,79 @@ public class ValidPacket extends AbstractLocalPacket {
    * @param middle
    * @param end
    */
-<span class="fc" id="L67">  public ValidPacket(String header, String middle, byte end) {</span>
-<span class="fc" id="L68">    sheader = header;</span>
-<span class="fc" id="L69">    smiddle = middle;</span>
-<span class="fc" id="L70">    send = end;</span>
-<span class="fc" id="L71">  }</span>
+<span class="fc" id="L71">  public ValidPacket(final String header, final String middle, final byte end) {</span>
+<span class="fc" id="L72">    sheader = header;</span>
+<span class="fc" id="L73">    smiddle = middle;</span>
+<span class="fc" id="L74">    send = end;</span>
+<span class="fc" id="L75">  }</span>
 
   @Override
-  public void createEnd(LocalChannelReference lcr)
-      throws OpenR66ProtocolPacketException {
-<span class="fc" id="L76">    end = Unpooled.buffer(1);</span>
-<span class="fc" id="L77">    end.writeByte(send);</span>
-<span class="fc" id="L78">  }</span>
+  public boolean hasGlobalBuffer() {
+<span class="fc" id="L79">    return true;</span>
+  }
 
   @Override
-  public void createHeader(LocalChannelReference lcr)
+  public void createAllBuffers(final LocalChannelReference lcr,
+                               final int networkHeader)
       throws OpenR66ProtocolPacketException {
-<span class="fc bfc" id="L83" title="All 2 branches covered.">    if (sheader != null) {</span>
-<span class="fc" id="L84">      header = Unpooled.wrappedBuffer(sheader.getBytes());</span>
-    }
-<span class="fc" id="L86">  }</span>
-
-  @Override
-  public void createMiddle(LocalChannelReference lcr)
-      throws OpenR66ProtocolPacketException {
-<span class="fc bfc" id="L91" title="All 2 branches covered.">    if (smiddle != null) {</span>
-<span class="fc" id="L92">      middle = Unpooled.wrappedBuffer(smiddle.getBytes());</span>
-    }
-<span class="fc" id="L94">  }</span>
+<span class="fc bfc" id="L86" title="All 2 branches covered.">    final byte[] headerBytes =</span>
+<span class="fc" id="L87">        sheader != null? sheader.getBytes() : EMPTY_ARRAY;</span>
+<span class="fc" id="L88">    final int headerSize = headerBytes.length;</span>
+<span class="fc bfc" id="L89" title="All 2 branches covered.">    final byte[] middleBytes =</span>
+<span class="fc" id="L90">        smiddle != null? smiddle.getBytes() : EMPTY_ARRAY;</span>
+<span class="fc" id="L91">    final int middleSize = middleBytes.length;</span>
+<span class="fc" id="L92">    final int endSize = 1;</span>
+<span class="fc" id="L93">    final int globalSize =</span>
+        networkHeader + LOCAL_HEADER_SIZE + headerSize + middleSize + endSize;
+<span class="fc" id="L95">    int offset = networkHeader + LOCAL_HEADER_SIZE;</span>
+<span class="fc" id="L96">    global = ByteBufAllocator.DEFAULT.buffer(globalSize, globalSize);</span>
+<span class="fc" id="L97">    header = WaarpNettyUtil.slice(global, offset, headerSize);</span>
+<span class="fc" id="L98">    header.writeBytes(headerBytes);</span>
+<span class="fc" id="L99">    offset += headerSize;</span>
+<span class="fc" id="L100">    middle = WaarpNettyUtil.slice(global, offset, middleSize);</span>
+<span class="fc" id="L101">    middle.writeBytes(middleBytes);</span>
+<span class="fc" id="L102">    offset += middleSize;</span>
+<span class="fc" id="L103">    end = WaarpNettyUtil.slice(global, offset, endSize);</span>
+<span class="fc" id="L104">    end.writeByte(send);</span>
+<span class="fc" id="L105">  }</span>
 
   @Override
   public String toString() {
-<span class="fc" id="L98">    return &quot;ValidPacket: &quot; + sheader + ':' + smiddle + ':' + send;</span>
+<span class="fc" id="L109">    return &quot;ValidPacket: &quot; + sheader + ':' + smiddle + ':' + send;</span>
   }
 
   @Override
   public byte getType() {
-<span class="fc" id="L103">    return LocalPacketFactory.VALIDPACKET;</span>
+<span class="fc" id="L114">    return LocalPacketFactory.VALIDPACKET;</span>
   }
 
   /**
    * @return the sheader
    */
   public String getSheader() {
-<span class="fc" id="L110">    return sheader;</span>
+<span class="fc" id="L121">    return sheader;</span>
   }
 
   /**
    * @return the smiddle
    */
   public String getSmiddle() {
-<span class="fc" id="L117">    return smiddle;</span>
+<span class="fc" id="L128">    return smiddle;</span>
   }
 
   /**
    * @param smiddle
    */
-  public void setSmiddle(String smiddle) {
-<span class="fc" id="L124">    this.smiddle = smiddle;</span>
-<span class="fc" id="L125">    middle = null;</span>
-<span class="fc" id="L126">  }</span>
+  public void setSmiddle(final String smiddle) {
+<span class="fc" id="L135">    this.smiddle = smiddle;</span>
+<span class="fc" id="L136">    middle = null;</span>
+<span class="fc" id="L137">  }</span>
 
   /**
    * @return the type
    */
   public byte getTypeValid() {
-<span class="fc" id="L132">    return send;</span>
+<span class="fc" id="L143">    return send;</span>
   }
 
 }

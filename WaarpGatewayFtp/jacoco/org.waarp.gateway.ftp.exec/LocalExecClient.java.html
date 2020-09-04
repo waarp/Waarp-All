@@ -54,15 +54,15 @@ public class LocalExecClient {
   private static Bootstrap bootstrapLocalExec;
   // Configure the pipeline factory.
   private static LocalExecClientInitializer localExecClientInitializer;
-  private static EventLoopGroup localPipelineExecutor;
 
   /**
    * Initialize the LocalExec Client context
    */
-  public static void initialize(int clientThread, long maxGlobalMemory) {
-<span class="nc" id="L63">    localPipelineExecutor = new NioEventLoopGroup(clientThread * 2,</span>
-                                                  new WaarpThreadFactory(
-                                                      &quot;LocalExecutor&quot;));
+  public static void initialize(final int clientThread,
+                                final long maxGlobalMemory) {
+<span class="nc" id="L63">    final EventLoopGroup localPipelineExecutor =</span>
+        new NioEventLoopGroup(clientThread * 2,
+                              new WaarpThreadFactory(&quot;LocalExecutor&quot;));
     // Configure the client.
 <span class="nc" id="L67">    bootstrapLocalExec = new Bootstrap();</span>
 <span class="nc" id="L68">    WaarpNettyUtil.setBootstrap(bootstrapLocalExec, localPipelineExecutor,</span>
@@ -106,8 +106,8 @@ public class LocalExecClient {
    * @param delay
    * @param futureCompletion
    */
-  public void runOneCommand(String command, long delay,
-                            WaarpFuture futureCompletion) {
+  public void runOneCommand(final String command, final long delay,
+                            final WaarpFuture futureCompletion) {
     // Initialize the command context
 <span class="nc" id="L112">    final LocalExecClientHandler clientHandler =</span>
 <span class="nc" id="L113">        (LocalExecClientHandler) channel.pipeline().last();</span>
@@ -172,7 +172,7 @@ public class LocalExecClient {
   /**
    * @param address the address to set
    */
-  public static void setAddress(InetSocketAddress address) {
+  public static void setAddress(final InetSocketAddress address) {
 <span class="nc" id="L176">    LocalExecClient.address = address;</span>
 <span class="nc" id="L177">  }</span>
 }

@@ -62,7 +62,7 @@
 <a class="jxr_linenumber" name="L54" href="#L54">54</a>  <em class="jxr_javadoccomment">   *</em>
 <a class="jxr_linenumber" name="L55" href="#L55">55</a>  <em class="jxr_javadoccomment">   * @throws WaarpDatabaseNoConnectionException</em>
 <a class="jxr_linenumber" name="L56" href="#L56">56</a>  <em class="jxr_javadoccomment">   */</em>
-<a class="jxr_linenumber" name="L57" href="#L57">57</a>    <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">int</strong> getServerVersion(DbSession session)
+<a class="jxr_linenumber" name="L57" href="#L57">57</a>    <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">int</strong> getServerVersion(<strong class="jxr_keyword">final</strong> DbSession session)
 <a class="jxr_linenumber" name="L58" href="#L58">58</a>        <strong class="jxr_keyword">throws</strong> WaarpDatabaseNoConnectionException {
 <a class="jxr_linenumber" name="L59" href="#L59">59</a>      <strong class="jxr_keyword">int</strong> serverVersion = 0;
 <a class="jxr_linenumber" name="L60" href="#L60">60</a>      <strong class="jxr_keyword">final</strong> DbRequest request = <strong class="jxr_keyword">new</strong> DbRequest(session);
@@ -84,7 +84,7 @@
 <a class="jxr_linenumber" name="L76" href="#L76">76</a>    }
 <a class="jxr_linenumber" name="L77" href="#L77">77</a>  
 <a class="jxr_linenumber" name="L78" href="#L78">78</a>    @Override
-<a class="jxr_linenumber" name="L79" href="#L79">79</a>    <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> createTables(DbSession session)
+<a class="jxr_linenumber" name="L79" href="#L79">79</a>    <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> createTables(<strong class="jxr_keyword">final</strong> DbSession session)
 <a class="jxr_linenumber" name="L80" href="#L80">80</a>        <strong class="jxr_keyword">throws</strong> WaarpDatabaseNoConnectionException {
 <a class="jxr_linenumber" name="L81" href="#L81">81</a>      <em class="jxr_comment">// Create tables: configuration, hosts, rules, runner, cptrunner</em>
 <a class="jxr_linenumber" name="L82" href="#L82">82</a>      <strong class="jxr_keyword">final</strong> String createTableH2 = <span class="jxr_string">"CREATE TABLE "</span>;
@@ -144,7 +144,7 @@
 <a class="jxr_linenumber" name="L136" href="#L136">136</a>   }
 <a class="jxr_linenumber" name="L137" href="#L137">137</a> 
 <a class="jxr_linenumber" name="L138" href="#L138">138</a>   @Override
-<a class="jxr_linenumber" name="L139" href="#L139">139</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">boolean</strong> upgradeDb(DbSession session, String version)
+<a class="jxr_linenumber" name="L139" href="#L139">139</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">boolean</strong> upgradeDb(<strong class="jxr_keyword">final</strong> DbSession session, <strong class="jxr_keyword">final</strong> String version)
 <a class="jxr_linenumber" name="L140" href="#L140">140</a>       <strong class="jxr_keyword">throws</strong> WaarpDatabaseNoConnectionException {
 <a class="jxr_linenumber" name="L141" href="#L141">141</a>     <strong class="jxr_keyword">if</strong> (<a name="PartnerConfiguration" href="../../../../../org/waarp/openr66/protocol/configuration/PartnerConfiguration.html#PartnerConfiguration">PartnerConfiguration</a>
 <a class="jxr_linenumber" name="L142" href="#L142">142</a>         .isVersion2GEQVersion1(version, R66Versions.V2_4_13.getVersion())) {
@@ -160,7 +160,7 @@
 <a class="jxr_linenumber" name="L152" href="#L152">152</a>       <strong class="jxr_keyword">final</strong> String notNull = <span class="jxr_string">" NOT NULL "</span>;
 <a class="jxr_linenumber" name="L153" href="#L153">153</a> 
 <a class="jxr_linenumber" name="L154" href="#L154">154</a>       <em class="jxr_comment">// HostConfiguration</em>
-<a class="jxr_linenumber" name="L155" href="#L155">155</a>       StringBuilder action =
+<a class="jxr_linenumber" name="L155" href="#L155">155</a>       <strong class="jxr_keyword">final</strong> StringBuilder action =
 <a class="jxr_linenumber" name="L156" href="#L156">156</a>           <strong class="jxr_keyword">new</strong> StringBuilder(createTableH2 + DbHostConfiguration.table + '(');
 <a class="jxr_linenumber" name="L157" href="#L157">157</a>       <strong class="jxr_keyword">final</strong> DbHostConfiguration.Columns[] chcolumns =
 <a class="jxr_linenumber" name="L158" href="#L158">158</a>           DbHostConfiguration.Columns.values();
@@ -269,8 +269,8 @@
 <a class="jxr_linenumber" name="L261" href="#L261">261</a>   }
 <a class="jxr_linenumber" name="L262" href="#L262">262</a> 
 <a class="jxr_linenumber" name="L263" href="#L263">263</a>   @Override
-<a class="jxr_linenumber" name="L264" href="#L264">264</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">boolean</strong> needUpgradeDb(DbSession session, String version,
-<a class="jxr_linenumber" name="L265" href="#L265">265</a>                                <strong class="jxr_keyword">boolean</strong> tryFix)
+<a class="jxr_linenumber" name="L264" href="#L264">264</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">boolean</strong> needUpgradeDb(<strong class="jxr_keyword">final</strong> DbSession session, <strong class="jxr_keyword">final</strong> String version,
+<a class="jxr_linenumber" name="L265" href="#L265">265</a>                                <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">boolean</strong> tryFix)
 <a class="jxr_linenumber" name="L266" href="#L266">266</a>       <strong class="jxr_keyword">throws</strong> WaarpDatabaseNoConnectionException {
 <a class="jxr_linenumber" name="L267" href="#L267">267</a>     <em class="jxr_comment">// Check if the database is up to date</em>
 <a class="jxr_linenumber" name="L268" href="#L268">268</a>     <strong class="jxr_keyword">return</strong> <a name="DbModelFactoryR66" href="../../../../../org/waarp/openr66/database/model/DbModelFactoryR66.html#DbModelFactoryR66">DbModelFactoryR66</a>

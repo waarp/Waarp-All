@@ -22,7 +22,9 @@ package org.waarp.openr66.protocol.localhandler.packet;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.Unpooled;
+import org.waarp.common.utility.WaarpNettyUtil;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
 import org.waarp.openr66.protocol.localhandler.LocalChannelReference;
 import org.waarp.openr66.protocol.localhandler.packet.json.JsonPacket;
@@ -49,20 +51,21 @@ public class JsonCommandPacket extends AbstractLocalPacket {
    *
    * @return the new ValidPacket from buffer
    */
-  public static JsonCommandPacket createFromBuffer(int headerLength,
-                                                   int middleLength,
-                                                   int endLength, ByteBuf buf) {
-<span class="fc" id="L55">    final byte[] bheader = new byte[headerLength - 1];</span>
-<span class="fc" id="L56">    final byte[] bmiddle = new byte[middleLength];</span>
+  public static JsonCommandPacket createFromBuffer(final int headerLength,
+                                                   final int middleLength,
+                                                   final int endLength,
+                                                   final ByteBuf buf) {
+<span class="fc" id="L58">    final byte[] bheader = new byte[headerLength - 1];</span>
+<span class="fc" id="L59">    final byte[] bmiddle = new byte[middleLength];</span>
     final byte bend;
-<span class="pc bpc" id="L58" title="1 of 2 branches missed.">    if (headerLength - 1 &gt; 0) {</span>
-<span class="fc" id="L59">      buf.readBytes(bheader);</span>
+<span class="pc bpc" id="L61" title="1 of 2 branches missed.">    if (headerLength - 1 &gt; 0) {</span>
+<span class="fc" id="L62">      buf.readBytes(bheader);</span>
     }
-<span class="fc bfc" id="L61" title="All 2 branches covered.">    if (middleLength &gt; 0) {</span>
-<span class="fc" id="L62">      buf.readBytes(bmiddle);</span>
+<span class="fc bfc" id="L64" title="All 2 branches covered.">    if (middleLength &gt; 0) {</span>
+<span class="fc" id="L65">      buf.readBytes(bmiddle);</span>
     }
-<span class="fc" id="L64">    bend = buf.readByte();</span>
-<span class="fc" id="L65">    return new JsonCommandPacket(new String(bheader), new String(bmiddle),</span>
+<span class="fc" id="L67">    bend = buf.readByte();</span>
+<span class="fc" id="L68">    return new JsonCommandPacket(new String(bheader), new String(bmiddle),</span>
                                  bend);
   }
 
@@ -71,64 +74,76 @@ public class JsonCommandPacket extends AbstractLocalPacket {
    * @param sresult
    * @param end
    */
-<span class="fc" id="L74">  public JsonCommandPacket(String srequest, String sresult, byte end) {</span>
-<span class="fc" id="L75">    request = srequest;</span>
-<span class="fc" id="L76">    result = sresult;</span>
-<span class="fc" id="L77">    send = end;</span>
-<span class="fc" id="L78">  }</span>
+  public JsonCommandPacket(final String srequest, final String sresult,
+<span class="fc" id="L78">                           final byte end) {</span>
+<span class="fc" id="L79">    request = srequest;</span>
+<span class="fc" id="L80">    result = sresult;</span>
+<span class="fc" id="L81">    send = end;</span>
+<span class="fc" id="L82">  }</span>
 
   /**
    * @param jrequest
    * @param end
    */
-<span class="fc" id="L84">  public JsonCommandPacket(JsonPacket jrequest, byte end) {</span>
-<span class="fc" id="L85">    request = jrequest.toString();</span>
-<span class="fc" id="L86">    result = null;</span>
-<span class="fc" id="L87">    send = end;</span>
-<span class="fc" id="L88">  }</span>
+<span class="fc" id="L88">  public JsonCommandPacket(final JsonPacket jrequest, final byte end) {</span>
+<span class="fc" id="L89">    request = jrequest.toString();</span>
+<span class="fc" id="L90">    result = null;</span>
+<span class="fc" id="L91">    send = end;</span>
+<span class="fc" id="L92">  }</span>
 
   /**
    * @param jrequest
    * @param sresult
    * @param end
    */
-<span class="fc" id="L95">  public JsonCommandPacket(JsonPacket jrequest, String sresult, byte end) {</span>
-<span class="fc" id="L96">    request = jrequest.toString();</span>
-<span class="fc" id="L97">    result = sresult;</span>
-<span class="fc" id="L98">    send = end;</span>
-<span class="fc" id="L99">  }</span>
+  public JsonCommandPacket(final JsonPacket jrequest, final String sresult,
+<span class="fc" id="L100">                           final byte end) {</span>
+<span class="fc" id="L101">    request = jrequest.toString();</span>
+<span class="fc" id="L102">    result = sresult;</span>
+<span class="fc" id="L103">    send = end;</span>
+<span class="fc" id="L104">  }</span>
 
   @Override
-  public void createEnd(LocalChannelReference lcr)
-      throws OpenR66ProtocolPacketException {
-<span class="fc" id="L104">    end = Unpooled.buffer(1);</span>
-<span class="fc" id="L105">    end.writeByte(send);</span>
-<span class="fc" id="L106">  }</span>
+  public boolean hasGlobalBuffer() {
+<span class="fc" id="L108">    return true;</span>
+  }
 
   @Override
-  public void createHeader(LocalChannelReference lcr)
+  public void createAllBuffers(final LocalChannelReference lcr,
+                               final int networkHeader)
       throws OpenR66ProtocolPacketException {
-<span class="pc bpc" id="L111" title="1 of 2 branches missed.">    if (request != null) {</span>
-<span class="fc" id="L112">      header = Unpooled.wrappedBuffer(request.getBytes());</span>
+<span class="pc bpc" id="L115" title="1 of 2 branches missed.">    final byte[] headerBytes =</span>
+<span class="pc" id="L116">        request != null? request.getBytes() : EMPTY_ARRAY;</span>
+<span class="fc" id="L117">    final int headerSize = headerBytes.length;</span>
+<span class="fc bfc" id="L118" title="All 2 branches covered.">    final byte[] middleBytes = result != null? result.getBytes() : EMPTY_ARRAY;</span>
+<span class="fc" id="L119">    final int middleSize = middleBytes.length;</span>
+<span class="fc" id="L120">    final int endSize = 1;</span>
+<span class="fc" id="L121">    final int globalSize =</span>
+        networkHeader + LOCAL_HEADER_SIZE + headerSize + middleSize + endSize;
+<span class="fc" id="L123">    int offset = networkHeader + LOCAL_HEADER_SIZE;</span>
+<span class="fc" id="L124">    global = ByteBufAllocator.DEFAULT.buffer(globalSize, globalSize);</span>
+<span class="fc" id="L125">    header = WaarpNettyUtil.slice(global, offset, headerSize);</span>
+<span class="pc bpc" id="L126" title="1 of 2 branches missed.">    if (request != null) {</span>
+<span class="fc" id="L127">      header.writeBytes(headerBytes);</span>
     }
-<span class="fc" id="L114">  }</span>
-
-  @Override
-  public void createMiddle(LocalChannelReference lcr)
-      throws OpenR66ProtocolPacketException {
-<span class="fc bfc" id="L119" title="All 2 branches covered.">    if (result != null) {</span>
-<span class="fc" id="L120">      middle = Unpooled.wrappedBuffer(result.getBytes());</span>
+<span class="fc" id="L129">    offset += headerSize;</span>
+<span class="fc" id="L130">    middle = WaarpNettyUtil.slice(global, offset, middleSize);</span>
+<span class="fc bfc" id="L131" title="All 2 branches covered.">    if (result != null) {</span>
+<span class="fc" id="L132">      middle.writeBytes(middleBytes);</span>
     }
-<span class="fc" id="L122">  }</span>
+<span class="fc" id="L134">    offset += middleSize;</span>
+<span class="fc" id="L135">    end = WaarpNettyUtil.slice(global, offset, endSize);</span>
+<span class="fc" id="L136">    end.writeByte(send);</span>
+<span class="fc" id="L137">  }</span>
 
   @Override
   public String toString() {
-<span class="fc" id="L126">    return &quot;JsonCommandPacket: &quot; + request + ':' + result + ':' + send;</span>
+<span class="fc" id="L141">    return &quot;JsonCommandPacket: &quot; + request + ':' + result + ':' + send;</span>
   }
 
   @Override
   public byte getType() {
-<span class="fc" id="L131">    return LocalPacketFactory.JSONREQUESTPACKET;</span>
+<span class="fc" id="L146">    return LocalPacketFactory.JSONREQUESTPACKET;</span>
   }
 
   /**
@@ -136,43 +151,43 @@ public class JsonCommandPacket extends AbstractLocalPacket {
    */
   public JsonPacket getJsonRequest() {
     try {
-<span class="fc" id="L139">      return JsonPacket.createFromBuffer(request);</span>
-<span class="nc" id="L140">    } catch (final JsonParseException e) {</span>
-<span class="nc" id="L141">      return null;</span>
-<span class="nc" id="L142">    } catch (final JsonMappingException e) {</span>
-<span class="nc" id="L143">      return null;</span>
-<span class="nc" id="L144">    } catch (final IOException e) {</span>
-<span class="nc" id="L145">      return null;</span>
+<span class="fc" id="L154">      return JsonPacket.createFromBuffer(request);</span>
+<span class="nc" id="L155">    } catch (final JsonParseException e) {</span>
+<span class="nc" id="L156">      return null;</span>
+<span class="nc" id="L157">    } catch (final JsonMappingException e) {</span>
+<span class="nc" id="L158">      return null;</span>
+<span class="nc" id="L159">    } catch (final IOException e) {</span>
+<span class="nc" id="L160">      return null;</span>
     }
   }
 
   /**
    * @param result
    */
-  public void setResult(String result) {
-<span class="nc" id="L153">    this.result = result;</span>
-<span class="nc" id="L154">    middle = null;</span>
-<span class="nc" id="L155">  }</span>
+  public void setResult(final String result) {
+<span class="nc" id="L168">    this.result = result;</span>
+<span class="nc" id="L169">    middle = null;</span>
+<span class="nc" id="L170">  }</span>
 
   /**
    * @return the request
    */
   public String getRequest() {
-<span class="fc" id="L161">    return request;</span>
+<span class="fc" id="L176">    return request;</span>
   }
 
   /**
    * @return the result
    */
   public String getResult() {
-<span class="fc" id="L168">    return result;</span>
+<span class="fc" id="L183">    return result;</span>
   }
 
   /**
    * @return the type
    */
   public byte getTypeValid() {
-<span class="fc" id="L175">    return send;</span>
+<span class="fc" id="L190">    return send;</span>
   }
 
 }

@@ -59,60 +59,61 @@ public class R66PrivateMib extends WaarpPrivateMib {
    * @param saddress
    * @param iservice
    */
-  public R66PrivateMib(String sysdesc, int port, int smiPrivateCodeFinal,
-                       int typeWaarpObject, String scontactName,
-                       String stextualName, String saddress, int iservice) {
-<span class="fc" id="L65">    super(sysdesc, port, smiPrivateCodeFinal, typeWaarpObject, scontactName,</span>
+  public R66PrivateMib(final String sysdesc, final int port,
+                       final int smiPrivateCodeFinal, final int typeWaarpObject,
+                       final String scontactName, final String stextualName,
+                       final String saddress, final int iservice) {
+<span class="fc" id="L66">    super(sysdesc, port, smiPrivateCodeFinal, typeWaarpObject, scontactName,</span>
           stextualName, saddress, iservice);
-<span class="fc" id="L67">  }</span>
+<span class="fc" id="L68">  }</span>
 
   @Override
   protected void agentRegisterWaarpMib() throws DuplicateRegistrationException {
-<span class="fc" id="L71">    logger.debug(&quot;registerGGMib&quot;);</span>
+<span class="fc" id="L72">    logger.debug(&quot;registerGGMib&quot;);</span>
     // register Static info
-<span class="fc" id="L73">    rowInfo = new WaarpMORow(this, rootOIDWaarpInfo, WaarpDefinition,</span>
-<span class="fc" id="L74">                             MibLevel.staticInfo.ordinal());</span>
-<span class="fc" id="L75">    rowInfo.setValue(WaarpDefinitionIndex.applName.ordinal(), &quot;Waarp OpenR66&quot;);</span>
-<span class="fc" id="L76">    rowInfo.setValue(WaarpDefinitionIndex.applServerName.ordinal(),</span>
-<span class="fc" id="L77">                     Configuration.configuration.getHostId());</span>
-<span class="fc" id="L78">    rowInfo.setValue(WaarpDefinitionIndex.applVersion.ordinal(), Version.ID);</span>
-<span class="fc" id="L79">    rowInfo.setValue(WaarpDefinitionIndex.applDescription.ordinal(),</span>
+<span class="fc" id="L74">    rowInfo = new WaarpMORow(this, rootOIDWaarpInfo, WaarpDefinition,</span>
+<span class="fc" id="L75">                             MibLevel.staticInfo.ordinal());</span>
+<span class="fc" id="L76">    rowInfo.setValue(WaarpDefinitionIndex.applName.ordinal(), &quot;Waarp OpenR66&quot;);</span>
+<span class="fc" id="L77">    rowInfo.setValue(WaarpDefinitionIndex.applServerName.ordinal(),</span>
+<span class="fc" id="L78">                     Configuration.configuration.getHostId());</span>
+<span class="fc" id="L79">    rowInfo.setValue(WaarpDefinitionIndex.applVersion.ordinal(), Version.ID);</span>
+<span class="fc" id="L80">    rowInfo.setValue(WaarpDefinitionIndex.applDescription.ordinal(),</span>
                      &quot;Waarp OpenR66: File Transfer Monitor&quot;);
-<span class="fc" id="L81">    rowInfo.setValue(WaarpDefinitionIndex.applURL.ordinal(),</span>
+<span class="fc" id="L82">    rowInfo.setValue(WaarpDefinitionIndex.applURL.ordinal(),</span>
                      &quot;http://waarp.github.com/Waarp&quot;);
-<span class="fc" id="L83">    rowInfo.setValue(WaarpDefinitionIndex.applApplicationProtocol.ordinal(),</span>
+<span class="fc" id="L84">    rowInfo.setValue(WaarpDefinitionIndex.applApplicationProtocol.ordinal(),</span>
                      applicationProtocol);
 
-<span class="fc" id="L86">    rowInfo.registerMOs(agent.getServer(), null);</span>
+<span class="fc" id="L87">    rowInfo.registerMOs(agent.getServer(), null);</span>
     // register General info
-<span class="fc" id="L88">    rowGlobal = new WaarpMORow(this, rootOIDWaarpGlobal, WaarpGlobalValues,</span>
-<span class="fc" id="L89">                               MibLevel.globalInfo.ordinal());</span>
-<span class="fc" id="L90">    WaarpMOScalar memoryScalar =</span>
-<span class="fc" id="L91">        rowGlobal.getRow()[WaarpGlobalValuesIndex.memoryTotal.ordinal()];</span>
-<span class="fc" id="L92">    memoryScalar.setValue(new MemoryGauge32(MemoryType.TotalMemory));</span>
-<span class="fc" id="L93">    memoryScalar =</span>
-<span class="fc" id="L94">        rowGlobal.getRow()[WaarpGlobalValuesIndex.memoryFree.ordinal()];</span>
-<span class="fc" id="L95">    memoryScalar.setValue(new MemoryGauge32(MemoryType.FreeMemory));</span>
-<span class="fc" id="L96">    memoryScalar =</span>
-<span class="fc" id="L97">        rowGlobal.getRow()[WaarpGlobalValuesIndex.memoryUsed.ordinal()];</span>
-<span class="fc" id="L98">    memoryScalar.setValue(new MemoryGauge32(MemoryType.UsedMemory));</span>
-<span class="fc" id="L99">    rowGlobal.registerMOs(agent.getServer(), null);</span>
+<span class="fc" id="L89">    rowGlobal = new WaarpMORow(this, rootOIDWaarpGlobal, WaarpGlobalValues,</span>
+<span class="fc" id="L90">                               MibLevel.globalInfo.ordinal());</span>
+<span class="fc" id="L91">    WaarpMOScalar memoryScalar =</span>
+<span class="fc" id="L92">        rowGlobal.getRow()[WaarpGlobalValuesIndex.memoryTotal.ordinal()];</span>
+<span class="fc" id="L93">    memoryScalar.setValue(new MemoryGauge32(MemoryType.TotalMemory));</span>
+<span class="fc" id="L94">    memoryScalar =</span>
+<span class="fc" id="L95">        rowGlobal.getRow()[WaarpGlobalValuesIndex.memoryFree.ordinal()];</span>
+<span class="fc" id="L96">    memoryScalar.setValue(new MemoryGauge32(MemoryType.FreeMemory));</span>
+<span class="fc" id="L97">    memoryScalar =</span>
+<span class="fc" id="L98">        rowGlobal.getRow()[WaarpGlobalValuesIndex.memoryUsed.ordinal()];</span>
+<span class="fc" id="L99">    memoryScalar.setValue(new MemoryGauge32(MemoryType.UsedMemory));</span>
+<span class="fc" id="L100">    rowGlobal.registerMOs(agent.getServer(), null);</span>
     // setup UpTime to SysUpTime and change status
-<span class="fc" id="L101">    scalarUptime =</span>
-<span class="fc" id="L102">        rowGlobal.getRow()[WaarpGlobalValuesIndex.applUptime.ordinal()];</span>
-<span class="fc" id="L103">    scalarUptime.setValue(new WaarpUptime(upTime));</span>
-<span class="fc" id="L104">    changeStatus(OperStatus.restarting);</span>
-<span class="fc" id="L105">    changeStatus(OperStatus.up);</span>
+<span class="fc" id="L102">    scalarUptime =</span>
+<span class="fc" id="L103">        rowGlobal.getRow()[WaarpGlobalValuesIndex.applUptime.ordinal()];</span>
+<span class="fc" id="L104">    scalarUptime.setValue(new WaarpUptime(upTime));</span>
+<span class="fc" id="L105">    changeStatus(OperStatus.restarting);</span>
+<span class="fc" id="L106">    changeStatus(OperStatus.up);</span>
     // register Detailed info
-<span class="fc" id="L107">    rowDetailed =</span>
+<span class="fc" id="L108">    rowDetailed =</span>
         new WaarpMORow(this, rootOIDWaarpDetailed, WaarpDetailedValues,
-<span class="fc" id="L109">                       MibLevel.detailedInfo.ordinal());</span>
-<span class="fc" id="L110">    rowDetailed.registerMOs(agent.getServer(), null);</span>
+<span class="fc" id="L110">                       MibLevel.detailedInfo.ordinal());</span>
+<span class="fc" id="L111">    rowDetailed.registerMOs(agent.getServer(), null);</span>
     // register Error info
-<span class="fc" id="L112">    rowError = new WaarpMORow(this, rootOIDWaarpError, WaarpErrorValues,</span>
-<span class="fc" id="L113">                              MibLevel.errorInfo.ordinal());</span>
-<span class="fc" id="L114">    rowError.registerMOs(agent.getServer(), null);</span>
-<span class="fc" id="L115">  }</span>
+<span class="fc" id="L113">    rowError = new WaarpMORow(this, rootOIDWaarpError, WaarpErrorValues,</span>
+<span class="fc" id="L114">                              MibLevel.errorInfo.ordinal());</span>
+<span class="fc" id="L115">    rowError.registerMOs(agent.getServer(), null);</span>
+<span class="fc" id="L116">  }</span>
 
   /**
    * Send a notification (trap or inform) for Shutdown event
@@ -120,12 +121,12 @@ public class R66PrivateMib extends WaarpPrivateMib {
    * @param message
    * @param message2
    */
-  public void notifyStartStop(String message, String message2) {
-<span class="pc bpc" id="L124" title="1 of 2 branches missed.">    if (!TrapLevel.StartStop.isLevelValid(agent.getTrapLevel())) {</span>
-<span class="nc" id="L125">      return;</span>
+  public void notifyStartStop(final String message, final String message2) {
+<span class="pc bpc" id="L125" title="1 of 2 branches missed.">    if (!TrapLevel.StartStop.isLevelValid(agent.getTrapLevel())) {</span>
+<span class="nc" id="L126">      return;</span>
     }
-<span class="fc" id="L127">    notify(NotificationElements.TrapShutdown, message, message2);</span>
-<span class="fc" id="L128">  }</span>
+<span class="fc" id="L128">    notify(NotificationElements.TrapShutdown, message, message2);</span>
+<span class="fc" id="L129">  }</span>
 
   /**
    * Send a notification (trap or inform) for Error event
@@ -133,12 +134,12 @@ public class R66PrivateMib extends WaarpPrivateMib {
    * @param message
    * @param message2
    */
-  public void notifyError(String message, String message2) {
-<span class="pc bpc" id="L137" title="1 of 2 branches missed.">    if (!TrapLevel.Alert.isLevelValid(agent.getTrapLevel())) {</span>
-<span class="nc" id="L138">      return;</span>
+  public void notifyError(final String message, final String message2) {
+<span class="pc bpc" id="L138" title="1 of 2 branches missed.">    if (!TrapLevel.Alert.isLevelValid(agent.getTrapLevel())) {</span>
+<span class="nc" id="L139">      return;</span>
     }
-<span class="fc" id="L140">    notify(NotificationElements.TrapError, message, message2);</span>
-<span class="fc" id="L141">  }</span>
+<span class="fc" id="L141">    notify(NotificationElements.TrapError, message, message2);</span>
+<span class="fc" id="L142">  }</span>
 
   /**
    * Send a notification (trap or inform) for Server Overloaded event
@@ -146,12 +147,12 @@ public class R66PrivateMib extends WaarpPrivateMib {
    * @param message
    * @param message2
    */
-  public void notifyOverloaded(String message, String message2) {
-<span class="pc bpc" id="L150" title="1 of 2 branches missed.">    if (!TrapLevel.Warning.isLevelValid(agent.getTrapLevel())) {</span>
-<span class="nc" id="L151">      return;</span>
+  public void notifyOverloaded(final String message, final String message2) {
+<span class="pc bpc" id="L151" title="1 of 2 branches missed.">    if (!TrapLevel.Warning.isLevelValid(agent.getTrapLevel())) {</span>
+<span class="nc" id="L152">      return;</span>
     }
-<span class="fc" id="L153">    notify(NotificationElements.TrapOverloaded, message, message2);</span>
-<span class="fc" id="L154">  }</span>
+<span class="fc" id="L154">    notify(NotificationElements.TrapOverloaded, message, message2);</span>
+<span class="fc" id="L155">  }</span>
 
   /**
    * Send a notification (trap or inform) for Warning event
@@ -159,12 +160,12 @@ public class R66PrivateMib extends WaarpPrivateMib {
    * @param message
    * @param message2
    */
-  public void notifyWarning(String message, String message2) {
-<span class="pc bpc" id="L163" title="1 of 2 branches missed.">    if (!TrapLevel.Warning.isLevelValid(agent.getTrapLevel())) {</span>
-<span class="nc" id="L164">      return;</span>
+  public void notifyWarning(final String message, final String message2) {
+<span class="pc bpc" id="L164" title="1 of 2 branches missed.">    if (!TrapLevel.Warning.isLevelValid(agent.getTrapLevel())) {</span>
+<span class="nc" id="L165">      return;</span>
     }
-<span class="fc" id="L166">    notify(NotificationElements.TrapWarning, message, message2);</span>
-<span class="fc" id="L167">  }</span>
+<span class="fc" id="L167">    notify(NotificationElements.TrapWarning, message, message2);</span>
+<span class="fc" id="L168">  }</span>
 
   /**
    * Send a notification (trap or inform)
@@ -172,28 +173,29 @@ public class R66PrivateMib extends WaarpPrivateMib {
    * @param message
    * @param runner
    */
-  public void notifyInternalTask(String message, DbTaskRunner runner) {
+  public void notifyInternalTask(final String message,
+                                 final DbTaskRunner runner) {
     try {
-<span class="fc" id="L177">      long delay =</span>
-<span class="fc" id="L178">          (runner.getStart().getTime() - agent.getUptimeSystemTime()) / 10;</span>
-<span class="pc bpc" id="L179" title="1 of 2 branches missed.">      if (delay &lt; 0) {</span>
-<span class="nc" id="L180">        delay = 0;</span>
+<span class="fc" id="L179">      long delay =</span>
+<span class="fc" id="L180">          (runner.getStart().getTime() - agent.getUptimeSystemTime()) / 10;</span>
+<span class="pc bpc" id="L181" title="1 of 2 branches missed.">      if (delay &lt; 0) {</span>
+<span class="nc" id="L182">        delay = 0;</span>
       }
-<span class="fc" id="L182">      agent.getNotificationOriginator().notify(new OctetString(&quot;public&quot;),</span>
+<span class="fc" id="L184">      agent.getNotificationOriginator().notify(new OctetString(&quot;public&quot;),</span>
                                                NotificationElements.InfoTask
-<span class="fc" id="L184">                                                   .getOID(rootOIDWaarpNotif),</span>
+<span class="fc" id="L186">                                                   .getOID(rootOIDWaarpNotif),</span>
                                                new VariableBinding[] {
                                                    new VariableBinding(
                                                        NotificationElements.InfoTask
-<span class="fc" id="L188">                                                           .getOID(</span>
+<span class="fc" id="L190">                                                           .getOID(</span>
                                                                rootOIDWaarpNotif,
                                                                1),
                                                        new OctetString(
                                                            NotificationElements.InfoTask
-<span class="fc" id="L193">                                                               .name())),</span>
+<span class="fc" id="L195">                                                               .name())),</span>
                                                    new VariableBinding(
                                                        NotificationElements.InfoTask
-<span class="fc" id="L196">                                                           .getOID(</span>
+<span class="fc" id="L198">                                                           .getOID(</span>
                                                                rootOIDWaarpNotif,
                                                                1),
                                                        new OctetString(
@@ -201,146 +203,146 @@ public class R66PrivateMib extends WaarpPrivateMib {
                                                    // Start of Task
                                                    new VariableBinding(
                                                        NotificationElements.InfoTask
-<span class="fc" id="L204">                                                           .getOID(</span>
+<span class="fc" id="L206">                                                           .getOID(</span>
                                                                rootOIDWaarpNotif,
                                                                NotificationTasks.globalStepInfo
-<span class="fc" id="L207">                                                                   .getOID()),</span>
+<span class="fc" id="L209">                                                                   .getOID()),</span>
                                                        new Gauge32(runner
-<span class="fc" id="L209">                                                                       .getGloballaststep())),</span>
+<span class="fc" id="L211">                                                                       .getGloballaststep())),</span>
                                                    new VariableBinding(
                                                        NotificationElements.InfoTask
-<span class="fc" id="L212">                                                           .getOID(</span>
+<span class="fc" id="L214">                                                           .getOID(</span>
                                                                rootOIDWaarpNotif,
                                                                NotificationTasks.stepInfo
-<span class="fc" id="L215">                                                                   .getOID()),</span>
+<span class="fc" id="L217">                                                                   .getOID()),</span>
                                                        new Gauge32(
-<span class="fc" id="L217">                                                           runner.getStep() +</span>
+<span class="fc" id="L219">                                                           runner.getStep() +</span>
                                                            1)),
                                                    new VariableBinding(
                                                        NotificationElements.InfoTask
-<span class="fc" id="L221">                                                           .getOID(</span>
+<span class="fc" id="L223">                                                           .getOID(</span>
                                                                rootOIDWaarpNotif,
                                                                NotificationTasks.rankFileInfo
-<span class="fc" id="L224">                                                                   .getOID()),</span>
+<span class="fc" id="L226">                                                                   .getOID()),</span>
                                                        new Gauge32(
-<span class="fc" id="L226">                                                           runner.getRank())),</span>
+<span class="fc" id="L228">                                                           runner.getRank())),</span>
                                                    new VariableBinding(
                                                        NotificationElements.InfoTask
-<span class="fc" id="L229">                                                           .getOID(</span>
+<span class="fc" id="L231">                                                           .getOID(</span>
                                                                rootOIDWaarpNotif,
                                                                NotificationTasks.stepStatusInfo
-<span class="fc" id="L232">                                                                   .getOID()),</span>
+<span class="fc" id="L234">                                                                   .getOID()),</span>
                                                        new OctetString(
-<span class="fc" id="L234">                                                           runner.getStatus()</span>
-<span class="fc" id="L235">                                                                 .getMesg())),</span>
+<span class="fc" id="L236">                                                           runner.getStatus()</span>
+<span class="fc" id="L237">                                                                 .getMesg())),</span>
                                                    new VariableBinding(
                                                        NotificationElements.InfoTask
-<span class="fc" id="L238">                                                           .getOID(</span>
+<span class="fc" id="L240">                                                           .getOID(</span>
                                                                rootOIDWaarpNotif,
                                                                NotificationTasks.filenameInfo
-<span class="fc" id="L241">                                                                   .getOID()),</span>
+<span class="fc" id="L243">                                                                   .getOID()),</span>
                                                        new OctetString(runner
-<span class="fc" id="L243">                                                                           .getFilename())),</span>
+<span class="fc" id="L245">                                                                           .getFilename())),</span>
                                                    new VariableBinding(
                                                        NotificationElements.InfoTask
-<span class="fc" id="L246">                                                           .getOID(</span>
+<span class="fc" id="L248">                                                           .getOID(</span>
                                                                rootOIDWaarpNotif,
                                                                NotificationTasks.originalNameInfo
-<span class="fc" id="L249">                                                                   .getOID()),</span>
+<span class="fc" id="L251">                                                                   .getOID()),</span>
                                                        new OctetString(runner
-<span class="fc" id="L251">                                                                           .getOriginalFilename())),</span>
+<span class="fc" id="L253">                                                                           .getOriginalFilename())),</span>
                                                    new VariableBinding(
                                                        NotificationElements.InfoTask
-<span class="fc" id="L254">                                                           .getOID(</span>
+<span class="fc" id="L256">                                                           .getOID(</span>
                                                                rootOIDWaarpNotif,
                                                                NotificationTasks.idRuleInfo
-<span class="fc" id="L257">                                                                   .getOID()),</span>
+<span class="fc" id="L259">                                                                   .getOID()),</span>
                                                        new OctetString(
-<span class="fc" id="L259">                                                           runner.getRuleId())),</span>
+<span class="fc" id="L261">                                                           runner.getRuleId())),</span>
                                                    new VariableBinding(
                                                        NotificationElements.InfoTask
-<span class="fc" id="L262">                                                           .getOID(</span>
+<span class="fc" id="L264">                                                           .getOID(</span>
                                                                rootOIDWaarpNotif,
                                                                NotificationTasks.modeTransInfo
-<span class="fc" id="L265">                                                                   .getOID()),</span>
+<span class="fc" id="L267">                                                                   .getOID()),</span>
                                                        new OctetString(
                                                            TRANSFERMODE
-<span class="fc" id="L268">                                                               .values()[runner</span>
-<span class="fc" id="L269">                                                               .getMode()]</span>
-<span class="fc" id="L270">                                                               .name())),</span>
+<span class="fc" id="L270">                                                               .values()[runner</span>
+<span class="fc" id="L271">                                                               .getMode()]</span>
+<span class="fc" id="L272">                                                               .name())),</span>
                                                    new VariableBinding(
                                                        NotificationElements.InfoTask
-<span class="fc" id="L273">                                                           .getOID(</span>
+<span class="fc" id="L275">                                                           .getOID(</span>
                                                                rootOIDWaarpNotif,
                                                                NotificationTasks.retrieveModeInfo
-<span class="fc" id="L276">                                                                   .getOID()),</span>
+<span class="fc" id="L278">                                                                   .getOID()),</span>
                                                        new OctetString(
-<span class="fc bfc" id="L278" title="All 2 branches covered.">                                                           runner.isSender()?</span>
+<span class="fc bfc" id="L280" title="All 2 branches covered.">                                                           runner.isSender()?</span>
                                                                &quot;Sender&quot; :
                                                                &quot;Receiver&quot;)),
                                                    new VariableBinding(
                                                        NotificationElements.InfoTask
-<span class="fc" id="L283">                                                           .getOID(</span>
+<span class="fc" id="L285">                                                           .getOID(</span>
                                                                rootOIDWaarpNotif,
                                                                NotificationTasks.startTransInfo
-<span class="fc" id="L286">                                                                   .getOID()),</span>
+<span class="fc" id="L288">                                                                   .getOID()),</span>
                                                        new TimeTicks(delay)),
                                                    new VariableBinding(
                                                        NotificationElements.InfoTask
-<span class="fc" id="L290">                                                           .getOID(</span>
+<span class="fc" id="L292">                                                           .getOID(</span>
                                                                rootOIDWaarpNotif,
                                                                NotificationTasks.infoStatusInfo
-<span class="fc" id="L293">                                                                   .getOID()),</span>
+<span class="fc" id="L295">                                                                   .getOID()),</span>
                                                        new OctetString(
-<span class="fc" id="L295">                                                           runner.getErrorInfo()</span>
-<span class="fc" id="L296">                                                                 .getMesg())),</span>
+<span class="fc" id="L297">                                                           runner.getErrorInfo()</span>
+<span class="fc" id="L298">                                                                 .getMesg())),</span>
                                                    new VariableBinding(
                                                        NotificationElements.InfoTask
-<span class="fc" id="L299">                                                           .getOID(</span>
+<span class="fc" id="L301">                                                           .getOID(</span>
                                                                rootOIDWaarpNotif,
                                                                NotificationTasks.requesterInfo
-<span class="fc" id="L302">                                                                   .getOID()),</span>
+<span class="fc" id="L304">                                                                   .getOID()),</span>
                                                        new OctetString(runner
-<span class="fc" id="L304">                                                                           .getRequester())),</span>
+<span class="fc" id="L306">                                                                           .getRequester())),</span>
                                                    new VariableBinding(
                                                        NotificationElements.InfoTask
-<span class="fc" id="L307">                                                           .getOID(</span>
+<span class="fc" id="L309">                                                           .getOID(</span>
                                                                rootOIDWaarpNotif,
                                                                NotificationTasks.requestedInfo
-<span class="fc" id="L310">                                                                   .getOID()),</span>
+<span class="fc" id="L312">                                                                   .getOID()),</span>
                                                        new OctetString(runner
-<span class="fc" id="L312">                                                                           .getRequested())),</span>
+<span class="fc" id="L314">                                                                           .getRequested())),</span>
                                                    new VariableBinding(
                                                        NotificationElements.InfoTask
-<span class="fc" id="L315">                                                           .getOID(</span>
+<span class="fc" id="L317">                                                           .getOID(</span>
                                                                rootOIDWaarpNotif,
                                                                NotificationTasks.specialIdInfo
-<span class="fc" id="L318">                                                                   .getOID()),</span>
+<span class="fc" id="L320">                                                                   .getOID()),</span>
                                                        new OctetString(String
-<span class="fc" id="L320">                                                                           .valueOf(</span>
+<span class="fc" id="L322">                                                                           .valueOf(</span>
                                                                                runner
-<span class="fc" id="L322">                                                                                   .getSpecialId()))),</span>
+<span class="fc" id="L324">                                                                                   .getSpecialId()))),</span>
                                                    // End of Task
                                                    new VariableBinding(
                                                        SnmpConstants.sysDescr,
-<span class="fc" id="L326">                                                       snmpv2.getDescr()),</span>
+<span class="fc" id="L328">                                                       snmpv2.getDescr()),</span>
                                                    new VariableBinding(
                                                        SnmpConstants.sysObjectID,
-<span class="fc" id="L329">                                                       snmpv2.getObjectID()),</span>
+<span class="fc" id="L331">                                                       snmpv2.getObjectID()),</span>
                                                    new VariableBinding(
                                                        SnmpConstants.sysContact,
-<span class="fc" id="L332">                                                       snmpv2.getContact()),</span>
+<span class="fc" id="L334">                                                       snmpv2.getContact()),</span>
                                                    new VariableBinding(
                                                        SnmpConstants.sysName,
-<span class="fc" id="L335">                                                       snmpv2.getName()),</span>
+<span class="fc" id="L337">                                                       snmpv2.getName()),</span>
                                                    new VariableBinding(
                                                        SnmpConstants.sysLocation,
-<span class="fc" id="L338">                                                       snmpv2.getLocation())</span>
+<span class="fc" id="L340">                                                       snmpv2.getLocation())</span>
                                                });
-<span class="nc" id="L340">    } catch (final NullPointerException ignored) {</span>
+<span class="nc" id="L342">    } catch (final NullPointerException ignored) {</span>
       // nothing
-<span class="fc" id="L342">    }</span>
-<span class="fc" id="L343">  }</span>
+<span class="fc" id="L344">    }</span>
+<span class="fc" id="L345">  }</span>
 
   /**
    * Send a notification (trap or inform) for Warning/Error event on a single
@@ -349,17 +351,17 @@ public class R66PrivateMib extends WaarpPrivateMib {
    * @param message
    * @param runner
    */
-  public void notifyInfoTask(String message, DbTaskRunner runner) {
-<span class="pc bpc" id="L353" title="1 of 2 branches missed.">    if (!TrapLevel.All.isLevelValid(agent.getTrapLevel())) {</span>
-<span class="nc" id="L354">      return;</span>
+  public void notifyInfoTask(final String message, final DbTaskRunner runner) {
+<span class="pc bpc" id="L355" title="1 of 2 branches missed.">    if (!TrapLevel.All.isLevelValid(agent.getTrapLevel())) {</span>
+<span class="nc" id="L356">      return;</span>
     }
-<span class="pc bpc" id="L356" title="1 of 2 branches missed.">    if (logger.isDebugEnabled()) {</span>
-<span class="nc" id="L357">      logger.debug(</span>
+<span class="pc bpc" id="L358" title="1 of 2 branches missed.">    if (logger.isDebugEnabled()) {</span>
+<span class="nc" id="L359">      logger.debug(</span>
           &quot;Notify: &quot; + NotificationElements.InfoTask + ':' + message + ':' +
-<span class="nc" id="L359">          runner.toShortString());</span>
+<span class="nc" id="L361">          runner.toShortString());</span>
     }
-<span class="fc" id="L361">    notifyInternalTask(message, runner);</span>
-<span class="fc" id="L362">  }</span>
+<span class="fc" id="L363">    notifyInternalTask(message, runner);</span>
+<span class="fc" id="L364">  }</span>
 
   /**
    * Send a notification (trap or inform) for all events on a single Transfer
@@ -368,17 +370,17 @@ public class R66PrivateMib extends WaarpPrivateMib {
    * @param message
    * @param runner
    */
-  public void notifyTask(String message, DbTaskRunner runner) {
-<span class="fc bfc" id="L372" title="All 2 branches covered.">    if (!TrapLevel.AllEvents.isLevelValid(agent.getTrapLevel())) {</span>
-<span class="fc" id="L373">      return;</span>
+  public void notifyTask(final String message, final DbTaskRunner runner) {
+<span class="fc bfc" id="L374" title="All 2 branches covered.">    if (!TrapLevel.AllEvents.isLevelValid(agent.getTrapLevel())) {</span>
+<span class="fc" id="L375">      return;</span>
     }
-<span class="pc bpc" id="L375" title="1 of 2 branches missed.">    if (logger.isDebugEnabled()) {</span>
-<span class="nc" id="L376">      logger.debug(</span>
+<span class="pc bpc" id="L377" title="1 of 2 branches missed.">    if (logger.isDebugEnabled()) {</span>
+<span class="nc" id="L378">      logger.debug(</span>
           &quot;Notify: &quot; + NotificationElements.InfoTask + ':' + message + ':' +
-<span class="nc" id="L378">          runner.toShortString());</span>
+<span class="nc" id="L380">          runner.toShortString());</span>
     }
-<span class="fc" id="L380">    notifyInternalTask(message, runner);</span>
-<span class="fc" id="L381">  }</span>
+<span class="fc" id="L382">    notifyInternalTask(message, runner);</span>
+<span class="fc" id="L383">  }</span>
 
   /**
    * Trap/Notification
@@ -387,46 +389,46 @@ public class R66PrivateMib extends WaarpPrivateMib {
    * @param message
    * @param message2
    */
-  private void notify(NotificationElements element, String message,
-                      String message2) {
+  private void notify(final NotificationElements element, final String message,
+                      final String message2) {
     try {
-<span class="pc bpc" id="L393" title="1 of 2 branches missed.">      if (logger.isDebugEnabled()) {</span>
-<span class="nc" id="L394">        logger.debug(&quot;Notify: &quot; + element + ':' + message + ':' + message2);</span>
+<span class="pc bpc" id="L395" title="1 of 2 branches missed.">      if (logger.isDebugEnabled()) {</span>
+<span class="nc" id="L396">        logger.debug(&quot;Notify: &quot; + element + ':' + message + ':' + message2);</span>
       }
-<span class="fc" id="L396">      agent.getNotificationOriginator()</span>
-<span class="fc" id="L397">           .notify(new OctetString(&quot;public&quot;), element.getOID(rootOIDWaarpNotif),</span>
+<span class="fc" id="L398">      agent.getNotificationOriginator()</span>
+<span class="fc" id="L399">           .notify(new OctetString(&quot;public&quot;), element.getOID(rootOIDWaarpNotif),</span>
                    new VariableBinding[] {
-<span class="fc" id="L399">                       new VariableBinding(element.getOID(rootOIDWaarpNotif, 1),</span>
-<span class="fc" id="L400">                                           new OctetString(element.name())),</span>
 <span class="fc" id="L401">                       new VariableBinding(element.getOID(rootOIDWaarpNotif, 1),</span>
-                                           new OctetString(message)),
+<span class="fc" id="L402">                                           new OctetString(element.name())),</span>
 <span class="fc" id="L403">                       new VariableBinding(element.getOID(rootOIDWaarpNotif, 1),</span>
+                                           new OctetString(message)),
+<span class="fc" id="L405">                       new VariableBinding(element.getOID(rootOIDWaarpNotif, 1),</span>
                                            new OctetString(message2)),
                        new VariableBinding(SnmpConstants.sysDescr,
-<span class="fc" id="L406">                                           snmpv2.getDescr()),</span>
+<span class="fc" id="L408">                                           snmpv2.getDescr()),</span>
                        new VariableBinding(SnmpConstants.sysObjectID,
-<span class="fc" id="L408">                                           snmpv2.getObjectID()),</span>
+<span class="fc" id="L410">                                           snmpv2.getObjectID()),</span>
                        new VariableBinding(SnmpConstants.sysContact,
-<span class="fc" id="L410">                                           snmpv2.getContact()),</span>
+<span class="fc" id="L412">                                           snmpv2.getContact()),</span>
                        new VariableBinding(SnmpConstants.sysName,
-<span class="fc" id="L412">                                           snmpv2.getName()),</span>
+<span class="fc" id="L414">                                           snmpv2.getName()),</span>
                        new VariableBinding(SnmpConstants.sysLocation,
-<span class="fc" id="L414">                                           snmpv2.getLocation())</span>
+<span class="fc" id="L416">                                           snmpv2.getLocation())</span>
                    });
-<span class="nc" id="L416">    } catch (final NullPointerException ignored) {</span>
+<span class="nc" id="L418">    } catch (final NullPointerException ignored) {</span>
       // nothing
-<span class="fc" id="L418">    }</span>
-<span class="fc" id="L419">  }</span>
+<span class="fc" id="L420">    }</span>
+<span class="fc" id="L421">  }</span>
 
   @Override
-  public void updateServices(WaarpMOScalar scalar) {
+  public void updateServices(final WaarpMOScalar scalar) {
     // nothing
-<span class="fc" id="L424">  }</span>
+<span class="fc" id="L426">  }</span>
 
   @Override
-  public void updateServices(MOScope range) {
+  public void updateServices(final MOScope range) {
     // nothing
-<span class="nc" id="L429">  }</span>
+<span class="nc" id="L431">  }</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

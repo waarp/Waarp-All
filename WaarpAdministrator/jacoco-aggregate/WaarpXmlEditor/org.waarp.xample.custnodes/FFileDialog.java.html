@@ -84,7 +84,7 @@ public class FFileDialog extends JDialog
 <span class="nc" id="L84">  }</span>
 
   @Override
-  protected void processWindowEvent(WindowEvent e) {
+  protected void processWindowEvent(final WindowEvent e) {
 <span class="nc bnc" id="L88" title="All 2 branches missed.">    if (e.getID() == WindowEvent.WINDOW_CLOSING) {</span>
 <span class="nc" id="L89">      cancel();</span>
     }
@@ -96,7 +96,7 @@ public class FFileDialog extends JDialog
 <span class="nc" id="L96">  }</span>
 
   @Override
-  public void actionPerformed(ActionEvent e) {
+  public void actionPerformed(final ActionEvent e) {
 <span class="nc bnc" id="L100" title="All 2 branches missed.">    if (!(e.getSource() instanceof JButton)) {</span>
 <span class="nc" id="L101">      return;</span>
     }
@@ -113,150 +113,151 @@ public class FFileDialog extends JDialog
 <span class="nc" id="L113">  }</span>
 
   @Override
-  public void initCellControl(boolean isEditor) {
+  public void initCellControl(final boolean isEditor) {
 <span class="nc" id="L117">    fileChooser.addBtnListener(fileChooser);</span>
 <span class="nc" id="L118">  }</span>
 
   @Override
-  public void updateCellControl(boolean isEditor, boolean enabled,
-                                boolean editable, Object data, Params params) {
-<span class="nc" id="L123">    pack();</span>
-<span class="nc" id="L124">    this.data = data;</span>
-<span class="nc bnc" id="L125" title="All 2 branches missed.">    if (data != null) {</span>
-<span class="nc" id="L126">      final String path = data.toString().trim();</span>
-<span class="nc bnc" id="L127" title="All 2 branches missed.">      if (path.length() &gt; 0) {</span>
+  public void updateCellControl(final boolean isEditor, final boolean enabled,
+                                final boolean editable, final Object data,
+                                final Params params) {
+<span class="nc" id="L124">    pack();</span>
+<span class="nc" id="L125">    this.data = data;</span>
+<span class="nc bnc" id="L126" title="All 2 branches missed.">    if (data != null) {</span>
+<span class="nc" id="L127">      final String path = data.toString().trim();</span>
+<span class="nc bnc" id="L128" title="All 2 branches missed.">      if (path.length() &gt; 0) {</span>
         try {
-<span class="nc" id="L129">          final File file = new File(path);</span>
-<span class="nc" id="L130">          fileChooser.setSelectedFile(file);</span>
-<span class="nc" id="L131">        } catch (final Exception ex) {</span>
-<span class="nc" id="L132">          fileChooser.setSelectedFile(null);</span>
-<span class="nc" id="L133">        }</span>
+<span class="nc" id="L130">          final File file = new File(path);</span>
+<span class="nc" id="L131">          fileChooser.setSelectedFile(file);</span>
+<span class="nc" id="L132">        } catch (final Exception ex) {</span>
+<span class="nc" id="L133">          fileChooser.setSelectedFile(null);</span>
+<span class="nc" id="L134">        }</span>
       } else {
-<span class="nc" id="L135">        fileChooser.setSelectedFile(null);</span>
+<span class="nc" id="L136">        fileChooser.setSelectedFile(null);</span>
       }
-<span class="nc" id="L137">    } else {</span>
-<span class="nc" id="L138">      fileChooser.setSelectedFile(null);</span>
+<span class="nc" id="L138">    } else {</span>
+<span class="nc" id="L139">      fileChooser.setSelectedFile(null);</span>
     }
-<span class="nc" id="L140">    final List list = params.getList();</span>
-<span class="nc" id="L141">    boolean sameMasks = true;</span>
-<span class="nc bnc" id="L142" title="All 4 branches missed.">    if (masks == null || list.size() != masks.size()) {</span>
-<span class="nc" id="L143">      sameMasks = false;</span>
+<span class="nc" id="L141">    final List list = params.getList();</span>
+<span class="nc" id="L142">    boolean sameMasks = true;</span>
+<span class="nc bnc" id="L143" title="All 4 branches missed.">    if (masks == null || list.size() != masks.size()) {</span>
+<span class="nc" id="L144">      sameMasks = false;</span>
     } else {
-<span class="nc bnc" id="L145" title="All 4 branches missed.">      for (int i = 0; i &lt; list.size() &amp;&amp; sameMasks; i++) {</span>
-<span class="nc bnc" id="L146" title="All 2 branches missed.">        if (!list.get(i).equals(masks.get(i))) {</span>
-<span class="nc" id="L147">          sameMasks = false;</span>
-<span class="nc" id="L148">          break;</span>
+<span class="nc bnc" id="L146" title="All 4 branches missed.">      for (int i = 0; i &lt; list.size() &amp;&amp; sameMasks; i++) {</span>
+<span class="nc bnc" id="L147" title="All 2 branches missed.">        if (!list.get(i).equals(masks.get(i))) {</span>
+<span class="nc" id="L148">          sameMasks = false;</span>
+<span class="nc" id="L149">          break;</span>
         }
       }
     }
-<span class="nc bnc" id="L152" title="All 2 branches missed.">    if (sameMasks) {</span>
-<span class="nc" id="L153">      return;</span>
+<span class="nc bnc" id="L153" title="All 2 branches missed.">    if (sameMasks) {</span>
+<span class="nc" id="L154">      return;</span>
     }
-<span class="nc" id="L155">    masks = list;</span>
-<span class="nc" id="L156">    fileChooser.resetChoosableFileFilters();</span>
-<span class="nc bnc" id="L157" title="All 2 branches missed.">    for (int i = 0; i &lt; masks.size(); i++) {</span>
-<span class="nc" id="L158">      fileChooser</span>
-<span class="nc" id="L159">          .addChoosableFileFilter(new FileExtFilter((String) masks.get(i)));</span>
+<span class="nc" id="L156">    masks = list;</span>
+<span class="nc" id="L157">    fileChooser.resetChoosableFileFilters();</span>
+<span class="nc bnc" id="L158" title="All 2 branches missed.">    for (int i = 0; i &lt; masks.size(); i++) {</span>
+<span class="nc" id="L159">      fileChooser</span>
+<span class="nc" id="L160">          .addChoosableFileFilter(new FileExtFilter((String) masks.get(i)));</span>
     }
-<span class="nc" id="L161">  }</span>
+<span class="nc" id="L162">  }</span>
 
   @Override
   public Object getData() {
-<span class="nc" id="L165">    return data;</span>
+<span class="nc" id="L166">    return data;</span>
   }
 
   class FileExtFilter extends FileFilter {
-<span class="nc" id="L169">    final HashSet&lt;String&gt; extensions = new HashSet&lt;String&gt;();</span>
-<span class="nc" id="L170">    String description = &quot;&quot;;</span>
+<span class="nc" id="L170">    final HashSet&lt;String&gt; extensions = new HashSet&lt;String&gt;();</span>
+<span class="nc" id="L171">    String description = &quot;&quot;;</span>
 
-<span class="nc" id="L172">    FileExtFilter(String mask) {</span>
-<span class="nc" id="L173">      final StringTokenizer st = new StringTokenizer(mask, &quot;|&quot;);</span>
-<span class="nc bnc" id="L174" title="All 2 branches missed.">      while (st.hasMoreElements()) {</span>
-<span class="nc" id="L175">        String token = st.nextToken().trim();</span>
-<span class="nc bnc" id="L176" title="All 2 branches missed.">        if (st.hasMoreElements()) {</span>
-<span class="nc bnc" id="L177" title="All 2 branches missed.">          if (token.length() == 0) {</span>
+<span class="nc" id="L173">    FileExtFilter(final String mask) {</span>
+<span class="nc" id="L174">      final StringTokenizer st = new StringTokenizer(mask, &quot;|&quot;);</span>
+<span class="nc bnc" id="L175" title="All 2 branches missed.">      while (st.hasMoreElements()) {</span>
+<span class="nc" id="L176">        String token = st.nextToken().trim();</span>
+<span class="nc bnc" id="L177" title="All 2 branches missed.">        if (st.hasMoreElements()) {</span>
+<span class="nc bnc" id="L178" title="All 2 branches missed.">          if (token.length() == 0) {</span>
             // no extension
           } else {
-<span class="nc bnc" id="L180" title="All 2 branches missed.">            if (token.startsWith(&quot;null&quot;)) {</span>
-<span class="nc bnc" id="L181" title="All 2 branches missed.">              if (token.length() &gt; 4) {</span>
-<span class="nc" id="L182">                token = token.substring(5).trim();</span>
+<span class="nc bnc" id="L181" title="All 2 branches missed.">            if (token.startsWith(&quot;null&quot;)) {</span>
+<span class="nc bnc" id="L182" title="All 2 branches missed.">              if (token.length() &gt; 4) {</span>
+<span class="nc" id="L183">                token = token.substring(5).trim();</span>
               } else {
-<span class="nc" id="L184">                token = &quot;&quot;;</span>
+<span class="nc" id="L185">                token = &quot;&quot;;</span>
               }
             }
-<span class="nc bnc" id="L187" title="All 2 branches missed.">            if (token.length() &gt; 0) {</span>
-<span class="nc" id="L188">              extensions.add(token.toLowerCase());</span>
+<span class="nc bnc" id="L188" title="All 2 branches missed.">            if (token.length() &gt; 0) {</span>
+<span class="nc" id="L189">              extensions.add(token.toLowerCase());</span>
             }
           }
         } else {
-<span class="nc" id="L192">          final String type = token.substring(0, 1);</span>
-<span class="nc" id="L193">          final int val = Integer.parseInt(type);</span>
-<span class="nc bnc" id="L194" title="All 2 branches missed.">          if (val == 0) {</span>
-<span class="nc" id="L195">            mode = JFileChooser.FILES_ONLY;</span>
-<span class="nc bnc" id="L196" title="All 2 branches missed.">          } else if (val == 1) {</span>
-<span class="nc" id="L197">            mode = JFileChooser.DIRECTORIES_ONLY;</span>
+<span class="nc" id="L193">          final String type = token.substring(0, 1);</span>
+<span class="nc" id="L194">          final int val = Integer.parseInt(type);</span>
+<span class="nc bnc" id="L195" title="All 2 branches missed.">          if (val == 0) {</span>
+<span class="nc" id="L196">            mode = JFileChooser.FILES_ONLY;</span>
+<span class="nc bnc" id="L197" title="All 2 branches missed.">          } else if (val == 1) {</span>
+<span class="nc" id="L198">            mode = JFileChooser.DIRECTORIES_ONLY;</span>
           } else {
-<span class="nc" id="L199">            mode = JFileChooser.FILES_AND_DIRECTORIES;</span>
+<span class="nc" id="L200">            mode = JFileChooser.FILES_AND_DIRECTORIES;</span>
           }
-<span class="nc" id="L201">          description = token.substring(1);</span>
+<span class="nc" id="L202">          description = token.substring(1);</span>
         }
-<span class="nc" id="L203">      }</span>
-<span class="nc" id="L204">      fileChooser.setFileSelectionMode(mode);</span>
-<span class="nc" id="L205">    }</span>
+<span class="nc" id="L204">      }</span>
+<span class="nc" id="L205">      fileChooser.setFileSelectionMode(mode);</span>
+<span class="nc" id="L206">    }</span>
 
     @Override
-    public boolean accept(File f) {
-<span class="nc bnc" id="L209" title="All 2 branches missed.">      if (f.isDirectory()) {</span>
-<span class="nc" id="L210">        return true;</span>
+    public boolean accept(final File f) {
+<span class="nc bnc" id="L210" title="All 2 branches missed.">      if (f.isDirectory()) {</span>
+<span class="nc" id="L211">        return true;</span>
       }
-<span class="nc bnc" id="L212" title="All 4 branches missed.">      if (f.isFile() &amp;&amp; mode == JFileChooser.DIRECTORIES_ONLY) {</span>
-<span class="nc" id="L213">        return false;</span>
+<span class="nc bnc" id="L213" title="All 4 branches missed.">      if (f.isFile() &amp;&amp; mode == JFileChooser.DIRECTORIES_ONLY) {</span>
+<span class="nc" id="L214">        return false;</span>
       }
-<span class="nc bnc" id="L215" title="All 2 branches missed.">      if (extensions.isEmpty()) {</span>
-<span class="nc" id="L216">        return true;</span>
+<span class="nc bnc" id="L216" title="All 2 branches missed.">      if (extensions.isEmpty()) {</span>
+<span class="nc" id="L217">        return true;</span>
       }
-      String ext;
-<span class="nc" id="L219">      final String name = f.getName();</span>
-<span class="nc" id="L220">      final int i = name.lastIndexOf('.');</span>
-<span class="nc bnc" id="L221" title="All 4 branches missed.">      if (i &gt; 0 &amp;&amp; i &lt; name.length() - 1) {</span>
-<span class="nc" id="L222">        ext = name.substring(i + 1).toLowerCase();</span>
-<span class="nc" id="L223">        return extensions.contains(ext);</span>
+      final String ext;
+<span class="nc" id="L220">      final String name = f.getName();</span>
+<span class="nc" id="L221">      final int i = name.lastIndexOf('.');</span>
+<span class="nc bnc" id="L222" title="All 4 branches missed.">      if (i &gt; 0 &amp;&amp; i &lt; name.length() - 1) {</span>
+<span class="nc" id="L223">        ext = name.substring(i + 1).toLowerCase();</span>
+<span class="nc" id="L224">        return extensions.contains(ext);</span>
       } else {
-<span class="nc" id="L225">        return false;</span>
+<span class="nc" id="L226">        return false;</span>
       }
     }
 
     @Override
     public String getDescription() {
-<span class="nc" id="L231">      return description;</span>
+<span class="nc" id="L232">      return description;</span>
     }
   }
 
-<span class="nc" id="L235">  class FFileChooser extends JFileChooser {</span>
+<span class="nc" id="L236">  class FFileChooser extends JFileChooser {</span>
     /**
      *
      */
     private static final long serialVersionUID = -4161876854413783100L;
 
-    public void addBtnListener(Component c) {
-<span class="nc bnc" id="L242" title="All 2 branches missed.">      if (c instanceof JButton) {</span>
-<span class="nc" id="L243">        ((JButton) c).addActionListener(FFileDialog.this);</span>
+    public void addBtnListener(final Component c) {
+<span class="nc bnc" id="L243" title="All 2 branches missed.">      if (c instanceof JButton) {</span>
+<span class="nc" id="L244">        ((JButton) c).addActionListener(FFileDialog.this);</span>
       }
-<span class="nc bnc" id="L245" title="All 2 branches missed.">      if (c instanceof Container) {</span>
-<span class="nc" id="L246">        final Component[] children = ((Container) c).getComponents();</span>
-<span class="nc bnc" id="L247" title="All 2 branches missed.">        for (final Component element : children) {</span>
-<span class="nc" id="L248">          addBtnListener(element);</span>
+<span class="nc bnc" id="L246" title="All 2 branches missed.">      if (c instanceof Container) {</span>
+<span class="nc" id="L247">        final Component[] children = ((Container) c).getComponents();</span>
+<span class="nc bnc" id="L248" title="All 2 branches missed.">        for (final Component element : children) {</span>
+<span class="nc" id="L249">          addBtnListener(element);</span>
         }
       }
-<span class="nc" id="L251">    }</span>
+<span class="nc" id="L252">    }</span>
 
     @Override
     public void updateUI() {
-<span class="nc bnc" id="L255" title="All 2 branches missed.">      setAcceptAllFileFilterUsed(getAcceptAllFileFilter() == null);</span>
-<span class="nc" id="L256">      super.updateUI();</span>
-<span class="nc" id="L257">      setAcceptAllFileFilterUsed(true);</span>
-<span class="nc" id="L258">      addBtnListener(this);</span>
-<span class="nc" id="L259">    }</span>
+<span class="nc bnc" id="L256" title="All 2 branches missed.">      setAcceptAllFileFilterUsed(getAcceptAllFileFilter() == null);</span>
+<span class="nc" id="L257">      super.updateUI();</span>
+<span class="nc" id="L258">      setAcceptAllFileFilterUsed(true);</span>
+<span class="nc" id="L259">      addBtnListener(this);</span>
+<span class="nc" id="L260">    }</span>
   }
 
 }

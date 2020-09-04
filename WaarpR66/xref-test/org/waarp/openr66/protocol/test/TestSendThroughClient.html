@@ -127,7 +127,7 @@
 <a class="jxr_linenumber" name="L119" href="#L119">119</a>                       (result.getFile() != <strong class="jxr_keyword">null</strong>? result.getFile().toString() :
 <a class="jxr_linenumber" name="L120" href="#L120">120</a>                           <span class="jxr_string">"no file"</span>) + <span class="jxr_string">" delay: "</span> + delay);
 <a class="jxr_linenumber" name="L121" href="#L121">121</a>         }
-<a class="jxr_linenumber" name="L122" href="#L122">122</a>         <strong class="jxr_keyword">if</strong> (nolog || result.getRunner().shallIgnoreSave()) {
+<a class="jxr_linenumber" name="L122" href="#L122">122</a>         <strong class="jxr_keyword">if</strong> (nolog) {
 <a class="jxr_linenumber" name="L123" href="#L123">123</a>           <em class="jxr_comment">// In case of success, delete the runner</em>
 <a class="jxr_linenumber" name="L124" href="#L124">124</a>           <strong class="jxr_keyword">try</strong> {
 <a class="jxr_linenumber" name="L125" href="#L125">125</a>             result.getRunner().delete();
@@ -164,8 +164,8 @@
 <a class="jxr_linenumber" name="L156" href="#L156">156</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">boolean</strong> sendFile() {
 <a class="jxr_linenumber" name="L157" href="#L157">157</a>     <strong class="jxr_keyword">final</strong> R66File r66file = localChannelReference.getSession().getFile();
 <a class="jxr_linenumber" name="L158" href="#L158">158</a>     <strong class="jxr_keyword">boolean</strong> retrieveDone = false;
-<a class="jxr_linenumber" name="L159" href="#L159">159</a>     <strong class="jxr_keyword">try</strong> {
-<a class="jxr_linenumber" name="L160" href="#L160">160</a>       DataBlock block = <strong class="jxr_keyword">null</strong>;
+<a class="jxr_linenumber" name="L159" href="#L159">159</a>     DataBlock block = <strong class="jxr_keyword">null</strong>;
+<a class="jxr_linenumber" name="L160" href="#L160">160</a>     <strong class="jxr_keyword">try</strong> {
 <a class="jxr_linenumber" name="L161" href="#L161">161</a>       <strong class="jxr_keyword">try</strong> {
 <a class="jxr_linenumber" name="L162" href="#L162">162</a>         block = r66file.readDataBlock();
 <a class="jxr_linenumber" name="L163" href="#L163">163</a>       } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> FileEndOfTransferException e) {
@@ -180,54 +180,56 @@
 <a class="jxr_linenumber" name="L172" href="#L172">172</a>       }
 <a class="jxr_linenumber" name="L173" href="#L173">173</a>       ChannelFuture future1 = <strong class="jxr_keyword">null</strong>, future2 = <strong class="jxr_keyword">null</strong>;
 <a class="jxr_linenumber" name="L174" href="#L174">174</a>       <strong class="jxr_keyword">if</strong> (block != <strong class="jxr_keyword">null</strong>) {
-<a class="jxr_linenumber" name="L175" href="#L175">175</a>         block.getBlock().retain();
-<a class="jxr_linenumber" name="L176" href="#L176">176</a>         future1 = writeWhenPossible(block);
-<a class="jxr_linenumber" name="L177" href="#L177">177</a>       }
-<a class="jxr_linenumber" name="L178" href="#L178">178</a>       <em class="jxr_comment">// While not last block</em>
-<a class="jxr_linenumber" name="L179" href="#L179">179</a>       <strong class="jxr_keyword">while</strong> (block != <strong class="jxr_keyword">null</strong> &amp;&amp; !block.isEOF()) {
-<a class="jxr_linenumber" name="L180" href="#L180">180</a>         WaarpNettyUtil.awaitOrInterrupted(future1);
-<a class="jxr_linenumber" name="L181" href="#L181">181</a>         <strong class="jxr_keyword">if</strong> (!future1.isSuccess()) {
-<a class="jxr_linenumber" name="L182" href="#L182">182</a>           <strong class="jxr_keyword">return</strong> false;
-<a class="jxr_linenumber" name="L183" href="#L183">183</a>         }
-<a class="jxr_linenumber" name="L184" href="#L184">184</a>         <strong class="jxr_keyword">try</strong> {
-<a class="jxr_linenumber" name="L185" href="#L185">185</a>           block = r66file.readDataBlock();
-<a class="jxr_linenumber" name="L186" href="#L186">186</a>         } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> FileEndOfTransferException e) {
-<a class="jxr_linenumber" name="L187" href="#L187">187</a>           <em class="jxr_comment">// Wait for last write</em>
-<a class="jxr_linenumber" name="L188" href="#L188">188</a>           retrieveDone = <strong class="jxr_keyword">true</strong>;
-<a class="jxr_linenumber" name="L189" href="#L189">189</a>           WaarpNettyUtil.awaitOrInterrupted(future1);
-<a class="jxr_linenumber" name="L190" href="#L190">190</a>           <strong class="jxr_keyword">return</strong> future1.isSuccess();
-<a class="jxr_linenumber" name="L191" href="#L191">191</a>         }
-<a class="jxr_linenumber" name="L192" href="#L192">192</a>         block.getBlock().retain();
-<a class="jxr_linenumber" name="L193" href="#L193">193</a>         future2 = writeWhenPossible(block);
-<a class="jxr_linenumber" name="L194" href="#L194">194</a>         future1 = future2;
-<a class="jxr_linenumber" name="L195" href="#L195">195</a>       }
-<a class="jxr_linenumber" name="L196" href="#L196">196</a>       <em class="jxr_comment">// Wait for last write</em>
-<a class="jxr_linenumber" name="L197" href="#L197">197</a>       <strong class="jxr_keyword">if</strong> (future1 != <strong class="jxr_keyword">null</strong>) {
-<a class="jxr_linenumber" name="L198" href="#L198">198</a>         WaarpNettyUtil.awaitOrInterrupted(future1);
-<a class="jxr_linenumber" name="L199" href="#L199">199</a>         <strong class="jxr_keyword">return</strong> future1.isSuccess();
-<a class="jxr_linenumber" name="L200" href="#L200">200</a>       }
-<a class="jxr_linenumber" name="L201" href="#L201">201</a>       retrieveDone = <strong class="jxr_keyword">true</strong>;
-<a class="jxr_linenumber" name="L202" href="#L202">202</a>       <strong class="jxr_keyword">return</strong> retrieveDone;
-<a class="jxr_linenumber" name="L203" href="#L203">203</a>     } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> FileTransferException e) {
-<a class="jxr_linenumber" name="L204" href="#L204">204</a>       <em class="jxr_comment">// An error occurs!</em>
-<a class="jxr_linenumber" name="L205" href="#L205">205</a>       transferInError(<strong class="jxr_keyword">new</strong> OpenR66ProtocolSystemException(e));
-<a class="jxr_linenumber" name="L206" href="#L206">206</a>       <strong class="jxr_keyword">return</strong> false;
-<a class="jxr_linenumber" name="L207" href="#L207">207</a>     } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> OpenR66ProtocolPacketException e) {
-<a class="jxr_linenumber" name="L208" href="#L208">208</a>       <em class="jxr_comment">// An error occurs!</em>
-<a class="jxr_linenumber" name="L209" href="#L209">209</a>       transferInError(e);
-<a class="jxr_linenumber" name="L210" href="#L210">210</a>       <strong class="jxr_keyword">return</strong> false;
-<a class="jxr_linenumber" name="L211" href="#L211">211</a>     } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> OpenR66RunnerErrorException e) {
-<a class="jxr_linenumber" name="L212" href="#L212">212</a>       <em class="jxr_comment">// An error occurs!</em>
-<a class="jxr_linenumber" name="L213" href="#L213">213</a>       transferInError(e);
-<a class="jxr_linenumber" name="L214" href="#L214">214</a>       <strong class="jxr_keyword">return</strong> false;
-<a class="jxr_linenumber" name="L215" href="#L215">215</a>     } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> OpenR66ProtocolSystemException e) {
-<a class="jxr_linenumber" name="L216" href="#L216">216</a>       <em class="jxr_comment">// An error occurs!</em>
-<a class="jxr_linenumber" name="L217" href="#L217">217</a>       transferInError(e);
-<a class="jxr_linenumber" name="L218" href="#L218">218</a>       <strong class="jxr_keyword">return</strong> false;
-<a class="jxr_linenumber" name="L219" href="#L219">219</a>     }
-<a class="jxr_linenumber" name="L220" href="#L220">220</a>   }
-<a class="jxr_linenumber" name="L221" href="#L221">221</a> 
-<a class="jxr_linenumber" name="L222" href="#L222">222</a> }
+<a class="jxr_linenumber" name="L175" href="#L175">175</a>         future1 = writeWhenPossible(block);
+<a class="jxr_linenumber" name="L176" href="#L176">176</a>       }
+<a class="jxr_linenumber" name="L177" href="#L177">177</a>       <em class="jxr_comment">// While not last block</em>
+<a class="jxr_linenumber" name="L178" href="#L178">178</a>       <strong class="jxr_keyword">while</strong> (block != <strong class="jxr_keyword">null</strong> &amp;&amp; !block.isEOF()) {
+<a class="jxr_linenumber" name="L179" href="#L179">179</a>         WaarpNettyUtil.awaitOrInterrupted(future1);
+<a class="jxr_linenumber" name="L180" href="#L180">180</a>         <strong class="jxr_keyword">if</strong> (!future1.isSuccess()) {
+<a class="jxr_linenumber" name="L181" href="#L181">181</a>           <strong class="jxr_keyword">return</strong> false;
+<a class="jxr_linenumber" name="L182" href="#L182">182</a>         }
+<a class="jxr_linenumber" name="L183" href="#L183">183</a>         <strong class="jxr_keyword">try</strong> {
+<a class="jxr_linenumber" name="L184" href="#L184">184</a>           block = r66file.readDataBlock();
+<a class="jxr_linenumber" name="L185" href="#L185">185</a>         } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> FileEndOfTransferException e) {
+<a class="jxr_linenumber" name="L186" href="#L186">186</a>           <em class="jxr_comment">// Wait for last write</em>
+<a class="jxr_linenumber" name="L187" href="#L187">187</a>           retrieveDone = <strong class="jxr_keyword">true</strong>;
+<a class="jxr_linenumber" name="L188" href="#L188">188</a>           WaarpNettyUtil.awaitOrInterrupted(future1);
+<a class="jxr_linenumber" name="L189" href="#L189">189</a>           <strong class="jxr_keyword">return</strong> future1.isSuccess();
+<a class="jxr_linenumber" name="L190" href="#L190">190</a>         }
+<a class="jxr_linenumber" name="L191" href="#L191">191</a>         future2 = writeWhenPossible(block);
+<a class="jxr_linenumber" name="L192" href="#L192">192</a>         future1 = future2;
+<a class="jxr_linenumber" name="L193" href="#L193">193</a>       }
+<a class="jxr_linenumber" name="L194" href="#L194">194</a>       <em class="jxr_comment">// Wait for last write</em>
+<a class="jxr_linenumber" name="L195" href="#L195">195</a>       <strong class="jxr_keyword">if</strong> (future1 != <strong class="jxr_keyword">null</strong>) {
+<a class="jxr_linenumber" name="L196" href="#L196">196</a>         WaarpNettyUtil.awaitOrInterrupted(future1);
+<a class="jxr_linenumber" name="L197" href="#L197">197</a>         <strong class="jxr_keyword">return</strong> future1.isSuccess();
+<a class="jxr_linenumber" name="L198" href="#L198">198</a>       }
+<a class="jxr_linenumber" name="L199" href="#L199">199</a>       retrieveDone = <strong class="jxr_keyword">true</strong>;
+<a class="jxr_linenumber" name="L200" href="#L200">200</a>       <strong class="jxr_keyword">return</strong> retrieveDone;
+<a class="jxr_linenumber" name="L201" href="#L201">201</a>     } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> FileTransferException e) {
+<a class="jxr_linenumber" name="L202" href="#L202">202</a>       <em class="jxr_comment">// An error occurs!</em>
+<a class="jxr_linenumber" name="L203" href="#L203">203</a>       transferInError(<strong class="jxr_keyword">new</strong> OpenR66ProtocolSystemException(e));
+<a class="jxr_linenumber" name="L204" href="#L204">204</a>       <strong class="jxr_keyword">return</strong> false;
+<a class="jxr_linenumber" name="L205" href="#L205">205</a>     } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> OpenR66ProtocolPacketException e) {
+<a class="jxr_linenumber" name="L206" href="#L206">206</a>       <em class="jxr_comment">// An error occurs!</em>
+<a class="jxr_linenumber" name="L207" href="#L207">207</a>       transferInError(e);
+<a class="jxr_linenumber" name="L208" href="#L208">208</a>       <strong class="jxr_keyword">return</strong> false;
+<a class="jxr_linenumber" name="L209" href="#L209">209</a>     } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> OpenR66RunnerErrorException e) {
+<a class="jxr_linenumber" name="L210" href="#L210">210</a>       <em class="jxr_comment">// An error occurs!</em>
+<a class="jxr_linenumber" name="L211" href="#L211">211</a>       transferInError(e);
+<a class="jxr_linenumber" name="L212" href="#L212">212</a>       <strong class="jxr_keyword">return</strong> false;
+<a class="jxr_linenumber" name="L213" href="#L213">213</a>     } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> OpenR66ProtocolSystemException e) {
+<a class="jxr_linenumber" name="L214" href="#L214">214</a>       <em class="jxr_comment">// An error occurs!</em>
+<a class="jxr_linenumber" name="L215" href="#L215">215</a>       transferInError(e);
+<a class="jxr_linenumber" name="L216" href="#L216">216</a>       <strong class="jxr_keyword">return</strong> false;
+<a class="jxr_linenumber" name="L217" href="#L217">217</a>     } <strong class="jxr_keyword">finally</strong> {
+<a class="jxr_linenumber" name="L218" href="#L218">218</a>       <strong class="jxr_keyword">if</strong> (block != <strong class="jxr_keyword">null</strong>) {
+<a class="jxr_linenumber" name="L219" href="#L219">219</a>         block.clear();
+<a class="jxr_linenumber" name="L220" href="#L220">220</a>       }
+<a class="jxr_linenumber" name="L221" href="#L221">221</a>     }
+<a class="jxr_linenumber" name="L222" href="#L222">222</a>   }
+<a class="jxr_linenumber" name="L223" href="#L223">223</a> 
+<a class="jxr_linenumber" name="L224" href="#L224">224</a> }
 </pre>
 <hr/>
 <div id="footer">Copyright &#169; 2009&#x2013;2020 <a href="http://www.waarp.fr">Waarp</a>. All rights reserved.</div>

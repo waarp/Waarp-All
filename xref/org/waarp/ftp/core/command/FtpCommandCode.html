@@ -1375,9 +1375,9 @@
 <a class="jxr_linenumber" name="L1367" href="#L1367">1367</a> <em class="jxr_javadoccomment">   */</em>
 <a class="jxr_linenumber" name="L1368" href="#L1368">1368</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">final</strong> Class&lt;?&gt;[] nextValids;
 <a class="jxr_linenumber" name="L1369" href="#L1369">1369</a> 
-<a class="jxr_linenumber" name="L1370" href="#L1370">1370</a>   <a name="FtpCommandCode" href="../../../../../org/waarp/ftp/core/command/FtpCommandCode.html#FtpCommandCode">FtpCommandCode</a>(Class&lt;? <strong class="jxr_keyword">extends</strong> AbstractCommand&gt; command,
-<a class="jxr_linenumber" name="L1371" href="#L1371">1371</a>                  Class&lt;? <strong class="jxr_keyword">extends</strong> AbstractCommand&gt; previousValid,
-<a class="jxr_linenumber" name="L1372" href="#L1372">1372</a>                  Class&lt;?&gt;... nextValids) {
+<a class="jxr_linenumber" name="L1370" href="#L1370">1370</a>   <a name="FtpCommandCode" href="../../../../../org/waarp/ftp/core/command/FtpCommandCode.html#FtpCommandCode">FtpCommandCode</a>(<strong class="jxr_keyword">final</strong> Class&lt;? <strong class="jxr_keyword">extends</strong> AbstractCommand&gt; command,
+<a class="jxr_linenumber" name="L1371" href="#L1371">1371</a>                  <strong class="jxr_keyword">final</strong> Class&lt;? <strong class="jxr_keyword">extends</strong> AbstractCommand&gt; previousValid,
+<a class="jxr_linenumber" name="L1372" href="#L1372">1372</a>                  <strong class="jxr_keyword">final</strong> Class&lt;?&gt;... nextValids) {
 <a class="jxr_linenumber" name="L1373" href="#L1373">1373</a>     <strong class="jxr_keyword">this</strong>.command = command;
 <a class="jxr_linenumber" name="L1374" href="#L1374">1374</a>     <strong class="jxr_keyword">this</strong>.previousValid = previousValid;
 <a class="jxr_linenumber" name="L1375" href="#L1375">1375</a>     <strong class="jxr_keyword">this</strong>.nextValids = nextValids;
@@ -1393,153 +1393,155 @@
 <a class="jxr_linenumber" name="L1385" href="#L1385">1385</a> <em class="jxr_javadoccomment">   *</em>
 <a class="jxr_linenumber" name="L1386" href="#L1386">1386</a> <em class="jxr_javadoccomment">   * @return the AbstractCommand from the line received from the client</em>
 <a class="jxr_linenumber" name="L1387" href="#L1387">1387</a> <em class="jxr_javadoccomment">   */</em>
-<a class="jxr_linenumber" name="L1388" href="#L1388">1388</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <a name="AbstractCommand" href="../../../../../org/waarp/ftp/core/command/AbstractCommand.html#AbstractCommand">AbstractCommand</a> getFromLine(<a name="FtpSession" href="../../../../../org/waarp/ftp/core/session/FtpSession.html#FtpSession">FtpSession</a> session, String line) {
-<a class="jxr_linenumber" name="L1389" href="#L1389">1389</a>     <a name="FtpCommandCode" href="../../../../../org/waarp/ftp/core/command/FtpCommandCode.html#FtpCommandCode">FtpCommandCode</a> ftpCommandCode;
-<a class="jxr_linenumber" name="L1390" href="#L1390">1390</a>     String newline = line;
-<a class="jxr_linenumber" name="L1391" href="#L1391">1391</a>     <strong class="jxr_keyword">if</strong> (newline == <strong class="jxr_keyword">null</strong>) {
-<a class="jxr_linenumber" name="L1392" href="#L1392">1392</a>       ftpCommandCode = Unknown;
-<a class="jxr_linenumber" name="L1393" href="#L1393">1393</a>       newline = <span class="jxr_string">""</span>;
-<a class="jxr_linenumber" name="L1394" href="#L1394">1394</a>     }
-<a class="jxr_linenumber" name="L1395" href="#L1395">1395</a>     String command;
-<a class="jxr_linenumber" name="L1396" href="#L1396">1396</a>     String arg;
-<a class="jxr_linenumber" name="L1397" href="#L1397">1397</a>     <strong class="jxr_keyword">if</strong> (newline.indexOf(' ') == -1) {
-<a class="jxr_linenumber" name="L1398" href="#L1398">1398</a>       command = newline;
-<a class="jxr_linenumber" name="L1399" href="#L1399">1399</a>       arg = <strong class="jxr_keyword">null</strong>;
-<a class="jxr_linenumber" name="L1400" href="#L1400">1400</a>     } <strong class="jxr_keyword">else</strong> {
-<a class="jxr_linenumber" name="L1401" href="#L1401">1401</a>       command = newline.substring(0, newline.indexOf(' '));
-<a class="jxr_linenumber" name="L1402" href="#L1402">1402</a>       arg = newline.substring(newline.indexOf(' ') + 1);
-<a class="jxr_linenumber" name="L1403" href="#L1403">1403</a>       <strong class="jxr_keyword">if</strong> (arg.length() == 0) {
-<a class="jxr_linenumber" name="L1404" href="#L1404">1404</a>         arg = <strong class="jxr_keyword">null</strong>;
-<a class="jxr_linenumber" name="L1405" href="#L1405">1405</a>       }
-<a class="jxr_linenumber" name="L1406" href="#L1406">1406</a>     }
-<a class="jxr_linenumber" name="L1407" href="#L1407">1407</a>     <strong class="jxr_keyword">final</strong> String COMMAND = command.toUpperCase();
-<a class="jxr_linenumber" name="L1408" href="#L1408">1408</a>     <strong class="jxr_keyword">try</strong> {
-<a class="jxr_linenumber" name="L1409" href="#L1409">1409</a>       ftpCommandCode = valueOf(COMMAND);
-<a class="jxr_linenumber" name="L1410" href="#L1410">1410</a>     } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> IllegalArgumentException e) {
-<a class="jxr_linenumber" name="L1411" href="#L1411">1411</a>       ftpCommandCode = Unknown;
-<a class="jxr_linenumber" name="L1412" href="#L1412">1412</a>     }
-<a class="jxr_linenumber" name="L1413" href="#L1413">1413</a>     <a name="AbstractCommand" href="../../../../../org/waarp/ftp/core/command/AbstractCommand.html#AbstractCommand">AbstractCommand</a> abstractCommand;
-<a class="jxr_linenumber" name="L1414" href="#L1414">1414</a>     <strong class="jxr_keyword">try</strong> {
-<a class="jxr_linenumber" name="L1415" href="#L1415">1415</a>       abstractCommand = ftpCommandCode.command.newInstance();
-<a class="jxr_linenumber" name="L1416" href="#L1416">1416</a>     } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> InstantiationException e) {
-<a class="jxr_linenumber" name="L1417" href="#L1417">1417</a>       abstractCommand = <strong class="jxr_keyword">new</strong> <a name="UnknownCommand" href="../../../../../org/waarp/ftp/core/command/internal/UnknownCommand.html#UnknownCommand">UnknownCommand</a>();
-<a class="jxr_linenumber" name="L1418" href="#L1418">1418</a>       abstractCommand.setArgs(session, COMMAND, arg, Unknown);
-<a class="jxr_linenumber" name="L1419" href="#L1419">1419</a>       <strong class="jxr_keyword">return</strong> abstractCommand;
-<a class="jxr_linenumber" name="L1420" href="#L1420">1420</a>     } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> IllegalAccessException e) {
-<a class="jxr_linenumber" name="L1421" href="#L1421">1421</a>       abstractCommand = <strong class="jxr_keyword">new</strong> <a name="UnknownCommand" href="../../../../../org/waarp/ftp/core/command/internal/UnknownCommand.html#UnknownCommand">UnknownCommand</a>();
-<a class="jxr_linenumber" name="L1422" href="#L1422">1422</a>       abstractCommand.setArgs(session, COMMAND, arg, Unknown);
-<a class="jxr_linenumber" name="L1423" href="#L1423">1423</a>       <strong class="jxr_keyword">return</strong> abstractCommand;
-<a class="jxr_linenumber" name="L1424" href="#L1424">1424</a>     }
-<a class="jxr_linenumber" name="L1425" href="#L1425">1425</a>     abstractCommand.setArgs(session, COMMAND, arg, ftpCommandCode);
-<a class="jxr_linenumber" name="L1426" href="#L1426">1426</a>     <strong class="jxr_keyword">return</strong> abstractCommand;
-<a class="jxr_linenumber" name="L1427" href="#L1427">1427</a>   }
-<a class="jxr_linenumber" name="L1428" href="#L1428">1428</a> 
-<a class="jxr_linenumber" name="L1429" href="#L1429">1429</a>   <em class="jxr_javadoccomment">/**</em>
-<a class="jxr_linenumber" name="L1430" href="#L1430">1430</a> <em class="jxr_javadoccomment">   * True if the command is a Store like operation (APPE, STOR, STOU, ...)</em>
-<a class="jxr_linenumber" name="L1431" href="#L1431">1431</a> <em class="jxr_javadoccomment">   *</em>
-<a class="jxr_linenumber" name="L1432" href="#L1432">1432</a> <em class="jxr_javadoccomment">   * @param command</em>
-<a class="jxr_linenumber" name="L1433" href="#L1433">1433</a> <em class="jxr_javadoccomment">   *</em>
-<a class="jxr_linenumber" name="L1434" href="#L1434">1434</a> <em class="jxr_javadoccomment">   * @return True if the command is a Store like operation (APPE, STOR, STOU,</em>
-<a class="jxr_linenumber" name="L1435" href="#L1435">1435</a> <em class="jxr_javadoccomment">   *     ...)</em>
-<a class="jxr_linenumber" name="L1436" href="#L1436">1436</a> <em class="jxr_javadoccomment">   */</em>
-<a class="jxr_linenumber" name="L1437" href="#L1437">1437</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">boolean</strong> isStoreLikeCommand(<a name="FtpCommandCode" href="../../../../../org/waarp/ftp/core/command/FtpCommandCode.html#FtpCommandCode">FtpCommandCode</a> command) {
-<a class="jxr_linenumber" name="L1438" href="#L1438">1438</a>     <strong class="jxr_keyword">return</strong> command == APPE || command == STOR || command == STOU;
-<a class="jxr_linenumber" name="L1439" href="#L1439">1439</a>   }
-<a class="jxr_linenumber" name="L1440" href="#L1440">1440</a> 
-<a class="jxr_linenumber" name="L1441" href="#L1441">1441</a>   <em class="jxr_javadoccomment">/**</em>
-<a class="jxr_linenumber" name="L1442" href="#L1442">1442</a> <em class="jxr_javadoccomment">   * True if the command is a Retrieve like operation (RETR, ...)</em>
-<a class="jxr_linenumber" name="L1443" href="#L1443">1443</a> <em class="jxr_javadoccomment">   *</em>
-<a class="jxr_linenumber" name="L1444" href="#L1444">1444</a> <em class="jxr_javadoccomment">   * @param command</em>
-<a class="jxr_linenumber" name="L1445" href="#L1445">1445</a> <em class="jxr_javadoccomment">   *</em>
-<a class="jxr_linenumber" name="L1446" href="#L1446">1446</a> <em class="jxr_javadoccomment">   * @return True if the command is a Retrieve like operation (RETR, ...)</em>
-<a class="jxr_linenumber" name="L1447" href="#L1447">1447</a> <em class="jxr_javadoccomment">   */</em>
-<a class="jxr_linenumber" name="L1448" href="#L1448">1448</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">boolean</strong> isRetrLikeCommand(<a name="FtpCommandCode" href="../../../../../org/waarp/ftp/core/command/FtpCommandCode.html#FtpCommandCode">FtpCommandCode</a> command) {
-<a class="jxr_linenumber" name="L1449" href="#L1449">1449</a>     <strong class="jxr_keyword">return</strong> command == RETR;
-<a class="jxr_linenumber" name="L1450" href="#L1450">1450</a>   }
-<a class="jxr_linenumber" name="L1451" href="#L1451">1451</a> 
-<a class="jxr_linenumber" name="L1452" href="#L1452">1452</a>   <em class="jxr_javadoccomment">/**</em>
-<a class="jxr_linenumber" name="L1453" href="#L1453">1453</a> <em class="jxr_javadoccomment">   * True if the command is a Retrieve or Store like operation</em>
-<a class="jxr_linenumber" name="L1454" href="#L1454">1454</a> <em class="jxr_javadoccomment">   *</em>
-<a class="jxr_linenumber" name="L1455" href="#L1455">1455</a> <em class="jxr_javadoccomment">   * @param command</em>
-<a class="jxr_linenumber" name="L1456" href="#L1456">1456</a> <em class="jxr_javadoccomment">   *</em>
-<a class="jxr_linenumber" name="L1457" href="#L1457">1457</a> <em class="jxr_javadoccomment">   * @return True if the command is a Retrieve or Store like operation</em>
-<a class="jxr_linenumber" name="L1458" href="#L1458">1458</a> <em class="jxr_javadoccomment">   */</em>
-<a class="jxr_linenumber" name="L1459" href="#L1459">1459</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">boolean</strong> isStorOrRetrLikeCommand(<a name="FtpCommandCode" href="../../../../../org/waarp/ftp/core/command/FtpCommandCode.html#FtpCommandCode">FtpCommandCode</a> command) {
-<a class="jxr_linenumber" name="L1460" href="#L1460">1460</a>     <strong class="jxr_keyword">return</strong> isRetrLikeCommand(command) || isStoreLikeCommand(command);
-<a class="jxr_linenumber" name="L1461" href="#L1461">1461</a>   }
-<a class="jxr_linenumber" name="L1462" href="#L1462">1462</a> 
-<a class="jxr_linenumber" name="L1463" href="#L1463">1463</a>   <em class="jxr_javadoccomment">/**</em>
-<a class="jxr_linenumber" name="L1464" href="#L1464">1464</a> <em class="jxr_javadoccomment">   * True if the command is a List like operation (LIST, NLST, MLSD, MLST,</em>
-<a class="jxr_linenumber" name="L1465" href="#L1465">1465</a> <em class="jxr_javadoccomment">   * ...)</em>
-<a class="jxr_linenumber" name="L1466" href="#L1466">1466</a> <em class="jxr_javadoccomment">   *</em>
-<a class="jxr_linenumber" name="L1467" href="#L1467">1467</a> <em class="jxr_javadoccomment">   * @param command</em>
-<a class="jxr_linenumber" name="L1468" href="#L1468">1468</a> <em class="jxr_javadoccomment">   *</em>
-<a class="jxr_linenumber" name="L1469" href="#L1469">1469</a> <em class="jxr_javadoccomment">   * @return True if the command is a List like operation (LIST, NLST, MLSD,</em>
-<a class="jxr_linenumber" name="L1470" href="#L1470">1470</a> <em class="jxr_javadoccomment">   *     MLST, ...)</em>
-<a class="jxr_linenumber" name="L1471" href="#L1471">1471</a> <em class="jxr_javadoccomment">   */</em>
-<a class="jxr_linenumber" name="L1472" href="#L1472">1472</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">boolean</strong> isListLikeCommand(<a name="FtpCommandCode" href="../../../../../org/waarp/ftp/core/command/FtpCommandCode.html#FtpCommandCode">FtpCommandCode</a> command) {
-<a class="jxr_linenumber" name="L1473" href="#L1473">1473</a>     <strong class="jxr_keyword">return</strong> command == LIST || command == NLST || command == MLSD ||
-<a class="jxr_linenumber" name="L1474" href="#L1474">1474</a>            command == MLST;
-<a class="jxr_linenumber" name="L1475" href="#L1475">1475</a>   }
-<a class="jxr_linenumber" name="L1476" href="#L1476">1476</a> 
-<a class="jxr_linenumber" name="L1477" href="#L1477">1477</a>   <em class="jxr_javadoccomment">/**</em>
-<a class="jxr_linenumber" name="L1478" href="#L1478">1478</a> <em class="jxr_javadoccomment">   * True if the command is using a Data connection</em>
-<a class="jxr_linenumber" name="L1479" href="#L1479">1479</a> <em class="jxr_javadoccomment">   *</em>
-<a class="jxr_linenumber" name="L1480" href="#L1480">1480</a> <em class="jxr_javadoccomment">   * @param command</em>
-<a class="jxr_linenumber" name="L1481" href="#L1481">1481</a> <em class="jxr_javadoccomment">   *</em>
-<a class="jxr_linenumber" name="L1482" href="#L1482">1482</a> <em class="jxr_javadoccomment">   * @return True if the command is using a Data Connection</em>
-<a class="jxr_linenumber" name="L1483" href="#L1483">1483</a> <em class="jxr_javadoccomment">   */</em>
-<a class="jxr_linenumber" name="L1484" href="#L1484">1484</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">boolean</strong> isDataConnectionUsageCommand(<a name="FtpCommandCode" href="../../../../../org/waarp/ftp/core/command/FtpCommandCode.html#FtpCommandCode">FtpCommandCode</a> command) {
-<a class="jxr_linenumber" name="L1485" href="#L1485">1485</a>     <strong class="jxr_keyword">return</strong> isRetrLikeCommand(command) || isStoreLikeCommand(command) ||
-<a class="jxr_linenumber" name="L1486" href="#L1486">1486</a>            isListLikeCommand(command);
-<a class="jxr_linenumber" name="L1487" href="#L1487">1487</a>   }
-<a class="jxr_linenumber" name="L1488" href="#L1488">1488</a> 
-<a class="jxr_linenumber" name="L1489" href="#L1489">1489</a>   <em class="jxr_javadoccomment">/**</em>
-<a class="jxr_linenumber" name="L1490" href="#L1490">1490</a> <em class="jxr_javadoccomment">   * True if the command is a special operation (QUIT, ABOR, NOOP, STAT, ...)</em>
-<a class="jxr_linenumber" name="L1491" href="#L1491">1491</a> <em class="jxr_javadoccomment">   *</em>
-<a class="jxr_linenumber" name="L1492" href="#L1492">1492</a> <em class="jxr_javadoccomment">   * @param command</em>
+<a class="jxr_linenumber" name="L1388" href="#L1388">1388</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <a name="AbstractCommand" href="../../../../../org/waarp/ftp/core/command/AbstractCommand.html#AbstractCommand">AbstractCommand</a> getFromLine(<strong class="jxr_keyword">final</strong> <a name="FtpSession" href="../../../../../org/waarp/ftp/core/session/FtpSession.html#FtpSession">FtpSession</a> session,
+<a class="jxr_linenumber" name="L1389" href="#L1389">1389</a>                                             <strong class="jxr_keyword">final</strong> String line) {
+<a class="jxr_linenumber" name="L1390" href="#L1390">1390</a>     <a name="FtpCommandCode" href="../../../../../org/waarp/ftp/core/command/FtpCommandCode.html#FtpCommandCode">FtpCommandCode</a> ftpCommandCode;
+<a class="jxr_linenumber" name="L1391" href="#L1391">1391</a>     String newline = line;
+<a class="jxr_linenumber" name="L1392" href="#L1392">1392</a>     <strong class="jxr_keyword">if</strong> (newline == <strong class="jxr_keyword">null</strong>) {
+<a class="jxr_linenumber" name="L1393" href="#L1393">1393</a>       ftpCommandCode = Unknown;
+<a class="jxr_linenumber" name="L1394" href="#L1394">1394</a>       newline = <span class="jxr_string">""</span>;
+<a class="jxr_linenumber" name="L1395" href="#L1395">1395</a>     }
+<a class="jxr_linenumber" name="L1396" href="#L1396">1396</a>     <strong class="jxr_keyword">final</strong> String command;
+<a class="jxr_linenumber" name="L1397" href="#L1397">1397</a>     String arg;
+<a class="jxr_linenumber" name="L1398" href="#L1398">1398</a>     <strong class="jxr_keyword">if</strong> (newline.indexOf(' ') == -1) {
+<a class="jxr_linenumber" name="L1399" href="#L1399">1399</a>       command = newline;
+<a class="jxr_linenumber" name="L1400" href="#L1400">1400</a>       arg = <strong class="jxr_keyword">null</strong>;
+<a class="jxr_linenumber" name="L1401" href="#L1401">1401</a>     } <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="L1402" href="#L1402">1402</a>       command = newline.substring(0, newline.indexOf(' '));
+<a class="jxr_linenumber" name="L1403" href="#L1403">1403</a>       arg = newline.substring(newline.indexOf(' ') + 1);
+<a class="jxr_linenumber" name="L1404" href="#L1404">1404</a>       <strong class="jxr_keyword">if</strong> (arg.length() == 0) {
+<a class="jxr_linenumber" name="L1405" href="#L1405">1405</a>         arg = <strong class="jxr_keyword">null</strong>;
+<a class="jxr_linenumber" name="L1406" href="#L1406">1406</a>       }
+<a class="jxr_linenumber" name="L1407" href="#L1407">1407</a>     }
+<a class="jxr_linenumber" name="L1408" href="#L1408">1408</a>     <strong class="jxr_keyword">final</strong> String COMMAND = command.toUpperCase();
+<a class="jxr_linenumber" name="L1409" href="#L1409">1409</a>     <strong class="jxr_keyword">try</strong> {
+<a class="jxr_linenumber" name="L1410" href="#L1410">1410</a>       ftpCommandCode = valueOf(COMMAND);
+<a class="jxr_linenumber" name="L1411" href="#L1411">1411</a>     } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> IllegalArgumentException e) {
+<a class="jxr_linenumber" name="L1412" href="#L1412">1412</a>       ftpCommandCode = Unknown;
+<a class="jxr_linenumber" name="L1413" href="#L1413">1413</a>     }
+<a class="jxr_linenumber" name="L1414" href="#L1414">1414</a>     <a name="AbstractCommand" href="../../../../../org/waarp/ftp/core/command/AbstractCommand.html#AbstractCommand">AbstractCommand</a> abstractCommand;
+<a class="jxr_linenumber" name="L1415" href="#L1415">1415</a>     <strong class="jxr_keyword">try</strong> {
+<a class="jxr_linenumber" name="L1416" href="#L1416">1416</a>       abstractCommand = ftpCommandCode.command.newInstance();
+<a class="jxr_linenumber" name="L1417" href="#L1417">1417</a>     } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> InstantiationException e) {
+<a class="jxr_linenumber" name="L1418" href="#L1418">1418</a>       abstractCommand = <strong class="jxr_keyword">new</strong> <a name="UnknownCommand" href="../../../../../org/waarp/ftp/core/command/internal/UnknownCommand.html#UnknownCommand">UnknownCommand</a>();
+<a class="jxr_linenumber" name="L1419" href="#L1419">1419</a>       abstractCommand.setArgs(session, COMMAND, arg, Unknown);
+<a class="jxr_linenumber" name="L1420" href="#L1420">1420</a>       <strong class="jxr_keyword">return</strong> abstractCommand;
+<a class="jxr_linenumber" name="L1421" href="#L1421">1421</a>     } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> IllegalAccessException e) {
+<a class="jxr_linenumber" name="L1422" href="#L1422">1422</a>       abstractCommand = <strong class="jxr_keyword">new</strong> <a name="UnknownCommand" href="../../../../../org/waarp/ftp/core/command/internal/UnknownCommand.html#UnknownCommand">UnknownCommand</a>();
+<a class="jxr_linenumber" name="L1423" href="#L1423">1423</a>       abstractCommand.setArgs(session, COMMAND, arg, Unknown);
+<a class="jxr_linenumber" name="L1424" href="#L1424">1424</a>       <strong class="jxr_keyword">return</strong> abstractCommand;
+<a class="jxr_linenumber" name="L1425" href="#L1425">1425</a>     }
+<a class="jxr_linenumber" name="L1426" href="#L1426">1426</a>     abstractCommand.setArgs(session, COMMAND, arg, ftpCommandCode);
+<a class="jxr_linenumber" name="L1427" href="#L1427">1427</a>     <strong class="jxr_keyword">return</strong> abstractCommand;
+<a class="jxr_linenumber" name="L1428" href="#L1428">1428</a>   }
+<a class="jxr_linenumber" name="L1429" href="#L1429">1429</a> 
+<a class="jxr_linenumber" name="L1430" href="#L1430">1430</a>   <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L1431" href="#L1431">1431</a> <em class="jxr_javadoccomment">   * True if the command is a Store like operation (APPE, STOR, STOU, ...)</em>
+<a class="jxr_linenumber" name="L1432" href="#L1432">1432</a> <em class="jxr_javadoccomment">   *</em>
+<a class="jxr_linenumber" name="L1433" href="#L1433">1433</a> <em class="jxr_javadoccomment">   * @param command</em>
+<a class="jxr_linenumber" name="L1434" href="#L1434">1434</a> <em class="jxr_javadoccomment">   *</em>
+<a class="jxr_linenumber" name="L1435" href="#L1435">1435</a> <em class="jxr_javadoccomment">   * @return True if the command is a Store like operation (APPE, STOR, STOU,</em>
+<a class="jxr_linenumber" name="L1436" href="#L1436">1436</a> <em class="jxr_javadoccomment">   *     ...)</em>
+<a class="jxr_linenumber" name="L1437" href="#L1437">1437</a> <em class="jxr_javadoccomment">   */</em>
+<a class="jxr_linenumber" name="L1438" href="#L1438">1438</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">boolean</strong> isStoreLikeCommand(<strong class="jxr_keyword">final</strong> <a name="FtpCommandCode" href="../../../../../org/waarp/ftp/core/command/FtpCommandCode.html#FtpCommandCode">FtpCommandCode</a> command) {
+<a class="jxr_linenumber" name="L1439" href="#L1439">1439</a>     <strong class="jxr_keyword">return</strong> command == APPE || command == STOR || command == STOU;
+<a class="jxr_linenumber" name="L1440" href="#L1440">1440</a>   }
+<a class="jxr_linenumber" name="L1441" href="#L1441">1441</a> 
+<a class="jxr_linenumber" name="L1442" href="#L1442">1442</a>   <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L1443" href="#L1443">1443</a> <em class="jxr_javadoccomment">   * True if the command is a Retrieve like operation (RETR, ...)</em>
+<a class="jxr_linenumber" name="L1444" href="#L1444">1444</a> <em class="jxr_javadoccomment">   *</em>
+<a class="jxr_linenumber" name="L1445" href="#L1445">1445</a> <em class="jxr_javadoccomment">   * @param command</em>
+<a class="jxr_linenumber" name="L1446" href="#L1446">1446</a> <em class="jxr_javadoccomment">   *</em>
+<a class="jxr_linenumber" name="L1447" href="#L1447">1447</a> <em class="jxr_javadoccomment">   * @return True if the command is a Retrieve like operation (RETR, ...)</em>
+<a class="jxr_linenumber" name="L1448" href="#L1448">1448</a> <em class="jxr_javadoccomment">   */</em>
+<a class="jxr_linenumber" name="L1449" href="#L1449">1449</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">boolean</strong> isRetrLikeCommand(<strong class="jxr_keyword">final</strong> <a name="FtpCommandCode" href="../../../../../org/waarp/ftp/core/command/FtpCommandCode.html#FtpCommandCode">FtpCommandCode</a> command) {
+<a class="jxr_linenumber" name="L1450" href="#L1450">1450</a>     <strong class="jxr_keyword">return</strong> command == RETR;
+<a class="jxr_linenumber" name="L1451" href="#L1451">1451</a>   }
+<a class="jxr_linenumber" name="L1452" href="#L1452">1452</a> 
+<a class="jxr_linenumber" name="L1453" href="#L1453">1453</a>   <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L1454" href="#L1454">1454</a> <em class="jxr_javadoccomment">   * True if the command is a Retrieve or Store like operation</em>
+<a class="jxr_linenumber" name="L1455" href="#L1455">1455</a> <em class="jxr_javadoccomment">   *</em>
+<a class="jxr_linenumber" name="L1456" href="#L1456">1456</a> <em class="jxr_javadoccomment">   * @param command</em>
+<a class="jxr_linenumber" name="L1457" href="#L1457">1457</a> <em class="jxr_javadoccomment">   *</em>
+<a class="jxr_linenumber" name="L1458" href="#L1458">1458</a> <em class="jxr_javadoccomment">   * @return True if the command is a Retrieve or Store like operation</em>
+<a class="jxr_linenumber" name="L1459" href="#L1459">1459</a> <em class="jxr_javadoccomment">   */</em>
+<a class="jxr_linenumber" name="L1460" href="#L1460">1460</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">boolean</strong> isStorOrRetrLikeCommand(<strong class="jxr_keyword">final</strong> <a name="FtpCommandCode" href="../../../../../org/waarp/ftp/core/command/FtpCommandCode.html#FtpCommandCode">FtpCommandCode</a> command) {
+<a class="jxr_linenumber" name="L1461" href="#L1461">1461</a>     <strong class="jxr_keyword">return</strong> isRetrLikeCommand(command) || isStoreLikeCommand(command);
+<a class="jxr_linenumber" name="L1462" href="#L1462">1462</a>   }
+<a class="jxr_linenumber" name="L1463" href="#L1463">1463</a> 
+<a class="jxr_linenumber" name="L1464" href="#L1464">1464</a>   <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L1465" href="#L1465">1465</a> <em class="jxr_javadoccomment">   * True if the command is a List like operation (LIST, NLST, MLSD, MLST,</em>
+<a class="jxr_linenumber" name="L1466" href="#L1466">1466</a> <em class="jxr_javadoccomment">   * ...)</em>
+<a class="jxr_linenumber" name="L1467" href="#L1467">1467</a> <em class="jxr_javadoccomment">   *</em>
+<a class="jxr_linenumber" name="L1468" href="#L1468">1468</a> <em class="jxr_javadoccomment">   * @param command</em>
+<a class="jxr_linenumber" name="L1469" href="#L1469">1469</a> <em class="jxr_javadoccomment">   *</em>
+<a class="jxr_linenumber" name="L1470" href="#L1470">1470</a> <em class="jxr_javadoccomment">   * @return True if the command is a List like operation (LIST, NLST, MLSD,</em>
+<a class="jxr_linenumber" name="L1471" href="#L1471">1471</a> <em class="jxr_javadoccomment">   *     MLST, ...)</em>
+<a class="jxr_linenumber" name="L1472" href="#L1472">1472</a> <em class="jxr_javadoccomment">   */</em>
+<a class="jxr_linenumber" name="L1473" href="#L1473">1473</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">boolean</strong> isListLikeCommand(<strong class="jxr_keyword">final</strong> <a name="FtpCommandCode" href="../../../../../org/waarp/ftp/core/command/FtpCommandCode.html#FtpCommandCode">FtpCommandCode</a> command) {
+<a class="jxr_linenumber" name="L1474" href="#L1474">1474</a>     <strong class="jxr_keyword">return</strong> command == LIST || command == NLST || command == MLSD ||
+<a class="jxr_linenumber" name="L1475" href="#L1475">1475</a>            command == MLST;
+<a class="jxr_linenumber" name="L1476" href="#L1476">1476</a>   }
+<a class="jxr_linenumber" name="L1477" href="#L1477">1477</a> 
+<a class="jxr_linenumber" name="L1478" href="#L1478">1478</a>   <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L1479" href="#L1479">1479</a> <em class="jxr_javadoccomment">   * True if the command is using a Data connection</em>
+<a class="jxr_linenumber" name="L1480" href="#L1480">1480</a> <em class="jxr_javadoccomment">   *</em>
+<a class="jxr_linenumber" name="L1481" href="#L1481">1481</a> <em class="jxr_javadoccomment">   * @param command</em>
+<a class="jxr_linenumber" name="L1482" href="#L1482">1482</a> <em class="jxr_javadoccomment">   *</em>
+<a class="jxr_linenumber" name="L1483" href="#L1483">1483</a> <em class="jxr_javadoccomment">   * @return True if the command is using a Data Connection</em>
+<a class="jxr_linenumber" name="L1484" href="#L1484">1484</a> <em class="jxr_javadoccomment">   */</em>
+<a class="jxr_linenumber" name="L1485" href="#L1485">1485</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">boolean</strong> isDataConnectionUsageCommand(
+<a class="jxr_linenumber" name="L1486" href="#L1486">1486</a>       <strong class="jxr_keyword">final</strong> <a name="FtpCommandCode" href="../../../../../org/waarp/ftp/core/command/FtpCommandCode.html#FtpCommandCode">FtpCommandCode</a> command) {
+<a class="jxr_linenumber" name="L1487" href="#L1487">1487</a>     <strong class="jxr_keyword">return</strong> isRetrLikeCommand(command) || isStoreLikeCommand(command) ||
+<a class="jxr_linenumber" name="L1488" href="#L1488">1488</a>            isListLikeCommand(command);
+<a class="jxr_linenumber" name="L1489" href="#L1489">1489</a>   }
+<a class="jxr_linenumber" name="L1490" href="#L1490">1490</a> 
+<a class="jxr_linenumber" name="L1491" href="#L1491">1491</a>   <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L1492" href="#L1492">1492</a> <em class="jxr_javadoccomment">   * True if the command is a special operation (QUIT, ABOR, NOOP, STAT, ...)</em>
 <a class="jxr_linenumber" name="L1493" href="#L1493">1493</a> <em class="jxr_javadoccomment">   *</em>
-<a class="jxr_linenumber" name="L1494" href="#L1494">1494</a> <em class="jxr_javadoccomment">   * @return True if the command is a special operation (QUIT, ABOR, NOOP,</em>
-<a class="jxr_linenumber" name="L1495" href="#L1495">1495</a> <em class="jxr_javadoccomment">   *     STAT,</em>
-<a class="jxr_linenumber" name="L1496" href="#L1496">1496</a> <em class="jxr_javadoccomment">   *     ...)</em>
-<a class="jxr_linenumber" name="L1497" href="#L1497">1497</a> <em class="jxr_javadoccomment">   */</em>
-<a class="jxr_linenumber" name="L1498" href="#L1498">1498</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">boolean</strong> isSpecialCommand(<a name="FtpCommandCode" href="../../../../../org/waarp/ftp/core/command/FtpCommandCode.html#FtpCommandCode">FtpCommandCode</a> command) {
-<a class="jxr_linenumber" name="L1499" href="#L1499">1499</a>     <strong class="jxr_keyword">return</strong> command == QUIT || command == ABOR || command == NOOP ||
-<a class="jxr_linenumber" name="L1500" href="#L1500">1500</a>            command == STAT;
-<a class="jxr_linenumber" name="L1501" href="#L1501">1501</a>   }
-<a class="jxr_linenumber" name="L1502" href="#L1502">1502</a> 
-<a class="jxr_linenumber" name="L1503" href="#L1503">1503</a>   <em class="jxr_javadoccomment">/**</em>
-<a class="jxr_linenumber" name="L1504" href="#L1504">1504</a> <em class="jxr_javadoccomment">   * True if the command is Ssl related (AUTH, PBSZ, PROT, USER, PASS, ACCT)</em>
-<a class="jxr_linenumber" name="L1505" href="#L1505">1505</a> <em class="jxr_javadoccomment">   *</em>
-<a class="jxr_linenumber" name="L1506" href="#L1506">1506</a> <em class="jxr_javadoccomment">   * @param command</em>
+<a class="jxr_linenumber" name="L1494" href="#L1494">1494</a> <em class="jxr_javadoccomment">   * @param command</em>
+<a class="jxr_linenumber" name="L1495" href="#L1495">1495</a> <em class="jxr_javadoccomment">   *</em>
+<a class="jxr_linenumber" name="L1496" href="#L1496">1496</a> <em class="jxr_javadoccomment">   * @return True if the command is a special operation (QUIT, ABOR, NOOP,</em>
+<a class="jxr_linenumber" name="L1497" href="#L1497">1497</a> <em class="jxr_javadoccomment">   *     STAT,</em>
+<a class="jxr_linenumber" name="L1498" href="#L1498">1498</a> <em class="jxr_javadoccomment">   *     ...)</em>
+<a class="jxr_linenumber" name="L1499" href="#L1499">1499</a> <em class="jxr_javadoccomment">   */</em>
+<a class="jxr_linenumber" name="L1500" href="#L1500">1500</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">boolean</strong> isSpecialCommand(<strong class="jxr_keyword">final</strong> <a name="FtpCommandCode" href="../../../../../org/waarp/ftp/core/command/FtpCommandCode.html#FtpCommandCode">FtpCommandCode</a> command) {
+<a class="jxr_linenumber" name="L1501" href="#L1501">1501</a>     <strong class="jxr_keyword">return</strong> command == QUIT || command == ABOR || command == NOOP ||
+<a class="jxr_linenumber" name="L1502" href="#L1502">1502</a>            command == STAT;
+<a class="jxr_linenumber" name="L1503" href="#L1503">1503</a>   }
+<a class="jxr_linenumber" name="L1504" href="#L1504">1504</a> 
+<a class="jxr_linenumber" name="L1505" href="#L1505">1505</a>   <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L1506" href="#L1506">1506</a> <em class="jxr_javadoccomment">   * True if the command is Ssl related (AUTH, PBSZ, PROT, USER, PASS, ACCT)</em>
 <a class="jxr_linenumber" name="L1507" href="#L1507">1507</a> <em class="jxr_javadoccomment">   *</em>
-<a class="jxr_linenumber" name="L1508" href="#L1508">1508</a> <em class="jxr_javadoccomment">   * @return True if the command is Ssl related (AUTH, PBSZ, PROT, USER, PASS,</em>
-<a class="jxr_linenumber" name="L1509" href="#L1509">1509</a> <em class="jxr_javadoccomment">   *     ACCT)</em>
-<a class="jxr_linenumber" name="L1510" href="#L1510">1510</a> <em class="jxr_javadoccomment">   */</em>
-<a class="jxr_linenumber" name="L1511" href="#L1511">1511</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">boolean</strong> isSslOrAuthCommand(<a name="FtpCommandCode" href="../../../../../org/waarp/ftp/core/command/FtpCommandCode.html#FtpCommandCode">FtpCommandCode</a> command) {
-<a class="jxr_linenumber" name="L1512" href="#L1512">1512</a>     <strong class="jxr_keyword">return</strong> command == AUTH || command == PBSZ || command == PROT ||
-<a class="jxr_linenumber" name="L1513" href="#L1513">1513</a>            command == PASS || command == ACCT;
-<a class="jxr_linenumber" name="L1514" href="#L1514">1514</a>   }
-<a class="jxr_linenumber" name="L1515" href="#L1515">1515</a> 
-<a class="jxr_linenumber" name="L1516" href="#L1516">1516</a>   <em class="jxr_javadoccomment">/**</em>
-<a class="jxr_linenumber" name="L1517" href="#L1517">1517</a> <em class="jxr_javadoccomment">   * True if the command is an extension operation (XMD5, XCRC, XSHA1, ...)</em>
-<a class="jxr_linenumber" name="L1518" href="#L1518">1518</a> <em class="jxr_javadoccomment">   *</em>
-<a class="jxr_linenumber" name="L1519" href="#L1519">1519</a> <em class="jxr_javadoccomment">   * @param command</em>
+<a class="jxr_linenumber" name="L1508" href="#L1508">1508</a> <em class="jxr_javadoccomment">   * @param command</em>
+<a class="jxr_linenumber" name="L1509" href="#L1509">1509</a> <em class="jxr_javadoccomment">   *</em>
+<a class="jxr_linenumber" name="L1510" href="#L1510">1510</a> <em class="jxr_javadoccomment">   * @return True if the command is Ssl related (AUTH, PBSZ, PROT, USER, PASS,</em>
+<a class="jxr_linenumber" name="L1511" href="#L1511">1511</a> <em class="jxr_javadoccomment">   *     ACCT)</em>
+<a class="jxr_linenumber" name="L1512" href="#L1512">1512</a> <em class="jxr_javadoccomment">   */</em>
+<a class="jxr_linenumber" name="L1513" href="#L1513">1513</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">boolean</strong> isSslOrAuthCommand(<strong class="jxr_keyword">final</strong> <a name="FtpCommandCode" href="../../../../../org/waarp/ftp/core/command/FtpCommandCode.html#FtpCommandCode">FtpCommandCode</a> command) {
+<a class="jxr_linenumber" name="L1514" href="#L1514">1514</a>     <strong class="jxr_keyword">return</strong> command == AUTH || command == PBSZ || command == PROT ||
+<a class="jxr_linenumber" name="L1515" href="#L1515">1515</a>            command == PASS || command == ACCT;
+<a class="jxr_linenumber" name="L1516" href="#L1516">1516</a>   }
+<a class="jxr_linenumber" name="L1517" href="#L1517">1517</a> 
+<a class="jxr_linenumber" name="L1518" href="#L1518">1518</a>   <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L1519" href="#L1519">1519</a> <em class="jxr_javadoccomment">   * True if the command is an extension operation (XMD5, XCRC, XSHA1, ...)</em>
 <a class="jxr_linenumber" name="L1520" href="#L1520">1520</a> <em class="jxr_javadoccomment">   *</em>
-<a class="jxr_linenumber" name="L1521" href="#L1521">1521</a> <em class="jxr_javadoccomment">   * @return True if the command is an extension operation (XMD5, XCRC, XSHA1,</em>
-<a class="jxr_linenumber" name="L1522" href="#L1522">1522</a> <em class="jxr_javadoccomment">   *     ...)</em>
-<a class="jxr_linenumber" name="L1523" href="#L1523">1523</a> <em class="jxr_javadoccomment">   */</em>
-<a class="jxr_linenumber" name="L1524" href="#L1524">1524</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">boolean</strong> isExtensionCommand(<a name="FtpCommandCode" href="../../../../../org/waarp/ftp/core/command/FtpCommandCode.html#FtpCommandCode">FtpCommandCode</a> command) {
-<a class="jxr_linenumber" name="L1525" href="#L1525">1525</a>     <strong class="jxr_keyword">return</strong> command == XMD5 || command == XCRC || command == XSHA1 ||
-<a class="jxr_linenumber" name="L1526" href="#L1526">1526</a>            command == XDIGEST || command == <a name="INTERNALSHUTDOWN" href="../../../../../org/waarp/ftp/core/command/internal/INTERNALSHUTDOWN.html#INTERNALSHUTDOWN">INTERNALSHUTDOWN</a> ||
-<a class="jxr_linenumber" name="L1527" href="#L1527">1527</a>            command == LIMITBANDWIDTH;
-<a class="jxr_linenumber" name="L1528" href="#L1528">1528</a>   }
-<a class="jxr_linenumber" name="L1529" href="#L1529">1529</a> 
-<a class="jxr_linenumber" name="L1530" href="#L1530">1530</a>   @Override
-<a class="jxr_linenumber" name="L1531" href="#L1531">1531</a>   <strong class="jxr_keyword">public</strong> String toString() {
-<a class="jxr_linenumber" name="L1532" href="#L1532">1532</a>     <strong class="jxr_keyword">return</strong> name();
-<a class="jxr_linenumber" name="L1533" href="#L1533">1533</a>   }
-<a class="jxr_linenumber" name="L1534" href="#L1534">1534</a> }
+<a class="jxr_linenumber" name="L1521" href="#L1521">1521</a> <em class="jxr_javadoccomment">   * @param command</em>
+<a class="jxr_linenumber" name="L1522" href="#L1522">1522</a> <em class="jxr_javadoccomment">   *</em>
+<a class="jxr_linenumber" name="L1523" href="#L1523">1523</a> <em class="jxr_javadoccomment">   * @return True if the command is an extension operation (XMD5, XCRC, XSHA1,</em>
+<a class="jxr_linenumber" name="L1524" href="#L1524">1524</a> <em class="jxr_javadoccomment">   *     ...)</em>
+<a class="jxr_linenumber" name="L1525" href="#L1525">1525</a> <em class="jxr_javadoccomment">   */</em>
+<a class="jxr_linenumber" name="L1526" href="#L1526">1526</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">boolean</strong> isExtensionCommand(<strong class="jxr_keyword">final</strong> <a name="FtpCommandCode" href="../../../../../org/waarp/ftp/core/command/FtpCommandCode.html#FtpCommandCode">FtpCommandCode</a> command) {
+<a class="jxr_linenumber" name="L1527" href="#L1527">1527</a>     <strong class="jxr_keyword">return</strong> command == XMD5 || command == XCRC || command == XSHA1 ||
+<a class="jxr_linenumber" name="L1528" href="#L1528">1528</a>            command == XDIGEST || command == <a name="INTERNALSHUTDOWN" href="../../../../../org/waarp/ftp/core/command/internal/INTERNALSHUTDOWN.html#INTERNALSHUTDOWN">INTERNALSHUTDOWN</a> ||
+<a class="jxr_linenumber" name="L1529" href="#L1529">1529</a>            command == LIMITBANDWIDTH;
+<a class="jxr_linenumber" name="L1530" href="#L1530">1530</a>   }
+<a class="jxr_linenumber" name="L1531" href="#L1531">1531</a> 
+<a class="jxr_linenumber" name="L1532" href="#L1532">1532</a>   @Override
+<a class="jxr_linenumber" name="L1533" href="#L1533">1533</a>   <strong class="jxr_keyword">public</strong> String toString() {
+<a class="jxr_linenumber" name="L1534" href="#L1534">1534</a>     <strong class="jxr_keyword">return</strong> name();
+<a class="jxr_linenumber" name="L1535" href="#L1535">1535</a>   }
+<a class="jxr_linenumber" name="L1536" href="#L1536">1536</a> }
 </pre>
 <hr/>
 <div id="footer">Copyright &#169; 2009&#x2013;2020 <a href="http://www.waarp.fr">Waarp</a>. All rights reserved.</div>

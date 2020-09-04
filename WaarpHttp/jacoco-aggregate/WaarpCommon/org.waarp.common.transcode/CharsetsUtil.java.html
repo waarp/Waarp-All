@@ -61,7 +61,7 @@ public final class CharsetsUtil {
   /**
    * @param args
    */
-  public static void main(String[] args) {
+  public static void main(final String[] args) {
 <span class="fc" id="L65">    int format = 1; // TEXT</span>
 <span class="fc" id="L66">    boolean transcode = false;</span>
 <span class="fc" id="L67">    String fromFilename = null;</span>
@@ -104,7 +104,7 @@ public final class CharsetsUtil {
   /**
    * @param format 0 = html, 1 = text, 2 = csv
    */
-  public static void printOutCharsetsAvailable(int format) {
+  public static void printOutCharsetsAvailable(final int format) {
 <span class="fc" id="L108">    final SortedMap&lt;String, Charset&gt; map = Charset.availableCharsets();</span>
 <span class="fc" id="L109">    final Set&lt;Entry&lt;String, Charset&gt;&gt; set = map.entrySet();</span>
 <span class="fc bfc" id="L110" title="All 3 branches covered.">    switch (format) {</span>
@@ -124,7 +124,7 @@ public final class CharsetsUtil {
     }
 <span class="fc bfc" id="L125" title="All 2 branches covered.">    for (final Entry&lt;String, Charset&gt; entry : set) {</span>
 <span class="fc" id="L126">      final Charset charset = entry.getValue();</span>
-<span class="fc" id="L127">      StringBuilder aliases = null;</span>
+      final StringBuilder aliases;
 <span class="fc bfc" id="L128" title="All 2 branches covered.">      switch (format) {</span>
         case 0:
 <span class="fc" id="L130">          aliases = new StringBuilder(&quot;&lt;ul&gt;&quot;);</span>
@@ -200,41 +200,43 @@ public final class CharsetsUtil {
    *
    * @return True if OK, else False (will log the reason)
    */
-  public static boolean transcode(String srcFilename, String fromCharset,
-                                  String toFilename, String toCharset,
-                                  int bufferSize) {
-<span class="fc" id="L206">    boolean success = false;</span>
-<span class="fc" id="L207">    final File from = new File(srcFilename);</span>
-<span class="fc" id="L208">    final File to = new File(toFilename);</span>
-<span class="fc" id="L209">    FileInputStream fileInputStream = null;</span>
-<span class="fc" id="L210">    InputStreamReader reader = null;</span>
-<span class="fc" id="L211">    FileOutputStream fileOutputStream = null;</span>
-<span class="fc" id="L212">    OutputStreamWriter writer = null;</span>
+  public static boolean transcode(final String srcFilename,
+                                  final String fromCharset,
+                                  final String toFilename,
+                                  final String toCharset,
+                                  final int bufferSize) {
+<span class="fc" id="L208">    boolean success = false;</span>
+<span class="fc" id="L209">    final File from = new File(srcFilename);</span>
+<span class="fc" id="L210">    final File to = new File(toFilename);</span>
+<span class="fc" id="L211">    FileInputStream fileInputStream = null;</span>
+<span class="fc" id="L212">    InputStreamReader reader = null;</span>
+<span class="fc" id="L213">    FileOutputStream fileOutputStream = null;</span>
+<span class="fc" id="L214">    OutputStreamWriter writer = null;</span>
     try {
-<span class="fc" id="L214">      fileInputStream = new FileInputStream(from);</span>
-<span class="fc" id="L215">      reader = new InputStreamReader(fileInputStream, fromCharset);</span>
-<span class="fc" id="L216">      fileOutputStream = new FileOutputStream(to);</span>
-<span class="fc" id="L217">      writer = new OutputStreamWriter(fileOutputStream, toCharset);</span>
-<span class="fc" id="L218">      final char[] cbuf = new char[bufferSize];</span>
-<span class="fc" id="L219">      int read = reader.read(cbuf);</span>
-<span class="fc bfc" id="L220" title="All 2 branches covered.">      while (read &gt; 0) {</span>
-<span class="fc" id="L221">        writer.write(cbuf, 0, read);</span>
-<span class="fc" id="L222">        read = reader.read(cbuf);</span>
+<span class="fc" id="L216">      fileInputStream = new FileInputStream(from);</span>
+<span class="fc" id="L217">      reader = new InputStreamReader(fileInputStream, fromCharset);</span>
+<span class="fc" id="L218">      fileOutputStream = new FileOutputStream(to);</span>
+<span class="fc" id="L219">      writer = new OutputStreamWriter(fileOutputStream, toCharset);</span>
+<span class="fc" id="L220">      final char[] cbuf = new char[bufferSize];</span>
+<span class="fc" id="L221">      int read = reader.read(cbuf);</span>
+<span class="fc bfc" id="L222" title="All 2 branches covered.">      while (read &gt; 0) {</span>
+<span class="fc" id="L223">        writer.write(cbuf, 0, read);</span>
+<span class="fc" id="L224">        read = reader.read(cbuf);</span>
       }
-<span class="fc" id="L224">      success = true;</span>
-<span class="nc" id="L225">    } catch (final FileNotFoundException e) {</span>
-<span class="nc" id="L226">      logger.warn(&quot;File not found&quot;, e);</span>
-<span class="nc" id="L227">    } catch (final UnsupportedEncodingException e) {</span>
-<span class="nc" id="L228">      logger.warn(&quot;Unsupported Encoding&quot;, e);</span>
-<span class="nc" id="L229">    } catch (final IOException e) {</span>
-<span class="nc" id="L230">      logger.warn(&quot;File IOException&quot;, e);</span>
+<span class="fc" id="L226">      success = true;</span>
+<span class="nc" id="L227">    } catch (final FileNotFoundException e) {</span>
+<span class="nc" id="L228">      logger.warn(&quot;File not found&quot;, e);</span>
+<span class="nc" id="L229">    } catch (final UnsupportedEncodingException e) {</span>
+<span class="nc" id="L230">      logger.warn(&quot;Unsupported Encoding&quot;, e);</span>
+<span class="nc" id="L231">    } catch (final IOException e) {</span>
+<span class="nc" id="L232">      logger.warn(&quot;File IOException&quot;, e);</span>
     } finally {
-<span class="fc" id="L232">      FileUtils.close(reader);</span>
-<span class="fc" id="L233">      FileUtils.close(fileInputStream);</span>
-<span class="fc" id="L234">      FileUtils.close(writer);</span>
-<span class="fc" id="L235">      FileUtils.close(fileOutputStream);</span>
+<span class="fc" id="L234">      FileUtils.close(reader);</span>
+<span class="fc" id="L235">      FileUtils.close(fileInputStream);</span>
+<span class="fc" id="L236">      FileUtils.close(writer);</span>
+<span class="fc" id="L237">      FileUtils.close(fileOutputStream);</span>
     }
-<span class="fc" id="L237">    return success;</span>
+<span class="fc" id="L239">    return success;</span>
   }
 
 }

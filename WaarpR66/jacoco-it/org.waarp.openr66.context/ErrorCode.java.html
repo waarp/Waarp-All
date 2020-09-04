@@ -174,13 +174,13 @@ import org.waarp.openr66.protocol.configuration.Messages;
    */
   public final char code;
 
-<span class="fc" id="L177">  ErrorCode(char code) {</span>
+<span class="fc" id="L177">  ErrorCode(final char code) {</span>
 <span class="fc" id="L178">    this.code = code;</span>
 <span class="fc" id="L179">  }</span>
 
   @JsonValue
   public String getJsonRepr() {
-<span class="fc" id="L183">    return String.valueOf(code) + &quot;  &quot;;</span>
+<span class="fc" id="L183">    return code + &quot;  &quot;;</span>
   }
 
   public String getCode() {
@@ -198,17 +198,17 @@ import org.waarp.openr66.protocol.configuration.Messages;
    *
    * @return the ErrorCode according to the code
    */
-  public static ErrorCode getFromCode(String code) {
+  public static ErrorCode getFromCode(final String code) {
 <span class="pc bpc" id="L202" title="1 of 2 branches missed.">    if (code.isEmpty()) {</span>
 <span class="nc" id="L203">      return Unknown;</span>
     }
-<span class="pc bpc" id="L205" title="30 of 35 branches missed.">    switch (code.charAt(0)) {</span>
+<span class="pc bpc" id="L205" title="27 of 35 branches missed.">    switch (code.charAt(0)) {</span>
       case 'i':
 <span class="nc" id="L207">        return InitOk;</span>
       case 'B':
 <span class="fc" id="L209">        return PreProcessingOk;</span>
       case 'P':
-<span class="nc" id="L211">        return PostProcessingOk;</span>
+<span class="fc" id="L211">        return PostProcessingOk;</span>
       case 'X':
 <span class="fc" id="L213">        return TransferOk;</span>
       case 'O':
@@ -220,11 +220,11 @@ import org.waarp.openr66.protocol.configuration.Messages;
       case 'E':
 <span class="nc" id="L221">        return ExternalOp;</span>
       case 'T':
-<span class="nc" id="L223">        return TransferError;</span>
+<span class="fc" id="L223">        return TransferError;</span>
       case 'M':
 <span class="nc" id="L225">        return MD5Error;</span>
       case 'D':
-<span class="nc" id="L227">        return Disconnection;</span>
+<span class="fc" id="L227">        return Disconnection;</span>
       case 'r':
 <span class="nc" id="L229">        return RemoteShutdown;</span>
       case 'F':
@@ -272,7 +272,7 @@ import org.waarp.openr66.protocol.configuration.Messages;
       case 'd':
 <span class="nc" id="L273">        return SizeNotAllowed;</span>
       default:
-        ErrorCode ecode;
+        final ErrorCode ecode;
         try {
 <span class="nc" id="L277">          ecode = valueOf(code.trim());</span>
 <span class="nc" id="L278">        } catch (final IllegalArgumentException e) {</span>
@@ -282,7 +282,7 @@ import org.waarp.openr66.protocol.configuration.Messages;
     }
   }
 
-  public static boolean isErrorCode(ErrorCode code) {
+  public static boolean isErrorCode(final ErrorCode code) {
 <span class="nc bnc" id="L286" title="All 3 branches missed.">    switch (code) {</span>
       case BadAuthent:
       case CanceledTransfer:

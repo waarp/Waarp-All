@@ -32,34 +32,35 @@ public class PostgreSQLTransferDAO extends DBTransferDAO {
 
   protected static final String SQL_GET_ID = &quot;SELECT NEXTVAL('runseq')&quot;;
 
-  public PostgreSQLTransferDAO(Connection con) throws DAOConnectionException {
-<span class="fc" id="L36">    super(con);</span>
-<span class="fc" id="L37">  }</span>
+  public PostgreSQLTransferDAO(final Connection con)
+      throws DAOConnectionException {
+<span class="fc" id="L37">    super(con);</span>
+<span class="fc" id="L38">  }</span>
 
   @Override
   protected long getNextId() throws DAOConnectionException {
-<span class="fc" id="L41">    PreparedStatement ps = null;</span>
-<span class="fc" id="L42">    ResultSet rs = null;</span>
+<span class="fc" id="L42">    PreparedStatement ps = null;</span>
+<span class="fc" id="L43">    ResultSet rs = null;</span>
     try {
-<span class="fc" id="L44">      ps = connection.prepareStatement(SQL_GET_ID);</span>
-<span class="fc" id="L45">      rs = ps.executeQuery();</span>
-<span class="pc bpc" id="L46" title="1 of 2 branches missed.">      if (rs.next()) {</span>
-<span class="fc" id="L47">        return rs.getLong(1);</span>
+<span class="fc" id="L45">      ps = connection.prepareStatement(SQL_GET_ID);</span>
+<span class="fc" id="L46">      rs = ps.executeQuery();</span>
+<span class="pc bpc" id="L47" title="1 of 2 branches missed.">      if (rs.next()) {</span>
+<span class="fc" id="L48">        return rs.getLong(1);</span>
       } else {
-<span class="nc" id="L49">        throw new DAOConnectionException(</span>
+<span class="nc" id="L50">        throw new DAOConnectionException(</span>
             &quot;Error no id available, you should purge the database.&quot;);
       }
-<span class="nc" id="L52">    } catch (final SQLException e) {</span>
-<span class="nc" id="L53">      throw new DAOConnectionException(e);</span>
+<span class="nc" id="L53">    } catch (final SQLException e) {</span>
+<span class="nc" id="L54">      throw new DAOConnectionException(e);</span>
     } finally {
       try {
-<span class="pc bpc" id="L56" title="1 of 2 branches missed.">        if (rs != null) {</span>
-<span class="fc" id="L57">          rs.close();</span>
+<span class="pc bpc" id="L57" title="1 of 2 branches missed.">        if (rs != null) {</span>
+<span class="fc" id="L58">          rs.close();</span>
         }
-<span class="nc" id="L59">      } catch (SQLException e) {</span>
+<span class="nc" id="L60">      } catch (final SQLException e) {</span>
         // ignore
-<span class="fc" id="L61">      }</span>
-<span class="fc" id="L62">      closeStatement(ps);</span>
+<span class="fc" id="L62">      }</span>
+<span class="fc" id="L63">      closeStatement(ps);</span>
     }
   }
 }

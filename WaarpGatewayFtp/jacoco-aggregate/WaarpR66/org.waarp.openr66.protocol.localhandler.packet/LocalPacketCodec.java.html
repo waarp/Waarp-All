@@ -39,8 +39,8 @@ import java.util.List;
 <span class="fc" id="L39">      WaarpLoggerFactory.getLogger(LocalPacketCodec.class);</span>
 
   @Override
-  protected void decode(ChannelHandlerContext ctx, ByteBuf buf,
-                        List&lt;Object&gt; out) throws Exception {
+  protected void decode(final ChannelHandlerContext ctx, final ByteBuf buf,
+                        final List&lt;Object&gt; out) throws Exception {
     // Make sure if the length field was received.
 <span class="nc bnc" id="L45" title="All 2 branches missed.">    if (buf.readableBytes() &lt; 4) {</span>
       // The length field was not received yet - return null.
@@ -54,7 +54,7 @@ import java.util.List;
     }
 <span class="nc" id="L55">  }</span>
 
-  public static AbstractLocalPacket decodeNetworkPacket(ByteBuf buf)
+  public static AbstractLocalPacket decodeNetworkPacket(final ByteBuf buf)
       throws OpenR66ProtocolPacketException {
     // Mark the current buffer position
 <span class="fc" id="L60">    buf.markReaderIndex();</span>
@@ -82,13 +82,15 @@ import java.util.List;
   }
 
   @Override
-  protected void encode(ChannelHandlerContext ctx, AbstractLocalPacket msg,
-                        ByteBuf out) throws Exception {
-<span class="nc" id="L87">    logger.trace(&quot;sending local packet {}&quot;, msg.getType());</span>
-<span class="nc" id="L88">    final ByteBuf buf = msg.getLocalPacket(null);</span>
-<span class="nc" id="L89">    out.writeBytes(buf);</span>
-<span class="nc" id="L90">    buf.release();</span>
-<span class="nc" id="L91">  }</span>
+  protected void encode(final ChannelHandlerContext ctx,
+                        final AbstractLocalPacket msg, final ByteBuf out)
+      throws Exception {
+<span class="nc" id="L88">    logger.trace(&quot;sending local packet {}&quot;, msg.getType());</span>
+<span class="nc" id="L89">    final ByteBuf buf = msg.getLocalPacket(null);</span>
+<span class="nc" id="L90">    out.writeBytes(buf);</span>
+<span class="nc" id="L91">    buf.release();</span>
+<span class="nc" id="L92">    msg.clear();</span>
+<span class="nc" id="L93">  }</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

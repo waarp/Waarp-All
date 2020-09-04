@@ -121,7 +121,7 @@ import java.io.File;
    * Print to standard output the help of this command
    */
   public static void printHelp() {
-<span class="nc" id="L124">    HelpFormatter formatter = new HelpFormatter();</span>
+<span class="nc" id="L124">    final HelpFormatter formatter = new HelpFormatter();</span>
 <span class="nc" id="L125">    formatter.printHelp(&quot;FtpArgs&quot;, FTP_OPTIONS);</span>
 <span class="nc" id="L126">  }</span>
 
@@ -134,12 +134,12 @@ import java.io.File;
    *
    * @param args must be already replaced values (getReplacedValue)
    */
-  public static FtpArgs getFtpArgs(String[] args)
+  public static FtpArgs getFtpArgs(final String[] args)
       throws OpenR66RunnerErrorException {
-<span class="fc" id="L139">    FtpArgs ftpArgs = new FtpArgs();</span>
-<span class="fc" id="L140">    CommandLineParser parser = new DefaultParser();</span>
+<span class="fc" id="L139">    final FtpArgs ftpArgs = new FtpArgs();</span>
+<span class="fc" id="L140">    final CommandLineParser parser = new DefaultParser();</span>
     try {
-<span class="fc" id="L142">      CommandLine cmd = parser.parse(FTP_OPTIONS, args, true);</span>
+<span class="fc" id="L142">      final CommandLine cmd = parser.parse(FTP_OPTIONS, args, true);</span>
 
 <span class="fc" id="L144">      ftpArgs.setFilepath(cmd.getOptionValue(&quot;file&quot;));</span>
 <span class="fc" id="L145">      ftpArgs.setFilename(new File(ftpArgs.getFilepath()).getName());</span>
@@ -149,7 +149,7 @@ import java.io.File;
 <span class="pc bpc" id="L149" title="1 of 2 branches missed.">        if (ftpArgs.getPort() &lt; 0) {</span>
 <span class="nc" id="L150">          throw new NumberFormatException(&quot;Port must be positive&quot;);</span>
         }
-<span class="fc" id="L152">      } catch (NumberFormatException e) {</span>
+<span class="fc" id="L152">      } catch (final NumberFormatException e) {</span>
 <span class="fc" id="L153">        throw new OpenR66RunnerErrorException(e);</span>
 <span class="fc" id="L154">      }</span>
 <span class="fc" id="L155">      ftpArgs.setUser(cmd.getOptionValue(&quot;user&quot;));</span>
@@ -162,7 +162,7 @@ import java.io.File;
 <span class="fc" id="L162">            .setPassive(&quot;passive&quot;.equalsIgnoreCase(cmd.getOptionValue(&quot;mode&quot;)));</span>
       }
 <span class="fc bfc" id="L164" title="All 2 branches covered.">      if (cmd.hasOption(&quot;ssl&quot;)) {</span>
-<span class="fc" id="L165">        String ssl = cmd.getOptionValue(&quot;ssl&quot;);</span>
+<span class="fc" id="L165">        final String ssl = cmd.getOptionValue(&quot;ssl&quot;);</span>
 <span class="fc bfc" id="L166" title="All 2 branches covered.">        if (&quot;implicit&quot;.equalsIgnoreCase(ssl)) {</span>
 <span class="fc" id="L167">          ftpArgs.setSsl(-1);</span>
 <span class="fc bfc" id="L168" title="All 2 branches covered.">        } else if (&quot;explicit&quot;.equalsIgnoreCase(ssl)) {</span>
@@ -175,7 +175,7 @@ import java.io.File;
 <span class="fc" id="L175">        ftpArgs.setCwd(cmd.getOptionValue(&quot;cwd&quot;));</span>
       }
 <span class="fc bfc" id="L177" title="All 2 branches covered.">      if (cmd.hasOption(&quot;digest&quot;)) {</span>
-<span class="fc" id="L178">        String digest = cmd.getOptionValue(&quot;digest&quot;);</span>
+<span class="fc" id="L178">        final String digest = cmd.getOptionValue(&quot;digest&quot;);</span>
 <span class="pc bpc" id="L179" title="1 of 2 branches missed.">        if (&quot;crc&quot;.equalsIgnoreCase(digest)) {</span>
 <span class="nc" id="L180">          ftpArgs.setDigest(DigestAlgo.CRC32);</span>
 <span class="nc" id="L181">          ftpArgs.setDigestCommand(&quot;XCRC &quot; + ftpArgs.getFilename());</span>
@@ -221,7 +221,7 @@ import java.io.File;
 <span class="fc" id="L221">              &quot;Command not known: &quot; + ftpArgs.getCommand());</span>
         }
       }
-<span class="fc" id="L224">    } catch (ParseException e) {</span>
+<span class="fc" id="L224">    } catch (final ParseException e) {</span>
 <span class="fc" id="L225">      throw new OpenR66RunnerErrorException(e);</span>
 <span class="fc" id="L226">    }</span>
 
@@ -232,7 +232,7 @@ import java.io.File;
 <span class="fc" id="L232">    return filepath;</span>
   }
 
-  public FtpArgs setFilepath(String filepath) {
+  public FtpArgs setFilepath(final String filepath) {
 <span class="fc" id="L236">    this.filepath = filepath;</span>
 <span class="fc" id="L237">    return this;</span>
   }
@@ -241,7 +241,7 @@ import java.io.File;
 <span class="fc" id="L241">    return filename;</span>
   }
 
-  public FtpArgs setFilename(String filename) {
+  public FtpArgs setFilename(final String filename) {
 <span class="fc" id="L245">    this.filename = filename;</span>
 <span class="fc" id="L246">    return this;</span>
   }
@@ -250,7 +250,7 @@ import java.io.File;
 <span class="fc" id="L250">    return requested;</span>
   }
 
-  public FtpArgs setRequested(String requested) {
+  public FtpArgs setRequested(final String requested) {
 <span class="fc" id="L254">    this.requested = requested;</span>
 <span class="fc" id="L255">    return this;</span>
   }
@@ -259,7 +259,7 @@ import java.io.File;
 <span class="fc" id="L259">    return port;</span>
   }
 
-  public FtpArgs setPort(int port) {
+  public FtpArgs setPort(final int port) {
 <span class="fc" id="L263">    this.port = port;</span>
 <span class="fc" id="L264">    return this;</span>
   }
@@ -268,7 +268,7 @@ import java.io.File;
 <span class="fc" id="L268">    return user;</span>
   }
 
-  public FtpArgs setUser(String user) {
+  public FtpArgs setUser(final String user) {
 <span class="fc" id="L272">    this.user = user;</span>
 <span class="fc" id="L273">    return this;</span>
   }
@@ -277,7 +277,7 @@ import java.io.File;
 <span class="fc" id="L277">    return pwd;</span>
   }
 
-  public FtpArgs setPwd(String pwd) {
+  public FtpArgs setPwd(final String pwd) {
 <span class="fc" id="L281">    this.pwd = pwd;</span>
 <span class="fc" id="L282">    return this;</span>
   }
@@ -286,7 +286,7 @@ import java.io.File;
 <span class="fc" id="L286">    return acct;</span>
   }
 
-  public FtpArgs setAcct(String acct) {
+  public FtpArgs setAcct(final String acct) {
 <span class="fc" id="L290">    this.acct = acct;</span>
 <span class="fc" id="L291">    return this;</span>
   }
@@ -295,7 +295,7 @@ import java.io.File;
 <span class="fc" id="L295">    return isPassive;</span>
   }
 
-  public FtpArgs setPassive(boolean passive) {
+  public FtpArgs setPassive(final boolean passive) {
 <span class="fc" id="L299">    isPassive = passive;</span>
 <span class="fc" id="L300">    return this;</span>
   }
@@ -304,7 +304,7 @@ import java.io.File;
 <span class="fc" id="L304">    return ssl;</span>
   }
 
-  public FtpArgs setSsl(int ssl) {
+  public FtpArgs setSsl(final int ssl) {
 <span class="fc" id="L308">    this.ssl = ssl;</span>
 <span class="fc" id="L309">    return this;</span>
   }
@@ -313,7 +313,7 @@ import java.io.File;
 <span class="fc" id="L313">    return cwd;</span>
   }
 
-  public FtpArgs setCwd(String cwd) {
+  public FtpArgs setCwd(final String cwd) {
 <span class="fc" id="L317">    this.cwd = cwd;</span>
 <span class="fc" id="L318">    return this;</span>
   }
@@ -322,7 +322,7 @@ import java.io.File;
 <span class="fc" id="L322">    return digest;</span>
   }
 
-  public FtpArgs setDigest(DigestAlgo digest) {
+  public FtpArgs setDigest(final DigestAlgo digest) {
 <span class="fc" id="L326">    this.digest = digest;</span>
 <span class="fc" id="L327">    return this;</span>
   }
@@ -331,7 +331,7 @@ import java.io.File;
 <span class="nc" id="L331">    return digestCommand;</span>
   }
 
-  public FtpArgs setDigestCommand(String digestCommand) {
+  public FtpArgs setDigestCommand(final String digestCommand) {
 <span class="fc" id="L335">    this.digestCommand = digestCommand;</span>
 <span class="fc" id="L336">    return this;</span>
   }
@@ -340,7 +340,7 @@ import java.io.File;
 <span class="fc" id="L340">    return command;</span>
   }
 
-  public FtpArgs setCommand(String command) {
+  public FtpArgs setCommand(final String command) {
 <span class="fc" id="L344">    this.command = command;</span>
 <span class="fc" id="L345">    return this;</span>
   }
@@ -349,7 +349,7 @@ import java.io.File;
 <span class="fc" id="L349">    return codeCommand;</span>
   }
 
-  public FtpArgs setCodeCommand(int codeCommand) {
+  public FtpArgs setCodeCommand(final int codeCommand) {
 <span class="fc" id="L353">    this.codeCommand = codeCommand;</span>
 <span class="fc" id="L354">    return this;</span>
   }
@@ -358,7 +358,7 @@ import java.io.File;
 <span class="fc" id="L358">    return preArgs;</span>
   }
 
-  public FtpArgs setPreArgs(String preArgs) {
+  public FtpArgs setPreArgs(final String preArgs) {
 <span class="fc" id="L362">    this.preArgs = preArgs;</span>
 <span class="fc" id="L363">    return this;</span>
   }
@@ -367,7 +367,7 @@ import java.io.File;
 <span class="fc" id="L367">    return postArgs;</span>
   }
 
-  public FtpArgs setPostArgs(String postArgs) {
+  public FtpArgs setPostArgs(final String postArgs) {
 <span class="fc" id="L371">    this.postArgs = postArgs;</span>
 <span class="fc" id="L372">    return this;</span>
   }

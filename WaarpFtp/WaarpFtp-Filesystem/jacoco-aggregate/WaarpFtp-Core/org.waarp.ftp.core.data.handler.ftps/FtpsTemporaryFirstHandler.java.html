@@ -51,96 +51,99 @@ class FtpsTemporaryFirstHandler extends ChannelDuplexHandler {
    */
   FtpSession session;
 
-<span class="nc" id="L54">  FtpsTemporaryFirstHandler(FtpConfiguration configuration, boolean active) {</span>
-<span class="nc" id="L55">    this.configuration = configuration;</span>
-<span class="nc" id="L56">    this.active = active;</span>
-<span class="nc" id="L57">  }</span>
+  FtpsTemporaryFirstHandler(final FtpConfiguration configuration,
+<span class="nc" id="L55">                            final boolean active) {</span>
+<span class="nc" id="L56">    this.configuration = configuration;</span>
+<span class="nc" id="L57">    this.active = active;</span>
+<span class="nc" id="L58">  }</span>
 
   @Override
-  public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
-<span class="nc" id="L61">    ctx.channel().config().setAutoRead(false);</span>
-<span class="nc" id="L62">    super.channelRegistered(ctx);</span>
-<span class="nc" id="L63">  }</span>
+  public void channelRegistered(final ChannelHandlerContext ctx)
+      throws Exception {
+<span class="nc" id="L63">    ctx.channel().config().setAutoRead(false);</span>
+<span class="nc" id="L64">    super.channelRegistered(ctx);</span>
+<span class="nc" id="L65">  }</span>
 
-  protected void setSession(Channel channel) {
+  protected void setSession(final Channel channel) {
     // First get the ftpSession from inetaddresses
-<span class="nc bnc" id="L67" title="All 2 branches missed.">    for (int i = 0; i &lt; FtpInternalConfiguration.RETRYNB; i++) {</span>
-<span class="nc" id="L68">      session = configuration.getFtpSessionNoRemove(channel, active);</span>
-<span class="nc bnc" id="L69" title="All 2 branches missed.">      if (session == null) {</span>
-<span class="nc" id="L70">        logger.warn(&quot;Session not found at try &quot; + i);</span>
+<span class="nc bnc" id="L69" title="All 2 branches missed.">    for (int i = 0; i &lt; FtpInternalConfiguration.RETRYNB; i++) {</span>
+<span class="nc" id="L70">      session = configuration.getFtpSessionNoRemove(channel, active);</span>
+<span class="nc bnc" id="L71" title="All 2 branches missed.">      if (session == null) {</span>
+<span class="nc" id="L72">        logger.warn(&quot;Session not found at try &quot; + i);</span>
         try {
-<span class="nc" id="L72">          Thread.sleep(FtpInternalConfiguration.RETRYINMS);</span>
-<span class="nc" id="L73">        } catch (final InterruptedException e1) {//NOSONAR</span>
-<span class="nc" id="L74">          SysErrLogger.FAKE_LOGGER.ignoreLog(e1);</span>
-<span class="nc" id="L75">          break;</span>
-<span class="nc" id="L76">        }</span>
+<span class="nc" id="L74">          Thread.sleep(FtpInternalConfiguration.RETRYINMS);</span>
+<span class="nc" id="L75">        } catch (final InterruptedException e1) {//NOSONAR</span>
+<span class="nc" id="L76">          SysErrLogger.FAKE_LOGGER.ignoreLog(e1);</span>
+<span class="nc" id="L77">          break;</span>
+<span class="nc" id="L78">        }</span>
       } else {
         break;
       }
     }
-<span class="nc bnc" id="L81" title="All 2 branches missed.">    if (session == null) {</span>
+<span class="nc bnc" id="L83" title="All 2 branches missed.">    if (session == null) {</span>
       // Not found !!!
-<span class="nc" id="L83">      logger.error(&quot;Session not found!&quot;);</span>
-<span class="nc" id="L84">      WaarpSslUtility.closingSslChannel(channel);</span>
+<span class="nc" id="L85">      logger.error(&quot;Session not found!&quot;);</span>
+<span class="nc" id="L86">      WaarpSslUtility.closingSslChannel(channel);</span>
       // Problem: control connection could not be directly informed!!!
       // Only timeout will occur
     }
-<span class="nc" id="L88">  }</span>
+<span class="nc" id="L90">  }</span>
 
-  private void superChannelActive(ChannelHandlerContext ctx) throws Exception {
-<span class="nc" id="L91">    super.channelActive(ctx);</span>
-<span class="nc" id="L92">  }</span>
+  private void superChannelActive(final ChannelHandlerContext ctx)
+      throws Exception {
+<span class="nc" id="L94">    super.channelActive(ctx);</span>
+<span class="nc" id="L95">  }</span>
 
   @Override
   public void channelActive(final ChannelHandlerContext ctx) throws Exception {
     // Get the SslHandler in the current pipeline.
-<span class="nc" id="L97">    final Channel channel = ctx.channel();</span>
+<span class="nc" id="L100">    final Channel channel = ctx.channel();</span>
 
-<span class="nc bnc" id="L99" title="All 2 branches missed.">    if (session == null) {</span>
-<span class="nc" id="L100">      setSession(channel);</span>
-    }
 <span class="nc bnc" id="L102" title="All 2 branches missed.">    if (session == null) {</span>
-<span class="nc" id="L103">      logger.error(&quot;Cannot find session for SSL&quot;);</span>
-<span class="nc" id="L104">      return;</span>
+<span class="nc" id="L103">      setSession(channel);</span>
+    }
+<span class="nc bnc" id="L105" title="All 2 branches missed.">    if (session == null) {</span>
+<span class="nc" id="L106">      logger.error(&quot;Cannot find session for SSL&quot;);</span>
+<span class="nc" id="L107">      return;</span>
     }
     // Server: no renegotiation still, but possible clientAuthent
     // Mode is always as SSL Server mode.
-<span class="nc" id="L108">    final SslHandler sslHandler = FtpsInitializer.waarpSslContextFactory</span>
-<span class="nc" id="L109">        .initInitializer(true, FtpsInitializer.waarpSslContextFactory</span>
-<span class="nc" id="L110">            .needClientAuthentication(), FtpChannelUtils</span>
-<span class="nc" id="L111">                             .getRemoteInetSocketAddress(</span>
-<span class="nc" id="L112">                                 session.getControlChannel()).getAddress()</span>
-<span class="nc" id="L113">                             .getHostAddress(), FtpChannelUtils</span>
+<span class="nc" id="L111">    final SslHandler sslHandler = FtpsInitializer.waarpSslContextFactory</span>
+<span class="nc" id="L112">        .initInitializer(true, FtpsInitializer.waarpSslContextFactory</span>
+<span class="nc" id="L113">            .needClientAuthentication(), FtpChannelUtils</span>
 <span class="nc" id="L114">                             .getRemoteInetSocketAddress(</span>
-<span class="nc" id="L115">                                 session.getControlChannel()).getPort());</span>
-<span class="nc" id="L116">    WaarpSslUtility.addSslOpenedChannel(channel);</span>
+<span class="nc" id="L115">                                 session.getControlChannel()).getAddress()</span>
+<span class="nc" id="L116">                             .getHostAddress(), FtpChannelUtils</span>
+<span class="nc" id="L117">                             .getRemoteInetSocketAddress(</span>
+<span class="nc" id="L118">                                 session.getControlChannel()).getPort());</span>
+<span class="nc" id="L119">    WaarpSslUtility.addSslOpenedChannel(channel);</span>
     // Get the SslHandler and begin handshake ASAP.
-<span class="nc" id="L118">    logger.debug(&quot;SSL found but need handshake: &quot; + ctx.channel());</span>
-<span class="nc" id="L119">    final FtpsTemporaryFirstHandler myself = this;</span>
-<span class="nc" id="L120">    WaarpSslUtility.addSslHandler(null, ctx.pipeline(), sslHandler,</span>
-<span class="nc" id="L121">                                  new GenericFutureListener&lt;Future&lt;? super Channel&gt;&gt;() {</span>
+<span class="nc" id="L121">    logger.debug(&quot;SSL found but need handshake: &quot; + ctx.channel());</span>
+<span class="nc" id="L122">    final FtpsTemporaryFirstHandler myself = this;</span>
+<span class="nc" id="L123">    WaarpSslUtility.addSslHandler(null, ctx.pipeline(), sslHandler,</span>
+<span class="nc" id="L124">                                  new GenericFutureListener&lt;Future&lt;? super Channel&gt;&gt;() {</span>
                                     @Override
                                     public void operationComplete(
-                                        Future&lt;? super Channel&gt; future)
+                                        final Future&lt;? super Channel&gt; future)
                                         throws Exception {
                                       try {
-<span class="nc" id="L127">                                        logger.debug(</span>
-<span class="nc" id="L128">                                            &quot;Handshake: &quot; + future.isSuccess() +</span>
-<span class="nc" id="L129">                                            ':' + future.get(), future.cause());</span>
-<span class="nc bnc" id="L130" title="All 2 branches missed.">                                        if (future.isSuccess()) {</span>
-<span class="nc" id="L131">                                          logger.debug(</span>
+<span class="nc" id="L130">                                        logger.debug(</span>
+<span class="nc" id="L131">                                            &quot;Handshake: &quot; + future.isSuccess() +</span>
+<span class="nc" id="L132">                                            ':' + future.get(), future.cause());</span>
+<span class="nc bnc" id="L133" title="All 2 branches missed.">                                        if (future.isSuccess()) {</span>
+<span class="nc" id="L134">                                          logger.debug(</span>
                                               &quot;End of initialization of SSL and data channel&quot;);
-<span class="nc" id="L133">                                          myself.superChannelActive(ctx);</span>
-<span class="nc" id="L134">                                          ctx.pipeline().remove(myself);</span>
+<span class="nc" id="L136">                                          myself.superChannelActive(ctx);</span>
+<span class="nc" id="L137">                                          ctx.pipeline().remove(myself);</span>
                                         } else {
-<span class="nc" id="L136">                                          ctx.close();</span>
+<span class="nc" id="L139">                                          ctx.close();</span>
                                         }
-<span class="nc" id="L138">                                      } catch (final Exception e) {</span>
-<span class="nc" id="L139">                                        ctx.close();</span>
-<span class="nc" id="L140">                                      }</span>
-<span class="nc" id="L141">                                    }</span>
+<span class="nc" id="L141">                                      } catch (final Exception e) {</span>
+<span class="nc" id="L142">                                        ctx.close();</span>
+<span class="nc" id="L143">                                      }</span>
+<span class="nc" id="L144">                                    }</span>
                                   });
-<span class="nc" id="L143">  }</span>
+<span class="nc" id="L146">  }</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

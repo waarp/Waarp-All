@@ -56,13 +56,13 @@ public final class ZipUtility {
    *
    * @return True if OK
    */
-  public static boolean createZipFromDirectory(String directory,
-                                               String filename,
-                                               boolean absolute) {
+  public static boolean createZipFromDirectory(final String directory,
+                                               final String filename,
+                                               final boolean absolute) {
 <span class="fc" id="L62">    final File rootDir = new File(directory);</span>
 <span class="fc" id="L63">    final File saveFile = new File(filename);</span>
     // recursive call
-    ZipArchiveOutputStream zaos;
+    final ZipArchiveOutputStream zaos;
     try {
 <span class="fc" id="L67">      zaos = new ZipArchiveOutputStream(new FileOutputStream(saveFile));</span>
 <span class="nc" id="L68">    } catch (final FileNotFoundException e) {</span>
@@ -93,9 +93,9 @@ public final class ZipUtility {
    *
    * @throws IOException
    */
-  private static void recurseFiles(File root, File file,
-                                   ZipArchiveOutputStream zaos,
-                                   boolean absolute) throws IOException {
+  private static void recurseFiles(final File root, final File file,
+                                   final ZipArchiveOutputStream zaos,
+                                   final boolean absolute) throws IOException {
 <span class="fc bfc" id="L99" title="All 2 branches covered.">    if (file.isDirectory()) {</span>
       // recursive call
 <span class="fc" id="L101">      final File[] files = file.listFiles();</span>
@@ -104,7 +104,7 @@ public final class ZipUtility {
       }
 <span class="fc bfc" id="L105" title="All 2 branches covered.">    } else if (!file.getName().endsWith(&quot;.zip&quot;) &amp;&amp;</span>
 <span class="pc bpc" id="L106" title="1 of 2 branches missed.">               !file.getName().endsWith(&quot;.ZIP&quot;)) {</span>
-      String filename;
+      final String filename;
 <span class="fc bfc" id="L108" title="All 2 branches covered.">      if (absolute) {</span>
 <span class="fc" id="L109">        filename =</span>
 <span class="fc" id="L110">            file.getAbsolutePath().substring(root.getAbsolutePath().length());</span>
@@ -128,8 +128,9 @@ public final class ZipUtility {
    *
    * @return True if OK
    */
-  public static boolean createZipFromFiles(List&lt;File&gt; files, String filename) {
-<span class="fc" id="L132">    return createZipFromFiles(files.toArray(FILE_0_LENGTH), filename);</span>
+  public static boolean createZipFromFiles(final List&lt;File&gt; files,
+                                           final String filename) {
+<span class="fc" id="L133">    return createZipFromFiles(files.toArray(FILE_0_LENGTH), filename);</span>
   }
 
   /**
@@ -140,29 +141,30 @@ public final class ZipUtility {
    *
    * @return True if OK
    */
-  public static boolean createZipFromFiles(File[] files, String filename) {
-<span class="fc" id="L144">    final File saveFile = new File(filename);</span>
-    ZipArchiveOutputStream zaos;
+  public static boolean createZipFromFiles(final File[] files,
+                                           final String filename) {
+<span class="fc" id="L146">    final File saveFile = new File(filename);</span>
+    final ZipArchiveOutputStream zaos;
     try {
-<span class="fc" id="L147">      zaos = new ZipArchiveOutputStream(new FileOutputStream(saveFile));</span>
-<span class="nc" id="L148">    } catch (final FileNotFoundException e) {</span>
-<span class="nc" id="L149">      return false;</span>
-<span class="fc" id="L150">    }</span>
-<span class="fc bfc" id="L151" title="All 2 branches covered.">    for (final File file : files) {</span>
+<span class="fc" id="L149">      zaos = new ZipArchiveOutputStream(new FileOutputStream(saveFile));</span>
+<span class="nc" id="L150">    } catch (final FileNotFoundException e) {</span>
+<span class="nc" id="L151">      return false;</span>
+<span class="fc" id="L152">    }</span>
+<span class="fc bfc" id="L153" title="All 2 branches covered.">    for (final File file : files) {</span>
       try {
-<span class="fc" id="L153">        addFile(file, zaos);</span>
-<span class="nc" id="L154">      } catch (final IOException e) {</span>
-<span class="nc" id="L155">        FileUtils.close(zaos);</span>
-<span class="nc" id="L156">        return false;</span>
-<span class="fc" id="L157">      }</span>
+<span class="fc" id="L155">        addFile(file, zaos);</span>
+<span class="nc" id="L156">      } catch (final IOException e) {</span>
+<span class="nc" id="L157">        FileUtils.close(zaos);</span>
+<span class="nc" id="L158">        return false;</span>
+<span class="fc" id="L159">      }</span>
     }
     try {
-<span class="fc" id="L160">      zaos.finish();</span>
-<span class="nc" id="L161">    } catch (final IOException e1) {</span>
+<span class="fc" id="L162">      zaos.finish();</span>
+<span class="nc" id="L163">    } catch (final IOException e1) {</span>
       // ignore
-<span class="fc" id="L163">    }</span>
-<span class="fc" id="L164">    FileUtils.close(zaos);</span>
-<span class="fc" id="L165">    return true;</span>
+<span class="fc" id="L165">    }</span>
+<span class="fc" id="L166">    FileUtils.close(zaos);</span>
+<span class="fc" id="L167">    return true;</span>
   }
 
   /**
@@ -173,17 +175,18 @@ public final class ZipUtility {
    *
    * @throws IOException
    */
-  private static void addFile(File file, ZipArchiveOutputStream zaos)
+  private static void addFile(final File file,
+                              final ZipArchiveOutputStream zaos)
       throws IOException {
-    String filename;
-<span class="fc" id="L179">    filename = file.getName();</span>
-<span class="fc" id="L180">    final ZipArchiveEntry zae = new ZipArchiveEntry(filename);</span>
-<span class="fc" id="L181">    zae.setSize(file.length());</span>
-<span class="fc" id="L182">    zaos.putArchiveEntry(zae);</span>
-<span class="fc" id="L183">    final FileInputStream fis = new FileInputStream(file);</span>
-<span class="fc" id="L184">    IOUtils.copy(fis, zaos);</span>
-<span class="fc" id="L185">    zaos.closeArchiveEntry();</span>
-<span class="fc" id="L186">  }</span>
+    final String filename;
+<span class="fc" id="L182">    filename = file.getName();</span>
+<span class="fc" id="L183">    final ZipArchiveEntry zae = new ZipArchiveEntry(filename);</span>
+<span class="fc" id="L184">    zae.setSize(file.length());</span>
+<span class="fc" id="L185">    zaos.putArchiveEntry(zae);</span>
+<span class="fc" id="L186">    final FileInputStream fis = new FileInputStream(file);</span>
+<span class="fc" id="L187">    IOUtils.copy(fis, zaos);</span>
+<span class="fc" id="L188">    zaos.closeArchiveEntry();</span>
+<span class="fc" id="L189">  }</span>
 
   /**
    * Extract all files from Tar into the specified directory
@@ -195,86 +198,86 @@ public final class ZipUtility {
    *
    * @throws IOException
    */
-  public static List&lt;String&gt; unZip(File tarFile, File directory)
+  public static List&lt;String&gt; unZip(final File tarFile, final File directory)
       throws IOException {
-<span class="fc" id="L200">    final List&lt;String&gt; result = new ArrayList&lt;String&gt;();</span>
-<span class="fc" id="L201">    final InputStream inputStream = new FileInputStream(tarFile);</span>
-<span class="fc" id="L202">    final ZipArchiveInputStream in = new ZipArchiveInputStream(inputStream);</span>
+<span class="fc" id="L203">    final List&lt;String&gt; result = new ArrayList&lt;String&gt;();</span>
+<span class="fc" id="L204">    final InputStream inputStream = new FileInputStream(tarFile);</span>
+<span class="fc" id="L205">    final ZipArchiveInputStream in = new ZipArchiveInputStream(inputStream);</span>
     try {
-<span class="fc" id="L204">      ZipArchiveEntry entry = in.getNextZipEntry();</span>
-<span class="fc bfc" id="L205" title="All 2 branches covered.">      while (entry != null) {</span>
-<span class="pc bpc" id="L206" title="1 of 2 branches missed.">        if (entry.isDirectory()) {</span>
-<span class="nc" id="L207">          entry = in.getNextZipEntry();</span>
-<span class="nc" id="L208">          continue;</span>
+<span class="fc" id="L207">      ZipArchiveEntry entry = in.getNextZipEntry();</span>
+<span class="fc bfc" id="L208" title="All 2 branches covered.">      while (entry != null) {</span>
+<span class="pc bpc" id="L209" title="1 of 2 branches missed.">        if (entry.isDirectory()) {</span>
+<span class="nc" id="L210">          entry = in.getNextZipEntry();</span>
+<span class="nc" id="L211">          continue;</span>
         }
-<span class="fc" id="L210">        final File curfile = new File(directory, entry.getName());</span>
-<span class="fc" id="L211">        final File parent = curfile.getParentFile();</span>
-<span class="fc bfc" id="L212" title="All 2 branches covered.">        if (!parent.exists()) {</span>
-<span class="fc" id="L213">          parent.mkdirs();</span>
+<span class="fc" id="L213">        final File curfile = new File(directory, entry.getName());</span>
+<span class="fc" id="L214">        final File parent = curfile.getParentFile();</span>
+<span class="fc bfc" id="L215" title="All 2 branches covered.">        if (!parent.exists()) {</span>
+<span class="fc" id="L216">          parent.mkdirs();//NOSONAR</span>
         }
-<span class="fc" id="L215">        final OutputStream out = new FileOutputStream(curfile);</span>
+<span class="fc" id="L218">        final OutputStream out = new FileOutputStream(curfile);</span>
         try {
-<span class="fc" id="L217">          IOUtils.copy(in, out);</span>
+<span class="fc" id="L220">          IOUtils.copy(in, out);</span>
         } finally {
-<span class="fc" id="L219">          FileUtils.close(out);</span>
+<span class="fc" id="L222">          FileUtils.close(out);</span>
         }
-<span class="fc" id="L221">        result.add(entry.getName());</span>
-<span class="fc" id="L222">        entry = in.getNextZipEntry();</span>
-<span class="fc" id="L223">      }</span>
+<span class="fc" id="L224">        result.add(entry.getName());</span>
+<span class="fc" id="L225">        entry = in.getNextZipEntry();</span>
+<span class="fc" id="L226">      }</span>
     } finally {
-<span class="fc" id="L225">      FileUtils.close(in);</span>
+<span class="fc" id="L228">      FileUtils.close(in);</span>
     }
-<span class="fc" id="L227">    return result;</span>
+<span class="fc" id="L230">    return result;</span>
   }
 
-  public static void main(String[] args) {
-<span class="nc bnc" id="L231" title="All 2 branches missed.">    if (args.length &lt; 3) {</span>
-<span class="nc" id="L232">      SysErrLogger.FAKE_LOGGER.syserr(&quot;You need to provide 3 arguments:\n&quot; +</span>
+  public static void main(final String[] args) {
+<span class="nc bnc" id="L234" title="All 2 branches missed.">    if (args.length &lt; 3) {</span>
+<span class="nc" id="L235">      SysErrLogger.FAKE_LOGGER.syserr(&quot;You need to provide 3 arguments:\n&quot; +</span>
                                       &quot;   option filedest.tar \&quot;source\&quot;\n&quot; +
                                       &quot;   where option=1 means unzip and source is a directory\n&quot; +
                                       &quot;   option=2 means zip and source is a directory\n&quot; +
                                       &quot;   option=3 means zip and source is a list of files comma separated&quot;);
-<span class="nc" id="L237">      System.exit(1);//NOSONAR</span>
+<span class="nc" id="L240">      System.exit(1);//NOSONAR</span>
     }
-<span class="nc" id="L239">    final int option = Integer.parseInt(args[0]);</span>
-<span class="nc" id="L240">    final String tarfile = args[1];</span>
-<span class="nc" id="L241">    final String tarsource = args[2];</span>
-    String[] tarfiles;
-<span class="nc bnc" id="L243" title="All 2 branches missed.">    if (option == 3) {</span>
-<span class="nc" id="L244">      tarfiles = args[2].split(&quot;,&quot;);</span>
-<span class="nc" id="L245">      final File[] files = new File[tarfiles.length];</span>
-<span class="nc bnc" id="L246" title="All 2 branches missed.">      for (int i = 0; i &lt; tarfiles.length; i++) {</span>
-<span class="nc" id="L247">        files[i] = new File(tarfiles[i]);</span>
+<span class="nc" id="L242">    final int option = Integer.parseInt(args[0]);</span>
+<span class="nc" id="L243">    final String tarfile = args[1];</span>
+<span class="nc" id="L244">    final String tarsource = args[2];</span>
+    final String[] tarfiles;
+<span class="nc bnc" id="L246" title="All 2 branches missed.">    if (option == 3) {</span>
+<span class="nc" id="L247">      tarfiles = args[2].split(&quot;,&quot;);</span>
+<span class="nc" id="L248">      final File[] files = new File[tarfiles.length];</span>
+<span class="nc bnc" id="L249" title="All 2 branches missed.">      for (int i = 0; i &lt; tarfiles.length; i++) {</span>
+<span class="nc" id="L250">        files[i] = new File(tarfiles[i]);</span>
       }
-<span class="nc bnc" id="L249" title="All 2 branches missed.">      if (createZipFromFiles(files, tarfile)) {</span>
-<span class="nc" id="L250">        SysErrLogger.FAKE_LOGGER.sysout(&quot;ZIP OK from multiple files&quot;);</span>
+<span class="nc bnc" id="L252" title="All 2 branches missed.">      if (createZipFromFiles(files, tarfile)) {</span>
+<span class="nc" id="L253">        SysErrLogger.FAKE_LOGGER.sysout(&quot;ZIP OK from multiple files&quot;);</span>
       } else {
-<span class="nc" id="L252">        SysErrLogger.FAKE_LOGGER.syserr(&quot;ZIP KO from multiple files&quot;);</span>
+<span class="nc" id="L255">        SysErrLogger.FAKE_LOGGER.syserr(&quot;ZIP KO from multiple files&quot;);</span>
       }
-<span class="nc bnc" id="L254" title="All 2 branches missed.">    } else if (option == 2) {</span>
-<span class="nc bnc" id="L255" title="All 2 branches missed.">      if (createZipFromDirectory(tarsource, tarfile, false)) {</span>
-<span class="nc" id="L256">        SysErrLogger.FAKE_LOGGER.sysout(&quot;ZIP OK from directory&quot;);</span>
+<span class="nc bnc" id="L257" title="All 2 branches missed.">    } else if (option == 2) {</span>
+<span class="nc bnc" id="L258" title="All 2 branches missed.">      if (createZipFromDirectory(tarsource, tarfile, false)) {</span>
+<span class="nc" id="L259">        SysErrLogger.FAKE_LOGGER.sysout(&quot;ZIP OK from directory&quot;);</span>
       } else {
-<span class="nc" id="L258">        SysErrLogger.FAKE_LOGGER.syserr(&quot;ZIP KO from directory&quot;);</span>
+<span class="nc" id="L261">        SysErrLogger.FAKE_LOGGER.syserr(&quot;ZIP KO from directory&quot;);</span>
       }
-<span class="nc bnc" id="L260" title="All 2 branches missed.">    } else if (option == 1) {</span>
-<span class="nc" id="L261">      final File tarFile = new File(tarfile);</span>
-<span class="nc" id="L262">      final File directory = new File(tarsource);</span>
-<span class="nc" id="L263">      List&lt;String&gt; result = null;</span>
+<span class="nc bnc" id="L263" title="All 2 branches missed.">    } else if (option == 1) {</span>
+<span class="nc" id="L264">      final File tarFile = new File(tarfile);</span>
+<span class="nc" id="L265">      final File directory = new File(tarsource);</span>
+<span class="nc" id="L266">      List&lt;String&gt; result = null;</span>
       try {
-<span class="nc" id="L265">        result = unZip(tarFile, directory);</span>
-<span class="nc" id="L266">      } catch (final IOException e) {</span>
-<span class="nc" id="L267">        SysErrLogger.FAKE_LOGGER.syserr(e);</span>
-<span class="nc" id="L268">      }</span>
-<span class="nc bnc" id="L269" title="All 4 branches missed.">      if (result == null || result.isEmpty()) {</span>
-<span class="nc" id="L270">        SysErrLogger.FAKE_LOGGER.syserr(&quot;UNZIP KO from directory&quot;);</span>
+<span class="nc" id="L268">        result = unZip(tarFile, directory);</span>
+<span class="nc" id="L269">      } catch (final IOException e) {</span>
+<span class="nc" id="L270">        SysErrLogger.FAKE_LOGGER.syserr(e);</span>
+<span class="nc" id="L271">      }</span>
+<span class="nc bnc" id="L272" title="All 4 branches missed.">      if (result == null || result.isEmpty()) {</span>
+<span class="nc" id="L273">        SysErrLogger.FAKE_LOGGER.syserr(&quot;UNZIP KO from directory&quot;);</span>
       } else {
-<span class="nc bnc" id="L272" title="All 2 branches missed.">        for (final String string : result) {</span>
-<span class="nc" id="L273">          SysErrLogger.FAKE_LOGGER.sysout(&quot;File: &quot; + string);</span>
-<span class="nc" id="L274">        }</span>
+<span class="nc bnc" id="L275" title="All 2 branches missed.">        for (final String string : result) {</span>
+<span class="nc" id="L276">          SysErrLogger.FAKE_LOGGER.sysout(&quot;File: &quot; + string);</span>
+<span class="nc" id="L277">        }</span>
       }
     }
 
-<span class="nc" id="L278">  }</span>
+<span class="nc" id="L281">  }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

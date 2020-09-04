@@ -21,6 +21,7 @@ package org.waarp.common.utility;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.bootstrap.ServerBootstrap;
+import io.netty.buffer.ByteBuf;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
@@ -36,13 +37,21 @@ import org.waarp.common.logging.SysErrLogger;
 public final class WaarpNettyUtil {
 
   private static final int TIMEOUT_MILLIS = 1000;
-  // Default optimal value for Waarp
-  private static final int BUFFER_SIZE_1MB = 1048576;
   // Default optimal value from Netty (tested as correct for Waarp)
   private static final int DEFAULT_LOW_WATER_MARK = 32 * 1024;
-  private static final int DEFAULT_HIGH_WATER_MARK = 64 * 1024;
+  private static final int DEFAULT_HIGH_WATER_MARK = 64 * 1024 + 64;
+  // Default optimal value for Waarp (in particular R66)
+  private static final int BUFFER_SIZE_1MB = DEFAULT_HIGH_WATER_MARK * 16;
 
   private WaarpNettyUtil() {
+  }
+
+  private static int getSoBufSize(final int maxBufSize) {
+<span class="fc" id="L50">    int soBuf = Math.min(maxBufSize * 16, BUFFER_SIZE_1MB);</span>
+<span class="pc bpc" id="L51" title="1 of 2 branches missed.">    if (soBuf &lt; maxBufSize * 4) {</span>
+<span class="nc" id="L52">      soBuf = maxBufSize * 4;</span>
+    }
+<span class="fc" id="L54">    return soBuf;</span>
   }
 
   /**
@@ -52,21 +61,42 @@ public final class WaarpNettyUtil {
    * @param group
    * @param timeout
    */
-  public static void setBootstrap(Bootstrap bootstrap, EventLoopGroup group,
-                                  int timeout) {
-<span class="fc" id="L57">    bootstrap.channel(NioSocketChannel.class);</span>
-<span class="fc" id="L58">    bootstrap.group(group);</span>
-<span class="fc" id="L59">    bootstrap.option(ChannelOption.TCP_NODELAY, false);</span>
-<span class="fc" id="L60">    bootstrap.option(ChannelOption.SO_REUSEADDR, true);</span>
-<span class="fc" id="L61">    bootstrap.option(ChannelOption.SO_KEEPALIVE, true);</span>
-<span class="fc" id="L62">    bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, timeout);</span>
-<span class="fc" id="L63">    bootstrap.option(ChannelOption.SO_RCVBUF, BUFFER_SIZE_1MB);</span>
-<span class="fc" id="L64">    bootstrap.option(ChannelOption.SO_SNDBUF, BUFFER_SIZE_1MB);</span>
-<span class="fc" id="L65">    bootstrap.option(ChannelOption.WRITE_BUFFER_WATER_MARK,</span>
-                     new WriteBufferWaterMark(DEFAULT_LOW_WATER_MARK,
-                                              DEFAULT_HIGH_WATER_MARK));
-<span class="fc" id="L68">    bootstrap.option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);</span>
-<span class="fc" id="L69">  }</span>
+  public static void setBootstrap(final Bootstrap bootstrap,
+                                  final EventLoopGroup group,
+                                  final int timeout) {
+<span class="fc" id="L67">    setBootstrap(bootstrap, group, timeout, DEFAULT_LOW_WATER_MARK, true);</span>
+<span class="fc" id="L68">  }</span>
+
+  /**
+   * Add default configuration for client bootstrap
+   *
+   * @param bootstrap
+   * @param group
+   * @param timeout
+   * @param maxBufSize
+   * @param autoRead
+   */
+  public static void setBootstrap(final Bootstrap bootstrap,
+                                  final EventLoopGroup group, final int timeout,
+                                  final int maxBufSize,
+                                  final boolean autoRead) {
+<span class="fc" id="L83">    bootstrap.channel(NioSocketChannel.class);</span>
+<span class="fc" id="L84">    bootstrap.group(group);</span>
+<span class="fc" id="L85">    bootstrap.option(ChannelOption.TCP_NODELAY, false);</span>
+<span class="fc" id="L86">    bootstrap.option(ChannelOption.SO_REUSEADDR, true);</span>
+<span class="fc" id="L87">    bootstrap.option(ChannelOption.SO_KEEPALIVE, true);</span>
+<span class="fc" id="L88">    bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, timeout);</span>
+<span class="fc" id="L89">    final int so_buf = getSoBufSize(maxBufSize);</span>
+<span class="fc" id="L90">    final int lowWaterMark = Math.min(DEFAULT_LOW_WATER_MARK, maxBufSize / 2);</span>
+<span class="fc" id="L91">    bootstrap.option(ChannelOption.SO_RCVBUF, so_buf);</span>
+<span class="fc" id="L92">    bootstrap.option(ChannelOption.SO_SNDBUF, so_buf);</span>
+<span class="fc" id="L93">    bootstrap.option(ChannelOption.WRITE_BUFFER_WATER_MARK,</span>
+                     new WriteBufferWaterMark(lowWaterMark, maxBufSize));
+<span class="fc" id="L95">    bootstrap.option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);</span>
+<span class="pc bpc" id="L96" title="1 of 2 branches missed.">    if (!autoRead) {</span>
+<span class="nc" id="L97">      bootstrap.option(ChannelOption.AUTO_READ, false);</span>
+    }
+<span class="fc" id="L99">  }</span>
 
   /**
    * Add default configuration for server bootstrap
@@ -75,41 +105,62 @@ public final class WaarpNettyUtil {
    * @param group
    * @param timeout
    */
-  public static void setServerBootstrap(ServerBootstrap bootstrap,
-                                        EventLoopGroup group, int timeout) {
-<span class="fc" id="L80">    bootstrap.channel(NioServerSocketChannel.class);</span>
-<span class="fc" id="L81">    bootstrap.group(group);</span>
+  public static void setServerBootstrap(final ServerBootstrap bootstrap,
+                                        final EventLoopGroup group,
+                                        final int timeout) {
+<span class="fc" id="L111">    setServerBootstrap(bootstrap, group, timeout, DEFAULT_LOW_WATER_MARK, true);</span>
+<span class="fc" id="L112">  }</span>
+
+  /**
+   * Add default configuration for server bootstrap
+   *
+   * @param bootstrap
+   * @param group
+   * @param timeout
+   * @param maxBufSize
+   * @param autoRead
+   */
+  public static void setServerBootstrap(final ServerBootstrap bootstrap,
+                                        final EventLoopGroup group,
+                                        final int timeout, final int maxBufSize,
+                                        final boolean autoRead) {
+<span class="fc" id="L127">    bootstrap.channel(NioServerSocketChannel.class);</span>
+<span class="fc" id="L128">    bootstrap.group(group);</span>
     // bootstrap.option(ChannelOption.TCP_NODELAY, true)
-<span class="fc" id="L83">    bootstrap.option(ChannelOption.SO_REUSEADDR, true);</span>
-<span class="fc" id="L84">    bootstrap.childOption(ChannelOption.TCP_NODELAY, false);</span>
-<span class="fc" id="L85">    bootstrap.childOption(ChannelOption.SO_REUSEADDR, true);</span>
-<span class="fc" id="L86">    bootstrap.childOption(ChannelOption.SO_KEEPALIVE, true);</span>
-<span class="fc" id="L87">    bootstrap.childOption(ChannelOption.CONNECT_TIMEOUT_MILLIS, timeout);</span>
-<span class="fc" id="L88">    bootstrap.childOption(ChannelOption.SO_RCVBUF, BUFFER_SIZE_1MB);</span>
-<span class="fc" id="L89">    bootstrap.childOption(ChannelOption.SO_SNDBUF, BUFFER_SIZE_1MB);</span>
-<span class="fc" id="L90">    bootstrap.childOption(ChannelOption.WRITE_BUFFER_WATER_MARK,</span>
-                          new WriteBufferWaterMark(DEFAULT_LOW_WATER_MARK,
-                                                   DEFAULT_HIGH_WATER_MARK));
-<span class="fc" id="L93">    bootstrap</span>
-<span class="fc" id="L94">        .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);</span>
-<span class="fc" id="L95">  }</span>
+<span class="fc" id="L130">    bootstrap.option(ChannelOption.SO_REUSEADDR, true);</span>
+<span class="fc" id="L131">    bootstrap.childOption(ChannelOption.TCP_NODELAY, false);</span>
+<span class="fc" id="L132">    bootstrap.childOption(ChannelOption.SO_REUSEADDR, true);</span>
+<span class="fc" id="L133">    bootstrap.childOption(ChannelOption.SO_KEEPALIVE, true);</span>
+<span class="fc" id="L134">    bootstrap.childOption(ChannelOption.CONNECT_TIMEOUT_MILLIS, timeout);</span>
+<span class="fc" id="L135">    final int so_buf = getSoBufSize(maxBufSize);</span>
+<span class="fc" id="L136">    final int lowWaterMark = Math.min(DEFAULT_LOW_WATER_MARK, maxBufSize / 2);</span>
+<span class="fc" id="L137">    bootstrap.childOption(ChannelOption.SO_RCVBUF, so_buf);</span>
+<span class="fc" id="L138">    bootstrap.childOption(ChannelOption.SO_SNDBUF, so_buf);</span>
+<span class="fc" id="L139">    bootstrap.childOption(ChannelOption.WRITE_BUFFER_WATER_MARK,</span>
+                          new WriteBufferWaterMark(lowWaterMark, maxBufSize));
+<span class="fc" id="L141">    bootstrap</span>
+<span class="fc" id="L142">        .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);</span>
+<span class="pc bpc" id="L143" title="1 of 2 branches missed.">    if (!autoRead) {</span>
+<span class="nc" id="L144">      bootstrap.childOption(ChannelOption.AUTO_READ, false);</span>
+    }
+<span class="fc" id="L146">  }</span>
 
   /**
    * @param future
    *
    * @return True if await done, else interruption occurs
    */
-  public static boolean awaitOrInterrupted(Future&lt;?&gt; future) {
+  public static boolean awaitOrInterrupted(final Future&lt;?&gt; future) {
     try {
-<span class="pc bpc" id="L104" title="1 of 2 branches missed.">      while (!Thread.interrupted()) {</span>
-<span class="pc bpc" id="L105" title="1 of 2 branches missed.">        if (future.await(TIMEOUT_MILLIS)) {</span>
-<span class="fc" id="L106">          return true;</span>
+<span class="pc bpc" id="L155" title="1 of 2 branches missed.">      while (!Thread.interrupted()) {</span>
+<span class="pc bpc" id="L156" title="1 of 2 branches missed.">        if (future.await(TIMEOUT_MILLIS)) {</span>
+<span class="fc" id="L157">          return true;</span>
         }
       }
-<span class="nc" id="L109">    } catch (final InterruptedException e) {//NOSONAR</span>
-<span class="nc" id="L110">      SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
-<span class="nc" id="L111">    }</span>
-<span class="nc" id="L112">    return false;</span>
+<span class="nc" id="L160">    } catch (final InterruptedException e) {//NOSONAR</span>
+<span class="nc" id="L161">      SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
+<span class="nc" id="L162">    }</span>
+<span class="nc" id="L163">    return false;</span>
   }
 
   /**
@@ -118,16 +169,16 @@ public final class WaarpNettyUtil {
    *
    * @return True if await done, else interruption occurs
    */
-  public static boolean awaitOrInterrupted(Future&lt;?&gt; future,
-                                           long timeMilliseconds) {
+  public static boolean awaitOrInterrupted(final Future&lt;?&gt; future,
+                                           final long timeMilliseconds) {
     try {
-<span class="pc bpc" id="L124" title="1 of 2 branches missed.">      if (future.await(timeMilliseconds)) {</span>
-<span class="pc bpc" id="L125" title="1 of 2 branches missed.">        return !Thread.interrupted();</span>
+<span class="pc bpc" id="L175" title="1 of 2 branches missed.">      if (future.await(timeMilliseconds)) {</span>
+<span class="pc bpc" id="L176" title="1 of 2 branches missed.">        return !Thread.interrupted();</span>
       }
-<span class="nc" id="L127">    } catch (final InterruptedException e) {//NOSONAR</span>
-<span class="nc" id="L128">      SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
-<span class="nc" id="L129">    }</span>
-<span class="nc" id="L130">    return false;</span>
+<span class="nc" id="L178">    } catch (final InterruptedException e) {//NOSONAR</span>
+<span class="nc" id="L179">      SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
+<span class="nc" id="L180">    }</span>
+<span class="nc" id="L181">    return false;</span>
   }
 
   /**
@@ -136,17 +187,61 @@ public final class WaarpNettyUtil {
    * @return True if await and isSuccess, else interruption or not success
    *     occurs
    */
-  public static boolean awaitIsSuccessOfInterrupted(Future&lt;?&gt; future) {
+  public static boolean awaitIsSuccessOfInterrupted(final Future&lt;?&gt; future) {
     try {
-<span class="nc bnc" id="L141" title="All 2 branches missed.">      while (!Thread.interrupted()) {</span>
-<span class="nc bnc" id="L142" title="All 2 branches missed.">        if (future.await(TIMEOUT_MILLIS)) {</span>
-<span class="nc" id="L143">          return future.isSuccess();</span>
+<span class="nc bnc" id="L192" title="All 2 branches missed.">      while (!Thread.interrupted()) {</span>
+<span class="nc bnc" id="L193" title="All 2 branches missed.">        if (future.await(TIMEOUT_MILLIS)) {</span>
+<span class="nc" id="L194">          return future.isSuccess();</span>
         }
       }
-<span class="nc" id="L146">    } catch (final InterruptedException e) {//NOSONAR</span>
-<span class="nc" id="L147">      SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
-<span class="nc" id="L148">    }</span>
-<span class="nc" id="L149">    return false;</span>
+<span class="nc" id="L197">    } catch (final InterruptedException e) {//NOSONAR</span>
+<span class="nc" id="L198">      SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
+<span class="nc" id="L199">    }</span>
+<span class="nc" id="L200">    return false;</span>
+  }
+
+  /**
+   * Shortcut to release a ByteByf
+   *
+   * @param byteBuf
+   *
+   * @return True if the ByteBuf is released
+   */
+  public static boolean release(final ByteBuf byteBuf) {
+<span class="nc bnc" id="L211" title="All 4 branches missed.">    if (byteBuf == null || byteBuf.refCnt() == 0) {</span>
+<span class="nc" id="L212">      return true;</span>
+    }
+<span class="nc" id="L214">    return byteBuf.release();</span>
+  }
+
+  /**
+   * Shortcut to release completely a ByteByf
+   *
+   * @param byteBuf
+   */
+  public static void releaseCompletely(final ByteBuf byteBuf) {
+<span class="nc bnc" id="L223" title="All 4 branches missed.">    if (byteBuf != null &amp;&amp; byteBuf.refCnt() != 0) {</span>
+<span class="nc bnc" id="L224" title="All 2 branches missed.">      while (!byteBuf.release()) {</span>
+        // Nothing
+      }
+    }
+<span class="nc" id="L228">  }</span>
+
+  /**
+   * Utility method to return a ByteBuf slice with Write ready.
+   * No retain is called on this slice.
+   *
+   * @param byteBuf
+   * @param start
+   * @param size
+   *
+   * @return the ByteBuf sliced
+   */
+  public static ByteBuf slice(final ByteBuf byteBuf, final int start,
+                              final int size) {
+<span class="nc" id="L242">    final ByteBuf bufSliced = byteBuf.slice(start, size);</span>
+<span class="nc" id="L243">    bufSliced.writerIndex(0);</span>
+<span class="nc" id="L244">    return bufSliced;</span>
   }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

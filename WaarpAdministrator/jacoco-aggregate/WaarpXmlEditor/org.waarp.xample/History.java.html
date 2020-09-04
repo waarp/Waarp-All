@@ -43,97 +43,98 @@ public class History {
   final String path;
   final String label;
 
-<span class="nc" id="L46">  public History(String path) {</span>
+<span class="nc" id="L46">  public History(final String path) {</span>
 <span class="nc" id="L47">    this.path = path.replace('\\', '/');</span>
 <span class="nc" id="L48">    label = abbreviatePath(this.path, MAX_LABEL_LENGTH);</span>
 <span class="nc" id="L49">  }</span>
 
-  public static String abbreviatePath(String path, int limitLength) {
-<span class="nc bnc" id="L52" title="All 2 branches missed.">    if (path.length() &lt;= limitLength) {</span>
-<span class="nc" id="L53">      return path;</span>
+  public static String abbreviatePath(final String path,
+                                      final int limitLength) {
+<span class="nc bnc" id="L53" title="All 2 branches missed.">    if (path.length() &lt;= limitLength) {</span>
+<span class="nc" id="L54">      return path;</span>
     }
-<span class="nc" id="L55">    int k = path.indexOf('/', 1);</span>
-<span class="nc" id="L56">    final String substring =</span>
-<span class="nc" id="L57">        &quot;...&quot; + path.substring(path.length() - limitLength + 3);</span>
-<span class="nc bnc" id="L58" title="All 2 branches missed.">    if (k &lt; 0) {</span>
-<span class="nc" id="L59">      return substring;</span>
+<span class="nc" id="L56">    int k = path.indexOf('/', 1);</span>
+<span class="nc" id="L57">    final String substring =</span>
+<span class="nc" id="L58">        &quot;...&quot; + path.substring(path.length() - limitLength + 3);</span>
+<span class="nc bnc" id="L59" title="All 2 branches missed.">    if (k &lt; 0) {</span>
+<span class="nc" id="L60">      return substring;</span>
     }
-<span class="nc" id="L61">    k = path.indexOf('/', k + 1);</span>
-<span class="nc bnc" id="L62" title="All 2 branches missed.">    if (k &lt; 0) {</span>
-<span class="nc" id="L63">      return substring;</span>
+<span class="nc" id="L62">    k = path.indexOf('/', k + 1);</span>
+<span class="nc bnc" id="L63" title="All 2 branches missed.">    if (k &lt; 0) {</span>
+<span class="nc" id="L64">      return substring;</span>
     }
-<span class="nc" id="L65">    final String prefix = path.substring(0, k + 1);</span>
-<span class="nc" id="L66">    String suffix = path.substring(k + 1);</span>
-<span class="nc" id="L67">    k = suffix.indexOf('/', 1);</span>
-<span class="nc bnc" id="L68" title="All 2 branches missed.">    if (k &lt; 0) {</span>
-<span class="nc" id="L69">      return substring;</span>
+<span class="nc" id="L66">    final String prefix = path.substring(0, k + 1);</span>
+<span class="nc" id="L67">    String suffix = path.substring(k + 1);</span>
+<span class="nc" id="L68">    k = suffix.indexOf('/', 1);</span>
+<span class="nc bnc" id="L69" title="All 2 branches missed.">    if (k &lt; 0) {</span>
+<span class="nc" id="L70">      return substring;</span>
     }
-<span class="nc" id="L71">    final int limit = MAX_LABEL_LENGTH - prefix.length() - 3;</span>
-<span class="nc bnc" id="L72" title="All 4 branches missed.">    while (k &gt;= 0 &amp;&amp; suffix.length() &gt; limit) {</span>
-<span class="nc" id="L73">      suffix = suffix.substring(k);</span>
-<span class="nc" id="L74">      k = suffix.indexOf('/', 1);</span>
+<span class="nc" id="L72">    final int limit = MAX_LABEL_LENGTH - prefix.length() - 3;</span>
+<span class="nc bnc" id="L73" title="All 4 branches missed.">    while (k &gt;= 0 &amp;&amp; suffix.length() &gt; limit) {</span>
+<span class="nc" id="L74">      suffix = suffix.substring(k);</span>
+<span class="nc" id="L75">      k = suffix.indexOf('/', 1);</span>
     }
-<span class="nc bnc" id="L76" title="All 2 branches missed.">    if (suffix.length() &lt;= limit) {</span>
-<span class="nc" id="L77">      return prefix + &quot;...&quot; + suffix;</span>
+<span class="nc bnc" id="L77" title="All 2 branches missed.">    if (suffix.length() &lt;= limit) {</span>
+<span class="nc" id="L78">      return prefix + &quot;...&quot; + suffix;</span>
     } else {
-<span class="nc" id="L79">      return substring;</span>
+<span class="nc" id="L80">      return substring;</span>
     }
   }
 
   @Override
-  public boolean equals(Object obj) {
-<span class="nc bnc" id="L85" title="All 2 branches missed.">    if (!(obj instanceof History)) {</span>
-<span class="nc" id="L86">      return false;</span>
+  public boolean equals(final Object obj) {
+<span class="nc bnc" id="L86" title="All 2 branches missed.">    if (!(obj instanceof History)) {</span>
+<span class="nc" id="L87">      return false;</span>
     }
-<span class="nc" id="L88">    final History history = (History) obj;</span>
-<span class="nc bnc" id="L89" title="All 2 branches missed.">    if (path == null) {</span>
-<span class="nc bnc" id="L90" title="All 2 branches missed.">      return history.path == null;</span>
+<span class="nc" id="L89">    final History history = (History) obj;</span>
+<span class="nc bnc" id="L90" title="All 2 branches missed.">    if (path == null) {</span>
+<span class="nc bnc" id="L91" title="All 2 branches missed.">      return history.path == null;</span>
     }
-<span class="nc" id="L92">    return path.equals(history.path);</span>
+<span class="nc" id="L93">    return path.equals(history.path);</span>
   }
 
   @Override
   public String toString() {
-<span class="nc" id="L97">    return label;</span>
+<span class="nc" id="L98">    return label;</span>
   }
 
-  public History put(String childPath) {
-<span class="nc bnc" id="L101" title="All 2 branches missed.">    if (items == null) {</span>
-<span class="nc" id="L102">      items = new ArrayList&lt;History&gt;();</span>
+  public History put(final String childPath) {
+<span class="nc bnc" id="L102" title="All 2 branches missed.">    if (items == null) {</span>
+<span class="nc" id="L103">      items = new ArrayList&lt;History&gt;();</span>
     }
-<span class="nc" id="L104">    History child = new History(childPath);</span>
-<span class="nc" id="L105">    final int index = items.indexOf(child);</span>
-<span class="nc bnc" id="L106" title="All 2 branches missed.">    if (index &gt;= 0) {</span>
-<span class="nc" id="L107">      child = items.remove(index);</span>
+<span class="nc" id="L105">    History child = new History(childPath);</span>
+<span class="nc" id="L106">    final int index = items.indexOf(child);</span>
+<span class="nc bnc" id="L107" title="All 2 branches missed.">    if (index &gt;= 0) {</span>
+<span class="nc" id="L108">      child = items.remove(index);</span>
     }
-<span class="nc" id="L109">    items.add(0, child);</span>
-<span class="nc bnc" id="L110" title="All 2 branches missed.">    if (items.size() &gt; MAX_ITEM_COUNT) {</span>
-<span class="nc" id="L111">      items.remove(items.size() - 1);</span>
+<span class="nc" id="L110">    items.add(0, child);</span>
+<span class="nc bnc" id="L111" title="All 2 branches missed.">    if (items.size() &gt; MAX_ITEM_COUNT) {</span>
+<span class="nc" id="L112">      items.remove(items.size() - 1);</span>
     }
-<span class="nc" id="L113">    return child;</span>
+<span class="nc" id="L114">    return child;</span>
   }
 
   public History getFirstChild() {
-<span class="nc bnc" id="L117" title="All 4 branches missed.">    if (items == null &amp;&amp; items.isEmpty()) {</span>
-<span class="nc" id="L118">      return null;</span>
+<span class="nc bnc" id="L118" title="All 4 branches missed.">    if (items == null || items.isEmpty()) {</span>
+<span class="nc" id="L119">      return null;</span>
     }
-<span class="nc" id="L120">    return items.get(0);</span>
+<span class="nc" id="L121">    return items.get(0);</span>
   }
 
-  public void remove(String childPath) {
-<span class="nc bnc" id="L124" title="All 2 branches missed.">    if (items == null) {</span>
-<span class="nc" id="L125">      items = new ArrayList&lt;History&gt;();</span>
+  public void remove(final String childPath) {
+<span class="nc bnc" id="L125" title="All 2 branches missed.">    if (items == null) {</span>
+<span class="nc" id="L126">      items = new ArrayList&lt;History&gt;();</span>
     }
-<span class="nc" id="L127">    final History child = new History(childPath);</span>
-<span class="nc" id="L128">    final int index = items.indexOf(child);</span>
-<span class="nc bnc" id="L129" title="All 2 branches missed.">    if (index &gt;= 0) {</span>
-<span class="nc" id="L130">      items.remove(index);</span>
+<span class="nc" id="L128">    final History child = new History(childPath);</span>
+<span class="nc" id="L129">    final int index = items.indexOf(child);</span>
+<span class="nc bnc" id="L130" title="All 2 branches missed.">    if (index &gt;= 0) {</span>
+<span class="nc" id="L131">      items.remove(index);</span>
     }
-<span class="nc" id="L132">  }</span>
+<span class="nc" id="L133">  }</span>
 
   @Override
   public int hashCode() {
-<span class="nc" id="L136">    return Arrays.hashCode(new Object[] { items, path, label });</span>
+<span class="nc" id="L137">    return Arrays.hashCode(new Object[] { items, path, label });</span>
   }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

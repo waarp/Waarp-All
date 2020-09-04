@@ -54,7 +54,7 @@ public class WaarpFuture {
    * @param cancellable {@code true} if and only if this future can be
    *     canceled
    */
-<span class="fc" id="L57">  public WaarpFuture(boolean cancellable) {</span>
+<span class="fc" id="L57">  public WaarpFuture(final boolean cancellable) {</span>
 <span class="fc" id="L58">    this.cancellable = cancellable;</span>
 <span class="fc" id="L59">  }</span>
 
@@ -156,7 +156,7 @@ public class WaarpFuture {
    *
    * @return True if the Future is done or False if interrupted
    */
-  public boolean awaitOrInterruptible(long timeoutMilliseconds) {
+  public boolean awaitOrInterruptible(final long timeoutMilliseconds) {
 <span class="fc" id="L160">    return awaitOrInterruptible(MILLISECONDS.toNanos(timeoutMilliseconds),</span>
                                 false);
   }
@@ -167,7 +167,7 @@ public class WaarpFuture {
    *
    * @return True if the Future is done or False if interrupted
    */
-  public boolean awaitOrInterruptible(long timeout, TimeUnit unit) {
+  public boolean awaitOrInterruptible(final long timeout, final TimeUnit unit) {
 <span class="fc" id="L171">    return awaitOrInterruptible(unit.toNanos(timeout), false);</span>
   }
 
@@ -177,8 +177,8 @@ public class WaarpFuture {
    *
    * @return True if the Future is done or False if interrupted
    */
-  private boolean awaitOrInterruptible(long timeoutNanos,
-                                       boolean interruptable) {
+  private boolean awaitOrInterruptible(final long timeoutNanos,
+                                       final boolean interruptable) {
     try {
 <span class="pc bpc" id="L183" title="2 of 4 branches missed.">      if (await0(timeoutNanos, interruptable) &amp;&amp; !Thread.interrupted()) {</span>
 <span class="fc" id="L184">        return true;</span>
@@ -189,7 +189,7 @@ public class WaarpFuture {
 <span class="nc" id="L189">    return false;</span>
   }
 
-  private boolean await0(long timeoutNanos, boolean interruptable)
+  private boolean await0(final long timeoutNanos, final boolean interruptable)
       throws InterruptedException {
 <span class="fc bfc" id="L194" title="All 2 branches covered.">    if (done) {</span>
 <span class="fc" id="L195">      return done;</span>
@@ -201,21 +201,21 @@ public class WaarpFuture {
 <span class="nc" id="L201">      throw new InterruptedException();</span>
     }
 
-<span class="fc" id="L204">    long startTime = System.nanoTime();</span>
+<span class="fc" id="L204">    final long startTime = System.nanoTime();</span>
 <span class="fc" id="L205">    long waitTime = timeoutNanos;</span>
 <span class="fc" id="L206">    boolean interrupted = false;</span>
 
     try {
       for (; ; ) {
 <span class="fc" id="L210">        synchronized (this) {</span>
-<span class="pc bpc" id="L211" title="1 of 2 branches missed.">          if (done) {</span>
-<span class="nc" id="L212">            return done;</span>
+<span class="fc bfc" id="L211" title="All 2 branches covered.">          if (done) {</span>
+<span class="fc" id="L212">            return done;</span>
           }
 <span class="fc" id="L214">          waiters++;</span>
 
           try {
 <span class="fc" id="L217">            wait(waitTime / 1000000, (int) (waitTime % 1000000));</span>
-<span class="nc" id="L218">          } catch (InterruptedException e) {//NOSONAR</span>
+<span class="nc" id="L218">          } catch (final InterruptedException e) {//NOSONAR</span>
 <span class="nc" id="L219">            SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
 <span class="nc bnc" id="L220" title="All 2 branches missed.">            if (interruptable) {</span>
 <span class="nc" id="L221">              throw e;</span>
@@ -274,7 +274,7 @@ public class WaarpFuture {
    *     because this future is already marked as either a success or a
    *     failure.
    */
-  public boolean setFailure(Throwable cause) {
+  public boolean setFailure(final Throwable cause) {
 <span class="nc" id="L278">    synchronized (this) {</span>
       // Allow only once.
 <span class="nc bnc" id="L280" title="All 2 branches missed.">      if (done) {</span>

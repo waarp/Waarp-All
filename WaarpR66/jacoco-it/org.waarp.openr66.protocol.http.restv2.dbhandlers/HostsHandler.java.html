@@ -88,7 +88,7 @@ public class HostsHandler extends AbstractRestDbHandler {
    *
    * @param crud the CRUD mask for this handler
    */
-  public HostsHandler(byte crud) {
+  public HostsHandler(final byte crud) {
 <span class="fc" id="L92">    super(crud);</span>
 <span class="fc" id="L93">  }</span>
 
@@ -118,101 +118,102 @@ public class HostsHandler extends AbstractRestDbHandler {
   @GET
   @Consumes(APPLICATION_FORM_URLENCODED)
   @RequiredRole(ROLE.READONLY)
-  public void filterHosts(HttpRequest request, HttpResponder responder,
+  public void filterHosts(final HttpRequest request,
+                          final HttpResponder responder,
                           @QueryParam(LIMIT) @DefaultValue(&quot;20&quot;)
-                              String limit_str,
+                          final String limit_str,
                           @QueryParam(OFFSET) @DefaultValue(&quot;0&quot;)
-                              String offset_str,
+                          final String offset_str,
                           @QueryParam(ORDER) @DefaultValue(&quot;ascId&quot;)
-                              String order_str,
-                          @QueryParam(ADDRESS) String address,
-                          @QueryParam(IS_SSL) String isSSL_str,
-                          @QueryParam(IS_ACTIVE) String isActive_str) {
+                          final String order_str,
+                          @QueryParam(ADDRESS) final String address,
+                          @QueryParam(IS_SSL) final String isSSL_str,
+                          @QueryParam(IS_ACTIVE) final String isActive_str) {
 
-<span class="nc" id="L132">    final List&lt;RestError&gt; errors = new ArrayList&lt;RestError&gt;();</span>
+<span class="nc" id="L133">    final List&lt;RestError&gt; errors = new ArrayList&lt;RestError&gt;();</span>
 
-<span class="nc" id="L134">    int limit = 20;</span>
-<span class="nc" id="L135">    int offset = 0;</span>
-<span class="nc" id="L136">    HostConverter.Order order = HostConverter.Order.ascId;</span>
+<span class="nc" id="L135">    int limit = 20;</span>
+<span class="nc" id="L136">    int offset = 0;</span>
+<span class="nc" id="L137">    HostConverter.Order order = HostConverter.Order.ascId;</span>
     try {
-<span class="nc" id="L138">      limit = Integer.parseInt(limit_str);</span>
-<span class="nc" id="L139">    } catch (final NumberFormatException e) {</span>
-<span class="nc" id="L140">      errors.add(ILLEGAL_PARAMETER_VALUE(LIMIT, limit_str));</span>
-<span class="nc" id="L141">    }</span>
+<span class="nc" id="L139">      limit = Integer.parseInt(limit_str);</span>
+<span class="nc" id="L140">    } catch (final NumberFormatException e) {</span>
+<span class="nc" id="L141">      errors.add(ILLEGAL_PARAMETER_VALUE(LIMIT, limit_str));</span>
+<span class="nc" id="L142">    }</span>
     try {
-<span class="nc" id="L143">      order = HostConverter.Order.valueOf(order_str);</span>
-<span class="nc" id="L144">    } catch (final IllegalArgumentException e) {</span>
-<span class="nc" id="L145">      errors.add(ILLEGAL_PARAMETER_VALUE(ORDER, order_str));</span>
-<span class="nc" id="L146">    }</span>
+<span class="nc" id="L144">      order = HostConverter.Order.valueOf(order_str);</span>
+<span class="nc" id="L145">    } catch (final IllegalArgumentException e) {</span>
+<span class="nc" id="L146">      errors.add(ILLEGAL_PARAMETER_VALUE(ORDER, order_str));</span>
+<span class="nc" id="L147">    }</span>
     try {
-<span class="nc" id="L148">      offset = Integer.parseInt(offset_str);</span>
-<span class="nc" id="L149">    } catch (final NumberFormatException e) {</span>
-<span class="nc" id="L150">      errors.add(ILLEGAL_PARAMETER_VALUE(OFFSET, offset_str));</span>
-<span class="nc" id="L151">    }</span>
+<span class="nc" id="L149">      offset = Integer.parseInt(offset_str);</span>
+<span class="nc" id="L150">    } catch (final NumberFormatException e) {</span>
+<span class="nc" id="L151">      errors.add(ILLEGAL_PARAMETER_VALUE(OFFSET, offset_str));</span>
+<span class="nc" id="L152">    }</span>
 
-<span class="nc bnc" id="L153" title="All 2 branches missed.">    if (limit &lt; 0) {</span>
-<span class="nc" id="L154">      errors.add(ILLEGAL_PARAMETER_VALUE(LIMIT, limit_str));</span>
-<span class="nc bnc" id="L155" title="All 2 branches missed.">    } else if (offset &lt; 0) {</span>
-<span class="nc" id="L156">      errors.add(ILLEGAL_PARAMETER_VALUE(OFFSET, offset_str));</span>
+<span class="nc bnc" id="L154" title="All 2 branches missed.">    if (limit &lt; 0) {</span>
+<span class="nc" id="L155">      errors.add(ILLEGAL_PARAMETER_VALUE(LIMIT, limit_str));</span>
+<span class="nc bnc" id="L156" title="All 2 branches missed.">    } else if (offset &lt; 0) {</span>
+<span class="nc" id="L157">      errors.add(ILLEGAL_PARAMETER_VALUE(OFFSET, offset_str));</span>
     }
 
-<span class="nc" id="L159">    boolean isSSL = false;</span>
-<span class="nc" id="L160">    boolean isActive = false;</span>
-<span class="nc bnc" id="L161" title="All 2 branches missed.">    if (isSSL_str != null) {</span>
+<span class="nc" id="L160">    boolean isSSL = false;</span>
+<span class="nc" id="L161">    boolean isActive = false;</span>
+<span class="nc bnc" id="L162" title="All 2 branches missed.">    if (isSSL_str != null) {</span>
       try {
-<span class="nc" id="L163">        isSSL = RestUtils.stringToBoolean(isSSL_str);</span>
-<span class="nc" id="L164">      } catch (final IllegalArgumentException e) {</span>
-<span class="nc" id="L165">        errors.add(ILLEGAL_PARAMETER_VALUE(IS_SSL, isSSL_str));</span>
-<span class="nc" id="L166">      }</span>
+<span class="nc" id="L164">        isSSL = RestUtils.stringToBoolean(isSSL_str);</span>
+<span class="nc" id="L165">      } catch (final IllegalArgumentException e) {</span>
+<span class="nc" id="L166">        errors.add(ILLEGAL_PARAMETER_VALUE(IS_SSL, isSSL_str));</span>
+<span class="nc" id="L167">      }</span>
     }
-<span class="nc bnc" id="L168" title="All 2 branches missed.">    if (isActive_str != null) {</span>
+<span class="nc bnc" id="L169" title="All 2 branches missed.">    if (isActive_str != null) {</span>
       try {
-<span class="nc" id="L170">        isActive = RestUtils.stringToBoolean(isActive_str);</span>
-<span class="nc" id="L171">      } catch (final IllegalArgumentException e) {</span>
-<span class="nc" id="L172">        errors.add(ILLEGAL_PARAMETER_VALUE(IS_ACTIVE, isActive_str));</span>
-<span class="nc" id="L173">      }</span>
+<span class="nc" id="L171">        isActive = RestUtils.stringToBoolean(isActive_str);</span>
+<span class="nc" id="L172">      } catch (final IllegalArgumentException e) {</span>
+<span class="nc" id="L173">        errors.add(ILLEGAL_PARAMETER_VALUE(IS_ACTIVE, isActive_str));</span>
+<span class="nc" id="L174">      }</span>
     }
 
-<span class="nc bnc" id="L176" title="All 2 branches missed.">    if (!errors.isEmpty()) {</span>
-<span class="nc" id="L177">      throw new RestErrorException(errors);</span>
+<span class="nc bnc" id="L177" title="All 2 branches missed.">    if (!errors.isEmpty()) {</span>
+<span class="nc" id="L178">      throw new RestErrorException(errors);</span>
     }
 
-<span class="nc" id="L180">    final List&lt;Filter&gt; filters = new ArrayList&lt;Filter&gt;();</span>
-<span class="nc bnc" id="L181" title="All 2 branches missed.">    if (address != null) {</span>
-<span class="nc" id="L182">      filters.add(new Filter(ADDRESS_FIELD, &quot;=&quot;, address));</span>
+<span class="nc" id="L181">    final List&lt;Filter&gt; filters = new ArrayList&lt;Filter&gt;();</span>
+<span class="nc bnc" id="L182" title="All 2 branches missed.">    if (address != null) {</span>
+<span class="nc" id="L183">      filters.add(new Filter(ADDRESS_FIELD, &quot;=&quot;, address));</span>
     }
-<span class="nc bnc" id="L184" title="All 2 branches missed.">    if (isSSL_str != null) {</span>
-<span class="nc" id="L185">      filters.add(new Filter(IS_SSL_FIELD, &quot;=&quot;, isSSL));</span>
+<span class="nc bnc" id="L185" title="All 2 branches missed.">    if (isSSL_str != null) {</span>
+<span class="nc" id="L186">      filters.add(new Filter(IS_SSL_FIELD, &quot;=&quot;, isSSL));</span>
     }
-<span class="nc bnc" id="L187" title="All 2 branches missed.">    if (isActive_str != null) {</span>
-<span class="nc" id="L188">      filters.add(new Filter(IS_ACTIVE_FIELD, &quot;=&quot;, isActive));</span>
+<span class="nc bnc" id="L188" title="All 2 branches missed.">    if (isActive_str != null) {</span>
+<span class="nc" id="L189">      filters.add(new Filter(IS_ACTIVE_FIELD, &quot;=&quot;, isActive));</span>
     }
     List&lt;Host&gt; hosts;
-<span class="nc" id="L191">    HostDAO hostDAO = null;</span>
+<span class="nc" id="L192">    HostDAO hostDAO = null;</span>
     try {
-<span class="nc" id="L193">      hostDAO = DAO_FACTORY.getHostDAO();</span>
-<span class="nc" id="L194">      hosts = hostDAO.find(filters);</span>
-<span class="nc" id="L195">    } catch (final DAOConnectionException e) {</span>
-<span class="nc" id="L196">      throw new InternalServerErrorException(e);</span>
+<span class="nc" id="L194">      hostDAO = DAO_FACTORY.getHostDAO();</span>
+<span class="nc" id="L195">      hosts = hostDAO.find(filters);</span>
+<span class="nc" id="L196">    } catch (final DAOConnectionException e) {</span>
+<span class="nc" id="L197">      throw new InternalServerErrorException(e);</span>
     } finally {
-<span class="nc" id="L198">      DAOFactory.closeDAO(hostDAO);</span>
+<span class="nc" id="L199">      DAOFactory.closeDAO(hostDAO);</span>
     }
 
-<span class="nc" id="L201">    final int totalResults = hosts.size();</span>
-<span class="nc" id="L202">    Collections.sort(hosts, order.comparator);</span>
+<span class="nc" id="L202">    final int totalResults = hosts.size();</span>
+<span class="nc" id="L203">    Collections.sort(hosts, order.comparator);</span>
 
-<span class="nc" id="L204">    final ArrayNode results = new ArrayNode(JsonNodeFactory.instance);</span>
-<span class="nc bnc" id="L205" title="All 4 branches missed.">    for (int i = offset; i &lt; offset + limit &amp;&amp; i &lt; hosts.size(); i++) {</span>
-<span class="nc" id="L206">      results.add(HostConverter.hostToNode(hosts.get(i)));</span>
+<span class="nc" id="L205">    final ArrayNode results = new ArrayNode(JsonNodeFactory.instance);</span>
+<span class="nc bnc" id="L206" title="All 4 branches missed.">    for (int i = offset; i &lt; offset + limit &amp;&amp; i &lt; hosts.size(); i++) {</span>
+<span class="nc" id="L207">      results.add(HostConverter.hostToNode(hosts.get(i)));</span>
     }
 
-<span class="nc" id="L209">    final ObjectNode responseObject = new ObjectNode(JsonNodeFactory.instance);</span>
-<span class="nc" id="L210">    responseObject.put(&quot;totalResults&quot;, totalResults);</span>
-<span class="nc" id="L211">    responseObject.set(&quot;results&quot;, results);</span>
+<span class="nc" id="L210">    final ObjectNode responseObject = new ObjectNode(JsonNodeFactory.instance);</span>
+<span class="nc" id="L211">    responseObject.put(&quot;totalResults&quot;, totalResults);</span>
+<span class="nc" id="L212">    responseObject.set(&quot;results&quot;, results);</span>
 
-<span class="nc" id="L213">    final String responseText = JsonUtils.nodeToString(responseObject);</span>
-<span class="nc" id="L214">    responder.sendJson(OK, responseText);</span>
-<span class="nc" id="L215">  }</span>
+<span class="nc" id="L214">    final String responseText = JsonUtils.nodeToString(responseObject);</span>
+<span class="nc" id="L215">    responder.sendJson(OK, responseText);</span>
+<span class="nc" id="L216">  }</span>
 
   /**
    * Method called to add a new host authentication entry to the server
@@ -225,35 +226,36 @@ public class HostsHandler extends AbstractRestDbHandler {
   @POST
   @Consumes(APPLICATION_JSON)
   @RequiredRole(ROLE.HOST)
-  public void addHost(HttpRequest request, HttpResponder responder) {
+  public void addHost(final HttpRequest request,
+                      final HttpResponder responder) {
 
-<span class="nc" id="L230">    final ObjectNode requestObject = JsonUtils.deserializeRequest(request);</span>
-<span class="nc" id="L231">    final Host host = HostConverter.nodeToNewHost(requestObject);</span>
+<span class="nc" id="L232">    final ObjectNode requestObject = JsonUtils.deserializeRequest(request);</span>
+<span class="nc" id="L233">    final Host host = HostConverter.nodeToNewHost(requestObject);</span>
 
-<span class="nc" id="L233">    HostDAO hostDAO = null;</span>
+<span class="nc" id="L235">    HostDAO hostDAO = null;</span>
     try {
-<span class="nc" id="L235">      hostDAO = DAO_FACTORY.getHostDAO();</span>
+<span class="nc" id="L237">      hostDAO = DAO_FACTORY.getHostDAO();</span>
 
-<span class="nc bnc" id="L237" title="All 2 branches missed.">      if (!hostDAO.exist(host.getHostid())) {</span>
-<span class="nc" id="L238">        throw new RestErrorException(ALREADY_EXISTING(host.getHostid()));</span>
+<span class="nc bnc" id="L239" title="All 2 branches missed.">      if (!hostDAO.exist(host.getHostid())) {</span>
+<span class="nc" id="L240">        throw new RestErrorException(ALREADY_EXISTING(host.getHostid()));</span>
       }
 
-<span class="nc" id="L241">      hostDAO.insert(host);</span>
-<span class="nc" id="L242">    } catch (final DAOConnectionException e) {</span>
-<span class="nc" id="L243">      throw new InternalServerErrorException(e);</span>
+<span class="nc" id="L243">      hostDAO.insert(host);</span>
+<span class="nc" id="L244">    } catch (final DAOConnectionException e) {</span>
+<span class="nc" id="L245">      throw new InternalServerErrorException(e);</span>
     } finally {
-<span class="nc" id="L245">      DAOFactory.closeDAO(hostDAO);</span>
+<span class="nc" id="L247">      DAOFactory.closeDAO(hostDAO);</span>
     }
 
-<span class="nc" id="L248">    final ObjectNode responseObject = HostConverter.hostToNode(host);</span>
-<span class="nc" id="L249">    final String responseText = JsonUtils.nodeToString(responseObject);</span>
+<span class="nc" id="L250">    final ObjectNode responseObject = HostConverter.hostToNode(host);</span>
+<span class="nc" id="L251">    final String responseText = JsonUtils.nodeToString(responseObject);</span>
 
-<span class="nc" id="L251">    final DefaultHttpHeaders headers = new DefaultHttpHeaders();</span>
-<span class="nc" id="L252">    headers.add(CONTENT_TYPE, APPLICATION_JSON);</span>
-<span class="nc" id="L253">    headers.add(&quot;host-uri&quot;, HOSTS_HANDLER_URI + host.getHostid());</span>
+<span class="nc" id="L253">    final DefaultHttpHeaders headers = new DefaultHttpHeaders();</span>
+<span class="nc" id="L254">    headers.add(CONTENT_TYPE, APPLICATION_JSON);</span>
+<span class="nc" id="L255">    headers.add(&quot;host-uri&quot;, HOSTS_HANDLER_URI + host.getHostid());</span>
 
-<span class="nc" id="L255">    responder.sendString(CREATED, responseText, headers);</span>
-<span class="nc" id="L256">  }</span>
+<span class="nc" id="L257">    responder.sendString(CREATED, responseText, headers);</span>
+<span class="nc" id="L258">  }</span>
 
   /**
    * Method called to get a list of all allowed HTTP methods on this entry
@@ -267,8 +269,9 @@ public class HostsHandler extends AbstractRestDbHandler {
   @OPTIONS
   @Consumes(WILDCARD)
   @RequiredRole(ROLE.NOACCESS)
-  public void options(HttpRequest request, HttpResponder responder) {
-<span class="nc" id="L271">    responder.sendStatus(OK, OPTIONS_HEADERS);</span>
-<span class="nc" id="L272">  }</span>
+  public void options(final HttpRequest request,
+                      final HttpResponder responder) {
+<span class="nc" id="L274">    responder.sendStatus(OK, OPTIONS_HEADERS);</span>
+<span class="nc" id="L275">  }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

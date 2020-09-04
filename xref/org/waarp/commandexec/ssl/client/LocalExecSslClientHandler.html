@@ -50,41 +50,42 @@
 <a class="jxr_linenumber" name="L42" href="#L42">42</a>    <em class="jxr_javadoccomment">/**</em>
 <a class="jxr_linenumber" name="L43" href="#L43">43</a>  <em class="jxr_javadoccomment">   * @param factory</em>
 <a class="jxr_linenumber" name="L44" href="#L44">44</a>  <em class="jxr_javadoccomment">   */</em>
-<a class="jxr_linenumber" name="L45" href="#L45">45</a>    <strong class="jxr_keyword">public</strong> <a name="LocalExecSslClientHandler" href="../../../../../org/waarp/commandexec/ssl/client/LocalExecSslClientHandler.html#LocalExecSslClientHandler">LocalExecSslClientHandler</a>(<a name="LocalExecClientInitializer" href="../../../../../org/waarp/commandexec/client/LocalExecClientInitializer.html#LocalExecClientInitializer">LocalExecClientInitializer</a> factory) {
+<a class="jxr_linenumber" name="L45" href="#L45">45</a>    <strong class="jxr_keyword">public</strong> <a name="LocalExecSslClientHandler" href="../../../../../org/waarp/commandexec/ssl/client/LocalExecSslClientHandler.html#LocalExecSslClientHandler">LocalExecSslClientHandler</a>(<strong class="jxr_keyword">final</strong> <a name="LocalExecClientInitializer" href="../../../../../org/waarp/commandexec/client/LocalExecClientInitializer.html#LocalExecClientInitializer">LocalExecClientInitializer</a> factory) {
 <a class="jxr_linenumber" name="L46" href="#L46">46</a>      <strong class="jxr_keyword">super</strong>(factory);
 <a class="jxr_linenumber" name="L47" href="#L47">47</a>    }
 <a class="jxr_linenumber" name="L48" href="#L48">48</a>  
 <a class="jxr_linenumber" name="L49" href="#L49">49</a>    @Override
-<a class="jxr_linenumber" name="L50" href="#L50">50</a>    <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> channelRegistered(ChannelHandlerContext ctx) <strong class="jxr_keyword">throws</strong> Exception {
-<a class="jxr_linenumber" name="L51" href="#L51">51</a>      WaarpSslUtility.addSslOpenedChannel(ctx.channel());
-<a class="jxr_linenumber" name="L52" href="#L52">52</a>      <strong class="jxr_keyword">super</strong>.channelRegistered(ctx);
-<a class="jxr_linenumber" name="L53" href="#L53">53</a>    }
-<a class="jxr_linenumber" name="L54" href="#L54">54</a>  
-<a class="jxr_linenumber" name="L55" href="#L55">55</a>    @Override
-<a class="jxr_linenumber" name="L56" href="#L56">56</a>    <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
-<a class="jxr_linenumber" name="L57" href="#L57">57</a>        <strong class="jxr_keyword">throws</strong> Exception {
-<a class="jxr_linenumber" name="L58" href="#L58">58</a>      logger.warn(<span class="jxr_string">"Unexpected exception from Outband while get information: "</span> +
-<a class="jxr_linenumber" name="L59" href="#L59">59</a>                  firstMessage, cause);
-<a class="jxr_linenumber" name="L60" href="#L60">60</a>      <strong class="jxr_keyword">if</strong> (firstMessage) {
-<a class="jxr_linenumber" name="L61" href="#L61">61</a>        firstMessage = false;
-<a class="jxr_linenumber" name="L62" href="#L62">62</a>        result.set(LocalExecDefaultResult.BadTransmition);
-<a class="jxr_linenumber" name="L63" href="#L63">63</a>        result.setException((Exception) cause);
-<a class="jxr_linenumber" name="L64" href="#L64">64</a>        back = <strong class="jxr_keyword">new</strong> StringBuilder(<span class="jxr_string">"Error in LocalExec: "</span>)
-<a class="jxr_linenumber" name="L65" href="#L65">65</a>            .append(result.getException().getMessage()).append('\n');
-<a class="jxr_linenumber" name="L66" href="#L66">66</a>      } <strong class="jxr_keyword">else</strong> {
-<a class="jxr_linenumber" name="L67" href="#L67">67</a>        <strong class="jxr_keyword">if</strong> (cause instanceof SSLException) {
-<a class="jxr_linenumber" name="L68" href="#L68">68</a>          <em class="jxr_comment">// ignore ?</em>
-<a class="jxr_linenumber" name="L69" href="#L69">69</a>          logger.warn(<span class="jxr_string">"Ignore exception ?"</span>, cause);
-<a class="jxr_linenumber" name="L70" href="#L70">70</a>          <strong class="jxr_keyword">return</strong>;
-<a class="jxr_linenumber" name="L71" href="#L71">71</a>        }
-<a class="jxr_linenumber" name="L72" href="#L72">72</a>        back.append(<span class="jxr_string">"\nERROR while receiving answer: "</span>);
-<a class="jxr_linenumber" name="L73" href="#L73">73</a>        result.setException((Exception) cause);
-<a class="jxr_linenumber" name="L74" href="#L74">74</a>        back.append(result.getException().getMessage()).append('\n');
-<a class="jxr_linenumber" name="L75" href="#L75">75</a>      }
-<a class="jxr_linenumber" name="L76" href="#L76">76</a>      actionBeforeClose(ctx.channel());
-<a class="jxr_linenumber" name="L77" href="#L77">77</a>      WaarpSslUtility.closingSslChannel(ctx.channel());
-<a class="jxr_linenumber" name="L78" href="#L78">78</a>    }
-<a class="jxr_linenumber" name="L79" href="#L79">79</a>  }
+<a class="jxr_linenumber" name="L50" href="#L50">50</a>    <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> channelRegistered(<strong class="jxr_keyword">final</strong> ChannelHandlerContext ctx)
+<a class="jxr_linenumber" name="L51" href="#L51">51</a>        <strong class="jxr_keyword">throws</strong> Exception {
+<a class="jxr_linenumber" name="L52" href="#L52">52</a>      WaarpSslUtility.addSslOpenedChannel(ctx.channel());
+<a class="jxr_linenumber" name="L53" href="#L53">53</a>      <strong class="jxr_keyword">super</strong>.channelRegistered(ctx);
+<a class="jxr_linenumber" name="L54" href="#L54">54</a>    }
+<a class="jxr_linenumber" name="L55" href="#L55">55</a>  
+<a class="jxr_linenumber" name="L56" href="#L56">56</a>    @Override
+<a class="jxr_linenumber" name="L57" href="#L57">57</a>    <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> exceptionCaught(<strong class="jxr_keyword">final</strong> ChannelHandlerContext ctx,
+<a class="jxr_linenumber" name="L58" href="#L58">58</a>                                <strong class="jxr_keyword">final</strong> Throwable cause) <strong class="jxr_keyword">throws</strong> Exception {
+<a class="jxr_linenumber" name="L59" href="#L59">59</a>      logger.warn(<span class="jxr_string">"Unexpected exception from Outband while get information: "</span> +
+<a class="jxr_linenumber" name="L60" href="#L60">60</a>                  firstMessage, cause);
+<a class="jxr_linenumber" name="L61" href="#L61">61</a>      <strong class="jxr_keyword">if</strong> (firstMessage) {
+<a class="jxr_linenumber" name="L62" href="#L62">62</a>        firstMessage = false;
+<a class="jxr_linenumber" name="L63" href="#L63">63</a>        result.set(LocalExecDefaultResult.BadTransmition);
+<a class="jxr_linenumber" name="L64" href="#L64">64</a>        result.setException((Exception) cause);
+<a class="jxr_linenumber" name="L65" href="#L65">65</a>        back = <strong class="jxr_keyword">new</strong> StringBuilder(<span class="jxr_string">"Error in LocalExec: "</span>)
+<a class="jxr_linenumber" name="L66" href="#L66">66</a>            .append(result.getException().getMessage()).append('\n');
+<a class="jxr_linenumber" name="L67" href="#L67">67</a>      } <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="L68" href="#L68">68</a>        <strong class="jxr_keyword">if</strong> (cause instanceof SSLException) {
+<a class="jxr_linenumber" name="L69" href="#L69">69</a>          <em class="jxr_comment">// ignore ?</em>
+<a class="jxr_linenumber" name="L70" href="#L70">70</a>          logger.warn(<span class="jxr_string">"Ignore exception ?"</span>, cause);
+<a class="jxr_linenumber" name="L71" href="#L71">71</a>          <strong class="jxr_keyword">return</strong>;
+<a class="jxr_linenumber" name="L72" href="#L72">72</a>        }
+<a class="jxr_linenumber" name="L73" href="#L73">73</a>        back.append(<span class="jxr_string">"\nERROR while receiving answer: "</span>);
+<a class="jxr_linenumber" name="L74" href="#L74">74</a>        result.setException((Exception) cause);
+<a class="jxr_linenumber" name="L75" href="#L75">75</a>        back.append(result.getException().getMessage()).append('\n');
+<a class="jxr_linenumber" name="L76" href="#L76">76</a>      }
+<a class="jxr_linenumber" name="L77" href="#L77">77</a>      actionBeforeClose(ctx.channel());
+<a class="jxr_linenumber" name="L78" href="#L78">78</a>      WaarpSslUtility.closingSslChannel(ctx.channel());
+<a class="jxr_linenumber" name="L79" href="#L79">79</a>    }
+<a class="jxr_linenumber" name="L80" href="#L80">80</a>  }
 </pre>
 <hr/>
 <div id="footer">Copyright &#169; 2009&#x2013;2020 <a href="http://www.waarp.fr">Waarp</a>. All rights reserved.</div>

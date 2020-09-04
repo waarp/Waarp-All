@@ -26,6 +26,7 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.role.RoleDefault.ROLE;
+import org.waarp.common.utility.SingletonUtils;
 import org.waarp.openr66.dao.BusinessDAO;
 import org.waarp.openr66.dao.DAOFactory;
 import org.waarp.openr66.dao.exception.DAOConnectionException;
@@ -60,9 +61,9 @@ public final class HostConfigConverter {
   /**
    * Makes the default constructor of this utility class inaccessible.
    */
-<span class="nc" id="L63">  private HostConfigConverter() throws InstantiationException {</span>
-<span class="nc" id="L64">    throw new InstantiationException(</span>
-<span class="nc" id="L65">        getClass().getName() + &quot; cannot be instantiated.&quot;);</span>
+<span class="nc" id="L64">  private HostConfigConverter() throws InstantiationException {</span>
+<span class="nc" id="L65">    throw new InstantiationException(</span>
+<span class="nc" id="L66">        getClass().getName() + &quot; cannot be instantiated.&quot;);</span>
   }
 
   // ########################### PUBLIC METHODS ###############################
@@ -74,18 +75,18 @@ public final class HostConfigConverter {
    *
    * @return the converted ObjectNode
    */
-  public static ObjectNode businessToNode(Business hostConfig) {
-<span class="fc" id="L78">    final ArrayNode business = getBusinessArray(hostConfig);</span>
-<span class="fc" id="L79">    final ArrayNode roles = getRolesArray(hostConfig);</span>
-<span class="fc" id="L80">    final ArrayNode aliasArray = getAliasArray(hostConfig);</span>
+  public static ObjectNode businessToNode(final Business hostConfig) {
+<span class="fc" id="L79">    final ArrayNode business = getBusinessArray(hostConfig);</span>
+<span class="fc" id="L80">    final ArrayNode roles = getRolesArray(hostConfig);</span>
+<span class="fc" id="L81">    final ArrayNode aliasArray = getAliasArray(hostConfig);</span>
 
-<span class="fc" id="L82">    final ObjectNode node = new ObjectNode(JsonNodeFactory.instance);</span>
-<span class="fc" id="L83">    node.putArray(BUSINESS).addAll(business);</span>
-<span class="fc" id="L84">    node.putArray(ROLES).addAll(roles);</span>
-<span class="fc" id="L85">    node.putArray(ALIASES).addAll(aliasArray);</span>
-<span class="fc" id="L86">    node.put(OTHERS, hostConfig.getOthers());</span>
+<span class="fc" id="L83">    final ObjectNode node = new ObjectNode(JsonNodeFactory.instance);</span>
+<span class="fc" id="L84">    node.putArray(BUSINESS).addAll(business);</span>
+<span class="fc" id="L85">    node.putArray(ROLES).addAll(roles);</span>
+<span class="fc" id="L86">    node.putArray(ALIASES).addAll(aliasArray);</span>
+<span class="fc" id="L87">    node.put(OTHERS, hostConfig.getOthers());</span>
 
-<span class="fc" id="L88">    return node;</span>
+<span class="fc" id="L89">    return node;</span>
   }
 
   /**
@@ -98,12 +99,12 @@ public final class HostConfigConverter {
    * @throws RestErrorException if the given ObjectNode does not
    *     represent a Business object
    */
-  public static Business nodeToNewBusiness(ObjectNode object) {
-<span class="nc" id="L102">    final Business emptyBusiness =</span>
-<span class="nc" id="L103">        new Business(serverName(), &quot;&quot;, &quot;&lt;roles&gt;&lt;/roles&gt;&quot;, &quot;&lt;aliases&gt;&lt;/aliases&gt;&quot;,</span>
+  public static Business nodeToNewBusiness(final ObjectNode object) {
+<span class="nc" id="L103">    final Business emptyBusiness =</span>
+<span class="nc" id="L104">        new Business(serverName(), &quot;&quot;, &quot;&lt;roles&gt;&lt;/roles&gt;&quot;, &quot;&lt;aliases&gt;&lt;/aliases&gt;&quot;,</span>
                      &quot;&lt;root&gt;&lt;version&gt;&lt;/version&gt;&lt;/root&gt;&quot;);
 
-<span class="nc" id="L106">    return nodeToUpdatedBusiness(object, emptyBusiness);</span>
+<span class="nc" id="L107">    return nodeToUpdatedBusiness(object, emptyBusiness);</span>
   }
 
   /**
@@ -121,72 +122,72 @@ public final class HostConfigConverter {
    * @throws RestErrorException if the given ObjectNode does not
    *     represent a Business object
    */
-  public static Business nodeToUpdatedBusiness(ObjectNode object,
-                                               Business oldBusiness) {
-<span class="nc" id="L126">    final List&lt;RestError&gt; errors = new ArrayList&lt;RestError&gt;();</span>
+  public static Business nodeToUpdatedBusiness(final ObjectNode object,
+                                               final Business oldBusiness) {
+<span class="nc" id="L127">    final List&lt;RestError&gt; errors = new ArrayList&lt;RestError&gt;();</span>
 
-<span class="nc" id="L128">    final Iterator&lt;Map.Entry&lt;String, JsonNode&gt;&gt; fields = object.fields();</span>
-<span class="nc bnc" id="L129" title="All 2 branches missed.">    while (fields.hasNext()) {</span>
-<span class="nc" id="L130">      final Map.Entry&lt;String, JsonNode&gt; field = fields.next();</span>
-<span class="nc" id="L131">      final String name = field.getKey();</span>
-<span class="nc" id="L132">      final JsonNode value = field.getValue();</span>
+<span class="nc" id="L129">    final Iterator&lt;Map.Entry&lt;String, JsonNode&gt;&gt; fields = object.fields();</span>
+<span class="nc bnc" id="L130" title="All 2 branches missed.">    while (fields.hasNext()) {</span>
+<span class="nc" id="L131">      final Map.Entry&lt;String, JsonNode&gt; field = fields.next();</span>
+<span class="nc" id="L132">      final String name = field.getKey();</span>
+<span class="nc" id="L133">      final JsonNode value = field.getValue();</span>
 
-<span class="nc bnc" id="L134" title="All 2 branches missed.">      if (name.equalsIgnoreCase(BUSINESS)) {</span>
-<span class="nc bnc" id="L135" title="All 2 branches missed.">        if (value.isArray()) {</span>
-<span class="nc" id="L136">          final Businesses businessList = new Businesses();</span>
-<span class="nc" id="L137">          final Iterator&lt;JsonNode&gt; business = value.elements();</span>
-<span class="nc bnc" id="L138" title="All 2 branches missed.">          while (business.hasNext()) {</span>
-<span class="nc" id="L139">            final JsonNode businessName = business.next();</span>
-<span class="nc bnc" id="L140" title="All 2 branches missed.">            if (businessName.isTextual()) {</span>
-<span class="nc" id="L141">              businessList.business.add(businessName.asText());</span>
+<span class="nc bnc" id="L135" title="All 2 branches missed.">      if (name.equalsIgnoreCase(BUSINESS)) {</span>
+<span class="nc bnc" id="L136" title="All 2 branches missed.">        if (value.isArray()) {</span>
+<span class="nc" id="L137">          final Businesses businessList = new Businesses();</span>
+<span class="nc" id="L138">          final Iterator&lt;JsonNode&gt; business = value.elements();</span>
+<span class="nc bnc" id="L139" title="All 2 branches missed.">          while (business.hasNext()) {</span>
+<span class="nc" id="L140">            final JsonNode businessName = business.next();</span>
+<span class="nc bnc" id="L141" title="All 2 branches missed.">            if (businessName.isTextual()) {</span>
+<span class="nc" id="L142">              businessList.business.add(businessName.asText());</span>
             } else {
-<span class="nc" id="L143">              errors</span>
-<span class="nc" id="L144">                  .add(ILLEGAL_FIELD_VALUE(BUSINESS, businessName.toString()));</span>
+<span class="nc" id="L144">              errors</span>
+<span class="nc" id="L145">                  .add(ILLEGAL_FIELD_VALUE(BUSINESS, businessName.toString()));</span>
             }
-<span class="nc" id="L146">          }</span>
-<span class="nc" id="L147">          oldBusiness.setBusiness(XmlUtils.objectToXml(businessList));</span>
-<span class="nc" id="L148">        } else {</span>
-<span class="nc" id="L149">          errors.add(ILLEGAL_FIELD_VALUE(BUSINESS, value.toString()));</span>
+<span class="nc" id="L147">          }</span>
+<span class="nc" id="L148">          oldBusiness.setBusiness(XmlUtils.objectToXml(businessList));</span>
+<span class="nc" id="L149">        } else {</span>
+<span class="nc" id="L150">          errors.add(ILLEGAL_FIELD_VALUE(BUSINESS, value.toString()));</span>
         }
-<span class="nc bnc" id="L151" title="All 2 branches missed.">      } else if (name.equalsIgnoreCase(ROLES)) {</span>
-<span class="nc bnc" id="L152" title="All 2 branches missed.">        if (value.isArray()) {</span>
+<span class="nc bnc" id="L152" title="All 2 branches missed.">      } else if (name.equalsIgnoreCase(ROLES)) {</span>
+<span class="nc bnc" id="L153" title="All 2 branches missed.">        if (value.isArray()) {</span>
           try {
-<span class="nc" id="L154">            final Roles roles = nodeToRoles((ArrayNode) value);</span>
-<span class="nc" id="L155">            oldBusiness.setRoles(XmlUtils.objectToXml(roles));</span>
-<span class="nc" id="L156">          } catch (final RestErrorException e) {</span>
-<span class="nc" id="L157">            errors.addAll(e.errors);</span>
-<span class="nc" id="L158">          }</span>
+<span class="nc" id="L155">            final Roles roles = nodeToRoles((ArrayNode) value);</span>
+<span class="nc" id="L156">            oldBusiness.setRoles(XmlUtils.objectToXml(roles));</span>
+<span class="nc" id="L157">          } catch (final RestErrorException e) {</span>
+<span class="nc" id="L158">            errors.addAll(e.errors);</span>
+<span class="nc" id="L159">          }</span>
         } else {
-<span class="nc" id="L160">          errors.add(ILLEGAL_FIELD_VALUE(ROLES, value.toString()));</span>
+<span class="nc" id="L161">          errors.add(ILLEGAL_FIELD_VALUE(ROLES, value.toString()));</span>
         }
-<span class="nc bnc" id="L162" title="All 2 branches missed.">      } else if (name.equalsIgnoreCase(ALIASES)) {</span>
-<span class="nc bnc" id="L163" title="All 2 branches missed.">        if (value.isArray()) {</span>
+<span class="nc bnc" id="L163" title="All 2 branches missed.">      } else if (name.equalsIgnoreCase(ALIASES)) {</span>
+<span class="nc bnc" id="L164" title="All 2 branches missed.">        if (value.isArray()) {</span>
           try {
-<span class="nc" id="L165">            final Aliases aliases = nodeToAliasList((ArrayNode) value);</span>
-<span class="nc" id="L166">            oldBusiness.setAliases(XmlUtils.objectToXml(aliases));</span>
-<span class="nc" id="L167">          } catch (final RestErrorException e) {</span>
-<span class="nc" id="L168">            errors.addAll(e.errors);</span>
-<span class="nc" id="L169">          }</span>
+<span class="nc" id="L166">            final Aliases aliases = nodeToAliasList((ArrayNode) value);</span>
+<span class="nc" id="L167">            oldBusiness.setAliases(XmlUtils.objectToXml(aliases));</span>
+<span class="nc" id="L168">          } catch (final RestErrorException e) {</span>
+<span class="nc" id="L169">            errors.addAll(e.errors);</span>
+<span class="nc" id="L170">          }</span>
         } else {
-<span class="nc" id="L171">          errors.add(ILLEGAL_FIELD_VALUE(ALIASES, value.toString()));</span>
+<span class="nc" id="L172">          errors.add(ILLEGAL_FIELD_VALUE(ALIASES, value.toString()));</span>
         }
-<span class="nc bnc" id="L173" title="All 2 branches missed.">      } else if (name.equalsIgnoreCase(OTHERS)) {</span>
-<span class="nc bnc" id="L174" title="All 2 branches missed.">        if (value.isTextual() &amp;&amp;</span>
-<span class="nc bnc" id="L175" title="All 2 branches missed.">            value.asText().matches(&quot;&lt;root&gt;&lt;version&gt;.+&lt;/version&gt;&lt;/root&gt;&quot;)) {</span>
-<span class="nc" id="L176">          oldBusiness.setOthers(value.asText());</span>
+<span class="nc bnc" id="L174" title="All 2 branches missed.">      } else if (name.equalsIgnoreCase(OTHERS)) {</span>
+<span class="nc bnc" id="L175" title="All 2 branches missed.">        if (value.isTextual() &amp;&amp;</span>
+<span class="nc bnc" id="L176" title="All 2 branches missed.">            value.asText().matches(&quot;&lt;root&gt;&lt;version&gt;.+&lt;/version&gt;&lt;/root&gt;&quot;)) {</span>
+<span class="nc" id="L177">          oldBusiness.setOthers(value.asText());</span>
 
         } else {
-<span class="nc" id="L179">          errors.add(ILLEGAL_FIELD_VALUE(ALIASES, value.toString()));</span>
+<span class="nc" id="L180">          errors.add(ILLEGAL_FIELD_VALUE(ALIASES, value.toString()));</span>
         }
       } else {
-<span class="nc" id="L182">        errors.add(UNKNOWN_FIELD(name));</span>
+<span class="nc" id="L183">        errors.add(UNKNOWN_FIELD(name));</span>
       }
-<span class="nc" id="L184">    }</span>
+<span class="nc" id="L185">    }</span>
 
-<span class="nc bnc" id="L186" title="All 2 branches missed.">    if (errors.isEmpty()) {</span>
-<span class="nc" id="L187">      return oldBusiness;</span>
+<span class="nc bnc" id="L187" title="All 2 branches missed.">    if (errors.isEmpty()) {</span>
+<span class="nc" id="L188">      return oldBusiness;</span>
     } else {
-<span class="nc" id="L189">      throw new RestErrorException(errors);</span>
+<span class="nc" id="L190">      throw new RestErrorException(errors);</span>
     }
   }
 
@@ -200,29 +201,29 @@ public final class HostConfigConverter {
    * @throws InternalServerErrorException if an unexpected error
    *     occurred
    */
-  public static List&lt;ROLE&gt; getRoles(String hostName) {
+  public static List&lt;ROLE&gt; getRoles(final String hostName) {
     ArrayNode array;
-<span class="fc" id="L205">    BusinessDAO businessDAO = null;</span>
+<span class="fc" id="L206">    BusinessDAO businessDAO = null;</span>
     try {
-<span class="fc" id="L207">      businessDAO = DAO_FACTORY.getBusinessDAO();</span>
-<span class="fc" id="L208">      final Business config = businessDAO.select(serverName());</span>
-<span class="fc" id="L209">      array = getRolesArray(config);</span>
-<span class="nc" id="L210">    } catch (final DAOConnectionException e) {</span>
-<span class="nc" id="L211">      throw new InternalServerErrorException(e);</span>
-<span class="nc" id="L212">    } catch (final DAONoDataException e) {</span>
-<span class="nc" id="L213">      throw new InternalServerErrorException(e);</span>
+<span class="fc" id="L208">      businessDAO = DAO_FACTORY.getBusinessDAO();</span>
+<span class="fc" id="L209">      final Business config = businessDAO.select(serverName());</span>
+<span class="fc" id="L210">      array = getRolesArray(config);</span>
+<span class="nc" id="L211">    } catch (final DAOConnectionException e) {</span>
+<span class="nc" id="L212">      throw new InternalServerErrorException(e);</span>
+<span class="nc" id="L213">    } catch (final DAONoDataException e) {</span>
+<span class="nc" id="L214">      throw new InternalServerErrorException(e);</span>
     } finally {
-<span class="fc" id="L215">      DAOFactory.closeDAO(businessDAO);</span>
+<span class="fc" id="L216">      DAOFactory.closeDAO(businessDAO);</span>
     }
 
-<span class="fc" id="L218">    final Roles roles = nodeToRoles(array);</span>
+<span class="fc" id="L219">    final Roles roles = nodeToRoles(array);</span>
 
-<span class="pc bpc" id="L220" title="1 of 2 branches missed.">    for (final RoleEntry role : roles.roles) {</span>
-<span class="fc bfc" id="L221" title="All 2 branches covered.">      if (role.hostName.equals(hostName)) {</span>
-<span class="fc" id="L222">        return role.roleList;</span>
+<span class="pc bpc" id="L221" title="1 of 2 branches missed.">    for (final RoleEntry role : roles.roles) {</span>
+<span class="fc bfc" id="L222" title="All 2 branches covered.">      if (role.hostName.equals(hostName)) {</span>
+<span class="fc" id="L223">        return role.roleList;</span>
       }
-<span class="fc" id="L224">    }</span>
-<span class="nc" id="L225">    return null;</span>
+<span class="fc" id="L225">    }</span>
+<span class="nc" id="L226">    return SingletonUtils.singletonList();</span>
   }
 
   // ########################## PRIVATE METHODS ###############################
@@ -235,31 +236,31 @@ public final class HostConfigConverter {
    *
    * @return the server's list of known aliases
    */
-  private static ArrayNode getAliasArray(Business hostConfig) {
-<span class="fc" id="L239">    final ArrayNode array = new ArrayNode(JsonNodeFactory.instance);</span>
-<span class="pc bpc" id="L240" title="1 of 2 branches missed.">    if (hostConfig.getAliases() != null) {</span>
+  private static ArrayNode getAliasArray(final Business hostConfig) {
+<span class="fc" id="L240">    final ArrayNode array = new ArrayNode(JsonNodeFactory.instance);</span>
+<span class="pc bpc" id="L241" title="1 of 2 branches missed.">    if (hostConfig.getAliases() != null) {</span>
       try {
-<span class="fc" id="L242">        final Aliases aliases =</span>
-<span class="fc" id="L243">            XmlUtils.xmlToObject(hostConfig.getAliases(), Aliases.class);</span>
+<span class="fc" id="L243">        final Aliases aliases =</span>
+<span class="fc" id="L244">            XmlUtils.xmlToObject(hostConfig.getAliases(), Aliases.class);</span>
 
-<span class="fc bfc" id="L245" title="All 2 branches covered.">        for (final AliasEntry alias : aliases.aliases) {</span>
-<span class="fc" id="L246">          final ObjectNode node = new ObjectNode(JsonNodeFactory.instance);</span>
-<span class="fc" id="L247">          final ArrayNode aliasIds = new ArrayNode(JsonNodeFactory.instance);</span>
+<span class="fc bfc" id="L246" title="All 2 branches covered.">        for (final AliasEntry alias : aliases.aliases) {</span>
+<span class="fc" id="L247">          final ObjectNode node = new ObjectNode(JsonNodeFactory.instance);</span>
+<span class="fc" id="L248">          final ArrayNode aliasIds = new ArrayNode(JsonNodeFactory.instance);</span>
 
-<span class="fc bfc" id="L249" title="All 2 branches covered.">          for (final String aliasId : alias.aliasList) {</span>
-<span class="fc" id="L250">            aliasIds.add(aliasId);</span>
-<span class="fc" id="L251">          }</span>
+<span class="fc bfc" id="L250" title="All 2 branches covered.">          for (final String aliasId : alias.aliasList) {</span>
+<span class="fc" id="L251">            aliasIds.add(aliasId);</span>
+<span class="fc" id="L252">          }</span>
 
-<span class="fc" id="L253">          node.put(HOST_NAME, alias.hostName);</span>
-<span class="fc" id="L254">          node.putArray(ALIAS_LIST).addAll(aliasIds);</span>
+<span class="fc" id="L254">          node.put(HOST_NAME, alias.hostName);</span>
+<span class="fc" id="L255">          node.putArray(ALIAS_LIST).addAll(aliasIds);</span>
 
-<span class="fc" id="L256">          array.add(node);</span>
-<span class="fc" id="L257">        }</span>
-<span class="nc" id="L258">      } catch (InternalServerErrorException ignore) { //NOSONAR</span>
-<span class="nc" id="L259">        SysErrLogger.FAKE_LOGGER.syserr(&quot;No Alias definition&quot;);</span>
-<span class="fc" id="L260">      }</span>
+<span class="fc" id="L257">          array.add(node);</span>
+<span class="fc" id="L258">        }</span>
+<span class="nc" id="L259">      } catch (final InternalServerErrorException ignore) { //NOSONAR</span>
+<span class="nc" id="L260">        SysErrLogger.FAKE_LOGGER.syserr(&quot;No Alias definition&quot;);</span>
+<span class="fc" id="L261">      }</span>
     }
-<span class="fc" id="L262">    return array;</span>
+<span class="fc" id="L263">    return array;</span>
   }
 
   /**
@@ -270,31 +271,31 @@ public final class HostConfigConverter {
    *
    * @return the server's list of known aliases
    */
-  private static ArrayNode getRolesArray(Business hostConfig) {
-<span class="fc" id="L274">    final ArrayNode array = new ArrayNode(JsonNodeFactory.instance);</span>
-<span class="pc bpc" id="L275" title="1 of 2 branches missed.">    if (hostConfig.getRoles() != null) {</span>
+  private static ArrayNode getRolesArray(final Business hostConfig) {
+<span class="fc" id="L275">    final ArrayNode array = new ArrayNode(JsonNodeFactory.instance);</span>
+<span class="pc bpc" id="L276" title="1 of 2 branches missed.">    if (hostConfig.getRoles() != null) {</span>
       try {
-<span class="fc" id="L277">        final Roles roles =</span>
-<span class="fc" id="L278">            XmlUtils.xmlToObject(hostConfig.getRoles(), Roles.class);</span>
+<span class="fc" id="L278">        final Roles roles =</span>
+<span class="fc" id="L279">            XmlUtils.xmlToObject(hostConfig.getRoles(), Roles.class);</span>
 
-<span class="fc bfc" id="L280" title="All 2 branches covered.">        for (final RoleEntry role : roles.roles) {</span>
-<span class="fc" id="L281">          final ObjectNode node = new ObjectNode(JsonNodeFactory.instance);</span>
-<span class="fc" id="L282">          final ArrayNode roleTypes = new ArrayNode(JsonNodeFactory.instance);</span>
+<span class="fc bfc" id="L281" title="All 2 branches covered.">        for (final RoleEntry role : roles.roles) {</span>
+<span class="fc" id="L282">          final ObjectNode node = new ObjectNode(JsonNodeFactory.instance);</span>
+<span class="fc" id="L283">          final ArrayNode roleTypes = new ArrayNode(JsonNodeFactory.instance);</span>
 
-<span class="fc bfc" id="L284" title="All 2 branches covered.">          for (final ROLE roleType : role.roleList) {</span>
-<span class="fc" id="L285">            roleTypes.add(roleType.name());</span>
-<span class="fc" id="L286">          }</span>
+<span class="fc bfc" id="L285" title="All 2 branches covered.">          for (final ROLE roleType : role.roleList) {</span>
+<span class="fc" id="L286">            roleTypes.add(roleType.name());</span>
+<span class="fc" id="L287">          }</span>
 
-<span class="fc" id="L288">          node.put(HOST_NAME, role.hostName);</span>
-<span class="fc" id="L289">          node.putArray(ROLE_LIST).addAll(roleTypes);</span>
+<span class="fc" id="L289">          node.put(HOST_NAME, role.hostName);</span>
+<span class="fc" id="L290">          node.putArray(ROLE_LIST).addAll(roleTypes);</span>
 
-<span class="fc" id="L291">          array.add(node);</span>
-<span class="fc" id="L292">        }</span>
-<span class="nc" id="L293">      } catch (InternalServerErrorException ignore) {//NOSONAR</span>
-<span class="nc" id="L294">        SysErrLogger.FAKE_LOGGER.syserr(&quot;No Roles definition&quot;);</span>
-<span class="fc" id="L295">      }</span>
+<span class="fc" id="L292">          array.add(node);</span>
+<span class="fc" id="L293">        }</span>
+<span class="nc" id="L294">      } catch (final InternalServerErrorException ignore) {//NOSONAR</span>
+<span class="nc" id="L295">        SysErrLogger.FAKE_LOGGER.syserr(&quot;No Roles definition&quot;);</span>
+<span class="fc" id="L296">      }</span>
     }
-<span class="fc" id="L297">    return array;</span>
+<span class="fc" id="L298">    return array;</span>
   }
 
   /**
@@ -306,21 +307,21 @@ public final class HostConfigConverter {
    *
    * @return the server's list of known aliases
    */
-  private static ArrayNode getBusinessArray(Business hostConfig) {
-<span class="fc" id="L310">    final ArrayNode array = new ArrayNode(JsonNodeFactory.instance);</span>
-<span class="pc bpc" id="L311" title="1 of 2 branches missed.">    if (hostConfig.getBusiness() != null) {</span>
+  private static ArrayNode getBusinessArray(final Business hostConfig) {
+<span class="fc" id="L311">    final ArrayNode array = new ArrayNode(JsonNodeFactory.instance);</span>
+<span class="pc bpc" id="L312" title="1 of 2 branches missed.">    if (hostConfig.getBusiness() != null) {</span>
       try {
-<span class="fc" id="L313">        final Businesses business =</span>
-<span class="fc" id="L314">            XmlUtils.xmlToObject(hostConfig.getBusiness(), Businesses.class);</span>
+<span class="fc" id="L314">        final Businesses business =</span>
+<span class="fc" id="L315">            XmlUtils.xmlToObject(hostConfig.getBusiness(), Businesses.class);</span>
 
-<span class="fc bfc" id="L316" title="All 2 branches covered.">        for (final String businessId : business.business) {</span>
-<span class="fc" id="L317">          array.add(businessId);</span>
-<span class="fc" id="L318">        }</span>
-<span class="nc" id="L319">      } catch (InternalServerErrorException ignore) {//NOSONAR</span>
-<span class="nc" id="L320">        SysErrLogger.FAKE_LOGGER.syserr(&quot;No Business definition&quot;);</span>
-<span class="fc" id="L321">      }</span>
+<span class="fc bfc" id="L317" title="All 2 branches covered.">        for (final String businessId : business.business) {</span>
+<span class="fc" id="L318">          array.add(businessId);</span>
+<span class="fc" id="L319">        }</span>
+<span class="nc" id="L320">      } catch (final InternalServerErrorException ignore) {//NOSONAR</span>
+<span class="nc" id="L321">        SysErrLogger.FAKE_LOGGER.syserr(&quot;No Business definition&quot;);</span>
+<span class="fc" id="L322">      }</span>
     }
-<span class="fc" id="L323">    return array;</span>
+<span class="fc" id="L324">    return array;</span>
   }
 
   /**
@@ -333,65 +334,65 @@ public final class HostConfigConverter {
    * @throws RestErrorException if the given ArrayNode does not
    *     represent a list of aliases
    */
-  private static Aliases nodeToAliasList(ArrayNode array) {
-<span class="nc" id="L337">    final List&lt;AliasEntry&gt; aliases = new ArrayList&lt;AliasEntry&gt;();</span>
-<span class="nc" id="L338">    final List&lt;RestError&gt; errors = new ArrayList&lt;RestError&gt;();</span>
+  private static Aliases nodeToAliasList(final ArrayNode array) {
+<span class="nc" id="L338">    final List&lt;AliasEntry&gt; aliases = new ArrayList&lt;AliasEntry&gt;();</span>
+<span class="nc" id="L339">    final List&lt;RestError&gt; errors = new ArrayList&lt;RestError&gt;();</span>
 
-<span class="nc" id="L340">    final Iterator&lt;JsonNode&gt; elements = array.elements();</span>
-<span class="nc bnc" id="L341" title="All 2 branches missed.">    while (elements.hasNext()) {</span>
-<span class="nc" id="L342">      final JsonNode element = elements.next();</span>
-<span class="nc" id="L343">      final AliasEntry alias = new AliasEntry();</span>
+<span class="nc" id="L341">    final Iterator&lt;JsonNode&gt; elements = array.elements();</span>
+<span class="nc bnc" id="L342" title="All 2 branches missed.">    while (elements.hasNext()) {</span>
+<span class="nc" id="L343">      final JsonNode element = elements.next();</span>
+<span class="nc" id="L344">      final AliasEntry alias = new AliasEntry();</span>
 
-<span class="nc bnc" id="L345" title="All 2 branches missed.">      if (!element.isObject()) {</span>
-<span class="nc" id="L346">        errors.add(ILLEGAL_PARAMETER_VALUE(ALIASES, element.toString()));</span>
-<span class="nc" id="L347">        continue;</span>
+<span class="nc bnc" id="L346" title="All 2 branches missed.">      if (!element.isObject()) {</span>
+<span class="nc" id="L347">        errors.add(ILLEGAL_PARAMETER_VALUE(ALIASES, element.toString()));</span>
+<span class="nc" id="L348">        continue;</span>
       }
 
-<span class="nc" id="L350">      final Iterator&lt;Map.Entry&lt;String, JsonNode&gt;&gt; fields = element.fields();</span>
-<span class="nc bnc" id="L351" title="All 2 branches missed.">      while (fields.hasNext()) {</span>
-<span class="nc" id="L352">        final Map.Entry&lt;String, JsonNode&gt; field = fields.next();</span>
-<span class="nc" id="L353">        final String name = field.getKey();</span>
-<span class="nc" id="L354">        final JsonNode value = field.getValue();</span>
+<span class="nc" id="L351">      final Iterator&lt;Map.Entry&lt;String, JsonNode&gt;&gt; fields = element.fields();</span>
+<span class="nc bnc" id="L352" title="All 2 branches missed.">      while (fields.hasNext()) {</span>
+<span class="nc" id="L353">        final Map.Entry&lt;String, JsonNode&gt; field = fields.next();</span>
+<span class="nc" id="L354">        final String name = field.getKey();</span>
+<span class="nc" id="L355">        final JsonNode value = field.getValue();</span>
 
-<span class="nc bnc" id="L356" title="All 2 branches missed.">        if (name.equalsIgnoreCase(HOST_NAME)) {</span>
-<span class="nc bnc" id="L357" title="All 2 branches missed.">          if (value.isTextual()) {</span>
-<span class="nc" id="L358">            alias.hostName = value.asText();</span>
+<span class="nc bnc" id="L357" title="All 2 branches missed.">        if (name.equalsIgnoreCase(HOST_NAME)) {</span>
+<span class="nc bnc" id="L358" title="All 2 branches missed.">          if (value.isTextual()) {</span>
+<span class="nc" id="L359">            alias.hostName = value.asText();</span>
           } else {
-<span class="nc" id="L360">            errors.add(ILLEGAL_PARAMETER_VALUE(HOST_NAME, value.toString()));</span>
+<span class="nc" id="L361">            errors.add(ILLEGAL_PARAMETER_VALUE(HOST_NAME, value.toString()));</span>
           }
-<span class="nc bnc" id="L362" title="All 2 branches missed.">        } else if (name.equalsIgnoreCase(ALIAS_LIST)) {</span>
-<span class="nc bnc" id="L363" title="All 2 branches missed.">          if (value.isArray()) {</span>
-<span class="nc" id="L364">            final Iterator&lt;JsonNode&gt; aliasList = value.elements();</span>
-<span class="nc bnc" id="L365" title="All 2 branches missed.">            while (aliasList.hasNext()) {</span>
-<span class="nc" id="L366">              final JsonNode aliasId = aliasList.next();</span>
-<span class="nc bnc" id="L367" title="All 2 branches missed.">              if (aliasId.isTextual()) {</span>
-<span class="nc" id="L368">                alias.aliasList.add(aliasId.asText());</span>
+<span class="nc bnc" id="L363" title="All 2 branches missed.">        } else if (name.equalsIgnoreCase(ALIAS_LIST)) {</span>
+<span class="nc bnc" id="L364" title="All 2 branches missed.">          if (value.isArray()) {</span>
+<span class="nc" id="L365">            final Iterator&lt;JsonNode&gt; aliasList = value.elements();</span>
+<span class="nc bnc" id="L366" title="All 2 branches missed.">            while (aliasList.hasNext()) {</span>
+<span class="nc" id="L367">              final JsonNode aliasId = aliasList.next();</span>
+<span class="nc bnc" id="L368" title="All 2 branches missed.">              if (aliasId.isTextual()) {</span>
+<span class="nc" id="L369">                alias.aliasList.add(aliasId.asText());</span>
               } else {
-<span class="nc" id="L370">                errors.add(</span>
-<span class="nc" id="L371">                    ILLEGAL_PARAMETER_VALUE(ALIAS_LIST, aliasId.toString()));</span>
+<span class="nc" id="L371">                errors.add(</span>
+<span class="nc" id="L372">                    ILLEGAL_PARAMETER_VALUE(ALIAS_LIST, aliasId.toString()));</span>
               }
-<span class="nc" id="L373">            }</span>
-<span class="nc" id="L374">          } else {</span>
-<span class="nc" id="L375">            errors.add(ILLEGAL_PARAMETER_VALUE(ALIAS_LIST, value.toString()));</span>
+<span class="nc" id="L374">            }</span>
+<span class="nc" id="L375">          } else {</span>
+<span class="nc" id="L376">            errors.add(ILLEGAL_PARAMETER_VALUE(ALIAS_LIST, value.toString()));</span>
           }
         } else {
-<span class="nc" id="L378">          errors.add(UNKNOWN_FIELD(name));</span>
+<span class="nc" id="L379">          errors.add(UNKNOWN_FIELD(name));</span>
         }
-<span class="nc" id="L380">      }</span>
+<span class="nc" id="L381">      }</span>
 
-<span class="nc bnc" id="L382" title="All 2 branches missed.">      if (alias.hostName.isEmpty()) {</span>
-<span class="nc" id="L383">        errors.add(MISSING_FIELD(HOST_NAME));</span>
+<span class="nc bnc" id="L383" title="All 2 branches missed.">      if (alias.hostName.isEmpty()) {</span>
+<span class="nc" id="L384">        errors.add(MISSING_FIELD(HOST_NAME));</span>
       }
-<span class="nc bnc" id="L385" title="All 2 branches missed.">      if (alias.aliasList.isEmpty()) {</span>
-<span class="nc" id="L386">        errors.add(MISSING_FIELD(ALIAS_LIST));</span>
+<span class="nc bnc" id="L386" title="All 2 branches missed.">      if (alias.aliasList.isEmpty()) {</span>
+<span class="nc" id="L387">        errors.add(MISSING_FIELD(ALIAS_LIST));</span>
       }
-<span class="nc" id="L388">      aliases.add(alias);</span>
-<span class="nc" id="L389">    }</span>
+<span class="nc" id="L389">      aliases.add(alias);</span>
+<span class="nc" id="L390">    }</span>
 
-<span class="nc bnc" id="L391" title="All 2 branches missed.">    if (errors.isEmpty()) {</span>
-<span class="nc" id="L392">      return new Aliases(aliases);</span>
+<span class="nc bnc" id="L392" title="All 2 branches missed.">    if (errors.isEmpty()) {</span>
+<span class="nc" id="L393">      return new Aliases(aliases);</span>
     } else {
-<span class="nc" id="L394">      throw new RestErrorException(errors);</span>
+<span class="nc" id="L395">      throw new RestErrorException(errors);</span>
     }
   }
 
@@ -405,70 +406,70 @@ public final class HostConfigConverter {
    * @throws RestErrorException if the given ArrayNode does not
    *     represent a list of roles
    */
-  private static Roles nodeToRoles(ArrayNode array) {
-<span class="fc" id="L409">    final List&lt;RoleEntry&gt; roles = new ArrayList&lt;RoleEntry&gt;();</span>
-<span class="fc" id="L410">    final List&lt;RestError&gt; errors = new ArrayList&lt;RestError&gt;();</span>
+  private static Roles nodeToRoles(final ArrayNode array) {
+<span class="fc" id="L410">    final List&lt;RoleEntry&gt; roles = new ArrayList&lt;RoleEntry&gt;();</span>
+<span class="fc" id="L411">    final List&lt;RestError&gt; errors = new ArrayList&lt;RestError&gt;();</span>
 
-<span class="fc" id="L412">    final Iterator&lt;JsonNode&gt; elements = array.elements();</span>
-<span class="fc bfc" id="L413" title="All 2 branches covered.">    while (elements.hasNext()) {</span>
-<span class="fc" id="L414">      final JsonNode element = elements.next();</span>
-<span class="fc" id="L415">      final RoleEntry role = new RoleEntry();</span>
+<span class="fc" id="L413">    final Iterator&lt;JsonNode&gt; elements = array.elements();</span>
+<span class="fc bfc" id="L414" title="All 2 branches covered.">    while (elements.hasNext()) {</span>
+<span class="fc" id="L415">      final JsonNode element = elements.next();</span>
+<span class="fc" id="L416">      final RoleEntry role = new RoleEntry();</span>
 
-<span class="pc bpc" id="L417" title="1 of 2 branches missed.">      if (!element.isObject()) {</span>
-<span class="nc" id="L418">        errors.add(ILLEGAL_PARAMETER_VALUE(ROLES, element.toString()));</span>
-<span class="nc" id="L419">        continue;</span>
+<span class="pc bpc" id="L418" title="1 of 2 branches missed.">      if (!element.isObject()) {</span>
+<span class="nc" id="L419">        errors.add(ILLEGAL_PARAMETER_VALUE(ROLES, element.toString()));</span>
+<span class="nc" id="L420">        continue;</span>
       }
 
-<span class="fc" id="L422">      final Iterator&lt;Map.Entry&lt;String, JsonNode&gt;&gt; fields = element.fields();</span>
-<span class="fc bfc" id="L423" title="All 2 branches covered.">      while (fields.hasNext()) {</span>
-<span class="fc" id="L424">        final Map.Entry&lt;String, JsonNode&gt; field = fields.next();</span>
-<span class="fc" id="L425">        final String name = field.getKey();</span>
-<span class="fc" id="L426">        final JsonNode value = field.getValue();</span>
+<span class="fc" id="L423">      final Iterator&lt;Map.Entry&lt;String, JsonNode&gt;&gt; fields = element.fields();</span>
+<span class="fc bfc" id="L424" title="All 2 branches covered.">      while (fields.hasNext()) {</span>
+<span class="fc" id="L425">        final Map.Entry&lt;String, JsonNode&gt; field = fields.next();</span>
+<span class="fc" id="L426">        final String name = field.getKey();</span>
+<span class="fc" id="L427">        final JsonNode value = field.getValue();</span>
 
-<span class="fc bfc" id="L428" title="All 2 branches covered.">        if (name.equalsIgnoreCase(HOST_NAME)) {</span>
-<span class="pc bpc" id="L429" title="1 of 2 branches missed.">          if (value.isTextual()) {</span>
-<span class="fc" id="L430">            role.hostName = value.asText();</span>
+<span class="fc bfc" id="L429" title="All 2 branches covered.">        if (name.equalsIgnoreCase(HOST_NAME)) {</span>
+<span class="pc bpc" id="L430" title="1 of 2 branches missed.">          if (value.isTextual()) {</span>
+<span class="fc" id="L431">            role.hostName = value.asText();</span>
           } else {
-<span class="nc" id="L432">            errors.add(ILLEGAL_PARAMETER_VALUE(HOST_NAME, value.toString()));</span>
+<span class="nc" id="L433">            errors.add(ILLEGAL_PARAMETER_VALUE(HOST_NAME, value.toString()));</span>
           }
-<span class="pc bpc" id="L434" title="1 of 2 branches missed.">        } else if (name.equalsIgnoreCase(ROLE_LIST)) {</span>
-<span class="pc bpc" id="L435" title="1 of 2 branches missed.">          if (value.isArray()) {</span>
-<span class="fc" id="L436">            final Iterator&lt;JsonNode&gt; roleTypes = value.elements();</span>
-<span class="fc bfc" id="L437" title="All 2 branches covered.">            while (roleTypes.hasNext()) {</span>
-<span class="fc" id="L438">              final JsonNode roleType = roleTypes.next();</span>
-<span class="pc bpc" id="L439" title="1 of 2 branches missed.">              if (roleType.isTextual()) {</span>
+<span class="pc bpc" id="L435" title="1 of 2 branches missed.">        } else if (name.equalsIgnoreCase(ROLE_LIST)) {</span>
+<span class="pc bpc" id="L436" title="1 of 2 branches missed.">          if (value.isArray()) {</span>
+<span class="fc" id="L437">            final Iterator&lt;JsonNode&gt; roleTypes = value.elements();</span>
+<span class="fc bfc" id="L438" title="All 2 branches covered.">            while (roleTypes.hasNext()) {</span>
+<span class="fc" id="L439">              final JsonNode roleType = roleTypes.next();</span>
+<span class="pc bpc" id="L440" title="1 of 2 branches missed.">              if (roleType.isTextual()) {</span>
                 try {
-<span class="fc" id="L441">                  role.roleList.add(ROLE.valueOf(roleType.asText()));</span>
-<span class="nc" id="L442">                } catch (final IllegalArgumentException e) {</span>
-<span class="nc" id="L443">                  errors.add(</span>
-<span class="nc" id="L444">                      ILLEGAL_PARAMETER_VALUE(ROLE_LIST, roleType.toString()));</span>
-<span class="pc" id="L445">                }</span>
+<span class="fc" id="L442">                  role.roleList.add(ROLE.valueOf(roleType.asText()));</span>
+<span class="nc" id="L443">                } catch (final IllegalArgumentException e) {</span>
+<span class="nc" id="L444">                  errors.add(</span>
+<span class="nc" id="L445">                      ILLEGAL_PARAMETER_VALUE(ROLE_LIST, roleType.toString()));</span>
+<span class="pc" id="L446">                }</span>
               } else {
-<span class="nc" id="L447">                errors.add(</span>
-<span class="nc" id="L448">                    ILLEGAL_PARAMETER_VALUE(ROLE_LIST, roleType.toString()));</span>
+<span class="nc" id="L448">                errors.add(</span>
+<span class="nc" id="L449">                    ILLEGAL_PARAMETER_VALUE(ROLE_LIST, roleType.toString()));</span>
               }
-<span class="fc" id="L450">            }</span>
-<span class="fc" id="L451">          } else {</span>
-<span class="nc" id="L452">            errors.add(ILLEGAL_PARAMETER_VALUE(ROLE_LIST, value.toString()));</span>
+<span class="fc" id="L451">            }</span>
+<span class="fc" id="L452">          } else {</span>
+<span class="nc" id="L453">            errors.add(ILLEGAL_PARAMETER_VALUE(ROLE_LIST, value.toString()));</span>
           }
         } else {
-<span class="nc" id="L455">          errors.add(UNKNOWN_FIELD(name));</span>
+<span class="nc" id="L456">          errors.add(UNKNOWN_FIELD(name));</span>
         }
-<span class="fc" id="L457">      }</span>
+<span class="fc" id="L458">      }</span>
 
-<span class="pc bpc" id="L459" title="1 of 2 branches missed.">      if (role.hostName.isEmpty()) {</span>
-<span class="nc" id="L460">        errors.add(MISSING_FIELD(HOST_NAME));</span>
+<span class="pc bpc" id="L460" title="1 of 2 branches missed.">      if (role.hostName.isEmpty()) {</span>
+<span class="nc" id="L461">        errors.add(MISSING_FIELD(HOST_NAME));</span>
       }
-<span class="pc bpc" id="L462" title="1 of 2 branches missed.">      if (role.roleList.isEmpty()) {</span>
-<span class="nc" id="L463">        errors.add(MISSING_FIELD(ROLE_LIST));</span>
+<span class="pc bpc" id="L463" title="1 of 2 branches missed.">      if (role.roleList.isEmpty()) {</span>
+<span class="nc" id="L464">        errors.add(MISSING_FIELD(ROLE_LIST));</span>
       }
-<span class="fc" id="L465">      roles.add(role);</span>
-<span class="fc" id="L466">    }</span>
+<span class="fc" id="L466">      roles.add(role);</span>
+<span class="fc" id="L467">    }</span>
 
-<span class="pc bpc" id="L468" title="1 of 2 branches missed.">    if (errors.isEmpty()) {</span>
-<span class="fc" id="L469">      return new Roles(roles);</span>
+<span class="pc bpc" id="L469" title="1 of 2 branches missed.">    if (errors.isEmpty()) {</span>
+<span class="fc" id="L470">      return new Roles(roles);</span>
     } else {
-<span class="nc" id="L471">      throw new RestErrorException(errors);</span>
+<span class="nc" id="L472">      throw new RestErrorException(errors);</span>
     }
   }
 }

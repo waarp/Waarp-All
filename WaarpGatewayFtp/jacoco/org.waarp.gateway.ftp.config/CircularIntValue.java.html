@@ -26,6 +26,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * propose to the client.
  */
 class CircularIntValue {
+<span class="fc" id="L29">  private final Object syncObject = new Object();</span>
   /**
    * Min value
    */
@@ -47,11 +48,11 @@ class CircularIntValue {
    * @param min
    * @param max
    */
-<span class="fc" id="L50">  CircularIntValue(int min, int max) {</span>
-<span class="fc" id="L51">    this.min = min;</span>
-<span class="fc" id="L52">    this.max = max;</span>
-<span class="fc" id="L53">    current = new AtomicInteger(this.min - 1);</span>
-<span class="fc" id="L54">  }</span>
+<span class="fc" id="L51">  CircularIntValue(final int min, final int max) {</span>
+<span class="fc" id="L52">    this.min = min;</span>
+<span class="fc" id="L53">    this.max = max;</span>
+<span class="fc" id="L54">    current = new AtomicInteger(this.min - 1);</span>
+<span class="fc" id="L55">  }</span>
 
   /**
    * Get the next value
@@ -59,11 +60,11 @@ class CircularIntValue {
    * @return the next value
    */
   public int getNext() {
-<span class="fc" id="L62">    synchronized (current) {</span>
-<span class="pc bpc" id="L63" title="1 of 2 branches missed.">      if (!current.compareAndSet(max, min)) {</span>
-<span class="fc" id="L64">        current.incrementAndGet();</span>
+<span class="fc" id="L63">    synchronized (syncObject) {</span>
+<span class="pc bpc" id="L64" title="1 of 2 branches missed.">      if (!current.compareAndSet(max, min)) {</span>
+<span class="fc" id="L65">        current.incrementAndGet();</span>
       }
-<span class="fc" id="L66">      return current.get();</span>
+<span class="fc" id="L67">      return current.get();</span>
     }
   }
 }

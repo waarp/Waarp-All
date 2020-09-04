@@ -73,8 +73,8 @@ public class ChModTask extends AbstractTask {
    * @param argTransfer
    * @param session
    */
-  public ChModTask(String argRule, int delay, String argTransfer,
-                   R66Session session) {
+  public ChModTask(final String argRule, final int delay,
+                   final String argTransfer, final R66Session session) {
 <span class="nc" id="L78">    super(TaskType.CHMOD, delay, argRule, argTransfer, session);</span>
 <span class="nc" id="L79">  }</span>
 
@@ -120,43 +120,45 @@ public class ChModTask extends AbstractTask {
         // ignore
         continue;
       }
-      boolean isr, isw, isx;
-<span class="nc bnc" id="L124" title="All 2 branches missed.">      isr = chmod.indexOf('r') &gt;= 0;</span>
-<span class="nc bnc" id="L125" title="All 2 branches missed.">      isw = chmod.indexOf('w') &gt;= 0;</span>
-<span class="nc bnc" id="L126" title="All 2 branches missed.">      isx = chmod.indexOf('x') &gt;= 0;</span>
-<span class="nc bnc" id="L127" title="All 6 branches missed.">      if (!isr &amp;&amp; !isw &amp;&amp; !isx) {</span>
+      final boolean isr;
+      final boolean isw;
+      final boolean isx;
+<span class="nc bnc" id="L126" title="All 2 branches missed.">      isr = chmod.indexOf('r') &gt;= 0;</span>
+<span class="nc bnc" id="L127" title="All 2 branches missed.">      isw = chmod.indexOf('w') &gt;= 0;</span>
+<span class="nc bnc" id="L128" title="All 2 branches missed.">      isx = chmod.indexOf('x') &gt;= 0;</span>
+<span class="nc bnc" id="L129" title="All 6 branches missed.">      if (!isr &amp;&amp; !isw &amp;&amp; !isx) {</span>
         // ignore
-<span class="nc" id="L129">        continue;</span>
+<span class="nc" id="L131">        continue;</span>
       }
-<span class="nc bnc" id="L131" title="All 2 branches missed.">      if (user) {</span>
-<span class="nc bnc" id="L132" title="All 16 branches missed.">        ur = ise &amp;&amp; isr || isp &amp;&amp; (isr || ur) || ism &amp;&amp; !isr &amp;&amp; ur;</span>
-<span class="nc bnc" id="L133" title="All 16 branches missed.">        uw = ise &amp;&amp; isw || isp &amp;&amp; (isw || uw) || ism &amp;&amp; !isw &amp;&amp; uw;</span>
-<span class="nc bnc" id="L134" title="All 16 branches missed.">        ux = ise &amp;&amp; isx || isp &amp;&amp; (isx || ux) || ism &amp;&amp; !isx &amp;&amp; ux;</span>
+<span class="nc bnc" id="L133" title="All 2 branches missed.">      if (user) {</span>
+<span class="nc bnc" id="L134" title="All 16 branches missed.">        ur = ise &amp;&amp; isr || isp &amp;&amp; (isr || ur) || ism &amp;&amp; !isr &amp;&amp; ur;</span>
+<span class="nc bnc" id="L135" title="All 16 branches missed.">        uw = ise &amp;&amp; isw || isp &amp;&amp; (isw || uw) || ism &amp;&amp; !isw &amp;&amp; uw;</span>
+<span class="nc bnc" id="L136" title="All 16 branches missed.">        ux = ise &amp;&amp; isx || isp &amp;&amp; (isx || ux) || ism &amp;&amp; !isx &amp;&amp; ux;</span>
       }
-<span class="nc bnc" id="L136" title="All 2 branches missed.">      if (all) {</span>
-<span class="nc bnc" id="L137" title="All 16 branches missed.">        ar = ise &amp;&amp; isr || isp &amp;&amp; (isr || ar) || ism &amp;&amp; !isr &amp;&amp; ar;</span>
-<span class="nc bnc" id="L138" title="All 16 branches missed.">        aw = ise &amp;&amp; isw || isp &amp;&amp; (isw || aw) || ism &amp;&amp; !isw &amp;&amp; aw;</span>
-<span class="nc bnc" id="L139" title="All 16 branches missed.">        ax = ise &amp;&amp; isx || isp &amp;&amp; (isx || ax) || ism &amp;&amp; !isx &amp;&amp; ax;</span>
+<span class="nc bnc" id="L138" title="All 2 branches missed.">      if (all) {</span>
+<span class="nc bnc" id="L139" title="All 16 branches missed.">        ar = ise &amp;&amp; isr || isp &amp;&amp; (isr || ar) || ism &amp;&amp; !isr &amp;&amp; ar;</span>
+<span class="nc bnc" id="L140" title="All 16 branches missed.">        aw = ise &amp;&amp; isw || isp &amp;&amp; (isw || aw) || ism &amp;&amp; !isw &amp;&amp; aw;</span>
+<span class="nc bnc" id="L141" title="All 16 branches missed.">        ax = ise &amp;&amp; isx || isp &amp;&amp; (isx || ax) || ism &amp;&amp; !isx &amp;&amp; ax;</span>
       }
     }
-<span class="nc" id="L142">    boolean result = true;</span>
-<span class="nc bnc" id="L143" title="All 2 branches missed.">    if (isall) {</span>
-<span class="nc" id="L144">      result &amp;= file.setReadable(ar, false);</span>
-<span class="nc" id="L145">      result &amp;= file.setWritable(aw, false);</span>
-<span class="nc" id="L146">      result &amp;= file.setExecutable(ax, false);</span>
+<span class="nc" id="L144">    boolean result = true;</span>
+<span class="nc bnc" id="L145" title="All 2 branches missed.">    if (isall) {</span>
+<span class="nc" id="L146">      result &amp;= file.setReadable(ar, false);</span>
+<span class="nc" id="L147">      result &amp;= file.setWritable(aw, false);</span>
+<span class="nc" id="L148">      result &amp;= file.setExecutable(ax, false);</span>
     }
-<span class="nc" id="L148">    result &amp;= file.setReadable(ur, true);</span>
-<span class="nc" id="L149">    result &amp;= file.setWritable(uw, true);</span>
-<span class="nc" id="L150">    result &amp;= file.setExecutable(ux, true);</span>
-<span class="nc bnc" id="L151" title="All 2 branches missed.">    if (result) {</span>
-<span class="nc" id="L152">      futureCompletion.setSuccess();</span>
+<span class="nc" id="L150">    result &amp;= file.setReadable(ur, true);</span>
+<span class="nc" id="L151">    result &amp;= file.setWritable(uw, true);</span>
+<span class="nc" id="L152">    result &amp;= file.setExecutable(ux, true);</span>
+<span class="nc bnc" id="L153" title="All 2 branches missed.">    if (result) {</span>
+<span class="nc" id="L154">      futureCompletion.setSuccess();</span>
     } else {
-<span class="nc" id="L154">      logger.error(</span>
+<span class="nc" id="L156">      logger.error(</span>
           &quot;ChMod &quot; + finalname + &quot; on file : &quot; + file + &quot;     &quot; + session);
-<span class="nc" id="L156">      futureCompletion.setFailure(</span>
+<span class="nc" id="L158">      futureCompletion.setFailure(</span>
           new OpenR66RunnerException(&quot;Chmod not fully applied on File&quot;));
     }
-<span class="nc" id="L159">  }</span>
+<span class="nc" id="L161">  }</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

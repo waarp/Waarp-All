@@ -68,8 +68,8 @@
 <a class="jxr_linenumber" name="L60" href="#L60">60</a>  <em class="jxr_javadoccomment">   * @param argTransfer</em>
 <a class="jxr_linenumber" name="L61" href="#L61">61</a>  <em class="jxr_javadoccomment">   * @param session</em>
 <a class="jxr_linenumber" name="L62" href="#L62">62</a>  <em class="jxr_javadoccomment">   */</em>
-<a class="jxr_linenumber" name="L63" href="#L63">63</a>    <strong class="jxr_keyword">public</strong> <a name="LogTask" href="../../../../../org/waarp/openr66/context/task/LogTask.html#LogTask">LogTask</a>(String argRule, <strong class="jxr_keyword">int</strong> delay, String argTransfer,
-<a class="jxr_linenumber" name="L64" href="#L64">64</a>                   <a name="R66Session" href="../../../../../org/waarp/openr66/context/R66Session.html#R66Session">R66Session</a> session) {
+<a class="jxr_linenumber" name="L63" href="#L63">63</a>    <strong class="jxr_keyword">public</strong> <a name="LogTask" href="../../../../../org/waarp/openr66/context/task/LogTask.html#LogTask">LogTask</a>(<strong class="jxr_keyword">final</strong> String argRule, <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong> delay,
+<a class="jxr_linenumber" name="L64" href="#L64">64</a>                   <strong class="jxr_keyword">final</strong> String argTransfer, <strong class="jxr_keyword">final</strong> <a name="R66Session" href="../../../../../org/waarp/openr66/context/R66Session.html#R66Session">R66Session</a> session) {
 <a class="jxr_linenumber" name="L65" href="#L65">65</a>      <strong class="jxr_keyword">super</strong>(TaskType.LOG, delay, argRule, argTransfer, session);
 <a class="jxr_linenumber" name="L66" href="#L66">66</a>    }
 <a class="jxr_linenumber" name="L67" href="#L67">67</a>  
@@ -121,7 +121,7 @@
 <a class="jxr_linenumber" name="L113" href="#L113">113</a>       futureCompletion.setSuccess();
 <a class="jxr_linenumber" name="L114" href="#L114">114</a>       <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">true</strong>;
 <a class="jxr_linenumber" name="L115" href="#L115">115</a>     }
-<a class="jxr_linenumber" name="L116" href="#L116">116</a>     FileOutputStream outputStream;
+<a class="jxr_linenumber" name="L116" href="#L116">116</a>     <strong class="jxr_keyword">final</strong> FileOutputStream outputStream;
 <a class="jxr_linenumber" name="L117" href="#L117">117</a>     <strong class="jxr_keyword">try</strong> {
 <a class="jxr_linenumber" name="L118" href="#L118">118</a>       outputStream = <strong class="jxr_keyword">new</strong> FileOutputStream(file, <strong class="jxr_keyword">true</strong>);
 <a class="jxr_linenumber" name="L119" href="#L119">119</a>     } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> FileNotFoundException e) {
@@ -143,19 +143,21 @@
 <a class="jxr_linenumber" name="L135" href="#L135">135</a>     } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> IOException e) {
 <a class="jxr_linenumber" name="L136" href="#L136">136</a>       <em class="jxr_comment">// File cannot be written so revert to log</em>
 <a class="jxr_linenumber" name="L137" href="#L137">137</a>       FileUtils.close(outputStream);
-<a class="jxr_linenumber" name="L138" href="#L138">138</a>       file.delete();
-<a class="jxr_linenumber" name="L139" href="#L139">139</a>       session.getRunner().setErrorExecutionStatus(ErrorCode.Warning);
-<a class="jxr_linenumber" name="L140" href="#L140">140</a>       <strong class="jxr_keyword">if</strong> (delay == 2) {
-<a class="jxr_linenumber" name="L141" href="#L141">141</a>         logger.log(finalLevel, finalValue + SPACES + session);
-<a class="jxr_linenumber" name="L142" href="#L142">142</a>       }
-<a class="jxr_linenumber" name="L143" href="#L143">143</a>       futureCompletion.setSuccess();
-<a class="jxr_linenumber" name="L144" href="#L144">144</a>       <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">true</strong>;
-<a class="jxr_linenumber" name="L145" href="#L145">145</a>     }
-<a class="jxr_linenumber" name="L146" href="#L146">146</a>     FileUtils.close(outputStream);
-<a class="jxr_linenumber" name="L147" href="#L147">147</a>     <strong class="jxr_keyword">return</strong> false;
-<a class="jxr_linenumber" name="L148" href="#L148">148</a>   }
-<a class="jxr_linenumber" name="L149" href="#L149">149</a> 
-<a class="jxr_linenumber" name="L150" href="#L150">150</a> }
+<a class="jxr_linenumber" name="L138" href="#L138">138</a>       <strong class="jxr_keyword">if</strong> (!file.delete()) {
+<a class="jxr_linenumber" name="L139" href="#L139">139</a>         logger.debug(<span class="jxr_string">"Cannot delete log file"</span>);
+<a class="jxr_linenumber" name="L140" href="#L140">140</a>       }
+<a class="jxr_linenumber" name="L141" href="#L141">141</a>       session.getRunner().setErrorExecutionStatus(ErrorCode.Warning);
+<a class="jxr_linenumber" name="L142" href="#L142">142</a>       <strong class="jxr_keyword">if</strong> (delay == 2) {
+<a class="jxr_linenumber" name="L143" href="#L143">143</a>         logger.log(finalLevel, finalValue + SPACES + session);
+<a class="jxr_linenumber" name="L144" href="#L144">144</a>       }
+<a class="jxr_linenumber" name="L145" href="#L145">145</a>       futureCompletion.setSuccess();
+<a class="jxr_linenumber" name="L146" href="#L146">146</a>       <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">true</strong>;
+<a class="jxr_linenumber" name="L147" href="#L147">147</a>     }
+<a class="jxr_linenumber" name="L148" href="#L148">148</a>     FileUtils.close(outputStream);
+<a class="jxr_linenumber" name="L149" href="#L149">149</a>     <strong class="jxr_keyword">return</strong> false;
+<a class="jxr_linenumber" name="L150" href="#L150">150</a>   }
+<a class="jxr_linenumber" name="L151" href="#L151">151</a> 
+<a class="jxr_linenumber" name="L152" href="#L152">152</a> }
 </pre>
 <hr/>
 <div id="footer">Copyright &#169; 2009&#x2013;2020 <a href="http://www.waarp.fr">Waarp</a>. All rights reserved.</div>

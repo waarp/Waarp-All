@@ -20,10 +20,13 @@
 package org.waarp.openr66.proxy.network;
 
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.handler.timeout.ReadTimeoutException;
+import io.netty.util.concurrent.Future;
 import org.waarp.common.crypto.ssl.WaarpSslUtility;
 import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
@@ -58,8 +61,8 @@ public class NetworkServerHandler
   /**
    * Internal Logger
    */
-<span class="fc" id="L61">  private static final WaarpLogger logger =</span>
-<span class="fc" id="L62">      WaarpLoggerFactory.getLogger(NetworkServerHandler.class);</span>
+<span class="fc" id="L64">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L65">      WaarpLoggerFactory.getLogger(NetworkServerHandler.class);</span>
 
   /**
    * The underlying Network Channel
@@ -74,10 +77,6 @@ public class NetworkServerHandler
    */
   private volatile ProxyBridge bridge;
   /**
-   * The associated Local Address
-   */
-  private volatile SocketAddress localAddress;
-  /**
    * Does this Handler is for SSL
    */
   protected volatile boolean isSSL;
@@ -88,7 +87,7 @@ public class NetworkServerHandler
   /**
    * To handle the keep alive
    */
-<span class="fc" id="L91">  private final AtomicInteger keepAlivedSent = new AtomicInteger();</span>
+<span class="fc" id="L90">  private final AtomicInteger keepAlivedSent = new AtomicInteger();</span>
   /**
    * Future to wait for Client to be setup
    */
@@ -97,210 +96,226 @@ public class NetworkServerHandler
   /**
    * @param isServer
    */
-<span class="fc" id="L100">  public NetworkServerHandler(boolean isServer) {</span>
-<span class="fc" id="L101">    this.isServer = isServer;</span>
-<span class="fc bfc" id="L102" title="All 2 branches covered.">    if (!this.isServer) {</span>
-<span class="fc" id="L103">      clientFuture = new R66Future(true);</span>
+<span class="fc" id="L99">  public NetworkServerHandler(final boolean isServer) {</span>
+<span class="fc" id="L100">    this.isServer = isServer;</span>
+<span class="fc bfc" id="L101" title="All 2 branches covered.">    if (!this.isServer) {</span>
+<span class="fc" id="L102">      clientFuture = new R66Future(true);</span>
     }
-<span class="fc" id="L105">  }</span>
+<span class="fc" id="L104">  }</span>
 
-  public void setBridge(ProxyBridge bridge) {
-<span class="fc" id="L108">    this.bridge = bridge;</span>
-<span class="pc bpc" id="L109" title="1 of 2 branches missed.">    if (this.bridge != null) {</span>
-<span class="fc" id="L110">      proxyChannel = bridge.getSource().getNetworkChannel();</span>
+  public void setBridge(final ProxyBridge bridge) {
+<span class="fc" id="L107">    this.bridge = bridge;</span>
+<span class="pc bpc" id="L108" title="1 of 2 branches missed.">    if (this.bridge != null) {</span>
+<span class="fc" id="L109">      proxyChannel = bridge.getSource().getNetworkChannel();</span>
     }
-<span class="fc" id="L112">    clientFuture.setSuccess();</span>
-<span class="pc bpc" id="L113" title="1 of 2 branches missed.">    logger.debug(&quot;setBridge: &quot; + isServer + ' ' + (bridge != null?</span>
-<span class="pc" id="L114">        bridge.getProxyEntry() + &quot; proxyChannelId: &quot; + proxyChannel.id() :</span>
+<span class="fc" id="L111">    clientFuture.setSuccess();</span>
+<span class="pc bpc" id="L112" title="1 of 2 branches missed.">    logger.debug(&quot;setBridge: &quot; + isServer + ' ' + (bridge != null?</span>
+<span class="pc" id="L113">        bridge.getProxyEntry() + &quot; proxyChannelId: &quot; + proxyChannel.id() :</span>
         &quot;nobridge&quot;));
-<span class="fc" id="L116">  }</span>
+<span class="fc" id="L115">  }</span>
 
   /**
    * @return the networkChannel
    */
   public Channel getNetworkChannel() {
-<span class="fc" id="L122">    return networkChannel;</span>
+<span class="fc" id="L121">    return networkChannel;</span>
   }
 
   public void close() {
-<span class="nc" id="L126">    WaarpSslUtility.closingSslChannel(networkChannel);</span>
-<span class="nc" id="L127">  }</span>
+<span class="nc" id="L125">    WaarpSslUtility.closingSslChannel(networkChannel);</span>
+<span class="nc" id="L126">  }</span>
 
   @Override
-  public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+  public void channelInactive(final ChannelHandlerContext ctx)
+      throws Exception {
 <span class="pc bpc" id="L131" title="1 of 2 branches missed.">    if (proxyChannel != null) {</span>
 <span class="fc" id="L132">      WaarpSslUtility.closingSslChannel(proxyChannel);</span>
     }
 <span class="fc" id="L134">  }</span>
 
   @Override
-  public void channelActive(ChannelHandlerContext ctx) throws Exception {
-<span class="fc" id="L138">    networkChannel = ctx.channel();</span>
-<span class="fc" id="L139">    localAddress = networkChannel.localAddress();</span>
-<span class="fc bfc" id="L140" title="All 2 branches covered.">    if (isServer) {</span>
-<span class="fc" id="L141">      final ProxyEntry entry = ProxyEntry.get(localAddress.toString());</span>
-<span class="pc bpc" id="L142" title="1 of 2 branches missed.">      if (entry == null) {</span>
-        // error
-        // XXX FIXME need to send error !
-<span class="nc" id="L145">        WaarpSslUtility.closingSslChannel(networkChannel);</span>
-<span class="nc" id="L146">        logger.error(&quot;No proxy configuration found for: &quot; + localAddress);</span>
-<span class="nc" id="L147">        return;</span>
+  public void channelActive(final ChannelHandlerContext ctx) throws Exception {
+    try {
+<span class="fc" id="L139">      networkChannel = ctx.channel();</span>
+      /**
+       * The associated Local Address
+       */
+<span class="fc" id="L143">      final SocketAddress localAddress = networkChannel.localAddress();</span>
+<span class="fc bfc" id="L144" title="All 2 branches covered.">      if (isServer) {</span>
+<span class="fc" id="L145">        final ProxyEntry entry = ProxyEntry.get(localAddress.toString());</span>
+<span class="pc bpc" id="L146" title="1 of 2 branches missed.">        if (entry == null) {</span>
+          // error
+          // XXX FIXME need to send error !
+<span class="nc" id="L149">          WaarpSslUtility.closingSslChannel(networkChannel);</span>
+<span class="nc" id="L150">          logger.error(&quot;No proxy configuration found for: &quot; + localAddress);</span>
+<span class="nc" id="L151">          return;</span>
+        }
+<span class="fc" id="L153">        bridge = new ProxyBridge(entry, this);</span>
+<span class="fc" id="L154">        bridge.initializeProxy();</span>
+<span class="pc bpc" id="L155" title="1 of 2 branches missed.">        if (!bridge.waitForRemoteConnection()) {</span>
+<span class="nc" id="L156">          logger.error(&quot;No connection for proxy: &quot; + localAddress);</span>
+<span class="nc" id="L157">          WaarpSslUtility.closingSslChannel(networkChannel);</span>
+<span class="nc" id="L158">          return;</span>
+        }
+<span class="fc" id="L160">        proxyChannel = bridge.getProxified().networkChannel;</span>
+<span class="pc bpc" id="L161" title="1 of 2 branches missed.">        logger.warn(&quot;Connected: &quot; + isServer + ' ' + (bridge != null?</span>
+<span class="pc" id="L162">            bridge.getProxyEntry() + &quot; proxyChannelId: &quot; + proxyChannel.id() :</span>
+            &quot;nobridge&quot;));
+<span class="fc" id="L164">      } else {</span>
+<span class="fc" id="L165">        clientFuture.awaitOrInterruptible(configuration.getTimeoutCon());</span>
+<span class="pc bpc" id="L166" title="2 of 4 branches missed.">        if (bridge == null || !clientFuture.isDone()) {</span>
+<span class="nc" id="L167">          logger.error(&quot;No connection for proxy: &quot; + localAddress);</span>
+<span class="nc" id="L168">          WaarpSslUtility.closingSslChannel(networkChannel);</span>
+<span class="nc" id="L169">          return;</span>
+        }
+<span class="fc" id="L171">        bridge.remoteConnected();</span>
       }
-<span class="fc" id="L149">      bridge = new ProxyBridge(entry, this);</span>
-<span class="fc" id="L150">      bridge.initializeProxy();</span>
-<span class="pc bpc" id="L151" title="1 of 2 branches missed.">      if (!bridge.waitForRemoteConnection()) {</span>
-<span class="nc" id="L152">        logger.error(&quot;No connection for proxy: &quot; + localAddress);</span>
-<span class="nc" id="L153">        WaarpSslUtility.closingSslChannel(networkChannel);</span>
-<span class="nc" id="L154">        return;</span>
-      }
-<span class="fc" id="L156">      proxyChannel = bridge.getProxified().networkChannel;</span>
-<span class="pc bpc" id="L157" title="1 of 2 branches missed.">      logger.warn(&quot;Connected: &quot; + isServer + ' ' + (bridge != null?</span>
-<span class="pc" id="L158">          bridge.getProxyEntry() + &quot; proxyChannelId: &quot; + proxyChannel.id() :</span>
-          &quot;nobridge&quot;));
-<span class="fc" id="L160">    } else {</span>
-<span class="fc" id="L161">      clientFuture.awaitOrInterruptible(configuration.getTimeoutCon());</span>
-<span class="pc bpc" id="L162" title="2 of 4 branches missed.">      if (bridge == null || !clientFuture.isDone()) {</span>
-<span class="nc" id="L163">        logger.error(&quot;No connection for proxy: &quot; + localAddress);</span>
-<span class="nc" id="L164">        WaarpSslUtility.closingSslChannel(networkChannel);</span>
-<span class="nc" id="L165">        return;</span>
-      }
-<span class="fc" id="L167">      bridge.remoteConnected();</span>
+<span class="fc" id="L173">      logger.debug(&quot;Network Channel Connected: {} &quot;, ctx.channel().id());</span>
+    } finally {
+<span class="fc" id="L175">      ctx.read();</span>
     }
-<span class="fc" id="L169">    logger.debug(&quot;Network Channel Connected: {} &quot;, ctx.channel().id());</span>
-<span class="fc" id="L170">  }</span>
+<span class="fc" id="L177">  }</span>
 
   @Override
-  public void userEventTriggered(ChannelHandlerContext ctx, Object evt)
-      throws Exception {
-<span class="pc bpc" id="L175" title="1 of 2 branches missed.">    if (configuration.isShutdown()) {</span>
-<span class="nc" id="L176">      return;</span>
+  public void userEventTriggered(final ChannelHandlerContext ctx,
+                                 final Object evt) throws Exception {
+<span class="pc bpc" id="L182" title="1 of 2 branches missed.">    if (configuration.isShutdown()) {</span>
+<span class="nc" id="L183">      return;</span>
     }
-<span class="fc bfc" id="L178" title="All 2 branches covered.">    if (evt instanceof IdleStateEvent) {</span>
-<span class="pc bpc" id="L179" title="1 of 2 branches missed.">      if (keepAlivedSent.get() &gt; 0) {</span>
-<span class="nc bnc" id="L180" title="All 2 branches missed.">        if (keepAlivedSent.get() &lt; 5) {</span>
+<span class="fc bfc" id="L185" title="All 2 branches covered.">    if (evt instanceof IdleStateEvent) {</span>
+<span class="pc bpc" id="L186" title="1 of 2 branches missed.">      if (keepAlivedSent.get() &gt; 0) {</span>
+<span class="nc bnc" id="L187" title="All 2 branches missed.">        if (keepAlivedSent.get() &lt; 5) {</span>
           // ignore this time
-<span class="nc" id="L182">          keepAlivedSent.getAndIncrement();</span>
-<span class="nc" id="L183">          return;</span>
+<span class="nc" id="L189">          keepAlivedSent.getAndIncrement();</span>
+<span class="nc" id="L190">          return;</span>
         }
-<span class="nc" id="L185">        logger.error(&quot;Not getting KAlive: closing channel&quot;);</span>
-<span class="nc bnc" id="L186" title="All 2 branches missed.">        if (configuration.getR66Mib() != null) {</span>
-<span class="nc" id="L187">          configuration.getR66Mib().notifyWarning(&quot;KeepAlive get no answer&quot;,</span>
+<span class="nc" id="L192">        logger.error(&quot;Not getting KAlive: closing channel&quot;);</span>
+<span class="nc bnc" id="L193" title="All 2 branches missed.">        if (configuration.getR66Mib() != null) {</span>
+<span class="nc" id="L194">          configuration.getR66Mib().notifyWarning(&quot;KeepAlive get no answer&quot;,</span>
                                                   &quot;Closing network connection&quot;);
         }
-<span class="nc" id="L190">        ChannelCloseTimer.closeFutureChannel(ctx.channel());</span>
+<span class="nc" id="L197">        ChannelCloseTimer.closeFutureChannel(ctx.channel());</span>
       } else {
-<span class="fc" id="L192">        keepAlivedSent.set(1);</span>
-<span class="fc" id="L193">        final KeepAlivePacket keepAlivePacket = new KeepAlivePacket();</span>
-<span class="fc" id="L194">        final NetworkPacket response =</span>
-<span class="fc" id="L195">            new NetworkPacket(ChannelUtils.NOCHANNEL, ChannelUtils.NOCHANNEL,</span>
+<span class="fc" id="L199">        keepAlivedSent.set(1);</span>
+<span class="fc" id="L200">        final KeepAlivePacket keepAlivePacket = new KeepAlivePacket();</span>
+<span class="fc" id="L201">        final NetworkPacket response =</span>
+<span class="fc" id="L202">            new NetworkPacket(ChannelUtils.NOCHANNEL, ChannelUtils.NOCHANNEL,</span>
                               keepAlivePacket, null);
-<span class="fc" id="L197">        logger.info(&quot;Write KAlive&quot;);</span>
-<span class="fc" id="L198">        ctx.channel().writeAndFlush(response);</span>
+<span class="fc" id="L204">        logger.info(&quot;Write KAlive&quot;);</span>
+<span class="fc" id="L205">        ctx.channel().writeAndFlush(response);</span>
       }
     }
-<span class="fc" id="L201">  }</span>
+<span class="fc" id="L208">  }</span>
 
-  public void setKeepAlivedSent() {
-<span class="fc" id="L204">    keepAlivedSent.set(0);</span>
-<span class="fc" id="L205">  }</span>
+  public void resetKeepAlive() {
+<span class="fc" id="L211">    keepAlivedSent.set(0);</span>
+<span class="fc" id="L212">  }</span>
 
   @Override
-  public void channelRead0(ChannelHandlerContext ctx, NetworkPacket msg)
-      throws Exception {
-<span class="fc bfc" id="L210" title="All 2 branches covered.">    if (msg.getCode() == LocalPacketFactory.NOOPPACKET) {</span>
-      // Will forward
-<span class="pc bpc" id="L212" title="1 of 2 branches missed.">    } else if (msg.getCode() == LocalPacketFactory.CONNECTERRORPACKET) {</span>
-<span class="nc" id="L213">      logger.debug(&quot;NetworkRecv: {}&quot;, msg);</span>
-      // Special code to STOP here
-<span class="nc bnc" id="L215" title="All 2 branches missed.">      if (msg.getLocalId() == ChannelUtils.NOCHANNEL) {</span>
-        // No way to know what is wrong: close all connections with
-        // remote host
-<span class="nc" id="L218">        logger.error(</span>
-            &quot;Will close NETWORK channel, Cannot continue connection with remote Host: &quot; +
-<span class="nc" id="L220">            msg + &quot; : &quot; + ctx.channel().remoteAddress());</span>
-<span class="nc" id="L221">        WaarpSslUtility.closingSslChannel(ctx.channel());</span>
-<span class="nc" id="L222">        msg.clear();</span>
-<span class="nc" id="L223">        return;</span>
-      }
-<span class="pc bpc" id="L225" title="1 of 2 branches missed.">    } else if (msg.getCode() == LocalPacketFactory.KEEPALIVEPACKET) {</span>
-<span class="nc" id="L226">      keepAlivedSent.set(0);</span>
-      try {
-<span class="nc" id="L228">        final KeepAlivePacket keepAlivePacket =</span>
-            (KeepAlivePacket) LocalPacketCodec
-<span class="nc" id="L230">                .decodeNetworkPacket(msg.getBuffer());</span>
-<span class="nc bnc" id="L231" title="All 2 branches missed.">        if (keepAlivePacket.isToValidate()) {</span>
-<span class="nc" id="L232">          keepAlivePacket.validate();</span>
-<span class="nc" id="L233">          final NetworkPacket response =</span>
-<span class="nc" id="L234">              new NetworkPacket(ChannelUtils.NOCHANNEL, ChannelUtils.NOCHANNEL,</span>
-                                keepAlivePacket, null);
-<span class="nc" id="L236">          logger.info(&quot;Answer KAlive&quot;);</span>
-<span class="nc" id="L237">          ctx.channel().writeAndFlush(response);</span>
-<span class="nc" id="L238">        } else {</span>
-<span class="nc" id="L239">          logger.info(&quot;Get KAlive&quot;);</span>
+  public void channelRead0(final ChannelHandlerContext ctx,
+                           final NetworkPacket msg) throws Exception {
+    try {
+<span class="fc bfc" id="L218" title="All 2 branches covered.">      if (msg.getCode() == LocalPacketFactory.NOOPPACKET) {</span>
+<span class="fc" id="L219">        resetKeepAlive();</span>
+        // Will forward
+<span class="pc bpc" id="L221" title="1 of 2 branches missed.">      } else if (msg.getCode() == LocalPacketFactory.CONNECTERRORPACKET) {</span>
+<span class="nc" id="L222">        logger.debug(&quot;NetworkRecv: {}&quot;, msg);</span>
+        // Special code to STOP here
+<span class="nc bnc" id="L224" title="All 2 branches missed.">        if (msg.getLocalId() == ChannelUtils.NOCHANNEL) {</span>
+          // No way to know what is wrong: close all connections with
+          // remote host
+<span class="nc" id="L227">          logger.error(</span>
+              &quot;Will close NETWORK channel, Cannot continue connection with remote Host: &quot; +
+<span class="nc" id="L229">              msg + &quot; : &quot; + ctx.channel().remoteAddress());</span>
+<span class="nc" id="L230">          WaarpSslUtility.closingSslChannel(ctx.channel());</span>
+<span class="nc" id="L231">          msg.clear();</span>
+<span class="nc" id="L232">          return;</span>
         }
-<span class="nc" id="L241">      } catch (final OpenR66ProtocolPacketException ignored) {</span>
-        // nothing
-<span class="nc" id="L243">      }</span>
-<span class="nc" id="L244">      msg.clear();</span>
-<span class="nc" id="L245">      return;</span>
+<span class="pc bpc" id="L234" title="1 of 2 branches missed.">      } else if (msg.getCode() == LocalPacketFactory.KEEPALIVEPACKET) {</span>
+<span class="nc" id="L235">        resetKeepAlive();</span>
+        try {
+<span class="nc" id="L237">          final KeepAlivePacket keepAlivePacket =</span>
+              (KeepAlivePacket) LocalPacketCodec
+<span class="nc" id="L239">                  .decodeNetworkPacket(msg.getBuffer());</span>
+<span class="nc bnc" id="L240" title="All 2 branches missed.">          if (keepAlivePacket.isToValidate()) {</span>
+<span class="nc" id="L241">            keepAlivePacket.validate();</span>
+<span class="nc" id="L242">            final NetworkPacket response =</span>
+<span class="nc" id="L243">                new NetworkPacket(ChannelUtils.NOCHANNEL,</span>
+<span class="nc" id="L244">                                  ChannelUtils.NOCHANNEL, keepAlivePacket,</span>
+                                  null);
+<span class="nc" id="L246">            logger.info(&quot;Answer KAlive&quot;);</span>
+<span class="nc" id="L247">            ctx.channel().writeAndFlush(response);</span>
+<span class="nc" id="L248">          } else {</span>
+<span class="nc" id="L249">            logger.info(&quot;Get KAlive&quot;);</span>
+          }
+<span class="nc" id="L251">        } catch (final OpenR66ProtocolPacketException ignored) {</span>
+          // nothing
+<span class="nc" id="L253">        }</span>
+<span class="nc" id="L254">        msg.clear();</span>
+<span class="nc" id="L255">        return;</span>
+      }
+      // forward message
+<span class="fc" id="L258">      resetKeepAlive();</span>
+<span class="pc bpc" id="L259" title="1 of 2 branches missed.">      if (proxyChannel != null) {</span>
+<span class="fc" id="L260">        proxyChannel.writeAndFlush(msg);</span>
+      } else {
+<span class="nc" id="L262">        msg.clear();</span>
+      }
+    } finally {
+<span class="fc" id="L265">      ctx.read();</span>
     }
-    // forward message
-<span class="pc bpc" id="L248" title="1 of 2 branches missed.">    if (proxyChannel != null) {</span>
-<span class="fc" id="L249">      proxyChannel.writeAndFlush(msg);</span>
-    } else {
-<span class="nc" id="L251">      msg.clear();</span>
-    }
-<span class="fc" id="L253">  }</span>
+<span class="fc" id="L267">  }</span>
 
   @Override
-  public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-<span class="nc" id="L257">    final Channel channel = ctx.channel();</span>
-<span class="nc" id="L258">    logger.debug(&quot;Network Channel Exception: {}&quot;, channel.id(), cause);</span>
-<span class="nc bnc" id="L259" title="All 2 branches missed.">    if (cause instanceof ReadTimeoutException) {</span>
-<span class="nc" id="L260">      final ReadTimeoutException exception = (ReadTimeoutException) cause;</span>
+  public void exceptionCaught(final ChannelHandlerContext ctx,
+                              final Throwable cause) {
+<span class="nc" id="L272">    final Channel channel = ctx.channel();</span>
+<span class="nc" id="L273">    logger.debug(&quot;Network Channel Exception: {}&quot;, channel.id(), cause);</span>
+<span class="nc bnc" id="L274" title="All 2 branches missed.">    if (cause instanceof ReadTimeoutException) {</span>
+<span class="nc" id="L275">      final ReadTimeoutException exception = (ReadTimeoutException) cause;</span>
       // No read for too long
-<span class="nc" id="L262">      logger.error(&quot;ReadTimeout so Will close NETWORK channel {}&quot;,</span>
-<span class="nc" id="L263">                   exception.getClass().getName() + &quot; : &quot; +</span>
-<span class="nc" id="L264">                   exception.getMessage());</span>
-<span class="nc" id="L265">      ChannelCloseTimer.closeFutureChannel(channel);</span>
-<span class="nc" id="L266">      return;</span>
+<span class="nc" id="L277">      logger.error(&quot;ReadTimeout so Will close NETWORK channel {}&quot;,</span>
+<span class="nc" id="L278">                   exception.getClass().getName() + &quot; : &quot; +</span>
+<span class="nc" id="L279">                   exception.getMessage());</span>
+<span class="nc" id="L280">      ChannelCloseTimer.closeFutureChannel(channel);</span>
+<span class="nc" id="L281">      return;</span>
     }
-<span class="nc bnc" id="L268" title="All 2 branches missed.">    if (cause instanceof BindException) {</span>
+<span class="nc bnc" id="L283" title="All 2 branches missed.">    if (cause instanceof BindException) {</span>
       // received when not yet connected
-<span class="nc" id="L270">      logger.debug(&quot;BindException&quot;);</span>
-<span class="nc" id="L271">      ChannelCloseTimer.closeFutureChannel(channel);</span>
-<span class="nc" id="L272">      return;</span>
+<span class="nc" id="L285">      logger.debug(&quot;BindException&quot;);</span>
+<span class="nc" id="L286">      ChannelCloseTimer.closeFutureChannel(channel);</span>
+<span class="nc" id="L287">      return;</span>
     }
-<span class="nc" id="L274">    final OpenR66Exception exception = OpenR66ExceptionTrappedFactory</span>
-<span class="nc" id="L275">        .getExceptionFromTrappedException(channel, cause);</span>
-<span class="nc bnc" id="L276" title="All 2 branches missed.">    if (exception != null) {</span>
-<span class="nc bnc" id="L277" title="All 2 branches missed.">      if (exception instanceof OpenR66ProtocolBusinessNoWriteBackException) {</span>
-<span class="nc" id="L278">        logger.debug(&quot;Will close NETWORK channel&quot;);</span>
-<span class="nc" id="L279">        ChannelCloseTimer.closeFutureChannel(channel);</span>
-<span class="nc" id="L280">        return;</span>
-<span class="nc bnc" id="L281" title="All 2 branches missed.">      } else if (exception instanceof OpenR66ProtocolNoConnectionException) {</span>
-<span class="nc" id="L282">        logger.debug(&quot;Connection impossible with NETWORK channel {}&quot;,</span>
-<span class="nc" id="L283">                     exception.getMessage());</span>
-<span class="nc" id="L284">        channel.close();</span>
-<span class="nc" id="L285">        return;</span>
+<span class="nc" id="L289">    final OpenR66Exception exception = OpenR66ExceptionTrappedFactory</span>
+<span class="nc" id="L290">        .getExceptionFromTrappedException(channel, cause);</span>
+<span class="nc bnc" id="L291" title="All 2 branches missed.">    if (exception != null) {</span>
+<span class="nc bnc" id="L292" title="All 2 branches missed.">      if (exception instanceof OpenR66ProtocolBusinessNoWriteBackException) {</span>
+<span class="nc" id="L293">        logger.debug(&quot;Will close NETWORK channel&quot;);</span>
+<span class="nc" id="L294">        ChannelCloseTimer.closeFutureChannel(channel);</span>
+<span class="nc" id="L295">        return;</span>
+<span class="nc bnc" id="L296" title="All 2 branches missed.">      } else if (exception instanceof OpenR66ProtocolNoConnectionException) {</span>
+<span class="nc" id="L297">        logger.debug(&quot;Connection impossible with NETWORK channel {}&quot;,</span>
+<span class="nc" id="L298">                     exception.getMessage());</span>
+<span class="nc" id="L299">        channel.close();</span>
+<span class="nc" id="L300">        return;</span>
       } else {
-<span class="nc" id="L287">        logger.debug(&quot;Network Channel Exception: {} {}&quot;, channel.id(),</span>
-<span class="nc" id="L288">                     exception.getMessage());</span>
+<span class="nc" id="L302">        logger.debug(&quot;Network Channel Exception: {} {}&quot;, channel.id(),</span>
+<span class="nc" id="L303">                     exception.getMessage());</span>
       }
-<span class="nc" id="L290">      final ConnectionErrorPacket errorPacket =</span>
-<span class="nc" id="L291">          new ConnectionErrorPacket(exception.getMessage(), null);</span>
-<span class="nc" id="L292">      writeError(channel, ChannelUtils.NOCHANNEL, ChannelUtils.NOCHANNEL,</span>
+<span class="nc" id="L305">      final ConnectionErrorPacket errorPacket =</span>
+<span class="nc" id="L306">          new ConnectionErrorPacket(exception.getMessage(), null);</span>
+<span class="nc" id="L307">      writeError(channel, ChannelUtils.NOCHANNEL, ChannelUtils.NOCHANNEL,</span>
                  errorPacket);
-<span class="nc bnc" id="L294" title="All 2 branches missed.">      if (proxyChannel != null) {</span>
-<span class="nc" id="L295">        writeError(proxyChannel, ChannelUtils.NOCHANNEL, ChannelUtils.NOCHANNEL,</span>
+<span class="nc bnc" id="L309" title="All 2 branches missed.">      if (proxyChannel != null) {</span>
+<span class="nc" id="L310">        writeError(proxyChannel, ChannelUtils.NOCHANNEL, ChannelUtils.NOCHANNEL,</span>
                    errorPacket);
       }
-<span class="nc" id="L298">      logger.debug(&quot;Will close NETWORK channel: {}&quot;, exception.getMessage());</span>
-<span class="nc" id="L299">      ChannelCloseTimer.closeFutureChannel(channel);</span>
+<span class="nc" id="L313">      logger.debug(&quot;Will close NETWORK channel: {}&quot;, exception.getMessage());</span>
+<span class="nc" id="L314">      ChannelCloseTimer.closeFutureChannel(channel);</span>
     } else {
       // Nothing to do
     }
-<span class="nc" id="L303">  }</span>
+<span class="nc" id="L318">  }</span>
 
   /**
    * Write error back to remote client
@@ -310,29 +325,39 @@ public class NetworkServerHandler
    * @param localId
    * @param error
    */
-  void writeError(Channel channel, Integer remoteId, Integer localId,
-                  AbstractLocalPacket error) {
-<span class="nc" id="L315">    NetworkPacket networkPacket = null;</span>
+  void writeError(final Channel channel, final Integer remoteId,
+                  final Integer localId, final AbstractLocalPacket error) {
     try {
-<span class="nc" id="L317">      networkPacket = new NetworkPacket(localId, remoteId, error, null);</span>
-<span class="nc" id="L318">    } catch (final OpenR66ProtocolPacketException ignored) {</span>
-      // nothing
-<span class="nc" id="L320">    }</span>
-    try {
-<span class="nc bnc" id="L322" title="All 2 branches missed.">      if (channel.isActive()) {</span>
-<span class="nc" id="L323">        channel.writeAndFlush(networkPacket)</span>
-<span class="nc" id="L324">               .await(ConfigurationProxyR66.WAITFORNETOP);</span>
+<span class="nc bnc" id="L331" title="All 2 branches missed.">      if (channel.isActive()) {</span>
+<span class="nc" id="L332">        NetworkPacket networkPacket = null;</span>
+        try {
+<span class="nc" id="L334">          networkPacket = new NetworkPacket(localId, remoteId, error, null);</span>
+<span class="nc" id="L335">        } catch (final OpenR66ProtocolPacketException ignored) {</span>
+          // nothing
+<span class="nc" id="L337">        }</span>
+<span class="nc bnc" id="L338" title="All 2 branches missed.">        if (networkPacket != null) {</span>
+<span class="nc" id="L339">          final NetworkPacket finalNP = networkPacket;</span>
+<span class="nc" id="L340">          Future future = channel.writeAndFlush(networkPacket);</span>
+<span class="nc" id="L341">          future.await(ConfigurationProxyR66.WAITFORNETOP);</span>
+<span class="nc" id="L342">          future.addListener(new ChannelFutureListener() {</span>
+            @Override
+            public void operationComplete(final ChannelFuture future)
+                throws Exception {
+<span class="nc" id="L346">              finalNP.clear();</span>
+<span class="nc" id="L347">            }</span>
+          });
+        }
       }
-<span class="nc" id="L326">    } catch (final InterruptedException e) {//NOSONAR</span>
-<span class="nc" id="L327">      SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
-<span class="nc" id="L328">    }</span>
-<span class="nc" id="L329">  }</span>
+<span class="nc" id="L351">    } catch (final InterruptedException e) {//NOSONAR</span>
+<span class="nc" id="L352">      SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
+<span class="nc" id="L353">    }</span>
+<span class="nc" id="L354">  }</span>
 
   /**
    * @return True if this Handler is for SSL
    */
   public boolean isSsl() {
-<span class="nc" id="L335">    return isSSL;</span>
+<span class="nc" id="L360">    return isSSL;</span>
   }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

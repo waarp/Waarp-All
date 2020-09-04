@@ -47,8 +47,8 @@
 <a class="jxr_linenumber" name="L39" href="#L39">39</a>        WaarpLoggerFactory.getLogger(LocalPacketCodec.<strong class="jxr_keyword">class</strong>);
 <a class="jxr_linenumber" name="L40" href="#L40">40</a>  
 <a class="jxr_linenumber" name="L41" href="#L41">41</a>    @Override
-<a class="jxr_linenumber" name="L42" href="#L42">42</a>    <strong class="jxr_keyword">protected</strong> <strong class="jxr_keyword">void</strong> decode(ChannelHandlerContext ctx, ByteBuf buf,
-<a class="jxr_linenumber" name="L43" href="#L43">43</a>                          List&lt;Object&gt; out) <strong class="jxr_keyword">throws</strong> Exception {
+<a class="jxr_linenumber" name="L42" href="#L42">42</a>    <strong class="jxr_keyword">protected</strong> <strong class="jxr_keyword">void</strong> decode(<strong class="jxr_keyword">final</strong> ChannelHandlerContext ctx, <strong class="jxr_keyword">final</strong> ByteBuf buf,
+<a class="jxr_linenumber" name="L43" href="#L43">43</a>                          <strong class="jxr_keyword">final</strong> List&lt;Object&gt; out) <strong class="jxr_keyword">throws</strong> Exception {
 <a class="jxr_linenumber" name="L44" href="#L44">44</a>      <em class="jxr_comment">// Make sure if the length field was received.</em>
 <a class="jxr_linenumber" name="L45" href="#L45">45</a>      <strong class="jxr_keyword">if</strong> (buf.readableBytes() &lt; 4) {
 <a class="jxr_linenumber" name="L46" href="#L46">46</a>        <em class="jxr_comment">// The length field was not received yet - return null.</em>
@@ -62,7 +62,7 @@
 <a class="jxr_linenumber" name="L54" href="#L54">54</a>      }
 <a class="jxr_linenumber" name="L55" href="#L55">55</a>    }
 <a class="jxr_linenumber" name="L56" href="#L56">56</a>  
-<a class="jxr_linenumber" name="L57" href="#L57">57</a>    <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <a name="AbstractLocalPacket" href="../../../../../../org/waarp/openr66/protocol/localhandler/packet/AbstractLocalPacket.html#AbstractLocalPacket">AbstractLocalPacket</a> decodeNetworkPacket(ByteBuf buf)
+<a class="jxr_linenumber" name="L57" href="#L57">57</a>    <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <a name="AbstractLocalPacket" href="../../../../../../org/waarp/openr66/protocol/localhandler/packet/AbstractLocalPacket.html#AbstractLocalPacket">AbstractLocalPacket</a> decodeNetworkPacket(<strong class="jxr_keyword">final</strong> ByteBuf buf)
 <a class="jxr_linenumber" name="L58" href="#L58">58</a>        <strong class="jxr_keyword">throws</strong> <a name="OpenR66ProtocolPacketException" href="../../../../../../org/waarp/openr66/protocol/exception/OpenR66ProtocolPacketException.html#OpenR66ProtocolPacketException">OpenR66ProtocolPacketException</a> {
 <a class="jxr_linenumber" name="L59" href="#L59">59</a>      <em class="jxr_comment">// Mark the current buffer position</em>
 <a class="jxr_linenumber" name="L60" href="#L60">60</a>      buf.markReaderIndex();
@@ -90,15 +90,17 @@
 <a class="jxr_linenumber" name="L82" href="#L82">82</a>    }
 <a class="jxr_linenumber" name="L83" href="#L83">83</a>  
 <a class="jxr_linenumber" name="L84" href="#L84">84</a>    @Override
-<a class="jxr_linenumber" name="L85" href="#L85">85</a>    <strong class="jxr_keyword">protected</strong> <strong class="jxr_keyword">void</strong> encode(ChannelHandlerContext ctx, <a name="AbstractLocalPacket" href="../../../../../../org/waarp/openr66/protocol/localhandler/packet/AbstractLocalPacket.html#AbstractLocalPacket">AbstractLocalPacket</a> msg,
-<a class="jxr_linenumber" name="L86" href="#L86">86</a>                          ByteBuf out) <strong class="jxr_keyword">throws</strong> Exception {
-<a class="jxr_linenumber" name="L87" href="#L87">87</a>      logger.trace(<span class="jxr_string">"sending local packet {}"</span>, msg.getType());
-<a class="jxr_linenumber" name="L88" href="#L88">88</a>      <strong class="jxr_keyword">final</strong> ByteBuf buf = msg.getLocalPacket(<strong class="jxr_keyword">null</strong>);
-<a class="jxr_linenumber" name="L89" href="#L89">89</a>      out.writeBytes(buf);
-<a class="jxr_linenumber" name="L90" href="#L90">90</a>      buf.release();
-<a class="jxr_linenumber" name="L91" href="#L91">91</a>    }
-<a class="jxr_linenumber" name="L92" href="#L92">92</a>  
-<a class="jxr_linenumber" name="L93" href="#L93">93</a>  }
+<a class="jxr_linenumber" name="L85" href="#L85">85</a>    <strong class="jxr_keyword">protected</strong> <strong class="jxr_keyword">void</strong> encode(<strong class="jxr_keyword">final</strong> ChannelHandlerContext ctx,
+<a class="jxr_linenumber" name="L86" href="#L86">86</a>                          <strong class="jxr_keyword">final</strong> <a name="AbstractLocalPacket" href="../../../../../../org/waarp/openr66/protocol/localhandler/packet/AbstractLocalPacket.html#AbstractLocalPacket">AbstractLocalPacket</a> msg, <strong class="jxr_keyword">final</strong> ByteBuf out)
+<a class="jxr_linenumber" name="L87" href="#L87">87</a>        <strong class="jxr_keyword">throws</strong> Exception {
+<a class="jxr_linenumber" name="L88" href="#L88">88</a>      logger.trace(<span class="jxr_string">"sending local packet {}"</span>, msg.getType());
+<a class="jxr_linenumber" name="L89" href="#L89">89</a>      <strong class="jxr_keyword">final</strong> ByteBuf buf = msg.getLocalPacket(<strong class="jxr_keyword">null</strong>);
+<a class="jxr_linenumber" name="L90" href="#L90">90</a>      out.writeBytes(buf);
+<a class="jxr_linenumber" name="L91" href="#L91">91</a>      buf.release();
+<a class="jxr_linenumber" name="L92" href="#L92">92</a>      msg.clear();
+<a class="jxr_linenumber" name="L93" href="#L93">93</a>    }
+<a class="jxr_linenumber" name="L94" href="#L94">94</a>  
+<a class="jxr_linenumber" name="L95" href="#L95">95</a>  }
 </pre>
 <hr/>
 <div id="footer">Copyright &#169; 2009&#x2013;2020 <a href="http://www.waarp.fr">Waarp</a>. All rights reserved.</div>

@@ -59,16 +59,16 @@
 <a class="jxr_linenumber" name="L51" href="#L51">51</a>  <em class="jxr_javadoccomment">   */</em>
 <a class="jxr_linenumber" name="L52" href="#L52">52</a>    <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> <a name="WaarpLogger" href="../../../../../../org/waarp/common/logging/WaarpLogger.html#WaarpLogger">WaarpLogger</a> logger =
 <a class="jxr_linenumber" name="L53" href="#L53">53</a>        WaarpLoggerFactory.getLogger(AddUuidJavaTask.<strong class="jxr_keyword">class</strong>);
-<a class="jxr_linenumber" name="L54" href="#L54">54</a>    <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> String sUUID = <span class="jxr_string">"#UUID#"</span>;
+<a class="jxr_linenumber" name="L54" href="#L54">54</a>    <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> String S_UUID = <span class="jxr_string">"#UUID#"</span>;
 <a class="jxr_linenumber" name="L55" href="#L55">55</a>    <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> Pattern UUID_COMPILE =
-<a class="jxr_linenumber" name="L56" href="#L56">56</a>        Pattern.compile(sUUID, Pattern.LITERAL);
+<a class="jxr_linenumber" name="L56" href="#L56">56</a>        Pattern.compile(S_UUID, Pattern.LITERAL);
 <a class="jxr_linenumber" name="L57" href="#L57">57</a>  
 <a class="jxr_linenumber" name="L58" href="#L58">58</a>    @Override
 <a class="jxr_linenumber" name="L59" href="#L59">59</a>    <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> run() {
 <a class="jxr_linenumber" name="L60" href="#L60">60</a>      logger.debug(toString());
 <a class="jxr_linenumber" name="L61" href="#L61">61</a>      <strong class="jxr_keyword">final</strong> <a name="GUID" href="../../../../../../org/waarp/comm<a name="GUID" href="../../../../../../org/waarp/common/guid/GUID.html#GUID">GUID</a>uid/GUID.html#GUID">GUID</a> uuid = <strong class="jxr_keyword">new</strong> <a name="GUID" href="../../../../../../org/waarp/common/guid/GUID.html#GUID">GUID</a>();
 <a class="jxr_linenumber" name="L62" href="#L62">62</a>      <strong class="jxr_keyword">final</strong> String[] args = BLANK.split(fullarg);
-<a class="jxr_linenumber" name="L63" href="#L63">63</a>      String fileInfo;
+<a class="jxr_linenumber" name="L63" href="#L63">63</a>      <strong class="jxr_keyword">final</strong> String fileInfo;
 <a class="jxr_linenumber" name="L64" href="#L64">64</a>      String format = <span class="jxr_string">"-##UUID##"</span>;
 <a class="jxr_linenumber" name="L65" href="#L65">65</a>      <strong class="jxr_keyword">int</strong> way = -1;
 <a class="jxr_linenumber" name="L66" href="#L66">66</a>      <strong class="jxr_keyword">for</strong> (<strong class="jxr_keyword">int</strong> i = 0; i &lt; args.length; i++) {
@@ -85,31 +85,32 @@
 <a class="jxr_linenumber" name="L77" href="#L77">77</a>        }
 <a class="jxr_linenumber" name="L78" href="#L78">78</a>      }
 <a class="jxr_linenumber" name="L79" href="#L79">79</a>      logger.debug(<span class="jxr_string">"Replace UUID in {} way: {}"</span>, format, way);
-<a class="jxr_linenumber" name="L80" href="#L80">80</a>      <strong class="jxr_keyword">if</strong> (way &lt; 0) {
-<a class="jxr_linenumber" name="L81" href="#L81">81</a>        fileInfo = UUID_COMPILE.matcher(format).replaceAll(
-<a class="jxr_linenumber" name="L82" href="#L82">82</a>            Matcher.quoteReplacement(uuid.toString())) + ' ' +
-<a class="jxr_linenumber" name="L83" href="#L83">83</a>                   session.getRunner().getFileInformation();
-<a class="jxr_linenumber" name="L84" href="#L84">84</a>      } <strong class="jxr_keyword">else</strong> {
-<a class="jxr_linenumber" name="L85" href="#L85">85</a>        fileInfo = session.getRunner().getFileInformation() + ' ' +
-<a class="jxr_linenumber" name="L86" href="#L86">86</a>                   UUID_COMPILE.matcher(format).replaceAll(
-<a class="jxr_linenumber" name="L87" href="#L87">87</a>                       Matcher.quoteReplacement(uuid.toString()));
-<a class="jxr_linenumber" name="L88" href="#L88">88</a>      }
-<a class="jxr_linenumber" name="L89" href="#L89">89</a>      session.getRunner().setFileInformation(fileInfo);
-<a class="jxr_linenumber" name="L90" href="#L90">90</a>      session.getRunner().setTransferInfo(session.getRunner().getTransferInfo()
-<a class="jxr_linenumber" name="L91" href="#L91">91</a>                                                 .replaceAll(sUUID,
-<a class="jxr_linenumber" name="L92" href="#L92">92</a>                                                             uuid.toString()));
-<a class="jxr_linenumber" name="L93" href="#L93">93</a>      session.getRunner().addToTransferMap(<span class="jxr_string">"uuid"</span>, uuid.toString());
-<a class="jxr_linenumber" name="L94" href="#L94">94</a>      <strong class="jxr_keyword">try</strong> {
-<a class="jxr_linenumber" name="L95" href="#L95">95</a>        session.getRunner().update();
-<a class="jxr_linenumber" name="L96" href="#L96">96</a>      } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> <a name="WaarpDatabaseException" href="../../../../../../org/waarp/common/database/exception/WaarpDatabaseException.html#WaarpDatabaseException">WaarpDatabaseException</a> e) {
-<a class="jxr_linenumber" name="L97" href="#L97">97</a>        logger.error(<span class="jxr_string">"UUID cannot be saved to fileInformation:"</span> + fileInfo);
-<a class="jxr_linenumber" name="L98" href="#L98">98</a>        status = 2;
-<a class="jxr_linenumber" name="L99" href="#L99">99</a>        <strong class="jxr_keyword">return</strong>;
-<a class="jxr_linenumber" name="L100" href="#L100">100</a>     }
-<a class="jxr_linenumber" name="L101" href="#L101">101</a>     logger.debug(<span class="jxr_string">"UUID saved to fileInformation:"</span> + fileInfo);
-<a class="jxr_linenumber" name="L102" href="#L102">102</a>     status = 0;
-<a class="jxr_linenumber" name="L103" href="#L103">103</a>   }
-<a class="jxr_linenumber" name="L104" href="#L104">104</a> }
+<a class="jxr_linenumber" name="L80" href="#L80">80</a>      <strong class="jxr_keyword">if</strong> (format.isEmpty()) {
+<a class="jxr_linenumber" name="L81" href="#L81">81</a>        fileInfo = session.getRunner().getFileInformation();
+<a class="jxr_linenumber" name="L82" href="#L82">82</a>      } <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="L83" href="#L83">83</a>        <strong class="jxr_keyword">if</strong> (way &lt; 0) {
+<a class="jxr_linenumber" name="L84" href="#L84">84</a>          fileInfo = UUID_COMPILE.matcher(format).replaceAll(
+<a class="jxr_linenumber" name="L85" href="#L85">85</a>              Matcher.quoteReplacement(uuid.toString())) + ' ' +
+<a class="jxr_linenumber" name="L86" href="#L86">86</a>                     session.getRunner().getFileInformation();
+<a class="jxr_linenumber" name="L87" href="#L87">87</a>        } <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="L88" href="#L88">88</a>          fileInfo = session.getRunner().getFileInformation() + ' ' +
+<a class="jxr_linenumber" name="L89" href="#L89">89</a>                     UUID_COMPILE.matcher(format).replaceAll(
+<a class="jxr_linenumber" name="L90" href="#L90">90</a>                         Matcher.quoteReplacement(uuid.toString()));
+<a class="jxr_linenumber" name="L91" href="#L91">91</a>        }
+<a class="jxr_linenumber" name="L92" href="#L92">92</a>      }
+<a class="jxr_linenumber" name="L93" href="#L93">93</a>      session.getRunner().setFileInformation(fileInfo);
+<a class="jxr_linenumber" name="L94" href="#L94">94</a>      session.getRunner().addToTransferMap(<span class="jxr_string">"uuid"</span>, uuid.toString());
+<a class="jxr_linenumber" name="L95" href="#L95">95</a>      <strong class="jxr_keyword">try</strong> {
+<a class="jxr_linenumber" name="L96" href="#L96">96</a>        session.getRunner().update();
+<a class="jxr_linenumber" name="L97" href="#L97">97</a>      } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> <a name="WaarpDatabaseException" href="../../../../../../org/waarp/common/database/exception/WaarpDatabaseException.html#WaarpDatabaseException">WaarpDatabaseException</a> e) {
+<a class="jxr_linenumber" name="L98" href="#L98">98</a>        logger.error(<span class="jxr_string">"UUID cannot be saved to fileInformation:"</span> + fileInfo);
+<a class="jxr_linenumber" name="L99" href="#L99">99</a>        status = 2;
+<a class="jxr_linenumber" name="L100" href="#L100">100</a>       <strong class="jxr_keyword">return</strong>;
+<a class="jxr_linenumber" name="L101" href="#L101">101</a>     }
+<a class="jxr_linenumber" name="L102" href="#L102">102</a>     logger.debug(<span class="jxr_string">"UUID saved to fileInformation:"</span> + fileInfo);
+<a class="jxr_linenumber" name="L103" href="#L103">103</a>     status = 0;
+<a class="jxr_linenumber" name="L104" href="#L104">104</a>   }
+<a class="jxr_linenumber" name="L105" href="#L105">105</a> }
 </pre>
 <hr/>
 <div id="footer">Copyright &#169; 2009&#x2013;2020 <a href="http://www.waarp.fr">Waarp</a>. All rights reserved.</div>

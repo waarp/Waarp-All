@@ -59,8 +59,8 @@
 <a class="jxr_linenumber" name="L51" href="#L51">51</a>  <em class="jxr_javadoccomment">   * @param delay</em>
 <a class="jxr_linenumber" name="L52" href="#L52">52</a>  <em class="jxr_javadoccomment">   * @param futureCompletion</em>
 <a class="jxr_linenumber" name="L53" href="#L53">53</a>  <em class="jxr_javadoccomment">   */</em>
-<a class="jxr_linenumber" name="L54" href="#L54">54</a>    <strong class="jxr_keyword">public</strong> <a name="JavaExecutor" href="../../../../../org/waarp/gateway/ftp/exec/JavaExecutor.html#JavaExecutor">JavaExecutor</a>(String command, <strong class="jxr_keyword">long</strong> delay,
-<a class="jxr_linenumber" name="L55" href="#L55">55</a>                        WaarpFuture futureCompletion) {
+<a class="jxr_linenumber" name="L54" href="#L54">54</a>    <strong class="jxr_keyword">public</strong> <a name="JavaExecutor" href="../../../../../org/waarp/gateway/ftp/exec/JavaExecutor.html#JavaExecutor">JavaExecutor</a>(<strong class="jxr_keyword">final</strong> String command, <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">long</strong> delay,
+<a class="jxr_linenumber" name="L55" href="#L55">55</a>                        <strong class="jxr_keyword">final</strong> WaarpFuture futureCompletion) {
 <a class="jxr_linenumber" name="L56" href="#L56">56</a>      args = BLANK.split(command);
 <a class="jxr_linenumber" name="L57" href="#L57">57</a>      <strong class="jxr_keyword">this</strong>.futureCompletion = futureCompletion;
 <a class="jxr_linenumber" name="L58" href="#L58">58</a>      <strong class="jxr_keyword">this</strong>.delay = delay;
@@ -71,13 +71,13 @@
 <a class="jxr_linenumber" name="L63" href="#L63">63</a>      <strong class="jxr_keyword">final</strong> String className = args[0];
 <a class="jxr_linenumber" name="L64" href="#L64">64</a>      <strong class="jxr_keyword">try</strong> {
 <a class="jxr_linenumber" name="L65" href="#L65">65</a>        ParametersChecker.checkSanityString(className);
-<a class="jxr_linenumber" name="L66" href="#L66">66</a>      } <strong class="jxr_keyword">catch</strong> (InvalidArgumentException e) {
+<a class="jxr_linenumber" name="L66" href="#L66">66</a>      } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> InvalidArgumentException e) {
 <a class="jxr_linenumber" name="L67" href="#L67">67</a>        SysErrLogger.FAKE_LOGGER.ignoreLog(e);
 <a class="jxr_linenumber" name="L68" href="#L68">68</a>        logger.error(
 <a class="jxr_linenumber" name="L69" href="#L69">69</a>            <span class="jxr_string">"Status: "</span> + e.getMessage() + <span class="jxr_string">"\n\t Exec in error with "</span> + className);
 <a class="jxr_linenumber" name="L70" href="#L70">70</a>        <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> Reply421Exception(<span class="jxr_string">"Pre Exec command is not correctly executed"</span>);
 <a class="jxr_linenumber" name="L71" href="#L71">71</a>      }
-<a class="jxr_linenumber" name="L72" href="#L72">72</a>      <a name="GatewayRunnable" href="../../../../../org/waarp/gateway/ftp/exec/GatewayRunnable.html#GatewayRunnable">GatewayRunnable</a> runnable;
+<a class="jxr_linenumber" name="L72" href="#L72">72</a>      <strong class="jxr_keyword">final</strong> <a name="GatewayRunnable" href="../../../../../org/waarp/gateway/ftp/exec/GatewayRunnable.html#GatewayRunnable">GatewayRunnable</a> runnable;
 <a class="jxr_linenumber" name="L73" href="#L73">73</a>      <strong class="jxr_keyword">try</strong> {
 <a class="jxr_linenumber" name="L74" href="#L74">74</a>        runnable = (<a name="GatewayRunnable" href="../../../../../org/waarp/gateway/ftp/exec/GatewayRunnable.html#GatewayRunnable">GatewayRunnable</a>) Class.forName(className)<em class="jxr_comment">//NOSONAR</em>
 <a class="jxr_linenumber" name="L75" href="#L75">75</a>                                          .newInstance();<em class="jxr_comment">//NOSONAR</em>

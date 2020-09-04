@@ -46,209 +46,211 @@ public class DbModelMysqlKernel extends DbModelMysql {
    *
    * @throws WaarpDatabaseNoConnectionException
    */
-  public DbModelMysqlKernel(String dbserver, String dbuser, String dbpasswd)
+  public DbModelMysqlKernel(final String dbserver, final String dbuser,
+                            final String dbpasswd)
       throws WaarpDatabaseNoConnectionException {
-<span class="nc" id="L51">    super(dbserver, dbuser, dbpasswd);</span>
-<span class="nc" id="L52">  }</span>
+<span class="nc" id="L52">    super(dbserver, dbuser, dbpasswd);</span>
+<span class="nc" id="L53">  }</span>
 
-<span class="nc" id="L54">  private final ReentrantLock lock = new ReentrantLock();</span>
+<span class="nc" id="L55">  private final ReentrantLock lock = new ReentrantLock();</span>
 
   @Override
-  public void createTables(DbSession session)
+  public void createTables(final DbSession session)
       throws WaarpDatabaseNoConnectionException {
-<span class="nc" id="L59">    createTableMonitoring(session);</span>
-<span class="nc" id="L60">  }</span>
+<span class="nc" id="L60">    createTableMonitoring(session);</span>
+<span class="nc" id="L61">  }</span>
 
   public static void createTableMonitoring(final DbSession session)
       throws WaarpDatabaseNoConnectionException {
     // Create tables: logs
-<span class="nc" id="L65">    final String createTableH2 = &quot;CREATE TABLE IF NOT EXISTS &quot;;</span>
-<span class="nc" id="L66">    final String primaryKey = &quot; PRIMARY KEY &quot;;</span>
-<span class="nc" id="L67">    final String notNull = &quot; NOT NULL &quot;;</span>
+<span class="nc" id="L66">    final String createTableH2 = &quot;CREATE TABLE IF NOT EXISTS &quot;;</span>
+<span class="nc" id="L67">    final String primaryKey = &quot; PRIMARY KEY &quot;;</span>
+<span class="nc" id="L68">    final String notNull = &quot; NOT NULL &quot;;</span>
 
-<span class="nc" id="L69">    final DbRequest request = new DbRequest(session);</span>
+<span class="nc" id="L70">    final DbRequest request = new DbRequest(session);</span>
     // TRANSLOG
-<span class="nc" id="L71">    StringBuilder action =</span>
+<span class="nc" id="L72">    StringBuilder action =</span>
         new StringBuilder(createTableH2 + DbTransferLog.table + '(');
-<span class="nc" id="L73">    final DbTransferLog.Columns[] acolumns = DbTransferLog.Columns.values();</span>
-<span class="nc bnc" id="L74" title="All 2 branches missed.">    for (int i = 0; i &lt; acolumns.length; i++) {</span>
-<span class="nc" id="L75">      action.append(acolumns[i].name())</span>
-<span class="nc" id="L76">            .append(DBType.getType(DbTransferLog.dbTypes[i])).append(notNull)</span>
-<span class="nc" id="L77">            .append(&quot;, &quot;);</span>
+<span class="nc" id="L74">    final DbTransferLog.Columns[] acolumns = DbTransferLog.Columns.values();</span>
+<span class="nc bnc" id="L75" title="All 2 branches missed.">    for (int i = 0; i &lt; acolumns.length; i++) {</span>
+<span class="nc" id="L76">      action.append(acolumns[i].name())</span>
+<span class="nc" id="L77">            .append(DBType.getType(DbTransferLog.dbTypes[i])).append(notNull)</span>
+<span class="nc" id="L78">            .append(&quot;, &quot;);</span>
     }
     // Several columns for primary key
-<span class="nc" id="L80">    action.append(&quot; CONSTRAINT TRANSLOG_PK &quot; + primaryKey + '(');</span>
-<span class="nc bnc" id="L81" title="All 2 branches missed.">    for (int i = DbTransferLog.NBPRKEY; i &gt; 1; i--) {</span>
-<span class="nc" id="L82">      action.append(acolumns[acolumns.length - i].name()).append(',');</span>
+<span class="nc" id="L81">    action.append(&quot; CONSTRAINT TRANSLOG_PK &quot; + primaryKey + '(');</span>
+<span class="nc bnc" id="L82" title="All 2 branches missed.">    for (int i = DbTransferLog.NBPRKEY; i &gt; 1; i--) {</span>
+<span class="nc" id="L83">      action.append(acolumns[acolumns.length - i].name()).append(',');</span>
     }
-<span class="nc" id="L84">    action.append(acolumns[acolumns.length - 1].name()).append(&quot;))&quot;);</span>
-<span class="nc" id="L85">    SysErrLogger.FAKE_LOGGER.sysout(action);</span>
+<span class="nc" id="L85">    action.append(acolumns[acolumns.length - 1].name()).append(&quot;))&quot;);</span>
+<span class="nc" id="L86">    SysErrLogger.FAKE_LOGGER.sysout(action);</span>
     try {
-<span class="nc" id="L87">      request.query(action.toString());</span>
-<span class="nc" id="L88">    } catch (final WaarpDatabaseNoConnectionException e) {</span>
-<span class="nc" id="L89">      SysErrLogger.FAKE_LOGGER.syserr(e);</span>
-<span class="nc" id="L90">      return;</span>
-<span class="nc" id="L91">    } catch (final WaarpDatabaseSqlException e) {</span>
-<span class="nc" id="L92">      SysErrLogger.FAKE_LOGGER.syserr(e);</span>
+<span class="nc" id="L88">      request.query(action.toString());</span>
+<span class="nc" id="L89">    } catch (final WaarpDatabaseNoConnectionException e) {</span>
+<span class="nc" id="L90">      SysErrLogger.FAKE_LOGGER.syserr(e);</span>
+<span class="nc" id="L91">      return;</span>
+<span class="nc" id="L92">    } catch (final WaarpDatabaseSqlException e) {</span>
+<span class="nc" id="L93">      SysErrLogger.FAKE_LOGGER.syserr(e);</span>
       // XXX FIX No return
     } finally {
-<span class="nc" id="L95">      request.close();</span>
+<span class="nc" id="L96">      request.close();</span>
     }
     // Index TRANSLOG
-<span class="nc" id="L98">    action = new StringBuilder(</span>
+<span class="nc" id="L99">    action = new StringBuilder(</span>
         &quot;CREATE INDEX IDX_TRANSLOG ON &quot; + DbTransferLog.table + '(');
-<span class="nc" id="L100">    final DbTransferLog.Columns[] icolumns = DbTransferLog.indexes;</span>
-<span class="nc bnc" id="L101" title="All 2 branches missed.">    for (int i = 0; i &lt; icolumns.length - 1; i++) {</span>
-<span class="nc" id="L102">      action.append(icolumns[i].name()).append(&quot;, &quot;);</span>
+<span class="nc" id="L101">    final DbTransferLog.Columns[] icolumns = DbTransferLog.indexes;</span>
+<span class="nc bnc" id="L102" title="All 2 branches missed.">    for (int i = 0; i &lt; icolumns.length - 1; i++) {</span>
+<span class="nc" id="L103">      action.append(icolumns[i].name()).append(&quot;, &quot;);</span>
     }
-<span class="nc" id="L104">    action.append(icolumns[icolumns.length - 1].name()).append(')');</span>
-<span class="nc" id="L105">    SysErrLogger.FAKE_LOGGER.sysout(action);</span>
+<span class="nc" id="L105">    action.append(icolumns[icolumns.length - 1].name()).append(')');</span>
+<span class="nc" id="L106">    SysErrLogger.FAKE_LOGGER.sysout(action);</span>
     try {
-<span class="nc" id="L107">      request.query(action.toString());</span>
-<span class="nc" id="L108">    } catch (final WaarpDatabaseNoConnectionException e) {</span>
-<span class="nc" id="L109">      SysErrLogger.FAKE_LOGGER.syserr(e);</span>
-<span class="nc" id="L110">      return;</span>
-<span class="nc" id="L111">    } catch (final WaarpDatabaseSqlException e) {</span>
-<span class="nc" id="L112">      SysErrLogger.FAKE_LOGGER.syserr(e);</span>
+<span class="nc" id="L108">      request.query(action.toString());</span>
+<span class="nc" id="L109">    } catch (final WaarpDatabaseNoConnectionException e) {</span>
+<span class="nc" id="L110">      SysErrLogger.FAKE_LOGGER.syserr(e);</span>
+<span class="nc" id="L111">      return;</span>
+<span class="nc" id="L112">    } catch (final WaarpDatabaseSqlException e) {</span>
+<span class="nc" id="L113">      SysErrLogger.FAKE_LOGGER.syserr(e);</span>
       // XXX FIX No return
     } finally {
-<span class="nc" id="L115">      request.close();</span>
+<span class="nc" id="L116">      request.close();</span>
     }
 
     // cptrunner
     /*
      * # Table to handle any number of sequences
      */
-<span class="nc" id="L122">    action = new StringBuilder(</span>
+<span class="nc" id="L123">    action = new StringBuilder(</span>
         &quot;CREATE TABLE Sequences (name VARCHAR(22) NOT NULL PRIMARY KEY,&quot; +
         &quot;seq BIGINT NOT NULL)&quot;);
-<span class="nc" id="L125">    SysErrLogger.FAKE_LOGGER.sysout(action);</span>
+<span class="nc" id="L126">    SysErrLogger.FAKE_LOGGER.sysout(action);</span>
     try {
-<span class="nc" id="L127">      request.query(action.toString());</span>
-<span class="nc" id="L128">    } catch (final WaarpDatabaseNoConnectionException e) {</span>
-<span class="nc" id="L129">      SysErrLogger.FAKE_LOGGER.syserr(e);</span>
-<span class="nc" id="L130">      return;</span>
-<span class="nc" id="L131">    } catch (final WaarpDatabaseSqlException e) {</span>
-<span class="nc" id="L132">      SysErrLogger.FAKE_LOGGER.syserr(e);</span>
+<span class="nc" id="L128">      request.query(action.toString());</span>
+<span class="nc" id="L129">    } catch (final WaarpDatabaseNoConnectionException e) {</span>
+<span class="nc" id="L130">      SysErrLogger.FAKE_LOGGER.syserr(e);</span>
+<span class="nc" id="L131">      return;</span>
+<span class="nc" id="L132">    } catch (final WaarpDatabaseSqlException e) {</span>
+<span class="nc" id="L133">      SysErrLogger.FAKE_LOGGER.syserr(e);</span>
       // XXX FIX No return
     } finally {
-<span class="nc" id="L135">      request.close();</span>
+<span class="nc" id="L136">      request.close();</span>
     }
-<span class="nc" id="L137">    action = new StringBuilder(</span>
+<span class="nc" id="L138">    action = new StringBuilder(</span>
         &quot;INSERT INTO Sequences (name, seq) VALUES ('&quot; + DbTransferLog.fieldseq +
         &quot;', &quot; + (DbConstant.ILLEGALVALUE + 1) + ')');
-<span class="nc" id="L140">    SysErrLogger.FAKE_LOGGER.sysout(action);</span>
+<span class="nc" id="L141">    SysErrLogger.FAKE_LOGGER.sysout(action);</span>
     try {
-<span class="nc" id="L142">      request.query(action.toString());</span>
-<span class="nc" id="L143">    } catch (final WaarpDatabaseNoConnectionException e) {</span>
-<span class="nc" id="L144">      SysErrLogger.FAKE_LOGGER.syserr(e);</span>
-<span class="nc" id="L145">    } catch (final WaarpDatabaseSqlException e) {</span>
-<span class="nc" id="L146">      SysErrLogger.FAKE_LOGGER.syserr(e);</span>
+<span class="nc" id="L143">      request.query(action.toString());</span>
+<span class="nc" id="L144">    } catch (final WaarpDatabaseNoConnectionException e) {</span>
+<span class="nc" id="L145">      SysErrLogger.FAKE_LOGGER.syserr(e);</span>
+<span class="nc" id="L146">    } catch (final WaarpDatabaseSqlException e) {</span>
+<span class="nc" id="L147">      SysErrLogger.FAKE_LOGGER.syserr(e);</span>
     } finally {
-<span class="nc" id="L148">      request.close();</span>
+<span class="nc" id="L149">      request.close();</span>
     }
-<span class="nc" id="L150">  }</span>
+<span class="nc" id="L151">  }</span>
 
   @Override
-  public void resetSequence(DbSession session, long newvalue)
+  public void resetSequence(final DbSession session, final long newvalue)
       throws WaarpDatabaseNoConnectionException {
-<span class="nc" id="L155">    resetSequenceMonitoring(session, newvalue);</span>
-<span class="nc" id="L156">  }</span>
+<span class="nc" id="L156">    resetSequenceMonitoring(session, newvalue);</span>
+<span class="nc" id="L157">  }</span>
 
   public static void resetSequenceMonitoring(final DbSession session,
                                              final long newvalue)
       throws WaarpDatabaseNoConnectionException {
-<span class="nc" id="L161">    final String action =</span>
+<span class="nc" id="L162">    final String action =</span>
         &quot;UPDATE Sequences SET seq = &quot; + newvalue + &quot; WHERE name = '&quot; +
         DbTransferLog.fieldseq + '\'';
-<span class="nc" id="L164">    final DbRequest request = new DbRequest(session);</span>
+<span class="nc" id="L165">    final DbRequest request = new DbRequest(session);</span>
     try {
-<span class="nc" id="L166">      request.query(action);</span>
-<span class="nc" id="L167">    } catch (final WaarpDatabaseNoConnectionException e) {</span>
-<span class="nc" id="L168">      SysErrLogger.FAKE_LOGGER.syserr(e);</span>
-<span class="nc" id="L169">      return;</span>
-<span class="nc" id="L170">    } catch (final WaarpDatabaseSqlException e) {</span>
-<span class="nc" id="L171">      SysErrLogger.FAKE_LOGGER.syserr(e);</span>
-<span class="nc" id="L172">      return;</span>
+<span class="nc" id="L167">      request.query(action);</span>
+<span class="nc" id="L168">    } catch (final WaarpDatabaseNoConnectionException e) {</span>
+<span class="nc" id="L169">      SysErrLogger.FAKE_LOGGER.syserr(e);</span>
+<span class="nc" id="L170">      return;</span>
+<span class="nc" id="L171">    } catch (final WaarpDatabaseSqlException e) {</span>
+<span class="nc" id="L172">      SysErrLogger.FAKE_LOGGER.syserr(e);</span>
+<span class="nc" id="L173">      return;</span>
     } finally {
-<span class="nc" id="L174">      request.close();</span>
+<span class="nc" id="L175">      request.close();</span>
     }
-<span class="nc" id="L176">    SysErrLogger.FAKE_LOGGER.sysout(action);</span>
-<span class="nc" id="L177">  }</span>
+<span class="nc" id="L177">    SysErrLogger.FAKE_LOGGER.sysout(action);</span>
+<span class="nc" id="L178">  }</span>
 
   @Override
-  public synchronized long nextSequence(DbSession dbSession)
+  public synchronized long nextSequence(final DbSession dbSession)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException,
              WaarpDatabaseNoDataException {
-<span class="nc" id="L183">    return nextSequenceMonitoring(dbSession, lock);</span>
+<span class="nc" id="L184">    return nextSequenceMonitoring(dbSession, lock);</span>
   }
 
   public static long nextSequenceMonitoring(final DbSession dbSession,
                                             final ReentrantLock lock)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException,
              WaarpDatabaseNoDataException {
-<span class="nc" id="L190">    lock.lock();</span>
+<span class="nc" id="L191">    lock.lock();</span>
     try {
-<span class="nc" id="L192">      long result = DbConstant.ILLEGALVALUE;</span>
-<span class="nc" id="L193">      String action =</span>
+<span class="nc" id="L193">      long result = DbConstant.ILLEGALVALUE;</span>
+<span class="nc" id="L194">      String action =</span>
           &quot;SELECT seq FROM Sequences WHERE name = '&quot; + DbTransferLog.fieldseq +
           &quot;' FOR UPDATE&quot;;
-<span class="nc" id="L196">      final DbPreparedStatement preparedStatement =</span>
+<span class="nc" id="L197">      final DbPreparedStatement preparedStatement =</span>
           new DbPreparedStatement(dbSession);
       try {
-<span class="nc" id="L199">        dbSession.getConn().setAutoCommit(false);</span>
-<span class="nc" id="L200">      } catch (final SQLException ignored) {</span>
+<span class="nc" id="L200">        dbSession.getConn().setAutoCommit(false);</span>
+<span class="nc" id="L201">      } catch (final SQLException ignored) {</span>
         // nothing
-<span class="nc" id="L202">      }</span>
+<span class="nc" id="L203">      }</span>
       try {
-<span class="nc" id="L204">        preparedStatement.createPrepareStatement(action);</span>
+<span class="nc" id="L205">        preparedStatement.createPrepareStatement(action);</span>
         // Limit the search
-<span class="nc" id="L206">        preparedStatement.executeQuery();</span>
-<span class="nc bnc" id="L207" title="All 2 branches missed.">        if (preparedStatement.getNext()) {</span>
+<span class="nc" id="L207">        preparedStatement.executeQuery();</span>
+<span class="nc bnc" id="L208" title="All 2 branches missed.">        if (preparedStatement.getNext()) {</span>
           try {
-<span class="nc" id="L209">            result = preparedStatement.getResultSet().getLong(1);</span>
-<span class="nc" id="L210">          } catch (final SQLException e) {</span>
-<span class="nc" id="L211">            throw new WaarpDatabaseSqlException(e);</span>
-<span class="nc" id="L212">          }</span>
+<span class="nc" id="L210">            result = preparedStatement.getResultSet().getLong(1);</span>
+<span class="nc" id="L211">          } catch (final SQLException e) {</span>
+<span class="nc" id="L212">            throw new WaarpDatabaseSqlException(e);</span>
+<span class="nc" id="L213">          }</span>
         } else {
-<span class="nc" id="L214">          throw new WaarpDatabaseNoDataException(</span>
+<span class="nc" id="L215">          throw new WaarpDatabaseNoDataException(</span>
               &quot;No sequence found. Must be initialized first&quot;);
         }
       } finally {
-<span class="nc" id="L218">        preparedStatement.realClose();</span>
+<span class="nc" id="L219">        preparedStatement.realClose();</span>
       }
-<span class="nc" id="L220">      action =</span>
+<span class="nc" id="L221">      action =</span>
           &quot;UPDATE Sequences SET seq = &quot; + (result + 1) + &quot; WHERE name = '&quot; +
           DbTransferLog.fieldseq + '\'';
       try {
-<span class="nc" id="L224">        preparedStatement.createPrepareStatement(action);</span>
+<span class="nc" id="L225">        preparedStatement.createPrepareStatement(action);</span>
         // Limit the search
-<span class="nc" id="L226">        preparedStatement.executeUpdate();</span>
+<span class="nc" id="L227">        preparedStatement.executeUpdate();</span>
       } finally {
-<span class="nc" id="L228">        preparedStatement.realClose();</span>
+<span class="nc" id="L229">        preparedStatement.realClose();</span>
       }
-<span class="nc" id="L230">      return result;</span>
+<span class="nc" id="L231">      return result;</span>
     } finally {
       try {
-<span class="nc" id="L233">        dbSession.getConn().setAutoCommit(true);</span>
-<span class="nc" id="L234">      } catch (final SQLException ignored) {</span>
+<span class="nc" id="L234">        dbSession.getConn().setAutoCommit(true);</span>
+<span class="nc" id="L235">      } catch (final SQLException ignored) {</span>
         // nothing
-<span class="nc" id="L236">      }</span>
-<span class="nc" id="L237">      lock.unlock();</span>
+      } finally {
+<span class="nc" id="L238">        lock.unlock();</span>
+      }
     }
   }
 
   @Override
-  public boolean upgradeDb(DbSession session, String version)
+  public boolean upgradeDb(final DbSession session, final String version)
       throws WaarpDatabaseNoConnectionException {
-<span class="nc" id="L244">    return false;</span>
+<span class="nc" id="L246">    return false;</span>
   }
 
   @Override
-  public boolean needUpgradeDb(DbSession session, String version,
-                               boolean tryFix)
+  public boolean needUpgradeDb(final DbSession session, final String version,
+                               final boolean tryFix)
       throws WaarpDatabaseNoConnectionException {
-<span class="nc" id="L251">    return false;</span>
+<span class="nc" id="L253">    return false;</span>
   }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

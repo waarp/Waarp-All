@@ -37,25 +37,27 @@ public class ProxyEntry {
   private final SocketAddress remoteSocketAddress;
   private final boolean remoteIsSsl;
 
-  public static void add(SocketAddress localAddress, boolean localIsSsl,
-                         SocketAddress remoteAddress, boolean remoteIsSsl)
+  public static void add(final SocketAddress localAddress,
+                         final boolean localIsSsl,
+                         final SocketAddress remoteAddress,
+                         final boolean remoteIsSsl)
       throws OpenR66ProtocolSystemException {
-<span class="fc" id="L43">    final String sla = localAddress.toString();</span>
-<span class="pc bpc" id="L44" title="1 of 2 branches missed.">    if (proxyEntries.containsKey(sla)) {</span>
-<span class="nc" id="L45">      throw new OpenR66ProtocolSystemException(</span>
+<span class="fc" id="L45">    final String sla = localAddress.toString();</span>
+<span class="pc bpc" id="L46" title="1 of 2 branches missed.">    if (proxyEntries.containsKey(sla)) {</span>
+<span class="nc" id="L47">      throw new OpenR66ProtocolSystemException(</span>
           &quot;Error in the configuration: Two entries with the same localAdress&quot;);
     }
-<span class="fc" id="L48">    proxyEntries.put(sla, new ProxyEntry(sla, localAddress, localIsSsl,</span>
+<span class="fc" id="L50">    proxyEntries.put(sla, new ProxyEntry(sla, localAddress, localIsSsl,</span>
                                          remoteAddress, remoteIsSsl));
-<span class="fc" id="L50">  }</span>
+<span class="fc" id="L52">  }</span>
 
-  public static ProxyEntry get(String name) {
-<span class="fc" id="L53">    synchronized (proxyEntries) {</span>
-<span class="pc bpc" id="L54" title="1 of 2 branches missed.">      if (proxyEntries.containsKey(name)) {</span>
-<span class="fc" id="L55">        return proxyEntries.get(name);</span>
+  public static ProxyEntry get(final String name) {
+<span class="fc" id="L55">    synchronized (proxyEntries) {</span>
+<span class="pc bpc" id="L56" title="1 of 2 branches missed.">      if (proxyEntries.containsKey(name)) {</span>
+<span class="fc" id="L57">        return proxyEntries.get(name);</span>
       } else {
         // error
-<span class="nc" id="L58">        return null;</span>
+<span class="nc" id="L60">        return null;</span>
       }
     }
   }
@@ -67,54 +69,55 @@ public class ProxyEntry {
    * @param remoteSocketAddress
    * @param remoteIsSsl
    */
-  private ProxyEntry(String name, SocketAddress localSocketAddress,
-                     boolean localIsSsl, SocketAddress remoteSocketAddress,
-<span class="fc" id="L72">                     boolean remoteIsSsl) {</span>
-<span class="fc" id="L73">    this.name = name;</span>
-<span class="fc" id="L74">    this.localSocketAddress = localSocketAddress;</span>
-<span class="fc" id="L75">    this.localIsSsl = localIsSsl;</span>
-<span class="fc" id="L76">    this.remoteSocketAddress = remoteSocketAddress;</span>
-<span class="fc" id="L77">    this.remoteIsSsl = remoteIsSsl;</span>
-<span class="fc" id="L78">  }</span>
+  private ProxyEntry(final String name, final SocketAddress localSocketAddress,
+                     final boolean localIsSsl,
+                     final SocketAddress remoteSocketAddress,
+<span class="fc" id="L75">                     final boolean remoteIsSsl) {</span>
+<span class="fc" id="L76">    this.name = name;</span>
+<span class="fc" id="L77">    this.localSocketAddress = localSocketAddress;</span>
+<span class="fc" id="L78">    this.localIsSsl = localIsSsl;</span>
+<span class="fc" id="L79">    this.remoteSocketAddress = remoteSocketAddress;</span>
+<span class="fc" id="L80">    this.remoteIsSsl = remoteIsSsl;</span>
+<span class="fc" id="L81">  }</span>
 
   /**
    * @return the localSocketAddress
    */
   public SocketAddress getLocalSocketAddress() {
-<span class="fc" id="L84">    return localSocketAddress;</span>
+<span class="fc" id="L87">    return localSocketAddress;</span>
   }
 
   /**
    * @return the localIsSsl
    */
   public boolean isLocalSsl() {
-<span class="fc" id="L91">    return localIsSsl;</span>
+<span class="fc" id="L94">    return localIsSsl;</span>
   }
 
   /**
    * @return the remoteSocketAddress
    */
   public SocketAddress getRemoteSocketAddress() {
-<span class="fc" id="L98">    return remoteSocketAddress;</span>
+<span class="fc" id="L101">    return remoteSocketAddress;</span>
   }
 
   /**
    * @return the name
    */
   public String getName() {
-<span class="nc" id="L105">    return name;</span>
+<span class="nc" id="L108">    return name;</span>
   }
 
   /**
    * @return the isSsl
    */
   public boolean isRemoteSsl() {
-<span class="fc" id="L112">    return remoteIsSsl;</span>
+<span class="fc" id="L115">    return remoteIsSsl;</span>
   }
 
   @Override
   public String toString() {
-<span class="fc" id="L117">    return &quot;from: &quot; + localSocketAddress + ':' + localIsSsl + &quot; to: &quot; +</span>
+<span class="fc" id="L120">    return &quot;from: &quot; + localSocketAddress + ':' + localIsSsl + &quot; to: &quot; +</span>
            remoteSocketAddress + ':' + remoteIsSsl;
   }
 }

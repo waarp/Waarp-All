@@ -44,35 +44,36 @@
 <a class="jxr_linenumber" name="L36" href="#L36">36</a>    <em class="jxr_javadoccomment">/**</em>
 <a class="jxr_linenumber" name="L37" href="#L37">37</a>  <em class="jxr_javadoccomment">   * @param session</em>
 <a class="jxr_linenumber" name="L38" href="#L38">38</a>  <em class="jxr_javadoccomment">   */</em>
-<a class="jxr_linenumber" name="L39" href="#L39">39</a>    <strong class="jxr_keyword">public</strong> <a name="FilesystemBasedFtpRestart" href="../../../../org/waarp/ftp/filesystembased/FilesystemBasedFtpRestart.html#FilesystemBasedFtpRestart">FilesystemBasedFtpRestart</a>(FtpSession session) {
+<a class="jxr_linenumber" name="L39" href="#L39">39</a>    <strong class="jxr_keyword">public</strong> <a name="FilesystemBasedFtpRestart" href="../../../../org/waarp/ftp/filesystembased/FilesystemBasedFtpRestart.html#FilesystemBasedFtpRestart">FilesystemBasedFtpRestart</a>(<strong class="jxr_keyword">final</strong> FtpSession session) {
 <a class="jxr_linenumber" name="L40" href="#L40">40</a>      <strong class="jxr_keyword">super</strong>(session);
 <a class="jxr_linenumber" name="L41" href="#L41">41</a>    }
 <a class="jxr_linenumber" name="L42" href="#L42">42</a>  
 <a class="jxr_linenumber" name="L43" href="#L43">43</a>    @Override
-<a class="jxr_linenumber" name="L44" href="#L44">44</a>    <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">boolean</strong> restartMarker(String marker) <strong class="jxr_keyword">throws</strong> CommandAbstractException {
-<a class="jxr_linenumber" name="L45" href="#L45">45</a>      <strong class="jxr_keyword">final</strong> FtpDataAsyncConn dataConn = ((FtpSession) getSession()).getDataConn();
-<a class="jxr_linenumber" name="L46" href="#L46">46</a>      <strong class="jxr_keyword">if</strong> (dataConn.getStructure() == TransferStructure.FILE &amp;&amp;
-<a class="jxr_linenumber" name="L47" href="#L47">47</a>          dataConn.getMode() == TransferMode.STREAM &amp;&amp;
-<a class="jxr_linenumber" name="L48" href="#L48">48</a>          dataConn.getType() != TransferType.LENGTH) {
-<a class="jxr_linenumber" name="L49" href="#L49">49</a>        <strong class="jxr_keyword">long</strong> newposition;
-<a class="jxr_linenumber" name="L50" href="#L50">50</a>        <strong class="jxr_keyword">final</strong> String[] args = marker.split(<span class="jxr_string">" "</span>);
-<a class="jxr_linenumber" name="L51" href="#L51">51</a>        <strong class="jxr_keyword">try</strong> {
-<a class="jxr_linenumber" name="L52" href="#L52">52</a>          newposition = Long.parseLong(args[0]);
-<a class="jxr_linenumber" name="L53" href="#L53">53</a>          <strong class="jxr_keyword">if</strong> (args.length &gt; 1) {
-<a class="jxr_linenumber" name="L54" href="#L54">54</a>            limit = Integer.parseInt(args[1]);
-<a class="jxr_linenumber" name="L55" href="#L55">55</a>          }
-<a class="jxr_linenumber" name="L56" href="#L56">56</a>        } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> NumberFormatException e) {
-<a class="jxr_linenumber" name="L57" href="#L57">57</a>          <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> Reply502Exception(
-<a class="jxr_linenumber" name="L58" href="#L58">58</a>              <span class="jxr_string">"Marker must be length in byte as a position"</span>);
-<a class="jxr_linenumber" name="L59" href="#L59">59</a>        }
-<a class="jxr_linenumber" name="L60" href="#L60">60</a>        position = newposition;
-<a class="jxr_linenumber" name="L61" href="#L61">61</a>        setSet(<strong class="jxr_keyword">true</strong>);
-<a class="jxr_linenumber" name="L62" href="#L62">62</a>        <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">true</strong>;
-<a class="jxr_linenumber" name="L63" href="#L63">63</a>      }
-<a class="jxr_linenumber" name="L64" href="#L64">64</a>      <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> Reply502Exception(
-<a class="jxr_linenumber" name="L65" href="#L65">65</a>          <span class="jxr_string">"Marker not implemented for such Mode, Type and Structure"</span>);
-<a class="jxr_linenumber" name="L66" href="#L66">66</a>    }
-<a class="jxr_linenumber" name="L67" href="#L67">67</a>  }
+<a class="jxr_linenumber" name="L44" href="#L44">44</a>    <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">boolean</strong> restartMarker(<strong class="jxr_keyword">final</strong> String marker)
+<a class="jxr_linenumber" name="L45" href="#L45">45</a>        <strong class="jxr_keyword">throws</strong> CommandAbstractException {
+<a class="jxr_linenumber" name="L46" href="#L46">46</a>      <strong class="jxr_keyword">final</strong> FtpDataAsyncConn dataConn = ((FtpSession) getSession()).getDataConn();
+<a class="jxr_linenumber" name="L47" href="#L47">47</a>      <strong class="jxr_keyword">if</strong> (dataConn.getStructure() == TransferStructure.FILE &amp;&amp;
+<a class="jxr_linenumber" name="L48" href="#L48">48</a>          dataConn.getMode() == TransferMode.STREAM &amp;&amp;
+<a class="jxr_linenumber" name="L49" href="#L49">49</a>          dataConn.getType() != TransferType.LENGTH) {
+<a class="jxr_linenumber" name="L50" href="#L50">50</a>        <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">long</strong> newposition;
+<a class="jxr_linenumber" name="L51" href="#L51">51</a>        <strong class="jxr_keyword">final</strong> String[] args = marker.split(<span class="jxr_string">" "</span>);
+<a class="jxr_linenumber" name="L52" href="#L52">52</a>        <strong class="jxr_keyword">try</strong> {
+<a class="jxr_linenumber" name="L53" href="#L53">53</a>          newposition = Long.parseLong(args[0]);
+<a class="jxr_linenumber" name="L54" href="#L54">54</a>          <strong class="jxr_keyword">if</strong> (args.length &gt; 1) {
+<a class="jxr_linenumber" name="L55" href="#L55">55</a>            limit = Integer.parseInt(args[1]);
+<a class="jxr_linenumber" name="L56" href="#L56">56</a>          }
+<a class="jxr_linenumber" name="L57" href="#L57">57</a>        } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> NumberFormatException e) {
+<a class="jxr_linenumber" name="L58" href="#L58">58</a>          <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> Reply502Exception(
+<a class="jxr_linenumber" name="L59" href="#L59">59</a>              <span class="jxr_string">"Marker must be length in byte as a position"</span>);
+<a class="jxr_linenumber" name="L60" href="#L60">60</a>        }
+<a class="jxr_linenumber" name="L61" href="#L61">61</a>        position = newposition;
+<a class="jxr_linenumber" name="L62" href="#L62">62</a>        setSet(<strong class="jxr_keyword">true</strong>);
+<a class="jxr_linenumber" name="L63" href="#L63">63</a>        <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">true</strong>;
+<a class="jxr_linenumber" name="L64" href="#L64">64</a>      }
+<a class="jxr_linenumber" name="L65" href="#L65">65</a>      <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> Reply502Exception(
+<a class="jxr_linenumber" name="L66" href="#L66">66</a>          <span class="jxr_string">"Marker not implemented for such Mode, Type and Structure"</span>);
+<a class="jxr_linenumber" name="L67" href="#L67">67</a>    }
+<a class="jxr_linenumber" name="L68" href="#L68">68</a>  }
 </pre>
 <hr/>
 <div id="footer">Copyright &#169; 2009&#x2013;2020 <a href="http://www.waarp.fr">Waarp</a>. All rights reserved.</div>

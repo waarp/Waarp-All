@@ -55,7 +55,7 @@ import java.util.regex.Pattern;
 /**
  * Execute an external command
  * &lt;p&gt;
- * It provides some common functionnalities.
+ * It provides some common functionalities.
  */
 public abstract class AbstractExecTask extends AbstractTask {
   /**
@@ -77,8 +77,8 @@ public abstract class AbstractExecTask extends AbstractTask {
    * @param argRule
    * @param session
    */
-  AbstractExecTask(TaskType type, int delay, String argRule, String argTransfer,
-                   R66Session session) {
+  AbstractExecTask(final TaskType type, final int delay, final String argRule,
+                   final String argTransfer, final R66Session session) {
 <span class="fc" id="L82">    super(type, delay, argRule, argTransfer, session);</span>
 <span class="fc" id="L83">  }</span>
 
@@ -89,7 +89,7 @@ public abstract class AbstractExecTask extends AbstractTask {
    *
    * @return the line after substitutions
    */
-  protected String applyTransferSubstitutions(String line) {
+  protected String applyTransferSubstitutions(final String line) {
 <span class="fc" id="L93">    final Object[] argFormat = COMPILE_BLANK.split(argTransfer);</span>
 <span class="pc bpc" id="L94" title="2 of 4 branches missed.">    if (argFormat != null &amp;&amp; argFormat.length &gt; 0) {</span>
       try {
@@ -107,7 +107,7 @@ public abstract class AbstractExecTask extends AbstractTask {
    *
    * @param line the command to process as a string
    */
-  protected CommandLine buildCommandLine(String line) {
+  protected CommandLine buildCommandLine(final String line) {
 <span class="pc bpc" id="L111" title="1 of 2 branches missed.">    if (line.contains(NOWAIT)) {</span>
 <span class="nc" id="L112">      waitForValidation = false;</span>
     }
@@ -122,7 +122,7 @@ public abstract class AbstractExecTask extends AbstractTask {
 <span class="fc" id="L122">        CommandLine.parse(replacedLine, getSubstitutionMap());</span>
 
 <span class="fc" id="L124">    final File exec = new File(commandLine.getExecutable());</span>
-<span class="pc bpc" id="L125" title="3 of 4 branches missed.">    if (exec.isAbsolute() &amp;&amp; !exec.canExecute()) {</span>
+<span class="pc bpc" id="L125" title="1 of 4 branches missed.">    if (exec.isAbsolute() &amp;&amp; !exec.canExecute()) {</span>
 <span class="nc" id="L126">      logger.error(&quot;Exec command is not executable: &quot; + line);</span>
 <span class="nc" id="L127">      final R66Result result =</span>
           new R66Result(session, false, ErrorCode.CommandNotFound,
@@ -411,7 +411,7 @@ public abstract class AbstractExecTask extends AbstractTask {
     private ExecuteWatchdog watchdog;
 
     PrepareCommandExec(final String finalname, final boolean noOutput,
-<span class="fc" id="L414">                       boolean waitForValidation) {</span>
+<span class="fc" id="L414">                       final boolean waitForValidation) {</span>
 <span class="fc" id="L415">      this.finalname = finalname;</span>
 <span class="fc" id="L416">      this.noOutput = noOutput;</span>
 <span class="fc" id="L417">      this.waitForValidation = waitForValidation;</span>
@@ -523,8 +523,8 @@ public abstract class AbstractExecTask extends AbstractTask {
 <span class="fc" id="L523">      status = -1;</span>
       try {
 <span class="fc" id="L525">        status = defaultExecutor.execute(commandLine);//NOSONAR</span>
-<span class="nc" id="L526">      } catch (final ExecuteException e) {</span>
-<span class="nc bnc" id="L527" title="All 2 branches missed.">        if (e.getExitValue() == -559038737) {</span>
+<span class="fc" id="L526">      } catch (final ExecuteException e) {</span>
+<span class="pc bpc" id="L527" title="1 of 2 branches missed.">        if (e.getExitValue() == -559038737) {</span>
           // Cannot run immediately so retry once
           try {
 <span class="nc" id="L530">            Thread.sleep(Configuration.RETRYINMS);</span>
@@ -548,10 +548,10 @@ public abstract class AbstractExecTask extends AbstractTask {
 <span class="nc" id="L548">            return this;</span>
 <span class="nc" id="L549">          }</span>
         } else {
-<span class="nc" id="L551">          closeAllForExecution(true);</span>
-<span class="nc" id="L552">          finalizeFromError(thread, status, commandLine, e);</span>
-<span class="nc" id="L553">          myResult = true;</span>
-<span class="nc" id="L554">          return this;</span>
+<span class="fc" id="L551">          closeAllForExecution(true);</span>
+<span class="fc" id="L552">          finalizeFromError(thread, status, commandLine, e);</span>
+<span class="fc" id="L553">          myResult = true;</span>
+<span class="fc" id="L554">          return this;</span>
         }
 <span class="nc" id="L556">      } catch (final IOException e) {</span>
 <span class="nc" id="L557">        closeAllForExecution(true);</span>
@@ -580,10 +580,10 @@ public abstract class AbstractExecTask extends AbstractTask {
 <span class="fc" id="L580">      return this;</span>
     }
 
-    private void closeAllForExecution(boolean interrupt) {
+    private void closeAllForExecution(final boolean interrupt) {
 <span class="fc" id="L584">      FileUtils.close(outputStream);</span>
-<span class="pc bpc" id="L585" title="3 of 4 branches missed.">      if (interrupt &amp;&amp; thread != null) {</span>
-<span class="nc" id="L586">        thread.interrupt();</span>
+<span class="pc bpc" id="L585" title="1 of 4 branches missed.">      if (interrupt &amp;&amp; thread != null) {</span>
+<span class="fc" id="L586">        thread.interrupt();</span>
       }
 <span class="fc" id="L588">      FileUtils.close(inputStream);</span>
       try {
@@ -594,8 +594,8 @@ public abstract class AbstractExecTask extends AbstractTask {
 <span class="fc" id="L594">    }</span>
   }
 
-  void finalizeFromError(Runnable threadReader, int status,
-                         CommandLine commandLine, Exception e) {
+  void finalizeFromError(final Runnable threadReader, final int status,
+                         final CommandLine commandLine, final Exception e) {
 <span class="nc" id="L599">    logger.error(&quot;Status: &quot; + status + &quot; Exec in error with &quot; + commandLine +</span>
 <span class="nc" id="L600">                 &quot; returns &quot; + e.getMessage());</span>
 <span class="nc" id="L601">    final OpenR66RunnerErrorException exc = new OpenR66RunnerErrorException(</span>

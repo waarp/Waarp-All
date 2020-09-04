@@ -56,30 +56,31 @@ public class MariaDBProperties implements DbProperties {
   }
 
   @Override
-  public int getMaximumConnections(Connection connection) throws SQLException {
-<span class="nc" id="L60">    Statement stm = null;</span>
-<span class="nc" id="L61">    ResultSet rs = null;</span>
+  public int getMaximumConnections(final Connection connection)
+      throws SQLException {
+<span class="nc" id="L61">    Statement stm = null;</span>
+<span class="nc" id="L62">    ResultSet rs = null;</span>
     try {
-<span class="nc" id="L63">      stm = connection.createStatement();</span>
-<span class="nc" id="L64">      rs = stm.executeQuery(MAX_CONNECTION_QUERY);</span>
-<span class="nc bnc" id="L65" title="All 2 branches missed.">      if (!rs.next()) {</span>
-<span class="nc" id="L66">        throw new SQLException(&quot;Cannot find max connection&quot;);</span>
+<span class="nc" id="L64">      stm = connection.createStatement();</span>
+<span class="nc" id="L65">      rs = stm.executeQuery(MAX_CONNECTION_QUERY);</span>
+<span class="nc bnc" id="L66" title="All 2 branches missed.">      if (!rs.next()) {</span>
+<span class="nc" id="L67">        throw new SQLException(&quot;Cannot find max connection&quot;);</span>
       }
-<span class="nc" id="L68">      return rs.getInt(1);</span>
+<span class="nc" id="L69">      return rs.getInt(1);</span>
     } finally {
-<span class="nc bnc" id="L70" title="All 2 branches missed.">      if (rs != null) {</span>
+<span class="nc bnc" id="L71" title="All 2 branches missed.">      if (rs != null) {</span>
         try {
-<span class="nc" id="L72">          rs.close();</span>
-<span class="nc" id="L73">        } catch (SQLException ignored) {</span>
+<span class="nc" id="L73">          rs.close();</span>
+<span class="nc" id="L74">        } catch (final SQLException ignored) {</span>
           // nothing
-<span class="nc" id="L75">        }</span>
+<span class="nc" id="L76">        }</span>
       }
-<span class="nc bnc" id="L77" title="All 2 branches missed.">      if (stm != null) {</span>
+<span class="nc bnc" id="L78" title="All 2 branches missed.">      if (stm != null) {</span>
         try {
-<span class="nc" id="L79">          stm.close();</span>
-<span class="nc" id="L80">        } catch (SQLException ignored) {</span>
+<span class="nc" id="L80">          stm.close();</span>
+<span class="nc" id="L81">        } catch (final SQLException ignored) {</span>
           // nothing
-<span class="nc" id="L82">        }</span>
+<span class="nc" id="L83">        }</span>
       }
     }
   }

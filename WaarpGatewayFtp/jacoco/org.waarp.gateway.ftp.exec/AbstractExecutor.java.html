@@ -75,7 +75,7 @@ import java.util.regex.Pattern;
   protected static final String FILE = &quot;#FILE#&quot;;
   protected static final String COMMAND = &quot;#COMMAND#&quot;;
   protected static final String SPECIALID = &quot;#SPECIALID#&quot;;
-  protected static final String sUUID = &quot;#sUUID#&quot;;
+  protected static final String S_UUID = &quot;#UUID#&quot;;
 
   protected static final String REFUSED = &quot;REFUSED&quot;;
   protected static final String NONE = &quot;NONE&quot;;
@@ -83,11 +83,11 @@ import java.util.regex.Pattern;
   protected static final String JAVAEXECUTE = &quot;JAVAEXECUTE&quot;;
   protected static final String R66PREPARETRANSFER = &quot;R66PREPARETRANSFER&quot;;
 
-  protected static final int tREFUSED = -1;
-  protected static final int tNONE = 0;
-  protected static final int tEXECUTE = 1;
-  protected static final int tR66PREPARETRANSFER = 2;
-  protected static final int tJAVAEXECUTE = 3;
+  protected static final int T_REFUSED = -1;
+  protected static final int T_NONE = 0;
+  protected static final int T_EXECUTE = 1;
+  protected static final int T_R_66_PREPARETRANSFER = 2;
+  protected static final int T_JAVAEXECUTE = 3;
 
   protected static CommandExecutor commandExecutor;
 
@@ -129,31 +129,31 @@ import java.util.regex.Pattern;
      * @param store
      * @param storDelay
      */
-    public CommandExecutor(String retrieve, long retrDelay, String store,
-<span class="fc" id="L133">                           long storDelay) {</span>
+    public CommandExecutor(final String retrieve, final long retrDelay,
+<span class="fc" id="L133">                           final String store, final long storDelay) {</span>
 <span class="pc bpc" id="L134" title="1 of 4 branches missed.">      if (retrieve == null || retrieve.trim().length() == 0) {</span>
 <span class="fc" id="L135">        pretrCMD = commandExecutor.pretrCMD;</span>
 <span class="fc" id="L136">        pretrType = commandExecutor.pretrType;</span>
 <span class="fc" id="L137">        setPretrRefused(commandExecutor.isPretrRefused());</span>
 <span class="pc bpc" id="L138" title="1 of 2 branches missed.">      } else if (isRefused(retrieve)) {</span>
 <span class="nc" id="L139">        pretrCMD = REFUSED;</span>
-<span class="nc" id="L140">        pretrType = tREFUSED;</span>
+<span class="nc" id="L140">        pretrType = T_REFUSED;</span>
 <span class="nc" id="L141">        setPretrRefused(true);</span>
       } else {
 <span class="pc bpc" id="L143" title="1 of 2 branches missed.">        if (isExecute(retrieve)) {</span>
 <span class="fc" id="L144">          pretrCMD = getExecuteCmd(retrieve);</span>
-<span class="fc" id="L145">          pretrType = tEXECUTE;</span>
+<span class="fc" id="L145">          pretrType = T_EXECUTE;</span>
 <span class="nc bnc" id="L146" title="All 2 branches missed.">        } else if (isR66PrepareTransfer(retrieve)) {</span>
 <span class="nc" id="L147">          pretrCMD = getR66PrepareTransferCmd(retrieve);</span>
-<span class="nc" id="L148">          pretrType = tR66PREPARETRANSFER;</span>
+<span class="nc" id="L148">          pretrType = T_R_66_PREPARETRANSFER;</span>
 <span class="nc" id="L149">          useDatabase = true;</span>
 <span class="nc bnc" id="L150" title="All 2 branches missed.">        } else if (isJavaExecute(retrieve)) {</span>
 <span class="nc" id="L151">          pretrCMD = getJavaExecuteCmd(retrieve);</span>
-<span class="nc" id="L152">          pretrType = tJAVAEXECUTE;</span>
+<span class="nc" id="L152">          pretrType = T_JAVAEXECUTE;</span>
         } else {
           // Default NONE
 <span class="nc" id="L155">          pretrCMD = getNone(retrieve);</span>
-<span class="nc" id="L156">          pretrType = tNONE;</span>
+<span class="nc" id="L156">          pretrType = T_NONE;</span>
         }
       }
 <span class="fc" id="L159">      setPretrDelay(retrDelay);</span>
@@ -164,61 +164,61 @@ import java.util.regex.Pattern;
 <span class="pc bpc" id="L164" title="1 of 2 branches missed.">      } else if (isRefused(store)) {</span>
 <span class="nc" id="L165">        pstorCMD = REFUSED;</span>
 <span class="nc" id="L166">        setPstorRefused(true);</span>
-<span class="nc" id="L167">        pstorType = tREFUSED;</span>
+<span class="nc" id="L167">        pstorType = T_REFUSED;</span>
       } else {
 <span class="pc bpc" id="L169" title="1 of 2 branches missed.">        if (isExecute(store)) {</span>
 <span class="fc" id="L170">          pstorCMD = getExecuteCmd(store);</span>
-<span class="fc" id="L171">          pstorType = tEXECUTE;</span>
+<span class="fc" id="L171">          pstorType = T_EXECUTE;</span>
 <span class="nc bnc" id="L172" title="All 2 branches missed.">        } else if (isR66PrepareTransfer(store)) {</span>
 <span class="nc" id="L173">          pstorCMD = getR66PrepareTransferCmd(store);</span>
-<span class="nc" id="L174">          pstorType = tR66PREPARETRANSFER;</span>
+<span class="nc" id="L174">          pstorType = T_R_66_PREPARETRANSFER;</span>
 <span class="nc" id="L175">          useDatabase = true;</span>
 <span class="nc bnc" id="L176" title="All 2 branches missed.">        } else if (isJavaExecute(store)) {</span>
 <span class="nc" id="L177">          pstorCMD = getJavaExecuteCmd(store);</span>
-<span class="nc" id="L178">          pstorType = tJAVAEXECUTE;</span>
+<span class="nc" id="L178">          pstorType = T_JAVAEXECUTE;</span>
         } else {
           // Default NONE
 <span class="nc" id="L181">          pstorCMD = getNone(store);</span>
-<span class="nc" id="L182">          pstorType = tNONE;</span>
+<span class="nc" id="L182">          pstorType = T_NONE;</span>
         }
       }
 <span class="fc" id="L185">      setPstorDelay(storDelay);</span>
 <span class="fc" id="L186">    }</span>
 
-    private static String getNone(String cmd) {
+    private static String getNone(final String cmd) {
 <span class="nc" id="L189">      return cmd.substring(NONE.length()).trim();</span>
     }
 
-    private static String getExecuteCmd(String cmd) {
+    private static String getExecuteCmd(final String cmd) {
 <span class="fc" id="L193">      return cmd.substring(EXECUTE.length()).trim();</span>
     }
 
-    private static String getJavaExecuteCmd(String cmd) {
+    private static String getJavaExecuteCmd(final String cmd) {
 <span class="nc" id="L197">      return cmd.substring(JAVAEXECUTE.length()).trim();</span>
     }
 
-    private static String getR66PrepareTransferCmd(String cmd) {
+    private static String getR66PrepareTransferCmd(final String cmd) {
 <span class="nc" id="L201">      return cmd.substring(R66PREPARETRANSFER.length()).trim();</span>
     }
 
-    private static boolean isRefused(String cmd) {
+    private static boolean isRefused(final String cmd) {
 <span class="fc" id="L205">      return cmd.startsWith(REFUSED);</span>
     }
 
-    private static boolean isExecute(String cmd) {
+    private static boolean isExecute(final String cmd) {
 <span class="fc" id="L209">      return cmd.startsWith(EXECUTE);</span>
     }
 
-    private static boolean isJavaExecute(String cmd) {
+    private static boolean isJavaExecute(final String cmd) {
 <span class="nc" id="L213">      return cmd.startsWith(JAVAEXECUTE);</span>
     }
 
-    private static boolean isR66PrepareTransfer(String cmd) {
+    private static boolean isR66PrepareTransfer(final String cmd) {
 <span class="nc" id="L217">      return cmd.startsWith(R66PREPARETRANSFER);</span>
     }
 
     @Override
-    public boolean isValidOperation(boolean isStore) {
+    public boolean isValidOperation(final boolean isStore) {
 <span class="pc bpc" id="L222" title="1 of 4 branches missed.">      if (isStore &amp;&amp; isPstorRefused()) {</span>
 <span class="nc" id="L223">        logger.info(&quot;STORe like operations REFUSED&quot;);</span>
 <span class="nc" id="L224">        return false;</span>
@@ -232,13 +232,13 @@ import java.util.regex.Pattern;
     @Override
     public String getRetrType() {
 <span class="pc bpc" id="L234" title="4 of 5 branches missed.">      switch (pretrType) {</span>
-        case tREFUSED:
+        case T_REFUSED:
 <span class="nc" id="L236">          return REFUSED;</span>
-        case tEXECUTE:
+        case T_EXECUTE:
 <span class="fc" id="L238">          return EXECUTE;</span>
-        case tR66PREPARETRANSFER:
+        case T_R_66_PREPARETRANSFER:
 <span class="nc" id="L240">          return R66PREPARETRANSFER;</span>
-        case tJAVAEXECUTE:
+        case T_JAVAEXECUTE:
 <span class="nc" id="L242">          return JAVAEXECUTE;</span>
         default:
 <span class="nc" id="L244">          return NONE;</span>
@@ -248,13 +248,13 @@ import java.util.regex.Pattern;
     @Override
     public String getStorType() {
 <span class="pc bpc" id="L250" title="4 of 5 branches missed.">      switch (pstorType) {</span>
-        case tREFUSED:
+        case T_REFUSED:
 <span class="nc" id="L252">          return REFUSED;</span>
-        case tEXECUTE:
+        case T_EXECUTE:
 <span class="fc" id="L254">          return EXECUTE;</span>
-        case tR66PREPARETRANSFER:
+        case T_R_66_PREPARETRANSFER:
 <span class="nc" id="L256">          return R66PREPARETRANSFER;</span>
-        case tJAVAEXECUTE:
+        case T_JAVAEXECUTE:
 <span class="nc" id="L258">          return JAVAEXECUTE;</span>
         default:
 <span class="nc" id="L260">          return NONE;</span>
@@ -271,7 +271,7 @@ import java.util.regex.Pattern;
     /**
      * @param pretrRefused the pretrRefused to set
      */
-    public void setPretrRefused(boolean pretrRefused) {
+    public void setPretrRefused(final boolean pretrRefused) {
 <span class="fc" id="L275">      this.pretrRefused = pretrRefused;</span>
 <span class="fc" id="L276">    }</span>
 
@@ -285,7 +285,7 @@ import java.util.regex.Pattern;
     /**
      * @param pretrDelay the pretrDelay to set
      */
-    public void setPretrDelay(long pretrDelay) {
+    public void setPretrDelay(final long pretrDelay) {
 <span class="fc" id="L289">      this.pretrDelay = pretrDelay;</span>
 <span class="fc" id="L290">    }</span>
 
@@ -299,7 +299,7 @@ import java.util.regex.Pattern;
     /**
      * @param pstorRefused the pstorRefused to set
      */
-    public void setPstorRefused(boolean pstorRefused) {
+    public void setPstorRefused(final boolean pstorRefused) {
 <span class="fc" id="L303">      this.pstorRefused = pstorRefused;</span>
 <span class="fc" id="L304">    }</span>
 
@@ -313,7 +313,7 @@ import java.util.regex.Pattern;
     /**
      * @param pstorDelay the pstorDelay to set
      */
-    public void setPstorDelay(long pstorDelay) {
+    public void setPstorDelay(final long pstorDelay) {
 <span class="fc" id="L317">      this.pstorDelay = pstorDelay;</span>
 <span class="fc" id="L318">    }</span>
   }
@@ -326,18 +326,20 @@ import java.util.regex.Pattern;
    * @param store
    * @param storDelay
    */
-  public static void initializeExecutor(String retrieve, long retrDelay,
-                                        String store, long storDelay) {
-<span class="fc" id="L331">    commandExecutor =</span>
+  public static void initializeExecutor(final String retrieve,
+                                        final long retrDelay,
+                                        final String store,
+                                        final long storDelay) {
+<span class="fc" id="L333">    commandExecutor =</span>
         new CommandExecutor(retrieve, retrDelay, store, storDelay);
-<span class="fc" id="L333">    logger.info(</span>
-<span class="fc" id="L334">        &quot;Executor configured as [RETR: &quot; + commandExecutor.getRetrType() + ':' +</span>
-<span class="fc" id="L335">        commandExecutor.pretrCMD + ':' + commandExecutor.getPretrDelay() + ':' +</span>
-<span class="fc" id="L336">        commandExecutor.isPretrRefused() + &quot;] [STOR: &quot; +</span>
-<span class="fc" id="L337">        commandExecutor.getStorType() + ':' + commandExecutor.pstorCMD + ':' +</span>
-<span class="fc" id="L338">        commandExecutor.getPstorDelay() + ':' +</span>
-<span class="fc" id="L339">        commandExecutor.isPstorRefused() + ']');</span>
-<span class="fc" id="L340">  }</span>
+<span class="fc" id="L335">    logger.info(</span>
+<span class="fc" id="L336">        &quot;Executor configured as [RETR: &quot; + commandExecutor.getRetrType() + ':' +</span>
+<span class="fc" id="L337">        commandExecutor.pretrCMD + ':' + commandExecutor.getPretrDelay() + ':' +</span>
+<span class="fc" id="L338">        commandExecutor.isPretrRefused() + &quot;] [STOR: &quot; +</span>
+<span class="fc" id="L339">        commandExecutor.getStorType() + ':' + commandExecutor.pstorCMD + ':' +</span>
+<span class="fc" id="L340">        commandExecutor.getPstorDelay() + ':' +</span>
+<span class="fc" id="L341">        commandExecutor.isPstorRefused() + ']');</span>
+<span class="fc" id="L342">  }</span>
 
   /**
    * Check if the given operation is allowed Globally
@@ -346,8 +348,8 @@ import java.util.regex.Pattern;
    *
    * @return True if allowed, else False
    */
-  public static boolean isValidOperation(boolean isStore) {
-<span class="nc" id="L350">    return commandExecutor.isValidOperation(isStore);</span>
+  public static boolean isValidOperation(final boolean isStore) {
+<span class="nc" id="L352">    return commandExecutor.isValidOperation(isStore);</span>
   }
 
   /**
@@ -358,76 +360,75 @@ import java.util.regex.Pattern;
    * @param isStore True for a STORE like operation, else False
    * @param futureCompletion
    */
-  public static AbstractExecutor createAbstractExecutor(HttpAuthInterface auth,
-                                                        String[] args,
-                                                        boolean isStore,
-                                                        WaarpFuture futureCompletion) {
-<span class="fc bfc" id="L365" title="All 2 branches covered.">    if (isStore) {</span>
-<span class="fc" id="L366">      CommandExecutor executor = (CommandExecutor) auth.getCommandExecutor();</span>
-<span class="pc bpc" id="L367" title="1 of 2 branches missed.">      if (executor == null) {</span>
-<span class="nc" id="L368">        executor = commandExecutor;</span>
-<span class="pc bpc" id="L369" title="1 of 2 branches missed.">      } else if (executor.pstorType == tNONE) {</span>
-<span class="nc" id="L370">        final String replaced = getPreparedCommand(executor.pstorCMD, args);</span>
-<span class="nc" id="L371">        return new NoTaskExecutor(replaced, executor.getPstorDelay(),</span>
+  public static AbstractExecutor createAbstractExecutor(
+      final HttpAuthInterface auth, final String[] args, final boolean isStore,
+      final WaarpFuture futureCompletion) {
+<span class="fc bfc" id="L366" title="All 2 branches covered.">    if (isStore) {</span>
+<span class="fc" id="L367">      CommandExecutor executor = (CommandExecutor) auth.getCommandExecutor();</span>
+<span class="pc bpc" id="L368" title="1 of 2 branches missed.">      if (executor == null) {</span>
+<span class="nc" id="L369">        executor = commandExecutor;</span>
+<span class="pc bpc" id="L370" title="1 of 2 branches missed.">      } else if (executor.pstorType == T_NONE) {</span>
+<span class="nc" id="L371">        final String replaced = getPreparedCommand(executor.pstorCMD, args);</span>
+<span class="nc" id="L372">        return new NoTaskExecutor(replaced, executor.getPstorDelay(),</span>
                                   futureCompletion);
       }
-<span class="pc bpc" id="L374" title="1 of 2 branches missed.">      if (executor.isPstorRefused()) {</span>
-<span class="nc" id="L375">        logger.error(&quot;STORe like operation REFUSED&quot;);</span>
-<span class="nc" id="L376">        futureCompletion.cancel();</span>
-<span class="nc" id="L377">        return null;</span>
+<span class="pc bpc" id="L375" title="1 of 2 branches missed.">      if (executor.isPstorRefused()) {</span>
+<span class="nc" id="L376">        logger.error(&quot;STORe like operation REFUSED&quot;);</span>
+<span class="nc" id="L377">        futureCompletion.cancel();</span>
+<span class="nc" id="L378">        return null;</span>
       }
-<span class="fc" id="L379">      final String replaced = getPreparedCommand(executor.pstorCMD, args);</span>
-<span class="pc bpc" id="L380" title="4 of 5 branches missed.">      switch (executor.pstorType) {</span>
-        case tREFUSED:
-<span class="nc" id="L382">          logger.error(&quot;STORe like operation REFUSED&quot;);</span>
-<span class="nc" id="L383">          futureCompletion.cancel();</span>
-<span class="nc" id="L384">          return null;</span>
-        case tEXECUTE:
-<span class="fc" id="L386">          return new ExecuteExecutor(replaced, executor.getPstorDelay(),</span>
+<span class="fc" id="L380">      final String replaced = getPreparedCommand(executor.pstorCMD, args);</span>
+<span class="pc bpc" id="L381" title="4 of 5 branches missed.">      switch (executor.pstorType) {</span>
+        case T_REFUSED:
+<span class="nc" id="L383">          logger.error(&quot;STORe like operation REFUSED&quot;);</span>
+<span class="nc" id="L384">          futureCompletion.cancel();</span>
+<span class="nc" id="L385">          return null;</span>
+        case T_EXECUTE:
+<span class="fc" id="L387">          return new ExecuteExecutor(replaced, executor.getPstorDelay(),</span>
                                      futureCompletion);
-        case tJAVAEXECUTE:
-<span class="nc" id="L389">          return new JavaExecutor(replaced, executor.getPstorDelay(),</span>
+        case T_JAVAEXECUTE:
+<span class="nc" id="L390">          return new JavaExecutor(replaced, executor.getPstorDelay(),</span>
                                   futureCompletion);
-        case tR66PREPARETRANSFER:
-<span class="nc" id="L392">          return new R66PreparedTransferExecutor(replaced,</span>
-<span class="nc" id="L393">                                                 executor.getPstorDelay(),</span>
+        case T_R_66_PREPARETRANSFER:
+<span class="nc" id="L393">          return new R66PreparedTransferExecutor(replaced,</span>
+<span class="nc" id="L394">                                                 executor.getPstorDelay(),</span>
                                                  futureCompletion);
         default:
-<span class="nc" id="L396">          return new NoTaskExecutor(replaced, executor.getPstorDelay(),</span>
+<span class="nc" id="L397">          return new NoTaskExecutor(replaced, executor.getPstorDelay(),</span>
                                     futureCompletion);
       }
     } else {
-<span class="fc" id="L400">      CommandExecutor executor = (CommandExecutor) auth.getCommandExecutor();</span>
-<span class="pc bpc" id="L401" title="1 of 2 branches missed.">      if (executor == null) {</span>
-<span class="nc" id="L402">        executor = commandExecutor;</span>
-<span class="pc bpc" id="L403" title="1 of 2 branches missed.">      } else if (executor.pretrType == tNONE) {</span>
-<span class="nc" id="L404">        final String replaced = getPreparedCommand(executor.pretrCMD, args);</span>
-<span class="nc" id="L405">        return new NoTaskExecutor(replaced, executor.getPretrDelay(),</span>
+<span class="fc" id="L401">      CommandExecutor executor = (CommandExecutor) auth.getCommandExecutor();</span>
+<span class="pc bpc" id="L402" title="1 of 2 branches missed.">      if (executor == null) {</span>
+<span class="nc" id="L403">        executor = commandExecutor;</span>
+<span class="pc bpc" id="L404" title="1 of 2 branches missed.">      } else if (executor.pretrType == T_NONE) {</span>
+<span class="nc" id="L405">        final String replaced = getPreparedCommand(executor.pretrCMD, args);</span>
+<span class="nc" id="L406">        return new NoTaskExecutor(replaced, executor.getPretrDelay(),</span>
                                   futureCompletion);
       }
-<span class="pc bpc" id="L408" title="1 of 2 branches missed.">      if (executor.isPretrRefused()) {</span>
-<span class="nc" id="L409">        logger.error(&quot;RETRieve operation REFUSED&quot;);</span>
-<span class="nc" id="L410">        futureCompletion.cancel();</span>
-<span class="nc" id="L411">        return null;</span>
+<span class="pc bpc" id="L409" title="1 of 2 branches missed.">      if (executor.isPretrRefused()) {</span>
+<span class="nc" id="L410">        logger.error(&quot;RETRieve operation REFUSED&quot;);</span>
+<span class="nc" id="L411">        futureCompletion.cancel();</span>
+<span class="nc" id="L412">        return null;</span>
       }
-<span class="fc" id="L413">      final String replaced = getPreparedCommand(executor.pretrCMD, args);</span>
-<span class="pc bpc" id="L414" title="4 of 5 branches missed.">      switch (executor.pretrType) {</span>
-        case tREFUSED:
-<span class="nc" id="L416">          logger.error(&quot;RETRieve operation REFUSED&quot;);</span>
-<span class="nc" id="L417">          futureCompletion.cancel();</span>
-<span class="nc" id="L418">          return null;</span>
-        case tEXECUTE:
-<span class="fc" id="L420">          return new ExecuteExecutor(replaced, executor.getPretrDelay(),</span>
+<span class="fc" id="L414">      final String replaced = getPreparedCommand(executor.pretrCMD, args);</span>
+<span class="pc bpc" id="L415" title="4 of 5 branches missed.">      switch (executor.pretrType) {</span>
+        case T_REFUSED:
+<span class="nc" id="L417">          logger.error(&quot;RETRieve operation REFUSED&quot;);</span>
+<span class="nc" id="L418">          futureCompletion.cancel();</span>
+<span class="nc" id="L419">          return null;</span>
+        case T_EXECUTE:
+<span class="fc" id="L421">          return new ExecuteExecutor(replaced, executor.getPretrDelay(),</span>
                                      futureCompletion);
-        case tJAVAEXECUTE:
-<span class="nc" id="L423">          return new JavaExecutor(replaced, executor.getPretrDelay(),</span>
+        case T_JAVAEXECUTE:
+<span class="nc" id="L424">          return new JavaExecutor(replaced, executor.getPretrDelay(),</span>
                                   futureCompletion);
-        case tR66PREPARETRANSFER:
-<span class="nc" id="L426">          return new R66PreparedTransferExecutor(replaced,</span>
-<span class="nc" id="L427">                                                 executor.getPretrDelay(),</span>
+        case T_R_66_PREPARETRANSFER:
+<span class="nc" id="L427">          return new R66PreparedTransferExecutor(replaced,</span>
+<span class="nc" id="L428">                                                 executor.getPretrDelay(),</span>
                                                  futureCompletion);
         default:
-<span class="nc" id="L430">          return new NoTaskExecutor(replaced, executor.getPretrDelay(),</span>
+<span class="nc" id="L431">          return new NoTaskExecutor(replaced, executor.getPretrDelay(),</span>
                                     futureCompletion);
       }
     }
@@ -441,22 +442,23 @@ import java.util.regex.Pattern;
    *
    * @return the prepared command
    */
-  public static String getPreparedCommand(String command, String[] args) {
-<span class="fc" id="L445">    final StringBuilder builder = new StringBuilder(command);</span>
-<span class="fc" id="L446">    logger.debug(&quot;Will replace value in &quot; + command + &quot; with User=&quot; + args[0] +</span>
+  public static String getPreparedCommand(final String command,
+                                          final String[] args) {
+<span class="fc" id="L447">    final StringBuilder builder = new StringBuilder(command);</span>
+<span class="fc" id="L448">    logger.debug(&quot;Will replace value in &quot; + command + &quot; with User=&quot; + args[0] +</span>
                  &quot;:Acct=&quot; + args[1] + &quot;:Base=&quot; + args[2] + &quot;:File=&quot; + args[3] +
                  &quot;:Cmd=&quot; + args[4]);
-<span class="fc" id="L449">    replaceAll(builder, USER, args[0]);</span>
-<span class="fc" id="L450">    replaceAll(builder, ACCOUNT, args[1]);</span>
-<span class="fc" id="L451">    replaceAll(builder, BASEPATH, args[2]);</span>
-<span class="fc" id="L452">    replaceAll(builder, FILE, args[3]);</span>
-<span class="fc" id="L453">    replaceAll(builder, COMMAND, args[4]);</span>
-<span class="fc" id="L454">    replaceAll(builder, SPECIALID, args[5]);</span>
-<span class="pc bpc" id="L455" title="1 of 2 branches missed.">    if (builder.indexOf(sUUID) &gt; 0) {</span>
-<span class="nc" id="L456">      replaceAll(builder, sUUID, new GUID().toString());</span>
+<span class="fc" id="L451">    replaceAll(builder, USER, args[0]);</span>
+<span class="fc" id="L452">    replaceAll(builder, ACCOUNT, args[1]);</span>
+<span class="fc" id="L453">    replaceAll(builder, BASEPATH, args[2]);</span>
+<span class="fc" id="L454">    replaceAll(builder, FILE, args[3]);</span>
+<span class="fc" id="L455">    replaceAll(builder, COMMAND, args[4]);</span>
+<span class="fc" id="L456">    replaceAll(builder, SPECIALID, args[5]);</span>
+<span class="pc bpc" id="L457" title="1 of 2 branches missed.">    if (builder.indexOf(S_UUID) &gt; 0) {</span>
+<span class="nc" id="L458">      replaceAll(builder, S_UUID, new GUID().toString());</span>
     }
-<span class="fc" id="L458">    logger.debug(&quot;Result: {}&quot;, builder);</span>
-<span class="fc" id="L459">    return builder.toString();</span>
+<span class="fc" id="L460">    logger.debug(&quot;Result: {}&quot;, builder);</span>
+<span class="fc" id="L461">    return builder.toString();</span>
   }
 
   /**
@@ -467,15 +469,15 @@ import java.util.regex.Pattern;
    * @param find
    * @param replace
    */
-  public static boolean replace(StringBuilder builder, String find,
-                                String replace) {
-<span class="fc" id="L472">    final int start = builder.indexOf(find);</span>
-<span class="pc bpc" id="L473" title="1 of 2 branches missed.">    if (start == -1) {</span>
-<span class="fc" id="L474">      return false;</span>
+  public static boolean replace(final StringBuilder builder, final String find,
+                                final String replace) {
+<span class="fc" id="L474">    final int start = builder.indexOf(find);</span>
+<span class="pc bpc" id="L475" title="1 of 2 branches missed.">    if (start == -1) {</span>
+<span class="fc" id="L476">      return false;</span>
     }
-<span class="nc" id="L476">    final int end = start + find.length();</span>
-<span class="nc" id="L477">    builder.replace(start, end, replace);</span>
-<span class="nc" id="L478">    return true;</span>
+<span class="nc" id="L478">    final int end = start + find.length();</span>
+<span class="nc" id="L479">    builder.replace(start, end, replace);</span>
+<span class="nc" id="L480">    return true;</span>
   }
 
   /**
@@ -486,15 +488,15 @@ import java.util.regex.Pattern;
    * @param find
    * @param replace
    */
-  public static void replaceAll(StringBuilder builder, String find,
-                                String replace) {
-<span class="pc bpc" id="L491" title="1 of 2 branches missed.">    while (replace(builder, find, replace)) {</span>
+  public static void replaceAll(final StringBuilder builder, final String find,
+                                final String replace) {
+<span class="pc bpc" id="L493" title="1 of 2 branches missed.">    while (replace(builder, find, replace)) {</span>
       // nothing
     }
-<span class="fc" id="L494">  }</span>
+<span class="fc" id="L496">  }</span>
 
   public static CommandExecutor getCommandExecutor() {
-<span class="fc" id="L497">    return commandExecutor;</span>
+<span class="fc" id="L499">    return commandExecutor;</span>
   }
 
   public abstract void run() throws CommandAbstractException;

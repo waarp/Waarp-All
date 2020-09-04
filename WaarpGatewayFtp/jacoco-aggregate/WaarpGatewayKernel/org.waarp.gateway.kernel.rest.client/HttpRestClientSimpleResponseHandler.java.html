@@ -77,7 +77,7 @@ import java.nio.channels.ClosedChannelException;
   private ByteBuf cumulativeBody;
   protected JsonNode jsonObject;
 
-  protected void actionFromResponse(Channel channel) {
+  protected void actionFromResponse(final Channel channel) {
 <span class="nc" id="L81">    final RestArgument ra = new RestArgument((ObjectNode) jsonObject);</span>
 <span class="nc bnc" id="L82" title="All 2 branches missed.">    if (jsonObject == null) {</span>
 <span class="nc" id="L83">      logger.warn(&quot;Recv: EMPTY&quot;);</span>
@@ -98,8 +98,8 @@ import java.nio.channels.ClosedChannelException;
 <span class="nc" id="L98">  }</span>
 
   @Override
-  protected void channelRead0(ChannelHandlerContext ctx, HttpObject msg)
-      throws Exception {
+  protected void channelRead0(final ChannelHandlerContext ctx,
+                              final HttpObject msg) throws Exception {
 <span class="fc bfc" id="L103" title="All 2 branches covered.">    if (msg instanceof HttpResponse) {</span>
 <span class="fc" id="L104">      final HttpResponse response = (HttpResponse) msg;</span>
 <span class="fc" id="L105">      final HttpResponseStatus status = response.status();</span>
@@ -146,8 +146,8 @@ import java.nio.channels.ClosedChannelException;
 <span class="fc" id="L146">  }</span>
 
   @Override
-  public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
-      throws Exception {
+  public void exceptionCaught(final ChannelHandlerContext ctx,
+                              final Throwable cause) throws Exception {
 <span class="nc" id="L151">    final RestFuture restFuture = ctx.channel().attr(RESTARGUMENT).get();</span>
 <span class="nc bnc" id="L152" title="All 2 branches missed.">    if (cause instanceof ClosedChannelException) {</span>
 <span class="nc" id="L153">      restFuture.setFailure(cause);</span>

@@ -85,8 +85,8 @@
 <a class="jxr_linenumber" name="L77" href="#L77">77</a>                                 <strong class="jxr_keyword">new</strong> RejectedExecutionHandler() {
 <a class="jxr_linenumber" name="L78" href="#L78">78</a>                                   @Override
 <a class="jxr_linenumber" name="L79" href="#L79">79</a>                                   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> rejectedExecution(
-<a class="jxr_linenumber" name="L80" href="#L80">80</a>                                       Runnable runnable,
-<a class="jxr_linenumber" name="L81" href="#L81">81</a>                                       ThreadPoolExecutor threadPoolExecutor) {
+<a class="jxr_linenumber" name="L80" href="#L80">80</a>                                       <strong class="jxr_keyword">final</strong> Runnable runnable,
+<a class="jxr_linenumber" name="L81" href="#L81">81</a>                                       <strong class="jxr_keyword">final</strong> ThreadPoolExecutor threadPoolExecutor) {
 <a class="jxr_linenumber" name="L82" href="#L82">82</a>                                     logger.debug(<span class="jxr_string">"Task rescheduled"</span>);
 <a class="jxr_linenumber" name="L83" href="#L83">83</a>                                   }
 <a class="jxr_linenumber" name="L84" href="#L84">84</a>                                 });
@@ -104,7 +104,7 @@
 <a class="jxr_linenumber" name="L96" href="#L96">96</a>    }
 <a class="jxr_linenumber" name="L97" href="#L97">97</a>  
 <a class="jxr_linenumber" name="L98" href="#L98">98</a>    <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">int</strong> allowedToSubmit() {
-<a class="jxr_linenumber" name="L99" href="#L99">99</a>      <strong class="jxr_keyword">int</strong> active = threadPoolExecutor.getActiveCount();
+<a class="jxr_linenumber" name="L99" href="#L99">99</a>      <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong> active = threadPoolExecutor.getActiveCount();
 <a class="jxr_linenumber" name="L100" href="#L100">100</a>     <strong class="jxr_keyword">if</strong> ((isRunning || !Configuration.configuration.isShutdown()) &amp;&amp;
 <a class="jxr_linenumber" name="L101" href="#L101">101</a>         (active &lt; Configuration.configuration.getRunnerThread())) {
 <a class="jxr_linenumber" name="L102" href="#L102">102</a>       <strong class="jxr_keyword">return</strong> Configuration.configuration.getRunnerThread() - active;
@@ -117,7 +117,7 @@
 <a class="jxr_linenumber" name="L109" href="#L109">109</a> <em class="jxr_javadoccomment">   *</em>
 <a class="jxr_linenumber" name="L110" href="#L110">110</a> <em class="jxr_javadoccomment">   * @param taskRunner</em>
 <a class="jxr_linenumber" name="L111" href="#L111">111</a> <em class="jxr_javadoccomment">   */</em>
-<a class="jxr_linenumber" name="L112" href="#L112">112</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> submitTaskRunner(<a name="DbTaskRunner" href="../../../../org/waarp/openr66/database/data/DbTaskRunner.html#DbTaskRunner">DbTaskRunner</a> taskRunner) {
+<a class="jxr_linenumber" name="L112" href="#L112">112</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> submitTaskRunner(<strong class="jxr_keyword">final</strong> <a name="DbTaskRunner" href="../../../../org/waarp/openr66/database/data/DbTaskRunner.html#DbTaskRunner">DbTaskRunner</a> taskRunner) {
 <a class="jxr_linenumber" name="L113" href="#L113">113</a>     <strong class="jxr_keyword">if</strong> (isRunning || !Configuration.configuration.isShutdown()) {
 <a class="jxr_linenumber" name="L114" href="#L114">114</a>       <em class="jxr_comment">// last check: number can have raised up since Commander checks</em>
 <a class="jxr_linenumber" name="L115" href="#L115">115</a>       <strong class="jxr_keyword">if</strong> (threadPoolExecutor.getActiveCount() &lt;

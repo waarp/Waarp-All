@@ -40,18 +40,18 @@ public abstract class FileMonitorCommandRunnableFuture implements Runnable {
 <span class="fc" id="L40">  protected FileMonitorCommandRunnableFuture() {</span>
 <span class="fc" id="L41">  }</span>
 
-  public void setMonitor(FileMonitor monitor) {
+  public void setMonitor(final FileMonitor monitor) {
 <span class="fc" id="L44">    this.monitor = monitor;</span>
 <span class="fc" id="L45">  }</span>
 
   /**
    * @param fileItem
    */
-<span class="fc" id="L50">  protected FileMonitorCommandRunnableFuture(FileItem fileItem) {</span>
+<span class="fc" id="L50">  protected FileMonitorCommandRunnableFuture(final FileItem fileItem) {</span>
 <span class="fc" id="L51">    setFileItem(fileItem);</span>
 <span class="fc" id="L52">  }</span>
 
-  public void setFileItem(FileItem fileItem) {
+  public void setFileItem(final FileItem fileItem) {
 <span class="fc" id="L55">    this.fileItem = fileItem;</span>
 <span class="fc" id="L56">  }</span>
 
@@ -74,7 +74,7 @@ public abstract class FileMonitorCommandRunnableFuture implements Runnable {
    *
    * @param ignoreAlreadyUsed
    */
-  protected void checkReuse(boolean ignoreAlreadyUsed) {
+  protected void checkReuse(final boolean ignoreAlreadyUsed) {
 <span class="pc bpc" id="L78" title="2 of 8 branches missed.">    if (!ignoreAlreadyUsed &amp;&amp; fileItem.used &amp;&amp;</span>
         fileItem.specialId != ILLEGALVALUE &amp;&amp;
         fileItem.status == Status.RESTART) {
@@ -87,7 +87,7 @@ public abstract class FileMonitorCommandRunnableFuture implements Runnable {
            fileItem.specialId != ILLEGALVALUE;
   }
 
-  protected boolean isIgnored(boolean ignoreAlreadyUsed) {
+  protected boolean isIgnored(final boolean ignoreAlreadyUsed) {
 <span class="pc bpc" id="L91" title="1 of 4 branches missed.">    return !ignoreAlreadyUsed &amp;&amp; fileItem.used;</span>
   }
 
@@ -99,11 +99,11 @@ public abstract class FileMonitorCommandRunnableFuture implements Runnable {
    * @return True if the file has to be run (or re-run), False in other
    *     conditions (ignored)
    */
-  protected boolean checkFileItemBusiness(FileItem fileItem) {
+  protected boolean checkFileItemBusiness(final FileItem fileItem) {
 <span class="fc bfc" id="L103" title="All 4 branches covered.">    return fileItem.status == Status.VALID || fileItem.status == Status.RESTART;</span>
   }
 
-  protected void setValid(FileItem fileItem) {
+  protected void setValid(final FileItem fileItem) {
 <span class="fc" id="L107">    fileItem.specialId = ILLEGALVALUE;</span>
 <span class="fc" id="L108">    fileItem.used = false;</span>
 <span class="fc" id="L109">    fileItem.status = Status.VALID;</span>
@@ -116,7 +116,7 @@ public abstract class FileMonitorCommandRunnableFuture implements Runnable {
    * @param status
    * @param specialId the specialId associated with the task
    */
-  protected void finalizeValidFile(boolean status, long specialId) {
+  protected void finalizeValidFile(final boolean status, final long specialId) {
 <span class="pc bpc" id="L120" title="1 of 2 branches missed.">    if (getMonitor() != null) {</span>
 <span class="fc" id="L121">      final Date date = new Date();</span>
 <span class="pc bpc" id="L122" title="1 of 2 branches missed.">      if (date.after(getMonitor().nextDay)) {</span>

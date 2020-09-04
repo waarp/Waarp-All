@@ -59,8 +59,8 @@
 <a class="jxr_linenumber" name="L51" href="#L51">51</a>  <em class="jxr_javadoccomment">   * @param message</em>
 <a class="jxr_linenumber" name="L52" href="#L52">52</a>  <em class="jxr_javadoccomment">   * @param session</em>
 <a class="jxr_linenumber" name="L53" href="#L53">53</a>  <em class="jxr_javadoccomment">   */</em>
-<a class="jxr_linenumber" name="L54" href="#L54">54</a>    <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">void</strong> logCreate(<a name="DbSession" href="../../../../../org/waarp/common/database/DbSession.html#DbSession">DbSession</a> dbSession, String message,
-<a class="jxr_linenumber" name="L55" href="#L55">55</a>                                 <a name="HttpSession" href="../../../../../org/waarp/gateway/kernel/session/HttpSession.html#HttpSession">HttpSession</a> session) {
+<a class="jxr_linenumber" name="L54" href="#L54">54</a>    <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">void</strong> logCreate(<strong class="jxr_keyword">final</strong> <a name="DbSession" href="../../../../../org/waarp/common/database/DbSession.html#DbSession">DbSession</a> dbSession, <strong class="jxr_keyword">final</strong> String message,
+<a class="jxr_linenumber" name="L55" href="#L55">55</a>                                 <strong class="jxr_keyword">final</strong> <a name="HttpSession" href="../../../../../org/waarp/gateway/kernel/session/HttpSession.html#HttpSession">HttpSession</a> session) {
 <a class="jxr_linenumber" name="L56" href="#L56">56</a>      <strong class="jxr_keyword">final</strong> String sessionContexte = session.toString();
 <a class="jxr_linenumber" name="L57" href="#L57">57</a>      logger.info(message + ' ' + sessionContexte);
 <a class="jxr_linenumber" name="L58" href="#L58">58</a>      <strong class="jxr_keyword">if</strong> (dbSession != <strong class="jxr_keyword">null</strong>) {
@@ -112,97 +112,100 @@
 <a class="jxr_linenumber" name="L104" href="#L104">104</a> <em class="jxr_javadoccomment">   * @param rcode</em>
 <a class="jxr_linenumber" name="L105" href="#L105">105</a> <em class="jxr_javadoccomment">   * @param info</em>
 <a class="jxr_linenumber" name="L106" href="#L106">106</a> <em class="jxr_javadoccomment">   */</em>
-<a class="jxr_linenumber" name="L107" href="#L107">107</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">void</strong> logAction(<a name="DbSession" href="../../../../../org/waarp/common/database/DbSession.html#DbSession">DbSession</a> dbSession, <a name="HttpSession" href="../../../../../org/waarp/gateway/kernel/session/HttpSession.html#HttpSession">HttpSession</a> session,
-<a class="jxr_linenumber" name="L108" href="#L108">108</a>                                String message, HttpResponseStatus rcode,
-<a class="jxr_linenumber" name="L109" href="#L109">109</a>                                UpdatedInfo info) {
-<a class="jxr_linenumber" name="L110" href="#L110">110</a>     <strong class="jxr_keyword">final</strong> String sessionContexte = session.toString();
-<a class="jxr_linenumber" name="L111" href="#L111">111</a>     <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">long</strong> specialId = session.getLogid();
-<a class="jxr_linenumber" name="L112" href="#L112">112</a>     logger.info(message + ' ' + sessionContexte);
-<a class="jxr_linenumber" name="L113" href="#L113">113</a>     <strong class="jxr_keyword">if</strong> (dbSession != <strong class="jxr_keyword">null</strong> &amp;&amp; specialId != DbConstant.ILLEGALVALUE) {
-<a class="jxr_linenumber" name="L114" href="#L114">114</a>       <strong class="jxr_keyword">final</strong> PageRole code = session.getCurrentCommand();
-<a class="jxr_linenumber" name="L115" href="#L115">115</a>       <strong class="jxr_keyword">switch</strong> (code) {
-<a class="jxr_linenumber" name="L116" href="#L116">116</a>         <strong class="jxr_keyword">case</strong> DELETE:
-<a class="jxr_linenumber" name="L117" href="#L117">117</a>         <strong class="jxr_keyword">case</strong> GETDOWNLOAD:
-<a class="jxr_linenumber" name="L118" href="#L118">118</a>         <strong class="jxr_keyword">case</strong> POST:
-<a class="jxr_linenumber" name="L119" href="#L119">119</a>         <strong class="jxr_keyword">case</strong> POSTUPLOAD:
-<a class="jxr_linenumber" name="L120" href="#L120">120</a>         <strong class="jxr_keyword">case</strong> PUT:
-<a class="jxr_linenumber" name="L121" href="#L121">121</a>           <strong class="jxr_keyword">break</strong>;
-<a class="jxr_linenumber" name="L122" href="#L122">122</a>         <strong class="jxr_keyword">case</strong> ERROR:
-<a class="jxr_linenumber" name="L123" href="#L123">123</a>         <strong class="jxr_keyword">case</strong> HTML:
-<a class="jxr_linenumber" name="L124" href="#L124">124</a>         <strong class="jxr_keyword">case</strong> MENU:
-<a class="jxr_linenumber" name="L125" href="#L125">125</a>         <strong class="jxr_keyword">default</strong>:
-<a class="jxr_linenumber" name="L126" href="#L126">126</a>           <strong class="jxr_keyword">return</strong>;
-<a class="jxr_linenumber" name="L127" href="#L127">127</a>       }
-<a class="jxr_linenumber" name="L128" href="#L128">128</a>       <strong class="jxr_keyword">try</strong> {
-<a class="jxr_linenumber" name="L129" href="#L129">129</a>         <em class="jxr_comment">// Try load</em>
-<a class="jxr_linenumber" name="L130" href="#L130">130</a>         <strong class="jxr_keyword">final</strong> <a name="DbTransferLog" href="../../../../../org/waarp/gateway/kernel/database/data/DbTransferLog.html#DbTransferLog">DbTransferLog</a> log =
-<a class="jxr_linenumber" name="L131" href="#L131">131</a>             <strong class="jxr_keyword">new</strong> <a name="DbTransferLog" href="../../../../../org/waarp/gateway/kernel/database/data/DbTransferLog.html#DbTransferLog">DbTransferLog</a>(dbSession, session.getAuth().getUser(),
-<a class="jxr_linenumber" name="L132" href="#L132">132</a>                               session.getAuth().getAccount(), specialId);
-<a class="jxr_linenumber" name="L133" href="#L133">133</a>         log.changeUpdatedInfo(info);
-<a class="jxr_linenumber" name="L134" href="#L134">134</a>         log.setInfotransf(message);
-<a class="jxr_linenumber" name="L135" href="#L135">135</a>         log.setReplyCodeExecutionStatus(rcode);
-<a class="jxr_linenumber" name="L136" href="#L136">136</a>         log.update();
-<a class="jxr_linenumber" name="L137" href="#L137">137</a>         logger.debug(<span class="jxr_string">"Update FS: "</span> + log);
-<a class="jxr_linenumber" name="L138" href="#L138">138</a>         session.setLogid(log.getSpecialId());
-<a class="jxr_linenumber" name="L139" href="#L139">139</a>       } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> <a name="WaarpDatabaseException" href="../../../../../org/waarp/common/database/exception/WaarpDatabaseException.html#WaarpDatabaseException">WaarpDatabaseException</a> e) {
-<a class="jxr_linenumber" name="L140" href="#L140">140</a>         <em class="jxr_comment">// Do nothing</em>
-<a class="jxr_linenumber" name="L141" href="#L141">141</a>       }
-<a class="jxr_linenumber" name="L142" href="#L142">142</a>     }
-<a class="jxr_linenumber" name="L143" href="#L143">143</a>   }
-<a class="jxr_linenumber" name="L144" href="#L144">144</a> 
-<a class="jxr_linenumber" name="L145" href="#L145">145</a>   <em class="jxr_javadoccomment">/**</em>
-<a class="jxr_linenumber" name="L146" href="#L146">146</a> <em class="jxr_javadoccomment">   * Log the action in error</em>
-<a class="jxr_linenumber" name="L147" href="#L147">147</a> <em class="jxr_javadoccomment">   *</em>
-<a class="jxr_linenumber" name="L148" href="#L148">148</a> <em class="jxr_javadoccomment">   * @param dbSession</em>
-<a class="jxr_linenumber" name="L149" href="#L149">149</a> <em class="jxr_javadoccomment">   * @param session</em>
-<a class="jxr_linenumber" name="L150" href="#L150">150</a> <em class="jxr_javadoccomment">   * @param message</em>
-<a class="jxr_linenumber" name="L151" href="#L151">151</a> <em class="jxr_javadoccomment">   * @param rcode</em>
-<a class="jxr_linenumber" name="L152" href="#L152">152</a> <em class="jxr_javadoccomment">   */</em>
-<a class="jxr_linenumber" name="L153" href="#L153">153</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">void</strong> logErrorAction(<a name="DbSession" href="../../../../../org/waarp/common/database/DbSession.html#DbSession">DbSession</a> dbSession, <a name="HttpSession" href="../../../../../org/waarp/gateway/kernel/session/HttpSession.html#HttpSession">HttpSession</a> session,
-<a class="jxr_linenumber" name="L154" href="#L154">154</a>                                     String message, HttpResponseStatus rcode) {
-<a class="jxr_linenumber" name="L155" href="#L155">155</a>     <strong class="jxr_keyword">final</strong> String sessionContexte = session.toString();
-<a class="jxr_linenumber" name="L156" href="#L156">156</a>     <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">long</strong> specialId = session.getLogid();
-<a class="jxr_linenumber" name="L157" href="#L157">157</a>     logger.error(rcode.code() + <span class="jxr_string">":"</span> + message + ' ' + sessionContexte);
-<a class="jxr_linenumber" name="L158" href="#L158">158</a>     logger.warn(<span class="jxr_string">"To Change to debug Log"</span>, <strong class="jxr_keyword">new</strong> Exception(<span class="jxr_string">"Log"</span>));
-<a class="jxr_linenumber" name="L159" href="#L159">159</a>     <strong class="jxr_keyword">if</strong> (dbSession != <strong class="jxr_keyword">null</strong> &amp;&amp; specialId != DbConstant.ILLEGALVALUE) {
-<a class="jxr_linenumber" name="L160" href="#L160">160</a>       <strong class="jxr_keyword">final</strong> PageRole code = session.getCurrentCommand();
-<a class="jxr_linenumber" name="L161" href="#L161">161</a>       <strong class="jxr_keyword">switch</strong> (code) {
-<a class="jxr_linenumber" name="L162" href="#L162">162</a>         <strong class="jxr_keyword">case</strong> DELETE:
-<a class="jxr_linenumber" name="L163" href="#L163">163</a>         <strong class="jxr_keyword">case</strong> GETDOWNLOAD:
-<a class="jxr_linenumber" name="L164" href="#L164">164</a>         <strong class="jxr_keyword">case</strong> POST:
-<a class="jxr_linenumber" name="L165" href="#L165">165</a>         <strong class="jxr_keyword">case</strong> POSTUPLOAD:
-<a class="jxr_linenumber" name="L166" href="#L166">166</a>         <strong class="jxr_keyword">case</strong> PUT:
-<a class="jxr_linenumber" name="L167" href="#L167">167</a>           <strong class="jxr_keyword">break</strong>;
-<a class="jxr_linenumber" name="L168" href="#L168">168</a>         <strong class="jxr_keyword">case</strong> ERROR:
-<a class="jxr_linenumber" name="L169" href="#L169">169</a>         <strong class="jxr_keyword">case</strong> HTML:
-<a class="jxr_linenumber" name="L170" href="#L170">170</a>         <strong class="jxr_keyword">case</strong> MENU:
-<a class="jxr_linenumber" name="L171" href="#L171">171</a>         <strong class="jxr_keyword">default</strong>:
-<a class="jxr_linenumber" name="L172" href="#L172">172</a>           <strong class="jxr_keyword">return</strong>;
-<a class="jxr_linenumber" name="L173" href="#L173">173</a>       }
-<a class="jxr_linenumber" name="L174" href="#L174">174</a>       <strong class="jxr_keyword">final</strong> UpdatedInfo info = UpdatedInfo.INERROR;
-<a class="jxr_linenumber" name="L175" href="#L175">175</a>       <strong class="jxr_keyword">try</strong> {
-<a class="jxr_linenumber" name="L176" href="#L176">176</a>         <em class="jxr_comment">// Try load</em>
-<a class="jxr_linenumber" name="L177" href="#L177">177</a>         <strong class="jxr_keyword">final</strong> <a name="DbTransferLog" href="../../../../../org/waarp/gateway/kernel/database/data/DbTransferLog.html#DbTransferLog">DbTransferLog</a> log =
-<a class="jxr_linenumber" name="L178" href="#L178">178</a>             <strong class="jxr_keyword">new</strong> <a name="DbTransferLog" href="../../../../../org/waarp/gateway/kernel/database/data/DbTransferLog.html#DbTransferLog">DbTransferLog</a>(dbSession, session.getAuth().getUser(),
-<a class="jxr_linenumber" name="L179" href="#L179">179</a>                               session.getAuth().getAccount(), specialId);
-<a class="jxr_linenumber" name="L180" href="#L180">180</a>         log.changeUpdatedInfo(info);
-<a class="jxr_linenumber" name="L181" href="#L181">181</a>         log.setInfotransf(message);
-<a class="jxr_linenumber" name="L182" href="#L182">182</a>         <strong class="jxr_keyword">if</strong> (rcode.code() &lt; 400) {
-<a class="jxr_linenumber" name="L183" href="#L183">183</a>           log.setReplyCodeExecutionStatus(HttpResponseStatus.BAD_REQUEST);
-<a class="jxr_linenumber" name="L184" href="#L184">184</a>         } <strong class="jxr_keyword">else</strong> {
-<a class="jxr_linenumber" name="L185" href="#L185">185</a>           log.setReplyCodeExecutionStatus(rcode);
-<a class="jxr_linenumber" name="L186" href="#L186">186</a>         }
-<a class="jxr_linenumber" name="L187" href="#L187">187</a>         <strong class="jxr_keyword">if</strong> (session.getFilename() != <strong class="jxr_keyword">null</strong>) {
-<a class="jxr_linenumber" name="L188" href="#L188">188</a>           log.setFilename(session.getFilename());
+<a class="jxr_linenumber" name="L107" href="#L107">107</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">void</strong> logAction(<strong class="jxr_keyword">final</strong> <a name="DbSession" href="../../../../../org/waarp/common/database/DbSession.html#DbSession">DbSession</a> dbSession,
+<a class="jxr_linenumber" name="L108" href="#L108">108</a>                                <strong class="jxr_keyword">final</strong> <a name="HttpSession" href="../../../../../org/waarp/gateway/kernel/session/HttpSession.html#HttpSession">HttpSession</a> session, <strong class="jxr_keyword">final</strong> String message,
+<a class="jxr_linenumber" name="L109" href="#L109">109</a>                                <strong class="jxr_keyword">final</strong> HttpResponseStatus rcode,
+<a class="jxr_linenumber" name="L110" href="#L110">110</a>                                <strong class="jxr_keyword">final</strong> UpdatedInfo info) {
+<a class="jxr_linenumber" name="L111" href="#L111">111</a>     <strong class="jxr_keyword">final</strong> String sessionContexte = session.toString();
+<a class="jxr_linenumber" name="L112" href="#L112">112</a>     <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">long</strong> specialId = session.getLogid();
+<a class="jxr_linenumber" name="L113" href="#L113">113</a>     logger.info(message + ' ' + sessionContexte);
+<a class="jxr_linenumber" name="L114" href="#L114">114</a>     <strong class="jxr_keyword">if</strong> (dbSession != <strong class="jxr_keyword">null</strong> &amp;&amp; specialId != DbConstant.ILLEGALVALUE) {
+<a class="jxr_linenumber" name="L115" href="#L115">115</a>       <strong class="jxr_keyword">final</strong> PageRole code = session.getCurrentCommand();
+<a class="jxr_linenumber" name="L116" href="#L116">116</a>       <strong class="jxr_keyword">switch</strong> (code) {
+<a class="jxr_linenumber" name="L117" href="#L117">117</a>         <strong class="jxr_keyword">case</strong> DELETE:
+<a class="jxr_linenumber" name="L118" href="#L118">118</a>         <strong class="jxr_keyword">case</strong> GETDOWNLOAD:
+<a class="jxr_linenumber" name="L119" href="#L119">119</a>         <strong class="jxr_keyword">case</strong> POST:
+<a class="jxr_linenumber" name="L120" href="#L120">120</a>         <strong class="jxr_keyword">case</strong> POSTUPLOAD:
+<a class="jxr_linenumber" name="L121" href="#L121">121</a>         <strong class="jxr_keyword">case</strong> PUT:
+<a class="jxr_linenumber" name="L122" href="#L122">122</a>           <strong class="jxr_keyword">break</strong>;
+<a class="jxr_linenumber" name="L123" href="#L123">123</a>         <strong class="jxr_keyword">case</strong> ERROR:
+<a class="jxr_linenumber" name="L124" href="#L124">124</a>         <strong class="jxr_keyword">case</strong> HTML:
+<a class="jxr_linenumber" name="L125" href="#L125">125</a>         <strong class="jxr_keyword">case</strong> MENU:
+<a class="jxr_linenumber" name="L126" href="#L126">126</a>         <strong class="jxr_keyword">default</strong>:
+<a class="jxr_linenumber" name="L127" href="#L127">127</a>           <strong class="jxr_keyword">return</strong>;
+<a class="jxr_linenumber" name="L128" href="#L128">128</a>       }
+<a class="jxr_linenumber" name="L129" href="#L129">129</a>       <strong class="jxr_keyword">try</strong> {
+<a class="jxr_linenumber" name="L130" href="#L130">130</a>         <em class="jxr_comment">// Try load</em>
+<a class="jxr_linenumber" name="L131" href="#L131">131</a>         <strong class="jxr_keyword">final</strong> <a name="DbTransferLog" href="../../../../../org/waarp/gateway/kernel/database/data/DbTransferLog.html#DbTransferLog">DbTransferLog</a> log =
+<a class="jxr_linenumber" name="L132" href="#L132">132</a>             <strong class="jxr_keyword">new</strong> <a name="DbTransferLog" href="../../../../../org/waarp/gateway/kernel/database/data/DbTransferLog.html#DbTransferLog">DbTransferLog</a>(dbSession, session.getAuth().getUser(),
+<a class="jxr_linenumber" name="L133" href="#L133">133</a>                               session.getAuth().getAccount(), specialId);
+<a class="jxr_linenumber" name="L134" href="#L134">134</a>         log.changeUpdatedInfo(info);
+<a class="jxr_linenumber" name="L135" href="#L135">135</a>         log.setInfotransf(message);
+<a class="jxr_linenumber" name="L136" href="#L136">136</a>         log.setReplyCodeExecutionStatus(rcode);
+<a class="jxr_linenumber" name="L137" href="#L137">137</a>         log.update();
+<a class="jxr_linenumber" name="L138" href="#L138">138</a>         logger.debug(<span class="jxr_string">"Update FS: "</span> + log);
+<a class="jxr_linenumber" name="L139" href="#L139">139</a>         session.setLogid(log.getSpecialId());
+<a class="jxr_linenumber" name="L140" href="#L140">140</a>       } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> <a name="WaarpDatabaseException" href="../../../../../org/waarp/common/database/exception/WaarpDatabaseException.html#WaarpDatabaseException">WaarpDatabaseException</a> e) {
+<a class="jxr_linenumber" name="L141" href="#L141">141</a>         <em class="jxr_comment">// Do nothing</em>
+<a class="jxr_linenumber" name="L142" href="#L142">142</a>       }
+<a class="jxr_linenumber" name="L143" href="#L143">143</a>     }
+<a class="jxr_linenumber" name="L144" href="#L144">144</a>   }
+<a class="jxr_linenumber" name="L145" href="#L145">145</a> 
+<a class="jxr_linenumber" name="L146" href="#L146">146</a>   <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L147" href="#L147">147</a> <em class="jxr_javadoccomment">   * Log the action in error</em>
+<a class="jxr_linenumber" name="L148" href="#L148">148</a> <em class="jxr_javadoccomment">   *</em>
+<a class="jxr_linenumber" name="L149" href="#L149">149</a> <em class="jxr_javadoccomment">   * @param dbSession</em>
+<a class="jxr_linenumber" name="L150" href="#L150">150</a> <em class="jxr_javadoccomment">   * @param session</em>
+<a class="jxr_linenumber" name="L151" href="#L151">151</a> <em class="jxr_javadoccomment">   * @param message</em>
+<a class="jxr_linenumber" name="L152" href="#L152">152</a> <em class="jxr_javadoccomment">   * @param rcode</em>
+<a class="jxr_linenumber" name="L153" href="#L153">153</a> <em class="jxr_javadoccomment">   */</em>
+<a class="jxr_linenumber" name="L154" href="#L154">154</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">void</strong> logErrorAction(<strong class="jxr_keyword">final</strong> <a name="DbSession" href="../../../../../org/waarp/common/database/DbSession.html#DbSession">DbSession</a> dbSession,
+<a class="jxr_linenumber" name="L155" href="#L155">155</a>                                     <strong class="jxr_keyword">final</strong> <a name="HttpSession" href="../../../../../org/waarp/gateway/kernel/session/HttpSession.html#HttpSession">HttpSession</a> session,
+<a class="jxr_linenumber" name="L156" href="#L156">156</a>                                     <strong class="jxr_keyword">final</strong> String message,
+<a class="jxr_linenumber" name="L157" href="#L157">157</a>                                     <strong class="jxr_keyword">final</strong> HttpResponseStatus rcode) {
+<a class="jxr_linenumber" name="L158" href="#L158">158</a>     <strong class="jxr_keyword">final</strong> String sessionContexte = session.toString();
+<a class="jxr_linenumber" name="L159" href="#L159">159</a>     <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">long</strong> specialId = session.getLogid();
+<a class="jxr_linenumber" name="L160" href="#L160">160</a>     logger.error(rcode.code() + <span class="jxr_string">":"</span> + message + ' ' + sessionContexte);
+<a class="jxr_linenumber" name="L161" href="#L161">161</a>     logger.warn(<span class="jxr_string">"To Change to debug Log"</span>, <strong class="jxr_keyword">new</strong> Exception(<span class="jxr_string">"Log"</span>));
+<a class="jxr_linenumber" name="L162" href="#L162">162</a>     <strong class="jxr_keyword">if</strong> (dbSession != <strong class="jxr_keyword">null</strong> &amp;&amp; specialId != DbConstant.ILLEGALVALUE) {
+<a class="jxr_linenumber" name="L163" href="#L163">163</a>       <strong class="jxr_keyword">final</strong> PageRole code = session.getCurrentCommand();
+<a class="jxr_linenumber" name="L164" href="#L164">164</a>       <strong class="jxr_keyword">switch</strong> (code) {
+<a class="jxr_linenumber" name="L165" href="#L165">165</a>         <strong class="jxr_keyword">case</strong> DELETE:
+<a class="jxr_linenumber" name="L166" href="#L166">166</a>         <strong class="jxr_keyword">case</strong> GETDOWNLOAD:
+<a class="jxr_linenumber" name="L167" href="#L167">167</a>         <strong class="jxr_keyword">case</strong> POST:
+<a class="jxr_linenumber" name="L168" href="#L168">168</a>         <strong class="jxr_keyword">case</strong> POSTUPLOAD:
+<a class="jxr_linenumber" name="L169" href="#L169">169</a>         <strong class="jxr_keyword">case</strong> PUT:
+<a class="jxr_linenumber" name="L170" href="#L170">170</a>           <strong class="jxr_keyword">break</strong>;
+<a class="jxr_linenumber" name="L171" href="#L171">171</a>         <strong class="jxr_keyword">case</strong> ERROR:
+<a class="jxr_linenumber" name="L172" href="#L172">172</a>         <strong class="jxr_keyword">case</strong> HTML:
+<a class="jxr_linenumber" name="L173" href="#L173">173</a>         <strong class="jxr_keyword">case</strong> MENU:
+<a class="jxr_linenumber" name="L174" href="#L174">174</a>         <strong class="jxr_keyword">default</strong>:
+<a class="jxr_linenumber" name="L175" href="#L175">175</a>           <strong class="jxr_keyword">return</strong>;
+<a class="jxr_linenumber" name="L176" href="#L176">176</a>       }
+<a class="jxr_linenumber" name="L177" href="#L177">177</a>       <strong class="jxr_keyword">final</strong> UpdatedInfo info = UpdatedInfo.INERROR;
+<a class="jxr_linenumber" name="L178" href="#L178">178</a>       <strong class="jxr_keyword">try</strong> {
+<a class="jxr_linenumber" name="L179" href="#L179">179</a>         <em class="jxr_comment">// Try load</em>
+<a class="jxr_linenumber" name="L180" href="#L180">180</a>         <strong class="jxr_keyword">final</strong> <a name="DbTransferLog" href="../../../../../org/waarp/gateway/kernel/database/data/DbTransferLog.html#DbTransferLog">DbTransferLog</a> log =
+<a class="jxr_linenumber" name="L181" href="#L181">181</a>             <strong class="jxr_keyword">new</strong> <a name="DbTransferLog" href="../../../../../org/waarp/gateway/kernel/database/data/DbTransferLog.html#DbTransferLog">DbTransferLog</a>(dbSession, session.getAuth().getUser(),
+<a class="jxr_linenumber" name="L182" href="#L182">182</a>                               session.getAuth().getAccount(), specialId);
+<a class="jxr_linenumber" name="L183" href="#L183">183</a>         log.changeUpdatedInfo(info);
+<a class="jxr_linenumber" name="L184" href="#L184">184</a>         log.setInfotransf(message);
+<a class="jxr_linenumber" name="L185" href="#L185">185</a>         <strong class="jxr_keyword">if</strong> (rcode.code() &lt; 400) {
+<a class="jxr_linenumber" name="L186" href="#L186">186</a>           log.setReplyCodeExecutionStatus(HttpResponseStatus.BAD_REQUEST);
+<a class="jxr_linenumber" name="L187" href="#L187">187</a>         } <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="L188" href="#L188">188</a>           log.setReplyCodeExecutionStatus(rcode);
 <a class="jxr_linenumber" name="L189" href="#L189">189</a>         }
-<a class="jxr_linenumber" name="L190" href="#L190">190</a>         log.update();
-<a class="jxr_linenumber" name="L191" href="#L191">191</a>         logger.debug(<span class="jxr_string">"Update FS: "</span> + log);
-<a class="jxr_linenumber" name="L192" href="#L192">192</a>       } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> <a name="WaarpDatabaseException" href="../../../../../org/waarp/common/database/exception/WaarpDatabaseException.html#WaarpDatabaseException">WaarpDatabaseException</a> e) {
-<a class="jxr_linenumber" name="L193" href="#L193">193</a>         <em class="jxr_comment">// Do nothing</em>
-<a class="jxr_linenumber" name="L194" href="#L194">194</a>       }
-<a class="jxr_linenumber" name="L195" href="#L195">195</a>     }
-<a class="jxr_linenumber" name="L196" href="#L196">196</a>   }
-<a class="jxr_linenumber" name="L197" href="#L197">197</a> }
+<a class="jxr_linenumber" name="L190" href="#L190">190</a>         <strong class="jxr_keyword">if</strong> (session.getFilename() != <strong class="jxr_keyword">null</strong>) {
+<a class="jxr_linenumber" name="L191" href="#L191">191</a>           log.setFilename(session.getFilename());
+<a class="jxr_linenumber" name="L192" href="#L192">192</a>         }
+<a class="jxr_linenumber" name="L193" href="#L193">193</a>         log.update();
+<a class="jxr_linenumber" name="L194" href="#L194">194</a>         logger.debug(<span class="jxr_string">"Update FS: "</span> + log);
+<a class="jxr_linenumber" name="L195" href="#L195">195</a>       } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> <a name="WaarpDatabaseException" href="../../../../../org/waarp/common/database/exception/WaarpDatabaseException.html#WaarpDatabaseException">WaarpDatabaseException</a> e) {
+<a class="jxr_linenumber" name="L196" href="#L196">196</a>         <em class="jxr_comment">// Do nothing</em>
+<a class="jxr_linenumber" name="L197" href="#L197">197</a>       }
+<a class="jxr_linenumber" name="L198" href="#L198">198</a>     }
+<a class="jxr_linenumber" name="L199" href="#L199">199</a>   }
+<a class="jxr_linenumber" name="L200" href="#L200">200</a> }
 </pre>
 <hr/>
 <div id="footer">Copyright &#169; 2009&#x2013;2020 <a href="http://www.waarp.fr">Waarp</a>. All rights reserved.</div>

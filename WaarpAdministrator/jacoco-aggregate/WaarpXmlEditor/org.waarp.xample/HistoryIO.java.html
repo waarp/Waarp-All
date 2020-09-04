@@ -60,7 +60,7 @@ public final class HistoryIO {
   private HistoryIO() {
   }
 
-  static void populateHistory(History history, Element element) {
+  static void populateHistory(final History history, final Element element) {
 <span class="nc" id="L64">    final NodeList lst = element.getChildNodes();</span>
 <span class="nc" id="L65">    history.items = new ArrayList&lt;History&gt;();</span>
 <span class="nc bnc" id="L66" title="All 2 branches missed.">    for (int i = lst.getLength() - 1; i &gt;= 0; i--) {</span>
@@ -76,12 +76,12 @@ public final class HistoryIO {
     }
 <span class="nc" id="L77">  }</span>
 
-  public static void load(History history) {
+  public static void load(final History history) {
 <span class="nc" id="L80">    final File file = new File(HISTORY_FILE_NAME);</span>
 <span class="nc bnc" id="L81" title="All 2 branches missed.">    if (!file.exists()) {</span>
 <span class="nc" id="L82">      return;</span>
     }
-    Element root;
+    final Element root;
     try {
 <span class="nc" id="L86">      final DOMParser parser = new DOMParser();</span>
 <span class="nc" id="L87">      parser.parse(file.toURI().toURL().toString());</span>
@@ -93,7 +93,7 @@ public final class HistoryIO {
 <span class="nc" id="L93">    }</span>
 <span class="nc" id="L94">  }</span>
 
-  public static void save(History history) {
+  public static void save(final History history) {
 <span class="nc" id="L97">    final Document doc = new DocumentImpl();</span>
 <span class="nc" id="L98">    final Element root = doc.createElement(HISTORY);</span>
 <span class="nc" id="L99">    doc.appendChild(root);</span>
@@ -117,7 +117,7 @@ public final class HistoryIO {
 <span class="nc" id="L117">    final File file = new File(HISTORY_FILE_NAME);</span>
 <span class="nc" id="L118">    FileOutputStream out = null;</span>
     try {
-<span class="nc" id="L120">      file.createNewFile();</span>
+<span class="nc" id="L120">      file.createNewFile();//NOSONAR</span>
 <span class="nc" id="L121">      out = new FileOutputStream(file);</span>
 <span class="nc" id="L122">      final OutputFormat format =</span>
           new OutputFormat(doc, WaarpStringUtils.UTF_8, true);

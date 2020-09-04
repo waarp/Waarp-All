@@ -40,43 +40,44 @@ public class DbModelMariaDbKernel extends DbModelMariadb {
    *
    * @throws WaarpDatabaseNoConnectionException
    */
-  public DbModelMariaDbKernel(String dbserver, String dbuser, String dbpasswd)
+  public DbModelMariaDbKernel(final String dbserver, final String dbuser,
+                              final String dbpasswd)
       throws WaarpDatabaseNoConnectionException {
-<span class="nc" id="L45">    super(dbserver, dbuser, dbpasswd);</span>
-<span class="nc" id="L46">  }</span>
+<span class="nc" id="L46">    super(dbserver, dbuser, dbpasswd);</span>
+<span class="nc" id="L47">  }</span>
 
-<span class="nc" id="L48">  private final ReentrantLock lock = new ReentrantLock();</span>
+<span class="nc" id="L49">  private final ReentrantLock lock = new ReentrantLock();</span>
 
   @Override
-  public void createTables(DbSession session)
+  public void createTables(final DbSession session)
       throws WaarpDatabaseNoConnectionException {
-<span class="nc" id="L53">    DbModelMysqlKernel.createTableMonitoring(session);</span>
-<span class="nc" id="L54">  }</span>
+<span class="nc" id="L54">    DbModelMysqlKernel.createTableMonitoring(session);</span>
+<span class="nc" id="L55">  }</span>
 
   @Override
-  public void resetSequence(DbSession session, long newvalue)
+  public void resetSequence(final DbSession session, final long newvalue)
       throws WaarpDatabaseNoConnectionException {
-<span class="nc" id="L59">    DbModelMysqlKernel.resetSequenceMonitoring(session, newvalue);</span>
-<span class="nc" id="L60">  }</span>
+<span class="nc" id="L60">    DbModelMysqlKernel.resetSequenceMonitoring(session, newvalue);</span>
+<span class="nc" id="L61">  }</span>
 
   @Override
-  public synchronized long nextSequence(DbSession dbSession)
+  public synchronized long nextSequence(final DbSession dbSession)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException,
              WaarpDatabaseNoDataException {
-<span class="nc" id="L66">    return DbModelMysqlKernel.nextSequenceMonitoring(dbSession, lock);</span>
+<span class="nc" id="L67">    return DbModelMysqlKernel.nextSequenceMonitoring(dbSession, lock);</span>
   }
 
   @Override
-  public boolean upgradeDb(DbSession session, String version)
+  public boolean upgradeDb(final DbSession session, final String version)
       throws WaarpDatabaseNoConnectionException {
-<span class="nc" id="L72">    return false;</span>
+<span class="nc" id="L73">    return false;</span>
   }
 
   @Override
-  public boolean needUpgradeDb(DbSession session, String version,
-                               boolean tryFix)
+  public boolean needUpgradeDb(final DbSession session, final String version,
+                               final boolean tryFix)
       throws WaarpDatabaseNoConnectionException {
-<span class="nc" id="L79">    return false;</span>
+<span class="nc" id="L80">    return false;</span>
   }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

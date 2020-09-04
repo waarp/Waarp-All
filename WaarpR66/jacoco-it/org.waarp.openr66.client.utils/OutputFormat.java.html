@@ -48,7 +48,7 @@ public class OutputFormat extends JsonHandler {
 <span class="fc" id="L48">  public enum FIELDS {</span>
 <span class="fc" id="L49">    command, args, status, statusTxt, transfer, error, remote, statusCode,</span>
 <span class="fc" id="L50">    specialid, originalPath, finalPath, ruleid, requester, requested,</span>
-<span class="fc" id="L51">    originalSize, fileInformation</span>
+<span class="fc" id="L51">    originalSize, fileInformation, transferInformation</span>
   }
 
   /**
@@ -56,7 +56,7 @@ public class OutputFormat extends JsonHandler {
    *
    * @param args
    */
-  public static void getParams(String[] args) {
+  public static void getParams(final String[] args) {
 <span class="nc bnc" id="L60" title="All 2 branches missed.">    for (int i = 1; i &lt; args.length; i++) {</span>
 <span class="nc bnc" id="L61" title="All 2 branches missed.">      if (&quot;-quiet&quot;.equalsIgnoreCase(args[i])) {</span>
 <span class="nc" id="L62">        defaultOutput = OUTPUTFORMAT.QUIET;</span>
@@ -72,8 +72,17 @@ public class OutputFormat extends JsonHandler {
     }
 <span class="nc" id="L73">  }</span>
 
-<span class="fc" id="L75">  private OUTPUTFORMAT format = defaultOutput;</span>
-<span class="fc" id="L76">  private final ObjectNode node = createObjectNode();</span>
+  /**
+   * To set the default OutputFormat
+   *
+   * @param outputformat
+   */
+  public static void setDefaultOutput(final OUTPUTFORMAT outputformat) {
+<span class="nc" id="L81">    defaultOutput = outputformat;</span>
+<span class="nc" id="L82">  }</span>
+
+<span class="fc" id="L84">  private OUTPUTFORMAT format = defaultOutput;</span>
+<span class="fc" id="L85">  private final ObjectNode node = createObjectNode();</span>
 
   /**
    * Create an OutputFormat helper using the default Format defined in
@@ -82,128 +91,160 @@ public class OutputFormat extends JsonHandler {
    * @param command
    * @param args
    */
-<span class="fc" id="L85">  public OutputFormat(String command, String[] args) {</span>
-<span class="fc" id="L86">    setValue(FIELDS.command.name(), command);</span>
-<span class="pc bpc" id="L87" title="1 of 2 branches missed.">    if (args != null) {</span>
-<span class="nc" id="L88">      final StringBuilder builder = new StringBuilder();</span>
-<span class="nc bnc" id="L89" title="All 2 branches missed.">      for (final String string : args) {</span>
-<span class="nc" id="L90">        builder.append(string).append(' ');</span>
+<span class="fc" id="L94">  public OutputFormat(final String command, final String[] args) {</span>
+<span class="fc" id="L95">    setValue(FIELDS.command.name(), command);</span>
+<span class="pc bpc" id="L96" title="1 of 2 branches missed.">    if (args != null) {</span>
+<span class="nc" id="L97">      final StringBuilder builder = new StringBuilder();</span>
+<span class="nc bnc" id="L98" title="All 2 branches missed.">      for (final String string : args) {</span>
+<span class="nc" id="L99">        builder.append(string).append(' ');</span>
       }
-<span class="nc" id="L92">      setValue(FIELDS.args.name(), builder.toString());</span>
+<span class="nc" id="L101">      setValue(FIELDS.args.name(), builder.toString());</span>
     }
-<span class="fc" id="L94">  }</span>
+<span class="fc" id="L103">  }</span>
 
   /**
    * To change the applied format
    *
    * @param format
    */
-  public void setFormat(OUTPUTFORMAT format) {
-<span class="nc" id="L102">    this.format = format;</span>
-<span class="nc" id="L103">  }</span>
-
-  /**
-   * @param values
-   */
-  public void setValue(Map&lt;String, Object&gt; values) {
-<span class="nc" id="L109">    final String json = writeAsString(values);</span>
-<span class="nc" id="L110">    final ObjectNode temp = getFromString(json);</span>
-<span class="nc" id="L111">    node.setAll(temp);</span>
+  public void setFormat(final OUTPUTFORMAT format) {
+<span class="nc" id="L111">    this.format = format;</span>
 <span class="nc" id="L112">  }</span>
 
+  public OUTPUTFORMAT getFormat() {
+<span class="nc" id="L115">    return format;</span>
+  }
+
   /**
    * @param values
    */
-  public void setValueString(Map&lt;String, String&gt; values) {
-<span class="nc" id="L118">    final String json = writeAsString(values);</span>
-<span class="nc" id="L119">    final ObjectNode temp = getFromString(json);</span>
-<span class="nc" id="L120">    node.setAll(temp);</span>
-<span class="nc" id="L121">  }</span>
+  public void setValue(final Map&lt;String, Object&gt; values) {
+<span class="nc" id="L122">    final String json = writeAsString(values);</span>
+<span class="nc" id="L123">    final ObjectNode temp = getFromString(json);</span>
+<span class="nc" id="L124">    node.setAll(temp);</span>
+<span class="nc" id="L125">  }</span>
+
+  /**
+   * @param values
+   */
+  public void setValueString(final Map&lt;String, String&gt; values) {
+<span class="nc" id="L131">    final String json = writeAsString(values);</span>
+<span class="nc" id="L132">    final ObjectNode temp = getFromString(json);</span>
+<span class="nc" id="L133">    node.setAll(temp);</span>
+<span class="nc" id="L134">  }</span>
 
   /**
    * @param node
    */
-  public void setValueString(ObjectNode node) {
-<span class="fc" id="L127">    node.setAll(node);</span>
-<span class="fc" id="L128">  }</span>
+  public void setValueString(final ObjectNode node) {
+<span class="fc" id="L140">    node.setAll(node);</span>
+<span class="fc" id="L141">  }</span>
 
   /**
    * @param field
    * @param value
    */
-  public void setValue(String field, boolean value) {
-<span class="nc" id="L135">    setValue(node, field, value);</span>
-<span class="nc" id="L136">  }</span>
+  public void setValue(final String field, final boolean value) {
+<span class="nc" id="L148">    setValue(node, field, value);</span>
+<span class="nc" id="L149">  }</span>
 
   /**
    * @param field
    * @param value
    */
-  public final void setValue(String field, double value) {
-<span class="nc" id="L143">    setValue(node, field, value);</span>
-<span class="nc" id="L144">  }</span>
+  public final void setValue(final String field, final double value) {
+<span class="nc" id="L156">    setValue(node, field, value);</span>
+<span class="nc" id="L157">  }</span>
 
   /**
    * @param field
    * @param value
    */
-  public final void setValue(String field, int value) {
-<span class="fc" id="L151">    setValue(node, field, value);</span>
-<span class="fc" id="L152">  }</span>
+  public final void setValue(final String field, final int value) {
+<span class="fc" id="L164">    setValue(node, field, value);</span>
+<span class="fc" id="L165">  }</span>
 
   /**
    * @param field
    * @param value
    */
-  public final void setValue(String field, long value) {
-<span class="fc" id="L159">    setValue(node, field, value);</span>
-<span class="fc" id="L160">  }</span>
+  public final void setValue(final String field, final long value) {
+<span class="fc" id="L172">    setValue(node, field, value);</span>
+<span class="fc" id="L173">  }</span>
 
   /**
    * @param field
    * @param value
    */
-  public final void setValue(String field, String value) {
-<span class="fc" id="L167">    setValue(node, field, value);</span>
-<span class="fc" id="L168">  }</span>
+  public final void setValue(final String field, final String value) {
+<span class="fc" id="L180">    setValue(node, field, value);</span>
+<span class="fc" id="L181">  }</span>
 
   /**
    * @param field
    * @param value
    */
-  public final void setValue(String field, byte[] value) {
-<span class="nc" id="L175">    setValue(node, field, value);</span>
-<span class="nc" id="L176">  }</span>
+  public final void setValue(final String field, final byte[] value) {
+<span class="nc" id="L188">    setValue(node, field, value);</span>
+<span class="nc" id="L189">  }</span>
 
   /**
    * @param field
    *
    * @return True if all fields exist
    */
-  public final boolean exist(String... field) {
-<span class="nc" id="L184">    return exist(node, field);</span>
+  public final boolean exist(final String... field) {
+<span class="nc" id="L197">    return exist(node, field);</span>
   }
 
   /**
    * @return True if the current default output format is on QUIET
    */
   public static boolean isQuiet() {
-<span class="nc bnc" id="L191" title="All 2 branches missed.">    return defaultOutput == OUTPUTFORMAT.QUIET;</span>
+<span class="nc bnc" id="L204" title="All 2 branches missed.">    return defaultOutput == OUTPUTFORMAT.QUIET;</span>
+  }
+
+  /**
+   * @return True if the current default output format is on XML
+   */
+  public static boolean isXml() {
+<span class="nc bnc" id="L211" title="All 2 branches missed.">    return defaultOutput == OUTPUTFORMAT.XML;</span>
+  }
+
+  /**
+   * @return True if the current default output format is on CSV
+   */
+  public static boolean isCsv() {
+<span class="nc bnc" id="L218" title="All 2 branches missed.">    return defaultOutput == OUTPUTFORMAT.CSV;</span>
+  }
+
+  /**
+   * @return True if the current default output format is on JSON
+   */
+  public static boolean isJson() {
+<span class="nc bnc" id="L225" title="All 2 branches missed.">    return defaultOutput == OUTPUTFORMAT.JSON;</span>
+  }
+
+  /**
+   * @return True if the current default output format is on PROPERTY
+   */
+  public static boolean isProperty() {
+<span class="nc bnc" id="L232" title="All 2 branches missed.">    return defaultOutput == OUTPUTFORMAT.PROPERTY;</span>
   }
 
   /**
    * Helper for sysOut
    */
   public void sysout() {
-<span class="nc bnc" id="L198" title="All 2 branches missed.">    if (format != OUTPUTFORMAT.QUIET) {</span>
-<span class="nc" id="L199">      System.out.println(getContext());//NOSONAR</span>
-<span class="nc" id="L200">      System.out.println(toString(format));//NOSONAR</span>
+<span class="nc bnc" id="L239" title="All 2 branches missed.">    if (format != OUTPUTFORMAT.QUIET) {</span>
+<span class="nc" id="L240">      System.out.println(getContext());//NOSONAR</span>
+<span class="nc" id="L241">      System.out.println(toString(format));//NOSONAR</span>
     }
-<span class="nc" id="L202">  }</span>
+<span class="nc" id="L243">  }</span>
 
   private String getContext() {
-<span class="fc" id="L205">    return '[' + getValue(node, FIELDS.command, &quot;&quot;) + &quot;] &quot; +</span>
-<span class="fc" id="L206">           getValue(node, FIELDS.statusTxt, &quot;&quot;);</span>
+<span class="fc" id="L246">    return '[' + getValue(node, FIELDS.command, &quot;&quot;) + &quot;] &quot; +</span>
+<span class="fc" id="L247">           getValue(node, FIELDS.statusTxt, &quot;&quot;);</span>
   }
 
   /**
@@ -212,12 +253,32 @@ public class OutputFormat extends JsonHandler {
    * @return the String to print in logger
    */
   public String loggerOut() {
-<span class="fc" id="L215">    return getContext() + &quot; =&gt; &quot; + toString(OUTPUTFORMAT.JSON);</span>
+<span class="fc" id="L256">    return getContext() + &quot; =&gt; &quot; + toString(OUTPUTFORMAT.JSON);</span>
   }
 
   @Override
   public String toString() {
-<span class="nc" id="L220">    return toString(format);</span>
+<span class="nc" id="L261">    return toString(format);</span>
+  }
+
+  private String commonEscaped(final String toEscape) {
+<span class="fc" id="L265">    return toEscape.replace('\n', ' ').replace('\r', ' ');</span>
+  }
+
+  private String escapedCSV(final String toEscape) {
+<span class="nc" id="L269">    String escaped = commonEscaped(toEscape);</span>
+<span class="nc bnc" id="L270" title="All 2 branches missed.">    if (escaped.indexOf(';') &gt;= 0) {</span>
+<span class="nc" id="L271">      escaped = &quot;\&quot;&quot; + escaped + &quot;\&quot;&quot;;</span>
+    }
+<span class="nc" id="L273">    return escaped;</span>
+  }
+
+  private String escapedXML(final String toEscape) {
+<span class="nc" id="L277">    return toEscape.replace('&lt;', '[').replace('&gt;', ']').replace('&amp;', ':');</span>
+  }
+
+  private String escapedProperty(final String toEscape) {
+<span class="nc" id="L281">    return commonEscaped(toEscape);</span>
   }
 
   /**
@@ -227,82 +288,87 @@ public class OutputFormat extends JsonHandler {
    *
    * @return the String representation
    */
-  public String toString(OUTPUTFORMAT format) {
-<span class="fc" id="L231">    final String inString = writeAsString(node);</span>
-<span class="pc bpc" id="L232" title="3 of 4 branches missed.">    switch (format) {</span>
+  public String toString(final OUTPUTFORMAT format) {
+<span class="fc" id="L292">    final String inString = writeAsString(node);</span>
+<span class="pc bpc" id="L293" title="3 of 4 branches missed.">    switch (format) {</span>
       case CSV:
         try {
-<span class="nc" id="L235">          final Map&lt;String, Object&gt; map = mapper</span>
-<span class="nc" id="L236">              .readValue(inString, new TypeReference&lt;Map&lt;String, Object&gt;&gt;() {</span>
+<span class="nc" id="L296">          final Map&lt;String, Object&gt; map = mapper</span>
+<span class="nc" id="L297">              .readValue(inString, new TypeReference&lt;Map&lt;String, Object&gt;&gt;() {</span>
               });
-<span class="nc" id="L238">          final StringBuilder builderKeys = new StringBuilder();</span>
-<span class="nc" id="L239">          final StringBuilder builderValues = new StringBuilder();</span>
-<span class="nc" id="L240">          boolean next = false;</span>
-<span class="nc bnc" id="L241" title="All 2 branches missed.">          for (final Entry&lt;String, Object&gt; entry : map.entrySet()) {</span>
-<span class="nc bnc" id="L242" title="All 2 branches missed.">            if (next) {</span>
-<span class="nc" id="L243">              builderKeys.append(';');</span>
-<span class="nc" id="L244">              builderValues.append(';');</span>
+<span class="nc" id="L299">          final StringBuilder builderKeys = new StringBuilder();</span>
+<span class="nc" id="L300">          final StringBuilder builderValues = new StringBuilder();</span>
+<span class="nc" id="L301">          boolean next = false;</span>
+<span class="nc bnc" id="L302" title="All 2 branches missed.">          for (final Entry&lt;String, Object&gt; entry : map.entrySet()) {</span>
+<span class="nc bnc" id="L303" title="All 2 branches missed.">            if (next) {</span>
+<span class="nc" id="L304">              builderKeys.append(';');</span>
+<span class="nc" id="L305">              builderValues.append(';');</span>
             } else {
-<span class="nc" id="L246">              next = true;</span>
+<span class="nc" id="L307">              next = true;</span>
             }
-<span class="nc" id="L248">            builderKeys.append(entry.getKey());</span>
-<span class="nc" id="L249">            builderValues.append(entry.getValue());</span>
-<span class="nc" id="L250">          }</span>
-<span class="nc" id="L251">          return builderKeys + &quot;\n&quot; + builderValues;</span>
-<span class="nc" id="L252">        } catch (final JsonParseException e) {</span>
-<span class="nc" id="L253">          return Messages.getString(MESSAGE_CANT_CONVERT, CSV) + inString;</span>
-<span class="nc" id="L254">        } catch (final JsonMappingException e) {</span>
-<span class="nc" id="L255">          return Messages.getString(MESSAGE_CANT_CONVERT, CSV) + inString;</span>
-<span class="nc" id="L256">        } catch (final IOException e) {</span>
-<span class="nc" id="L257">          return Messages.getString(MESSAGE_CANT_CONVERT, CSV) + inString;</span>
+<span class="nc" id="L309">            builderKeys.append(entry.getKey());</span>
+<span class="nc" id="L310">            String value = entry.getValue().toString();</span>
+<span class="nc" id="L311">            value = escapedCSV(value);</span>
+<span class="nc" id="L312">            builderValues.append(value);</span>
+<span class="nc" id="L313">          }</span>
+<span class="nc" id="L314">          return builderKeys + &quot;\n&quot; + builderValues;</span>
+<span class="nc" id="L315">        } catch (final JsonParseException e) {</span>
+<span class="nc" id="L316">          return Messages.getString(MESSAGE_CANT_CONVERT, CSV) + inString;</span>
+<span class="nc" id="L317">        } catch (final JsonMappingException e) {</span>
+<span class="nc" id="L318">          return Messages.getString(MESSAGE_CANT_CONVERT, CSV) + inString;</span>
+<span class="nc" id="L319">        } catch (final IOException e) {</span>
+<span class="nc" id="L320">          return Messages.getString(MESSAGE_CANT_CONVERT, CSV) + inString;</span>
         }
       case PROPERTY:
         try {
-<span class="nc" id="L261">          final Map&lt;String, Object&gt; map = mapper</span>
-<span class="nc" id="L262">              .readValue(inString, new TypeReference&lt;Map&lt;String, Object&gt;&gt;() {</span>
+<span class="nc" id="L324">          final Map&lt;String, Object&gt; map = mapper</span>
+<span class="nc" id="L325">              .readValue(inString, new TypeReference&lt;Map&lt;String, Object&gt;&gt;() {</span>
               });
-<span class="nc" id="L264">          final StringBuilder builder = new StringBuilder();</span>
-<span class="nc" id="L265">          boolean next = false;</span>
-<span class="nc bnc" id="L266" title="All 2 branches missed.">          for (final Entry&lt;String, Object&gt; entry : map.entrySet()) {</span>
-<span class="nc bnc" id="L267" title="All 2 branches missed.">            if (next) {</span>
-<span class="nc" id="L268">              builder.append('\n');</span>
+<span class="nc" id="L327">          final StringBuilder builder = new StringBuilder();</span>
+<span class="nc" id="L328">          boolean next = false;</span>
+<span class="nc bnc" id="L329" title="All 2 branches missed.">          for (final Entry&lt;String, Object&gt; entry : map.entrySet()) {</span>
+<span class="nc bnc" id="L330" title="All 2 branches missed.">            if (next) {</span>
+<span class="nc" id="L331">              builder.append('\n');</span>
             } else {
-<span class="nc" id="L270">              next = true;</span>
+<span class="nc" id="L333">              next = true;</span>
             }
-<span class="nc" id="L272">            builder.append(entry.getKey()).append('=').append(entry.getValue());</span>
-<span class="nc" id="L273">          }</span>
-<span class="nc" id="L274">          return builder.toString();</span>
-<span class="nc" id="L275">        } catch (final JsonParseException e) {</span>
-<span class="nc" id="L276">          return Messages.getString(MESSAGE_CANT_CONVERT, PROPERTY) + inString;</span>
-<span class="nc" id="L277">        } catch (final JsonMappingException e) {</span>
-<span class="nc" id="L278">          return Messages.getString(MESSAGE_CANT_CONVERT, PROPERTY) + inString;</span>
-<span class="nc" id="L279">        } catch (final IOException e) {</span>
-<span class="nc" id="L280">          return Messages.getString(MESSAGE_CANT_CONVERT, PROPERTY) + inString;</span>
+<span class="nc" id="L335">            String value = entry.getValue().toString();</span>
+<span class="nc" id="L336">            value = escapedProperty(value);</span>
+<span class="nc" id="L337">            builder.append(entry.getKey()).append('=').append(value);</span>
+<span class="nc" id="L338">          }</span>
+<span class="nc" id="L339">          return builder.toString();</span>
+<span class="nc" id="L340">        } catch (final JsonParseException e) {</span>
+<span class="nc" id="L341">          return Messages.getString(MESSAGE_CANT_CONVERT, PROPERTY) + inString;</span>
+<span class="nc" id="L342">        } catch (final JsonMappingException e) {</span>
+<span class="nc" id="L343">          return Messages.getString(MESSAGE_CANT_CONVERT, PROPERTY) + inString;</span>
+<span class="nc" id="L344">        } catch (final IOException e) {</span>
+<span class="nc" id="L345">          return Messages.getString(MESSAGE_CANT_CONVERT, PROPERTY) + inString;</span>
         }
       case XML:
         try {
-<span class="nc" id="L284">          final Map&lt;String, Object&gt; map = mapper</span>
-<span class="nc" id="L285">              .readValue(inString, new TypeReference&lt;Map&lt;String, Object&gt;&gt;() {</span>
+<span class="nc" id="L349">          final Map&lt;String, Object&gt; map = mapper</span>
+<span class="nc" id="L350">              .readValue(inString, new TypeReference&lt;Map&lt;String, Object&gt;&gt;() {</span>
               });
-<span class="nc" id="L287">          final StringBuilder builder = new StringBuilder(&quot;&lt;xml&gt;&quot;);</span>
-<span class="nc bnc" id="L288" title="All 2 branches missed.">          for (final Entry&lt;String, Object&gt; entry : map.entrySet()) {</span>
-<span class="nc" id="L289">            builder.append('&lt;').append(entry.getKey()).append('&gt;')</span>
-<span class="nc" id="L290">                   .append(entry.getValue()).append(&quot;&lt;/&quot;).append(entry.getKey())</span>
-<span class="nc" id="L291">                   .append('&gt;');</span>
-<span class="nc" id="L292">          }</span>
-<span class="nc" id="L293">          builder.append(&quot;&lt;/xml&gt;&quot;);</span>
-<span class="nc" id="L294">          return builder.toString();</span>
-<span class="nc" id="L295">        } catch (final JsonParseException e) {</span>
-<span class="nc" id="L296">          return Messages.getString(MESSAGE_CANT_CONVERT, XML) + inString;</span>
-<span class="nc" id="L297">        } catch (final JsonMappingException e) {</span>
-<span class="nc" id="L298">          return Messages.getString(MESSAGE_CANT_CONVERT, XML) + inString;</span>
-<span class="nc" id="L299">        } catch (final IOException e) {</span>
-<span class="nc" id="L300">          return Messages.getString(MESSAGE_CANT_CONVERT, XML) + inString;</span>
+<span class="nc" id="L352">          final StringBuilder builder = new StringBuilder(&quot;&lt;xml&gt;&quot;);</span>
+<span class="nc bnc" id="L353" title="All 2 branches missed.">          for (final Entry&lt;String, Object&gt; entry : map.entrySet()) {</span>
+<span class="nc" id="L354">            String value = entry.getValue().toString();</span>
+<span class="nc" id="L355">            value = escapedXML(value);</span>
+<span class="nc" id="L356">            builder.append('&lt;').append(entry.getKey()).append('&gt;').append(value)</span>
+<span class="nc" id="L357">                   .append(&quot;&lt;/&quot;).append(entry.getKey()).append('&gt;');</span>
+<span class="nc" id="L358">          }</span>
+<span class="nc" id="L359">          builder.append(&quot;&lt;/xml&gt;&quot;);</span>
+<span class="nc" id="L360">          return builder.toString();</span>
+<span class="nc" id="L361">        } catch (final JsonParseException e) {</span>
+<span class="nc" id="L362">          return Messages.getString(MESSAGE_CANT_CONVERT, XML) + inString;</span>
+<span class="nc" id="L363">        } catch (final JsonMappingException e) {</span>
+<span class="nc" id="L364">          return Messages.getString(MESSAGE_CANT_CONVERT, XML) + inString;</span>
+<span class="nc" id="L365">        } catch (final IOException e) {</span>
+<span class="nc" id="L366">          return Messages.getString(MESSAGE_CANT_CONVERT, XML) + inString;</span>
         }
       case QUIET:
       case JSON:
       default:
-<span class="fc" id="L305">        return inString;</span>
+<span class="fc" id="L371">        return commonEscaped(inString);</span>
     }
   }
 }

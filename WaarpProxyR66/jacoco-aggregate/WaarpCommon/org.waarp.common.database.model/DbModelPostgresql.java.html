@@ -115,12 +115,12 @@ public abstract class DbModelPostgresql extends DbModelAbstract {
 
     public final String constructor;
 
-<span class="fc" id="L118">    DBType(int type, String constructor) {</span>
+<span class="fc" id="L118">    DBType(final int type, final String constructor) {</span>
 <span class="fc" id="L119">      this.type = type;</span>
 <span class="fc" id="L120">      this.constructor = constructor;</span>
 <span class="fc" id="L121">    }</span>
 
-    public static String getType(int sqltype) {
+    public static String getType(final int sqltype) {
 <span class="pc bpc" id="L124" title="6 of 15 branches missed.">      switch (sqltype) {</span>
         case Types.CHAR:
 <span class="fc" id="L126">          return CHAR.constructor;</span>
@@ -157,7 +157,7 @@ public abstract class DbModelPostgresql extends DbModelAbstract {
   }
 
   @Override
-  public void resetSequence(DbSession session, long newvalue)
+  public void resetSequence(final DbSession session, final long newvalue)
       throws WaarpDatabaseNoConnectionException {
 <span class="nc" id="L162">    final String action =</span>
         &quot;ALTER SEQUENCE &quot; + DbDataModel.fieldseq + &quot; MINVALUE &quot; +
@@ -176,7 +176,7 @@ public abstract class DbModelPostgresql extends DbModelAbstract {
 <span class="nc" id="L176">  }</span>
 
   @Override
-  public long nextSequence(DbSession dbSession)
+  public long nextSequence(final DbSession dbSession)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException,
              WaarpDatabaseNoDataException {
 <span class="nc" id="L182">    long result = DbConstant.ILLEGALVALUE;</span>
@@ -209,11 +209,12 @@ public abstract class DbModelPostgresql extends DbModelAbstract {
   }
 
   @Override
-  public String limitRequest(String allfields, String request, int nb) {
-<span class="nc bnc" id="L213" title="All 2 branches missed.">    if (nb == 0) {</span>
-<span class="nc" id="L214">      return request;</span>
+  public String limitRequest(final String allfields, final String request,
+                             final int nb) {
+<span class="nc bnc" id="L214" title="All 2 branches missed.">    if (nb == 0) {</span>
+<span class="nc" id="L215">      return request;</span>
     }
-<span class="nc" id="L216">    return request + &quot; LIMIT &quot; + nb;</span>
+<span class="nc" id="L217">    return request + &quot; LIMIT &quot; + nb;</span>
   }
 
 }

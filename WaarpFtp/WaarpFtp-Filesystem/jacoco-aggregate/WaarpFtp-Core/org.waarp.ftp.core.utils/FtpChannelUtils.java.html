@@ -53,7 +53,7 @@ public class FtpChannelUtils implements Runnable {
    *
    * @return the remote InetAddress
    */
-  public static InetAddress getRemoteInetAddress(Channel channel) {
+  public static InetAddress getRemoteInetAddress(final Channel channel) {
 <span class="nc" id="L57">    InetSocketAddress socketAddress =</span>
 <span class="nc" id="L58">        (InetSocketAddress) channel.remoteAddress();</span>
 <span class="nc bnc" id="L59" title="All 2 branches missed.">    if (socketAddress == null) {</span>
@@ -69,7 +69,7 @@ public class FtpChannelUtils implements Runnable {
    *
    * @return the local InetAddress
    */
-  public static InetAddress getLocalInetAddress(Channel channel) {
+  public static InetAddress getLocalInetAddress(final Channel channel) {
 <span class="nc" id="L73">    final InetSocketAddress socketAddress =</span>
 <span class="nc" id="L74">        (InetSocketAddress) channel.localAddress();</span>
 <span class="nc" id="L75">    return socketAddress.getAddress();</span>
@@ -82,8 +82,9 @@ public class FtpChannelUtils implements Runnable {
    *
    * @return the remote InetSocketAddress
    */
-  public static InetSocketAddress getRemoteInetSocketAddress(Channel channel) {
-<span class="nc" id="L86">    return (InetSocketAddress) channel.remoteAddress();</span>
+  public static InetSocketAddress getRemoteInetSocketAddress(
+      final Channel channel) {
+<span class="nc" id="L87">    return (InetSocketAddress) channel.remoteAddress();</span>
   }
 
   /**
@@ -93,8 +94,9 @@ public class FtpChannelUtils implements Runnable {
    *
    * @return the local InetSocketAddress
    */
-  public static InetSocketAddress getLocalInetSocketAddress(Channel channel) {
-<span class="nc" id="L97">    return (InetSocketAddress) channel.localAddress();</span>
+  public static InetSocketAddress getLocalInetSocketAddress(
+      final Channel channel) {
+<span class="nc" id="L99">    return (InetSocketAddress) channel.localAddress();</span>
   }
 
   /**
@@ -104,34 +106,34 @@ public class FtpChannelUtils implements Runnable {
    *
    * @return the InetSocketAddress or null if an error occurs
    */
-  public static InetSocketAddress getInetSocketAddress(String arg) {
-<span class="nc" id="L108">    final String[] elements = arg.split(&quot;,&quot;);</span>
-<span class="nc bnc" id="L109" title="All 2 branches missed.">    if (elements.length != 6) {</span>
-<span class="nc" id="L110">      return null;</span>
+  public static InetSocketAddress getInetSocketAddress(final String arg) {
+<span class="nc" id="L110">    final String[] elements = arg.split(&quot;,&quot;);</span>
+<span class="nc bnc" id="L111" title="All 2 branches missed.">    if (elements.length != 6) {</span>
+<span class="nc" id="L112">      return null;</span>
     }
-<span class="nc" id="L112">    final byte[] address = new byte[4];</span>
-<span class="nc" id="L113">    final int[] iElements = new int[6];</span>
-<span class="nc bnc" id="L114" title="All 2 branches missed.">    for (int i = 0; i &lt; 6; i++) {</span>
+<span class="nc" id="L114">    final byte[] address = { 0, 0, 0, 0 };</span>
+<span class="nc" id="L115">    final int[] iElements = new int[6];</span>
+<span class="nc bnc" id="L116" title="All 2 branches missed.">    for (int i = 0; i &lt; 6; i++) {</span>
       try {
-<span class="nc" id="L116">        iElements[i] = Integer.parseInt(elements[i]);</span>
-<span class="nc" id="L117">      } catch (final NumberFormatException e) {</span>
-<span class="nc" id="L118">        return null;</span>
-<span class="nc" id="L119">      }</span>
-<span class="nc bnc" id="L120" title="All 4 branches missed.">      if (iElements[i] &lt; 0 || iElements[i] &gt; 255) {</span>
-<span class="nc" id="L121">        return null;</span>
+<span class="nc" id="L118">        iElements[i] = Integer.parseInt(elements[i]);</span>
+<span class="nc" id="L119">      } catch (final NumberFormatException e) {</span>
+<span class="nc" id="L120">        return null;</span>
+<span class="nc" id="L121">      }</span>
+<span class="nc bnc" id="L122" title="All 4 branches missed.">      if (iElements[i] &lt; 0 || iElements[i] &gt; 255) {</span>
+<span class="nc" id="L123">        return null;</span>
       }
     }
-<span class="nc bnc" id="L124" title="All 2 branches missed.">    for (int i = 0; i &lt; 4; i++) {</span>
-<span class="nc" id="L125">      address[i] = (byte) iElements[i];</span>
+<span class="nc bnc" id="L126" title="All 2 branches missed.">    for (int i = 0; i &lt; 4; i++) {</span>
+<span class="nc" id="L127">      address[i] = (byte) iElements[i];</span>
     }
-<span class="nc" id="L127">    final int port = iElements[4] &lt;&lt; 8 | iElements[5];</span>
-    InetAddress inetAddress;
+<span class="nc" id="L129">    final int port = iElements[4] &lt;&lt; 8 | iElements[5];</span>
+    final InetAddress inetAddress;
     try {
-<span class="nc" id="L130">      inetAddress = InetAddress.getByAddress(address);</span>
-<span class="nc" id="L131">    } catch (final UnknownHostException e) {</span>
-<span class="nc" id="L132">      return null;</span>
-<span class="nc" id="L133">    }</span>
-<span class="nc" id="L134">    return new InetSocketAddress(inetAddress, port);</span>
+<span class="nc" id="L132">      inetAddress = InetAddress.getByAddress(address);</span>
+<span class="nc" id="L133">    } catch (final UnknownHostException e) {</span>
+<span class="nc" id="L134">      return null;</span>
+<span class="nc" id="L135">    }</span>
+<span class="nc" id="L136">    return new InetSocketAddress(inetAddress, port);</span>
   }
 
   /**
@@ -142,8 +144,8 @@ public class FtpChannelUtils implements Runnable {
    *
    * @return the String representation of the address
    */
-  public static String getAddress(String address, int port) {
-<span class="nc" id="L146">    return address.replace('.', ',') + ',' + (port &gt;&gt; 8) + ',' + (port &amp; 0xFF);</span>
+  public static String getAddress(final String address, final int port) {
+<span class="nc" id="L148">    return address.replace('.', ',') + ',' + (port &gt;&gt; 8) + ',' + (port &amp; 0xFF);</span>
   }
 
   /**
@@ -153,10 +155,10 @@ public class FtpChannelUtils implements Runnable {
    *
    * @return the String representation of the address
    */
-  public static String getAddress(InetSocketAddress address) {
-<span class="nc" id="L157">    final InetAddress servAddr = address.getAddress();</span>
-<span class="nc" id="L158">    final int servPort = address.getPort();</span>
-<span class="nc" id="L159">    return servAddr.getHostAddress().replace('.', ',') + ',' + (servPort &gt;&gt; 8) +</span>
+  public static String getAddress(final InetSocketAddress address) {
+<span class="nc" id="L159">    final InetAddress servAddr = address.getAddress();</span>
+<span class="nc" id="L160">    final int servPort = address.getPort();</span>
+<span class="nc" id="L161">    return servAddr.getHostAddress().replace('.', ',') + ',' + (servPort &gt;&gt; 8) +</span>
            ',' + (servPort &amp; 0xFF);
   }
 
@@ -168,62 +170,62 @@ public class FtpChannelUtils implements Runnable {
    *
    * @return the InetSocketAddress or null if an error occurs
    */
-  public static InetSocketAddress get2428InetSocketAddress(String arg) {
+  public static InetSocketAddress get2428InetSocketAddress(final String arg) {
     // Format: #a#net-addr#tcp-port# where a = 1 IPV4 or 2 IPV6, other will
     // not be supported
-<span class="nc bnc" id="L174" title="All 4 branches missed.">    if (arg == null || arg.length() == 0) {</span>
+<span class="nc bnc" id="L176" title="All 4 branches missed.">    if (arg == null || arg.length() == 0) {</span>
       // bad args
-<span class="nc" id="L176">      return null;</span>
+<span class="nc" id="L178">      return null;</span>
     }
-<span class="nc" id="L178">    final String delim = arg.substring(0, 1);</span>
-<span class="nc" id="L179">    final String[] infos = arg.split('\\' + delim);</span>
-<span class="nc bnc" id="L180" title="All 4 branches missed.">    if (infos.length != 3 &amp;&amp; infos.length != 4) {</span>
+<span class="nc" id="L180">    final String delim = arg.substring(0, 1);</span>
+<span class="nc" id="L181">    final String[] infos = arg.split('\\' + delim);</span>
+<span class="nc bnc" id="L182" title="All 4 branches missed.">    if (infos.length != 3 &amp;&amp; infos.length != 4) {</span>
       // bad format
-<span class="nc" id="L182">      logger.error(&quot;Bad address format: &quot; + infos.length);</span>
-<span class="nc" id="L183">      return null;</span>
+<span class="nc" id="L184">      logger.error(&quot;Bad address format: &quot; + infos.length);</span>
+<span class="nc" id="L185">      return null;</span>
     }
-<span class="nc" id="L185">    int start = 0;</span>
-<span class="nc bnc" id="L186" title="All 2 branches missed.">    if (infos.length == 4) {</span>
-<span class="nc" id="L187">      start = 1;</span>
+<span class="nc" id="L187">    int start = 0;</span>
+<span class="nc bnc" id="L188" title="All 2 branches missed.">    if (infos.length == 4) {</span>
+<span class="nc" id="L189">      start = 1;</span>
     }
-<span class="nc" id="L189">    boolean isIPV4 = true;</span>
-<span class="nc bnc" id="L190" title="All 2 branches missed.">    if (&quot;1&quot;.equals(infos[start])) {</span>
-<span class="nc" id="L191">      isIPV4 = true;</span>
-<span class="nc bnc" id="L192" title="All 2 branches missed.">    } else if (&quot;2&quot;.equals(infos[start])) {</span>
-<span class="nc" id="L193">      isIPV4 = false;</span>
+<span class="nc" id="L191">    boolean isIPV4 = true;</span>
+<span class="nc bnc" id="L192" title="All 2 branches missed.">    if (&quot;1&quot;.equals(infos[start])) {</span>
+<span class="nc" id="L193">      isIPV4 = true;</span>
+<span class="nc bnc" id="L194" title="All 2 branches missed.">    } else if (&quot;2&quot;.equals(infos[start])) {</span>
+<span class="nc" id="L195">      isIPV4 = false;</span>
     } else {
       // not supported
-<span class="nc" id="L196">      logger.error(&quot;Bad 1 or 2 format in address: &quot; + infos[start]);</span>
-<span class="nc" id="L197">      return null;</span>
+<span class="nc" id="L198">      logger.error(&quot;Bad 1 or 2 format in address: &quot; + infos[start]);</span>
+<span class="nc" id="L199">      return null;</span>
     }
-<span class="nc" id="L199">    start++;</span>
-    InetAddress inetAddress;
-<span class="nc bnc" id="L201" title="All 2 branches missed.">    if (isIPV4) {</span>
+<span class="nc" id="L201">    start++;</span>
+    final InetAddress inetAddress;
+<span class="nc bnc" id="L203" title="All 2 branches missed.">    if (isIPV4) {</span>
       // IPV4
       try {
-<span class="nc" id="L204">        inetAddress = InetAddress.getByName(infos[start]);</span>
-<span class="nc" id="L205">      } catch (final UnknownHostException e) {</span>
-<span class="nc" id="L206">        logger.error(&quot;Bad IPV4 format&quot;, e);</span>
-<span class="nc" id="L207">        return null;</span>
-<span class="nc" id="L208">      }</span>
+<span class="nc" id="L206">        inetAddress = InetAddress.getByName(infos[start]);</span>
+<span class="nc" id="L207">      } catch (final UnknownHostException e) {</span>
+<span class="nc" id="L208">        logger.error(&quot;Bad IPV4 format&quot;, e);</span>
+<span class="nc" id="L209">        return null;</span>
+<span class="nc" id="L210">      }</span>
     } else {
       // IPV6
       try {
-<span class="nc" id="L212">        inetAddress = InetAddress.getByName(infos[start]);</span>
-<span class="nc" id="L213">      } catch (final UnknownHostException e) {</span>
-<span class="nc" id="L214">        logger.error(&quot;Bad IPV6 format&quot;, e);</span>
-<span class="nc" id="L215">        return null;</span>
-<span class="nc" id="L216">      }</span>
+<span class="nc" id="L214">        inetAddress = InetAddress.getByName(infos[start]);</span>
+<span class="nc" id="L215">      } catch (final UnknownHostException e) {</span>
+<span class="nc" id="L216">        logger.error(&quot;Bad IPV6 format&quot;, e);</span>
+<span class="nc" id="L217">        return null;</span>
+<span class="nc" id="L218">      }</span>
     }
-<span class="nc" id="L218">    start++;</span>
-    int port;
+<span class="nc" id="L220">    start++;</span>
+    final int port;
     try {
-<span class="nc" id="L221">      port = Integer.parseInt(infos[start]);</span>
-<span class="nc" id="L222">    } catch (final NumberFormatException e) {</span>
-<span class="nc" id="L223">      logger.error(&quot;Bad port number format: &quot; + infos[start]);</span>
-<span class="nc" id="L224">      return null;</span>
-<span class="nc" id="L225">    }</span>
-<span class="nc" id="L226">    return new InetSocketAddress(inetAddress, port);</span>
+<span class="nc" id="L223">      port = Integer.parseInt(infos[start]);</span>
+<span class="nc" id="L224">    } catch (final NumberFormatException e) {</span>
+<span class="nc" id="L225">      logger.error(&quot;Bad port number format: &quot; + infos[start]);</span>
+<span class="nc" id="L226">      return null;</span>
+<span class="nc" id="L227">    }</span>
+<span class="nc" id="L228">    return new InetSocketAddress(inetAddress, port);</span>
   }
 
   /**
@@ -233,20 +235,20 @@ public class FtpChannelUtils implements Runnable {
    *
    * @return the String representation of the address
    */
-  public static String get2428Address(InetSocketAddress address) {
-<span class="nc" id="L237">    final InetAddress servAddr = address.getAddress();</span>
-<span class="nc" id="L238">    final int servPort = address.getPort();</span>
-<span class="nc" id="L239">    final StringBuilder builder = new StringBuilder();</span>
-<span class="nc" id="L240">    final String hostaddress = servAddr.getHostAddress();</span>
-<span class="nc" id="L241">    builder.append('|');</span>
-<span class="nc bnc" id="L242" title="All 2 branches missed.">    if (hostaddress.contains(&quot;:&quot;)) {</span>
-<span class="nc" id="L243">      builder.append('2'); // IPV6</span>
+  public static String get2428Address(final InetSocketAddress address) {
+<span class="nc" id="L239">    final InetAddress servAddr = address.getAddress();</span>
+<span class="nc" id="L240">    final int servPort = address.getPort();</span>
+<span class="nc" id="L241">    final StringBuilder builder = new StringBuilder();</span>
+<span class="nc" id="L242">    final String hostaddress = servAddr.getHostAddress();</span>
+<span class="nc" id="L243">    builder.append('|');</span>
+<span class="nc bnc" id="L244" title="All 2 branches missed.">    if (hostaddress.contains(&quot;:&quot;)) {</span>
+<span class="nc" id="L245">      builder.append('2'); // IPV6</span>
     } else {
-<span class="nc" id="L245">      builder.append('1'); // IPV4</span>
+<span class="nc" id="L247">      builder.append('1'); // IPV4</span>
     }
-<span class="nc" id="L247">    builder.append('|').append(hostaddress).append('|').append(servPort)</span>
-<span class="nc" id="L248">           .append('|');</span>
-<span class="nc" id="L249">    return builder.toString();</span>
+<span class="nc" id="L249">    builder.append('|').append(hostaddress).append('|').append(servPort)</span>
+<span class="nc" id="L250">           .append('|');</span>
+<span class="nc" id="L251">    return builder.toString();</span>
   }
 
   /**
@@ -257,12 +259,12 @@ public class FtpChannelUtils implements Runnable {
    * @return the number of previously registered command channels
    */
   static int terminateCommandChannels(final FtpConfiguration configuration) {
-<span class="nc" id="L260">    final int result =</span>
-<span class="nc" id="L261">        configuration.getFtpInternalConfiguration().getCommandChannelGroup()</span>
-<span class="nc" id="L262">                     .size();</span>
-<span class="nc" id="L263">    configuration.getFtpInternalConfiguration().getCommandChannelGroup()</span>
-<span class="nc" id="L264">                 .close();</span>
-<span class="nc" id="L265">    return result;</span>
+<span class="nc" id="L262">    final int result =</span>
+<span class="nc" id="L263">        configuration.getFtpInternalConfiguration().getCommandChannelGroup()</span>
+<span class="nc" id="L264">                     .size();</span>
+<span class="nc" id="L265">    configuration.getFtpInternalConfiguration().getCommandChannelGroup()</span>
+<span class="nc" id="L266">                 .close();</span>
+<span class="nc" id="L267">    return result;</span>
   }
 
   /**
@@ -274,11 +276,11 @@ public class FtpChannelUtils implements Runnable {
    */
   private static int terminateDataChannels(
       final FtpConfiguration configuration) {
-<span class="nc" id="L277">    final int result =</span>
-<span class="nc" id="L278">        configuration.getFtpInternalConfiguration().getDataChannelGroup()</span>
-<span class="nc" id="L279">                     .size();</span>
-<span class="nc" id="L280">    configuration.getFtpInternalConfiguration().getDataChannelGroup().close();</span>
-<span class="nc" id="L281">    return result;</span>
+<span class="nc" id="L279">    final int result =</span>
+<span class="nc" id="L280">        configuration.getFtpInternalConfiguration().getDataChannelGroup()</span>
+<span class="nc" id="L281">                     .size();</span>
+<span class="nc" id="L282">    configuration.getFtpInternalConfiguration().getDataChannelGroup().close();</span>
+<span class="nc" id="L283">    return result;</span>
   }
 
   /**
@@ -288,9 +290,9 @@ public class FtpChannelUtils implements Runnable {
    *
    * @return the current number of command connections
    */
-  public static int nbCommandChannels(FtpConfiguration configuration) {
-<span class="nc" id="L292">    return configuration.getFtpInternalConfiguration().getCommandChannelGroup()</span>
-<span class="nc" id="L293">                        .size();</span>
+  public static int nbCommandChannels(final FtpConfiguration configuration) {
+<span class="nc" id="L294">    return configuration.getFtpInternalConfiguration().getCommandChannelGroup()</span>
+<span class="nc" id="L295">                        .size();</span>
   }
 
   /**
@@ -300,9 +302,9 @@ public class FtpChannelUtils implements Runnable {
    *
    * @return the current number of data connections
    */
-  public static int nbDataChannels(FtpConfiguration configuration) {
-<span class="nc" id="L304">    return configuration.getFtpInternalConfiguration().getDataChannelGroup()</span>
-<span class="nc" id="L305">                        .size();</span>
+  public static int nbDataChannels(final FtpConfiguration configuration) {
+<span class="nc" id="L306">    return configuration.getFtpInternalConfiguration().getDataChannelGroup()</span>
+<span class="nc" id="L307">                        .size();</span>
   }
 
   /**
@@ -312,26 +314,26 @@ public class FtpChannelUtils implements Runnable {
    *
    * @return the number of positive command connections
    */
-  public static int validCommandChannels(FtpConfiguration configuration) {
-<span class="nc" id="L316">    int result = 0;</span>
+  public static int validCommandChannels(final FtpConfiguration configuration) {
+<span class="nc" id="L318">    int result = 0;</span>
     Channel channel;
-<span class="nc bnc" id="L318" title="All 2 branches missed.">    for (final Channel value : configuration.getFtpInternalConfiguration()</span>
-<span class="nc" id="L319">                                            .getCommandChannelGroup()) {</span>
-<span class="nc" id="L320">      channel = value;</span>
-<span class="nc bnc" id="L321" title="All 2 branches missed.">      if (channel.parent() != null) {</span>
+<span class="nc bnc" id="L320" title="All 2 branches missed.">    for (final Channel value : configuration.getFtpInternalConfiguration()</span>
+<span class="nc" id="L321">                                            .getCommandChannelGroup()) {</span>
+<span class="nc" id="L322">      channel = value;</span>
+<span class="nc bnc" id="L323" title="All 2 branches missed.">      if (channel.parent() != null) {</span>
         // Child Channel
-<span class="nc bnc" id="L323" title="All 2 branches missed.">        if (channel.isActive()) {</span>
+<span class="nc bnc" id="L325" title="All 2 branches missed.">        if (channel.isActive()) {</span>
           // Normal channel
-<span class="nc" id="L325">          result++;</span>
+<span class="nc" id="L327">          result++;</span>
         } else {
-<span class="nc" id="L327">          WaarpSslUtility.closingSslChannel(channel);</span>
+<span class="nc" id="L329">          WaarpSslUtility.closingSslChannel(channel);</span>
         }
       } else {
         // Parent channel
-<span class="nc" id="L331">        result++;</span>
+<span class="nc" id="L333">        result++;</span>
       }
-<span class="nc" id="L333">    }</span>
-<span class="nc" id="L334">    return result;</span>
+<span class="nc" id="L335">    }</span>
+<span class="nc" id="L336">    return result;</span>
   }
 
   /**
@@ -339,27 +341,27 @@ public class FtpChannelUtils implements Runnable {
    *
    * @param configuration
    */
-  protected static void exit(FtpConfiguration configuration) {
-<span class="nc" id="L343">    configuration.setShutdown(true);</span>
-<span class="nc" id="L344">    final long delay = configuration.getTimeoutCon() / 2;</span>
-<span class="nc" id="L345">    logger.warn(&quot;Exit: Give a delay of &quot; + delay + &quot; ms&quot;);</span>
-<span class="nc" id="L346">    configuration.inShutdownProcess();</span>
+  protected static void exit(final FtpConfiguration configuration) {
+<span class="nc" id="L345">    configuration.setShutdown(true);</span>
+<span class="nc" id="L346">    final long delay = configuration.getTimeoutCon() / 2;</span>
+<span class="nc" id="L347">    logger.warn(&quot;Exit: Give a delay of &quot; + delay + &quot; ms&quot;);</span>
+<span class="nc" id="L348">    configuration.inShutdownProcess();</span>
     try {
-<span class="nc" id="L348">      Thread.sleep(delay);</span>
-<span class="nc" id="L349">    } catch (final InterruptedException e) {//NOSONAR</span>
-<span class="nc" id="L350">      SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
-<span class="nc" id="L351">    }</span>
-<span class="nc" id="L352">    final Timer timer = new Timer(true);</span>
-<span class="nc" id="L353">    final FtpTimerTask timerTask = new FtpTimerTask(FtpTimerTask.TIMER_CONTROL);</span>
-<span class="nc" id="L354">    timerTask.setConfiguration(configuration);</span>
-<span class="nc" id="L355">    timer.schedule(timerTask, delay / 2);</span>
-<span class="nc" id="L356">    configuration.getFtpInternalConfiguration().getGlobalTrafficShapingHandler()</span>
-<span class="nc" id="L357">                 .release();</span>
-<span class="nc" id="L358">    configuration.releaseResources();</span>
-<span class="nc" id="L359">    logger.info(&quot;Exit Shutdown Data&quot;);</span>
-<span class="nc" id="L360">    terminateDataChannels(configuration);</span>
-<span class="nc" id="L361">    logger.warn(&quot;Exit end of Data Shutdown&quot;);</span>
-<span class="nc" id="L362">  }</span>
+<span class="nc" id="L350">      Thread.sleep(delay);</span>
+<span class="nc" id="L351">    } catch (final InterruptedException e) {//NOSONAR</span>
+<span class="nc" id="L352">      SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
+<span class="nc" id="L353">    }</span>
+<span class="nc" id="L354">    final Timer timer = new Timer(true);</span>
+<span class="nc" id="L355">    final FtpTimerTask timerTask = new FtpTimerTask(FtpTimerTask.TIMER_CONTROL);</span>
+<span class="nc" id="L356">    timerTask.setConfiguration(configuration);</span>
+<span class="nc" id="L357">    timer.schedule(timerTask, delay / 2);</span>
+<span class="nc" id="L358">    configuration.getFtpInternalConfiguration().getGlobalTrafficShapingHandler()</span>
+<span class="nc" id="L359">                 .release();</span>
+<span class="nc" id="L360">    configuration.releaseResources();</span>
+<span class="nc" id="L361">    logger.info(&quot;Exit Shutdown Data&quot;);</span>
+<span class="nc" id="L362">    terminateDataChannels(configuration);</span>
+<span class="nc" id="L363">    logger.warn(&quot;Exit end of Data Shutdown&quot;);</span>
+<span class="nc" id="L364">  }</span>
 
   /**
    * This function is the top function to be called when the server is to be
@@ -367,10 +369,10 @@ public class FtpChannelUtils implements Runnable {
    *
    * @param configuration
    */
-  public static void teminateServer(FtpConfiguration configuration) {
-<span class="nc" id="L371">    FtpShutdownHook.configuration = configuration;</span>
-<span class="nc" id="L372">    WaarpShutdownHook.terminate(false);</span>
-<span class="nc" id="L373">  }</span>
+  public static void teminateServer(final FtpConfiguration configuration) {
+<span class="nc" id="L373">    FtpShutdownHook.configuration = configuration;</span>
+<span class="nc" id="L374">    WaarpShutdownHook.terminate(false);</span>
+<span class="nc" id="L375">  }</span>
 
   /**
    * Add a command channel into the list
@@ -378,12 +380,12 @@ public class FtpChannelUtils implements Runnable {
    * @param channel
    * @param configuration
    */
-  public static void addCommandChannel(Channel channel,
-                                       FtpConfiguration configuration) {
+  public static void addCommandChannel(final Channel channel,
+                                       final FtpConfiguration configuration) {
     // logger.debug(&quot;Add Command Channel {}&quot;, channel)
-<span class="nc" id="L384">    configuration.getFtpInternalConfiguration().getCommandChannelGroup()</span>
-<span class="nc" id="L385">                 .add(channel);</span>
-<span class="nc" id="L386">  }</span>
+<span class="nc" id="L386">    configuration.getFtpInternalConfiguration().getCommandChannelGroup()</span>
+<span class="nc" id="L387">                 .add(channel);</span>
+<span class="nc" id="L388">  }</span>
 
   /**
    * Add a data channel into the list
@@ -391,39 +393,39 @@ public class FtpChannelUtils implements Runnable {
    * @param channel
    * @param configuration
    */
-  public static void addDataChannel(Channel channel,
-                                    FtpConfiguration configuration) {
+  public static void addDataChannel(final Channel channel,
+                                    final FtpConfiguration configuration) {
     // logger.debug(&quot;Add Data Channel {}&quot;, channel)
-<span class="nc" id="L397">    configuration.getFtpInternalConfiguration().getDataChannelGroup()</span>
-<span class="nc" id="L398">                 .add(channel);</span>
-<span class="nc" id="L399">  }</span>
+<span class="nc" id="L399">    configuration.getFtpInternalConfiguration().getDataChannelGroup()</span>
+<span class="nc" id="L400">                 .add(channel);</span>
+<span class="nc" id="L401">  }</span>
 
   /**
    * Used to run Exit command
    */
   private final FtpConfiguration configuration;
 
-<span class="nc" id="L406">  public FtpChannelUtils(FtpConfiguration configuration) {</span>
-<span class="nc" id="L407">    this.configuration = configuration;</span>
-<span class="nc" id="L408">  }</span>
+<span class="nc" id="L408">  public FtpChannelUtils(final FtpConfiguration configuration) {</span>
+<span class="nc" id="L409">    this.configuration = configuration;</span>
+<span class="nc" id="L410">  }</span>
 
   @Override
   public void run() {
-<span class="nc" id="L412">    exit(configuration);</span>
-<span class="nc" id="L413">  }</span>
+<span class="nc" id="L414">    exit(configuration);</span>
+<span class="nc" id="L415">  }</span>
 
   public static void stopLogger() {
-<span class="nc bnc" id="L416" title="All 2 branches missed.">    if (DetectionUtils.isJunit()) {</span>
-<span class="nc" id="L417">      return;</span>
+<span class="nc bnc" id="L418" title="All 2 branches missed.">    if (DetectionUtils.isJunit()) {</span>
+<span class="nc" id="L419">      return;</span>
     }
     if (WaarpLoggerFactory
-<span class="nc bnc" id="L420" title="All 2 branches missed.">            .getDefaultFactory() instanceof WaarpSlf4JLoggerFactory &amp;&amp;</span>
-<span class="nc bnc" id="L421" title="All 2 branches missed.">        !DetectionUtils.isJunit()) {</span>
+<span class="nc bnc" id="L422" title="All 2 branches missed.">            .getDefaultFactory() instanceof WaarpSlf4JLoggerFactory &amp;&amp;</span>
+<span class="nc bnc" id="L423" title="All 2 branches missed.">        !DetectionUtils.isJunit()) {</span>
       final LoggerContext lc =
-<span class="nc" id="L423">          (LoggerContext) LoggerFactory.getILoggerFactory();</span>
-<span class="nc" id="L424">      lc.stop();</span>
+<span class="nc" id="L425">          (LoggerContext) LoggerFactory.getILoggerFactory();</span>
+<span class="nc" id="L426">      lc.stop();</span>
     }
-<span class="nc" id="L426">  }</span>
+<span class="nc" id="L428">  }</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

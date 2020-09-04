@@ -72,12 +72,12 @@
 <a class="jxr_linenumber" name="L64" href="#L64">64</a>  
 <a class="jxr_linenumber" name="L65" href="#L65">65</a>      <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">final</strong> String constructor;
 <a class="jxr_linenumber" name="L66" href="#L66">66</a>  
-<a class="jxr_linenumber" name="L67" href="#L67">67</a>      DBType(<strong class="jxr_keyword">int</strong> type, String constructor) {
+<a class="jxr_linenumber" name="L67" href="#L67">67</a>      DBType(<strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong> type, <strong class="jxr_keyword">final</strong> String constructor) {
 <a class="jxr_linenumber" name="L68" href="#L68">68</a>        <strong class="jxr_keyword">this</strong>.type = type;
 <a class="jxr_linenumber" name="L69" href="#L69">69</a>        <strong class="jxr_keyword">this</strong>.constructor = constructor;
 <a class="jxr_linenumber" name="L70" href="#L70">70</a>      }
 <a class="jxr_linenumber" name="L71" href="#L71">71</a>  
-<a class="jxr_linenumber" name="L72" href="#L72">72</a>      <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> String getType(<strong class="jxr_keyword">int</strong> sqltype) {
+<a class="jxr_linenumber" name="L72" href="#L72">72</a>      <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> String getType(<strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong> sqltype) {
 <a class="jxr_linenumber" name="L73" href="#L73">73</a>        <strong class="jxr_keyword">switch</strong> (sqltype) {
 <a class="jxr_linenumber" name="L74" href="#L74">74</a>          <strong class="jxr_keyword">case</strong> Types.CHAR:
 <a class="jxr_linenumber" name="L75" href="#L75">75</a>            <strong class="jxr_keyword">return</strong> CHAR.constructor;
@@ -116,7 +116,7 @@
 <a class="jxr_linenumber" name="L108" href="#L108">108</a>   <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">final</strong> ReentrantLock lock = <strong class="jxr_keyword">new</strong> ReentrantLock();
 <a class="jxr_linenumber" name="L109" href="#L109">109</a> 
 <a class="jxr_linenumber" name="L110" href="#L110">110</a>   @Override
-<a class="jxr_linenumber" name="L111" href="#L111">111</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> resetSequence(<a name="DbSession" href="../../../../../org/waarp/common/database/DbSession.html#DbSession">DbSession</a> session, <strong class="jxr_keyword">long</strong> newvalue)
+<a class="jxr_linenumber" name="L111" href="#L111">111</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> resetSequence(<strong class="jxr_keyword">final</strong> <a name="DbSession" href="../../../../../org/waarp/common/database/DbSession.html#DbSession">DbSession</a> session, <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">long</strong> newvalue)
 <a class="jxr_linenumber" name="L112" href="#L112">112</a>       <strong class="jxr_keyword">throws</strong> <a name="WaarpDatabaseNoConnectionException" href="../../../../../org/waarp/common/database/exception/WaarpDatabaseNoConnectionException.html#WaarpDatabaseNoConnectionException">WaarpDatabaseNoConnectionException</a> {
 <a class="jxr_linenumber" name="L113" href="#L113">113</a>     <strong class="jxr_keyword">final</strong> String action =
 <a class="jxr_linenumber" name="L114" href="#L114">114</a>         <span class="jxr_string">"UPDATE Sequences SET seq = "</span> + newvalue + <span class="jxr_string">" WHERE name = '"</span> +
@@ -135,7 +135,7 @@
 <a class="jxr_linenumber" name="L127" href="#L127">127</a>   }
 <a class="jxr_linenumber" name="L128" href="#L128">128</a> 
 <a class="jxr_linenumber" name="L129" href="#L129">129</a>   @Override
-<a class="jxr_linenumber" name="L130" href="#L130">130</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">synchronized</strong> <strong class="jxr_keyword">long</strong> nextSequence(<a name="DbSession" href="../../../../../org/waarp/common/database/DbSession.html#DbSession">DbSession</a> dbSession)
+<a class="jxr_linenumber" name="L130" href="#L130">130</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">synchronized</strong> <strong class="jxr_keyword">long</strong> nextSequence(<strong class="jxr_keyword">final</strong> <a name="DbSession" href="../../../../../org/waarp/common/database/DbSession.html#DbSession">DbSession</a> dbSession)
 <a class="jxr_linenumber" name="L131" href="#L131">131</a>       <strong class="jxr_keyword">throws</strong> WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException,
 <a class="jxr_linenumber" name="L132" href="#L132">132</a>              <a name="WaarpDatabaseNoDataException" href="../../../../../org/waarp/common/database/exception/WaarpDatabaseNoDataException.html#WaarpDatabaseNoDataException">WaarpDatabaseNoDataException</a> {
 <a class="jxr_linenumber" name="L133" href="#L133">133</a>     lock.lock();
@@ -184,25 +184,27 @@
 <a class="jxr_linenumber" name="L176" href="#L176">176</a>         dbSession.getConn().setAutoCommit(<strong class="jxr_keyword">true</strong>);
 <a class="jxr_linenumber" name="L177" href="#L177">177</a>       } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> SQLException ignored) {
 <a class="jxr_linenumber" name="L178" href="#L178">178</a>         SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
-<a class="jxr_linenumber" name="L179" href="#L179">179</a>       }
-<a class="jxr_linenumber" name="L180" href="#L180">180</a>       lock.unlock();
-<a class="jxr_linenumber" name="L181" href="#L181">181</a>     }
-<a class="jxr_linenumber" name="L182" href="#L182">182</a>   }
-<a class="jxr_linenumber" name="L183" href="#L183">183</a> 
-<a class="jxr_linenumber" name="L184" href="#L184">184</a>   @Override
-<a class="jxr_linenumber" name="L185" href="#L185">185</a>   <strong class="jxr_keyword">protected</strong> String validConnectionString() {
-<a class="jxr_linenumber" name="L186" href="#L186">186</a>     <strong class="jxr_keyword">return</strong> <span class="jxr_string">"select 1 from dual"</span>;
-<a class="jxr_linenumber" name="L187" href="#L187">187</a>   }
-<a class="jxr_linenumber" name="L188" href="#L188">188</a> 
-<a class="jxr_linenumber" name="L189" href="#L189">189</a>   @Override
-<a class="jxr_linenumber" name="L190" href="#L190">190</a>   <strong class="jxr_keyword">public</strong> String limitRequest(String allfields, String request, <strong class="jxr_keyword">int</strong> nb) {
-<a class="jxr_linenumber" name="L191" href="#L191">191</a>     <strong class="jxr_keyword">if</strong> (nb == 0) {
-<a class="jxr_linenumber" name="L192" href="#L192">192</a>       <strong class="jxr_keyword">return</strong> request;
-<a class="jxr_linenumber" name="L193" href="#L193">193</a>     }
-<a class="jxr_linenumber" name="L194" href="#L194">194</a>     <strong class="jxr_keyword">return</strong> request + <span class="jxr_string">" LIMIT "</span> + nb;
-<a class="jxr_linenumber" name="L195" href="#L195">195</a>   }
-<a class="jxr_linenumber" name="L196" href="#L196">196</a> 
-<a class="jxr_linenumber" name="L197" href="#L197">197</a> }
+<a class="jxr_linenumber" name="L179" href="#L179">179</a>       } <strong class="jxr_keyword">finally</strong> {
+<a class="jxr_linenumber" name="L180" href="#L180">180</a>         lock.unlock();
+<a class="jxr_linenumber" name="L181" href="#L181">181</a>       }
+<a class="jxr_linenumber" name="L182" href="#L182">182</a>     }
+<a class="jxr_linenumber" name="L183" href="#L183">183</a>   }
+<a class="jxr_linenumber" name="L184" href="#L184">184</a> 
+<a class="jxr_linenumber" name="L185" href="#L185">185</a>   @Override
+<a class="jxr_linenumber" name="L186" href="#L186">186</a>   <strong class="jxr_keyword">protected</strong> String validConnectionString() {
+<a class="jxr_linenumber" name="L187" href="#L187">187</a>     <strong class="jxr_keyword">return</strong> <span class="jxr_string">"select 1 from dual"</span>;
+<a class="jxr_linenumber" name="L188" href="#L188">188</a>   }
+<a class="jxr_linenumber" name="L189" href="#L189">189</a> 
+<a class="jxr_linenumber" name="L190" href="#L190">190</a>   @Override
+<a class="jxr_linenumber" name="L191" href="#L191">191</a>   <strong class="jxr_keyword">public</strong> String limitRequest(<strong class="jxr_keyword">final</strong> String allfields, <strong class="jxr_keyword">final</strong> String request,
+<a class="jxr_linenumber" name="L192" href="#L192">192</a>                              <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong> nb) {
+<a class="jxr_linenumber" name="L193" href="#L193">193</a>     <strong class="jxr_keyword">if</strong> (nb == 0) {
+<a class="jxr_linenumber" name="L194" href="#L194">194</a>       <strong class="jxr_keyword">return</strong> request;
+<a class="jxr_linenumber" name="L195" href="#L195">195</a>     }
+<a class="jxr_linenumber" name="L196" href="#L196">196</a>     <strong class="jxr_keyword">return</strong> request + <span class="jxr_string">" LIMIT "</span> + nb;
+<a class="jxr_linenumber" name="L197" href="#L197">197</a>   }
+<a class="jxr_linenumber" name="L198" href="#L198">198</a> 
+<a class="jxr_linenumber" name="L199" href="#L199">199</a> }
 </pre>
 <hr/>
 <div id="footer">Copyright &#169; 2009&#x2013;2020 <a href="http://www.waarp.fr">Waarp</a>. All rights reserved.</div>

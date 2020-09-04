@@ -71,7 +71,7 @@ import static org.waarp.openr66.protocol.configuration.Configuration.*;
      *
      * @param uniquefile
      */
-<span class="fc" id="L74">    REQUEST(String uniquefile) {</span>
+<span class="fc" id="L74">    REQUEST(final String uniquefile) {</span>
 <span class="fc" id="L75">      header = uniquefile;</span>
 <span class="fc" id="L76">    }</span>
 
@@ -80,14 +80,14 @@ import static org.waarp.openr66.protocol.configuration.Configuration.*;
      *
      * @return the content of the unique file
      */
-    public String readFileUnique(HttpSslHandlerProxyR66 handler) {
+    public String readFileUnique(final HttpSslHandlerProxyR66 handler) {
 <span class="fc" id="L84">      return handler</span>
 <span class="fc" id="L85">          .readFileHeaderInternal(configuration.getHttpBasePath() + header);</span>
     }
   }
 
-  private String readFileHeaderInternal(String filename) {
-    String value;
+  private String readFileHeaderInternal(final String filename) {
+    final String value;
     try {
 <span class="fc" id="L92">      value = WaarpStringUtils.readFileException(filename);</span>
 <span class="nc" id="L93">    } catch (final InvalidArgumentException e) {</span>
@@ -149,7 +149,7 @@ import static org.waarp.openr66.protocol.configuration.Configuration.*;
   /**
    * @param builder
    */
-  private void replaceStringSystem(StringBuilder builder) {
+  private void replaceStringSystem(final StringBuilder builder) {
 <span class="fc" id="L153">    WaarpStringUtils</span>
 <span class="fc" id="L154">        .replace(builder, REPLACEMENT.XXXXSESSIONLIMITWXXX.toString(),</span>
 <span class="fc" id="L155">                 Long.toString(configuration.getServerChannelWriteLimit()));</span>
@@ -249,7 +249,7 @@ import static org.waarp.openr66.protocol.configuration.Configuration.*;
 <span class="nc" id="L249">          forceClose = true;</span>
 <span class="nc" id="L250">          return logon;</span>
 <span class="nc bnc" id="L251" title="All 2 branches missed.">        } else if (&quot;Shutdown&quot;.equalsIgnoreCase(act)) {</span>
-          String error;
+          final String error;
 <span class="nc bnc" id="L253" title="All 2 branches missed.">          if (configuration.getShutdownConfiguration().serviceFuture != null) {</span>
 <span class="nc" id="L254">            error =</span>
 <span class="nc" id="L255">                error(Messages.getString(&quot;HttpSslHandler.38&quot;)); //$NON-NLS-1$</span>
@@ -373,7 +373,7 @@ import static org.waarp.openr66.protocol.configuration.Configuration.*;
     }
 <span class="fc" id="L374">  }</span>
 
-  private void checkAuthentProxy(ChannelHandlerContext ctx) {
+  private void checkAuthentProxy(final ChannelHandlerContext ctx) {
 <span class="fc" id="L377">    newSession = true;</span>
 <span class="fc bfc" id="L378" title="All 2 branches covered.">    if (request.method() == HttpMethod.GET) {</span>
 <span class="fc" id="L379">      String logon = logon();</span>
@@ -472,8 +472,8 @@ import static org.waarp.openr66.protocol.configuration.Configuration.*;
 <span class="fc" id="L472">  }</span>
 
   @Override
-  protected void channelRead0(ChannelHandlerContext ctx, FullHttpRequest msg)
-      throws Exception {
+  protected void channelRead0(final ChannelHandlerContext ctx,
+                              final FullHttpRequest msg) throws Exception {
 <span class="fc" id="L477">    final FullHttpRequest request = this.request = msg;</span>
 <span class="fc" id="L478">    final QueryStringDecoder queryStringDecoder =</span>
 <span class="fc" id="L479">        new QueryStringDecoder(request.uri());</span>
@@ -508,18 +508,15 @@ import static org.waarp.openr66.protocol.configuration.Configuration.*;
 <span class="fc" id="L508">          logger.debug(&quot;NotFound: &quot; + find + ':' + uriRequest);</span>
 <span class="fc" id="L509">        }</span>
       }
-<span class="fc bfc" id="L511" title="All 2 branches covered.">      switch (req) {</span>
-        case System:
-<span class="fc" id="L513">          responseContent.append(System());</span>
-<span class="fc" id="L514">          break;</span>
-        default:
-<span class="fc" id="L516">          responseContent.append(indexProxy());</span>
-          break;
+<span class="fc bfc" id="L511" title="All 2 branches covered.">      if (req == REQUEST.System) {</span>
+<span class="fc" id="L512">        responseContent.append(System());</span>
+      } else {
+<span class="fc" id="L514">        responseContent.append(indexProxy());</span>
       }
-<span class="fc" id="L519">      writeResponse(ctx);</span>
+<span class="fc" id="L516">      writeResponse(ctx);</span>
     } finally {
-<span class="fc" id="L521">      closeConnection();</span>
+<span class="fc" id="L518">      closeConnection();</span>
     }
-<span class="fc" id="L523">  }</span>
+<span class="fc" id="L520">  }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

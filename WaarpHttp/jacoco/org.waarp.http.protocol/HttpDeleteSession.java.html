@@ -41,7 +41,6 @@ public class HttpDeleteSession extends HttpSessionAbstract {
 <span class="nc" id="L41">  private static final WaarpLogger logger =</span>
 <span class="nc" id="L42">      WaarpLoggerFactory.getLogger(HttpDeleteSession.class);</span>
   private final String identifier;
-  private final DbTaskRunner runner;
   private final File file;
 
   /**
@@ -54,28 +53,30 @@ public class HttpDeleteSession extends HttpSessionAbstract {
    */
   public HttpDeleteSession(final String identifier, final HttpAuthent authent)
       throws WaarpDatabaseException, OpenR66RunnerErrorException {
-<span class="nc" id="L57">    super(authent);</span>
-<span class="nc" id="L58">    this.identifier = identifier;</span>
+<span class="nc" id="L56">    super(authent);</span>
+<span class="nc" id="L57">    this.identifier = identifier;</span>
+    final DbTaskRunner runner;
 <span class="nc bnc" id="L59" title="All 2 branches missed.">    if (!DetectionUtils.isJunit()) {</span>
 <span class="nc" id="L60">      checkAuthentR66Business(this, session, authent);</span>
 <span class="nc" id="L61">      runner = getDbTaskRunner(authent.getUserId(), identifier);</span>
       try {
 <span class="nc" id="L63">        session.getDir().changeDirectory(runner.getRule().getRecvPath());</span>
-<span class="nc" id="L64">      } catch (CommandAbstractException e) {</span>
+<span class="nc" id="L64">      } catch (final CommandAbstractException e) {</span>
         // Nothing: ignore
 <span class="nc" id="L66">      }</span>
-<span class="nc" id="L67">      String baseDir = runner.getRule().getRecvPath();</span>
-<span class="nc" id="L68">      String path = session.getDir().getFullPath();</span>
-<span class="nc" id="L69">      String filepath_in = runner.getFilename();</span>
-<span class="nc" id="L70">      String finalPath = filepath_in.replace(baseDir, path).replace(&quot;//&quot;, &quot;/&quot;);</span>
-<span class="nc" id="L71">      logger.info(&quot;From {} to {} using {} gives {}&quot;, baseDir, path, filepath_in,</span>
+<span class="nc" id="L67">      final String baseDir = runner.getRule().getRecvPath();</span>
+<span class="nc" id="L68">      final String path = session.getDir().getFullPath();</span>
+<span class="nc" id="L69">      final String filepath_in = runner.getFilename();</span>
+<span class="nc" id="L70">      final String finalPath =</span>
+<span class="nc" id="L71">          filepath_in.replace(baseDir, path).replace(&quot;//&quot;, &quot;/&quot;);</span>
+<span class="nc" id="L72">      logger.info(&quot;From {} to {} using {} gives {}&quot;, baseDir, path, filepath_in,</span>
                   finalPath);
-<span class="nc" id="L73">      file = new File(finalPath);</span>
-<span class="nc" id="L74">    } else {</span>
-<span class="nc" id="L75">      runner = null;</span>
-<span class="nc" id="L76">      file = null;</span>
+<span class="nc" id="L74">      file = new File(finalPath);</span>
+<span class="nc" id="L75">    } else {</span>
+<span class="nc" id="L76">      runner = null;</span>
+<span class="nc" id="L77">      file = null;</span>
     }
-<span class="nc" id="L78">  }</span>
+<span class="nc" id="L79">  }</span>
 
   /**
    * Reload the DbTaskRunner for this user and rulename
@@ -90,23 +91,22 @@ public class HttpDeleteSession extends HttpSessionAbstract {
   private DbTaskRunner getDbTaskRunner(final String user,
                                        final String identifier)
       throws IllegalArgumentException, WaarpDatabaseException {
-<span class="nc" id="L93">    long specialId = Long.parseLong(identifier);</span>
-<span class="nc" id="L94">    final String requested = Configuration.configuration.getHostId();</span>
-<span class="nc" id="L95">    final String requester = user;</span>
+<span class="nc" id="L94">    final long specialId = Long.parseLong(identifier);</span>
+<span class="nc" id="L95">    final String requested = Configuration.configuration.getHostId();</span>
 <span class="nc" id="L96">    DbTaskRunner runner = null;</span>
 
     // Try to reload it
     try {
-<span class="nc" id="L100">      logger.debug(&quot;{} {} &lt;-&gt; {}&quot;, specialId, requester, requested);</span>
-<span class="nc" id="L101">      runner = new DbTaskRunner(specialId, requester, requested);</span>
-<span class="nc" id="L102">    } catch (WaarpDatabaseException e) {</span>
-<span class="nc" id="L103">      logger.debug(&quot;{} {} {}&quot;, specialId, requester, requested);</span>
-<span class="nc" id="L104">      runner = new DbTaskRunner(specialId, requested, requester);</span>
+<span class="nc" id="L100">      logger.debug(&quot;{} {} &lt;-&gt; {}&quot;, specialId, user, requested);</span>
+<span class="nc" id="L101">      runner = new DbTaskRunner(specialId, user, requested);</span>
+<span class="nc" id="L102">    } catch (final WaarpDatabaseException e) {</span>
+<span class="nc" id="L103">      logger.debug(&quot;{} {} {}&quot;, specialId, user, requested);</span>
+<span class="nc" id="L104">      runner = new DbTaskRunner(specialId, requested, user);</span>
 <span class="nc" id="L105">    }</span>
 <span class="nc" id="L106">    runner.setSender(true);</span>
     try {
 <span class="nc" id="L108">      session.setRunner(runner);</span>
-<span class="nc" id="L109">    } catch (OpenR66RunnerErrorException e) {</span>
+<span class="nc" id="L109">    } catch (final OpenR66RunnerErrorException e) {</span>
 <span class="nc" id="L110">      logger.debug(e);</span>
 <span class="nc" id="L111">    }</span>
 <span class="nc" id="L112">    session.setReady(true);</span>
@@ -128,7 +128,7 @@ public class HttpDeleteSession extends HttpSessionAbstract {
   }
 
   @Override
-  public void error(Exception e, R66BusinessInterface business)
+  public void error(final Exception e, final R66BusinessInterface business)
       throws IllegalArgumentException {
 <span class="nc" id="L133">    logger.error(e);</span>
 <span class="nc bnc" id="L134" title="All 2 branches missed.">    if (business != null) {</span>

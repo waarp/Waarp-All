@@ -30,6 +30,7 @@ import org.waarp.common.database.exception.WaarpDatabaseNoDataException;
 import org.waarp.common.database.exception.WaarpDatabaseSqlException;
 import org.waarp.common.file.DirInterface;
 import org.waarp.common.file.FileUtils;
+import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.xml.XmlDecl;
@@ -38,6 +39,11 @@ import org.waarp.common.xml.XmlType;
 import org.waarp.common.xml.XmlUtil;
 import org.waarp.common.xml.XmlValue;
 import org.waarp.openr66.context.task.TaskType;
+import org.waarp.openr66.dao.DAOFactory;
+import org.waarp.openr66.dao.RuleDAO;
+import org.waarp.openr66.dao.exception.DAOConnectionException;
+import org.waarp.openr66.dao.xml.XMLDAOFactory;
+import org.waarp.openr66.dao.xml.XMLRuleDAO;
 import org.waarp.openr66.database.data.DbRule;
 import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolNoDataException;
@@ -60,8 +66,8 @@ public final class RuleFileBasedConfiguration {
   /**
    * Internal Logger
    */
-<span class="fc" id="L63">  private static final WaarpLogger logger =</span>
-<span class="fc" id="L64">      WaarpLoggerFactory.getLogger(RuleFileBasedConfiguration.class);</span>
+<span class="fc" id="L69">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L70">      WaarpLoggerFactory.getLogger(RuleFileBasedConfiguration.class);</span>
 
   public static final String MULTIPLEROOT = &quot;rules&quot;;
   public static final String ROOT = &quot;rule&quot;;
@@ -86,15 +92,15 @@ public final class RuleFileBasedConfiguration {
 
   private static final String TASK = &quot;/tasks/task&quot;;
 
-<span class="fc" id="L89">  private static final XmlDecl[] taskDecl = {</span>
+<span class="fc" id="L95">  private static final XmlDecl[] taskDecl = {</span>
       new XmlDecl(XmlType.STRING, DbRule.TASK_TYPE),
       new XmlDecl(XmlType.STRING, DbRule.TASK_PATH),
       new XmlDecl(XmlType.LONG, DbRule.TASK_DELAY),
       new XmlDecl(XmlType.STRING, DbRule.TASK_COMMENT)
   };
-<span class="fc" id="L95">  public static final XmlDecl[] tasksDecl =</span>
+<span class="fc" id="L101">  public static final XmlDecl[] tasksDecl =</span>
       { new XmlDecl(XTASK, XmlType.XVAL, TASK, taskDecl, true) };
-<span class="fc" id="L97">  private static final XmlDecl[] subruleDecls = {</span>
+<span class="fc" id="L103">  private static final XmlDecl[] subruleDecls = {</span>
       new XmlDecl(XmlType.STRING, XIDRULE),
       new XmlDecl(XHOSTIDS, XmlType.STRING, HOSTIDS_HOSTID, true),
       new XmlDecl(XmlType.INTEGER, XMODE),
@@ -109,13 +115,13 @@ public final class RuleFileBasedConfiguration {
       new XmlDecl(XSPOSTTASKS, XmlType.XVAL, XSPOSTTASKS, tasksDecl, false),
       new XmlDecl(XSERRORTASKS, XmlType.XVAL, XSERRORTASKS, tasksDecl, false)
   };
-<span class="fc" id="L112">  private static final XmlDecl[] ruleDecls =</span>
+<span class="fc" id="L118">  private static final XmlDecl[] ruleDecls =</span>
       { new XmlDecl(ROOT, XmlType.XVAL, ROOT, subruleDecls, false) };
-<span class="fc" id="L114">  private static final XmlDecl[] multipleruleDecls = {</span>
+<span class="fc" id="L120">  private static final XmlDecl[] multipleruleDecls = {</span>
       new XmlDecl(MULTIPLEROOT, XmlType.XVAL, '/' + MULTIPLEROOT + '/' + ROOT,
                   subruleDecls, true)
   };
-<span class="fc" id="L118">  public static final XmlDecl[] hostsDecls =</span>
+<span class="fc" id="L124">  public static final XmlDecl[] hostsDecls =</span>
       { new XmlDecl(XHOSTIDS, XmlType.STRING, HOSTIDS_HOSTID, true), };
 
   /**
@@ -126,8 +132,8 @@ public final class RuleFileBasedConfiguration {
    * Extension of multiple rules in one file
    */
   public static final String EXT_RULES = &quot;.rules.xml&quot;;
-<span class="fc" id="L129">  private static final String[][] STRINGS_0_0_LENGTH = new String[0][0];</span>
-<span class="fc" id="L130">  private static final String[] STRING_0_LENGTH = new String[0];</span>
+<span class="fc" id="L135">  private static final String[][] STRINGS_0_0_LENGTH = new String[0][0];</span>
+<span class="fc" id="L136">  private static final String[] STRING_0_LENGTH = new String[0];</span>
 
   private RuleFileBasedConfiguration() {
   }
@@ -140,20 +146,38 @@ public final class RuleFileBasedConfiguration {
    * @throws OpenR66ProtocolSystemException
    * @throws WaarpDatabaseException
    */
-  public static void importRules(File configDirectory)
+  public static void importRules(final File configDirectory)
       throws OpenR66ProtocolSystemException, WaarpDatabaseException {
-<span class="fc" id="L145">    File[] files =</span>
-<span class="fc" id="L146">        FileUtils.getFiles(configDirectory, new ExtensionFilter(EXT_RULE));</span>
-<span class="fc bfc" id="L147" title="All 2 branches covered.">    for (final File file : files) {</span>
-<span class="fc" id="L148">      logger.info(&quot;Load rule from {}&quot;, file.getAbsolutePath());</span>
-<span class="fc" id="L149">      final DbRule rule = getFromFile(file);</span>
-<span class="fc" id="L150">      logger.debug(rule.toString());</span>
+<span class="fc" id="L151">    final DAOFactory daoFactory = DAOFactory.getInstance();</span>
+<span class="pc bpc" id="L152" title="1 of 2 branches missed.">    if (daoFactory instanceof XMLDAOFactory) {</span>
+<span class="nc" id="L153">      RuleDAO ruleDAO = null;</span>
+      try {
+<span class="nc" id="L155">        ruleDAO = daoFactory.getRuleDAO();</span>
+<span class="nc bnc" id="L156" title="All 2 branches missed.">        if (ruleDAO instanceof XMLRuleDAO) {</span>
+<span class="nc" id="L157">          final XMLRuleDAO xmlRuleDAO = (XMLRuleDAO) ruleDAO;</span>
+          // To allow loading into cache all Rules
+<span class="nc" id="L159">          xmlRuleDAO.getAll();</span>
+        }
+<span class="nc" id="L161">      } catch (final DAOConnectionException e) {</span>
+<span class="nc" id="L162">        SysErrLogger.FAKE_LOGGER.syserr(e);</span>
+      } finally {
+<span class="nc bnc" id="L164" title="All 2 branches missed.">        if (ruleDAO != null) {</span>
+<span class="nc" id="L165">          ruleDAO.close();</span>
+        }
+      }
     }
-<span class="fc" id="L152">    files = FileUtils.getFiles(configDirectory, new ExtensionFilter(EXT_RULES));</span>
-<span class="pc bpc" id="L153" title="1 of 2 branches missed.">    for (final File file : files) {</span>
-<span class="nc" id="L154">      getMultipleFromFile(file);</span>
+<span class="fc" id="L169">    File[] files =</span>
+<span class="fc" id="L170">        FileUtils.getFiles(configDirectory, new ExtensionFilter(EXT_RULE));</span>
+<span class="fc bfc" id="L171" title="All 2 branches covered.">    for (final File file : files) {</span>
+<span class="fc" id="L172">      logger.info(&quot;Load rule from {}&quot;, file.getAbsolutePath());</span>
+<span class="fc" id="L173">      final DbRule rule = getFromFile(file);</span>
+<span class="fc" id="L174">      logger.debug(rule.toString());</span>
     }
-<span class="fc" id="L156">  }</span>
+<span class="fc" id="L176">    files = FileUtils.getFiles(configDirectory, new ExtensionFilter(EXT_RULES));</span>
+<span class="pc bpc" id="L177" title="1 of 2 branches missed.">    for (final File file : files) {</span>
+<span class="nc" id="L178">      getMultipleFromFile(file);</span>
+    }
+<span class="fc" id="L180">  }</span>
 
   /**
    * Utility function
@@ -163,68 +187,68 @@ public final class RuleFileBasedConfiguration {
    * @return the array of tasks or empty array if in error.
    */
   @SuppressWarnings(&quot;unchecked&quot;)
-  public static String[][] getTasksRule(XmlValue value) {
-<span class="fc" id="L167">    List&lt;XmlValue[]&gt; list = (List&lt;XmlValue[]&gt;) value.getList();</span>
-<span class="pc bpc" id="L168" title="1 of 4 branches missed.">    if (list == null || list.isEmpty()) {</span>
-<span class="fc" id="L169">      logger.debug(&quot;NoRule for &quot; + value.getName());</span>
+  public static String[][] getTasksRule(final XmlValue value) {
+<span class="fc" id="L191">    final List&lt;XmlValue[]&gt; list = (List&lt;XmlValue[]&gt;) value.getList();</span>
+<span class="pc bpc" id="L192" title="1 of 4 branches missed.">    if (list == null || list.isEmpty()) {</span>
+<span class="fc" id="L193">      logger.debug(&quot;NoRule for &quot; + value.getName());</span>
       // Unable to find the tasks for Rule, setting to the default
-<span class="fc" id="L171">      return STRINGS_0_0_LENGTH;</span>
+<span class="fc" id="L195">      return STRINGS_0_0_LENGTH;</span>
     }
-<span class="fc" id="L173">    final String[][] taskArray = new String[list.size()][4];</span>
-<span class="fc bfc" id="L174" title="All 2 branches covered.">    for (int i = 0; i &lt; list.size(); i++) {</span>
-<span class="fc" id="L175">      taskArray[i][0] = null;</span>
-<span class="fc" id="L176">      taskArray[i][1] = null;</span>
-<span class="fc" id="L177">      taskArray[i][2] = null;</span>
-<span class="fc" id="L178">      taskArray[i][3] = null;</span>
+<span class="fc" id="L197">    final String[][] taskArray = new String[list.size()][4];</span>
+<span class="fc bfc" id="L198" title="All 2 branches covered.">    for (int i = 0; i &lt; list.size(); i++) {</span>
+<span class="fc" id="L199">      taskArray[i][0] = null;</span>
+<span class="fc" id="L200">      taskArray[i][1] = null;</span>
+<span class="fc" id="L201">      taskArray[i][2] = null;</span>
+<span class="fc" id="L202">      taskArray[i][3] = null;</span>
     }
-<span class="fc" id="L180">    int rank = 0;</span>
-<span class="fc bfc" id="L181" title="All 2 branches covered.">    for (final XmlValue[] subvals : list) {</span>
-<span class="fc" id="L182">      final XmlHash hash = new XmlHash(subvals);</span>
-<span class="fc" id="L183">      final XmlValue valtype = hash.get(DbRule.TASK_TYPE);</span>
-<span class="pc bpc" id="L184" title="2 of 4 branches missed.">      if (valtype == null || valtype.isEmpty() ||</span>
-<span class="pc bpc" id="L185" title="1 of 2 branches missed.">          valtype.getString().isEmpty()) {</span>
-<span class="nc" id="L186">        continue;</span>
+<span class="fc" id="L204">    int rank = 0;</span>
+<span class="fc bfc" id="L205" title="All 2 branches covered.">    for (final XmlValue[] subvals : list) {</span>
+<span class="fc" id="L206">      final XmlHash hash = new XmlHash(subvals);</span>
+<span class="fc" id="L207">      final XmlValue valtype = hash.get(DbRule.TASK_TYPE);</span>
+<span class="pc bpc" id="L208" title="2 of 4 branches missed.">      if (valtype == null || valtype.isEmpty() ||</span>
+<span class="pc bpc" id="L209" title="1 of 2 branches missed.">          valtype.getString().isEmpty()) {</span>
+<span class="nc" id="L210">        continue;</span>
       }
-<span class="fc" id="L188">      final XmlValue valpath = hash.get(DbRule.TASK_PATH);</span>
-<span class="pc bpc" id="L189" title="2 of 4 branches missed.">      if (valpath == null || valpath.isEmpty() ||</span>
-<span class="pc bpc" id="L190" title="1 of 2 branches missed.">          valtype.getString().isEmpty()) {</span>
-<span class="nc" id="L191">        continue;</span>
+<span class="fc" id="L212">      final XmlValue valpath = hash.get(DbRule.TASK_PATH);</span>
+<span class="pc bpc" id="L213" title="2 of 4 branches missed.">      if (valpath == null || valpath.isEmpty() ||</span>
+<span class="pc bpc" id="L214" title="1 of 2 branches missed.">          valtype.getString().isEmpty()) {</span>
+<span class="nc" id="L215">        continue;</span>
       }
-<span class="fc" id="L193">      final XmlValue valdelay = hash.get(DbRule.TASK_DELAY);</span>
-      String delay;
-<span class="pc bpc" id="L195" title="2 of 4 branches missed.">      if (valdelay == null || valdelay.isEmpty()) {</span>
-<span class="nc" id="L196">        delay = Long.toString(Configuration.configuration.getTimeoutCon());</span>
+<span class="fc" id="L217">      final XmlValue valdelay = hash.get(DbRule.TASK_DELAY);</span>
+      final String delay;
+<span class="pc bpc" id="L219" title="1 of 4 branches missed.">      if (valdelay == null || valdelay.isEmpty()) {</span>
+<span class="fc" id="L220">        delay = Long.toString(Configuration.configuration.getTimeoutCon());</span>
       } else {
-<span class="fc" id="L198">        delay = valdelay.getIntoString();</span>
+<span class="fc" id="L222">        delay = valdelay.getIntoString();</span>
       }
-<span class="fc" id="L200">      final XmlValue valcomment = hash.get(DbRule.TASK_COMMENT);</span>
-      String comment;
-<span class="pc bpc" id="L202" title="2 of 4 branches missed.">      if (valcomment == null || valcomment.isEmpty() ||</span>
-<span class="nc bnc" id="L203" title="All 2 branches missed.">          valcomment.getString().isEmpty()) {</span>
-<span class="fc" id="L204">        comment = &quot;&quot;;</span>
+<span class="fc" id="L224">      final XmlValue valcomment = hash.get(DbRule.TASK_COMMENT);</span>
+      final String comment;
+<span class="pc bpc" id="L226" title="2 of 4 branches missed.">      if (valcomment == null || valcomment.isEmpty() ||</span>
+<span class="nc bnc" id="L227" title="All 2 branches missed.">          valcomment.getString().isEmpty()) {</span>
+<span class="fc" id="L228">        comment = &quot;&quot;;</span>
       } else {
-<span class="nc" id="L206">        comment = valcomment.getString();</span>
+<span class="nc" id="L230">        comment = valcomment.getString();</span>
       }
-<span class="fc" id="L208">      taskArray[rank][0] = valtype.getString().toUpperCase();</span>
+<span class="fc" id="L232">      taskArray[rank][0] = valtype.getString().toUpperCase();</span>
       // CHECK TASK_TYPE
       try {
-<span class="fc" id="L211">        TaskType.valueOf(taskArray[rank][0]);</span>
-<span class="nc" id="L212">      } catch (final IllegalArgumentException e) {</span>
+<span class="fc" id="L235">        TaskType.valueOf(taskArray[rank][0]);</span>
+<span class="nc" id="L236">      } catch (final IllegalArgumentException e) {</span>
         // Bad Type
-<span class="nc" id="L214">        logger.warn(&quot;Bad Type of Task: &quot; + taskArray[rank][0]);</span>
-<span class="nc" id="L215">        continue;</span>
-<span class="fc" id="L216">      }</span>
-<span class="fc" id="L217">      taskArray[rank][1] = valpath.getString();</span>
-<span class="fc" id="L218">      taskArray[rank][2] = delay;</span>
-<span class="fc" id="L219">      taskArray[rank][3] = comment;</span>
-<span class="fc" id="L220">      logger.debug(</span>
-<span class="fc" id="L221">          &quot;RuleTask: &quot; + valtype.getString() + ':' + valpath.getString() + ':' +</span>
+<span class="nc" id="L238">        logger.warn(&quot;Bad Type of Task: &quot; + taskArray[rank][0]);</span>
+<span class="nc" id="L239">        continue;</span>
+<span class="fc" id="L240">      }</span>
+<span class="fc" id="L241">      taskArray[rank][1] = valpath.getString();</span>
+<span class="fc" id="L242">      taskArray[rank][2] = delay;</span>
+<span class="fc" id="L243">      taskArray[rank][3] = comment;</span>
+<span class="fc" id="L244">      logger.debug(</span>
+<span class="fc" id="L245">          &quot;RuleTask: &quot; + valtype.getString() + ':' + valpath.getString() + ':' +</span>
           delay + ':' + comment);
-<span class="fc" id="L223">      rank++;</span>
-<span class="fc" id="L224">      hash.clear();</span>
-<span class="fc" id="L225">    }</span>
-<span class="fc" id="L226">    list.clear();</span>
-<span class="fc" id="L227">    return taskArray;</span>
+<span class="fc" id="L247">      rank++;</span>
+<span class="fc" id="L248">      hash.clear();</span>
+<span class="fc" id="L249">    }</span>
+<span class="fc" id="L250">    list.clear();</span>
+<span class="fc" id="L251">    return taskArray;</span>
   }
 
   /**
@@ -232,26 +256,26 @@ public final class RuleFileBasedConfiguration {
    *
    * @return the array of HostIds allowed for the current rule
    */
-  public static String[] getHostIds(XmlValue value) {
-<span class="fc" id="L236">    String[] idsArray = STRING_0_LENGTH;</span>
-<span class="pc bpc" id="L237" title="2 of 6 branches missed.">    if (value == null || value.getList() == null || value.getList().isEmpty()) {</span>
-<span class="fc" id="L238">      logger.debug(</span>
+  public static String[] getHostIds(final XmlValue value) {
+<span class="fc" id="L260">    String[] idsArray = STRING_0_LENGTH;</span>
+<span class="pc bpc" id="L261" title="2 of 6 branches missed.">    if (value == null || value.getList() == null || value.getList().isEmpty()) {</span>
+<span class="fc" id="L262">      logger.debug(</span>
           &quot;Unable to find the Hostid for Rule, setting to &quot; + &quot;the default&quot;);
     } else {
       @SuppressWarnings(&quot;unchecked&quot;)
-<span class="fc" id="L242">      List&lt;String&gt; ids = (List&lt;String&gt;) value.getList();</span>
-<span class="fc" id="L243">      idsArray = new String[ids.size()];</span>
-<span class="fc" id="L244">      int i = 0;</span>
-<span class="fc bfc" id="L245" title="All 2 branches covered.">      for (final String sval : ids) {</span>
-<span class="pc bpc" id="L246" title="1 of 2 branches missed.">        if (sval.isEmpty()) {</span>
-<span class="nc" id="L247">          continue;</span>
+<span class="fc" id="L266">      final List&lt;String&gt; ids = (List&lt;String&gt;) value.getList();</span>
+<span class="fc" id="L267">      idsArray = new String[ids.size()];</span>
+<span class="fc" id="L268">      int i = 0;</span>
+<span class="fc bfc" id="L269" title="All 2 branches covered.">      for (final String sval : ids) {</span>
+<span class="pc bpc" id="L270" title="1 of 2 branches missed.">        if (sval.isEmpty()) {</span>
+<span class="nc" id="L271">          continue;</span>
         }
-<span class="fc" id="L249">        idsArray[i] = sval;</span>
-<span class="fc" id="L250">        i++;</span>
-<span class="fc" id="L251">      }</span>
-<span class="fc" id="L252">      ids.clear();</span>
+<span class="fc" id="L273">        idsArray[i] = sval;</span>
+<span class="fc" id="L274">        i++;</span>
+<span class="fc" id="L275">      }</span>
+<span class="fc" id="L276">      ids.clear();</span>
     }
-<span class="fc" id="L254">    return idsArray;</span>
+<span class="fc" id="L278">    return idsArray;</span>
   }
 
   /**
@@ -268,28 +292,28 @@ public final class RuleFileBasedConfiguration {
    * @throws WaarpDatabaseNoConnectionException
    * @throws OpenR66ProtocolNoDataException
    */
-  public static DbRule getFromFile(File file)
+  public static DbRule getFromFile(final File file)
       throws OpenR66ProtocolSystemException, WaarpDatabaseNoConnectionException,
              WaarpDatabaseSqlException, WaarpDatabaseNoDataException,
              WaarpDatabaseException {
-    DbRule newRule;
-    Document document;
+    final DbRule newRule;
+    final Document document;
     // Open config file
     try {
-<span class="fc" id="L279">      document = XmlUtil.getNewSaxReader().read(file);</span>
-<span class="nc" id="L280">    } catch (final DocumentException e) {</span>
-<span class="nc" id="L281">      logger.error(UNABLE_TO_READ_THE_XML_RULE_FILE + file.getName(), e);</span>
-<span class="nc" id="L282">      throw new OpenR66ProtocolSystemException(UNABLE_TO_READ_THE_XML_RULE_FILE,</span>
+<span class="fc" id="L303">      document = XmlUtil.getNewSaxReader().read(file);</span>
+<span class="nc" id="L304">    } catch (final DocumentException e) {</span>
+<span class="nc" id="L305">      logger.error(UNABLE_TO_READ_THE_XML_RULE_FILE + file.getName(), e);</span>
+<span class="nc" id="L306">      throw new OpenR66ProtocolSystemException(UNABLE_TO_READ_THE_XML_RULE_FILE,</span>
                                                e);
-<span class="fc" id="L284">    }</span>
-<span class="pc bpc" id="L285" title="1 of 2 branches missed.">    if (document == null) {</span>
-<span class="nc" id="L286">      logger.error(UNABLE_TO_READ_THE_XML_RULE_FILE + file.getName());</span>
-<span class="nc" id="L287">      throw new OpenR66ProtocolSystemException(</span>
+<span class="fc" id="L308">    }</span>
+<span class="pc bpc" id="L309" title="1 of 2 branches missed.">    if (document == null) {</span>
+<span class="nc" id="L310">      logger.error(UNABLE_TO_READ_THE_XML_RULE_FILE + file.getName());</span>
+<span class="nc" id="L311">      throw new OpenR66ProtocolSystemException(</span>
           UNABLE_TO_READ_THE_XML_RULE_FILE);
     }
-<span class="fc" id="L290">    XmlValue[] values = XmlUtil.read(document, ruleDecls);</span>
-<span class="fc" id="L291">    newRule = getFromXmlValue(values);</span>
-<span class="fc" id="L292">    return newRule;</span>
+<span class="fc" id="L314">    final XmlValue[] values = XmlUtil.read(document, ruleDecls);</span>
+<span class="fc" id="L315">    newRule = getFromXmlValue(values);</span>
+<span class="fc" id="L316">    return newRule;</span>
   }
 
   /**
@@ -306,36 +330,36 @@ public final class RuleFileBasedConfiguration {
    * @throws WaarpDatabaseNoConnectionException
    * @throws OpenR66ProtocolNoDataException
    */
-  public static List&lt;DbRule&gt; getMultipleFromFile(File file)
+  public static List&lt;DbRule&gt; getMultipleFromFile(final File file)
       throws OpenR66ProtocolSystemException, WaarpDatabaseNoConnectionException,
              WaarpDatabaseSqlException, WaarpDatabaseNoDataException,
              WaarpDatabaseException {
-    Document document;
+    final Document document;
     // Open config file
     try {
-<span class="nc" id="L316">      document = XmlUtil.getNewSaxReader().read(file);</span>
-<span class="nc" id="L317">    } catch (final DocumentException e) {</span>
-<span class="nc" id="L318">      logger.error(UNABLE_TO_READ_THE_XML_RULE_FILE + file.getName(), e);</span>
-<span class="nc" id="L319">      throw new OpenR66ProtocolSystemException(UNABLE_TO_READ_THE_XML_RULE_FILE,</span>
+<span class="nc" id="L340">      document = XmlUtil.getNewSaxReader().read(file);</span>
+<span class="nc" id="L341">    } catch (final DocumentException e) {</span>
+<span class="nc" id="L342">      logger.error(UNABLE_TO_READ_THE_XML_RULE_FILE + file.getName(), e);</span>
+<span class="nc" id="L343">      throw new OpenR66ProtocolSystemException(UNABLE_TO_READ_THE_XML_RULE_FILE,</span>
                                                e);
-<span class="nc" id="L321">    }</span>
-<span class="nc bnc" id="L322" title="All 2 branches missed.">    if (document == null) {</span>
-<span class="nc" id="L323">      logger.error(UNABLE_TO_READ_THE_XML_RULE_FILE + file.getName());</span>
-<span class="nc" id="L324">      throw new OpenR66ProtocolSystemException(</span>
+<span class="nc" id="L345">    }</span>
+<span class="nc bnc" id="L346" title="All 2 branches missed.">    if (document == null) {</span>
+<span class="nc" id="L347">      logger.error(UNABLE_TO_READ_THE_XML_RULE_FILE + file.getName());</span>
+<span class="nc" id="L348">      throw new OpenR66ProtocolSystemException(</span>
           UNABLE_TO_READ_THE_XML_RULE_FILE);
     }
-<span class="nc" id="L327">    XmlValue[] values = XmlUtil.read(document, multipleruleDecls);</span>
-<span class="nc bnc" id="L328" title="All 2 branches missed.">    if (values.length &lt;= 0) {</span>
-<span class="nc" id="L329">      return new ArrayList&lt;DbRule&gt;(0);</span>
+<span class="nc" id="L351">    final XmlValue[] values = XmlUtil.read(document, multipleruleDecls);</span>
+<span class="nc bnc" id="L352" title="All 2 branches missed.">    if (values.length &lt;= 0) {</span>
+<span class="nc" id="L353">      return new ArrayList&lt;DbRule&gt;(0);</span>
     }
-<span class="nc" id="L331">    final XmlValue value = values[0];</span>
+<span class="nc" id="L355">    final XmlValue value = values[0];</span>
     @SuppressWarnings(&quot;unchecked&quot;)
-<span class="nc" id="L333">    final List&lt;XmlValue[]&gt; list = (List&lt;XmlValue[]&gt;) value.getList();</span>
-<span class="nc" id="L334">    final List&lt;DbRule&gt; result = new ArrayList&lt;DbRule&gt;(list.size());</span>
-<span class="nc bnc" id="L335" title="All 2 branches missed.">    for (final XmlValue[] xmlValue : list) {</span>
-<span class="nc" id="L336">      result.add(getFromXmlValue(xmlValue));</span>
-<span class="nc" id="L337">    }</span>
-<span class="nc" id="L338">    return result;</span>
+<span class="nc" id="L357">    final List&lt;XmlValue[]&gt; list = (List&lt;XmlValue[]&gt;) value.getList();</span>
+<span class="nc" id="L358">    final List&lt;DbRule&gt; result = new ArrayList&lt;DbRule&gt;(list.size());</span>
+<span class="nc bnc" id="L359" title="All 2 branches missed.">    for (final XmlValue[] xmlValue : list) {</span>
+<span class="nc" id="L360">      result.add(getFromXmlValue(xmlValue));</span>
+<span class="nc" id="L361">    }</span>
+<span class="nc" id="L362">    return result;</span>
   }
 
   /**
@@ -352,120 +376,120 @@ public final class RuleFileBasedConfiguration {
    * @throws WaarpDatabaseNoConnectionException
    * @throws OpenR66ProtocolNoDataException
    */
-  private static DbRule getFromXmlValue(XmlValue[] root)
+  private static DbRule getFromXmlValue(final XmlValue[] root)
       throws OpenR66ProtocolSystemException, WaarpDatabaseNoConnectionException,
              WaarpDatabaseSqlException, WaarpDatabaseNoDataException,
              WaarpDatabaseException {
-    DbRule newRule;
-<span class="fc" id="L360">    final XmlHash hash = new XmlHash(root);</span>
-<span class="fc" id="L361">    XmlValue value = hash.get(XIDRULE);</span>
-<span class="pc bpc" id="L362" title="3 of 6 branches missed.">    if (value == null || value.isEmpty() || value.getString().isEmpty()) {</span>
-<span class="nc" id="L363">      logger.error(&quot;Unable to find in Rule field: &quot; + XIDRULE);</span>
-<span class="nc" id="L364">      throw new OpenR66ProtocolSystemException();</span>
+    final DbRule newRule;
+<span class="fc" id="L384">    final XmlHash hash = new XmlHash(root);</span>
+<span class="fc" id="L385">    XmlValue value = hash.get(XIDRULE);</span>
+<span class="pc bpc" id="L386" title="3 of 6 branches missed.">    if (value == null || value.isEmpty() || value.getString().isEmpty()) {</span>
+<span class="nc" id="L387">      logger.error(&quot;Unable to find in Rule field: &quot; + XIDRULE);</span>
+<span class="nc" id="L388">      throw new OpenR66ProtocolSystemException();</span>
     }
-<span class="fc" id="L366">    final String idrule = value.getString();</span>
-<span class="fc" id="L367">    value = hash.get(XMODE);</span>
-<span class="pc bpc" id="L368" title="2 of 4 branches missed.">    if (value == null || value.isEmpty()) {</span>
-<span class="nc" id="L369">      logger.error(&quot;Unable to find in Rule field: &quot; + XMODE);</span>
-<span class="nc" id="L370">      throw new OpenR66ProtocolSystemException();</span>
+<span class="fc" id="L390">    final String idrule = value.getString();</span>
+<span class="fc" id="L391">    value = hash.get(XMODE);</span>
+<span class="pc bpc" id="L392" title="2 of 4 branches missed.">    if (value == null || value.isEmpty()) {</span>
+<span class="nc" id="L393">      logger.error(&quot;Unable to find in Rule field: &quot; + XMODE);</span>
+<span class="nc" id="L394">      throw new OpenR66ProtocolSystemException();</span>
     }
-<span class="fc" id="L372">    final int mode = value.getInteger();</span>
-    String recvpath;
-<span class="fc" id="L374">    value = hash.get(XRECVPATH);</span>
-<span class="pc bpc" id="L375" title="3 of 6 branches missed.">    if (value == null || value.isEmpty() || value.getString().isEmpty()) {</span>
-<span class="fc" id="L376">      recvpath = Configuration.configuration.getInPath();</span>
+<span class="fc" id="L396">    final int mode = value.getInteger();</span>
+    final String recvpath;
+<span class="fc" id="L398">    value = hash.get(XRECVPATH);</span>
+<span class="pc bpc" id="L399" title="2 of 6 branches missed.">    if (value == null || value.isEmpty() || value.getString().isEmpty()) {</span>
+<span class="fc" id="L400">      recvpath = Configuration.configuration.getInPath();</span>
     } else {
-<span class="nc" id="L378">      recvpath = DirInterface.SEPARATOR + value.getString();</span>
+<span class="nc" id="L402">      recvpath = DirInterface.SEPARATOR + value.getString();</span>
     }
-    String sendpath;
-<span class="fc" id="L381">    value = hash.get(XSENDPATH);</span>
-<span class="pc bpc" id="L382" title="3 of 6 branches missed.">    if (value == null || value.isEmpty() || value.getString().isEmpty()) {</span>
-<span class="fc" id="L383">      sendpath = Configuration.configuration.getOutPath();</span>
+    final String sendpath;
+<span class="fc" id="L405">    value = hash.get(XSENDPATH);</span>
+<span class="pc bpc" id="L406" title="2 of 6 branches missed.">    if (value == null || value.isEmpty() || value.getString().isEmpty()) {</span>
+<span class="fc" id="L407">      sendpath = Configuration.configuration.getOutPath();</span>
     } else {
-<span class="nc" id="L385">      sendpath = DirInterface.SEPARATOR + value.getString();</span>
+<span class="nc" id="L409">      sendpath = DirInterface.SEPARATOR + value.getString();</span>
     }
-    String archivepath;
-<span class="fc" id="L388">    value = hash.get(XARCHIVEPATH);</span>
-<span class="pc bpc" id="L389" title="3 of 6 branches missed.">    if (value == null || value.isEmpty() || value.getString().isEmpty()) {</span>
-<span class="fc" id="L390">      archivepath = Configuration.configuration.getArchivePath();</span>
+    final String archivepath;
+<span class="fc" id="L412">    value = hash.get(XARCHIVEPATH);</span>
+<span class="pc bpc" id="L413" title="2 of 6 branches missed.">    if (value == null || value.isEmpty() || value.getString().isEmpty()) {</span>
+<span class="fc" id="L414">      archivepath = Configuration.configuration.getArchivePath();</span>
     } else {
-<span class="nc" id="L392">      archivepath = DirInterface.SEPARATOR + value.getString();</span>
+<span class="nc" id="L416">      archivepath = DirInterface.SEPARATOR + value.getString();</span>
     }
-    String workpath;
-<span class="fc" id="L395">    value = hash.get(XWORKPATH);</span>
-<span class="pc bpc" id="L396" title="3 of 6 branches missed.">    if (value == null || value.isEmpty() || value.getString().isEmpty()) {</span>
-<span class="fc" id="L397">      workpath = Configuration.configuration.getWorkingPath();</span>
+    final String workpath;
+<span class="fc" id="L419">    value = hash.get(XWORKPATH);</span>
+<span class="pc bpc" id="L420" title="2 of 6 branches missed.">    if (value == null || value.isEmpty() || value.getString().isEmpty()) {</span>
+<span class="fc" id="L421">      workpath = Configuration.configuration.getWorkingPath();</span>
     } else {
-<span class="nc" id="L399">      workpath = DirInterface.SEPARATOR + value.getString();</span>
+<span class="nc" id="L423">      workpath = DirInterface.SEPARATOR + value.getString();</span>
     }
-    String[] idsArray;
-<span class="fc" id="L402">    value = hash.get(XHOSTIDS);</span>
-<span class="fc" id="L403">    idsArray = getHostIds(value);</span>
-<span class="fc" id="L404">    String[][] rpretasks = STRINGS_0_0_LENGTH;</span>
-<span class="fc" id="L405">    value = hash.get(XRPRETASKS);</span>
-<span class="pc bpc" id="L406" title="2 of 4 branches missed.">    if (value != null &amp;&amp; !value.isEmpty()) {</span>
-<span class="fc" id="L407">      final XmlValue[] subvalues = value.getSubXml();</span>
-<span class="pc bpc" id="L408" title="1 of 2 branches missed.">      if (subvalues.length &gt; 0) {</span>
-<span class="fc" id="L409">        rpretasks = getTasksRule(subvalues[0]);</span>
-      }
-    }
-<span class="fc" id="L412">    String[][] rposttasks = STRINGS_0_0_LENGTH;</span>
-<span class="fc" id="L413">    value = hash.get(XRPOSTTASKS);</span>
-<span class="pc bpc" id="L414" title="2 of 4 branches missed.">    if (value != null &amp;&amp; !value.isEmpty()) {</span>
-<span class="fc" id="L415">      final XmlValue[] subvalues = value.getSubXml();</span>
-<span class="pc bpc" id="L416" title="1 of 2 branches missed.">      if (subvalues.length &gt; 0) {</span>
-<span class="fc" id="L417">        rposttasks = getTasksRule(subvalues[0]);</span>
-      }
-    }
-<span class="fc" id="L420">    String[][] rerrortasks = STRINGS_0_0_LENGTH;</span>
-<span class="fc" id="L421">    value = hash.get(XRERRORTASKS);</span>
-<span class="pc bpc" id="L422" title="2 of 4 branches missed.">    if (value != null &amp;&amp; !value.isEmpty()) {</span>
-<span class="fc" id="L423">      final XmlValue[] subvalues = value.getSubXml();</span>
-<span class="pc bpc" id="L424" title="1 of 2 branches missed.">      if (subvalues.length &gt; 0) {</span>
-<span class="fc" id="L425">        rerrortasks = getTasksRule(subvalues[0]);</span>
-      }
-    }
-<span class="fc" id="L428">    String[][] spretasks = STRINGS_0_0_LENGTH;</span>
-<span class="fc" id="L429">    value = hash.get(XSPRETASKS);</span>
+    final String[] idsArray;
+<span class="fc" id="L426">    value = hash.get(XHOSTIDS);</span>
+<span class="fc" id="L427">    idsArray = getHostIds(value);</span>
+<span class="fc" id="L428">    String[][] rpretasks = STRINGS_0_0_LENGTH;</span>
+<span class="fc" id="L429">    value = hash.get(XRPRETASKS);</span>
 <span class="pc bpc" id="L430" title="2 of 4 branches missed.">    if (value != null &amp;&amp; !value.isEmpty()) {</span>
 <span class="fc" id="L431">      final XmlValue[] subvalues = value.getSubXml();</span>
 <span class="pc bpc" id="L432" title="1 of 2 branches missed.">      if (subvalues.length &gt; 0) {</span>
-<span class="fc" id="L433">        spretasks = getTasksRule(subvalues[0]);</span>
+<span class="fc" id="L433">        rpretasks = getTasksRule(subvalues[0]);</span>
       }
     }
-<span class="fc" id="L436">    String[][] sposttasks = STRINGS_0_0_LENGTH;</span>
-<span class="fc" id="L437">    value = hash.get(XSPOSTTASKS);</span>
+<span class="fc" id="L436">    String[][] rposttasks = STRINGS_0_0_LENGTH;</span>
+<span class="fc" id="L437">    value = hash.get(XRPOSTTASKS);</span>
 <span class="pc bpc" id="L438" title="2 of 4 branches missed.">    if (value != null &amp;&amp; !value.isEmpty()) {</span>
 <span class="fc" id="L439">      final XmlValue[] subvalues = value.getSubXml();</span>
 <span class="pc bpc" id="L440" title="1 of 2 branches missed.">      if (subvalues.length &gt; 0) {</span>
-<span class="fc" id="L441">        sposttasks = getTasksRule(subvalues[0]);</span>
+<span class="fc" id="L441">        rposttasks = getTasksRule(subvalues[0]);</span>
       }
     }
-<span class="fc" id="L444">    String[][] serrortasks = STRINGS_0_0_LENGTH;</span>
-<span class="fc" id="L445">    value = hash.get(XSERRORTASKS);</span>
+<span class="fc" id="L444">    String[][] rerrortasks = STRINGS_0_0_LENGTH;</span>
+<span class="fc" id="L445">    value = hash.get(XRERRORTASKS);</span>
 <span class="pc bpc" id="L446" title="2 of 4 branches missed.">    if (value != null &amp;&amp; !value.isEmpty()) {</span>
 <span class="fc" id="L447">      final XmlValue[] subvalues = value.getSubXml();</span>
 <span class="pc bpc" id="L448" title="1 of 2 branches missed.">      if (subvalues.length &gt; 0) {</span>
-<span class="fc" id="L449">        serrortasks = getTasksRule(subvalues[0]);</span>
+<span class="fc" id="L449">        rerrortasks = getTasksRule(subvalues[0]);</span>
+      }
+    }
+<span class="fc" id="L452">    String[][] spretasks = STRINGS_0_0_LENGTH;</span>
+<span class="fc" id="L453">    value = hash.get(XSPRETASKS);</span>
+<span class="pc bpc" id="L454" title="2 of 4 branches missed.">    if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="fc" id="L455">      final XmlValue[] subvalues = value.getSubXml();</span>
+<span class="pc bpc" id="L456" title="1 of 2 branches missed.">      if (subvalues.length &gt; 0) {</span>
+<span class="fc" id="L457">        spretasks = getTasksRule(subvalues[0]);</span>
+      }
+    }
+<span class="fc" id="L460">    String[][] sposttasks = STRINGS_0_0_LENGTH;</span>
+<span class="fc" id="L461">    value = hash.get(XSPOSTTASKS);</span>
+<span class="pc bpc" id="L462" title="2 of 4 branches missed.">    if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="fc" id="L463">      final XmlValue[] subvalues = value.getSubXml();</span>
+<span class="pc bpc" id="L464" title="1 of 2 branches missed.">      if (subvalues.length &gt; 0) {</span>
+<span class="fc" id="L465">        sposttasks = getTasksRule(subvalues[0]);</span>
+      }
+    }
+<span class="fc" id="L468">    String[][] serrortasks = STRINGS_0_0_LENGTH;</span>
+<span class="fc" id="L469">    value = hash.get(XSERRORTASKS);</span>
+<span class="pc bpc" id="L470" title="2 of 4 branches missed.">    if (value != null &amp;&amp; !value.isEmpty()) {</span>
+<span class="fc" id="L471">      final XmlValue[] subvalues = value.getSubXml();</span>
+<span class="pc bpc" id="L472" title="1 of 2 branches missed.">      if (subvalues.length &gt; 0) {</span>
+<span class="fc" id="L473">        serrortasks = getTasksRule(subvalues[0]);</span>
       }
     }
 
-<span class="fc" id="L453">    newRule =</span>
+<span class="fc" id="L477">    newRule =</span>
         new DbRule(idrule, idsArray, mode, recvpath, sendpath, archivepath,
                    workpath, rpretasks, rposttasks, rerrortasks, spretasks,
                    sposttasks, serrortasks);
-<span class="pc bpc" id="L457" title="2 of 4 branches missed.">    if (admin != null &amp;&amp; admin.getSession() != null) {</span>
-<span class="pc bpc" id="L458" title="1 of 2 branches missed.">      if (newRule.exist()) {</span>
-<span class="fc" id="L459">        newRule.update();</span>
+<span class="pc bpc" id="L481" title="2 of 4 branches missed.">    if (admin != null &amp;&amp; admin.getSession() != null) {</span>
+<span class="pc bpc" id="L482" title="1 of 2 branches missed.">      if (newRule.exist()) {</span>
+<span class="fc" id="L483">        newRule.update();</span>
       } else {
-<span class="nc" id="L461">        newRule.insert();</span>
+<span class="nc" id="L485">        newRule.insert();</span>
       }
     } else {
       // put in hashtable
-<span class="nc" id="L465">      newRule.insert();</span>
+<span class="nc" id="L489">      newRule.insert();</span>
     }
-<span class="fc" id="L467">    hash.clear();</span>
-<span class="fc" id="L468">    return newRule;</span>
+<span class="fc" id="L491">    hash.clear();</span>
+<span class="fc" id="L492">    return newRule;</span>
   }
 
   /**
@@ -476,10 +500,10 @@ public final class RuleFileBasedConfiguration {
    *
    * @return the new Element
    */
-  private static Element newElement(String name, String value) {
-<span class="nc" id="L480">    final Element node = new DefaultElement(name);</span>
-<span class="nc" id="L481">    node.addText(value);</span>
-<span class="nc" id="L482">    return node;</span>
+  private static Element newElement(final String name, final String value) {
+<span class="nc" id="L504">    final Element node = new DefaultElement(name);</span>
+<span class="nc" id="L505">    node.addText(value);</span>
+<span class="nc" id="L506">    return node;</span>
   }
 
   /**
@@ -488,156 +512,156 @@ public final class RuleFileBasedConfiguration {
    * @param element
    * @param rule
    */
-  private static void addToElement(Element element, DbRule rule) {
-<span class="nc" id="L492">    element.add(newElement(XIDRULE, rule.getIdRule()));</span>
-<span class="nc" id="L493">    final Element hosts = new DefaultElement(XHOSTIDS);</span>
-<span class="nc bnc" id="L494" title="All 2 branches missed.">    if (rule.getIdsArray() != null) {</span>
-<span class="nc bnc" id="L495" title="All 2 branches missed.">      for (final String host : rule.getIdsArray()) {</span>
-<span class="nc" id="L496">        hosts.add(newElement(XHOSTID, host));</span>
+  private static void addToElement(final Element element, final DbRule rule) {
+<span class="nc" id="L516">    element.add(newElement(XIDRULE, rule.getIdRule()));</span>
+<span class="nc" id="L517">    final Element hosts = new DefaultElement(XHOSTIDS);</span>
+<span class="nc bnc" id="L518" title="All 2 branches missed.">    if (rule.getIdsArray() != null) {</span>
+<span class="nc bnc" id="L519" title="All 2 branches missed.">      for (final String host : rule.getIdsArray()) {</span>
+<span class="nc" id="L520">        hosts.add(newElement(XHOSTID, host));</span>
       }
     }
-<span class="nc" id="L499">    element.add(hosts);</span>
-<span class="nc" id="L500">    element.add(newElement(XMODE, Integer.toString(rule.getMode())));</span>
-<span class="nc" id="L501">    String dir = rule.getRuleRecvPath();</span>
-<span class="nc bnc" id="L502" title="All 2 branches missed.">    if (dir != null) {</span>
-<span class="nc bnc" id="L503" title="All 2 branches missed.">      if (dir.startsWith(File.separator) ||</span>
-<span class="nc bnc" id="L504" title="All 2 branches missed.">          dir.startsWith(DirInterface.SEPARATOR)) {</span>
-<span class="nc" id="L505">        element.add(newElement(XRECVPATH, dir.substring(1)));</span>
+<span class="nc" id="L523">    element.add(hosts);</span>
+<span class="nc" id="L524">    element.add(newElement(XMODE, Integer.toString(rule.getMode())));</span>
+<span class="nc" id="L525">    String dir = rule.getRuleRecvPath();</span>
+<span class="nc bnc" id="L526" title="All 2 branches missed.">    if (dir != null) {</span>
+<span class="nc bnc" id="L527" title="All 2 branches missed.">      if (dir.startsWith(File.separator) ||</span>
+<span class="nc bnc" id="L528" title="All 2 branches missed.">          dir.startsWith(DirInterface.SEPARATOR)) {</span>
+<span class="nc" id="L529">        element.add(newElement(XRECVPATH, dir.substring(1)));</span>
       } else {
-<span class="nc" id="L507">        element.add(newElement(XRECVPATH, dir));</span>
+<span class="nc" id="L531">        element.add(newElement(XRECVPATH, dir));</span>
       }
     }
-<span class="nc" id="L510">    dir = rule.getRuleSendPath();</span>
-<span class="nc bnc" id="L511" title="All 2 branches missed.">    if (dir != null) {</span>
-<span class="nc bnc" id="L512" title="All 2 branches missed.">      if (dir.startsWith(File.separator) ||</span>
-<span class="nc bnc" id="L513" title="All 2 branches missed.">          dir.startsWith(DirInterface.SEPARATOR)) {</span>
-<span class="nc" id="L514">        element.add(newElement(XSENDPATH, dir.substring(1)));</span>
+<span class="nc" id="L534">    dir = rule.getRuleSendPath();</span>
+<span class="nc bnc" id="L535" title="All 2 branches missed.">    if (dir != null) {</span>
+<span class="nc bnc" id="L536" title="All 2 branches missed.">      if (dir.startsWith(File.separator) ||</span>
+<span class="nc bnc" id="L537" title="All 2 branches missed.">          dir.startsWith(DirInterface.SEPARATOR)) {</span>
+<span class="nc" id="L538">        element.add(newElement(XSENDPATH, dir.substring(1)));</span>
       } else {
-<span class="nc" id="L516">        element.add(newElement(XSENDPATH, dir));</span>
+<span class="nc" id="L540">        element.add(newElement(XSENDPATH, dir));</span>
       }
     }
-<span class="nc" id="L519">    dir = rule.getRuleArchivePath();</span>
-<span class="nc bnc" id="L520" title="All 2 branches missed.">    if (dir != null) {</span>
-<span class="nc bnc" id="L521" title="All 2 branches missed.">      if (dir.startsWith(File.separator) ||</span>
-<span class="nc bnc" id="L522" title="All 2 branches missed.">          dir.startsWith(DirInterface.SEPARATOR)) {</span>
-<span class="nc" id="L523">        element.add(newElement(XARCHIVEPATH, dir.substring(1)));</span>
+<span class="nc" id="L543">    dir = rule.getRuleArchivePath();</span>
+<span class="nc bnc" id="L544" title="All 2 branches missed.">    if (dir != null) {</span>
+<span class="nc bnc" id="L545" title="All 2 branches missed.">      if (dir.startsWith(File.separator) ||</span>
+<span class="nc bnc" id="L546" title="All 2 branches missed.">          dir.startsWith(DirInterface.SEPARATOR)) {</span>
+<span class="nc" id="L547">        element.add(newElement(XARCHIVEPATH, dir.substring(1)));</span>
       } else {
-<span class="nc" id="L525">        element.add(newElement(XARCHIVEPATH, dir));</span>
+<span class="nc" id="L549">        element.add(newElement(XARCHIVEPATH, dir));</span>
       }
     }
-<span class="nc" id="L528">    dir = rule.getRuleWorkPath();</span>
-<span class="nc bnc" id="L529" title="All 2 branches missed.">    if (dir != null) {</span>
-<span class="nc bnc" id="L530" title="All 2 branches missed.">      if (dir.startsWith(File.separator) ||</span>
-<span class="nc bnc" id="L531" title="All 2 branches missed.">          dir.startsWith(DirInterface.SEPARATOR)) {</span>
-<span class="nc" id="L532">        element.add(newElement(XWORKPATH, dir.substring(1)));</span>
+<span class="nc" id="L552">    dir = rule.getRuleWorkPath();</span>
+<span class="nc bnc" id="L553" title="All 2 branches missed.">    if (dir != null) {</span>
+<span class="nc bnc" id="L554" title="All 2 branches missed.">      if (dir.startsWith(File.separator) ||</span>
+<span class="nc bnc" id="L555" title="All 2 branches missed.">          dir.startsWith(DirInterface.SEPARATOR)) {</span>
+<span class="nc" id="L556">        element.add(newElement(XWORKPATH, dir.substring(1)));</span>
       } else {
-<span class="nc" id="L534">        element.add(newElement(XWORKPATH, dir));</span>
+<span class="nc" id="L558">        element.add(newElement(XWORKPATH, dir));</span>
       }
     }
-<span class="nc" id="L537">    Element tasks = new DefaultElement(XRPRETASKS);</span>
-<span class="nc" id="L538">    Element roottasks = new DefaultElement(XTASKS);</span>
+<span class="nc" id="L561">    Element tasks = new DefaultElement(XRPRETASKS);</span>
+<span class="nc" id="L562">    Element roottasks = new DefaultElement(XTASKS);</span>
     int rank;
-<span class="nc" id="L540">    String[][] array = rule.getRpreTasksArray();</span>
-<span class="nc bnc" id="L541" title="All 2 branches missed.">    if (array != null) {</span>
-<span class="nc bnc" id="L542" title="All 2 branches missed.">      for (rank = 0; rank &lt; array.length; rank++) {</span>
-<span class="nc" id="L543">        final Element task = new DefaultElement(XTASK);</span>
-<span class="nc" id="L544">        task.add(newElement(DbRule.TASK_TYPE, array[rank][0]));</span>
-<span class="nc" id="L545">        task.add(newElement(DbRule.TASK_PATH, array[rank][1]));</span>
-<span class="nc" id="L546">        task.add(newElement(DbRule.TASK_DELAY, array[rank][2]));</span>
-<span class="nc bnc" id="L547" title="All 2 branches missed.">        if (array[rank].length &gt; 3) {</span>
-<span class="nc" id="L548">          task.add(newElement(DbRule.TASK_COMMENT, array[rank][3]));</span>
+<span class="nc" id="L564">    String[][] array = rule.getRpreTasksArray();</span>
+<span class="nc bnc" id="L565" title="All 2 branches missed.">    if (array != null) {</span>
+<span class="nc bnc" id="L566" title="All 2 branches missed.">      for (rank = 0; rank &lt; array.length; rank++) {</span>
+<span class="nc" id="L567">        final Element task = new DefaultElement(XTASK);</span>
+<span class="nc" id="L568">        task.add(newElement(DbRule.TASK_TYPE, array[rank][0]));</span>
+<span class="nc" id="L569">        task.add(newElement(DbRule.TASK_PATH, array[rank][1]));</span>
+<span class="nc" id="L570">        task.add(newElement(DbRule.TASK_DELAY, array[rank][2]));</span>
+<span class="nc bnc" id="L571" title="All 2 branches missed.">        if (array[rank].length &gt; 3) {</span>
+<span class="nc" id="L572">          task.add(newElement(DbRule.TASK_COMMENT, array[rank][3]));</span>
         }
-<span class="nc" id="L550">        roottasks.add(task);</span>
+<span class="nc" id="L574">        roottasks.add(task);</span>
       }
     }
-<span class="nc" id="L553">    tasks.add(roottasks);</span>
-<span class="nc" id="L554">    element.add(tasks);</span>
-<span class="nc" id="L555">    tasks = new DefaultElement(XRPOSTTASKS);</span>
-<span class="nc" id="L556">    roottasks = new DefaultElement(XTASKS);</span>
-<span class="nc" id="L557">    array = rule.getRpostTasksArray();</span>
-<span class="nc bnc" id="L558" title="All 2 branches missed.">    if (array != null) {</span>
-<span class="nc bnc" id="L559" title="All 2 branches missed.">      for (rank = 0; rank &lt; array.length; rank++) {</span>
-<span class="nc" id="L560">        final Element task = new DefaultElement(XTASK);</span>
-<span class="nc" id="L561">        task.add(newElement(DbRule.TASK_TYPE, array[rank][0]));</span>
-<span class="nc" id="L562">        task.add(newElement(DbRule.TASK_PATH, array[rank][1]));</span>
-<span class="nc" id="L563">        task.add(newElement(DbRule.TASK_DELAY, array[rank][2]));</span>
-<span class="nc bnc" id="L564" title="All 2 branches missed.">        if (array[rank].length &gt; 3) {</span>
-<span class="nc" id="L565">          task.add(newElement(DbRule.TASK_COMMENT, array[rank][3]));</span>
+<span class="nc" id="L577">    tasks.add(roottasks);</span>
+<span class="nc" id="L578">    element.add(tasks);</span>
+<span class="nc" id="L579">    tasks = new DefaultElement(XRPOSTTASKS);</span>
+<span class="nc" id="L580">    roottasks = new DefaultElement(XTASKS);</span>
+<span class="nc" id="L581">    array = rule.getRpostTasksArray();</span>
+<span class="nc bnc" id="L582" title="All 2 branches missed.">    if (array != null) {</span>
+<span class="nc bnc" id="L583" title="All 2 branches missed.">      for (rank = 0; rank &lt; array.length; rank++) {</span>
+<span class="nc" id="L584">        final Element task = new DefaultElement(XTASK);</span>
+<span class="nc" id="L585">        task.add(newElement(DbRule.TASK_TYPE, array[rank][0]));</span>
+<span class="nc" id="L586">        task.add(newElement(DbRule.TASK_PATH, array[rank][1]));</span>
+<span class="nc" id="L587">        task.add(newElement(DbRule.TASK_DELAY, array[rank][2]));</span>
+<span class="nc bnc" id="L588" title="All 2 branches missed.">        if (array[rank].length &gt; 3) {</span>
+<span class="nc" id="L589">          task.add(newElement(DbRule.TASK_COMMENT, array[rank][3]));</span>
         }
-<span class="nc" id="L567">        roottasks.add(task);</span>
+<span class="nc" id="L591">        roottasks.add(task);</span>
       }
     }
-<span class="nc" id="L570">    tasks.add(roottasks);</span>
-<span class="nc" id="L571">    element.add(tasks);</span>
-<span class="nc" id="L572">    tasks = new DefaultElement(XRERRORTASKS);</span>
-<span class="nc" id="L573">    roottasks = new DefaultElement(XTASKS);</span>
-<span class="nc" id="L574">    array = rule.getRerrorTasksArray();</span>
-<span class="nc bnc" id="L575" title="All 2 branches missed.">    if (array != null) {</span>
-<span class="nc bnc" id="L576" title="All 2 branches missed.">      for (rank = 0; rank &lt; array.length; rank++) {</span>
-<span class="nc" id="L577">        final Element task = new DefaultElement(XTASK);</span>
-<span class="nc" id="L578">        task.add(newElement(DbRule.TASK_TYPE, array[rank][0]));</span>
-<span class="nc" id="L579">        task.add(newElement(DbRule.TASK_PATH, array[rank][1]));</span>
-<span class="nc" id="L580">        task.add(newElement(DbRule.TASK_DELAY, array[rank][2]));</span>
-<span class="nc bnc" id="L581" title="All 2 branches missed.">        if (array[rank].length &gt; 3) {</span>
-<span class="nc" id="L582">          task.add(newElement(DbRule.TASK_COMMENT, array[rank][3]));</span>
+<span class="nc" id="L594">    tasks.add(roottasks);</span>
+<span class="nc" id="L595">    element.add(tasks);</span>
+<span class="nc" id="L596">    tasks = new DefaultElement(XRERRORTASKS);</span>
+<span class="nc" id="L597">    roottasks = new DefaultElement(XTASKS);</span>
+<span class="nc" id="L598">    array = rule.getRerrorTasksArray();</span>
+<span class="nc bnc" id="L599" title="All 2 branches missed.">    if (array != null) {</span>
+<span class="nc bnc" id="L600" title="All 2 branches missed.">      for (rank = 0; rank &lt; array.length; rank++) {</span>
+<span class="nc" id="L601">        final Element task = new DefaultElement(XTASK);</span>
+<span class="nc" id="L602">        task.add(newElement(DbRule.TASK_TYPE, array[rank][0]));</span>
+<span class="nc" id="L603">        task.add(newElement(DbRule.TASK_PATH, array[rank][1]));</span>
+<span class="nc" id="L604">        task.add(newElement(DbRule.TASK_DELAY, array[rank][2]));</span>
+<span class="nc bnc" id="L605" title="All 2 branches missed.">        if (array[rank].length &gt; 3) {</span>
+<span class="nc" id="L606">          task.add(newElement(DbRule.TASK_COMMENT, array[rank][3]));</span>
         }
-<span class="nc" id="L584">        roottasks.add(task);</span>
+<span class="nc" id="L608">        roottasks.add(task);</span>
       }
     }
-<span class="nc" id="L587">    tasks.add(roottasks);</span>
-<span class="nc" id="L588">    element.add(tasks);</span>
-<span class="nc" id="L589">    tasks = new DefaultElement(XSPRETASKS);</span>
-<span class="nc" id="L590">    roottasks = new DefaultElement(XTASKS);</span>
-<span class="nc" id="L591">    array = rule.getSpreTasksArray();</span>
-<span class="nc bnc" id="L592" title="All 2 branches missed.">    if (array != null) {</span>
-<span class="nc bnc" id="L593" title="All 2 branches missed.">      for (rank = 0; rank &lt; array.length; rank++) {</span>
-<span class="nc" id="L594">        final Element task = new DefaultElement(XTASK);</span>
-<span class="nc" id="L595">        task.add(newElement(DbRule.TASK_TYPE, array[rank][0]));</span>
-<span class="nc" id="L596">        task.add(newElement(DbRule.TASK_PATH, array[rank][1]));</span>
-<span class="nc" id="L597">        task.add(newElement(DbRule.TASK_DELAY, array[rank][2]));</span>
-<span class="nc bnc" id="L598" title="All 2 branches missed.">        if (array[rank].length &gt; 3) {</span>
-<span class="nc" id="L599">          task.add(newElement(DbRule.TASK_COMMENT, array[rank][3]));</span>
+<span class="nc" id="L611">    tasks.add(roottasks);</span>
+<span class="nc" id="L612">    element.add(tasks);</span>
+<span class="nc" id="L613">    tasks = new DefaultElement(XSPRETASKS);</span>
+<span class="nc" id="L614">    roottasks = new DefaultElement(XTASKS);</span>
+<span class="nc" id="L615">    array = rule.getSpreTasksArray();</span>
+<span class="nc bnc" id="L616" title="All 2 branches missed.">    if (array != null) {</span>
+<span class="nc bnc" id="L617" title="All 2 branches missed.">      for (rank = 0; rank &lt; array.length; rank++) {</span>
+<span class="nc" id="L618">        final Element task = new DefaultElement(XTASK);</span>
+<span class="nc" id="L619">        task.add(newElement(DbRule.TASK_TYPE, array[rank][0]));</span>
+<span class="nc" id="L620">        task.add(newElement(DbRule.TASK_PATH, array[rank][1]));</span>
+<span class="nc" id="L621">        task.add(newElement(DbRule.TASK_DELAY, array[rank][2]));</span>
+<span class="nc bnc" id="L622" title="All 2 branches missed.">        if (array[rank].length &gt; 3) {</span>
+<span class="nc" id="L623">          task.add(newElement(DbRule.TASK_COMMENT, array[rank][3]));</span>
         }
-<span class="nc" id="L601">        roottasks.add(task);</span>
+<span class="nc" id="L625">        roottasks.add(task);</span>
       }
     }
-<span class="nc" id="L604">    tasks.add(roottasks);</span>
-<span class="nc" id="L605">    element.add(tasks);</span>
-<span class="nc" id="L606">    tasks = new DefaultElement(XSPOSTTASKS);</span>
-<span class="nc" id="L607">    roottasks = new DefaultElement(XTASKS);</span>
-<span class="nc" id="L608">    array = rule.getSpostTasksArray();</span>
-<span class="nc bnc" id="L609" title="All 2 branches missed.">    if (array != null) {</span>
-<span class="nc bnc" id="L610" title="All 2 branches missed.">      for (rank = 0; rank &lt; array.length; rank++) {</span>
-<span class="nc" id="L611">        final Element task = new DefaultElement(XTASK);</span>
-<span class="nc" id="L612">        task.add(newElement(DbRule.TASK_TYPE, array[rank][0]));</span>
-<span class="nc" id="L613">        task.add(newElement(DbRule.TASK_PATH, array[rank][1]));</span>
-<span class="nc" id="L614">        task.add(newElement(DbRule.TASK_DELAY, array[rank][2]));</span>
-<span class="nc bnc" id="L615" title="All 2 branches missed.">        if (array[rank].length &gt; 3) {</span>
-<span class="nc" id="L616">          task.add(newElement(DbRule.TASK_COMMENT, array[rank][3]));</span>
+<span class="nc" id="L628">    tasks.add(roottasks);</span>
+<span class="nc" id="L629">    element.add(tasks);</span>
+<span class="nc" id="L630">    tasks = new DefaultElement(XSPOSTTASKS);</span>
+<span class="nc" id="L631">    roottasks = new DefaultElement(XTASKS);</span>
+<span class="nc" id="L632">    array = rule.getSpostTasksArray();</span>
+<span class="nc bnc" id="L633" title="All 2 branches missed.">    if (array != null) {</span>
+<span class="nc bnc" id="L634" title="All 2 branches missed.">      for (rank = 0; rank &lt; array.length; rank++) {</span>
+<span class="nc" id="L635">        final Element task = new DefaultElement(XTASK);</span>
+<span class="nc" id="L636">        task.add(newElement(DbRule.TASK_TYPE, array[rank][0]));</span>
+<span class="nc" id="L637">        task.add(newElement(DbRule.TASK_PATH, array[rank][1]));</span>
+<span class="nc" id="L638">        task.add(newElement(DbRule.TASK_DELAY, array[rank][2]));</span>
+<span class="nc bnc" id="L639" title="All 2 branches missed.">        if (array[rank].length &gt; 3) {</span>
+<span class="nc" id="L640">          task.add(newElement(DbRule.TASK_COMMENT, array[rank][3]));</span>
         }
-<span class="nc" id="L618">        roottasks.add(task);</span>
+<span class="nc" id="L642">        roottasks.add(task);</span>
       }
     }
-<span class="nc" id="L621">    tasks.add(roottasks);</span>
-<span class="nc" id="L622">    element.add(tasks);</span>
-<span class="nc" id="L623">    tasks = new DefaultElement(XSERRORTASKS);</span>
-<span class="nc" id="L624">    roottasks = new DefaultElement(XTASKS);</span>
-<span class="nc" id="L625">    array = rule.getSerrorTasksArray();</span>
-<span class="nc bnc" id="L626" title="All 2 branches missed.">    if (array != null) {</span>
-<span class="nc bnc" id="L627" title="All 2 branches missed.">      for (rank = 0; rank &lt; array.length; rank++) {</span>
-<span class="nc" id="L628">        final Element task = new DefaultElement(XTASK);</span>
-<span class="nc" id="L629">        task.add(newElement(DbRule.TASK_TYPE, array[rank][0]));</span>
-<span class="nc" id="L630">        task.add(newElement(DbRule.TASK_PATH, array[rank][1]));</span>
-<span class="nc" id="L631">        task.add(newElement(DbRule.TASK_DELAY, array[rank][2]));</span>
-<span class="nc bnc" id="L632" title="All 2 branches missed.">        if (array[rank].length &gt; 3) {</span>
-<span class="nc" id="L633">          task.add(newElement(DbRule.TASK_COMMENT, array[rank][3]));</span>
+<span class="nc" id="L645">    tasks.add(roottasks);</span>
+<span class="nc" id="L646">    element.add(tasks);</span>
+<span class="nc" id="L647">    tasks = new DefaultElement(XSERRORTASKS);</span>
+<span class="nc" id="L648">    roottasks = new DefaultElement(XTASKS);</span>
+<span class="nc" id="L649">    array = rule.getSerrorTasksArray();</span>
+<span class="nc bnc" id="L650" title="All 2 branches missed.">    if (array != null) {</span>
+<span class="nc bnc" id="L651" title="All 2 branches missed.">      for (rank = 0; rank &lt; array.length; rank++) {</span>
+<span class="nc" id="L652">        final Element task = new DefaultElement(XTASK);</span>
+<span class="nc" id="L653">        task.add(newElement(DbRule.TASK_TYPE, array[rank][0]));</span>
+<span class="nc" id="L654">        task.add(newElement(DbRule.TASK_PATH, array[rank][1]));</span>
+<span class="nc" id="L655">        task.add(newElement(DbRule.TASK_DELAY, array[rank][2]));</span>
+<span class="nc bnc" id="L656" title="All 2 branches missed.">        if (array[rank].length &gt; 3) {</span>
+<span class="nc" id="L657">          task.add(newElement(DbRule.TASK_COMMENT, array[rank][3]));</span>
         }
-<span class="nc" id="L635">        roottasks.add(task);</span>
+<span class="nc" id="L659">        roottasks.add(task);</span>
       }
     }
-<span class="nc" id="L638">    tasks.add(roottasks);</span>
-<span class="nc" id="L639">    element.add(tasks);</span>
-<span class="nc" id="L640">  }</span>
+<span class="nc" id="L662">    tasks.add(roottasks);</span>
+<span class="nc" id="L663">    element.add(tasks);</span>
+<span class="nc" id="L664">  }</span>
 
   /**
    * Write the rule to a file from filename
@@ -647,18 +671,18 @@ public final class RuleFileBasedConfiguration {
    *
    * @throws OpenR66ProtocolSystemException
    */
-  private static void writeXML(String filename, DbRule rule)
+  private static void writeXMLInternal(final String filename, final DbRule rule)
       throws OpenR66ProtocolSystemException {
-<span class="nc" id="L652">    final Document document = DocumentHelper.createDocument();</span>
-<span class="nc" id="L653">    final Element root = document.addElement(ROOT);</span>
-<span class="nc" id="L654">    addToElement(root, rule);</span>
+<span class="nc" id="L676">    final Document document = DocumentHelper.createDocument();</span>
+<span class="nc" id="L677">    final Element root = document.addElement(ROOT);</span>
+<span class="nc" id="L678">    addToElement(root, rule);</span>
     try {
-<span class="nc" id="L656">      XmlUtil.writeXML(filename, null, document);</span>
-<span class="nc" id="L657">    } catch (final IOException e) {</span>
-<span class="nc" id="L658">      throw new OpenR66ProtocolSystemException(&quot;Cannot write file: &quot; + filename,</span>
+<span class="nc" id="L680">      XmlUtil.writeXML(filename, null, document);</span>
+<span class="nc" id="L681">    } catch (final IOException e) {</span>
+<span class="nc" id="L682">      throw new OpenR66ProtocolSystemException(&quot;Cannot write file: &quot; + filename,</span>
                                                e);
-<span class="nc" id="L660">    }</span>
-<span class="nc" id="L661">  }</span>
+<span class="nc" id="L684">    }</span>
+<span class="nc" id="L685">  }</span>
 
   /**
    * Write to directory files prefixed by hostname all Rules from database
@@ -670,22 +694,23 @@ public final class RuleFileBasedConfiguration {
    * @throws WaarpDatabaseSqlException
    * @throws OpenR66ProtocolSystemException
    */
-  public static final void writeXml(String directory, String hostname)
+  public static final void writeXml(final String directory,
+                                    final String hostname)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException,
              OpenR66ProtocolSystemException {
-<span class="nc" id="L676">    final File dir = new File(directory);</span>
-<span class="nc bnc" id="L677" title="All 2 branches missed.">    if (!dir.isDirectory()) {</span>
-<span class="nc" id="L678">      dir.mkdirs();</span>
+<span class="nc" id="L701">    final File dir = new File(directory);</span>
+<span class="nc bnc" id="L702" title="All 2 branches missed.">    if (!dir.isDirectory()) {</span>
+<span class="nc" id="L703">      dir.mkdirs();//NOSONAR</span>
     }
-<span class="nc" id="L680">    final DbRule[] rules = DbRule.getAllRules();</span>
-<span class="nc bnc" id="L681" title="All 2 branches missed.">    for (final DbRule rule : rules) {</span>
-<span class="nc" id="L682">      final String filename =</span>
-<span class="nc" id="L683">          dir.getAbsolutePath() + File.separator + hostname + '_' +</span>
-<span class="nc" id="L684">          rule.getIdRule() + EXT_RULE;</span>
-<span class="nc" id="L685">      logger.debug(&quot;Will write Rule: &quot; + rule.getIdRule() + &quot; in &quot; + filename);</span>
-<span class="nc" id="L686">      writeXML(filename, rule);</span>
+<span class="nc" id="L705">    final DbRule[] rules = DbRule.getAllRules();</span>
+<span class="nc bnc" id="L706" title="All 2 branches missed.">    for (final DbRule rule : rules) {</span>
+<span class="nc" id="L707">      final String filename =</span>
+<span class="nc" id="L708">          dir.getAbsolutePath() + File.separator + hostname + '_' +</span>
+<span class="nc" id="L709">          rule.getIdRule() + EXT_RULE;</span>
+<span class="nc" id="L710">      logger.debug(&quot;Will write Rule: &quot; + rule.getIdRule() + &quot; in &quot; + filename);</span>
+<span class="nc" id="L711">      writeXMLInternal(filename, rule);</span>
     }
-<span class="nc" id="L688">  }</span>
+<span class="nc" id="L713">  }</span>
 
   /**
    * Write to directory 1 file prefixed by hostname all Rules from database
@@ -699,29 +724,30 @@ public final class RuleFileBasedConfiguration {
    * @throws WaarpDatabaseSqlException
    * @throws OpenR66ProtocolSystemException
    */
-  public static String writeOneXml(String directory, String hostname)
+  public static String writeOneXml(final String directory,
+                                   final String hostname)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException,
              OpenR66ProtocolSystemException {
-<span class="nc" id="L705">    final File dir = new File(directory);</span>
-<span class="nc bnc" id="L706" title="All 2 branches missed.">    if (!dir.isDirectory()) {</span>
-<span class="nc" id="L707">      dir.mkdirs();</span>
+<span class="nc" id="L731">    final File dir = new File(directory);</span>
+<span class="nc bnc" id="L732" title="All 2 branches missed.">    if (!dir.isDirectory()) {</span>
+<span class="nc" id="L733">      dir.mkdirs();//NOSONAR</span>
     }
-<span class="nc" id="L709">    final DbRule[] rules = DbRule.getAllRules();</span>
-<span class="nc" id="L710">    final String filename =</span>
-<span class="nc" id="L711">        dir.getAbsolutePath() + File.separator + hostname + EXT_RULES;</span>
-<span class="nc" id="L712">    final Document document = DocumentHelper.createDocument();</span>
-<span class="nc" id="L713">    final Element root = document.addElement(MULTIPLEROOT);</span>
-<span class="nc bnc" id="L714" title="All 2 branches missed.">    for (final DbRule rule : rules) {</span>
-<span class="nc" id="L715">      final Element element = root.addElement(ROOT);</span>
-<span class="nc" id="L716">      addToElement(element, rule);</span>
+<span class="nc" id="L735">    final DbRule[] rules = DbRule.getAllRules();</span>
+<span class="nc" id="L736">    final String filename =</span>
+<span class="nc" id="L737">        dir.getAbsolutePath() + File.separator + hostname + EXT_RULES;</span>
+<span class="nc" id="L738">    final Document document = DocumentHelper.createDocument();</span>
+<span class="nc" id="L739">    final Element root = document.addElement(MULTIPLEROOT);</span>
+<span class="nc bnc" id="L740" title="All 2 branches missed.">    for (final DbRule rule : rules) {</span>
+<span class="nc" id="L741">      final Element element = root.addElement(ROOT);</span>
+<span class="nc" id="L742">      addToElement(element, rule);</span>
     }
     try {
-<span class="nc" id="L719">      XmlUtil.writeXML(filename, null, document);</span>
-<span class="nc" id="L720">    } catch (final IOException e) {</span>
-<span class="nc" id="L721">      throw new OpenR66ProtocolSystemException(&quot;Cannot write file: &quot; + filename,</span>
+<span class="nc" id="L745">      XmlUtil.writeXML(filename, null, document);</span>
+<span class="nc" id="L746">    } catch (final IOException e) {</span>
+<span class="nc" id="L747">      throw new OpenR66ProtocolSystemException(&quot;Cannot write file: &quot; + filename,</span>
                                                e);
-<span class="nc" id="L723">    }</span>
-<span class="nc" id="L724">    return filename;</span>
+<span class="nc" id="L749">    }</span>
+<span class="nc" id="L750">    return filename;</span>
   }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

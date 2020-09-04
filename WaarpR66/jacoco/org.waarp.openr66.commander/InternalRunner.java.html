@@ -77,8 +77,8 @@ public class InternalRunner {
 <span class="fc" id="L77">                               new RejectedExecutionHandler() {</span>
                                  @Override
                                  public void rejectedExecution(
-                                     Runnable runnable,
-                                     ThreadPoolExecutor threadPoolExecutor) {
+                                     final Runnable runnable,
+                                     final ThreadPoolExecutor threadPoolExecutor) {
 <span class="nc" id="L82">                                   logger.debug(&quot;Task rescheduled&quot;);</span>
 <span class="nc" id="L83">                                 }</span>
                                });
@@ -96,7 +96,7 @@ public class InternalRunner {
   }
 
   public int allowedToSubmit() {
-<span class="fc" id="L99">    int active = threadPoolExecutor.getActiveCount();</span>
+<span class="fc" id="L99">    final int active = threadPoolExecutor.getActiveCount();</span>
 <span class="pc bpc" id="L100" title="3 of 4 branches missed.">    if ((isRunning || !Configuration.configuration.isShutdown()) &amp;&amp;</span>
 <span class="pc bpc" id="L101" title="1 of 2 branches missed.">        (active &lt; Configuration.configuration.getRunnerThread())) {</span>
 <span class="fc" id="L102">      return Configuration.configuration.getRunnerThread() - active;</span>
@@ -109,7 +109,7 @@ public class InternalRunner {
    *
    * @param taskRunner
    */
-  public void submitTaskRunner(DbTaskRunner taskRunner) {
+  public void submitTaskRunner(final DbTaskRunner taskRunner) {
 <span class="pc bpc" id="L113" title="3 of 4 branches missed.">    if (isRunning || !Configuration.configuration.isShutdown()) {</span>
       // last check: number can have raised up since Commander checks
 <span class="fc" id="L115">      if (threadPoolExecutor.getActiveCount() &lt;</span>

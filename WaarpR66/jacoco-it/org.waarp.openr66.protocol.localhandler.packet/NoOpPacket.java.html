@@ -20,6 +20,7 @@
 package org.waarp.openr66.protocol.localhandler.packet;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.Unpooled;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
 import org.waarp.openr66.protocol.localhandler.LocalChannelReference;
@@ -29,7 +30,7 @@ import org.waarp.openr66.protocol.localhandler.LocalChannelReference;
  * &lt;p&gt;
  * header = empty middle = empty end = empty
  */
-<span class="nc" id="L32">public class NoOpPacket extends AbstractLocalPacket {</span>
+<span class="nc" id="L33">public class NoOpPacket extends AbstractLocalPacket {</span>
 
   /**
    * @param headerLength
@@ -41,35 +42,38 @@ import org.waarp.openr66.protocol.localhandler.LocalChannelReference;
    *
    * @throws OpenR66ProtocolPacketException
    */
-  public static NoOpPacket createFromBuffer(int headerLength, int middleLength,
-                                            int endLength, ByteBuf buf)
+  public static NoOpPacket createFromBuffer(final int headerLength,
+                                            final int middleLength,
+                                            final int endLength,
+                                            final ByteBuf buf)
       throws OpenR66ProtocolPacketException {
-<span class="nc" id="L47">    return new NoOpPacket();</span>
+<span class="nc" id="L50">    return new NoOpPacket();</span>
   }
 
   @Override
-  public void createEnd(LocalChannelReference lcr) {
-<span class="nc" id="L52">    end = Unpooled.EMPTY_BUFFER;</span>
-<span class="nc" id="L53">  }</span>
+  public boolean hasGlobalBuffer() {
+<span class="nc" id="L55">    return true;</span>
+  }
 
   @Override
-  public void createHeader(LocalChannelReference lcr) {
-<span class="nc" id="L57">    header = Unpooled.EMPTY_BUFFER;</span>
-<span class="nc" id="L58">  }</span>
-
-  @Override
-  public void createMiddle(LocalChannelReference lcr) {
-<span class="nc" id="L62">    middle = Unpooled.EMPTY_BUFFER;</span>
-<span class="nc" id="L63">  }</span>
+  public void createAllBuffers(final LocalChannelReference lcr,
+                               final int networkHeader)
+      throws OpenR66ProtocolPacketException {
+<span class="nc" id="L62">    final int globalSize = networkHeader + LOCAL_HEADER_SIZE;</span>
+<span class="nc" id="L63">    global = ByteBufAllocator.DEFAULT.buffer(globalSize, globalSize);</span>
+<span class="nc" id="L64">    end = Unpooled.EMPTY_BUFFER;</span>
+<span class="nc" id="L65">    header = Unpooled.EMPTY_BUFFER;</span>
+<span class="nc" id="L66">    middle = Unpooled.EMPTY_BUFFER;</span>
+<span class="nc" id="L67">  }</span>
 
   @Override
   public byte getType() {
-<span class="nc" id="L67">    return LocalPacketFactory.NOOPPACKET;</span>
+<span class="nc" id="L71">    return LocalPacketFactory.NOOPPACKET;</span>
   }
 
   @Override
   public String toString() {
-<span class="nc" id="L72">    return &quot;NoOpPacket&quot;;</span>
+<span class="nc" id="L76">    return &quot;NoOpPacket&quot;;</span>
   }
 
 }

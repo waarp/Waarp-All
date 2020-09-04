@@ -20,9 +20,14 @@
 package org.waarp.openr66.protocol.localhandler.packet;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.Unpooled;
+import org.waarp.common.utility.WaarpNettyUtil;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
 import org.waarp.openr66.protocol.localhandler.LocalChannelReference;
+import org.waarp.openr66.protocol.networkhandler.packet.NetworkPacket;
+
+import static org.waarp.openr66.protocol.networkhandler.packet.NetworkPacket.*;
 
 /**
  * This class represents Abstract Packet with its header, middle and end parts.
@@ -34,47 +39,73 @@ import org.waarp.openr66.protocol.localhandler.LocalChannelReference;
  * End: (End length field bytes) = code status field (4 bytes), ...&lt;br&gt;
  */
 public abstract class AbstractLocalPacket {
+<span class="fc" id="L42">  protected static final byte[] EMPTY_ARRAY = {};</span>
+  protected static final int LOCAL_HEADER_SIZE = 4 * 3 + 1;
+
   protected ByteBuf header;
 
   protected ByteBuf middle;
 
   protected ByteBuf end;
 
-<span class="nc" id="L43">  protected AbstractLocalPacket(ByteBuf header, ByteBuf middle, ByteBuf end) {</span>
-<span class="nc" id="L44">    this.header = header;</span>
-<span class="nc" id="L45">    this.middle = middle;</span>
-<span class="nc" id="L46">    this.end = end;</span>
-<span class="nc" id="L47">  }</span>
+<span class="pc" id="L51">  protected ByteBuf global = null;</span>
 
-<span class="fc" id="L49">  protected AbstractLocalPacket() {</span>
-<span class="fc" id="L50">    header = null;</span>
-<span class="fc" id="L51">    middle = null;</span>
-<span class="fc" id="L52">    end = null;</span>
-<span class="fc" id="L53">  }</span>
+  protected AbstractLocalPacket(final ByteBuf header, final ByteBuf middle,
+<span class="nc" id="L54">                                final ByteBuf end) {</span>
+<span class="nc" id="L55">    this.header = header;</span>
+<span class="nc" id="L56">    this.middle = middle;</span>
+<span class="nc" id="L57">    this.end = end;</span>
+<span class="nc" id="L58">  }</span>
+
+<span class="fc" id="L60">  protected AbstractLocalPacket() {</span>
+<span class="fc" id="L61">    header = null;</span>
+<span class="fc" id="L62">    middle = null;</span>
+<span class="fc" id="L63">    end = null;</span>
+<span class="fc" id="L64">  }</span>
+
+  /**
+   * @return True if all buffers fit in one piece
+   */
+  public abstract boolean hasGlobalBuffer();
+
+  /**
+   * Prepare the 2 buffers Header, Middle and End
+   *
+   * @throws OpenR66ProtocolPacketException
+   */
+  public abstract void createAllBuffers(LocalChannelReference lcr,
+                                        int networkHeader)
+      throws OpenR66ProtocolPacketException;
 
   /**
    * Prepare the Header buffer
    *
    * @throws OpenR66ProtocolPacketException
    */
-  public abstract void createHeader(LocalChannelReference lcr)
-      throws OpenR66ProtocolPacketException;
+  public void createHeader(LocalChannelReference lcr)
+      throws OpenR66ProtocolPacketException {
+<span class="nc" id="L87">    throw new IllegalStateException(&quot;Should not be called&quot;);</span>
+  }
 
   /**
    * Prepare the Middle buffer
    *
    * @throws OpenR66ProtocolPacketException
    */
-  public abstract void createMiddle(LocalChannelReference lcr)
-      throws OpenR66ProtocolPacketException;
+  public void createMiddle(LocalChannelReference lcr)
+      throws OpenR66ProtocolPacketException {
+<span class="nc" id="L97">    throw new IllegalStateException(&quot;Should not be called&quot;);</span>
+  }
 
   /**
    * Prepare the End buffer
    *
    * @throws OpenR66ProtocolPacketException
    */
-  public abstract void createEnd(LocalChannelReference lcr)
-      throws OpenR66ProtocolPacketException;
+  public void createEnd(LocalChannelReference lcr)
+      throws OpenR66ProtocolPacketException {
+<span class="nc" id="L107">    throw new IllegalStateException(&quot;Should not be called&quot;);</span>
+  }
 
   /**
    * @return the type of Packet
@@ -91,54 +122,112 @@ public abstract class AbstractLocalPacket {
    *
    * @throws OpenR66ProtocolPacketException
    */
-  public ByteBuf getLocalPacket(LocalChannelReference lcr)
+  public ByteBuf getLocalPacket(final LocalChannelReference lcr)
       throws OpenR66ProtocolPacketException {
-<span class="fc" id="L96">    final ByteBuf buf = Unpooled.buffer(4 * 3 + 1);// 3 header</span>
-    // lengths+type
-<span class="pc bpc" id="L98" title="1 of 2 branches missed.">    if (header == null) {</span>
-<span class="fc" id="L99">      createHeader(lcr);</span>
+<span class="nc" id="L127">    return getLocalPacketForNetworkPacket(lcr, null);</span>
+  }
+
+  /**
+   * @param lcr the LocalChannelReference in use
+   *
+   * @return the ByteBuf as LocalPacket
+   *
+   * @throws OpenR66ProtocolPacketException
+   */
+  public ByteBuf getLocalPacketForNetworkPacket(final LocalChannelReference lcr,
+                                                final NetworkPacket packet)
+      throws OpenR66ProtocolPacketException {
+    final ByteBuf buf;
+    final int globalHeader;
+<span class="pc bpc" id="L142" title="1 of 2 branches missed.">    if (packet != null) {</span>
+<span class="fc" id="L143">      globalHeader = NETWORK_HEADER_SIZE;</span>
+    } else {
+<span class="nc" id="L145">      globalHeader = 0;</span>
     }
-<span class="pc bpc" id="L101" title="1 of 2 branches missed.">    final ByteBuf newHeader = header != null? header : Unpooled.EMPTY_BUFFER;</span>
-<span class="fc" id="L102">    final int headerLength = 4 * 2 + 1 + newHeader.readableBytes();</span>
-<span class="pc bpc" id="L103" title="1 of 2 branches missed.">    if (middle == null) {</span>
-<span class="fc" id="L104">      createMiddle(lcr);</span>
+<span class="fc bfc" id="L147" title="All 2 branches covered.">    if (hasGlobalBuffer()) {</span>
+<span class="pc bpc" id="L148" title="1 of 2 branches missed.">      if (global == null) {</span>
+<span class="fc" id="L149">        createAllBuffers(lcr, globalHeader);</span>
+      } else {
+<span class="nc" id="L151">        global.readerIndex(0);</span>
+<span class="nc" id="L152">        global.writerIndex(0);</span>
+      }
+<span class="fc" id="L154">      buf = global;</span>
+    } else {
+      // 3 header lengths+type
+<span class="fc" id="L157">      buf = ByteBufAllocator.DEFAULT.buffer(globalHeader + LOCAL_HEADER_SIZE,</span>
+                                            globalHeader + LOCAL_HEADER_SIZE);
+<span class="pc bpc" id="L159" title="1 of 2 branches missed.">      if (header == null) {</span>
+<span class="fc" id="L160">        createHeader(lcr);</span>
+      }
+<span class="pc bpc" id="L162" title="1 of 2 branches missed.">      if (middle == null) {</span>
+<span class="fc" id="L163">        createMiddle(lcr);</span>
+      }
+<span class="pc bpc" id="L165" title="1 of 2 branches missed.">      if (end == null) {</span>
+<span class="fc" id="L166">        createEnd(lcr);</span>
+      }
     }
-<span class="fc bfc" id="L106" title="All 2 branches covered.">    final ByteBuf newMiddle = middle != null? middle : Unpooled.EMPTY_BUFFER;</span>
-<span class="fc" id="L107">    final int middleLength = newMiddle.readableBytes();</span>
-<span class="pc bpc" id="L108" title="1 of 2 branches missed.">    if (end == null) {</span>
-<span class="fc" id="L109">      createEnd(lcr);</span>
+<span class="pc bpc" id="L169" title="1 of 2 branches missed.">    if (packet != null) {</span>
+<span class="pc bpc" id="L170" title="1 of 2 branches missed.">      final int capacity =</span>
+<span class="pc bpc" id="L171" title="1 of 2 branches missed.">          LOCAL_HEADER_SIZE + (header != null? header.capacity() : 0) +</span>
+<span class="pc bpc" id="L172" title="1 of 2 branches missed.">          (middle != null? middle.capacity() : 0) +</span>
+<span class="pc" id="L173">          (end != null? end.capacity() : 0);</span>
+<span class="fc" id="L174">      packet.writeNetworkHeader(buf, capacity);</span>
     }
-<span class="pc bpc" id="L111" title="1 of 2 branches missed.">    final ByteBuf newEnd = end != null? end : Unpooled.EMPTY_BUFFER;</span>
-<span class="fc" id="L112">    final int endLength = newEnd.readableBytes();</span>
-<span class="fc" id="L113">    buf.writeInt(headerLength);</span>
-<span class="fc" id="L114">    buf.writeInt(middleLength);</span>
-<span class="fc" id="L115">    buf.writeInt(endLength);</span>
-<span class="fc" id="L116">    buf.writeByte(getType());</span>
-<span class="fc" id="L117">    return Unpooled.wrappedBuffer(buf, newHeader, newMiddle, newEnd);</span>
+<span class="fc" id="L176">    return getByteBuf(buf);</span>
+  }
+
+  private ByteBuf getByteBuf(final ByteBuf buf) {
+<span class="pc bpc" id="L180" title="1 of 2 branches missed.">    final ByteBuf newHeader = header != null? header : Unpooled.EMPTY_BUFFER;</span>
+<span class="fc" id="L181">    final int headerLength = LOCAL_HEADER_SIZE - 4 + newHeader.readableBytes();</span>
+<span class="pc bpc" id="L182" title="1 of 2 branches missed.">    final ByteBuf newMiddle = middle != null? middle : Unpooled.EMPTY_BUFFER;</span>
+<span class="fc" id="L183">    final int middleLength = newMiddle.readableBytes();</span>
+<span class="pc bpc" id="L184" title="1 of 2 branches missed.">    final ByteBuf newEnd = end != null? end : Unpooled.EMPTY_BUFFER;</span>
+<span class="fc" id="L185">    final int endLength = newEnd.readableBytes();</span>
+<span class="fc" id="L186">    buf.writeInt(headerLength);</span>
+<span class="fc" id="L187">    buf.writeInt(middleLength);</span>
+<span class="fc" id="L188">    buf.writeInt(endLength);</span>
+<span class="fc" id="L189">    buf.writeByte(getType());</span>
+<span class="fc bfc" id="L190" title="All 2 branches covered.">    if (hasGlobalBuffer()) {</span>
+<span class="fc" id="L191">      buf.writerIndex(buf.capacity());</span>
+<span class="fc" id="L192">      return buf;</span>
+    }
+<span class="fc" id="L194">    return Unpooled.wrappedBuffer(buf, newHeader, newMiddle, newEnd);</span>
   }
 
   public void clear() {
-<span class="pc bpc" id="L121" title="3 of 4 branches missed.">    if (header != null &amp;&amp; header.release()) {</span>
-<span class="nc" id="L122">      header = null;</span>
+<span class="pc bpc" id="L198" title="1 of 2 branches missed.">    if (WaarpNettyUtil.release(global)) {</span>
+<span class="fc" id="L199">      global = null;</span>
     }
-<span class="pc bpc" id="L124" title="3 of 4 branches missed.">    if (middle != null &amp;&amp; middle.release()) {</span>
-<span class="nc" id="L125">      middle = null;</span>
+<span class="fc bfc" id="L201" title="All 2 branches covered.">    if (hasGlobalBuffer()) {</span>
+<span class="fc" id="L202">      return;</span>
     }
-<span class="pc bpc" id="L127" title="3 of 4 branches missed.">    if (end != null &amp;&amp; end.release()) {</span>
-<span class="nc" id="L128">      end = null;</span>
+<span class="pc bpc" id="L204" title="1 of 2 branches missed.">    if (WaarpNettyUtil.release(header)) {</span>
+<span class="fc" id="L205">      header = null;</span>
     }
-<span class="fc" id="L130">  }</span>
+<span class="pc bpc" id="L207" title="1 of 2 branches missed.">    if (WaarpNettyUtil.release(middle)) {</span>
+<span class="fc" id="L208">      middle = null;</span>
+    }
+<span class="pc bpc" id="L210" title="1 of 2 branches missed.">    if (WaarpNettyUtil.release(end)) {</span>
+<span class="fc" id="L211">      end = null;</span>
+    }
+<span class="fc" id="L213">  }</span>
 
   public void retain() {
-<span class="nc bnc" id="L133" title="All 2 branches missed.">    if (header != null) {</span>
-<span class="nc" id="L134">      header.retain();</span>
+<span class="nc bnc" id="L216" title="All 2 branches missed.">    if (global != null) {</span>
+<span class="nc" id="L217">      global.retain();</span>
     }
-<span class="nc bnc" id="L136" title="All 2 branches missed.">    if (middle != null) {</span>
-<span class="nc" id="L137">      middle.retain();</span>
+<span class="nc bnc" id="L219" title="All 2 branches missed.">    if (hasGlobalBuffer()) {</span>
+<span class="nc" id="L220">      return;</span>
     }
-<span class="nc bnc" id="L139" title="All 2 branches missed.">    if (end != null) {</span>
-<span class="nc" id="L140">      end.retain();</span>
+<span class="nc bnc" id="L222" title="All 2 branches missed.">    if (header != null) {</span>
+<span class="nc" id="L223">      header.retain();</span>
     }
-<span class="nc" id="L142">  }</span>
+<span class="nc bnc" id="L225" title="All 2 branches missed.">    if (middle != null) {</span>
+<span class="nc" id="L226">      middle.retain();</span>
+    }
+<span class="nc bnc" id="L228" title="All 2 branches missed.">    if (end != null) {</span>
+<span class="nc" id="L229">      end.retain();</span>
+    }
+<span class="nc" id="L231">  }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

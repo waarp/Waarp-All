@@ -20,8 +20,6 @@
 
 package org.waarp.openr66.dao.database;
 
-import org.waarp.common.logging.WaarpLogger;
-import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.openr66.dao.MultipleMonitorDAO;
 import org.waarp.openr66.pojo.MultipleMonitor;
 
@@ -35,9 +33,6 @@ import java.sql.SQLException;
 public class DBMultipleMonitorDAO extends StatementExecutor&lt;MultipleMonitor&gt;
     implements MultipleMonitorDAO {
 
-<span class="fc" id="L38">  private static final WaarpLogger logger =</span>
-<span class="fc" id="L39">      WaarpLoggerFactory.getLogger(DBMultipleMonitorDAO.class);</span>
-
   protected static final String TABLE = &quot;multiplemonitor&quot;;
 
   public static final String HOSTID_FIELD = &quot;hostid&quot;;
@@ -47,89 +42,91 @@ public class DBMultipleMonitorDAO extends StatementExecutor&lt;MultipleMonitor&g
 
   protected static final String SQL_DELETE_ALL = &quot;DELETE FROM &quot; + TABLE;
   protected static final String SQL_DELETE =
-      &quot;DELETE FROM &quot; + TABLE + &quot; WHERE &quot; + HOSTID_FIELD + &quot; = ?&quot;;
+      &quot;DELETE FROM &quot; + TABLE + WHERE + HOSTID_FIELD + PARAMETER;
   protected static final String SQL_GET_ALL = &quot;SELECT * FROM &quot; + TABLE;
   protected static final String SQL_EXIST =
-      &quot;SELECT 1 FROM &quot; + TABLE + &quot; WHERE &quot; + HOSTID_FIELD + &quot; = ?&quot;;
+      &quot;SELECT 1 FROM &quot; + TABLE + WHERE + HOSTID_FIELD + PARAMETER;
   protected static final String SQL_SELECT =
-      &quot;SELECT * FROM &quot; + TABLE + &quot; WHERE &quot; + HOSTID_FIELD + &quot; = ?&quot;;
+      &quot;SELECT * FROM &quot; + TABLE + WHERE + HOSTID_FIELD + PARAMETER;
   protected static final String SQL_INSERT =
       &quot;INSERT INTO &quot; + TABLE + &quot; (&quot; + HOSTID_FIELD + &quot;, &quot; + COUNT_CONFIG_FIELD +
       &quot;, &quot; + COUNT_HOST_FIELD + &quot;, &quot; + COUNT_RULE_FIELD + &quot;) VALUES (?,?,?,?)&quot;;
 
   protected static final String SQL_UPDATE =
-      &quot;UPDATE &quot; + TABLE + &quot; SET &quot; + HOSTID_FIELD + &quot; = ?, &quot; +
-      COUNT_CONFIG_FIELD + &quot; = ?, &quot; + COUNT_HOST_FIELD + &quot; = ?, &quot; +
-      COUNT_RULE_FIELD + &quot; = ? WHERE &quot; + HOSTID_FIELD + &quot; = ?&quot;;
+      &quot;UPDATE &quot; + TABLE + &quot; SET &quot; + HOSTID_FIELD + PARAMETER_COMMA +
+      COUNT_CONFIG_FIELD + PARAMETER_COMMA + COUNT_HOST_FIELD +
+      PARAMETER_COMMA + COUNT_RULE_FIELD + &quot; = ? WHERE &quot; + HOSTID_FIELD +
+      PARAMETER;
 
 
-  public DBMultipleMonitorDAO(Connection con) {
-<span class="fc" id="L67">    super(con);</span>
-<span class="fc" id="L68">  }</span>
+  public DBMultipleMonitorDAO(final Connection con) {
+<span class="fc" id="L63">    super(con);</span>
+<span class="fc" id="L64">  }</span>
 
   @Override
   protected String getId(final MultipleMonitor e1) {
-<span class="nc" id="L72">    return e1.getHostid();</span>
+<span class="nc" id="L68">    return e1.getHostid();</span>
   }
 
   @Override
   protected String getSelectRequest() {
-<span class="nc" id="L77">    return SQL_SELECT;</span>
+<span class="nc" id="L73">    return SQL_SELECT;</span>
   }
 
   @Override
   protected String getGetAllRequest() {
-<span class="nc" id="L82">    return SQL_GET_ALL;</span>
+<span class="nc" id="L78">    return SQL_GET_ALL;</span>
   }
 
   @Override
   protected String getExistRequest() {
-<span class="fc" id="L87">    return SQL_EXIST;</span>
+<span class="fc" id="L83">    return SQL_EXIST;</span>
   }
 
   @Override
   protected Object[] getInsertValues(final MultipleMonitor multipleMonitor) {
-<span class="nc" id="L92">    return new Object[] {</span>
-<span class="nc" id="L93">        multipleMonitor.getHostid(), multipleMonitor.getCountConfig(),</span>
-<span class="nc" id="L94">        multipleMonitor.getCountHost(), multipleMonitor.getCountRule()</span>
+<span class="nc" id="L88">    return new Object[] {</span>
+<span class="nc" id="L89">        multipleMonitor.getHostid(), multipleMonitor.getCountConfig(),</span>
+<span class="nc" id="L90">        multipleMonitor.getCountHost(), multipleMonitor.getCountRule()</span>
     };
   }
 
   @Override
   protected String getInsertRequest() {
-<span class="nc" id="L100">    return SQL_INSERT;</span>
+<span class="nc" id="L96">    return SQL_INSERT;</span>
   }
 
   @Override
   protected Object[] getUpdateValues(final MultipleMonitor multipleMonitor) {
-<span class="nc" id="L105">    return new Object[] {</span>
-<span class="nc" id="L106">        multipleMonitor.getHostid(), multipleMonitor.getCountConfig(),</span>
-<span class="nc" id="L107">        multipleMonitor.getCountHost(), multipleMonitor.getCountRule(),</span>
-<span class="nc" id="L108">        multipleMonitor.getHostid()</span>
+<span class="nc" id="L101">    return new Object[] {</span>
+<span class="nc" id="L102">        multipleMonitor.getHostid(), multipleMonitor.getCountConfig(),</span>
+<span class="nc" id="L103">        multipleMonitor.getCountHost(), multipleMonitor.getCountRule(),</span>
+<span class="nc" id="L104">        multipleMonitor.getHostid()</span>
     };
   }
 
   @Override
   protected String getUpdateRequest() {
-<span class="nc" id="L114">    return SQL_UPDATE;</span>
+<span class="nc" id="L110">    return SQL_UPDATE;</span>
   }
 
   @Override
   protected String getDeleteRequest() {
-<span class="nc" id="L119">    return SQL_DELETE;</span>
+<span class="nc" id="L115">    return SQL_DELETE;</span>
   }
 
   @Override
   protected String getDeleteAllRequest() {
-<span class="nc" id="L124">    return SQL_DELETE_ALL;</span>
+<span class="nc" id="L120">    return SQL_DELETE_ALL;</span>
   }
 
   @Override
-  public MultipleMonitor getFromResultSet(ResultSet set) throws SQLException {
-<span class="nc" id="L129">    return new MultipleMonitor(set.getString(HOSTID_FIELD),</span>
-<span class="nc" id="L130">                               set.getInt(COUNT_CONFIG_FIELD),</span>
-<span class="nc" id="L131">                               set.getInt(COUNT_HOST_FIELD),</span>
-<span class="nc" id="L132">                               set.getInt(COUNT_RULE_FIELD));</span>
+  public MultipleMonitor getFromResultSet(final ResultSet set)
+      throws SQLException {
+<span class="nc" id="L126">    return new MultipleMonitor(set.getString(HOSTID_FIELD),</span>
+<span class="nc" id="L127">                               set.getInt(COUNT_CONFIG_FIELD),</span>
+<span class="nc" id="L128">                               set.getInt(COUNT_HOST_FIELD),</span>
+<span class="nc" id="L129">                               set.getInt(COUNT_RULE_FIELD));</span>
   }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

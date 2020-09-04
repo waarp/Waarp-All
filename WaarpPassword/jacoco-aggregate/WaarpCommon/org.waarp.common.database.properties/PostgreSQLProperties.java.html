@@ -57,30 +57,31 @@ public class PostgreSQLProperties implements DbProperties {
   }
 
   @Override
-  public int getMaximumConnections(Connection connection) throws SQLException {
-<span class="nc" id="L61">    Statement stm = null;</span>
-<span class="nc" id="L62">    ResultSet rs = null;</span>
+  public int getMaximumConnections(final Connection connection)
+      throws SQLException {
+<span class="nc" id="L62">    Statement stm = null;</span>
+<span class="nc" id="L63">    ResultSet rs = null;</span>
     try {
-<span class="nc" id="L64">      stm = connection.createStatement();</span>
-<span class="nc" id="L65">      rs = stm.executeQuery(MAX_CONNECTION_QUERY);</span>
-<span class="nc bnc" id="L66" title="All 2 branches missed.">      if (!rs.next()) {</span>
-<span class="nc" id="L67">        throw new SQLException(&quot;Cannot find max connection&quot;);</span>
+<span class="nc" id="L65">      stm = connection.createStatement();</span>
+<span class="nc" id="L66">      rs = stm.executeQuery(MAX_CONNECTION_QUERY);</span>
+<span class="nc bnc" id="L67" title="All 2 branches missed.">      if (!rs.next()) {</span>
+<span class="nc" id="L68">        throw new SQLException(&quot;Cannot find max connection&quot;);</span>
       }
-<span class="nc" id="L69">      return rs.getInt(1);</span>
+<span class="nc" id="L70">      return rs.getInt(1);</span>
     } finally {
-<span class="nc bnc" id="L71" title="All 2 branches missed.">      if (rs != null) {</span>
+<span class="nc bnc" id="L72" title="All 2 branches missed.">      if (rs != null) {</span>
         try {
-<span class="nc" id="L73">          rs.close();</span>
-<span class="nc" id="L74">        } catch (SQLException ignored) {</span>
+<span class="nc" id="L74">          rs.close();</span>
+<span class="nc" id="L75">        } catch (final SQLException ignored) {</span>
           // nothing
-<span class="nc" id="L76">        }</span>
+<span class="nc" id="L77">        }</span>
       }
-<span class="nc bnc" id="L78" title="All 2 branches missed.">      if (stm != null) {</span>
+<span class="nc bnc" id="L79" title="All 2 branches missed.">      if (stm != null) {</span>
         try {
-<span class="nc" id="L80">          stm.close();</span>
-<span class="nc" id="L81">        } catch (SQLException ignored) {</span>
+<span class="nc" id="L81">          stm.close();</span>
+<span class="nc" id="L82">        } catch (final SQLException ignored) {</span>
           // nothing
-<span class="nc" id="L83">        }</span>
+<span class="nc" id="L84">        }</span>
       }
     }
   }

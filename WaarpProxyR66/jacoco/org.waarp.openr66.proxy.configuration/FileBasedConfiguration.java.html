@@ -174,43 +174,43 @@ public class FileBasedConfiguration {
                   configLimitDecls, false)
   };
 
-  private static XmlValue[] configuration;
   private static XmlHash hashConfig;
 
   private FileBasedConfiguration() {
   }
 
-  private static boolean loadServerParam(Configuration config) {
-<span class="fc" id="L184">    XmlHash hashConfigSub = new XmlHash(hashConfig.get(XML_SERVER));</span>
+  private static boolean loadServerParam(final Configuration config) {
+<span class="fc" id="L183">    XmlHash hashConfigSub = new XmlHash(hashConfig.get(XML_SERVER));</span>
     try {
-<span class="fc" id="L186">      return org.waarp.openr66.configuration.FileBasedConfiguration</span>
-<span class="fc" id="L187">          .loadServerConfig(config, hashConfigSub);</span>
+<span class="fc" id="L185">      return org.waarp.openr66.configuration.FileBasedConfiguration</span>
+<span class="fc" id="L186">          .loadServerConfig(config, hashConfigSub);</span>
     } finally {
-<span class="fc" id="L189">      hashConfigSub.clear();</span>
-<span class="fc" id="L190">      hashConfigSub = null;</span>
+<span class="fc" id="L188">      hashConfigSub.clear();</span>
+<span class="fc" id="L189">      hashConfigSub = null;</span>
     }
   }
 
-  private static boolean loadDirectory(Configuration config) {
-<span class="fc" id="L195">    XmlHash hashConfigSub = new XmlHash(hashConfig.get(XML_DIRECTORY));</span>
+  private static boolean loadDirectory(final Configuration config) {
+<span class="fc" id="L194">    XmlHash hashConfigSub = new XmlHash(hashConfig.get(XML_DIRECTORY));</span>
     try {
-<span class="pc bpc" id="L197" title="1 of 2 branches missed.">      if (loadMinimalDirectory(config, hashConfigSub)) {</span>
-<span class="nc" id="L198">        return false;</span>
+<span class="pc bpc" id="L196" title="1 of 2 branches missed.">      if (loadMinimalDirectory(config, hashConfigSub)) {</span>
+<span class="nc" id="L197">        return false;</span>
       }
     } finally {
-<span class="fc" id="L201">      hashConfigSub.clear();</span>
-<span class="fc" id="L202">      hashConfigSub = null;</span>
+<span class="fc" id="L200">      hashConfigSub.clear();</span>
+<span class="fc" id="L201">      hashConfigSub = null;</span>
     }
-<span class="fc" id="L204">    return true;</span>
+<span class="fc" id="L203">    return true;</span>
   }
 
   private static boolean alreadySetLimit;
 
-  private static void loadLimit(Configuration config, boolean updateLimit) {
+  private static void loadLimit(final Configuration config,
+                                final boolean updateLimit) {
 <span class="pc bpc" id="L210" title="1 of 2 branches missed.">    if (alreadySetLimit) {</span>
 <span class="nc" id="L211">      return;</span>
     }
-<span class="fc" id="L213">    XmlHash hashConfigSub = new XmlHash(hashConfig.get(XML_LIMIT));</span>
+<span class="fc" id="L213">    final XmlHash hashConfigSub = new XmlHash(hashConfig.get(XML_LIMIT));</span>
     try {
 <span class="fc" id="L215">      loadCommonLimit(config, hashConfigSub, updateLimit);</span>
 <span class="pc bpc" id="L216" title="1 of 2 branches missed.">      if (config.getRunnerThread() &lt; 10) {</span>
@@ -224,7 +224,7 @@ public class FileBasedConfiguration {
 <span class="fc" id="L224">  }</span>
 
   @SuppressWarnings(&quot;unchecked&quot;)
-  private static boolean loadNetworkServer(Configuration config) {
+  private static boolean loadNetworkServer(final Configuration config) {
 <span class="fc" id="L228">    config.setServerPort(0);</span>
 <span class="fc" id="L229">    config.setServerSslPort(0);</span>
 <span class="fc" id="L230">    XmlValue value = hashConfig.get(XML_SERVER_HTTPPORT);</span>
@@ -303,7 +303,7 @@ public class FileBasedConfiguration {
    *
    * @return True if OK
    */
-  private static boolean loadDatabase(Configuration config) {
+  private static boolean loadDatabase(final Configuration config) {
 <span class="fc" id="L307">    logger.info(&quot;Unable to find DBDriver in Config file&quot;);</span>
 <span class="fc" id="L308">    admin = new DbAdmin(); // no database support</span>
 <span class="fc" id="L309">    noCommitAdmin = admin;</span>
@@ -318,9 +318,9 @@ public class FileBasedConfiguration {
    *
    * @return True if OK
    */
-  public static boolean setConfigurationProxyFromXml(Configuration config,
-                                                     String filename) {
-    Document document;
+  public static boolean setConfigurationProxyFromXml(final Configuration config,
+                                                     final String filename) {
+    final Document document;
     // Open config file
     try {
 <span class="fc" id="L326">      document = XmlUtil.getNewSaxReader().read(filename);</span>
@@ -332,9 +332,9 @@ public class FileBasedConfiguration {
 <span class="nc" id="L332">      logger.error(&quot;Unable to read the XML Config file: &quot; + filename);</span>
 <span class="nc" id="L333">      return false;</span>
     }
-<span class="fc" id="L335">    configuration = XmlUtil.read(document, configServer);</span>
+<span class="fc" id="L335">    XmlValue[] configuration = XmlUtil.read(document, configServer);</span>
 <span class="fc" id="L336">    hashConfig = new XmlHash(configuration);</span>
-<span class="fc" id="L337">    XmlRootHash xmlRootHash = new XmlRootHash(configuration);</span>
+<span class="fc" id="L337">    final XmlRootHash xmlRootHash = new XmlRootHash(configuration);</span>
 <span class="fc" id="L338">    setXmlRootHash(xmlRootHash);</span>
     // Now read the configuration
 <span class="pc bpc" id="L340" title="1 of 2 branches missed.">    if (!loadIdentity(config, xmlRootHash)) {</span>

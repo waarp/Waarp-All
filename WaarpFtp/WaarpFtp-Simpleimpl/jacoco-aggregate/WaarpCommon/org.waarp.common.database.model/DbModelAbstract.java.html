@@ -80,7 +80,7 @@ import java.util.ConcurrentModificationException;
    *
    * @throws WaarpDatabaseNoConnectionException
    */
-  private void recreateSession(DbSession dbSession)
+  private void recreateSession(final DbSession dbSession)
       throws WaarpDatabaseNoConnectionException {
 <span class="nc" id="L85">    DbAdmin admin = dbSession.getAdmin();</span>
 <span class="nc bnc" id="L86" title="All 2 branches missed.">    if (admin == null) {</span>
@@ -90,7 +90,7 @@ import java.util.ConcurrentModificationException;
 <span class="nc" id="L90">        admin = DbConstant.noCommitAdmin;</span>
       }
     }
-    DbSession newdbSession;
+    final DbSession newdbSession;
 <span class="nc" id="L94">    newdbSession = new DbSession(admin, dbSession.isReadOnly());</span>
     try {
 <span class="nc bnc" id="L96" title="All 2 branches missed.">      if (dbSession.getConn() != null) {</span>
@@ -112,7 +112,7 @@ import java.util.ConcurrentModificationException;
    *
    * @param dbSession
    */
-  protected void closeInternalConnection(DbSession dbSession) {
+  protected void closeInternalConnection(final DbSession dbSession) {
     try {
 <span class="nc bnc" id="L117" title="All 2 branches missed.">      if (dbSession.getConn() != null) {</span>
 <span class="nc" id="L118">        dbSession.getConn().close();</span>
@@ -127,7 +127,7 @@ import java.util.ConcurrentModificationException;
 <span class="nc" id="L127">  }</span>
 
   @Override
-  public void validConnection(DbSession dbSession)
+  public void validConnection(final DbSession dbSession)
       throws WaarpDatabaseNoConnectionException {
     // try to limit the number of check!
 <span class="nc" id="L133">    synchronized (dbSession) {</span>
@@ -190,7 +190,7 @@ import java.util.ConcurrentModificationException;
 <span class="nc" id="L190">    return false;</span>
   }
 
-  protected void validConnectionSelect(DbSession dbSession)
+  protected void validConnectionSelect(final DbSession dbSession)
       throws WaarpDatabaseNoConnectionException {
     // try to limit the number of check!
 <span class="nc" id="L196">    synchronized (dbSession) {</span>
@@ -228,7 +228,7 @@ import java.util.ConcurrentModificationException;
 <span class="nc" id="L228">    }</span>
 <span class="nc" id="L229">  }</span>
 
-  private void closingStatement(Statement stmt) {
+  private void closingStatement(final Statement stmt) {
     try {
 <span class="nc bnc" id="L233" title="All 2 branches missed.">      if (stmt != null) {</span>
 <span class="nc" id="L234">        stmt.close();</span>
@@ -298,8 +298,8 @@ import java.util.ConcurrentModificationException;
   protected abstract String validConnectionString();
 
   @Override
-  public Connection getDbConnection(String server, String user, String passwd)
-      throws SQLException {
+  public Connection getDbConnection(final String server, final String user,
+                                    final String passwd) throws SQLException {
     // Default implementation
 <span class="nc" id="L304">    return DriverManager.getConnection(server, user, passwd);</span>
   }

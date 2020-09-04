@@ -85,7 +85,7 @@
 <a class="jxr_linenumber" name="L77" href="#L77">77</a>  <em class="jxr_javadoccomment">   *</em>
 <a class="jxr_linenumber" name="L78" href="#L78">78</a>  <em class="jxr_javadoccomment">   * @return True if in Shutdown</em>
 <a class="jxr_linenumber" name="L79" href="#L79">79</a>  <em class="jxr_javadoccomment">   */</em>
-<a class="jxr_linenumber" name="L80" href="#L80">80</a>    <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">boolean</strong> isShutdown(Channel channel) {
+<a class="jxr_linenumber" name="L80" href="#L80">80</a>    <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">boolean</strong> isShutdown(<strong class="jxr_keyword">final</strong> Channel channel) {
 <a class="jxr_linenumber" name="L81" href="#L81">81</a>      <strong class="jxr_keyword">if</strong> (isShutdown) {
 <a class="jxr_linenumber" name="L82" href="#L82">82</a>        channel.writeAndFlush(
 <a class="jxr_linenumber" name="L83" href="#L83">83</a>            LocalExecDefaultResult.ConnectionRefused.getStatus() + <span class="jxr_string">" "</span> +
@@ -109,8 +109,8 @@
 <a class="jxr_linenumber" name="L101" href="#L101">101</a> <em class="jxr_javadoccomment">   * @param thread</em>
 <a class="jxr_linenumber" name="L102" href="#L102">102</a> <em class="jxr_javadoccomment">   * @param stacks</em>
 <a class="jxr_linenumber" name="L103" href="#L103">103</a> <em class="jxr_javadoccomment">   */</em>
-<a class="jxr_linenumber" name="L104" href="#L104">104</a>   <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">void</strong> printStackTrace(Thread thread,
-<a class="jxr_linenumber" name="L105" href="#L105">105</a>                                       StackTraceElement[] stacks) {
+<a class="jxr_linenumber" name="L104" href="#L104">104</a>   <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">void</strong> printStackTrace(<strong class="jxr_keyword">final</strong> Thread thread,
+<a class="jxr_linenumber" name="L105" href="#L105">105</a>                                       <strong class="jxr_keyword">final</strong> StackTraceElement[] stacks) {
 <a class="jxr_linenumber" name="L106" href="#L106">106</a>     SysErrLogger.FAKE_LOGGER.syserrNoLn(thread + <span class="jxr_string">" : "</span>);
 <a class="jxr_linenumber" name="L107" href="#L107">107</a>     <strong class="jxr_keyword">for</strong> (<strong class="jxr_keyword">int</strong> i = 0; i &lt; stacks.length - 1; i++) {
 <a class="jxr_linenumber" name="L108" href="#L108">108</a>       SysErrLogger.FAKE_LOGGER.syserrNoLn(stacks[i] + <span class="jxr_string">" "</span>);
@@ -129,13 +129,13 @@
 <a class="jxr_linenumber" name="L121" href="#L121">121</a>     <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">long</strong> DELAY = 3000;
 <a class="jxr_linenumber" name="L122" href="#L122">122</a>     <strong class="jxr_keyword">final</strong> <a name="LocalExecServerInitializer" href="../../../../org/waarp/commandexec/server/LocalExecServerInitializer.html#LocalExecServerInitializer">LocalExecServerInitializer</a> factory;
 <a class="jxr_linenumber" name="L123" href="#L123">123</a> 
-<a class="jxr_linenumber" name="L124" href="#L124">124</a>     <strong class="jxr_keyword">private</strong> GGLEThreadShutdown(<a name="LocalExecServerInitializer" href="../../../../org/waarp/commandexec/server/LocalExecServerInitializer.html#LocalExecServerInitializer">LocalExecServerInitializer</a> factory) {
+<a class="jxr_linenumber" name="L124" href="#L124">124</a>     <strong class="jxr_keyword">private</strong> GGLEThreadShutdown(<strong class="jxr_keyword">final</strong> <a name="LocalExecServerInitializer" href="../../../../org/waarp/commandexec/server/LocalExecServerInitializer.html#LocalExecServerInitializer">LocalExecServerInitializer</a> factory) {
 <a class="jxr_linenumber" name="L125" href="#L125">125</a>       <strong class="jxr_keyword">this</strong>.factory = factory;
 <a class="jxr_linenumber" name="L126" href="#L126">126</a>     }
 <a class="jxr_linenumber" name="L127" href="#L127">127</a> 
 <a class="jxr_linenumber" name="L128" href="#L128">128</a>     @Override
 <a class="jxr_linenumber" name="L129" href="#L129">129</a>     <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> run() {
-<a class="jxr_linenumber" name="L130" href="#L130">130</a>       Timer timer;
+<a class="jxr_linenumber" name="L130" href="#L130">130</a>       <strong class="jxr_keyword">final</strong> Timer timer;
 <a class="jxr_linenumber" name="L131" href="#L131">131</a>       timer = <strong class="jxr_keyword">new</strong> Timer(<strong class="jxr_keyword">true</strong>);
 <a class="jxr_linenumber" name="L132" href="#L132">132</a>       <strong class="jxr_keyword">final</strong> GGLETimerTask ggleTimerTask = <strong class="jxr_keyword">new</strong> GGLETimerTask();
 <a class="jxr_linenumber" name="L133" href="#L133">133</a>       timer.schedule(ggleTimerTask, DELAY);
@@ -162,7 +162,7 @@
 <a class="jxr_linenumber" name="L154" href="#L154">154</a>       <strong class="jxr_keyword">for</strong> (<strong class="jxr_keyword">final</strong> Entry&lt;Thread, StackTraceElement[]&gt; entry : map.entrySet()) {
 <a class="jxr_linenumber" name="L155" href="#L155">155</a>         <strong class="jxr_keyword">try</strong> {
 <a class="jxr_linenumber" name="L156" href="#L156">156</a>           printStackTrace(entry.getKey(), entry.getValue());
-<a class="jxr_linenumber" name="L157" href="#L157">157</a>         } <strong class="jxr_keyword">catch</strong> (ArrayIndexOutOfBoundsException e) {
+<a class="jxr_linenumber" name="L157" href="#L157">157</a>         } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> ArrayIndexOutOfBoundsException e) {
 <a class="jxr_linenumber" name="L158" href="#L158">158</a>           <em class="jxr_comment">// ignore</em>
 <a class="jxr_linenumber" name="L159" href="#L159">159</a>         }
 <a class="jxr_linenumber" name="L160" href="#L160">160</a>       }
@@ -175,14 +175,14 @@
 <a class="jxr_linenumber" name="L167" href="#L167">167</a> <em class="jxr_javadoccomment">   *</em>
 <a class="jxr_linenumber" name="L168" href="#L168">168</a> <em class="jxr_javadoccomment">   * @param newdelay</em>
 <a class="jxr_linenumber" name="L169" href="#L169">169</a> <em class="jxr_javadoccomment">   */</em>
-<a class="jxr_linenumber" name="L170" href="#L170">170</a>   <strong class="jxr_keyword">public</strong> <a name="LocalExecServerHandler" href="../../../../org/waarp/commandexec/server/LocalExecServerHandler.html#LocalExecServerHandler">LocalExecServerHandler</a>(<a name="LocalExecServerInitializer" href="../../../../org/waarp/commandexec/server/LocalExecServerInitializer.html#LocalExecServerInitializer">LocalExecServerInitializer</a> factory,
-<a class="jxr_linenumber" name="L171" href="#L171">171</a>                                 <strong class="jxr_keyword">long</strong> newdelay) {
+<a class="jxr_linenumber" name="L170" href="#L170">170</a>   <strong class="jxr_keyword">public</strong> <a name="LocalExecServerHandler" href="../../../../org/waarp/commandexec/server/LocalExecServerHandler.html#LocalExecServerHandler">LocalExecServerHandler</a>(<strong class="jxr_keyword">final</strong> <a name="LocalExecServerInitializer" href="../../../../org/waarp/commandexec/server/LocalExecServerInitializer.html#LocalExecServerInitializer">LocalExecServerInitializer</a> factory,
+<a class="jxr_linenumber" name="L171" href="#L171">171</a>                                 <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">long</strong> newdelay) {
 <a class="jxr_linenumber" name="L172" href="#L172">172</a>     <strong class="jxr_keyword">this</strong>.factory = factory;
 <a class="jxr_linenumber" name="L173" href="#L173">173</a>     delay = newdelay;
 <a class="jxr_linenumber" name="L174" href="#L174">174</a>   }
 <a class="jxr_linenumber" name="L175" href="#L175">175</a> 
 <a class="jxr_linenumber" name="L176" href="#L176">176</a>   @Override
-<a class="jxr_linenumber" name="L177" href="#L177">177</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> channelActive(ChannelHandlerContext ctx) <strong class="jxr_keyword">throws</strong> Exception {
+<a class="jxr_linenumber" name="L177" href="#L177">177</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> channelActive(<strong class="jxr_keyword">final</strong> ChannelHandlerContext ctx) <strong class="jxr_keyword">throws</strong> Exception {
 <a class="jxr_linenumber" name="L178" href="#L178">178</a>     <strong class="jxr_keyword">if</strong> (isShutdown(ctx.channel())) {
 <a class="jxr_linenumber" name="L179" href="#L179">179</a>       answered = <strong class="jxr_keyword">true</strong>;
 <a class="jxr_linenumber" name="L180" href="#L180">180</a>       <strong class="jxr_keyword">return</strong>;
@@ -197,12 +197,12 @@
 <a class="jxr_linenumber" name="L189" href="#L189">189</a> <em class="jxr_javadoccomment">   *</em>
 <a class="jxr_linenumber" name="L190" href="#L190">190</a> <em class="jxr_javadoccomment">   * @param newdelay</em>
 <a class="jxr_linenumber" name="L191" href="#L191">191</a> <em class="jxr_javadoccomment">   */</em>
-<a class="jxr_linenumber" name="L192" href="#L192">192</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> setNewDelay(<strong class="jxr_keyword">long</strong> newdelay) {
+<a class="jxr_linenumber" name="L192" href="#L192">192</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> setNewDelay(<strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">long</strong> newdelay) {
 <a class="jxr_linenumber" name="L193" href="#L193">193</a>     delay = newdelay;
 <a class="jxr_linenumber" name="L194" href="#L194">194</a>   }
 <a class="jxr_linenumber" name="L195" href="#L195">195</a> 
 <a class="jxr_linenumber" name="L196" href="#L196">196</a>   @Override
-<a class="jxr_linenumber" name="L197" href="#L197">197</a>   <strong class="jxr_keyword">protected</strong> <strong class="jxr_keyword">void</strong> channelRead0(ChannelHandlerContext ctx, String msg)
+<a class="jxr_linenumber" name="L197" href="#L197">197</a>   <strong class="jxr_keyword">protected</strong> <strong class="jxr_keyword">void</strong> channelRead0(<strong class="jxr_keyword">final</strong> ChannelHandlerContext ctx, <strong class="jxr_keyword">final</strong> String msg)
 <a class="jxr_linenumber" name="L198" href="#L198">198</a>       <strong class="jxr_keyword">throws</strong> Exception {
 <a class="jxr_linenumber" name="L199" href="#L199">199</a>     answered = false;
 <a class="jxr_linenumber" name="L200" href="#L200">200</a> 
@@ -253,7 +253,7 @@
 <a class="jxr_linenumber" name="L245" href="#L245">245</a>           commandLine.addArgument(args[cpt]);
 <a class="jxr_linenumber" name="L246" href="#L246">246</a>         }
 <a class="jxr_linenumber" name="L247" href="#L247">247</a>         <strong class="jxr_keyword">final</strong> DefaultExecutor defaultExecutor = <strong class="jxr_keyword">new</strong> DefaultExecutor();
-<a class="jxr_linenumber" name="L248" href="#L248">248</a>         ByteArrayOutputStream outputStream;
+<a class="jxr_linenumber" name="L248" href="#L248">248</a>         <strong class="jxr_keyword">final</strong> ByteArrayOutputStream outputStream;
 <a class="jxr_linenumber" name="L249" href="#L249">249</a>         outputStream = <strong class="jxr_keyword">new</strong> ByteArrayOutputStream();
 <a class="jxr_linenumber" name="L250" href="#L250">250</a>         <strong class="jxr_keyword">final</strong> PumpStreamHandler pumpStreamHandler =
 <a class="jxr_linenumber" name="L251" href="#L251">251</a>             <strong class="jxr_keyword">new</strong> PumpStreamHandler(outputStream);
@@ -367,8 +367,8 @@
 <a class="jxr_linenumber" name="L359" href="#L359">359</a>   }
 <a class="jxr_linenumber" name="L360" href="#L360">360</a> 
 <a class="jxr_linenumber" name="L361" href="#L361">361</a>   @Override
-<a class="jxr_linenumber" name="L362" href="#L362">362</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
-<a class="jxr_linenumber" name="L363" href="#L363">363</a>       <strong class="jxr_keyword">throws</strong> Exception {
+<a class="jxr_linenumber" name="L362" href="#L362">362</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> exceptionCaught(<strong class="jxr_keyword">final</strong> ChannelHandlerContext ctx,
+<a class="jxr_linenumber" name="L363" href="#L363">363</a>                               <strong class="jxr_keyword">final</strong> Throwable cause) <strong class="jxr_keyword">throws</strong> Exception {
 <a class="jxr_linenumber" name="L364" href="#L364">364</a>     <strong class="jxr_keyword">if</strong> (!answered) {
 <a class="jxr_linenumber" name="L365" href="#L365">365</a>       logger.error(<span class="jxr_string">"Unexpected exception from Outband while not answered."</span>,
 <a class="jxr_linenumber" name="L366" href="#L366">366</a>                    cause);

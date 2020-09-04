@@ -53,7 +53,7 @@
 <a class="jxr_linenumber" name="L45" href="#L45">45</a>          registerRandomSecure();
 <a class="jxr_linenumber" name="L46" href="#L46">46</a>          initialized = <strong class="jxr_keyword">true</strong>;
 <a class="jxr_linenumber" name="L47" href="#L47">47</a>        }
-<a class="jxr_linenumber" name="L48" href="#L48">48</a>      } <strong class="jxr_keyword">catch</strong> (Throwable throwable) {<em class="jxr_comment">//NOSONAR</em>
+<a class="jxr_linenumber" name="L48" href="#L48">48</a>      } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> Throwable throwable) {<em class="jxr_comment">//NOSONAR</em>
 <a class="jxr_linenumber" name="L49" href="#L49">49</a>        throwable.printStackTrace();<em class="jxr_comment">//NOSONAR</em>
 <a class="jxr_linenumber" name="L50" href="#L50">50</a>        System.err <em class="jxr_comment">//NOSONAR</em>
 <a class="jxr_linenumber" name="L51" href="#L51">51</a>                   .println(<span class="jxr_string">"Error occurs at startup: "</span> +<em class="jxr_comment">//NOSONAR</em>
@@ -75,7 +75,7 @@
 <a class="jxr_linenumber" name="L67" href="#L67">67</a>  <em class="jxr_javadoccomment">   */</em>
 <a class="jxr_linenumber" name="L68" href="#L68">68</a>    <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">void</strong> registerRandomSecure() {
 <a class="jxr_linenumber" name="L69" href="#L69">69</a>      <strong class="jxr_keyword">if</strong> (System.getProperty(<span class="jxr_string">"os.name"</span>).contains(<span class="jxr_string">"Windows"</span>)) {
-<a class="jxr_linenumber" name="L70" href="#L70">70</a>        Provider provider = Security.getProvider(<span class="jxr_string">"SunMSCAPI"</span>);
+<a class="jxr_linenumber" name="L70" href="#L70">70</a>        <strong class="jxr_keyword">final</strong> Provider provider = Security.getProvider(<span class="jxr_string">"SunMSCAPI"</span>);
 <a class="jxr_linenumber" name="L71" href="#L71">71</a>        <strong class="jxr_keyword">if</strong> (provider != <strong class="jxr_keyword">null</strong>) {
 <a class="jxr_linenumber" name="L72" href="#L72">72</a>          Security.removeProvider(provider.getName());
 <a class="jxr_linenumber" name="L73" href="#L73">73</a>          Security.insertProviderAt(provider, 1);
@@ -83,7 +83,7 @@
 <a class="jxr_linenumber" name="L75" href="#L75">75</a>        }
 <a class="jxr_linenumber" name="L76" href="#L76">76</a>      } <strong class="jxr_keyword">else</strong> {
 <a class="jxr_linenumber" name="L77" href="#L77">77</a>        System.setProperty(<span class="jxr_string">"java.security.egd"</span>, <span class="jxr_string">"file:/dev/./urandom"</span>);
-<a class="jxr_linenumber" name="L78" href="#L78">78</a>        Provider provider = Security.getProvider(<span class="jxr_string">"SUN"</span>);
+<a class="jxr_linenumber" name="L78" href="#L78">78</a>        <strong class="jxr_keyword">final</strong> Provider provider = Security.getProvider(<span class="jxr_string">"SUN"</span>);
 <a class="jxr_linenumber" name="L79" href="#L79">79</a>        <strong class="jxr_keyword">final</strong> String type = <span class="jxr_string">"SecureRandom"</span>;
 <a class="jxr_linenumber" name="L80" href="#L80">80</a>        <strong class="jxr_keyword">final</strong> String alg = <span class="jxr_string">"NativePRNGNonBlocking"</span>;
 <a class="jxr_linenumber" name="L81" href="#L81">81</a>        <strong class="jxr_keyword">if</strong> (provider != <strong class="jxr_keyword">null</strong>) {
@@ -112,17 +112,17 @@
 <a class="jxr_linenumber" name="L104" href="#L104">104</a>     <strong class="jxr_keyword">if</strong> (System.getProperty(<span class="jxr_string">"os.name"</span>).contains(<span class="jxr_string">"Windows"</span>)) {
 <a class="jxr_linenumber" name="L105" href="#L105">105</a>       <strong class="jxr_keyword">try</strong> {
 <a class="jxr_linenumber" name="L106" href="#L106">106</a>         <strong class="jxr_keyword">return</strong> SecureRandom.getInstance(<span class="jxr_string">"Windows-PRNG"</span>, <span class="jxr_string">"SunMSCAPI"</span>);
-<a class="jxr_linenumber" name="L107" href="#L107">107</a>       } <strong class="jxr_keyword">catch</strong> (NoSuchAlgorithmException e) {
+<a class="jxr_linenumber" name="L107" href="#L107">107</a>       } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> NoSuchAlgorithmException e) {
 <a class="jxr_linenumber" name="L108" href="#L108">108</a>         <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">new</strong> SecureRandom();
-<a class="jxr_linenumber" name="L109" href="#L109">109</a>       } <strong class="jxr_keyword">catch</strong> (NoSuchProviderException e) {
+<a class="jxr_linenumber" name="L109" href="#L109">109</a>       } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> NoSuchProviderException e) {
 <a class="jxr_linenumber" name="L110" href="#L110">110</a>         <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">new</strong> SecureRandom();
 <a class="jxr_linenumber" name="L111" href="#L111">111</a>       }
 <a class="jxr_linenumber" name="L112" href="#L112">112</a>     } <strong class="jxr_keyword">else</strong> {
 <a class="jxr_linenumber" name="L113" href="#L113">113</a>       <strong class="jxr_keyword">try</strong> {
 <a class="jxr_linenumber" name="L114" href="#L114">114</a>         <strong class="jxr_keyword">return</strong> SecureRandom.getInstance(<span class="jxr_string">"NativePRNGNonBlocking"</span>, <span class="jxr_string">"SUN"</span>);
-<a class="jxr_linenumber" name="L115" href="#L115">115</a>       } <strong class="jxr_keyword">catch</strong> (NoSuchAlgorithmException e) {
+<a class="jxr_linenumber" name="L115" href="#L115">115</a>       } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> NoSuchAlgorithmException e) {
 <a class="jxr_linenumber" name="L116" href="#L116">116</a>         <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">new</strong> SecureRandom();
-<a class="jxr_linenumber" name="L117" href="#L117">117</a>       } <strong class="jxr_keyword">catch</strong> (NoSuchProviderException e) {
+<a class="jxr_linenumber" name="L117" href="#L117">117</a>       } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> NoSuchProviderException e) {
 <a class="jxr_linenumber" name="L118" href="#L118">118</a>         <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">new</strong> SecureRandom();
 <a class="jxr_linenumber" name="L119" href="#L119">119</a>       }
 <a class="jxr_linenumber" name="L120" href="#L120">120</a>     }

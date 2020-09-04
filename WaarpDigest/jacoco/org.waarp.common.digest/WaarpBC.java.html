@@ -45,7 +45,7 @@ public class WaarpBC {
 <span class="fc" id="L45">        registerRandomSecure();</span>
 <span class="fc" id="L46">        initialized = true;</span>
       }
-<span class="nc" id="L48">    } catch (Throwable throwable) {//NOSONAR</span>
+<span class="nc" id="L48">    } catch (final Throwable throwable) {//NOSONAR</span>
 <span class="nc" id="L49">      throwable.printStackTrace();//NOSONAR</span>
 <span class="nc" id="L50">      System.err //NOSONAR</span>
 <span class="nc" id="L51">                 .println(&quot;Error occurs at startup: &quot; +//NOSONAR</span>
@@ -67,7 +67,7 @@ public class WaarpBC {
    */
   private static void registerRandomSecure() {
 <span class="pc bpc" id="L69" title="1 of 2 branches missed.">    if (System.getProperty(&quot;os.name&quot;).contains(&quot;Windows&quot;)) {</span>
-<span class="nc" id="L70">      Provider provider = Security.getProvider(&quot;SunMSCAPI&quot;);</span>
+<span class="nc" id="L70">      final Provider provider = Security.getProvider(&quot;SunMSCAPI&quot;);</span>
 <span class="nc bnc" id="L71" title="All 2 branches missed.">      if (provider != null) {</span>
 <span class="nc" id="L72">        Security.removeProvider(provider.getName());</span>
 <span class="nc" id="L73">        Security.insertProviderAt(provider, 1);</span>
@@ -75,7 +75,7 @@ public class WaarpBC {
       }
 <span class="nc" id="L76">    } else {</span>
 <span class="fc" id="L77">      System.setProperty(&quot;java.security.egd&quot;, &quot;file:/dev/./urandom&quot;);</span>
-<span class="fc" id="L78">      Provider provider = Security.getProvider(&quot;SUN&quot;);</span>
+<span class="fc" id="L78">      final Provider provider = Security.getProvider(&quot;SUN&quot;);</span>
 <span class="fc" id="L79">      final String type = &quot;SecureRandom&quot;;</span>
 <span class="fc" id="L80">      final String alg = &quot;NativePRNGNonBlocking&quot;;</span>
 <span class="pc bpc" id="L81" title="1 of 2 branches missed.">      if (provider != null) {</span>
@@ -104,17 +104,17 @@ public class WaarpBC {
 <span class="nc bnc" id="L104" title="All 2 branches missed.">    if (System.getProperty(&quot;os.name&quot;).contains(&quot;Windows&quot;)) {</span>
       try {
 <span class="nc" id="L106">        return SecureRandom.getInstance(&quot;Windows-PRNG&quot;, &quot;SunMSCAPI&quot;);</span>
-<span class="nc" id="L107">      } catch (NoSuchAlgorithmException e) {</span>
+<span class="nc" id="L107">      } catch (final NoSuchAlgorithmException e) {</span>
 <span class="nc" id="L108">        return new SecureRandom();</span>
-<span class="nc" id="L109">      } catch (NoSuchProviderException e) {</span>
+<span class="nc" id="L109">      } catch (final NoSuchProviderException e) {</span>
 <span class="nc" id="L110">        return new SecureRandom();</span>
       }
     } else {
       try {
 <span class="nc" id="L114">        return SecureRandom.getInstance(&quot;NativePRNGNonBlocking&quot;, &quot;SUN&quot;);</span>
-<span class="nc" id="L115">      } catch (NoSuchAlgorithmException e) {</span>
+<span class="nc" id="L115">      } catch (final NoSuchAlgorithmException e) {</span>
 <span class="nc" id="L116">        return new SecureRandom();</span>
-<span class="nc" id="L117">      } catch (NoSuchProviderException e) {</span>
+<span class="nc" id="L117">      } catch (final NoSuchProviderException e) {</span>
 <span class="nc" id="L118">        return new SecureRandom();</span>
       }
     }

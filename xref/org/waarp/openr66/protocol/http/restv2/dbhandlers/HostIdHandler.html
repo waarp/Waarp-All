@@ -88,7 +88,7 @@
 <a class="jxr_linenumber" name="L80" href="#L80">80</a>  <em class="jxr_javadoccomment">   *</em>
 <a class="jxr_linenumber" name="L81" href="#L81">81</a>  <em class="jxr_javadoccomment">   * @param crud the CRUD mask for this handler</em>
 <a class="jxr_linenumber" name="L82" href="#L82">82</a>  <em class="jxr_javadoccomment">   */</em>
-<a class="jxr_linenumber" name="L83" href="#L83">83</a>    <strong class="jxr_keyword">public</strong> <a name="HostIdHandler" href="../../../../../../../org/waarp/openr66/protocol/http/restv2/dbhandlers/HostIdHandler.html#HostIdHandler">HostIdHandler</a>(byte crud) {
+<a class="jxr_linenumber" name="L83" href="#L83">83</a>    <strong class="jxr_keyword">public</strong> <a name="HostIdHandler" href="../../../../../../../org/waarp/openr66/protocol/http/restv2/dbhandlers/HostIdHandler.html#HostIdHandler">HostIdHandler</a>(<strong class="jxr_keyword">final</strong> byte crud) {
 <a class="jxr_linenumber" name="L84" href="#L84">84</a>      <strong class="jxr_keyword">super</strong>(crud);
 <a class="jxr_linenumber" name="L85" href="#L85">85</a>    }
 <a class="jxr_linenumber" name="L86" href="#L86">86</a>  
@@ -104,8 +104,8 @@
 <a class="jxr_linenumber" name="L96" href="#L96">96</a>    @GET
 <a class="jxr_linenumber" name="L97" href="#L97">97</a>    @Consumes(WILDCARD)
 <a class="jxr_linenumber" name="L98" href="#L98">98</a>    @RequiredRole(READONLY)
-<a class="jxr_linenumber" name="L99" href="#L99">99</a>    <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> getHost(HttpRequest request, HttpResponder responder,
-<a class="jxr_linenumber" name="L100" href="#L100">100</a>                       @PathParam(URI_ID) String id) {
+<a class="jxr_linenumber" name="L99" href="#L99">99</a>    <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> getHost(<strong class="jxr_keyword">final</strong> HttpRequest request, <strong class="jxr_keyword">final</strong> HttpResponder responder,
+<a class="jxr_linenumber" name="L100" href="#L100">100</a>                       @PathParam(URI_ID) <strong class="jxr_keyword">final</strong> String id) {
 <a class="jxr_linenumber" name="L101" href="#L101">101</a> 
 <a class="jxr_linenumber" name="L102" href="#L102">102</a>     <a name="HostDAO" href="../../../../../../../org/waarp/openr66/dao/HostDAO.html#HostDAO">HostDAO</a> hostDAO = <strong class="jxr_keyword">null</strong>;
 <a class="jxr_linenumber" name="L103" href="#L103">103</a>     <strong class="jxr_keyword">try</strong> {
@@ -140,89 +140,91 @@
 <a class="jxr_linenumber" name="L132" href="#L132">132</a>   @PUT
 <a class="jxr_linenumber" name="L133" href="#L133">133</a>   @Consumes(APPLICATION_JSON)
 <a class="jxr_linenumber" name="L134" href="#L134">134</a>   @RequiredRole(HOST)
-<a class="jxr_linenumber" name="L135" href="#L135">135</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> updateHost(HttpRequest request, HttpResponder responder,
-<a class="jxr_linenumber" name="L136" href="#L136">136</a>                          @PathParam(URI_ID) String id) {
-<a class="jxr_linenumber" name="L137" href="#L137">137</a> 
-<a class="jxr_linenumber" name="L138" href="#L138">138</a>     <a name="HostDAO" href="../../../../../../../org/waarp/openr66/dao/HostDAO.html#HostDAO">HostDAO</a> hostDAO = <strong class="jxr_keyword">null</strong>;
-<a class="jxr_linenumber" name="L139" href="#L139">139</a>     <strong class="jxr_keyword">try</strong> {
-<a class="jxr_linenumber" name="L140" href="#L140">140</a>       hostDAO = DAO_FACTORY.getHostDAO();
-<a class="jxr_linenumber" name="L141" href="#L141">141</a>       <strong class="jxr_keyword">final</strong> <a name="Host" href="../../../../../../../org/waarp/openr66/pojo/Host.html#Host">Host</a> oldHost = hostDAO.select(id);
-<a class="jxr_linenumber" name="L142" href="#L142">142</a> 
-<a class="jxr_linenumber" name="L143" href="#L143">143</a>       <strong class="jxr_keyword">if</strong> (oldHost == <strong class="jxr_keyword">null</strong>) {
-<a class="jxr_linenumber" name="L144" href="#L144">144</a>         responder.sendStatus(NOT_FOUND);
-<a class="jxr_linenumber" name="L145" href="#L145">145</a>         <strong class="jxr_keyword">return</strong>;
-<a class="jxr_linenumber" name="L146" href="#L146">146</a>       }
-<a class="jxr_linenumber" name="L147" href="#L147">147</a> 
-<a class="jxr_linenumber" name="L148" href="#L148">148</a>       <strong class="jxr_keyword">final</strong> ObjectNode requestObject = JsonUtils.deserializeRequest(request);
-<a class="jxr_linenumber" name="L149" href="#L149">149</a>       <strong class="jxr_keyword">final</strong> <a name="Host" href="../../../../../../../org/waarp/openr66/pojo/Host.html#Host">Host</a> newHost =
-<a class="jxr_linenumber" name="L150" href="#L150">150</a>           HostConverter.nodeToUpdatedHost(requestObject, oldHost);
-<a class="jxr_linenumber" name="L151" href="#L151">151</a> 
-<a class="jxr_linenumber" name="L152" href="#L152">152</a>       hostDAO.update(newHost);
-<a class="jxr_linenumber" name="L153" href="#L153">153</a> 
-<a class="jxr_linenumber" name="L154" href="#L154">154</a>       <strong class="jxr_keyword">final</strong> ObjectNode responseObject = HostConverter.hostToNode(newHost);
-<a class="jxr_linenumber" name="L155" href="#L155">155</a>       <strong class="jxr_keyword">final</strong> String responseText = JsonUtils.nodeToString(responseObject);
-<a class="jxr_linenumber" name="L156" href="#L156">156</a>       responder.sendJson(CREATED, responseText);
-<a class="jxr_linenumber" name="L157" href="#L157">157</a> 
-<a class="jxr_linenumber" name="L158" href="#L158">158</a>     } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> <a name="DAOConnectionException" href="../../../../../../../org/waarp/openr66/dao/exception/DAOConnectionException.html#DAOConnectionException">DAOConnectionException</a> e) {
-<a class="jxr_linenumber" name="L159" href="#L159">159</a>       <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> InternalServerErrorException(e);
-<a class="jxr_linenumber" name="L160" href="#L160">160</a>     } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> <a name="DAONoDataException" href="../../../../../../../org/waarp/openr66/dao/exception/DAONoDataException.html#DAONoDataException">DAONoDataException</a> e) {
-<a class="jxr_linenumber" name="L161" href="#L161">161</a>       responder.sendStatus(NOT_FOUND);
-<a class="jxr_linenumber" name="L162" href="#L162">162</a>     } <strong class="jxr_keyword">finally</strong> {
-<a class="jxr_linenumber" name="L163" href="#L163">163</a>       DAOFactory.closeDAO(hostDAO);
-<a class="jxr_linenumber" name="L164" href="#L164">164</a>     }
-<a class="jxr_linenumber" name="L165" href="#L165">165</a>   }
-<a class="jxr_linenumber" name="L166" href="#L166">166</a> 
-<a class="jxr_linenumber" name="L167" href="#L167">167</a>   <em class="jxr_javadoccomment">/**</em>
-<a class="jxr_linenumber" name="L168" href="#L168">168</a> <em class="jxr_javadoccomment">   * Method called to delete a host entry from the database.</em>
-<a class="jxr_linenumber" name="L169" href="#L169">169</a> <em class="jxr_javadoccomment">   *</em>
-<a class="jxr_linenumber" name="L170" href="#L170">170</a> <em class="jxr_javadoccomment">   * @param request the HttpRequest made on the resource</em>
-<a class="jxr_linenumber" name="L171" href="#L171">171</a> <em class="jxr_javadoccomment">   * @param responder the HttpResponder which sends the reply to the</em>
-<a class="jxr_linenumber" name="L172" href="#L172">172</a> <em class="jxr_javadoccomment">   *     request</em>
-<a class="jxr_linenumber" name="L173" href="#L173">173</a> <em class="jxr_javadoccomment">   * @param id the requested host's name</em>
-<a class="jxr_linenumber" name="L174" href="#L174">174</a> <em class="jxr_javadoccomment">   */</em>
-<a class="jxr_linenumber" name="L175" href="#L175">175</a>   @DELETE
-<a class="jxr_linenumber" name="L176" href="#L176">176</a>   @Consumes(WILDCARD)
-<a class="jxr_linenumber" name="L177" href="#L177">177</a>   @RequiredRole(HOST)
-<a class="jxr_linenumber" name="L178" href="#L178">178</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> deleteHost(HttpRequest request, HttpResponder responder,
-<a class="jxr_linenumber" name="L179" href="#L179">179</a>                          @PathParam(URI_ID) String id) {
-<a class="jxr_linenumber" name="L180" href="#L180">180</a> 
-<a class="jxr_linenumber" name="L181" href="#L181">181</a>     <a name="HostDAO" href="../../../../../../../org/waarp/openr66/dao/HostDAO.html#HostDAO">HostDAO</a> hostDAO = <strong class="jxr_keyword">null</strong>;
-<a class="jxr_linenumber" name="L182" href="#L182">182</a>     <strong class="jxr_keyword">try</strong> {
-<a class="jxr_linenumber" name="L183" href="#L183">183</a>       hostDAO = DAO_FACTORY.getHostDAO();
-<a class="jxr_linenumber" name="L184" href="#L184">184</a>       <strong class="jxr_keyword">final</strong> <a name="Host" href="../../../../../../../org/waarp/openr66/pojo/Host.html#Host">Host</a> host = hostDAO.select(id);
-<a class="jxr_linenumber" name="L185" href="#L185">185</a>       <strong class="jxr_keyword">if</strong> (host == <strong class="jxr_keyword">null</strong>) {
-<a class="jxr_linenumber" name="L186" href="#L186">186</a>         responder.sendStatus(NOT_FOUND);
-<a class="jxr_linenumber" name="L187" href="#L187">187</a>       } <strong class="jxr_keyword">else</strong> {
-<a class="jxr_linenumber" name="L188" href="#L188">188</a>         hostDAO.delete(host);
-<a class="jxr_linenumber" name="L189" href="#L189">189</a>         responder.sendStatus(NO_CONTENT);
-<a class="jxr_linenumber" name="L190" href="#L190">190</a>       }
-<a class="jxr_linenumber" name="L191" href="#L191">191</a>     } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> <a name="DAOConnectionException" href="../../../../../../../org/waarp/openr66/dao/exception/DAOConnectionException.html#DAOConnectionException">DAOConnectionException</a> e) {
-<a class="jxr_linenumber" name="L192" href="#L192">192</a>       <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> InternalServerErrorException(e);
-<a class="jxr_linenumber" name="L193" href="#L193">193</a>     } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> <a name="DAONoDataException" href="../../../../../../../org/waarp/openr66/dao/exception/DAONoDataException.html#DAONoDataException">DAONoDataException</a> e) {
-<a class="jxr_linenumber" name="L194" href="#L194">194</a>       responder.sendStatus(NOT_FOUND);
-<a class="jxr_linenumber" name="L195" href="#L195">195</a>     } <strong class="jxr_keyword">finally</strong> {
-<a class="jxr_linenumber" name="L196" href="#L196">196</a>       DAOFactory.closeDAO(hostDAO);
-<a class="jxr_linenumber" name="L197" href="#L197">197</a>     }
-<a class="jxr_linenumber" name="L198" href="#L198">198</a>   }
-<a class="jxr_linenumber" name="L199" href="#L199">199</a> 
-<a class="jxr_linenumber" name="L200" href="#L200">200</a>   <em class="jxr_javadoccomment">/**</em>
-<a class="jxr_linenumber" name="L201" href="#L201">201</a> <em class="jxr_javadoccomment">   * Method called to get a list of all allowed HTTP methods on this entry</em>
-<a class="jxr_linenumber" name="L202" href="#L202">202</a> <em class="jxr_javadoccomment">   * point. The HTTP methods are sent as</em>
-<a class="jxr_linenumber" name="L203" href="#L203">203</a> <em class="jxr_javadoccomment">   * an array in the reply's headers.</em>
-<a class="jxr_linenumber" name="L204" href="#L204">204</a> <em class="jxr_javadoccomment">   *</em>
-<a class="jxr_linenumber" name="L205" href="#L205">205</a> <em class="jxr_javadoccomment">   * @param request the HttpRequest made on the resource</em>
-<a class="jxr_linenumber" name="L206" href="#L206">206</a> <em class="jxr_javadoccomment">   * @param responder the HttpResponder which sends the reply to the</em>
-<a class="jxr_linenumber" name="L207" href="#L207">207</a> <em class="jxr_javadoccomment">   *     request</em>
-<a class="jxr_linenumber" name="L208" href="#L208">208</a> <em class="jxr_javadoccomment">   * @param id the requested host's name</em>
-<a class="jxr_linenumber" name="L209" href="#L209">209</a> <em class="jxr_javadoccomment">   */</em>
-<a class="jxr_linenumber" name="L210" href="#L210">210</a>   @OPTIONS
-<a class="jxr_linenumber" name="L211" href="#L211">211</a>   @Consumes(WILDCARD)
-<a class="jxr_linenumber" name="L212" href="#L212">212</a>   @RequiredRole(NOACCESS)
-<a class="jxr_linenumber" name="L213" href="#L213">213</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> options(HttpRequest request, HttpResponder responder,
-<a class="jxr_linenumber" name="L214" href="#L214">214</a>                       @PathParam(URI_ID) String id) {
-<a class="jxr_linenumber" name="L215" href="#L215">215</a>     responder.sendStatus(OK, OPTIONS_HEADERS);
-<a class="jxr_linenumber" name="L216" href="#L216">216</a>   }
-<a class="jxr_linenumber" name="L217" href="#L217">217</a> }
+<a class="jxr_linenumber" name="L135" href="#L135">135</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> updateHost(<strong class="jxr_keyword">final</strong> HttpRequest request,
+<a class="jxr_linenumber" name="L136" href="#L136">136</a>                          <strong class="jxr_keyword">final</strong> HttpResponder responder,
+<a class="jxr_linenumber" name="L137" href="#L137">137</a>                          @PathParam(URI_ID) <strong class="jxr_keyword">final</strong> String id) {
+<a class="jxr_linenumber" name="L138" href="#L138">138</a> 
+<a class="jxr_linenumber" name="L139" href="#L139">139</a>     <a name="HostDAO" href="../../../../../../../org/waarp/openr66/dao/HostDAO.html#HostDAO">HostDAO</a> hostDAO = <strong class="jxr_keyword">null</strong>;
+<a class="jxr_linenumber" name="L140" href="#L140">140</a>     <strong class="jxr_keyword">try</strong> {
+<a class="jxr_linenumber" name="L141" href="#L141">141</a>       hostDAO = DAO_FACTORY.getHostDAO();
+<a class="jxr_linenumber" name="L142" href="#L142">142</a>       <strong class="jxr_keyword">final</strong> <a name="Host" href="../../../../../../../org/waarp/openr66/pojo/Host.html#Host">Host</a> oldHost = hostDAO.select(id);
+<a class="jxr_linenumber" name="L143" href="#L143">143</a> 
+<a class="jxr_linenumber" name="L144" href="#L144">144</a>       <strong class="jxr_keyword">if</strong> (oldHost == <strong class="jxr_keyword">null</strong>) {
+<a class="jxr_linenumber" name="L145" href="#L145">145</a>         responder.sendStatus(NOT_FOUND);
+<a class="jxr_linenumber" name="L146" href="#L146">146</a>         <strong class="jxr_keyword">return</strong>;
+<a class="jxr_linenumber" name="L147" href="#L147">147</a>       }
+<a class="jxr_linenumber" name="L148" href="#L148">148</a> 
+<a class="jxr_linenumber" name="L149" href="#L149">149</a>       <strong class="jxr_keyword">final</strong> ObjectNode requestObject = JsonUtils.deserializeRequest(request);
+<a class="jxr_linenumber" name="L150" href="#L150">150</a>       <strong class="jxr_keyword">final</strong> <a name="Host" href="../../../../../../../org/waarp/openr66/pojo/Host.html#Host">Host</a> newHost =
+<a class="jxr_linenumber" name="L151" href="#L151">151</a>           HostConverter.nodeToUpdatedHost(requestObject, oldHost);
+<a class="jxr_linenumber" name="L152" href="#L152">152</a> 
+<a class="jxr_linenumber" name="L153" href="#L153">153</a>       hostDAO.update(newHost);
+<a class="jxr_linenumber" name="L154" href="#L154">154</a> 
+<a class="jxr_linenumber" name="L155" href="#L155">155</a>       <strong class="jxr_keyword">final</strong> ObjectNode responseObject = HostConverter.hostToNode(newHost);
+<a class="jxr_linenumber" name="L156" href="#L156">156</a>       <strong class="jxr_keyword">final</strong> String responseText = JsonUtils.nodeToString(responseObject);
+<a class="jxr_linenumber" name="L157" href="#L157">157</a>       responder.sendJson(CREATED, responseText);
+<a class="jxr_linenumber" name="L158" href="#L158">158</a> 
+<a class="jxr_linenumber" name="L159" href="#L159">159</a>     } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> <a name="DAOConnectionException" href="../../../../../../../org/waarp/openr66/dao/exception/DAOConnectionException.html#DAOConnectionException">DAOConnectionException</a> e) {
+<a class="jxr_linenumber" name="L160" href="#L160">160</a>       <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> InternalServerErrorException(e);
+<a class="jxr_linenumber" name="L161" href="#L161">161</a>     } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> <a name="DAONoDataException" href="../../../../../../../org/waarp/openr66/dao/exception/DAONoDataException.html#DAONoDataException">DAONoDataException</a> e) {
+<a class="jxr_linenumber" name="L162" href="#L162">162</a>       responder.sendStatus(NOT_FOUND);
+<a class="jxr_linenumber" name="L163" href="#L163">163</a>     } <strong class="jxr_keyword">finally</strong> {
+<a class="jxr_linenumber" name="L164" href="#L164">164</a>       DAOFactory.closeDAO(hostDAO);
+<a class="jxr_linenumber" name="L165" href="#L165">165</a>     }
+<a class="jxr_linenumber" name="L166" href="#L166">166</a>   }
+<a class="jxr_linenumber" name="L167" href="#L167">167</a> 
+<a class="jxr_linenumber" name="L168" href="#L168">168</a>   <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L169" href="#L169">169</a> <em class="jxr_javadoccomment">   * Method called to delete a host entry from the database.</em>
+<a class="jxr_linenumber" name="L170" href="#L170">170</a> <em class="jxr_javadoccomment">   *</em>
+<a class="jxr_linenumber" name="L171" href="#L171">171</a> <em class="jxr_javadoccomment">   * @param request the HttpRequest made on the resource</em>
+<a class="jxr_linenumber" name="L172" href="#L172">172</a> <em class="jxr_javadoccomment">   * @param responder the HttpResponder which sends the reply to the</em>
+<a class="jxr_linenumber" name="L173" href="#L173">173</a> <em class="jxr_javadoccomment">   *     request</em>
+<a class="jxr_linenumber" name="L174" href="#L174">174</a> <em class="jxr_javadoccomment">   * @param id the requested host's name</em>
+<a class="jxr_linenumber" name="L175" href="#L175">175</a> <em class="jxr_javadoccomment">   */</em>
+<a class="jxr_linenumber" name="L176" href="#L176">176</a>   @DELETE
+<a class="jxr_linenumber" name="L177" href="#L177">177</a>   @Consumes(WILDCARD)
+<a class="jxr_linenumber" name="L178" href="#L178">178</a>   @RequiredRole(HOST)
+<a class="jxr_linenumber" name="L179" href="#L179">179</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> deleteHost(<strong class="jxr_keyword">final</strong> HttpRequest request,
+<a class="jxr_linenumber" name="L180" href="#L180">180</a>                          <strong class="jxr_keyword">final</strong> HttpResponder responder,
+<a class="jxr_linenumber" name="L181" href="#L181">181</a>                          @PathParam(URI_ID) <strong class="jxr_keyword">final</strong> String id) {
+<a class="jxr_linenumber" name="L182" href="#L182">182</a> 
+<a class="jxr_linenumber" name="L183" href="#L183">183</a>     <a name="HostDAO" href="../../../../../../../org/waarp/openr66/dao/HostDAO.html#HostDAO">HostDAO</a> hostDAO = <strong class="jxr_keyword">null</strong>;
+<a class="jxr_linenumber" name="L184" href="#L184">184</a>     <strong class="jxr_keyword">try</strong> {
+<a class="jxr_linenumber" name="L185" href="#L185">185</a>       hostDAO = DAO_FACTORY.getHostDAO();
+<a class="jxr_linenumber" name="L186" href="#L186">186</a>       <strong class="jxr_keyword">final</strong> <a name="Host" href="../../../../../../../org/waarp/openr66/pojo/Host.html#Host">Host</a> host = hostDAO.select(id);
+<a class="jxr_linenumber" name="L187" href="#L187">187</a>       <strong class="jxr_keyword">if</strong> (host == <strong class="jxr_keyword">null</strong>) {
+<a class="jxr_linenumber" name="L188" href="#L188">188</a>         responder.sendStatus(NOT_FOUND);
+<a class="jxr_linenumber" name="L189" href="#L189">189</a>       } <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="L190" href="#L190">190</a>         hostDAO.delete(host);
+<a class="jxr_linenumber" name="L191" href="#L191">191</a>         responder.sendStatus(NO_CONTENT);
+<a class="jxr_linenumber" name="L192" href="#L192">192</a>       }
+<a class="jxr_linenumber" name="L193" href="#L193">193</a>     } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> <a name="DAOConnectionException" href="../../../../../../../org/waarp/openr66/dao/exception/DAOConnectionException.html#DAOConnectionException">DAOConnectionException</a> e) {
+<a class="jxr_linenumber" name="L194" href="#L194">194</a>       <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> InternalServerErrorException(e);
+<a class="jxr_linenumber" name="L195" href="#L195">195</a>     } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> <a name="DAONoDataException" href="../../../../../../../org/waarp/openr66/dao/exception/DAONoDataException.html#DAONoDataException">DAONoDataException</a> e) {
+<a class="jxr_linenumber" name="L196" href="#L196">196</a>       responder.sendStatus(NOT_FOUND);
+<a class="jxr_linenumber" name="L197" href="#L197">197</a>     } <strong class="jxr_keyword">finally</strong> {
+<a class="jxr_linenumber" name="L198" href="#L198">198</a>       DAOFactory.closeDAO(hostDAO);
+<a class="jxr_linenumber" name="L199" href="#L199">199</a>     }
+<a class="jxr_linenumber" name="L200" href="#L200">200</a>   }
+<a class="jxr_linenumber" name="L201" href="#L201">201</a> 
+<a class="jxr_linenumber" name="L202" href="#L202">202</a>   <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L203" href="#L203">203</a> <em class="jxr_javadoccomment">   * Method called to get a list of all allowed HTTP methods on this entry</em>
+<a class="jxr_linenumber" name="L204" href="#L204">204</a> <em class="jxr_javadoccomment">   * point. The HTTP methods are sent as</em>
+<a class="jxr_linenumber" name="L205" href="#L205">205</a> <em class="jxr_javadoccomment">   * an array in the reply's headers.</em>
+<a class="jxr_linenumber" name="L206" href="#L206">206</a> <em class="jxr_javadoccomment">   *</em>
+<a class="jxr_linenumber" name="L207" href="#L207">207</a> <em class="jxr_javadoccomment">   * @param request the HttpRequest made on the resource</em>
+<a class="jxr_linenumber" name="L208" href="#L208">208</a> <em class="jxr_javadoccomment">   * @param responder the HttpResponder which sends the reply to the</em>
+<a class="jxr_linenumber" name="L209" href="#L209">209</a> <em class="jxr_javadoccomment">   *     request</em>
+<a class="jxr_linenumber" name="L210" href="#L210">210</a> <em class="jxr_javadoccomment">   * @param id the requested host's name</em>
+<a class="jxr_linenumber" name="L211" href="#L211">211</a> <em class="jxr_javadoccomment">   */</em>
+<a class="jxr_linenumber" name="L212" href="#L212">212</a>   @OPTIONS
+<a class="jxr_linenumber" name="L213" href="#L213">213</a>   @Consumes(WILDCARD)
+<a class="jxr_linenumber" name="L214" href="#L214">214</a>   @RequiredRole(NOACCESS)
+<a class="jxr_linenumber" name="L215" href="#L215">215</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> options(<strong class="jxr_keyword">final</strong> HttpRequest request, <strong class="jxr_keyword">final</strong> HttpResponder responder,
+<a class="jxr_linenumber" name="L216" href="#L216">216</a>                       @PathParam(URI_ID) <strong class="jxr_keyword">final</strong> String id) {
+<a class="jxr_linenumber" name="L217" href="#L217">217</a>     responder.sendStatus(OK, OPTIONS_HEADERS);
+<a class="jxr_linenumber" name="L218" href="#L218">218</a>   }
+<a class="jxr_linenumber" name="L219" href="#L219">219</a> }
 </pre>
 <hr/>
 <div id="footer">Copyright &#169; 2009&#x2013;2020 <a href="http://www.waarp.fr">Waarp</a>. All rights reserved.</div>

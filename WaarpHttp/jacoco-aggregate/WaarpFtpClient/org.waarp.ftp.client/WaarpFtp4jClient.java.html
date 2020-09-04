@@ -91,7 +91,6 @@ public class WaarpFtp4jClient {
   final int ssl; // -1 native, 1 auth
   protected FTPClient ftpClient;
   protected String result;
-<span class="fc" id="L94">  private boolean binaryTransfer = true;</span>
 
   /**
    * @param server
@@ -103,92 +102,96 @@ public class WaarpFtp4jClient {
    * @param ssl -1 native, 1 auth
    * @param timeout
    */
-  public WaarpFtp4jClient(String server, int port, String user, String pwd,
-                          String acct, boolean isPassive, int ssl,
-<span class="fc" id="L108">                          int keepalive, int timeout) {</span>
-<span class="fc" id="L109">    this.server = server;</span>
-<span class="fc" id="L110">    this.port = port;</span>
-<span class="fc" id="L111">    this.user = user;</span>
-<span class="fc" id="L112">    this.pwd = pwd;</span>
-<span class="fc" id="L113">    this.acct = acct;</span>
-<span class="fc" id="L114">    this.isPassive = isPassive;</span>
-<span class="fc" id="L115">    this.ssl = ssl;</span>
-<span class="fc" id="L116">    this.keepalive = keepalive;</span>
-<span class="fc" id="L117">    this.timeout = timeout;</span>
-<span class="fc" id="L118">    ftpClient = new FTPClient();</span>
-<span class="fc bfc" id="L119" title="All 2 branches covered.">    if (this.ssl != 0) {</span>
+  public WaarpFtp4jClient(final String server, final int port,
+                          final String user, final String pwd,
+                          final String acct, final boolean isPassive,
+                          final int ssl, final int keepalive,
+<span class="fc" id="L109">                          final int timeout) {</span>
+<span class="fc" id="L110">    this.server = server;</span>
+<span class="fc" id="L111">    this.port = port;</span>
+<span class="fc" id="L112">    this.user = user;</span>
+<span class="fc" id="L113">    this.pwd = pwd;</span>
+<span class="fc" id="L114">    this.acct = acct;</span>
+<span class="fc" id="L115">    this.isPassive = isPassive;</span>
+<span class="fc" id="L116">    this.ssl = ssl;</span>
+<span class="fc" id="L117">    this.keepalive = keepalive;</span>
+<span class="fc" id="L118">    this.timeout = timeout;</span>
+<span class="fc" id="L119">    ftpClient = new FTPClient();</span>
+<span class="fc bfc" id="L120" title="All 2 branches covered.">    if (this.ssl != 0) {</span>
       // implicit or explicit
-<span class="fc" id="L121">      final TrustManager[] trustManager = {</span>
-<span class="fc" id="L122">          new X509TrustManager() {</span>
+<span class="fc" id="L122">      final TrustManager[] trustManager = {</span>
+<span class="fc" id="L123">          new X509TrustManager() {</span>
             @Override
             public X509Certificate[] getAcceptedIssuers() {
-<span class="fc" id="L125">              return null;</span>
+<span class="fc" id="L126">              return null;</span>
             }
 
             @Override
-            public void checkClientTrusted(X509Certificate[] certs, //NOSONAR
-                                           String authType)
+            public void checkClientTrusted(final X509Certificate[] certs,
+//NOSONAR
+                                           final String authType)
                 throws CertificateException {
               // nothing
-<span class="nc" id="L133">            }</span>
+<span class="nc" id="L135">            }</span>
 
             @Override
-            public void checkServerTrusted(X509Certificate[] certs, //NOSONAR
-                                           String authType)
+            public void checkServerTrusted(final X509Certificate[] certs,
+//NOSONAR
+                                           final String authType)
                 throws CertificateException {
               // nothing
-<span class="fc" id="L140">            }</span>
+<span class="fc" id="L143">            }</span>
           }
       };
-      SSLContext sslContext;
+      final SSLContext sslContext;
       try {
-<span class="fc" id="L145">        sslContext = getInstance();</span>
-<span class="fc" id="L146">        sslContext.init(null, trustManager, getSecureRandom());</span>
-<span class="nc" id="L147">      } catch (final NoSuchAlgorithmException e) {</span>
-<span class="nc" id="L148">        throw new IllegalArgumentException(&quot;Bad algorithm&quot;, e);</span>
-<span class="nc" id="L149">      } catch (final KeyManagementException e) {</span>
-<span class="nc" id="L150">        throw new IllegalArgumentException(&quot;Bad KeyManagement&quot;, e);</span>
-<span class="nc" id="L151">      } catch (NoSuchProviderException e) {</span>
-<span class="nc" id="L152">        throw new IllegalArgumentException(&quot;Bad Provider&quot;, e);</span>
-<span class="fc" id="L153">      }</span>
-<span class="fc" id="L154">      final SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();</span>
-<span class="fc" id="L155">      ftpClient.setSSLSocketFactory(sslSocketFactory);</span>
-<span class="fc bfc" id="L156" title="All 2 branches covered.">      if (this.ssl &lt; 0) {</span>
-<span class="fc" id="L157">        ftpClient.setSecurity(FTPClient.SECURITY_FTPS);</span>
+<span class="fc" id="L148">        sslContext = getInstance();</span>
+<span class="fc" id="L149">        sslContext.init(null, trustManager, getSecureRandom());</span>
+<span class="nc" id="L150">      } catch (final NoSuchAlgorithmException e) {</span>
+<span class="nc" id="L151">        throw new IllegalArgumentException(&quot;Bad algorithm&quot;, e);</span>
+<span class="nc" id="L152">      } catch (final KeyManagementException e) {</span>
+<span class="nc" id="L153">        throw new IllegalArgumentException(&quot;Bad KeyManagement&quot;, e);</span>
+<span class="nc" id="L154">      } catch (final NoSuchProviderException e) {</span>
+<span class="nc" id="L155">        throw new IllegalArgumentException(&quot;Bad Provider&quot;, e);</span>
+<span class="fc" id="L156">      }</span>
+<span class="fc" id="L157">      final SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();</span>
+<span class="fc" id="L158">      ftpClient.setSSLSocketFactory(sslSocketFactory);</span>
+<span class="fc bfc" id="L159" title="All 2 branches covered.">      if (this.ssl &lt; 0) {</span>
+<span class="fc" id="L160">        ftpClient.setSecurity(FTPClient.SECURITY_FTPS);</span>
       } else {
-<span class="fc" id="L159">        ftpClient.setSecurity(FTPClient.SECURITY_FTPES);</span>
+<span class="fc" id="L162">        ftpClient.setSecurity(FTPClient.SECURITY_FTPES);</span>
       }
-<span class="fc" id="L161">    } else {</span>
-<span class="fc" id="L162">      ftpClient = new FTPClient();</span>
+<span class="fc" id="L164">    } else {</span>
+<span class="fc" id="L165">      ftpClient = new FTPClient();</span>
     }
-<span class="pc bpc" id="L164" title="1 of 2 branches missed.">    if (timeout &gt; 0) {</span>
-<span class="fc" id="L165">      System.setProperty(&quot;ftp4j.activeDataTransfer.acceptTimeout&quot;,</span>
-<span class="fc" id="L166">                         String.valueOf(timeout));</span>
+<span class="pc bpc" id="L167" title="1 of 2 branches missed.">    if (timeout &gt; 0) {</span>
+<span class="fc" id="L168">      System.setProperty(&quot;ftp4j.activeDataTransfer.acceptTimeout&quot;,</span>
+<span class="fc" id="L169">                         String.valueOf(timeout));</span>
     }
-<span class="fc" id="L168">    System.setProperty(&quot;ftp4j.activeDataTransfer.hostAddress&quot;, &quot;127.0.0.1&quot;);</span>
+<span class="fc" id="L171">    System.setProperty(&quot;ftp4j.activeDataTransfer.hostAddress&quot;, &quot;127.0.0.1&quot;);</span>
 
-<span class="fc" id="L170">    ftpClient.addCommunicationListener(new FTPCommunicationListener() {</span>
+<span class="fc" id="L173">    ftpClient.addCommunicationListener(new FTPCommunicationListener() {</span>
       @Override
-      public void sent(String arg0) {
-<span class="fc" id="L173">        logger.debug(&quot;Command: &quot; + arg0);</span>
-<span class="fc" id="L174">      }</span>
+      public void sent(final String arg0) {
+<span class="fc" id="L176">        logger.debug(&quot;Command: &quot; + arg0);</span>
+<span class="fc" id="L177">      }</span>
 
       @Override
-      public void received(String arg0) {
-<span class="fc" id="L178">        logger.debug(&quot;Answer: &quot; + arg0);</span>
-<span class="fc" id="L179">      }</span>
+      public void received(final String arg0) {
+<span class="fc" id="L181">        logger.debug(&quot;Answer: &quot; + arg0);</span>
+<span class="fc" id="L182">      }</span>
     });
-<span class="fc" id="L181">    final FTPConnector connector = ftpClient.getConnector();</span>
-<span class="fc" id="L182">    connector.setCloseTimeout(timeout);</span>
-<span class="fc" id="L183">    connector.setReadTimeout(timeout);</span>
-<span class="fc" id="L184">    connector.setUseSuggestedAddressForDataConnections(true);</span>
-<span class="fc" id="L185">  }</span>
+<span class="fc" id="L184">    final FTPConnector connector = ftpClient.getConnector();</span>
+<span class="fc" id="L185">    connector.setCloseTimeout(timeout);</span>
+<span class="fc" id="L186">    connector.setReadTimeout(timeout);</span>
+<span class="fc" id="L187">    connector.setUseSuggestedAddressForDataConnections(true);</span>
+<span class="fc" id="L188">  }</span>
 
   /**
    * @return the result associated with the last command
    */
   public String getResult() {
-<span class="nc" id="L191">    return result;</span>
+<span class="nc" id="L194">    return result;</span>
   }
 
   /**
@@ -197,75 +200,75 @@ public class WaarpFtp4jClient {
    * @return True if connected and authenticated, else False
    */
   public boolean connect() {
-<span class="fc" id="L200">    result = null;</span>
-<span class="fc" id="L201">    boolean isActive = false;</span>
+<span class="fc" id="L203">    result = null;</span>
+<span class="fc" id="L204">    boolean isActive = false;</span>
     try {
       try {
-<span class="fc" id="L204">        ftpClient.connect(server, port);</span>
-<span class="nc" id="L205">      } catch (final SocketException e) {</span>
-<span class="nc" id="L206">        result = CONNECTION_IN_ERROR;</span>
-<span class="nc" id="L207">        logger.error(result, e);</span>
-<span class="nc" id="L208">        return false;</span>
-<span class="nc" id="L209">      } catch (final IOException e) {</span>
-<span class="nc" id="L210">        result = CONNECTION_IN_ERROR;</span>
-<span class="nc" id="L211">        logger.error(result, e);</span>
-<span class="nc" id="L212">        return false;</span>
-<span class="nc" id="L213">      } catch (final IllegalStateException e) {</span>
-<span class="nc" id="L214">        result = CONNECTION_IN_ERROR;</span>
-<span class="nc" id="L215">        logger.error(result, e);</span>
-<span class="nc" id="L216">        return false;</span>
-<span class="nc" id="L217">      } catch (final FTPIllegalReplyException e) {</span>
-<span class="nc" id="L218">        result = CONNECTION_IN_ERROR;</span>
-<span class="nc" id="L219">        logger.error(result, e);</span>
-<span class="nc" id="L220">        return false;</span>
-<span class="nc" id="L221">      } catch (final FTPException e) {</span>
-<span class="nc" id="L222">        result = CONNECTION_IN_ERROR;</span>
-<span class="nc" id="L223">        logger.error(result, e);</span>
-<span class="nc" id="L224">        return false;</span>
-<span class="fc" id="L225">      }</span>
+<span class="fc" id="L207">        ftpClient.connect(server, port);</span>
+<span class="nc" id="L208">      } catch (final SocketException e) {</span>
+<span class="nc" id="L209">        result = CONNECTION_IN_ERROR;</span>
+<span class="nc" id="L210">        logger.error(result, e);</span>
+<span class="nc" id="L211">        return false;</span>
+<span class="nc" id="L212">      } catch (final IOException e) {</span>
+<span class="nc" id="L213">        result = CONNECTION_IN_ERROR;</span>
+<span class="nc" id="L214">        logger.error(result, e);</span>
+<span class="nc" id="L215">        return false;</span>
+<span class="nc" id="L216">      } catch (final IllegalStateException e) {</span>
+<span class="nc" id="L217">        result = CONNECTION_IN_ERROR;</span>
+<span class="nc" id="L218">        logger.error(result, e);</span>
+<span class="nc" id="L219">        return false;</span>
+<span class="nc" id="L220">      } catch (final FTPIllegalReplyException e) {</span>
+<span class="nc" id="L221">        result = CONNECTION_IN_ERROR;</span>
+<span class="nc" id="L222">        logger.error(result, e);</span>
+<span class="nc" id="L223">        return false;</span>
+<span class="nc" id="L224">      } catch (final FTPException e) {</span>
+<span class="nc" id="L225">        result = CONNECTION_IN_ERROR;</span>
+<span class="nc" id="L226">        logger.error(result, e);</span>
+<span class="nc" id="L227">        return false;</span>
+<span class="fc" id="L228">      }</span>
       try {
-<span class="pc bpc" id="L227" title="1 of 2 branches missed.">        if (acct == null) {</span>
+<span class="pc bpc" id="L230" title="1 of 2 branches missed.">        if (acct == null) {</span>
           // no account
-<span class="nc" id="L229">          ftpClient.login(user, pwd);</span>
+<span class="nc" id="L232">          ftpClient.login(user, pwd);</span>
         } else {
-<span class="fc" id="L231">          ftpClient.login(user, pwd, acct);</span>
+<span class="fc" id="L234">          ftpClient.login(user, pwd, acct);</span>
         }
-<span class="nc" id="L233">      } catch (final IOException e) {</span>
-<span class="nc" id="L234">        result = LOGIN_IN_ERROR;</span>
-<span class="nc" id="L235">        logger.error(result, e);</span>
-<span class="nc" id="L236">        return false;</span>
-<span class="nc" id="L237">      } catch (final IllegalStateException e) {</span>
-<span class="nc" id="L238">        logout();</span>
-<span class="nc" id="L239">        result = LOGIN_IN_ERROR;</span>
-<span class="nc" id="L240">        logger.error(result);</span>
-<span class="nc" id="L241">        return false;</span>
-<span class="nc" id="L242">      } catch (final FTPIllegalReplyException e) {</span>
-<span class="nc" id="L243">        logout();</span>
-<span class="nc" id="L244">        result = LOGIN_IN_ERROR;</span>
-<span class="nc" id="L245">        logger.error(result);</span>
-<span class="nc" id="L246">        return false;</span>
-<span class="nc" id="L247">      } catch (final FTPException e) {</span>
-<span class="nc" id="L248">        logout();</span>
-<span class="nc" id="L249">        result = LOGIN_IN_ERROR;</span>
-<span class="nc" id="L250">        logger.error(result);</span>
-<span class="nc" id="L251">        return false;</span>
-<span class="fc" id="L252">      }</span>
+<span class="nc" id="L236">      } catch (final IOException e) {</span>
+<span class="nc" id="L237">        result = LOGIN_IN_ERROR;</span>
+<span class="nc" id="L238">        logger.error(result, e);</span>
+<span class="nc" id="L239">        return false;</span>
+<span class="nc" id="L240">      } catch (final IllegalStateException e) {</span>
+<span class="nc" id="L241">        logout();</span>
+<span class="nc" id="L242">        result = LOGIN_IN_ERROR;</span>
+<span class="nc" id="L243">        logger.error(result);</span>
+<span class="nc" id="L244">        return false;</span>
+<span class="nc" id="L245">      } catch (final FTPIllegalReplyException e) {</span>
+<span class="nc" id="L246">        logout();</span>
+<span class="nc" id="L247">        result = LOGIN_IN_ERROR;</span>
+<span class="nc" id="L248">        logger.error(result);</span>
+<span class="nc" id="L249">        return false;</span>
+<span class="nc" id="L250">      } catch (final FTPException e) {</span>
+<span class="nc" id="L251">        logout();</span>
+<span class="nc" id="L252">        result = LOGIN_IN_ERROR;</span>
+<span class="nc" id="L253">        logger.error(result);</span>
+<span class="nc" id="L254">        return false;</span>
+<span class="fc" id="L255">      }</span>
       try {
-<span class="fc" id="L254">        ftpClient.setType(FTPClient.TYPE_BINARY);</span>
-<span class="nc" id="L255">      } catch (final IllegalArgumentException e1) {</span>
-<span class="nc" id="L256">        result = &quot;Set BINARY in error&quot;;</span>
-<span class="nc" id="L257">        logger.error(result, e1);</span>
-<span class="nc" id="L258">        return false;</span>
-<span class="fc" id="L259">      }</span>
-<span class="fc" id="L260">      changeMode(isPassive);</span>
-<span class="pc bpc" id="L261" title="1 of 2 branches missed.">      if (keepalive &gt; 0) {</span>
-<span class="nc" id="L262">        ftpClient.setAutoNoopTimeout(keepalive);</span>
+<span class="fc" id="L257">        ftpClient.setType(FTPClient.TYPE_BINARY);</span>
+<span class="nc" id="L258">      } catch (final IllegalArgumentException e1) {</span>
+<span class="nc" id="L259">        result = &quot;Set BINARY in error&quot;;</span>
+<span class="nc" id="L260">        logger.error(result, e1);</span>
+<span class="nc" id="L261">        return false;</span>
+<span class="fc" id="L262">      }</span>
+<span class="fc" id="L263">      changeMode(isPassive);</span>
+<span class="pc bpc" id="L264" title="1 of 2 branches missed.">      if (keepalive &gt; 0) {</span>
+<span class="nc" id="L265">        ftpClient.setAutoNoopTimeout(keepalive);</span>
       }
-<span class="fc" id="L264">      isActive = true;</span>
-<span class="fc" id="L265">      return true;</span>
+<span class="fc" id="L267">      isActive = true;</span>
+<span class="fc" id="L268">      return true;</span>
     } finally {
-<span class="pc bpc" id="L267" title="3 of 4 branches missed.">      if (!isActive &amp;&amp; !ftpClient.isPassive()) {</span>
-<span class="nc" id="L268">        disconnect();</span>
+<span class="pc bpc" id="L270" title="3 of 4 branches missed.">      if (!isActive &amp;&amp; !ftpClient.isPassive()) {</span>
+<span class="nc" id="L271">        disconnect();</span>
       }
     }
   }
@@ -274,44 +277,44 @@ public class WaarpFtp4jClient {
    * QUIT the control connection
    */
   public void logout() {
-<span class="fc" id="L277">    ftpClient.setAutoNoopTimeout(0);</span>
-<span class="fc" id="L278">    logger.debug(&quot;QUIT&quot;);</span>
-<span class="pc bpc" id="L279" title="1 of 2 branches missed.">    if (executeCommand(&quot;QUIT&quot;) == null) {</span>
+<span class="fc" id="L280">    ftpClient.setAutoNoopTimeout(0);</span>
+<span class="fc" id="L281">    logger.debug(&quot;QUIT&quot;);</span>
+<span class="pc bpc" id="L282" title="1 of 2 branches missed.">    if (executeCommand(&quot;QUIT&quot;) == null) {</span>
       try {
-<span class="nc" id="L281">        ftpClient.logout();</span>
-<span class="nc" id="L282">      } catch (final IOException e) {</span>
+<span class="nc" id="L284">        ftpClient.logout();</span>
+<span class="nc" id="L285">      } catch (final IOException e) {</span>
         // do nothing
-<span class="nc" id="L284">      } catch (final IllegalStateException e) {</span>
+<span class="nc" id="L287">      } catch (final IllegalStateException e) {</span>
         // do nothing
-<span class="nc" id="L286">      } catch (final FTPIllegalReplyException e) {</span>
+<span class="nc" id="L289">      } catch (final FTPIllegalReplyException e) {</span>
         // do nothing
-<span class="nc" id="L288">      } catch (final FTPException e) {</span>
+<span class="nc" id="L291">      } catch (final FTPException e) {</span>
         // do nothing
       } finally {
-<span class="nc bnc" id="L291" title="All 2 branches missed.">        if (!ftpClient.isPassive()) {</span>
-<span class="nc" id="L292">          disconnect();</span>
+<span class="nc bnc" id="L294" title="All 2 branches missed.">        if (!ftpClient.isPassive()) {</span>
+<span class="nc" id="L295">          disconnect();</span>
         }
       }
     }
-<span class="fc" id="L296">  }</span>
+<span class="fc" id="L299">  }</span>
 
   /**
    * Disconnect the Ftp Client
    */
   public void disconnect() {
-<span class="fc" id="L302">    ftpClient.setAutoNoopTimeout(0);</span>
+<span class="fc" id="L305">    ftpClient.setAutoNoopTimeout(0);</span>
     try {
-<span class="fc" id="L304">      ftpClient.disconnect(false);</span>
-<span class="nc" id="L305">    } catch (final IOException e) {</span>
-<span class="nc" id="L306">      logger.debug(DISCONNECTION_IN_ERROR, e);</span>
-<span class="nc" id="L307">    } catch (final IllegalStateException e) {</span>
-<span class="nc" id="L308">      logger.debug(DISCONNECTION_IN_ERROR, e);</span>
-<span class="nc" id="L309">    } catch (final FTPIllegalReplyException e) {</span>
-<span class="nc" id="L310">      logger.debug(DISCONNECTION_IN_ERROR, e);</span>
-<span class="nc" id="L311">    } catch (final FTPException e) {</span>
-<span class="nc" id="L312">      logger.debug(DISCONNECTION_IN_ERROR, e);</span>
-<span class="pc" id="L313">    }</span>
-<span class="fc" id="L314">  }</span>
+<span class="fc" id="L307">      ftpClient.disconnect(false);</span>
+<span class="nc" id="L308">    } catch (final IOException e) {</span>
+<span class="nc" id="L309">      logger.debug(DISCONNECTION_IN_ERROR, e);</span>
+<span class="nc" id="L310">    } catch (final IllegalStateException e) {</span>
+<span class="nc" id="L311">      logger.debug(DISCONNECTION_IN_ERROR, e);</span>
+<span class="nc" id="L312">    } catch (final FTPIllegalReplyException e) {</span>
+<span class="nc" id="L313">      logger.debug(DISCONNECTION_IN_ERROR, e);</span>
+<span class="nc" id="L314">    } catch (final FTPException e) {</span>
+<span class="nc" id="L315">      logger.debug(DISCONNECTION_IN_ERROR, e);</span>
+<span class="pc" id="L316">    }</span>
+<span class="fc" id="L317">  }</span>
 
   /**
    * Create a new directory
@@ -320,27 +323,27 @@ public class WaarpFtp4jClient {
    *
    * @return True if created
    */
-  public boolean makeDir(String newDir) {
-<span class="fc" id="L324">    result = null;</span>
+  public boolean makeDir(final String newDir) {
+<span class="fc" id="L327">    result = null;</span>
     try {
-<span class="fc" id="L326">      ftpClient.createDirectory(newDir);</span>
-<span class="fc" id="L327">      return true;</span>
-<span class="nc" id="L328">    } catch (final IOException e) {</span>
-<span class="nc" id="L329">      result = MKDIR_IN_ERROR;</span>
-<span class="nc" id="L330">      logger.info(result, e);</span>
-<span class="nc" id="L331">      return false;</span>
-<span class="nc" id="L332">    } catch (final IllegalStateException e) {</span>
-<span class="nc" id="L333">      result = MKDIR_IN_ERROR;</span>
-<span class="nc" id="L334">      logger.info(result, e);</span>
-<span class="nc" id="L335">      return false;</span>
-<span class="nc" id="L336">    } catch (final FTPIllegalReplyException e) {</span>
-<span class="nc" id="L337">      result = MKDIR_IN_ERROR;</span>
-<span class="nc" id="L338">      logger.info(result, e);</span>
-<span class="nc" id="L339">      return false;</span>
-<span class="nc" id="L340">    } catch (final FTPException e) {</span>
-<span class="nc" id="L341">      result = MKDIR_IN_ERROR;</span>
-<span class="nc" id="L342">      logger.info(result, e);</span>
-<span class="nc" id="L343">      return false;</span>
+<span class="fc" id="L329">      ftpClient.createDirectory(newDir);</span>
+<span class="fc" id="L330">      return true;</span>
+<span class="nc" id="L331">    } catch (final IOException e) {</span>
+<span class="nc" id="L332">      result = MKDIR_IN_ERROR;</span>
+<span class="nc" id="L333">      logger.info(result, e);</span>
+<span class="nc" id="L334">      return false;</span>
+<span class="nc" id="L335">    } catch (final IllegalStateException e) {</span>
+<span class="nc" id="L336">      result = MKDIR_IN_ERROR;</span>
+<span class="nc" id="L337">      logger.info(result, e);</span>
+<span class="nc" id="L338">      return false;</span>
+<span class="nc" id="L339">    } catch (final FTPIllegalReplyException e) {</span>
+<span class="nc" id="L340">      result = MKDIR_IN_ERROR;</span>
+<span class="nc" id="L341">      logger.info(result, e);</span>
+<span class="nc" id="L342">      return false;</span>
+<span class="nc" id="L343">    } catch (final FTPException e) {</span>
+<span class="nc" id="L344">      result = MKDIR_IN_ERROR;</span>
+<span class="nc" id="L345">      logger.info(result, e);</span>
+<span class="nc" id="L346">      return false;</span>
     }
   }
 
@@ -351,51 +354,50 @@ public class WaarpFtp4jClient {
    *
    * @return True if the change is OK
    */
-  public boolean changeDir(String newDir) {
-<span class="fc" id="L355">    result = null;</span>
+  public boolean changeDir(final String newDir) {
+<span class="fc" id="L358">    result = null;</span>
     try {
-<span class="fc" id="L357">      ftpClient.changeDirectory(newDir);</span>
-<span class="fc" id="L358">      return true;</span>
-<span class="nc" id="L359">    } catch (final IOException e) {</span>
-<span class="nc" id="L360">      result = CHDIR_IN_ERROR;</span>
-<span class="nc" id="L361">      logger.info(result, e);</span>
-<span class="nc" id="L362">      return false;</span>
-<span class="nc" id="L363">    } catch (final IllegalStateException e) {</span>
-<span class="nc" id="L364">      result = CHDIR_IN_ERROR;</span>
-<span class="nc" id="L365">      logger.info(result, e);</span>
-<span class="nc" id="L366">      return false;</span>
-<span class="nc" id="L367">    } catch (final FTPIllegalReplyException e) {</span>
-<span class="nc" id="L368">      result = CHDIR_IN_ERROR;</span>
-<span class="nc" id="L369">      logger.info(result, e);</span>
-<span class="nc" id="L370">      return false;</span>
-<span class="nc" id="L371">    } catch (final FTPException e) {</span>
-<span class="nc" id="L372">      result = CHDIR_IN_ERROR;</span>
-<span class="nc" id="L373">      logger.info(result, e);</span>
-<span class="nc" id="L374">      return false;</span>
+<span class="fc" id="L360">      ftpClient.changeDirectory(newDir);</span>
+<span class="fc" id="L361">      return true;</span>
+<span class="nc" id="L362">    } catch (final IOException e) {</span>
+<span class="nc" id="L363">      result = CHDIR_IN_ERROR;</span>
+<span class="nc" id="L364">      logger.info(result, e);</span>
+<span class="nc" id="L365">      return false;</span>
+<span class="nc" id="L366">    } catch (final IllegalStateException e) {</span>
+<span class="nc" id="L367">      result = CHDIR_IN_ERROR;</span>
+<span class="nc" id="L368">      logger.info(result, e);</span>
+<span class="nc" id="L369">      return false;</span>
+<span class="nc" id="L370">    } catch (final FTPIllegalReplyException e) {</span>
+<span class="nc" id="L371">      result = CHDIR_IN_ERROR;</span>
+<span class="nc" id="L372">      logger.info(result, e);</span>
+<span class="nc" id="L373">      return false;</span>
+<span class="nc" id="L374">    } catch (final FTPException e) {</span>
+<span class="nc" id="L375">      result = CHDIR_IN_ERROR;</span>
+<span class="nc" id="L376">      logger.info(result, e);</span>
+<span class="nc" id="L377">      return false;</span>
     }
   }
 
   /**
    * Change the FileType of Transfer (Binary true, ASCII false)
    *
-   * @param binaryTransfer1
+   * @param binaryTransfer
    *
    * @return True if the change is OK
    */
-  public boolean changeFileType(boolean binaryTransfer1) {
-<span class="fc" id="L386">    result = null;</span>
-<span class="fc" id="L387">    binaryTransfer = binaryTransfer1;</span>
+  public boolean changeFileType(final boolean binaryTransfer) {
+<span class="fc" id="L389">    result = null;</span>
     try {
-<span class="pc bpc" id="L389" title="1 of 2 branches missed.">      if (binaryTransfer) {</span>
-<span class="fc" id="L390">        ftpClient.setType(FTPClient.TYPE_BINARY);</span>
+<span class="pc bpc" id="L391" title="1 of 2 branches missed.">      if (binaryTransfer) {</span>
+<span class="fc" id="L392">        ftpClient.setType(FTPClient.TYPE_BINARY);</span>
       } else {
-<span class="nc" id="L392">        ftpClient.setType(FTPClient.TYPE_TEXTUAL);</span>
+<span class="nc" id="L394">        ftpClient.setType(FTPClient.TYPE_TEXTUAL);</span>
       }
-<span class="fc" id="L394">      return true;</span>
-<span class="nc" id="L395">    } catch (final IllegalArgumentException e) {</span>
-<span class="nc" id="L396">      result = &quot;FileType in error&quot;;</span>
-<span class="nc" id="L397">      logger.warn(result, e);</span>
-<span class="nc" id="L398">      return false;</span>
+<span class="fc" id="L396">      return true;</span>
+<span class="nc" id="L397">    } catch (final IllegalArgumentException e) {</span>
+<span class="nc" id="L398">      result = &quot;FileType in error&quot;;</span>
+<span class="nc" id="L399">      logger.warn(result, e);</span>
+<span class="nc" id="L400">      return false;</span>
     }
   }
 
@@ -404,10 +406,10 @@ public class WaarpFtp4jClient {
    *
    * @param passive
    */
-  public void changeMode(boolean passive) {
-<span class="fc" id="L408">    isPassive = passive;</span>
-<span class="fc" id="L409">    ftpClient.setPassive(passive);</span>
-<span class="fc" id="L410">  }</span>
+  public void changeMode(final boolean passive) {
+<span class="fc" id="L410">    isPassive = passive;</span>
+<span class="fc" id="L411">    ftpClient.setPassive(passive);</span>
+<span class="fc" id="L412">  }</span>
 
   /**
    * Ask to transfer a file
@@ -418,105 +420,105 @@ public class WaarpFtp4jClient {
    *
    * @return True if the file is correctly transfered
    */
-  public boolean transferFile(String local, String remote,
-                              int getStoreOrAppend) {
-<span class="fc" id="L423">    result = null;</span>
+  public boolean transferFile(final String local, final String remote,
+                              final int getStoreOrAppend) {
+<span class="fc" id="L425">    result = null;</span>
     try {
-<span class="fc bfc" id="L425" title="All 2 branches covered.">      if (getStoreOrAppend &gt; 0) {</span>
-<span class="fc" id="L426">        final File from = new File(local);</span>
-<span class="fc" id="L427">        result = &quot;Cannot finalize store like operation&quot;;</span>
-<span class="fc" id="L428">        logger.debug(&quot;Will STOR: &quot; + from);</span>
+<span class="fc bfc" id="L427" title="All 2 branches covered.">      if (getStoreOrAppend &gt; 0) {</span>
+<span class="fc" id="L428">        final File from = new File(local);</span>
+<span class="fc" id="L429">        result = &quot;Cannot finalize store like operation&quot;;</span>
+<span class="fc" id="L430">        logger.debug(&quot;Will STOR: &quot; + from);</span>
         try {
-<span class="pc bpc" id="L430" title="1 of 2 branches missed.">          if (getStoreOrAppend == 1) {</span>
-<span class="fc" id="L431">            ftpClient.upload(from,</span>
+<span class="pc bpc" id="L432" title="1 of 2 branches missed.">          if (getStoreOrAppend == 1) {</span>
+<span class="fc" id="L433">            ftpClient.upload(from,</span>
                              new DataTimeOutListener(ftpClient, timeout, &quot;STOR&quot;,
                                                      local));
           } else {
             // append
-<span class="nc" id="L436">            ftpClient.append(from,</span>
+<span class="nc" id="L438">            ftpClient.append(from,</span>
                              new DataTimeOutListener(ftpClient, timeout, &quot;APPE&quot;,
                                                      local));
           }
-<span class="fc" id="L440">          result = null;</span>
-<span class="nc" id="L441">        } catch (final IllegalStateException e) {</span>
-<span class="nc" id="L442">          logger.error(result, e);</span>
-<span class="nc" id="L443">          return false;</span>
-<span class="nc" id="L444">        } catch (final FTPIllegalReplyException e) {</span>
-<span class="nc" id="L445">          logger.error(result, e);</span>
-<span class="nc" id="L446">          return false;</span>
-<span class="nc" id="L447">        } catch (final FTPException e) {</span>
-<span class="nc" id="L448">          logger.error(result, e);</span>
-<span class="nc" id="L449">          return false;</span>
-<span class="nc" id="L450">        } catch (final FTPDataTransferException e) {</span>
-<span class="nc" id="L451">          logger.error(result, e);</span>
-<span class="nc" id="L452">          return false;</span>
-<span class="nc" id="L453">        } catch (final FTPAbortedException e) {</span>
-<span class="nc" id="L454">          logger.error(result, e);</span>
-<span class="nc" id="L455">          return false;</span>
-<span class="fc" id="L456">        }</span>
-<span class="fc" id="L457">      } else {</span>
-<span class="fc" id="L458">        result = &quot;Cannot finalize retrieve like operation&quot;;</span>
-<span class="pc bpc" id="L459" title="1 of 2 branches missed.">        if (local == null) {</span>
+<span class="fc" id="L442">          result = null;</span>
+<span class="nc" id="L443">        } catch (final IllegalStateException e) {</span>
+<span class="nc" id="L444">          logger.error(result, e);</span>
+<span class="nc" id="L445">          return false;</span>
+<span class="nc" id="L446">        } catch (final FTPIllegalReplyException e) {</span>
+<span class="nc" id="L447">          logger.error(result, e);</span>
+<span class="nc" id="L448">          return false;</span>
+<span class="nc" id="L449">        } catch (final FTPException e) {</span>
+<span class="nc" id="L450">          logger.error(result, e);</span>
+<span class="nc" id="L451">          return false;</span>
+<span class="nc" id="L452">        } catch (final FTPDataTransferException e) {</span>
+<span class="nc" id="L453">          logger.error(result, e);</span>
+<span class="nc" id="L454">          return false;</span>
+<span class="nc" id="L455">        } catch (final FTPAbortedException e) {</span>
+<span class="nc" id="L456">          logger.error(result, e);</span>
+<span class="nc" id="L457">          return false;</span>
+<span class="fc" id="L458">        }</span>
+<span class="fc" id="L459">      } else {</span>
+<span class="fc" id="L460">        result = &quot;Cannot finalize retrieve like operation&quot;;</span>
+<span class="pc bpc" id="L461" title="1 of 2 branches missed.">        if (local == null) {</span>
           // test
-<span class="fc" id="L461">          NullOutputStream nullOutputStream = null;</span>
-<span class="fc" id="L462">          logger.debug(&quot;Will DLD nullStream: &quot; + remote);</span>
+<span class="fc" id="L463">          NullOutputStream nullOutputStream = null;</span>
+<span class="fc" id="L464">          logger.debug(&quot;Will DLD nullStream: &quot; + remote);</span>
           try {
-<span class="fc" id="L464">            nullOutputStream = new NullOutputStream();</span>
-<span class="fc" id="L465">            ftpClient.download(remote, nullOutputStream, 0,</span>
+<span class="fc" id="L466">            nullOutputStream = new NullOutputStream();</span>
+<span class="fc" id="L467">            ftpClient.download(remote, nullOutputStream, 0,</span>
                                new DataTimeOutListener(ftpClient, timeout,
                                                        &quot;RETR&quot;, remote));
-<span class="fc" id="L468">            result = null;</span>
-<span class="nc" id="L469">          } catch (final IllegalStateException e) {</span>
-<span class="nc" id="L470">            logger.error(result, e);</span>
-<span class="nc" id="L471">            return false;</span>
-<span class="nc" id="L472">          } catch (final FTPIllegalReplyException e) {</span>
-<span class="nc" id="L473">            logger.error(result, e);</span>
-<span class="nc" id="L474">            return false;</span>
-<span class="nc" id="L475">          } catch (final FTPException e) {</span>
-<span class="nc" id="L476">            logger.error(result, e);</span>
-<span class="nc" id="L477">            return false;</span>
-<span class="nc" id="L478">          } catch (final FTPDataTransferException e) {</span>
-<span class="nc" id="L479">            logger.error(result, e);</span>
-<span class="nc" id="L480">            return false;</span>
-<span class="nc" id="L481">          } catch (final FTPAbortedException e) {</span>
-<span class="nc" id="L482">            logger.error(result, e);</span>
-<span class="nc" id="L483">            return false;</span>
+<span class="fc" id="L470">            result = null;</span>
+<span class="nc" id="L471">          } catch (final IllegalStateException e) {</span>
+<span class="nc" id="L472">            logger.error(result, e);</span>
+<span class="nc" id="L473">            return false;</span>
+<span class="nc" id="L474">          } catch (final FTPIllegalReplyException e) {</span>
+<span class="nc" id="L475">            logger.error(result, e);</span>
+<span class="nc" id="L476">            return false;</span>
+<span class="nc" id="L477">          } catch (final FTPException e) {</span>
+<span class="nc" id="L478">            logger.error(result, e);</span>
+<span class="nc" id="L479">            return false;</span>
+<span class="nc" id="L480">          } catch (final FTPDataTransferException e) {</span>
+<span class="nc" id="L481">            logger.error(result, e);</span>
+<span class="nc" id="L482">            return false;</span>
+<span class="nc" id="L483">          } catch (final FTPAbortedException e) {</span>
+<span class="nc" id="L484">            logger.error(result, e);</span>
+<span class="nc" id="L485">            return false;</span>
           } finally {
-<span class="pc bpc" id="L485" title="1 of 2 branches missed.">            if (nullOutputStream != null) {</span>
-<span class="fc" id="L486">              nullOutputStream.close();</span>
+<span class="pc bpc" id="L487" title="1 of 2 branches missed.">            if (nullOutputStream != null) {</span>
+<span class="fc" id="L488">              nullOutputStream.close();</span>
             }
           }
-<span class="fc" id="L489">        } else {</span>
-<span class="nc" id="L490">          logger.debug(&quot;Will DLD to local: &quot; + remote + &quot; into &quot; + local);</span>
-<span class="nc" id="L491">          final File to = new File(local);</span>
+<span class="fc" id="L491">        } else {</span>
+<span class="nc" id="L492">          logger.debug(&quot;Will DLD to local: &quot; + remote + &quot; into &quot; + local);</span>
+<span class="nc" id="L493">          final File to = new File(local);</span>
           try {
-<span class="nc" id="L493">            ftpClient.download(remote, to,</span>
+<span class="nc" id="L495">            ftpClient.download(remote, to,</span>
                                new DataTimeOutListener(ftpClient, timeout,
                                                        &quot;RETR&quot;, local));
-<span class="nc" id="L496">            result = null;</span>
-<span class="nc" id="L497">          } catch (final IllegalStateException e) {</span>
-<span class="nc" id="L498">            logger.error(result, e);</span>
-<span class="nc" id="L499">            return false;</span>
-<span class="nc" id="L500">          } catch (final FTPIllegalReplyException e) {</span>
-<span class="nc" id="L501">            logger.error(result, e);</span>
-<span class="nc" id="L502">            return false;</span>
-<span class="nc" id="L503">          } catch (final FTPException e) {</span>
-<span class="nc" id="L504">            logger.error(result, e);</span>
-<span class="nc" id="L505">            return false;</span>
-<span class="nc" id="L506">          } catch (final FTPDataTransferException e) {</span>
-<span class="nc" id="L507">            logger.error(result, e);</span>
-<span class="nc" id="L508">            return false;</span>
-<span class="nc" id="L509">          } catch (final FTPAbortedException e) {</span>
-<span class="nc" id="L510">            logger.error(result, e);</span>
-<span class="nc" id="L511">            return false;</span>
-<span class="nc" id="L512">          }</span>
+<span class="nc" id="L498">            result = null;</span>
+<span class="nc" id="L499">          } catch (final IllegalStateException e) {</span>
+<span class="nc" id="L500">            logger.error(result, e);</span>
+<span class="nc" id="L501">            return false;</span>
+<span class="nc" id="L502">          } catch (final FTPIllegalReplyException e) {</span>
+<span class="nc" id="L503">            logger.error(result, e);</span>
+<span class="nc" id="L504">            return false;</span>
+<span class="nc" id="L505">          } catch (final FTPException e) {</span>
+<span class="nc" id="L506">            logger.error(result, e);</span>
+<span class="nc" id="L507">            return false;</span>
+<span class="nc" id="L508">          } catch (final FTPDataTransferException e) {</span>
+<span class="nc" id="L509">            logger.error(result, e);</span>
+<span class="nc" id="L510">            return false;</span>
+<span class="nc" id="L511">          } catch (final FTPAbortedException e) {</span>
+<span class="nc" id="L512">            logger.error(result, e);</span>
+<span class="nc" id="L513">            return false;</span>
+<span class="nc" id="L514">          }</span>
         }
       }
-<span class="fc" id="L515">      return true;</span>
-<span class="nc" id="L516">    } catch (final IOException e) {</span>
-<span class="nc" id="L517">      result = &quot;Cannot finalize operation&quot;;</span>
-<span class="nc" id="L518">      logger.error(result, e);</span>
-<span class="nc" id="L519">      return false;</span>
+<span class="fc" id="L517">      return true;</span>
+<span class="nc" id="L518">    } catch (final IOException e) {</span>
+<span class="nc" id="L519">      result = &quot;Cannot finalize operation&quot;;</span>
+<span class="nc" id="L520">      logger.error(result, e);</span>
+<span class="nc" id="L521">      return false;</span>
     }
   }
 
@@ -525,42 +527,42 @@ public class WaarpFtp4jClient {
    */
   public String[] listFiles() {
     try {
-<span class="fc" id="L528">      final FTPFile[] list = ftpClient.list();</span>
-<span class="fc" id="L529">      final String[] results = new String[list.length];</span>
-<span class="fc" id="L530">      int i = 0;</span>
-<span class="fc bfc" id="L531" title="All 2 branches covered.">      for (final FTPFile file : list) {</span>
-<span class="fc" id="L532">        results[i] = file.toString();</span>
-<span class="fc" id="L533">        i++;</span>
+<span class="fc" id="L530">      final FTPFile[] list = ftpClient.list();</span>
+<span class="fc" id="L531">      final String[] results = new String[list.length];</span>
+<span class="fc" id="L532">      int i = 0;</span>
+<span class="fc bfc" id="L533" title="All 2 branches covered.">      for (final FTPFile file : list) {</span>
+<span class="fc" id="L534">        results[i] = file.toString();</span>
+<span class="fc" id="L535">        i++;</span>
       }
-<span class="fc" id="L535">      return results;</span>
-<span class="nc" id="L536">    } catch (final IOException e) {</span>
-<span class="nc" id="L537">      result = CANNOT_FINALIZE_TRANSFER_OPERATION;</span>
-<span class="nc" id="L538">      logger.error(result, e);</span>
-<span class="nc" id="L539">      return null;</span>
-<span class="nc" id="L540">    } catch (final IllegalStateException e) {</span>
-<span class="nc" id="L541">      result = CANNOT_FINALIZE_TRANSFER_OPERATION;</span>
-<span class="nc" id="L542">      logger.error(result, e);</span>
-<span class="nc" id="L543">      return null;</span>
-<span class="nc" id="L544">    } catch (final FTPIllegalReplyException e) {</span>
-<span class="nc" id="L545">      result = CANNOT_FINALIZE_TRANSFER_OPERATION;</span>
-<span class="nc" id="L546">      logger.error(result, e);</span>
-<span class="nc" id="L547">      return null;</span>
-<span class="nc" id="L548">    } catch (final FTPException e) {</span>
-<span class="nc" id="L549">      result = CANNOT_FINALIZE_TRANSFER_OPERATION;</span>
-<span class="nc" id="L550">      logger.error(result, e);</span>
-<span class="nc" id="L551">      return null;</span>
-<span class="nc" id="L552">    } catch (final FTPDataTransferException e) {</span>
-<span class="nc" id="L553">      result = CANNOT_FINALIZE_TRANSFER_OPERATION;</span>
-<span class="nc" id="L554">      logger.error(result, e);</span>
-<span class="nc" id="L555">      return null;</span>
-<span class="nc" id="L556">    } catch (final FTPAbortedException e) {</span>
-<span class="nc" id="L557">      result = CANNOT_FINALIZE_TRANSFER_OPERATION;</span>
-<span class="nc" id="L558">      logger.error(result, e);</span>
-<span class="nc" id="L559">      return null;</span>
-<span class="nc" id="L560">    } catch (final FTPListParseException e) {</span>
-<span class="nc" id="L561">      result = CANNOT_FINALIZE_TRANSFER_OPERATION;</span>
-<span class="nc" id="L562">      logger.error(result, e);</span>
-<span class="nc" id="L563">      return null;</span>
+<span class="fc" id="L537">      return results;</span>
+<span class="nc" id="L538">    } catch (final IOException e) {</span>
+<span class="nc" id="L539">      result = CANNOT_FINALIZE_TRANSFER_OPERATION;</span>
+<span class="nc" id="L540">      logger.error(result, e);</span>
+<span class="nc" id="L541">      return null;</span>
+<span class="nc" id="L542">    } catch (final IllegalStateException e) {</span>
+<span class="nc" id="L543">      result = CANNOT_FINALIZE_TRANSFER_OPERATION;</span>
+<span class="nc" id="L544">      logger.error(result, e);</span>
+<span class="nc" id="L545">      return null;</span>
+<span class="nc" id="L546">    } catch (final FTPIllegalReplyException e) {</span>
+<span class="nc" id="L547">      result = CANNOT_FINALIZE_TRANSFER_OPERATION;</span>
+<span class="nc" id="L548">      logger.error(result, e);</span>
+<span class="nc" id="L549">      return null;</span>
+<span class="nc" id="L550">    } catch (final FTPException e) {</span>
+<span class="nc" id="L551">      result = CANNOT_FINALIZE_TRANSFER_OPERATION;</span>
+<span class="nc" id="L552">      logger.error(result, e);</span>
+<span class="nc" id="L553">      return null;</span>
+<span class="nc" id="L554">    } catch (final FTPDataTransferException e) {</span>
+<span class="nc" id="L555">      result = CANNOT_FINALIZE_TRANSFER_OPERATION;</span>
+<span class="nc" id="L556">      logger.error(result, e);</span>
+<span class="nc" id="L557">      return null;</span>
+<span class="nc" id="L558">    } catch (final FTPAbortedException e) {</span>
+<span class="nc" id="L559">      result = CANNOT_FINALIZE_TRANSFER_OPERATION;</span>
+<span class="nc" id="L560">      logger.error(result, e);</span>
+<span class="nc" id="L561">      return null;</span>
+<span class="nc" id="L562">    } catch (final FTPListParseException e) {</span>
+<span class="nc" id="L563">      result = CANNOT_FINALIZE_TRANSFER_OPERATION;</span>
+<span class="nc" id="L564">      logger.error(result, e);</span>
+<span class="nc" id="L565">      return null;</span>
     }
   }
 
@@ -569,28 +571,28 @@ public class WaarpFtp4jClient {
    *
    * @return True if the given feature is listed
    */
-  public boolean featureEnabled(String feature) {
+  public boolean featureEnabled(final String feature) {
     try {
-<span class="fc" id="L574">      final FTPReply reply = ftpClient.sendCustomCommand(&quot;FEAT&quot;);</span>
-<span class="fc" id="L575">      final String[] msg = reply.getMessages();</span>
-<span class="pc bpc" id="L576" title="1 of 2 branches missed.">      for (final String string : msg) {</span>
-<span class="fc bfc" id="L577" title="All 2 branches covered.">        if (string.contains(feature.toUpperCase())) {</span>
-<span class="fc" id="L578">          return true;</span>
+<span class="fc" id="L576">      final FTPReply reply = ftpClient.sendCustomCommand(&quot;FEAT&quot;);</span>
+<span class="fc" id="L577">      final String[] msg = reply.getMessages();</span>
+<span class="pc bpc" id="L578" title="1 of 2 branches missed.">      for (final String string : msg) {</span>
+<span class="fc bfc" id="L579" title="All 2 branches covered.">        if (string.contains(feature.toUpperCase())) {</span>
+<span class="fc" id="L580">          return true;</span>
         }
       }
-<span class="nc" id="L581">      return false;</span>
-<span class="nc" id="L582">    } catch (final IOException e) {</span>
-<span class="nc" id="L583">      result = CANNOT_EXECUTE_OPERATION_FEATURE;</span>
-<span class="nc" id="L584">      logger.error(result, e);</span>
-<span class="nc" id="L585">      return false;</span>
-<span class="nc" id="L586">    } catch (final IllegalStateException e) {</span>
-<span class="nc" id="L587">      result = CANNOT_EXECUTE_OPERATION_FEATURE;</span>
-<span class="nc" id="L588">      logger.error(result, e);</span>
-<span class="nc" id="L589">      return false;</span>
-<span class="nc" id="L590">    } catch (final FTPIllegalReplyException e) {</span>
-<span class="nc" id="L591">      result = CANNOT_EXECUTE_OPERATION_FEATURE;</span>
-<span class="nc" id="L592">      logger.error(result, e);</span>
-<span class="nc" id="L593">      return false;</span>
+<span class="nc" id="L583">      return false;</span>
+<span class="nc" id="L584">    } catch (final IOException e) {</span>
+<span class="nc" id="L585">      result = CANNOT_EXECUTE_OPERATION_FEATURE;</span>
+<span class="nc" id="L586">      logger.error(result, e);</span>
+<span class="nc" id="L587">      return false;</span>
+<span class="nc" id="L588">    } catch (final IllegalStateException e) {</span>
+<span class="nc" id="L589">      result = CANNOT_EXECUTE_OPERATION_FEATURE;</span>
+<span class="nc" id="L590">      logger.error(result, e);</span>
+<span class="nc" id="L591">      return false;</span>
+<span class="nc" id="L592">    } catch (final FTPIllegalReplyException e) {</span>
+<span class="nc" id="L593">      result = CANNOT_EXECUTE_OPERATION_FEATURE;</span>
+<span class="nc" id="L594">      logger.error(result, e);</span>
+<span class="nc" id="L595">      return false;</span>
     }
   }
 
@@ -599,27 +601,27 @@ public class WaarpFtp4jClient {
    *
    * @return True if deleted
    */
-  public boolean deleteFile(String remote) {
+  public boolean deleteFile(final String remote) {
     try {
-<span class="fc" id="L604">      logger.debug(&quot;DELE {}&quot;, remote);</span>
-<span class="fc" id="L605">      ftpClient.deleteFile(remote);</span>
-<span class="fc" id="L606">      return true;</span>
-<span class="nc" id="L607">    } catch (final IOException e) {</span>
-<span class="nc" id="L608">      result = CANNOT_EXECUTE_OPERATION_SITE;</span>
-<span class="nc" id="L609">      logger.error(result, e);</span>
-<span class="nc" id="L610">      return false;</span>
-<span class="nc" id="L611">    } catch (final IllegalStateException e) {</span>
-<span class="nc" id="L612">      result = CANNOT_EXECUTE_OPERATION_SITE;</span>
-<span class="nc" id="L613">      logger.error(result, e);</span>
-<span class="nc" id="L614">      return false;</span>
-<span class="nc" id="L615">    } catch (final FTPIllegalReplyException e) {</span>
-<span class="nc" id="L616">      result = CANNOT_EXECUTE_OPERATION_SITE;</span>
-<span class="nc" id="L617">      logger.error(result, e);</span>
-<span class="nc" id="L618">      return false;</span>
-<span class="nc" id="L619">    } catch (final FTPException e) {</span>
-<span class="nc" id="L620">      result = CANNOT_EXECUTE_OPERATION_SITE;</span>
-<span class="nc" id="L621">      logger.error(result, e);</span>
-<span class="nc" id="L622">      return false;</span>
+<span class="fc" id="L606">      logger.debug(&quot;DELE {}&quot;, remote);</span>
+<span class="fc" id="L607">      ftpClient.deleteFile(remote);</span>
+<span class="fc" id="L608">      return true;</span>
+<span class="nc" id="L609">    } catch (final IOException e) {</span>
+<span class="nc" id="L610">      result = CANNOT_EXECUTE_OPERATION_SITE;</span>
+<span class="nc" id="L611">      logger.error(result, e);</span>
+<span class="nc" id="L612">      return false;</span>
+<span class="nc" id="L613">    } catch (final IllegalStateException e) {</span>
+<span class="nc" id="L614">      result = CANNOT_EXECUTE_OPERATION_SITE;</span>
+<span class="nc" id="L615">      logger.error(result, e);</span>
+<span class="nc" id="L616">      return false;</span>
+<span class="nc" id="L617">    } catch (final FTPIllegalReplyException e) {</span>
+<span class="nc" id="L618">      result = CANNOT_EXECUTE_OPERATION_SITE;</span>
+<span class="nc" id="L619">      logger.error(result, e);</span>
+<span class="nc" id="L620">      return false;</span>
+<span class="nc" id="L621">    } catch (final FTPException e) {</span>
+<span class="nc" id="L622">      result = CANNOT_EXECUTE_OPERATION_SITE;</span>
+<span class="nc" id="L623">      logger.error(result, e);</span>
+<span class="nc" id="L624">      return false;</span>
     }
   }
 
@@ -628,28 +630,28 @@ public class WaarpFtp4jClient {
    *
    * @return the string lines result for the command params
    */
-  public String[] executeCommand(String params) {
-<span class="fc" id="L632">    result = null;</span>
+  public String[] executeCommand(final String params) {
+<span class="fc" id="L634">    result = null;</span>
     try {
-<span class="fc" id="L634">      logger.debug(params);</span>
-<span class="fc" id="L635">      final FTPReply reply = ftpClient.sendCustomCommand(params);</span>
-<span class="pc bpc" id="L636" title="1 of 2 branches missed.">      if (!reply.isSuccessCode()) {</span>
-<span class="nc" id="L637">        result = reply.toString();</span>
-<span class="nc" id="L638">        return null;</span>
+<span class="fc" id="L636">      logger.debug(params);</span>
+<span class="fc" id="L637">      final FTPReply reply = ftpClient.sendCustomCommand(params);</span>
+<span class="pc bpc" id="L638" title="1 of 2 branches missed.">      if (!reply.isSuccessCode()) {</span>
+<span class="nc" id="L639">        result = reply.toString();</span>
+<span class="nc" id="L640">        return null;</span>
       }
-<span class="fc" id="L640">      return reply.getMessages();</span>
-<span class="nc" id="L641">    } catch (final IOException e) {</span>
-<span class="nc" id="L642">      result = CANNOT_EXECUTE_OPERATION_SITE;</span>
-<span class="nc" id="L643">      logger.error(result, e);</span>
-<span class="nc" id="L644">      return null;</span>
-<span class="nc" id="L645">    } catch (final IllegalStateException e) {</span>
-<span class="nc" id="L646">      result = CANNOT_EXECUTE_OPERATION_SITE;</span>
-<span class="nc" id="L647">      logger.error(result, e);</span>
-<span class="nc" id="L648">      return null;</span>
-<span class="nc" id="L649">    } catch (final FTPIllegalReplyException e) {</span>
-<span class="nc" id="L650">      result = CANNOT_EXECUTE_OPERATION_SITE;</span>
-<span class="nc" id="L651">      logger.error(result, e);</span>
-<span class="nc" id="L652">      return null;</span>
+<span class="fc" id="L642">      return reply.getMessages();</span>
+<span class="nc" id="L643">    } catch (final IOException e) {</span>
+<span class="nc" id="L644">      result = CANNOT_EXECUTE_OPERATION_SITE;</span>
+<span class="nc" id="L645">      logger.error(result, e);</span>
+<span class="nc" id="L646">      return null;</span>
+<span class="nc" id="L647">    } catch (final IllegalStateException e) {</span>
+<span class="nc" id="L648">      result = CANNOT_EXECUTE_OPERATION_SITE;</span>
+<span class="nc" id="L649">      logger.error(result, e);</span>
+<span class="nc" id="L650">      return null;</span>
+<span class="nc" id="L651">    } catch (final FTPIllegalReplyException e) {</span>
+<span class="nc" id="L652">      result = CANNOT_EXECUTE_OPERATION_SITE;</span>
+<span class="nc" id="L653">      logger.error(result, e);</span>
+<span class="nc" id="L654">      return null;</span>
     }
   }
 
@@ -658,28 +660,28 @@ public class WaarpFtp4jClient {
    *
    * @return the string lines result for the SITE command params
    */
-  public String[] executeSiteCommand(String params) {
-<span class="fc" id="L662">    result = null;</span>
+  public String[] executeSiteCommand(final String params) {
+<span class="fc" id="L664">    result = null;</span>
     try {
-<span class="fc" id="L664">      logger.debug(&quot;SITE &quot; + params);</span>
-<span class="fc" id="L665">      final FTPReply reply = ftpClient.sendSiteCommand(params);</span>
-<span class="pc bpc" id="L666" title="1 of 2 branches missed.">      if (!reply.isSuccessCode()) {</span>
-<span class="nc" id="L667">        result = reply.toString();</span>
-<span class="nc" id="L668">        return null;</span>
+<span class="fc" id="L666">      logger.debug(&quot;SITE &quot; + params);</span>
+<span class="fc" id="L667">      final FTPReply reply = ftpClient.sendSiteCommand(params);</span>
+<span class="pc bpc" id="L668" title="1 of 2 branches missed.">      if (!reply.isSuccessCode()) {</span>
+<span class="nc" id="L669">        result = reply.toString();</span>
+<span class="nc" id="L670">        return null;</span>
       }
-<span class="fc" id="L670">      return reply.getMessages();</span>
-<span class="nc" id="L671">    } catch (final IOException e) {</span>
-<span class="nc" id="L672">      result = CANNOT_EXECUTE_OPERATION_SITE;</span>
-<span class="nc" id="L673">      logger.error(result, e);</span>
-<span class="nc" id="L674">      return null;</span>
-<span class="nc" id="L675">    } catch (final IllegalStateException e) {</span>
-<span class="nc" id="L676">      result = CANNOT_EXECUTE_OPERATION_SITE;</span>
-<span class="nc" id="L677">      logger.error(result, e);</span>
-<span class="nc" id="L678">      return null;</span>
-<span class="nc" id="L679">    } catch (final FTPIllegalReplyException e) {</span>
-<span class="nc" id="L680">      result = CANNOT_EXECUTE_OPERATION_SITE;</span>
-<span class="nc" id="L681">      logger.error(result, e);</span>
-<span class="nc" id="L682">      return null;</span>
+<span class="fc" id="L672">      return reply.getMessages();</span>
+<span class="nc" id="L673">    } catch (final IOException e) {</span>
+<span class="nc" id="L674">      result = CANNOT_EXECUTE_OPERATION_SITE;</span>
+<span class="nc" id="L675">      logger.error(result, e);</span>
+<span class="nc" id="L676">      return null;</span>
+<span class="nc" id="L677">    } catch (final IllegalStateException e) {</span>
+<span class="nc" id="L678">      result = CANNOT_EXECUTE_OPERATION_SITE;</span>
+<span class="nc" id="L679">      logger.error(result, e);</span>
+<span class="nc" id="L680">      return null;</span>
+<span class="nc" id="L681">    } catch (final FTPIllegalReplyException e) {</span>
+<span class="nc" id="L682">      result = CANNOT_EXECUTE_OPERATION_SITE;</span>
+<span class="nc" id="L683">      logger.error(result, e);</span>
+<span class="nc" id="L684">      return null;</span>
     }
   }
 

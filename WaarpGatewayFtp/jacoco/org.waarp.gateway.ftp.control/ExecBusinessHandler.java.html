@@ -84,7 +84,7 @@ import java.io.IOException;
   private boolean internalDb;
 
   @Override
-  public void afterTransferDoneBeforeAnswer(FtpTransfer transfer)
+  public void afterTransferDoneBeforeAnswer(final FtpTransfer transfer)
       throws CommandAbstractException {
     // if Admin, do nothing
 <span class="pc bpc" id="L90" title="2 of 4 branches missed.">    if (getFtpSession() == null || getFtpSession().getAuth() == null) {</span>
@@ -129,7 +129,7 @@ import java.io.IOException;
 <span class="fc" id="L129">        args[0] = auth.getUser();</span>
 <span class="fc" id="L130">        args[1] = auth.getAccount();</span>
 <span class="fc" id="L131">        args[2] = auth.getBaseDirectory();</span>
-        FtpFile file;
+        final FtpFile file;
         try {
 <span class="fc" id="L134">          file = transfer.getFtpFile();</span>
 <span class="nc" id="L135">        } catch (final FtpNoFileException e1) {</span>
@@ -152,317 +152,319 @@ import java.io.IOException;
           // Here the transfer is successful. If the file does not exist on disk
           // We create it : the transfered file was empty.
           try {
-<span class="fc" id="L155">            newfile.createNewFile();</span>
-<span class="nc" id="L156">          } catch (final IOException e) {</span>
-<span class="nc" id="L157">            throw new Reply421Exception(</span>
+<span class="pc bpc" id="L155" title="1 of 2 branches missed.">            if (!newfile.createNewFile()) {</span>
+<span class="fc" id="L156">              logger.error(&quot;Cannot create New Empty File&quot;);</span>
+            }
+<span class="nc" id="L158">          } catch (final IOException e) {</span>
+<span class="nc" id="L159">            throw new Reply421Exception(</span>
                 POST_EXECUTION_IN_ERROR_FOR_TRANSFER_SINCE_NO_FILE_FOUND);
-<span class="nc" id="L159">          } catch (final SecurityException e) {</span>
-<span class="nc" id="L160">            throw new Reply421Exception(</span>
+<span class="nc" id="L161">          } catch (final SecurityException e) {</span>
+<span class="nc" id="L162">            throw new Reply421Exception(</span>
                 POST_EXECUTION_IN_ERROR_FOR_TRANSFER_SINCE_NO_FILE_FOUND);
-<span class="fc" id="L162">          }</span>
+<span class="fc" id="L164">          }</span>
 
-<span class="pc bpc" id="L164" title="1 of 2 branches missed.">          if (!newfile.canRead()) {</span>
+<span class="pc bpc" id="L166" title="1 of 2 branches missed.">          if (!newfile.canRead()) {</span>
             // File cannot be sent
-<span class="nc" id="L166">            final String message =</span>
+<span class="nc" id="L168">            final String message =</span>
                 &quot;PostExecution in Error for Transfer since File is not readable: &quot; +
-<span class="nc" id="L168">                transfer.getCommand() + ' ' + newfile.getAbsolutePath() + ':' +</span>
-<span class="nc" id="L169">                newfile.canRead() + ' ' + transfer.getStatus() + ' ' +</span>
-<span class="nc" id="L170">                transfer.getPath();</span>
-<span class="nc" id="L171">            final CommandAbstractException exc = new Reply421Exception(</span>
+<span class="nc" id="L170">                transfer.getCommand() + ' ' + newfile.getAbsolutePath() + ':' +</span>
+<span class="nc" id="L171">                newfile.canRead() + ' ' + transfer.getStatus() + ' ' +</span>
+<span class="nc" id="L172">                transfer.getPath();</span>
+<span class="nc" id="L173">            final CommandAbstractException exc = new Reply421Exception(</span>
                 TRANSFER_DONE_BUT_FORCE_DISCONNECTION_SINCE_AN_ERROR_OCCURS_ON_POST_OPERATION);
-<span class="nc" id="L173">            WaarpActionLogger</span>
-<span class="nc" id="L174">                .logErrorAction(dbFtpSession, specialId, transfer, message,</span>
+<span class="nc" id="L175">            WaarpActionLogger</span>
+<span class="nc" id="L176">                .logErrorAction(dbFtpSession, specialId, transfer, message,</span>
                                 exc.code, this);
-<span class="nc" id="L176">            throw exc;</span>
+<span class="nc" id="L178">            throw exc;</span>
           }
-<span class="nc" id="L178">        } catch (final CommandAbstractException e1) {</span>
+<span class="nc" id="L180">        } catch (final CommandAbstractException e1) {</span>
           // File cannot be sent
-<span class="nc" id="L180">          final String message =</span>
+<span class="nc" id="L182">          final String message =</span>
               &quot;PostExecution in Error for Transfer since No File found: &quot; +
-<span class="nc" id="L182">              transfer.getCommand() + ' ' + transfer.getStatus() + ' ' +</span>
-<span class="nc" id="L183">              transfer.getPath();</span>
-<span class="nc" id="L184">          final CommandAbstractException exc = new Reply421Exception(</span>
+<span class="nc" id="L184">              transfer.getCommand() + ' ' + transfer.getStatus() + ' ' +</span>
+<span class="nc" id="L185">              transfer.getPath();</span>
+<span class="nc" id="L186">          final CommandAbstractException exc = new Reply421Exception(</span>
               TRANSFER_DONE_BUT_FORCE_DISCONNECTION_SINCE_AN_ERROR_OCCURS_ON_POST_OPERATION);
-<span class="nc" id="L186">          WaarpActionLogger</span>
-<span class="nc" id="L187">              .logErrorAction(dbFtpSession, specialId, transfer, message,</span>
+<span class="nc" id="L188">          WaarpActionLogger</span>
+<span class="nc" id="L189">              .logErrorAction(dbFtpSession, specialId, transfer, message,</span>
                               exc.code, this);
-<span class="nc" id="L189">          throw exc;</span>
-<span class="fc" id="L190">        }</span>
-<span class="fc" id="L191">        args[4] = transfer.getCommand().toString();</span>
-<span class="fc" id="L192">        args[5] = Long.toString(specialId);</span>
-<span class="fc" id="L193">        final AbstractExecutor executor = AbstractExecutor</span>
-<span class="fc" id="L194">            .createAbstractExecutor(auth, args, true, futureCompletion);</span>
-<span class="pc bpc" id="L195" title="1 of 2 branches missed.">        if (executor instanceof R66PreparedTransferExecutor) {</span>
-<span class="nc" id="L196">          ((R66PreparedTransferExecutor) executor).setDbsession(dbR66Session);</span>
+<span class="nc" id="L191">          throw exc;</span>
+<span class="fc" id="L192">        }</span>
+<span class="fc" id="L193">        args[4] = transfer.getCommand().toString();</span>
+<span class="fc" id="L194">        args[5] = Long.toString(specialId);</span>
+<span class="fc" id="L195">        final AbstractExecutor executor = AbstractExecutor</span>
+<span class="fc" id="L196">            .createAbstractExecutor(auth, args, true, futureCompletion);</span>
+<span class="pc bpc" id="L197" title="1 of 2 branches missed.">        if (executor instanceof R66PreparedTransferExecutor) {</span>
+<span class="nc" id="L198">          ((R66PreparedTransferExecutor) executor).setDbsession(dbR66Session);</span>
         }
-<span class="fc" id="L198">        executor.run();</span>
-<span class="fc" id="L199">        futureCompletion.awaitOrInterruptible();</span>
-<span class="pc bpc" id="L200" title="1 of 2 branches missed.">        if (futureCompletion.isSuccess()) {</span>
+<span class="fc" id="L200">        executor.run();</span>
+<span class="fc" id="L201">        futureCompletion.awaitOrInterruptible();</span>
+<span class="pc bpc" id="L202" title="1 of 2 branches missed.">        if (futureCompletion.isSuccess()) {</span>
           // All done
-<span class="fc" id="L202">          WaarpActionLogger</span>
-<span class="fc" id="L203">              .logAction(dbFtpSession, specialId, &quot;Post-Command executed: OK&quot;,</span>
-<span class="fc" id="L204">                         this, getFtpSession().getReplyCode(),</span>
+<span class="fc" id="L204">          WaarpActionLogger</span>
+<span class="fc" id="L205">              .logAction(dbFtpSession, specialId, &quot;Post-Command executed: OK&quot;,</span>
+<span class="fc" id="L206">                         this, getFtpSession().getReplyCode(),</span>
                          UpdatedInfo.RUNNING);
         } else {
           // File cannot be sent
-<span class="nc" id="L208">          final String message =</span>
-<span class="nc" id="L209">              &quot;PostExecution in Error for Transfer: &quot; + transfer.getCommand() +</span>
-<span class="nc" id="L210">              ' ' + transfer.getStatus() + ' ' + transfer.getPath() + &quot;\n   &quot; +</span>
-<span class="nc bnc" id="L211" title="All 2 branches missed.">              (futureCompletion.getCause() != null?</span>
-<span class="nc" id="L212">                  futureCompletion.getCause().getMessage() :</span>
+<span class="nc" id="L210">          final String message =</span>
+<span class="nc" id="L211">              &quot;PostExecution in Error for Transfer: &quot; + transfer.getCommand() +</span>
+<span class="nc" id="L212">              ' ' + transfer.getStatus() + ' ' + transfer.getPath() + &quot;\n   &quot; +</span>
+<span class="nc bnc" id="L213" title="All 2 branches missed.">              (futureCompletion.getCause() != null?</span>
+<span class="nc" id="L214">                  futureCompletion.getCause().getMessage() :</span>
                   &quot;Internal error of PostExecution&quot;);
-<span class="nc" id="L214">          final CommandAbstractException exc = new Reply421Exception(</span>
+<span class="nc" id="L216">          final CommandAbstractException exc = new Reply421Exception(</span>
               TRANSFER_DONE_BUT_FORCE_DISCONNECTION_SINCE_AN_ERROR_OCCURS_ON_POST_OPERATION);
-<span class="nc" id="L216">          WaarpActionLogger</span>
-<span class="nc" id="L217">              .logErrorAction(dbFtpSession, specialId, transfer, message,</span>
+<span class="nc" id="L218">          WaarpActionLogger</span>
+<span class="nc" id="L219">              .logErrorAction(dbFtpSession, specialId, transfer, message,</span>
                               exc.code, this);
-<span class="nc" id="L219">          throw exc;</span>
+<span class="nc" id="L221">          throw exc;</span>
         }
         break;
       default:
         // nothing to do
     }
-<span class="fc" id="L225">  }</span>
+<span class="fc" id="L227">  }</span>
 
   @Override
-  public void afterRunCommandKo(CommandAbstractException e) {
-<span class="nc" id="L229">    final String message =</span>
-<span class="nc" id="L230">        &quot;ExecHandler: KO: &quot; + getFtpSession() + ' ' + e.getMessage();</span>
-<span class="nc" id="L231">    final long specialId =</span>
-<span class="nc" id="L232">        ((FileBasedAuth) getFtpSession().getAuth()).getSpecialId();</span>
-<span class="nc" id="L233">    WaarpActionLogger</span>
-<span class="nc" id="L234">        .logErrorAction(dbFtpSession, specialId, null, message, e.code, this);</span>
-<span class="nc" id="L235">    ((FileBasedAuth) getFtpSession().getAuth())</span>
-<span class="nc" id="L236">        .setSpecialId(org.waarp.common.database.DbConstant.ILLEGALVALUE);</span>
-<span class="nc" id="L237">  }</span>
+  public void afterRunCommandKo(final CommandAbstractException e) {
+<span class="nc" id="L231">    final String message =</span>
+<span class="nc" id="L232">        &quot;ExecHandler: KO: &quot; + getFtpSession() + ' ' + e.getMessage();</span>
+<span class="nc" id="L233">    final long specialId =</span>
+<span class="nc" id="L234">        ((FileBasedAuth) getFtpSession().getAuth()).getSpecialId();</span>
+<span class="nc" id="L235">    WaarpActionLogger</span>
+<span class="nc" id="L236">        .logErrorAction(dbFtpSession, specialId, null, message, e.code, this);</span>
+<span class="nc" id="L237">    ((FileBasedAuth) getFtpSession().getAuth())</span>
+<span class="nc" id="L238">        .setSpecialId(org.waarp.common.database.DbConstant.ILLEGALVALUE);</span>
+<span class="nc" id="L239">  }</span>
 
   @Override
   public void afterRunCommandOk() throws CommandAbstractException {
-<span class="pc bpc" id="L241" title="1 of 4 branches missed.">    if (!(getFtpSession().getCurrentCommand() instanceof QUIT) &amp;&amp;</span>
+<span class="pc bpc" id="L243" title="1 of 4 branches missed.">    if (!(getFtpSession().getCurrentCommand() instanceof QUIT) &amp;&amp;</span>
         dbR66Session != null) {
-<span class="nc" id="L243">      final long specialId =</span>
-<span class="nc" id="L244">          ((FileBasedAuth) getFtpSession().getAuth()).getSpecialId();</span>
-<span class="nc" id="L245">      WaarpActionLogger.logAction(dbFtpSession, specialId,</span>
+<span class="nc" id="L245">      final long specialId =</span>
+<span class="nc" id="L246">          ((FileBasedAuth) getFtpSession().getAuth()).getSpecialId();</span>
+<span class="nc" id="L247">      WaarpActionLogger.logAction(dbFtpSession, specialId,</span>
                                   &quot;Transfer Command fully executed: OK&quot;, this,
-<span class="nc" id="L247">                                  getFtpSession().getReplyCode(),</span>
+<span class="nc" id="L249">                                  getFtpSession().getReplyCode(),</span>
                                   UpdatedInfo.DONE);
-<span class="nc" id="L249">      ((FileBasedAuth) getFtpSession().getAuth())</span>
-<span class="nc" id="L250">          .setSpecialId(org.waarp.common.database.DbConstant.ILLEGALVALUE);</span>
+<span class="nc" id="L251">      ((FileBasedAuth) getFtpSession().getAuth())</span>
+<span class="nc" id="L252">          .setSpecialId(org.waarp.common.database.DbConstant.ILLEGALVALUE);</span>
     }
-<span class="fc" id="L252">  }</span>
+<span class="fc" id="L254">  }</span>
 
   @Override
   public void beforeRunCommand() throws CommandAbstractException {
-<span class="fc" id="L256">    long specialId = org.waarp.common.database.DbConstant.ILLEGALVALUE;</span>
+<span class="fc" id="L258">    long specialId = org.waarp.common.database.DbConstant.ILLEGALVALUE;</span>
     // if Admin, do nothing
-<span class="pc bpc" id="L258" title="2 of 4 branches missed.">    if (getFtpSession() == null || getFtpSession().getAuth() == null) {</span>
-<span class="nc" id="L259">      return;</span>
+<span class="pc bpc" id="L260" title="2 of 4 branches missed.">    if (getFtpSession() == null || getFtpSession().getAuth() == null) {</span>
+<span class="nc" id="L261">      return;</span>
     }
-<span class="fc" id="L261">    final FileBasedAuth auth = (FileBasedAuth) getFtpSession().getAuth();</span>
-<span class="fc bfc" id="L262" title="All 2 branches covered.">    if (auth.isAdmin()) {</span>
-<span class="fc" id="L263">      logger.debug(&quot;Admin user so all actions are allowed&quot;);</span>
-<span class="fc" id="L264">      return;</span>
+<span class="fc" id="L263">    final FileBasedAuth auth = (FileBasedAuth) getFtpSession().getAuth();</span>
+<span class="fc bfc" id="L264" title="All 2 branches covered.">    if (auth.isAdmin()) {</span>
+<span class="fc" id="L265">      logger.debug(&quot;Admin user so all actions are allowed&quot;);</span>
+<span class="fc" id="L266">      return;</span>
     }
     // Test limits
-<span class="fc" id="L267">    final FtpConstraintLimitHandler constraints =</span>
-<span class="fc" id="L268">        ((FileBasedConfiguration) getFtpSession().getConfiguration())</span>
-<span class="fc" id="L269">            .getConstraintLimitHandler();</span>
-<span class="pc bpc" id="L270" title="1 of 2 branches missed.">    if (constraints != null) {</span>
-<span class="fc bfc" id="L271" title="All 2 branches covered.">      if (!auth.isIdentified()) {</span>
+<span class="fc" id="L269">    final FtpConstraintLimitHandler constraints =</span>
+<span class="fc" id="L270">        ((FileBasedConfiguration) getFtpSession().getConfiguration())</span>
+<span class="fc" id="L271">            .getConstraintLimitHandler();</span>
+<span class="pc bpc" id="L272" title="1 of 2 branches missed.">    if (constraints != null) {</span>
+<span class="fc bfc" id="L273" title="All 2 branches covered.">      if (!auth.isIdentified()) {</span>
         // ignore test since it can be an Admin connection
-<span class="pc bpc" id="L273" title="1 of 2 branches missed.">      } else if (auth.isAdmin()) {</span>
+<span class="pc bpc" id="L275" title="1 of 2 branches missed.">      } else if (auth.isAdmin()) {</span>
         // ignore test since it is an Admin connection (always valid)
-<span class="fc" id="L275">      } else if (!FtpCommandCode</span>
-<span class="fc bfc" id="L276" title="All 2 branches covered.">          .isSpecialCommand(getFtpSession().getCurrentCommand().getCode())) {</span>
+<span class="fc" id="L277">      } else if (!FtpCommandCode</span>
+<span class="fc bfc" id="L278" title="All 2 branches covered.">          .isSpecialCommand(getFtpSession().getCurrentCommand().getCode())) {</span>
         // Authenticated, not Admin and not Special Command
-<span class="pc bpc" id="L278" title="1 of 2 branches missed.">        if (constraints.checkConstraintsSleep(1)) {</span>
-<span class="nc bnc" id="L279" title="All 2 branches missed.">          if (constraints.checkConstraints()) {</span>
+<span class="pc bpc" id="L280" title="1 of 2 branches missed.">        if (constraints.checkConstraintsSleep(1)) {</span>
+<span class="nc bnc" id="L281" title="All 2 branches missed.">          if (constraints.checkConstraints()) {</span>
             // Really overload so refuse the command
-<span class="nc" id="L281">            logger</span>
-<span class="nc" id="L282">                .info(&quot;Server overloaded. {} Try later... \n&quot; + getFtpSession(),</span>
+<span class="nc" id="L283">            logger</span>
+<span class="nc" id="L284">                .info(&quot;Server overloaded. {} Try later... \n&quot; + getFtpSession(),</span>
                       constraints.lastAlert);
-<span class="nc bnc" id="L284" title="All 2 branches missed.">            if (FileBasedConfiguration.fileBasedConfiguration.getFtpMib() !=</span>
+<span class="nc bnc" id="L286" title="All 2 branches missed.">            if (FileBasedConfiguration.fileBasedConfiguration.getFtpMib() !=</span>
                 null) {
-<span class="nc" id="L286">              FileBasedConfiguration.fileBasedConfiguration.getFtpMib()</span>
-<span class="nc" id="L287">                                                           .notifyOverloaded(</span>
+<span class="nc" id="L288">              FileBasedConfiguration.fileBasedConfiguration.getFtpMib()</span>
+<span class="nc" id="L289">                                                           .notifyOverloaded(</span>
                                                                &quot;Server overloaded&quot;,
-<span class="nc" id="L289">                                                               getFtpSession()</span>
-<span class="nc" id="L290">                                                                   .toString());</span>
+<span class="nc" id="L291">                                                               getFtpSession()</span>
+<span class="nc" id="L292">                                                                   .toString());</span>
             }
-<span class="nc" id="L292">            throw new Reply451Exception(&quot;Server overloaded. Try later...&quot;);</span>
+<span class="nc" id="L294">            throw new Reply451Exception(&quot;Server overloaded. Try later...&quot;);</span>
           }
         }
       }
     }
-<span class="fc" id="L297">    final FtpCommandCode code = getFtpSession().getCurrentCommand().getCode();</span>
-<span class="fc" id="L298">    logger.debug(&quot;Checking action vs auth before command: {}&quot;, code);</span>
-<span class="fc bfc" id="L299" title="All 3 branches covered.">    switch (code) {</span>
+<span class="fc" id="L299">    final FtpCommandCode code = getFtpSession().getCurrentCommand().getCode();</span>
+<span class="fc" id="L300">    logger.debug(&quot;Checking action vs auth before command: {}&quot;, code);</span>
+<span class="fc bfc" id="L301" title="All 3 branches covered.">    switch (code) {</span>
       case APPE:
       case STOR:
       case STOU:
-<span class="fc" id="L303">        auth.setSpecialId(specialId);</span>
-<span class="pc bpc" id="L304" title="1 of 2 branches missed.">        if (!auth.getCommandExecutor().isValidOperation(true)) {</span>
-<span class="nc" id="L305">          throw new Reply504Exception(&quot;STORe like operations are not allowed&quot;);</span>
+<span class="fc" id="L305">        auth.setSpecialId(specialId);</span>
+<span class="pc bpc" id="L306" title="1 of 2 branches missed.">        if (!auth.getCommandExecutor().isValidOperation(true)) {</span>
+<span class="nc" id="L307">          throw new Reply504Exception(&quot;STORe like operations are not allowed&quot;);</span>
         }
         // create entry in log
-<span class="fc" id="L308">        specialId = WaarpActionLogger</span>
-<span class="fc" id="L309">            .logCreate(dbFtpSession, &quot;PrepareTransfer: OK&quot;,</span>
-<span class="fc" id="L310">                       getFtpSession().getCurrentCommand().getArg(), this);</span>
-<span class="fc" id="L311">        auth.setSpecialId(specialId);</span>
+<span class="fc" id="L310">        specialId = WaarpActionLogger</span>
+<span class="fc" id="L311">            .logCreate(dbFtpSession, &quot;PrepareTransfer: OK&quot;,</span>
+<span class="fc" id="L312">                       getFtpSession().getCurrentCommand().getArg(), this);</span>
+<span class="fc" id="L313">        auth.setSpecialId(specialId);</span>
         // nothing to do now
-<span class="fc" id="L313">        break;</span>
+<span class="fc" id="L315">        break;</span>
       case RETR:
-<span class="fc" id="L315">        auth.setSpecialId(specialId);</span>
-<span class="pc bpc" id="L316" title="1 of 2 branches missed.">        if (!auth.getCommandExecutor().isValidOperation(false)) {</span>
-<span class="nc" id="L317">          throw new Reply504Exception(</span>
+<span class="fc" id="L317">        auth.setSpecialId(specialId);</span>
+<span class="pc bpc" id="L318" title="1 of 2 branches missed.">        if (!auth.getCommandExecutor().isValidOperation(false)) {</span>
+<span class="nc" id="L319">          throw new Reply504Exception(</span>
               &quot;RETRieve like operations are not allowed&quot;);
         }
         // create entry in log
-<span class="fc" id="L321">        specialId = WaarpActionLogger</span>
-<span class="fc" id="L322">            .logCreate(dbFtpSession, &quot;PrepareTransfer: OK&quot;,</span>
-<span class="fc" id="L323">                       getFtpSession().getCurrentCommand().getArg(), this);</span>
-<span class="fc" id="L324">        auth.setSpecialId(specialId);</span>
+<span class="fc" id="L323">        specialId = WaarpActionLogger</span>
+<span class="fc" id="L324">            .logCreate(dbFtpSession, &quot;PrepareTransfer: OK&quot;,</span>
+<span class="fc" id="L325">                       getFtpSession().getCurrentCommand().getArg(), this);</span>
+<span class="fc" id="L326">        auth.setSpecialId(specialId);</span>
         // execute the external retrieve command before the execution of RETR
-<span class="fc" id="L326">        final WaarpFuture futureCompletion = new WaarpFuture(true);</span>
-<span class="fc" id="L327">        final String[] args = new String[6];</span>
-<span class="fc" id="L328">        args[0] = auth.getUser();</span>
-<span class="fc" id="L329">        args[1] = auth.getAccount();</span>
-<span class="fc" id="L330">        args[2] = auth.getBaseDirectory();</span>
-<span class="fc" id="L331">        final String filename = getFtpSession().getCurrentCommand().getArg();</span>
-<span class="fc" id="L332">        final FtpFile file = getFtpSession().getDir().setFile(filename, false);</span>
-<span class="fc" id="L333">        args[3] = file.getFile();</span>
-<span class="fc" id="L334">        args[4] = code.toString();</span>
-<span class="fc" id="L335">        args[5] = Long.toString(specialId);</span>
-<span class="fc" id="L336">        final AbstractExecutor executor = AbstractExecutor</span>
-<span class="fc" id="L337">            .createAbstractExecutor(auth, args, false, futureCompletion);</span>
-<span class="pc bpc" id="L338" title="1 of 2 branches missed.">        if (executor instanceof R66PreparedTransferExecutor) {</span>
-<span class="nc" id="L339">          ((R66PreparedTransferExecutor) executor).setDbsession(dbR66Session);</span>
+<span class="fc" id="L328">        final WaarpFuture futureCompletion = new WaarpFuture(true);</span>
+<span class="fc" id="L329">        final String[] args = new String[6];</span>
+<span class="fc" id="L330">        args[0] = auth.getUser();</span>
+<span class="fc" id="L331">        args[1] = auth.getAccount();</span>
+<span class="fc" id="L332">        args[2] = auth.getBaseDirectory();</span>
+<span class="fc" id="L333">        final String filename = getFtpSession().getCurrentCommand().getArg();</span>
+<span class="fc" id="L334">        final FtpFile file = getFtpSession().getDir().setFile(filename, false);</span>
+<span class="fc" id="L335">        args[3] = file.getFile();</span>
+<span class="fc" id="L336">        args[4] = code.toString();</span>
+<span class="fc" id="L337">        args[5] = Long.toString(specialId);</span>
+<span class="fc" id="L338">        final AbstractExecutor executor = AbstractExecutor</span>
+<span class="fc" id="L339">            .createAbstractExecutor(auth, args, false, futureCompletion);</span>
+<span class="pc bpc" id="L340" title="1 of 2 branches missed.">        if (executor instanceof R66PreparedTransferExecutor) {</span>
+<span class="nc" id="L341">          ((R66PreparedTransferExecutor) executor).setDbsession(dbR66Session);</span>
         }
-<span class="fc" id="L341">        executor.run();</span>
-<span class="fc" id="L342">        futureCompletion.awaitOrInterruptible();</span>
-<span class="pc bpc" id="L343" title="1 of 2 branches missed.">        if (futureCompletion.isSuccess()) {</span>
+<span class="fc" id="L343">        executor.run();</span>
+<span class="fc" id="L344">        futureCompletion.awaitOrInterruptible();</span>
+<span class="pc bpc" id="L345" title="1 of 2 branches missed.">        if (futureCompletion.isSuccess()) {</span>
           // File should be ready
-<span class="pc bpc" id="L345" title="1 of 2 branches missed.">          if (!file.canRead()) {</span>
-<span class="nc" id="L346">            logger.error(&quot;PreExecution in Error for Transfer since &quot; +</span>
+<span class="pc bpc" id="L347" title="1 of 2 branches missed.">          if (!file.canRead()) {</span>
+<span class="nc" id="L348">            logger.error(&quot;PreExecution in Error for Transfer since &quot; +</span>
                          &quot;File downloaded but not ready to be retrieved: {} &quot; +
-<span class="nc bnc" id="L348" title="All 2 branches missed.">                         &quot; {} \n   &quot; + (futureCompletion.getCause() != null?</span>
-<span class="nc" id="L349">                             futureCompletion.getCause().getMessage() :</span>
+<span class="nc bnc" id="L350" title="All 2 branches missed.">                         &quot; {} \n   &quot; + (futureCompletion.getCause() != null?</span>
+<span class="nc" id="L351">                             futureCompletion.getCause().getMessage() :</span>
                              &quot;File downloaded but not ready to be retrieved&quot;), args[4],
                          args[3]);
-<span class="nc" id="L352">            throw new Reply421Exception(</span>
+<span class="nc" id="L354">            throw new Reply421Exception(</span>
                 &quot;File downloaded but not ready to be retrieved&quot;);
           }
-<span class="fc" id="L355">          WaarpActionLogger</span>
-<span class="fc" id="L356">              .logAction(dbFtpSession, specialId, &quot;Pre-Command executed: OK&quot;,</span>
-<span class="fc" id="L357">                         this, getFtpSession().getReplyCode(),</span>
+<span class="fc" id="L357">          WaarpActionLogger</span>
+<span class="fc" id="L358">              .logAction(dbFtpSession, specialId, &quot;Pre-Command executed: OK&quot;,</span>
+<span class="fc" id="L359">                         this, getFtpSession().getReplyCode(),</span>
                          UpdatedInfo.RUNNING);
         } else {
           // File cannot be retrieved
-<span class="nc" id="L361">          logger.error(&quot;PreExecution in Error for Transfer since &quot; +</span>
+<span class="nc" id="L363">          logger.error(&quot;PreExecution in Error for Transfer since &quot; +</span>
                        &quot;File cannot be prepared to be retrieved: {} &quot; +
-<span class="nc bnc" id="L363" title="All 2 branches missed.">                       &quot; {} \n   &quot; + (futureCompletion.getCause() != null?</span>
-<span class="nc" id="L364">              futureCompletion.getCause().getMessage() :</span>
+<span class="nc bnc" id="L365" title="All 2 branches missed.">                       &quot; {} \n   &quot; + (futureCompletion.getCause() != null?</span>
+<span class="nc" id="L366">              futureCompletion.getCause().getMessage() :</span>
               &quot;File cannot be prepared to be retrieved&quot;), args[4], args[3]);
-<span class="nc" id="L366">          throw new Reply421Exception(</span>
+<span class="nc" id="L368">          throw new Reply421Exception(</span>
               &quot;File cannot be prepared to be retrieved&quot;);
         }
         break;
       default:
         // nothing to do
     }
-<span class="fc" id="L373">  }</span>
+<span class="fc" id="L375">  }</span>
 
   @Override
   protected void cleanSession() {
     // Nothing
-<span class="fc" id="L378">  }</span>
+<span class="fc" id="L380">  }</span>
 
   @Override
-  public void exceptionLocalCaught(Throwable cause) {
-<span class="nc bnc" id="L382" title="All 2 branches missed.">    if (FileBasedConfiguration.fileBasedConfiguration.getFtpMib() != null) {</span>
-      String mesg;
-<span class="nc bnc" id="L384" title="All 4 branches missed.">      if (cause != null &amp;&amp; cause.getMessage() != null) {</span>
-<span class="nc" id="L385">        mesg = cause.getMessage();</span>
+  public void exceptionLocalCaught(final Throwable cause) {
+<span class="nc bnc" id="L384" title="All 2 branches missed.">    if (FileBasedConfiguration.fileBasedConfiguration.getFtpMib() != null) {</span>
+      final String mesg;
+<span class="nc bnc" id="L386" title="All 4 branches missed.">      if (cause != null &amp;&amp; cause.getMessage() != null) {</span>
+<span class="nc" id="L387">        mesg = cause.getMessage();</span>
       } else {
-<span class="nc bnc" id="L387" title="All 2 branches missed.">        if (getFtpSession() != null) {</span>
-<span class="nc" id="L388">          mesg = &quot;Exception while &quot; + getFtpSession().getReplyCode().getMesg();</span>
+<span class="nc bnc" id="L389" title="All 2 branches missed.">        if (getFtpSession() != null) {</span>
+<span class="nc" id="L390">          mesg = &quot;Exception while &quot; + getFtpSession().getReplyCode().getMesg();</span>
         } else {
-<span class="nc" id="L390">          mesg = &quot;Unknown Exception&quot;;</span>
+<span class="nc" id="L392">          mesg = &quot;Unknown Exception&quot;;</span>
         }
       }
-<span class="nc" id="L393">      FileBasedConfiguration.fileBasedConfiguration.getFtpMib().notifyError(</span>
+<span class="nc" id="L395">      FileBasedConfiguration.fileBasedConfiguration.getFtpMib().notifyError(</span>
           &quot;Exception trapped&quot;, mesg);
     }
-<span class="nc bnc" id="L396" title="All 2 branches missed.">    if (FileBasedConfiguration.fileBasedConfiguration.getMonitoring() != null) {</span>
-<span class="nc bnc" id="L397" title="All 2 branches missed.">      if (getFtpSession() != null) {</span>
-<span class="nc" id="L398">        FileBasedConfiguration.fileBasedConfiguration.getMonitoring()</span>
-<span class="nc" id="L399">                                                     .updateCodeNoTransfer(</span>
-<span class="nc" id="L400">                                                         getFtpSession()</span>
-<span class="nc" id="L401">                                                             .getReplyCode());</span>
+<span class="nc bnc" id="L398" title="All 2 branches missed.">    if (FileBasedConfiguration.fileBasedConfiguration.getMonitoring() != null) {</span>
+<span class="nc bnc" id="L399" title="All 2 branches missed.">      if (getFtpSession() != null) {</span>
+<span class="nc" id="L400">        FileBasedConfiguration.fileBasedConfiguration.getMonitoring()</span>
+<span class="nc" id="L401">                                                     .updateCodeNoTransfer(</span>
+<span class="nc" id="L402">                                                         getFtpSession()</span>
+<span class="nc" id="L403">                                                             .getReplyCode());</span>
       }
     }
-<span class="nc" id="L404">  }</span>
+<span class="nc" id="L406">  }</span>
 
   @Override
   public void executeChannelClosed() {
-<span class="pc bpc" id="L408" title="5 of 6 branches missed.">    if (AbstractExecutor.useDatabase &amp;&amp; !internalDb &amp;&amp; dbR66Session != null) {</span>
-<span class="nc" id="L409">      dbR66Session.disconnect();</span>
-<span class="nc" id="L410">      dbR66Session = null;</span>
+<span class="pc bpc" id="L410" title="5 of 6 branches missed.">    if (AbstractExecutor.useDatabase &amp;&amp; !internalDb &amp;&amp; dbR66Session != null) {</span>
+<span class="nc" id="L411">      dbR66Session.disconnect();</span>
+<span class="nc" id="L412">      dbR66Session = null;</span>
     }
-<span class="pc bpc" id="L412" title="1 of 2 branches missed.">    if (dbFtpSession != null) {</span>
-<span class="fc" id="L413">      dbFtpSession.disconnect();</span>
-<span class="fc" id="L414">      dbFtpSession = null;</span>
+<span class="pc bpc" id="L414" title="1 of 2 branches missed.">    if (dbFtpSession != null) {</span>
+<span class="fc" id="L415">      dbFtpSession.disconnect();</span>
+<span class="fc" id="L416">      dbFtpSession = null;</span>
     }
-<span class="fc" id="L416">  }</span>
+<span class="fc" id="L418">  }</span>
 
   @Override
-  public void executeChannelConnected(Channel channel) {
-<span class="pc bpc" id="L420" title="1 of 2 branches missed.">    if (AbstractExecutor.useDatabase) {</span>
-<span class="nc bnc" id="L421" title="All 2 branches missed.">      if (org.waarp.common.database.DbConstant.admin != null) {</span>
+  public void executeChannelConnected(final Channel channel) {
+<span class="pc bpc" id="L422" title="1 of 2 branches missed.">    if (AbstractExecutor.useDatabase) {</span>
+<span class="nc bnc" id="L423" title="All 2 branches missed.">      if (org.waarp.common.database.DbConstant.admin != null) {</span>
         try {
-<span class="nc" id="L423">          dbR66Session =</span>
+<span class="nc" id="L425">          dbR66Session =</span>
               new DbSession(org.waarp.common.database.DbConstant.admin, false);
-<span class="nc" id="L425">        } catch (final WaarpDatabaseNoConnectionException e1) {</span>
-<span class="nc" id="L426">          logger.warn(&quot;Database not ready due to {}&quot;, e1.getMessage());</span>
-<span class="nc" id="L427">          final QUIT command = (QUIT) FtpCommandCode</span>
-<span class="nc" id="L428">              .getFromLine(getFtpSession(), FtpCommandCode.QUIT.name());</span>
-<span class="nc" id="L429">          getFtpSession().setNextCommand(command);</span>
-<span class="nc" id="L430">          dbR66Session = null;</span>
-<span class="nc" id="L431">          internalDb = true;</span>
-<span class="nc" id="L432">        }</span>
+<span class="nc" id="L427">        } catch (final WaarpDatabaseNoConnectionException e1) {</span>
+<span class="nc" id="L428">          logger.warn(&quot;Database not ready due to {}&quot;, e1.getMessage());</span>
+<span class="nc" id="L429">          final QUIT command = (QUIT) FtpCommandCode</span>
+<span class="nc" id="L430">              .getFromLine(getFtpSession(), FtpCommandCode.QUIT.name());</span>
+<span class="nc" id="L431">          getFtpSession().setNextCommand(command);</span>
+<span class="nc" id="L432">          dbR66Session = null;</span>
+<span class="nc" id="L433">          internalDb = true;</span>
+<span class="nc" id="L434">        }</span>
       }
     }
-<span class="pc bpc" id="L435" title="1 of 2 branches missed.">    if (DbConstantFtp.gatewayAdmin != null) {</span>
+<span class="pc bpc" id="L437" title="1 of 2 branches missed.">    if (DbConstantFtp.gatewayAdmin != null) {</span>
       try {
-<span class="fc" id="L437">        dbFtpSession = new DbSession(DbConstantFtp.gatewayAdmin, false);</span>
-<span class="nc" id="L438">      } catch (final WaarpDatabaseNoConnectionException e1) {</span>
-<span class="nc" id="L439">        logger.warn(&quot;Database not ready due to {}&quot;, e1.getMessage());</span>
-<span class="nc" id="L440">        final QUIT command = (QUIT) FtpCommandCode</span>
-<span class="nc" id="L441">            .getFromLine(getFtpSession(), FtpCommandCode.QUIT.name());</span>
-<span class="nc" id="L442">        getFtpSession().setNextCommand(command);</span>
-<span class="nc" id="L443">        dbFtpSession = null;</span>
-<span class="fc" id="L444">      }</span>
+<span class="fc" id="L439">        dbFtpSession = new DbSession(DbConstantFtp.gatewayAdmin, false);</span>
+<span class="nc" id="L440">      } catch (final WaarpDatabaseNoConnectionException e1) {</span>
+<span class="nc" id="L441">        logger.warn(&quot;Database not ready due to {}&quot;, e1.getMessage());</span>
+<span class="nc" id="L442">        final QUIT command = (QUIT) FtpCommandCode</span>
+<span class="nc" id="L443">            .getFromLine(getFtpSession(), FtpCommandCode.QUIT.name());</span>
+<span class="nc" id="L444">        getFtpSession().setNextCommand(command);</span>
+<span class="nc" id="L445">        dbFtpSession = null;</span>
+<span class="fc" id="L446">      }</span>
     }
-<span class="fc" id="L446">  }</span>
+<span class="fc" id="L448">  }</span>
 
   @Override
   public FileBasedAuth getBusinessNewAuth() {
-<span class="fc" id="L450">    return new FileBasedAuth(getFtpSession());</span>
+<span class="fc" id="L452">    return new FileBasedAuth(getFtpSession());</span>
   }
 
   @Override
   public FileBasedDir getBusinessNewDir() {
-<span class="fc" id="L455">    return new FileBasedDir(getFtpSession());</span>
+<span class="fc" id="L457">    return new FileBasedDir(getFtpSession());</span>
   }
 
   @Override
   public FilesystemBasedFtpRestart getBusinessNewRestart() {
-<span class="fc" id="L460">    return new FilesystemBasedFtpRestart(getFtpSession());</span>
+<span class="fc" id="L462">    return new FilesystemBasedFtpRestart(getFtpSession());</span>
   }
 
   @Override
-  public String getHelpMessage(String arg) {
-<span class="nc" id="L465">    return</span>
+  public String getHelpMessage(final String arg) {
+<span class="nc" id="L467">    return</span>
         &quot;This FTP server is only intend as a Gateway. RETRieve actions may be unallowed.\n&quot; +
         &quot;This FTP server refers to RFC 959, 775, 2389, 2428, 3659 and &quot; +
         &quot;supports XDIGEST, XCRC, XMD5 and XSHA1 commands.\n&quot; +
@@ -474,61 +476,62 @@ import java.io.IOException;
 
   @Override
   public String getFeatMessage() {
-<span class="fc" id="L477">    final StringBuilder builder =</span>
-<span class="fc" id="L478">        new StringBuilder(&quot;Extensions supported:&quot;).append('\n').append(</span>
-<span class="fc" id="L479">            getDefaultFeatMessage());</span>
-<span class="fc" id="L480">    if (getFtpSession().getConfiguration().getFtpInternalConfiguration()</span>
-<span class="pc bpc" id="L481" title="1 of 2 branches missed.">                       .isAcceptAuthProt()) {</span>
-<span class="nc" id="L482">      builder.append('\n').append(getSslFeatMessage());</span>
+<span class="fc" id="L479">    final StringBuilder builder =</span>
+<span class="fc" id="L480">        new StringBuilder(&quot;Extensions supported:&quot;).append('\n').append(</span>
+<span class="fc" id="L481">            getDefaultFeatMessage());</span>
+<span class="fc" id="L482">    if (getFtpSession().getConfiguration().getFtpInternalConfiguration()</span>
+<span class="pc bpc" id="L483" title="1 of 2 branches missed.">                       .isAcceptAuthProt()) {</span>
+<span class="nc" id="L484">      builder.append('\n').append(getSslFeatMessage());</span>
     }
-<span class="fc" id="L484">    builder.append('\n').append(FtpCommandCode.SITE.name()).append(' ')</span>
-<span class="fc" id="L485">           .append(&quot;AUTHUPDATE&quot;).append(&quot;\nEnd&quot;);</span>
-<span class="fc" id="L486">    return builder.toString();</span>
+<span class="fc" id="L486">    builder.append('\n').append(FtpCommandCode.SITE.name()).append(' ')</span>
+<span class="fc" id="L487">           .append(&quot;AUTHUPDATE&quot;).append(&quot;\nEnd&quot;);</span>
+<span class="fc" id="L488">    return builder.toString();</span>
   }
 
   @Override
-  public String getOptsMessage(String[] args) throws CommandAbstractException {
-<span class="nc bnc" id="L491" title="All 2 branches missed.">    if (args.length &gt; 0) {</span>
-<span class="nc bnc" id="L492" title="All 2 branches missed.">      if (args[0].equalsIgnoreCase(FtpCommandCode.MLST.name()) ||</span>
-<span class="nc bnc" id="L493" title="All 2 branches missed.">          args[0].equalsIgnoreCase(FtpCommandCode.MLSD.name())) {</span>
-<span class="nc" id="L494">        return getMLSxOptsMessage(args);</span>
+  public String getOptsMessage(final String[] args)
+      throws CommandAbstractException {
+<span class="nc bnc" id="L494" title="All 2 branches missed.">    if (args.length &gt; 0) {</span>
+<span class="nc bnc" id="L495" title="All 2 branches missed.">      if (args[0].equalsIgnoreCase(FtpCommandCode.MLST.name()) ||</span>
+<span class="nc bnc" id="L496" title="All 2 branches missed.">          args[0].equalsIgnoreCase(FtpCommandCode.MLSD.name())) {</span>
+<span class="nc" id="L497">        return getMLSxOptsMessage(args);</span>
       }
-<span class="nc" id="L496">      throw new Reply502Exception(&quot;OPTS not implemented for &quot; + args[0]);</span>
+<span class="nc" id="L499">      throw new Reply502Exception(&quot;OPTS not implemented for &quot; + args[0]);</span>
     }
-<span class="nc" id="L498">    throw new Reply502Exception(&quot;OPTS not implemented&quot;);</span>
+<span class="nc" id="L501">    throw new Reply502Exception(&quot;OPTS not implemented&quot;);</span>
   }
 
   @Override
-  public AbstractCommand getSpecializedSiteCommand(FtpSession session,
-                                                   String line) {
-<span class="pc bpc" id="L504" title="2 of 4 branches missed.">    if (getFtpSession() == null || getFtpSession().getAuth() == null) {</span>
-<span class="nc" id="L505">      return null;</span>
+  public AbstractCommand getSpecializedSiteCommand(final FtpSession session,
+                                                   final String line) {
+<span class="pc bpc" id="L507" title="2 of 4 branches missed.">    if (getFtpSession() == null || getFtpSession().getAuth() == null) {</span>
+<span class="nc" id="L508">      return null;</span>
     }
-<span class="fc bfc" id="L507" title="All 2 branches covered.">    if (!session.getAuth().isAdmin()) {</span>
-<span class="fc" id="L508">      return null;</span>
+<span class="fc bfc" id="L510" title="All 2 branches covered.">    if (!session.getAuth().isAdmin()) {</span>
+<span class="fc" id="L511">      return null;</span>
     }
-<span class="pc bpc" id="L510" title="1 of 2 branches missed.">    if (line == null) {</span>
-<span class="nc" id="L511">      return null;</span>
+<span class="pc bpc" id="L513" title="1 of 2 branches missed.">    if (line == null) {</span>
+<span class="nc" id="L514">      return null;</span>
     }
-    String command;
+    final String command;
     String arg;
-<span class="pc bpc" id="L515" title="1 of 2 branches missed.">    if (line.indexOf(' ') == -1) {</span>
-<span class="nc" id="L516">      command = line;</span>
-<span class="nc" id="L517">      arg = null;</span>
+<span class="pc bpc" id="L518" title="1 of 2 branches missed.">    if (line.indexOf(' ') == -1) {</span>
+<span class="nc" id="L519">      command = line;</span>
+<span class="nc" id="L520">      arg = null;</span>
     } else {
-<span class="fc" id="L519">      command = line.substring(0, line.indexOf(' '));</span>
-<span class="fc" id="L520">      arg = line.substring(line.indexOf(' ') + 1);</span>
-<span class="pc bpc" id="L521" title="1 of 2 branches missed.">      if (arg.length() == 0) {</span>
-<span class="nc" id="L522">        arg = null;</span>
+<span class="fc" id="L522">      command = line.substring(0, line.indexOf(' '));</span>
+<span class="fc" id="L523">      arg = line.substring(line.indexOf(' ') + 1);</span>
+<span class="pc bpc" id="L524" title="1 of 2 branches missed.">      if (arg.length() == 0) {</span>
+<span class="nc" id="L525">        arg = null;</span>
       }
     }
-<span class="fc" id="L525">    final String COMMAND = command.toUpperCase();</span>
-<span class="pc bpc" id="L526" title="1 of 2 branches missed.">    if (!&quot;AUTHUPDATE&quot;.equals(COMMAND)) {</span>
-<span class="fc" id="L527">      return null;</span>
+<span class="fc" id="L528">    final String COMMAND = command.toUpperCase();</span>
+<span class="pc bpc" id="L529" title="1 of 2 branches missed.">    if (!&quot;AUTHUPDATE&quot;.equals(COMMAND)) {</span>
+<span class="fc" id="L530">      return null;</span>
     }
-<span class="nc" id="L529">    final AbstractCommand abstractCommand = new AUTHUPDATE();</span>
-<span class="nc" id="L530">    abstractCommand.setArgs(session, COMMAND, arg, FtpCommandCode.SITE);</span>
-<span class="nc" id="L531">    return abstractCommand;</span>
+<span class="nc" id="L532">    final AbstractCommand abstractCommand = new AUTHUPDATE();</span>
+<span class="nc" id="L533">    abstractCommand.setArgs(session, COMMAND, arg, FtpCommandCode.SITE);</span>
+<span class="nc" id="L534">    return abstractCommand;</span>
   }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

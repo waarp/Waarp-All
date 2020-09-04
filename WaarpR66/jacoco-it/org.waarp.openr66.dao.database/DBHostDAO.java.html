@@ -20,8 +20,6 @@
 
 package org.waarp.openr66.dao.database;
 
-import org.waarp.common.logging.WaarpLogger;
-import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.openr66.dao.HostDAO;
 import org.waarp.openr66.dao.exception.DAOConnectionException;
 import org.waarp.openr66.pojo.Host;
@@ -35,9 +33,6 @@ import java.sql.SQLException;
  * Implementation of HostDAO for standard SQL databases
  */
 public class DBHostDAO extends StatementExecutor&lt;Host&gt; implements HostDAO {
-
-<span class="fc" id="L39">  private static final WaarpLogger logger =</span>
-<span class="fc" id="L40">      WaarpLoggerFactory.getLogger(DBHostDAO.class);</span>
 
   protected static final String TABLE = &quot;hosts&quot;;
 
@@ -54,12 +49,12 @@ public class DBHostDAO extends StatementExecutor&lt;Host&gt; implements HostDAO 
 
   protected static final String SQL_DELETE_ALL = &quot;DELETE FROM &quot; + TABLE;
   protected static final String SQL_DELETE =
-      &quot;DELETE FROM &quot; + TABLE + &quot; WHERE &quot; + HOSTID_FIELD + &quot; = ?&quot;;
+      &quot;DELETE FROM &quot; + TABLE + WHERE + HOSTID_FIELD + PARAMETER;
   protected static final String SQL_GET_ALL = &quot;SELECT * FROM &quot; + TABLE;
   protected static final String SQL_EXIST =
-      &quot;SELECT 1 FROM &quot; + TABLE + &quot; WHERE &quot; + HOSTID_FIELD + &quot; = ?&quot;;
+      &quot;SELECT 1 FROM &quot; + TABLE + WHERE + HOSTID_FIELD + PARAMETER;
   protected static final String SQL_SELECT =
-      &quot;SELECT * FROM &quot; + TABLE + &quot; WHERE &quot; + HOSTID_FIELD + &quot; = ?&quot;;
+      &quot;SELECT * FROM &quot; + TABLE + WHERE + HOSTID_FIELD + PARAMETER;
   protected static final String SQL_INSERT =
       &quot;INSERT INTO &quot; + TABLE + &quot; (&quot; + HOSTID_FIELD + &quot;, &quot; + ADDRESS_FIELD +
       &quot;, &quot; + PORT_FIELD + &quot;, &quot; + IS_SSL_FIELD + &quot;, &quot; + IS_CLIENT_FIELD + &quot;, &quot; +
@@ -67,86 +62,86 @@ public class DBHostDAO extends StatementExecutor&lt;Host&gt; implements HostDAO 
       &quot;, &quot; + ADMINROLE_FIELD + &quot;, &quot; + UPDATED_INFO_FIELD +
       &quot;) VALUES (?,?,?,?,?,?,?,?,?,?)&quot;;
   protected static final String SQL_UPDATE =
-      &quot;UPDATE &quot; + TABLE + &quot; SET &quot; + HOSTID_FIELD + &quot; = ?, &quot; + ADDRESS_FIELD +
-      &quot; = ?, &quot; + PORT_FIELD + &quot; = ?, &quot; + IS_SSL_FIELD + &quot; = ?, &quot; +
-      IS_CLIENT_FIELD + &quot; = ?, &quot; + IS_ACTIVE_FIELD + &quot; = ?, &quot; +
-      IS_PROXIFIED_FIELD + &quot; = ?, &quot; + HOSTKEY_FIELD + &quot; = ?, &quot; +
-      ADMINROLE_FIELD + &quot; = ?, &quot; + UPDATED_INFO_FIELD + &quot; = ? WHERE &quot; +
-      HOSTID_FIELD + &quot; = ?&quot;;
+      &quot;UPDATE &quot; + TABLE + &quot; SET &quot; + HOSTID_FIELD + PARAMETER_COMMA +
+      ADDRESS_FIELD + PARAMETER_COMMA + PORT_FIELD + PARAMETER_COMMA +
+      IS_SSL_FIELD + PARAMETER_COMMA + IS_CLIENT_FIELD + PARAMETER_COMMA +
+      IS_ACTIVE_FIELD + PARAMETER_COMMA + IS_PROXIFIED_FIELD + PARAMETER_COMMA +
+      HOSTKEY_FIELD + PARAMETER_COMMA + ADMINROLE_FIELD + PARAMETER_COMMA +
+      UPDATED_INFO_FIELD + &quot; = ? WHERE &quot; + HOSTID_FIELD + PARAMETER;
 
 
-  public DBHostDAO(Connection con) throws DAOConnectionException {
-<span class="fc" id="L79">    super(con);</span>
-<span class="fc" id="L80">  }</span>
+  public DBHostDAO(final Connection con) throws DAOConnectionException {
+<span class="fc" id="L74">    super(con);</span>
+<span class="fc" id="L75">  }</span>
 
   @Override
   protected String getId(final Host e1) {
-<span class="nc" id="L84">    return e1.getHostid();</span>
+<span class="nc" id="L79">    return e1.getHostid();</span>
   }
 
   @Override
   protected String getSelectRequest() {
-<span class="fc" id="L89">    return SQL_SELECT;</span>
+<span class="fc" id="L84">    return SQL_SELECT;</span>
   }
 
   @Override
   protected String getGetAllRequest() {
-<span class="fc" id="L94">    return SQL_GET_ALL;</span>
+<span class="fc" id="L89">    return SQL_GET_ALL;</span>
   }
 
   @Override
   protected String getExistRequest() {
-<span class="fc" id="L99">    return SQL_EXIST;</span>
+<span class="fc" id="L94">    return SQL_EXIST;</span>
   }
 
   @Override
   protected Object[] getInsertValues(final Host host) {
-<span class="fc" id="L104">    return new Object[] {</span>
-<span class="fc" id="L105">        host.getHostid(), host.getAddress(), host.getPort(), host.isSSL(),</span>
-<span class="fc" id="L106">        host.isClient(), host.isActive(), host.isProxified(), host.getHostkey(),</span>
-<span class="fc" id="L107">        host.isAdmin(), host.getUpdatedInfo().ordinal()</span>
+<span class="fc" id="L99">    return new Object[] {</span>
+<span class="fc" id="L100">        host.getHostid(), host.getAddress(), host.getPort(), host.isSSL(),</span>
+<span class="fc" id="L101">        host.isClient(), host.isActive(), host.isProxified(), host.getHostkey(),</span>
+<span class="fc" id="L102">        host.isAdmin(), host.getUpdatedInfo().ordinal()</span>
     };
   }
 
   @Override
   protected String getInsertRequest() {
-<span class="fc" id="L113">    return SQL_INSERT;</span>
+<span class="fc" id="L108">    return SQL_INSERT;</span>
   }
 
   @Override
   protected Object[] getUpdateValues(final Host host) {
-<span class="fc" id="L118">    return new Object[] {</span>
-<span class="fc" id="L119">        host.getHostid(), host.getAddress(), host.getPort(), host.isSSL(),</span>
-<span class="fc" id="L120">        host.isClient(), host.isActive(), host.isProxified(), host.getHostkey(),</span>
-<span class="fc" id="L121">        host.isAdmin(), host.getUpdatedInfo().ordinal(), host.getHostid()</span>
+<span class="fc" id="L113">    return new Object[] {</span>
+<span class="fc" id="L114">        host.getHostid(), host.getAddress(), host.getPort(), host.isSSL(),</span>
+<span class="fc" id="L115">        host.isClient(), host.isActive(), host.isProxified(), host.getHostkey(),</span>
+<span class="fc" id="L116">        host.isAdmin(), host.getUpdatedInfo().ordinal(), host.getHostid()</span>
     };
   }
 
   @Override
   protected String getUpdateRequest() {
-<span class="fc" id="L127">    return SQL_UPDATE;</span>
+<span class="fc" id="L122">    return SQL_UPDATE;</span>
   }
 
   @Override
   protected String getDeleteRequest() {
-<span class="nc" id="L132">    return SQL_DELETE;</span>
+<span class="nc" id="L127">    return SQL_DELETE;</span>
   }
 
   @Override
   protected String getDeleteAllRequest() {
-<span class="nc" id="L137">    return SQL_DELETE_ALL;</span>
+<span class="nc" id="L132">    return SQL_DELETE_ALL;</span>
   }
 
   @Override
-  public Host getFromResultSet(ResultSet set) throws SQLException {
-<span class="fc" id="L142">    return new Host(set.getString(HOSTID_FIELD), set.getString(ADDRESS_FIELD),</span>
-<span class="fc" id="L143">                    set.getInt(PORT_FIELD), set.getBytes(HOSTKEY_FIELD),</span>
-<span class="fc" id="L144">                    set.getBoolean(IS_SSL_FIELD),</span>
-<span class="fc" id="L145">                    set.getBoolean(IS_CLIENT_FIELD),</span>
-<span class="fc" id="L146">                    set.getBoolean(IS_PROXIFIED_FIELD),</span>
-<span class="fc" id="L147">                    set.getBoolean(ADMINROLE_FIELD),</span>
-<span class="fc" id="L148">                    set.getBoolean(IS_ACTIVE_FIELD),</span>
-<span class="fc" id="L149">                    UpdatedInfo.valueOf(set.getInt(UPDATED_INFO_FIELD)));</span>
+  public Host getFromResultSet(final ResultSet set) throws SQLException {
+<span class="fc" id="L137">    return new Host(set.getString(HOSTID_FIELD), set.getString(ADDRESS_FIELD),</span>
+<span class="fc" id="L138">                    set.getInt(PORT_FIELD), set.getBytes(HOSTKEY_FIELD),</span>
+<span class="fc" id="L139">                    set.getBoolean(IS_SSL_FIELD),</span>
+<span class="fc" id="L140">                    set.getBoolean(IS_CLIENT_FIELD),</span>
+<span class="fc" id="L141">                    set.getBoolean(IS_PROXIFIED_FIELD),</span>
+<span class="fc" id="L142">                    set.getBoolean(ADMINROLE_FIELD),</span>
+<span class="fc" id="L143">                    set.getBoolean(IS_ACTIVE_FIELD),</span>
+<span class="fc" id="L144">                    UpdatedInfo.valueOf(set.getInt(UPDATED_INFO_FIELD)));</span>
   }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

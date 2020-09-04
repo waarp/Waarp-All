@@ -55,15 +55,15 @@ import java.util.regex.Pattern;
 <span class="fc" id="L55">  private static final WaarpLogger logger =</span>
 <span class="fc" id="L56">      WaarpLoggerFactory.getLogger(AddDigestJavaTask.class);</span>
 
-  private static final String sDIGEST = &quot;#DIGEST#&quot;;
+  private static final String S_DIGEST = &quot;#DIGEST#&quot;;
 <span class="fc" id="L59">  private static final Pattern DIGEST_PATTERN =</span>
-<span class="fc" id="L60">      Pattern.compile(sDIGEST, Pattern.LITERAL);</span>
+<span class="fc" id="L60">      Pattern.compile(S_DIGEST, Pattern.LITERAL);</span>
 
   @Override
   public void run() {
 <span class="fc" id="L64">    logger.debug(toString());</span>
 <span class="fc" id="L65">    final String[] args = BLANK.split(fullarg);</span>
-    String fileInfo;
+    final String fileInfo;
 <span class="fc" id="L67">    String format = &quot;-##DIGEST##&quot;;</span>
 <span class="fc" id="L68">    String algo = &quot;MD5&quot;;</span>
 <span class="fc" id="L69">    int way = -1;</span>
@@ -83,7 +83,7 @@ import java.util.regex.Pattern;
 <span class="fc" id="L83">        i++;</span>
       }
     }
-    DigestAlgo digest;
+    final DigestAlgo digest;
     try {
 <span class="fc" id="L88">      digest = DigestAlgo.valueOf(algo);</span>
 <span class="nc" id="L89">    } catch (final Exception e) {</span>
@@ -91,7 +91,7 @@ import java.util.regex.Pattern;
 <span class="nc" id="L91">      status = 3;</span>
 <span class="nc" id="L92">      return;</span>
 <span class="fc" id="L93">    }</span>
-    String key;
+    final String key;
     try {
 <span class="fc" id="L96">      key = FilesystemBasedDigest.getHex(FilesystemBasedDigest.getHash(</span>
 <span class="fc" id="L97">          session.getFile().getTrueFile(), true, digest));</span>
@@ -102,28 +102,30 @@ import java.util.regex.Pattern;
 <span class="fc" id="L102">    }</span>
 <span class="fc" id="L103">    logger.debug(&quot;Replace Digest in {} way: {} digest: {} key: {}&quot;, format, way,</span>
                  algo, key);
-<span class="pc bpc" id="L105" title="1 of 2 branches missed.">    if (way &lt; 0) {</span>
-<span class="fc" id="L106">      fileInfo = DIGEST_PATTERN.matcher(format)</span>
-<span class="fc" id="L107">                               .replaceAll(Matcher.quoteReplacement(key)) +</span>
-<span class="fc" id="L108">                 ' ' + session.getRunner().getFileInformation();</span>
+<span class="pc bpc" id="L105" title="1 of 2 branches missed.">    if (format.isEmpty()) {</span>
+<span class="nc" id="L106">      fileInfo = session.getRunner().getFileInformation();</span>
     } else {
-<span class="nc" id="L110">      fileInfo = session.getRunner().getFileInformation() + ' ' +</span>
-<span class="nc" id="L111">                 DIGEST_PATTERN.matcher(format)</span>
-<span class="nc" id="L112">                               .replaceAll(Matcher.quoteReplacement(key));</span>
+<span class="pc bpc" id="L108" title="1 of 2 branches missed.">      if (way &lt; 0) {</span>
+<span class="fc" id="L109">        fileInfo = DIGEST_PATTERN.matcher(format)</span>
+<span class="fc" id="L110">                                 .replaceAll(Matcher.quoteReplacement(key)) +</span>
+<span class="fc" id="L111">                   ' ' + session.getRunner().getFileInformation();</span>
+      } else {
+<span class="nc" id="L113">        fileInfo = session.getRunner().getFileInformation() + ' ' +</span>
+<span class="nc" id="L114">                   DIGEST_PATTERN.matcher(format)</span>
+<span class="nc" id="L115">                                 .replaceAll(Matcher.quoteReplacement(key));</span>
+      }
     }
-<span class="fc" id="L114">    session.getRunner().setFileInformation(fileInfo);</span>
-<span class="fc" id="L115">    session.getRunner().setTransferInfo(</span>
-<span class="fc" id="L116">        session.getRunner().getTransferInfo().replaceAll(sDIGEST, key));</span>
-<span class="fc" id="L117">    session.getRunner().addToTransferMap(&quot;digest&quot;, key);</span>
+<span class="fc" id="L118">    session.getRunner().setFileInformation(fileInfo);</span>
+<span class="fc" id="L119">    session.getRunner().addToTransferMap(&quot;digest&quot;, key);</span>
     try {
-<span class="fc" id="L119">      session.getRunner().update();</span>
-<span class="nc" id="L120">    } catch (final WaarpDatabaseException e) {</span>
-<span class="nc" id="L121">      logger.error(&quot;Digest cannot be saved to fileInformation:&quot; + fileInfo);</span>
-<span class="nc" id="L122">      status = 2;</span>
-<span class="nc" id="L123">      return;</span>
-<span class="fc" id="L124">    }</span>
-<span class="fc" id="L125">    logger.debug(&quot;Digest saved to fileInformation:&quot; + fileInfo);</span>
-<span class="fc" id="L126">    status = 0;</span>
-<span class="fc" id="L127">  }</span>
+<span class="fc" id="L121">      session.getRunner().update();</span>
+<span class="nc" id="L122">    } catch (final WaarpDatabaseException e) {</span>
+<span class="nc" id="L123">      logger.error(&quot;Digest cannot be saved to fileInformation:&quot; + fileInfo);</span>
+<span class="nc" id="L124">      status = 2;</span>
+<span class="nc" id="L125">      return;</span>
+<span class="fc" id="L126">    }</span>
+<span class="fc" id="L127">    logger.debug(&quot;Digest saved to fileInformation:&quot; + fileInfo);</span>
+<span class="fc" id="L128">    status = 0;</span>
+<span class="fc" id="L129">  }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

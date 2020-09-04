@@ -180,18 +180,19 @@ public class DbDataModel extends AbstractDbData {
    * @param ws Write Session Limit
    * @param del Delay Limit
    */
-  public DbDataModel(DbSession dbSession, String hostid, long rg, long wg,
-                     long rs, long ws, long del) {
-<span class="nc" id="L185">    super(dbSession);</span>
-<span class="nc" id="L186">    this.hostid = hostid;</span>
-<span class="nc" id="L187">    readgloballimit = rg;</span>
-<span class="nc" id="L188">    writegloballimit = wg;</span>
-<span class="nc" id="L189">    readsessionlimit = rs;</span>
-<span class="nc" id="L190">    writesessionlimit = ws;</span>
-<span class="nc" id="L191">    delayllimit = del;</span>
-<span class="nc" id="L192">    setToArray();</span>
-<span class="nc" id="L193">    isSaved = false;</span>
-<span class="nc" id="L194">  }</span>
+  public DbDataModel(final DbSession dbSession, final String hostid,
+                     final long rg, final long wg, final long rs, final long ws,
+                     final long del) {
+<span class="nc" id="L186">    super(dbSession);</span>
+<span class="nc" id="L187">    this.hostid = hostid;</span>
+<span class="nc" id="L188">    readgloballimit = rg;</span>
+<span class="nc" id="L189">    writegloballimit = wg;</span>
+<span class="nc" id="L190">    readsessionlimit = rs;</span>
+<span class="nc" id="L191">    writesessionlimit = ws;</span>
+<span class="nc" id="L192">    delayllimit = del;</span>
+<span class="nc" id="L193">    setToArray();</span>
+<span class="nc" id="L194">    isSaved = false;</span>
+<span class="nc" id="L195">  }</span>
 
   /**
    * @param dbSession
@@ -199,148 +200,148 @@ public class DbDataModel extends AbstractDbData {
    *
    * @throws WaarpDatabaseException
    */
-  public DbDataModel(DbSession dbSession, String hostid)
+  public DbDataModel(final DbSession dbSession, final String hostid)
       throws WaarpDatabaseException {
-<span class="nc" id="L204">    super(dbSession);</span>
-<span class="nc" id="L205">    this.hostid = hostid;</span>
+<span class="nc" id="L205">    super(dbSession);</span>
+<span class="nc" id="L206">    this.hostid = hostid;</span>
     // load from DB
-<span class="nc" id="L207">    select();</span>
-<span class="nc" id="L208">  }</span>
+<span class="nc" id="L208">    select();</span>
+<span class="nc" id="L209">  }</span>
 
   @Override
   public void delete() throws WaarpDatabaseException {
-<span class="nc bnc" id="L212" title="All 2 branches missed.">    if (dbSession == null) {</span>
-<span class="nc" id="L213">      dbR66ConfigurationHashMap.remove(hostid);</span>
-<span class="nc" id="L214">      isSaved = false;</span>
-<span class="nc" id="L215">      return;</span>
+<span class="nc bnc" id="L213" title="All 2 branches missed.">    if (dbSession == null) {</span>
+<span class="nc" id="L214">      dbR66ConfigurationHashMap.remove(hostid);</span>
+<span class="nc" id="L215">      isSaved = false;</span>
+<span class="nc" id="L216">      return;</span>
     }
-<span class="nc" id="L217">    final DbPreparedStatement preparedStatement =</span>
+<span class="nc" id="L218">    final DbPreparedStatement preparedStatement =</span>
         new DbPreparedStatement(dbSession);
     try {
-<span class="nc" id="L220">      preparedStatement.createPrepareStatement(</span>
-<span class="nc" id="L221">          &quot;DELETE FROM &quot; + table + WHERE + getWherePrimaryKey());</span>
-<span class="nc" id="L222">      setPrimaryKey();</span>
-<span class="nc" id="L223">      setValues(preparedStatement, primaryKey);</span>
-<span class="nc" id="L224">      final int count = preparedStatement.executeUpdate();</span>
-<span class="nc bnc" id="L225" title="All 2 branches missed.">      if (count &lt;= 0) {</span>
-<span class="nc" id="L226">        throw new WaarpDatabaseNoDataException(NO_ROW_FOUND);</span>
+<span class="nc" id="L221">      preparedStatement.createPrepareStatement(</span>
+<span class="nc" id="L222">          &quot;DELETE FROM &quot; + table + WHERE + getWherePrimaryKey());</span>
+<span class="nc" id="L223">      setPrimaryKey();</span>
+<span class="nc" id="L224">      setValues(preparedStatement, primaryKey);</span>
+<span class="nc" id="L225">      final int count = preparedStatement.executeUpdate();</span>
+<span class="nc bnc" id="L226" title="All 2 branches missed.">      if (count &lt;= 0) {</span>
+<span class="nc" id="L227">        throw new WaarpDatabaseNoDataException(NO_ROW_FOUND);</span>
       }
-<span class="nc" id="L228">      isSaved = false;</span>
+<span class="nc" id="L229">      isSaved = false;</span>
     } finally {
-<span class="nc" id="L230">      preparedStatement.realClose();</span>
+<span class="nc" id="L231">      preparedStatement.realClose();</span>
     }
-<span class="nc" id="L232">  }</span>
+<span class="nc" id="L233">  }</span>
 
   @Override
   public void insert() throws WaarpDatabaseException {
-<span class="nc bnc" id="L236" title="All 2 branches missed.">    if (isSaved) {</span>
-<span class="nc" id="L237">      return;</span>
+<span class="nc bnc" id="L237" title="All 2 branches missed.">    if (isSaved) {</span>
+<span class="nc" id="L238">      return;</span>
     }
-<span class="nc bnc" id="L239" title="All 2 branches missed.">    if (dbSession == null) {</span>
-<span class="nc" id="L240">      dbR66ConfigurationHashMap.put(hostid, this);</span>
-<span class="nc" id="L241">      isSaved = true;</span>
-<span class="nc" id="L242">      return;</span>
+<span class="nc bnc" id="L240" title="All 2 branches missed.">    if (dbSession == null) {</span>
+<span class="nc" id="L241">      dbR66ConfigurationHashMap.put(hostid, this);</span>
+<span class="nc" id="L242">      isSaved = true;</span>
+<span class="nc" id="L243">      return;</span>
     }
-<span class="nc" id="L244">    final DbPreparedStatement preparedStatement =</span>
+<span class="nc" id="L245">    final DbPreparedStatement preparedStatement =</span>
         new DbPreparedStatement(dbSession);
     try {
-<span class="nc" id="L247">      preparedStatement.createPrepareStatement(</span>
+<span class="nc" id="L248">      preparedStatement.createPrepareStatement(</span>
           &quot;INSERT INTO &quot; + table + &quot; (&quot; + selectAllFields + &quot;) VALUES &quot; +
           insertAllValues);
-<span class="nc" id="L250">      setValues(preparedStatement, allFields);</span>
-<span class="nc" id="L251">      final int count = preparedStatement.executeUpdate();</span>
-<span class="nc bnc" id="L252" title="All 2 branches missed.">      if (count &lt;= 0) {</span>
-<span class="nc" id="L253">        throw new WaarpDatabaseNoDataException(NO_ROW_FOUND);</span>
+<span class="nc" id="L251">      setValues(preparedStatement, allFields);</span>
+<span class="nc" id="L252">      final int count = preparedStatement.executeUpdate();</span>
+<span class="nc bnc" id="L253" title="All 2 branches missed.">      if (count &lt;= 0) {</span>
+<span class="nc" id="L254">        throw new WaarpDatabaseNoDataException(NO_ROW_FOUND);</span>
       }
-<span class="nc" id="L255">      isSaved = true;</span>
+<span class="nc" id="L256">      isSaved = true;</span>
     } finally {
-<span class="nc" id="L257">      preparedStatement.realClose();</span>
+<span class="nc" id="L258">      preparedStatement.realClose();</span>
     }
-<span class="nc" id="L259">  }</span>
+<span class="nc" id="L260">  }</span>
 
   @Override
   public boolean exist() throws WaarpDatabaseException {
-<span class="nc bnc" id="L263" title="All 2 branches missed.">    if (dbSession == null) {</span>
-<span class="nc" id="L264">      return dbR66ConfigurationHashMap.containsKey(hostid);</span>
+<span class="nc bnc" id="L264" title="All 2 branches missed.">    if (dbSession == null) {</span>
+<span class="nc" id="L265">      return dbR66ConfigurationHashMap.containsKey(hostid);</span>
     }
-<span class="nc" id="L266">    final DbPreparedStatement preparedStatement =</span>
+<span class="nc" id="L267">    final DbPreparedStatement preparedStatement =</span>
         new DbPreparedStatement(dbSession);
     try {
-<span class="nc" id="L269">      preparedStatement.createPrepareStatement(</span>
-<span class="nc" id="L270">          SELECT + primaryKey[0].getColumn() + FROM + table + WHERE +</span>
-<span class="nc" id="L271">          getWherePrimaryKey());</span>
-<span class="nc" id="L272">      setPrimaryKey();</span>
-<span class="nc" id="L273">      setValues(preparedStatement, primaryKey);</span>
-<span class="nc" id="L274">      preparedStatement.executeQuery();</span>
-<span class="nc" id="L275">      return preparedStatement.getNext();</span>
+<span class="nc" id="L270">      preparedStatement.createPrepareStatement(</span>
+<span class="nc" id="L271">          SELECT + primaryKey[0].getColumn() + FROM + table + WHERE +</span>
+<span class="nc" id="L272">          getWherePrimaryKey());</span>
+<span class="nc" id="L273">      setPrimaryKey();</span>
+<span class="nc" id="L274">      setValues(preparedStatement, primaryKey);</span>
+<span class="nc" id="L275">      preparedStatement.executeQuery();</span>
+<span class="nc" id="L276">      return preparedStatement.getNext();</span>
     } finally {
-<span class="nc" id="L277">      preparedStatement.realClose();</span>
+<span class="nc" id="L278">      preparedStatement.realClose();</span>
     }
   }
 
   @Override
   public void select() throws WaarpDatabaseException {
-<span class="nc bnc" id="L283" title="All 2 branches missed.">    if (dbSession == null) {</span>
-<span class="nc" id="L284">      final DbDataModel conf = dbR66ConfigurationHashMap.get(hostid);</span>
-<span class="nc bnc" id="L285" title="All 2 branches missed.">      if (conf == null) {</span>
-<span class="nc" id="L286">        throw new WaarpDatabaseNoDataException(NO_ROW_FOUND);</span>
+<span class="nc bnc" id="L284" title="All 2 branches missed.">    if (dbSession == null) {</span>
+<span class="nc" id="L285">      final DbDataModel conf = dbR66ConfigurationHashMap.get(hostid);</span>
+<span class="nc bnc" id="L286" title="All 2 branches missed.">      if (conf == null) {</span>
+<span class="nc" id="L287">        throw new WaarpDatabaseNoDataException(NO_ROW_FOUND);</span>
       } else {
         // copy info
-<span class="nc bnc" id="L289" title="All 2 branches missed.">        for (int i = 0; i &lt; allFields.length; i++) {</span>
-<span class="nc" id="L290">          allFields[i].setValue(conf.allFields[i].getValue());</span>
+<span class="nc bnc" id="L290" title="All 2 branches missed.">        for (int i = 0; i &lt; allFields.length; i++) {</span>
+<span class="nc" id="L291">          allFields[i].setValue(conf.allFields[i].getValue());</span>
         }
-<span class="nc" id="L292">        setFromArray();</span>
-<span class="nc" id="L293">        isSaved = true;</span>
-<span class="nc" id="L294">        return;</span>
+<span class="nc" id="L293">        setFromArray();</span>
+<span class="nc" id="L294">        isSaved = true;</span>
+<span class="nc" id="L295">        return;</span>
       }
     }
-<span class="nc" id="L297">    final DbPreparedStatement preparedStatement =</span>
+<span class="nc" id="L298">    final DbPreparedStatement preparedStatement =</span>
         new DbPreparedStatement(dbSession);
     try {
-<span class="nc" id="L300">      preparedStatement.createPrepareStatement(</span>
+<span class="nc" id="L301">      preparedStatement.createPrepareStatement(</span>
           SELECT + selectAllFields + FROM + table + WHERE +
-<span class="nc" id="L302">          getWherePrimaryKey());</span>
-<span class="nc" id="L303">      setPrimaryKey();</span>
-<span class="nc" id="L304">      setValues(preparedStatement, primaryKey);</span>
-<span class="nc" id="L305">      preparedStatement.executeQuery();</span>
-<span class="nc bnc" id="L306" title="All 2 branches missed.">      if (preparedStatement.getNext()) {</span>
-<span class="nc" id="L307">        getValues(preparedStatement, allFields);</span>
-<span class="nc" id="L308">        setFromArray();</span>
-<span class="nc" id="L309">        isSaved = true;</span>
+<span class="nc" id="L303">          getWherePrimaryKey());</span>
+<span class="nc" id="L304">      setPrimaryKey();</span>
+<span class="nc" id="L305">      setValues(preparedStatement, primaryKey);</span>
+<span class="nc" id="L306">      preparedStatement.executeQuery();</span>
+<span class="nc bnc" id="L307" title="All 2 branches missed.">      if (preparedStatement.getNext()) {</span>
+<span class="nc" id="L308">        getValues(preparedStatement, allFields);</span>
+<span class="nc" id="L309">        setFromArray();</span>
+<span class="nc" id="L310">        isSaved = true;</span>
       } else {
-<span class="nc" id="L311">        throw new WaarpDatabaseNoDataException(NO_ROW_FOUND);</span>
+<span class="nc" id="L312">        throw new WaarpDatabaseNoDataException(NO_ROW_FOUND);</span>
       }
     } finally {
-<span class="nc" id="L314">      preparedStatement.realClose();</span>
+<span class="nc" id="L315">      preparedStatement.realClose();</span>
     }
-<span class="nc" id="L316">  }</span>
+<span class="nc" id="L317">  }</span>
 
   @Override
   public void update() throws WaarpDatabaseException {
-<span class="nc bnc" id="L320" title="All 2 branches missed.">    if (isSaved) {</span>
-<span class="nc" id="L321">      return;</span>
+<span class="nc bnc" id="L321" title="All 2 branches missed.">    if (isSaved) {</span>
+<span class="nc" id="L322">      return;</span>
     }
-<span class="nc bnc" id="L323" title="All 2 branches missed.">    if (dbSession == null) {</span>
-<span class="nc" id="L324">      dbR66ConfigurationHashMap.put(hostid, this);</span>
-<span class="nc" id="L325">      isSaved = true;</span>
-<span class="nc" id="L326">      return;</span>
+<span class="nc bnc" id="L324" title="All 2 branches missed.">    if (dbSession == null) {</span>
+<span class="nc" id="L325">      dbR66ConfigurationHashMap.put(hostid, this);</span>
+<span class="nc" id="L326">      isSaved = true;</span>
+<span class="nc" id="L327">      return;</span>
     }
-<span class="nc" id="L328">    final DbPreparedStatement preparedStatement =</span>
+<span class="nc" id="L329">    final DbPreparedStatement preparedStatement =</span>
         new DbPreparedStatement(dbSession);
     try {
-<span class="nc" id="L331">      preparedStatement.createPrepareStatement(</span>
+<span class="nc" id="L332">      preparedStatement.createPrepareStatement(</span>
           &quot;UPDATE &quot; + table + &quot; SET &quot; + updateAllFields + WHERE +
-<span class="nc" id="L333">          getWherePrimaryKey());</span>
-<span class="nc" id="L334">      setValues(preparedStatement, allFields);</span>
-<span class="nc" id="L335">      final int count = preparedStatement.executeUpdate();</span>
-<span class="nc bnc" id="L336" title="All 2 branches missed.">      if (count &lt;= 0) {</span>
-<span class="nc" id="L337">        throw new WaarpDatabaseNoDataException(NO_ROW_FOUND);</span>
+<span class="nc" id="L334">          getWherePrimaryKey());</span>
+<span class="nc" id="L335">      setValues(preparedStatement, allFields);</span>
+<span class="nc" id="L336">      final int count = preparedStatement.executeUpdate();</span>
+<span class="nc bnc" id="L337" title="All 2 branches missed.">      if (count &lt;= 0) {</span>
+<span class="nc" id="L338">        throw new WaarpDatabaseNoDataException(NO_ROW_FOUND);</span>
       }
-<span class="nc" id="L339">      isSaved = true;</span>
+<span class="nc" id="L340">      isSaved = true;</span>
     } finally {
-<span class="nc" id="L341">      preparedStatement.realClose();</span>
+<span class="nc" id="L342">      preparedStatement.realClose();</span>
     }
-<span class="nc" id="L343">  }</span>
+<span class="nc" id="L344">  }</span>
 
   /**
    * @return the DbPreparedStatement for getting Updated Object
@@ -348,24 +349,25 @@ public class DbDataModel extends AbstractDbData {
    * @throws WaarpDatabaseNoConnectionException
    * @throws WaarpDatabaseSqlException
    */
-  public static DbPreparedStatement getUpdatedPrepareStament(DbSession session)
+  public static DbPreparedStatement getUpdatedPrepareStament(
+      final DbSession session)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
-<span class="nc" id="L353">    String request = SELECT + selectAllFields;</span>
-<span class="nc" id="L354">    request += FROM + table + WHERE + Columns.UPDATEDINFO.name() + &quot; = &quot; +</span>
-<span class="nc" id="L355">               AbstractDbData.UpdatedInfo.TOSUBMIT.ordinal();</span>
-<span class="nc" id="L356">    final DbPreparedStatement prep = new DbPreparedStatement(session, request);</span>
-<span class="nc" id="L357">    session.addLongTermPreparedStatement(prep);</span>
-<span class="nc" id="L358">    return prep;</span>
+<span class="nc" id="L355">    String request = SELECT + selectAllFields;</span>
+<span class="nc" id="L356">    request += FROM + table + WHERE + Columns.UPDATEDINFO.name() + &quot; = &quot; +</span>
+<span class="nc" id="L357">               AbstractDbData.UpdatedInfo.TOSUBMIT.ordinal();</span>
+<span class="nc" id="L358">    final DbPreparedStatement prep = new DbPreparedStatement(session, request);</span>
+<span class="nc" id="L359">    session.addLongTermPreparedStatement(prep);</span>
+<span class="nc" id="L360">    return prep;</span>
   }
 
   @Override
-  public void changeUpdatedInfo(UpdatedInfo info) {
-<span class="nc bnc" id="L363" title="All 2 branches missed.">    if (updatedInfo != info.ordinal()) {</span>
-<span class="nc" id="L364">      updatedInfo = info.ordinal();</span>
-<span class="nc" id="L365">      allFields[Columns.UPDATEDINFO.ordinal()].setValue(updatedInfo);</span>
-<span class="nc" id="L366">      isSaved = false;</span>
+  public void changeUpdatedInfo(final UpdatedInfo info) {
+<span class="nc bnc" id="L365" title="All 2 branches missed.">    if (updatedInfo != info.ordinal()) {</span>
+<span class="nc" id="L366">      updatedInfo = info.ordinal();</span>
+<span class="nc" id="L367">      allFields[Columns.UPDATEDINFO.ordinal()].setValue(updatedInfo);</span>
+<span class="nc" id="L368">      isSaved = false;</span>
     }
-<span class="nc" id="L368">  }</span>
+<span class="nc" id="L370">  }</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

@@ -26,6 +26,7 @@ import org.waarp.common.exception.FileEndOfTransferException;
 import org.waarp.common.exception.FileTransferException;
 import org.waarp.common.file.AbstractDir;
 import org.waarp.common.file.DataBlock;
+import org.waarp.common.file.FileUtils;
 import org.waarp.common.file.filesystembased.FilesystemBasedFileImpl;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
@@ -48,7 +49,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.nio.channels.FileChannel;
 import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -75,8 +75,8 @@ public class R66File extends FilesystemBasedFileImpl {
    *
    * @throws CommandAbstractException
    */
-  public R66File(R66Session session, R66Dir dir, String path, boolean append)
-      throws CommandAbstractException {
+  public R66File(final R66Session session, final R66Dir dir, final String path,
+                 final boolean append) throws CommandAbstractException {
 <span class="fc" id="L80">    super(session, dir, path, append);</span>
 <span class="fc" id="L81">  }</span>
 
@@ -87,10 +87,11 @@ public class R66File extends FilesystemBasedFileImpl {
    * @param dir
    * @param path
    */
-  public R66File(R66Session session, R66Dir dir, String path) {
-<span class="fc" id="L91">    super(session, dir, path);</span>
-<span class="fc" id="L92">    isExternal = true;</span>
-<span class="fc" id="L93">  }</span>
+  public R66File(final R66Session session, final R66Dir dir,
+                 final String path) {
+<span class="fc" id="L92">    super(session, dir, path);</span>
+<span class="fc" id="L93">    isExternal = true;</span>
+<span class="fc" id="L94">  }</span>
 
   /**
    * Start the retrieve (send to the remote host the local file)
@@ -100,42 +101,41 @@ public class R66File extends FilesystemBasedFileImpl {
    * @throws OpenR66RunnerErrorException
    * @throws OpenR66ProtocolSystemException
    */
-  public void retrieveBlocking(AtomicBoolean running)
+  public void retrieveBlocking(final AtomicBoolean running)
       throws OpenR66RunnerErrorException, OpenR66ProtocolSystemException {
-<span class="fc" id="L105">    boolean retrieveDone = false;</span>
-<span class="fc" id="L106">    final LocalChannelReference localChannelReference =</span>
-<span class="fc" id="L107">        getSession().getLocalChannelReference();</span>
-<span class="fc" id="L108">    FilesystemBasedDigest digest = null;</span>
-<span class="fc" id="L109">    logger.debug(&quot;File to retrieve: &quot; + this);</span>
+<span class="fc" id="L106">    boolean retrieveDone = false;</span>
+<span class="fc" id="L107">    final LocalChannelReference localChannelReference =</span>
+<span class="fc" id="L108">        getSession().getLocalChannelReference();</span>
+<span class="fc" id="L109">    FilesystemBasedDigest digest = null;</span>
+<span class="fc" id="L110">    logger.debug(&quot;File to retrieve: &quot; + this);</span>
+<span class="fc" id="L111">    DataBlock block = null;</span>
     try {
-<span class="pc bpc" id="L111" title="1 of 2 branches missed.">      if (!isReady) {</span>
-<span class="nc" id="L112">        return;</span>
+<span class="pc bpc" id="L113" title="1 of 2 branches missed.">      if (!isReady) {</span>
+<span class="nc" id="L114">        return;</span>
       }
-      DataBlock block;
       try {
-<span class="fc" id="L116">        block = readDataBlock();</span>
-<span class="nc" id="L117">      } catch (final FileEndOfTransferException e) {</span>
+<span class="fc" id="L117">        block = readDataBlock();</span>
+<span class="nc" id="L118">      } catch (final FileEndOfTransferException e) {</span>
         // Last block (in fact, no data to read)
-<span class="nc" id="L119">        retrieveDone = true;</span>
-<span class="nc" id="L120">        return;</span>
-<span class="fc" id="L121">      }</span>
-<span class="pc bpc" id="L122" title="1 of 2 branches missed.">      if (block == null) {</span>
+<span class="nc" id="L120">        retrieveDone = true;</span>
+<span class="nc" id="L121">        return;</span>
+<span class="fc" id="L122">      }</span>
+<span class="pc bpc" id="L123" title="1 of 2 branches missed.">      if (block == null) {</span>
         // Last block (in fact, no data to read)
-<span class="nc" id="L124">        retrieveDone = true;</span>
-<span class="nc" id="L125">        return;</span>
+<span class="nc" id="L125">        retrieveDone = true;</span>
+<span class="nc" id="L126">        return;</span>
       }
-<span class="pc bpc" id="L127" title="1 of 2 branches missed.">      if (Configuration.configuration.isGlobalDigest()) {</span>
+<span class="pc bpc" id="L128" title="1 of 2 branches missed.">      if (Configuration.configuration.isGlobalDigest()) {</span>
         try {
-<span class="fc" id="L129">          digest = new FilesystemBasedDigest(</span>
-<span class="fc" id="L130">              Configuration.configuration.getDigest());</span>
-<span class="nc" id="L131">        } catch (final NoSuchAlgorithmException e2) {</span>
+<span class="fc" id="L130">          digest = new FilesystemBasedDigest(</span>
+<span class="fc" id="L131">              Configuration.configuration.getDigest());</span>
+<span class="nc" id="L132">        } catch (final NoSuchAlgorithmException e2) {</span>
           // ignore
-<span class="fc" id="L133">        }</span>
+<span class="fc" id="L134">        }</span>
       }
-<span class="fc" id="L135">      ChannelFuture future1 = null;</span>
+<span class="fc" id="L136">      ChannelFuture future1 = null;</span>
       ChannelFuture future2;
-<span class="pc bpc" id="L137" title="3 of 6 branches missed.">      if (block != null &amp;&amp; running.get() &amp;&amp; !Thread.interrupted()) {</span>
-<span class="fc" id="L138">        block.getBlock().retain();</span>
+<span class="pc bpc" id="L138" title="2 of 4 branches missed.">      if (running.get() &amp;&amp; !Thread.interrupted()) {</span>
 <span class="pc bpc" id="L139" title="1 of 2 branches missed.">        if (Configuration.configuration.isGlobalDigest()) {</span>
 <span class="fc" id="L140">          future1 = RetrieveRunner</span>
 <span class="fc" id="L141">              .writeWhenPossible(block, localChannelReference, digest);</span>
@@ -148,88 +148,86 @@ public class R66File extends FilesystemBasedFileImpl {
 <span class="pc bpc" id="L148" title="2 of 6 branches missed.">      while (block != null &amp;&amp; !block.isEOF() &amp;&amp; running.get() &amp;&amp;</span>
 <span class="pc bpc" id="L149" title="1 of 2 branches missed.">             !Thread.interrupted()) {</span>
 <span class="fc" id="L150">        WaarpNettyUtil.awaitOrInterrupted(future1);</span>
-<span class="pc bpc" id="L151" title="1 of 2 branches missed.">        if (!future1.isSuccess()) {</span>
-<span class="nc" id="L152">          return;</span>
+<span class="fc bfc" id="L151" title="All 2 branches covered.">        if (!future1.isSuccess()) {</span>
+<span class="fc" id="L152">          return;</span>
         }
 <span class="pc bpc" id="L154" title="3 of 4 branches missed.">        if (!running.get() &amp;&amp; Thread.interrupted()) {</span>
 <span class="nc" id="L155">          return;</span>
         }
         try {
 <span class="fc" id="L158">          block = readDataBlock();</span>
-<span class="nc" id="L159">        } catch (final FileEndOfTransferException e) {</span>
+<span class="fc" id="L159">        } catch (final FileEndOfTransferException e) {</span>
           // Wait for last write
-<span class="nc" id="L161">          WaarpNettyUtil.awaitOrInterrupted(future1);</span>
-<span class="nc bnc" id="L162" title="All 2 branches missed.">          if (future1.isSuccess()) {</span>
-<span class="nc" id="L163">            retrieveDone = true;</span>
+<span class="fc" id="L161">          WaarpNettyUtil.awaitOrInterrupted(future1);</span>
+<span class="pc bpc" id="L162" title="1 of 2 branches missed.">          if (future1.isSuccess()) {</span>
+<span class="fc" id="L163">            retrieveDone = true;</span>
           }
-<span class="nc" id="L165">          return;</span>
+<span class="fc" id="L165">          return;</span>
 <span class="fc" id="L166">        }</span>
-<span class="fc" id="L167">        block.getBlock().retain();</span>
-<span class="pc bpc" id="L168" title="1 of 2 branches missed.">        if (Configuration.configuration.isGlobalDigest()) {</span>
-<span class="fc" id="L169">          future2 = RetrieveRunner</span>
-<span class="fc" id="L170">              .writeWhenPossible(block, localChannelReference, digest);</span>
+<span class="pc bpc" id="L167" title="1 of 2 branches missed.">        if (Configuration.configuration.isGlobalDigest()) {</span>
+<span class="fc" id="L168">          future2 = RetrieveRunner</span>
+<span class="fc" id="L169">              .writeWhenPossible(block, localChannelReference, digest);</span>
         } else {
-<span class="nc" id="L172">          future2 = RetrieveRunner</span>
-<span class="nc" id="L173">              .writeWhenPossible(block, localChannelReference, null);</span>
+<span class="nc" id="L171">          future2 = RetrieveRunner</span>
+<span class="nc" id="L172">              .writeWhenPossible(block, localChannelReference, null);</span>
         }
-<span class="fc" id="L175">        future1 = future2;</span>
+<span class="fc" id="L174">        future1 = future2;</span>
       }
-<span class="pc bpc" id="L177" title="3 of 4 branches missed.">      if (!running.get() &amp;&amp; Thread.interrupted()) {</span>
+<span class="pc bpc" id="L176" title="3 of 4 branches missed.">      if (!running.get() &amp;&amp; Thread.interrupted()) {</span>
         // stopped
-<span class="nc" id="L179">        return;</span>
+<span class="nc" id="L178">        return;</span>
       }
       // Wait for last write
-<span class="pc bpc" id="L182" title="1 of 2 branches missed.">      if (future1 != null) {</span>
-<span class="fc" id="L183">        WaarpNettyUtil.awaitOrInterrupted(future1);</span>
-<span class="pc bpc" id="L184" title="1 of 2 branches missed.">        if (!future1.isSuccess()) {</span>
-<span class="nc" id="L185">          return;</span>
+<span class="pc bpc" id="L181" title="1 of 2 branches missed.">      if (future1 != null) {</span>
+<span class="fc" id="L182">        WaarpNettyUtil.awaitOrInterrupted(future1);</span>
+<span class="pc bpc" id="L183" title="1 of 2 branches missed.">        if (!future1.isSuccess()) {</span>
+<span class="nc" id="L184">          return;</span>
         }
       }
-<span class="pc bpc" id="L188" title="1 of 2 branches missed.">      if (block != null) {</span>
-<span class="fc" id="L189">        block.getBlock().release();</span>
-<span class="fc" id="L190">        block.clear();</span>
-      }
-<span class="fc" id="L192">      retrieveDone = true;</span>
-<span class="nc" id="L193">    } catch (final FileTransferException e) {</span>
+<span class="fc" id="L187">      retrieveDone = true;</span>
+<span class="nc" id="L188">    } catch (final FileTransferException e) {</span>
       // An error occurs!
-<span class="nc" id="L195">      getSession().setFinalizeTransfer(false, new R66Result(</span>
-<span class="nc" id="L196">          new OpenR66ProtocolSystemException(e), getSession(), false,</span>
-<span class="nc" id="L197">          ErrorCode.TransferError, getSession().getRunner()));</span>
-<span class="nc" id="L198">    } catch (final OpenR66ProtocolPacketException e) {</span>
+<span class="nc" id="L190">      getSession().setFinalizeTransfer(false, new R66Result(</span>
+<span class="nc" id="L191">          new OpenR66ProtocolSystemException(e), getSession(), false,</span>
+<span class="nc" id="L192">          ErrorCode.TransferError, getSession().getRunner()));</span>
+<span class="nc" id="L193">    } catch (final OpenR66ProtocolPacketException e) {</span>
       // An error occurs!
-<span class="nc" id="L200">      getSession().setFinalizeTransfer(false,</span>
-<span class="nc" id="L201">                                       new R66Result(e, getSession(), false,</span>
+<span class="nc" id="L195">      getSession().setFinalizeTransfer(false,</span>
+<span class="nc" id="L196">                                       new R66Result(e, getSession(), false,</span>
                                                      ErrorCode.Internal,
-<span class="nc" id="L203">                                                     getSession().getRunner()));</span>
+<span class="nc" id="L198">                                                     getSession().getRunner()));</span>
     } finally {
-<span class="pc bpc" id="L205" title="1 of 2 branches missed.">      if (retrieveDone) {</span>
-<span class="fc" id="L206">        String hash = null;</span>
-<span class="pc bpc" id="L207" title="1 of 2 branches missed.">        if (digest != null) {</span>
-<span class="fc" id="L208">          hash = FilesystemBasedDigest.getHex(digest.Final());</span>
+<span class="pc bpc" id="L200" title="1 of 2 branches missed.">      if (block != null) {</span>
+<span class="fc" id="L201">        block.clear();</span>
+      }
+<span class="fc bfc" id="L203" title="All 2 branches covered.">      if (retrieveDone) {</span>
+<span class="fc" id="L204">        String hash = null;</span>
+<span class="pc bpc" id="L205" title="1 of 2 branches missed.">        if (digest != null) {</span>
+<span class="fc" id="L206">          hash = FilesystemBasedDigest.getHex(digest.Final());</span>
         }
         try {
-<span class="pc bpc" id="L211" title="1 of 2 branches missed.">          if (hash == null) {</span>
-<span class="nc" id="L212">            ChannelUtils.writeEndTransfer(localChannelReference);</span>
+<span class="pc bpc" id="L209" title="1 of 2 branches missed.">          if (hash == null) {</span>
+<span class="nc" id="L210">            ChannelUtils.writeEndTransfer(localChannelReference);</span>
           } else {
-<span class="fc" id="L214">            ChannelUtils.writeEndTransfer(localChannelReference, hash);</span>
+<span class="fc" id="L212">            ChannelUtils.writeEndTransfer(localChannelReference, hash);</span>
           }
-<span class="nc" id="L216">        } catch (final OpenR66ProtocolPacketException e) {</span>
+<span class="nc" id="L214">        } catch (final OpenR66ProtocolPacketException e) {</span>
           // An error occurs!
-<span class="nc" id="L218">          getSession().setFinalizeTransfer(false,</span>
-<span class="nc" id="L219">                                           new R66Result(e, getSession(), false,</span>
+<span class="nc" id="L216">          getSession().setFinalizeTransfer(false,</span>
+<span class="nc" id="L217">                                           new R66Result(e, getSession(), false,</span>
                                                          ErrorCode.Internal,
-<span class="nc" id="L221">                                                         getSession()</span>
-<span class="nc" id="L222">                                                             .getRunner()));</span>
-<span class="fc" id="L223">        }</span>
-<span class="fc" id="L224">      } else {</span>
+<span class="nc" id="L219">                                                         getSession()</span>
+<span class="nc" id="L220">                                                             .getRunner()));</span>
+<span class="fc" id="L221">        }</span>
+<span class="fc" id="L222">      } else {</span>
         // An error occurs!
-<span class="nc" id="L226">        getSession().setFinalizeTransfer(false, new R66Result(</span>
+<span class="fc" id="L224">        getSession().setFinalizeTransfer(false, new R66Result(</span>
             new OpenR66ProtocolSystemException(&quot;Transfer in error&quot;),
-<span class="nc" id="L228">            getSession(), false, ErrorCode.TransferError,</span>
-<span class="nc" id="L229">            getSession().getRunner()));</span>
+<span class="fc" id="L226">            getSession(), false, ErrorCode.TransferError,</span>
+<span class="fc" id="L227">            getSession().getRunner()));</span>
       }
     }
-<span class="fc" id="L232">  }</span>
+<span class="fc" id="L230">  }</span>
 
   /**
    * This method is a good to have in a true FileInterface implementation.
@@ -237,14 +235,14 @@ public class R66File extends FilesystemBasedFileImpl {
    * @return the File associated with the current FileInterface operation
    */
   public File getTrueFile() {
-<span class="fc bfc" id="L240" title="All 2 branches covered.">    if (isExternal) {</span>
-<span class="fc" id="L241">      return new File(currentFile);</span>
+<span class="fc bfc" id="L238" title="All 2 branches covered.">    if (isExternal) {</span>
+<span class="fc" id="L239">      return new File(currentFile);</span>
     }
     try {
-<span class="fc" id="L244">      return getFileFromPath(getFile());</span>
-<span class="nc" id="L245">    } catch (final CommandAbstractException e) {</span>
-<span class="nc" id="L246">      logger.warn(&quot;Exception while getting file: &quot; + this, e);</span>
-<span class="nc" id="L247">      return null;</span>
+<span class="fc" id="L242">      return getFileFromPath(getFile());</span>
+<span class="nc" id="L243">    } catch (final CommandAbstractException e) {</span>
+<span class="nc" id="L244">      logger.warn(&quot;Exception while getting file: &quot; + this, e);</span>
+<span class="nc" id="L245">      return null;</span>
     }
   }
 
@@ -252,7 +250,7 @@ public class R66File extends FilesystemBasedFileImpl {
    * @return the basename of the current file
    */
   public String getBasename() {
-<span class="fc" id="L255">    return getBasename(currentFile);</span>
+<span class="fc" id="L253">    return getBasename(currentFile);</span>
   }
 
   /**
@@ -260,97 +258,99 @@ public class R66File extends FilesystemBasedFileImpl {
    *
    * @return the basename from the given path
    */
-  public static String getBasename(String path) {
-<span class="fc" id="L264">    int pos = path.lastIndexOf('/');</span>
-<span class="fc" id="L265">    final int pos2 = path.lastIndexOf('\\');</span>
-<span class="pc bpc" id="L266" title="1 of 2 branches missed.">    if (pos2 &gt; pos) {</span>
-<span class="nc" id="L267">      pos = pos2;</span>
+  public static String getBasename(final String path) {
+<span class="fc" id="L262">    int pos = path.lastIndexOf('/');</span>
+<span class="fc" id="L263">    final int pos2 = path.lastIndexOf('\\');</span>
+<span class="pc bpc" id="L264" title="1 of 2 branches missed.">    if (pos2 &gt; pos) {</span>
+<span class="nc" id="L265">      pos = pos2;</span>
     }
-<span class="fc bfc" id="L269" title="All 2 branches covered.">    if (pos &gt; 0) {</span>
-<span class="fc" id="L270">      return path.substring(pos + 1);</span>
+<span class="fc bfc" id="L267" title="All 2 branches covered.">    if (pos &gt; 0) {</span>
+<span class="fc" id="L268">      return path.substring(pos + 1);</span>
     }
-<span class="fc" id="L272">    return path;</span>
+<span class="fc" id="L270">    return path;</span>
   }
 
   @Override
   public R66Session getSession() {
-<span class="fc" id="L277">    return (R66Session) session;</span>
+<span class="fc" id="L275">    return (R66Session) session;</span>
   }
 
   @Override
   public boolean canRead() throws CommandAbstractException {
-<span class="pc bpc" id="L282" title="1 of 2 branches missed.">    if (isExternal) {</span>
-<span class="nc" id="L283">      final File file = new File(currentFile);</span>
-<span class="nc" id="L284">      logger.debug(&quot;Final File: &quot; + file + &quot; CanRead: &quot; + file.canRead());</span>
-<span class="nc" id="L285">      return file.canRead();</span>
+<span class="pc bpc" id="L280" title="1 of 2 branches missed.">    if (isExternal) {</span>
+<span class="nc" id="L281">      final File file = new File(currentFile);</span>
+<span class="nc" id="L282">      logger.debug(&quot;Final File: &quot; + file + &quot; CanRead: &quot; + file.canRead());</span>
+<span class="nc" id="L283">      return file.canRead();</span>
     }
-<span class="fc" id="L287">    return super.canRead();</span>
+<span class="fc" id="L285">    return super.canRead();</span>
   }
 
   @Override
   public boolean canWrite() throws CommandAbstractException {
-<span class="pc bpc" id="L292" title="1 of 2 branches missed.">    if (isExternal) {</span>
-<span class="nc" id="L293">      final File file = new File(currentFile);</span>
-<span class="nc bnc" id="L294" title="All 2 branches missed.">      if (file.exists()) {</span>
-<span class="nc" id="L295">        return file.canWrite();</span>
+<span class="pc bpc" id="L290" title="1 of 2 branches missed.">    if (isExternal) {</span>
+<span class="nc" id="L291">      final File file = new File(currentFile);</span>
+<span class="nc bnc" id="L292" title="All 2 branches missed.">      if (file.exists()) {</span>
+<span class="nc" id="L293">        return file.canWrite();</span>
       }
-<span class="nc" id="L297">      return file.getParentFile().canWrite();</span>
+<span class="nc" id="L295">      return file.getParentFile().canWrite();</span>
     }
-<span class="fc" id="L299">    return super.canWrite();</span>
+<span class="fc" id="L297">    return super.canWrite();</span>
   }
 
   @Override
   public boolean delete() throws CommandAbstractException {
-<span class="fc bfc" id="L304" title="All 2 branches covered.">    if (isExternal) {</span>
-<span class="fc" id="L305">      final File file = new File(currentFile);</span>
-<span class="fc" id="L306">      checkIdentify();</span>
-<span class="pc bpc" id="L307" title="1 of 2 branches missed.">      if (!isReady) {</span>
-<span class="nc" id="L308">        return false;</span>
+<span class="fc bfc" id="L302" title="All 2 branches covered.">    if (isExternal) {</span>
+<span class="fc" id="L303">      final File file = new File(currentFile);</span>
+<span class="fc" id="L304">      checkIdentify();</span>
+<span class="pc bpc" id="L305" title="1 of 2 branches missed.">      if (!isReady) {</span>
+<span class="nc" id="L306">        return false;</span>
       }
-<span class="pc bpc" id="L310" title="1 of 2 branches missed.">      if (!file.exists()) {</span>
-<span class="nc" id="L311">        return true;</span>
+<span class="pc bpc" id="L308" title="1 of 2 branches missed.">      if (!file.exists()) {</span>
+<span class="nc" id="L309">        return true;</span>
       }
-<span class="fc" id="L313">      closeFile();</span>
-<span class="fc" id="L314">      return file.delete();</span>
+<span class="fc" id="L311">      closeFile();</span>
+<span class="fc" id="L312">      return file.delete();</span>
     }
-<span class="fc" id="L316">    return super.delete();</span>
+<span class="fc" id="L314">    return super.delete();</span>
   }
 
   @Override
   public boolean exists() throws CommandAbstractException {
-<span class="pc bpc" id="L321" title="1 of 2 branches missed.">    if (isExternal) {</span>
-<span class="nc" id="L322">      final File file = new File(currentFile);</span>
-<span class="nc" id="L323">      return file.exists();</span>
+<span class="pc bpc" id="L319" title="1 of 2 branches missed.">    if (isExternal) {</span>
+<span class="nc" id="L320">      final File file = new File(currentFile);</span>
+<span class="nc" id="L321">      return file.exists();</span>
     }
-<span class="fc" id="L325">    return super.exists();</span>
+<span class="fc" id="L323">    return super.exists();</span>
   }
 
   @Override
-  protected FileChannel getFileChannel() {
-<span class="pc bpc" id="L330" title="1 of 2 branches missed.">    if (!isExternal) {</span>
-<span class="fc" id="L331">      return super.getFileChannel();</span>
+  protected FileInputStream getFileInputStream() {
+<span class="pc bpc" id="L328" title="1 of 2 branches missed.">    if (!isExternal) {</span>
+<span class="fc" id="L329">      return super.getFileInputStream();</span>
     }
-<span class="nc bnc" id="L333" title="All 2 branches missed.">    if (!isReady) {</span>
-<span class="nc" id="L334">      return null;</span>
+<span class="nc bnc" id="L331" title="All 2 branches missed.">    if (!isReady) {</span>
+<span class="nc" id="L332">      return null;</span>
     }
-<span class="nc" id="L336">    final File trueFile = getTrueFile();</span>
-    FileChannel fileChannel;
+<span class="nc" id="L334">    final File trueFile = getTrueFile();</span>
+    @SuppressWarnings(&quot;resource&quot;)
+<span class="nc" id="L336">    FileInputStream fileInputStream = null;</span>
     try {
-      @SuppressWarnings(&quot;resource&quot;)
-<span class="nc" id="L340">      final FileInputStream fileInputStream =//NOSONAR</span>
-          new FileInputStream(trueFile);//NOSONAR
-<span class="nc" id="L342">      fileChannel = fileInputStream.getChannel();</span>
-<span class="nc bnc" id="L343" title="All 2 branches missed.">      if (getPosition() &gt; 0) {</span>
-<span class="nc" id="L344">        fileChannel = fileChannel.position(getPosition());</span>
+<span class="nc" id="L338">      fileInputStream = new FileInputStream(trueFile);//NOSONAR</span>
+<span class="nc" id="L339">      final long pos = getPosition();</span>
+<span class="nc bnc" id="L340" title="All 2 branches missed.">      if (pos &gt; 0) {</span>
+<span class="nc" id="L341">        long read = fileInputStream.skip(pos);</span>
+<span class="nc bnc" id="L342" title="All 2 branches missed.">        if (read != pos) {</span>
+<span class="nc" id="L343">          logger.warn(&quot;Cannot ensure position: {} while is {}&quot;, pos, read);</span>
+        }
       }
 <span class="nc" id="L346">    } catch (final FileNotFoundException e) {</span>
-<span class="nc" id="L347">      logger.error(&quot;FileInterface not found in getFileChannel:&quot;, e);</span>
+<span class="nc" id="L347">      logger.error(&quot;FileInterface not found in getFileInputStream:&quot;, e);</span>
 <span class="nc" id="L348">      return null;</span>
 <span class="nc" id="L349">    } catch (final IOException e) {</span>
-<span class="nc" id="L350">      logger.error(&quot;Change position in getFileChannel:&quot;, e);</span>
+<span class="nc" id="L350">      logger.error(&quot;Change position in getFileInputStream:&quot;, e);</span>
 <span class="nc" id="L351">      return null;</span>
 <span class="nc" id="L352">    }</span>
-<span class="nc" id="L353">    return fileChannel;</span>
+<span class="nc" id="L353">    return fileInputStream;</span>
   }
 
   @Override
@@ -362,7 +362,7 @@ public class R66File extends FilesystemBasedFileImpl {
 <span class="nc" id="L362">      return null;</span>
     }
 <span class="nc" id="L364">    final File trueFile = getTrueFile();</span>
-    RandomAccessFile raf;
+    final RandomAccessFile raf;
     try {
 <span class="nc" id="L367">      raf = new RandomAccessFile(trueFile, &quot;rw&quot;);//NOSONAR</span>
 <span class="nc" id="L368">      raf.seek(getPosition());</span>
@@ -386,7 +386,7 @@ public class R66File extends FilesystemBasedFileImpl {
    * @return the FileOutputStream (OUT)
    */
   @Override
-  protected FileOutputStream getFileOutputStream(boolean append) {
+  protected FileOutputStream getFileOutputStream(final boolean append) {
 <span class="pc bpc" id="L390" title="1 of 2 branches missed.">    if (!isExternal) {</span>
 <span class="fc" id="L391">      return super.getFileOutputStream(append);</span>
     }
@@ -409,7 +409,7 @@ public class R66File extends FilesystemBasedFileImpl {
 <span class="nc" id="L409">        return null;</span>
 <span class="nc" id="L410">      }</span>
     }
-    FileOutputStream fos;
+    final FileOutputStream fos;
     try {
 <span class="nc" id="L414">      fos = new FileOutputStream(trueFile, append);</span>
 <span class="nc" id="L415">    } catch (final FileNotFoundException e) {</span>
@@ -465,7 +465,7 @@ public class R66File extends FilesystemBasedFileImpl {
   }
 
   @Override
-  public boolean renameTo(String path) throws CommandAbstractException {
+  public boolean renameTo(final String path) throws CommandAbstractException {
 <span class="pc bpc" id="L469" title="1 of 2 branches missed.">    if (!isExternal) {</span>
 <span class="fc" id="L470">      return super.renameTo(path);</span>
     }
@@ -513,27 +513,10 @@ public class R66File extends FilesystemBasedFileImpl {
   private boolean renameTo(final File file, final File newFile)
       throws CommandAbstractException {
 <span class="nc bnc" id="L515" title="All 2 branches missed.">    if (!file.renameTo(newFile)) {</span>
-<span class="nc" id="L516">      FileOutputStream fileOutputStream = null;</span>
-      try {
-        try {
-<span class="nc" id="L519">          fileOutputStream = new FileOutputStream(newFile);</span>
-<span class="nc" id="L520">        } catch (final FileNotFoundException e) {</span>
-<span class="nc" id="L521">          logger.warn(&quot;Cannot find file: &quot; + newFile.getName(), e);</span>
-<span class="nc" id="L522">          return true;</span>
-<span class="nc" id="L523">        }</span>
-<span class="nc" id="L524">        final FileChannel fileChannelOut = fileOutputStream.getChannel();</span>
-<span class="nc bnc" id="L525" title="All 2 branches missed.">        if (get(fileChannelOut)) {</span>
-<span class="nc" id="L526">          delete();</span>
-        } else {
-<span class="nc" id="L528">          org.waarp.common.file.FileUtils.close(fileChannelOut);</span>
-<span class="nc" id="L529">          logger.error(&quot;Cannot write file: {}&quot;, newFile);</span>
-<span class="nc" id="L530">          return true;</span>
-        }
-      } finally {
-<span class="nc" id="L533">        org.waarp.common.file.FileUtils.close(fileOutputStream);</span>
-      }
+<span class="nc" id="L516">      FileUtils.copy(file, newFile, true, false);</span>
+<span class="nc" id="L517">      return true;</span>
     }
-<span class="nc" id="L536">    return false;</span>
+<span class="nc" id="L519">    return false;</span>
   }
 
   /**
@@ -547,48 +530,48 @@ public class R66File extends FilesystemBasedFileImpl {
    *
    * @throws CommandAbstractException
    */
-  public boolean renameTo(String path, boolean external)
+  public boolean renameTo(final String path, final boolean external)
       throws CommandAbstractException {
-<span class="nc bnc" id="L552" title="All 2 branches missed.">    if (!external) {</span>
-<span class="nc" id="L553">      return renameTo(path);</span>
+<span class="nc bnc" id="L535" title="All 2 branches missed.">    if (!external) {</span>
+<span class="nc" id="L536">      return renameTo(path);</span>
     }
-<span class="nc" id="L555">    checkIdentify();</span>
-<span class="nc bnc" id="L556" title="All 2 branches missed.">    if (!isReady) {</span>
-<span class="nc" id="L557">      return false;</span>
+<span class="nc" id="L538">    checkIdentify();</span>
+<span class="nc bnc" id="L539" title="All 2 branches missed.">    if (!isReady) {</span>
+<span class="nc" id="L540">      return false;</span>
     }
-<span class="nc" id="L559">    final File file = getTrueFile();</span>
-<span class="nc bnc" id="L560" title="All 2 branches missed.">    if (file.canRead()) {</span>
-<span class="nc" id="L561">      File newFile = new File(path);</span>
-<span class="nc" id="L562">      File parentFile = newFile.getParentFile();</span>
-<span class="nc bnc" id="L563" title="All 2 branches missed.">      if (parentFile == null) {</span>
-<span class="nc" id="L564">        final String dir = getFullInDir();</span>
-<span class="nc bnc" id="L565" title="All 2 branches missed.">        if (dir != null) {</span>
-<span class="nc" id="L566">          newFile = new File(dir, newFile.getPath());</span>
-<span class="nc" id="L567">          parentFile = newFile.getParentFile();</span>
+<span class="nc" id="L542">    final File file = getTrueFile();</span>
+<span class="nc bnc" id="L543" title="All 2 branches missed.">    if (file.canRead()) {</span>
+<span class="nc" id="L544">      File newFile = new File(path);</span>
+<span class="nc" id="L545">      File parentFile = newFile.getParentFile();</span>
+<span class="nc bnc" id="L546" title="All 2 branches missed.">      if (parentFile == null) {</span>
+<span class="nc" id="L547">        final String dir = getFullInDir();</span>
+<span class="nc bnc" id="L548" title="All 2 branches missed.">        if (dir != null) {</span>
+<span class="nc" id="L549">          newFile = new File(dir, newFile.getPath());</span>
+<span class="nc" id="L550">          parentFile = newFile.getParentFile();</span>
         }
       }
-<span class="nc bnc" id="L570" title="All 2 branches missed.">      if (newFile.exists()) {</span>
-<span class="nc" id="L571">        logger.warn(&quot;Target file already exists: &quot; + newFile.getAbsolutePath());</span>
-<span class="nc" id="L572">        return false;</span>
+<span class="nc bnc" id="L553" title="All 2 branches missed.">      if (newFile.exists()) {</span>
+<span class="nc" id="L554">        logger.warn(&quot;Target file already exists: &quot; + newFile.getAbsolutePath());</span>
+<span class="nc" id="L555">        return false;</span>
       }
-<span class="nc bnc" id="L574" title="All 2 branches missed.">      if (newFile.getAbsolutePath().equals(file.getAbsolutePath())) {</span>
+<span class="nc bnc" id="L557" title="All 2 branches missed.">      if (newFile.getAbsolutePath().equals(file.getAbsolutePath())) {</span>
         // already in the right position
-<span class="nc" id="L576">        isReady = true;</span>
-<span class="nc" id="L577">        return true;</span>
+<span class="nc" id="L559">        isReady = true;</span>
+<span class="nc" id="L560">        return true;</span>
       }
-<span class="nc bnc" id="L579" title="All 4 branches missed.">      if (parentFile != null &amp;&amp; parentFile.canWrite()) {</span>
-<span class="nc bnc" id="L580" title="All 2 branches missed.">        if (renameTo(file, newFile)) {</span>
-<span class="nc" id="L581">          return false;</span>
+<span class="nc bnc" id="L562" title="All 4 branches missed.">      if (parentFile != null &amp;&amp; parentFile.canWrite()) {</span>
+<span class="nc bnc" id="L563" title="All 2 branches missed.">        if (renameTo(file, newFile)) {</span>
+<span class="nc" id="L564">          return false;</span>
         }
-<span class="nc" id="L583">        currentFile = AbstractDir.normalizePath(newFile.getAbsolutePath());</span>
-<span class="nc" id="L584">        isExternal = true;</span>
-<span class="nc" id="L585">        isReady = true;</span>
-<span class="nc" id="L586">        return true;</span>
+<span class="nc" id="L566">        currentFile = AbstractDir.normalizePath(newFile.getAbsolutePath());</span>
+<span class="nc" id="L567">        isExternal = true;</span>
+<span class="nc" id="L568">        isReady = true;</span>
+<span class="nc" id="L569">        return true;</span>
       }
-<span class="nc" id="L588">      logger.error(&quot;Cannot write to parent directory: {}&quot;, newFile.getParent());</span>
+<span class="nc" id="L571">      logger.error(&quot;Cannot write to parent directory: {}&quot;, newFile.getParent());</span>
     }
-<span class="nc" id="L590">    logger.error(&quot;Cannot read file: {}&quot;, file);</span>
-<span class="nc" id="L591">    return false;</span>
+<span class="nc" id="L573">    logger.error(&quot;Cannot read file: {}&quot;, file);</span>
+<span class="nc" id="L574">    return false;</span>
   }
 
   /**
@@ -600,33 +583,33 @@ public class R66File extends FilesystemBasedFileImpl {
    *
    * @throws CommandAbstractException
    */
-  public void replaceFilename(String filename, boolean isExternal)
+  public void replaceFilename(final String filename, final boolean isExternal)
       throws CommandAbstractException {
-<span class="fc" id="L605">    closeFile();</span>
-<span class="fc" id="L606">    currentFile = filename;</span>
-<span class="fc" id="L607">    this.isExternal = isExternal;</span>
-<span class="fc" id="L608">    isReady = true;</span>
-<span class="fc" id="L609">  }</span>
+<span class="fc" id="L588">    closeFile();</span>
+<span class="fc" id="L589">    currentFile = filename;</span>
+<span class="fc" id="L590">    this.isExternal = isExternal;</span>
+<span class="fc" id="L591">    isReady = true;</span>
+<span class="fc" id="L592">  }</span>
 
   @Override
   public boolean closeFile() throws CommandAbstractException {
-<span class="fc" id="L613">    final boolean status = super.closeFile();</span>
+<span class="fc" id="L596">    final boolean status = super.closeFile();</span>
     // FORCE re-open file
-<span class="fc" id="L615">    isReady = true;</span>
-<span class="fc" id="L616">    return status;</span>
+<span class="fc" id="L598">    isReady = true;</span>
+<span class="fc" id="L599">    return status;</span>
   }
 
   /**
    * @return True if this file is outside OpenR66 Base directory
    */
   public boolean isExternal() {
-<span class="fc" id="L623">    return isExternal;</span>
+<span class="fc" id="L606">    return isExternal;</span>
   }
 
   @Override
   public String toString() {
-<span class="fc" id="L628">    return &quot;File: &quot; + currentFile + &quot; Ready &quot; + isReady + &quot; isExternal &quot; +</span>
-<span class="fc" id="L629">           isExternal + ' ' + getPosition();</span>
+<span class="fc" id="L611">    return &quot;File: &quot; + currentFile + &quot; Ready &quot; + isReady + &quot; isExternal &quot; +</span>
+<span class="fc" id="L612">           isExternal + ' ' + getPosition();</span>
   }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

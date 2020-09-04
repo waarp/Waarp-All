@@ -50,8 +50,8 @@ public class ExecTask extends AbstractExecTask {
    * @param argTransfer
    * @param session
    */
-  public ExecTask(String argRule, int delay, String argTransfer,
-                  R66Session session) {
+  public ExecTask(final String argRule, final int delay,
+                  final String argTransfer, final R66Session session) {
 <span class="fc" id="L55">    super(TaskType.EXEC, delay, argRule, argTransfer, session);</span>
 <span class="fc" id="L56">  }</span>
 
@@ -77,70 +77,71 @@ public class ExecTask extends AbstractExecTask {
       } // else continue
     }
 
-<span class="fc" id="L80">    PrepareCommandExec prepareCommandExec =</span>
+<span class="fc" id="L80">    final PrepareCommandExec prepareCommandExec =</span>
 <span class="fc" id="L81">        new PrepareCommandExec(finalname, true, waitForValidation).invoke();</span>
 <span class="pc bpc" id="L82" title="1 of 2 branches missed.">    if (prepareCommandExec.isError()) {</span>
 <span class="nc" id="L83">      return;</span>
     }
-<span class="fc" id="L85">    CommandLine commandLine = prepareCommandExec.getCommandLine();</span>
-<span class="fc" id="L86">    DefaultExecutor defaultExecutor = prepareCommandExec.getDefaultExecutor();</span>
-<span class="fc" id="L87">    PipedInputStream inputStream = prepareCommandExec.getInputStream();</span>
-<span class="fc" id="L88">    PipedOutputStream outputStream = prepareCommandExec.getOutputStream();</span>
-<span class="fc" id="L89">    PumpStreamHandler pumpStreamHandler =</span>
-<span class="fc" id="L90">        prepareCommandExec.getPumpStreamHandler();</span>
-<span class="fc" id="L91">    ExecuteWatchdog watchdog = prepareCommandExec.getWatchdog();</span>
+<span class="fc" id="L85">    final CommandLine commandLine = prepareCommandExec.getCommandLine();</span>
+<span class="fc" id="L86">    final DefaultExecutor defaultExecutor =</span>
+<span class="fc" id="L87">        prepareCommandExec.getDefaultExecutor();</span>
+<span class="fc" id="L88">    final PipedInputStream inputStream = prepareCommandExec.getInputStream();</span>
+<span class="fc" id="L89">    final PipedOutputStream outputStream = prepareCommandExec.getOutputStream();</span>
+<span class="fc" id="L90">    final PumpStreamHandler pumpStreamHandler =</span>
+<span class="fc" id="L91">        prepareCommandExec.getPumpStreamHandler();</span>
+<span class="fc" id="L92">    final ExecuteWatchdog watchdog = prepareCommandExec.getWatchdog();</span>
 
-<span class="pc bpc" id="L93" title="1 of 2 branches missed.">    if (!waitForValidation) {</span>
+<span class="pc bpc" id="L94" title="1 of 2 branches missed.">    if (!waitForValidation) {</span>
       // Do not wait for validation
-<span class="nc" id="L95">      futureCompletion.setSuccess();</span>
-<span class="nc" id="L96">      logger.info(&quot;Exec will start but no WAIT with {}&quot;, commandLine);</span>
+<span class="nc" id="L96">      futureCompletion.setSuccess();</span>
+<span class="nc" id="L97">      logger.info(&quot;Exec will start but no WAIT with {}&quot;, commandLine);</span>
     }
 
-<span class="fc" id="L99">    ExecuteCommand executeCommand =</span>
+<span class="fc" id="L100">    final ExecuteCommand executeCommand =</span>
         new ExecuteCommand(commandLine, defaultExecutor, inputStream,
-<span class="fc" id="L101">                           outputStream, pumpStreamHandler, null).invoke();</span>
-<span class="pc bpc" id="L102" title="1 of 2 branches missed.">    if (executeCommand.isError()) {</span>
-<span class="nc" id="L103">      return;</span>
+<span class="fc" id="L102">                           outputStream, pumpStreamHandler, null).invoke();</span>
+<span class="pc bpc" id="L103" title="1 of 2 branches missed.">    if (executeCommand.isError()) {</span>
+<span class="nc" id="L104">      return;</span>
     }
-<span class="fc" id="L105">    int status = executeCommand.getStatus();</span>
+<span class="fc" id="L106">    int status = executeCommand.getStatus();</span>
 
-<span class="pc bpc" id="L107" title="3 of 4 branches missed.">    if (defaultExecutor.isFailure(status) &amp;&amp; watchdog != null &amp;&amp;</span>
-<span class="nc bnc" id="L108" title="All 2 branches missed.">        watchdog.killedProcess()) {</span>
+<span class="pc bpc" id="L108" title="3 of 4 branches missed.">    if (defaultExecutor.isFailure(status) &amp;&amp; watchdog != null &amp;&amp;</span>
+<span class="nc bnc" id="L109" title="All 2 branches missed.">        watchdog.killedProcess()) {</span>
       // kill by the watchdoc (time out)
-<span class="nc" id="L110">      logger.error(&quot;Exec is in Time Out&quot;);</span>
-<span class="nc" id="L111">      status = -1;</span>
+<span class="nc" id="L111">      logger.error(&quot;Exec is in Time Out&quot;);</span>
+<span class="nc" id="L112">      status = -1;</span>
     }
-<span class="pc bpc" id="L113" title="1 of 2 branches missed.">    if (status == 0) {</span>
-<span class="pc bpc" id="L114" title="1 of 2 branches missed.">      if (waitForValidation) {</span>
-<span class="fc" id="L115">        futureCompletion.setSuccess();</span>
+<span class="pc bpc" id="L114" title="1 of 2 branches missed.">    if (status == 0) {</span>
+<span class="pc bpc" id="L115" title="1 of 2 branches missed.">      if (waitForValidation) {</span>
+<span class="fc" id="L116">        futureCompletion.setSuccess();</span>
       }
-<span class="fc" id="L117">      logger.info(&quot;Exec OK with {}&quot;, commandLine);</span>
-<span class="nc bnc" id="L118" title="All 2 branches missed.">    } else if (status == 1) {</span>
-<span class="nc" id="L119">      logger.warn(&quot;Exec in warning with &quot; + commandLine);</span>
-<span class="nc bnc" id="L120" title="All 2 branches missed.">      if (waitForValidation) {</span>
-<span class="nc" id="L121">        futureCompletion.setSuccess();</span>
+<span class="fc" id="L118">      logger.info(&quot;Exec OK with {}&quot;, commandLine);</span>
+<span class="nc bnc" id="L119" title="All 2 branches missed.">    } else if (status == 1) {</span>
+<span class="nc" id="L120">      logger.warn(&quot;Exec in warning with &quot; + commandLine);</span>
+<span class="nc bnc" id="L121" title="All 2 branches missed.">      if (waitForValidation) {</span>
+<span class="nc" id="L122">        futureCompletion.setSuccess();</span>
       }
     } else {
-<span class="nc" id="L124">      logger.error(&quot;Status: &quot; + status + &quot; Exec in error with &quot; + commandLine);</span>
-<span class="nc bnc" id="L125" title="All 2 branches missed.">      if (waitForValidation) {</span>
-<span class="nc" id="L126">        futureCompletion.cancel();</span>
+<span class="nc" id="L125">      logger.error(&quot;Status: &quot; + status + &quot; Exec in error with &quot; + commandLine);</span>
+<span class="nc bnc" id="L126" title="All 2 branches missed.">      if (waitForValidation) {</span>
+<span class="nc" id="L127">        futureCompletion.cancel();</span>
       }
     }
-<span class="fc" id="L129">  }</span>
+<span class="fc" id="L130">  }</span>
 
   @Override
-  void finalizeFromError(Runnable threadReader, int status,
-                         CommandLine commandLine, Exception e) {
+  void finalizeFromError(final Runnable threadReader, final int status,
+                         final CommandLine commandLine, final Exception e) {
     try {
-<span class="nc" id="L135">      Thread.sleep(Configuration.RETRYINMS);</span>
-<span class="nc" id="L136">    } catch (final InterruptedException e2) {//NOSONAR</span>
-<span class="nc" id="L137">      SysErrLogger.FAKE_LOGGER.ignoreLog(e2);</span>
-<span class="nc" id="L138">    }</span>
-<span class="nc" id="L139">    logger.error(&quot;Status: &quot; + status + &quot; Exec in error with &quot; + commandLine +</span>
-<span class="nc" id="L140">                 &quot; returns &quot; + e.getMessage());</span>
-<span class="nc bnc" id="L141" title="All 2 branches missed.">    if (waitForValidation) {</span>
-<span class="nc" id="L142">      futureCompletion.setFailure(e);</span>
+<span class="nc" id="L136">      Thread.sleep(Configuration.RETRYINMS);</span>
+<span class="nc" id="L137">    } catch (final InterruptedException e2) {//NOSONAR</span>
+<span class="nc" id="L138">      SysErrLogger.FAKE_LOGGER.ignoreLog(e2);</span>
+<span class="nc" id="L139">    }</span>
+<span class="nc" id="L140">    logger.error(&quot;Status: &quot; + status + &quot; Exec in error with &quot; + commandLine +</span>
+<span class="nc" id="L141">                 &quot; returns &quot; + e.getMessage());</span>
+<span class="nc bnc" id="L142" title="All 2 branches missed.">    if (waitForValidation) {</span>
+<span class="nc" id="L143">      futureCompletion.setFailure(e);</span>
     }
-<span class="nc" id="L144">  }</span>
+<span class="nc" id="L145">  }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

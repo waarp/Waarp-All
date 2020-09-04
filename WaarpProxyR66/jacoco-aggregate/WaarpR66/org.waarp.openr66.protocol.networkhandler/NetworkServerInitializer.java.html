@@ -25,6 +25,8 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.handler.traffic.ChannelTrafficShapingHandler;
 import io.netty.handler.traffic.GlobalTrafficShapingHandler;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolNetworkException;
 import org.waarp.openr66.protocol.networkhandler.packet.NetworkPacketCodec;
@@ -36,6 +38,11 @@ import java.util.concurrent.TimeUnit;
  */
 public class NetworkServerInitializer
     extends ChannelInitializer&lt;SocketChannel&gt; {
+  /**
+   * Internal Logger
+   */
+<span class="fc" id="L44">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L45">      WaarpLoggerFactory.getLogger(NetworkServerInitializer.class);</span>
 
   public static final String TIMEOUT = &quot;timeout&quot;;
   public static final String LIMITGLOBAL = &quot;GLOBALLIMIT&quot;;
@@ -45,36 +52,38 @@ public class NetworkServerInitializer
 
   protected final boolean server;
 
-<span class="fc" id="L48">  public NetworkServerInitializer(boolean server) {</span>
-<span class="fc" id="L49">    this.server = server;</span>
-<span class="fc" id="L50">  }</span>
+<span class="fc" id="L55">  public NetworkServerInitializer(final boolean server) {</span>
+<span class="fc" id="L56">    this.server = server;</span>
+<span class="fc" id="L57">  }</span>
 
   @Override
-  protected void initChannel(SocketChannel ch) throws Exception {
-<span class="fc" id="L54">    final ChannelPipeline pipeline = ch.pipeline();</span>
-<span class="fc" id="L55">    pipeline.addLast(TIMEOUT, new IdleStateHandler(0, 0,</span>
+  protected void initChannel(final SocketChannel ch) throws Exception {
+<span class="fc" id="L61">    final ChannelPipeline pipeline = ch.pipeline();</span>
+<span class="fc" id="L62">    logger.debug(&quot;Create IdleStateHandler with {} ms&quot;,</span>
+<span class="fc" id="L63">                 Configuration.configuration.getTimeoutCon());</span>
+<span class="fc" id="L64">    pipeline.addLast(TIMEOUT, new IdleStateHandler(true, 0, 0,</span>
                                                    Configuration.configuration
-<span class="fc" id="L57">                                                       .getTimeoutCon(),</span>
+<span class="fc" id="L66">                                                       .getTimeoutCon(),</span>
                                                    TimeUnit.MILLISECONDS));
     // Global limitation
-<span class="fc" id="L60">    final GlobalTrafficShapingHandler handler =</span>
-<span class="fc" id="L61">        Configuration.configuration.getGlobalTrafficShapingHandler();</span>
-<span class="pc bpc" id="L62" title="1 of 2 branches missed.">    if (handler == null) {</span>
-<span class="nc" id="L63">      throw new OpenR66ProtocolNetworkException(</span>
+<span class="fc" id="L69">    final GlobalTrafficShapingHandler handler =</span>
+<span class="fc" id="L70">        Configuration.configuration.getGlobalTrafficShapingHandler();</span>
+<span class="pc bpc" id="L71" title="1 of 2 branches missed.">    if (handler == null) {</span>
+<span class="nc" id="L72">      throw new OpenR66ProtocolNetworkException(</span>
           &quot;Error at pipeline initialization,&quot; +
           &quot; GlobalTrafficShapingHandler configured.&quot;);
     }
-<span class="fc" id="L67">    pipeline.addLast(LIMITGLOBAL, handler);</span>
+<span class="fc" id="L76">    pipeline.addLast(LIMITGLOBAL, handler);</span>
     // Per channel limitation
-<span class="fc" id="L69">    pipeline.addLast(LIMITCHANNEL, new ChannelTrafficShapingHandler(</span>
-<span class="fc" id="L70">        Configuration.configuration.getServerChannelWriteLimit(),</span>
-<span class="fc" id="L71">        Configuration.configuration.getServerChannelReadLimit(),</span>
-<span class="fc" id="L72">        Configuration.configuration.getDelayLimit(),</span>
-<span class="fc" id="L73">        Configuration.configuration.getTimeoutCon()));</span>
-<span class="fc" id="L74">    pipeline.addLast(NETWORK_CODEC, new NetworkPacketCodec());</span>
-<span class="fc" id="L75">    pipeline</span>
-<span class="fc" id="L76">        .addLast(Configuration.configuration.getHandlerGroup(), NETWORK_HANDLER,</span>
+<span class="fc" id="L78">    pipeline.addLast(LIMITCHANNEL, new ChannelTrafficShapingHandler(</span>
+<span class="fc" id="L79">        Configuration.configuration.getServerChannelWriteLimit(),</span>
+<span class="fc" id="L80">        Configuration.configuration.getServerChannelReadLimit(),</span>
+<span class="fc" id="L81">        Configuration.configuration.getDelayLimit(),</span>
+<span class="fc" id="L82">        Configuration.configuration.getTimeoutCon()));</span>
+<span class="fc" id="L83">    pipeline.addLast(NETWORK_CODEC, new NetworkPacketCodec());</span>
+<span class="fc" id="L84">    pipeline</span>
+<span class="fc" id="L85">        .addLast(Configuration.configuration.getHandlerGroup(), NETWORK_HANDLER,</span>
                  new NetworkServerHandler(server));
-<span class="fc" id="L78">  }</span>
+<span class="fc" id="L87">  }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

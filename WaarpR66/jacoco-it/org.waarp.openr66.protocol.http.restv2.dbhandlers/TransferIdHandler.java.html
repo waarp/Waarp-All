@@ -70,7 +70,7 @@ public class TransferIdHandler extends AbstractRestDbHandler {
    *
    * @param crud the CRUD mask for this handler
    */
-  public TransferIdHandler(byte crud) {
+  public TransferIdHandler(final byte crud) {
 <span class="fc" id="L74">    super(crud);</span>
 <span class="fc" id="L75">  }</span>
 
@@ -94,44 +94,45 @@ public class TransferIdHandler extends AbstractRestDbHandler {
   @GET
   @Consumes(WILDCARD)
   @RequiredRole(READONLY)
-  public void getTransfer(HttpRequest request, HttpResponder responder,
-                          @PathParam(URI_ID) String uri)
+  public void getTransfer(final HttpRequest request,
+                          final HttpResponder responder,
+                          @PathParam(URI_ID) final String uri)
       throws UnsupportedEncodingException {
 
-<span class="nc" id="L101">    final String key = URLDecoder.decode(uri, UTF8_CHARSET.name());</span>
-<span class="nc" id="L102">    final Pattern pattern = Pattern.compile(&quot;(-?\\d+)_(.+)&quot;);</span>
-<span class="nc" id="L103">    final Matcher matcher = pattern.matcher(key);</span>
-<span class="nc bnc" id="L104" title="All 2 branches missed.">    if (!matcher.find()) {</span>
-<span class="nc" id="L105">      responder.sendStatus(NOT_FOUND);</span>
-<span class="nc" id="L106">      return;</span>
+<span class="nc" id="L102">    final String key = URLDecoder.decode(uri, UTF8_CHARSET.name());</span>
+<span class="nc" id="L103">    final Pattern pattern = Pattern.compile(&quot;(-?\\d+)_(.+)&quot;);</span>
+<span class="nc" id="L104">    final Matcher matcher = pattern.matcher(key);</span>
+<span class="nc bnc" id="L105" title="All 2 branches missed.">    if (!matcher.find()) {</span>
+<span class="nc" id="L106">      responder.sendStatus(NOT_FOUND);</span>
+<span class="nc" id="L107">      return;</span>
     }
-<span class="nc" id="L108">    final String id = matcher.group(1);</span>
-<span class="nc" id="L109">    final String requested = matcher.group(2);</span>
+<span class="nc" id="L109">    final String id = matcher.group(1);</span>
+<span class="nc" id="L110">    final String requested = matcher.group(2);</span>
 
-<span class="nc" id="L111">    TransferDAO transferDAO = null;</span>
+<span class="nc" id="L112">    TransferDAO transferDAO = null;</span>
     try {
-<span class="nc" id="L113">      final long transID = Long.parseLong(id);</span>
-<span class="nc" id="L114">      transferDAO = DAO_FACTORY.getTransferDAO();</span>
-<span class="nc" id="L115">      if (!transferDAO</span>
-<span class="nc bnc" id="L116" title="All 2 branches missed.">          .exist(transID, serverName(requested), requested, serverName())) {</span>
-<span class="nc" id="L117">        responder.sendStatus(NOT_FOUND);</span>
+<span class="nc" id="L114">      final long transID = Long.parseLong(id);</span>
+<span class="nc" id="L115">      transferDAO = DAO_FACTORY.getTransferDAO();</span>
+<span class="nc" id="L116">      if (!transferDAO</span>
+<span class="nc bnc" id="L117" title="All 2 branches missed.">          .exist(transID, serverName(requested), requested, serverName())) {</span>
+<span class="nc" id="L118">        responder.sendStatus(NOT_FOUND);</span>
       } else {
-<span class="nc" id="L119">        final Transfer transfer = transferDAO</span>
-<span class="nc" id="L120">            .select(transID, serverName(requested), requested, serverName());</span>
-<span class="nc" id="L121">        final ObjectNode response = TransferConverter.transferToNode(transfer);</span>
-<span class="nc" id="L122">        final String responseText = JsonUtils.nodeToString(response);</span>
-<span class="nc" id="L123">        responder.sendJson(OK, responseText);</span>
+<span class="nc" id="L120">        final Transfer transfer = transferDAO</span>
+<span class="nc" id="L121">            .select(transID, serverName(requested), requested, serverName());</span>
+<span class="nc" id="L122">        final ObjectNode response = TransferConverter.transferToNode(transfer);</span>
+<span class="nc" id="L123">        final String responseText = JsonUtils.nodeToString(response);</span>
+<span class="nc" id="L124">        responder.sendJson(OK, responseText);</span>
       }
-<span class="nc" id="L125">    } catch (final NumberFormatException e) {</span>
-<span class="nc" id="L126">      responder.sendStatus(NOT_FOUND);</span>
-<span class="nc" id="L127">    } catch (final DAOConnectionException e) {</span>
-<span class="nc" id="L128">      throw new InternalServerErrorException(e);</span>
-<span class="nc" id="L129">    } catch (final DAONoDataException e) {</span>
-<span class="nc" id="L130">      responder.sendStatus(NOT_FOUND);</span>
+<span class="nc" id="L126">    } catch (final NumberFormatException e) {</span>
+<span class="nc" id="L127">      responder.sendStatus(NOT_FOUND);</span>
+<span class="nc" id="L128">    } catch (final DAOConnectionException e) {</span>
+<span class="nc" id="L129">      throw new InternalServerErrorException(e);</span>
+<span class="nc" id="L130">    } catch (final DAONoDataException e) {</span>
+<span class="nc" id="L131">      responder.sendStatus(NOT_FOUND);</span>
     } finally {
-<span class="nc" id="L132">      DAOFactory.closeDAO(transferDAO);</span>
+<span class="nc" id="L133">      DAOFactory.closeDAO(transferDAO);</span>
     }
-<span class="nc" id="L134">  }</span>
+<span class="nc" id="L135">  }</span>
 
   /**
    * Method called to restart a paused transfer.
@@ -150,51 +151,52 @@ public class TransferIdHandler extends AbstractRestDbHandler {
   @PUT
   @Consumes(WILDCARD)
   @RequiredRole(SYSTEM)
-  public void restartTransfer(HttpRequest request, HttpResponder responder,
-                              @PathParam(URI_ID) String uri)
+  public void restartTransfer(final HttpRequest request,
+                              final HttpResponder responder,
+                              @PathParam(URI_ID) final String uri)
       throws UnsupportedEncodingException {
 
-<span class="nc" id="L157">    final String key = URLDecoder.decode(uri, WaarpStringUtils.UTF_8);</span>
-<span class="nc" id="L158">    final Pattern pattern = Pattern.compile(&quot;(-?\\d+)_(.+)&quot;);</span>
-<span class="nc" id="L159">    final Matcher matcher = pattern.matcher(key);</span>
-<span class="nc bnc" id="L160" title="All 2 branches missed.">    if (!matcher.find()) {</span>
-<span class="nc" id="L161">      responder.sendStatus(NOT_FOUND);</span>
-<span class="nc" id="L162">      return;</span>
+<span class="nc" id="L159">    final String key = URLDecoder.decode(uri, WaarpStringUtils.UTF_8);</span>
+<span class="nc" id="L160">    final Pattern pattern = Pattern.compile(&quot;(-?\\d+)_(.+)&quot;);</span>
+<span class="nc" id="L161">    final Matcher matcher = pattern.matcher(key);</span>
+<span class="nc bnc" id="L162" title="All 2 branches missed.">    if (!matcher.find()) {</span>
+<span class="nc" id="L163">      responder.sendStatus(NOT_FOUND);</span>
+<span class="nc" id="L164">      return;</span>
     }
-<span class="nc" id="L164">    final String id = matcher.group(1);</span>
-<span class="nc" id="L165">    final String requested = matcher.group(2);</span>
+<span class="nc" id="L166">    final String id = matcher.group(1);</span>
+<span class="nc" id="L167">    final String requested = matcher.group(2);</span>
 
-<span class="nc" id="L167">    TransferDAO transferDAO = null;</span>
+<span class="nc" id="L169">    TransferDAO transferDAO = null;</span>
     try {
-<span class="nc" id="L169">      final long transID = Long.parseLong(id);</span>
-<span class="nc" id="L170">      transferDAO = DAO_FACTORY.getTransferDAO();</span>
-<span class="nc" id="L171">      if (!transferDAO</span>
-<span class="nc bnc" id="L172" title="All 2 branches missed.">          .exist(transID, serverName(requested), requested, serverName())) {</span>
-<span class="nc" id="L173">        responder.sendStatus(NOT_FOUND);</span>
+<span class="nc" id="L171">      final long transID = Long.parseLong(id);</span>
+<span class="nc" id="L172">      transferDAO = DAO_FACTORY.getTransferDAO();</span>
+<span class="nc" id="L173">      if (!transferDAO</span>
+<span class="nc bnc" id="L174" title="All 2 branches missed.">          .exist(transID, serverName(requested), requested, serverName())) {</span>
+<span class="nc" id="L175">        responder.sendStatus(NOT_FOUND);</span>
       } else {
-<span class="nc" id="L175">        final Transfer transfer = transferDAO</span>
-<span class="nc" id="L176">            .select(transID, serverName(requested), requested, serverName());</span>
-<span class="nc" id="L177">        final ServerActions actions = new ServerActions();</span>
-<span class="nc" id="L178">        actions.newSession();</span>
-<span class="nc" id="L179">        actions.stopTransfer(transfer);</span>
-<span class="nc" id="L180">        transfer.setUpdatedInfo(TOSUBMIT);</span>
-<span class="nc" id="L181">        transfer.setGlobalStep(transfer.getLastGlobalStep());</span>
-<span class="nc" id="L182">        transferDAO.update(transfer);</span>
+<span class="nc" id="L177">        final Transfer transfer = transferDAO</span>
+<span class="nc" id="L178">            .select(transID, serverName(requested), requested, serverName());</span>
+<span class="nc" id="L179">        final ServerActions actions = new ServerActions();</span>
+<span class="nc" id="L180">        actions.newSession();</span>
+<span class="nc" id="L181">        actions.stopTransfer(transfer);</span>
+<span class="nc" id="L182">        transfer.setUpdatedInfo(TOSUBMIT);</span>
+<span class="nc" id="L183">        transfer.setGlobalStep(transfer.getLastGlobalStep());</span>
+<span class="nc" id="L184">        transferDAO.update(transfer);</span>
 
-<span class="nc" id="L184">        final ObjectNode response = TransferConverter.transferToNode(transfer);</span>
-<span class="nc" id="L185">        final String responseText = JsonUtils.nodeToString(response);</span>
-<span class="nc" id="L186">        responder.sendJson(OK, responseText);</span>
+<span class="nc" id="L186">        final ObjectNode response = TransferConverter.transferToNode(transfer);</span>
+<span class="nc" id="L187">        final String responseText = JsonUtils.nodeToString(response);</span>
+<span class="nc" id="L188">        responder.sendJson(OK, responseText);</span>
       }
-<span class="nc" id="L188">    } catch (final NumberFormatException e) {</span>
-<span class="nc" id="L189">      responder.sendStatus(NOT_FOUND);</span>
-<span class="nc" id="L190">    } catch (final DAOConnectionException e) {</span>
-<span class="nc" id="L191">      throw new InternalServerErrorException(e);</span>
-<span class="nc" id="L192">    } catch (final DAONoDataException e) {</span>
-<span class="nc" id="L193">      responder.sendStatus(NOT_FOUND);</span>
+<span class="nc" id="L190">    } catch (final NumberFormatException e) {</span>
+<span class="nc" id="L191">      responder.sendStatus(NOT_FOUND);</span>
+<span class="nc" id="L192">    } catch (final DAOConnectionException e) {</span>
+<span class="nc" id="L193">      throw new InternalServerErrorException(e);</span>
+<span class="nc" id="L194">    } catch (final DAONoDataException e) {</span>
+<span class="nc" id="L195">      responder.sendStatus(NOT_FOUND);</span>
     } finally {
-<span class="nc" id="L195">      DAOFactory.closeDAO(transferDAO);</span>
+<span class="nc" id="L197">      DAOFactory.closeDAO(transferDAO);</span>
     }
-<span class="nc" id="L197">  }</span>
+<span class="nc" id="L199">  }</span>
 
   /**
    * Method called to pause a staged or running transfer.
@@ -213,49 +215,50 @@ public class TransferIdHandler extends AbstractRestDbHandler {
   @PUT
   @Consumes(WILDCARD)
   @RequiredRole(SYSTEM)
-  public void stopTransfer(HttpRequest request, HttpResponder responder,
-                           @PathParam(URI_ID) String uri)
+  public void stopTransfer(final HttpRequest request,
+                           final HttpResponder responder,
+                           @PathParam(URI_ID) final String uri)
       throws UnsupportedEncodingException {
 
-<span class="nc" id="L220">    final String key = URLDecoder.decode(uri, WaarpStringUtils.UTF8.name());</span>
-<span class="nc" id="L221">    final Pattern pattern = Pattern.compile(&quot;(-?\\d+)_(.+)&quot;);</span>
-<span class="nc" id="L222">    final Matcher matcher = pattern.matcher(key);</span>
-<span class="nc bnc" id="L223" title="All 2 branches missed.">    if (!matcher.find()) {</span>
-<span class="nc" id="L224">      responder.sendStatus(NOT_FOUND);</span>
-<span class="nc" id="L225">      return;</span>
+<span class="nc" id="L223">    final String key = URLDecoder.decode(uri, WaarpStringUtils.UTF8.name());</span>
+<span class="nc" id="L224">    final Pattern pattern = Pattern.compile(&quot;(-?\\d+)_(.+)&quot;);</span>
+<span class="nc" id="L225">    final Matcher matcher = pattern.matcher(key);</span>
+<span class="nc bnc" id="L226" title="All 2 branches missed.">    if (!matcher.find()) {</span>
+<span class="nc" id="L227">      responder.sendStatus(NOT_FOUND);</span>
+<span class="nc" id="L228">      return;</span>
     }
-<span class="nc" id="L227">    final String id = matcher.group(1);</span>
-<span class="nc" id="L228">    final String requested = matcher.group(2);</span>
+<span class="nc" id="L230">    final String id = matcher.group(1);</span>
+<span class="nc" id="L231">    final String requested = matcher.group(2);</span>
 
-<span class="nc" id="L230">    TransferDAO transferDAO = null;</span>
+<span class="nc" id="L233">    TransferDAO transferDAO = null;</span>
     try {
-<span class="nc" id="L232">      final long transID = Long.parseLong(id);</span>
-<span class="nc" id="L233">      transferDAO = DAO_FACTORY.getTransferDAO();</span>
-<span class="nc" id="L234">      if (!transferDAO</span>
-<span class="nc bnc" id="L235" title="All 2 branches missed.">          .exist(transID, serverName(requested), requested, serverName())) {</span>
-<span class="nc" id="L236">        responder.sendStatus(NOT_FOUND);</span>
+<span class="nc" id="L235">      final long transID = Long.parseLong(id);</span>
+<span class="nc" id="L236">      transferDAO = DAO_FACTORY.getTransferDAO();</span>
+<span class="nc" id="L237">      if (!transferDAO</span>
+<span class="nc bnc" id="L238" title="All 2 branches missed.">          .exist(transID, serverName(requested), requested, serverName())) {</span>
+<span class="nc" id="L239">        responder.sendStatus(NOT_FOUND);</span>
       } else {
-<span class="nc" id="L238">        final Transfer transfer = transferDAO</span>
-<span class="nc" id="L239">            .select(transID, serverName(requested), requested, serverName());</span>
-<span class="nc" id="L240">        final ServerActions actions = new ServerActions();</span>
-<span class="nc" id="L241">        actions.newSession();</span>
-<span class="nc" id="L242">        actions.stopTransfer(transfer);</span>
-<span class="nc" id="L243">        transferDAO.update(transfer);</span>
+<span class="nc" id="L241">        final Transfer transfer = transferDAO</span>
+<span class="nc" id="L242">            .select(transID, serverName(requested), requested, serverName());</span>
+<span class="nc" id="L243">        final ServerActions actions = new ServerActions();</span>
+<span class="nc" id="L244">        actions.newSession();</span>
+<span class="nc" id="L245">        actions.stopTransfer(transfer);</span>
+<span class="nc" id="L246">        transferDAO.update(transfer);</span>
 
-<span class="nc" id="L245">        final ObjectNode response = TransferConverter.transferToNode(transfer);</span>
-<span class="nc" id="L246">        final String responseText = JsonUtils.nodeToString(response);</span>
-<span class="nc" id="L247">        responder.sendJson(OK, responseText);</span>
+<span class="nc" id="L248">        final ObjectNode response = TransferConverter.transferToNode(transfer);</span>
+<span class="nc" id="L249">        final String responseText = JsonUtils.nodeToString(response);</span>
+<span class="nc" id="L250">        responder.sendJson(OK, responseText);</span>
       }
-<span class="nc" id="L249">    } catch (final NumberFormatException e) {</span>
-<span class="nc" id="L250">      responder.sendStatus(NOT_FOUND);</span>
-<span class="nc" id="L251">    } catch (final DAOConnectionException e) {</span>
-<span class="nc" id="L252">      throw new InternalServerErrorException(e);</span>
-<span class="nc" id="L253">    } catch (final DAONoDataException e) {</span>
-<span class="nc" id="L254">      responder.sendStatus(NOT_FOUND);</span>
+<span class="nc" id="L252">    } catch (final NumberFormatException e) {</span>
+<span class="nc" id="L253">      responder.sendStatus(NOT_FOUND);</span>
+<span class="nc" id="L254">    } catch (final DAOConnectionException e) {</span>
+<span class="nc" id="L255">      throw new InternalServerErrorException(e);</span>
+<span class="nc" id="L256">    } catch (final DAONoDataException e) {</span>
+<span class="nc" id="L257">      responder.sendStatus(NOT_FOUND);</span>
     } finally {
-<span class="nc" id="L256">      DAOFactory.closeDAO(transferDAO);</span>
+<span class="nc" id="L259">      DAOFactory.closeDAO(transferDAO);</span>
     }
-<span class="nc" id="L258">  }</span>
+<span class="nc" id="L261">  }</span>
 
   /**
    * Method called to cancel a staged or running transfer.
@@ -274,49 +277,50 @@ public class TransferIdHandler extends AbstractRestDbHandler {
   @PUT
   @Consumes(WILDCARD)
   @RequiredRole(SYSTEM)
-  public void cancelTransfer(HttpRequest request, HttpResponder responder,
-                             @PathParam(URI_ID) String uri)
+  public void cancelTransfer(final HttpRequest request,
+                             final HttpResponder responder,
+                             @PathParam(URI_ID) final String uri)
       throws UnsupportedEncodingException {
 
-<span class="nc" id="L281">    final String key = URLDecoder.decode(uri, WaarpStringUtils.UTF8.name());</span>
-<span class="nc" id="L282">    final Pattern pattern = Pattern.compile(&quot;(-?\\d+)_(.+)&quot;);</span>
-<span class="nc" id="L283">    final Matcher matcher = pattern.matcher(key);</span>
-<span class="nc bnc" id="L284" title="All 2 branches missed.">    if (!matcher.find()) {</span>
-<span class="nc" id="L285">      responder.sendStatus(NOT_FOUND);</span>
-<span class="nc" id="L286">      return;</span>
+<span class="nc" id="L285">    final String key = URLDecoder.decode(uri, WaarpStringUtils.UTF8.name());</span>
+<span class="nc" id="L286">    final Pattern pattern = Pattern.compile(&quot;(-?\\d+)_(.+)&quot;);</span>
+<span class="nc" id="L287">    final Matcher matcher = pattern.matcher(key);</span>
+<span class="nc bnc" id="L288" title="All 2 branches missed.">    if (!matcher.find()) {</span>
+<span class="nc" id="L289">      responder.sendStatus(NOT_FOUND);</span>
+<span class="nc" id="L290">      return;</span>
     }
-<span class="nc" id="L288">    final String id = matcher.group(1);</span>
-<span class="nc" id="L289">    final String requested = matcher.group(2);</span>
+<span class="nc" id="L292">    final String id = matcher.group(1);</span>
+<span class="nc" id="L293">    final String requested = matcher.group(2);</span>
 
-<span class="nc" id="L291">    TransferDAO transferDAO = null;</span>
+<span class="nc" id="L295">    TransferDAO transferDAO = null;</span>
     try {
-<span class="nc" id="L293">      final long transID = Long.parseLong(id);</span>
-<span class="nc" id="L294">      transferDAO = DAO_FACTORY.getTransferDAO();</span>
-<span class="nc" id="L295">      if (!transferDAO</span>
-<span class="nc bnc" id="L296" title="All 2 branches missed.">          .exist(transID, serverName(requested), requested, serverName())) {</span>
-<span class="nc" id="L297">        responder.sendStatus(NOT_FOUND);</span>
+<span class="nc" id="L297">      final long transID = Long.parseLong(id);</span>
+<span class="nc" id="L298">      transferDAO = DAO_FACTORY.getTransferDAO();</span>
+<span class="nc" id="L299">      if (!transferDAO</span>
+<span class="nc bnc" id="L300" title="All 2 branches missed.">          .exist(transID, serverName(requested), requested, serverName())) {</span>
+<span class="nc" id="L301">        responder.sendStatus(NOT_FOUND);</span>
       } else {
-<span class="nc" id="L299">        final Transfer transfer = transferDAO</span>
-<span class="nc" id="L300">            .select(transID, serverName(requested), requested, serverName());</span>
-<span class="nc" id="L301">        final ServerActions actions = new ServerActions();</span>
-<span class="nc" id="L302">        actions.newSession();</span>
-<span class="nc" id="L303">        actions.cancelTransfer(transfer);</span>
-<span class="nc" id="L304">        transferDAO.update(transfer);</span>
+<span class="nc" id="L303">        final Transfer transfer = transferDAO</span>
+<span class="nc" id="L304">            .select(transID, serverName(requested), requested, serverName());</span>
+<span class="nc" id="L305">        final ServerActions actions = new ServerActions();</span>
+<span class="nc" id="L306">        actions.newSession();</span>
+<span class="nc" id="L307">        actions.cancelTransfer(transfer);</span>
+<span class="nc" id="L308">        transferDAO.update(transfer);</span>
 
-<span class="nc" id="L306">        final ObjectNode response = TransferConverter.transferToNode(transfer);</span>
-<span class="nc" id="L307">        final String responseBody = JsonUtils.nodeToString(response);</span>
-<span class="nc" id="L308">        responder.sendJson(OK, responseBody);</span>
+<span class="nc" id="L310">        final ObjectNode response = TransferConverter.transferToNode(transfer);</span>
+<span class="nc" id="L311">        final String responseBody = JsonUtils.nodeToString(response);</span>
+<span class="nc" id="L312">        responder.sendJson(OK, responseBody);</span>
       }
-<span class="nc" id="L310">    } catch (final NumberFormatException e) {</span>
-<span class="nc" id="L311">      responder.sendStatus(NOT_FOUND);</span>
-<span class="nc" id="L312">    } catch (final DAOConnectionException e) {</span>
-<span class="nc" id="L313">      throw new InternalServerErrorException(e);</span>
-<span class="nc" id="L314">    } catch (final DAONoDataException e) {</span>
+<span class="nc" id="L314">    } catch (final NumberFormatException e) {</span>
 <span class="nc" id="L315">      responder.sendStatus(NOT_FOUND);</span>
+<span class="nc" id="L316">    } catch (final DAOConnectionException e) {</span>
+<span class="nc" id="L317">      throw new InternalServerErrorException(e);</span>
+<span class="nc" id="L318">    } catch (final DAONoDataException e) {</span>
+<span class="nc" id="L319">      responder.sendStatus(NOT_FOUND);</span>
     } finally {
-<span class="nc" id="L317">      DAOFactory.closeDAO(transferDAO);</span>
+<span class="nc" id="L321">      DAOFactory.closeDAO(transferDAO);</span>
     }
-<span class="nc" id="L319">  }</span>
+<span class="nc" id="L323">  }</span>
 
   /**
    * Method called to get a list of all allowed HTTP methods on this entry
@@ -336,37 +340,38 @@ public class TransferIdHandler extends AbstractRestDbHandler {
   @OPTIONS
   @Consumes(WILDCARD)
   @RequiredRole(NOACCESS)
-  public void options(HttpRequest request, HttpResponder responder,
-                      @PathParam(URI_ID) String uri) {
-<span class="nc" id="L341">    final HttpHeaders allow = new DefaultHttpHeaders();</span>
-<span class="nc" id="L342">    allow.add(ALLOW, HttpMethod.OPTIONS);</span>
-<span class="nc" id="L343">    responder.sendStatus(OK, allow);</span>
-<span class="nc" id="L344">  }</span>
+  public void options(final HttpRequest request, final HttpResponder responder,
+                      @PathParam(URI_ID) final String uri) {
+<span class="nc" id="L345">    final HttpHeaders allow = new DefaultHttpHeaders();</span>
+<span class="nc" id="L346">    allow.add(ALLOW, HttpMethod.OPTIONS);</span>
+<span class="nc" id="L347">    responder.sendStatus(OK, allow);</span>
+<span class="nc" id="L348">  }</span>
 
   @Path(&quot;{ep}&quot;)
   @OPTIONS
   @Consumes(WILDCARD)
   @RequiredRole(NOACCESS)
-  public void subOptions(HttpRequest request, HttpResponder responder,
-                         @PathParam(URI_ID) String uri,
-                         @PathParam(&quot;ep&quot;) String ep) {
+  public void subOptions(final HttpRequest request,
+                         final HttpResponder responder,
+                         @PathParam(URI_ID) final String uri,
+                         @PathParam(&quot;ep&quot;) final String ep) {
 
-<span class="nc" id="L354">    final HttpHeaders allow = new DefaultHttpHeaders();</span>
-<span class="nc" id="L355">    final List&lt;HttpMethod&gt; methods = new ArrayList&lt;HttpMethod&gt;();</span>
+<span class="nc" id="L359">    final HttpHeaders allow = new DefaultHttpHeaders();</span>
+<span class="nc" id="L360">    final List&lt;HttpMethod&gt; methods = new ArrayList&lt;HttpMethod&gt;();</span>
 
-<span class="nc bnc" id="L357" title="All 2 branches missed.">    if (ep.equals(TransferCommandsURI.RESTART_URI)) {</span>
-<span class="nc" id="L358">      methods.add(HttpMethod.PUT);</span>
-<span class="nc bnc" id="L359" title="All 2 branches missed.">    } else if (ep.equals(TransferCommandsURI.STOP_URI)) {</span>
-<span class="nc" id="L360">      methods.add(HttpMethod.PUT);</span>
-<span class="nc bnc" id="L361" title="All 2 branches missed.">    } else if (ep.equals(TransferCommandsURI.CANCEL_URI)) {</span>
-<span class="nc" id="L362">      methods.add(HttpMethod.PUT);</span>
+<span class="nc bnc" id="L362" title="All 2 branches missed.">    if (ep.equals(TransferCommandsURI.RESTART_URI)) {</span>
+<span class="nc" id="L363">      methods.add(HttpMethod.PUT);</span>
+<span class="nc bnc" id="L364" title="All 2 branches missed.">    } else if (ep.equals(TransferCommandsURI.STOP_URI)) {</span>
+<span class="nc" id="L365">      methods.add(HttpMethod.PUT);</span>
+<span class="nc bnc" id="L366" title="All 2 branches missed.">    } else if (ep.equals(TransferCommandsURI.CANCEL_URI)) {</span>
+<span class="nc" id="L367">      methods.add(HttpMethod.PUT);</span>
     } else {
-<span class="nc" id="L364">      responder.sendStatus(NOT_FOUND);</span>
-<span class="nc" id="L365">      return;</span>
+<span class="nc" id="L369">      responder.sendStatus(NOT_FOUND);</span>
+<span class="nc" id="L370">      return;</span>
     }
-<span class="nc" id="L367">    methods.add(HttpMethod.OPTIONS);</span>
-<span class="nc" id="L368">    allow.add(ALLOW, methods);</span>
-<span class="nc" id="L369">    responder.sendStatus(OK, allow);</span>
-<span class="nc" id="L370">  }</span>
+<span class="nc" id="L372">    methods.add(HttpMethod.OPTIONS);</span>
+<span class="nc" id="L373">    allow.add(ALLOW, methods);</span>
+<span class="nc" id="L374">    responder.sendStatus(OK, allow);</span>
+<span class="nc" id="L375">  }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

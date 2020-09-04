@@ -40,7 +40,7 @@ public final class SysErrLogger {
    *
    * @param throwable to log ignore
    */
-  public void ignoreLog(Throwable throwable) {
+  public void ignoreLog(final Throwable throwable) {// NOSONAR
     // Nothing to do
 <span class="fc" id="L45">  }</span>
 
@@ -60,20 +60,19 @@ public final class SysErrLogger {
    *
    * @param message to write for no error log
    */
-  public void sysout(Object message) {
+  public void sysout(final Object message) {
 <span class="fc" id="L64">    System.out.println(message); // NOSONAR</span>
 <span class="fc" id="L65">  }</span>
 
   /**
-   * Utility method to log through System.err
-   * &lt;p&gt;
-   * Used only in classes where WaarpLogger is not allowed
+   * Utility method to log through System.out
    *
-   * @param message to write for error
+   * @param format
+   * @param args
    */
-  public void syserrNoLn(Object message) {
-<span class="nc" id="L75">    System.err.print(&quot;ERROR &quot; + message); // NOSONAR</span>
-<span class="nc" id="L76">  }</span>
+  public void sysoutFormat(final String format, Object... args) {
+<span class="fc" id="L74">    System.out.format(format, args); // NOSONAR</span>
+<span class="fc" id="L75">  }</span>
 
   /**
    * Utility method to log through System.err
@@ -82,9 +81,20 @@ public final class SysErrLogger {
    *
    * @param message to write for error
    */
-  public void syserr(Object message) {
-<span class="fc" id="L86">    System.err.println(&quot;ERROR &quot; + message); // NOSONAR</span>
-<span class="fc" id="L87">  }</span>
+  public void syserrNoLn(final Object message) {
+<span class="nc" id="L85">    System.err.print(&quot;ERROR &quot; + message); // NOSONAR</span>
+<span class="nc" id="L86">  }</span>
+
+  /**
+   * Utility method to log through System.err
+   * &lt;p&gt;
+   * Used only in classes where WaarpLogger is not allowed
+   *
+   * @param message to write for error
+   */
+  public void syserr(final Object message) {
+<span class="fc" id="L96">    System.err.println(&quot;ERROR &quot; + message); // NOSONAR</span>
+<span class="fc" id="L97">  }</span>
 
   /**
    * Utility method to log through System.err the current Stacktrace
@@ -92,8 +102,8 @@ public final class SysErrLogger {
    * Used only in classes where WaarpLogger is not allowed
    */
   public void syserr() {
-<span class="fc" id="L95">    new Exception(&quot;ERROR Stacktrace&quot;).printStackTrace(); // NOSONAR</span>
-<span class="fc" id="L96">  }</span>
+<span class="fc" id="L105">    new Exception(&quot;ERROR Stacktrace&quot;).printStackTrace(); // NOSONAR</span>
+<span class="fc" id="L106">  }</span>
 
   /**
    * Utility method to log through System.err the current Stacktrace
@@ -103,10 +113,10 @@ public final class SysErrLogger {
    * @param message to write for error
    * @param e throw to write as error
    */
-  public void syserr(String message, Throwable e) {
-<span class="fc" id="L107">    System.err.print(&quot;ERROR &quot; + message + &quot;: &quot;); // NOSONAR</span>
-<span class="fc" id="L108">    e.printStackTrace(); // NOSONAR</span>
-<span class="fc" id="L109">  }</span>
+  public void syserr(final String message, final Throwable e) {
+<span class="fc" id="L117">    System.err.print(&quot;ERROR &quot; + message + &quot;: &quot;); // NOSONAR</span>
+<span class="fc" id="L118">    e.printStackTrace(); // NOSONAR</span>
+<span class="fc" id="L119">  }</span>
 
   /**
    * Utility method to log through System.err the current Stacktrace
@@ -115,9 +125,9 @@ public final class SysErrLogger {
    *
    * @param e throw to write as error
    */
-  public void syserr(Throwable e) {
-<span class="fc" id="L119">    System.err.print(&quot;ERROR: &quot;); // NOSONAR</span>
-<span class="fc" id="L120">    e.printStackTrace(); // NOSONAR</span>
-<span class="fc" id="L121">  }</span>
+  public void syserr(final Throwable e) {
+<span class="fc" id="L129">    System.err.print(&quot;ERROR: &quot;); // NOSONAR</span>
+<span class="fc" id="L130">    e.printStackTrace(); // NOSONAR</span>
+<span class="fc" id="L131">  }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

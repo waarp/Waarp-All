@@ -74,9 +74,9 @@
 <a class="jxr_linenumber" name="L66" href="#L66">66</a>  <em class="jxr_javadoccomment">   * @return True if OK</em>
 <a class="jxr_linenumber" name="L67" href="#L67">67</a>  <em class="jxr_javadoccomment">   */</em>
 <a class="jxr_linenumber" name="L68" href="#L68">68</a>    @SuppressWarnings(<span class="jxr_string">"unchecked"</span>)
-<a class="jxr_linenumber" name="L69" href="#L69">69</a>    <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">boolean</strong> loadAuthentication(<a name="Configuration" href="../../../../org/waarp/openr66/protocol/configuration/Configuration.html#Configuration">Configuration</a> config,
-<a class="jxr_linenumber" name="L70" href="#L70">70</a>                                             String filename) {
-<a class="jxr_linenumber" name="L71" href="#L71">71</a>      Document document;
+<a class="jxr_linenumber" name="L69" href="#L69">69</a>    <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">boolean</strong> loadAuthentication(<strong class="jxr_keyword">final</strong> <a name="Configuration" href="../../../../org/waarp/openr66/protocol/configuration/Configuration.html#Configuration">Configuration</a> config,
+<a class="jxr_linenumber" name="L70" href="#L70">70</a>                                             <strong class="jxr_keyword">final</strong> String filename) {
+<a class="jxr_linenumber" name="L71" href="#L71">71</a>      <strong class="jxr_keyword">final</strong> Document document;
 <a class="jxr_linenumber" name="L72" href="#L72">72</a>      <strong class="jxr_keyword">try</strong> {
 <a class="jxr_linenumber" name="L73" href="#L73">73</a>        document = XmlUtil.getNewSaxReader().read(filename);
 <a class="jxr_linenumber" name="L74" href="#L74">74</a>      } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> DocumentException e) {
@@ -88,7 +88,7 @@
 <a class="jxr_linenumber" name="L80" href="#L80">80</a>        logger.error(<span class="jxr_string">"Unable to read the XML Authentication file: "</span> + filename);
 <a class="jxr_linenumber" name="L81" href="#L81">81</a>        <strong class="jxr_keyword">return</strong> false;
 <a class="jxr_linenumber" name="L82" href="#L82">82</a>      }
-<a class="jxr_linenumber" name="L83" href="#L83">83</a>      <a name="XmlValue" href="../../../../org/waarp/common/xml/XmlValue.html#XmlValue">XmlValue</a>[] values = XmlUtil.read(document, authentElements);
+<a class="jxr_linenumber" name="L83" href="#L83">83</a>      <strong class="jxr_keyword">final</strong> <a name="XmlValue" href="../../../../org/waarp/common/xml/XmlValue.html#XmlValue">XmlValue</a>[] values = XmlUtil.read(document, authentElements);
 <a class="jxr_linenumber" name="L84" href="#L84">84</a>      <strong class="jxr_keyword">final</strong> <a name="XmlHash" href="../../../../org/waarp/common/xml<a name="XmlHash" href="../../../../org/waarp/common/xml/XmlHash.html#XmlHash">XmlHash</a>h.html#XmlHash">XmlHash</a> hash = <strong class="jxr_keyword">new</strong> <a name="XmlHash" href="../../../../org/waarp/common/xml/XmlHash.html#XmlHash">XmlHash</a>(values);
 <a class="jxr_linenumber" name="L85" href="#L85">85</a>      <a name="XmlValue" href="../../../../org/waarp/common/xml/XmlValue.html#XmlValue">XmlValue</a> value = hash.get(XML_AUTHENTIFICATION_ENTRY);
 <a class="jxr_linenumber" name="L86" href="#L86">86</a>      <strong class="jxr_keyword">final</strong> List&lt;XmlValue[]&gt; list = (List&lt;XmlValue[]&gt;) value.getList();
@@ -149,7 +149,7 @@
 <a class="jxr_linenumber" name="L141" href="#L141">141</a>         <strong class="jxr_keyword">continue</strong>;
 <a class="jxr_linenumber" name="L142" href="#L142">142</a>       }
 <a class="jxr_linenumber" name="L143" href="#L143">143</a>       <strong class="jxr_keyword">final</strong> String address = value.getString();
-<a class="jxr_linenumber" name="L144" href="#L144">144</a>       <strong class="jxr_keyword">int</strong> port;
+<a class="jxr_linenumber" name="L144" href="#L144">144</a>       <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong> port;
 <a class="jxr_linenumber" name="L145" href="#L145">145</a>       value = subHash.get(XML_AUTHENTIFICATION_PORT);
 <a class="jxr_linenumber" name="L146" href="#L146">146</a>       <strong class="jxr_keyword">if</strong> (value != <strong class="jxr_keyword">null</strong> &amp;&amp; !value.isEmpty()) {
 <a class="jxr_linenumber" name="L147" href="#L147">147</a>         port = value.getInteger();
@@ -205,7 +205,7 @@
 <a class="jxr_linenumber" name="L197" href="#L197">197</a> <em class="jxr_javadoccomment">   *</em>
 <a class="jxr_linenumber" name="L198" href="#L198">198</a> <em class="jxr_javadoccomment">   * @return the new Element</em>
 <a class="jxr_linenumber" name="L199" href="#L199">199</a> <em class="jxr_javadoccomment">   */</em>
-<a class="jxr_linenumber" name="L200" href="#L200">200</a>   <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> Element newElement(String name, String value) {
+<a class="jxr_linenumber" name="L200" href="#L200">200</a>   <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> Element newElement(<strong class="jxr_keyword">final</strong> String name, <strong class="jxr_keyword">final</strong> String value) {
 <a class="jxr_linenumber" name="L201" href="#L201">201</a>     <strong class="jxr_keyword">final</strong> Element node = <strong class="jxr_keyword">new</strong> DefaultElement(name);
 <a class="jxr_linenumber" name="L202" href="#L202">202</a>     node.addText(value);
 <a class="jxr_linenumber" name="L203" href="#L203">203</a>     <strong class="jxr_keyword">return</strong> node;
@@ -220,7 +220,7 @@
 <a class="jxr_linenumber" name="L212" href="#L212">212</a> <em class="jxr_javadoccomment">   * @throws WaarpDatabaseNoConnectionException</em>
 <a class="jxr_linenumber" name="L213" href="#L213">213</a> <em class="jxr_javadoccomment">   * @throws WaarpDatabaseSqlException</em>
 <a class="jxr_linenumber" name="L214" href="#L214">214</a> <em class="jxr_javadoccomment">   */</em>
-<a class="jxr_linenumber" name="L215" href="#L215">215</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">void</strong> writeXML(<a name="Configuration" href="../../../../org/waarp/openr66/protocol/configuration/Configuration.html#Configuration">Configuration</a> config, String filename)
+<a class="jxr_linenumber" name="L215" href="#L215">215</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">void</strong> writeXML(<strong class="jxr_keyword">final</strong> <a name="Configuration" href="../../../../org/waarp/openr66/protocol/configuration/Configuration.html#Configuration">Configuration</a> config, <strong class="jxr_keyword">final</strong> String filename)
 <a class="jxr_linenumber" name="L216" href="#L216">216</a>       <strong class="jxr_keyword">throws</strong> OpenR66ProtocolSystemException, WaarpDatabaseNoConnectionException,
 <a class="jxr_linenumber" name="L217" href="#L217">217</a>              <a name="WaarpDatabaseSqlException" href="../../../../org/waarp/common/database/exception/WaarpDatabaseSqlException.html#WaarpDatabaseSqlException">WaarpDatabaseSqlException</a> {
 <a class="jxr_linenumber" name="L218" href="#L218">218</a>     <strong class="jxr_keyword">final</strong> Document document = DocumentHelper.createDocument();

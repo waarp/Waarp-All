@@ -95,8 +95,8 @@ public class IcapTask extends AbstractExecTask {
    * @param argTransfer
    * @param session
    */
-  public IcapTask(String argRule, int delay, String argTransfer,
-                  R66Session session) {
+  public IcapTask(final String argRule, final int delay,
+                  final String argTransfer, final R66Session session) {
 <span class="fc" id="L100">    super(TaskType.ICAP, delay, argRule, argTransfer, session);</span>
 <span class="fc" id="L101">  }</span>
 
@@ -116,7 +116,7 @@ public class IcapTask extends AbstractExecTask {
           new OpenR66RunnerErrorException(&quot;Not enough argument in ICAP&quot;));
 <span class="nc" id="L117">      return;</span>
     }
-<span class="fc" id="L119">    int status = IcapScanFile.scanFile(args);</span>
+<span class="fc" id="L119">    final int status = IcapScanFile.scanFile(args);</span>
 <span class="pc bpc" id="L120" title="5 of 7 branches missed.">    switch (status) {</span>
       case IcapScanFile.STATUS_OK:
 <span class="fc" id="L122">        futureCompletion.setSuccess();</span>
@@ -181,12 +181,12 @@ public class IcapTask extends AbstractExecTask {
 <span class="fc bfc" id="L181" title="All 2 branches covered.">      if (IcapScanFile.ERROR_SEND_ARG.equalsIgnoreCase(args[i])) {</span>
 <span class="pc bpc" id="L182" title="1 of 2 branches missed.">        for (i++; i &lt; args.length; i++) {</span>
 <span class="fc bfc" id="L183" title="All 2 branches covered.">          if (IcapScanFile.SEPARATOR_SEND.equals(args[i])) {</span>
-<span class="fc" id="L184">            StringBuilder newArgs = new StringBuilder();</span>
+<span class="fc" id="L184">            final StringBuilder newArgs = new StringBuilder();</span>
 <span class="fc bfc" id="L185" title="All 2 branches covered.">            for (i++; i &lt; args.length; i++) {</span>
 <span class="fc" id="L186">              newArgs.append(args[i]).append(' ');</span>
             }
             // Now launch send
-<span class="fc" id="L189">            TransferTask transferTask =</span>
+<span class="fc" id="L189">            final TransferTask transferTask =</span>
 <span class="fc" id="L190">                new TransferTask(newArgs.toString(), 0, argTransfer, session);</span>
 <span class="fc" id="L191">            transferTask.run();</span>
 <span class="fc" id="L192">            transferTask.futureCompletion.awaitOrInterruptible();</span>

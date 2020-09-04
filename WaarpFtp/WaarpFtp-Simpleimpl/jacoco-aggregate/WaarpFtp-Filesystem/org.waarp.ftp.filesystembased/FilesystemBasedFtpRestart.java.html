@@ -36,32 +36,33 @@ public class FilesystemBasedFtpRestart extends FilesystemBasedRestartImpl {
   /**
    * @param session
    */
-  public FilesystemBasedFtpRestart(FtpSession session) {
+  public FilesystemBasedFtpRestart(final FtpSession session) {
 <span class="fc" id="L40">    super(session);</span>
 <span class="fc" id="L41">  }</span>
 
   @Override
-  public boolean restartMarker(String marker) throws CommandAbstractException {
-<span class="fc" id="L45">    final FtpDataAsyncConn dataConn = ((FtpSession) getSession()).getDataConn();</span>
-<span class="pc bpc" id="L46" title="1 of 2 branches missed.">    if (dataConn.getStructure() == TransferStructure.FILE &amp;&amp;</span>
-<span class="pc bpc" id="L47" title="1 of 2 branches missed.">        dataConn.getMode() == TransferMode.STREAM &amp;&amp;</span>
-<span class="pc bpc" id="L48" title="1 of 2 branches missed.">        dataConn.getType() != TransferType.LENGTH) {</span>
-      long newposition;
-<span class="fc" id="L50">      final String[] args = marker.split(&quot; &quot;);</span>
+  public boolean restartMarker(final String marker)
+      throws CommandAbstractException {
+<span class="fc" id="L46">    final FtpDataAsyncConn dataConn = ((FtpSession) getSession()).getDataConn();</span>
+<span class="pc bpc" id="L47" title="1 of 2 branches missed.">    if (dataConn.getStructure() == TransferStructure.FILE &amp;&amp;</span>
+<span class="pc bpc" id="L48" title="1 of 2 branches missed.">        dataConn.getMode() == TransferMode.STREAM &amp;&amp;</span>
+<span class="pc bpc" id="L49" title="1 of 2 branches missed.">        dataConn.getType() != TransferType.LENGTH) {</span>
+      final long newposition;
+<span class="fc" id="L51">      final String[] args = marker.split(&quot; &quot;);</span>
       try {
-<span class="fc" id="L52">        newposition = Long.parseLong(args[0]);</span>
-<span class="pc bpc" id="L53" title="1 of 2 branches missed.">        if (args.length &gt; 1) {</span>
-<span class="nc" id="L54">          limit = Integer.parseInt(args[1]);</span>
+<span class="fc" id="L53">        newposition = Long.parseLong(args[0]);</span>
+<span class="pc bpc" id="L54" title="1 of 2 branches missed.">        if (args.length &gt; 1) {</span>
+<span class="nc" id="L55">          limit = Integer.parseInt(args[1]);</span>
         }
-<span class="nc" id="L56">      } catch (final NumberFormatException e) {</span>
-<span class="nc" id="L57">        throw new Reply502Exception(</span>
+<span class="nc" id="L57">      } catch (final NumberFormatException e) {</span>
+<span class="nc" id="L58">        throw new Reply502Exception(</span>
             &quot;Marker must be length in byte as a position&quot;);
-<span class="fc" id="L59">      }</span>
-<span class="fc" id="L60">      position = newposition;</span>
-<span class="fc" id="L61">      setSet(true);</span>
-<span class="fc" id="L62">      return true;</span>
+<span class="fc" id="L60">      }</span>
+<span class="fc" id="L61">      position = newposition;</span>
+<span class="fc" id="L62">      setSet(true);</span>
+<span class="fc" id="L63">      return true;</span>
     }
-<span class="nc" id="L64">    throw new Reply502Exception(</span>
+<span class="nc" id="L65">    throw new Reply502Exception(</span>
         &quot;Marker not implemented for such Mode, Type and Structure&quot;);
   }
 }

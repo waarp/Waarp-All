@@ -63,104 +63,104 @@ import java.util.regex.Pattern;
    * Server side method to validate the request
    *
    * @param packet
+   *
+   * @return True if feedback is done
    */
-  public void validate(BusinessRequestPacket packet) {
-<span class="nc" id="L68">    status = 0;</span>
-<span class="nc" id="L69">    packet.validate();</span>
-<span class="nc bnc" id="L70" title="All 2 branches missed.">    if (callFromBusiness) {</span>
-<span class="nc" id="L71">      final LocalChannelReference localChannelReference =</span>
-<span class="nc" id="L72">          session.getLocalChannelReference();</span>
-<span class="nc bnc" id="L73" title="All 2 branches missed.">      if (localChannelReference != null) {</span>
-<span class="nc" id="L74">        final R66Result result =</span>
+  public boolean validate(final BusinessRequestPacket packet) {
+<span class="nc" id="L70">    status = 0;</span>
+<span class="nc" id="L71">    packet.validate();</span>
+<span class="nc bnc" id="L72" title="All 2 branches missed.">    if (callFromBusiness) {</span>
+<span class="nc" id="L73">      final LocalChannelReference localChannelReference =</span>
+<span class="nc" id="L74">          session.getLocalChannelReference();</span>
+<span class="nc bnc" id="L75" title="All 2 branches missed.">      if (localChannelReference != null) {</span>
+<span class="nc" id="L76">        final R66Result result =</span>
             new R66Result(session, true, ErrorCode.CompleteOk, null);
-<span class="nc" id="L76">        localChannelReference.validateRequest(result);</span>
+<span class="nc" id="L78">        localChannelReference.validateRequest(result);</span>
         try {
-<span class="nc" id="L78">          ChannelUtils</span>
-<span class="nc" id="L79">              .writeAbstractLocalPacket(localChannelReference, packet, true);</span>
-<span class="nc" id="L80">        } catch (final OpenR66ProtocolPacketException ignored) {</span>
+<span class="nc" id="L80">          ChannelUtils</span>
+<span class="nc" id="L81">              .writeAbstractLocalPacket(localChannelReference, packet, true);</span>
+<span class="nc" id="L82">        } catch (final OpenR66ProtocolPacketException ignored) {</span>
           // nothing
-<span class="nc" id="L82">        }</span>
-<span class="nc" id="L83">      } else {</span>
-<span class="nc" id="L84">        finalInformation = packet.toString();</span>
+<span class="nc" id="L84">        }</span>
+<span class="nc" id="L85">        return true;</span>
+      } else {
+<span class="nc" id="L87">        finalInformation = packet.toString();</span>
       }
     }
-<span class="nc" id="L87">  }</span>
+<span class="nc" id="L90">    return false;</span>
+  }
 
   /**
    * To be called by the requester when finished
    *
    * @param object special object to get back
    */
-  public void finalValidate(Object object) {
-<span class="nc" id="L95">    status = 0;</span>
-<span class="nc bnc" id="L96" title="All 2 branches missed.">    if (callFromBusiness) {</span>
-<span class="nc" id="L97">      final LocalChannelReference localChannelReference =</span>
-<span class="nc" id="L98">          session.getLocalChannelReference();</span>
-<span class="nc bnc" id="L99" title="All 2 branches missed.">      if (localChannelReference != null) {</span>
-<span class="nc" id="L100">        final R66Result result =</span>
+  public void finalValidate(final Object object) {
+<span class="nc" id="L99">    status = 0;</span>
+<span class="nc bnc" id="L100" title="All 2 branches missed.">    if (callFromBusiness) {</span>
+<span class="nc" id="L101">      final LocalChannelReference localChannelReference =</span>
+<span class="nc" id="L102">          session.getLocalChannelReference();</span>
+<span class="nc bnc" id="L103" title="All 2 branches missed.">      if (localChannelReference != null) {</span>
+<span class="nc" id="L104">        final R66Result result =</span>
             new R66Result(session, true, ErrorCode.CompleteOk, null);
-<span class="nc" id="L102">        result.setOther(object);</span>
-<span class="nc" id="L103">        localChannelReference.validateRequest(result);</span>
-<span class="nc" id="L104">        localChannelReference.close();</span>
-<span class="nc" id="L105">      } else {</span>
-<span class="nc" id="L106">        finalInformation = JsonHandler.writeAsString(object);</span>
+<span class="nc" id="L106">        result.setOther(object);</span>
+<span class="nc" id="L107">        localChannelReference.validateRequest(result);</span>
+<span class="nc" id="L108">        localChannelReference.close();</span>
+<span class="nc" id="L109">      } else {</span>
+<span class="nc" id="L110">        finalInformation = JsonHandler.writeAsString(object);</span>
       }
     }
-<span class="nc" id="L109">  }</span>
+<span class="nc" id="L113">  }</span>
 
   /**
    * To be used if abnormal usage is made of one Java Method
    */
   public void invalid() {
-<span class="nc" id="L115">    status = 2;</span>
-<span class="nc bnc" id="L116" title="All 2 branches missed.">    if (!callFromBusiness) {</span>
-<span class="nc" id="L117">      return;</span>
+<span class="nc" id="L119">    status = 2;</span>
+<span class="nc bnc" id="L120" title="All 2 branches missed.">    if (!callFromBusiness) {</span>
+<span class="nc" id="L121">      return;</span>
     }
-<span class="nc" id="L119">    final R66Result result =</span>
+<span class="nc" id="L123">    final R66Result result =</span>
         new R66Result(null, session, true, ErrorCode.Unimplemented,
-<span class="nc" id="L121">                      session.getRunner());</span>
-<span class="nc" id="L122">    final LocalChannelReference localChannelReference =</span>
-<span class="nc" id="L123">        session.getLocalChannelReference();</span>
-<span class="nc bnc" id="L124" title="All 2 branches missed.">    if (localChannelReference != null) {</span>
-<span class="nc" id="L125">      localChannelReference.sessionNewState(R66FiniteDualStates.ERROR);</span>
-<span class="nc" id="L126">      final ErrorPacket error = new ErrorPacket(&quot;Command Incompatible&quot;,</span>
-<span class="nc" id="L127">                                                ErrorCode.ExternalOp.getCode(),</span>
+<span class="nc" id="L125">                      session.getRunner());</span>
+<span class="nc" id="L126">    final LocalChannelReference localChannelReference =</span>
+<span class="nc" id="L127">        session.getLocalChannelReference();</span>
+<span class="nc bnc" id="L128" title="All 2 branches missed.">    if (localChannelReference != null) {</span>
+<span class="nc" id="L129">      localChannelReference.sessionNewState(R66FiniteDualStates.ERROR);</span>
+<span class="nc" id="L130">      final ErrorPacket error = new ErrorPacket(&quot;Command Incompatible&quot;,</span>
+<span class="nc" id="L131">                                                ErrorCode.ExternalOp.getCode(),</span>
                                                 ErrorPacket.FORWARDCLOSECODE);
       try {
-<span class="nc" id="L130">        ChannelUtils</span>
-<span class="nc" id="L131">            .writeAbstractLocalPacket(localChannelReference, error, true);</span>
-<span class="nc" id="L132">      } catch (final OpenR66ProtocolPacketException ignored) {</span>
+<span class="nc" id="L134">        ChannelUtils</span>
+<span class="nc" id="L135">            .writeAbstractLocalPacket(localChannelReference, error, true);</span>
+<span class="nc" id="L136">      } catch (final OpenR66ProtocolPacketException ignored) {</span>
         // nothing
-<span class="nc" id="L134">      }</span>
-<span class="nc" id="L135">      localChannelReference.invalidateRequest(result);</span>
-<span class="nc" id="L136">      localChannelReference.close();</span>
+<span class="nc" id="L138">      }</span>
+<span class="nc" id="L139">      localChannelReference.invalidateRequest(result);</span>
+<span class="nc" id="L140">      localChannelReference.close();</span>
     }
-<span class="nc" id="L138">  }</span>
+<span class="nc" id="L142">  }</span>
 
   @Override
   public void run() {
-<span class="nc bnc" id="L142" title="All 2 branches missed.">    if (callFromBusiness) {</span>
+<span class="nc bnc" id="L146" title="All 4 branches missed.">    if (callFromBusiness &amp;&amp; isToValidate) {</span>
       // Business Request to validate?
-<span class="nc bnc" id="L144" title="All 2 branches missed.">      if (isToValidate) {</span>
-<span class="nc" id="L145">        final BusinessRequestPacket packet =</span>
-            new BusinessRequestPacket(classname + ' ' + fullarg, 0);
-<span class="nc" id="L147">        validate(packet);</span>
-      }
+<span class="nc" id="L148">      final BusinessRequestPacket packet =</span>
+          new BusinessRequestPacket(classname + ' ' + fullarg, 0);
+<span class="nc" id="L150">      validate(packet);</span>
     }
-<span class="nc" id="L150">    final StringBuilder builder =</span>
-<span class="nc" id="L151">        new StringBuilder(getClass().getSimpleName()).append(':')</span>
-<span class="nc" id="L152">                                                     .append(&quot;args(&quot;)</span>
-<span class="nc" id="L153">                                                     .append(fullarg)</span>
-<span class="nc" id="L154">                                                     .append(')');</span>
-<span class="nc" id="L155">    logger.warn(builder.toString());</span>
-<span class="nc" id="L156">    status = 0;</span>
-<span class="nc" id="L157">  }</span>
+<span class="nc" id="L152">    final String builder =</span>
+<span class="nc" id="L153">        getClass().getSimpleName() + ':' + &quot;args(&quot; + fullarg + ')';</span>
+<span class="nc" id="L154">    logger.warn(builder);</span>
+<span class="nc" id="L155">    status = 0;</span>
+<span class="nc" id="L156">  }</span>
 
   @Override
-  public void setArgs(R66Session session, boolean waitForValidation,
-                      boolean useLocalExec, int delay, String classname,
-                      String arg, boolean callFromBusiness,
-                      boolean isToValidate) {
+  public void setArgs(final R66Session session, final boolean waitForValidation,
+                      final boolean useLocalExec, final int delay,
+                      final String classname, final String arg,
+                      final boolean callFromBusiness,
+                      final boolean isToValidate) {
 <span class="nc" id="L164">    this.session = session;</span>
 <span class="nc" id="L165">    this.waitForValidation = waitForValidation;</span>
 <span class="nc" id="L166">    this.useLocalExec = useLocalExec;</span>
@@ -179,13 +179,9 @@ import java.util.regex.Pattern;
   @Override
   public String toString() {
 <span class="nc bnc" id="L181" title="All 4 branches missed.">    if (status == -1 || finalInformation == null) {</span>
-<span class="nc" id="L182">      final StringBuilder builder =</span>
-<span class="nc" id="L183">          new StringBuilder(getClass().getSimpleName()).append(&quot;: [&quot;)</span>
-<span class="nc" id="L184">                                                       .append(fullarg)</span>
-<span class="nc" id="L185">                                                       .append(']');</span>
-<span class="nc" id="L186">      return builder.toString();</span>
+<span class="nc" id="L182">      return getClass().getSimpleName() + &quot;: [&quot; + fullarg + ']';</span>
     } else {
-<span class="nc" id="L188">      return finalInformation;</span>
+<span class="nc" id="L184">      return finalInformation;</span>
     }
   }
 

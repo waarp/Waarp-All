@@ -64,12 +64,12 @@ import static org.waarp.common.database.DbConstant.*;
    *
    * @throws WaarpDatabaseNoConnectionException
    */
-  public static DbAdmin initialize(String dbdriver, String dbserver,
-                                   String dbuser, String dbpasswd,
-                                   boolean write)
+  public static DbAdmin initialize(final String dbdriver, final String dbserver,
+                                   final String dbuser, final String dbpasswd,
+                                   final boolean write)
       throws WaarpDatabaseNoConnectionException {
 <span class="fc" id="L71">    final DbType type = DbType.getFromDriver(dbdriver);</span>
-    DbModel dbModel;
+    final DbModel dbModel;
 <span class="pc bpc" id="L73" title="2 of 6 branches missed.">    switch (type) {</span>
       case H2:
 <span class="fc" id="L75">        dbModel = new DbModelH2R66(dbserver, dbuser, dbpasswd);</span>
@@ -287,7 +287,7 @@ import static org.waarp.common.database.DbConstant.*;
 <span class="fc" id="L287">      action.append(&quot;, &quot;);</span>
     }
     // Several columns for primary key
-<span class="fc" id="L290">    action.append(&quot; CONSTRAINT runner_pk &quot; + primaryKey + '(');</span>
+<span class="fc" id="L290">    action.append(&quot; CONSTRAINT runner_pk &quot;).append(primaryKey).append('(');</span>
 <span class="fc bfc" id="L291" title="All 2 branches covered.">    for (int i = DbTaskRunner.NBPRKEY; i &gt; 1; i--) {</span>
 <span class="fc" id="L292">      action.append(acolumns[acolumns.length - i].name()).append(',');</span>
     }
@@ -331,7 +331,7 @@ import static org.waarp.common.database.DbConstant.*;
 <span class="fc" id="L331">    final String createTableH2 = &quot;CREATE TABLE IF NOT EXISTS &quot;;</span>
 <span class="fc" id="L332">    final String primaryKey = &quot; PRIMARY KEY &quot;;</span>
 <span class="fc" id="L333">    final String notNull = &quot; NOT NULL &quot;;</span>
-<span class="fc" id="L334">    DbRequest request =</span>
+<span class="fc" id="L334">    final DbRequest request =</span>
 <span class="fc" id="L335">        subCreateTableMariaDbMySQLPostgreSQL(dbTypeResolver, session,</span>
                                              createTableH2, primaryKey,
                                              notNull);
@@ -387,7 +387,7 @@ import static org.waarp.common.database.DbConstant.*;
 <span class="nc" id="L387">      final String notNull = &quot; NOT NULL &quot;;</span>
 
       // HostConfiguration
-<span class="nc" id="L390">      StringBuilder action =</span>
+<span class="nc" id="L390">      final StringBuilder action =</span>
           new StringBuilder(createTableH2 + DbHostConfiguration.table + '(');
       final DbHostConfiguration.Columns[] chcolumns =
 <span class="nc" id="L393">          DbHostConfiguration.Columns.values();</span>

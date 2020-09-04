@@ -56,30 +56,31 @@ public class MariaDBProperties implements DbProperties {
   }
 
   @Override
-  public int getMaximumConnections(Connection connection) throws SQLException {
-<span class="fc" id="L60">    Statement stm = null;</span>
-<span class="fc" id="L61">    ResultSet rs = null;</span>
+  public int getMaximumConnections(final Connection connection)
+      throws SQLException {
+<span class="fc" id="L61">    Statement stm = null;</span>
+<span class="fc" id="L62">    ResultSet rs = null;</span>
     try {
-<span class="fc" id="L63">      stm = connection.createStatement();</span>
-<span class="fc" id="L64">      rs = stm.executeQuery(MAX_CONNECTION_QUERY);</span>
-<span class="pc bpc" id="L65" title="1 of 2 branches missed.">      if (!rs.next()) {</span>
-<span class="nc" id="L66">        throw new SQLException(&quot;Cannot find max connection&quot;);</span>
+<span class="fc" id="L64">      stm = connection.createStatement();</span>
+<span class="fc" id="L65">      rs = stm.executeQuery(MAX_CONNECTION_QUERY);</span>
+<span class="pc bpc" id="L66" title="1 of 2 branches missed.">      if (!rs.next()) {</span>
+<span class="nc" id="L67">        throw new SQLException(&quot;Cannot find max connection&quot;);</span>
       }
-<span class="fc" id="L68">      return rs.getInt(1);</span>
+<span class="fc" id="L69">      return rs.getInt(1);</span>
     } finally {
-<span class="pc bpc" id="L70" title="1 of 2 branches missed.">      if (rs != null) {</span>
+<span class="pc bpc" id="L71" title="1 of 2 branches missed.">      if (rs != null) {</span>
         try {
-<span class="fc" id="L72">          rs.close();</span>
-<span class="nc" id="L73">        } catch (SQLException ignored) {</span>
+<span class="fc" id="L73">          rs.close();</span>
+<span class="nc" id="L74">        } catch (final SQLException ignored) {</span>
           // nothing
-<span class="fc" id="L75">        }</span>
+<span class="fc" id="L76">        }</span>
       }
-<span class="pc bpc" id="L77" title="1 of 2 branches missed.">      if (stm != null) {</span>
+<span class="pc bpc" id="L78" title="1 of 2 branches missed.">      if (stm != null) {</span>
         try {
-<span class="fc" id="L79">          stm.close();</span>
-<span class="nc" id="L80">        } catch (SQLException ignored) {</span>
+<span class="fc" id="L80">          stm.close();</span>
+<span class="nc" id="L81">        } catch (final SQLException ignored) {</span>
           // nothing
-<span class="fc" id="L82">        }</span>
+<span class="fc" id="L83">        }</span>
       }
     }
   }

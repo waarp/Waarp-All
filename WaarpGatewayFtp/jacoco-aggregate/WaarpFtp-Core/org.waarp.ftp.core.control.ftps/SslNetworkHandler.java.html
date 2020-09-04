@@ -40,18 +40,19 @@ public class SslNetworkHandler extends NetworkHandler {
   /**
    * @param session
    */
-  public SslNetworkHandler(FtpSession session) {
+  public SslNetworkHandler(final FtpSession session) {
 <span class="fc" id="L44">    super(session);</span>
 <span class="fc" id="L45">  }</span>
 
   @Override
-  public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
-<span class="fc" id="L49">    final Channel channel = ctx.channel();</span>
-<span class="fc" id="L50">    logger.debug(&quot;Add channel to ssl &quot; + channel);</span>
-<span class="fc" id="L51">    WaarpSslUtility.addSslOpenedChannel(channel);</span>
-<span class="fc" id="L52">    getFtpSession().prepareSsl();</span>
-<span class="fc" id="L53">    super.channelRegistered(ctx);</span>
-<span class="fc" id="L54">  }</span>
+  public void channelRegistered(final ChannelHandlerContext ctx)
+      throws Exception {
+<span class="fc" id="L50">    final Channel channel = ctx.channel();</span>
+<span class="fc" id="L51">    logger.debug(&quot;Add channel to ssl &quot; + channel);</span>
+<span class="fc" id="L52">    WaarpSslUtility.addSslOpenedChannel(channel);</span>
+<span class="fc" id="L53">    getFtpSession().prepareSsl();</span>
+<span class="fc" id="L54">    super.channelRegistered(ctx);</span>
+<span class="fc" id="L55">  }</span>
 
   /**
    * To be extended to inform of an error to SNMP support
@@ -60,21 +61,21 @@ public class SslNetworkHandler extends NetworkHandler {
    * @param error2
    */
   @Override
-  protected void callForSnmp(String error1, String error2) {
+  protected void callForSnmp(final String error1, final String error2) {
     // ignore
-<span class="nc" id="L65">  }</span>
+<span class="nc" id="L66">  }</span>
 
   @Override
   public void channelActive(final ChannelHandlerContext ctx) throws Exception {
-<span class="pc bpc" id="L69" title="1 of 2 branches missed.">    if (!WaarpSslUtility.waitForHandshake(ctx.channel())) {</span>
-<span class="nc" id="L70">      callForSnmp(&quot;SSL Connection Error&quot;, &quot;During Ssl Handshake&quot;);</span>
-<span class="nc" id="L71">      getFtpSession().setSsl(false);</span>
-<span class="nc" id="L72">      return;</span>
+<span class="pc bpc" id="L70" title="1 of 2 branches missed.">    if (!WaarpSslUtility.waitForHandshake(ctx.channel())) {</span>
+<span class="nc" id="L71">      callForSnmp(&quot;SSL Connection Error&quot;, &quot;During Ssl Handshake&quot;);</span>
+<span class="nc" id="L72">      getFtpSession().setSsl(false);</span>
+<span class="nc" id="L73">      return;</span>
     } else {
-<span class="fc" id="L74">      getFtpSession().setSsl(true);</span>
+<span class="fc" id="L75">      getFtpSession().setSsl(true);</span>
     }
-<span class="fc" id="L76">    super.channelActive(ctx);</span>
-<span class="fc" id="L77">  }</span>
+<span class="fc" id="L77">    super.channelActive(ctx);</span>
+<span class="fc" id="L78">  }</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

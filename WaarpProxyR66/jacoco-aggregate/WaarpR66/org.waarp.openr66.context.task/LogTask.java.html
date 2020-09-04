@@ -60,8 +60,8 @@ public class LogTask extends AbstractTask {
    * @param argTransfer
    * @param session
    */
-  public LogTask(String argRule, int delay, String argTransfer,
-                 R66Session session) {
+  public LogTask(final String argRule, final int delay,
+                 final String argTransfer, final R66Session session) {
 <span class="fc" id="L65">    super(TaskType.LOG, delay, argRule, argTransfer, session);</span>
 <span class="fc" id="L66">  }</span>
 
@@ -113,7 +113,7 @@ public class LogTask extends AbstractTask {
 <span class="nc" id="L113">      futureCompletion.setSuccess();</span>
 <span class="nc" id="L114">      return true;</span>
     }
-    FileOutputStream outputStream;
+    final FileOutputStream outputStream;
     try {
 <span class="fc" id="L118">      outputStream = new FileOutputStream(file, true);</span>
 <span class="nc" id="L119">    } catch (final FileNotFoundException e) {</span>
@@ -135,16 +135,18 @@ public class LogTask extends AbstractTask {
 <span class="nc" id="L135">    } catch (final IOException e) {</span>
       // File cannot be written so revert to log
 <span class="nc" id="L137">      FileUtils.close(outputStream);</span>
-<span class="nc" id="L138">      file.delete();</span>
-<span class="nc" id="L139">      session.getRunner().setErrorExecutionStatus(ErrorCode.Warning);</span>
-<span class="nc bnc" id="L140" title="All 2 branches missed.">      if (delay == 2) {</span>
-<span class="nc" id="L141">        logger.log(finalLevel, finalValue + SPACES + session);</span>
+<span class="nc bnc" id="L138" title="All 2 branches missed.">      if (!file.delete()) {</span>
+<span class="nc" id="L139">        logger.debug(&quot;Cannot delete log file&quot;);</span>
       }
-<span class="nc" id="L143">      futureCompletion.setSuccess();</span>
-<span class="nc" id="L144">      return true;</span>
-<span class="fc" id="L145">    }</span>
-<span class="fc" id="L146">    FileUtils.close(outputStream);</span>
-<span class="fc" id="L147">    return false;</span>
+<span class="nc" id="L141">      session.getRunner().setErrorExecutionStatus(ErrorCode.Warning);</span>
+<span class="nc bnc" id="L142" title="All 2 branches missed.">      if (delay == 2) {</span>
+<span class="nc" id="L143">        logger.log(finalLevel, finalValue + SPACES + session);</span>
+      }
+<span class="nc" id="L145">      futureCompletion.setSuccess();</span>
+<span class="nc" id="L146">      return true;</span>
+<span class="fc" id="L147">    }</span>
+<span class="fc" id="L148">    FileUtils.close(outputStream);</span>
+<span class="fc" id="L149">    return false;</span>
   }
 
 }

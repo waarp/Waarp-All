@@ -83,39 +83,41 @@ public class HttpPage {
    * @throws IllegalAccessException
    * @throws InstantiationException
    */
-  public HttpPage(String pagename, String fileform, String header,
-                  String footer, String beginform, String endform,
-                  String nextinform, String uri, PageRole pagerole,
-                  String errorpage, String classname,
-                  Map&lt;String, AbstractHttpField&gt; fields)
+  public HttpPage(final String pagename, final String fileform,
+                  final String header, final String footer,
+                  final String beginform, final String endform,
+                  final String nextinform, final String uri,
+                  final PageRole pagerole, final String errorpage,
+                  final String classname,
+                  final Map&lt;String, AbstractHttpField&gt; fields)
       throws ClassNotFoundException, InstantiationException,
-<span class="fc" id="L92">             IllegalAccessException {</span>
-<span class="fc" id="L93">    setPagename(pagename);</span>
-<span class="fc" id="L94">    setFileform(fileform);</span>
-<span class="pc bpc" id="L95" title="3 of 4 branches missed.">    if (getFileform() != null &amp;&amp; getFileform().length() == 0) {</span>
-<span class="nc" id="L96">      setFileform(null);</span>
+<span class="fc" id="L94">             IllegalAccessException {</span>
+<span class="fc" id="L95">    setPagename(pagename);</span>
+<span class="fc" id="L96">    setFileform(fileform);</span>
+<span class="pc bpc" id="L97" title="3 of 4 branches missed.">    if (getFileform() != null &amp;&amp; getFileform().length() == 0) {</span>
+<span class="nc" id="L98">      setFileform(null);</span>
     }
-<span class="fc" id="L98">    setHeader(header);</span>
-<span class="fc" id="L99">    setFooter(footer);</span>
-<span class="fc" id="L100">    setBeginform(beginform);</span>
-<span class="fc" id="L101">    setEndform(endform);</span>
-<span class="fc" id="L102">    setNextinform(nextinform);</span>
-<span class="fc" id="L103">    setUri(uri);</span>
-<span class="fc" id="L104">    setPagerole(pagerole);</span>
-<span class="fc" id="L105">    setErrorpage(errorpage);</span>
-<span class="fc" id="L106">    setClassname(classname);</span>
-<span class="fc" id="L107">    setFields(fields);</span>
+<span class="fc" id="L100">    setHeader(header);</span>
+<span class="fc" id="L101">    setFooter(footer);</span>
+<span class="fc" id="L102">    setBeginform(beginform);</span>
+<span class="fc" id="L103">    setEndform(endform);</span>
+<span class="fc" id="L104">    setNextinform(nextinform);</span>
+<span class="fc" id="L105">    setUri(uri);</span>
+<span class="fc" id="L106">    setPagerole(pagerole);</span>
+<span class="fc" id="L107">    setErrorpage(errorpage);</span>
+<span class="fc" id="L108">    setClassname(classname);</span>
+<span class="fc" id="L109">    setFields(fields);</span>
     try {
-<span class="fc" id="L109">      ParametersChecker.checkSanityString(classname);</span>
-<span class="nc" id="L110">    } catch (InvalidArgumentException e) {</span>
-<span class="nc" id="L111">      throw new IllegalArgumentException(e.getMessage());</span>
-<span class="fc" id="L112">    }</span>
+<span class="fc" id="L111">      ParametersChecker.checkSanityString(classname);</span>
+<span class="nc" id="L112">    } catch (final InvalidArgumentException e) {</span>
+<span class="nc" id="L113">      throw new IllegalArgumentException(e.getMessage());</span>
+<span class="fc" id="L114">    }</span>
     @SuppressWarnings(&quot;unchecked&quot;)
-<span class="fc" id="L114">    final Class&lt;HttpBusinessFactory&gt; clasz =</span>
-<span class="fc" id="L115">        (Class&lt;HttpBusinessFactory&gt;) Class.forName(classname);//NOSONAR</span>
-<span class="fc" id="L116">    HttpBusinessFactory factory = clasz.newInstance();//NOSONAR</span>
-<span class="fc" id="L117">    setHttpBusinessFactory(factory);//NOSONAR</span>
-<span class="fc" id="L118">  }</span>
+<span class="fc" id="L116">    final Class&lt;HttpBusinessFactory&gt; clasz =</span>
+<span class="fc" id="L117">        (Class&lt;HttpBusinessFactory&gt;) Class.forName(classname);//NOSONAR</span>
+<span class="fc" id="L118">    final HttpBusinessFactory factory = clasz.newInstance();//NOSONAR</span>
+<span class="fc" id="L119">    setHttpBusinessFactory(factory);//NOSONAR</span>
+<span class="fc" id="L120">  }</span>
 
   /**
    * Called at the beginning of every request to get the current
@@ -125,31 +127,32 @@ public class HttpPage {
    *
    * @return AbstractHttpBusinessRequest to use during the request
    */
-  public AbstractHttpBusinessRequest newRequest(SocketAddress remoteAddress) {
-<span class="nc" id="L129">    final LinkedHashMap&lt;String, AbstractHttpField&gt; linkedHashMap =</span>
-<span class="nc" id="L130">        new LinkedHashMap&lt;String, AbstractHttpField&gt;(getFields().size());</span>
-<span class="nc bnc" id="L131" title="All 2 branches missed.">    for (final AbstractHttpField field : getFields().values()) {</span>
-<span class="nc" id="L132">      final AbstractHttpField newfield = field.clone();</span>
-<span class="nc bnc" id="L133" title="All 2 branches missed.">      if (getPagerole() != PageRole.MENU) {</span>
-<span class="nc" id="L134">        newfield.fieldvalue = null;</span>
+  public AbstractHttpBusinessRequest newRequest(
+      final SocketAddress remoteAddress) {
+<span class="nc" id="L132">    final LinkedHashMap&lt;String, AbstractHttpField&gt; linkedHashMap =</span>
+<span class="nc" id="L133">        new LinkedHashMap&lt;String, AbstractHttpField&gt;(getFields().size());</span>
+<span class="nc bnc" id="L134" title="All 2 branches missed.">    for (final AbstractHttpField field : getFields().values()) {</span>
+<span class="nc" id="L135">      final AbstractHttpField newfield = field.clone();</span>
+<span class="nc bnc" id="L136" title="All 2 branches missed.">      if (getPagerole() != PageRole.MENU) {</span>
+<span class="nc" id="L137">        newfield.fieldvalue = null;</span>
       }
-<span class="nc" id="L136">      linkedHashMap.put(field.getFieldname(), newfield);</span>
-<span class="nc" id="L137">    }</span>
-<span class="nc" id="L138">    return getHttpBusinessFactory()</span>
-<span class="nc" id="L139">        .getNewHttpBusinessRequest(remoteAddress, linkedHashMap, this);</span>
+<span class="nc" id="L139">      linkedHashMap.put(field.getFieldname(), newfield);</span>
+<span class="nc" id="L140">    }</span>
+<span class="nc" id="L141">    return getHttpBusinessFactory()</span>
+<span class="nc" id="L142">        .getNewHttpBusinessRequest(remoteAddress, linkedHashMap, this);</span>
   }
 
-  public String getPageValue(String value) {
-<span class="nc bnc" id="L143" title="All 4 branches missed.">    if (getFileform() != null &amp;&amp; value != null) {</span>
+  public String getPageValue(final String value) {
+<span class="nc bnc" id="L146" title="All 4 branches missed.">    if (getFileform() != null &amp;&amp; value != null) {</span>
       try {
-<span class="nc" id="L145">        return WaarpStringUtils.readFileException(getFileform() + value);</span>
-<span class="nc" id="L146">      } catch (final InvalidArgumentException ignored) {</span>
+<span class="nc" id="L148">        return WaarpStringUtils.readFileException(getFileform() + value);</span>
+<span class="nc" id="L149">      } catch (final InvalidArgumentException ignored) {</span>
         // nothing
-<span class="nc" id="L148">      } catch (final FileTransferException ignored) {</span>
+<span class="nc" id="L151">      } catch (final FileTransferException ignored) {</span>
         // nothing
-<span class="nc" id="L150">      }</span>
+<span class="nc" id="L153">      }</span>
     }
-<span class="nc" id="L152">    return value;</span>
+<span class="nc" id="L155">    return value;</span>
   }
 
   /**
@@ -159,137 +162,137 @@ public class HttpPage {
    *
    * @throws HttpIncorrectRequestException
    */
-  public String getHtmlPage(AbstractHttpBusinessRequest reference)
+  public String getHtmlPage(final AbstractHttpBusinessRequest reference)
       throws HttpIncorrectRequestException {
-<span class="nc bnc" id="L164" title="All 2 branches missed.">    if (getPagerole() == PageRole.HTML) {</span>
+<span class="nc bnc" id="L167" title="All 2 branches missed.">    if (getPagerole() == PageRole.HTML) {</span>
       // No handling of variable management, use MENU instead
-<span class="nc" id="L166">      String value = reference.getHeader();</span>
-<span class="nc bnc" id="L167" title="All 2 branches missed.">      logger.debug(&quot;Debug: &quot; + (value != null));</span>
-<span class="nc bnc" id="L168" title="All 4 branches missed.">      if (value == null || value.length() == 0) {</span>
-<span class="nc" id="L169">        value = getPageValue(getHeader());</span>
+<span class="nc" id="L169">      String value = reference.getHeader();</span>
+<span class="nc bnc" id="L170" title="All 2 branches missed.">      logger.debug(&quot;Debug: &quot; + (value != null));</span>
+<span class="nc bnc" id="L171" title="All 4 branches missed.">      if (value == null || value.length() == 0) {</span>
+<span class="nc" id="L172">        value = getPageValue(getHeader());</span>
       }
-      StringBuilder builder;
-<span class="nc bnc" id="L172" title="All 2 branches missed.">      if (value == null) {</span>
-<span class="nc" id="L173">        builder = new StringBuilder();</span>
+      final StringBuilder builder;
+<span class="nc bnc" id="L175" title="All 2 branches missed.">      if (value == null) {</span>
+<span class="nc" id="L176">        builder = new StringBuilder();</span>
       } else {
-<span class="nc" id="L175">        builder = new StringBuilder(value);</span>
+<span class="nc" id="L178">        builder = new StringBuilder(value);</span>
       }
-<span class="nc" id="L177">      value = reference.getBeginForm();</span>
-<span class="nc bnc" id="L178" title="All 4 branches missed.">      if (value == null || value.length() == 0) {</span>
-<span class="nc" id="L179">        value = getPageValue(getBeginform());</span>
+<span class="nc" id="L180">      value = reference.getBeginForm();</span>
+<span class="nc bnc" id="L181" title="All 4 branches missed.">      if (value == null || value.length() == 0) {</span>
+<span class="nc" id="L182">        value = getPageValue(getBeginform());</span>
       }
-<span class="nc bnc" id="L181" title="All 2 branches missed.">      if (value != null) {</span>
-<span class="nc" id="L182">        builder.append(value);</span>
+<span class="nc bnc" id="L184" title="All 2 branches missed.">      if (value != null) {</span>
+<span class="nc" id="L185">        builder.append(value);</span>
       }
-<span class="nc" id="L184">      value = reference.getEndForm();</span>
-<span class="nc bnc" id="L185" title="All 4 branches missed.">      if (value == null || value.length() == 0) {</span>
-<span class="nc" id="L186">        value = getPageValue(getEndform());</span>
+<span class="nc" id="L187">      value = reference.getEndForm();</span>
+<span class="nc bnc" id="L188" title="All 4 branches missed.">      if (value == null || value.length() == 0) {</span>
+<span class="nc" id="L189">        value = getPageValue(getEndform());</span>
       }
-<span class="nc bnc" id="L188" title="All 2 branches missed.">      if (value != null) {</span>
-<span class="nc" id="L189">        builder.append(value);</span>
+<span class="nc bnc" id="L191" title="All 2 branches missed.">      if (value != null) {</span>
+<span class="nc" id="L192">        builder.append(value);</span>
       }
-<span class="nc" id="L191">      value = reference.getFooter();</span>
-<span class="nc bnc" id="L192" title="All 4 branches missed.">      if (value == null || value.length() == 0) {</span>
-<span class="nc" id="L193">        value = getPageValue(getFooter());</span>
+<span class="nc" id="L194">      value = reference.getFooter();</span>
+<span class="nc bnc" id="L195" title="All 4 branches missed.">      if (value == null || value.length() == 0) {</span>
+<span class="nc" id="L196">        value = getPageValue(getFooter());</span>
       }
-<span class="nc bnc" id="L195" title="All 2 branches missed.">      if (value != null) {</span>
-<span class="nc" id="L196">        builder.append(value);</span>
+<span class="nc bnc" id="L198" title="All 2 branches missed.">      if (value != null) {</span>
+<span class="nc" id="L199">        builder.append(value);</span>
       }
-<span class="nc" id="L198">      return builder.toString();</span>
+<span class="nc" id="L201">      return builder.toString();</span>
     }
-<span class="nc" id="L200">    final boolean isForm = reference.isForm();</span>
-<span class="nc" id="L201">    String value = reference.getHeader();</span>
-<span class="nc bnc" id="L202" title="All 4 branches missed.">    if (value == null || value.length() == 0) {</span>
-<span class="nc" id="L203">      value = getPageValue(getHeader());</span>
+<span class="nc" id="L203">    final boolean isForm = reference.isForm();</span>
+<span class="nc" id="L204">    String value = reference.getHeader();</span>
+<span class="nc bnc" id="L205" title="All 4 branches missed.">    if (value == null || value.length() == 0) {</span>
+<span class="nc" id="L206">      value = getPageValue(getHeader());</span>
     }
-    StringBuilder builder;
-<span class="nc bnc" id="L206" title="All 2 branches missed.">    if (value == null) {</span>
-<span class="nc" id="L207">      builder = new StringBuilder();</span>
+    final StringBuilder builder;
+<span class="nc bnc" id="L209" title="All 2 branches missed.">    if (value == null) {</span>
+<span class="nc" id="L210">      builder = new StringBuilder();</span>
     } else {
-<span class="nc" id="L209">      builder = new StringBuilder(value);</span>
+<span class="nc" id="L212">      builder = new StringBuilder(value);</span>
     }
-<span class="nc" id="L211">    final Map&lt;String, AbstractHttpField&gt; requestFields =</span>
-<span class="nc" id="L212">        reference.getMapHttpFields();</span>
-<span class="nc bnc" id="L213" title="All 2 branches missed.">    if (!isForm) {</span>
-<span class="nc" id="L214">      value = reference.getBeginForm();</span>
-<span class="nc bnc" id="L215" title="All 4 branches missed.">      if (value == null || value.length() == 0) {</span>
-<span class="nc" id="L216">        value = getPageValue(getBeginform());</span>
+<span class="nc" id="L214">    final Map&lt;String, AbstractHttpField&gt; requestFields =</span>
+<span class="nc" id="L215">        reference.getMapHttpFields();</span>
+<span class="nc bnc" id="L216" title="All 2 branches missed.">    if (!isForm) {</span>
+<span class="nc" id="L217">      value = reference.getBeginForm();</span>
+<span class="nc bnc" id="L218" title="All 4 branches missed.">      if (value == null || value.length() == 0) {</span>
+<span class="nc" id="L219">        value = getPageValue(getBeginform());</span>
       }
-<span class="nc bnc" id="L218" title="All 2 branches missed.">      if (value != null) {</span>
-<span class="nc" id="L219">        builder.append(value);</span>
+<span class="nc bnc" id="L221" title="All 2 branches missed.">      if (value != null) {</span>
+<span class="nc" id="L222">        builder.append(value);</span>
       } else {
-<span class="nc" id="L221">        builder.append(&quot;&lt;BR&gt;&lt;TABLE border=1&gt;&lt;TR&gt;&quot;);</span>
-<span class="nc bnc" id="L222" title="All 2 branches missed.">        for (final AbstractHttpField field : requestFields.values()) {</span>
-<span class="nc bnc" id="L223" title="All 2 branches missed.">          if (field.isFieldvisibility()) {</span>
-<span class="nc" id="L224">            builder.append(&quot;&lt;TH&gt;&quot;).append(field.getFieldinfo()).append(&quot;&lt;/TH&gt;&quot;);</span>
+<span class="nc" id="L224">        builder.append(&quot;&lt;BR&gt;&lt;TABLE border=1&gt;&lt;TR&gt;&quot;);</span>
+<span class="nc bnc" id="L225" title="All 2 branches missed.">        for (final AbstractHttpField field : requestFields.values()) {</span>
+<span class="nc bnc" id="L226" title="All 2 branches missed.">          if (field.isFieldvisibility()) {</span>
+<span class="nc" id="L227">            builder.append(&quot;&lt;TH&gt;&quot;).append(field.getFieldinfo()).append(&quot;&lt;/TH&gt;&quot;);</span>
           }
-<span class="nc" id="L226">        }</span>
-<span class="nc" id="L227">        builder.append(&quot;&lt;TR&gt;&quot;);</span>
+<span class="nc" id="L229">        }</span>
+<span class="nc" id="L230">        builder.append(&quot;&lt;TR&gt;&quot;);</span>
       }
     } else {
-<span class="nc" id="L230">      value = reference.getBeginForm();</span>
-<span class="nc bnc" id="L231" title="All 4 branches missed.">      if (value == null || value.length() == 0) {</span>
-<span class="nc" id="L232">        value = getPageValue(getBeginform());</span>
+<span class="nc" id="L233">      value = reference.getBeginForm();</span>
+<span class="nc bnc" id="L234" title="All 4 branches missed.">      if (value == null || value.length() == 0) {</span>
+<span class="nc" id="L235">        value = getPageValue(getBeginform());</span>
       }
-<span class="nc bnc" id="L234" title="All 2 branches missed.">      if (value != null) {</span>
-<span class="nc" id="L235">        builder.append(value);</span>
+<span class="nc bnc" id="L237" title="All 2 branches missed.">      if (value != null) {</span>
+<span class="nc" id="L238">        builder.append(value);</span>
       }
     }
-<span class="nc" id="L238">    boolean first = true;</span>
-<span class="nc bnc" id="L239" title="All 2 branches missed.">    for (final AbstractHttpField field : requestFields.values()) {</span>
-<span class="nc bnc" id="L240" title="All 2 branches missed.">      if (field.isFieldvisibility()) {</span>
+<span class="nc" id="L241">    boolean first = true;</span>
+<span class="nc bnc" id="L242" title="All 2 branches missed.">    for (final AbstractHttpField field : requestFields.values()) {</span>
+<span class="nc bnc" id="L243" title="All 2 branches missed.">      if (field.isFieldvisibility()) {</span>
         // to prevent that last will have a next field form
-<span class="nc bnc" id="L242" title="All 2 branches missed.">        if (first) {</span>
-<span class="nc" id="L243">          first = false;</span>
+<span class="nc bnc" id="L245" title="All 2 branches missed.">        if (first) {</span>
+<span class="nc" id="L246">          first = false;</span>
         } else {
-<span class="nc" id="L245">          value = reference.getNextFieldInForm();</span>
-<span class="nc bnc" id="L246" title="All 4 branches missed.">          if (value == null || value.length() == 0) {</span>
-<span class="nc" id="L247">            value = getPageValue(getNextinform());</span>
+<span class="nc" id="L248">          value = reference.getNextFieldInForm();</span>
+<span class="nc bnc" id="L249" title="All 4 branches missed.">          if (value == null || value.length() == 0) {</span>
+<span class="nc" id="L250">            value = getPageValue(getNextinform());</span>
           }
-<span class="nc bnc" id="L249" title="All 2 branches missed.">          if (value != null) {</span>
-<span class="nc" id="L250">            builder.append(value);</span>
+<span class="nc bnc" id="L252" title="All 2 branches missed.">          if (value != null) {</span>
+<span class="nc" id="L253">            builder.append(value);</span>
           }
         }
-<span class="nc" id="L253">        value = reference.getFieldForm(field);</span>
-<span class="nc bnc" id="L254" title="All 4 branches missed.">        if (value == null || value.length() == 0) {</span>
-<span class="nc bnc" id="L255" title="All 2 branches missed.">          if (isForm) {</span>
-<span class="nc" id="L256">            value = field.getHtmlFormField(this);</span>
+<span class="nc" id="L256">        value = reference.getFieldForm(field);</span>
+<span class="nc bnc" id="L257" title="All 4 branches missed.">        if (value == null || value.length() == 0) {</span>
+<span class="nc bnc" id="L258" title="All 2 branches missed.">          if (isForm) {</span>
+<span class="nc" id="L259">            value = field.getHtmlFormField(this);</span>
           } else {
-<span class="nc" id="L258">            value = field.getHtmlTabField(this);</span>
+<span class="nc" id="L261">            value = field.getHtmlTabField(this);</span>
           }
         }
-<span class="nc bnc" id="L261" title="All 2 branches missed.">        if (value != null) {</span>
-<span class="nc" id="L262">          builder.append(value);</span>
+<span class="nc bnc" id="L264" title="All 2 branches missed.">        if (value != null) {</span>
+<span class="nc" id="L265">          builder.append(value);</span>
         }
       }
-<span class="nc" id="L265">    }</span>
-<span class="nc bnc" id="L266" title="All 2 branches missed.">    if (!isForm) {</span>
-<span class="nc" id="L267">      value = reference.getEndForm();</span>
-<span class="nc bnc" id="L268" title="All 4 branches missed.">      if (value == null || value.length() == 0) {</span>
-<span class="nc" id="L269">        value = getPageValue(getEndform());</span>
+<span class="nc" id="L268">    }</span>
+<span class="nc bnc" id="L269" title="All 2 branches missed.">    if (!isForm) {</span>
+<span class="nc" id="L270">      value = reference.getEndForm();</span>
+<span class="nc bnc" id="L271" title="All 4 branches missed.">      if (value == null || value.length() == 0) {</span>
+<span class="nc" id="L272">        value = getPageValue(getEndform());</span>
       }
-<span class="nc bnc" id="L271" title="All 2 branches missed.">      if (value != null) {</span>
-<span class="nc" id="L272">        builder.append(value);</span>
+<span class="nc bnc" id="L274" title="All 2 branches missed.">      if (value != null) {</span>
+<span class="nc" id="L275">        builder.append(value);</span>
       } else {
-<span class="nc" id="L274">        builder.append(&quot;&lt;/TABLE&gt;&lt;BR&gt;&quot;);</span>
+<span class="nc" id="L277">        builder.append(&quot;&lt;/TABLE&gt;&lt;BR&gt;&quot;);</span>
       }
     } else {
-<span class="nc" id="L277">      value = reference.getEndForm();</span>
-<span class="nc bnc" id="L278" title="All 4 branches missed.">      if (value == null || value.length() == 0) {</span>
-<span class="nc" id="L279">        value = getPageValue(getEndform());</span>
+<span class="nc" id="L280">      value = reference.getEndForm();</span>
+<span class="nc bnc" id="L281" title="All 4 branches missed.">      if (value == null || value.length() == 0) {</span>
+<span class="nc" id="L282">        value = getPageValue(getEndform());</span>
       }
-<span class="nc bnc" id="L281" title="All 2 branches missed.">      if (value != null) {</span>
-<span class="nc" id="L282">        builder.append(value);</span>
+<span class="nc bnc" id="L284" title="All 2 branches missed.">      if (value != null) {</span>
+<span class="nc" id="L285">        builder.append(value);</span>
       }
     }
-<span class="nc" id="L285">    value = reference.getFooter();</span>
-<span class="nc bnc" id="L286" title="All 4 branches missed.">    if (value == null || value.length() == 0) {</span>
-<span class="nc" id="L287">      value = getPageValue(getFooter());</span>
+<span class="nc" id="L288">    value = reference.getFooter();</span>
+<span class="nc bnc" id="L289" title="All 4 branches missed.">    if (value == null || value.length() == 0) {</span>
+<span class="nc" id="L290">      value = getPageValue(getFooter());</span>
     }
-<span class="nc bnc" id="L289" title="All 2 branches missed.">    if (value != null) {</span>
-<span class="nc" id="L290">      builder.append(value);</span>
+<span class="nc bnc" id="L292" title="All 2 branches missed.">    if (value != null) {</span>
+<span class="nc" id="L293">      builder.append(value);</span>
     }
-<span class="nc" id="L292">    return builder.toString();</span>
+<span class="nc" id="L295">    return builder.toString();</span>
   }
 
   /**
@@ -304,27 +307,28 @@ public class HttpPage {
    *
    * @throws HttpIncorrectRequestException
    */
-  public void setValue(AbstractHttpBusinessRequest reference, String fieldname,
-                       String value, FieldPosition position)
+  public void setValue(final AbstractHttpBusinessRequest reference,
+                       final String fieldname, final String value,
+                       final FieldPosition position)
       throws HttpIncorrectRequestException {
-<span class="nc" id="L310">    final Map&lt;String, AbstractHttpField&gt; requestFields =</span>
-<span class="nc" id="L311">        reference.getMapHttpFields();</span>
-<span class="nc" id="L312">    final AbstractHttpField field = requestFields.get(fieldname);</span>
-<span class="nc bnc" id="L313" title="All 2 branches missed.">    if (field != null) {</span>
-<span class="nc bnc" id="L314" title="All 2 branches missed.">      if (field.getFieldposition() == FieldPosition.ANY ||</span>
-<span class="nc bnc" id="L315" title="All 2 branches missed.">          field.getFieldposition() == position) {</span>
-<span class="nc" id="L316">        field.setStringValue(value);</span>
-<span class="nc bnc" id="L317" title="All 4 branches missed.">        if (field.isFieldtovalidate() &amp;&amp; !reference.isFieldValid(field)) {</span>
-<span class="nc" id="L318">          throw new HttpIncorrectRequestException(</span>
+<span class="nc" id="L314">    final Map&lt;String, AbstractHttpField&gt; requestFields =</span>
+<span class="nc" id="L315">        reference.getMapHttpFields();</span>
+<span class="nc" id="L316">    final AbstractHttpField field = requestFields.get(fieldname);</span>
+<span class="nc bnc" id="L317" title="All 2 branches missed.">    if (field != null) {</span>
+<span class="nc bnc" id="L318" title="All 2 branches missed.">      if (field.getFieldposition() == FieldPosition.ANY ||</span>
+<span class="nc bnc" id="L319" title="All 2 branches missed.">          field.getFieldposition() == position) {</span>
+<span class="nc" id="L320">        field.setStringValue(value);</span>
+<span class="nc bnc" id="L321" title="All 4 branches missed.">        if (field.isFieldtovalidate() &amp;&amp; !reference.isFieldValid(field)) {</span>
+<span class="nc" id="L322">          throw new HttpIncorrectRequestException(</span>
               &quot;Field unvalid: &quot; + fieldname);
         }
       } else {
-<span class="nc" id="L322">        throw new HttpIncorrectRequestException(</span>
+<span class="nc" id="L326">        throw new HttpIncorrectRequestException(</span>
             &quot;Invalid position: &quot; + position +
-<span class="nc" id="L324">            &quot; while field is supposed to be in &quot; + field.getFieldposition());</span>
+<span class="nc" id="L328">            &quot; while field is supposed to be in &quot; + field.getFieldposition());</span>
       }
     }
-<span class="nc" id="L327">  }</span>
+<span class="nc" id="L331">  }</span>
 
   /**
    * Set the value to the field according to fieldname.
@@ -336,36 +340,36 @@ public class HttpPage {
    *
    * @throws HttpIncorrectRequestException
    */
-  public void setValue(AbstractHttpBusinessRequest reference, String fieldname,
-                       FileUpload fileUpload)
+  public void setValue(final AbstractHttpBusinessRequest reference,
+                       final String fieldname, final FileUpload fileUpload)
       throws HttpIncorrectRequestException {
-<span class="nc" id="L342">    final Map&lt;String, AbstractHttpField&gt; requestFields =</span>
-<span class="nc" id="L343">        reference.getMapHttpFields();</span>
-<span class="nc" id="L344">    final AbstractHttpField field = requestFields.get(fieldname);</span>
-<span class="nc bnc" id="L345" title="All 2 branches missed.">    if (field != null) {</span>
-<span class="nc" id="L346">      field.setFileUpload(fileUpload);</span>
-<span class="nc bnc" id="L347" title="All 4 branches missed.">      if (field.isFieldtovalidate() &amp;&amp; !reference.isFieldValid(field)) {</span>
-<span class="nc" id="L348">        throw new HttpIncorrectRequestException(&quot;Field unvalid: &quot; + fieldname);</span>
+<span class="nc" id="L346">    final Map&lt;String, AbstractHttpField&gt; requestFields =</span>
+<span class="nc" id="L347">        reference.getMapHttpFields();</span>
+<span class="nc" id="L348">    final AbstractHttpField field = requestFields.get(fieldname);</span>
+<span class="nc bnc" id="L349" title="All 2 branches missed.">    if (field != null) {</span>
+<span class="nc" id="L350">      field.setFileUpload(fileUpload);</span>
+<span class="nc bnc" id="L351" title="All 4 branches missed.">      if (field.isFieldtovalidate() &amp;&amp; !reference.isFieldValid(field)) {</span>
+<span class="nc" id="L352">        throw new HttpIncorrectRequestException(&quot;Field unvalid: &quot; + fieldname);</span>
       }
     }
-<span class="nc" id="L351">  }</span>
+<span class="nc" id="L355">  }</span>
 
   /**
    * @param reference
    *
    * @return True if the request is fully valid
    */
-  public boolean isRequestValid(AbstractHttpBusinessRequest reference) {
-<span class="nc" id="L359">    final Map&lt;String, AbstractHttpField&gt; requestFields =</span>
-<span class="nc" id="L360">        reference.getMapHttpFields();</span>
-<span class="nc bnc" id="L361" title="All 2 branches missed.">    for (final AbstractHttpField field : requestFields.values()) {</span>
-<span class="nc bnc" id="L362" title="All 4 branches missed.">      if (field.isFieldmandatory() &amp;&amp; !field.isPresent()) {</span>
-<span class="nc" id="L363">        logger.warn(&quot;Request invalid since the following field is absent: &quot; +</span>
-<span class="nc" id="L364">                    field.getFieldname());</span>
-<span class="nc" id="L365">        return false;</span>
+  public boolean isRequestValid(final AbstractHttpBusinessRequest reference) {
+<span class="nc" id="L363">    final Map&lt;String, AbstractHttpField&gt; requestFields =</span>
+<span class="nc" id="L364">        reference.getMapHttpFields();</span>
+<span class="nc bnc" id="L365" title="All 2 branches missed.">    for (final AbstractHttpField field : requestFields.values()) {</span>
+<span class="nc bnc" id="L366" title="All 4 branches missed.">      if (field.isFieldmandatory() &amp;&amp; !field.isPresent()) {</span>
+<span class="nc" id="L367">        logger.warn(&quot;Request invalid since the following field is absent: &quot; +</span>
+<span class="nc" id="L368">                    field.getFieldname());</span>
+<span class="nc" id="L369">        return false;</span>
       }
-<span class="nc" id="L367">    }</span>
-<span class="nc" id="L368">    return reference.isRequestValid();</span>
+<span class="nc" id="L371">    }</span>
+<span class="nc" id="L372">    return reference.isRequestValid();</span>
   }
 
   /**
@@ -376,8 +380,8 @@ public class HttpPage {
    * @return the fields list from the current AbstractHttpBusinessRequest
    */
   public Map&lt;String, AbstractHttpField&gt; getFieldsForRequest(
-      AbstractHttpBusinessRequest reference) {
-<span class="nc" id="L380">    return reference.getMapHttpFields();</span>
+      final AbstractHttpBusinessRequest reference) {
+<span class="nc" id="L384">    return reference.getMapHttpFields();</span>
   }
 
   /**
@@ -388,13 +392,13 @@ public class HttpPage {
    *
    * @return the String value
    */
-  public String getValue(AbstractHttpBusinessRequest reference,
-                         String fieldname) {
-<span class="nc" id="L393">    final AbstractHttpField field = reference.getMapHttpFields().get(fieldname);</span>
-<span class="nc bnc" id="L394" title="All 2 branches missed.">    if (field != null) {</span>
-<span class="nc" id="L395">      return field.fieldvalue;</span>
+  public String getValue(final AbstractHttpBusinessRequest reference,
+                         final String fieldname) {
+<span class="nc" id="L397">    final AbstractHttpField field = reference.getMapHttpFields().get(fieldname);</span>
+<span class="nc bnc" id="L398" title="All 2 branches missed.">    if (field != null) {</span>
+<span class="nc" id="L399">      return field.fieldvalue;</span>
     }
-<span class="nc" id="L397">    return null;</span>
+<span class="nc" id="L401">    return null;</span>
   }
 
   /**
@@ -405,13 +409,13 @@ public class HttpPage {
    *
    * @return the FileUpload value
    */
-  public FileUpload getFileUpload(AbstractHttpBusinessRequest reference,
-                                  String fieldname) {
-<span class="nc" id="L410">    final AbstractHttpField field = reference.getMapHttpFields().get(fieldname);</span>
-<span class="nc bnc" id="L411" title="All 2 branches missed.">    if (field != null) {</span>
-<span class="nc" id="L412">      return field.fileUpload;</span>
+  public FileUpload getFileUpload(final AbstractHttpBusinessRequest reference,
+                                  final String fieldname) {
+<span class="nc" id="L414">    final AbstractHttpField field = reference.getMapHttpFields().get(fieldname);</span>
+<span class="nc bnc" id="L415" title="All 2 branches missed.">    if (field != null) {</span>
+<span class="nc" id="L416">      return field.fileUpload;</span>
     }
-<span class="nc" id="L414">    return null;</span>
+<span class="nc" id="L418">    return null;</span>
   }
 
   /**
@@ -422,191 +426,192 @@ public class HttpPage {
    *
    * @return the AbstractHttpField value
    */
-  public AbstractHttpField getField(AbstractHttpBusinessRequest reference,
-                                    String fieldname) {
-<span class="nc" id="L427">    return reference.getMapHttpFields().get(fieldname);</span>
+  public AbstractHttpField getField(final AbstractHttpBusinessRequest reference,
+                                    final String fieldname) {
+<span class="nc" id="L431">    return reference.getMapHttpFields().get(fieldname);</span>
   }
 
   /**
    * @return the pagename
    */
   public String getPagename() {
-<span class="fc" id="L434">    return pagename;</span>
+<span class="fc" id="L438">    return pagename;</span>
   }
 
   /**
    * @param pagename the pagename to set
    */
-  private void setPagename(String pagename) {
-<span class="fc" id="L441">    this.pagename = pagename;</span>
-<span class="fc" id="L442">  }</span>
+  private void setPagename(final String pagename) {
+<span class="fc" id="L445">    this.pagename = pagename;</span>
+<span class="fc" id="L446">  }</span>
 
   /**
    * @return the fileform
    */
   public String getFileform() {
-<span class="fc" id="L448">    return fileform;</span>
+<span class="fc" id="L452">    return fileform;</span>
   }
 
   /**
    * @param fileform the fileform to set
    */
-  private void setFileform(String fileform) {
-<span class="fc" id="L455">    this.fileform = fileform;</span>
-<span class="fc" id="L456">  }</span>
+  private void setFileform(final String fileform) {
+<span class="fc" id="L459">    this.fileform = fileform;</span>
+<span class="fc" id="L460">  }</span>
 
   /**
    * @return the header
    */
   public String getHeader() {
-<span class="fc" id="L462">    return header;</span>
+<span class="fc" id="L466">    return header;</span>
   }
 
   /**
    * @param header the header to set
    */
-  private void setHeader(String header) {
-<span class="fc" id="L469">    this.header = header;</span>
-<span class="fc" id="L470">  }</span>
+  private void setHeader(final String header) {
+<span class="fc" id="L473">    this.header = header;</span>
+<span class="fc" id="L474">  }</span>
 
   /**
    * @return the footer
    */
   public String getFooter() {
-<span class="fc" id="L476">    return footer;</span>
+<span class="fc" id="L480">    return footer;</span>
   }
 
   /**
    * @param footer the footer to set
    */
-  private void setFooter(String footer) {
-<span class="fc" id="L483">    this.footer = footer;</span>
-<span class="fc" id="L484">  }</span>
+  private void setFooter(final String footer) {
+<span class="fc" id="L487">    this.footer = footer;</span>
+<span class="fc" id="L488">  }</span>
 
   /**
    * @return the beginform
    */
   public String getBeginform() {
-<span class="fc" id="L490">    return beginform;</span>
+<span class="fc" id="L494">    return beginform;</span>
   }
 
   /**
    * @param beginform the beginform to set
    */
-  private void setBeginform(String beginform) {
-<span class="fc" id="L497">    this.beginform = beginform;</span>
-<span class="fc" id="L498">  }</span>
+  private void setBeginform(final String beginform) {
+<span class="fc" id="L501">    this.beginform = beginform;</span>
+<span class="fc" id="L502">  }</span>
 
   /**
    * @return the endform
    */
   public String getEndform() {
-<span class="fc" id="L504">    return endform;</span>
+<span class="fc" id="L508">    return endform;</span>
   }
 
   /**
    * @param endform the endform to set
    */
-  private void setEndform(String endform) {
-<span class="fc" id="L511">    this.endform = endform;</span>
-<span class="fc" id="L512">  }</span>
+  private void setEndform(final String endform) {
+<span class="fc" id="L515">    this.endform = endform;</span>
+<span class="fc" id="L516">  }</span>
 
   /**
    * @return the nextinform
    */
   public String getNextinform() {
-<span class="fc" id="L518">    return nextinform;</span>
+<span class="fc" id="L522">    return nextinform;</span>
   }
 
   /**
    * @param nextinform the nextinform to set
    */
-  private void setNextinform(String nextinform) {
-<span class="fc" id="L525">    this.nextinform = nextinform;</span>
-<span class="fc" id="L526">  }</span>
+  private void setNextinform(final String nextinform) {
+<span class="fc" id="L529">    this.nextinform = nextinform;</span>
+<span class="fc" id="L530">  }</span>
 
   /**
    * @return the uri
    */
   public String getUri() {
-<span class="fc" id="L532">    return uri;</span>
+<span class="fc" id="L536">    return uri;</span>
   }
 
   /**
    * @param uri the uri to set
    */
-  private void setUri(String uri) {
-<span class="fc" id="L539">    this.uri = uri;</span>
-<span class="fc" id="L540">  }</span>
+  private void setUri(final String uri) {
+<span class="fc" id="L543">    this.uri = uri;</span>
+<span class="fc" id="L544">  }</span>
 
   /**
    * @return the pagerole
    */
   public PageRole getPagerole() {
-<span class="fc" id="L546">    return pagerole;</span>
+<span class="fc" id="L550">    return pagerole;</span>
   }
 
   /**
    * @param pagerole the pagerole to set
    */
-  private void setPagerole(PageRole pagerole) {
-<span class="fc" id="L553">    this.pagerole = pagerole;</span>
-<span class="fc" id="L554">  }</span>
+  private void setPagerole(final PageRole pagerole) {
+<span class="fc" id="L557">    this.pagerole = pagerole;</span>
+<span class="fc" id="L558">  }</span>
 
   /**
    * @return the errorpage
    */
   public String getErrorpage() {
-<span class="fc" id="L560">    return errorpage;</span>
+<span class="fc" id="L564">    return errorpage;</span>
   }
 
   /**
    * @param errorpage the errorpage to set
    */
-  private void setErrorpage(String errorpage) {
-<span class="fc" id="L567">    this.errorpage = errorpage;</span>
-<span class="fc" id="L568">  }</span>
+  private void setErrorpage(final String errorpage) {
+<span class="fc" id="L571">    this.errorpage = errorpage;</span>
+<span class="fc" id="L572">  }</span>
 
   /**
    * @return the classname
    */
   public String getClassname() {
-<span class="fc" id="L574">    return classname;</span>
+<span class="fc" id="L578">    return classname;</span>
   }
 
   /**
    * @param classname the classname to set
    */
-  private void setClassname(String classname) {
-<span class="fc" id="L581">    this.classname = classname;</span>
-<span class="fc" id="L582">  }</span>
+  private void setClassname(final String classname) {
+<span class="fc" id="L585">    this.classname = classname;</span>
+<span class="fc" id="L586">  }</span>
 
   /**
    * @return the fields
    */
   public Map&lt;String, AbstractHttpField&gt; getFields() {
-<span class="fc" id="L588">    return fields;</span>
+<span class="fc" id="L592">    return fields;</span>
   }
 
   /**
    * @param fields the fields to set
    */
-  private void setFields(Map&lt;String, AbstractHttpField&gt; fields) {
-<span class="fc" id="L595">    this.fields = fields;</span>
-<span class="fc" id="L596">  }</span>
+  private void setFields(final Map&lt;String, AbstractHttpField&gt; fields) {
+<span class="fc" id="L599">    this.fields = fields;</span>
+<span class="fc" id="L600">  }</span>
 
   /**
    * @return the httpBusinessFactory
    */
   public HttpBusinessFactory getHttpBusinessFactory() {
-<span class="nc" id="L602">    return httpBusinessFactory;</span>
+<span class="nc" id="L606">    return httpBusinessFactory;</span>
   }
 
   /**
    * @param httpBusinessFactory the httpBusinessFactory to set
    */
-  private void setHttpBusinessFactory(HttpBusinessFactory httpBusinessFactory) {
-<span class="fc" id="L609">    this.httpBusinessFactory = httpBusinessFactory;</span>
-<span class="fc" id="L610">  }</span>
+  private void setHttpBusinessFactory(
+      final HttpBusinessFactory httpBusinessFactory) {
+<span class="fc" id="L614">    this.httpBusinessFactory = httpBusinessFactory;</span>
+<span class="fc" id="L615">  }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

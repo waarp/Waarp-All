@@ -54,7 +54,7 @@ public class DbModelPostgresqlR66 extends DbModelPostgresql {
    *
    * @throws WaarpDatabaseNoConnectionException
    */
-  private int getServerVersion(DbSession session)
+  private int getServerVersion(final DbSession session)
       throws WaarpDatabaseNoConnectionException {
 <span class="nc" id="L59">    int serverVersion = 0;</span>
 <span class="nc" id="L60">    final DbRequest request = new DbRequest(session);</span>
@@ -76,7 +76,7 @@ public class DbModelPostgresqlR66 extends DbModelPostgresql {
   }
 
   @Override
-  public void createTables(DbSession session)
+  public void createTables(final DbSession session)
       throws WaarpDatabaseNoConnectionException {
     // Create tables: configuration, hosts, rules, runner, cptrunner
 <span class="fc" id="L82">    final String createTableH2 = &quot;CREATE TABLE &quot;;</span>
@@ -136,7 +136,7 @@ public class DbModelPostgresqlR66 extends DbModelPostgresql {
 <span class="fc" id="L136">  }</span>
 
   @Override
-  public boolean upgradeDb(DbSession session, String version)
+  public boolean upgradeDb(final DbSession session, final String version)
       throws WaarpDatabaseNoConnectionException {
 <span class="nc" id="L141">    if (PartnerConfiguration</span>
 <span class="nc bnc" id="L142" title="All 2 branches missed.">        .isVersion2GEQVersion1(version, R66Versions.V2_4_13.getVersion())) {</span>
@@ -152,7 +152,7 @@ public class DbModelPostgresqlR66 extends DbModelPostgresql {
 <span class="nc" id="L152">      final String notNull = &quot; NOT NULL &quot;;</span>
 
       // HostConfiguration
-<span class="nc" id="L155">      StringBuilder action =</span>
+<span class="nc" id="L155">      final StringBuilder action =</span>
           new StringBuilder(createTableH2 + DbHostConfiguration.table + '(');
       final DbHostConfiguration.Columns[] chcolumns =
 <span class="nc" id="L158">          DbHostConfiguration.Columns.values();</span>
@@ -261,8 +261,8 @@ public class DbModelPostgresqlR66 extends DbModelPostgresql {
   }
 
   @Override
-  public boolean needUpgradeDb(DbSession session, String version,
-                               boolean tryFix)
+  public boolean needUpgradeDb(final DbSession session, final String version,
+                               final boolean tryFix)
       throws WaarpDatabaseNoConnectionException {
     // Check if the database is up to date
 <span class="fc" id="L268">    return DbModelFactoryR66</span>

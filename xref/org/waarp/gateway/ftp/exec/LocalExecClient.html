@@ -62,15 +62,15 @@
 <a class="jxr_linenumber" name="L54" href="#L54">54</a>    <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> Bootstrap bootstrapLocalExec;
 <a class="jxr_linenumber" name="L55" href="#L55">55</a>    <em class="jxr_comment">// Configure the pipeline factory.</em>
 <a class="jxr_linenumber" name="L56" href="#L56">56</a>    <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <a name="LocalExecClientInitializer" href="../../../../../org/waarp/commandexec/client/LocalExecClientInitializer.html#LocalExecClientInitializer">LocalExecClientInitializer</a> localExecClientInitializer;
-<a class="jxr_linenumber" name="L57" href="#L57">57</a>    <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> EventLoopGroup localPipelineExecutor;
-<a class="jxr_linenumber" name="L58" href="#L58">58</a>  
-<a class="jxr_linenumber" name="L59" href="#L59">59</a>    <em class="jxr_javadoccomment">/**</em>
-<a class="jxr_linenumber" name="L60" href="#L60">60</a>  <em class="jxr_javadoccomment">   * Initialize the LocalExec Client context</em>
-<a class="jxr_linenumber" name="L61" href="#L61">61</a>  <em class="jxr_javadoccomment">   */</em>
-<a class="jxr_linenumber" name="L62" href="#L62">62</a>    <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">void</strong> initialize(<strong class="jxr_keyword">int</strong> clientThread, <strong class="jxr_keyword">long</strong> maxGlobalMemory) {
-<a class="jxr_linenumber" name="L63" href="#L63">63</a>      localPipelineExecutor = <strong class="jxr_keyword">new</strong> NioEventLoopGroup(clientThread * 2,
-<a class="jxr_linenumber" name="L64" href="#L64">64</a>                                                    <strong class="jxr_keyword">new</strong> <a name="WaarpThreadFactory" href="../../../../../org/waarp/common/utility/WaarpThreadFactory.html#WaarpThreadFactory">WaarpThreadFactory</a>(
-<a class="jxr_linenumber" name="L65" href="#L65">65</a>                                                        <span class="jxr_string">"LocalExecutor"</span>));
+<a class="jxr_linenumber" name="L57" href="#L57">57</a>  
+<a class="jxr_linenumber" name="L58" href="#L58">58</a>    <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L59" href="#L59">59</a>  <em class="jxr_javadoccomment">   * Initialize the LocalExec Client context</em>
+<a class="jxr_linenumber" name="L60" href="#L60">60</a>  <em class="jxr_javadoccomment">   */</em>
+<a class="jxr_linenumber" name="L61" href="#L61">61</a>    <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">void</strong> initialize(<strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong> clientThread,
+<a class="jxr_linenumber" name="L62" href="#L62">62</a>                                  <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">long</strong> maxGlobalMemory) {
+<a class="jxr_linenumber" name="L63" href="#L63">63</a>      <strong class="jxr_keyword">final</strong> EventLoopGroup localPipelineExecutor =
+<a class="jxr_linenumber" name="L64" href="#L64">64</a>          <strong class="jxr_keyword">new</strong> NioEventLoopGroup(clientThread * 2,
+<a class="jxr_linenumber" name="L65" href="#L65">65</a>                                <strong class="jxr_keyword">new</strong> <a name="WaarpThreadFactory" href="../../../../../org/waarp/common/utility/WaarpThreadFactory.html#WaarpThreadFactory">WaarpThreadFactory</a>(<span class="jxr_string">"LocalExecutor"</span>));
 <a class="jxr_linenumber" name="L66" href="#L66">66</a>      <em class="jxr_comment">// Configure the client.</em>
 <a class="jxr_linenumber" name="L67" href="#L67">67</a>      bootstrapLocalExec = <strong class="jxr_keyword">new</strong> Bootstrap();
 <a class="jxr_linenumber" name="L68" href="#L68">68</a>      WaarpNettyUtil.setBootstrap(bootstrapLocalExec, localPipelineExecutor,
@@ -114,8 +114,8 @@
 <a class="jxr_linenumber" name="L106" href="#L106">106</a> <em class="jxr_javadoccomment">   * @param delay</em>
 <a class="jxr_linenumber" name="L107" href="#L107">107</a> <em class="jxr_javadoccomment">   * @param futureCompletion</em>
 <a class="jxr_linenumber" name="L108" href="#L108">108</a> <em class="jxr_javadoccomment">   */</em>
-<a class="jxr_linenumber" name="L109" href="#L109">109</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> runOneCommand(String command, <strong class="jxr_keyword">long</strong> delay,
-<a class="jxr_linenumber" name="L110" href="#L110">110</a>                             <a name="WaarpFuture" href="../../../../../org/waarp/common/future/WaarpFuture.html#WaarpFuture">WaarpFuture</a> futureCompletion) {
+<a class="jxr_linenumber" name="L109" href="#L109">109</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> runOneCommand(<strong class="jxr_keyword">final</strong> String command, <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">long</strong> delay,
+<a class="jxr_linenumber" name="L110" href="#L110">110</a>                             <strong class="jxr_keyword">final</strong> <a name="WaarpFuture" href="../../../../../org/waarp/common/future/WaarpFuture.html#WaarpFuture">WaarpFuture</a> futureCompletion) {
 <a class="jxr_linenumber" name="L111" href="#L111">111</a>     <em class="jxr_comment">// Initialize the command context</em>
 <a class="jxr_linenumber" name="L112" href="#L112">112</a>     <strong class="jxr_keyword">final</strong> <a name="LocalExecClientHandler" href="../../../../../org/waarp/commandexec/client/LocalExecClientHandler.html#LocalExecClientHandler">LocalExecClientHandler</a> clientHandler =
 <a class="jxr_linenumber" name="L113" href="#L113">113</a>         (<a name="LocalExecClientHandler" href="../../../../../org/waarp/commandexec/client/LocalExecClientHandler.html#LocalExecClientHandler">LocalExecClientHandler</a>) channel.pipeline().last();
@@ -180,7 +180,7 @@
 <a class="jxr_linenumber" name="L172" href="#L172">172</a>   <em class="jxr_javadoccomment">/**</em>
 <a class="jxr_linenumber" name="L173" href="#L173">173</a> <em class="jxr_javadoccomment">   * @param address the address to set</em>
 <a class="jxr_linenumber" name="L174" href="#L174">174</a> <em class="jxr_javadoccomment">   */</em>
-<a class="jxr_linenumber" name="L175" href="#L175">175</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">void</strong> setAddress(InetSocketAddress address) {
+<a class="jxr_linenumber" name="L175" href="#L175">175</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">void</strong> setAddress(<strong class="jxr_keyword">final</strong> InetSocketAddress address) {
 <a class="jxr_linenumber" name="L176" href="#L176">176</a>     LocalExecClient.address = address;
 <a class="jxr_linenumber" name="L177" href="#L177">177</a>   }
 <a class="jxr_linenumber" name="L178" href="#L178">178</a> }

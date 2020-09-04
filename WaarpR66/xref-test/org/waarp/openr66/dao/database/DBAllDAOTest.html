@@ -216,7 +216,7 @@
 <a class="jxr_linenumber" name="L208" href="#L208">208</a>       fail(<span class="jxr_string">"Cannot find "</span> + file.getAbsolutePath());
 <a class="jxr_linenumber" name="L209" href="#L209">209</a>     }
 <a class="jxr_linenumber" name="L210" href="#L210">210</a>     String content = WaarpStringUtils.readFile(file.getAbsolutePath());
-<a class="jxr_linenumber" name="L211" href="#L211">211</a>     SysErrLogger.FAKE_LOGGER.syserr(getJDC().getJdbcUrl());
+<a class="jxr_linenumber" name="L211" href="#L211">211</a>     SysErrLogger.FAKE_LOGGER.sysout(getJDC().getJdbcUrl());
 <a class="jxr_linenumber" name="L212" href="#L212">212</a>     String driver = getJDC().getDriverClassName();
 <a class="jxr_linenumber" name="L213" href="#L213">213</a>     String target = <span class="jxr_string">"notfound"</span>;
 <a class="jxr_linenumber" name="L214" href="#L214">214</a>     String jdbcUrl = getJDC().getJdbcUrl();
@@ -240,8 +240,8 @@
 <a class="jxr_linenumber" name="L232" href="#L232">232</a>     }
 <a class="jxr_linenumber" name="L233" href="#L233">233</a>     content = content.replace(<span class="jxr_string">"XXXJDBCXXX"</span>, jdbcUrl);
 <a class="jxr_linenumber" name="L234" href="#L234">234</a>     content = content.replace(<span class="jxr_string">"XXXDRIVERXXX"</span>, target);
-<a class="jxr_linenumber" name="L235" href="#L235">235</a>     SysErrLogger.FAKE_LOGGER.syserr(getJDC().getDriverClassName());
-<a class="jxr_linenumber" name="L236" href="#L236">236</a>     SysErrLogger.FAKE_LOGGER.syserr(target);
+<a class="jxr_linenumber" name="L235" href="#L235">235</a>     SysErrLogger.FAKE_LOGGER.sysout(getJDC().getDriverClassName());
+<a class="jxr_linenumber" name="L236" href="#L236">236</a>     SysErrLogger.FAKE_LOGGER.sysout(target);
 <a class="jxr_linenumber" name="L237" href="#L237">237</a>     File fileTo = <strong class="jxr_keyword">new</strong> File(TMP_R_66_CONF_CONFIG_XML);
 <a class="jxr_linenumber" name="L238" href="#L238">238</a>     fileTo.getParentFile().mkdirs();
 <a class="jxr_linenumber" name="L239" href="#L239">239</a>     FileWriter writer = <strong class="jxr_keyword">null</strong>;
@@ -1187,37 +1187,38 @@
 <a class="jxr_linenumber" name="L1179" href="#L1179">1179</a>     assertEquals(<span class="jxr_string">"test"</span>, res.getString(<span class="jxr_string">"filename"</span>));
 <a class="jxr_linenumber" name="L1180" href="#L1180">1180</a>     assertEquals(<span class="jxr_string">"testOrig"</span>, res.getString(<span class="jxr_string">"originalname"</span>));
 <a class="jxr_linenumber" name="L1181" href="#L1181">1181</a>     assertEquals(<span class="jxr_string">"testInfo"</span>, res.getString(<span class="jxr_string">"fileinfo"</span>));
-<a class="jxr_linenumber" name="L1182" href="#L1182">1182</a>     assertTrue(res.getBoolean(<span class="jxr_string">"ismoved"</span>));
-<a class="jxr_linenumber" name="L1183" href="#L1183">1183</a>     assertEquals(42, res.getInt(<span class="jxr_string">"blocksz"</span>));
-<a class="jxr_linenumber" name="L1184" href="#L1184">1184</a>     assertTrue(res.getBoolean(<span class="jxr_string">"retrievemode"</span>));
-<a class="jxr_linenumber" name="L1185" href="#L1185">1185</a>     assertEquals(<span class="jxr_string">"server1"</span>, res.getString(<span class="jxr_string">"ownerreq"</span>));
-<a class="jxr_linenumber" name="L1186" href="#L1186">1186</a>     assertEquals(<span class="jxr_string">"server1"</span>, res.getString(<span class="jxr_string">"requester"</span>));
-<a class="jxr_linenumber" name="L1187" href="#L1187">1187</a>     assertEquals(<span class="jxr_string">"server2"</span>, res.getString(<span class="jxr_string">"requested"</span>));
-<a class="jxr_linenumber" name="L1188" href="#L1188">1188</a>     assertEquals(Transfer.TASKSTEP.ERRORTASK.ordinal(),
-<a class="jxr_linenumber" name="L1189" href="#L1189">1189</a>                  res.getInt(<span class="jxr_string">"globalstep"</span>));
-<a class="jxr_linenumber" name="L1190" href="#L1190">1190</a>     assertEquals(Transfer.TASKSTEP.TRANSFERTASK.ordinal(),
-<a class="jxr_linenumber" name="L1191" href="#L1191">1191</a>                  res.getInt(<span class="jxr_string">"globallaststep"</span>));
-<a class="jxr_linenumber" name="L1192" href="#L1192">1192</a>     assertEquals(27, res.getInt(<span class="jxr_string">"step"</span>));
-<a class="jxr_linenumber" name="L1193" href="#L1193">1193</a>     assertEquals(ErrorCode.CompleteOk.code,
-<a class="jxr_linenumber" name="L1194" href="#L1194">1194</a>                  res.getString(<span class="jxr_string">"stepstatus"</span>).charAt(0));
-<a class="jxr_linenumber" name="L1195" href="#L1195">1195</a>     assertEquals(ErrorCode.Unknown.code, res.getString(<span class="jxr_string">"infostatus"</span>).charAt(0));
-<a class="jxr_linenumber" name="L1196" href="#L1196">1196</a>     assertEquals(64, res.getInt(<span class="jxr_string">"rank"</span>));
-<a class="jxr_linenumber" name="L1197" href="#L1197">1197</a>     assertEquals(<strong class="jxr_keyword">new</strong> Timestamp(192L), res.getTimestamp(<span class="jxr_string">"starttrans"</span>));
-<a class="jxr_linenumber" name="L1198" href="#L1198">1198</a>     assertEquals(<strong class="jxr_keyword">new</strong> Timestamp(1511L), res.getTimestamp(<span class="jxr_string">"stoptrans"</span>));
-<a class="jxr_linenumber" name="L1199" href="#L1199">1199</a>     assertEquals(UpdatedInfo.TOSUBMIT.ordinal(), res.getInt(<span class="jxr_string">"updatedInfo"</span>));
-<a class="jxr_linenumber" name="L1200" href="#L1200">1200</a>   }
-<a class="jxr_linenumber" name="L1201" href="#L1201">1201</a> 
-<a class="jxr_linenumber" name="L1202" href="#L1202">1202</a>   @Test
-<a class="jxr_linenumber" name="L1203" href="#L1203">1203</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> testFindTransfer() <strong class="jxr_keyword">throws</strong> Exception {
-<a class="jxr_linenumber" name="L1204" href="#L1204">1204</a>     <strong class="jxr_keyword">final</strong> ArrayList&lt;Filter&gt; map = <strong class="jxr_keyword">new</strong> ArrayList&lt;Filter&gt;();
-<a class="jxr_linenumber" name="L1205" href="#L1205">1205</a>     map.add(<strong class="jxr_keyword">new</strong> Filter(DBTransferDAO.ID_RULE_FIELD, <span class="jxr_string">"="</span>, <span class="jxr_string">"default"</span>));
-<a class="jxr_linenumber" name="L1206" href="#L1206">1206</a>     map.add(<strong class="jxr_keyword">new</strong> Filter(DBTransferDAO.OWNER_REQUEST_FIELD, <span class="jxr_string">"="</span>, <span class="jxr_string">"server1"</span>));
-<a class="jxr_linenumber" name="L1207" href="#L1207">1207</a> 
-<a class="jxr_linenumber" name="L1208" href="#L1208">1208</a>     <strong class="jxr_keyword">final</strong> TransferDAO dao = getDAO(getConnection());
-<a class="jxr_linenumber" name="L1209" href="#L1209">1209</a>     assertEquals(3, dao.find(map).size());
-<a class="jxr_linenumber" name="L1210" href="#L1210">1210</a>   }
-<a class="jxr_linenumber" name="L1211" href="#L1211">1211</a> 
-<a class="jxr_linenumber" name="L1212" href="#L1212">1212</a> }
+<a class="jxr_linenumber" name="L1182" href="#L1182">1182</a>     assertEquals(<span class="jxr_string">"transferInfo"</span>, res.getString(<span class="jxr_string">"transferinfo"</span>));
+<a class="jxr_linenumber" name="L1183" href="#L1183">1183</a>     assertTrue(res.getBoolean(<span class="jxr_string">"ismoved"</span>));
+<a class="jxr_linenumber" name="L1184" href="#L1184">1184</a>     assertEquals(42, res.getInt(<span class="jxr_string">"blocksz"</span>));
+<a class="jxr_linenumber" name="L1185" href="#L1185">1185</a>     assertTrue(res.getBoolean(<span class="jxr_string">"retrievemode"</span>));
+<a class="jxr_linenumber" name="L1186" href="#L1186">1186</a>     assertEquals(<span class="jxr_string">"server1"</span>, res.getString(<span class="jxr_string">"ownerreq"</span>));
+<a class="jxr_linenumber" name="L1187" href="#L1187">1187</a>     assertEquals(<span class="jxr_string">"server1"</span>, res.getString(<span class="jxr_string">"requester"</span>));
+<a class="jxr_linenumber" name="L1188" href="#L1188">1188</a>     assertEquals(<span class="jxr_string">"server2"</span>, res.getString(<span class="jxr_string">"requested"</span>));
+<a class="jxr_linenumber" name="L1189" href="#L1189">1189</a>     assertEquals(Transfer.TASKSTEP.ERRORTASK.ordinal(),
+<a class="jxr_linenumber" name="L1190" href="#L1190">1190</a>                  res.getInt(<span class="jxr_string">"globalstep"</span>));
+<a class="jxr_linenumber" name="L1191" href="#L1191">1191</a>     assertEquals(Transfer.TASKSTEP.TRANSFERTASK.ordinal(),
+<a class="jxr_linenumber" name="L1192" href="#L1192">1192</a>                  res.getInt(<span class="jxr_string">"globallaststep"</span>));
+<a class="jxr_linenumber" name="L1193" href="#L1193">1193</a>     assertEquals(27, res.getInt(<span class="jxr_string">"step"</span>));
+<a class="jxr_linenumber" name="L1194" href="#L1194">1194</a>     assertEquals(ErrorCode.CompleteOk.code,
+<a class="jxr_linenumber" name="L1195" href="#L1195">1195</a>                  res.getString(<span class="jxr_string">"stepstatus"</span>).charAt(0));
+<a class="jxr_linenumber" name="L1196" href="#L1196">1196</a>     assertEquals(ErrorCode.Unknown.code, res.getString(<span class="jxr_string">"infostatus"</span>).charAt(0));
+<a class="jxr_linenumber" name="L1197" href="#L1197">1197</a>     assertEquals(64, res.getInt(<span class="jxr_string">"rank"</span>));
+<a class="jxr_linenumber" name="L1198" href="#L1198">1198</a>     assertEquals(<strong class="jxr_keyword">new</strong> Timestamp(192L), res.getTimestamp(<span class="jxr_string">"starttrans"</span>));
+<a class="jxr_linenumber" name="L1199" href="#L1199">1199</a>     assertEquals(<strong class="jxr_keyword">new</strong> Timestamp(1511L), res.getTimestamp(<span class="jxr_string">"stoptrans"</span>));
+<a class="jxr_linenumber" name="L1200" href="#L1200">1200</a>     assertEquals(UpdatedInfo.TOSUBMIT.ordinal(), res.getInt(<span class="jxr_string">"updatedInfo"</span>));
+<a class="jxr_linenumber" name="L1201" href="#L1201">1201</a>   }
+<a class="jxr_linenumber" name="L1202" href="#L1202">1202</a> 
+<a class="jxr_linenumber" name="L1203" href="#L1203">1203</a>   @Test
+<a class="jxr_linenumber" name="L1204" href="#L1204">1204</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> testFindTransfer() <strong class="jxr_keyword">throws</strong> Exception {
+<a class="jxr_linenumber" name="L1205" href="#L1205">1205</a>     <strong class="jxr_keyword">final</strong> ArrayList&lt;Filter&gt; map = <strong class="jxr_keyword">new</strong> ArrayList&lt;Filter&gt;();
+<a class="jxr_linenumber" name="L1206" href="#L1206">1206</a>     map.add(<strong class="jxr_keyword">new</strong> Filter(DBTransferDAO.ID_RULE_FIELD, <span class="jxr_string">"="</span>, <span class="jxr_string">"default"</span>));
+<a class="jxr_linenumber" name="L1207" href="#L1207">1207</a>     map.add(<strong class="jxr_keyword">new</strong> Filter(DBTransferDAO.OWNER_REQUEST_FIELD, <span class="jxr_string">"="</span>, <span class="jxr_string">"server1"</span>));
+<a class="jxr_linenumber" name="L1208" href="#L1208">1208</a> 
+<a class="jxr_linenumber" name="L1209" href="#L1209">1209</a>     <strong class="jxr_keyword">final</strong> TransferDAO dao = getDAO(getConnection());
+<a class="jxr_linenumber" name="L1210" href="#L1210">1210</a>     assertEquals(3, dao.find(map).size());
+<a class="jxr_linenumber" name="L1211" href="#L1211">1211</a>   }
+<a class="jxr_linenumber" name="L1212" href="#L1212">1212</a> 
+<a class="jxr_linenumber" name="L1213" href="#L1213">1213</a> }
 </pre>
 <hr/>
 <div id="footer">Copyright &#169; 2009&#x2013;2020 <a href="http://www.waarp.fr">Waarp</a>. All rights reserved.</div>

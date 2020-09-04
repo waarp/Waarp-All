@@ -47,7 +47,7 @@ public class CommonFileChunkedInput implements ChunkedInput&lt;ByteBuf&gt; {
    *
    * @throws HttpIncorrectRetrieveException
    */
-  public CommonFileChunkedInput(FileInterface document)
+  public CommonFileChunkedInput(final FileInterface document)
 <span class="nc" id="L51">      throws HttpIncorrectRetrieveException {</span>
 <span class="nc" id="L52">    this.document = document;</span>
     try {
@@ -58,7 +58,7 @@ public class CommonFileChunkedInput implements ChunkedInput&lt;ByteBuf&gt; {
 <span class="nc" id="L58">  }</span>
 
   @Override
-  public ByteBuf readChunk(ChannelHandlerContext ctx) throws Exception {
+  public ByteBuf readChunk(final ChannelHandlerContext ctx) throws Exception {
 <span class="nc" id="L62">    return readChunk((ByteBufAllocator) null);</span>
   }
 
@@ -94,20 +94,21 @@ public class CommonFileChunkedInput implements ChunkedInput&lt;ByteBuf&gt; {
 <span class="nc" id="L94">  }</span>
 
   @Override
-  public ByteBuf readChunk(ByteBufAllocator byteBufAllocator) throws Exception {
+  public ByteBuf readChunk(final ByteBufAllocator byteBufAllocator)
+      throws Exception {
     // Document
-    DataBlock block;
+    final DataBlock block;
     try {
-<span class="nc" id="L101">      block = document.readDataBlock();</span>
-<span class="nc" id="L102">    } catch (final FileEndOfTransferException e) {</span>
-<span class="nc" id="L103">      lastChunkAlready = true;</span>
-<span class="nc" id="L104">      return Unpooled.EMPTY_BUFFER;</span>
-<span class="nc" id="L105">    } catch (final FileTransferException e) {</span>
-<span class="nc" id="L106">      throw new HttpIncorrectRetrieveException(e);</span>
-<span class="nc" id="L107">    }</span>
-<span class="nc" id="L108">    lastChunkAlready = block.isEOF();</span>
-<span class="nc" id="L109">    offset += block.getByteCount();</span>
-<span class="nc" id="L110">    return block.getBlock();</span>
+<span class="nc" id="L102">      block = document.readDataBlock();</span>
+<span class="nc" id="L103">    } catch (final FileEndOfTransferException e) {</span>
+<span class="nc" id="L104">      lastChunkAlready = true;</span>
+<span class="nc" id="L105">      return Unpooled.EMPTY_BUFFER;</span>
+<span class="nc" id="L106">    } catch (final FileTransferException e) {</span>
+<span class="nc" id="L107">      throw new HttpIncorrectRetrieveException(e);</span>
+<span class="nc" id="L108">    }</span>
+<span class="nc" id="L109">    lastChunkAlready = block.isEOF();</span>
+<span class="nc" id="L110">    offset += block.getByteCount();</span>
+<span class="nc" id="L111">    return block.getBlock();</span>
   }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

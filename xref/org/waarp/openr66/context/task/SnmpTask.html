@@ -54,8 +54,8 @@
 <a class="jxr_linenumber" name="L46" href="#L46">46</a>  <em class="jxr_javadoccomment">   * @param argTransfer</em>
 <a class="jxr_linenumber" name="L47" href="#L47">47</a>  <em class="jxr_javadoccomment">   * @param session</em>
 <a class="jxr_linenumber" name="L48" href="#L48">48</a>  <em class="jxr_javadoccomment">   */</em>
-<a class="jxr_linenumber" name="L49" href="#L49">49</a>    <strong class="jxr_keyword">public</strong> <a name="SnmpTask" href="../../../../../org/waarp/openr66/context/task/SnmpTask.html#SnmpTask">SnmpTask</a>(String argRule, <strong class="jxr_keyword">int</strong> delay, String argTransfer,
-<a class="jxr_linenumber" name="L50" href="#L50">50</a>                    <a name="R66Session" href="../../../../../org/waarp/openr66/context/R66Session.html#R66Session">R66Session</a> session) {
+<a class="jxr_linenumber" name="L49" href="#L49">49</a>    <strong class="jxr_keyword">public</strong> <a name="SnmpTask" href="../../../../../org/waarp/openr66/context/task/SnmpTask.html#SnmpTask">SnmpTask</a>(<strong class="jxr_keyword">final</strong> String argRule, <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong> delay,
+<a class="jxr_linenumber" name="L50" href="#L50">50</a>                    <strong class="jxr_keyword">final</strong> String argTransfer, <strong class="jxr_keyword">final</strong> <a name="R66Session" href="../../../../../org/waarp/openr66/context/R66Session.html#R66Session">R66Session</a> session) {
 <a class="jxr_linenumber" name="L51" href="#L51">51</a>      <strong class="jxr_keyword">super</strong>(TaskType.SNMP, delay, argRule, argTransfer, session);
 <a class="jxr_linenumber" name="L52" href="#L52">52</a>    }
 <a class="jxr_linenumber" name="L53" href="#L53">53</a>  
@@ -67,26 +67,27 @@
 <a class="jxr_linenumber" name="L59" href="#L59">59</a>        <strong class="jxr_keyword">return</strong>;
 <a class="jxr_linenumber" name="L60" href="#L60">60</a>      }
 <a class="jxr_linenumber" name="L61" href="#L61">61</a>      String finalValue = argRule;
-<a class="jxr_linenumber" name="L62" href="#L62">62</a>      finalValue = getReplacedValue(finalValue, argTransfer.split(<span class="jxr_string">" "</span>));
-<a class="jxr_linenumber" name="L63" href="#L63">63</a>      <strong class="jxr_keyword">switch</strong> (delay) {
-<a class="jxr_linenumber" name="L64" href="#L64">64</a>        <strong class="jxr_keyword">case</strong> 0:
-<a class="jxr_linenumber" name="L65" href="#L65">65</a>          Configuration.configuration.getR66Mib().notifyWarning(finalValue,
-<a class="jxr_linenumber" name="L66" href="#L66">66</a>                                                                <span class="jxr_string">"TransferId:"</span> +
-<a class="jxr_linenumber" name="L67" href="#L67">67</a>                                                                session
-<a class="jxr_linenumber" name="L68" href="#L68">68</a>                                                                    .getRunner()
-<a class="jxr_linenumber" name="L69" href="#L69">69</a>                                                                    .getSpecialId());
-<a class="jxr_linenumber" name="L70" href="#L70">70</a>          <strong class="jxr_keyword">break</strong>;
-<a class="jxr_linenumber" name="L71" href="#L71">71</a>        <strong class="jxr_keyword">case</strong> 1:
-<a class="jxr_linenumber" name="L72" href="#L72">72</a>          Configuration.configuration.getR66Mib().notifyInternalTask(finalValue,
-<a class="jxr_linenumber" name="L73" href="#L73">73</a>                                                                     session
-<a class="jxr_linenumber" name="L74" href="#L74">74</a>                                                                         .getRunner());
-<a class="jxr_linenumber" name="L75" href="#L75">75</a>          <strong class="jxr_keyword">break</strong>;
-<a class="jxr_linenumber" name="L76" href="#L76">76</a>        <strong class="jxr_keyword">default</strong>:
-<a class="jxr_linenumber" name="L77" href="#L77">77</a>      }
-<a class="jxr_linenumber" name="L78" href="#L78">78</a>      futureCompletion.setSuccess();
-<a class="jxr_linenumber" name="L79" href="#L79">79</a>    }
-<a class="jxr_linenumber" name="L80" href="#L80">80</a>  
-<a class="jxr_linenumber" name="L81" href="#L81">81</a>  }
+<a class="jxr_linenumber" name="L62" href="#L62">62</a>      finalValue = getReplacedValue(finalValue, argTransfer == <strong class="jxr_keyword">null</strong>? <strong class="jxr_keyword">null</strong> :
+<a class="jxr_linenumber" name="L63" href="#L63">63</a>          argTransfer.split(<span class="jxr_string">" "</span>));
+<a class="jxr_linenumber" name="L64" href="#L64">64</a>      <strong class="jxr_keyword">switch</strong> (delay) {
+<a class="jxr_linenumber" name="L65" href="#L65">65</a>        <strong class="jxr_keyword">case</strong> 0:
+<a class="jxr_linenumber" name="L66" href="#L66">66</a>          Configuration.configuration.getR66Mib().notifyWarning(finalValue,
+<a class="jxr_linenumber" name="L67" href="#L67">67</a>                                                                <span class="jxr_string">"TransferId:"</span> +
+<a class="jxr_linenumber" name="L68" href="#L68">68</a>                                                                session
+<a class="jxr_linenumber" name="L69" href="#L69">69</a>                                                                    .getRunner()
+<a class="jxr_linenumber" name="L70" href="#L70">70</a>                                                                    .getSpecialId());
+<a class="jxr_linenumber" name="L71" href="#L71">71</a>          <strong class="jxr_keyword">break</strong>;
+<a class="jxr_linenumber" name="L72" href="#L72">72</a>        <strong class="jxr_keyword">case</strong> 1:
+<a class="jxr_linenumber" name="L73" href="#L73">73</a>          Configuration.configuration.getR66Mib().notifyInternalTask(finalValue,
+<a class="jxr_linenumber" name="L74" href="#L74">74</a>                                                                     session
+<a class="jxr_linenumber" name="L75" href="#L75">75</a>                                                                         .getRunner());
+<a class="jxr_linenumber" name="L76" href="#L76">76</a>          <strong class="jxr_keyword">break</strong>;
+<a class="jxr_linenumber" name="L77" href="#L77">77</a>        <strong class="jxr_keyword">default</strong>:
+<a class="jxr_linenumber" name="L78" href="#L78">78</a>      }
+<a class="jxr_linenumber" name="L79" href="#L79">79</a>      futureCompletion.setSuccess();
+<a class="jxr_linenumber" name="L80" href="#L80">80</a>    }
+<a class="jxr_linenumber" name="L81" href="#L81">81</a>  
+<a class="jxr_linenumber" name="L82" href="#L82">82</a>  }
 </pre>
 <hr/>
 <div id="footer">Copyright &#169; 2009&#x2013;2020 <a href="http://www.waarp.fr">Waarp</a>. All rights reserved.</div>

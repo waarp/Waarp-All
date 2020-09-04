@@ -54,7 +54,7 @@ public class ChangeBandwidthLimits implements Runnable {
    */
   static volatile WaarpLogger logger;
 
-  protected static final String _INFO_ARGS =
+  protected static final String INFO_ARGS =
       &quot;Need the configuration file as first argument then at least one of\n&quot; +
       &quot;   -wglob limitGlobalWrite\n&quot; + &quot;   -rglob limitGlobalRead\n&quot; +
       &quot;   -wsess limitSessionWrite\n&quot; + &quot;   -rsess limitSessionWrite\n&quot; +
@@ -68,9 +68,9 @@ public class ChangeBandwidthLimits implements Runnable {
   protected final NetworkTransaction networkTransaction;
   protected DbHostAuth host;
 
-  public ChangeBandwidthLimits(R66Future future, long wgl, long rgl, long wsl,
-                               long rsl,
-<span class="nc" id="L73">                               NetworkTransaction networkTransaction) {</span>
+  public ChangeBandwidthLimits(final R66Future future, final long wgl,
+                               final long rgl, final long wsl, final long rsl,
+<span class="nc" id="L73">                               final NetworkTransaction networkTransaction) {</span>
 <span class="nc" id="L74">    this.future = future;</span>
 <span class="nc" id="L75">    writeGlobalLimit = wgl;</span>
 <span class="nc" id="L76">    readGlobalLimit = rgl;</span>
@@ -83,7 +83,7 @@ public class ChangeBandwidthLimits implements Runnable {
     }
 <span class="nc" id="L84">  }</span>
 
-  public void setHost(DbHostAuth host) {
+  public void setHost(final DbHostAuth host) {
 <span class="nc" id="L87">    this.host = host;</span>
 <span class="nc" id="L88">  }</span>
 
@@ -97,13 +97,13 @@ public class ChangeBandwidthLimits implements Runnable {
 <span class="nc bnc" id="L97" title="All 2 branches missed.">    if (logger == null) {</span>
 <span class="nc" id="L98">      logger = WaarpLoggerFactory.getLogger(ChangeBandwidthLimits.class);</span>
     }
-<span class="nc" id="L100">    LocalChannelReference localChannelReference =</span>
+<span class="nc" id="L100">    final LocalChannelReference localChannelReference =</span>
 <span class="nc" id="L101">        AbstractTransfer.tryConnect(host, future, networkTransaction);</span>
 <span class="nc bnc" id="L102" title="All 2 branches missed.">    if (localChannelReference == null) {</span>
 <span class="nc" id="L103">      return;</span>
     }
 <span class="nc" id="L105">    localChannelReference.sessionNewState(R66FiniteDualStates.VALIDOTHER);</span>
-    AbstractLocalPacket valid;
+    final AbstractLocalPacket valid;
 <span class="nc" id="L107">    final boolean useJson = PartnerConfiguration.useJson(host.getHostid());</span>
 <span class="nc" id="L108">    logger.debug(&quot;UseJson: &quot; + useJson);</span>
 <span class="nc bnc" id="L109" title="All 2 branches missed.">    if (useJson) {</span>
@@ -143,17 +143,17 @@ public class ChangeBandwidthLimits implements Runnable {
 <span class="nc" id="L143">  protected static long sreadSessionLimit = -1;</span>
   protected static String stohost;
 
-  protected static boolean getParams(String[] args) {
+  protected static boolean getParams(final String[] args) {
 <span class="nc bnc" id="L147" title="All 2 branches missed.">    if (logger == null) {</span>
 <span class="nc" id="L148">      logger = WaarpLoggerFactory.getLogger(ChangeBandwidthLimits.class);</span>
     }
 <span class="nc bnc" id="L150" title="All 2 branches missed.">    if (args.length &lt; 3) {</span>
-<span class="nc" id="L151">      logger.error(_INFO_ARGS);</span>
+<span class="nc" id="L151">      logger.error(INFO_ARGS);</span>
 <span class="nc" id="L152">      return false;</span>
     }
 <span class="nc" id="L154">    if (!FileBasedConfiguration</span>
 <span class="nc bnc" id="L155" title="All 2 branches missed.">        .setClientConfigurationFromXml(Configuration.configuration, args[0])) {</span>
-<span class="nc" id="L156">      logger.error(_INFO_ARGS);</span>
+<span class="nc" id="L156">      logger.error(INFO_ARGS);</span>
 <span class="nc" id="L157">      return false;</span>
     }
 <span class="nc bnc" id="L159" title="All 2 branches missed.">    for (int i = 1; i &lt; args.length; i++) {</span>
@@ -180,13 +180,13 @@ public class ChangeBandwidthLimits implements Runnable {
     }
 <span class="nc bnc" id="L181" title="All 8 branches missed.">    if (swriteGlobalLimit == -1 &amp;&amp; sreadGlobalLimit == -1 &amp;&amp;</span>
         swriteSessionLimit == -1 &amp;&amp; sreadSessionLimit == -1) {
-<span class="nc" id="L183">      logger.error(_INFO_ARGS);</span>
+<span class="nc" id="L183">      logger.error(INFO_ARGS);</span>
 <span class="nc" id="L184">      return false;</span>
     }
 <span class="nc" id="L186">    return true;</span>
   }
 
-  public static void main(String[] args) {
+  public static void main(final String[] args) {
 <span class="nc" id="L190">    WaarpLoggerFactory</span>
 <span class="nc" id="L191">        .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));</span>
 <span class="nc bnc" id="L192" title="All 2 branches missed.">    if (logger == null) {</span>
@@ -230,7 +230,7 @@ public class ChangeBandwidthLimits implements Runnable {
 <span class="nc" id="L230">      final boolean useJson = PartnerConfiguration.useJson(stohost);</span>
 <span class="nc" id="L231">      logger.debug(&quot;UseJson: &quot; + useJson);</span>
 <span class="nc bnc" id="L232" title="All 2 branches missed.">      if (future.isSuccess()) {</span>
-        String sresult;
+        final String sresult;
 <span class="nc bnc" id="L234" title="All 2 branches missed.">        if (result.getOther() != null) {</span>
 <span class="nc bnc" id="L235" title="All 2 branches missed.">          if (useJson) {</span>
 <span class="nc" id="L236">            sresult = ((JsonCommandPacket) result.getOther()).getRequest();</span>

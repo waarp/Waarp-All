@@ -53,7 +53,7 @@ import static org.waarp.openr66.protocol.configuration.Configuration.*;
 <span class="fc" id="L53">  private static final WaarpLogger logger =</span>
 <span class="fc" id="L54">      WaarpLoggerFactory.getLogger(HttpFormattedHandlerProxyR66.class);</span>
 
-<span class="fc" id="L56">  private static enum REQUEST {</span>
+<span class="fc" id="L56">  private enum REQUEST {</span>
 <span class="fc" id="L57">    index(&quot;index.html&quot;), error(&quot;monitoring_header.html&quot;, &quot;monitoring_end.html&quot;),</span>
 <span class="fc" id="L58">    statusxml(&quot;&quot;);</span>
 
@@ -66,7 +66,7 @@ import static org.waarp.openr66.protocol.configuration.Configuration.*;
      *
      * @param uniquefile
      */
-<span class="fc" id="L69">    REQUEST(String uniquefile) {</span>
+<span class="fc" id="L69">    REQUEST(final String uniquefile) {</span>
 <span class="fc" id="L70">      header = uniquefile;</span>
 <span class="fc" id="L71">      end = uniquefile;</span>
 <span class="fc" id="L72">    }</span>
@@ -75,7 +75,7 @@ import static org.waarp.openr66.protocol.configuration.Configuration.*;
      * @param header
      * @param end
      */
-<span class="fc" id="L78">    REQUEST(String header, String end) {</span>
+<span class="fc" id="L78">    REQUEST(final String header, final String end) {</span>
 <span class="fc" id="L79">      this.header = header;</span>
 <span class="fc" id="L80">      this.end = end;</span>
 <span class="fc" id="L81">    }</span>
@@ -85,12 +85,12 @@ import static org.waarp.openr66.protocol.configuration.Configuration.*;
      *
      * @return the content of the unique file
      */
-    public String readFileUnique(HttpFormattedHandlerProxyR66 handler) {
+    public String readFileUnique(final HttpFormattedHandlerProxyR66 handler) {
 <span class="fc" id="L89">      return handler.readFileHeaderInternal(</span>
 <span class="fc" id="L90">          configuration.getHttpBasePath() + MONITOR + header);</span>
     }
 
-    public String readHeader(HttpFormattedHandlerProxyR66 handler) {
+    public String readHeader(final HttpFormattedHandlerProxyR66 handler) {
 <span class="nc" id="L94">      return handler.readFileHeaderInternal(</span>
 <span class="nc" id="L95">          configuration.getHttpBasePath() + MONITOR + header);</span>
     }
@@ -103,8 +103,8 @@ import static org.waarp.openr66.protocol.configuration.Configuration.*;
 
 <span class="fc" id="L104">  final R66Session authentHttp = new R66Session();</span>
 
-  private String readFileHeaderInternal(String filename) {
-    String value;
+  private String readFileHeaderInternal(final String filename) {
+    final String value;
     try {
 <span class="fc" id="L109">      value = WaarpStringUtils.readFileException(filename);</span>
 <span class="nc" id="L110">    } catch (final InvalidArgumentException e) {</span>
@@ -141,8 +141,8 @@ import static org.waarp.openr66.protocol.configuration.Configuration.*;
   }
 
   @Override
-  protected void channelRead0(ChannelHandlerContext ctx, FullHttpRequest msg)
-      throws Exception {
+  protected void channelRead0(final ChannelHandlerContext ctx,
+                              final FullHttpRequest msg) throws Exception {
 <span class="fc" id="L146">    isCurrentRequestXml = false;</span>
 <span class="fc" id="L147">    isCurrentRequestJson = false;</span>
 <span class="fc" id="L148">    status = HttpResponseStatus.OK;</span>
@@ -200,8 +200,8 @@ import static org.waarp.openr66.protocol.configuration.Configuration.*;
 <span class="fc" id="L200">  }</span>
 
   @Override
-  public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
-      throws Exception {
+  public void exceptionCaught(final ChannelHandlerContext ctx,
+                              final Throwable cause) throws Exception {
 <span class="nc" id="L205">    final OpenR66Exception exception = OpenR66ExceptionTrappedFactory</span>
 <span class="nc" id="L206">        .getExceptionFromTrappedException(ctx.channel(), cause);</span>
 <span class="nc bnc" id="L207" title="All 2 branches missed.">    if (exception != null) {</span>
@@ -221,21 +221,22 @@ import static org.waarp.openr66.protocol.configuration.Configuration.*;
 <span class="nc" id="L221">  }</span>
 
   @Override
-  public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-<span class="fc" id="L225">    super.channelInactive(ctx);</span>
-<span class="fc" id="L226">    logger.debug(&quot;Closed&quot;);</span>
-<span class="fc" id="L227">  }</span>
+  public void channelInactive(final ChannelHandlerContext ctx)
+      throws Exception {
+<span class="fc" id="L226">    super.channelInactive(ctx);</span>
+<span class="fc" id="L227">    logger.debug(&quot;Closed&quot;);</span>
+<span class="fc" id="L228">  }</span>
 
   @Override
-  public void channelActive(ChannelHandlerContext ctx) throws Exception {
-<span class="fc" id="L231">    logger.debug(&quot;Connected&quot;);</span>
-<span class="fc" id="L232">    authentHttp.getAuth()</span>
-<span class="fc" id="L233">               .specialNoSessionAuth(false, configuration.getHostId());</span>
-<span class="fc" id="L234">    super.channelActive(ctx);</span>
-<span class="fc" id="L235">    final ChannelGroup group = configuration.getHttpChannelGroup();</span>
-<span class="pc bpc" id="L236" title="1 of 2 branches missed.">    if (group != null) {</span>
-<span class="fc" id="L237">      group.add(ctx.channel());</span>
+  public void channelActive(final ChannelHandlerContext ctx) throws Exception {
+<span class="fc" id="L232">    logger.debug(&quot;Connected&quot;);</span>
+<span class="fc" id="L233">    authentHttp.getAuth()</span>
+<span class="fc" id="L234">               .specialNoSessionAuth(false, configuration.getHostId());</span>
+<span class="fc" id="L235">    super.channelActive(ctx);</span>
+<span class="fc" id="L236">    final ChannelGroup group = configuration.getHttpChannelGroup();</span>
+<span class="pc bpc" id="L237" title="1 of 2 branches missed.">    if (group != null) {</span>
+<span class="fc" id="L238">      group.add(ctx.channel());</span>
     }
-<span class="fc" id="L239">  }</span>
+<span class="fc" id="L240">  }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

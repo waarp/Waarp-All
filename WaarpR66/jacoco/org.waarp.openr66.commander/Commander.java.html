@@ -78,7 +78,7 @@ public class Commander implements CommanderInterface {
    * @throws WaarpDatabaseNoConnectionException
    * @throws WaarpDatabaseSqlException
    */
-  public Commander(InternalRunner runner)
+  public Commander(final InternalRunner runner)
 <span class="fc" id="L82">      throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {</span>
 <span class="fc" id="L83">    internalConstructor(runner);</span>
 <span class="fc" id="L84">  }</span>
@@ -92,7 +92,7 @@ public class Commander implements CommanderInterface {
    * @throws WaarpDatabaseNoConnectionException
    * @throws WaarpDatabaseSqlException
    */
-  public Commander(InternalRunner runner, boolean fromStartup)
+  public Commander(final InternalRunner runner, final boolean fromStartup)
 <span class="fc" id="L96">      throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {</span>
 <span class="fc" id="L97">    internalConstructor(runner);</span>
 <span class="pc bpc" id="L98" title="1 of 2 branches missed.">    if (fromStartup) {</span>
@@ -101,7 +101,7 @@ public class Commander implements CommanderInterface {
     }
 <span class="fc" id="L102">  }</span>
 
-  private void internalConstructor(InternalRunner runner)
+  private void internalConstructor(final InternalRunner runner)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
     try {
 <span class="pc bpc" id="L107" title="1 of 2 branches missed.">      if (Configuration.configuration.getMultipleMonitors() &gt; 1) {</span>
@@ -300,10 +300,10 @@ public class Commander implements CommanderInterface {
 <span class="fc" id="L300">        int i = 0;</span>
 <span class="fc" id="L301">        boolean mm = false;</span>
 <span class="fc" id="L302">        boolean lastUpdate = false;</span>
-<span class="pc bpc" id="L303" title="1 of 2 branches missed.">        while (i &lt; auths.length) {</span>
+<span class="fc bfc" id="L303" title="All 2 branches covered.">        while (i &lt; auths.length) {</span>
           // Maybe multiple
-<span class="nc" id="L305">          final DbHostAuth hostAuth = auths[i];</span>
-<span class="nc bnc" id="L306" title="All 2 branches missed.">          if (multipleMonitor != null) {</span>
+<span class="fc" id="L305">          final DbHostAuth hostAuth = auths[i];</span>
+<span class="pc bpc" id="L306" title="1 of 2 branches missed.">          if (multipleMonitor != null) {</span>
 <span class="nc bnc" id="L307" title="All 2 branches missed.">            if (!mm) {</span>
               // not already set from a previous hostAuth
 <span class="nc" id="L309">              mm = true;</span>
@@ -320,11 +320,11 @@ public class Commander implements CommanderInterface {
 <span class="nc" id="L320">            logger.debug(&quot;Host &quot; + multipleMonitor);</span>
           } else {
             // Nothing to do except validate
-<span class="nc" id="L323">            hostAuth.changeUpdatedInfo(AbstractDbData.UpdatedInfo.NOTUPDATED);</span>
-<span class="nc" id="L324">            hostAuth.update();</span>
+<span class="fc" id="L323">            hostAuth.changeUpdatedInfo(AbstractDbData.UpdatedInfo.NOTUPDATED);</span>
+<span class="fc" id="L324">            hostAuth.update();</span>
           }
-<span class="nc" id="L326">          i++;</span>
-<span class="nc" id="L327">        }</span>
+<span class="fc" id="L326">          i++;</span>
+<span class="fc" id="L327">        }</span>
 <span class="nc" id="L328">      } catch (final WaarpDatabaseNoConnectionException e) {</span>
         try {
 <span class="nc" id="L330">          admin.getDbModel().validConnection(admin.getSession());</span>
@@ -422,7 +422,7 @@ public class Commander implements CommanderInterface {
 <span class="fc" id="L422">      logger.debug(&quot;start runner&quot;);</span>
       try {
         // No specific HA mode since the other servers will wait for the commit on Lock
-<span class="fc" id="L425">        int maxRunnable =</span>
+<span class="fc" id="L425">        final int maxRunnable =</span>
 <span class="fc" id="L426">            Math.min(Configuration.configuration.getRunnerThread(),</span>
 <span class="fc" id="L427">                     internalRunner.allowedToSubmit());</span>
 <span class="pc bpc" id="L428" title="1 of 2 branches missed.">        if (maxRunnable &gt; 0) {</span>
@@ -440,29 +440,29 @@ public class Commander implements CommanderInterface {
 <span class="nc" id="L440">              return;</span>
             }
 <span class="fc" id="L442">            final DbTaskRunner taskRunner = tasks[i];</span>
+<span class="fc" id="L443">            i++;</span>
 
-<span class="fc" id="L444">            logger.debug(&quot;get a task: {}&quot;, taskRunner);</span>
+<span class="fc" id="L445">            logger.debug(&quot;get a task: {}&quot;, taskRunner);</span>
             // Launch if possible this task
-<span class="fc" id="L446">            final String key =</span>
-<span class="fc" id="L447">                taskRunner.getRequested() + ' ' + taskRunner.getRequester() +</span>
-<span class="fc" id="L448">                ' ' + taskRunner.getSpecialId();</span>
-<span class="fc" id="L449">            if (Configuration.configuration.getLocalTransaction()</span>
-<span class="pc bpc" id="L450" title="1 of 2 branches missed.">                                           .getFromRequest(key) != null) {</span>
+<span class="fc" id="L447">            final String key =</span>
+<span class="fc" id="L448">                taskRunner.getRequested() + ' ' + taskRunner.getRequester() +</span>
+<span class="fc" id="L449">                ' ' + taskRunner.getSpecialId();</span>
+<span class="fc" id="L450">            if (Configuration.configuration.getLocalTransaction()</span>
+<span class="pc bpc" id="L451" title="1 of 2 branches missed.">                                           .getFromRequest(key) != null) {</span>
               // already running
-<span class="nc" id="L452">              continue;</span>
+<span class="nc" id="L453">              continue;</span>
             }
-<span class="pc bpc" id="L454" title="1 of 2 branches missed.">            if (taskRunner.isSelfRequested()) {</span>
+<span class="pc bpc" id="L455" title="1 of 2 branches missed.">            if (taskRunner.isSelfRequested()) {</span>
               // cannot schedule a request where the host is the requested host
-<span class="nc" id="L456">              taskRunner.changeUpdatedInfo(UpdatedInfo.INTERRUPTED);</span>
+<span class="nc" id="L457">              taskRunner.changeUpdatedInfo(UpdatedInfo.INTERRUPTED);</span>
               try {
-<span class="nc" id="L458">                taskRunner.update();</span>
-<span class="nc" id="L459">              } catch (final WaarpDatabaseNoDataException e) {</span>
-<span class="nc" id="L460">                logger.warn(&quot;Update failed, no transfer found&quot;);</span>
-<span class="nc" id="L461">              }</span>
-<span class="nc" id="L462">              continue;</span>
+<span class="nc" id="L459">                taskRunner.update();</span>
+<span class="nc" id="L460">              } catch (final WaarpDatabaseNoDataException e) {</span>
+<span class="nc" id="L461">                logger.warn(&quot;Update failed, no transfer found&quot;);</span>
+<span class="nc" id="L462">              }</span>
+<span class="nc" id="L463">              continue;</span>
             }
-<span class="fc" id="L464">            internalRunner.submitTaskRunner(taskRunner);</span>
-<span class="fc" id="L465">            i++;</span>
+<span class="fc" id="L465">            internalRunner.submitTaskRunner(taskRunner);</span>
 <span class="fc" id="L466">            totalRuns++;</span>
 <span class="fc" id="L467">          }</span>
         }

@@ -99,60 +99,61 @@ public class LocalExecClient {
    * @param delay
    * @param futureCompletion
    */
-  public void runOneCommand(String command, long delay, boolean waitFor,
-                            WaarpFuture futureCompletion) {
+  public void runOneCommand(final String command, final long delay,
+                            final boolean waitFor,
+                            final WaarpFuture futureCompletion) {
     // Initialize the command context
-<span class="nc" id="L105">    final LocalExecClientHandler clientHandler =</span>
-<span class="nc" id="L106">        (LocalExecClientHandler) channel.pipeline().last();</span>
+<span class="nc" id="L106">    final LocalExecClientHandler clientHandler =</span>
+<span class="nc" id="L107">        (LocalExecClientHandler) channel.pipeline().last();</span>
     // Command to execute
-<span class="nc" id="L108">    clientHandler.initExecClient(delay, command);</span>
-<span class="nc bnc" id="L109" title="All 2 branches missed.">    if (!waitFor) {</span>
-<span class="nc" id="L110">      futureCompletion.setSuccess();</span>
-<span class="nc" id="L111">      logger.info(&quot;Exec OK with {}&quot;, command);</span>
+<span class="nc" id="L109">    clientHandler.initExecClient(delay, command);</span>
+<span class="nc bnc" id="L110" title="All 2 branches missed.">    if (!waitFor) {</span>
+<span class="nc" id="L111">      futureCompletion.setSuccess();</span>
+<span class="nc" id="L112">      logger.info(&quot;Exec OK with {}&quot;, command);</span>
     }
     // Wait for the end of the exec command
-<span class="nc" id="L114">    result = clientHandler.waitFor(delay * 2);</span>
-<span class="nc bnc" id="L115" title="All 2 branches missed.">    if (futureCompletion == null) {</span>
-<span class="nc" id="L116">      return;</span>
+<span class="nc" id="L115">    result = clientHandler.waitFor(delay * 2);</span>
+<span class="nc bnc" id="L116" title="All 2 branches missed.">    if (futureCompletion == null) {</span>
+<span class="nc" id="L117">      return;</span>
     }
-<span class="nc bnc" id="L118" title="All 2 branches missed.">    if (result.getStatus() == 0) {</span>
-<span class="nc bnc" id="L119" title="All 2 branches missed.">      if (waitFor) {</span>
-<span class="nc" id="L120">        futureCompletion.setSuccess();</span>
+<span class="nc bnc" id="L119" title="All 2 branches missed.">    if (result.getStatus() == 0) {</span>
+<span class="nc bnc" id="L120" title="All 2 branches missed.">      if (waitFor) {</span>
+<span class="nc" id="L121">        futureCompletion.setSuccess();</span>
       }
-<span class="nc" id="L122">      logger.info(&quot;Exec OK with {}&quot;, command);</span>
-<span class="nc bnc" id="L123" title="All 2 branches missed.">    } else if (result.getStatus() == 1) {</span>
-<span class="nc" id="L124">      logger.warn(&quot;Exec in warning with {}&quot;, command);</span>
-<span class="nc bnc" id="L125" title="All 2 branches missed.">      if (waitFor) {</span>
-<span class="nc" id="L126">        futureCompletion.setSuccess();</span>
+<span class="nc" id="L123">      logger.info(&quot;Exec OK with {}&quot;, command);</span>
+<span class="nc bnc" id="L124" title="All 2 branches missed.">    } else if (result.getStatus() == 1) {</span>
+<span class="nc" id="L125">      logger.warn(&quot;Exec in warning with {}&quot;, command);</span>
+<span class="nc bnc" id="L126" title="All 2 branches missed.">      if (waitFor) {</span>
+<span class="nc" id="L127">        futureCompletion.setSuccess();</span>
       }
     } else {
-<span class="nc" id="L129">      logger.error(</span>
-<span class="nc" id="L130">          &quot;Status: &quot; + result.getStatus() + &quot; Exec in error with &quot; + command +</span>
-<span class="nc" id="L131">          ' ' + result.getResult());</span>
-<span class="nc bnc" id="L132" title="All 2 branches missed.">      if (waitFor) {</span>
-<span class="nc" id="L133">        futureCompletion.cancel();</span>
+<span class="nc" id="L130">      logger.error(</span>
+<span class="nc" id="L131">          &quot;Status: &quot; + result.getStatus() + &quot; Exec in error with &quot; + command +</span>
+<span class="nc" id="L132">          ' ' + result.getResult());</span>
+<span class="nc bnc" id="L133" title="All 2 branches missed.">      if (waitFor) {</span>
+<span class="nc" id="L134">        futureCompletion.cancel();</span>
       }
     }
-<span class="nc" id="L136">  }</span>
+<span class="nc" id="L137">  }</span>
 
   /**
    * Connect to the Server
    */
   public boolean connect() {
     // Start the connection attempt.
-<span class="nc" id="L143">    final ChannelFuture future = bootstrapLocalExec.connect(address);</span>
+<span class="nc" id="L144">    final ChannelFuture future = bootstrapLocalExec.connect(address);</span>
 
     // Wait until the connection attempt succeeds or fails.
     try {
-<span class="nc" id="L147">      channel = future.await().sync().channel();</span>
-<span class="nc" id="L148">    } catch (final InterruptedException e) {//NOSONAR</span>
-<span class="nc" id="L149">      SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
-<span class="nc" id="L150">    }</span>
-<span class="nc bnc" id="L151" title="All 2 branches missed.">    if (!future.isSuccess()) {</span>
-<span class="nc" id="L152">      logger.error(&quot;Client Not Connected&quot;, future.cause());</span>
-<span class="nc" id="L153">      return false;</span>
+<span class="nc" id="L148">      channel = future.await().sync().channel();</span>
+<span class="nc" id="L149">    } catch (final InterruptedException e) {//NOSONAR</span>
+<span class="nc" id="L150">      SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
+<span class="nc" id="L151">    }</span>
+<span class="nc bnc" id="L152" title="All 2 branches missed.">    if (!future.isSuccess()) {</span>
+<span class="nc" id="L153">      logger.error(&quot;Client Not Connected&quot;, future.cause());</span>
+<span class="nc" id="L154">      return false;</span>
     }
-<span class="nc" id="L155">    return true;</span>
+<span class="nc" id="L156">    return true;</span>
   }
 
   /**
@@ -161,8 +162,8 @@ public class LocalExecClient {
   public void disconnect() {
     // Close the connection. Make sure the close operation ends because
     // all I/O operations are asynchronous in Netty.
-<span class="nc" id="L164">    WaarpNettyUtil</span>
-<span class="nc" id="L165">        .awaitOrInterrupted(WaarpSslUtility.closingSslChannel(channel));</span>
-<span class="nc" id="L166">  }</span>
+<span class="nc" id="L165">    WaarpNettyUtil</span>
+<span class="nc" id="L166">        .awaitOrInterrupted(WaarpSslUtility.closingSslChannel(channel));</span>
+<span class="nc" id="L167">  }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

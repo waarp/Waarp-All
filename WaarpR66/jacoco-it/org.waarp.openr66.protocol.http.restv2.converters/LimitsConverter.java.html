@@ -59,7 +59,7 @@ public final class LimitsConverter {
    *
    * @return the converted ObjectNode
    */
-  public static ObjectNode limitToNode(Limit limits) {
+  public static ObjectNode limitToNode(final Limit limits) {
 <span class="nc" id="L63">    final ObjectNode node = new ObjectNode(JsonNodeFactory.instance);</span>
 <span class="nc" id="L64">    node.put(READ_GLOBAL_LIMIT, limits.getReadGlobalLimit());</span>
 <span class="nc" id="L65">    node.put(WRITE_GLOBAL_LIMIT, limits.getWriteGlobalLimit());</span>
@@ -80,7 +80,7 @@ public final class LimitsConverter {
    * @throws RestErrorException if the given ObjectNode does not
    *     represent a Limit object
    */
-  public static Limit nodeToNewLimit(ObjectNode object) {
+  public static Limit nodeToNewLimit(final ObjectNode object) {
 <span class="nc" id="L84">    final Limit emptyLimits = new Limit(serverName(), 0, 0, 0, 0, 0);</span>
 <span class="nc" id="L85">    return nodeToUpdatedLimit(object, emptyLimits);</span>
   }
@@ -99,53 +99,54 @@ public final class LimitsConverter {
    * @throws RestErrorException if the given ObjectNode does not
    *     represent a Limit object
    */
-  public static Limit nodeToUpdatedLimit(ObjectNode object, Limit oldLimits) {
-<span class="nc" id="L103">    final List&lt;RestError&gt; errors = new ArrayList&lt;RestError&gt;();</span>
+  public static Limit nodeToUpdatedLimit(final ObjectNode object,
+                                         final Limit oldLimits) {
+<span class="nc" id="L104">    final List&lt;RestError&gt; errors = new ArrayList&lt;RestError&gt;();</span>
 
-<span class="nc bnc" id="L105" title="All 2 branches missed.">    while (object.fields().hasNext()) {</span>
-<span class="nc" id="L106">      final Map.Entry&lt;String, JsonNode&gt; field = object.fields().next();</span>
-<span class="nc" id="L107">      final String name = field.getKey();</span>
-<span class="nc" id="L108">      final JsonNode value = field.getValue();</span>
+<span class="nc bnc" id="L106" title="All 2 branches missed.">    while (object.fields().hasNext()) {</span>
+<span class="nc" id="L107">      final Map.Entry&lt;String, JsonNode&gt; field = object.fields().next();</span>
+<span class="nc" id="L108">      final String name = field.getKey();</span>
+<span class="nc" id="L109">      final JsonNode value = field.getValue();</span>
 
-<span class="nc bnc" id="L110" title="All 2 branches missed.">      if (name.equalsIgnoreCase(READ_GLOBAL_LIMIT)) {</span>
-<span class="nc bnc" id="L111" title="All 4 branches missed.">        if (value.canConvertToLong() &amp;&amp; value.asLong() &gt;= 0) {</span>
-<span class="nc" id="L112">          oldLimits.setReadGlobalLimit(value.asLong());</span>
+<span class="nc bnc" id="L111" title="All 2 branches missed.">      if (name.equalsIgnoreCase(READ_GLOBAL_LIMIT)) {</span>
+<span class="nc bnc" id="L112" title="All 4 branches missed.">        if (value.canConvertToLong() &amp;&amp; value.asLong() &gt;= 0) {</span>
+<span class="nc" id="L113">          oldLimits.setReadGlobalLimit(value.asLong());</span>
         } else {
-<span class="nc" id="L114">          errors.add(ILLEGAL_PARAMETER_VALUE(name, value.toString()));</span>
+<span class="nc" id="L115">          errors.add(ILLEGAL_PARAMETER_VALUE(name, value.toString()));</span>
         }
-<span class="nc bnc" id="L116" title="All 2 branches missed.">      } else if (name.equalsIgnoreCase(WRITE_GLOBAL_LIMIT)) {</span>
-<span class="nc bnc" id="L117" title="All 4 branches missed.">        if (value.canConvertToLong() &amp;&amp; value.asLong() &gt;= 0) {</span>
-<span class="nc" id="L118">          oldLimits.setWriteGlobalLimit(value.asLong());</span>
+<span class="nc bnc" id="L117" title="All 2 branches missed.">      } else if (name.equalsIgnoreCase(WRITE_GLOBAL_LIMIT)) {</span>
+<span class="nc bnc" id="L118" title="All 4 branches missed.">        if (value.canConvertToLong() &amp;&amp; value.asLong() &gt;= 0) {</span>
+<span class="nc" id="L119">          oldLimits.setWriteGlobalLimit(value.asLong());</span>
         } else {
-<span class="nc" id="L120">          errors.add(ILLEGAL_PARAMETER_VALUE(name, value.toString()));</span>
+<span class="nc" id="L121">          errors.add(ILLEGAL_PARAMETER_VALUE(name, value.toString()));</span>
         }
-<span class="nc bnc" id="L122" title="All 2 branches missed.">      } else if (name.equalsIgnoreCase(READ_SESSION_LIMIT)) {</span>
-<span class="nc bnc" id="L123" title="All 4 branches missed.">        if (value.canConvertToLong() &amp;&amp; value.asLong() &gt;= 0) {</span>
-<span class="nc" id="L124">          oldLimits.setReadSessionLimit(value.asLong());</span>
+<span class="nc bnc" id="L123" title="All 2 branches missed.">      } else if (name.equalsIgnoreCase(READ_SESSION_LIMIT)) {</span>
+<span class="nc bnc" id="L124" title="All 4 branches missed.">        if (value.canConvertToLong() &amp;&amp; value.asLong() &gt;= 0) {</span>
+<span class="nc" id="L125">          oldLimits.setReadSessionLimit(value.asLong());</span>
         } else {
-<span class="nc" id="L126">          errors.add(ILLEGAL_PARAMETER_VALUE(name, value.toString()));</span>
+<span class="nc" id="L127">          errors.add(ILLEGAL_PARAMETER_VALUE(name, value.toString()));</span>
         }
-<span class="nc bnc" id="L128" title="All 2 branches missed.">      } else if (name.equalsIgnoreCase(WRITE_SESSION_LIMIT)) {</span>
-<span class="nc bnc" id="L129" title="All 4 branches missed.">        if (value.canConvertToLong() &amp;&amp; value.asLong() &gt;= 0) {</span>
-<span class="nc" id="L130">          oldLimits.setWriteSessionLimit(value.asLong());</span>
+<span class="nc bnc" id="L129" title="All 2 branches missed.">      } else if (name.equalsIgnoreCase(WRITE_SESSION_LIMIT)) {</span>
+<span class="nc bnc" id="L130" title="All 4 branches missed.">        if (value.canConvertToLong() &amp;&amp; value.asLong() &gt;= 0) {</span>
+<span class="nc" id="L131">          oldLimits.setWriteSessionLimit(value.asLong());</span>
         } else {
-<span class="nc" id="L132">          errors.add(ILLEGAL_PARAMETER_VALUE(name, value.toString()));</span>
+<span class="nc" id="L133">          errors.add(ILLEGAL_PARAMETER_VALUE(name, value.toString()));</span>
         }
-<span class="nc bnc" id="L134" title="All 2 branches missed.">      } else if (name.equalsIgnoreCase(DELAY_LIMIT)) {</span>
-<span class="nc bnc" id="L135" title="All 4 branches missed.">        if (value.canConvertToLong() &amp;&amp; value.asLong() &gt;= 0) {</span>
-<span class="nc" id="L136">          oldLimits.setDelayLimit(value.asLong());</span>
+<span class="nc bnc" id="L135" title="All 2 branches missed.">      } else if (name.equalsIgnoreCase(DELAY_LIMIT)) {</span>
+<span class="nc bnc" id="L136" title="All 4 branches missed.">        if (value.canConvertToLong() &amp;&amp; value.asLong() &gt;= 0) {</span>
+<span class="nc" id="L137">          oldLimits.setDelayLimit(value.asLong());</span>
         } else {
-<span class="nc" id="L138">          errors.add(ILLEGAL_PARAMETER_VALUE(name, value.toString()));</span>
+<span class="nc" id="L139">          errors.add(ILLEGAL_PARAMETER_VALUE(name, value.toString()));</span>
         }
       } else {
-<span class="nc" id="L141">        errors.add(UNKNOWN_FIELD(name));</span>
+<span class="nc" id="L142">        errors.add(UNKNOWN_FIELD(name));</span>
       }
-<span class="nc" id="L143">    }</span>
+<span class="nc" id="L144">    }</span>
 
-<span class="nc bnc" id="L145" title="All 2 branches missed.">    if (errors.isEmpty()) {</span>
-<span class="nc" id="L146">      return oldLimits;</span>
+<span class="nc bnc" id="L146" title="All 2 branches missed.">    if (errors.isEmpty()) {</span>
+<span class="nc" id="L147">      return oldLimits;</span>
     } else {
-<span class="nc" id="L148">      throw new RestErrorException(errors);</span>
+<span class="nc" id="L149">      throw new RestErrorException(errors);</span>
     }
   }
 }

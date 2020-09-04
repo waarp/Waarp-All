@@ -102,121 +102,123 @@ public class ConfigurationProxyR66 extends Configuration {
 <span class="pc bpc" id="L102" title="1 of 2 branches missed.">    if (isUseNOSSL()) {</span>
 <span class="fc" id="L103">      serverBootstrap = new ServerBootstrap();</span>
 <span class="fc" id="L104">      WaarpNettyUtil.setServerBootstrap(serverBootstrap, workerGroup,</span>
-<span class="fc" id="L105">                                        (int) getTimeoutCon());</span>
-<span class="fc" id="L106">      networkServerInitializer = new NetworkServerInitializerProxy(true);</span>
-<span class="fc" id="L107">      serverBootstrap.childHandler(networkServerInitializer);</span>
+<span class="fc" id="L105">                                        (int) getTimeoutCon(),</span>
+<span class="fc" id="L106">                                        getBlockSize() + 64, false);</span>
+<span class="fc" id="L107">      networkServerInitializer = new NetworkServerInitializerProxy(true);</span>
+<span class="fc" id="L108">      serverBootstrap.childHandler(networkServerInitializer);</span>
       // FIXME take into account multiple address
-<span class="fc" id="L109">      final List&lt;ChannelFuture&gt; futures = new ArrayList&lt;ChannelFuture&gt;();</span>
-<span class="fc bfc" id="L110" title="All 2 branches covered.">      for (final ProxyEntry entry : ProxyEntry.proxyEntries.values()) {</span>
-<span class="fc bfc" id="L111" title="All 2 branches covered.">        if (!entry.isLocalSsl()) {</span>
-<span class="fc" id="L112">          logger.debug(&quot;Future Activation: &quot; + entry.getLocalSocketAddress());</span>
-<span class="fc" id="L113">          futures.add(serverBootstrap.bind(entry.getLocalSocketAddress()));</span>
+<span class="fc" id="L110">      final List&lt;ChannelFuture&gt; futures = new ArrayList&lt;ChannelFuture&gt;();</span>
+<span class="fc bfc" id="L111" title="All 2 branches covered.">      for (final ProxyEntry entry : ProxyEntry.proxyEntries.values()) {</span>
+<span class="fc bfc" id="L112" title="All 2 branches covered.">        if (!entry.isLocalSsl()) {</span>
+<span class="fc" id="L113">          logger.debug(&quot;Future Activation: &quot; + entry.getLocalSocketAddress());</span>
+<span class="fc" id="L114">          futures.add(serverBootstrap.bind(entry.getLocalSocketAddress()));</span>
         }
-<span class="fc" id="L115">      }</span>
-<span class="fc bfc" id="L116" title="All 2 branches covered.">      for (final ChannelFuture future : futures) {</span>
-<span class="fc" id="L117">        future.syncUninterruptibly();</span>
-<span class="pc bpc" id="L118" title="1 of 2 branches missed.">        if (future.isSuccess()) {</span>
-<span class="fc" id="L119">          bindNoSSL = future.channel();</span>
-<span class="fc" id="L120">          serverChannelGroup.add(bindNoSSL);</span>
-<span class="fc" id="L121">          logger.debug(&quot;Activation: &quot; + bindNoSSL.localAddress());</span>
+<span class="fc" id="L116">      }</span>
+<span class="fc bfc" id="L117" title="All 2 branches covered.">      for (final ChannelFuture future : futures) {</span>
+<span class="fc" id="L118">        future.syncUninterruptibly();</span>
+<span class="pc bpc" id="L119" title="1 of 2 branches missed.">        if (future.isSuccess()) {</span>
+<span class="fc" id="L120">          bindNoSSL = future.channel();</span>
+<span class="fc" id="L121">          serverChannelGroup.add(bindNoSSL);</span>
+<span class="fc" id="L122">          logger.debug(&quot;Activation: &quot; + bindNoSSL.localAddress());</span>
         } else {
-<span class="nc" id="L123">          logger.warn(</span>
-<span class="nc" id="L124">              Messages.getString(&quot;Configuration.NOSSLDeactivated&quot;) + &quot; for &quot; +</span>
-<span class="nc" id="L125">              bindNoSSL.localAddress()); //$NON-NLS-2$</span>
+<span class="nc" id="L124">          logger.warn(</span>
+<span class="nc" id="L125">              Messages.getString(&quot;Configuration.NOSSLDeactivated&quot;) + &quot; for &quot; +</span>
+<span class="nc" id="L126">              bindNoSSL.localAddress()); //$NON-NLS-2$</span>
         }
-<span class="fc" id="L127">      }</span>
-<span class="fc" id="L128">    } else {</span>
-<span class="nc" id="L129">      networkServerInitializer = null;</span>
-<span class="nc" id="L130">      logger.warn(</span>
-<span class="nc" id="L131">          Messages.getString(&quot;Configuration.NOSSLDeactivated&quot;)); //$NON-NLS-1$</span>
+<span class="fc" id="L128">      }</span>
+<span class="fc" id="L129">    } else {</span>
+<span class="nc" id="L130">      networkServerInitializer = null;</span>
+<span class="nc" id="L131">      logger.warn(</span>
+<span class="nc" id="L132">          Messages.getString(&quot;Configuration.NOSSLDeactivated&quot;)); //$NON-NLS-1$</span>
     }
 
-<span class="pc bpc" id="L134" title="2 of 4 branches missed.">    if (isUseSSL() &amp;&amp; getHostSslId() != null) {</span>
-<span class="fc" id="L135">      serverSslBootstrap = new ServerBootstrap();</span>
-<span class="fc" id="L136">      WaarpNettyUtil.setServerBootstrap(serverSslBootstrap, workerGroup,</span>
-<span class="fc" id="L137">                                        (int) getTimeoutCon());</span>
-<span class="fc" id="L138">      networkSslServerInitializer = new NetworkSslServerInitializerProxy(false);</span>
-<span class="fc" id="L139">      serverSslBootstrap.childHandler(networkSslServerInitializer);</span>
+<span class="pc bpc" id="L135" title="2 of 4 branches missed.">    if (isUseSSL() &amp;&amp; getHostSslId() != null) {</span>
+<span class="fc" id="L136">      serverSslBootstrap = new ServerBootstrap();</span>
+<span class="fc" id="L137">      WaarpNettyUtil.setServerBootstrap(serverSslBootstrap, workerGroup,</span>
+<span class="fc" id="L138">                                        (int) getTimeoutCon(),</span>
+<span class="fc" id="L139">                                        getBlockSize() + 64, false);</span>
+<span class="fc" id="L140">      networkSslServerInitializer = new NetworkSslServerInitializerProxy(false);</span>
+<span class="fc" id="L141">      serverSslBootstrap.childHandler(networkSslServerInitializer);</span>
       // FIXME take into account multiple address
-<span class="fc" id="L141">      final List&lt;ChannelFuture&gt; futures = new ArrayList&lt;ChannelFuture&gt;();</span>
-<span class="fc bfc" id="L142" title="All 2 branches covered.">      for (final ProxyEntry entry : ProxyEntry.proxyEntries.values()) {</span>
-<span class="fc bfc" id="L143" title="All 2 branches covered.">        if (entry.isLocalSsl()) {</span>
-<span class="fc" id="L144">          logger</span>
-<span class="fc" id="L145">              .debug(&quot;Future SslActivation: &quot; + entry.getLocalSocketAddress());</span>
-<span class="fc" id="L146">          futures.add(serverSslBootstrap.bind(entry.getLocalSocketAddress()));</span>
+<span class="fc" id="L143">      final List&lt;ChannelFuture&gt; futures = new ArrayList&lt;ChannelFuture&gt;();</span>
+<span class="fc bfc" id="L144" title="All 2 branches covered.">      for (final ProxyEntry entry : ProxyEntry.proxyEntries.values()) {</span>
+<span class="fc bfc" id="L145" title="All 2 branches covered.">        if (entry.isLocalSsl()) {</span>
+<span class="fc" id="L146">          logger</span>
+<span class="fc" id="L147">              .debug(&quot;Future SslActivation: &quot; + entry.getLocalSocketAddress());</span>
+<span class="fc" id="L148">          futures.add(serverSslBootstrap.bind(entry.getLocalSocketAddress()));</span>
         }
-<span class="fc" id="L148">      }</span>
-<span class="fc bfc" id="L149" title="All 2 branches covered.">      for (final ChannelFuture future : futures) {</span>
-<span class="fc" id="L150">        future.syncUninterruptibly();</span>
-<span class="pc bpc" id="L151" title="1 of 2 branches missed.">        if (future.isSuccess()) {</span>
-<span class="fc" id="L152">          bindSSL = future.channel();</span>
-<span class="fc" id="L153">          serverChannelGroup.add(bindSSL);</span>
-<span class="fc" id="L154">          logger.debug(&quot;SslActivation: &quot; + bindSSL.localAddress());</span>
+<span class="fc" id="L150">      }</span>
+<span class="fc bfc" id="L151" title="All 2 branches covered.">      for (final ChannelFuture future : futures) {</span>
+<span class="fc" id="L152">        future.syncUninterruptibly();</span>
+<span class="pc bpc" id="L153" title="1 of 2 branches missed.">        if (future.isSuccess()) {</span>
+<span class="fc" id="L154">          bindSSL = future.channel();</span>
+<span class="fc" id="L155">          serverChannelGroup.add(bindSSL);</span>
+<span class="fc" id="L156">          logger.debug(&quot;SslActivation: &quot; + bindSSL.localAddress());</span>
         } else {
-<span class="nc" id="L156">          logger.warn(</span>
-<span class="nc" id="L157">              Messages.getString(&quot;Configuration.SSLMODEDeactivated&quot;) + &quot; for &quot; +</span>
-<span class="nc" id="L158">              bindSSL.localAddress()); //$NON-NLS-2$</span>
+<span class="nc" id="L158">          logger.warn(</span>
+<span class="nc" id="L159">              Messages.getString(&quot;Configuration.SSLMODEDeactivated&quot;) + &quot; for &quot; +</span>
+<span class="nc" id="L160">              bindSSL.localAddress()); //$NON-NLS-2$</span>
         }
-<span class="fc" id="L160">      }</span>
-<span class="fc" id="L161">    } else {</span>
-<span class="nc" id="L162">      networkSslServerInitializer = null;</span>
-<span class="nc" id="L163">      logger.warn(</span>
-<span class="nc" id="L164">          Messages.getString(&quot;Configuration.SSLMODEDeactivated&quot;)); //$NON-NLS-1$</span>
+<span class="fc" id="L162">      }</span>
+<span class="fc" id="L163">    } else {</span>
+<span class="nc" id="L164">      networkSslServerInitializer = null;</span>
+<span class="nc" id="L165">      logger.warn(</span>
+<span class="nc" id="L166">          Messages.getString(&quot;Configuration.SSLMODEDeactivated&quot;)); //$NON-NLS-1$</span>
     }
 
     // Factory for TrafficShapingHandler
-<span class="fc" id="L168">    setupLimitHandler();</span>
-<span class="fc" id="L169">    ProxyBridge.initialize();</span>
-<span class="fc" id="L170">    setThriftService(null);</span>
-<span class="fc" id="L171">  }</span>
+<span class="fc" id="L170">    setupLimitHandler();</span>
+<span class="fc" id="L171">    ProxyBridge.initialize();</span>
+<span class="fc" id="L172">    setThriftService(null);</span>
+<span class="fc" id="L173">  }</span>
 
   @Override
   public void startHttpSupport() {
     // Now start the HTTP support
-<span class="fc" id="L176">    logger.info(</span>
-<span class="fc" id="L177">        Messages.getString(&quot;Configuration.HTTPStart&quot;) + getServerHttpport() +</span>
+<span class="fc" id="L178">    logger.info(</span>
+<span class="fc" id="L179">        Messages.getString(&quot;Configuration.HTTPStart&quot;) + getServerHttpport() +</span>
         //$NON-NLS-1$
-<span class="fc" id="L179">        &quot; HTTPS: &quot; + getServerHttpsPort());</span>
-<span class="fc" id="L180">    httpChannelGroup =</span>
-<span class="fc" id="L181">        new DefaultChannelGroup(&quot;HttpOpenR66&quot;, subTaskGroup.next());</span>
+<span class="fc" id="L181">        &quot; HTTPS: &quot; + getServerHttpsPort());</span>
+<span class="fc" id="L182">    httpChannelGroup =</span>
+<span class="fc" id="L183">        new DefaultChannelGroup(&quot;HttpOpenR66&quot;, subTaskGroup.next());</span>
     // Configure the server.
-<span class="fc" id="L183">    httpBootstrap = new ServerBootstrap();</span>
-<span class="fc" id="L184">    WaarpNettyUtil.setServerBootstrap(httpBootstrap, httpWorkerGroup,</span>
-<span class="fc" id="L185">                                      (int) getTimeoutCon());</span>
+<span class="fc" id="L185">    httpBootstrap = new ServerBootstrap();</span>
+<span class="fc" id="L186">    WaarpNettyUtil.setServerBootstrap(httpBootstrap, httpWorkerGroup,</span>
+<span class="fc" id="L187">                                      (int) getTimeoutCon());</span>
     // Set up the event pipeline factory.
-<span class="fc" id="L187">    httpBootstrap.childHandler(new HttpInitializer(isUseHttpCompression()));</span>
+<span class="fc" id="L189">    httpBootstrap.childHandler(new HttpInitializer(isUseHttpCompression()));</span>
     // Bind and start to accept incoming connections.
-<span class="pc bpc" id="L189" title="1 of 2 branches missed.">    if (getServerHttpport() &gt; 0) {</span>
-<span class="fc" id="L190">      final ChannelFuture future =</span>
-<span class="fc" id="L191">          httpBootstrap.bind(new InetSocketAddress(getServerHttpport()))</span>
-<span class="fc" id="L192">                       .awaitUninterruptibly();</span>
-<span class="pc bpc" id="L193" title="1 of 2 branches missed.">      if (future.isSuccess()) {</span>
-<span class="fc" id="L194">        httpChannelGroup.add(future.channel());</span>
+<span class="pc bpc" id="L191" title="1 of 2 branches missed.">    if (getServerHttpport() &gt; 0) {</span>
+<span class="fc" id="L192">      final ChannelFuture future =</span>
+<span class="fc" id="L193">          httpBootstrap.bind(new InetSocketAddress(getServerHttpport()))</span>
+<span class="fc" id="L194">                       .awaitUninterruptibly();</span>
+<span class="pc bpc" id="L195" title="1 of 2 branches missed.">      if (future.isSuccess()) {</span>
+<span class="fc" id="L196">        httpChannelGroup.add(future.channel());</span>
       }
     }
     // Now start the HTTPS support
     // Configure the server.
-<span class="fc" id="L199">    httpsBootstrap = new ServerBootstrap();</span>
+<span class="fc" id="L201">    httpsBootstrap = new ServerBootstrap();</span>
     // Set up the event pipeline factory.
-<span class="fc" id="L201">    WaarpNettyUtil.setServerBootstrap(httpsBootstrap, httpWorkerGroup,</span>
-<span class="fc" id="L202">                                      (int) getTimeoutCon());</span>
-<span class="fc" id="L203">    httpsBootstrap.childHandler(new HttpSslInitializer(isUseHttpCompression()));</span>
+<span class="fc" id="L203">    WaarpNettyUtil.setServerBootstrap(httpsBootstrap, httpWorkerGroup,</span>
+<span class="fc" id="L204">                                      (int) getTimeoutCon());</span>
+<span class="fc" id="L205">    httpsBootstrap.childHandler(new HttpSslInitializer(isUseHttpCompression()));</span>
     // Bind and start to accept incoming connections.
-<span class="pc bpc" id="L205" title="1 of 2 branches missed.">    if (getServerHttpsPort() &gt; 0) {</span>
-<span class="fc" id="L206">      final ChannelFuture future =</span>
-<span class="fc" id="L207">          httpsBootstrap.bind(new InetSocketAddress(getServerHttpsPort()))</span>
-<span class="fc" id="L208">                        .awaitUninterruptibly();</span>
-<span class="pc bpc" id="L209" title="1 of 2 branches missed.">      if (future.isSuccess()) {</span>
-<span class="fc" id="L210">        httpChannelGroup.add(future.channel());</span>
+<span class="pc bpc" id="L207" title="1 of 2 branches missed.">    if (getServerHttpsPort() &gt; 0) {</span>
+<span class="fc" id="L208">      final ChannelFuture future =</span>
+<span class="fc" id="L209">          httpsBootstrap.bind(new InetSocketAddress(getServerHttpsPort()))</span>
+<span class="fc" id="L210">                        .awaitUninterruptibly();</span>
+<span class="pc bpc" id="L211" title="1 of 2 branches missed.">      if (future.isSuccess()) {</span>
+<span class="fc" id="L212">        httpChannelGroup.add(future.channel());</span>
       }
     }
-<span class="fc" id="L213">  }</span>
+<span class="fc" id="L215">  }</span>
 
   @Override
   public void serverStop() {
-<span class="fc" id="L217">    super.serverStop();</span>
-<span class="fc" id="L218">    ProxyBridge.transaction.closeAll();</span>
-<span class="fc" id="L219">  }</span>
+<span class="fc" id="L219">    super.serverStop();</span>
+<span class="fc" id="L220">    ProxyBridge.transaction.closeAll();</span>
+<span class="fc" id="L221">  }</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

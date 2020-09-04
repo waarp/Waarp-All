@@ -48,7 +48,7 @@ import org.waarp.ftp.simpleimpl.file.FileBasedDir;
 <span class="fc" id="L48">      WaarpLoggerFactory.getLogger(SimpleBusinessHandler.class);</span>
 
   @Override
-  public void afterRunCommandKo(CommandAbstractException e) {
+  public void afterRunCommandKo(final CommandAbstractException e) {
     // TO DO Auto-generated method stub
 <span class="fc bfc" id="L53" title="All 2 branches covered.">    if (getFtpSession().getCurrentCommand() instanceof MKD) {</span>
       // do nothing
@@ -76,7 +76,7 @@ import org.waarp.ftp.simpleimpl.file.FileBasedDir;
 <span class="fc" id="L76">  }</span>
 
   @Override
-  public void exceptionLocalCaught(Throwable e) {
+  public void exceptionLocalCaught(final Throwable e) {
     // TO DO Auto-generated method stub
 <span class="nc" id="L81">    logger.warn(&quot;GBBH: EXCEP: {} {}&quot;, getFtpSession(), e.getMessage());</span>
 <span class="nc" id="L82">  }</span>
@@ -89,7 +89,7 @@ import org.waarp.ftp.simpleimpl.file.FileBasedDir;
 <span class="fc" id="L89">  }</span>
 
   @Override
-  public void executeChannelConnected(Channel channel) {
+  public void executeChannelConnected(final Channel channel) {
     // TO DO Auto-generated method stub
     // logger.info(&quot;GBBH: CONNEC: {}&quot;, getFtpSession())
 <span class="fc" id="L95">  }</span>
@@ -110,7 +110,7 @@ import org.waarp.ftp.simpleimpl.file.FileBasedDir;
   }
 
   @Override
-  public String getHelpMessage(String arg) {
+  public String getHelpMessage(final String arg) {
 <span class="fc" id="L114">    return &quot;This FTP server is only intend as a Gateway.\n&quot; +</span>
            &quot;This FTP server refers to RFC 959, 775, 2389, 2428, 3659, 4217 &quot; +
            &quot;and supports XDIGEST, XCRC, XMD5 and XSHA1 commands.\n&quot; +
@@ -135,43 +135,44 @@ import org.waarp.ftp.simpleimpl.file.FileBasedDir;
   }
 
   @Override
-  public String getOptsMessage(String[] args) throws CommandAbstractException {
-<span class="pc bpc" id="L139" title="1 of 2 branches missed.">    if (args.length &gt; 0) {</span>
-<span class="pc bpc" id="L140" title="1 of 2 branches missed.">      if (args[0].equalsIgnoreCase(FtpCommandCode.MLST.name()) ||</span>
-<span class="nc bnc" id="L141" title="All 2 branches missed.">          args[0].equalsIgnoreCase(FtpCommandCode.MLSD.name())) {</span>
-<span class="fc" id="L142">        return getMLSxOptsMessage(args);</span>
-      }
-<span class="nc" id="L144">      throw new Reply502Exception(&quot;OPTS not implemented for &quot; + args[0]);</span>
-    }
-<span class="nc" id="L146">    throw new Reply502Exception(&quot;OPTS not implemented&quot;);</span>
-  }
-
-  @Override
-  public AbstractCommand getSpecializedSiteCommand(FtpSession session,
-                                                   String line) {
-<span class="fc" id="L152">    return null;</span>
-  }
-
-  @Override
-  public void afterTransferDoneBeforeAnswer(FtpTransfer transfer)
+  public String getOptsMessage(final String[] args)
       throws CommandAbstractException {
-<span class="pc bpc" id="L158" title="1 of 2 branches missed.">    if (transfer.getCommand() == FtpCommandCode.APPE) {</span>
-<span class="nc" id="L159">      logger.info(GBBH_TRANSFER + transfer.getStatus() + &quot; {}&quot;,</span>
-<span class="nc" id="L160">                  transfer.getCommand(), transfer.getPath());</span>
-<span class="fc bfc" id="L161" title="All 2 branches covered.">    } else if (transfer.getCommand() == FtpCommandCode.RETR) {</span>
-<span class="fc" id="L162">      logger.info(GBBH_TRANSFER + transfer.getStatus() + &quot; {}&quot;,</span>
-<span class="fc" id="L163">                  transfer.getCommand(), transfer.getPath());</span>
-<span class="pc bpc" id="L164" title="1 of 2 branches missed.">    } else if (transfer.getCommand() == FtpCommandCode.STOR) {</span>
-<span class="fc" id="L165">      logger.info(GBBH_TRANSFER + transfer.getStatus() + &quot; {}&quot;,</span>
-<span class="fc" id="L166">                  transfer.getCommand(), transfer.getPath());</span>
-<span class="nc bnc" id="L167" title="All 2 branches missed.">    } else if (transfer.getCommand() == FtpCommandCode.STOU) {</span>
-<span class="nc" id="L168">      logger.info(GBBH_TRANSFER + transfer.getStatus() + &quot; {}&quot;,</span>
-<span class="nc" id="L169">                  transfer.getCommand(), transfer.getPath());</span>
+<span class="pc bpc" id="L140" title="1 of 2 branches missed.">    if (args.length &gt; 0) {</span>
+<span class="pc bpc" id="L141" title="1 of 2 branches missed.">      if (args[0].equalsIgnoreCase(FtpCommandCode.MLST.name()) ||</span>
+<span class="nc bnc" id="L142" title="All 2 branches missed.">          args[0].equalsIgnoreCase(FtpCommandCode.MLSD.name())) {</span>
+<span class="fc" id="L143">        return getMLSxOptsMessage(args);</span>
+      }
+<span class="nc" id="L145">      throw new Reply502Exception(&quot;OPTS not implemented for &quot; + args[0]);</span>
+    }
+<span class="nc" id="L147">    throw new Reply502Exception(&quot;OPTS not implemented&quot;);</span>
+  }
+
+  @Override
+  public AbstractCommand getSpecializedSiteCommand(final FtpSession session,
+                                                   final String line) {
+<span class="fc" id="L153">    return null;</span>
+  }
+
+  @Override
+  public void afterTransferDoneBeforeAnswer(final FtpTransfer transfer)
+      throws CommandAbstractException {
+<span class="pc bpc" id="L159" title="1 of 2 branches missed.">    if (transfer.getCommand() == FtpCommandCode.APPE) {</span>
+<span class="nc" id="L160">      logger.info(GBBH_TRANSFER + transfer.getStatus() + &quot; {}&quot;,</span>
+<span class="nc" id="L161">                  transfer.getCommand(), transfer.getPath());</span>
+<span class="fc bfc" id="L162" title="All 2 branches covered.">    } else if (transfer.getCommand() == FtpCommandCode.RETR) {</span>
+<span class="fc" id="L163">      logger.info(GBBH_TRANSFER + transfer.getStatus() + &quot; {}&quot;,</span>
+<span class="fc" id="L164">                  transfer.getCommand(), transfer.getPath());</span>
+<span class="pc bpc" id="L165" title="1 of 2 branches missed.">    } else if (transfer.getCommand() == FtpCommandCode.STOR) {</span>
+<span class="fc" id="L166">      logger.info(GBBH_TRANSFER + transfer.getStatus() + &quot; {}&quot;,</span>
+<span class="fc" id="L167">                  transfer.getCommand(), transfer.getPath());</span>
+<span class="nc bnc" id="L168" title="All 2 branches missed.">    } else if (transfer.getCommand() == FtpCommandCode.STOU) {</span>
+<span class="nc" id="L169">      logger.info(GBBH_TRANSFER + transfer.getStatus() + &quot; {}&quot;,</span>
+<span class="nc" id="L170">                  transfer.getCommand(), transfer.getPath());</span>
     } else {
-<span class="nc" id="L171">      logger.warn(&quot;GBBH: Transfer unknown: {} &quot; + transfer.getStatus() + &quot; {}&quot;,</span>
-<span class="nc" id="L172">                  transfer.getCommand(), transfer.getPath());</span>
+<span class="nc" id="L172">      logger.warn(&quot;GBBH: Transfer unknown: {} &quot; + transfer.getStatus() + &quot; {}&quot;,</span>
+<span class="nc" id="L173">                  transfer.getCommand(), transfer.getPath());</span>
       // Nothing to do
     }
-<span class="fc" id="L175">  }</span>
+<span class="fc" id="L176">  }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

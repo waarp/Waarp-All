@@ -149,7 +149,7 @@ public class FXApplet extends JApplet {
 <span class="nc" id="L149">    return prmDocName;</span>
   }
 
-  public void setDocName(String docName) {
+  public void setDocName(final String docName) {
 <span class="nc" id="L153">    prmDocName = normalize(docName);</span>
 <span class="nc" id="L154">  }</span>
 
@@ -157,7 +157,7 @@ public class FXApplet extends JApplet {
 <span class="nc" id="L157">    return prmXMLSchema;</span>
   }
 
-  public void setXMLSchema(String xmlSchema) {
+  public void setXMLSchema(final String xmlSchema) {
 <span class="nc" id="L161">    prmXMLSchema = normalize(xmlSchema);</span>
 <span class="nc" id="L162">  }</span>
 
@@ -165,7 +165,7 @@ public class FXApplet extends JApplet {
 <span class="nc" id="L165">    return prmXMLSource;</span>
   }
 
-  public void setXMLSource(String xmlSource) {
+  public void setXMLSource(final String xmlSource) {
 <span class="nc" id="L169">    prmXMLSource = normalize(xmlSource);</span>
 <span class="nc" id="L170">  }</span>
 
@@ -173,7 +173,7 @@ public class FXApplet extends JApplet {
 <span class="nc" id="L173">    return prmBaseURL;</span>
   }
 
-  public void setBaseURL(String baseURL) {
+  public void setBaseURL(final String baseURL) {
 <span class="nc bnc" id="L177" title="All 2 branches missed.">    prmBaseURL = baseURL == null? null : baseURL.trim();</span>
 <span class="nc" id="L178">  }</span>
 
@@ -181,7 +181,7 @@ public class FXApplet extends JApplet {
 <span class="nc" id="L181">    return prmNamespace;</span>
   }
 
-  public void setNamespace(String namespace) {
+  public void setNamespace(final String namespace) {
 <span class="nc bnc" id="L185" title="All 2 branches missed.">    prmNamespace = namespace == null? null : namespace.trim();</span>
 <span class="nc" id="L186">  }</span>
 
@@ -189,7 +189,7 @@ public class FXApplet extends JApplet {
 <span class="nc" id="L189">    return prmElement;</span>
   }
 
-  public void setElement(String rootElementName) {
+  public void setElement(final String rootElementName) {
 <span class="nc" id="L193">    prmElement = normalize(rootElementName);</span>
 <span class="nc" id="L194">  }</span>
 
@@ -197,7 +197,7 @@ public class FXApplet extends JApplet {
 <span class="nc" id="L197">    return prmXMLDest;</span>
   }
 
-  public void setXMLDest(String xmlDest) {
+  public void setXMLDest(final String xmlDest) {
 <span class="nc" id="L201">    prmXMLDest = normalize(xmlDest);</span>
 <span class="nc" id="L202">  }</span>
 
@@ -307,7 +307,7 @@ public class FXApplet extends JApplet {
       try {
 <span class="nc" id="L308">        List lostElements = null;</span>
 <span class="nc" id="L309">        File tmp = new File(prmXMLSchema);</span>
-        URL xsdURL;
+        final URL xsdURL;
 <span class="nc bnc" id="L311" title="All 2 branches missed.">        if (tmp.exists()) {</span>
 <span class="nc" id="L312">          xsdURL = tmp.toURI().toURL();</span>
         } else {
@@ -321,7 +321,7 @@ public class FXApplet extends JApplet {
 <span class="nc" id="L321">          lostElements = model.openDocument(xsdURL, src);</span>
 <span class="nc bnc" id="L322" title="All 2 branches missed.">        } else if (prmXMLSource != null) {</span>
 <span class="nc" id="L323">          tmp = new File(prmXMLSource);</span>
-          URL xmlURL;
+          final URL xmlURL;
 <span class="nc bnc" id="L325" title="All 2 branches missed.">          if (tmp.exists()) {</span>
 <span class="nc" id="L326">            xmlURL = tmp.toURI().toURL();</span>
           } else {
@@ -406,16 +406,16 @@ public class FXApplet extends JApplet {
     }
 <span class="nc" id="L407">  }</span>
 
-  void callJavascriptHandler(String methodName) {
+  void callJavascriptHandler(final String methodName) {
     try {
 <span class="nc" id="L411">      final JSObject win = JSObject.getWindow(this);</span>
-<span class="nc" id="L412">      win.call(methodName, new Object[] { this });</span>
+<span class="nc" id="L412">      win.call(methodName, this);</span>
 <span class="nc" id="L413">    } catch (final Exception ex) {</span>
 <span class="nc" id="L414">      dblView.showErrorMessage(ex.toString());</span>
 <span class="nc" id="L415">    }</span>
 <span class="nc" id="L416">  }</span>
 
-  public void loadXMLDocument(String xmlContent) {
+  public void loadXMLDocument(final String xmlContent) {
 <span class="nc" id="L419">    SwingUtilities.invokeLater(new XMLDocumentLoader(xmlContent));</span>
 <span class="nc" id="L420">  }</span>
 
@@ -459,7 +459,7 @@ public class FXApplet extends JApplet {
 <span class="nc" id="L459">    prmXMLDest = null;</span>
 <span class="nc bnc" id="L460" title="All 2 branches missed.">    if (prmXMLDest == null) {</span>
 <span class="nc" id="L461">      final String cur = textFieldXml.getText();</span>
-      JFileChooser fc;
+      final JFileChooser fc;
 <span class="nc bnc" id="L463" title="All 4 branches missed.">      if (cur != null &amp;&amp; !cur.isEmpty()) {</span>
 <span class="nc" id="L464">        final File parent = new File(cur).getParentFile();</span>
 <span class="nc" id="L465">        fc = new JFileChooser(parent);</span>
@@ -525,7 +525,7 @@ public class FXApplet extends JApplet {
 <span class="nc" id="L525">      serial.serialize(doc);</span>
 <span class="nc" id="L526">      reader =</span>
 <span class="nc" id="L527">          new BufferedReader(new InputStreamReader(httpConn.getInputStream()));</span>
-<span class="nc" id="L528">      StringBuilder message = new StringBuilder();</span>
+<span class="nc" id="L528">      final StringBuilder message = new StringBuilder();</span>
       String line;
 <span class="nc bnc" id="L530" title="All 2 branches missed.">      for (; (line = reader.readLine()) != null;</span>
 <span class="nc" id="L531">           message.append(line).append('\n')) {</span>
@@ -554,7 +554,7 @@ public class FXApplet extends JApplet {
     }
 <span class="nc" id="L555">  }</span>
 
-  void updateLookAndFeel(String lfName) {
+  void updateLookAndFeel(final String lfName) {
 <span class="nc" id="L558">    final LookAndFeel lf = UIManager.getLookAndFeel();</span>
 <span class="nc bnc" id="L559" title="All 4 branches missed.">    if (lf != null &amp;&amp; lf.getName().equals(lfName)) {</span>
 <span class="nc" id="L560">      return;</span>
@@ -626,7 +626,7 @@ public class FXApplet extends JApplet {
      */
     private static final long serialVersionUID = 7556957719356707384L;
 
-<span class="nc" id="L629">    Btn(ImageIcon icon, String toolTipText) {</span>
+<span class="nc" id="L629">    Btn(final ImageIcon icon, final String toolTipText) {</span>
 <span class="nc" id="L630">      super(icon);</span>
 <span class="nc" id="L631">      setFocusPainted(false);</span>
 <span class="nc" id="L632">      setDisabledIcon(FadingFilter.fade(icon));</span>
@@ -646,7 +646,7 @@ public class FXApplet extends JApplet {
      */
     private static final long serialVersionUID = -2731668382902219913L;
 
-<span class="nc" id="L649">    ToggleBtn(ImageIcon icon, String toolTipText) {</span>
+<span class="nc" id="L649">    ToggleBtn(final ImageIcon icon, final String toolTipText) {</span>
 <span class="nc" id="L650">      super(icon);</span>
 <span class="nc" id="L651">      setFocusPainted(false);</span>
 <span class="nc" id="L652">      setDisabledIcon(FadingFilter.fade(icon));</span>
@@ -666,7 +666,7 @@ public class FXApplet extends JApplet {
      */
     private static final long serialVersionUID = -6743687839953167701L;
 
-<span class="nc" id="L669">    MItem(String text, ImageIcon icon) {</span>
+<span class="nc" id="L669">    MItem(final String text, final ImageIcon icon) {</span>
 <span class="nc" id="L670">      super(text);</span>
 <span class="nc bnc" id="L671" title="All 2 branches missed.">      if (icon != null) {</span>
 <span class="nc" id="L672">        setIcon(icon);</span>
@@ -680,7 +680,7 @@ public class FXApplet extends JApplet {
 
     final String xmlContent;
 
-<span class="nc" id="L683">    XMLDocumentLoader(String xmlContent) {</span>
+<span class="nc" id="L683">    XMLDocumentLoader(final String xmlContent) {</span>
 <span class="nc" id="L684">      this.xmlContent = xmlContent;</span>
 <span class="nc" id="L685">    }</span>
 
@@ -696,7 +696,7 @@ public class FXApplet extends JApplet {
 <span class="nc" id="L696">    }</span>
 
     @Override
-    public void actionPerformed(ActionEvent e) {
+    public void actionPerformed(final ActionEvent e) {
 <span class="nc" id="L700">      final Object source = e.getSource();</span>
 <span class="nc bnc" id="L701" title="All 4 branches missed.">      if (source == btnReload || source == mReload) {</span>
 <span class="nc bnc" id="L702" title="All 2 branches missed.">        if (prmOnLoad != null) {</span>
@@ -712,7 +712,7 @@ public class FXApplet extends JApplet {
         }
 <span class="nc bnc" id="L713" title="All 4 branches missed.">      } else if (source == btnXmlLoad || source == mXmlLoad) {</span>
 <span class="nc" id="L714">        final String cur = textFieldXml.getText();</span>
-        JFileChooser fc;
+        final JFileChooser fc;
 <span class="nc bnc" id="L716" title="All 4 branches missed.">        if (cur != null &amp;&amp; !cur.isEmpty()) {</span>
 <span class="nc" id="L717">          final File parent = new File(cur).getParentFile();</span>
 <span class="nc" id="L718">          fc = new JFileChooser(parent);</span>
@@ -728,7 +728,7 @@ public class FXApplet extends JApplet {
 <span class="nc" id="L728">        doLoadXMLDocument(null);</span>
 <span class="nc bnc" id="L729" title="All 4 branches missed.">      } else if (source == btnXsdLoad || source == mXsdLoad) {</span>
 <span class="nc" id="L730">        final String cur = textField.getText();</span>
-        JFileChooser fc;
+        final JFileChooser fc;
 <span class="nc bnc" id="L732" title="All 4 branches missed.">        if (cur != null &amp;&amp; !cur.isEmpty()) {</span>
 <span class="nc" id="L733">          final File parent = new File(cur).getParentFile();</span>
 <span class="nc" id="L734">          fc = new JFileChooser(parent);</span>
@@ -754,13 +754,13 @@ public class FXApplet extends JApplet {
 <span class="nc" id="L754">    }</span>
 
     @Override
-    public void newDocumentLoaded(FXStatusEvent e) {
+    public void newDocumentLoaded(final FXStatusEvent e) {
 <span class="nc bnc" id="L758" title="All 4 branches missed.">      btnSave.setEnabled(dblView.hasDocument() &amp;&amp; dblView.isDocValid());</span>
 <span class="nc bnc" id="L759" title="All 4 branches missed.">      mSave.setEnabled(dblView.hasDocument() &amp;&amp; dblView.isDocValid());</span>
 <span class="nc" id="L760">    }</span>
 
     @Override
-    public void docValidityStatusChanged(FXStatusEvent e) {
+    public void docValidityStatusChanged(final FXStatusEvent e) {
 <span class="nc bnc" id="L764" title="All 4 branches missed.">      btnSave.setEnabled(dblView.hasDocument() &amp;&amp; dblView.isDocValid());</span>
 <span class="nc bnc" id="L765" title="All 4 branches missed.">      mSave.setEnabled(dblView.hasDocument() &amp;&amp; dblView.isDocValid());</span>
 <span class="nc" id="L766">    }</span>

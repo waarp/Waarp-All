@@ -147,14 +147,35 @@ import org.waarp.openr66.database.data.DbHostConfiguration;
    */
   public static final String XML_SERVER_HTTPSPORT = &quot;serverhttpsport&quot;;
   /**
+   * SERVER PORT
+   */
+  public static final String XML_SERVER_ADDRESSES = &quot;serveraddresses&quot;;
+  /**
+   * SERVER SSL PORT
+   */
+  public static final String XML_SERVER_SSL_ADDRESSES = &quot;serverssladdresses&quot;;
+  /**
+   * SERVER HTTP PORT
+   */
+  public static final String XML_SERVER_HTTP_ADDRESSES = &quot;serverhttpaddresses&quot;;
+  /**
+   * SERVER HTTPS PORT
+   */
+  public static final String XML_SERVER_HTTPS_ADDRESSES =
+      &quot;serverhttpsaddresses&quot;;
+  /**
    * Structure of the Configuration file
    */
-<span class="fc" id="L152">  private static final XmlDecl[] configNetworkServerDecls = {</span>
+<span class="fc" id="L169">  private static final XmlDecl[] configNetworkServerDecls = {</span>
       // network
       new XmlDecl(XmlType.INTEGER, XML_SERVER_PORT),
       new XmlDecl(XmlType.INTEGER, XML_SERVER_SSLPORT),
       new XmlDecl(XmlType.INTEGER, XML_SERVER_HTTPPORT),
-      new XmlDecl(XmlType.INTEGER, XML_SERVER_HTTPSPORT)
+      new XmlDecl(XmlType.INTEGER, XML_SERVER_HTTPSPORT),
+      new XmlDecl(XmlType.STRING, XML_SERVER_ADDRESSES),
+      new XmlDecl(XmlType.STRING, XML_SERVER_SSL_ADDRESSES),
+      new XmlDecl(XmlType.STRING, XML_SERVER_HTTP_ADDRESSES),
+      new XmlDecl(XmlType.STRING, XML_SERVER_HTTPS_ADDRESSES)
   };
   /**
    * SERVER SSL STOREKEY PATH
@@ -195,7 +216,7 @@ import org.waarp.openr66.database.data.DbHostConfiguration;
   /**
    * Structure of the Configuration file
    */
-<span class="fc" id="L198">  public static final XmlDecl[] configIdentityDecls = {</span>
+<span class="fc" id="L219">  public static final XmlDecl[] configIdentityDecls = {</span>
       // identity
       new XmlDecl(XmlType.STRING, XML_SERVER_HOSTID),
       new XmlDecl(XmlType.STRING, XML_SERVER_SSLHOSTID),
@@ -230,7 +251,7 @@ import org.waarp.openr66.database.data.DbHostConfiguration;
   /**
    * Structure of the Configuration file
    */
-<span class="fc" id="L233">  private static final XmlDecl[] configDirectoryDecls = {</span>
+<span class="fc" id="L254">  private static final XmlDecl[] configDirectoryDecls = {</span>
       // directory
       new XmlDecl(XmlType.STRING, XML_SERVER_HOME),
       new XmlDecl(XmlType.STRING, XML_INPATH),
@@ -268,7 +289,7 @@ import org.waarp.openr66.database.data.DbHostConfiguration;
   /**
    * Structure of the Configuration file
    */
-<span class="fc" id="L271">  public static final XmlDecl[] configSslDecls = {</span>
+<span class="fc" id="L292">  public static final XmlDecl[] configSslDecls = {</span>
       // ssl
       new XmlDecl(XmlType.STRING, XML_PATH_KEYPATH),
       new XmlDecl(XmlType.STRING, XML_PATH_KEYSTOREPASS),
@@ -366,7 +387,7 @@ import org.waarp.openr66.database.data.DbHostConfiguration;
   /**
    * Structure of the Configuration file
    */
-<span class="fc" id="L369">  private static final XmlDecl[] configClientParamDecls = {</span>
+<span class="fc" id="L390">  private static final XmlDecl[] configClientParamDecls = {</span>
       // client
       new XmlDecl(XmlType.BOOLEAN, XML_SAVE_TASKRUNNERNODB),
       new XmlDecl(XmlType.STRING, XML_BUSINESS_FACTORY)
@@ -386,7 +407,7 @@ import org.waarp.openr66.database.data.DbHostConfiguration;
   /**
    * Structure of the Configuration file
    */
-<span class="fc" id="L389">  private static final XmlDecl[] configServerParamDecls = {</span>
+<span class="fc" id="L410">  private static final XmlDecl[] configServerParamDecls = {</span>
       // server
       new XmlDecl(XmlType.BOOLEAN, XML_USESSL),
       new XmlDecl(XmlType.BOOLEAN, XML_USENOSSL),
@@ -470,7 +491,7 @@ import org.waarp.openr66.database.data.DbHostConfiguration;
   /**
    * Structure of the Configuration file
    */
-<span class="fc" id="L473">  private static final XmlDecl[] configSubmitLimitDecls = {</span>
+<span class="fc" id="L494">  private static final XmlDecl[] configSubmitLimitDecls = {</span>
       // limit
       new XmlDecl(XmlType.INTEGER, XML_BLOCKSIZE)
   };
@@ -509,7 +530,7 @@ import org.waarp.openr66.database.data.DbHostConfiguration;
   /**
    * Structure of the Configuration file
    */
-<span class="fc" id="L512">  private static final XmlDecl[] configDbDecls = {</span>
+<span class="fc" id="L533">  private static final XmlDecl[] configDbDecls = {</span>
       // db
       new XmlDecl(XmlType.STRING, XML_DBDRIVER),
       new XmlDecl(XmlType.STRING, XML_DBSERVER),
@@ -530,7 +551,7 @@ import org.waarp.openr66.database.data.DbHostConfiguration;
   /**
    * Structure of the Configuration file
    */
-<span class="fc" id="L533">  private static final XmlDecl[] configLimitDecls = {</span>
+<span class="fc" id="L554">  private static final XmlDecl[] configLimitDecls = {</span>
       // limit
       new XmlDecl(XmlType.LONG, XML_LIMITSESSION),
       new XmlDecl(XmlType.LONG, XML_LIMITGLOBAL),
@@ -601,7 +622,7 @@ import org.waarp.openr66.database.data.DbHostConfiguration;
    * SERVER REST interface CRUD per method
    */
   public static final String XML_REST_CRUD = &quot;restcrud&quot;;
-<span class="fc" id="L604">  public static final XmlDecl[] configRestMethodDecls = {</span>
+<span class="fc" id="L625">  public static final XmlDecl[] configRestMethodDecls = {</span>
       // Rest Method
       new XmlDecl(XmlType.STRING, XML_REST_METHOD_NAME),
       new XmlDecl(XmlType.STRING, XML_REST_CRUD)
@@ -609,7 +630,7 @@ import org.waarp.openr66.database.data.DbHostConfiguration;
   /**
    * Structure of the Configuration file
    */
-<span class="fc" id="L612">  private static final XmlDecl[] configRestDecls = {</span>
+<span class="fc" id="L633">  private static final XmlDecl[] configRestDecls = {</span>
       // Rest support configuration
       new XmlDecl(XmlType.STRING, XML_REST_ADDRESS),
       new XmlDecl(XmlType.INTEGER, XML_SERVER_REST_PORT),
@@ -636,7 +657,7 @@ import org.waarp.openr66.database.data.DbHostConfiguration;
   /**
    * Global Structure for Submit only Client Configuration
    */
-<span class="fc" id="L639">  public static final XmlDecl[] configSubmitClient = {</span>
+<span class="fc" id="L660">  public static final XmlDecl[] configSubmitClient = {</span>
       new XmlDecl(XML_IDENTITY, XmlType.XVAL, XML_ROOT + XML_IDENTITY,
                   configIdentityDecls, false),
       new XmlDecl(XML_DIRECTORY, XmlType.XVAL, XML_ROOT + XML_DIRECTORY,
@@ -654,7 +675,7 @@ import org.waarp.openr66.database.data.DbHostConfiguration;
   /**
    * Global Structure for Client Configuration
    */
-<span class="fc" id="L657">  public static final XmlDecl[] configClient = {</span>
+<span class="fc" id="L678">  public static final XmlDecl[] configClient = {</span>
       new XmlDecl(XML_IDENTITY, XmlType.XVAL, XML_ROOT + XML_IDENTITY,
                   configIdentityDecls, false),
       new XmlDecl(XML_CLIENT, XmlType.XVAL, XML_ROOT + XML_CLIENT,
@@ -680,7 +701,7 @@ import org.waarp.openr66.database.data.DbHostConfiguration;
   /**
    * Global Structure for Server Configuration
    */
-<span class="fc" id="L683">  public static final XmlDecl[] configServer = {</span>
+<span class="fc" id="L704">  public static final XmlDecl[] configServer = {</span>
       new XmlDecl(XML_IDENTITY, XmlType.XVAL, XML_ROOT + XML_IDENTITY,
                   configIdentityDecls, false),
       new XmlDecl(XML_SERVER, XmlType.XVAL, XML_ROOT + XML_SERVER,

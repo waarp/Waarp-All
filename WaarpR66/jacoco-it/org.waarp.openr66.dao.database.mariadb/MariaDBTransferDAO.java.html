@@ -35,41 +35,42 @@ public class MariaDBTransferDAO extends DBTransferDAO {
   private static final String SQL_UPDATE_ID =
       &quot;UPDATE Sequences SET seq = ? &quot; + &quot;WHERE name='RUNSEQ'&quot;;
 
-  public MariaDBTransferDAO(Connection con) throws DAOConnectionException {
-<span class="nc" id="L39">    super(con);</span>
-<span class="nc" id="L40">  }</span>
+  public MariaDBTransferDAO(final Connection con)
+      throws DAOConnectionException {
+<span class="nc" id="L40">    super(con);</span>
+<span class="nc" id="L41">  }</span>
 
   @Override
   protected long getNextId() throws DAOConnectionException {
-<span class="nc" id="L44">    PreparedStatement ps = null;</span>
-<span class="nc" id="L45">    PreparedStatement ps2 = null;</span>
-<span class="nc" id="L46">    ResultSet rs = null;</span>
+<span class="nc" id="L45">    PreparedStatement ps = null;</span>
+<span class="nc" id="L46">    PreparedStatement ps2 = null;</span>
+<span class="nc" id="L47">    ResultSet rs = null;</span>
     try {
-<span class="nc" id="L48">      ps = connection.prepareStatement(SQL_GET_ID);</span>
-<span class="nc" id="L49">      rs = ps.executeQuery();</span>
-      long res;
-<span class="nc bnc" id="L51" title="All 2 branches missed.">      if (rs.next()) {</span>
-<span class="nc" id="L52">        res = rs.getLong(1);</span>
-<span class="nc" id="L53">        ps2 = connection.prepareStatement(SQL_UPDATE_ID);</span>
-<span class="nc" id="L54">        ps2.setLong(1, res + 1);</span>
-<span class="nc" id="L55">        ps2.executeUpdate();</span>
-<span class="nc" id="L56">        return res;</span>
+<span class="nc" id="L49">      ps = connection.prepareStatement(SQL_GET_ID);</span>
+<span class="nc" id="L50">      rs = ps.executeQuery();</span>
+      final long res;
+<span class="nc bnc" id="L52" title="All 2 branches missed.">      if (rs.next()) {</span>
+<span class="nc" id="L53">        res = rs.getLong(1);</span>
+<span class="nc" id="L54">        ps2 = connection.prepareStatement(SQL_UPDATE_ID);</span>
+<span class="nc" id="L55">        ps2.setLong(1, res + 1);</span>
+<span class="nc" id="L56">        ps2.executeUpdate();</span>
+<span class="nc" id="L57">        return res;</span>
       } else {
-<span class="nc" id="L58">        throw new DAOConnectionException(</span>
+<span class="nc" id="L59">        throw new DAOConnectionException(</span>
             &quot;Error no id available, you should purge the database.&quot;);
       }
-<span class="nc" id="L61">    } catch (final SQLException e) {</span>
-<span class="nc" id="L62">      throw new DAOConnectionException(e);</span>
+<span class="nc" id="L62">    } catch (final SQLException e) {</span>
+<span class="nc" id="L63">      throw new DAOConnectionException(e);</span>
     } finally {
       try {
-<span class="nc bnc" id="L65" title="All 2 branches missed.">        if (rs != null) {</span>
-<span class="nc" id="L66">          rs.close();</span>
+<span class="nc bnc" id="L66" title="All 2 branches missed.">        if (rs != null) {</span>
+<span class="nc" id="L67">          rs.close();</span>
         }
-<span class="nc" id="L68">      } catch (SQLException e) {</span>
+<span class="nc" id="L69">      } catch (final SQLException e) {</span>
         // ignore
-<span class="nc" id="L70">      }</span>
-<span class="nc" id="L71">      closeStatement(ps);</span>
-<span class="nc" id="L72">      closeStatement(ps2);</span>
+<span class="nc" id="L71">      }</span>
+<span class="nc" id="L72">      closeStatement(ps);</span>
+<span class="nc" id="L73">      closeStatement(ps2);</span>
     }
   }
 }

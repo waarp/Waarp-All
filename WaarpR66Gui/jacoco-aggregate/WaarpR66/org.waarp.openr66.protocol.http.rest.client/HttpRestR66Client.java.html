@@ -68,15 +68,17 @@ public class HttpRestR66Client extends HttpRestClientHelper {
    *
    * @return the RestFuture associated with this request
    */
-  public RestFuture sendQuery(RestConfiguration config, Channel channel,
-                              HttpMethod method, String host, String addedUri,
-                              String user, String pwd,
-                              Map&lt;String, String&gt; uriArgs, String json) {
-<span class="pc bpc" id="L75" title="1 of 2 branches missed.">    if (config.isRestSignature()) {</span>
-<span class="fc" id="L76">      return sendQuery(config.getHmacSha256(), channel, method, host, addedUri,</span>
+  public RestFuture sendQuery(final RestConfiguration config,
+                              final Channel channel, final HttpMethod method,
+                              final String host, final String addedUri,
+                              final String user, final String pwd,
+                              final Map&lt;String, String&gt; uriArgs,
+                              final String json) {
+<span class="pc bpc" id="L77" title="1 of 2 branches missed.">    if (config.isRestSignature()) {</span>
+<span class="fc" id="L78">      return sendQuery(config.getHmacSha256(), channel, method, host, addedUri,</span>
                        user, pwd, uriArgs, json);
     } else {
-<span class="nc" id="L79">      return sendQuery(channel, method, host, addedUri, user, uriArgs, json);</span>
+<span class="nc" id="L81">      return sendQuery(channel, method, host, addedUri, user, uriArgs, json);</span>
     }
   }
 
@@ -89,28 +91,28 @@ public class HttpRestR66Client extends HttpRestClientHelper {
    * @param client limit number of concurrent connected clients
    * @param timeout time out for network connection
    */
-  public HttpRestR66Client(String baseUri,
-                           ChannelInitializer&lt;SocketChannel&gt; initializer,
-                           int client, long timeout) {
-<span class="fc" id="L95">    super(baseUri, client, timeout, initializer);</span>
-<span class="fc" id="L96">  }</span>
+  public HttpRestR66Client(final String baseUri,
+                           final ChannelInitializer&lt;SocketChannel&gt; initializer,
+                           final int client, final long timeout) {
+<span class="fc" id="L97">    super(baseUri, client, timeout, initializer);</span>
+<span class="fc" id="L98">  }</span>
 
   /**
    * @param bodyResponse
    *
    * @return the associated RESTHANDLERS if any, else null
    */
-  public RESTHANDLERS getRestHandler(RestArgument bodyResponse) {
-<span class="fc" id="L104">    final ObjectNode node = bodyResponse.getAnswer();</span>
-<span class="fc" id="L105">    final String model = node.path(AbstractDbData.JSON_MODEL).asText();</span>
+  public RESTHANDLERS getRestHandler(final RestArgument bodyResponse) {
+<span class="fc" id="L106">    final ObjectNode node = bodyResponse.getAnswer();</span>
+<span class="fc" id="L107">    final String model = node.path(AbstractDbData.JSON_MODEL).asText();</span>
     try {
-<span class="pc bpc" id="L107" title="2 of 4 branches missed.">      if (model != null &amp;&amp; !model.isEmpty()) {</span>
-<span class="fc" id="L108">        return RESTHANDLERS.valueOf(model);</span>
+<span class="pc bpc" id="L109" title="2 of 4 branches missed.">      if (model != null &amp;&amp; !model.isEmpty()) {</span>
+<span class="fc" id="L110">        return RESTHANDLERS.valueOf(model);</span>
       }
-<span class="nc" id="L110">    } catch (final Exception ignored) {</span>
+<span class="nc" id="L112">    } catch (final Exception ignored) {</span>
       // nothing
-<span class="nc" id="L112">    }</span>
-<span class="nc" id="L113">    return null;</span>
+<span class="nc" id="L114">    }</span>
+<span class="nc" id="L115">    return null;</span>
   }
 
   /**
@@ -119,14 +121,14 @@ public class HttpRestR66Client extends HttpRestClientHelper {
    * @return the primary property value associated with the Model (from the
    *     bodyResponse), else null
    */
-  public String getPrimaryProperty(RestArgument bodyResponse) {
-<span class="fc" id="L123">    final ObjectNode answer = bodyResponse.getAnswer();</span>
-<span class="fc" id="L124">    final String model = answer.path(AbstractDbData.JSON_MODEL).asText();</span>
-<span class="fc" id="L125">    final String property = getPrimaryPropertyName(model);</span>
-<span class="pc bpc" id="L126" title="1 of 2 branches missed.">    if (property == null) {</span>
-<span class="nc" id="L127">      return null;</span>
+  public String getPrimaryProperty(final RestArgument bodyResponse) {
+<span class="fc" id="L125">    final ObjectNode answer = bodyResponse.getAnswer();</span>
+<span class="fc" id="L126">    final String model = answer.path(AbstractDbData.JSON_MODEL).asText();</span>
+<span class="fc" id="L127">    final String property = getPrimaryPropertyName(model);</span>
+<span class="pc bpc" id="L128" title="1 of 2 branches missed.">    if (property == null) {</span>
+<span class="nc" id="L129">      return null;</span>
     }
-<span class="fc" id="L129">    return answer.path(property).asText();</span>
+<span class="fc" id="L131">    return answer.path(property).asText();</span>
   }
 
   /**
@@ -134,19 +136,19 @@ public class HttpRestR66Client extends HttpRestClientHelper {
    *
    * @return the primary property name associated with the Model
    */
-  public String getPrimaryPropertyName(String model) {
+  public String getPrimaryPropertyName(final String model) {
     try {
-<span class="pc bpc" id="L139" title="2 of 4 branches missed.">      if (model != null &amp;&amp; !model.isEmpty()) {</span>
-<span class="fc" id="L140">        final RESTHANDLERS dbdata = RESTHANDLERS.valueOf(model);</span>
-<span class="fc" id="L141">        final DataModelRestMethodHandler&lt;?&gt; handler =</span>
+<span class="pc bpc" id="L141" title="2 of 4 branches missed.">      if (model != null &amp;&amp; !model.isEmpty()) {</span>
+<span class="fc" id="L142">        final RESTHANDLERS dbdata = RESTHANDLERS.valueOf(model);</span>
+<span class="fc" id="L143">        final DataModelRestMethodHandler&lt;?&gt; handler =</span>
             (DataModelRestMethodHandler&lt;?&gt;) HttpRestHandler.defaultConfiguration.restHashMap
-<span class="fc" id="L143">                .get(dbdata.uri);</span>
-<span class="fc" id="L144">        return handler.getPrimaryPropertyName();</span>
+<span class="fc" id="L145">                .get(dbdata.uri);</span>
+<span class="fc" id="L146">        return handler.getPrimaryPropertyName();</span>
       }
-<span class="nc" id="L146">    } catch (final Exception ignored) {</span>
+<span class="nc" id="L148">    } catch (final Exception ignored) {</span>
       // ignore
-<span class="nc" id="L148">    }</span>
-<span class="nc" id="L149">    return null;</span>
+<span class="nc" id="L150">    }</span>
+<span class="nc" id="L151">    return null;</span>
   }
 
   /**
@@ -158,29 +160,29 @@ public class HttpRestR66Client extends HttpRestClientHelper {
    * @throws HttpIncorrectRequestException
    */
   @SuppressWarnings(&quot;unchecked&quot;)
-  public AbstractDbData getDbDataFromFuture(DbSession dbSession,
-                                            RestFuture future)
+  public AbstractDbData getDbDataFromFuture(final DbSession dbSession,
+                                            final RestFuture future)
       throws HttpIncorrectRequestException {
-<span class="nc bnc" id="L164" title="All 2 branches missed.">    if (future.getRestArgument() != null) {</span>
-<span class="nc" id="L165">      final RestArgument arg = future.getRestArgument();</span>
-<span class="nc" id="L166">      final ObjectNode node = arg.getAnswer();</span>
-<span class="nc" id="L167">      final String model = node.path(AbstractDbData.JSON_MODEL).asText();</span>
+<span class="nc bnc" id="L166" title="All 2 branches missed.">    if (future.getRestArgument() != null) {</span>
+<span class="nc" id="L167">      final RestArgument arg = future.getRestArgument();</span>
+<span class="nc" id="L168">      final ObjectNode node = arg.getAnswer();</span>
+<span class="nc" id="L169">      final String model = node.path(AbstractDbData.JSON_MODEL).asText();</span>
       try {
-<span class="nc bnc" id="L169" title="All 4 branches missed.">        if (model != null &amp;&amp; !model.isEmpty()) {</span>
-<span class="nc" id="L170">          final RESTHANDLERS rmodel = RESTHANDLERS.valueOf(model);</span>
+<span class="nc bnc" id="L171" title="All 4 branches missed.">        if (model != null &amp;&amp; !model.isEmpty()) {</span>
+<span class="nc" id="L172">          final RESTHANDLERS rmodel = RESTHANDLERS.valueOf(model);</span>
           try {
-<span class="nc" id="L172">            return (AbstractDbData) rmodel.clasz</span>
-<span class="nc" id="L173">                .getConstructor(DbSession.class, ObjectNode.class)</span>
-<span class="nc" id="L174">                .newInstance(dbSession, node);</span>
-<span class="nc" id="L175">          } catch (final Exception e) {</span>
-<span class="nc" id="L176">            throw new HttpIncorrectRequestException(e);</span>
+<span class="nc" id="L174">            return (AbstractDbData) rmodel.clasz</span>
+<span class="nc" id="L175">                .getConstructor(DbSession.class, ObjectNode.class)</span>
+<span class="nc" id="L176">                .newInstance(dbSession, node);</span>
+<span class="nc" id="L177">          } catch (final Exception e) {</span>
+<span class="nc" id="L178">            throw new HttpIncorrectRequestException(e);</span>
           }
         }
-<span class="nc" id="L179">      } catch (final Exception ignored) {</span>
+<span class="nc" id="L181">      } catch (final Exception ignored) {</span>
         // ignore
-<span class="nc" id="L181">      }</span>
+<span class="nc" id="L183">      }</span>
     }
-<span class="nc" id="L183">    return null;</span>
+<span class="nc" id="L185">    return null;</span>
   }
 
   /**
@@ -190,18 +192,18 @@ public class HttpRestR66Client extends HttpRestClientHelper {
    *
    * @throws HttpIncorrectRequestException
    */
-  public JsonPacket getJsonPacketFromFuture(RestFuture future)
+  public JsonPacket getJsonPacketFromFuture(final RestFuture future)
       throws HttpIncorrectRequestException {
-<span class="nc bnc" id="L195" title="All 2 branches missed.">    if (future.getRestArgument() != null) {</span>
-<span class="nc" id="L196">      final RestArgument arg = future.getRestArgument();</span>
-<span class="nc" id="L197">      final ObjectNode node = arg.getAnswer();</span>
+<span class="nc bnc" id="L197" title="All 2 branches missed.">    if (future.getRestArgument() != null) {</span>
+<span class="nc" id="L198">      final RestArgument arg = future.getRestArgument();</span>
+<span class="nc" id="L199">      final ObjectNode node = arg.getAnswer();</span>
       try {
-<span class="nc" id="L199">        return JsonPacket.createFromBuffer(JsonHandler.writeAsString(node));</span>
-<span class="nc" id="L200">      } catch (final Exception e) {</span>
-<span class="nc" id="L201">        throw new HttpIncorrectRequestException(e);</span>
+<span class="nc" id="L201">        return JsonPacket.createFromBuffer(JsonHandler.writeAsString(node));</span>
+<span class="nc" id="L202">      } catch (final Exception e) {</span>
+<span class="nc" id="L203">        throw new HttpIncorrectRequestException(e);</span>
       }
     }
-<span class="nc" id="L204">    return null;</span>
+<span class="nc" id="L206">    return null;</span>
   }
 
 }

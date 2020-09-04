@@ -22,6 +22,7 @@ package org.waarp.openr66.proxy.network;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageCodec;
+import org.waarp.common.utility.WaarpNettyUtil;
 import org.waarp.openr66.protocol.localhandler.packet.KeepAlivePacket;
 import org.waarp.openr66.protocol.localhandler.packet.LocalPacketCodec;
 import org.waarp.openr66.protocol.localhandler.packet.LocalPacketFactory;
@@ -34,63 +35,63 @@ import java.util.List;
 /**
  * Packet Decoder
  */
-<span class="fc" id="L37">public class NetworkPacketCodec extends ByteToMessageCodec&lt;NetworkPacket&gt; {</span>
+<span class="fc" id="L38">public class NetworkPacketCodec extends ByteToMessageCodec&lt;NetworkPacket&gt; {</span>
   @Override
-  protected void decode(ChannelHandlerContext ctx, ByteBuf buf,
-                        List&lt;Object&gt; out) throws Exception {
+  protected void decode(final ChannelHandlerContext ctx, final ByteBuf buf,
+                        final List&lt;Object&gt; out) throws Exception {
     // Make sure if the length field was received.
-<span class="pc bpc" id="L42" title="1 of 2 branches missed.">    if (buf.readableBytes() &lt; 4) {</span>
+<span class="pc bpc" id="L43" title="1 of 2 branches missed.">    if (buf.readableBytes() &lt; 4) {</span>
       // The length field was not received yet - return null.
       // This method will be invoked again when more packets are
       // received and appended to the buffer.
-<span class="nc" id="L46">      return;</span>
+<span class="nc" id="L47">      return;</span>
     }
     // Mark the current buffer position
-<span class="fc" id="L49">    buf.markReaderIndex();</span>
+<span class="fc" id="L50">    buf.markReaderIndex();</span>
     // Read the length field
-<span class="fc" id="L51">    final int length = buf.readInt();</span>
-<span class="fc bfc" id="L52" title="All 2 branches covered.">    if (buf.readableBytes() &lt; length) {</span>
-<span class="fc" id="L53">      buf.resetReaderIndex();</span>
-<span class="fc" id="L54">      return;</span>
+<span class="fc" id="L52">    final int length = buf.readInt();</span>
+<span class="fc bfc" id="L53" title="All 2 branches covered.">    if (buf.readableBytes() &lt; length) {</span>
+<span class="fc" id="L54">      buf.resetReaderIndex();</span>
+<span class="fc" id="L55">      return;</span>
     }
     // Now we can read the two Ids
     // Slight change in Proxy = first is remote and second is local!
-<span class="fc" id="L58">    final int remoteId = buf.readInt();</span>
-<span class="fc" id="L59">    final int localId = buf.readInt();</span>
-<span class="fc" id="L60">    final byte code = buf.readByte();</span>
-<span class="fc" id="L61">    final int readerInder = buf.readerIndex();</span>
-<span class="fc" id="L62">    final ByteBuf buffer = buf.slice(readerInder, length - 9);</span>
-<span class="fc" id="L63">    buffer.retain();</span>
+<span class="fc" id="L59">    final int remoteId = buf.readInt();</span>
+<span class="fc" id="L60">    final int localId = buf.readInt();</span>
+<span class="fc" id="L61">    final byte code = buf.readByte();</span>
+<span class="fc" id="L62">    final int index = buf.readerIndex();</span>
+<span class="fc" id="L63">    final ByteBuf buffer = buf.retainedSlice(index, length - 9);</span>
 <span class="fc" id="L64">    buf.skipBytes(length - 9);</span>
 <span class="fc" id="L65">    NetworkPacket networkPacket =</span>
         new NetworkPacket(localId, remoteId, code, buffer);
 <span class="fc bfc" id="L67" title="All 2 branches covered.">    if (code == LocalPacketFactory.KEEPALIVEPACKET) {</span>
-<span class="fc" id="L68">      final KeepAlivePacket keepAlivePacket = (KeepAlivePacket) LocalPacketCodec</span>
-<span class="fc" id="L69">          .decodeNetworkPacket(networkPacket.getBuffer());</span>
-<span class="fc bfc" id="L70" title="All 2 branches covered.">      if (keepAlivePacket.isToValidate()) {</span>
-<span class="fc" id="L71">        keepAlivePacket.validate();</span>
-<span class="fc" id="L72">        final NetworkPacket response =</span>
-<span class="fc" id="L73">            new NetworkPacket(ChannelUtils.NOCHANNEL, ChannelUtils.NOCHANNEL,</span>
+<span class="fc" id="L68">      final KeepAlivePacket keepAlivePacket =</span>
+<span class="fc" id="L69">          (KeepAlivePacket) LocalPacketCodec.decodeNetworkPacket(buffer);</span>
+<span class="fc" id="L70">      buffer.release();</span>
+<span class="fc bfc" id="L71" title="All 2 branches covered.">      if (keepAlivePacket.isToValidate()) {</span>
+<span class="fc" id="L72">        keepAlivePacket.validate();</span>
+<span class="fc" id="L73">        final NetworkPacket response =</span>
+<span class="fc" id="L74">            new NetworkPacket(ChannelUtils.NOCHANNEL, ChannelUtils.NOCHANNEL,</span>
                               keepAlivePacket, null);
-<span class="fc" id="L75">        ctx.writeAndFlush(response.getNetworkPacket());</span>
+<span class="fc" id="L76">        ctx.writeAndFlush(response.getNetworkPacket());</span>
       }
-<span class="fc" id="L77">      buffer.release();</span>
       // Replaced by a NoOp packet
 <span class="fc" id="L79">      networkPacket =</span>
           new NetworkPacket(localId, remoteId, new NoOpPacket(), null);
 <span class="fc" id="L81">      final NetworkServerHandler nsh =</span>
 <span class="fc" id="L82">          (NetworkServerHandler) ctx.pipeline().last();</span>
-<span class="fc" id="L83">      nsh.setKeepAlivedSent();</span>
+<span class="fc" id="L83">      nsh.resetKeepAlive();</span>
     }
 <span class="fc" id="L85">    out.add(networkPacket);</span>
 <span class="fc" id="L86">  }</span>
 
   @Override
-  protected void encode(ChannelHandlerContext ctx, NetworkPacket msg,
-                        ByteBuf out) throws Exception {
-<span class="fc" id="L91">    final ByteBuf finalBuf = msg.getNetworkPacket();</span>
-<span class="fc" id="L92">    out.writeBytes(finalBuf);</span>
-<span class="fc" id="L93">    finalBuf.release();</span>
-<span class="fc" id="L94">  }</span>
+  protected void encode(final ChannelHandlerContext ctx,
+                        final NetworkPacket msg, final ByteBuf out)
+      throws Exception {
+<span class="fc" id="L92">    final ByteBuf finalBuf = msg.getNetworkPacket();</span>
+<span class="fc" id="L93">    out.writeBytes(finalBuf);</span>
+<span class="fc" id="L94">    WaarpNettyUtil.releaseCompletely(finalBuf);</span>
+<span class="fc" id="L95">  }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

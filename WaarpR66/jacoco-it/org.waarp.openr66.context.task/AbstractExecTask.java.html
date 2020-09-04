@@ -55,7 +55,7 @@ import java.util.regex.Pattern;
 /**
  * Execute an external command
  * &lt;p&gt;
- * It provides some common functionnalities.
+ * It provides some common functionalities.
  */
 public abstract class AbstractExecTask extends AbstractTask {
   /**
@@ -77,8 +77,8 @@ public abstract class AbstractExecTask extends AbstractTask {
    * @param argRule
    * @param session
    */
-  AbstractExecTask(TaskType type, int delay, String argRule, String argTransfer,
-                   R66Session session) {
+  AbstractExecTask(final TaskType type, final int delay, final String argRule,
+                   final String argTransfer, final R66Session session) {
 <span class="fc" id="L82">    super(type, delay, argRule, argTransfer, session);</span>
 <span class="fc" id="L83">  }</span>
 
@@ -89,7 +89,7 @@ public abstract class AbstractExecTask extends AbstractTask {
    *
    * @return the line after substitutions
    */
-  protected String applyTransferSubstitutions(String line) {
+  protected String applyTransferSubstitutions(final String line) {
 <span class="fc" id="L93">    final Object[] argFormat = COMPILE_BLANK.split(argTransfer);</span>
 <span class="pc bpc" id="L94" title="2 of 4 branches missed.">    if (argFormat != null &amp;&amp; argFormat.length &gt; 0) {</span>
       try {
@@ -107,7 +107,7 @@ public abstract class AbstractExecTask extends AbstractTask {
    *
    * @param line the command to process as a string
    */
-  protected CommandLine buildCommandLine(String line) {
+  protected CommandLine buildCommandLine(final String line) {
 <span class="nc bnc" id="L111" title="All 2 branches missed.">    if (line.contains(NOWAIT)) {</span>
 <span class="nc" id="L112">      waitForValidation = false;</span>
     }
@@ -411,7 +411,7 @@ public abstract class AbstractExecTask extends AbstractTask {
     private ExecuteWatchdog watchdog;
 
     PrepareCommandExec(final String finalname, final boolean noOutput,
-<span class="nc" id="L414">                       boolean waitForValidation) {</span>
+<span class="nc" id="L414">                       final boolean waitForValidation) {</span>
 <span class="nc" id="L415">      this.finalname = finalname;</span>
 <span class="nc" id="L416">      this.noOutput = noOutput;</span>
 <span class="nc" id="L417">      this.waitForValidation = waitForValidation;</span>
@@ -580,7 +580,7 @@ public abstract class AbstractExecTask extends AbstractTask {
 <span class="nc" id="L580">      return this;</span>
     }
 
-    private void closeAllForExecution(boolean interrupt) {
+    private void closeAllForExecution(final boolean interrupt) {
 <span class="nc" id="L584">      FileUtils.close(outputStream);</span>
 <span class="nc bnc" id="L585" title="All 4 branches missed.">      if (interrupt &amp;&amp; thread != null) {</span>
 <span class="nc" id="L586">        thread.interrupt();</span>
@@ -594,8 +594,8 @@ public abstract class AbstractExecTask extends AbstractTask {
 <span class="nc" id="L594">    }</span>
   }
 
-  void finalizeFromError(Runnable threadReader, int status,
-                         CommandLine commandLine, Exception e) {
+  void finalizeFromError(final Runnable threadReader, final int status,
+                         final CommandLine commandLine, final Exception e) {
 <span class="nc" id="L599">    logger.error(&quot;Status: &quot; + status + &quot; Exec in error with &quot; + commandLine +</span>
 <span class="nc" id="L600">                 &quot; returns &quot; + e.getMessage());</span>
 <span class="nc" id="L601">    final OpenR66RunnerErrorException exc = new OpenR66RunnerErrorException(</span>

@@ -58,7 +58,7 @@ public class RestSignatureHandler
    *
    * @param hmac The REST HMAC signing key.
    */
-<span class="nc" id="L61">  public RestSignatureHandler(HmacSha256 hmac) {</span>
+<span class="nc" id="L61">  public RestSignatureHandler(final HmacSha256 hmac) {</span>
 <span class="nc" id="L62">    this.hmac = hmac;</span>
 <span class="nc" id="L63">  }</span>
 
@@ -75,8 +75,8 @@ public class RestSignatureHandler
    * @param request The original HTTP request.
    */
   @Override
-  protected void channelRead0(ChannelHandlerContext ctx,
-                              FullHttpRequest request) {
+  protected void channelRead0(final ChannelHandlerContext ctx,
+                              final FullHttpRequest request) {
 
     // If the request does not have a body, skip the signature checking.
 <span class="nc bnc" id="L82" title="All 2 branches missed.">    if (!request.content().isReadable()) {</span>
@@ -90,7 +90,7 @@ public class RestSignatureHandler
 <span class="nc" id="L90">    final String method = request.method().toString();</span>
 <span class="nc" id="L91">    final String sign = request.headers().get(AUTH_SIGNATURE);</span>
 
-    FullHttpResponse response;
+    final FullHttpResponse response;
 
 <span class="nc bnc" id="L95" title="All 4 branches missed.">    if (authent == null || sign == null) {</span>
 <span class="nc" id="L96">      response = new DefaultFullHttpResponse(HTTP_1_1, UNAUTHORIZED);</span>
@@ -98,7 +98,7 @@ public class RestSignatureHandler
 <span class="nc" id="L98">      return;</span>
     }
 
-    String computedHash;
+    final String computedHash;
     try {
 <span class="nc" id="L103">      computedHash = hmac.cryptToHex(authent + body + URI + method);</span>
 <span class="nc" id="L104">    } catch (final Exception e) {</span>

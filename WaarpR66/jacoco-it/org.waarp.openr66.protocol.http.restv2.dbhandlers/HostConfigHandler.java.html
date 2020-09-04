@@ -84,7 +84,7 @@ public class HostConfigHandler extends AbstractRestDbHandler {
    *
    * @param crud the CRUD mask for this handler
    */
-  public HostConfigHandler(byte crud) {
+  public HostConfigHandler(final byte crud) {
 <span class="fc" id="L88">    super(crud);</span>
 <span class="fc" id="L89">  }</span>
 
@@ -98,31 +98,32 @@ public class HostConfigHandler extends AbstractRestDbHandler {
   @GET
   @Consumes(WILDCARD)
   @RequiredRole(READONLY)
-  public void getConfig(HttpRequest request, HttpResponder responder) {
+  public void getConfig(final HttpRequest request,
+                        final HttpResponder responder) {
 
-<span class="nc" id="L103">    BusinessDAO businessDAO = null;</span>
+<span class="nc" id="L104">    BusinessDAO businessDAO = null;</span>
     try {
-<span class="nc" id="L105">      businessDAO = DAO_FACTORY.getBusinessDAO();</span>
-<span class="nc" id="L106">      final Business business = businessDAO.select(serverName());</span>
-<span class="nc bnc" id="L107" title="All 2 branches missed.">      if (business != null) {</span>
-<span class="nc" id="L108">        final ObjectNode responseObject =</span>
-<span class="nc" id="L109">            HostConfigConverter.businessToNode(business);</span>
-<span class="nc" id="L110">        responseObject.put(&quot;versionR66&quot;, Version.ID);</span>
-<span class="nc" id="L111">        responseObject.put(&quot;versionBin&quot;,</span>
-<span class="nc" id="L112">                           org.waarp.common.utility.Version.fullIdentifier());</span>
-<span class="nc" id="L113">        final String responseText = JsonUtils.nodeToString(responseObject);</span>
-<span class="nc" id="L114">        responder.sendJson(OK, responseText);</span>
-<span class="nc" id="L115">      } else {</span>
-<span class="nc" id="L116">        responder.sendStatus(NOT_FOUND);</span>
+<span class="nc" id="L106">      businessDAO = DAO_FACTORY.getBusinessDAO();</span>
+<span class="nc" id="L107">      final Business business = businessDAO.select(serverName());</span>
+<span class="nc bnc" id="L108" title="All 2 branches missed.">      if (business != null) {</span>
+<span class="nc" id="L109">        final ObjectNode responseObject =</span>
+<span class="nc" id="L110">            HostConfigConverter.businessToNode(business);</span>
+<span class="nc" id="L111">        responseObject.put(&quot;versionR66&quot;, Version.ID);</span>
+<span class="nc" id="L112">        responseObject.put(&quot;versionBin&quot;,</span>
+<span class="nc" id="L113">                           org.waarp.common.utility.Version.fullIdentifier());</span>
+<span class="nc" id="L114">        final String responseText = JsonUtils.nodeToString(responseObject);</span>
+<span class="nc" id="L115">        responder.sendJson(OK, responseText);</span>
+<span class="nc" id="L116">      } else {</span>
+<span class="nc" id="L117">        responder.sendStatus(NOT_FOUND);</span>
       }
-<span class="nc" id="L118">    } catch (final DAOConnectionException e) {</span>
-<span class="nc" id="L119">      throw new InternalServerErrorException(e);</span>
-<span class="nc" id="L120">    } catch (final DAONoDataException e) {</span>
-<span class="nc" id="L121">      responder.sendStatus(NOT_FOUND);</span>
+<span class="nc" id="L119">    } catch (final DAOConnectionException e) {</span>
+<span class="nc" id="L120">      throw new InternalServerErrorException(e);</span>
+<span class="nc" id="L121">    } catch (final DAONoDataException e) {</span>
+<span class="nc" id="L122">      responder.sendStatus(NOT_FOUND);</span>
     } finally {
-<span class="nc" id="L123">      DAOFactory.closeDAO(businessDAO);</span>
+<span class="nc" id="L124">      DAOFactory.closeDAO(businessDAO);</span>
     }
-<span class="nc" id="L125">  }</span>
+<span class="nc" id="L126">  }</span>
 
   /**
    * Method called to initialize a host's configuration database entry if none
@@ -135,31 +136,32 @@ public class HostConfigHandler extends AbstractRestDbHandler {
   @POST
   @Consumes(APPLICATION_FORM_URLENCODED)
   @RequiredRole(CONFIGADMIN)
-  public void initializeConfig(HttpRequest request, HttpResponder responder) {
+  public void initializeConfig(final HttpRequest request,
+                               final HttpResponder responder) {
 
-<span class="nc" id="L140">    BusinessDAO businessDAO = null;</span>
+<span class="nc" id="L142">    BusinessDAO businessDAO = null;</span>
     try {
-<span class="nc" id="L142">      businessDAO = DAO_FACTORY.getBusinessDAO();</span>
+<span class="nc" id="L144">      businessDAO = DAO_FACTORY.getBusinessDAO();</span>
 
-<span class="nc bnc" id="L144" title="All 2 branches missed.">      if (!businessDAO.exist(serverName())) {</span>
-<span class="nc" id="L145">        final ObjectNode requestObject = JsonUtils.deserializeRequest(request);</span>
-<span class="nc" id="L146">        final Business config =</span>
-<span class="nc" id="L147">            HostConfigConverter.nodeToNewBusiness(requestObject);</span>
-<span class="nc" id="L148">        businessDAO.insert(config);</span>
+<span class="nc bnc" id="L146" title="All 2 branches missed.">      if (!businessDAO.exist(serverName())) {</span>
+<span class="nc" id="L147">        final ObjectNode requestObject = JsonUtils.deserializeRequest(request);</span>
+<span class="nc" id="L148">        final Business config =</span>
+<span class="nc" id="L149">            HostConfigConverter.nodeToNewBusiness(requestObject);</span>
+<span class="nc" id="L150">        businessDAO.insert(config);</span>
 
-<span class="nc" id="L150">        final ObjectNode responseObject =</span>
-<span class="nc" id="L151">            HostConfigConverter.businessToNode(config);</span>
-<span class="nc" id="L152">        final String responseText = JsonUtils.nodeToString(responseObject);</span>
-<span class="nc" id="L153">        responder.sendJson(CREATED, responseText);</span>
-<span class="nc" id="L154">      } else {</span>
-<span class="nc" id="L155">        throw new RestErrorException(ALREADY_EXISTING(serverName()));</span>
+<span class="nc" id="L152">        final ObjectNode responseObject =</span>
+<span class="nc" id="L153">            HostConfigConverter.businessToNode(config);</span>
+<span class="nc" id="L154">        final String responseText = JsonUtils.nodeToString(responseObject);</span>
+<span class="nc" id="L155">        responder.sendJson(CREATED, responseText);</span>
+<span class="nc" id="L156">      } else {</span>
+<span class="nc" id="L157">        throw new RestErrorException(ALREADY_EXISTING(serverName()));</span>
       }
-<span class="nc" id="L157">    } catch (final DAOConnectionException e) {</span>
-<span class="nc" id="L158">      throw new InternalServerErrorException(e);</span>
+<span class="nc" id="L159">    } catch (final DAOConnectionException e) {</span>
+<span class="nc" id="L160">      throw new InternalServerErrorException(e);</span>
     } finally {
-<span class="nc" id="L160">      DAOFactory.closeDAO(businessDAO);</span>
+<span class="nc" id="L162">      DAOFactory.closeDAO(businessDAO);</span>
     }
-<span class="nc" id="L162">  }</span>
+<span class="nc" id="L164">  }</span>
 
   /**
    * Method called to update a host's configuration in the database if it
@@ -172,35 +174,36 @@ public class HostConfigHandler extends AbstractRestDbHandler {
   @PUT
   @Consumes(APPLICATION_JSON)
   @RequiredRole(CONFIGADMIN)
-  public void updateConfig(HttpRequest request, HttpResponder responder) {
+  public void updateConfig(final HttpRequest request,
+                           final HttpResponder responder) {
 
-<span class="nc" id="L177">    BusinessDAO businessDAO = null;</span>
+<span class="nc" id="L180">    BusinessDAO businessDAO = null;</span>
 
     try {
-<span class="nc" id="L180">      businessDAO = DAO_FACTORY.getBusinessDAO();</span>
+<span class="nc" id="L183">      businessDAO = DAO_FACTORY.getBusinessDAO();</span>
 
-<span class="nc bnc" id="L182" title="All 2 branches missed.">      if (!businessDAO.exist(serverName())) {</span>
-<span class="nc" id="L183">        responder.sendStatus(NOT_FOUND);</span>
+<span class="nc bnc" id="L185" title="All 2 branches missed.">      if (!businessDAO.exist(serverName())) {</span>
+<span class="nc" id="L186">        responder.sendStatus(NOT_FOUND);</span>
       }
 
-<span class="nc" id="L186">      final ObjectNode requestObject = JsonUtils.deserializeRequest(request);</span>
-<span class="nc" id="L187">      final Business oldConfig = businessDAO.select(serverName());</span>
-<span class="nc" id="L188">      final Business newConfig =</span>
-<span class="nc" id="L189">          HostConfigConverter.nodeToUpdatedBusiness(requestObject, oldConfig);</span>
-<span class="nc" id="L190">      businessDAO.update(newConfig);</span>
+<span class="nc" id="L189">      final ObjectNode requestObject = JsonUtils.deserializeRequest(request);</span>
+<span class="nc" id="L190">      final Business oldConfig = businessDAO.select(serverName());</span>
+<span class="nc" id="L191">      final Business newConfig =</span>
+<span class="nc" id="L192">          HostConfigConverter.nodeToUpdatedBusiness(requestObject, oldConfig);</span>
+<span class="nc" id="L193">      businessDAO.update(newConfig);</span>
 
-<span class="nc" id="L192">      final ObjectNode responseObject =</span>
-<span class="nc" id="L193">          HostConfigConverter.businessToNode(newConfig);</span>
-<span class="nc" id="L194">      final String responseText = JsonUtils.nodeToString(responseObject);</span>
-<span class="nc" id="L195">      responder.sendJson(CREATED, responseText);</span>
-<span class="nc" id="L196">    } catch (final DAOConnectionException e) {</span>
-<span class="nc" id="L197">      throw new InternalServerErrorException(e);</span>
-<span class="nc" id="L198">    } catch (final DAONoDataException e) {</span>
-<span class="nc" id="L199">      responder.sendStatus(NOT_FOUND);</span>
+<span class="nc" id="L195">      final ObjectNode responseObject =</span>
+<span class="nc" id="L196">          HostConfigConverter.businessToNode(newConfig);</span>
+<span class="nc" id="L197">      final String responseText = JsonUtils.nodeToString(responseObject);</span>
+<span class="nc" id="L198">      responder.sendJson(CREATED, responseText);</span>
+<span class="nc" id="L199">    } catch (final DAOConnectionException e) {</span>
+<span class="nc" id="L200">      throw new InternalServerErrorException(e);</span>
+<span class="nc" id="L201">    } catch (final DAONoDataException e) {</span>
+<span class="nc" id="L202">      responder.sendStatus(NOT_FOUND);</span>
     } finally {
-<span class="nc" id="L201">      DAOFactory.closeDAO(businessDAO);</span>
+<span class="nc" id="L204">      DAOFactory.closeDAO(businessDAO);</span>
     }
-<span class="nc" id="L203">  }</span>
+<span class="nc" id="L206">  }</span>
 
   /**
    * Method called to delete a host's configuration entry in the database.
@@ -212,25 +215,26 @@ public class HostConfigHandler extends AbstractRestDbHandler {
   @DELETE
   @Consumes(WILDCARD)
   @RequiredRole(CONFIGADMIN)
-  public void deleteConfig(HttpRequest request, HttpResponder responder) {
+  public void deleteConfig(final HttpRequest request,
+                           final HttpResponder responder) {
 
-<span class="nc" id="L217">    BusinessDAO businessDAO = null;</span>
+<span class="nc" id="L221">    BusinessDAO businessDAO = null;</span>
     try {
-<span class="nc" id="L219">      businessDAO = DAO_FACTORY.getBusinessDAO();</span>
-<span class="nc bnc" id="L220" title="All 2 branches missed.">      if (businessDAO.exist(serverName())) {</span>
-<span class="nc" id="L221">        businessDAO.delete(businessDAO.select(serverName()));</span>
-<span class="nc" id="L222">        responder.sendStatus(NO_CONTENT);</span>
+<span class="nc" id="L223">      businessDAO = DAO_FACTORY.getBusinessDAO();</span>
+<span class="nc bnc" id="L224" title="All 2 branches missed.">      if (businessDAO.exist(serverName())) {</span>
+<span class="nc" id="L225">        businessDAO.delete(businessDAO.select(serverName()));</span>
+<span class="nc" id="L226">        responder.sendStatus(NO_CONTENT);</span>
       } else {
-<span class="nc" id="L224">        responder.sendStatus(NOT_FOUND);</span>
+<span class="nc" id="L228">        responder.sendStatus(NOT_FOUND);</span>
       }
-<span class="nc" id="L226">    } catch (final DAOConnectionException e) {</span>
-<span class="nc" id="L227">      throw new InternalServerErrorException(e);</span>
-<span class="nc" id="L228">    } catch (final DAONoDataException e) {</span>
-<span class="nc" id="L229">      responder.sendStatus(NOT_FOUND);</span>
+<span class="nc" id="L230">    } catch (final DAOConnectionException e) {</span>
+<span class="nc" id="L231">      throw new InternalServerErrorException(e);</span>
+<span class="nc" id="L232">    } catch (final DAONoDataException e) {</span>
+<span class="nc" id="L233">      responder.sendStatus(NOT_FOUND);</span>
     } finally {
-<span class="nc" id="L231">      DAOFactory.closeDAO(businessDAO);</span>
+<span class="nc" id="L235">      DAOFactory.closeDAO(businessDAO);</span>
     }
-<span class="nc" id="L233">  }</span>
+<span class="nc" id="L237">  }</span>
 
   /**
    * Method called to get a list of all allowed HTTP methods on this entry
@@ -244,8 +248,9 @@ public class HostConfigHandler extends AbstractRestDbHandler {
   @OPTIONS
   @Consumes(WILDCARD)
   @RequiredRole(NOACCESS)
-  public void options(HttpRequest request, HttpResponder responder) {
-<span class="nc" id="L248">    responder.sendStatus(OK, OPTIONS_HEADERS);</span>
-<span class="nc" id="L249">  }</span>
+  public void options(final HttpRequest request,
+                      final HttpResponder responder) {
+<span class="nc" id="L253">    responder.sendStatus(OK, OPTIONS_HEADERS);</span>
+<span class="nc" id="L254">  }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

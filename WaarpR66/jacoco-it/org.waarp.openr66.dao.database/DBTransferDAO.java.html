@@ -80,12 +80,12 @@ public abstract class DBTransferDAO extends StatementExecutor&lt;Transfer&gt;
 
   // CRUD requests
   protected static final String SQL_DELETE =
-      &quot;DELETE FROM &quot; + TABLE + &quot; WHERE &quot; + ID_FIELD + &quot; = ? AND &quot; +
+      &quot;DELETE FROM &quot; + TABLE + WHERE + ID_FIELD + &quot; = ? AND &quot; +
       REQUESTER_FIELD + &quot; = ? AND &quot; + REQUESTED_FIELD + &quot; = ? AND &quot; +
       OWNER_REQUEST_FIELD + &quot; = ?&quot;;
   protected static final String SQL_DELETE_ALL = &quot;DELETE FROM &quot; + TABLE;
   protected static final String SQL_EXIST =
-      &quot;SELECT 1 FROM &quot; + TABLE + &quot; WHERE &quot; + ID_FIELD + &quot; = ? AND &quot; +
+      &quot;SELECT 1 FROM &quot; + TABLE + WHERE + ID_FIELD + &quot; = ? AND &quot; +
       REQUESTER_FIELD + &quot; = ? AND &quot; + REQUESTED_FIELD + &quot; = ? AND &quot; +
       OWNER_REQUEST_FIELD + &quot; = ?&quot;;
   protected static final String SQL_GET_ALL = &quot;SELECT * FROM &quot; + TABLE;
@@ -101,392 +101,398 @@ public abstract class DBTransferDAO extends StatementExecutor&lt;Transfer&gt;
       &quot;, &quot; + REQUESTER_FIELD + &quot;, &quot; + ID_FIELD + &quot;, &quot; + UPDATED_INFO_FIELD +
       &quot;) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)&quot;;
   protected static final String SQL_SELECT =
-      &quot;SELECT * FROM &quot; + TABLE + &quot; WHERE &quot; + ID_FIELD + &quot; = ? AND &quot; +
+      &quot;SELECT * FROM &quot; + TABLE + WHERE + ID_FIELD + &quot; = ? AND &quot; +
       REQUESTER_FIELD + &quot; = ? AND &quot; + REQUESTED_FIELD + &quot; = ? AND &quot; +
       OWNER_REQUEST_FIELD + &quot; = ?&quot;;
   protected static final String SQL_UPDATE =
-      &quot;UPDATE &quot; + TABLE + &quot; SET &quot; + ID_FIELD + &quot; = ?, &quot; + GLOBAL_STEP_FIELD +
-      &quot; = ?, &quot; + GLOBAL_LAST_STEP_FIELD + &quot; = ?, &quot; + STEP_FIELD + &quot; = ?, &quot; +
-      RANK_FIELD + &quot; = ?, &quot; + STEP_STATUS_FIELD + &quot; = ?, &quot; +
-      RETRIEVE_MODE_FIELD + &quot; = ?, &quot; + FILENAME_FIELD + &quot; = ?, &quot; +
-      IS_MOVED_FIELD + &quot; = ?, &quot; + ID_RULE_FIELD + &quot; = ?, &quot; + BLOCK_SIZE_FIELD +
-      &quot; = ?, &quot; + ORIGINAL_NAME_FIELD + &quot; = ?, &quot; + FILE_INFO_FIELD + &quot; = ?, &quot; +
-      TRANSFER_INFO_FIELD + &quot; = ?, &quot; + TRANSFER_MODE_FIELD + &quot; = ?, &quot; +
-      TRANSFER_START_FIELD + &quot; = ?, &quot; + TRANSFER_STOP_FIELD + &quot; = ?, &quot; +
-      INFO_STATUS_FIELD + &quot; = ?, &quot; + OWNER_REQUEST_FIELD + &quot; = ?, &quot; +
-      REQUESTED_FIELD + &quot; = ?, &quot; + REQUESTER_FIELD + &quot; = ?, &quot; +
+      &quot;UPDATE &quot; + TABLE + &quot; SET &quot; + ID_FIELD + PARAMETER_COMMA +
+      GLOBAL_STEP_FIELD + PARAMETER_COMMA + GLOBAL_LAST_STEP_FIELD +
+      PARAMETER_COMMA + STEP_FIELD + PARAMETER_COMMA + RANK_FIELD +
+      PARAMETER_COMMA + STEP_STATUS_FIELD + PARAMETER_COMMA +
+      RETRIEVE_MODE_FIELD + PARAMETER_COMMA + FILENAME_FIELD + PARAMETER_COMMA +
+      IS_MOVED_FIELD + PARAMETER_COMMA + ID_RULE_FIELD + PARAMETER_COMMA +
+      BLOCK_SIZE_FIELD + PARAMETER_COMMA + ORIGINAL_NAME_FIELD +
+      PARAMETER_COMMA + FILE_INFO_FIELD + PARAMETER_COMMA +
+      TRANSFER_INFO_FIELD + PARAMETER_COMMA + TRANSFER_MODE_FIELD +
+      PARAMETER_COMMA + TRANSFER_START_FIELD + PARAMETER_COMMA +
+      TRANSFER_STOP_FIELD + PARAMETER_COMMA + INFO_STATUS_FIELD +
+      PARAMETER_COMMA + OWNER_REQUEST_FIELD + PARAMETER_COMMA +
+      REQUESTED_FIELD + PARAMETER_COMMA + REQUESTER_FIELD + PARAMETER_COMMA +
       UPDATED_INFO_FIELD + &quot; = ?  WHERE &quot; + OWNER_REQUEST_FIELD + &quot; = ? AND &quot; +
       REQUESTER_FIELD + &quot; = ? AND &quot; + REQUESTED_FIELD + &quot; = ? AND &quot; + ID_FIELD +
       &quot; = ?&quot;;
 
   protected String getDeleteRequest() {
-<span class="nc" id="L123">    return SQL_DELETE;</span>
+<span class="nc" id="L126">    return SQL_DELETE;</span>
   }
 
   protected String getDeleteAllRequest() {
-<span class="fc" id="L127">    return SQL_DELETE_ALL;</span>
+<span class="fc" id="L130">    return SQL_DELETE_ALL;</span>
   }
 
   protected String getExistRequest() {
-<span class="nc" id="L131">    return SQL_EXIST;</span>
+<span class="nc" id="L134">    return SQL_EXIST;</span>
   }
 
   protected String getGetAllRequest() {
-<span class="fc" id="L135">    return SQL_GET_ALL;</span>
+<span class="fc" id="L138">    return SQL_GET_ALL;</span>
   }
 
   protected String getInsertRequest() {
-<span class="fc" id="L139">    return SQL_INSERT;</span>
+<span class="fc" id="L142">    return SQL_INSERT;</span>
   }
 
   protected String getSelectRequest() {
-<span class="fc" id="L143">    return SQL_SELECT;</span>
+<span class="fc" id="L146">    return SQL_SELECT;</span>
   }
 
   protected String getUpdateRequest() {
-<span class="fc" id="L147">    return SQL_UPDATE;</span>
+<span class="fc" id="L150">    return SQL_UPDATE;</span>
   }
 
-  protected DBTransferDAO(Connection con) {
-<span class="fc" id="L151">    super(con);</span>
-<span class="fc" id="L152">  }</span>
+  protected DBTransferDAO(final Connection con) {
+<span class="fc" id="L154">    super(con);</span>
+<span class="fc" id="L155">  }</span>
 
   @Override
   protected Object[] getInsertValues(final Transfer transfer) {
-<span class="fc" id="L156">    return new Object[] {</span>
-<span class="fc" id="L157">        transfer.getGlobalStep().ordinal(),</span>
-<span class="fc" id="L158">        transfer.getLastGlobalStep().ordinal(), transfer.getStep(),</span>
-<span class="fc" id="L159">        transfer.getRank(), transfer.getStepStatus().getCode(),</span>
-<span class="fc" id="L160">        transfer.getRetrieveMode(), transfer.getFilename(),</span>
-<span class="fc" id="L161">        transfer.getIsMoved(), transfer.getRule(), transfer.getBlockSize(),</span>
-<span class="fc" id="L162">        transfer.getOriginalName(), transfer.getFileInfo(),</span>
-<span class="fc" id="L163">        transfer.getTransferInfo(), transfer.getTransferMode(),</span>
-<span class="fc" id="L164">        transfer.getStart(), transfer.getStop(),</span>
-<span class="fc" id="L165">        transfer.getInfoStatus().getCode(), transfer.getOwnerRequest(),</span>
-<span class="fc" id="L166">        transfer.getRequested(), transfer.getRequester(), transfer.getId(),</span>
-<span class="fc" id="L167">        transfer.getUpdatedInfo().ordinal()</span>
+<span class="fc" id="L159">    return new Object[] {</span>
+<span class="fc" id="L160">        transfer.getGlobalStep().ordinal(),</span>
+<span class="fc" id="L161">        transfer.getLastGlobalStep().ordinal(), transfer.getStep(),</span>
+<span class="fc" id="L162">        transfer.getRank(), transfer.getStepStatus().getCode(),</span>
+<span class="fc" id="L163">        transfer.getRetrieveMode(), transfer.getFilename(),</span>
+<span class="fc" id="L164">        transfer.getIsMoved(), transfer.getRule(), transfer.getBlockSize(),</span>
+<span class="fc" id="L165">        transfer.getOriginalName(), transfer.getFileInfo(),</span>
+<span class="fc" id="L166">        transfer.getTransferInfo(), transfer.getTransferMode(),</span>
+<span class="fc" id="L167">        transfer.getStart(), transfer.getStop(),</span>
+<span class="fc" id="L168">        transfer.getInfoStatus().getCode(), transfer.getOwnerRequest(),</span>
+<span class="fc" id="L169">        transfer.getRequested(), transfer.getRequester(), transfer.getId(),</span>
+<span class="fc" id="L170">        transfer.getUpdatedInfo().ordinal()</span>
     };
   }
 
   @Override
   protected Object[] getUpdateValues(final Transfer transfer) {
-<span class="fc" id="L173">    return new Object[] {</span>
-<span class="fc" id="L174">        transfer.getId(), transfer.getGlobalStep().ordinal(),</span>
-<span class="fc" id="L175">        transfer.getLastGlobalStep().ordinal(), transfer.getStep(),</span>
-<span class="fc" id="L176">        transfer.getRank(), transfer.getStepStatus().getCode(),</span>
-<span class="fc" id="L177">        transfer.getRetrieveMode(), transfer.getFilename(),</span>
-<span class="fc" id="L178">        transfer.getIsMoved(), transfer.getRule(), transfer.getBlockSize(),</span>
-<span class="fc" id="L179">        transfer.getOriginalName(), transfer.getFileInfo(),</span>
-<span class="fc" id="L180">        transfer.getTransferInfo(), transfer.getTransferMode(),</span>
-<span class="fc" id="L181">        transfer.getStart(), transfer.getStop(),</span>
-<span class="fc" id="L182">        transfer.getInfoStatus().getCode(), transfer.getOwnerRequest(),</span>
-<span class="fc" id="L183">        transfer.getRequested(), transfer.getRequester(),</span>
-<span class="fc" id="L184">        transfer.getUpdatedInfo().ordinal(), transfer.getOwnerRequest(),</span>
-<span class="fc" id="L185">        transfer.getRequester(), transfer.getRequested(), transfer.getId()</span>
+<span class="fc" id="L176">    return new Object[] {</span>
+<span class="fc" id="L177">        transfer.getId(), transfer.getGlobalStep().ordinal(),</span>
+<span class="fc" id="L178">        transfer.getLastGlobalStep().ordinal(), transfer.getStep(),</span>
+<span class="fc" id="L179">        transfer.getRank(), transfer.getStepStatus().getCode(),</span>
+<span class="fc" id="L180">        transfer.getRetrieveMode(), transfer.getFilename(),</span>
+<span class="fc" id="L181">        transfer.getIsMoved(), transfer.getRule(), transfer.getBlockSize(),</span>
+<span class="fc" id="L182">        transfer.getOriginalName(), transfer.getFileInfo(),</span>
+<span class="fc" id="L183">        transfer.getTransferInfo(), transfer.getTransferMode(),</span>
+<span class="fc" id="L184">        transfer.getStart(), transfer.getStop(),</span>
+<span class="fc" id="L185">        transfer.getInfoStatus().getCode(), transfer.getOwnerRequest(),</span>
+<span class="fc" id="L186">        transfer.getRequested(), transfer.getRequester(),</span>
+<span class="fc" id="L187">        transfer.getUpdatedInfo().ordinal(), transfer.getOwnerRequest(),</span>
+<span class="fc" id="L188">        transfer.getRequester(), transfer.getRequested(), transfer.getId()</span>
     };
   }
 
   @Override
-  public void delete(Transfer transfer)
+  public void delete(final Transfer transfer)
       throws DAOConnectionException, DAONoDataException {
-<span class="nc" id="L192">    PreparedStatement stm = null;</span>
-<span class="nc" id="L193">    final Object[] params = {</span>
-<span class="nc" id="L194">        transfer.getId(), transfer.getRequester(), transfer.getRequested(),</span>
-<span class="nc" id="L195">        transfer.getOwnerRequest()</span>
+<span class="nc" id="L195">    PreparedStatement stm = null;</span>
+<span class="nc" id="L196">    final Object[] params = {</span>
+<span class="nc" id="L197">        transfer.getId(), transfer.getRequester(), transfer.getRequested(),</span>
+<span class="nc" id="L198">        transfer.getOwnerRequest()</span>
     };
     try {
-<span class="nc" id="L198">      stm = connection.prepareStatement(getDeleteRequest());</span>
-<span class="nc" id="L199">      setParameters(stm, params);</span>
+<span class="nc" id="L201">      stm = connection.prepareStatement(getDeleteRequest());</span>
+<span class="nc" id="L202">      setParameters(stm, params);</span>
       try {
-<span class="nc" id="L201">        executeAction(stm);</span>
-<span class="nc" id="L202">      } catch (final SQLException e2) {</span>
-<span class="nc" id="L203">        throw new DAONoDataException(e2);</span>
-<span class="nc" id="L204">      }</span>
-<span class="nc" id="L205">    } catch (final SQLException e) {</span>
-<span class="nc" id="L206">      throw new DAOConnectionException(e);</span>
+<span class="nc" id="L204">        executeAction(stm);</span>
+<span class="nc" id="L205">      } catch (final SQLException e2) {</span>
+<span class="nc" id="L206">        throw new DAONoDataException(e2);</span>
+<span class="nc" id="L207">      }</span>
+<span class="nc" id="L208">    } catch (final SQLException e) {</span>
+<span class="nc" id="L209">      throw new DAOConnectionException(e);</span>
     } finally {
-<span class="nc" id="L208">      closeStatement(stm);</span>
+<span class="nc" id="L211">      closeStatement(stm);</span>
     }
-<span class="nc" id="L210">  }</span>
+<span class="nc" id="L213">  }</span>
 
-  private String prepareFindQuery(List&lt;Filter&gt; filters, Object[] params) {
-<span class="fc" id="L213">    final StringBuilder query = new StringBuilder(getGetAllRequest());</span>
-<span class="fc" id="L214">    final Iterator&lt;Filter&gt; it = filters.listIterator();</span>
-<span class="fc bfc" id="L215" title="All 2 branches covered.">    if (it.hasNext()) {</span>
-<span class="fc" id="L216">      query.append(&quot; WHERE &quot;);</span>
+  private String prepareFindQuery(final List&lt;Filter&gt; filters,
+                                  final Object[] params) {
+<span class="fc" id="L217">    final StringBuilder query = new StringBuilder(getGetAllRequest());</span>
+<span class="fc" id="L218">    final Iterator&lt;Filter&gt; it = filters.listIterator();</span>
+<span class="fc bfc" id="L219" title="All 2 branches covered.">    if (it.hasNext()) {</span>
+<span class="fc" id="L220">      query.append(WHERE);</span>
     }
-<span class="fc" id="L218">    String prefix = &quot;&quot;;</span>
-<span class="fc" id="L219">    int i = 0;</span>
-<span class="fc bfc" id="L220" title="All 2 branches covered.">    while (it.hasNext()) {</span>
-<span class="fc" id="L221">      query.append(prefix);</span>
-<span class="fc" id="L222">      final Filter filter = it.next();</span>
-<span class="fc" id="L223">      query.append(filter.key + ' ' + filter.operand + &quot; ?&quot;);</span>
-<span class="fc" id="L224">      params[i] = filter.value;</span>
-<span class="fc" id="L225">      i++;</span>
-<span class="fc" id="L226">      prefix = &quot; AND &quot;;</span>
-<span class="fc" id="L227">    }</span>
-<span class="fc" id="L228">    return query.toString();</span>
+<span class="fc" id="L222">    String prefix = &quot;&quot;;</span>
+<span class="fc" id="L223">    int i = 0;</span>
+<span class="fc bfc" id="L224" title="All 2 branches covered.">    while (it.hasNext()) {</span>
+<span class="fc" id="L225">      query.append(prefix);</span>
+<span class="fc" id="L226">      final Filter filter = it.next();</span>
+<span class="fc" id="L227">      query.append(filter.key).append(' ').append(filter.operand).append(&quot; ?&quot;);</span>
+<span class="fc" id="L228">      params[i] = filter.value;</span>
+<span class="fc" id="L229">      i++;</span>
+<span class="fc" id="L230">      prefix = &quot; AND &quot;;</span>
+<span class="fc" id="L231">    }</span>
+<span class="fc" id="L232">    return query.toString();</span>
   }
 
   @Override
-  public List&lt;Transfer&gt; find(List&lt;Filter&gt; filters, int limit)
+  public List&lt;Transfer&gt; find(final List&lt;Filter&gt; filters, final int limit)
       throws DAOConnectionException {
-<span class="nc" id="L234">    final ArrayList&lt;Transfer&gt; transfers = new ArrayList&lt;Transfer&gt;();</span>
+<span class="nc" id="L238">    final ArrayList&lt;Transfer&gt; transfers = new ArrayList&lt;Transfer&gt;();</span>
     // Create the SQL query
-<span class="nc" id="L236">    final Object[] params = new Object[filters.size()];</span>
-<span class="nc" id="L237">    final StringBuilder query =</span>
-<span class="nc" id="L238">        new StringBuilder(prepareFindQuery(filters, params));</span>
+<span class="nc" id="L240">    final Object[] params = new Object[filters.size()];</span>
+<span class="nc" id="L241">    final StringBuilder query =</span>
+<span class="nc" id="L242">        new StringBuilder(prepareFindQuery(filters, params));</span>
     // Set LIMIT
-<span class="nc bnc" id="L240" title="All 2 branches missed.">    if (limit &gt; 0) {</span>
-<span class="nc" id="L241">      query.append(LIMIT2 + limit);</span>
+<span class="nc bnc" id="L244" title="All 2 branches missed.">    if (limit &gt; 0) {</span>
+<span class="nc" id="L245">      query.append(LIMIT2).append(limit);</span>
     }
     // Execute query
-<span class="nc" id="L244">    PreparedStatement stm = null;</span>
-<span class="nc" id="L245">    ResultSet res = null;</span>
+<span class="nc" id="L248">    PreparedStatement stm = null;</span>
+<span class="nc" id="L249">    ResultSet res = null;</span>
     try {
-<span class="nc" id="L247">      stm = connection.prepareStatement(query.toString());</span>
-<span class="nc" id="L248">      setParameters(stm, params);</span>
-<span class="nc" id="L249">      res = executeQuery(stm);</span>
-<span class="nc bnc" id="L250" title="All 2 branches missed.">      while (res.next()) {</span>
-<span class="nc" id="L251">        transfers.add(getFromResultSet(res));</span>
+<span class="nc" id="L251">      stm = connection.prepareStatement(query.toString());</span>
+<span class="nc" id="L252">      setParameters(stm, params);</span>
+<span class="nc" id="L253">      res = executeQuery(stm);</span>
+<span class="nc bnc" id="L254" title="All 2 branches missed.">      while (res.next()) {</span>
+<span class="nc" id="L255">        transfers.add(getFromResultSet(res));</span>
       }
-<span class="nc" id="L253">    } catch (final SQLException e) {</span>
-<span class="nc" id="L254">      throw new DAOConnectionException(e);</span>
+<span class="nc" id="L257">    } catch (final SQLException e) {</span>
+<span class="nc" id="L258">      throw new DAOConnectionException(e);</span>
     } finally {
-<span class="nc" id="L256">      closeResultSet(res);</span>
-<span class="nc" id="L257">      closeStatement(stm);</span>
+<span class="nc" id="L260">      closeResultSet(res);</span>
+<span class="nc" id="L261">      closeStatement(stm);</span>
     }
-<span class="nc" id="L259">    return transfers;</span>
+<span class="nc" id="L263">    return transfers;</span>
   }
 
   @Override
-  public List&lt;Transfer&gt; find(List&lt;Filter&gt; filters, int limit, int offset)
-      throws DAOConnectionException {
-<span class="nc" id="L265">    final ArrayList&lt;Transfer&gt; transfers = new ArrayList&lt;Transfer&gt;();</span>
+  public List&lt;Transfer&gt; find(final List&lt;Filter&gt; filters, final int limit,
+                             final int offset) throws DAOConnectionException {
+<span class="nc" id="L269">    final ArrayList&lt;Transfer&gt; transfers = new ArrayList&lt;Transfer&gt;();</span>
     // Create the SQL query
-<span class="nc" id="L267">    final Object[] params = new Object[filters.size()];</span>
-<span class="nc" id="L268">    final StringBuilder query =</span>
-<span class="nc" id="L269">        new StringBuilder(prepareFindQuery(filters, params));</span>
+<span class="nc" id="L271">    final Object[] params = new Object[filters.size()];</span>
+<span class="nc" id="L272">    final StringBuilder query =</span>
+<span class="nc" id="L273">        new StringBuilder(prepareFindQuery(filters, params));</span>
     // Set LIMIT
-<span class="nc bnc" id="L271" title="All 2 branches missed.">    if (limit &gt; 0) {</span>
-<span class="nc" id="L272">      query.append(LIMIT2 + limit);</span>
-    }
-    // Set OFFSET
 <span class="nc bnc" id="L275" title="All 2 branches missed.">    if (limit &gt; 0) {</span>
-<span class="nc" id="L276">      query.append(&quot; OFFSET &quot; + offset);</span>
-    }
-    // Execute query
-<span class="nc" id="L279">    PreparedStatement stm = null;</span>
-<span class="nc" id="L280">    ResultSet res = null;</span>
-    try {
-<span class="nc" id="L282">      stm = connection.prepareStatement(query.toString());</span>
-<span class="nc" id="L283">      setParameters(stm, params);</span>
-<span class="nc" id="L284">      res = executeQuery(stm);</span>
-<span class="nc bnc" id="L285" title="All 2 branches missed.">      while (res.next()) {</span>
-<span class="nc" id="L286">        transfers.add(getFromResultSet(res));</span>
-      }
-<span class="nc" id="L288">    } catch (final SQLException e) {</span>
-<span class="nc" id="L289">      throw new DAOConnectionException(e);</span>
-    } finally {
-<span class="nc" id="L291">      closeResultSet(res);</span>
-<span class="nc" id="L292">      closeStatement(stm);</span>
-    }
-<span class="nc" id="L294">    return transfers;</span>
-  }
-
-  @Override
-  public List&lt;Transfer&gt; find(List&lt;Filter&gt; filters, String column,
-                             boolean ascend) throws DAOConnectionException {
-<span class="nc" id="L300">    final ArrayList&lt;Transfer&gt; transfers = new ArrayList&lt;Transfer&gt;();</span>
-    // Create the SQL query
-<span class="nc" id="L302">    final Object[] params = new Object[filters.size()];</span>
-<span class="nc" id="L303">    final StringBuilder query =</span>
-<span class="nc" id="L304">        new StringBuilder(prepareFindQuery(filters, params));</span>
-    // Set ORDER BY
-<span class="nc bnc" id="L306" title="All 4 branches missed.">    if (column != null &amp;&amp; !column.isEmpty()) {</span>
-<span class="nc" id="L307">      query.append(&quot; ORDER BY &quot; + column);</span>
-<span class="nc bnc" id="L308" title="All 2 branches missed.">      if (!ascend) {</span>
-<span class="nc" id="L309">        query.append(&quot; DESC&quot;);</span>
-      }
-    }
-    // Execute query
-<span class="nc" id="L313">    PreparedStatement stm = null;</span>
-<span class="nc" id="L314">    ResultSet res = null;</span>
-    try {
-<span class="nc" id="L316">      stm = connection.prepareStatement(query.toString());</span>
-<span class="nc" id="L317">      setParameters(stm, params);</span>
-<span class="nc" id="L318">      logger.trace(stm.toString());</span>
-<span class="nc" id="L319">      res = executeQuery(stm);</span>
-<span class="nc bnc" id="L320" title="All 2 branches missed.">      while (res.next()) {</span>
-<span class="nc" id="L321">        transfers.add(getFromResultSet(res));</span>
-      }
-<span class="nc" id="L323">    } catch (final SQLException e) {</span>
-<span class="nc" id="L324">      throw new DAOConnectionException(e);</span>
-    } finally {
-<span class="nc" id="L326">      closeResultSet(res);</span>
-<span class="nc" id="L327">      closeStatement(stm);</span>
-    }
-<span class="nc" id="L329">    return transfers;</span>
-  }
-
-  @Override
-  public List&lt;Transfer&gt; find(List&lt;Filter&gt; filters, String column,
-                             boolean ascend, int limit)
-      throws DAOConnectionException {
-<span class="fc" id="L336">    final ArrayList&lt;Transfer&gt; transfers = new ArrayList&lt;Transfer&gt;();</span>
-    // Create the SQL query
-<span class="fc" id="L338">    final Object[] params = new Object[filters.size()];</span>
-<span class="fc" id="L339">    final StringBuilder query =</span>
-<span class="fc" id="L340">        new StringBuilder(prepareFindQuery(filters, params));</span>
-    // Set ORDER BY
-<span class="pc bpc" id="L342" title="2 of 4 branches missed.">    if (column != null &amp;&amp; !column.isEmpty()) {</span>
-<span class="fc" id="L343">      query.append(&quot; ORDER BY &quot; + column);</span>
-<span class="pc bpc" id="L344" title="1 of 2 branches missed.">      if (!ascend) {</span>
-<span class="nc" id="L345">        query.append(&quot; DESC&quot;);</span>
-      }
-    }
-    // Set LIMIT
-<span class="pc bpc" id="L349" title="1 of 2 branches missed.">    if (limit &gt; 0) {</span>
-<span class="fc" id="L350">      query.append(LIMIT2 + limit);</span>
-    }
-    // Execute query
-<span class="fc" id="L353">    PreparedStatement stm = null;</span>
-<span class="fc" id="L354">    ResultSet res = null;</span>
-    try {
-<span class="fc" id="L356">      stm = connection.prepareStatement(query.toString());</span>
-<span class="fc" id="L357">      setParameters(stm, params);</span>
-<span class="fc" id="L358">      res = executeQuery(stm);</span>
-<span class="fc bfc" id="L359" title="All 2 branches covered.">      while (res.next()) {</span>
-<span class="fc" id="L360">        transfers.add(getFromResultSet(res));</span>
-      }
-<span class="nc" id="L362">    } catch (final SQLException e) {</span>
-<span class="nc" id="L363">      throw new DAOConnectionException(e);</span>
-    } finally {
-<span class="fc" id="L365">      closeResultSet(res);</span>
-<span class="fc" id="L366">      closeStatement(stm);</span>
-    }
-<span class="fc" id="L368">    return transfers;</span>
-  }
-
-  @Override
-  public List&lt;Transfer&gt; find(List&lt;Filter&gt; filters, String column,
-                             boolean ascend, int limit, int offset)
-      throws DAOConnectionException {
-<span class="fc" id="L375">    final ArrayList&lt;Transfer&gt; transfers = new ArrayList&lt;Transfer&gt;();</span>
-    // Create the SQL query
-<span class="fc" id="L377">    final Object[] params = new Object[filters.size()];</span>
-<span class="fc" id="L378">    final StringBuilder query =</span>
-<span class="fc" id="L379">        new StringBuilder(prepareFindQuery(filters, params));</span>
-    // Set ORDER BY
-<span class="fc" id="L381">    query.append(&quot; ORDER BY &quot; + column);</span>
-<span class="pc bpc" id="L382" title="1 of 2 branches missed.">    if (!ascend) {</span>
-<span class="nc" id="L383">      query.append(&quot; DESC&quot;);</span>
-    }
-    // Set LIMIT
-<span class="pc bpc" id="L386" title="1 of 2 branches missed.">    if (limit &gt; 0) {</span>
-<span class="fc" id="L387">      query.append(LIMIT2 + limit);</span>
+<span class="nc" id="L276">      query.append(LIMIT2).append(limit);</span>
     }
     // Set OFFSET
-<span class="pc bpc" id="L390" title="1 of 2 branches missed.">    if (limit &gt; 0) {</span>
-<span class="fc" id="L391">      query.append(&quot; OFFSET &quot; + offset);</span>
+<span class="nc bnc" id="L279" title="All 2 branches missed.">    if (limit &gt; 0) {</span>
+<span class="nc" id="L280">      query.append(&quot; OFFSET &quot;).append(offset);</span>
     }
     // Execute query
-<span class="fc" id="L394">    PreparedStatement stm = null;</span>
-<span class="fc" id="L395">    ResultSet res = null;</span>
+<span class="nc" id="L283">    PreparedStatement stm = null;</span>
+<span class="nc" id="L284">    ResultSet res = null;</span>
     try {
-<span class="fc" id="L397">      stm = connection.prepareStatement(query.toString());</span>
-<span class="fc" id="L398">      setParameters(stm, params);</span>
-<span class="fc" id="L399">      res = executeQuery(stm);</span>
-<span class="pc bpc" id="L400" title="1 of 2 branches missed.">      while (res.next()) {</span>
-<span class="nc" id="L401">        transfers.add(getFromResultSet(res));</span>
+<span class="nc" id="L286">      stm = connection.prepareStatement(query.toString());</span>
+<span class="nc" id="L287">      setParameters(stm, params);</span>
+<span class="nc" id="L288">      res = executeQuery(stm);</span>
+<span class="nc bnc" id="L289" title="All 2 branches missed.">      while (res.next()) {</span>
+<span class="nc" id="L290">        transfers.add(getFromResultSet(res));</span>
       }
-<span class="nc" id="L403">    } catch (final SQLException e) {</span>
-<span class="nc" id="L404">      throw new DAOConnectionException(e);</span>
+<span class="nc" id="L292">    } catch (final SQLException e) {</span>
+<span class="nc" id="L293">      throw new DAOConnectionException(e);</span>
     } finally {
-<span class="fc" id="L406">      closeResultSet(res);</span>
-<span class="fc" id="L407">      closeStatement(stm);</span>
+<span class="nc" id="L295">      closeResultSet(res);</span>
+<span class="nc" id="L296">      closeStatement(stm);</span>
     }
-<span class="fc" id="L409">    return transfers;</span>
+<span class="nc" id="L298">    return transfers;</span>
   }
 
   @Override
-  public boolean exist(long id, String requester, String requested,
-                       String owner) throws DAOConnectionException {
-<span class="nc" id="L415">    PreparedStatement stm = null;</span>
-<span class="nc" id="L416">    ResultSet res = null;</span>
-<span class="nc" id="L417">    final Object[] params = { id, requester, requested, owner };</span>
+  public List&lt;Transfer&gt; find(final List&lt;Filter&gt; filters, final String column,
+                             final boolean ascend)
+      throws DAOConnectionException {
+<span class="nc" id="L305">    final ArrayList&lt;Transfer&gt; transfers = new ArrayList&lt;Transfer&gt;();</span>
+    // Create the SQL query
+<span class="nc" id="L307">    final Object[] params = new Object[filters.size()];</span>
+<span class="nc" id="L308">    final StringBuilder query =</span>
+<span class="nc" id="L309">        new StringBuilder(prepareFindQuery(filters, params));</span>
+    // Set ORDER BY
+<span class="nc bnc" id="L311" title="All 4 branches missed.">    if (column != null &amp;&amp; !column.isEmpty()) {</span>
+<span class="nc" id="L312">      query.append(&quot; ORDER BY &quot;).append(column);</span>
+<span class="nc bnc" id="L313" title="All 2 branches missed.">      if (!ascend) {</span>
+<span class="nc" id="L314">        query.append(&quot; DESC&quot;);</span>
+      }
+    }
+    // Execute query
+<span class="nc" id="L318">    PreparedStatement stm = null;</span>
+<span class="nc" id="L319">    ResultSet res = null;</span>
     try {
-<span class="nc" id="L419">      stm = connection.prepareStatement(getExistRequest());</span>
-<span class="nc" id="L420">      setParameters(stm, params);</span>
-<span class="nc" id="L421">      res = executeQuery(stm);</span>
-<span class="nc" id="L422">      return res.next();</span>
-<span class="nc" id="L423">    } catch (final SQLException e) {</span>
-<span class="nc" id="L424">      throw new DAOConnectionException(e);</span>
+<span class="nc" id="L321">      stm = connection.prepareStatement(query.toString());</span>
+<span class="nc" id="L322">      setParameters(stm, params);</span>
+<span class="nc" id="L323">      logger.trace(stm.toString());</span>
+<span class="nc" id="L324">      res = executeQuery(stm);</span>
+<span class="nc bnc" id="L325" title="All 2 branches missed.">      while (res.next()) {</span>
+<span class="nc" id="L326">        transfers.add(getFromResultSet(res));</span>
+      }
+<span class="nc" id="L328">    } catch (final SQLException e) {</span>
+<span class="nc" id="L329">      throw new DAOConnectionException(e);</span>
     } finally {
-<span class="nc" id="L426">      closeResultSet(res);</span>
-<span class="nc" id="L427">      closeStatement(stm);</span>
+<span class="nc" id="L331">      closeResultSet(res);</span>
+<span class="nc" id="L332">      closeStatement(stm);</span>
+    }
+<span class="nc" id="L334">    return transfers;</span>
+  }
+
+  @Override
+  public List&lt;Transfer&gt; find(final List&lt;Filter&gt; filters, final String column,
+                             final boolean ascend, final int limit)
+      throws DAOConnectionException {
+<span class="fc" id="L341">    final ArrayList&lt;Transfer&gt; transfers = new ArrayList&lt;Transfer&gt;();</span>
+    // Create the SQL query
+<span class="fc" id="L343">    final Object[] params = new Object[filters.size()];</span>
+<span class="fc" id="L344">    final StringBuilder query =</span>
+<span class="fc" id="L345">        new StringBuilder(prepareFindQuery(filters, params));</span>
+    // Set ORDER BY
+<span class="pc bpc" id="L347" title="2 of 4 branches missed.">    if (column != null &amp;&amp; !column.isEmpty()) {</span>
+<span class="fc" id="L348">      query.append(&quot; ORDER BY &quot;).append(column);</span>
+<span class="pc bpc" id="L349" title="1 of 2 branches missed.">      if (!ascend) {</span>
+<span class="nc" id="L350">        query.append(&quot; DESC&quot;);</span>
+      }
+    }
+    // Set LIMIT
+<span class="pc bpc" id="L354" title="1 of 2 branches missed.">    if (limit &gt; 0) {</span>
+<span class="fc" id="L355">      query.append(LIMIT2).append(limit);</span>
+    }
+    // Execute query
+<span class="fc" id="L358">    PreparedStatement stm = null;</span>
+<span class="fc" id="L359">    ResultSet res = null;</span>
+    try {
+<span class="fc" id="L361">      stm = connection.prepareStatement(query.toString());</span>
+<span class="fc" id="L362">      setParameters(stm, params);</span>
+<span class="fc" id="L363">      res = executeQuery(stm);</span>
+<span class="fc bfc" id="L364" title="All 2 branches covered.">      while (res.next()) {</span>
+<span class="fc" id="L365">        transfers.add(getFromResultSet(res));</span>
+      }
+<span class="nc" id="L367">    } catch (final SQLException e) {</span>
+<span class="nc" id="L368">      throw new DAOConnectionException(e);</span>
+    } finally {
+<span class="fc" id="L370">      closeResultSet(res);</span>
+<span class="fc" id="L371">      closeStatement(stm);</span>
+    }
+<span class="fc" id="L373">    return transfers;</span>
+  }
+
+  @Override
+  public List&lt;Transfer&gt; find(final List&lt;Filter&gt; filters, final String column,
+                             final boolean ascend, final int limit,
+                             final int offset) throws DAOConnectionException {
+<span class="fc" id="L380">    final ArrayList&lt;Transfer&gt; transfers = new ArrayList&lt;Transfer&gt;();</span>
+    // Create the SQL query
+<span class="fc" id="L382">    final Object[] params = new Object[filters.size()];</span>
+<span class="fc" id="L383">    final StringBuilder query =</span>
+<span class="fc" id="L384">        new StringBuilder(prepareFindQuery(filters, params));</span>
+    // Set ORDER BY
+<span class="fc" id="L386">    query.append(&quot; ORDER BY &quot;).append(column);</span>
+<span class="pc bpc" id="L387" title="1 of 2 branches missed.">    if (!ascend) {</span>
+<span class="nc" id="L388">      query.append(&quot; DESC&quot;);</span>
+    }
+    // Set LIMIT
+<span class="pc bpc" id="L391" title="1 of 2 branches missed.">    if (limit &gt; 0) {</span>
+<span class="fc" id="L392">      query.append(LIMIT2).append(limit);</span>
+    }
+    // Set OFFSET
+<span class="pc bpc" id="L395" title="1 of 2 branches missed.">    if (limit &gt; 0) {</span>
+<span class="fc" id="L396">      query.append(&quot; OFFSET &quot;).append(offset);</span>
+    }
+    // Execute query
+<span class="fc" id="L399">    PreparedStatement stm = null;</span>
+<span class="fc" id="L400">    ResultSet res = null;</span>
+    try {
+<span class="fc" id="L402">      stm = connection.prepareStatement(query.toString());</span>
+<span class="fc" id="L403">      setParameters(stm, params);</span>
+<span class="fc" id="L404">      res = executeQuery(stm);</span>
+<span class="pc bpc" id="L405" title="1 of 2 branches missed.">      while (res.next()) {</span>
+<span class="nc" id="L406">        transfers.add(getFromResultSet(res));</span>
+      }
+<span class="nc" id="L408">    } catch (final SQLException e) {</span>
+<span class="nc" id="L409">      throw new DAOConnectionException(e);</span>
+    } finally {
+<span class="fc" id="L411">      closeResultSet(res);</span>
+<span class="fc" id="L412">      closeStatement(stm);</span>
+    }
+<span class="fc" id="L414">    return transfers;</span>
+  }
+
+  @Override
+  public boolean exist(final long id, final String requester,
+                       final String requested, final String owner)
+      throws DAOConnectionException {
+<span class="nc" id="L421">    PreparedStatement stm = null;</span>
+<span class="nc" id="L422">    ResultSet res = null;</span>
+<span class="nc" id="L423">    final Object[] params = { id, requester, requested, owner };</span>
+    try {
+<span class="nc" id="L425">      stm = connection.prepareStatement(getExistRequest());</span>
+<span class="nc" id="L426">      setParameters(stm, params);</span>
+<span class="nc" id="L427">      res = executeQuery(stm);</span>
+<span class="nc" id="L428">      return res.next();</span>
+<span class="nc" id="L429">    } catch (final SQLException e) {</span>
+<span class="nc" id="L430">      throw new DAOConnectionException(e);</span>
+    } finally {
+<span class="nc" id="L432">      closeResultSet(res);</span>
+<span class="nc" id="L433">      closeStatement(stm);</span>
     }
   }
 
   @Override
-  public Transfer select(long id, String requester, String requested,
-                         String owner)
+  public Transfer select(final long id, final String requester,
+                         final String requested, final String owner)
       throws DAOConnectionException, DAONoDataException {
-<span class="fc" id="L435">    PreparedStatement stm = null;</span>
-<span class="fc" id="L436">    ResultSet res = null;</span>
-<span class="fc" id="L437">    final Object[] params = { id, requester, requested, owner };</span>
+<span class="fc" id="L441">    PreparedStatement stm = null;</span>
+<span class="fc" id="L442">    ResultSet res = null;</span>
+<span class="fc" id="L443">    final Object[] params = { id, requester, requested, owner };</span>
     try {
-<span class="fc" id="L439">      stm = connection.prepareStatement(getSelectRequest());</span>
-<span class="fc" id="L440">      setParameters(stm, params);</span>
-<span class="fc" id="L441">      res = executeQuery(stm);</span>
-<span class="pc bpc" id="L442" title="1 of 2 branches missed.">      if (res.next()) {</span>
-<span class="fc" id="L443">        return getFromResultSet(res);</span>
+<span class="fc" id="L445">      stm = connection.prepareStatement(getSelectRequest());</span>
+<span class="fc" id="L446">      setParameters(stm, params);</span>
+<span class="fc" id="L447">      res = executeQuery(stm);</span>
+<span class="fc bfc" id="L448" title="All 2 branches covered.">      if (res.next()) {</span>
+<span class="fc" id="L449">        return getFromResultSet(res);</span>
       } else {
-<span class="nc" id="L445">        throw new DAONoDataException(&quot;No &quot; + getClass().getName() + &quot; found&quot;);</span>
+<span class="fc" id="L451">        throw new DAONoDataException(&quot;No &quot; + getClass().getName() + &quot; found&quot;);</span>
       }
-<span class="nc" id="L447">    } catch (final SQLException e) {</span>
-<span class="nc" id="L448">      throw new DAOConnectionException(e);</span>
+<span class="nc" id="L453">    } catch (final SQLException e) {</span>
+<span class="nc" id="L454">      throw new DAOConnectionException(e);</span>
     } finally {
-<span class="fc" id="L450">      closeResultSet(res);</span>
-<span class="fc" id="L451">      closeStatement(stm);</span>
+<span class="fc" id="L456">      closeResultSet(res);</span>
+<span class="fc" id="L457">      closeStatement(stm);</span>
     }
   }
 
   protected abstract long getNextId() throws DAOConnectionException;
 
   @Override
-  public void insert(Transfer transfer) throws DAOConnectionException {
-<span class="pc bpc" id="L459" title="1 of 2 branches missed.">    if (transfer.getId() == ILLEGALVALUE) {</span>
-<span class="fc" id="L460">      transfer.setId(getNextId());</span>
+  public void insert(final Transfer transfer) throws DAOConnectionException {
+<span class="fc bfc" id="L465" title="All 2 branches covered.">    if (transfer.getId() == ILLEGALVALUE) {</span>
+<span class="fc" id="L466">      transfer.setId(getNextId());</span>
     }
-<span class="fc" id="L462">    logger.trace(&quot;TRACE ID {}&quot;, transfer.getId());</span>
-<span class="fc" id="L463">    super.insert(transfer);</span>
-<span class="fc" id="L464">  }</span>
+<span class="fc" id="L468">    logger.trace(&quot;TRACE ID {}&quot;, transfer.getId());</span>
+<span class="fc" id="L469">    super.insert(transfer);</span>
+<span class="fc" id="L470">  }</span>
 
   @Override
-  public Transfer getFromResultSet(ResultSet set) throws SQLException {
-<span class="fc" id="L468">    return new Transfer(set.getLong(ID_FIELD), set.getString(ID_RULE_FIELD),</span>
-<span class="fc" id="L469">                        set.getInt(TRANSFER_MODE_FIELD),</span>
-<span class="fc" id="L470">                        set.getString(FILENAME_FIELD),</span>
-<span class="fc" id="L471">                        set.getString(ORIGINAL_NAME_FIELD),</span>
-<span class="fc" id="L472">                        set.getString(FILE_INFO_FIELD),</span>
-<span class="fc" id="L473">                        set.getBoolean(IS_MOVED_FIELD),</span>
-<span class="fc" id="L474">                        set.getInt(BLOCK_SIZE_FIELD),</span>
-<span class="fc" id="L475">                        set.getBoolean(RETRIEVE_MODE_FIELD),</span>
-<span class="fc" id="L476">                        set.getString(OWNER_REQUEST_FIELD),</span>
-<span class="fc" id="L477">                        set.getString(REQUESTER_FIELD),</span>
-<span class="fc" id="L478">                        set.getString(REQUESTED_FIELD),</span>
-<span class="fc" id="L479">                        set.getString(TRANSFER_INFO_FIELD), Transfer.TASKSTEP</span>
-<span class="fc" id="L480">                            .valueOf(set.getInt(GLOBAL_STEP_FIELD)),</span>
+  public Transfer getFromResultSet(final ResultSet set) throws SQLException {
+<span class="fc" id="L474">    return new Transfer(set.getLong(ID_FIELD), set.getString(ID_RULE_FIELD),</span>
+<span class="fc" id="L475">                        set.getInt(TRANSFER_MODE_FIELD),</span>
+<span class="fc" id="L476">                        set.getString(FILENAME_FIELD),</span>
+<span class="fc" id="L477">                        set.getString(ORIGINAL_NAME_FIELD),</span>
+<span class="fc" id="L478">                        set.getString(FILE_INFO_FIELD),</span>
+<span class="fc" id="L479">                        set.getBoolean(IS_MOVED_FIELD),</span>
+<span class="fc" id="L480">                        set.getInt(BLOCK_SIZE_FIELD),</span>
+<span class="fc" id="L481">                        set.getBoolean(RETRIEVE_MODE_FIELD),</span>
+<span class="fc" id="L482">                        set.getString(OWNER_REQUEST_FIELD),</span>
+<span class="fc" id="L483">                        set.getString(REQUESTER_FIELD),</span>
+<span class="fc" id="L484">                        set.getString(REQUESTED_FIELD),</span>
+<span class="fc" id="L485">                        set.getString(TRANSFER_INFO_FIELD), Transfer.TASKSTEP</span>
+<span class="fc" id="L486">                            .valueOf(set.getInt(GLOBAL_STEP_FIELD)),</span>
                         Transfer.TASKSTEP
-<span class="fc" id="L482">                            .valueOf(set.getInt(GLOBAL_LAST_STEP_FIELD)),</span>
-<span class="fc" id="L483">                        set.getInt(STEP_FIELD),</span>
-<span class="fc" id="L484">                        ErrorCode.getFromCode(set.getString(STEP_STATUS_FIELD)),</span>
-<span class="fc" id="L485">                        ErrorCode.getFromCode(set.getString(INFO_STATUS_FIELD)),</span>
-<span class="fc" id="L486">                        set.getInt(RANK_FIELD),</span>
-<span class="fc" id="L487">                        set.getTimestamp(TRANSFER_START_FIELD),</span>
-<span class="fc" id="L488">                        set.getTimestamp(TRANSFER_STOP_FIELD),</span>
-<span class="fc" id="L489">                        UpdatedInfo.valueOf(set.getInt(UPDATED_INFO_FIELD)));</span>
+<span class="fc" id="L488">                            .valueOf(set.getInt(GLOBAL_LAST_STEP_FIELD)),</span>
+<span class="fc" id="L489">                        set.getInt(STEP_FIELD),</span>
+<span class="fc" id="L490">                        ErrorCode.getFromCode(set.getString(STEP_STATUS_FIELD)),</span>
+<span class="fc" id="L491">                        ErrorCode.getFromCode(set.getString(INFO_STATUS_FIELD)),</span>
+<span class="fc" id="L492">                        set.getInt(RANK_FIELD),</span>
+<span class="fc" id="L493">                        set.getTimestamp(TRANSFER_START_FIELD),</span>
+<span class="fc" id="L494">                        set.getTimestamp(TRANSFER_STOP_FIELD),</span>
+<span class="fc" id="L495">                        UpdatedInfo.valueOf(set.getInt(UPDATED_INFO_FIELD)));</span>
   }
 
 
@@ -499,7 +505,7 @@ public abstract class DBTransferDAO extends StatementExecutor&lt;Transfer&gt;
    */
   @Override
   public Transfer select(final String id) {
-<span class="nc" id="L502">    throw new UnsupportedOperationException();</span>
+<span class="nc" id="L508">    throw new UnsupportedOperationException();</span>
   }
 
   /**
@@ -511,7 +517,7 @@ public abstract class DBTransferDAO extends StatementExecutor&lt;Transfer&gt;
    */
   @Override
   public boolean exist(final String id) {
-<span class="nc" id="L514">    throw new UnsupportedOperationException();</span>
+<span class="nc" id="L520">    throw new UnsupportedOperationException();</span>
   }
 
   /**
@@ -523,7 +529,7 @@ public abstract class DBTransferDAO extends StatementExecutor&lt;Transfer&gt;
    */
   @Override
   protected String getId(final Transfer e1) {
-<span class="nc" id="L526">    throw new UnsupportedOperationException();</span>
+<span class="nc" id="L532">    throw new UnsupportedOperationException();</span>
   }
 }
 

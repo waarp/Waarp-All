@@ -20,7 +20,9 @@
 package org.waarp.openr66.protocol.localhandler.packet;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.Unpooled;
+import org.waarp.common.utility.WaarpNettyUtil;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
 import org.waarp.openr66.protocol.localhandler.LocalChannelReference;
 
@@ -43,85 +45,90 @@ public class ShutdownPacket extends AbstractLocalPacket {
    *
    * @throws OpenR66ProtocolPacketException
    */
-  public static ShutdownPacket createFromBuffer(int headerLength,
-                                                int middleLength, int endLength,
-                                                ByteBuf buf)
+  public static ShutdownPacket createFromBuffer(final int headerLength,
+                                                final int middleLength,
+                                                final int endLength,
+                                                final ByteBuf buf)
       throws OpenR66ProtocolPacketException {
-<span class="nc bnc" id="L50" title="All 2 branches missed.">    if (headerLength - 1 &lt;= 0) {</span>
-<span class="nc" id="L51">      throw new OpenR66ProtocolPacketException(&quot;Not enough data&quot;);</span>
+<span class="nc bnc" id="L53" title="All 2 branches missed.">    if (headerLength - 1 &lt;= 0) {</span>
+<span class="nc" id="L54">      throw new OpenR66ProtocolPacketException(&quot;Not enough data&quot;);</span>
     }
-<span class="nc" id="L53">    final byte[] bpassword = new byte[headerLength - 1];</span>
-<span class="nc bnc" id="L54" title="All 2 branches missed.">    if (headerLength - 1 &gt; 0) {</span>
-<span class="nc" id="L55">      buf.readBytes(bpassword);</span>
+<span class="nc" id="L56">    final byte[] bpassword = new byte[headerLength - 1];</span>
+<span class="nc" id="L57">    buf.readBytes(bpassword);</span>
+<span class="nc" id="L58">    byte torestart = 0;</span>
+<span class="nc bnc" id="L59" title="All 2 branches missed.">    if (middleLength &gt; 0) {</span>
+<span class="nc" id="L60">      torestart = buf.readByte();</span>
     }
-<span class="nc" id="L57">    byte torestart = 0;</span>
-<span class="nc bnc" id="L58" title="All 2 branches missed.">    if (middleLength &gt; 0) {</span>
-<span class="nc" id="L59">      torestart = buf.readByte();</span>
-    }
-<span class="nc" id="L61">    return new ShutdownPacket(bpassword, torestart);</span>
+<span class="nc" id="L62">    return new ShutdownPacket(bpassword, torestart);</span>
   }
 
   /**
    * @param spassword
    */
-<span class="nc" id="L67">  public ShutdownPacket(byte[] spassword) {</span>
-<span class="nc" id="L68">    key = spassword;</span>
-<span class="nc" id="L69">    restart = 0;</span>
-<span class="nc" id="L70">  }</span>
+<span class="nc" id="L68">  public ShutdownPacket(final byte[] spassword) {</span>
+<span class="nc" id="L69">    key = spassword;</span>
+<span class="nc" id="L70">    restart = 0;</span>
+<span class="nc" id="L71">  }</span>
 
   /**
    * @param spassword
    * @param restart
    */
-<span class="nc" id="L76">  public ShutdownPacket(byte[] spassword, byte restart) {</span>
-<span class="nc" id="L77">    key = spassword;</span>
-<span class="nc" id="L78">    this.restart = restart;</span>
-<span class="nc" id="L79">  }</span>
+<span class="nc" id="L77">  public ShutdownPacket(final byte[] spassword, final byte restart) {</span>
+<span class="nc" id="L78">    key = spassword;</span>
+<span class="nc" id="L79">    this.restart = restart;</span>
+<span class="nc" id="L80">  }</span>
 
   @Override
-  public void createEnd(LocalChannelReference lcr)
-      throws OpenR66ProtocolPacketException {
-<span class="nc" id="L84">    end = Unpooled.EMPTY_BUFFER;</span>
-<span class="nc" id="L85">  }</span>
+  public boolean hasGlobalBuffer() {
+<span class="nc" id="L84">    return true;</span>
+  }
 
   @Override
-  public void createHeader(LocalChannelReference lcr)
+  public void createAllBuffers(final LocalChannelReference lcr,
+                               final int networkHeader)
       throws OpenR66ProtocolPacketException {
-<span class="nc bnc" id="L90" title="All 2 branches missed.">    if (key != null) {</span>
-<span class="nc" id="L91">      header = Unpooled.wrappedBuffer(key);</span>
+<span class="nc" id="L91">    end = Unpooled.EMPTY_BUFFER;</span>
+<span class="nc bnc" id="L92" title="All 2 branches missed.">    final int sizeKey = key != null? key.length : 0;</span>
+<span class="nc bnc" id="L93" title="All 2 branches missed.">    final int sizeMiddle = restart != 0? 1 : 0;</span>
+<span class="nc" id="L94">    final int globalSize =</span>
+        networkHeader + LOCAL_HEADER_SIZE + sizeKey + sizeMiddle;
+<span class="nc" id="L96">    int offset = networkHeader + LOCAL_HEADER_SIZE;</span>
+<span class="nc" id="L97">    global = ByteBufAllocator.DEFAULT.buffer(globalSize, globalSize);</span>
+<span class="nc bnc" id="L98" title="All 2 branches missed.">    if (key != null) {</span>
+<span class="nc" id="L99">      header = WaarpNettyUtil.slice(global, offset, sizeKey);</span>
+<span class="nc" id="L100">      header.writeBytes(key);</span>
+    } else {
+<span class="nc" id="L102">      header = Unpooled.EMPTY_BUFFER;</span>
     }
-<span class="nc" id="L93">  }</span>
-
-  @Override
-  public void createMiddle(LocalChannelReference lcr)
-      throws OpenR66ProtocolPacketException {
-<span class="nc bnc" id="L98" title="All 2 branches missed.">    if (restart != 0) {</span>
-<span class="nc" id="L99">      final byte[] array = { restart };</span>
-<span class="nc" id="L100">      middle = Unpooled.wrappedBuffer(array);</span>
-<span class="nc" id="L101">    } else {</span>
-<span class="nc" id="L102">      middle = Unpooled.EMPTY_BUFFER;</span>
+<span class="nc" id="L104">    offset += sizeKey;</span>
+<span class="nc bnc" id="L105" title="All 2 branches missed.">    if (restart != 0) {</span>
+<span class="nc" id="L106">      middle = WaarpNettyUtil.slice(global, offset, sizeMiddle);</span>
+<span class="nc" id="L107">      middle.writeByte(restart);</span>
+    } else {
+<span class="nc" id="L109">      middle = Unpooled.EMPTY_BUFFER;</span>
     }
-<span class="nc" id="L104">  }</span>
+<span class="nc" id="L111">  }</span>
 
   @Override
   public String toString() {
-<span class="nc bnc" id="L108" title="All 2 branches missed.">    return &quot;ShutdownPacket&quot; + (restart != 0? &quot; and restart&quot; : &quot;&quot;);</span>
+<span class="nc bnc" id="L115" title="All 2 branches missed.">    return &quot;ShutdownPacket&quot; + (restart != 0? &quot; and restart&quot; : &quot;&quot;);</span>
   }
 
   @Override
   public byte getType() {
-<span class="nc" id="L113">    return LocalPacketFactory.SHUTDOWNPACKET;</span>
+<span class="nc" id="L120">    return LocalPacketFactory.SHUTDOWNPACKET;</span>
   }
 
   /**
    * @return the key
    */
   public byte[] getKey() {
-<span class="nc" id="L120">    return key;</span>
+<span class="nc" id="L127">    return key;</span>
   }
 
   public boolean isRestart() {
-<span class="nc bnc" id="L124" title="All 2 branches missed.">    return restart != 0;</span>
+<span class="nc bnc" id="L131" title="All 2 branches missed.">    return restart != 0;</span>
   }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

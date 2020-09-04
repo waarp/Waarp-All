@@ -159,26 +159,28 @@ public class DbTransferLog extends AbstractDbData {
    *
    * @throws WaarpDatabaseException
    */
-  public DbTransferLog(DbSession dbSession, String user, String account,
-                       long specialId, boolean isSender, String filename,
-                       String mode, ReplyCode infostatus, String info,
-                       UpdatedInfo updatedInfo) throws WaarpDatabaseException {
-<span class="fc" id="L166">    super(dbSession);</span>
-<span class="fc" id="L167">    this.user = user;</span>
-<span class="fc" id="L168">    this.account = account;</span>
-<span class="fc" id="L169">    this.specialId = specialId;</span>
-<span class="fc" id="L170">    this.isSender = isSender;</span>
-<span class="fc" id="L171">    this.filename = filename;</span>
-<span class="fc" id="L172">    this.mode = mode;</span>
-<span class="fc" id="L173">    start = new Timestamp(System.currentTimeMillis());</span>
-<span class="fc" id="L174">    this.infostatus = infostatus;</span>
-<span class="fc" id="L175">    infotransf = info;</span>
-<span class="fc" id="L176">    this.updatedInfo = updatedInfo.ordinal();</span>
-<span class="fc" id="L177">    hostid = FileBasedConfiguration.fileBasedConfiguration.getHostId();</span>
-<span class="fc" id="L178">    setToArray();</span>
-<span class="fc" id="L179">    isSaved = false;</span>
-<span class="fc" id="L180">    insert();</span>
-<span class="fc" id="L181">  }</span>
+  public DbTransferLog(final DbSession dbSession, final String user,
+                       final String account, final long specialId,
+                       final boolean isSender, final String filename,
+                       final String mode, final ReplyCode infostatus,
+                       final String info, final UpdatedInfo updatedInfo)
+      throws WaarpDatabaseException {
+<span class="fc" id="L168">    super(dbSession);</span>
+<span class="fc" id="L169">    this.user = user;</span>
+<span class="fc" id="L170">    this.account = account;</span>
+<span class="fc" id="L171">    this.specialId = specialId;</span>
+<span class="fc" id="L172">    this.isSender = isSender;</span>
+<span class="fc" id="L173">    this.filename = filename;</span>
+<span class="fc" id="L174">    this.mode = mode;</span>
+<span class="fc" id="L175">    start = new Timestamp(System.currentTimeMillis());</span>
+<span class="fc" id="L176">    this.infostatus = infostatus;</span>
+<span class="fc" id="L177">    infotransf = info;</span>
+<span class="fc" id="L178">    this.updatedInfo = updatedInfo.ordinal();</span>
+<span class="fc" id="L179">    hostid = FileBasedConfiguration.fileBasedConfiguration.getHostId();</span>
+<span class="fc" id="L180">    setToArray();</span>
+<span class="fc" id="L181">    isSaved = false;</span>
+<span class="fc" id="L182">    insert();</span>
+<span class="fc" id="L183">  }</span>
 
   /**
    * Load from database
@@ -190,62 +192,63 @@ public class DbTransferLog extends AbstractDbData {
    *
    * @throws WaarpDatabaseException
    */
-  public DbTransferLog(DbSession dbSession, String user, String account,
-                       long specialId) throws WaarpDatabaseException {
-<span class="fc" id="L195">    super(dbSession);</span>
-<span class="fc" id="L196">    this.user = user;</span>
-<span class="fc" id="L197">    this.account = account;</span>
-<span class="fc" id="L198">    this.specialId = specialId;</span>
-<span class="fc" id="L199">    hostid = FileBasedConfiguration.fileBasedConfiguration.getHostId();</span>
-<span class="fc" id="L200">    select();</span>
-<span class="fc" id="L201">  }</span>
+  public DbTransferLog(final DbSession dbSession, final String user,
+                       final String account, final long specialId)
+      throws WaarpDatabaseException {
+<span class="fc" id="L198">    super(dbSession);</span>
+<span class="fc" id="L199">    this.user = user;</span>
+<span class="fc" id="L200">    this.account = account;</span>
+<span class="fc" id="L201">    this.specialId = specialId;</span>
+<span class="fc" id="L202">    hostid = FileBasedConfiguration.fileBasedConfiguration.getHostId();</span>
+<span class="fc" id="L203">    select();</span>
+<span class="fc" id="L204">  }</span>
 
   @Override
   protected void initObject() {
-<span class="fc" id="L205">    primaryKey = new DbValue[] {</span>
-<span class="fc" id="L206">        new DbValue(user, Columns.USERID.name()),</span>
-<span class="fc" id="L207">        new DbValue(account, Columns.ACCOUNTID.name()),</span>
-<span class="fc" id="L208">        new DbValue(hostid, Columns.HOSTID.name()),</span>
-<span class="fc" id="L209">        new DbValue(specialId, Columns.SPECIALID.name())</span>
+<span class="fc" id="L208">    primaryKey = new DbValue[] {</span>
+<span class="fc" id="L209">        new DbValue(user, Columns.USERID.name()),</span>
+<span class="fc" id="L210">        new DbValue(account, Columns.ACCOUNTID.name()),</span>
+<span class="fc" id="L211">        new DbValue(hostid, Columns.HOSTID.name()),</span>
+<span class="fc" id="L212">        new DbValue(specialId, Columns.SPECIALID.name())</span>
     };
-<span class="fc" id="L211">    otherFields = new DbValue[] {</span>
+<span class="fc" id="L214">    otherFields = new DbValue[] {</span>
         // FILENAME, MODETRANS,
         // STARTTRANS, STOPTRANS, TRANSINFO
         // INFOSTATUS, UPDATEDINFO
-<span class="fc" id="L215">        new DbValue(filename, Columns.FILENAME.name()),</span>
-<span class="fc" id="L216">        new DbValue(mode, Columns.MODETRANS.name()),</span>
-<span class="fc" id="L217">        new DbValue(start, Columns.STARTTRANS.name()),</span>
-<span class="fc" id="L218">        new DbValue(stop, Columns.STOPTRANS.name()),</span>
-<span class="fc" id="L219">        new DbValue(infotransf, Columns.TRANSINFO.name()),</span>
-<span class="fc" id="L220">        new DbValue(ReplyCode.REPLY_000_SPECIAL_NOSTATUS.getCode(),</span>
-<span class="fc" id="L221">                    Columns.INFOSTATUS.name()), // infostatus.getCode()</span>
-<span class="fc" id="L222">        new DbValue(updatedInfo, Columns.UPDATEDINFO.name())</span>
+<span class="fc" id="L218">        new DbValue(filename, Columns.FILENAME.name()),</span>
+<span class="fc" id="L219">        new DbValue(mode, Columns.MODETRANS.name()),</span>
+<span class="fc" id="L220">        new DbValue(start, Columns.STARTTRANS.name()),</span>
+<span class="fc" id="L221">        new DbValue(stop, Columns.STOPTRANS.name()),</span>
+<span class="fc" id="L222">        new DbValue(infotransf, Columns.TRANSINFO.name()),</span>
+<span class="fc" id="L223">        new DbValue(ReplyCode.REPLY_000_SPECIAL_NOSTATUS.getCode(),</span>
+<span class="fc" id="L224">                    Columns.INFOSTATUS.name()), // infostatus.getCode()</span>
+<span class="fc" id="L225">        new DbValue(updatedInfo, Columns.UPDATEDINFO.name())</span>
     };
-<span class="fc" id="L224">    allFields = new DbValue[] {</span>
+<span class="fc" id="L227">    allFields = new DbValue[] {</span>
         otherFields[0], otherFields[1], otherFields[2], otherFields[3],
         otherFields[4], otherFields[5], otherFields[6], primaryKey[0],
         primaryKey[1], primaryKey[2], primaryKey[3]
     };
-<span class="fc" id="L229">  }</span>
+<span class="fc" id="L232">  }</span>
 
   @Override
   protected String getSelectAllFields() {
-<span class="fc" id="L233">    return selectAllFields;</span>
+<span class="fc" id="L236">    return selectAllFields;</span>
   }
 
   @Override
   protected String getTable() {
-<span class="fc" id="L238">    return table;</span>
+<span class="fc" id="L241">    return table;</span>
   }
 
   @Override
   protected String getInsertAllValues() {
-<span class="fc" id="L243">    return insertAllValues;</span>
+<span class="fc" id="L246">    return insertAllValues;</span>
   }
 
   @Override
   protected String getUpdateAllFields() {
-<span class="fc" id="L248">    return updateAllFields;</span>
+<span class="fc" id="L251">    return updateAllFields;</span>
   }
 
   @Override
@@ -254,48 +257,48 @@ public class DbTransferLog extends AbstractDbData {
     // STARTTRANS, STOPTRANS, TRANSINFO
     // INFOSTATUS, UPDATEDINFO
     // USERID, ACCOUNTID, SPECIALID
-<span class="fc" id="L257">    allFields[Columns.FILENAME.ordinal()].setValue(filename);</span>
-<span class="fc" id="L258">    allFields[Columns.MODETRANS.ordinal()].setValue(mode);</span>
-<span class="fc" id="L259">    allFields[Columns.STARTTRANS.ordinal()].setValue(start);</span>
-<span class="fc" id="L260">    stop = new Timestamp(System.currentTimeMillis());</span>
-<span class="fc" id="L261">    allFields[Columns.STOPTRANS.ordinal()].setValue(stop);</span>
-<span class="fc" id="L262">    allFields[Columns.TRANSINFO.ordinal()].setValue(infotransf);</span>
-<span class="fc" id="L263">    allFields[Columns.INFOSTATUS.ordinal()].setValue(infostatus.getCode());</span>
-<span class="fc" id="L264">    allFields[Columns.UPDATEDINFO.ordinal()].setValue(updatedInfo);</span>
-<span class="fc" id="L265">    allFields[Columns.USERID.ordinal()].setValue(user);</span>
-<span class="fc" id="L266">    allFields[Columns.ACCOUNTID.ordinal()].setValue(account);</span>
-<span class="fc" id="L267">    allFields[Columns.HOSTID.ordinal()].setValue(hostid);</span>
-<span class="fc" id="L268">    allFields[Columns.SPECIALID.ordinal()].setValue(specialId);</span>
-<span class="fc" id="L269">  }</span>
+<span class="fc" id="L260">    allFields[Columns.FILENAME.ordinal()].setValue(filename);</span>
+<span class="fc" id="L261">    allFields[Columns.MODETRANS.ordinal()].setValue(mode);</span>
+<span class="fc" id="L262">    allFields[Columns.STARTTRANS.ordinal()].setValue(start);</span>
+<span class="fc" id="L263">    stop = new Timestamp(System.currentTimeMillis());</span>
+<span class="fc" id="L264">    allFields[Columns.STOPTRANS.ordinal()].setValue(stop);</span>
+<span class="fc" id="L265">    allFields[Columns.TRANSINFO.ordinal()].setValue(infotransf);</span>
+<span class="fc" id="L266">    allFields[Columns.INFOSTATUS.ordinal()].setValue(infostatus.getCode());</span>
+<span class="fc" id="L267">    allFields[Columns.UPDATEDINFO.ordinal()].setValue(updatedInfo);</span>
+<span class="fc" id="L268">    allFields[Columns.USERID.ordinal()].setValue(user);</span>
+<span class="fc" id="L269">    allFields[Columns.ACCOUNTID.ordinal()].setValue(account);</span>
+<span class="fc" id="L270">    allFields[Columns.HOSTID.ordinal()].setValue(hostid);</span>
+<span class="fc" id="L271">    allFields[Columns.SPECIALID.ordinal()].setValue(specialId);</span>
+<span class="fc" id="L272">  }</span>
 
   @Override
   protected void setFromArray() throws WaarpDatabaseSqlException {
-<span class="fc" id="L273">    filename = (String) allFields[Columns.FILENAME.ordinal()].getValue();</span>
-<span class="fc" id="L274">    mode = (String) allFields[Columns.MODETRANS.ordinal()].getValue();</span>
-<span class="fc" id="L275">    start = (Timestamp) allFields[Columns.STARTTRANS.ordinal()].getValue();</span>
-<span class="fc" id="L276">    stop = (Timestamp) allFields[Columns.STOPTRANS.ordinal()].getValue();</span>
+<span class="fc" id="L276">    filename = (String) allFields[Columns.FILENAME.ordinal()].getValue();</span>
+<span class="fc" id="L277">    mode = (String) allFields[Columns.MODETRANS.ordinal()].getValue();</span>
+<span class="fc" id="L278">    start = (Timestamp) allFields[Columns.STARTTRANS.ordinal()].getValue();</span>
+<span class="fc" id="L279">    stop = (Timestamp) allFields[Columns.STOPTRANS.ordinal()].getValue();</span>
     try {
-<span class="fc" id="L278">      infostatus = ReplyCode.getReplyCode(</span>
-<span class="fc" id="L279">          (Integer) allFields[Columns.INFOSTATUS.ordinal()].getValue());</span>
-<span class="nc" id="L280">    } catch (final InvalidArgumentException e) {</span>
-<span class="nc" id="L281">      throw new WaarpDatabaseSqlException(&quot;Wrong Argument&quot;, e);</span>
-<span class="fc" id="L282">    }</span>
-<span class="fc" id="L283">    infotransf = (String) allFields[Columns.TRANSINFO.ordinal()].getValue();</span>
-<span class="fc" id="L284">    updatedInfo = (Integer) allFields[Columns.UPDATEDINFO.ordinal()].getValue();</span>
-<span class="fc" id="L285">    user = (String) allFields[Columns.USERID.ordinal()].getValue();</span>
-<span class="fc" id="L286">    account = (String) allFields[Columns.ACCOUNTID.ordinal()].getValue();</span>
-<span class="fc" id="L287">    hostid = (String) allFields[Columns.HOSTID.ordinal()].getValue();</span>
-<span class="fc" id="L288">    specialId = (Long) allFields[Columns.SPECIALID.ordinal()].getValue();</span>
-<span class="fc" id="L289">  }</span>
+<span class="fc" id="L281">      infostatus = ReplyCode.getReplyCode(</span>
+<span class="fc" id="L282">          (Integer) allFields[Columns.INFOSTATUS.ordinal()].getValue());</span>
+<span class="nc" id="L283">    } catch (final InvalidArgumentException e) {</span>
+<span class="nc" id="L284">      throw new WaarpDatabaseSqlException(&quot;Wrong Argument&quot;, e);</span>
+<span class="fc" id="L285">    }</span>
+<span class="fc" id="L286">    infotransf = (String) allFields[Columns.TRANSINFO.ordinal()].getValue();</span>
+<span class="fc" id="L287">    updatedInfo = (Integer) allFields[Columns.UPDATEDINFO.ordinal()].getValue();</span>
+<span class="fc" id="L288">    user = (String) allFields[Columns.USERID.ordinal()].getValue();</span>
+<span class="fc" id="L289">    account = (String) allFields[Columns.ACCOUNTID.ordinal()].getValue();</span>
+<span class="fc" id="L290">    hostid = (String) allFields[Columns.HOSTID.ordinal()].getValue();</span>
+<span class="fc" id="L291">    specialId = (Long) allFields[Columns.SPECIALID.ordinal()].getValue();</span>
+<span class="fc" id="L292">  }</span>
 
   /**
    * @return The Where condition on Primary Key
    */
   @Override
   protected String getWherePrimaryKey() {
-<span class="fc" id="L296">    return primaryKey[0].getColumn() + &quot; = ? AND &quot; + primaryKey[1].getColumn() +</span>
-<span class="fc" id="L297">           &quot; = ? AND &quot; + primaryKey[2].getColumn() + &quot; = ? AND &quot; +</span>
-<span class="fc" id="L298">           primaryKey[3].getColumn() + &quot; = ? &quot;;</span>
+<span class="fc" id="L299">    return primaryKey[0].getColumn() + &quot; = ? AND &quot; + primaryKey[1].getColumn() +</span>
+<span class="fc" id="L300">           &quot; = ? AND &quot; + primaryKey[2].getColumn() + &quot; = ? AND &quot; +</span>
+<span class="fc" id="L301">           primaryKey[3].getColumn() + &quot; = ? &quot;;</span>
   }
 
   /**
@@ -303,77 +306,77 @@ public class DbTransferLog extends AbstractDbData {
    */
   @Override
   protected void setPrimaryKey() {
-<span class="fc" id="L306">    primaryKey[0].setValue(user);</span>
-<span class="fc" id="L307">    primaryKey[1].setValue(account);</span>
-<span class="fc" id="L308">    primaryKey[2].setValue(hostid);</span>
-<span class="fc" id="L309">    primaryKey[3].setValue(specialId);</span>
-<span class="fc" id="L310">  }</span>
+<span class="fc" id="L309">    primaryKey[0].setValue(user);</span>
+<span class="fc" id="L310">    primaryKey[1].setValue(account);</span>
+<span class="fc" id="L311">    primaryKey[2].setValue(hostid);</span>
+<span class="fc" id="L312">    primaryKey[3].setValue(specialId);</span>
+<span class="fc" id="L313">  }</span>
 
   /**
    * @return the condition to limit access to the row concerned by the Host
    */
   private static String getLimitWhereCondition() {
-<span class="fc" id="L316">    return &quot; &quot; + Columns.HOSTID + &quot; = '&quot; +</span>
-<span class="fc" id="L317">           FileBasedConfiguration.fileBasedConfiguration.getHostId() + &quot;' &quot;;</span>
+<span class="fc" id="L319">    return &quot; &quot; + Columns.HOSTID + &quot; = '&quot; +</span>
+<span class="fc" id="L320">           FileBasedConfiguration.fileBasedConfiguration.getHostId() + &quot;' &quot;;</span>
   }
 
   /**
    * Create a Special Id for NoDb client
    */
   private void createNoDbSpecialId() {
-<span class="nc" id="L324">    synchronized (clientNoDbSpecialId) {</span>
+<span class="nc" id="L327">    synchronized (clientNoDbSpecialId) {</span>
       // New SpecialId is not possible with No Database Model
-<span class="nc" id="L326">      specialId = System.currentTimeMillis();</span>
-<span class="nc" id="L327">      Long newOne = specialId;</span>
-<span class="nc bnc" id="L328" title="All 2 branches missed.">      while (clientNoDbSpecialId.contains(newOne)) {</span>
-<span class="nc" id="L329">        newOne = specialId++;</span>
+<span class="nc" id="L329">      specialId = System.currentTimeMillis();</span>
+<span class="nc" id="L330">      Long newOne = specialId;</span>
+<span class="nc bnc" id="L331" title="All 2 branches missed.">      while (clientNoDbSpecialId.contains(newOne)) {</span>
+<span class="nc" id="L332">        newOne = specialId++;</span>
       }
-<span class="nc" id="L331">      clientNoDbSpecialId.add(newOne);</span>
-<span class="nc" id="L332">    }</span>
-<span class="nc" id="L333">  }</span>
+<span class="nc" id="L334">      clientNoDbSpecialId.add(newOne);</span>
+<span class="nc" id="L335">    }</span>
+<span class="nc" id="L336">  }</span>
 
   /**
    * Remove a Special Id for NoDb Client
    */
   private void removeNoDbSpecialId() {
-<span class="nc" id="L339">    synchronized (clientNoDbSpecialId) {</span>
-<span class="nc" id="L340">      final Long oldOne = specialId;</span>
-<span class="nc" id="L341">      clientNoDbSpecialId.remove(oldOne);</span>
-<span class="nc" id="L342">    }</span>
-<span class="nc" id="L343">  }</span>
+<span class="nc" id="L342">    synchronized (clientNoDbSpecialId) {</span>
+<span class="nc" id="L343">      final Long oldOne = specialId;</span>
+<span class="nc" id="L344">      clientNoDbSpecialId.remove(oldOne);</span>
+<span class="nc" id="L345">    }</span>
+<span class="nc" id="L346">  }</span>
 
   @Override
   public void delete() throws WaarpDatabaseException {
-<span class="nc bnc" id="L347" title="All 2 branches missed.">    if (dbSession == null) {</span>
-<span class="nc" id="L348">      removeNoDbSpecialId();</span>
-<span class="nc" id="L349">      return;</span>
+<span class="nc bnc" id="L350" title="All 2 branches missed.">    if (dbSession == null) {</span>
+<span class="nc" id="L351">      removeNoDbSpecialId();</span>
+<span class="nc" id="L352">      return;</span>
     }
-<span class="nc" id="L351">    super.delete();</span>
-<span class="nc" id="L352">  }</span>
+<span class="nc" id="L354">    super.delete();</span>
+<span class="nc" id="L355">  }</span>
 
   @Override
   public void insert() throws WaarpDatabaseException {
-<span class="pc bpc" id="L356" title="1 of 2 branches missed.">    if (isSaved) {</span>
-<span class="nc" id="L357">      return;</span>
+<span class="pc bpc" id="L359" title="1 of 2 branches missed.">    if (isSaved) {</span>
+<span class="nc" id="L360">      return;</span>
     }
-<span class="pc bpc" id="L359" title="1 of 2 branches missed.">    if (dbSession == null) {</span>
-<span class="nc bnc" id="L360" title="All 2 branches missed.">      if (specialId == DbConstant.ILLEGALVALUE) {</span>
+<span class="pc bpc" id="L362" title="1 of 2 branches missed.">    if (dbSession == null) {</span>
+<span class="nc bnc" id="L363" title="All 2 branches missed.">      if (specialId == DbConstant.ILLEGALVALUE) {</span>
         // New SpecialId is not possible with No Database Model
-<span class="nc" id="L362">        createNoDbSpecialId();</span>
+<span class="nc" id="L365">        createNoDbSpecialId();</span>
       }
-<span class="nc" id="L364">      isSaved = true;</span>
-<span class="nc" id="L365">      return;</span>
+<span class="nc" id="L367">      isSaved = true;</span>
+<span class="nc" id="L368">      return;</span>
     }
-<span class="fc" id="L367">    logger.debug(&quot;Dbrelated info: &quot; + dbSession.getAdmin().getServer());</span>
+<span class="fc" id="L370">    logger.debug(&quot;Dbrelated info: &quot; + dbSession.getAdmin().getServer());</span>
     // First need to find a new id if id is not ok
-<span class="fc bfc" id="L369" title="All 2 branches covered.">    if (specialId == DbConstant.ILLEGALVALUE) {</span>
-<span class="fc" id="L370">      specialId = dbSession.getAdmin().getDbModel().nextSequence(dbSession);</span>
-<span class="fc" id="L371">      logger.debug(&quot;Try Insert create a new Id from sequence: &quot; + specialId);</span>
-<span class="fc" id="L372">      setPrimaryKey();</span>
+<span class="fc bfc" id="L372" title="All 2 branches covered.">    if (specialId == DbConstant.ILLEGALVALUE) {</span>
+<span class="fc" id="L373">      specialId = dbSession.getAdmin().getDbModel().nextSequence(dbSession);</span>
+<span class="fc" id="L374">      logger.debug(&quot;Try Insert create a new Id from sequence: &quot; + specialId);</span>
+<span class="fc" id="L375">      setPrimaryKey();</span>
     }
-<span class="fc" id="L374">    super.insert();</span>
-<span class="fc" id="L375">    logger.debug(&quot;TransferLog shall be created: {}&quot;, this);</span>
-<span class="fc" id="L376">  }</span>
+<span class="fc" id="L377">    super.insert();</span>
+<span class="fc" id="L378">    logger.debug(&quot;TransferLog shall be created: {}&quot;, this);</span>
+<span class="fc" id="L379">  }</span>
 
   /**
    * As insert but with the ability to change the SpecialId
@@ -381,87 +384,87 @@ public class DbTransferLog extends AbstractDbData {
    * @throws WaarpDatabaseException
    */
   public void create() throws WaarpDatabaseException {
-<span class="nc bnc" id="L384" title="All 2 branches missed.">    if (isSaved) {</span>
-<span class="nc" id="L385">      return;</span>
+<span class="nc bnc" id="L387" title="All 2 branches missed.">    if (isSaved) {</span>
+<span class="nc" id="L388">      return;</span>
     }
-<span class="nc bnc" id="L387" title="All 2 branches missed.">    if (dbSession == null) {</span>
-<span class="nc bnc" id="L388" title="All 2 branches missed.">      if (specialId == DbConstant.ILLEGALVALUE) {</span>
+<span class="nc bnc" id="L390" title="All 2 branches missed.">    if (dbSession == null) {</span>
+<span class="nc bnc" id="L391" title="All 2 branches missed.">      if (specialId == DbConstant.ILLEGALVALUE) {</span>
         // New SpecialId is not possible with No Database Model
-<span class="nc" id="L390">        createNoDbSpecialId();</span>
+<span class="nc" id="L393">        createNoDbSpecialId();</span>
       }
-<span class="nc" id="L392">      isSaved = true;</span>
-<span class="nc" id="L393">      return;</span>
+<span class="nc" id="L395">      isSaved = true;</span>
+<span class="nc" id="L396">      return;</span>
     }
     // First need to find a new id if id is not ok
-<span class="nc bnc" id="L396" title="All 2 branches missed.">    if (specialId == DbConstant.ILLEGALVALUE) {</span>
-<span class="nc" id="L397">      specialId = dbSession.getAdmin().getDbModel().nextSequence(dbSession);</span>
-<span class="nc" id="L398">      logger.debug(&quot;Try Insert create a new Id from sequence: &quot; + specialId);</span>
-<span class="nc" id="L399">      setPrimaryKey();</span>
+<span class="nc bnc" id="L399" title="All 2 branches missed.">    if (specialId == DbConstant.ILLEGALVALUE) {</span>
+<span class="nc" id="L400">      specialId = dbSession.getAdmin().getDbModel().nextSequence(dbSession);</span>
+<span class="nc" id="L401">      logger.debug(&quot;Try Insert create a new Id from sequence: &quot; + specialId);</span>
+<span class="nc" id="L402">      setPrimaryKey();</span>
     }
-<span class="nc" id="L401">    setToArray();</span>
-<span class="nc" id="L402">    final DbPreparedStatement preparedStatement =</span>
+<span class="nc" id="L404">    setToArray();</span>
+<span class="nc" id="L405">    final DbPreparedStatement preparedStatement =</span>
         new DbPreparedStatement(dbSession);
     try {
-<span class="nc" id="L405">      preparedStatement.createPrepareStatement(</span>
+<span class="nc" id="L408">      preparedStatement.createPrepareStatement(</span>
           &quot;INSERT INTO &quot; + table + &quot; (&quot; + selectAllFields + &quot;) VALUES &quot; +
           insertAllValues);
-<span class="nc" id="L408">      setValues(preparedStatement, allFields);</span>
+<span class="nc" id="L411">      setValues(preparedStatement, allFields);</span>
       try {
-<span class="nc" id="L410">        final int count = preparedStatement.executeUpdate();</span>
-<span class="nc bnc" id="L411" title="All 2 branches missed.">        if (count &lt;= 0) {</span>
-<span class="nc" id="L412">          throw new WaarpDatabaseNoDataException(NO_ROW_FOUND2);</span>
+<span class="nc" id="L413">        final int count = preparedStatement.executeUpdate();</span>
+<span class="nc bnc" id="L414" title="All 2 branches missed.">        if (count &lt;= 0) {</span>
+<span class="nc" id="L415">          throw new WaarpDatabaseNoDataException(NO_ROW_FOUND2);</span>
         }
-<span class="nc" id="L414">      } catch (final WaarpDatabaseSqlException e) {</span>
-<span class="nc" id="L415">        logger.error(&quot;Problem while inserting&quot;, e);</span>
-<span class="nc" id="L416">        final DbPreparedStatement find = new DbPreparedStatement(dbSession);</span>
+<span class="nc" id="L417">      } catch (final WaarpDatabaseSqlException e) {</span>
+<span class="nc" id="L418">        logger.error(&quot;Problem while inserting&quot;, e);</span>
+<span class="nc" id="L419">        final DbPreparedStatement find = new DbPreparedStatement(dbSession);</span>
         try {
-<span class="nc" id="L418">          find.createPrepareStatement(</span>
-<span class="nc" id="L419">              &quot;SELECT MAX(&quot; + primaryKey[3].getColumn() + &quot;) FROM &quot; + table +</span>
-<span class="nc" id="L420">              &quot; WHERE &quot; + primaryKey[0].getColumn() + &quot; = ? AND &quot; +</span>
-<span class="nc" id="L421">              primaryKey[1].getColumn() + &quot; = ? AND &quot; +</span>
-<span class="nc" id="L422">              primaryKey[2].getColumn() + &quot; = ? AND &quot; +</span>
-<span class="nc" id="L423">              primaryKey[3].getColumn() + &quot; != ? &quot;);</span>
-<span class="nc" id="L424">          setPrimaryKey();</span>
-<span class="nc" id="L425">          setValues(find, primaryKey);</span>
-<span class="nc" id="L426">          find.executeQuery();</span>
-<span class="nc bnc" id="L427" title="All 2 branches missed.">          if (find.getNext()) {</span>
-            long result;
+<span class="nc" id="L421">          find.createPrepareStatement(</span>
+<span class="nc" id="L422">              &quot;SELECT MAX(&quot; + primaryKey[3].getColumn() + &quot;) FROM &quot; + table +</span>
+<span class="nc" id="L423">              &quot; WHERE &quot; + primaryKey[0].getColumn() + &quot; = ? AND &quot; +</span>
+<span class="nc" id="L424">              primaryKey[1].getColumn() + &quot; = ? AND &quot; +</span>
+<span class="nc" id="L425">              primaryKey[2].getColumn() + &quot; = ? AND &quot; +</span>
+<span class="nc" id="L426">              primaryKey[3].getColumn() + &quot; != ? &quot;);</span>
+<span class="nc" id="L427">          setPrimaryKey();</span>
+<span class="nc" id="L428">          setValues(find, primaryKey);</span>
+<span class="nc" id="L429">          find.executeQuery();</span>
+<span class="nc bnc" id="L430" title="All 2 branches missed.">          if (find.getNext()) {</span>
+            final long result;
             try {
-<span class="nc" id="L430">              result = find.getResultSet().getLong(1);</span>
-<span class="nc" id="L431">            } catch (final SQLException e1) {</span>
-<span class="nc" id="L432">              throw new WaarpDatabaseSqlException(e1);</span>
-<span class="nc" id="L433">            }</span>
-<span class="nc" id="L434">            specialId = result + 1;</span>
-<span class="nc" id="L435">            dbSession.getAdmin().getDbModel()</span>
-<span class="nc" id="L436">                     .resetSequence(dbSession, specialId + 1);</span>
-<span class="nc" id="L437">            setToArray();</span>
-<span class="nc" id="L438">            preparedStatement.close();</span>
-<span class="nc" id="L439">            setValues(preparedStatement, allFields);</span>
-<span class="nc" id="L440">            final int count = preparedStatement.executeUpdate();</span>
-<span class="nc bnc" id="L441" title="All 2 branches missed.">            if (count &lt;= 0) {</span>
-<span class="nc" id="L442">              throw new WaarpDatabaseNoDataException(NO_ROW_FOUND2);</span>
+<span class="nc" id="L433">              result = find.getResultSet().getLong(1);</span>
+<span class="nc" id="L434">            } catch (final SQLException e1) {</span>
+<span class="nc" id="L435">              throw new WaarpDatabaseSqlException(e1);</span>
+<span class="nc" id="L436">            }</span>
+<span class="nc" id="L437">            specialId = result + 1;</span>
+<span class="nc" id="L438">            dbSession.getAdmin().getDbModel()</span>
+<span class="nc" id="L439">                     .resetSequence(dbSession, specialId + 1);</span>
+<span class="nc" id="L440">            setToArray();</span>
+<span class="nc" id="L441">            preparedStatement.close();</span>
+<span class="nc" id="L442">            setValues(preparedStatement, allFields);</span>
+<span class="nc" id="L443">            final int count = preparedStatement.executeUpdate();</span>
+<span class="nc bnc" id="L444" title="All 2 branches missed.">            if (count &lt;= 0) {</span>
+<span class="nc" id="L445">              throw new WaarpDatabaseNoDataException(NO_ROW_FOUND2);</span>
             }
-<span class="nc" id="L444">          } else {</span>
-<span class="nc" id="L445">            throw new WaarpDatabaseNoDataException(NO_ROW_FOUND2);</span>
+<span class="nc" id="L447">          } else {</span>
+<span class="nc" id="L448">            throw new WaarpDatabaseNoDataException(NO_ROW_FOUND2);</span>
           }
         } finally {
-<span class="nc" id="L448">          find.realClose();</span>
+<span class="nc" id="L451">          find.realClose();</span>
         }
-<span class="nc" id="L450">      }</span>
-<span class="nc" id="L451">      isSaved = true;</span>
+<span class="nc" id="L453">      }</span>
+<span class="nc" id="L454">      isSaved = true;</span>
     } finally {
-<span class="nc" id="L453">      preparedStatement.realClose();</span>
+<span class="nc" id="L456">      preparedStatement.realClose();</span>
     }
-<span class="nc" id="L455">  }</span>
+<span class="nc" id="L458">  }</span>
 
   /**
    * Private constructor
    *
    * @param dBsession
    */
-  private DbTransferLog(DbSession dBsession) {
-<span class="fc" id="L463">    super(dBsession);</span>
-<span class="fc" id="L464">  }</span>
+  private DbTransferLog(final DbSession dBsession) {
+<span class="fc" id="L466">    super(dBsession);</span>
+<span class="fc" id="L467">  }</span>
 
   /**
    * For instance when getting updated information
@@ -474,14 +477,14 @@ public class DbTransferLog extends AbstractDbData {
    * @throws WaarpDatabaseSqlException
    */
   public static DbTransferLog getFromStatement(
-      DbPreparedStatement preparedStatement)
+      final DbPreparedStatement preparedStatement)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
-<span class="fc" id="L479">    final DbTransferLog dbTaskRunner =</span>
-<span class="fc" id="L480">        new DbTransferLog(preparedStatement.getDbSession());</span>
-<span class="fc" id="L481">    dbTaskRunner.getValues(preparedStatement, dbTaskRunner.allFields);</span>
-<span class="fc" id="L482">    dbTaskRunner.setFromArray();</span>
-<span class="fc" id="L483">    dbTaskRunner.isSaved = true;</span>
-<span class="fc" id="L484">    return dbTaskRunner;</span>
+<span class="fc" id="L482">    final DbTransferLog dbTaskRunner =</span>
+<span class="fc" id="L483">        new DbTransferLog(preparedStatement.getDbSession());</span>
+<span class="fc" id="L484">    dbTaskRunner.getValues(preparedStatement, dbTaskRunner.allFields);</span>
+<span class="fc" id="L485">    dbTaskRunner.setFromArray();</span>
+<span class="fc" id="L486">    dbTaskRunner.isSaved = true;</span>
+<span class="fc" id="L487">    return dbTaskRunner;</span>
   }
 
   /**
@@ -496,24 +499,23 @@ public class DbTransferLog extends AbstractDbData {
    * @throws WaarpDatabaseNoConnectionException
    * @throws WaarpDatabaseSqlException
    */
-  public static DbPreparedStatement getStatusPrepareStament(DbSession session,
-                                                            ReplyCode status,
-                                                            int limit)
+  public static DbPreparedStatement getStatusPrepareStament(
+      final DbSession session, final ReplyCode status, final int limit)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
-<span class="fc" id="L503">    String request = &quot;SELECT &quot; + selectAllFields + &quot; FROM &quot; + table;</span>
-<span class="pc bpc" id="L504" title="1 of 2 branches missed.">    if (status != null) {</span>
-<span class="nc" id="L505">      request +=</span>
-<span class="nc" id="L506">          &quot; WHERE &quot; + Columns.INFOSTATUS.name() + &quot; = &quot; + status.getCode() +</span>
-<span class="nc" id="L507">          &quot; AND &quot; + getLimitWhereCondition();</span>
+<span class="fc" id="L505">    String request = &quot;SELECT &quot; + selectAllFields + &quot; FROM &quot; + table;</span>
+<span class="pc bpc" id="L506" title="1 of 2 branches missed.">    if (status != null) {</span>
+<span class="nc" id="L507">      request +=</span>
+<span class="nc" id="L508">          &quot; WHERE &quot; + Columns.INFOSTATUS.name() + &quot; = &quot; + status.getCode() +</span>
+<span class="nc" id="L509">          &quot; AND &quot; + getLimitWhereCondition();</span>
     } else {
-<span class="fc" id="L509">      request += &quot; WHERE &quot; + getLimitWhereCondition();</span>
+<span class="fc" id="L511">      request += &quot; WHERE &quot; + getLimitWhereCondition();</span>
     }
-<span class="fc" id="L511">    request += &quot; ORDER BY &quot; + Columns.STARTTRANS.name() + &quot; DESC &quot;;</span>
-<span class="pc bpc" id="L512" title="1 of 2 branches missed.">    if (limit &gt; 0) {</span>
-<span class="fc" id="L513">      request = session.getAdmin().getDbModel()</span>
-<span class="fc" id="L514">                       .limitRequest(selectAllFields, request, limit);</span>
+<span class="fc" id="L513">    request += &quot; ORDER BY &quot; + Columns.STARTTRANS.name() + &quot; DESC &quot;;</span>
+<span class="pc bpc" id="L514" title="1 of 2 branches missed.">    if (limit &gt; 0) {</span>
+<span class="fc" id="L515">      request = session.getAdmin().getDbModel()</span>
+<span class="fc" id="L516">                       .limitRequest(selectAllFields, request, limit);</span>
     }
-<span class="fc" id="L516">    return new DbPreparedStatement(session, request);</span>
+<span class="fc" id="L518">    return new DbPreparedStatement(session, request);</span>
   }
 
   /**
@@ -528,11 +530,10 @@ public class DbTransferLog extends AbstractDbData {
    * @throws WaarpDatabaseNoConnectionException
    * @throws WaarpDatabaseSqlException
    */
-  public static DbPreparedStatement getLogPrepareStament(DbSession session,
-                                                         Timestamp start,
-                                                         Timestamp stop)
+  public static DbPreparedStatement getLogPrepareStament(
+      final DbSession session, final Timestamp start, final Timestamp stop)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
-<span class="nc" id="L535">    return getLogPrepareStament(session, start, stop, null);</span>
+<span class="nc" id="L536">    return getLogPrepareStament(session, start, stop, null);</span>
   }
 
   /**
@@ -547,10 +548,9 @@ public class DbTransferLog extends AbstractDbData {
    * @throws WaarpDatabaseNoConnectionException
    * @throws WaarpDatabaseSqlException
    */
-  public static DbPreparedStatement getLogPrepareStament(DbSession session,
-                                                         Timestamp start,
-                                                         Timestamp stop,
-                                                         ReplyCode status)
+  public static DbPreparedStatement getLogPrepareStament(
+      final DbSession session, final Timestamp start, final Timestamp stop,
+      final ReplyCode status)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
 
 <span class="nc" id="L556">    String statusWhereFilter = &quot;&quot;;</span>
@@ -614,7 +614,7 @@ public class DbTransferLog extends AbstractDbData {
    * @throws WaarpDatabaseSqlException
    */
   public static DbPreparedStatement getCountInfoPrepareStatement(
-      DbSession session)
+      final DbSession session)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
 <span class="fc" id="L619">    final String request =</span>
 <span class="fc" id="L620">        &quot;SELECT COUNT(&quot; + Columns.SPECIALID.name() + &quot;) FROM &quot; + table +</span>
@@ -633,27 +633,26 @@ public class DbTransferLog extends AbstractDbData {
    *
    * @return the number of elements (COUNT) from the statement
    */
-  public static long getResultCountPrepareStatement(DbPreparedStatement pstt,
-                                                    UpdatedInfo info,
-                                                    long time) {
-<span class="nc" id="L639">    long result = 0;</span>
+  public static long getResultCountPrepareStatement(
+      final DbPreparedStatement pstt, final UpdatedInfo info, final long time) {
+<span class="nc" id="L638">    long result = 0;</span>
     try {
-<span class="nc" id="L641">      finishSelectOrCountPrepareStatement(pstt, time);</span>
-<span class="nc" id="L642">      pstt.getPreparedStatement().setInt(2, info.ordinal());</span>
-<span class="nc" id="L643">      pstt.executeQuery();</span>
-<span class="nc bnc" id="L644" title="All 2 branches missed.">      if (pstt.getNext()) {</span>
-<span class="nc" id="L645">        result = pstt.getResultSet().getLong(1);</span>
+<span class="nc" id="L640">      finishSelectOrCountPrepareStatement(pstt, time);</span>
+<span class="nc" id="L641">      pstt.getPreparedStatement().setInt(2, info.ordinal());</span>
+<span class="nc" id="L642">      pstt.executeQuery();</span>
+<span class="nc bnc" id="L643" title="All 2 branches missed.">      if (pstt.getNext()) {</span>
+<span class="nc" id="L644">        result = pstt.getResultSet().getLong(1);</span>
       }
-<span class="nc" id="L647">    } catch (final WaarpDatabaseNoConnectionException ignored) {</span>
+<span class="nc" id="L646">    } catch (final WaarpDatabaseNoConnectionException ignored) {</span>
       // nothing
-<span class="nc" id="L649">    } catch (final WaarpDatabaseSqlException ignored) {</span>
+<span class="nc" id="L648">    } catch (final WaarpDatabaseSqlException ignored) {</span>
       // nothing
-<span class="nc" id="L651">    } catch (final SQLException ignored) {</span>
+<span class="nc" id="L650">    } catch (final SQLException ignored) {</span>
       // nothing
     } finally {
-<span class="nc" id="L654">      pstt.close();</span>
+<span class="nc" id="L653">      pstt.close();</span>
     }
-<span class="nc" id="L656">    return result;</span>
+<span class="nc" id="L655">    return result;</span>
   }
 
   /**
@@ -666,16 +665,16 @@ public class DbTransferLog extends AbstractDbData {
    * @throws WaarpDatabaseSqlException
    */
   public static DbPreparedStatement getCountStatusPrepareStatement(
-      DbSession session)
+      final DbSession session)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
-<span class="fc" id="L671">    String request =</span>
-<span class="fc" id="L672">        &quot;SELECT COUNT(&quot; + Columns.SPECIALID.name() + &quot;) FROM &quot; + table;</span>
-<span class="fc" id="L673">    request += &quot; WHERE &quot; + Columns.STARTTRANS.name() + &quot; &gt;= ? &quot;;</span>
-<span class="fc" id="L674">    request += &quot; AND &quot; + Columns.INFOSTATUS.name() + &quot; = ? AND &quot; +</span>
-<span class="fc" id="L675">               getLimitWhereCondition();</span>
-<span class="fc" id="L676">    final DbPreparedStatement prep = new DbPreparedStatement(session, request);</span>
-<span class="fc" id="L677">    session.addLongTermPreparedStatement(prep);</span>
-<span class="fc" id="L678">    return prep;</span>
+<span class="fc" id="L670">    String request =</span>
+<span class="fc" id="L671">        &quot;SELECT COUNT(&quot; + Columns.SPECIALID.name() + &quot;) FROM &quot; + table;</span>
+<span class="fc" id="L672">    request += &quot; WHERE &quot; + Columns.STARTTRANS.name() + &quot; &gt;= ? &quot;;</span>
+<span class="fc" id="L673">    request += &quot; AND &quot; + Columns.INFOSTATUS.name() + &quot; = ? AND &quot; +</span>
+<span class="fc" id="L674">               getLimitWhereCondition();</span>
+<span class="fc" id="L675">    final DbPreparedStatement prep = new DbPreparedStatement(session, request);</span>
+<span class="fc" id="L676">    session.addLongTermPreparedStatement(prep);</span>
+<span class="fc" id="L677">    return prep;</span>
   }
 
   /**
@@ -689,15 +688,15 @@ public class DbTransferLog extends AbstractDbData {
    * @throws WaarpDatabaseSqlException
    */
   public static DbPreparedStatement getCountAllPrepareStatement(
-      DbSession session)
+      final DbSession session)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
-<span class="fc" id="L694">    String request =</span>
-<span class="fc" id="L695">        &quot;SELECT COUNT(&quot; + Columns.SPECIALID.name() + &quot;) FROM &quot; + table;</span>
-<span class="fc" id="L696">    request += &quot; WHERE &quot; + Columns.STARTTRANS.name() + &quot; &gt;= ? &quot;;</span>
-<span class="fc" id="L697">    request += &quot; AND &quot; + getLimitWhereCondition();</span>
-<span class="fc" id="L698">    final DbPreparedStatement prep = new DbPreparedStatement(session, request);</span>
-<span class="fc" id="L699">    session.addLongTermPreparedStatement(prep);</span>
-<span class="fc" id="L700">    return prep;</span>
+<span class="fc" id="L693">    String request =</span>
+<span class="fc" id="L694">        &quot;SELECT COUNT(&quot; + Columns.SPECIALID.name() + &quot;) FROM &quot; + table;</span>
+<span class="fc" id="L695">    request += &quot; WHERE &quot; + Columns.STARTTRANS.name() + &quot; &gt;= ? &quot;;</span>
+<span class="fc" id="L696">    request += &quot; AND &quot; + getLimitWhereCondition();</span>
+<span class="fc" id="L697">    final DbPreparedStatement prep = new DbPreparedStatement(session, request);</span>
+<span class="fc" id="L698">    session.addLongTermPreparedStatement(prep);</span>
+<span class="fc" id="L699">    return prep;</span>
   }
 
   /**
@@ -707,27 +706,26 @@ public class DbTransferLog extends AbstractDbData {
    *
    * @return the number of elements (COUNT) from the statement
    */
-  public static long getResultCountPrepareStatement(DbPreparedStatement pstt,
-                                                    ReplyCode error,
-                                                    long time) {
-<span class="nc" id="L713">    long result = 0;</span>
+  public static long getResultCountPrepareStatement(
+      final DbPreparedStatement pstt, final ReplyCode error, final long time) {
+<span class="nc" id="L711">    long result = 0;</span>
     try {
-<span class="nc" id="L715">      finishSelectOrCountPrepareStatement(pstt, time);</span>
-<span class="nc" id="L716">      pstt.getPreparedStatement().setInt(2, error.getCode());</span>
-<span class="nc" id="L717">      pstt.executeQuery();</span>
-<span class="nc bnc" id="L718" title="All 2 branches missed.">      if (pstt.getNext()) {</span>
-<span class="nc" id="L719">        result = pstt.getResultSet().getLong(1);</span>
+<span class="nc" id="L713">      finishSelectOrCountPrepareStatement(pstt, time);</span>
+<span class="nc" id="L714">      pstt.getPreparedStatement().setInt(2, error.getCode());</span>
+<span class="nc" id="L715">      pstt.executeQuery();</span>
+<span class="nc bnc" id="L716" title="All 2 branches missed.">      if (pstt.getNext()) {</span>
+<span class="nc" id="L717">        result = pstt.getResultSet().getLong(1);</span>
       }
-<span class="nc" id="L721">    } catch (final WaarpDatabaseNoConnectionException ignored) {</span>
+<span class="nc" id="L719">    } catch (final WaarpDatabaseNoConnectionException ignored) {</span>
       // nothing
-<span class="nc" id="L723">    } catch (final WaarpDatabaseSqlException ignored) {</span>
+<span class="nc" id="L721">    } catch (final WaarpDatabaseSqlException ignored) {</span>
       // nothing
-<span class="nc" id="L725">    } catch (final SQLException ignored) {</span>
+<span class="nc" id="L723">    } catch (final SQLException ignored) {</span>
       // nothing
     } finally {
-<span class="nc" id="L728">      pstt.close();</span>
+<span class="nc" id="L726">      pstt.close();</span>
     }
-<span class="nc" id="L730">    return result;</span>
+<span class="nc" id="L728">    return result;</span>
   }
 
   /**
@@ -735,23 +733,24 @@ public class DbTransferLog extends AbstractDbData {
    *
    * @return the number of elements (COUNT) from the statement
    */
-  public static long getResultCountPrepareStatement(DbPreparedStatement pstt) {
-<span class="nc" id="L739">    long result = 0;</span>
+  public static long getResultCountPrepareStatement(
+      final DbPreparedStatement pstt) {
+<span class="nc" id="L738">    long result = 0;</span>
     try {
-<span class="nc" id="L741">      pstt.executeQuery();</span>
-<span class="nc bnc" id="L742" title="All 2 branches missed.">      if (pstt.getNext()) {</span>
-<span class="nc" id="L743">        result = pstt.getResultSet().getLong(1);</span>
+<span class="nc" id="L740">      pstt.executeQuery();</span>
+<span class="nc bnc" id="L741" title="All 2 branches missed.">      if (pstt.getNext()) {</span>
+<span class="nc" id="L742">        result = pstt.getResultSet().getLong(1);</span>
       }
-<span class="nc" id="L745">    } catch (final WaarpDatabaseNoConnectionException ignored) {</span>
+<span class="nc" id="L744">    } catch (final WaarpDatabaseNoConnectionException ignored) {</span>
       // nothing
-<span class="nc" id="L747">    } catch (final WaarpDatabaseSqlException ignored) {</span>
+<span class="nc" id="L746">    } catch (final WaarpDatabaseSqlException ignored) {</span>
       // nothing
-<span class="nc" id="L749">    } catch (final SQLException ignored) {</span>
+<span class="nc" id="L748">    } catch (final SQLException ignored) {</span>
       // nothing
     } finally {
-<span class="nc" id="L752">      pstt.close();</span>
+<span class="nc" id="L751">      pstt.close();</span>
     }
-<span class="nc" id="L754">    return result;</span>
+<span class="nc" id="L753">    return result;</span>
   }
 
   /**
@@ -763,10 +762,10 @@ public class DbTransferLog extends AbstractDbData {
    * @throws WaarpDatabaseSqlException
    */
   public static void finishSelectOrCountPrepareStatement(
-      DbPreparedStatement pstt)
+      final DbPreparedStatement pstt)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
-<span class="nc" id="L768">    finishSelectOrCountPrepareStatement(pstt, System.currentTimeMillis());</span>
-<span class="nc" id="L769">  }</span>
+<span class="nc" id="L767">    finishSelectOrCountPrepareStatement(pstt, System.currentTimeMillis());</span>
+<span class="nc" id="L768">  }</span>
 
   /**
    * Set the current time in the given updatedPreparedStatement
@@ -777,16 +776,16 @@ public class DbTransferLog extends AbstractDbData {
    * @throws WaarpDatabaseSqlException
    */
   public static void finishSelectOrCountPrepareStatement(
-      DbPreparedStatement pstt, long time)
+      final DbPreparedStatement pstt, final long time)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
-<span class="nc" id="L782">    final Timestamp startlimit = new Timestamp(time);</span>
+<span class="nc" id="L781">    final Timestamp startlimit = new Timestamp(time);</span>
     try {
-<span class="nc" id="L784">      pstt.getPreparedStatement().setTimestamp(1, startlimit);</span>
-<span class="nc" id="L785">    } catch (final SQLException e) {</span>
-<span class="nc" id="L786">      logger.error(&quot;Database SQL Error: Cannot set timestamp&quot;, e);</span>
-<span class="nc" id="L787">      throw new WaarpDatabaseSqlException(&quot;Cannot set timestamp&quot;, e);</span>
-<span class="nc" id="L788">    }</span>
-<span class="nc" id="L789">  }</span>
+<span class="nc" id="L783">      pstt.getPreparedStatement().setTimestamp(1, startlimit);</span>
+<span class="nc" id="L784">    } catch (final SQLException e) {</span>
+<span class="nc" id="L785">      logger.error(&quot;Database SQL Error: Cannot set timestamp&quot;, e);</span>
+<span class="nc" id="L786">      throw new WaarpDatabaseSqlException(&quot;Cannot set timestamp&quot;, e);</span>
+<span class="nc" id="L787">    }</span>
+<span class="nc" id="L788">  }</span>
 
   /**
    * Running or not transfers are concerned
@@ -801,29 +800,29 @@ public class DbTransferLog extends AbstractDbData {
    * @throws WaarpDatabaseSqlException
    */
   public static DbPreparedStatement getCountInOutErrorPrepareStatement(
-      DbSession session, boolean in)
+      final DbSession session, final boolean in)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
-<span class="fc" id="L806">    String request =</span>
-<span class="fc" id="L807">        &quot;SELECT COUNT(&quot; + Columns.SPECIALID.name() + &quot;) FROM &quot; + table;</span>
-    String inCond;
-<span class="fc bfc" id="L809" title="All 2 branches covered.">    if (in) {</span>
-<span class="fc" id="L810">      inCond = &quot; (&quot; + Columns.MODETRANS.name() + &quot; = '&quot; +</span>
-<span class="fc" id="L811">               FtpCommandCode.APPE.name() + &quot;' OR &quot; + Columns.MODETRANS.name() +</span>
-<span class="fc" id="L812">               &quot; = '&quot; + FtpCommandCode.STOR.name() + &quot;' OR &quot; +</span>
-<span class="fc" id="L813">               Columns.MODETRANS.name() + &quot; = '&quot; + FtpCommandCode.STOU.name() +</span>
+<span class="fc" id="L805">    String request =</span>
+<span class="fc" id="L806">        &quot;SELECT COUNT(&quot; + Columns.SPECIALID.name() + &quot;) FROM &quot; + table;</span>
+    final String inCond;
+<span class="fc bfc" id="L808" title="All 2 branches covered.">    if (in) {</span>
+<span class="fc" id="L809">      inCond = &quot; (&quot; + Columns.MODETRANS.name() + &quot; = '&quot; +</span>
+<span class="fc" id="L810">               FtpCommandCode.APPE.name() + &quot;' OR &quot; + Columns.MODETRANS.name() +</span>
+<span class="fc" id="L811">               &quot; = '&quot; + FtpCommandCode.STOR.name() + &quot;' OR &quot; +</span>
+<span class="fc" id="L812">               Columns.MODETRANS.name() + &quot; = '&quot; + FtpCommandCode.STOU.name() +</span>
                &quot;') &quot;;
     } else {
-<span class="fc" id="L816">      inCond = &quot; (&quot; + Columns.MODETRANS.name() + &quot; = '&quot; +</span>
-<span class="fc" id="L817">               FtpCommandCode.RETR.name() + &quot;') &quot;;</span>
+<span class="fc" id="L815">      inCond = &quot; (&quot; + Columns.MODETRANS.name() + &quot; = '&quot; +</span>
+<span class="fc" id="L816">               FtpCommandCode.RETR.name() + &quot;') &quot;;</span>
     }
-<span class="fc" id="L819">    request += &quot; WHERE &quot; + inCond;</span>
-<span class="fc" id="L820">    request += &quot; AND &quot; + getLimitWhereCondition() + ' ';</span>
-<span class="fc" id="L821">    request += &quot; AND &quot; + Columns.STARTTRANS.name() + &quot; &gt;= ? &quot;;</span>
-<span class="fc" id="L822">    request += &quot; AND &quot; + Columns.UPDATEDINFO.name() + &quot; = &quot; +</span>
-<span class="fc" id="L823">               UpdatedInfo.INERROR.ordinal();</span>
-<span class="fc" id="L824">    final DbPreparedStatement prep = new DbPreparedStatement(session, request);</span>
-<span class="fc" id="L825">    session.addLongTermPreparedStatement(prep);</span>
-<span class="fc" id="L826">    return prep;</span>
+<span class="fc" id="L818">    request += &quot; WHERE &quot; + inCond;</span>
+<span class="fc" id="L819">    request += &quot; AND &quot; + getLimitWhereCondition() + ' ';</span>
+<span class="fc" id="L820">    request += &quot; AND &quot; + Columns.STARTTRANS.name() + &quot; &gt;= ? &quot;;</span>
+<span class="fc" id="L821">    request += &quot; AND &quot; + Columns.UPDATEDINFO.name() + &quot; = &quot; +</span>
+<span class="fc" id="L822">               UpdatedInfo.INERROR.ordinal();</span>
+<span class="fc" id="L823">    final DbPreparedStatement prep = new DbPreparedStatement(session, request);</span>
+<span class="fc" id="L824">    session.addLongTermPreparedStatement(prep);</span>
+<span class="fc" id="L825">    return prep;</span>
   }
 
   /**
@@ -840,139 +839,139 @@ public class DbTransferLog extends AbstractDbData {
    * @throws WaarpDatabaseSqlException
    */
   public static DbPreparedStatement getCountInOutRunningPrepareStatement(
-      DbSession session, boolean in, boolean running)
+      final DbSession session, final boolean in, final boolean running)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
-<span class="fc" id="L845">    String request =</span>
-<span class="fc" id="L846">        &quot;SELECT COUNT(&quot; + Columns.SPECIALID.name() + &quot;) FROM &quot; + table;</span>
-    String inCond;
-<span class="fc bfc" id="L848" title="All 2 branches covered.">    if (in) {</span>
-<span class="fc" id="L849">      inCond = &quot; (&quot; + Columns.MODETRANS.name() + &quot; = '&quot; +</span>
-<span class="fc" id="L850">               FtpCommandCode.APPE.name() + &quot;' OR &quot; + Columns.MODETRANS.name() +</span>
-<span class="fc" id="L851">               &quot; = '&quot; + FtpCommandCode.STOR.name() + &quot;' OR &quot; +</span>
-<span class="fc" id="L852">               Columns.MODETRANS.name() + &quot; = '&quot; + FtpCommandCode.STOU.name() +</span>
+<span class="fc" id="L844">    String request =</span>
+<span class="fc" id="L845">        &quot;SELECT COUNT(&quot; + Columns.SPECIALID.name() + &quot;) FROM &quot; + table;</span>
+    final String inCond;
+<span class="fc bfc" id="L847" title="All 2 branches covered.">    if (in) {</span>
+<span class="fc" id="L848">      inCond = &quot; (&quot; + Columns.MODETRANS.name() + &quot; = '&quot; +</span>
+<span class="fc" id="L849">               FtpCommandCode.APPE.name() + &quot;' OR &quot; + Columns.MODETRANS.name() +</span>
+<span class="fc" id="L850">               &quot; = '&quot; + FtpCommandCode.STOR.name() + &quot;' OR &quot; +</span>
+<span class="fc" id="L851">               Columns.MODETRANS.name() + &quot; = '&quot; + FtpCommandCode.STOU.name() +</span>
                &quot;') &quot;;
     } else {
-<span class="fc" id="L855">      inCond = &quot; (&quot; + Columns.MODETRANS.name() + &quot; = '&quot; +</span>
-<span class="fc" id="L856">               FtpCommandCode.RETR.name() + &quot;') &quot;;</span>
+<span class="fc" id="L854">      inCond = &quot; (&quot; + Columns.MODETRANS.name() + &quot; = '&quot; +</span>
+<span class="fc" id="L855">               FtpCommandCode.RETR.name() + &quot;') &quot;;</span>
     }
-<span class="fc" id="L858">    request += &quot; WHERE &quot; + inCond;</span>
-<span class="fc" id="L859">    request += &quot; AND &quot; + getLimitWhereCondition() + ' ';</span>
-<span class="fc" id="L860">    request += &quot; AND &quot; + Columns.STARTTRANS.name() + &quot; &gt;= ? &quot;;</span>
-<span class="fc bfc" id="L861" title="All 2 branches covered.">    if (running) {</span>
-<span class="fc" id="L862">      request += &quot; AND &quot; + Columns.UPDATEDINFO.name() + &quot; = &quot; +</span>
-<span class="fc" id="L863">                 UpdatedInfo.RUNNING.ordinal();</span>
+<span class="fc" id="L857">    request += &quot; WHERE &quot; + inCond;</span>
+<span class="fc" id="L858">    request += &quot; AND &quot; + getLimitWhereCondition() + ' ';</span>
+<span class="fc" id="L859">    request += &quot; AND &quot; + Columns.STARTTRANS.name() + &quot; &gt;= ? &quot;;</span>
+<span class="fc bfc" id="L860" title="All 2 branches covered.">    if (running) {</span>
+<span class="fc" id="L861">      request += &quot; AND &quot; + Columns.UPDATEDINFO.name() + &quot; = &quot; +</span>
+<span class="fc" id="L862">                 UpdatedInfo.RUNNING.ordinal();</span>
     }
-<span class="fc" id="L865">    final DbPreparedStatement prep = new DbPreparedStatement(session, request);</span>
-<span class="fc" id="L866">    session.addLongTermPreparedStatement(prep);</span>
-<span class="fc" id="L867">    return prep;</span>
+<span class="fc" id="L864">    final DbPreparedStatement prep = new DbPreparedStatement(session, request);</span>
+<span class="fc" id="L865">    session.addLongTermPreparedStatement(prep);</span>
+<span class="fc" id="L866">    return prep;</span>
   }
 
   @Override
-  public void changeUpdatedInfo(UpdatedInfo info) {
-<span class="fc" id="L872">    updatedInfo = info.ordinal();</span>
-<span class="fc" id="L873">    allFields[Columns.UPDATEDINFO.ordinal()].setValue(updatedInfo);</span>
-<span class="fc" id="L874">    isSaved = false;</span>
-<span class="fc" id="L875">  }</span>
+  public void changeUpdatedInfo(final UpdatedInfo info) {
+<span class="fc" id="L871">    updatedInfo = info.ordinal();</span>
+<span class="fc" id="L872">    allFields[Columns.UPDATEDINFO.ordinal()].setValue(updatedInfo);</span>
+<span class="fc" id="L873">    isSaved = false;</span>
+<span class="fc" id="L874">  }</span>
 
   /**
    * Set the ReplyCode for the UpdatedInfo
    *
    * @param code
    */
-  public void setReplyCodeExecutionStatus(ReplyCode code) {
-<span class="pc bpc" id="L883" title="1 of 2 branches missed.">    if (infostatus != code) {</span>
-<span class="fc" id="L884">      infostatus = code;</span>
-<span class="fc" id="L885">      allFields[Columns.INFOSTATUS.ordinal()].setValue(infostatus.getCode());</span>
-<span class="fc" id="L886">      isSaved = false;</span>
+  public void setReplyCodeExecutionStatus(final ReplyCode code) {
+<span class="pc bpc" id="L882" title="1 of 2 branches missed.">    if (infostatus != code) {</span>
+<span class="fc" id="L883">      infostatus = code;</span>
+<span class="fc" id="L884">      allFields[Columns.INFOSTATUS.ordinal()].setValue(infostatus.getCode());</span>
+<span class="fc" id="L885">      isSaved = false;</span>
     }
-<span class="fc" id="L888">  }</span>
+<span class="fc" id="L887">  }</span>
 
   /**
    * @return The current UpdatedInfo value
    */
   public UpdatedInfo getUpdatedInfo() {
-<span class="fc" id="L894">    return UpdatedInfo.values()[updatedInfo];</span>
+<span class="fc" id="L893">    return UpdatedInfo.values()[updatedInfo];</span>
   }
 
   /**
    * @return the ReplyCode code associated with the Updated Info
    */
   public ReplyCode getErrorInfo() {
-<span class="fc" id="L901">    return infostatus;</span>
+<span class="fc" id="L900">    return infostatus;</span>
   }
 
   /**
    * @param filename the filename to set
    */
-  public void setFilename(String filename) {
-<span class="nc bnc" id="L908" title="All 2 branches missed.">    if (!this.filename.equals(filename)) {</span>
-<span class="nc" id="L909">      this.filename = filename;</span>
-<span class="nc" id="L910">      allFields[Columns.FILENAME.ordinal()].setValue(this.filename);</span>
-<span class="nc" id="L911">      isSaved = false;</span>
+  public void setFilename(final String filename) {
+<span class="nc bnc" id="L907" title="All 2 branches missed.">    if (!this.filename.equals(filename)) {</span>
+<span class="nc" id="L908">      this.filename = filename;</span>
+<span class="nc" id="L909">      allFields[Columns.FILENAME.ordinal()].setValue(this.filename);</span>
+<span class="nc" id="L910">      isSaved = false;</span>
     }
-<span class="nc" id="L913">  }</span>
+<span class="nc" id="L912">  }</span>
 
   /**
    * @return the isSender
    */
   public boolean isSender() {
-<span class="nc" id="L919">    return isSender;</span>
+<span class="nc" id="L918">    return isSender;</span>
   }
 
   /**
    * @return the filename
    */
   public String getFilename() {
-<span class="fc" id="L926">    return filename;</span>
+<span class="fc" id="L925">    return filename;</span>
   }
 
   /**
    * @return the specialId
    */
   public long getSpecialId() {
-<span class="fc" id="L933">    return specialId;</span>
+<span class="fc" id="L932">    return specialId;</span>
   }
 
   /**
    * @return the infotransf
    */
   public String getInfotransf() {
-<span class="fc" id="L940">    return infotransf;</span>
+<span class="fc" id="L939">    return infotransf;</span>
   }
 
   /**
    * @param infotransf the infotransf to set
    */
-  public void setInfotransf(String infotransf) {
-<span class="fc" id="L947">    this.infotransf = infotransf;</span>
-<span class="fc" id="L948">  }</span>
+  public void setInfotransf(final String infotransf) {
+<span class="fc" id="L946">    this.infotransf = infotransf;</span>
+<span class="fc" id="L947">  }</span>
 
   /**
    * @return the user
    */
   public String getUser() {
-<span class="fc" id="L954">    return user;</span>
+<span class="fc" id="L953">    return user;</span>
   }
 
   /**
    * @return the account
    */
   public String getAccount() {
-<span class="fc" id="L961">    return account;</span>
+<span class="fc" id="L960">    return account;</span>
   }
 
   /**
    * @param stop the stop to set
    */
-  public void setStop(Timestamp stop) {
-<span class="nc" id="L968">    this.stop = stop;</span>
-<span class="nc" id="L969">  }</span>
+  public void setStop(final Timestamp stop) {
+<span class="nc" id="L967">    this.stop = stop;</span>
+<span class="nc" id="L968">  }</span>
 
   /**
    * @return the mode
    */
   public String getMode() {
-<span class="fc" id="L975">    return mode;</span>
+<span class="fc" id="L974">    return mode;</span>
   }
 
   /**
@@ -981,37 +980,37 @@ public class DbTransferLog extends AbstractDbData {
    * @throws WaarpDatabaseException
    */
   public void saveStatus() throws WaarpDatabaseException {
-<span class="nc" id="L984">    update();</span>
-<span class="nc" id="L985">  }</span>
+<span class="nc" id="L983">    update();</span>
+<span class="nc" id="L984">  }</span>
 
   /**
    * Clear the runner
    */
   public void clear() {
     // nothing
-<span class="nc" id="L992">  }</span>
+<span class="nc" id="L991">  }</span>
 
   @Override
   public String toString() {
-<span class="fc" id="L996">    return &quot;Transfer: on &quot; + filename + &quot; SpecialId: &quot; + specialId + &quot; Mode: &quot; +</span>
+<span class="fc" id="L995">    return &quot;Transfer: on &quot; + filename + &quot; SpecialId: &quot; + specialId + &quot; Mode: &quot; +</span>
            mode + &quot; isSender: &quot; + isSender + &quot; User: &quot; + user + &quot; Account: &quot; +
            account + &quot; Start: &quot; + start + &quot; Stop: &quot; + stop + &quot; Internal: &quot; +
-<span class="fc" id="L999">           UpdatedInfo.values()[updatedInfo].name() + ':' +</span>
-<span class="fc" id="L1000">           infostatus.getMesg() + &quot; TransferInfo: &quot; + infotransf;</span>
+<span class="fc" id="L998">           UpdatedInfo.values()[updatedInfo].name() + ':' +</span>
+<span class="fc" id="L999">           infostatus.getMesg() + &quot; TransferInfo: &quot; + infotransf;</span>
   }
 
   /**
    * @return the start
    */
   public Timestamp getStart() {
-<span class="fc" id="L1007">    return start;</span>
+<span class="fc" id="L1006">    return start;</span>
   }
 
   /**
    * @return the stop
    */
   public Timestamp getStop() {
-<span class="fc" id="L1014">    return stop;</span>
+<span class="fc" id="L1013">    return stop;</span>
   }
 
   /*
@@ -1033,7 +1032,7 @@ public class DbTransferLog extends AbstractDbData {
   /**
    * Structure of the Configuration file
    */
-<span class="fc" id="L1036">  private static final XmlDecl[] logDecls = {</span>
+<span class="fc" id="L1035">  private static final XmlDecl[] logDecls = {</span>
       // identity
       new XmlDecl(XmlType.STRING, XML_IDX),
       new XmlDecl(XmlType.STRING, XML_USER),
@@ -1049,7 +1048,7 @@ public class DbTransferLog extends AbstractDbData {
   /**
    * Global Structure for Server Configuration
    */
-<span class="fc" id="L1052">  private static final XmlDecl[] logsElements = {</span>
+<span class="fc" id="L1051">  private static final XmlDecl[] logsElements = {</span>
       new XmlDecl(XML_ENTRY, XmlType.XVAL, XML_ROOT + '/' + XML_ENTRY, logDecls,
                   true)
   };
@@ -1058,25 +1057,25 @@ public class DbTransferLog extends AbstractDbData {
    * @return the associated XmlValue
    */
   private XmlValue[] saveIntoXmlValue() {
-<span class="nc" id="L1061">    final XmlValue[] values = new XmlValue[logDecls.length];</span>
-<span class="nc bnc" id="L1062" title="All 2 branches missed.">    for (int i = 0; i &lt; logDecls.length; i++) {</span>
-<span class="nc" id="L1063">      values[i] = new XmlValue(logDecls[i]);</span>
+<span class="nc" id="L1060">    final XmlValue[] values = new XmlValue[logDecls.length];</span>
+<span class="nc bnc" id="L1061" title="All 2 branches missed.">    for (int i = 0; i &lt; logDecls.length; i++) {</span>
+<span class="nc" id="L1062">      values[i] = new XmlValue(logDecls[i]);</span>
     }
     try {
-<span class="nc" id="L1066">      values[0].setFromString(Long.toString(specialId));</span>
-<span class="nc" id="L1067">      values[1].setFromString(user);</span>
-<span class="nc" id="L1068">      values[2].setFromString(account);</span>
-<span class="nc" id="L1069">      values[3].setFromString(filename);</span>
-<span class="nc" id="L1070">      values[4].setFromString(mode);</span>
-<span class="nc" id="L1071">      values[5].setFromString(getErrorInfo().getMesg());</span>
-<span class="nc" id="L1072">      values[6].setFromString(infotransf);</span>
-<span class="nc" id="L1073">      values[7].setFromString(getUpdatedInfo().name());</span>
-<span class="nc" id="L1074">      values[8].setFromString(start.toString());</span>
-<span class="nc" id="L1075">      values[9].setFromString(stop.toString());</span>
-<span class="nc" id="L1076">    } catch (final InvalidArgumentException e) {</span>
-<span class="nc" id="L1077">      return null;</span>
-<span class="nc" id="L1078">    }</span>
-<span class="nc" id="L1079">    return values;</span>
+<span class="nc" id="L1065">      values[0].setFromString(Long.toString(specialId));</span>
+<span class="nc" id="L1066">      values[1].setFromString(user);</span>
+<span class="nc" id="L1067">      values[2].setFromString(account);</span>
+<span class="nc" id="L1068">      values[3].setFromString(filename);</span>
+<span class="nc" id="L1069">      values[4].setFromString(mode);</span>
+<span class="nc" id="L1070">      values[5].setFromString(getErrorInfo().getMesg());</span>
+<span class="nc" id="L1071">      values[6].setFromString(infotransf);</span>
+<span class="nc" id="L1072">      values[7].setFromString(getUpdatedInfo().name());</span>
+<span class="nc" id="L1073">      values[8].setFromString(start.toString());</span>
+<span class="nc" id="L1074">      values[9].setFromString(stop.toString());</span>
+<span class="nc" id="L1075">    } catch (final InvalidArgumentException e) {</span>
+<span class="nc" id="L1076">      return null;</span>
+<span class="nc" id="L1077">    }</span>
+<span class="nc" id="L1078">    return values;</span>
   }
 
   /**
@@ -1086,37 +1085,37 @@ public class DbTransferLog extends AbstractDbData {
    *
    * @return The message for the HTTPS interface
    */
-  public String saveDbTransferLog(String filename) {
-<span class="nc" id="L1090">    final Document document = XmlUtil.createEmptyDocument();</span>
-<span class="nc" id="L1091">    final XmlValue[] roots = new XmlValue[1];</span>
-<span class="nc" id="L1092">    final XmlValue root = new XmlValue(logsElements[0]);</span>
-<span class="nc" id="L1093">    roots[0] = root;</span>
+  public String saveDbTransferLog(final String filename) {
+<span class="nc" id="L1089">    final Document document = XmlUtil.createEmptyDocument();</span>
+<span class="nc" id="L1090">    final XmlValue[] roots = new XmlValue[1];</span>
+<span class="nc" id="L1091">    final XmlValue root = new XmlValue(logsElements[0]);</span>
+<span class="nc" id="L1092">    roots[0] = root;</span>
     String message;
-<span class="nc" id="L1095">    final XmlValue[] values = saveIntoXmlValue();</span>
-<span class="nc bnc" id="L1096" title="All 2 branches missed.">    if (values == null) {</span>
-<span class="nc" id="L1097">      return &quot;Error during export&quot;;</span>
+<span class="nc" id="L1094">    final XmlValue[] values = saveIntoXmlValue();</span>
+<span class="nc bnc" id="L1095" title="All 2 branches missed.">    if (values == null) {</span>
+<span class="nc" id="L1096">      return &quot;Error during export&quot;;</span>
     }
     try {
-<span class="nc" id="L1100">      root.addValue(values);</span>
-<span class="nc" id="L1101">    } catch (final InvalidObjectException e) {</span>
-<span class="nc" id="L1102">      logger.error(&quot;Error during Write DbTransferLog file&quot;, e);</span>
-<span class="nc" id="L1103">      return ERROR_DURING_PURGE;</span>
-<span class="nc" id="L1104">    }</span>
+<span class="nc" id="L1099">      root.addValue(values);</span>
+<span class="nc" id="L1100">    } catch (final InvalidObjectException e) {</span>
+<span class="nc" id="L1101">      logger.error(&quot;Error during Write DbTransferLog file&quot;, e);</span>
+<span class="nc" id="L1102">      return ERROR_DURING_PURGE;</span>
+<span class="nc" id="L1103">    }</span>
     try {
-<span class="nc" id="L1106">      delete();</span>
-<span class="nc" id="L1107">      message = &quot;Purge Correct Logs successful&quot;;</span>
-<span class="nc" id="L1108">    } catch (final WaarpDatabaseException e) {</span>
-<span class="nc" id="L1109">      message = ERROR_DURING_PURGE;</span>
-<span class="nc" id="L1110">    }</span>
-<span class="nc" id="L1111">    XmlUtil.write(document, roots);</span>
+<span class="nc" id="L1105">      delete();</span>
+<span class="nc" id="L1106">      message = &quot;Purge Correct Logs successful&quot;;</span>
+<span class="nc" id="L1107">    } catch (final WaarpDatabaseException e) {</span>
+<span class="nc" id="L1108">      message = ERROR_DURING_PURGE;</span>
+<span class="nc" id="L1109">    }</span>
+<span class="nc" id="L1110">    XmlUtil.write(document, roots);</span>
     try {
-<span class="nc" id="L1113">      XmlUtil.saveDocument(filename, document);</span>
-<span class="nc" id="L1114">    } catch (final IOException e1) {</span>
-<span class="nc" id="L1115">      logger.error(&quot;Cannot write to file: &quot; + filename + &quot; since {}&quot;,</span>
-<span class="nc" id="L1116">                   e1.getMessage());</span>
-<span class="nc" id="L1117">      return message + &quot; but cannot save file as export&quot;;</span>
-<span class="nc" id="L1118">    }</span>
-<span class="nc" id="L1119">    return message;</span>
+<span class="nc" id="L1112">      XmlUtil.saveDocument(filename, document);</span>
+<span class="nc" id="L1113">    } catch (final IOException e1) {</span>
+<span class="nc" id="L1114">      logger.error(&quot;Cannot write to file: &quot; + filename + &quot; since {}&quot;,</span>
+<span class="nc" id="L1115">                   e1.getMessage());</span>
+<span class="nc" id="L1116">      return message + &quot; but cannot save file as export&quot;;</span>
+<span class="nc" id="L1117">    }</span>
+<span class="nc" id="L1118">    return message;</span>
   }
 
   /**
@@ -1131,15 +1130,15 @@ public class DbTransferLog extends AbstractDbData {
    * @return The message for the HTTPS interface
    */
   public static String saveDbTransferLogFile(
-      DbPreparedStatement preparedStatement, String filename) {
-    Writer outWriter;
+      final DbPreparedStatement preparedStatement, final String filename) {
+    final Writer outWriter;
     try {
-<span class="nc" id="L1137">      outWriter = new FileWriter(filename);</span>
-<span class="nc" id="L1138">    } catch (final IOException e) {</span>
-<span class="nc" id="L1139">      return &quot;Cannot open file &quot; + filename + &quot;: &quot; + e.getMessage();</span>
-<span class="nc" id="L1140">    }</span>
+<span class="nc" id="L1136">      outWriter = new FileWriter(filename);</span>
+<span class="nc" id="L1137">    } catch (final IOException e) {</span>
+<span class="nc" id="L1138">      return &quot;Cannot open file &quot; + filename + &quot;: &quot; + e.getMessage();</span>
+<span class="nc" id="L1139">    }</span>
 
-<span class="nc" id="L1142">    return saveDbTransferLogFile(preparedStatement, outWriter, true);</span>
+<span class="nc" id="L1141">    return saveDbTransferLogFile(preparedStatement, outWriter, true);</span>
   }
 
   /**
@@ -1156,7 +1155,8 @@ public class DbTransferLog extends AbstractDbData {
    * @return The message for the HTTPS interface
    */
   public static String saveDbTransferLogFile(
-      DbPreparedStatement preparedStatement, Writer outWriter, boolean purge) {
+      final DbPreparedStatement preparedStatement, final Writer outWriter,
+      final boolean purge) {
 <span class="nc" id="L1160">    final Document document = XmlUtil.createEmptyDocument();</span>
 <span class="nc" id="L1161">    final XmlValue[] roots = new XmlValue[1];</span>
 <span class="nc" id="L1162">    final XmlValue root = new XmlValue(logsElements[0]);</span>

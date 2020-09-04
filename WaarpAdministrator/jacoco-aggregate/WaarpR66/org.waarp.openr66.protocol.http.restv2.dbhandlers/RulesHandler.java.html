@@ -82,7 +82,7 @@ public class RulesHandler extends AbstractRestDbHandler {
 <span class="fc" id="L82">    OPTIONS_HEADERS.add(ALLOW, allow);</span>
 <span class="fc" id="L83">  }</span>
 
-  public RulesHandler(byte crud) {
+  public RulesHandler(final byte crud) {
 <span class="fc" id="L86">    super(crud);</span>
 <span class="fc" id="L87">  }</span>
 
@@ -104,82 +104,83 @@ public class RulesHandler extends AbstractRestDbHandler {
   @GET
   @Consumes(APPLICATION_FORM_URLENCODED)
   @RequiredRole(ROLE.READONLY)
-  public void filterRules(HttpRequest request, HttpResponder responder,
+  public void filterRules(final HttpRequest request,
+                          final HttpResponder responder,
                           @QueryParam(LIMIT) @DefaultValue(&quot;20&quot;)
-                              String limitStr,
+                          final String limitStr,
                           @QueryParam(OFFSET) @DefaultValue(&quot;0&quot;)
-                              String offsetStr,
+                          final String offsetStr,
                           @QueryParam(ORDER) @DefaultValue(&quot;ascName&quot;)
-                              String orderStr,
+                          final String orderStr,
                           @QueryParam(MODE_TRANS) @DefaultValue(&quot;&quot;)
-                              String modeTransStr) {
+                          final String modeTransStr) {
 
-<span class="fc" id="L117">    final List&lt;RestError&gt; errors = new ArrayList&lt;RestError&gt;();</span>
+<span class="fc" id="L118">    final List&lt;RestError&gt; errors = new ArrayList&lt;RestError&gt;();</span>
 
-<span class="fc" id="L119">    int limit = 20;</span>
-<span class="fc" id="L120">    int offset = 0;</span>
-<span class="fc" id="L121">    Order order = ascName;</span>
-<span class="fc" id="L122">    ModeTrans modeTrans = null;</span>
+<span class="fc" id="L120">    int limit = 20;</span>
+<span class="fc" id="L121">    int offset = 0;</span>
+<span class="fc" id="L122">    Order order = ascName;</span>
+<span class="fc" id="L123">    ModeTrans modeTrans = null;</span>
     try {
-<span class="fc" id="L124">      limit = Integer.parseInt(limitStr);</span>
-<span class="fc" id="L125">      order = Order.valueOf(orderStr);</span>
-<span class="nc" id="L126">    } catch (final NumberFormatException e) {</span>
-<span class="nc" id="L127">      errors.add(ILLEGAL_PARAMETER_VALUE(LIMIT, limitStr));</span>
-<span class="nc" id="L128">    } catch (final IllegalArgumentException e) {</span>
-<span class="nc" id="L129">      errors.add(ILLEGAL_PARAMETER_VALUE(ORDER, orderStr));</span>
-<span class="pc" id="L130">    }</span>
+<span class="fc" id="L125">      limit = Integer.parseInt(limitStr);</span>
+<span class="fc" id="L126">      order = Order.valueOf(orderStr);</span>
+<span class="nc" id="L127">    } catch (final NumberFormatException e) {</span>
+<span class="nc" id="L128">      errors.add(ILLEGAL_PARAMETER_VALUE(LIMIT, limitStr));</span>
+<span class="nc" id="L129">    } catch (final IllegalArgumentException e) {</span>
+<span class="nc" id="L130">      errors.add(ILLEGAL_PARAMETER_VALUE(ORDER, orderStr));</span>
+<span class="pc" id="L131">    }</span>
     try {
-<span class="fc" id="L132">      offset = Integer.parseInt(offsetStr);</span>
-<span class="pc bpc" id="L133" title="1 of 2 branches missed.">      if (!modeTransStr.isEmpty()) {</span>
-<span class="nc" id="L134">        modeTrans = ModeTrans.valueOf(modeTransStr);</span>
+<span class="fc" id="L133">      offset = Integer.parseInt(offsetStr);</span>
+<span class="pc bpc" id="L134" title="1 of 2 branches missed.">      if (!modeTransStr.isEmpty()) {</span>
+<span class="nc" id="L135">        modeTrans = ModeTrans.valueOf(modeTransStr);</span>
       }
-<span class="nc" id="L136">    } catch (final NumberFormatException e) {</span>
-<span class="nc" id="L137">      errors.add(ILLEGAL_PARAMETER_VALUE(OFFSET, offsetStr));</span>
-<span class="nc" id="L138">    } catch (final IllegalArgumentException e) {</span>
-<span class="nc" id="L139">      errors.add(ILLEGAL_PARAMETER_VALUE(MODE_TRANS, e.getMessage()));</span>
-<span class="pc" id="L140">    }</span>
+<span class="nc" id="L137">    } catch (final NumberFormatException e) {</span>
+<span class="nc" id="L138">      errors.add(ILLEGAL_PARAMETER_VALUE(OFFSET, offsetStr));</span>
+<span class="nc" id="L139">    } catch (final IllegalArgumentException e) {</span>
+<span class="nc" id="L140">      errors.add(ILLEGAL_PARAMETER_VALUE(MODE_TRANS, e.getMessage()));</span>
+<span class="pc" id="L141">    }</span>
 
-<span class="pc bpc" id="L142" title="1 of 2 branches missed.">    if (limit &lt;= 0) {</span>
-<span class="nc" id="L143">      errors.add(ILLEGAL_PARAMETER_VALUE(LIMIT, limitStr));</span>
-<span class="pc bpc" id="L144" title="1 of 2 branches missed.">    } else if (offset &lt; 0) {</span>
-<span class="nc" id="L145">      errors.add(ILLEGAL_PARAMETER_VALUE(OFFSET, offsetStr));</span>
+<span class="pc bpc" id="L143" title="1 of 2 branches missed.">    if (limit &lt;= 0) {</span>
+<span class="nc" id="L144">      errors.add(ILLEGAL_PARAMETER_VALUE(LIMIT, limitStr));</span>
+<span class="pc bpc" id="L145" title="1 of 2 branches missed.">    } else if (offset &lt; 0) {</span>
+<span class="nc" id="L146">      errors.add(ILLEGAL_PARAMETER_VALUE(OFFSET, offsetStr));</span>
     }
 
-<span class="pc bpc" id="L148" title="1 of 2 branches missed.">    if (!errors.isEmpty()) {</span>
-<span class="nc" id="L149">      throw new RestErrorException(errors);</span>
+<span class="pc bpc" id="L149" title="1 of 2 branches missed.">    if (!errors.isEmpty()) {</span>
+<span class="nc" id="L150">      throw new RestErrorException(errors);</span>
     }
 
-<span class="fc" id="L152">    final List&lt;Filter&gt; filters = new ArrayList&lt;Filter&gt;();</span>
-<span class="pc bpc" id="L153" title="1 of 2 branches missed.">    if (modeTrans != null) {</span>
-<span class="nc" id="L154">      filters.add(new Filter(MODE_TRANS_FIELD, &quot;=&quot;,</span>
-<span class="nc" id="L155">                             Integer.toString(modeTrans.ordinal())));</span>
+<span class="fc" id="L153">    final List&lt;Filter&gt; filters = new ArrayList&lt;Filter&gt;();</span>
+<span class="pc bpc" id="L154" title="1 of 2 branches missed.">    if (modeTrans != null) {</span>
+<span class="nc" id="L155">      filters.add(new Filter(MODE_TRANS_FIELD, &quot;=&quot;,</span>
+<span class="nc" id="L156">                             Integer.toString(modeTrans.ordinal())));</span>
     }
 
     List&lt;Rule&gt; rules;
-<span class="fc" id="L159">    RuleDAO ruleDAO = null;</span>
+<span class="fc" id="L160">    RuleDAO ruleDAO = null;</span>
     try {
-<span class="fc" id="L161">      ruleDAO = DAO_FACTORY.getRuleDAO();</span>
-<span class="fc" id="L162">      rules = ruleDAO.find(filters);</span>
-<span class="nc" id="L163">    } catch (final DAOConnectionException e) {</span>
-<span class="nc" id="L164">      throw new InternalServerErrorException(e);</span>
+<span class="fc" id="L162">      ruleDAO = DAO_FACTORY.getRuleDAO();</span>
+<span class="fc" id="L163">      rules = ruleDAO.find(filters);</span>
+<span class="nc" id="L164">    } catch (final DAOConnectionException e) {</span>
+<span class="nc" id="L165">      throw new InternalServerErrorException(e);</span>
     } finally {
-<span class="fc" id="L166">      DAOFactory.closeDAO(ruleDAO);</span>
+<span class="fc" id="L167">      DAOFactory.closeDAO(ruleDAO);</span>
     }
 
-<span class="fc" id="L169">    final int totalResults = rules.size();</span>
-<span class="fc" id="L170">    Collections.sort(rules, order.comparator);</span>
+<span class="fc" id="L170">    final int totalResults = rules.size();</span>
+<span class="fc" id="L171">    Collections.sort(rules, order.comparator);</span>
 
-<span class="fc" id="L172">    final ArrayNode results = new ArrayNode(JsonNodeFactory.instance);</span>
-<span class="pc bpc" id="L173" title="1 of 4 branches missed.">    for (int i = offset; i &lt; offset + limit &amp;&amp; i &lt; rules.size(); i++) {</span>
-<span class="fc" id="L174">      results.add(ruleToNode(rules.get(i)));</span>
+<span class="fc" id="L173">    final ArrayNode results = new ArrayNode(JsonNodeFactory.instance);</span>
+<span class="pc bpc" id="L174" title="1 of 4 branches missed.">    for (int i = offset; i &lt; offset + limit &amp;&amp; i &lt; rules.size(); i++) {</span>
+<span class="fc" id="L175">      results.add(ruleToNode(rules.get(i)));</span>
     }
 
-<span class="fc" id="L177">    final ObjectNode responseObject = new ObjectNode(JsonNodeFactory.instance);</span>
-<span class="fc" id="L178">    responseObject.put(&quot;totalResults&quot;, totalResults);</span>
-<span class="fc" id="L179">    responseObject.set(&quot;results&quot;, results);</span>
-<span class="fc" id="L180">    final String responseText = nodeToString(responseObject);</span>
-<span class="fc" id="L181">    responder.sendJson(OK, responseText);</span>
-<span class="fc" id="L182">  }</span>
+<span class="fc" id="L178">    final ObjectNode responseObject = new ObjectNode(JsonNodeFactory.instance);</span>
+<span class="fc" id="L179">    responseObject.put(&quot;totalResults&quot;, totalResults);</span>
+<span class="fc" id="L180">    responseObject.set(&quot;results&quot;, results);</span>
+<span class="fc" id="L181">    final String responseText = nodeToString(responseObject);</span>
+<span class="fc" id="L182">    responder.sendJson(OK, responseText);</span>
+<span class="fc" id="L183">  }</span>
 
   /**
    * Method called to add a new transfer rule in the server database. The
@@ -194,35 +195,36 @@ public class RulesHandler extends AbstractRestDbHandler {
   @POST
   @Consumes(APPLICATION_JSON)
   @RequiredRole(ROLE.RULE)
-  public void addRule(HttpRequest request, HttpResponder responder) {
+  public void addRule(final HttpRequest request,
+                      final HttpResponder responder) {
 
-<span class="nc" id="L199">    final ObjectNode requestObject = deserializeRequest(request);</span>
-<span class="nc" id="L200">    final Rule rule = nodeToNewRule(requestObject);</span>
+<span class="nc" id="L201">    final ObjectNode requestObject = deserializeRequest(request);</span>
+<span class="nc" id="L202">    final Rule rule = nodeToNewRule(requestObject);</span>
 
-<span class="nc" id="L202">    RuleDAO ruleDAO = null;</span>
+<span class="nc" id="L204">    RuleDAO ruleDAO = null;</span>
     try {
-<span class="nc" id="L204">      ruleDAO = DAO_FACTORY.getRuleDAO();</span>
+<span class="nc" id="L206">      ruleDAO = DAO_FACTORY.getRuleDAO();</span>
 
-<span class="nc bnc" id="L206" title="All 2 branches missed.">      if (ruleDAO.exist(rule.getName())) {</span>
-<span class="nc" id="L207">        throw new RestErrorException(ALREADY_EXISTING(rule.getName()));</span>
+<span class="nc bnc" id="L208" title="All 2 branches missed.">      if (ruleDAO.exist(rule.getName())) {</span>
+<span class="nc" id="L209">        throw new RestErrorException(ALREADY_EXISTING(rule.getName()));</span>
       }
 
-<span class="nc" id="L210">      ruleDAO.insert(rule);</span>
-<span class="nc" id="L211">    } catch (final DAOConnectionException e) {</span>
-<span class="nc" id="L212">      throw new InternalServerErrorException(e);</span>
+<span class="nc" id="L212">      ruleDAO.insert(rule);</span>
+<span class="nc" id="L213">    } catch (final DAOConnectionException e) {</span>
+<span class="nc" id="L214">      throw new InternalServerErrorException(e);</span>
     } finally {
-<span class="nc" id="L214">      DAOFactory.closeDAO(ruleDAO);</span>
+<span class="nc" id="L216">      DAOFactory.closeDAO(ruleDAO);</span>
     }
 
-<span class="nc" id="L217">    final ObjectNode responseObject = ruleToNode(rule);</span>
-<span class="nc" id="L218">    final String responseText = nodeToString(responseObject);</span>
+<span class="nc" id="L219">    final ObjectNode responseObject = ruleToNode(rule);</span>
+<span class="nc" id="L220">    final String responseText = nodeToString(responseObject);</span>
 
-<span class="nc" id="L220">    final DefaultHttpHeaders headers = new DefaultHttpHeaders();</span>
-<span class="nc" id="L221">    headers.add(CONTENT_TYPE, APPLICATION_JSON);</span>
-<span class="nc" id="L222">    headers.add(&quot;ruleURI&quot;, RULES_HANDLER_URI + rule.getName());</span>
+<span class="nc" id="L222">    final DefaultHttpHeaders headers = new DefaultHttpHeaders();</span>
+<span class="nc" id="L223">    headers.add(CONTENT_TYPE, APPLICATION_JSON);</span>
+<span class="nc" id="L224">    headers.add(&quot;ruleURI&quot;, RULES_HANDLER_URI + rule.getName());</span>
 
-<span class="nc" id="L224">    responder.sendString(CREATED, responseText, headers);</span>
-<span class="nc" id="L225">  }</span>
+<span class="nc" id="L226">    responder.sendString(CREATED, responseText, headers);</span>
+<span class="nc" id="L227">  }</span>
 
   /**
    * Method called to get a list of all allowed HTTP methods on this entry
@@ -236,8 +238,9 @@ public class RulesHandler extends AbstractRestDbHandler {
   @OPTIONS
   @Consumes(WILDCARD)
   @RequiredRole(ROLE.NOACCESS)
-  public void options(HttpRequest request, HttpResponder responder) {
-<span class="nc" id="L240">    responder.sendStatus(OK, OPTIONS_HEADERS);</span>
-<span class="nc" id="L241">  }</span>
+  public void options(final HttpRequest request,
+                      final HttpResponder responder) {
+<span class="nc" id="L243">    responder.sendStatus(OK, OPTIONS_HEADERS);</span>
+<span class="nc" id="L244">  }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

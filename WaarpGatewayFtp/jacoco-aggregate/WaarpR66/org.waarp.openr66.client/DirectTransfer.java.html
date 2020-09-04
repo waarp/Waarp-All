@@ -50,21 +50,22 @@ public class DirectTransfer extends AbstractTransfer {
 
 <span class="fc" id="L51">  protected boolean limitRetryConnection = true;</span>
 
-  public DirectTransfer(R66Future future, String remoteHost, String filename,
-                        String rulename, String transferInfo, boolean isMD5,
-                        int blocksize, long id,
-                        NetworkTransaction networkTransaction) {
+  public DirectTransfer(final R66Future future, final String remoteHost,
+                        final String filename, final String rulename,
+                        final String transferInfo, final boolean isMD5,
+                        final int blocksize, final long id,
+                        final NetworkTransaction networkTransaction) {
     // no starttime since it is direct (blocking request, no delay)
-<span class="fc" id="L58">    super(DirectTransfer.class, future, filename, rulename, transferInfo, isMD5,</span>
+<span class="fc" id="L59">    super(DirectTransfer.class, future, filename, rulename, transferInfo, isMD5,</span>
           remoteHost, blocksize, id, null);
-<span class="fc" id="L60">    this.networkTransaction = networkTransaction;</span>
-<span class="fc" id="L61">  }</span>
+<span class="fc" id="L61">    this.networkTransaction = networkTransaction;</span>
+<span class="fc" id="L62">  }</span>
 
   /**
    * @return True if this DirectTransfer should limit the retry of connection
    */
   public boolean isLimitRetryConnection() {
-<span class="fc" id="L67">    return limitRetryConnection;</span>
+<span class="fc" id="L68">    return limitRetryConnection;</span>
   }
 
   /**
@@ -72,8 +73,8 @@ public class DirectTransfer extends AbstractTransfer {
    *     connection, False to have no limit
    */
   public void setLimitRetryConnection(final boolean limitRetryConnection) {
-<span class="nc" id="L75">    this.limitRetryConnection = limitRetryConnection;</span>
-<span class="nc" id="L76">  }</span>
+<span class="nc" id="L76">    this.limitRetryConnection = limitRetryConnection;</span>
+<span class="nc" id="L77">  }</span>
 
   /**
    * Prior to call this method, the pipeline and NetworkTransaction must have
@@ -82,179 +83,180 @@ public class DirectTransfer extends AbstractTransfer {
    */
   @Override
   public void run() {
-<span class="pc bpc" id="L85" title="1 of 2 branches missed.">    if (logger == null) {</span>
-<span class="nc" id="L86">      logger = WaarpLoggerFactory.getLogger(DirectTransfer.class);</span>
+<span class="pc bpc" id="L86" title="1 of 2 branches missed.">    if (logger == null) {</span>
+<span class="nc" id="L87">      logger = WaarpLoggerFactory.getLogger(DirectTransfer.class);</span>
     }
-<span class="fc" id="L88">    final DbTaskRunner taskRunner = initRequest();</span>
-<span class="fc bfc" id="L89" title="All 2 branches covered.">    if (taskRunner == null) {</span>
+<span class="fc" id="L89">    final DbTaskRunner taskRunner = initRequest();</span>
+<span class="fc bfc" id="L90" title="All 2 branches covered.">    if (taskRunner == null) {</span>
       // already an error from there
-<span class="fc" id="L91">      return;</span>
+<span class="fc" id="L92">      return;</span>
     }
-<span class="fc" id="L93">    final ClientRunner runner =</span>
+<span class="fc" id="L94">    final ClientRunner runner =</span>
         new ClientRunner(networkTransaction, taskRunner, future);
     // If retry indefinitely is useful
-<span class="fc" id="L96">    runner.setLimitRetryConnection(isLimitRetryConnection());</span>
-<span class="fc" id="L97">    OpenR66ProtocolNotYetConnectionException exc = null;</span>
-<span class="pc bpc" id="L98" title="1 of 2 branches missed.">    for (int i = 0; i &lt; Configuration.RETRYNB; i++) {</span>
+<span class="fc" id="L97">    runner.setLimitRetryConnection(isLimitRetryConnection());</span>
+<span class="fc" id="L98">    OpenR66ProtocolNotYetConnectionException exc = null;</span>
+<span class="pc bpc" id="L99" title="1 of 2 branches missed.">    for (int i = 0; i &lt; Configuration.RETRYNB; i++) {</span>
       try {
-<span class="fc" id="L100">        runner.runTransfer();</span>
-<span class="fc" id="L101">        exc = null;</span>
-<span class="fc" id="L102">        break;</span>
-<span class="nc" id="L103">      } catch (final OpenR66RunnerErrorException e) {</span>
-<span class="nc" id="L104">        logger.debug(&quot;Cannot Transfer&quot;, e);</span>
-<span class="nc" id="L105">        future.setResult(</span>
+<span class="fc" id="L101">        runner.runTransfer();</span>
+<span class="fc" id="L102">        exc = null;</span>
+<span class="fc" id="L103">        break;</span>
+<span class="nc" id="L104">      } catch (final OpenR66RunnerErrorException e) {</span>
+<span class="nc" id="L105">        logger.debug(&quot;Cannot Transfer&quot;, e);</span>
+<span class="nc" id="L106">        future.setResult(</span>
             new R66Result(e, null, true, ErrorCode.Internal, taskRunner));
-<span class="nc" id="L107">        future.setFailure(e);</span>
-<span class="nc" id="L108">        return;</span>
-<span class="fc" id="L109">      } catch (final OpenR66ProtocolNoConnectionException e) {</span>
-<span class="fc" id="L110">        logger.debug(&quot;Cannot Connect&quot;, e);</span>
-<span class="fc" id="L111">        future.setResult(</span>
+<span class="nc" id="L108">        future.setFailure(e);</span>
+<span class="nc" id="L109">        return;</span>
+<span class="fc" id="L110">      } catch (final OpenR66ProtocolNoConnectionException e) {</span>
+<span class="fc" id="L111">        logger.debug(&quot;Cannot Connect&quot;, e);</span>
+<span class="fc" id="L112">        future.setResult(</span>
             new R66Result(e, null, true, ErrorCode.ConnectionImpossible,
                           taskRunner));
-<span class="fc" id="L114">        finalizeInErrorTransferRequest(runner, taskRunner,</span>
+<span class="fc" id="L115">        finalizeInErrorTransferRequest(runner, taskRunner,</span>
                                        ErrorCode.ConnectionImpossible);
         // since no connection : just forget it
-<span class="pc bpc" id="L117" title="2 of 4 branches missed.">        if (nolog || taskRunner.shallIgnoreSave()) {</span>
+<span class="pc bpc" id="L118" title="2 of 4 branches missed.">        if (nolog || taskRunner.shallIgnoreSave()) {</span>
           try {
-<span class="nc" id="L119">            taskRunner.delete();</span>
-<span class="nc" id="L120">          } catch (final WaarpDatabaseException ignored) {</span>
+<span class="nc" id="L120">            taskRunner.delete();</span>
+<span class="nc" id="L121">          } catch (final WaarpDatabaseException ignored) {</span>
             // nothing
-<span class="nc" id="L122">          }</span>
+<span class="nc" id="L123">          }</span>
         }
-<span class="fc" id="L124">        future.setFailure(e);</span>
-<span class="fc" id="L125">        return;</span>
-<span class="nc" id="L126">      } catch (final OpenR66ProtocolPacketException e) {</span>
-<span class="nc" id="L127">        logger.debug(&quot;Bad Protocol&quot;, e);</span>
-<span class="nc" id="L128">        future.setResult(</span>
+<span class="fc" id="L125">        future.setFailure(e);</span>
+<span class="fc" id="L126">        return;</span>
+<span class="nc" id="L127">      } catch (final OpenR66ProtocolPacketException e) {</span>
+<span class="nc" id="L128">        logger.debug(&quot;Bad Protocol&quot;, e);</span>
+<span class="nc" id="L129">        future.setResult(</span>
             new R66Result(e, null, true, ErrorCode.TransferError, taskRunner));
-<span class="nc" id="L130">        future.setFailure(e);</span>
-<span class="nc" id="L131">        return;</span>
-<span class="fc" id="L132">      } catch (final OpenR66ProtocolNotYetConnectionException e) {</span>
-<span class="fc" id="L133">        logger.debug(&quot;Not Yet Connected&quot;, e);</span>
-<span class="fc" id="L134">        exc = e;</span>
+<span class="nc" id="L131">        future.setFailure(e);</span>
+<span class="nc" id="L132">        return;</span>
+<span class="fc" id="L133">      } catch (final OpenR66ProtocolNotYetConnectionException e) {</span>
+<span class="fc" id="L134">        logger.debug(&quot;Not Yet Connected&quot;, e);</span>
+<span class="fc" id="L135">        exc = e;</span>
       }
     }
-<span class="pc bpc" id="L137" title="1 of 2 branches missed.">    if (exc != null) {</span>
-<span class="nc" id="L138">      taskRunner.setLocalChannelReference(new LocalChannelReference());</span>
-<span class="nc" id="L139">      logger.debug(&quot;Cannot Connect&quot;, exc);</span>
-<span class="nc" id="L140">      future.setResult(</span>
+<span class="pc bpc" id="L138" title="1 of 2 branches missed.">    if (exc != null) {</span>
+<span class="nc" id="L139">      taskRunner.setLocalChannelReference(new LocalChannelReference());</span>
+<span class="nc" id="L140">      logger.debug(&quot;Cannot Connect&quot;, exc);</span>
+<span class="nc" id="L141">      future.setResult(</span>
           new R66Result(exc, null, true, ErrorCode.ConnectionImpossible,
                         taskRunner));
       // since no connection : just forget it
-<span class="nc bnc" id="L144" title="All 4 branches missed.">      if (nolog || taskRunner.shallIgnoreSave()) {</span>
+<span class="nc bnc" id="L145" title="All 4 branches missed.">      if (nolog || taskRunner.shallIgnoreSave()) {</span>
         try {
-<span class="nc" id="L146">          taskRunner.delete();</span>
-<span class="nc" id="L147">        } catch (final WaarpDatabaseException ignored) {</span>
+<span class="nc" id="L147">          taskRunner.delete();</span>
+<span class="nc" id="L148">        } catch (final WaarpDatabaseException ignored) {</span>
           // nothing
-<span class="nc" id="L149">        }</span>
+<span class="nc" id="L150">        }</span>
       }
-<span class="nc" id="L151">      future.setFailure(exc);</span>
+<span class="nc" id="L152">      future.setFailure(exc);</span>
     }
-<span class="fc" id="L153">  }</span>
+<span class="fc" id="L154">  }</span>
 
-  public static void main(String[] args) {
-<span class="nc" id="L156">    WaarpLoggerFactory</span>
-<span class="nc" id="L157">        .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));</span>
-<span class="nc bnc" id="L158" title="All 2 branches missed.">    if (logger == null) {</span>
-<span class="nc" id="L159">      logger = WaarpLoggerFactory.getLogger(DirectTransfer.class);</span>
+  public static void main(final String[] args) {
+<span class="nc" id="L157">    WaarpLoggerFactory</span>
+<span class="nc" id="L158">        .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));</span>
+<span class="nc bnc" id="L159" title="All 2 branches missed.">    if (logger == null) {</span>
+<span class="nc" id="L160">      logger = WaarpLoggerFactory.getLogger(DirectTransfer.class);</span>
     }
-<span class="nc bnc" id="L161" title="All 2 branches missed.">    if (!getParams(args, false)) {</span>
-<span class="nc" id="L162">      logger.error(Messages.getString(&quot;Configuration.WrongInit&quot;)); //$NON-NLS-1$</span>
-<span class="nc bnc" id="L163" title="All 2 branches missed.">      if (!OutputFormat.isQuiet()) {</span>
-<span class="nc" id="L164">        SysErrLogger.FAKE_LOGGER.sysout(</span>
-<span class="nc" id="L165">            Messages.getString(&quot;Configuration.WrongInit&quot;)); //$NON-NLS-1$</span>
+<span class="nc bnc" id="L162" title="All 2 branches missed.">    if (!getParams(args, false)) {</span>
+<span class="nc" id="L163">      logger.error(Messages.getString(&quot;Configuration.WrongInit&quot;)); //$NON-NLS-1$</span>
+<span class="nc bnc" id="L164" title="All 2 branches missed.">      if (!OutputFormat.isQuiet()) {</span>
+<span class="nc" id="L165">        SysErrLogger.FAKE_LOGGER.sysout(</span>
+<span class="nc" id="L166">            Messages.getString(&quot;Configuration.WrongInit&quot;)); //$NON-NLS-1$</span>
       }
-<span class="nc bnc" id="L167" title="All 2 branches missed.">      if (admin != null) {</span>
-<span class="nc" id="L168">        admin.close();</span>
+<span class="nc bnc" id="L168" title="All 2 branches missed.">      if (admin != null) {</span>
+<span class="nc" id="L169">        admin.close();</span>
       }
-<span class="nc bnc" id="L170" title="All 2 branches missed.">      if (DetectionUtils.isJunit()) {</span>
-<span class="nc" id="L171">        return;</span>
+<span class="nc bnc" id="L171" title="All 2 branches missed.">      if (DetectionUtils.isJunit()) {</span>
+<span class="nc" id="L172">        return;</span>
       }
-<span class="nc" id="L173">      ChannelUtils.stopLogger();</span>
-<span class="nc" id="L174">      System.exit(2);//NOSONAR</span>
+<span class="nc" id="L174">      ChannelUtils.stopLogger();</span>
+<span class="nc" id="L175">      System.exit(2);//NOSONAR</span>
     }
-<span class="nc" id="L176">    final long time1 = System.currentTimeMillis();</span>
-<span class="nc" id="L177">    final R66Future future = new R66Future(true);</span>
+<span class="nc" id="L177">    final long time1 = System.currentTimeMillis();</span>
+<span class="nc" id="L178">    final R66Future future = new R66Future(true);</span>
 
-<span class="nc" id="L179">    Configuration.configuration.pipelineInit();</span>
-<span class="nc" id="L180">    final NetworkTransaction networkTransaction = new NetworkTransaction();</span>
+<span class="nc" id="L180">    Configuration.configuration.pipelineInit();</span>
+<span class="nc" id="L181">    final NetworkTransaction networkTransaction = new NetworkTransaction();</span>
     try {
-<span class="nc" id="L182">      final DirectTransfer transaction =</span>
+<span class="nc" id="L183">      final DirectTransfer transaction =</span>
           new DirectTransfer(future, rhost, localFilename, rule, transferInfo,
                              ismd5, block, idt, networkTransaction);
-<span class="nc" id="L185">      transaction.normalInfoAsWarn = snormalInfoAsWarn;</span>
-<span class="nc" id="L186">      logger.debug(</span>
-<span class="nc" id="L187">          &quot;rhost: &quot; + rhost + ':' + transaction.transferArgs.getRemoteHost());</span>
-<span class="nc" id="L188">      transaction.run();</span>
-<span class="nc" id="L189">      future.awaitOrInterruptible();</span>
-<span class="nc" id="L190">      final long time2 = System.currentTimeMillis();</span>
-<span class="nc" id="L191">      logger.debug(&quot;finish transfer: &quot; + future.isSuccess());</span>
-<span class="nc" id="L192">      final long delay = time2 - time1;</span>
-<span class="nc" id="L193">      final R66Result result = future.getResult();</span>
-<span class="nc" id="L194">      final OutputFormat outputFormat =</span>
-<span class="nc" id="L195">          new OutputFormat(DirectTransfer.class.getSimpleName(), args);</span>
-<span class="nc bnc" id="L196" title="All 2 branches missed.">      if (future.isSuccess()) {</span>
-<span class="nc" id="L197">        prepareOkOutputFormat(delay, result, outputFormat);</span>
-<span class="nc bnc" id="L198" title="All 2 branches missed.">        if (transaction.normalInfoAsWarn) {</span>
-<span class="nc" id="L199">          logger.warn(outputFormat.loggerOut());</span>
+<span class="nc" id="L186">      transaction.transferArgs.setFollowId(sFollowId);</span>
+<span class="nc" id="L187">      transaction.normalInfoAsWarn = snormalInfoAsWarn;</span>
+<span class="nc" id="L188">      logger.debug(</span>
+<span class="nc" id="L189">          &quot;rhost: &quot; + rhost + ':' + transaction.transferArgs.getRemoteHost());</span>
+<span class="nc" id="L190">      transaction.run();</span>
+<span class="nc" id="L191">      future.awaitOrInterruptible();</span>
+<span class="nc" id="L192">      final long time2 = System.currentTimeMillis();</span>
+<span class="nc" id="L193">      logger.debug(&quot;finish transfer: &quot; + future.isSuccess());</span>
+<span class="nc" id="L194">      final long delay = time2 - time1;</span>
+<span class="nc" id="L195">      final R66Result result = future.getResult();</span>
+<span class="nc" id="L196">      final OutputFormat outputFormat =</span>
+<span class="nc" id="L197">          new OutputFormat(DirectTransfer.class.getSimpleName(), args);</span>
+<span class="nc bnc" id="L198" title="All 2 branches missed.">      if (future.isSuccess()) {</span>
+<span class="nc" id="L199">        prepareOkOutputFormat(delay, result, outputFormat);</span>
+<span class="nc bnc" id="L200" title="All 2 branches missed.">        if (transaction.normalInfoAsWarn) {</span>
+<span class="nc" id="L201">          logger.warn(outputFormat.loggerOut());</span>
         } else {
-<span class="nc" id="L201">          logger.info(outputFormat.loggerOut());</span>
+<span class="nc" id="L203">          logger.info(outputFormat.loggerOut());</span>
         }
-<span class="nc bnc" id="L203" title="All 2 branches missed.">        if (!OutputFormat.isQuiet()) {</span>
-<span class="nc" id="L204">          outputFormat.sysout();</span>
+<span class="nc bnc" id="L205" title="All 2 branches missed.">        if (!OutputFormat.isQuiet()) {</span>
+<span class="nc" id="L206">          outputFormat.sysout();</span>
         }
-<span class="nc bnc" id="L206" title="All 4 branches missed.">        if (nolog || result.getRunner().shallIgnoreSave()) {</span>
+<span class="nc bnc" id="L208" title="All 2 branches missed.">        if (nolog) {</span>
           // In case of success, delete the runner
           try {
-<span class="nc" id="L209">            result.getRunner().delete();</span>
-<span class="nc" id="L210">          } catch (final WaarpDatabaseException e) {</span>
-<span class="nc" id="L211">            logger.warn(&quot;Cannot apply nolog to     &quot; +</span>
-<span class="nc" id="L212">                        result.getRunner().toShortString(), e);</span>
-<span class="nc" id="L213">          }</span>
+<span class="nc" id="L211">            result.getRunner().delete();</span>
+<span class="nc" id="L212">          } catch (final WaarpDatabaseException e) {</span>
+<span class="nc" id="L213">            logger.warn(&quot;Cannot apply nolog to     &quot; +</span>
+<span class="nc" id="L214">                        result.getRunner().toShortString(), e);</span>
+<span class="nc" id="L215">          }</span>
         }
-<span class="nc bnc" id="L215" title="All 2 branches missed.">        if (DetectionUtils.isJunit()) {</span>
-<span class="nc" id="L216">          return;</span>
+<span class="nc bnc" id="L217" title="All 2 branches missed.">        if (DetectionUtils.isJunit()) {</span>
+<span class="nc" id="L218">          return;</span>
         }
-<span class="nc" id="L218">        networkTransaction.closeAll();</span>
-<span class="nc" id="L219">        System.exit(0);//NOSONAR</span>
+<span class="nc" id="L220">        networkTransaction.closeAll();</span>
+<span class="nc" id="L221">        System.exit(0);//NOSONAR</span>
       } else {
-<span class="nc bnc" id="L221" title="All 4 branches missed.">        if (result == null || result.getRunner() == null) {</span>
-<span class="nc" id="L222">          prepareKoOutputFormat(future, outputFormat);</span>
-<span class="nc bnc" id="L223" title="All 2 branches missed.">          if (!OutputFormat.isQuiet()) {</span>
-<span class="nc" id="L224">            outputFormat.sysout();</span>
+<span class="nc bnc" id="L223" title="All 4 branches missed.">        if (result == null || result.getRunner() == null) {</span>
+<span class="nc" id="L224">          prepareKoOutputFormat(future, outputFormat);</span>
+<span class="nc bnc" id="L225" title="All 2 branches missed.">          if (!OutputFormat.isQuiet()) {</span>
+<span class="nc" id="L226">            outputFormat.sysout();</span>
           }
-<span class="nc bnc" id="L226" title="All 2 branches missed.">          if (DetectionUtils.isJunit()) {</span>
-<span class="nc" id="L227">            return;</span>
+<span class="nc bnc" id="L228" title="All 2 branches missed.">          if (DetectionUtils.isJunit()) {</span>
+<span class="nc" id="L229">            return;</span>
           }
-<span class="nc" id="L229">          networkTransaction.closeAll();</span>
-<span class="nc" id="L230">          System.exit(ErrorCode.Unknown.ordinal());//NOSONAR</span>
+<span class="nc" id="L231">          networkTransaction.closeAll();</span>
+<span class="nc" id="L232">          System.exit(ErrorCode.Unknown.ordinal());//NOSONAR</span>
         }
-<span class="nc" id="L232">        prepareKoOutputFormat(future, result, outputFormat);</span>
-<span class="nc bnc" id="L233" title="All 2 branches missed.">        if (!OutputFormat.isQuiet()) {</span>
-<span class="nc" id="L234">          outputFormat.sysout();</span>
+<span class="nc" id="L234">        prepareKoOutputFormat(future, result, outputFormat);</span>
+<span class="nc bnc" id="L235" title="All 2 branches missed.">        if (!OutputFormat.isQuiet()) {</span>
+<span class="nc" id="L236">          outputFormat.sysout();</span>
         }
-<span class="nc bnc" id="L236" title="All 2 branches missed.">        if (DetectionUtils.isJunit()) {</span>
-<span class="nc" id="L237">          return;</span>
+<span class="nc bnc" id="L238" title="All 2 branches missed.">        if (DetectionUtils.isJunit()) {</span>
+<span class="nc" id="L239">          return;</span>
         }
-<span class="nc" id="L239">        networkTransaction.closeAll();</span>
-<span class="nc" id="L240">        System.exit(result.getCode().ordinal());//NOSONAR</span>
+<span class="nc" id="L241">        networkTransaction.closeAll();</span>
+<span class="nc" id="L242">        System.exit(result.getCode().ordinal());//NOSONAR</span>
       }
-<span class="nc" id="L242">    } catch (final Throwable e) {</span>
-<span class="nc" id="L243">      logger.error(&quot;Exception&quot;, e);</span>
+<span class="nc" id="L244">    } catch (final Throwable e) {</span>
+<span class="nc" id="L245">      logger.error(&quot;Exception&quot;, e);</span>
     } finally {
-<span class="nc" id="L245">      logger.debug(</span>
-<span class="nc" id="L246">          &quot;finish transfer: &quot; + future.isDone() + ':' + future.isSuccess());</span>
-<span class="nc bnc" id="L247" title="All 2 branches missed.">      if (!DetectionUtils.isJunit()) {</span>
-<span class="nc" id="L248">        networkTransaction.closeAll();</span>
+<span class="nc" id="L247">      logger.debug(</span>
+<span class="nc" id="L248">          &quot;finish transfer: &quot; + future.isDone() + ':' + future.isSuccess());</span>
+<span class="nc bnc" id="L249" title="All 2 branches missed.">      if (!DetectionUtils.isJunit()) {</span>
+<span class="nc" id="L250">        networkTransaction.closeAll();</span>
         // In case something wrong append
-<span class="nc bnc" id="L250" title="All 4 branches missed.">        if (future.isDone() &amp;&amp; future.isSuccess()) {</span>
-<span class="nc" id="L251">          System.exit(0);//NOSONAR</span>
+<span class="nc bnc" id="L252" title="All 4 branches missed.">        if (future.isDone() &amp;&amp; future.isSuccess()) {</span>
+<span class="nc" id="L253">          System.exit(0);//NOSONAR</span>
         } else {
-<span class="nc" id="L253">          System.exit(66);//NOSONAR</span>
+<span class="nc" id="L255">          System.exit(66);//NOSONAR</span>
         }
       }
     }
-<span class="nc" id="L257">  }</span>
+<span class="nc" id="L259">  }</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

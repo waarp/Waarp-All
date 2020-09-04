@@ -42,39 +42,40 @@ public class LocalExecSslClientHandler extends LocalExecClientHandler {
   /**
    * @param factory
    */
-  public LocalExecSslClientHandler(LocalExecClientInitializer factory) {
+  public LocalExecSslClientHandler(final LocalExecClientInitializer factory) {
 <span class="fc" id="L46">    super(factory);</span>
 <span class="fc" id="L47">  }</span>
 
   @Override
-  public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
-<span class="fc" id="L51">    WaarpSslUtility.addSslOpenedChannel(ctx.channel());</span>
-<span class="fc" id="L52">    super.channelRegistered(ctx);</span>
-<span class="fc" id="L53">  }</span>
+  public void channelRegistered(final ChannelHandlerContext ctx)
+      throws Exception {
+<span class="fc" id="L52">    WaarpSslUtility.addSslOpenedChannel(ctx.channel());</span>
+<span class="fc" id="L53">    super.channelRegistered(ctx);</span>
+<span class="fc" id="L54">  }</span>
 
   @Override
-  public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
-      throws Exception {
-<span class="nc" id="L58">    logger.warn(&quot;Unexpected exception from Outband while get information: &quot; +</span>
+  public void exceptionCaught(final ChannelHandlerContext ctx,
+                              final Throwable cause) throws Exception {
+<span class="nc" id="L59">    logger.warn(&quot;Unexpected exception from Outband while get information: &quot; +</span>
                 firstMessage, cause);
-<span class="nc bnc" id="L60" title="All 2 branches missed.">    if (firstMessage) {</span>
-<span class="nc" id="L61">      firstMessage = false;</span>
-<span class="nc" id="L62">      result.set(LocalExecDefaultResult.BadTransmition);</span>
-<span class="nc" id="L63">      result.setException((Exception) cause);</span>
-<span class="nc" id="L64">      back = new StringBuilder(&quot;Error in LocalExec: &quot;)</span>
-<span class="nc" id="L65">          .append(result.getException().getMessage()).append('\n');</span>
+<span class="nc bnc" id="L61" title="All 2 branches missed.">    if (firstMessage) {</span>
+<span class="nc" id="L62">      firstMessage = false;</span>
+<span class="nc" id="L63">      result.set(LocalExecDefaultResult.BadTransmition);</span>
+<span class="nc" id="L64">      result.setException((Exception) cause);</span>
+<span class="nc" id="L65">      back = new StringBuilder(&quot;Error in LocalExec: &quot;)</span>
+<span class="nc" id="L66">          .append(result.getException().getMessage()).append('\n');</span>
     } else {
-<span class="nc bnc" id="L67" title="All 2 branches missed.">      if (cause instanceof SSLException) {</span>
+<span class="nc bnc" id="L68" title="All 2 branches missed.">      if (cause instanceof SSLException) {</span>
         // ignore ?
-<span class="nc" id="L69">        logger.warn(&quot;Ignore exception ?&quot;, cause);</span>
-<span class="nc" id="L70">        return;</span>
+<span class="nc" id="L70">        logger.warn(&quot;Ignore exception ?&quot;, cause);</span>
+<span class="nc" id="L71">        return;</span>
       }
-<span class="nc" id="L72">      back.append(&quot;\nERROR while receiving answer: &quot;);</span>
-<span class="nc" id="L73">      result.setException((Exception) cause);</span>
-<span class="nc" id="L74">      back.append(result.getException().getMessage()).append('\n');</span>
+<span class="nc" id="L73">      back.append(&quot;\nERROR while receiving answer: &quot;);</span>
+<span class="nc" id="L74">      result.setException((Exception) cause);</span>
+<span class="nc" id="L75">      back.append(result.getException().getMessage()).append('\n');</span>
     }
-<span class="nc" id="L76">    actionBeforeClose(ctx.channel());</span>
-<span class="nc" id="L77">    WaarpSslUtility.closingSslChannel(ctx.channel());</span>
-<span class="nc" id="L78">  }</span>
+<span class="nc" id="L77">    actionBeforeClose(ctx.channel());</span>
+<span class="nc" id="L78">    WaarpSslUtility.closingSslChannel(ctx.channel());</span>
+<span class="nc" id="L79">  }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

@@ -67,111 +67,112 @@ import java.util.Map;
 
 
   @Override
-  protected void doPost(HttpServletRequest request,
-                        HttpServletResponse response) throws ServletException {
+  protected void doPost(final HttpServletRequest request,
+                        final HttpServletResponse response)
+      throws ServletException {
     // Check that we have a file upload request
-<span class="fc" id="L73">    boolean isMultipart =</span>
-<span class="fc" id="L74">        request.getHeader(&quot;Content-Type&quot;).contains(&quot;multipart/&quot;);</span>
-<span class="fc" id="L75">    InputStream inputStream = null;</span>
-    HttpResumableInfo resumableInfo;
-    HttpResumableSession session;
-<span class="fc" id="L78">    Map&lt;String, String&gt; arguments = new HashMap&lt;String, String&gt;();</span>
-<span class="fc" id="L79">    logger.debug(&quot;MULTIPART MODE? {} {}&quot;, isMultipart,</span>
-<span class="fc" id="L80">                 request.getHeader(&quot;Content-Type&quot;));</span>
-<span class="fc bfc" id="L81" title="All 2 branches covered.">    if (isMultipart) {</span>
-<span class="pc bpc" id="L82" title="1 of 2 branches missed.">      if (request.getAttribute(__MULTIPART_CONFIG_ELEMENT) == null) {</span>
-<span class="fc" id="L83">        request.setAttribute(__MULTIPART_CONFIG_ELEMENT, MULTI_PART_CONFIG);</span>
+<span class="fc" id="L74">    final boolean isMultipart =</span>
+<span class="fc" id="L75">        request.getHeader(&quot;Content-Type&quot;).contains(&quot;multipart/&quot;);</span>
+<span class="fc" id="L76">    InputStream inputStream = null;</span>
+    final HttpResumableInfo resumableInfo;
+    final HttpResumableSession session;
+<span class="fc" id="L79">    final Map&lt;String, String&gt; arguments = new HashMap&lt;String, String&gt;();</span>
+<span class="fc" id="L80">    logger.debug(&quot;MULTIPART MODE? {} {}&quot;, isMultipart,</span>
+<span class="fc" id="L81">                 request.getHeader(&quot;Content-Type&quot;));</span>
+<span class="fc bfc" id="L82" title="All 2 branches covered.">    if (isMultipart) {</span>
+<span class="pc bpc" id="L83" title="1 of 2 branches missed.">      if (request.getAttribute(__MULTIPART_CONFIG_ELEMENT) == null) {</span>
+<span class="fc" id="L84">        request.setAttribute(__MULTIPART_CONFIG_ELEMENT, MULTI_PART_CONFIG);</span>
       }
       try {
-<span class="fc" id="L86">        Collection&lt;Part&gt; parts = request.getParts();</span>
-<span class="fc bfc" id="L87" title="All 2 branches covered.">        if (parts.isEmpty()) {</span>
-<span class="fc" id="L88">          logger.warn(&quot;MULTIPART MODE BUT EMPTY&quot;);</span>
-<span class="fc" id="L89">          inputStream = request.getInputStream();</span>
+<span class="fc" id="L87">        final Collection&lt;Part&gt; parts = request.getParts();</span>
+<span class="fc bfc" id="L88" title="All 2 branches covered.">        if (parts.isEmpty()) {</span>
+<span class="fc" id="L89">          logger.warn(&quot;MULTIPART MODE BUT EMPTY&quot;);</span>
+<span class="fc" id="L90">          inputStream = request.getInputStream();</span>
         } else {
-<span class="fc bfc" id="L91" title="All 2 branches covered.">          for (Part part : parts) {</span>
+<span class="fc bfc" id="L92" title="All 2 branches covered.">          for (final Part part : parts) {</span>
 
-<span class="fc bfc" id="L93" title="All 2 branches covered.">            if (part.getName().equalsIgnoreCase(FIELD_FILE)) {</span>
-<span class="fc" id="L94">              inputStream = part.getInputStream();</span>
+<span class="fc bfc" id="L94" title="All 2 branches covered.">            if (part.getName().equalsIgnoreCase(FIELD_FILE)) {</span>
+<span class="fc" id="L95">              inputStream = part.getInputStream();</span>
             } else {
-<span class="fc" id="L96">              final InputStream finalInputStream = part.getInputStream();</span>
-<span class="fc" id="L97">              ByteSource byteSource = new ByteSource() {</span>
+<span class="fc" id="L97">              final InputStream finalInputStream = part.getInputStream();</span>
+<span class="fc" id="L98">              final ByteSource byteSource = new ByteSource() {</span>
                 @Override
                 public InputStream openStream() {
-<span class="fc" id="L100">                  return finalInputStream;</span>
+<span class="fc" id="L101">                  return finalInputStream;</span>
                 }
               };
 
-<span class="fc" id="L104">              String valueText =</span>
-<span class="fc" id="L105">                  byteSource.asCharSource(WaarpStringUtils.UTF8).read();</span>
-<span class="fc" id="L106">              arguments.put(part.getName(), valueText);</span>
+<span class="fc" id="L105">              final String valueText =</span>
+<span class="fc" id="L106">                  byteSource.asCharSource(WaarpStringUtils.UTF8).read();</span>
+<span class="fc" id="L107">              arguments.put(part.getName(), valueText);</span>
             }
-<span class="fc" id="L108">          }</span>
+<span class="fc" id="L109">          }</span>
         }
-<span class="nc" id="L110">      } catch (ServletException ignored) {</span>
-<span class="nc" id="L111">        logger.warn(&quot;MULTIPART MODE BUT error&quot;, ignored);</span>
+<span class="nc" id="L111">      } catch (final ServletException ignored) {</span>
+<span class="nc" id="L112">        logger.warn(&quot;MULTIPART MODE BUT error&quot;, ignored);</span>
         try {
-<span class="nc" id="L113">          inputStream = request.getInputStream();</span>
-<span class="nc" id="L114">        } catch (IOException ignore) {</span>
-<span class="nc" id="L115">          throw new ServletException(INVALID_BLOCK, ignore);</span>
-<span class="nc" id="L116">        }</span>
-<span class="nc" id="L117">      } catch (IOException ignored) {</span>
-<span class="nc" id="L118">        logger.warn(&quot;MULTIPART MODE BUT error&quot;, ignored);</span>
+<span class="nc" id="L114">          inputStream = request.getInputStream();</span>
+<span class="nc" id="L115">        } catch (final IOException ignore) {</span>
+<span class="nc" id="L116">          throw new ServletException(INVALID_BLOCK, ignore);</span>
+<span class="nc" id="L117">        }</span>
+<span class="nc" id="L118">      } catch (final IOException ignored) {</span>
+<span class="nc" id="L119">        logger.warn(&quot;MULTIPART MODE BUT error&quot;, ignored);</span>
         try {
-<span class="nc" id="L120">          inputStream = request.getInputStream();</span>
-<span class="nc" id="L121">        } catch (IOException ignore) {</span>
-<span class="nc" id="L122">          throw new ServletException(INVALID_BLOCK, ignore);</span>
-<span class="nc" id="L123">        }</span>
-<span class="pc" id="L124">      }</span>
+<span class="nc" id="L121">          inputStream = request.getInputStream();</span>
+<span class="nc" id="L122">        } catch (final IOException ignore) {</span>
+<span class="nc" id="L123">          throw new ServletException(INVALID_BLOCK, ignore);</span>
+<span class="nc" id="L124">        }</span>
+<span class="pc" id="L125">      }</span>
     } else {
-<span class="fc" id="L126">      Enumeration&lt;String&gt; names = request.getParameterNames();</span>
-<span class="fc bfc" id="L127" title="All 2 branches covered.">      while (names.hasMoreElements()) {</span>
-<span class="fc" id="L128">        String name = names.nextElement();</span>
-<span class="fc" id="L129">        arguments.put(name, request.getParameter(name));</span>
-<span class="fc" id="L130">      }</span>
+<span class="fc" id="L127">      final Enumeration&lt;String&gt; names = request.getParameterNames();</span>
+<span class="fc bfc" id="L128" title="All 2 branches covered.">      while (names.hasMoreElements()) {</span>
+<span class="fc" id="L129">        final String name = names.nextElement();</span>
+<span class="fc" id="L130">        arguments.put(name, request.getParameter(name));</span>
+<span class="fc" id="L131">      }</span>
       try {
-<span class="fc" id="L132">        inputStream = request.getInputStream();</span>
-<span class="nc" id="L133">      } catch (IOException ignore) {</span>
-<span class="nc" id="L134">        throw new ServletException(INVALID_BLOCK, ignore);</span>
-<span class="fc" id="L135">      }</span>
+<span class="fc" id="L133">        inputStream = request.getInputStream();</span>
+<span class="nc" id="L134">      } catch (final IOException ignore) {</span>
+<span class="nc" id="L135">        throw new ServletException(INVALID_BLOCK, ignore);</span>
+<span class="fc" id="L136">      }</span>
     }
-<span class="fc" id="L137">    logger.warn(&quot;PARAMS: {}&quot;, arguments);</span>
-<span class="fc" id="L138">    resumableInfo = getResumableInfo(arguments);</span>
-<span class="fc" id="L139">    logger.debug(&quot;RECV: {}&quot;, resumableInfo);</span>
-<span class="fc" id="L140">    session = getResumableSession(arguments, resumableInfo);</span>
-<span class="fc" id="L141">    logger.debug(&quot;SESSION: {}&quot;, session);</span>
+<span class="fc" id="L138">    logger.warn(&quot;PARAMS: {}&quot;, arguments);</span>
+<span class="fc" id="L139">    resumableInfo = getResumableInfo(arguments);</span>
+<span class="fc" id="L140">    logger.debug(&quot;RECV: {}&quot;, resumableInfo);</span>
+<span class="fc" id="L141">    session = getResumableSession(arguments, resumableInfo);//NOSONAR</span>
+<span class="fc" id="L142">    logger.debug(&quot;SESSION: {}&quot;, session);</span>
     try {
-<span class="fc bfc" id="L143" title="All 2 branches covered.">      if (!session.tryWrite(resumableInfo, inputStream)) {</span>
-<span class="fc" id="L144">        throw new ServletException(INVALID_BLOCK);</span>
+<span class="fc bfc" id="L144" title="All 2 branches covered.">      if (!session.tryWrite(resumableInfo, inputStream)) {</span>
+<span class="fc" id="L145">        throw new ServletException(INVALID_BLOCK);</span>
       }
-<span class="nc" id="L146">    } catch (IOException e) {</span>
-<span class="nc" id="L147">      throw new ServletException(INVALID_BLOCK, e);</span>
-<span class="fc" id="L148">    }</span>
+<span class="nc" id="L147">    } catch (final IOException e) {</span>
+<span class="nc" id="L148">      throw new ServletException(INVALID_BLOCK, e);</span>
+<span class="fc" id="L149">    }</span>
 
-<span class="fc" id="L150">    String sha = arguments.get(SHA_256);</span>
-<span class="pc bpc" id="L151" title="1 of 4 branches missed.">    if (!Strings.isNullOrEmpty(sha) &amp;&amp; sha.equalsIgnoreCase(&quot;undefined&quot;)) {</span>
-<span class="nc" id="L152">      sha = null;</span>
+<span class="fc" id="L151">    String sha = arguments.get(SHA_256);</span>
+<span class="pc bpc" id="L152" title="1 of 4 branches missed.">    if (!Strings.isNullOrEmpty(sha) &amp;&amp; sha.equalsIgnoreCase(&quot;undefined&quot;)) {</span>
+<span class="nc" id="L153">      sha = null;</span>
     }
-<span class="fc bfc" id="L154" title="All 2 branches covered.">    if (session.checkIfUploadFinished(sha)) {</span>
+<span class="fc bfc" id="L155" title="All 2 branches covered.">    if (session.checkIfUploadFinished(sha)) {</span>
       // Check if all chunks uploaded, and change filename
-<span class="fc" id="L156">      logger.warn(&quot;ALL USER TRANSFER FINISHED: {}&quot;, session);</span>
-<span class="fc" id="L157">      HttpSessions.getInstance().removeSession(session);</span>
-<span class="fc" id="L158">      response.setStatus(200);</span>
+<span class="fc" id="L157">      logger.warn(&quot;ALL USER TRANSFER FINISHED: {}&quot;, session);</span>
+<span class="fc" id="L158">      HttpSessions.getInstance().removeSession(session);</span>
+<span class="fc" id="L159">      response.setStatus(200);</span>
       try {
-<span class="fc" id="L160">        response.getWriter().print(&quot;All finished.&quot;);</span>
-<span class="nc" id="L161">      } catch (IOException ignore) {</span>
-<span class="nc" id="L162">        logger.debug(ignore);</span>
-<span class="pc" id="L163">      }</span>
+<span class="fc" id="L161">        response.getWriter().print(&quot;All finished.&quot;);</span>
+<span class="nc" id="L162">      } catch (final IOException ignore) {</span>
+<span class="nc" id="L163">        logger.debug(ignore);</span>
+<span class="pc" id="L164">      }</span>
     } else {
-<span class="fc" id="L165">      logger.debug(&quot;PARTIAL UPLOAD: {}&quot;, session);</span>
-<span class="fc" id="L166">      response.setStatus(201);</span>
+<span class="fc" id="L166">      logger.debug(&quot;PARTIAL UPLOAD: {}&quot;, session);</span>
+<span class="fc" id="L167">      response.setStatus(201);</span>
       try {
-<span class="fc" id="L168">        response.getWriter().print(&quot;Upload&quot;);</span>
-<span class="nc" id="L169">      } catch (IOException ignore) {</span>
-<span class="nc" id="L170">        logger.debug(ignore);</span>
-<span class="fc" id="L171">      }</span>
+<span class="fc" id="L169">        response.getWriter().print(&quot;Upload&quot;);</span>
+<span class="nc" id="L170">      } catch (final IOException ignore) {</span>
+<span class="nc" id="L171">        logger.debug(ignore);</span>
+<span class="fc" id="L172">      }</span>
     }
 
-<span class="fc" id="L174">  }</span>
+<span class="fc" id="L175">  }</span>
 
   /**
    * From the HttpServletRequest, build the HttpResumableInfo
@@ -180,17 +181,18 @@ import java.util.Map;
    *
    * @return the HttpResumableInfo
    */
-  private HttpResumableInfo getResumableInfo(Map&lt;String, String&gt; arguments) {
-<span class="fc" id="L184">    int resumableChunkNumber =</span>
-<span class="fc" id="L185">        HttpHelper.toInt(arguments.get(RESUMABLE_CHUNK_NUMBER), -1);</span>
-<span class="fc" id="L186">    int resumableChunkSize =</span>
-<span class="fc" id="L187">        HttpHelper.toInt(arguments.get(RESUMABLE_CHUNK_SIZE), -1);</span>
-<span class="fc" id="L188">    long resumableTotalSize =</span>
-<span class="fc" id="L189">        HttpHelper.toLong(arguments.get(RESUMABLE_TOTAL_SIZE), -1);</span>
-<span class="fc" id="L190">    String resumableIdentifier = arguments.get(RESUMABLE_IDENTIFIER);</span>
-<span class="fc" id="L191">    String resumableFilename = arguments.get(RESUMABLE_FILENAME);</span>
-<span class="fc" id="L192">    String resumableRelativePath = arguments.get(RESUMABLE_RELATIVE_PATH);</span>
-<span class="fc" id="L193">    return new HttpResumableInfo(resumableChunkNumber, resumableChunkSize,</span>
+  private HttpResumableInfo getResumableInfo(
+      final Map&lt;String, String&gt; arguments) {
+<span class="fc" id="L186">    final int resumableChunkNumber =</span>
+<span class="fc" id="L187">        HttpHelper.toInt(arguments.get(RESUMABLE_CHUNK_NUMBER), -1);</span>
+<span class="fc" id="L188">    final int resumableChunkSize =</span>
+<span class="fc" id="L189">        HttpHelper.toInt(arguments.get(RESUMABLE_CHUNK_SIZE), -1);</span>
+<span class="fc" id="L190">    final long resumableTotalSize =</span>
+<span class="fc" id="L191">        HttpHelper.toLong(arguments.get(RESUMABLE_TOTAL_SIZE), -1);</span>
+<span class="fc" id="L192">    final String resumableIdentifier = arguments.get(RESUMABLE_IDENTIFIER);</span>
+<span class="fc" id="L193">    final String resumableFilename = arguments.get(RESUMABLE_FILENAME);</span>
+<span class="fc" id="L194">    final String resumableRelativePath = arguments.get(RESUMABLE_RELATIVE_PATH);</span>
+<span class="fc" id="L195">    return new HttpResumableInfo(resumableChunkNumber, resumableChunkSize,</span>
                                  resumableTotalSize, resumableIdentifier,
                                  resumableFilename, resumableRelativePath);
   }
@@ -207,64 +209,65 @@ import java.util.Map;
    * @throws ServletException
    */
   private HttpResumableSession getResumableSession(
-      Map&lt;String, String&gt; arguments, HttpResumableInfo resumableInfo)
-      throws ServletException {
-<span class="fc" id="L212">    String rulename = arguments.get(RULENAME);</span>
-<span class="fc bfc" id="L213" title="All 2 branches covered.">    if (rulename == null) {</span>
-<span class="fc" id="L214">      throw new ServletException(INVALID_REQUEST_PARAMS);</span>
+      final Map&lt;String, String&gt; arguments,
+      final HttpResumableInfo resumableInfo) throws ServletException {
+<span class="fc" id="L214">    final String rulename = arguments.get(RULENAME);</span>
+<span class="fc bfc" id="L215" title="All 2 branches covered.">    if (rulename == null) {</span>
+<span class="fc" id="L216">      throw new ServletException(INVALID_REQUEST_PARAMS);</span>
     }
-<span class="fc" id="L216">    String comment = arguments.get(COMMENT);</span>
-<span class="fc bfc" id="L217" title="All 2 branches covered.">    if (comment == null) {</span>
-<span class="fc" id="L218">      comment = &quot;Web Upload &quot; + resumableInfo.getIdentifier();</span>
+<span class="fc" id="L218">    String comment = arguments.get(COMMENT);</span>
+<span class="fc bfc" id="L219" title="All 2 branches covered.">    if (comment == null) {</span>
+<span class="fc" id="L220">      comment = &quot;Web Upload &quot; + resumableInfo.getIdentifier();</span>
     }
-<span class="fc" id="L220">    HttpSessions sessions = HttpSessions.getInstance();</span>
+<span class="fc" id="L222">    final HttpSessions sessions = HttpSessions.getInstance();</span>
 
     try {
-<span class="fc" id="L223">      HttpAuthent authent = authentClass.newInstance();</span>
-<span class="fc" id="L224">      authent.initializeAuthent(arguments);</span>
-<span class="fc" id="L225">      HttpResumableSession session = sessions</span>
-<span class="fc" id="L226">          .getOrCreateResumableSession(resumableInfo, rulename, comment,</span>
+<span class="fc" id="L225">      final HttpAuthent authent = authentClass.newInstance();</span>
+<span class="fc" id="L226">      authent.initializeAuthent(arguments);</span>
+<span class="fc" id="L227">      final HttpResumableSession session = sessions</span>
+<span class="fc" id="L228">          .getOrCreateResumableSession(resumableInfo, rulename, comment,</span>
                                        authent);
-<span class="fc bfc" id="L228" title="All 2 branches covered.">      if (!session.valid(resumableInfo)) {</span>
-<span class="fc" id="L229">        sessions.removeSession(resumableInfo);</span>
-<span class="fc" id="L230">        throw new ServletException(INVALID_REQUEST_PARAMS);</span>
+<span class="fc bfc" id="L230" title="All 2 branches covered.">      if (!session.valid(resumableInfo)) {</span>
+<span class="fc" id="L231">        sessions.removeSession(resumableInfo);</span>
+<span class="fc" id="L232">        throw new ServletException(INVALID_REQUEST_PARAMS);</span>
       }
-<span class="fc" id="L232">      return session;</span>
-<span class="fc" id="L233">    } catch (IllegalArgumentException e) {</span>
-<span class="fc" id="L234">      throw new ServletException(INVALID_REQUEST_PARAMS, e);</span>
-<span class="nc" id="L235">    } catch (IllegalAccessException e) {</span>
-<span class="nc" id="L236">      throw new ServletException(INVALID_REQUEST_PARAMS, e);</span>
-<span class="nc" id="L237">    } catch (InstantiationException e) {</span>
+<span class="fc" id="L234">      return session;</span>
+<span class="fc" id="L235">    } catch (final IllegalArgumentException e) {</span>
+<span class="fc" id="L236">      throw new ServletException(INVALID_REQUEST_PARAMS, e);</span>
+<span class="nc" id="L237">    } catch (final IllegalAccessException e) {</span>
 <span class="nc" id="L238">      throw new ServletException(INVALID_REQUEST_PARAMS, e);</span>
+<span class="nc" id="L239">    } catch (final InstantiationException e) {</span>
+<span class="nc" id="L240">      throw new ServletException(INVALID_REQUEST_PARAMS, e);</span>
     }
   }
 
   @Override
-  protected void doGet(HttpServletRequest request, HttpServletResponse response)
+  protected void doGet(final HttpServletRequest request,
+                       final HttpServletResponse response)
       throws ServletException {
-<span class="fc" id="L245">    Map&lt;String, String&gt; arguments = new HashMap&lt;String, String&gt;();</span>
-<span class="fc" id="L246">    Enumeration&lt;String&gt; names = request.getParameterNames();</span>
-<span class="fc bfc" id="L247" title="All 2 branches covered.">    while (names.hasMoreElements()) {</span>
-<span class="fc" id="L248">      String name = names.nextElement();</span>
-<span class="fc" id="L249">      arguments.put(name, request.getParameter(name));</span>
-<span class="fc" id="L250">    }</span>
-<span class="fc" id="L251">    HttpResumableInfo resumableInfo = getResumableInfo(arguments);</span>
-<span class="fc" id="L252">    logger.debug(&quot;RECVGET: {}&quot;, resumableInfo);</span>
-<span class="fc" id="L253">    HttpResumableSession session =</span>
-<span class="fc" id="L254">        getResumableSession(arguments, resumableInfo);</span>
-<span class="fc" id="L255">    logger.debug(&quot;SESSION: {}&quot;, session);</span>
-<span class="fc bfc" id="L256" title="All 2 branches covered.">    if (session.contains(resumableInfo)) {</span>
-<span class="fc" id="L257">      logger.info(&quot;ALREADY: {}&quot;, session);</span>
-<span class="fc" id="L258">      response.setStatus(200);</span>
+<span class="fc" id="L248">    final Map&lt;String, String&gt; arguments = new HashMap&lt;String, String&gt;();</span>
+<span class="fc" id="L249">    final Enumeration&lt;String&gt; names = request.getParameterNames();</span>
+<span class="fc bfc" id="L250" title="All 2 branches covered.">    while (names.hasMoreElements()) {</span>
+<span class="fc" id="L251">      final String name = names.nextElement();</span>
+<span class="fc" id="L252">      arguments.put(name, request.getParameter(name));</span>
+<span class="fc" id="L253">    }</span>
+<span class="fc" id="L254">    final HttpResumableInfo resumableInfo = getResumableInfo(arguments);</span>
+<span class="fc" id="L255">    logger.debug(&quot;RECVGET: {}&quot;, resumableInfo);</span>
+<span class="fc" id="L256">    final HttpResumableSession session =</span>
+<span class="fc" id="L257">        getResumableSession(arguments, resumableInfo);</span>
+<span class="fc" id="L258">    logger.debug(&quot;SESSION: {}&quot;, session);</span>
+<span class="fc bfc" id="L259" title="All 2 branches covered.">    if (session.contains(resumableInfo)) {</span>
+<span class="fc" id="L260">      logger.info(&quot;ALREADY: {}&quot;, session);</span>
+<span class="fc" id="L261">      response.setStatus(200);</span>
       try {
-<span class="fc" id="L260">        response.getWriter().print(&quot;Uploaded.&quot;); //This Chunk has been Uploaded.</span>
-<span class="nc" id="L261">      } catch (IOException ignore) {</span>
-<span class="nc" id="L262">        logger.debug(ignore);</span>
-<span class="pc" id="L263">      }</span>
+<span class="fc" id="L263">        response.getWriter().print(&quot;Uploaded.&quot;); //This Chunk has been Uploaded.</span>
+<span class="nc" id="L264">      } catch (final IOException ignore) {</span>
+<span class="nc" id="L265">        logger.debug(ignore);</span>
+<span class="pc" id="L266">      }</span>
     } else {
-<span class="fc" id="L265">      logger.info(&quot;NOTDONE: {}&quot;, session);</span>
-<span class="fc" id="L266">      response.setStatus(HttpServletResponse.SC_NOT_FOUND);</span>
+<span class="fc" id="L268">      logger.info(&quot;NOTDONE: {}&quot;, session);</span>
+<span class="fc" id="L269">      response.setStatus(HttpServletResponse.SC_NOT_FOUND);</span>
     }
-<span class="fc" id="L268">  }</span>
+<span class="fc" id="L271">  }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

@@ -22,6 +22,8 @@ package org.waarp.openr66.protocol.localhandler.packet;
 import io.netty.buffer.ByteBuf;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
 
+import static org.waarp.openr66.protocol.localhandler.packet.AbstractLocalPacket.*;
+
 /**
  * Factory to create Packet according to type from a buffer
  */
@@ -93,11 +95,9 @@ public final class LocalPacketFactory {
    *
    * @throws OpenR66ProtocolPacketException
    */
-  public static AbstractLocalPacket createPacketFromByteBuf(int headerLength,
-                                                            int middleLength,
-                                                            int endLength,
-                                                            ByteBuf buf)
-      throws OpenR66ProtocolPacketException {
+  public static AbstractLocalPacket createPacketFromByteBuf(
+      final int headerLength, final int middleLength, final int endLength,
+      final ByteBuf buf) throws OpenR66ProtocolPacketException {
 <span class="fc" id="L101">    final byte packetType = buf.readByte();</span>
 <span class="pc bpc" id="L102" title="12 of 19 branches missed.">    switch (packetType) {</span>
       case AUTHENTPACKET:
@@ -167,14 +167,14 @@ public final class LocalPacketFactory {
     }
   }
 
-  public static final int estimateSize(Object o) {
+  public static final int estimateSize(final Object o) {
 <span class="nc bnc" id="L171" title="All 2 branches missed.">    if (!(o instanceof AbstractLocalPacket)) {</span>
       // Type unimplemented
 <span class="nc" id="L173">      return -1;</span>
     }
 <span class="nc" id="L175">    final AbstractLocalPacket packet = (AbstractLocalPacket) o;</span>
 <span class="nc" id="L176">    return packet.header.readableBytes() + packet.middle.readableBytes() +</span>
-<span class="nc" id="L177">           packet.end.readableBytes();</span>
+<span class="nc" id="L177">           packet.end.readableBytes() + LOCAL_HEADER_SIZE;</span>
   }
 
 }

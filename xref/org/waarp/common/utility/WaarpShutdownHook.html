@@ -84,7 +84,7 @@
 <a class="jxr_linenumber" name="L76" href="#L76">76</a>    <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">volatile</strong> <strong class="jxr_keyword">boolean</strong> shouldRestart;
 <a class="jxr_linenumber" name="L77" href="#L77">77</a>    <strong class="jxr_keyword">private</strong> ShutdownConfiguration shutdownConfiguration;
 <a class="jxr_linenumber" name="L78" href="#L78">78</a>  
-<a class="jxr_linenumber" name="L79" href="#L79">79</a>    <strong class="jxr_keyword">protected</strong> <a name="WaarpShutdownHook" href="../../../../org/waarp/common/utility/WaarpShutdownHook.html#WaarpShutdownHook">WaarpShutdownHook</a>(ShutdownConfiguration configuration) {
+<a class="jxr_linenumber" name="L79" href="#L79">79</a>    <strong class="jxr_keyword">protected</strong> <a name="WaarpShutdownHook" href="../../../../org/waarp/common/utility/WaarpShutdownHook.html#WaarpShutdownHook">WaarpShutdownHook</a>(<strong class="jxr_keyword">final</strong> ShutdownConfiguration configuration) {
 <a class="jxr_linenumber" name="L80" href="#L80">80</a>      <strong class="jxr_keyword">if</strong> (initialized) {
 <a class="jxr_linenumber" name="L81" href="#L81">81</a>        shutdownHook.shutdownConfiguration = configuration;
 <a class="jxr_linenumber" name="L82" href="#L82">82</a>        setName(<span class="jxr_string">"WaarpShutdownHook"</span>);
@@ -145,9 +145,9 @@
 <a class="jxr_linenumber" name="L137" href="#L137">137</a> <em class="jxr_javadoccomment">   *</em>
 <a class="jxr_linenumber" name="L138" href="#L138">138</a> <em class="jxr_javadoccomment">   * @param immediateSet</em>
 <a class="jxr_linenumber" name="L139" href="#L139">139</a> <em class="jxr_javadoccomment">   */</em>
-<a class="jxr_linenumber" name="L140" href="#L140">140</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">void</strong> terminate(<strong class="jxr_keyword">boolean</strong> immediateSet) {
+<a class="jxr_linenumber" name="L140" href="#L140">140</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">void</strong> terminate(<strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">boolean</strong> immediateSet) {
 <a class="jxr_linenumber" name="L141" href="#L141">141</a>     <strong class="jxr_keyword">if</strong> (immediateSet) {
-<a class="jxr_linenumber" name="L142" href="#L142">142</a>       immediate = immediateSet;
+<a class="jxr_linenumber" name="L142" href="#L142">142</a>       immediate = <strong class="jxr_keyword">true</strong>;
 <a class="jxr_linenumber" name="L143" href="#L143">143</a>     }
 <a class="jxr_linenumber" name="L144" href="#L144">144</a>     <strong class="jxr_keyword">if</strong> (shutdownHook != <strong class="jxr_keyword">null</strong>) {
 <a class="jxr_linenumber" name="L145" href="#L145">145</a>       removeShutdownHook();
@@ -242,8 +242,8 @@
 <a class="jxr_linenumber" name="L234" href="#L234">234</a> <em class="jxr_javadoccomment">   * @param thread</em>
 <a class="jxr_linenumber" name="L235" href="#L235">235</a> <em class="jxr_javadoccomment">   * @param stacks</em>
 <a class="jxr_linenumber" name="L236" href="#L236">236</a> <em class="jxr_javadoccomment">   */</em>
-<a class="jxr_linenumber" name="L237" href="#L237">237</a>   <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">void</strong> printStackTrace(Thread thread,
-<a class="jxr_linenumber" name="L238" href="#L238">238</a>                                       StackTraceElement[] stacks) {
+<a class="jxr_linenumber" name="L237" href="#L237">237</a>   <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">void</strong> printStackTrace(<strong class="jxr_keyword">final</strong> Thread thread,
+<a class="jxr_linenumber" name="L238" href="#L238">238</a>                                       <strong class="jxr_keyword">final</strong> StackTraceElement[] stacks) {
 <a class="jxr_linenumber" name="L239" href="#L239">239</a>     SysErrLogger.FAKE_LOGGER.syserrNoLn(thread + <span class="jxr_string">" : "</span>);
 <a class="jxr_linenumber" name="L240" href="#L240">240</a>     <strong class="jxr_keyword">for</strong> (<strong class="jxr_keyword">int</strong> i = 0; i &lt; stacks.length - 1; i++) {
 <a class="jxr_linenumber" name="L241" href="#L241">241</a>       SysErrLogger.FAKE_LOGGER.syserrNoLn(stacks[i] + <span class="jxr_string">" "</span>);
@@ -374,7 +374,7 @@
 <a class="jxr_linenumber" name="L366" href="#L366">366</a> <em class="jxr_javadoccomment">   *</em>
 <a class="jxr_linenumber" name="L367" href="#L367">367</a> <em class="jxr_javadoccomment">   * @param toRestart</em>
 <a class="jxr_linenumber" name="L368" href="#L368">368</a> <em class="jxr_javadoccomment">   */</em>
-<a class="jxr_linenumber" name="L369" href="#L369">369</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">void</strong> setRestart(<strong class="jxr_keyword">boolean</strong> toRestart) {
+<a class="jxr_linenumber" name="L369" href="#L369">369</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">void</strong> setRestart(<strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">boolean</strong> toRestart) {
 <a class="jxr_linenumber" name="L370" href="#L370">370</a>     shouldRestart = toRestart;
 <a class="jxr_linenumber" name="L371" href="#L371">371</a>   }
 <a class="jxr_linenumber" name="L372" href="#L372">372</a> 
@@ -384,13 +384,13 @@
 <a class="jxr_linenumber" name="L376" href="#L376">376</a> <em class="jxr_javadoccomment">   * @param main</em>
 <a class="jxr_linenumber" name="L377" href="#L377">377</a> <em class="jxr_javadoccomment">   * @param args</em>
 <a class="jxr_linenumber" name="L378" href="#L378">378</a> <em class="jxr_javadoccomment">   */</em>
-<a class="jxr_linenumber" name="L379" href="#L379">379</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">void</strong> registerMain(Class&lt;?&gt; main, String[] args) {
+<a class="jxr_linenumber" name="L379" href="#L379">379</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">void</strong> registerMain(<strong class="jxr_keyword">final</strong> Class&lt;?&gt; main, <strong class="jxr_keyword">final</strong> String[] args) {
 <a class="jxr_linenumber" name="L380" href="#L380">380</a>     <strong class="jxr_keyword">if</strong> (main == <strong class="jxr_keyword">null</strong>) {
 <a class="jxr_linenumber" name="L381" href="#L381">381</a>       applArgs = getArgs();
 <a class="jxr_linenumber" name="L382" href="#L382">382</a>       <strong class="jxr_keyword">return</strong>;
 <a class="jxr_linenumber" name="L383" href="#L383">383</a>     }
-<a class="jxr_linenumber" name="L384" href="#L384">384</a>     String path = ManagementFactory.getRuntimeMXBean().getClassPath();
-<a class="jxr_linenumber" name="L385" href="#L385">385</a>     StringBuilder newArgs = <strong class="jxr_keyword">new</strong> StringBuilder();
+<a class="jxr_linenumber" name="L384" href="#L384">384</a>     <strong class="jxr_keyword">final</strong> String path = ManagementFactory.getRuntimeMXBean().getClassPath();
+<a class="jxr_linenumber" name="L385" href="#L385">385</a>     <strong class="jxr_keyword">final</strong> StringBuilder newArgs = <strong class="jxr_keyword">new</strong> StringBuilder();
 <a class="jxr_linenumber" name="L386" href="#L386">386</a>     <strong class="jxr_keyword">if</strong> (path != <strong class="jxr_keyword">null</strong> &amp;&amp; !path.isEmpty()) {
 <a class="jxr_linenumber" name="L387" href="#L387">387</a>       newArgs.append(<span class="jxr_string">"-cp "</span>).append(path);
 <a class="jxr_linenumber" name="L388" href="#L388">388</a>     }

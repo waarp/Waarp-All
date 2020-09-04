@@ -58,107 +58,109 @@ public class HttpRestLogR66Handler extends HttpRestAbstractR66Handler {
 <span class="fc" id="L58">  private static final WaarpLogger logger =</span>
 <span class="fc" id="L59">      WaarpLoggerFactory.getLogger(HttpRestLogR66Handler.class);</span>
 
-  public HttpRestLogR66Handler(RestConfiguration config, METHOD... methods) {
-<span class="fc" id="L62">    super(BASEURI, config, METHOD.OPTIONS);</span>
-<span class="fc" id="L63">    setIntersectionMethods(methods, METHOD.GET);</span>
-<span class="fc" id="L64">  }</span>
+  public HttpRestLogR66Handler(final RestConfiguration config,
+                               final METHOD... methods) {
+<span class="fc" id="L63">    super(BASEURI, config, METHOD.OPTIONS);</span>
+<span class="fc" id="L64">    setIntersectionMethods(methods, METHOD.GET);</span>
+<span class="fc" id="L65">  }</span>
 
   @Override
-  public void endParsingRequest(HttpRestHandler handler, RestArgument arguments,
-                                RestArgument result, Object body)
+  public void endParsingRequest(final HttpRestHandler handler,
+                                final RestArgument arguments,
+                                final RestArgument result, final Object body)
       throws HttpIncorrectRequestException, HttpInvalidAuthenticationException {
-<span class="fc" id="L70">    logger.debug(&quot;debug: {} ### {}&quot;, arguments, result);</span>
-<span class="pc bpc" id="L71" title="1 of 2 branches missed.">    if (body != null) {</span>
-<span class="nc" id="L72">      logger.debug(&quot;Obj: {}&quot;, body);</span>
+<span class="fc" id="L72">    logger.debug(&quot;debug: {} ### {}&quot;, arguments, result);</span>
+<span class="pc bpc" id="L73" title="1 of 2 branches missed.">    if (body != null) {</span>
+<span class="nc" id="L74">      logger.debug(&quot;Obj: {}&quot;, body);</span>
     }
-<span class="fc" id="L74">    handler.setWillClose(false);</span>
-<span class="fc" id="L75">    final ServerActions serverHandler =</span>
-<span class="fc" id="L76">        ((HttpRestR66Handler) handler).getServerHandler();</span>
+<span class="fc" id="L76">    handler.setWillClose(false);</span>
+<span class="fc" id="L77">    final ServerActions serverHandler =</span>
+<span class="fc" id="L78">        ((HttpRestR66Handler) handler).getServerHandler();</span>
     // now action according to body
-<span class="fc" id="L78">    final JsonPacket json = (JsonPacket) body;</span>
-<span class="pc bpc" id="L79" title="1 of 2 branches missed.">    if (json == null) {</span>
-<span class="fc" id="L80">      result.setDetail(&quot;not enough information&quot;);</span>
-<span class="fc" id="L81">      setError(handler, result, HttpResponseStatus.BAD_REQUEST);</span>
-<span class="fc" id="L82">      return;</span>
+<span class="fc" id="L80">    final JsonPacket json = (JsonPacket) body;</span>
+<span class="pc bpc" id="L81" title="1 of 2 branches missed.">    if (json == null) {</span>
+<span class="fc" id="L82">      result.setDetail(&quot;not enough information&quot;);</span>
+<span class="fc" id="L83">      setError(handler, result, HttpResponseStatus.BAD_REQUEST);</span>
+<span class="fc" id="L84">      return;</span>
     }
-<span class="nc" id="L84">    result.getAnswer().put(AbstractDbData.JSON_MODEL, RESTHANDLERS.Log.name());</span>
+<span class="nc" id="L86">    result.getAnswer().put(AbstractDbData.JSON_MODEL, RESTHANDLERS.Log.name());</span>
     try {
-<span class="nc bnc" id="L86" title="All 2 branches missed.">      if (json instanceof LogJsonPacket) {//</span>
-<span class="nc" id="L87">        result.setCommand(ACTIONS_TYPE.GetLog.name());</span>
-<span class="nc" id="L88">        final LogJsonPacket node = (LogJsonPacket) json;</span>
-<span class="nc" id="L89">        final boolean purge = node.isPurge();</span>
-<span class="nc" id="L90">        final boolean clean = node.isClean();</span>
-<span class="nc bnc" id="L91" title="All 2 branches missed.">        final Timestamp start = node.getStart() == null? null :</span>
-<span class="nc" id="L92">            new Timestamp(node.getStart().getTime());</span>
-<span class="nc bnc" id="L93" title="All 2 branches missed.">        final Timestamp stop = node.getStop() == null? null :</span>
-<span class="nc" id="L94">            new Timestamp(node.getStop().getTime());</span>
-<span class="nc" id="L95">        final String startid = node.getStartid();</span>
-<span class="nc" id="L96">        final String stopid = node.getStopid();</span>
-<span class="nc" id="L97">        final String rule = node.getRule();</span>
-<span class="nc" id="L98">        final String request = node.getRequest();</span>
-<span class="nc" id="L99">        final boolean pending = node.isStatuspending();</span>
-<span class="nc" id="L100">        final boolean transfer = node.isStatustransfer();</span>
-<span class="nc" id="L101">        final boolean done = node.isStatusdone();</span>
-<span class="nc" id="L102">        final boolean error = node.isStatuserror();</span>
-<span class="nc" id="L103">        final String[] sresult = serverHandler</span>
-<span class="nc" id="L104">            .logPurge(purge, clean, start, stop, startid, stopid, rule, request,</span>
+<span class="nc bnc" id="L88" title="All 2 branches missed.">      if (json instanceof LogJsonPacket) {//</span>
+<span class="nc" id="L89">        result.setCommand(ACTIONS_TYPE.GetLog.name());</span>
+<span class="nc" id="L90">        final LogJsonPacket node = (LogJsonPacket) json;</span>
+<span class="nc" id="L91">        final boolean purge = node.isPurge();</span>
+<span class="nc" id="L92">        final boolean clean = node.isClean();</span>
+<span class="nc bnc" id="L93" title="All 2 branches missed.">        final Timestamp start = node.getStart() == null? null :</span>
+<span class="nc" id="L94">            new Timestamp(node.getStart().getTime());</span>
+<span class="nc bnc" id="L95" title="All 2 branches missed.">        final Timestamp stop = node.getStop() == null? null :</span>
+<span class="nc" id="L96">            new Timestamp(node.getStop().getTime());</span>
+<span class="nc" id="L97">        final String startid = node.getStartid();</span>
+<span class="nc" id="L98">        final String stopid = node.getStopid();</span>
+<span class="nc" id="L99">        final String rule = node.getRule();</span>
+<span class="nc" id="L100">        final String request = node.getRequest();</span>
+<span class="nc" id="L101">        final boolean pending = node.isStatuspending();</span>
+<span class="nc" id="L102">        final boolean transfer = node.isStatustransfer();</span>
+<span class="nc" id="L103">        final boolean done = node.isStatusdone();</span>
+<span class="nc" id="L104">        final boolean error = node.isStatuserror();</span>
+<span class="nc" id="L105">        final String[] sresult = serverHandler</span>
+<span class="nc" id="L106">            .logPurge(purge, clean, start, stop, startid, stopid, rule, request,</span>
                       pending, transfer, done, error, purge);
-<span class="nc" id="L106">        final LogResponseJsonPacket newjson = new LogResponseJsonPacket();</span>
-<span class="nc" id="L107">        newjson.fromJson(node);</span>
+<span class="nc" id="L108">        final LogResponseJsonPacket newjson = new LogResponseJsonPacket();</span>
+<span class="nc" id="L109">        newjson.fromJson(node);</span>
         // Now answer
-<span class="nc" id="L109">        newjson.setCommand(node.getRequestUserPacket());</span>
-<span class="nc" id="L110">        newjson.setFilename(sresult[0]);</span>
-<span class="nc" id="L111">        newjson.setExported(Long.parseLong(sresult[1]));</span>
-<span class="nc" id="L112">        newjson.setPurged(Long.parseLong(sresult[2]));</span>
-<span class="nc" id="L113">        setOk(handler, result, newjson, HttpResponseStatus.OK);</span>
-<span class="nc" id="L114">      } else {</span>
-<span class="nc" id="L115">        logger.info(&quot;Validation is ignored: &quot; + json);</span>
-<span class="nc" id="L116">        result.setDetail(&quot;Unknown command&quot;);</span>
-<span class="nc" id="L117">        setError(handler, result, json, HttpResponseStatus.PRECONDITION_FAILED);</span>
+<span class="nc" id="L111">        newjson.setCommand(node.getRequestUserPacket());</span>
+<span class="nc" id="L112">        newjson.setFilename(sresult[0]);</span>
+<span class="nc" id="L113">        newjson.setExported(Long.parseLong(sresult[1]));</span>
+<span class="nc" id="L114">        newjson.setPurged(Long.parseLong(sresult[2]));</span>
+<span class="nc" id="L115">        setOk(handler, result, newjson, HttpResponseStatus.OK);</span>
+<span class="nc" id="L116">      } else {</span>
+<span class="nc" id="L117">        logger.info(&quot;Validation is ignored: &quot; + json);</span>
+<span class="nc" id="L118">        result.setDetail(&quot;Unknown command&quot;);</span>
+<span class="nc" id="L119">        setError(handler, result, json, HttpResponseStatus.PRECONDITION_FAILED);</span>
       }
-<span class="nc" id="L119">    } catch (final OpenR66ProtocolNotAuthenticatedException e) {</span>
-<span class="nc" id="L120">      throw new HttpInvalidAuthenticationException(e);</span>
-<span class="nc" id="L121">    } catch (final OpenR66ProtocolBusinessException e) {</span>
-<span class="nc" id="L122">      throw new HttpIncorrectRequestException(e);</span>
-<span class="nc" id="L123">    }</span>
-<span class="nc" id="L124">  }</span>
+<span class="nc" id="L121">    } catch (final OpenR66ProtocolNotAuthenticatedException e) {</span>
+<span class="nc" id="L122">      throw new HttpInvalidAuthenticationException(e);</span>
+<span class="nc" id="L123">    } catch (final OpenR66ProtocolBusinessException e) {</span>
+<span class="nc" id="L124">      throw new HttpIncorrectRequestException(e);</span>
+<span class="nc" id="L125">    }</span>
+<span class="nc" id="L126">  }</span>
 
   @Override
   protected ArrayNode getDetailedAllow() {
-<span class="fc" id="L128">    final ArrayNode node = JsonHandler.createArrayNode();</span>
+<span class="fc" id="L130">    final ArrayNode node = JsonHandler.createArrayNode();</span>
 
-<span class="pc bpc" id="L130" title="1 of 2 branches missed.">    if (methods.contains(METHOD.GET)) {</span>
-<span class="fc" id="L131">      final LogJsonPacket node3 = new LogJsonPacket();</span>
-<span class="fc" id="L132">      node3.setRequestUserPacket();</span>
-<span class="fc" id="L133">      node3.setComment(&quot;Log export request (GET)&quot;);</span>
-<span class="fc" id="L134">      node3.setRequest(&quot;The requester or requested host name&quot;);</span>
-<span class="fc" id="L135">      node3.setRule(&quot;The rule name&quot;);</span>
-<span class="fc" id="L136">      node3.setStart(new Date());</span>
-<span class="fc" id="L137">      node3.setStop(new Date());</span>
-<span class="fc" id="L138">      node3.setStartid(&quot;Start id - long -&quot;);</span>
-<span class="fc" id="L139">      node3.setStopid(&quot;Stop id - long -&quot;);</span>
-      ObjectNode node2;
-<span class="fc" id="L141">      final LogResponseJsonPacket resp = new LogResponseJsonPacket();</span>
-<span class="fc" id="L142">      resp.setComment(&quot;Log export response&quot;);</span>
-<span class="fc" id="L143">      resp.setFilename(&quot;filepath&quot;);</span>
-<span class="fc" id="L144">      final ArrayNode node1 = JsonHandler.createArrayNode();</span>
+<span class="pc bpc" id="L132" title="1 of 2 branches missed.">    if (methods.contains(METHOD.GET)) {</span>
+<span class="fc" id="L133">      final LogJsonPacket node3 = new LogJsonPacket();</span>
+<span class="fc" id="L134">      node3.setRequestUserPacket();</span>
+<span class="fc" id="L135">      node3.setComment(&quot;Log export request (GET)&quot;);</span>
+<span class="fc" id="L136">      node3.setRequest(&quot;The requester or requested host name&quot;);</span>
+<span class="fc" id="L137">      node3.setRule(&quot;The rule name&quot;);</span>
+<span class="fc" id="L138">      node3.setStart(new Date());</span>
+<span class="fc" id="L139">      node3.setStop(new Date());</span>
+<span class="fc" id="L140">      node3.setStartid(&quot;Start id - long -&quot;);</span>
+<span class="fc" id="L141">      node3.setStopid(&quot;Stop id - long -&quot;);</span>
+      final ObjectNode node2;
+<span class="fc" id="L143">      final LogResponseJsonPacket resp = new LogResponseJsonPacket();</span>
+<span class="fc" id="L144">      resp.setComment(&quot;Log export response&quot;);</span>
+<span class="fc" id="L145">      resp.setFilename(&quot;filepath&quot;);</span>
+<span class="fc" id="L146">      final ArrayNode node1 = JsonHandler.createArrayNode();</span>
       try {
-<span class="fc" id="L146">        node1.add(resp.createObjectNode());</span>
-<span class="fc" id="L147">        node2 = RestArgument</span>
-<span class="fc" id="L148">            .fillDetailedAllow(METHOD.GET, path, ACTIONS_TYPE.GetLog.name(),</span>
-<span class="fc" id="L149">                               node3.createObjectNode(), node1);</span>
-<span class="fc" id="L150">        node.add(node2);</span>
-<span class="nc" id="L151">      } catch (final OpenR66ProtocolPacketException ignored) {</span>
+<span class="fc" id="L148">        node1.add(resp.createObjectNode());</span>
+<span class="fc" id="L149">        node2 = RestArgument</span>
+<span class="fc" id="L150">            .fillDetailedAllow(METHOD.GET, path, ACTIONS_TYPE.GetLog.name(),</span>
+<span class="fc" id="L151">                               node3.createObjectNode(), node1);</span>
+<span class="fc" id="L152">        node.add(node2);</span>
+<span class="nc" id="L153">      } catch (final OpenR66ProtocolPacketException ignored) {</span>
         // ignore
-<span class="fc" id="L153">      }</span>
+<span class="fc" id="L155">      }</span>
     }
 
-<span class="fc" id="L156">    final ObjectNode node2 = RestArgument</span>
-<span class="fc" id="L157">        .fillDetailedAllow(METHOD.OPTIONS, path, COMMAND_TYPE.OPTIONS.name(),</span>
+<span class="fc" id="L158">    final ObjectNode node2 = RestArgument</span>
+<span class="fc" id="L159">        .fillDetailedAllow(METHOD.OPTIONS, path, COMMAND_TYPE.OPTIONS.name(),</span>
                            null, null);
-<span class="fc" id="L159">    node.add(node2);</span>
+<span class="fc" id="L161">    node.add(node2);</span>
 
-<span class="fc" id="L161">    return node;</span>
+<span class="fc" id="L163">    return node;</span>
   }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

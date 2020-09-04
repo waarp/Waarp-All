@@ -20,8 +20,6 @@
 
 package org.waarp.openr66.dao.database;
 
-import org.waarp.common.logging.WaarpLogger;
-import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.openr66.dao.BusinessDAO;
 import org.waarp.openr66.pojo.Business;
 import org.waarp.openr66.pojo.UpdatedInfo;
@@ -36,9 +34,6 @@ import java.sql.SQLException;
 public class DBBusinessDAO extends StatementExecutor&lt;Business&gt;
     implements BusinessDAO {
 
-<span class="fc" id="L39">  private static final WaarpLogger logger =</span>
-<span class="fc" id="L40">      WaarpLoggerFactory.getLogger(DBBusinessDAO.class);</span>
-
   protected static final String TABLE = &quot;hostconfig&quot;;
 
   public static final String HOSTID_FIELD = &quot;hostid&quot;;
@@ -50,92 +45,92 @@ public class DBBusinessDAO extends StatementExecutor&lt;Business&gt;
 
   protected static final String SQL_DELETE_ALL = &quot;DELETE FROM &quot; + TABLE;
   protected static final String SQL_DELETE =
-      &quot;DELETE FROM &quot; + TABLE + &quot; WHERE &quot; + HOSTID_FIELD + &quot; = ?&quot;;
+      &quot;DELETE FROM &quot; + TABLE + WHERE + HOSTID_FIELD + PARAMETER;
   protected static final String SQL_GET_ALL = &quot;SELECT * FROM &quot; + TABLE;
   protected static final String SQL_EXIST =
-      &quot;SELECT 1 FROM &quot; + TABLE + &quot; WHERE &quot; + HOSTID_FIELD + &quot; = ?&quot;;
+      &quot;SELECT 1 FROM &quot; + TABLE + WHERE + HOSTID_FIELD + PARAMETER;
   protected static final String SQL_SELECT =
-      &quot;SELECT * FROM &quot; + TABLE + &quot; WHERE &quot; + HOSTID_FIELD + &quot; = ?&quot;;
+      &quot;SELECT * FROM &quot; + TABLE + WHERE + HOSTID_FIELD + PARAMETER;
   protected static final String SQL_INSERT =
       &quot;INSERT INTO &quot; + TABLE + &quot; (&quot; + HOSTID_FIELD + &quot;, &quot; + BUSINESS_FIELD +
       &quot;, &quot; + ROLES_FIELD + &quot;, &quot; + ALIASES_FIELD + &quot;, &quot; + OTHERS_FIELD + &quot;, &quot; +
       UPDATED_INFO_FIELD + &quot;) VALUES (?,?,?,?,?,?)&quot;;
   protected static final String SQL_UPDATE =
-      &quot;UPDATE &quot; + TABLE + &quot; SET &quot; + HOSTID_FIELD + &quot; = ?, &quot; + BUSINESS_FIELD +
-      &quot; = ?, &quot; + ROLES_FIELD + &quot; = ?, &quot; + ALIASES_FIELD + &quot; = ?, &quot; +
-      OTHERS_FIELD + &quot; = ?, &quot; + UPDATED_INFO_FIELD + &quot; = ? WHERE &quot; +
-      HOSTID_FIELD + &quot; = ?&quot;;
+      &quot;UPDATE &quot; + TABLE + &quot; SET &quot; + HOSTID_FIELD + PARAMETER_COMMA +
+      BUSINESS_FIELD + PARAMETER_COMMA + ROLES_FIELD + PARAMETER_COMMA +
+      ALIASES_FIELD + PARAMETER_COMMA + OTHERS_FIELD + PARAMETER_COMMA +
+      UPDATED_INFO_FIELD + &quot; = ? WHERE &quot; + HOSTID_FIELD + PARAMETER;
 
-  public DBBusinessDAO(Connection con) {
-<span class="fc" id="L70">    super(con);</span>
-<span class="fc" id="L71">  }</span>
+  public DBBusinessDAO(final Connection con) {
+<span class="fc" id="L65">    super(con);</span>
+<span class="fc" id="L66">  }</span>
 
   @Override
   protected String getId(final Business e1) {
-<span class="nc" id="L75">    return e1.getHostid();</span>
+<span class="nc" id="L70">    return e1.getHostid();</span>
   }
 
   @Override
   protected String getSelectRequest() {
-<span class="fc" id="L80">    return SQL_SELECT;</span>
+<span class="fc" id="L75">    return SQL_SELECT;</span>
   }
 
   @Override
   protected String getGetAllRequest() {
-<span class="fc" id="L85">    return SQL_GET_ALL;</span>
+<span class="fc" id="L80">    return SQL_GET_ALL;</span>
   }
 
   @Override
   protected String getExistRequest() {
-<span class="nc" id="L90">    return SQL_EXIST;</span>
+<span class="nc" id="L85">    return SQL_EXIST;</span>
   }
 
   @Override
   protected Object[] getInsertValues(final Business business) {
-<span class="nc" id="L95">    return new Object[] {</span>
-<span class="nc" id="L96">        business.getHostid(), business.getBusiness(), business.getRoles(),</span>
-<span class="nc" id="L97">        business.getAliases(), business.getOthers(),</span>
-<span class="nc" id="L98">        business.getUpdatedInfo().ordinal()</span>
+<span class="nc" id="L90">    return new Object[] {</span>
+<span class="nc" id="L91">        business.getHostid(), business.getBusiness(), business.getRoles(),</span>
+<span class="nc" id="L92">        business.getAliases(), business.getOthers(),</span>
+<span class="nc" id="L93">        business.getUpdatedInfo().ordinal()</span>
     };
   }
 
   @Override
   protected String getInsertRequest() {
-<span class="nc" id="L104">    return SQL_INSERT;</span>
+<span class="nc" id="L99">    return SQL_INSERT;</span>
   }
 
   @Override
   protected Object[] getUpdateValues(final Business business) {
-<span class="fc" id="L109">    return new Object[] {</span>
-<span class="fc" id="L110">        business.getHostid(), business.getBusiness(), business.getRoles(),</span>
-<span class="fc" id="L111">        business.getAliases(), business.getOthers(),</span>
-<span class="fc" id="L112">        business.getUpdatedInfo().ordinal(), business.getHostid()</span>
+<span class="fc" id="L104">    return new Object[] {</span>
+<span class="fc" id="L105">        business.getHostid(), business.getBusiness(), business.getRoles(),</span>
+<span class="fc" id="L106">        business.getAliases(), business.getOthers(),</span>
+<span class="fc" id="L107">        business.getUpdatedInfo().ordinal(), business.getHostid()</span>
     };
   }
 
   @Override
   protected String getUpdateRequest() {
-<span class="fc" id="L118">    return SQL_UPDATE;</span>
+<span class="fc" id="L113">    return SQL_UPDATE;</span>
   }
 
   @Override
   protected String getDeleteRequest() {
-<span class="nc" id="L123">    return SQL_DELETE;</span>
+<span class="nc" id="L118">    return SQL_DELETE;</span>
   }
 
   @Override
   protected String getDeleteAllRequest() {
-<span class="nc" id="L128">    return SQL_DELETE_ALL;</span>
+<span class="nc" id="L123">    return SQL_DELETE_ALL;</span>
   }
 
   @Override
-  public Business getFromResultSet(ResultSet set) throws SQLException {
-<span class="fc" id="L133">    return new Business(set.getString(HOSTID_FIELD),</span>
-<span class="fc" id="L134">                        set.getString(BUSINESS_FIELD),</span>
-<span class="fc" id="L135">                        set.getString(ROLES_FIELD),</span>
-<span class="fc" id="L136">                        set.getString(ALIASES_FIELD),</span>
-<span class="fc" id="L137">                        set.getString(OTHERS_FIELD),</span>
-<span class="fc" id="L138">                        UpdatedInfo.valueOf(set.getInt(UPDATED_INFO_FIELD)));</span>
+  public Business getFromResultSet(final ResultSet set) throws SQLException {
+<span class="fc" id="L128">    return new Business(set.getString(HOSTID_FIELD),</span>
+<span class="fc" id="L129">                        set.getString(BUSINESS_FIELD),</span>
+<span class="fc" id="L130">                        set.getString(ROLES_FIELD),</span>
+<span class="fc" id="L131">                        set.getString(ALIASES_FIELD),</span>
+<span class="fc" id="L132">                        set.getString(OTHERS_FIELD),</span>
+<span class="fc" id="L133">                        UpdatedInfo.valueOf(set.getInt(UPDATED_INFO_FIELD)));</span>
   }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

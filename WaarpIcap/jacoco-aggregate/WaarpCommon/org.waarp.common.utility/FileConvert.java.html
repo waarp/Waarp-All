@@ -23,7 +23,7 @@ package org.waarp.common.utility;
  * Description: Converts Unix files to Dos and vice versa
  */
 
-import com.google.common.io.Files;
+import org.waarp.common.command.exception.Reply550Exception;
 import org.waarp.common.file.FileUtils;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
@@ -56,8 +56,8 @@ public class FileConvert extends Thread {
    *     files
    * @param tmpDir if not null, specific tmp directory
    */
-  public FileConvert(List&lt;File&gt; files, boolean unix2dos, boolean recursive,
-<span class="fc" id="L60">                     File tmpDir) {</span>
+  public FileConvert(final List&lt;File&gt; files, final boolean unix2dos,
+<span class="fc" id="L60">                     final boolean recursive, final File tmpDir) {</span>
 <span class="fc bfc" id="L61" title="All 2 branches covered.">    if (logger == null) {</span>
 <span class="fc" id="L62">      logger = WaarpLoggerFactory.getLogger(FileConvert.class);</span>
     }
@@ -74,7 +74,7 @@ public class FileConvert extends Thread {
    *
    * @param args
    */
-  public static void main(String[] args) {
+  public static void main(final String[] args) {
 <span class="nc" id="L78">    WaarpLoggerFactory</span>
 <span class="nc" id="L79">        .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));</span>
 <span class="nc bnc" id="L80" title="All 2 branches missed.">    if (logger == null) {</span>
@@ -115,7 +115,7 @@ public class FileConvert extends Thread {
     }
 <span class="nc" id="L116">    final FileConvert fileConvert =</span>
         new FileConvert(files, unix2dos, recursive, tmpDir);
-<span class="nc" id="L118">    fileConvert.run();</span>
+<span class="nc" id="L118">    fileConvert.run();//NOSONAR</span>
 <span class="nc" id="L119">  }</span>
 
   /**
@@ -137,24 +137,26 @@ public class FileConvert extends Thread {
 <span class="fc" id="L137">    }</span>
 <span class="fc" id="L138">  }</span>
 
-  private void recursive(File directory) {
+  private void recursive(final File directory) {
 <span class="nc" id="L141">    final File[] listFiles = directory.listFiles();</span>
-<span class="nc bnc" id="L142" title="All 2 branches missed.">    for (final File file : listFiles) {</span>
-<span class="nc bnc" id="L143" title="All 2 branches missed.">      if (file.isDirectory()) {</span>
-<span class="nc" id="L144">        recursive(file);</span>
-      } else {
-<span class="nc" id="L146">        convert(file, unix2dos);</span>
+<span class="nc bnc" id="L142" title="All 2 branches missed.">    if (listFiles != null) {</span>
+<span class="nc bnc" id="L143" title="All 2 branches missed.">      for (final File file : listFiles) {</span>
+<span class="nc bnc" id="L144" title="All 2 branches missed.">        if (file.isDirectory()) {</span>
+<span class="nc" id="L145">          recursive(file);</span>
+        } else {
+<span class="nc" id="L147">          convert(file, unix2dos);</span>
+        }
       }
     }
-<span class="nc" id="L149">  }</span>
+<span class="nc" id="L151">  }</span>
 
-  private boolean copyFile(File source, File destination) {
+  private boolean copyFile(final File source, final File destination) {
     try {
-<span class="fc" id="L153">      Files.copy(source, destination);</span>
-<span class="fc" id="L154">      return true;</span>
-<span class="nc" id="L155">    } catch (IOException e) {</span>
-<span class="nc" id="L156">      logger.error(&quot;FileConvert copy back in error&quot;, e);</span>
-<span class="nc" id="L157">      return false;</span>
+<span class="fc" id="L155">      FileUtils.copy(source, destination, false, false);</span>
+<span class="fc" id="L156">      return true;</span>
+<span class="nc" id="L157">    } catch (final Reply550Exception e) {</span>
+<span class="nc" id="L158">      logger.error(&quot;FileConvert copy back in error&quot;, e);</span>
+<span class="nc" id="L159">      return false;</span>
     }
   }
 
@@ -166,76 +168,78 @@ public class FileConvert extends Thread {
    *
    * @return True if OK
    */
-  public boolean convert(File input, boolean unix2dos) {
-<span class="fc bfc" id="L170" title="All 2 branches covered.">    if (unix2dos) {</span>
-<span class="fc" id="L171">      logger.info(&quot;unix2Dos conversion of '&quot; + input + &quot;'... &quot;);</span>
+  public boolean convert(final File input, final boolean unix2dos) {
+<span class="fc bfc" id="L172" title="All 2 branches covered.">    if (unix2dos) {</span>
+<span class="fc" id="L173">      logger.info(&quot;unix2Dos conversion of '&quot; + input + &quot;'... &quot;);</span>
     } else {
-<span class="fc" id="L173">      logger.info(&quot;dos2Unix conversion of '&quot; + input + &quot;'... &quot;);</span>
+<span class="fc" id="L175">      logger.info(&quot;dos2Unix conversion of '&quot; + input + &quot;'... &quot;);</span>
     }
-<span class="fc" id="L175">    FileInputStream fis = null;</span>
-<span class="fc" id="L176">    FileOutputStream fos = null;</span>
-<span class="fc" id="L177">    File tmpFile = null;</span>
+<span class="fc" id="L177">    FileInputStream fis = null;</span>
+<span class="fc" id="L178">    FileOutputStream fos = null;</span>
+<span class="fc" id="L179">    File tmpFile = null;</span>
     try {
-<span class="fc" id="L179">      fis = new FileInputStream(input);</span>
-<span class="fc" id="L180">      tmpFile =</span>
-<span class="fc" id="L181">          File.createTempFile(&quot;FileConevrt_&quot; + input.getName(), null, tmpDir);</span>
-<span class="fc" id="L182">      fos = new FileOutputStream(tmpFile);</span>
-<span class="fc bfc" id="L183" title="All 2 branches covered.">      if (unix2dos) {</span>
-<span class="fc" id="L184">        byte pb = -1;</span>
+<span class="fc" id="L181">      fis = new FileInputStream(input);</span>
+<span class="fc" id="L182">      tmpFile =</span>
+<span class="fc" id="L183">          File.createTempFile(&quot;FileConevrt_&quot; + input.getName(), null, tmpDir);</span>
+<span class="fc" id="L184">      fos = new FileOutputStream(tmpFile);</span>
+<span class="fc bfc" id="L185" title="All 2 branches covered.">      if (unix2dos) {</span>
+<span class="fc" id="L186">        byte pb = -1;</span>
         byte b;
-<span class="fc bfc" id="L186" title="All 2 branches covered.">        while ((b = (byte) fis.read()) != -1) {</span>
-<span class="pc bpc" id="L187" title="1 of 4 branches missed.">          if (b == 10 &amp;&amp; pb != 13) {</span>
-<span class="fc" id="L188">            fos.write((byte) 13);</span>
+<span class="fc bfc" id="L188" title="All 2 branches covered.">        while ((b = (byte) fis.read()) != -1) {</span>
+<span class="pc bpc" id="L189" title="1 of 4 branches missed.">          if (b == 10 &amp;&amp; pb != 13) {</span>
+<span class="fc" id="L190">            fos.write((byte) 13);</span>
           }
-<span class="fc" id="L190">          fos.write(b);</span>
-<span class="fc" id="L191">          pb = b;</span>
+<span class="fc" id="L192">          fos.write(b);</span>
+<span class="fc" id="L193">          pb = b;</span>
         }
-<span class="fc" id="L193">      } else {</span>
+<span class="fc" id="L195">      } else {</span>
         byte b;
         byte nb;
-<span class="fc bfc" id="L196" title="All 2 branches covered.">        while ((b = (byte) fis.read()) != -1) {</span>
-<span class="fc bfc" id="L197" title="All 2 branches covered.">          if (b == 13) {</span>
-<span class="fc" id="L198">            nb = (byte) fis.read();</span>
-<span class="pc bpc" id="L199" title="1 of 2 branches missed.">            if (nb == -1) {</span>
-<span class="nc" id="L200">              fos.write(b);</span>
+<span class="fc bfc" id="L198" title="All 2 branches covered.">        while ((b = (byte) fis.read()) != -1) {</span>
+<span class="fc bfc" id="L199" title="All 2 branches covered.">          if (b == 13) {</span>
+<span class="fc" id="L200">            nb = (byte) fis.read();</span>
+<span class="pc bpc" id="L201" title="1 of 2 branches missed.">            if (nb == -1) {</span>
+<span class="nc" id="L202">              fos.write(b);</span>
             } else {
-<span class="pc bpc" id="L202" title="1 of 2 branches missed.">              if (nb != 10) {</span>
-<span class="nc" id="L203">                fos.write(b);</span>
+<span class="pc bpc" id="L204" title="1 of 2 branches missed.">              if (nb != 10) {</span>
+<span class="nc" id="L205">                fos.write(b);</span>
               }
-<span class="fc" id="L205">              fos.write(nb);</span>
+<span class="fc" id="L207">              fos.write(nb);</span>
             }
           } else {
-<span class="fc" id="L208">            fos.write(b);</span>
+<span class="fc" id="L210">            fos.write(b);</span>
           }
         }
       }
-<span class="fc" id="L212">      final boolean result = copyFile(tmpFile, input);</span>
-<span class="pc bpc" id="L213" title="1 of 2 branches missed.">      if (result) {</span>
-<span class="fc" id="L214">        logger.info(&quot;done.&quot;);</span>
+<span class="fc" id="L214">      final boolean result = copyFile(tmpFile, input);</span>
+<span class="pc bpc" id="L215" title="1 of 2 branches missed.">      if (result) {</span>
+<span class="fc" id="L216">        logger.info(&quot;done.&quot;);</span>
       } else {
-<span class="nc" id="L216">        logger.error(&quot;FileConvert in error during final copy: &quot; + input + ':' +</span>
+<span class="nc" id="L218">        logger.error(&quot;FileConvert in error during final copy: &quot; + input + ':' +</span>
                      unix2dos);
       }
-<span class="fc" id="L219">      return result;</span>
-<span class="nc" id="L220">    } catch (final FileNotFoundException e) {</span>
-<span class="nc" id="L221">      logger.error(&quot;FileConvert in error: &quot; + input + ':' + unix2dos, e);</span>
-<span class="nc" id="L222">      return false;</span>
-<span class="nc" id="L223">    } catch (final IOException e) {</span>
-<span class="nc" id="L224">      logger.error(&quot;FileConvert in error: &quot; + input + ':' + unix2dos, e);</span>
-<span class="nc" id="L225">      return false;</span>
+<span class="fc" id="L221">      return result;</span>
+<span class="nc" id="L222">    } catch (final FileNotFoundException e) {</span>
+<span class="nc" id="L223">      logger.error(&quot;FileConvert in error: &quot; + input + ':' + unix2dos, e);</span>
+<span class="nc" id="L224">      return false;</span>
+<span class="nc" id="L225">    } catch (final IOException e) {</span>
+<span class="nc" id="L226">      logger.error(&quot;FileConvert in error: &quot; + input + ':' + unix2dos, e);</span>
+<span class="nc" id="L227">      return false;</span>
     } finally {
-<span class="pc bpc" id="L227" title="1 of 2 branches missed.">      if (tmpFile != null) {</span>
-<span class="fc" id="L228">        tmpFile.delete();</span>
+<span class="pc bpc" id="L229" title="1 of 2 branches missed.">      if (tmpFile != null) {</span>
+<span class="pc bpc" id="L230" title="1 of 2 branches missed.">        if (!tmpFile.delete()) {</span>
+<span class="nc" id="L231">          logger.debug(&quot;Cannot delete temp file&quot;);</span>
+        }
       }
-<span class="fc" id="L230">      FileUtils.close(fis);</span>
-<span class="fc" id="L231">      FileUtils.close(fos);</span>
+<span class="fc" id="L234">      FileUtils.close(fis);</span>
+<span class="fc" id="L235">      FileUtils.close(fos);</span>
     }
   }
 
   private static void syntax() {
-<span class="nc" id="L236">    logger.error(</span>
+<span class="nc" id="L240">    logger.error(</span>
         &quot;Syntax: Covnert -(u|-nix2dos|-unixtodos) | -(d|-dos2unix|-dostounix) -(t|-temporary) directory  -(r|-recursive) file directory&quot;);
-<span class="nc" id="L238">  }</span>
+<span class="nc" id="L242">  }</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

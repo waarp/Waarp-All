@@ -27,7 +27,6 @@ import io.netty.handler.traffic.ChannelTrafficShapingHandler;
 import io.netty.handler.traffic.GlobalTrafficShapingHandler;
 import org.waarp.openr66.protocol.networkhandler.ssl.NetworkSslServerInitializer;
 import org.waarp.openr66.proxy.network.NetworkPacketCodec;
-import org.waarp.openr66.proxy.network.NetworkServerHandler;
 
 import java.util.concurrent.TimeUnit;
 
@@ -42,41 +41,40 @@ public class NetworkSslServerInitializerProxy
   /**
    * @param isClient True if this Factory is to be used in Client mode
    */
-  public NetworkSslServerInitializerProxy(boolean isClient) {
-<span class="fc" id="L46">    super(isClient);</span>
-<span class="fc" id="L47">  }</span>
+  public NetworkSslServerInitializerProxy(final boolean isClient) {
+<span class="fc" id="L45">    super(isClient);</span>
+<span class="fc" id="L46">  }</span>
 
   @Override
-  protected void initChannel(SocketChannel ch) throws Exception {
-<span class="fc" id="L51">    final ChannelPipeline pipeline = ch.pipeline();</span>
+  protected void initChannel(final SocketChannel ch) throws Exception {
+<span class="fc" id="L50">    final ChannelPipeline pipeline = ch.pipeline();</span>
     // Add SSL handler first to encrypt and decrypt everything.
-    SslHandler sslHandler;
-<span class="fc bfc" id="L54" title="All 2 branches covered.">    if (isClient) {</span>
+    final SslHandler sslHandler;
+<span class="fc bfc" id="L53" title="All 2 branches covered.">    if (isClient) {</span>
       // Not server: no clientAuthent, no renegotiation
-<span class="fc" id="L56">      sslHandler = getWaarpSslContextFactory().initInitializer(false, false);</span>
+<span class="fc" id="L55">      sslHandler = getWaarpSslContextFactory().initInitializer(false, false);</span>
     } else {
       // Server: no renegotiation still, but possible clientAuthent
-<span class="fc" id="L59">      sslHandler = getWaarpSslContextFactory().initInitializer(true,</span>
-<span class="fc" id="L60">                                                               getWaarpSslContextFactory()</span>
-<span class="fc" id="L61">                                                                   .needClientAuthentication());</span>
+<span class="fc" id="L58">      sslHandler = getWaarpSslContextFactory().initInitializer(true,</span>
+<span class="fc" id="L59">                                                               getWaarpSslContextFactory()</span>
+<span class="fc" id="L60">                                                                   .needClientAuthentication());</span>
     }
-<span class="fc" id="L63">    pipeline.addLast(SSL_HANDLER, sslHandler);</span>
+<span class="fc" id="L62">    pipeline.addLast(SSL_HANDLER, sslHandler);</span>
 
-<span class="fc" id="L65">    pipeline.addLast(TIMEOUT,</span>
-<span class="fc" id="L66">                     new IdleStateHandler(0, 0, configuration.getTimeoutCon(),</span>
-                                          TimeUnit.MILLISECONDS));
-<span class="fc" id="L68">    final GlobalTrafficShapingHandler handler =</span>
-<span class="fc" id="L69">        configuration.getGlobalTrafficShapingHandler();</span>
-<span class="pc bpc" id="L70" title="1 of 2 branches missed.">    if (handler != null) {</span>
-<span class="fc" id="L71">      pipeline.addLast(LIMITGLOBAL, handler);</span>
+<span class="fc" id="L64">    pipeline.addLast(TIMEOUT, new IdleStateHandler(true, 0, 0, configuration</span>
+<span class="fc" id="L65">        .getTimeoutCon(), TimeUnit.MILLISECONDS));</span>
+<span class="fc" id="L66">    final GlobalTrafficShapingHandler handler =</span>
+<span class="fc" id="L67">        configuration.getGlobalTrafficShapingHandler();</span>
+<span class="pc bpc" id="L68" title="1 of 2 branches missed.">    if (handler != null) {</span>
+<span class="fc" id="L69">      pipeline.addLast(LIMITGLOBAL, handler);</span>
     }
-<span class="fc" id="L73">    pipeline.addLast(LIMITCHANNEL, new ChannelTrafficShapingHandler(</span>
-<span class="fc" id="L74">        configuration.getServerChannelWriteLimit(),</span>
-<span class="fc" id="L75">        configuration.getServerChannelReadLimit(),</span>
-<span class="fc" id="L76">        configuration.getDelayLimit(), configuration.getTimeoutCon()));</span>
-<span class="fc" id="L77">    pipeline.addLast(NETWORK_CODEC, new NetworkPacketCodec());</span>
-<span class="fc bfc" id="L78" title="All 2 branches covered.">    pipeline.addLast(configuration.getHandlerGroup(), NETWORK_HANDLER,</span>
-                     new NetworkServerHandler(!isClient));
-<span class="fc" id="L80">  }</span>
+<span class="fc" id="L71">    pipeline.addLast(LIMITCHANNEL, new ChannelTrafficShapingHandler(</span>
+<span class="fc" id="L72">        configuration.getServerChannelWriteLimit(),</span>
+<span class="fc" id="L73">        configuration.getServerChannelReadLimit(),</span>
+<span class="fc" id="L74">        configuration.getDelayLimit(), configuration.getTimeoutCon()));</span>
+<span class="fc" id="L75">    pipeline.addLast(NETWORK_CODEC, new NetworkPacketCodec());</span>
+<span class="fc bfc" id="L76" title="All 2 branches covered.">    pipeline.addLast(configuration.getHandlerGroup(), NETWORK_HANDLER,</span>
+                     new NetworkSslServerHandler(!isClient));
+<span class="fc" id="L78">  }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

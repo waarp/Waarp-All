@@ -39,169 +39,172 @@ public class DefaultHttpField extends AbstractHttpField {
    * @param fieldposition
    * @param fieldrank
    */
-  public DefaultHttpField(String fieldname, FieldRole fieldtype,
-                          String fieldinfo, String fieldvalue,
-                          boolean fieldvisibility, boolean fieldmandatory,
-                          boolean fieldcookieset, boolean fieldtovalidate,
-                          FieldPosition fieldposition, int fieldrank) {
-<span class="fc" id="L47">    super(fieldname, fieldtype, fieldinfo, fieldvalue, fieldvisibility,</span>
+  public DefaultHttpField(final String fieldname, final FieldRole fieldtype,
+                          final String fieldinfo, final String fieldvalue,
+                          final boolean fieldvisibility,
+                          final boolean fieldmandatory,
+                          final boolean fieldcookieset,
+                          final boolean fieldtovalidate,
+                          final FieldPosition fieldposition,
+                          final int fieldrank) {
+<span class="fc" id="L50">    super(fieldname, fieldtype, fieldinfo, fieldvalue, fieldvisibility,</span>
           fieldmandatory, fieldcookieset, fieldtovalidate, fieldposition,
           fieldrank);
-<span class="fc" id="L50">  }</span>
+<span class="fc" id="L53">  }</span>
 
   @Override
-  public String getHtmlFormField(HttpPage page)
+  public String getHtmlFormField(final HttpPage page)
       throws HttpIncorrectRequestException {
-<span class="nc" id="L55">    final StringBuilder builder = new StringBuilder();</span>
-<span class="nc bnc" id="L56" title="All 7 branches missed.">    switch (getFieldtype()) {</span>
+<span class="nc" id="L58">    final StringBuilder builder = new StringBuilder();</span>
+<span class="nc bnc" id="L59" title="All 7 branches missed.">    switch (getFieldtype()) {</span>
       case BUSINESS_INPUT_CHECKBOX:
       case BUSINESS_INPUT_RADIO: {
-<span class="nc" id="L59">        builder.append(getFieldinfo());</span>
-<span class="nc" id="L60">        final AbstractHttpField source = page.getFields().get(getFieldname());</span>
-<span class="nc" id="L61">        final String[] values = source.fieldvalue.split(&quot;,&quot;);</span>
-<span class="nc" id="L62">        final String[] finalValues = fieldvalue.split(&quot;,&quot;);</span>
-        String inputtype;
-<span class="nc bnc" id="L64" title="All 2 branches missed.">        if (getFieldtype() == FieldRole.BUSINESS_INPUT_CHECKBOX) {</span>
-<span class="nc" id="L65">          inputtype = &quot;: &lt;INPUT type=CHECKBOX name=&quot;;</span>
+<span class="nc" id="L62">        builder.append(getFieldinfo());</span>
+<span class="nc" id="L63">        final AbstractHttpField source = page.getFields().get(getFieldname());</span>
+<span class="nc" id="L64">        final String[] values = source.fieldvalue.split(&quot;,&quot;);</span>
+<span class="nc" id="L65">        final String[] finalValues = fieldvalue.split(&quot;,&quot;);</span>
+        final String inputtype;
+<span class="nc bnc" id="L67" title="All 2 branches missed.">        if (getFieldtype() == FieldRole.BUSINESS_INPUT_CHECKBOX) {</span>
+<span class="nc" id="L68">          inputtype = &quot;: &lt;INPUT type=CHECKBOX name=&quot;;</span>
         } else {
-<span class="nc" id="L67">          inputtype = &quot;: &lt;INPUT type=RADIO name=&quot;;</span>
+<span class="nc" id="L70">          inputtype = &quot;: &lt;INPUT type=RADIO name=&quot;;</span>
         }
-<span class="nc bnc" id="L69" title="All 2 branches missed.">        for (final String string : values) {</span>
-<span class="nc" id="L70">          builder.append(inputtype).append(getFieldname());</span>
-<span class="nc bnc" id="L71" title="All 4 branches missed.">          if (fieldvalue != null &amp;&amp; fieldvalue.length() &gt; 0) {</span>
-<span class="nc" id="L72">            builder.append(&quot; value=\&quot;&quot;).append(string).append('&quot;');</span>
-<span class="nc bnc" id="L73" title="All 2 branches missed.">            if (finalValues != null) {</span>
-<span class="nc bnc" id="L74" title="All 2 branches missed.">              for (final String value : finalValues) {</span>
-<span class="nc bnc" id="L75" title="All 2 branches missed.">                if (value.equals(string)) {</span>
-<span class="nc" id="L76">                  builder.append(&quot; checked&quot;);</span>
-<span class="nc" id="L77">                  break;</span>
+<span class="nc bnc" id="L72" title="All 2 branches missed.">        for (final String string : values) {</span>
+<span class="nc" id="L73">          builder.append(inputtype).append(getFieldname());</span>
+<span class="nc bnc" id="L74" title="All 4 branches missed.">          if (fieldvalue != null &amp;&amp; fieldvalue.length() &gt; 0) {</span>
+<span class="nc" id="L75">            builder.append(&quot; value=\&quot;&quot;).append(string).append('&quot;');</span>
+<span class="nc bnc" id="L76" title="All 2 branches missed.">            if (finalValues != null) {</span>
+<span class="nc bnc" id="L77" title="All 2 branches missed.">              for (final String value : finalValues) {</span>
+<span class="nc bnc" id="L78" title="All 2 branches missed.">                if (value.equals(string)) {</span>
+<span class="nc" id="L79">                  builder.append(&quot; checked&quot;);</span>
+<span class="nc" id="L80">                  break;</span>
                 }
               }
             }
           }
-<span class="nc" id="L82">          builder.append('&gt;').append(string).append(&quot;&lt;BR&gt;&quot;);</span>
+<span class="nc" id="L85">          builder.append('&gt;').append(string).append(&quot;&lt;BR&gt;&quot;);</span>
         }
-<span class="nc" id="L84">        break;</span>
+<span class="nc" id="L87">        break;</span>
       }
       case BUSINESS_INPUT_FILE:
       case BUSINESS_INPUT_HIDDEN:
       case BUSINESS_INPUT_PWD:
       case BUSINESS_INPUT_TEXT:
       case SUBMIT: {
-<span class="nc" id="L91">        builder.append(getFieldinfo());</span>
-<span class="nc bnc" id="L92" title="All 6 branches missed.">        switch (getFieldtype()) {</span>
+<span class="nc" id="L94">        builder.append(getFieldinfo());</span>
+<span class="nc bnc" id="L95" title="All 6 branches missed.">        switch (getFieldtype()) {</span>
           case BUSINESS_INPUT_FILE:
-<span class="nc" id="L94">            builder.append(&quot;: &lt;INPUT type=FILE name=&quot;);</span>
-<span class="nc" id="L95">            break;</span>
-          case BUSINESS_INPUT_HIDDEN:
-<span class="nc" id="L97">            builder.append(&quot;: &lt;INPUT type=HIDDEN name=&quot;);</span>
+<span class="nc" id="L97">            builder.append(&quot;: &lt;INPUT type=FILE name=&quot;);</span>
 <span class="nc" id="L98">            break;</span>
-          case BUSINESS_INPUT_PWD:
-<span class="nc" id="L100">            builder.append(&quot;: &lt;INPUT type=PASSWORD name=&quot;);</span>
+          case BUSINESS_INPUT_HIDDEN:
+<span class="nc" id="L100">            builder.append(&quot;: &lt;INPUT type=HIDDEN name=&quot;);</span>
 <span class="nc" id="L101">            break;</span>
-          case BUSINESS_INPUT_TEXT:
-<span class="nc" id="L103">            builder.append(&quot;: &lt;INPUT type=TEXT name=&quot;);</span>
+          case BUSINESS_INPUT_PWD:
+<span class="nc" id="L103">            builder.append(&quot;: &lt;INPUT type=PASSWORD name=&quot;);</span>
 <span class="nc" id="L104">            break;</span>
-          case SUBMIT:
-<span class="nc" id="L106">            builder.append(&quot;: &lt;INPUT type=SUBMIT name=&quot;);</span>
+          case BUSINESS_INPUT_TEXT:
+<span class="nc" id="L106">            builder.append(&quot;: &lt;INPUT type=TEXT name=&quot;);</span>
 <span class="nc" id="L107">            break;</span>
+          case SUBMIT:
+<span class="nc" id="L109">            builder.append(&quot;: &lt;INPUT type=SUBMIT name=&quot;);</span>
+<span class="nc" id="L110">            break;</span>
           default:
-<span class="nc" id="L109">            throw new HttpIncorrectRequestException(</span>
-<span class="nc" id="L110">                &quot;Incorrect type: &quot; + getFieldtype());</span>
+<span class="nc" id="L112">            throw new HttpIncorrectRequestException(</span>
+<span class="nc" id="L113">                &quot;Incorrect type: &quot; + getFieldtype());</span>
         }
-<span class="nc" id="L112">        builder.append(getFieldname());</span>
-<span class="nc bnc" id="L113" title="All 4 branches missed.">        if (fieldvalue != null &amp;&amp; fieldvalue.length() &gt; 0) {</span>
-<span class="nc" id="L114">          builder.append(&quot; value=\&quot;&quot;).append(fieldvalue).append('&quot;');</span>
+<span class="nc" id="L115">        builder.append(getFieldname());</span>
+<span class="nc bnc" id="L116" title="All 4 branches missed.">        if (fieldvalue != null &amp;&amp; fieldvalue.length() &gt; 0) {</span>
+<span class="nc" id="L117">          builder.append(&quot; value=\&quot;&quot;).append(fieldvalue).append('&quot;');</span>
         }
-<span class="nc" id="L116">        builder.append('&gt;');</span>
-<span class="nc" id="L117">        break;</span>
+<span class="nc" id="L119">        builder.append('&gt;');</span>
+<span class="nc" id="L120">        break;</span>
       }
       case BUSINESS_INPUT_IMAGE: {
-<span class="nc" id="L120">        builder.append(getFieldinfo()).append(&quot;: &lt;INPUT type=IMAGE name=&quot;)</span>
-<span class="nc" id="L121">               .append(getFieldname());</span>
-<span class="nc bnc" id="L122" title="All 4 branches missed.">        if (fieldvalue != null &amp;&amp; fieldvalue.length() &gt; 0) {</span>
-<span class="nc" id="L123">          builder.append(&quot; src=\&quot;&quot;).append(fieldvalue).append(&quot;\&quot; &quot;);</span>
+<span class="nc" id="L123">        builder.append(getFieldinfo()).append(&quot;: &lt;INPUT type=IMAGE name=&quot;)</span>
+<span class="nc" id="L124">               .append(getFieldname());</span>
+<span class="nc bnc" id="L125" title="All 4 branches missed.">        if (fieldvalue != null &amp;&amp; fieldvalue.length() &gt; 0) {</span>
+<span class="nc" id="L126">          builder.append(&quot; src=\&quot;&quot;).append(fieldvalue).append(&quot;\&quot; &quot;);</span>
         }
-<span class="nc bnc" id="L125" title="All 4 branches missed.">        if (getFieldinfo() != null &amp;&amp; getFieldinfo().length() &gt; 0) {</span>
-<span class="nc" id="L126">          builder.append(&quot; alt=\&quot;&quot;).append(getFieldinfo()).append(&quot;\&quot; &quot;);</span>
+<span class="nc bnc" id="L128" title="All 4 branches missed.">        if (getFieldinfo() != null &amp;&amp; getFieldinfo().length() &gt; 0) {</span>
+<span class="nc" id="L129">          builder.append(&quot; alt=\&quot;&quot;).append(getFieldinfo()).append(&quot;\&quot; &quot;);</span>
         }
-<span class="nc" id="L128">        builder.append('&gt;');</span>
-<span class="nc" id="L129">        break;</span>
+<span class="nc" id="L131">        builder.append('&gt;');</span>
+<span class="nc" id="L132">        break;</span>
       }
       case BUSINESS_SELECT: {
-<span class="nc" id="L132">        builder.append(getFieldinfo()).append(&quot;&lt;BR&gt;&lt;SELECT name=&quot;)</span>
-<span class="nc" id="L133">               .append(getFieldname()).append('&gt;');</span>
-<span class="nc" id="L134">        final AbstractHttpField source = page.getFields().get(getFieldname());</span>
-<span class="nc" id="L135">        final String[] values = source.fieldvalue.split(&quot;,&quot;);</span>
-<span class="nc bnc" id="L136" title="All 2 branches missed.">        for (final String string : values) {</span>
-<span class="nc" id="L137">          builder.append(&quot;&lt;OPTION label=\&quot;&quot;).append(string)</span>
-<span class="nc" id="L138">                 .append(&quot;\&quot; value=\&quot;&quot;).append(string);</span>
-<span class="nc bnc" id="L139" title="All 4 branches missed.">          if (fieldvalue != null &amp;&amp; fieldvalue.length() &gt; 0 &amp;&amp;</span>
-<span class="nc bnc" id="L140" title="All 2 branches missed.">              fieldvalue.equals(string)) {</span>
-<span class="nc" id="L141">            builder.append(&quot;\&quot; selected&gt;&quot;);</span>
+<span class="nc" id="L135">        builder.append(getFieldinfo()).append(&quot;&lt;BR&gt;&lt;SELECT name=&quot;)</span>
+<span class="nc" id="L136">               .append(getFieldname()).append('&gt;');</span>
+<span class="nc" id="L137">        final AbstractHttpField source = page.getFields().get(getFieldname());</span>
+<span class="nc" id="L138">        final String[] values = source.fieldvalue.split(&quot;,&quot;);</span>
+<span class="nc bnc" id="L139" title="All 2 branches missed.">        for (final String string : values) {</span>
+<span class="nc" id="L140">          builder.append(&quot;&lt;OPTION label=\&quot;&quot;).append(string)</span>
+<span class="nc" id="L141">                 .append(&quot;\&quot; value=\&quot;&quot;).append(string);</span>
+<span class="nc bnc" id="L142" title="All 4 branches missed.">          if (fieldvalue != null &amp;&amp; fieldvalue.length() &gt; 0 &amp;&amp;</span>
+<span class="nc bnc" id="L143" title="All 2 branches missed.">              fieldvalue.equals(string)) {</span>
+<span class="nc" id="L144">            builder.append(&quot;\&quot; selected&gt;&quot;);</span>
           } else {
-<span class="nc" id="L143">            builder.append(&quot;\&quot;&gt;&quot;);</span>
+<span class="nc" id="L146">            builder.append(&quot;\&quot;&gt;&quot;);</span>
           }
-<span class="nc" id="L145">          builder.append(string).append(&quot;&lt;/OPTION&gt;&quot;);</span>
+<span class="nc" id="L148">          builder.append(string).append(&quot;&lt;/OPTION&gt;&quot;);</span>
         }
-<span class="nc" id="L147">        builder.append(&quot;&lt;/SELECT&gt;&quot;);</span>
-<span class="nc" id="L148">        break;</span>
+<span class="nc" id="L150">        builder.append(&quot;&lt;/SELECT&gt;&quot;);</span>
+<span class="nc" id="L151">        break;</span>
       }
       case BUSINESS_TEXTAREA: {
-<span class="nc" id="L151">        builder.append(getFieldinfo()).append(&quot;&lt;BR&gt;&lt;TEXTAREA name=&quot;)</span>
-<span class="nc" id="L152">               .append(getFieldname()).append('&gt;');</span>
-<span class="nc bnc" id="L153" title="All 4 branches missed.">        if (fieldvalue != null &amp;&amp; fieldvalue.length() &gt; 0) {</span>
-<span class="nc" id="L154">          builder.append(fieldvalue);</span>
+<span class="nc" id="L154">        builder.append(getFieldinfo()).append(&quot;&lt;BR&gt;&lt;TEXTAREA name=&quot;)</span>
+<span class="nc" id="L155">               .append(getFieldname()).append('&gt;');</span>
+<span class="nc bnc" id="L156" title="All 4 branches missed.">        if (fieldvalue != null &amp;&amp; fieldvalue.length() &gt; 0) {</span>
+<span class="nc" id="L157">          builder.append(fieldvalue);</span>
         }
-<span class="nc" id="L156">        builder.append(&quot;&lt;/TEXTAREA&gt;&quot;);</span>
-<span class="nc" id="L157">        break;</span>
+<span class="nc" id="L159">        builder.append(&quot;&lt;/TEXTAREA&gt;&quot;);</span>
+<span class="nc" id="L160">        break;</span>
       }
       case BUSINESS_COOKIE:
         // no since Cookie
-<span class="nc" id="L161">        break;</span>
+<span class="nc" id="L164">        break;</span>
       default:
-<span class="nc" id="L163">        throw new HttpIncorrectRequestException(</span>
-<span class="nc" id="L164">            &quot;Incorrect type: &quot; + getFieldtype());</span>
+<span class="nc" id="L166">        throw new HttpIncorrectRequestException(</span>
+<span class="nc" id="L167">            &quot;Incorrect type: &quot; + getFieldtype());</span>
     }
-<span class="nc" id="L166">    return builder.toString();</span>
+<span class="nc" id="L169">    return builder.toString();</span>
   }
 
   @Override
-  public String getHtmlTabField(HttpPage page)
+  public String getHtmlTabField(final HttpPage page)
       throws HttpIncorrectRequestException {
-<span class="nc" id="L172">    final StringBuilder builder =</span>
-<span class="nc" id="L173">        new StringBuilder().append(getFieldinfo()).append(&quot;&lt;/TD&gt;&lt;TD&gt;&quot;);</span>
-<span class="nc bnc" id="L174" title="All 2 branches missed.">    if (fieldvalue != null) {</span>
-<span class="nc" id="L175">      builder.append(fieldvalue);</span>
+<span class="nc" id="L175">    final StringBuilder builder =</span>
+<span class="nc" id="L176">        new StringBuilder().append(getFieldinfo()).append(&quot;&lt;/TD&gt;&lt;TD&gt;&quot;);</span>
+<span class="nc bnc" id="L177" title="All 2 branches missed.">    if (fieldvalue != null) {</span>
+<span class="nc" id="L178">      builder.append(fieldvalue);</span>
     }
-<span class="nc" id="L177">    return builder.toString();</span>
+<span class="nc" id="L180">    return builder.toString();</span>
   }
 
   @Override
   public DefaultHttpField clone() {
-<span class="nc" id="L182">    return new DefaultHttpField(getFieldname(), getFieldtype(), getFieldinfo(),</span>
-<span class="nc" id="L183">                                fieldvalue, isFieldvisibility(),</span>
-<span class="nc" id="L184">                                isFieldmandatory(), isFieldcookieset(),</span>
-<span class="nc" id="L185">                                isFieldtovalidate(), getFieldposition(),</span>
-<span class="nc" id="L186">                                getFieldrank());</span>
+<span class="nc" id="L185">    return new DefaultHttpField(getFieldname(), getFieldtype(), getFieldinfo(),</span>
+<span class="nc" id="L186">                                fieldvalue, isFieldvisibility(),</span>
+<span class="nc" id="L187">                                isFieldmandatory(), isFieldcookieset(),</span>
+<span class="nc" id="L188">                                isFieldtovalidate(), getFieldposition(),</span>
+<span class="nc" id="L189">                                getFieldrank());</span>
   }
 
   @Override
-  public void setStringValue(String value)
+  public void setStringValue(final String value)
       throws HttpIncorrectRequestException {
-<span class="nc bnc" id="L192" title="All 3 branches missed.">    switch (getFieldtype()) {</span>
+<span class="nc bnc" id="L195" title="All 3 branches missed.">    switch (getFieldtype()) {</span>
       case BUSINESS_INPUT_CHECKBOX:
-<span class="nc bnc" id="L194" title="All 2 branches missed.">        if (fieldvalue != null) {</span>
-<span class="nc bnc" id="L195" title="All 2 branches missed.">          if (fieldvalue.length() &gt; 0) {</span>
-<span class="nc" id="L196">            fieldvalue += ',' + value;</span>
+<span class="nc bnc" id="L197" title="All 2 branches missed.">        if (fieldvalue != null) {</span>
+<span class="nc bnc" id="L198" title="All 2 branches missed.">          if (fieldvalue.length() &gt; 0) {</span>
+<span class="nc" id="L199">            fieldvalue += ',' + value;</span>
           } else {
-<span class="nc" id="L198">            fieldvalue = value;</span>
+<span class="nc" id="L201">            fieldvalue = value;</span>
           }
         } else {
-<span class="nc" id="L201">          fieldvalue = value;</span>
+<span class="nc" id="L204">          fieldvalue = value;</span>
         }
-<span class="nc" id="L203">        setPresent(true);</span>
-<span class="nc" id="L204">        break;</span>
+<span class="nc" id="L206">        setPresent(true);</span>
+<span class="nc" id="L207">        break;</span>
       case BUSINESS_INPUT_FILE:
       case BUSINESS_INPUT_HIDDEN:
       case BUSINESS_INPUT_IMAGE:
@@ -211,37 +214,37 @@ public class DefaultHttpField extends AbstractHttpField {
       case BUSINESS_SELECT:
       case BUSINESS_TEXTAREA:
       case BUSINESS_COOKIE:
-<span class="nc bnc" id="L214" title="All 2 branches missed.">        if (isPresent()) {</span>
+<span class="nc bnc" id="L217" title="All 2 branches missed.">        if (isPresent()) {</span>
           // should not be
-<span class="nc" id="L216">          throw new HttpIncorrectRequestException(</span>
-<span class="nc" id="L217">              &quot;Field already filled: &quot; + getFieldname());</span>
+<span class="nc" id="L219">          throw new HttpIncorrectRequestException(</span>
+<span class="nc" id="L220">              &quot;Field already filled: &quot; + getFieldname());</span>
         }
-<span class="nc" id="L219">        fieldvalue = value;</span>
-<span class="nc" id="L220">        setPresent(true);</span>
-<span class="nc" id="L221">        break;</span>
+<span class="nc" id="L222">        fieldvalue = value;</span>
+<span class="nc" id="L223">        setPresent(true);</span>
+<span class="nc" id="L224">        break;</span>
       default:
         break;
     }
-<span class="nc" id="L225">  }</span>
+<span class="nc" id="L228">  }</span>
 
   @Override
-  public void setFileUpload(FileUpload fileUpload)
+  public void setFileUpload(final FileUpload fileUpload)
       throws HttpIncorrectRequestException {
-<span class="nc bnc" id="L230" title="All 2 branches missed.">    if (getFieldtype() == FieldRole.BUSINESS_INPUT_FILE) {</span>
-<span class="nc bnc" id="L231" title="All 2 branches missed.">      if (isPresent()) {</span>
+<span class="nc bnc" id="L233" title="All 2 branches missed.">    if (getFieldtype() == FieldRole.BUSINESS_INPUT_FILE) {</span>
+<span class="nc bnc" id="L234" title="All 2 branches missed.">      if (isPresent()) {</span>
         // should not be
-<span class="nc" id="L233">        throw new HttpIncorrectRequestException(</span>
-<span class="nc" id="L234">            &quot;Field already filled: &quot; + getFieldname());</span>
+<span class="nc" id="L236">        throw new HttpIncorrectRequestException(</span>
+<span class="nc" id="L237">            &quot;Field already filled: &quot; + getFieldname());</span>
       }
-<span class="nc" id="L236">      this.fileUpload = fileUpload;</span>
-<span class="nc" id="L237">      fieldvalue = fileUpload.getFilename();</span>
-<span class="nc" id="L238">      setPresent(true);</span>
+<span class="nc" id="L239">      this.fileUpload = fileUpload;</span>
+<span class="nc" id="L240">      fieldvalue = fileUpload.getFilename();</span>
+<span class="nc" id="L241">      setPresent(true);</span>
     } else {
       // should not be
-<span class="nc" id="L241">      throw new HttpIncorrectRequestException(</span>
-<span class="nc" id="L242">          &quot;Field with wrong type (should be File): &quot; + getFieldname());</span>
+<span class="nc" id="L244">      throw new HttpIncorrectRequestException(</span>
+<span class="nc" id="L245">          &quot;Field with wrong type (should be File): &quot; + getFieldname());</span>
     }
-<span class="nc" id="L244">  }</span>
+<span class="nc" id="L247">  }</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

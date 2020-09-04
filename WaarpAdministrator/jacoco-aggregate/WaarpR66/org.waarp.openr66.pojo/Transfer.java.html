@@ -73,7 +73,7 @@ public class Transfer {
 <span class="fc" id="L73">      taskNo = task;</span>
 <span class="fc" id="L74">    }</span>
 
-    public static TASKSTEP valueOf(int taskStep) {
+    public static TASKSTEP valueOf(final int taskStep) {
 <span class="fc" id="L77">      return map.get(taskStep);</span>
     }
 
@@ -140,7 +140,7 @@ public class Transfer {
   @JsonProperty(&quot;REQUESTED&quot;)
   private String requested = &quot;&quot;;
 
-<span class="fc" id="L143">  @XmlTransient</span>
+<span class="fc" id="L143">  @XmlElement(name = TRANSFER_INFO_FIELD)</span>
   @JsonProperty(&quot;TRANSFERINFO&quot;)
   private String transferInfo = &quot;&quot;;
 
@@ -186,7 +186,7 @@ public class Transfer {
 <span class="nc" id="L186">    return start.getTime();</span>
   }
 
-  public void setXmlStart(long xml) {
+  public void setXmlStart(final long xml) {
 <span class="nc" id="L190">    start = new Timestamp(xml);</span>
 <span class="nc" id="L191">  }</span>
 
@@ -196,7 +196,7 @@ public class Transfer {
 <span class="nc" id="L196">    return stop.getTime();</span>
   }
 
-  public void setXmlStop(long xml) {
+  public void setXmlStop(final long xml) {
 <span class="nc" id="L200">    stop = new Timestamp(xml);</span>
 <span class="nc" id="L201">  }</span>
 
@@ -226,18 +226,22 @@ public class Transfer {
    * @param stop
    * @param updatedInfo
    */
-  public Transfer(long id, String rule, int mode, String filename,
-                  String originalName, String fileInfo, boolean isMoved,
-                  int blockSize, boolean retrieveMode, String ownerReq,
-                  String requester, String requested, String transferInfo,
-                  TASKSTEP globalStep, TASKSTEP lastGlobalStep, int step,
-                  ErrorCode stepStatus, ErrorCode infoStatus, int rank,
-                  Timestamp start, Timestamp stop, UpdatedInfo updatedInfo) {
-<span class="fc" id="L236">    this(id, rule, mode, filename, originalName, fileInfo, isMoved, blockSize,</span>
+  public Transfer(final long id, final String rule, final int mode,
+                  final String filename, final String originalName,
+                  final String fileInfo, final boolean isMoved,
+                  final int blockSize, final boolean retrieveMode,
+                  final String ownerReq, final String requester,
+                  final String requested, final String transferInfo,
+                  final TASKSTEP globalStep, final TASKSTEP lastGlobalStep,
+                  final int step, final ErrorCode stepStatus,
+                  final ErrorCode infoStatus, final int rank,
+                  final Timestamp start, final Timestamp stop,
+                  final UpdatedInfo updatedInfo) {
+<span class="fc" id="L240">    this(id, rule, mode, filename, originalName, fileInfo, isMoved, blockSize,</span>
          retrieveMode, ownerReq, requester, requested, transferInfo, globalStep,
          lastGlobalStep, step, stepStatus, infoStatus, rank, start, stop);
-<span class="fc" id="L239">    this.updatedInfo = updatedInfo;</span>
-<span class="fc" id="L240">  }</span>
+<span class="fc" id="L243">    this.updatedInfo = updatedInfo;</span>
+<span class="fc" id="L244">  }</span>
 
   /**
    * Constructor to create Transfer from remote requests
@@ -264,35 +268,38 @@ public class Transfer {
    * @param start
    * @param stop
    */
-  public Transfer(long id, String rule, int mode, String filename,
-                  String originalName, String fileInfo, boolean isMoved,
-                  int blockSize, boolean retrieveMode, String ownerReq,
-                  String requester, String requested, String transferInfo,
-                  TASKSTEP globalStep, TASKSTEP lastGlobalStep, int step,
-                  ErrorCode stepStatus, ErrorCode infoStatus, int rank,
-<span class="fc" id="L273">                  Timestamp start, Timestamp stop) {</span>
-<span class="fc" id="L274">    this.id = id;</span>
-<span class="fc" id="L275">    this.rule = rule;</span>
-<span class="fc" id="L276">    transferMode = mode;</span>
-<span class="fc" id="L277">    this.retrieveMode = retrieveMode;</span>
-<span class="fc" id="L278">    this.filename = filename;</span>
-<span class="fc" id="L279">    this.originalName = originalName;</span>
-<span class="fc" id="L280">    this.fileInfo = fileInfo;</span>
-<span class="fc" id="L281">    this.isMoved = isMoved;</span>
-<span class="fc" id="L282">    this.blockSize = blockSize;</span>
-<span class="fc" id="L283">    ownerRequest = ownerReq;</span>
-<span class="fc" id="L284">    this.requester = requester;</span>
-<span class="fc" id="L285">    this.requested = requested;</span>
-<span class="fc" id="L286">    this.transferInfo = transferInfo;</span>
-<span class="fc" id="L287">    this.globalStep = globalStep;</span>
-<span class="fc" id="L288">    this.lastGlobalStep = lastGlobalStep;</span>
-<span class="fc" id="L289">    this.step = step;</span>
-<span class="fc" id="L290">    this.stepStatus = stepStatus;</span>
-<span class="fc" id="L291">    this.infoStatus = infoStatus;</span>
-<span class="fc" id="L292">    this.rank = rank;</span>
-<span class="fc" id="L293">    this.start = start;</span>
-<span class="fc" id="L294">    this.stop = stop;</span>
-<span class="fc" id="L295">  }</span>
+  public Transfer(final long id, final String rule, final int mode,
+                  final String filename, final String originalName,
+                  final String fileInfo, final boolean isMoved,
+                  final int blockSize, final boolean retrieveMode,
+                  final String ownerReq, final String requester,
+                  final String requested, final String transferInfo,
+                  final TASKSTEP globalStep, final TASKSTEP lastGlobalStep,
+                  final int step, final ErrorCode stepStatus,
+                  final ErrorCode infoStatus, final int rank,
+<span class="fc" id="L280">                  final Timestamp start, final Timestamp stop) {</span>
+<span class="fc" id="L281">    this.id = id;</span>
+<span class="fc" id="L282">    this.rule = rule;</span>
+<span class="fc" id="L283">    transferMode = mode;</span>
+<span class="fc" id="L284">    this.retrieveMode = retrieveMode;</span>
+<span class="fc" id="L285">    this.filename = filename;</span>
+<span class="fc" id="L286">    this.originalName = originalName;</span>
+<span class="fc" id="L287">    this.fileInfo = fileInfo;</span>
+<span class="fc" id="L288">    this.isMoved = isMoved;</span>
+<span class="fc" id="L289">    this.blockSize = blockSize;</span>
+<span class="fc" id="L290">    ownerRequest = ownerReq;</span>
+<span class="fc" id="L291">    this.requester = requester;</span>
+<span class="fc" id="L292">    this.requested = requested;</span>
+<span class="fc" id="L293">    this.transferInfo = transferInfo;</span>
+<span class="fc" id="L294">    this.globalStep = globalStep;</span>
+<span class="fc" id="L295">    this.lastGlobalStep = lastGlobalStep;</span>
+<span class="fc" id="L296">    this.step = step;</span>
+<span class="fc" id="L297">    this.stepStatus = stepStatus;</span>
+<span class="fc" id="L298">    this.infoStatus = infoStatus;</span>
+<span class="fc" id="L299">    this.rank = rank;</span>
+<span class="fc" id="L300">    this.start = start;</span>
+<span class="fc" id="L301">    this.stop = stop;</span>
+<span class="fc" id="L302">  }</span>
 
   /**
    * Constructor to create transfer locally with delayed start time
@@ -303,21 +310,22 @@ public class Transfer {
    * @param fileInfo
    * @param blockSize
    */
-  public Transfer(String remote, String rule, int ruleMode,
-                  boolean retrieveMode, String file, String fileInfo,
-<span class="fc" id="L308">                  int blockSize, Timestamp start) {</span>
-<span class="fc" id="L309">    ownerRequest = Configuration.configuration.getHostId();</span>
-<span class="fc" id="L310">    requester = Configuration.configuration.getHostId();</span>
-<span class="fc" id="L311">    requested = remote;</span>
-<span class="fc" id="L312">    this.rule = rule;</span>
-<span class="fc" id="L313">    transferMode = ruleMode;</span>
-<span class="fc" id="L314">    this.retrieveMode = retrieveMode;</span>
-<span class="fc" id="L315">    filename = file;</span>
-<span class="fc" id="L316">    originalName = file;</span>
-<span class="fc" id="L317">    this.fileInfo = fileInfo;</span>
-<span class="fc" id="L318">    this.blockSize = blockSize;</span>
-<span class="fc" id="L319">    this.start = start;</span>
-<span class="fc" id="L320">  }</span>
+  public Transfer(final String remote, final String rule, final int ruleMode,
+                  final boolean retrieveMode, final String file,
+                  final String fileInfo, final int blockSize,
+<span class="fc" id="L316">                  final Timestamp start) {</span>
+<span class="fc" id="L317">    ownerRequest = Configuration.configuration.getHostId();</span>
+<span class="fc" id="L318">    requester = Configuration.configuration.getHostId();</span>
+<span class="fc" id="L319">    requested = remote;</span>
+<span class="fc" id="L320">    this.rule = rule;</span>
+<span class="fc" id="L321">    transferMode = ruleMode;</span>
+<span class="fc" id="L322">    this.retrieveMode = retrieveMode;</span>
+<span class="fc" id="L323">    filename = file;</span>
+<span class="fc" id="L324">    originalName = file;</span>
+<span class="fc" id="L325">    this.fileInfo = fileInfo;</span>
+<span class="fc" id="L326">    this.blockSize = blockSize;</span>
+<span class="fc" id="L327">    this.start = start;</span>
+<span class="fc" id="L328">  }</span>
 
   /**
    * Constructor to create transfer locally
@@ -328,195 +336,195 @@ public class Transfer {
    * @param fileInfo
    * @param blockSize
    */
-  public Transfer(String remote, String rule, int ruleMode,
-                  boolean retrieveMode, String file, String fileInfo,
-                  int blockSize) {
-<span class="fc" id="L334">    this(remote, rule, ruleMode, retrieveMode, file, fileInfo, blockSize,</span>
-<span class="fc" id="L335">         new Timestamp(new Date().getTime()));</span>
-<span class="fc" id="L336">  }</span>
+  public Transfer(final String remote, final String rule, final int ruleMode,
+                  final boolean retrieveMode, final String file,
+                  final String fileInfo, final int blockSize) {
+<span class="fc" id="L342">    this(remote, rule, ruleMode, retrieveMode, file, fileInfo, blockSize,</span>
+<span class="fc" id="L343">         new Timestamp(new Date().getTime()));</span>
+<span class="fc" id="L344">  }</span>
 
   /**
    * Empty constructor
    */
-<span class="fc" id="L341">  public Transfer() {</span>
+<span class="fc" id="L349">  public Transfer() {</span>
     // Nothing
-<span class="fc" id="L343">  }</span>
+<span class="fc" id="L351">  }</span>
 
   public long getId() {
-<span class="fc" id="L346">    return id;</span>
+<span class="fc" id="L354">    return id;</span>
   }
 
-  public void setId(long id) {
-<span class="fc" id="L350">    logger.trace(&quot;TRACE ID {}&quot;, id);</span>
-<span class="fc" id="L351">    this.id = id;</span>
-<span class="fc" id="L352">  }</span>
-
-  public boolean getRetrieveMode() {
-<span class="fc" id="L355">    return retrieveMode;</span>
-  }
-
-  public void setRetrieveMode(boolean retrieveMode) {
-<span class="fc" id="L359">    this.retrieveMode = retrieveMode;</span>
+  public void setId(final long id) {
+<span class="fc" id="L358">    logger.trace(&quot;TRACE ID {}&quot;, id);</span>
+<span class="fc" id="L359">    this.id = id;</span>
 <span class="fc" id="L360">  }</span>
 
-  public String getRule() {
-<span class="fc" id="L363">    return rule;</span>
+  public boolean getRetrieveMode() {
+<span class="fc" id="L363">    return retrieveMode;</span>
   }
 
-  public void setRule(String rule) {
-<span class="fc" id="L367">    this.rule = rule;</span>
+  public void setRetrieveMode(final boolean retrieveMode) {
+<span class="fc" id="L367">    this.retrieveMode = retrieveMode;</span>
 <span class="fc" id="L368">  }</span>
 
-  public int getTransferMode() {
-<span class="fc" id="L371">    return transferMode;</span>
+  public String getRule() {
+<span class="fc" id="L371">    return rule;</span>
   }
 
-  public void setTransferMode(int mode) {
-<span class="fc" id="L375">    transferMode = mode;</span>
+  public void setRule(final String rule) {
+<span class="fc" id="L375">    this.rule = rule;</span>
 <span class="fc" id="L376">  }</span>
 
-  public String getFilename() {
-<span class="fc" id="L379">    return filename;</span>
+  public int getTransferMode() {
+<span class="fc" id="L379">    return transferMode;</span>
   }
 
-  public void setFilename(String filename) {
-<span class="fc" id="L383">    this.filename = filename;</span>
+  public void setTransferMode(final int mode) {
+<span class="fc" id="L383">    transferMode = mode;</span>
 <span class="fc" id="L384">  }</span>
 
-  public String getOriginalName() {
-<span class="fc" id="L387">    return originalName;</span>
+  public String getFilename() {
+<span class="fc" id="L387">    return filename;</span>
   }
 
-  public void setOriginalName(String originalName) {
-<span class="fc" id="L391">    this.originalName = originalName;</span>
+  public void setFilename(final String filename) {
+<span class="fc" id="L391">    this.filename = filename;</span>
 <span class="fc" id="L392">  }</span>
 
-  public String getFileInfo() {
-<span class="fc" id="L395">    return fileInfo;</span>
+  public String getOriginalName() {
+<span class="fc" id="L395">    return originalName;</span>
   }
 
-  public void setFileInfo(String fileInfo) {
-<span class="fc" id="L399">    this.fileInfo = fileInfo;</span>
+  public void setOriginalName(final String originalName) {
+<span class="fc" id="L399">    this.originalName = originalName;</span>
 <span class="fc" id="L400">  }</span>
 
-  public boolean getIsMoved() {
-<span class="fc" id="L403">    return isMoved;</span>
+  public String getFileInfo() {
+<span class="fc" id="L403">    return fileInfo;</span>
   }
 
-  public void setIsMoved(boolean isMoved) {
-<span class="fc" id="L407">    this.isMoved = isMoved;</span>
+  public void setFileInfo(final String fileInfo) {
+<span class="fc" id="L407">    this.fileInfo = fileInfo;</span>
 <span class="fc" id="L408">  }</span>
 
-  public int getBlockSize() {
-<span class="fc" id="L411">    return blockSize;</span>
+  public boolean getIsMoved() {
+<span class="fc" id="L411">    return isMoved;</span>
   }
 
-  public void setBlockSize(int blockSize) {
-<span class="fc" id="L415">    this.blockSize = blockSize;</span>
+  public void setIsMoved(final boolean isMoved) {
+<span class="fc" id="L415">    this.isMoved = isMoved;</span>
 <span class="fc" id="L416">  }</span>
 
-  public String getOwnerRequest() {
-<span class="fc" id="L419">    return ownerRequest;</span>
+  public int getBlockSize() {
+<span class="fc" id="L419">    return blockSize;</span>
   }
 
-  public void setOwnerRequest(String ownerRequest) {
-<span class="fc" id="L423">    this.ownerRequest = ownerRequest;</span>
+  public void setBlockSize(final int blockSize) {
+<span class="fc" id="L423">    this.blockSize = blockSize;</span>
 <span class="fc" id="L424">  }</span>
 
-  public String getRequester() {
-<span class="fc" id="L427">    return requester;</span>
+  public String getOwnerRequest() {
+<span class="fc" id="L427">    return ownerRequest;</span>
   }
 
-  public void setRequester(String requester) {
-<span class="fc" id="L431">    this.requester = requester;</span>
+  public void setOwnerRequest(final String ownerRequest) {
+<span class="fc" id="L431">    this.ownerRequest = ownerRequest;</span>
 <span class="fc" id="L432">  }</span>
 
-  public String getRequested() {
-<span class="fc" id="L435">    return requested;</span>
+  public String getRequester() {
+<span class="fc" id="L435">    return requester;</span>
   }
 
-  public void setRequested(String requested) {
-<span class="fc" id="L439">    this.requested = requested;</span>
+  public void setRequester(final String requester) {
+<span class="fc" id="L439">    this.requester = requester;</span>
 <span class="fc" id="L440">  }</span>
 
-  public String getTransferInfo() {
-<span class="fc" id="L443">    return transferInfo;</span>
+  public String getRequested() {
+<span class="fc" id="L443">    return requested;</span>
   }
 
-  public void setTransferInfo(String transferInfo) {
-<span class="fc" id="L447">    this.transferInfo = transferInfo;</span>
+  public void setRequested(final String requested) {
+<span class="fc" id="L447">    this.requested = requested;</span>
 <span class="fc" id="L448">  }</span>
 
-  public TASKSTEP getGlobalStep() {
-<span class="fc" id="L451">    return globalStep;</span>
+  public String getTransferInfo() {
+<span class="fc" id="L451">    return transferInfo;</span>
   }
 
-  public void setGlobalStep(TASKSTEP globalStep) {
-<span class="fc" id="L455">    this.globalStep = globalStep;</span>
+  public void setTransferInfo(final String transferInfo) {
+<span class="fc" id="L455">    this.transferInfo = transferInfo;</span>
 <span class="fc" id="L456">  }</span>
 
-  public TASKSTEP getLastGlobalStep() {
-<span class="fc" id="L459">    return lastGlobalStep;</span>
+  public TASKSTEP getGlobalStep() {
+<span class="fc" id="L459">    return globalStep;</span>
   }
 
-  public void setLastGlobalStep(TASKSTEP lastGlobalStep) {
-<span class="fc" id="L463">    this.lastGlobalStep = lastGlobalStep;</span>
+  public void setGlobalStep(final TASKSTEP globalStep) {
+<span class="fc" id="L463">    this.globalStep = globalStep;</span>
 <span class="fc" id="L464">  }</span>
 
-  public int getStep() {
-<span class="fc" id="L467">    return step;</span>
+  public TASKSTEP getLastGlobalStep() {
+<span class="fc" id="L467">    return lastGlobalStep;</span>
   }
 
-  public void setStep(int step) {
-<span class="fc" id="L471">    this.step = step;</span>
+  public void setLastGlobalStep(final TASKSTEP lastGlobalStep) {
+<span class="fc" id="L471">    this.lastGlobalStep = lastGlobalStep;</span>
 <span class="fc" id="L472">  }</span>
 
-  public ErrorCode getStepStatus() {
-<span class="fc" id="L475">    return stepStatus;</span>
+  public int getStep() {
+<span class="fc" id="L475">    return step;</span>
   }
 
-  public void setStepStatus(ErrorCode stepStatus) {
-<span class="fc" id="L479">    this.stepStatus = stepStatus;</span>
+  public void setStep(final int step) {
+<span class="fc" id="L479">    this.step = step;</span>
 <span class="fc" id="L480">  }</span>
 
-  public ErrorCode getInfoStatus() {
-<span class="fc" id="L483">    return infoStatus;</span>
+  public ErrorCode getStepStatus() {
+<span class="fc" id="L483">    return stepStatus;</span>
   }
 
-  public void setInfoStatus(ErrorCode infoStatus) {
-<span class="fc" id="L487">    this.infoStatus = infoStatus;</span>
+  public void setStepStatus(final ErrorCode stepStatus) {
+<span class="fc" id="L487">    this.stepStatus = stepStatus;</span>
 <span class="fc" id="L488">  }</span>
 
-  public int getRank() {
-<span class="fc" id="L491">    return rank;</span>
+  public ErrorCode getInfoStatus() {
+<span class="fc" id="L491">    return infoStatus;</span>
   }
 
-  public void setRank(int rank) {
-<span class="fc" id="L495">    this.rank = rank;</span>
+  public void setInfoStatus(final ErrorCode infoStatus) {
+<span class="fc" id="L495">    this.infoStatus = infoStatus;</span>
 <span class="fc" id="L496">  }</span>
 
-  public Timestamp getStart() {
-<span class="fc" id="L499">    return start;</span>
+  public int getRank() {
+<span class="fc" id="L499">    return rank;</span>
   }
 
-  public void setStart(Timestamp start) {
-<span class="fc" id="L503">    this.start = start;</span>
+  public void setRank(final int rank) {
+<span class="fc" id="L503">    this.rank = rank;</span>
 <span class="fc" id="L504">  }</span>
 
-  public Timestamp getStop() {
-<span class="fc" id="L507">    return stop;</span>
+  public Timestamp getStart() {
+<span class="fc" id="L507">    return start;</span>
   }
 
-  public void setStop(Timestamp stop) {
-<span class="fc" id="L511">    this.stop = stop;</span>
+  public void setStart(final Timestamp start) {
+<span class="fc" id="L511">    this.start = start;</span>
 <span class="fc" id="L512">  }</span>
 
-  public UpdatedInfo getUpdatedInfo() {
-<span class="fc" id="L515">    return updatedInfo;</span>
+  public Timestamp getStop() {
+<span class="fc" id="L515">    return stop;</span>
   }
 
-  public void setUpdatedInfo(UpdatedInfo info) {
-<span class="fc" id="L519">    updatedInfo = info;</span>
+  public void setStop(final Timestamp stop) {
+<span class="fc" id="L519">    this.stop = stop;</span>
 <span class="fc" id="L520">  }</span>
+
+  public UpdatedInfo getUpdatedInfo() {
+<span class="fc" id="L523">    return updatedInfo;</span>
+  }
+
+  public void setUpdatedInfo(final UpdatedInfo info) {
+<span class="fc" id="L527">    updatedInfo = info;</span>
+<span class="fc" id="L528">  }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

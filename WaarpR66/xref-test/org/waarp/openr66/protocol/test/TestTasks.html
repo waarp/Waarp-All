@@ -393,27 +393,25 @@
 <a class="jxr_linenumber" name="L385" href="#L385">385</a>   <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">void</strong> waitForAllDone(DbTaskRunner runner) {
 <a class="jxr_linenumber" name="L386" href="#L386">386</a>     <strong class="jxr_keyword">while</strong> (<strong class="jxr_keyword">true</strong>) {
 <a class="jxr_linenumber" name="L387" href="#L387">387</a>       <strong class="jxr_keyword">try</strong> {
-<a class="jxr_linenumber" name="L388" href="#L388">388</a>         DbTaskRunner checkedRunner =
-<a class="jxr_linenumber" name="L389" href="#L389">389</a>             <strong class="jxr_keyword">new</strong> DbTaskRunner(runner.getSpecialId(), runner.getRequester(),
-<a class="jxr_linenumber" name="L390" href="#L390">390</a>                              runner.getRequested());
-<a class="jxr_linenumber" name="L391" href="#L391">391</a>         <strong class="jxr_keyword">if</strong> (checkedRunner.isAllDone()) {
-<a class="jxr_linenumber" name="L392" href="#L392">392</a>           SysErrLogger.FAKE_LOGGER.sysout(<span class="jxr_string">"DbTaskRunner done"</span>);
-<a class="jxr_linenumber" name="L393" href="#L393">393</a>           <strong class="jxr_keyword">return</strong>;
-<a class="jxr_linenumber" name="L394" href="#L394">394</a>         } <strong class="jxr_keyword">else</strong> <strong class="jxr_keyword">if</strong> (checkedRunner.isInError()) {
-<a class="jxr_linenumber" name="L395" href="#L395">395</a>           SysErrLogger.FAKE_LOGGER.syserr(<span class="jxr_string">"DbTaskRunner in error"</span>);
-<a class="jxr_linenumber" name="L396" href="#L396">396</a>           <strong class="jxr_keyword">return</strong>;
-<a class="jxr_linenumber" name="L397" href="#L397">397</a>         }
-<a class="jxr_linenumber" name="L398" href="#L398">398</a>         Thread.sleep(100);
-<a class="jxr_linenumber" name="L399" href="#L399">399</a>       } <strong class="jxr_keyword">catch</strong> (InterruptedException e) {<em class="jxr_comment">//NOSONAR</em>
-<a class="jxr_linenumber" name="L400" href="#L400">400</a>         SysErrLogger.FAKE_LOGGER.syserr(<span class="jxr_string">"Interrupted"</span>, e);
-<a class="jxr_linenumber" name="L401" href="#L401">401</a>         <strong class="jxr_keyword">return</strong>;
-<a class="jxr_linenumber" name="L402" href="#L402">402</a>       } <strong class="jxr_keyword">catch</strong> (WaarpDatabaseException e) {
-<a class="jxr_linenumber" name="L403" href="#L403">403</a>         SysErrLogger.FAKE_LOGGER.syserr(<span class="jxr_string">"Cannot found DbTaskRunner"</span>, e);
-<a class="jxr_linenumber" name="L404" href="#L404">404</a>         <strong class="jxr_keyword">return</strong>;
-<a class="jxr_linenumber" name="L405" href="#L405">405</a>       }
-<a class="jxr_linenumber" name="L406" href="#L406">406</a>     }
-<a class="jxr_linenumber" name="L407" href="#L407">407</a>   }
-<a class="jxr_linenumber" name="L408" href="#L408">408</a> }
+<a class="jxr_linenumber" name="L388" href="#L388">388</a>         DbTaskRunner checkedRunner = DbTaskRunner.reloadFromDatabase(runner);
+<a class="jxr_linenumber" name="L389" href="#L389">389</a>         <strong class="jxr_keyword">if</strong> (checkedRunner.isAllDone()) {
+<a class="jxr_linenumber" name="L390" href="#L390">390</a>           SysErrLogger.FAKE_LOGGER.sysout(<span class="jxr_string">"DbTaskRunner done"</span>);
+<a class="jxr_linenumber" name="L391" href="#L391">391</a>           <strong class="jxr_keyword">return</strong>;
+<a class="jxr_linenumber" name="L392" href="#L392">392</a>         } <strong class="jxr_keyword">else</strong> <strong class="jxr_keyword">if</strong> (checkedRunner.isInError()) {
+<a class="jxr_linenumber" name="L393" href="#L393">393</a>           SysErrLogger.FAKE_LOGGER.syserr(<span class="jxr_string">"DbTaskRunner in error"</span>);
+<a class="jxr_linenumber" name="L394" href="#L394">394</a>           <strong class="jxr_keyword">return</strong>;
+<a class="jxr_linenumber" name="L395" href="#L395">395</a>         }
+<a class="jxr_linenumber" name="L396" href="#L396">396</a>         Thread.sleep(100);
+<a class="jxr_linenumber" name="L397" href="#L397">397</a>       } <strong class="jxr_keyword">catch</strong> (InterruptedException e) {<em class="jxr_comment">//NOSONAR</em>
+<a class="jxr_linenumber" name="L398" href="#L398">398</a>         SysErrLogger.FAKE_LOGGER.syserr(<span class="jxr_string">"Interrupted"</span>, e);
+<a class="jxr_linenumber" name="L399" href="#L399">399</a>         <strong class="jxr_keyword">return</strong>;
+<a class="jxr_linenumber" name="L400" href="#L400">400</a>       } <strong class="jxr_keyword">catch</strong> (WaarpDatabaseException e) {
+<a class="jxr_linenumber" name="L401" href="#L401">401</a>         SysErrLogger.FAKE_LOGGER.syserr(<span class="jxr_string">"Cannot found DbTaskRunner"</span>, e);
+<a class="jxr_linenumber" name="L402" href="#L402">402</a>         <strong class="jxr_keyword">return</strong>;
+<a class="jxr_linenumber" name="L403" href="#L403">403</a>       }
+<a class="jxr_linenumber" name="L404" href="#L404">404</a>     }
+<a class="jxr_linenumber" name="L405" href="#L405">405</a>   }
+<a class="jxr_linenumber" name="L406" href="#L406">406</a> }
 </pre>
 <hr/>
 <div id="footer">Copyright &#169; 2009&#x2013;2020 <a href="http://www.waarp.fr">Waarp</a>. All rights reserved.</div>

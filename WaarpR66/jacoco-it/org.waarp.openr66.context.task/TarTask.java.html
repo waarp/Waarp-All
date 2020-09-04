@@ -46,8 +46,8 @@ public class TarTask extends AbstractTask {
    * @param argTransfer
    * @param session
    */
-  public TarTask(String argRule, int delay, String argTransfer,
-                 R66Session session) {
+  public TarTask(final String argRule, final int delay,
+                 final String argTransfer, final R66Session session) {
 <span class="nc" id="L51">    super(TaskType.TAR, delay, argRule, argTransfer, session);</span>
 <span class="nc" id="L52">  }</span>
 
@@ -57,50 +57,51 @@ public class TarTask extends AbstractTask {
         &quot;TAR with &quot; + argRule + ':' + argTransfer + ':' + delay + &quot; and {}&quot;,
         session);
 <span class="nc" id="L59">    String finalname = argRule;</span>
-<span class="nc" id="L60">    finalname = getReplacedValue(finalname, argTransfer.split(&quot; &quot;));</span>
+<span class="nc bnc" id="L60" title="All 2 branches missed.">    finalname = getReplacedValue(finalname, argTransfer == null? null :</span>
+<span class="nc" id="L61">        argTransfer.split(&quot; &quot;));</span>
     boolean tar;
-<span class="nc bnc" id="L62" title="All 3 branches missed.">    switch (delay) {</span>
+<span class="nc bnc" id="L63" title="All 3 branches missed.">    switch (delay) {</span>
       case 2: {
         // directory: tar finalname where finalname=&quot;target directory&quot;
-<span class="nc" id="L65">        final String[] args = finalname.split(&quot; &quot;);</span>
-<span class="nc" id="L66">        tar = TarUtility.createTarFromDirectory(args[1], args[0], true);</span>
-<span class="nc" id="L67">        break;</span>
+<span class="nc" id="L66">        final String[] args = finalname.split(&quot; &quot;);</span>
+<span class="nc" id="L67">        tar = TarUtility.createTarFromDirectory(args[1], args[0], true);</span>
+<span class="nc" id="L68">        break;</span>
       }
       case 3: {
         // list of files: tar finalname where finalname=&quot;target file1 file2...&quot;
-<span class="nc" id="L71">        final String[] args = finalname.split(&quot; &quot;);</span>
-<span class="nc" id="L72">        final List&lt;File&gt; files = new ArrayList&lt;File&gt;(args.length - 1);</span>
-<span class="nc bnc" id="L73" title="All 2 branches missed.">        for (int i = 1; i &lt; args.length; i++) {</span>
-<span class="nc" id="L74">          files.add(new File(args[i]));</span>
+<span class="nc" id="L72">        final String[] args = finalname.split(&quot; &quot;);</span>
+<span class="nc" id="L73">        final List&lt;File&gt; files = new ArrayList&lt;File&gt;(args.length - 1);</span>
+<span class="nc bnc" id="L74" title="All 2 branches missed.">        for (int i = 1; i &lt; args.length; i++) {</span>
+<span class="nc" id="L75">          files.add(new File(args[i]));</span>
         }
-<span class="nc" id="L76">        tar = TarUtility.createTarFromFiles(files, args[0]);</span>
-<span class="nc" id="L77">        break;</span>
+<span class="nc" id="L77">        tar = TarUtility.createTarFromFiles(files, args[0]);</span>
+<span class="nc" id="L78">        break;</span>
       }
       default:
         // untar
         // directory: untar finalname where finalname=&quot;source directory&quot;
-<span class="nc" id="L82">        final String[] args = finalname.split(&quot; &quot;);</span>
-<span class="nc" id="L83">        final File tarFile = new File(args[0]);</span>
-<span class="nc" id="L84">        final File directory = new File(args[1]);</span>
+<span class="nc" id="L83">        final String[] args = finalname.split(&quot; &quot;);</span>
+<span class="nc" id="L84">        final File tarFile = new File(args[0]);</span>
+<span class="nc" id="L85">        final File directory = new File(args[1]);</span>
         try {
-<span class="nc" id="L86">          TarUtility.unTar(tarFile, directory);</span>
-<span class="nc" id="L87">          tar = true;</span>
-<span class="nc" id="L88">        } catch (final IOException e) {</span>
-<span class="nc" id="L89">          logger.warn(&quot;Error while untar&quot;, e);</span>
-<span class="nc" id="L90">          tar = false;</span>
-<span class="nc" id="L91">        }</span>
+<span class="nc" id="L87">          TarUtility.unTar(tarFile, directory);</span>
+<span class="nc" id="L88">          tar = true;</span>
+<span class="nc" id="L89">        } catch (final IOException e) {</span>
+<span class="nc" id="L90">          logger.warn(&quot;Error while untar&quot;, e);</span>
+<span class="nc" id="L91">          tar = false;</span>
+<span class="nc" id="L92">        }</span>
         break;
     }
-<span class="nc bnc" id="L94" title="All 2 branches missed.">    if (!tar) {</span>
-<span class="nc" id="L95">      logger.error(</span>
+<span class="nc bnc" id="L95" title="All 2 branches missed.">    if (!tar) {</span>
+<span class="nc" id="L96">      logger.error(</span>
           &quot;Tar error with &quot; + argRule + ':' + argTransfer + ':' + delay +
           &quot; and &quot; + session);
-<span class="nc" id="L98">      futureCompletion</span>
-<span class="nc" id="L99">          .setFailure(new OpenR66ProtocolSystemException(&quot;Tar error&quot;));</span>
-<span class="nc" id="L100">      return;</span>
+<span class="nc" id="L99">      futureCompletion</span>
+<span class="nc" id="L100">          .setFailure(new OpenR66ProtocolSystemException(&quot;Tar error&quot;));</span>
+<span class="nc" id="L101">      return;</span>
     }
-<span class="nc" id="L102">    futureCompletion.setSuccess();</span>
-<span class="nc" id="L103">  }</span>
+<span class="nc" id="L103">    futureCompletion.setSuccess();</span>
+<span class="nc" id="L104">  }</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

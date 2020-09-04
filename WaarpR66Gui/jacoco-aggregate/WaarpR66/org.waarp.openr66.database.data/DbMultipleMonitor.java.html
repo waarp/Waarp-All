@@ -100,62 +100,63 @@ public class DbMultipleMonitor extends AbstractDbDataDao&lt;MultipleMonitor&gt; 
    * @param ch count for Host
    * @param cr count for Rule
    */
-<span class="fc" id="L103">  public DbMultipleMonitor(String hostid, int cc, int ch, int cr) {</span>
-<span class="fc" id="L104">    pojo = new MultipleMonitor(hostid, cc, ch, cr);</span>
-<span class="fc" id="L105">  }</span>
+  public DbMultipleMonitor(final String hostid, final int cc, final int ch,
+<span class="fc" id="L104">                           final int cr) {</span>
+<span class="fc" id="L105">    pojo = new MultipleMonitor(hostid, cc, ch, cr);</span>
+<span class="fc" id="L106">  }</span>
 
   /**
    * @param hostid
    *
    * @throws WaarpDatabaseException
    */
-<span class="nc" id="L112">  public DbMultipleMonitor(String hostid) throws WaarpDatabaseException {</span>
-<span class="nc" id="L113">    MultipleMonitorDAO monitorAccess = null;</span>
+<span class="nc" id="L113">  public DbMultipleMonitor(final String hostid) throws WaarpDatabaseException {</span>
+<span class="nc" id="L114">    MultipleMonitorDAO monitorAccess = null;</span>
     try {
-<span class="nc" id="L115">      monitorAccess = DAOFactory.getInstance().getMultipleMonitorDAO();</span>
-<span class="nc" id="L116">      pojo = monitorAccess.select(hostid);</span>
-<span class="nc" id="L117">    } catch (final DAOConnectionException e) {</span>
-<span class="nc" id="L118">      throw new WaarpDatabaseException(e);</span>
-<span class="nc" id="L119">    } catch (final DAONoDataException e) {</span>
-<span class="nc" id="L120">      throw new WaarpDatabaseNoDataException(&quot;Cannot find &quot; + &quot;MultipleMonitor&quot;,</span>
+<span class="nc" id="L116">      monitorAccess = DAOFactory.getInstance().getMultipleMonitorDAO();</span>
+<span class="nc" id="L117">      pojo = monitorAccess.select(hostid);</span>
+<span class="nc" id="L118">    } catch (final DAOConnectionException e) {</span>
+<span class="nc" id="L119">      throw new WaarpDatabaseException(e);</span>
+<span class="nc" id="L120">    } catch (final DAONoDataException e) {</span>
+<span class="nc" id="L121">      throw new WaarpDatabaseNoDataException(&quot;Cannot find &quot; + &quot;MultipleMonitor&quot;,</span>
                                              e);
     } finally {
-<span class="nc" id="L123">      DBDAOFactory.closeDAO(monitorAccess);</span>
+<span class="nc" id="L124">      DBDAOFactory.closeDAO(monitorAccess);</span>
     }
-<span class="nc" id="L125">  }</span>
+<span class="nc" id="L126">  }</span>
 
   @Override
   protected void setFromJson(final String field, final JsonNode value) {
-<span class="nc bnc" id="L129" title="All 2 branches missed.">    if (value == null) {</span>
-<span class="nc" id="L130">      return;</span>
+<span class="nc bnc" id="L130" title="All 2 branches missed.">    if (value == null) {</span>
+<span class="nc" id="L131">      return;</span>
     }
-<span class="nc bnc" id="L132" title="All 2 branches missed.">    for (Columns column : Columns.values()) {</span>
-<span class="nc bnc" id="L133" title="All 2 branches missed.">      if (column.name().equalsIgnoreCase(field)) {</span>
+<span class="nc bnc" id="L133" title="All 2 branches missed.">    for (final Columns column : Columns.values()) {</span>
+<span class="nc bnc" id="L134" title="All 2 branches missed.">      if (column.name().equalsIgnoreCase(field)) {</span>
         int len;
-<span class="nc bnc" id="L135" title="All 5 branches missed.">        switch (column) {</span>
+<span class="nc bnc" id="L136" title="All 5 branches missed.">        switch (column) {</span>
           case COUNTCONFIG:
-<span class="nc" id="L137">            pojo.setCountConfig(value.asInt());</span>
-<span class="nc" id="L138">            break;</span>
+<span class="nc" id="L138">            pojo.setCountConfig(value.asInt());</span>
+<span class="nc" id="L139">            break;</span>
           case COUNTHOST:
-<span class="nc" id="L140">            pojo.setCountHost(value.asInt());</span>
-<span class="nc" id="L141">            break;</span>
+<span class="nc" id="L141">            pojo.setCountHost(value.asInt());</span>
+<span class="nc" id="L142">            break;</span>
           case COUNTRULE:
-<span class="nc" id="L143">            pojo.setCountRule(value.asInt());</span>
-<span class="nc" id="L144">            break;</span>
+<span class="nc" id="L144">            pojo.setCountRule(value.asInt());</span>
+<span class="nc" id="L145">            break;</span>
           case HOSTID:
-<span class="nc" id="L146">            pojo.setHostid(value.asText());</span>
+<span class="nc" id="L147">            pojo.setHostid(value.asText());</span>
             break;
         }
       }
     }
-<span class="nc" id="L151">  }</span>
+<span class="nc" id="L152">  }</span>
 
   /**
    * Private constructor for Commander only
    */
-<span class="nc" id="L156">  private DbMultipleMonitor() {</span>
-<span class="nc" id="L157">    pojo = new MultipleMonitor();</span>
-<span class="nc" id="L158">  }</span>
+<span class="nc" id="L157">  private DbMultipleMonitor() {</span>
+<span class="nc" id="L158">    pojo = new MultipleMonitor();</span>
+<span class="nc" id="L159">  }</span>
 
   /**
    * For instance from Commander when getting updated information
@@ -168,22 +169,22 @@ public class DbMultipleMonitor extends AbstractDbDataDao&lt;MultipleMonitor&gt; 
    * @throws WaarpDatabaseSqlException
    */
   public static DbMultipleMonitor getFromStatement(
-      DbPreparedStatement preparedStatement)
+      final DbPreparedStatement preparedStatement)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
-<span class="nc" id="L173">    final DbMultipleMonitor dbMm = new DbMultipleMonitor();</span>
-<span class="nc" id="L174">    AbstractDAO&lt;MultipleMonitor&gt; multipleDAO = null;</span>
+<span class="nc" id="L174">    final DbMultipleMonitor dbMm = new DbMultipleMonitor();</span>
+<span class="nc" id="L175">    AbstractDAO&lt;MultipleMonitor&gt; multipleDAO = null;</span>
     try {
-<span class="nc" id="L176">      multipleDAO = dbMm.getDao();</span>
-<span class="nc" id="L177">      dbMm.pojo = ((StatementExecutor&lt;MultipleMonitor&gt;) multipleDAO)</span>
-<span class="nc" id="L178">          .getFromResultSet(preparedStatement.getResultSet());</span>
-<span class="nc" id="L179">      return dbMm;</span>
-<span class="nc" id="L180">    } catch (SQLException e) {</span>
-<span class="nc" id="L181">      DbSession.error(e);</span>
-<span class="nc" id="L182">      throw new WaarpDatabaseSqlException(&quot;Getting values in error&quot;, e);</span>
-<span class="nc" id="L183">    } catch (DAOConnectionException e) {</span>
-<span class="nc" id="L184">      throw new WaarpDatabaseSqlException(&quot;Getting values in error&quot;, e);</span>
+<span class="nc" id="L177">      multipleDAO = dbMm.getDao();</span>
+<span class="nc" id="L178">      dbMm.pojo = ((StatementExecutor&lt;MultipleMonitor&gt;) multipleDAO)</span>
+<span class="nc" id="L179">          .getFromResultSet(preparedStatement.getResultSet());</span>
+<span class="nc" id="L180">      return dbMm;</span>
+<span class="nc" id="L181">    } catch (final SQLException e) {</span>
+<span class="nc" id="L182">      DbSession.error(e);</span>
+<span class="nc" id="L183">      throw new WaarpDatabaseSqlException(&quot;Getting values in error&quot;, e);</span>
+<span class="nc" id="L184">    } catch (final DAOConnectionException e) {</span>
+<span class="nc" id="L185">      throw new WaarpDatabaseSqlException(&quot;Getting values in error&quot;, e);</span>
     } finally {
-<span class="nc" id="L186">      DAOFactory.closeDAO(multipleDAO);</span>
+<span class="nc" id="L187">      DAOFactory.closeDAO(multipleDAO);</span>
     }
   }
 
@@ -194,22 +195,23 @@ public class DbMultipleMonitor extends AbstractDbDataDao&lt;MultipleMonitor&gt; 
    * @throws WaarpDatabaseNoConnectionException
    * @throws WaarpDatabaseSqlException
    */
-  public static DbPreparedStatement getUpdatedPrepareStament(DbSession session)
+  public static DbPreparedStatement getUpdatedPrepareStament(
+      final DbSession session)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
-<span class="nc" id="L199">    final DbMultipleMonitor multipleMonitor =</span>
-<span class="nc" id="L200">        new DbMultipleMonitor(Configuration.configuration.getHostId(), 0, 0, 0);</span>
+<span class="nc" id="L201">    final DbMultipleMonitor multipleMonitor =</span>
+<span class="nc" id="L202">        new DbMultipleMonitor(Configuration.configuration.getHostId(), 0, 0, 0);</span>
     try {
-<span class="nc bnc" id="L202" title="All 2 branches missed.">      if (!multipleMonitor.exist()) {</span>
-<span class="nc" id="L203">        multipleMonitor.insert();</span>
-<span class="nc" id="L204">        session.commit();</span>
+<span class="nc bnc" id="L204" title="All 2 branches missed.">      if (!multipleMonitor.exist()) {</span>
+<span class="nc" id="L205">        multipleMonitor.insert();</span>
+<span class="nc" id="L206">        session.commit();</span>
       }
-<span class="nc" id="L206">    } catch (final WaarpDatabaseException ignored) {</span>
+<span class="nc" id="L208">    } catch (final WaarpDatabaseException ignored) {</span>
       // ignore
-<span class="nc" id="L208">    }</span>
-<span class="nc" id="L209">    String request = &quot;SELECT &quot; + selectAllFields;</span>
-<span class="nc" id="L210">    request += &quot; FROM &quot; + table + &quot; WHERE &quot; + Columns.HOSTID.name() + &quot; = '&quot; +</span>
-<span class="nc" id="L211">               Configuration.configuration.getHostId() + '\'' + &quot; FOR UPDATE &quot;;</span>
-<span class="nc" id="L212">    return new DbPreparedStatement(session, request);</span>
+<span class="nc" id="L210">    }</span>
+<span class="nc" id="L211">    String request = &quot;SELECT &quot; + selectAllFields;</span>
+<span class="nc" id="L212">    request += &quot; FROM &quot; + table + &quot; WHERE &quot; + Columns.HOSTID.name() + &quot; = '&quot; +</span>
+<span class="nc" id="L213">               Configuration.configuration.getHostId() + '\'' + &quot; FOR UPDATE &quot;;</span>
+<span class="nc" id="L214">    return new DbPreparedStatement(session, request);</span>
   }
 
   /**
@@ -218,15 +220,15 @@ public class DbMultipleMonitor extends AbstractDbDataDao&lt;MultipleMonitor&gt; 
    * @return True if this is the last update
    */
   public boolean checkUpdateConfig() {
-<span class="nc bnc" id="L221" title="All 2 branches missed.">    if (getCountConfig() &lt;= 0) {</span>
-<span class="nc" id="L222">      setCountConfig(Configuration.configuration.getMultipleMonitors());</span>
-<span class="nc" id="L223">      setCountConfig(getCountConfig() - 1);</span>
-<span class="nc" id="L224">      isSaved = false;</span>
+<span class="nc bnc" id="L223" title="All 2 branches missed.">    if (getCountConfig() &lt;= 0) {</span>
+<span class="nc" id="L224">      setCountConfig(Configuration.configuration.getMultipleMonitors());</span>
+<span class="nc" id="L225">      setCountConfig(getCountConfig() - 1);</span>
+<span class="nc" id="L226">      isSaved = false;</span>
     } else {
-<span class="nc" id="L226">      setCountConfig(getCountConfig() - 1);</span>
-<span class="nc" id="L227">      isSaved = false;</span>
+<span class="nc" id="L228">      setCountConfig(getCountConfig() - 1);</span>
+<span class="nc" id="L229">      isSaved = false;</span>
     }
-<span class="nc bnc" id="L229" title="All 2 branches missed.">    return getCountConfig() &lt;= 0;</span>
+<span class="nc bnc" id="L231" title="All 2 branches missed.">    return getCountConfig() &lt;= 0;</span>
   }
 
   /**
@@ -235,15 +237,15 @@ public class DbMultipleMonitor extends AbstractDbDataDao&lt;MultipleMonitor&gt; 
    * @return True if this is the last update
    */
   public boolean checkUpdateHost() {
-<span class="nc bnc" id="L238" title="All 2 branches missed.">    if (getCountHost() &lt;= 0) {</span>
-<span class="nc" id="L239">      setCountHost(Configuration.configuration.getMultipleMonitors());</span>
-<span class="nc" id="L240">      setCountHost(getCountHost() - 1);</span>
-<span class="nc" id="L241">      isSaved = false;</span>
+<span class="nc bnc" id="L240" title="All 2 branches missed.">    if (getCountHost() &lt;= 0) {</span>
+<span class="nc" id="L241">      setCountHost(Configuration.configuration.getMultipleMonitors());</span>
+<span class="nc" id="L242">      setCountHost(getCountHost() - 1);</span>
+<span class="nc" id="L243">      isSaved = false;</span>
     } else {
-<span class="nc" id="L243">      setCountHost(getCountHost() - 1);</span>
-<span class="nc" id="L244">      isSaved = false;</span>
+<span class="nc" id="L245">      setCountHost(getCountHost() - 1);</span>
+<span class="nc" id="L246">      isSaved = false;</span>
     }
-<span class="nc bnc" id="L246" title="All 2 branches missed.">    return getCountHost() &lt;= 0;</span>
+<span class="nc bnc" id="L248" title="All 2 branches missed.">    return getCountHost() &lt;= 0;</span>
   }
 
   /**
@@ -252,71 +254,71 @@ public class DbMultipleMonitor extends AbstractDbDataDao&lt;MultipleMonitor&gt; 
    * @return True if this is the last update
    */
   public boolean checkUpdateRule() {
-<span class="nc bnc" id="L255" title="All 2 branches missed.">    if (getCountRule() &lt;= 0) {</span>
-<span class="nc" id="L256">      setCountRule(Configuration.configuration.getMultipleMonitors());</span>
-<span class="nc" id="L257">      setCountRule(getCountRule() - 1);</span>
-<span class="nc" id="L258">      isSaved = false;</span>
+<span class="nc bnc" id="L257" title="All 2 branches missed.">    if (getCountRule() &lt;= 0) {</span>
+<span class="nc" id="L258">      setCountRule(Configuration.configuration.getMultipleMonitors());</span>
+<span class="nc" id="L259">      setCountRule(getCountRule() - 1);</span>
+<span class="nc" id="L260">      isSaved = false;</span>
     } else {
-<span class="nc" id="L260">      setCountRule(getCountRule() - 1);</span>
-<span class="nc" id="L261">      isSaved = false;</span>
+<span class="nc" id="L262">      setCountRule(getCountRule() - 1);</span>
+<span class="nc" id="L263">      isSaved = false;</span>
     }
-<span class="nc bnc" id="L263" title="All 2 branches missed.">    return getCountRule() &lt;= 0;</span>
+<span class="nc bnc" id="L265" title="All 2 branches missed.">    return getCountRule() &lt;= 0;</span>
   }
 
   @Override
-  public void changeUpdatedInfo(UpdatedInfo info) {
+  public void changeUpdatedInfo(final UpdatedInfo info) {
     // ignore
-<span class="nc" id="L269">  }</span>
+<span class="nc" id="L271">  }</span>
 
   /**
    * return the String representation
    */
   @Override
   public String toString() {
-<span class="nc" id="L276">    return &quot;DbMM &quot; + getCountConfig() + ':' + getCountHost() + ':' +</span>
-<span class="nc" id="L277">           getCountRule();</span>
+<span class="nc" id="L278">    return &quot;DbMM &quot; + getCountConfig() + ':' + getCountHost() + ':' +</span>
+<span class="nc" id="L279">           getCountRule();</span>
   }
 
   /**
    * @return the countConfig
    */
   public int getCountConfig() {
-<span class="nc" id="L284">    return pojo.getCountConfig();</span>
+<span class="nc" id="L286">    return pojo.getCountConfig();</span>
   }
 
   /**
    * @param countConfig the countConfig to set
    */
-  private void setCountConfig(int countConfig) {
-<span class="nc" id="L291">    pojo.setCountConfig(countConfig);</span>
-<span class="nc" id="L292">  }</span>
+  private void setCountConfig(final int countConfig) {
+<span class="nc" id="L293">    pojo.setCountConfig(countConfig);</span>
+<span class="nc" id="L294">  }</span>
 
   /**
    * @return the countHost
    */
   public int getCountHost() {
-<span class="nc" id="L298">    return pojo.getCountHost();</span>
+<span class="nc" id="L300">    return pojo.getCountHost();</span>
   }
 
   /**
    * @param countHost the countHost to set
    */
-  private void setCountHost(int countHost) {
-<span class="nc" id="L305">    pojo.setCountHost(countHost);</span>
-<span class="nc" id="L306">  }</span>
+  private void setCountHost(final int countHost) {
+<span class="nc" id="L307">    pojo.setCountHost(countHost);</span>
+<span class="nc" id="L308">  }</span>
 
   /**
    * @return the countRule
    */
   public int getCountRule() {
-<span class="nc" id="L312">    return pojo.getCountRule();</span>
+<span class="nc" id="L314">    return pojo.getCountRule();</span>
   }
 
   /**
    * @param countRule the countRule to set
    */
-  private void setCountRule(int countRule) {
-<span class="nc" id="L319">    pojo.setCountRule(countRule);</span>
-<span class="nc" id="L320">  }</span>
+  private void setCountRule(final int countRule) {
+<span class="nc" id="L321">    pojo.setCountRule(countRule);</span>
+<span class="nc" id="L322">  }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

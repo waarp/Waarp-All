@@ -75,7 +75,7 @@ public final class XmlUtils {
    * @throws InternalServerErrorException if an unexpected error
    *     occurred
    */
-  public static String objectToXml(XmlSerializable object) {
+  public static String objectToXml(final XmlSerializable object) {
     try {
 <span class="nc" id="L80">      final StringWriter writer = new StringWriter();</span>
 <span class="nc" id="L81">      final JAXBContext context = JAXBContext.newInstance(object.getClass());</span>
@@ -100,11 +100,11 @@ public final class XmlUtils {
    * @throws InternalServerErrorException if an unexpected error
    *     occurred
    */
-  public static &lt;T extends XmlSerializable&gt; T xmlToObject(String xml,
-                                                          Class&lt;T&gt; clazz) {
+  public static &lt;T extends XmlSerializable&gt; T xmlToObject(final String xml,
+                                                          final Class&lt;T&gt; clazz) {
     try {
 <span class="nc" id="L106">      ParametersChecker.checkSanityString(xml);</span>
-<span class="nc" id="L107">    } catch (InvalidArgumentException e) {</span>
+<span class="nc" id="L107">    } catch (final InvalidArgumentException e) {</span>
 <span class="nc" id="L108">      throw new InternalServerErrorException(e);</span>
 <span class="nc" id="L109">    }</span>
     try {
@@ -128,10 +128,10 @@ public final class XmlUtils {
    * @throws InternalServerErrorException if an unexpected error
    *     occurred
    */
-  public static void saveXML(String xml, String filePath) {
+  public static void saveXML(final String xml, final String filePath) {
     try {
 <span class="nc" id="L133">      ParametersChecker.checkSanityString(xml);</span>
-<span class="nc" id="L134">    } catch (InvalidArgumentException e) {</span>
+<span class="nc" id="L134">    } catch (final InvalidArgumentException e) {</span>
 <span class="nc" id="L135">      throw new InternalServerErrorException(e);</span>
 <span class="nc" id="L136">    }</span>
 <span class="nc" id="L137">    FileWriter fileWriter = null;</span>
@@ -157,7 +157,7 @@ public final class XmlUtils {
    * @throws InternalServerErrorException if an unexpected error
    *     occurred
    */
-  public static String loadXML(String filePath) {
+  public static String loadXML(final String filePath) {
 <span class="nc" id="L161">    FileReader fr = null;</span>
 <span class="nc" id="L162">    BufferedReader buff = null;</span>
     try {
@@ -188,11 +188,12 @@ public final class XmlUtils {
    * @throws InternalServerErrorException if an unexpected error
    *     occurred
    */
-  public static void saveObject(XmlSerializable object, String filePath) {
+  public static void saveObject(final XmlSerializable object,
+                                final String filePath) {
 
-<span class="nc" id="L193">    final String xml = objectToXml(object);</span>
-<span class="nc" id="L194">    saveXML(xml, filePath);</span>
-<span class="nc" id="L195">  }</span>
+<span class="nc" id="L194">    final String xml = objectToXml(object);</span>
+<span class="nc" id="L195">    saveXML(xml, filePath);</span>
+<span class="nc" id="L196">  }</span>
 
   /**
    * Loads the given XML file into a corresponding serializable Java object.
@@ -205,11 +206,11 @@ public final class XmlUtils {
    * @throws InternalServerErrorException if an unexpected error
    *     occurred
    */
-  public static &lt;T extends XmlSerializable&gt; T loadObject(String filePath,
-                                                         Class&lt;T&gt; clazz) {
+  public static &lt;T extends XmlSerializable&gt; T loadObject(final String filePath,
+                                                         final Class&lt;T&gt; clazz) {
 
-<span class="nc" id="L211">    final String xml = loadXML(filePath);</span>
-<span class="nc" id="L212">    return xmlToObject(xml, clazz);</span>
+<span class="nc" id="L212">    final String xml = loadXML(filePath);</span>
+<span class="nc" id="L213">    return xmlToObject(xml, clazz);</span>
   }
 
   // ######################### PRIVATE METHODS #################################
@@ -224,25 +225,25 @@ public final class XmlUtils {
    * @throws InternalServerErrorException if an unexpected error
    *     occurred
    */
-  private static String pretty(String input) {
+  private static String pretty(final String input) {
     try {
-<span class="nc" id="L229">      final Source xmlInput = new StreamSource(new StringReader(input));</span>
-<span class="nc" id="L230">      final StringWriter stringWriter = new StringWriter();</span>
-<span class="nc" id="L231">      final StreamResult xmlOutput = new StreamResult(stringWriter);</span>
+<span class="nc" id="L230">      final Source xmlInput = new StreamSource(new StringReader(input));</span>
+<span class="nc" id="L231">      final StringWriter stringWriter = new StringWriter();</span>
+<span class="nc" id="L232">      final StreamResult xmlOutput = new StreamResult(stringWriter);</span>
       final TransformerFactory factory =//NOSONAR
-<span class="nc" id="L233">          TransformerFactory.newInstance();//NOSONAR</span>
-<span class="nc" id="L234">      factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);</span>
-<span class="nc" id="L235">      factory.setAttribute(INDENT_NUMBER, 2);</span>
-<span class="nc" id="L236">      final Transformer transformer = factory.newTransformer();</span>
-<span class="nc" id="L237">      transformer.setOutputProperty(INDENT, &quot;yes&quot;);</span>
-<span class="nc" id="L238">      transformer.setOutputProperty(OMIT_XML_DECLARATION, &quot;yes&quot;);</span>
+<span class="nc" id="L234">          TransformerFactory.newInstance();//NOSONAR</span>
+<span class="nc" id="L235">      factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);</span>
+<span class="nc" id="L236">      factory.setAttribute(INDENT_NUMBER, 2);</span>
+<span class="nc" id="L237">      final Transformer transformer = factory.newTransformer();</span>
+<span class="nc" id="L238">      transformer.setOutputProperty(INDENT, &quot;yes&quot;);</span>
+<span class="nc" id="L239">      transformer.setOutputProperty(OMIT_XML_DECLARATION, &quot;yes&quot;);</span>
 
-<span class="nc" id="L240">      transformer.transform(xmlInput, xmlOutput);</span>
-<span class="nc" id="L241">      return xmlOutput.getWriter().toString();</span>
-<span class="nc" id="L242">    } catch (final TransformerConfigurationException e) {</span>
-<span class="nc" id="L243">      throw new InternalServerErrorException(e);</span>
-<span class="nc" id="L244">    } catch (final TransformerException e) {</span>
-<span class="nc" id="L245">      throw new InternalServerErrorException(e);</span>
+<span class="nc" id="L241">      transformer.transform(xmlInput, xmlOutput);</span>
+<span class="nc" id="L242">      return xmlOutput.getWriter().toString();</span>
+<span class="nc" id="L243">    } catch (final TransformerConfigurationException e) {</span>
+<span class="nc" id="L244">      throw new InternalServerErrorException(e);</span>
+<span class="nc" id="L245">    } catch (final TransformerException e) {</span>
+<span class="nc" id="L246">      throw new InternalServerErrorException(e);</span>
     }
   }
 }

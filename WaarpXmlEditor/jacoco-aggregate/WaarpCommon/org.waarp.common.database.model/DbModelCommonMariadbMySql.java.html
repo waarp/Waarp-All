@@ -64,12 +64,12 @@ import java.util.concurrent.locks.ReentrantLock;
 
     public final String constructor;
 
-<span class="nc" id="L67">    DBType(int type, String constructor) {</span>
+<span class="nc" id="L67">    DBType(final int type, final String constructor) {</span>
 <span class="nc" id="L68">      this.type = type;</span>
 <span class="nc" id="L69">      this.constructor = constructor;</span>
 <span class="nc" id="L70">    }</span>
 
-    public static String getType(int sqltype) {
+    public static String getType(final int sqltype) {
 <span class="nc bnc" id="L73" title="All 15 branches missed.">      switch (sqltype) {</span>
         case Types.CHAR:
 <span class="nc" id="L75">          return CHAR.constructor;</span>
@@ -108,7 +108,7 @@ import java.util.concurrent.locks.ReentrantLock;
 <span class="nc" id="L108">  private final ReentrantLock lock = new ReentrantLock();</span>
 
   @Override
-  public void resetSequence(DbSession session, long newvalue)
+  public void resetSequence(final DbSession session, final long newvalue)
       throws WaarpDatabaseNoConnectionException {
 <span class="nc" id="L113">    final String action =</span>
         &quot;UPDATE Sequences SET seq = &quot; + newvalue + &quot; WHERE name = '&quot; +
@@ -127,7 +127,7 @@ import java.util.concurrent.locks.ReentrantLock;
 <span class="nc" id="L127">  }</span>
 
   @Override
-  public synchronized long nextSequence(DbSession dbSession)
+  public synchronized long nextSequence(final DbSession dbSession)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException,
              WaarpDatabaseNoDataException {
 <span class="nc" id="L133">    lock.lock();</span>
@@ -176,22 +176,24 @@ import java.util.concurrent.locks.ReentrantLock;
 <span class="nc" id="L176">        dbSession.getConn().setAutoCommit(true);</span>
 <span class="nc" id="L177">      } catch (final SQLException ignored) {</span>
 <span class="nc" id="L178">        SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);</span>
-<span class="nc" id="L179">      }</span>
-<span class="nc" id="L180">      lock.unlock();</span>
+      } finally {
+<span class="nc" id="L180">        lock.unlock();</span>
+      }
     }
   }
 
   @Override
   protected String validConnectionString() {
-<span class="nc" id="L186">    return &quot;select 1 from dual&quot;;</span>
+<span class="nc" id="L187">    return &quot;select 1 from dual&quot;;</span>
   }
 
   @Override
-  public String limitRequest(String allfields, String request, int nb) {
-<span class="nc bnc" id="L191" title="All 2 branches missed.">    if (nb == 0) {</span>
-<span class="nc" id="L192">      return request;</span>
+  public String limitRequest(final String allfields, final String request,
+                             final int nb) {
+<span class="nc bnc" id="L193" title="All 2 branches missed.">    if (nb == 0) {</span>
+<span class="nc" id="L194">      return request;</span>
     }
-<span class="nc" id="L194">    return request + &quot; LIMIT &quot; + nb;</span>
+<span class="nc" id="L196">    return request + &quot; LIMIT &quot; + nb;</span>
   }
 
 }

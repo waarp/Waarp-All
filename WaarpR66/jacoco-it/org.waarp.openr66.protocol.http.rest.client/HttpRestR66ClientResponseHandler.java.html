@@ -84,7 +84,7 @@ import java.nio.charset.UnsupportedCharsetException;
   private ByteBuf cumulativeBody;
   protected JsonNode jsonObject;
 
-  protected void addContent(FullHttpResponse response)
+  protected void addContent(final FullHttpResponse response)
       throws HttpIncorrectRequestException {
 <span class="nc" id="L89">    final ByteBuf content = response.content();</span>
 <span class="nc bnc" id="L90" title="All 4 branches missed.">    if (content != null &amp;&amp; content.isReadable()) {</span>
@@ -113,7 +113,7 @@ import java.nio.charset.UnsupportedCharsetException;
    *
    * @throws HttpInvalidAuthenticationException
    */
-  protected void actionFromResponse(Channel channel)
+  protected void actionFromResponse(final Channel channel)
       throws HttpInvalidAuthenticationException {
 <span class="nc" id="L118">    boolean includeValidation = false;</span>
 <span class="nc" id="L119">    final RestArgument ra = new RestArgument((ObjectNode) jsonObject);</span>
@@ -255,7 +255,7 @@ import java.nio.charset.UnsupportedCharsetException;
   protected abstract boolean afterError(Channel channel, RestArgument ra)
       throws HttpInvalidAuthenticationException;
 
-  protected boolean get(Channel channel, RestArgument ra)
+  protected boolean get(final Channel channel, final RestArgument ra)
       throws HttpInvalidAuthenticationException {
 <span class="nc bnc" id="L260" title="All 2 branches missed.">    if (logger.isDebugEnabled()) {</span>
 <span class="nc" id="L261">      logger.debug(ra.prettyPrint());</span>
@@ -275,7 +275,7 @@ import java.nio.charset.UnsupportedCharsetException;
     }
   }
 
-  protected boolean put(Channel channel, RestArgument ra)
+  protected boolean put(final Channel channel, final RestArgument ra)
       throws HttpInvalidAuthenticationException {
 <span class="nc bnc" id="L280" title="All 2 branches missed.">    if (logger.isDebugEnabled()) {</span>
 <span class="nc" id="L281">      logger.debug(ra.prettyPrint());</span>
@@ -293,7 +293,7 @@ import java.nio.charset.UnsupportedCharsetException;
     }
   }
 
-  protected boolean post(Channel channel, RestArgument ra)
+  protected boolean post(final Channel channel, final RestArgument ra)
       throws HttpInvalidAuthenticationException {
 <span class="nc bnc" id="L298" title="All 2 branches missed.">    if (logger.isDebugEnabled()) {</span>
 <span class="nc" id="L299">      logger.debug(ra.prettyPrint());</span>
@@ -311,7 +311,7 @@ import java.nio.charset.UnsupportedCharsetException;
     }
   }
 
-  protected boolean delete(Channel channel, RestArgument ra)
+  protected boolean delete(final Channel channel, final RestArgument ra)
       throws HttpInvalidAuthenticationException {
 <span class="nc bnc" id="L316" title="All 2 branches missed.">    if (logger.isDebugEnabled()) {</span>
 <span class="nc" id="L317">      logger.debug(ra.prettyPrint());</span>
@@ -329,7 +329,7 @@ import java.nio.charset.UnsupportedCharsetException;
     }
   }
 
-  protected boolean options(Channel channel, RestArgument ra)
+  protected boolean options(final Channel channel, final RestArgument ra)
       throws HttpInvalidAuthenticationException {
 <span class="nc bnc" id="L334" title="All 2 branches missed.">    if (logger.isDebugEnabled()) {</span>
 <span class="nc" id="L335">      logger.debug(ra.prettyPrint());</span>
@@ -348,8 +348,8 @@ import java.nio.charset.UnsupportedCharsetException;
   }
 
   @Override
-  protected void channelRead0(ChannelHandlerContext ctx, HttpObject msg)
-      throws Exception {
+  protected void channelRead0(final ChannelHandlerContext ctx,
+                              final HttpObject msg) throws Exception {
 <span class="nc bnc" id="L353" title="All 2 branches missed.">    if (msg instanceof HttpResponse) {</span>
 <span class="nc" id="L354">      final HttpResponse response = (HttpResponse) msg;</span>
 <span class="nc" id="L355">      final HttpResponseStatus status = response.status();</span>
@@ -430,8 +430,8 @@ import java.nio.charset.UnsupportedCharsetException;
 <span class="nc" id="L430">  }</span>
 
   @Override
-  public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
-      throws Exception {
+  public void exceptionCaught(final ChannelHandlerContext ctx,
+                              final Throwable cause) throws Exception {
 <span class="nc" id="L435">    final RestFuture restFuture =</span>
 <span class="nc" id="L436">        ctx.channel().attr(HttpRestClientSimpleResponseHandler.RESTARGUMENT)</span>
 <span class="nc" id="L437">           .get();</span>

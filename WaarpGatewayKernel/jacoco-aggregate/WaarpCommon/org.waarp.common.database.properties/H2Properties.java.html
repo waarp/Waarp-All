@@ -50,7 +50,7 @@ public class H2Properties implements DbProperties {
   }
 
   @Override
-  public int getMaximumConnections(Connection connection) {
+  public int getMaximumConnections(final Connection connection) {
     // According to H2 website:
     // There is no limit on the number of database open concurrently per
     // server, or on the number of open connections.

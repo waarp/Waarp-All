@@ -72,12 +72,12 @@
 <a class="jxr_linenumber" name="L64" href="#L64">64</a>  <em class="jxr_javadoccomment">   *</em>
 <a class="jxr_linenumber" name="L65" href="#L65">65</a>  <em class="jxr_javadoccomment">   * @throws WaarpDatabaseNoConnectionException</em>
 <a class="jxr_linenumber" name="L66" href="#L66">66</a>  <em class="jxr_javadoccomment">   */</em>
-<a class="jxr_linenumber" name="L67" href="#L67">67</a>    <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <a name="DbAdmin" href="../../../../../org/waarp/common/database/DbAdmin.html#DbAdmin">DbAdmin</a> initialize(String dbdriver, String dbserver,
-<a class="jxr_linenumber" name="L68" href="#L68">68</a>                                     String dbuser, String dbpasswd,
-<a class="jxr_linenumber" name="L69" href="#L69">69</a>                                     <strong class="jxr_keyword">boolean</strong> write)
+<a class="jxr_linenumber" name="L67" href="#L67">67</a>    <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <a name="DbAdmin" href="../../../../../org/waarp/common/database/DbAdmin.html#DbAdmin">DbAdmin</a> initialize(<strong class="jxr_keyword">final</strong> String dbdriver, <strong class="jxr_keyword">final</strong> String dbserver,
+<a class="jxr_linenumber" name="L68" href="#L68">68</a>                                     <strong class="jxr_keyword">final</strong> String dbuser, <strong class="jxr_keyword">final</strong> String dbpasswd,
+<a class="jxr_linenumber" name="L69" href="#L69">69</a>                                     <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">boolean</strong> write)
 <a class="jxr_linenumber" name="L70" href="#L70">70</a>        <strong class="jxr_keyword">throws</strong> <a name="WaarpDatabaseNoConnectionException" href="../../../../../org/waarp/common/database/exception/WaarpDatabaseNoConnectionException.html#WaarpDatabaseNoConnectionException">WaarpDatabaseNoConnectionException</a> {
 <a class="jxr_linenumber" name="L71" href="#L71">71</a>      <strong class="jxr_keyword">final</strong> <a name="DbType" href="../../../../../org/waarp/common/database/model/DbType.html#DbType">DbType</a> type = DbType.getFromDriver(dbdriver);
-<a class="jxr_linenumber" name="L72" href="#L72">72</a>      <a name="DbModel" href="../../../../../org/waarp/common/database/model/DbModel.html#DbModel">DbModel</a> dbModel;
+<a class="jxr_linenumber" name="L72" href="#L72">72</a>      <strong class="jxr_keyword">final</strong> <a name="DbModel" href="../../../../../org/waarp/common/database/model/DbModel.html#DbModel">DbModel</a> dbModel;
 <a class="jxr_linenumber" name="L73" href="#L73">73</a>      <strong class="jxr_keyword">switch</strong> (type) {
 <a class="jxr_linenumber" name="L74" href="#L74">74</a>        <strong class="jxr_keyword">case</strong> H2:
 <a class="jxr_linenumber" name="L75" href="#L75">75</a>          dbModel = <strong class="jxr_keyword">new</strong> <a name="DbModelH2R66" href="../../../../../org/waarp/openr66/database/model/DbModelH2R66.html#DbModelH2R66">DbModelH2R66</a>(dbserver, dbuser, dbpasswd);
@@ -295,7 +295,7 @@
 <a class="jxr_linenumber" name="L287" href="#L287">287</a>       action.append(<span class="jxr_string">", "</span>);
 <a class="jxr_linenumber" name="L288" href="#L288">288</a>     }
 <a class="jxr_linenumber" name="L289" href="#L289">289</a>     <em class="jxr_comment">// Several columns for primary key</em>
-<a class="jxr_linenumber" name="L290" href="#L290">290</a>     action.append(<span class="jxr_string">" CONSTRAINT runner_pk "</span> + primaryKey + '(');
+<a class="jxr_linenumber" name="L290" href="#L290">290</a>     action.append(<span class="jxr_string">" CONSTRAINT runner_pk "</span>).append(primaryKey).append('(');
 <a class="jxr_linenumber" name="L291" href="#L291">291</a>     <strong class="jxr_keyword">for</strong> (<strong class="jxr_keyword">int</strong> i = DbTaskRunner.NBPRKEY; i &gt; 1; i--) {
 <a class="jxr_linenumber" name="L292" href="#L292">292</a>       action.append(acolumns[acolumns.length - i].name()).append(',');
 <a class="jxr_linenumber" name="L293" href="#L293">293</a>     }
@@ -339,7 +339,7 @@
 <a class="jxr_linenumber" name="L331" href="#L331">331</a>     <strong class="jxr_keyword">final</strong> String createTableH2 = <span class="jxr_string">"CREATE TABLE IF NOT EXISTS "</span>;
 <a class="jxr_linenumber" name="L332" href="#L332">332</a>     <strong class="jxr_keyword">final</strong> String primaryKey = <span class="jxr_string">" PRIMARY KEY "</span>;
 <a class="jxr_linenumber" name="L333" href="#L333">333</a>     <strong class="jxr_keyword">final</strong> String notNull = <span class="jxr_string">" NOT NULL "</span>;
-<a class="jxr_linenumber" name="L334" href="#L334">334</a>     <a name="DbRequest" href="../../../../../org/waarp/common/database/DbRequest.html#DbRequest">DbRequest</a> request =
+<a class="jxr_linenumber" name="L334" href="#L334">334</a>     <strong class="jxr_keyword">final</strong> <a name="DbRequest" href="../../../../../org/waarp/common/database/DbRequest.html#DbRequest">DbRequest</a> request =
 <a class="jxr_linenumber" name="L335" href="#L335">335</a>         subCreateTableMariaDbMySQLPostgreSQL(dbTypeResolver, session,
 <a class="jxr_linenumber" name="L336" href="#L336">336</a>                                              createTableH2, primaryKey,
 <a class="jxr_linenumber" name="L337" href="#L337">337</a>                                              notNull);
@@ -395,7 +395,7 @@
 <a class="jxr_linenumber" name="L387" href="#L387">387</a>       <strong class="jxr_keyword">final</strong> String notNull = <span class="jxr_string">" NOT NULL "</span>;
 <a class="jxr_linenumber" name="L388" href="#L388">388</a> 
 <a class="jxr_linenumber" name="L389" href="#L389">389</a>       <em class="jxr_comment">// HostConfiguration</em>
-<a class="jxr_linenumber" name="L390" href="#L390">390</a>       StringBuilder action =
+<a class="jxr_linenumber" name="L390" href="#L390">390</a>       <strong class="jxr_keyword">final</strong> StringBuilder action =
 <a class="jxr_linenumber" name="L391" href="#L391">391</a>           <strong class="jxr_keyword">new</strong> StringBuilder(createTableH2 + DbHostConfiguration.table + '(');
 <a class="jxr_linenumber" name="L392" href="#L392">392</a>       <strong class="jxr_keyword">final</strong> DbHostConfiguration.Columns[] chcolumns =
 <a class="jxr_linenumber" name="L393" href="#L393">393</a>           DbHostConfiguration.Columns.values();

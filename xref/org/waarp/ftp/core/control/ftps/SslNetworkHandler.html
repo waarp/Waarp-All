@@ -48,43 +48,44 @@
 <a class="jxr_linenumber" name="L40" href="#L40">40</a>    <em class="jxr_javadoccomment">/**</em>
 <a class="jxr_linenumber" name="L41" href="#L41">41</a>  <em class="jxr_javadoccomment">   * @param session</em>
 <a class="jxr_linenumber" name="L42" href="#L42">42</a>  <em class="jxr_javadoccomment">   */</em>
-<a class="jxr_linenumber" name="L43" href="#L43">43</a>    <strong class="jxr_keyword">public</strong> <a name="SslNetworkHandler" href="../../../../../../org/waarp/ftp/core/control/ftps/SslNetworkHandler.html#SslNetworkHandler">SslNetworkHandler</a>(<a name="FtpSession" href="../../../../../../org/waarp/ftp/core/session/FtpSession.html#FtpSession">FtpSession</a> session) {
+<a class="jxr_linenumber" name="L43" href="#L43">43</a>    <strong class="jxr_keyword">public</strong> <a name="SslNetworkHandler" href="../../../../../../org/waarp/ftp/core/control/ftps/SslNetworkHandler.html#SslNetworkHandler">SslNetworkHandler</a>(<strong class="jxr_keyword">final</strong> <a name="FtpSession" href="../../../../../../org/waarp/ftp/core/session/FtpSession.html#FtpSession">FtpSession</a> session) {
 <a class="jxr_linenumber" name="L44" href="#L44">44</a>      <strong class="jxr_keyword">super</strong>(session);
 <a class="jxr_linenumber" name="L45" href="#L45">45</a>    }
 <a class="jxr_linenumber" name="L46" href="#L46">46</a>  
 <a class="jxr_linenumber" name="L47" href="#L47">47</a>    @Override
-<a class="jxr_linenumber" name="L48" href="#L48">48</a>    <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> channelRegistered(ChannelHandlerContext ctx) <strong class="jxr_keyword">throws</strong> Exception {
-<a class="jxr_linenumber" name="L49" href="#L49">49</a>      <strong class="jxr_keyword">final</strong> Channel channel = ctx.channel();
-<a class="jxr_linenumber" name="L50" href="#L50">50</a>      logger.debug(<span class="jxr_string">"Add channel to ssl "</span> + channel);
-<a class="jxr_linenumber" name="L51" href="#L51">51</a>      WaarpSslUtility.addSslOpenedChannel(channel);
-<a class="jxr_linenumber" name="L52" href="#L52">52</a>      getFtpSession().prepareSsl();
-<a class="jxr_linenumber" name="L53" href="#L53">53</a>      <strong class="jxr_keyword">super</strong>.channelRegistered(ctx);
-<a class="jxr_linenumber" name="L54" href="#L54">54</a>    }
-<a class="jxr_linenumber" name="L55" href="#L55">55</a>  
-<a class="jxr_linenumber" name="L56" href="#L56">56</a>    <em class="jxr_javadoccomment">/**</em>
-<a class="jxr_linenumber" name="L57" href="#L57">57</a>  <em class="jxr_javadoccomment">   * To be extended to inform of an error to SNMP support</em>
-<a class="jxr_linenumber" name="L58" href="#L58">58</a>  <em class="jxr_javadoccomment">   *</em>
-<a class="jxr_linenumber" name="L59" href="#L59">59</a>  <em class="jxr_javadoccomment">   * @param error1</em>
-<a class="jxr_linenumber" name="L60" href="#L60">60</a>  <em class="jxr_javadoccomment">   * @param error2</em>
-<a class="jxr_linenumber" name="L61" href="#L61">61</a>  <em class="jxr_javadoccomment">   */</em>
-<a class="jxr_linenumber" name="L62" href="#L62">62</a>    @Override
-<a class="jxr_linenumber" name="L63" href="#L63">63</a>    <strong class="jxr_keyword">protected</strong> <strong class="jxr_keyword">void</strong> callForSnmp(String error1, String error2) {
-<a class="jxr_linenumber" name="L64" href="#L64">64</a>      <em class="jxr_comment">// ignore</em>
-<a class="jxr_linenumber" name="L65" href="#L65">65</a>    }
-<a class="jxr_linenumber" name="L66" href="#L66">66</a>  
-<a class="jxr_linenumber" name="L67" href="#L67">67</a>    @Override
-<a class="jxr_linenumber" name="L68" href="#L68">68</a>    <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> channelActive(<strong class="jxr_keyword">final</strong> ChannelHandlerContext ctx) <strong class="jxr_keyword">throws</strong> Exception {
-<a class="jxr_linenumber" name="L69" href="#L69">69</a>      <strong class="jxr_keyword">if</strong> (!WaarpSslUtility.waitForHandshake(ctx.channel())) {
-<a class="jxr_linenumber" name="L70" href="#L70">70</a>        callForSnmp(<span class="jxr_string">"SSL Connection Error"</span>, <span class="jxr_string">"During Ssl Handshake"</span>);
-<a class="jxr_linenumber" name="L71" href="#L71">71</a>        getFtpSession().setSsl(false);
-<a class="jxr_linenumber" name="L72" href="#L72">72</a>        <strong class="jxr_keyword">return</strong>;
-<a class="jxr_linenumber" name="L73" href="#L73">73</a>      } <strong class="jxr_keyword">else</strong> {
-<a class="jxr_linenumber" name="L74" href="#L74">74</a>        getFtpSession().setSsl(<strong class="jxr_keyword">true</strong>);
-<a class="jxr_linenumber" name="L75" href="#L75">75</a>      }
-<a class="jxr_linenumber" name="L76" href="#L76">76</a>      <strong class="jxr_keyword">super</strong>.channelActive(ctx);
-<a class="jxr_linenumber" name="L77" href="#L77">77</a>    }
-<a class="jxr_linenumber" name="L78" href="#L78">78</a>  
-<a class="jxr_linenumber" name="L79" href="#L79">79</a>  }
+<a class="jxr_linenumber" name="L48" href="#L48">48</a>    <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> channelRegistered(<strong class="jxr_keyword">final</strong> ChannelHandlerContext ctx)
+<a class="jxr_linenumber" name="L49" href="#L49">49</a>        <strong class="jxr_keyword">throws</strong> Exception {
+<a class="jxr_linenumber" name="L50" href="#L50">50</a>      <strong class="jxr_keyword">final</strong> Channel channel = ctx.channel();
+<a class="jxr_linenumber" name="L51" href="#L51">51</a>      logger.debug(<span class="jxr_string">"Add channel to ssl "</span> + channel);
+<a class="jxr_linenumber" name="L52" href="#L52">52</a>      WaarpSslUtility.addSslOpenedChannel(channel);
+<a class="jxr_linenumber" name="L53" href="#L53">53</a>      getFtpSession().prepareSsl();
+<a class="jxr_linenumber" name="L54" href="#L54">54</a>      <strong class="jxr_keyword">super</strong>.channelRegistered(ctx);
+<a class="jxr_linenumber" name="L55" href="#L55">55</a>    }
+<a class="jxr_linenumber" name="L56" href="#L56">56</a>  
+<a class="jxr_linenumber" name="L57" href="#L57">57</a>    <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L58" href="#L58">58</a>  <em class="jxr_javadoccomment">   * To be extended to inform of an error to SNMP support</em>
+<a class="jxr_linenumber" name="L59" href="#L59">59</a>  <em class="jxr_javadoccomment">   *</em>
+<a class="jxr_linenumber" name="L60" href="#L60">60</a>  <em class="jxr_javadoccomment">   * @param error1</em>
+<a class="jxr_linenumber" name="L61" href="#L61">61</a>  <em class="jxr_javadoccomment">   * @param error2</em>
+<a class="jxr_linenumber" name="L62" href="#L62">62</a>  <em class="jxr_javadoccomment">   */</em>
+<a class="jxr_linenumber" name="L63" href="#L63">63</a>    @Override
+<a class="jxr_linenumber" name="L64" href="#L64">64</a>    <strong class="jxr_keyword">protected</strong> <strong class="jxr_keyword">void</strong> callForSnmp(<strong class="jxr_keyword">final</strong> String error1, <strong class="jxr_keyword">final</strong> String error2) {
+<a class="jxr_linenumber" name="L65" href="#L65">65</a>      <em class="jxr_comment">// ignore</em>
+<a class="jxr_linenumber" name="L66" href="#L66">66</a>    }
+<a class="jxr_linenumber" name="L67" href="#L67">67</a>  
+<a class="jxr_linenumber" name="L68" href="#L68">68</a>    @Override
+<a class="jxr_linenumber" name="L69" href="#L69">69</a>    <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> channelActive(<strong class="jxr_keyword">final</strong> ChannelHandlerContext ctx) <strong class="jxr_keyword">throws</strong> Exception {
+<a class="jxr_linenumber" name="L70" href="#L70">70</a>      <strong class="jxr_keyword">if</strong> (!WaarpSslUtility.waitForHandshake(ctx.channel())) {
+<a class="jxr_linenumber" name="L71" href="#L71">71</a>        callForSnmp(<span class="jxr_string">"SSL Connection Error"</span>, <span class="jxr_string">"During Ssl Handshake"</span>);
+<a class="jxr_linenumber" name="L72" href="#L72">72</a>        getFtpSession().setSsl(false);
+<a class="jxr_linenumber" name="L73" href="#L73">73</a>        <strong class="jxr_keyword">return</strong>;
+<a class="jxr_linenumber" name="L74" href="#L74">74</a>      } <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="L75" href="#L75">75</a>        getFtpSession().setSsl(<strong class="jxr_keyword">true</strong>);
+<a class="jxr_linenumber" name="L76" href="#L76">76</a>      }
+<a class="jxr_linenumber" name="L77" href="#L77">77</a>      <strong class="jxr_keyword">super</strong>.channelActive(ctx);
+<a class="jxr_linenumber" name="L78" href="#L78">78</a>    }
+<a class="jxr_linenumber" name="L79" href="#L79">79</a>  
+<a class="jxr_linenumber" name="L80" href="#L80">80</a>  }
 </pre>
 <hr/>
 <div id="footer">Copyright &#169; 2009&#x2013;2020 <a href="http://www.waarp.fr">Waarp</a>. All rights reserved.</div>

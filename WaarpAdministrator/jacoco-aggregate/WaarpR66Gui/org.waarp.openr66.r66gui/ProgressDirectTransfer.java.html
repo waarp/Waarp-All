@@ -49,58 +49,61 @@ public class ProgressDirectTransfer extends ProgressBarTransfer {
    * @param networkTransaction
    * @param callbackdelay
    */
-  public ProgressDirectTransfer(R66Future future, String remoteHost,
-                                String filename, String rulename,
-                                String fileinfo, boolean isMD5, int blocksize,
-                                long id, NetworkTransaction networkTransaction,
-                                long callbackdelay, JProgressBar progressBar,
-                                JEditorPane textFieldStatus) {
-<span class="nc" id="L58">    super(future, remoteHost, filename, rulename, fileinfo, isMD5, blocksize,</span>
+  public ProgressDirectTransfer(final R66Future future, final String remoteHost,
+                                final String filename, final String rulename,
+                                final String fileinfo, final boolean isMD5,
+                                final int blocksize, final long id,
+                                final NetworkTransaction networkTransaction,
+                                final long callbackdelay,
+                                final JProgressBar progressBar,
+                                final JEditorPane textFieldStatus) {
+<span class="nc" id="L60">    super(future, remoteHost, filename, rulename, fileinfo, isMD5, blocksize,</span>
           id, networkTransaction, callbackdelay);
-<span class="nc" id="L60">    this.textFieldStatus = textFieldStatus;</span>
-<span class="nc" id="L61">    this.progressBar = progressBar;</span>
-<span class="nc" id="L62">    this.progressBar.setIndeterminate(true);</span>
-<span class="nc" id="L63">    this.progressBar.setValue(0);</span>
-<span class="nc" id="L64">    this.progressBar.setVisible(true);</span>
-<span class="nc" id="L65">    this.textFieldStatus.setText(&quot;Initializing transfer...&quot;);</span>
-<span class="nc" id="L66">  }</span>
+<span class="nc" id="L62">    this.textFieldStatus = textFieldStatus;</span>
+<span class="nc" id="L63">    this.progressBar = progressBar;</span>
+<span class="nc" id="L64">    this.progressBar.setIndeterminate(true);</span>
+<span class="nc" id="L65">    this.progressBar.setValue(0);</span>
+<span class="nc" id="L66">    this.progressBar.setVisible(true);</span>
+<span class="nc" id="L67">    this.textFieldStatus.setText(&quot;Initializing transfer...&quot;);</span>
+<span class="nc" id="L68">  }</span>
 
   @Override
-  public void callBack(int currentBlock, int blocksize) {
-<span class="nc bnc" id="L70" title="All 2 branches missed.">    if (firstCall) {</span>
-<span class="nc bnc" id="L71" title="All 2 branches missed.">      if (filesize != 0) {</span>
-<span class="nc" id="L72">        progressBar.setIndeterminate(false);</span>
-<span class="nc" id="L73">        nbBlock = (int) Math.ceil((double) filesize / (double) blocksize);</span>
+  public void callBack(final int currentBlock, final int blocksize) {
+<span class="nc bnc" id="L72" title="All 2 branches missed.">    if (firstCall) {</span>
+<span class="nc bnc" id="L73" title="All 2 branches missed.">      if (filesize != 0) {</span>
+<span class="nc" id="L74">        progressBar.setIndeterminate(false);</span>
+<span class="nc" id="L75">        nbBlock = (int) Math.ceil((double) filesize / (double) blocksize);</span>
       }
-<span class="nc" id="L75">      firstCall = false;</span>
+<span class="nc" id="L77">      firstCall = false;</span>
     }
-<span class="nc" id="L77">    final long newtime = System.currentTimeMillis() + 1;</span>
-<span class="nc" id="L78">    final int sendsize = (currentBlock - lastRank) * blocksize;</span>
-<span class="nc" id="L79">    final long time = (newtime - lastTime) * 1024 / 1000;</span>
-<span class="nc" id="L80">    final long speedKB = sendsize / time;</span>
-<span class="nc bnc" id="L81" title="All 2 branches missed.">    if (filesize == 0) {</span>
-<span class="nc" id="L82">      textFieldStatus.setText(</span>
+<span class="nc" id="L79">    final long newtime = System.currentTimeMillis() + 1;</span>
+<span class="nc" id="L80">    final int sendsize = (currentBlock - lastRank) * blocksize;</span>
+<span class="nc" id="L81">    final long time = (newtime - lastTime) * 1024 / 1000;</span>
+<span class="nc" id="L82">    final long speedKB = sendsize / time;</span>
+<span class="nc bnc" id="L83" title="All 2 branches missed.">    if (filesize == 0) {</span>
+<span class="nc" id="L84">      textFieldStatus.setText(</span>
           &quot;Bytes transmitted: &quot; + currentBlock * blocksize + &quot; at &quot; + speedKB +
           &quot; KB/s&quot;);
     } else {
-<span class="nc" id="L86">      progressBar.setValue(currentBlock * 100 / nbBlock);</span>
-<span class="nc" id="L87">      textFieldStatus.setText(</span>
+<span class="nc" id="L88">      progressBar.setValue(currentBlock * 100 / nbBlock);</span>
+<span class="nc" id="L89">      textFieldStatus.setText(</span>
           &quot;Bytes transmitted: &quot; + currentBlock * blocksize + &quot; on &quot; + filesize +
           &quot; at &quot; + speedKB + &quot; KB/s&quot;);
     }
-<span class="nc" id="L91">    lastTime = newtime - 1;</span>
-<span class="nc" id="L92">    lastRank = currentBlock;</span>
-<span class="nc" id="L93">  }</span>
+<span class="nc" id="L93">    lastTime = newtime - 1;</span>
+<span class="nc" id="L94">    lastRank = currentBlock;</span>
+<span class="nc" id="L95">  }</span>
 
   @Override
-  public void lastCallBack(boolean success, int currentBlock, int blocksize) {
-<span class="nc" id="L97">    progressBar.setIndeterminate(false);</span>
-<span class="nc bnc" id="L98" title="All 2 branches missed.">    if (filesize != 0) {</span>
-<span class="nc" id="L99">      progressBar.setValue(100);</span>
+  public void lastCallBack(final boolean success, final int currentBlock,
+                           final int blocksize) {
+<span class="nc" id="L100">    progressBar.setIndeterminate(false);</span>
+<span class="nc bnc" id="L101" title="All 2 branches missed.">    if (filesize != 0) {</span>
+<span class="nc" id="L102">      progressBar.setValue(100);</span>
     }
-<span class="nc" id="L101">    textFieldStatus.setText(</span>
+<span class="nc" id="L104">    textFieldStatus.setText(</span>
         &quot;Finally Bytes transmitted: &quot; + currentBlock * blocksize +
         &quot; with Status: &quot; + success);
-<span class="nc" id="L104">  }</span>
+<span class="nc" id="L107">  }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
