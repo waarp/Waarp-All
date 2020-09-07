@@ -26,7 +26,6 @@ import org.waarp.common.database.exception.WaarpDatabaseSqlException;
 import org.waarp.common.database.model.DbModel;
 import org.waarp.common.database.model.DbModelFactory;
 import org.waarp.common.guid.GUID;
-import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.lru.ConcurrentUtility;
@@ -359,12 +358,6 @@ public class DbSession {
     if (getConn() == null) {
       logger.debug("Connection already closed");
       return;
-    }
-    try {
-      Thread.sleep(DbAdmin.WAITFORNETOP);
-    } catch (final InterruptedException e1) {//NOSONAR
-      SysErrLogger.FAKE_LOGGER.ignoreLog(e1);
-      Thread.currentThread().interrupt();
     }
     logger.debug("DbConnection still in use: " + nbThread);
     removeLongTermPreparedStatements();

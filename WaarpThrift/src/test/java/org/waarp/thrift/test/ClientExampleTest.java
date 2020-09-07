@@ -20,9 +20,13 @@
 package org.waarp.thrift.test;
 
 import org.apache.thrift.TException;
+import org.apache.thrift.async.AsyncMethodCallback;
+import org.apache.thrift.async.TAsyncClientManager;
 import org.apache.thrift.protocol.TBinaryProtocol;
+import org.apache.thrift.protocol.TBinaryProtocol.Factory;
 import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.transport.TFramedTransport;
+import org.apache.thrift.transport.TNonblockingSocket;
 import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
@@ -32,13 +36,19 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestWatcher;
 import org.junit.runners.MethodSorters;
+import org.waarp.common.future.WaarpFuture;
 import org.waarp.common.utility.TestWatcherJunit4;
 import org.waarp.thrift.r66.Action;
 import org.waarp.thrift.r66.R66Request;
 import org.waarp.thrift.r66.R66Result;
 import org.waarp.thrift.r66.R66Service;
+import org.waarp.thrift.r66.R66Service.AsyncClient.infoListQuery_call;
+import org.waarp.thrift.r66.R66Service.AsyncClient.infoTransferQuery_call;
+import org.waarp.thrift.r66.R66Service.AsyncClient.isStillRunning_call;
+import org.waarp.thrift.r66.R66Service.AsyncClient.transferRequestQuery_call;
 import org.waarp.thrift.r66.RequestMode;
 
+import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -62,12 +72,6 @@ public class ClientExampleTest implements Runnable {
 
   public static void main(String[] args) throws InterruptedException {
     new ClientExampleTest().test4_Client_Sync();
-  }
-
-  @Test
-  public void test4_Client_Sync() throws InterruptedException {
-    test_Client(true, true);
-    PORT++;
   }
 
   public void test_Client(boolean clientAsync, boolean serverAsync)
@@ -252,6 +256,273 @@ public class ClientExampleTest implements Runnable {
     }
   }
 
+  public void test_AsyncClient(boolean clientAsync, boolean serverAsync)
+      throws InterruptedException {
+    System.out
+        .println("Start Client: " + clientAsync + " Server: " + serverAsync);
+    isBlocking = clientAsync;
+    isBlockingServer = serverAsync;
+    initServer();
+    try {
+      TTransport transport = null;
+      try {
+        if (isBlocking) {
+          transport = new TSocket("localhost", PORT);
+        } else {
+          transport = new TNonblockingSocket("localhost", PORT);
+        }
+        final TAsyncClientManager manager = new TAsyncClientManager();
+        final TBinaryProtocol.Factory factory = new Factory();
+        final R66Service.AsyncClient client =
+            new R66Service.AsyncClient.Factory(manager, factory)
+                .getAsyncClient((TNonblockingSocket) transport);
+        final R66Request request = new R66Request(RequestMode.SYNCTRANSFER);
+        request.setFromuid("myclient");
+        request.setDestuid("mypartner");
+        request.setRule("myruletouse");
+        request.setFile("pathtomyfile.txt");
+        request.setInfo("my info send on the wire");
+        request.setMd5(true);
+
+        System.out.println("REQUEST1: " + request);
+        final WaarpFuture future = new WaarpFuture(true);
+        AsyncMethodCallback<transferRequestQuery_call> asyncMethodCallback =
+            new AsyncMethodCallback<transferRequestQuery_call>() {
+              @Override
+              public void onComplete(final transferRequestQuery_call response) {
+                try {
+                  R66Result result = response.getResult();
+                  System.out.println("RESULT1: " + result);
+                } catch (TException e) {
+                  e.printStackTrace();
+                }
+                future.setSuccess();
+              }
+
+              @Override
+              public void onError(final Exception exception) {
+
+              }
+            };
+        client.transferRequestQuery(request, asyncMethodCallback);
+
+        final R66Request request2 = new R66Request(request);
+        assertTrue(request.equals(request2));
+        assertEquals(0, request.compareTo(request2));
+        final long start = System.currentTimeMillis();
+        future.awaitOrInterruptible();
+        future.reset();
+        AsyncMethodCallback<transferRequestQuery_call> asyncMethodCallback0 =
+            new AsyncMethodCallback<transferRequestQuery_call>() {
+              @Override
+              public void onComplete(final transferRequestQuery_call response) {
+                try {
+                  R66Result result2 = response.getResult();
+                } catch (TException e) {
+                  e.printStackTrace();
+                }
+                future.setSuccess();
+              }
+
+              @Override
+              public void onError(final Exception exception) {
+
+              }
+            };
+        for (int i = 0; i < tries; i++) {
+          client.transferRequestQuery(request2, asyncMethodCallback0);
+          future.awaitOrInterruptible();
+          future.reset();
+        }
+        final long end = System.currentTimeMillis();
+        System.out.println(
+            "Delay: " + (end - start) + " : " + (tries * 1000) / (end - start));
+
+        request.setMode(RequestMode.ASYNCTRANSFER);
+        System.out.println("REQUEST1A: " + request);
+        client.transferRequestQuery(request, asyncMethodCallback);
+        future.awaitOrInterruptible();
+        future.reset();
+        final R66Request requestCopy = request.deepCopy();
+        client.transferRequestQuery(requestCopy,
+                                    new AsyncMethodCallback<transferRequestQuery_call>() {
+                                      @Override
+                                      public void onComplete(
+                                          final transferRequestQuery_call response) {
+                                        try {
+                                          request.setTid(
+                                              response.getResult().getTid());
+                                        } catch (TException e) {
+                                          e.printStackTrace();
+                                        }
+                                        future.setSuccess();
+                                      }
+
+                                      @Override
+                                      public void onError(
+                                          final Exception exception) {
+
+                                      }
+                                    });
+        future.awaitOrInterruptible();
+        future.reset();
+
+        request.setMode(RequestMode.INFOREQUEST);
+        request.setAction(Action.Detail);
+        AsyncMethodCallback<infoTransferQuery_call> asyncMethodCallback1 =
+            new AsyncMethodCallback<infoTransferQuery_call>() {
+              @Override
+              public void onComplete(final infoTransferQuery_call response) {
+                try {
+                  R66Result result = response.getResult();
+                  System.out.println("RESULT1: " + result);
+                } catch (TException e) {
+                  e.printStackTrace();
+                }
+
+                future.setSuccess();
+              }
+
+              @Override
+              public void onError(final Exception exception) {
+
+              }
+            };
+        client.infoTransferQuery(request, asyncMethodCallback1);
+        future.awaitOrInterruptible();
+        future.reset();
+
+        client.isStillRunning(request.getFromuid(), request.getDestuid(),
+                              request.getTid(),
+                              new AsyncMethodCallback<isStillRunning_call>() {
+                                @Override
+                                public void onComplete(
+                                    final isStillRunning_call response) {
+                                  try {
+                                    System.out.println(
+                                        "Exist: " + response.getResult());
+                                  } catch (TException e) {
+                                    e.printStackTrace();
+                                  }
+                                  future.setSuccess();
+                                }
+
+                                @Override
+                                public void onError(final Exception exception) {
+
+                                }
+                              });
+        future.awaitOrInterruptible();
+        future.reset();
+
+        request.setAction(Action.Exist);
+        client.infoTransferQuery(request, asyncMethodCallback1);
+        future.awaitOrInterruptible();
+        future.reset();
+        request.setAction(Action.Stop);
+        client.infoTransferQuery(request, asyncMethodCallback1);
+        future.awaitOrInterruptible();
+        future.reset();
+
+        request.setAction(Action.Restart);
+        request.setBlocksize(1024);
+        request.setStart(new Date().toString());
+        request.setDelay(new Date().toString());
+        request.setNotrace(false);
+        client.infoTransferQuery(request, asyncMethodCallback1);
+        future.awaitOrInterruptible();
+        future.reset();
+
+        request.setAction(Action.Cancel);
+        client.infoTransferQuery(request, asyncMethodCallback1);
+        future.awaitOrInterruptible();
+        future.reset();
+
+        request.setMode(RequestMode.INFOFILE);
+        request.setAction(Action.List);
+        client.infoTransferQuery(request, asyncMethodCallback1);
+        future.awaitOrInterruptible();
+        future.reset();
+
+        request.setAction(Action.Mlsx);
+        client.infoTransferQuery(request, asyncMethodCallback1);
+        future.awaitOrInterruptible();
+        future.reset();
+
+        request.setMode(RequestMode.INFOFILE);
+        request.setAction(Action.List);
+        request.setFile("MyDirectory");
+        AsyncMethodCallback<infoListQuery_call> asyncMethodCallback2 =
+            new AsyncMethodCallback<infoListQuery_call>() {
+              @Override
+              public void onComplete(final infoListQuery_call response) {
+                List<String> list = null;
+                try {
+                  list = response.getResult();
+                } catch (TException e) {
+                  e.printStackTrace();
+                }
+                System.out.println("RESULT4: " + list);
+                future.setSuccess();
+              }
+
+              @Override
+              public void onError(final Exception exception) {
+
+              }
+            };
+        client.infoListQuery(request, asyncMethodCallback2);
+        future.awaitOrInterruptible();
+        future.reset();
+
+        request.setAction(Action.Mlsx);
+        client.infoListQuery(request, asyncMethodCallback2);
+        future.awaitOrInterruptible();
+        future.reset();
+
+        request.setAction(Action.Detail);
+        client.infoListQuery(request, asyncMethodCallback2);
+        future.awaitOrInterruptible();
+        future.reset();
+
+        request.setAction(Action.Exist);
+        client.infoListQuery(request, asyncMethodCallback2);
+        future.awaitOrInterruptible();
+        future.reset();
+      } catch (final TTransportException e) {
+        e.printStackTrace();
+        fail("Should not");
+      } catch (final TException e) {
+        e.printStackTrace();
+        fail("Should not");
+      } catch (IOException e) {
+        e.printStackTrace();
+      } finally {
+        if (transport != null) {
+          transport.close();
+        }
+      }
+      final ExecutorService executorService = Executors.newCachedThreadPool();
+      final long start = System.currentTimeMillis();
+      final int nb = 5;
+      for (int i = 0; i < nb; i++) {
+        final ClientExampleTest example = new ClientExampleTest();
+        executorService.execute(example);
+      }
+      executorService.shutdown();
+      try {
+        executorService.awaitTermination(1000000, TimeUnit.SECONDS);
+      } catch (final InterruptedException ignored) {//NOSONAR
+      }
+      final long end = System.currentTimeMillis();
+      executorService.shutdownNow();
+      System.out.println("Global Delay: " + (end - start) + " : " +
+                         (tries * 1000 * nb) / (end - start));
+    } finally {
+      stopServer();
+    }
+  }
+
   public void initServer() throws InterruptedException {
     ServerExample.startServer(isBlockingServer, PORT);
     Thread.sleep(1000);
@@ -263,8 +534,20 @@ public class ClientExampleTest implements Runnable {
   }
 
   @Test
+  public void test4_Client_Sync() throws InterruptedException {
+    test_Client(true, true);
+    PORT++;
+  }
+
+  @Test
   public void test2_Client_ASync() throws InterruptedException {
     test_Client(false, false);
+    PORT++;
+  }
+
+  @Test
+  public void test2_Client_FullASync() throws InterruptedException {
+    test_AsyncClient(false, false);
     PORT++;
   }
 

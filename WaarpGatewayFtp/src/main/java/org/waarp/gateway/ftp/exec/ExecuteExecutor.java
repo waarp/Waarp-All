@@ -31,6 +31,7 @@ import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.utility.WaarpStringUtils;
+import org.waarp.openr66.protocol.configuration.Configuration;
 
 import java.io.File;
 import java.io.IOException;
@@ -125,7 +126,7 @@ public class ExecuteExecutor extends AbstractExecutor {
       if (e.getExitValue() == -559038737) {
         // Cannot run immediately so retry once
         try {
-          Thread.sleep(10);
+          Thread.sleep(Configuration.RETRYINMS);
         } catch (final InterruptedException e1) {//NOSONAR
           SysErrLogger.FAKE_LOGGER.ignoreLog(e1);
         }

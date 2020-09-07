@@ -475,6 +475,241 @@ public class SpooledDirectoryTransfer implements Runnable {
         // Nothing to do
         return;
       }
+      specialId = checkReuseUniqueHost(fileItem, specialId);
+      try {
+        for (String host : remoteHosts) {
+          host = host.trim();
+          if (host != null && !host.isEmpty()) {
+            final String filename = fileItem.file.getAbsolutePath();
+            logger
+                .info("Launch transfer to " + host + " with file " + filename);
+            R66Future r66Future = new R66Future(true);
+            String text;
+            if (submit) {
+              text = submitTransfer(specialId, host, filename, r66Future);
+            } else {
+              if (specialId != ILLEGALVALUE) {
+                // Clean previously transfer if any
+                cleanPreviousTransfer(specialId, host, filename, r66Future);
+              }
+              text = "Direct Transfer: ";
+              r66Future = new R66Future(true);
+              directTransfer(host, filename, r66Future, text);
+            }
+            r66Future.awaitOrInterruptible();
+            final R66Result r66result = r66Future.getResult();
+            if (r66Future.isSuccess()) {
+              finalStatus = true;
+              newSpecialId =
+                  finalizeInSuccess(newSpecialId, host, text, r66result);
+            } else {
+              setError(getError() + 1);
+              ko++;
+              final DbTaskRunner runner;
+              if (r66result != null) {
+                String errMsg = "Unknown Error Message";
+                if (r66Future.getCause() != null) {
+                  errMsg = r66Future.getCause().getMessage();
+                }
+                final boolean isConnectionImpossible =
+                    r66result.getCode() == ErrorCode.ConnectionImpossible &&
+                    !normalInfoAsWarn;
+                runner = r66result.getRunner();
+                if (runner != null) {
+                  newSpecialId = koOnFoundRunner(host, text, runner, errMsg,
+                                                 isConnectionImpossible);
+                } else {
+                  ko = getKoOnNoRunner(ko, host, r66Future, text, r66result,
+                                       isConnectionImpossible);
+                }
+              } else {
+                logger.error(
+                    text + Messages.getString(REQUEST_INFORMATION_FAILURE)
+                    //$NON-NLS-1$
+                    + REMOTE + host + REMOTE2, r66Future.getCause());
+              }
+            }
+          }
+        }
+      } catch (final Throwable e) {
+        // catch any exception
+        logger.error("Error in SpooledDirectory", e);
+        finalStatus = false;
+      }
+      specialId = remoteHosts.size() > 1? ILLEGALVALUE : newSpecialId;
+      if (ko > 0) {
+        // If at least one is in error, the transfer is in error so should be redone
+        finalStatus = false;
+      }
+      finalizeValidFile(finalStatus, specialId);
+    }
+
+    private void directTransfer(final String host, final String filename,
+                                final R66Future r66Future, final String text) {
+      final DirectTransfer transaction =
+          new DirectTransfer(r66Future, host, filename, ruleName, fileInfo,
+                             isMD5, blocksize, ILLEGALVALUE,
+                             networkTransaction);
+      if (!fileInfo.contains("-nofollow")) {
+        TransferArgs.forceAnalyzeFollow(transaction);
+      }
+      // If retry indefinitely is useful transaction.setLimitRetryConnection(true)
+      transaction.normalInfoAsWarn = normalInfoAsWarn;
+      logger.info(text + host);
+      transaction.run();
+    }
+
+    private String submitTransfer(final long specialId, final String host,
+                                  final String filename,
+                                  final R66Future r66Future) {
+      String text;
+      text = "Submit Transfer: ";
+      final SubmitTransfer transaction =
+          new SubmitTransfer(r66Future, host, filename, ruleName, fileInfo,
+                             isMD5, blocksize, specialId, null);
+      if (!fileInfo.contains("-nofollow")) {
+        TransferArgs.forceAnalyzeFollow(transaction);
+      }
+      transaction.normalInfoAsWarn = normalInfoAsWarn;
+      logger.info(text + host);
+      transaction.run();
+      return text;
+    }
+
+    private long koOnFoundRunner(final String host, final String text,
+                                 final DbTaskRunner runner, final String errMsg,
+                                 final boolean isConnectionImpossible) {
+      long newSpecialId;
+      newSpecialId = runner.getSpecialId();
+      DbTaskRunner.removeNoDbSpecialId(newSpecialId);
+      if (isConnectionImpossible) {
+        logger.info(text + Messages.getString(REQUEST_INFORMATION_FAILURE) +
+                    //$NON-NLS-1$
+                    runner.toShortString() + REMOTE + host +
+                    "</REMOTE><REASON>" + errMsg + "</REASON>");
+      } else {
+        logger.error(text + Messages.getString(REQUEST_INFORMATION_FAILURE) +
+                     //$NON-NLS-1$
+                     runner.toShortString() + REMOTE + host +
+                     "</REMOTE><REASON>" + errMsg + "</REASON>");
+      }
+      return newSpecialId;
+    }
+
+    private int getKoOnNoRunner(int ko, final String host,
+                                final R66Future r66Future, final String text,
+                                final R66Result r66result,
+                                final boolean isConnectionImpossible) {
+      if (isConnectionImpossible) {
+        logger.info(
+            text + Messages.getString(REQUEST_INFORMATION_FAILURE) + REMOTE +
+            host + REMOTE2, r66Future.getCause());
+      } else {
+        if (r66result.getCode() == QueryRemotelyUnknown) {
+          logger.info("Transfer not found" + REMOTE + host + REMOTE2);
+          // False negative
+          ko--;
+          setError(getError() - 1);
+        } else {
+          logger.error(
+              text + Messages.getString(REQUEST_INFORMATION_FAILURE) + REMOTE +
+              host + REMOTE2, r66Future.getCause());
+        }
+      }
+      return ko;
+    }
+
+    private long finalizeInSuccess(long newSpecialId, final String host,
+                                   final String text,
+                                   final R66Result r66result) {
+      setSent(getSent() + 1);
+      final DbTaskRunner runner;
+      if (r66result != null) {
+        runner = r66result.getRunner();
+        if (runner != null) {
+          newSpecialId = runner.getSpecialId();
+          String status =
+              Messages.getString("RequestInformation.Success"); //$NON-NLS-1$
+          if (runner.getErrorInfo() == ErrorCode.Warning) {
+            status =
+                Messages.getString("RequestInformation.Warned"); //$NON-NLS-1$
+          }
+          if (normalInfoAsWarn) {
+            logger.warn(
+                text + " status: " + status + "     " + runner.toShortString() +
+                "     <REMOTE>" + host + REMOTE2 + "     <FILEFINAL>" +
+                (r66result.getFile() != null?
+                    r66result.getFile() + "</FILEFINAL>" : "no file"));
+          } else {
+            logger.info(
+                text + " status: " + status + "     " + runner.toShortString() +
+                "     <REMOTE>" + host + REMOTE2 + "     <FILEFINAL>" +
+                (r66result.getFile() != null?
+                    r66result.getFile() + "</FILEFINAL>" : "no file"));
+          }
+          if (nolog && !submit) {
+            // In case of success, delete the runner
+            try {
+              runner.delete();
+            } catch (final WaarpDatabaseException e) {
+              logger.warn("Cannot apply nolog to     " + runner.toShortString(),
+                          e);
+            }
+          }
+          DbTaskRunner.removeNoDbSpecialId(newSpecialId);
+        } else {
+          if (normalInfoAsWarn) {
+            logger.warn(text + Messages.getString("RequestInformation.Success")
+                        //$NON-NLS-1$
+                        + REMOTE + host + REMOTE2);
+          } else {
+            logger.info(text + Messages.getString("RequestInformation.Success")
+                        //$NON-NLS-1$
+                        + REMOTE + host + REMOTE2);
+          }
+        }
+      } else {
+        if (normalInfoAsWarn) {
+          logger.warn(text + Messages.getString("RequestInformation.Success")
+                      //$NON-NLS-1$
+                      + REMOTE + host + REMOTE2);
+        } else {
+          logger.info(text + Messages.getString("RequestInformation.Success")
+                      //$NON-NLS-1$
+                      + REMOTE + host + REMOTE2);
+        }
+      }
+      return newSpecialId;
+    }
+
+    private void cleanPreviousTransfer(final long specialId, final String host,
+                                       final String filename,
+                                       final R66Future r66Future) {
+      String text;
+      try {
+        final String srequester = Configuration.configuration.getHostId(host);
+        text =
+            "Request Transfer Cancelled: " + specialId + ' ' + filename + ' ';
+        // Cancel
+        logger.debug("Will try to cancel {}", specialId);
+        final RequestTransfer transaction2 =
+            new RequestTransfer(r66Future, specialId, host, srequester, true,
+                                false, false, networkTransaction);
+        transaction2.normalInfoAsWarn = normalInfoAsWarn;
+        logger.warn(text + host);
+        transaction2.run();
+        // special task
+        r66Future.awaitOrInterruptible();
+      } catch (final WaarpDatabaseException e) {
+        if (admin.getSession() != null) {
+          admin.getSession().checkConnectionNoException();
+        }
+        logger.warn(Messages.getString("RequestTransfer.5") + host,
+                    e); //$NON-NLS-1$
+      }
+    }
+
+    private long checkReuseUniqueHost(final FileItem fileItem, long specialId) {
       if (isReuse() && remoteHosts.size() == 1) {
         // if specialId is not IllegalValue, then used was necessarily true
         // before
@@ -516,204 +751,7 @@ public class SpooledDirectoryTransfer implements Runnable {
           }
         }
       }
-      try {
-        for (String host : remoteHosts) {
-          host = host.trim();
-          if (host != null && !host.isEmpty()) {
-            final String filename = fileItem.file.getAbsolutePath();
-            logger
-                .info("Launch transfer to " + host + " with file " + filename);
-            R66Future r66Future = new R66Future(true);
-            String text;
-            if (submit) {
-              text = "Submit Transfer: ";
-              final SubmitTransfer transaction =
-                  new SubmitTransfer(r66Future, host, filename, ruleName,
-                                     fileInfo, isMD5, blocksize, specialId,
-                                     null);
-              if (!fileInfo.contains("-nofollow")) {
-                TransferArgs.forceAnalyzeFollow(transaction);
-              }
-              transaction.normalInfoAsWarn = normalInfoAsWarn;
-              logger.info(text + host);
-              transaction.run();
-            } else {
-              if (specialId != ILLEGALVALUE) {
-                // Clean previously transfer if any
-                try {
-                  final String srequester =
-                      Configuration.configuration.getHostId(host);
-                  text = "Request Transfer Cancelled: " + specialId + ' ' +
-                         filename + ' ';
-                  // Cancel
-                  logger.debug("Will try to cancel {}", specialId);
-                  final RequestTransfer transaction2 =
-                      new RequestTransfer(r66Future, specialId, host,
-                                          srequester, true, false, false,
-                                          networkTransaction);
-                  transaction2.normalInfoAsWarn = normalInfoAsWarn;
-                  logger.warn(text + host);
-                  transaction2.run();
-                  // special task
-                  r66Future.awaitOrInterruptible();
-                } catch (final WaarpDatabaseException e) {
-                  if (admin.getSession() != null) {
-                    admin.getSession().checkConnectionNoException();
-                  }
-                  logger.warn(Messages.getString("RequestTransfer.5") + host,
-                              e); //$NON-NLS-1$
-                }
-              }
-              text = "Direct Transfer: ";
-              r66Future = new R66Future(true);
-              final DirectTransfer transaction =
-                  new DirectTransfer(r66Future, host, filename, ruleName,
-                                     fileInfo, isMD5, blocksize, ILLEGALVALUE,
-                                     networkTransaction);
-              if (!fileInfo.contains("-nofollow")) {
-                TransferArgs.forceAnalyzeFollow(transaction);
-              }
-              // If retry indefinitely is useful transaction.setLimitRetryConnection(true)
-              transaction.normalInfoAsWarn = normalInfoAsWarn;
-              logger.info(text + host);
-              transaction.run();
-            }
-            r66Future.awaitOrInterruptible();
-            final R66Result r66result = r66Future.getResult();
-            if (r66Future.isSuccess()) {
-              finalStatus = true;
-              setSent(getSent() + 1);
-              final DbTaskRunner runner;
-              if (r66result != null) {
-                runner = r66result.getRunner();
-                if (runner != null) {
-                  newSpecialId = runner.getSpecialId();
-                  String status = Messages
-                      .getString("RequestInformation.Success"); //$NON-NLS-1$
-                  if (runner.getErrorInfo() == ErrorCode.Warning) {
-                    status = Messages
-                        .getString("RequestInformation.Warned"); //$NON-NLS-1$
-                  }
-                  if (normalInfoAsWarn) {
-                    logger.warn(text + " status: " + status + "     " +
-                                runner.toShortString() + "     <REMOTE>" +
-                                host + REMOTE2 + "     <FILEFINAL>" +
-                                (r66result.getFile() != null?
-                                    r66result.getFile() + "</FILEFINAL>" :
-                                    "no file"));
-                  } else {
-                    logger.info(text + " status: " + status + "     " +
-                                runner.toShortString() + "     <REMOTE>" +
-                                host + REMOTE2 + "     <FILEFINAL>" +
-                                (r66result.getFile() != null?
-                                    r66result.getFile() + "</FILEFINAL>" :
-                                    "no file"));
-                  }
-                  if (nolog && !submit) {
-                    // In case of success, delete the runner
-                    try {
-                      runner.delete();
-                    } catch (final WaarpDatabaseException e) {
-                      logger.warn(
-                          "Cannot apply nolog to     " + runner.toShortString(),
-                          e);
-                    }
-                  }
-                  DbTaskRunner.removeNoDbSpecialId(newSpecialId);
-                } else {
-                  if (normalInfoAsWarn) {
-                    logger.warn(
-                        text + Messages.getString("RequestInformation.Success")
-                        //$NON-NLS-1$
-                        + REMOTE + host + REMOTE2);
-                  } else {
-                    logger.info(
-                        text + Messages.getString("RequestInformation.Success")
-                        //$NON-NLS-1$
-                        + REMOTE + host + REMOTE2);
-                  }
-                }
-              } else {
-                if (normalInfoAsWarn) {
-                  logger.warn(
-                      text + Messages.getString("RequestInformation.Success")
-                      //$NON-NLS-1$
-                      + REMOTE + host + REMOTE2);
-                } else {
-                  logger.info(
-                      text + Messages.getString("RequestInformation.Success")
-                      //$NON-NLS-1$
-                      + REMOTE + host + REMOTE2);
-                }
-              }
-            } else {
-              setError(getError() + 1);
-              ko++;
-              final DbTaskRunner runner;
-              if (r66result != null) {
-                String errMsg = "Unknown Error Message";
-                if (r66Future.getCause() != null) {
-                  errMsg = r66Future.getCause().getMessage();
-                }
-                final boolean isConnectionImpossible =
-                    r66result.getCode() == ErrorCode.ConnectionImpossible &&
-                    !normalInfoAsWarn;
-                runner = r66result.getRunner();
-                if (runner != null) {
-                  newSpecialId = runner.getSpecialId();
-                  DbTaskRunner.removeNoDbSpecialId(newSpecialId);
-                  if (isConnectionImpossible) {
-                    logger.info(
-                        text + Messages.getString(REQUEST_INFORMATION_FAILURE) +
-                        //$NON-NLS-1$
-                        runner.toShortString() + REMOTE + host +
-                        "</REMOTE><REASON>" + errMsg + "</REASON>");
-                  } else {
-                    logger.error(
-                        text + Messages.getString(REQUEST_INFORMATION_FAILURE) +
-                        //$NON-NLS-1$
-                        runner.toShortString() + REMOTE + host +
-                        "</REMOTE><REASON>" + errMsg + "</REASON>");
-                  }
-                } else {
-                  if (isConnectionImpossible) {
-                    logger.info(
-                        text + Messages.getString(REQUEST_INFORMATION_FAILURE) +
-                        REMOTE + host + REMOTE2, r66Future.getCause());
-                  } else {
-                    if (r66result.getCode() == QueryRemotelyUnknown) {
-                      logger
-                          .info("Transfer not found" + REMOTE + host + REMOTE2);
-                      // False negative
-                      ko--;
-                      setError(getError() - 1);
-                    } else {
-                      logger.error(text + Messages
-                          .getString(REQUEST_INFORMATION_FAILURE) + REMOTE +
-                                   host + REMOTE2, r66Future.getCause());
-                    }
-                  }
-                }
-              } else {
-                logger.error(
-                    text + Messages.getString(REQUEST_INFORMATION_FAILURE)
-                    //$NON-NLS-1$
-                    + REMOTE + host + REMOTE2, r66Future.getCause());
-              }
-            }
-          }
-        }
-      } catch (final Throwable e) {
-        // catch any exception
-        logger.error("Error in SpooledDirectory", e);
-        finalStatus = false;
-      }
-      specialId = remoteHosts.size() > 1? ILLEGALVALUE : newSpecialId;
-      if (ko > 0) {
-        // If at least one is in error, the transfer is in error so should be redone
-        finalStatus = false;
-      }
-      finalizeValidFile(finalStatus, specialId);
+      return specialId;
     }
   }
 

@@ -186,35 +186,13 @@ public class Commander implements CommanderInterface {
         return;
       }
       logger.debug("Before " + multipleMonitor);
-      // First check Configuration
+      boolean shallReturnInCaseError = true;
       try {
-        final DbConfiguration[] configurations =
-            DbConfiguration.getUpdatedPrepareStament();
-        int i = 0;
-        while (i < configurations.length) {
-          // should be only one...
-          final DbConfiguration configuration = configurations[i];
-          if (configuration.isOwnConfiguration()) {
-            configuration.updateConfiguration();
-          }
-          if (multipleMonitor != null) {
-            // update the configuration in HA mode
-            if (multipleMonitor.checkUpdateConfig()) {
-              configuration
-                  .changeUpdatedInfo(AbstractDbData.UpdatedInfo.NOTUPDATED);
-              configuration.update();
-              logger.debug(CONFIG + multipleMonitor);
-            } else {
-              configuration.update();
-              logger.debug(CONFIG + multipleMonitor);
-            }
-          } else {
-            configuration
-                .changeUpdatedInfo(AbstractDbData.UpdatedInfo.NOTUPDATED);
-            configuration.update();
-          }
-          i++;
-        }
+        // First check Configuration
+        checkConfiguration(multipleMonitor);
+        // check HostConfiguration
+        shallReturnInCaseError = false;
+        checkHostConfiguration(multipleMonitor);
       } catch (final WaarpDatabaseNoConnectionException e) {
         try {
           admin.getDbModel().validConnection(admin.getSession());
@@ -230,7 +208,10 @@ public class Commander implements CommanderInterface {
           // nothing
         }
         logger.error(DATABASE_SQL_ERROR_CANNOT_EXECUTE_COMMANDER, e);
-        return;
+        // XXX no return since table might not be initialized
+        if (shallReturnInCaseError) {
+          return;
+        }
       } catch (final WaarpDatabaseException e) {
         try {
           admin.getDbModel().validConnection(admin.getSession());
@@ -238,148 +219,26 @@ public class Commander implements CommanderInterface {
           // nothing
         }
         logger.error(DATABASE_ERROR_CANNOT_EXECUTE_COMMANDER, e);
-        return;
+        // XXX no return since table might not be initialized
+        if (shallReturnInCaseError) {
+          return;
+        }
       }
-      // check HostConfiguration
+      // Do not fusion with previous cases since last one could be in error but
+      // still continue
       try {
-        final DbHostConfiguration[] configurations =
-            DbHostConfiguration.getUpdatedPrepareStament();
-        int i = 0;
-        while (i < configurations.length) {
-          // should be only one...
-          final DbHostConfiguration configuration = configurations[i];
-          if (configuration.isOwnConfiguration()) {
-            configuration.updateConfiguration();
-          }
-          if (multipleMonitor != null) {
-            // update the configuration in HA mode
-            if (multipleMonitor.checkUpdateConfig()) {
-              configuration
-                  .changeUpdatedInfo(AbstractDbData.UpdatedInfo.NOTUPDATED);
-              configuration.update();
-              logger.debug(CONFIG + multipleMonitor);
-            } else {
-              configuration.update();
-              logger.debug(CONFIG + multipleMonitor);
-            }
-          } else {
-            configuration
-                .changeUpdatedInfo(AbstractDbData.UpdatedInfo.NOTUPDATED);
-            configuration.update();
-          }
-          i++;
+        // ConsistencyCheck HostAuthent
+        checkHostAuthent(multipleMonitor);
+        // Check Rules
+        checkRule(multipleMonitor);
+        if (WaarpShutdownHook.isShutdownStarting()) {
+          // no more task to submit
+          return;
         }
-      } catch (final WaarpDatabaseNoConnectionException e) {
-        try {
-          admin.getDbModel().validConnection(admin.getSession());
-        } catch (final WaarpDatabaseNoConnectionException ignored) {
-          // nothing
-        }
-        logger.error(DATABASE_NO_CONNECTION_ERROR_CANNOT_EXECUTE_COMMANDER, e);
-        return;
-      } catch (final WaarpDatabaseSqlException e) {
-        try {
-          admin.getDbModel().validConnection(admin.getSession());
-        } catch (final WaarpDatabaseNoConnectionException ignored) {
-          // nothing
-        }
-        logger.error(DATABASE_SQL_ERROR_CANNOT_EXECUTE_COMMANDER, e);
-        // XXX no return since table might not be initialized 
-      } catch (final WaarpDatabaseException e) {
-        try {
-          admin.getDbModel().validConnection(admin.getSession());
-        } catch (final WaarpDatabaseNoConnectionException ignored) {
-          // nothing
-        }
-        logger.error(DATABASE_ERROR_CANNOT_EXECUTE_COMMANDER, e);
-        // XXX no return since table might not be initialized 
-      }
-      // ConsistencyCheck HostAuthent
-      try {
-        final DbHostAuth[] auths = DbHostAuth.getUpdatedPreparedStatement();
-        int i = 0;
-        boolean mm = false;
-        boolean lastUpdate = false;
-        while (i < auths.length) {
-          // Maybe multiple
-          final DbHostAuth hostAuth = auths[i];
-          if (multipleMonitor != null) {
-            if (!mm) {
-              // not already set from a previous hostAuth
-              mm = true;
-              lastUpdate = multipleMonitor.checkUpdateHost();
-            } // else already set so no action on multipleMonitor
 
-            // Update the Host configuration in HA mode
-            if (lastUpdate) {
-              hostAuth.changeUpdatedInfo(AbstractDbData.UpdatedInfo.NOTUPDATED);
-            } else {
-              // Nothing to do except validate
-            }
-            hostAuth.update();
-            logger.debug("Host " + multipleMonitor);
-          } else {
-            // Nothing to do except validate
-            hostAuth.changeUpdatedInfo(AbstractDbData.UpdatedInfo.NOTUPDATED);
-            hostAuth.update();
-          }
-          i++;
-        }
-      } catch (final WaarpDatabaseNoConnectionException e) {
-        try {
-          admin.getDbModel().validConnection(admin.getSession());
-        } catch (final WaarpDatabaseNoConnectionException ignored) {
-          // nothing
-        }
-        logger.error(DATABASE_NO_CONNECTION_ERROR_CANNOT_EXECUTE_COMMANDER, e);
-        return;
-      } catch (final WaarpDatabaseSqlException e) {
-        try {
-          admin.getDbModel().validConnection(admin.getSession());
-        } catch (final WaarpDatabaseNoConnectionException ignored) {
-          // nothing
-        }
-        logger.error(DATABASE_SQL_ERROR_CANNOT_EXECUTE_COMMANDER, e);
-        return;
-      } catch (final WaarpDatabaseException e) {
-        try {
-          admin.getDbModel().validConnection(admin.getSession());
-        } catch (final WaarpDatabaseNoConnectionException ignored) {
-          // nothing
-        }
-        logger.error(DATABASE_ERROR_CANNOT_EXECUTE_COMMANDER, e);
-        return;
-      }
-
-      // Check Rules
-      try {
-        final DbRule[] rules = DbRule.getUpdatedPrepareStament();
-        int i = 0;
-        boolean mm = false;
-        boolean lastUpdate = false;
-        while (i < rules.length) {
-          final DbRule rule = rules[i];
-          if (multipleMonitor != null) {
-            if (!mm) {
-              // not already set from a previous hostAuth
-              mm = true;
-              lastUpdate = multipleMonitor.checkUpdateRule();
-            } // else already set so no action on multipleMonitor
-            // Update the Rules in HA mode
-            if (lastUpdate) {
-              rule.changeUpdatedInfo(AbstractDbData.UpdatedInfo.NOTUPDATED);
-            } else {
-              // Nothing to do except validate
-            }
-            rule.update();
-            logger.debug("Rule " + multipleMonitor);
-          } else {
-            // Nothing to do except validate
-            rule.changeUpdatedInfo(AbstractDbData.UpdatedInfo.NOTUPDATED);
-            rule.update();
-          }
-          i++;
-        }
+        // Lauch Transfer ready to be submited
+        logger.debug("start runner");
+        checkTaskRunner(multipleMonitor);
       } catch (final WaarpDatabaseNoConnectionException e) {
         try {
           admin.getDbModel().validConnection(admin.getSession());
@@ -413,84 +272,6 @@ public class Commander implements CommanderInterface {
         logger.error(DATABASE_ERROR_CANNOT_EXECUTE_COMMANDER, e);
         return;
       }
-      if (WaarpShutdownHook.isShutdownStarting()) {
-        // no more task to submit
-        return;
-      }
-
-      // Lauch Transfer ready to be submited
-      logger.debug("start runner");
-      try {
-        // No specific HA mode since the other servers will wait for the commit on Lock
-        final int maxRunnable =
-            Math.min(Configuration.configuration.getRunnerThread(),
-                     internalRunner.allowedToSubmit());
-        if (maxRunnable > 0) {
-          final DbTaskRunner[] tasks = DbTaskRunner
-              .getSelectFromInfoPrepareStatement(UpdatedInfo.TOSUBMIT, true,
-                                                 maxRunnable);
-          logger.info("TaskRunner to launch: {} (launched: {}, active: {}) {}",
-                      tasks.length, totalRuns,
-                      internalRunner.nbInternalRunner(),
-                      NetworkTransaction.hashStatus());
-          int i = 0;
-          while (i < tasks.length) {
-            if (WaarpShutdownHook.isShutdownStarting()) {
-              logger.info("Will not start transfers, server is in shutdown.");
-              return;
-            }
-            final DbTaskRunner taskRunner = tasks[i];
-            i++;
-
-            logger.debug("get a task: {}", taskRunner);
-            // Launch if possible this task
-            final String key =
-                taskRunner.getRequested() + ' ' + taskRunner.getRequester() +
-                ' ' + taskRunner.getSpecialId();
-            if (Configuration.configuration.getLocalTransaction()
-                                           .getFromRequest(key) != null) {
-              // already running
-              continue;
-            }
-            if (taskRunner.isSelfRequested()) {
-              // cannot schedule a request where the host is the requested host
-              taskRunner.changeUpdatedInfo(UpdatedInfo.INTERRUPTED);
-              try {
-                taskRunner.update();
-              } catch (final WaarpDatabaseNoDataException e) {
-                logger.warn("Update failed, no transfer found");
-              }
-              continue;
-            }
-            internalRunner.submitTaskRunner(taskRunner);
-            totalRuns++;
-          }
-        }
-      } catch (final WaarpDatabaseNoConnectionException e) {
-        try {
-          admin.getDbModel().validConnection(admin.getSession());
-        } catch (final WaarpDatabaseNoConnectionException ignored) {
-          // nothing
-        }
-        logger.error(DATABASE_NO_CONNECTION_ERROR_CANNOT_EXECUTE_COMMANDER, e);
-        return;
-      } catch (final WaarpDatabaseSqlException e) {
-        try {
-          admin.getDbModel().validConnection(admin.getSession());
-        } catch (final WaarpDatabaseNoConnectionException ignored) {
-          // nothing
-        }
-        logger.error(DATABASE_SQL_ERROR_CANNOT_EXECUTE_COMMANDER, e);
-        return;
-      } catch (final WaarpDatabaseException e) {
-        try {
-          admin.getDbModel().validConnection(admin.getSession());
-        } catch (final WaarpDatabaseNoConnectionException ignored) {
-          // nothing
-        }
-        logger.error(DATABASE_ERROR_CANNOT_EXECUTE_COMMANDER, e);
-        return;
-      }
       logger.debug("end commander");
     } finally {
       if (multipleMonitor != null) {
@@ -511,4 +292,175 @@ public class Commander implements CommanderInterface {
     }
   }
 
+  private void checkConfiguration(DbMultipleMonitor multipleMonitor)
+      throws WaarpDatabaseException {
+    final DbConfiguration[] configurations =
+        DbConfiguration.getUpdatedPrepareStament();
+    int i = 0;
+    while (i < configurations.length) {
+      // should be only one...
+      final DbConfiguration configuration = configurations[i];
+      if (configuration.isOwnConfiguration()) {
+        configuration.updateConfiguration();
+      }
+      if (multipleMonitor != null) {
+        // update the configuration in HA mode
+        if (multipleMonitor.checkUpdateConfig()) {
+          configuration
+              .changeUpdatedInfo(AbstractDbData.UpdatedInfo.NOTUPDATED);
+          configuration.update();
+          logger.debug(CONFIG + multipleMonitor);
+        } else {
+          configuration.update();
+          logger.debug(CONFIG + multipleMonitor);
+        }
+      } else {
+        configuration.changeUpdatedInfo(AbstractDbData.UpdatedInfo.NOTUPDATED);
+        configuration.update();
+      }
+      i++;
+    }
+  }
+
+  private void checkHostConfiguration(DbMultipleMonitor multipleMonitor)
+      throws WaarpDatabaseException {
+    final DbHostConfiguration[] configurations =
+        DbHostConfiguration.getUpdatedPrepareStament();
+    int i = 0;
+    while (i < configurations.length) {
+      // should be only one...
+      final DbHostConfiguration configuration = configurations[i];
+      if (configuration.isOwnConfiguration()) {
+        configuration.updateConfiguration();
+      }
+      if (multipleMonitor != null) {
+        // update the configuration in HA mode
+        if (multipleMonitor.checkUpdateConfig()) {
+          configuration
+              .changeUpdatedInfo(AbstractDbData.UpdatedInfo.NOTUPDATED);
+          configuration.update();
+          logger.debug(CONFIG + multipleMonitor);
+        } else {
+          configuration.update();
+          logger.debug(CONFIG + multipleMonitor);
+        }
+      } else {
+        configuration.changeUpdatedInfo(AbstractDbData.UpdatedInfo.NOTUPDATED);
+        configuration.update();
+      }
+      i++;
+    }
+  }
+
+  private void checkHostAuthent(DbMultipleMonitor multipleMonitor)
+      throws WaarpDatabaseException {
+    final DbHostAuth[] auths = DbHostAuth.getUpdatedPreparedStatement();
+    int i = 0;
+    boolean mm = false;
+    boolean lastUpdate = false;
+    while (i < auths.length) {
+      // Maybe multiple
+      final DbHostAuth hostAuth = auths[i];
+      if (multipleMonitor != null) {
+        if (!mm) {
+          // not already set from a previous hostAuth
+          mm = true;
+          lastUpdate = multipleMonitor.checkUpdateHost();
+        } // else already set so no action on multipleMonitor
+
+        // Update the Host configuration in HA mode
+        if (lastUpdate) {
+          hostAuth.changeUpdatedInfo(AbstractDbData.UpdatedInfo.NOTUPDATED);
+        } else {
+          // Nothing to do except validate
+        }
+        hostAuth.update();
+        logger.debug("Host " + multipleMonitor);
+      } else {
+        // Nothing to do except validate
+        hostAuth.changeUpdatedInfo(AbstractDbData.UpdatedInfo.NOTUPDATED);
+        hostAuth.update();
+      }
+      i++;
+    }
+  }
+
+  private void checkRule(DbMultipleMonitor multipleMonitor)
+      throws WaarpDatabaseException {
+    final DbRule[] rules = DbRule.getUpdatedPrepareStament();
+    int i = 0;
+    boolean mm = false;
+    boolean lastUpdate = false;
+    while (i < rules.length) {
+      final DbRule rule = rules[i];
+      if (multipleMonitor != null) {
+        if (!mm) {
+          // not already set from a previous hostAuth
+          mm = true;
+          lastUpdate = multipleMonitor.checkUpdateRule();
+        } // else already set so no action on multipleMonitor
+        // Update the Rules in HA mode
+        if (lastUpdate) {
+          rule.changeUpdatedInfo(AbstractDbData.UpdatedInfo.NOTUPDATED);
+        } else {
+          // Nothing to do except validate
+        }
+        rule.update();
+        logger.debug("Rule " + multipleMonitor);
+      } else {
+        // Nothing to do except validate
+        rule.changeUpdatedInfo(AbstractDbData.UpdatedInfo.NOTUPDATED);
+        rule.update();
+      }
+      i++;
+    }
+  }
+
+  private void checkTaskRunner(DbMultipleMonitor multipleMonitor)
+      throws WaarpDatabaseException {
+    // No specific HA mode since the other servers will wait for the commit on Lock
+    final int maxRunnable =
+        Math.min(Configuration.configuration.getRunnerThread(),
+                 internalRunner.allowedToSubmit());
+    if (maxRunnable > 0) {
+      final DbTaskRunner[] tasks = DbTaskRunner
+          .getSelectFromInfoPrepareStatement(UpdatedInfo.TOSUBMIT, true,
+                                             maxRunnable);
+      logger.info("TaskRunner to launch: {} (launched: {}, active: {}) {}",
+                  tasks.length, totalRuns, internalRunner.nbInternalRunner(),
+                  NetworkTransaction.hashStatus());
+      int i = 0;
+      while (i < tasks.length) {
+        if (WaarpShutdownHook.isShutdownStarting()) {
+          logger.info("Will not start transfers, server is in shutdown.");
+          return;
+        }
+        final DbTaskRunner taskRunner = tasks[i];
+        i++;
+
+        logger.debug("get a task: {}", taskRunner);
+        // Launch if possible this task
+        final String key =
+            taskRunner.getRequested() + ' ' + taskRunner.getRequester() + ' ' +
+            taskRunner.getSpecialId();
+        if (Configuration.configuration.getLocalTransaction()
+                                       .getFromRequest(key) != null) {
+          // already running
+          continue;
+        }
+        if (taskRunner.isSelfRequested()) {
+          // cannot schedule a request where the host is the requested host
+          taskRunner.changeUpdatedInfo(UpdatedInfo.INTERRUPTED);
+          try {
+            taskRunner.update();
+          } catch (final WaarpDatabaseNoDataException e) {
+            logger.warn("Update failed, no transfer found");
+          }
+          continue;
+        }
+        internalRunner.submitTaskRunner(taskRunner);
+        totalRuns++;
+      }
+    }
+  }
 }

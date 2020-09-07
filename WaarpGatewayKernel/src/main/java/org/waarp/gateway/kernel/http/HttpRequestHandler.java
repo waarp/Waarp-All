@@ -51,7 +51,9 @@ import io.netty.handler.codec.http.multipart.InterfaceHttpData;
 import io.netty.handler.codec.http.multipart.InterfaceHttpData.HttpDataType;
 import org.waarp.common.crypto.ssl.WaarpSslUtility;
 import org.waarp.common.database.DbConstant;
+import org.waarp.common.database.DbSession;
 import org.waarp.common.database.data.AbstractDbData.UpdatedInfo;
+import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.utility.WaarpStringUtils;
@@ -198,11 +200,19 @@ public abstract class HttpRequestHandler
                             FieldPosition.HEADER);
         } else if (values.size() > 1) {
           // more than one element is not allowed
-          values.clear();
+          try {
+            values.clear();
+          } catch (UnsupportedOperationException e) {
+            SysErrLogger.FAKE_LOGGER.ignoreLog(e);
+          }
           throw new HttpIncorrectRequestException(
               "Too many values for " + name);
         }
-        values.clear();
+        try {
+          values.clear();
+        } catch (UnsupportedOperationException e) {
+          SysErrLogger.FAKE_LOGGER.ignoreLog(e);
+        }
       }
     }
   }
@@ -288,9 +298,11 @@ public abstract class HttpRequestHandler
         }
         httpPage = httpPageTemp;
         session.setCurrentCommand(httpPage.getPagerole());
-        WaarpActionLogger.logCreate(DbConstant.admin.getSession(),
-                                    "Request received: " +
-                                    httpPage.getPagename(), session);
+        DbSession dbSession =
+            DbConstant.admin != null? DbConstant.admin.getSession() : null;
+        WaarpActionLogger
+            .logCreate(dbSession, "Request received: " + httpPage.getPagename(),
+                       session);
         if (httpPageTemp.getPagerole() == PageRole.ERROR) {
           status = HttpResponseStatus.BAD_REQUEST;
           error(ctx);
@@ -392,9 +404,14 @@ public abstract class HttpRequestHandler
    * @param ctx
    */
   protected void writeErrorPage(final ChannelHandlerContext ctx) {
-    WaarpActionLogger.logErrorAction(DbConstant.admin.getSession(), session,
-                                     "Error: " + (httpPage == null? "no page" :
-                                         httpPage.getPagename()), status);
+    DbSession dbSession =
+        DbConstant.admin != null? DbConstant.admin.getSession() : null;
+    WaarpActionLogger.logErrorAction(dbSession, session, "Error: " +
+                                                         (httpPage == null?
+                                                             "no page" :
+                                                             httpPage
+                                                                 .getPagename()),
+                                     status);
     error(ctx);
     clean();
     willClose = true;
@@ -467,8 +484,12 @@ public abstract class HttpRequestHandler
     final ByteBuf buf =
         Unpooled.wrappedBuffer(answer.getBytes(WaarpStringUtils.UTF8));
     final FullHttpResponse response = getResponse(buf);
-    response.headers().set(HttpHeaderNames.CONTENT_TYPE,
-                           businessRequest.getContentType());
+    if (businessRequest == null) {
+      response.headers().set(HttpHeaderNames.CONTENT_TYPE, "text/html");
+    } else {
+      response.headers().set(HttpHeaderNames.CONTENT_TYPE,
+                             businessRequest.getContentType());
+    }
     response.headers().set(HttpHeaderNames.REFERER, request.uri());
     length = buf.readableBytes();
     if (!willClose) {
@@ -630,37 +651,35 @@ public abstract class HttpRequestHandler
       if (!httpPage.isRequestValid(businessRequest)) {
         throw new HttpIncorrectRequestException("Request unvalid");
       }
+      DbSession dbSession =
+          DbConstant.admin != null? DbConstant.admin.getSession() : null;
       switch (httpPage.getPagerole()) {
         case DELETE:
           session.setFilename(getFilename());
           finalDelete(ctx);
-          WaarpActionLogger
-              .logAction(DbConstant.admin.getSession(), session, "Delete OK",
-                         status, UpdatedInfo.DONE);
+          WaarpActionLogger.logAction(dbSession, session, "Delete OK", status,
+                                      UpdatedInfo.DONE);
           break;
         case GETDOWNLOAD:
           finalGet(ctx);
-          WaarpActionLogger
-              .logAction(DbConstant.admin.getSession(), session, "Download OK",
-                         status, UpdatedInfo.DONE);
+          WaarpActionLogger.logAction(dbSession, session, "Download OK", status,
+                                      UpdatedInfo.DONE);
           break;
         case POST:
           finalPost(ctx);
-          WaarpActionLogger
-              .logAction(DbConstant.admin.getSession(), session, "Post OK",
-                         status, UpdatedInfo.DONE);
+          WaarpActionLogger.logAction(dbSession, session, "Post OK", status,
+                                      UpdatedInfo.DONE);
           break;
         case POSTUPLOAD:
           finalPostUpload(ctx);
-          WaarpActionLogger.logAction(DbConstant.admin.getSession(), session,
-                                      "PostUpload OK", status,
-                                      UpdatedInfo.DONE);
+          WaarpActionLogger
+              .logAction(dbSession, session, "PostUpload OK", status,
+                         UpdatedInfo.DONE);
           break;
         case PUT:
           finalPut(ctx);
-          WaarpActionLogger
-              .logAction(DbConstant.admin.getSession(), session, "Put OK",
-                         status, UpdatedInfo.DONE);
+          WaarpActionLogger.logAction(dbSession, session, "Put OK", status,
+                                      UpdatedInfo.DONE);
           break;
         default:
           // real error => 400
@@ -802,6 +821,12 @@ public abstract class HttpRequestHandler
                            final HttpContent chunk)
       throws HttpIncorrectRequestException {
     // New chunk is received: only for Post!
+    if (decoder == null) {
+      finalData(ctx);
+      writeSimplePage(ctx);
+      clean();
+      return;
+    }
     try {
       decoder.offer(chunk);
     } catch (final ErrorDataDecoderException e1) {

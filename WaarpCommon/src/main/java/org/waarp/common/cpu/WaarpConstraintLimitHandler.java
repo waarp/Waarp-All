@@ -271,12 +271,10 @@ public abstract class WaarpConstraintLimitHandler implements Runnable {
   private double getLastLA() {
     final long newTime = System.currentTimeMillis();
     // first check if last test was done too shortly
-    if (newTime - lastTime < waitForNetOp >> 1) {
-      // If last test was wrong, then redo the test
-      if (lastLA <= cpuLimit) {
-        // last test was OK, so Continue
-        return lastLA;
-      }
+    // If last test was wrong, then redo the test
+    if (newTime - lastTime < waitForNetOp >> 1 && lastLA <= cpuLimit) {
+      // last test was OK, so Continue
+      return lastLA;
     }
     lastTime = newTime;
     lastLA = cpuManagement.getLoadAverage();

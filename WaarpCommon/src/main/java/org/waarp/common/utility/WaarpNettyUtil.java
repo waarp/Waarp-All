@@ -37,6 +37,14 @@ import org.waarp.common.logging.SysErrLogger;
 public final class WaarpNettyUtil {
 
   private static final int TIMEOUT_MILLIS = 1000;
+  /**
+   * Used in final operation to wait for extra works
+   */
+  public static final int SIMPLE_DELAY_MS = 100;
+  /**
+   * Minimal delay (OS sleep minimal time)
+   */
+  public static final int MINIMAL_DELAY_MS = 10;
   // Default optimal value from Netty (tested as correct for Waarp)
   private static final int DEFAULT_LOW_WATER_MARK = 32 * 1024;
   private static final int DEFAULT_HIGH_WATER_MARK = 64 * 1024 + 64;

@@ -21,7 +21,6 @@ package org.waarp.openr66.protocol.localhandler.packet;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
-import io.netty.buffer.Unpooled;
 import org.waarp.common.utility.WaarpNettyUtil;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
 import org.waarp.openr66.protocol.localhandler.LocalChannelReference;

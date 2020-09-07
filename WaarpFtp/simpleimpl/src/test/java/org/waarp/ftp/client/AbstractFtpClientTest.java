@@ -92,12 +92,6 @@ public abstract class AbstractFtpClientTest {
       logger.warn("Logout");
       client.logout();
     }
-    if (isSSL != 0) {
-      try {
-        Thread.sleep(100);
-      } catch (final InterruptedException ignored) {//NOSONAR
-      }
-    }
     final ExecutorService executorService = Executors.newCachedThreadPool();
     logger.warn("Will start {} Threads", numberThread);
     final long date1 = System.currentTimeMillis();
@@ -124,8 +118,6 @@ public abstract class AbstractFtpClientTest {
       Thread.sleep(100);
     } catch (final InterruptedException e1) {//NOSONAR
       SysErrLogger.FAKE_LOGGER.syserr(e1);
-      executorService.shutdownNow();
-      // Thread.currentThread().interrupt();
     }
     executorService.shutdown();
     long date2 = 0;
@@ -175,7 +167,7 @@ public abstract class AbstractFtpClientTest {
   public static void stopServer() {
     logger.warn("Will shutdown from client");
     try {
-      Thread.sleep(500);
+      Thread.sleep(200);
     } catch (final InterruptedException ignored) {//NOSONAR
     }
     final Ftp4JClientTransactionTest client =

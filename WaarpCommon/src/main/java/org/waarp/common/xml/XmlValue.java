@@ -609,7 +609,7 @@ public class XmlValue {
         case XVAL:
           final XmlValue[] newValue = (XmlValue[]) value;
           if (isSubXml()) {
-            // FIXME should check also internal XmlDecl equality but
+            // should check also internal XmlDecl equality but
             // can only check size
             if (decl.getSubXmlSize() != newValue.length) {
               throw new InvalidObjectException(

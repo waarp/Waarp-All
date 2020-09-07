@@ -351,8 +351,7 @@ public class DbValue {
         return getValue().toString();
       case Types.VARBINARY:
         return new String((byte[]) getValue(), WaarpStringUtils.UTF8);
-      case Types.CLOB:
-      case Types.BLOB: {
+      case Types.CLOB: {
         final StringBuilder sBuilder = new StringBuilder();
         final Reader reader = (Reader) getValue();
         final char[] cbuf = new char[4096];
@@ -366,6 +365,23 @@ public class DbValue {
         } catch (final IOException e) {
           throw new WaarpDatabaseSqlException(
               "Error while reading Clob as String", e);
+        }
+        return sBuilder.toString();
+      }
+      case Types.BLOB: {
+        final StringBuilder sBuilder = new StringBuilder();
+        final InputStream inputStream = (InputStream) getValue();
+        final byte[] cbuf = new byte[4096];
+        int len;
+        try {
+          len = inputStream.read(cbuf);
+          while (len > 0) {
+            sBuilder.append(new String(cbuf, 0, len));
+            len = inputStream.read(cbuf);
+          }
+        } catch (final IOException e) {
+          throw new WaarpDatabaseSqlException(
+              "Error while reading Blob as String", e);
         }
         return sBuilder.toString();
       }

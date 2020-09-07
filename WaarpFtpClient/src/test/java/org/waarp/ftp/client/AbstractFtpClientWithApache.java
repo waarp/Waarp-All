@@ -56,7 +56,7 @@ public abstract class AbstractFtpClientWithApache extends AbstractFtpClient {
                     localFilename.getAbsolutePath(), localFilename.getName());
     logger.warn("End Active");
     try {
-      Thread.sleep(1000);
+      Thread.sleep(100);
     } catch (final InterruptedException e) {//NOSONAR
       // ignore
     }
@@ -76,7 +76,7 @@ public abstract class AbstractFtpClientWithApache extends AbstractFtpClient {
                     localFilename.getAbsolutePath(), localFilename.getName());
     logger.warn("End Passive");
     try {
-      Thread.sleep(1000);
+      Thread.sleep(100);
     } catch (final InterruptedException e) {//NOSONAR
       // ignore
     }
@@ -95,12 +95,6 @@ public abstract class AbstractFtpClientWithApache extends AbstractFtpClient {
       return;
     } else {
       FtpClientTest.numberOK.incrementAndGet();
-      if (delay > 0) {
-        try {
-          Thread.sleep(delay);
-        } catch (final InterruptedException ignored) {//NOSONAR
-        }
-      }
     }
     if (!client.deleteFile(localFilename.getName())) {
       logger.warn(" Cant delete file {} mode ", smode);
@@ -108,12 +102,6 @@ public abstract class AbstractFtpClientWithApache extends AbstractFtpClient {
       return;
     } else {
       FtpClientTest.numberOK.incrementAndGet();
-      if (delay > 0) {
-        try {
-          Thread.sleep(delay);
-        } catch (final InterruptedException ignored) {//NOSONAR
-        }
-      }
     }
     if (!client
         .transferFile(localFilename.getAbsolutePath(), localFilename.getName(),
@@ -123,12 +111,6 @@ public abstract class AbstractFtpClientWithApache extends AbstractFtpClient {
       return;
     } else {
       FtpClientTest.numberOK.incrementAndGet();
-      if (delay > 0) {
-        try {
-          Thread.sleep(delay);
-        } catch (final InterruptedException ignored) {//NOSONAR
-        }
-      }
     }
     Thread.yield();
     logger.info(" transfer {} retr ", smode);
@@ -137,12 +119,6 @@ public abstract class AbstractFtpClientWithApache extends AbstractFtpClient {
       FtpClientTest.numberKO.incrementAndGet();
     } else {
       FtpClientTest.numberOK.incrementAndGet();
-      if (delay > 0) {
-        try {
-          Thread.sleep(delay);
-        } catch (final InterruptedException ignored) {//NOSONAR
-        }
-      }
     }
   }
 
@@ -174,10 +150,6 @@ public abstract class AbstractFtpClientWithApache extends AbstractFtpClient {
       System.err.println("SHA1: " + client.featureEnabled("XSHA1"));
       System.err.println("DIGEST: " + client.featureEnabled("XDIGEST"));
       client.changeDir("T0");
-      try {
-        Thread.sleep(delay);
-      } catch (final InterruptedException ignored) {//NOSONAR
-      }
       client.changeFileType(true);
       client.changeMode(true);
       internalApacheClient(client, localFilename, delay, true);

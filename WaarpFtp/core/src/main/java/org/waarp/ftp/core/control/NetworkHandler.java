@@ -35,6 +35,7 @@ import org.waarp.common.command.exception.Reply503Exception;
 import org.waarp.common.crypto.ssl.WaarpSslUtility;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.WaarpNettyUtil;
 import org.waarp.ftp.core.command.AbstractCommand;
 import org.waarp.ftp.core.command.FtpCommandCode;
 import org.waarp.ftp.core.command.access.USER;
@@ -133,7 +134,7 @@ public class NetworkHandler extends SimpleChannelInboundHandler<String> {
     int limit = 100;
     while (session.getDataConn().getFtpTransferControl()
                   .isFtpTransferExecuting()) {
-      Thread.sleep(10);
+      Thread.sleep(WaarpNettyUtil.MINIMAL_DELAY_MS);
       limit--;
       if (limit <= 0) {
         logger.warn("Waiting for transfer finished but 1s is not enough");

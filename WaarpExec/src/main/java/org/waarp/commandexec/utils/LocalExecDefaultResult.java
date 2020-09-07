@@ -46,7 +46,7 @@ public final class LocalExecDefaultResult {
       new LocalExecResult(false, -10, null, "Exec Server shutdown on going");
   public static final LocalExecResult CorrectExec =
       new LocalExecResult(false, 1, null, "Correctly Executed");
-  public static final long RETRYINMS = 500;
+  public static final long RETRYINMS = 200;
   public static final long MAXWAITPROCESS = 60000;
   public static final String ENDOFCOMMAND = "$#GGEXEC END OF COMMAND#$";
 

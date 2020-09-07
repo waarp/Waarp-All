@@ -130,7 +130,7 @@ public abstract class DbModelAbstract implements DbModel {
   public void validConnection(final DbSession dbSession)
       throws WaarpDatabaseNoConnectionException {
     // try to limit the number of check!
-    synchronized (dbSession) {
+    synchronized (this) {
       if (dbSession.getConn() == null) {
         throw new WaarpDatabaseNoConnectionException(
             CANNOT_CONNECT_TO_DATABASE);
@@ -193,7 +193,7 @@ public abstract class DbModelAbstract implements DbModel {
   protected void validConnectionSelect(final DbSession dbSession)
       throws WaarpDatabaseNoConnectionException {
     // try to limit the number of check!
-    synchronized (dbSession) {
+    synchronized (this) {
       Statement stmt = null;
       try {
         stmt = dbSession.getConn().createStatement();//NOSONAR

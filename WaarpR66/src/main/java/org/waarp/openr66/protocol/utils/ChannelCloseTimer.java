@@ -83,8 +83,8 @@ public class ChannelCloseTimer implements TimerTask {
       final ConnectionActions connectionActions) {
     if (Configuration.configuration.isTimerCloseReady()) {
       Configuration.configuration.getTimerClose().newTimeout(
-          new ChannelCloseTimer(connectionActions),
-          Configuration.WAITFORNETOP * 2, TimeUnit.MILLISECONDS);
+          new ChannelCloseTimer(connectionActions), Configuration.WAITFORNETOP,
+          TimeUnit.MILLISECONDS);
     }
   }
 

@@ -197,7 +197,7 @@ public abstract class WaarpShutdownHook extends Thread {
       shutdownHook.serviceStopped();
       SysErrLogger.FAKE_LOGGER.syserr("Halt System");
       try {
-        Thread.sleep(100);
+        Thread.sleep(WaarpNettyUtil.SIMPLE_DELAY_MS);
       } catch (final InterruptedException e) {//NOSONAR
         SysErrLogger.FAKE_LOGGER.ignoreLog(e);
       }
@@ -398,7 +398,7 @@ public abstract class WaarpShutdownHook extends Thread {
     if (isShutdownOver) {
       if (shutdownHook != null && shutdownHook.serviceStopped()) {
         try {
-          Thread.sleep(100);
+          Thread.sleep(WaarpNettyUtil.SIMPLE_DELAY_MS);
         } catch (final InterruptedException e) {//NOSONAR
           SysErrLogger.FAKE_LOGGER.ignoreLog(e);
         }
@@ -414,7 +414,7 @@ public abstract class WaarpShutdownHook extends Thread {
     } catch (final Throwable t) {
       if (shutdownHook != null && shutdownHook.serviceStopped()) {
         try {
-          Thread.sleep(100);
+          Thread.sleep(WaarpNettyUtil.SIMPLE_DELAY_MS);
         } catch (final InterruptedException e) {//NOSONAR
           SysErrLogger.FAKE_LOGGER.ignoreLog(e);
         }
@@ -454,7 +454,7 @@ public abstract class WaarpShutdownHook extends Thread {
       logger.error("System will force EXIT");
       if (shutdownHook != null && shutdownHook.serviceStopped()) {
         try {
-          Thread.sleep(100);
+          Thread.sleep(WaarpNettyUtil.SIMPLE_DELAY_MS);
         } catch (final InterruptedException e) {//NOSONAR
           SysErrLogger.FAKE_LOGGER.ignoreLog(e);
         }

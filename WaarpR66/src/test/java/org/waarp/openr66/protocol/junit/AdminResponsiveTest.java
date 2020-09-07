@@ -100,7 +100,7 @@ public class AdminResponsiveTest extends TestAbstract {
   }
 
   @Test
-  public void testWebHttpSimpleAdmin() throws InterruptedException {
+  public void test04_WebHttpSimpleAdmin() throws InterruptedException {
     try {
       // Test name: TestResponsiveMonitor
       // Step # | name | target | value | comment
@@ -165,7 +165,7 @@ public class AdminResponsiveTest extends TestAbstract {
 
 
   @Test
-  public void testWebHttpsBasic() throws InterruptedException {
+  public void test05_WebHttpsBasic() throws InterruptedException {
     try {
       // Test name: TestResponsiveAdmin
       // Step # | name | target | value | comment
@@ -219,6 +219,9 @@ public class AdminResponsiveTest extends TestAbstract {
       driver.get("https://127.0.0.1:8867/Spooled.html");
       assertTrue(
           driver.getCurrentUrl().equals("https://127.0.0.1:8867/Spooled.html"));
+      driver.get("https://127.0.0.1:8867/NotExist.html");
+      assertTrue(driver.getCurrentUrl()
+                       .equals("https://127.0.0.1:8867/NotExist.html"));
     } catch (NoSuchElementException e) {
       e.printStackTrace();
       fail(e.getMessage());
@@ -234,7 +237,82 @@ public class AdminResponsiveTest extends TestAbstract {
   }
 
   @Test
-  public void testWebBusiness() throws InterruptedException {
+  public void test06_WebInteractiveResponsive() throws InterruptedException {
+    try {
+      // Test name: TestInteractResponsive
+      // Step # | name | target | value
+      // 1 | open | https://127.0.0.1:8867/ |  |
+      driver.get("https://127.0.0.1:8867/");
+      // 2 | type | id=passwd | pwdhttp |
+      driver.findElement(By.id("passwd")).sendKeys("pwdhttp");
+      // 3 | type | id=name | monadmin |
+      driver.findElement(By.id("name")).sendKeys("monadmin");
+      // 4 | click | id=submit |  |
+      driver.findElement(By.id("submit")).click();
+      assertTrue(
+          driver.getCurrentUrl().equals("https://127.0.0.1:8867/index.html"));
+      // 5 | open | https://127.0.0.1:8867/ |  |
+      driver.get("https://127.0.0.1:8867/");
+      assertTrue(driver.getCurrentUrl().equals("https://127.0.0.1:8867/"));
+      driver.get("https://127.0.0.1:8867/Listing.html");
+      assertTrue(
+          driver.getCurrentUrl().equals("https://127.0.0.1:8867/Listing.html"));
+      // 9 | click | css=.btn-primary:nth-child(1) |
+      driver.findElement(By.cssSelector(".btn-primary:nth-child(1)")).click();
+      // 10 | click | css=.btn-primary:nth-child(2) |
+      driver.findElement(By.cssSelector(".btn-primary:nth-child(2)")).click();
+      driver.get("https://127.0.0.1:8867/CancelRestart.html");
+      assertTrue(driver.getCurrentUrl()
+                       .equals("https://127.0.0.1:8867/CancelRestart.html"));
+      // 13 | click | css=.btn-primary:nth-child(1) |
+      driver.findElement(By.cssSelector(".btn-primary:nth-child(1)")).click();
+      // 14 | click | css=.btn-primary:nth-child(2) |
+      driver.findElement(By.cssSelector(".btn-primary:nth-child(2)")).click();
+      // 15 | click | css=.btn-warning |
+      driver.findElement(By.cssSelector(".btn-warning")).click();
+      // 16 | click | css=.btn-info |
+      driver.findElement(By.cssSelector(".btn-info")).click();
+      driver.get("https://127.0.0.1:8867/Hosts.html");
+      assertTrue(
+          driver.getCurrentUrl().equals("https://127.0.0.1:8867/Hosts.html"));
+      // 18 | click | css=.btn-primary:nth-child(1) |
+      driver.findElement(By.cssSelector(".btn-primary:nth-child(1)")).click();
+      // 19 | click | css=.odd:nth-child(1) > td:nth-child(1) |
+      driver.findElement(By.cssSelector(".odd:nth-child(1) > td:nth-child(1)"))
+            .click();
+      // 20 | click | css=.btn:nth-child(2) > span |
+      driver.findElement(By.cssSelector(".btn:nth-child(2) > span")).click();
+      // 21 | click | id=update-button |
+      driver.findElement(By.id("update-button")).click();
+      // 22 | click | linkText=RULES |
+      driver.get("https://127.0.0.1:8867/Rules.html");
+      assertTrue(
+          driver.getCurrentUrl().equals("https://127.0.0.1:8867/Rules.html"));
+      // 23 | click | css=.btn-primary:nth-child(1) |
+      driver.findElement(By.cssSelector(".btn-primary:nth-child(1)")).click();
+      // 24 | click | css=.even:nth-child(2) > .sorting_1 |
+      driver.findElement(By.cssSelector(".even:nth-child(2) > .sorting_1"))
+            .click();
+      // 25 | click | css=.btn:nth-child(2) > span |
+      driver.findElement(By.cssSelector(".btn:nth-child(2) > span")).click();
+      // 26 | click | id=update-button |
+      driver.findElement(By.id("update-button")).click();
+    } catch (NoSuchElementException e) {
+      e.printStackTrace();
+      fail(e.getMessage());
+    } catch (StaleElementReferenceException e) {
+      e.printStackTrace();
+      fail(e.getMessage());
+    } finally {
+      // 29 | click | linkText=LOGOUT |  |
+      driver.get("https://127.0.0.1:8867/Logout.html");
+      assertTrue(
+          driver.getCurrentUrl().equals("https://127.0.0.1:8867/Logout.html"));
+    }
+  }
+
+  @Test
+  public void test01_WebBusiness() throws InterruptedException {
     try {
       // Test name: HostConfig
       // Step # | name | target | value
@@ -388,7 +466,7 @@ public class AdminResponsiveTest extends TestAbstract {
   }
 
   @Test
-  public void testWebSystem() throws InterruptedException {
+  public void test07_WebSystem() throws InterruptedException {
     try {
       // Test name: SystemResponsive
       // Step # | name | target | value
@@ -545,7 +623,7 @@ public class AdminResponsiveTest extends TestAbstract {
   }
 
   @Test
-  public void testWebCreateUser() throws InterruptedException {
+  public void test02_WebCreateUser() throws InterruptedException {
     // Test name: TestCreateUser
     try {
       // Step # | name | target | value
@@ -707,7 +785,7 @@ public class AdminResponsiveTest extends TestAbstract {
   }
 
   @Test
-  public void testWebCreateUserAdmin() throws InterruptedException {
+  public void test03_WebCreateUserAdmin() throws InterruptedException {
     // Test name: TestCreateUser
     try {
       // Step # | name | target | value
@@ -766,4 +844,37 @@ public class AdminResponsiveTest extends TestAbstract {
       driver.get("https://127.0.0.1:8867/Logout.html");
     }
   }
+
+  @Test
+  public void test08_WebShutdown() throws InterruptedException {
+    // Test name: TestConnectShutdown
+    // Step # | name | target | value
+    try {
+      // Test name: TestInteractResponsive
+      // Step # | name | target | value
+      // 1 | open | https://127.0.0.1:8867/ |  |
+      driver.get("https://127.0.0.1:8867/");
+      // 2 | type | id=passwd | pwdhttp |
+      driver.findElement(By.id("passwd")).sendKeys("pwdhttp");
+      // 3 | type | id=name | monadmin |
+      driver.findElement(By.id("name")).sendKeys("monadmin");
+      // 4 | click | id=submit |  |
+      driver.findElement(By.id("submit")).click();
+      assertTrue(
+          driver.getCurrentUrl().equals("https://127.0.0.1:8867/index.html"));
+      // 5 | open | https://127.0.0.1:8867/ |  |
+      driver.get("https://127.0.0.1:8867/");
+      assertTrue(driver.getCurrentUrl().equals("https://127.0.0.1:8867/"));
+      // 10 | click | linkText=SYSTEM |
+      driver.get("https://127.0.0.1:8867/System.html");
+      Thread.sleep(WAIT);
+      // 11 | click | css=.text-right:nth-child(3) > .btn |
+      driver.findElement(By.cssSelector(".text-right:nth-child(3) > .btn"))
+            .click();
+    } finally {
+      // Disconnection
+      driver.get("https://127.0.0.1:8867/Logout.html");
+    }
+  }
+
 }
