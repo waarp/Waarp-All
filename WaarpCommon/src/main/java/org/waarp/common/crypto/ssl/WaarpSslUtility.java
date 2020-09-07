@@ -227,56 +227,41 @@ public final class WaarpSslUtility {
             @Override
             public void operationComplete(final Future future)
                 throws Exception {
-              logger.debug("Found SslHandler and wait for Ssl.close()");
-              final ChannelHandlerContext cht =
-                  channel.pipeline().context(sslHandler);
-              if (cht.channel().isActive()) {
-                cht.close().addListener(
-                    new GenericFutureListener<Future<? super Void>>() {
-                      @Override
-                      public void operationComplete(
-                          final Future<? super Void> future) throws Exception {
-                        logger.debug("Ssl closed");
-                        if (!close) {
-                          channel.pipeline().remove(sslHandler);
-                        } else {
-                          if (channel.isActive()) {
-                            channel.close();
-                          }
-                        }
-                      }
-                    });
-              }
+              waitForSslClose(channel, sslHandler, close);
             }
           });
         } else {
-          logger
-              .debug("Found SslHandler and wait for Ssl.close() : " + channel);
-          final ChannelHandlerContext cht =
-              channel.pipeline().context(sslHandler);
-          if (cht.channel().isActive()) {
-            cht.close()
-               .addListener(new GenericFutureListener<Future<? super Void>>() {
-                 @Override
-                 public void operationComplete(
-                     final Future<? super Void> future) throws Exception {
-                   logger.debug("Ssl closed: " + channel);
-                   if (!close) {
-                     channel.pipeline().remove(sslHandler);
-                   } else {
-                     if (channel.isActive()) {
-                       channel.close();
-                     }
-                   }
-                 }
-               });
-          }
+          waitForSslClose(channel, sslHandler, close);
         }
       } else {
         if (channel.isActive()) {
           channel.close();
         }
       }
+    }
+  }
+
+  private static void waitForSslClose(final Channel channel,
+                                      final SslHandler sslHandler,
+                                      final boolean close) {
+    logger.debug("Found SslHandler and wait for Ssl.close() : {}", channel);
+    final ChannelHandlerContext cht = channel.pipeline().context(sslHandler);
+    if (cht.channel().isActive()) {
+      cht.close()
+         .addListener(new GenericFutureListener<Future<? super Void>>() {
+           @Override
+           public void operationComplete(final Future<? super Void> future)
+               throws Exception {
+             logger.debug("Ssl closed: {}", channel);
+             if (!close) {
+               channel.pipeline().remove(sslHandler);
+             } else {
+               if (channel.isActive()) {
+                 channel.close();
+               }
+             }
+           }
+         });
     }
   }
 

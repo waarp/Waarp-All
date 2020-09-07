@@ -377,7 +377,7 @@ public class DataNetworkHandler extends SimpleChannelInboundHandler<DataBlock> {
           }
         } catch (final FtpNoTransferException e) {
           try {
-            Thread.sleep(100);
+            Thread.sleep(WaarpNettyUtil.SIMPLE_DELAY_MS);
           } catch (final InterruptedException e1) {//NOSONAR
             SysErrLogger.FAKE_LOGGER.ignoreLog(e1);
             break;

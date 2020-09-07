@@ -739,12 +739,6 @@ public class NetworkTransaction {
         }
       }
       localChannelReference.close();
-      try {
-        Thread.sleep(Configuration.WAITFORNETOP * 2);
-      } catch (final InterruptedException e) {//NOSONAR
-        SysErrLogger.FAKE_LOGGER.ignoreLog(e);
-        // ignore
-      }
       throw new OpenR66ProtocolNotAuthenticatedException(
           "Cannot validate connection: " + future.getResult(),
           future.getCause());

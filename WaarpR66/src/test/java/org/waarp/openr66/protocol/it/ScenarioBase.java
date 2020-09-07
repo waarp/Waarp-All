@@ -351,7 +351,6 @@ public abstract class ScenarioBase extends TestAbstract {
         }
       }
       timestop = System.currentTimeMillis();
-      Thread.sleep(1000);
       logger.warn(
           "Sent {} files to R2, then {} to R3, using at most {} parallel clients" +
           " ({} seconds,  {} per seconds)", dirR2.list().length,
@@ -366,13 +365,13 @@ public abstract class ScenarioBase extends TestAbstract {
         }
       }
       timestop = System.currentTimeMillis();
-      Thread.sleep(1000);
       logger.warn(
           "Sent {} files to R2, then {} to R3 ({} seconds, {} per seconds)",
           dirR2.list().length, dirR3.list().length,
           (timestop - timestart) / 1000,
           NUMBER_FILES * 1000 / (timestop - timestart));
     }
+    Thread.sleep(1000);
     FileUtils.forceDeleteRecursiveDir(dirR2);
     FileUtils.forceDeleteRecursiveDir(dirR3);
     logger.warn("End {}", Processes.getCurrentMethodName());
@@ -479,7 +478,6 @@ public abstract class ScenarioBase extends TestAbstract {
         }
       }
       timestop = System.currentTimeMillis();
-      Thread.sleep(1000);
       logger.warn(
           "Sent {} files to R2, then {} to R3, using at most {} parallel clients" +
           " ({} seconds, {} per seconds)", dirR1.list().length,
@@ -494,13 +492,13 @@ public abstract class ScenarioBase extends TestAbstract {
         }
       }
       timestop = System.currentTimeMillis();
-      Thread.sleep(1000);
       logger.warn(
           "Sent {} files to R1, then {} to R3 ({} seconds, {} per seconds)",
           dirR1.list().length, dirR3.list().length,
           (timestop - timestart) / 1000,
           NUMBER_FILES * 1000 / (timestop - timestart));
     }
+    Thread.sleep(1000);
     FileUtils.forceDeleteRecursiveDir(dirR1);
     FileUtils.forceDeleteRecursiveDir(dirR3);
     logger.warn("End {}", Processes.getCurrentMethodName());
@@ -526,7 +524,7 @@ public abstract class ScenarioBase extends TestAbstract {
     test011_SendToItself();
     NUMBER_FILES = lastNumber;
     // Extra sleep to check correctness if necessary on Logs
-    Thread.sleep(5000);
+    Thread.sleep(2000);
   }
 
   @Test
@@ -566,7 +564,7 @@ public abstract class ScenarioBase extends TestAbstract {
     // Ensure the last send is ok
     test011_SendToItself();
     // Extra sleep to check correctness if necessary on Logs
-    Thread.sleep(5000);
+    Thread.sleep(2000);
     NUMBER_FILES = lastNumber;
   }
 

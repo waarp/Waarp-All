@@ -53,9 +53,13 @@ public class IcapTestClientReal {
       createFile(file, 10000);
 
       String service = "avscan";
+      String IP = "172.17.0.2";
+      if (args.length > 0) {
+        IP = args[0];
+      }
       String[] fullArgs = new String[] {
           IcapScanFile.FILE_ARG, file.getAbsolutePath(), IcapScanFile.TO_ARG,
-          "172.17.0.2", IcapScanFile.SERVICE_ARG, service, "-logger", "DEBUG"
+          IP, IcapScanFile.SERVICE_ARG, service, "-logger", "DEBUG"
       };
       testScanIcap(file, service, fullArgs);
       service = "virus_scan";

@@ -113,14 +113,6 @@ public class FtpClientThread implements Runnable {
       // client.makeDir(this.id);
       logger.info(id + " change dir");
       client.changeDir(id);
-      if (delay >= 10) {
-        try {
-          Thread.sleep(delay);
-        } catch (final InterruptedException ignored) {//NOSONAR
-        }
-      } else {
-        Thread.yield();
-      }
 
       logger.info(id + " change type");
       client.changeFileType(true);
@@ -136,14 +128,7 @@ public class FtpClientThread implements Runnable {
               return;
             } else {
               FtpClientTest.numberOK.incrementAndGet();
-              if (delay > 0) {
-                try {
-                  Thread.sleep(delay);
-                } catch (final InterruptedException ignored) {//NOSONAR
-                }
-              }
             }
-            // System.err.println(id+" end transfer store "+i);
           }
         } else {
           for (int i = 0; i < numberIteration; i++) {
@@ -154,12 +139,6 @@ public class FtpClientThread implements Runnable {
               return;
             } else {
               FtpClientTest.numberOK.incrementAndGet();
-              if (delay > 0) {
-                try {
-                  Thread.sleep(delay);
-                } catch (final InterruptedException ignored) {//NOSONAR
-                }
-              }
             }
             if (!client.deleteFile(remoteFilename)) {
               logger.warn(" Cant delete file passive mode " + id);
@@ -167,14 +146,7 @@ public class FtpClientThread implements Runnable {
               return;
             } else {
               FtpClientTest.numberOK.incrementAndGet();
-              if (delay > 0) {
-                try {
-                  Thread.sleep(delay);
-                } catch (final InterruptedException ignored) {//NOSONAR
-                }
-              }
             }
-            // System.err.println(id+" end transfer retr "+i);
           }
           if (!client.transferFile(localFilename, remoteFilename, true)) {
             logger.warn("Cant store file passive mode " + id);
@@ -182,12 +154,6 @@ public class FtpClientThread implements Runnable {
             return;
           } else {
             FtpClientTest.numberOK.incrementAndGet();
-            if (delay > 0) {
-              try {
-                Thread.sleep(delay);
-              } catch (final InterruptedException ignored) {//NOSONAR
-              }
-            }
           }
           Thread.yield();
           for (int i = 0; i < numberIteration; i++) {
@@ -198,14 +164,7 @@ public class FtpClientThread implements Runnable {
               return;
             } else {
               FtpClientTest.numberOK.incrementAndGet();
-              if (delay > 0) {
-                try {
-                  Thread.sleep(delay);
-                } catch (final InterruptedException ignored) {//NOSONAR
-                }
-              }
             }
-            // System.err.println(id+" end transfer retr "+i);
           }
         }
         Thread.yield();
@@ -222,14 +181,7 @@ public class FtpClientThread implements Runnable {
               return;
             } else {
               FtpClientTest.numberOK.incrementAndGet();
-              if (delay > 0) {
-                try {
-                  Thread.sleep(delay);
-                } catch (final InterruptedException ignored) {//NOSONAR
-                }
-              }
             }
-            // System.err.println(id+" transfer store end "+i);
           }
           Thread.yield();
         } else {
@@ -241,12 +193,6 @@ public class FtpClientThread implements Runnable {
               return;
             } else {
               FtpClientTest.numberOK.incrementAndGet();
-              if (delay > 0) {
-                try {
-                  Thread.sleep(delay);
-                } catch (final InterruptedException ignored) {//NOSONAR
-                }
-              }
             }
             if (!client.deleteFile(remoteFilename)) {
               logger.warn("Cant delete file active mode " + id);
@@ -254,14 +200,7 @@ public class FtpClientThread implements Runnable {
               return;
             } else {
               FtpClientTest.numberOK.incrementAndGet();
-              if (delay > 0) {
-                try {
-                  Thread.sleep(delay);
-                } catch (final InterruptedException ignored) {//NOSONAR
-                }
-              }
             }
-            // System.err.println(id+" end transfer retr "+i);
           }
           if (!client.transferFile(localFilename, remoteFilename, true)) {
             logger.warn("Cant store file active mode " + id);
@@ -269,12 +208,6 @@ public class FtpClientThread implements Runnable {
             return;
           } else {
             FtpClientTest.numberOK.incrementAndGet();
-            if (delay > 0) {
-              try {
-                Thread.sleep(delay);
-              } catch (final InterruptedException ignored) {//NOSONAR
-              }
-            }
           }
           Thread.yield();
           for (int i = 0; i < numberIteration; i++) {
@@ -285,14 +218,7 @@ public class FtpClientThread implements Runnable {
               return;
             } else {
               FtpClientTest.numberOK.incrementAndGet();
-              if (delay > 0) {
-                try {
-                  Thread.sleep(delay);
-                } catch (final InterruptedException ignored) {//NOSONAR
-                }
-              }
             }
-            // System.err.println(id+" end transfer retr "+i);
           }
         }
       }

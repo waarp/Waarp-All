@@ -743,4 +743,72 @@ public class AdminTest extends TestAbstract {
       driver.findElement(By.linkText("LOGOUT")).click();
     }
   }
+
+  @Test
+  public void test09_InteractiveShutdown() throws InterruptedException {
+    try {
+      // Test name: TestInteract
+      // Step # | name | target | value
+      // 1 | open | / |
+      driver.get("https://127.0.0.1:8067/");
+      Thread.sleep(WAIT);
+      // 4 | type | name=passwd | pwdhttp
+      driver.findElement(By.name("passwd")).sendKeys("pwdhttp");
+      // 5 | type | name=name | monadmin
+      driver.findElement(By.name("name")).sendKeys("monadmin");
+      // 6 | click | name=Logon |
+      driver.findElement(By.name("Logon")).click();
+      Thread.sleep(WAIT);
+      // 7 | click | linkText=TRANSFERS |
+      driver.findElement(By.linkText("TRANSFERS")).click();
+      // 8 | click | linkText=LISTING |
+      driver.findElement(By.linkText("LISTING")).click();
+      // 9 | click | name=ACTION |
+      driver.findElement(By.name("ACTION")).click();
+      // 10 | click | css=input:nth-child(5) |
+      driver.findElement(By.cssSelector("input:nth-child(5)")).click();
+      // 11 | click | css=p > input:nth-child(6) |
+      driver.findElement(By.cssSelector("p > input:nth-child(6)")).click();
+      // 12 | click | linkText=CANCEL-RESTART |
+      driver.findElement(By.linkText("CANCEL-RESTART")).click();
+      // 13 | click | name=ACTION |
+      driver.findElement(By.name("ACTION")).click();
+      // 14 | click | css=input:nth-child(5) |
+      driver.findElement(By.cssSelector("input:nth-child(5)")).click();
+      // 15 | click | css=input:nth-child(1) |
+      driver.findElement(By.cssSelector("input:nth-child(1)")).click();
+      // 16 | click | css=p:nth-child(39) > input:nth-child(2) |
+      driver.findElement(By.cssSelector("p:nth-child(39) > input:nth-child(2)"))
+            .click();
+      // 17 | click | linkText=HOSTS |
+      driver.findElement(By.linkText("HOSTS")).click();
+      // 18 | click | css=input:nth-child(4) |
+      driver.findElement(By.cssSelector("input:nth-child(4)")).click();
+      // 19 | click | css=tr:nth-child(2) > td:nth-child(12) > input |
+      driver.findElement(
+          By.cssSelector("tr:nth-child(2) > td:nth-child(12) > input")).click();
+      // 20 | click | css=td:nth-child(14) > input |
+      driver.findElement(By.cssSelector("td:nth-child(14) > input")).click();
+      // 21 | click | linkText=RULES |
+      driver.findElement(By.linkText("RULES")).click();
+      // 22 | click | css=p:nth-child(3) > input:nth-child(4) |
+      driver.findElement(By.cssSelector("p:nth-child(3) > input:nth-child(4)"))
+            .click();
+      // 23 | click | css=p:nth-child(3) > input:nth-child(5) |
+      driver.findElement(By.cssSelector("p:nth-child(3) > input:nth-child(5)"))
+            .click();
+      // 24 | click | css=#AutoNumber1 tr:nth-child(4) input:nth-child(1) |
+      driver.findElement(
+          By.cssSelector("#AutoNumber1 tr:nth-child(4) input:nth-child(1)"))
+            .click();
+      // 25 | click | linkText=SYSTEM |
+      driver.findElement(By.linkText("SYSTEM")).click();
+      // 26 | click | css=form:nth-child(11) > input |
+      driver.findElement(By.cssSelector("form:nth-child(11) > input")).click();
+    } finally {
+      // 45 | click | linkText=LOGOUT |
+      driver.findElement(By.linkText("LOGOUT")).click();
+    }
+  }
+
 }

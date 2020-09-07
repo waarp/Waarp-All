@@ -25,6 +25,7 @@ import org.waarp.common.exception.InvalidArgumentException;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.utility.ParametersChecker;
+import org.waarp.common.utility.SingletonUtils;
 import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.gateway.kernel.AbstractHttpField.FieldPosition;
 import org.waarp.gateway.kernel.exception.HttpIncorrectRequestException;
@@ -164,6 +165,9 @@ public class HttpPage {
    */
   public String getHtmlPage(final AbstractHttpBusinessRequest reference)
       throws HttpIncorrectRequestException {
+    if (reference == null) {
+      return "<HTML><HEADER/>ERROR</HTML>";
+    }
     if (getPagerole() == PageRole.HTML) {
       // No handling of variable management, use MENU instead
       String value = reference.getHeader();
@@ -311,6 +315,9 @@ public class HttpPage {
                        final String fieldname, final String value,
                        final FieldPosition position)
       throws HttpIncorrectRequestException {
+    if (reference == null) {
+      return;
+    }
     final Map<String, AbstractHttpField> requestFields =
         reference.getMapHttpFields();
     final AbstractHttpField field = requestFields.get(fieldname);
@@ -360,6 +367,9 @@ public class HttpPage {
    * @return True if the request is fully valid
    */
   public boolean isRequestValid(final AbstractHttpBusinessRequest reference) {
+    if (reference == null) {
+      return true;
+    }
     final Map<String, AbstractHttpField> requestFields =
         reference.getMapHttpFields();
     for (final AbstractHttpField field : requestFields.values()) {
@@ -381,6 +391,9 @@ public class HttpPage {
    */
   public Map<String, AbstractHttpField> getFieldsForRequest(
       final AbstractHttpBusinessRequest reference) {
+    if (reference == null) {
+      return SingletonUtils.singletonMap();
+    }
     return reference.getMapHttpFields();
   }
 

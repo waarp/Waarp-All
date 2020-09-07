@@ -25,7 +25,6 @@ import org.apache.commons.exec.ExecuteWatchdog;
 import org.apache.commons.exec.PumpStreamHandler;
 import org.waarp.commandexec.utils.LocalExecResult;
 import org.waarp.common.command.exception.CommandAbstractException;
-import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.openr66.context.ErrorCode;
@@ -198,11 +197,6 @@ public class ExecOutputTask extends AbstractExecTask {
   @Override
   void finalizeFromError(final Runnable threadReader, final int status,
                          final CommandLine commandLine, final Exception e) {
-    try {
-      Thread.sleep(Configuration.RETRYINMS);
-    } catch (final InterruptedException e2) {//NOSONAR
-      SysErrLogger.FAKE_LOGGER.ignoreLog(e2);
-    }
     final String result =
         ((AllLineReader) threadReader).getLastLine().toString();
     logger.error("Status: " + status + " Exec in error with " + commandLine +

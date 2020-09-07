@@ -179,12 +179,6 @@ public abstract class AbstractFtpClient {
       logger.warn("Logout");
       client.logout();
     }
-    if (isSSL != 0) {
-      try {
-        Thread.sleep(100);
-      } catch (final InterruptedException ignored) {//NOSONAR
-      }
-    }
     final ExecutorService executorService = Executors.newCachedThreadPool();
     logger.warn("Will start {} Threads", numberThread);
     final long date1 = System.currentTimeMillis();
@@ -193,26 +187,12 @@ public abstract class AbstractFtpClient {
           new FtpClientThread("T" + i, server, port, username, passwd, account,
                               localFilename, numberIteration, type, delay,
                               isSSL));
-      if (delay > 0) {
-        try {
-          final long newdel = ((delay / 3) / 10) * 10;
-          if (newdel == 0) {
-            Thread.yield();
-          } else {
-            Thread.sleep(newdel);
-          }
-        } catch (final InterruptedException ignored) {//NOSONAR
-        }
-      } else {
-        Thread.yield();
-      }
+      Thread.yield();
     }
     try {
       Thread.sleep(100);
     } catch (final InterruptedException e1) {//NOSONAR
       e1.printStackTrace();
-      executorService.shutdownNow();
-      // Thread.currentThread().interrupt();
     }
     executorService.shutdown();
     long date2 = 0;

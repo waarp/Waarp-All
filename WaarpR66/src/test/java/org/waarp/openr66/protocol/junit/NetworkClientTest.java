@@ -983,9 +983,8 @@ public class NetworkClientTest extends TestAbstract {
     final long time2 = System.currentTimeMillis();
     logger.warn("Success: " + success + " Error: " + error + " NB/s: " +
                 2 * success * 1000 / (time2 - time1));
-    Thread.sleep(1000);
+    Thread.sleep(200);
     totest.delete();
-    Thread.sleep(1000);
     assertEquals("Success should be 2", 2, success);
     assertEquals("Errors should be 0", 0, error);
   }
@@ -1037,9 +1036,8 @@ public class NetworkClientTest extends TestAbstract {
     final long time2 = System.currentTimeMillis();
     logger.warn("Success: " + success + " Error: " + error + " NB/s: " +
                 success * 1000 / (time2 - time1));
-    Thread.sleep(5000);
+    Thread.sleep(200);
     totest.delete();
-    Thread.sleep(3000);
     assertEquals("Success should be 0", 0, success);
     assertEquals("Errors should be 1", 1, error);
   }
@@ -1074,9 +1072,8 @@ public class NetworkClientTest extends TestAbstract {
     final long time2 = System.currentTimeMillis();
     logger.warn("Success: " + success + " Error: " + error + " NB/s: " +
                 success * 1000 / (time2 - time1));
-    Thread.sleep(5000);
+    Thread.sleep(200);
     totest.delete();
-    Thread.sleep(3000);
     assertEquals("Success should be 0", 0, success);
     assertEquals("Errors should be 1", 1, error);
   }
@@ -1106,9 +1103,8 @@ public class NetworkClientTest extends TestAbstract {
     final long time2 = System.currentTimeMillis();
     logger.warn("Success: " + success + " Error: " + error + " NB/s: " +
                 success * 1000 / (time2 - time1));
-    Thread.sleep(5000);
+    Thread.sleep(200);
     totest.delete();
-    Thread.sleep(3000);
     assertEquals("Success should be 0", 0, success);
     assertEquals("Errors should be 1", 1, error);
   }
@@ -1137,7 +1133,7 @@ public class NetworkClientTest extends TestAbstract {
     final long time2 = System.currentTimeMillis();
     logger.warn("Success: " + success + " Error: " + error + " NB/s: " +
                 success * 1000 / (time2 - time1));
-    Thread.sleep(5000);
+    Thread.sleep(200);
     assertEquals("Success should be 0", 0, success);
     assertEquals("Errors should be 1", 1, error);
   }

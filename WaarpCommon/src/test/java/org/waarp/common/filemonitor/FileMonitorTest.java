@@ -366,8 +366,6 @@ public class FileMonitorTest {
     waitForStatusOrFail(countNew, 1);
 
     logger.warn("Waiting long delay for check: " + fileTest.getAbsolutePath());
-    // FIXME change false to true and wait for 300 more (400), and check redo
-    //  is launched if ignore false
     Thread.sleep(LARGE_WAIT);
     logger.warn("Check is true: " + fileTest.getAbsolutePath());
     checkOK.set(true);

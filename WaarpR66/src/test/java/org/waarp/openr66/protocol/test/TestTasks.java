@@ -39,10 +39,14 @@ import org.waarp.openr66.context.task.ExecMoveTask;
 import org.waarp.openr66.context.task.ExecOutputTask;
 import org.waarp.openr66.context.task.ExecTask;
 import org.waarp.openr66.context.task.FileCheckTask;
+import org.waarp.openr66.context.task.FtpTransferTask;
+import org.waarp.openr66.context.task.LinkRenameTask;
 import org.waarp.openr66.context.task.LogTask;
 import org.waarp.openr66.context.task.MoveRenameTask;
 import org.waarp.openr66.context.task.MoveTask;
 import org.waarp.openr66.context.task.RenameTask;
+import org.waarp.openr66.context.task.RescheduleTransferTask;
+import org.waarp.openr66.context.task.RestartServerTask;
 import org.waarp.openr66.context.task.SnmpTask;
 import org.waarp.openr66.context.task.TarTask;
 import org.waarp.openr66.context.task.TranscodeTask;
@@ -371,6 +375,42 @@ public class TestTasks {
                transferTask.getFutureCompletion().isSuccess());
     waitForAllDone(transferTask.getFutureCompletion().getResult().getRunner());
 
+    // FTPTRANSFER
+    final FtpTransferTask ftpTransferTask = new FtpTransferTask(
+        "-file " + out + "/test.tar -to localhost -port 2022 " +
+        " -user test -pwd test -account test -command put", 0, argTransfer,
+        session);
+    ftpTransferTask.run();
+    ftpTransferTask.getFutureCompletion().awaitOrInterruptible();
+    System.out.println(
+        "FTPTRANSFER: " + ftpTransferTask.getFutureCompletion().isSuccess());
+    assertTrue("FTPTRANSFER should be KO (no connection)",
+               ftpTransferTask.getFutureCompletion().isFailed());
+
+    // LINKRENAME
+    final LinkRenameTask linkRenameTask =
+        new LinkRenameTask(out + "/linkrename", 0, argTransfer, session);
+    linkRenameTask.run();
+    linkRenameTask.getFutureCompletion().awaitOrInterruptible();
+    System.out.println(
+        "LINKRENAME: " + linkRenameTask.getFutureCompletion().isSuccess());
+    assertTrue("LINKRENAME should be OK",
+               linkRenameTask.getFutureCompletion().isSuccess());
+
+    // RESCHEDULETRANSFER
+    final RescheduleTransferTask rescheduleTransferTask =
+        new RescheduleTransferTask(
+            "-delay 3600000 -case ConnectionImpossible,ServerOverloaded,Shutdown" +
+            " -count 2" + " -notbetween H7:m0:S0;H19:m0:S0" +
+            " -notbetween H1:m0:S0;H=3:m0:S0", 0, argTransfer, session);
+    rescheduleTransferTask.run();
+    rescheduleTransferTask.getFutureCompletion().awaitOrInterruptible();
+    System.out.println("RESCHEDULETRANSFER: " +
+                       rescheduleTransferTask.getFutureCompletion()
+                                             .isSuccess());
+    assertTrue("RESCHEDULETRANSFER should be KO",
+               rescheduleTransferTask.getFutureCompletion().isFailed());
+
     // DELETE
     final DeleteTask deleteTask =
         new DeleteTask(out + "/move", 0, argTransfer, session);
@@ -380,6 +420,17 @@ public class TestTasks {
         .println("DELETE: " + deleteTask.getFutureCompletion().isSuccess());
     assertTrue("DELETE should be OK",
                deleteTask.getFutureCompletion().isSuccess());
+
+    // RESTART
+    final RestartServerTask restartServerTask =
+        new RestartServerTask("", 0, argTransfer, session);
+    restartServerTask.run();
+    restartServerTask.getFutureCompletion().awaitOrInterruptible();
+    System.out.println(
+        "RESTART: " + restartServerTask.getFutureCompletion().isSuccess());
+    assertTrue("RESTART should be KO (unallowed)",
+               restartServerTask.getFutureCompletion().isFailed());
+
   }
 
   private static void waitForAllDone(DbTaskRunner runner) {

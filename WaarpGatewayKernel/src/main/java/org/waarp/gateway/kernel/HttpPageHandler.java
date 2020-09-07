@@ -21,6 +21,7 @@ package org.waarp.gateway.kernel;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import org.waarp.common.database.DbConstant;
+import org.waarp.common.database.DbSession;
 import org.waarp.gateway.kernel.database.WaarpActionLogger;
 import org.waarp.gateway.kernel.exception.HttpIncorrectRequestException;
 import org.waarp.gateway.kernel.session.HttpSession;
@@ -77,16 +78,7 @@ public class HttpPageHandler {
     switch (page.getPagerole()) {
       case DELETE:
         if (!"DELETE".equalsIgnoreCase(method)) {
-          // error
-          WaarpActionLogger
-              .logErrorAction(DbConstant.admin.getSession(), session,
-                              INCORRECT_PAGE + page.getPagerole(),
-                              HttpResponseStatus.BAD_REQUEST);
-          if (page.getErrorpage() != null && page.getErrorpage().length() > 1) {
-            page = getHashmap().get(page.getErrorpage());
-          } else {
-            page = null;
-          }
+          page = getHttpPageError(session, page);
         }
         break;
       case HTML:
@@ -96,61 +88,45 @@ public class HttpPageHandler {
       case GETDOWNLOAD:
         if (!"GET".equalsIgnoreCase(method)) {
           // error
-          WaarpActionLogger
-              .logErrorAction(DbConstant.admin.getSession(), session,
-                              INCORRECT_PAGE + page.getPagerole(),
-                              HttpResponseStatus.BAD_REQUEST);
-          if (page.getErrorpage() != null && page.getErrorpage().length() > 1) {
-            page = getHashmap().get(page.getErrorpage());
-          } else {
-            page = null;
-          }
+          page = getHttpPageError(session, page);
         }
         break;
       case POST:
       case POSTUPLOAD:
         if (!"POST".equalsIgnoreCase(method)) {
           // error
-          WaarpActionLogger
-              .logErrorAction(DbConstant.admin.getSession(), session,
-                              INCORRECT_PAGE + page.getPagerole(),
-                              HttpResponseStatus.BAD_REQUEST);
-          if (page.getErrorpage() != null && page.getErrorpage().length() > 1) {
-            page = getHashmap().get(page.getErrorpage());
-          } else {
-            page = null;
-          }
+          page = getHttpPageError(session, page);
         }
         break;
       case PUT:
         if (!"PUT".equalsIgnoreCase(method)) {
           // error
-          WaarpActionLogger
-              .logErrorAction(DbConstant.admin.getSession(), session,
-                              INCORRECT_PAGE + page.getPagerole(),
-                              HttpResponseStatus.BAD_REQUEST);
-          if (page.getErrorpage() != null && page.getErrorpage().length() > 1) {
-            page = getHashmap().get(page.getErrorpage());
-          } else {
-            page = null;
-          }
+          page = getHttpPageError(session, page);
         }
         break;
       case ERROR:
         break;
       default:
         // error
-        WaarpActionLogger.logErrorAction(DbConstant.admin.getSession(), session,
-                                         INCORRECT_PAGE + page.getPagerole(),
-                                         HttpResponseStatus.BAD_REQUEST);
-        if (page.getErrorpage() != null || page.getErrorpage().length() > 1) {
-          page = getHashmap().get(page.getErrorpage());
-        } else {
-          page = null;
-        }
+        page = getHttpPageError(session, page);
     }
     if (page == null) {
       throw new HttpIncorrectRequestException("No Page found");
+    }
+    return page;
+  }
+
+  private HttpPage getHttpPageError(final HttpSession session, HttpPage page) {
+    // error
+    DbSession dbSession =
+        DbConstant.admin != null? DbConstant.admin.getSession() : null;
+    WaarpActionLogger
+        .logErrorAction(dbSession, session, INCORRECT_PAGE + page.getPagerole(),
+                        HttpResponseStatus.BAD_REQUEST);
+    if (page.getErrorpage() != null && page.getErrorpage().length() > 1) {
+      page = getHashmap().get(page.getErrorpage());
+    } else {
+      page = null;
     }
     return page;
   }

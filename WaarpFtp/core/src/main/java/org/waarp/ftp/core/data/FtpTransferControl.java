@@ -143,7 +143,7 @@ public class FtpTransferControl {
    */
   public void waitForDataNetworkHandlerReady() throws InterruptedException {
     if (!isDataNetworkHandlerReady) {
-      Thread.sleep(10);
+      Thread.sleep(WaarpNettyUtil.MINIMAL_DELAY_MS);
       if (!isDataNetworkHandlerReady) {
         // logger.debug("Wait for DataNetwork Ready over {}")
         throw new InterruptedException("Bad initialization");

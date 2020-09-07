@@ -21,7 +21,6 @@
 package org.waarp.ftp.client.transaction;
 
 import org.waarp.common.digest.FilesystemBasedDigest.DigestAlgo;
-import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.ftp.client.FtpClientTest;
@@ -116,15 +115,7 @@ public class FtpClientThread implements Runnable {
       // client.makeDir(this.id);
       logger.info(id + " change dir");
       client.changeDir(id);
-      if (delay >= 10) {
-        try {
-          Thread.sleep(delay);
-        } catch (final InterruptedException e) {//NOSONAR
-          SysErrLogger.FAKE_LOGGER.ignoreLog(e);
-        }
-      } else {
-        Thread.yield();
-      }
+      Thread.yield();
       String[] results = client.executeCommand("XMKD newtest");
       for (final String string : results) {
         logger.warn("XMKD: {}", string);
@@ -201,15 +192,7 @@ public class FtpClientThread implements Runnable {
               return;
             } else {
               FtpClientTest.numberOK.incrementAndGet();
-              if (delay > 0) {
-                try {
-                  Thread.sleep(delay);
-                } catch (final InterruptedException e) {//NOSONAR
-                  SysErrLogger.FAKE_LOGGER.ignoreLog(e);
-                }
-              }
             }
-            // System.err.println(id+" end transfer store "+i);
           }
         } else {
           for (int i = 0; i < numberIteration; i++) {
@@ -220,12 +203,6 @@ public class FtpClientThread implements Runnable {
               return;
             } else {
               FtpClientTest.numberOK.incrementAndGet();
-              if (delay > 0) {
-                try {
-                  Thread.sleep(delay);
-                } catch (final InterruptedException ignored) {//NOSONAR
-                }
-              }
             }
             if (!client.deleteFile(remoteFilename)) {
               logger.warn(" Cant delete file passive mode " + id);
@@ -233,14 +210,7 @@ public class FtpClientThread implements Runnable {
               return;
             } else {
               FtpClientTest.numberOK.incrementAndGet();
-              if (delay > 0) {
-                try {
-                  Thread.sleep(delay);
-                } catch (final InterruptedException ignored) {//NOSONAR
-                }
-              }
             }
-            // System.err.println(id+" end transfer retr "+i);
           }
           if (!client.transferFile(localFilename, remoteFilename, true)) {
             logger.warn("Cant store file passive mode " + id);
@@ -248,12 +218,6 @@ public class FtpClientThread implements Runnable {
             return;
           } else {
             FtpClientTest.numberOK.incrementAndGet();
-            if (delay > 0) {
-              try {
-                Thread.sleep(delay);
-              } catch (final InterruptedException ignored) {//NOSONAR
-              }
-            }
           }
           Thread.yield();
           for (int i = 0; i < numberIteration; i++) {
@@ -264,14 +228,7 @@ public class FtpClientThread implements Runnable {
               return;
             } else {
               FtpClientTest.numberOK.incrementAndGet();
-              if (delay > 0) {
-                try {
-                  Thread.sleep(delay);
-                } catch (final InterruptedException ignored) {//NOSONAR
-                }
-              }
             }
-            // System.err.println(id+" end transfer retr "+i);
           }
         }
         Thread.yield();
@@ -288,14 +245,7 @@ public class FtpClientThread implements Runnable {
               return;
             } else {
               FtpClientTest.numberOK.incrementAndGet();
-              if (delay > 0) {
-                try {
-                  Thread.sleep(delay);
-                } catch (final InterruptedException ignored) {//NOSONAR
-                }
-              }
             }
-            // System.err.println(id+" transfer store end "+i);
           }
           Thread.yield();
         } else {
@@ -307,12 +257,6 @@ public class FtpClientThread implements Runnable {
               return;
             } else {
               FtpClientTest.numberOK.incrementAndGet();
-              if (delay > 0) {
-                try {
-                  Thread.sleep(delay);
-                } catch (final InterruptedException ignored) {//NOSONAR
-                }
-              }
             }
             if (!client.deleteFile(remoteFilename)) {
               logger.warn("Cant delete file active mode " + id);
@@ -320,14 +264,7 @@ public class FtpClientThread implements Runnable {
               return;
             } else {
               FtpClientTest.numberOK.incrementAndGet();
-              if (delay > 0) {
-                try {
-                  Thread.sleep(delay);
-                } catch (final InterruptedException ignored) {//NOSONAR
-                }
-              }
             }
-            // System.err.println(id+" end transfer retr "+i);
           }
           if (!client.transferFile(localFilename, remoteFilename, true)) {
             logger.warn("Cant store file active mode " + id);
@@ -335,12 +272,6 @@ public class FtpClientThread implements Runnable {
             return;
           } else {
             FtpClientTest.numberOK.incrementAndGet();
-            if (delay > 0) {
-              try {
-                Thread.sleep(delay);
-              } catch (final InterruptedException ignored) {//NOSONAR
-              }
-            }
           }
           Thread.yield();
           for (int i = 0; i < numberIteration; i++) {
@@ -351,14 +282,7 @@ public class FtpClientThread implements Runnable {
               return;
             } else {
               FtpClientTest.numberOK.incrementAndGet();
-              if (delay > 0) {
-                try {
-                  Thread.sleep(delay);
-                } catch (final InterruptedException ignored) {//NOSONAR
-                }
-              }
             }
-            // System.err.println(id+" end transfer retr "+i);
           }
         }
       }

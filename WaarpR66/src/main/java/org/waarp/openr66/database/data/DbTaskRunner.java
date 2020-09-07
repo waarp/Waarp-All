@@ -3912,7 +3912,8 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
             logger.debug("Cannot delete wrong XML file");
           }
           logger.error("Cannot write XML file", e);
-          throw new OpenR66ProtocolBusinessException("Unsupported Encoding");
+          throw new OpenR66ProtocolBusinessException(//NOSONAR
+                                                     "Unsupported Encoding");//NOSONAR
         } catch (final IOException e) {
           FileUtils.close(outputStream);
           final File file = new File(filename);
@@ -3920,7 +3921,8 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
             logger.debug("Cannot delete wrong XML file");
           }
           logger.error("Cannot write XML file", e);
-          throw new OpenR66ProtocolBusinessException("Unsupported Encoding");
+          throw new OpenR66ProtocolBusinessException(//NOSONAR
+                                                     "Unsupported Encoding");//NOSONAR
         }
         if (!isOk && outputStream != null) {
           FileUtils.close(outputStream);
@@ -4247,7 +4249,8 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
             logger.debug("Cannot delete wrong XML file");
           }
           logger.error("Cannot write XML file", e);
-          throw new OpenR66ProtocolBusinessException("Cannot write XML file");
+          throw new OpenR66ProtocolBusinessException(//NOSONAR
+                                                     "Cannot write XML file");//NOSONAR
         } catch (final IOException e) {
           FileUtils.close(outputStream);
           final File file = new File(filename);
@@ -4255,7 +4258,9 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
             logger.debug("Cannot delete wrong XML file");
           }
           logger.error("Cannot write XML file", e);
-          throw new OpenR66ProtocolBusinessException("IO error on XML file", e);
+          throw new OpenR66ProtocolBusinessException(//NOSONAR
+                                                     "IO error on XML file",
+                                                     e);//NOSONAR
         }
         if (!isOk && outputStream != null) {
           FileUtils.close(outputStream);

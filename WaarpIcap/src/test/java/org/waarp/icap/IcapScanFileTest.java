@@ -968,7 +968,8 @@ public class IcapScanFileTest {
         "600", "-key200", "Options-TTL", "-string200", "XXX", "-stringHttp",
         "WrongWaarpFakeIcap"
     };
-    assertEquals(IcapScanFile.STATUS_KO_SCAN_POST_ACTION_ERROR, IcapScanFile.scanFile(fullArgs));
+    assertEquals(IcapScanFile.STATUS_KO_SCAN_POST_ACTION_ERROR,
+                 IcapScanFile.scanFile(fullArgs));
     assertTrue(file.exists());
   }
 
