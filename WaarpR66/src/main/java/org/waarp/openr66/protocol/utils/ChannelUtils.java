@@ -201,11 +201,19 @@ public class ChannelUtils extends Thread {
    */
   public static ChannelFuture writeBackDataBlock(
       final LocalChannelReference localChannelReference,
-      final FilesystemBasedDigest digestGlobal, final DataBlock block)
+      final FilesystemBasedDigest digestGlobal, final DataBlock block,
+      final FilesystemBasedDigest digestBlock)
       throws OpenR66ProtocolPacketException {
     byte[] md5 = {};
     final DbTaskRunner runner = localChannelReference.getSession().getRunner();
-    if (RequestPacket.isMD5Mode(runner.getMode())) {
+    if (digestBlock != null) {
+      if (digestGlobal != null) {
+        digestGlobal.Update(block.getByteBlock());
+      }
+      digestBlock.Update(block.getByteBlock());
+      md5 = digestBlock.Final();
+    } else if (RequestPacket.isSendThroughMode(runner.getMode()) &&
+               RequestPacket.isMD5Mode(runner.getMode())) {
       final DigestAlgo algo =
           localChannelReference.getPartner().getDigestAlgo();
       md5 = FileUtils.getHash(block.getByteBlock(), algo, digestGlobal);

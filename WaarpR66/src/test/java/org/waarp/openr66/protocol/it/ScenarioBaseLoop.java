@@ -129,6 +129,7 @@ public abstract class ScenarioBaseLoop extends TestAbstract {
     Processes.setJvmArgsDefault(null);
     WaarpLoggerFactory.setDefaultFactoryIfNotSame(
         new WaarpSlf4JLoggerFactory(WaarpLogLevel.WARN));
+    // Thread.sleep(10000);// To enable Profiling
   }
 
   public String getServerConfigFile() {

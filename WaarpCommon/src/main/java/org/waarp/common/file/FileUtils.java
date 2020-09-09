@@ -300,7 +300,7 @@ public final class FileUtils {
         try {
           copy(inputStream, outputStream);
         } catch (final IOException e) {
-          throw new Reply550Exception("Cannot copy");
+          throw new Reply550Exception("Cannot copy, e");
         }
       } finally {
         close(outputStream);

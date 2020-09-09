@@ -272,6 +272,7 @@ public class TransferActions extends ServerActions {
     localChannelReference.setChannelLimit(runner.isSender(), localLimit);
     packet.setLimit(localLimit);
 
+    session.initializeDigest();
     // inform back
     informBackFromRequest(packet, runner);
     // if retrieve => START the retrieve operation except if in Send Through mode
@@ -902,12 +903,12 @@ public class TransferActions extends ServerActions {
                    (localChannelReference.getPartner() != null?
                        localChannelReference.getPartner().getDigestAlgo() :
                        "usual algo"));
+
       if (Configuration.configuration.isGlobalDigest()) {
         prepareGlobalDigests();
         // Cumulate all three digests
         if (!packet
-            .isKeyValid(localChannelReference.getPartner().getDigestAlgo(),
-                        globalDigest, localDigest)) {
+            .isKeyValid(session.getDigestBlock(), globalDigest, localDigest)) {
           // Wrong packet
           logger.error(Messages.getString("LocalServerHandler.17"), packet,
                        //$NON-NLS-1$
@@ -922,8 +923,7 @@ public class TransferActions extends ServerActions {
           return;
         }
         // Only Packet digest
-      } else if (!packet
-          .isKeyValid(localChannelReference.getPartner().getDigestAlgo())) {
+      } else if (!packet.isKeyValid(session.getDigestBlock())) {
         // Wrong packet
         logger.error(Messages.getString("LocalServerHandler.17"), packet,
                      //$NON-NLS-1$
@@ -986,11 +986,16 @@ public class TransferActions extends ServerActions {
               localChannelReference.getPartner().getDigestAlgo();
           if (algo != Configuration.configuration.getDigest()) {
             globalDigest = new FilesystemBasedDigest(algo);
-            localDigest = new FilesystemBasedDigest(
-                Configuration.configuration.getDigest());
+            if (Configuration.configuration.isLocalDigest() &&
+                !localChannelReference.isPartialHash()) {
+              localDigest = new FilesystemBasedDigest(
+                  Configuration.configuration.getDigest());
+            }
           }
         }
-        if (globalDigest == null) {
+        if (globalDigest == null &&
+            Configuration.configuration.isLocalDigest() &&
+            !localChannelReference.isPartialHash()) {
           globalDigest = new FilesystemBasedDigest(
               Configuration.configuration.getDigest());
           localDigest = null;
@@ -1106,15 +1111,18 @@ public class TransferActions extends ServerActions {
         }
         session.setStatus(23);
         ChannelCloseTimer.closeFutureTransaction(this);
+        localDigest = null;
+        globalDigest = null;
         return true;
-      } else {
+      } else if (Configuration.configuration.isLocalDigest()) {
         if (localDigest != null) {
           localhash = FilesystemBasedDigest.getHex(localDigest.Final());
         }
         localChannelReference.setHashComputeDuringTransfer(localhash);
         logger.debug("Global digest ok");
       }
-    } else if (globalDigest != null) {
+    } else if (Configuration.configuration.isLocalDigest() &&
+               (globalDigest != null || localDigest != null)) {
       final String localhash;
       if (localDigest != null) {
         localhash = FilesystemBasedDigest.getHex(localDigest.Final());

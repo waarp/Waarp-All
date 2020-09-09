@@ -723,6 +723,10 @@ public class FileBasedConfiguration {
       if (value != null && !value.isEmpty()) {
         config.setGlobalDigest(value.getBoolean());
       }
+      value = hashConfig.get(XML_LOCALDIGEST);
+      if (value != null && !value.isEmpty()) {
+        config.setLocalDigest(value.getBoolean());
+      }
       alreadySetLimit = true;
       return true;
     } finally {

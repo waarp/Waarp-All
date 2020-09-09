@@ -279,6 +279,7 @@ public class RetrieveRunner extends Thread {
    * @param block
    * @param localChannelReference
    * @param digestGlobal
+   * @param digestBlock
    *
    * @return the ChannelFuture on the write operation
    *
@@ -288,11 +289,13 @@ public class RetrieveRunner extends Thread {
    */
   public static ChannelFuture writeWhenPossible(final DataBlock block,
                                                 final LocalChannelReference localChannelReference,
-                                                final FilesystemBasedDigest digestGlobal)
+                                                final FilesystemBasedDigest digestGlobal,
+                                                final FilesystemBasedDigest digestBlock)
       throws OpenR66ProtocolPacketException, OpenR66RunnerErrorException,
              OpenR66ProtocolSystemException {
     return ChannelUtils
-        .writeBackDataBlock(localChannelReference, digestGlobal, block);
+        .writeBackDataBlock(localChannelReference, digestGlobal, block,
+                            digestBlock);
   }
 
   public int getLocalId() {

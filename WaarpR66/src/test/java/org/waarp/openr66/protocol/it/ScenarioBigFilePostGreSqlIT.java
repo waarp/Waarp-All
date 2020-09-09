@@ -62,6 +62,7 @@ public class ScenarioBigFilePostGreSqlIT extends ScenarioBaseBigFile {
     logger.warn("START PostGreSQL IT TEST");
     scenarioBase = new ScenarioBigFilePostGreSqlIT();
     setUpBeforeClass();
+    // Thread.sleep(10000);// To enable Profiling
   }
 
 }

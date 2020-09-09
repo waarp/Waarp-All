@@ -23,7 +23,6 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.Unpooled;
 import org.waarp.common.digest.FilesystemBasedDigest;
-import org.waarp.common.digest.FilesystemBasedDigest.DigestAlgo;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.utility.ParametersChecker;
@@ -202,19 +201,20 @@ public class DataPacket extends AbstractLocalPacket {
   /**
    * @return True if the Hashed key is valid (or no key is set)
    */
-  public boolean isKeyValid(final DigestAlgo algo) {
+  public boolean isKeyValid(final FilesystemBasedDigest digestBlock) {
     ParametersChecker.checkParameter("Data is not setup correctly", data);
     if (key == null || key.length == 0) {
       logger.error("Should received a Digest but don't");
       return false;
     }
-    final byte[] newkey = FileUtils.getHash(data, algo, null);
+    digestBlock.Update(data);
+    final byte[] newkey = digestBlock.Final();
     final boolean equal = Arrays.equals(key, newkey);
     if (!equal) {
       logger.error("DIGEST {} != {} for {} bytes using {} at rank {}",
                    FilesystemBasedDigest.getHex(key),
-                   FilesystemBasedDigest.getHex(newkey), data.length, algo,
-                   packetRank);
+                   FilesystemBasedDigest.getHex(newkey), data.length,
+                   digestBlock.getAlgo(), packetRank);
     }
     return equal;
   }
@@ -222,7 +222,7 @@ public class DataPacket extends AbstractLocalPacket {
   /**
    * @return True if the Hashed key is valid (or no key is set)
    */
-  public boolean isKeyValid(final DigestAlgo algo,
+  public boolean isKeyValid(final FilesystemBasedDigest digestBlock,
                             final FilesystemBasedDigest digestGlobal,
                             final FilesystemBasedDigest digestLocal) {
     ParametersChecker.checkParameter("Data is not setup correctly", data);
@@ -233,23 +233,15 @@ public class DataPacket extends AbstractLocalPacket {
       logger.error("Should received a Digest but don't");
       return false;
     }
-    final byte[] newkey;
-    if (digestGlobal != null && digestLocal != null) {
-      newkey = FileUtils.getHash(data, algo, null);
-      FileUtils.computeGlobalHash(digestGlobal, digestLocal, data);
-    } else if (digestGlobal == null && digestLocal == null) {
-      newkey = FileUtils.getHash(data, algo, null);
-    } else if (digestGlobal != null) {
-      newkey = FileUtils.getHash(data, algo, digestGlobal);
-    } else {
-      newkey = FileUtils.getHash(data, algo, digestLocal);
-    }
+    digestBlock.Update(data);
+    final byte[] newkey = digestBlock.Final();
+    FileUtils.computeGlobalHash(digestGlobal, digestLocal, data);
     final boolean equal = Arrays.equals(key, newkey);
     if (!equal) {
       logger.error("DIGEST {} != {} for {} bytes using {} at rank {}",
                    FilesystemBasedDigest.getHex(key),
-                   FilesystemBasedDigest.getHex(newkey), data.length, algo,
-                   packetRank);
+                   FilesystemBasedDigest.getHex(newkey), data.length,
+                   digestBlock.getAlgo(), packetRank);
     }
     return equal;
   }
