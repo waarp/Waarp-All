@@ -106,7 +106,8 @@ public class R66File extends FilesystemBasedFileImpl {
     boolean retrieveDone = false;
     final LocalChannelReference localChannelReference =
         getSession().getLocalChannelReference();
-    FilesystemBasedDigest digest = null;
+    FilesystemBasedDigest digestGlobal = null;
+    FilesystemBasedDigest digestBlock = ((R66Session) session).getDigestBlock();
     logger.debug("File to retrieve: " + this);
     DataBlock block = null;
     try {
@@ -127,7 +128,7 @@ public class R66File extends FilesystemBasedFileImpl {
       }
       if (Configuration.configuration.isGlobalDigest()) {
         try {
-          digest = new FilesystemBasedDigest(
+          digestGlobal = new FilesystemBasedDigest(
               Configuration.configuration.getDigest());
         } catch (final NoSuchAlgorithmException e2) {
           // ignore
@@ -138,10 +139,12 @@ public class R66File extends FilesystemBasedFileImpl {
       if (running.get() && !Thread.interrupted()) {
         if (Configuration.configuration.isGlobalDigest()) {
           future1 = RetrieveRunner
-              .writeWhenPossible(block, localChannelReference, digest);
+              .writeWhenPossible(block, localChannelReference, digestGlobal,
+                                 digestBlock);
         } else {
           future1 = RetrieveRunner
-              .writeWhenPossible(block, localChannelReference, null);
+              .writeWhenPossible(block, localChannelReference, null,
+                                 digestBlock);
         }
       }
       // While not last block
@@ -166,10 +169,12 @@ public class R66File extends FilesystemBasedFileImpl {
         }
         if (Configuration.configuration.isGlobalDigest()) {
           future2 = RetrieveRunner
-              .writeWhenPossible(block, localChannelReference, digest);
+              .writeWhenPossible(block, localChannelReference, digestGlobal,
+                                 digestBlock);
         } else {
           future2 = RetrieveRunner
-              .writeWhenPossible(block, localChannelReference, null);
+              .writeWhenPossible(block, localChannelReference, null,
+                                 digestBlock);
         }
         future1 = future2;
       }
@@ -202,8 +207,8 @@ public class R66File extends FilesystemBasedFileImpl {
       }
       if (retrieveDone) {
         String hash = null;
-        if (digest != null) {
-          hash = FilesystemBasedDigest.getHex(digest.Final());
+        if (digestGlobal != null) {
+          hash = FilesystemBasedDigest.getHex(digestGlobal.Final());
         }
         try {
           if (hash == null) {

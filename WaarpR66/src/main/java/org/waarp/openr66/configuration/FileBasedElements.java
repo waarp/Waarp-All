@@ -460,16 +460,16 @@ public class FileBasedElements {
    */
   public static final String XML_TIMEOUTCON = "timeoutcon";
   /**
-   * Should a file MD5 SHA1 be computed using NIO
+   * Should a file MD5 SHA1 be computed using NIO (not recommended anymore)
    */
   public static final String XML_USENIO = "usenio";
   /**
    * What Digest to use: CRC32=0, ADLER32=1, MD5=2, MD2=3, SHA1=4, SHA256=5,
-   * SHA384=6, SHA512=7
+   * SHA384=6, SHA512=7 : recommended value is 7
    */
   public static final String XML_DIGEST = "digest";
   /**
-   * Should a file MD5 be computed using FastMD5
+   * Should a file MD5 be computed using FastMD5 (not recommended anymore)
    */
   public static final String XML_USEFASTMD5 = "usefastmd5";
   /**
@@ -549,6 +549,10 @@ public class FileBasedElements {
    */
   public static final String XML_GLOBALDIGEST = "globaldigest";
   /**
+   * Final local digest check by transfer enable
+   */
+  public static final String XML_LOCALDIGEST = "localdigest";
+  /**
    * Structure of the Configuration file
    */
   private static final XmlDecl[] configLimitDecls = {
@@ -580,7 +584,8 @@ public class FileBasedElements {
       new XmlDecl(XmlType.INTEGER, XML_BLOCKSIZE),
       new XmlDecl(XmlType.INTEGER, XML_USETHRIFT),
       new XmlDecl(XmlType.BOOLEAN, XML_CHECKVERSION),
-      new XmlDecl(XmlType.BOOLEAN, XML_GLOBALDIGEST)
+      new XmlDecl(XmlType.BOOLEAN, XML_GLOBALDIGEST),
+      new XmlDecl(XmlType.BOOLEAN, XML_LOCALDIGEST)
   };
   /**
    * SERVER REST interface SHA address usage (and not all available IPs)

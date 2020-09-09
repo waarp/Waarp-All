@@ -3026,21 +3026,44 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
             } catch (final CommandAbstractException ignored) {
               // nothing
             }
-            // check if possible once more the hash
-            String hash = localChannelReference.getHashComputeDuringTransfer();
-            if (localChannelReference.isPartialHash()) {
-              hash = null; // ignore
-            }
-            if (hash != null) {
-              // we can compute it once more
-              try {
-                if (!FilesystemBasedDigest.getHex(FilesystemBasedDigest.getHash(
-                    file.getTrueFile(), true,
-                    Configuration.configuration.getDigest())).equals(hash)) {
-                  // KO
+            // check if necessary once more the hash
+            if (Configuration.configuration.isLocalDigest()) {
+              String hash = null;
+              if (localChannelReference != null &&
+                  !localChannelReference.isPartialHash() &&
+                  !localChannelReference.getPartner().useFinalHash()) {
+                // If partner is using final hash, not necessary since both
+                // sides already checked already during end of transfer
+                hash = localChannelReference.getHashComputeDuringTransfer();
+              }
+              if (hash != null) {
+                // we can compute it once more
+                try {
+                  if (!FilesystemBasedDigest.getHex(FilesystemBasedDigest
+                                                        .getHash(
+                                                            file.getTrueFile(),
+                                                            true,
+                                                            Configuration.configuration
+                                                                .getDigest()))
+                                            .equals(hash)) {
+                    // KO
+                    final R66Result result = new R66Result(
+                        new OpenR66RunnerErrorException(
+                            "Bad final digest on receive operation"), session,
+                        false, ErrorCode.FinalOp, this);
+                    result.setFile(file);
+                    result.setRunner(this);
+                    if (localChannelReference != null) {
+                      localChannelReference.invalidateRequest(result);
+                    }
+                    error.setException(result.getException());
+                    errorTransfer(error, file, localChannelReference);
+                    throw (OpenR66RunnerErrorException) result.getException();
+                  }
+                } catch (final IOException e) {
                   final R66Result result = new R66Result(
                       new OpenR66RunnerErrorException(
-                          "Bad final digest on receive operation"), session,
+                          "Bad final digest on receive operation", e), session,
                       false, ErrorCode.FinalOp, this);
                   result.setFile(file);
                   result.setRunner(this);
@@ -3051,19 +3074,6 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
                   errorTransfer(error, file, localChannelReference);
                   throw (OpenR66RunnerErrorException) result.getException();
                 }
-              } catch (final IOException e) {
-                final R66Result result = new R66Result(
-                    new OpenR66RunnerErrorException(
-                        "Bad final digest on receive operation", e), session,
-                    false, ErrorCode.FinalOp, this);
-                result.setFile(file);
-                result.setRunner(this);
-                if (localChannelReference != null) {
-                  localChannelReference.invalidateRequest(result);
-                }
-                error.setException(result.getException());
-                errorTransfer(error, file, localChannelReference);
-                throw (OpenR66RunnerErrorException) result.getException();
               }
             }
           }

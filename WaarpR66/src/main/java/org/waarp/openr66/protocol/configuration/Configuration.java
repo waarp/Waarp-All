@@ -34,7 +34,6 @@ import org.waarp.common.crypto.Des;
 import org.waarp.common.crypto.ssl.WaarpSecureKeyStore;
 import org.waarp.common.crypto.ssl.WaarpSslContextFactory;
 import org.waarp.common.crypto.ssl.WaarpSslUtility;
-import org.waarp.common.database.DbSession;
 import org.waarp.common.database.exception.WaarpDatabaseException;
 import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
 import org.waarp.common.database.exception.WaarpDatabaseSqlException;
@@ -98,8 +97,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionHandler;
@@ -189,6 +191,10 @@ public class Configuration {
    * Global digest
    */
   private boolean globalDigest = true;
+  /**
+   * Local digest
+   */
+  private boolean localDigest = true;
   /**
    * White List of allowed Partners to use Business Requests
    */
@@ -417,7 +423,7 @@ public class Configuration {
    */
   private boolean useNOSSL = true;
   /**
-   * Algorithm to use for Digest
+   * Algorithm to use for Digest: fastest, replacement could be SHA512
    */
   private FilesystemBasedDigest.DigestAlgo digest = DigestAlgo.MD5;
 
@@ -1491,21 +1497,6 @@ public class Configuration {
     }
   }
 
-  /**
-   * @param dbSession
-   * @param remoteHost
-   *
-   * @return the HostId according to remoteHost (and its SSL status)
-   *
-   * @throws WaarpDatabaseException
-   * @deprecated Use getHostId(String remoteHost)
-   */
-  @Deprecated
-  public String getHostId(final DbSession dbSession, final String remoteHost)
-      throws WaarpDatabaseException {
-    return getHostId(remoteHost);
-  }
-
   private static class UsageStatistic extends TimerTask {
 
     @Override
@@ -1623,37 +1614,51 @@ public class Configuration {
   }
 
   /**
+   * @return the localDigest
+   */
+  public boolean isLocalDigest() {
+    return localDigest;
+  }
+
+  /**
+   * @param localDigest the localDigest to set
+   */
+  public void setLocalDigest(final boolean localDigest) {
+    this.localDigest = localDigest;
+  }
+
+  /**
    * @return the businessWhiteSet
    */
-  public HashSet<String> getBusinessWhiteSet() {
+  public Set<String> getBusinessWhiteSet() {
     return businessWhiteSet;
   }
 
   /**
    * @return the roles
    */
-  public HashMap<String, RoleDefault> getRoles() {
+  public Map<String, RoleDefault> getRoles() {
     return roles;
   }
 
   /**
    * @return the aliases
    */
-  public HashMap<String, String> getAliases() {
+  public Map<String, String> getAliases() {
     return aliases;
   }
 
   /**
    * @return the reverseAliases
    */
-  public HashMap<String, String[]> getReverseAliases() {
+  public Map<String, String[]> getReverseAliases() {
     return reverseAliases;
   }
 
   /**
    * @return the versions
    */
-  public ConcurrentHashMap<String, PartnerConfiguration> getVersions() {
+  public ConcurrentMap<String, PartnerConfiguration> getVersions() {
     return versions;
   }
 

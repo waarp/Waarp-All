@@ -21,10 +21,12 @@ package org.waarp.openr66.context;
 
 import org.waarp.common.command.exception.CommandAbstractException;
 import org.waarp.common.database.data.AbstractDbData.UpdatedInfo;
+import org.waarp.common.digest.FilesystemBasedDigest;
 import org.waarp.common.exception.IllegalFiniteStateException;
 import org.waarp.common.exception.NoRestartException;
 import org.waarp.common.file.SessionInterface;
 import org.waarp.common.file.filesystembased.FilesystemBasedFileParameterImpl;
+import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.state.MachineState;
@@ -38,11 +40,13 @@ import org.waarp.openr66.database.data.DbTaskRunner.TASKSTEP;
 import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolSystemException;
 import org.waarp.openr66.protocol.localhandler.LocalChannelReference;
+import org.waarp.openr66.protocol.localhandler.packet.RequestPacket;
 import org.waarp.openr66.protocol.utils.FileUtils;
 
 import java.io.File;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -92,7 +96,7 @@ public class R66Session implements SessionInterface {
   /**
    * Used to prevent deny of service
    */
-  private AtomicInteger numOfError;
+  private AtomicInteger numOfError = new AtomicInteger(0);
 
   /**
    * Current Restart information
@@ -123,6 +127,7 @@ public class R66Session implements SessionInterface {
   private final HashMap<String, R66Dir> dirsFromSession =
       new HashMap<String, R66Dir>();
   private byte[] reusableBuffer;
+  private FilesystemBasedDigest digestBlock = null;
 
   /**
    * Create the session
@@ -242,6 +247,7 @@ public class R66Session implements SessionInterface {
       businessObject.releaseResources(this);
       businessObject = null;
     }
+    digestBlock = null;
   }
 
   public void partialClear() {
@@ -270,6 +276,7 @@ public class R66Session implements SessionInterface {
       businessObject.releaseResources(this);
       businessObject = null;
     }
+    digestBlock = null;
   }
 
   @Override
@@ -293,6 +300,27 @@ public class R66Session implements SessionInterface {
       reusableBuffer = new byte[blockSize];
     }
     return reusableBuffer;
+  }
+
+  /**
+   * Initialize per block digest
+   */
+  public void initializeDigest() {
+    if (digestBlock == null && RequestPacket.isMD5Mode(getRunner().getMode())) {
+      try {
+        digestBlock = new FilesystemBasedDigest(
+            localChannelReference.getPartner().getDigestAlgo());
+      } catch (NoSuchAlgorithmException e) {
+        SysErrLogger.FAKE_LOGGER.ignoreLog(e);
+      }
+    }
+  }
+
+  /**
+   * @return the digest used per block
+   */
+  public FilesystemBasedDigest getDigestBlock() {
+    return digestBlock;
   }
 
   /**
