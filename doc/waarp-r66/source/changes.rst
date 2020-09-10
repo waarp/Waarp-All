@@ -7,6 +7,18 @@ La procédure de mise à jour est disponible ici: :any:`upgrade`
 Non publié
 ==========
 
+Waarp R66 3.5.1 (2020-09-01)
+============================
+
+Correctifs
+----------
+
+- Réduction des temps de latence dans le code
+- Correction de mauvaises pratiques de code
+- Amélioration des performances sensibles (15%) en lien avec les calculs
+  d'empreintes (Digest)
+
+
 Waarp R66 3.5.0 (2020-09-01)
 ============================
 
