@@ -15,8 +15,10 @@ Correctifs
 
 - Réduction des temps de latence dans le code
 - Correction de mauvaises pratiques de code
+- Compatibilité JDK 6 à 11
 - Amélioration des performances sensibles (15%) en lien avec les calculs
   d'empreintes (Digest)
+- Amélioration de la documentation
 
 
 Waarp R66 3.5.0 (2020-09-01)

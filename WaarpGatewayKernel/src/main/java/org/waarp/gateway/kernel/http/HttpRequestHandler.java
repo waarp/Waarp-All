@@ -526,14 +526,16 @@ public abstract class HttpRequestHandler
    */
   protected void addBusinessCookie(final FullHttpResponse response,
                                    final Set<String> cookieNames) {
-    for (final AbstractHttpField field : httpPage
-        .getFieldsForRequest(businessRequest).values()) {
-      if (field.isFieldcookieset() &&
-          !cookieNames.contains(field.getFieldname())) {
-        response.headers().add(HttpHeaderNames.SET_COOKIE,
-                               ServerCookieEncoder.LAX
-                                   .encode(field.getFieldname(),
-                                           field.fieldvalue));
+    if (httpPage != null) {
+      for (final AbstractHttpField field : httpPage
+          .getFieldsForRequest(businessRequest).values()) {
+        if (field.isFieldcookieset() &&
+            !cookieNames.contains(field.getFieldname())) {
+          response.headers().add(HttpHeaderNames.SET_COOKIE,
+                                 ServerCookieEncoder.LAX
+                                     .encode(field.getFieldname(),
+                                             field.fieldvalue));
+        }
       }
     }
   }
@@ -648,6 +650,10 @@ public abstract class HttpRequestHandler
       throws HttpIncorrectRequestException {
     try {
       businessValidRequestAfterAllDataReceived(ctx);
+      if (httpPage == null) {
+        // Cached
+        return;
+      }
       if (!httpPage.isRequestValid(businessRequest)) {
         throw new HttpIncorrectRequestException("Request unvalid");
       }

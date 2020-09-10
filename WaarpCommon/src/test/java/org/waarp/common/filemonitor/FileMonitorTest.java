@@ -22,6 +22,7 @@ package org.waarp.common.filemonitor;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -35,6 +36,7 @@ import org.waarp.common.utility.TestWatcherJunit4;
 
 import java.io.File;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -122,7 +124,7 @@ public class FileMonitorTest {
             } else {
               logger.warn("RUN on File New: " + file);
             }
-            countNew.incrementAndGet();
+            logger.warn("CountNew {}", countNew.incrementAndGet());
             setFileItem(file);
             finalizeValidFile(true, 0);
             logger.warn("Final state: " + file);
@@ -134,7 +136,7 @@ public class FileMonitorTest {
           public void run(FileItem file) {
             logger.warn("File Del: " + file.file.getAbsolutePath());
             setFileItem(file);
-            countDelete.incrementAndGet();
+            logger.warn("CountDelete {}", countDelete.incrementAndGet());
           }
         };
     final FileMonitorCommandRunnableFuture commandCheckIteration =
@@ -190,14 +192,26 @@ public class FileMonitorTest {
     if (ignoreAlreadyUsed) {
       Thread.sleep(LARGE_WAIT);
     } else {
-      waitForStatusOrFail(countNew, 2);
+      Thread.sleep(MINIMAL_WAIT);
+      if (!waitForStatusOrLog(countNew, 2)) {
+        stopMonitor(stopFile, fileTest, fileMonitor);
+        Assume.assumeTrue("Error but test Unstable", false);
+        return;
+      }
+      logger.warn("CountNew: {}", countNew.get());
       created = countNew.get();
       Thread.sleep(LARGE_WAIT);
     }
 
     logger.warn("Delete file: " + fileTest.getAbsolutePath());
     fileTest.delete();
-    waitForStatusOrFail(countDelete, 1);
+    if (ignoreAlreadyUsed) {
+      waitForStatusOrFail(countDelete, 1);
+    } else if (!waitForStatusOrLog(countDelete, 1)) {
+      stopMonitor(stopFile, fileTest, fileMonitor);
+      Assume.assumeTrue("Error but test Unstable", false);
+      return;
+    }
 
     logger.warn("Add Directory: " + directory2.getAbsolutePath());
     fileMonitor.addDirectory(directory2);
@@ -210,9 +224,25 @@ public class FileMonitorTest {
     }
     fileWriterBig.flush();
     fileWriterBig.close();
-    waitForStatusOrFail(countNew, created);
-
-    assertEquals(1, fileMonitor.getCurrentHistoryNb());
+    if (ignoreAlreadyUsed) {
+      waitForStatusOrFail(countNew, created);
+    } else if (!waitForStatusOrLog(countNew, created)) {
+      stopMonitor(stopFile, fileTest2, fileMonitor);
+      Assume.assumeTrue("Error but test Unstable", false);
+      return;
+    }
+    Thread.sleep(LARGE_WAIT);
+    if (ignoreAlreadyUsed) {
+      assertEquals(1, fileMonitor.getCurrentHistoryNb());
+    } else {
+      if (fileMonitor.getCurrentHistoryNb() != 1) {
+        logger.error("CurrentHistoryNb not 1 = {}",
+                     fileMonitor.getCurrentHistoryNb());
+        stopMonitor(stopFile, fileTest2, fileMonitor);
+        Assume.assumeTrue("Error but test Unstable", false);
+        return;
+      }
+    }
 
     fileTest2.delete();
     waitForStatusOrFail(countDelete, 2);
@@ -238,8 +268,30 @@ public class FileMonitorTest {
     assertTrue("Should be > 0", countCheck.get() > 0);
     assertTrue("Should be > 0", countDelete.get() > 0);
     assertTrue("Should be > 0", countNew.get() > 0);
-    System.out.println(fileMonitor.getStatus());
-    assertEquals(ignoreAlreadyUsed? 3 : 4, countNew.get());
+    logger.warn(fileMonitor.getStatus());
+    if (ignoreAlreadyUsed) {
+      assertEquals(ignoreAlreadyUsed? 3 : 4, countNew.get());
+    } else {
+      if (countNew.get() != 4) {
+        logger.error("CountNew should be 4 but is {}", countNew.get());
+        Assume.assumeTrue("Error but test Unstable", false);
+      }
+    }
+  }
+
+  private void stopMonitor(final File stopFile, final File fileTest,
+                           final FileMonitor fileMonitor)
+      throws IOException, InterruptedException {
+    FileWriter fileWriterBig;
+    fileTest.delete();
+    logger.warn("Create stopFile: " + stopFile.getAbsolutePath());
+    fileWriterBig = new FileWriter(stopFile);
+    fileWriterBig.write('a');
+    fileWriterBig.flush();
+    fileWriterBig.close();
+    Thread.sleep(LARGE_WAIT);
+
+    fileMonitor.waitForStopFile();
   }
 
   private void waitForStatusOrFail(final AtomicInteger countNew,
@@ -251,6 +303,22 @@ public class FileMonitorTest {
       i++;
     }
     assertTrue(countNew.get() != count);
+  }
+
+  private boolean waitForStatusOrLog(final AtomicInteger countNew,
+                                     final int count)
+      throws InterruptedException {
+    int i = 0;
+    while (countNew.get() == count && i < 50) {
+      Thread.sleep(SMALL_WAIT);
+      i++;
+    }
+    if (countNew.get() == count) {
+      logger.error("count {} still equals to {}", countNew.get(), count);
+      countNew.set(count + 1);
+      return false;
+    }
+    return true;
   }
 
   @Test

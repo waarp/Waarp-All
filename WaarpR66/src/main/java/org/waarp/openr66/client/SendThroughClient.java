@@ -370,8 +370,8 @@ public abstract class SendThroughClient extends AbstractTransfer {
   public ChannelFuture writeWhenPossible(final DataBlock block)
       throws OpenR66RunnerErrorException, OpenR66ProtocolPacketException,
              OpenR66ProtocolSystemException {
-    return RetrieveRunner.writeWhenPossible(block, localChannelReference,
-                                            null, null);
+    return RetrieveRunner
+        .writeWhenPossible(block, localChannelReference, null, null);
   }
 
   /**

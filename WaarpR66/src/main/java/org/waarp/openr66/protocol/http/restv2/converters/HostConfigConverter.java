@@ -215,7 +215,6 @@ public final class HostConfigConverter {
     } finally {
       DAOFactory.closeDAO(businessDAO);
     }
-
     final Roles roles = nodeToRoles(array);
 
     for (final RoleEntry role : roles.roles) {

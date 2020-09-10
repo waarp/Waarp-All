@@ -76,7 +76,8 @@ public final class Processes {
     int pid = -1;
 
     try {
-      if ("java.lang.UNIXProcess".equals(p.getClass().getName())) {
+      if ("java.lang.UNIXProcess".equals(p.getClass().getName()) ||
+          "java.lang.ProcessImpl".equals(p.getClass().getName())) {
         Field f = p.getClass().getDeclaredField("pid");
         f.setAccessible(true);
         pid = f.getInt(p);
@@ -296,6 +297,17 @@ public final class Processes {
 
   public static void setJvmArgsDefault(String jvmArgsDefault1) {
     jvmArgsDefault = jvmArgsDefault1;
+  }
+
+  public static String contentXmx() {
+    final List<String> vmArguments =
+        ManagementFactory.getRuntimeMXBean().getInputArguments();
+    for (final String arg : vmArguments) {
+      if (arg.contains("-Xmx")) {
+        return arg;
+      }
+    }
+    return null;
   }
 
   public static Process launchJavaProcess(String applArgs) throws IOException {
