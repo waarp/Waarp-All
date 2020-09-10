@@ -54,6 +54,18 @@ Correctifs
   (issue [`#59 <https://github.com/waarp/Waarp-All/issues/59>`__])
 - Nettoyage du code (styles)
 - Mise à jour des dépendances
+- Packaging : Modifications des valeurs Xms et Xmx de Java avec les valeurs
+  recommandées.
+- Packaging : Correction des commandes de lancement de transfert sous windows
+- Packaging : Correction de l'arrêt des filewatchers et des serveurs R66
+- Packaging : Les packages .deb dépendent maintenant directement de Java 8 (et
+  non de la JRE par défaut).
+- Packaging : Corrections des erreurs "The %1 service is marked as an
+  interactive service. However, the system is configured to not allow
+  interactive services. This service may not function properly." lors du
+  démarrage des services sur certaines versions de Windows.
+- Packaging : par défaut, les logs clients R66 sont écrits dans des fichiers
+  plutôt que sur la sortie standard.
 
 
 Waarp R66 3.4.0 (2020-07-17)
