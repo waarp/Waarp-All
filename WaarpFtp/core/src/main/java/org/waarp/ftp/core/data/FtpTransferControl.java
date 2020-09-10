@@ -449,9 +449,17 @@ public class FtpTransferControl {
    * @throws FtpNoTransferException
    */
   public FtpTransfer getExecutingFtpTransfer() throws FtpNoTransferException {
-    if (executingCommand != null) {
-      return executingCommand;
+    for (int i = 0; i < 10; i++) {
+      if (executingCommand != null) {
+        return executingCommand;
+      }
+      try {
+        Thread.sleep(WaarpNettyUtil.MINIMAL_DELAY_MS);
+      } catch (final InterruptedException e1) {//NOSONAR
+        throw new FtpNoTransferException("No Command currently running", e1);
+      }
     }
+
     throw new FtpNoTransferException("No Command currently running");
   }
 

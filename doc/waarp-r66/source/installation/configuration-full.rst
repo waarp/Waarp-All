@@ -231,12 +231,13 @@ Il est possible de limiter l'usage de la mémoire en usant des paramètres suiva
    exemple `10 x blocksize`)
  * `digest`: Possibilité de choisir des algorithmes plus performants (`CRC32`=0, `MD5`=2) ou avec moins de
    risques de collisions (`SHA-XXX` tel que `SHA-512`=7) (`SHA-512` est conseillé car très efficace)
-   * `CRC32` est le plus performant (95%) mais avec le plus de collisions,
-   * `MD5` performant (55%) mais avec encore des collisions
-   * `SHA-512` est le plus performant des SHA (au moins 25%) et aux collisions infimes
-   * *chiffres comparés à `SHA-256`*
- * `globaldigest` : Possibilité de le désactiver mais recommandé à `True` (environ 25%)
- * `localdigest` : Possibilité de le désactiver (`False`) (environ 20%)
+   * `CRC32` est le plus performant (95% avec 6ms JDK11, 10ms JDK8) mais avec le plus de collisions,
+   * `MD5` performant (55% avec 88ms JDK11, 105ms JDK8) mais avec encore des collisions
+   * `SHA-512` est le plus performant des SHA (au moins 25% avec 70ms JDK11, 153ms JDK8) et aux collisions
+     infimes
+   * *chiffres comparés à `SHA-256` (159ms JDK11, 192ms JDK8)*
+ * `globaldigest` : Possibilité de le désactiver mais recommandé à `True` (environ 25% de gains)
+ * `localdigest` : Possibilité de le désactiver (`False`) (environ 20% de gains)
 
 La performance d'autres éléments peuvent jouer :
 

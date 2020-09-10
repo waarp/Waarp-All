@@ -75,6 +75,9 @@ public class HttpPageHandler {
     if (page == null) {
       return null;
     }
+    if ("HEAD".equalsIgnoreCase(method)) {
+      return page;
+    }
     switch (page.getPagerole()) {
       case DELETE:
         if (!"DELETE".equalsIgnoreCase(method)) {
@@ -120,9 +123,10 @@ public class HttpPageHandler {
     // error
     DbSession dbSession =
         DbConstant.admin != null? DbConstant.admin.getSession() : null;
-    WaarpActionLogger
-        .logErrorAction(dbSession, session, INCORRECT_PAGE + page.getPagerole(),
-                        HttpResponseStatus.BAD_REQUEST);
+    WaarpActionLogger.logErrorAction(dbSession, session,
+                                     INCORRECT_PAGE + page.getPagerole() + ":" +
+                                     page.getPagename(),
+                                     HttpResponseStatus.BAD_REQUEST);
     if (page.getErrorpage() != null && page.getErrorpage().length() > 1) {
       page = getHashmap().get(page.getErrorpage());
     } else {

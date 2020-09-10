@@ -118,16 +118,14 @@ public class FilesystemBasedDigestPerfTest {
         System.out.println("Provider: " + provider.getName());
       }
       FilesystemBasedDigest.setUseFastMd5(false);
-      FilesystemBasedDigest digest =
-          new FilesystemBasedDigest(DigestAlgo.MD5);
+      FilesystemBasedDigest digest = new FilesystemBasedDigest(DigestAlgo.MD5);
       digest.Update(TESTPHRASEBYTES, 0, TESTPHRASEBYTES.length);
       byte[] bmd5 = digest.Final();
       String hex = FilesystemBasedDigest.getHex(bmd5);
       long start = System.currentTimeMillis();
       for (int i = 0; i < COUNT; i++) {
         FilesystemBasedDigest.setUseFastMd5(false);
-        digest =
-            new FilesystemBasedDigest(DigestAlgo.MD5);
+        digest = new FilesystemBasedDigest(DigestAlgo.MD5);
         digest.Update(TESTPHRASEBYTES, 0, TESTPHRASEBYTES.length);
         bmd5 = digest.Final();
         hex = FilesystemBasedDigest.getHex(bmd5);
@@ -135,8 +133,8 @@ public class FilesystemBasedDigestPerfTest {
                    FilesystemBasedDigest.digestEquals(hex, bmd5));
       }
       long end = System.currentTimeMillis();
-      System.out.println(
-          "Byte Algo: " + DigestAlgo.MD5 + " Time: " + (end - start));
+      System.out
+          .println("Byte Algo: " + DigestAlgo.MD5 + " Time: " + (end - start));
       MessageDigest digest2 = MessageDigest.getInstance("MD5", "SUN");
       digest2.update(TESTPHRASEBYTES, 0, TESTPHRASEBYTES.length);
       byte[] bmd52 = digest2.digest();
@@ -169,16 +167,14 @@ public class FilesystemBasedDigestPerfTest {
       }
       end = System.currentTimeMillis();
       System.out.println("Buf Algo: MD5 Native2 Time: " + (end - start));
-      digest =
-          new FilesystemBasedDigest(DigestAlgo.SHA512);
+      digest = new FilesystemBasedDigest(DigestAlgo.SHA512);
       digest.Update(TESTPHRASEBYTES, 0, TESTPHRASEBYTES.length);
       bmd5 = digest.Final();
       hex = FilesystemBasedDigest.getHex(bmd5);
       start = System.currentTimeMillis();
       for (int i = 0; i < COUNT; i++) {
         FilesystemBasedDigest.setUseFastMd5(false);
-        digest =
-            new FilesystemBasedDigest(DigestAlgo.SHA512);
+        digest = new FilesystemBasedDigest(DigestAlgo.SHA512);
         digest.Update(TESTPHRASEBYTES, 0, TESTPHRASEBYTES.length);
         bmd5 = digest.Final();
         hex = FilesystemBasedDigest.getHex(bmd5);

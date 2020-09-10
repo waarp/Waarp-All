@@ -103,7 +103,14 @@ public abstract class ScenarioBaseBigFile extends TestAbstract {
     createBaseR66Directory(r2, "/tmp/R66/scenario_big_file_limitbdw/R2");
     setUp3DbBeforeClass();
     Configuration.configuration.setTimeoutCon(100);
-    Processes.setJvmArgsDefault("-Xms2048m -Xmx2048m ");
+    String xmx = Processes.contentXmx();
+    if (xmx == null || "-Xmx1024m".equalsIgnoreCase(xmx)) {
+      Processes.setJvmArgsDefault("-Xms1024m -Xmx1024m ");
+    } else if ("-Xmx2048m".equalsIgnoreCase(xmx)) {
+      Processes.setJvmArgsDefault("-Xms2048m -Xmx2048m ");
+    } else {
+      Processes.setJvmArgsDefault("-Xms1024m -Xmx1024m ");
+    }
     if (!SERVER1_IN_JUNIT) {
       r66Pid1 = startServer(configFile.getAbsolutePath());
     }

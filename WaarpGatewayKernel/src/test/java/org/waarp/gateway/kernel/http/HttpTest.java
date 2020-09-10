@@ -53,6 +53,9 @@ import org.waarp.gateway.kernel.HttpPage.PageRole;
 import org.waarp.gateway.kernel.HttpPageHandler;
 import org.waarp.gateway.kernel.http.saplink.HttpSapBusinessFactory;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -67,10 +70,15 @@ public class HttpTest {
   @Test
   public void testSimpleHttp()
       throws InterruptedException, InstantiationException,
-             IllegalAccessException, ClassNotFoundException {
+             IllegalAccessException, ClassNotFoundException, IOException {
     WaarpLoggerFactory.setDefaultFactoryIfNotSame(
         new WaarpSlf4JLoggerFactory(WaarpLogLevel.WARN));
     ResourceLeakDetector.setLevel(Level.PARANOID);
+    File pageFile = new File("/tmp/empty.txt");
+    FileOutputStream outputStream = new FileOutputStream(pageFile);
+    outputStream.write("test".getBytes());
+    outputStream.flush();
+    outputStream.close();
     final EventLoopGroup workerGroup = new NioEventLoopGroup();
     // Configure the server.
     final ServerBootstrap httpBootstrap = new ServerBootstrap();
@@ -78,8 +86,8 @@ public class HttpTest {
     // Configure the pipeline factory.
     HashMap<String, HttpPage> map = new HashMap<String, HttpPage>();
     PageRole pageRole = PageRole.DELETE;
-    String pagename = "400";
-    String uri = "400";
+    String pagename = "empty.txt";
+    String uri = "empty.txt";
     String header = "<HTML><HEAD><TITLE>TITLE</TITLE></HEAD><BODY>";
     String footer = "</BODY></HTML>";
     String beginform = "<table border=\"0\"><tr><td><h1>TITLE</h1>";
@@ -132,17 +140,17 @@ public class HttpTest {
                         nextinform, uri, pageRole, errorpage, classname,
                         linkedHashMap);
     map.put("/PATCH", page);
-    pageRole = PageRole.GETDOWNLOAD;
+    pageRole = PageRole.HTML;
     page = new HttpPage(pagename, null, header, footer, beginform, endform,
                         nextinform, uri, pageRole, errorpage, classname,
                         linkedHashMap);
     map.put("/OPTIONS", page);
-    pageRole = PageRole.GETDOWNLOAD;
+    pageRole = PageRole.HTML;
     page = new HttpPage(pagename, null, header, footer, beginform, endform,
                         nextinform, uri, pageRole, errorpage, classname,
                         linkedHashMap);
     map.put("/HEAD", page);
-    pageRole = PageRole.GETDOWNLOAD;
+    pageRole = PageRole.HTML;
     page = new HttpPage(pagename, null, header, footer, beginform, endform,
                         nextinform, uri, pageRole, errorpage, classname,
                         linkedHashMap);
@@ -174,6 +182,28 @@ public class HttpTest {
                             .isSuccess());
     clientChannel.closeFuture().sync();
     clientChannel.close();
+
+    clientChannel = bootstrap.connect("localhost", 1234).sync().channel();
+    request = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET,
+                                         "/empty.txt");
+    request.headers().set(HttpHeaderNames.HOST, "localhost")
+           .set(HttpHeaderNames.CONNECTION, HttpHeaderValues.CLOSE)
+           .set(HttpHeaderNames.ACCEPT_ENCODING, HttpHeaderValues.GZIP);
+    assertTrue(clientChannel.writeAndFlush(request).awaitUninterruptibly()
+                            .isSuccess());
+    clientChannel.closeFuture().sync();
+
+    clientChannel = bootstrap.connect("localhost", 1234).sync().channel();
+    request = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET,
+                                         "/empty.txt");
+    request.headers().set(HttpHeaderNames.HOST, "localhost")
+           .set(HttpHeaderNames.CONNECTION, HttpHeaderValues.CLOSE)
+           .set(HttpHeaderNames.ACCEPT_ENCODING, HttpHeaderValues.GZIP)
+           .set(HttpHeaderNames.IF_MODIFIED_SINCE,
+                "Sun, 06 Nov 2994 08:49:37 GMT");
+    assertTrue(clientChannel.writeAndFlush(request).awaitUninterruptibly()
+                            .isSuccess());
+    clientChannel.closeFuture().sync();
 
     clientChannel = bootstrap.connect("localhost", 1234).sync().channel();
     request = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST,
