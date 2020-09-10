@@ -82,6 +82,12 @@ businessfactorynetwork string   N    null     Indique la classe Factory pour les
 Section ``network``
 -------------------
 
+.. versionadded:: 3.5.0
+
+   Ajout des options ``serveraddresses``, ``serverssladdresses``,
+   ``serverhttpaddresses``, ``serverhttpsaddresses``.
+   
+
 ==================== ======= ==== ========= =============
 Balise               Type    Obl. Défaut    Signification
 ==================== ======= ==== ========= =============
@@ -90,23 +96,22 @@ serveraddresses      string  N    null      Adresses utilisées pour le protocol
 serversslport        integer N    6667      Port utilisé pour le protocole R66 en SSL
 serverssladdresses   string  N    null      Adresses utilisées pour le protocole R66 en SSL (séparées par des virgules)
 serverhttpport       integer N    8066      Port utilisé pour l'interface web de supervision (la valeur ``0`` désactive l'interface)
-serverhttpips        string  N    null      Adresses utilisées pour l'interface web de supervision (séparées par des virgules)
+serverhttpaddresses  string  N    null      Adresses utilisées pour l'interface web de supervision (séparées par des virgules)
 serverhttpsport      integer N    8067      Port utilisé pour l'interface web HTTPS d'administration (la valeur ``0`` désactive l'interface)
 serverhttpsaddresses string  N    null      Adresses utilisées pour l'interface web HTTPS d'administration (séparées par des virgules)
 ==================== ======= ==== ========= =============
 
-.. versionadded:: 3.5.0
 
-  Il est possible de définir avec précision les interfaces (IP) utilisées pour
-  chacun des ports via les options serveraddresses, serverssladdresses,
-  serverhttpaddresses, serverhttpsaddresses. Chacune spécifie optionnellement
-  la liste des IP à associer (avec le port défini optionnellement) avec la
-  virgule comme séparateur.
+Il est possible de définir avec précision les interfaces (IP) utilisées pour
+chacun des ports via les options ``serveraddresses``, ``serverssladdresses``,
+``serverhttpaddresses``, ``serverhttpsaddresses``. Chacune spécifie optionnellement
+la liste des IP à associer (avec le port défini optionnellement) avec la
+virgule comme séparateur.
 
-  Si cette option n'est pas spécifiée ou vide pour un port de service, toutes
-  les interfaces disponibles seront associées à ce service avec ce port.
+Si cette option n'est pas spécifiée ou vide pour un port de service, toutes
+les interfaces disponibles seront associées à ce service avec ce port.
 
-  Exemple :
+Exemple :
 
 .. code-block:: xml
 

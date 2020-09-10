@@ -14,8 +14,9 @@ Nouvelles fonctionnalités
 -------------------------
 
 - [`#74 <https://github.com/waarp/Waarp-All/pull/74>`__]
-  Les interfaces réseaux sont spécifiables en plus du port à utiliser.
-  Plusieurs interfaces sont possibles (séparées par une virgule).
+  Les :any:`interfaces réseaux <server-xml-network>` sont spécifiables en plus
+  du port à utiliser.  Plusieurs interfaces sont possibles (séparées par une
+  virgule).
 
 Correctifs
 ----------
