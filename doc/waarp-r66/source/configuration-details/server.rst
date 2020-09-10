@@ -190,20 +190,20 @@ Section ``limit``
 ================= ======= ==== ========== =============
 Balise            Type    Obl. Défaut     Signification
 ================= ======= ==== ========== =============
-serverthread      Integer N    8          Nombre de threads utilisés par les serveur Waarp R66 (valeur recommandée: nombre de cœurs du processeur)
-clientthread      Integer N    80         Nombre de threads utilisés par le client Waarp R66 (valeur recommandée: serverthread*10)
+serverthread      Integer N    8          Nombre de threads utilisés par les serveur Waarp R66 (valeur recommandée: nombre de cœurs du processeur) (si 0, la valeur sera autmatiquement calculée en fonction)
+clientthread      Integer N    80         Nombre de threads utilisés par le client Waarp R66 (valeur recommandée: serverthread*10) (si 0, la valeur sera autmatiquement calculée en fonction)
 memorylimit       Integer N    1000000000 Quantité maximale de mémoire utilisée pour les services Web et REST (en octets)
 sessionlimit      Integer N    1GB        Bande passante maximale utilisée pour une session (en octets)
 globallimit       Integer N    100GB      Bande passante globale maximale utilisée (en octets)
 delaylimit        Integer N    10000      Délais entre deux vérifications de bande passante. Plus cette valeur est faible, plus le contrôle de la bande passante sera précis. Attention toutefois à ne pas donner de valeur trop faible (en ms)
-runlimit          Integer N    10000      Nombre maximal de transferts actifs simultanés
+runlimit          Integer N    1000       Nombre maximal de transferts actifs simultanés
 delaycommand      Integer N    5000       Délais entre deux exécutions du Commander (en ms)
 delayretry        Integer N    30000      Délais entre deux tentatives de transfert en cas d'erreur (en ms)
 timeoutcon        Integer N    30000      Délais de timeout d'une connexion (en ms)
 blocksize         Integer N    65536      Taille de bloc utilisée par le serveur Waarp R66. Une valeur entre 8KB et 16MB est recommandée (en octets)
 gaprestart        Integer N    30         Nombre de blocs écartés lors de la reprise d'un transfert.
 usenio            boolean N    False      Activation du support de NIO pour les fichiers. Selon le JDK, cela peut améliorer les performances.
-usecpulimit       boolean N    False      Utilisation de la limitation de l'utilisation du CPU au démarrage d'une requête
+usecpulimit       boolean N    False      Utilisation de la limitation de l'utilisation du CPU en jouant sur la bande passante globale pour limiter l'usage des processeurs
 usejdkcpulimit    boolean N    False      Utilisation du support natif du JDK pour contrôler l'utilisation du CPU.  Si « False », la librairie Java Sysmon est utilisée
 cpulimit          Decimal N    0.0        Pourcentage maximal d'utilisation du CPU au-delà duquel une demande de transfert est refusée. Les valeurs 0 et 1 désactivent la limite.
 connlimit         Integer N    0          Nombre maximal de connexions. La valeur 0 désactive la limite.
@@ -212,11 +212,12 @@ highcpulimit      decimal N    0.0        Seuil maximal de consommation de CPU (
 percentdecrease   decimal N    0.01       Valeur de diminution de la bande passante quand le seuil maximal de consommation CPU est atteint (en pourcentage)
 delaythrottle     integer N    1000       Intervalle de contrôle de la consommation de ressources (en ms)
 limitlowbandwidth integer N    1000000    Seuil minimal de consommation de bande passante (en octets)
-digest            Integer N    2          Algorithme de hashage utilisé par défaut. CRC32=0, ADLER32=1, MD5=2, MD2=3, SHA1=4, SHA256=5, SHA384=6, SHA512=7 (SHA256=5 est recommandé)
-usefastmd5        boolean N    True       Utilisation de la librairie FastMD5
+digest            Integer N    2          Algorithme de hashage utilisé par défaut. CRC32=0, ADLER32=1, MD5=2, MD2=3, SHA1=4, SHA256=5, SHA384=6, SHA512=7 (SHA512=7 est recommandé)
+usefastmd5        boolean N    False      Utilisation de la librairie FastMD5 (cette option n'est plus active)
 usethrift         integer N    0          Active le serveur RPC Apache Thrift (0 désactive le serveur RPC, une valeur supérieure à 0 indique le port sur lequel écouter)
 checkversion      boolean N    True       Vérifie la version de ses partenaires pour s'assurer de la compatibilité du protocole
 globaldigest      boolean N    True       Active ou non le contrôle d'intégrité de bout en bout
+localdigest       boolean N    True       Active ou non le contrôle d'intégrité de bout en bout en fin de transfert localement (optionnel, False est autorisé sans restreindre les capacités)
 ================= ======= ==== ========== =============
 
 

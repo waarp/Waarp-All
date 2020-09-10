@@ -181,6 +181,28 @@ logback-{client,server}.xml
 ***************************
 
 Les fichiers `logback*.xml` permettent de paramétrer les écritures de log.
+Veuillez vous référer au manuel en ligne de Logback pour configurer la façon dont les logs sont générés et
+écrits dans un fichier et/ou vers `syslog`.
+
+Il est à noter qu'il est conseillé d'avoir les éléments suivants dans le fichier de configuration de Logback.
+
+.. code-block:: xml
+
+  <configuration>
+    <statusListener class="org.waarp.common.logging.PrintOnlyWarningLogbackStatusListener" />
+
+    <appender name=... class=...><!-- Voir la documentation Logback -->
+    </appender>
+
+    <root level="warn">
+      <appender-ref ref=... /><!-- Voir la documentation Logback -->
+    </root>
+
+    <logger name="ch.qos.logback" level="WARN"/>
+    <logger name="org.apache.http" level="WARN"/>
+    <logger name="io.netty" level="WARN"/>
+    <logger name="io.netty.util.internal.PlatformDependent" level="DEBUG"/>
+  </configuration>
 
 authent.xml
 ***********
