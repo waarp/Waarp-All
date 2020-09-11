@@ -504,29 +504,25 @@ public class NetworkServerHandler
   public static void writeError(final Channel channel, final Integer remoteId,
                                 final Integer localId,
                                 final AbstractLocalPacket error) {
-    try {
-      if (channel.isActive()) {
-        NetworkPacket networkPacket = null;
-        try {
-          networkPacket = new NetworkPacket(localId, remoteId, error, null);
-        } catch (final OpenR66ProtocolPacketException ignored) {
-          // nothing
-        }
-        if (networkPacket != null) {
-          final NetworkPacket finalNP = networkPacket;
-          Future future = channel.writeAndFlush(networkPacket);
-          future.await(Configuration.WAITFORNETOP);
-          future.addListener(new ChannelFutureListener() {
-            @Override
-            public void operationComplete(final ChannelFuture future)
-                throws Exception {
-              finalNP.clear();
-            }
-          });
-        }
+    if (channel.isActive()) {
+      NetworkPacket networkPacket = null;
+      try {
+        networkPacket = new NetworkPacket(localId, remoteId, error, null);
+      } catch (final OpenR66ProtocolPacketException ignored) {
+        // nothing
       }
-    } catch (final InterruptedException e) {//NOSONAR
-      SysErrLogger.FAKE_LOGGER.ignoreLog(e);
+      if (networkPacket != null) {
+        final NetworkPacket finalNP = networkPacket;
+        Future future = channel.writeAndFlush(networkPacket);
+        future.addListener(new ChannelFutureListener() {
+          @Override
+          public void operationComplete(final ChannelFuture future)
+              throws Exception {
+            future.await(Configuration.WAITFORNETOP);
+            finalNP.clear();
+          }
+        });
+      }
     }
   }
 

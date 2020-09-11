@@ -40,7 +40,6 @@ import org.junit.AfterClass;
 import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestWatcher;
@@ -1609,7 +1608,6 @@ public class NetworkClientTest extends TestAbstract {
     }
   }
 
-  @Ignore("Information not OK at the end")
   @Test
   public void test80_JsonCommandsBusiness() throws Exception {
     final DbHostAuth host = new DbHostAuth("hosta");
@@ -1637,7 +1635,6 @@ public class NetworkClientTest extends TestAbstract {
 
   }
 
-  @Ignore("Information not OK at the end")
   @Test
   public void test80_JsonCommandsTest() throws Exception {
     final DbHostAuth host = new DbHostAuth("hosta");

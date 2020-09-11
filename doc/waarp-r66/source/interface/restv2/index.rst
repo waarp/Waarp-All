@@ -23,3 +23,4 @@ Une specification détaillée écrite en RAML peut également être télécharg�
    config/index
    limits/index
    server/index
+   filemonitors/index

@@ -1,0 +1,293 @@
+openapi: 3.0.0
+info:
+  title: API REST pour WaarpR66
+  version: 2.0.0
+  description: API REST pour la gestion de serveurs WaarpR66.
+servers: []
+paths:
+  /v2/filemonitors:
+    get:
+      responses:
+        '200':
+          description: La requête s'est déroulée avec succès.
+          content:
+            application/json:
+              schema:
+                title: Liste de réponses
+                type: object
+                properties:
+                  totalResults:
+                    title: Total de réponses
+                    minimum: 0
+                    format: int32
+                    description: >-
+                      Le nombre total de FileMonitors trouvés.
+                    type: integer
+                  totalSubResults:
+                    title: Total des sous réponses
+                    minimum: 0
+                    format: int32
+                    description: >-
+                      Le nombre total de Files dans les FileMonitors trouvés.
+                    type: integer
+                  results:
+                    title: Réponses
+                    uniqueItems: true
+                    description: Un tableau contenant tous les FileMonitors demandés.
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ObjectFileMonitor'
+                required:
+                  - totalResults
+                  - totalSubResults
+                  - results
+        '400':
+          $ref: '#/components/responses/trait_returnsBadRequest_400'
+      description: >
+        Renvoie une liste des FileMonitors reçus par le serveur respectant les
+        filtres donnés en paramètres de requête.
+      operationId: Lister les FileMonitors
+      parameters:
+        - name: name
+          in: query
+          description: Nom optionnel du FileMonitor à retourner
+          schema:
+            default: ""
+            type: string
+        - name: status
+          in: query
+          description: 0 pour tous les FileMonitors, 1 pour ceux actifs, -1 pour les inactifs.
+          schema:
+            default: 0
+            minimum: -1
+            maximum: 1
+            format: int32
+            type: integer
+components:
+  schemas:
+    ObjectFileMonitorFile:
+      title: FileMonitorFile
+      description: >-
+        Un objet regroupant les informations sur un File issue d'un FileMonitor
+        telles qu'elles sont stockées dans WaarpR66.
+      example:
+        FILE: (1)/testTaskBig_34.txt
+        HASH: c902a17556796a9f97afa23bad130b04
+        LASTTIME: 1599821375000
+        USEDTIME: 1599821387208
+        USED: true
+        ID: -9223372036854775773
+      type: object
+      additionalProperties: false
+      properties:
+        FILE:
+          title: Nom du Fichier
+          description: Nom du Fichier
+          type: string
+        HASH:
+          title: Empreinte du Fichier
+          description: Empreinte du Fichier
+          type: string
+        LASTTIME:
+          title: Date (Timestamp) du dernier check du fichier
+          description: Date (Timestamp) du dernier check du fichier
+          format: int64
+          type: integer
+        USEDTIME:
+          title: Date (Timestamp) du dernier usage du fichier
+          description: Date (Timestamp) du dernier usage du fichier
+          format: int64
+          type: integer
+        USED:
+          title: Indique si le fichier a été transmis
+          description: Indique si le fichier a été transmis
+          type: boolean
+        ID:
+          title: Identifiant du transfert
+          description: Identifiant du transfert
+          type: string
+      required:
+        - FILE
+        - HASH
+        - LASTTIME
+        - USEDTIME
+        - USED
+        - ID
+    ObjectFileMonitor:
+      title: FileMonitor
+      description: >-
+        Un objet regroupant les informations sur un FileMonitor telles qu'elles
+        sont stockées dans WaarpR66.
+      example:
+        NAME: SpooledClient
+        HOST: hostas
+        LAST_UPDATE: 1599821388296
+        GLOBALOK: 87
+        GLOBALERROR: 0
+        TODAYOK: 87
+        TODAYERROR: 0
+        INTERVAL: 500
+        STOPFILE: /tmp/R66/test/stopout.txt
+        STATUSFILE: /tmp/R66/test/statusoutdirect1.json
+        SUBDIRS: false
+        DIRECTORIES: /tmp/R66/test/out/example(1)
+        FILES:
+          - FILE: (1)/testTaskBig_34.txt
+          - HASH: c902a17556796a9f97afa23bad130b04
+          - LASTTIME: 1599821375000
+          - USEDTIME: 1599821387208
+          - USED: true
+          - ID: -9223372036854775773
+      type: object
+      additionalProperties: false
+      properties:
+        NAME:
+          title: Nom du FileMonitor
+          description: Nom du FileMonitor
+          type: string
+        HOST:
+          title: Nom du Serveur WaarpR66 cible
+          description: Nom du Serveur WaarpR66 ciblé par le transfert
+          type: string
+        LAST_UPDATE:
+          title: Date (Timestamp) du dernier update du fichier
+          description: Date (Timestamp) du dernier update du fichier
+          format: int64
+          type: integer
+        GLOBALOK:
+          title: Nombre de transferts OK
+          description: Nombre de transferts OK au sein du FileMonitor depuis son lancement
+          format: int32
+          type: integer
+        GLOBALERROR:
+          title: Nombre de transferts KO
+          description: Nombre de transferts KO au sein du FileMonitor depuis son lancement
+          format: int32
+          type: integer
+        TODAYOK:
+          title: Nombre de transferts OK du jour
+          description: Nombre de transferts OK au sein du FileMonitor ce jour
+          format: int32
+          type: integer
+        TODAYERROR:
+          title: Nombre de transferts KO
+          description: Nombre de transferts KO au sein du FileMonitor ce jour
+          format: int32
+          type: integer
+        INTERVAL:
+          title: Délai entre chaque analyse des fichiers à transmettre du FileMonitor
+          description: Délai entre chaque analyse des fichiers à transmettre du FileMonitor
+          format: int32
+          type: integer
+        STOPFILE:
+          title: Fichier d'arrêt du FileMonitor
+          description: Fichier d'arrêt du FileMonitor
+          type: string
+        STATUSFILE:
+          title: Fichier de status du FileMonitor
+          description: Fichier de status du FileMonitor
+          type: string
+        SUBDIRS:
+          title: Analyse des sousrépertoires par le FileMonitor
+          description: Indique si les sousrépertoires sont scannés par le FileMonitor
+          type: boolean
+        DIRECTORIES:
+          title: Répertoires associés au FileMonitor
+          description: Répertoires associés au FileMonitor
+          type: string
+        FILES:
+          title: Fichiers associés (transférrés ou non) avec le FileMonitor
+          description: Fichiers associés (transférrés ou non) avec le FileMonitor
+          type: ObjectFileMonitorFile[]
+      required:
+        - NAME
+        - HOST
+        - LAST_UPDATE
+        - GLOBALOK
+        - GLOBALERROR
+        - TODAYOK
+        - TODAYERROR
+        - INTERVAL
+        - STOPFILE
+        - STATUSFILE
+        - SUBDIRS
+        - DIRECTORIES
+        - FILES
+    HttpError:
+      title: Erreurs utilisateur
+      description: >-
+        Un objet listant les causes de l'échec d'une requête REST lorsque cet
+        échec est dû à des entrées utilisateur invalides.
+      type: object
+      properties:
+        errors:
+          title: Liste d'erreurs
+          minItems: 1
+          description: >-
+            Un tableau de toutes les erreurs utilisateurs rencontrées lors du
+            traitement de la requête.
+          type: array
+          items:
+            description: Un objet représentant une erreur utilisateur.
+            type: object
+            properties:
+              message:
+                description: Un message décrivant l'erreur rencontrée.
+                type: string
+              errorCode:
+                format: int32
+                description: Le code d'erreur REST correspondant à l'erreur rencontrée.
+                type: integer
+            required:
+              - message
+              - errorCode
+      required:
+        - errors
+  responses:
+    trait_returnsBadRequest_400:
+      description: >
+        La requête est invalide, soit à cause de paramètres de requête erronés,
+        soit à cause d'un corps de requête invalide.
+
+
+        Les causes de l'échec de la requête sont données dans le corps de la
+        réponse sour forme d'un tableau JSON.
+      content:
+        application/json:
+          example:
+            errors:
+              - message: 'Query parameter ''startTrans'' : illegal value ''not_a_date''.'
+                errorCode: 4
+              - message: 'Query parameter ''status'' : illegal value ''not_a_status''.'
+                errorCode: 4
+          schema:
+            $ref: '#/components/schemas/HttpError'
+  parameters: {}
+  examples: {}
+  requestBodies: {}
+  headers: {}
+  securitySchemes:
+    BasicAuthentication:
+      description: Authentification HTTP basique au moyen d'identifiants encodés en base64.
+      type: http
+      scheme: basic
+    BasicAuthentication+Signature:
+      description: >-
+        Authentification HTTP basique au moyen d'identifiants encodés en base64,
+        avec vérification de signature des requêtes.
+      type: http
+      scheme: basic
+    HmacKey:
+      description: Authentification par le biais d'un hash des identifiants utilisateur.
+      type: apiKey
+      in: header
+      name: Authorization
+    HmacKey+Signature:
+      description: >-
+        Authentification par le biais d'un hash des identifiants utilisateur,
+        avec vérification de signature des requêtes.
+      type: apiKey
+      in: header
+      name: Authorization
+  links: {}
+  callbacks: {}

@@ -942,6 +942,17 @@ public class R66Session implements SessionInterface {
        */
       return;
     }
+    if (runner.isInError()) {
+      logger.debug(
+          "Transfer already done in error but " + status + " on " + file +
+          runner.toShortString(),
+          new OpenR66RunnerErrorException(finalValue.toString()));
+      // FIXME ??
+      /*
+       * if (! status) runner.finalizeTransfer(localChannelReference, file, finalValue, status)
+       */
+      return;
+    }
     if (localChannelReference.getFutureRequest().isDone()) {
       logger.debug("Request already done but " + status + " on " + file +
                    runner.toShortString(),

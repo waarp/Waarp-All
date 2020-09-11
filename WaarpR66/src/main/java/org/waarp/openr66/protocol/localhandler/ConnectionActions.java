@@ -154,7 +154,8 @@ public abstract class ConnectionActions {
             session.newState(ERROR);
             final R66Result finalValue = new R66Result(
                 new OpenR66ProtocolSystemException(
-                    Messages.getString("LocalServerHandler.4")),
+                    runner != null? Messages.getString("LocalServerHandler.4") :
+                        Messages.getString("HttpSslHandler.37")),
                 //$NON-NLS-1$
                 session, true, ErrorCode.FinalOp, runner); // True since closed
             try {

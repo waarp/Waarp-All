@@ -396,7 +396,7 @@ public class SpooledInformTask extends AbstractExecJavaTask {
       final Set<String> names = spooledInformationMap.keySet();
       for (final String name : names) {
         // per Name
-        buildSpooledJsonElement(detailed, status, array, name);
+        buildSpooledJsonElement(detailed, status, array, name, false);
       }
     }
     return WaarpStringUtils.cleanJsonForHtml(JsonHandler.writeAsString(array));
@@ -415,10 +415,40 @@ public class SpooledInformTask extends AbstractExecJavaTask {
     // get current information
     synchronized (spooledInformationMap) {
       // per Name
-      buildSpooledJsonElement(true, 0, array, name);
+      buildSpooledJsonElement(true, 0, array, name, false);
     }
-    logger.warn(JsonHandler.writeAsString(array));
     return WaarpStringUtils.cleanJsonForHtml(JsonHandler.writeAsString(array));
+  }
+
+  /**
+   * For REST V2 service
+   *
+   * @param array the ArrayNode to fill with the results
+   * @param status if 0, get all Spooled, 1 active ones, -1 inactive ones
+   * @param name if null or empty, will get all Spooled
+   *
+   * @return the total number of "files" from request arguments of
+   *     SpooledInformation
+   */
+  public static int buildSpooledJson(final ArrayNode array, final int status,
+                                     final String name) {
+    int nb = 0;
+    if (name == null || name.isEmpty()) {
+      synchronized (spooledInformationMap) {
+        final Set<String> names = spooledInformationMap.keySet();
+        for (final String nameInternal : names) {
+          // per Name
+          nb +=
+              buildSpooledJsonElement(true, status, array, nameInternal, true);
+        }
+      }
+    } else {
+      synchronized (spooledInformationMap) {
+        // per Name
+        nb += buildSpooledJsonElement(true, status, array, name, true);
+      }
+    }
+    return nb;
   }
 
   /**
@@ -426,14 +456,18 @@ public class SpooledInformTask extends AbstractExecJavaTask {
    * @param status
    * @param array
    * @param name
+   * @param strict
+   *
+   * @return number of files within
    */
-  private static void buildSpooledJsonElement(final boolean detailed,
-                                              final int status,
-                                              final ArrayNode array,
-                                              final String name) {
+  private static int buildSpooledJsonElement(final boolean detailed,
+                                             final int status,
+                                             final ArrayNode array,
+                                             final String name,
+                                             final boolean strict) {
     final SpooledInformation inform = spooledInformationMap.get(name);
     if (inform == null) {
-      return;
+      return 0;
     }
     final long time = inform.lastUpdate.getTime() +
                       Configuration.configuration.getTimeoutCon();
@@ -441,24 +475,29 @@ public class SpooledInformTask extends AbstractExecJavaTask {
     if (status != 0) {
       if (time + Configuration.configuration.getTimeoutCon() < curtime) {
         if (status < 0) {
-          return;
+          return 0;
         }
       } else if (status > 0) {
-        return;
+        return 0;
       }
     }
     final ObjectNode elt = JsonHandler.createObjectNode();
     elt.put("NAME", name.replace(',', ' '));
     elt.put("HOST", inform.host);
-    final String val;
-    if (time + Configuration.configuration.getTimeoutCon() < curtime) {
-      val = "bg-danger";
-    } else if (time < curtime) {
-      val = "bg-warning";
+    if (strict) {
+      elt.put("LAST_UPDATE", inform.lastUpdate.getTime());
     } else {
-      val = "bg-success";
+      final String val;
+      if (time + Configuration.configuration.getTimeoutCon() < curtime) {
+        val = "bg-danger";
+      } else if (time < curtime) {
+        val = "bg-warning";
+      } else {
+        val = "bg-success";
+      }
+      elt.put("LAST_UPDATE", val + ' ' + inform.lastUpdate.getTime());
     }
-    elt.put("LAST_UPDATE", val + ' ' + inform.lastUpdate.getTime());
+    int nb = 0;
     if (inform.fileMonitorInformation != null) {
       elt.put("GLOBALOK", inform.fileMonitorInformation.globalok.get());
       elt.put("GLOBALERROR", inform.fileMonitorInformation.globalerror.get());
@@ -478,7 +517,7 @@ public class SpooledInformTask extends AbstractExecJavaTask {
       }
       elt.put("DIRECTORIES", dirs.toString());
       if (detailed && inform.fileMonitorInformation.fileItems != null) {
-        buildSpooledJsonFiles(elt, inform, dirs2.toString().split(" "));
+        buildSpooledJsonFiles(elt, inform, dirs2.toString().split(" "), strict);
       } else {
         // simply print number of files
         if (inform.fileMonitorInformation.fileItems != null) {
@@ -488,8 +527,10 @@ public class SpooledInformTask extends AbstractExecJavaTask {
           elt.putArray("FILES").add(0);
         }
       }
+      nb = inform.fileMonitorInformation.fileItems.size();
     }
     array.add(elt);
+    return nb;
   }
 
   /**
@@ -499,20 +540,23 @@ public class SpooledInformTask extends AbstractExecJavaTask {
    */
   private static void buildSpooledJsonFiles(final ObjectNode node,
                                             final SpooledInformation inform,
-                                            final String[] dirs) {
+                                            final String[] dirs,
+                                            final boolean strict) {
     final ArrayNode array = node.putArray("FILES");
     if (inform.fileMonitorInformation.fileItems.isEmpty()) {
       array.add(0);
       return;
     }
-    final ArrayNode header = JsonHandler.createArrayNode();
-    header.add("FILE");
-    header.add("HASH");
-    header.add("LASTTIME");
-    header.add("USEDTIME");
-    header.add("USED");
-    header.add("ID");
-    array.add(header);
+    if (!strict) {
+      final ArrayNode header = JsonHandler.createArrayNode();
+      header.add("FILE");
+      header.add("HASH");
+      header.add("LASTTIME");
+      header.add("USEDTIME");
+      header.add("USED");
+      header.add("ID");
+      array.add(header);
+    }
     for (final FileItem fileItem : inform.fileMonitorInformation.fileItems
         .values()) {
       final ObjectNode elt = JsonHandler.createObjectNode();

@@ -216,7 +216,7 @@ public final class WaarpNettyUtil {
    * @return True if the ByteBuf is released
    */
   public static boolean release(final ByteBuf byteBuf) {
-    if (byteBuf == null || byteBuf.refCnt() == 0) {
+    if (byteBuf == null || byteBuf.refCnt() <= 0) {
       return true;
     }
     return byteBuf.release();
