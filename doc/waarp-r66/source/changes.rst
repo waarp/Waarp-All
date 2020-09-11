@@ -19,6 +19,8 @@ Correctifs
 - Amélioration des performances sensibles (15%) en lien avec les calculs
   d'empreintes (Digest)
 - Amélioration de la documentation
+- Amélioration du service Rest V2 pour inclure les informations des
+  FileMonitoring
 
 
 Waarp R66 3.5.0 (2020-09-01)

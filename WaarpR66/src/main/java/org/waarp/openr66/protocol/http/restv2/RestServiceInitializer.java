@@ -33,6 +33,7 @@ import org.waarp.common.crypto.ssl.WaarpSecureKeyStore;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.gateway.kernel.rest.RestConfiguration;
+import org.waarp.gateway.kernel.rest.RestConfiguration.CRUD;
 import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.http.restv2.dbhandlers.AbstractRestDbHandler;
 import org.waarp.openr66.protocol.http.restv2.dbhandlers.HostConfigHandler;
@@ -42,6 +43,7 @@ import org.waarp.openr66.protocol.http.restv2.dbhandlers.LimitsHandler;
 import org.waarp.openr66.protocol.http.restv2.dbhandlers.RuleIdHandler;
 import org.waarp.openr66.protocol.http.restv2.dbhandlers.RulesHandler;
 import org.waarp.openr66.protocol.http.restv2.dbhandlers.ServerHandler;
+import org.waarp.openr66.protocol.http.restv2.dbhandlers.SpooledHandler;
 import org.waarp.openr66.protocol.http.restv2.dbhandlers.TransferIdHandler;
 import org.waarp.openr66.protocol.http.restv2.dbhandlers.TransfersHandler;
 import org.waarp.openr66.protocol.http.restv2.resthandlers.RestExceptionHandler;
@@ -105,6 +107,7 @@ public final class RestServiceInitializer {
     final byte rulesCRUD = config.getResthandlersCrud()[DbRule.ordinal()];
     final byte transferCRUD =
         config.getResthandlersCrud()[DbTaskRunner.ordinal()];
+    final byte spooledCRUD = CRUD.READ.mask;
     final byte configCRUD =
         config.getResthandlersCrud()[DbHostConfiguration.ordinal()];
     final byte limitCRUD = config.getResthandlersCrud()[Bandwidth.ordinal()];
@@ -135,6 +138,9 @@ public final class RestServiceInitializer {
     }
     if (serverCRUD != 0) {
       handlers.add(new ServerHandler(config.getResthandlersCrud()));
+    }
+    if (spooledCRUD != 0) {
+      handlers.add(new SpooledHandler(spooledCRUD));
     }
   }
 

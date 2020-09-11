@@ -321,11 +321,11 @@ public abstract class ScenarioBaseLoop extends TestAbstract {
       HttpGet request =
           new HttpGet("http://127.0.0.1:8098/v2/transfers?limit=1000");
       CloseableHttpResponse response = null;
-      try {
-        int nb = 0;
-        int every10sec = 10;
-        int max = SystemPropertyUtil.get(IT_LONG_TEST, false)? 60 : 20;
-        while (nb < max) {
+      int nb = 0;
+      int every10sec = 10;
+      int max = SystemPropertyUtil.get(IT_LONG_TEST, false)? 60 : 20;
+      while (nb < max) {
+        try {
           response = httpClient.execute(request);
           assertEquals(200, response.getStatusLine().getStatusCode());
           String content = EntityUtils.toString(response.getEntity());
@@ -340,12 +340,12 @@ public abstract class ScenarioBaseLoop extends TestAbstract {
             }
             every10sec--;
           }
-          Thread.sleep(1000);
+        } finally {
+          if (response != null) {
+            response.close();
+          }
         }
-      } finally {
-        if (response != null) {
-          response.close();
-        }
+        Thread.sleep(1000);
       }
     } catch (ExecuteException e) {
       // ignore

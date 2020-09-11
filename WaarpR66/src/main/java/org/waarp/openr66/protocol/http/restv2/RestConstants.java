@@ -138,6 +138,12 @@ public final class RestConstants {
   /**
    * Access point of the transfers collection.
    */
+  public static final String FILE_MONITOR_HANDLER_URI =
+      VERSION_PREFIX + "filemonitors";
+
+  /**
+   * Access point of the transfers collection.
+   */
   public static final String TRANSFERS_HANDLER_URI =
       VERSION_PREFIX + "transfers/";
 
