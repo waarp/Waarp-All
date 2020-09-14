@@ -82,7 +82,7 @@ public class AUTH extends AbstractCommand {
     } else {
       throw new Reply504Exception("Unknown Parameter: " + types[0]);
     }
-    logger.debug("End of AUTH " + types[0]);
+    logger.debug("End of AUTH {}", types[0]);
   }
 
 }

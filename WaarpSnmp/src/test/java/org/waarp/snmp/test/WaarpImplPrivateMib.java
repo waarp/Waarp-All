@@ -84,9 +84,8 @@ public class WaarpImplPrivateMib extends WaarpPrivateMib {
     boolean okDetailed = true;
     boolean okError = true;
     if (low != null) {
-      logger.debug(
-          "low: {}:{} " + rootOIDWaarpGlobal + ':' + rootOIDWaarpDetailed +
-          ':' + rootOIDWaarpError, low, range.isLowerIncluded());
+      logger.debug("low: {}:{} {}:{}:{}", low, range.isLowerIncluded(),
+                   rootOIDWaarpGlobal, rootOIDWaarpDetailed, rootOIDWaarpError);
       if (low.size() <= rootOIDWaarp.size() && low.startsWith(rootOIDWaarp)) {
         // test for global requests
         okGeneral = okDetailed = okError = true;
@@ -97,9 +96,8 @@ public class WaarpImplPrivateMib extends WaarpPrivateMib {
         okError &= low.startsWith(rootOIDWaarpError);
       }
     }
-    logger.debug(
-        "General:" + okGeneral + " Detailed:" + okDetailed + " Error:" +
-        okError);
+    logger.debug("General:{} Detailed:{} Error:{}", okGeneral, okDetailed,
+                 okError);
     if (okGeneral) {
       ((WaarpPrivateMonitor) agent.getMonitor()).generalValuesUpdate();
     }

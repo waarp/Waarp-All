@@ -116,7 +116,7 @@ public class HttpRestBusinessR66Handler extends HttpRestAbstractR66Handler {
           setOk(handler, result, json, HttpResponseStatus.OK);
         }
       } else {
-        logger.info("Validation is ignored: " + json);
+        logger.info("Validation is ignored: {}", json);
         result.setDetail("Unknown command");
         setError(handler, result, json, HttpResponseStatus.PRECONDITION_FAILED);
       }
@@ -131,7 +131,7 @@ public class HttpRestBusinessR66Handler extends HttpRestAbstractR66Handler {
                            final RestArgument result, final R66Session session,
                            final BusinessRequestJsonPacket node,
                            final R66Result r66result) {
-    logger.info("Task in Error:" + node.getClassName() + ' ' + r66result);
+    logger.info("Task in Error: {} {}", node.getClassName(), r66result);
     if (!r66result.isAnswered()) {
       node.setValidated(false);
       session.newState(ERROR);

@@ -114,9 +114,9 @@ public abstract class DbModelMariadb extends DbModelCommonMariadbMySql {
       pool = new DbConnectionPool(mysqlConnectionPoolDataSource);
     }
 
-    logger.info(
-        "Some info: MaxConn: " + pool.getMaxConnections() + " LogTimeout: " +
-        pool.getLoginTimeout() + " ForceClose: " + pool.getTimeoutForceClose());
+    logger.info("Some info: MaxConn: {} LogTimeout: {} ForceClose: {}",
+                pool.getMaxConnections(), pool.getLoginTimeout(),
+                pool.getTimeoutForceClose());
   }
 
   /**

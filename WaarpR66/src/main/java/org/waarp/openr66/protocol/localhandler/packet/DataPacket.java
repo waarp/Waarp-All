@@ -207,7 +207,7 @@ public class DataPacket extends AbstractLocalPacket {
       logger.error("Should received a Digest but don't");
       return false;
     }
-    digestBlock.Update(data);
+    digestBlock.Update(data, 0, data.length);
     final byte[] newkey = digestBlock.Final();
     final boolean equal = Arrays.equals(key, newkey);
     if (!equal) {
@@ -233,7 +233,7 @@ public class DataPacket extends AbstractLocalPacket {
       logger.error("Should received a Digest but don't");
       return false;
     }
-    digestBlock.Update(data);
+    digestBlock.Update(data, 0, data.length);
     final byte[] newkey = digestBlock.Final();
     FileUtils.computeGlobalHash(digestGlobal, digestLocal, data);
     final boolean equal = Arrays.equals(key, newkey);

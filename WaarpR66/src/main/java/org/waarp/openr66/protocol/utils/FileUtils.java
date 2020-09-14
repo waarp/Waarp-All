@@ -64,13 +64,13 @@ public final class FileUtils {
                                       final boolean isThrough, R66File file)
       throws OpenR66RunnerErrorException {
     String filename;
-    logger.debug("PreStart: " + isPreStart);
-    logger.debug("Dir is: " + session.getDir().getFullPath());
-    logger.debug("File is: " + filenameSrc);
+    logger.debug("PreStart: {}", isPreStart);
+    logger.debug("Dir is: {}", session.getDir().getFullPath());
+    logger.debug("File is: {}", filenameSrc);
     if (isPreStart) {
       filename = AbstractDir.normalizePath(filenameSrc);
       filename = AbstractDir.pathFromURI(filename);
-      logger.debug("File becomes: " + filename);
+      logger.debug("File becomes: {}", filename);
     } else {
       filename = filenameSrc;
     }
@@ -155,12 +155,6 @@ public final class FileUtils {
                                        final FilesystemBasedDigest digestLocal,
                                        final byte[] buffer) {
     if (buffer == null || buffer.length == 0) {
-      return;
-    }
-    if (digestGlobal != null && digestLocal != null) {
-      final int length = buffer.length;
-      digestGlobal.Update(buffer, 0, length);
-      digestLocal.Update(buffer, 0, length);
       return;
     }
     if (digestGlobal != null) {

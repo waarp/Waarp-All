@@ -123,10 +123,12 @@ public abstract class ConnectionActions {
     }
     final DbTaskRunner runner = session.getRunner();
     try {
-      logger.debug("Local Server Channel Closed: {} {}",
-                   localChannelReference != null? localChannelReference :
-                       "no LocalChannelReference",
-                   runner != null? runner.toShortString() : "no runner");
+      if (logger.isDebugEnabled()) {
+        logger.debug("Local Server Channel Closed: {} {}",
+                     localChannelReference != null? localChannelReference :
+                         "no LocalChannelReference",
+                     runner != null? runner.toShortString() : "no runner");
+      }
       // clean session objects like files
       boolean mustFinalize = true;
       if (localChannelReference != null &&
@@ -149,7 +151,7 @@ public abstract class ConnectionActions {
               mustFinalize = false;
             }
           }
-          logger.debug("Must Finalize: " + mustFinalize);
+          logger.debug("Must Finalize: {}", mustFinalize);
           if (mustFinalize) {
             session.newState(ERROR);
             final R66Result finalValue = new R66Result(
@@ -172,8 +174,8 @@ public abstract class ConnectionActions {
           // Since requested : log
           final R66Result result = transfer.getResult();
           if (transfer.isDone() && transfer.isSuccess()) {
-            logger.info("TRANSFER REQUESTED RESULT:     SUCCESS     " +
-                        (result != null? result.toString() : "no result"));
+            logger.info("TRANSFER REQUESTED RESULT:     SUCCESS     {}",
+                        (result != null? result : "no result"));
           } else {
             logger.error("TRANSFER REQUESTED RESULT:     FAILURE     " +
                          (result != null? result.toString() : "no result"));
@@ -300,9 +302,11 @@ public abstract class ConnectionActions {
     logger.error(Messages.getString("LocalServerHandler.6") + //$NON-NLS-1$
                  localChannelReference.getNetworkChannel().remoteAddress() +
                  " : " + packet.getHostId());
-    logger.debug(Messages.getString("LocalServerHandler.6") + //$NON-NLS-1$
-                 localChannelReference.getNetworkChannel().remoteAddress() +
-                 " : " + packet.getHostId(), e1);
+    if (logger.isDebugEnabled()) {
+      logger.debug(Messages.getString("LocalServerHandler.6") + //$NON-NLS-1$
+                   localChannelReference.getNetworkChannel().remoteAddress() +
+                   " : " + packet.getHostId(), e1);
+    }
     if (Configuration.configuration.getR66Mib() != null) {
       Configuration.configuration.getR66Mib().notifyError(
           "Connection not allowed from " +
@@ -536,7 +540,7 @@ public abstract class ConnectionActions {
     final OpenR66ProtocolBusinessException exception;
     if (code.code == ErrorCode.CanceledTransfer.code) {
       NetworkTransaction.stopRetrieve(session.getLocalChannelReference());
-      logger.debug("Stop retrieving file: the transfer has been canceled");
+      logger.info("Stop retrieving file: the transfer has been canceled");
       exception =
           new OpenR66ProtocolBusinessCancelException(packet.getSheader());
       final int rank = 0;
@@ -560,7 +564,7 @@ public abstract class ConnectionActions {
       return;
     } else if (code.code == ErrorCode.StoppedTransfer.code) {
       NetworkTransaction.stopRetrieve(session.getLocalChannelReference());
-      logger.debug("Stop retrieving file: the transfer has been stopped");
+      logger.info("Stop retrieving file: the transfer has been stopped");
       exception = new OpenR66ProtocolBusinessStopException(packet.getSheader());
       final String[] vars = packet.getSheader().split(" ");
       final String var = vars[vars.length - 1];

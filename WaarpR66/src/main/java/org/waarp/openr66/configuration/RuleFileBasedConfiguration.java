@@ -171,7 +171,7 @@ public final class RuleFileBasedConfiguration {
     for (final File file : files) {
       logger.info("Load rule from {}", file.getAbsolutePath());
       final DbRule rule = getFromFile(file);
-      logger.debug(rule.toString());
+      logger.debug("{}", rule);
     }
     files = FileUtils.getFiles(configDirectory, new ExtensionFilter(EXT_RULES));
     for (final File file : files) {
@@ -190,7 +190,7 @@ public final class RuleFileBasedConfiguration {
   public static String[][] getTasksRule(final XmlValue value) {
     final List<XmlValue[]> list = (List<XmlValue[]>) value.getList();
     if (list == null || list.isEmpty()) {
-      logger.debug("NoRule for " + value.getName());
+      logger.debug("NoRule for {}", value.getName());
       // Unable to find the tasks for Rule, setting to the default
       return STRINGS_0_0_LENGTH;
     }
@@ -241,9 +241,8 @@ public final class RuleFileBasedConfiguration {
       taskArray[rank][1] = valpath.getString();
       taskArray[rank][2] = delay;
       taskArray[rank][3] = comment;
-      logger.debug(
-          "RuleTask: " + valtype.getString() + ':' + valpath.getString() + ':' +
-          delay + ':' + comment);
+      logger.debug("RuleTask: {}:{}:{}:{}", valtype.getString(),
+                   valpath.getString(), delay, comment);
       rank++;
       hash.clear();
     }
@@ -259,8 +258,8 @@ public final class RuleFileBasedConfiguration {
   public static String[] getHostIds(final XmlValue value) {
     String[] idsArray = STRING_0_LENGTH;
     if (value == null || value.getList() == null || value.getList().isEmpty()) {
-      logger.debug(
-          "Unable to find the Hostid for Rule, setting to " + "the default");
+      logger
+          .debug("Unable to find the Hostid for Rule, setting to the default");
     } else {
       @SuppressWarnings("unchecked")
       final List<String> ids = (List<String>) value.getList();
@@ -707,7 +706,7 @@ public final class RuleFileBasedConfiguration {
       final String filename =
           dir.getAbsolutePath() + File.separator + hostname + '_' +
           rule.getIdRule() + EXT_RULE;
-      logger.debug("Will write Rule: " + rule.getIdRule() + " in " + filename);
+      logger.debug("Will write Rule: {} in {}", rule.getIdRule(), filename);
       writeXMLInternal(filename, rule);
     }
   }

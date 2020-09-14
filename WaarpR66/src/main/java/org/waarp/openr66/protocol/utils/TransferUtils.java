@@ -105,8 +105,10 @@ public final class TransferUtils {
               logger.warn(Messages.getString("TransferUtils.3")); //$NON-NLS-1$
             } else {
               final R66Future result = new R66Future(true);
-              logger.info(Messages.getString("TransferUtils.4") +
-                          taskRunner.toShortString()); //$NON-NLS-1$
+              if (logger.isInfoEnabled()) {
+                logger.info("{}{}", Messages.getString("TransferUtils.4"),
+                            taskRunner.toShortString()); //$NON-NLS-1$
+              }
               final RequestTransfer requestTransfer =
                   new RequestTransfer(result, taskRunner.getSpecialId(),
                                       taskRunner.getRequested(),
@@ -421,8 +423,8 @@ public final class TransferUtils {
           if (file != null) {
             name = file.getFile();
             if (file.exists()) {
-              logger.info(
-                  Messages.getString("TransferUtils.18") + file); //$NON-NLS-1$
+              logger.info("{}{}", Messages.getString("TransferUtils.18"),
+                          file); //$NON-NLS-1$
               if (!file.delete()) {
                 logger.warn(Messages.getString("TransferUtils.19") +
                             file); //$NON-NLS-1$

@@ -303,7 +303,7 @@ public class HttpRestR66Handler extends HttpRestHandler {
                                         new HttpRestControlR66Handler(
                                             restConfiguration, methods));
     }
-    logger.debug("Initialized handler: " + RESTHANDLERS.values().length);
+    logger.debug("Initialized handler: {}", RESTHANDLERS.values().length);
   }
 
   /**

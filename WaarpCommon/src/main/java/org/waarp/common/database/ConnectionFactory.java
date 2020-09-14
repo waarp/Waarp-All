@@ -151,7 +151,6 @@ public class ConnectionFactory {
     if (ds == null) {
       throw new SQLException("ConnectionFactory is not inialized.");
     }
-    logger.trace("Active: {}, Idle: {}", ds.getNumActive(), ds.getNumIdle());
     try {
       return ds.getConnection();
     } catch (final SQLException e) {
@@ -204,7 +203,7 @@ public class ConnectionFactory {
       }
     }
     setMaxConnections(maxConnections);
-    logger.info(toString());
+    logger.info("{}", this);
   }
 
   /**

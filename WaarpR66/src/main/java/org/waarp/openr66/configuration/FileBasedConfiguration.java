@@ -1216,7 +1216,7 @@ public class FileBasedConfiguration {
               return false;
             }
             Configuration.configuration.getRestConfigurations().add(config);
-            logger.info(config.toString());
+            logger.info("{}", config);
           }
         }
       }
@@ -1398,20 +1398,22 @@ public class FileBasedConfiguration {
           } else {
             noCommitAdmin = admin;
           }
-          logger.info("Database connection: Admin:" + (admin != null) +
-                      " NoCommitAdmin:" + (noCommitAdmin != null));
+          if (logger.isInfoEnabled()) {
+            logger.info("Database connection: Admin: {}  NoCommitAdmin: {}",
+                        (admin != null), (noCommitAdmin != null));
 
-          try {
-            logger.info("DefaultTransactionIsolation: " +
-                        admin.getSession().getConn().getMetaData()
-                             .getDefaultTransactionIsolation() +
-                        " MaxConnections: " +
-                        admin.getSession().getConn().getMetaData()
-                             .getMaxConnections() + " MaxStatements: " +
-                        admin.getSession().getConn().getMetaData()
-                             .getMaxStatements());
-          } catch (final SQLException e) {
-            SysErrLogger.FAKE_LOGGER.syserr(e);
+            try {
+              logger.info("DefaultTransactionIsolation: " +
+                          admin.getSession().getConn().getMetaData()
+                               .getDefaultTransactionIsolation() +
+                          " MaxConnections: " +
+                          admin.getSession().getConn().getMetaData()
+                               .getMaxConnections() + " MaxStatements: " +
+                          admin.getSession().getConn().getMetaData()
+                               .getMaxStatements());
+            } catch (final SQLException e) {
+              SysErrLogger.FAKE_LOGGER.syserr(e);
+            }
           }
         } catch (final WaarpDatabaseNoConnectionException e2) {
           logger.error(Messages.getString("Database.CannotConnect"),
@@ -1490,7 +1492,7 @@ public class FileBasedConfiguration {
             if (sval.isEmpty()) {
               continue;
             }
-            logger.info("Business Allow: " + sval);
+            logger.info("Business Allow: {}", sval);
             config.getBusinessWhiteSet().add(sval.trim());
           }
           ids.clear();
@@ -1534,7 +1536,7 @@ public class FileBasedConfiguration {
             config.getAliases().put(namealias, refHostId);
           }
           config.getReverseAliases().put(refHostId, alias);
-          logger.info("Aliases for: " + refHostId + " = " + aliasset);
+          logger.info("Aliases for: {} = {}", refHostId, aliasset);
         }
       }
     } finally {
@@ -1602,7 +1604,7 @@ public class FileBasedConfiguration {
               // ignore
             }
           }
-          logger.info("New Role: " + refHostId + ':' + newrole);
+          logger.info("New Role: {}:{}", refHostId, newrole);
           config.getRoles().put(refHostId, newrole);
         }
       }

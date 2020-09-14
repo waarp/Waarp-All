@@ -173,7 +173,7 @@ public class ConfigImport implements Runnable {
     }
     localChannelReference.sessionNewState(R66FiniteDualStates.VALIDOTHER);
     final boolean useJson = PartnerConfiguration.useJson(dbhost.getHostid());
-    logger.debug("UseJson: " + useJson);
+    logger.debug("UseJson: {}", useJson);
     final AbstractLocalPacket valid;
     if (useJson) {
       final ConfigImportJsonPacket node = new ConfigImportJsonPacket();
@@ -200,8 +200,8 @@ public class ConfigImport implements Runnable {
     }
     AbstractTransfer
         .sendValidPacket(dbhost, localChannelReference, valid, future);
-    logger.debug(
-        "Request done with " + (future.isSuccess()? "success" : "error"));
+    logger.debug("Request done with {}",
+                 (future.isSuccess()? "success" : "error"));
   }
 
   protected static String shost;
@@ -377,7 +377,7 @@ public class ConfigImport implements Runnable {
       final R66Result result = future.getResult();
       if (future.isSuccess()) {
         final boolean useJson = PartnerConfiguration.useJson(stohost);
-        logger.debug("UseJson: " + useJson);
+        logger.debug("UseJson: {}", useJson);
         final String message;
         if (useJson) {
           message = result.getOther() != null?

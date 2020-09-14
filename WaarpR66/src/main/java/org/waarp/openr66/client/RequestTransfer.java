@@ -257,7 +257,7 @@ public class RequestTransfer implements Runnable {
       }
       try {
         runner = new DbTaskRunner(null, null, specialId, requester, requested);
-        logger.info("Found previous Runner: " + runner);
+        logger.info("Found previous Runner: {}", runner);
       } catch (final WaarpDatabaseException e) {
         // Maybe we can ask to the remote
         final R66Future futureInfo = new R66Future(true);
@@ -277,7 +277,7 @@ public class RequestTransfer implements Runnable {
             // useful ?
             CommanderNoDb.todoList.add(runner);
 
-            logger.info("Get Runner from remote: " + runner);
+            logger.info("Get Runner from remote: {}", runner);
             if (runner.getSpecialId() == ILLEGALVALUE || !runner.isSender()) {
               logger.error(
                   Messages.getString("RequestTransfer.18")); //$NON-NLS-1$
@@ -320,7 +320,7 @@ public class RequestTransfer implements Runnable {
           if (runner.isAllDone()) {
             // nothing to do since already finished
             setDone(runner);
-            logger.info("Transfer already finished: " + runner);
+            logger.info("Transfer already finished: {}", runner);
             future.setResult(
                 new R66Result(null, true, ErrorCode.TransferOk, runner));
             future.getResult().setRunner(runner);
@@ -423,8 +423,10 @@ public class RequestTransfer implements Runnable {
         }
       } else {
         // Only request
-        logger.info("Transfer information: {}    " + runner.toShortString(),
-                    future.isDone());
+        if (logger.isInfoEnabled()) {
+          logger.info("Transfer information: {}    {}", future.isDone(),
+                      runner.toShortString());
+        }
         future.setResult(
             new R66Result(null, true, runner.getErrorInfo(), runner));
         future.setSuccess();
@@ -470,11 +472,13 @@ public class RequestTransfer implements Runnable {
       return ErrorCode.Internal;
     }
     // check if requester is "client" so no connect from him but direct action
-    logger.debug("Requester Host isClient: " + host.isClient());
+    logger.debug("Requester Host isClient: {}", host.isClient());
     if (host.isClient()) {
       if (code == LocalPacketFactory.VALIDPACKET) {
-        logger.info(Messages.getString("RequestTransfer.42") + //$NON-NLS-1$
-                    runner.toShortString());
+        if (logger.isInfoEnabled()) {
+          logger.info("{} {}", Messages.getString("RequestTransfer.42"),
+                      runner.toShortString());//$NON-NLS-1$
+        }
         final R66Future transfer = new R66Future(true);
         final DirectTransfer transaction =
             new DirectTransfer(transfer, runner.getRequested(),
@@ -485,8 +489,8 @@ public class RequestTransfer implements Runnable {
         transaction.normalInfoAsWarn = normalInfoAsWarn;
         transaction.run();
         transfer.awaitOrInterruptible();
-        logger.info(
-            "Request done with " + (transfer.isSuccess()? "success" : "error"));
+        logger.info("Request done with {}",
+                    (transfer.isSuccess()? "success" : "error"));
         if (transfer.isSuccess()) {
           future.setResult(
               new R66Result(null, true, ErrorCode.PreProcessingOk, runner));
@@ -526,7 +530,7 @@ public class RequestTransfer implements Runnable {
       return ErrorCode.ConnectionImpossible;
     }
     final boolean useJson = PartnerConfiguration.useJson(host.getHostid());
-    logger.debug("UseJson: " + useJson);
+    logger.debug("UseJson: {}", useJson);
     final AbstractLocalPacket packet;
     if (useJson) {
       final RestartTransferJsonPacket node = new RestartTransferJsonPacket();
@@ -536,7 +540,7 @@ public class RequestTransfer implements Runnable {
       node.setSpecialid(specialId);
       if (restarttime != null && code == LocalPacketFactory.VALIDPACKET) {
         // restart time set
-        logger.debug("Restart with time: " + restarttime);
+        logger.debug("Restart with time: {}", restarttime);
         // time to reschedule in yyyyMMddHHmmss format
         final SimpleDateFormat dateFormat =
             new SimpleDateFormat(AbstractTransfer.TIMESTAMP_FORMAT);
@@ -551,7 +555,7 @@ public class RequestTransfer implements Runnable {
     } else {
       if (restarttime != null && code == LocalPacketFactory.VALIDPACKET) {
         // restart time set
-        logger.debug("Restart with time: " + restarttime);
+        logger.debug("Restart with time: {}", restarttime);
         packet = new ValidPacket(REQUEST_ON_TRANSFER,
                                  requested + ' ' + requester + ' ' + specialId +
                                  ' ' + restarttime, code);
@@ -597,7 +601,7 @@ public class RequestTransfer implements Runnable {
     }
 
     final boolean useJson = PartnerConfiguration.useJson(host.getHostid());
-    logger.debug("UseJson: " + useJson);
+    logger.debug("UseJson: {}", useJson);
     final AbstractLocalPacket packet;
     if (useJson) {
       final StopOrCancelJsonPacket node = new StopOrCancelJsonPacket();
@@ -676,7 +680,7 @@ public class RequestTransfer implements Runnable {
             outputFormat.setValueString(result.getRunner().getJson());
             if (requestTransfer.normalInfoAsWarn) {
               logger.warn(outputFormat.loggerOut());
-            } else {
+            } else if (logger.isInfoEnabled()) {
               logger.info(outputFormat.loggerOut());
             }
             if (!OutputFormat.isQuiet()) {
@@ -737,7 +741,7 @@ public class RequestTransfer implements Runnable {
               outputFormat.setValueString(result.getRunner().getJson());
               if (requestTransfer.normalInfoAsWarn) {
                 logger.warn(outputFormat.loggerOut());
-              } else {
+              } else if (logger.isInfoEnabled()) {
                 logger.info(outputFormat.loggerOut());
               }
               if (!OutputFormat.isQuiet()) {
@@ -808,7 +812,7 @@ public class RequestTransfer implements Runnable {
               outputFormat.setValueString(result.getRunner().getJson());
               if (requestTransfer.normalInfoAsWarn) {
                 logger.warn(outputFormat.loggerOut());
-              } else {
+              } else if (logger.isInfoEnabled()) {
                 logger.info(outputFormat.loggerOut());
               }
               if (!OutputFormat.isQuiet()) {
@@ -881,7 +885,7 @@ public class RequestTransfer implements Runnable {
         }
         if (requestTransfer.normalInfoAsWarn) {
           logger.warn(outputFormat.loggerOut());
-        } else {
+        } else if (logger.isInfoEnabled()) {
           logger.info(outputFormat.loggerOut());
         }
         if (!OutputFormat.isQuiet()) {

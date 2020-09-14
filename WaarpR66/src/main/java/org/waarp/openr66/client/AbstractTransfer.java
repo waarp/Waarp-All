@@ -237,7 +237,7 @@ public abstract class AbstractTransfer implements Runnable {
           }
         }
       }
-      logger.debug("Filesize: " + originalSize);
+      logger.debug("Filesize: {}", originalSize);
       final String sep =
           PartnerConfiguration.getSeparator(transferArgs.getRemoteHost());
       final RequestPacket request =
@@ -429,8 +429,9 @@ public abstract class AbstractTransfer implements Runnable {
       } else {
         // remote query
         final R66Future futureInfo = new R66Future(true);
-        logger.info(Messages.getString("Transfer.3") + filenameNew + " to " +
-                    requested); //$NON-NLS-1$
+        logger
+            .info("{} {} to {}", Messages.getString("Transfer.3"), filenameNew,
+                  requested); //$NON-NLS-1$
         final RequestInformation info =
             new RequestInformation(futureInfo, requested,
                                    transferArgs.getRulename(), filenameNew,
@@ -475,12 +476,12 @@ public abstract class AbstractTransfer implements Runnable {
       for (final String filenameNew : localfilenames) {
         if (!(filenameNew.contains("*") || filenameNew.contains("?") ||
               filenameNew.contains("~"))) {
-          logger.info("Direct add: " + filenameNew);
+          logger.info("Direct add: {}", filenameNew);
           files.add(filenameNew);
         } else {
           // local: must check
-          logger.info(
-              "Local Ask for " + filenameNew + " from " + dir.getFullPath());
+          logger
+              .info("Local Ask for {} from {}", filenameNew, dir.getFullPath());
           final List<String> list;
           try {
             list = dir.list(filenameNew);
@@ -513,12 +514,12 @@ public abstract class AbstractTransfer implements Runnable {
     if (logger == null) {
       logger = WaarpLoggerFactory.getLogger(AbstractTransfer.class);
     }
-    logger.info("Try RequestTransfer to " + host);
+    logger.info("Try RequestTransfer to {}", host);
     final SocketAddress socketAddress;
     try {
       socketAddress = host.getSocketAddress();
     } catch (final IllegalArgumentException e) {
-      logger.debug("Cannot connect to " + host);
+      logger.debug("Cannot connect to {}", host);
       future.setResult(new R66Result(new OpenR66ProtocolNoConnectionException(
           "Cannot connect to server " + host.getHostid()), null, true,
                                      ErrorCode.ConnectionImpossible, null));
@@ -530,7 +531,7 @@ public abstract class AbstractTransfer implements Runnable {
     final LocalChannelReference localChannelReference = networkTransaction
         .createConnectionWithRetry(socketAddress, isSSL, future);
     if (localChannelReference == null) {
-      logger.debug("Cannot connect to " + host);
+      logger.debug("Cannot connect to {}", host);
       future.setResult(new R66Result(new OpenR66ProtocolNoConnectionException(
           "Cannot connect to server " + host.getHostid()), null, true,
                                      ErrorCode.ConnectionImpossible, null));

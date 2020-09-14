@@ -115,7 +115,7 @@ public class DbSession {
       setReadOnly(isReadOnly);
       getConn().setReadOnly(isReadOnly());
       setInternalId(new GUID());
-      logger.debug("Open Db Conn: " + getInternalId());
+      logger.debug("Open Db Conn: {}", getInternalId());
       DbAdmin.addConnection(getInternalId(), this);
       setDisActive(false);
       checkConnection();
@@ -284,7 +284,7 @@ public class DbSession {
         }
       }
     }
-    logger.debug(THREAD_USING + val);
+    logger.debug("{}{}", THREAD_USING, val);
   }
 
   /**
@@ -293,7 +293,7 @@ public class DbSession {
    */
   public void endUseConnection() {
     final int val = nbThread.decrementAndGet();
-    logger.debug(THREAD_USING + val);
+    logger.debug("{}{}", THREAD_USING, val);
     if (val <= 0) {
       disconnect();
     }
@@ -305,7 +305,7 @@ public class DbSession {
    */
   public void enUseConnectionNoDisconnect() {
     final int val = nbThread.decrementAndGet();
-    logger.debug(THREAD_USING + val);
+    logger.debug("{}{}", THREAD_USING, val);
     if (val <= 0) {
       DbAdmin.dbSessionTimer.newTimeout(new TryDisconnectDbSession(this),
                                         DbAdmin.WAITFORNETOP * 10,
@@ -329,7 +329,7 @@ public class DbSession {
       if (val <= 0) {
         dbSession.disconnect();
       }
-      logger.debug(THREAD_USING + val);
+      logger.debug("{}{}", THREAD_USING, val);
     }
   }
 
@@ -359,12 +359,12 @@ public class DbSession {
       logger.debug("Connection already closed");
       return;
     }
-    logger.debug("DbConnection still in use: " + nbThread);
+    logger.debug("DbConnection still in use: {}", nbThread);
     removeLongTermPreparedStatements();
     DbAdmin.removeConnection(getInternalId());
     setDisActive(true);
     try {
-      logger.debug("Fore close Db Conn: " + getInternalId());
+      logger.debug("Fore close Db Conn: {}", getInternalId());
       if (getConn() != null) {
         getConn().close();
         setConn(null);
@@ -375,7 +375,7 @@ public class DbSession {
     } catch (final ConcurrentModificationException e) {
       // ignore
     }
-    logger.info("Current cached connection: " +
+    logger.info("Current cached connection: {}",
                 getAdmin().getDbModel().currentNumberOfPooledConnections());
   }
 
@@ -384,16 +384,16 @@ public class DbSession {
    */
   public void disconnect() {
     if (getInternalId().equals(getAdmin().getSession().getInternalId())) {
-      logger.debug("Closing internal db connection: " + nbThread.get());
+      logger.debug("Closing internal db connection: {}", nbThread.get());
     }
     if (getConn() == null || isDisActive()) {
       logger.debug("Connection already closed");
       return;
     }
-    logger.debug("DbConnection still in use: " + nbThread);
+    logger.debug("DbConnection still in use: {}", nbThread);
     if (nbThread.get() > 0) {
-      logger.info(
-          "Still some clients could use this Database Session: " + nbThread);
+      logger.info("Still some clients could use this Database Session: {}",
+                  nbThread);
       return;
     }
     synchronized (this) {
@@ -401,7 +401,7 @@ public class DbSession {
       DbAdmin.removeConnection(getInternalId());
       setDisActive(true);
       try {
-        logger.debug("Close Db Conn: " + getInternalId());
+        logger.debug("Close Db Conn: {}", getInternalId());
         if (getConn() != null) {
           getConn().close();
           setConn(null);
@@ -413,7 +413,7 @@ public class DbSession {
         // ignore
       }
     }
-    logger.info("Current cached connection: " +
+    logger.info("Current cached connection: {}",
                 getAdmin().getDbModel().currentNumberOfPooledConnections());
   }
 
@@ -464,8 +464,8 @@ public class DbSession {
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
     WaarpDatabaseNoConnectionException elast = null;
     WaarpDatabaseSqlException e2last = null;
-    logger.info(
-        "RecreateLongTermPreparedStatements: " + listPreparedStatement.size());
+    logger.info("RecreateLongTermPreparedStatements: {}",
+                listPreparedStatement.size());
     for (final DbPreparedStatement longterm : listPreparedStatement) {
       try {
         longterm.recreatePreparedStatement();

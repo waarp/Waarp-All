@@ -50,11 +50,11 @@ public class RETR extends AbstractCommand {
                     .setNewFtpTransfer(getCode(), file);
         return;
       }
-      logger.debug("File not accessible: " + file);
+      logger.info("File not accessible: {}", file);
       // FtpFile does not exist
       throw new Reply450Exception("Retrieve operation not allowed");
     }
-    logger.debug("Filename not allowed: " + filename);
+    logger.info("Filename not allowed: {}", filename);
     // FtpFile name not allowed
     throw new Reply550Exception("Filename not allowed");
   }

@@ -58,6 +58,8 @@ public abstract class TestAbstractMinimal {
         new WaarpSlf4JLoggerFactory(WaarpLogLevel.WARN));
     if (!SystemPropertyUtil.get(IT_LONG_TEST, false)) {
       ResourceLeakDetector.setLevel(Level.PARANOID);
+    } else {
+      ResourceLeakDetector.setLevel(Level.SIMPLE);
     }
     if (logger == null) {
       logger = WaarpLoggerFactory.getLogger(TestAbstractMinimal.class);

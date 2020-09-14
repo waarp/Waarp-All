@@ -170,9 +170,9 @@ public class FileConvert extends Thread {
    */
   public boolean convert(final File input, final boolean unix2dos) {
     if (unix2dos) {
-      logger.info("unix2Dos conversion of '" + input + "'... ");
+      logger.info("unix2Dos conversion of '{}'... ", input);
     } else {
-      logger.info("dos2Unix conversion of '" + input + "'... ");
+      logger.info("dos2Unix conversion of '{}'... ", input);
     }
     FileInputStream fis = null;
     FileOutputStream fos = null;

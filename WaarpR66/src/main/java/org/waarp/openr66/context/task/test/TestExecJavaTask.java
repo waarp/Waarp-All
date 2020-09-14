@@ -54,9 +54,9 @@ public class TestExecJavaTask extends AbstractExecJavaTask {
             getClass().getName() + " business " + rank + " final return", 0);
         if (rank > 100) {
           validate(packet);
-          logger.info("Will NOT close the channel: " + rank);
+          logger.info("Will NOT close the channel: {}", rank);
         } else {
-          logger.info("Continue: " + rank);
+          logger.info("Continue: {}", rank);
           if (session.getLocalChannelReference() != null) {
             try {
               ChannelUtils
@@ -79,7 +79,7 @@ public class TestExecJavaTask extends AbstractExecJavaTask {
         logger.info("TestExecJavaTask No File");
       } else {
         try {
-          logger.info("TestExecJavaTask File: " + file.getFile());
+          logger.info("TestExecJavaTask File: {}", file.getFile());
         } catch (final CommandAbstractException ignored) {
           // nothing
         }

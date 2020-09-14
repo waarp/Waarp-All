@@ -127,9 +127,9 @@ public class NetworkTransaction {
     }
     if (channel == null) {
       if (lastException != null) {
-        logger.debug("Cannot connect : {}", lastException.getMessage());
+        logger.info("Cannot connect : {}", lastException.getMessage());
       } else {
-        logger.debug("Cannot connect!");
+        logger.info("Cannot connect!");
       }
     } else if (lastException != null) {
       logger.debug("Connection retried since {}", lastException.getMessage());
@@ -160,7 +160,7 @@ public class NetworkTransaction {
     boolean valid = false;
     for (int i = 0; i < RETRYNB * 2; i++) {
       if (configuration.getConstraintLimitHandler().checkConstraintsSleep(i)) {
-        logger.debug("Constraints exceeded: " + i);
+        logger.info("Constraints exceeded: {}", i);
       } else {
         logger.debug("Constraints NOT exceeded");
         valid = true;
@@ -228,7 +228,7 @@ public class NetworkTransaction {
       if (channelFuture.isSuccess()) {
         final Channel channel = channelFuture.channel();
         if (isSSL && !NetworkSslServerHandler.isSslConnectedChannel(channel)) {
-          logger.debug("KO CONNECT since SSL handshake is over");
+          logger.info("KO CONNECT since SSL handshake is over");
           channel.close();
           throw new OpenR66ProtocolNoConnectionException(
               "Cannot finish connect to remote server");
@@ -246,7 +246,7 @@ public class NetworkTransaction {
               "Cannot connect to remote server due to interruption");
         }
         if (channelFuture.cause() instanceof ConnectException) {
-          logger.debug("KO CONNECT:" + channelFuture.cause().getMessage());
+          logger.debug("KO CONNECT: {}", channelFuture.cause().getMessage());
           throw new OpenR66ProtocolNoConnectionException(
               "Cannot connect to remote server", channelFuture.cause());
         } else {

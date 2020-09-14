@@ -132,7 +132,7 @@ public class ConfigExport implements Runnable {
     localChannelReference.sessionNewState(R66FiniteDualStates.VALIDOTHER);
     final AbstractLocalPacket valid;
     final boolean useJson = PartnerConfiguration.useJson(dbhost.getHostid());
-    logger.debug("UseJson: " + useJson);
+    logger.debug("UseJson: {}", useJson);
     if (useJson) {
       final ConfigExportJsonPacket node = new ConfigExportJsonPacket();
       node.setHost(host);
@@ -166,9 +166,8 @@ public class ConfigExport implements Runnable {
           ((JsonCommandPacket) future.getResult().getOther()).getRequest() :
           future.getResult().getOther().toString();
     }
-    logger.info(
-        "Config Export done with " + (future.isSuccess()? "success" : "error") +
-        " (" + sresult + ')');
+    logger.info("Config Export done with {} ({})",
+                future.isSuccess()? "success" : "error", sresult);
     localChannelReference.close();
   }
 
@@ -257,7 +256,7 @@ public class ConfigExport implements Runnable {
       final R66Result result = future.getResult();
       if (future.isSuccess()) {
         final boolean useJson = PartnerConfiguration.useJson(stohost);
-        logger.debug("UseJson: " + useJson);
+        logger.debug("UseJson: {}", useJson);
         final String message;
         if (useJson) {
           message = result.getOther() != null?

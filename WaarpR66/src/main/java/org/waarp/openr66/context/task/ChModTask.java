@@ -84,7 +84,7 @@ public class ChModTask extends AbstractTask {
     finalname = AbstractDir
         .normalizePath(getReplacedValue(finalname, BLANK.split(argTransfer)))
         .trim().toLowerCase();
-    logger.info("ChMod with arg " + finalname + " from {}", session);
+    logger.info("ChMod with arg {} from {}", finalname, session);
     final File file = session.getFile().getTrueFile();
     boolean user;
     boolean all;

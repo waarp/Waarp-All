@@ -160,8 +160,7 @@ public class RescheduleTransferTask extends AbstractTask {
 
   @Override
   public void run() {
-    logger.info("Reschedule with " + argRule + ':' + argTransfer + " and {}",
-                session);
+    logger.info("Reschedule with {}:{} and {}", argRule, argTransfer, session);
     runner = session.getRunner();
     if (runner == null) {
       futureCompletion.setFailure(
@@ -287,7 +286,7 @@ public class RescheduleTransferTask extends AbstractTask {
           for (final String code2 : codes) {
             final ErrorCode code = ErrorCode.getFromCode(code2);
             if (session.getLocalChannelReference().getCurrentCode() == code) {
-              logger.debug("Code valid: " + code);
+              logger.debug("Code valid: {}", code);
               validCode = true;
             }
           }
@@ -352,9 +351,9 @@ public class RescheduleTransferTask extends AbstractTask {
         } else {
           stop = Calendar.getInstance();
         }
-        logger.debug(
-            "Dates before check: Not between " + start.getTime() + " and " +
-            stop.getTime());
+        logger
+            .debug("Dates before check: Not between {} and {}", start.getTime(),
+                   stop.getTime());
         // Check that start < stop
         if (start.compareTo(stop) > 0) {
           // no so add 24H to stop
@@ -365,21 +364,19 @@ public class RescheduleTransferTask extends AbstractTask {
           start.add(Calendar.DAY_OF_MONTH, 1);
           stop.add(Calendar.DAY_OF_MONTH, 1);
         }
-        logger.debug(
-            "Dates after check: Not between " + start.getTime() + " and " +
-            stop.getTime());
+        logger
+            .debug("Dates after check: Not between {} and {}", start.getTime(),
+                   stop.getTime());
         if (!startModified) {
           if (newDate.compareTo(stop) < 0) {
-            logger.debug(
-                "newDate: " + newDate.getTime() + " Should not be between " +
-                start.getTime() + " and " + stop.getTime());
+            logger.debug("newDate: {} Should not be between {} and {}",
+                         newDate.getTime(), start.getTime(), stop.getTime());
             return false;
           }
         } else if (start.compareTo(newDate) < 0) {
           if (!stopModified || newDate.compareTo(stop) < 0) {
-            logger.debug(
-                "newDate: " + newDate.getTime() + " Should not be between " +
-                start.getTime() + " and " + stop.getTime());
+            logger.debug("newDate: {} Should not be between {} and {}",
+                         newDate.getTime(), start.getTime(), stop.getTime());
             return false;
           }
         }
@@ -403,9 +400,8 @@ public class RescheduleTransferTask extends AbstractTask {
         } else {
           stop = Calendar.getInstance();
         }
-        logger.debug(
-            "Dates before check: Between " + start.getTime() + " and " +
-            stop.getTime());
+        logger.debug("Dates before check: Between {} and {}", start.getTime(),
+                     stop.getTime());
         // Check that start < stop
         if (start.compareTo(stop) > 0) {
           // no so add 24H to stop
@@ -416,30 +412,30 @@ public class RescheduleTransferTask extends AbstractTask {
           start.add(Calendar.DAY_OF_MONTH, 1);
           stop.add(Calendar.DAY_OF_MONTH, 1);
         }
-        logger.debug(
-            "Dates before check: Between " + start.getTime() + " and " +
-            stop.getTime());
+        logger.debug("Dates before check: Between {} and {}", start.getTime(),
+                     stop.getTime());
         if (!startModified) {
           if (newDate.compareTo(stop) < 0) {
-            logger.debug("newDate: " + newDate.getTime() + " is between " +
-                         start.getTime() + " and " + stop.getTime());
+            logger.debug("newDate: {} is between {} and {}", newDate.getTime(),
+                         start.getTime(), stop.getTime());
             betweenResult = true;
           }
         } else if (start.compareTo(newDate) < 0) {
           if (!stopModified || newDate.compareTo(stop) < 0) {
-            logger.debug("newDate: " + newDate.getTime() + " is between " +
-                         start.getTime() + " and " + stop.getTime());
+            logger.debug("newDate: {} is between {} and {}", newDate.getTime(),
+                         start.getTime(), stop.getTime());
             betweenResult = true;
           }
         }
       }
     }
     if (betweenTest) {
-      logger.debug("Since between is specified, do we found newDate: " +
-                   newDate.getTime() + " Result: " + betweenResult);
+      logger.debug(
+          "Since between is specified, do we found newDate: {} Result: {}",
+          newDate.getTime(), betweenResult);
       return betweenResult;
     }
-    logger.debug("newDate: " + newDate.getTime() + " rescheduled");
+    logger.debug("newDate: {} rescheduled", newDate.getTime());
     return true;
   }
 

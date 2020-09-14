@@ -157,20 +157,20 @@ public class SimpleBusinessHandler extends BusinessHandler {
   public void afterTransferDoneBeforeAnswer(final FtpTransfer transfer)
       throws CommandAbstractException {
     if (transfer.getCommand() == FtpCommandCode.APPE) {
-      logger.info(GBBH_TRANSFER + transfer.getStatus() + " {}",
-                  transfer.getCommand(), transfer.getPath());
+      logger.info(GBBH_TRANSFER + "{} {}", transfer.getCommand(),
+                  transfer.getStatus(), transfer.getPath());
     } else if (transfer.getCommand() == FtpCommandCode.RETR) {
-      logger.info(GBBH_TRANSFER + transfer.getStatus() + " {}",
-                  transfer.getCommand(), transfer.getPath());
+      logger.info(GBBH_TRANSFER + "{} {}", transfer.getCommand(),
+                  transfer.getStatus(), transfer.getPath());
     } else if (transfer.getCommand() == FtpCommandCode.STOR) {
-      logger.info(GBBH_TRANSFER + transfer.getStatus() + " {}",
-                  transfer.getCommand(), transfer.getPath());
+      logger.info(GBBH_TRANSFER + "{} {}", transfer.getCommand(),
+                  transfer.getStatus(), transfer.getPath());
     } else if (transfer.getCommand() == FtpCommandCode.STOU) {
-      logger.info(GBBH_TRANSFER + transfer.getStatus() + " {}",
-                  transfer.getCommand(), transfer.getPath());
+      logger.info(GBBH_TRANSFER + "{} {}", transfer.getCommand(),
+                  transfer.getStatus(), transfer.getPath());
     } else {
-      logger.warn("GBBH: Transfer unknown: {} " + transfer.getStatus() + " {}",
-                  transfer.getCommand(), transfer.getPath());
+      logger.warn("GBBH: Transfer unknown: {} {} {}", transfer.getCommand(),
+                  transfer.getStatus(), transfer.getPath());
       // Nothing to do
     }
   }

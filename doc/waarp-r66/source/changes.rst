@@ -21,6 +21,7 @@ Correctifs
 - Amélioration de la documentation
 - Amélioration du service Rest V2 pour inclure les informations des
   FileMonitoring
+- Mise à jour des dépendances
 
 
 Waarp R66 3.5.0 (2020-09-01)

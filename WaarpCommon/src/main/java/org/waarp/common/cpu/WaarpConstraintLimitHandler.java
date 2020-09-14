@@ -296,14 +296,14 @@ public abstract class WaarpConstraintLimitHandler implements Runnable {
         return false;
       }
       lastAlert = "CPU Constraint: " + lastLA + " > " + cpuLimit;
-      logger.debug(lastAlert);
+      logger.info(lastAlert);
       return true;
     }
     if (channelLimit > 0) {
       final int nb = getNumberLocalChannel();
       if (channelLimit < nb) {
         lastAlert = "LocalNetwork Constraint: " + nb + " > " + channelLimit;
-        logger.debug(lastAlert);
+        logger.info(lastAlert);
         return true;
       }
     }
@@ -495,9 +495,8 @@ public abstract class WaarpConstraintLimitHandler implements Runnable {
           curlimit.write != newwrite) {
         // Not same limit so add this limit
         curLimits.add(newlimit);
-        logger.debug(
-            "Set new low limit since CPU = " + curLA + ' ' + newwrite + ':' +
-            newread);
+        logger.info("Set new low limit since CPU = {} {}:{}", curLA, newwrite,
+                    newread);
         handler.configure(newlimit.write, newlimit.read);
         nbSinceLastDecrease += PAYLOAD;
       }
@@ -518,18 +517,17 @@ public abstract class WaarpConstraintLimitHandler implements Runnable {
         // reset to default limits
         final long newread = getReadLimit();
         final long newwrite = getWriteLimit();
-        logger.debug(
-            "restore limit since CPU = " + curLA + ' ' + newwrite + ':' +
-            newread);
+        logger.info("restore limit since CPU = {} {}:{}", curLA, newwrite,
+                    newread);
         handler.configure(newwrite, newread);
       } else {
         // set next upper values
         newlimit = curLimits.getLast();
         final long newread = newlimit.read;
         final long newwrite = newlimit.write;
-        logger.debug(
-            "Set new upper limit since CPU = " + curLA + ' ' + newwrite + ':' +
-            newread);
+        logger
+            .info("Set new upper limit since CPU = {} {}:{}", +curLA, newwrite,
+                  newread);
         handler.configure(newwrite, newread);
         // give extra payload to prevent a brutal return to normal
         nbSinceLastDecrease = PAYLOAD;

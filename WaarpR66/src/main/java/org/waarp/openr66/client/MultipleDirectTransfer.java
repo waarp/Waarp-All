@@ -117,12 +117,12 @@ public class MultipleDirectTransfer extends DirectTransfer {
                                    transferArgs.getId(), networkTransaction);
             transaction.transferArgs.setFollowId(transferArgs.getFollowId());
             transaction.normalInfoAsWarn = normalInfoAsWarn;
-            logger.debug("rhost: " + host + ':' +
+            logger.debug("rhost: {}:{}", host,
                          transaction.transferArgs.getRemoteHost());
             transaction.run();
             future.awaitOrInterruptible();
             final long time2 = System.currentTimeMillis();
-            logger.debug("finish transfer: " + future.isSuccess());
+            logger.debug("finish transfer: {}", future.isSuccess());
             final long delay = time2 - time1;
             final R66Result result = future.getResult();
             final OutputFormat outputFormat = new OutputFormat(
@@ -133,7 +133,7 @@ public class MultipleDirectTransfer extends DirectTransfer {
               setDoneMultiple(getDoneMultiple() + 1);
               if (transaction.normalInfoAsWarn) {
                 logger.warn(outputFormat.loggerOut());
-              } else {
+              } else if (logger.isInfoEnabled()) {
                 logger.info(outputFormat.loggerOut());
               }
               if (nolog) {
@@ -210,7 +210,7 @@ public class MultipleDirectTransfer extends DirectTransfer {
       multipleDirectTransfer.run();
       future.awaitOrInterruptible();
       final long time2 = System.currentTimeMillis();
-      logger.debug("finish all transfers: " + future.isSuccess());
+      logger.debug("finish all transfers: {}", future.isSuccess());
       final long delay = time2 - time1;
       final OutputFormat outputFormat =
           new OutputFormat(MultipleDirectTransfer.class.getSimpleName(), args);
@@ -225,7 +225,7 @@ public class MultipleDirectTransfer extends DirectTransfer {
         outputFormat.setValue("delay", delay);
         if (multipleDirectTransfer.normalInfoAsWarn) {
           logger.warn(outputFormat.loggerOut());
-        } else {
+        } else if (logger.isInfoEnabled()) {
           logger.info(outputFormat.loggerOut());
         }
         if (!OutputFormat.isQuiet()) {

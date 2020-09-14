@@ -62,7 +62,7 @@ public final class WaarpActionLogger {
                                final BusinessHandler handler) {
     final FtpSession session = handler.getFtpSession();
     final String sessionContexte = session.toString();
-    logger.info(message + ' ' + sessionContexte);
+    logger.info("{} {}", message, sessionContexte);
     if (ftpSession != null) {
       final FtpCommandCode code = session.getCurrentCommand().getCode();
       if (FtpCommandCode.isStorOrRetrLikeCommand(code)) {
@@ -76,7 +76,7 @@ public final class WaarpActionLogger {
                                 code.name(),
                                 ReplyCode.REPLY_000_SPECIAL_NOSTATUS, message,
                                 UpdatedInfo.TOSUBMIT);
-          logger.debug("Create FS: " + log);
+          logger.debug("Create FS: {}", log);
           if (FileBasedConfiguration.fileBasedConfiguration.getMonitoring() !=
               null) {
             if (isSender) {
@@ -112,7 +112,7 @@ public final class WaarpActionLogger {
                                final ReplyCode rcode, final UpdatedInfo info) {
     final FtpSession session = handler.getFtpSession();
     final String sessionContexte = session.toString();
-    logger.info(message + ' ' + sessionContexte);
+    logger.info("{} {}", message, sessionContexte);
     if (ftpSession != null && specialId != DbConstant.ILLEGALVALUE) {
       final FtpCommandCode code = session.getCurrentCommand().getCode();
       if (FtpCommandCode.isStorOrRetrLikeCommand(code)) {
@@ -125,7 +125,7 @@ public final class WaarpActionLogger {
           log.setInfotransf(message);
           log.setReplyCodeExecutionStatus(rcode);
           log.update();
-          logger.debug("Update FS: " + log);
+          logger.debug("Update FS: {}", log);
           return log.getSpecialId();
         } catch (final WaarpDatabaseException e) {
           // Do nothing
@@ -167,7 +167,9 @@ public final class WaarpActionLogger {
     final FtpSession session = handler.getFtpSession();
     final String sessionContexte = session.toString();
     logger.error(rcode.getCode() + ":" + message + ' ' + sessionContexte);
-    logger.debug("Log", new Exception("Log"));
+    if (logger.isDebugEnabled()) {
+      logger.debug("Log", new Exception("Log"));
+    }
     if (ftpSession != null && specialId != DbConstant.ILLEGALVALUE) {
       final FtpCommandCode code = session.getCurrentCommand().getCode();
       if (FtpCommandCode.isStorOrRetrLikeCommand(code)) {
@@ -205,7 +207,7 @@ public final class WaarpActionLogger {
                                                          .notifyInfoTask(
                                                              message, log);
           }
-          logger.debug("Update FS: " + log);
+          logger.debug("Update FS: {}", log);
         } catch (final WaarpDatabaseException e) {
           // Do nothing
         }

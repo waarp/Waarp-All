@@ -95,15 +95,17 @@ public class SimpleAuth {
     setRetrDelay(retrDelay);
     setCommandExecutor(
         new CommandExecutor(retrCmd, retrDelay, storCmd, storDelay));
-    logger.info("Executor for " + user + " configured as [RETR: " +
-                getCommandExecutor().getRetrType() + ':' +
-                getCommandExecutor().pretrCMD + ':' +
-                getCommandExecutor().getPretrDelay() + ':' +
-                getCommandExecutor().isPretrRefused() + "] [STOR: " +
-                getCommandExecutor().getStorType() + ':' +
-                getCommandExecutor().pstorCMD + ':' +
-                getCommandExecutor().getPstorDelay() + ':' +
-                getCommandExecutor().isPstorRefused() + ']');
+    if (logger.isInfoEnabled()) {
+      logger.info("Executor for " + user + " configured as [RETR: " +
+                  getCommandExecutor().getRetrType() + ':' +
+                  getCommandExecutor().pretrCMD + ':' +
+                  getCommandExecutor().getPretrDelay() + ':' +
+                  getCommandExecutor().isPretrRefused() + "] [STOR: " +
+                  getCommandExecutor().getStorType() + ':' +
+                  getCommandExecutor().pstorCMD + ':' +
+                  getCommandExecutor().getPstorDelay() + ':' +
+                  getCommandExecutor().isPstorRefused() + ']');
+    }
   }
 
   /**
@@ -136,7 +138,7 @@ public class SimpleAuth {
       return true;
     }
     if (account == null) {
-      logger.debug("No account given");
+      logger.info("No account given");
       return false;
     }
     for (final String acct : getAccounts()) {
@@ -145,7 +147,7 @@ public class SimpleAuth {
         return true;
       }
     }
-    logger.debug("No account found");
+    logger.info("No account found");
     return false;
   }
 

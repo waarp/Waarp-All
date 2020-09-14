@@ -148,9 +148,11 @@ public class TransferTask extends AbstractExecTask {
     if (future.isSuccess()) {
       futureCompletion.setResult(future.getResult());
       runner = future.getResult().getRunner();
-      logger.info(
-          "Prepare transfer in     SUCCESS     " + runner.toShortString() +
-          "     <REMOTE>" + transferArgs.getRemoteHost() + "</REMOTE>");
+      if (logger.isInfoEnabled()) {
+        logger.info(
+            "Prepare transfer in     SUCCESS     " + runner.toShortString() +
+            "     <REMOTE>" + transferArgs.getRemoteHost() + "</REMOTE>");
+      }
       futureCompletion.setSuccess();
     } else {
       if (future.getResult() != null) {

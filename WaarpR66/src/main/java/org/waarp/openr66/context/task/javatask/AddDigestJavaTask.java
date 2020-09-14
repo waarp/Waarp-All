@@ -61,7 +61,7 @@ public class AddDigestJavaTask extends AbstractExecJavaTask {
 
   @Override
   public void run() {
-    logger.debug(toString());
+    logger.debug("{}", this);
     final String[] args = BLANK.split(fullarg);
     final String fileInfo;
     String format = "-##DIGEST##";
@@ -124,7 +124,7 @@ public class AddDigestJavaTask extends AbstractExecJavaTask {
       status = 2;
       return;
     }
-    logger.debug("Digest saved to fileInformation:" + fileInfo);
+    logger.debug("Digest saved to fileInformation: {}", fileInfo);
     status = 0;
   }
 }

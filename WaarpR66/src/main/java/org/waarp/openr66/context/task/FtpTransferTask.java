@@ -107,284 +107,8 @@ public class FtpTransferTask extends AbstractTask {
    **/
 
   @Override
-  /*public void run() {
-    logger.info("FtpTransfer with " + argRule + ':' + argTransfer + " and {}",
-                session);
-    String finalname = argRule;
-    final Object[] argFormat = BLANK.split(argTransfer);
-    if (argFormat != null && argFormat.length > 0) {
-      try {
-        finalname = String.format(finalname, argFormat);
-      } catch (final Exception e) {
-        // ignored error since bad argument in static rule info
-        logger
-            .error("Bad format in Rule: {" + finalname + "} " + e.getMessage());
-      }
-    }
-
-    final CommandLine cl = new CommandLine("dummy");
-    cl.addArguments(finalname, false);
-    final String[] args = cl.getArguments();
-
-    if (args.length < 10) {
-      final OpenR66RunnerErrorException exception =
-          new OpenR66RunnerErrorException("Not enough argument in Transfer");
-      final R66Result result =
-          new R66Result(exception, session, false, ErrorCode.CommandNotFound,
-                        session.getRunner());
-      logger.error("Not enough arguments");
-      futureCompletion.setResult(result);
-      futureCompletion.setFailure(exception);
-      return;
-    }
-    String filepath = null;
-    String filename = null;
-    String requested = null;
-    int port = 21;
-    String user = null;
-    String pwd = null;
-    String acct = null;
-    boolean isPassive = true;
-    int ssl = 0; // -1 native, 1 auth
-    String cwd = null;
-    int digest = 0; // 1 CRC, 2 MD5, 3 SHA1
-    String command;
-    int codeCommand = 0; // -1 get, 1 put, 2 append
-    String preArgs = null;
-    String postArgs = null;
-    for (int i = 0; i < args.length; i++) {
-      args[i] = getReplacedValue(args[i], null);
-    }
-    for (int i = 0; i < args.length; i++) {
-      if ("-file".equalsIgnoreCase(args[i])) {
-        i++;
-        filepath = args[i];
-        filename = new File(filepath).getName();
-      } else if ("-to".equalsIgnoreCase(args[i])) {
-        i++;
-        requested = args[i];
-      } else if ("-port".equalsIgnoreCase(args[i])) {
-        i++;
-        port = Integer.parseInt(args[i]);
-      } else if ("-user".equalsIgnoreCase(args[i])) {
-        i++;
-        user = args[i];
-      } else if ("-pwd".equalsIgnoreCase(args[i])) {
-        i++;
-        pwd = args[i];
-      } else if ("-account".equalsIgnoreCase(args[i])) {
-        i++;
-        acct = args[i];
-      } else if ("-mode".equalsIgnoreCase(args[i])) {
-        i++;
-        isPassive = "passive".equalsIgnoreCase(args[i]);
-      } else if ("-ssl".equalsIgnoreCase(args[i])) {
-        i++;
-        if ("implicit".equalsIgnoreCase(args[i])) {
-          ssl = -1;
-        } else if ("explicit".equalsIgnoreCase(args[i])) {
-          ssl = 1;
-        } else {
-          ssl = 0;
-        }
-      } else if ("-cwd".equalsIgnoreCase(args[i])) {
-        i++;
-        cwd = args[i];
-      } else if ("-digest".equalsIgnoreCase(args[i])) {
-        i++;
-        if ("crc".equalsIgnoreCase(args[i])) {
-          digest = 1;
-        } else if ("md5".equalsIgnoreCase(args[i])) {
-          digest = 2;
-        } else if ("sha1".equalsIgnoreCase(args[i])) {
-          digest = 3;
-        } else if ("sha256".equalsIgnoreCase(args[i])) {
-          digest = 4;
-        } else if ("sha384".equalsIgnoreCase(args[i])) {
-          digest = 5;
-        } else if ("sha512".equalsIgnoreCase(args[i])) {
-          digest = 6;
-        } else {
-          digest = 0;
-        }
-      } else if ("-pre".equalsIgnoreCase(args[i])) {
-        i++;
-        preArgs = args[i].replace(',', ' ');
-      } else if ("-post".equalsIgnoreCase(args[i])) {
-        i++;
-        postArgs = args[i].replace(',', ' ');
-      } else if ("-command".equalsIgnoreCase(args[i])) {
-        i++;
-        command = args[i];
-        // get,put,append,list
-        // -1 get, 1 put, 2 append
-        if ("get".equalsIgnoreCase(command)) {
-          codeCommand = -1;
-        } else if ("put".equalsIgnoreCase(command)) {
-          codeCommand = 1;
-        } else if ("append".equalsIgnoreCase(command)) {
-          codeCommand = 2;
-        } else {
-          // error
-          codeCommand = 0;
-        }
-      }
-    }
-    if (filepath == null || requested == null || port <= 0 || user == null ||
-        pwd == null || codeCommand == 0) {
-      final OpenR66RunnerErrorException exception =
-          new OpenR66RunnerErrorException("Not enough argument in Transfer");
-      final R66Result result =
-          new R66Result(exception, session, false, ErrorCode.CommandNotFound,
-                        session.getRunner());
-      final int code = (filepath == null? 1 : 0) + (requested == null? 10 : 0) +
-                       (port <= 0? 100 : 0) + (user == null? 1000 : 0) +
-                       (pwd == null? 10000 : 0) +
-                       (codeCommand == 0? 100000 : 0);
-      logger.error("Not enough arguments: " + code);
-      futureCompletion.setResult(result);
-      futureCompletion.setFailure(exception);
-      return;
-    }
-    final WaarpFtp4jClient ftpClient =
-        new WaarpFtp4jClient(requested, port, user, pwd, acct, isPassive, ssl,
-                             5000,
-                             (int) Configuration.configuration.getTimeoutCon());
-    boolean status = false;
-    for (int i = 0; i < Configuration.RETRYNB; i++) {
-      if (ftpClient.connect()) {
-        status = true;
-        break;
-      }
-    }
-    if (!status) {
-      final OpenR66RunnerErrorException exception =
-          new OpenR66RunnerErrorException("Cannot connect to remote FTP host");
-      final R66Result result = new R66Result(exception, session, false,
-                                             ErrorCode.ConnectionImpossible,
-                                             session.getRunner());
-      futureCompletion.setResult(result);
-      futureCompletion.setFailure(exception);
-      logger.error(ftpClient.getResult());
-      return;
-    }
-    try {
-      if (cwd != null && !ftpClient.changeDir(cwd)) {
-        ftpClient.makeDir(cwd);
-        if (!ftpClient.changeDir(cwd)) {
-          logger.warn("Cannot change od directory: " + cwd);
-        }
-      }
-      if (preArgs != null) {
-        final String[] result = ftpClient.executeCommand(preArgs);
-        for (final String string : result) {
-          logger.debug("PRE: " + string);
-        }
-      }
-      if (!ftpClient.transferFile(filepath, filename, codeCommand)) {
-        final OpenR66RunnerErrorException exception =
-            new OpenR66RunnerErrorException(
-                "Cannot transfert file from/to remote FTP host");
-        final R66Result result =
-            new R66Result(exception, session, false, ErrorCode.TransferError,
-                          session.getRunner());
-        futureCompletion.setResult(result);
-        futureCompletion.setFailure(exception);
-        logger.error(ftpClient.getResult());
-        return;
-      }
-      if (digest > 0) {
-        // digest check
-        String params;
-        DigestAlgo algo;
-        switch (digest) {
-          case 1: // CRC
-            params = "XCRC ";
-            algo = DigestAlgo.CRC32;
-            break;
-          case 2: // MD5
-            params = "XMD5 ";
-            algo = DigestAlgo.MD5;
-            break;
-          case 4:
-            params = "XSAH256 ";
-            algo = DigestAlgo.SHA256;
-            break;
-          case 5:
-            params = "XSAH384 ";
-            algo = DigestAlgo.SHA384;
-            break;
-          case 6:
-            params = "XSAH512 ";
-            algo = DigestAlgo.SHA512;
-            break;
-          case 3: // SHA1
-          default:
-            params = "XSHA1 ";
-            algo = DigestAlgo.SHA1;
-            break;
-        }
-        params += filename;
-        String[] values = ftpClient.executeCommand(params);
-        String hashresult = null;
-        if (values != null) {
-          values = BLANK.split(values[0]);
-          hashresult = values.length > 3? values[1] : values[0];
-        }
-        if (hashresult == null) {
-          final OpenR66RunnerErrorException exception =
-              new OpenR66RunnerErrorException(
-                  "Hash cannot be computed while FTP transfer is done");
-          final R66Result result =
-              new R66Result(exception, session, false, ErrorCode.TransferError,
-                            session.getRunner());
-          futureCompletion.setResult(result);
-          futureCompletion.setFailure(exception);
-          logger.error("Hash cannot be computed: " + ftpClient.getResult());
-          return;
-        }
-        // now check locally
-        String hash;
-        try {
-          hash = FilesystemBasedDigest.getHex(
-              FilesystemBasedDigest.getHash(new File(filepath), false, algo));
-        } catch (final IOException e) {
-          hash = null;
-        }
-        if (hash == null || !hash.equalsIgnoreCase(hashresult)) {
-          final OpenR66RunnerErrorException exception =
-              new OpenR66RunnerErrorException(
-                  "Hash not equal while FTP transfer is done");
-          final R66Result result =
-              new R66Result(exception, session, false, ErrorCode.TransferError,
-                            session.getRunner());
-          futureCompletion.setResult(result);
-          futureCompletion.setFailure(exception);
-          logger.error("Hash not equal: " + ftpClient.getResult());
-          return;
-        }
-      }
-      if (postArgs != null) {
-        final String[] result = ftpClient.executeCommand(postArgs);
-        for (final String string : result) {
-          logger.debug("POST: " + string);
-        }
-      }
-    } finally {
-      ftpClient.logout();
-    }
-    final R66Result result = new R66Result(session, false, ErrorCode.TransferOk,
-                                           session.getRunner());
-    futureCompletion.setResult(result);
-    logger.info("FTP transfer in     SUCCESS     " +
-                session.getRunner().toShortString() + "     <REMOTE>" +
-                requested + "</REMOTE>");
-    futureCompletion.setSuccess();
-  }*/
-
   public void run() {
-    logger.info("FtpTransfer with " + argRule + ':' + argTransfer + " and {}",
-                session);
+    logger.info("FtpTransfer with {}:{} and {}", argRule, argTransfer, session);
     if (argRule == null) {
       logger.error(
           "FtpTransfer cannot be done with " + argRule + ':' + argTransfer +
@@ -457,7 +181,7 @@ public class FtpTransferTask extends AbstractTask {
       if (ftpArgs.getPreArgs() != null) {
         final String[] result = ftpClient.executeCommand(ftpArgs.getPreArgs());
         for (final String string : result) {
-          logger.debug("PRE: " + string);
+          logger.debug("PRE: {}", string);
         }
       }
       if (!ftpClient.transferFile(ftpArgs.getFilepath(), ftpArgs.getFilename(),
@@ -516,7 +240,7 @@ public class FtpTransferTask extends AbstractTask {
       if (ftpArgs.getPostArgs() != null) {
         final String[] result = ftpClient.executeCommand(ftpArgs.getPostArgs());
         for (final String string : result) {
-          logger.debug("POST: " + string);
+          logger.debug("POST: {}", string);
         }
       }
     } finally {
@@ -525,9 +249,11 @@ public class FtpTransferTask extends AbstractTask {
     final R66Result result = new R66Result(session, false, ErrorCode.TransferOk,
                                            session.getRunner());
     futureCompletion.setResult(result);
-    logger.info("FTP transfer in     SUCCESS     " +
-                session.getRunner().toShortString() + "     <REMOTE>" +
-                ftpArgs.getRequested() + "</REMOTE>");
+    if (logger.isInfoEnabled()) {
+      logger.info("FTP transfer in     SUCCESS     " +
+                  session.getRunner().toShortString() + "     <REMOTE>" +
+                  ftpArgs.getRequested() + "</REMOTE>");
+    }
     futureCompletion.setSuccess();
   }
 

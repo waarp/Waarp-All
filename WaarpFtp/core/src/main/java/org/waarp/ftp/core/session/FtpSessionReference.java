@@ -139,7 +139,6 @@ public class FtpSessionReference {
       return;
     }
     hashMap.put(pAddress, session);
-    // logger.debug("Add: {} {}", ipOnly, fullIp)
   }
 
   /**
@@ -160,7 +159,6 @@ public class FtpSessionReference {
                    channel.localAddress() + channel.remoteAddress());
       return null;
     }
-    // logger.debug("Get: {} {}", pAddress.ipOnly, pAddress.fullIp)
     if (remove) {
       return hashMap.remove(pAddress);
     } else {
@@ -183,7 +181,6 @@ public class FtpSessionReference {
       logger.error("Couple invalid in getPassiveFtpSession: " + channel);
       return null;
     }
-    // logger.debug("Get: {} {}", pAddress.ipOnly, pAddress.fullIp)
     if (remove) {
       return hashMap.remove(pAddress);
     } else {
@@ -205,7 +202,6 @@ public class FtpSessionReference {
           .error("Couple invalid in delFtpSession: " + ipOnly + " : " + fullIp);
       return;
     }
-    // logger.debug("Del: {} {}", pAddress.ipOnly, pAddress.fullIp)
     hashMap.remove(pAddress);
   }
 
@@ -225,7 +221,6 @@ public class FtpSessionReference {
       logger.error("Couple invalid in contains: " + ipOnly + " : " + fullIp);
       return false;
     }
-    // logger.debug("Contains: {} {}", pAddress.ipOnly, pAddress.fullIp)
     return hashMap.containsKey(pAddress);
   }
 

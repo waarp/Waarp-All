@@ -123,7 +123,6 @@ public class NetworkPacket {
     buf.writeInt(remoteId);
     buf.writeInt(localId);
     buf.writeByte(code);
-    logger.trace("TRACE ID Before sending NetworkPacket {}", this);
   }
 
   /**

@@ -144,7 +144,7 @@ public class R66Auth extends FilesystemBasedAuthImpl {
           role.setRole(ROLE.FULLADMIN);
         }
       }
-      logger.debug(role.toString());
+      logger.debug("{}", role);
       return true;
     }
     throw new Reply530Exception("Key is not valid for this HostId");
@@ -334,7 +334,7 @@ public class R66Auth extends FilesystemBasedAuthImpl {
       if (isAdmin) {
         role.setRole(ROLE.FULLADMIN);
       }
-      logger.info(role + ":" + currentAuth);
+      logger.info("{}:{}", role, currentAuth);
       return true;
     }
     throw new Reply530Exception("Key is not valid for this HostId");

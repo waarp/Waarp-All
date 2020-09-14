@@ -1032,11 +1032,13 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
           gmode = -1;
         }
         head = resetOptionRules(head, rule, tmode, gmode);
-        logger.debug("Recv UpdOrInsert: " + rule + ':' + hostids + ':' +
-                     (tmode != null? tmode.ordinal() : 0) + ':' + recvp + ':' +
-                     sendp + ':' + archp + ':' + workp + ':' + rpre + ':' +
-                     rpost + ':' + rerr + ':' + spre + ':' + spost + ':' +
-                     serr);
+        if (logger.isDebugEnabled()) {
+          logger.debug("Recv UpdOrInsert: " + rule + ':' + hostids + ':' +
+                       (tmode != null? tmode.ordinal() : 0) + ':' + recvp +
+                       ':' + sendp + ':' + archp + ':' + workp + ':' + rpre +
+                       ':' + rpost + ':' + rerr + ':' + spre + ':' + spost +
+                       ':' + serr);
+        }
         final DbRule dbrule =
             new DbRule(rule, hostids, (tmode != null? tmode.ordinal() : 0),
                        recvp, sendp, archp, workp, rpre, rpost, rerr, spre,
@@ -1722,11 +1724,11 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
         getMenu = true;
       }
       if (!getMenu && name != null) {
-        logger.debug(
-            "Name? " + name.equals(Configuration.configuration.getAdminName()) +
-            " Passwd? " + Arrays
-                .equals(password.getBytes(WaarpStringUtils.UTF8),
-                        Configuration.configuration.getServerAdminKey()));
+        logger.debug("Name? {} Passwd? {}",
+                     name.equals(Configuration.configuration.getAdminName()),
+                     Arrays.equals(password.getBytes(WaarpStringUtils.UTF8),
+                                   Configuration.configuration
+                                       .getServerAdminKey()));
         if (name.equals(Configuration.configuration.getAdminName()) && Arrays
             .equals(password.getBytes(WaarpStringUtils.UTF8),
                     Configuration.configuration.getServerAdminKey())) {
@@ -1746,12 +1748,11 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
         }
         if (!authentHttp.isAuthenticated()) {
           authentHttp.setStatus(71);
-          logger.debug("Still not authenticated: {}", authentHttp);
+          logger.info("Still not authenticated: {}", authentHttp);
           getMenu = true;
         }
-        logger.debug(
-            "Identified: " + authentHttp.getAuth().isIdentified() + ':' +
-            authentHttp.isAuthenticated());
+        logger.debug("Identified: {}:{}", authentHttp.getAuth().isIdentified(),
+                     authentHttp.isAuthenticated());
       }
     } else {
       getMenu = true;
@@ -1772,7 +1773,7 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
           Long.toHexString(RANDOM.nextLong()));
       sessions.put(admin.value(), authentHttp);
       authentHttp.setStatus(72);
-      logger.debug("CreateSession: " + uriRequest + ":{}", admin);
+      logger.debug("CreateSession: {}:{}", uriRequest, admin);
     }
     writeResponse(ctx);
   }
@@ -1784,7 +1785,7 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
     final QueryStringDecoder queryStringDecoder =
         new QueryStringDecoder(request.uri());
     uriRequest = queryStringDecoder.path();
-    logger.debug("Msg: " + uriRequest);
+    logger.debug("Msg: {}", uriRequest);
     if (uriRequest.contains("gre/") || uriRequest.contains("img/") ||
         uriRequest.contains("app/") || uriRequest.contains("css/") ||
         uriRequest.contains("js/") || uriRequest.contains("datatable/") ||
@@ -1807,7 +1808,7 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
     checkSession(ctx.channel());
     try {
       if (!authentHttp.isAuthenticated()) {
-        logger.debug("Not Authent: " + uriRequest + ":{}", authentHttp);
+        logger.debug("Not Authent: {}:{}", uriRequest, authentHttp);
         checkAuthentResponsive(ctx);
         return;
       }
@@ -1822,7 +1823,7 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
           req = REQUEST.valueOf(find);
         } catch (final IllegalArgumentException e1) {
           req = REQUEST.index;
-          logger.debug("NotFound: " + find + ':' + uriRequest);
+          logger.info("NotFound: {}:{}", find, uriRequest);
         }
       }
       switch (req) {

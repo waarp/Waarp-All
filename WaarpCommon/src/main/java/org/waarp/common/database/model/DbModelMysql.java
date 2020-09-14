@@ -100,9 +100,9 @@ public abstract class DbModelMysql extends DbModelCommonMariadbMySql {
     mysqlConnectionPoolDataSource.setPassword(dbpasswd);
     // Create a pool with no limit
     pool = new DbConnectionPool(mysqlConnectionPoolDataSource, timer, delay);
-    logger.info(
-        "Some info: MaxConn: " + pool.getMaxConnections() + " LogTimeout: " +
-        pool.getLoginTimeout() + " ForceClose: " + pool.getTimeoutForceClose());
+    logger.info("Some info: MaxConn: {} LogTimeout: {} ForceClose: {}",
+                pool.getMaxConnections(), pool.getLoginTimeout(),
+                pool.getTimeoutForceClose());
   }
 
   /**

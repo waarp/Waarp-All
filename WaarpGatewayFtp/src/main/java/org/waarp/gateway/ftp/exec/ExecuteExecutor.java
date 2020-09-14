@@ -151,8 +151,9 @@ public class ExecuteExecutor extends AbstractExecutor {
               EXCEPTION + e.getMessage() + EXEC_IN_ERROR_WITH + commandLine);
           throw new Reply421Exception(CANNOT_EXECUTE_PRE_COMMAND);
         }
-        logger.info("System Exception: " + e.getMessage() +
-                    " but finally get the command executed " + commandLine);
+        logger.info(
+            "System Exception: {} but finally get the command executed {}",
+            e.getMessage(), commandLine);
       } else {
         try {
           pumpStreamHandler.stop();
@@ -190,8 +191,8 @@ public class ExecuteExecutor extends AbstractExecutor {
       logger.warn("Exec in warning with {}", commandLine);
       futureCompletion.setSuccess();
     } else {
-      logger.debug("Status: " + status + (status == -1? " Timeout" : "") +
-                   " Exec in error with " + commandLine);
+      logger.debug("Status: {}{} Exec in error with {}", status,
+                   status == -1? " Timeout" : "", commandLine);
       throw new Reply421Exception("Pre command executed in error");
     }
   }

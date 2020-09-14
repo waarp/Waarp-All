@@ -123,8 +123,8 @@ public class FileCheckTask extends AbstractTask {
                 result = true; // ??
                 break;
             }
-            logger.debug(
-                "DEBUG: " + supposelength + ' ' + arg.name() + ' ' + tocompare);
+            logger
+                .debug("DEBUG: {} {} {}", supposelength, arg.name(), tocompare);
             if (!result) {
               // error so stop
               logger.error(
@@ -156,7 +156,7 @@ public class FileCheckTask extends AbstractTask {
               "File size incompatible with Working directory"));
           return;
         }
-        logger.debug("DEBUG: " + supposelength + " < " + freesize);
+        logger.debug("DEBUG: {} < {}", supposelength, freesize);
         freesize = runner.freespace(session, false);
         if (freesize > 0 && supposelength > freesize) {
           // error so stop
@@ -169,13 +169,13 @@ public class FileCheckTask extends AbstractTask {
               "File size incompatible with Recv directory"));
           return;
         }
-        logger.debug("DEBUG: " + supposelength + " < " + freesize);
+        logger.debug("DEBUG: {} < {}", supposelength, freesize);
       } else {
         // ignore and continue
         current++;
       }
     }
-    logger.debug("DEBUG: End of check " + supposelength);
+    logger.debug("DEBUG: End of check {}", supposelength);
     futureCompletion.setSuccess();
   }
 

@@ -1487,7 +1487,6 @@ public class FileBasedConfiguration extends FtpConfiguration {
         int i = 0;
         for (final String s : listaccount) {
           account[i] = s;
-          // logger.debug("User: {} Acct: {}", user, account[i])
           final File directory =
               new File(getBaseDirectory() + '/' + user + '/' + account[i]);
           directory.mkdirs();//NOSONAR
@@ -1800,7 +1799,7 @@ public class FileBasedConfiguration extends FtpConfiguration {
       if (executorWorker != null) {
         executorWorker.shutdownGracefully();
       }
-      logger.info("Done with shutdown " + name);
+      logger.info("Done with shutdown {}", name);
     }
   }
 
@@ -1810,7 +1809,7 @@ public class FileBasedConfiguration extends FtpConfiguration {
     super.releaseResources();
     if (httpChannelGroup != null) {
       final int result = httpChannelGroup.size();
-      logger.debug("HttpChannelGroup: " + result);
+      logger.debug("HttpChannelGroup: {}", result);
       httpChannelGroup.close().addListener(
           new GgChannelGroupFutureListener("HttpChannelGroup", workerGroup));
     }

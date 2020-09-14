@@ -75,7 +75,7 @@ public class HttpRestBandwidthR66Handler extends HttpRestAbstractR66Handler {
     // now action according to body
     final JsonPacket json = (JsonPacket) body;
     if (json != null && !(json instanceof BandwidthJsonPacket)) {
-      logger.info("Validation is ignored: " + json);
+      logger.info("Validation is ignored: {}", json);
       result.setDetail("Unknown command");
       setError(handler, result, json, HttpResponseStatus.PRECONDITION_FAILED);
       return;

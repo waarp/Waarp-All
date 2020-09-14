@@ -536,7 +536,7 @@ public class DbHostAuth extends AbstractDbDataDao<Host> {
                                      .decryptHexInBytes(pojo.getHostkey()),
           newkey);
     } catch (final Exception e) {
-      logger.debug("Error while checking key", e);
+      logger.info("Error while checking key", e);
       return false;
     }
   }
@@ -552,7 +552,7 @@ public class DbHostAuth extends AbstractDbDataDao<Host> {
       return Configuration.configuration.getCryptoKey()
                                         .decryptHexInBytes(pojo.getHostkey());
     } catch (final Exception e) {
-      logger.debug("Error while checking key", e);
+      logger.info("Error while checking key", e);
       return VALUE_0_BYTE;
     }
   }

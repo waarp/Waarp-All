@@ -55,7 +55,7 @@ public abstract class AbstractWaarpLogger implements WaarpLogger, Serializable {
    */
   protected AbstractWaarpLogger(final String name) {
     if (name == null) {
-      throw new NullPointerException("name");
+      throw new IllegalArgumentException("name");
     }
     this.name = name;
   }

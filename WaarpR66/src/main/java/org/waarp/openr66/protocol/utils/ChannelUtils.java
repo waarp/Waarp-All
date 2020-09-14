@@ -135,7 +135,7 @@ public class ChannelUtils extends Thread {
     }
     final int result =
         Configuration.configuration.getServerChannelGroup().size();
-    logger.info("ServerChannelGroup: " + result);
+    logger.info("ServerChannelGroup: {}", result);
     Configuration.configuration.getServerChannelGroup().close();
     return result;
   }
@@ -152,7 +152,7 @@ public class ChannelUtils extends Thread {
     }
     final int result =
         Configuration.configuration.getServerConnectedChannelGroup().size();
-    logger.info("ServerConnectedChannelGroup: " + result);
+    logger.info("ServerConnectedChannelGroup: {}", result);
     Configuration.configuration.getServerConnectedChannelGroup().close();
     return result;
   }
@@ -167,7 +167,7 @@ public class ChannelUtils extends Thread {
       return 0;
     }
     final int result = Configuration.configuration.getHttpChannelGroup().size();
-    logger.debug("HttpChannelGroup: " + result);
+    logger.debug("HttpChannelGroup: {}", result);
     Configuration.configuration.getHttpChannelGroup().close();
     return result;
   }
@@ -206,25 +206,25 @@ public class ChannelUtils extends Thread {
       throws OpenR66ProtocolPacketException {
     byte[] md5 = {};
     final DbTaskRunner runner = localChannelReference.getSession().getRunner();
+    byte[] dataBlock = block.getByteBlock();
     if (digestBlock != null) {
       if (digestGlobal != null) {
-        digestGlobal.Update(block.getByteBlock());
+        digestGlobal.Update(dataBlock, 0, dataBlock.length);
       }
-      digestBlock.Update(block.getByteBlock());
+      digestBlock.Update(dataBlock, 0, dataBlock.length);
       md5 = digestBlock.Final();
     } else if (RequestPacket.isSendThroughMode(runner.getMode()) &&
                RequestPacket.isMD5Mode(runner.getMode())) {
       final DigestAlgo algo =
           localChannelReference.getPartner().getDigestAlgo();
-      md5 = FileUtils.getHash(block.getByteBlock(), algo, digestGlobal);
+      md5 = FileUtils.getHash(dataBlock, algo, digestGlobal);
     } else if (digestGlobal != null) {
-      digestGlobal.Update(block.getByteBlock());
+      digestGlobal.Update(dataBlock, 0, dataBlock.length);
     }
     if (runner.getRank() % 100 == 1 ||
         localChannelReference.getSessionState() != R66FiniteDualStates.DATAS) {
       localChannelReference.sessionNewState(R66FiniteDualStates.DATAS);
     }
-    logger.trace("sending data block {}", runner.getRank());
     final DataPacket data =
         new DataPacket(runner.getRank(), block.getByteBlock(), md5);
     final ChannelFuture future =
@@ -283,8 +283,6 @@ public class ChannelUtils extends Thread {
       throws OpenR66ProtocolPacketException {
     final NetworkPacket networkPacket;
     try {
-      logger.trace("TRACE ID {} {} {}", localChannelReference.getLocalId(),
-                   localChannelReference.getRemoteId(), packet);
       networkPacket = new NetworkPacket(localChannelReference.getLocalId(),
                                         localChannelReference.getRemoteId(),
                                         packet, localChannelReference);
@@ -324,7 +322,7 @@ public class ChannelUtils extends Thread {
    * Exit global ChannelFactory
    */
   public static void exit() {
-    logger.info("Current launched threads before exit: " +
+    logger.info("Current launched threads before exit: {}",
                 ManagementFactory.getThreadMXBean().getThreadCount());
     if (Configuration.configuration.getConstraintLimitHandler() != null) {
       Configuration.configuration.getConstraintLimitHandler().release();
@@ -405,7 +403,7 @@ public class ChannelUtils extends Thread {
    */
   @Override
   public void run() {
-    logger.info("Should restart? " + WaarpShutdownHook.isRestart());
+    logger.info("Should restart? {}", WaarpShutdownHook.isRestart());
     WaarpShutdownHook.terminate(false);
   }
 

@@ -42,7 +42,7 @@ public class EPRT extends AbstractCommand {
     if (!hasArg()) {
       final InetSocketAddress inetSocketAddress =
           getSession().getDataConn().getRemoteAddress();
-      logger.debug("Active connect to " + inetSocketAddress);
+      logger.debug("Active connect to {}", inetSocketAddress);
       getSession().getDataConn().setActive(inetSocketAddress);
       getSession().setReplyCode(ReplyCode.REPLY_200_COMMAND_OKAY,
                                 "EPRT command successful on (" + FtpChannelUtils
@@ -59,7 +59,7 @@ public class EPRT extends AbstractCommand {
     }
     // No Check if the Client address is the same as given
     // OK now try to initialize connection (not open)
-    logger.debug("Active connect to " + inetSocketAddress);
+    logger.debug("Active connect to {}", inetSocketAddress);
     getSession().getDataConn().setActive(inetSocketAddress);
     getSession().setReplyCode(ReplyCode.REPLY_200_COMMAND_OKAY,
                               "EPRT command successful on (" + FtpChannelUtils

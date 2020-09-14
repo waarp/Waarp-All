@@ -284,7 +284,7 @@ public abstract class SendThroughClient extends AbstractTransfer {
         }
       }
       localChannelReference.getFutureEndTransfer().awaitOrInterruptible();
-      logger.debug("Await future End Transfer done: " +
+      logger.debug("Await future End Transfer done: {}",
                    localChannelReference.getFutureEndTransfer().isSuccess());
       if (localChannelReference.getFutureEndTransfer().isSuccess()) {
         // send a validation

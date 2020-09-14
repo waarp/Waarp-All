@@ -406,7 +406,9 @@ public abstract class DataModelRestMethodHandler<E extends AbstractDbData>
             "Issue while inserting to database", e);
       }
     }
-    logger.debug("Save {}", item.getJson());
+    if (logger.isDebugEnabled()) {
+      logger.debug("Save {}", item.getJson());
+    }
     result.addAnswer(item.getJson());
     result.setCommand(COMMAND_TYPE.CREATE);
     setOk(handler, result);

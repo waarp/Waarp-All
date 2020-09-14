@@ -370,7 +370,7 @@ public class LocalChannelReference {
   public void validateConnection(final boolean validate,
                                  final R66Result result) {
     if (futureConnection.isDone()) {
-      logger.debug("LocalChannelReference already validated: " +
+      logger.debug("LocalChannelReference already validated: {}",
                    futureConnection.isSuccess());
       return;
     }
@@ -429,8 +429,8 @@ public class LocalChannelReference {
       futureEndTransfer.setResult(finalValue);
       futureEndTransfer.setSuccess();
     } else {
-      logger.debug("Could not validate since Already validated: " +
-                   futureEndTransfer.isSuccess() + ' ' + finalValue);
+      logger.debug("Could not validate since Already validated: {} {}",
+                   futureEndTransfer.isSuccess(), finalValue);
       if (!futureEndTransfer.getResult().isAnswered()) {
         futureEndTransfer.getResult().setAnswered(finalValue.isAnswered());
       }
@@ -492,14 +492,16 @@ public class LocalChannelReference {
       finalValue =
           new R66Result(session, false, ErrorCode.Unknown, session.getRunner());
     }
-    logger.debug(
-        "FST: " + futureStartup.isDone() + ":" + futureStartup.isSuccess() +
-        " FCT: " + futureConnection.isDone() + ':' +
-        futureConnection.isSuccess() + " FET: " + futureEndTransfer.isDone() +
-        ':' + futureEndTransfer.isSuccess() + " FVR: " +
-        futureValidRequest.isDone() + ':' + futureValidRequest.isSuccess() +
-        " FR: " + futureRequest.isDone() + ':' + futureRequest.isSuccess() +
-        ' ' + finalValue.getMessage());
+    if (logger.isDebugEnabled()) {
+      logger.debug(
+          "FST: " + futureStartup.isDone() + ":" + futureStartup.isSuccess() +
+          " FCT: " + futureConnection.isDone() + ':' +
+          futureConnection.isSuccess() + " FET: " + futureEndTransfer.isDone() +
+          ':' + futureEndTransfer.isSuccess() + " FVR: " +
+          futureValidRequest.isDone() + ':' + futureValidRequest.isSuccess() +
+          " FR: " + futureRequest.isDone() + ':' + futureRequest.isSuccess() +
+          ' ' + finalValue.getMessage());
+    }
     if (!futureStartup.isDone()) {
       futureStartup.setResult(finalValue);
       if (finalValue.getException() != null) {
@@ -532,8 +534,10 @@ public class LocalChannelReference {
         futureValidRequest.cancel();
       }
     }
-    logger.trace("Invalidate Request",
-                 new Exception("DEBUG Trace for " + "Invalidation"));
+    if (logger.isTraceEnabled()) {
+      logger.trace("Invalidate Request",
+                   new Exception("DEBUG Trace for " + "Invalidation"));
+    }
     if (finalValue.getCode() != ErrorCode.ServerOverloaded) {
       if (!futureRequest.isDone()) {
         setErrorMessage(finalValue.getMessage(), finalValue.getCode());
@@ -544,12 +548,12 @@ public class LocalChannelReference {
           futureRequest.cancel();
         }
       } else {
-        logger.debug("Could not invalidate since Already finished: " +
+        logger.debug("Could not invalidate since Already finished: {}",
                      futureEndTransfer.getResult());
       }
     } else {
       setErrorMessage(finalValue.getMessage(), finalValue.getCode());
-      logger.debug("Overloaded");
+      logger.info("Server Overloaded");
     }
     if (session != null) {
       final DbTaskRunner runner = session.getRunner();
@@ -584,8 +588,8 @@ public class LocalChannelReference {
       futureRequest.setResult(finalValue);
       futureRequest.setSuccess();
     } else {
-      logger.info(
-          "Already validated: " + futureRequest.isSuccess() + ' ' + finalValue);
+      logger.info("Already validated: {} {}", futureRequest.isSuccess(),
+                  finalValue);
       if (!futureRequest.getResult().isAnswered()) {
         futureRequest.getResult().setAnswered(finalValue.isAnswered());
       }
@@ -745,7 +749,7 @@ public class LocalChannelReference {
    * @param hostId the partner to set
    */
   public void setPartner(final String hostId) {
-    logger.debug("host:" + hostId);
+    logger.debug("host: {}", hostId);
     partner = Configuration.configuration.getVersions().get(hostId);
     if (partner == null) {
       partner =

@@ -98,7 +98,8 @@ public final class IntegerUuid {
     final String id = idsource.trim();
 
     if (id.length() != UUIDSIZE * 2) {
-      throw new RuntimeException("Attempted to parse malformed UUID: " + id);
+      throw new IllegalArgumentException(
+          "Attempted to parse malformed UUID: " + id);
     }
     System.arraycopy(Hexa.fromHex(id), 0, uuid, 0, UUIDSIZE);
   }

@@ -221,7 +221,7 @@ public class WaarpSslContextFactory {
                                          final boolean needClientAuth) {
     // Add SSL handler first to encrypt and decrypt everything.
     final SSLEngine engine;
-    logger.debug("Has TrustManager? " + needClientAuth + " Is ServerMode? " +
+    logger.debug("Has TrustManager? {} Is ServerMode? {}", needClientAuth,
                  serverMode);
     if (serverMode) {
       engine = getServerContext().createSSLEngine();
@@ -254,7 +254,7 @@ public class WaarpSslContextFactory {
                                          final String host, final int port) {
     // Add SSL handler first to encrypt and decrypt everything.
     final SSLEngine engine;
-    logger.debug("Has TrustManager? " + needClientAuth + " Is ServerMode? " +
+    logger.debug("Has TrustManager? {} Is ServerMode? {}", needClientAuth,
                  serverMode);
     if (serverMode) {
       engine = getServerContext().createSSLEngine(host, port);

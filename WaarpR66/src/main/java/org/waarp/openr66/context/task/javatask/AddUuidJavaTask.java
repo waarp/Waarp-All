@@ -57,7 +57,7 @@ public class AddUuidJavaTask extends AbstractExecJavaTask {
 
   @Override
   public void run() {
-    logger.debug(toString());
+    logger.debug("{}", this);
     final GUID uuid = new GUID();
     final String[] args = BLANK.split(fullarg);
     final String fileInfo;
@@ -99,7 +99,7 @@ public class AddUuidJavaTask extends AbstractExecJavaTask {
       status = 2;
       return;
     }
-    logger.debug("UUID saved to fileInformation:" + fileInfo);
+    logger.debug("UUID saved to fileInformation: {}", fileInfo);
     status = 0;
   }
 }

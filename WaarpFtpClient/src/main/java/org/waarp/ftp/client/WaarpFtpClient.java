@@ -167,8 +167,8 @@ public class WaarpFtpClient {
           ((FTPSClient) ftpClient).execPBSZ(0);
           logger.debug("PBSZ 0");
           ((FTPSClient) ftpClient).execPROT("P");
-          logger.debug(
-              "Info: " + ((FTPSClient) ftpClient).getEnableSessionCreation());
+          logger.debug("Info: {}",
+                       ((FTPSClient) ftpClient).getEnableSessionCreation());
         } catch (final IOException e) {
           logout();
           result = "Explicit SSL in error";

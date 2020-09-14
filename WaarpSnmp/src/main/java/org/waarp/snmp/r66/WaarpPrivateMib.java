@@ -261,11 +261,10 @@ public abstract class WaarpPrivateMib implements WaarpInterfaceMib {
     snmpv2.setName(new OctetString(textualName));
     snmpv2.registerMOs(agent.getServer(), null);
     if (logger.isDebugEnabled()) {
-      logger.debug(
-          "SNMPV2: " + snmpv2.getContact() + ':' + snmpv2.getDescr() + ':' +
-          snmpv2.getLocation() + ':' + snmpv2.getName() + ':' +
-          snmpv2.getObjectID() + ':' + snmpv2.getServices() + ':' +
-          snmpv2.getUpTime());
+      logger.debug("SNMPV2: {}:{}:{}:{}:{}:{}:{}", snmpv2.getContact(),
+                   snmpv2.getDescr(), snmpv2.getLocation(), snmpv2.getName(),
+                   snmpv2.getObjectID(), snmpv2.getServices(),
+                   snmpv2.getUpTime());
     }
     // Save UpTime reference since used everywhere
     upTime = snmpv2.getSysUpTime();

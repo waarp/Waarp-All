@@ -118,7 +118,7 @@ class FtpsTemporaryFirstHandler extends ChannelDuplexHandler {
                                  session.getControlChannel()).getPort());
     WaarpSslUtility.addSslOpenedChannel(channel);
     // Get the SslHandler and begin handshake ASAP.
-    logger.debug("SSL found but need handshake: " + ctx.channel());
+    logger.debug("SSL found but need handshake: {}", ctx.channel());
     final FtpsTemporaryFirstHandler myself = this;
     WaarpSslUtility.addSslHandler(null, ctx.pipeline(), sslHandler,
                                   new GenericFutureListener<Future<? super Channel>>() {
@@ -127,9 +127,10 @@ class FtpsTemporaryFirstHandler extends ChannelDuplexHandler {
                                         final Future<? super Channel> future)
                                         throws Exception {
                                       try {
-                                        logger.debug(
-                                            "Handshake: " + future.isSuccess() +
-                                            ':' + future.get(), future.cause());
+                                        logger.debug("Handshake: {}:{}",
+                                                     future.isSuccess(),
+                                                     future.get(),
+                                                     future.cause());
                                         if (future.isSuccess()) {
                                           logger.debug(
                                               "End of initialization of SSL and data channel");

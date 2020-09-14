@@ -188,7 +188,7 @@ public abstract class WaarpShutdownHook extends Thread {
         }
       }
       isShutdownOver = true;
-      logger.info("Should restart? " + isRestart());
+      logger.info("Should restart? {}", isRestart());
       try {
         restartApplication();
       } catch (final IOException e1) {
@@ -208,7 +208,7 @@ public abstract class WaarpShutdownHook extends Thread {
       shutdownHook.exitService();
       isShutdownOver = true;
       shutdownHook.serviceStopped();
-      logger.info("Should restart? " + isRestart());
+      logger.info("Should restart? {}", isRestart());
       try {
         restartApplication();
       } catch (final IOException e1) {
@@ -298,7 +298,7 @@ public abstract class WaarpShutdownHook extends Thread {
               "Error while trying to restart the " + "application");
         }
         cmd.append(applArgs);
-        logger.debug("Should restart with:\n" + cmd);
+        logger.debug("Should restart with:\n{}", cmd);
         logger.warn("Should restart");
         Runtime.getRuntime().exec(cmd.toString()); //NOSONAR
       } catch (final Throwable e) {

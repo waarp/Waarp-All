@@ -446,7 +446,7 @@ public class NetworkTransaction {
       for (int i = 0; i < Configuration.RETRYNB * 2; i++) {
         if (Configuration.configuration.getConstraintLimitHandler()
                                        .checkConstraintsSleep(i)) {
-          logger.debug("Constraints exceeded: " + i);
+          logger.info("Constraints exceeded: {}", i);
         } else {
           logger.debug("Constraints NOT exceeded");
           valid = true;
@@ -485,7 +485,7 @@ public class NetworkTransaction {
     } else {
       final OpenR66ProtocolNetworkException exc =
           new OpenR66ProtocolNetworkException("Startup is invalid");
-      logger.debug("Startup is Invalid", exc);
+      logger.info("Startup is Invalid", exc);
       final R66Result finalValue =
           new R66Result(exc, null, true, ErrorCode.ConnectionImpossible, null);
       localChannelReference.invalidateRequest(finalValue);
@@ -552,7 +552,7 @@ public class NetworkTransaction {
           final Channel channel = channelFuture.channel();
           if (isSSL &&
               !NetworkSslServerHandler.isSslConnectedChannel(channel)) {
-            logger.debug("KO CONNECT since SSL handshake is over");
+            logger.info("KO CONNECT since SSL handshake is over");
             channel.close();
             throw new OpenR66ProtocolNoConnectionException(
                 "Cannot finish connect to remote server");
@@ -577,7 +577,7 @@ public class NetworkTransaction {
                 "interruption");
           }
           if (channelFuture.cause() instanceof ConnectException) {
-            logger.debug("KO CONNECT:" + channelFuture.cause().getMessage());
+            logger.debug("KO CONNECT: {}", channelFuture.cause().getMessage());
             throw new OpenR66ProtocolNoConnectionException(
                 channelFuture.cause().getMessage(), channelFuture.cause());
           } else {
@@ -985,9 +985,8 @@ public class NetworkTransaction {
           clientNetworkChannelsPerHostId.put(requester, clientNetworkChannels);
         }
         clientNetworkChannels.add(networkChannelReference);
-        logger.debug(
-            "AddClient: add count? " + clientNetworkChannels.size() + " for " +
-            requester);
+        logger.debug("AddClient: add count? {} for {}",
+                     clientNetworkChannels.size(), requester);
       }
     }
   }
@@ -999,7 +998,7 @@ public class NetworkTransaction {
     if (networkChannelReference != null && clientNetworkChannels != null &&
         requester != null) {
       clientNetworkChannels.remove(networkChannelReference);
-      logger.debug("removeClient: remove for :" + requester + " still " +
+      logger.debug("removeClient: remove for :{} still {}", requester,
                    clientNetworkChannels.size());
       if (clientNetworkChannels.isEmpty()) {
         clientNetworkChannelsPerHostId.remove(requester);
@@ -1105,7 +1104,7 @@ public class NetworkTransaction {
               .checkLastTime(Configuration.configuration.getTimeoutCon() * 2);
           if (time > Configuration.RETRYINMS &&
               Configuration.configuration.isTimerCloseReady()) {
-            logger.debug("NC reschedule at " + time + " : {}",
+            logger.debug("NC reschedule at {} : {}", time,
                          networkChannelReference);
             // will re execute this request later on
             time = (time / 10) * 10 + 100; // round to 10
@@ -1140,7 +1139,7 @@ public class NetworkTransaction {
     networkChannelReference.lock
         .lock(Configuration.WAITFORNETOP, TimeUnit.MILLISECONDS);
     try {
-      logger.debug("Close con: " + networkChannelReference);
+      logger.debug("Close con: {}", networkChannelReference);
       if (localChannelReference != null) {
         networkChannelReference.closeAndRemove(localChannelReference);
       }
@@ -1177,10 +1176,12 @@ public class NetworkTransaction {
    */
   public static int nbAttachedConnection(final SocketAddress address,
                                          final String host) {
-    logger.debug("nbAttachedConnection: " +
-                 networkChannelOnSocketAddressConcurrentHashMap
-                     .containsKey(address.hashCode()) + ':' +
-                 getNumberClients(host));
+    if (logger.isDebugEnabled()) {
+      logger.debug("nbAttachedConnection: {}:{}",
+                   networkChannelOnSocketAddressConcurrentHashMap
+                       .containsKey(address.hashCode()),
+                   getNumberClients(host));
+    }
     return (networkChannelOnSocketAddressConcurrentHashMap
         .containsKey(address.hashCode())? 1 : 0) + getNumberClients(host);
   }
@@ -1202,7 +1203,8 @@ public class NetworkTransaction {
     try {
       final NetworkChannelReference networkChannelReference =
           getRemoteChannel(address);
-      logger.debug("IS IN SHUTDOWN: " + networkChannelReference.isShuttingDown);
+      logger
+          .debug("IS IN SHUTDOWN: {}", networkChannelReference.isShuttingDown);
       return !networkChannelReference.isShuttingDown;
     } catch (final OpenR66ProtocolRemoteShutdownException e) {
       logger.debug("ALREADY IN SHUTDOWN");

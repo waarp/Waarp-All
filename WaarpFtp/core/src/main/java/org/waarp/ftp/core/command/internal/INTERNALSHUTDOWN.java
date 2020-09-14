@@ -72,7 +72,10 @@ public class INTERNALSHUTDOWN extends AbstractCommand {
       throw new Reply501Exception("Shutdown Need password");
     }
     final String password = getArg();
-    logger.debug("{} {}", password, getConfiguration().checkPassword(password));
+    if (logger.isDebugEnabled()) {
+      logger
+          .debug("{} {}", password, getConfiguration().checkPassword(password));
+    }
     if (!getConfiguration().checkPassword(password)) {
       throw new Reply501Exception("Shutdown Need a correct password");
     }

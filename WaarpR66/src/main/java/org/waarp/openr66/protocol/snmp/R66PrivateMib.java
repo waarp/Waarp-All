@@ -356,9 +356,8 @@ public class R66PrivateMib extends WaarpPrivateMib {
       return;
     }
     if (logger.isDebugEnabled()) {
-      logger.debug(
-          "Notify: " + NotificationElements.InfoTask + ':' + message + ':' +
-          runner.toShortString());
+      logger.debug("Notify: {}:{}:{}", NotificationElements.InfoTask, message,
+                   runner.toShortString());
     }
     notifyInternalTask(message, runner);
   }
@@ -375,9 +374,8 @@ public class R66PrivateMib extends WaarpPrivateMib {
       return;
     }
     if (logger.isDebugEnabled()) {
-      logger.debug(
-          "Notify: " + NotificationElements.InfoTask + ':' + message + ':' +
-          runner.toShortString());
+      logger.debug("Notify: {}:{}:{}", NotificationElements.InfoTask, message,
+                   runner.toShortString());
     }
     notifyInternalTask(message, runner);
   }
@@ -393,7 +391,7 @@ public class R66PrivateMib extends WaarpPrivateMib {
                       final String message2) {
     try {
       if (logger.isDebugEnabled()) {
-        logger.debug("Notify: " + element + ':' + message + ':' + message2);
+        logger.debug("Notify: {}:{}:{}", element, message, message2);
       }
       agent.getNotificationOriginator()
            .notify(new OctetString("public"), element.getOID(rootOIDWaarpNotif),

@@ -132,7 +132,7 @@ public class FtpTransfer {
    * @param status
    */
   public void setStatus(final boolean status) {
-    if (!status) {
+    if (!status && logger.isDebugEnabled()) {
       logger.debug("Status false", new Exception("Trace only exception"));
     }
     this.status = status;

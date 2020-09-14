@@ -166,10 +166,10 @@ public class NetworkServerHandler
       }
       remoteAddress = netChannel.remoteAddress();
       logger.debug(
-          "Will the Connection be refused if Partner is BlackListed from " +
+          "Will the Connection be refused if Partner is BlackListed from {}",
           remoteAddress);
       if (NetworkTransaction.isBlacklisted(netChannel)) {
-        logger.warn("Connection refused since Partner is BlackListed from " +
+        logger.warn("Connection refused since Partner is BlackListed from {}",
                     remoteAddress);
         isBlackListed = true;
         if (Configuration.configuration.getR66Mib() != null) {
@@ -333,7 +333,6 @@ public class NetworkServerHandler
         }
         return;
       }
-      logger.trace("TRACE ID GET MSG: {}", msg);
       networkChannelReference.use();
       final LocalChannelReference localChannelReference;
       if (msg.getLocalId() == ChannelUtils.NOCHANNEL) {
@@ -351,13 +350,13 @@ public class NetworkServerHandler
           } catch (final OpenR66ProtocolSystemException e1) {
             // do not send anything since the packet is external
             try {
-              logger.debug(
+              logger.info(
                   "Cannot get LocalChannel while an end of request comes: {}",
                   LocalPacketCodec.decodeNetworkPacket(msg.getBuffer()));
             } catch (final OpenR66ProtocolPacketException e2) {
-              logger.debug(
+              logger.info(
                   "Cannot get LocalChannel while an end of request comes: {}",
-                  msg.toString());
+                  msg);
             }
             msg.clear();
             return;
@@ -373,13 +372,13 @@ public class NetworkServerHandler
           } catch (final OpenR66ProtocolSystemException e1) {
             // do not send anything since the packet is external
             try {
-              logger.debug(
+              logger.info(
                   "Cannot get LocalChannel while an external error comes: {}",
                   LocalPacketCodec.decodeNetworkPacket(msg.getBuffer()));
             } catch (final OpenR66ProtocolPacketException e2) {
-              logger.debug(
+              logger.info(
                   "Cannot get LocalChannel while an external error comes: {}",
-                  msg.toString());
+                  msg);
             }
             msg.clear();
             return;
@@ -403,8 +402,8 @@ public class NetworkServerHandler
               return;
             }
             // try to send later
-            logger.debug("Cannot get LocalChannel: " + msg + " due to " +
-                         e1.getMessage());
+            logger.info("Cannot get LocalChannel: {} due to {}", msg,
+                        e1.getMessage());
             final ConnectionErrorPacket error = new ConnectionErrorPacket(
                 "Cannot get localChannel since localId is not found anymore",
                 String.valueOf(msg.getLocalId()));
@@ -461,23 +460,23 @@ public class NetworkServerHandler
       if (exception instanceof OpenR66ProtocolBusinessNoWriteBackException) {
         if (networkChannelReference != null &&
             networkChannelReference.nbLocalChannels() > 0) {
-          logger.debug("Network Channel Exception: {} {}", channel.id(),
-                       exception.getClass().getName() + " : " +
-                       exception.getMessage());
+          logger.info("Network Channel Exception: {} {}", channel.id(),
+                      exception.getClass().getName() + " : " +
+                      exception.getMessage());
         }
         logger.debug("Will close NETWORK channel");
         ChannelCloseTimer.closeFutureChannel(channel);
         return;
       } else if (exception instanceof OpenR66ProtocolNoConnectionException) {
-        logger.debug("Connection impossible with NETWORK channel {}",
-                     exception.getClass().getName() + " : " +
-                     exception.getMessage());
+        logger.info("Connection impossible with NETWORK channel {}",
+                    exception.getClass().getName() + " : " +
+                    exception.getMessage());
         channel.close();
         return;
       } else {
-        logger.debug("Network Channel Exception: {} {}", channel.id(),
-                     exception.getClass().getName() + " : " +
-                     exception.getMessage());
+        logger.info("Network Channel Exception: {} {}", channel.id(),
+                    exception.getClass().getName() + " : " +
+                    exception.getMessage());
       }
       final ConnectionErrorPacket errorPacket = new ConnectionErrorPacket(
           exception.getClass().getName() + " : " + exception.getMessage(),

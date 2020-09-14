@@ -105,7 +105,7 @@ public class ChangeBandwidthLimits implements Runnable {
     localChannelReference.sessionNewState(R66FiniteDualStates.VALIDOTHER);
     final AbstractLocalPacket valid;
     final boolean useJson = PartnerConfiguration.useJson(host.getHostid());
-    logger.debug("UseJson: " + useJson);
+    logger.debug("UseJson: {}", useJson);
     if (useJson) {
       final BandwidthJsonPacket node = new BandwidthJsonPacket();
       if (writeGlobalLimit < 0 && readGlobalLimit < 0 &&
@@ -228,7 +228,7 @@ public class ChangeBandwidthLimits implements Runnable {
       final long delay = time2 - time1;
       final R66Result result = future.getResult();
       final boolean useJson = PartnerConfiguration.useJson(stohost);
-      logger.debug("UseJson: " + useJson);
+      logger.debug("UseJson: {}", useJson);
       if (future.isSuccess()) {
         final String sresult;
         if (result.getOther() != null) {

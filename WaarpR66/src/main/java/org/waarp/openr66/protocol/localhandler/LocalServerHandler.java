@@ -132,8 +132,6 @@ public final class LocalServerHandler {
     // action as requested and answer if necessary
     final TransferActions serverHandler =
         localChannelReference.getServerHandler();
-    logger.trace("TRACE ID Received virtually {} {}", packet,
-                 localChannelReference);
     if (packet.getType() == LocalPacketFactory.STARTUPPACKET) {
       logger.warn("Error in the protocol: {}", packet.toString());
     } else {
@@ -168,9 +166,9 @@ public final class LocalServerHandler {
           if (((DataPacket) packet).getPacketRank() % 100 == 1 ||
               serverHandler.getSession().getState() != DATAR) {
             serverHandler.getSession().newState(DATAR);
-            logger.debug(
-                "DATA RANK: " + ((DataPacket) packet).getPacketRank() + " : " +
-                serverHandler.getSession().getRunner().getRank());
+            logger.debug("DATA RANK: {} : {}",
+                         ((DataPacket) packet).getPacketRank(),
+                         serverHandler.getSession().getRunner().getRank());
           }
           serverHandler.data((DataPacket) packet);
           break;
@@ -330,12 +328,12 @@ public final class LocalServerHandler {
             }
             final long newSize = node.getFilesize();
             final String newFileInfo = node.getFileInfo();
-            logger.debug("NewSize " + newSize + " NewName " + newfilename);
+            logger.debug("NewSize {} NewName {}", newSize, newfilename);
             // potential fileInfo changed
             if (newFileInfo != null && !newFileInfo.equals(
                 serverHandler.getSession().getRunner().getFileInformation())) {
-              logger.debug("NewSize " + newSize + " NewName " + newfilename +
-                           " newFileInfo: " + newFileInfo);
+              logger.debug("NewSize {} NewName {} newFileInfo {}", newSize,
+                           newfilename, newFileInfo);
               serverHandler.requestChangeFileInfo(newFileInfo);
             }
             // potential file size changed
@@ -368,7 +366,7 @@ public final class LocalServerHandler {
   public static void exceptionCaught(final TransferActions serverHandler,
                                      final Throwable cause) {
     // inform clients
-    logger.debug("Exception and isFinished: " +
+    logger.debug("Exception and isFinished: {}",
                  (serverHandler.getLocalChannelReference() != null &&
                   serverHandler.getLocalChannelReference().getFutureRequest()
                                .isDone()), cause);

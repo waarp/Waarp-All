@@ -93,7 +93,7 @@ public class ConfigurationProxyR66 extends Configuration {
 
   @Override
   public void r66Startup() {
-    logger.debug("Start R66: " + getHostSslId());
+    logger.debug("Start R66: {}", getHostSslId());
     // add into configuration
     getConstraintLimitHandler().setServer(true);
     // Global Server
@@ -110,7 +110,7 @@ public class ConfigurationProxyR66 extends Configuration {
       final List<ChannelFuture> futures = new ArrayList<ChannelFuture>();
       for (final ProxyEntry entry : ProxyEntry.proxyEntries.values()) {
         if (!entry.isLocalSsl()) {
-          logger.debug("Future Activation: " + entry.getLocalSocketAddress());
+          logger.debug("Future Activation: {}", entry.getLocalSocketAddress());
           futures.add(serverBootstrap.bind(entry.getLocalSocketAddress()));
         }
       }
@@ -119,7 +119,7 @@ public class ConfigurationProxyR66 extends Configuration {
         if (future.isSuccess()) {
           bindNoSSL = future.channel();
           serverChannelGroup.add(bindNoSSL);
-          logger.debug("Activation: " + bindNoSSL.localAddress());
+          logger.debug("Activation: {}", bindNoSSL.localAddress());
         } else {
           logger.warn(
               Messages.getString("Configuration.NOSSLDeactivated") + " for " +
@@ -153,7 +153,7 @@ public class ConfigurationProxyR66 extends Configuration {
         if (future.isSuccess()) {
           bindSSL = future.channel();
           serverChannelGroup.add(bindSSL);
-          logger.debug("SslActivation: " + bindSSL.localAddress());
+          logger.debug("SslActivation: {}", bindSSL.localAddress());
         } else {
           logger.warn(
               Messages.getString("Configuration.SSLMODEDeactivated") + " for " +

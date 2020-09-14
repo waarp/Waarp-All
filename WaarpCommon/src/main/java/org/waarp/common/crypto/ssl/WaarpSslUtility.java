@@ -70,7 +70,7 @@ public final class WaarpSslUtility {
         public void operationComplete(final ChannelFuture future)
             throws Exception {
           if (future.channel().isActive()) {
-            final SSLTHREAD thread = new SSLTHREAD(future.channel());
+            final SslThread thread = new SslThread(future.channel());
             thread.start();
           }
         }
@@ -104,20 +104,20 @@ public final class WaarpSslUtility {
                                    final ChannelHandler sslHandler,
                                    final GenericFutureListener<? extends Future<? super Channel>> listener) {
     if (future == null) {
-      logger.debug("Add SslHandler: " + pipeline.channel());
+      logger.debug("Add SslHandler: {}", pipeline.channel());
       pipeline.addFirst("SSL", sslHandler);
       ((SslHandler) sslHandler).handshakeFuture().addListener(listener);
     } else {
       future.addListener(new GenericFutureListener() {
         @Override
         public void operationComplete(final Future future) throws Exception {
-          logger.debug("Add SslHandler: " + pipeline.channel());
+          logger.debug("Add SslHandler: {}", pipeline.channel());
           pipeline.addFirst("SSL", sslHandler);
           ((SslHandler) sslHandler).handshakeFuture().addListener(listener);
         }
       });
     }
-    logger.debug("Checked Ssl Handler to be added: " + pipeline.channel());
+    logger.debug("Checked Ssl Handler to be added: {}", pipeline.channel());
   }
 
   /**
@@ -132,7 +132,7 @@ public final class WaarpSslUtility {
   public static boolean waitForHandshake(final Channel channel) {
     final ChannelHandler handler = channel.pipeline().first();
     if (handler instanceof SslHandler) {
-      logger.debug("Start handshake SSL: " + channel);
+      logger.debug("Start handshake SSL: {}", channel);
       final SslHandler sslHandler = (SslHandler) handler;
       // Get the SslHandler and begin handshake ASAP.
       // Get notified when SSL handshake is done.
@@ -140,7 +140,7 @@ public final class WaarpSslUtility {
       WaarpNettyUtil.awaitOrInterrupted(handshakeFuture,
                                         sslHandler.getHandshakeTimeoutMillis() +
                                         100);
-      logger.debug("Handshake: " + handshakeFuture.isSuccess() + ": " + channel,
+      logger.debug("Handshake: {}:{}", handshakeFuture.isSuccess(), channel,
                    handshakeFuture.cause());
       if (!handshakeFuture.isSuccess()) {
         channel.close();
@@ -296,13 +296,13 @@ public final class WaarpSslUtility {
   /**
    * Thread used to ensure we are not in IO thread when waiting
    */
-  private static class SSLTHREAD extends Thread {
+  private static class SslThread extends Thread {
     private final Channel channel;
 
     /**
      * @param channel
      */
-    private SSLTHREAD(final Channel channel) {
+    private SslThread(final Channel channel) {
       this.channel = channel;
       setDaemon(true);
       setName("SSLTHREAD_" + getName());

@@ -96,10 +96,10 @@ public class ExecBusinessHandler extends BusinessHandler {
     }
     final long specialId = auth.getSpecialId();
     final ReplyCode replyCode = getFtpSession().getReplyCode();
-    logger.debug("Transfer done but action needed: " + !(replyCode !=
-                                                         ReplyCode.REPLY_250_REQUESTED_FILE_ACTION_OKAY &&
-                                                         replyCode !=
-                                                         ReplyCode.REPLY_226_CLOSING_DATA_CONNECTION));
+    logger.debug("Transfer done but action needed: {}", !(replyCode !=
+                                                          ReplyCode.REPLY_250_REQUESTED_FILE_ACTION_OKAY &&
+                                                          replyCode !=
+                                                          ReplyCode.REPLY_226_CLOSING_DATA_CONNECTION));
     if (replyCode != ReplyCode.REPLY_250_REQUESTED_FILE_ACTION_OKAY &&
         replyCode != ReplyCode.REPLY_226_CLOSING_DATA_CONNECTION) {
       // Do nothing

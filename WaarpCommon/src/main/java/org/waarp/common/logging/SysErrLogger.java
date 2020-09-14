@@ -102,7 +102,7 @@ public final class SysErrLogger {
    * Used only in classes where WaarpLogger is not allowed
    */
   public void syserr() {
-    new Exception("ERROR Stacktrace").printStackTrace(); // NOSONAR
+    new RuntimeException("ERROR Stacktrace").printStackTrace(); // NOSONAR
   }
 
   /**

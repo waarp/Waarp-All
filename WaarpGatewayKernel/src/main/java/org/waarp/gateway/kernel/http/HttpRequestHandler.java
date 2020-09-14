@@ -283,7 +283,7 @@ public abstract class HttpRequestHandler
         if (httpPageTemp == null) {
           // if Get => standard Get
           if (method == HttpMethod.GET) {
-            logger.debug("simple get: " + request.uri());
+            logger.debug("simple get: {}", request.uri());
             // send content (image for instance)
             HttpWriteCacheEnable
                 .writeFile(request, ctx, baseStaticPath + uriRequest,
@@ -373,7 +373,7 @@ public abstract class HttpRequestHandler
   protected void prepareError(final ChannelHandlerContext ctx,
                               final String message)
       throws HttpIncorrectRequestException {
-    logger.debug("Debug " + message);
+    logger.debug("Debug {}", message);
     if (!setErrorPage(ctx)) {
       // really really bad !
       return;
@@ -463,11 +463,10 @@ public abstract class HttpRequestHandler
    */
   protected void writeSimplePage(final ChannelHandlerContext ctx)
       throws HttpIncorrectRequestException {
-    logger.debug(
-        "HttpPage: " + (httpPage != null? httpPage.getPagename() : "no page") +
-        " businessRequest: " +
-        (businessRequest != null? businessRequest.getClass().getName() :
-            "no BR"));
+    logger.debug("HttpPage: {} businessRequest: {}",
+                 httpPage != null? httpPage.getPagename() : "no page",
+                 businessRequest != null? businessRequest.getClass().getName() :
+                     "no BR");
     if (httpPage != null && httpPage.getPagerole() == PageRole.ERROR) {
       try {
         httpPage

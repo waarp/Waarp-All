@@ -118,7 +118,7 @@ public class HttpRestServerR66Handler extends HttpRestAbstractR66Handler {
         }
         setOk(handler, result, json, HttpResponseStatus.OK);
       } else {
-        logger.info("Validation is ignored: " + json);
+        logger.info("Validation is ignored: {}", json);
         result.setDetail("Unknown command");
         setError(handler, result, json, HttpResponseStatus.PRECONDITION_FAILED);
       }

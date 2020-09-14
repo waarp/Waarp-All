@@ -53,9 +53,8 @@ public class TarTask extends AbstractTask {
 
   @Override
   public void run() {
-    logger.info(
-        "TAR with " + argRule + ':' + argTransfer + ':' + delay + " and {}",
-        session);
+    logger
+        .info("TAR with {}:{}:{} and {}", argRule, argTransfer, delay, session);
     String finalname = argRule;
     finalname = getReplacedValue(finalname, argTransfer == null? null :
         argTransfer.split(" "));

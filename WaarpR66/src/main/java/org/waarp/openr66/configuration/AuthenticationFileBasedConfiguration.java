@@ -218,9 +218,9 @@ public class AuthenticationFileBasedConfiguration {
     final Document document = DocumentHelper.createDocument();
     final Element root = document.addElement(XML_AUTHENTIFICATION_ROOT);
     final DbHostAuth[] hosts = DbHostAuth.getAllHosts();
-    logger.debug("Will write DbHostAuth: " + hosts.length + " in " + filename);
+    logger.debug("Will write DbHostAuth: {} in {}", hosts.length, filename);
     for (final DbHostAuth auth : hosts) {
-      logger.debug("Will write DbHostAuth: " + auth.getHostid());
+      logger.debug("Will write DbHostAuth: {}", auth.getHostid());
       final Element entry = new DefaultElement(XML_AUTHENTIFICATION_ENTRY);
       entry.add(newElement(XML_AUTHENTIFICATION_HOSTID, auth.getHostid()));
       final byte[] key = auth.getHostkey();

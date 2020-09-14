@@ -1469,11 +1469,13 @@ public class HttpSslHandler
           gmode = -1;
         }
         head = resetOptionRules(head, rule, tmode, gmode);
-        logger.debug("Recv UpdOrInsert: " + rule + ':' + hostids + ':' +
-                     (tmode != null? tmode.ordinal() : 0) + ':' + recvp + ':' +
-                     sendp + ':' + archp + ':' + workp + ':' + rpre + ':' +
-                     rpost + ':' + rerr + ':' + spre + ':' + spost + ':' +
-                     serr);
+        if (logger.isDebugEnabled()) {
+          logger.debug("Recv UpdOrInsert: " + rule + ':' + hostids + ':' +
+                       (tmode != null? tmode.ordinal() : 0) + ':' + recvp +
+                       ':' + sendp + ':' + archp + ':' + workp + ':' + rpre +
+                       ':' + rpost + ':' + rerr + ':' + spre + ':' + spost +
+                       ':' + serr);
+        }
         final DbRule dbrule =
             new DbRule(rule, hostids, (tmode != null? tmode.ordinal() : 0),
                        recvp, sendp, archp, workp, rpre, rpost, rerr, spre,
@@ -2225,11 +2227,11 @@ public class HttpSslHandler
         getMenu = true;
       }
       if (!getMenu && name != null) {
-        logger.debug(
-            "Name? " + name.equals(Configuration.configuration.getAdminName()) +
-            " Passwd? " + Arrays
-                .equals(password.getBytes(WaarpStringUtils.UTF8),
-                        Configuration.configuration.getServerAdminKey()));
+        logger.debug("Name? {} Passwd? {}",
+                     name.equals(Configuration.configuration.getAdminName()),
+                     Arrays.equals(password.getBytes(WaarpStringUtils.UTF8),
+                                   Configuration.configuration
+                                       .getServerAdminKey()));
         if (name.equals(Configuration.configuration.getAdminName()) && Arrays
             .equals(password.getBytes(WaarpStringUtils.UTF8),
                     Configuration.configuration.getServerAdminKey())) {
@@ -2249,12 +2251,11 @@ public class HttpSslHandler
         }
         if (!authentHttp.isAuthenticated()) {
           authentHttp.setStatus(71);
-          logger.debug("Still not authenticated: {}", authentHttp);
+          logger.info("Still not authenticated: {}", authentHttp);
           getMenu = true;
         }
-        logger.debug(
-            "Identified: " + authentHttp.getAuth().isIdentified() + ':' +
-            authentHttp.isAuthenticated());
+        logger.debug("Identified: {}:{}", authentHttp.getAuth().isIdentified(),
+                     authentHttp.isAuthenticated());
       }
     } else {
       getMenu = true;
@@ -2275,7 +2276,7 @@ public class HttpSslHandler
           Long.toHexString(RANDOM.nextLong()));
       sessions.put(admin.value(), authentHttp);
       authentHttp.setStatus(72);
-      logger.debug("CreateSession: " + uriRequest + ":{}", admin);
+      logger.debug("CreateSession: {}:{}", uriRequest, admin);
     }
     writeResponse(ctx);
   }
@@ -2287,7 +2288,7 @@ public class HttpSslHandler
     final QueryStringDecoder queryStringDecoder =
         new QueryStringDecoder(httpRequest.uri());
     uriRequest = queryStringDecoder.path();
-    logger.debug("Msg: " + uriRequest);
+    logger.debug("Msg: {}", uriRequest);
     if (uriRequest.contains("gre/") || uriRequest.contains("img/") ||
         uriRequest.contains("res/") || uriRequest.contains("favicon.ico")) {
       HttpWriteCacheEnable.writeFile(httpRequest, ctx,
@@ -2300,7 +2301,7 @@ public class HttpSslHandler
     checkSession(ctx.channel());
     try {
       if (!authentHttp.isAuthenticated()) {
-        logger.debug("Not Authent: " + uriRequest + ":{}", authentHttp);
+        logger.debug("Not Authent: {}:{}", uriRequest, authentHttp);
         checkAuthent(ctx);
         return;
       }
@@ -2315,7 +2316,7 @@ public class HttpSslHandler
           req = REQUEST.valueOf(find);
         } catch (final IllegalArgumentException e1) {
           req = REQUEST.index;
-          logger.debug("NotFound: " + find + ':' + uriRequest);
+          logger.info("NotFound: {}:{}", find, uriRequest);
         }
       }
       switch (req) {
@@ -2391,7 +2392,7 @@ public class HttpSslHandler
         for (final Cookie elt : cookies) {
           if (elt.name().equalsIgnoreCase(
               R66SESSION + Configuration.configuration.getHostId())) {
-            logger.debug("Found session: " + elt);
+            logger.debug("Found session: {}", elt);
             admin = elt;
             final R66Session session = sessions.get(admin.value());
             if (session != null) {
@@ -2401,7 +2402,7 @@ public class HttpSslHandler
               admin = null;
             }
           } else if (elt.name().equalsIgnoreCase(I18NEXT)) {
-            logger.debug("Found i18next: " + elt);
+            logger.debug("Found i18next: {}", elt);
             lang = elt.value();
           }
         }
@@ -2416,7 +2417,7 @@ public class HttpSslHandler
       dbSession = DbConstantR66.admin.getSession();
     }
     if (admin == null) {
-      logger.debug("NoSession: " + uriRequest + ":{}", admin);
+      logger.debug("NoSession: {}:{}", uriRequest, admin);
     }
   }
 
@@ -2465,7 +2466,7 @@ public class HttpSslHandler
         if (!findSession && admin != null) {
           response.headers().add(HttpHeaderNames.SET_COOKIE,
                                  ServerCookieEncoder.LAX.encode(admin));
-          logger.debug("AddSession: " + uriRequest + ":{}", admin);
+          logger.debug("AddSession: {}:{}", uriRequest, admin);
         }
       }
     } else {
@@ -2473,7 +2474,7 @@ public class HttpSslHandler
       response.headers().add(HttpHeaderNames.SET_COOKIE,
                              ServerCookieEncoder.LAX.encode(cookie));
       if (admin != null) {
-        logger.debug("AddSession: " + uriRequest + ":{}", admin);
+        logger.debug("AddSession: {}:{}", uriRequest, admin);
         response.headers().add(HttpHeaderNames.SET_COOKIE,
                                ServerCookieEncoder.LAX.encode(admin));
       }

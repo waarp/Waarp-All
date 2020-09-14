@@ -199,8 +199,13 @@ public class R66Session implements SessionInterface {
    * @param stat
    */
   public void setStatus(final int stat) {
-    final StackTraceElement elt = Thread.currentThread().getStackTrace()[2];
-    status = '(' + elt.getFileName() + ':' + elt.getLineNumber() + "):" + stat;
+    if (logger.isDebugEnabled()) {
+      final StackTraceElement elt = Thread.currentThread().getStackTrace()[2];
+      status =
+          '(' + elt.getFileName() + ':' + elt.getLineNumber() + "):" + stat;
+    } else {
+      status = ":" + stat;
+    }
   }
 
   @Override
@@ -463,8 +468,8 @@ public class R66Session implements SessionInterface {
       try {
         runner.setOriginalFilename(file.getFile());
         runner.setFilename(file.getFile());
-        logger.debug(
-            "Old size: " + runner.getOriginalSize() + " => " + file.length());
+        logger.debug("Old size: {} => {}", runner.getOriginalSize(),
+                     file.length());
         if (runner.getOriginalSize() <= 0) {
           final long originalSize = file.length();
           if (originalSize > 0) {
@@ -586,7 +591,7 @@ public class R66Session implements SessionInterface {
     }
     // check fileSize
     if (runner.isSender() && file != null) {
-      logger.debug("could change size: " + runner.getOriginalSize() + " => " +
+      logger.debug("could change size: {} => {}", runner.getOriginalSize(),
                    file.length());
       if (runner.getOriginalSize() < 0) {
         final long originalSize = file.length();
@@ -688,7 +693,7 @@ public class R66Session implements SessionInterface {
         }
       }
     }
-    logger.debug("Dir is: " + dir.getFullPath());
+    logger.debug("Dir is: {}", dir.getFullPath());
   }
 
   /**
@@ -702,15 +707,15 @@ public class R66Session implements SessionInterface {
   public void startup(final boolean checkNotExternal)
       throws OpenR66RunnerErrorException {
     if (runner.getRank() > 0) {
-      logger.debug("restart at " + runner.getRank() + " {}", runner);
-      logger.debug("restart at " + runner.getRank() + " {}", dir);
+      logger.debug("restart at {} {}", runner.getRank(), runner);
+      logger.debug("restart at {} {}", runner.getRank(), dir);
       runner.setTransferTask(runner.getRank());
       restart.restartMarker(runner.getBlocksize() * runner.getRank());
     } else {
       restart.restartMarker(0);
     }
-    logger.debug("GlobalLastStep: " + runner.getGloballaststep() + " vs " +
-                 TASKSTEP.NOTASK.ordinal() + ':' + TASKSTEP.PRETASK.ordinal());
+    logger.debug("GlobalLastStep: {} vs {}:{}", runner.getGloballaststep(),
+                 TASKSTEP.NOTASK.ordinal(), TASKSTEP.PRETASK.ordinal());
     if (runner.getGloballaststep() == TASKSTEP.NOTASK.ordinal() ||
         runner.getGloballaststep() == TASKSTEP.PRETASK.ordinal()) {
       setFileBeforePreRunner();
@@ -762,7 +767,7 @@ public class R66Session implements SessionInterface {
       // generated due to a possible wildcard not ready
       file = null;
     }
-    logger.debug("GlobalLastStep: " + runner.getGloballaststep());
+    logger.debug("GlobalLastStep: {}", runner.getGloballaststep());
     if (runner.getGloballaststep() == TASKSTEP.TRANSFERTASK.ordinal()) {
       if (businessObject != null) {
         businessObject.checkAfterPreCommand(this);
@@ -794,9 +799,9 @@ public class R66Session implements SessionInterface {
             available = truefile.getFreeSpace();
             targetDir = truefile.getPath();
           }
-          logger.debug(
-              "Check available space: " + available + " >? " + needed + "(+" +
-              length + ')');
+          logger
+              .debug("Check available space: {} >? {}(+{})", available, needed,
+                     length);
           // Available > 0 since some system returns 0 (wrong size)
           if (available > 0 && needed > available) {
             // not enough space
@@ -821,8 +826,8 @@ public class R66Session implements SessionInterface {
               if (newRank <= 0) {
                 newRank = 1;
               }
-              logger.info("OldPos: " + oldPosition + ':' + runner.getRank() +
-                          " curLength: " + length + ':' + newRank);
+              logger.info("OldPos: {}:{} curLength: {}:{}", oldPosition,
+                          runner.getRank(), length, newRank);
               logger
                   .warn("Decreased Rank Restart for {} at " + newRank, runner);
               runner.setTransferTask(newRank);
@@ -907,7 +912,7 @@ public class R66Session implements SessionInterface {
   public void setFinalizeTransfer(final boolean status,
                                   final R66Result finalValue)
       throws OpenR66RunnerErrorException, OpenR66ProtocolSystemException {
-    logger.debug(status + ":" + finalValue + ':' + runner);
+    logger.debug("{}:{}:{}", status, finalValue, runner);
     if (runner == null) {
       if (localChannelReference != null) {
         if (status) {
@@ -933,9 +938,11 @@ public class R66Session implements SessionInterface {
       }
     }
     if (runner.isAllDone()) {
-      logger.debug("Transfer already done but " + status + " on " + file +
-                   runner.toShortString(),
-                   new OpenR66RunnerErrorException(finalValue.toString()));
+      if (logger.isDebugEnabled()) {
+        logger.debug("Transfer already done but {} on {} {}", status, file,
+                     runner.toShortString(),
+                     new OpenR66RunnerErrorException(finalValue.toString()));
+      }
       // FIXME ??
       /*
        * if (! status) runner.finalizeTransfer(localChannelReference, file, finalValue, status)
@@ -943,10 +950,11 @@ public class R66Session implements SessionInterface {
       return;
     }
     if (runner.isInError()) {
-      logger.debug(
-          "Transfer already done in error but " + status + " on " + file +
-          runner.toShortString(),
-          new OpenR66RunnerErrorException(finalValue.toString()));
+      if (logger.isDebugEnabled()) {
+        logger.debug("Transfer already done in error but {} on {} {}", status,
+                     file, runner.toShortString(),
+                     new OpenR66RunnerErrorException(finalValue.toString()));
+      }
       // FIXME ??
       /*
        * if (! status) runner.finalizeTransfer(localChannelReference, file, finalValue, status)
@@ -954,9 +962,11 @@ public class R66Session implements SessionInterface {
       return;
     }
     if (localChannelReference.getFutureRequest().isDone()) {
-      logger.debug("Request already done but " + status + " on " + file +
-                   runner.toShortString(),
-                   new OpenR66RunnerErrorException(finalValue.toString()));
+      if (logger.isDebugEnabled()) {
+        logger.debug("Request already done but {} on {} {}" + status, file,
+                     runner.toShortString(),
+                     new OpenR66RunnerErrorException(finalValue.toString()));
+      }
       // Already finished once so do nothing more
       return;
     }
@@ -970,7 +980,7 @@ public class R66Session implements SessionInterface {
       runner.finishTransferTask(finalValue.getCode());
     }
     runner.saveStatus();
-    logger.debug("Transfer " + status + " on {} and {}", file, runner);
+    logger.debug("Transfer {} on {} and {}", status, file, runner);
     if (!runner.ready()) {
       // Pre task in error (or even before)
       final OpenR66RunnerErrorException runnerErrorException;
@@ -982,8 +992,8 @@ public class R66Session implements SessionInterface {
             "Pre task in error (or even before)");
       }
       finalValue.setException(runnerErrorException);
-      logger.debug("Pre task in error (or even before) : " +
-                   runnerErrorException.getMessage());
+      logger.info("Pre task in error (or even before) : {}",
+                  runnerErrorException.getMessage());
       if (Configuration.configuration.isExecuteErrorBeforeTransferAllowed()) {
         runner
             .finalizeTransfer(localChannelReference, file, finalValue, status);

@@ -54,7 +54,7 @@ public final class WaarpActionLogger {
   public static void logCreate(final DbSession dbSession, final String message,
                                final HttpSession session) {
     final String sessionContexte = session.toString();
-    logger.info(message + ' ' + sessionContexte);
+    logger.info("{} {}", message, sessionContexte);
     if (dbSession != null) {
       final PageRole code = session.getCurrentCommand();
       boolean isSender = false;
@@ -85,7 +85,7 @@ public final class WaarpActionLogger {
                               session.getFilename(), code.name(),
                               HttpResponseStatus.OK, message,
                               UpdatedInfo.TOSUBMIT);
-        logger.debug("Create FS: " + log);
+        logger.debug("Create FS: {}", log);
         session.setLogid(log.getSpecialId());
         return;
       } catch (final WaarpDatabaseException e1) {
@@ -110,7 +110,7 @@ public final class WaarpActionLogger {
                                final UpdatedInfo info) {
     final String sessionContexte = session.toString();
     final long specialId = session.getLogid();
-    logger.info(message + ' ' + sessionContexte);
+    logger.info("{} {}", message, sessionContexte);
     if (dbSession != null && specialId != DbConstant.ILLEGALVALUE) {
       final PageRole code = session.getCurrentCommand();
       switch (code) {
@@ -135,7 +135,7 @@ public final class WaarpActionLogger {
         log.setInfotransf(message);
         log.setReplyCodeExecutionStatus(rcode);
         log.update();
-        logger.debug("Update FS: " + log);
+        logger.debug("Update FS: {}", log);
         session.setLogid(log.getSpecialId());
       } catch (final WaarpDatabaseException e) {
         // Do nothing
@@ -191,7 +191,7 @@ public final class WaarpActionLogger {
           log.setFilename(session.getFilename());
         }
         log.update();
-        logger.debug("Update FS: " + log);
+        logger.debug("Update FS: {}", log);
       } catch (final WaarpDatabaseException e) {
         // Do nothing
       }

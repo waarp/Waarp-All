@@ -280,7 +280,7 @@ public class NetworkHandler extends SimpleChannelInboundHandler<String> {
         return;
       }
       AbstractCommand command = FtpCommandCode.getFromLine(getFtpSession(), e);
-      logger.debug("RECVMSG: {} CMD: {} " + command.getCode(), e,
+      logger.debug("RECVMSG: {} CMD: {} {}" + command.getCode(), e,
                    command.getCommand());
       // First check if the command is an ABORT, QUIT or STAT
       if (!FtpCommandCode.isSpecialCommand(command.getCode())) {
@@ -308,9 +308,8 @@ public class NetworkHandler extends SimpleChannelInboundHandler<String> {
         return;
       }
       if (session.getCurrentCommand().isNextCommandValid(command)) {
-        logger.debug(
-            "Previous: " + session.getCurrentCommand().getCode() + " Next: " +
-            command.getCode());
+        logger.debug("Previous: {} Next: {}",
+                     session.getCurrentCommand().getCode(), command.getCode());
         session.setNextCommand(command);
         messageRunAnswer(ctx);
       } else {
@@ -358,7 +357,7 @@ public class NetworkHandler extends SimpleChannelInboundHandler<String> {
    */
   public ChannelFuture writeIntermediateAnswer(
       final ChannelHandlerContext ctx) {
-    logger.debug("Answer: " + session.getAnswer());
+    logger.debug("Answer: {}", session.getAnswer());
     return ctx.writeAndFlush(session.getAnswer());
   }
 
@@ -387,7 +386,7 @@ public class NetworkHandler extends SimpleChannelInboundHandler<String> {
    */
   private void messageRunAnswer(final ChannelHandlerContext ctx) {
     boolean error = false;
-    logger.debug("Code: " + session.getCurrentCommand().getCode());
+    logger.debug("Code: {}", session.getCurrentCommand().getCode());
     try {
       businessHandler.beforeRunCommand();
       final AbstractCommand command = session.getCurrentCommand();
@@ -400,8 +399,8 @@ public class NetworkHandler extends SimpleChannelInboundHandler<String> {
       session.setReplyCode(e);
       businessHandler.afterRunCommandKo(e);
     }
-    logger.debug("Code: " + session.getCurrentCommand().getCode() + " [" +
-                 session.getReplyCode() + ']');
+    logger.debug("Code: {} [{}]", session.getCurrentCommand().getCode(),
+                 session.getReplyCode());
     if (error) {
       if (session.getCurrentCommand().getCode() !=
           FtpCommandCode.INTERNALSHUTDOWN) {
@@ -448,7 +447,7 @@ public class NetworkHandler extends SimpleChannelInboundHandler<String> {
                                                             .getMessage() :
                                                       "During Handshake";
                                               logger.error(
-                                                  "Cannot finalize Ssl Command channel " +
+                                                  "Cannot finalize Ssl Command channel {}",
                                                   error2);
                                               callForSnmp(
                                                   "SSL Connection Error",
@@ -457,7 +456,7 @@ public class NetworkHandler extends SimpleChannelInboundHandler<String> {
                                               ctx.close();
                                             } else {
                                               logger.debug(
-                                                  "End of initialization of SSL and command channel: " +
+                                                  "End of initialization of SSL and command channel: {}",
                                                   ctx.channel());
                                               session.setSsl(true);
                                             }

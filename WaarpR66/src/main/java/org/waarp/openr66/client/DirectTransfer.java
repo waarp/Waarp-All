@@ -102,13 +102,13 @@ public class DirectTransfer extends AbstractTransfer {
         exc = null;
         break;
       } catch (final OpenR66RunnerErrorException e) {
-        logger.debug("Cannot Transfer", e);
+        logger.info("Cannot Transfer", e);
         future.setResult(
             new R66Result(e, null, true, ErrorCode.Internal, taskRunner));
         future.setFailure(e);
         return;
       } catch (final OpenR66ProtocolNoConnectionException e) {
-        logger.debug("Cannot Connect", e);
+        logger.info("Cannot Connect", e);
         future.setResult(
             new R66Result(e, null, true, ErrorCode.ConnectionImpossible,
                           taskRunner));
@@ -125,7 +125,7 @@ public class DirectTransfer extends AbstractTransfer {
         future.setFailure(e);
         return;
       } catch (final OpenR66ProtocolPacketException e) {
-        logger.debug("Bad Protocol", e);
+        logger.info("Bad Protocol", e);
         future.setResult(
             new R66Result(e, null, true, ErrorCode.TransferError, taskRunner));
         future.setFailure(e);
@@ -137,7 +137,7 @@ public class DirectTransfer extends AbstractTransfer {
     }
     if (exc != null) {
       taskRunner.setLocalChannelReference(new LocalChannelReference());
-      logger.debug("Cannot Connect", exc);
+      logger.info("Cannot Connect", exc);
       future.setResult(
           new R66Result(exc, null, true, ErrorCode.ConnectionImpossible,
                         taskRunner));
@@ -185,12 +185,12 @@ public class DirectTransfer extends AbstractTransfer {
                              ismd5, block, idt, networkTransaction);
       transaction.transferArgs.setFollowId(sFollowId);
       transaction.normalInfoAsWarn = snormalInfoAsWarn;
-      logger.debug(
-          "rhost: " + rhost + ':' + transaction.transferArgs.getRemoteHost());
+      logger.debug("rhost: {}:{}", rhost,
+                   transaction.transferArgs.getRemoteHost());
       transaction.run();
       future.awaitOrInterruptible();
       final long time2 = System.currentTimeMillis();
-      logger.debug("finish transfer: " + future.isSuccess());
+      logger.debug("finish transfer: {}", future.isSuccess());
       final long delay = time2 - time1;
       final R66Result result = future.getResult();
       final OutputFormat outputFormat =
@@ -199,7 +199,7 @@ public class DirectTransfer extends AbstractTransfer {
         prepareOkOutputFormat(delay, result, outputFormat);
         if (transaction.normalInfoAsWarn) {
           logger.warn(outputFormat.loggerOut());
-        } else {
+        } else if (logger.isInfoEnabled()) {
           logger.info(outputFormat.loggerOut());
         }
         if (!OutputFormat.isQuiet()) {
@@ -244,8 +244,8 @@ public class DirectTransfer extends AbstractTransfer {
     } catch (final Throwable e) {
       logger.error("Exception", e);
     } finally {
-      logger.debug(
-          "finish transfer: " + future.isDone() + ':' + future.isSuccess());
+      logger
+          .debug("finish transfer: {}:{}", future.isDone(), future.isSuccess());
       if (!DetectionUtils.isJunit()) {
         networkTransaction.closeAll();
         // In case something wrong append

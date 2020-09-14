@@ -22,6 +22,8 @@ package org.waarp.openr66.protocol.it;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.netty.util.ResourceLeakDetector;
+import io.netty.util.ResourceLeakDetector.Level;
 import org.apache.commons.exec.ExecuteException;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -101,6 +103,11 @@ public abstract class ScenarioBaseLoop extends TestAbstract {
   private long usedMemory;
 
   public static void setUpBeforeClass() throws Exception {
+    if (!SystemPropertyUtil.get(IT_LONG_TEST, false)) {
+      ResourceLeakDetector.setLevel(Level.PARANOID);
+    } else {
+      ResourceLeakDetector.setLevel(Level.SIMPLE);
+    }
     final ClassLoader classLoader = ScenarioBaseLoop.class.getClassLoader();
     File file =
         new File(classLoader.getResource(RESOURCES_SERVER_1_XML).getFile());
