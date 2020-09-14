@@ -316,7 +316,7 @@ public class FileMonitor {
   private void createChkFile() {
     try {
       if (!checkFile.createNewFile()) {
-        logger.debug("Cannot create Check File");
+        logger.info("Cannot create Check File");
       }
     } catch (final IOException ignored) {
       SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
@@ -325,7 +325,7 @@ public class FileMonitor {
 
   private void deleteChkFile() {
     if (!checkFile.delete()) {
-      logger.debug("Cannot delete Check File");
+      logger.info("Cannot delete Check File");
     }
   }
 
@@ -581,7 +581,7 @@ public class FileMonitor {
     }
     synchronized (directories) {
       for (final File directory : directories) {
-        logger.info("Scan: " + directory);
+        logger.info("Scan: {}", directory);
         fileItemsChanged = checkOneDir(fileItemsChanged, directory);
       }
     }
@@ -726,14 +726,14 @@ public class FileMonitor {
             continue;
           }
         }
-        logger.debug("File check: " + fileItem);
+        logger.debug("File check: {}", fileItem);
         final long size = fileItem.file.length();
         if (size != fileItem.size) {
           // changed or second size check
           fileItem.size = size;
           fileItemsChanged = true;
           fileItem.status = Status.CHANGING;
-          logger.debug("File Size check: " + fileItem + "(" + size + ")");
+          logger.debug("File Size check: {}({})", fileItem, size);
           continue;
         }
         final long lastTimeModified = fileItem.file.lastModified();
@@ -745,8 +745,7 @@ public class FileMonitor {
           }
           fileItemsChanged = true;
           fileItem.status = Status.CHANGING;
-          logger.debug(
-              "File Change check: " + fileItem + "(" + lastTimeModified + ")");
+          logger.debug("File Change check: {}({})", fileItem, lastTimeModified);
           continue;
         }
         // now check Hash or third time
@@ -757,14 +756,14 @@ public class FileMonitor {
             fileItem.hash = hash;
             fileItemsChanged = true;
             fileItem.status = Status.CHANGING;
-            logger.debug("File Hash0 check: " + fileItem);
+            logger.debug("File Hash0 check: {}", fileItem);
             continue;
           }
           if (!Arrays.equals(hash, fileItem.hash)) {
             fileItem.hash = hash;
             fileItemsChanged = true;
             fileItem.status = Status.CHANGING;
-            logger.debug("File Hash1 check: " + fileItem);
+            logger.debug("File Hash1 check: {}", fileItem);
             continue;
           } else {
             setIfAlreadyUsed(fileItem, fileItem.status != Status.DONE);
@@ -776,18 +775,18 @@ public class FileMonitor {
           if (!ignoreAlreadyUsed && fileItem.used &&
               fileItem.specialId != DbConstant.ILLEGALVALUE) {
             if (fileItem.status != Status.RESTART) {
-              logger.debug("File Ignore check: " + fileItem);
+              logger.debug("File Ignore check: {}", fileItem);
               toIgnore = true;
             }
           }
-          logger.debug("File Run check: " + fileItem);
+          logger.debug("File Run check: {}", fileItem);
           // now time and hash are the same so act on it
           fileItem.timeUsed = System.currentTimeMillis();
           if (commandValidFileFactory != null) {
             final FileMonitorCommandRunnableFuture torun =
                 commandValidFileFactory.create(fileItem);
             if (!torun.checkFileItemBusiness(fileItem)) {
-              logger.debug("File Ignore Business check: " + fileItem);
+              logger.debug("File Ignore Business check: {}", fileItem);
               continue;
             }
             if (toIgnore) {
@@ -801,7 +800,7 @@ public class FileMonitor {
             }
           } else if (commandValidFile != null) {
             if (!commandValidFile.checkFileItemBusiness(fileItem)) {
-              logger.debug("File Ignore Business check: " + fileItem);
+              logger.debug("File Ignore Business check: {}", fileItem);
               continue;
             }
             if (toIgnore) {

@@ -20,6 +20,8 @@
 
 package org.waarp.openr66.protocol.it;
 
+import io.netty.util.ResourceLeakDetector;
+import io.netty.util.ResourceLeakDetector.Level;
 import org.junit.AfterClass;
 import org.junit.Assume;
 import org.junit.Before;
@@ -91,6 +93,11 @@ public abstract class ScenarioBaseBigFile extends TestAbstract {
   private long usedMemory;
 
   public static void setUpBeforeClass() throws Exception {
+    if (!SystemPropertyUtil.get(IT_LONG_TEST, false)) {
+      ResourceLeakDetector.setLevel(Level.PARANOID);
+    } else {
+      ResourceLeakDetector.setLevel(Level.SIMPLE);
+    }
     final ClassLoader classLoader = ScenarioBaseBigFile.class.getClassLoader();
     File file =
         new File(classLoader.getResource(RESOURCES_SERVER_1_XML).getFile());

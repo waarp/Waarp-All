@@ -180,17 +180,16 @@ public abstract class AbstractBusinessRequest implements Runnable {
      * rhost, networkTransaction, packet); transaction.run(); future.awaitUninterruptibly()
      */
     final long time2 = System.currentTimeMillis();
-    logger.debug("Finish Business Request: " + future.isSuccess());
+    logger.debug("Finish Business Request: {}", future.isSuccess());
     final long delay = time2 - time1;
     if (future.isSuccess()) {
       logger.info(
-          "Business Request in status: SUCCESS" + "    <REMOTE>" + rhost +
-          "</REMOTE>" + "    delay: " + delay);
+          "Business Request in status: SUCCESS    <REMOTE>{}</REMOTE>    delay: {}",
+          rhost, delay);
     } else {
       logger.info(
-          "Business Request in status: FAILURE" + "    <REMOTE>" + rhost +
-          "</REMOTE>" + "    <ERROR>" + future.getCause() + "</ERROR>" +
-          "    delay: " + delay);
+          "Business Request in status: FAILURE    <REMOTE>{}</REMOTE>    <ERROR>{}</ERROR>    delay: {}",
+          rhost, future.getCause(), delay);
       if (DetectionUtils.isJunit()) {
         return;
       }

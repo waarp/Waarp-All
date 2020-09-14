@@ -379,7 +379,7 @@ public class RequestPacket extends AbstractLocalPacket {
       throw new OpenR66ProtocolPacketException(NOT_ENOUGH_DATA);
     }
     if (lcr.getPartner() != null && lcr.getPartner().useJson()) {
-      logger.debug("Request will use JSON " + lcr.getPartner());
+      logger.debug("Request will use JSON {}", lcr.getPartner());
       final ObjectNode node = JsonHandler.createObjectNode();
       JsonHandler.setValue(node, FIELDS.rule, rulename);
       JsonHandler.setValue(node, FIELDS.mode, mode);

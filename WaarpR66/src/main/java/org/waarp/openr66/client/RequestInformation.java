@@ -311,7 +311,7 @@ public class RequestInformation implements Runnable {
         }
         if (requestInformation.normalInfoAsWarn) {
           logger.warn(outputFormat.loggerOut());
-        } else {
+        } else if (logger.isInfoEnabled()) {
           logger.info(outputFormat.loggerOut());
         }
         if (!OutputFormat.isQuiet()) {

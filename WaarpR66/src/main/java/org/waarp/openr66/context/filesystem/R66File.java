@@ -108,7 +108,7 @@ public class R66File extends FilesystemBasedFileImpl {
         getSession().getLocalChannelReference();
     FilesystemBasedDigest digestGlobal = null;
     FilesystemBasedDigest digestBlock = ((R66Session) session).getDigestBlock();
-    logger.debug("File to retrieve: " + this);
+    logger.debug("File to retrieve: {}", this);
     DataBlock block = null;
     try {
       if (!isReady) {
@@ -284,7 +284,7 @@ public class R66File extends FilesystemBasedFileImpl {
   public boolean canRead() throws CommandAbstractException {
     if (isExternal) {
       final File file = new File(currentFile);
-      logger.debug("Final File: " + file + " CanRead: " + file.canRead());
+      logger.debug("Final File: {} CanRead: {}", file, file.canRead());
       return file.canRead();
     }
     return super.canRead();

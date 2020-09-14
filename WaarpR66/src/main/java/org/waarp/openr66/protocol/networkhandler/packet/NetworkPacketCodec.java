@@ -105,7 +105,6 @@ public class NetworkPacketCodec extends ByteToMessageCodec<NetworkPacket> {
   protected void encode(final ChannelHandlerContext ctx,
                         final NetworkPacket msg, final ByteBuf out)
       throws Exception {
-    logger.trace("TRACE ID sending network packet {}", msg);
     final ByteBuf finalBuf = msg.getNetworkPacket();
     out.writeBytes(finalBuf);
     WaarpNettyUtil.releaseCompletely(finalBuf);

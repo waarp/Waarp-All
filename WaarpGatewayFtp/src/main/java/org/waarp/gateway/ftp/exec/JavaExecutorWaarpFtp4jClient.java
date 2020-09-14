@@ -107,206 +107,8 @@ public class JavaExecutorWaarpFtp4jClient implements GatewayRunnable {
    * (get,put,append) <br> [-post extraCommand2 with ',' as separator of arguments]" <br>
    **/
   @Override
-  /*public void run() {
-    logger.info("FtpTransfer with " + args.length + " arguments");
-    if (args.length < 10) {
-      status = -1;
-      logger.error("Not enough arguments");
-      return;
-    }
-    String filepath = null;
-    String filename = null;
-    String requested = null;
-    int port = 21;
-    String user = null;
-    String pwd = null;
-    String acct = null;
-    boolean isPassive = true;
-    int ssl = 0; // -1 native, 1 auth
-    String cwd = null;
-    int digest = 0; // 1 CRC, 2 MD5, 3 SHA1
-    String command;
-    int codeCommand = 0; // -1 get, 1 put, 2 append
-    String preArgs = null;
-    String postArgs = null;
-    for (int i = 0; i < args.length; i++) {
-      if ("-file".equalsIgnoreCase(args[i])) {
-        i++;
-        filepath = args[i];
-        filename = new File(filepath).getName();
-      } else if ("-to".equalsIgnoreCase(args[i])) {
-        i++;
-        requested = args[i];
-      } else if ("-port".equalsIgnoreCase(args[i])) {
-        i++;
-        port = Integer.parseInt(args[i]);
-      } else if ("-user".equalsIgnoreCase(args[i])) {
-        i++;
-        user = args[i];
-      } else if ("-pwd".equalsIgnoreCase(args[i])) {
-        i++;
-        pwd = args[i];
-      } else if ("-account".equalsIgnoreCase(args[i])) {
-        i++;
-        acct = args[i];
-      } else if ("-mode".equalsIgnoreCase(args[i])) {
-        i++;
-        isPassive = "passive".equalsIgnoreCase(args[i]);
-      } else if ("-ssl".equalsIgnoreCase(args[i])) {
-        i++;
-        if ("implicit".equalsIgnoreCase(args[i])) {
-          ssl = -1;
-        } else if ("explicit".equalsIgnoreCase(args[i])) {
-          ssl = 1;
-        } else {
-          ssl = 0;
-        }
-      } else if ("-cwd".equalsIgnoreCase(args[i])) {
-        i++;
-        cwd = args[i];
-      } else if ("-digest".equalsIgnoreCase(args[i])) {
-        i++;
-        if ("crc".equalsIgnoreCase(args[i])) {
-          digest = 1;
-        } else if ("md5".equalsIgnoreCase(args[i])) {
-          digest = 2;
-        } else if ("sha1".equalsIgnoreCase(args[i])) {
-          digest = 3;
-        } else {
-          digest = 0;
-        }
-      } else if ("-pre".equalsIgnoreCase(args[i])) {
-        i++;
-        preArgs = args[i].replace(',', ' ');
-      } else if ("-post".equalsIgnoreCase(args[i])) {
-        i++;
-        postArgs = args[i].replace(',', ' ');
-      } else if ("-command".equalsIgnoreCase(args[i])) {
-        i++;
-        command = args[i];
-        // get,put,append,list
-        // -1 get, 1 put, 2 append
-        if ("get".equalsIgnoreCase(command)) {
-          codeCommand = -1;
-        } else if ("put".equalsIgnoreCase(command)) {
-          codeCommand = 1;
-        } else if ("append".equalsIgnoreCase(command)) {
-          codeCommand = 2;
-        } else {
-          // error
-          codeCommand = 0;
-        }
-      }
-    }
-    if (filepath == null || requested == null || port <= 0 || user == null ||
-        pwd == null || codeCommand == 0) {
-      status = -2;
-      final int code = (filepath == null? 1 : 0) + (requested == null? 10 : 0) +
-                       (port <= 0? 100 : 0) + (user == null? 1000 : 0) +
-                       (pwd == null? 10000 : 0) +
-                       (codeCommand == 0? 100000 : 0);
-      logger.error("Not enough arguments: " + code);
-      return;
-    }
-    int timeout = 30000;
-    if (delay > 1000) {
-      timeout = delay;
-    }
-    final WaarpFtp4jClient ftpClient =
-        new WaarpFtp4jClient(requested, port, user, pwd, acct, isPassive, ssl,
-                             5000, timeout);
-    boolean connected = false;
-    for (int i = 0; i < 3; i++) {
-      if (ftpClient.connect()) {
-        connected = true;
-        break;
-      }
-    }
-    if (!connected) {
-      status = -3;
-      logger.error(ftpClient.getResult());
-      return;
-    }
-    try {
-      if (cwd != null && !ftpClient.changeDir(cwd)) {
-        ftpClient.makeDir(cwd);
-        if (!ftpClient.changeDir(cwd)) {
-          logger.warn("Cannot change od directory: " + cwd);
-        }
-      }
-      if (preArgs != null) {
-        final String[] result = ftpClient.executeCommand(preArgs);
-        for (final String string : result) {
-          logger.debug("PRE: " + string);
-        }
-      }
-      if (!ftpClient.transferFile(filepath, filename, codeCommand)) {
-        status = -4;
-        logger.error(ftpClient.getResult());
-        return;
-      }
-      if (digest > 0) {
-        // digest check
-        String params;
-        DigestAlgo algo;
-        switch (digest) {
-          case 1: // CRC
-            params = "XCRC ";
-            algo = DigestAlgo.CRC32;
-            break;
-          case 2: // MD5
-            params = "XMD5 ";
-            algo = DigestAlgo.MD5;
-            break;
-          case 3: // SHA1
-          default:
-            params = "XSHA1 ";
-            algo = DigestAlgo.SHA1;
-            break;
-        }
-        params += filename;
-        String[] values = ftpClient.executeCommand(params);
-        String hashresult = null;
-        if (values != null) {
-          values = BLANK.split(values[0]);
-          hashresult = values.length > 3? values[1] : values[0];
-        }
-        if (hashresult == null) {
-          status = -5;
-          logger.error("Hash cannot be computed: " + ftpClient.getResult());
-          return;
-        }
-        // now check locally
-        String hash;
-        try {
-          hash = FilesystemBasedDigest.getHex(
-              FilesystemBasedDigest.getHash(new File(filepath), false, algo));
-        } catch (final IOException e) {
-          hash = null;
-        }
-        if (hash == null || !hash.equalsIgnoreCase(hashresult)) {
-          status = -6;
-          logger.error("Hash not equal: " + ftpClient.getResult());
-          return;
-        }
-      }
-      if (postArgs != null) {
-        final String[] result = ftpClient.executeCommand(postArgs);
-        for (final String string : result) {
-          logger.debug("POST: " + string);
-        }
-      }
-    } finally {
-      ftpClient.logout();
-    }
-    logger.info(
-        "FTP transfer in\n    SUCCESS\n    " + filepath + "\n    <REMOTE>" +
-        requested + "</REMOTE>");
-    status = 0;
-  }*/
-
   public void run() {
-    logger.info("FtpTransfer with " + args.length + " arguments");
+    logger.info("FtpTransfer with {} arguments", args.length);
     final FtpArgs ftpArgs;
     try {
       ftpArgs = FtpArgs.getFtpArgs(args);
@@ -346,7 +148,7 @@ public class JavaExecutorWaarpFtp4jClient implements GatewayRunnable {
       if (ftpArgs.getPreArgs() != null) {
         final String[] result = ftpClient.executeCommand(ftpArgs.getPreArgs());
         for (final String string : result) {
-          logger.debug("PRE: " + string);
+          logger.debug("PRE: {}", string);
         }
       }
       if (!ftpClient.transferFile(ftpArgs.getFilepath(), ftpArgs.getFilename(),
@@ -384,14 +186,14 @@ public class JavaExecutorWaarpFtp4jClient implements GatewayRunnable {
       if (ftpArgs.getPostArgs() != null) {
         final String[] result = ftpClient.executeCommand(ftpArgs.getPostArgs());
         for (final String string : result) {
-          logger.debug("POST: " + string);
+          logger.debug("POST: {}", string);
         }
       }
     } finally {
       ftpClient.logout();
     }
-    logger.info("FTP transfer in\n    SUCCESS\n    " + ftpArgs.getFilepath() +
-                "\n    <REMOTE>" + ftpArgs.getRequested() + "</REMOTE>");
+    logger.info("FTP transfer in\n    SUCCESS\n    {}\n    <REMOTE>{}</REMOTE>",
+                ftpArgs.getFilepath(), ftpArgs.getRequested());
     status = 0;
   }
 

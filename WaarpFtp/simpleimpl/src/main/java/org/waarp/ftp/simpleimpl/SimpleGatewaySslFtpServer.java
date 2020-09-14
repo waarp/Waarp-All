@@ -93,7 +93,7 @@ public class SimpleGatewaySslFtpServer {
                    (configuration.getFtpInternalConfiguration()
                                  .isUsingNativeSsl()? "SSL" : "AUTH"), e);
     }
-    logger.info("FTP started: Mode " +
+    logger.info("FTP started: Mode {}",
                 (configuration.getFtpInternalConfiguration().isUsingNativeSsl()?
                     "SSL" : "AUTH"));
   }

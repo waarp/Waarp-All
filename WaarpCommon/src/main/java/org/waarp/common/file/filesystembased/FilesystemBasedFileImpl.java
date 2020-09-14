@@ -187,7 +187,7 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
     }
     final String truedir = auth.getAbsolutePath(newdir);
     final File file = new File(truedir);
-    logger.debug("Final File: " + truedir + " CanRead: " + file.canRead());
+    logger.debug("Final File: {} CanRead: {}", truedir, file.canRead());
     return file;
   }
 
@@ -665,7 +665,7 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
         logger.error("Change position in getFileOutputStream:", e);
         return null;
       }
-      logger.debug("New size: " + trueFile.length() + " : " + position);
+      logger.debug("New size: {}:{}", trueFile.length(), position);
     }
     final FileOutputStream fos;
     try {

@@ -54,9 +54,8 @@ public class RenameTask extends AbstractTask {
                                                                      .replace(
                                                                          '\\',
                                                                          '/');
-    logger.debug(
-        "Rename to " + finalname + " with " + argRule + ':' + argTransfer +
-        " and {}", session);
+    logger.debug("Rename to {} with {}:{} and {}", finalname, argRule,
+                 argTransfer, session);
     try {
       session.getFile().replaceFilename(finalname, true);
       success = true;

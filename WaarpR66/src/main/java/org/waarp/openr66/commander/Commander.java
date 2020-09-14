@@ -49,7 +49,7 @@ public class Commander implements CommanderInterface {
   private static final String DATABASE_ERROR_CANNOT_EXECUTE_COMMANDER =
       "Database Error: Cannot execute Commander";
 
-  private static final String CONFIG = "Config ";
+  private static final String CONFIG = "Config {}";
 
   private static final String DATABASE_SQL_ERROR_CANNOT_EXECUTE_COMMANDER =
       "Database SQL Error: Cannot execute Commander";
@@ -185,7 +185,7 @@ public class Commander implements CommanderInterface {
         }
         return;
       }
-      logger.debug("Before " + multipleMonitor);
+      logger.debug("Before {}", multipleMonitor);
       boolean shallReturnInCaseError = true;
       try {
         // First check Configuration
@@ -277,7 +277,7 @@ public class Commander implements CommanderInterface {
       if (multipleMonitor != null) {
         try {
           // Now update and Commit so releasing the lock
-          logger.debug("Update " + multipleMonitor);
+          logger.debug("Update {}", multipleMonitor);
           multipleMonitor.update();
           noCommitAdmin.getSession().commit();
         } catch (final WaarpDatabaseException e) {
@@ -309,10 +309,10 @@ public class Commander implements CommanderInterface {
           configuration
               .changeUpdatedInfo(AbstractDbData.UpdatedInfo.NOTUPDATED);
           configuration.update();
-          logger.debug(CONFIG + multipleMonitor);
+          logger.debug(CONFIG, multipleMonitor);
         } else {
           configuration.update();
-          logger.debug(CONFIG + multipleMonitor);
+          logger.debug(CONFIG, multipleMonitor);
         }
       } else {
         configuration.changeUpdatedInfo(AbstractDbData.UpdatedInfo.NOTUPDATED);
@@ -339,10 +339,10 @@ public class Commander implements CommanderInterface {
           configuration
               .changeUpdatedInfo(AbstractDbData.UpdatedInfo.NOTUPDATED);
           configuration.update();
-          logger.debug(CONFIG + multipleMonitor);
+          logger.debug(CONFIG, multipleMonitor);
         } else {
           configuration.update();
-          logger.debug(CONFIG + multipleMonitor);
+          logger.debug(CONFIG, multipleMonitor);
         }
       } else {
         configuration.changeUpdatedInfo(AbstractDbData.UpdatedInfo.NOTUPDATED);
@@ -375,7 +375,7 @@ public class Commander implements CommanderInterface {
           // Nothing to do except validate
         }
         hostAuth.update();
-        logger.debug("Host " + multipleMonitor);
+        logger.debug("Host {}", multipleMonitor);
       } else {
         // Nothing to do except validate
         hostAuth.changeUpdatedInfo(AbstractDbData.UpdatedInfo.NOTUPDATED);
@@ -406,7 +406,7 @@ public class Commander implements CommanderInterface {
           // Nothing to do except validate
         }
         rule.update();
-        logger.debug("Rule " + multipleMonitor);
+        logger.debug("Rule {}", multipleMonitor);
       } else {
         // Nothing to do except validate
         rule.changeUpdatedInfo(AbstractDbData.UpdatedInfo.NOTUPDATED);

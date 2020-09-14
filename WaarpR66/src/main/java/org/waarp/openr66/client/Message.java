@@ -153,8 +153,8 @@ public class Message implements Runnable {
       host = hostAuth;
     }
     if (host == null) {
-      logger.debug(
-          Messages.getString("Message.HostNotFound") + requested); //$NON-NLS-1$
+      logger.info("{} {}", Messages.getString("Message.HostNotFound"),
+                  requested); //$NON-NLS-1$
       final R66Result result =
           new R66Result(null, true, ErrorCode.ConnectionImpossible, null);
       future.setResult(result);
@@ -177,8 +177,8 @@ public class Message implements Runnable {
         .createConnectionWithRetry(socketAddress, isSSL, future);
     socketAddress = null;
     if (localChannelReference == null) {
-      logger.debug(Messages.getString("AdminR66OperationsGui.188") +
-                   requested); //$NON-NLS-1$
+      logger.info("{} {}", Messages.getString("AdminR66OperationsGui.188"),
+                  requested); //$NON-NLS-1$
       final R66Result result =
           new R66Result(null, true, ErrorCode.ConnectionImpossible, null);
       future.setResult(result);

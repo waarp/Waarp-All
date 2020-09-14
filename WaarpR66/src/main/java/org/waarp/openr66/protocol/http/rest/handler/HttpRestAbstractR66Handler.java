@@ -89,8 +89,7 @@ public abstract class HttpRestAbstractR66Handler extends RestMethodHandler {
                             final RestArgument result)
       throws HttpIncorrectRequestException {
     // should not be
-    logger.debug(
-        "debug: " + data.getName() + ':' + data.getHttpDataType().name());
+    logger.debug("debug: {}:{}", data.getName(), data.getHttpDataType().name());
   }
 
   protected void setError(final HttpRestHandler handler,

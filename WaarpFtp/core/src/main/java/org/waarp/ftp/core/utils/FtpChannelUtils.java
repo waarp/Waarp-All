@@ -382,7 +382,6 @@ public class FtpChannelUtils implements Runnable {
    */
   public static void addCommandChannel(final Channel channel,
                                        final FtpConfiguration configuration) {
-    // logger.debug("Add Command Channel {}", channel)
     configuration.getFtpInternalConfiguration().getCommandChannelGroup()
                  .add(channel);
   }
@@ -395,7 +394,6 @@ public class FtpChannelUtils implements Runnable {
    */
   public static void addDataChannel(final Channel channel,
                                     final FtpConfiguration configuration) {
-    // logger.debug("Add Data Channel {}", channel)
     configuration.getFtpInternalConfiguration().getDataChannelGroup()
                  .add(channel);
   }

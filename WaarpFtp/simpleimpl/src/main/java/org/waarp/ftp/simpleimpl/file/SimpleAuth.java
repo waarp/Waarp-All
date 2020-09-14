@@ -96,7 +96,7 @@ public class SimpleAuth {
       return true;
     }
     if (account == null) {
-      logger.debug("No account given");
+      logger.info("No account given");
       return false;
     }
     for (final String acct : accounts) {
@@ -105,7 +105,7 @@ public class SimpleAuth {
         return true;
       }
     }
-    logger.debug("No account found");
+    logger.info("No account found");
     return false;
   }
 

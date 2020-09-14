@@ -353,7 +353,7 @@ public class LocalExecServerHandler
       if (watchdog != null) {
         watchdog.stop();
       }
-      logger.info("End of Command: " + msg + " : " + response);
+      logger.info("End of Command: {}:{}", msg, response);
       ctx.channel().writeAndFlush(LocalExecDefaultResult.ENDOFCOMMAND + '\n');
     }
   }

@@ -860,7 +860,7 @@ public class Configuration {
       DbTaskRunner.updateLruCacheTimeout(getTimeLimitCache());
     }
     WaarpShutdownHook.addShutdownHook();
-    logger.debug("Use NoSSL: " + isUseNOSSL() + " Use SSL: " + isUseSSL());
+    logger.debug("Use NoSSL: {} Use SSL: {}", isUseNOSSL(), isUseSSL());
     if (!isUseNOSSL() && !isUseSSL()) {
       logger.error(Messages.getString("Configuration.NoSSL")); //$NON-NLS-1$
       if (DetectionUtils.isJunit()) {

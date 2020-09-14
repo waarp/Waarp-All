@@ -114,10 +114,10 @@ public class PartnerConfiguration {
       sep = BLANK_SEPARATOR_FIELD;
     }
     if (isVersion2GEQVersion1(R66Versions.V2_4_17.getVersion(), version)) {
-      logger.debug("UseJson for " + id + ':' + json);
+      logger.debug("UseJson for {}:{}", id, json);
       useJson = true;
     } else {
-      logger.debug("NOT UseJson for " + id + ':' + json);
+      logger.debug("NOT UseJson for {}:{}", id, json);
       useJson = false;
     }
     if (isVersion2GEQVersion1(R66Versions.V3_0_4.getVersion(), version)) {
@@ -136,7 +136,7 @@ public class PartnerConfiguration {
       Configuration.configuration.setBlacklistBadAuthent(false);
     }
     digestAlgo = getDigestAlgoInternal();
-    logger.debug("Info on HostId: " + root);
+    logger.debug("Info on HostId: {}", root);
   }
 
   /**
@@ -158,7 +158,7 @@ public class PartnerConfiguration {
     JsonHandler.setValue(root, FIELDS.SEPARATOR, getSEPARATOR_FIELD());
     useJson = true;
     digestAlgo = getDigestAlgoInternal();
-    logger.debug("Info on HostId: " + root);
+    logger.debug("Info on HostId: {}", root);
   }
 
   /**
@@ -265,7 +265,7 @@ public class PartnerConfiguration {
    * @return the separator to be used
    */
   public static final String getSeparator(final String remoteHost) {
-    logger.debug("Versions: search: " + remoteHost + " in {}",
+    logger.debug("Versions: search: {} in {}", remoteHost,
                  Configuration.configuration.getVersions());
     final PartnerConfiguration partner =
         Configuration.configuration.getVersions().get(remoteHost);
@@ -306,9 +306,8 @@ public class PartnerConfiguration {
                                                               rank1 == rank2 &&
                                                               subversion1 <=
                                                               subversion2);
-    logger.trace(
-        "1: " + major1 + ':' + rank1 + ':' + subversion1 + " <=? " + major2 +
-        ':' + rank2 + ':' + subversion2 + " = " + (b));
+    logger.trace("1: {}:{}:{} <=? {}:{}:{} = {}", major1, rank1, subversion1,
+                 major2, rank2, subversion2, b);
     return b;
   }
 
@@ -343,9 +342,8 @@ public class PartnerConfiguration {
                                                               rank1 == rank2 &&
                                                               subversion1 <
                                                               subversion2);
-    logger.debug(
-        "1: " + major1 + ':' + rank1 + ':' + subversion1 + " <? " + major2 +
-        ':' + rank2 + ':' + subversion2 + " = " + (b));
+    logger.debug("1: {}:{}:{} <? {}:{}:{} = {}", major1, rank1, subversion1,
+                 major2, rank2, subversion2, b);
     return b;
   }
 
@@ -355,13 +353,15 @@ public class PartnerConfiguration {
    * @return True if this host is referenced as using Json
    */
   public static final boolean useJson(final String host) {
-    logger.debug("UseJson host: '" + host + "':" +
-                 (Configuration.configuration.getVersions().containsKey(host)?
-                     Configuration.configuration.getVersions().get(host)
-                                                .useJson() : "no:" +
-                                                             ((Map<String, PartnerConfiguration>) Configuration.configuration
-                                                                 .getVersions())
-                                                                 .keySet()));
+    if (logger.isDebugEnabled()) {
+      logger.debug("UseJson host: '{}':{}", host,
+                   Configuration.configuration.getVersions().containsKey(host)?
+                       Configuration.configuration.getVersions().get(host)
+                                                  .useJson() : "no:" +
+                                                               ((Map<String, PartnerConfiguration>) Configuration.configuration
+                                                                   .getVersions())
+                                                                   .keySet());
+    }
     return Configuration.configuration.getVersions().containsKey(host) &&
            Configuration.configuration.getVersions().get(host).useJson();
   }

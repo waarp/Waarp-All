@@ -237,7 +237,6 @@ public class HttpDownloadSession extends HttpSessionAbstract {
    * @return the previously hash if computed, else null
    */
   public String getComputedHadh() {
-    logger.trace("Runner {}", session.getRunner());
     final String hash = (String) session.getRunner().getFromTransferMap(HASH);
     logger.debug("Found {}", hash);
     return hash;

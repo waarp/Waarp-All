@@ -83,7 +83,7 @@ public class RestVersionHandler
   @Override
   protected void channelRead0(final ChannelHandlerContext ctx,
                               final FullHttpRequest request) {
-    logger.debug(request.method() + " received on " + request.uri());
+    logger.debug("{} received on {}", request.method(), request.uri());
 
     if (request.uri().startsWith(VERSION_PREFIX)) {
       if (ctx.pipeline().get(V1_HANDLER) != null) {

@@ -84,7 +84,7 @@ public class DbPreparedStatement {
           PREPARED_STATEMENT_NO_SESSION);
     }
     if (ls.isDisActive()) {
-      logger.debug("DisActive: " + ls.getAdmin().getServer());
+      logger.debug("DisActive: {}", ls.getAdmin().getServer());
       ls.checkConnection();
     }
     this.ls = ls;
@@ -219,7 +219,7 @@ public class DbPreparedStatement {
       close();
     }
     if (ls.isDisActive()) {
-      logger.debug("DisActive: " + ls.getAdmin().getServer());
+      logger.debug("DisActive: {}", ls.getAdmin().getServer());
       ls.checkConnection();
     }
     try {
@@ -323,7 +323,7 @@ public class DbPreparedStatement {
     } catch (final SQLException e) {
       logger.error(
           "SQL Exception executeUpdate:" + request + ' ' + e.getMessage());
-      logger.debug("SQL Exception full stack trace", e);
+      logger.info("SQL Exception full stack trace", e);
       DbSession.error(e);
       ls.checkConnectionNoException();
       throw new WaarpDatabaseSqlException(

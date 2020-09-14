@@ -48,7 +48,7 @@ public class SslNetworkHandler extends NetworkHandler {
   public void channelRegistered(final ChannelHandlerContext ctx)
       throws Exception {
     final Channel channel = ctx.channel();
-    logger.debug("Add channel to ssl " + channel);
+    logger.debug("Add channel to ssl {}", channel);
     WaarpSslUtility.addSslOpenedChannel(channel);
     getFtpSession().prepareSsl();
     super.channelRegistered(ctx);

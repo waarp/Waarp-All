@@ -109,7 +109,7 @@ public class NetworkServerHandler
       proxyChannel = bridge.getSource().getNetworkChannel();
     }
     clientFuture.setSuccess();
-    logger.debug("setBridge: " + isServer + ' ' + (bridge != null?
+    logger.info("setBridge: {} {}", isServer, (bridge != null?
         bridge.getProxyEntry() + " proxyChannelId: " + proxyChannel.id() :
         "nobridge"));
   }
@@ -294,13 +294,13 @@ public class NetworkServerHandler
         ChannelCloseTimer.closeFutureChannel(channel);
         return;
       } else if (exception instanceof OpenR66ProtocolNoConnectionException) {
-        logger.debug("Connection impossible with NETWORK channel {}",
-                     exception.getMessage());
+        logger.info("Connection impossible with NETWORK channel {}",
+                    exception.getMessage());
         channel.close();
         return;
       } else {
-        logger.debug("Network Channel Exception: {} {}", channel.id(),
-                     exception.getMessage());
+        logger.info("Network Channel Exception: {} {}", channel.id(),
+                    exception.getMessage());
       }
       final ConnectionErrorPacket errorPacket =
           new ConnectionErrorPacket(exception.getMessage(), null);

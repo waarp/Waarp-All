@@ -826,7 +826,7 @@ public final class Base64 {
                                     final int options) throws IOException {
 
     if (serializableObject == null) {
-      throw new NullPointerException("Cannot serialize a null object.");
+      throw new IllegalArgumentException("Cannot serialize a null object.");
     } // end if: null
 
     // Streams
@@ -1076,7 +1076,7 @@ public final class Base64 {
       throws IOException {
 
     if (source == null) {
-      throw new NullPointerException("Cannot serialize a null array.");
+      throw new IllegalArgumentException("Cannot serialize a null array.");
     } // end if: null
 
     if (off < 0) {
@@ -1209,10 +1209,10 @@ public final class Base64 {
 
     // Lots of error checking and exception throwing
     if (source == null) {
-      throw new NullPointerException("Source array was null.");
+      throw new IllegalArgumentException("Source array was null.");
     } // end if
     if (destination == null) {
-      throw new NullPointerException("Destination array was null.");
+      throw new IllegalArgumentException("Destination array was null.");
     } // end if
     if (srcOffset < 0 || srcOffset + 3 >= source.length) {
       throw new IllegalArgumentException(String.format(
@@ -1310,7 +1310,7 @@ public final class Base64 {
 
     // Lots of error checking and exception throwing
     if (source == null) {
-      throw new NullPointerException("Cannot decode null source array.");
+      throw new IllegalArgumentException("Cannot decode null source array.");
     } // end if
     if (off < 0 || off + len > source.length) {
       throw new IllegalArgumentException(String.format(
@@ -1404,7 +1404,7 @@ public final class Base64 {
       throws IOException {
 
     if (s == null) {
-      throw new NullPointerException("Input string was null.");
+      throw new IllegalArgumentException("Input string was null.");
     } // end if
 
     byte[] bytes;
@@ -1571,7 +1571,7 @@ public final class Base64 {
                                   final String filename) throws IOException {
 
     if (dataToEncode == null) {
-      throw new NullPointerException("Data to encode was null.");
+      throw new IllegalArgumentException("Data to encode was null.");
     } // end iff
 
     InnerOutputStream bos = null;

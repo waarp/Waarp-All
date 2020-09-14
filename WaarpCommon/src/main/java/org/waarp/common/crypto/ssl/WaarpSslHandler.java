@@ -48,6 +48,6 @@ public class WaarpSslHandler extends SslHandler {
   public void handlerAdded(final ChannelHandlerContext ctx) throws Exception {
     ctx.channel().config().setAutoRead(true);
     super.handlerAdded(ctx);
-    logger.debug("Ssl Handler added: " + ctx.channel());
+    logger.debug("Ssl Handler added: {}", ctx.channel());
   }
 }

@@ -125,7 +125,7 @@ public class HttpRestTestHandler extends HttpRestHandler {
                                         new DbTransferLogDataModelRestMethodHandler(
                                             restConfiguration, methods));
     }
-    logger.debug("Initialized handler: " + RESTHANDLERS.values().length);
+    logger.debug("Initialized handler: {}", RESTHANDLERS.values().length);
   }
 
   @Override

@@ -372,7 +372,7 @@ public class SpooledDirectoryTransfer implements Runnable {
               logger.warn("Will inform back Waarp hosts of current history: " +
                           monitorArg.getCurrentHistoryNb());
             } else {
-              logger.info("Will inform back Waarp hosts of current history: " +
+              logger.info("Will inform back Waarp hosts of current history: {}",
                           monitorArg.getCurrentHistoryNb());
             }
             for (String host : waarpHosts) {
@@ -387,7 +387,7 @@ public class SpooledDirectoryTransfer implements Runnable {
                 transaction.run();
                 r66Future.awaitOrInterruptible();
                 if (!r66Future.isSuccess()) {
-                  logger.info("Can't inform Waarp server: " + host + " since " +
+                  logger.info("Can't inform Waarp server: {} since {}", host,
                               r66Future.getCause());
                 } else {
                   final R66Result result = r66Future.getResult();
@@ -399,7 +399,7 @@ public class SpooledDirectoryTransfer implements Runnable {
                       monitorArg.setNextAsFullStatus();
                     }
                   }
-                  logger.debug("Inform back Waarp hosts over for: " + host);
+                  logger.debug("Inform back Waarp hosts over for: {}", host);
                 }
               }
             }
@@ -555,7 +555,7 @@ public class SpooledDirectoryTransfer implements Runnable {
       }
       // If retry indefinitely is useful transaction.setLimitRetryConnection(true)
       transaction.normalInfoAsWarn = normalInfoAsWarn;
-      logger.info(text + host);
+      logger.info("{}{}", text, host);
       transaction.run();
     }
 
@@ -571,7 +571,7 @@ public class SpooledDirectoryTransfer implements Runnable {
         TransferArgs.forceAnalyzeFollow(transaction);
       }
       transaction.normalInfoAsWarn = normalInfoAsWarn;
-      logger.info(text + host);
+      logger.info("{}{}", text, host);
       transaction.run();
       return text;
     }
@@ -583,10 +583,13 @@ public class SpooledDirectoryTransfer implements Runnable {
       newSpecialId = runner.getSpecialId();
       DbTaskRunner.removeNoDbSpecialId(newSpecialId);
       if (isConnectionImpossible) {
-        logger.info(text + Messages.getString(REQUEST_INFORMATION_FAILURE) +
-                    //$NON-NLS-1$
-                    runner.toShortString() + REMOTE + host +
-                    "</REMOTE><REASON>" + errMsg + "</REASON>");
+        if (logger.isInfoEnabled()) {
+          logger.info("{}{}{}{}{}{}{}{}", text,
+                      Messages.getString(REQUEST_INFORMATION_FAILURE),
+                      //$NON-NLS-1$
+                      runner.toShortString(), REMOTE, host, "</REMOTE><REASON>",
+                      errMsg, "</REASON>");
+        }
       } else {
         logger.error(text + Messages.getString(REQUEST_INFORMATION_FAILURE) +
                      //$NON-NLS-1$
@@ -601,12 +604,12 @@ public class SpooledDirectoryTransfer implements Runnable {
                                 final R66Result r66result,
                                 final boolean isConnectionImpossible) {
       if (isConnectionImpossible) {
-        logger.info(
-            text + Messages.getString(REQUEST_INFORMATION_FAILURE) + REMOTE +
-            host + REMOTE2, r66Future.getCause());
+        logger.info("{}{}{}{}{}", text,
+                    Messages.getString(REQUEST_INFORMATION_FAILURE), REMOTE,
+                    host, REMOTE2, r66Future.getCause());
       } else {
         if (r66result.getCode() == QueryRemotelyUnknown) {
-          logger.info("Transfer not found" + REMOTE + host + REMOTE2);
+          logger.info("Transfer not found {}{}{}", REMOTE, host, REMOTE2);
           // False negative
           ko--;
           setError(getError() - 1);
@@ -640,10 +643,10 @@ public class SpooledDirectoryTransfer implements Runnable {
                 "     <REMOTE>" + host + REMOTE2 + "     <FILEFINAL>" +
                 (r66result.getFile() != null?
                     r66result.getFile() + "</FILEFINAL>" : "no file"));
-          } else {
+          } else if (logger.isInfoEnabled()) {
             logger.info(
-                text + " status: " + status + "     " + runner.toShortString() +
-                "     <REMOTE>" + host + REMOTE2 + "     <FILEFINAL>" +
+                "{} status: {}     {}     <REMOTE>{}</REMOTE>     <FILEFINAL>{}",
+                text, status, runner.toShortString(), host,
                 (r66result.getFile() != null?
                     r66result.getFile() + "</FILEFINAL>" : "no file"));
           }
@@ -663,9 +666,10 @@ public class SpooledDirectoryTransfer implements Runnable {
                         //$NON-NLS-1$
                         + REMOTE + host + REMOTE2);
           } else {
-            logger.info(text + Messages.getString("RequestInformation.Success")
+            logger.info("{}{}{}{}{}", text,
+                        Messages.getString("RequestInformation.Success"),
                         //$NON-NLS-1$
-                        + REMOTE + host + REMOTE2);
+                        REMOTE, host, REMOTE2);
           }
         }
       } else {
@@ -674,9 +678,10 @@ public class SpooledDirectoryTransfer implements Runnable {
                       //$NON-NLS-1$
                       + REMOTE + host + REMOTE2);
         } else {
-          logger.info(text + Messages.getString("RequestInformation.Success")
+          logger.info("{}{}{}{}{}", text,
+                      Messages.getString("RequestInformation.Success"),
                       //$NON-NLS-1$
-                      + REMOTE + host + REMOTE2);
+                      REMOTE, host, REMOTE2);
         }
       }
       return newSpecialId;
@@ -734,7 +739,7 @@ public class SpooledDirectoryTransfer implements Runnable {
                                       srequester, true, false, false,
                                       networkTransaction);
               transaction.normalInfoAsWarn = normalInfoAsWarn;
-              logger.info(text + host);
+              logger.info("{}{}", text, host);
               // special task
               transaction.run();
               r66Future.awaitOrInterruptible();

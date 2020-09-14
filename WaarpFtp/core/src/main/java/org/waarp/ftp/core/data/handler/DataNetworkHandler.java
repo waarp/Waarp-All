@@ -148,7 +148,7 @@ public class DataNetworkHandler extends SimpleChannelInboundHandler<DataBlock> {
   @Override
   public void channelInactive(final ChannelHandlerContext ctx)
       throws Exception {
-    logger.debug("Data Channel closed with a session ? " + (session != null));
+    logger.debug("Data Channel closed with a session ? {}", session != null);
     if (session != null) {
       if (!session.getDataConn().checkCorrectChannel(ctx.channel())) {
         for (int i = 0; i < FtpInternalConfiguration.RETRYNB; i++) {
@@ -214,7 +214,7 @@ public class DataNetworkHandler extends SimpleChannelInboundHandler<DataBlock> {
     if (session == null) {
       setSession(channel);
     }
-    logger.debug("Data Channel opened as " + channel);
+    logger.debug("Data Channel opened as {}", channel);
     if (session == null) {
       logger
           .debug("DataChannel immediately closed since no session is assigned");
@@ -225,7 +225,7 @@ public class DataNetworkHandler extends SimpleChannelInboundHandler<DataBlock> {
     dataChannel = channel;
     dataBusinessHandler.setFtpSession(getFtpSession());
     FtpChannelUtils.addDataChannel(channel, session.getConfiguration());
-    logger.debug("DataChannel connected: " + session.getReplyCode());
+    logger.debug("DataChannel connected: {}", session.getReplyCode());
     if (session.getReplyCode().getCode() >= 400) {
       // shall not be except if an error early occurs
       switch (session.getCurrentCommand().getCode()) {
@@ -234,9 +234,9 @@ public class DataNetworkHandler extends SimpleChannelInboundHandler<DataBlock> {
         case STOR:
         case STOU:
           // close the data channel immediately
-          logger.debug("DataChannel immediately closed since " +
-                       session.getCurrentCommand().getCode() +
-                       " is not ok at startup");
+          logger.info(
+              "DataChannel immediately closed since {} is not ok at startup",
+              session.getCurrentCommand().getCode());
           WaarpSslUtility.closingSslChannel(ctx.channel());
           return;
         default:
@@ -251,7 +251,7 @@ public class DataNetworkHandler extends SimpleChannelInboundHandler<DataBlock> {
       logger.debug("DataChannel fully configured");
     } else {
       // Cannot continue
-      logger.debug("Connected but no more alive so will disconnect");
+      logger.info("Connected but no more alive so will disconnect");
       session.getDataConn().getFtpTransferControl()
              .setOpenedDataChannel(null, this);
     }
@@ -297,7 +297,7 @@ public class DataNetworkHandler extends SimpleChannelInboundHandler<DataBlock> {
   public void exceptionCaught(final ChannelHandlerContext ctx,
                               final Throwable cause) throws Exception {
     if (session == null) {
-      logger.debug("Error without any session active {}", cause);
+      logger.info("Error without any session active {}", cause);
       return;
     }
     if (cause instanceof ConnectException) {
@@ -385,7 +385,7 @@ public class DataNetworkHandler extends SimpleChannelInboundHandler<DataBlock> {
         }
       }
       if (ftpTransfer == null) {
-        logger.debug("No ExecutionFtpTransfer found");
+        logger.info("No ExecutionFtpTransfer found");
         session.getDataConn().getFtpTransferControl()
                .setTransferAbortedFromInternal(true);
         return;

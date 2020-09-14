@@ -440,7 +440,7 @@ public abstract class FilesystemBasedDirImpl extends AbstractDir {
       }
     }
     newpath = consolidatePath(newpath);
-    logger.debug("debug: " + newpath);
+    logger.debug("debug: {}", newpath);
     final List<String> paths = wildcardFiles(newpath);
     if (paths.isEmpty()) {
       throw new Reply550Exception("No files found");

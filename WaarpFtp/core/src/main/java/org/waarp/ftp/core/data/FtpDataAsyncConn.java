@@ -230,7 +230,7 @@ public class FtpDataAsyncConn {
     passiveMode = false;
     isBind = false;
     remotePort = remoteAddress.getPort();
-    logger.debug("SetActive: " + this);
+    logger.debug("SetActive: {}", this);
   }
 
   /**
@@ -243,7 +243,7 @@ public class FtpDataAsyncConn {
     resetLocalAddress();
     passiveMode = true;
     isBind = false;
-    logger.debug("SetPassive: " + this);
+    logger.debug("SetPassive: {}", this);
   }
 
   /**

@@ -76,7 +76,7 @@ public class LocalExecClientHandler
     if (!ready.awaitOrInterruptible() && channel == null) {
       throw new RuntimeException("Cannot get client connected");
     }
-    logger.debug("write command: " + this.command);
+    logger.debug("write command: {}", this.command);
     if (this.delay != 0) {
       WaarpNettyUtil.awaitOrInterrupted(
           channel.writeAndFlush(this.delay + " " + this.command + '\n'));
@@ -181,7 +181,7 @@ public class LocalExecClientHandler
       }
       mesg = mesg.substring(pos + 1);
       if (mesg.startsWith(LocalExecDefaultResult.ENDOFCOMMAND)) {
-        logger.debug(command + ':' + "Receive End of Command");
+        logger.debug("{}:Receive End of Command", command);
         result.setResult(LocalExecDefaultResult.NoMessage.getResult());
         back.append(result.getResult());
         finalizeMessage();
@@ -190,7 +190,7 @@ public class LocalExecClientHandler
         back.append(mesg);
       }
     } else if (mesg.startsWith(LocalExecDefaultResult.ENDOFCOMMAND)) {
-      logger.debug(command + ':' + "Receive End of Command");
+      logger.debug("{}:Receive End of Command", command);
       finalizeMessage();
     } else {
       back.append('\n').append(mesg);

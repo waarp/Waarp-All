@@ -429,10 +429,12 @@ public class HttpSslHandlerProxyR66 extends HttpSslHandler {
         getMenu = true;
       }
       if (!getMenu && name != null) {
-        logger.debug("Name=" + name + " vs " +
-                     name.equals(configuration.getAdminName()) + " Passwd vs " +
-                     Arrays.equals(password.getBytes(WaarpStringUtils.UTF8),
+        if (logger.isDebugEnabled()) {
+          logger.debug("Name={} vs {} Passwd vs ", name,
+                       name.equals(configuration.getAdminName()), Arrays
+                           .equals(password.getBytes(WaarpStringUtils.UTF8),
                                    configuration.getServerAdminKey()));
+        }
         if (name.equals(configuration.getAdminName()) && Arrays
             .equals(password.getBytes(WaarpStringUtils.UTF8),
                     configuration.getServerAdminKey())) {
@@ -444,7 +446,7 @@ public class HttpSslHandlerProxyR66 extends HttpSslHandler {
         }
         if (!authentHttp.isAuthenticated()) {
           authentHttp.setStatus(71);
-          logger.debug("Still not authenticated: {}", authentHttp);
+          logger.info("Still not authenticated: {}", authentHttp);
           getMenu = true;
         }
       }
@@ -466,7 +468,7 @@ public class HttpSslHandlerProxyR66 extends HttpSslHandler {
                                 Long.toHexString(RANDOM.nextLong()));
       sessions.put(admin.value(), authentHttp);
       authentHttp.setStatus(72);
-      logger.debug("CreateSession: " + uriRequest + ":{}", admin);
+      logger.debug("CreateSession: {}:{}", uriRequest, admin);
     }
     writeResponse(ctx);
   }
@@ -478,7 +480,7 @@ public class HttpSslHandlerProxyR66 extends HttpSslHandler {
     final QueryStringDecoder queryStringDecoder =
         new QueryStringDecoder(request.uri());
     uriRequest = queryStringDecoder.path();
-    logger.debug("Msg: " + uriRequest);
+    logger.debug("Msg: {}", uriRequest);
     if (uriRequest.contains("gre/") || uriRequest.contains("img/") ||
         uriRequest.contains("res/") || uriRequest.contains("favicon.ico")) {
       HttpWriteCacheEnable
@@ -490,7 +492,7 @@ public class HttpSslHandlerProxyR66 extends HttpSslHandler {
     checkSession(ctx.channel());
     try {
       if (!authentHttp.isAuthenticated()) {
-        logger.debug("Not Authent: " + uriRequest + ":{}", authentHttp);
+        logger.debug("Not Authent: {}:{}", uriRequest, authentHttp);
         checkAuthentProxy(ctx);
         return;
       }
@@ -505,7 +507,7 @@ public class HttpSslHandlerProxyR66 extends HttpSslHandler {
           req = REQUEST.valueOf(find);
         } catch (final IllegalArgumentException e1) {
           req = REQUEST.index;
-          logger.debug("NotFound: " + find + ':' + uriRequest);
+          logger.info("NotFound: {}:{}", find, uriRequest);
         }
       }
       if (req == REQUEST.System) {

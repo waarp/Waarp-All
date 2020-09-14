@@ -59,7 +59,7 @@ public class SubmitTransfer extends AbstractTransfer {
     }
     final DbTaskRunner taskRunner = initRequest();
     if (taskRunner == null) {
-      logger.debug("Cannot prepare task");
+      logger.info("Cannot prepare task");
       if (future.isFailed() && future.getResult() != null) {
         return;
       }
@@ -74,7 +74,7 @@ public class SubmitTransfer extends AbstractTransfer {
       // Resubmit call, some checks are needed
       if (!taskRunner.restart(true)) {
         // cannot be done from there => must be done through IHM
-        logger.debug("Cannot prepare task from there. IHM must be used");
+        logger.info("Cannot prepare task from there. IHM must be used");
         final R66Result result = new R66Result(
             new OpenR66DatabaseGlobalException(
                 "Cannot prepare task from there. IHM must be used"), null, true,
@@ -89,7 +89,7 @@ public class SubmitTransfer extends AbstractTransfer {
     if (!taskRunner.forceSaveStatus()) {
       try {
         if (!taskRunner.specialSubmit()) {
-          logger.debug("Cannot prepare task");
+          logger.info("Cannot prepare task");
           final R66Result result = new R66Result(
               new OpenR66DatabaseGlobalException("Cannot prepare Task"), null,
               true, ErrorCode.Internal, taskRunner);
@@ -98,7 +98,7 @@ public class SubmitTransfer extends AbstractTransfer {
           return;
         }
       } catch (final WaarpDatabaseException e) {
-        logger.debug("Cannot prepare task");
+        logger.info("Cannot prepare task");
         final R66Result result = new R66Result(
             new OpenR66DatabaseGlobalException("Cannot prepare Task"), null,
             true, ErrorCode.Internal, taskRunner);
@@ -155,7 +155,7 @@ public class SubmitTransfer extends AbstractTransfer {
       prepareSubmitOkOutputFormat(runner, outputFormat);
       if (transaction.normalInfoAsWarn) {
         logger.warn(outputFormat.loggerOut());
-      } else {
+      } else if (logger.isInfoEnabled()) {
         logger.info(outputFormat.loggerOut());
       }
       if (!OutputFormat.isQuiet()) {

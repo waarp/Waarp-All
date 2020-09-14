@@ -606,10 +606,9 @@ public class HttpSslHandler
         getMenu = true;
       }
       if (!getMenu && name != null) {
-        logger.debug("Name=" + name + " vs " + name.equals(
-            FileBasedConfiguration.fileBasedConfiguration.getAdminName()) +
-                     " Passwd=" + password + " vs " +
-                     FileBasedConfiguration.fileBasedConfiguration
+        logger.debug("Name={} vs {} Passwd={} vs {}", name, name.equals(
+            FileBasedConfiguration.fileBasedConfiguration.getAdminName()),
+                     password, FileBasedConfiguration.fileBasedConfiguration
                          .checkPassword(password));
         if (name.equals(
             FileBasedConfiguration.fileBasedConfiguration.getAdminName()) &&
@@ -621,7 +620,7 @@ public class HttpSslHandler
           getMenu = true;
         }
         if (!authentHttp.isIdentified()) {
-          logger.debug("Still not authenticated: {}", authentHttp);
+          logger.info("Still not authenticated: {}", authentHttp);
           getMenu = true;
         }
       }
@@ -641,7 +640,7 @@ public class HttpSslHandler
                                     .getHostId() +
                                 Long.toHexString(RANDOM.nextLong()));
       sessions.put(admin.value(), authentHttp);
-      logger.debug("CreateSession: " + uriRequest + ":{}", admin);
+      logger.debug("CreateSession: {}}:{}", uriRequest, admin);
     }
     writeResponse(ctx);
   }
@@ -664,7 +663,7 @@ public class HttpSslHandler
     checkSession();
     try {
       if (!authentHttp.isIdentified()) {
-        logger.debug("Not Authent: " + uriRequest + ":{}", authentHttp);
+        logger.debug("Not Authent: {}}:{}", uriRequest, authentHttp);
         checkAuthent(ctx);
         return;
       }
@@ -678,7 +677,7 @@ public class HttpSslHandler
         req = REQUEST.valueOf(find);
       } catch (final IllegalArgumentException e1) {
         req = REQUEST.index;
-        logger.debug("NotFound: " + find + ':' + uriRequest);
+        logger.info("NotFound: {}:{}", find, uriRequest);
       }
       switch (req) {
         case System:
@@ -731,7 +730,7 @@ public class HttpSslHandler
         authentHttp = auth;
       }
     } else {
-      logger.debug("NoSession: " + uriRequest + ":{}", admin);
+      logger.info("NoSession: {}:{}", uriRequest, admin);
     }
   }
 
@@ -760,11 +759,11 @@ public class HttpSslHandler
         if (!findSession && admin != null) {
           response.headers().add(HttpHeaderNames.SET_COOKIE,
                                  ServerCookieEncoder.LAX.encode(admin));
-          logger.debug("AddSession: " + uriRequest + ":{}", admin);
+          logger.debug("AddSession: {}:{}", uriRequest, admin);
         }
       }
     } else if (admin != null) {
-      logger.debug("AddSession: " + uriRequest + ":{}", admin);
+      logger.debug("AddSession: {}:{}", uriRequest, admin);
       response.headers().add(HttpHeaderNames.SET_COOKIE,
                              ServerCookieEncoder.LAX.encode(admin));
     }

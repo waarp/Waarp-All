@@ -189,7 +189,7 @@ public class LogExtendedExport implements Runnable {
     node.setStatusdone(statusdone);
 
     final JsonCommandPacket valid = new JsonCommandPacket(node, type);
-    logger.debug("ExtendedLogCommand: " + valid.getRequest());
+    logger.debug("ExtendedLogCommand: {}", valid.getRequest());
     final R66Future newFuture = new R66Future(true);
     final LocalChannelReference localChannelReference =
         AbstractTransfer.tryConnect(host, newFuture, networkTransaction);
@@ -213,8 +213,8 @@ public class LogExtendedExport implements Runnable {
     }
     host = null;
     newFuture.awaitOrInterruptible();
-    logger.info(
-        "Request done with " + (newFuture.isSuccess()? "success" : "error"));
+    logger.info("Request done with {}",
+                newFuture.isSuccess()? "success" : "error");
     if (newFuture.isSuccess() && ruleDownload != null &&
         !ruleDownload.isEmpty()) {
       try {

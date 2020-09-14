@@ -22,6 +22,7 @@ package org.waarp.common.service;
 import org.apache.commons.daemon.Daemon;
 import org.apache.commons.daemon.DaemonContext;
 import org.apache.commons.daemon.DaemonController;
+import org.waarp.common.exception.InvalidArgumentException;
 import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
@@ -82,7 +83,7 @@ public abstract class ServiceLauncher implements Daemon {
     final String className =
         Thread.currentThread().getStackTrace()[3].getClassName();
 
-    logger.debug("Engine " + className);
+    logger.debug("Engine {}", className);
     try {
       engineLauncherInstance =
           (ServiceLauncher) Class.forName(className).newInstance();//NOSONAR
@@ -210,7 +211,7 @@ public abstract class ServiceLauncher implements Daemon {
       if (controller != null) {
         controller.fail("Service stopped abnormally");
       } else {
-        throw new Exception("Service stopped abnormally");
+        throw new InvalidArgumentException("Service stopped abnormally");
       }
     }
   }
@@ -219,7 +220,7 @@ public abstract class ServiceLauncher implements Daemon {
    * Internal command
    */
   protected void windowsStop() {
-    logger.info("windowsStop called from Service: " + stopCalledCorrectly);
+    logger.info("windowsStop called from Service: {}", stopCalledCorrectly);
     terminate();
     // should we force Future to be cancelled there?
   }

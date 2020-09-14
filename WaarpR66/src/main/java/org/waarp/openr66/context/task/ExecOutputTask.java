@@ -84,8 +84,7 @@ public class ExecOutputTask extends AbstractExecTask {
      * else 1 for a warning else as an error. In case of an error (> 0), all the line from output will be send
      * back to the partner with the Error code. No change is made to the file.
      */
-    logger.info("ExecOutput with " + argRule + ':' + argTransfer + " and {}",
-                session);
+    logger.info("ExecOutput with {}:{} and {}", argRule, argTransfer, session);
     final String finalname = applyTransferSubstitutions(argRule);
     //
     // Force the WaitForValidation

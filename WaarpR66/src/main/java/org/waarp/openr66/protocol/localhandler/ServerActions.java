@@ -329,7 +329,7 @@ public class ServerActions extends ConnectionActions {
           Date date = null;
           if (keys.length > 3) {
             // time to reschedule in yyyyMMddHHmmss format
-            logger.debug("Debug: restart with " + keys[3]);
+            logger.debug("Debug: restart with {}", keys[3]);
             final SimpleDateFormat dateFormat =
                 new SimpleDateFormat(AbstractTransfer.TIMESTAMP_FORMAT);
             try {
@@ -673,7 +673,7 @@ public class ServerActions extends ConnectionActions {
       }
       case LocalPacketFactory.TESTPACKET: {
         session.newState(VALIDOTHER);
-        logger.info("Valid TEST MESSAGE: " + packet);
+        logger.info("Valid TEST MESSAGE: {}", packet);
         final R66Result resulttest =
             new R66Result(session, true, ErrorCode.CompleteOk, null);
         resulttest.setOther(packet);
@@ -682,7 +682,7 @@ public class ServerActions extends ConnectionActions {
         break;
       }
       default:
-        logger.info("Validation is ignored: " + packet.getTypeValid());
+        logger.info("Validation is ignored: {}", packet.getTypeValid());
         packet.clear();
     }
   }
@@ -783,7 +783,7 @@ public class ServerActions extends ConnectionActions {
   private void jsonCommandTest(final JsonCommandPacket packet,
                                final JsonPacket json) {
     session.newState(VALIDOTHER);
-    logger.info("Valid TEST MESSAGE: " + packet);
+    logger.info("Valid TEST MESSAGE: {}", packet);
     final R66Result resulttest =
         new R66Result(session, true, ErrorCode.CompleteOk, null);
     resulttest.setOther(packet);
@@ -1126,7 +1126,7 @@ public class ServerActions extends ConnectionActions {
   private void wrongResult(final BusinessRequestJsonPacket node,
                            final R66Result result)
       throws OpenR66ProtocolPacketException {
-    logger.info("Task in Error:" + node.getClassName() + ' ' + result);
+    logger.info("Task in Error: {} {}", node.getClassName(), result);
     if (!result.isAnswered()) {
       node.setValidated(false);
       session.newState(ERROR);
@@ -1437,7 +1437,7 @@ public class ServerActions extends ConnectionActions {
         if (AuthenticationFileBasedConfiguration
             .loadAuthentication(Configuration.configuration, shost)) {
           importedhost = true;
-          logger.debug("Host configuration imported from " + shost);
+          logger.debug("Host configuration imported from {}", shost);
         } else {
           logger.error("Error in Load Hosts");
           importedhost = false;
@@ -1484,7 +1484,7 @@ public class ServerActions extends ConnectionActions {
         try {
           RuleFileBasedConfiguration.getMultipleFromFile(file);
           importedrule = true;
-          logger.debug("Rule configuration imported from " + srule);
+          logger.debug("Rule configuration imported from {}", srule);
         } catch (final WaarpDatabaseNoConnectionException e) {
           logger.error("Error", e);
           importedrule = false;
@@ -1541,9 +1541,9 @@ public class ServerActions extends ConnectionActions {
             importedbusiness =
                 host.updateBusiness(Configuration.configuration, content,
                                     bbusinessPurge);
-            logger.debug(
-                "Business configuration imported from " + sbusiness + '(' +
-                importedbusiness + ')');
+            logger
+                .debug("Business configuration imported from {}({})", sbusiness,
+                       importedbusiness);
           } catch (final InvalidArgumentException e) {
             logger.error("Error", e);
             importedbusiness = false;
@@ -1571,8 +1571,8 @@ public class ServerActions extends ConnectionActions {
             importedalias =
                 host.updateAlias(Configuration.configuration, content,
                                  baliasPurge);
-            logger.debug("Alias configuration imported from " + salias + '(' +
-                         importedalias + ')');
+            logger.debug("Alias configuration imported from {}({})", salias,
+                         importedalias);
           } catch (final InvalidArgumentException e) {
             logger.error("Error", e);
             importedalias = false;
@@ -1600,8 +1600,8 @@ public class ServerActions extends ConnectionActions {
             importedroles =
                 host.updateRoles(Configuration.configuration, content,
                                  brolesPurge);
-            logger.debug("Roles configuration imported from " + sroles + '(' +
-                         importedroles + ')');
+            logger.debug("Roles configuration imported from {}({})", sroles,
+                         importedroles);
           } catch (final InvalidArgumentException e) {
             logger.error("Error", e);
             importedroles = false;
@@ -1865,7 +1865,7 @@ public class ServerActions extends ConnectionActions {
           final Timestamp timestart;
           if (date != null) {
             // time to reschedule in yyyyMMddHHmmss format
-            logger.debug("Debug: restart with " + date);
+            logger.debug("Debug: restart with {}", date);
             timestart = new Timestamp(date.getTime());
             taskRunner.setStart(timestart);
           }
@@ -1873,7 +1873,9 @@ public class ServerActions extends ConnectionActions {
               Configuration.configuration.getLocalTransaction().getFromRequest(
                   reqd + ' ' + reqr + ' ' + id);
           // since it comes from a request transfer, cannot redo it
-          logger.info("Will try to restart: " + taskRunner.toShortString());
+          if (logger.isInfoEnabled()) {
+            logger.info("Will try to restart: {}", taskRunner.toShortString());
+          }
           resulttest = TransferUtils.restartTransfer(taskRunner, lcr);
           returnCode = resulttest.getCode();
         } catch (final WaarpDatabaseException e1) {
@@ -2336,7 +2338,7 @@ public class ServerActions extends ConnectionActions {
   private void wrongResult(final BusinessRequestPacket packet,
                            final String argRule, final R66Result result)
       throws OpenR66ProtocolPacketException {
-    logger.info("Task in Error:" + argRule + ' ' + result);
+    logger.info("Task in Error: {} {}", argRule, result);
     if (!result.isAnswered()) {
       packet.invalidate();
       session.newState(ERROR);

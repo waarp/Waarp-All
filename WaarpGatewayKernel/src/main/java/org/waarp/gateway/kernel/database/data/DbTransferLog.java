@@ -363,7 +363,7 @@ public class DbTransferLog extends AbstractDbData {
     // First need to find a new id if id is not ok
     if (specialId == DbConstant.ILLEGALVALUE) {
       specialId = dbSession.getAdmin().getDbModel().nextSequence(dbSession);
-      logger.debug("Try Insert create a new Id from sequence: " + specialId);
+      logger.debug("Try Insert create a new Id from sequence: {}", specialId);
       setPrimaryKey();
     }
     super.insert();
@@ -389,7 +389,7 @@ public class DbTransferLog extends AbstractDbData {
     // First need to find a new id if id is not ok
     if (specialId == DbConstant.ILLEGALVALUE) {
       specialId = dbSession.getAdmin().getDbModel().nextSequence(dbSession);
-      logger.debug("Try Insert create a new Id from sequence: " + specialId);
+      logger.debug("Try Insert create a new Id from sequence: {}", specialId);
       setPrimaryKey();
     }
     setToArray();

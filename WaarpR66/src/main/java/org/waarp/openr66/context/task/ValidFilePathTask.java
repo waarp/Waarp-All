@@ -63,16 +63,15 @@ public class ValidFilePathTask extends AbstractTask {
     String finalname = argRule;
     finalname = AbstractDir
         .normalizePath(getReplacedValue(finalname, BLANK.split(argTransfer)));
-    logger.info("Test Valid Path with " + finalname + " from {}", session);
+    logger.info("Test Valid Path with {} from {}", finalname, session);
     final File from = session.getFile().getTrueFile();
     final String curpath = AbstractDir.normalizePath(from.getAbsolutePath());
     final String[] paths = BLANK.split(finalname);
     for (final String base : paths) {
       if (curpath.startsWith(base)) {
         if (delay > 0) {
-          logger.info(
-              "Validate File " + curpath + " from " + base + " and     " +
-              session);
+          logger
+              .info("Validate File {} from {} and {}", curpath, base, session);
         }
         futureCompletion.setSuccess();
         return;

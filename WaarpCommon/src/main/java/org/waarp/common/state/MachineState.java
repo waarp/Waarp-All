@@ -129,8 +129,8 @@ public class MachineState<E extends Enum<E>> {
    */
   public E setCurrent(final E desiredState) throws IllegalFiniteStateException {
     if (!isReachable(desiredState)) {
-      logger.debug(
-          "State " + desiredState + " not reachable from: " + currentState);
+      logger
+          .debug("State {} not reachable from: {}", desiredState, currentState);
       throw new IllegalFiniteStateException(
           desiredState + " not allowed from " + currentState);
     }
@@ -174,7 +174,7 @@ public class MachineState<E extends Enum<E>> {
    * @return the requested state
    */
   private E setAsFinal(final E desiredState) {
-    logger.debug("New State: " + desiredState + " from " + currentState);
+    logger.debug("New State: {} from {}", desiredState, currentState);
     currentState = desiredState;
     return currentState;
   }

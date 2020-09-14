@@ -77,7 +77,6 @@ public class LocalPacketCodec extends ByteToMessageCodec<AbstractLocalPacket> {
     // createPacketFromByteBuf read the buffer
     final AbstractLocalPacket rv = LocalPacketFactory
         .createPacketFromByteBuf(length - 8, middleLength, endLength, buf);
-    logger.trace("received local packet {}", rv.getType());
     return rv;
   }
 
@@ -85,7 +84,6 @@ public class LocalPacketCodec extends ByteToMessageCodec<AbstractLocalPacket> {
   protected void encode(final ChannelHandlerContext ctx,
                         final AbstractLocalPacket msg, final ByteBuf out)
       throws Exception {
-    logger.trace("sending local packet {}", msg.getType());
     final ByteBuf buf = msg.getLocalPacket(null);
     out.writeBytes(buf);
     buf.release();

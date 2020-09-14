@@ -125,7 +125,7 @@ class FtpTransferExecutor implements Runnable {
         executeTransfer.getFtpFile().trueRetrieve();
       } catch (final FtpNoFileException e) {
         // an error occurs
-        logger.debug(e);
+        logger.info(e);
         session.getDataConn().getFtpTransferControl().setEndOfTransfer();
       }
       logger.debug("wait for end of command");

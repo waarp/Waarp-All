@@ -103,9 +103,8 @@ public class HttpRestClientSimpleResponseHandler
     if (msg instanceof HttpResponse) {
       final HttpResponse response = (HttpResponse) msg;
       final HttpResponseStatus status = response.status();
-      logger.debug(HttpHeaderNames.REFERER + ": " +
-                   response.headers().get(HttpHeaderNames.REFERER) +
-                   " STATUS: " + status);
+      logger.debug("{}: {} STATUS: {}", HttpHeaderNames.REFERER,
+                   response.headers().get(HttpHeaderNames.REFERER), status);
     }
     if (msg instanceof HttpContent) {
       final HttpContent chunk = (HttpContent) msg;

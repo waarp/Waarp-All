@@ -44,7 +44,7 @@ public class ExecBusinessTask extends AbstractExecJavaTask {
       // Business Request to validate?
       String validate = "Validated";
       if (isToValidate) {
-        logger.debug("DEBUG: " + fullarg);
+        logger.debug("DEBUG: {}", fullarg);
         final String[] args = BLANK.split(fullarg);
         final String operation = args[0];
         int newdelay;

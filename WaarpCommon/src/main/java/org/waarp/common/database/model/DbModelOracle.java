@@ -101,9 +101,9 @@ public abstract class DbModelOracle extends DbModelAbstract {
     oracleConnectionPoolDataSource.setUser(dbuser);
     oracleConnectionPoolDataSource.setPassword(dbpasswd);
     pool = new DbConnectionPool(oracleConnectionPoolDataSource, timer, delay);
-    logger.info(
-        "Some info: MaxConn: " + pool.getMaxConnections() + " LogTimeout: " +
-        pool.getLoginTimeout() + " ForceClose: " + pool.getTimeoutForceClose());
+    logger.info("Some info: MaxConn: {} LogTimeout: {} ForceClose: {}",
+                pool.getMaxConnections(), pool.getLoginTimeout(),
+                pool.getTimeoutForceClose());
   }
 
   /**

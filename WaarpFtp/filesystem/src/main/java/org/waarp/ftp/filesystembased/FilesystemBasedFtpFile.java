@@ -162,7 +162,7 @@ public abstract class FilesystemBasedFtpFile extends FilesystemBasedFileImpl
       // Last block
       closeFile();
       if (block != null) {
-        logger.debug("Write " + block.getByteCount());
+        logger.debug("Write {}", block.getByteCount());
         future = channel.writeAndFlush(block);
       }
       // Wait for last write

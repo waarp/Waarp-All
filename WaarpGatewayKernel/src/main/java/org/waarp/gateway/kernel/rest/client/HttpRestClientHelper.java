@@ -178,7 +178,7 @@ public class HttpRestClientHelper {
                               final Map<String, String> uriArgs,
                               final String json) {
     // Prepare the HTTP request.
-    logger.debug("Prepare request: " + method + ':' + addedUri + ':' + json);
+    logger.debug("Prepare request: {}:{}:{}", method, addedUri, json);
     final RestFuture future =
         channel.attr(HttpRestClientSimpleResponseHandler.RESTARGUMENT).get();
     final QueryStringEncoder encoder;
@@ -210,8 +210,9 @@ public class HttpRestClientHelper {
       future.setFailure(e);
       return future;
     }
-    logger.debug("Uri ready: " + uri.toASCIIString());
-
+    if (logger.isDebugEnabled()) {
+      logger.debug("Uri ready: {}", uri.toASCIIString());
+    }
     final FullHttpRequest request;
     if (json != null) {
       logger.debug("Add body");
@@ -273,7 +274,7 @@ public class HttpRestClientHelper {
                               final Map<String, String> uriArgs,
                               final String json) {
     // Prepare the HTTP request.
-    logger.debug("Prepare request: " + method + ':' + addedUri + ':' + json);
+    logger.debug("Prepare request: {}:{}:{}", method, addedUri, json);
     final RestFuture future =
         channel.attr(HttpRestClientSimpleResponseHandler.RESTARGUMENT).get();
     final QueryStringEncoder encoder;
@@ -296,8 +297,9 @@ public class HttpRestClientHelper {
       future.setFailure(e);
       return future;
     }
-    logger.debug("Uri ready: " + uri.toASCIIString());
-
+    if (logger.isDebugEnabled()) {
+      logger.debug("Uri ready: " + uri.toASCIIString());
+    }
     final FullHttpRequest request;
     if (json != null) {
       logger.debug("Add body");

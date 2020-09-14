@@ -143,7 +143,7 @@ public class WaarpSnmpAgent extends BaseAgent {
     hasV2 = SnmpConfiguration.hasV2;
     hasV3 = SnmpConfiguration.hasV3;
 
-    logger.debug("SNMP Configuration loaded: " + address[0] + ':' + nbThread);
+    logger.debug("SNMP Configuration loaded: {}:{}", address[0], nbThread);
     workerPool = ThreadPool.create("SnmpRequestPool", nbThread);
     agent.setWorkerPool(workerPool);
     setMonitor(monitor);
@@ -206,7 +206,7 @@ public class WaarpSnmpAgent extends BaseAgent {
    * @param moGroup
    */
   public void unregisterManagedObject(final MOGroup moGroup) {
-    logger.debug("Unregister " + moGroup);
+    logger.debug("Unregister {}", moGroup);
     moGroup.unregisterMOs(server, getContext(moGroup));
   }
 
@@ -217,7 +217,7 @@ public class WaarpSnmpAgent extends BaseAgent {
   @Override
   protected void addUsmUser(final USM usm) {
     for (final UsmUser userlist : listUsmUser) {
-      logger.debug("User: " + userlist);
+      logger.debug("User: {}", userlist);
       usm.addUser(userlist.getSecurityName(), usm.getLocalEngineID(), userlist);
     }
     final UsmUser usernotify =
@@ -235,7 +235,7 @@ public class WaarpSnmpAgent extends BaseAgent {
     targetMIB.addDefaultTDomains();
 
     for (final TargetElement element : listTargetElements) {
-      logger.debug("AddTarget: " + element);
+      logger.debug("AddTarget: {}", element);
       targetMIB.addTargetAddress(element.name, element.transportDomain,
                                  element.address, element.timeout,
                                  element.retries, element.tagList,
@@ -250,7 +250,7 @@ public class WaarpSnmpAgent extends BaseAgent {
      * TransportDomains.transportDomainUdpIpv4, new OctetString(new UdpAddress("127.0.0.1/1162").getValue()), 200,
      * 1, new OctetString("notify"), new OctetString("v3notify"), StorageType.permanent);
      */
-    logger.debug("HasV2: " + hasV2 + " HasV3: " + hasV3);
+    logger.debug("HasV2: {} HasV3: {}", hasV2, hasV3);
     if (hasV2) {
       targetMIB.addTargetParams(new OctetString(SnmpConfiguration.V2C),
                                 MessageProcessingModel.MPv2c,
@@ -292,8 +292,8 @@ public class WaarpSnmpAgent extends BaseAgent {
                   new OctetString("v3group"), StorageType.nonVolatile);
 
     for (final UsmUser user : listUsmUser) {
-      logger.debug("Groups: " + user.getSecurityName() + " Restricted? " +
-                   (user.getPrivacyProtocol() == null));
+      logger.debug("Groups: {} Restricted? {}", user.getSecurityName(),
+                   user.getPrivacyProtocol() == null);
       if (user.getPrivacyProtocol() == null) {
         vacm.addGroup(SecurityModel.SECURITY_MODEL_USM,
                       new OctetString(user.getSecurityName()),
@@ -416,8 +416,8 @@ public class WaarpSnmpAgent extends BaseAgent {
    * @throws IOException
    */
   public void start() throws IOException {
-    logger.debug(
-        "WaarpSnmpAgent starting: " + address[0] + " 1 on " + address.length);
+    logger.debug("WaarpSnmpAgent starting: {} 1 on {}", address[0],
+                 address.length);
     try {
       init();
     } catch (final IOException e) {

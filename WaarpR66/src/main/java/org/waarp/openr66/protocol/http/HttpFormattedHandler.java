@@ -248,7 +248,7 @@ public class HttpFormattedHandler
     QueryStringDecoder queryStringDecoder =
         new QueryStringDecoder(httpRequest.uri());
     uriRequest = queryStringDecoder.path();
-    logger.debug("Msg: " + uriRequest);
+    logger.debug("Msg: {}", uriRequest);
     if (uriRequest.contains("gre/") || uriRequest.contains("img/") ||
         uriRequest.contains("res/") || uriRequest.contains("favicon.ico")) {
       HttpWriteCacheEnable.writeFile(httpRequest, ctx,

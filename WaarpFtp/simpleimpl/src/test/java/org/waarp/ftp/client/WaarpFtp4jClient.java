@@ -146,12 +146,12 @@ public class WaarpFtp4jClient {
     ftpClient.addCommunicationListener(new FTPCommunicationListener() {
       @Override
       public void sent(String arg0) {
-        logger.debug("Command: " + arg0);
+        logger.debug("Command: {}", arg0);
       }
 
       @Override
       public void received(String arg0) {
-        logger.debug("Answer: " + arg0);
+        logger.debug("Answer: {}", arg0);
       }
     });
     final FTPConnector connector = ftpClient.getConnector();

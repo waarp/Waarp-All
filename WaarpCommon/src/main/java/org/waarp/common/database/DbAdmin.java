@@ -395,7 +395,7 @@ public class DbAdmin {
    */
   public static void closeAllConnection() {
     for (final DbSession session : listConnection.values()) {
-      logger.debug("Close (all) Db Conn: " + session.getInternalId());
+      logger.debug("Close (all) Db Conn: {}", session.getInternalId());
       try {
         final Connection connection = session.getConn();
         if (connection != null) {

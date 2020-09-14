@@ -320,7 +320,7 @@ public abstract class DBTransferDAO extends StatementExecutor<Transfer>
     try {
       stm = connection.prepareStatement(query.toString());
       setParameters(stm, params);
-      logger.trace(stm.toString());
+      logger.trace("{}", stm);
       res = executeQuery(stm);
       while (res.next()) {
         transfers.add(getFromResultSet(res));

@@ -76,7 +76,7 @@ public class UnzeroedFileTask extends AbstractTask {
           if (delay > 1) {
             logger.warn("Unzeroed File: " + curpath + " from " + session);
           } else {
-            logger.info("Unzeroed File: " + curpath + " from " + session);
+            logger.info("Unzeroed File: {} from {}", curpath, session);
           }
         }
         futureCompletion.setSuccess();
@@ -94,8 +94,8 @@ public class UnzeroedFileTask extends AbstractTask {
         logger.warn(
             "Unzeroed File not applicable to " + curpath + " from " + session);
       } else {
-        logger.info(
-            "Unzeroed File not applicable to " + curpath + " from " + session);
+        logger.info("Unzeroed File not applicable to {} from {}", curpath,
+                    session);
       }
     }
     futureCompletion.setSuccess();

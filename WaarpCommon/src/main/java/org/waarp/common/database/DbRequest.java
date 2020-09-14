@@ -188,7 +188,7 @@ public class DbRequest {
     stmt = createStatement();
     try {
       final int rowcount = stmt.executeUpdate(query);
-      logger.debug("QUERY(" + rowcount + "): {}", query);
+      logger.debug("QUERY({}): {}", rowcount, query);
       return rowcount;
     } catch (final SQLException e) {
       logger.error(SQL_EXCEPTION_REQUEST1 + query + ' ' + e.getMessage());

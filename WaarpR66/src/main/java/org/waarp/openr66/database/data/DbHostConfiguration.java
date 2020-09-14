@@ -379,7 +379,7 @@ public class DbHostConfiguration extends AbstractDbDataDao<Business> {
           if (sval.isEmpty()) {
             continue;
           }
-          logger.info("Business Allow: " + sval);
+          logger.info("Business Allow: {}", sval);
           Configuration.configuration.getBusinessWhiteSet().add(sval.trim());
         }
         ids.clear();
@@ -404,7 +404,7 @@ public class DbHostConfiguration extends AbstractDbDataDao<Business> {
           Configuration.configuration.getAliases().put(namealias, refHostId);
         }
         Configuration.configuration.getReverseAliases().put(refHostId, alias);
-        logger.info("Aliases for: " + refHostId + " = " + aliasset);
+        logger.info("Aliases for: {} = {}", refHostId, aliasset);
       }
     }
     value = hashConfig.get(XML_ROLES);
@@ -436,7 +436,7 @@ public class DbHostConfiguration extends AbstractDbDataDao<Business> {
             // ignore
           }
         }
-        logger.info("New Role: " + refHostId + ':' + newrole);
+        logger.info("New Role: {}:{}", refHostId, newrole);
         Configuration.configuration.getRoles().put(refHostId, newrole);
       }
     }
@@ -777,7 +777,7 @@ public class DbHostConfiguration extends AbstractDbDataDao<Business> {
       final Element root = document.getRootElement();
       for (final String sval : set) {
         root.addElement(XML_BUSINESSID).setText(sval);
-        logger.info("Business Allow: " + sval);
+        logger.info("Business Allow: {}", sval);
       }
       setBusiness(root.asXML());
       try {
@@ -805,7 +805,7 @@ public class DbHostConfiguration extends AbstractDbDataDao<Business> {
       final Element root = document.getRootElement();
       for (final String sval : configuration.getBusinessWhiteSet()) {
         root.addElement(XML_BUSINESSID).setText(sval);
-        logger.info("Business Allow: " + sval);
+        logger.info("Business Allow: {}", sval);
       }
       final String xml = root.asXML();
       this.pojo.setBusiness(xml);
@@ -868,7 +868,7 @@ public class DbHostConfiguration extends AbstractDbDataDao<Business> {
         if (cumul == null) {
           cumul = new StringBuilder();
         }
-        logger.info("New Role: " + entry.getKey() + ':' + cumul.toString());
+        logger.info("New Role: {}:{}", entry.getKey(), cumul);
         elt.addElement(XML_ROLESET).setText(cumul.toString());
       }
       final String xml = root.asXML();
@@ -1103,7 +1103,7 @@ public class DbHostConfiguration extends AbstractDbDataDao<Business> {
         if (cumul == null) {
           cumul = new StringBuilder();
         }
-        logger.info("New Role: " + entry.getKey() + ':' + newrole);
+        logger.info("New Role: {}:{}", entry.getKey(), newrole);
         config.getRoles().put(entry.getKey(), newrole);
         elt.addElement(XML_ROLESET).setText(cumul.toString());
       }
@@ -1131,7 +1131,7 @@ public class DbHostConfiguration extends AbstractDbDataDao<Business> {
             // ignore
           }
         }
-        logger.info("New Role: " + entry.getKey() + ':' + newrole);
+        logger.info("New Role: {}:{}", entry.getKey(), newrole);
         config.getRoles().put(entry.getKey(), newrole);
       }
     }

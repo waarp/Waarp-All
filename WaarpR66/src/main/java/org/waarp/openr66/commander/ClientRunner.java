@@ -236,9 +236,9 @@ public class ClientRunner extends Thread {
                       result.toString());
         } else {
           if (transfer.isSuccess()) {
-            logger.info(Messages.getString(TRANSFER_STATUS) +
-                        Messages.getString(REQUEST_INFORMATION_SUCCESS) +
-                        "     " + result.toString());
+            logger.info("{}{}     {}", Messages.getString(TRANSFER_STATUS),
+                        Messages.getString(REQUEST_INFORMATION_SUCCESS),
+                        result);
           } else {
             logger.error(Messages.getString(TRANSFER_STATUS) +
                          Messages.getString(REQUEST_INFORMATION_FAILURE) +
@@ -277,7 +277,7 @@ public class ClientRunner extends Thread {
     }
     final String key = runner.getKey();
     Integer tries = taskRunnerRetryHashMap.get(key);
-    logger.debug("try to find integer: " + tries);
+    logger.debug("try to find integer: {}", tries);
     if (tries == null) {
       tries = 1;
     } else {
@@ -348,7 +348,7 @@ public class ClientRunner extends Thread {
     }
     final boolean incRetry =
         incrementTaskRunnerTry(taskRunner, Configuration.RETRYNB);
-    logger.debug("tryAgainTransferOnOverloaded: " + retry + ':' + incRetry);
+    logger.debug("tryAgainTransferOnOverloaded: {}:{}", retry, incRetry);
     switch (taskRunner.getUpdatedInfo()) {
       case DONE:
       case INERROR:
@@ -560,9 +560,9 @@ public class ClientRunner extends Thread {
           Thread.sleep(Configuration.configuration.getDelayRetry());
         } catch (final InterruptedException e) {//NOSONAR
           SysErrLogger.FAKE_LOGGER.ignoreLog(e);
-          logger.debug(
-              "Will not retry since an interruption occurs while connection " +
-              "to {}", host);
+          logger.info(
+              "Will not retry since an interruption occurs while connection to {}",
+              host);
           retry = " and retries gets an interruption so stop here";
           changeUpdatedInfo(UpdatedInfo.INERROR, ErrorCode.ConnectionImpossible,
                             true);
@@ -575,7 +575,7 @@ public class ClientRunner extends Thread {
         throw new OpenR66ProtocolNotYetConnectionException(
             CANNOT_CONNECT_TO_SERVER + host + retry);
       } else {
-        logger.debug(
+        logger.info(
             "Will not retry since limit of connection attemtps is reached for {}",
             host);
         retry = " and retries reach step limit so stop here";
@@ -617,9 +617,8 @@ public class ClientRunner extends Thread {
                  taskRunner);
       taskRunner.restartRank();
       taskRunner.forceSaveStatus();
-      logger.debug(
-          "Requester is not Sender so new rank is " + taskRunner.getRank() +
-          " {}", taskRunner);
+      logger.info("Requester is not Sender so new rank is {} {}",
+                  taskRunner.getRank(), taskRunner);
     }
     final RequestPacket request = taskRunner.getRequest();
     request.setLimit(

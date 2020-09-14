@@ -855,7 +855,7 @@ public class IcapClient implements Closeable {
           logger.debug("Recv ICAP Preview Status Continue");
           return 0; //Continue transfer
         case 200:
-          logger.debug("Recv ICAP Preview Status Abort");
+          logger.info("Recv ICAP Preview Status Abort");
           return -1;
         case 204:
           logger.debug("Recv ICAP Preview Status Accepted");
@@ -918,7 +918,7 @@ public class IcapClient implements Closeable {
             getHeaderHttp();
           }
         }
-        logger.debug("Final status with check {}", finalStatus);
+        logger.info("Final status with check {}", finalStatus);
         return finalStatus;
       }
     }
@@ -1191,7 +1191,6 @@ public class IcapClient implements Closeable {
       if (withFlush) {
         out.flush();
       }
-      logger.trace("SEND Request:\n{}", requestHeader);
     } catch (final SocketTimeoutException e) {
       logger.error(TIMEOUT_OCCURS_WITH_THE_SERVER_SINCE, serverIP, port,
                    e.getMessage());
@@ -1216,7 +1215,6 @@ public class IcapClient implements Closeable {
       throws IcapException {
     try {
       out.write(chunk, 0, length);
-      logger.trace("SEND {} bytes", length);
     } catch (final SocketTimeoutException e) {
       logger.error(TIMEOUT_OCCURS_WITH_THE_SERVER_SINCE, serverIP, port,
                    e.getMessage());

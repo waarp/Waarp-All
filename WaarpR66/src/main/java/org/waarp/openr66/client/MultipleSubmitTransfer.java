@@ -147,7 +147,7 @@ public class MultipleSubmitTransfer extends SubmitTransfer {
               getResults().add(outputFormat);
               if (transaction.normalInfoAsWarn) {
                 logger.warn(outputFormat.loggerOut());
-              } else {
+              } else if (logger.isInfoEnabled()) {
                 logger.info(outputFormat.loggerOut());
               }
               setDoneMultiple(getDoneMultiple() + 1);
@@ -232,7 +232,7 @@ public class MultipleSubmitTransfer extends SubmitTransfer {
         outputFormat.setValue("ok", transaction.getDoneMultiple());
         if (transaction.normalInfoAsWarn) {
           logger.warn(outputFormat.loggerOut());
-        } else {
+        } else if (logger.isInfoEnabled()) {
           logger.info(outputFormat.loggerOut());
         }
         if (!OutputFormat.isQuiet()) {

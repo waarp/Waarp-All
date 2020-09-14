@@ -171,7 +171,7 @@ public class HttpPage {
     if (getPagerole() == PageRole.HTML) {
       // No handling of variable management, use MENU instead
       String value = reference.getHeader();
-      logger.debug("Debug: " + (value != null));
+      logger.debug("Debug: {}", value != null);
       if (value == null || value.length() == 0) {
         value = getPageValue(getHeader());
       }

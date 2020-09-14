@@ -150,7 +150,7 @@ public class HttpFormattedHandlerProxyR66 extends HttpFormattedHandler {
     final QueryStringDecoder queryStringDecoder =
         new QueryStringDecoder(request.uri());
     uriRequest = queryStringDecoder.path();
-    logger.debug("Msg: " + uriRequest);
+    logger.debug("Msg: {}", uriRequest);
     if (uriRequest.contains("gre/") || uriRequest.contains("img/") ||
         uriRequest.contains("res/") || uriRequest.contains("favicon.ico")) {
       HttpWriteCacheEnable

@@ -332,13 +332,16 @@ public abstract class AbstractExecutor {
                                         final long storDelay) {
     commandExecutor =
         new CommandExecutor(retrieve, retrDelay, store, storDelay);
-    logger.info(
-        "Executor configured as [RETR: " + commandExecutor.getRetrType() + ':' +
-        commandExecutor.pretrCMD + ':' + commandExecutor.getPretrDelay() + ':' +
-        commandExecutor.isPretrRefused() + "] [STOR: " +
-        commandExecutor.getStorType() + ':' + commandExecutor.pstorCMD + ':' +
-        commandExecutor.getPstorDelay() + ':' +
-        commandExecutor.isPstorRefused() + ']');
+    if (logger.isInfoEnabled()) {
+      logger.info(
+          "Executor configured as [RETR: " + commandExecutor.getRetrType() +
+          ':' + commandExecutor.pretrCMD + ':' +
+          commandExecutor.getPretrDelay() + ':' +
+          commandExecutor.isPretrRefused() + "] [STOR: " +
+          commandExecutor.getStorType() + ':' + commandExecutor.pstorCMD + ':' +
+          commandExecutor.getPstorDelay() + ':' +
+          commandExecutor.isPstorRefused() + ']');
+    }
   }
 
   /**
@@ -445,9 +448,9 @@ public abstract class AbstractExecutor {
   public static String getPreparedCommand(final String command,
                                           final String[] args) {
     final StringBuilder builder = new StringBuilder(command);
-    logger.debug("Will replace value in " + command + " with User=" + args[0] +
-                 ":Acct=" + args[1] + ":Base=" + args[2] + ":File=" + args[3] +
-                 ":Cmd=" + args[4]);
+    logger.debug(
+        "Will replace value in {} with User={}:Acct={}:Base={}:File={}:Cmd={}",
+        command, args[0], args[1], args[2], args[3], args[4]);
     replaceAll(builder, USER, args[0]);
     replaceAll(builder, ACCOUNT, args[1]);
     replaceAll(builder, BASEPATH, args[2]);

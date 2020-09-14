@@ -88,7 +88,7 @@ public class ServerExportConfiguration {
                               true);
       for (final String string : filenames) {
         if (string != null) {
-          logger.info("Export: " + string);
+          logger.info("Export: {}", string);
         }
       }
       final String filename =

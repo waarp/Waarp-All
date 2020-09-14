@@ -78,7 +78,7 @@ public class JavaExecutor extends AbstractExecutor {
       throw new Reply421Exception("Pre Exec command is not executable");
     }
     runnable.setArgs(true, useLocalExec, (int) delay, args);
-    logger.debug(className + ' ' + runnable.getClass().getName());
+    logger.debug("{} {}", className, runnable.getClass().getName());
     int status = -1;
     if (delay <= 0) {
       runnable.run();

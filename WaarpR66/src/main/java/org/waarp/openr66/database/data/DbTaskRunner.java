@@ -334,8 +334,8 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
         isSendThrough = false;
       }
     }
-    logger.debug("DbTask " + pojo.getTransferMode() + " isRecvThrough: " +
-                 isRecvThrough + " isSendThrough: " + isSendThrough);
+    logger.debug("DbTask {} isRecvThrough: {} isSendThrough: {}",
+                 pojo.getTransferMode(), isRecvThrough, isSendThrough);
   }
 
   private void setStopNow() {
@@ -1868,7 +1868,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
         preparedStatement.createPrepareStatement(request);
       }
       final int nb = preparedStatement.executeUpdate();
-      logger.info("Purge " + nb + " from " + request);
+      logger.info("Purge {} from {}", nb, request);
       return nb;
     } finally {
       preparedStatement.realClose();
@@ -1939,7 +1939,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
                              stopid, start, stop, rule, req, pending, transfer,
                              error, done, all);
       nb = preparedStatement.executeUpdate();
-      logger.info("Purge " + nb + " from " + request);
+      logger.info("Purge {} from {}", nb, request);
     } finally {
       if (preparedStatement != null) {
         preparedStatement.realClose();
@@ -2072,16 +2072,15 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
     if (!pojo.getRetrieveMode()) {
       int newrank = getRank();
       if (newrank > 0) {
-        logger.debug(
-            "Decrease Rank Restart of -" + Configuration.getRankRestart() +
-            " from " + newrank);
+        logger.debug("Decrease Rank Restart of -{} from {}",
+                     Configuration.getRankRestart(), newrank);
         newrank -= Configuration.getRankRestart();
         if (newrank <= 0) {
           newrank = 1;
         }
         if (getRank() != newrank) {
-          logger.warn("Decreased Rank Restart at rank: " + newrank + " for {}",
-                      this);
+          logger
+              .warn("Decreased Rank Restart at rank: {} for {}", newrank, this);
         }
       }
       setTransferTask(newrank);
@@ -2162,7 +2161,9 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
       logger.warn("StopOrCancel: {}     {}", code.getMesg(), toShortString());
       return true;
     } else {
-      logger.info("Transfer already finished {}", toShortString());
+      if (logger.isInfoEnabled()) {
+        logger.info("Transfer already finished {}", toShortString());
+      }
     }
     return false;
   }
@@ -2725,11 +2726,10 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    */
   private R66Future runNextTask(final String[][] tasks)
       throws OpenR66RunnerEndTasksException, OpenR66RunnerErrorException {
-    logger.debug((session == null) + ":" +
-                 (session == null? "norunner" : session.getRunner() == null) +
-                 ':' + toLogRunStep() + ':' + getStep() + ':' +
-                 (tasks == null? "null" : tasks.length) + " Sender: " +
-                 isSender() + ' ' +
+    logger.debug("{}:{}:{}:{}:{} Sender: {} {}", (session == null),
+                 session == null? "norunner" : session.getRunner() == null,
+                 toLogRunStep(), getStep(),
+                 tasks == null? "null" : tasks.length, isSender(),
                  rule.printTasks(isSender(), getGlobalStep()));
     if (tasks == null) {
       throw new OpenR66RunnerEndTasksException("No tasks!");
@@ -2764,7 +2764,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
       }
     }
     final AbstractTask task = getTask(tasks[getStep()], tempSession);
-    logger.debug(toLogRunStep() + " Task: " + task.getClass().getName());
+    logger.debug("{} Task: {}", toLogRunStep(), task.getClass().getName());
     task.run();
     task.getFutureCompletion().awaitOrInterruptible();
     // Possible long task
@@ -2826,7 +2826,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
         throw new OpenR66RunnerErrorException("Rule Object not initialized");
       }
     }
-    logger.debug(toLogRunStep() + " Sender: " + isSender() + ' ' +
+    logger.debug("{} Sender: {} {}", toLogRunStep(), isSender(),
                  rule.printTasks(isSender(), getGlobalStep()));
     switch (getGlobalStep()) {
       case PRETASK:
@@ -2883,9 +2883,8 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
   public void run() throws OpenR66RunnerErrorException {
     R66Future future;
     try {
-      logger.debug(toLogRunStep() + " Status: " + getStatus() + " Sender: " +
-                   isSender() + ' ' +
-                   rule.printTasks(isSender(), getGlobalStep()));
+      logger.debug("{} Status: {} Sender: {} {}", toLogRunStep(), getStatus(),
+                   isSender(), rule.printTasks(isSender(), getGlobalStep()));
     } catch (final NullPointerException ignored) {
       // Ignored
     }
@@ -2894,7 +2893,9 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
           "Current global STEP not ready to run: " + this);
     }
     while (true) {
-      logger.debug(toLogRunStep());
+      if (logger.isDebugEnabled()) {
+        logger.debug(toLogRunStep());
+      }
       try {
         future = runNext();
       } catch (final OpenR66RunnerEndTasksException e) {
@@ -2915,7 +2916,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
           setErrorExecutionStatus(ErrorCode.ExternalOp);
         }
         saveStatus();
-        logger.info("Future is failed: " + getErrorInfo().getMesg());
+        logger.info("Future is failed: {}", getErrorInfo().getMesg());
         if (future.getCause() != null) {
           throw new OpenR66RunnerErrorException(
               "Runner is failed: " + future.getCause().getMessage(),
@@ -2947,7 +2948,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
                                final R66File file, final R66Result finalValue,
                                final boolean status)
       throws OpenR66RunnerErrorException, OpenR66ProtocolSystemException {
-    logger.debug("status: " + status + ':' + finalValue);
+    logger.debug("status: {}:{}", status, finalValue);
 
     if (session == null) {
       if (localChannelReference == null) {
@@ -3130,9 +3131,9 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
         localChannelReference.validateEndTransfer(finalValue);
       }
     } else {
-      logger.debug(
-          "ContinueTransfer: " + continueTransfer + " status:" + status + ':' +
-          finalValue);
+      logger
+          .debug("ContinueTransfer: {} status:{}:{}", continueTransfer, status,
+                 finalValue);
       if (finalValue.getException() == null) {
         finalValue.setException(new OpenR66RunnerException("Trace for error"));
       }
@@ -3174,8 +3175,8 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
       saveStatus();
       finalValue.setAnswered(true);
     }
-    logger.debug("status: " + getStatus() + " wasNotError:" +
-                 (getGlobalStep() != TASKSTEP.ERRORTASK) + ':' + finalValue);
+    logger.debug("status: {} wasNotError:{}:{}", getStatus(),
+                 getGlobalStep() != TASKSTEP.ERRORTASK, finalValue);
     if (getGlobalStep() != TASKSTEP.ERRORTASK) {
       // errorstep was not already executed
       // real error
@@ -3919,7 +3920,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
           FileUtils.close(outputStream);
           final File file = new File(filename);
           if (!file.delete()) {
-            logger.debug("Cannot delete wrong XML file");
+            logger.info("Cannot delete wrong XML file");
           }
           logger.error("Cannot write XML file", e);
           throw new OpenR66ProtocolBusinessException(//NOSONAR
@@ -3928,7 +3929,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
           FileUtils.close(outputStream);
           final File file = new File(filename);
           if (!file.delete()) {
-            logger.debug("Cannot delete wrong XML file");
+            logger.info("Cannot delete wrong XML file");
           }
           logger.error("Cannot write XML file", e);
           throw new OpenR66ProtocolBusinessException(//NOSONAR
@@ -3938,7 +3939,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
           FileUtils.close(outputStream);
           final File file = new File(filename);
           if (!file.delete()) {
-            logger.debug("Cannot delete wrong  XML file");
+            logger.info("Cannot delete wrong  XML file");
           }
         }
       } else if (outputStream != null) {
@@ -4256,7 +4257,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
           FileUtils.close(outputStream);
           final File file = new File(filename);
           if (!file.delete()) {
-            logger.debug("Cannot delete wrong XML file");
+            logger.info("Cannot delete wrong XML file");
           }
           logger.error("Cannot write XML file", e);
           throw new OpenR66ProtocolBusinessException(//NOSONAR
@@ -4265,7 +4266,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
           FileUtils.close(outputStream);
           final File file = new File(filename);
           if (!file.delete()) {
-            logger.debug("Cannot delete wrong XML file");
+            logger.info("Cannot delete wrong XML file");
           }
           logger.error("Cannot write XML file", e);
           throw new OpenR66ProtocolBusinessException(//NOSONAR
@@ -4276,7 +4277,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
           FileUtils.close(outputStream);
           final File file = new File(filename);
           if (!file.delete()) {
-            logger.debug("Cannot delete wrong XML file");
+            logger.info("Cannot delete wrong XML file");
           }
         }
       } else if (outputStream != null) {
@@ -4396,7 +4397,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
   public void deleteXmlWorkNoDb() {
     final File file = new File(backendXmlFilename());
     if (!file.delete()) {
-      logger.debug("Cannot delete XML file");
+      logger.info("Cannot delete XML file");
     }
   }
 

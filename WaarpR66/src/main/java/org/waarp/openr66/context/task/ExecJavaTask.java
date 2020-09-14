@@ -102,11 +102,9 @@ public class ExecJavaTask extends AbstractTask {
     final boolean isSpooled =
         className.equals(SpooledInformTask.class.getName());
     if (isSpooled) {
-      logger.debug("Exec with " + className + ':' + argTransfer + " and {}",
-                   session);
+      logger.debug("Exec with {}:{} and {}", className, argTransfer, session);
     } else {
-      logger.debug("Exec with " + argRule + ':' + argTransfer + " and {}",
-                   session);
+      logger.debug("Exec with {}:{} and {}", argRule, argTransfer, session);
     }
     final R66Runnable runnable;
     try {
@@ -133,7 +131,7 @@ public class ExecJavaTask extends AbstractTask {
                    finalname.substring(className.length() + 1), businessRequest,
                    false);
     }
-    logger.debug(className + ' ' + runnable.getClass().getName());
+    logger.debug("{} {}", className, runnable.getClass().getName());
     if (!waitForValidation) {
       // Do not wait for validation
       futureCompletion.setSuccess();

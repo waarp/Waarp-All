@@ -76,8 +76,7 @@ public class ExecMoveTask extends AbstractExecTask {
      * case of status 0. The previous file should be deleted by the script or will be deleted in case of status 0.
      * If the status is 1, no change is made to the file.
      */
-    logger.info("ExecMove with " + argRule + ':' + argTransfer + " and {}",
-                session);
+    logger.info("ExecMove with {}:{} and {}", argRule, argTransfer, session);
     final String finalname = applyTransferSubstitutions(argRule);
 
     // Force the WaitForValidation

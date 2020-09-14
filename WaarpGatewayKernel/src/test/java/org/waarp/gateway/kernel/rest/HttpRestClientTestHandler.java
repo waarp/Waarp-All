@@ -35,7 +35,7 @@ public class HttpRestClientTestHandler
 
   protected void actionFromResponse(Channel channel) {
     final RestArgument ra = new RestArgument((ObjectNode) jsonObject);
-    logger.debug("RA: " + ra);
+    logger.debug("RA: {}", ra);
     if (jsonObject == null) {
       logger.warn("Recv: EMPTY");
     } else {

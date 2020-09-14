@@ -94,7 +94,7 @@ public class BusinessRequest extends AbstractBusinessRequest {
     future.awaitOrInterruptible();
 
     final long time2 = System.currentTimeMillis();
-    logger.debug("Finish Business Request: " + future.isSuccess());
+    logger.debug("Finish Business Request: {}", future.isSuccess());
     final long delay = time2 - time1;
     final OutputFormat outputFormat =
         new OutputFormat(BusinessRequest.class.getSimpleName(), args);
@@ -106,7 +106,9 @@ public class BusinessRequest extends AbstractBusinessRequest {
                                     "RequestInformation.Success")); //$NON-NLS-1$
       outputFormat.setValue(FIELDS.remote.name(), rhost);
       outputFormat.setValue("delay", delay);
-      logger.info(outputFormat.loggerOut());
+      if (logger.isInfoEnabled()) {
+        logger.info(outputFormat.loggerOut());
+      }
       if (!OutputFormat.isQuiet()) {
         outputFormat.sysout();
       }

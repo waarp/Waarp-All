@@ -503,9 +503,9 @@ public class FtpSession implements SessionInterface {
         }
         Thread.yield();
       }
-      logger.debug("DEBUG : " +
-                   (waitForSsl != null? waitForSsl.isDone() : "not Finished") +
-                   ':' + isSsl + ':' + getControlChannel());
+      logger.debug("DEBUG : {}:{}:{}",
+                   waitForSsl != null? waitForSsl.isDone() : "not Finished",
+                   isSsl, getControlChannel());
     }
     return isSsl;
   }

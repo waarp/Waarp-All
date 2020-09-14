@@ -52,16 +52,16 @@ public class LogJavaTask implements GatewayRunnable {
     }
     switch (delay) {
       case 1:
-        logger.debug(builder.toString());
+        logger.debug("{}", builder);
         break;
       case 2:
-        logger.info(builder.toString());
+        logger.info("{}", builder);
         break;
       case 4:
-        logger.error(builder.toString());
+        logger.error("{}", builder);
         break;
       default:
-        logger.warn(builder.toString());
+        logger.warn("{}", builder);
         break;
     }
   }
