@@ -20,9 +20,11 @@
 
 package org.waarp.openr66.dao.database;
 
+import org.waarp.common.lru.SynchronizedLruCache;
 import org.waarp.openr66.dao.BusinessDAO;
 import org.waarp.openr66.pojo.Business;
 import org.waarp.openr66.pojo.UpdatedInfo;
+import org.waarp.openr66.protocol.configuration.Configuration;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -61,8 +63,25 @@ public class DBBusinessDAO extends StatementExecutor<Business>
       ALIASES_FIELD + PARAMETER_COMMA + OTHERS_FIELD + PARAMETER_COMMA +
       UPDATED_INFO_FIELD + " = ? WHERE " + HOSTID_FIELD + PARAMETER;
 
+  /**
+   * Hashmap for Business
+   */
+  private static final SynchronizedLruCache<String, Business>
+      reentrantConcurrentHashMap =
+      new SynchronizedLruCache<String, Business>(500, 180000);
+
   public DBBusinessDAO(final Connection con) {
     super(con);
+  }
+
+  @Override
+  protected boolean isCachedEnable() {
+    return Configuration.configuration.getMultipleMonitors() <= 1;
+  }
+
+  @Override
+  protected SynchronizedLruCache<String, Business> getCache() {
+    return reentrantConcurrentHashMap;
   }
 
   @Override

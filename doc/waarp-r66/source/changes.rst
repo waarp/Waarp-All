@@ -21,6 +21,9 @@ Correctifs
 - Amélioration de la documentation
 - Amélioration du service Rest V2 pour inclure les informations des
   FileMonitoring
+- Amélioration des logs (performances et level)
+- Amélioration des accès base de données (Rule, Host, Business) par cache et
+  optimisation spécifique pour TaskRunner (mise à jour du compteur Rank)
 - Mise à jour des dépendances
 
 

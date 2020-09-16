@@ -121,6 +121,11 @@ public abstract class DBTransferDAO extends StatementExecutor<Transfer>
       UPDATED_INFO_FIELD + " = ?  WHERE " + OWNER_REQUEST_FIELD + " = ? AND " +
       REQUESTER_FIELD + " = ? AND " + REQUESTED_FIELD + " = ? AND " + ID_FIELD +
       " = ?";
+  private static final String SQL_UPDATE_LIMITED_RANK =
+      "UPDATE " + TABLE + " SET " + RANK_FIELD + PARAMETER_COMMA +
+      TRANSFER_STOP_FIELD + " = ?  WHERE " + OWNER_REQUEST_FIELD + " = ? AND " +
+      REQUESTER_FIELD + " = ? AND " + REQUESTED_FIELD + " = ? AND " + ID_FIELD +
+      " = ?";
 
   protected String getDeleteRequest() {
     return SQL_DELETE;
@@ -148,6 +153,10 @@ public abstract class DBTransferDAO extends StatementExecutor<Transfer>
 
   protected String getUpdateRequest() {
     return SQL_UPDATE;
+  }
+
+  private String getUpdateLimitedRankRequest() {
+    return SQL_UPDATE_LIMITED_RANK;
   }
 
   protected DBTransferDAO(final Connection con) {
@@ -187,6 +196,33 @@ public abstract class DBTransferDAO extends StatementExecutor<Transfer>
         transfer.getUpdatedInfo().ordinal(), transfer.getOwnerRequest(),
         transfer.getRequester(), transfer.getRequested(), transfer.getId()
     };
+  }
+
+  private Object[] getUpdateLimitedRankValues(final Transfer transfer) {
+    return new Object[] {
+        transfer.getRank(), transfer.getStop(), transfer.getOwnerRequest(),
+        transfer.getRequester(), transfer.getRequested(), transfer.getId()
+    };
+  }
+
+  public void updateRank(final Transfer e1)
+      throws DAOConnectionException, DAONoDataException {
+    final Object[] params = getUpdateLimitedRankValues(e1);
+
+    PreparedStatement stm = null;
+    try {
+      stm = connection.prepareStatement(getUpdateLimitedRankRequest());
+      setParameters(stm, params);
+      try {
+        executeUpdate(stm);
+      } catch (final SQLException e2) {
+        throw new DAONoDataException(e2);
+      }
+    } catch (final SQLException e) {
+      throw new DAOConnectionException(e);
+    } finally {
+      closeStatement(stm);
+    }
   }
 
   @Override
@@ -320,7 +356,6 @@ public abstract class DBTransferDAO extends StatementExecutor<Transfer>
     try {
       stm = connection.prepareStatement(query.toString());
       setParameters(stm, params);
-      logger.trace("{}", stm);
       res = executeQuery(stm);
       while (res.next()) {
         transfers.add(getFromResultSet(res));
@@ -465,7 +500,6 @@ public abstract class DBTransferDAO extends StatementExecutor<Transfer>
     if (transfer.getId() == ILLEGALVALUE) {
       transfer.setId(getNextId());
     }
-    logger.trace("TRACE ID {}", transfer.getId());
     super.insert(transfer);
   }
 
