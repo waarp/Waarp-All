@@ -384,7 +384,6 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
 
     // Usefull ?
     pojo.setRank(requestPacket.getRank());
-    logger.trace("TRACE ID {}", requestPacket.getSpecialId());
     pojo.setId(requestPacket.getSpecialId());
 
     originalSize = requestPacket.getOriginalSize();
@@ -433,7 +432,6 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
     pojo.setRequester(getRequester(session, requestPacket));
     pojo.setRank(requestPacket.getRank());
     if (requestPacket.getSpecialId() != ILLEGALVALUE) {
-      logger.trace("TRACE ID {}", requestPacket.getSpecialId());
       pojo.setId(requestPacket.getSpecialId());
     }
     originalSize = requestPacket.getOriginalSize();
@@ -722,7 +720,6 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
   public DbTaskRunner(final long id, final String requested)
       throws WaarpDatabaseException {
     TransferDAO transferAccess = null;
-    logger.trace("TRACE ID {}", id);
     try {
       transferAccess = DAOFactory.getInstance().getTransferDAO();
       final String requester = Configuration.configuration.getHostId(requested);
@@ -824,6 +821,66 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
     checkThroughMode();
   }
 
+  public void updateRank() throws WaarpDatabaseException {
+    // SNMP notification
+    if (pojo.getUpdatedInfo().equals(UpdatedInfo.INERROR) ||
+        pojo.getUpdatedInfo().equals(UpdatedInfo.INTERRUPTED)) {
+      if (Configuration.configuration.getR66Mib() != null) {
+        Configuration.configuration.getR66Mib().notifyInfoTask(
+            "Task is " + pojo.getUpdatedInfo().name(), this);
+      } else {
+        logger.debug("Could send a SNMP trap here since {}",
+                     pojo.getUpdatedInfo());
+      }
+    } else {
+      if (pojo.getGlobalStep() != Transfer.TASKSTEP.TRANSFERTASK ||
+          pojo.getGlobalStep() == Transfer.TASKSTEP.TRANSFERTASK &&
+          pojo.getRank() % 100 == 0) {
+        if (Configuration.configuration.getR66Mib() != null) {
+          Configuration.configuration.getR66Mib().notifyTask(
+              "Task is currently " + pojo.getUpdatedInfo().name(), this);
+        }
+      }
+    }
+    // FIX SelfRequest
+    if (isSelfRequest()) {
+      if (RequestPacket.isCompatibleMode(pojo.getTransferMode(),
+                                         pojo.getRetrieveMode()?
+                                             RequestPacket.TRANSFERMODE.RECVMODE
+                                                 .ordinal() :
+                                             RequestPacket.TRANSFERMODE.SENDMODE
+                                                 .ordinal())) {
+        optimizedRankUpdate();
+      }
+    } else {
+      optimizedRankUpdate();
+    }
+  }
+
+  /**
+   * Update Runner using Rank (and stop) only update
+   *
+   * @throws WaarpDatabaseException
+   */
+  private void optimizedRankUpdate() throws WaarpDatabaseException {
+    setStopNow();
+    TransferDAO transferAccess = null;
+    try {
+      transferAccess = DAOFactory.getInstance().getTransferDAO();
+      if (transferAccess instanceof DBTransferDAO) {
+        ((DBTransferDAO) transferAccess).updateRank(pojo);
+      } else {
+        transferAccess.update(pojo);
+      }
+    } catch (final DAOConnectionException e) {
+      throw new WaarpDatabaseException(e);
+    } catch (final DAONoDataException e) {
+      throw new WaarpDatabaseNoDataException(TRANSFER_NOT_FOUND, e);
+    } finally {
+      DAOFactory.closeDAO(transferAccess);
+    }
+  }
+
   @Override
   public void update() throws WaarpDatabaseException {
     // SNMP notification
@@ -905,8 +962,6 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    */
   public void setFrom(final DbTaskRunner runner) {
     if (runner != null) {
-      logger.trace("TRACE ID {}", pojo.getId());
-      logger.trace("TRACE ID {}", runner.getSpecialId());
       pojo.setInfoStatus(runner.getErrorInfo());
       pojo.setRank(runner.getRank());
       pojo.setStepStatus(runner.getStatus());
@@ -3240,7 +3295,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
     if (getRank() % modulo == 0) {
       // Save each 10 blocks
       try {
-        update();
+        updateRank();
       } catch (final WaarpDatabaseException e) {
         logger.warn("Cannot update Runner: {}", e.getMessage());
       }

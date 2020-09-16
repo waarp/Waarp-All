@@ -355,7 +355,6 @@ public class Transfer {
   }
 
   public void setId(final long id) {
-    logger.trace("TRACE ID {}", id);
     this.id = id;
   }
 

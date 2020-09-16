@@ -379,6 +379,10 @@ public class XMLTransferDAO implements TransferDAO {
     }
   }
 
+  public void updateRank(final Transfer e1) throws DAOConnectionException {
+    update(e1);
+  }
+
   @Override
   public void update(final Transfer transfer) throws DAOConnectionException {
     file = getFile(transfer.getRequester(), transfer.getRequested(),

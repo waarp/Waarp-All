@@ -22,6 +22,7 @@ package org.waarp.openr66.dao.database;
 
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.lru.SynchronizedLruCache;
 import org.waarp.openr66.dao.AbstractDAO;
 import org.waarp.openr66.dao.Filter;
 import org.waarp.openr66.dao.exception.DAOConnectionException;
@@ -43,23 +44,64 @@ public abstract class StatementExecutor<E> implements AbstractDAO<E> {
   protected static final String WHERE = " WHERE ";
   protected static final String PARAMETER = " = ?";
   protected static final String PARAMETER_COMMA = " = ?, ";
+
   protected final Connection connection;
 
   public abstract E getFromResultSet(ResultSet set)
       throws SQLException, DAOConnectionException;
 
+  protected boolean isCachedEnable() {
+    return false;
+  }
+
+  protected SynchronizedLruCache<String, E> getCache() {
+    return null;
+  }
+
+  protected void clearCache() {
+    if (isCachedEnable()) {
+      getCache().clear();
+    }
+  }
+
+  protected void addToCache(String key, E elt) {
+    if (isCachedEnable()) {
+      getCache().put(key, elt);
+    }
+  }
+
+  protected E getFromCache(String key) {
+    if (isCachedEnable()) {
+      return getCache().get(key);
+    }
+    return null;
+  }
+
+  protected void removeFromCache(String key) {
+    if (isCachedEnable()) {
+      getCache().remove(key);
+    }
+  }
+
+  protected boolean isInCache(String key) {
+    if (isCachedEnable()) {
+      return getCache().contains(key);
+    }
+    return false;
+  }
+
   protected StatementExecutor(final Connection con) {
     connection = con;
   }
 
-  public void setParameters(final PreparedStatement stm, final Object... values)
-      throws SQLException {
+  protected void setParameters(final PreparedStatement stm,
+                               final Object... values) throws SQLException {
     for (int i = 0; i < values.length; i++) {
       stm.setObject(i + 1, values[i]);
     }
   }
 
-  public void executeUpdate(final PreparedStatement stm) throws SQLException {
+  void executeUpdate(final PreparedStatement stm) throws SQLException {
     final int res;
     res = stm.executeUpdate();
     if (res < 1) {
@@ -71,16 +113,17 @@ public abstract class StatementExecutor<E> implements AbstractDAO<E> {
     }
   }
 
-  public void executeAction(final PreparedStatement stm) throws SQLException {
+  protected void executeAction(final PreparedStatement stm)
+      throws SQLException {
     stm.executeUpdate();
   }
 
-  public ResultSet executeQuery(final PreparedStatement stm)
+  protected ResultSet executeQuery(final PreparedStatement stm)
       throws SQLException {
     return stm.executeQuery();
   }
 
-  public void closeStatement(final Statement stm) {
+  protected void closeStatement(final Statement stm) {
     if (stm == null) {
       return;
     }
@@ -91,7 +134,7 @@ public abstract class StatementExecutor<E> implements AbstractDAO<E> {
     }
   }
 
-  public void closeResultSet(final ResultSet rs) {
+  protected void closeResultSet(final ResultSet rs) {
     if (rs == null) {
       return;
     }
@@ -133,6 +176,10 @@ public abstract class StatementExecutor<E> implements AbstractDAO<E> {
   @Override
   public void delete(final E e1)
       throws DAOConnectionException, DAONoDataException {
+    if (isCachedEnable()) {
+      // Need to check since all does not accept getId
+      removeFromCache(getId(e1));
+    }
     PreparedStatement stm = null;
     try {
       stm = connection.prepareStatement(getDeleteRequest());
@@ -151,6 +198,7 @@ public abstract class StatementExecutor<E> implements AbstractDAO<E> {
 
   @Override
   public void deleteAll() throws DAOConnectionException {
+    clearCache();
     PreparedStatement stm = null;
     try {
       stm = connection.prepareStatement(getDeleteAllRequest());
@@ -224,6 +272,9 @@ public abstract class StatementExecutor<E> implements AbstractDAO<E> {
 
   @Override
   public boolean exist(final String id) throws DAOConnectionException {
+    if (isInCache(id)) {
+      return true;
+    }
     PreparedStatement stm = null;
     ResultSet res = null;
     try {
@@ -242,6 +293,12 @@ public abstract class StatementExecutor<E> implements AbstractDAO<E> {
   @Override
   public E select(final String id)
       throws DAOConnectionException, DAONoDataException {
+    if (isCachedEnable()) {
+      E found = getFromCache(id);
+      if (found != null) {
+        return found;
+      }
+    }
     PreparedStatement stm = null;
     ResultSet res = null;
     try {
@@ -249,7 +306,9 @@ public abstract class StatementExecutor<E> implements AbstractDAO<E> {
       setParameters(stm, id);
       res = executeQuery(stm);
       if (res.next()) {
-        return getFromResultSet(res);
+        E found = getFromResultSet(res);
+        addToCache(id, found);
+        return found;
       } else {
         throw new DAONoDataException("No " + getClass().getName() + " found");
       }
@@ -263,6 +322,10 @@ public abstract class StatementExecutor<E> implements AbstractDAO<E> {
 
   @Override
   public void insert(final E e1) throws DAOConnectionException {
+    if (isCachedEnable()) {
+      // Need to check since all does not accept getId
+      addToCache(getId(e1), e1);
+    }
     final Object[] params = getInsertValues(e1);
 
     PreparedStatement stm = null;
@@ -280,6 +343,10 @@ public abstract class StatementExecutor<E> implements AbstractDAO<E> {
   @Override
   public void update(final E e1)
       throws DAOConnectionException, DAONoDataException {
+    if (isCachedEnable()) {
+      // Need to check since all does not accept getId
+      addToCache(getId(e1), e1);
+    }
     final Object[] params = getUpdateValues(e1);
 
     PreparedStatement stm = null;

@@ -24,12 +24,14 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.waarp.common.lru.SynchronizedLruCache;
 import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.openr66.dao.RuleDAO;
 import org.waarp.openr66.dao.exception.DAOConnectionException;
 import org.waarp.openr66.pojo.Rule;
 import org.waarp.openr66.pojo.RuleTask;
 import org.waarp.openr66.pojo.UpdatedInfo;
+import org.waarp.openr66.protocol.configuration.Configuration;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.ByteArrayInputStream;
@@ -92,8 +94,25 @@ public class DBRuleDAO extends StatementExecutor<Rule> implements RuleDAO {
       S_ERROR_TASKS_FIELD + PARAMETER_COMMA + UPDATED_INFO_FIELD +
       " = ? WHERE " + ID_FIELD + PARAMETER;
 
+  /**
+   * Hashmap for Rule
+   */
+  private static final SynchronizedLruCache<String, Rule>
+      reentrantConcurrentHashMap =
+      new SynchronizedLruCache<String, Rule>(500, 180000);
+
   public DBRuleDAO(final Connection con) {
     super(con);
+  }
+
+  @Override
+  protected boolean isCachedEnable() {
+    return Configuration.configuration.getMultipleMonitors() <= 1;
+  }
+
+  @Override
+  protected SynchronizedLruCache<String, Rule> getCache() {
+    return reentrantConcurrentHashMap;
   }
 
   @Override
