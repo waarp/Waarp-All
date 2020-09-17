@@ -19,8 +19,10 @@
  */
 package org.waarp.common.lru;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * Threadsafe synchronized implementation of LruCache based on LinkedHashMap.
@@ -121,6 +123,16 @@ public class SynchronizedLruCache<K, V> extends AbstractLruCache<K, V> {
       return cv.getValue();
     }
     return null;
+  }
+
+  @Override
+  public Collection<V> values() {
+    Collection<InterfaceLruCacheEntry<V>> cacheEntry = cacheMap.values();
+    List<V> list = new ArrayList<V>(cacheEntry.size());
+    for (InterfaceLruCacheEntry<V> entry : cacheEntry) {
+      list.add(entry.getValue());
+    }
+    return list;
   }
 
   @Override

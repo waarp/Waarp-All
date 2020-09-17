@@ -1096,6 +1096,8 @@ public class TransferActions extends ServerActions {
       globalDigest = null;
       if (!localhash.equalsIgnoreCase(hash)) {
         // bad global Hash
+        logger.warn("Partner GlobalHash error: {}",
+                    localChannelReference.getPartner());
         final R66Result result = new R66Result(new OpenR66RunnerErrorException(
             Messages.getString("LocalServerHandler.19") + //$NON-NLS-1$
             localChannelReference.getPartner().getDigestAlgo().algoName + ')'),

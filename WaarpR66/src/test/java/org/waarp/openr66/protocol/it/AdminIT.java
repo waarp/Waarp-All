@@ -20,6 +20,8 @@
 
 package org.waarp.openr66.protocol.it;
 
+import io.netty.util.ResourceLeakDetector;
+import io.netty.util.ResourceLeakDetector.Level;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -73,6 +75,11 @@ public class AdminIT extends TestAbstract {
   public static void setUpBeforeClass() throws Exception {
     err = System.err;
     System.setErr(new NullPrintStream());
+    if (!SystemPropertyUtil.get(IT_LONG_TEST, false)) {
+      ResourceLeakDetector.setLevel(Level.PARANOID);
+    } else {
+      ResourceLeakDetector.setLevel(Level.SIMPLE);
+    }
     final ClassLoader classLoader = NetworkClientTest.class.getClassLoader();
     final File file =
         new File(classLoader.getResource("logback-test.xml").getFile());
@@ -124,7 +131,6 @@ public class AdminIT extends TestAbstract {
       // 2 | type | V2 [  |
       String v2BaseUri = baseUri + "v2/";
       driver.get(v2BaseUri + "transfers");
-      SysErrLogger.FAKE_LOGGER.sysout(driver.getCurrentUrl());
       assertTrue(driver.getPageSource()
                        .equals("<html><head></head><body></body></html>"));
     } catch (NoSuchElementException e) {
@@ -149,7 +155,7 @@ public class AdminIT extends TestAbstract {
       assertTrue(driver.getPageSource().contains("results"));
       int max = 60 * 25;// Roughly 1min
       if (SystemPropertyUtil.get(IT_LONG_TEST, false)) {
-        max = 10000; // Roughly 7 min
+        max = 5000; // Roughly 4 min
       }
       for (int i = 0; i < max; i++) {
         driver.get(v2BaseUri + "transfers");
@@ -205,7 +211,7 @@ public class AdminIT extends TestAbstract {
           driver.getCurrentUrl().equals("https://127.0.0.1:8067/Listing.html"));
       int max = 60 * 8;// Roughly 1min
       if (SystemPropertyUtil.get(IT_LONG_TEST, false)) {
-        max = 3500; // Roughly 7 min
+        max = 2000; // Roughly 4 min
       }
       for (int i = 0; i < max; i++) {
         // 5 | click | linkText=TRANSFERS |  |
