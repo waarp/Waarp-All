@@ -69,6 +69,7 @@ import java.net.URL;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -97,6 +98,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
       try {
         return new DBBusinessDAO(getConnection());
       } catch (final SQLException e) {
+        SysErrLogger.FAKE_LOGGER.syserr(e);
         fail(e.getMessage());
         return null;
       }
@@ -107,6 +109,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
       try {
         return new DBHostDAO(getConnection());
       } catch (final SQLException e) {
+        SysErrLogger.FAKE_LOGGER.syserr(e);
         fail(e.getMessage());
         return null;
       }
@@ -117,6 +120,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
       try {
         return new DBLimitDAO(getConnection());
       } catch (final SQLException e) {
+        SysErrLogger.FAKE_LOGGER.syserr(e);
         fail(e.getMessage());
         return null;
       }
@@ -128,6 +132,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
       try {
         return new DBMultipleMonitorDAO(getConnection());
       } catch (final SQLException e) {
+        SysErrLogger.FAKE_LOGGER.syserr(e);
         fail(e.getMessage());
         return null;
       }
@@ -138,6 +143,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
       try {
         return new DBRuleDAO(getConnection());
       } catch (final SQLException e) {
+        SysErrLogger.FAKE_LOGGER.syserr(e);
         fail(e.getMessage());
         return null;
       }
@@ -148,6 +154,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
       try {
         return getDAO(getConnection());
       } catch (final SQLException e) {
+        SysErrLogger.FAKE_LOGGER.syserr(e);
         fail(e.getMessage());
         return null;
       }
@@ -161,6 +168,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
           Thread.currentThread().getContextClassLoader().getResource(script);
       runner.runScript(new BufferedReader(new FileReader(url.getPath())));
     } catch (final Exception e) {
+      SysErrLogger.FAKE_LOGGER.syserr(e);
       fail(e.getMessage());
     }
   }
@@ -171,6 +179,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
       con = getConnection();
       initDB();
     } catch (final Exception e) {
+      SysErrLogger.FAKE_LOGGER.syserr(e);
       fail(e.getMessage());
     }
   }
@@ -187,6 +196,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
         con.close();
       }
     } catch (final Exception e) {
+      SysErrLogger.FAKE_LOGGER.syserr(e);
       fail(e.getMessage());
     }
   }
@@ -260,6 +270,9 @@ public abstract class DBAllDAOTest extends TestAbstract {
 
   @Test
   public void startStopServerR66() throws Exception {
+    if (checkXml()) {
+      return;
+    }
     String fileconf = null;
     try {
       fileconf = getServerConfigFile();
@@ -327,10 +340,9 @@ public abstract class DBAllDAOTest extends TestAbstract {
       final BusinessDAO dao = getDaoFactory().getBusinessDAO();
       dao.deleteAll();
 
-      final ResultSet res =
-          con.createStatement().executeQuery("SELECT * FROM hostconfig");
-      assertFalse(res.next());
+      checkSql("SELECT * FROM hostconfig");
     } catch (final Exception e) {
+      SysErrLogger.FAKE_LOGGER.syserr(e);
       fail(e.getMessage());
     }
   }
@@ -341,10 +353,9 @@ public abstract class DBAllDAOTest extends TestAbstract {
       final BusinessDAO dao = getDaoFactory().getBusinessDAO();
       dao.delete(new Business("server1", "", "", "", ""));
 
-      final ResultSet res = con.createStatement().executeQuery(
-          "SELECT * FROM hostconfig where hostid = 'server1'");
-      assertFalse(res.next());
+      checkSql("SELECT * FROM hostconfig where hostid = 'server1'");
     } catch (final Exception e) {
+      SysErrLogger.FAKE_LOGGER.syserr(e);
       fail(e.getMessage());
     }
   }
@@ -354,7 +365,14 @@ public abstract class DBAllDAOTest extends TestAbstract {
     try {
       final BusinessDAO dao = getDaoFactory().getBusinessDAO();
       assertEquals(5, dao.getAll().size());
+    } catch (final DAOConnectionException e) {
+      // Ignore since OK if XML
+      if (!checkXml()) {
+        SysErrLogger.FAKE_LOGGER.syserr(e);
+        fail(e.getMessage());
+      }
     } catch (final Exception e) {
+      SysErrLogger.FAKE_LOGGER.syserr(e);
       fail(e.getMessage());
     }
   }
@@ -376,8 +394,15 @@ public abstract class DBAllDAOTest extends TestAbstract {
         fail("Should raised an exception");
       } catch (final DAONoDataException e) {
         // Ignore since OK
+      } catch (final DAOConnectionException e) {
+        // Ignore since OK if XML
+        if (!checkXml()) {
+          SysErrLogger.FAKE_LOGGER.syserr(e);
+          fail(e.getMessage());
+        }
       }
     } catch (final Exception e) {
+      SysErrLogger.FAKE_LOGGER.syserr(e);
       fail(e.getMessage());
     }
   }
@@ -388,7 +413,14 @@ public abstract class DBAllDAOTest extends TestAbstract {
       final BusinessDAO dao = getDaoFactory().getBusinessDAO();
       assertTrue(dao.exist("server1"));
       assertFalse(dao.exist("ghost"));
+    } catch (final DAOConnectionException e) {
+      // Ignore since OK if XML
+      if (!checkXml()) {
+        SysErrLogger.FAKE_LOGGER.syserr(e);
+        fail(e.getMessage());
+      }
     } catch (final Exception e) {
+      SysErrLogger.FAKE_LOGGER.syserr(e);
       fail(e.getMessage());
     }
   }
@@ -400,6 +432,9 @@ public abstract class DBAllDAOTest extends TestAbstract {
       dao.insert(new Business("chacha", "lolo", "lala", "minou", "ect",
                               UpdatedInfo.TOSUBMIT));
 
+      if (checkXml()) {
+        return;
+      }
       final ResultSet res = con.createStatement().executeQuery(
           "SELECT COUNT(1) as count FROM hostconfig");
       res.next();
@@ -415,6 +450,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
       assertEquals("ect", res2.getString("others"));
       assertEquals(UpdatedInfo.TOSUBMIT.ordinal(), res2.getInt("updatedInfo"));
     } catch (final Exception e) {
+      SysErrLogger.FAKE_LOGGER.syserr(e);
       fail(e.getMessage());
     }
   }
@@ -425,7 +461,9 @@ public abstract class DBAllDAOTest extends TestAbstract {
       final BusinessDAO dao = getDaoFactory().getBusinessDAO();
       dao.update(new Business("server2", "lolo", "lala", "minou", "ect",
                               UpdatedInfo.RUNNING));
-
+      if (checkXml()) {
+        return;
+      }
       final ResultSet res = con.createStatement().executeQuery(
           "SELECT * FROM hostconfig WHERE hostid = 'server2'");
       res.next();
@@ -436,6 +474,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
       assertEquals("ect", res.getString("others"));
       assertEquals(UpdatedInfo.RUNNING.ordinal(), res.getInt("updatedInfo"));
     } catch (final Exception e) {
+      SysErrLogger.FAKE_LOGGER.syserr(e);
       fail(e.getMessage());
     }
   }
@@ -447,7 +486,14 @@ public abstract class DBAllDAOTest extends TestAbstract {
     try {
       final BusinessDAO dao = getDaoFactory().getBusinessDAO();
       assertEquals(2, dao.find(map).size());
+    } catch (final DAOConnectionException e) {
+      // Ignore since OK if XML
+      if (!checkXml()) {
+        SysErrLogger.FAKE_LOGGER.syserr(e);
+        fail(e.getMessage());
+      }
     } catch (final Exception e) {
+      SysErrLogger.FAKE_LOGGER.syserr(e);
       fail(e.getMessage());
     }
   }
@@ -462,10 +508,9 @@ public abstract class DBAllDAOTest extends TestAbstract {
       final HostDAO dao = getDaoFactory().getHostDAO();
       dao.deleteAll();
 
-      final ResultSet res =
-          con.createStatement().executeQuery("SELECT * FROM hosts");
-      assertFalse(res.next());
+      checkSql("SELECT * FROM hosts");
     } catch (final Exception e) {
+      SysErrLogger.FAKE_LOGGER.syserr(e);
       fail(e.getMessage());
     }
   }
@@ -476,10 +521,9 @@ public abstract class DBAllDAOTest extends TestAbstract {
       final HostDAO dao = getDaoFactory().getHostDAO();
       dao.delete(new Host("server1", "", 666, null, false, false));
 
-      final ResultSet res = con.createStatement().executeQuery(
-          "SELECT * FROM hosts where hostid = 'server1'");
-      assertFalse(res.next());
+      checkSql("SELECT * FROM hosts where hostid = 'server1'");
     } catch (final Exception e) {
+      SysErrLogger.FAKE_LOGGER.syserr(e);
       fail(e.getMessage());
     }
   }
@@ -489,7 +533,14 @@ public abstract class DBAllDAOTest extends TestAbstract {
     try {
       final HostDAO dao = getDaoFactory().getHostDAO();
       assertEquals(3, dao.getAll().size());
+    } catch (final DAOConnectionException e) {
+      // Ignore since OK if XML
+      if (!checkXml()) {
+        SysErrLogger.FAKE_LOGGER.syserr(e);
+        fail(e.getMessage());
+      }
     } catch (final Exception e) {
+      SysErrLogger.FAKE_LOGGER.syserr(e);
       fail(e.getMessage());
     }
   }
@@ -514,10 +565,17 @@ public abstract class DBAllDAOTest extends TestAbstract {
       try {
         dao.select("ghost");
         fail("Should raised an exception");
+      } catch (final DAOConnectionException e) {
+        // Ignore since OK if XML
+        if (!checkXml()) {
+          SysErrLogger.FAKE_LOGGER.syserr(e);
+          fail(e.getMessage());
+        }
       } catch (final DAONoDataException e) {
         // Ignore since OK
       }
     } catch (final Exception e) {
+      SysErrLogger.FAKE_LOGGER.syserr(e);
       fail(e.getMessage());
     }
   }
@@ -528,7 +586,14 @@ public abstract class DBAllDAOTest extends TestAbstract {
       final HostDAO dao = getDaoFactory().getHostDAO();
       assertTrue(dao.exist("server1"));
       assertFalse(dao.exist("ghost"));
+    } catch (final DAOConnectionException e) {
+      // Ignore since OK if XML
+      if (!checkXml()) {
+        SysErrLogger.FAKE_LOGGER.syserr(e);
+        fail(e.getMessage());
+      }
     } catch (final Exception e) {
+      SysErrLogger.FAKE_LOGGER.syserr(e);
       fail(e.getMessage());
     }
   }
@@ -539,7 +604,9 @@ public abstract class DBAllDAOTest extends TestAbstract {
       final HostDAO dao = getDaoFactory().getHostDAO();
       dao.insert(new Host("chacha", "address", 666,
                           "aaa".getBytes(WaarpStringUtils.UTF8), false, false));
-
+      if (checkXml()) {
+        return;
+      }
       final ResultSet res = con.createStatement().executeQuery(
           "SELECT COUNT(1) as count FROM hosts");
       res.next();
@@ -560,6 +627,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
       assertTrue(res2.getBoolean("isactive"));
       assertEquals(0, res2.getInt("updatedinfo"));
     } catch (final Exception e) {
+      SysErrLogger.FAKE_LOGGER.syserr(e);
       fail(e.getMessage());
     }
   }
@@ -571,7 +639,9 @@ public abstract class DBAllDAOTest extends TestAbstract {
       dao.update(new Host("server2", "address", 666,
                           "password".getBytes(WaarpStringUtils.UTF8), false,
                           false));
-
+      if (checkXml()) {
+        return;
+      }
       final ResultSet res = con.createStatement().executeQuery(
           "SELECT * FROM hosts WHERE hostid = 'server2'");
       res.next();
@@ -587,6 +657,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
       assertTrue(res.getBoolean("isactive"));
       assertEquals(0, res.getInt("updatedinfo"));
     } catch (final Exception e) {
+      SysErrLogger.FAKE_LOGGER.syserr(e);
       fail(e.getMessage());
     }
   }
@@ -598,8 +669,14 @@ public abstract class DBAllDAOTest extends TestAbstract {
     try {
       final HostDAO dao = getDaoFactory().getHostDAO();
       assertEquals(2, dao.find(map).size());
+    } catch (final DAOConnectionException e) {
+      // Ignore since OK if XML
+      if (!checkXml()) {
+        SysErrLogger.FAKE_LOGGER.syserr(e);
+        fail(e.getMessage());
+      }
     } catch (final Exception e) {
-      e.printStackTrace();
+      SysErrLogger.FAKE_LOGGER.syserr(e);
       fail(e.getMessage());
     }
   }
@@ -614,10 +691,9 @@ public abstract class DBAllDAOTest extends TestAbstract {
       final LimitDAO dao = getDaoFactory().getLimitDAO();
       dao.deleteAll();
 
-      final ResultSet res =
-          con.createStatement().executeQuery("SELECT * FROM configuration");
-      assertFalse(res.next());
+      checkSql("SELECT * FROM configuration");
     } catch (final Exception e) {
+      SysErrLogger.FAKE_LOGGER.syserr(e);
       fail(e.getMessage());
     }
   }
@@ -628,10 +704,9 @@ public abstract class DBAllDAOTest extends TestAbstract {
       final LimitDAO dao = getDaoFactory().getLimitDAO();
       dao.delete(new Limit("server1", 0L));
 
-      final ResultSet res = con.createStatement().executeQuery(
-          "SELECT * FROM configuration where hostid = 'server1'");
-      assertFalse(res.next());
+      checkSql("SELECT * FROM configuration where hostid = 'server1'");
     } catch (final Exception e) {
+      SysErrLogger.FAKE_LOGGER.syserr(e);
       fail(e.getMessage());
     }
   }
@@ -641,7 +716,14 @@ public abstract class DBAllDAOTest extends TestAbstract {
     try {
       final LimitDAO dao = getDaoFactory().getLimitDAO();
       assertEquals(3, dao.getAll().size());
+    } catch (final DAOConnectionException e) {
+      // Ignore since OK if XML
+      if (!checkXml()) {
+        SysErrLogger.FAKE_LOGGER.syserr(e);
+        fail(e.getMessage());
+      }
     } catch (final Exception e) {
+      SysErrLogger.FAKE_LOGGER.syserr(e);
       fail(e.getMessage());
     }
   }
@@ -665,8 +747,15 @@ public abstract class DBAllDAOTest extends TestAbstract {
         fail("Should raised an exception");
       } catch (final DAONoDataException e) {
         // Ignore since OK
+      } catch (final DAOConnectionException e) {
+        // Ignore since OK if XML
+        if (!checkXml()) {
+          SysErrLogger.FAKE_LOGGER.syserr(e);
+          fail(e.getMessage());
+        }
       }
     } catch (final Exception e) {
+      SysErrLogger.FAKE_LOGGER.syserr(e);
       fail(e.getMessage());
     }
   }
@@ -677,7 +766,14 @@ public abstract class DBAllDAOTest extends TestAbstract {
       final LimitDAO dao = getDaoFactory().getLimitDAO();
       assertTrue(dao.exist("server1"));
       assertFalse(dao.exist("ghost"));
+    } catch (final DAOConnectionException e) {
+      // Ignore since OK if XML
+      if (!checkXml()) {
+        SysErrLogger.FAKE_LOGGER.syserr(e);
+        fail(e.getMessage());
+      }
     } catch (final Exception e) {
+      SysErrLogger.FAKE_LOGGER.syserr(e);
       fail(e.getMessage());
     }
   }
@@ -688,7 +784,9 @@ public abstract class DBAllDAOTest extends TestAbstract {
       final LimitDAO dao = getDaoFactory().getLimitDAO();
       dao.insert(
           new Limit("chacha", 4L, 1L, 5L, 13L, 12, UpdatedInfo.TOSUBMIT));
-
+      if (checkXml()) {
+        return;
+      }
       final ResultSet res = con.createStatement().executeQuery(
           "SELECT COUNT(1) as count FROM configuration");
       res.next();
@@ -705,6 +803,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
       assertEquals(12, res2.getLong("writeSessionLimit"));
       assertEquals(UpdatedInfo.TOSUBMIT.ordinal(), res2.getInt("updatedInfo"));
     } catch (final Exception e) {
+      SysErrLogger.FAKE_LOGGER.syserr(e);
       fail(e.getMessage());
     }
   }
@@ -715,7 +814,9 @@ public abstract class DBAllDAOTest extends TestAbstract {
       final LimitDAO dao = getDaoFactory().getLimitDAO();
       dao.update(
           new Limit("server2", 4L, 1L, 5L, 13L, 12L, UpdatedInfo.RUNNING));
-
+      if (checkXml()) {
+        return;
+      }
       final ResultSet res = con.createStatement().executeQuery(
           "SELECT * FROM configuration WHERE hostid = 'server2'");
       res.next();
@@ -727,6 +828,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
       assertEquals(12, res.getLong("writeSessionLimit"));
       assertEquals(UpdatedInfo.RUNNING.ordinal(), res.getInt("updatedInfo"));
     } catch (final Exception e) {
+      SysErrLogger.FAKE_LOGGER.syserr(e);
       fail(e.getMessage());
     }
   }
@@ -738,7 +840,14 @@ public abstract class DBAllDAOTest extends TestAbstract {
     try {
       final LimitDAO dao = getDaoFactory().getLimitDAO();
       assertEquals(2, dao.find(map).size());
+    } catch (final DAOConnectionException e) {
+      // Ignore since OK if XML
+      if (!checkXml()) {
+        SysErrLogger.FAKE_LOGGER.syserr(e);
+        fail(e.getMessage());
+      }
     } catch (final Exception e) {
+      SysErrLogger.FAKE_LOGGER.syserr(e);
       fail(e.getMessage());
     }
   }
@@ -757,10 +866,9 @@ public abstract class DBAllDAOTest extends TestAbstract {
       }
       dao.deleteAll();
 
-      final ResultSet res =
-          con.createStatement().executeQuery("SELECT * FROM multiplemonitor");
-      assertFalse(res.next());
+      checkSql("SELECT * FROM multiplemonitor");
     } catch (final Exception e) {
+      SysErrLogger.FAKE_LOGGER.syserr(e);
       fail(e.getMessage());
     }
   }
@@ -775,10 +883,9 @@ public abstract class DBAllDAOTest extends TestAbstract {
       }
       dao.delete(new MultipleMonitor("server1", 0, 0, 0));
 
-      final ResultSet res = con.createStatement().executeQuery(
-          "SELECT * FROM multiplemonitor where hostid = 'server1'");
-      assertFalse(res.next());
+      checkSql("SELECT * FROM multiplemonitor where hostid = 'server1'");
     } catch (final Exception e) {
+      SysErrLogger.FAKE_LOGGER.syserr(e);
       fail(e.getMessage());
     }
   }
@@ -793,6 +900,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
       }
       assertEquals(4, dao.getAll().size());
     } catch (final Exception e) {
+      SysErrLogger.FAKE_LOGGER.syserr(e);
       fail(e.getMessage());
     }
   }
@@ -818,6 +926,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
         // Ignore since OK
       }
     } catch (final Exception e) {
+      SysErrLogger.FAKE_LOGGER.syserr(e);
       fail(e.getMessage());
     }
   }
@@ -833,6 +942,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
       assertTrue(dao.exist("server1"));
       assertFalse(dao.exist("ghost"));
     } catch (final Exception e) {
+      SysErrLogger.FAKE_LOGGER.syserr(e);
       fail(e.getMessage());
     }
   }
@@ -860,6 +970,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
       assertEquals(19, res2.getInt("countHost"));
       assertEquals(31, res2.getInt("countConfig"));
     } catch (final Exception e) {
+      SysErrLogger.FAKE_LOGGER.syserr(e);
       fail(e.getMessage());
     }
   }
@@ -882,6 +993,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
       assertEquals(19, res.getInt("countHost"));
       assertEquals(31, res.getInt("countConfig"));
     } catch (final Exception e) {
+      SysErrLogger.FAKE_LOGGER.syserr(e);
       fail(e.getMessage());
     }
   }
@@ -898,6 +1010,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
       }
       assertEquals(2, dao.find(map).size());
     } catch (final Exception e) {
+      SysErrLogger.FAKE_LOGGER.syserr(e);
       fail(e.getMessage());
     }
   }
@@ -912,10 +1025,9 @@ public abstract class DBAllDAOTest extends TestAbstract {
       final RuleDAO dao = getDaoFactory().getRuleDAO();
       dao.deleteAll();
 
-      final ResultSet res =
-          con.createStatement().executeQuery("SELECT * FROM rules");
-      assertFalse(res.next());
+      checkSql("SELECT * FROM rules");
     } catch (final Exception e) {
+      SysErrLogger.FAKE_LOGGER.syserr(e);
       fail(e.getMessage());
     }
   }
@@ -926,20 +1038,23 @@ public abstract class DBAllDAOTest extends TestAbstract {
       final RuleDAO dao = getDaoFactory().getRuleDAO();
       dao.delete(new Rule("default", 1));
 
-      final ResultSet res = con.createStatement().executeQuery(
-          "SELECT * FROM rules where idrule = 'default'");
-      assertFalse(res.next());
+      checkSql("SELECT * FROM rules where idrule = 'default'");
     } catch (final Exception e) {
+      SysErrLogger.FAKE_LOGGER.syserr(e);
       fail(e.getMessage());
     }
   }
 
   @Test
   public void testGetAllRule() {
+    if (checkXml()) {
+      return;
+    }
     try {
       final RuleDAO dao = getDaoFactory().getRuleDAO();
       assertEquals(3, dao.getAll().size());
     } catch (final Exception e) {
+      SysErrLogger.FAKE_LOGGER.syserr(e);
       fail(e.getMessage());
     }
   }
@@ -967,10 +1082,17 @@ public abstract class DBAllDAOTest extends TestAbstract {
       try {
         dao.select("ghost");
         fail("Should raised an exception");
+      } catch (final DAOConnectionException e) {
+        // Ignore since OK if XML
+        if (!checkXml()) {
+          SysErrLogger.FAKE_LOGGER.syserr(e);
+          fail(e.getMessage());
+        }
       } catch (final DAONoDataException e) {
         // Ignore since OK
       }
     } catch (final Exception e) {
+      SysErrLogger.FAKE_LOGGER.syserr(e);
       fail(e.getMessage());
     }
   }
@@ -982,6 +1104,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
       assertTrue(dao.exist("dummy"));
       assertFalse(dao.exist("ghost"));
     } catch (final Exception e) {
+      SysErrLogger.FAKE_LOGGER.syserr(e);
       fail(e.getMessage());
     }
   }
@@ -991,7 +1114,9 @@ public abstract class DBAllDAOTest extends TestAbstract {
     try {
       final RuleDAO dao = getDaoFactory().getRuleDAO();
       dao.insert(new Rule("chacha", 2));
-
+      if (checkXml()) {
+        return;
+      }
       final ResultSet res = con.createStatement().executeQuery(
           "SELECT COUNT(1) as count FROM rules");
       res.next();
@@ -1019,6 +1144,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
       assertEquals("<tasks></tasks>", res2.getString("serrortasks"));
       assertEquals(0, res2.getInt("updatedInfo"));
     } catch (final Exception e) {
+      SysErrLogger.FAKE_LOGGER.syserr(e);
       fail(e.getMessage());
     }
   }
@@ -1028,7 +1154,9 @@ public abstract class DBAllDAOTest extends TestAbstract {
     try {
       final RuleDAO dao = getDaoFactory().getRuleDAO();
       dao.update(new Rule("dummy", 2));
-
+      if (checkXml()) {
+        return;
+      }
       final ResultSet res = con.createStatement().executeQuery(
           "SELECT * FROM rules WHERE idrule = 'dummy'");
       res.next();
@@ -1051,6 +1179,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
       assertEquals("<tasks></tasks>", res.getString("serrortasks"));
       assertEquals(0, res.getInt("updatedInfo"));
     } catch (final Exception e) {
+      SysErrLogger.FAKE_LOGGER.syserr(e);
       fail(e.getMessage());
     }
   }
@@ -1062,7 +1191,14 @@ public abstract class DBAllDAOTest extends TestAbstract {
     try {
       final RuleDAO dao = getDaoFactory().getRuleDAO();
       assertEquals(2, dao.find(map).size());
+    } catch (final DAOConnectionException e) {
+      // Ignore since OK if XML
+      if (!checkXml()) {
+        SysErrLogger.FAKE_LOGGER.syserr(e);
+        fail(e.getMessage());
+      }
     } catch (final Exception e) {
+      SysErrLogger.FAKE_LOGGER.syserr(e);
       fail(e.getMessage());
     }
   }
@@ -1076,9 +1212,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
     final TransferDAO dao = getDAO(getConnection());
     dao.deleteAll();
 
-    final ResultSet res =
-        con.createStatement().executeQuery("SELECT * FROM runner");
-    assertFalse(res.next());
+    checkSql("SELECT * FROM runner");
   }
 
   public abstract TransferDAO getDAO(Connection con)
@@ -1091,16 +1225,15 @@ public abstract class DBAllDAOTest extends TestAbstract {
                             "server1", "server2", "", Transfer.TASKSTEP.NOTASK,
                             Transfer.TASKSTEP.NOTASK, 0, ErrorCode.Unknown,
                             ErrorCode.Unknown, 0, null, null));
-
-    final ResultSet res = con.createStatement().executeQuery(
-        "SELECT * FROM runner where specialid = 0");
-    assertFalse(res.next());
+    checkSql("SELECT * FROM runner where specialid = 0");
   }
 
   @Test
   public void testGetAllTransfer() throws Exception {
+    Configuration.configuration.setArchivePath("/arch");
     final TransferDAO dao = getDAO(getConnection());
     assertEquals(4, dao.getAll().size());
+    Configuration.configuration.setArchivePath(null);
   }
 
   @Test
@@ -1120,8 +1253,16 @@ public abstract class DBAllDAOTest extends TestAbstract {
   @Test
   public void testExistTransfer() throws Exception {
     final TransferDAO dao = getDAO(getConnection());
-    assertTrue(dao.exist(0L, "server1", "server2", "server1"));
-    assertFalse(dao.exist(1L, "server1", "server2", "server1"));
+    try {
+      assertTrue(dao.exist(0L, "server1", "server2", "server1"));
+      assertFalse(dao.exist(1L, "server1", "server2", "server1"));
+    } catch (final DAOConnectionException e) {
+      // Ignore since OK if XML
+      if (!checkXml()) {
+        SysErrLogger.FAKE_LOGGER.syserr(e);
+        fail(e.getMessage());
+      }
+    }
   }
 
   @Test
@@ -1137,6 +1278,19 @@ public abstract class DBAllDAOTest extends TestAbstract {
     transfer.setTransferInfo("transfer info");
     dao.insert(transfer);
 
+    if (checkXml()) {
+      Transfer transfer1 = dao.select(transfer.getId(), transfer.getRequester(),
+                                      transfer.getRequested(),
+                                      transfer.getOwnerRequest());
+      assertEquals("rule", transfer1.getRule());
+      assertEquals(1, transfer1.getTransferMode());
+      assertEquals("file", transfer1.getFilename());
+      assertEquals("file", transfer1.getOriginalName());
+      assertEquals("info", transfer1.getFileInfo());
+      assertFalse(transfer1.getIsMoved());
+      assertEquals(3, transfer1.getBlockSize());
+      return;
+    }
     final ResultSet res = con.createStatement().executeQuery(
         "SELECT COUNT(1) as count FROM runner");
     res.next();
@@ -1158,13 +1312,48 @@ public abstract class DBAllDAOTest extends TestAbstract {
   public void testUpdateTransfer() throws Exception {
     final TransferDAO dao = getDAO(getConnection());
 
-    dao.update(
-        new Transfer(0L, "rule", 13, "test", "testOrig", "testInfo", true, 42,
-                     true, "server1", "server1", "server2", "transferInfo",
-                     Transfer.TASKSTEP.ERRORTASK,
-                     Transfer.TASKSTEP.TRANSFERTASK, 27, ErrorCode.CompleteOk,
-                     ErrorCode.Unknown, 64, new Timestamp(192L),
-                     new Timestamp(1511L), UpdatedInfo.TOSUBMIT));
+    try {
+      dao.update(
+          new Transfer(0L, "rule", 13, "test", "testOrig", "testInfo", true, 42,
+                       true, "server1", "server1", "server2", "transferInfo",
+                       Transfer.TASKSTEP.ERRORTASK,
+                       Transfer.TASKSTEP.TRANSFERTASK, 27, ErrorCode.CompleteOk,
+                       ErrorCode.Unknown, 64, new Timestamp(192L),
+                       new Timestamp(1511L), UpdatedInfo.TOSUBMIT));
+    } catch (DAOConnectionException e) {
+      // Ignore since OK if XML
+      if (!checkXml()) {
+        SysErrLogger.FAKE_LOGGER.syserr(e);
+        fail(e.getMessage());
+      }
+    }
+    if (checkXml()) {
+      Transfer transfer1 = dao.select(0, "server1", "server2", "server1");
+      assertEquals(0, transfer1.getId());
+      assertEquals("rule", transfer1.getRule());
+      assertEquals(13, transfer1.getTransferMode());
+      assertEquals("test", transfer1.getFilename());
+      assertEquals("testOrig", transfer1.getOriginalName());
+      assertEquals("testInfo", transfer1.getFileInfo());
+      assertEquals("transferInfo", transfer1.getTransferInfo());
+      assertTrue(transfer1.getIsMoved());
+      assertEquals(42, transfer1.getBlockSize());
+      assertTrue(transfer1.getRetrieveMode());
+      assertEquals("server1", transfer1.getOwnerRequest());
+      assertEquals("server1", transfer1.getRequester());
+      assertEquals("server2", transfer1.getRequested());
+      assertEquals(Transfer.TASKSTEP.ERRORTASK, transfer1.getGlobalStep());
+      assertEquals(Transfer.TASKSTEP.TRANSFERTASK,
+                   transfer1.getLastGlobalStep());
+      assertEquals(27, transfer1.getStep());
+      assertEquals(ErrorCode.CompleteOk, transfer1.getStepStatus());
+      assertEquals(ErrorCode.Unknown, transfer1.getInfoStatus());
+      assertEquals(64, transfer1.getRank());
+      assertEquals(new Timestamp(192L), transfer1.getStart());
+      assertEquals(new Timestamp(1511L), transfer1.getStop());
+      assertEquals(UpdatedInfo.TOSUBMIT, transfer1.getUpdatedInfo());
+      return;
+    }
 
     final ResultSet res = con.createStatement().executeQuery(
         "SELECT * FROM runner WHERE specialid=0 and " +
@@ -1202,6 +1391,9 @@ public abstract class DBAllDAOTest extends TestAbstract {
 
   @Test
   public void testFindTransfer() throws Exception {
+    if (checkXml()) {
+      return;
+    }
     final ArrayList<Filter> map = new ArrayList<Filter>();
     map.add(new Filter(DBTransferDAO.ID_RULE_FIELD, "=", "default"));
     map.add(new Filter(DBTransferDAO.OWNER_REQUEST_FIELD, "=", "server1"));
@@ -1210,4 +1402,42 @@ public abstract class DBAllDAOTest extends TestAbstract {
     assertEquals(3, dao.find(map).size());
   }
 
+  private boolean checkXml() {
+    if (con == null) {
+      SysErrLogger.FAKE_LOGGER.sysout("XML test: ignore SQL");
+      return true;
+    }
+    return false;
+  }
+
+  private void checkSql(String command) {
+    if (checkXml()) {
+      return;
+    }
+    Statement stmt = null;
+    ResultSet res = null;
+    try {
+      stmt = con.createStatement();
+      res = stmt.executeQuery(command);
+      assertFalse(res.next());
+    } catch (SQLException e) {
+      SysErrLogger.FAKE_LOGGER.syserr(e);
+      fail(e.getMessage());
+    } finally {
+      if (res != null) {
+        try {
+          res.close();
+        } catch (SQLException ignore) {
+          SysErrLogger.FAKE_LOGGER.ignoreLog(ignore);
+        }
+      }
+      if (stmt != null) {
+        try {
+          stmt.close();
+        } catch (SQLException ignore) {
+          SysErrLogger.FAKE_LOGGER.ignoreLog(ignore);
+        }
+      }
+    }
+  }
 }

@@ -37,27 +37,23 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestWatcher;
 import org.junit.runners.MethodSorters;
-import org.waarp.common.digest.FilesystemBasedDigest;
 import org.waarp.common.file.FileUtils;
 import org.waarp.common.json.JsonHandler;
+import org.waarp.common.utility.Processes;
 import org.waarp.common.utility.SystemPropertyUtil;
 import org.waarp.common.utility.TestWatcherJunit4;
 import org.waarp.openr66.client.SpooledDirectoryTransfer;
 import org.waarp.openr66.client.SpooledDirectoryTransfer.Arguments;
-import org.waarp.openr66.context.R66FiniteDualStates;
-import org.waarp.openr66.database.data.DbHostAuth;
 import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.junit.TestAbstract;
-import org.waarp.openr66.protocol.localhandler.packet.AbstractLocalPacket;
-import org.waarp.openr66.protocol.localhandler.packet.JsonCommandPacket;
-import org.waarp.openr66.protocol.localhandler.packet.LocalPacketFactory;
-import org.waarp.openr66.protocol.localhandler.packet.json.ShutdownOrBlockJsonPacket;
 import org.waarp.openr66.protocol.networkhandler.NetworkTransaction;
 import org.waarp.openr66.protocol.utils.R66Future;
+import org.waarp.openr66.server.R66Server;
+import org.waarp.openr66.server.ServerInitDatabase;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.SocketAddress;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.Assert.*;
@@ -78,10 +74,15 @@ public class SpooledIT extends TestAbstract {
   private static final String LINUX_CONFIG_CONFIG_SERVER_INIT_B_XML =
       "Linux/config/config-serverInitB.xml";
   private static final String CONFIG_CLIENT_A_XML = "config-clientA.xml";
+  private static final String CONFIG_CLIENT_A_NODB_XML =
+      "config-clientANoDb.xml";
 
   private static final int MAX_NB =
       SystemPropertyUtil.get(IT_LONG_TEST, false)? 1000 : 100;
   private static int currentNb = 0;
+  protected static boolean noDb = false;
+  private static final List<Integer> PIDS = new ArrayList<Integer>();
+  private static int r66Pid1 = 999999;
 
   /**
    * @throws Exception
@@ -98,10 +99,79 @@ public class SpooledIT extends TestAbstract {
         new File(classLoader.getResource("logback-test.xml").getFile());
     setUpBeforeClassMinimal(LINUX_CONFIG_CONFIG_SERVER_INIT_B_XML);
     setUpDbBeforeClass();
-    // setUpBeforeClassServer("Linux/config/config-serverInitB.xml", "config-serverB.xml", false);
-    setUpBeforeClassServer(LINUX_CONFIG_CONFIG_SERVER_INIT_A_XML,
-                           CONFIG_SERVER_A_MINIMAL_XML, true);
-    setUpBeforeClassClient(CONFIG_CLIENT_A_XML);
+    setUpBeforeClassServer(LINUX_CONFIG_CONFIG_SERVER_INIT_A_XML);
+    Processes.setJvmArgsDefault("-Xms2048m -Xmx2048m ");
+    File configFile = new File(dir, CONFIG_SERVER_A_MINIMAL_XML);
+    r66Pid1 = startServer(configFile.getAbsolutePath());
+    Processes.setJvmArgsDefault(null);
+    Thread.sleep(2000);
+
+    setUpBeforeClassClient(
+        noDb? CONFIG_CLIENT_A_NODB_XML : CONFIG_CLIENT_A_XML);
+  }
+
+  /**
+   * @throws Exception
+   */
+  public static void setUpBeforeClassServer(String serverInit)
+      throws Exception {
+
+    if (Configuration.configuration != null &&
+        Configuration.configuration.isConfigured()) {
+      // Ensure we redo configuration
+      Configuration.configuration.setConfigured(false);
+      Configuration.configuration = new Configuration();
+    }
+    final ClassLoader classLoader = TestAbstract.class.getClassLoader();
+    final File file;
+    if (serverInit.startsWith("/")) {
+      file = new File(serverInit);
+    } else {
+      file = new File(classLoader.getResource(serverInit).getFile());
+    }
+    if (file.exists()) {
+      dir = file.getParentFile();
+      System.err.println("Find serverInit file: " + file.getAbsolutePath());
+      final String[] argsServer = {
+          file.getAbsolutePath(), "-initdb", "-dir", dir.getAbsolutePath(),
+          "-auth", new File(dir, "OpenR66-authent-A.xml").getAbsolutePath(),
+          "-limit", new File(dir, "limitConfiga.xml").getAbsolutePath()
+      };
+      Processes
+          .executeJvm(project, homeDir, ServerInitDatabase.class, argsServer,
+                      false);
+      logger.warn("Init Done");
+    } else {
+      System.err
+          .println("Cannot find serverInit file: " + file.getAbsolutePath());
+    }
+  }
+
+  public static int startServer(String serverConfig) throws Exception {
+    final File file2;
+    if (serverConfig.charAt(0) == '/') {
+      file2 = new File(serverConfig);
+    } else {
+      file2 = new File(dirResources, serverConfig);
+    }
+    if (file2.exists()) {
+      System.err.println("Find server file: " + file2.getAbsolutePath());
+      final String[] argsServer = {
+          file2.getAbsolutePath()
+      };
+      // global ant project settings
+      project = Processes.getProject(homeDir);
+      Processes.executeJvm(project, homeDir, R66Server.class, argsServer, true);
+      int pid = Processes
+          .getPidOfRunnerCommandLinux("java", R66Server.class.getName(), PIDS);
+      PIDS.add(pid);
+      logger.warn("Start Done: {}", pid);
+      return pid;
+    } else {
+      System.err.println("Cannot find server file: " + file2.getAbsolutePath());
+      fail("Cannot find server file");
+      return 999999;
+    }
   }
 
   /**
@@ -109,31 +179,10 @@ public class SpooledIT extends TestAbstract {
    */
   @AfterClass
   public static void tearDownAfterClass() throws Exception {
-    Thread.sleep(100);
-    final DbHostAuth host = new DbHostAuth("hostas");
-    final SocketAddress socketServerAddress;
-    try {
-      socketServerAddress = host.getSocketAddress();
-    } catch (final IllegalArgumentException e) {
-      logger.error("Needs a correct configuration file as first argument");
-      return;
+    for (int pid : PIDS) {
+      Processes.kill(pid, true);
     }
-    final byte scode = -1;
-
-    // Shutdown server
-    logger.warn("Shutdown Server");
-    Configuration.configuration.setTimeoutCon(100);
-    final R66Future future = new R66Future(true);
-    final ShutdownOrBlockJsonPacket node8 = new ShutdownOrBlockJsonPacket();
-    node8.setRestartOrBlock(false);
-    node8.setShutdownOrBlock(true);
-    node8.setKey(FilesystemBasedDigest.passwdCrypt(
-        Configuration.configuration.getServerAdminKey()));
-    final AbstractLocalPacket valid =
-        new JsonCommandPacket(node8, LocalPacketFactory.BLOCKREQUESTPACKET);
-    sendInformation(valid, socketServerAddress, future, scode, false,
-                    R66FiniteDualStates.SHUTDOWN, true);
-    Thread.sleep(200);
+    Thread.sleep(100);
 
     tearDownAfterClassClient();
     tearDownAfterClassMinimal();
@@ -290,6 +339,10 @@ public class SpooledIT extends TestAbstract {
   @Test
   public void test7_SpooledSubmit() throws IOException, InterruptedException {
     logger.warn("Start Test of Spooled Transfer");
+    if (noDb) {
+      logger.warn("No DB so no Submit");
+      return;
+    }
     SpooledThread spooledThread = new SpooledThread();
     spooledThread.ignoreAlreadyUsed = false;
     spooledThread.submit = true;
@@ -313,6 +366,10 @@ public class SpooledIT extends TestAbstract {
   public void test7_SpooledSubmitIgnore()
       throws IOException, InterruptedException {
     logger.warn("Start Test of Spooled Ignored Changed File Transfer");
+    if (noDb) {
+      logger.warn("No DB so no Submit");
+      return;
+    }
     SpooledThread spooledThread = new SpooledThread();
     spooledThread.ignoreAlreadyUsed = true;
     spooledThread.submit = true;
@@ -360,7 +417,8 @@ public class SpooledIT extends TestAbstract {
 
     @Override
     public void run() {
-      File file = new File(dir, CONFIG_CLIENT_A_XML);
+      File file =
+          new File(dir, noDb? CONFIG_CLIENT_A_NODB_XML : CONFIG_CLIENT_A_XML);
       String[] args = {
           file.getAbsolutePath(), "-to", host, "-name", "SpooledClient",
           "-directory", TMP_R_66_TEST_OUT_EXAMPLE, "-rule", "rule3del",

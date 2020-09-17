@@ -20,34 +20,8 @@
 
 package org.waarp.openr66.protocol.it;
 
-import org.junit.BeforeClass;
-import org.junit.FixMethodOrder;
-import org.junit.Rule;
-import org.junit.rules.TestWatcher;
-import org.junit.runners.MethodSorters;
-import org.testcontainers.containers.JdbcDatabaseContainer;
-import org.waarp.common.utility.TestWatcherJunit4;
-
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class ScenarioBigFileClientOnlyH2IT
-    extends ScenarioBaseBigFileClientOnly {
-  @Rule(order = Integer.MIN_VALUE)
-  public TestWatcher watchman = new TestWatcherJunit4();
-
-  public JdbcDatabaseContainer getJDC() {
-    return null;
+public class SpooledNoDbIT extends SpooledIT {
+  static {
+    noDb = true;
   }
-
-  @Override
-  public String getServerConfigFile() {
-    return SERVER_H2_1_XML;
-  }
-
-  @BeforeClass
-  public static void setup() throws Exception {
-    logger.warn("START H2 IT TEST");
-    scenarioBase = new ScenarioBigFileClientOnlyH2IT();
-    setUpBeforeClass();
-  }
-
 }

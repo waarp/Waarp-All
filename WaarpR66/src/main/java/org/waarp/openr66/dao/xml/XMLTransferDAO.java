@@ -33,6 +33,7 @@ import org.waarp.openr66.dao.Filter;
 import org.waarp.openr66.dao.TransferDAO;
 import org.waarp.openr66.dao.exception.DAOConnectionException;
 import org.waarp.openr66.dao.exception.DAONoDataException;
+import org.waarp.openr66.database.DbConstantR66;
 import org.waarp.openr66.pojo.Transfer;
 import org.waarp.openr66.protocol.configuration.Configuration;
 import org.xml.sax.SAXException;
@@ -175,7 +176,6 @@ public class XMLTransferDAO implements TransferDAO {
   @Override
   public void deleteAll() throws DAOConnectionException {
     dbR66TaskHashMap.clear();
-    throw new DAOConnectionException("Operation not supported on XML DAO");
   }
 
   @Override
@@ -208,6 +208,13 @@ public class XMLTransferDAO implements TransferDAO {
           throw new DAOConnectionException(e);
         } catch (final IOException e) {
           throw new DAOConnectionException(e);
+        }
+      }
+    }
+    synchronized (dbR66TaskHashMap) {
+      for (Transfer transfer : dbR66TaskHashMap.values()) {
+        if (transfer != null && !res.contains(transfer)) {
+          res.add(transfer);
         }
       }
     }
@@ -318,7 +325,9 @@ public class XMLTransferDAO implements TransferDAO {
   @Override
   public void insert(final Transfer transfer) throws DAOConnectionException {
     // Set unique Id
-    transfer.setId(new LongUuid().getLong());
+    if (transfer.getId() == DbConstantR66.ILLEGALVALUE) {
+      transfer.setId(new LongUuid().getLong());
+    }
     dbR66TaskHashMap.put(transfer.getId(), transfer);
     file = getFile(transfer.getRequester(), transfer.getRequested(),
                    transfer.getId());
@@ -379,12 +388,9 @@ public class XMLTransferDAO implements TransferDAO {
     }
   }
 
-  public void updateRank(final Transfer e1) throws DAOConnectionException {
-    update(e1);
-  }
-
   @Override
   public void update(final Transfer transfer) throws DAOConnectionException {
+    dbR66TaskHashMap.put(transfer.getId(), transfer);
     file = getFile(transfer.getRequester(), transfer.getRequested(),
                    transfer.getId());
     if (!file.exists()) {
@@ -418,7 +424,6 @@ public class XMLTransferDAO implements TransferDAO {
       root.appendChild(getNode(document, transfer));
       // Write document in file
       XMLUtils.writeToFile(file, document);
-      dbR66TaskHashMap.put(transfer.getId(), transfer);
     } catch (final SAXException e) {
       throw new DAOConnectionException(e);
     } catch (final XPathExpressionException e) {

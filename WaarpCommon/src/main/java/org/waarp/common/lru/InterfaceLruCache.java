@@ -19,6 +19,7 @@
  */
 package org.waarp.common.lru;
 
+import java.util.Collection;
 import java.util.concurrent.Callable;
 
 /**
@@ -157,4 +158,9 @@ public interface InterfaceLruCache<K, V> {
    * @param key
    */
   void updateTtl(K key);
+
+  /**
+   * @return the Collection of Values
+   */
+  Collection<V> values();
 }

@@ -376,6 +376,7 @@ public abstract class TestAbstract extends TestAbstractMinimal {
     } else {
       clientConfigFile = new File(dir, clientConfig);
     }
+    logger.warn("Will try to load {}", clientConfigFile);
     if (clientConfigFile.isFile()) {
       System.err.println(
           "Find serverInit file: " + clientConfigFile.getAbsolutePath());
