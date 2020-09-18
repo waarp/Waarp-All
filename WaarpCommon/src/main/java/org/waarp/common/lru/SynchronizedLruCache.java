@@ -127,9 +127,9 @@ public class SynchronizedLruCache<K, V> extends AbstractLruCache<K, V> {
 
   @Override
   public Collection<V> values() {
-    Collection<InterfaceLruCacheEntry<V>> cacheEntry = cacheMap.values();
-    List<V> list = new ArrayList<V>(cacheEntry.size());
-    for (InterfaceLruCacheEntry<V> entry : cacheEntry) {
+    final Collection<InterfaceLruCacheEntry<V>> cacheEntry = cacheMap.values();
+    final List<V> list = new ArrayList<V>(cacheEntry.size());
+    for (final InterfaceLruCacheEntry<V> entry : cacheEntry) {
       list.add(entry.getValue());
     }
     return list;

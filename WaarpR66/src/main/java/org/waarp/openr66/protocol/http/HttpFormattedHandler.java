@@ -42,7 +42,6 @@ import io.netty.handler.codec.http.cookie.ServerCookieDecoder;
 import io.netty.handler.codec.http.cookie.ServerCookieEncoder;
 import io.netty.handler.traffic.TrafficCounter;
 import org.waarp.common.database.DbAdmin;
-import org.waarp.common.database.DbSession;
 import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
 import org.waarp.common.database.exception.WaarpDatabaseSqlException;
 import org.waarp.common.exception.FileTransferException;
@@ -80,8 +79,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-
-import static org.waarp.common.database.DbConstant.*;
 
 /**
  * Handler for HTTP information support
@@ -174,16 +171,6 @@ public class HttpFormattedHandler
   private static final String sNB = "NB";
   private static final String sDETAIL = "DETAIL";
 
-  /**
-   * The Database connection attached to this NetworkChannelReference shared
-   * among all associated LocalChannels
-   */
-  private final DbSession dbSession = admin.getSession();
-
-  /**
-   * Does this dbSession is private and so should be closed
-   */
-  private final boolean isPrivateDbSession = false;
   protected boolean isCurrentRequestXml;
   protected boolean isCurrentRequestJson;
 
@@ -673,7 +660,6 @@ public class HttpFormattedHandler
    * print only status
    *
    * @param ctx
-   * @param nb
    */
   private void status(final ChannelHandlerContext ctx) {
     responseContent.append(REQUEST.status.readHeader(this));

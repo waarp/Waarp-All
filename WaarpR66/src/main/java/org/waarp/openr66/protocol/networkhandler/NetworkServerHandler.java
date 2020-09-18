@@ -89,10 +89,6 @@ public class NetworkServerHandler
    */
   protected boolean isSSL;
   /**
-   * Is this Handler a server side
-   */
-  protected final boolean isServer;
-  /**
    * To handle the keep alive
    */
   private final AtomicInteger keepAlivedSent = new AtomicInteger(0);
@@ -102,10 +98,9 @@ public class NetworkServerHandler
   protected volatile boolean isBlackListed;
 
   /**
-   * @param isServer
+   *
    */
-  public NetworkServerHandler(final boolean isServer) {
-    this.isServer = isServer;
+  public NetworkServerHandler() {
   }
 
   @Override
@@ -512,7 +507,7 @@ public class NetworkServerHandler
       }
       if (networkPacket != null) {
         final NetworkPacket finalNP = networkPacket;
-        Future future = channel.writeAndFlush(networkPacket);
+        final Future future = channel.writeAndFlush(networkPacket);
         future.addListener(new ChannelFutureListener() {
           @Override
           public void operationComplete(final ChannelFuture future)

@@ -206,7 +206,8 @@ public final class HttpWriteCacheEnable {
    * Sets the Date and Cache headers for the HTTP Response
    *
    * @param response HTTP response
-   * @param fileToCache file to extract content type
+   * @param rfc1123Format
+   * @param lastModifDate
    */
   private static void setDateAndCacheHeaders(final HttpResponse response,
                                              final DateFormat rfc1123Format,

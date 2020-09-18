@@ -55,13 +55,13 @@ import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder.NotEnoughDat
 import io.netty.handler.codec.http.multipart.InterfaceHttpData;
 import io.netty.handler.codec.http.multipart.InterfaceHttpData.HttpDataType;
 import org.waarp.common.crypto.ssl.WaarpSslUtility;
-import org.waarp.common.database.DbConstant;
 import org.waarp.common.database.DbSession;
 import org.waarp.common.exception.CryptoException;
 import org.waarp.common.json.JsonHandler;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.utility.WaarpStringUtils;
+import org.waarp.gateway.kernel.database.DbConstantGateway;
 import org.waarp.gateway.kernel.exception.HttpForbiddenRequestException;
 import org.waarp.gateway.kernel.exception.HttpIncorrectRequestException;
 import org.waarp.gateway.kernel.exception.HttpInvalidAuthenticationException;
@@ -327,7 +327,7 @@ public abstract class HttpRestHandler
    *     dbSession if none)
    */
   public DbSession getDbSession() {
-    return dbSession == null? DbConstant.admin.getSession() : dbSession;
+    return dbSession == null? DbConstantGateway.admin.getSession() : dbSession;
   }
 
   /**

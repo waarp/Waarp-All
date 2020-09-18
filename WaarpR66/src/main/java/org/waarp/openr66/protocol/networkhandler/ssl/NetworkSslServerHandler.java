@@ -46,7 +46,7 @@ public class NetworkSslServerHandler extends NetworkServerHandler {
    * @param isServer
    */
   public NetworkSslServerHandler(final boolean isServer) {
-    super(isServer);
+    super();
   }
 
   /**

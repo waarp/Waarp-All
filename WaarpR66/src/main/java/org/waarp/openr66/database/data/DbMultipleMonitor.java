@@ -52,18 +52,9 @@ public class DbMultipleMonitor extends AbstractDbDataDao<MultipleMonitor> {
 
   public static final String table = " MULTIPLEMONITOR ";
 
-  // ALL TABLE SHOULD IMPLEMENT THIS
-  public static final int NBPRKEY = 1;
-
   protected static final String selectAllFields =
       Columns.COUNTCONFIG.name() + ',' + Columns.COUNTHOST.name() + ',' +
       Columns.COUNTRULE.name() + ',' + Columns.HOSTID.name();
-
-  protected static final String updateAllFields =
-      Columns.COUNTCONFIG.name() + "=?," + Columns.COUNTHOST.name() + "=?," +
-      Columns.COUNTRULE.name() + "=?";
-
-  protected static final String insertAllValues = " (?,?,?,?) ";
 
   @Override
   protected void initObject() {
@@ -132,7 +123,6 @@ public class DbMultipleMonitor extends AbstractDbDataDao<MultipleMonitor> {
     }
     for (final Columns column : Columns.values()) {
       if (column.name().equalsIgnoreCase(field)) {
-        int len;
         switch (column) {
           case COUNTCONFIG:
             pojo.setCountConfig(value.asInt());

@@ -83,6 +83,6 @@ public class NetworkServerInitializer
     pipeline.addLast(NETWORK_CODEC, new NetworkPacketCodec());
     pipeline
         .addLast(Configuration.configuration.getHandlerGroup(), NETWORK_HANDLER,
-                 new NetworkServerHandler(server));
+                 new NetworkServerHandler());
   }
 }

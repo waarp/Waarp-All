@@ -19,7 +19,6 @@
  */
 package org.waarp.gateway.kernel.database.model;
 
-import org.waarp.common.database.DbConstant;
 import org.waarp.common.database.DbPreparedStatement;
 import org.waarp.common.database.DbRequest;
 import org.waarp.common.database.DbSession;
@@ -28,6 +27,7 @@ import org.waarp.common.database.exception.WaarpDatabaseNoDataException;
 import org.waarp.common.database.exception.WaarpDatabaseSqlException;
 import org.waarp.common.database.model.DbModelMysql;
 import org.waarp.common.logging.SysErrLogger;
+import org.waarp.gateway.kernel.database.DbConstantGateway;
 import org.waarp.gateway.kernel.database.data.DbTransferLog;
 
 import java.sql.SQLException;
@@ -137,7 +137,7 @@ public class DbModelMysqlKernel extends DbModelMysql {
     }
     action = new StringBuilder(
         "INSERT INTO Sequences (name, seq) VALUES ('" + DbTransferLog.fieldseq +
-        "', " + (DbConstant.ILLEGALVALUE + 1) + ')');
+        "', " + (DbConstantGateway.ILLEGALVALUE + 1) + ')');
     SysErrLogger.FAKE_LOGGER.sysout(action);
     try {
       request.query(action.toString());
@@ -190,7 +190,7 @@ public class DbModelMysqlKernel extends DbModelMysql {
              WaarpDatabaseNoDataException {
     lock.lock();
     try {
-      long result = DbConstant.ILLEGALVALUE;
+      long result = DbConstantGateway.ILLEGALVALUE;
       String action =
           "SELECT seq FROM Sequences WHERE name = '" + DbTransferLog.fieldseq +
           "' FOR UPDATE";

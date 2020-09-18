@@ -47,7 +47,6 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 
-import static com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl.*;
 import static javax.xml.transform.OutputKeys.*;
 
 /**
@@ -233,7 +232,7 @@ public final class XmlUtils {
       final TransformerFactory factory =//NOSONAR
           TransformerFactory.newInstance();//NOSONAR
       factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-      factory.setAttribute(INDENT_NUMBER, 2);
+      factory.setAttribute("indent-number", 2);
       final Transformer transformer = factory.newTransformer();
       transformer.setOutputProperty(INDENT, "yes");
       transformer.setOutputProperty(OMIT_XML_DECLARATION, "yes");

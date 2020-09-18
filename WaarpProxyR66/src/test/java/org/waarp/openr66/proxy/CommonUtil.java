@@ -42,6 +42,7 @@ import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
 import org.waarp.common.utility.DetectionUtils;
+import org.waarp.common.utility.FileTestUtils;
 import org.waarp.common.utility.Processes;
 import org.waarp.common.utility.WaarpShutdownHook;
 import org.waarp.openr66.configuration.FileBasedConfiguration;
@@ -58,7 +59,6 @@ import org.waarp.openr66.server.ServerInitDatabase;
 
 import java.io.File;
 import java.io.FileFilter;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -184,13 +184,13 @@ public abstract class CommonUtil {
   }
 
   static File generateOutFile(String name, int size) throws IOException {
-    final File file = new File(name);
-    final FileWriter fileWriterBig = new FileWriter(file);
-    for (int i = 0; i < size / 10; i++) {
-      fileWriterBig.write("0123456789");
+    try {
+      Thread.sleep(10);
+    } catch (InterruptedException e) {
+      throw new IOException(e);
     }
-    fileWriterBig.flush();
-    fileWriterBig.close();
+    final File file = new File(name);
+    FileTestUtils.createTestFile(file, size / 10);
     return file;
   }
 
@@ -403,6 +403,7 @@ public abstract class CommonUtil {
   public void tearDown() throws Exception {
     Configuration.configuration.setTimeoutCon(100);
     reloadDriver();
+    Thread.sleep(100);
   }
 
   public static void initiateWebDriver(File file) {

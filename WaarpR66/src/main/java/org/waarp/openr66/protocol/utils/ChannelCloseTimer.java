@@ -88,24 +88,6 @@ public class ChannelCloseTimer implements TimerTask {
     }
   }
 
-  /**
-   * Close in the future this transaction
-   *
-   * @param connectionActions
-   * @param noconcurrencyDbSession
-   */
-  public static void closeFutureTransaction(
-      final ConnectionActions connectionActions,
-      final DbSession noconcurrencyDbSession) {
-    if (Configuration.configuration.isTimerCloseReady()) {
-      final ChannelCloseTimer cct = new ChannelCloseTimer(connectionActions);
-      cct.setDbSession(noconcurrencyDbSession);
-      Configuration.configuration.getTimerClose()
-                                 .newTimeout(cct, Configuration.WAITFORNETOP,
-                                             TimeUnit.MILLISECONDS);
-    }
-  }
-
   public void setDbSession(final DbSession dbSession) {
     noconcurrencyDbSession = dbSession;
   }
@@ -124,18 +106,4 @@ public class ChannelCloseTimer implements TimerTask {
     }
   }
 
-  /**
-   * Close in the future this channel
-   *
-   * @param channel
-   * @param future future to wait in addition to other constraints
-   */
-  public static void closeFutureChannel(final Channel channel,
-                                        final ChannelFuture future) {
-    if (Configuration.configuration.isTimerCloseReady()) {
-      Configuration.configuration.getTimerClose().newTimeout(
-          new ChannelCloseTimer(channel, future), Configuration.WAITFORNETOP,
-          TimeUnit.MILLISECONDS);
-    }
-  }
 }

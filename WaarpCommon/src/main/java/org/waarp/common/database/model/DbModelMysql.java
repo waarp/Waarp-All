@@ -20,7 +20,6 @@
 package org.waarp.common.database.model;
 
 import com.mysql.jdbc.Driver;
-import com.mysql.jdbc.jdbc2.optional.MysqlConnectionPoolDataSource;
 import org.waarp.common.database.DbAdmin;
 import org.waarp.common.database.DbConnectionPool;
 import org.waarp.common.database.DbSession;
@@ -29,6 +28,9 @@ import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 
+import javax.sql.ConnectionPoolDataSource;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -45,6 +47,12 @@ public abstract class DbModelMysql extends DbModelCommonMariadbMySql {
       WaarpLoggerFactory.getLogger(DbModelMysql.class);
 
   private static final DbType type = DbType.MySQL;
+  private static final String MYSQL_CONNECTION_POOL_DATA_SOURCE_JRE6 =
+      "com.mysql.jdbc.jdbc2.optional.MysqlConnectionPoolDataSource";
+  private static final String MYSQL_CONNECTION_POOL_DATA_SOURCE_JRE8 =
+      "com.mysql.cj.jdbc.MysqlConnectionPoolDataSource";
+  public static final String MYSQL_DRIVER_JRE6 = "com.mysql.jdbc.Driver";
+  public static final String MYSQL_DRIVER_JRE8 = "com.mysql.cj.jdbc.Driver";
 
   protected static class DbTypeResolverMySQL
       extends DbModelAbstract.DbTypeResolver {
@@ -70,12 +78,63 @@ public abstract class DbModelMysql extends DbModelCommonMariadbMySql {
     dbTypeResolver = new DbTypeResolverMySQL();
   }
 
-  protected MysqlConnectionPoolDataSource mysqlConnectionPoolDataSource;
+  protected ConnectionPoolDataSource mysqlConnectionPoolDataSource;
   protected DbConnectionPool pool;
 
   @Override
   public DbType getDbType() {
     return type;
+  }
+
+  /**
+   * @return a ConnectionPoolDataSource as MysqlConnectionPoolDataSource
+   *
+   * @throws WaarpDatabaseNoConnectionException if class not found
+   */
+  private ConnectionPoolDataSource createMysqlConnectionPoolDataSource(
+      final String dbServer, final String dbUser, final String dbPwd)
+      throws WaarpDatabaseNoConnectionException {
+    Class<?> mysqlConnectionPoolDataSourceClass = null;
+    try {
+      mysqlConnectionPoolDataSourceClass =
+          Class.forName(MYSQL_CONNECTION_POOL_DATA_SOURCE_JRE6);
+    } catch (final ClassNotFoundException e) {
+      try {
+        mysqlConnectionPoolDataSourceClass =
+            Class.forName(MYSQL_CONNECTION_POOL_DATA_SOURCE_JRE8);
+      } catch (final ClassNotFoundException classNotFoundException) {
+        logger.error("Cannot initialize MysqlConnectionPoolDataSource");
+        throw new WaarpDatabaseNoConnectionException(
+            "Cannot initialize MysqlConnectionPoolDataSource", e);
+      }
+    }
+    try {
+      final ConnectionPoolDataSource cpds =
+          (ConnectionPoolDataSource) mysqlConnectionPoolDataSourceClass
+              .newInstance();
+      Method method = mysqlConnectionPoolDataSourceClass
+          .getMethod("setUrl", dbServer.getClass());
+      method.invoke(cpds, dbServer);
+      method = mysqlConnectionPoolDataSourceClass
+          .getMethod("setUser", dbUser.getClass());
+      method.invoke(cpds, dbUser);
+      method = mysqlConnectionPoolDataSourceClass
+          .getMethod("setPassword", dbPwd.getClass());
+      method.invoke(cpds, dbPwd);
+      return cpds;
+    } catch (final InstantiationException e) {
+      throw new WaarpDatabaseNoConnectionException(
+          "Cannot initialize MysqlConnectionPoolDataSource", e);
+    } catch (final IllegalAccessException e) {
+      throw new WaarpDatabaseNoConnectionException(
+          "Cannot initialize MysqlConnectionPoolDataSource", e);
+    } catch (final NoSuchMethodException e) {
+      throw new WaarpDatabaseNoConnectionException(
+          "Cannot initialize MysqlConnectionPoolDataSource", e);
+    } catch (final InvocationTargetException e) {
+      throw new WaarpDatabaseNoConnectionException(
+          "Cannot initialize MysqlConnectionPoolDataSource", e);
+    }
   }
 
   /**
@@ -94,10 +153,8 @@ public abstract class DbModelMysql extends DbModelCommonMariadbMySql {
                          final long delay)
       throws WaarpDatabaseNoConnectionException {
     this();
-    mysqlConnectionPoolDataSource = new MysqlConnectionPoolDataSource();
-    mysqlConnectionPoolDataSource.setUrl(dbserver);
-    mysqlConnectionPoolDataSource.setUser(dbuser);
-    mysqlConnectionPoolDataSource.setPassword(dbpasswd);
+    mysqlConnectionPoolDataSource =
+        createMysqlConnectionPoolDataSource(dbserver, dbuser, dbpasswd);
     // Create a pool with no limit
     pool = new DbConnectionPool(mysqlConnectionPoolDataSource, timer, delay);
     logger.info("Some info: MaxConn: {} LogTimeout: {} ForceClose: {}",
@@ -118,10 +175,8 @@ public abstract class DbModelMysql extends DbModelCommonMariadbMySql {
                          final String dbpasswd)
       throws WaarpDatabaseNoConnectionException {
     this();
-    mysqlConnectionPoolDataSource = new MysqlConnectionPoolDataSource();
-    mysqlConnectionPoolDataSource.setUrl(dbserver);
-    mysqlConnectionPoolDataSource.setUser(dbuser);
-    mysqlConnectionPoolDataSource.setPassword(dbpasswd);
+    mysqlConnectionPoolDataSource =
+        createMysqlConnectionPoolDataSource(dbserver, dbuser, dbpasswd);
     // Create a pool with no limit
     pool = new DbConnectionPool(mysqlConnectionPoolDataSource);
     logger.warn(
@@ -180,10 +235,15 @@ public abstract class DbModelMysql extends DbModelCommonMariadbMySql {
           return pool.getConnection();
         } catch (final SQLException e) {
           // try to renew the pool
-          mysqlConnectionPoolDataSource = new MysqlConnectionPoolDataSource();
-          mysqlConnectionPoolDataSource.setUrl(server);
-          mysqlConnectionPoolDataSource.setUser(user);
-          mysqlConnectionPoolDataSource.setPassword(passwd);
+          try {
+            mysqlConnectionPoolDataSource =
+                createMysqlConnectionPoolDataSource(server, user, passwd);
+          } catch (final WaarpDatabaseNoConnectionException e1) {
+            logger.debug("Cannot found MySQLPooled class", e1);
+            pool.dispose();
+            pool = null;
+            return super.getDbConnection(server, user, passwd);
+          }
           pool.resetPoolDataSource(mysqlConnectionPoolDataSource);
           try {
             return pool.getConnection();

@@ -71,6 +71,7 @@ public class IcapClientTest {
   public void after() throws Exception {
     IcapServer.shutdown();
     logger.debug("Server stopped");
+    Thread.sleep(100);
   }
 
   @Test

@@ -40,6 +40,7 @@ import org.junit.runners.MethodSorters;
 import org.testcontainers.containers.JdbcDatabaseContainer;
 import org.waarp.common.command.exception.Reply550Exception;
 import org.waarp.common.database.exception.WaarpDatabaseException;
+import org.waarp.common.database.model.DbModelMysql;
 import org.waarp.common.file.FileUtils;
 import org.waarp.common.json.JsonHandler;
 import org.waarp.common.logging.SysErrLogger;
@@ -177,7 +178,8 @@ public abstract class ScenarioBaseLoop extends TestAbstract {
           "Unsupported Test for Oracle since wrong JDBC driver");
     } else if (driver.equalsIgnoreCase("org.postgresql.Driver")) {
       target = "postgresql";
-    } else if (driver.equalsIgnoreCase("com.mysql.jdbc.Driver")) {
+    } else if (DbModelMysql.MYSQL_DRIVER_JRE6.equalsIgnoreCase(driver) ||
+               DbModelMysql.MYSQL_DRIVER_JRE8.equalsIgnoreCase(driver)) {
       target = "mysql";
     } else {
       SysErrLogger.FAKE_LOGGER.syserr("Cannot find driver for " + driver);
@@ -379,7 +381,7 @@ public abstract class ScenarioBaseLoop extends TestAbstract {
 
   @After
   public void tearDown() throws Exception {
-    // Nothing
+    Thread.sleep(100);
   }
 
   private void checkMemory() {
@@ -392,8 +394,7 @@ public abstract class ScenarioBaseLoop extends TestAbstract {
   }
 
   private void testBigTransfer(boolean limit, String serverName, boolean direct,
-                               boolean recv, int size)
-      throws IOException, InterruptedException {
+                               boolean recv, int size) throws IOException {
     if (!SERVER1_IN_JUNIT && !direct) {
       logger.warn("Only Direct is enabled in Client mode");
       return;

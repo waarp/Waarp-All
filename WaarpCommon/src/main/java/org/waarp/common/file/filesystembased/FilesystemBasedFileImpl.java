@@ -585,7 +585,7 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
     try {
       fileInputStreamTemp = new FileInputStream(trueFile);//NOSONAR
       if (position != 0) {
-        long read = fileInputStreamTemp.skip(position);
+        final long read = fileInputStreamTemp.skip(position);
         if (read != position) {
           logger.warn("Cannot ensure position: {} while is {}", position, read);
         }

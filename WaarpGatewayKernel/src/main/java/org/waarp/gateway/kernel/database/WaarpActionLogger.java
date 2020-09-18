@@ -21,7 +21,6 @@
 package org.waarp.gateway.kernel.database;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
-import org.waarp.common.database.DbConstant;
 import org.waarp.common.database.DbSession;
 import org.waarp.common.database.data.AbstractDbData.UpdatedInfo;
 import org.waarp.common.database.exception.WaarpDatabaseException;
@@ -62,7 +61,7 @@ public final class WaarpActionLogger {
         case ERROR:
         case HTML:
         case MENU:
-          session.setLogid(DbConstant.ILLEGALVALUE);
+          session.setLogid(DbConstantGateway.ILLEGALVALUE);
           return;
         case DELETE:
         case GETDOWNLOAD:
@@ -81,7 +80,7 @@ public final class WaarpActionLogger {
         final DbTransferLog log =
             new DbTransferLog(dbSession, session.getAuth().getUser(),
                               session.getAuth().getAccount(),
-                              DbConstant.ILLEGALVALUE, isSender,
+                              DbConstantGateway.ILLEGALVALUE, isSender,
                               session.getFilename(), code.name(),
                               HttpResponseStatus.OK, message,
                               UpdatedInfo.TOSUBMIT);
@@ -92,7 +91,7 @@ public final class WaarpActionLogger {
         // Do nothing
       }
     }
-    session.setLogid(DbConstant.ILLEGALVALUE);
+    session.setLogid(DbConstantGateway.ILLEGALVALUE);
   }
 
   /**
@@ -111,7 +110,7 @@ public final class WaarpActionLogger {
     final String sessionContexte = session.toString();
     final long specialId = session.getLogid();
     logger.info("{} {}", message, sessionContexte);
-    if (dbSession != null && specialId != DbConstant.ILLEGALVALUE) {
+    if (dbSession != null && specialId != DbConstantGateway.ILLEGALVALUE) {
       final PageRole code = session.getCurrentCommand();
       switch (code) {
         case DELETE:
@@ -159,7 +158,7 @@ public final class WaarpActionLogger {
     final long specialId = session.getLogid();
     logger.error(rcode.code() + ":" + message + ' ' + sessionContexte);
     logger.warn("To Change to debug Log", new Exception("Log"));
-    if (dbSession != null && specialId != DbConstant.ILLEGALVALUE) {
+    if (dbSession != null && specialId != DbConstantGateway.ILLEGALVALUE) {
       final PageRole code = session.getCurrentCommand();
       switch (code) {
         case DELETE:

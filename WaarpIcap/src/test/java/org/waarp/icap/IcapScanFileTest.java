@@ -57,6 +57,7 @@ public class IcapScanFileTest {
   @After
   public void after() throws Exception {
     IcapServer.shutdown();
+    Thread.sleep(100);
   }
 
   /**

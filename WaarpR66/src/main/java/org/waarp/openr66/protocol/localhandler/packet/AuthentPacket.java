@@ -129,9 +129,11 @@ public class AuthentPacket extends AbstractLocalPacket {
     this.key = key;
     localId = newId;
     way = ASKVALIDATE;
-    Configuration.configuration.getVersions().putIfAbsent(hostId,
-                                                          new PartnerConfiguration(
-                                                              hostId));
+    if (!Configuration.configuration.getVersions().containsKey(hostId)) {
+      Configuration.configuration.getVersions().putIfAbsent(hostId,
+                                                            new PartnerConfiguration(
+                                                                hostId));
+    }
     version = Configuration.configuration.getVersions().get(hostId).toString();
   }
 
@@ -223,9 +225,11 @@ public class AuthentPacket extends AbstractLocalPacket {
       auth = Configuration.configuration.getHostAuth();
     }
     key = FilesystemBasedDigest.passwdCrypt(auth.getHostkey());
-    Configuration.configuration.getVersions().putIfAbsent(hostId,
-                                                          new PartnerConfiguration(
-                                                              hostId));
+    if (!Configuration.configuration.getVersions().containsKey(hostId)) {
+      Configuration.configuration.getVersions().putIfAbsent(hostId,
+                                                            new PartnerConfiguration(
+                                                                hostId));
+    }
     version = Configuration.configuration.getVersions().get(hostId).toString();
     clear();
   }

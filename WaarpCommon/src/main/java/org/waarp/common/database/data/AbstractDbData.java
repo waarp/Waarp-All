@@ -442,22 +442,6 @@ public abstract class AbstractDbData {
   }
 
   /**
-   * Set one value to a DbPreparedStatement
-   *
-   * @param preparedStatement
-   * @param value
-   *
-   * @throws WaarpDatabaseNoConnectionException
-   * @throws WaarpDatabaseSqlException
-   */
-  protected void setValue(final DbPreparedStatement preparedStatement,
-                          final DbValue value)
-      throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
-    final PreparedStatement ps = preparedStatement.getPreparedStatement();
-    setTrueValue(ps, value, 1);
-  }
-
-  /**
    * Set several values to a DbPreparedStatement
    *
    * @param preparedStatement
@@ -542,22 +526,6 @@ public abstract class AbstractDbData {
   }
 
   /**
-   * Get one value into DbValue from DbPreparedStatement
-   *
-   * @param preparedStatement
-   * @param value
-   *
-   * @throws WaarpDatabaseNoConnectionException
-   * @throws WaarpDatabaseSqlException
-   */
-  protected void getValue(final DbPreparedStatement preparedStatement,
-                          final DbValue value)
-      throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
-    final ResultSet rs = preparedStatement.getResultSet();
-    getTrueValue(rs, value);
-  }
-
-  /**
    * Get several values into DbValue from DbPreparedStatement
    *
    * @param preparedStatement
@@ -577,26 +545,7 @@ public abstract class AbstractDbData {
   }
 
   /**
-   * Get Values from PreparedStatement
-   *
-   * @param preparedStatement
-   *
-   * @return True if OK, else False
-   */
-  public boolean get(final DbPreparedStatement preparedStatement) {
-    try {
-      getValues(preparedStatement, allFields);
-    } catch (final WaarpDatabaseNoConnectionException e1) {
-      return false;
-    } catch (final WaarpDatabaseSqlException e1) {
-      return false;
-    }
-    isSaved = true;
-    return true;
-  }
-
-  /**
-   * @return the runner as Json
+   * @return the object as Json
    */
   public String asJson() {
     final ObjectNode node = getJson();

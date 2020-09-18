@@ -292,7 +292,7 @@ public class Commander implements CommanderInterface {
     }
   }
 
-  private void checkConfiguration(DbMultipleMonitor multipleMonitor)
+  private void checkConfiguration(final DbMultipleMonitor multipleMonitor)
       throws WaarpDatabaseException {
     final DbConfiguration[] configurations =
         DbConfiguration.getUpdatedPrepareStament();
@@ -322,7 +322,7 @@ public class Commander implements CommanderInterface {
     }
   }
 
-  private void checkHostConfiguration(DbMultipleMonitor multipleMonitor)
+  private void checkHostConfiguration(final DbMultipleMonitor multipleMonitor)
       throws WaarpDatabaseException {
     final DbHostConfiguration[] configurations =
         DbHostConfiguration.getUpdatedPrepareStament();
@@ -352,7 +352,7 @@ public class Commander implements CommanderInterface {
     }
   }
 
-  private void checkHostAuthent(DbMultipleMonitor multipleMonitor)
+  private void checkHostAuthent(final DbMultipleMonitor multipleMonitor)
       throws WaarpDatabaseException {
     final DbHostAuth[] auths = DbHostAuth.getUpdatedPreparedStatement();
     int i = 0;
@@ -385,7 +385,7 @@ public class Commander implements CommanderInterface {
     }
   }
 
-  private void checkRule(DbMultipleMonitor multipleMonitor)
+  private void checkRule(final DbMultipleMonitor multipleMonitor)
       throws WaarpDatabaseException {
     final DbRule[] rules = DbRule.getUpdatedPrepareStament();
     int i = 0;
@@ -416,7 +416,7 @@ public class Commander implements CommanderInterface {
     }
   }
 
-  private void checkTaskRunner(DbMultipleMonitor multipleMonitor)
+  private void checkTaskRunner(final DbMultipleMonitor multipleMonitor)
       throws WaarpDatabaseException {
     // No specific HA mode since the other servers will wait for the commit on Lock
     final int maxRunnable =

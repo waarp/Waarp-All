@@ -151,15 +151,6 @@ public class R66Auth extends FilesystemBasedAuthImpl {
   }
 
   /**
-   * @param key
-   *
-   * @return True if the key is valid for the current user
-   */
-  public boolean isKeyValid(final byte[] key) {
-    return currentAuth.isKeyValid(key);
-  }
-
-  /**
    * Set the root relative Path from current status of Authentication (should
    * be
    * the highest level for the

@@ -22,7 +22,6 @@ package org.waarp.gateway.kernel.rest;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.waarp.common.database.DbConstant;
 import org.waarp.common.database.DbPreparedStatement;
 import org.waarp.common.database.data.AbstractDbData;
 import org.waarp.common.database.data.DbValue;
@@ -30,6 +29,7 @@ import org.waarp.common.database.exception.WaarpDatabaseException;
 import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
 import org.waarp.common.database.exception.WaarpDatabaseSqlException;
 import org.waarp.common.json.JsonHandler;
+import org.waarp.gateway.kernel.database.DbConstantGateway;
 import org.waarp.gateway.kernel.database.data.DbTransferLog;
 import org.waarp.gateway.kernel.database.data.DbTransferLog.Columns;
 import org.waarp.gateway.kernel.exception.HttpForbiddenRequestException;
@@ -114,7 +114,7 @@ public class DbTransferLogDataModelRestMethodHandler
       final DbTransferLog newlog = new DbTransferLog(handler.getDbSession());
       newlog.setFromJson(arg, false);
       if (newlog.getAccount() == null || newlog.getUser() == null ||
-          newlog.getSpecialId() == DbConstant.ILLEGALVALUE) {
+          newlog.getSpecialId() == DbConstantGateway.ILLEGALVALUE) {
         throw new WaarpDatabaseSqlException(
             "Not enough argument to create the object");
       }

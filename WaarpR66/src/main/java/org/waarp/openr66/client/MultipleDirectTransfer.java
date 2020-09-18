@@ -98,8 +98,7 @@ public class MultipleDirectTransfer extends DirectTransfer {
       host = host.trim();
       if (!host.isEmpty()) {
         if (dbrule.isRecvMode()) {
-          files =
-              getRemoteFiles(dbrule, localfilenames, host, networkTransaction);
+          files = getRemoteFiles(localfilenames, host, networkTransaction);
         }
         for (String filename : files) {
           filename = filename.trim();

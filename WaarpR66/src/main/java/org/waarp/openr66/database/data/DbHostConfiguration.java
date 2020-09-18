@@ -166,20 +166,10 @@ public class DbHostConfiguration extends AbstractDbDataDao<Business> {
     root, version, seeallid
   }
 
-  // ALL TABLE SHOULD IMPLEMENT THIS
-  public static final int NBPRKEY = 1;
-
   protected static final String selectAllFields =
       Columns.BUSINESS.name() + ',' + Columns.ROLES.name() + ',' +
       Columns.ALIASES.name() + ',' + Columns.OTHERS.name() + ',' +
       Columns.UPDATEDINFO.name() + ',' + Columns.HOSTID.name();
-
-  protected static final String updateAllFields =
-      Columns.BUSINESS.name() + "=?," + Columns.ROLES.name() + "=?," +
-      Columns.ALIASES.name() + "=?," + Columns.OTHERS.name() + "=?," +
-      Columns.UPDATEDINFO.name() + "=?";
-
-  protected static final String insertAllValues = " (?,?,?,?,?,?) ";
 
   @Override
   protected void initObject() {

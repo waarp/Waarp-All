@@ -19,7 +19,6 @@
  */
 package org.waarp.gateway.kernel.database.model;
 
-import org.waarp.common.database.DbConstant;
 import org.waarp.common.database.DbPreparedStatement;
 import org.waarp.common.database.DbRequest;
 import org.waarp.common.database.DbSession;
@@ -28,6 +27,7 @@ import org.waarp.common.database.exception.WaarpDatabaseNoDataException;
 import org.waarp.common.database.exception.WaarpDatabaseSqlException;
 import org.waarp.common.database.model.DbModelOracle;
 import org.waarp.common.logging.SysErrLogger;
+import org.waarp.gateway.kernel.database.DbConstantGateway;
 import org.waarp.gateway.kernel.database.data.DbTransferLog;
 
 import java.sql.SQLException;
@@ -117,8 +117,8 @@ public class DbModelOracleKernel extends DbModelOracle {
     // cptrunner
     action = new StringBuilder(
         "CREATE SEQUENCE " + DbTransferLog.fieldseq + " MINVALUE " +
-        (DbConstant.ILLEGALVALUE + 1) + " START WITH " +
-        (DbConstant.ILLEGALVALUE + 1));
+        (DbConstantGateway.ILLEGALVALUE + 1) + " START WITH " +
+        (DbConstantGateway.ILLEGALVALUE + 1));
     SysErrLogger.FAKE_LOGGER.sysout(action);
     try {
       request.query(action.toString());
@@ -143,7 +143,7 @@ public class DbModelOracleKernel extends DbModelOracle {
     final String action = "DROP SEQUENCE " + DbTransferLog.fieldseq;
     final String action2 =
         "CREATE SEQUENCE " + DbTransferLog.fieldseq + " MINVALUE " +
-        (DbConstant.ILLEGALVALUE + 1) + " START WITH " + newvalue;
+        (DbConstantGateway.ILLEGALVALUE + 1) + " START WITH " + newvalue;
     final DbRequest request = new DbRequest(session);
     try {
       request.query(action);
@@ -171,7 +171,7 @@ public class DbModelOracleKernel extends DbModelOracle {
   public static long nextSequenceMonitoring(final DbSession dbSession)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException,
              WaarpDatabaseNoDataException {
-    long result = DbConstant.ILLEGALVALUE;
+    long result = DbConstantGateway.ILLEGALVALUE;
     final String action =
         "SELECT " + DbTransferLog.fieldseq + ".NEXTVAL FROM DUAL";
     final DbPreparedStatement preparedStatement =

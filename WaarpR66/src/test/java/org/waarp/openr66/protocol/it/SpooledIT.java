@@ -205,7 +205,7 @@ public class SpooledIT extends TestAbstract {
       final File totestBig = generateOutFile(
           SpooledThread.TMP_R_66_TEST_OUT_EXAMPLE + "/testTaskBig_" + i +
           ".txt", size);
-      Thread.sleep(100);
+      Thread.sleep(50);
     }
     logger.warn("Files created {}", nb);
     while (spooledThread.spooledDirectoryTransfer.getSent() < nb) {

@@ -21,7 +21,6 @@ package org.waarp.gateway.kernel.session;
 
 import io.netty.handler.codec.http.HttpMethod;
 import org.waarp.common.command.exception.CommandAbstractException;
-import org.waarp.common.database.DbConstant;
 import org.waarp.common.file.DirInterface;
 import org.waarp.common.file.FileParameterInterface;
 import org.waarp.common.file.Restart;
@@ -30,13 +29,14 @@ import org.waarp.common.file.filesystembased.FilesystemBasedOptsMLSxImpl;
 import org.waarp.gateway.kernel.HttpPage.PageRole;
 import org.waarp.gateway.kernel.commonfile.CommonDirImpl;
 import org.waarp.gateway.kernel.commonfile.FilesystemBasedFileParameterImpl;
+import org.waarp.gateway.kernel.database.DbConstantGateway;
 
 /**
  *
  */
 public class HttpSession implements SessionInterface {
   protected HttpAuthInterface httpAuth;
-  protected long logid = DbConstant.ILLEGALVALUE;
+  protected long logid = DbConstantGateway.ILLEGALVALUE;
   protected CommonDirImpl dir;
   HttpMethod method;
   private String cookieSession;

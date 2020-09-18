@@ -26,6 +26,7 @@ import org.waarp.common.guid.JvmProcessId;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
 import org.waarp.common.utility.DetectionUtils;
+import org.waarp.common.utility.FileTestUtils;
 import org.waarp.openr66.client.DirectTransfer;
 import org.waarp.openr66.client.TransferArgs;
 import org.waarp.openr66.context.ErrorCode;
@@ -36,7 +37,6 @@ import org.waarp.openr66.protocol.networkhandler.NetworkTransaction;
 import org.waarp.openr66.protocol.utils.R66Future;
 
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -82,14 +82,8 @@ public class TestTransferNoDb extends DirectTransfer {
       localFilename =
           file.getAbsolutePath() + JvmProcessId.jvmProcessId() + ".txt";
       file = new File(localFilename);
-      FileWriter fileWriterBig;
       try {
-        fileWriterBig = new FileWriter(file);
-        for (int i = 0; i < size / 10; i++) {
-          fileWriterBig.write("0123456789");
-        }
-        fileWriterBig.flush();
-        fileWriterBig.close();
+        FileTestUtils.createTestFile(file, size / 10);
       } catch (final IOException e) {
         logger.error(e);
         return;

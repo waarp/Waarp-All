@@ -32,6 +32,7 @@ import org.waarp.common.filemonitor.FileMonitor.Status;
 import org.waarp.common.logging.WaarpLogLevel;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.FileTestUtils;
 import org.waarp.common.utility.TestWatcherJunit4;
 
 import java.io.File;
@@ -70,6 +71,7 @@ public class FileMonitorTest {
     directory2.mkdirs();
     final File fileTest2 = new File(directory2, "test.txt");
     fileTest2.delete();
+    Thread.sleep(100);
   }
 
   @After
@@ -82,6 +84,7 @@ public class FileMonitorTest {
     FileUtils.deleteDirectory(directory);
     final File directory2 = new File("/tmp/monitor2");
     FileUtils.deleteDirectory(directory2);
+    Thread.sleep(100);
   }
 
   @Test
@@ -158,12 +161,7 @@ public class FileMonitorTest {
     fileMonitor.start();
     Thread.sleep(LARGE_WAIT);
     logger.warn("Create file: " + fileTest.getAbsolutePath());
-    FileWriter fileWriterBig = new FileWriter(fileTest);
-    for (int i = 0; i < FILE_SIZE; i++) {
-      fileWriterBig.write("a");
-    }
-    fileWriterBig.flush();
-    fileWriterBig.close();
+    FileTestUtils.createTestFile(fileTest, FILE_SIZE, "a");
     waitForStatusOrFail(countNew, 0);
 
     logger.warn("Delete file: " + fileTest.getAbsolutePath());
@@ -171,7 +169,7 @@ public class FileMonitorTest {
     waitForStatusOrFail(countDelete, 0);
 
     logger.warn("Create new file: " + fileTest.getAbsolutePath());
-    fileWriterBig = new FileWriter(fileTest);
+    FileWriter fileWriterBig = new FileWriter(fileTest);
     for (int i = 0; i < FILE_SIZE; i++) {
       fileWriterBig.write("a");
       fileWriterBig.flush();
@@ -182,12 +180,7 @@ public class FileMonitorTest {
     waitForStatusOrFail(countNew, 1);
 
     logger.warn("Overwrite file: " + fileTest.getAbsolutePath());
-    fileWriterBig = new FileWriter(fileTest);
-    for (int i = 0; i < FILE_SIZE; i++) {
-      fileWriterBig.write("a");
-    }
-    fileWriterBig.flush();
-    fileWriterBig.close();
+    FileTestUtils.createTestFile(fileTest, FILE_SIZE, "a");
     int created = countNew.get();
     if (ignoreAlreadyUsed) {
       Thread.sleep(LARGE_WAIT);
@@ -258,10 +251,7 @@ public class FileMonitorTest {
     Thread.sleep(LARGE_WAIT);
 
     logger.warn("Create stopFile: " + stopFile.getAbsolutePath());
-    fileWriterBig = new FileWriter(stopFile);
-    fileWriterBig.write('a');
-    fileWriterBig.flush();
-    fileWriterBig.close();
+    FileTestUtils.createTestFile(stopFile, 1, "a");
     Thread.sleep(LARGE_WAIT);
 
     fileMonitor.waitForStopFile();
@@ -282,13 +272,9 @@ public class FileMonitorTest {
   private void stopMonitor(final File stopFile, final File fileTest,
                            final FileMonitor fileMonitor)
       throws IOException, InterruptedException {
-    FileWriter fileWriterBig;
     fileTest.delete();
     logger.warn("Create stopFile: " + stopFile.getAbsolutePath());
-    fileWriterBig = new FileWriter(stopFile);
-    fileWriterBig.write('a');
-    fileWriterBig.flush();
-    fileWriterBig.close();
+    FileTestUtils.createTestFile(stopFile, 1, "a");
     Thread.sleep(LARGE_WAIT);
 
     fileMonitor.waitForStopFile();
@@ -410,12 +396,7 @@ public class FileMonitorTest {
     fileMonitor.start();
     Thread.sleep(LARGE_WAIT);
     logger.warn("Create file: " + fileTest.getAbsolutePath());
-    FileWriter fileWriterBig = new FileWriter(fileTest);
-    for (int i = 0; i < SMALL_WAIT; i++) {
-      fileWriterBig.write("a");
-    }
-    fileWriterBig.flush();
-    fileWriterBig.close();
+    FileTestUtils.createTestFile(fileTest, FILE_SIZE, "a");
     waitForStatusOrFail(countNew, 0);
 
     logger.warn("Delete file: " + fileTest.getAbsolutePath());
@@ -423,7 +404,7 @@ public class FileMonitorTest {
     waitForStatusOrFail(countDelete, 0);
 
     logger.warn("Create new file: " + fileTest.getAbsolutePath());
-    fileWriterBig = new FileWriter(fileTest);
+    FileWriter fileWriterBig = new FileWriter(fileTest);
     for (int i = 0; i < FILE_SIZE; i++) {
       fileWriterBig.write("a");
       fileWriterBig.flush();
@@ -447,12 +428,7 @@ public class FileMonitorTest {
     checkOK.set(false);
     logger.warn("Override file: " + fileTest.getAbsolutePath());
 
-    fileWriterBig = new FileWriter(fileTest);
-    for (int i = 0; i < FILE_SIZE; i++) {
-      fileWriterBig.write("a");
-    }
-    fileWriterBig.flush();
-    fileWriterBig.close();
+    FileTestUtils.createTestFile(fileTest, FILE_SIZE, "a");
     if (ignoreAlreadyUsed) {
       Thread.sleep(LARGE_WAIT);
     } else {
@@ -494,10 +470,7 @@ public class FileMonitorTest {
     Thread.sleep(LARGE_WAIT);
 
     logger.warn("Create stopFile: " + stopFile.getAbsolutePath());
-    fileWriterBig = new FileWriter(stopFile);
-    fileWriterBig.write('a');
-    fileWriterBig.flush();
-    fileWriterBig.close();
+    FileTestUtils.createTestFile(stopFile, 1, "a");
     Thread.sleep(LARGE_WAIT);
 
     fileMonitor.waitForStopFile();
@@ -633,28 +606,16 @@ public class FileMonitorTest {
     fileMonitor.setCheckDelay(-1);
 
     logger.warn("Create file: " + fileTest.getAbsolutePath());
-    FileWriter fileWriter = new FileWriter(fileTest);
-    fileWriter.write("a");
-    fileWriter.flush();
-    fileWriter.close();
+    FileTestUtils.createTestFile(fileTest, 1, "a");
 
     logger.warn("Create file: " + fileTest2.getAbsolutePath());
-    fileWriter = new FileWriter(fileTest2);
-    fileWriter.write("a");
-    fileWriter.flush();
-    fileWriter.close();
+    FileTestUtils.createTestFile(fileTest2, 1, "a");
 
     logger.warn("Create file: " + fileTest3.getAbsolutePath());
-    fileWriter = new FileWriter(fileTest3);
-    fileWriter.write("a");
-    fileWriter.flush();
-    fileWriter.close();
+    FileTestUtils.createTestFile(fileTest3, 1, "a");
 
     logger.warn("Create file: " + fileTest4.getAbsolutePath());
-    fileWriter = new FileWriter(fileTest4);
-    fileWriter.write("a");
-    fileWriter.flush();
-    fileWriter.close();
+    FileTestUtils.createTestFile(fileTest4, 1, "a");
 
     fileMonitor.start();
     waitForUntilCountOrFail(countNew, expected.size());
@@ -662,10 +623,7 @@ public class FileMonitorTest {
     assertTrue(filesSeen.equals(expected));
 
     logger.warn("Create stopFile: " + stopFile.getAbsolutePath());
-    FileWriter fileWriterStopFile = new FileWriter(stopFile);
-    fileWriterStopFile.write('a');
-    fileWriterStopFile.flush();
-    fileWriterStopFile.close();
+    FileTestUtils.createTestFile(stopFile, 1, "a");
     Thread.sleep(LARGE_WAIT);
 
     fileMonitor.waitForStopFile();

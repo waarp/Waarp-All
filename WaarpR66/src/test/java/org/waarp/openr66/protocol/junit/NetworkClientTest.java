@@ -55,6 +55,7 @@ import org.waarp.common.digest.FilesystemBasedDigest;
 import org.waarp.common.file.FileUtils;
 import org.waarp.common.json.JsonHandler;
 import org.waarp.common.role.RoleDefault;
+import org.waarp.common.utility.FileTestUtils;
 import org.waarp.common.utility.Processes;
 import org.waarp.common.utility.TestWatcherJunit4;
 import org.waarp.common.utility.Version;
@@ -119,7 +120,6 @@ import org.waarp.thrift.r66.R66Service;
 import org.waarp.thrift.r66.RequestMode;
 
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.SocketAddress;
@@ -1238,17 +1238,6 @@ public class NetworkClientTest extends TestAbstract {
     totestBig.delete();
   }
 
-  @Test
-  public void test7_Spooled() throws IOException, InterruptedException {
-    logger.warn("Start Test of Spooled Transfer");
-    SpooledThread spooledThread = new SpooledThread();
-    spooledThread.ignoreAlreadyUsed = false;
-    spooledThread.submit = false;
-    test_Spooled(spooledThread, 2);
-    assertEquals(3, spooledThread.spooledDirectoryTransfer.getSent());
-    assertEquals(0, spooledThread.spooledDirectoryTransfer.getError());
-  }
-
   private void test_Spooled(final SpooledThread spooledThread, final int factor)
       throws IOException, InterruptedException {
     final int size = 200;
@@ -1292,7 +1281,18 @@ public class NetworkClientTest extends TestAbstract {
   }
 
   @Test
-  public void test7_SpooledSubmit() throws IOException, InterruptedException {
+  public void test70_Spooled() throws IOException, InterruptedException {
+    logger.warn("Start Test of Spooled Transfer");
+    SpooledThread spooledThread = new SpooledThread();
+    spooledThread.ignoreAlreadyUsed = false;
+    spooledThread.submit = false;
+    test_Spooled(spooledThread, 2);
+    assertEquals(3, spooledThread.spooledDirectoryTransfer.getSent());
+    assertEquals(0, spooledThread.spooledDirectoryTransfer.getError());
+  }
+
+  @Test
+  public void test70_SpooledSubmit() throws IOException, InterruptedException {
     logger.warn("Start Test of Spooled Transfer");
     SpooledThread spooledThread = new SpooledThread();
     spooledThread.ignoreAlreadyUsed = false;
@@ -1303,7 +1303,7 @@ public class NetworkClientTest extends TestAbstract {
   }
 
   @Test
-  public void test7_SpooledIgnore() throws IOException, InterruptedException {
+  public void test70_SpooledIgnore() throws IOException, InterruptedException {
     logger.warn("Start Test of Spooled Ignored Changed File Transfer");
     SpooledThread spooledThread = new SpooledThread();
     spooledThread.ignoreAlreadyUsed = true;
@@ -1314,7 +1314,7 @@ public class NetworkClientTest extends TestAbstract {
   }
 
   @Test
-  public void test7_SpooledSubmitIgnore()
+  public void test70_SpooledSubmitIgnore()
       throws IOException, InterruptedException {
     logger.warn("Start Test of Spooled Ignored Changed File Transfer");
     SpooledThread spooledThread = new SpooledThread();
@@ -1326,7 +1326,7 @@ public class NetworkClientTest extends TestAbstract {
   }
 
   @Test
-  public void test7_SpooledWrongHost()
+  public void test70_SpooledWrongHost()
       throws IOException, InterruptedException {
     logger.warn("Start Test of Spooled Retry Transfer");
     //WaarpLoggerFactory.setLogLevel(WaarpLogLevel.DEBUG);
@@ -1341,7 +1341,7 @@ public class NetworkClientTest extends TestAbstract {
   }
 
   @Test
-  public void test7_SpooledSubmitWrongHost()
+  public void test70_SpooledSubmitWrongHost()
       throws IOException, InterruptedException {
     logger.warn("Start Test of Spooled Retry Transfer");
     SpooledThread spooledThread = new SpooledThread();
@@ -1354,7 +1354,7 @@ public class NetworkClientTest extends TestAbstract {
   }
 
   @Test
-  public void test7_SpooledWrongHostIgnore()
+  public void test70_SpooledWrongHostIgnore()
       throws IOException, InterruptedException {
     logger.warn("Start Test of Spooled Ignored Changed File Transfer");
     SpooledThread spooledThread = new SpooledThread();
@@ -1368,7 +1368,7 @@ public class NetworkClientTest extends TestAbstract {
   }
 
   @Test
-  public void test7_SpooledSubmitWrongHostIgnore()
+  public void test70_SpooledSubmitWrongHostIgnore()
       throws IOException, InterruptedException {
     logger.warn("Start Test of Spooled Ignored Changed File Transfer");
     SpooledThread spooledThread = new SpooledThread();
@@ -1381,7 +1381,7 @@ public class NetworkClientTest extends TestAbstract {
   }
 
   @Test
-  public void test50_Transfer_Delete_Rule_Wrong() throws Exception {
+  public void test71_Transfer_Delete_Rule_Wrong() throws Exception {
     final File totest = generateOutFile("/tmp/R66/out/testTask.txt", 10);
     final R66Future future = new R66Future(true);
     logger.warn("Start Test of DirectTransfer with future deleted Rule");
@@ -1427,7 +1427,7 @@ public class NetworkClientTest extends TestAbstract {
   }
 
   @Test
-  public void test51_Transfer_With_Icap_Send() throws Exception {
+  public void test72_Transfer_With_Icap_Send() throws Exception {
     IcapServerHandler.resetJunitStatus();
     IcapServer.main(new String[] { "127.0.0.1", "9999" });
     final File totest = generateOutFile("/tmp/R66/out/testTask.txt", 100);
@@ -1462,7 +1462,7 @@ public class NetworkClientTest extends TestAbstract {
   }
 
   @Test
-  public void test52_Transfer_With_Icap_Send_Virus() throws Exception {
+  public void test73_Transfer_With_Icap_Send_Virus() throws Exception {
     IcapServerHandler.resetJunitStatus();
     IcapServer.main(new String[] { "127.0.0.1", "9999" });
     IcapServerHandler.setFinalStatus(200);
@@ -1486,9 +1486,20 @@ public class NetworkClientTest extends TestAbstract {
         success++;
       } else {
         if (runner != null) {
-          DbTaskRunner dbTaskRunner =
-              new DbTaskRunner(runner.getSpecialId() + 1, runner.getRequester(),
-                               runner.getRequested());
+          DbTaskRunner dbTaskRunner = null;
+          for (int i = 0; i < 10; i++) {
+            try {
+              dbTaskRunner = new DbTaskRunner(runner.getSpecialId() + 1,
+                                              runner.getRequester(),
+                                              runner.getRequested());
+              break;
+            } catch (WaarpDatabaseException e) {
+              Thread.sleep(200);
+            }
+          }
+          if (dbTaskRunner == null) {
+            fail("Cannot find Runner");
+          }
           logger.warn("Start wait for re-transfer: {}",
                       dbTaskRunner.toShortString());
           waitForAllDone(dbTaskRunner);
@@ -1518,7 +1529,7 @@ public class NetworkClientTest extends TestAbstract {
   }
 
   @Test
-  public void test53_Transfer_With_Icap_Recv() throws Exception {
+  public void test74_Transfer_With_Icap_Recv() throws Exception {
     IcapServerHandler.resetJunitStatus();
     IcapServer.main(new String[] { "127.0.0.1", "9999" });
     final File totest = generateOutFile("/tmp/R66/out/testTask.txt", 100);
@@ -1553,7 +1564,7 @@ public class NetworkClientTest extends TestAbstract {
   }
 
   @Test
-  public void test54_Transfer_With_Icap_Recv_Virus() throws Exception {
+  public void test75_Transfer_With_Icap_Recv_Virus() throws Exception {
     IcapServerHandler.resetJunitStatus();
     IcapServer.main(new String[] { "127.0.0.1", "9999" });
     IcapServerHandler.setFinalStatus(200);
@@ -1577,9 +1588,20 @@ public class NetworkClientTest extends TestAbstract {
         success++;
       } else {
         if (runner != null) {
-          DbTaskRunner dbTaskRunner =
-              new DbTaskRunner(runner.getSpecialId() + 1, runner.getRequester(),
-                               runner.getRequested());
+          DbTaskRunner dbTaskRunner = null;
+          for (int i = 0; i < 10; i++) {
+            try {
+              dbTaskRunner = new DbTaskRunner(runner.getSpecialId() + 1,
+                                              runner.getRequester(),
+                                              runner.getRequested());
+              break;
+            } catch (WaarpDatabaseException e) {
+              Thread.sleep(200);
+            }
+          }
+          if (dbTaskRunner == null) {
+            fail("Cannot find Runner");
+          }
           logger.warn("Start wait for re-transfer: {}",
                       dbTaskRunner.toShortString());
           waitForAllDone(dbTaskRunner);
@@ -1597,7 +1619,7 @@ public class NetworkClientTest extends TestAbstract {
       }
       logger.warn("Success: " + success + " Error: " + error);
       assertEquals("Success should be total", 1, success);
-      assertEquals("Errors should be 0", 1, error);
+      assertEquals("Errors should be 1", 1, error);
       totest.delete();
       if (runner != null) {
         runner.delete();
@@ -2143,10 +2165,7 @@ public class NetworkClientTest extends TestAbstract {
   public void test96_Tasks() throws Exception {
     System.err.println("Start Tasks");
     final File totest = new File("/tmp/R66/in/testTask.txt");
-    final FileWriter fileWriter = new FileWriter(totest);
-    fileWriter.write("Test content");
-    fileWriter.flush();
-    fileWriter.close();
+    FileTestUtils.createTestFile(totest, 1);
     TestTasks.main(new String[] {
         new File(dirResources, CONFIG_SERVER_A_MINIMAL_XML).getAbsolutePath(),
         "/tmp/R66/in", "/tmp/R66/out", totest.getName()

@@ -21,7 +21,6 @@ package org.waarp.gateway.kernel.database.data;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import org.dom4j.Document;
-import org.waarp.common.database.DbConstant;
 import org.waarp.common.database.DbPreparedStatement;
 import org.waarp.common.database.DbSession;
 import org.waarp.common.database.data.AbstractDbData;
@@ -40,6 +39,7 @@ import org.waarp.common.xml.XmlUtil;
 import org.waarp.common.xml.XmlValue;
 import org.waarp.gateway.kernel.HttpPage.PageRole;
 import org.waarp.gateway.kernel.HttpPageHandler;
+import org.waarp.gateway.kernel.database.DbConstantGateway;
 
 import java.io.IOException;
 import java.io.InvalidObjectException;
@@ -353,7 +353,7 @@ public class DbTransferLog extends AbstractDbData {
       return;
     }
     if (dbSession == null) {
-      if (specialId == DbConstant.ILLEGALVALUE) {
+      if (specialId == DbConstantGateway.ILLEGALVALUE) {
         // New SpecialId is not possible with No Database Model
         createNoDbSpecialId();
       }
@@ -361,7 +361,7 @@ public class DbTransferLog extends AbstractDbData {
       return;
     }
     // First need to find a new id if id is not ok
-    if (specialId == DbConstant.ILLEGALVALUE) {
+    if (specialId == DbConstantGateway.ILLEGALVALUE) {
       specialId = dbSession.getAdmin().getDbModel().nextSequence(dbSession);
       logger.debug("Try Insert create a new Id from sequence: {}", specialId);
       setPrimaryKey();
@@ -379,7 +379,7 @@ public class DbTransferLog extends AbstractDbData {
       return;
     }
     if (dbSession == null) {
-      if (specialId == DbConstant.ILLEGALVALUE) {
+      if (specialId == DbConstantGateway.ILLEGALVALUE) {
         // New SpecialId is not possible with No Database Model
         createNoDbSpecialId();
       }
@@ -387,7 +387,7 @@ public class DbTransferLog extends AbstractDbData {
       return;
     }
     // First need to find a new id if id is not ok
-    if (specialId == DbConstant.ILLEGALVALUE) {
+    if (specialId == DbConstantGateway.ILLEGALVALUE) {
       specialId = dbSession.getAdmin().getDbModel().nextSequence(dbSession);
       logger.debug("Try Insert create a new Id from sequence: {}", specialId);
       setPrimaryKey();

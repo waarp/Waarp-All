@@ -22,8 +22,6 @@ package org.waarp.openr66.protocol.networkhandler;
 import io.netty.channel.Channel;
 import org.waarp.common.future.WaarpLock;
 import org.waarp.common.logging.SysErrLogger;
-import org.waarp.common.logging.WaarpLogger;
-import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.lru.ConcurrentUtility;
 import org.waarp.openr66.context.ErrorCode;
 import org.waarp.openr66.context.R66Result;
@@ -46,11 +44,6 @@ import java.util.Set;
  * channels are attached to it.
  */
 public class NetworkChannelReference {
-  /**
-   * Internal Logger
-   */
-  protected static final WaarpLogger logger =
-      WaarpLoggerFactory.getLogger(NetworkChannelReference.class);
   private static final LocalChannelReference[] LCR_0_LENGTH =
       new LocalChannelReference[0];
 
@@ -327,13 +320,6 @@ public class NetworkChannelReference {
    */
   public void setHostId(final String hostId) {
     this.hostId = hostId;
-  }
-
-  /**
-   * @return the lock
-   */
-  public WaarpLock getLock() {
-    return lock;
   }
 
   /**

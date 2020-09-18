@@ -337,7 +337,7 @@ public class NetworkServerHandler
         }
         if (networkPacket != null) {
           final NetworkPacket finalNP = networkPacket;
-          Future future = channel.writeAndFlush(networkPacket);
+          final Future future = channel.writeAndFlush(networkPacket);
           future.await(ConfigurationProxyR66.WAITFORNETOP);
           future.addListener(new ChannelFutureListener() {
             @Override

@@ -53,10 +53,7 @@ public class FtpMonitoring implements WaarpInterfaceMonitor {
 
   // global informations
   public long nbNetworkConnection;
-  public long secondsRunning;
   public long nbThread;
-  public long bandwidthIn;
-  public long bandwidthOut;
 
   // Internal data
   private final DbSession dbSession;

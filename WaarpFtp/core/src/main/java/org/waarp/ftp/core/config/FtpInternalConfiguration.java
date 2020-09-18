@@ -80,18 +80,9 @@ public class FtpInternalConfiguration {
   public static final int RETRYNB = 3;
 
   /**
-   * Time elapse for WRITE OR CLOSE WAIT elaps in ms
-   */
-  public static final long WAITFORNETOP = 1000;
-  /**
    * Hack to say Windows or Unix (USR1 not OK on Windows)
    */
   static Boolean isUnix;
-
-  /**
-   * Default size for buffers (NIO)
-   */
-  public static final int BUFFERSIZEDEFAULT = 0x10000; // 64K
 
   // Dynamic values
   /**

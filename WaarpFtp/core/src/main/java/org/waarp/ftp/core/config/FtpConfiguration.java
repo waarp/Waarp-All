@@ -35,7 +35,6 @@ import java.io.File;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.HashMap;
-import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
@@ -481,13 +480,6 @@ public abstract class FtpConfiguration {
     } else if (getClientThread() < nb) {
       setClientThread(nb * 10);
     }
-  }
-
-  /**
-   * @return the lock on configuration
-   */
-  public Lock getLock() {
-    return lock;
   }
 
   /**

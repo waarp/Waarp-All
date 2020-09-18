@@ -409,7 +409,7 @@ public class FXApplet extends JApplet {
   void callJavascriptHandler(final String methodName) {
     try {
       final JSObject win = JSObject.getWindow(this);
-      win.call(methodName, this);
+      win.call(methodName, new Object[] { this });
     } catch (final Exception ex) {
       dblView.showErrorMessage(ex.toString());
     }
