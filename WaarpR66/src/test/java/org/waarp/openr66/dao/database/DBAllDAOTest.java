@@ -23,9 +23,12 @@ package org.waarp.openr66.dao.database;
 import org.junit.After;
 import org.junit.Assume;
 import org.junit.Before;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 import org.testcontainers.containers.JdbcDatabaseContainer;
 import org.waarp.common.command.exception.Reply550Exception;
+import org.waarp.common.database.model.DbModelMysql;
 import org.waarp.common.digest.FilesystemBasedDigest;
 import org.waarp.common.file.FileUtils;
 import org.waarp.common.logging.SysErrLogger;
@@ -77,6 +80,7 @@ import java.util.Map;
 
 import static org.junit.Assert.*;
 
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public abstract class DBAllDAOTest extends TestAbstract {
 
   private static final String TMP_CONFIG_XML = "/tmp/config.xml";
@@ -235,7 +239,8 @@ public abstract class DBAllDAOTest extends TestAbstract {
           "Unsupported Test for Oracle since wrong JDBC driver");
     } else if (driver.equalsIgnoreCase("org.postgresql.Driver")) {
       target = "postgresql";
-    } else if (driver.equalsIgnoreCase("com.mysql.jdbc.Driver")) {
+    } else if (DbModelMysql.MYSQL_DRIVER_JRE6.equalsIgnoreCase(driver) ||
+               DbModelMysql.MYSQL_DRIVER_JRE8.equalsIgnoreCase(driver)) {
       target = "mysql";
     } else {
       SysErrLogger.FAKE_LOGGER.syserr("Cannot find driver for " + driver);
@@ -269,7 +274,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
   }
 
   @Test
-  public void startStopServerR66() throws Exception {
+  public void test99_startStopServerR66() throws Exception {
     if (checkXml()) {
       return;
     }
@@ -335,7 +340,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
    * BUSINESS
    *******************/
   @Test
-  public void testDeleteAllBusiness() {
+  public void test01_DeleteAllBusiness() {
     try {
       final BusinessDAO dao = getDaoFactory().getBusinessDAO();
       dao.deleteAll();
@@ -348,7 +353,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
   }
 
   @Test
-  public void testDeleteBusiness() {
+  public void test01_DeleteBusiness() {
     try {
       final BusinessDAO dao = getDaoFactory().getBusinessDAO();
       dao.delete(new Business("server1", "", "", "", ""));
@@ -361,7 +366,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
   }
 
   @Test
-  public void testGetAllBusiness() {
+  public void test01_GetAllBusiness() {
     try {
       final BusinessDAO dao = getDaoFactory().getBusinessDAO();
       assertEquals(5, dao.getAll().size());
@@ -378,7 +383,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
   }
 
   @Test
-  public void testSelectBusiness() {
+  public void test01_SelectBusiness() {
     try {
       final BusinessDAO dao = getDaoFactory().getBusinessDAO();
       final Business business = dao.select("server1");
@@ -408,7 +413,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
   }
 
   @Test
-  public void testExistBusiness() {
+  public void test01_ExistBusiness() {
     try {
       final BusinessDAO dao = getDaoFactory().getBusinessDAO();
       assertTrue(dao.exist("server1"));
@@ -426,7 +431,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
   }
 
   @Test
-  public void testInsertBusiness() {
+  public void test01_InsertBusiness() {
     try {
       final BusinessDAO dao = getDaoFactory().getBusinessDAO();
       dao.insert(new Business("chacha", "lolo", "lala", "minou", "ect",
@@ -456,7 +461,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
   }
 
   @Test
-  public void testUpdateBusiness() {
+  public void test01_UpdateBusiness() {
     try {
       final BusinessDAO dao = getDaoFactory().getBusinessDAO();
       dao.update(new Business("server2", "lolo", "lala", "minou", "ect",
@@ -480,7 +485,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
   }
 
   @Test
-  public void testFindBusiness() {
+  public void test01_FindBusiness() {
     final ArrayList<Filter> map = new ArrayList<Filter>();
     map.add(new Filter(DBBusinessDAO.BUSINESS_FIELD, "=", "ba"));
     try {
@@ -503,7 +508,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
    *********************/
 
   @Test
-  public void testDeleteAllHost() {
+  public void test02_DeleteAllHost() {
     try {
       final HostDAO dao = getDaoFactory().getHostDAO();
       dao.deleteAll();
@@ -516,7 +521,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
   }
 
   @Test
-  public void testDeleteHost() {
+  public void test02_DeleteHost() {
     try {
       final HostDAO dao = getDaoFactory().getHostDAO();
       dao.delete(new Host("server1", "", 666, null, false, false));
@@ -529,7 +534,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
   }
 
   @Test
-  public void testGetAllHost() {
+  public void test02_GetAllHost() {
     try {
       final HostDAO dao = getDaoFactory().getHostDAO();
       assertEquals(3, dao.getAll().size());
@@ -546,7 +551,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
   }
 
   @Test
-  public void testSelectHost() {
+  public void test02_SelectHost() {
     try {
       final HostDAO dao = getDaoFactory().getHostDAO();
       final Host host = dao.select("server1");
@@ -581,7 +586,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
   }
 
   @Test
-  public void testExistHost() {
+  public void test02_ExistHost() {
     try {
       final HostDAO dao = getDaoFactory().getHostDAO();
       assertTrue(dao.exist("server1"));
@@ -599,7 +604,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
   }
 
   @Test
-  public void testInsertHost() {
+  public void test02_InsertHost() {
     try {
       final HostDAO dao = getDaoFactory().getHostDAO();
       dao.insert(new Host("chacha", "address", 666,
@@ -633,7 +638,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
   }
 
   @Test
-  public void testUpdateHost() {
+  public void test02_UpdateHost() {
     try {
       final HostDAO dao = getDaoFactory().getHostDAO();
       dao.update(new Host("server2", "address", 666,
@@ -663,7 +668,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
   }
 
   @Test
-  public void testFindHost() {
+  public void test02_FindHost() {
     final ArrayList<Filter> map = new ArrayList<Filter>();
     map.add(new Filter(DBHostDAO.ADDRESS_FIELD, "=", "127.0.0.1"));
     try {
@@ -686,7 +691,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
    *********************/
 
   @Test
-  public void testDeleteAllLimit() {
+  public void test03_DeleteAllLimit() {
     try {
       final LimitDAO dao = getDaoFactory().getLimitDAO();
       dao.deleteAll();
@@ -699,7 +704,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
   }
 
   @Test
-  public void testDeleteLimit() {
+  public void test03_DeleteLimit() {
     try {
       final LimitDAO dao = getDaoFactory().getLimitDAO();
       dao.delete(new Limit("server1", 0L));
@@ -712,7 +717,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
   }
 
   @Test
-  public void testGetAllLimit() {
+  public void test03_GetAllLimit() {
     try {
       final LimitDAO dao = getDaoFactory().getLimitDAO();
       assertEquals(3, dao.getAll().size());
@@ -729,7 +734,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
   }
 
   @Test
-  public void testSelectLimit() {
+  public void test03_SelectLimit() {
     try {
       final LimitDAO dao = getDaoFactory().getLimitDAO();
       final Limit limit = dao.select("server1");
@@ -761,7 +766,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
   }
 
   @Test
-  public void testExistLimit() {
+  public void test03_ExistLimit() {
     try {
       final LimitDAO dao = getDaoFactory().getLimitDAO();
       assertTrue(dao.exist("server1"));
@@ -779,7 +784,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
   }
 
   @Test
-  public void testInsertLimit() {
+  public void test03_InsertLimit() {
     try {
       final LimitDAO dao = getDaoFactory().getLimitDAO();
       dao.insert(
@@ -809,7 +814,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
   }
 
   @Test
-  public void testUpdateLimit() {
+  public void test03_UpdateLimit() {
     try {
       final LimitDAO dao = getDaoFactory().getLimitDAO();
       dao.update(
@@ -834,7 +839,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
   }
 
   @Test
-  public void testFindLimit() {
+  public void test03_FindLimit() {
     final ArrayList<Filter> map = new ArrayList<Filter>();
     map.add(new Filter(DBLimitDAO.READ_SESSION_LIMIT_FIELD, ">", 2));
     try {
@@ -857,7 +862,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
    *********************/
 
   @Test
-  public void testDeleteAllMultipleMonitor() {
+  public void test04_DeleteAllMultipleMonitor() {
     try {
       final MultipleMonitorDAO dao = getDaoFactory().getMultipleMonitorDAO();
       if (dao == null) {
@@ -874,7 +879,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
   }
 
   @Test
-  public void testDeleteMultipleMonitor() {
+  public void test04_DeleteMultipleMonitor() {
     try {
       final MultipleMonitorDAO dao = getDaoFactory().getMultipleMonitorDAO();
       if (dao == null) {
@@ -891,7 +896,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
   }
 
   @Test
-  public void testGetAllMultipleMonitor() {
+  public void test04_GetAllMultipleMonitor() {
     try {
       final MultipleMonitorDAO dao = getDaoFactory().getMultipleMonitorDAO();
       if (dao == null) {
@@ -906,7 +911,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
   }
 
   @Test
-  public void testSelectMultipleMonitor() {
+  public void test04_SelectMultipleMonitor() {
     try {
       final MultipleMonitorDAO dao = getDaoFactory().getMultipleMonitorDAO();
       if (dao == null) {
@@ -932,7 +937,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
   }
 
   @Test
-  public void testExistMultipleMonitor() {
+  public void test04_ExistMultipleMonitor() {
     try {
       final MultipleMonitorDAO dao = getDaoFactory().getMultipleMonitorDAO();
       if (dao == null) {
@@ -948,7 +953,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
   }
 
   @Test
-  public void testInsertMultipleMonitor() {
+  public void test04_InsertMultipleMonitor() {
     try {
       final MultipleMonitorDAO dao = getDaoFactory().getMultipleMonitorDAO();
       if (dao == null) {
@@ -976,7 +981,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
   }
 
   @Test
-  public void testUpdateMultipleMonitor() {
+  public void test04_UpdateMultipleMonitor() {
     try {
       final MultipleMonitorDAO dao = getDaoFactory().getMultipleMonitorDAO();
       if (dao == null) {
@@ -999,7 +1004,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
   }
 
   @Test
-  public void testFindMultipleMonitor() {
+  public void test04_FindMultipleMonitor() {
     final ArrayList<Filter> map = new ArrayList<Filter>();
     map.add(new Filter(DBMultipleMonitorDAO.COUNT_CONFIG_FIELD, "=", 0));
     try {
@@ -1020,7 +1025,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
    *********************/
 
   @Test
-  public void testDeleteAllRule() {
+  public void test05_DeleteAllRule() {
     try {
       final RuleDAO dao = getDaoFactory().getRuleDAO();
       dao.deleteAll();
@@ -1033,7 +1038,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
   }
 
   @Test
-  public void testDeleteRule() {
+  public void test05_DeleteRule() {
     try {
       final RuleDAO dao = getDaoFactory().getRuleDAO();
       dao.delete(new Rule("default", 1));
@@ -1046,7 +1051,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
   }
 
   @Test
-  public void testGetAllRule() {
+  public void test05_GetAllRule() {
     if (checkXml()) {
       return;
     }
@@ -1060,7 +1065,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
   }
 
   @Test
-  public void testSelectRule() {
+  public void test05_SelectRule() {
     try {
       final RuleDAO dao = getDaoFactory().getRuleDAO();
       final Rule rule = dao.select("dummy");
@@ -1098,7 +1103,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
   }
 
   @Test
-  public void testExistRule() {
+  public void test05_ExistRule() {
     try {
       final RuleDAO dao = getDaoFactory().getRuleDAO();
       assertTrue(dao.exist("dummy"));
@@ -1110,7 +1115,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
   }
 
   @Test
-  public void testInsertRule() {
+  public void test05_InsertRule() {
     try {
       final RuleDAO dao = getDaoFactory().getRuleDAO();
       dao.insert(new Rule("chacha", 2));
@@ -1150,7 +1155,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
   }
 
   @Test
-  public void testUpdateRule() {
+  public void test05_UpdateRule() {
     try {
       final RuleDAO dao = getDaoFactory().getRuleDAO();
       dao.update(new Rule("dummy", 2));
@@ -1185,7 +1190,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
   }
 
   @Test
-  public void testFindRule() {
+  public void test05_FindRule() {
     final ArrayList<Filter> map = new ArrayList<Filter>();
     map.add(new Filter(DBRuleDAO.MODE_TRANS_FIELD, "=", 1));
     try {
@@ -1207,19 +1212,19 @@ public abstract class DBAllDAOTest extends TestAbstract {
    * TRANSFER
    *********************/
 
+  public abstract TransferDAO getDAO(Connection con)
+      throws DAOConnectionException;
+
   @Test
-  public void testDeleteAllTransfer() throws Exception {
+  public void test06_DeleteAllTransfer() throws Exception {
     final TransferDAO dao = getDAO(getConnection());
     dao.deleteAll();
 
     checkSql("SELECT * FROM runner");
   }
 
-  public abstract TransferDAO getDAO(Connection con)
-      throws DAOConnectionException;
-
   @Test
-  public void testDeleteTransfer() throws Exception {
+  public void test06_DeleteTransfer() throws Exception {
     final TransferDAO dao = getDAO(getConnection());
     dao.delete(new Transfer(0L, "", 1, "", "", "", false, 0, false, "server1",
                             "server1", "server2", "", Transfer.TASKSTEP.NOTASK,
@@ -1229,7 +1234,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
   }
 
   @Test
-  public void testGetAllTransfer() throws Exception {
+  public void test06_GetAllTransfer() throws Exception {
     Configuration.configuration.setArchivePath("/arch");
     final TransferDAO dao = getDAO(getConnection());
     assertEquals(4, dao.getAll().size());
@@ -1237,7 +1242,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
   }
 
   @Test
-  public void testSelectTransfer() throws Exception {
+  public void test06_SelectTransfer() throws Exception {
     final TransferDAO dao = getDAO(getConnection());
     final Transfer transfer = dao.select(0L, "server1", "server2", "server1");
 
@@ -1251,7 +1256,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
   }
 
   @Test
-  public void testExistTransfer() throws Exception {
+  public void test06_ExistTransfer() throws Exception {
     final TransferDAO dao = getDAO(getConnection());
     try {
       assertTrue(dao.exist(0L, "server1", "server2", "server1"));
@@ -1266,7 +1271,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
   }
 
   @Test
-  public void testInsertTransfer() throws Exception {
+  public void test06_InsertTransfer() throws Exception {
     final TransferDAO dao = getDAO(getConnection());
     final Transfer transfer =
         new Transfer("server2", "rule", 1, false, "file", "info", 3);
@@ -1274,7 +1279,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
     transfer.setRequester("dummy");
     transfer.setOwnerRequest("dummy");
     transfer.setStart(new Timestamp(1112242L));
-    transfer.setStop(new Timestamp(122L));
+    transfer.setStop(new Timestamp(1112342L));
     transfer.setTransferInfo("transfer info");
     dao.insert(transfer);
 
@@ -1309,17 +1314,18 @@ public abstract class DBAllDAOTest extends TestAbstract {
   }
 
   @Test
-  public void testUpdateTransfer() throws Exception {
+  public void test06_UpdateTransfer() throws Exception {
     final TransferDAO dao = getDAO(getConnection());
-
+    // MySQL JRE11 note: datetime < 1 second 01/01/1970 00:00:01 => DateTime
+    // truncated error
     try {
       dao.update(
           new Transfer(0L, "rule", 13, "test", "testOrig", "testInfo", true, 42,
                        true, "server1", "server1", "server2", "transferInfo",
                        Transfer.TASKSTEP.ERRORTASK,
                        Transfer.TASKSTEP.TRANSFERTASK, 27, ErrorCode.CompleteOk,
-                       ErrorCode.Unknown, 64, new Timestamp(192L),
-                       new Timestamp(1511L), UpdatedInfo.TOSUBMIT));
+                       ErrorCode.Unknown, 64, new Timestamp(1122242L),
+                       new Timestamp(1123242L), UpdatedInfo.TOSUBMIT));
     } catch (DAOConnectionException e) {
       // Ignore since OK if XML
       if (!checkXml()) {
@@ -1349,8 +1355,8 @@ public abstract class DBAllDAOTest extends TestAbstract {
       assertEquals(ErrorCode.CompleteOk, transfer1.getStepStatus());
       assertEquals(ErrorCode.Unknown, transfer1.getInfoStatus());
       assertEquals(64, transfer1.getRank());
-      assertEquals(new Timestamp(192L), transfer1.getStart());
-      assertEquals(new Timestamp(1511L), transfer1.getStop());
+      assertEquals(new Timestamp(1122242L), transfer1.getStart());
+      assertEquals(new Timestamp(1123242L), transfer1.getStop());
       assertEquals(UpdatedInfo.TOSUBMIT, transfer1.getUpdatedInfo());
       return;
     }
@@ -1384,13 +1390,13 @@ public abstract class DBAllDAOTest extends TestAbstract {
                  res.getString("stepstatus").charAt(0));
     assertEquals(ErrorCode.Unknown.code, res.getString("infostatus").charAt(0));
     assertEquals(64, res.getInt("rank"));
-    assertEquals(new Timestamp(192L), res.getTimestamp("starttrans"));
-    assertEquals(new Timestamp(1511L), res.getTimestamp("stoptrans"));
+    assertEquals(new Timestamp(1122242L), res.getTimestamp("starttrans"));
+    assertEquals(new Timestamp(1123242L), res.getTimestamp("stoptrans"));
     assertEquals(UpdatedInfo.TOSUBMIT.ordinal(), res.getInt("updatedInfo"));
   }
 
   @Test
-  public void testFindTransfer() throws Exception {
+  public void test06_FindTransfer() throws Exception {
     if (checkXml()) {
       return;
     }

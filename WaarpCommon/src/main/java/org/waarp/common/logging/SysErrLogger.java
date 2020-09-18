@@ -70,7 +70,7 @@ public final class SysErrLogger {
    * @param format
    * @param args
    */
-  public void sysoutFormat(final String format, Object... args) {
+  public void sysoutFormat(final String format, final Object... args) {
     System.out.format(format, args); // NOSONAR
   }
 

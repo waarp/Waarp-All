@@ -302,19 +302,20 @@ public final class WaarpStringUtils {
   }
 
   public static DateFormat getDateFormat() {
-    DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd z");
+    final DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd z");
     dateFormat.setTimeZone(z);
     return dateFormat;
   }
 
   public static DateFormat getTimeFormat() {
-    DateFormat timeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss z");
+    final DateFormat timeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss z");
     timeFormat.setTimeZone(z);
     return timeFormat;
   }
 
   public static DateFormat getTimestampFormat() {
-    DateFormat timestampFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    final DateFormat timestampFormat =
+        new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     timestampFormat.setTimeZone(z);
     return timestampFormat;
   }

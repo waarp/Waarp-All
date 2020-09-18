@@ -30,7 +30,6 @@ import org.junit.rules.TestWatcher;
 import org.waarp.common.transcode.CharsetsUtil;
 
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -71,16 +70,8 @@ public class FileConvertTest {
     final List<File> files = new ArrayList<File>();
     final File filecomp = new File("/tmp/testFile2.txt");
     final File file = new File("/tmp/testFile.txt");
-    final FileWriter fileWriterBig = new FileWriter(filecomp);
-    final FileWriter fileWriterBig2 = new FileWriter(file);
-    for (int i = 0; i < 10; i++) {
-      fileWriterBig.write("0123456789\n");
-      fileWriterBig2.write("0123456789\n");
-    }
-    fileWriterBig.flush();
-    fileWriterBig.close();
-    fileWriterBig2.flush();
-    fileWriterBig2.close();
+    FileTestUtils.createTestFile(filecomp, 10);
+    FileTestUtils.createTestFile(file, 10);
     files.add(file);
     FileConvert fileConvert = new FileConvert(files, true, false, null);
     fileConvert.run();
@@ -95,12 +86,7 @@ public class FileConvertTest {
   public void testCharsetsUtil() throws IOException {
     final File fileto = new File("/tmp/to.txt");
     final File filefrom = new File("/tmp/from.txt");
-    final FileWriter fileWriterBig = new FileWriter(filefrom);
-    for (int i = 0; i < 10; i++) {
-      fileWriterBig.write("0123456789\n");
-    }
-    fileWriterBig.flush();
-    fileWriterBig.close();
+    FileTestUtils.createTestFile(filefrom, 10);
     final String[] args = {
         "-to", "/tmp/to.txt", WaarpStringUtils.UTF_8, "-from", "/tmp/from.txt",
         WaarpStringUtils.UTF_8

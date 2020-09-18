@@ -64,26 +64,26 @@ public abstract class StatementExecutor<E> implements AbstractDAO<E> {
     }
   }
 
-  protected void addToCache(String key, E elt) {
+  protected void addToCache(final String key, final E elt) {
     if (isCachedEnable()) {
       getCache().put(key, elt);
     }
   }
 
-  protected E getFromCache(String key) {
+  protected E getFromCache(final String key) {
     if (isCachedEnable()) {
       return getCache().get(key);
     }
     return null;
   }
 
-  protected void removeFromCache(String key) {
+  protected void removeFromCache(final String key) {
     if (isCachedEnable()) {
       getCache().remove(key);
     }
   }
 
-  protected boolean isInCache(String key) {
+  protected boolean isInCache(final String key) {
     if (isCachedEnable()) {
       return getCache().contains(key);
     }
@@ -294,7 +294,7 @@ public abstract class StatementExecutor<E> implements AbstractDAO<E> {
   public E select(final String id)
       throws DAOConnectionException, DAONoDataException {
     if (isCachedEnable()) {
-      E found = getFromCache(id);
+      final E found = getFromCache(id);
       if (found != null) {
         return found;
       }
@@ -306,7 +306,7 @@ public abstract class StatementExecutor<E> implements AbstractDAO<E> {
       setParameters(stm, id);
       res = executeQuery(stm);
       if (res.next()) {
-        E found = getFromResultSet(res);
+        final E found = getFromResultSet(res);
         addToCache(id, found);
         return found;
       } else {

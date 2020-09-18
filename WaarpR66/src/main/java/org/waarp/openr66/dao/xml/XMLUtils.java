@@ -60,7 +60,7 @@ public final class XMLUtils {
       final StreamResult streamResult = new StreamResult(file);
       transformer.transform(domSource, streamResult);
     } catch (final TransformerException e) {
-      logger.error("Error while writing document to file", e);
+      logger.error("Error while writing document to file: {}", e.getMessage());
     }
   }
 }

@@ -201,27 +201,6 @@ public class DataPacket extends AbstractLocalPacket {
   /**
    * @return True if the Hashed key is valid (or no key is set)
    */
-  public boolean isKeyValid(final FilesystemBasedDigest digestBlock) {
-    ParametersChecker.checkParameter("Data is not setup correctly", data);
-    if (key == null || key.length == 0) {
-      logger.error("Should received a Digest but don't");
-      return false;
-    }
-    digestBlock.Update(data, 0, data.length);
-    final byte[] newkey = digestBlock.Final();
-    final boolean equal = Arrays.equals(key, newkey);
-    if (!equal) {
-      logger.error("DIGEST {} != {} for {} bytes using {} at rank {}",
-                   FilesystemBasedDigest.getHex(key),
-                   FilesystemBasedDigest.getHex(newkey), data.length,
-                   digestBlock.getAlgo(), packetRank);
-    }
-    return equal;
-  }
-
-  /**
-   * @return True if the Hashed key is valid (or no key is set)
-   */
   public boolean isKeyValid(final FilesystemBasedDigest digestBlock,
                             final FilesystemBasedDigest digestGlobal,
                             final FilesystemBasedDigest digestLocal) {

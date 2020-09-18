@@ -29,9 +29,9 @@ import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
 import org.waarp.common.utility.DetectionUtils;
+import org.waarp.common.utility.FileTestUtils;
 
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 
 /**
@@ -120,13 +120,13 @@ public abstract class TestAbstractMinimal {
 
   protected static File generateOutFile(String name, int size, String tenchars)
       throws IOException {
-    final File file = new File(name);
-    final FileWriter fileWriterBig = new FileWriter(file);
-    for (int i = 0; i < size / 10; i++) {
-      fileWriterBig.write(tenchars);
+    try {
+      Thread.sleep(10);
+    } catch (InterruptedException e) {
+      throw new IOException(e);
     }
-    fileWriterBig.flush();
-    fileWriterBig.close();
+    final File file = new File(name);
+    FileTestUtils.createTestFile(file, size / 10, tenchars);
     return file;
   }
 }

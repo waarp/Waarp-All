@@ -20,8 +20,8 @@
 package org.waarp.gateway.kernel;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
-import org.waarp.common.database.DbConstant;
 import org.waarp.common.database.DbSession;
+import org.waarp.gateway.kernel.database.DbConstantGateway;
 import org.waarp.gateway.kernel.database.WaarpActionLogger;
 import org.waarp.gateway.kernel.exception.HttpIncorrectRequestException;
 import org.waarp.gateway.kernel.session.HttpSession;
@@ -121,8 +121,9 @@ public class HttpPageHandler {
 
   private HttpPage getHttpPageError(final HttpSession session, HttpPage page) {
     // error
-    DbSession dbSession =
-        DbConstant.admin != null? DbConstant.admin.getSession() : null;
+    final DbSession dbSession =
+        DbConstantGateway.admin != null? DbConstantGateway.admin.getSession() :
+            null;
     WaarpActionLogger.logErrorAction(dbSession, session,
                                      INCORRECT_PAGE + page.getPagerole() + ":" +
                                      page.getPagename(),

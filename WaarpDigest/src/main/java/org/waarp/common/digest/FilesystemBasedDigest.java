@@ -402,35 +402,6 @@ public class FilesystemBasedDigest {
   }
 
   /**
-   * get the byte array of the SHA-1 for the given FileInterface using Nio
-   * access
-   *
-   * @param f
-   *
-   * @return the byte array representing the SHA-1
-   *
-   * @throws IOException
-   */
-  public static byte[] getHashSha1Nio(final File f) throws IOException {
-    return getHash(f, true, DigestAlgo.SHA1);
-  }
-
-  /**
-   * get the byte array of the SHA-1 for the given FileInterface using
-   * standard
-   * access
-   *
-   * @param f
-   *
-   * @return the byte array representing the SHA-1
-   *
-   * @throws IOException
-   */
-  public static byte[] getHashSha1(final File f) throws IOException {
-    return getHash(f, false, DigestAlgo.SHA1);
-  }
-
-  /**
    * Internal function for No NIO InputStream support
    *
    * @param in will be closed at the end of this call
@@ -505,7 +476,6 @@ public class FilesystemBasedDigest {
    *
    * @throws IOException
    */
-  @SuppressWarnings("resource")
   public static byte[] getHash(final File f, final boolean nio,
                                final DigestAlgo algo) throws IOException {
     if (!f.exists()) {

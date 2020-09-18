@@ -279,6 +279,10 @@ public class WaarpFtp4jClient {
   public void changeMode(boolean passive) {
     isPassive = passive;
     ftpClient.setPassive(passive);
+    try {
+      Thread.sleep(100);
+    } catch (final InterruptedException ignored) {//NOSONAR
+    }
   }
 
   /**

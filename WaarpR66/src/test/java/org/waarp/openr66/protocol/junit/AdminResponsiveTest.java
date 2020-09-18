@@ -97,6 +97,7 @@ public class AdminResponsiveTest extends TestAbstract {
   @After
   public void restartDriver() throws InterruptedException {
     reloadDriver();
+    Thread.sleep(100);
   }
 
   @Test

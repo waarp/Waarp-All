@@ -484,7 +484,7 @@ public class SpooledDirectoryTransfer implements Runnable {
             logger
                 .info("Launch transfer to " + host + " with file " + filename);
             R66Future r66Future = new R66Future(true);
-            String text;
+            final String text;
             if (submit) {
               text = submitTransfer(specialId, host, filename, r66Future);
             } else {
@@ -562,7 +562,7 @@ public class SpooledDirectoryTransfer implements Runnable {
     private String submitTransfer(final long specialId, final String host,
                                   final String filename,
                                   final R66Future r66Future) {
-      String text;
+      final String text;
       text = "Submit Transfer: ";
       final SubmitTransfer transaction =
           new SubmitTransfer(r66Future, host, filename, ruleName, fileInfo,
@@ -579,7 +579,7 @@ public class SpooledDirectoryTransfer implements Runnable {
     private long koOnFoundRunner(final String host, final String text,
                                  final DbTaskRunner runner, final String errMsg,
                                  final boolean isConnectionImpossible) {
-      long newSpecialId;
+      final long newSpecialId;
       newSpecialId = runner.getSpecialId();
       DbTaskRunner.removeNoDbSpecialId(newSpecialId);
       if (isConnectionImpossible) {
@@ -690,7 +690,7 @@ public class SpooledDirectoryTransfer implements Runnable {
     private void cleanPreviousTransfer(final long specialId, final String host,
                                        final String filename,
                                        final R66Future r66Future) {
-      String text;
+      final String text;
       try {
         final String srequester = Configuration.configuration.getHostId(host);
         text =

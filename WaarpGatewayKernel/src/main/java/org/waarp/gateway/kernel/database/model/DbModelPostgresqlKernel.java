@@ -19,7 +19,6 @@
  */
 package org.waarp.gateway.kernel.database.model;
 
-import org.waarp.common.database.DbConstant;
 import org.waarp.common.database.DbRequest;
 import org.waarp.common.database.DbSession;
 import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
@@ -27,6 +26,7 @@ import org.waarp.common.database.exception.WaarpDatabaseNoDataException;
 import org.waarp.common.database.exception.WaarpDatabaseSqlException;
 import org.waarp.common.database.model.DbModelPostgresql;
 import org.waarp.common.logging.SysErrLogger;
+import org.waarp.gateway.kernel.database.DbConstantGateway;
 import org.waarp.gateway.kernel.database.data.DbTransferLog;
 
 /**
@@ -107,8 +107,8 @@ public class DbModelPostgresqlKernel extends DbModelPostgresql {
     // cptrunner
     action = new StringBuilder(
         "CREATE SEQUENCE " + DbTransferLog.fieldseq + " MINVALUE " +
-        (DbConstant.ILLEGALVALUE + 1) + " RESTART WITH " +
-        (DbConstant.ILLEGALVALUE + 1));
+        (DbConstantGateway.ILLEGALVALUE + 1) + " RESTART WITH " +
+        (DbConstantGateway.ILLEGALVALUE + 1));
     SysErrLogger.FAKE_LOGGER.sysout(action);
     try {
       request.query(action.toString());

@@ -22,8 +22,6 @@ package org.waarp.openr66.protocol.networkhandler.packet;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageCodec;
-import org.waarp.common.logging.WaarpLogger;
-import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.utility.WaarpNettyUtil;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
 import org.waarp.openr66.protocol.localhandler.packet.KeepAlivePacket;
@@ -40,11 +38,6 @@ import java.util.List;
  * Packet Decoder
  */
 public class NetworkPacketCodec extends ByteToMessageCodec<NetworkPacket> {
-  /**
-   * Internal Logger
-   */
-  private static final WaarpLogger logger =
-      WaarpLoggerFactory.getLogger(NetworkPacketCodec.class);
 
   @Override
   protected void decode(final ChannelHandlerContext ctx, final ByteBuf buf,

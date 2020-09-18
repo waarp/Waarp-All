@@ -112,9 +112,6 @@ public class DbRule extends AbstractDbDataDao<Rule> {
    */
   public static final String TASK_COMMENT = "comment";
 
-  // ALL TABLE SHOULD IMPLEMENT THIS
-  public static final int NBPRKEY = 1;
-
   protected static final String selectAllFields =
       Columns.HOSTIDS.name() + ',' + Columns.MODETRANS.name() + ',' +
       Columns.RECVPATH.name() + ',' + Columns.SENDPATH.name() + ',' +
@@ -123,18 +120,6 @@ public class DbRule extends AbstractDbDataDao<Rule> {
       Columns.RERRORTASKS.name() + ',' + Columns.SPRETASKS.name() + ',' +
       Columns.SPOSTTASKS.name() + ',' + Columns.SERRORTASKS.name() + ',' +
       Columns.UPDATEDINFO.name() + ',' + Columns.IDRULE.name();
-
-  protected static final String updateAllFields =
-      Columns.HOSTIDS.name() + "=?," + Columns.MODETRANS.name() + "=?," +
-      Columns.RECVPATH.name() + "=?," + Columns.SENDPATH.name() + "=?," +
-      Columns.ARCHIVEPATH.name() + "=?," + Columns.WORKPATH.name() + "=?," +
-      Columns.RPRETASKS.name() + "=?," + Columns.RPOSTTASKS.name() + "=?," +
-      Columns.RERRORTASKS.name() + "=?," + Columns.SPRETASKS.name() + "=?," +
-      Columns.SPOSTTASKS.name() + "=?," + Columns.SERRORTASKS.name() + "=?," +
-      Columns.UPDATEDINFO.name() + "=?";
-
-  protected static final String insertAllValues =
-      " (?,?,?,?,?,?,?,?,?,?,?,?,?,?) ";
 
   @Override
   protected void initObject() {

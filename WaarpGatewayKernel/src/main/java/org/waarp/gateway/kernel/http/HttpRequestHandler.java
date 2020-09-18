@@ -50,7 +50,6 @@ import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder.NotEnoughDat
 import io.netty.handler.codec.http.multipart.InterfaceHttpData;
 import io.netty.handler.codec.http.multipart.InterfaceHttpData.HttpDataType;
 import org.waarp.common.crypto.ssl.WaarpSslUtility;
-import org.waarp.common.database.DbConstant;
 import org.waarp.common.database.DbSession;
 import org.waarp.common.database.data.AbstractDbData.UpdatedInfo;
 import org.waarp.common.logging.SysErrLogger;
@@ -65,6 +64,7 @@ import org.waarp.gateway.kernel.HttpBusinessFactory;
 import org.waarp.gateway.kernel.HttpPage;
 import org.waarp.gateway.kernel.HttpPage.PageRole;
 import org.waarp.gateway.kernel.HttpPageHandler;
+import org.waarp.gateway.kernel.database.DbConstantGateway;
 import org.waarp.gateway.kernel.database.WaarpActionLogger;
 import org.waarp.gateway.kernel.exception.HttpIncorrectRequestException;
 import org.waarp.gateway.kernel.session.DefaultHttpAuth;
@@ -138,7 +138,7 @@ public abstract class HttpRequestHandler
     }
     if (session != null) {
       session.setFilename(null);
-      session.setLogid(DbConstant.ILLEGALVALUE);
+      session.setLogid(DbConstantGateway.ILLEGALVALUE);
     }
   }
 
@@ -202,7 +202,7 @@ public abstract class HttpRequestHandler
           // more than one element is not allowed
           try {
             values.clear();
-          } catch (UnsupportedOperationException e) {
+          } catch (final UnsupportedOperationException e) {
             SysErrLogger.FAKE_LOGGER.ignoreLog(e);
           }
           throw new HttpIncorrectRequestException(
@@ -210,7 +210,7 @@ public abstract class HttpRequestHandler
         }
         try {
           values.clear();
-        } catch (UnsupportedOperationException e) {
+        } catch (final UnsupportedOperationException e) {
           SysErrLogger.FAKE_LOGGER.ignoreLog(e);
         }
       }
@@ -298,8 +298,8 @@ public abstract class HttpRequestHandler
         }
         httpPage = httpPageTemp;
         session.setCurrentCommand(httpPage.getPagerole());
-        DbSession dbSession =
-            DbConstant.admin != null? DbConstant.admin.getSession() : null;
+        final DbSession dbSession = DbConstantGateway.admin != null?
+            DbConstantGateway.admin.getSession() : null;
         WaarpActionLogger
             .logCreate(dbSession, "Request received: " + httpPage.getPagename(),
                        session);
@@ -312,7 +312,7 @@ public abstract class HttpRequestHandler
           willClose = true;
           writeSimplePage(ctx);
           WaarpActionLogger
-              .logErrorAction(DbConstant.admin.getSession(), session,
+              .logErrorAction(DbConstantGateway.admin.getSession(), session,
                               "Error: " + httpPage.getPagename(), status);
           return;
           // end of task
@@ -404,8 +404,9 @@ public abstract class HttpRequestHandler
    * @param ctx
    */
   protected void writeErrorPage(final ChannelHandlerContext ctx) {
-    DbSession dbSession =
-        DbConstant.admin != null? DbConstant.admin.getSession() : null;
+    final DbSession dbSession =
+        DbConstantGateway.admin != null? DbConstantGateway.admin.getSession() :
+            null;
     WaarpActionLogger.logErrorAction(dbSession, session, "Error: " +
                                                          (httpPage == null?
                                                              "no page" :
@@ -449,9 +450,9 @@ public abstract class HttpRequestHandler
       logger.debug("Will close");
       future.addListener(WaarpSslUtility.SSLCLOSE);
     }
-    WaarpActionLogger.logErrorAction(DbConstant.admin.getSession(), session,
-                                     "Error: " + httpPage.getPagename(),
-                                     status);
+    WaarpActionLogger
+        .logErrorAction(DbConstantGateway.admin.getSession(), session,
+                        "Error: " + httpPage.getPagename(), status);
   }
 
   /**
@@ -656,8 +657,8 @@ public abstract class HttpRequestHandler
       if (!httpPage.isRequestValid(businessRequest)) {
         throw new HttpIncorrectRequestException("Request unvalid");
       }
-      DbSession dbSession =
-          DbConstant.admin != null? DbConstant.admin.getSession() : null;
+      final DbSession dbSession = DbConstantGateway.admin != null?
+          DbConstantGateway.admin.getSession() : null;
       switch (httpPage.getPagerole()) {
         case DELETE:
           session.setFilename(getFilename());

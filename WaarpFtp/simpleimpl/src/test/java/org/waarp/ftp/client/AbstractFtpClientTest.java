@@ -29,12 +29,12 @@ import org.waarp.common.logging.WaarpLogLevel;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
+import org.waarp.common.utility.FileTestUtils;
 import org.waarp.ftp.FtpServer;
 import org.waarp.ftp.client.transaction.Ftp4JClientTransactionTest;
 import org.waarp.ftp.client.transaction.FtpClientThread;
 
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -154,12 +154,7 @@ public abstract class AbstractFtpClientTest {
     FtpServer.startFtpServer("config.xml", "src/test/resources/sslconfig.xml",
                              SSL_MODE != 0, SSL_MODE < 0);
     final File localFilename = new File("/tmp/ftpfile.bin");
-    final FileWriter fileWriterBig = new FileWriter(localFilename);
-    for (int i = 0; i < 1000; i++) {
-      fileWriterBig.write("0123456789");
-    }
-    fileWriterBig.flush();
-    fileWriterBig.close();
+    FileTestUtils.createTestFile(localFilename, 1000);
     logger.warn("Will start server");
   }
 

@@ -212,7 +212,7 @@ public class XMLTransferDAO implements TransferDAO {
       }
     }
     synchronized (dbR66TaskHashMap) {
-      for (Transfer transfer : dbR66TaskHashMap.values()) {
+      for (final Transfer transfer : dbR66TaskHashMap.values()) {
         if (transfer != null && !res.contains(transfer)) {
           res.add(transfer);
         }

@@ -17,12 +17,34 @@
  *  You should have received a copy of the GNU General Public License along with
  * Waarp . If not, see <http://www.gnu.org/licenses/>.
  */
-package org.waarp.openr66.database;
 
-import org.waarp.common.database.DbConstant;
+package org.waarp.common.utility;
 
-/**
- * Constants value for database
- */
-public class DbConstantR66 extends DbConstant {
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+
+public class FileTestUtils {
+
+  public static void createTestFile(final File file, final int sizePer10,
+                                    final String content) throws IOException {
+    final FileWriter fileWriterBig = new FileWriter(file);
+    for (int i = 0; i < sizePer10; i++) {
+      fileWriterBig.write(content);
+    }
+    fileWriterBig.flush();
+    fileWriterBig.close();
+    while (!file.isFile() && !file.canRead() && file.length() == 0) {
+      try {
+        Thread.sleep(10);
+      } catch (InterruptedException e) {
+        throw new IOException(e);
+      }
+    }
+  }
+
+  public static void createTestFile(final File file, final int sizePer10)
+      throws IOException {
+    createTestFile(file, sizePer10, "0123456789\n");
+  }
 }

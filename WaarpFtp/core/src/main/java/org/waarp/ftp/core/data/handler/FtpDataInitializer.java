@@ -54,11 +54,6 @@ public class FtpDataInitializer extends ChannelInitializer<SocketChannel> {
   public static final String CODEC_STRUCTURE = "STRUCTURE";
 
   /**
-   * Pipeline Executor Codec
-   */
-  public static final String PIPELINE_EXECUTOR = "pipelineExecutor";
-
-  /**
    * Handler Codec
    */
   public static final String HANDLER = "handler";

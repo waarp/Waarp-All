@@ -23,7 +23,6 @@ package org.waarp.gateway.ftp.exec;
 
 import org.waarp.common.command.exception.CommandAbstractException;
 import org.waarp.common.command.exception.Reply421Exception;
-import org.waarp.common.database.DbSession;
 import org.waarp.common.database.data.AbstractDbData.UpdatedInfo;
 import org.waarp.common.database.exception.WaarpDatabaseException;
 import org.waarp.common.future.WaarpFuture;
@@ -90,8 +89,6 @@ public class R66PreparedTransferExecutor extends AbstractExecutor {
 
   protected boolean nolog;
 
-  protected DbSession dbsession;
-
   /**
    * Transfer arguments:<br>
    * <br>
@@ -124,13 +121,6 @@ public class R66PreparedTransferExecutor extends AbstractExecutor {
       nolog = transferArgs.isNolog();
     }
     future = futureCompletion;
-  }
-
-  /**
-   * @param dbsession the dbsession to set
-   */
-  public void setDbsession(final DbSession dbsession) {
-    this.dbsession = dbsession;
   }
 
   @Override

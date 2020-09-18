@@ -254,6 +254,18 @@ public class FilesystemBasedDigestPerfTest {
     fileWriterBig.flush();
     fileWriterBig.close();
     try {
+      Thread.sleep(50);
+    } catch (InterruptedException e) {
+      throw new IOException(e);
+    }
+    while (!file.isFile() && !file.canRead() && file.length() == 0) {
+      try {
+        Thread.sleep(10);
+      } catch (InterruptedException e) {
+        throw new IOException(e);
+      }
+    }
+    try {
       FilesystemBasedDigest.setUseFastMd5(false);
       for (final DigestAlgo algo : DigestAlgo.values()) {
         long start = System.currentTimeMillis();

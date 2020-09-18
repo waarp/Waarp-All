@@ -224,20 +224,6 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
       Columns.OWNERREQ.name() + ',' + Columns.REQUESTER.name() + ',' +
       Columns.REQUESTED.name() + ',' + Columns.SPECIALID.name();
 
-  protected static final String updateAllFields =
-      Columns.GLOBALSTEP.name() + "=?," + Columns.GLOBALLASTSTEP.name() +
-      "=?," + Columns.STEP.name() + "=?," + Columns.RANK.name() + "=?," +
-      Columns.STEPSTATUS.name() + "=?," + Columns.RETRIEVEMODE.name() + "=?," +
-      Columns.FILENAME.name() + "=?," + Columns.ISMOVED.name() + "=?," +
-      Columns.IDRULE.name() + "=?," + Columns.BLOCKSZ.name() + "=?," +
-      Columns.ORIGINALNAME.name() + "=?," + Columns.FILEINFO.name() + "=?," +
-      Columns.TRANSFERINFO.name() + "=?," + Columns.MODETRANS.name() + "=?," +
-      Columns.STARTTRANS.name() + "=?," + Columns.STOPTRANS.name() + "=?," +
-      Columns.INFOSTATUS.name() + "=?," + Columns.UPDATEDINFO.name() + "=?";
-
-  protected static final String insertAllValues =
-      " (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) ";
-
   @Override
   protected void initObject() {
     // Nothing
@@ -549,9 +535,11 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
     if (taskRunner == null) {
       throw new WaarpDatabaseNoDataException("TaskRunner is no defined");
     }
-    return new DbTaskRunner(taskRunner.getSpecialId(),
-                            taskRunner.getRequester(),
-                            taskRunner.getRequested());
+    final DbTaskRunner runner =
+        new DbTaskRunner(taskRunner.getSpecialId(), taskRunner.getRequester(),
+                         taskRunner.getRequested());
+    runner.setSender(taskRunner.isSender());
+    return runner;
   }
 
   private void checkMapInfo() {
@@ -760,16 +748,6 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
     XMLTransferDAO.updateUsed(specialId);
   }
 
-  /**
-   * As insert but with the ability to change the SpecialId
-   *
-   * @throws WaarpDatabaseException
-   */
-  public void create() throws WaarpDatabaseException {
-    setStopNow();
-    insert();
-  }
-
   @Override
   public boolean exist() throws WaarpDatabaseException {
     TransferDAO transferAccess = null;
@@ -821,8 +799,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
     checkThroughMode();
   }
 
-  public void updateRank() throws WaarpDatabaseException {
-    // SNMP notification
+  private void checkSnmp() {
     if (pojo.getUpdatedInfo().equals(UpdatedInfo.INERROR) ||
         pojo.getUpdatedInfo().equals(UpdatedInfo.INTERRUPTED)) {
       if (Configuration.configuration.getR66Mib() != null) {
@@ -842,6 +819,11 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
         }
       }
     }
+  }
+
+  public void updateRank() throws WaarpDatabaseException {
+    // SNMP notification
+    checkSnmp();
     // FIX SelfRequest
     if (isSelfRequest()) {
       if (RequestPacket.isCompatibleMode(pojo.getTransferMode(),
@@ -884,25 +866,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
   @Override
   public void update() throws WaarpDatabaseException {
     // SNMP notification
-    if (pojo.getUpdatedInfo().equals(UpdatedInfo.INERROR) ||
-        pojo.getUpdatedInfo().equals(UpdatedInfo.INTERRUPTED)) {
-      if (Configuration.configuration.getR66Mib() != null) {
-        Configuration.configuration.getR66Mib().notifyInfoTask(
-            "Task is " + pojo.getUpdatedInfo().name(), this);
-      } else {
-        logger.debug("Could send a SNMP trap here since {}",
-                     pojo.getUpdatedInfo());
-      }
-    } else {
-      if (pojo.getGlobalStep() != Transfer.TASKSTEP.TRANSFERTASK ||
-          pojo.getGlobalStep() == Transfer.TASKSTEP.TRANSFERTASK &&
-          pojo.getRank() % 100 == 0) {
-        if (Configuration.configuration.getR66Mib() != null) {
-          Configuration.configuration.getR66Mib().notifyTask(
-              "Task is currently " + pojo.getUpdatedInfo().name(), this);
-        }
-      }
-    }
+    checkSnmp();
     // FIX SelfRequest
     if (isSelfRequest()) {
       if (RequestPacket.isCompatibleMode(pojo.getTransferMode(),
@@ -2781,11 +2745,13 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    */
   private R66Future runNextTask(final String[][] tasks)
       throws OpenR66RunnerEndTasksException, OpenR66RunnerErrorException {
-    logger.debug("{}:{}:{}:{}:{} Sender: {} {}", (session == null),
-                 session == null? "norunner" : session.getRunner() == null,
-                 toLogRunStep(), getStep(),
-                 tasks == null? "null" : tasks.length, isSender(),
-                 rule.printTasks(isSender(), getGlobalStep()));
+    if (logger.isDebugEnabled()) {
+      logger.debug("{}:{}:{}:{}:{} Sender: {} {}", (session == null),
+                   session == null? "norunner" : session.getRunner() == null,
+                   toLogRunStep(), getStep(),
+                   tasks == null? "null" : tasks.length, isSender(),
+                   rule.printTasks(isSender(), getGlobalStep()));
+    }
     if (tasks == null) {
       throw new OpenR66RunnerEndTasksException("No tasks!");
     }
@@ -2881,8 +2847,10 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
         throw new OpenR66RunnerErrorException("Rule Object not initialized");
       }
     }
-    logger.debug("{} Sender: {} {}", toLogRunStep(), isSender(),
-                 rule.printTasks(isSender(), getGlobalStep()));
+    if (logger.isDebugEnabled()) {
+      logger.debug("{} Sender: {} {}", toLogRunStep(), isSender(),
+                   rule.printTasks(isSender(), getGlobalStep()));
+    }
     switch (getGlobalStep()) {
       case PRETASK:
         try {
@@ -2937,11 +2905,13 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    */
   public void run() throws OpenR66RunnerErrorException {
     R66Future future;
-    try {
-      logger.debug("{} Status: {} Sender: {} {}", toLogRunStep(), getStatus(),
-                   isSender(), rule.printTasks(isSender(), getGlobalStep()));
-    } catch (final NullPointerException ignored) {
-      // Ignored
+    if (logger.isDebugEnabled()) {
+      try {
+        logger.debug("{} Status: {} Sender: {} {}", toLogRunStep(), getStatus(),
+                     isSender(), rule.printTasks(isSender(), getGlobalStep()));
+      } catch (final NullPointerException ignored) {
+        // Ignored
+      }
     }
     if (getStatus() != ErrorCode.Running) {
       throw new OpenR66RunnerErrorException(

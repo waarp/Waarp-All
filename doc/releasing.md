@@ -4,14 +4,35 @@
 
 Les outils suivants sont nécessaires. Des variantes peuvent être utilisées :
 
-- Java 1.8 (les tests requièrent java 1.8 même si les modules sont compilés en
-  Java 1.6)
+- Java 1.8 (les tests requièrent java 1.8, même si les modules sont compilés en
+  Java 1.6), Java 1.11 pour créer la version `jre11` (attention, pour les
+  versions `jre6` et `jre8`, JRE8 est nécessaire)
 - Maven 3.6.3
 - Docker (19 par exemple)
 - Artifactory (ou équivalent) pour pré-publier les jar (via Docker sur le PC :
   https://www.jfrog.com/confluence/display/JFROG/Installing+Artifactory )
+  - Note : Afin d'autoriser Maven à communiquer avec SonarQube, dans votre
+    fichier `~/.m2/settings.xml`, il faut ajouter les éléments suivants :
+    
+    `<servers>
+      <server>
+        <id>centralArtifactory</id>
+        <username>USER_NAME</username>
+        <password>PASSWORD</password>
+      </server>
+    </servers>`
+
 - SonarQube (via Docker par exemple :
   https://docs.sonarqube.org/latest/setup/get-started-2-minutes/ )
+  - Note : Afin d'autoriser Maven à communiquer avec SonarQube, dans votre
+    fichier `~/.m2/settings.xml`, il faut ajouter les éléments suivants :
+    
+    `<properties>
+       <sonar.host.url>http://localhost:9000</sonar.host.url>
+       <sonar.login>USER_CODE</sonar.login>
+     </properties>`
+
+    
 - De préférence un IDE moderne comme IntelliJ (en version communautaire) :
   un modèle de configuration est disponible.
 - Un Host Linux (Debian, Ubuntu ou Redhat ou assimilé) avec au moins 2 cœurs et
@@ -27,9 +48,47 @@ automatisés et de la qualité du code.
 ### 2.1  S’assurer de la bonne documentation
 
 Dans le répertoire `doc/waarp-r66/source`, s’assurer a minima que les fichiers
-`changes.rst` et `conf.py` sont à jour.
+`changes.rst` et `conf.py` sont à jour tant sur les versions que la
+documentation.
 
 ### 2.2  Via Maven
+
+#### 2.2.1  Mise à jour des versions dans le `pom.xml` parent dans `Waarp-All`
+
+Dans la section `profiles`, 3 profils sont importants et doivent faire l'objet
+d'une mise à jour pour une nouvelle version :
+
+##### 2.2.1.1  Profil `jre6`
+
+Dans ce profil, la compilation cible JRE6 et les paquets seront nommés de
+manière standard `NomPackage-version.jar`.
+
+Le champ à modifier est `waarp.version` avec une valeur du type `x.y.z`.
+
+**IMPORTANT** : chaque commande Maven doit être accompagnée de l'option
+spécifiant le profil : **`mvn -P jre6 ...`**. Une JDK8 est nécessaire.
+
+##### 2.2.1.2  Profil `jre8`
+
+Dans ce profil, la compilation cible JRE8 et les paquets seront nommés de
+manière standard `NomPackage-version-jre8.jar`.
+
+Le champ à modifier est `waarp.version` avec une valeur du type `x.y.z-jre8`.
+
+**IMPORTANT** : chaque commande Maven doit être accompagnée de l'option
+spécifiant le profil : **`mvn -P jre8 ...`**. Une JDK8 est nécessaire.
+
+##### 2.2.1.3  Profil `jre11`
+
+Dans ce profil, la compilation cible JRE11 et les paquets seront nommés de
+manière standard `NomPackage-version-jre11.jar`.
+
+Le champ à modifier est `waarp.version` avec une valeur du type `x.y.z-jre11`.
+
+**IMPORTANT** : chaque commande Maven doit être accompagnée de l'option
+spécifiant le profil : **`mvn -P jre11 ...`**. **Une JDK11 est nécessaire.**
+
+#### 2.2.2 Validation Maven
 
 A la racine du projet `Waarp-All` :
 
@@ -38,19 +97,19 @@ A la racine du projet `Waarp-All` :
   - Dépendances logicielles Java : l’inspection des résultats proposera des
     mises à jour définies dans le `pom.xml` parent (notamment la partie
     `properties`) (à prendre avec précaution)
-    - `mvn versions:display-dependency-updates`
+    - `mvn -P jreX versions:display-dependency-updates`
   - Dépendances logicielles Maven
-    - `mvn versions:display-plugin-updates`
+    - `mvn -P jreX versions:display-plugin-updates`
 - Vérification du code
-  - `mvn clean install`
+  - `mvn -P jreX clean install`
     - Ceci vérifiera l’ensemble des modules selon les tests Junits et les tests
       IT en mode « simplifiés » (raccourcis).
     - Si un module plante, à partir de votre IDE, vous pouvez relancer les
       tests concernés et corriger ou faire pour un module unique :
-      `mvn install -f nom_du_module` (où `nom_du_module` est par exemple
+      `mvn -P jreX install -f nom_du_module` (où `nom_du_module` est par exemple
       `WaarpR66`). Il faudra ensuite relancer la commande complète de tests
-      `mvn clean install`
-    - A noter que quelques tests peuvent parfois avoir une erreur sans être
+      `mvn -P jreX clean install`
+    - À noter que quelques tests peuvent parfois avoir une erreur sans être
       reproductible (en raison de tests dont les conditions d’exécution ne sont
       pas garantis à 100 % pour des raisons de concurrences, de charge de la
       machine…) :
@@ -97,26 +156,30 @@ performances)…
 Par exemple, pour lancer les tests IT de "longue durée", il faut exécuter la
 commande suivante :
 
-- `mvn -Dit.test=ClassDuTest -DIT_LONG_TEST=true -f ModuleName failsafe:integration-test`
+- `mvn -P jreX -Dit.test=ClassDuTest -DIT_LONG_TEST=true -f ModuleName failsafe:integration-test`
   où `ClassDuTest` est le nom de la classe contenant le test long et 
   `ModuleName` le nom du module la contenant (en général `WaarpR66`)
-- ou `mvn -DIT_LONG_TEST=true failsafe:integration-test` pour tous les vérifier
+- ou `mvn -P jreX -DIT_LONG_TEST=true failsafe:integration-test` pour tous les vérifier
 
 ### 2.4  Étape SonarQube
 
 Cette étape permet de générer l’analyse complète SonarQube qui sera intégrée
 partiellement dans le Site Maven.
 
-Prérequis : les tests complets (`mvn clean install`) doivent avoir été
-préalablement exécutés avec succès.
+Prérequis : les tests complets (`mvn -P jre6 clean install`) doivent avoir été
+préalablement exécutés avec succès. *(pas besoin de générer pour JRE8 ou JRE11)*
+
 SonarQube doit être actif durant cette étape.
 
-- `mvn -pl '!WaarpR66Gui,!WaarpAdministrator,!WaarpXmlEditor' sonar:sonar`
+- `mvn -P jreX -pl '!WaarpR66Gui,!WaarpAdministrator,!WaarpXmlEditor' sonar:sonar`
 - Il est possible et recommandé ensuite de constater les résultats sur
   l’interface Web de SonarQube.
 - Si nécessaire, apportez encore des corrections pour des failles de sécurité
   ou mauvaises pratiques, le cas échéant en rejouant tous les tests depuis le
   début.
+
+L'exclusion des 3 packages est en raison de l'absence de tests sur ces modules
+graphiques.
 
 SonarQube peut être arrêté une fois cette étape terminée.
 
@@ -131,10 +194,20 @@ HTML et GITHUB.
 Grâce à Artifactory (ou équivalent), qui doit être actif durant cette étape,
 via Maven, il est possible de pré-publier les Jar dans un dépôt local maven :
 
-- `mvn -P release deploy`
+- `mvn -P release,jreX clean deploy -DskipTests`
+
+Si vous disposez de Java 11, vous pouvez donc publier la version :
+- Java 11 avec `jre11`
+
+Si vous disposez de Java 8, vous pouvez publier 2 versions :
+- Java 6 avec `jre6`
+- Java 8 avec `jre8`
 
 Note pour Artifactory : l’export sera effectué sur le répertoire attaché au
-host non Docker dans `/jfrog/artifactory/logs/maven2/`
+host non Docker dans `/jfrog/artifactory/logs/maven2/`.
+
+Il est possible de modifier l'adresse du service Maven de publication dans le
+profile `release`.
 
 Une fois publiés dans le dépôt Maven local, il faut suivre la procédure pour
 recopier le résultat dans le dépôt GITHUB correspondant. Pour Artifactory :
@@ -178,7 +251,7 @@ branche `gh-pages`.
 
 Cette étape permet de générer le Site Maven (dans `Waarp-All/target/staging`).
 
-- `mvn site site:stage`
+- `mvn -P jre6 site site:stage` *(pas besoin de générer pour JRE8 ou JRE11)*
 
 Recopier ensuite le contenu de ce site dans le clone `Waarp-All` pour la
 branche `gh-pages` prévu à cet effet et enfin publier :
@@ -214,8 +287,9 @@ Il s’agit ici de publier la release sous Github :
   la release (trouvés respectivement dans 
   `Waarp-All/WaarpGatewayFtp/target/WaarpGatewayFtp-X.Y.Z-jar-with-dependencies.jar`
   et `Waarp-All/WaarpR66/target/WaarpR66-X.Y.Z-jar-with-dependencies.jar`)
+  - Le cas échéant, y ajouter les versions JRE8 et JRE11.
 - Publier
 
 
-D’autres étapes sont nécessaires, comme par exemple la publication sur le site
+D’autres étapes sont nécessaires, comme la publication sur le site
 officiel de la société Waarp.

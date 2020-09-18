@@ -106,6 +106,18 @@ public class FilesystemBasedDigestTest {
     fileWriterBig.flush();
     fileWriterBig.close();
     try {
+      Thread.sleep(50);
+    } catch (InterruptedException e) {
+      throw new IOException(e);
+    }
+    while (!file.isFile() && !file.canRead() && file.length() == 0) {
+      try {
+        Thread.sleep(10);
+      } catch (InterruptedException e) {
+        throw new IOException(e);
+      }
+    }
+    try {
       for (final DigestAlgo algo : DigestAlgo.values()) {
         final long start = System.currentTimeMillis();
         byte[] bmd5 = null;
@@ -177,6 +189,18 @@ public class FilesystemBasedDigestTest {
     fileWriterBig.write(TESTPHRASE);
     fileWriterBig.flush();
     fileWriterBig.close();
+    try {
+      Thread.sleep(50);
+    } catch (InterruptedException e) {
+      throw new IOException(e);
+    }
+    while (!file.isFile() && !file.canRead() && file.length() == 0) {
+      try {
+        Thread.sleep(10);
+      } catch (InterruptedException e) {
+        throw new IOException(e);
+      }
+    }
     try {
       final DigestAlgo algo = DigestAlgo.MD5;
       final long start = System.currentTimeMillis();

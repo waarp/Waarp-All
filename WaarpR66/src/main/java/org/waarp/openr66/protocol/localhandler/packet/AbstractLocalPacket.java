@@ -50,13 +50,6 @@ public abstract class AbstractLocalPacket {
 
   protected ByteBuf global = null;
 
-  protected AbstractLocalPacket(final ByteBuf header, final ByteBuf middle,
-                                final ByteBuf end) {
-    this.header = header;
-    this.middle = middle;
-    this.end = end;
-  }
-
   protected AbstractLocalPacket() {
     header = null;
     middle = null;
@@ -73,8 +66,8 @@ public abstract class AbstractLocalPacket {
    *
    * @throws OpenR66ProtocolPacketException
    */
-  public abstract void createAllBuffers(LocalChannelReference lcr,
-                                        int networkHeader)
+  public abstract void createAllBuffers(final LocalChannelReference lcr,
+                                        final int networkHeader)
       throws OpenR66ProtocolPacketException;
 
   /**
@@ -82,7 +75,7 @@ public abstract class AbstractLocalPacket {
    *
    * @throws OpenR66ProtocolPacketException
    */
-  public void createHeader(LocalChannelReference lcr)
+  public void createHeader(final LocalChannelReference lcr)
       throws OpenR66ProtocolPacketException {
     throw new IllegalStateException("Should not be called");
   }
@@ -92,7 +85,7 @@ public abstract class AbstractLocalPacket {
    *
    * @throws OpenR66ProtocolPacketException
    */
-  public void createMiddle(LocalChannelReference lcr)
+  public void createMiddle(final LocalChannelReference lcr)
       throws OpenR66ProtocolPacketException {
     throw new IllegalStateException("Should not be called");
   }
@@ -102,7 +95,7 @@ public abstract class AbstractLocalPacket {
    *
    * @throws OpenR66ProtocolPacketException
    */
-  public void createEnd(LocalChannelReference lcr)
+  public void createEnd(final LocalChannelReference lcr)
       throws OpenR66ProtocolPacketException {
     throw new IllegalStateException("Should not be called");
   }

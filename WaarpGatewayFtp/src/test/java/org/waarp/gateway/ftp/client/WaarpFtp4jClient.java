@@ -299,6 +299,10 @@ public class WaarpFtp4jClient {
     } catch (final FTPException e) {
       logger.debug("Disconnection in error", e);
     }
+    try {
+      Thread.sleep(100);
+    } catch (final InterruptedException ignored) {//NOSONAR
+    }
   }
 
   /**

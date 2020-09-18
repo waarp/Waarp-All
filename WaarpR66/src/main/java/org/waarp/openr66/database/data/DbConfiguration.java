@@ -59,22 +59,11 @@ public class DbConfiguration extends AbstractDbDataDao<Limit> {
 
   public static final String table = " CONFIGURATION ";
 
-  // ALL TABLE SHOULD IMPLEMENT THIS
-  public static final int NBPRKEY = 1;
-
   protected static final String selectAllFields =
       Columns.READGLOBALLIMIT.name() + ',' + Columns.WRITEGLOBALLIMIT.name() +
       ',' + Columns.READSESSIONLIMIT.name() + ',' +
       Columns.WRITESESSIONLIMIT.name() + ',' + Columns.DELAYLIMIT.name() + ',' +
       Columns.UPDATEDINFO.name() + ',' + Columns.HOSTID.name();
-
-  protected static final String updateAllFields =
-      Columns.READGLOBALLIMIT.name() + "=?," + Columns.WRITEGLOBALLIMIT.name() +
-      "=?," + Columns.READSESSIONLIMIT.name() + "=?," +
-      Columns.WRITESESSIONLIMIT.name() + "=?," + Columns.DELAYLIMIT.name() +
-      "=?," + Columns.UPDATEDINFO.name() + "=?";
-
-  protected static final String insertAllValues = " (?,?,?,?,?,?,?) ";
 
   @Override
   protected String getTable() {

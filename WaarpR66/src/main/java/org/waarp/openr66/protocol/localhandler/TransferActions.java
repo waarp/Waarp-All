@@ -205,6 +205,7 @@ public class TransferActions extends ServerActions {
       }
       packet.setSpecialId(runner.getSpecialId());
     }
+    runner.setSender(isRetrieve);
     logger.debug("Runner before any action: {} {}", runner.shallIgnoreSave(),
                  runner);
     // Check now if request is a valid one
@@ -228,7 +229,7 @@ public class TransferActions extends ServerActions {
       // Fix to ensure that recv request are not trying to access to not chroot files
       session.startup(Configuration.configuration.isChrootChecked() &&
                       packet.isToValidate() && runner.isSender());
-      if (runner.isSender() && !runner.isSendThrough()) {
+      if (isRetrieve && !runner.isSendThrough()) {
         if (packet.getOriginalSize() != runner.getOriginalSize()) {
           packet.setOriginalSize(runner.getOriginalSize());
           shouldInformBack = true;
@@ -272,7 +273,7 @@ public class TransferActions extends ServerActions {
     session.initializeDigest();
     // inform back
     informBackFromRequest(packet, runner);
-    if (!runner.isSender()) {
+    if (!isRetrieve) {
       prepareGlobalDigests();
     }
     // if retrieve => START the retrieve operation except if in Send Through mode
@@ -1401,7 +1402,7 @@ public class TransferActions extends ServerActions {
         runner.saveStatus();
         runner.setErrorExecutionStatus(ErrorCode.FileNotFound);
         session.newState(ERROR);
-        logger.error("File renaming in error {}", e.getMessage());
+        logger.error("File renaming in error {}", e.getMessage(), e);
         final ErrorPacket error =
             new ErrorPacket("File renaming in error: " + e.getMessage(),
                             runner.getErrorInfo().getCode(),

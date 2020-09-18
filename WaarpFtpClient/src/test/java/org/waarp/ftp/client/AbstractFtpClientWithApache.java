@@ -25,10 +25,10 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.FileTestUtils;
 import org.waarp.ftp.client.transaction.FtpApacheClientTransactionTest;
 
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 
 import static org.junit.Assert.*;
@@ -45,12 +45,7 @@ public abstract class AbstractFtpClientWithApache extends AbstractFtpClient {
   @Test
   public void test0_FtpApacheClientActive() throws IOException {
     final File localFilename = new File("/tmp/ftpfile.bin");
-    final FileWriter fileWriterBig = new FileWriter(localFilename);
-    for (int i = 0; i < 100; i++) {
-      fileWriterBig.write("0123456789");
-    }
-    fileWriterBig.flush();
-    fileWriterBig.close();
+    FileTestUtils.createTestFile(localFilename, 100);
     logger.warn("Active");
     launchFtpClient("127.0.0.1", port, "fredo", "fred1", "a", true,
                     localFilename.getAbsolutePath(), localFilename.getName());
@@ -65,12 +60,7 @@ public abstract class AbstractFtpClientWithApache extends AbstractFtpClient {
   @Test
   public void test0_FtpApacheClientPassive() throws IOException {
     final File localFilename = new File("/tmp/ftpfile.bin");
-    final FileWriter fileWriterBig = new FileWriter(localFilename);
-    for (int i = 0; i < 100; i++) {
-      fileWriterBig.write("0123456789");
-    }
-    fileWriterBig.flush();
-    fileWriterBig.close();
+    FileTestUtils.createTestFile(localFilename, 100);
     logger.warn("Passive");
     launchFtpClient("127.0.0.1", port, "fredo", "fred1", "a", false,
                     localFilename.getAbsolutePath(), localFilename.getName());

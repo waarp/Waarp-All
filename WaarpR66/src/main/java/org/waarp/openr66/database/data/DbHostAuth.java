@@ -90,24 +90,12 @@ public class DbHostAuth extends AbstractDbDataDao<Host> {
 
   public static final String table = " HOSTS ";
 
-  // ALL TABLE SHOULD IMPLEMENT THIS
-  public static final int NBPRKEY = 1;
-
   protected static final String selectAllFields =
       Columns.ADDRESS.name() + ',' + Columns.PORT.name() + ',' +
       Columns.ISSSL.name() + ',' + Columns.HOSTKEY.name() + ',' +
       Columns.ADMINROLE.name() + ',' + Columns.ISCLIENT.name() + ',' +
       Columns.ISACTIVE.name() + ',' + Columns.ISPROXIFIED.name() + ',' +
       Columns.UPDATEDINFO.name() + ',' + Columns.HOSTID.name();
-
-  protected static final String updateAllFields =
-      Columns.ADDRESS.name() + "=?," + Columns.PORT.name() + "=?," +
-      Columns.ISSSL.name() + "=?," + Columns.HOSTKEY.name() + "=?," +
-      Columns.ADMINROLE.name() + "=?," + Columns.ISCLIENT.name() + "=?," +
-      Columns.ISACTIVE.name() + "=?," + Columns.ISPROXIFIED.name() + "=?," +
-      Columns.UPDATEDINFO.name() + "=?";
-
-  protected static final String insertAllValues = " (?,?,?,?,?,?,?,?,?,?) ";
 
   @Override
   protected void initObject() {

@@ -153,6 +153,7 @@ public class HttpSessionAbstract implements HttpSession {
         runner.insert();
         runner = new DbTaskRunner(identifier, runner.getRequester(),
                                   runner.getRequested());
+        runner.setSender(!uploadMode);
         logger.debug("{} {} {}", identifier, user, requested);
       } catch (final WaarpDatabaseException ex) {
         error(ex, business);

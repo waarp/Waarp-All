@@ -48,6 +48,7 @@ import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
 import org.waarp.common.utility.DetectionUtils;
+import org.waarp.common.utility.FileTestUtils;
 import org.waarp.common.utility.TestWatcherJunit4;
 import org.waarp.gateway.ftp.ExecGatewayFtpServer;
 import org.waarp.gateway.ftp.ServerInitDatabase;
@@ -60,7 +61,6 @@ import org.waarp.gateway.ftp.database.DbConstantFtp;
 
 import java.io.File;
 import java.io.FileFilter;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
@@ -182,12 +182,7 @@ public class FtpClientTest {
     home.mkdirs();
     FileUtils.forceDeleteRecursiveDir(home);
     final File localFilename = new File("/tmp/ftpfile.bin");
-    final FileWriter fileWriterBig = new FileWriter(localFilename);
-    for (int i = 0; i < 100; i++) {
-      fileWriterBig.write("0123456789");
-    }
-    fileWriterBig.flush();
-    fileWriterBig.close();
+    FileTestUtils.createTestFile(localFilename, 100);
     final ClassLoader classLoader = FtpClientTest.class.getClassLoader();
     File file = new File(classLoader.getResource("Gg-FTP.xml").getFile());
     if (file.exists()) {

@@ -96,7 +96,7 @@ public class R66Session implements SessionInterface {
   /**
    * Used to prevent deny of service
    */
-  private AtomicInteger numOfError = new AtomicInteger(0);
+  private final AtomicInteger numOfError = new AtomicInteger(0);
 
   /**
    * Current Restart information
@@ -128,6 +128,7 @@ public class R66Session implements SessionInterface {
       new HashMap<String, R66Dir>();
   private byte[] reusableBuffer;
   private FilesystemBasedDigest digestBlock = null;
+  private boolean isSender;
 
   /**
    * Create the session
@@ -315,7 +316,7 @@ public class R66Session implements SessionInterface {
       try {
         digestBlock = new FilesystemBasedDigest(
             localChannelReference.getPartner().getDigestAlgo());
-      } catch (NoSuchAlgorithmException e) {
+      } catch (final NoSuchAlgorithmException e) {
         SysErrLogger.FAKE_LOGGER.ignoreLog(e);
       }
     }
@@ -483,6 +484,85 @@ public class R66Session implements SessionInterface {
   }
 
   /**
+   * Set the File from the runner once PRE operation are done, only for Receiver
+   *
+   * @param createFile When True, the file can be newly created if
+   *     needed.
+   *     If False, no new file will be
+   *     created, thus having an Exception.
+   *
+   * @throws OpenR66RunnerErrorException
+   * @throws CommandAbstractException only when new received created
+   *     file
+   *     cannot be created
+   */
+  public void setFileAfterPreRunnerReceiver(final boolean createFile)
+      throws OpenR66RunnerErrorException, CommandAbstractException {
+    if (businessObject != null) {
+      businessObject.checkAtChangeFilename(this);
+    }
+    // File should not exist except if restart
+    if (runner.getRank() > 0) {
+      // Filename should be get back from runner load from database
+      try {
+        file = (R66File) dir.setFile(runner.getFilename(), true);
+        if (runner.isRecvThrough()) {
+          // no test on file since it does not really exist
+          logger.debug("File is in through mode: {}", file);
+        } else if (!file.canWrite()) {
+          throw new OpenR66RunnerErrorException("File cannot be write");
+        }
+      } catch (final CommandAbstractException e) {
+        throw new OpenR66RunnerErrorException(e);
+      }
+    } else {
+      // New FILENAME if necessary and store it
+      if (createFile) {
+        file = null;
+        String newfilename = runner.getOriginalFilename();
+        if (newfilename.charAt(1) == ':') {
+          // Windows path
+          newfilename = newfilename.substring(2);
+        }
+        newfilename = R66File.getBasename(newfilename);
+        try {
+          file = dir.setUniqueFile(runner.getSpecialId(), newfilename);
+          runner.setFilename(file.getBasename());
+        } catch (final CommandAbstractException e) {
+          runner.deleteTempFile();
+          throw e;
+        }
+        try {
+          if (runner.isRecvThrough()) {
+            // no test on file since it does not really exist
+            logger.debug("File is in through mode: {}", file);
+            runner.deleteTempFile();
+          } else if (!file.canWrite()) {
+            runner.deleteTempFile();
+            throw new OpenR66RunnerErrorException("File cannot be write");
+          }
+        } catch (final CommandAbstractException e) {
+          runner.deleteTempFile();
+          throw new OpenR66RunnerErrorException(e);
+        }
+      } else {
+        throw new OpenR66RunnerErrorException("No file created");
+      }
+    }
+    // Store TRUEFILENAME
+    try {
+      if (runner.isFileMoved()) {
+        runner.setFileMoved(file.getFile(), true);
+      } else {
+        runner.setFilename(file.getFile());
+      }
+    } catch (final CommandAbstractException e) {
+      runner.deleteTempFile();
+      throw new OpenR66RunnerErrorException(e);
+    }
+  }
+
+  /**
    * Set the File from the runner once PRE operation are done
    *
    * @param createFile When True, the file can be newly created if
@@ -501,7 +581,10 @@ public class R66Session implements SessionInterface {
       businessObject.checkAtChangeFilename(this);
     }
     // Now create the associated file
-    if (runner.isSender()) {
+    if (isSender != runner.isSender()) {
+      logger.warn("Not same SenderSide {} {}", isSender, runner.isSender());
+    }
+    if (isSender && runner.isSender()) {
       try {
         if (file == null) {
           try {
@@ -518,11 +601,12 @@ public class R66Session implements SessionInterface {
         } else if (!file.canRead()) {
           // file is not under normal base directory, so is external
           // File must already exist but cannot used special code ('*?')
-          file = new R66File(this, dir, runner.getFilename());
-          if (!file.canRead()) {
+          final R66File newFile = new R66File(this, dir, runner.getFilename());
+          if (!newFile.canRead()) {
             runner.setErrorExecutionStatus(ErrorCode.FileNotFound);
             throw new OpenR66RunnerErrorException(
-                "File cannot be read: " + file.getTrueFile().getAbsolutePath());
+                "File cannot be read: " + file.getTrueFile().getAbsolutePath() +
+                " to " + newFile.getTrueFile().getAbsolutePath());
           }
         }
       } catch (final CommandAbstractException e) {
@@ -590,7 +674,7 @@ public class R66Session implements SessionInterface {
       throw new OpenR66RunnerErrorException(e);
     }
     // check fileSize
-    if (runner.isSender() && file != null) {
+    if (isSender && file != null) {
       logger.debug("could change size: {} => {}", runner.getOriginalSize(),
                    file.length());
       if (runner.getOriginalSize() < 0) {
@@ -653,6 +737,7 @@ public class R66Session implements SessionInterface {
   public void setRunner(final DbTaskRunner runner)
       throws OpenR66RunnerErrorException {
     this.runner = runner;
+    this.isSender = runner.isSender();
     logger.debug("Runner to set: {} {}", runner.shallIgnoreSave(), runner);
     this.runner.checkThroughMode();
     if (businessObject != null) {
@@ -891,7 +976,7 @@ public class R66Session implements SessionInterface {
     // Now rename it
     runner.setOriginalFilename(newFilename);
     try {
-      setFileAfterPreRunner(true);
+      setFileAfterPreRunnerReceiver(true);
     } catch (final CommandAbstractException e) {
       throw new OpenR66RunnerErrorException(e);
     }

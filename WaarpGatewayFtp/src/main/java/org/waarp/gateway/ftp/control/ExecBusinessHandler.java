@@ -46,7 +46,6 @@ import org.waarp.gateway.ftp.config.AUTHUPDATE;
 import org.waarp.gateway.ftp.config.FileBasedConfiguration;
 import org.waarp.gateway.ftp.database.DbConstantFtp;
 import org.waarp.gateway.ftp.exec.AbstractExecutor;
-import org.waarp.gateway.ftp.exec.R66PreparedTransferExecutor;
 import org.waarp.gateway.ftp.file.FileBasedAuth;
 import org.waarp.gateway.ftp.file.FileBasedDir;
 
@@ -194,9 +193,6 @@ public class ExecBusinessHandler extends BusinessHandler {
         args[5] = Long.toString(specialId);
         final AbstractExecutor executor = AbstractExecutor
             .createAbstractExecutor(auth, args, true, futureCompletion);
-        if (executor instanceof R66PreparedTransferExecutor) {
-          ((R66PreparedTransferExecutor) executor).setDbsession(dbR66Session);
-        }
         executor.run();
         futureCompletion.awaitOrInterruptible();
         if (futureCompletion.isSuccess()) {
@@ -337,9 +333,6 @@ public class ExecBusinessHandler extends BusinessHandler {
         args[5] = Long.toString(specialId);
         final AbstractExecutor executor = AbstractExecutor
             .createAbstractExecutor(auth, args, false, futureCompletion);
-        if (executor instanceof R66PreparedTransferExecutor) {
-          ((R66PreparedTransferExecutor) executor).setDbsession(dbR66Session);
-        }
         executor.run();
         futureCompletion.awaitOrInterruptible();
         if (futureCompletion.isSuccess()) {

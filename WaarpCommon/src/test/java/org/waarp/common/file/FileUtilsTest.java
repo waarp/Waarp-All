@@ -28,10 +28,10 @@ import org.waarp.common.command.exception.Reply550Exception;
 import org.waarp.common.digest.FilesystemBasedDigest;
 import org.waarp.common.digest.FilesystemBasedDigest.DigestAlgo;
 import org.waarp.common.logging.SysErrLogger;
+import org.waarp.common.utility.FileTestUtils;
 import org.waarp.common.utility.TestWatcherJunit4;
 
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 
@@ -56,16 +56,8 @@ public class FileUtilsTest {
     dir.mkdirs();
     file1 = new File(dir, "testFile2.txt");
     file2 = new File(dir, "testFile.txt");
-    final FileWriter fileWriterBig = new FileWriter(file1);
-    final FileWriter fileWriterBig2 = new FileWriter(file2);
-    for (int i = 0; i < 10; i++) {
-      fileWriterBig.write("0123456789\n");
-      fileWriterBig2.write("0123456789\n");
-    }
-    fileWriterBig.flush();
-    fileWriterBig.close();
-    fileWriterBig2.flush();
-    fileWriterBig2.close();
+    FileTestUtils.createTestFile(file1, 10);
+    FileTestUtils.createTestFile(file2, 10);
   }
 
   @Test

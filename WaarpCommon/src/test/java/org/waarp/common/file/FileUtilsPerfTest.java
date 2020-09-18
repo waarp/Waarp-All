@@ -26,12 +26,12 @@ import org.junit.Test;
 import org.junit.rules.TestWatcher;
 import org.waarp.common.command.exception.Reply550Exception;
 import org.waarp.common.logging.SysErrLogger;
+import org.waarp.common.utility.FileTestUtils;
 import org.waarp.common.utility.TestWatcherJunit4;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
@@ -59,7 +59,6 @@ public class FileUtilsPerfTest {
     dir.mkdirs();
     file1 = new File(dir, "testFile2.txt");
     file2 = new File(dir, "testFile.txt");
-    final FileWriter fileWriterBig = new FileWriter(file1);
     StringBuilder builder = new StringBuilder(FileUtils.ZERO_COPY_CHUNK_SIZE);
     for (int i = 0; i < 1024; i++) {
       builder.append(
@@ -68,11 +67,7 @@ public class FileUtilsPerfTest {
     builder.setLength(FileUtils.ZERO_COPY_CHUNK_SIZE);
     String content = builder.toString();
     buffer = content.getBytes();
-    for (int i = 0; i < SIZE_FROM_BUF; i++) {
-      fileWriterBig.write(content);
-    }
-    fileWriterBig.flush();
-    fileWriterBig.close();
+    FileTestUtils.createTestFile(file1, (int) SIZE_FROM_BUF, content);
   }
 
   @Test

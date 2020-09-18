@@ -107,7 +107,8 @@ public class R66File extends FilesystemBasedFileImpl {
     final LocalChannelReference localChannelReference =
         getSession().getLocalChannelReference();
     FilesystemBasedDigest digestGlobal = null;
-    FilesystemBasedDigest digestBlock = ((R66Session) session).getDigestBlock();
+    final FilesystemBasedDigest digestBlock =
+        ((R66Session) session).getDigestBlock();
     logger.debug("File to retrieve: {}", this);
     DataBlock block = null;
     try {
@@ -343,7 +344,7 @@ public class R66File extends FilesystemBasedFileImpl {
       fileInputStream = new FileInputStream(trueFile);//NOSONAR
       final long pos = getPosition();
       if (pos > 0) {
-        long read = fileInputStream.skip(pos);
+        final long read = fileInputStream.skip(pos);
         if (read != pos) {
           logger.warn("Cannot ensure position: {} while is {}", pos, read);
         }

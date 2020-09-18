@@ -22,8 +22,6 @@ package org.waarp.openr66.protocol.networkhandler.packet;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.Unpooled;
-import org.waarp.common.logging.WaarpLogger;
-import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.utility.WaarpNettyUtil;
 import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
@@ -39,11 +37,6 @@ import org.waarp.openr66.protocol.localhandler.packet.LocalPacketFactory;
  * reverse.
  */
 public class NetworkPacket {
-  /**
-   * Internal Logger
-   */
-  private static final WaarpLogger logger =
-      WaarpLoggerFactory.getLogger(NetworkPacket.class);
   public static final int NETWORK_HEADER_SIZE = 4 * 3 + 1;
   private ByteBuf buffer;
 

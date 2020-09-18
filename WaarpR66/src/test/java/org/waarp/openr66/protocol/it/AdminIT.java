@@ -111,6 +111,7 @@ public class AdminIT extends TestAbstract {
   @After
   public void restartDriver() throws InterruptedException {
     reloadDriver();
+    Thread.sleep(100);
   }
 
   private static void checkBigIt() {

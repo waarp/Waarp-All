@@ -15,7 +15,8 @@ Correctifs
 
 - Réduction des temps de latence dans le code
 - Correction de mauvaises pratiques de code
-- Compatibilité JDK 6 à 11
+- Compatibilité JDK 6 à 11, 3 packages Java (`Waarp*.jar` pour JRE6,
+  `Waarp*-jre8.jar` pour JRE8 et `Waarp*-jre11.jar` pour JRE11)
 - Amélioration des performances sensibles (15%) en lien avec les calculs
   d'empreintes (Digest)
 - Amélioration de la documentation

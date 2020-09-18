@@ -20,7 +20,6 @@
 package org.waarp.gateway.kernel.database.model;
 
 import org.waarp.common.database.DbAdmin;
-import org.waarp.common.database.DbConstant;
 import org.waarp.common.database.DbPreparedStatement;
 import org.waarp.common.database.DbRequest;
 import org.waarp.common.database.DbSession;
@@ -31,6 +30,7 @@ import org.waarp.common.database.model.DbModel;
 import org.waarp.common.database.model.DbModelFactory;
 import org.waarp.common.database.model.DbType;
 import org.waarp.common.logging.SysErrLogger;
+import org.waarp.gateway.kernel.database.DbConstantGateway;
 import org.waarp.gateway.kernel.database.data.DbTransferLog;
 
 import java.sql.SQLException;
@@ -85,7 +85,7 @@ public class DbModelFactoryGateway extends DbModelFactory {
       throws WaarpDatabaseNoConnectionException {
     final String action =
         "ALTER SEQUENCE " + DbTransferLog.fieldseq + " MINVALUE " +
-        (DbConstant.ILLEGALVALUE + 1) + " RESTART WITH " + newvalue;
+        (DbConstantGateway.ILLEGALVALUE + 1) + " RESTART WITH " + newvalue;
     final DbRequest request = new DbRequest(session);
     try {
       request.query(action);
@@ -104,7 +104,7 @@ public class DbModelFactoryGateway extends DbModelFactory {
   public static long nextSequenceMonitoring(final DbSession dbSession)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException,
              WaarpDatabaseNoDataException {
-    long result = DbConstant.ILLEGALVALUE;
+    long result = DbConstantGateway.ILLEGALVALUE;
     final String action = "SELECT NEXTVAL('" + DbTransferLog.fieldseq + "')";
     final DbPreparedStatement preparedStatement =
         new DbPreparedStatement(dbSession);

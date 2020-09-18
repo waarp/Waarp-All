@@ -20,7 +20,6 @@
 package org.waarp.openr66.protocol.utils;
 
 import ch.qos.logback.classic.LoggerContext;
-import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
@@ -54,8 +53,6 @@ import org.waarp.openr66.protocol.networkhandler.NetworkTransaction;
 import org.waarp.openr66.protocol.networkhandler.packet.NetworkPacket;
 
 import java.lang.management.ManagementFactory;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
 
 import static org.waarp.openr66.database.DbConstantR66.*;
 
@@ -70,59 +67,6 @@ public class ChannelUtils extends Thread {
       WaarpLoggerFactory.getLogger(ChannelUtils.class);
 
   public static final Integer NOCHANNEL = Integer.MIN_VALUE;
-
-  /**
-   * Get the Remote InetAddress
-   *
-   * @param channel
-   *
-   * @return the remote InetAddress
-   */
-  public static final InetAddress getRemoteInetAddress(final Channel channel) {
-    InetSocketAddress socketAddress =
-        (InetSocketAddress) channel.remoteAddress();
-    if (socketAddress == null) {
-      socketAddress = new InetSocketAddress(20);
-    }
-    return socketAddress.getAddress();
-  }
-
-  /**
-   * Get the Local InetAddress
-   *
-   * @param channel
-   *
-   * @return the local InetAddress
-   */
-  public static final InetAddress getLocalInetAddress(final Channel channel) {
-    final InetSocketAddress socketAddress =
-        (InetSocketAddress) channel.localAddress();
-    return socketAddress.getAddress();
-  }
-
-  /**
-   * Get the Remote InetSocketAddress
-   *
-   * @param channel
-   *
-   * @return the remote InetSocketAddress
-   */
-  public static final InetSocketAddress getRemoteInetSocketAddress(
-      final Channel channel) {
-    return (InetSocketAddress) channel.remoteAddress();
-  }
-
-  /**
-   * Get the Local InetSocketAddress
-   *
-   * @param channel
-   *
-   * @return the local InetSocketAddress
-   */
-  public static final InetSocketAddress getLocalInetSocketAddress(
-      final Channel channel) {
-    return (InetSocketAddress) channel.localAddress();
-  }
 
   /**
    * Terminate all registered channels
@@ -206,7 +150,7 @@ public class ChannelUtils extends Thread {
       throws OpenR66ProtocolPacketException {
     byte[] md5 = {};
     final DbTaskRunner runner = localChannelReference.getSession().getRunner();
-    byte[] dataBlock = block.getByteBlock();
+    final byte[] dataBlock = block.getByteBlock();
     if (digestBlock != null) {
       if (digestGlobal != null) {
         digestGlobal.Update(dataBlock, 0, dataBlock.length);

@@ -118,7 +118,7 @@ public class SpooledHandler extends AbstractRestDbHandler {
     } else {
       try {
         argStatus = Integer.parseInt(statusStr.trim());
-      } catch (NumberFormatException ignored) {
+      } catch (final NumberFormatException ignored) {
         SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
         errors.add(ILLEGAL_PARAMETER_VALUE(STATUS, statusStr));
         argStatus = 0;
@@ -128,8 +128,8 @@ public class SpooledHandler extends AbstractRestDbHandler {
       throw new RestErrorException(errors);
     }
 
-    ArrayNode arrayNode = JsonHandler.createArrayNode();
-    int nbFiles =
+    final ArrayNode arrayNode = JsonHandler.createArrayNode();
+    final int nbFiles =
         SpooledInformTask.buildSpooledJson(arrayNode, argStatus, argName);
     final ObjectNode responseObject = new ObjectNode(JsonNodeFactory.instance);
     final ArrayNode resultList = responseObject.putArray("results");

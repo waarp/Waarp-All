@@ -20,8 +20,6 @@
 
 package org.waarp.openr66.dao.database;
 
-import org.waarp.common.logging.WaarpLogger;
-import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.openr66.context.ErrorCode;
 import org.waarp.openr66.dao.Filter;
 import org.waarp.openr66.dao.TransferDAO;
@@ -47,9 +45,6 @@ public abstract class DBTransferDAO extends StatementExecutor<Transfer>
     implements TransferDAO {
 
   private static final String LIMIT2 = " LIMIT ";
-
-  private static final WaarpLogger logger =
-      WaarpLoggerFactory.getLogger(DBTransferDAO.class);
 
   // Table name
   protected static final String TABLE = "runner";

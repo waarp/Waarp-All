@@ -30,6 +30,7 @@ import org.junit.runners.MethodSorters;
 import org.testcontainers.containers.JdbcDatabaseContainer;
 import org.waarp.common.command.exception.Reply550Exception;
 import org.waarp.common.database.exception.WaarpDatabaseException;
+import org.waarp.common.database.model.DbModelMysql;
 import org.waarp.common.file.FileUtils;
 import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogLevel;
@@ -163,7 +164,8 @@ public abstract class ScenarioBase extends TestAbstract {
           "Unsupported Test for Oracle since wrong JDBC driver");
     } else if (driver.equalsIgnoreCase("org.postgresql.Driver")) {
       target = "postgresql";
-    } else if (driver.equalsIgnoreCase("com.mysql.jdbc.Driver")) {
+    } else if (DbModelMysql.MYSQL_DRIVER_JRE6.equalsIgnoreCase(driver) ||
+               DbModelMysql.MYSQL_DRIVER_JRE8.equalsIgnoreCase(driver)) {
       target = "mysql";
     } else {
       SysErrLogger.FAKE_LOGGER.syserr("Cannot find driver for " + driver);
@@ -385,7 +387,7 @@ public abstract class ScenarioBase extends TestAbstract {
   }
 
   @Test
-  public void test011_SendToItself() throws IOException, InterruptedException {
+  public void test011_SendToItself() throws IOException {
     logger.warn("Start {}", Processes.getCurrentMethodName());
     Assume.assumeNotNull(networkTransaction);
     File baseDir = new File("/tmp/R66/scenario_1_2_3/R1/out/");

@@ -20,7 +20,6 @@
 package org.waarp.openr66.protocol.localhandler;
 
 import io.netty.channel.Channel;
-import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.traffic.ChannelTrafficShapingHandler;
 import org.waarp.common.database.DbSession;
 import org.waarp.common.guid.IntegerUuid;
@@ -264,14 +263,6 @@ public class LocalChannelReference {
    */
   public TransferActions getServerHandler() {
     return serverHandler;
-  }
-
-  /**
-   * @return the channelHandlerContextNetwork
-   */
-  public ChannelHandlerContext getChannelHandlerContextNetwork() {
-    return networkChannelRef.channel().pipeline()
-                            .context(NetworkServerInitializer.NETWORK_HANDLER);
   }
 
   /**

@@ -328,6 +328,7 @@ public abstract class TestAbstract extends TestAbstractMinimal {
   @After
   public void tearDown() throws Exception {
     Configuration.configuration.setTimeoutCon(100);
+    Thread.sleep(100);
   }
 
   public enum DriverType {

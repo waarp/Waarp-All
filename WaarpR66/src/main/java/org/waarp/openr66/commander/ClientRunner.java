@@ -167,6 +167,7 @@ public class ClientRunner extends Thread {
                                taskRunner.getSpecialId(),
                                taskRunner.getRequester(),
                                taskRunner.getRequested());
+          reloaded.setSender(taskRunner.isSender());
           session.setRunner(reloaded);
           final File file = new File(reloaded.getFullFilePath());
           if (!file.isFile()) {
