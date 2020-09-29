@@ -21,6 +21,7 @@ package org.waarp.ftp.core.data.handler;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageCodec;
 import org.waarp.common.exception.InvalidArgumentException;
@@ -222,7 +223,7 @@ public class FtpDataModeCodec extends ByteToMessageCodec<DataBlock> {
   protected void decode(final ChannelHandlerContext ctx, final ByteBuf buf,
                         final List<Object> out) throws Exception {
     // First test if the connection is fully ready (block might be
-    // transfered
+    // transferred
     // by client before connection is ready)
     if (!isReady) {
       if (!codecLocked.awaitOrInterruptible()) {
@@ -305,14 +306,15 @@ public class FtpDataModeCodec extends ByteToMessageCodec<DataBlock> {
     throw new InvalidArgumentException("Mode unimplemented: " + mode.name());
   }
 
-  protected ByteBuf encodeRecordStandard(final DataBlock msg,
-                                         final ByteBuf buffer) {
+  protected ByteBuf encodeRecord(final DataBlock msg, final byte[] buffer) {
     final int size = msg.getByteCount();
     final ByteBuf newbuf = ByteBufAllocator.DEFAULT.buffer(size, size);
     int newbyte;
     try {
-      while (buffer.readableBytes() > 0) {
-        newbyte = buffer.readUnsignedByte();
+      int pos = 0;
+      int limit = buffer.length;
+      while (pos < limit) {
+        newbyte = buffer[pos++] & 0xFF;
         if (newbyte == 0xFF) {
           newbuf.writeByte((byte) 0xFF);
         }
@@ -333,43 +335,6 @@ public class FtpDataModeCodec extends ByteToMessageCodec<DataBlock> {
       newbuf.writeByte((byte) (value & 0xFF));
     }
     msg.clear();
-    return newbuf;
-  }
-
-  protected ByteBuf encodeRecord(final DataBlock msg, final ByteBuf buffer) {
-    final FtpSeekAheadData sad;
-    try {
-      sad = new FtpSeekAheadData(buffer);
-    } catch (final SeekAheadNoBackArrayException e1) {
-      return encodeRecordStandard(msg, buffer);
-    }
-    final int size = msg.getByteCount();
-    final ByteBuf newbuf = ByteBufAllocator.DEFAULT.buffer(size, size);
-    int newbyte;
-    try {
-      while (sad.pos < sad.limit) {
-        newbyte = sad.bytes[sad.pos++] & 0xFF;
-        if (newbyte == 0xFF) {
-          newbuf.writeByte((byte) 0xFF);
-        }
-        newbuf.writeByte((byte) (newbyte & 0xFF));
-      }
-    } catch (final IndexOutOfBoundsException e) {
-      // end of read
-    }
-    int value = 0;
-    if (msg.isEOF()) {
-      value += 2;
-    }
-    if (msg.isEOR()) {
-      value += 1;
-    }
-    if (value > 0) {
-      newbuf.writeByte((byte) 0xFF);
-      newbuf.writeByte((byte) (value & 0xFF));
-    }
-    msg.clear();
-    sad.setReadPosition(0);
     return newbuf;
   }
 
@@ -387,14 +352,14 @@ public class FtpDataModeCodec extends ByteToMessageCodec<DataBlock> {
     if (msg.isCleared()) {
       return null;
     }
-    final ByteBuf buffer = msg.getBlock();
+    final byte[] bytes = msg.getByteBlock();
     if (mode == TransferMode.STREAM) {
       // If record structure, special attention
       if (structure == TransferStructure.RECORD) {
-        return encodeRecord(msg, buffer);
+        return encodeRecord(msg, bytes);
       }
       msg.clear();
-      return buffer;
+      return Unpooled.wrappedBuffer(bytes);
     } else if (mode == TransferMode.BLOCK) {
       int length = msg.getByteCount();
       final int size = length > 0xFFFF? 0xFFFF + 3 : length + 3;
@@ -438,7 +403,8 @@ public class FtpDataModeCodec extends ByteToMessageCodec<DataBlock> {
         header[2] = (byte) 0xFF;
         newbuf.writeBytes(header);
         // Now take the first 0xFFFF bytes from buffer
-        newbuf.writeBytes(msg.getBlock(), 0xFFFF);
+        newbuf.writeBytes(bytes, msg.getOffset(), 0xFFFF);
+        msg.addOffset(0xFFFF);
         length -= 0xFFFF;
         msg.setByteCount(length);
         // return the sub block
@@ -450,7 +416,7 @@ public class FtpDataModeCodec extends ByteToMessageCodec<DataBlock> {
       header[2] = msg.getByteCountLower();
       newbuf.writeBytes(header);
       // real data
-      newbuf.writeBytes(buffer, length);
+      newbuf.writeBytes(bytes, msg.getOffset(), length);
       // Next call will be the last one
       msg.clear();
       // return the last block

@@ -85,7 +85,10 @@ public class DataBlock {
 
   /**
    * @return the block
+   *
+   * @deprecated method, prefer getByteBlock()
    */
+  @Deprecated
   public ByteBuf getBlock() {
     if (blockBuf == null) {
       blockBuf = Unpooled.wrappedBuffer(block);
@@ -109,6 +112,15 @@ public class DataBlock {
   }
 
   /**
+   * Increase the offset position
+   *
+   * @param offset
+   */
+  public void addOffset(final int offset) {
+    offsetBuf += offset;
+  }
+
+  /**
    * Set the block and the byte count according to the block
    *
    * @param block the block to set
@@ -124,17 +136,11 @@ public class DataBlock {
       return;
     }
     byteCount = block.readableBytes();
-    if (block.hasArray()) {
-      blockBuf = block;
-      this.block = block.array();
-      this.offsetBuf = block.arrayOffset();
-    } else {
-      this.block = new byte[byteCount];
-      offsetBuf = 0;
-      blockBuf = null;
-      block.readBytes(this.block);
-      block.release();
-    }
+    this.block = new byte[byteCount];
+    offsetBuf = 0;
+    blockBuf = null;
+    block.readBytes(this.block);
+    block.release();
   }
 
   /**
@@ -164,7 +170,7 @@ public class DataBlock {
    * @return the byteCount
    */
   public int getByteCount() {
-    return byteCount;
+    return byteCount - offsetBuf;
   }
 
   /**

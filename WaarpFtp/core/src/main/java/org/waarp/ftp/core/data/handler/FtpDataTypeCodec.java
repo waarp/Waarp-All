@@ -19,8 +19,6 @@
  */
 package org.waarp.ftp.core.data.handler;
 
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageCodec;
@@ -180,8 +178,8 @@ class FtpDataTypeCodec extends MessageToMessageCodec<DataBlock, DataBlock> {
       out.add(msg);
       return;
     } else if (type == TransferType.ASCII || type == TransferType.EBCDIC) {
-      final ByteBuf buffer = msg.getBlock();
-      msg.setBlock(decode(buffer));
+      final byte[] bytes = msg.getByteBlock();
+      msg.setBlock(decode(bytes));
       out.add(msg);
       return;
     }
@@ -195,11 +193,9 @@ class FtpDataTypeCodec extends MessageToMessageCodec<DataBlock, DataBlock> {
    * @param byteBuf
    *
    * @return the byteBuf
-   *
-   * @throws Exception
    */
-  protected ByteBuf decode(final ByteBuf byteBuf) throws Exception {
-    return Unpooled.copiedBuffer(byteBuf.toString(type.charset), charsetName);
+  protected byte[] decode(final byte[] byteBuf) {
+    return new String(byteBuf, type.charset).getBytes(charsetName);
   }
 
   @Override
@@ -210,8 +206,8 @@ class FtpDataTypeCodec extends MessageToMessageCodec<DataBlock, DataBlock> {
       out.add(msg);
       return;
     } else if (type == TransferType.ASCII || type == TransferType.EBCDIC) {
-      final ByteBuf buffer = msg.getBlock();
-      msg.setBlock(encode(buffer));
+      final byte[] bytes = msg.getByteBlock();
+      msg.setBlock(encode(bytes));
       out.add(msg);
       return;
     }
@@ -225,11 +221,8 @@ class FtpDataTypeCodec extends MessageToMessageCodec<DataBlock, DataBlock> {
    * @param byteBuf
    *
    * @return the encoded buffer
-   *
-   * @throws Exception
    */
-  protected ByteBuf encode(final ByteBuf byteBuf) throws Exception {
-    final String chString = byteBuf.toString(charsetName);
-    return Unpooled.copiedBuffer(chString, type.charset);
+  protected byte[] encode(final byte[] byteBuf) {
+    return new String(byteBuf, charsetName).getBytes(type.charset);
   }
 }
