@@ -86,8 +86,7 @@ public class ShutdownPacket extends AbstractLocalPacket {
 
   @Override
   public void createAllBuffers(final LocalChannelReference lcr,
-                               final int networkHeader)
-      throws OpenR66ProtocolPacketException {
+                               final int networkHeader) {
     end = Unpooled.EMPTY_BUFFER;
     final int sizeKey = key != null? key.length : 0;
     final int sizeMiddle = restart != 0? 1 : 0;

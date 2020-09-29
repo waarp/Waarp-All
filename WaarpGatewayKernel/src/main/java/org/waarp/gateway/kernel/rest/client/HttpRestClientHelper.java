@@ -93,7 +93,7 @@ public class HttpRestClientHelper {
     }
     // Configure the client.
     bootstrap = new Bootstrap();
-    /**
+    /*
      * ExecutorService Worker Boss
      */
     final EventLoopGroup workerGroup = new NioEventLoopGroup(nbclient,

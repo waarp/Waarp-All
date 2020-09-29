@@ -77,7 +77,7 @@ public class FileBasedAuth extends FilesystemBasedFtpAuth {
    */
   @Override
   protected NextCommandReply setBusinessUser(final String user)
-      throws Reply421Exception, Reply530Exception {
+      throws Reply530Exception {
     final SimpleAuth auth =
         ((FileBasedConfiguration) ((FtpSession) getSession())
             .getConfiguration()).getSimpleAuth(user);
@@ -151,7 +151,7 @@ public class FileBasedAuth extends FilesystemBasedFtpAuth {
    */
   @Override
   protected NextCommandReply setBusinessAccount(final String account)
-      throws Reply421Exception, Reply530Exception {
+      throws Reply530Exception {
     if (currentAuth == null) {
       throw new Reply530Exception("ACCT needs a USER first");
     }

@@ -45,7 +45,6 @@ import org.waarp.openr66.dao.exception.DAOConnectionException;
 import org.waarp.openr66.dao.exception.DAONoDataException;
 import org.waarp.openr66.pojo.Host;
 import org.waarp.openr66.protocol.configuration.Configuration;
-import org.waarp.openr66.protocol.exception.OpenR66ProtocolBusinessException;
 import org.waarp.openr66.protocol.networkhandler.NetworkTransaction;
 
 import java.net.InetSocketAddress;
@@ -672,12 +671,10 @@ public class DbHostAuth extends AbstractDbDataDao<Host> {
    *
    * @throws WaarpDatabaseNoConnectionException
    * @throws WaarpDatabaseSqlException
-   * @throws OpenR66ProtocolBusinessException
    */
   public static String getJson(final DbPreparedStatement preparedStatement,
                                final int limit)
-      throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException,
-             OpenR66ProtocolBusinessException {
+      throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
     final ArrayNode arrayNode = JsonHandler.createArrayNode();
     try {
       preparedStatement.executeQuery();

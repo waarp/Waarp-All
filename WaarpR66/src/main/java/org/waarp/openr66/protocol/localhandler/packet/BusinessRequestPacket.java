@@ -85,8 +85,7 @@ public class BusinessRequestPacket extends AbstractLocalPacket {
 
   @Override
   public void createAllBuffers(final LocalChannelReference lcr,
-                               final int networkHeader)
-      throws OpenR66ProtocolPacketException {
+                               final int networkHeader) {
     final byte[] headerBytes = sheader.getBytes();
     final int headerSize = headerBytes.length;
     final int middleSize = 4;

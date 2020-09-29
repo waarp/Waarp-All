@@ -160,8 +160,7 @@ public class LocalExecClientHandler
   }
 
   @Override
-  protected void channelRead0(final ChannelHandlerContext ctx, String mesg)
-      throws Exception {
+  protected void channelRead0(final ChannelHandlerContext ctx, String mesg) {
     // Add the line received from the server.
     // If first message, then take the status and then the message
     if (firstMessage) {
@@ -199,7 +198,7 @@ public class LocalExecClientHandler
 
   @Override
   public void exceptionCaught(final ChannelHandlerContext ctx,
-                              final Throwable cause) throws Exception {
+                              final Throwable cause) {
     logger.warn(command + ':' +
                 "Unexpected exception from Outband while get information: " +
                 firstMessage, cause);

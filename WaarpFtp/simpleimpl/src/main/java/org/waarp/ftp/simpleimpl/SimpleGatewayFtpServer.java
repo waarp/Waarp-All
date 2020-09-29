@@ -50,7 +50,7 @@ public class SimpleGatewayFtpServer {
     }
     WaarpLoggerFactory
         .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));
-    /**
+    /*
      * Internal Logger
      */
     final WaarpLogger logger =

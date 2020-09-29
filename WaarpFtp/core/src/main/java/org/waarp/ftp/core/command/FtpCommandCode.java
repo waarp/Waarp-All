@@ -1316,8 +1316,7 @@ public enum FtpCommandCode {
    * 534, 535<br>
    * APPE<br>
    * 534, 535
-   */
-  /**
+   *
    * Security Association Setup AUTH TLS (Control) or AUTH SSL (Control and
    * Data)<br>
    * 234*<br>

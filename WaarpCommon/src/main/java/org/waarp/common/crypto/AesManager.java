@@ -28,7 +28,7 @@ public class AesManager extends KeyManager {
   /**
    * @return the current KeyManager
    */
-  public static final KeyManager getInstance() {
+  public static KeyManager getInstance() {
     return manager;
   }
 

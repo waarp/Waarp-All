@@ -213,8 +213,8 @@ public class AuthenticationFileBasedConfiguration {
    * @throws WaarpDatabaseSqlException
    */
   public static void writeXML(final Configuration config, final String filename)
-      throws OpenR66ProtocolSystemException, WaarpDatabaseNoConnectionException,
-             WaarpDatabaseSqlException {
+      throws OpenR66ProtocolSystemException,
+             WaarpDatabaseNoConnectionException {
     final Document document = DocumentHelper.createDocument();
     final Element root = document.addElement(XML_AUTHENTIFICATION_ROOT);
     final DbHostAuth[] hosts = DbHostAuth.getAllHosts();

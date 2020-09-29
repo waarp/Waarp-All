@@ -108,18 +108,7 @@ public class MultipleDirectTransfer extends DirectTransfer {
             final long time1 = System.currentTimeMillis();
             final R66Future future = new R66Future(true);
             final DirectTransfer transaction =
-                new DirectTransfer(future, host, filename,
-                                   transferArgs.getRulename(),
-                                   transferArgs.getTransferInfo(),
-                                   transferArgs.isMD5(),
-                                   transferArgs.getBlockSize(),
-                                   transferArgs.getId(), networkTransaction);
-            transaction.transferArgs.setFollowId(transferArgs.getFollowId());
-            transaction.normalInfoAsWarn = normalInfoAsWarn;
-            logger.debug("rhost: {}:{}", host,
-                         transaction.transferArgs.getRemoteHost());
-            transaction.run();
-            future.awaitOrInterruptible();
+                runDirectTransfer(host, filename, future);
             final long time2 = System.currentTimeMillis();
             logger.debug("finish transfer: {}", future.isSuccess());
             final long delay = time2 - time1;
@@ -127,23 +116,7 @@ public class MultipleDirectTransfer extends DirectTransfer {
             final OutputFormat outputFormat = new OutputFormat(
                 "Unique " + MultipleDirectTransfer.class.getSimpleName(), null);
             if (future.isSuccess()) {
-              prepareOkOutputFormat(delay, result, outputFormat);
-              getResults().add(outputFormat);
-              setDoneMultiple(getDoneMultiple() + 1);
-              if (transaction.normalInfoAsWarn) {
-                logger.warn(outputFormat.loggerOut());
-              } else if (logger.isInfoEnabled()) {
-                logger.info(outputFormat.loggerOut());
-              }
-              if (nolog) {
-                // In case of success, delete the runner
-                try {
-                  result.getRunner().delete();
-                } catch (final WaarpDatabaseException e) {
-                  logger.warn("Cannot apply nolog to     " +
-                              result.getRunner().toShortString(), e);
-                }
-              }
+              successTransfer(transaction, delay, result, outputFormat);
             } else {
               if (result == null || result.getRunner() == null) {
                 prepareKoOutputFormat(future, outputFormat);
@@ -172,6 +145,46 @@ public class MultipleDirectTransfer extends DirectTransfer {
     } else {
       future.setSuccess();
     }
+  }
+
+  private void successTransfer(final DirectTransfer transaction,
+                               final long delay, final R66Result result,
+                               final OutputFormat outputFormat) {
+    prepareOkOutputFormat(delay, result, outputFormat);
+    getResults().add(outputFormat);
+    setDoneMultiple(getDoneMultiple() + 1);
+    if (transaction.normalInfoAsWarn) {
+      logger.warn(outputFormat.loggerOut());
+    } else if (logger.isInfoEnabled()) {
+      logger.info(outputFormat.loggerOut());
+    }
+    if (nolog) {
+      // In case of success, delete the runner
+      try {
+        result.getRunner().delete();
+      } catch (final WaarpDatabaseException e) {
+        logger.warn(
+            "Cannot apply nolog to     " + result.getRunner().toShortString(),
+            e);
+      }
+    }
+  }
+
+  private DirectTransfer runDirectTransfer(final String host,
+                                           final String filename,
+                                           final R66Future future) {
+    final DirectTransfer transaction =
+        new DirectTransfer(future, host, filename, transferArgs.getRulename(),
+                           transferArgs.getTransferInfo(), transferArgs.isMD5(),
+                           transferArgs.getBlockSize(), transferArgs.getId(),
+                           networkTransaction);
+    transaction.transferArgs.setFollowId(transferArgs.getFollowId());
+    transaction.normalInfoAsWarn = normalInfoAsWarn;
+    logger
+        .debug("rhost: {}:{}", host, transaction.transferArgs.getRemoteHost());
+    transaction.run();
+    future.awaitOrInterruptible();
+    return transaction;
   }
 
   public static void main(final String[] args) {

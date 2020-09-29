@@ -59,6 +59,9 @@ public class R66Session implements SessionInterface {
    */
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(R66Session.class);
+  private static final String FILE_IS_IN_THROUGH_MODE =
+      "File is in through mode: {}";
+  private static final String FILE_CANNOT_BE_WRITE = "File cannot be write";
 
   /**
    * Block size used during file transfer
@@ -508,9 +511,9 @@ public class R66Session implements SessionInterface {
         file = (R66File) dir.setFile(runner.getFilename(), true);
         if (runner.isRecvThrough()) {
           // no test on file since it does not really exist
-          logger.debug("File is in through mode: {}", file);
+          logger.debug(FILE_IS_IN_THROUGH_MODE, file);
         } else if (!file.canWrite()) {
-          throw new OpenR66RunnerErrorException("File cannot be write");
+          throw new OpenR66RunnerErrorException(FILE_CANNOT_BE_WRITE);
         }
       } catch (final CommandAbstractException e) {
         throw new OpenR66RunnerErrorException(e);
@@ -535,11 +538,11 @@ public class R66Session implements SessionInterface {
         try {
           if (runner.isRecvThrough()) {
             // no test on file since it does not really exist
-            logger.debug("File is in through mode: {}", file);
+            logger.debug(FILE_IS_IN_THROUGH_MODE, file);
             runner.deleteTempFile();
           } else if (!file.canWrite()) {
             runner.deleteTempFile();
-            throw new OpenR66RunnerErrorException("File cannot be write");
+            throw new OpenR66RunnerErrorException(FILE_CANNOT_BE_WRITE);
           }
         } catch (final CommandAbstractException e) {
           runner.deleteTempFile();
@@ -597,7 +600,7 @@ public class R66Session implements SessionInterface {
         }
         if (runner.isSendThrough()) {
           // no test on file since it does not really exist
-          logger.debug("File is in through mode: {}", file);
+          logger.debug(FILE_IS_IN_THROUGH_MODE, file);
         } else if (!file.canRead()) {
           // file is not under normal base directory, so is external
           // File must already exist but cannot used special code ('*?')
@@ -620,9 +623,9 @@ public class R66Session implements SessionInterface {
           file = (R66File) dir.setFile(runner.getFilename(), true);
           if (runner.isRecvThrough()) {
             // no test on file since it does not really exist
-            logger.debug("File is in through mode: {}", file);
+            logger.debug(FILE_IS_IN_THROUGH_MODE, file);
           } else if (!file.canWrite()) {
-            throw new OpenR66RunnerErrorException("File cannot be write");
+            throw new OpenR66RunnerErrorException(FILE_CANNOT_BE_WRITE);
           }
         } catch (final CommandAbstractException e) {
           throw new OpenR66RunnerErrorException(e);
@@ -647,11 +650,11 @@ public class R66Session implements SessionInterface {
           try {
             if (runner.isRecvThrough()) {
               // no test on file since it does not really exist
-              logger.debug("File is in through mode: {}", file);
+              logger.debug(FILE_IS_IN_THROUGH_MODE, file);
               runner.deleteTempFile();
             } else if (!file.canWrite()) {
               runner.deleteTempFile();
-              throw new OpenR66RunnerErrorException("File cannot be write");
+              throw new OpenR66RunnerErrorException(FILE_CANNOT_BE_WRITE);
             }
           } catch (final CommandAbstractException e) {
             runner.deleteTempFile();
@@ -791,16 +794,129 @@ public class R66Session implements SessionInterface {
    */
   public void startup(final boolean checkNotExternal)
       throws OpenR66RunnerErrorException {
-    if (runner.getRank() > 0) {
-      logger.debug("restart at {} {}", runner.getRank(), runner);
-      logger.debug("restart at {} {}", runner.getRank(), dir);
-      runner.setTransferTask(runner.getRank());
-      restart.restartMarker(runner.getBlocksize() * runner.getRank());
-    } else {
-      restart.restartMarker(0);
-    }
+    setRestartMarker();
     logger.debug("GlobalLastStep: {} vs {}:{}", runner.getGloballaststep(),
                  TASKSTEP.NOTASK.ordinal(), TASKSTEP.PRETASK.ordinal());
+    initializeTransfer(checkNotExternal);
+    // Now create the associated file
+    try {
+      setFileAfterPreRunner(true);
+    } catch (final CommandAbstractException e2) {
+      // generated due to a possible wildcard not ready
+      file = null;
+    }
+    logger.debug("GlobalLastStep: {}", runner.getGloballaststep());
+    if (runner.getGloballaststep() == TASKSTEP.TRANSFERTASK.ordinal()) {
+      if (businessObject != null) {
+        businessObject.checkAfterPreCommand(this);
+      }
+      if (!runner.isSender()) {
+        if (initializeReceiver()) {
+          return;
+        }
+      } else {
+        initializeSender();
+      }
+    }
+    runner.saveStatus();
+    logger.debug("Final init: {} {}", runner, file != null);
+  }
+
+  private void initializeSender() throws OpenR66RunnerErrorException {
+    if (file != null) {
+      try {
+        localChannelReference.getFutureRequest().setFilesize(file.length());
+      } catch (final CommandAbstractException ignored) {
+        // nothing
+      }
+      try {
+        file.restartMarker(restart);
+      } catch (final CommandAbstractException e) {
+        runner.deleteTempFile();
+        throw new OpenR66RunnerErrorException(e);
+      }
+    }
+  }
+
+  private boolean initializeReceiver() throws OpenR66RunnerErrorException {
+    // Check file length according to rank
+    if (runner.isRecvThrough()) {
+      // no size can be checked
+    } else {
+      long length = 0;
+      if (file != null) {
+        try {
+          length = file.length();
+        } catch (final CommandAbstractException ignored) {
+          // nothing
+        }
+      }
+      final long needed = runner.getOriginalSize() - length;
+      long available = 0;
+      String targetDir = null;
+      try {
+        available = dir.getFreeSpace();
+        targetDir = dir.getPwd();
+      } catch (final CommandAbstractException ignored) {
+        // nothing
+      }
+      if (file != null) {
+        final File truefile = file.getTrueFile().getParentFile();
+        available = truefile.getFreeSpace();
+        targetDir = truefile.getPath();
+      }
+      logger.debug("Check available space: {} >? {}(+{})", available, needed,
+                   length);
+      // Available > 0 since some system returns 0 (wrong size)
+      if (available > 0 && needed > available) {
+        // not enough space
+        runner.setErrorExecutionStatus(ErrorCode.Internal);
+        throw new OpenR66RunnerErrorException(
+            "File cannot be written due to unsufficient space available: " +
+            targetDir + " need " + needed + " more while available is " +
+            available);
+      }
+      if (file == null) {
+        runner.saveStatus();
+        logger.info("Final PARTIAL init: {}", runner);
+        return true;
+      }
+      checkPosition(length);
+    }
+    return false;
+  }
+
+  private void checkPosition(final long length)
+      throws OpenR66RunnerErrorException {
+    // First check available space
+    try {
+      final long oldPosition = restart.getPosition();
+      restart.setSet(true);
+      if (oldPosition > length) {
+        int newRank = (int) (length / runner.getBlocksize()) -
+                      Configuration.getRankRestart();
+        if (newRank <= 0) {
+          newRank = 1;
+        }
+        logger.info("OldPos: {}:{} curLength: {}:{}", oldPosition,
+                    runner.getRank(), length, newRank);
+        logger.warn("Decreased Rank Restart for {} at " + newRank, runner);
+        runner.setTransferTask(newRank);
+        restart.restartMarker(runner.getBlocksize() * runner.getRank());
+      }
+      try {
+        file.restartMarker(restart);
+      } catch (final CommandAbstractException e) {
+        runner.deleteTempFile();
+        throw new OpenR66RunnerErrorException(e);
+      }
+    } catch (final NoRestartException e) {
+      // length is not to be changed
+    }
+  }
+
+  private void initializeTransfer(final boolean checkNotExternal)
+      throws OpenR66RunnerErrorException {
     if (runner.getGloballaststep() == TASKSTEP.NOTASK.ordinal() ||
         runner.getGloballaststep() == TASKSTEP.PRETASK.ordinal()) {
       setFileBeforePreRunner();
@@ -845,107 +961,17 @@ public class R66Session implements SessionInterface {
       runner.changeUpdatedInfo(UpdatedInfo.RUNNING);
       runner.saveStatus();
     }
-    // Now create the associated file
-    try {
-      setFileAfterPreRunner(true);
-    } catch (final CommandAbstractException e2) {
-      // generated due to a possible wildcard not ready
-      file = null;
+  }
+
+  private void setRestartMarker() {
+    if (runner.getRank() > 0) {
+      logger.debug("restart at {} {}", runner.getRank(), runner);
+      logger.debug("restart at {} {}", runner.getRank(), dir);
+      runner.setTransferTask(runner.getRank());
+      restart.restartMarker(runner.getBlocksize() * runner.getRank());
+    } else {
+      restart.restartMarker(0);
     }
-    logger.debug("GlobalLastStep: {}", runner.getGloballaststep());
-    if (runner.getGloballaststep() == TASKSTEP.TRANSFERTASK.ordinal()) {
-      if (businessObject != null) {
-        businessObject.checkAfterPreCommand(this);
-      }
-      if (!runner.isSender()) {
-        // Check file length according to rank
-        if (runner.isRecvThrough()) {
-          // no size can be checked
-        } else {
-          long length = 0;
-          if (file != null) {
-            try {
-              length = file.length();
-            } catch (final CommandAbstractException ignored) {
-              // nothing
-            }
-          }
-          final long needed = runner.getOriginalSize() - length;
-          long available = 0;
-          String targetDir = null;
-          try {
-            available = dir.getFreeSpace();
-            targetDir = dir.getPwd();
-          } catch (final CommandAbstractException ignored) {
-            // nothing
-          }
-          if (file != null) {
-            final File truefile = file.getTrueFile().getParentFile();
-            available = truefile.getFreeSpace();
-            targetDir = truefile.getPath();
-          }
-          logger
-              .debug("Check available space: {} >? {}(+{})", available, needed,
-                     length);
-          // Available > 0 since some system returns 0 (wrong size)
-          if (available > 0 && needed > available) {
-            // not enough space
-            runner.setErrorExecutionStatus(ErrorCode.Internal);
-            throw new OpenR66RunnerErrorException(
-                "File cannot be written due to unsufficient space available: " +
-                targetDir + " need " + needed + " more while available is " +
-                available);
-          }
-          if (file == null) {
-            runner.saveStatus();
-            logger.info("Final PARTIAL init: {}", runner);
-            return;
-          }
-          // First check available space
-          try {
-            final long oldPosition = restart.getPosition();
-            restart.setSet(true);
-            if (oldPosition > length) {
-              int newRank = (int) (length / runner.getBlocksize()) -
-                            Configuration.getRankRestart();
-              if (newRank <= 0) {
-                newRank = 1;
-              }
-              logger.info("OldPos: {}:{} curLength: {}:{}", oldPosition,
-                          runner.getRank(), length, newRank);
-              logger
-                  .warn("Decreased Rank Restart for {} at " + newRank, runner);
-              runner.setTransferTask(newRank);
-              restart.restartMarker(runner.getBlocksize() * runner.getRank());
-            }
-            try {
-              file.restartMarker(restart);
-            } catch (final CommandAbstractException e) {
-              runner.deleteTempFile();
-              throw new OpenR66RunnerErrorException(e);
-            }
-          } catch (final NoRestartException e) {
-            // length is not to be changed
-          }
-        }
-      } else {
-        if (file != null) {
-          try {
-            localChannelReference.getFutureRequest().setFilesize(file.length());
-          } catch (final CommandAbstractException ignored) {
-            // nothing
-          }
-          try {
-            file.restartMarker(restart);
-          } catch (final CommandAbstractException e) {
-            runner.deleteTempFile();
-            throw new OpenR66RunnerErrorException(e);
-          }
-        }
-      }
-    }
-    runner.saveStatus();
-    logger.debug("Final init: {} {}", runner, file != null);
   }
 
   /**

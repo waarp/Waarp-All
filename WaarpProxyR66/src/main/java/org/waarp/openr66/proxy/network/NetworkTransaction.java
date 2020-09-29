@@ -34,7 +34,6 @@ import org.waarp.common.utility.WaarpShutdownHook;
 import org.waarp.openr66.protocol.exception.OpenR66Exception;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolNetworkException;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolNoConnectionException;
-import org.waarp.openr66.protocol.exception.OpenR66ProtocolRemoteShutdownException;
 import org.waarp.openr66.protocol.utils.ChannelUtils;
 import org.waarp.openr66.proxy.network.ssl.NetworkSslServerHandler;
 import org.waarp.openr66.proxy.network.ssl.NetworkSslServerInitializerProxy;
@@ -105,10 +104,6 @@ public class NetworkTransaction {
       try {
         channel = createConnection(socketAddress, isSSL);
         break;
-      } catch (final OpenR66ProtocolRemoteShutdownException e1) {
-        lastException = e1;
-        channel = null;
-        break;
       } catch (final OpenR66ProtocolNoConnectionException e1) {
         lastException = e1;
         channel = null;
@@ -146,13 +141,11 @@ public class NetworkTransaction {
    * @return the channel
    *
    * @throws OpenR66ProtocolNetworkException
-   * @throws OpenR66ProtocolRemoteShutdownException
    * @throws OpenR66ProtocolNoConnectionException
    */
   private Channel createConnection(final SocketAddress socketAddress,
                                    final boolean isSSL)
       throws OpenR66ProtocolNetworkException,
-             OpenR66ProtocolRemoteShutdownException,
              OpenR66ProtocolNoConnectionException {
     Channel channel = null;
     boolean ok = false;
@@ -196,13 +189,12 @@ public class NetworkTransaction {
    * @return the channel
    *
    * @throws OpenR66ProtocolNetworkException
-   * @throws OpenR66ProtocolRemoteShutdownException
    * @throws OpenR66ProtocolNoConnectionException
    */
   private Channel createNewConnection(final SocketAddress socketServerAddress,
                                       final boolean isSSL)
       throws OpenR66ProtocolNetworkException,
-             OpenR66ProtocolRemoteShutdownException,
+
              OpenR66ProtocolNoConnectionException {
     ChannelFuture channelFuture = null;
     for (int i = 0; i < RETRYNB; i++) {

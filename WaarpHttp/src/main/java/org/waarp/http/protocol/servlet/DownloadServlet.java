@@ -61,7 +61,7 @@ public class DownloadServlet extends AbstractServlet {
   @Override
   protected void doHead(final HttpServletRequest request,
                         final HttpServletResponse response)
-      throws ServletException, IOException {
+      throws ServletException {
     final Map<String, String> arguments = new HashMap<String, String>();
     final Enumeration<String> names = request.getParameterNames();
     while (names.hasMoreElements()) {

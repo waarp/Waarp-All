@@ -350,8 +350,7 @@ public class FilesystemBasedDigest {
    *
    * @return True if the two digest are equals
    */
-  public static final boolean digestEquals(final byte[] dig1,
-                                           final byte[] dig2) {
+  public static boolean digestEquals(final byte[] dig1, final byte[] dig2) {
     return MessageDigest.isEqual(dig1, dig2);
   }
 
@@ -361,8 +360,7 @@ public class FilesystemBasedDigest {
    *
    * @return True if the two digest are equals
    */
-  public static final boolean digestEquals(final String dig1,
-                                           final byte[] dig2) {
+  public static boolean digestEquals(final String dig1, final byte[] dig2) {
     final byte[] bdig1 = getFromHex(dig1);
     return MessageDigest.isEqual(bdig1, dig2);
   }
@@ -750,7 +748,7 @@ public class FilesystemBasedDigest {
    *
    * @return the hexadecimal representation as a String of the array of bytes
    */
-  public static final String getHex(final byte[] hash) {
+  public static String getHex(final byte[] hash) {
     final char[] buf = new char[hash.length * 2];
     for (int i = 0, x = 0; i < hash.length; i++) {
       buf[x++] = HEX_CHARS[hash[i] >>> 4 & 0xf];
@@ -766,7 +764,7 @@ public class FilesystemBasedDigest {
    *
    * @return the array of bytes representation of the hexadecimal String
    */
-  public static final byte[] getFromHex(final String hex) {
+  public static byte[] getFromHex(final String hex) {
     final byte[] from = hex.getBytes(UTF8);
     final byte[] hash = new byte[from.length / 2];
     for (int i = 0, x = 0; i < hash.length; i++) {
@@ -799,7 +797,7 @@ public class FilesystemBasedDigest {
    *
    * @throws IOException
    */
-  public static final String passwdCrypt(final String pwd) {
+  public static String passwdCrypt(final String pwd) {
     if (isUseFastMd5()) {
       return MD5.passwdCrypt(pwd);
     }
@@ -826,7 +824,7 @@ public class FilesystemBasedDigest {
    *
    * @throws IOException
    */
-  public static final byte[] passwdCrypt(final byte[] pwd) {
+  public static byte[] passwdCrypt(final byte[] pwd) {
     if (isUseFastMd5()) {
       return MD5.passwdCrypt(pwd);
     }
@@ -851,8 +849,7 @@ public class FilesystemBasedDigest {
    *
    * @throws IOException
    */
-  public static final boolean equalPasswd(final String pwd,
-                                          final String cryptPwd) {
+  public static boolean equalPasswd(final String pwd, final String cryptPwd) {
     final String asHex;
     asHex = passwdCrypt(pwd);
     return cryptPwd.equals(asHex);
@@ -864,8 +861,7 @@ public class FilesystemBasedDigest {
    *
    * @return True if the pwd is comparable with the cryptPwd
    */
-  public static final boolean equalPasswd(final byte[] pwd,
-                                          final byte[] cryptPwd) {
+  public static boolean equalPasswd(final byte[] pwd, final byte[] cryptPwd) {
     final byte[] bytes;
     bytes = passwdCrypt(pwd);
     return Arrays.equals(cryptPwd, bytes);

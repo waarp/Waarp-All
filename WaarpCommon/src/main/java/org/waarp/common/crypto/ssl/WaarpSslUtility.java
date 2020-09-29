@@ -67,8 +67,7 @@ public final class WaarpSslUtility {
       new ChannelFutureListener() {
 
         @Override
-        public void operationComplete(final ChannelFuture future)
-            throws Exception {
+        public void operationComplete(final ChannelFuture future) {
           if (future.channel().isActive()) {
             final SslThread thread = new SslThread(future.channel());
             thread.start();
@@ -110,7 +109,7 @@ public final class WaarpSslUtility {
     } else {
       future.addListener(new GenericFutureListener() {
         @Override
-        public void operationComplete(final Future future) throws Exception {
+        public void operationComplete(final Future future) {
           logger.debug("Add SslHandler: {}", pipeline.channel());
           pipeline.addFirst("SSL", sslHandler);
           ((SslHandler) sslHandler).handshakeFuture().addListener(listener);
@@ -225,8 +224,7 @@ public final class WaarpSslUtility {
         if (future != null) {
           future.addListener(new GenericFutureListener() {
             @Override
-            public void operationComplete(final Future future)
-                throws Exception {
+            public void operationComplete(final Future future) {
               waitForSslClose(channel, sslHandler, close);
             }
           });
@@ -250,8 +248,7 @@ public final class WaarpSslUtility {
       cht.close()
          .addListener(new GenericFutureListener<Future<? super Void>>() {
            @Override
-           public void operationComplete(final Future<? super Void> future)
-               throws Exception {
+           public void operationComplete(final Future<? super Void> future) {
              logger.debug("Ssl closed: {}", channel);
              if (!close) {
                channel.pipeline().remove(sslHandler);

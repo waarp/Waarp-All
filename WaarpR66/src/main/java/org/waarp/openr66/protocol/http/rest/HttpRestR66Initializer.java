@@ -46,7 +46,7 @@ public class HttpRestR66Initializer extends ChannelInitializer<SocketChannel> {
   }
 
   @Override
-  protected void initChannel(final SocketChannel ch) throws Exception {
+  protected void initChannel(final SocketChannel ch) {
     // Create a default pipeline implementation.
     final ChannelPipeline pipeline = ch.pipeline();
 

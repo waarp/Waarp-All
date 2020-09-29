@@ -70,7 +70,7 @@ public class LocalExecServerInitializer
   }
 
   @Override
-  public void initChannel(final SocketChannel ch) throws Exception {
+  public void initChannel(final SocketChannel ch) {
     // Create a default pipeline implementation.
     final ChannelPipeline pipeline = ch.pipeline();
 

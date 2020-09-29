@@ -30,7 +30,6 @@ import org.waarp.openr66.client.SendThroughClient;
 import org.waarp.openr66.commander.ClientRunner;
 import org.waarp.openr66.context.ErrorCode;
 import org.waarp.openr66.context.R66Result;
-import org.waarp.openr66.context.task.exception.OpenR66RunnerErrorException;
 import org.waarp.openr66.database.data.DbRule;
 import org.waarp.openr66.database.data.DbTaskRunner;
 import org.waarp.openr66.protocol.configuration.Configuration;
@@ -168,12 +167,6 @@ public class TestSendThroughForward extends SendThroughClient {
           localChannelReference = runner.initRequest();
           exc = null;
           break;
-        } catch (final OpenR66RunnerErrorException e) {
-          logger.error("Cannot Transfer", e);
-          future.setResult(
-              new R66Result(e, null, true, ErrorCode.Internal, taskRunner));
-          future.setFailure(e);
-          return false;
         } catch (final OpenR66ProtocolNoConnectionException e) {
           logger.error("Cannot Connect", e);
           future.setResult(
@@ -263,11 +256,7 @@ public class TestSendThroughForward extends SendThroughClient {
           client.transferInError(
               new OpenR66ProtocolSystemException("Write impossible"));
         }
-      } catch (final OpenR66RunnerErrorException e) {
-        client.transferInError(e);
       } catch (final OpenR66ProtocolPacketException e) {
-        client.transferInError(e);
-      } catch (final OpenR66ProtocolSystemException e) {
         client.transferInError(e);
       }
       if (block.isEOF()) {

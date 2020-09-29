@@ -26,7 +26,6 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.handler.timeout.ReadTimeoutException;
-import io.netty.util.concurrent.Future;
 import org.waarp.common.crypto.ssl.WaarpSslUtility;
 import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
@@ -126,8 +125,7 @@ public class NetworkServerHandler
   }
 
   @Override
-  public void channelInactive(final ChannelHandlerContext ctx)
-      throws Exception {
+  public void channelInactive(final ChannelHandlerContext ctx) {
     if (proxyChannel != null) {
       WaarpSslUtility.closingSslChannel(proxyChannel);
     }
@@ -137,7 +135,7 @@ public class NetworkServerHandler
   public void channelActive(final ChannelHandlerContext ctx) throws Exception {
     try {
       networkChannel = ctx.channel();
-      /**
+      /*
        * The associated Local Address
        */
       final SocketAddress localAddress = networkChannel.localAddress();
@@ -213,7 +211,7 @@ public class NetworkServerHandler
 
   @Override
   public void channelRead0(final ChannelHandlerContext ctx,
-                           final NetworkPacket msg) throws Exception {
+                           final NetworkPacket msg) {
     try {
       if (msg.getCode() == LocalPacketFactory.NOOPPACKET) {
         resetKeepAlive();
@@ -337,12 +335,11 @@ public class NetworkServerHandler
         }
         if (networkPacket != null) {
           final NetworkPacket finalNP = networkPacket;
-          final Future future = channel.writeAndFlush(networkPacket);
+          final ChannelFuture future = channel.writeAndFlush(networkPacket);
           future.await(ConfigurationProxyR66.WAITFORNETOP);
           future.addListener(new ChannelFutureListener() {
             @Override
-            public void operationComplete(final ChannelFuture future)
-                throws Exception {
+            public void operationComplete(final ChannelFuture future) {
               finalNP.clear();
             }
           });

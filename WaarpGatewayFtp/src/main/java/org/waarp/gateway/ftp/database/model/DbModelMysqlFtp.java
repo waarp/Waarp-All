@@ -69,15 +69,13 @@ public class DbModelMysqlFtp extends DbModelMysql {
   }
 
   @Override
-  public boolean upgradeDb(final DbSession session, final String version)
-      throws WaarpDatabaseNoConnectionException {
+  public boolean upgradeDb(final DbSession session, final String version) {
     return true;
   }
 
   @Override
   public boolean needUpgradeDb(final DbSession session, final String version,
-                               final boolean tryFix)
-      throws WaarpDatabaseNoConnectionException {
+                               final boolean tryFix) {
     return false;
   }
 }

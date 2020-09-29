@@ -20,7 +20,6 @@
 package org.waarp.ftp.core.command.internal;
 
 import org.waarp.common.command.ReplyCode;
-import org.waarp.common.command.exception.CommandAbstractException;
 import org.waarp.ftp.core.command.AbstractCommand;
 import org.waarp.ftp.core.command.FtpCommandCode;
 import org.waarp.ftp.core.session.FtpSession;
@@ -40,7 +39,7 @@ public class ConnectionCommand extends AbstractCommand {
   }
 
   @Override
-  public void exec() throws CommandAbstractException {
+  public void exec() {
     // Nothing to do except 220
     getSession().setReplyCode(ReplyCode.REPLY_220_SERVICE_READY, null);
   }

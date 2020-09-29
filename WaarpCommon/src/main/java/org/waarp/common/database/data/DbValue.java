@@ -351,43 +351,49 @@ public class DbValue {
         return getValue().toString();
       case Types.VARBINARY:
         return new String((byte[]) getValue(), WaarpStringUtils.UTF8);
-      case Types.CLOB: {
-        final StringBuilder sBuilder = new StringBuilder();
-        final Reader reader = (Reader) getValue();
-        final char[] cbuf = new char[4096];
-        int len;
-        try {
-          len = reader.read(cbuf);
-          while (len > 0) {
-            sBuilder.append(cbuf, 0, len);
-            len = reader.read(cbuf);
-          }
-        } catch (final IOException e) {
-          throw new WaarpDatabaseSqlException(
-              "Error while reading Clob as String", e);
-        }
-        return sBuilder.toString();
-      }
-      case Types.BLOB: {
-        final StringBuilder sBuilder = new StringBuilder();
-        final InputStream inputStream = (InputStream) getValue();
-        final byte[] cbuf = new byte[4096];
-        int len;
-        try {
-          len = inputStream.read(cbuf);
-          while (len > 0) {
-            sBuilder.append(new String(cbuf, 0, len));
-            len = inputStream.read(cbuf);
-          }
-        } catch (final IOException e) {
-          throw new WaarpDatabaseSqlException(
-              "Error while reading Blob as String", e);
-        }
-        return sBuilder.toString();
-      }
+      case Types.CLOB:
+        return getClob();
+      case Types.BLOB:
+        return getBlob();
       default:
         throw new WaarpDatabaseSqlException(TYPE_UNKNOWN + type);
     }
+  }
+
+  private String getBlob() throws WaarpDatabaseSqlException {
+    final StringBuilder sBuilder = new StringBuilder();
+    final InputStream inputStream = (InputStream) getValue();
+    final byte[] cbuf = new byte[4096];
+    int len;
+    try {
+      len = inputStream.read(cbuf);
+      while (len > 0) {
+        sBuilder.append(new String(cbuf, 0, len));
+        len = inputStream.read(cbuf);
+      }
+    } catch (final IOException e) {
+      throw new WaarpDatabaseSqlException("Error while reading Blob as String",
+                                          e);
+    }
+    return sBuilder.toString();
+  }
+
+  private String getClob() throws WaarpDatabaseSqlException {
+    final StringBuilder sBuilder = new StringBuilder();
+    final Reader reader = (Reader) getValue();
+    final char[] cbuf = new char[4096];
+    int len;
+    try {
+      len = reader.read(cbuf);
+      while (len > 0) {
+        sBuilder.append(cbuf, 0, len);
+        len = reader.read(cbuf);
+      }
+    } catch (final IOException e) {
+      throw new WaarpDatabaseSqlException("Error while reading Clob as String",
+                                          e);
+    }
+    return sBuilder.toString();
   }
 
   public void setValueFromString(final String svalue)

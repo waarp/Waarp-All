@@ -72,6 +72,12 @@ public class AbstractServlet extends HttpServlet {
     } catch (final ClassNotFoundException e) {
       logger.error("Cannot find authent class {}", sauthent);
       throw new ServletException("Cannot find authent class");
+    } catch (final ClassCastException e) {
+      logger.error(
+          "Cannot cast authent class {} to mandatory inherited HttpAuthent",
+          sauthent);
+      throw new ServletException(
+          "Cannot cast authent class to mandatory inherited HttpAuthent");
     }
     WaarpStartup.startupWaarp(file);
     logger.info("{}: {} {}", config.getServletName(),

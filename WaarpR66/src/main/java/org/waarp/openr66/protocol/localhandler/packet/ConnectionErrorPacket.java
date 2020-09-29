@@ -23,7 +23,6 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.Unpooled;
 import org.waarp.common.utility.WaarpNettyUtil;
-import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
 import org.waarp.openr66.protocol.localhandler.LocalChannelReference;
 
 /**
@@ -44,14 +43,11 @@ public class ConnectionErrorPacket extends AbstractLocalPacket {
    * @param buf
    *
    * @return the new ErrorPacket from buffer
-   *
-   * @throws OpenR66ProtocolPacketException
    */
   public static ConnectionErrorPacket createFromBuffer(final int headerLength,
                                                        final int middleLength,
                                                        final int endLength,
-                                                       final ByteBuf buf)
-      throws OpenR66ProtocolPacketException {
+                                                       final ByteBuf buf) {
     final byte[] bheader = new byte[headerLength - 1];
     final byte[] bmiddle = new byte[middleLength];
     if (headerLength - 1 > 0) {
@@ -79,8 +75,7 @@ public class ConnectionErrorPacket extends AbstractLocalPacket {
 
   @Override
   public void createAllBuffers(final LocalChannelReference lcr,
-                               final int networkHeader)
-      throws OpenR66ProtocolPacketException {
+                               final int networkHeader) {
     end = Unpooled.EMPTY_BUFFER;
     final byte[] sheaderByte =
         sheader != null? sheader.getBytes() : EMPTY_ARRAY;

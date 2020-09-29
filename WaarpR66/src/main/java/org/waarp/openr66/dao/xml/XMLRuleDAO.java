@@ -114,12 +114,12 @@ public class XMLRuleDAO implements RuleDAO {
   }
 
   @Override
-  public void delete(final Rule rule) throws DAOConnectionException {
+  public void delete(final Rule rule) {
     dbR66RuleHashMap.remove(rule.getName());
   }
 
   @Override
-  public void deleteAll() throws DAOConnectionException {
+  public void deleteAll() {
     dbR66RuleHashMap.clear();
   }
 
@@ -159,7 +159,7 @@ public class XMLRuleDAO implements RuleDAO {
   }
 
   @Override
-  public boolean exist(final String rulename) throws DAOConnectionException {
+  public boolean exist(final String rulename) {
     return dbR66RuleHashMap.containsKey(rulename);
   }
 
@@ -170,7 +170,7 @@ public class XMLRuleDAO implements RuleDAO {
   }
 
   @Override
-  public void insert(final Rule rule) throws DAOConnectionException {
+  public void insert(final Rule rule) {
     dbR66RuleHashMap.put(rule.getName(), rule);
   }
 
@@ -184,7 +184,7 @@ public class XMLRuleDAO implements RuleDAO {
   }
 
   @Override
-  public void update(final Rule rule) throws DAOConnectionException {
+  public void update(final Rule rule) {
     dbR66RuleHashMap.put(rule.getName(), rule);
   }
 
@@ -264,8 +264,7 @@ public class XMLRuleDAO implements RuleDAO {
   public static final String PATH_FIELD = "path";
   public static final String DELAY_FIELD = "delay";
 
-  private List<RuleTask> retrieveTasks(final Node src)
-      throws DAOConnectionException {
+  private List<RuleTask> retrieveTasks(final Node src) {
     final List<RuleTask> res = new ArrayList<RuleTask>();
     final NodeList feed = src.getChildNodes();
     for (int i = 0; i < feed.getLength(); i++) {

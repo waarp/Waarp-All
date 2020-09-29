@@ -36,7 +36,7 @@ class HttpCleanChannelFutureListener implements ChannelFutureListener {
   }
 
   @Override
-  public void operationComplete(final ChannelFuture future) throws Exception {
+  public void operationComplete(final ChannelFuture future) {
     handler.clean();
   }
 

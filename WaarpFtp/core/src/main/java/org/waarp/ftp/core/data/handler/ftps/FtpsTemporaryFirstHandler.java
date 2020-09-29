@@ -95,7 +95,7 @@ class FtpsTemporaryFirstHandler extends ChannelDuplexHandler {
   }
 
   @Override
-  public void channelActive(final ChannelHandlerContext ctx) throws Exception {
+  public void channelActive(final ChannelHandlerContext ctx) {
     // Get the SslHandler in the current pipeline.
     final Channel channel = ctx.channel();
 
@@ -124,8 +124,7 @@ class FtpsTemporaryFirstHandler extends ChannelDuplexHandler {
                                   new GenericFutureListener<Future<? super Channel>>() {
                                     @Override
                                     public void operationComplete(
-                                        final Future<? super Channel> future)
-                                        throws Exception {
+                                        final Future<? super Channel> future) {
                                       try {
                                         logger.debug("Handshake: {}:{}",
                                                      future.isSuccess(),

@@ -118,15 +118,13 @@ public class LocalTransaction {
    *
    * @return the LocalChannelReference
    *
-   * @throws OpenR66ProtocolSystemException
    * @throws OpenR66ProtocolRemoteShutdownException
    * @throws OpenR66ProtocolNoConnectionException
    */
   public LocalChannelReference createNewClient(
       final NetworkChannelReference networkChannelReference,
       final Integer remoteId, final R66Future futureRequest,
-      final boolean fromSsl) throws OpenR66ProtocolSystemException,
-                                    OpenR66ProtocolRemoteShutdownException,
+      final boolean fromSsl) throws OpenR66ProtocolRemoteShutdownException,
                                     OpenR66ProtocolNoConnectionException {
     if (WaarpShutdownHook.isShutdownStarting()) {
       // Do not try since already locally in shutdown

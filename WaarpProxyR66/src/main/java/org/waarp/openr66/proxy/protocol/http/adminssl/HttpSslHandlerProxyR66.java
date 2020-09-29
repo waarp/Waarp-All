@@ -27,7 +27,6 @@ import io.netty.handler.codec.http.QueryStringDecoder;
 import io.netty.handler.codec.http.cookie.DefaultCookie;
 import io.netty.handler.traffic.TrafficCounter;
 import org.waarp.common.exception.FileTransferException;
-import org.waarp.common.exception.InvalidArgumentException;
 import org.waarp.common.logging.WaarpLogLevel;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
@@ -90,9 +89,6 @@ public class HttpSslHandlerProxyR66 extends HttpSslHandler {
     final String value;
     try {
       value = WaarpStringUtils.readFileException(filename);
-    } catch (final InvalidArgumentException e) {
-      logger.error("Error while trying to open: " + filename, e);
-      return "";
     } catch (final FileTransferException e) {
       logger.error("Error while trying to read: " + filename, e);
       return "";
@@ -475,7 +471,7 @@ public class HttpSslHandlerProxyR66 extends HttpSslHandler {
 
   @Override
   protected void channelRead0(final ChannelHandlerContext ctx,
-                              final FullHttpRequest msg) throws Exception {
+                              final FullHttpRequest msg) {
     final FullHttpRequest request = this.request = msg;
     final QueryStringDecoder queryStringDecoder =
         new QueryStringDecoder(request.uri());

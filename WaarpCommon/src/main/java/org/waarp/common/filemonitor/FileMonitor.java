@@ -729,23 +729,13 @@ public class FileMonitor {
         logger.debug("File check: {}", fileItem);
         final long size = fileItem.file.length();
         if (size != fileItem.size) {
-          // changed or second size check
-          fileItem.size = size;
-          fileItemsChanged = true;
-          fileItem.status = Status.CHANGING;
-          logger.debug("File Size check: {}({})", fileItem, size);
+          fileItemsChanged = isFileItemsChangedOnSize(fileItem, size);
           continue;
         }
         final long lastTimeModified = fileItem.file.lastModified();
         if (lastTimeModified != fileItem.lastTime) {
-          // changed or second time check
-          fileItem.lastTime = lastTimeModified;
-          if (!ignoreAlreadyUsed && fileItem.used) {
-            fileItem.hash = null;
-          }
-          fileItemsChanged = true;
-          fileItem.status = Status.CHANGING;
-          logger.debug("File Change check: {}({})", fileItem, lastTimeModified);
+          fileItemsChanged =
+              isFileItemsChangedOnLastTimeModified(fileItem, lastTimeModified);
           continue;
         }
         // now check Hash or third time
@@ -753,17 +743,13 @@ public class FileMonitor {
           final byte[] hash =
               FilesystemBasedDigest.getHash(fileItem.file, true, digest);
           if (hash == null || fileItem.hash == null) {
-            fileItem.hash = hash;
-            fileItemsChanged = true;
-            fileItem.status = Status.CHANGING;
-            logger.debug("File Hash0 check: {}", fileItem);
+            // First set
+            fileItemsChanged = isFileItemsChangedOnHash(fileItem, hash);
             continue;
           }
           if (!Arrays.equals(hash, fileItem.hash)) {
-            fileItem.hash = hash;
-            fileItemsChanged = true;
-            fileItem.status = Status.CHANGING;
-            logger.debug("File Hash1 check: {}", fileItem);
+            // Second check true
+            fileItemsChanged = isFileItemsChangedOnHash(fileItem, hash);
             continue;
           } else {
             setIfAlreadyUsed(fileItem, fileItem.status != Status.DONE);
@@ -838,6 +824,35 @@ public class FileMonitor {
     return fileItemsChanged;
   }
 
+  private boolean isFileItemsChangedOnHash(final FileItem fileItem,
+                                           final byte[] hash) {
+    fileItem.hash = hash;
+    fileItem.status = Status.CHANGING;
+    logger.debug("File Hash check: {}", fileItem);
+    return true;
+  }
+
+  private boolean isFileItemsChangedOnLastTimeModified(final FileItem fileItem,
+                                                       final long lastTimeModified) {
+    // changed or second time check
+    fileItem.lastTime = lastTimeModified;
+    if (!ignoreAlreadyUsed && fileItem.used) {
+      fileItem.hash = null;
+    }
+    fileItem.status = Status.CHANGING;
+    logger.debug("File Change check: {}({})", fileItem, lastTimeModified);
+    return true;
+  }
+
+  private boolean isFileItemsChangedOnSize(final FileItem fileItem,
+                                           final long size) {
+    // changed or second size check
+    fileItem.size = size;
+    fileItem.status = Status.CHANGING;
+    logger.debug("File Size check: {}({})", fileItem, size);
+    return true;
+  }
+
   /**
    * Timer task
    */
@@ -855,7 +870,7 @@ public class FileMonitor {
     }
 
     @Override
-    public void run(final Timeout timeout) throws Exception {
+    public void run(final Timeout timeout) {
       try {
         if (fileMonitor.checkFiles()) {
           fileMonitor.setThreadName();
@@ -906,7 +921,7 @@ public class FileMonitor {
     }
 
     @Override
-    public void run(final Timeout timeout) throws Exception {
+    public void run(final Timeout timeout) {
       try {
         Thread.currentThread().setName("FileMonitorInformation_" + name);
         if (!checkStop()) {

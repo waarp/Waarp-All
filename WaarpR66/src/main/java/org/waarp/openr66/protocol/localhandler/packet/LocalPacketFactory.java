@@ -167,7 +167,7 @@ public final class LocalPacketFactory {
     }
   }
 
-  public static final int estimateSize(final Object o) {
+  public static int estimateSize(final Object o) {
     if (!(o instanceof AbstractLocalPacket)) {
       // Type unimplemented
       return -1;

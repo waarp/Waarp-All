@@ -180,9 +180,6 @@ public class HttpFormattedHandler
     final String value;
     try {
       value = WaarpStringUtils.readFileException(filename);
-    } catch (final InvalidArgumentException e) {
-      logger.error("Error while trying to open: " + filename, e);
-      return "";
     } catch (final FileTransferException e) {
       logger.error("Error while trying to read: " + filename, e);
       return "";
@@ -227,7 +224,7 @@ public class HttpFormattedHandler
 
   @Override
   protected void channelRead0(final ChannelHandlerContext ctx,
-                              final FullHttpRequest msg) throws Exception {
+                              final FullHttpRequest msg) {
     isCurrentRequestXml = false;
     isCurrentRequestJson = false;
     status = HttpResponseStatus.OK;
@@ -910,7 +907,7 @@ public class HttpFormattedHandler
 
   @Override
   public void exceptionCaught(final ChannelHandlerContext ctx,
-                              final Throwable cause) throws Exception {
+                              final Throwable cause) {
     final OpenR66Exception exception = OpenR66ExceptionTrappedFactory
         .getExceptionFromTrappedException(ctx.channel(), cause);
     if (exception != null) {

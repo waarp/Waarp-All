@@ -112,7 +112,7 @@ public class WaarpSnmpAgent extends BaseAgent {
                         final WaarpInterfaceMonitor monitor,
                         final WaarpInterfaceMib mib)
       throws IllegalArgumentException {
-    /**
+    /*
      * Creates a base agent with boot-counter, config file, and a CommandProcessor for processing SNMP requests.
      *
      * Parameters:
@@ -241,7 +241,7 @@ public class WaarpSnmpAgent extends BaseAgent {
                                  element.retries, element.tagList,
                                  element.params, element.storageType);
     }
-    /**
+    /*
      * Example
      *
      * targetMIB.addTargetAddress(new OctetString("notificationV2c"), TransportDomains.transportDomainUdpIpv4, new

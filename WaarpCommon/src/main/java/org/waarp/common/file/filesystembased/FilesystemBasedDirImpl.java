@@ -75,7 +75,7 @@ public abstract class FilesystemBasedDirImpl extends AbstractDir {
    */
   protected static FilesystemBasedDirJdkAbstract filesystemBasedFtpDirJdk;
 
-  /**
+  /*
    * Initialize the filesystem
    */
   static {

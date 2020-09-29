@@ -76,8 +76,7 @@ public class BlockRequestPacket extends AbstractLocalPacket {
 
   @Override
   public void createAllBuffers(final LocalChannelReference lcr,
-                               final int networkHeader)
-      throws OpenR66ProtocolPacketException {
+                               final int networkHeader) {
     end = Unpooled.EMPTY_BUFFER;
     middle = Unpooled.EMPTY_BUFFER;
     final int globalSize = networkHeader + LOCAL_HEADER_SIZE + 1 + key.length;

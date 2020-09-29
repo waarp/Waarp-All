@@ -227,7 +227,7 @@ public abstract class ServiceLauncher implements Daemon {
 
   // Implementing the Daemon interface is not required for Windows but is for Linux
   @Override
-  public void init(final DaemonContext arg0) throws Exception {
+  public void init(final DaemonContext arg0) {
     controller = arg0.getController();
     logger.info("Daemon init");
   }

@@ -108,8 +108,8 @@ public class CommonFileChunkedInput implements ChunkedInput<ByteBuf> {
     }
     lastChunkAlready = block.isEOF();
     offset += block.getByteCount();
-    byte[] bytes = block.getByteBlock();
-    ByteBuf buffer = byteBufAllocator.buffer(bytes.length, bytes.length);
+    final byte[] bytes = block.getByteBlock();
+    final ByteBuf buffer = byteBufAllocator.buffer(bytes.length, bytes.length);
     buffer.writeBytes(bytes);
     return buffer;
   }

@@ -574,7 +574,7 @@ public class DbHostConfiguration extends AbstractDbDataDao<Business> {
    * @throws WaarpDatabaseSqlException
    */
   public static DbHostConfiguration[] getUpdatedPrepareStament()
-      throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
+      throws WaarpDatabaseNoConnectionException {
     final List<Filter> filters = new ArrayList<Filter>();
     filters.add(new Filter(DBBusinessDAO.HOSTID_FIELD, "=",
                            Configuration.configuration.getHostId()));

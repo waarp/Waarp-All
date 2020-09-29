@@ -147,8 +147,6 @@ public class HttpPage {
     if (getFileform() != null && value != null) {
       try {
         return WaarpStringUtils.readFileException(getFileform() + value);
-      } catch (final InvalidArgumentException ignored) {
-        // nothing
       } catch (final FileTransferException ignored) {
         // nothing
       }
@@ -169,40 +167,7 @@ public class HttpPage {
       return "<HTML><HEADER/>ERROR</HTML>";
     }
     if (getPagerole() == PageRole.HTML) {
-      // No handling of variable management, use MENU instead
-      String value = reference.getHeader();
-      logger.debug("Debug: {}", value != null);
-      if (value == null || value.length() == 0) {
-        value = getPageValue(getHeader());
-      }
-      final StringBuilder builder;
-      if (value == null) {
-        builder = new StringBuilder();
-      } else {
-        builder = new StringBuilder(value);
-      }
-      value = reference.getBeginForm();
-      if (value == null || value.length() == 0) {
-        value = getPageValue(getBeginform());
-      }
-      if (value != null) {
-        builder.append(value);
-      }
-      value = reference.getEndForm();
-      if (value == null || value.length() == 0) {
-        value = getPageValue(getEndform());
-      }
-      if (value != null) {
-        builder.append(value);
-      }
-      value = reference.getFooter();
-      if (value == null || value.length() == 0) {
-        value = getPageValue(getFooter());
-      }
-      if (value != null) {
-        builder.append(value);
-      }
-      return builder.toString();
+      return getSimpleHtml(reference);
     }
     final boolean isForm = reference.isForm();
     String value = reference.getHeader();
@@ -217,31 +182,48 @@ public class HttpPage {
     }
     final Map<String, AbstractHttpField> requestFields =
         reference.getMapHttpFields();
+    setFromPossibleForm(reference, isForm, builder, requestFields);
+    setFields(reference, isForm, builder, requestFields);
+    finalizePage(reference, isForm, builder);
+    return builder.toString();
+  }
+
+  private void finalizePage(final AbstractHttpBusinessRequest reference,
+                            final boolean isForm, final StringBuilder builder) {
+    String value;
     if (!isForm) {
-      value = reference.getBeginForm();
+      value = reference.getEndForm();
       if (value == null || value.length() == 0) {
-        value = getPageValue(getBeginform());
+        value = getPageValue(getEndform());
       }
       if (value != null) {
         builder.append(value);
       } else {
-        builder.append("<BR><TABLE border=1><TR>");
-        for (final AbstractHttpField field : requestFields.values()) {
-          if (field.isFieldvisibility()) {
-            builder.append("<TH>").append(field.getFieldinfo()).append("</TH>");
-          }
-        }
-        builder.append("<TR>");
+        builder.append("</TABLE><BR>");
       }
     } else {
-      value = reference.getBeginForm();
+      value = reference.getEndForm();
       if (value == null || value.length() == 0) {
-        value = getPageValue(getBeginform());
+        value = getPageValue(getEndform());
       }
       if (value != null) {
         builder.append(value);
       }
     }
+    value = reference.getFooter();
+    if (value == null || value.length() == 0) {
+      value = getPageValue(getFooter());
+    }
+    if (value != null) {
+      builder.append(value);
+    }
+  }
+
+  private void setFields(final AbstractHttpBusinessRequest reference,
+                         final boolean isForm, final StringBuilder builder,
+                         final Map<String, AbstractHttpField> requestFields)
+      throws HttpIncorrectRequestException {
+    String value;
     boolean first = true;
     for (final AbstractHttpField field : requestFields.values()) {
       if (field.isFieldvisibility()) {
@@ -270,24 +252,66 @@ public class HttpPage {
         }
       }
     }
+  }
+
+  private void setFromPossibleForm(final AbstractHttpBusinessRequest reference,
+                                   final boolean isForm,
+                                   final StringBuilder builder,
+                                   final Map<String, AbstractHttpField> requestFields) {
+    String value;
     if (!isForm) {
-      value = reference.getEndForm();
+      value = reference.getBeginForm();
       if (value == null || value.length() == 0) {
-        value = getPageValue(getEndform());
+        value = getPageValue(getBeginform());
       }
       if (value != null) {
         builder.append(value);
       } else {
-        builder.append("</TABLE><BR>");
+        builder.append("<BR><TABLE border=1><TR>");
+        for (final AbstractHttpField field : requestFields.values()) {
+          if (field.isFieldvisibility()) {
+            builder.append("<TH>").append(field.getFieldinfo()).append("</TH>");
+          }
+        }
+        builder.append("<TR>");
       }
     } else {
-      value = reference.getEndForm();
+      value = reference.getBeginForm();
       if (value == null || value.length() == 0) {
-        value = getPageValue(getEndform());
+        value = getPageValue(getBeginform());
       }
       if (value != null) {
         builder.append(value);
       }
+    }
+  }
+
+  private String getSimpleHtml(final AbstractHttpBusinessRequest reference) {
+    // No handling of variable management, use MENU instead
+    String value = reference.getHeader();
+    logger.debug("Debug: {}", value != null);
+    if (value == null || value.length() == 0) {
+      value = getPageValue(getHeader());
+    }
+    final StringBuilder builder;
+    if (value == null) {
+      builder = new StringBuilder();
+    } else {
+      builder = new StringBuilder(value);
+    }
+    value = reference.getBeginForm();
+    if (value == null || value.length() == 0) {
+      value = getPageValue(getBeginform());
+    }
+    if (value != null) {
+      builder.append(value);
+    }
+    value = reference.getEndForm();
+    if (value == null || value.length() == 0) {
+      value = getPageValue(getEndform());
+    }
+    if (value != null) {
+      builder.append(value);
     }
     value = reference.getFooter();
     if (value == null || value.length() == 0) {

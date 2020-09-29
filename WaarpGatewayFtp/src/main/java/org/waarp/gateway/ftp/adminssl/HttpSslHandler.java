@@ -606,7 +606,7 @@ public class HttpSslHandler
         getMenu = true;
       }
       if (!getMenu && name != null) {
-        logger.debug("Name={} vs {} Passwd={} vs {}", name, name.equals(
+        logger.debug("Name={} vs {} Pass={} vs {}", name, name.equals(
             FileBasedConfiguration.fileBasedConfiguration.getAdminName()),
                      password, FileBasedConfiguration.fileBasedConfiguration
                          .checkPassword(password));
@@ -647,7 +647,7 @@ public class HttpSslHandler
 
   @Override
   protected void channelRead0(final ChannelHandlerContext ctx,
-                              final FullHttpRequest msg) throws Exception {
+                              final FullHttpRequest msg) {
     request = msg;
     final QueryStringDecoder queryStringDecoder =
         new QueryStringDecoder(request.uri());
@@ -844,7 +844,7 @@ public class HttpSslHandler
 
   @Override
   public void exceptionCaught(final ChannelHandlerContext ctx,
-                              final Throwable cause) throws Exception {
+                              final Throwable cause) {
     if (!(cause instanceof CommandAbstractException)) {
       if (cause instanceof IOException) {
         // Nothing to do

@@ -32,7 +32,6 @@ import org.waarp.common.json.JsonHandler;
 import org.waarp.common.role.RoleDefault.ROLE;
 import org.waarp.gateway.kernel.exception.HttpForbiddenRequestException;
 import org.waarp.gateway.kernel.exception.HttpIncorrectRequestException;
-import org.waarp.gateway.kernel.exception.HttpInvalidAuthenticationException;
 import org.waarp.gateway.kernel.exception.HttpNotFoundRequestException;
 import org.waarp.gateway.kernel.rest.DataModelRestMethodHandler;
 import org.waarp.gateway.kernel.rest.HttpRestHandler;
@@ -89,8 +88,7 @@ public class DbTaskRunnerR66RestMethodHandler
   protected DbTaskRunner getItem(final HttpRestHandler handler,
                                  final RestArgument arguments,
                                  final RestArgument result, final Object body)
-      throws HttpIncorrectRequestException, HttpInvalidAuthenticationException,
-             HttpNotFoundRequestException {
+      throws HttpNotFoundRequestException {
     final ObjectNode arg = arguments.getUriArgs().deepCopy();
     arg.setAll(arguments.getBody());
     try {
@@ -120,7 +118,7 @@ public class DbTaskRunnerR66RestMethodHandler
                                     final RestArgument arguments,
                                     final RestArgument result,
                                     final Object body)
-      throws HttpIncorrectRequestException, HttpInvalidAuthenticationException {
+      throws HttpIncorrectRequestException {
     final ObjectNode arg = arguments.getUriArgs().deepCopy();
     arg.setAll(arguments.getBody());
     try {
@@ -135,7 +133,7 @@ public class DbTaskRunnerR66RestMethodHandler
   protected DbPreparedStatement getPreparedStatement(
       final HttpRestHandler handler, final RestArgument arguments,
       final RestArgument result, final Object body)
-      throws HttpIncorrectRequestException, HttpInvalidAuthenticationException {
+      throws HttpIncorrectRequestException {
     final ObjectNode arg = arguments.getUriArgs().deepCopy();
     arg.setAll(arguments.getBody());
     final int limit = arg.path(FILTER_ARGS.LIMIT.name()).asInt(0);

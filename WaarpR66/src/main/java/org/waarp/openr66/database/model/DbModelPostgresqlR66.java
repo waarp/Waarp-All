@@ -60,8 +60,9 @@ public class DbModelPostgresqlR66 extends DbModelPostgresql {
     final DbRequest request = new DbRequest(session);
     try {
       request.select("SHOW server_version_num");
-      request.getNext();
-      serverVersion = request.getResultSet().getInt("server_version_num");
+      if (request.getNext()) {
+        serverVersion = request.getResultSet().getInt("server_version_num");
+      }
     } catch (final WaarpDatabaseNoConnectionException e) {
       SysErrLogger.FAKE_LOGGER.syserr(e);
     } catch (final WaarpDatabaseSqlException e) {

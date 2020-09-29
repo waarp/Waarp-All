@@ -131,8 +131,6 @@ public class HttpRestInformationR66Handler extends HttpRestAbstractR66Handler {
       }
     } catch (final OpenR66ProtocolNotAuthenticatedException e) {
       throw new HttpInvalidAuthenticationException(e);
-    } catch (final OpenR66ProtocolPacketException e) {
-      throw new HttpIncorrectRequestException(e);
     } catch (final OpenR66ProtocolNoDataException e) {
       throw new HttpIncorrectRequestException(e);
     }

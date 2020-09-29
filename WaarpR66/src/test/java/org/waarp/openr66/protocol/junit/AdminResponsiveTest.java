@@ -133,6 +133,9 @@ public class AdminResponsiveTest extends TestAbstract {
       driver.get("http://127.0.0.1:8866/statusxml");
       assertTrue(
           driver.getCurrentUrl().equals("http://127.0.0.1:8866/statusxml"));
+      driver.get("http://127.0.0.1:8866/statusxml?DETAIL=1");
+      assertTrue(driver.getCurrentUrl()
+                       .equals("http://127.0.0.1:8866/statusxml?DETAIL=1"));
       // 11 | open | / |  |
       driver.get("http://127.0.0.1:8866/");
       assertTrue(driver.getCurrentUrl().equals("http://127.0.0.1:8866/"));
@@ -140,6 +143,9 @@ public class AdminResponsiveTest extends TestAbstract {
       driver.get("http://127.0.0.1:8866/statusjson");
       assertTrue(
           driver.getCurrentUrl().equals("http://127.0.0.1:8866/statusjson"));
+      driver.get("http://127.0.0.1:8866/statusjson?DETAIL=1");
+      assertTrue(driver.getCurrentUrl()
+                       .equals("http://127.0.0.1:8866/statusjson?DETAIL=1"));
       // 13 | open | / |  |
       driver.get("http://127.0.0.1:8866/");
       assertTrue(driver.getCurrentUrl().equals("http://127.0.0.1:8866/"));

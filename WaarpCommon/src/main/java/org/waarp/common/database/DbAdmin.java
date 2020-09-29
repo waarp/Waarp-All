@@ -41,7 +41,8 @@ import java.util.concurrent.TimeUnit;
 /**
  * Class for access to Database
  *
- * Partially deprecated (only in Waarp R66 but not other components)
+ * Partially deprecated (only in Waarp R66, except Rest, Http and Monitoring
+ * and special cases using PreparedStatements but not other components)
  */
 public class DbAdmin {
   /**

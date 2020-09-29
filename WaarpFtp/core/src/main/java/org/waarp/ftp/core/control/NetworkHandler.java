@@ -193,7 +193,7 @@ public class NetworkHandler extends SimpleChannelInboundHandler<String> {
    */
   @Override
   public void exceptionCaught(final ChannelHandlerContext ctx,
-                              final Throwable cause) throws Exception {
+                              final Throwable cause) {
     this.ctx = ctx;
     final Channel channel = ctx.channel();
     if (session == null) {
@@ -438,8 +438,7 @@ public class NetworkHandler extends SimpleChannelInboundHandler<String> {
                                         new GenericFutureListener<Future<? super Channel>>() {
                                           @Override
                                           public void operationComplete(
-                                              final Future<? super Channel> future)
-                                              throws Exception {
+                                              final Future<? super Channel> future) {
                                             if (!future.isSuccess()) {
                                               final String error2 =
                                                   future.cause() != null?

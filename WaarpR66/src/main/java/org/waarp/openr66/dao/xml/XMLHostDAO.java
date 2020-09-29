@@ -79,12 +79,12 @@ public class XMLHostDAO implements HostDAO {
   }
 
   @Override
-  public void delete(final Host host) throws DAOConnectionException {
+  public void delete(final Host host) {
     dbR66HostAuthHashMap.remove(host.getHostid());
   }
 
   @Override
-  public void deleteAll() throws DAOConnectionException {
+  public void deleteAll() {
     dbR66HostAuthHashMap.clear();
   }
 
@@ -160,7 +160,7 @@ public class XMLHostDAO implements HostDAO {
   }
 
   @Override
-  public void insert(final Host host) throws DAOConnectionException {
+  public void insert(final Host host) {
     dbR66HostAuthHashMap.put(host.getHostid(), host);
   }
 
@@ -205,7 +205,7 @@ public class XMLHostDAO implements HostDAO {
   }
 
   @Override
-  public void update(final Host host) throws DAOConnectionException {
+  public void update(final Host host) {
     dbR66HostAuthHashMap.put(host.getHostid(), host);
   }
 

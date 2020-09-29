@@ -245,7 +245,7 @@ public class PartnerConfiguration {
     return getVersion() + '.' + JsonHandler.writeAsString(root);
   }
 
-  public static final DigestAlgo getDigestAlgo(final String algo) {
+  public static DigestAlgo getDigestAlgo(final String algo) {
     for (final DigestAlgo alg : DigestAlgo.values()) {
       if (alg.algoName.equals(algo)) {
         return alg;
@@ -264,7 +264,7 @@ public class PartnerConfiguration {
    *
    * @return the separator to be used
    */
-  public static final String getSeparator(final String remoteHost) {
+  public static String getSeparator(final String remoteHost) {
     logger.debug("Versions: search: {} in {}", remoteHost,
                  Configuration.configuration.getVersions());
     final PartnerConfiguration partner =
@@ -283,8 +283,8 @@ public class PartnerConfiguration {
    *
    * @return True if version2 >= version1
    */
-  public static final boolean isVersion2GEQVersion1(final String version1,
-                                                    final String version2) {
+  public static boolean isVersion2GEQVersion1(final String version1,
+                                              final String version2) {
     if (version1 == null || version2 == null) {
       return false;
     }
@@ -319,8 +319,8 @@ public class PartnerConfiguration {
    *
    * @return True if version2 > version1
    */
-  public static final boolean isVersion2GTVersion1(final String version1,
-                                                   final String version2) {
+  public static boolean isVersion2GTVersion1(final String version1,
+                                             final String version2) {
     if (version1 == null || version2 == null) {
       return false;
     }
@@ -352,7 +352,7 @@ public class PartnerConfiguration {
    *
    * @return True if this host is referenced as using Json
    */
-  public static final boolean useJson(final String host) {
+  public static boolean useJson(final String host) {
     if (logger.isDebugEnabled()) {
       logger.debug("UseJson host: '{}':{}", host,
                    Configuration.configuration.getVersions().containsKey(host)?

@@ -20,9 +20,6 @@
 package org.waarp.gateway.kernel.session;
 
 import org.waarp.common.command.NextCommandReply;
-import org.waarp.common.command.exception.Reply421Exception;
-import org.waarp.common.command.exception.Reply502Exception;
-import org.waarp.common.command.exception.Reply530Exception;
 import org.waarp.common.file.SessionInterface;
 
 /**
@@ -72,8 +69,7 @@ public class DefaultHttpAuth implements HttpAuthInterface {
   }
 
   @Override
-  public NextCommandReply setUser(final String user)
-      throws Reply421Exception, Reply530Exception {
+  public NextCommandReply setUser(final String user) {
     this.user = user;
     return null;
   }
@@ -84,8 +80,7 @@ public class DefaultHttpAuth implements HttpAuthInterface {
   }
 
   @Override
-  public NextCommandReply setPassword(final String password)
-      throws Reply421Exception, Reply530Exception {
+  public NextCommandReply setPassword(final String password) {
     this.password = password;
     return null;
   }
@@ -131,8 +126,7 @@ public class DefaultHttpAuth implements HttpAuthInterface {
   }
 
   @Override
-  public NextCommandReply setAccount(final String account)
-      throws Reply421Exception, Reply530Exception, Reply502Exception {
+  public NextCommandReply setAccount(final String account) {
     this.account = account;
     return null;
   }

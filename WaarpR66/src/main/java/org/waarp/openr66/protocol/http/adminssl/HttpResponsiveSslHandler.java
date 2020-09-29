@@ -207,13 +207,6 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
       logger.warn(OPEN_R66_WEB_ERROR2, e.getMessage());
       errorText +=
           Messages.getString("ErrorCode.17") + ": " + e.getMessage() + "<BR/>";
-    } catch (final OpenR66ProtocolBusinessException e) {
-      if (preparedStatement != null) {
-        preparedStatement.realClose();
-      }
-      logger.warn(OPEN_R66_WEB_ERROR2, e.getMessage());
-      errorText +=
-          Messages.getString("ErrorCode.17") + ": " + e.getMessage() + "<BR/>";
     }
     return head.replace(XXXRESULTXXX, errorText);
   }
@@ -632,13 +625,6 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
       logger.warn(OPEN_R66_WEB_ERROR2, e.getMessage());
       errorText +=
           Messages.getString("ErrorCode.17") + ": " + e.getMessage() + "<BR/>";
-    } catch (final OpenR66ProtocolBusinessException e) {
-      if (preparedStatement != null) {
-        preparedStatement.realClose();
-      }
-      logger.warn(OPEN_R66_WEB_ERROR2, e.getMessage());
-      errorText +=
-          Messages.getString("ErrorCode.17") + ": " + e.getMessage() + "<BR/>";
     }
     return head.replace(XXXRESULTXXX, errorText);
   }
@@ -948,13 +934,6 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
       preparedStatement.realClose();
       return head.replace(XXXDATAJSONXXX, json);
     } catch (final WaarpDatabaseException e) {
-      if (preparedStatement != null) {
-        preparedStatement.realClose();
-      }
-      logger.warn(OPEN_R66_WEB_ERROR2, e.getMessage());
-      errorText +=
-          Messages.getString("ErrorCode.17") + ": " + e.getMessage() + "<BR/>";
-    } catch (final OpenR66ProtocolBusinessException e) {
       if (preparedStatement != null) {
         preparedStatement.realClose();
       }
@@ -1780,7 +1759,7 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
 
   @Override
   protected void channelRead0(final ChannelHandlerContext ctx,
-                              final FullHttpRequest msg) throws Exception {
+                              final FullHttpRequest msg) {
     final FullHttpRequest request = this.request = msg;
     final QueryStringDecoder queryStringDecoder =
         new QueryStringDecoder(request.uri());

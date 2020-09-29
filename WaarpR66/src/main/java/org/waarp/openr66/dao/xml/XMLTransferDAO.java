@@ -132,7 +132,7 @@ public class XMLTransferDAO implements TransferDAO {
    *
    * @param specialId
    */
-  public static final void removeNoDbSpecialId(final long specialId) {
+  public static void removeNoDbSpecialId(final long specialId) {
     dbR66TaskHashMap.remove(specialId);
   }
 
@@ -141,7 +141,7 @@ public class XMLTransferDAO implements TransferDAO {
    *
    * @param specialId
    */
-  public static final void updateUsed(final long specialId) {
+  public static void updateUsed(final long specialId) {
     dbR66TaskHashMap.updateTtl(specialId);
   }
 
@@ -166,7 +166,7 @@ public class XMLTransferDAO implements TransferDAO {
   }
 
   @Override
-  public void delete(final Transfer transfer) throws DAOConnectionException {
+  public void delete(final Transfer transfer) {
     removeNoDbSpecialId(transfer.getId());
   }
 
@@ -174,7 +174,7 @@ public class XMLTransferDAO implements TransferDAO {
    * {@link DAOConnectionException}
    */
   @Override
-  public void deleteAll() throws DAOConnectionException {
+  public void deleteAll() {
     dbR66TaskHashMap.clear();
   }
 
@@ -223,8 +223,7 @@ public class XMLTransferDAO implements TransferDAO {
 
   @Override
   public boolean exist(final long id, final String requester,
-                       final String requested, final String owner)
-      throws DAOConnectionException {
+                       final String requested, final String owner) {
     if (dbR66TaskHashMap.contains(id)) {
       return true;
     }
@@ -249,8 +248,7 @@ public class XMLTransferDAO implements TransferDAO {
    * @return never
    */
   @Override
-  public Transfer select(final String id)
-      throws DAOConnectionException, DAONoDataException {
+  public Transfer select(final String id) {
     throw new UnsupportedOperationException();
   }
 
@@ -260,7 +258,7 @@ public class XMLTransferDAO implements TransferDAO {
    * @return never
    */
   @Override
-  public boolean exist(final String id) throws DAOConnectionException {
+  public boolean exist(final String id) {
     throw new UnsupportedOperationException();
   }
 

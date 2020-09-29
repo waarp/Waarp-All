@@ -68,7 +68,7 @@ public abstract class AbstractDir implements DirInterface {
    */
   protected static final File[] roots;
 
-  /**
+  /*
    * Init Windows Support
    */
   static {
@@ -359,7 +359,7 @@ public abstract class AbstractDir implements DirInterface {
       throws CommandAbstractException;
 
   @Override
-  public String getPwd() throws CommandAbstractException {
+  public String getPwd() {
     return currentDir;
   }
 

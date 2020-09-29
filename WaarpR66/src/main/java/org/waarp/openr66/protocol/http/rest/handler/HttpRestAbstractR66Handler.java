@@ -86,8 +86,7 @@ public abstract class HttpRestAbstractR66Handler extends RestMethodHandler {
   @Override
   public void getFileUpload(final HttpRestHandler handler,
                             final FileUpload data, final RestArgument arguments,
-                            final RestArgument result)
-      throws HttpIncorrectRequestException {
+                            final RestArgument result) {
     // should not be
     logger.debug("debug: {}:{}", data.getName(), data.getHttpDataType().name());
   }

@@ -53,6 +53,9 @@ public abstract class DbModelMysql extends DbModelCommonMariadbMySql {
       "com.mysql.cj.jdbc.MysqlConnectionPoolDataSource";
   public static final String MYSQL_DRIVER_JRE6 = "com.mysql.jdbc.Driver";
   public static final String MYSQL_DRIVER_JRE8 = "com.mysql.cj.jdbc.Driver";
+  private static final String
+      CANNOT_INITIALIZE_MYSQL_CONNECTION_POOL_DATA_SOURCE =
+      "Cannot initialize MysqlConnectionPoolDataSource";
 
   protected static class DbTypeResolverMySQL
       extends DbModelAbstract.DbTypeResolver {
@@ -103,9 +106,9 @@ public abstract class DbModelMysql extends DbModelCommonMariadbMySql {
         mysqlConnectionPoolDataSourceClass =
             Class.forName(MYSQL_CONNECTION_POOL_DATA_SOURCE_JRE8);
       } catch (final ClassNotFoundException classNotFoundException) {
-        logger.error("Cannot initialize MysqlConnectionPoolDataSource");
+        logger.error(CANNOT_INITIALIZE_MYSQL_CONNECTION_POOL_DATA_SOURCE);
         throw new WaarpDatabaseNoConnectionException(
-            "Cannot initialize MysqlConnectionPoolDataSource", e);
+            CANNOT_INITIALIZE_MYSQL_CONNECTION_POOL_DATA_SOURCE, e);
       }
     }
     try {
@@ -124,16 +127,16 @@ public abstract class DbModelMysql extends DbModelCommonMariadbMySql {
       return cpds;
     } catch (final InstantiationException e) {
       throw new WaarpDatabaseNoConnectionException(
-          "Cannot initialize MysqlConnectionPoolDataSource", e);
+          CANNOT_INITIALIZE_MYSQL_CONNECTION_POOL_DATA_SOURCE, e);
     } catch (final IllegalAccessException e) {
       throw new WaarpDatabaseNoConnectionException(
-          "Cannot initialize MysqlConnectionPoolDataSource", e);
+          CANNOT_INITIALIZE_MYSQL_CONNECTION_POOL_DATA_SOURCE, e);
     } catch (final NoSuchMethodException e) {
       throw new WaarpDatabaseNoConnectionException(
-          "Cannot initialize MysqlConnectionPoolDataSource", e);
+          CANNOT_INITIALIZE_MYSQL_CONNECTION_POOL_DATA_SOURCE, e);
     } catch (final InvocationTargetException e) {
       throw new WaarpDatabaseNoConnectionException(
-          "Cannot initialize MysqlConnectionPoolDataSource", e);
+          CANNOT_INITIALIZE_MYSQL_CONNECTION_POOL_DATA_SOURCE, e);
     }
   }
 

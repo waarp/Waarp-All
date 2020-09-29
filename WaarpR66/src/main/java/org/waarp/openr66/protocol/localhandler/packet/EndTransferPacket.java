@@ -123,8 +123,7 @@ public class EndTransferPacket extends AbstractLocalPacket {
 
   @Override
   public void createAllBuffers(final LocalChannelReference lcr,
-                               final int networkHeader)
-      throws OpenR66ProtocolPacketException {
+                               final int networkHeader) {
     final int headerSize = 1;
     final int middleSize = 1;
     final byte[] endBytes =

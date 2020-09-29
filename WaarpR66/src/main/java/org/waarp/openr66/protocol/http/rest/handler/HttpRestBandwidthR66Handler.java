@@ -26,7 +26,6 @@ import org.waarp.common.database.data.AbstractDbData;
 import org.waarp.common.json.JsonHandler;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
-import org.waarp.gateway.kernel.exception.HttpIncorrectRequestException;
 import org.waarp.gateway.kernel.exception.HttpInvalidAuthenticationException;
 import org.waarp.gateway.kernel.rest.DataModelRestMethodHandler.COMMAND_TYPE;
 import org.waarp.gateway.kernel.rest.HttpRestHandler;
@@ -64,7 +63,7 @@ public class HttpRestBandwidthR66Handler extends HttpRestAbstractR66Handler {
   public void endParsingRequest(final HttpRestHandler handler,
                                 final RestArgument arguments,
                                 final RestArgument result, final Object body)
-      throws HttpIncorrectRequestException, HttpInvalidAuthenticationException {
+      throws HttpInvalidAuthenticationException {
     logger.debug("debug: {} ### {}", arguments, result);
     if (body != null) {
       logger.debug("Obj: {}", body);

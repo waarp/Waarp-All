@@ -146,7 +146,7 @@ public class HttpRestClientSimpleResponseHandler
 
   @Override
   public void exceptionCaught(final ChannelHandlerContext ctx,
-                              final Throwable cause) throws Exception {
+                              final Throwable cause) {
     final RestFuture restFuture = ctx.channel().attr(RESTARGUMENT).get();
     if (cause instanceof ClosedChannelException) {
       restFuture.setFailure(cause);

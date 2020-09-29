@@ -284,15 +284,12 @@ public class RetrieveRunner extends Thread {
    * @return the ChannelFuture on the write operation
    *
    * @throws OpenR66ProtocolPacketException
-   * @throws OpenR66RunnerErrorException
-   * @throws OpenR66ProtocolSystemException
    */
   public static ChannelFuture writeWhenPossible(final DataBlock block,
                                                 final LocalChannelReference localChannelReference,
                                                 final FilesystemBasedDigest digestGlobal,
                                                 final FilesystemBasedDigest digestBlock)
-      throws OpenR66ProtocolPacketException, OpenR66RunnerErrorException,
-             OpenR66ProtocolSystemException {
+      throws OpenR66ProtocolPacketException {
     return ChannelUtils
         .writeBackDataBlock(localChannelReference, digestGlobal, block,
                             digestBlock);

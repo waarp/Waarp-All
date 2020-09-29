@@ -299,72 +299,62 @@ public abstract class AbstractTask implements Runnable {
       useLocalExec = true;
       WaarpStringUtils.replaceAll(builder, LOCALEXEC, "");
     }
-    File trueFile = null;
-    if (session.getFile() != null) {
-      trueFile = session.getFile().getTrueFile();
-    }
-    if (trueFile != null) {
-      WaarpStringUtils
-          .replaceAll(builder, TRUEFULLPATH, trueFile.getAbsolutePath());
-      WaarpStringUtils.replaceAll(builder, TRUEFILENAME, R66Dir
-          .getFinalUniqueFilename(session.getFile()));
-      WaarpStringUtils
-          .replaceAll(builder, FILESIZE, Long.toString(trueFile.length()));
-    } else {
-      WaarpStringUtils.replaceAll(builder, TRUEFULLPATH, "nofile");
-      WaarpStringUtils.replaceAll(builder, TRUEFILENAME, "nofile");
-      WaarpStringUtils.replaceAll(builder, FILESIZE, "0");
-    }
-    final DbTaskRunner runner = session.getRunner();
-    if (runner != null) {
-      WaarpStringUtils
-          .replaceAll(builder, ORIGINALFULLPATH, runner.getOriginalFilename());
-      WaarpStringUtils.replaceAll(builder, ORIGINALFILENAME, R66File
-          .getBasename(runner.getOriginalFilename()));
-      WaarpStringUtils.replaceAll(builder, RULE, runner.getRuleId());
-    }
-    DateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
-    final Date date = new Date();
-    WaarpStringUtils.replaceAll(builder, DATE, dateFormat.format(date));
-    dateFormat = new SimpleDateFormat("HHmmss");
-    WaarpStringUtils.replaceAll(builder, HOUR, dateFormat.format(date));
-    if (session.getAuth() != null) {
-      WaarpStringUtils
-          .replaceAll(builder, REMOTEHOST, session.getAuth().getUser());
-      try {
-        WaarpStringUtils.replaceAll(builder, LOCALHOST,
-                                    Configuration.configuration
-                                        .getHostId(session.getAuth().isSsl()));
-      } catch (final OpenR66ProtocolNoSslException e) {
-        // replace by standard name
-        WaarpStringUtils.replaceAll(builder, LOCALHOST,
-                                    Configuration.configuration.getHostId());
-      }
-    }
-    if (session.getRemoteAddress() != null) {
-      WaarpStringUtils.replaceAll(builder, REMOTEHOSTADDR,
-                                  session.getRemoteAddress().toString());
-      WaarpStringUtils.replaceAll(builder, LOCALHOSTADDR,
-                                  session.getLocalAddress().toString());
-    } else {
-      WaarpStringUtils.replaceAll(builder, REMOTEHOSTADDR, "unknown");
-      WaarpStringUtils.replaceAll(builder, LOCALHOSTADDR, "unknown");
-    }
-    if (runner != null) {
-      WaarpStringUtils.replaceAll(builder, TRANSFERID,
-                                  Long.toString(runner.getSpecialId()));
-      final String requester = runner.getRequester();
-      WaarpStringUtils.replaceAll(builder, REQUESTERHOST, requester);
-      final String requested = runner.getRequested();
-      WaarpStringUtils.replaceAll(builder, REQUESTEDHOST, requested);
-      WaarpStringUtils.replaceAll(builder, FULLTRANSFERID,
-                                  runner.getSpecialId() + "_" + requester +
-                                  '_' + requested);
-      WaarpStringUtils.replaceAll(builder, RANKTRANSFER,
-                                  Integer.toString(runner.getRank()));
-    }
+    substituteFile(builder);
+    final DbTaskRunner runner = substituteRunner(builder);
+    substituteDate(builder);
+    substituteHost(builder);
     WaarpStringUtils.replaceAll(builder, BLOCKSIZE,
                                 Integer.toString(session.getBlockSize()));
+    substitutePath(builder, runner);
+    WaarpStringUtils.replaceAll(builder, HOMEPATH,
+                                Configuration.configuration.getBaseDirectory());
+    substituteErrorCode(builder);
+    // finalname
+    if (argFormat != null && argFormat.length > 0) {
+      try {
+        return String.format(builder.toString(), argFormat);
+      } catch (final Exception e) {
+        // ignored error since bad argument in static rule info
+        logger.error("Bad format in Rule: {" + builder + "} " + e.getMessage());
+      }
+    }
+    return builder.toString();
+  }
+
+  private void substituteErrorCode(final StringBuilder builder) {
+    if (session.getLocalChannelReference() == null) {
+      WaarpStringUtils.replaceAll(builder, ERRORMSG, "NoError");
+      WaarpStringUtils.replaceAll(builder, ERRORCODE, "-");
+      WaarpStringUtils
+          .replaceAll(builder, ERRORSTRCODE, ErrorCode.Unknown.name());
+    } else {
+      try {
+        WaarpStringUtils.replaceAll(builder, ERRORMSG,
+                                    session.getLocalChannelReference()
+                                           .getErrorMessage());
+      } catch (final NullPointerException e) {
+        WaarpStringUtils.replaceAll(builder, ERRORMSG, "NoError");
+      }
+      try {
+        WaarpStringUtils.replaceAll(builder, ERRORCODE,
+                                    session.getLocalChannelReference()
+                                           .getCurrentCode().getCode());
+      } catch (final NullPointerException e) {
+        WaarpStringUtils.replaceAll(builder, ERRORCODE, "-");
+      }
+      try {
+        WaarpStringUtils.replaceAll(builder, ERRORSTRCODE,
+                                    session.getLocalChannelReference()
+                                           .getCurrentCode().name());
+      } catch (final NullPointerException e) {
+        WaarpStringUtils
+            .replaceAll(builder, ERRORSTRCODE, ErrorCode.Unknown.name());
+      }
+    }
+  }
+
+  private void substitutePath(final StringBuilder builder,
+                              final DbTaskRunner runner) {
     R66Dir dir = new R66Dir(session);
     if (runner != null) {
       if (runner.isRecvThrough() || runner.isSendThrough()) {
@@ -453,46 +443,80 @@ public abstract class AbstractTask implements Runnable {
         // nothing
       }
     }
-    WaarpStringUtils.replaceAll(builder, HOMEPATH,
-                                Configuration.configuration.getBaseDirectory());
-    if (session.getLocalChannelReference() == null) {
-      WaarpStringUtils.replaceAll(builder, ERRORMSG, "NoError");
-      WaarpStringUtils.replaceAll(builder, ERRORCODE, "-");
+  }
+
+  private void substituteHost(final StringBuilder builder) {
+    if (session.getAuth() != null) {
       WaarpStringUtils
-          .replaceAll(builder, ERRORSTRCODE, ErrorCode.Unknown.name());
+          .replaceAll(builder, REMOTEHOST, session.getAuth().getUser());
+      try {
+        WaarpStringUtils.replaceAll(builder, LOCALHOST,
+                                    Configuration.configuration
+                                        .getHostId(session.getAuth().isSsl()));
+      } catch (final OpenR66ProtocolNoSslException e) {
+        // replace by standard name
+        WaarpStringUtils.replaceAll(builder, LOCALHOST,
+                                    Configuration.configuration.getHostId());
+      }
+    }
+    if (session.getRemoteAddress() != null) {
+      WaarpStringUtils.replaceAll(builder, REMOTEHOSTADDR,
+                                  session.getRemoteAddress().toString());
+      WaarpStringUtils.replaceAll(builder, LOCALHOSTADDR,
+                                  session.getLocalAddress().toString());
     } else {
-      try {
-        WaarpStringUtils.replaceAll(builder, ERRORMSG,
-                                    session.getLocalChannelReference()
-                                           .getErrorMessage());
-      } catch (final NullPointerException e) {
-        WaarpStringUtils.replaceAll(builder, ERRORMSG, "NoError");
-      }
-      try {
-        WaarpStringUtils.replaceAll(builder, ERRORCODE,
-                                    session.getLocalChannelReference()
-                                           .getCurrentCode().getCode());
-      } catch (final NullPointerException e) {
-        WaarpStringUtils.replaceAll(builder, ERRORCODE, "-");
-      }
-      try {
-        WaarpStringUtils.replaceAll(builder, ERRORSTRCODE,
-                                    session.getLocalChannelReference()
-                                           .getCurrentCode().name());
-      } catch (final NullPointerException e) {
-        WaarpStringUtils
-            .replaceAll(builder, ERRORSTRCODE, ErrorCode.Unknown.name());
-      }
+      WaarpStringUtils.replaceAll(builder, REMOTEHOSTADDR, "unknown");
+      WaarpStringUtils.replaceAll(builder, LOCALHOSTADDR, "unknown");
     }
-    // finalname
-    if (argFormat != null && argFormat.length > 0) {
-      try {
-        return String.format(builder.toString(), argFormat);
-      } catch (final Exception e) {
-        // ignored error since bad argument in static rule info
-        logger.error("Bad format in Rule: {" + builder + "} " + e.getMessage());
-      }
+  }
+
+  private void substituteDate(final StringBuilder builder) {
+    DateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
+    final Date date = new Date();
+    WaarpStringUtils.replaceAll(builder, DATE, dateFormat.format(date));
+    dateFormat = new SimpleDateFormat("HHmmss");
+    WaarpStringUtils.replaceAll(builder, HOUR, dateFormat.format(date));
+  }
+
+  private DbTaskRunner substituteRunner(final StringBuilder builder) {
+    final DbTaskRunner runner = session.getRunner();
+    if (runner != null) {
+      WaarpStringUtils
+          .replaceAll(builder, ORIGINALFULLPATH, runner.getOriginalFilename());
+      WaarpStringUtils.replaceAll(builder, ORIGINALFILENAME, R66File
+          .getBasename(runner.getOriginalFilename()));
+      WaarpStringUtils.replaceAll(builder, RULE, runner.getRuleId());
+      WaarpStringUtils.replaceAll(builder, TRANSFERID,
+                                  Long.toString(runner.getSpecialId()));
+      final String requester = runner.getRequester();
+      WaarpStringUtils.replaceAll(builder, REQUESTERHOST, requester);
+      final String requested = runner.getRequested();
+      WaarpStringUtils.replaceAll(builder, REQUESTEDHOST, requested);
+      WaarpStringUtils.replaceAll(builder, FULLTRANSFERID,
+                                  runner.getSpecialId() + "_" + requester +
+                                  '_' + requested);
+      WaarpStringUtils.replaceAll(builder, RANKTRANSFER,
+                                  Integer.toString(runner.getRank()));
     }
-    return builder.toString();
+    return runner;
+  }
+
+  private void substituteFile(final StringBuilder builder) {
+    File trueFile = null;
+    if (session.getFile() != null) {
+      trueFile = session.getFile().getTrueFile();
+    }
+    if (trueFile != null) {
+      WaarpStringUtils
+          .replaceAll(builder, TRUEFULLPATH, trueFile.getAbsolutePath());
+      WaarpStringUtils.replaceAll(builder, TRUEFILENAME, R66Dir
+          .getFinalUniqueFilename(session.getFile()));
+      WaarpStringUtils
+          .replaceAll(builder, FILESIZE, Long.toString(trueFile.length()));
+    } else {
+      WaarpStringUtils.replaceAll(builder, TRUEFULLPATH, "nofile");
+      WaarpStringUtils.replaceAll(builder, TRUEFILENAME, "nofile");
+      WaarpStringUtils.replaceAll(builder, FILESIZE, "0");
+    }
   }
 }

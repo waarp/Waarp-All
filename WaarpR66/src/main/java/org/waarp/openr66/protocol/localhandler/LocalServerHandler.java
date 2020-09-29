@@ -385,40 +385,7 @@ public final class LocalServerHandler {
       serverHandler.getSession().newState(ERROR);
       boolean isAnswered = false;
       if (exception instanceof OpenR66ProtocolShutdownException) {
-        WaarpShutdownHook.shutdownWillStart();
-        logger.warn(Messages.getString("LocalServerHandler.0") +
-                    //$NON-NLS-1$
-                    serverHandler.getSession().getAuth().getUser());
-        if (serverHandler.getLocalChannelReference() != null) {
-          final R66Result finalValue =
-              new R66Result(exception, serverHandler.getSession(), true,
-                            ErrorCode.Shutdown,
-                            serverHandler.getSession().getRunner());
-          try {
-            serverHandler.tryFinalizeRequest(finalValue);
-          } catch (final OpenR66RunnerErrorException ignored) {
-            // ignore
-          } catch (final OpenR66ProtocolSystemException ignored) {
-            // ignore
-          }
-          if (!serverHandler.getLocalChannelReference().getFutureRequest()
-                            .isDone()) {
-            try {
-              serverHandler.getSession().setFinalizeTransfer(false, finalValue);
-            } catch (final OpenR66RunnerErrorException e1) {
-              serverHandler.getLocalChannelReference()
-                           .invalidateRequest(finalValue);
-            } catch (final OpenR66ProtocolSystemException e1) {
-              serverHandler.getLocalChannelReference()
-                           .invalidateRequest(finalValue);
-            }
-          }
-        }
-        // dont'close, thread will do
-        ChannelUtils.startShutdown();
-        // set global shutdown info and before close, send a valid
-        // shutdown to all
-        serverHandler.getSession().setStatus(54);
+        shutdownFromException(serverHandler, exception);
         return;
       } else {
         if (serverHandler.getLocalChannelReference() != null &&
@@ -434,21 +401,19 @@ public final class LocalServerHandler {
             }
           }
         }
+        final DbTaskRunner runner = serverHandler.getSession().getRunner();
         if (exception instanceof OpenR66ProtocolNoConnectionException) {
           code = ErrorCode.ConnectionImpossible;
-          final DbTaskRunner runner = serverHandler.getSession().getRunner();
           if (runner != null) {
             runner.stopOrCancelRunner(code);
           }
         } else if (exception instanceof OpenR66ProtocolBusinessCancelException) {
           code = ErrorCode.CanceledTransfer;
-          final DbTaskRunner runner = serverHandler.getSession().getRunner();
           if (runner != null) {
             runner.stopOrCancelRunner(code);
           }
         } else if (exception instanceof OpenR66ProtocolBusinessStopException) {
           code = ErrorCode.StoppedTransfer;
-          final DbTaskRunner runner = serverHandler.getSession().getRunner();
           if (runner != null) {
             runner.stopOrCancelRunner(code);
           }
@@ -456,8 +421,7 @@ public final class LocalServerHandler {
           code = ErrorCode.QueryAlreadyFinished;
           try {
             serverHandler.tryFinalizeRequest(
-                new R66Result(serverHandler.getSession(), true, code,
-                              serverHandler.getSession().getRunner()));
+                new R66Result(serverHandler.getSession(), true, code, runner));
             ChannelCloseTimer.closeFutureTransaction(serverHandler);
             return;
           } catch (final OpenR66RunnerErrorException ignored) {
@@ -483,14 +447,12 @@ public final class LocalServerHandler {
           isAnswered = true;
         } else if (exception instanceof OpenR66ProtocolNetworkException) {
           code = ErrorCode.Disconnection;
-          final DbTaskRunner runner = serverHandler.getSession().getRunner();
           if (runner != null) {
             final R66Result finalValue = new R66Result(
                 new OpenR66ProtocolSystemException(
                     Messages.getString("LocalServerHandler.2")),
                 //$NON-NLS-1$
-                serverHandler.getSession(), true, code,
-                serverHandler.getSession().getRunner());
+                serverHandler.getSession(), true, code, runner);
             try {
               serverHandler.tryFinalizeRequest(finalValue);
             } catch (final OpenR66Exception ignored) {
@@ -499,14 +461,12 @@ public final class LocalServerHandler {
           }
         } else if (exception instanceof OpenR66ProtocolRemoteShutdownException) {
           code = ErrorCode.RemoteShutdown;
-          final DbTaskRunner runner = serverHandler.getSession().getRunner();
           if (runner != null) {
             runner.stopOrCancelRunner(code);
           }
         } else if (exception instanceof OpenR66ProtocolNoDataException) {
           code = ErrorCode.FileNotFound;
         } else {
-          final DbTaskRunner runner = serverHandler.getSession().getRunner();
           if (runner != null) {
             switch (runner.getErrorInfo()) {
               case InitOk:
@@ -543,7 +503,7 @@ public final class LocalServerHandler {
         }
         final R66Result finalValue =
             new R66Result(exception, serverHandler.getSession(), true, code,
-                          serverHandler.getSession().getRunner());
+                          runner);
         try {
           serverHandler.getSession().setFinalizeTransfer(false, finalValue);
           if (serverHandler.getLocalChannelReference() != null) {
@@ -579,5 +539,43 @@ public final class LocalServerHandler {
       // Nothing to do
       serverHandler.getSession().setStatus(59);
     }
+  }
+
+  private static void shutdownFromException(final TransferActions serverHandler,
+                                            final OpenR66Exception exception) {
+    WaarpShutdownHook.shutdownWillStart();
+    logger.warn(Messages.getString("LocalServerHandler.0") +
+                //$NON-NLS-1$
+                serverHandler.getSession().getAuth().getUser());
+    if (serverHandler.getLocalChannelReference() != null) {
+      final R66Result finalValue =
+          new R66Result(exception, serverHandler.getSession(), true,
+                        ErrorCode.Shutdown,
+                        serverHandler.getSession().getRunner());
+      try {
+        serverHandler.tryFinalizeRequest(finalValue);
+      } catch (final OpenR66RunnerErrorException ignored) {
+        // ignore
+      } catch (final OpenR66ProtocolSystemException ignored) {
+        // ignore
+      }
+      if (!serverHandler.getLocalChannelReference().getFutureRequest()
+                        .isDone()) {
+        try {
+          serverHandler.getSession().setFinalizeTransfer(false, finalValue);
+        } catch (final OpenR66RunnerErrorException e1) {
+          serverHandler.getLocalChannelReference()
+                       .invalidateRequest(finalValue);
+        } catch (final OpenR66ProtocolSystemException e1) {
+          serverHandler.getLocalChannelReference()
+                       .invalidateRequest(finalValue);
+        }
+      }
+    }
+    // dont'close, thread will do
+    ChannelUtils.startShutdown();
+    // set global shutdown info and before close, send a valid
+    // shutdown to all
+    serverHandler.getSession().setStatus(54);
   }
 }

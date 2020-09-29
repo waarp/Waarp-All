@@ -147,101 +147,67 @@ public abstract class AbstractExecTask extends AbstractTask {
     rv.put(COMPILE_HASH.matcher(LOCALEXEC)
                        .replaceAll(Matcher.quoteReplacement("")), "");
 
-    File trueFile = null;
-    if (session.getFile() != null) {
-      trueFile = session.getFile().getTrueFile();
-    }
-    if (trueFile != null) {
-      rv.put(COMPILE_HASH.matcher(TRUEFULLPATH)
-                         .replaceAll(Matcher.quoteReplacement("")),
-             trueFile.getAbsolutePath());
-      rv.put(COMPILE_HASH.matcher(TRUEFILENAME)
-                         .replaceAll(Matcher.quoteReplacement("")),
-             R66Dir.getFinalUniqueFilename(session.getFile()));
-      rv.put(COMPILE_HASH.matcher(FILESIZE)
-                         .replaceAll(Matcher.quoteReplacement("")),
-             Long.toString(trueFile.length()));
-    } else {
-      rv.put(COMPILE_HASH.matcher(TRUEFULLPATH)
-                         .replaceAll(Matcher.quoteReplacement("")), "nofile");
-      rv.put(COMPILE_HASH.matcher(TRUEFILENAME)
-                         .replaceAll(Matcher.quoteReplacement("")), "nofile");
-      rv.put(COMPILE_HASH.matcher(FILESIZE)
-                         .replaceAll(Matcher.quoteReplacement("")), "0");
-    }
+    substituteFile(rv);
 
-    final DbTaskRunner runner = session.getRunner();
-    if (runner != null) {
-      rv.put(COMPILE_HASH.matcher(ORIGINALFULLPATH)
-                         .replaceAll(Matcher.quoteReplacement("")),
-             runner.getOriginalFilename());
-      rv.put(COMPILE_HASH.matcher(ORIGINALFILENAME)
-                         .replaceAll(Matcher.quoteReplacement("")),
-             R66File.getBasename(runner.getOriginalFilename()));
-      rv.put(
-          COMPILE_HASH.matcher(RULE).replaceAll(Matcher.quoteReplacement("")),
-          runner.getRuleId());
-    }
+    final DbTaskRunner runner = substituteRunner(rv);
 
-    DateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
-    final Date date = new Date();
-    rv.put(COMPILE_HASH.matcher(DATE).replaceAll(Matcher.quoteReplacement("")),
-           dateFormat.format(date));
-    dateFormat = new SimpleDateFormat("HHmmss");
-    rv.put(COMPILE_HASH.matcher(HOUR).replaceAll(Matcher.quoteReplacement("")),
-           dateFormat.format(date));
+    substituteDate(rv);
 
-    if (session.getAuth() != null) {
-      rv.put(COMPILE_HASH.matcher(REMOTEHOST)
-                         .replaceAll(Matcher.quoteReplacement("")),
-             session.getAuth().getUser());
-      String localhost;
-      try {
-        localhost =
-            Configuration.configuration.getHostId(session.getAuth().isSsl());
-      } catch (final OpenR66ProtocolNoSslException e) {
-        // replace by standard name
-        localhost = Configuration.configuration.getHostId();
-      }
-      rv.put(COMPILE_HASH.matcher(LOCALHOST)
-                         .replaceAll(Matcher.quoteReplacement("")), localhost);
-    }
-    if (session.getRemoteAddress() != null) {
-      rv.put(COMPILE_HASH.matcher(REMOTEHOSTADDR)
-                         .replaceAll(Matcher.quoteReplacement("")),
-             session.getRemoteAddress().toString());
-      rv.put(COMPILE_HASH.matcher(LOCALHOSTADDR)
-                         .replaceAll(Matcher.quoteReplacement("")),
-             session.getLocalAddress().toString());
-    } else {
-      rv.put(COMPILE_HASH.matcher(REMOTEHOSTADDR)
-                         .replaceAll(Matcher.quoteReplacement("")), "unknown");
-      rv.put(COMPILE_HASH.matcher(LOCALHOSTADDR)
-                         .replaceAll(Matcher.quoteReplacement("")), "unknown");
-    }
-    if (runner != null) {
-      rv.put(COMPILE_HASH.matcher(TRANSFERID)
-                         .replaceAll(Matcher.quoteReplacement("")),
-             runner.getSpecialId());
-      rv.put(COMPILE_HASH.matcher(REQUESTERHOST)
-                         .replaceAll(Matcher.quoteReplacement("")),
-             runner.getRequester());
-      rv.put(COMPILE_HASH.matcher(REQUESTEDHOST)
-                         .replaceAll(Matcher.quoteReplacement("")),
-             runner.getRequested());
-      rv.put(COMPILE_HASH.matcher(FULLTRANSFERID)
-                         .replaceAll(Matcher.quoteReplacement("")),
-             runner.getSpecialId() + "_" + runner.getRequester() + '_' +
-             runner.getRequested());
-      rv.put(COMPILE_HASH.matcher(RANKTRANSFER)
-                         .replaceAll(Matcher.quoteReplacement("")),
-             Integer.toString(runner.getRank()));
-    }
+    substituteHost(rv);
     rv.put(COMPILE_HASH.matcher(BLOCKSIZE)
                        .replaceAll(Matcher.quoteReplacement("")),
            session.getBlockSize());
 
-    R66Dir dir = new R66Dir(session);
+    final R66Dir dir = new R66Dir(session);
+    substitutePath(rv, runner, dir);
+    rv.put(
+        COMPILE_HASH.matcher(HOMEPATH).replaceAll(Matcher.quoteReplacement("")),
+        Configuration.configuration.getBaseDirectory());
+    substituteErrorCode(rv);
+    return rv;
+  }
+
+  private void substituteErrorCode(final Map<String, Object> rv) {
+    if (session.getLocalChannelReference() == null) {
+      rv.put(COMPILE_HASH.matcher(ERRORMSG)
+                         .replaceAll(Matcher.quoteReplacement("")), "NoError");
+      rv.put(COMPILE_HASH.matcher(ERRORCODE)
+                         .replaceAll(Matcher.quoteReplacement("")), "-");
+      rv.put(COMPILE_HASH.matcher(ERRORSTRCODE)
+                         .replaceAll(Matcher.quoteReplacement("")),
+             ErrorCode.Unknown.name());
+    } else {
+      try {
+        rv.put(COMPILE_HASH.matcher(ERRORMSG)
+                           .replaceAll(Matcher.quoteReplacement("")),
+               session.getLocalChannelReference().getErrorMessage());
+      } catch (final NullPointerException e) {
+        rv.put(COMPILE_HASH.matcher(ERRORMSG)
+                           .replaceAll(Matcher.quoteReplacement("")),
+               "NoError");
+      }
+      try {
+        rv.put(COMPILE_HASH.matcher(ERRORCODE)
+                           .replaceAll(Matcher.quoteReplacement("")),
+               session.getLocalChannelReference().getCurrentCode().getCode());
+      } catch (final NullPointerException e) {
+        rv.put(COMPILE_HASH.matcher(ERRORCODE)
+                           .replaceAll(Matcher.quoteReplacement("")), "-");
+      }
+      try {
+        rv.put(COMPILE_HASH.matcher(ERRORSTRCODE)
+                           .replaceAll(Matcher.quoteReplacement("")),
+               session.getLocalChannelReference().getCurrentCode().name());
+      } catch (final NullPointerException e) {
+        rv.put(COMPILE_HASH.matcher(ERRORSTRCODE)
+                           .replaceAll(Matcher.quoteReplacement("")),
+               ErrorCode.Unknown.name());
+      }
+    }
+  }
+
+  private void substitutePath(final Map<String, Object> rv,
+                              final DbTaskRunner runner, R66Dir dir) {
     if (runner != null) {
       if (runner.isRecvThrough() || runner.isSendThrough()) {
         try {
@@ -353,46 +319,106 @@ public abstract class AbstractExecTask extends AbstractTask {
         // nothing
       }
     }
-    rv.put(
-        COMPILE_HASH.matcher(HOMEPATH).replaceAll(Matcher.quoteReplacement("")),
-        Configuration.configuration.getBaseDirectory());
-    if (session.getLocalChannelReference() == null) {
-      rv.put(COMPILE_HASH.matcher(ERRORMSG)
-                         .replaceAll(Matcher.quoteReplacement("")), "NoError");
-      rv.put(COMPILE_HASH.matcher(ERRORCODE)
-                         .replaceAll(Matcher.quoteReplacement("")), "-");
-      rv.put(COMPILE_HASH.matcher(ERRORSTRCODE)
+  }
+
+  private void substituteHost(final Map<String, Object> rv) {
+    if (session.getAuth() != null) {
+      rv.put(COMPILE_HASH.matcher(REMOTEHOST)
                          .replaceAll(Matcher.quoteReplacement("")),
-             ErrorCode.Unknown.name());
-    } else {
+             session.getAuth().getUser());
+      String localhost;
       try {
-        rv.put(COMPILE_HASH.matcher(ERRORMSG)
-                           .replaceAll(Matcher.quoteReplacement("")),
-               session.getLocalChannelReference().getErrorMessage());
-      } catch (final NullPointerException e) {
-        rv.put(COMPILE_HASH.matcher(ERRORMSG)
-                           .replaceAll(Matcher.quoteReplacement("")),
-               "NoError");
+        localhost =
+            Configuration.configuration.getHostId(session.getAuth().isSsl());
+      } catch (final OpenR66ProtocolNoSslException e) {
+        // replace by standard name
+        localhost = Configuration.configuration.getHostId();
       }
-      try {
-        rv.put(COMPILE_HASH.matcher(ERRORCODE)
-                           .replaceAll(Matcher.quoteReplacement("")),
-               session.getLocalChannelReference().getCurrentCode().getCode());
-      } catch (final NullPointerException e) {
-        rv.put(COMPILE_HASH.matcher(ERRORCODE)
-                           .replaceAll(Matcher.quoteReplacement("")), "-");
-      }
-      try {
-        rv.put(COMPILE_HASH.matcher(ERRORSTRCODE)
-                           .replaceAll(Matcher.quoteReplacement("")),
-               session.getLocalChannelReference().getCurrentCode().name());
-      } catch (final NullPointerException e) {
-        rv.put(COMPILE_HASH.matcher(ERRORSTRCODE)
-                           .replaceAll(Matcher.quoteReplacement("")),
-               ErrorCode.Unknown.name());
-      }
+      rv.put(COMPILE_HASH.matcher(LOCALHOST)
+                         .replaceAll(Matcher.quoteReplacement("")), localhost);
     }
-    return rv;
+    if (session.getRemoteAddress() != null) {
+      rv.put(COMPILE_HASH.matcher(REMOTEHOSTADDR)
+                         .replaceAll(Matcher.quoteReplacement("")),
+             session.getRemoteAddress().toString());
+      rv.put(COMPILE_HASH.matcher(LOCALHOSTADDR)
+                         .replaceAll(Matcher.quoteReplacement("")),
+             session.getLocalAddress().toString());
+    } else {
+      rv.put(COMPILE_HASH.matcher(REMOTEHOSTADDR)
+                         .replaceAll(Matcher.quoteReplacement("")), "unknown");
+      rv.put(COMPILE_HASH.matcher(LOCALHOSTADDR)
+                         .replaceAll(Matcher.quoteReplacement("")), "unknown");
+    }
+  }
+
+  private void substituteDate(final Map<String, Object> rv) {
+    DateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
+    final Date date = new Date();
+    rv.put(COMPILE_HASH.matcher(DATE).replaceAll(Matcher.quoteReplacement("")),
+           dateFormat.format(date));
+    dateFormat = new SimpleDateFormat("HHmmss");
+    rv.put(COMPILE_HASH.matcher(HOUR).replaceAll(Matcher.quoteReplacement("")),
+           dateFormat.format(date));
+  }
+
+  private DbTaskRunner substituteRunner(final Map<String, Object> rv) {
+    final DbTaskRunner runner = session.getRunner();
+    if (runner != null) {
+      rv.put(COMPILE_HASH.matcher(ORIGINALFULLPATH)
+                         .replaceAll(Matcher.quoteReplacement("")),
+             runner.getOriginalFilename());
+      rv.put(COMPILE_HASH.matcher(ORIGINALFILENAME)
+                         .replaceAll(Matcher.quoteReplacement("")),
+             R66File.getBasename(runner.getOriginalFilename()));
+      rv.put(
+          COMPILE_HASH.matcher(RULE).replaceAll(Matcher.quoteReplacement("")),
+          runner.getRuleId());
+    }
+    if (runner != null) {
+      rv.put(COMPILE_HASH.matcher(TRANSFERID)
+                         .replaceAll(Matcher.quoteReplacement("")),
+             runner.getSpecialId());
+      rv.put(COMPILE_HASH.matcher(REQUESTERHOST)
+                         .replaceAll(Matcher.quoteReplacement("")),
+             runner.getRequester());
+      rv.put(COMPILE_HASH.matcher(REQUESTEDHOST)
+                         .replaceAll(Matcher.quoteReplacement("")),
+             runner.getRequested());
+      rv.put(COMPILE_HASH.matcher(FULLTRANSFERID)
+                         .replaceAll(Matcher.quoteReplacement("")),
+             runner.getSpecialId() + "_" + runner.getRequester() + '_' +
+             runner.getRequested());
+      rv.put(COMPILE_HASH.matcher(RANKTRANSFER)
+                         .replaceAll(Matcher.quoteReplacement("")),
+             Integer.toString(runner.getRank()));
+    }
+    return runner;
+  }
+
+  private void substituteFile(final Map<String, Object> rv) {
+    File trueFile = null;
+    if (session.getFile() != null) {
+      trueFile = session.getFile().getTrueFile();
+    }
+    if (trueFile != null) {
+      rv.put(COMPILE_HASH.matcher(TRUEFULLPATH)
+                         .replaceAll(Matcher.quoteReplacement("")),
+             trueFile.getAbsolutePath());
+      rv.put(COMPILE_HASH.matcher(TRUEFILENAME)
+                         .replaceAll(Matcher.quoteReplacement("")),
+             R66Dir.getFinalUniqueFilename(session.getFile()));
+      rv.put(COMPILE_HASH.matcher(FILESIZE)
+                         .replaceAll(Matcher.quoteReplacement("")),
+             Long.toString(trueFile.length()));
+    } else {
+      rv.put(COMPILE_HASH.matcher(TRUEFULLPATH)
+                         .replaceAll(Matcher.quoteReplacement("")), "nofile");
+      rv.put(COMPILE_HASH.matcher(TRUEFILENAME)
+                         .replaceAll(Matcher.quoteReplacement("")), "nofile");
+      rv.put(COMPILE_HASH.matcher(FILESIZE)
+                         .replaceAll(Matcher.quoteReplacement("")), "0");
+    }
   }
 
   /**

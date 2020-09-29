@@ -117,27 +117,23 @@ public class DataPacket extends AbstractLocalPacket {
 
   @Override
   public void createAllBuffers(final LocalChannelReference lcr,
-                               final int networkHeader)
-      throws OpenR66ProtocolPacketException {
+                               final int networkHeader) {
     throw new IllegalStateException("Should not be called");
   }
 
   @Override
-  public void createEnd(final LocalChannelReference lcr)
-      throws OpenR66ProtocolPacketException {
+  public void createEnd(final LocalChannelReference lcr) {
     end = Unpooled.wrappedBuffer(key);
   }
 
   @Override
-  public void createHeader(final LocalChannelReference lcr)
-      throws OpenR66ProtocolPacketException {
+  public void createHeader(final LocalChannelReference lcr) {
     header = ByteBufAllocator.DEFAULT.buffer(4, 4);
     header.writeInt(packetRank);
   }
 
   @Override
-  public void createMiddle(final LocalChannelReference lcr)
-      throws OpenR66ProtocolPacketException {
+  public void createMiddle(final LocalChannelReference lcr) {
     if (dataRecv != null) {
       middle = dataRecv;
     } else {
@@ -187,7 +183,8 @@ public class DataPacket extends AbstractLocalPacket {
    * @return the data
    */
   public byte[] getData() {
-    ParametersChecker.checkParameter("Data is not setup correctly", data);
+    ParametersChecker
+        .checkParameter("Data is not setup correctly", data, logger);
     return data;
   }
 
@@ -204,7 +201,8 @@ public class DataPacket extends AbstractLocalPacket {
   public boolean isKeyValid(final FilesystemBasedDigest digestBlock,
                             final FilesystemBasedDigest digestGlobal,
                             final FilesystemBasedDigest digestLocal) {
-    ParametersChecker.checkParameter("Data is not setup correctly", data);
+    ParametersChecker
+        .checkParameter("Data is not setup correctly", data, logger);
     if (key == null || key.length == 0) {
       if (digestGlobal != null || digestLocal != null) {
         FileUtils.computeGlobalHash(digestGlobal, digestLocal, data);

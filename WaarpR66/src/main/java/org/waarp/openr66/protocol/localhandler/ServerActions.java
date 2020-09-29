@@ -30,7 +30,6 @@ import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
 import org.waarp.common.database.exception.WaarpDatabaseNoDataException;
 import org.waarp.common.database.exception.WaarpDatabaseSqlException;
 import org.waarp.common.exception.FileTransferException;
-import org.waarp.common.exception.InvalidArgumentException;
 import org.waarp.common.file.DirInterface;
 import org.waarp.common.file.FileUtils;
 import org.waarp.common.json.JsonHandler;
@@ -256,371 +255,33 @@ public class ServerActions extends ConnectionActions {
     }
     switch (packet.getTypeValid()) {
       case LocalPacketFactory.SHUTDOWNPACKET: {
-        int rank = -1;
-        if (session.getRunner() != null && session.getRunner().isInTransfer()) {
-          final String srank = packet.getSmiddle();
-          if (srank != null && !srank.isEmpty()) {
-            // Save last rank from remote point of view
-            try {
-              rank = Integer.parseInt(srank);
-            } catch (final NumberFormatException e) {
-              // ignore
-            }
-          }
-        }
-        final R66Result result =
-            new R66Result(new OpenR66ProtocolShutdownException(), session, true,
-                          ErrorCode.Shutdown, session.getRunner());
-        result.setOther(packet);
-        rank = shutdownRequest(result, rank);
-        if (rank >= 0) {
-          packet.setSmiddle(Integer.toString(rank));
-          try {
-            ChannelUtils
-                .writeAbstractLocalPacket(localChannelReference, packet, true);
-          } catch (final OpenR66ProtocolPacketException ignored) {
-            // ignore
-          }
-        }
-        shutdownLocalChannel();
+        shutdownPacket(packet);
         break;
       }
       case LocalPacketFactory.STOPPACKET:
       case LocalPacketFactory.CANCELPACKET: {
-        final String[] keys = packet.getSmiddle().split(" ");
-        final long id = Long.parseLong(keys[2]);
-        session.newState(VALIDOTHER);
-        final R66Result resulttest =
-            stopOrCancel(packet.getTypeValid(), keys[0], keys[1], id);
-        // inform back the requester
-        final ValidPacket valid =
-            new ValidPacket(packet.getSmiddle(), resulttest.getCode().getCode(),
-                            LocalPacketFactory.REQUESTUSERPACKET);
-        resulttest.setOther(packet);
-        localChannelReference.validateRequest(resulttest);
-        try {
-          ChannelUtils
-              .writeAbstractLocalPacket(localChannelReference, valid, true);
-        } catch (final OpenR66ProtocolPacketException ignored) {
-          // ignore
-        }
-        session.setStatus(27);
-        localChannelReference.close();
+        stopOrCancelPacket(packet);
         break;
       }
       case LocalPacketFactory.VALIDPACKET: {
-        // header = ?; middle = requested+blank+requester+blank+specialId
-        // note: might contains one more argument = time to reschedule in yyyyMMddHHmmss format
-        final String[] keys = packet.getSmiddle().split(" ");
-        final ValidPacket valid;
-        if (keys.length < 3) {
-          // not enough args
-          valid = new ValidPacket(packet.getSmiddle(),
-                                  ErrorCode.IncorrectCommand.getCode(),
-                                  LocalPacketFactory.REQUESTUSERPACKET);
-          final R66Result resulttest = new R66Result(
-              new OpenR66ProtocolBusinessRemoteFileNotFoundException(
-                  "Not enough arguments"), session, true,
-              ErrorCode.IncorrectCommand, null);
-          resulttest.setOther(packet);
-          localChannelReference.invalidateRequest(resulttest);
-        } else {
-          final long id = Long.parseLong(keys[2]);
-          Date date = null;
-          if (keys.length > 3) {
-            // time to reschedule in yyyyMMddHHmmss format
-            logger.debug("Debug: restart with {}", keys[3]);
-            final SimpleDateFormat dateFormat =
-                new SimpleDateFormat(AbstractTransfer.TIMESTAMP_FORMAT);
-            try {
-              date = dateFormat.parse(keys[3]);
-            } catch (final ParseException ignored) {
-              // ignore
-            }
-          }
-          session.newState(VALIDOTHER);
-          final R66Result result = requestRestart(keys[0], keys[1], id, date);
-          valid =
-              new ValidPacket(packet.getSmiddle(), result.getCode().getCode(),
-                              LocalPacketFactory.REQUESTUSERPACKET);
-          result.setOther(packet);
-          if (isCodeValid(result.getCode())) {
-            localChannelReference.validateRequest(result);
-          } else {
-            localChannelReference.invalidateRequest(result);
-          }
-        }
-        // inform back the requester
-        try {
-          ChannelUtils
-              .writeAbstractLocalPacket(localChannelReference, valid, true);
-        } catch (final OpenR66ProtocolPacketException ignored) {
-          // ignore
-        }
-        localChannelReference.close();
+        validPacket(packet);
         break;
       }
       case LocalPacketFactory.REQUESTUSERPACKET: {
-        session.newState(VALIDOTHER);
-        // Validate user request
-        final R66Result resulttest = new R66Result(session, true, ErrorCode
-            .getFromCode(packet.getSmiddle()), null);
-        resulttest.setOther(packet);
-        switch (resulttest.getCode()) {
-          case CompleteOk:
-          case InitOk:
-          case PostProcessingOk:
-          case PreProcessingOk:
-          case QueryAlreadyFinished:
-          case QueryStillRunning:
-          case Running:
-          case TransferOk:
-            break;
-          default:
-            localChannelReference.invalidateRequest(resulttest);
-            session.setStatus(102);
-            localChannelReference.close();
-            return;
-        }
-        localChannelReference.validateRequest(resulttest);
-        session.setStatus(28);
-        localChannelReference.close();
+        requestUserPacket(packet);
         break;
       }
       case LocalPacketFactory.LOGPACKET:
       case LocalPacketFactory.LOGPURGEPACKET: {
-        session.newState(VALIDOTHER);
-        // should be from the local server or from an authorized hosts: LOGCONTROL
-        try {
-          if (!session.getAuth().getUser().equals(Configuration.configuration
-                                                      .getHostId(
-                                                          session.getAuth()
-                                                                 .isSsl())) &&
-              !session.getAuth().isValidRole(ROLE.LOGCONTROL)) {
-            throw new OpenR66ProtocolNotAuthenticatedException(
-                NOT_CORRECTLY_AUTHENTICATED);
-          }
-        } catch (final OpenR66ProtocolNoSslException e1) {
-          throw new OpenR66ProtocolNotAuthenticatedException(
-              NOT_CORRECTLY_AUTHENTICATED_SINCE_SSL_IS_NOT_SUPPORTED, e1);
-        }
-        final String sstart = packet.getSheader();
-        final String sstop = packet.getSmiddle();
-        final boolean isPurge =
-            packet.getTypeValid() == LocalPacketFactory.LOGPURGEPACKET;
-        final Timestamp start = sstart == null || sstart.isEmpty()? null :
-            Timestamp.valueOf(sstart);
-        final Timestamp stop =
-            sstop == null || sstop.isEmpty()? null : Timestamp.valueOf(sstop);
-        packet.clear();
-        // create export of log and optionally purge them from database
-        final String filename = Configuration.configuration.getBaseDirectory() +
-                                Configuration.configuration.getArchivePath() +
-                                DirInterface.SEPARATOR +
-                                Configuration.configuration.getHostId() + '_' +
-                                System.currentTimeMillis() + "_runners.xml";
-        DbPreparedStatement statement = null;
-        try {
-          statement = DbTaskRunner
-              .getLogPrepareStatement(localChannelReference.getDbSession(),
-                                      start, stop);
-          DbTaskRunner.writeXMLWriter(statement, filename);
-        } catch (final WaarpDatabaseNoConnectionException e) {
-          throw new OpenR66ProtocolBusinessException(e);
-        } catch (final WaarpDatabaseSqlException e) {
-          throw new OpenR66ProtocolBusinessException(e);
-        } finally {
-          if (statement != null) {
-            statement.realClose();
-          }
-        }
-        // in case of purge
-        int nb = 0;
-        if (isPurge) {
-          // purge in same interval all runners with globallaststep
-          // as ALLDONETASK or ERRORTASK
-          if (Configuration.configuration.getR66Mib() != null) {
-            Configuration.configuration.getR66Mib().notifyWarning(
-                "Purge Log Order received", session.getAuth().getUser());
-          }
-          try {
-            nb = DbTaskRunner
-                .purgeLogPrepareStatement(localChannelReference.getDbSession(),
-                                          start, stop);
-          } catch (final WaarpDatabaseNoConnectionException e) {
-            throw new OpenR66ProtocolBusinessException(e);
-          } catch (final WaarpDatabaseSqlException e) {
-            throw new OpenR66ProtocolBusinessException(e);
-          }
-        }
-        final R66Result result =
-            new R66Result(session, true, ErrorCode.CompleteOk, null);
-        // Now answer
-        final ValidPacket valid =
-            new ValidPacket(filename + ' ' + nb, result.getCode().getCode(),
-                            LocalPacketFactory.REQUESTUSERPACKET);
-        localChannelReference.validateRequest(result);
-        try {
-          ChannelUtils
-              .writeAbstractLocalPacket(localChannelReference, valid, true);
-        } catch (final OpenR66ProtocolPacketException ignored) {
-          // ignore
-        }
-        localChannelReference.close();
+        logPacket(packet);
         break;
       }
       case LocalPacketFactory.CONFEXPORTPACKET: {
-        final String shost = packet.getSheader();
-        final String srule = packet.getSmiddle();
-        final boolean bhost = Boolean.parseBoolean(shost);
-        final boolean brule = Boolean.parseBoolean(srule);
-        packet.clear();
-        session.newState(VALIDOTHER);
-        final String[] sresult =
-            configExport(bhost, brule, false, false, false);
-        final R66Result result;
-        if (sresult[0] != null || sresult[1] != null) {
-          result = new R66Result(session, true, ErrorCode.CompleteOk, null);
-        } else {
-          result = new R66Result(session, true, ErrorCode.TransferError, null);
-        }
-        // Now answer
-        final ValidPacket valid =
-            new ValidPacket(shost + ' ' + srule, result.getCode().getCode(),
-                            LocalPacketFactory.REQUESTUSERPACKET);
-        localChannelReference.validateRequest(result);
-        try {
-          ChannelUtils
-              .writeAbstractLocalPacket(localChannelReference, valid, true);
-        } catch (final OpenR66ProtocolPacketException ignored) {
-          // ignore
-        }
-        localChannelReference.close();
+        configExportPacket(packet);
         break;
       }
       case LocalPacketFactory.CONFIMPORTPACKET: {
-        session.newState(VALIDOTHER);
-        // Authentication must be the local server or CONFIGADMIN authorization
-        try {
-          if (!session.getAuth().getUser().equals(Configuration.configuration
-                                                      .getHostId(
-                                                          session.getAuth()
-                                                                 .isSsl())) &&
-              !session.getAuth().isValidRole(ROLE.CONFIGADMIN)) {
-            throw new OpenR66ProtocolNotAuthenticatedException(
-                NOT_CORRECTLY_AUTHENTICATED);
-          }
-        } catch (final OpenR66ProtocolNoSslException e1) {
-          throw new OpenR66ProtocolNotAuthenticatedException(
-              NOT_CORRECTLY_AUTHENTICATED_SINCE_SSL_IS_NOT_SUPPORTED, e1);
-        }
-        if (Configuration.configuration.getR66Mib() != null) {
-          Configuration.configuration.getR66Mib().notifyWarning(
-              "Import Configuration Order received",
-              session.getAuth().getUser());
-        }
-        String shost = packet.getSheader();
-        String srule = packet.getSmiddle();
-        final boolean bhostPurge = shost.startsWith("1 ");
-        shost = shost.substring(2);
-        final boolean brulePurge = srule.startsWith("1 ");
-        srule = srule.substring(2);
-        boolean bhost = !shost.isEmpty();
-        boolean brule = !srule.isEmpty();
-        packet.clear();
-        if (bhost) {
-          DbHostAuth[] oldHosts = null;
-          if (bhostPurge) {
-            // Need to first delete all entries
-            try {
-              oldHosts = DbHostAuth.deleteAll();
-            } catch (final WaarpDatabaseException e) {
-              // ignore
-            }
-          }
-          final String filename = shost;
-          if (AuthenticationFileBasedConfiguration
-              .loadAuthentication(Configuration.configuration, filename)) {
-            shost = "Host:OK";
-          } else {
-            logger.error("Error in Load Hosts");
-            shost = "Host:KO";
-            bhost = false;
-          }
-          if (!bhost && oldHosts != null) {
-            for (final DbHostAuth dbHost : oldHosts) {
-              try {
-                if (!dbHost.exist()) {
-                  dbHost.insert();
-                }
-              } catch (final WaarpDatabaseException e1) {
-                // ignore
-              }
-            }
-          }
-        }
-        if (brule) {
-          DbRule[] oldRules = null;
-          if (brulePurge) {
-            // Need to first delete all entries
-            try {
-              oldRules = DbRule.deleteAll();
-            } catch (final WaarpDatabaseException e) {
-              // ignore
-            }
-          }
-          final File file = new File(srule);
-          try {
-            RuleFileBasedConfiguration.getMultipleFromFile(file);
-            srule = "Rule:OK";
-            brule = true;
-          } catch (final WaarpDatabaseNoConnectionException e) {
-            logger.error("Error", e);
-            srule = "Rule:KO";
-            brule = false;
-          } catch (final WaarpDatabaseSqlException e) {
-            logger.error("Error", e);
-            srule = "Rule:KO";
-            brule = false;
-          } catch (final WaarpDatabaseNoDataException e) {
-            logger.error("Error", e);
-            srule = "Rule:KO";
-            brule = false;
-          } catch (final WaarpDatabaseException e) {
-            logger.error("Error", e);
-            srule = "Rule:KO";
-            brule = false;
-          }
-          if (!brule && oldRules != null) {
-            for (final DbRule dbRule : oldRules) {
-              try {
-                if (!dbRule.exist()) {
-                  dbRule.insert();
-                }
-              } catch (final WaarpDatabaseException e1) {
-                // ignore
-              }
-            }
-          }
-        }
-        final R66Result result;
-        if (brule || bhost) {
-          result = new R66Result(session, true, ErrorCode.CompleteOk, null);
-        } else {
-          result = new R66Result(session, true, ErrorCode.TransferError, null);
-        }
-        // Now answer
-        final ValidPacket valid =
-            new ValidPacket(shost + ' ' + srule, result.getCode().getCode(),
-                            LocalPacketFactory.REQUESTUSERPACKET);
-        localChannelReference.validateRequest(result);
-        try {
-          ChannelUtils
-              .writeAbstractLocalPacket(localChannelReference, valid, true);
-        } catch (final OpenR66ProtocolPacketException ignored) {
-          // nothing
-        }
-        localChannelReference.close();
+        configImportPacket(packet);
         break;
       }
       case LocalPacketFactory.INFORMATIONPACKET: {
@@ -634,41 +295,7 @@ public class ServerActions extends ConnectionActions {
         break;
       }
       case LocalPacketFactory.BANDWIDTHPACKET: {
-        final String[] splitglobal = packet.getSheader().split(" ");
-        final String[] splitsession = packet.getSmiddle().split(" ");
-        packet.clear();
-        final R66Result result =
-            new R66Result(session, true, ErrorCode.CompleteOk, null);
-        final ValidPacket valid;
-        if (splitglobal.length < 2 || splitsession.length < 2) {
-          // request of current values
-          session.newState(VALIDOTHER);
-
-          final long[] lresult = bandwidth(false, 0, 0, 0, 0);
-          // Now answer
-          valid = new ValidPacket(
-              lresult[0] + " " + lresult[1] + ' ' + lresult[2] + ' ' +
-              lresult[3], result.getCode().getCode(),
-              LocalPacketFactory.REQUESTUSERPACKET);
-        } else {
-          session.newState(VALIDOTHER);
-          bandwidth(true, Long.parseLong(splitglobal[0]),
-                    Long.parseLong(splitglobal[1]),
-                    Long.parseLong(splitsession[0]),
-                    Long.parseLong(splitsession[1]));
-          // Now answer
-          valid =
-              new ValidPacket("Bandwidth changed", result.getCode().getCode(),
-                              LocalPacketFactory.REQUESTUSERPACKET);
-        }
-        localChannelReference.validateRequest(result);
-        try {
-          ChannelUtils
-              .writeAbstractLocalPacket(localChannelReference, valid, true);
-        } catch (final OpenR66ProtocolPacketException ignored) {
-          // nothing
-        }
-        localChannelReference.close();
+        bandwidthPacket(packet);
         break;
       }
       case LocalPacketFactory.TESTPACKET: {
@@ -685,6 +312,404 @@ public class ServerActions extends ConnectionActions {
         logger.info("Validation is ignored: {}", packet.getTypeValid());
         packet.clear();
     }
+  }
+
+  private void bandwidthPacket(final ValidPacket packet)
+      throws OpenR66ProtocolNotAuthenticatedException {
+    final String[] splitglobal = packet.getSheader().split(" ");
+    final String[] splitsession = packet.getSmiddle().split(" ");
+    packet.clear();
+    final R66Result result =
+        new R66Result(session, true, ErrorCode.CompleteOk, null);
+    final ValidPacket valid;
+    if (splitglobal.length < 2 || splitsession.length < 2) {
+      // request of current values
+      session.newState(VALIDOTHER);
+
+      final long[] lresult = bandwidth(false, 0, 0, 0, 0);
+      // Now answer
+      valid = new ValidPacket(
+          lresult[0] + " " + lresult[1] + ' ' + lresult[2] + ' ' + lresult[3],
+          result.getCode().getCode(), LocalPacketFactory.REQUESTUSERPACKET);
+    } else {
+      session.newState(VALIDOTHER);
+      bandwidth(true, Long.parseLong(splitglobal[0]),
+                Long.parseLong(splitglobal[1]), Long.parseLong(splitsession[0]),
+                Long.parseLong(splitsession[1]));
+      // Now answer
+      valid = new ValidPacket("Bandwidth changed", result.getCode().getCode(),
+                              LocalPacketFactory.REQUESTUSERPACKET);
+    }
+    localChannelReference.validateRequest(result);
+    try {
+      ChannelUtils.writeAbstractLocalPacket(localChannelReference, valid, true);
+    } catch (final OpenR66ProtocolPacketException ignored) {
+      // nothing
+    }
+    localChannelReference.close();
+  }
+
+  private void configImportPacket(final ValidPacket packet)
+      throws OpenR66ProtocolNotAuthenticatedException,
+             OpenR66ProtocolSystemException {
+    session.newState(VALIDOTHER);
+    // Authentication must be the local server or CONFIGADMIN authorization
+    try {
+      if (!session.getAuth().getUser().equals(
+          Configuration.configuration.getHostId(session.getAuth().isSsl())) &&
+          !session.getAuth().isValidRole(ROLE.CONFIGADMIN)) {
+        throw new OpenR66ProtocolNotAuthenticatedException(
+            NOT_CORRECTLY_AUTHENTICATED);
+      }
+    } catch (final OpenR66ProtocolNoSslException e1) {
+      throw new OpenR66ProtocolNotAuthenticatedException(
+          NOT_CORRECTLY_AUTHENTICATED_SINCE_SSL_IS_NOT_SUPPORTED, e1);
+    }
+    if (Configuration.configuration.getR66Mib() != null) {
+      Configuration.configuration.getR66Mib().notifyWarning(
+          "Import Configuration Order received", session.getAuth().getUser());
+    }
+    String shost = packet.getSheader();
+    String srule = packet.getSmiddle();
+    final boolean bhostPurge = shost.startsWith("1 ");
+    shost = shost.substring(2);
+    final boolean brulePurge = srule.startsWith("1 ");
+    srule = srule.substring(2);
+    boolean bhost = !shost.isEmpty();
+    boolean brule = !srule.isEmpty();
+    packet.clear();
+    if (bhost) {
+      DbHostAuth[] oldHosts = null;
+      if (bhostPurge) {
+        // Need to first delete all entries
+        try {
+          oldHosts = DbHostAuth.deleteAll();
+        } catch (final WaarpDatabaseException e) {
+          // ignore
+        }
+      }
+      final String filename = shost;
+      if (AuthenticationFileBasedConfiguration
+          .loadAuthentication(Configuration.configuration, filename)) {
+        shost = "Host:OK";
+      } else {
+        logger.error("Error in Load Hosts");
+        shost = "Host:KO";
+        bhost = false;
+      }
+      if (!bhost && oldHosts != null) {
+        for (final DbHostAuth dbHost : oldHosts) {
+          try {
+            if (!dbHost.exist()) {
+              dbHost.insert();
+            }
+          } catch (final WaarpDatabaseException e1) {
+            // ignore
+          }
+        }
+      }
+    }
+    if (brule) {
+      DbRule[] oldRules = null;
+      if (brulePurge) {
+        // Need to first delete all entries
+        try {
+          oldRules = DbRule.deleteAll();
+        } catch (final WaarpDatabaseException e) {
+          // ignore
+        }
+      }
+      final File file = new File(srule);
+      try {
+        RuleFileBasedConfiguration.getMultipleFromFile(file);
+        srule = "Rule:OK";
+        brule = true;
+      } catch (final WaarpDatabaseNoConnectionException e) {
+        logger.error("Error", e);
+        srule = "Rule:KO";
+        brule = false;
+      } catch (final WaarpDatabaseSqlException e) {
+        logger.error("Error", e);
+        srule = "Rule:KO";
+        brule = false;
+      } catch (final WaarpDatabaseNoDataException e) {
+        logger.error("Error", e);
+        srule = "Rule:KO";
+        brule = false;
+      } catch (final WaarpDatabaseException e) {
+        logger.error("Error", e);
+        srule = "Rule:KO";
+        brule = false;
+      }
+      if (!brule && oldRules != null) {
+        for (final DbRule dbRule : oldRules) {
+          try {
+            if (!dbRule.exist()) {
+              dbRule.insert();
+            }
+          } catch (final WaarpDatabaseException e1) {
+            // ignore
+          }
+        }
+      }
+    }
+    final R66Result result;
+    if (brule || bhost) {
+      result = new R66Result(session, true, ErrorCode.CompleteOk, null);
+    } else {
+      result = new R66Result(session, true, ErrorCode.TransferError, null);
+    }
+    // Now answer
+    final ValidPacket valid =
+        new ValidPacket(shost + ' ' + srule, result.getCode().getCode(),
+                        LocalPacketFactory.REQUESTUSERPACKET);
+    localChannelReference.validateRequest(result);
+    try {
+      ChannelUtils.writeAbstractLocalPacket(localChannelReference, valid, true);
+    } catch (final OpenR66ProtocolPacketException ignored) {
+      // nothing
+    }
+    localChannelReference.close();
+  }
+
+  private void configExportPacket(final ValidPacket packet)
+      throws OpenR66ProtocolNotAuthenticatedException {
+    final String shost = packet.getSheader();
+    final String srule = packet.getSmiddle();
+    final boolean bhost = Boolean.parseBoolean(shost);
+    final boolean brule = Boolean.parseBoolean(srule);
+    packet.clear();
+    session.newState(VALIDOTHER);
+    final String[] sresult = configExport(bhost, brule, false, false, false);
+    final R66Result result;
+    if (sresult[0] != null || sresult[1] != null) {
+      result = new R66Result(session, true, ErrorCode.CompleteOk, null);
+    } else {
+      result = new R66Result(session, true, ErrorCode.TransferError, null);
+    }
+    // Now answer
+    final ValidPacket valid =
+        new ValidPacket(shost + ' ' + srule, result.getCode().getCode(),
+                        LocalPacketFactory.REQUESTUSERPACKET);
+    localChannelReference.validateRequest(result);
+    try {
+      ChannelUtils.writeAbstractLocalPacket(localChannelReference, valid, true);
+    } catch (final OpenR66ProtocolPacketException ignored) {
+      // ignore
+    }
+    localChannelReference.close();
+  }
+
+  private void logPacket(final ValidPacket packet)
+      throws OpenR66ProtocolBusinessException {
+    session.newState(VALIDOTHER);
+    // should be from the local server or from an authorized hosts: LOGCONTROL
+    try {
+      if (!session.getAuth().getUser().equals(
+          Configuration.configuration.getHostId(session.getAuth().isSsl())) &&
+          !session.getAuth().isValidRole(ROLE.LOGCONTROL)) {
+        throw new OpenR66ProtocolNotAuthenticatedException(
+            NOT_CORRECTLY_AUTHENTICATED);
+      }
+    } catch (final OpenR66ProtocolNoSslException e1) {
+      throw new OpenR66ProtocolNotAuthenticatedException(
+          NOT_CORRECTLY_AUTHENTICATED_SINCE_SSL_IS_NOT_SUPPORTED, e1);
+    }
+    final String sstart = packet.getSheader();
+    final String sstop = packet.getSmiddle();
+    final boolean isPurge =
+        packet.getTypeValid() == LocalPacketFactory.LOGPURGEPACKET;
+    final Timestamp start =
+        sstart == null || sstart.isEmpty()? null : Timestamp.valueOf(sstart);
+    final Timestamp stop =
+        sstop == null || sstop.isEmpty()? null : Timestamp.valueOf(sstop);
+    packet.clear();
+    // create export of log and optionally purge them from database
+    final String filename = Configuration.configuration.getBaseDirectory() +
+                            Configuration.configuration.getArchivePath() +
+                            DirInterface.SEPARATOR +
+                            Configuration.configuration.getHostId() + '_' +
+                            System.currentTimeMillis() + "_runners.xml";
+    DbPreparedStatement statement = null;
+    try {
+      statement = DbTaskRunner
+          .getLogPrepareStatement(localChannelReference.getDbSession(), start,
+                                  stop);
+      DbTaskRunner.writeXMLWriter(statement, filename);
+    } catch (final WaarpDatabaseNoConnectionException e) {
+      throw new OpenR66ProtocolBusinessException(e);
+    } catch (final WaarpDatabaseSqlException e) {
+      throw new OpenR66ProtocolBusinessException(e);
+    } finally {
+      if (statement != null) {
+        statement.realClose();
+      }
+    }
+    // in case of purge
+    int nb = 0;
+    if (isPurge) {
+      // purge in same interval all runners with globallaststep
+      // as ALLDONETASK or ERRORTASK
+      if (Configuration.configuration.getR66Mib() != null) {
+        Configuration.configuration.getR66Mib()
+                                   .notifyWarning("Purge Log Order received",
+                                                  session.getAuth().getUser());
+      }
+      try {
+        nb = DbTaskRunner
+            .purgeLogPrepareStatement(localChannelReference.getDbSession(),
+                                      start, stop);
+      } catch (final WaarpDatabaseNoConnectionException e) {
+        throw new OpenR66ProtocolBusinessException(e);
+      } catch (final WaarpDatabaseSqlException e) {
+        throw new OpenR66ProtocolBusinessException(e);
+      }
+    }
+    final R66Result result =
+        new R66Result(session, true, ErrorCode.CompleteOk, null);
+    // Now answer
+    final ValidPacket valid =
+        new ValidPacket(filename + ' ' + nb, result.getCode().getCode(),
+                        LocalPacketFactory.REQUESTUSERPACKET);
+    localChannelReference.validateRequest(result);
+    try {
+      ChannelUtils.writeAbstractLocalPacket(localChannelReference, valid, true);
+    } catch (final OpenR66ProtocolPacketException ignored) {
+      // ignore
+    }
+    localChannelReference.close();
+  }
+
+  private void requestUserPacket(final ValidPacket packet) {
+    session.newState(VALIDOTHER);
+    // Validate user request
+    final R66Result resulttest =
+        new R66Result(session, true, ErrorCode.getFromCode(packet.getSmiddle()),
+                      null);
+    resulttest.setOther(packet);
+    switch (resulttest.getCode()) {
+      case CompleteOk:
+      case InitOk:
+      case PostProcessingOk:
+      case PreProcessingOk:
+      case QueryAlreadyFinished:
+      case QueryStillRunning:
+      case Running:
+      case TransferOk:
+        break;
+      default:
+        localChannelReference.invalidateRequest(resulttest);
+        session.setStatus(102);
+        localChannelReference.close();
+        return;
+    }
+    localChannelReference.validateRequest(resulttest);
+    session.setStatus(28);
+    localChannelReference.close();
+  }
+
+  private void validPacket(final ValidPacket packet)
+      throws OpenR66ProtocolNotAuthenticatedException {
+    // header = ?; middle = requested+blank+requester+blank+specialId
+    // note: might contains one more argument = time to reschedule in yyyyMMddHHmmss format
+    final String[] keys = packet.getSmiddle().split(" ");
+    final ValidPacket valid;
+    if (keys.length < 3) {
+      // not enough args
+      valid = new ValidPacket(packet.getSmiddle(),
+                              ErrorCode.IncorrectCommand.getCode(),
+                              LocalPacketFactory.REQUESTUSERPACKET);
+      final R66Result resulttest = new R66Result(
+          new OpenR66ProtocolBusinessRemoteFileNotFoundException(
+              "Not enough arguments"), session, true,
+          ErrorCode.IncorrectCommand, null);
+      resulttest.setOther(packet);
+      localChannelReference.invalidateRequest(resulttest);
+    } else {
+      final long id = Long.parseLong(keys[2]);
+      Date date = null;
+      if (keys.length > 3) {
+        // time to reschedule in yyyyMMddHHmmss format
+        logger.debug("Debug: restart with {}", keys[3]);
+        final SimpleDateFormat dateFormat =
+            new SimpleDateFormat(AbstractTransfer.TIMESTAMP_FORMAT);
+        try {
+          date = dateFormat.parse(keys[3]);
+        } catch (final ParseException ignored) {
+          // ignore
+        }
+      }
+      session.newState(VALIDOTHER);
+      final R66Result result = requestRestart(keys[0], keys[1], id, date);
+      valid = new ValidPacket(packet.getSmiddle(), result.getCode().getCode(),
+                              LocalPacketFactory.REQUESTUSERPACKET);
+      result.setOther(packet);
+      if (isCodeValid(result.getCode())) {
+        localChannelReference.validateRequest(result);
+      } else {
+        localChannelReference.invalidateRequest(result);
+      }
+    }
+    // inform back the requester
+    try {
+      ChannelUtils.writeAbstractLocalPacket(localChannelReference, valid, true);
+    } catch (final OpenR66ProtocolPacketException ignored) {
+      // ignore
+    }
+    localChannelReference.close();
+  }
+
+  private void stopOrCancelPacket(final ValidPacket packet)
+      throws OpenR66ProtocolNotAuthenticatedException {
+    final String[] keys = packet.getSmiddle().split(" ");
+    final long id = Long.parseLong(keys[2]);
+    session.newState(VALIDOTHER);
+    final R66Result resulttest =
+        stopOrCancel(packet.getTypeValid(), keys[0], keys[1], id);
+    // inform back the requester
+    final ValidPacket valid =
+        new ValidPacket(packet.getSmiddle(), resulttest.getCode().getCode(),
+                        LocalPacketFactory.REQUESTUSERPACKET);
+    resulttest.setOther(packet);
+    localChannelReference.validateRequest(resulttest);
+    try {
+      ChannelUtils.writeAbstractLocalPacket(localChannelReference, valid, true);
+    } catch (final OpenR66ProtocolPacketException ignored) {
+      // ignore
+    }
+    session.setStatus(27);
+    localChannelReference.close();
+  }
+
+  private void shutdownPacket(final ValidPacket packet)
+      throws OpenR66RunnerErrorException, OpenR66ProtocolSystemException {
+    int rank = -1;
+    if (session.getRunner() != null && session.getRunner().isInTransfer()) {
+      final String srank = packet.getSmiddle();
+      if (srank != null && !srank.isEmpty()) {
+        // Save last rank from remote point of view
+        try {
+          rank = Integer.parseInt(srank);
+        } catch (final NumberFormatException e) {
+          // ignore
+        }
+      }
+    }
+    final R66Result result =
+        new R66Result(new OpenR66ProtocolShutdownException(), session, true,
+                      ErrorCode.Shutdown, session.getRunner());
+    result.setOther(packet);
+    rank = shutdownRequest(result, rank);
+    if (rank >= 0) {
+      packet.setSmiddle(Integer.toString(rank));
+      try {
+        ChannelUtils
+            .writeAbstractLocalPacket(localChannelReference, packet, true);
+      } catch (final OpenR66ProtocolPacketException ignored) {
+        // ignore
+      }
+    }
+    shutdownLocalChannel();
   }
 
   /**
@@ -1544,9 +1569,6 @@ public class ServerActions extends ConnectionActions {
             logger
                 .debug("Business configuration imported from {}({})", sbusiness,
                        importedbusiness);
-          } catch (final InvalidArgumentException e) {
-            logger.error("Error", e);
-            importedbusiness = false;
           } catch (final FileTransferException e) {
             logger.error("Error", e);
             importedbusiness = false;
@@ -1573,9 +1595,6 @@ public class ServerActions extends ConnectionActions {
                                  baliasPurge);
             logger.debug("Alias configuration imported from {}({})", salias,
                          importedalias);
-          } catch (final InvalidArgumentException e) {
-            logger.error("Error", e);
-            importedalias = false;
           } catch (final FileTransferException e) {
             logger.error("Error", e);
             importedalias = false;
@@ -1602,9 +1621,6 @@ public class ServerActions extends ConnectionActions {
                                  brolesPurge);
             logger.debug("Roles configuration imported from {}({})", sroles,
                          importedroles);
-          } catch (final InvalidArgumentException e) {
-            logger.error("Error", e);
-            importedroles = false;
           } catch (final FileTransferException e) {
             logger.error("Error", e);
             importedroles = false;
@@ -1714,10 +1730,6 @@ public class ServerActions extends ConnectionActions {
         logger.error("Error", e);
         shost = null;
         bhost = false;
-      } catch (final WaarpDatabaseSqlException e) {
-        logger.error("Error", e);
-        shost = null;
-        bhost = false;
       } catch (final OpenR66ProtocolSystemException e) {
         logger.error("Error", e);
         shost = null;
@@ -1728,10 +1740,6 @@ public class ServerActions extends ConnectionActions {
       try {
         srule = RuleFileBasedConfiguration.writeOneXml(dir, hostname);
       } catch (final WaarpDatabaseNoConnectionException e1) {
-        logger.error("Error", e1);
-        srule = null;
-        brule = false;
-      } catch (final WaarpDatabaseSqlException e1) {
         logger.error("Error", e1);
         srule = null;
         brule = false;
@@ -2371,15 +2379,13 @@ public class ServerActions extends ConnectionActions {
    * @return future of the execution
    *
    * @throws OpenR66ProtocolNotAuthenticatedException
-   * @throws OpenR66ProtocolPacketException
    */
   public final R66Future businessRequest(final boolean isToApplied,
                                          final String className,
                                          final String arguments,
                                          final String extraArguments,
                                          final int delay)
-      throws OpenR66ProtocolNotAuthenticatedException,
-             OpenR66ProtocolPacketException {
+      throws OpenR66ProtocolNotAuthenticatedException {
     if (!session.isAuthenticated()) {
       throw new OpenR66ProtocolNotAuthenticatedException(
           "Not authenticated while BusinessRequest received");
@@ -2415,11 +2421,10 @@ public class ServerActions extends ConnectionActions {
    *
    * @param packet
    *
-   * @throws OpenR66ProtocolPacketException
    * @throws OpenR66ProtocolBusinessException
    */
   public void blockRequest(final BlockRequestPacket packet)
-      throws OpenR66ProtocolPacketException, OpenR66ProtocolBusinessException {
+      throws OpenR66ProtocolBusinessException {
     final R66Result result = blockRequest(packet.getKey(), packet.getBlock());
     final ValidPacket valid = new ValidPacket(
         (packet.getBlock()? "Block" : "Unblock") + " new request",
@@ -2489,14 +2494,13 @@ public class ServerActions extends ConnectionActions {
    *
    * @throws OpenR66ProtocolNotAuthenticatedException
    * @throws OpenR66ProtocolNoDataException
-   * @throws OpenR66ProtocolPacketException
    */
   public final ValidPacket informationFile(final byte request,
                                            final String rulename,
                                            final String filename,
                                            final boolean jsonOutput)
       throws OpenR66ProtocolNotAuthenticatedException,
-             OpenR66ProtocolNoDataException, OpenR66ProtocolPacketException {
+             OpenR66ProtocolNoDataException {
     if (!session.isAuthenticated()) {
       throw new OpenR66ProtocolNotAuthenticatedException(
           "Not authenticated while Information received");
@@ -2619,13 +2623,12 @@ public class ServerActions extends ConnectionActions {
    *
    * @throws OpenR66ProtocolNotAuthenticatedException
    * @throws OpenR66ProtocolNoDataException
-   * @throws OpenR66ProtocolPacketException
    */
   public final ValidPacket informationRequest(final long id, final boolean isTo,
                                               final String remoteHost,
                                               final boolean jsonOutput)
       throws OpenR66ProtocolNotAuthenticatedException,
-             OpenR66ProtocolNoDataException, OpenR66ProtocolPacketException {
+             OpenR66ProtocolNoDataException {
     if (!session.isAuthenticated()) {
       throw new OpenR66ProtocolNotAuthenticatedException(
           "Not authenticated while Information received");
@@ -2668,16 +2671,9 @@ public class ServerActions extends ConnectionActions {
     if (!jsonOutput) {
       session.newState(VALIDOTHER);
     }
-    final ValidPacket validPacket;
-    try {
-      validPacket =
-          new ValidPacket(jsonOutput? runner.asJson() : runner.asXML(), "",
-                          LocalPacketFactory.INFORMATIONPACKET);
-    } catch (final OpenR66ProtocolBusinessException e) {
-      logger.error("RunnerTask cannot be found: " + id, e);
-      throw new OpenR66ProtocolNoDataException(
-          "RunnerTask cannot be found: " + id, e);
-    }
+    final ValidPacket validPacket =
+        new ValidPacket(jsonOutput? runner.asJson() : runner.asXML(), "",
+                        LocalPacketFactory.INFORMATIONPACKET);
     final R66Result result =
         new R66Result(session, true, ErrorCode.CompleteOk, null);
     result.setOther(validPacket);

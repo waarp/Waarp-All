@@ -690,12 +690,10 @@ public final class RuleFileBasedConfiguration {
    * @param hostname
    *
    * @throws WaarpDatabaseNoConnectionException
-   * @throws WaarpDatabaseSqlException
    * @throws OpenR66ProtocolSystemException
    */
-  public static final void writeXml(final String directory,
-                                    final String hostname)
-      throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException,
+  public static void writeXml(final String directory, final String hostname)
+      throws WaarpDatabaseNoConnectionException,
              OpenR66ProtocolSystemException {
     final File dir = new File(directory);
     if (!dir.isDirectory()) {
@@ -720,12 +718,11 @@ public final class RuleFileBasedConfiguration {
    * @return the filename
    *
    * @throws WaarpDatabaseNoConnectionException
-   * @throws WaarpDatabaseSqlException
    * @throws OpenR66ProtocolSystemException
    */
   public static String writeOneXml(final String directory,
                                    final String hostname)
-      throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException,
+      throws WaarpDatabaseNoConnectionException,
              OpenR66ProtocolSystemException {
     final File dir = new File(directory);
     if (!dir.isDirectory()) {

@@ -264,7 +264,7 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
   }
 
   @Override
-  public boolean isInReading() throws CommandAbstractException {
+  public boolean isInReading() {
     if (!isReady) {
       return false;
     }
@@ -272,7 +272,7 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
   }
 
   @Override
-  public boolean isInWriting() throws CommandAbstractException {
+  public boolean isInWriting() {
     if (!isReady) {
       return false;
     }

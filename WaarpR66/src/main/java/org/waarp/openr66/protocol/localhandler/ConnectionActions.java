@@ -658,7 +658,7 @@ public abstract class ConnectionActions {
     }
 
     @Override
-    public void operationComplete(final ChannelFuture future) throws Exception {
+    public void operationComplete(final ChannelFuture future) {
       localChannelReference.invalidateRequest(result);
       ChannelCloseTimer
           .closeFutureTransaction(localChannelReference.getServerHandler());

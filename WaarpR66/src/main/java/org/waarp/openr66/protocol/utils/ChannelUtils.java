@@ -123,7 +123,7 @@ public class ChannelUtils extends Thread {
    *
    * @return the current number of network connections
    */
-  public static final int nbCommandChannels(final Configuration configuration) {
+  public static int nbCommandChannels(final Configuration configuration) {
     int nb = 0;
     if (Configuration.configuration.getServerConnectedChannelGroup() != null) {
       nb += configuration.getServerConnectedChannelGroup().size();
@@ -184,7 +184,7 @@ public class ChannelUtils extends Thread {
    *
    * @throws OpenR66ProtocolPacketException
    */
-  public static final void writeEndTransfer(
+  public static void writeEndTransfer(
       final LocalChannelReference localChannelReference)
       throws OpenR66ProtocolPacketException {
     final EndTransferPacket packet =
@@ -201,7 +201,7 @@ public class ChannelUtils extends Thread {
    *
    * @throws OpenR66ProtocolPacketException
    */
-  public static final void writeEndTransfer(
+  public static void writeEndTransfer(
       final LocalChannelReference localChannelReference, final String hash)
       throws OpenR66ProtocolPacketException {
     final EndTransferPacket packet =
@@ -245,8 +245,7 @@ public class ChannelUtils extends Thread {
       future.addListener(new GenericFutureListener<Future<? super Void>>() {
 
         @Override
-        public void operationComplete(final Future<? super Void> future)
-            throws Exception {
+        public void operationComplete(final Future<? super Void> future) {
           localChannelReference.close();
         }
       });
@@ -328,7 +327,7 @@ public class ChannelUtils extends Thread {
     stopLogger();
   }
 
-  public static final void stopLogger() {
+  public static void stopLogger() {
     if (DetectionUtils.isJunit()) {
       return;
     }
@@ -354,7 +353,7 @@ public class ChannelUtils extends Thread {
   /**
    * Start Shutdown
    */
-  public static final void startShutdown() {
+  public static void startShutdown() {
     if (WaarpShutdownHook.isInShutdown()) {
       return;
     }
