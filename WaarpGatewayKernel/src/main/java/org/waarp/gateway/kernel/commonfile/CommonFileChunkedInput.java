@@ -59,7 +59,7 @@ public class CommonFileChunkedInput implements ChunkedInput<ByteBuf> {
 
   @Override
   public ByteBuf readChunk(final ChannelHandlerContext ctx) throws Exception {
-    return readChunk((ByteBufAllocator) null);
+    return readChunk(ByteBufAllocator.DEFAULT);
   }
 
   @Override
@@ -108,6 +108,9 @@ public class CommonFileChunkedInput implements ChunkedInput<ByteBuf> {
     }
     lastChunkAlready = block.isEOF();
     offset += block.getByteCount();
-    return block.getBlock();
+    byte[] bytes = block.getByteBlock();
+    ByteBuf buffer = byteBufAllocator.buffer(bytes.length, bytes.length);
+    buffer.writeBytes(bytes);
+    return buffer;
   }
 }
