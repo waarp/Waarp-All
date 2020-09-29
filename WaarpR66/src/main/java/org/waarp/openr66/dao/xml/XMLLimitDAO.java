@@ -67,7 +67,7 @@ public class XMLLimitDAO implements LimitDAO {
 
   private final File file;
 
-  public XMLLimitDAO(final String filePath) throws DAOConnectionException {
+  public XMLLimitDAO(final String filePath) {
     file = new File(filePath);
   }
 
@@ -77,12 +77,12 @@ public class XMLLimitDAO implements LimitDAO {
   }
 
   @Override
-  public void delete(final Limit limit) throws DAOConnectionException {
+  public void delete(final Limit limit) {
     dbR66ConfigurationHashMap.remove(limit.getHostid());
   }
 
   @Override
-  public void deleteAll() throws DAOConnectionException {
+  public void deleteAll() {
     dbR66ConfigurationHashMap.clear();
   }
 
@@ -149,7 +149,7 @@ public class XMLLimitDAO implements LimitDAO {
   }
 
   @Override
-  public void insert(final Limit limit) throws DAOConnectionException {
+  public void insert(final Limit limit) {
     dbR66ConfigurationHashMap.put(limit.getHostid(), limit);
   }
 
@@ -193,7 +193,7 @@ public class XMLLimitDAO implements LimitDAO {
   }
 
   @Override
-  public void update(final Limit limit) throws DAOConnectionException {
+  public void update(final Limit limit) {
     dbR66ConfigurationHashMap.put(limit.getHostid(), limit);
   }
 

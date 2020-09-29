@@ -208,7 +208,7 @@ public class DataNetworkHandler extends SimpleChannelInboundHandler<DataBlock> {
    * Initialize the Handler.
    */
   @Override
-  public void channelActive(final ChannelHandlerContext ctx) throws Exception {
+  public void channelActive(final ChannelHandlerContext ctx) {
     final Channel channel = ctx.channel();
     channel.config().setAutoRead(false);
     if (session == null) {
@@ -295,7 +295,7 @@ public class DataNetworkHandler extends SimpleChannelInboundHandler<DataBlock> {
    */
   @Override
   public void exceptionCaught(final ChannelHandlerContext ctx,
-                              final Throwable cause) throws Exception {
+                              final Throwable cause) {
     if (session == null) {
       logger.info("Error without any session active {}", cause);
       return;

@@ -324,7 +324,7 @@ public class DbSession {
     }
 
     @Override
-    public void run(final Timeout timeout) throws Exception {
+    public void run(final Timeout timeout) {
       final int val = dbSession.nbThread.get();
       if (val <= 0) {
         dbSession.disconnect();

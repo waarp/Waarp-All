@@ -46,7 +46,7 @@ public class NetworkSslServerInitializerProxy
   }
 
   @Override
-  protected void initChannel(final SocketChannel ch) throws Exception {
+  protected void initChannel(final SocketChannel ch) {
     final ChannelPipeline pipeline = ch.pipeline();
     // Add SSL handler first to encrypt and decrypt everything.
     final SslHandler sslHandler;

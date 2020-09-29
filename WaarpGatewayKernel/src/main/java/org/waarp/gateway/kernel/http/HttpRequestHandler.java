@@ -259,7 +259,7 @@ public abstract class HttpRequestHandler
 
   @Override
   protected void channelRead0(final ChannelHandlerContext ctx,
-                              final HttpObject msg) throws Exception {
+                              final HttpObject msg) {
     try {
       if (msg instanceof HttpRequest) {
         initialize();
@@ -852,7 +852,7 @@ public abstract class HttpRequestHandler
 
   @Override
   public void exceptionCaught(final ChannelHandlerContext ctx,
-                              final Throwable cause) throws Exception {
+                              final Throwable cause) {
     if (ctx.channel().isActive()) {
       if (cause != null && cause.getMessage() != null) {
         logger.warn("Exception {}", cause.getMessage(), cause);

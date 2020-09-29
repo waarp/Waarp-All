@@ -77,8 +77,7 @@ public class DbConfigurationR66RestMethodHandler
                                     final RestArgument arguments,
                                     final RestArgument result,
                                     final Object body)
-      throws HttpIncorrectRequestException, HttpInvalidAuthenticationException,
-             HttpNotFoundRequestException {
+      throws HttpNotFoundRequestException {
     final ObjectNode arg = arguments.getUriArgs().deepCopy();
     arg.setAll(arguments.getBody());
     try {
@@ -102,7 +101,7 @@ public class DbConfigurationR66RestMethodHandler
                                        final RestArgument arguments,
                                        final RestArgument result,
                                        final Object body)
-      throws HttpIncorrectRequestException, HttpInvalidAuthenticationException {
+      throws HttpIncorrectRequestException {
     final ObjectNode arg = arguments.getUriArgs().deepCopy();
     arg.setAll(arguments.getBody());
     try {
@@ -117,7 +116,7 @@ public class DbConfigurationR66RestMethodHandler
   protected DbPreparedStatement getPreparedStatement(
       final HttpRestHandler handler, final RestArgument arguments,
       final RestArgument result, final Object body)
-      throws HttpIncorrectRequestException, HttpInvalidAuthenticationException {
+      throws HttpIncorrectRequestException {
     final ObjectNode arg = arguments.getUriArgs().deepCopy();
     arg.setAll(arguments.getBody());
     String host = arg.path(FILTER_ARGS.HOSTID.name()).asText();

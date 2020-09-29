@@ -388,15 +388,9 @@ public class ClientRunner extends Thread {
    * @param localChannelReference
    *
    * @return The R66Future of the transfer operation
-   *
-   * @throws OpenR66ProtocolNotYetConnectionException
-   * @throws OpenR66ProtocolPacketException
-   * @throws OpenR66ProtocolNoConnectionException
-   * @throws OpenR66RunnerErrorException
    */
   public R66Future finishTransfer(
-      final LocalChannelReference localChannelReference)
-      throws OpenR66RunnerErrorException {
+      final LocalChannelReference localChannelReference) {
     if (this.localChannelReference == null) {
       this.localChannelReference = localChannelReference;
     }
@@ -479,12 +473,11 @@ public class ClientRunner extends Thread {
    * @return the localChannelReference holding the transfer request
    *
    * @throws OpenR66ProtocolNoConnectionException
-   * @throws OpenR66RunnerErrorException
    * @throws OpenR66ProtocolPacketException
    * @throws OpenR66ProtocolNotYetConnectionException
    */
   public LocalChannelReference initRequest()
-      throws OpenR66ProtocolNoConnectionException, OpenR66RunnerErrorException,
+      throws OpenR66ProtocolNoConnectionException,
              OpenR66ProtocolPacketException,
              OpenR66ProtocolNotYetConnectionException {
     changeUpdatedInfo(UpdatedInfo.RUNNING, ErrorCode.Running, true);

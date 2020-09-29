@@ -52,7 +52,7 @@ public class HttpDeleteSession extends HttpSessionAbstract {
    * @throws OpenR66RunnerErrorException
    */
   public HttpDeleteSession(final String identifier, final HttpAuthent authent)
-      throws WaarpDatabaseException, OpenR66RunnerErrorException {
+      throws WaarpDatabaseException {
     super(authent);
     this.identifier = identifier;
     final DbTaskRunner runner;

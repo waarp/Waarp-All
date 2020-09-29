@@ -26,7 +26,6 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.handler.timeout.ReadTimeoutException;
-import io.netty.util.concurrent.Future;
 import org.waarp.common.crypto.ssl.WaarpSslUtility;
 import org.waarp.common.database.DbSession;
 import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
@@ -101,11 +100,11 @@ public class NetworkServerHandler
    *
    */
   public NetworkServerHandler() {
+    // Empty
   }
 
   @Override
-  public void channelInactive(final ChannelHandlerContext ctx)
-      throws Exception {
+  public void channelInactive(final ChannelHandlerContext ctx) {
     try {
       if (Configuration.configuration.getServerConnectedChannelGroup() !=
           null) {
@@ -271,7 +270,7 @@ public class NetworkServerHandler
 
   @Override
   public void channelRead0(final ChannelHandlerContext ctx,
-                           final NetworkPacket msg) throws Exception {
+                           final NetworkPacket msg) {
     try {
       if (isBlackListed) {
         // ignore message since close on going
@@ -507,7 +506,7 @@ public class NetworkServerHandler
       }
       if (networkPacket != null) {
         final NetworkPacket finalNP = networkPacket;
-        final Future future = channel.writeAndFlush(networkPacket);
+        final ChannelFuture future = channel.writeAndFlush(networkPacket);
         future.addListener(new ChannelFutureListener() {
           @Override
           public void operationComplete(final ChannelFuture future)

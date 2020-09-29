@@ -170,8 +170,7 @@ public class DefaultHttpField extends AbstractHttpField {
   }
 
   @Override
-  public String getHtmlTabField(final HttpPage page)
-      throws HttpIncorrectRequestException {
+  public String getHtmlTabField(final HttpPage page) {
     final StringBuilder builder =
         new StringBuilder().append(getFieldinfo()).append("</TD><TD>");
     if (fieldvalue != null) {

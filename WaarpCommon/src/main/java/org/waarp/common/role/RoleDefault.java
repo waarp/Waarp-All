@@ -149,7 +149,7 @@ public class RoleDefault {
       }
     }
 
-    public static final String toString(final byte fromRole) {
+    public static String toString(final byte fromRole) {
       final StringBuilder result = new StringBuilder("[ ");
       final ROLE[] values = ROLE.values();
       for (final ROLE role : values) {
@@ -161,7 +161,7 @@ public class RoleDefault {
       return result.toString();
     }
 
-    public static final ROLE fromByte(final byte role) {
+    public static ROLE fromByte(final byte role) {
       switch (role) {
         case 1:
           return READONLY;
@@ -270,39 +270,39 @@ public class RoleDefault {
     return ROLE.LOGCONTROL.isContained(role);
   }
 
-  public static final boolean hasNoAccess(final byte role) {
+  public static boolean hasNoAccess(final byte role) {
     return role == ROLE.NOACCESS.brole;
   }
 
-  public static final boolean hasReadOnly(final byte role) {
+  public static boolean hasReadOnly(final byte role) {
     return ROLE.READONLY.isContained(role);
   }
 
-  public static final boolean hasTransfer(final byte role) {
+  public static boolean hasTransfer(final byte role) {
     return ROLE.TRANSFER.isContained(role);
   }
 
-  public static final boolean hasRule(final byte role) {
+  public static boolean hasRule(final byte role) {
     return ROLE.RULE.isContained(role);
   }
 
-  public static final boolean hasHost(final byte role) {
+  public static boolean hasHost(final byte role) {
     return ROLE.HOST.isContained(role);
   }
 
-  public static final boolean hasLimit(final byte role) {
+  public static boolean hasLimit(final byte role) {
     return ROLE.LIMIT.isContained(role);
   }
 
-  public static final boolean hasSystem(final byte role) {
+  public static boolean hasSystem(final byte role) {
     return ROLE.SYSTEM.isContained(role);
   }
 
-  public static final boolean hasUnused(final byte role) {
+  public static boolean hasUnused(final byte role) {
     return ROLE.UNUSED.isContained(role);
   }
 
-  public static final boolean hasLogControl(final byte role) {
+  public static boolean hasLogControl(final byte role) {
     return ROLE.LOGCONTROL.isContained(role);
   }
 

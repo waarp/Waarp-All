@@ -53,8 +53,6 @@ import org.waarp.openr66.pojo.Rule;
 import org.waarp.openr66.pojo.RuleTask;
 import org.waarp.openr66.pojo.Transfer;
 import org.waarp.openr66.protocol.configuration.Configuration;
-import org.waarp.openr66.protocol.exception.OpenR66ProtocolBusinessException;
-import org.waarp.openr66.protocol.exception.OpenR66ProtocolSystemException;
 import org.waarp.openr66.protocol.localhandler.packet.RequestPacket;
 
 import java.io.File;
@@ -479,10 +477,9 @@ public class DbRule extends AbstractDbDataDao<Rule> {
    * @return the DbPreparedStatement for getting Updated Object
    *
    * @throws WaarpDatabaseNoConnectionException
-   * @throws WaarpDatabaseSqlException
    */
   public static DbRule[] getUpdatedPrepareStament()
-      throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
+      throws WaarpDatabaseNoConnectionException {
     final List<Filter> filters = new ArrayList<Filter>(1);
     filters.add(new Filter(DBRuleDAO.UPDATED_INFO_FIELD, "=",
                            org.waarp.openr66.pojo.UpdatedInfo
@@ -579,11 +576,8 @@ public class DbRule extends AbstractDbDataDao<Rule> {
    * @param filename
    *
    * @return the full String path
-   *
-   * @throws OpenR66ProtocolSystemException
    */
-  public String setRecvPath(final String filename)
-      throws OpenR66ProtocolSystemException {
+  public String setRecvPath(final String filename) {
     if (pojo.getRecvPath() != null && !pojo.getRecvPath().isEmpty()) {
       return pojo.getRecvPath() + DirInterface.SEPARATOR + filename;
     }
@@ -597,11 +591,8 @@ public class DbRule extends AbstractDbDataDao<Rule> {
    * @param filename
    *
    * @return the full String path
-   *
-   * @throws OpenR66ProtocolSystemException
    */
-  public String setSendPath(final String filename)
-      throws OpenR66ProtocolSystemException {
+  public String setSendPath(final String filename) {
     if (pojo.getSendPath() != null) {
       final File file = new File(filename);
       final String basename = file.getName();
@@ -617,11 +608,8 @@ public class DbRule extends AbstractDbDataDao<Rule> {
    * @param filename
    *
    * @return the full String path
-   *
-   * @throws OpenR66ProtocolSystemException
    */
-  public String setArchivePath(final String filename)
-      throws OpenR66ProtocolSystemException {
+  public String setArchivePath(final String filename) {
     if (pojo.getArchivePath() != null) {
       return pojo.getArchivePath() + DirInterface.SEPARATOR + filename;
     }
@@ -635,11 +623,8 @@ public class DbRule extends AbstractDbDataDao<Rule> {
    * @param filename
    *
    * @return the full String path
-   *
-   * @throws OpenR66ProtocolSystemException
    */
-  public String setWorkingPath(final String filename)
-      throws OpenR66ProtocolSystemException {
+  public String setWorkingPath(final String filename) {
     if (pojo.getWorkPath() != null) {
       return pojo.getWorkPath() + DirInterface.SEPARATOR + filename +
              Configuration.EXT_R66;
@@ -798,12 +783,10 @@ public class DbRule extends AbstractDbDataDao<Rule> {
    *
    * @throws WaarpDatabaseNoConnectionException
    * @throws WaarpDatabaseSqlException
-   * @throws OpenR66ProtocolBusinessException
    */
   public static String getJson(final DbPreparedStatement preparedStatement,
                                final int limit)
-      throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException,
-             OpenR66ProtocolBusinessException {
+      throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
     final ArrayNode arrayNode = JsonHandler.createArrayNode();
     try {
       preparedStatement.executeQuery();

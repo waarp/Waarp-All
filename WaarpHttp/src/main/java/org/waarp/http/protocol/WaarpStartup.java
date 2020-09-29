@@ -22,7 +22,6 @@ package org.waarp.http.protocol;
 
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
-import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
 import org.waarp.openr66.server.R66Server;
 
 import javax.servlet.ServletException;
@@ -49,13 +48,8 @@ public class WaarpStartup {
   public static void startupWaarp(final File configurationFile)
       throws ServletException {
     if (STARTED.compareAndSet(false, true)) {
-      try {
-        R66Server.main(new String[] { configurationFile.getAbsolutePath() });
-        logger.info("Start Done");
-      } catch (final OpenR66ProtocolPacketException e) {
-        logger.error(e);
-        throw new ServletException("Cannot start R66 Server");
-      }
+      R66Server.main(new String[] { configurationFile.getAbsolutePath() });
+      logger.info("Start Done");
     }
   }
 }

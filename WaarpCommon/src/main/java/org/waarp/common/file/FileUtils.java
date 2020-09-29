@@ -52,7 +52,7 @@ public final class FileUtils {
   private FileUtils() {
   }
 
-  public static final void close(final Reader stream) {
+  public static void close(final Reader stream) {
     if (stream == null) {
       return;
     }
@@ -63,34 +63,7 @@ public final class FileUtils {
     }
   }
 
-  public static final void close(final Writer stream) {
-    if (stream == null) {
-      return;
-    }
-    try {
-      stream.flush();
-    } catch (final Exception ignored) {
-      SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
-    }
-    try {
-      stream.close();
-    } catch (final Exception ignored) {
-      SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
-    }
-  }
-
-  public static final void close(final InputStream stream) {
-    if (stream == null) {
-      return;
-    }
-    try {
-      stream.close();
-    } catch (final Exception ignored) {
-      SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
-    }
-  }
-
-  public static final void close(final OutputStream stream) {
+  public static void close(final Writer stream) {
     if (stream == null) {
       return;
     }
@@ -106,7 +79,34 @@ public final class FileUtils {
     }
   }
 
-  public static final void close(final RandomAccessFile accessFile) {
+  public static void close(final InputStream stream) {
+    if (stream == null) {
+      return;
+    }
+    try {
+      stream.close();
+    } catch (final Exception ignored) {
+      SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
+    }
+  }
+
+  public static void close(final OutputStream stream) {
+    if (stream == null) {
+      return;
+    }
+    try {
+      stream.flush();
+    } catch (final Exception ignored) {
+      SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
+    }
+    try {
+      stream.close();
+    } catch (final Exception ignored) {
+      SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
+    }
+  }
+
+  public static void close(final RandomAccessFile accessFile) {
     if (accessFile == null) {
       return;
     }
@@ -124,7 +124,7 @@ public final class FileUtils {
    *
    * @return True if deleted, False else.
    */
-  public static final boolean deleteDir(final File directory) {
+  public static boolean deleteDir(final File directory) {
     if (directory == null) {
       return true;
     }
@@ -144,7 +144,7 @@ public final class FileUtils {
    *
    * @return True if OK, else if not (or if the file never exists).
    */
-  public static final boolean delete(final File file) {
+  public static boolean delete(final File file) {
     if (!file.exists()) {
       return true;
     }
@@ -224,7 +224,7 @@ public final class FileUtils {
    *
    * @return True if created, False else.
    */
-  public static final boolean createDir(final File directory) {
+  public static boolean createDir(final File directory) {
     if (directory == null) {
       return false;
     }
@@ -470,8 +470,7 @@ public final class FileUtils {
    *
    * @return true if the file exist in the specified path
    */
-  public static final boolean fileExist(final String fileName,
-                                        final String path) {
+  public static boolean fileExist(final String fileName, final String path) {
     boolean exist = false;
     final String fileString = path + File.separator + fileName;
     final File file = new File(fileString);
@@ -488,7 +487,7 @@ public final class FileUtils {
    *
    * @return the list of files (as an array)
    */
-  public static final File[] getFiles(final File directory) {
+  public static File[] getFiles(final File directory) {
     if (directory == null || !directory.isDirectory()) {
       return FILE_0_LENGTH;
     }
@@ -543,8 +542,8 @@ public final class FileUtils {
    *
    * @return the list of files (as an array)
    */
-  public static final File[] getFiles(final File directory,
-                                      final FilenameFilter filter) {
+  public static File[] getFiles(final File directory,
+                                final FilenameFilter filter) {
     if (directory == null || !directory.isDirectory()) {
       return FILE_0_LENGTH;
     }
@@ -558,11 +557,9 @@ public final class FileUtils {
    * @param fileOut
    *
    * @return the size of the uncompressed file or -1 if an error occurs
-   *
-   * @throws Reply550Exception
    */
-  public static long uncompressedBz2File(final File fileIn, final File fileOut)
-      throws Reply550Exception {
+  public static long uncompressedBz2File(final File fileIn,
+                                         final File fileOut) {
     FileInputStream fin = null;
     CompressorInputStream input = null;
     FileOutputStream output = null;

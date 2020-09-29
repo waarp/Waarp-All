@@ -210,10 +210,9 @@ public class DbConfiguration extends AbstractDbDataDao<Limit> {
    * @return the array of DbConfiguration from Updated status
    *
    * @throws WaarpDatabaseNoConnectionException
-   * @throws WaarpDatabaseSqlException
    */
   public static DbConfiguration[] getUpdatedPrepareStament()
-      throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
+      throws WaarpDatabaseNoConnectionException {
     final List<Filter> filters = new ArrayList<Filter>();
     filters.add(new Filter(DBLimitDAO.HOSTID_FIELD, "=",
                            Configuration.configuration.getHostId()));

@@ -270,7 +270,7 @@ public class DbTransferLog extends AbstractDbData {
   }
 
   @Override
-  protected void setFromArray() throws WaarpDatabaseSqlException {
+  protected void setFromArray() {
     filename = (String) allFields[Columns.FILENAME.ordinal()].getValue();
     mode = (String) allFields[Columns.MODETRANS.ordinal()].getValue();
     start = (Timestamp) allFields[Columns.STARTTRANS.ordinal()].getValue();

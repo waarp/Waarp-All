@@ -19,7 +19,6 @@
  */
 package org.waarp.gateway.kernel.commonfile;
 
-import org.waarp.common.command.exception.CommandAbstractException;
 import org.waarp.common.file.FileInterface;
 import org.waarp.common.file.OptsMLSxInterface;
 import org.waarp.common.file.SessionInterface;
@@ -40,8 +39,7 @@ public class CommonDirImpl extends FilesystemBasedDirImpl {
   }
 
   @Override
-  public FileInterface newFile(final String path, final boolean append)
-      throws CommandAbstractException {
+  public FileInterface newFile(final String path, final boolean append) {
     return new CommonFileImpl(session, this, path);
   }
 

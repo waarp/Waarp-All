@@ -27,9 +27,6 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.multipart.FileUpload;
 import org.waarp.common.json.JsonHandler;
-import org.waarp.gateway.kernel.exception.HttpForbiddenRequestException;
-import org.waarp.gateway.kernel.exception.HttpIncorrectRequestException;
-import org.waarp.gateway.kernel.exception.HttpInvalidAuthenticationException;
 import org.waarp.gateway.kernel.rest.DataModelRestMethodHandler.COMMAND_TYPE;
 import org.waarp.gateway.kernel.rest.HttpRestHandler.METHOD;
 
@@ -47,31 +44,28 @@ public class RootOptionsRestMethodHandler extends RestMethodHandler {
   @Override
   public void checkHandlerSessionCorrectness(final HttpRestHandler handler,
                                              final RestArgument arguments,
-                                             final RestArgument result)
-      throws HttpForbiddenRequestException {
+                                             final RestArgument result) {
     // nothing
   }
 
   @Override
   public void getFileUpload(final HttpRestHandler handler,
                             final FileUpload data, final RestArgument arguments,
-                            final RestArgument result)
-      throws HttpIncorrectRequestException {
+                            final RestArgument result) {
     // nothing
   }
 
   @Override
   public Object getBody(final HttpRestHandler handler, final ByteBuf body,
-                        final RestArgument arguments, final RestArgument result)
-      throws HttpIncorrectRequestException {
+                        final RestArgument arguments,
+                        final RestArgument result) {
     return null;
   }
 
   @Override
   public void endParsingRequest(final HttpRestHandler handler,
                                 final RestArgument arguments,
-                                final RestArgument result, final Object body)
-      throws HttpIncorrectRequestException, HttpInvalidAuthenticationException {
+                                final RestArgument result, final Object body) {
     // nothing
   }
 

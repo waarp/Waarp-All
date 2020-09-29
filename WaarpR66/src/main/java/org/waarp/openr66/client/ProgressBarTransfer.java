@@ -26,7 +26,6 @@ import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.openr66.commander.ClientRunner;
 import org.waarp.openr66.context.ErrorCode;
 import org.waarp.openr66.context.R66Result;
-import org.waarp.openr66.context.task.exception.OpenR66RunnerErrorException;
 import org.waarp.openr66.database.data.DbTaskRunner;
 import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolNoConnectionException;
@@ -149,13 +148,6 @@ public abstract class ProgressBarTransfer extends AbstractTransfer {
                      future.getRunner().getBlocksize());
         exc = null;
         break;
-      } catch (final OpenR66RunnerErrorException e) {
-        logger.error("Cannot Transfer", e);
-        future.setResult(
-            new R66Result(e, null, true, ErrorCode.Internal, taskRunner));
-        future.setFailure(e);
-        lastCallBack(false, taskRunner.getRank(), taskRunner.getBlocksize());
-        return;
       } catch (final OpenR66ProtocolNoConnectionException e) {
         logger.error("Cannot Connect", e);
         future.setResult(

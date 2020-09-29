@@ -57,7 +57,7 @@ public class WaarpX509TrustManager implements X509TrustManager {
   public WaarpX509TrustManager(final TrustManagerFactory tmf)
       throws CryptoException {
     final TrustManager[] tms = tmf.getTrustManagers();
-    /**
+    /*
      * Iterate over the returned trustmanagers, look for an instance of X509TrustManager and use it as the default
      */
     for (final TrustManager tm : tms) {
@@ -66,7 +66,7 @@ public class WaarpX509TrustManager implements X509TrustManager {
         return;
       }
     }
-    /**
+    /*
      * Could not initialize, maybe try to build it from scratch?
      */
     throw new CryptoException("Cannot initialize the WaarpX509TrustManager");

@@ -120,7 +120,7 @@ public class JsonHandler {
    *
    * @return the jsonNode (ObjectNode or ArrayNode)
    */
-  public static final ObjectNode getFromFile(final File file) {
+  public static ObjectNode getFromFile(final File file) {
     try {
       return (ObjectNode) mapper.readTree(file);
     } catch (final JsonProcessingException e) {
@@ -136,8 +136,7 @@ public class JsonHandler {
    *
    * @return the object of type clasz
    */
-  public static final <T> T getFromString(final String value,
-                                          final Class<T> clasz) {
+  public static <T> T getFromString(final String value, final Class<T> clasz) {
     try {
       return mapper.readValue(value, clasz);
     } catch (final IOException e) {
@@ -151,8 +150,7 @@ public class JsonHandler {
    *
    * @return the corresponding object
    */
-  public static final Object getFromFile(final File file,
-                                         final Class<?> clasz) {
+  public static Object getFromFile(final File file, final Class<?> clasz) {
     try {
       return mapper.readValue(file, clasz);
     } catch (final IOException e) {
@@ -204,8 +202,7 @@ public class JsonHandler {
    *
    * @return True if correctly written
    */
-  public static final boolean writeAsFile(final Object object,
-                                          final File file) {
+  public static boolean writeAsFile(final Object object, final File file) {
     try {
       mapper.writeValue(file, object);
       return true;
@@ -233,8 +230,7 @@ public class JsonHandler {
    *
    * @return the String if the field exists, else null
    */
-  public static final String getString(final ObjectNode node,
-                                       final String field) {
+  public static String getString(final ObjectNode node, final String field) {
     return getValue(node, field, (String) null);
   }
 
@@ -244,8 +240,7 @@ public class JsonHandler {
    *
    * @return the String if the field exists, else null
    */
-  public static final String getString(final ObjectNode node,
-                                       final Enum<?> field) {
+  public static String getString(final ObjectNode node, final Enum<?> field) {
     return getValue(node, field.name(), (String) null);
   }
 
@@ -256,8 +251,8 @@ public class JsonHandler {
    *
    * @return the String if the field exists, else defValue
    */
-  public static final String getValue(final ObjectNode node, final String field,
-                                      final String defValue) {
+  public static String getValue(final ObjectNode node, final String field,
+                                final String defValue) {
     final JsonNode elt = node.get(field);
     if (elt != null) {
       final String val = elt.asText();
@@ -276,9 +271,8 @@ public class JsonHandler {
    *
    * @return the Boolean if the field exists, else defValue
    */
-  public static final Boolean getValue(final ObjectNode node,
-                                       final String field,
-                                       final boolean defValue) {
+  public static Boolean getValue(final ObjectNode node, final String field,
+                                 final boolean defValue) {
     return node.path(field).asBoolean(defValue);
   }
 
@@ -289,8 +283,8 @@ public class JsonHandler {
    *
    * @return the Double if the field exists, else defValue
    */
-  public static final Double getValue(final ObjectNode node, final String field,
-                                      final double defValue) {
+  public static Double getValue(final ObjectNode node, final String field,
+                                final double defValue) {
     return node.path(field).asDouble(defValue);
   }
 
@@ -301,8 +295,8 @@ public class JsonHandler {
    *
    * @return the Long if the field exists, else defValue
    */
-  public static final Long getValue(final ObjectNode node, final String field,
-                                    final long defValue) {
+  public static Long getValue(final ObjectNode node, final String field,
+                              final long defValue) {
     return node.path(field).asLong(defValue);
   }
 
@@ -313,8 +307,8 @@ public class JsonHandler {
    *
    * @return the Integer if the field exists, else defValue
    */
-  public static final Integer getValue(final ObjectNode node,
-                                       final String field, final int defValue) {
+  public static Integer getValue(final ObjectNode node, final String field,
+                                 final int defValue) {
     return node.path(field).asInt(defValue);
   }
 
@@ -325,8 +319,8 @@ public class JsonHandler {
    *
    * @return the byte array if the field exists, else defValue
    */
-  public static final byte[] getValue(final ObjectNode node, final String field,
-                                      final byte[] defValue) {
+  public static byte[] getValue(final ObjectNode node, final String field,
+                                final byte[] defValue) {
     final JsonNode elt = node.get(field);
     if (elt != null) {
       try {
@@ -343,8 +337,8 @@ public class JsonHandler {
    * @param field
    * @param value
    */
-  public static final void setValue(final ObjectNode node, final String field,
-                                    final boolean value) {
+  public static void setValue(final ObjectNode node, final String field,
+                              final boolean value) {
     node.put(field, value);
   }
 
@@ -353,8 +347,8 @@ public class JsonHandler {
    * @param field
    * @param value
    */
-  public static final void setValue(final ObjectNode node, final String field,
-                                    final double value) {
+  public static void setValue(final ObjectNode node, final String field,
+                              final double value) {
     node.put(field, value);
   }
 
@@ -363,8 +357,8 @@ public class JsonHandler {
    * @param field
    * @param value
    */
-  public static final void setValue(final ObjectNode node, final String field,
-                                    final int value) {
+  public static void setValue(final ObjectNode node, final String field,
+                              final int value) {
     node.put(field, value);
   }
 
@@ -373,8 +367,8 @@ public class JsonHandler {
    * @param field
    * @param value
    */
-  public static final void setValue(final ObjectNode node, final String field,
-                                    final long value) {
+  public static void setValue(final ObjectNode node, final String field,
+                              final long value) {
     node.put(field, value);
   }
 
@@ -383,8 +377,8 @@ public class JsonHandler {
    * @param field
    * @param value
    */
-  public static final void setValue(final ObjectNode node, final String field,
-                                    final String value) {
+  public static void setValue(final ObjectNode node, final String field,
+                              final String value) {
     if (value == null || value.isEmpty()) {
       return;
     }
@@ -396,8 +390,8 @@ public class JsonHandler {
    * @param field
    * @param value
    */
-  public static final void setValue(final ObjectNode node, final String field,
-                                    final byte[] value) {
+  public static void setValue(final ObjectNode node, final String field,
+                              final byte[] value) {
     if (value == null || value.length == 0) {
       return;
     }
@@ -410,8 +404,7 @@ public class JsonHandler {
    *
    * @return True if all fields exist
    */
-  public static final boolean exist(final ObjectNode node,
-                                    final String... field) {
+  public static boolean exist(final ObjectNode node, final String... field) {
     for (final String string : field) {
       if (!node.has(string)) {
         return false;
@@ -427,9 +420,8 @@ public class JsonHandler {
    *
    * @return the String if the field exists, else defValue
    */
-  public static final String getValue(final ObjectNode node,
-                                      final Enum<?> field,
-                                      final String defValue) {
+  public static String getValue(final ObjectNode node, final Enum<?> field,
+                                final String defValue) {
     return getValue(node, field.name(), defValue);
   }
 
@@ -440,9 +432,8 @@ public class JsonHandler {
    *
    * @return the Boolean if the field exists, else defValue
    */
-  public static final Boolean getValue(final ObjectNode node,
-                                       final Enum<?> field,
-                                       final boolean defValue) {
+  public static Boolean getValue(final ObjectNode node, final Enum<?> field,
+                                 final boolean defValue) {
     return node.path(field.name()).asBoolean(defValue);
   }
 
@@ -453,9 +444,8 @@ public class JsonHandler {
    *
    * @return the Double if the field exists, else defValue
    */
-  public static final Double getValue(final ObjectNode node,
-                                      final Enum<?> field,
-                                      final double defValue) {
+  public static Double getValue(final ObjectNode node, final Enum<?> field,
+                                final double defValue) {
     return node.path(field.name()).asDouble(defValue);
   }
 
@@ -466,8 +456,8 @@ public class JsonHandler {
    *
    * @return the Long if the field exists, else defValue
    */
-  public static final Long getValue(final ObjectNode node, final Enum<?> field,
-                                    final long defValue) {
+  public static Long getValue(final ObjectNode node, final Enum<?> field,
+                              final long defValue) {
     return node.path(field.name()).asLong(defValue);
   }
 
@@ -478,9 +468,8 @@ public class JsonHandler {
    *
    * @return the Integer if the field exists, else defValue
    */
-  public static final Integer getValue(final ObjectNode node,
-                                       final Enum<?> field,
-                                       final int defValue) {
+  public static Integer getValue(final ObjectNode node, final Enum<?> field,
+                                 final int defValue) {
     return node.path(field.name()).asInt(defValue);
   }
 
@@ -491,9 +480,8 @@ public class JsonHandler {
    *
    * @return the byte array if the field exists, else defValue
    */
-  public static final byte[] getValue(final ObjectNode node,
-                                      final Enum<?> field,
-                                      final byte[] defValue) {
+  public static byte[] getValue(final ObjectNode node, final Enum<?> field,
+                                final byte[] defValue) {
     return getValue(node, field.name(), defValue);
   }
 
@@ -502,8 +490,8 @@ public class JsonHandler {
    * @param field
    * @param value
    */
-  public static final void setValue(final ObjectNode node, final Enum<?> field,
-                                    final boolean value) {
+  public static void setValue(final ObjectNode node, final Enum<?> field,
+                              final boolean value) {
     node.put(field.name(), value);
   }
 
@@ -512,8 +500,8 @@ public class JsonHandler {
    * @param field
    * @param value
    */
-  public static final void setValue(final ObjectNode node, final Enum<?> field,
-                                    final double value) {
+  public static void setValue(final ObjectNode node, final Enum<?> field,
+                              final double value) {
     node.put(field.name(), value);
   }
 
@@ -522,8 +510,8 @@ public class JsonHandler {
    * @param field
    * @param value
    */
-  public static final void setValue(final ObjectNode node, final Enum<?> field,
-                                    final int value) {
+  public static void setValue(final ObjectNode node, final Enum<?> field,
+                              final int value) {
     node.put(field.name(), value);
   }
 
@@ -532,8 +520,8 @@ public class JsonHandler {
    * @param field
    * @param value
    */
-  public static final void setValue(final ObjectNode node, final Enum<?> field,
-                                    final long value) {
+  public static void setValue(final ObjectNode node, final Enum<?> field,
+                              final long value) {
     node.put(field.name(), value);
   }
 
@@ -542,8 +530,8 @@ public class JsonHandler {
    * @param field
    * @param value
    */
-  public static final void setValue(final ObjectNode node, final Enum<?> field,
-                                    final String value) {
+  public static void setValue(final ObjectNode node, final Enum<?> field,
+                              final String value) {
     if (value == null || value.isEmpty()) {
       return;
     }
@@ -555,8 +543,8 @@ public class JsonHandler {
    * @param field
    * @param value
    */
-  public static final void setValue(final ObjectNode node, final Enum<?> field,
-                                    final byte[] value) {
+  public static void setValue(final ObjectNode node, final Enum<?> field,
+                              final byte[] value) {
     if (value == null || value.length == 0) {
       return;
     }
@@ -569,8 +557,7 @@ public class JsonHandler {
    *
    * @return True if all fields exist
    */
-  public static final boolean exist(final ObjectNode node,
-                                    final Enum<?>... field) {
+  public static boolean exist(final ObjectNode node, final Enum<?>... field) {
     for (final Enum<?> enm : field) {
       if (!node.has(enm.name())) {
         return false;

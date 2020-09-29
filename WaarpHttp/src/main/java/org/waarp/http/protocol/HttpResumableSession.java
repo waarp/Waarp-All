@@ -34,7 +34,6 @@ import org.waarp.openr66.context.filesystem.R66Dir;
 import org.waarp.openr66.context.filesystem.R66File;
 import org.waarp.openr66.context.task.exception.OpenR66RunnerErrorException;
 import org.waarp.openr66.database.data.DbTaskRunner;
-import org.waarp.openr66.protocol.exception.OpenR66ProtocolSystemException;
 
 import java.io.File;
 import java.io.IOException;
@@ -259,8 +258,6 @@ public class HttpResumableSession extends HttpSessionAbstract {
         runPostTask();
         authent.finalizeTransfer(this, session);
       } catch (final OpenR66RunnerErrorException e) {
-        error(e, session.getBusinessObject());
-      } catch (final OpenR66ProtocolSystemException e) {
         error(e, session.getBusinessObject());
       } catch (final CommandAbstractException e) {
         error(e, session.getBusinessObject());

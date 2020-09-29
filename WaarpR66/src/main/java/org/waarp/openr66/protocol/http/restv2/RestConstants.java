@@ -68,7 +68,7 @@ public final class RestConstants {
    *
    * @return The name of this R66 Server
    */
-  public static final String serverName() {
+  public static String serverName() {
     return Configuration.configuration.getHostId();
   }
 
@@ -79,7 +79,7 @@ public final class RestConstants {
    *
    * @return the name of this R66 server according to SSL
    */
-  public static final String serverName(final String requested) {
+  public static String serverName(final String requested) {
     String requester = serverName();
     try {
       requester = Configuration.configuration.getHostId(requested);

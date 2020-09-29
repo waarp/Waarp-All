@@ -155,15 +155,13 @@ public class DbModelH2Kernel extends DbModelH2 {
   }
 
   @Override
-  public boolean upgradeDb(final DbSession session, final String version)
-      throws WaarpDatabaseNoConnectionException {
+  public boolean upgradeDb(final DbSession session, final String version) {
     return false;
   }
 
   @Override
   public boolean needUpgradeDb(final DbSession session, final String version,
-                               final boolean tryFix)
-      throws WaarpDatabaseNoConnectionException {
+                               final boolean tryFix) {
     return false;
   }
 

@@ -62,7 +62,7 @@ public class XMLBusinessDAO implements BusinessDAO {
 
   private final File file;
 
-  public XMLBusinessDAO(final String filePath) throws DAOConnectionException {
+  public XMLBusinessDAO(final String filePath) {
     file = new File(filePath);
   }
 
@@ -72,12 +72,12 @@ public class XMLBusinessDAO implements BusinessDAO {
   }
 
   @Override
-  public void delete(final Business business) throws DAOConnectionException {
+  public void delete(final Business business) {
     dbR66BusinessHashMap.remove(business.getHostid());
   }
 
   @Override
-  public void deleteAll() throws DAOConnectionException {
+  public void deleteAll() {
     dbR66BusinessHashMap.clear();
   }
 
@@ -153,7 +153,7 @@ public class XMLBusinessDAO implements BusinessDAO {
   }
 
   @Override
-  public void insert(final Business business) throws DAOConnectionException {
+  public void insert(final Business business) {
     dbR66BusinessHashMap.put(business.getHostid(), business);
   }
 
@@ -197,7 +197,7 @@ public class XMLBusinessDAO implements BusinessDAO {
   }
 
   @Override
-  public void update(final Business business) throws DAOConnectionException {
+  public void update(final Business business) {
     dbR66BusinessHashMap.put(business.getHostid(), business);
   }
 

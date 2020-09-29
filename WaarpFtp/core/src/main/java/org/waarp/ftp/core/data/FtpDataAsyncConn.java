@@ -487,11 +487,10 @@ public class FtpDataAsyncConn {
    *
    * @param dataChannel the new Data Channel
    *
-   * @throws InterruptedException
    * @throws Reply425Exception
    */
   public void setNewOpenedDataChannel(final Channel dataChannel)
-      throws InterruptedException, Reply425Exception {
+      throws Reply425Exception {
     this.dataChannel = dataChannel;
     if (dataChannel == null) {
       final String curmode;

@@ -32,7 +32,6 @@
  */
 package org.waarp.common.logging;
 
-import java.io.ObjectStreamException;
 import java.io.Serializable;
 
 /**
@@ -244,7 +243,7 @@ public abstract class AbstractWaarpLogger implements WaarpLogger, Serializable {
     }
   }
 
-  protected Object readResolve() throws ObjectStreamException {
+  protected Object readResolve() {
     return WaarpLoggerFactory.getInstance(name());
   }
 
@@ -253,7 +252,7 @@ public abstract class AbstractWaarpLogger implements WaarpLogger, Serializable {
    *
    * @return the simple Class Name
    */
-  public static final String simpleClassName(final Object o) {
+  public static String simpleClassName(final Object o) {
     if (o == null) {
       return "null_object";
     } else {
@@ -266,7 +265,7 @@ public abstract class AbstractWaarpLogger implements WaarpLogger, Serializable {
    *
    * @return the simple Class Name
    */
-  public static final String simpleClassName(final Class<?> clazz) {
+  public static String simpleClassName(final Class<?> clazz) {
     if (clazz == null) {
       return "null_class";
     }
@@ -313,7 +312,7 @@ public abstract class AbstractWaarpLogger implements WaarpLogger, Serializable {
    *
    * @return "ClassAndMethodName(FileName:LineNumber)"
    */
-  public static final String getImmediateMethodAndLine() {
+  public static String getImmediateMethodAndLine() {
     final StackTraceElement elt =
         Thread.currentThread().getStackTrace()[BASELEVEL + 1];
     return getMethodAndLine(elt);
@@ -326,7 +325,7 @@ public abstract class AbstractWaarpLogger implements WaarpLogger, Serializable {
    *
    * @return "MethodName(FileName:LineNumber)"
    */
-  public static final String getLoggerMethodAndLine() {
+  public static String getLoggerMethodAndLine() {
     final StackTraceElement elt =
         Thread.currentThread().getStackTrace()[LOGLEVEL];
     return getMethodAndLine(elt);
@@ -337,7 +336,7 @@ public abstract class AbstractWaarpLogger implements WaarpLogger, Serializable {
    *
    * @return "ClassAndMethodName(FileName:LineNumber)"
    */
-  protected static final String getRankMethodAndLine(final int rank) {
+  protected static String getRankMethodAndLine(final int rank) {
     final StackTraceElement elt = Thread.currentThread().getStackTrace()[rank];
     return getMethodAndLine(elt);
   }

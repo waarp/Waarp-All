@@ -27,7 +27,6 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.QueryStringDecoder;
 import io.netty.handler.traffic.TrafficCounter;
 import org.waarp.common.exception.FileTransferException;
-import org.waarp.common.exception.InvalidArgumentException;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.utility.WaarpStringUtils;
@@ -107,9 +106,6 @@ public class HttpFormattedHandlerProxyR66 extends HttpFormattedHandler {
     final String value;
     try {
       value = WaarpStringUtils.readFileException(filename);
-    } catch (final InvalidArgumentException e) {
-      logger.error("Error while trying to open: " + filename, e);
-      return "";
     } catch (final FileTransferException e) {
       logger.error("Error while trying to read: " + filename, e);
       return "";
@@ -142,7 +138,7 @@ public class HttpFormattedHandlerProxyR66 extends HttpFormattedHandler {
 
   @Override
   protected void channelRead0(final ChannelHandlerContext ctx,
-                              final FullHttpRequest msg) throws Exception {
+                              final FullHttpRequest msg) {
     isCurrentRequestXml = false;
     isCurrentRequestJson = false;
     status = HttpResponseStatus.OK;
@@ -201,7 +197,7 @@ public class HttpFormattedHandlerProxyR66 extends HttpFormattedHandler {
 
   @Override
   public void exceptionCaught(final ChannelHandlerContext ctx,
-                              final Throwable cause) throws Exception {
+                              final Throwable cause) {
     final OpenR66Exception exception = OpenR66ExceptionTrappedFactory
         .getExceptionFromTrappedException(ctx.channel(), cause);
     if (exception != null) {

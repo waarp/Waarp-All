@@ -1238,7 +1238,7 @@ public class AdminR66OperationsGui extends JFrame {
     }
 
     @Override
-    protected String doInBackground() throws Exception {
+    protected String doInBackground() {
       disableAllButtons();
       startRequest();
       switch (method) {

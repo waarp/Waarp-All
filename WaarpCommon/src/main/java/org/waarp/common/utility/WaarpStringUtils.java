@@ -74,7 +74,7 @@ public final class WaarpStringUtils {
    * @throws FileTransferException for reading exception
    */
   public static String readFileException(final String filename)
-      throws InvalidArgumentException, FileTransferException {
+      throws FileTransferException {
     final File file = new File(filename);
     // Check for size of file
     if (file.length() > Integer.MAX_VALUE) {
@@ -100,9 +100,6 @@ public final class WaarpStringUtils {
   public static String readFile(final String filename) {
     try {
       return readFileException(filename);
-    } catch (final InvalidArgumentException e) {
-      logger.error("Error while trying to open: " + filename, e);
-      return "";
     } catch (final FileTransferException e) {
       logger.error("Error while trying to read: " + filename, e);
       return "";

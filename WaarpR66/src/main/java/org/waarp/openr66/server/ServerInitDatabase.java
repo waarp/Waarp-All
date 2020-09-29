@@ -322,7 +322,7 @@ public class ServerInitDatabase {
   /**
    * @return True if the base is up to date, else False (need Upgrade)
    */
-  public static boolean upgradedb() throws WaarpDatabaseException {
+  public static boolean upgradedb() {
     if (logger == null) {
       logger = WaarpLoggerFactory.getLogger(ServerInitDatabase.class);
     }

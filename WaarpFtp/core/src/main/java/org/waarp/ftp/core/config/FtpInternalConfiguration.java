@@ -297,7 +297,7 @@ public class FtpInternalConfiguration {
 
     logger.debug("Start command connections {}", configuration.getServerPort());
     // Main Command server
-    /**
+    /*
      * Bootstrap for Command server
      */
     final ServerBootstrap serverBootstrap = new ServerBootstrap();

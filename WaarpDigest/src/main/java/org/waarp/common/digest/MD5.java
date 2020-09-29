@@ -512,8 +512,7 @@ class MD5 {
    *     character set is desired.
    *
    * @throws UnsupportedEncodingException If the named charset
-   *     is
-   *     not supported.
+   *     is not supported.
    */
   void Update(final String s, final String charsetName)
       throws UnsupportedEncodingException {
@@ -627,7 +626,7 @@ class MD5 {
    *
    * @return Generated hex string
    */
-  static final String asHex(final byte[] hash) {
+  static String asHex(final byte[] hash) {
     final char[] buf = new char[hash.length * 2];
     for (int i = 0, x = 0; i < hash.length; i++) {
       buf[x++] = HEX_CHARS[hash[i] >>> 4 & 0xf];
@@ -644,7 +643,7 @@ class MD5 {
    *
    * @return Array of bytes converted from hex-string
    */
-  static final byte[] asByte(final String buf) {
+  static byte[] asByte(final String buf) {
     final byte[] from = buf.getBytes(FilesystemBasedDigest.UTF8);
     final byte[] hash = new byte[from.length / 2];
     for (int i = 0, x = 0; i < hash.length; i++) {
@@ -825,7 +824,7 @@ class MD5 {
    *
    * @return the crypted password
    */
-  static final String passwdCrypt(final String pwd) {
+  static String passwdCrypt(final String pwd) {
     final MD5 md5 = new MD5();
     final byte[] bpwd = pwd.getBytes(FilesystemBasedDigest.UTF8);
     for (int i = 0; i < 16; i++) {
@@ -842,7 +841,7 @@ class MD5 {
    *
    * @return the crypted password
    */
-  static final byte[] passwdCrypt(final byte[] bpwd) {
+  static byte[] passwdCrypt(final byte[] bpwd) {
     final MD5 md5 = new MD5();
     for (int i = 0; i < 16; i++) {
       md5.Update(md5.state, bpwd, 0, bpwd.length);
@@ -857,7 +856,7 @@ class MD5 {
    *
    * @return True if the pwd is comparable with the cryptPwd
    */
-  static final boolean equalPasswd(final String pwd, final String cryptPwd) {
+  static boolean equalPasswd(final String pwd, final String cryptPwd) {
     final String asHex = passwdCrypt(pwd);
     return cryptPwd.equals(asHex);
   }
@@ -868,7 +867,7 @@ class MD5 {
    *
    * @return True if the pwd is comparable with the cryptPwd
    */
-  static final boolean equalPasswd(final byte[] pwd, final byte[] cryptPwd) {
+  static boolean equalPasswd(final byte[] pwd, final byte[] cryptPwd) {
     final byte[] bytes = passwdCrypt(pwd);
     return Arrays.equals(cryptPwd, bytes);
   }

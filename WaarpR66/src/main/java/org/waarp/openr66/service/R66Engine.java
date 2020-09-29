@@ -81,7 +81,7 @@ public class R66Engine extends EngineAbstract {
   }
 
   @Override
-  public boolean waitShutdown() throws InterruptedException {
+  public boolean waitShutdown() {
     closeFuture.awaitOrInterruptible();
     logger.info("Shutdown on going: {}", closeFuture.isSuccess());
     return closeFuture.isSuccess();

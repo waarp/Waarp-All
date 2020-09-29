@@ -35,7 +35,7 @@ public class WaarpSucceededFuture extends WaarpCompletedFuture {
   }
 
   @Override
-  public WaarpFuture rethrowIfFailed() throws Exception {
+  public WaarpFuture rethrowIfFailed() {
     return this;
   }
 }

@@ -312,7 +312,7 @@ public class FtpDataModeCodec extends ByteToMessageCodec<DataBlock> {
     int newbyte;
     try {
       int pos = 0;
-      int limit = buffer.length;
+      final int limit = buffer.length;
       while (pos < limit) {
         newbyte = buffer[pos++] & 0xFF;
         if (newbyte == 0xFF) {

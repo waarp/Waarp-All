@@ -430,7 +430,7 @@ public abstract class HttpRestR66ClientResponseHandler
 
   @Override
   public void exceptionCaught(final ChannelHandlerContext ctx,
-                              final Throwable cause) throws Exception {
+                              final Throwable cause) {
     final RestFuture restFuture =
         ctx.channel().attr(HttpRestClientSimpleResponseHandler.RESTARGUMENT)
            .get();

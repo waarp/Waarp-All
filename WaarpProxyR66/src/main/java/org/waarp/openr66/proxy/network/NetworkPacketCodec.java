@@ -87,8 +87,7 @@ public class NetworkPacketCodec extends ByteToMessageCodec<NetworkPacket> {
 
   @Override
   protected void encode(final ChannelHandlerContext ctx,
-                        final NetworkPacket msg, final ByteBuf out)
-      throws Exception {
+                        final NetworkPacket msg, final ByteBuf out) {
     final ByteBuf finalBuf = msg.getNetworkPacket();
     out.writeBytes(finalBuf);
     WaarpNettyUtil.releaseCompletely(finalBuf);

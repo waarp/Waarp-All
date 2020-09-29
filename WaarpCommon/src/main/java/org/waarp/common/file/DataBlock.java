@@ -152,7 +152,9 @@ public class DataBlock {
     if (isRESTART) {
       this.block = null;
       markers = new int[6];
-      System.arraycopy(block, 0, markers, 0, 6);
+      for (int i = 0; i < 6; i++) {
+        markers[i] = block[i];
+      }
       byteCount = 6;
       return;
     }

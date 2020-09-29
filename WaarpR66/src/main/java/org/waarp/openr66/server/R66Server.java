@@ -27,7 +27,6 @@ import org.waarp.common.utility.WaarpShutdownHook;
 import org.waarp.openr66.configuration.FileBasedConfiguration;
 import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.configuration.Messages;
-import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
 
 /**
  * R66Server startup main class
@@ -40,11 +39,8 @@ public class R66Server {
 
   /**
    * @param args as first argument the configuration file
-   *
-   * @throws OpenR66ProtocolPacketException
    */
-  public static void main(final String[] args)
-      throws OpenR66ProtocolPacketException {
+  public static void main(final String[] args) {
     WaarpLoggerFactory
         .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));
     logger = WaarpLoggerFactory.getLogger(R66Server.class);

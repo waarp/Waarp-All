@@ -112,8 +112,8 @@ public final class SystemPropertyUtil {
         SysErrLogger.FAKE_LOGGER.sysout(IO_NETTY_ALLOCATOR_TYPE + ":" +
                                         io.netty.util.internal.SystemPropertyUtil
                                             .get(IO_NETTY_ALLOCATOR_TYPE));
-      } catch (final Throwable e1) {//NOSONAR
-        SysErrLogger.FAKE_LOGGER.ignoreLog(e1);
+      } catch (final Throwable ignored) {//NOSONAR
+        SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
       }
     }
     // Ensure minimize DIRECT except if something different set
@@ -128,8 +128,8 @@ public final class SystemPropertyUtil {
         SysErrLogger.FAKE_LOGGER.sysout(IO_NETTY_NOPREFERDIRECT + ":" +
                                         io.netty.util.internal.SystemPropertyUtil
                                             .get(IO_NETTY_NOPREFERDIRECT));
-      } catch (final Throwable e1) {//NOSONAR
-        SysErrLogger.FAKE_LOGGER.ignoreLog(e1);
+      } catch (final Throwable ignored) {//NOSONAR
+        SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
       }
     }
     // Ensure minimize Direct except if something different set
@@ -144,8 +144,8 @@ public final class SystemPropertyUtil {
         SysErrLogger.FAKE_LOGGER.sysout(IO_NETTY_MAXDIRECTMEMORY + ":" +
                                         io.netty.util.internal.SystemPropertyUtil
                                             .get(IO_NETTY_MAXDIRECTMEMORY));
-      } catch (final Throwable e1) {//NOSONAR
-        SysErrLogger.FAKE_LOGGER.ignoreLog(e1);
+      } catch (final Throwable ignored) {//NOSONAR
+        SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
       }
     }
     if (!contains(FILE_ENCODING) ||
@@ -302,10 +302,10 @@ public final class SystemPropertyUtil {
     if (value.matches(FIND_0_9)) {
       try {
         return Integer.parseInt(value);
-      } catch (final Exception e) {
+      } catch (final Exception ignored) {
         // Since logger could be not available yet
         // Ignore
-        SysErrLogger.FAKE_LOGGER.ignoreLog(e);
+        SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
       }
     }
     try {
@@ -346,10 +346,10 @@ public final class SystemPropertyUtil {
     if (value.matches(FIND_0_9)) {
       try {
         return Long.parseLong(value);
-      } catch (final Exception e) {
+      } catch (final Exception ignored) {
         // Since logger could be not available yet
         // Ignore
-        SysErrLogger.FAKE_LOGGER.ignoreLog(e);
+        SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
       }
     }
     try {
@@ -722,9 +722,9 @@ public final class SystemPropertyUtil {
       String os = "";
       try {
         os = System.getProperty("os.name").toLowerCase();
-      } catch (final Exception e) {
+      } catch (final Exception ignored) {
         // ignore
-        SysErrLogger.FAKE_LOGGER.ignoreLog(e);
+        SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
       }
       if (os.contains("win")) {
         mOs = Platform.WINDOWS;

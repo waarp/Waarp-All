@@ -63,6 +63,9 @@ public final class XmlUtil {
   public static SAXReader getNewSaxReader() {
     final SAXReader saxReader = new SAXReader();
     try {
+      saxReader
+          .setFeature("http://apache.org/xml/features/disallow-doctype-decl",
+                      true);
       saxReader.setFeature(
           "http://apache.org/xml/features/nonvalidating/load-dtd-grammar",
           false);
@@ -240,15 +243,6 @@ public final class XmlUtil {
     writer.write(element);
     writer.flush();
     writer.close();
-  }
-
-  /**
-   * @param document
-   *
-   * @return the root Element from the document
-   */
-  public static Element getRootElement(final Document document) {
-    return document.getRootElement();
   }
 
   /**
@@ -620,18 +614,7 @@ public final class XmlUtil {
           } catch (final DocumentException e) {
             continue;
           }
-          for (final Node element : elts) {
-            final XmlValue[] newValue =
-                read((Element) element, decls[i].getSubXml());
-            if (newValue == null) {
-              continue;
-            }
-            try {
-              value.addValue(newValue);
-            } catch (final InvalidObjectException e) {
-              // nothing
-            }
-          }
+          addValueToNodes(value, elts, decls[i]);
         } else {
           final Element element;
           try {
@@ -639,15 +622,7 @@ public final class XmlUtil {
           } catch (final DocumentException e) {
             continue;
           }
-          final XmlValue[] newValue = read(element, decls[i].getSubXml());
-          if (newValue == null) {
-            continue;
-          }
-          try {
-            value.setValue(newValue);
-          } catch (final InvalidObjectException e) {
-            // nothing
-          }
+          setValueToElement(value, read(element, decls[i].getSubXml()));
         }
       } else if (decls[i].isMultiple()) {
         final List<Node> elts;
@@ -656,16 +631,7 @@ public final class XmlUtil {
         } catch (final DocumentException e) {
           continue;
         }
-        for (final Node element : elts) {
-          final String svalue = element.getText();
-          try {
-            value.addFromString(getExtraTrimed(svalue));
-          } catch (final InvalidObjectException e) {
-            // nothing
-          } catch (final InvalidArgumentException e) {
-            // nothing
-          }
-        }
+        addFromStringToElements(value, elts);
       } else {
         final Element element;
         try {
@@ -707,18 +673,7 @@ public final class XmlUtil {
           } catch (final DocumentException e) {
             continue;
           }
-          for (final Node element : elts) {
-            final XmlValue[] newValue =
-                read((Element) element, decls[i].getSubXml());
-            if (newValue == null) {
-              continue;
-            }
-            try {
-              value.addValue(newValue);
-            } catch (final InvalidObjectException e) {
-              // nothing
-            }
-          }
+          addValueToNodes(value, elts, decls[i]);
         } else {
           final Element element;
           try {
@@ -726,15 +681,7 @@ public final class XmlUtil {
           } catch (final DocumentException e) {
             continue;
           }
-          final XmlValue[] newValue = read(element, decls[i].getSubXml());
-          if (newValue == null) {
-            continue;
-          }
-          try {
-            value.setValue(newValue);
-          } catch (final InvalidObjectException e) {
-            // nothing
-          }
+          setValueToElement(value, read(element, decls[i].getSubXml()));
         }
       } else if (decls[i].isMultiple()) {
         final List<Node> elts;
@@ -743,16 +690,7 @@ public final class XmlUtil {
         } catch (final DocumentException e) {
           continue;
         }
-        for (final Node element : elts) {
-          final String svalue = element.getText();
-          try {
-            value.addFromString(getExtraTrimed(svalue));
-          } catch (final InvalidObjectException e) {
-            // nothing
-          } catch (final InvalidArgumentException e) {
-            // nothing
-          }
-        }
+        addFromStringToElements(value, elts);
       } else {
         final Element element;
         try {
@@ -769,6 +707,45 @@ public final class XmlUtil {
       }
     }
     return values;
+  }
+
+  private static void addFromStringToElements(final XmlValue value,
+                                              final List<Node> elts) {
+    for (final Node element : elts) {
+      final String svalue = element.getText();
+      try {
+        value.addFromString(getExtraTrimed(svalue));
+      } catch (final InvalidObjectException e) {
+        // nothing
+      } catch (final InvalidArgumentException e) {
+        // nothing
+      }
+    }
+  }
+
+  private static void setValueToElement(final XmlValue value,
+                                        final XmlValue[] read) {
+    if (read == null) {
+      return;
+    }
+    try {
+      value.setValue(read);
+    } catch (final InvalidObjectException e) {
+      // nothing
+    }
+  }
+
+  private static void addValueToNodes(final XmlValue value,
+                                      final List<Node> elts,
+                                      final XmlDecl decl) {
+    for (final Node element : elts) {
+      final XmlValue[] newValue = read((Element) element, decl.getSubXml());
+      try {
+        value.addValue(newValue);
+      } catch (final InvalidObjectException e) {
+        // nothing
+      }
+    }
   }
 
   /**

@@ -20,7 +20,6 @@
 
 package org.waarp.ftp.client;
 
-import java.io.IOException;
 import java.io.OutputStream;
 
 /**
@@ -36,28 +35,27 @@ public class NullOutputStream extends OutputStream {
   }
 
   @Override
-  public void close() throws IOException {
+  public void close() {
     // nothing
   }
 
   @Override
-  public void flush() throws IOException {
+  public void flush() {
     // nothing
   }
 
   @Override
-  public void write(final byte[] b, final int off, final int len)
-      throws IOException {
+  public void write(final byte[] b, final int off, final int len) {
     // nothing
   }
 
   @Override
-  public void write(final byte[] b) throws IOException {
+  public void write(final byte[] b) {
     // nothing
   }
 
   @Override
-  public void write(final int b) throws IOException {
+  public void write(final int b) {
     // nothing
   }
 

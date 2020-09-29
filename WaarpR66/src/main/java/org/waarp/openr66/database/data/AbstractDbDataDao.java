@@ -338,7 +338,7 @@ public abstract class AbstractDbDataDao<E> extends AbstractDbData {
    * {@link UnsupportedOperationException}
    */
   @Override
-  protected void setFromArray() throws WaarpDatabaseSqlException {
+  protected void setFromArray() {
     throw new UnsupportedOperationException(SHOULD_NOT_BE_CALLED);
   }
 
@@ -347,8 +347,7 @@ public abstract class AbstractDbDataDao<E> extends AbstractDbData {
    */
   @Override
   protected void getValues(final DbPreparedStatement preparedStatement,
-                           final DbValue[] values)
-      throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
+                           final DbValue[] values) {
     throw new UnsupportedOperationException(SHOULD_NOT_BE_CALLED);
   }
 }

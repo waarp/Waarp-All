@@ -23,7 +23,6 @@ package org.waarp.openr66.dao.database.xml;
 import org.junit.Rule;
 import org.junit.rules.TestWatcher;
 import org.testcontainers.containers.JdbcDatabaseContainer;
-import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.utility.SingletonUtils;
 import org.waarp.common.utility.TestWatcherJunit4;
 import org.waarp.openr66.context.ErrorCode;
@@ -134,16 +133,14 @@ public class DbXmlDAOTest extends DBAllDAOTest {
   @Override
   public void initDB() {
     // Init through Map
-    try {
+    {
       final XMLLimitDAO dao = new XMLLimitDAO(path);
       dao.deleteAll();
       dao.insert(new Limit("server1", 5, 1, 2, 3, 4, UpdatedInfo.valueOf(1)));
       dao.insert(new Limit("server2", 2, 2, 3, 2, 2, UpdatedInfo.valueOf(0)));
       dao.insert(new Limit("server3", 3, 5, 6, 3, 4, UpdatedInfo.valueOf(0)));
-    } catch (final DAOConnectionException e) {
-      SysErrLogger.FAKE_LOGGER.syserr(e);
     }
-    try {
+    {
       final XMLBusinessDAO dao = new XMLBusinessDAO(path);
       dao.deleteAll();
       dao.insert(
@@ -161,11 +158,9 @@ public class DbXmlDAOTest extends DBAllDAOTest {
       dao.insert(new Business("server5", "", "", "",
                               "<root><version>3.0.9</version></root>",
                               UpdatedInfo.UNKNOWN));
-    } catch (final DAOConnectionException e) {
-      e.printStackTrace();
     }
 
-    try {
+    {
       final XMLHostDAO dao = new XMLHostDAO(path);
       dao.deleteAll();
       dao.insert(new Host("server1", "127.0.0.1", 6666,
@@ -180,11 +175,9 @@ public class DbXmlDAOTest extends DBAllDAOTest {
                           "303465626439323336346235616136306332396630346461353132616361346265303639646336633661383432653235"
                               .getBytes(), false, false, false, false, true,
                           UpdatedInfo.valueOf(0)));
-    } catch (final DAOConnectionException e) {
-      e.printStackTrace();
     }
 
-    try {
+    {
       final XMLRuleDAO dao = new XMLRuleDAO(path);
       dao.deleteAll();
       dao.insert(new org.waarp.openr66.pojo.Rule("default", 1,
@@ -230,8 +223,6 @@ public class DbXmlDAOTest extends DBAllDAOTest {
                                                  SingletonUtils.<RuleTask>singletonList(),
                                                  SingletonUtils.<RuleTask>singletonList(),
                                                  UpdatedInfo.UNKNOWN));
-    } catch (final DAOConnectionException e) {
-      e.printStackTrace();
     }
 
     try {

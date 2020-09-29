@@ -20,7 +20,6 @@
 
 package org.waarp.gateway.ftp.exec;
 
-import org.waarp.common.command.exception.Reply421Exception;
 import org.waarp.common.future.WaarpFuture;
 
 /**
@@ -40,7 +39,7 @@ public class NoTaskExecutor extends AbstractExecutor {
   }
 
   @Override
-  public void run() throws Reply421Exception {
+  public void run() {
     futureCompletion.setSuccess();
   }
 }

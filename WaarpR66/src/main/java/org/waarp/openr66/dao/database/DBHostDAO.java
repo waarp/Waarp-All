@@ -22,7 +22,6 @@ package org.waarp.openr66.dao.database;
 
 import org.waarp.common.lru.SynchronizedLruCache;
 import org.waarp.openr66.dao.HostDAO;
-import org.waarp.openr66.dao.exception.DAOConnectionException;
 import org.waarp.openr66.pojo.Host;
 import org.waarp.openr66.pojo.UpdatedInfo;
 import org.waarp.openr66.protocol.configuration.Configuration;
@@ -79,7 +78,7 @@ public class DBHostDAO extends StatementExecutor<Host> implements HostDAO {
       reentrantConcurrentHashMap =
       new SynchronizedLruCache<String, Host>(500, 180000);
 
-  public DBHostDAO(final Connection con) throws DAOConnectionException {
+  public DBHostDAO(final Connection con) {
     super(con);
   }
 

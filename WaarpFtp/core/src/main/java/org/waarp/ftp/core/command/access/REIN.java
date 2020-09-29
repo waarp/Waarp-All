@@ -20,7 +20,6 @@
 package org.waarp.ftp.core.command.access;
 
 import org.waarp.common.command.ReplyCode;
-import org.waarp.common.command.exception.CommandAbstractException;
 import org.waarp.ftp.core.command.AbstractCommand;
 import org.waarp.ftp.core.command.FtpCommandCode;
 
@@ -30,7 +29,7 @@ import org.waarp.ftp.core.command.FtpCommandCode;
 public class REIN extends AbstractCommand {
 
   @Override
-  public void exec() throws CommandAbstractException {
+  public void exec() {
     // reset to default
     getSession().rein();
     setExtraNextCommand(FtpCommandCode.USER);

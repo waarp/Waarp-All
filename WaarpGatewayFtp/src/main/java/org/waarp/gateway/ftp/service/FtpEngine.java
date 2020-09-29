@@ -86,7 +86,7 @@ public class FtpEngine extends EngineAbstract {
   }
 
   @Override
-  public boolean waitShutdown() throws InterruptedException {
+  public boolean waitShutdown() {
     closeFuture.awaitOrInterruptible();
     return closeFuture.isSuccess();
   }

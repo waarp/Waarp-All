@@ -174,7 +174,7 @@ public class LocalExecServerHandler
   }
 
   @Override
-  public void channelActive(final ChannelHandlerContext ctx) throws Exception {
+  public void channelActive(final ChannelHandlerContext ctx) {
     if (isShutdown(ctx.channel())) {
       answered = true;
       return;
@@ -194,8 +194,8 @@ public class LocalExecServerHandler
   }
 
   @Override
-  protected void channelRead0(final ChannelHandlerContext ctx, final String msg)
-      throws Exception {
+  protected void channelRead0(final ChannelHandlerContext ctx,
+                              final String msg) {
     answered = false;
 
     // Generate and write a response.
@@ -360,7 +360,7 @@ public class LocalExecServerHandler
 
   @Override
   public void exceptionCaught(final ChannelHandlerContext ctx,
-                              final Throwable cause) throws Exception {
+                              final Throwable cause) {
     if (!answered) {
       logger.error("Unexpected exception from Outband while not answered.",
                    cause);

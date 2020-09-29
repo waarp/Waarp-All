@@ -42,7 +42,6 @@ import java.net.SocketException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
-import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 
 import static org.waarp.common.digest.WaarpBC.*;
@@ -129,16 +128,14 @@ public class WaarpFtp4jClient {
             @Override
             public void checkClientTrusted(final X509Certificate[] certs,
 //NOSONAR
-                                           final String authType)
-                throws CertificateException {
+                                           final String authType) {
               // nothing
             }
 
             @Override
             public void checkServerTrusted(final X509Certificate[] certs,
 //NOSONAR
-                                           final String authType)
-                throws CertificateException {
+                                           final String authType) {
               // nothing
             }
           }

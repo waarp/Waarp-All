@@ -307,26 +307,9 @@ public class SpooledDirectoryTransfer implements Runnable {
     } else if (minimalSize > 0) {
       filter = new RegexFileFilter(minimalSize);
     }
-    // Will be used if no parallelism
     final FileMonitorCommandRunnableFuture commandValidFile =
-        new SpooledRunner(null);
-    final FileMonitorCommandRunnableFuture waarpRemovedCommand =
-        new FileMonitorCommandRunnableFuture() {
-          @Override
-          public void run(final FileItem file) {
-            if (normalInfoAsWarn) {
-              logger.warn("File removed: {}", file.file);
-            } else {
-              logger.info("File removed: {}", file.file);
-            }
-          }
-        };
-    final FileMonitorCommandRunnableFuture waarpHostCommand;
-    File dir = new File(directory.get(0));
-    monitor = new FileMonitor(name, status, stop, dir, null, elapseTime, filter,
-                              recurs, commandValidFile, waarpRemovedCommand,
-                              null);
-    monitor.setIgnoreAlreadyUsed(ignoreAlreadyUsed);
+        initializeFileMonitorCommandRunnableFuture(status, stop, filter);
+    File dir;
     if (!monitor.initialized()) {
       // wrong
       logger.error(
@@ -358,59 +341,7 @@ public class SpooledDirectoryTransfer implements Runnable {
     }
     final FileMonitor monitorArg = monitor;
     if (waarpHosts != null && !waarpHosts.isEmpty()) {
-      waarpHostCommand = new FileMonitorCommandRunnableFuture() {
-        @Override
-        public void run(final FileItem notused) {
-          try {
-            Thread.currentThread().setName("FileMonitorInformation_" + name);
-            if (admin.getSession() != null &&
-                admin.getSession().isDisActive()) {
-              admin.getSession().checkConnectionNoException();
-            }
-            String status = monitorArg.getStatus();
-            if (normalInfoAsWarn) {
-              logger.warn("Will inform back Waarp hosts of current history: " +
-                          monitorArg.getCurrentHistoryNb());
-            } else {
-              logger.info("Will inform back Waarp hosts of current history: {}",
-                          monitorArg.getCurrentHistoryNb());
-            }
-            for (String host : waarpHosts) {
-              host = host.trim();
-              if (host != null && !host.isEmpty()) {
-                final R66Future r66Future = new R66Future(true);
-                final BusinessRequestPacket packet = new BusinessRequestPacket(
-                    SpooledInformTask.class.getName() + ' ' + status, 0);
-                final BusinessRequest transaction =
-                    new BusinessRequest(networkTransaction, r66Future, host,
-                                        packet);
-                transaction.run();
-                r66Future.awaitOrInterruptible();
-                if (!r66Future.isSuccess()) {
-                  logger.info("Can't inform Waarp server: {} since {}", host,
-                              r66Future.getCause());
-                } else {
-                  final R66Result result = r66Future.getResult();
-                  if (result == null) {
-                    monitorArg.setNextAsFullStatus();
-                  } else {
-                    status = (String) result.getOther();
-                    if (status == null || status.equalsIgnoreCase(NEEDFULL)) {
-                      monitorArg.setNextAsFullStatus();
-                    }
-                  }
-                  logger.debug("Inform back Waarp hosts over for: {}", host);
-                }
-              }
-            }
-          } catch (final Throwable e) {
-            logger.error("Issue during Waarp information", e);
-            // ignore
-          }
-        }
-      };
-      monitor.setCommandCheckIteration(waarpHostCommand);
-      monitor.setElapseWaarpTime(elapseWaarpTime);
+      setWaarpHostCommand(monitorArg);
     }
     for (int i = 1; i < directory.size(); i++) {
       dir = new File(directory.get(i));
@@ -433,6 +364,89 @@ public class SpooledDirectoryTransfer implements Runnable {
       Configuration.configuration.getShutdownConfiguration().serviceFuture
           .setSuccess();
     }
+  }
+
+  private void setWaarpHostCommand(final FileMonitor monitorArg) {
+    final FileMonitorCommandRunnableFuture waarpHostCommand;
+    waarpHostCommand = new FileMonitorCommandRunnableFuture() {
+      @Override
+      public void run(final FileItem notused) {
+        try {
+          Thread.currentThread().setName("FileMonitorInformation_" + name);
+          if (admin.getSession() != null && admin.getSession().isDisActive()) {
+            admin.getSession().checkConnectionNoException();
+          }
+          String status = monitorArg.getStatus();
+          if (normalInfoAsWarn) {
+            logger.warn("Will inform back Waarp hosts of current history: " +
+                        monitorArg.getCurrentHistoryNb());
+          } else {
+            logger.info("Will inform back Waarp hosts of current history: {}",
+                        monitorArg.getCurrentHistoryNb());
+          }
+          for (String host : waarpHosts) {
+            if (host == null) {
+              continue;
+            }
+            host = host.trim();
+            if (!host.isEmpty()) {
+              final R66Future r66Future = new R66Future(true);
+              final BusinessRequestPacket packet = new BusinessRequestPacket(
+                  SpooledInformTask.class.getName() + ' ' + status, 0);
+              final BusinessRequest transaction =
+                  new BusinessRequest(networkTransaction, r66Future, host,
+                                      packet);
+              transaction.run();
+              r66Future.awaitOrInterruptible();
+              if (!r66Future.isSuccess()) {
+                logger.info("Can't inform Waarp server: {} since {}", host,
+                            r66Future.getCause());
+              } else {
+                final R66Result result = r66Future.getResult();
+                if (result == null) {
+                  monitorArg.setNextAsFullStatus();
+                } else {
+                  status = (String) result.getOther();
+                  if (status == null || status.equalsIgnoreCase(NEEDFULL)) {
+                    monitorArg.setNextAsFullStatus();
+                  }
+                }
+                logger.debug("Inform back Waarp hosts over for: {}", host);
+              }
+            }
+          }
+        } catch (final Throwable e) {
+          logger.error("Issue during Waarp information", e);
+          // ignore
+        }
+      }
+    };
+    monitor.setCommandCheckIteration(waarpHostCommand);
+    monitor.setElapseWaarpTime(elapseWaarpTime);
+  }
+
+  private FileMonitorCommandRunnableFuture initializeFileMonitorCommandRunnableFuture(
+      final File status, final File stop, final FileFilter filter) {
+    // Will be used if no parallelism
+    final FileMonitorCommandRunnableFuture commandValidFile =
+        new SpooledRunner(null);
+    final FileMonitorCommandRunnableFuture waarpRemovedCommand =
+        new FileMonitorCommandRunnableFuture() {
+          @Override
+          public void run(final FileItem file) {
+            if (normalInfoAsWarn) {
+              logger.warn("File removed: {}", file.file);
+            } else {
+              logger.info("File removed: {}", file.file);
+            }
+          }
+        };
+    final File dir = new File(directory.get(0));
+    monitor = new FileMonitor(name, status, stop, dir, null, elapseTime, filter,
+                              recurs, commandValidFile, waarpRemovedCommand,
+                              null);
+    monitor.setIgnoreAlreadyUsed(ignoreAlreadyUsed);
+    return commandValidFile;
   }
 
   public void stop() {
@@ -478,8 +492,11 @@ public class SpooledDirectoryTransfer implements Runnable {
       specialId = checkReuseUniqueHost(fileItem, specialId);
       try {
         for (String host : remoteHosts) {
+          if (host == null) {
+            continue;
+          }
           host = host.trim();
-          if (host != null && !host.isEmpty()) {
+          if (!host.isEmpty()) {
             final String filename = fileItem.file.getAbsolutePath();
             logger
                 .info("Launch transfer to " + host + " with file " + filename);
@@ -723,8 +740,12 @@ public class SpooledDirectoryTransfer implements Runnable {
           setValid(fileItem);
         } else {
           // Cancel the unique previous transfer
-          final String host = remoteHosts.get(0).trim();
-          if (host != null && !host.isEmpty()) {
+          String host = remoteHosts.get(0);
+          if (host == null) {
+            return specialId;
+          }
+          host = host.trim();
+          if (!host.isEmpty()) {
             final String filename = fileItem.file.getAbsolutePath();
             final String text =
                 "Request Transfer to be cancelled: " + fileItem.specialId +

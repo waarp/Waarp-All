@@ -94,7 +94,7 @@ public class RequestPacket extends AbstractLocalPacket {
    *
    * @return the same mode (RECV or SEND) in MD5 version
    */
-  public static final int getModeMD5(final int mode) {
+  public static int getModeMD5(final int mode) {
     switch (mode) {
       case 1:
       case 2:
@@ -112,7 +112,7 @@ public class RequestPacket extends AbstractLocalPacket {
    *
    * @return true if this mode is a RECV(MD5) mode
    */
-  public static final boolean isRecvMode(final int mode) {
+  public static boolean isRecvMode(final int mode) {
     return mode == TRANSFERMODE.RECVMODE.ordinal() ||
            mode == TRANSFERMODE.RECVMD5MODE.ordinal() ||
            mode == TRANSFERMODE.RECVTHROUGHMODE.ordinal() ||
@@ -125,8 +125,8 @@ public class RequestPacket extends AbstractLocalPacket {
    *
    * @return True if this mode is a THROUGH (MD5) mode
    */
-  public static final boolean isSendThroughMode(final int mode,
-                                                final boolean isRequested) {
+  public static boolean isSendThroughMode(final int mode,
+                                          final boolean isRequested) {
     return !isRequested && isSendThroughMode(mode) ||
            isRequested && isRecvThroughMode(mode);
   }
@@ -136,7 +136,7 @@ public class RequestPacket extends AbstractLocalPacket {
    *
    * @return True if this mode is a SEND THROUGH (MD5) mode
    */
-  public static final boolean isSendThroughMode(final int mode) {
+  public static boolean isSendThroughMode(final int mode) {
     return mode == TRANSFERMODE.SENDTHROUGHMODE.ordinal() ||
            mode == TRANSFERMODE.SENDMD5THROUGHMODE.ordinal();
   }
@@ -147,8 +147,8 @@ public class RequestPacket extends AbstractLocalPacket {
    *
    * @return True if this mode is a THROUGH (MD5) mode
    */
-  public static final boolean isRecvThroughMode(final int mode,
-                                                final boolean isRequested) {
+  public static boolean isRecvThroughMode(final int mode,
+                                          final boolean isRequested) {
     return !isRequested && isRecvThroughMode(mode) ||
            isRequested && isSendThroughMode(mode);
   }
@@ -158,12 +158,12 @@ public class RequestPacket extends AbstractLocalPacket {
    *
    * @return True if this mode is a RECV THROUGH (MD5) mode
    */
-  public static final boolean isRecvThroughMode(final int mode) {
+  public static boolean isRecvThroughMode(final int mode) {
     return mode == TRANSFERMODE.RECVTHROUGHMODE.ordinal() ||
            mode == TRANSFERMODE.RECVMD5THROUGHMODE.ordinal();
   }
 
-  public static final boolean isSendMode(final int mode) {
+  public static boolean isSendMode(final int mode) {
     return !isRecvMode(mode);
   }
 
@@ -172,7 +172,7 @@ public class RequestPacket extends AbstractLocalPacket {
    *
    * @return True if this mode is a THROUGH mode (with or without MD5)
    */
-  public static final boolean isThroughMode(final int mode) {
+  public static boolean isThroughMode(final int mode) {
     return mode >= TRANSFERMODE.SENDTHROUGHMODE.ordinal() &&
            mode <= TRANSFERMODE.RECVMD5THROUGHMODE.ordinal();
   }
@@ -182,7 +182,7 @@ public class RequestPacket extends AbstractLocalPacket {
    *
    * @return true if this mode is a MD5 mode
    */
-  public static final boolean isMD5Mode(final int mode) {
+  public static boolean isMD5Mode(final int mode) {
     return mode == TRANSFERMODE.RECVMD5MODE.ordinal() ||
            mode == TRANSFERMODE.SENDMD5MODE.ordinal() ||
            mode == TRANSFERMODE.SENDMD5THROUGHMODE.ordinal() ||
@@ -195,8 +195,7 @@ public class RequestPacket extends AbstractLocalPacket {
    *
    * @return true if both modes are compatible (both send, or both recv)
    */
-  public static final boolean isCompatibleMode(final int mode1,
-                                               final int mode2) {
+  public static boolean isCompatibleMode(final int mode1, final int mode2) {
     return isRecvMode(mode1) && isRecvMode(mode2) ||
            !isRecvMode(mode1) && !isRecvMode(mode2);
   }
@@ -359,14 +358,12 @@ public class RequestPacket extends AbstractLocalPacket {
 
   @Override
   public void createAllBuffers(final LocalChannelReference lcr,
-                               final int networkHeader)
-      throws OpenR66ProtocolPacketException {
+                               final int networkHeader) {
     throw new IllegalStateException("Should not be called");
   }
 
   @Override
-  public void createEnd(final LocalChannelReference lcr)
-      throws OpenR66ProtocolPacketException {
+  public void createEnd(final LocalChannelReference lcr) {
     if (transferInformation != null) {
       end = Unpooled.wrappedBuffer(transferInformation.getBytes());
     }

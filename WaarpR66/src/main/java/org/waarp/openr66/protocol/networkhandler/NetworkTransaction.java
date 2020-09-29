@@ -468,8 +468,6 @@ public class NetworkTransaction {
               Configuration.configuration.getLocalTransaction().createNewClient(
                   networkChannelReference, ChannelUtils.NOCHANNEL,
                   futureRequest, isSSL);
-        } catch (final OpenR66ProtocolSystemException e) {
-          throw new OpenR66ProtocolNetworkException(e);
         } catch (final NullPointerException e) {
           throw new OpenR66ProtocolNetworkException(e);
         }
@@ -614,16 +612,6 @@ public class NetworkTransaction {
     try {
       return Configuration.configuration.getLocalTransaction().createNewClient(
           networkChannelReference, startupPacket.getRemoteId(), null, fromSsl);
-    } catch (final OpenR66ProtocolSystemException e1) {
-      logger.error(
-          "Cannot create LocalChannel for: " + startupPacket + " due to " +
-          e1.getMessage());
-      final ConnectionErrorPacket error = new ConnectionErrorPacket(
-          "Cannot connect to localChannel since cannot create it", null);
-      NetworkServerHandler.writeError(channel, startupPacket.getRemoteId(),
-                                      startupPacket.getLocalId(), error);
-      checkClosingNetworkChannel(networkChannelReference, null);
-      startupPacket.clear();
     } catch (final OpenR66ProtocolRemoteShutdownException e1) {
       logger.info("Will Close Local from Network Channel");
       WaarpSslUtility.closingSslChannel(channel);
@@ -648,13 +636,12 @@ public class NetworkTransaction {
    * @param localChannelReference
    *
    * @throws OpenR66ProtocolNetworkException
-   * @throws OpenR66ProtocolRemoteShutdownException
    * @throws OpenR66ProtocolNotAuthenticatedException
    */
   private void sendValidationConnection(
       final LocalChannelReference localChannelReference)
       throws OpenR66ProtocolNetworkException,
-             OpenR66ProtocolRemoteShutdownException,
+
              OpenR66ProtocolNotAuthenticatedException {
     final AuthentPacket authent;
 
@@ -1094,7 +1081,7 @@ public class NetworkTransaction {
     }
 
     @Override
-    public void run(final Timeout timeout) throws Exception {
+    public void run(final Timeout timeout) {
       networkChannelReference.lock
           .lock(Configuration.WAITFORNETOP, TimeUnit.MILLISECONDS);
       try {
@@ -1269,7 +1256,7 @@ public class NetworkTransaction {
    *
    * @return the associated NetworkChannelReference immediately (if known)
    */
-  public static final NetworkChannelReference getImmediateNetworkChannel(
+  public static NetworkChannelReference getImmediateNetworkChannel(
       final Channel channel) {
     if (channel.remoteAddress() != null) {
       return getNCR(channel.remoteAddress());
@@ -1313,7 +1300,7 @@ public class NetworkTransaction {
     }
 
     @Override
-    public void run(final Timeout timeout) throws Exception {
+    public void run(final Timeout timeout) {
       if (isBlacklisted) {
         logger.debug("Will remove Blacklisted for : {}", ncr);
         removeBlacklistNCR(ncr);

@@ -24,7 +24,6 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import org.waarp.common.utility.WaarpNettyUtil;
-import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
 import org.waarp.openr66.protocol.localhandler.LocalChannelReference;
 import org.waarp.openr66.protocol.localhandler.packet.json.JsonPacket;
 
@@ -109,8 +108,7 @@ public class JsonCommandPacket extends AbstractLocalPacket {
 
   @Override
   public void createAllBuffers(final LocalChannelReference lcr,
-                               final int networkHeader)
-      throws OpenR66ProtocolPacketException {
+                               final int networkHeader) {
     final byte[] headerBytes =
         request != null? request.getBytes() : EMPTY_ARRAY;
     final int headerSize = headerBytes.length;

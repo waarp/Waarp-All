@@ -79,7 +79,7 @@ public class R66Auth extends FilesystemBasedAuthImpl {
 
   @Override
   protected NextCommandReply setBusinessPassword(final String arg0)
-      throws Reply421Exception, Reply530Exception {
+      throws Reply421Exception {
     throw new Reply421Exception("Command not valid");
   }
 
@@ -180,7 +180,7 @@ public class R66Auth extends FilesystemBasedAuthImpl {
 
   @Override
   protected NextCommandReply setBusinessUser(final String arg0)
-      throws Reply421Exception, Reply530Exception {
+      throws Reply421Exception {
     throw new Reply421Exception("Command not valid");
   }
 

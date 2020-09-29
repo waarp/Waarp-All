@@ -19,7 +19,6 @@
  */
 package org.waarp.common.utility;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Collections;
@@ -142,28 +141,27 @@ public final class SingletonUtils {
    */
   private static class VoidOutputStream extends OutputStream {
     @Override
-    public void close() throws IOException {
+    public void close() {
       // Empty
     }
 
     @Override
-    public void flush() throws IOException {
+    public void flush() {
       // Empty
     }
 
     @Override
-    public void write(final byte[] arg0, final int arg1, final int arg2)
-        throws IOException {
+    public void write(final byte[] arg0, final int arg1, final int arg2) {
       // Empty
     }
 
     @Override
-    public void write(final byte[] arg0) throws IOException {
+    public void write(final byte[] arg0) {
       // Empty
     }
 
     @Override
-    public void write(final int arg0) throws IOException {
+    public void write(final int arg0) {
       // Empty
     }
   }

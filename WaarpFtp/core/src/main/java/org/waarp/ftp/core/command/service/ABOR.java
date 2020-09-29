@@ -20,7 +20,6 @@
 package org.waarp.ftp.core.command.service;
 
 import org.waarp.common.command.ReplyCode;
-import org.waarp.common.command.exception.CommandAbstractException;
 import org.waarp.ftp.core.command.AbstractCommand;
 import org.waarp.ftp.core.exception.FtpNoTransferException;
 
@@ -29,7 +28,7 @@ import org.waarp.ftp.core.exception.FtpNoTransferException;
  */
 public class ABOR extends AbstractCommand {
   @Override
-  public void exec() throws CommandAbstractException {
+  public void exec() {
     // First check if the data connection is opened
     if (getSession().getDataConn().isActive()) {
       // Now check if the data connection is currently used

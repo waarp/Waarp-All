@@ -671,207 +671,11 @@ public class RequestTransfer implements Runnable {
           new OutputFormat(RequestTransfer.class.getSimpleName(), args);
       if (scancel || sstop || srestart) {
         if (scancel) {
-          if (result.isSuccess()) {
-            value = 0;
-            outputFormat.setValue(FIELDS.status.name(), value);
-            outputFormat.setValue(FIELDS.statusTxt.name(), Messages
-                .getString("RequestTransfer.21")); //$NON-NLS-1$
-            outputFormat.setValue(FIELDS.remote.name(), rhost);
-            outputFormat.setValueString(result.getRunner().getJson());
-            if (requestTransfer.normalInfoAsWarn) {
-              logger.warn(outputFormat.loggerOut());
-            } else if (logger.isInfoEnabled()) {
-              logger.info(outputFormat.loggerOut());
-            }
-            if (!OutputFormat.isQuiet()) {
-              outputFormat.sysout();
-            }
-          } else {
-            switch (finalValue.getCode()) {
-              case CompleteOk:
-                value = 0;
-                outputFormat.setValue(FIELDS.status.name(), value);
-                outputFormat.setValue(FIELDS.statusTxt.name(), Messages
-                    .getString("RequestTransfer.70")); //$NON-NLS-1$
-                outputFormat.setValue(FIELDS.remote.name(), rhost);
-                outputFormat.setValueString(result.getRunner().getJson());
-                logger.warn(outputFormat.loggerOut());
-                if (!OutputFormat.isQuiet()) {
-                  outputFormat.sysout();
-                }
-                break;
-              case TransferOk:
-                value = 3;
-                outputFormat.setValue(FIELDS.status.name(), value);
-                outputFormat.setValue(FIELDS.statusTxt.name(), Messages
-                    .getString("RequestTransfer.71")); //$NON-NLS-1$
-                outputFormat.setValue(FIELDS.remote.name(), rhost);
-                outputFormat.setValueString(result.getRunner().getJson());
-                logger.warn(outputFormat.loggerOut());
-                if (!OutputFormat.isQuiet()) {
-                  outputFormat.sysout();
-                }
-                break;
-              default:
-                value = 4;
-                outputFormat.setValue(FIELDS.status.name(), value);
-                outputFormat.setValue(FIELDS.statusTxt.name(), Messages
-                    .getString("RequestTransfer.72")); //$NON-NLS-1$
-                outputFormat.setValue(FIELDS.remote.name(), rhost);
-                outputFormat.setValueString(result.getRunner().getJson());
-                if (result.getCause() != null) {
-                  outputFormat.setValue(FIELDS.error.name(),
-                                        result.getCause().getMessage());
-                }
-                logger.error(outputFormat.loggerOut());
-                if (!OutputFormat.isQuiet()) {
-                  outputFormat.sysout();
-                }
-                break;
-            }
-          }
+          value = cancel(result, requestTransfer, finalValue, outputFormat);
         } else if (sstop) {
-          switch (finalValue.getCode()) {
-            case CompleteOk:
-              value = 0;
-              outputFormat.setValue(FIELDS.status.name(), value);
-              outputFormat.setValue(FIELDS.statusTxt.name(), Messages
-                  .getString("RequestTransfer.73")); //$NON-NLS-1$
-              outputFormat.setValue(FIELDS.remote.name(), rhost);
-              outputFormat.setValueString(result.getRunner().getJson());
-              if (requestTransfer.normalInfoAsWarn) {
-                logger.warn(outputFormat.loggerOut());
-              } else if (logger.isInfoEnabled()) {
-                logger.info(outputFormat.loggerOut());
-              }
-              if (!OutputFormat.isQuiet()) {
-                outputFormat.sysout();
-              }
-              break;
-            case TransferOk:
-              value = 0;
-              outputFormat.setValue(FIELDS.status.name(), value);
-              outputFormat.setValue(FIELDS.statusTxt.name(), Messages
-                  .getString("RequestTransfer.74")); //$NON-NLS-1$
-              outputFormat.setValue(FIELDS.remote.name(), rhost);
-              outputFormat.setValueString(result.getRunner().getJson());
-              logger.warn(outputFormat.loggerOut());
-              if (!OutputFormat.isQuiet()) {
-                outputFormat.sysout();
-              }
-              break;
-            default:
-              value = 3;
-              outputFormat.setValue(FIELDS.status.name(), value);
-              outputFormat.setValue(FIELDS.statusTxt.name(), Messages
-                  .getString("RequestTransfer.75")); //$NON-NLS-1$
-              outputFormat.setValue(FIELDS.remote.name(), rhost);
-              outputFormat.setValueString(result.getRunner().getJson());
-              if (result.getCause() != null) {
-                outputFormat.setValue(FIELDS.error.name(),
-                                      result.getCause().getMessage());
-              }
-              logger.warn(outputFormat.loggerOut());
-              if (!OutputFormat.isQuiet()) {
-                outputFormat.sysout();
-              }
-              break;
-          }
+          value = stop(result, requestTransfer, finalValue, outputFormat);
         } else if (srestart) {
-          switch (finalValue.getCode()) {
-            case QueryStillRunning:
-              value = 0;
-              outputFormat.setValue(FIELDS.status.name(), value);
-              outputFormat.setValue(FIELDS.statusTxt.name(), Messages
-                  .getString("RequestTransfer.76")); //$NON-NLS-1$
-              outputFormat.setValue(FIELDS.remote.name(), rhost);
-              outputFormat.setValueString(result.getRunner().getJson());
-              logger.warn(outputFormat.loggerOut());
-              if (!OutputFormat.isQuiet()) {
-                outputFormat.sysout();
-              }
-              break;
-            case Running:
-              value = 0;
-              outputFormat.setValue(FIELDS.status.name(), value);
-              outputFormat.setValue(FIELDS.statusTxt.name(), Messages
-                  .getString("RequestTransfer.77")); //$NON-NLS-1$
-              outputFormat.setValue(FIELDS.remote.name(), rhost);
-              outputFormat.setValueString(result.getRunner().getJson());
-              logger.warn(outputFormat.loggerOut());
-              if (!OutputFormat.isQuiet()) {
-                outputFormat.sysout();
-              }
-              break;
-            case PreProcessingOk:
-              value = 0;
-              outputFormat.setValue(FIELDS.status.name(), value);
-              outputFormat.setValue(FIELDS.statusTxt.name(), Messages
-                  .getString("RequestTransfer.78")); //$NON-NLS-1$
-              outputFormat.setValue(FIELDS.remote.name(), rhost);
-              outputFormat.setValueString(result.getRunner().getJson());
-              if (requestTransfer.normalInfoAsWarn) {
-                logger.warn(outputFormat.loggerOut());
-              } else if (logger.isInfoEnabled()) {
-                logger.info(outputFormat.loggerOut());
-              }
-              if (!OutputFormat.isQuiet()) {
-                outputFormat.sysout();
-              }
-              break;
-            case CompleteOk:
-              value = 4;
-              outputFormat.setValue(FIELDS.status.name(), value);
-              outputFormat.setValue(FIELDS.statusTxt.name(), Messages
-                  .getString("RequestTransfer.79")); //$NON-NLS-1$
-              outputFormat.setValue(FIELDS.remote.name(), rhost);
-              outputFormat.setValueString(result.getRunner().getJson());
-              logger.warn(outputFormat.loggerOut());
-              if (!OutputFormat.isQuiet()) {
-                outputFormat.sysout();
-              }
-              break;
-            case RemoteError:
-              value = 5;
-              outputFormat.setValue(FIELDS.status.name(), value);
-              outputFormat.setValue(FIELDS.statusTxt.name(), Messages
-                  .getString("RequestTransfer.80")); //$NON-NLS-1$
-              outputFormat.setValue(FIELDS.remote.name(), rhost);
-              outputFormat.setValueString(result.getRunner().getJson());
-              logger.warn(outputFormat.loggerOut());
-              if (!OutputFormat.isQuiet()) {
-                outputFormat.sysout();
-              }
-              break;
-            case PassThroughMode:
-              value = 6;
-              outputFormat.setValue(FIELDS.status.name(), value);
-              outputFormat.setValue(FIELDS.statusTxt.name(), Messages
-                  .getString("RequestTransfer.81")); //$NON-NLS-1$
-              outputFormat.setValue(FIELDS.remote.name(), rhost);
-              outputFormat.setValueString(result.getRunner().getJson());
-              logger.warn(outputFormat.loggerOut());
-              if (!OutputFormat.isQuiet()) {
-                outputFormat.sysout();
-              }
-              break;
-            default:
-              value = 3;
-              outputFormat.setValue(FIELDS.status.name(), value);
-              outputFormat.setValue(FIELDS.statusTxt.name(), Messages
-                  .getString("RequestTransfer.82")); //$NON-NLS-1$
-              outputFormat.setValue(FIELDS.remote.name(), rhost);
-              outputFormat.setValueString(result.getRunner().getJson());
-              if (result.getCause() != null) {
-                outputFormat.setValue(FIELDS.error.name(),
-                                      result.getCause().getMessage());
-              }
-              logger.warn(outputFormat.loggerOut());
-              if (!OutputFormat.isQuiet()) {
-                outputFormat.sysout();
-              }
-              break;
-          }
+          value = restart(result, requestTransfer, finalValue, outputFormat);
         }
       } else {
         value = 0;
@@ -898,6 +702,229 @@ public class RequestTransfer implements Runnable {
       }
       System.exit(value);//NOSONAR
     }
+  }
+
+  private static int restart(final R66Future result,
+                             final RequestTransfer requestTransfer,
+                             final R66Result finalValue,
+                             final OutputFormat outputFormat) {
+    final int value;
+    switch (finalValue.getCode()) {
+      case QueryStillRunning:
+        value = 0;
+        outputFormat.setValue(FIELDS.status.name(), value);
+        outputFormat.setValue(FIELDS.statusTxt.name(), Messages
+            .getString("RequestTransfer.76")); //$NON-NLS-1$
+        outputFormat.setValue(FIELDS.remote.name(), rhost);
+        outputFormat.setValueString(result.getRunner().getJson());
+        logger.warn(outputFormat.loggerOut());
+        if (!OutputFormat.isQuiet()) {
+          outputFormat.sysout();
+        }
+        break;
+      case Running:
+        value = 0;
+        outputFormat.setValue(FIELDS.status.name(), value);
+        outputFormat.setValue(FIELDS.statusTxt.name(), Messages
+            .getString("RequestTransfer.77")); //$NON-NLS-1$
+        outputFormat.setValue(FIELDS.remote.name(), rhost);
+        outputFormat.setValueString(result.getRunner().getJson());
+        logger.warn(outputFormat.loggerOut());
+        if (!OutputFormat.isQuiet()) {
+          outputFormat.sysout();
+        }
+        break;
+      case PreProcessingOk:
+        value = 0;
+        outputFormat.setValue(FIELDS.status.name(), value);
+        outputFormat.setValue(FIELDS.statusTxt.name(), Messages
+            .getString("RequestTransfer.78")); //$NON-NLS-1$
+        outputFormat.setValue(FIELDS.remote.name(), rhost);
+        outputFormat.setValueString(result.getRunner().getJson());
+        if (requestTransfer.normalInfoAsWarn) {
+          logger.warn(outputFormat.loggerOut());
+        } else if (logger.isInfoEnabled()) {
+          logger.info(outputFormat.loggerOut());
+        }
+        if (!OutputFormat.isQuiet()) {
+          outputFormat.sysout();
+        }
+        break;
+      case CompleteOk:
+        value = 4;
+        outputFormat.setValue(FIELDS.status.name(), value);
+        outputFormat.setValue(FIELDS.statusTxt.name(), Messages
+            .getString("RequestTransfer.79")); //$NON-NLS-1$
+        outputFormat.setValue(FIELDS.remote.name(), rhost);
+        outputFormat.setValueString(result.getRunner().getJson());
+        logger.warn(outputFormat.loggerOut());
+        if (!OutputFormat.isQuiet()) {
+          outputFormat.sysout();
+        }
+        break;
+      case RemoteError:
+        value = 5;
+        outputFormat.setValue(FIELDS.status.name(), value);
+        outputFormat.setValue(FIELDS.statusTxt.name(), Messages
+            .getString("RequestTransfer.80")); //$NON-NLS-1$
+        outputFormat.setValue(FIELDS.remote.name(), rhost);
+        outputFormat.setValueString(result.getRunner().getJson());
+        logger.warn(outputFormat.loggerOut());
+        if (!OutputFormat.isQuiet()) {
+          outputFormat.sysout();
+        }
+        break;
+      case PassThroughMode:
+        value = 6;
+        outputFormat.setValue(FIELDS.status.name(), value);
+        outputFormat.setValue(FIELDS.statusTxt.name(), Messages
+            .getString("RequestTransfer.81")); //$NON-NLS-1$
+        outputFormat.setValue(FIELDS.remote.name(), rhost);
+        outputFormat.setValueString(result.getRunner().getJson());
+        logger.warn(outputFormat.loggerOut());
+        if (!OutputFormat.isQuiet()) {
+          outputFormat.sysout();
+        }
+        break;
+      default:
+        value = 3;
+        outputFormat.setValue(FIELDS.status.name(), value);
+        outputFormat.setValue(FIELDS.statusTxt.name(), Messages
+            .getString("RequestTransfer.82")); //$NON-NLS-1$
+        outputFormat.setValue(FIELDS.remote.name(), rhost);
+        outputFormat.setValueString(result.getRunner().getJson());
+        if (result.getCause() != null) {
+          outputFormat
+              .setValue(FIELDS.error.name(), result.getCause().getMessage());
+        }
+        logger.warn(outputFormat.loggerOut());
+        if (!OutputFormat.isQuiet()) {
+          outputFormat.sysout();
+        }
+        break;
+    }
+    return value;
+  }
+
+  private static int stop(final R66Future result,
+                          final RequestTransfer requestTransfer,
+                          final R66Result finalValue,
+                          final OutputFormat outputFormat) {
+    final int value;
+    switch (finalValue.getCode()) {
+      case CompleteOk:
+        value = 0;
+        outputFormat.setValue(FIELDS.status.name(), value);
+        outputFormat.setValue(FIELDS.statusTxt.name(), Messages
+            .getString("RequestTransfer.73")); //$NON-NLS-1$
+        outputFormat.setValue(FIELDS.remote.name(), rhost);
+        outputFormat.setValueString(result.getRunner().getJson());
+        if (requestTransfer.normalInfoAsWarn) {
+          logger.warn(outputFormat.loggerOut());
+        } else if (logger.isInfoEnabled()) {
+          logger.info(outputFormat.loggerOut());
+        }
+        if (!OutputFormat.isQuiet()) {
+          outputFormat.sysout();
+        }
+        break;
+      case TransferOk:
+        value = 0;
+        outputFormat.setValue(FIELDS.status.name(), value);
+        outputFormat.setValue(FIELDS.statusTxt.name(), Messages
+            .getString("RequestTransfer.74")); //$NON-NLS-1$
+        outputFormat.setValue(FIELDS.remote.name(), rhost);
+        outputFormat.setValueString(result.getRunner().getJson());
+        logger.warn(outputFormat.loggerOut());
+        if (!OutputFormat.isQuiet()) {
+          outputFormat.sysout();
+        }
+        break;
+      default:
+        value = 3;
+        outputFormat.setValue(FIELDS.status.name(), value);
+        outputFormat.setValue(FIELDS.statusTxt.name(), Messages
+            .getString("RequestTransfer.75")); //$NON-NLS-1$
+        outputFormat.setValue(FIELDS.remote.name(), rhost);
+        outputFormat.setValueString(result.getRunner().getJson());
+        if (result.getCause() != null) {
+          outputFormat
+              .setValue(FIELDS.error.name(), result.getCause().getMessage());
+        }
+        logger.warn(outputFormat.loggerOut());
+        if (!OutputFormat.isQuiet()) {
+          outputFormat.sysout();
+        }
+        break;
+    }
+    return value;
+  }
+
+  private static int cancel(final R66Future result,
+                            final RequestTransfer requestTransfer,
+                            final R66Result finalValue,
+                            final OutputFormat outputFormat) {
+    final int value;
+    if (result.isSuccess()) {
+      value = 0;
+      outputFormat.setValue(FIELDS.status.name(), value);
+      outputFormat.setValue(FIELDS.statusTxt.name(), Messages
+          .getString("RequestTransfer.21")); //$NON-NLS-1$
+      outputFormat.setValue(FIELDS.remote.name(), rhost);
+      outputFormat.setValueString(result.getRunner().getJson());
+      if (requestTransfer.normalInfoAsWarn) {
+        logger.warn(outputFormat.loggerOut());
+      } else if (logger.isInfoEnabled()) {
+        logger.info(outputFormat.loggerOut());
+      }
+      if (!OutputFormat.isQuiet()) {
+        outputFormat.sysout();
+      }
+    } else {
+      switch (finalValue.getCode()) {
+        case CompleteOk:
+          value = 0;
+          outputFormat.setValue(FIELDS.status.name(), value);
+          outputFormat.setValue(FIELDS.statusTxt.name(), Messages
+              .getString("RequestTransfer.70")); //$NON-NLS-1$
+          outputFormat.setValue(FIELDS.remote.name(), rhost);
+          outputFormat.setValueString(result.getRunner().getJson());
+          logger.warn(outputFormat.loggerOut());
+          if (!OutputFormat.isQuiet()) {
+            outputFormat.sysout();
+          }
+          break;
+        case TransferOk:
+          value = 3;
+          outputFormat.setValue(FIELDS.status.name(), value);
+          outputFormat.setValue(FIELDS.statusTxt.name(), Messages
+              .getString("RequestTransfer.71")); //$NON-NLS-1$
+          outputFormat.setValue(FIELDS.remote.name(), rhost);
+          outputFormat.setValueString(result.getRunner().getJson());
+          logger.warn(outputFormat.loggerOut());
+          if (!OutputFormat.isQuiet()) {
+            outputFormat.sysout();
+          }
+          break;
+        default:
+          value = 4;
+          outputFormat.setValue(FIELDS.status.name(), value);
+          outputFormat.setValue(FIELDS.statusTxt.name(), Messages
+              .getString("RequestTransfer.72")); //$NON-NLS-1$
+          outputFormat.setValue(FIELDS.remote.name(), rhost);
+          outputFormat.setValueString(result.getRunner().getJson());
+          if (result.getCause() != null) {
+            outputFormat
+                .setValue(FIELDS.error.name(), result.getCause().getMessage());
+          }
+          logger.error(outputFormat.loggerOut());
+          if (!OutputFormat.isQuiet()) {
+            outputFormat.sysout();
+          }
+          break;
+      }
+    }
+    return value;
   }
 
 }

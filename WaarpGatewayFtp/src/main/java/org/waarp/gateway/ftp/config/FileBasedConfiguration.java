@@ -1337,7 +1337,7 @@ public class FileBasedConfiguration extends FtpConfiguration {
     logger.debug("Start HTTPS");
     // Now start the HTTPS support
     // Configure the server.
-    /**
+    /*
      * Bootstrap for Https server
      */
     final ServerBootstrap httpsBootstrap = new ServerBootstrap();
@@ -1794,8 +1794,7 @@ public class FileBasedConfiguration extends FtpConfiguration {
     }
 
     @Override
-    public void operationComplete(final ChannelGroupFuture future)
-        throws Exception {
+    public void operationComplete(final ChannelGroupFuture future) {
       if (executorWorker != null) {
         executorWorker.shutdownGracefully();
       }

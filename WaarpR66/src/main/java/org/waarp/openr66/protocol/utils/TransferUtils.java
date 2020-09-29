@@ -68,12 +68,9 @@ public final class TransferUtils {
    * @param taskRunner
    *
    * @return the associated Result
-   *
-   * @throws WaarpDatabaseException
    */
   public static R66Result restartTransfer(final DbTaskRunner taskRunner,
-                                          final LocalChannelReference lcr)
-      throws WaarpDatabaseException {
+                                          final LocalChannelReference lcr) {
     final R66Result finalResult =
         new R66Result(null, true, ErrorCode.InitOk, taskRunner);
     if (lcr != null) {
@@ -484,27 +481,11 @@ public final class TransferUtils {
    * @param pending
    * @param transfer
    * @param error
+   * @param host
    *
    * @return the associated StringBuilder if the one given as parameter is not
    *     null
    */
-  public static void cleanSelectedTransfers(final DbSession dbSession,
-                                            final int limit, final Object map,
-                                            final R66Session session,
-                                            final String body,
-                                            final String startid,
-                                            final String stopid,
-                                            final Timestamp tstart,
-                                            final Timestamp tstop,
-                                            final String rule, final String req,
-                                            final boolean pending,
-                                            final boolean transfer,
-                                            final boolean error) {
-    cleanSelectedTransfers(dbSession, limit, map, session, body, startid,
-                           stopid, tstart, tstop, rule, req, pending, transfer,
-                           error, null);
-  }
-
   public static void cleanSelectedTransfers(final DbSession dbSession,
                                             final int limit, final Object map,
                                             final R66Session session,

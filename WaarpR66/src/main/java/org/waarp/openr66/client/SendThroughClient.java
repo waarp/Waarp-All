@@ -200,12 +200,6 @@ public abstract class SendThroughClient extends AbstractTransfer {
           localChannelReference = runner.initRequest();
           exc = null;
           break;
-        } catch (final OpenR66RunnerErrorException e) {
-          logger.error("Cannot Transfer", e);
-          future.setResult(
-              new R66Result(e, null, true, ErrorCode.Internal, taskRunner));
-          future.setFailure(e);
-          return false;
         } catch (final OpenR66ProtocolNoConnectionException e) {
           logger.error("Cannot Connect", e);
           future.setResult(
@@ -363,13 +357,10 @@ public abstract class SendThroughClient extends AbstractTransfer {
    *
    * @return the ChannelFuture on the write operation
    *
-   * @throws OpenR66RunnerErrorException
    * @throws OpenR66ProtocolPacketException
-   * @throws OpenR66ProtocolSystemException
    */
   public ChannelFuture writeWhenPossible(final DataBlock block)
-      throws OpenR66RunnerErrorException, OpenR66ProtocolPacketException,
-             OpenR66ProtocolSystemException {
+      throws OpenR66ProtocolPacketException {
     return RetrieveRunner
         .writeWhenPossible(block, localChannelReference, null, null);
   }

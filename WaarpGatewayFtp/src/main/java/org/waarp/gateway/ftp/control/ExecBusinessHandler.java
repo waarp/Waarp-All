@@ -235,7 +235,7 @@ public class ExecBusinessHandler extends BusinessHandler {
   }
 
   @Override
-  public void afterRunCommandOk() throws CommandAbstractException {
+  public void afterRunCommandOk() {
     if (!(getFtpSession().getCurrentCommand() instanceof QUIT) &&
         dbR66Session != null) {
       final long specialId =

@@ -121,6 +121,12 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    */
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(DbTaskRunner.class);
+  private static final String GETTING_VALUES_IN_ERROR =
+      "Getting values in error";
+  private static final String CANNOT_WRITE_XML_FILE = "Cannot write XML file";
+  private static final String UNSUPPORTED_ENCODING = "Unsupported Encoding";
+  private static final String CANNOT_DELETE_WRONG_XML_FILE =
+      "Cannot delete wrong XML file";
 
   /**
    * Create the LRU cache
@@ -735,17 +741,8 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    *
    * @param specialId
    */
-  public static final void removeNoDbSpecialId(final long specialId) {
+  public static void removeNoDbSpecialId(final long specialId) {
     XMLTransferDAO.removeNoDbSpecialId(specialId);
-  }
-
-  /**
-   * To update the usage TTL of the associated object
-   *
-   * @param specialId
-   */
-  public static final void updateUsed(final long specialId) {
-    XMLTransferDAO.updateUsed(specialId);
   }
 
   @Override
@@ -1004,9 +1001,9 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
       return dbTaskRunner;
     } catch (final SQLException e) {
       DbSession.error(e);
-      throw new WaarpDatabaseSqlException("Getting values in error", e);
+      throw new WaarpDatabaseSqlException(GETTING_VALUES_IN_ERROR, e);
     } catch (final DAOConnectionException e) {
-      throw new WaarpDatabaseSqlException("Getting values in error", e);
+      throw new WaarpDatabaseSqlException(GETTING_VALUES_IN_ERROR, e);
     } finally {
       DAOFactory.closeDAO(transferDAO);
     }
@@ -1046,9 +1043,9 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
       return dbTaskRunner;
     } catch (final SQLException e) {
       DbSession.error(e);
-      throw new WaarpDatabaseSqlException("Getting values in error", e);
+      throw new WaarpDatabaseSqlException(GETTING_VALUES_IN_ERROR, e);
     } catch (final DAOConnectionException e) {
-      throw new WaarpDatabaseSqlException("Getting values in error", e);
+      throw new WaarpDatabaseSqlException(GETTING_VALUES_IN_ERROR, e);
     } finally {
       DAOFactory.closeDAO(transferDAO);
     }
@@ -1086,9 +1083,9 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
       return dbTaskRunner;
     } catch (final SQLException e) {
       DbSession.error(e);
-      throw new WaarpDatabaseSqlException("Getting values in error", e);
+      throw new WaarpDatabaseSqlException(GETTING_VALUES_IN_ERROR, e);
     } catch (final DAOConnectionException e) {
-      throw new WaarpDatabaseSqlException("Getting values in error", e);
+      throw new WaarpDatabaseSqlException(GETTING_VALUES_IN_ERROR, e);
     } finally {
       DAOFactory.closeDAO(transferDAO);
     }
@@ -1117,7 +1114,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    * @throws WaarpDatabaseNoConnectionException
    * @throws WaarpDatabaseSqlException
    */
-  private static DbPreparedStatement getFilterCondition(
+  private static void getFilterCondition(
       final DbPreparedStatement preparedStatement, final String srcrequest,
       final int limit, final String orderby, final String startid,
       final String stopid, final Timestamp start, final Timestamp stop,
@@ -1137,7 +1134,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
         request += orderby;
       }
       preparedStatement.createPrepareStatement(request);
-      return preparedStatement;
+      return;
     }
     request += " WHERE ";
     final StringBuilder scondition = new StringBuilder();
@@ -1280,7 +1277,6 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
       preparedStatement.realClose();
       throw new WaarpDatabaseSqlException(e);
     }
-    return preparedStatement;
   }
 
   /**
@@ -1368,9 +1364,10 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
     } else {
       orderby += " ORDER BY " + Columns.STARTTRANS.name() + " DESC ";
     }
-    return getFilterCondition(preparedStatement, request, limit, orderby,
-                              startid, stopid, start, stop, rule, req, pending,
-                              transfer, error, done, all);
+    getFilterCondition(preparedStatement, request, limit, orderby, startid,
+                       stopid, start, stop, rule, req, pending, transfer, error,
+                       done, all);
+    return preparedStatement;
   }
 
   /**
@@ -1398,7 +1395,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
   public static DbTaskRunner[] getSelectSameFollowId(final String followId,
                                                      final boolean orderByStart,
                                                      final int limit)
-      throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
+      throws WaarpDatabaseNoConnectionException {
     final List<Filter> filters = new ArrayList<Filter>(1);
     filters.add(getFollowIdFilter(followId));
     TransferDAO transferAccess = null;
@@ -1438,7 +1435,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    */
   public static DbTaskRunner[] getSelectFromInfoPrepareStatement(
       final UpdatedInfo info, final boolean orderByStart, final int limit)
-      throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
+      throws WaarpDatabaseNoConnectionException {
     final List<Filter> filters = new ArrayList<Filter>(3);
     filters.add(new Filter(DBTransferDAO.UPDATED_INFO_FIELD, "=",
                            org.waarp.openr66.pojo.UpdatedInfo.fromLegacy(info)
@@ -1928,7 +1925,8 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
                                              final boolean done,
                                              final boolean all)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
-    DbPreparedStatement preparedStatement = new DbPreparedStatement(session);
+    final DbPreparedStatement preparedStatement =
+        new DbPreparedStatement(session);
     final String request = "DELETE FROM " + table;
     final String orderby;
     if (startid == null && stopid == null && start == null && stop == null &&
@@ -1953,16 +1951,13 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
     }
     int nb;
     try {
-      preparedStatement =
-          getFilterCondition(preparedStatement, request, 0, orderby, startid,
-                             stopid, start, stop, rule, req, pending, transfer,
-                             error, done, all);
+      getFilterCondition(preparedStatement, request, 0, orderby, startid,
+                         stopid, start, stop, rule, req, pending, transfer,
+                         error, done, all);
       nb = preparedStatement.executeUpdate();
       logger.info("Purge {} from {}", nb, request);
     } finally {
-      if (preparedStatement != null) {
-        preparedStatement.realClose();
-      }
+      preparedStatement.realClose();
     }
     return nb;
   }
@@ -2119,14 +2114,12 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    */
   public boolean restart(final boolean submit) {
     // Restart if not Requested
-    if (submit) {
-      if (isSelfRequested()) {
-        if (pojo.getLastGlobalStep() != Transfer.TASKSTEP.ALLDONETASK ||
-            pojo.getLastGlobalStep() != Transfer.TASKSTEP.ERRORTASK) {
-          // nothing
-        }
-        return false;
+    if (submit && isSelfRequested()) {
+      if (pojo.getLastGlobalStep() != Transfer.TASKSTEP.ALLDONETASK ||
+          pojo.getLastGlobalStep() != Transfer.TASKSTEP.ERRORTASK) {
+        // nothing
       }
+      return false;
     }
     // Restart if already stopped and not finished
     if (reset()) {
@@ -2985,176 +2978,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
       localChannelReference = session.getLocalChannelReference();
     }
     if (status) {
-      // First move the file
-      if (isSender()) {
-        // Nothing to do since it is the original file
-        setPostTask();
-        if (!shallIgnoreSave()) {
-          saveStatus();
-        }
-      } else {
-        final int poststep = getStep();
-        setPostTask();
-        saveStatus();
-        // in case of error
-        final R66Result error =
-            new R66Result(session, finalValue.isAnswered(), ErrorCode.FinalOp,
-                          this);
-        if (!isRecvThrough()) {
-          if (getGlobalStep() == TASKSTEP.TRANSFERTASK ||
-              getGlobalStep() == TASKSTEP.POSTTASK && poststep == 0) {
-            // Result file moves
-            final String finalpath = R66Dir.getFinalUniqueFilename(file);
-            logger.debug("Will move file {}", finalpath);
-            try {
-              if (!file.renameTo(getRule().setRecvPath(finalpath))) {
-                final OpenR66ProtocolSystemException e =
-                    new OpenR66ProtocolSystemException(
-                        "Cannot move file to final position");
-                final R66Result result =
-                    new R66Result(e, session, false, ErrorCode.FinalOp, this);
-                result.setFile(file);
-                result.setRunner(this);
-                if (localChannelReference != null) {
-                  localChannelReference.invalidateRequest(result);
-                }
-                error.setException(result.getException());
-                errorTransfer(error, file, localChannelReference);
-                throw e;
-              }
-            } catch (final OpenR66ProtocolSystemException e) {
-              final R66Result result =
-                  new R66Result(e, session, false, ErrorCode.FinalOp, this);
-              result.setFile(file);
-              result.setRunner(this);
-              if (localChannelReference != null) {
-                localChannelReference.invalidateRequest(result);
-              }
-              error.setException(result.getException());
-              errorTransfer(error, file, localChannelReference);
-              throw e;
-            } catch (final CommandAbstractException e) {
-              final R66Result result =
-                  new R66Result(new OpenR66RunnerErrorException(e), session,
-                                false, ErrorCode.FinalOp, this);
-              result.setFile(file);
-              result.setRunner(this);
-              if (localChannelReference != null) {
-                localChannelReference.invalidateRequest(result);
-              }
-              error.setException(result.getException());
-              errorTransfer(error, file, localChannelReference);
-              throw (OpenR66RunnerErrorException) result.getException();
-            }
-            logger.debug("File finally moved: {}", file);
-            try {
-              setFilename(file.getFile());
-            } catch (final CommandAbstractException ignored) {
-              // nothing
-            }
-            // check if necessary once more the hash
-            if (Configuration.configuration.isLocalDigest()) {
-              String hash = null;
-              if (localChannelReference != null &&
-                  !localChannelReference.isPartialHash() &&
-                  !localChannelReference.getPartner().useFinalHash()) {
-                // If partner is using final hash, not necessary since both
-                // sides already checked already during end of transfer
-                hash = localChannelReference.getHashComputeDuringTransfer();
-              }
-              if (hash != null) {
-                // we can compute it once more
-                try {
-                  if (!FilesystemBasedDigest.getHex(FilesystemBasedDigest
-                                                        .getHash(
-                                                            file.getTrueFile(),
-                                                            true,
-                                                            Configuration.configuration
-                                                                .getDigest()))
-                                            .equals(hash)) {
-                    // KO
-                    final R66Result result = new R66Result(
-                        new OpenR66RunnerErrorException(
-                            "Bad final digest on receive operation"), session,
-                        false, ErrorCode.FinalOp, this);
-                    result.setFile(file);
-                    result.setRunner(this);
-                    if (localChannelReference != null) {
-                      localChannelReference.invalidateRequest(result);
-                    }
-                    error.setException(result.getException());
-                    errorTransfer(error, file, localChannelReference);
-                    throw (OpenR66RunnerErrorException) result.getException();
-                  }
-                } catch (final IOException e) {
-                  final R66Result result = new R66Result(
-                      new OpenR66RunnerErrorException(
-                          "Bad final digest on receive operation", e), session,
-                      false, ErrorCode.FinalOp, this);
-                  result.setFile(file);
-                  result.setRunner(this);
-                  if (localChannelReference != null) {
-                    localChannelReference.invalidateRequest(result);
-                  }
-                  error.setException(result.getException());
-                  errorTransfer(error, file, localChannelReference);
-                  throw (OpenR66RunnerErrorException) result.getException();
-                }
-              }
-            }
-          }
-        }
-      }
-      saveStatus();
-      if (isRecvThrough() || isSendThrough()) {
-        // File could not exist
-      } else if (getStep() == 0) {
-        // File must exist
-        try {
-          if (!file.exists()) {
-            // error
-            final R66Result error = new R66Result(
-                new OpenR66RunnerException(ErrorCode.FileNotFound.getMesg()),
-                session, finalValue.isAnswered(), ErrorCode.FileNotFound, this);
-            setErrorExecutionStatus(ErrorCode.FileNotFound);
-            errorTransfer(error, file, localChannelReference);
-            return;
-          }
-        } catch (final CommandAbstractException e) {
-          // error
-          final R66Result error = new R66Result(
-              new OpenR66RunnerException(ErrorCode.FileNotFound.getMesg()),
-              session, finalValue.isAnswered(), ErrorCode.FileNotFound, this);
-          setErrorExecutionStatus(ErrorCode.FileNotFound);
-          errorTransfer(error, file, localChannelReference);
-          return;
-        }
-      }
-      try {
-        run();
-      } catch (final OpenR66RunnerErrorException e1) {
-        final R66Result result =
-            new R66Result(e1, session, false, ErrorCode.ExternalOp, this);
-        result.setFile(file);
-        result.setRunner(this);
-        changeUpdatedInfo(UpdatedInfo.INERROR);
-        saveStatus();
-        result.setException(e1);
-        errorTransfer(result, file, localChannelReference);
-        if (localChannelReference != null) {
-          localChannelReference.invalidateRequest(result);
-        }
-        throw e1;
-      }
-      saveStatus();
-      /*
-       * Done later on after EndRequest this.setAllDone() this.saveStatus()
-       */
-      logger.info("Transfer done on {} at RANK {}",
-                  file != null? file : "no file", getRank());
-      if (localChannelReference != null) {
-        localChannelReference.validateEndTransfer(finalValue);
-      }
+      internalFinalizeValid(localChannelReference, file, finalValue);
     } else {
       logger
           .debug("ContinueTransfer: {} status:{}:{}", continueTransfer, status,
@@ -3163,6 +2987,190 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
         finalValue.setException(new OpenR66RunnerException("Trace for error"));
       }
       errorTransfer(finalValue, file, localChannelReference);
+    }
+  }
+
+  private void internalFinalizeValid(
+      final LocalChannelReference localChannelReference, final R66File file,
+      final R66Result finalValue)
+      throws OpenR66RunnerErrorException, OpenR66ProtocolSystemException {
+    // First move the file
+    if (isSender()) {
+      // Nothing to do since it is the original file
+      setPostTask();
+      if (!shallIgnoreSave()) {
+        saveStatus();
+      }
+    } else {
+      finalizeReceiver(localChannelReference, file, finalValue);
+    }
+    saveStatus();
+    if (isRecvThrough() || isSendThrough()) {
+      // File could not exist
+    } else if (getStep() == 0) {
+      // File must exist
+      try {
+        if (!file.exists()) {
+          // error
+          final R66Result error = new R66Result(
+              new OpenR66RunnerException(ErrorCode.FileNotFound.getMesg()),
+              session, finalValue.isAnswered(), ErrorCode.FileNotFound, this);
+          setErrorExecutionStatus(ErrorCode.FileNotFound);
+          errorTransfer(error, file, localChannelReference);
+          return;
+        }
+      } catch (final CommandAbstractException e) {
+        // error
+        final R66Result error = new R66Result(
+            new OpenR66RunnerException(ErrorCode.FileNotFound.getMesg()),
+            session, finalValue.isAnswered(), ErrorCode.FileNotFound, this);
+        setErrorExecutionStatus(ErrorCode.FileNotFound);
+        errorTransfer(error, file, localChannelReference);
+        return;
+      }
+    }
+    try {
+      run();
+    } catch (final OpenR66RunnerErrorException e1) {
+      final R66Result result =
+          new R66Result(e1, session, false, ErrorCode.ExternalOp, this);
+      result.setFile(file);
+      result.setRunner(this);
+      changeUpdatedInfo(UpdatedInfo.INERROR);
+      saveStatus();
+      result.setException(e1);
+      errorTransfer(result, file, localChannelReference);
+      if (localChannelReference != null) {
+        localChannelReference.invalidateRequest(result);
+      }
+      throw e1;
+    }
+    saveStatus();
+    /*
+     * Done later on after EndRequest this.setAllDone() this.saveStatus()
+     */
+    logger
+        .info("Transfer done on {} at RANK {}", file != null? file : "no file",
+              getRank());
+    if (localChannelReference != null) {
+      localChannelReference.validateEndTransfer(finalValue);
+    }
+  }
+
+  private void finalizeReceiver(
+      final LocalChannelReference localChannelReference, final R66File file,
+      final R66Result finalValue)
+      throws OpenR66RunnerErrorException, OpenR66ProtocolSystemException {
+    final int poststep = getStep();
+    setPostTask();
+    saveStatus();
+    // in case of error
+    final R66Result error =
+        new R66Result(session, finalValue.isAnswered(), ErrorCode.FinalOp,
+                      this);
+    if (!isRecvThrough() && (getGlobalStep() == TASKSTEP.TRANSFERTASK ||
+                             getGlobalStep() == TASKSTEP.POSTTASK &&
+                             poststep == 0)) {
+      resultFileMove(localChannelReference, file, error);
+      // check if necessary once more the hash
+      if (Configuration.configuration.isLocalDigest()) {
+        String hash = null;
+        if (localChannelReference != null &&
+            !localChannelReference.isPartialHash() &&
+            !localChannelReference.getPartner().useFinalHash()) {
+          // If partner is using final hash, not necessary since both
+          // sides already checked already during end of transfer
+          hash = localChannelReference.getHashComputeDuringTransfer();
+        }
+        if (hash != null) {
+          // we can compute it once more
+          try {
+            if (!FilesystemBasedDigest.getHex(FilesystemBasedDigest
+                                                  .getHash(file.getTrueFile(),
+                                                           true,
+                                                           Configuration.configuration
+                                                               .getDigest()))
+                                      .equals(hash)) {
+              // KO
+              final R66Result result = new R66Result(
+                  new OpenR66RunnerErrorException(
+                      "Bad final digest on receive operation"), session, false,
+                  ErrorCode.FinalOp, this);
+              result.setFile(file);
+              result.setRunner(this);
+              localChannelReference.invalidateRequest(result);
+              error.setException(result.getException());
+              errorTransfer(error, file, localChannelReference);
+              throw (OpenR66RunnerErrorException) result.getException();
+            }
+          } catch (final IOException e) {
+            final R66Result result = new R66Result(
+                new OpenR66RunnerErrorException(
+                    "Bad final digest on receive operation", e), session, false,
+                ErrorCode.FinalOp, this);
+            result.setFile(file);
+            result.setRunner(this);
+            localChannelReference.invalidateRequest(result);
+            error.setException(result.getException());
+            errorTransfer(error, file, localChannelReference);
+            throw (OpenR66RunnerErrorException) result.getException();
+          }
+        }
+      }
+    }
+  }
+
+  private void resultFileMove(final LocalChannelReference localChannelReference,
+                              final R66File file, final R66Result error)
+      throws OpenR66RunnerErrorException, OpenR66ProtocolSystemException {
+    // Result file moves
+    final String finalpath = R66Dir.getFinalUniqueFilename(file);
+    logger.debug("Will move file {}", finalpath);
+    try {
+      if (!file.renameTo(getRule().setRecvPath(finalpath))) {
+        final OpenR66ProtocolSystemException e =
+            new OpenR66ProtocolSystemException(
+                "Cannot move file to final position");
+        final R66Result result =
+            new R66Result(e, session, false, ErrorCode.FinalOp, this);
+        result.setFile(file);
+        result.setRunner(this);
+        if (localChannelReference != null) {
+          localChannelReference.invalidateRequest(result);
+        }
+        error.setException(result.getException());
+        errorTransfer(error, file, localChannelReference);
+        throw e;
+      }
+    } catch (final OpenR66ProtocolSystemException e) {
+      final R66Result result =
+          new R66Result(e, session, false, ErrorCode.FinalOp, this);
+      result.setFile(file);
+      result.setRunner(this);
+      if (localChannelReference != null) {
+        localChannelReference.invalidateRequest(result);
+      }
+      error.setException(result.getException());
+      errorTransfer(error, file, localChannelReference);
+      throw e;
+    } catch (final CommandAbstractException e) {
+      final R66Result result =
+          new R66Result(new OpenR66RunnerErrorException(e), session, false,
+                        ErrorCode.FinalOp, this);
+      result.setFile(file);
+      result.setRunner(this);
+      if (localChannelReference != null) {
+        localChannelReference.invalidateRequest(result);
+      }
+      error.setException(result.getException());
+      errorTransfer(error, file, localChannelReference);
+      throw (OpenR66RunnerErrorException) result.getException();
+    }
+    logger.debug("File finally moved: {}", file);
+    try {
+      setFilename(file.getFile());
+    } catch (final CommandAbstractException ignored) {
+      // nothing
     }
   }
 
@@ -3205,7 +3213,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
     if (getGlobalStep() != TASKSTEP.ERRORTASK) {
       // errorstep was not already executed
       // real error
-      if (localChannelReference != null && finalValue != null) {
+      if (localChannelReference != null) {
         localChannelReference
             .setErrorMessage(finalValue.getMessage(), finalValue.getCode());
       }
@@ -3778,11 +3786,8 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    * @param runner
    *
    * @return The Element representing the given Runner
-   *
-   * @throws WaarpDatabaseSqlException
    */
-  private static Element getElementFromRunner(final DbTaskRunner runner)
-      throws WaarpDatabaseSqlException {
+  private static Element getElementFromRunner(final DbTaskRunner runner) {
     final Element root = new DefaultElement(XMLRUNNER);
     for (final Columns column : Columns.values()) {
       if (column.name().equals(Columns.UPDATEDINFO.name()) ||
@@ -3793,23 +3798,6 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
                           getValue(runner, column.name()).toString()));
     }
     return root;
-  }
-
-  /**
-   * Set the given runner from the root element of the runner itself
-   * (XMLRUNNER
-   * but not XMLRUNNERS). Need to
-   * call 'setFromArray' after.
-   *
-   * @param runner
-   * @param root
-   *
-   * @throws WaarpDatabaseSqlException
-   */
-  private static void setRunnerFromElement(final DbTaskRunner runner,
-                                           final Element root)
-      throws WaarpDatabaseSqlException {
-    setRunnerFromElementNoException(runner, root);
   }
 
   /**
@@ -3846,7 +3834,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
       }
       xmlWriter.writeClose(root);
     } catch (final IOException e) {
-      logger.error("Cannot write XML file", e);
+      logger.error(CANNOT_WRITE_XML_FILE, e);
       throw new OpenR66ProtocolBusinessException(
           "Cannot write file: " + e.getMessage());
     }
@@ -3862,12 +3850,10 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    *
    * @throws WaarpDatabaseNoConnectionException
    * @throws WaarpDatabaseSqlException
-   * @throws OpenR66ProtocolBusinessException
    */
   public static String getJson(final DbPreparedStatement preparedStatement,
                                final int limit)
-      throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException,
-             OpenR66ProtocolBusinessException {
+      throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
     final ArrayNode arrayNode = JsonHandler.createArrayNode();
     try {
       preparedStatement.executeQuery();
@@ -3930,11 +3916,11 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
       nbAndSpecialId = writeXML(preparedStatement, xmlWriter);
       isOk = true;
     } catch (final FileNotFoundException e) {
-      logger.error("Cannot write XML file", e);
+      logger.error(CANNOT_WRITE_XML_FILE, e);
       throw new OpenR66ProtocolBusinessException("File not found");
     } catch (final UnsupportedEncodingException e) {
-      logger.error("Cannot write XML file", e);
-      throw new OpenR66ProtocolBusinessException("Unsupported Encoding");
+      logger.error(CANNOT_WRITE_XML_FILE, e);
+      throw new OpenR66ProtocolBusinessException(UNSUPPORTED_ENCODING);
     } finally {
       if (xmlWriter != null) {
         try {
@@ -3945,22 +3931,22 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
           FileUtils.close(outputStream);
           final File file = new File(filename);
           if (!file.delete()) {
-            logger.info("Cannot delete wrong XML file");
+            logger.info(CANNOT_DELETE_WRONG_XML_FILE);
           }
-          logger.error("Cannot write XML file", e);
+          logger.error(CANNOT_WRITE_XML_FILE, e);
           throw new OpenR66ProtocolBusinessException(//NOSONAR
-                                                     "Unsupported Encoding");//NOSONAR
+                                                     UNSUPPORTED_ENCODING);//NOSONAR
         } catch (final IOException e) {
           FileUtils.close(outputStream);
           final File file = new File(filename);
           if (!file.delete()) {
-            logger.info("Cannot delete wrong XML file");
+            logger.info(CANNOT_DELETE_WRONG_XML_FILE);
           }
-          logger.error("Cannot write XML file", e);
+          logger.error(CANNOT_WRITE_XML_FILE, e);
           throw new OpenR66ProtocolBusinessException(//NOSONAR
-                                                     "Unsupported Encoding");//NOSONAR
+                                                     UNSUPPORTED_ENCODING);//NOSONAR
         }
-        if (!isOk && outputStream != null) {
+        if (!isOk) {
           FileUtils.close(outputStream);
           final File file = new File(filename);
           if (!file.delete()) {
@@ -4018,18 +4004,9 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
 
   /**
    * @return the runner as XML
-   *
-   * @throws OpenR66ProtocolBusinessException
    */
-  public String asXML() throws OpenR66ProtocolBusinessException {
-    final Element node;
-    try {
-      node = getElementFromRunner(this);
-    } catch (final WaarpDatabaseSqlException e) {
-      logger.error("Cannot read Data", e);
-      throw new OpenR66ProtocolBusinessException(
-          "Cannot read Data: " + e.getMessage());
-    }
+  public String asXML() {
+    final Element node = getElementFromRunner(this);
     return node.asXML();
   }
 
@@ -4232,122 +4209,6 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
   }
 
   /**
-   * Method to write the current DbTaskRunner for NoDb client instead of
-   * updating DB. 'setToArray' must be
-   * called priorly to be able to store the values.
-   *
-   * @throws OpenR66ProtocolBusinessException
-   */
-  public void writeXmlWorkNoDb() throws OpenR66ProtocolBusinessException {
-    final String filename = backendXmlFilename();
-    OutputStream outputStream = null;
-    XMLWriter xmlWriter = null;
-    boolean isOk = false;
-    try {
-      outputStream = new FileOutputStream(filename);
-      final OutputFormat format = OutputFormat.createPrettyPrint();
-      format.setEncoding(WaarpStringUtils.UTF_8);
-      xmlWriter = new XMLWriter(outputStream, format);
-      final Element root = new DefaultElement(XMLRUNNERS);
-      try {
-        xmlWriter.writeOpen(root);
-        final Element node;
-        node = getElementFromRunner(this);
-        xmlWriter.write(node);
-        xmlWriter.flush();
-        xmlWriter.writeClose(root);
-        isOk = true;
-      } catch (final IOException e) {
-        logger.error("Cannot write XML file", e);
-        throw new OpenR66ProtocolBusinessException(
-            "Cannot write file: " + e.getMessage());
-      } catch (final WaarpDatabaseSqlException e) {
-        logger.error("Cannot write Data", e);
-        throw new OpenR66ProtocolBusinessException(
-            "Cannot write Data: " + e.getMessage());
-      }
-    } catch (final FileNotFoundException e) {
-      logger.error("Cannot write XML file", e);
-      throw new OpenR66ProtocolBusinessException("File not found");
-    } catch (final UnsupportedEncodingException e) {
-      logger.error("Cannot write XML file", e);
-      throw new OpenR66ProtocolBusinessException("Unsupported Encoding");
-    } finally {
-      if (xmlWriter != null) {
-        try {
-          xmlWriter.endDocument();
-          xmlWriter.flush();
-          xmlWriter.close();
-        } catch (final SAXException e) {
-          FileUtils.close(outputStream);
-          final File file = new File(filename);
-          if (!file.delete()) {
-            logger.info("Cannot delete wrong XML file");
-          }
-          logger.error("Cannot write XML file", e);
-          throw new OpenR66ProtocolBusinessException(//NOSONAR
-                                                     "Cannot write XML file");//NOSONAR
-        } catch (final IOException e) {
-          FileUtils.close(outputStream);
-          final File file = new File(filename);
-          if (!file.delete()) {
-            logger.info("Cannot delete wrong XML file");
-          }
-          logger.error("Cannot write XML file", e);
-          throw new OpenR66ProtocolBusinessException(//NOSONAR
-                                                     "IO error on XML file",
-                                                     e);//NOSONAR
-        }
-        if (!isOk && outputStream != null) {
-          FileUtils.close(outputStream);
-          final File file = new File(filename);
-          if (!file.delete()) {
-            logger.info("Cannot delete wrong XML file");
-          }
-        }
-      } else if (outputStream != null) {
-        FileUtils.close(outputStream);
-        final File file = new File(filename);
-        if (!file.delete()) {
-          logger.debug("Cannot delete unwritten XML file");
-        }
-      }
-    }
-  }
-
-  /**
-   * Method to load a previous existing DbTaskRunner for NoDb client from File
-   * instead of from DB.
-   * 'setFromArray' must be called after.
-   *
-   * @throws OpenR66ProtocolBusinessException
-   */
-  public void loadXmlWorkNoDb() throws OpenR66ProtocolBusinessException {
-    final String filename = backendXmlFilename();
-    final File file = new File(filename);
-    if (!file.canRead()) {
-      throw new OpenR66ProtocolBusinessException(
-          "Backend XML file cannot be read");
-    }
-    final SAXReader reader = XmlUtil.getNewSaxReader();
-    final Document document;
-    try {
-      document = reader.read(file);
-    } catch (final DocumentException e) {
-      throw new OpenR66ProtocolBusinessException(
-          "Backend XML file cannot be read as an XML file", e);
-    }
-    final Element root =
-        (Element) document.selectSingleNode('/' + XMLRUNNERS + '/' + XMLRUNNER);
-    try {
-      setRunnerFromElement(this, root);
-    } catch (final WaarpDatabaseSqlException e) {
-      throw new OpenR66ProtocolBusinessException(
-          "Backend XML file is not conform to the model", e);
-    }
-  }
-
-  /**
    * Special function for save or update for Log Import
    *
    * @throws WaarpDatabaseException
@@ -4390,7 +4251,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
     for (final Node element : elts) {
       final DbTaskRunner runnerlog = new DbTaskRunner();
       try {
-        setRunnerFromElement(runnerlog, (Element) element);
+        setRunnerFromElementNoException(runnerlog, (Element) element);
         runnerlog.insertOrUpdateForLogsImport();
       } catch (final WaarpDatabaseSqlException e) {
         error = true;
@@ -4403,26 +4264,6 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
     if (error) {
       throw new OpenR66ProtocolBusinessException(
           "Backend XML file is not conform to the model", one);
-    }
-  }
-
-  /**
-   * @return True if the backend XML for NoDb client is available for this
-   *     TaskRunner
-   */
-  public boolean existXmlWorkNoDb() {
-    final String filename = backendXmlFilename();
-    final File file = new File(filename);
-    return file.canRead();
-  }
-
-  /**
-   * Delete the backend XML file for the current TaskRunner for NoDb Client
-   */
-  public void deleteXmlWorkNoDb() {
-    final File file = new File(backendXmlFilename());
-    if (!file.delete()) {
-      logger.info("Cannot delete XML file");
     }
   }
 

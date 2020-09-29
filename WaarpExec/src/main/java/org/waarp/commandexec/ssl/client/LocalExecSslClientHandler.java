@@ -55,7 +55,7 @@ public class LocalExecSslClientHandler extends LocalExecClientHandler {
 
   @Override
   public void exceptionCaught(final ChannelHandlerContext ctx,
-                              final Throwable cause) throws Exception {
+                              final Throwable cause) {
     logger.warn("Unexpected exception from Outband while get information: " +
                 firstMessage, cause);
     if (firstMessage) {

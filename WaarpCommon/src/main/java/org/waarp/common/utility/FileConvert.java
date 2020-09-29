@@ -19,9 +19,6 @@
  */
 package org.waarp.common.utility;
 
-/**
- * Description: Converts Unix files to Dos and vice versa
- */
 
 import org.waarp.common.command.exception.Reply550Exception;
 import org.waarp.common.file.FileUtils;
@@ -38,6 +35,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
+/**
+ * Description: Converts Unix files to Dos and vice versa
+ */
 public class FileConvert extends Thread {
   /**
    * Internal Logger

@@ -34,7 +34,6 @@ import org.waarp.openr66.client.SendThroughClient;
 import org.waarp.openr66.context.ErrorCode;
 import org.waarp.openr66.context.R66Result;
 import org.waarp.openr66.context.filesystem.R66File;
-import org.waarp.openr66.context.task.exception.OpenR66RunnerErrorException;
 import org.waarp.openr66.database.DbConstantR66;
 import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
@@ -203,14 +202,6 @@ public class TestSendThroughClient extends SendThroughClient {
       transferInError(new OpenR66ProtocolSystemException(e));
       return false;
     } catch (final OpenR66ProtocolPacketException e) {
-      // An error occurs!
-      transferInError(e);
-      return false;
-    } catch (final OpenR66RunnerErrorException e) {
-      // An error occurs!
-      transferInError(e);
-      return false;
-    } catch (final OpenR66ProtocolSystemException e) {
       // An error occurs!
       transferInError(e);
       return false;

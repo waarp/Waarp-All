@@ -20,7 +20,6 @@
 package org.waarp.ftp.core.command.rfc2428;
 
 import org.waarp.common.command.ReplyCode;
-import org.waarp.common.command.exception.Reply501Exception;
 import org.waarp.common.command.exception.Reply522Exception;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
@@ -37,7 +36,7 @@ public class EPRT extends AbstractCommand {
       WaarpLoggerFactory.getInstance(EPRT.class);
 
   @Override
-  public void exec() throws Reply501Exception, Reply522Exception {
+  public void exec() throws Reply522Exception {
     // First Check if any argument
     if (!hasArg()) {
       final InetSocketAddress inetSocketAddress =

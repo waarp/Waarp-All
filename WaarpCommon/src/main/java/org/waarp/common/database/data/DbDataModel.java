@@ -124,7 +124,7 @@ public class DbDataModel extends AbstractDbData {
   }
 
   @Override
-  protected void setFromArray() throws WaarpDatabaseSqlException {
+  protected void setFromArray() {
     hostid = (String) allFields[Columns.HOSTID.ordinal()].getValue();
     readgloballimit =
         (Long) allFields[Columns.READGLOBALLIMIT.ordinal()].getValue();

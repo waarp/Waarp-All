@@ -44,7 +44,6 @@ import org.waarp.openr66.protocol.exception.OpenR66Exception;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolBusinessException;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolBusinessQueryAlreadyFinishedException;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolBusinessQueryStillRunningException;
-import org.waarp.openr66.protocol.exception.OpenR66ProtocolNoDataException;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolNotAuthenticatedException;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolNotYetConnectionException;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
@@ -145,16 +144,14 @@ public class TransferActions extends ServerActions {
    *
    * @param packet
    *
-   * @throws OpenR66ProtocolNoDataException
    * @throws OpenR66ProtocolPacketException
    * @throws OpenR66ProtocolBusinessException
    * @throws OpenR66ProtocolSystemException
    * @throws OpenR66RunnerErrorException
    */
   public void request(RequestPacket packet)
-      throws OpenR66ProtocolNoDataException, OpenR66ProtocolPacketException,
-             OpenR66RunnerErrorException, OpenR66ProtocolSystemException,
-             OpenR66ProtocolBusinessException {
+      throws OpenR66ProtocolPacketException, OpenR66RunnerErrorException,
+             OpenR66ProtocolSystemException, OpenR66ProtocolBusinessException {
     session.setStatus(99);
     if (!session.isAuthenticated()) {
       session.setStatus(48);
@@ -545,8 +542,7 @@ public class TransferActions extends ServerActions {
 
   private boolean checkRunnerConsistency(final RequestPacket packet,
                                          final DbTaskRunner runner,
-                                         final LocalChannelReference lcr)
-      throws OpenR66ProtocolPacketException {
+                                         final LocalChannelReference lcr) {
     // Check correctness of packet received vs current LCR
     if (runner == null) {
       logger.info("Id is unknown: {}}", packet.getSpecialId());
@@ -1026,13 +1022,10 @@ public class TransferActions extends ServerActions {
    *
    * @param packet
    *
-   * @throws OpenR66RunnerErrorException
-   * @throws OpenR66ProtocolSystemException
    * @throws OpenR66ProtocolNotAuthenticatedException
    */
   public void endTransfer(final EndTransferPacket packet)
-      throws OpenR66RunnerErrorException, OpenR66ProtocolSystemException,
-             OpenR66ProtocolNotAuthenticatedException {
+      throws OpenR66ProtocolNotAuthenticatedException {
     if (!session.isAuthenticated()) {
       throw new OpenR66ProtocolNotAuthenticatedException(
           "Not authenticated while EndTransfer received");

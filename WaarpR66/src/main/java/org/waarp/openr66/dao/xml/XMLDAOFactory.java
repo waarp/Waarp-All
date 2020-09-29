@@ -46,12 +46,12 @@ public class XMLDAOFactory extends DAOFactory {
   }
 
   @Override
-  public BusinessDAO getBusinessDAO() throws DAOConnectionException {
+  public BusinessDAO getBusinessDAO() {
     return new XMLBusinessDAO(businessFile);
   }
 
   @Override
-  public HostDAO getHostDAO() throws DAOConnectionException {
+  public HostDAO getHostDAO() {
     return new XMLHostDAO(hostFile);
   }
 
@@ -68,12 +68,12 @@ public class XMLDAOFactory extends DAOFactory {
   }
 
   @Override
-  public RuleDAO getRuleDAO() throws DAOConnectionException {
+  public RuleDAO getRuleDAO() {
     return new XMLRuleDAO(ruleFile);
   }
 
   @Override
-  public TransferDAO getTransferDAO() throws DAOConnectionException {
+  public TransferDAO getTransferDAO() {
     return new XMLTransferDAO(transferFile);
   }
 }

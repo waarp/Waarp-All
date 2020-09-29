@@ -81,8 +81,7 @@ public class KeepAlivePacket extends AbstractLocalPacket {
 
   @Override
   public void createAllBuffers(final LocalChannelReference lcr,
-                               final int networkHeader)
-      throws OpenR66ProtocolPacketException {
+                               final int networkHeader) {
     final int globalSize = networkHeader + LOCAL_HEADER_SIZE + 1;
     final int offset = networkHeader + LOCAL_HEADER_SIZE;
     global = ByteBufAllocator.DEFAULT.buffer(globalSize, globalSize);

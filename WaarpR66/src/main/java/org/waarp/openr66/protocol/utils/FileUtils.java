@@ -56,12 +56,12 @@ public final class FileUtils {
    *
    * @throws OpenR66RunnerErrorException
    */
-  public static final R66File getFile(final WaarpLogger logger,
-                                      final R66Session session,
-                                      final String filenameSrc,
-                                      final boolean isPreStart,
-                                      final boolean isSender,
-                                      final boolean isThrough, R66File file)
+  public static R66File getFile(final WaarpLogger logger,
+                                final R66Session session,
+                                final String filenameSrc,
+                                final boolean isPreStart,
+                                final boolean isSender, final boolean isThrough,
+                                R66File file)
       throws OpenR66RunnerErrorException {
     String filename;
     logger.debug("PreStart: {}", isPreStart);
@@ -120,8 +120,8 @@ public final class FileUtils {
    *
    * @return the hash from the given Buffer
    */
-  public static final byte[] getHash(final byte[] buffer, final DigestAlgo algo,
-                                     final FilesystemBasedDigest digestGlobal) {
+  public static byte[] getHash(final byte[] buffer, final DigestAlgo algo,
+                               final FilesystemBasedDigest digestGlobal) {
     if (buffer == null || buffer.length == 0) {
       return EMPTY_ARRAY;
     }

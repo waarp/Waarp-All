@@ -39,7 +39,6 @@ import org.openqa.selenium.phantomjs.PhantomJSDriver;
 import org.openqa.selenium.phantomjs.PhantomJSDriverService;
 import org.openqa.selenium.remote.CapabilityType;
 import org.openqa.selenium.remote.DesiredCapabilities;
-import org.waarp.common.command.exception.Reply550Exception;
 import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
 import org.waarp.common.file.FileUtils;
 import org.waarp.common.file.filesystembased.FilesystemBasedFileParameterImpl;
@@ -285,12 +284,8 @@ public class FtpClientTest {
     if (!libPhantomJS.canRead()) {
       File libPhantomJSZip = new File(libdir, "lib/phantomjs-2.1.1.bz2");
       if (libPhantomJSZip.canRead()) {
-        try {
-          FileUtils.uncompressedBz2File(libPhantomJSZip, libPhantomJS);
-          libPhantomJS.setExecutable(true);
-        } catch (Reply550Exception e) {
-          fail(e.getMessage());
-        }
+        FileUtils.uncompressedBz2File(libPhantomJSZip, libPhantomJS);
+        libPhantomJS.setExecutable(true);
       }
     }
     assertTrue(libPhantomJS.exists());

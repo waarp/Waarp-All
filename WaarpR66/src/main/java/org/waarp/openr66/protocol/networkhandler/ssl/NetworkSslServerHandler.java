@@ -89,8 +89,8 @@ public class NetworkSslServerHandler extends NetworkServerHandler {
       sslHandler.handshakeFuture().addListener(
           new GenericFutureListener<Future<? super Channel>>() {
             @Override
-            public void operationComplete(final Future<? super Channel> future)
-                throws Exception {
+            public void operationComplete(
+                final Future<? super Channel> future) {
               if (!future.isSuccess() &&
                   Configuration.configuration.getR66Mib() != null) {
                 Configuration.configuration.getR66Mib()

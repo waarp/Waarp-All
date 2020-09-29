@@ -55,7 +55,7 @@ public class INTERNALSHUTDOWN extends AbstractCommand {
     }
 
     @Override
-    public void operationComplete(final ChannelFuture arg0) throws Exception {
+    public void operationComplete(final ChannelFuture arg0) {
       WaarpSslUtility.closingSslChannel(arg0.channel());
       FtpChannelUtils.teminateServer(configuration);
     }
