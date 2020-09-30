@@ -59,7 +59,7 @@ public class CommonFileChunkedInput implements ChunkedInput&lt;ByteBuf&gt; {
 
   @Override
   public ByteBuf readChunk(final ChannelHandlerContext ctx) throws Exception {
-<span class="nc" id="L62">    return readChunk((ByteBufAllocator) null);</span>
+<span class="nc" id="L62">    return readChunk(ByteBufAllocator.DEFAULT);</span>
   }
 
   @Override
@@ -108,7 +108,10 @@ public class CommonFileChunkedInput implements ChunkedInput&lt;ByteBuf&gt; {
 <span class="nc" id="L108">    }</span>
 <span class="nc" id="L109">    lastChunkAlready = block.isEOF();</span>
 <span class="nc" id="L110">    offset += block.getByteCount();</span>
-<span class="nc" id="L111">    return block.getBlock();</span>
+<span class="nc" id="L111">    final byte[] bytes = block.getByteBlock();</span>
+<span class="nc" id="L112">    final ByteBuf buffer = byteBufAllocator.buffer(bytes.length, bytes.length);</span>
+<span class="nc" id="L113">    buffer.writeBytes(bytes);</span>
+<span class="nc" id="L114">    return buffer;</span>
   }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

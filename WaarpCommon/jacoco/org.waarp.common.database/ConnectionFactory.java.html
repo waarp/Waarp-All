@@ -151,11 +151,10 @@ public class ConnectionFactory {
 <span class="nc bnc" id="L151" title="All 2 branches missed.">    if (ds == null) {</span>
 <span class="nc" id="L152">      throw new SQLException(&quot;ConnectionFactory is not inialized.&quot;);</span>
     }
-<span class="nc" id="L154">    logger.trace(&quot;Active: {}, Idle: {}&quot;, ds.getNumActive(), ds.getNumIdle());</span>
     try {
-<span class="nc" id="L156">      return ds.getConnection();</span>
-<span class="nc" id="L157">    } catch (final SQLException e) {</span>
-<span class="nc" id="L158">      throw new SQLException(&quot;Cannot access database&quot;, e);</span>
+<span class="nc" id="L155">      return ds.getConnection();</span>
+<span class="nc" id="L156">    } catch (final SQLException e) {</span>
+<span class="nc" id="L157">      throw new SQLException(&quot;Cannot access database&quot;, e);</span>
     }
   }
 
@@ -167,45 +166,45 @@ public class ConnectionFactory {
    */
   private ConnectionFactory(final DbProperties properties, final String server,
                             final String user, final String password)
-<span class="nc" id="L170">      throws SQLException {</span>
-<span class="nc" id="L171">    this.server = server;</span>
-<span class="nc" id="L172">    this.user = user;</span>
-<span class="nc" id="L173">    this.password = password;</span>
-<span class="nc" id="L174">    this.properties = properties;</span>
+<span class="nc" id="L169">      throws SQLException {</span>
+<span class="nc" id="L170">    this.server = server;</span>
+<span class="nc" id="L171">    this.user = user;</span>
+<span class="nc" id="L172">    this.password = password;</span>
+<span class="nc" id="L173">    this.properties = properties;</span>
 
-<span class="nc" id="L176">    ds = new BasicDataSource();</span>
+<span class="nc" id="L175">    ds = new BasicDataSource();</span>
 
     // Initialize DataSource
-<span class="nc" id="L179">    ds.setDriverClassName(this.properties.getDriverName());</span>
-<span class="nc" id="L180">    ds.setUrl(this.server);</span>
-<span class="nc" id="L181">    ds.setUsername(this.user);</span>
-<span class="nc" id="L182">    ds.setPassword(this.password);</span>
-<span class="nc" id="L183">    ds.setDefaultAutoCommit(AUTOCOMMIT);</span>
-<span class="nc" id="L184">    ds.setDefaultReadOnly(READONLY);</span>
-<span class="nc" id="L185">    ds.setValidationQuery(this.properties.getValidationQuery());</span>
+<span class="nc" id="L178">    ds.setDriverClassName(this.properties.getDriverName());</span>
+<span class="nc" id="L179">    ds.setUrl(this.server);</span>
+<span class="nc" id="L180">    ds.setUsername(this.user);</span>
+<span class="nc" id="L181">    ds.setPassword(this.password);</span>
+<span class="nc" id="L182">    ds.setDefaultAutoCommit(AUTOCOMMIT);</span>
+<span class="nc" id="L183">    ds.setDefaultReadOnly(READONLY);</span>
+<span class="nc" id="L184">    ds.setValidationQuery(this.properties.getValidationQuery());</span>
 
     // Get maximum connections
-<span class="nc" id="L188">    Connection con = null;</span>
+<span class="nc" id="L187">    Connection con = null;</span>
     // default
-<span class="nc" id="L190">    maxConnections = MAX_CONNECTIONS_DEFAULT;</span>
+<span class="nc" id="L189">    maxConnections = MAX_CONNECTIONS_DEFAULT;</span>
     try {
-<span class="nc" id="L192">      con = getConnection();</span>
+<span class="nc" id="L191">      con = getConnection();</span>
       // Max of user value (if not set, default 10) and current maximum
       // connections
-<span class="nc" id="L195">      maxConnections = Math.min(properties.getMaximumConnections(con),</span>
-<span class="nc" id="L196">                                SystemPropertyUtil.get(</span>
+<span class="nc" id="L194">      maxConnections = Math.min(properties.getMaximumConnections(con),</span>
+<span class="nc" id="L195">                                SystemPropertyUtil.get(</span>
                                     SystemPropertyUtil.WAARP_DATABASE_CONNECTION_MAX,
                                     MAX_CONNECTIONS_DEFAULT));
-<span class="nc" id="L199">    } catch (final SQLException e) {</span>
-<span class="nc" id="L200">      logger.warn(&quot;Cannot fetch maximum connection allowed from database&quot;, e);</span>
+<span class="nc" id="L198">    } catch (final SQLException e) {</span>
+<span class="nc" id="L199">      logger.warn(&quot;Cannot fetch maximum connection allowed from database&quot;, e);</span>
     } finally {
-<span class="nc bnc" id="L202" title="All 2 branches missed.">      if (con != null) {</span>
-<span class="nc" id="L203">        con.close();</span>
+<span class="nc bnc" id="L201" title="All 2 branches missed.">      if (con != null) {</span>
+<span class="nc" id="L202">        con.close();</span>
       }
     }
-<span class="nc" id="L206">    setMaxConnections(maxConnections);</span>
-<span class="nc" id="L207">    logger.info(toString());</span>
-<span class="nc" id="L208">  }</span>
+<span class="nc" id="L205">    setMaxConnections(maxConnections);</span>
+<span class="nc" id="L206">    logger.info(&quot;{}&quot;, this);</span>
+<span class="nc" id="L207">  }</span>
 
   /**
    * Mainly for Junit
@@ -214,77 +213,77 @@ public class ConnectionFactory {
    */
   public void setMaxConnections(final int max) {
     // Minimal value should be 2
-<span class="nc" id="L217">    maxConnections = Math.max(max, MAX_IDLE_DEFAULT);</span>
-<span class="nc" id="L218">    ds.setMaxActive(maxConnections);</span>
-<span class="nc" id="L219">    maxIdle = Math.min(Math.max(maxConnections / 2, MAX_IDLE_DEFAULT),</span>
+<span class="nc" id="L216">    maxConnections = Math.max(max, MAX_IDLE_DEFAULT);</span>
+<span class="nc" id="L217">    ds.setMaxActive(maxConnections);</span>
+<span class="nc" id="L218">    maxIdle = Math.min(Math.max(maxConnections / 2, MAX_IDLE_DEFAULT),</span>
                        maxConnections);
-<span class="nc bnc" id="L221" title="All 2 branches missed.">    if (maxIdle &lt; GenericObjectPool.DEFAULT_MAX_IDLE) {</span>
-<span class="nc" id="L222">      ds.setMaxIdle(maxIdle);</span>
+<span class="nc bnc" id="L220" title="All 2 branches missed.">    if (maxIdle &lt; GenericObjectPool.DEFAULT_MAX_IDLE) {</span>
+<span class="nc" id="L221">      ds.setMaxIdle(maxIdle);</span>
     }
-<span class="nc" id="L224">  }</span>
+<span class="nc" id="L223">  }</span>
 
   /**
    * Closes and releases all registered connections and connection pool
    */
   public void close() {
-<span class="nc" id="L230">    logger.info(&quot;Closing ConnectionFactory&quot;);</span>
+<span class="nc" id="L229">    logger.info(&quot;Closing ConnectionFactory&quot;);</span>
     try {
-<span class="nc" id="L232">      ds.close();</span>
-<span class="nc" id="L233">    } catch (final SQLException e) {</span>
-<span class="nc" id="L234">      logger.debug(&quot;Cannot close properly the connection pool&quot;, e);</span>
-<span class="nc" id="L235">    }</span>
-<span class="nc" id="L236">  }</span>
+<span class="nc" id="L231">      ds.close();</span>
+<span class="nc" id="L232">    } catch (final SQLException e) {</span>
+<span class="nc" id="L233">      logger.debug(&quot;Cannot close properly the connection pool&quot;, e);</span>
+<span class="nc" id="L234">    }</span>
+<span class="nc" id="L235">  }</span>
 
   /**
    * @return the current configuration of the database maximum connections
    */
   public int getMaxConnections() {
-<span class="nc" id="L242">    return maxConnections;</span>
+<span class="nc" id="L241">    return maxConnections;</span>
   }
 
   /**
    * @return the JDBC connection url property
    */
   public String getServer() {
-<span class="nc" id="L249">    return server;</span>
+<span class="nc" id="L248">    return server;</span>
   }
 
   /**
    * @return the JDBC connection username property
    */
   public String getUser() {
-<span class="nc" id="L256">    return user;</span>
+<span class="nc" id="L255">    return user;</span>
   }
 
   /**
    * @return the JDBC connection password property
    */
   public String getPassword() {
-<span class="nc" id="L263">    return password;</span>
+<span class="nc" id="L262">    return password;</span>
   }
 
   /**
    * @return the associated DbProperties
    */
   public DbProperties getProperties() {
-<span class="nc" id="L270">    return properties;</span>
+<span class="nc" id="L269">    return properties;</span>
   }
 
   @Override
   public String toString() {
-<span class="nc" id="L275">    final StringBuilder sb = new StringBuilder();</span>
-<span class="nc" id="L276">    sb.append(&quot;Datapool:&quot;);</span>
-<span class="nc" id="L277">    sb.append(server);</span>
-<span class="nc" id="L278">    sb.append(&quot;, with user:&quot;);</span>
-<span class="nc" id="L279">    sb.append(user);</span>
-<span class="nc" id="L280">    sb.append(&quot;, AutoCommit:&quot;);</span>
-<span class="nc" id="L281">    sb.append(AUTOCOMMIT);</span>
-<span class="nc" id="L282">    sb.append(&quot;, DefaultReadOnly:&quot;);</span>
-<span class="nc" id="L283">    sb.append(READONLY);</span>
-<span class="nc" id="L284">    sb.append(&quot;, max connecions:&quot;);</span>
-<span class="nc" id="L285">    sb.append(maxConnections);</span>
+<span class="nc" id="L274">    final StringBuilder sb = new StringBuilder();</span>
+<span class="nc" id="L275">    sb.append(&quot;Datapool:&quot;);</span>
+<span class="nc" id="L276">    sb.append(server);</span>
+<span class="nc" id="L277">    sb.append(&quot;, with user:&quot;);</span>
+<span class="nc" id="L278">    sb.append(user);</span>
+<span class="nc" id="L279">    sb.append(&quot;, AutoCommit:&quot;);</span>
+<span class="nc" id="L280">    sb.append(AUTOCOMMIT);</span>
+<span class="nc" id="L281">    sb.append(&quot;, DefaultReadOnly:&quot;);</span>
+<span class="nc" id="L282">    sb.append(READONLY);</span>
+<span class="nc" id="L283">    sb.append(&quot;, max connecions:&quot;);</span>
+<span class="nc" id="L284">    sb.append(maxConnections);</span>
 
-<span class="nc" id="L287">    return sb.toString();</span>
+<span class="nc" id="L286">    return sb.toString();</span>
   }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

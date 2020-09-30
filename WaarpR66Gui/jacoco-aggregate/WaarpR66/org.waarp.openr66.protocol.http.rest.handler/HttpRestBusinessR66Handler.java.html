@@ -116,60 +116,58 @@ public class HttpRestBusinessR66Handler extends HttpRestAbstractR66Handler {
 <span class="nc" id="L116">          setOk(handler, result, json, HttpResponseStatus.OK);</span>
         }
 <span class="nc" id="L118">      } else {</span>
-<span class="nc" id="L119">        logger.info(&quot;Validation is ignored: &quot; + json);</span>
+<span class="nc" id="L119">        logger.info(&quot;Validation is ignored: {}&quot;, json);</span>
 <span class="nc" id="L120">        result.setDetail(&quot;Unknown command&quot;);</span>
 <span class="nc" id="L121">        setError(handler, result, json, HttpResponseStatus.PRECONDITION_FAILED);</span>
       }
 <span class="nc" id="L123">    } catch (final OpenR66ProtocolNotAuthenticatedException e) {</span>
 <span class="nc" id="L124">      throw new HttpInvalidAuthenticationException(e);</span>
-<span class="nc" id="L125">    } catch (final OpenR66ProtocolPacketException e) {</span>
-<span class="nc" id="L126">      throw new HttpIncorrectRequestException(e);</span>
-<span class="nc" id="L127">    }</span>
-<span class="nc" id="L128">  }</span>
+<span class="nc" id="L125">    }</span>
+<span class="nc" id="L126">  }</span>
 
   private void wrongResult(final HttpRestHandler handler,
                            final RestArgument result, final R66Session session,
                            final BusinessRequestJsonPacket node,
                            final R66Result r66result) {
-<span class="nc" id="L134">    logger.info(&quot;Task in Error:&quot; + node.getClassName() + ' ' + r66result);</span>
-<span class="nc bnc" id="L135" title="All 2 branches missed.">    if (!r66result.isAnswered()) {</span>
-<span class="nc" id="L136">      node.setValidated(false);</span>
-<span class="nc" id="L137">      session.newState(ERROR);</span>
+<span class="nc" id="L132">    logger.info(&quot;Task in Error: {} {}&quot;, node.getClassName(), r66result);</span>
+<span class="nc bnc" id="L133" title="All 2 branches missed.">    if (!r66result.isAnswered()) {</span>
+<span class="nc" id="L134">      node.setValidated(false);</span>
+<span class="nc" id="L135">      session.newState(ERROR);</span>
     }
-<span class="nc" id="L139">    result.setDetail(&quot;Task in Error:&quot; + node.getClassName() + ' ' + r66result);</span>
-<span class="nc" id="L140">    setError(handler, result, HttpResponseStatus.NOT_ACCEPTABLE);</span>
-<span class="nc" id="L141">  }</span>
+<span class="nc" id="L137">    result.setDetail(&quot;Task in Error:&quot; + node.getClassName() + ' ' + r66result);</span>
+<span class="nc" id="L138">    setError(handler, result, HttpResponseStatus.NOT_ACCEPTABLE);</span>
+<span class="nc" id="L139">  }</span>
 
   @Override
   protected ArrayNode getDetailedAllow() {
-<span class="fc" id="L145">    final ArrayNode node = JsonHandler.createArrayNode();</span>
+<span class="fc" id="L143">    final ArrayNode node = JsonHandler.createArrayNode();</span>
 
-<span class="pc bpc" id="L147" title="1 of 2 branches missed.">    if (methods.contains(METHOD.GET)) {</span>
-<span class="fc" id="L148">      final BusinessRequestJsonPacket node3 = new BusinessRequestJsonPacket();</span>
-<span class="fc" id="L149">      node3.setRequestUserPacket();</span>
-<span class="fc" id="L150">      node3.setComment(&quot;Business execution request (GET)&quot;);</span>
-<span class="fc" id="L151">      node3.setClassName(&quot;Class name to execute&quot;);</span>
-<span class="fc" id="L152">      node3.setArguments(&quot;Arguments of the execution&quot;);</span>
-<span class="fc" id="L153">      node3.setExtraArguments(&quot;Extra arguments&quot;);</span>
+<span class="pc bpc" id="L145" title="1 of 2 branches missed.">    if (methods.contains(METHOD.GET)) {</span>
+<span class="fc" id="L146">      final BusinessRequestJsonPacket node3 = new BusinessRequestJsonPacket();</span>
+<span class="fc" id="L147">      node3.setRequestUserPacket();</span>
+<span class="fc" id="L148">      node3.setComment(&quot;Business execution request (GET)&quot;);</span>
+<span class="fc" id="L149">      node3.setClassName(&quot;Class name to execute&quot;);</span>
+<span class="fc" id="L150">      node3.setArguments(&quot;Arguments of the execution&quot;);</span>
+<span class="fc" id="L151">      node3.setExtraArguments(&quot;Extra arguments&quot;);</span>
       final ObjectNode node2;
-<span class="fc" id="L155">      final ArrayNode node1 = JsonHandler.createArrayNode();</span>
+<span class="fc" id="L153">      final ArrayNode node1 = JsonHandler.createArrayNode();</span>
       try {
-<span class="fc" id="L157">        node1.add(node3.createObjectNode());</span>
-<span class="fc" id="L158">        node2 = RestArgument.fillDetailedAllow(METHOD.GET, path,</span>
+<span class="fc" id="L155">        node1.add(node3.createObjectNode());</span>
+<span class="fc" id="L156">        node2 = RestArgument.fillDetailedAllow(METHOD.GET, path,</span>
                                                ACTIONS_TYPE.ExecuteBusiness
-<span class="fc" id="L160">                                                   .name(),</span>
-<span class="fc" id="L161">                                               node3.createObjectNode(), node1);</span>
-<span class="fc" id="L162">        node.add(node2);</span>
-<span class="nc" id="L163">      } catch (final OpenR66ProtocolPacketException ignored) {</span>
+<span class="fc" id="L158">                                                   .name(),</span>
+<span class="fc" id="L159">                                               node3.createObjectNode(), node1);</span>
+<span class="fc" id="L160">        node.add(node2);</span>
+<span class="nc" id="L161">      } catch (final OpenR66ProtocolPacketException ignored) {</span>
         // ignore
-<span class="fc" id="L165">      }</span>
+<span class="fc" id="L163">      }</span>
     }
-<span class="fc" id="L167">    final ObjectNode node2 = RestArgument</span>
-<span class="fc" id="L168">        .fillDetailedAllow(METHOD.OPTIONS, path, COMMAND_TYPE.OPTIONS.name(),</span>
+<span class="fc" id="L165">    final ObjectNode node2 = RestArgument</span>
+<span class="fc" id="L166">        .fillDetailedAllow(METHOD.OPTIONS, path, COMMAND_TYPE.OPTIONS.name(),</span>
                            null, null);
-<span class="fc" id="L170">    node.add(node2);</span>
+<span class="fc" id="L168">    node.add(node2);</span>
 
-<span class="fc" id="L172">    return node;</span>
+<span class="fc" id="L170">    return node;</span>
   }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

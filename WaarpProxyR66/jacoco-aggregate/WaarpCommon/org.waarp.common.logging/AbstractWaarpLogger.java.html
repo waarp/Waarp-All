@@ -32,7 +32,6 @@
  */
 package org.waarp.common.logging;
 
-import java.io.ObjectStreamException;
 import java.io.Serializable;
 
 /**
@@ -53,199 +52,199 @@ public abstract class AbstractWaarpLogger implements WaarpLogger, Serializable {
   /**
    * Creates a new instance.
    */
-<span class="fc" id="L56">  protected AbstractWaarpLogger(final String name) {</span>
-<span class="pc bpc" id="L57" title="1 of 2 branches missed.">    if (name == null) {</span>
-<span class="nc" id="L58">      throw new NullPointerException(&quot;name&quot;);</span>
+<span class="fc" id="L55">  protected AbstractWaarpLogger(final String name) {</span>
+<span class="pc bpc" id="L56" title="1 of 2 branches missed.">    if (name == null) {</span>
+<span class="nc" id="L57">      throw new IllegalArgumentException(&quot;name&quot;);</span>
     }
-<span class="fc" id="L60">    this.name = name;</span>
-<span class="fc" id="L61">  }</span>
+<span class="fc" id="L59">    this.name = name;</span>
+<span class="fc" id="L60">  }</span>
 
   @Override
   public String name() {
-<span class="fc" id="L65">    return name;</span>
+<span class="fc" id="L64">    return name;</span>
   }
 
   @Override
   public boolean isEnabled(final WaarpLogLevel level) {
-<span class="nc bnc" id="L70" title="All 6 branches missed.">    switch (level) {</span>
+<span class="nc bnc" id="L69" title="All 6 branches missed.">    switch (level) {</span>
       case TRACE:
-<span class="nc" id="L72">        return isTraceEnabled();</span>
+<span class="nc" id="L71">        return isTraceEnabled();</span>
       case DEBUG:
-<span class="nc" id="L74">        return isDebugEnabled();</span>
+<span class="nc" id="L73">        return isDebugEnabled();</span>
       case INFO:
-<span class="nc" id="L76">        return isInfoEnabled();</span>
+<span class="nc" id="L75">        return isInfoEnabled();</span>
       case WARN:
-<span class="nc" id="L78">        return isWarnEnabled();</span>
+<span class="nc" id="L77">        return isWarnEnabled();</span>
       case ERROR:
-<span class="nc" id="L80">        return isErrorEnabled();</span>
+<span class="nc" id="L79">        return isErrorEnabled();</span>
       default:
-<span class="nc" id="L82">        return true;</span>
+<span class="nc" id="L81">        return true;</span>
     }
   }
 
   @Override
   public void trace(final Throwable t) {
-<span class="nc" id="L88">    trace(EXCEPTION_MESSAGE, t);</span>
-<span class="nc" id="L89">  }</span>
+<span class="nc" id="L87">    trace(EXCEPTION_MESSAGE, t);</span>
+<span class="nc" id="L88">  }</span>
 
   @Override
   public void debug(final Throwable t) {
-<span class="fc" id="L93">    debug(EXCEPTION_MESSAGE, t);</span>
-<span class="fc" id="L94">  }</span>
+<span class="fc" id="L92">    debug(EXCEPTION_MESSAGE, t);</span>
+<span class="fc" id="L93">  }</span>
 
   @Override
   public void info(final Throwable t) {
-<span class="fc" id="L98">    info(EXCEPTION_MESSAGE, t);</span>
-<span class="fc" id="L99">  }</span>
+<span class="fc" id="L97">    info(EXCEPTION_MESSAGE, t);</span>
+<span class="fc" id="L98">  }</span>
 
   @Override
   public void warn(final Throwable t) {
-<span class="fc" id="L103">    warn(EXCEPTION_MESSAGE, t);</span>
-<span class="fc" id="L104">  }</span>
+<span class="nc" id="L102">    warn(EXCEPTION_MESSAGE, t);</span>
+<span class="nc" id="L103">  }</span>
 
   @Override
   public void error(final Throwable t) {
-<span class="fc" id="L108">    error(EXCEPTION_MESSAGE, t);</span>
-<span class="fc" id="L109">  }</span>
+<span class="fc" id="L107">    error(EXCEPTION_MESSAGE, t);</span>
+<span class="fc" id="L108">  }</span>
 
   @Override
   public void log(final WaarpLogLevel level, final String msg,
                   final Throwable cause) {
-<span class="nc bnc" id="L114" title="All 5 branches missed.">    switch (level) {</span>
+<span class="nc bnc" id="L113" title="All 5 branches missed.">    switch (level) {</span>
       case TRACE:
-<span class="nc" id="L116">        trace(msg, cause);</span>
-<span class="nc" id="L117">        break;</span>
+<span class="nc" id="L115">        trace(msg, cause);</span>
+<span class="nc" id="L116">        break;</span>
       case DEBUG:
-<span class="nc" id="L119">        debug(msg, cause);</span>
-<span class="nc" id="L120">        break;</span>
+<span class="nc" id="L118">        debug(msg, cause);</span>
+<span class="nc" id="L119">        break;</span>
       case INFO:
-<span class="nc" id="L122">        info(msg, cause);</span>
-<span class="nc" id="L123">        break;</span>
+<span class="nc" id="L121">        info(msg, cause);</span>
+<span class="nc" id="L122">        break;</span>
       case WARN:
-<span class="nc" id="L125">        warn(msg, cause);</span>
-<span class="nc" id="L126">        break;</span>
+<span class="nc" id="L124">        warn(msg, cause);</span>
+<span class="nc" id="L125">        break;</span>
       case ERROR:
       default:
-<span class="nc" id="L129">        error(msg, cause);</span>
+<span class="nc" id="L128">        error(msg, cause);</span>
         break;
     }
-<span class="nc" id="L132">  }</span>
+<span class="nc" id="L131">  }</span>
 
   @Override
   public void log(final WaarpLogLevel level, final Throwable cause) {
-<span class="nc bnc" id="L136" title="All 5 branches missed.">    switch (level) {</span>
+<span class="nc bnc" id="L135" title="All 5 branches missed.">    switch (level) {</span>
       case TRACE:
-<span class="nc" id="L138">        trace(cause);</span>
-<span class="nc" id="L139">        break;</span>
+<span class="nc" id="L137">        trace(cause);</span>
+<span class="nc" id="L138">        break;</span>
       case DEBUG:
-<span class="nc" id="L141">        debug(cause);</span>
-<span class="nc" id="L142">        break;</span>
+<span class="nc" id="L140">        debug(cause);</span>
+<span class="nc" id="L141">        break;</span>
       case INFO:
-<span class="nc" id="L144">        info(cause);</span>
-<span class="nc" id="L145">        break;</span>
+<span class="nc" id="L143">        info(cause);</span>
+<span class="nc" id="L144">        break;</span>
       case WARN:
-<span class="nc" id="L147">        warn(cause);</span>
-<span class="nc" id="L148">        break;</span>
+<span class="nc" id="L146">        warn(cause);</span>
+<span class="nc" id="L147">        break;</span>
       case ERROR:
       default:
-<span class="nc" id="L151">        error(cause);</span>
+<span class="nc" id="L150">        error(cause);</span>
         break;
     }
-<span class="nc" id="L154">  }</span>
+<span class="nc" id="L153">  }</span>
 
   @Override
   public void log(final WaarpLogLevel level, final String msg) {
-<span class="pc bpc" id="L158" title="3 of 5 branches missed.">    switch (level) {</span>
+<span class="pc bpc" id="L157" title="3 of 5 branches missed.">    switch (level) {</span>
       case TRACE:
-<span class="nc" id="L160">        trace(msg);</span>
-<span class="nc" id="L161">        break;</span>
+<span class="nc" id="L159">        trace(msg);</span>
+<span class="nc" id="L160">        break;</span>
       case DEBUG:
-<span class="nc" id="L163">        debug(msg);</span>
-<span class="nc" id="L164">        break;</span>
+<span class="nc" id="L162">        debug(msg);</span>
+<span class="nc" id="L163">        break;</span>
       case INFO:
-<span class="nc" id="L166">        info(msg);</span>
-<span class="nc" id="L167">        break;</span>
+<span class="nc" id="L165">        info(msg);</span>
+<span class="nc" id="L166">        break;</span>
       case WARN:
-<span class="fc" id="L169">        warn(msg);</span>
-<span class="fc" id="L170">        break;</span>
+<span class="fc" id="L168">        warn(msg);</span>
+<span class="fc" id="L169">        break;</span>
       case ERROR:
       default:
-<span class="fc" id="L173">        error(msg);</span>
+<span class="fc" id="L172">        error(msg);</span>
         break;
     }
-<span class="fc" id="L176">  }</span>
+<span class="fc" id="L175">  }</span>
 
   @Override
   public void log(final WaarpLogLevel level, final String format,
                   final Object arg) {
-<span class="pc bpc" id="L181" title="4 of 5 branches missed.">    switch (level) {</span>
+<span class="pc bpc" id="L180" title="4 of 5 branches missed.">    switch (level) {</span>
       case TRACE:
-<span class="fc" id="L183">        trace(format, arg);</span>
-<span class="fc" id="L184">        break;</span>
+<span class="fc" id="L182">        trace(format, arg);</span>
+<span class="fc" id="L183">        break;</span>
       case DEBUG:
-<span class="nc" id="L186">        debug(format, arg);</span>
-<span class="nc" id="L187">        break;</span>
+<span class="nc" id="L185">        debug(format, arg);</span>
+<span class="nc" id="L186">        break;</span>
       case INFO:
-<span class="nc" id="L189">        info(format, arg);</span>
-<span class="nc" id="L190">        break;</span>
+<span class="nc" id="L188">        info(format, arg);</span>
+<span class="nc" id="L189">        break;</span>
       case WARN:
-<span class="nc" id="L192">        warn(format, arg);</span>
-<span class="nc" id="L193">        break;</span>
+<span class="nc" id="L191">        warn(format, arg);</span>
+<span class="nc" id="L192">        break;</span>
       case ERROR:
       default:
-<span class="nc" id="L196">        error(format, arg);</span>
+<span class="nc" id="L195">        error(format, arg);</span>
         break;
     }
-<span class="fc" id="L199">  }</span>
+<span class="fc" id="L198">  }</span>
 
   @Override
   public void log(final WaarpLogLevel level, final String format,
                   final Object argA, final Object argB) {
-<span class="nc bnc" id="L204" title="All 5 branches missed.">    switch (level) {</span>
+<span class="nc bnc" id="L203" title="All 5 branches missed.">    switch (level) {</span>
       case TRACE:
-<span class="nc" id="L206">        trace(format, argA, argB);</span>
-<span class="nc" id="L207">        break;</span>
+<span class="nc" id="L205">        trace(format, argA, argB);</span>
+<span class="nc" id="L206">        break;</span>
       case DEBUG:
-<span class="nc" id="L209">        debug(format, argA, argB);</span>
-<span class="nc" id="L210">        break;</span>
+<span class="nc" id="L208">        debug(format, argA, argB);</span>
+<span class="nc" id="L209">        break;</span>
       case INFO:
-<span class="nc" id="L212">        info(format, argA, argB);</span>
-<span class="nc" id="L213">        break;</span>
+<span class="nc" id="L211">        info(format, argA, argB);</span>
+<span class="nc" id="L212">        break;</span>
       case WARN:
-<span class="nc" id="L215">        warn(format, argA, argB);</span>
-<span class="nc" id="L216">        break;</span>
+<span class="nc" id="L214">        warn(format, argA, argB);</span>
+<span class="nc" id="L215">        break;</span>
       case ERROR:
       default:
-<span class="nc" id="L219">        error(format, argA, argB);</span>
+<span class="nc" id="L218">        error(format, argA, argB);</span>
         break;
     }
-<span class="nc" id="L222">  }</span>
+<span class="nc" id="L221">  }</span>
 
   @Override
   public void log(final WaarpLogLevel level, final String format,
                   final Object... arguments) {
-<span class="nc bnc" id="L227" title="All 5 branches missed.">    switch (level) {</span>
+<span class="nc bnc" id="L226" title="All 5 branches missed.">    switch (level) {</span>
       case TRACE:
-<span class="nc" id="L229">        trace(format, arguments);</span>
-<span class="nc" id="L230">        break;</span>
+<span class="nc" id="L228">        trace(format, arguments);</span>
+<span class="nc" id="L229">        break;</span>
       case DEBUG:
-<span class="nc" id="L232">        debug(format, arguments);</span>
-<span class="nc" id="L233">        break;</span>
+<span class="nc" id="L231">        debug(format, arguments);</span>
+<span class="nc" id="L232">        break;</span>
       case INFO:
-<span class="nc" id="L235">        info(format, arguments);</span>
-<span class="nc" id="L236">        break;</span>
+<span class="nc" id="L234">        info(format, arguments);</span>
+<span class="nc" id="L235">        break;</span>
       case WARN:
-<span class="nc" id="L238">        warn(format, arguments);</span>
-<span class="nc" id="L239">        break;</span>
+<span class="nc" id="L237">        warn(format, arguments);</span>
+<span class="nc" id="L238">        break;</span>
       case ERROR:
       default:
-<span class="nc" id="L242">        error(format, arguments);</span>
+<span class="nc" id="L241">        error(format, arguments);</span>
         break;
     }
-<span class="nc" id="L245">  }</span>
+<span class="nc" id="L244">  }</span>
 
-  protected Object readResolve() throws ObjectStreamException {
-<span class="nc" id="L248">    return WaarpLoggerFactory.getInstance(name());</span>
+  protected Object readResolve() {
+<span class="nc" id="L247">    return WaarpLoggerFactory.getInstance(name());</span>
   }
 
   /**
@@ -253,11 +252,11 @@ public abstract class AbstractWaarpLogger implements WaarpLogger, Serializable {
    *
    * @return the simple Class Name
    */
-  public static final String simpleClassName(final Object o) {
-<span class="nc bnc" id="L257" title="All 2 branches missed.">    if (o == null) {</span>
-<span class="nc" id="L258">      return &quot;null_object&quot;;</span>
+  public static String simpleClassName(final Object o) {
+<span class="nc bnc" id="L256" title="All 2 branches missed.">    if (o == null) {</span>
+<span class="nc" id="L257">      return &quot;null_object&quot;;</span>
     } else {
-<span class="nc" id="L260">      return simpleClassName(o.getClass());</span>
+<span class="nc" id="L259">      return simpleClassName(o.getClass());</span>
     }
   }
 
@@ -266,21 +265,21 @@ public abstract class AbstractWaarpLogger implements WaarpLogger, Serializable {
    *
    * @return the simple Class Name
    */
-  public static final String simpleClassName(final Class&lt;?&gt; clazz) {
-<span class="nc bnc" id="L270" title="All 2 branches missed.">    if (clazz == null) {</span>
-<span class="nc" id="L271">      return &quot;null_class&quot;;</span>
+  public static String simpleClassName(final Class&lt;?&gt; clazz) {
+<span class="nc bnc" id="L269" title="All 2 branches missed.">    if (clazz == null) {</span>
+<span class="nc" id="L270">      return &quot;null_class&quot;;</span>
     }
-<span class="nc" id="L273">    final Package pkg = clazz.getPackage();</span>
-<span class="nc bnc" id="L274" title="All 2 branches missed.">    if (pkg != null) {</span>
-<span class="nc" id="L275">      return clazz.getName().substring(pkg.getName().length() + 1);</span>
+<span class="nc" id="L272">    final Package pkg = clazz.getPackage();</span>
+<span class="nc bnc" id="L273" title="All 2 branches missed.">    if (pkg != null) {</span>
+<span class="nc" id="L274">      return clazz.getName().substring(pkg.getName().length() + 1);</span>
     } else {
-<span class="nc" id="L277">      return clazz.getName();</span>
+<span class="nc" id="L276">      return clazz.getName();</span>
     }
   }
 
   @Override
   public String toString() {
-<span class="nc" id="L283">    return simpleClassName(this) + '(' + name() + ')';</span>
+<span class="nc" id="L282">    return simpleClassName(this) + '(' + name() + ')';</span>
   }
 
   private static final int BASELEVEL;
@@ -292,20 +291,20 @@ public abstract class AbstractWaarpLogger implements WaarpLogger, Serializable {
    * @return the default base level
    */
   private static int detectLoggingBaseLevel() {
-<span class="fc" id="L295">    final StackTraceElement[] elt = Thread.currentThread().getStackTrace();</span>
+<span class="fc" id="L294">    final StackTraceElement[] elt = Thread.currentThread().getStackTrace();</span>
     int i;
-<span class="pc bpc" id="L297" title="1 of 2 branches missed.">    for (i = 0; i &lt; elt.length; i++) {</span>
-<span class="fc bfc" id="L298" title="All 2 branches covered.">      if (&quot;detectLoggingBaseLevel&quot;.equalsIgnoreCase(elt[i].getMethodName())) {</span>
-<span class="fc" id="L299">        break;</span>
+<span class="pc bpc" id="L296" title="1 of 2 branches missed.">    for (i = 0; i &lt; elt.length; i++) {</span>
+<span class="fc bfc" id="L297" title="All 2 branches covered.">      if (&quot;detectLoggingBaseLevel&quot;.equalsIgnoreCase(elt[i].getMethodName())) {</span>
+<span class="fc" id="L298">        break;</span>
       }
     }
-<span class="fc" id="L302">    return i;</span>
+<span class="fc" id="L301">    return i;</span>
   }
 
   static {
-<span class="fc" id="L306">    BASELEVEL = detectLoggingBaseLevel();</span>
-<span class="fc" id="L307">    LOGLEVEL = BASELEVEL + 2;</span>
-<span class="fc" id="L308">  }</span>
+<span class="fc" id="L305">    BASELEVEL = detectLoggingBaseLevel();</span>
+<span class="fc" id="L306">    LOGLEVEL = BASELEVEL + 2;</span>
+<span class="fc" id="L307">  }</span>
 
   /**
    * To be used in message for logger (rank 2) like
@@ -313,10 +312,10 @@ public abstract class AbstractWaarpLogger implements WaarpLogger, Serializable {
    *
    * @return &quot;ClassAndMethodName(FileName:LineNumber)&quot;
    */
-  public static final String getImmediateMethodAndLine() {
+  public static String getImmediateMethodAndLine() {
     final StackTraceElement elt =
-<span class="nc" id="L318">        Thread.currentThread().getStackTrace()[BASELEVEL + 1];</span>
-<span class="nc" id="L319">    return getMethodAndLine(elt);</span>
+<span class="nc" id="L317">        Thread.currentThread().getStackTrace()[BASELEVEL + 1];</span>
+<span class="nc" id="L318">    return getMethodAndLine(elt);</span>
   }
 
   // FIXME TODO for JDK6 IBM add 1 (2-&gt;3 and 3-&gt;4)
@@ -326,10 +325,10 @@ public abstract class AbstractWaarpLogger implements WaarpLogger, Serializable {
    *
    * @return &quot;MethodName(FileName:LineNumber)&quot;
    */
-  public static final String getLoggerMethodAndLine() {
+  public static String getLoggerMethodAndLine() {
     final StackTraceElement elt =
-<span class="fc" id="L331">        Thread.currentThread().getStackTrace()[LOGLEVEL];</span>
-<span class="fc" id="L332">    return getMethodAndLine(elt);</span>
+<span class="fc" id="L330">        Thread.currentThread().getStackTrace()[LOGLEVEL];</span>
+<span class="fc" id="L331">    return getMethodAndLine(elt);</span>
   }
 
   /**
@@ -337,9 +336,9 @@ public abstract class AbstractWaarpLogger implements WaarpLogger, Serializable {
    *
    * @return &quot;ClassAndMethodName(FileName:LineNumber)&quot;
    */
-  protected static final String getRankMethodAndLine(final int rank) {
-<span class="nc" id="L341">    final StackTraceElement elt = Thread.currentThread().getStackTrace()[rank];</span>
-<span class="nc" id="L342">    return getMethodAndLine(elt);</span>
+  protected static String getRankMethodAndLine(final int rank) {
+<span class="nc" id="L340">    final StackTraceElement elt = Thread.currentThread().getStackTrace()[rank];</span>
+<span class="nc" id="L341">    return getMethodAndLine(elt);</span>
   }
 
 
@@ -349,18 +348,18 @@ public abstract class AbstractWaarpLogger implements WaarpLogger, Serializable {
    * @return &quot;MethodName(FileName:LineNumber) &quot; from elt
    */
   private static String getMethodAndLine(final StackTraceElement elt) {
-<span class="fc" id="L352">    final StringBuilder builder =</span>
-<span class="fc" id="L353">        new StringBuilder(elt.getClassName()).append('.')</span>
-<span class="fc" id="L354">                                             .append(elt.getMethodName())</span>
-<span class="fc" id="L355">                                             .append('(')</span>
-<span class="fc" id="L356">                                             .append(elt.getFileName())</span>
-<span class="fc" id="L357">                                             .append(':')</span>
-<span class="fc" id="L358">                                             .append(elt.getLineNumber())</span>
-<span class="fc" id="L359">                                             .append(&quot;) : &quot;);</span>
-<span class="fc bfc" id="L360" title="All 2 branches covered.">    if (WaarpLoggerFactory.localName != null) {</span>
-<span class="fc" id="L361">      builder.append('[').append(WaarpLoggerFactory.localName).append(&quot;] &quot;);</span>
+<span class="fc" id="L351">    final StringBuilder builder =</span>
+<span class="fc" id="L352">        new StringBuilder(elt.getClassName()).append('.')</span>
+<span class="fc" id="L353">                                             .append(elt.getMethodName())</span>
+<span class="fc" id="L354">                                             .append('(')</span>
+<span class="fc" id="L355">                                             .append(elt.getFileName())</span>
+<span class="fc" id="L356">                                             .append(':')</span>
+<span class="fc" id="L357">                                             .append(elt.getLineNumber())</span>
+<span class="fc" id="L358">                                             .append(&quot;) : &quot;);</span>
+<span class="fc bfc" id="L359" title="All 2 branches covered.">    if (WaarpLoggerFactory.localName != null) {</span>
+<span class="fc" id="L360">      builder.append('[').append(WaarpLoggerFactory.localName).append(&quot;] &quot;);</span>
     }
-<span class="fc" id="L363">    return builder.toString();</span>
+<span class="fc" id="L362">    return builder.toString();</span>
   }
 
 }

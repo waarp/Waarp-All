@@ -23,7 +23,6 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.Unpooled;
 import org.waarp.common.utility.WaarpNettyUtil;
-import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
 import org.waarp.openr66.protocol.localhandler.LocalChannelReference;
 
 /**
@@ -47,62 +46,61 @@ public class StartupPacket extends AbstractLocalPacket {
                                                final int middleLength,
                                                final int endLength,
                                                final ByteBuf buf) {
-<span class="nc" id="L50">    final Integer newId = buf.readInt();</span>
-<span class="nc" id="L51">    final boolean fromSsl = buf.readBoolean();</span>
-<span class="nc" id="L52">    return new StartupPacket(newId, fromSsl);</span>
+<span class="nc" id="L49">    final Integer newId = buf.readInt();</span>
+<span class="nc" id="L50">    final boolean fromSsl = buf.readBoolean();</span>
+<span class="nc" id="L51">    return new StartupPacket(newId, fromSsl);</span>
   }
 
   /**
    * @param newId
    */
-<span class="fc" id="L58">  public StartupPacket(final Integer newId, final boolean fromSsl) {</span>
-<span class="fc" id="L59">    localId = newId;</span>
-<span class="fc" id="L60">    this.fromSsl = fromSsl;</span>
-<span class="fc" id="L61">  }</span>
+<span class="fc" id="L57">  public StartupPacket(final Integer newId, final boolean fromSsl) {</span>
+<span class="fc" id="L58">    localId = newId;</span>
+<span class="fc" id="L59">    this.fromSsl = fromSsl;</span>
+<span class="fc" id="L60">  }</span>
 
   @Override
   public boolean hasGlobalBuffer() {
-<span class="fc" id="L65">    return true;</span>
+<span class="fc" id="L64">    return true;</span>
   }
 
   @Override
   public void createAllBuffers(final LocalChannelReference lcr,
-                               final int networkHeader)
-      throws OpenR66ProtocolPacketException {
-<span class="nc" id="L72">    final int headerSize = 4;</span>
-<span class="nc" id="L73">    final int middleSize = 1;</span>
-<span class="nc" id="L74">    final int endSize = 0;</span>
-<span class="nc" id="L75">    final int globalSize =</span>
+                               final int networkHeader) {
+<span class="nc" id="L70">    final int headerSize = 4;</span>
+<span class="nc" id="L71">    final int middleSize = 1;</span>
+<span class="nc" id="L72">    final int endSize = 0;</span>
+<span class="nc" id="L73">    final int globalSize =</span>
         networkHeader + LOCAL_HEADER_SIZE + headerSize + middleSize + endSize;
-<span class="nc" id="L77">    int offset = networkHeader + LOCAL_HEADER_SIZE;</span>
-<span class="nc" id="L78">    global = ByteBufAllocator.DEFAULT.buffer(globalSize, globalSize);</span>
-<span class="nc" id="L79">    header = WaarpNettyUtil.slice(global, offset, headerSize);</span>
-<span class="nc" id="L80">    header.writeInt(localId);</span>
-<span class="nc" id="L81">    offset += headerSize;</span>
-<span class="nc" id="L82">    middle = WaarpNettyUtil.slice(global, offset, middleSize);</span>
-<span class="nc" id="L83">    middle.writeBoolean(fromSsl);</span>
-<span class="nc" id="L84">    end = Unpooled.EMPTY_BUFFER;</span>
-<span class="nc" id="L85">  }</span>
+<span class="nc" id="L75">    int offset = networkHeader + LOCAL_HEADER_SIZE;</span>
+<span class="nc" id="L76">    global = ByteBufAllocator.DEFAULT.buffer(globalSize, globalSize);</span>
+<span class="nc" id="L77">    header = WaarpNettyUtil.slice(global, offset, headerSize);</span>
+<span class="nc" id="L78">    header.writeInt(localId);</span>
+<span class="nc" id="L79">    offset += headerSize;</span>
+<span class="nc" id="L80">    middle = WaarpNettyUtil.slice(global, offset, middleSize);</span>
+<span class="nc" id="L81">    middle.writeBoolean(fromSsl);</span>
+<span class="nc" id="L82">    end = Unpooled.EMPTY_BUFFER;</span>
+<span class="nc" id="L83">  }</span>
 
   @Override
   public String toString() {
-<span class="nc" id="L89">    return &quot;StartupPacket: &quot; + localId;</span>
+<span class="nc" id="L87">    return &quot;StartupPacket: &quot; + localId;</span>
   }
 
   @Override
   public byte getType() {
-<span class="nc" id="L94">    return LocalPacketFactory.STARTUPPACKET;</span>
+<span class="nc" id="L92">    return LocalPacketFactory.STARTUPPACKET;</span>
   }
 
   /**
    * @return the localId
    */
   public Integer getLocalId() {
-<span class="nc" id="L101">    return localId;</span>
+<span class="nc" id="L99">    return localId;</span>
   }
 
   public boolean isFromSsl() {
-<span class="nc" id="L105">    return fromSsl;</span>
+<span class="nc" id="L103">    return fromSsl;</span>
   }
 
 }

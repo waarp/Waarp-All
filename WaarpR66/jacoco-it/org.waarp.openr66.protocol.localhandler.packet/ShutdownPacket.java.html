@@ -86,49 +86,48 @@ public class ShutdownPacket extends AbstractLocalPacket {
 
   @Override
   public void createAllBuffers(final LocalChannelReference lcr,
-                               final int networkHeader)
-      throws OpenR66ProtocolPacketException {
-<span class="nc" id="L91">    end = Unpooled.EMPTY_BUFFER;</span>
-<span class="nc bnc" id="L92" title="All 2 branches missed.">    final int sizeKey = key != null? key.length : 0;</span>
-<span class="nc bnc" id="L93" title="All 2 branches missed.">    final int sizeMiddle = restart != 0? 1 : 0;</span>
-<span class="nc" id="L94">    final int globalSize =</span>
+                               final int networkHeader) {
+<span class="nc" id="L90">    end = Unpooled.EMPTY_BUFFER;</span>
+<span class="nc bnc" id="L91" title="All 2 branches missed.">    final int sizeKey = key != null? key.length : 0;</span>
+<span class="nc bnc" id="L92" title="All 2 branches missed.">    final int sizeMiddle = restart != 0? 1 : 0;</span>
+<span class="nc" id="L93">    final int globalSize =</span>
         networkHeader + LOCAL_HEADER_SIZE + sizeKey + sizeMiddle;
-<span class="nc" id="L96">    int offset = networkHeader + LOCAL_HEADER_SIZE;</span>
-<span class="nc" id="L97">    global = ByteBufAllocator.DEFAULT.buffer(globalSize, globalSize);</span>
-<span class="nc bnc" id="L98" title="All 2 branches missed.">    if (key != null) {</span>
-<span class="nc" id="L99">      header = WaarpNettyUtil.slice(global, offset, sizeKey);</span>
-<span class="nc" id="L100">      header.writeBytes(key);</span>
+<span class="nc" id="L95">    int offset = networkHeader + LOCAL_HEADER_SIZE;</span>
+<span class="nc" id="L96">    global = ByteBufAllocator.DEFAULT.buffer(globalSize, globalSize);</span>
+<span class="nc bnc" id="L97" title="All 2 branches missed.">    if (key != null) {</span>
+<span class="nc" id="L98">      header = WaarpNettyUtil.slice(global, offset, sizeKey);</span>
+<span class="nc" id="L99">      header.writeBytes(key);</span>
     } else {
-<span class="nc" id="L102">      header = Unpooled.EMPTY_BUFFER;</span>
+<span class="nc" id="L101">      header = Unpooled.EMPTY_BUFFER;</span>
     }
-<span class="nc" id="L104">    offset += sizeKey;</span>
-<span class="nc bnc" id="L105" title="All 2 branches missed.">    if (restart != 0) {</span>
-<span class="nc" id="L106">      middle = WaarpNettyUtil.slice(global, offset, sizeMiddle);</span>
-<span class="nc" id="L107">      middle.writeByte(restart);</span>
+<span class="nc" id="L103">    offset += sizeKey;</span>
+<span class="nc bnc" id="L104" title="All 2 branches missed.">    if (restart != 0) {</span>
+<span class="nc" id="L105">      middle = WaarpNettyUtil.slice(global, offset, sizeMiddle);</span>
+<span class="nc" id="L106">      middle.writeByte(restart);</span>
     } else {
-<span class="nc" id="L109">      middle = Unpooled.EMPTY_BUFFER;</span>
+<span class="nc" id="L108">      middle = Unpooled.EMPTY_BUFFER;</span>
     }
-<span class="nc" id="L111">  }</span>
+<span class="nc" id="L110">  }</span>
 
   @Override
   public String toString() {
-<span class="nc bnc" id="L115" title="All 2 branches missed.">    return &quot;ShutdownPacket&quot; + (restart != 0? &quot; and restart&quot; : &quot;&quot;);</span>
+<span class="nc bnc" id="L114" title="All 2 branches missed.">    return &quot;ShutdownPacket&quot; + (restart != 0? &quot; and restart&quot; : &quot;&quot;);</span>
   }
 
   @Override
   public byte getType() {
-<span class="nc" id="L120">    return LocalPacketFactory.SHUTDOWNPACKET;</span>
+<span class="nc" id="L119">    return LocalPacketFactory.SHUTDOWNPACKET;</span>
   }
 
   /**
    * @return the key
    */
   public byte[] getKey() {
-<span class="nc" id="L127">    return key;</span>
+<span class="nc" id="L126">    return key;</span>
   }
 
   public boolean isRestart() {
-<span class="nc bnc" id="L131" title="All 2 branches missed.">    return restart != 0;</span>
+<span class="nc bnc" id="L130" title="All 2 branches missed.">    return restart != 0;</span>
   }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

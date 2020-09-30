@@ -114,10 +114,10 @@ public class PartnerConfiguration {
 <span class="nc" id="L114">      sep = BLANK_SEPARATOR_FIELD;</span>
     }
 <span class="pc bpc" id="L116" title="1 of 2 branches missed.">    if (isVersion2GEQVersion1(R66Versions.V2_4_17.getVersion(), version)) {</span>
-<span class="fc" id="L117">      logger.debug(&quot;UseJson for &quot; + id + ':' + json);</span>
+<span class="fc" id="L117">      logger.debug(&quot;UseJson for {}:{}&quot;, id, json);</span>
 <span class="fc" id="L118">      useJson = true;</span>
     } else {
-<span class="nc" id="L120">      logger.debug(&quot;NOT UseJson for &quot; + id + ':' + json);</span>
+<span class="nc" id="L120">      logger.debug(&quot;NOT UseJson for {}:{}&quot;, id, json);</span>
 <span class="nc" id="L121">      useJson = false;</span>
     }
 <span class="pc bpc" id="L123" title="1 of 2 branches missed.">    if (isVersion2GEQVersion1(R66Versions.V3_0_4.getVersion(), version)) {</span>
@@ -136,7 +136,7 @@ public class PartnerConfiguration {
 <span class="nc" id="L136">      Configuration.configuration.setBlacklistBadAuthent(false);</span>
     }
 <span class="fc" id="L138">    digestAlgo = getDigestAlgoInternal();</span>
-<span class="fc" id="L139">    logger.debug(&quot;Info on HostId: &quot; + root);</span>
+<span class="fc" id="L139">    logger.debug(&quot;Info on HostId: {}&quot;, root);</span>
 <span class="fc" id="L140">  }</span>
 
   /**
@@ -158,7 +158,7 @@ public class PartnerConfiguration {
 <span class="fc" id="L158">    JsonHandler.setValue(root, FIELDS.SEPARATOR, getSEPARATOR_FIELD());</span>
 <span class="fc" id="L159">    useJson = true;</span>
 <span class="fc" id="L160">    digestAlgo = getDigestAlgoInternal();</span>
-<span class="fc" id="L161">    logger.debug(&quot;Info on HostId: &quot; + root);</span>
+<span class="fc" id="L161">    logger.debug(&quot;Info on HostId: {}&quot;, root);</span>
 <span class="fc" id="L162">  }</span>
 
   /**
@@ -245,7 +245,7 @@ public class PartnerConfiguration {
 <span class="fc" id="L245">    return getVersion() + '.' + JsonHandler.writeAsString(root);</span>
   }
 
-  public static final DigestAlgo getDigestAlgo(final String algo) {
+  public static DigestAlgo getDigestAlgo(final String algo) {
 <span class="pc bpc" id="L249" title="1 of 2 branches missed.">    for (final DigestAlgo alg : DigestAlgo.values()) {</span>
 <span class="fc bfc" id="L250" title="All 2 branches covered.">      if (alg.algoName.equals(algo)) {</span>
 <span class="fc" id="L251">        return alg;</span>
@@ -264,8 +264,8 @@ public class PartnerConfiguration {
    *
    * @return the separator to be used
    */
-  public static final String getSeparator(final String remoteHost) {
-<span class="fc" id="L268">    logger.debug(&quot;Versions: search: &quot; + remoteHost + &quot; in {}&quot;,</span>
+  public static String getSeparator(final String remoteHost) {
+<span class="fc" id="L268">    logger.debug(&quot;Versions: search: {} in {}&quot;, remoteHost,</span>
 <span class="fc" id="L269">                 Configuration.configuration.getVersions());</span>
 <span class="fc" id="L270">    final PartnerConfiguration partner =</span>
 <span class="fc" id="L271">        Configuration.configuration.getVersions().get(remoteHost);</span>
@@ -283,8 +283,8 @@ public class PartnerConfiguration {
    *
    * @return True if version2 &gt;= version1
    */
-  public static final boolean isVersion2GEQVersion1(final String version1,
-                                                    final String version2) {
+  public static boolean isVersion2GEQVersion1(final String version1,
+                                              final String version2) {
 <span class="pc bpc" id="L288" title="2 of 4 branches missed.">    if (version1 == null || version2 == null) {</span>
 <span class="nc" id="L289">      return false;</span>
     }
@@ -306,10 +306,9 @@ public class PartnerConfiguration {
                                                               rank1 == rank2 &amp;&amp;
                                                               subversion1 &lt;=
                                                               subversion2);
-<span class="fc" id="L309">    logger.trace(</span>
-        &quot;1: &quot; + major1 + ':' + rank1 + ':' + subversion1 + &quot; &lt;=? &quot; + major2 +
-        ':' + rank2 + ':' + subversion2 + &quot; = &quot; + (b));
-<span class="fc" id="L312">    return b;</span>
+<span class="fc" id="L309">    logger.trace(&quot;1: {}:{}:{} &lt;=? {}:{}:{} = {}&quot;, major1, rank1, subversion1,</span>
+<span class="fc" id="L310">                 major2, rank2, subversion2, b);</span>
+<span class="fc" id="L311">    return b;</span>
   }
 
   /**
@@ -320,33 +319,32 @@ public class PartnerConfiguration {
    *
    * @return True if version2 &gt; version1
    */
-  public static final boolean isVersion2GTVersion1(final String version1,
-                                                   final String version2) {
-<span class="pc bpc" id="L325" title="2 of 4 branches missed.">    if (version1 == null || version2 == null) {</span>
-<span class="nc" id="L326">      return false;</span>
+  public static boolean isVersion2GTVersion1(final String version1,
+                                             final String version2) {
+<span class="pc bpc" id="L324" title="2 of 4 branches missed.">    if (version1 == null || version2 == null) {</span>
+<span class="nc" id="L325">      return false;</span>
     }
     final int major1;
     final int rank1;
     final int subversion1;
-<span class="fc" id="L331">    String[] vals = version1.split(&quot;\\.&quot;);</span>
-<span class="fc" id="L332">    major1 = Integer.parseInt(vals[0]);</span>
-<span class="fc" id="L333">    rank1 = Integer.parseInt(vals[1]);</span>
-<span class="fc" id="L334">    subversion1 = Integer.parseInt(vals[2]);</span>
+<span class="fc" id="L330">    String[] vals = version1.split(&quot;\\.&quot;);</span>
+<span class="fc" id="L331">    major1 = Integer.parseInt(vals[0]);</span>
+<span class="fc" id="L332">    rank1 = Integer.parseInt(vals[1]);</span>
+<span class="fc" id="L333">    subversion1 = Integer.parseInt(vals[2]);</span>
     final int major2;
     final int rank2;
     final int subversion2;
-<span class="fc" id="L338">    vals = version2.split(&quot;\\.&quot;);</span>
-<span class="fc" id="L339">    major2 = Integer.parseInt(vals[0]);</span>
-<span class="fc" id="L340">    rank2 = Integer.parseInt(vals[1]);</span>
-<span class="fc" id="L341">    subversion2 = Integer.parseInt(vals[2]);</span>
-<span class="pc bpc" id="L342" title="5 of 10 branches missed.">    final boolean b = major1 &lt; major2 || major1 == major2 &amp;&amp; (rank1 &lt; rank2 ||</span>
+<span class="fc" id="L337">    vals = version2.split(&quot;\\.&quot;);</span>
+<span class="fc" id="L338">    major2 = Integer.parseInt(vals[0]);</span>
+<span class="fc" id="L339">    rank2 = Integer.parseInt(vals[1]);</span>
+<span class="fc" id="L340">    subversion2 = Integer.parseInt(vals[2]);</span>
+<span class="pc bpc" id="L341" title="5 of 10 branches missed.">    final boolean b = major1 &lt; major2 || major1 == major2 &amp;&amp; (rank1 &lt; rank2 ||</span>
                                                               rank1 == rank2 &amp;&amp;
                                                               subversion1 &lt;
                                                               subversion2);
-<span class="fc" id="L346">    logger.debug(</span>
-        &quot;1: &quot; + major1 + ':' + rank1 + ':' + subversion1 + &quot; &lt;? &quot; + major2 +
-        ':' + rank2 + ':' + subversion2 + &quot; = &quot; + (b));
-<span class="fc" id="L349">    return b;</span>
+<span class="fc" id="L345">    logger.debug(&quot;1: {}:{}:{} &lt;? {}:{}:{} = {}&quot;, major1, rank1, subversion1,</span>
+<span class="fc" id="L346">                 major2, rank2, subversion2, b);</span>
+<span class="fc" id="L347">    return b;</span>
   }
 
   /**
@@ -354,14 +352,16 @@ public class PartnerConfiguration {
    *
    * @return True if this host is referenced as using Json
    */
-  public static final boolean useJson(final String host) {
-<span class="nc" id="L358">    logger.debug(&quot;UseJson host: '&quot; + host + &quot;':&quot; +</span>
-<span class="nc bnc" id="L359" title="All 2 branches missed.">                 (Configuration.configuration.getVersions().containsKey(host)?</span>
-<span class="nc" id="L360">                     Configuration.configuration.getVersions().get(host)</span>
-<span class="nc" id="L361">                                                .useJson() : &quot;no:&quot; +</span>
-                                                             ((Map&lt;String, PartnerConfiguration&gt;) Configuration.configuration
-<span class="nc" id="L363">                                                                 .getVersions())</span>
-<span class="nc" id="L364">                                                                 .keySet()));</span>
+  public static boolean useJson(final String host) {
+<span class="nc bnc" id="L356" title="All 2 branches missed.">    if (logger.isDebugEnabled()) {</span>
+<span class="nc" id="L357">      logger.debug(&quot;UseJson host: '{}':{}&quot;, host,</span>
+<span class="nc bnc" id="L358" title="All 2 branches missed.">                   Configuration.configuration.getVersions().containsKey(host)?</span>
+<span class="nc" id="L359">                       Configuration.configuration.getVersions().get(host)</span>
+<span class="nc" id="L360">                                                  .useJson() : &quot;no:&quot; +</span>
+                                                               ((Map&lt;String, PartnerConfiguration&gt;) Configuration.configuration
+<span class="nc" id="L362">                                                                   .getVersions())</span>
+<span class="nc" id="L363">                                                                   .keySet());</span>
+    }
 <span class="nc bnc" id="L365" title="All 2 branches missed.">    return Configuration.configuration.getVersions().containsKey(host) &amp;&amp;</span>
 <span class="nc bnc" id="L366" title="All 2 branches missed.">           Configuration.configuration.getVersions().get(host).useJson();</span>
   }

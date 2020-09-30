@@ -187,7 +187,7 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
     }
 <span class="fc" id="L188">    final String truedir = auth.getAbsolutePath(newdir);</span>
 <span class="fc" id="L189">    final File file = new File(truedir);</span>
-<span class="fc" id="L190">    logger.debug(&quot;Final File: &quot; + truedir + &quot; CanRead: &quot; + file.canRead());</span>
+<span class="fc" id="L190">    logger.debug(&quot;Final File: {} CanRead: {}&quot;, truedir, file.canRead());</span>
 <span class="fc" id="L191">    return file;</span>
   }
 
@@ -264,7 +264,7 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
   }
 
   @Override
-  public boolean isInReading() throws CommandAbstractException {
+  public boolean isInReading() {
 <span class="pc bpc" id="L268" title="1 of 2 branches missed.">    if (!isReady) {</span>
 <span class="fc" id="L269">      return false;</span>
     }
@@ -272,7 +272,7 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
   }
 
   @Override
-  public boolean isInWriting() throws CommandAbstractException {
+  public boolean isInWriting() {
 <span class="nc bnc" id="L276" title="All 2 branches missed.">    if (!isReady) {</span>
 <span class="nc" id="L277">      return false;</span>
     }
@@ -585,7 +585,7 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
     try {
 <span class="fc" id="L586">      fileInputStreamTemp = new FileInputStream(trueFile);//NOSONAR</span>
 <span class="pc bpc" id="L587" title="1 of 2 branches missed.">      if (position != 0) {</span>
-<span class="nc" id="L588">        long read = fileInputStreamTemp.skip(position);</span>
+<span class="nc" id="L588">        final long read = fileInputStreamTemp.skip(position);</span>
 <span class="nc bnc" id="L589" title="All 2 branches missed.">        if (read != position) {</span>
 <span class="nc" id="L590">          logger.warn(&quot;Cannot ensure position: {} while is {}&quot;, position, read);</span>
         }
@@ -665,7 +665,7 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
 <span class="nc" id="L665">        logger.error(&quot;Change position in getFileOutputStream:&quot;, e);</span>
 <span class="nc" id="L666">        return null;</span>
 <span class="nc" id="L667">      }</span>
-<span class="nc" id="L668">      logger.debug(&quot;New size: &quot; + trueFile.length() + &quot; : &quot; + position);</span>
+<span class="nc" id="L668">      logger.debug(&quot;New size: {}:{}&quot;, trueFile.length(), position);</span>
     }
     final FileOutputStream fos;
     try {

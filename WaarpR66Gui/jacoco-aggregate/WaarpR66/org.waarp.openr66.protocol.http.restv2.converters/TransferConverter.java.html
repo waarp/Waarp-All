@@ -196,12 +196,10 @@ public final class TransferConverter {
 <span class="nc bnc" id="L196" title="All 4 branches missed.">    transfer.setRetrieveMode(</span>
         mode == ModeTrans.receive || mode == ModeTrans.receiveMD5);
 <span class="nc" id="L198">    transfer.setTransferMode(mode.code);</span>
-    // FIXME was setFileInfo(&quot;&quot;)
-    // transfer.setTransferInfo(&quot;{}&quot;);
-<span class="nc" id="L201">    transfer.setStop(transfer.getStart());</span>
-<span class="nc" id="L202">    transfer.setUpdatedInfo(UpdatedInfo.TOSUBMIT);</span>
+<span class="nc" id="L199">    transfer.setStop(transfer.getStart());</span>
+<span class="nc" id="L200">    transfer.setUpdatedInfo(UpdatedInfo.TOSUBMIT);</span>
 
-<span class="nc" id="L204">    return transfer;</span>
+<span class="nc" id="L202">    return transfer;</span>
   }
 
   // ######################### PRIVATE METHODS ################################
@@ -214,14 +212,14 @@ public final class TransferConverter {
    * @return {@code true} if the rule exists, {@code false} otherwise.
    */
   private static boolean ruleExists(final String rule) {
-<span class="nc" id="L217">    RuleDAO ruleDAO = null;</span>
+<span class="nc" id="L215">    RuleDAO ruleDAO = null;</span>
     try {
-<span class="nc" id="L219">      ruleDAO = DAO_FACTORY.getRuleDAO();</span>
-<span class="nc" id="L220">      return ruleDAO.exist(rule);</span>
-<span class="nc" id="L221">    } catch (final DAOConnectionException e) {</span>
-<span class="nc" id="L222">      throw new InternalServerErrorException(e);</span>
+<span class="nc" id="L217">      ruleDAO = DAO_FACTORY.getRuleDAO();</span>
+<span class="nc" id="L218">      return ruleDAO.exist(rule);</span>
+<span class="nc" id="L219">    } catch (final DAOConnectionException e) {</span>
+<span class="nc" id="L220">      throw new InternalServerErrorException(e);</span>
     } finally {
-<span class="nc" id="L224">      DAOFactory.closeDAO(ruleDAO);</span>
+<span class="nc" id="L222">      DAOFactory.closeDAO(ruleDAO);</span>
     }
   }
 
@@ -233,14 +231,14 @@ public final class TransferConverter {
    * @return {@code true} if the host exists, {@code false} otherwise.
    */
   private static boolean hostExists(final String host) {
-<span class="nc" id="L236">    HostDAO hostDAO = null;</span>
+<span class="nc" id="L234">    HostDAO hostDAO = null;</span>
     try {
-<span class="nc" id="L238">      hostDAO = DAO_FACTORY.getHostDAO();</span>
-<span class="nc" id="L239">      return hostDAO.exist(host);</span>
-<span class="nc" id="L240">    } catch (final DAOConnectionException e) {</span>
-<span class="nc" id="L241">      throw new InternalServerErrorException(e);</span>
+<span class="nc" id="L236">      hostDAO = DAO_FACTORY.getHostDAO();</span>
+<span class="nc" id="L237">      return hostDAO.exist(host);</span>
+<span class="nc" id="L238">    } catch (final DAOConnectionException e) {</span>
+<span class="nc" id="L239">      throw new InternalServerErrorException(e);</span>
     } finally {
-<span class="nc" id="L243">      DAOFactory.closeDAO(hostDAO);</span>
+<span class="nc" id="L241">      DAOFactory.closeDAO(hostDAO);</span>
     }
   }
 
@@ -254,17 +252,17 @@ public final class TransferConverter {
    *     false} otherwise
    */
   private static boolean canUseRule(final String host, final String rule) {
-<span class="nc" id="L257">    RuleDAO ruleDAO = null;</span>
+<span class="nc" id="L255">    RuleDAO ruleDAO = null;</span>
     try {
-<span class="nc" id="L259">      ruleDAO = DAO_FACTORY.getRuleDAO();</span>
-<span class="nc" id="L260">      final List&lt;String&gt; hostIds = ruleDAO.select(rule).getHostids();</span>
-<span class="nc bnc" id="L261" title="All 4 branches missed.">      return !hostIds.isEmpty() &amp;&amp; !hostIds.contains(host);</span>
-<span class="nc" id="L262">    } catch (final DAOConnectionException e) {</span>
+<span class="nc" id="L257">      ruleDAO = DAO_FACTORY.getRuleDAO();</span>
+<span class="nc" id="L258">      final List&lt;String&gt; hostIds = ruleDAO.select(rule).getHostids();</span>
+<span class="nc bnc" id="L259" title="All 4 branches missed.">      return !hostIds.isEmpty() &amp;&amp; !hostIds.contains(host);</span>
+<span class="nc" id="L260">    } catch (final DAOConnectionException e) {</span>
+<span class="nc" id="L261">      throw new InternalServerErrorException(e);</span>
+<span class="nc" id="L262">    } catch (final DAONoDataException e) {</span>
 <span class="nc" id="L263">      throw new InternalServerErrorException(e);</span>
-<span class="nc" id="L264">    } catch (final DAONoDataException e) {</span>
-<span class="nc" id="L265">      throw new InternalServerErrorException(e);</span>
     } finally {
-<span class="nc" id="L267">      DAOFactory.closeDAO(ruleDAO);</span>
+<span class="nc" id="L265">      DAOFactory.closeDAO(ruleDAO);</span>
     }
   }
 
@@ -279,19 +277,19 @@ public final class TransferConverter {
    * @return the list of all missing fields
    */
   private static List&lt;RestError&gt; checkRequiredFields(final Transfer transfer) {
-<span class="nc" id="L282">    final List&lt;RestError&gt; errors = new ArrayList&lt;RestError&gt;();</span>
-<span class="nc bnc" id="L283" title="All 4 branches missed.">    if (transfer.getRule() == null || transfer.getRule().isEmpty()) {</span>
-<span class="nc" id="L284">      errors.add(MISSING_FIELD(RULE));</span>
+<span class="nc" id="L280">    final List&lt;RestError&gt; errors = new ArrayList&lt;RestError&gt;();</span>
+<span class="nc bnc" id="L281" title="All 4 branches missed.">    if (transfer.getRule() == null || transfer.getRule().isEmpty()) {</span>
+<span class="nc" id="L282">      errors.add(MISSING_FIELD(RULE));</span>
     }
-<span class="nc bnc" id="L286" title="All 2 branches missed.">    if (transfer.getOriginalName() == null ||</span>
-<span class="nc bnc" id="L287" title="All 2 branches missed.">        transfer.getOriginalName().isEmpty()) {</span>
-<span class="nc" id="L288">      errors.add(MISSING_FIELD(FILENAME));</span>
+<span class="nc bnc" id="L284" title="All 2 branches missed.">    if (transfer.getOriginalName() == null ||</span>
+<span class="nc bnc" id="L285" title="All 2 branches missed.">        transfer.getOriginalName().isEmpty()) {</span>
+<span class="nc" id="L286">      errors.add(MISSING_FIELD(FILENAME));</span>
     }
-<span class="nc bnc" id="L290" title="All 4 branches missed.">    if (transfer.getRequested() == null || transfer.getRequested().isEmpty()) {</span>
-<span class="nc" id="L291">      errors.add(MISSING_FIELD(REQUESTED));</span>
+<span class="nc bnc" id="L288" title="All 4 branches missed.">    if (transfer.getRequested() == null || transfer.getRequested().isEmpty()) {</span>
+<span class="nc" id="L289">      errors.add(MISSING_FIELD(REQUESTED));</span>
     }
 
-<span class="nc" id="L294">    return errors;</span>
+<span class="nc" id="L292">    return errors;</span>
   }
 
   /**
@@ -310,100 +308,100 @@ public final class TransferConverter {
    */
   private static Transfer parseNode(final ObjectNode object,
                                     final Transfer transfer) {
-<span class="nc" id="L313">    final List&lt;RestError&gt; errors = new ArrayList&lt;RestError&gt;();</span>
+<span class="nc" id="L311">    final List&lt;RestError&gt; errors = new ArrayList&lt;RestError&gt;();</span>
 
-<span class="nc" id="L315">    final Iterator&lt;Map.Entry&lt;String, JsonNode&gt;&gt; fields = object.fields();</span>
-<span class="nc bnc" id="L316" title="All 2 branches missed.">    while (fields.hasNext()) {</span>
-<span class="nc" id="L317">      final Map.Entry&lt;String, JsonNode&gt; field = fields.next();</span>
-<span class="nc" id="L318">      final String name = field.getKey();</span>
-<span class="nc" id="L319">      final JsonNode value = field.getValue();</span>
+<span class="nc" id="L313">    final Iterator&lt;Map.Entry&lt;String, JsonNode&gt;&gt; fields = object.fields();</span>
+<span class="nc bnc" id="L314" title="All 2 branches missed.">    while (fields.hasNext()) {</span>
+<span class="nc" id="L315">      final Map.Entry&lt;String, JsonNode&gt; field = fields.next();</span>
+<span class="nc" id="L316">      final String name = field.getKey();</span>
+<span class="nc" id="L317">      final JsonNode value = field.getValue();</span>
 
-<span class="nc bnc" id="L321" title="All 2 branches missed.">      if (name.equalsIgnoreCase(RULE)) {</span>
-<span class="nc bnc" id="L322" title="All 2 branches missed.">        if (value.isTextual()) {</span>
-<span class="nc bnc" id="L323" title="All 2 branches missed.">          if (ruleExists(value.asText())) {</span>
-<span class="nc" id="L324">            transfer.setRule(value.asText());</span>
+<span class="nc bnc" id="L319" title="All 2 branches missed.">      if (name.equalsIgnoreCase(RULE)) {</span>
+<span class="nc bnc" id="L320" title="All 2 branches missed.">        if (value.isTextual()) {</span>
+<span class="nc bnc" id="L321" title="All 2 branches missed.">          if (ruleExists(value.asText())) {</span>
+<span class="nc" id="L322">            transfer.setRule(value.asText());</span>
           } else {
-<span class="nc" id="L326">            errors.add(UNKNOWN_RULE(value.asText()));</span>
+<span class="nc" id="L324">            errors.add(UNKNOWN_RULE(value.asText()));</span>
           }
         } else {
-<span class="nc" id="L329">          errors.add(ILLEGAL_FIELD_VALUE(name, value.toString()));</span>
+<span class="nc" id="L327">          errors.add(ILLEGAL_FIELD_VALUE(name, value.toString()));</span>
         }
-<span class="nc bnc" id="L331" title="All 2 branches missed.">      } else if (name.equalsIgnoreCase(FILENAME)) {</span>
-<span class="nc bnc" id="L332" title="All 2 branches missed.">        if (value.isTextual()) {</span>
-<span class="nc" id="L333">          transfer.setOriginalName(value.asText());</span>
-<span class="nc" id="L334">          transfer.setFilename(value.asText());</span>
+<span class="nc bnc" id="L329" title="All 2 branches missed.">      } else if (name.equalsIgnoreCase(FILENAME)) {</span>
+<span class="nc bnc" id="L330" title="All 2 branches missed.">        if (value.isTextual()) {</span>
+<span class="nc" id="L331">          transfer.setOriginalName(value.asText());</span>
+<span class="nc" id="L332">          transfer.setFilename(value.asText());</span>
         } else {
-<span class="nc" id="L336">          errors.add(ILLEGAL_FIELD_VALUE(name, value.toString()));</span>
+<span class="nc" id="L334">          errors.add(ILLEGAL_FIELD_VALUE(name, value.toString()));</span>
         }
-<span class="nc bnc" id="L338" title="All 2 branches missed.">      } else if (name.equalsIgnoreCase(REQUESTED)) {</span>
-<span class="nc bnc" id="L339" title="All 2 branches missed.">        if (value.isTextual()) {</span>
-<span class="nc bnc" id="L340" title="All 2 branches missed.">          if (hostExists(value.asText())) {</span>
-<span class="nc" id="L341">            transfer.setRequested(value.asText());</span>
+<span class="nc bnc" id="L336" title="All 2 branches missed.">      } else if (name.equalsIgnoreCase(REQUESTED)) {</span>
+<span class="nc bnc" id="L337" title="All 2 branches missed.">        if (value.isTextual()) {</span>
+<span class="nc bnc" id="L338" title="All 2 branches missed.">          if (hostExists(value.asText())) {</span>
+<span class="nc" id="L339">            transfer.setRequested(value.asText());</span>
             try {
-<span class="nc" id="L343">              transfer.setRequester(</span>
-<span class="nc" id="L344">                  Configuration.configuration.getHostId(value.asText()));</span>
-<span class="nc" id="L345">            } catch (final WaarpDatabaseException e) {</span>
+<span class="nc" id="L341">              transfer.setRequester(</span>
+<span class="nc" id="L342">                  Configuration.configuration.getHostId(value.asText()));</span>
+<span class="nc" id="L343">            } catch (final WaarpDatabaseException e) {</span>
               // Ignore !!
-<span class="nc" id="L347">            }</span>
+<span class="nc" id="L345">            }</span>
           } else {
-<span class="nc" id="L349">            errors.add(UNKNOWN_HOST(value.asText()));</span>
+<span class="nc" id="L347">            errors.add(UNKNOWN_HOST(value.asText()));</span>
           }
         } else {
-<span class="nc" id="L352">          errors.add(ILLEGAL_FIELD_VALUE(name, value.toString()));</span>
+<span class="nc" id="L350">          errors.add(ILLEGAL_FIELD_VALUE(name, value.toString()));</span>
         }
-<span class="nc bnc" id="L354" title="All 2 branches missed.">      } else if (name.equalsIgnoreCase(BLOCK_SIZE)) {</span>
-<span class="nc bnc" id="L355" title="All 4 branches missed.">        if (value.canConvertToInt() &amp;&amp; value.asInt() &gt; 0) {</span>
-<span class="nc" id="L356">          transfer.setBlockSize(value.asInt());</span>
+<span class="nc bnc" id="L352" title="All 2 branches missed.">      } else if (name.equalsIgnoreCase(BLOCK_SIZE)) {</span>
+<span class="nc bnc" id="L353" title="All 4 branches missed.">        if (value.canConvertToInt() &amp;&amp; value.asInt() &gt; 0) {</span>
+<span class="nc" id="L354">          transfer.setBlockSize(value.asInt());</span>
         } else {
-<span class="nc" id="L358">          errors.add(ILLEGAL_FIELD_VALUE(name, value.toString()));</span>
+<span class="nc" id="L356">          errors.add(ILLEGAL_FIELD_VALUE(name, value.toString()));</span>
         }
-<span class="nc bnc" id="L360" title="All 2 branches missed.">      } else if (name.equalsIgnoreCase(FILE_INFO)) {</span>
-<span class="nc bnc" id="L361" title="All 2 branches missed.">        if (value.isTextual()) {</span>
-<span class="nc" id="L362">          transfer.setFileInfo(value.asText());</span>
+<span class="nc bnc" id="L358" title="All 2 branches missed.">      } else if (name.equalsIgnoreCase(FILE_INFO)) {</span>
+<span class="nc bnc" id="L359" title="All 2 branches missed.">        if (value.isTextual()) {</span>
+<span class="nc" id="L360">          transfer.setFileInfo(value.asText());</span>
         } else {
-<span class="nc" id="L364">          errors.add(ILLEGAL_FIELD_VALUE(name, value.toString()));</span>
+<span class="nc" id="L362">          errors.add(ILLEGAL_FIELD_VALUE(name, value.toString()));</span>
         }
-<span class="nc bnc" id="L366" title="All 2 branches missed.">      } else if (name.equalsIgnoreCase(TRANSFER_INFO)) {</span>
-<span class="nc bnc" id="L367" title="All 2 branches missed.">        if (value.isTextual()) {</span>
-<span class="nc" id="L368">          transfer.setTransferInfo(value.asText());</span>
+<span class="nc bnc" id="L364" title="All 2 branches missed.">      } else if (name.equalsIgnoreCase(TRANSFER_INFO)) {</span>
+<span class="nc bnc" id="L365" title="All 2 branches missed.">        if (value.isTextual()) {</span>
+<span class="nc" id="L366">          transfer.setTransferInfo(value.asText());</span>
         } else {
-<span class="nc" id="L370">          errors.add(ILLEGAL_FIELD_VALUE(name, value.toString()));</span>
+<span class="nc" id="L368">          errors.add(ILLEGAL_FIELD_VALUE(name, value.toString()));</span>
         }
-<span class="nc bnc" id="L372" title="All 2 branches missed.">      } else if (name.equalsIgnoreCase(START)) {</span>
-<span class="nc bnc" id="L373" title="All 2 branches missed.">        if (value.isTextual()) {</span>
+<span class="nc bnc" id="L370" title="All 2 branches missed.">      } else if (name.equalsIgnoreCase(START)) {</span>
+<span class="nc bnc" id="L371" title="All 2 branches missed.">        if (value.isTextual()) {</span>
           try {
-<span class="nc" id="L375">            final DateTime start = DateTime.parse(value.asText());</span>
-<span class="nc bnc" id="L376" title="All 2 branches missed.">            if (start.isBeforeNow()) {</span>
-<span class="nc" id="L377">              errors.add(ILLEGAL_FIELD_VALUE(name, value.asText()));</span>
+<span class="nc" id="L373">            final DateTime start = DateTime.parse(value.asText());</span>
+<span class="nc bnc" id="L374" title="All 2 branches missed.">            if (start.isBeforeNow()) {</span>
+<span class="nc" id="L375">              errors.add(ILLEGAL_FIELD_VALUE(name, value.asText()));</span>
             } else {
-<span class="nc" id="L379">              transfer.setStart(new Timestamp(start.getMillis()));</span>
+<span class="nc" id="L377">              transfer.setStart(new Timestamp(start.getMillis()));</span>
             }
-<span class="nc" id="L381">          } catch (final IllegalArgumentException e) {</span>
-<span class="nc" id="L382">            errors.add(ILLEGAL_FIELD_VALUE(name, value.asText()));</span>
-<span class="nc" id="L383">          }</span>
+<span class="nc" id="L379">          } catch (final IllegalArgumentException e) {</span>
+<span class="nc" id="L380">            errors.add(ILLEGAL_FIELD_VALUE(name, value.asText()));</span>
+<span class="nc" id="L381">          }</span>
         } else {
-<span class="nc" id="L385">          errors.add(ILLEGAL_FIELD_VALUE(name, value.toString()));</span>
+<span class="nc" id="L383">          errors.add(ILLEGAL_FIELD_VALUE(name, value.toString()));</span>
         }
       }
-<span class="nc" id="L388">    }</span>
+<span class="nc" id="L386">    }</span>
 
     // check that both hosts are allowed to use the transfer rule
-<span class="nc" id="L391">    final String rule = transfer.getRule();</span>
-<span class="nc" id="L392">    final String requested = transfer.getRequested();</span>
-<span class="nc" id="L393">    final String requester = transfer.getRequester();</span>
-<span class="nc bnc" id="L394" title="All 6 branches missed.">    if (rule != null &amp;&amp; !requested.isEmpty() &amp;&amp; canUseRule(requested, rule)) {</span>
-<span class="nc" id="L395">      errors.add(RULE_NOT_ALLOWED(requested, rule));</span>
+<span class="nc" id="L389">    final String rule = transfer.getRule();</span>
+<span class="nc" id="L390">    final String requested = transfer.getRequested();</span>
+<span class="nc" id="L391">    final String requester = transfer.getRequester();</span>
+<span class="nc bnc" id="L392" title="All 6 branches missed.">    if (rule != null &amp;&amp; !requested.isEmpty() &amp;&amp; canUseRule(requested, rule)) {</span>
+<span class="nc" id="L393">      errors.add(RULE_NOT_ALLOWED(requested, rule));</span>
     }
-<span class="nc bnc" id="L397" title="All 6 branches missed.">    if (rule != null &amp;&amp; !requester.isEmpty() &amp;&amp; canUseRule(requester, rule)) {</span>
-<span class="nc" id="L398">      errors.add(RULE_NOT_ALLOWED(requester, rule));</span>
+<span class="nc bnc" id="L395" title="All 6 branches missed.">    if (rule != null &amp;&amp; !requester.isEmpty() &amp;&amp; canUseRule(requester, rule)) {</span>
+<span class="nc" id="L396">      errors.add(RULE_NOT_ALLOWED(requester, rule));</span>
     }
 
-<span class="nc" id="L401">    errors.addAll(checkRequiredFields(transfer));</span>
+<span class="nc" id="L399">    errors.addAll(checkRequiredFields(transfer));</span>
 
-<span class="nc bnc" id="L403" title="All 2 branches missed.">    if (errors.isEmpty()) {</span>
-<span class="nc" id="L404">      return transfer;</span>
+<span class="nc bnc" id="L401" title="All 2 branches missed.">    if (errors.isEmpty()) {</span>
+<span class="nc" id="L402">      return transfer;</span>
     } else {
-<span class="nc" id="L406">      throw new RestErrorException(errors);</span>
+<span class="nc" id="L404">      throw new RestErrorException(errors);</span>
     }
   }
 }

@@ -56,21 +56,21 @@ public final class FileUtils {
    *
    * @throws OpenR66RunnerErrorException
    */
-  public static final R66File getFile(final WaarpLogger logger,
-                                      final R66Session session,
-                                      final String filenameSrc,
-                                      final boolean isPreStart,
-                                      final boolean isSender,
-                                      final boolean isThrough, R66File file)
+  public static R66File getFile(final WaarpLogger logger,
+                                final R66Session session,
+                                final String filenameSrc,
+                                final boolean isPreStart,
+                                final boolean isSender, final boolean isThrough,
+                                R66File file)
       throws OpenR66RunnerErrorException {
     String filename;
-<span class="fc" id="L67">    logger.debug(&quot;PreStart: &quot; + isPreStart);</span>
-<span class="fc" id="L68">    logger.debug(&quot;Dir is: &quot; + session.getDir().getFullPath());</span>
-<span class="fc" id="L69">    logger.debug(&quot;File is: &quot; + filenameSrc);</span>
+<span class="fc" id="L67">    logger.debug(&quot;PreStart: {}&quot;, isPreStart);</span>
+<span class="fc" id="L68">    logger.debug(&quot;Dir is: {}&quot;, session.getDir().getFullPath());</span>
+<span class="fc" id="L69">    logger.debug(&quot;File is: {}&quot;, filenameSrc);</span>
 <span class="pc bpc" id="L70" title="1 of 2 branches missed.">    if (isPreStart) {</span>
 <span class="fc" id="L71">      filename = AbstractDir.normalizePath(filenameSrc);</span>
 <span class="fc" id="L72">      filename = AbstractDir.pathFromURI(filename);</span>
-<span class="fc" id="L73">      logger.debug(&quot;File becomes: &quot; + filename);</span>
+<span class="fc" id="L73">      logger.debug(&quot;File becomes: {}&quot;, filename);</span>
     } else {
 <span class="nc" id="L75">      filename = filenameSrc;</span>
     }
@@ -120,28 +120,28 @@ public final class FileUtils {
    *
    * @return the hash from the given Buffer
    */
-  public static final byte[] getHash(final byte[] buffer, final DigestAlgo algo,
-                                     final FilesystemBasedDigest digestGlobal) {
-<span class="pc bpc" id="L125" title="2 of 4 branches missed.">    if (buffer == null || buffer.length == 0) {</span>
+  public static byte[] getHash(final byte[] buffer, final DigestAlgo algo,
+                               final FilesystemBasedDigest digestGlobal) {
+<span class="nc bnc" id="L125" title="All 4 branches missed.">    if (buffer == null || buffer.length == 0) {</span>
 <span class="nc" id="L126">      return EMPTY_ARRAY;</span>
     }
     final byte[] newkey;
     try {
-<span class="pc bpc" id="L130" title="1 of 2 branches missed.">      if (digestGlobal == null) {</span>
+<span class="nc bnc" id="L130" title="All 2 branches missed.">      if (digestGlobal == null) {</span>
 <span class="nc" id="L131">        newkey = FilesystemBasedDigest.getHash(buffer, algo);</span>
       } else {
-<span class="fc" id="L133">        final FilesystemBasedDigest digestPacket =</span>
+<span class="nc" id="L133">        final FilesystemBasedDigest digestPacket =</span>
             new FilesystemBasedDigest(algo);
-<span class="fc" id="L135">        digestPacket.Update(buffer, 0, buffer.length);</span>
-<span class="fc" id="L136">        newkey = digestPacket.Final();</span>
-<span class="fc" id="L137">        digestGlobal.Update(buffer, 0, buffer.length);</span>
+<span class="nc" id="L135">        digestPacket.Update(buffer, 0, buffer.length);</span>
+<span class="nc" id="L136">        newkey = digestPacket.Final();</span>
+<span class="nc" id="L137">        digestGlobal.Update(buffer, 0, buffer.length);</span>
       }
 <span class="nc" id="L139">    } catch (final IOException e) {</span>
 <span class="nc" id="L140">      return EMPTY_ARRAY;</span>
 <span class="nc" id="L141">    } catch (final NoSuchAlgorithmException e) {</span>
 <span class="nc" id="L142">      return EMPTY_ARRAY;</span>
-<span class="fc" id="L143">    }</span>
-<span class="fc" id="L144">    return newkey;</span>
+<span class="nc" id="L143">    }</span>
+<span class="nc" id="L144">    return newkey;</span>
   }
 
   /**
@@ -154,21 +154,15 @@ public final class FileUtils {
   public static void computeGlobalHash(final FilesystemBasedDigest digestGlobal,
                                        final FilesystemBasedDigest digestLocal,
                                        final byte[] buffer) {
-<span class="nc bnc" id="L157" title="All 4 branches missed.">    if (buffer == null || buffer.length == 0) {</span>
+<span class="pc bpc" id="L157" title="2 of 4 branches missed.">    if (buffer == null || buffer.length == 0) {</span>
 <span class="nc" id="L158">      return;</span>
     }
-<span class="nc bnc" id="L160" title="All 4 branches missed.">    if (digestGlobal != null &amp;&amp; digestLocal != null) {</span>
-<span class="nc" id="L161">      final int length = buffer.length;</span>
-<span class="nc" id="L162">      digestGlobal.Update(buffer, 0, length);</span>
-<span class="nc" id="L163">      digestLocal.Update(buffer, 0, length);</span>
-<span class="nc" id="L164">      return;</span>
+<span class="pc bpc" id="L160" title="1 of 2 branches missed.">    if (digestGlobal != null) {</span>
+<span class="fc" id="L161">      digestGlobal.Update(buffer, 0, buffer.length);</span>
     }
-<span class="nc bnc" id="L166" title="All 2 branches missed.">    if (digestGlobal != null) {</span>
-<span class="nc" id="L167">      digestGlobal.Update(buffer, 0, buffer.length);</span>
+<span class="pc bpc" id="L163" title="1 of 2 branches missed.">    if (digestLocal != null) {</span>
+<span class="nc" id="L164">      digestLocal.Update(buffer, 0, buffer.length);</span>
     }
-<span class="nc bnc" id="L169" title="All 2 branches missed.">    if (digestLocal != null) {</span>
-<span class="nc" id="L170">      digestLocal.Update(buffer, 0, buffer.length);</span>
-    }
-<span class="nc" id="L172">  }</span>
+<span class="fc" id="L166">  }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

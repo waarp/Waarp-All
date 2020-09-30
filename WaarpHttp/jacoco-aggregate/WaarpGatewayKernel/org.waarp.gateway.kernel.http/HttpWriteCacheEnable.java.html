@@ -133,17 +133,17 @@ public final class HttpWriteCacheEnable {
         new SimpleDateFormat(RFC1123_PATTERN, LOCALE_US);
 <span class="fc" id="L134">    rfc1123Format.setTimeZone(GMT_ZONE);</span>
 <span class="fc" id="L135">    final Date lastModifDate = new Date(file.lastModified());</span>
-<span class="pc bpc" id="L136" title="1 of 2 branches missed.">    if (request.headers().contains(HttpHeaderNames.IF_MODIFIED_SINCE)) {</span>
-<span class="nc" id="L137">      final String sdate =</span>
-<span class="nc" id="L138">          request.headers().get(HttpHeaderNames.IF_MODIFIED_SINCE);</span>
+<span class="fc bfc" id="L136" title="All 2 branches covered.">    if (request.headers().contains(HttpHeaderNames.IF_MODIFIED_SINCE)) {</span>
+<span class="fc" id="L137">      final String sdate =</span>
+<span class="fc" id="L138">          request.headers().get(HttpHeaderNames.IF_MODIFIED_SINCE);</span>
       try {
-<span class="nc" id="L140">        final Date ifmodif = rfc1123Format.parse(sdate);</span>
-<span class="nc bnc" id="L141" title="All 2 branches missed.">        if (ifmodif.after(lastModifDate)) {</span>
-<span class="nc" id="L142">          response = new DefaultHttpResponse(HTTP_1_1,</span>
+<span class="fc" id="L140">        final Date ifmodif = rfc1123Format.parse(sdate);</span>
+<span class="pc bpc" id="L141" title="1 of 2 branches missed.">        if (ifmodif.after(lastModifDate)) {</span>
+<span class="fc" id="L142">          response = new DefaultHttpResponse(HTTP_1_1,</span>
                                              HttpResponseStatus.NOT_MODIFIED);
-<span class="nc" id="L144">          handleCookies(request, response, cookieNameToRemove);</span>
-<span class="nc" id="L145">          ctx.writeAndFlush(response);</span>
-<span class="nc" id="L146">          return;</span>
+<span class="fc" id="L144">          handleCookies(request, response, cookieNameToRemove);</span>
+<span class="fc" id="L145">          ctx.writeAndFlush(response);</span>
+<span class="fc" id="L146">          return;</span>
         }
 <span class="nc" id="L148">      } catch (final ParseException ignored) {</span>
         // nothing
@@ -172,9 +172,9 @@ public final class HttpWriteCacheEnable {
 <span class="fc" id="L172">    setContentTypeHeader(response, file);</span>
 <span class="fc" id="L173">    setDateAndCacheHeaders(response, rfc1123Format, lastModifDate);</span>
 
-<span class="pc bpc" id="L175" title="1 of 2 branches missed.">    if (!keepAlive) {</span>
-<span class="nc" id="L176">      response.headers()</span>
-<span class="nc" id="L177">              .set(HttpHeaderNames.CONNECTION, HttpHeaderValues.CLOSE);</span>
+<span class="fc bfc" id="L175" title="All 2 branches covered.">    if (!keepAlive) {</span>
+<span class="fc" id="L176">      response.headers()</span>
+<span class="fc" id="L177">              .set(HttpHeaderNames.CONNECTION, HttpHeaderValues.CLOSE);</span>
 <span class="pc bpc" id="L178" title="1 of 2 branches missed.">    } else if (request.protocolVersion().equals(HTTP_1_0)) {</span>
 <span class="nc" id="L179">      response.headers()</span>
 <span class="nc" id="L180">              .set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);</span>
@@ -184,9 +184,9 @@ public final class HttpWriteCacheEnable {
 <span class="fc" id="L184">    final ChannelFuture sendFileFuture = ctx.writeAndFlush(response);</span>
 
     // Decide whether to close the connection or not.
-<span class="pc bpc" id="L187" title="1 of 2 branches missed.">    if (!keepAlive) {</span>
+<span class="fc bfc" id="L187" title="All 2 branches covered.">    if (!keepAlive) {</span>
       // Close the connection when the whole content is written out.
-<span class="nc" id="L189">      sendFileFuture.addListener(ChannelFutureListener.CLOSE);</span>
+<span class="fc" id="L189">      sendFileFuture.addListener(ChannelFutureListener.CLOSE);</span>
     }
 <span class="fc" id="L191">  }</span>
 
@@ -206,48 +206,49 @@ public final class HttpWriteCacheEnable {
    * Sets the Date and Cache headers for the HTTP Response
    *
    * @param response HTTP response
-   * @param fileToCache file to extract content type
+   * @param rfc1123Format
+   * @param lastModifDate
    */
   private static void setDateAndCacheHeaders(final HttpResponse response,
                                              final DateFormat rfc1123Format,
                                              final Date lastModifDate) {
     // Date header
-<span class="fc" id="L215">    final Calendar time = new GregorianCalendar();</span>
-<span class="fc" id="L216">    response.headers()</span>
-<span class="fc" id="L217">            .set(HttpHeaderNames.DATE, rfc1123Format.format(time.getTime()));</span>
+<span class="fc" id="L216">    final Calendar time = new GregorianCalendar();</span>
+<span class="fc" id="L217">    response.headers()</span>
+<span class="fc" id="L218">            .set(HttpHeaderNames.DATE, rfc1123Format.format(time.getTime()));</span>
 
     // Add cache headers
-<span class="fc" id="L220">    time.add(Calendar.SECOND, MAX_AGE_SECOND);</span>
-<span class="fc" id="L221">    response.headers()</span>
-<span class="fc" id="L222">            .set(HttpHeaderNames.EXPIRES, rfc1123Format.format(time.getTime()));</span>
-<span class="fc" id="L223">    response.headers().set(HttpHeaderNames.CACHE_CONTROL, cache_control);</span>
-<span class="fc" id="L224">    response.headers().set(HttpHeaderNames.LAST_MODIFIED,</span>
-<span class="fc" id="L225">                           rfc1123Format.format(lastModifDate));</span>
-<span class="fc" id="L226">  }</span>
+<span class="fc" id="L221">    time.add(Calendar.SECOND, MAX_AGE_SECOND);</span>
+<span class="fc" id="L222">    response.headers()</span>
+<span class="fc" id="L223">            .set(HttpHeaderNames.EXPIRES, rfc1123Format.format(time.getTime()));</span>
+<span class="fc" id="L224">    response.headers().set(HttpHeaderNames.CACHE_CONTROL, cache_control);</span>
+<span class="fc" id="L225">    response.headers().set(HttpHeaderNames.LAST_MODIFIED,</span>
+<span class="fc" id="L226">                           rfc1123Format.format(lastModifDate));</span>
+<span class="fc" id="L227">  }</span>
 
   private static void sendError(final HttpRequest request,
                                 final ChannelHandlerContext ctx,
                                 final String cookieNameToRemove,
                                 final boolean keepAlive) {
     final HttpResponse response;
-<span class="fc" id="L233">    response =</span>
+<span class="fc" id="L234">    response =</span>
         new DefaultFullHttpResponse(HTTP_1_1, HttpResponseStatus.NOT_FOUND);
-<span class="fc" id="L235">    response.headers().add(HttpHeaderNames.CONTENT_LENGTH, 0);</span>
-<span class="pc bpc" id="L236" title="1 of 2 branches missed.">    if (!keepAlive) {</span>
-<span class="nc" id="L237">      response.headers()</span>
-<span class="nc" id="L238">              .set(HttpHeaderNames.CONNECTION, HttpHeaderValues.CLOSE);</span>
-<span class="pc bpc" id="L239" title="1 of 2 branches missed.">    } else if (request.protocolVersion().equals(HTTP_1_0)) {</span>
-<span class="nc" id="L240">      response.headers()</span>
-<span class="nc" id="L241">              .set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);</span>
+<span class="fc" id="L236">    response.headers().add(HttpHeaderNames.CONTENT_LENGTH, 0);</span>
+<span class="pc bpc" id="L237" title="1 of 2 branches missed.">    if (!keepAlive) {</span>
+<span class="nc" id="L238">      response.headers()</span>
+<span class="nc" id="L239">              .set(HttpHeaderNames.CONNECTION, HttpHeaderValues.CLOSE);</span>
+<span class="pc bpc" id="L240" title="1 of 2 branches missed.">    } else if (request.protocolVersion().equals(HTTP_1_0)) {</span>
+<span class="nc" id="L241">      response.headers()</span>
+<span class="nc" id="L242">              .set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);</span>
     }
-<span class="fc" id="L243">    handleCookies(request, response, cookieNameToRemove);</span>
-<span class="fc" id="L244">    final ChannelFuture sendFileFuture = ctx.writeAndFlush(response);</span>
+<span class="fc" id="L244">    handleCookies(request, response, cookieNameToRemove);</span>
+<span class="fc" id="L245">    final ChannelFuture sendFileFuture = ctx.writeAndFlush(response);</span>
     // Decide whether to close the connection or not.
-<span class="pc bpc" id="L246" title="1 of 2 branches missed.">    if (!keepAlive) {</span>
+<span class="pc bpc" id="L247" title="1 of 2 branches missed.">    if (!keepAlive) {</span>
       // Close the connection when the whole content is written out.
-<span class="nc" id="L248">      sendFileFuture.addListener(ChannelFutureListener.CLOSE);</span>
+<span class="nc" id="L249">      sendFileFuture.addListener(ChannelFutureListener.CLOSE);</span>
     }
-<span class="fc" id="L250">  }</span>
+<span class="fc" id="L251">  }</span>
 
   /**
    * Remove the given named cookie
@@ -259,23 +260,23 @@ public final class HttpWriteCacheEnable {
   public static void handleCookies(final HttpRequest request,
                                    final HttpResponse response,
                                    final String cookieNameToRemove) {
-<span class="fc" id="L262">    final String cookieString = request.headers().get(HttpHeaderNames.COOKIE);</span>
-<span class="pc bpc" id="L263" title="1 of 2 branches missed.">    if (cookieString != null) {</span>
-<span class="fc" id="L264">      final Set&lt;Cookie&gt; cookies = ServerCookieDecoder.LAX.decode(cookieString);</span>
-<span class="pc bpc" id="L265" title="1 of 2 branches missed.">      if (!cookies.isEmpty()) {</span>
+<span class="fc" id="L263">    final String cookieString = request.headers().get(HttpHeaderNames.COOKIE);</span>
+<span class="fc bfc" id="L264" title="All 2 branches covered.">    if (cookieString != null) {</span>
+<span class="fc" id="L265">      final Set&lt;Cookie&gt; cookies = ServerCookieDecoder.LAX.decode(cookieString);</span>
+<span class="pc bpc" id="L266" title="1 of 2 branches missed.">      if (!cookies.isEmpty()) {</span>
         // Reset the sessions if necessary.
         // Remove all Session for images
-<span class="fc bfc" id="L268" title="All 2 branches covered.">        for (final Cookie cookie : cookies) {</span>
-<span class="pc bpc" id="L269" title="1 of 2 branches missed.">          if (cookie.name().equalsIgnoreCase(cookieNameToRemove)) {</span>
+<span class="fc bfc" id="L269" title="All 2 branches covered.">        for (final Cookie cookie : cookies) {</span>
+<span class="pc bpc" id="L270" title="1 of 2 branches missed.">          if (cookie.name().equalsIgnoreCase(cookieNameToRemove)) {</span>
             // nothing
           } else {
-<span class="fc" id="L272">            response.headers().add(HttpHeaderNames.SET_COOKIE,</span>
-<span class="fc" id="L273">                                   ServerCookieEncoder.LAX.encode(cookie));</span>
+<span class="fc" id="L273">            response.headers().add(HttpHeaderNames.SET_COOKIE,</span>
+<span class="fc" id="L274">                                   ServerCookieEncoder.LAX.encode(cookie));</span>
           }
-<span class="fc" id="L275">        }</span>
+<span class="fc" id="L276">        }</span>
       }
     }
-<span class="fc" id="L278">  }</span>
+<span class="fc" id="L279">  }</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

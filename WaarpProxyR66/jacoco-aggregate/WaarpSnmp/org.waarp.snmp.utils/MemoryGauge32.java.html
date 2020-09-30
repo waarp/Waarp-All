@@ -44,7 +44,7 @@ public class MemoryGauge32 extends WaarpGauge32 {
   /**
    * Type of MemoryType used
    */
-  protected MemoryType type;
+  protected final MemoryType type;
 
   @Override
   protected void setInternalValue() {

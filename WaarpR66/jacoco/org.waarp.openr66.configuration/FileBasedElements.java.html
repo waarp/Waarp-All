@@ -460,16 +460,16 @@ import org.waarp.openr66.database.data.DbHostConfiguration;
    */
   public static final String XML_TIMEOUTCON = &quot;timeoutcon&quot;;
   /**
-   * Should a file MD5 SHA1 be computed using NIO
+   * Should a file MD5 SHA1 be computed using NIO (not recommended anymore)
    */
   public static final String XML_USENIO = &quot;usenio&quot;;
   /**
    * What Digest to use: CRC32=0, ADLER32=1, MD5=2, MD2=3, SHA1=4, SHA256=5,
-   * SHA384=6, SHA512=7
+   * SHA384=6, SHA512=7 : recommended value is 7
    */
   public static final String XML_DIGEST = &quot;digest&quot;;
   /**
-   * Should a file MD5 be computed using FastMD5
+   * Should a file MD5 be computed using FastMD5 (not recommended anymore)
    */
   public static final String XML_USEFASTMD5 = &quot;usefastmd5&quot;;
   /**
@@ -549,9 +549,13 @@ import org.waarp.openr66.database.data.DbHostConfiguration;
    */
   public static final String XML_GLOBALDIGEST = &quot;globaldigest&quot;;
   /**
+   * Final local digest check by transfer enable
+   */
+  public static final String XML_LOCALDIGEST = &quot;localdigest&quot;;
+  /**
    * Structure of the Configuration file
    */
-<span class="fc" id="L554">  private static final XmlDecl[] configLimitDecls = {</span>
+<span class="fc" id="L558">  private static final XmlDecl[] configLimitDecls = {</span>
       // limit
       new XmlDecl(XmlType.LONG, XML_LIMITSESSION),
       new XmlDecl(XmlType.LONG, XML_LIMITGLOBAL),
@@ -580,7 +584,8 @@ import org.waarp.openr66.database.data.DbHostConfiguration;
       new XmlDecl(XmlType.INTEGER, XML_BLOCKSIZE),
       new XmlDecl(XmlType.INTEGER, XML_USETHRIFT),
       new XmlDecl(XmlType.BOOLEAN, XML_CHECKVERSION),
-      new XmlDecl(XmlType.BOOLEAN, XML_GLOBALDIGEST)
+      new XmlDecl(XmlType.BOOLEAN, XML_GLOBALDIGEST),
+      new XmlDecl(XmlType.BOOLEAN, XML_LOCALDIGEST)
   };
   /**
    * SERVER REST interface SHA address usage (and not all available IPs)
@@ -622,7 +627,7 @@ import org.waarp.openr66.database.data.DbHostConfiguration;
    * SERVER REST interface CRUD per method
    */
   public static final String XML_REST_CRUD = &quot;restcrud&quot;;
-<span class="fc" id="L625">  public static final XmlDecl[] configRestMethodDecls = {</span>
+<span class="fc" id="L630">  public static final XmlDecl[] configRestMethodDecls = {</span>
       // Rest Method
       new XmlDecl(XmlType.STRING, XML_REST_METHOD_NAME),
       new XmlDecl(XmlType.STRING, XML_REST_CRUD)
@@ -630,7 +635,7 @@ import org.waarp.openr66.database.data.DbHostConfiguration;
   /**
    * Structure of the Configuration file
    */
-<span class="fc" id="L633">  private static final XmlDecl[] configRestDecls = {</span>
+<span class="fc" id="L638">  private static final XmlDecl[] configRestDecls = {</span>
       // Rest support configuration
       new XmlDecl(XmlType.STRING, XML_REST_ADDRESS),
       new XmlDecl(XmlType.INTEGER, XML_SERVER_REST_PORT),
@@ -657,7 +662,7 @@ import org.waarp.openr66.database.data.DbHostConfiguration;
   /**
    * Global Structure for Submit only Client Configuration
    */
-<span class="fc" id="L660">  public static final XmlDecl[] configSubmitClient = {</span>
+<span class="fc" id="L665">  public static final XmlDecl[] configSubmitClient = {</span>
       new XmlDecl(XML_IDENTITY, XmlType.XVAL, XML_ROOT + XML_IDENTITY,
                   configIdentityDecls, false),
       new XmlDecl(XML_DIRECTORY, XmlType.XVAL, XML_ROOT + XML_DIRECTORY,
@@ -675,7 +680,7 @@ import org.waarp.openr66.database.data.DbHostConfiguration;
   /**
    * Global Structure for Client Configuration
    */
-<span class="fc" id="L678">  public static final XmlDecl[] configClient = {</span>
+<span class="fc" id="L683">  public static final XmlDecl[] configClient = {</span>
       new XmlDecl(XML_IDENTITY, XmlType.XVAL, XML_ROOT + XML_IDENTITY,
                   configIdentityDecls, false),
       new XmlDecl(XML_CLIENT, XmlType.XVAL, XML_ROOT + XML_CLIENT,
@@ -701,7 +706,7 @@ import org.waarp.openr66.database.data.DbHostConfiguration;
   /**
    * Global Structure for Server Configuration
    */
-<span class="fc" id="L704">  public static final XmlDecl[] configServer = {</span>
+<span class="fc" id="L709">  public static final XmlDecl[] configServer = {</span>
       new XmlDecl(XML_IDENTITY, XmlType.XVAL, XML_ROOT + XML_IDENTITY,
                   configIdentityDecls, false),
       new XmlDecl(XML_SERVER, XmlType.XVAL, XML_ROOT + XML_SERVER,

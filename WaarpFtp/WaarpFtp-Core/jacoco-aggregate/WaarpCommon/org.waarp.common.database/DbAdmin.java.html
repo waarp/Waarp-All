@@ -41,14 +41,15 @@ import java.util.concurrent.TimeUnit;
 /**
  * Class for access to Database
  *
- * Partially deprecated (only in Waarp R66 but not other components)
+ * Partially deprecated (only in Waarp R66, except Rest, Http and Monitoring
+ * and special cases using PreparedStatements but not other components)
  */
 public class DbAdmin {
   /**
    * Internal Logger
    */
-<span class="nc" id="L50">  private static final WaarpLogger logger =</span>
-<span class="nc" id="L51">      WaarpLoggerFactory.getLogger(DbAdmin.class);</span>
+<span class="nc" id="L51">  private static final WaarpLogger logger =</span>
+<span class="nc" id="L52">      WaarpLoggerFactory.getLogger(DbAdmin.class);</span>
 
   public static final int RETRYNB = 3;
 
@@ -93,7 +94,7 @@ public class DbAdmin {
    */
   private static int nbHttpSession;
 
-<span class="nc" id="L96">  protected static final Timer dbSessionTimer =</span>
+<span class="nc" id="L97">  protected static final Timer dbSessionTimer =</span>
       new HashedWheelTimer(new WaarpThreadFactory(&quot;TimerClose&quot;), 50,
                            TimeUnit.MILLISECONDS, 1024);
 
@@ -101,21 +102,21 @@ public class DbAdmin {
    * @return the session
    */
   public DbSession getSession() {
-<span class="nc" id="L104">    return session;</span>
+<span class="nc" id="L105">    return session;</span>
   }
 
   /**
    * @param session the session to set
    */
   public void setSession(final DbSession session) {
-<span class="nc" id="L111">    this.session = session;</span>
-<span class="nc" id="L112">  }</span>
+<span class="nc" id="L112">    this.session = session;</span>
+<span class="nc" id="L113">  }</span>
 
   /**
    * @return True if the connection is ReadOnly
    */
   public boolean isReadOnly() {
-<span class="nc" id="L118">    return isReadOnly;</span>
+<span class="nc" id="L119">    return isReadOnly;</span>
   }
 
   /**
@@ -125,13 +126,13 @@ public class DbAdmin {
    */
   public void validConnection() throws WaarpDatabaseNoConnectionException {
     try {
-<span class="nc" id="L128">      dbModel.validConnection(getSession());</span>
-<span class="nc" id="L129">    } catch (final WaarpDatabaseNoConnectionException e) {</span>
-<span class="nc" id="L130">      getSession().setDisActive(true);</span>
-<span class="nc" id="L131">      throw e;</span>
-<span class="nc" id="L132">    }</span>
-<span class="nc" id="L133">    getSession().setDisActive(false);</span>
-<span class="nc" id="L134">  }</span>
+<span class="nc" id="L129">      dbModel.validConnection(getSession());</span>
+<span class="nc" id="L130">    } catch (final WaarpDatabaseNoConnectionException e) {</span>
+<span class="nc" id="L131">      getSession().setDisActive(true);</span>
+<span class="nc" id="L132">      throw e;</span>
+<span class="nc" id="L133">    }</span>
+<span class="nc" id="L134">    getSession().setDisActive(false);</span>
+<span class="nc" id="L135">  }</span>
 
   /**
    * Use a default server for basic connection. Later on, specific connection
@@ -161,23 +162,23 @@ public class DbAdmin {
    */
   public DbAdmin(final DbModel model, final String server, final String user,
                  final String passwd)
-<span class="nc" id="L164">      throws WaarpDatabaseNoConnectionException {</span>
-<span class="nc" id="L165">    this.server = server;</span>
-<span class="nc" id="L166">    this.user = user;</span>
-<span class="nc" id="L167">    this.passwd = passwd;</span>
-<span class="nc" id="L168">    dbModel = model;</span>
-<span class="nc" id="L169">    typeDriver = model.getDbType();</span>
-<span class="nc bnc" id="L170" title="All 2 branches missed.">    if (typeDriver == null) {</span>
-<span class="nc" id="L171">      logger.error(&quot;Cannot find TypeDriver&quot;);</span>
-<span class="nc" id="L172">      throw new WaarpDatabaseNoConnectionException(</span>
+<span class="nc" id="L165">      throws WaarpDatabaseNoConnectionException {</span>
+<span class="nc" id="L166">    this.server = server;</span>
+<span class="nc" id="L167">    this.user = user;</span>
+<span class="nc" id="L168">    this.passwd = passwd;</span>
+<span class="nc" id="L169">    dbModel = model;</span>
+<span class="nc" id="L170">    typeDriver = model.getDbType();</span>
+<span class="nc bnc" id="L171" title="All 2 branches missed.">    if (typeDriver == null) {</span>
+<span class="nc" id="L172">      logger.error(&quot;Cannot find TypeDriver&quot;);</span>
+<span class="nc" id="L173">      throw new WaarpDatabaseNoConnectionException(</span>
           &quot;Cannot find database drive&quot;);
     }
-<span class="nc" id="L175">    setSession(new DbSession(this, false));</span>
-<span class="nc" id="L176">    getSession().setAdmin(this);</span>
-<span class="nc" id="L177">    isReadOnly = false;</span>
-<span class="nc" id="L178">    validConnection();</span>
-<span class="nc" id="L179">    getSession().useConnection(); // default since this is the top connection</span>
-<span class="nc" id="L180">  }</span>
+<span class="nc" id="L176">    setSession(new DbSession(this, false));</span>
+<span class="nc" id="L177">    getSession().setAdmin(this);</span>
+<span class="nc" id="L178">    isReadOnly = false;</span>
+<span class="nc" id="L179">    validConnection();</span>
+<span class="nc" id="L180">    getSession().useConnection(); // default since this is the top connection</span>
+<span class="nc" id="L181">  }</span>
 
   /**
    * Use a default server for basic connection. Later on, specific connection
@@ -209,65 +210,65 @@ public class DbAdmin {
    */
   public DbAdmin(final DbModel model, final String server, final String user,
                  final String passwd, final boolean write)
-<span class="nc" id="L212">      throws WaarpDatabaseNoConnectionException {</span>
-<span class="nc" id="L213">    this.server = server;</span>
-<span class="nc" id="L214">    this.user = user;</span>
-<span class="nc" id="L215">    this.passwd = passwd;</span>
-<span class="nc" id="L216">    dbModel = model;</span>
-<span class="nc" id="L217">    typeDriver = model.getDbType();</span>
-<span class="nc bnc" id="L218" title="All 2 branches missed.">    if (typeDriver == null) {</span>
-<span class="nc" id="L219">      logger.error(&quot;Cannot find TypeDriver&quot;);</span>
-<span class="nc" id="L220">      throw new WaarpDatabaseNoConnectionException(</span>
+<span class="nc" id="L213">      throws WaarpDatabaseNoConnectionException {</span>
+<span class="nc" id="L214">    this.server = server;</span>
+<span class="nc" id="L215">    this.user = user;</span>
+<span class="nc" id="L216">    this.passwd = passwd;</span>
+<span class="nc" id="L217">    dbModel = model;</span>
+<span class="nc" id="L218">    typeDriver = model.getDbType();</span>
+<span class="nc bnc" id="L219" title="All 2 branches missed.">    if (typeDriver == null) {</span>
+<span class="nc" id="L220">      logger.error(&quot;Cannot find TypeDriver&quot;);</span>
+<span class="nc" id="L221">      throw new WaarpDatabaseNoConnectionException(</span>
           &quot;Cannot find database driver&quot;);
     }
-<span class="nc bnc" id="L223" title="All 2 branches missed.">    if (write) {</span>
-<span class="nc bnc" id="L224" title="All 2 branches missed.">      for (int i = 0; i &lt; RETRYNB; i++) {</span>
+<span class="nc bnc" id="L224" title="All 2 branches missed.">    if (write) {</span>
+<span class="nc bnc" id="L225" title="All 2 branches missed.">      for (int i = 0; i &lt; RETRYNB; i++) {</span>
         try {
-<span class="nc" id="L226">          setSession(new DbSession(this, false));</span>
-<span class="nc" id="L227">        } catch (final WaarpDatabaseNoConnectionException e) {</span>
-<span class="nc" id="L228">          logger.warn(&quot;Attempt of connection in error: &quot; + i, e);</span>
-<span class="nc" id="L229">          continue;</span>
-<span class="nc" id="L230">        }</span>
-<span class="nc" id="L231">        isReadOnly = false;</span>
-<span class="nc" id="L232">        getSession().setAdmin(this);</span>
-<span class="nc" id="L233">        validConnection();</span>
-<span class="nc" id="L234">        getSession().useConnection(); // default since this is the top</span>
+<span class="nc" id="L227">          setSession(new DbSession(this, false));</span>
+<span class="nc" id="L228">        } catch (final WaarpDatabaseNoConnectionException e) {</span>
+<span class="nc" id="L229">          logger.warn(&quot;Attempt of connection in error: &quot; + i, e);</span>
+<span class="nc" id="L230">          continue;</span>
+<span class="nc" id="L231">        }</span>
+<span class="nc" id="L232">        isReadOnly = false;</span>
+<span class="nc" id="L233">        getSession().setAdmin(this);</span>
+<span class="nc" id="L234">        validConnection();</span>
+<span class="nc" id="L235">        getSession().useConnection(); // default since this is the top</span>
         // connection
-<span class="nc" id="L236">        return;</span>
+<span class="nc" id="L237">        return;</span>
       }
     } else {
-<span class="nc bnc" id="L239" title="All 2 branches missed.">      for (int i = 0; i &lt; RETRYNB; i++) {</span>
+<span class="nc bnc" id="L240" title="All 2 branches missed.">      for (int i = 0; i &lt; RETRYNB; i++) {</span>
         try {
-<span class="nc" id="L241">          setSession(new DbSession(this, true));</span>
-<span class="nc" id="L242">        } catch (final WaarpDatabaseNoConnectionException e) {</span>
-<span class="nc" id="L243">          logger.warn(&quot;Attempt of connection in error: &quot; + i, e);</span>
-<span class="nc" id="L244">          continue;</span>
-<span class="nc" id="L245">        }</span>
-<span class="nc" id="L246">        isReadOnly = true;</span>
-<span class="nc" id="L247">        getSession().setAdmin(this);</span>
-<span class="nc" id="L248">        validConnection();</span>
-<span class="nc" id="L249">        getSession().useConnection(); // default since this is the top</span>
+<span class="nc" id="L242">          setSession(new DbSession(this, true));</span>
+<span class="nc" id="L243">        } catch (final WaarpDatabaseNoConnectionException e) {</span>
+<span class="nc" id="L244">          logger.warn(&quot;Attempt of connection in error: &quot; + i, e);</span>
+<span class="nc" id="L245">          continue;</span>
+<span class="nc" id="L246">        }</span>
+<span class="nc" id="L247">        isReadOnly = true;</span>
+<span class="nc" id="L248">        getSession().setAdmin(this);</span>
+<span class="nc" id="L249">        validConnection();</span>
+<span class="nc" id="L250">        getSession().useConnection(); // default since this is the top</span>
         // connection
-<span class="nc" id="L251">        return;</span>
+<span class="nc" id="L252">        return;</span>
       }
     }
-<span class="nc" id="L254">    setSession(null);</span>
-<span class="nc" id="L255">    logger.error(&quot;Cannot connect to Database!&quot;);</span>
-<span class="nc" id="L256">    throw new WaarpDatabaseNoConnectionException(&quot;Cannot connect to database&quot;);</span>
+<span class="nc" id="L255">    setSession(null);</span>
+<span class="nc" id="L256">    logger.error(&quot;Cannot connect to Database!&quot;);</span>
+<span class="nc" id="L257">    throw new WaarpDatabaseNoConnectionException(&quot;Cannot connect to database&quot;);</span>
   }
 
   /**
    * Empty constructor for no Database support (very thin client)
    */
-<span class="nc" id="L262">  public DbAdmin() {</span>
+<span class="nc" id="L263">  public DbAdmin() {</span>
     // not true but to enable pseudo database functions
-<span class="nc" id="L264">    typeDriver = DbType.none;</span>
-<span class="nc" id="L265">    DbModelFactory.classLoaded.add(DbType.none.name());</span>
-<span class="nc" id="L266">    dbModel = new EmptyDbModel();</span>
-<span class="nc" id="L267">    server = null;</span>
-<span class="nc" id="L268">    user = null;</span>
-<span class="nc" id="L269">    passwd = null;</span>
-<span class="nc" id="L270">  }</span>
+<span class="nc" id="L265">    typeDriver = DbType.none;</span>
+<span class="nc" id="L266">    DbModelFactory.classLoaded.add(DbType.none.name());</span>
+<span class="nc" id="L267">    dbModel = new EmptyDbModel();</span>
+<span class="nc" id="L268">    server = null;</span>
+<span class="nc" id="L269">    user = null;</span>
+<span class="nc" id="L270">    passwd = null;</span>
+<span class="nc" id="L271">  }</span>
 
   /**
    * Close the underlying session. Can be call even for connection given from
@@ -275,13 +276,13 @@ public class DbAdmin {
    * DbAdmin(Connection, boolean).
    */
   public void close() {
-<span class="nc bnc" id="L278" title="All 2 branches missed.">    if (getSession() != null) {</span>
-<span class="nc" id="L279">      getSession().endUseConnection(); // default since this is the top</span>
+<span class="nc bnc" id="L279" title="All 2 branches missed.">    if (getSession() != null) {</span>
+<span class="nc" id="L280">      getSession().endUseConnection(); // default since this is the top</span>
       // connection
-<span class="nc" id="L281">      getSession().forceDisconnect();</span>
-<span class="nc" id="L282">      setSession(null);</span>
+<span class="nc" id="L282">      getSession().forceDisconnect();</span>
+<span class="nc" id="L283">      setSession(null);</span>
     }
-<span class="nc" id="L284">  }</span>
+<span class="nc" id="L285">  }</span>
 
   /**
    * Commit on connection (since in autocommit, should not be used)
@@ -291,77 +292,77 @@ public class DbAdmin {
    */
   public void commit()
       throws WaarpDatabaseSqlException, WaarpDatabaseNoConnectionException {
-<span class="nc bnc" id="L294" title="All 2 branches missed.">    if (getSession() != null) {</span>
-<span class="nc" id="L295">      getSession().commit();</span>
+<span class="nc bnc" id="L295" title="All 2 branches missed.">    if (getSession() != null) {</span>
+<span class="nc" id="L296">      getSession().commit();</span>
     }
-<span class="nc" id="L297">  }</span>
+<span class="nc" id="L298">  }</span>
 
   /**
    * @return the server
    */
   public String getServer() {
-<span class="nc" id="L303">    return server;</span>
+<span class="nc" id="L304">    return server;</span>
   }
 
   /**
    * @return the user
    */
   public String getUser() {
-<span class="nc" id="L310">    return user;</span>
+<span class="nc" id="L311">    return user;</span>
   }
 
   /**
    * @return the passwd
    */
   public String getPasswd() {
-<span class="nc" id="L317">    return passwd;</span>
+<span class="nc" id="L318">    return passwd;</span>
   }
 
   /**
    * @return the associated dbModel
    */
   public DbModel getDbModel() {
-<span class="nc" id="L324">    return dbModel;</span>
+<span class="nc" id="L325">    return dbModel;</span>
   }
 
   /**
    * @return the typeDriver
    */
   public DbType getTypeDriver() {
-<span class="nc" id="L331">    return typeDriver;</span>
+<span class="nc" id="L332">    return typeDriver;</span>
   }
 
   @Override
   public String toString() {
-<span class="nc" id="L336">    return &quot;Admin: &quot; + typeDriver.name() + ':' + server + ':' + user + ':' +</span>
-<span class="nc" id="L337">           passwd.length();</span>
+<span class="nc" id="L337">    return &quot;Admin: &quot; + typeDriver.name() + ':' + server + ':' + user + ':' +</span>
+<span class="nc" id="L338">           passwd.length();</span>
   }
 
   /**
    * List all Connection to enable the close call on them
    */
-<span class="nc" id="L343">  private static final ConcurrentHashMap&lt;GUID, DbSession&gt; listConnection =</span>
+<span class="nc" id="L344">  private static final ConcurrentHashMap&lt;GUID, DbSession&gt; listConnection =</span>
       new ConcurrentHashMap&lt;org.waarp.common.guid.GUID, DbSession&gt;();
 
   /**
    * Increment nb of Http Connection
    */
   public static void incHttpSession() {
-<span class="nc" id="L350">    nbHttpSession++;</span>
-<span class="nc" id="L351">  }</span>
+<span class="nc" id="L351">    nbHttpSession++;</span>
+<span class="nc" id="L352">  }</span>
 
   /**
    * Decrement nb of Http Connection
    */
   public static void decHttpSession() {
-<span class="nc" id="L357">    nbHttpSession--;</span>
-<span class="nc" id="L358">  }</span>
+<span class="nc" id="L358">    nbHttpSession--;</span>
+<span class="nc" id="L359">  }</span>
 
   /**
    * @return the nb of Http Connection
    */
   public static int getHttpSession() {
-<span class="nc" id="L364">    return nbHttpSession;</span>
+<span class="nc" id="L365">    return nbHttpSession;</span>
   }
 
   /**
@@ -371,8 +372,8 @@ public class DbAdmin {
    * @param session
    */
   public static void addConnection(final GUID id, final DbSession session) {
-<span class="nc" id="L374">    listConnection.put(id, session);</span>
-<span class="nc" id="L375">  }</span>
+<span class="nc" id="L375">    listConnection.put(id, session);</span>
+<span class="nc" id="L376">  }</span>
 
   /**
    * Remove a Connection from the list
@@ -380,61 +381,61 @@ public class DbAdmin {
    * @param id Id of the connection
    */
   public static void removeConnection(final GUID id) {
-<span class="nc" id="L383">    listConnection.remove(id);</span>
-<span class="nc" id="L384">  }</span>
+<span class="nc" id="L384">    listConnection.remove(id);</span>
+<span class="nc" id="L385">  }</span>
 
   /**
    * @return the number of connection (so number of network channels)
    */
   public static int getNbConnection() {
-<span class="nc" id="L390">    return listConnection.size() - 1;</span>
+<span class="nc" id="L391">    return listConnection.size() - 1;</span>
   }
 
   /**
    * Close all database connections
    */
   public static void closeAllConnection() {
-<span class="nc bnc" id="L397" title="All 2 branches missed.">    for (final DbSession session : listConnection.values()) {</span>
-<span class="nc" id="L398">      logger.debug(&quot;Close (all) Db Conn: &quot; + session.getInternalId());</span>
+<span class="nc bnc" id="L398" title="All 2 branches missed.">    for (final DbSession session : listConnection.values()) {</span>
+<span class="nc" id="L399">      logger.debug(&quot;Close (all) Db Conn: {}&quot;, session.getInternalId());</span>
       try {
-<span class="nc" id="L400">        final Connection connection = session.getConn();</span>
-<span class="nc bnc" id="L401" title="All 2 branches missed.">        if (connection != null) {</span>
-<span class="nc" id="L402">          connection.close();</span>
+<span class="nc" id="L401">        final Connection connection = session.getConn();</span>
+<span class="nc bnc" id="L402" title="All 2 branches missed.">        if (connection != null) {</span>
+<span class="nc" id="L403">          connection.close();</span>
         }
-<span class="nc" id="L404">      } catch (final SQLException ignored) {</span>
+<span class="nc" id="L405">      } catch (final SQLException ignored) {</span>
         // nothing
-<span class="nc" id="L406">      } catch (final ConcurrentModificationException ignored) {</span>
+<span class="nc" id="L407">      } catch (final ConcurrentModificationException ignored) {</span>
         // nothing
-<span class="nc" id="L408">      }</span>
-<span class="nc" id="L409">    }</span>
-<span class="nc" id="L410">    listConnection.clear();</span>
-<span class="nc bnc" id="L411" title="All 2 branches missed.">    for (final DbModel dbModel : DbModelFactory.dbModels) {</span>
-<span class="nc bnc" id="L412" title="All 2 branches missed.">      if (dbModel != null) {</span>
-<span class="nc" id="L413">        dbModel.releaseResources();</span>
+<span class="nc" id="L409">      }</span>
+<span class="nc" id="L410">    }</span>
+<span class="nc" id="L411">    listConnection.clear();</span>
+<span class="nc bnc" id="L412" title="All 2 branches missed.">    for (final DbModel dbModel : DbModelFactory.dbModels) {</span>
+<span class="nc bnc" id="L413" title="All 2 branches missed.">      if (dbModel != null) {</span>
+<span class="nc" id="L414">        dbModel.releaseResources();</span>
       }
-<span class="nc" id="L415">    }</span>
-<span class="nc" id="L416">    dbSessionTimer.stop();</span>
-<span class="nc" id="L417">  }</span>
+<span class="nc" id="L416">    }</span>
+<span class="nc" id="L417">    dbSessionTimer.stop();</span>
+<span class="nc" id="L418">  }</span>
 
   /**
    * Check all database connections and try to reopen them if disActive
    */
   public static void checkAllConnections() {
-<span class="nc bnc" id="L423" title="All 2 branches missed.">    for (final DbSession session : listConnection.values()) {</span>
+<span class="nc bnc" id="L424" title="All 2 branches missed.">    for (final DbSession session : listConnection.values()) {</span>
       try {
-<span class="nc" id="L425">        session.checkConnection();</span>
-<span class="nc" id="L426">      } catch (final WaarpDatabaseNoConnectionException e) {</span>
-<span class="nc" id="L427">        logger.error(&quot;Database Connection cannot be reinitialized&quot;);</span>
-<span class="nc" id="L428">      }</span>
-<span class="nc" id="L429">    }</span>
-<span class="nc" id="L430">  }</span>
+<span class="nc" id="L426">        session.checkConnection();</span>
+<span class="nc" id="L427">      } catch (final WaarpDatabaseNoConnectionException e) {</span>
+<span class="nc" id="L428">        logger.error(&quot;Database Connection cannot be reinitialized&quot;);</span>
+<span class="nc" id="L429">      }</span>
+<span class="nc" id="L430">    }</span>
+<span class="nc" id="L431">  }</span>
 
   /**
    * @return True if this driver allows Thread Shared Connexion (concurrency
    *     usage)
    */
   public boolean isCompatibleWithThreadSharedConnexion() {
-<span class="nc bnc" id="L437" title="All 8 branches missed.">    return typeDriver != DbType.MariaDB &amp;&amp; typeDriver != DbType.MySQL &amp;&amp;</span>
+<span class="nc bnc" id="L438" title="All 8 branches missed.">    return typeDriver != DbType.MariaDB &amp;&amp; typeDriver != DbType.MySQL &amp;&amp;</span>
            typeDriver != DbType.Oracle &amp;&amp; typeDriver != DbType.none;
   }
 }

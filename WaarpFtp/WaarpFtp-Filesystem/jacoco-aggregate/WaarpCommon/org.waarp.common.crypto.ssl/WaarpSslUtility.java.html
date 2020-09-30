@@ -67,13 +67,12 @@ public final class WaarpSslUtility {
 <span class="fc" id="L67">      new ChannelFutureListener() {</span>
 
         @Override
-        public void operationComplete(final ChannelFuture future)
-            throws Exception {
-<span class="pc bpc" id="L72" title="1 of 2 branches missed.">          if (future.channel().isActive()) {</span>
-<span class="fc" id="L73">            final SSLTHREAD thread = new SSLTHREAD(future.channel());</span>
-<span class="fc" id="L74">            thread.start();</span>
+        public void operationComplete(final ChannelFuture future) {
+<span class="pc bpc" id="L71" title="1 of 2 branches missed.">          if (future.channel().isActive()) {</span>
+<span class="fc" id="L72">            final SslThread thread = new SslThread(future.channel());</span>
+<span class="fc" id="L73">            thread.start();</span>
           }
-<span class="fc" id="L76">        }</span>
+<span class="fc" id="L75">        }</span>
       };
 
   private WaarpSslUtility() {
@@ -85,8 +84,8 @@ public final class WaarpSslUtility {
    * @param channel
    */
   public static void addSslOpenedChannel(final Channel channel) {
-<span class="fc" id="L88">    sslChannelGroup.add(channel);</span>
-<span class="fc" id="L89">  }</span>
+<span class="fc" id="L87">    sslChannelGroup.add(channel);</span>
+<span class="fc" id="L88">  }</span>
 
   /**
    * Add a SslHandler in a pipeline when the channel is already active
@@ -103,22 +102,22 @@ public final class WaarpSslUtility {
                                    final ChannelPipeline pipeline,
                                    final ChannelHandler sslHandler,
                                    final GenericFutureListener&lt;? extends Future&lt;? super Channel&gt;&gt; listener) {
-<span class="nc bnc" id="L106" title="All 2 branches missed.">    if (future == null) {</span>
-<span class="nc" id="L107">      logger.debug(&quot;Add SslHandler: &quot; + pipeline.channel());</span>
-<span class="nc" id="L108">      pipeline.addFirst(&quot;SSL&quot;, sslHandler);</span>
-<span class="nc" id="L109">      ((SslHandler) sslHandler).handshakeFuture().addListener(listener);</span>
+<span class="nc bnc" id="L105" title="All 2 branches missed.">    if (future == null) {</span>
+<span class="nc" id="L106">      logger.debug(&quot;Add SslHandler: {}&quot;, pipeline.channel());</span>
+<span class="nc" id="L107">      pipeline.addFirst(&quot;SSL&quot;, sslHandler);</span>
+<span class="nc" id="L108">      ((SslHandler) sslHandler).handshakeFuture().addListener(listener);</span>
     } else {
-<span class="nc" id="L111">      future.addListener(new GenericFutureListener() {</span>
+<span class="nc" id="L110">      future.addListener(new GenericFutureListener() {</span>
         @Override
-        public void operationComplete(final Future future) throws Exception {
-<span class="nc" id="L114">          logger.debug(&quot;Add SslHandler: &quot; + pipeline.channel());</span>
-<span class="nc" id="L115">          pipeline.addFirst(&quot;SSL&quot;, sslHandler);</span>
-<span class="nc" id="L116">          ((SslHandler) sslHandler).handshakeFuture().addListener(listener);</span>
-<span class="nc" id="L117">        }</span>
+        public void operationComplete(final Future future) {
+<span class="nc" id="L113">          logger.debug(&quot;Add SslHandler: {}&quot;, pipeline.channel());</span>
+<span class="nc" id="L114">          pipeline.addFirst(&quot;SSL&quot;, sslHandler);</span>
+<span class="nc" id="L115">          ((SslHandler) sslHandler).handshakeFuture().addListener(listener);</span>
+<span class="nc" id="L116">        }</span>
       });
     }
-<span class="nc" id="L120">    logger.debug(&quot;Checked Ssl Handler to be added: &quot; + pipeline.channel());</span>
-<span class="nc" id="L121">  }</span>
+<span class="nc" id="L119">    logger.debug(&quot;Checked Ssl Handler to be added: {}&quot;, pipeline.channel());</span>
+<span class="nc" id="L120">  }</span>
 
   /**
    * Wait for the handshake on the given channel (better to use addSslHandler
@@ -130,27 +129,27 @@ public final class WaarpSslUtility {
    * @return True if the Handshake is done correctly
    */
   public static boolean waitForHandshake(final Channel channel) {
-<span class="fc" id="L133">    final ChannelHandler handler = channel.pipeline().first();</span>
-<span class="pc bpc" id="L134" title="1 of 2 branches missed.">    if (handler instanceof SslHandler) {</span>
-<span class="fc" id="L135">      logger.debug(&quot;Start handshake SSL: &quot; + channel);</span>
-<span class="fc" id="L136">      final SslHandler sslHandler = (SslHandler) handler;</span>
+<span class="fc" id="L132">    final ChannelHandler handler = channel.pipeline().first();</span>
+<span class="pc bpc" id="L133" title="1 of 2 branches missed.">    if (handler instanceof SslHandler) {</span>
+<span class="fc" id="L134">      logger.debug(&quot;Start handshake SSL: {}&quot;, channel);</span>
+<span class="fc" id="L135">      final SslHandler sslHandler = (SslHandler) handler;</span>
       // Get the SslHandler and begin handshake ASAP.
       // Get notified when SSL handshake is done.
-<span class="fc" id="L139">      final Future&lt;Channel&gt; handshakeFuture = sslHandler.handshakeFuture();</span>
-<span class="fc" id="L140">      WaarpNettyUtil.awaitOrInterrupted(handshakeFuture,</span>
-<span class="fc" id="L141">                                        sslHandler.getHandshakeTimeoutMillis() +</span>
+<span class="fc" id="L138">      final Future&lt;Channel&gt; handshakeFuture = sslHandler.handshakeFuture();</span>
+<span class="fc" id="L139">      WaarpNettyUtil.awaitOrInterrupted(handshakeFuture,</span>
+<span class="fc" id="L140">                                        sslHandler.getHandshakeTimeoutMillis() +</span>
                                         100);
-<span class="fc" id="L143">      logger.debug(&quot;Handshake: &quot; + handshakeFuture.isSuccess() + &quot;: &quot; + channel,</span>
-<span class="fc" id="L144">                   handshakeFuture.cause());</span>
-<span class="pc bpc" id="L145" title="1 of 2 branches missed.">      if (!handshakeFuture.isSuccess()) {</span>
-<span class="nc" id="L146">        channel.close();</span>
-<span class="nc" id="L147">        return false;</span>
+<span class="fc" id="L142">      logger.debug(&quot;Handshake: {}:{}&quot;, handshakeFuture.isSuccess(), channel,</span>
+<span class="fc" id="L143">                   handshakeFuture.cause());</span>
+<span class="pc bpc" id="L144" title="1 of 2 branches missed.">      if (!handshakeFuture.isSuccess()) {</span>
+<span class="nc" id="L145">        channel.close();</span>
+<span class="nc" id="L146">        return false;</span>
       }
-<span class="fc" id="L149">    } else {</span>
-<span class="nc" id="L150">      logger.info(&quot;SSL Not found but connected: {} {}&quot;,</span>
-<span class="nc" id="L151">                  handler.getClass().getName());</span>
+<span class="fc" id="L148">    } else {</span>
+<span class="nc" id="L149">      logger.info(&quot;SSL Not found but connected: {} {}&quot;,</span>
+<span class="nc" id="L150">                  handler.getClass().getName());</span>
     }
-<span class="fc" id="L153">    return true;</span>
+<span class="fc" id="L152">    return true;</span>
   }
 
   /**
@@ -163,30 +162,30 @@ public final class WaarpSslUtility {
    */
   public static Channel waitforChannelReady(final ChannelFuture future) {
     // Wait until the connection attempt succeeds or fails.
-<span class="fc" id="L166">    WaarpNettyUtil.awaitOrInterrupted(future);</span>
-<span class="pc bpc" id="L167" title="1 of 2 branches missed.">    if (!future.isSuccess()) {</span>
-<span class="nc" id="L168">      logger.error(&quot;Channel not connected&quot;, future.cause());</span>
-<span class="nc" id="L169">      return null;</span>
+<span class="fc" id="L165">    WaarpNettyUtil.awaitOrInterrupted(future);</span>
+<span class="pc bpc" id="L166" title="1 of 2 branches missed.">    if (!future.isSuccess()) {</span>
+<span class="nc" id="L167">      logger.error(&quot;Channel not connected&quot;, future.cause());</span>
+<span class="nc" id="L168">      return null;</span>
     }
-<span class="fc" id="L171">    final Channel channel = future.channel();</span>
-<span class="pc bpc" id="L172" title="1 of 2 branches missed.">    if (waitForHandshake(channel)) {</span>
-<span class="fc" id="L173">      return channel;</span>
+<span class="fc" id="L170">    final Channel channel = future.channel();</span>
+<span class="pc bpc" id="L171" title="1 of 2 branches missed.">    if (waitForHandshake(channel)) {</span>
+<span class="fc" id="L172">      return channel;</span>
     }
-<span class="nc" id="L175">    return null;</span>
+<span class="nc" id="L174">    return null;</span>
   }
 
   /**
    * Utility to force all channels to be closed
    */
   public static void forceCloseAllSslChannels() {
-<span class="pc bpc" id="L182" title="1 of 2 branches missed.">    if (SSL_EVENT_EXECUTOR.isShutdown()) {</span>
-<span class="nc bnc" id="L183" title="All 2 branches missed.">      for (final Channel channel : sslChannelGroup) {</span>
-<span class="nc" id="L184">        closingSslChannel(channel);</span>
-<span class="nc" id="L185">      }</span>
-<span class="nc" id="L186">      WaarpNettyUtil.awaitOrInterrupted(sslChannelGroup.close());</span>
-<span class="nc" id="L187">      SSL_EVENT_EXECUTOR.shutdownGracefully();</span>
+<span class="pc bpc" id="L181" title="1 of 2 branches missed.">    if (SSL_EVENT_EXECUTOR.isShutdown()) {</span>
+<span class="nc bnc" id="L182" title="All 2 branches missed.">      for (final Channel channel : sslChannelGroup) {</span>
+<span class="nc" id="L183">        closingSslChannel(channel);</span>
+<span class="nc" id="L184">      }</span>
+<span class="nc" id="L185">      WaarpNettyUtil.awaitOrInterrupted(sslChannelGroup.close());</span>
+<span class="nc" id="L186">      SSL_EVENT_EXECUTOR.shutdownGracefully();</span>
     }
-<span class="fc" id="L189">  }</span>
+<span class="fc" id="L188">  }</span>
 
   /**
    * Utility method to close a channel in SSL mode correctly (if any)
@@ -194,14 +193,14 @@ public final class WaarpSslUtility {
    * @param channel
    */
   public static ChannelFuture closingSslChannel(final Channel channel) {
-<span class="fc bfc" id="L197" title="All 2 branches covered.">    if (channel.isActive()) {</span>
-<span class="fc" id="L198">      removingSslHandler(null, channel, true);</span>
-<span class="fc" id="L199">      logger</span>
-<span class="fc" id="L200">          .debug(&quot;Close the channel and returns the ChannelFuture: &quot; + channel);</span>
-<span class="fc" id="L201">      return channel.closeFuture();</span>
+<span class="fc bfc" id="L196" title="All 2 branches covered.">    if (channel.isActive()) {</span>
+<span class="fc" id="L197">      removingSslHandler(null, channel, true);</span>
+<span class="fc" id="L198">      logger</span>
+<span class="fc" id="L199">          .debug(&quot;Close the channel and returns the ChannelFuture: &quot; + channel);</span>
+<span class="fc" id="L200">      return channel.closeFuture();</span>
     }
-<span class="fc" id="L203">    logger.debug(&quot;Already closed&quot;);</span>
-<span class="fc" id="L204">    return channel.newSucceededFuture();</span>
+<span class="fc" id="L202">    logger.debug(&quot;Already closed&quot;);</span>
+<span class="fc" id="L203">    return channel.newSucceededFuture();</span>
   }
 
   /**
@@ -217,68 +216,51 @@ public final class WaarpSslUtility {
   public static void removingSslHandler(final ChannelFuture future,
                                         final Channel channel,
                                         final boolean close) {
-<span class="pc bpc" id="L220" title="1 of 2 branches missed.">    if (channel.isActive()) {</span>
-<span class="fc" id="L221">      channel.config().setAutoRead(true);</span>
-<span class="fc" id="L222">      final ChannelHandler handler = channel.pipeline().first();</span>
-<span class="pc bpc" id="L223" title="1 of 2 branches missed.">      if (handler instanceof SslHandler) {</span>
-<span class="fc" id="L224">        final SslHandler sslHandler = (SslHandler) handler;</span>
-<span class="pc bpc" id="L225" title="1 of 2 branches missed.">        if (future != null) {</span>
-<span class="nc" id="L226">          future.addListener(new GenericFutureListener() {</span>
+<span class="pc bpc" id="L219" title="1 of 2 branches missed.">    if (channel.isActive()) {</span>
+<span class="fc" id="L220">      channel.config().setAutoRead(true);</span>
+<span class="fc" id="L221">      final ChannelHandler handler = channel.pipeline().first();</span>
+<span class="pc bpc" id="L222" title="1 of 2 branches missed.">      if (handler instanceof SslHandler) {</span>
+<span class="fc" id="L223">        final SslHandler sslHandler = (SslHandler) handler;</span>
+<span class="pc bpc" id="L224" title="1 of 2 branches missed.">        if (future != null) {</span>
+<span class="nc" id="L225">          future.addListener(new GenericFutureListener() {</span>
             @Override
-            public void operationComplete(final Future future)
-                throws Exception {
-<span class="nc" id="L230">              logger.debug(&quot;Found SslHandler and wait for Ssl.close()&quot;);</span>
-<span class="nc" id="L231">              final ChannelHandlerContext cht =</span>
-<span class="nc" id="L232">                  channel.pipeline().context(sslHandler);</span>
-<span class="nc bnc" id="L233" title="All 2 branches missed.">              if (cht.channel().isActive()) {</span>
-<span class="nc" id="L234">                cht.close().addListener(</span>
-<span class="nc" id="L235">                    new GenericFutureListener&lt;Future&lt;? super Void&gt;&gt;() {</span>
-                      @Override
-                      public void operationComplete(
-                          final Future&lt;? super Void&gt; future) throws Exception {
-<span class="nc" id="L239">                        logger.debug(&quot;Ssl closed&quot;);</span>
-<span class="nc bnc" id="L240" title="All 2 branches missed.">                        if (!close) {</span>
-<span class="nc" id="L241">                          channel.pipeline().remove(sslHandler);</span>
-                        } else {
-<span class="nc bnc" id="L243" title="All 2 branches missed.">                          if (channel.isActive()) {</span>
-<span class="nc" id="L244">                            channel.close();</span>
-                          }
-                        }
-<span class="nc" id="L247">                      }</span>
-                    });
-              }
-<span class="nc" id="L250">            }</span>
+            public void operationComplete(final Future future) {
+<span class="nc" id="L228">              waitForSslClose(channel, sslHandler, close);</span>
+<span class="nc" id="L229">            }</span>
           });
         } else {
-<span class="fc" id="L253">          logger</span>
-<span class="fc" id="L254">              .debug(&quot;Found SslHandler and wait for Ssl.close() : &quot; + channel);</span>
-<span class="fc" id="L255">          final ChannelHandlerContext cht =</span>
-<span class="fc" id="L256">              channel.pipeline().context(sslHandler);</span>
-<span class="pc bpc" id="L257" title="1 of 2 branches missed.">          if (cht.channel().isActive()) {</span>
-<span class="fc" id="L258">            cht.close()</span>
-<span class="fc" id="L259">               .addListener(new GenericFutureListener&lt;Future&lt;? super Void&gt;&gt;() {</span>
-                 @Override
-                 public void operationComplete(
-                     final Future&lt;? super Void&gt; future) throws Exception {
-<span class="fc" id="L263">                   logger.debug(&quot;Ssl closed: &quot; + channel);</span>
-<span class="pc bpc" id="L264" title="1 of 2 branches missed.">                   if (!close) {</span>
-<span class="nc" id="L265">                     channel.pipeline().remove(sslHandler);</span>
-                   } else {
-<span class="pc bpc" id="L267" title="1 of 2 branches missed.">                     if (channel.isActive()) {</span>
-<span class="nc" id="L268">                       channel.close();</span>
-                     }
-                   }
-<span class="fc" id="L271">                 }</span>
-               });
-          }
+<span class="fc" id="L232">          waitForSslClose(channel, sslHandler, close);</span>
         }
-<span class="fc" id="L275">      } else {</span>
-<span class="nc bnc" id="L276" title="All 2 branches missed.">        if (channel.isActive()) {</span>
-<span class="nc" id="L277">          channel.close();</span>
+<span class="fc" id="L234">      } else {</span>
+<span class="nc bnc" id="L235" title="All 2 branches missed.">        if (channel.isActive()) {</span>
+<span class="nc" id="L236">          channel.close();</span>
         }
       }
     }
-<span class="fc" id="L281">  }</span>
+<span class="fc" id="L240">  }</span>
+
+  private static void waitForSslClose(final Channel channel,
+                                      final SslHandler sslHandler,
+                                      final boolean close) {
+<span class="fc" id="L245">    logger.debug(&quot;Found SslHandler and wait for Ssl.close() : {}&quot;, channel);</span>
+<span class="fc" id="L246">    final ChannelHandlerContext cht = channel.pipeline().context(sslHandler);</span>
+<span class="pc bpc" id="L247" title="1 of 2 branches missed.">    if (cht.channel().isActive()) {</span>
+<span class="fc" id="L248">      cht.close()</span>
+<span class="fc" id="L249">         .addListener(new GenericFutureListener&lt;Future&lt;? super Void&gt;&gt;() {</span>
+           @Override
+           public void operationComplete(final Future&lt;? super Void&gt; future) {
+<span class="fc" id="L252">             logger.debug(&quot;Ssl closed: {}&quot;, channel);</span>
+<span class="pc bpc" id="L253" title="1 of 2 branches missed.">             if (!close) {</span>
+<span class="nc" id="L254">               channel.pipeline().remove(sslHandler);</span>
+             } else {
+<span class="pc bpc" id="L256" title="1 of 2 branches missed.">               if (channel.isActive()) {</span>
+<span class="nc" id="L257">                 channel.close();</span>
+               }
+             }
+<span class="fc" id="L260">           }</span>
+         });
+    }
+<span class="fc" id="L263">  }</span>
 
   /**
    * Wait for the channel with SSL to be closed
@@ -290,43 +272,43 @@ public final class WaarpSslUtility {
    */
   public static boolean waitForClosingSslChannel(final Channel channel,
                                                  final long delay) {
-<span class="pc bpc" id="L293" title="1 of 2 branches missed.">    if (!WaarpNettyUtil.awaitOrInterrupted(channel.closeFuture(), delay)) {</span>
+<span class="pc bpc" id="L275" title="1 of 2 branches missed.">    if (!WaarpNettyUtil.awaitOrInterrupted(channel.closeFuture(), delay)) {</span>
       try {
-<span class="nc" id="L295">        channel.pipeline().remove(WaarpSslHandler.class);</span>
-<span class="nc" id="L296">        logger.debug(&quot;try to close anyway&quot;);</span>
-<span class="nc bnc" id="L297" title="All 2 branches missed.">        if (channel.isActive()) {</span>
-<span class="nc" id="L298">          WaarpNettyUtil.awaitOrInterrupted(channel.close(), delay);</span>
+<span class="nc" id="L277">        channel.pipeline().remove(WaarpSslHandler.class);</span>
+<span class="nc" id="L278">        logger.debug(&quot;try to close anyway&quot;);</span>
+<span class="nc bnc" id="L279" title="All 2 branches missed.">        if (channel.isActive()) {</span>
+<span class="nc" id="L280">          WaarpNettyUtil.awaitOrInterrupted(channel.close(), delay);</span>
         }
-<span class="nc" id="L300">        return false;</span>
-<span class="nc" id="L301">      } catch (final NoSuchElementException e) {</span>
+<span class="nc" id="L282">        return false;</span>
+<span class="nc" id="L283">      } catch (final NoSuchElementException e) {</span>
         // ignore
-<span class="nc bnc" id="L303" title="All 2 branches missed.">        if (channel.isActive()) {</span>
-<span class="nc" id="L304">          WaarpNettyUtil.awaitOrInterrupted(channel.closeFuture(), delay);</span>
+<span class="nc bnc" id="L285" title="All 2 branches missed.">        if (channel.isActive()) {</span>
+<span class="nc" id="L286">          WaarpNettyUtil.awaitOrInterrupted(channel.closeFuture(), delay);</span>
         }
       }
     }
-<span class="fc" id="L308">    return true;</span>
+<span class="fc" id="L290">    return true;</span>
   }
 
   /**
    * Thread used to ensure we are not in IO thread when waiting
    */
-  private static class SSLTHREAD extends Thread {
+  private static class SslThread extends Thread {
     private final Channel channel;
 
     /**
      * @param channel
      */
-<span class="fc" id="L320">    private SSLTHREAD(final Channel channel) {</span>
-<span class="fc" id="L321">      this.channel = channel;</span>
-<span class="fc" id="L322">      setDaemon(true);</span>
-<span class="fc" id="L323">      setName(&quot;SSLTHREAD_&quot; + getName());</span>
-<span class="fc" id="L324">    }</span>
+<span class="fc" id="L302">    private SslThread(final Channel channel) {</span>
+<span class="fc" id="L303">      this.channel = channel;</span>
+<span class="fc" id="L304">      setDaemon(true);</span>
+<span class="fc" id="L305">      setName(&quot;SSLTHREAD_&quot; + getName());</span>
+<span class="fc" id="L306">    }</span>
 
     @Override
     public void run() {
-<span class="fc" id="L328">      closingSslChannel(channel);</span>
-<span class="fc" id="L329">    }</span>
+<span class="fc" id="L310">      closingSslChannel(channel);</span>
+<span class="fc" id="L311">    }</span>
 
   }
 

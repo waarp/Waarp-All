@@ -195,7 +195,7 @@
 <a class="jxr_linenumber" name="L187" href="#L187">187</a>     }
 <a class="jxr_linenumber" name="L188" href="#L188">188</a>     <strong class="jxr_keyword">final</strong> String truedir = auth.getAbsolutePath(newdir);
 <a class="jxr_linenumber" name="L189" href="#L189">189</a>     <strong class="jxr_keyword">final</strong> File file = <strong class="jxr_keyword">new</strong> File(truedir);
-<a class="jxr_linenumber" name="L190" href="#L190">190</a>     logger.debug(<span class="jxr_string">"Final File: "</span> + truedir + <span class="jxr_string">" CanRead: "</span> + file.canRead());
+<a class="jxr_linenumber" name="L190" href="#L190">190</a>     logger.debug(<span class="jxr_string">"Final File: {} CanRead: {}"</span>, truedir, file.canRead());
 <a class="jxr_linenumber" name="L191" href="#L191">191</a>     <strong class="jxr_keyword">return</strong> file;
 <a class="jxr_linenumber" name="L192" href="#L192">192</a>   }
 <a class="jxr_linenumber" name="L193" href="#L193">193</a> 
@@ -272,7 +272,7 @@
 <a class="jxr_linenumber" name="L264" href="#L264">264</a>   }
 <a class="jxr_linenumber" name="L265" href="#L265">265</a> 
 <a class="jxr_linenumber" name="L266" href="#L266">266</a>   @Override
-<a class="jxr_linenumber" name="L267" href="#L267">267</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">boolean</strong> isInReading() <strong class="jxr_keyword">throws</strong> <a name="CommandAbstractException" href="../../../../../org/waarp/common/command/exception/CommandAbstractException.html#CommandAbstractException">CommandAbstractException</a> {
+<a class="jxr_linenumber" name="L267" href="#L267">267</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">boolean</strong> isInReading() {
 <a class="jxr_linenumber" name="L268" href="#L268">268</a>     <strong class="jxr_keyword">if</strong> (!isReady) {
 <a class="jxr_linenumber" name="L269" href="#L269">269</a>       <strong class="jxr_keyword">return</strong> false;
 <a class="jxr_linenumber" name="L270" href="#L270">270</a>     }
@@ -280,7 +280,7 @@
 <a class="jxr_linenumber" name="L272" href="#L272">272</a>   }
 <a class="jxr_linenumber" name="L273" href="#L273">273</a> 
 <a class="jxr_linenumber" name="L274" href="#L274">274</a>   @Override
-<a class="jxr_linenumber" name="L275" href="#L275">275</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">boolean</strong> isInWriting() <strong class="jxr_keyword">throws</strong> <a name="CommandAbstractException" href="../../../../../org/waarp/common/command/exception/CommandAbstractException.html#CommandAbstractException">CommandAbstractException</a> {
+<a class="jxr_linenumber" name="L275" href="#L275">275</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">boolean</strong> isInWriting() {
 <a class="jxr_linenumber" name="L276" href="#L276">276</a>     <strong class="jxr_keyword">if</strong> (!isReady) {
 <a class="jxr_linenumber" name="L277" href="#L277">277</a>       <strong class="jxr_keyword">return</strong> false;
 <a class="jxr_linenumber" name="L278" href="#L278">278</a>     }
@@ -593,7 +593,7 @@
 <a class="jxr_linenumber" name="L585" href="#L585">585</a>     <strong class="jxr_keyword">try</strong> {
 <a class="jxr_linenumber" name="L586" href="#L586">586</a>       fileInputStreamTemp = <strong class="jxr_keyword">new</strong> FileInputStream(trueFile);<em class="jxr_comment">//NOSONAR</em>
 <a class="jxr_linenumber" name="L587" href="#L587">587</a>       <strong class="jxr_keyword">if</strong> (position != 0) {
-<a class="jxr_linenumber" name="L588" href="#L588">588</a>         <strong class="jxr_keyword">long</strong> read = fileInputStreamTemp.skip(position);
+<a class="jxr_linenumber" name="L588" href="#L588">588</a>         <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">long</strong> read = fileInputStreamTemp.skip(position);
 <a class="jxr_linenumber" name="L589" href="#L589">589</a>         <strong class="jxr_keyword">if</strong> (read != position) {
 <a class="jxr_linenumber" name="L590" href="#L590">590</a>           logger.warn(<span class="jxr_string">"Cannot ensure position: {} while is {}"</span>, position, read);
 <a class="jxr_linenumber" name="L591" href="#L591">591</a>         }
@@ -673,7 +673,7 @@
 <a class="jxr_linenumber" name="L665" href="#L665">665</a>         logger.error(<span class="jxr_string">"Change position in getFileOutputStream:"</span>, e);
 <a class="jxr_linenumber" name="L666" href="#L666">666</a>         <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">null</strong>;
 <a class="jxr_linenumber" name="L667" href="#L667">667</a>       }
-<a class="jxr_linenumber" name="L668" href="#L668">668</a>       logger.debug(<span class="jxr_string">"New size: "</span> + trueFile.length() + <span class="jxr_string">" : "</span> + position);
+<a class="jxr_linenumber" name="L668" href="#L668">668</a>       logger.debug(<span class="jxr_string">"New size: {}:{}"</span>, trueFile.length(), position);
 <a class="jxr_linenumber" name="L669" href="#L669">669</a>     }
 <a class="jxr_linenumber" name="L670" href="#L670">670</a>     <strong class="jxr_keyword">final</strong> FileOutputStream fos;
 <a class="jxr_linenumber" name="L671" href="#L671">671</a>     <strong class="jxr_keyword">try</strong> {

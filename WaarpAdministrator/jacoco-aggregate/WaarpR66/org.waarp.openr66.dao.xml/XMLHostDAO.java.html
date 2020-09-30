@@ -51,7 +51,7 @@ public class XMLHostDAO implements HostDAO {
   /**
    * HashTable in case of lack of database
    */
-<span class="nc" id="L54">  private static final ConcurrentHashMap&lt;String, Host&gt; dbR66HostAuthHashMap =</span>
+<span class="fc" id="L54">  private static final ConcurrentHashMap&lt;String, Host&gt; dbR66HostAuthHashMap =</span>
       new ConcurrentHashMap&lt;String, Host&gt;();
 
   public static final String HOSTID_FIELD = &quot;hostid&quot;;
@@ -69,9 +69,9 @@ public class XMLHostDAO implements HostDAO {
 
   private final File file;
 
-<span class="nc" id="L72">  public XMLHostDAO(final String filePath) {</span>
-<span class="nc" id="L73">    file = new File(filePath);</span>
-<span class="nc" id="L74">  }</span>
+<span class="fc" id="L72">  public XMLHostDAO(final String filePath) {</span>
+<span class="fc" id="L73">    file = new File(filePath);</span>
+<span class="fc" id="L74">  }</span>
 
   @Override
   public void close() {
@@ -79,22 +79,22 @@ public class XMLHostDAO implements HostDAO {
 <span class="nc" id="L79">  }</span>
 
   @Override
-  public void delete(final Host host) throws DAOConnectionException {
-<span class="nc" id="L83">    dbR66HostAuthHashMap.remove(host.getHostid());</span>
-<span class="nc" id="L84">  }</span>
+  public void delete(final Host host) {
+<span class="fc" id="L83">    dbR66HostAuthHashMap.remove(host.getHostid());</span>
+<span class="fc" id="L84">  }</span>
 
   @Override
-  public void deleteAll() throws DAOConnectionException {
-<span class="nc" id="L88">    dbR66HostAuthHashMap.clear();</span>
-<span class="nc" id="L89">  }</span>
+  public void deleteAll() {
+<span class="fc" id="L88">    dbR66HostAuthHashMap.clear();</span>
+<span class="fc" id="L89">  }</span>
 
   @Override
   public List&lt;Host&gt; getAll() throws DAOConnectionException {
-<span class="nc bnc" id="L93" title="All 2 branches missed.">    if (!file.exists()) {</span>
+<span class="pc bpc" id="L93" title="1 of 2 branches missed.">    if (!file.exists()) {</span>
 <span class="nc" id="L94">      throw new DAOConnectionException(&quot;File doesn't exist&quot;);</span>
     }
     try {
-<span class="nc" id="L97">      final DocumentBuilderFactory dbf = getDocumentBuilderFactory();</span>
+<span class="fc" id="L97">      final DocumentBuilderFactory dbf = getDocumentBuilderFactory();</span>
 <span class="nc" id="L98">      final Document document = dbf.newDocumentBuilder().parse(file);</span>
       // Setup XPath query
 <span class="nc" id="L100">      final XPath xPath = XPathFactory.newInstance().newXPath();</span>
@@ -110,8 +110,8 @@ public class XMLHostDAO implements HostDAO {
 <span class="nc" id="L110">        dbR66HostAuthHashMap.put(host.getHostid(), host);</span>
       }
 <span class="nc" id="L112">      return res;</span>
-<span class="nc" id="L113">    } catch (final SAXException e) {</span>
-<span class="nc" id="L114">      throw new DAOConnectionException(e);</span>
+<span class="fc" id="L113">    } catch (final SAXException e) {</span>
+<span class="fc" id="L114">      throw new DAOConnectionException(e);</span>
 <span class="nc" id="L115">    } catch (final XPathExpressionException e) {</span>
 <span class="nc" id="L116">      throw new DAOConnectionException(e);</span>
 <span class="nc" id="L117">    } catch (final ParserConfigurationException e) {</span>
@@ -123,14 +123,14 @@ public class XMLHostDAO implements HostDAO {
 
   @Override
   public boolean exist(final String hostid) throws DAOConnectionException {
-<span class="nc bnc" id="L126" title="All 2 branches missed.">    if (dbR66HostAuthHashMap.containsKey(hostid)) {</span>
-<span class="nc" id="L127">      return true;</span>
+<span class="fc bfc" id="L126" title="All 2 branches covered.">    if (dbR66HostAuthHashMap.containsKey(hostid)) {</span>
+<span class="fc" id="L127">      return true;</span>
     }
-<span class="nc bnc" id="L129" title="All 2 branches missed.">    if (!file.exists()) {</span>
+<span class="pc bpc" id="L129" title="1 of 2 branches missed.">    if (!file.exists()) {</span>
 <span class="nc" id="L130">      throw new DAOConnectionException(&quot;File doesn't exist&quot;);</span>
     }
     try {
-<span class="nc" id="L133">      final DocumentBuilderFactory dbf = getDocumentBuilderFactory();</span>
+<span class="fc" id="L133">      final DocumentBuilderFactory dbf = getDocumentBuilderFactory();</span>
 <span class="nc" id="L134">      final Document document = dbf.newDocumentBuilder().parse(file);</span>
       // Setup XPath variable
 <span class="nc" id="L136">      final SimpleVariableResolver resolver = new SimpleVariableResolver();</span>
@@ -142,8 +142,8 @@ public class XMLHostDAO implements HostDAO {
       // Query will return &quot;&quot; if nothing is found
 <span class="nc bnc" id="L143" title="All 2 branches missed.">      return xpe.evaluate(document) != null &amp;&amp;</span>
 <span class="nc bnc" id="L144" title="All 2 branches missed.">             !xpe.evaluate(document).isEmpty();</span>
-<span class="nc" id="L145">    } catch (final SAXException e) {</span>
-<span class="nc" id="L146">      throw new DAOConnectionException(e);</span>
+<span class="fc" id="L145">    } catch (final SAXException e) {</span>
+<span class="fc" id="L146">      throw new DAOConnectionException(e);</span>
 <span class="nc" id="L147">    } catch (final XPathExpressionException e) {</span>
 <span class="nc" id="L148">      throw new DAOConnectionException(e);</span>
 <span class="nc" id="L149">    } catch (final ParserConfigurationException e) {</span>
@@ -156,27 +156,27 @@ public class XMLHostDAO implements HostDAO {
   @Override
   public List&lt;Host&gt; find(final List&lt;Filter&gt; fitlers)
       throws DAOConnectionException {
-<span class="nc" id="L159">    throw new DAOConnectionException(&quot;Operation not supported on XML DAO&quot;);</span>
+<span class="fc" id="L159">    throw new DAOConnectionException(&quot;Operation not supported on XML DAO&quot;);</span>
   }
 
   @Override
-  public void insert(final Host host) throws DAOConnectionException {
-<span class="nc" id="L164">    dbR66HostAuthHashMap.put(host.getHostid(), host);</span>
-<span class="nc" id="L165">  }</span>
+  public void insert(final Host host) {
+<span class="fc" id="L164">    dbR66HostAuthHashMap.put(host.getHostid(), host);</span>
+<span class="fc" id="L165">  }</span>
 
   @Override
   public Host select(final String hostid)
       throws DAOConnectionException, DAONoDataException {
-<span class="nc" id="L170">    Host host = dbR66HostAuthHashMap.get(hostid);</span>
-<span class="nc bnc" id="L171" title="All 2 branches missed.">    if (host != null) {</span>
-<span class="nc" id="L172">      return host;</span>
+<span class="fc" id="L170">    Host host = dbR66HostAuthHashMap.get(hostid);</span>
+<span class="fc bfc" id="L171" title="All 2 branches covered.">    if (host != null) {</span>
+<span class="fc" id="L172">      return host;</span>
     }
-<span class="nc bnc" id="L174" title="All 2 branches missed.">    if (!file.exists()) {</span>
+<span class="pc bpc" id="L174" title="1 of 2 branches missed.">    if (!file.exists()) {</span>
 <span class="nc" id="L175">      throw new DAOConnectionException(</span>
 <span class="nc" id="L176">          &quot;File &quot; + file.getPath() + &quot; doesn't exist&quot;);</span>
     }
     try {
-<span class="nc" id="L179">      final DocumentBuilderFactory dbf = getDocumentBuilderFactory();</span>
+<span class="fc" id="L179">      final DocumentBuilderFactory dbf = getDocumentBuilderFactory();</span>
 <span class="nc" id="L180">      final Document document = dbf.newDocumentBuilder().parse(file);</span>
       // Setup XPath variable
 <span class="nc" id="L182">      final SimpleVariableResolver resolver = new SimpleVariableResolver();</span>
@@ -193,8 +193,8 @@ public class XMLHostDAO implements HostDAO {
 <span class="nc" id="L193">        return host;</span>
       }
 <span class="nc" id="L195">      throw new DAONoDataException(&quot;Host not found&quot;);</span>
-<span class="nc" id="L196">    } catch (final SAXException e) {</span>
-<span class="nc" id="L197">      throw new DAOConnectionException(e);</span>
+<span class="fc" id="L196">    } catch (final SAXException e) {</span>
+<span class="fc" id="L197">      throw new DAOConnectionException(e);</span>
 <span class="nc" id="L198">    } catch (final XPathExpressionException e) {</span>
 <span class="nc" id="L199">      throw new DAOConnectionException(e);</span>
 <span class="nc" id="L200">    } catch (final ParserConfigurationException e) {</span>
@@ -205,9 +205,9 @@ public class XMLHostDAO implements HostDAO {
   }
 
   @Override
-  public void update(final Host host) throws DAOConnectionException {
-<span class="nc" id="L209">    dbR66HostAuthHashMap.put(host.getHostid(), host);</span>
-<span class="nc" id="L210">  }</span>
+  public void update(final Host host) {
+<span class="fc" id="L209">    dbR66HostAuthHashMap.put(host.getHostid(), host);</span>
+<span class="fc" id="L210">  }</span>
 
   private Host getFromNode(final Node parent) {
 <span class="nc" id="L213">    final Host res = new Host();</span>

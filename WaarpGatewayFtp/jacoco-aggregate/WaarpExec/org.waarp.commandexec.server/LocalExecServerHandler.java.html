@@ -174,7 +174,7 @@ public class LocalExecServerHandler
 <span class="fc" id="L174">  }</span>
 
   @Override
-  public void channelActive(final ChannelHandlerContext ctx) throws Exception {
+  public void channelActive(final ChannelHandlerContext ctx) {
 <span class="pc bpc" id="L178" title="1 of 2 branches missed.">    if (isShutdown(ctx.channel())) {</span>
 <span class="nc" id="L179">      answered = true;</span>
 <span class="nc" id="L180">      return;</span>
@@ -194,8 +194,8 @@ public class LocalExecServerHandler
 <span class="nc" id="L194">  }</span>
 
   @Override
-  protected void channelRead0(final ChannelHandlerContext ctx, final String msg)
-      throws Exception {
+  protected void channelRead0(final ChannelHandlerContext ctx,
+                              final String msg) {
 <span class="fc" id="L199">    answered = false;</span>
 
     // Generate and write a response.
@@ -353,14 +353,14 @@ public class LocalExecServerHandler
 <span class="fc bfc" id="L353" title="All 2 branches covered.">      if (watchdog != null) {</span>
 <span class="fc" id="L354">        watchdog.stop();</span>
       }
-<span class="fc" id="L356">      logger.info(&quot;End of Command: &quot; + msg + &quot; : &quot; + response);</span>
+<span class="fc" id="L356">      logger.info(&quot;End of Command: {}:{}&quot;, msg, response);</span>
 <span class="fc" id="L357">      ctx.channel().writeAndFlush(LocalExecDefaultResult.ENDOFCOMMAND + '\n');</span>
     }
 <span class="fc" id="L359">  }</span>
 
   @Override
   public void exceptionCaught(final ChannelHandlerContext ctx,
-                              final Throwable cause) throws Exception {
+                              final Throwable cause) {
 <span class="nc bnc" id="L364" title="All 2 branches missed.">    if (!answered) {</span>
 <span class="nc" id="L365">      logger.error(&quot;Unexpected exception from Outband while not answered.&quot;,</span>
                    cause);

@@ -95,7 +95,7 @@ class FtpsTemporaryFirstHandler extends ChannelDuplexHandler {
 <span class="nc" id="L95">  }</span>
 
   @Override
-  public void channelActive(final ChannelHandlerContext ctx) throws Exception {
+  public void channelActive(final ChannelHandlerContext ctx) {
     // Get the SslHandler in the current pipeline.
 <span class="nc" id="L100">    final Channel channel = ctx.channel();</span>
 
@@ -118,18 +118,18 @@ class FtpsTemporaryFirstHandler extends ChannelDuplexHandler {
 <span class="nc" id="L118">                                 session.getControlChannel()).getPort());</span>
 <span class="nc" id="L119">    WaarpSslUtility.addSslOpenedChannel(channel);</span>
     // Get the SslHandler and begin handshake ASAP.
-<span class="nc" id="L121">    logger.debug(&quot;SSL found but need handshake: &quot; + ctx.channel());</span>
+<span class="nc" id="L121">    logger.debug(&quot;SSL found but need handshake: {}&quot;, ctx.channel());</span>
 <span class="nc" id="L122">    final FtpsTemporaryFirstHandler myself = this;</span>
 <span class="nc" id="L123">    WaarpSslUtility.addSslHandler(null, ctx.pipeline(), sslHandler,</span>
 <span class="nc" id="L124">                                  new GenericFutureListener&lt;Future&lt;? super Channel&gt;&gt;() {</span>
                                     @Override
                                     public void operationComplete(
-                                        final Future&lt;? super Channel&gt; future)
-                                        throws Exception {
+                                        final Future&lt;? super Channel&gt; future) {
                                       try {
-<span class="nc" id="L130">                                        logger.debug(</span>
-<span class="nc" id="L131">                                            &quot;Handshake: &quot; + future.isSuccess() +</span>
-<span class="nc" id="L132">                                            ':' + future.get(), future.cause());</span>
+<span class="nc" id="L129">                                        logger.debug(&quot;Handshake: {}:{}&quot;,</span>
+<span class="nc" id="L130">                                                     future.isSuccess(),</span>
+<span class="nc" id="L131">                                                     future.get(),</span>
+<span class="nc" id="L132">                                                     future.cause());</span>
 <span class="nc bnc" id="L133" title="All 2 branches missed.">                                        if (future.isSuccess()) {</span>
 <span class="nc" id="L134">                                          logger.debug(</span>
                                               &quot;End of initialization of SSL and data channel&quot;);

@@ -86,8 +86,8 @@ public class RetrieveRunner extends Thread {
    * Try to stop the runner
    */
   public void stopRunner() {
-<span class="fc" id="L89">    running.set(false);</span>
-<span class="fc" id="L90">  }</span>
+<span class="nc" id="L89">    running.set(false);</span>
+<span class="nc" id="L90">  }</span>
 
   @Override
   public void run() {
@@ -120,10 +120,10 @@ public class RetrieveRunner extends Thread {
 <span class="nc" id="L120">        return;</span>
 <span class="fc" id="L121">      }</span>
 <span class="fc" id="L122">      localChannelReference.getFutureEndTransfer().awaitOrInterruptible();</span>
-<span class="fc" id="L123">      logger.debug(&quot;Await future End Transfer done: &quot; +</span>
+<span class="fc" id="L123">      logger.debug(&quot;Await future End Transfer done: {}&quot;,</span>
 <span class="fc" id="L124">                   localChannelReference.getFutureEndTransfer().isSuccess());</span>
 <span class="pc bpc" id="L125" title="1 of 2 branches missed.">      if (localChannelReference.getFutureEndTransfer().isDone() &amp;&amp;</span>
-<span class="fc bfc" id="L126" title="All 2 branches covered.">          localChannelReference.getFutureEndTransfer().isSuccess()) {</span>
+<span class="pc bpc" id="L126" title="1 of 2 branches missed.">          localChannelReference.getFutureEndTransfer().isSuccess()) {</span>
         // send a validation
 <span class="fc" id="L128">        requestValidDone = true;</span>
 <span class="fc" id="L129">        localChannelReference.sessionNewState(R66FiniteDualStates.ENDREQUESTS);</span>
@@ -160,8 +160,8 @@ public class RetrieveRunner extends Thread {
         }
 <span class="fc" id="L161">        done = true;</span>
 <span class="fc" id="L162">      } else {</span>
-<span class="fc" id="L163">        checkDoneNotAnswered();</span>
-<span class="pc bpc" id="L164" title="1 of 2 branches missed.">        if (!localChannelReference.getFutureRequest().isDone()) {</span>
+<span class="nc" id="L163">        checkDoneNotAnswered();</span>
+<span class="nc bnc" id="L164" title="All 2 branches missed.">        if (!localChannelReference.getFutureRequest().isDone()) {</span>
 <span class="nc" id="L165">          R66Result result =</span>
 <span class="nc" id="L166">              localChannelReference.getFutureEndTransfer().getResult();</span>
 <span class="nc bnc" id="L167" title="All 2 branches missed.">          if (result == null) {</span>
@@ -170,8 +170,8 @@ public class RetrieveRunner extends Thread {
           }
 <span class="nc" id="L171">          localChannelReference.invalidateRequest(result);</span>
         }
-<span class="fc" id="L173">        done = true;</span>
-<span class="fc" id="L174">        logger.info(END_RETRIEVE_IN_ERROR);</span>
+<span class="nc" id="L173">        done = true;</span>
+<span class="nc" id="L174">        logger.info(END_RETRIEVE_IN_ERROR);</span>
       }
     } finally {
       try {
@@ -186,10 +186,10 @@ public class RetrieveRunner extends Thread {
 <span class="fc" id="L186">  }</span>
 
   private boolean checkDoneNotAnswered() {
-<span class="pc bpc" id="L189" title="1 of 2 branches missed.">    if (localChannelReference.getFutureEndTransfer().isDone()) {</span>
+<span class="nc bnc" id="L189" title="All 2 branches missed.">    if (localChannelReference.getFutureEndTransfer().isDone()) {</span>
       // Done and Not Success =&gt; error
-<span class="fc" id="L191">      if (!localChannelReference.getFutureEndTransfer().getResult()</span>
-<span class="pc bpc" id="L192" title="1 of 2 branches missed.">                                .isAnswered()) {</span>
+<span class="nc" id="L191">      if (!localChannelReference.getFutureEndTransfer().getResult()</span>
+<span class="nc bnc" id="L192" title="All 2 branches missed.">                                .isAnswered()) {</span>
 <span class="nc" id="L193">        localChannelReference.sessionNewState(R66FiniteDualStates.ERROR);</span>
 <span class="nc" id="L194">        final ErrorPacket error =</span>
 <span class="nc" id="L195">            new ErrorPacket(localChannelReference.getErrorMessage(),</span>
@@ -204,7 +204,7 @@ public class RetrieveRunner extends Thread {
           // ignore
 <span class="nc" id="L205">        }</span>
       }
-<span class="fc" id="L207">      return true;</span>
+<span class="nc" id="L207">      return true;</span>
     }
 <span class="nc" id="L209">    return false;</span>
   }
@@ -279,20 +279,20 @@ public class RetrieveRunner extends Thread {
    * @param block
    * @param localChannelReference
    * @param digestGlobal
+   * @param digestBlock
    *
    * @return the ChannelFuture on the write operation
    *
    * @throws OpenR66ProtocolPacketException
-   * @throws OpenR66RunnerErrorException
-   * @throws OpenR66ProtocolSystemException
    */
   public static ChannelFuture writeWhenPossible(final DataBlock block,
                                                 final LocalChannelReference localChannelReference,
-                                                final FilesystemBasedDigest digestGlobal)
-      throws OpenR66ProtocolPacketException, OpenR66RunnerErrorException,
-             OpenR66ProtocolSystemException {
-<span class="fc" id="L294">    return ChannelUtils</span>
-<span class="fc" id="L295">        .writeBackDataBlock(localChannelReference, digestGlobal, block);</span>
+                                                final FilesystemBasedDigest digestGlobal,
+                                                final FilesystemBasedDigest digestBlock)
+      throws OpenR66ProtocolPacketException {
+<span class="fc" id="L293">    return ChannelUtils</span>
+<span class="fc" id="L294">        .writeBackDataBlock(localChannelReference, digestGlobal, block,</span>
+                            digestBlock);
   }
 
   public int getLocalId() {

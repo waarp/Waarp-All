@@ -21,7 +21,6 @@
 package org.waarp.gateway.kernel.database;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
-import org.waarp.common.database.DbConstant;
 import org.waarp.common.database.DbSession;
 import org.waarp.common.database.data.AbstractDbData.UpdatedInfo;
 import org.waarp.common.database.exception.WaarpDatabaseException;
@@ -38,8 +37,8 @@ public final class WaarpActionLogger {
   /**
    * Internal Logger
    */
-<span class="nc" id="L41">  private static final WaarpLogger logger =</span>
-<span class="nc" id="L42">      WaarpLoggerFactory.getLogger(WaarpActionLogger.class);</span>
+<span class="fc" id="L40">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L41">      WaarpLoggerFactory.getLogger(WaarpActionLogger.class);</span>
 
   private WaarpActionLogger() {
   }
@@ -53,47 +52,47 @@ public final class WaarpActionLogger {
    */
   public static void logCreate(final DbSession dbSession, final String message,
                                final HttpSession session) {
-<span class="nc" id="L56">    final String sessionContexte = session.toString();</span>
-<span class="nc" id="L57">    logger.info(message + ' ' + sessionContexte);</span>
-<span class="nc bnc" id="L58" title="All 2 branches missed.">    if (dbSession != null) {</span>
-<span class="nc" id="L59">      final PageRole code = session.getCurrentCommand();</span>
-<span class="nc" id="L60">      boolean isSender = false;</span>
-<span class="nc bnc" id="L61" title="All 4 branches missed.">      switch (code) {</span>
+<span class="fc" id="L55">    final String sessionContexte = session.toString();</span>
+<span class="fc" id="L56">    logger.info(&quot;{} {}&quot;, message, sessionContexte);</span>
+<span class="pc bpc" id="L57" title="1 of 2 branches missed.">    if (dbSession != null) {</span>
+<span class="nc" id="L58">      final PageRole code = session.getCurrentCommand();</span>
+<span class="nc" id="L59">      boolean isSender = false;</span>
+<span class="nc bnc" id="L60" title="All 4 branches missed.">      switch (code) {</span>
         case ERROR:
         case HTML:
         case MENU:
-<span class="nc" id="L65">          session.setLogid(DbConstant.ILLEGALVALUE);</span>
-<span class="nc" id="L66">          return;</span>
+<span class="nc" id="L64">          session.setLogid(DbConstantGateway.ILLEGALVALUE);</span>
+<span class="nc" id="L65">          return;</span>
         case DELETE:
         case GETDOWNLOAD:
-<span class="nc" id="L69">          isSender = false;</span>
-<span class="nc" id="L70">          break;</span>
+<span class="nc" id="L68">          isSender = false;</span>
+<span class="nc" id="L69">          break;</span>
         case POST:
         case POSTUPLOAD:
         case PUT:
-<span class="nc" id="L74">          isSender = true;</span>
-<span class="nc" id="L75">          break;</span>
+<span class="nc" id="L73">          isSender = true;</span>
+<span class="nc" id="L74">          break;</span>
         default:
           break;
       }
       // Insert new one
       try {
-<span class="nc" id="L81">        final DbTransferLog log =</span>
-<span class="nc" id="L82">            new DbTransferLog(dbSession, session.getAuth().getUser(),</span>
-<span class="nc" id="L83">                              session.getAuth().getAccount(),</span>
-                              DbConstant.ILLEGALVALUE, isSender,
-<span class="nc" id="L85">                              session.getFilename(), code.name(),</span>
+<span class="nc" id="L80">        final DbTransferLog log =</span>
+<span class="nc" id="L81">            new DbTransferLog(dbSession, session.getAuth().getUser(),</span>
+<span class="nc" id="L82">                              session.getAuth().getAccount(),</span>
+                              DbConstantGateway.ILLEGALVALUE, isSender,
+<span class="nc" id="L84">                              session.getFilename(), code.name(),</span>
                               HttpResponseStatus.OK, message,
                               UpdatedInfo.TOSUBMIT);
-<span class="nc" id="L88">        logger.debug(&quot;Create FS: &quot; + log);</span>
-<span class="nc" id="L89">        session.setLogid(log.getSpecialId());</span>
-<span class="nc" id="L90">        return;</span>
-<span class="nc" id="L91">      } catch (final WaarpDatabaseException e1) {</span>
+<span class="nc" id="L87">        logger.debug(&quot;Create FS: {}&quot;, log);</span>
+<span class="nc" id="L88">        session.setLogid(log.getSpecialId());</span>
+<span class="nc" id="L89">        return;</span>
+<span class="nc" id="L90">      } catch (final WaarpDatabaseException e1) {</span>
         // Do nothing
       }
     }
-<span class="nc" id="L95">    session.setLogid(DbConstant.ILLEGALVALUE);</span>
-<span class="nc" id="L96">  }</span>
+<span class="fc" id="L94">    session.setLogid(DbConstantGateway.ILLEGALVALUE);</span>
+<span class="fc" id="L95">  }</span>
 
   /**
    * Log the action
@@ -108,40 +107,40 @@ public final class WaarpActionLogger {
                                final HttpSession session, final String message,
                                final HttpResponseStatus rcode,
                                final UpdatedInfo info) {
-<span class="nc" id="L111">    final String sessionContexte = session.toString();</span>
-<span class="nc" id="L112">    final long specialId = session.getLogid();</span>
-<span class="nc" id="L113">    logger.info(message + ' ' + sessionContexte);</span>
-<span class="nc bnc" id="L114" title="All 4 branches missed.">    if (dbSession != null &amp;&amp; specialId != DbConstant.ILLEGALVALUE) {</span>
-<span class="nc" id="L115">      final PageRole code = session.getCurrentCommand();</span>
-<span class="nc bnc" id="L116" title="All 2 branches missed.">      switch (code) {</span>
+<span class="fc" id="L110">    final String sessionContexte = session.toString();</span>
+<span class="fc" id="L111">    final long specialId = session.getLogid();</span>
+<span class="fc" id="L112">    logger.info(&quot;{} {}&quot;, message, sessionContexte);</span>
+<span class="pc bpc" id="L113" title="3 of 4 branches missed.">    if (dbSession != null &amp;&amp; specialId != DbConstantGateway.ILLEGALVALUE) {</span>
+<span class="nc" id="L114">      final PageRole code = session.getCurrentCommand();</span>
+<span class="nc bnc" id="L115" title="All 2 branches missed.">      switch (code) {</span>
         case DELETE:
         case GETDOWNLOAD:
         case POST:
         case POSTUPLOAD:
         case PUT:
-<span class="nc" id="L122">          break;</span>
+<span class="nc" id="L121">          break;</span>
         case ERROR:
         case HTML:
         case MENU:
         default:
-<span class="nc" id="L127">          return;</span>
+<span class="nc" id="L126">          return;</span>
       }
       try {
         // Try load
-<span class="nc" id="L131">        final DbTransferLog log =</span>
-<span class="nc" id="L132">            new DbTransferLog(dbSession, session.getAuth().getUser(),</span>
-<span class="nc" id="L133">                              session.getAuth().getAccount(), specialId);</span>
-<span class="nc" id="L134">        log.changeUpdatedInfo(info);</span>
-<span class="nc" id="L135">        log.setInfotransf(message);</span>
-<span class="nc" id="L136">        log.setReplyCodeExecutionStatus(rcode);</span>
-<span class="nc" id="L137">        log.update();</span>
-<span class="nc" id="L138">        logger.debug(&quot;Update FS: &quot; + log);</span>
-<span class="nc" id="L139">        session.setLogid(log.getSpecialId());</span>
-<span class="nc" id="L140">      } catch (final WaarpDatabaseException e) {</span>
+<span class="nc" id="L130">        final DbTransferLog log =</span>
+<span class="nc" id="L131">            new DbTransferLog(dbSession, session.getAuth().getUser(),</span>
+<span class="nc" id="L132">                              session.getAuth().getAccount(), specialId);</span>
+<span class="nc" id="L133">        log.changeUpdatedInfo(info);</span>
+<span class="nc" id="L134">        log.setInfotransf(message);</span>
+<span class="nc" id="L135">        log.setReplyCodeExecutionStatus(rcode);</span>
+<span class="nc" id="L136">        log.update();</span>
+<span class="nc" id="L137">        logger.debug(&quot;Update FS: {}&quot;, log);</span>
+<span class="nc" id="L138">        session.setLogid(log.getSpecialId());</span>
+<span class="nc" id="L139">      } catch (final WaarpDatabaseException e) {</span>
         // Do nothing
-<span class="nc" id="L142">      }</span>
+<span class="nc" id="L141">      }</span>
     }
-<span class="nc" id="L144">  }</span>
+<span class="fc" id="L143">  }</span>
 
   /**
    * Log the action in error
@@ -155,47 +154,47 @@ public final class WaarpActionLogger {
                                     final HttpSession session,
                                     final String message,
                                     final HttpResponseStatus rcode) {
-<span class="nc" id="L158">    final String sessionContexte = session.toString();</span>
-<span class="nc" id="L159">    final long specialId = session.getLogid();</span>
-<span class="nc" id="L160">    logger.error(rcode.code() + &quot;:&quot; + message + ' ' + sessionContexte);</span>
-<span class="nc" id="L161">    logger.warn(&quot;To Change to debug Log&quot;, new Exception(&quot;Log&quot;));</span>
-<span class="nc bnc" id="L162" title="All 4 branches missed.">    if (dbSession != null &amp;&amp; specialId != DbConstant.ILLEGALVALUE) {</span>
-<span class="nc" id="L163">      final PageRole code = session.getCurrentCommand();</span>
-<span class="nc bnc" id="L164" title="All 2 branches missed.">      switch (code) {</span>
+<span class="fc" id="L157">    final String sessionContexte = session.toString();</span>
+<span class="fc" id="L158">    final long specialId = session.getLogid();</span>
+<span class="fc" id="L159">    logger.error(rcode.code() + &quot;:&quot; + message + ' ' + sessionContexte);</span>
+<span class="fc" id="L160">    logger.warn(&quot;To Change to debug Log&quot;, new Exception(&quot;Log&quot;));</span>
+<span class="pc bpc" id="L161" title="3 of 4 branches missed.">    if (dbSession != null &amp;&amp; specialId != DbConstantGateway.ILLEGALVALUE) {</span>
+<span class="nc" id="L162">      final PageRole code = session.getCurrentCommand();</span>
+<span class="nc bnc" id="L163" title="All 2 branches missed.">      switch (code) {</span>
         case DELETE:
         case GETDOWNLOAD:
         case POST:
         case POSTUPLOAD:
         case PUT:
-<span class="nc" id="L170">          break;</span>
+<span class="nc" id="L169">          break;</span>
         case ERROR:
         case HTML:
         case MENU:
         default:
-<span class="nc" id="L175">          return;</span>
+<span class="nc" id="L174">          return;</span>
       }
-<span class="nc" id="L177">      final UpdatedInfo info = UpdatedInfo.INERROR;</span>
+<span class="nc" id="L176">      final UpdatedInfo info = UpdatedInfo.INERROR;</span>
       try {
         // Try load
-<span class="nc" id="L180">        final DbTransferLog log =</span>
-<span class="nc" id="L181">            new DbTransferLog(dbSession, session.getAuth().getUser(),</span>
-<span class="nc" id="L182">                              session.getAuth().getAccount(), specialId);</span>
-<span class="nc" id="L183">        log.changeUpdatedInfo(info);</span>
-<span class="nc" id="L184">        log.setInfotransf(message);</span>
-<span class="nc bnc" id="L185" title="All 2 branches missed.">        if (rcode.code() &lt; 400) {</span>
-<span class="nc" id="L186">          log.setReplyCodeExecutionStatus(HttpResponseStatus.BAD_REQUEST);</span>
+<span class="nc" id="L179">        final DbTransferLog log =</span>
+<span class="nc" id="L180">            new DbTransferLog(dbSession, session.getAuth().getUser(),</span>
+<span class="nc" id="L181">                              session.getAuth().getAccount(), specialId);</span>
+<span class="nc" id="L182">        log.changeUpdatedInfo(info);</span>
+<span class="nc" id="L183">        log.setInfotransf(message);</span>
+<span class="nc bnc" id="L184" title="All 2 branches missed.">        if (rcode.code() &lt; 400) {</span>
+<span class="nc" id="L185">          log.setReplyCodeExecutionStatus(HttpResponseStatus.BAD_REQUEST);</span>
         } else {
-<span class="nc" id="L188">          log.setReplyCodeExecutionStatus(rcode);</span>
+<span class="nc" id="L187">          log.setReplyCodeExecutionStatus(rcode);</span>
         }
-<span class="nc bnc" id="L190" title="All 2 branches missed.">        if (session.getFilename() != null) {</span>
-<span class="nc" id="L191">          log.setFilename(session.getFilename());</span>
+<span class="nc bnc" id="L189" title="All 2 branches missed.">        if (session.getFilename() != null) {</span>
+<span class="nc" id="L190">          log.setFilename(session.getFilename());</span>
         }
-<span class="nc" id="L193">        log.update();</span>
-<span class="nc" id="L194">        logger.debug(&quot;Update FS: &quot; + log);</span>
-<span class="nc" id="L195">      } catch (final WaarpDatabaseException e) {</span>
+<span class="nc" id="L192">        log.update();</span>
+<span class="nc" id="L193">        logger.debug(&quot;Update FS: {}&quot;, log);</span>
+<span class="nc" id="L194">      } catch (final WaarpDatabaseException e) {</span>
         // Do nothing
-<span class="nc" id="L197">      }</span>
+<span class="nc" id="L196">      }</span>
     }
-<span class="nc" id="L199">  }</span>
+<span class="fc" id="L198">  }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

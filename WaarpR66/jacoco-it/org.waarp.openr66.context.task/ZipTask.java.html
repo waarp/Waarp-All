@@ -53,55 +53,54 @@ public class ZipTask extends AbstractTask {
 
   @Override
   public void run() {
-<span class="nc" id="L56">    logger.info(</span>
-        &quot;ZIP with &quot; + argRule + ':' + argTransfer + ':' + delay + &quot; and {}&quot;,
-        session);
-<span class="nc" id="L59">    String finalname = argRule;</span>
-<span class="nc" id="L60">    finalname = getReplacedValue(finalname, BLANK.split(argTransfer));</span>
+<span class="nc" id="L56">    logger</span>
+<span class="nc" id="L57">        .info(&quot;ZIP with {}:{}:{} and {}&quot;, argRule, argTransfer, delay, session);</span>
+<span class="nc" id="L58">    String finalname = argRule;</span>
+<span class="nc" id="L59">    finalname = getReplacedValue(finalname, BLANK.split(argTransfer));</span>
     boolean zip;
-<span class="nc bnc" id="L62" title="All 3 branches missed.">    switch (delay) {</span>
+<span class="nc bnc" id="L61" title="All 3 branches missed.">    switch (delay) {</span>
       case 2: {
         // directory: zip finalname where finalname=&quot;target directory&quot;
-<span class="nc" id="L65">        final String[] args = BLANK.split(finalname);</span>
-<span class="nc" id="L66">        zip = ZipUtility.createZipFromDirectory(args[1], args[0], true);</span>
-<span class="nc" id="L67">        break;</span>
+<span class="nc" id="L64">        final String[] args = BLANK.split(finalname);</span>
+<span class="nc" id="L65">        zip = ZipUtility.createZipFromDirectory(args[1], args[0], true);</span>
+<span class="nc" id="L66">        break;</span>
       }
       case 3: {
         // list of files: zip finalname where finalname=&quot;target file1 file2...&quot;
-<span class="nc" id="L71">        final String[] args = BLANK.split(finalname);</span>
-<span class="nc" id="L72">        final List&lt;File&gt; files = new ArrayList&lt;File&gt;(args.length - 1);</span>
-<span class="nc bnc" id="L73" title="All 2 branches missed.">        for (int i = 1; i &lt; args.length; i++) {</span>
-<span class="nc" id="L74">          files.add(new File(args[i]));</span>
+<span class="nc" id="L70">        final String[] args = BLANK.split(finalname);</span>
+<span class="nc" id="L71">        final List&lt;File&gt; files = new ArrayList&lt;File&gt;(args.length - 1);</span>
+<span class="nc bnc" id="L72" title="All 2 branches missed.">        for (int i = 1; i &lt; args.length; i++) {</span>
+<span class="nc" id="L73">          files.add(new File(args[i]));</span>
         }
-<span class="nc" id="L76">        zip = ZipUtility.createZipFromFiles(files, args[0]);</span>
-<span class="nc" id="L77">        break;</span>
+<span class="nc" id="L75">        zip = ZipUtility.createZipFromFiles(files, args[0]);</span>
+<span class="nc" id="L76">        break;</span>
       }
       default: {
         // unzip
         // directory: unzip finalname where finalname=&quot;source directory&quot;
-<span class="nc" id="L82">        final String[] args = BLANK.split(finalname);</span>
-<span class="nc" id="L83">        final File zipFile = new File(args[0]);</span>
-<span class="nc" id="L84">        final File directory = new File(args[1]);</span>
+<span class="nc" id="L81">        final String[] args = BLANK.split(finalname);</span>
+<span class="nc" id="L82">        final File zipFile = new File(args[0]);</span>
+<span class="nc" id="L83">        final File directory = new File(args[1]);</span>
         try {
-<span class="nc" id="L86">          ZipUtility.unZip(zipFile, directory);</span>
-<span class="nc" id="L87">          zip = true;</span>
-<span class="nc" id="L88">        } catch (final IOException e) {</span>
-<span class="nc" id="L89">          logger.warn(&quot;Error while unzip&quot;, e);</span>
-<span class="nc" id="L90">          zip = false;</span>
-<span class="nc" id="L91">        }</span>
-<span class="nc" id="L92">        break;</span>
+<span class="nc" id="L85">          ZipUtility.unZip(zipFile, directory);</span>
+<span class="nc" id="L86">          zip = true;</span>
+<span class="nc" id="L87">        } catch (final IOException e) {</span>
+<span class="nc" id="L88">          logger.warn(&quot;Error while unzip&quot;, e);</span>
+<span class="nc" id="L89">          zip = false;</span>
+<span class="nc" id="L90">        }</span>
+<span class="nc" id="L91">        break;</span>
       }
     }
-<span class="nc bnc" id="L95" title="All 2 branches missed.">    if (!zip) {</span>
-<span class="nc" id="L96">      logger.error(</span>
+<span class="nc bnc" id="L94" title="All 2 branches missed.">    if (!zip) {</span>
+<span class="nc" id="L95">      logger.error(</span>
           &quot;Zip error with &quot; + argRule + ':' + argTransfer + ':' + delay +
           &quot; and &quot; + session);
-<span class="nc" id="L99">      futureCompletion</span>
-<span class="nc" id="L100">          .setFailure(new OpenR66ProtocolSystemException(&quot;Zip error&quot;));</span>
-<span class="nc" id="L101">      return;</span>
+<span class="nc" id="L98">      futureCompletion</span>
+<span class="nc" id="L99">          .setFailure(new OpenR66ProtocolSystemException(&quot;Zip error&quot;));</span>
+<span class="nc" id="L100">      return;</span>
     }
-<span class="nc" id="L103">    futureCompletion.setSuccess();</span>
-<span class="nc" id="L104">  }</span>
+<span class="nc" id="L102">    futureCompletion.setSuccess();</span>
+<span class="nc" id="L103">  }</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

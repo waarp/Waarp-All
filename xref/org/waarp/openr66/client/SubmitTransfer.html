@@ -67,7 +67,7 @@
 <a class="jxr_linenumber" name="L59" href="#L59">59</a>      }
 <a class="jxr_linenumber" name="L60" href="#L60">60</a>      <strong class="jxr_keyword">final</strong> <a name="DbTaskRunner" href="../../../../org/waarp/openr66/database/data/DbTaskRunner.html#DbTaskRunner">DbTaskRunner</a> taskRunner = initRequest();
 <a class="jxr_linenumber" name="L61" href="#L61">61</a>      <strong class="jxr_keyword">if</strong> (taskRunner == <strong class="jxr_keyword">null</strong>) {
-<a class="jxr_linenumber" name="L62" href="#L62">62</a>        logger.debug(<span class="jxr_string">"Cannot prepare task"</span>);
+<a class="jxr_linenumber" name="L62" href="#L62">62</a>        logger.info(<span class="jxr_string">"Cannot prepare task"</span>);
 <a class="jxr_linenumber" name="L63" href="#L63">63</a>        <strong class="jxr_keyword">if</strong> (future.isFailed() &amp;&amp; future.getResult() != <strong class="jxr_keyword">null</strong>) {
 <a class="jxr_linenumber" name="L64" href="#L64">64</a>          <strong class="jxr_keyword">return</strong>;
 <a class="jxr_linenumber" name="L65" href="#L65">65</a>        }
@@ -82,7 +82,7 @@
 <a class="jxr_linenumber" name="L74" href="#L74">74</a>        <em class="jxr_comment">// Resubmit call, some checks are needed</em>
 <a class="jxr_linenumber" name="L75" href="#L75">75</a>        <strong class="jxr_keyword">if</strong> (!taskRunner.restart(<strong class="jxr_keyword">true</strong>)) {
 <a class="jxr_linenumber" name="L76" href="#L76">76</a>          <em class="jxr_comment">// cannot be done from there =&gt; must be done through IHM</em>
-<a class="jxr_linenumber" name="L77" href="#L77">77</a>          logger.debug(<span class="jxr_string">"Cannot prepare task from there. IHM must be used"</span>);
+<a class="jxr_linenumber" name="L77" href="#L77">77</a>          logger.info(<span class="jxr_string">"Cannot prepare task from there. IHM must be used"</span>);
 <a class="jxr_linenumber" name="L78" href="#L78">78</a>          <strong class="jxr_keyword">final</strong> <a name="R66Result" href="../../../../org/waarp/openr66/cont<a name="R66Result" href="../../../../org/waarp/openr66/context/R66Result.html#R66Result">R66Result</a>sult.html#R66Result">R66Result</a> result = <strong class="jxr_keyword">new</strong> <a name="R66Result" href="../../../../org/waarp/openr66/context/R66Result.html#R66Result">R66Result</a>(
 <a class="jxr_linenumber" name="L79" href="#L79">79</a>              <strong class="jxr_keyword">new</strong> <a name="OpenR66DatabaseGlobalException" href="../../../../org/waarp/openr66/protocol/exception/OpenR66DatabaseGlobalException.html#OpenR66DatabaseGlobalException">OpenR66DatabaseGlobalException</a>(
 <a class="jxr_linenumber" name="L80" href="#L80">80</a>                  <span class="jxr_string">"Cannot prepare task from there. IHM must be used"</span>), <strong class="jxr_keyword">null</strong>, <strong class="jxr_keyword">true</strong>,
@@ -97,7 +97,7 @@
 <a class="jxr_linenumber" name="L89" href="#L89">89</a>      <strong class="jxr_keyword">if</strong> (!taskRunner.forceSaveStatus()) {
 <a class="jxr_linenumber" name="L90" href="#L90">90</a>        <strong class="jxr_keyword">try</strong> {
 <a class="jxr_linenumber" name="L91" href="#L91">91</a>          <strong class="jxr_keyword">if</strong> (!taskRunner.specialSubmit()) {
-<a class="jxr_linenumber" name="L92" href="#L92">92</a>            logger.debug(<span class="jxr_string">"Cannot prepare task"</span>);
+<a class="jxr_linenumber" name="L92" href="#L92">92</a>            logger.info(<span class="jxr_string">"Cannot prepare task"</span>);
 <a class="jxr_linenumber" name="L93" href="#L93">93</a>            <strong class="jxr_keyword">final</strong> <a name="R66Result" href="../../../../org/waarp/openr66/cont<a name="R66Result" href="../../../../org/waarp/openr66/context/R66Result.html#R66Result">R66Result</a>sult.html#R66Result">R66Result</a> result = <strong class="jxr_keyword">new</strong> <a name="R66Result" href="../../../../org/waarp/openr66/context/R66Result.html#R66Result">R66Result</a>(
 <a class="jxr_linenumber" name="L94" href="#L94">94</a>                <strong class="jxr_keyword">new</strong> <a name="OpenR66DatabaseGlobalException" href="../../../../org/waarp/openr66/protocol/exception/OpenR66DatabaseGlobalException.html#OpenR66DatabaseGlobalException">OpenR66DatabaseGlobalException</a>(<span class="jxr_string">"Cannot prepare Task"</span>), <strong class="jxr_keyword">null</strong>,
 <a class="jxr_linenumber" name="L95" href="#L95">95</a>                <strong class="jxr_keyword">true</strong>, ErrorCode.Internal, taskRunner);
@@ -106,7 +106,7 @@
 <a class="jxr_linenumber" name="L98" href="#L98">98</a>            <strong class="jxr_keyword">return</strong>;
 <a class="jxr_linenumber" name="L99" href="#L99">99</a>          }
 <a class="jxr_linenumber" name="L100" href="#L100">100</a>       } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> <a name="WaarpDatabaseException" href="../../../../org/waarp/common/database/exception/WaarpDatabaseException.html#WaarpDatabaseException">WaarpDatabaseException</a> e) {
-<a class="jxr_linenumber" name="L101" href="#L101">101</a>         logger.debug(<span class="jxr_string">"Cannot prepare task"</span>);
+<a class="jxr_linenumber" name="L101" href="#L101">101</a>         logger.info(<span class="jxr_string">"Cannot prepare task"</span>);
 <a class="jxr_linenumber" name="L102" href="#L102">102</a>         <strong class="jxr_keyword">final</strong> <a name="R66Result" href="../../../../org/waarp/openr66/cont<a name="R66Result" href="../../../../org/waarp/openr66/context/R66Result.html#R66Result">R66Result</a>sult.html#R66Result">R66Result</a> result = <strong class="jxr_keyword">new</strong> <a name="R66Result" href="../../../../org/waarp/openr66/context/R66Result.html#R66Result">R66Result</a>(
 <a class="jxr_linenumber" name="L103" href="#L103">103</a>             <strong class="jxr_keyword">new</strong> <a name="OpenR66DatabaseGlobalException" href="../../../../org/waarp/openr66/protocol/exception/OpenR66DatabaseGlobalException.html#OpenR66DatabaseGlobalException">OpenR66DatabaseGlobalException</a>(<span class="jxr_string">"Cannot prepare Task"</span>), <strong class="jxr_keyword">null</strong>,
 <a class="jxr_linenumber" name="L104" href="#L104">104</a>             <strong class="jxr_keyword">true</strong>, ErrorCode.Internal, taskRunner);
@@ -163,7 +163,7 @@
 <a class="jxr_linenumber" name="L155" href="#L155">155</a>       prepareSubmitOkOutputFormat(runner, outputFormat);
 <a class="jxr_linenumber" name="L156" href="#L156">156</a>       <strong class="jxr_keyword">if</strong> (transaction.normalInfoAsWarn) {
 <a class="jxr_linenumber" name="L157" href="#L157">157</a>         logger.warn(outputFormat.loggerOut());
-<a class="jxr_linenumber" name="L158" href="#L158">158</a>       } <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="L158" href="#L158">158</a>       } <strong class="jxr_keyword">else</strong> <strong class="jxr_keyword">if</strong> (logger.isInfoEnabled()) {
 <a class="jxr_linenumber" name="L159" href="#L159">159</a>         logger.info(outputFormat.loggerOut());
 <a class="jxr_linenumber" name="L160" href="#L160">160</a>       }
 <a class="jxr_linenumber" name="L161" href="#L161">161</a>       <strong class="jxr_keyword">if</strong> (!OutputFormat.isQuiet()) {

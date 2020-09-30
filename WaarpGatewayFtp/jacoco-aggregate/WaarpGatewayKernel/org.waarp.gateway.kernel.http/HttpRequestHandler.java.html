@@ -50,8 +50,9 @@ import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder.NotEnoughDat
 import io.netty.handler.codec.http.multipart.InterfaceHttpData;
 import io.netty.handler.codec.http.multipart.InterfaceHttpData.HttpDataType;
 import org.waarp.common.crypto.ssl.WaarpSslUtility;
-import org.waarp.common.database.DbConstant;
+import org.waarp.common.database.DbSession;
 import org.waarp.common.database.data.AbstractDbData.UpdatedInfo;
+import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.utility.WaarpStringUtils;
@@ -63,6 +64,7 @@ import org.waarp.gateway.kernel.HttpBusinessFactory;
 import org.waarp.gateway.kernel.HttpPage;
 import org.waarp.gateway.kernel.HttpPage.PageRole;
 import org.waarp.gateway.kernel.HttpPageHandler;
+import org.waarp.gateway.kernel.database.DbConstantGateway;
 import org.waarp.gateway.kernel.database.WaarpActionLogger;
 import org.waarp.gateway.kernel.exception.HttpIncorrectRequestException;
 import org.waarp.gateway.kernel.session.DefaultHttpAuth;
@@ -85,10 +87,10 @@ public abstract class HttpRequestHandler
   /**
    * Internal Logger
    */
-<span class="nc" id="L88">  private static final WaarpLogger logger =</span>
-<span class="nc" id="L89">      WaarpLoggerFactory.getLogger(HttpRequestHandler.class);</span>
+<span class="fc" id="L90">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L91">      WaarpLoggerFactory.getLogger(HttpRequestHandler.class);</span>
 
-<span class="nc" id="L91">  private static final SecureRandom random = new SecureRandom();</span>
+<span class="fc" id="L93">  private static final SecureRandom random = new SecureRandom();</span>
 
   protected final String baseStaticPath;
   protected final String cookieSession;
@@ -101,18 +103,18 @@ public abstract class HttpRequestHandler
    */
   protected HttpRequestHandler(final String baseStaticPath,
                                final String cookieSession,
-<span class="nc" id="L104">                               final HttpPageHandler httpPageHandler) {</span>
-<span class="nc" id="L105">    this.baseStaticPath = baseStaticPath;</span>
-<span class="nc" id="L106">    this.cookieSession = cookieSession;</span>
-<span class="nc" id="L107">    this.httpPageHandler = httpPageHandler;</span>
-<span class="nc" id="L108">  }</span>
+<span class="fc" id="L106">                               final HttpPageHandler httpPageHandler) {</span>
+<span class="fc" id="L107">    this.baseStaticPath = baseStaticPath;</span>
+<span class="fc" id="L108">    this.cookieSession = cookieSession;</span>
+<span class="fc" id="L109">    this.httpPageHandler = httpPageHandler;</span>
+<span class="fc" id="L110">  }</span>
 
   protected HttpSession session;
   protected HttpPostRequestDecoder decoder;
   protected HttpPage httpPage;
   protected AbstractHttpBusinessRequest businessRequest;
 
-<span class="nc" id="L115">  protected HttpResponseStatus status = HttpResponseStatus.OK;</span>
+<span class="fc" id="L117">  protected HttpResponseStatus status = HttpResponseStatus.OK;</span>
   protected String errorMesg;
 
   protected HttpRequest request;
@@ -126,19 +128,19 @@ public abstract class HttpRequestHandler
    * Override if needed
    */
   protected void clean() {
-<span class="nc bnc" id="L129" title="All 2 branches missed.">    if (businessRequest != null) {</span>
-<span class="nc" id="L130">      businessRequest.cleanRequest();</span>
-<span class="nc" id="L131">      businessRequest = null;</span>
+<span class="pc bpc" id="L131" title="1 of 2 branches missed.">    if (businessRequest != null) {</span>
+<span class="nc" id="L132">      businessRequest.cleanRequest();</span>
+<span class="nc" id="L133">      businessRequest = null;</span>
     }
-<span class="nc bnc" id="L133" title="All 2 branches missed.">    if (decoder != null) {</span>
-<span class="nc" id="L134">      decoder.cleanFiles();</span>
-<span class="nc" id="L135">      decoder = null;</span>
+<span class="fc bfc" id="L135" title="All 2 branches covered.">    if (decoder != null) {</span>
+<span class="fc" id="L136">      decoder.cleanFiles();</span>
+<span class="fc" id="L137">      decoder = null;</span>
     }
-<span class="nc bnc" id="L137" title="All 2 branches missed.">    if (session != null) {</span>
-<span class="nc" id="L138">      session.setFilename(null);</span>
-<span class="nc" id="L139">      session.setLogid(DbConstant.ILLEGALVALUE);</span>
+<span class="pc bpc" id="L139" title="1 of 2 branches missed.">    if (session != null) {</span>
+<span class="fc" id="L140">      session.setFilename(null);</span>
+<span class="fc" id="L141">      session.setLogid(DbConstantGateway.ILLEGALVALUE);</span>
     }
-<span class="nc" id="L141">  }</span>
+<span class="fc" id="L143">  }</span>
 
   /**
    * Called at the beginning of every new request
@@ -147,12 +149,12 @@ public abstract class HttpRequestHandler
    */
   protected void initialize() {
     // clean previous FileUpload if Any
-<span class="nc" id="L150">    clean();</span>
-<span class="nc" id="L151">    willClose = false;</span>
-<span class="nc" id="L152">    status = HttpResponseStatus.OK;</span>
-<span class="nc" id="L153">    httpPage = null;</span>
-<span class="nc" id="L154">    businessRequest = null;</span>
-<span class="nc" id="L155">  }</span>
+<span class="fc" id="L152">    clean();</span>
+<span class="fc" id="L153">    willClose = false;</span>
+<span class="fc" id="L154">    status = HttpResponseStatus.OK;</span>
+<span class="fc" id="L155">    httpPage = null;</span>
+<span class="fc" id="L156">    businessRequest = null;</span>
+<span class="fc" id="L157">  }</span>
 
   /**
    * set values from URI
@@ -160,27 +162,27 @@ public abstract class HttpRequestHandler
    * @throws HttpIncorrectRequestException
    */
   protected void getUriArgs() throws HttpIncorrectRequestException {
-<span class="nc" id="L163">    final QueryStringDecoder decoderQuery =</span>
-<span class="nc" id="L164">        new QueryStringDecoder(request.uri());</span>
-<span class="nc" id="L165">    final Map&lt;String, List&lt;String&gt;&gt; uriAttributes = decoderQuery.parameters();</span>
-<span class="nc" id="L166">    final Set&lt;String&gt; attributes = uriAttributes.keySet();</span>
-<span class="nc bnc" id="L167" title="All 2 branches missed.">    for (final String name : attributes) {</span>
-<span class="nc" id="L168">      final List&lt;String&gt; values = uriAttributes.get(name);</span>
-<span class="nc bnc" id="L169" title="All 2 branches missed.">      if (values != null) {</span>
-<span class="nc bnc" id="L170" title="All 2 branches missed.">        if (values.size() == 1) {</span>
+<span class="fc" id="L165">    final QueryStringDecoder decoderQuery =</span>
+<span class="fc" id="L166">        new QueryStringDecoder(request.uri());</span>
+<span class="fc" id="L167">    final Map&lt;String, List&lt;String&gt;&gt; uriAttributes = decoderQuery.parameters();</span>
+<span class="fc" id="L168">    final Set&lt;String&gt; attributes = uriAttributes.keySet();</span>
+<span class="pc bpc" id="L169" title="1 of 2 branches missed.">    for (final String name : attributes) {</span>
+<span class="nc" id="L170">      final List&lt;String&gt; values = uriAttributes.get(name);</span>
+<span class="nc bnc" id="L171" title="All 2 branches missed.">      if (values != null) {</span>
+<span class="nc bnc" id="L172" title="All 2 branches missed.">        if (values.size() == 1) {</span>
           // only one element is allowed
-<span class="nc" id="L172">          httpPage.setValue(businessRequest, name, values.get(0),</span>
+<span class="nc" id="L174">          httpPage.setValue(businessRequest, name, values.get(0),</span>
                             FieldPosition.URL);
-<span class="nc bnc" id="L174" title="All 2 branches missed.">        } else if (values.size() &gt; 1) {</span>
+<span class="nc bnc" id="L176" title="All 2 branches missed.">        } else if (values.size() &gt; 1) {</span>
           // more than one element is not allowed
-<span class="nc" id="L176">          values.clear();</span>
-<span class="nc" id="L177">          throw new HttpIncorrectRequestException(</span>
+<span class="nc" id="L178">          values.clear();</span>
+<span class="nc" id="L179">          throw new HttpIncorrectRequestException(</span>
               &quot;Too many values for &quot; + name);
         }
-<span class="nc" id="L180">        values.clear();</span>
+<span class="nc" id="L182">        values.clear();</span>
       }
-<span class="nc" id="L182">    }</span>
-<span class="nc" id="L183">  }</span>
+<span class="nc" id="L184">    }</span>
+<span class="fc" id="L185">  }</span>
 
   /**
    * set values from Header
@@ -188,24 +190,32 @@ public abstract class HttpRequestHandler
    * @throws HttpIncorrectRequestException
    */
   protected void getHeaderArgs() throws HttpIncorrectRequestException {
-<span class="nc" id="L191">    final Set&lt;String&gt; headerNames = request.headers().names();</span>
-<span class="nc bnc" id="L192" title="All 2 branches missed.">    for (final String name : headerNames) {</span>
-<span class="nc" id="L193">      final List&lt;String&gt; values = request.headers().getAll((CharSequence) name);</span>
-<span class="nc bnc" id="L194" title="All 2 branches missed.">      if (values != null) {</span>
-<span class="nc bnc" id="L195" title="All 2 branches missed.">        if (values.size() == 1) {</span>
+<span class="fc" id="L193">    final Set&lt;String&gt; headerNames = request.headers().names();</span>
+<span class="fc bfc" id="L194" title="All 2 branches covered.">    for (final String name : headerNames) {</span>
+<span class="fc" id="L195">      final List&lt;String&gt; values = request.headers().getAll((CharSequence) name);</span>
+<span class="pc bpc" id="L196" title="1 of 2 branches missed.">      if (values != null) {</span>
+<span class="pc bpc" id="L197" title="1 of 2 branches missed.">        if (values.size() == 1) {</span>
           // only one element is allowed
-<span class="nc" id="L197">          httpPage.setValue(businessRequest, name, values.get(0),</span>
+<span class="fc" id="L199">          httpPage.setValue(businessRequest, name, values.get(0),</span>
                             FieldPosition.HEADER);
-<span class="nc bnc" id="L199" title="All 2 branches missed.">        } else if (values.size() &gt; 1) {</span>
+<span class="nc bnc" id="L201" title="All 2 branches missed.">        } else if (values.size() &gt; 1) {</span>
           // more than one element is not allowed
-<span class="nc" id="L201">          values.clear();</span>
-<span class="nc" id="L202">          throw new HttpIncorrectRequestException(</span>
+          try {
+<span class="nc" id="L204">            values.clear();</span>
+<span class="nc" id="L205">          } catch (final UnsupportedOperationException e) {</span>
+<span class="nc" id="L206">            SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
+<span class="nc" id="L207">          }</span>
+<span class="nc" id="L208">          throw new HttpIncorrectRequestException(</span>
               &quot;Too many values for &quot; + name);
         }
-<span class="nc" id="L205">        values.clear();</span>
+        try {
+<span class="nc" id="L212">          values.clear();</span>
+<span class="fc" id="L213">        } catch (final UnsupportedOperationException e) {</span>
+<span class="fc" id="L214">          SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
+<span class="nc" id="L215">        }</span>
       }
-<span class="nc" id="L207">    }</span>
-<span class="nc" id="L208">  }</span>
+<span class="fc" id="L217">    }</span>
+<span class="fc" id="L218">  }</span>
 
   /**
    * set values from Cookies
@@ -214,22 +224,22 @@ public abstract class HttpRequestHandler
    */
   protected void getCookieArgs() throws HttpIncorrectRequestException {
     final Set&lt;Cookie&gt; cookies;
-<span class="nc" id="L217">    final String value = request.headers().get(HttpHeaderNames.COOKIE);</span>
-<span class="nc bnc" id="L218" title="All 2 branches missed.">    if (value == null) {</span>
-<span class="nc" id="L219">      cookies = Collections.emptySet();</span>
+<span class="fc" id="L227">    final String value = request.headers().get(HttpHeaderNames.COOKIE);</span>
+<span class="pc bpc" id="L228" title="1 of 2 branches missed.">    if (value == null) {</span>
+<span class="fc" id="L229">      cookies = Collections.emptySet();</span>
     } else {
-<span class="nc" id="L221">      cookies = ServerCookieDecoder.LAX.decode(value);</span>
+<span class="nc" id="L231">      cookies = ServerCookieDecoder.LAX.decode(value);</span>
     }
-<span class="nc bnc" id="L223" title="All 2 branches missed.">    if (!cookies.isEmpty()) {</span>
-<span class="nc bnc" id="L224" title="All 2 branches missed.">      for (final Cookie cookie : cookies) {</span>
-<span class="nc bnc" id="L225" title="All 2 branches missed.">        if (isCookieValid(cookie)) {</span>
-<span class="nc" id="L226">          httpPage.setValue(businessRequest, cookie.name(), cookie.value(),</span>
+<span class="pc bpc" id="L233" title="1 of 2 branches missed.">    if (!cookies.isEmpty()) {</span>
+<span class="nc bnc" id="L234" title="All 2 branches missed.">      for (final Cookie cookie : cookies) {</span>
+<span class="nc bnc" id="L235" title="All 2 branches missed.">        if (isCookieValid(cookie)) {</span>
+<span class="nc" id="L236">          httpPage.setValue(businessRequest, cookie.name(), cookie.value(),</span>
                             FieldPosition.COOKIE);
         }
-<span class="nc" id="L229">      }</span>
+<span class="nc" id="L239">      }</span>
     }
-<span class="nc" id="L231">    cookies.clear();</span>
-<span class="nc" id="L232">  }</span>
+<span class="fc" id="L241">    cookies.clear();</span>
+<span class="fc" id="L242">  }</span>
 
   /**
    * To be used for instance to check correctness of connection
@@ -249,106 +259,108 @@ public abstract class HttpRequestHandler
 
   @Override
   protected void channelRead0(final ChannelHandlerContext ctx,
-                              final HttpObject msg) throws Exception {
+                              final HttpObject msg) {
     try {
-<span class="nc bnc" id="L254" title="All 2 branches missed.">      if (msg instanceof HttpRequest) {</span>
-<span class="nc" id="L255">        initialize();</span>
-<span class="nc" id="L256">        request = (HttpRequest) msg;</span>
-<span class="nc" id="L257">        method = request.method();</span>
-<span class="nc" id="L258">        final QueryStringDecoder queryStringDecoder =</span>
-<span class="nc" id="L259">            new QueryStringDecoder(request.uri());</span>
-<span class="nc" id="L260">        final String uriRequest = queryStringDecoder.path();</span>
+<span class="fc bfc" id="L264" title="All 2 branches covered.">      if (msg instanceof HttpRequest) {</span>
+<span class="fc" id="L265">        initialize();</span>
+<span class="fc" id="L266">        request = (HttpRequest) msg;</span>
+<span class="fc" id="L267">        method = request.method();</span>
+<span class="fc" id="L268">        final QueryStringDecoder queryStringDecoder =</span>
+<span class="fc" id="L269">            new QueryStringDecoder(request.uri());</span>
+<span class="fc" id="L270">        final String uriRequest = queryStringDecoder.path();</span>
         final HttpPage httpPageTemp;
         try {
-<span class="nc" id="L263">          httpPageTemp =</span>
-<span class="nc" id="L264">              httpPageHandler.getHttpPage(uriRequest, method.name(), session);</span>
-<span class="nc" id="L265">        } catch (final HttpIncorrectRequestException e1) {</span>
+<span class="fc" id="L273">          httpPageTemp =</span>
+<span class="fc" id="L274">              httpPageHandler.getHttpPage(uriRequest, method.name(), session);</span>
+<span class="fc" id="L275">        } catch (final HttpIncorrectRequestException e1) {</span>
           // real error =&gt; 400
-<span class="nc" id="L267">          status = HttpResponseStatus.BAD_REQUEST;</span>
-<span class="nc" id="L268">          errorMesg = e1.getMessage();</span>
-<span class="nc" id="L269">          writeErrorPage(ctx);</span>
-<span class="nc" id="L270">          return;</span>
+<span class="fc" id="L277">          status = HttpResponseStatus.BAD_REQUEST;</span>
+<span class="fc" id="L278">          errorMesg = e1.getMessage();</span>
+<span class="fc" id="L279">          writeErrorPage(ctx);</span>
+<span class="fc" id="L280">          return;</span>
           // end of task
-<span class="nc" id="L272">        }</span>
-<span class="nc bnc" id="L273" title="All 2 branches missed.">        if (httpPageTemp == null) {</span>
+<span class="fc" id="L282">        }</span>
+<span class="fc bfc" id="L283" title="All 2 branches covered.">        if (httpPageTemp == null) {</span>
           // if Get =&gt; standard Get
-<span class="nc bnc" id="L275" title="All 2 branches missed.">          if (method == HttpMethod.GET) {</span>
-<span class="nc" id="L276">            logger.debug(&quot;simple get: &quot; + request.uri());</span>
+<span class="pc bpc" id="L285" title="1 of 2 branches missed.">          if (method == HttpMethod.GET) {</span>
+<span class="fc" id="L286">            logger.debug(&quot;simple get: {}&quot;, request.uri());</span>
             // send content (image for instance)
-<span class="nc" id="L278">            HttpWriteCacheEnable</span>
-<span class="nc" id="L279">                .writeFile(request, ctx, baseStaticPath + uriRequest,</span>
+<span class="fc" id="L288">            HttpWriteCacheEnable</span>
+<span class="fc" id="L289">                .writeFile(request, ctx, baseStaticPath + uriRequest,</span>
                            cookieSession);
             // end of task
           } else {
             // real error =&gt; 404
-<span class="nc" id="L284">            status = HttpResponseStatus.NOT_FOUND;</span>
-<span class="nc" id="L285">            writeErrorPage(ctx);</span>
+<span class="nc" id="L294">            status = HttpResponseStatus.NOT_FOUND;</span>
+<span class="nc" id="L295">            writeErrorPage(ctx);</span>
           }
-<span class="nc" id="L287">          return;</span>
+<span class="fc" id="L297">          return;</span>
         }
-<span class="nc" id="L289">        httpPage = httpPageTemp;</span>
-<span class="nc" id="L290">        session.setCurrentCommand(httpPage.getPagerole());</span>
-<span class="nc" id="L291">        WaarpActionLogger.logCreate(DbConstant.admin.getSession(),</span>
-                                    &quot;Request received: &quot; +
-<span class="nc" id="L293">                                    httpPage.getPagename(), session);</span>
-<span class="nc bnc" id="L294" title="All 2 branches missed.">        if (httpPageTemp.getPagerole() == PageRole.ERROR) {</span>
-<span class="nc" id="L295">          status = HttpResponseStatus.BAD_REQUEST;</span>
-<span class="nc" id="L296">          error(ctx);</span>
-<span class="nc" id="L297">          clean();</span>
+<span class="fc" id="L299">        httpPage = httpPageTemp;</span>
+<span class="fc" id="L300">        session.setCurrentCommand(httpPage.getPagerole());</span>
+<span class="pc bpc" id="L301" title="1 of 2 branches missed.">        final DbSession dbSession = DbConstantGateway.admin != null?</span>
+<span class="pc" id="L302">            DbConstantGateway.admin.getSession() : null;</span>
+<span class="fc" id="L303">        WaarpActionLogger</span>
+<span class="fc" id="L304">            .logCreate(dbSession, &quot;Request received: &quot; + httpPage.getPagename(),</span>
+                       session);
+<span class="pc bpc" id="L306" title="1 of 2 branches missed.">        if (httpPageTemp.getPagerole() == PageRole.ERROR) {</span>
+<span class="nc" id="L307">          status = HttpResponseStatus.BAD_REQUEST;</span>
+<span class="nc" id="L308">          error(ctx);</span>
+<span class="nc" id="L309">          clean();</span>
           // order is important: first clean, then create new businessRequest
-<span class="nc" id="L299">          businessRequest = httpPage.newRequest(ctx.channel().remoteAddress());</span>
-<span class="nc" id="L300">          willClose = true;</span>
-<span class="nc" id="L301">          writeSimplePage(ctx);</span>
-<span class="nc" id="L302">          WaarpActionLogger</span>
-<span class="nc" id="L303">              .logErrorAction(DbConstant.admin.getSession(), session,</span>
-<span class="nc" id="L304">                              &quot;Error: &quot; + httpPage.getPagename(), status);</span>
-<span class="nc" id="L305">          return;</span>
+<span class="nc" id="L311">          businessRequest = httpPage.newRequest(ctx.channel().remoteAddress());</span>
+<span class="nc" id="L312">          willClose = true;</span>
+<span class="nc" id="L313">          writeSimplePage(ctx);</span>
+<span class="nc" id="L314">          WaarpActionLogger</span>
+<span class="nc" id="L315">              .logErrorAction(DbConstantGateway.admin.getSession(), session,</span>
+<span class="nc" id="L316">                              &quot;Error: &quot; + httpPage.getPagename(), status);</span>
+<span class="nc" id="L317">          return;</span>
           // end of task
         }
-<span class="nc" id="L308">        businessRequest = httpPage.newRequest(ctx.channel().remoteAddress());</span>
-<span class="nc" id="L309">        getUriArgs();</span>
-<span class="nc" id="L310">        getHeaderArgs();</span>
-<span class="nc" id="L311">        getCookieArgs();</span>
-<span class="nc" id="L312">        checkConnection(ctx);</span>
-<span class="nc bnc" id="L313" title="All 5 branches missed.">        switch (httpPage.getPagerole()) {</span>
+<span class="fc" id="L320">        businessRequest = httpPage.newRequest(ctx.channel().remoteAddress());</span>
+<span class="fc" id="L321">        getUriArgs();</span>
+<span class="fc" id="L322">        getHeaderArgs();</span>
+<span class="fc" id="L323">        getCookieArgs();</span>
+<span class="fc" id="L324">        checkConnection(ctx);</span>
+<span class="pc bpc" id="L325" title="1 of 5 branches missed.">        switch (httpPage.getPagerole()) {</span>
           case DELETE:
             // no body element
-<span class="nc" id="L316">            delete(ctx);</span>
-<span class="nc" id="L317">            return;</span>
+<span class="fc" id="L328">            delete(ctx);</span>
+<span class="fc" id="L329">            return;</span>
           case GETDOWNLOAD:
             // no body element
-<span class="nc" id="L320">            getFile(ctx);</span>
-<span class="nc" id="L321">            return;</span>
+<span class="fc" id="L332">            getFile(ctx);</span>
+<span class="fc" id="L333">            return;</span>
           case HTML:
           case MENU:
             // no body element
-<span class="nc" id="L325">            beforeSimplePage(ctx);</span>
-<span class="nc" id="L326">            writeSimplePage(ctx);</span>
-<span class="nc" id="L327">            return;</span>
+<span class="fc" id="L337">            beforeSimplePage(ctx);</span>
+<span class="fc" id="L338">            writeSimplePage(ctx);</span>
+<span class="fc" id="L339">            return;</span>
           case POST:
           case POSTUPLOAD:
           case PUT:
-<span class="nc" id="L331">            post(ctx);</span>
-<span class="nc" id="L332">            return;</span>
+<span class="fc" id="L343">            post(ctx);</span>
+<span class="fc" id="L344">            return;</span>
           default:
             // real error =&gt; 400
-<span class="nc" id="L335">            status = HttpResponseStatus.BAD_REQUEST;</span>
-<span class="nc" id="L336">            writeErrorPage(ctx);</span>
+<span class="nc" id="L347">            status = HttpResponseStatus.BAD_REQUEST;</span>
+<span class="nc" id="L348">            writeErrorPage(ctx);</span>
         }
-<span class="nc" id="L338">      } else {</span>
+<span class="nc" id="L350">      } else {</span>
         // New chunk is received: only for Put, Post or PostMulti!
-<span class="nc" id="L340">        postChunk(ctx, (HttpContent) msg);</span>
+<span class="fc" id="L352">        postChunk(ctx, (HttpContent) msg);</span>
       }
-<span class="nc" id="L342">    } catch (final HttpIncorrectRequestException e1) {</span>
+<span class="fc" id="L354">    } catch (final HttpIncorrectRequestException e1) {</span>
       // real error =&gt; 400
-<span class="nc bnc" id="L344" title="All 2 branches missed.">      if (status == HttpResponseStatus.OK) {</span>
-<span class="nc" id="L345">        status = HttpResponseStatus.BAD_REQUEST;</span>
+<span class="pc bpc" id="L356" title="1 of 2 branches missed.">      if (status == HttpResponseStatus.OK) {</span>
+<span class="nc" id="L357">        status = HttpResponseStatus.BAD_REQUEST;</span>
       }
-<span class="nc" id="L347">      errorMesg = e1.getMessage();</span>
-<span class="nc" id="L348">      logger.warn(&quot;Error&quot;, e1);</span>
-<span class="nc" id="L349">      writeErrorPage(ctx);</span>
-<span class="nc" id="L350">    }</span>
-<span class="nc" id="L351">  }</span>
+<span class="fc" id="L359">      errorMesg = e1.getMessage();</span>
+<span class="fc" id="L360">      logger.warn(&quot;Error&quot;, e1);</span>
+<span class="fc" id="L361">      writeErrorPage(ctx);</span>
+<span class="fc" id="L362">    }</span>
+<span class="fc" id="L363">  }</span>
 
   /**
    * Utility to prepare error
@@ -361,13 +373,13 @@ public abstract class HttpRequestHandler
   protected void prepareError(final ChannelHandlerContext ctx,
                               final String message)
       throws HttpIncorrectRequestException {
-<span class="nc" id="L364">    logger.debug(&quot;Debug &quot; + message);</span>
-<span class="nc bnc" id="L365" title="All 2 branches missed.">    if (!setErrorPage(ctx)) {</span>
+<span class="nc" id="L376">    logger.debug(&quot;Debug {}&quot;, message);</span>
+<span class="nc bnc" id="L377" title="All 2 branches missed.">    if (!setErrorPage(ctx)) {</span>
       // really really bad !
-<span class="nc" id="L367">      return;</span>
+<span class="nc" id="L379">      return;</span>
     }
-<span class="nc" id="L369">    errorMesg = status.reasonPhrase() + &quot; / &quot; + message;</span>
-<span class="nc" id="L370">    throw new HttpIncorrectRequestException(errorMesg);</span>
+<span class="nc" id="L381">    errorMesg = status.reasonPhrase() + &quot; / &quot; + message;</span>
+<span class="nc" id="L382">    throw new HttpIncorrectRequestException(errorMesg);</span>
   }
 
   /**
@@ -378,12 +390,12 @@ public abstract class HttpRequestHandler
    * @return True if initialized
    */
   protected boolean setErrorPage(final ChannelHandlerContext ctx) {
-<span class="nc" id="L381">    httpPage = httpPageHandler.getHttpPage(status.code());</span>
-<span class="nc bnc" id="L382" title="All 2 branches missed.">    if (httpPage == null) {</span>
-<span class="nc" id="L383">      return false;</span>
+<span class="fc" id="L393">    httpPage = httpPageHandler.getHttpPage(status.code());</span>
+<span class="pc bpc" id="L394" title="1 of 2 branches missed.">    if (httpPage == null) {</span>
+<span class="nc" id="L395">      return false;</span>
     }
-<span class="nc" id="L385">    businessRequest = httpPage.newRequest(ctx.channel().remoteAddress());</span>
-<span class="nc" id="L386">    return true;</span>
+<span class="fc" id="L397">    businessRequest = httpPage.newRequest(ctx.channel().remoteAddress());</span>
+<span class="fc" id="L398">    return true;</span>
   }
 
   /**
@@ -392,24 +404,30 @@ public abstract class HttpRequestHandler
    * @param ctx
    */
   protected void writeErrorPage(final ChannelHandlerContext ctx) {
-<span class="nc bnc" id="L395" title="All 2 branches missed.">    WaarpActionLogger.logErrorAction(DbConstant.admin.getSession(), session,</span>
-                                     &quot;Error: &quot; + (httpPage == null? &quot;no page&quot; :
-<span class="nc" id="L397">                                         httpPage.getPagename()), status);</span>
-<span class="nc" id="L398">    error(ctx);</span>
-<span class="nc" id="L399">    clean();</span>
-<span class="nc" id="L400">    willClose = true;</span>
-<span class="nc bnc" id="L401" title="All 2 branches missed.">    if (!setErrorPage(ctx)) {</span>
+<span class="pc bpc" id="L407" title="1 of 2 branches missed.">    final DbSession dbSession =</span>
+<span class="pc" id="L408">        DbConstantGateway.admin != null? DbConstantGateway.admin.getSession() :</span>
+            null;
+<span class="fc bfc" id="L410" title="All 2 branches covered.">    WaarpActionLogger.logErrorAction(dbSession, session, &quot;Error: &quot; +</span>
+                                                         (httpPage == null?
+                                                             &quot;no page&quot; :
+                                                             httpPage
+<span class="fc" id="L414">                                                                 .getPagename()),</span>
+                                     status);
+<span class="fc" id="L416">    error(ctx);</span>
+<span class="fc" id="L417">    clean();</span>
+<span class="fc" id="L418">    willClose = true;</span>
+<span class="pc bpc" id="L419" title="1 of 2 branches missed.">    if (!setErrorPage(ctx)) {</span>
       // really really bad !
-<span class="nc" id="L403">      forceClosing(ctx);</span>
-<span class="nc" id="L404">      return;</span>
+<span class="nc" id="L421">      forceClosing(ctx);</span>
+<span class="nc" id="L422">      return;</span>
     }
     try {
-<span class="nc" id="L407">      writeSimplePage(ctx);</span>
-<span class="nc" id="L408">    } catch (final HttpIncorrectRequestException e) {</span>
+<span class="fc" id="L425">      writeSimplePage(ctx);</span>
+<span class="nc" id="L426">    } catch (final HttpIncorrectRequestException e) {</span>
       // force channel closing
-<span class="nc" id="L410">      forceClosing(ctx);</span>
-<span class="nc" id="L411">    }</span>
-<span class="nc" id="L412">  }</span>
+<span class="nc" id="L428">      forceClosing(ctx);</span>
+<span class="fc" id="L429">    }</span>
+<span class="fc" id="L430">  }</span>
 
   /**
    * To allow quick answer even if in very bad shape
@@ -417,25 +435,25 @@ public abstract class HttpRequestHandler
    * @param ctx
    */
   protected void forceClosing(final ChannelHandlerContext ctx) {
-<span class="nc bnc" id="L420" title="All 2 branches missed.">    if (status == HttpResponseStatus.OK) {</span>
-<span class="nc" id="L421">      status = HttpResponseStatus.INTERNAL_SERVER_ERROR;</span>
+<span class="nc bnc" id="L438" title="All 2 branches missed.">    if (status == HttpResponseStatus.OK) {</span>
+<span class="nc" id="L439">      status = HttpResponseStatus.INTERNAL_SERVER_ERROR;</span>
     }
-<span class="nc bnc" id="L423" title="All 2 branches missed.">    if (ctx.channel().isActive()) {</span>
-<span class="nc" id="L424">      willClose = true;</span>
-<span class="nc" id="L425">      final String answer =</span>
-<span class="nc" id="L426">          &quot;&lt;html&gt;&lt;body&gt;Error &quot; + status.reasonPhrase() + &quot;&lt;/body&gt;&lt;/html&gt;&quot;;</span>
-<span class="nc" id="L427">      final FullHttpResponse response = getResponse(</span>
-<span class="nc" id="L428">          Unpooled.wrappedBuffer(answer.getBytes(WaarpStringUtils.UTF8)));</span>
-<span class="nc" id="L429">      response.headers().set(HttpHeaderNames.CONTENT_TYPE, &quot;text/html&quot;);</span>
-<span class="nc" id="L430">      response.headers().set(HttpHeaderNames.REFERER, request.uri());</span>
-<span class="nc" id="L431">      final ChannelFuture future = ctx.writeAndFlush(response);</span>
-<span class="nc" id="L432">      logger.debug(&quot;Will close&quot;);</span>
-<span class="nc" id="L433">      future.addListener(WaarpSslUtility.SSLCLOSE);</span>
+<span class="nc bnc" id="L441" title="All 2 branches missed.">    if (ctx.channel().isActive()) {</span>
+<span class="nc" id="L442">      willClose = true;</span>
+<span class="nc" id="L443">      final String answer =</span>
+<span class="nc" id="L444">          &quot;&lt;html&gt;&lt;body&gt;Error &quot; + status.reasonPhrase() + &quot;&lt;/body&gt;&lt;/html&gt;&quot;;</span>
+<span class="nc" id="L445">      final FullHttpResponse response = getResponse(</span>
+<span class="nc" id="L446">          Unpooled.wrappedBuffer(answer.getBytes(WaarpStringUtils.UTF8)));</span>
+<span class="nc" id="L447">      response.headers().set(HttpHeaderNames.CONTENT_TYPE, &quot;text/html&quot;);</span>
+<span class="nc" id="L448">      response.headers().set(HttpHeaderNames.REFERER, request.uri());</span>
+<span class="nc" id="L449">      final ChannelFuture future = ctx.writeAndFlush(response);</span>
+<span class="nc" id="L450">      logger.debug(&quot;Will close&quot;);</span>
+<span class="nc" id="L451">      future.addListener(WaarpSslUtility.SSLCLOSE);</span>
     }
-<span class="nc" id="L435">    WaarpActionLogger.logErrorAction(DbConstant.admin.getSession(), session,</span>
-<span class="nc" id="L436">                                     &quot;Error: &quot; + httpPage.getPagename(),</span>
-                                     status);
-<span class="nc" id="L438">  }</span>
+<span class="nc" id="L453">    WaarpActionLogger</span>
+<span class="nc" id="L454">        .logErrorAction(DbConstantGateway.admin.getSession(), session,</span>
+<span class="nc" id="L455">                        &quot;Error: &quot; + httpPage.getPagename(), status);</span>
+<span class="nc" id="L456">  }</span>
 
   /**
    * Write a simple page from current httpPage and businessRequest
@@ -446,45 +464,48 @@ public abstract class HttpRequestHandler
    */
   protected void writeSimplePage(final ChannelHandlerContext ctx)
       throws HttpIncorrectRequestException {
-<span class="nc bnc" id="L449" title="All 2 branches missed.">    logger.debug(</span>
-<span class="nc bnc" id="L450" title="All 2 branches missed.">        &quot;HttpPage: &quot; + (httpPage != null? httpPage.getPagename() : &quot;no page&quot;) +</span>
-        &quot; businessRequest: &quot; +
-<span class="nc" id="L452">        (businessRequest != null? businessRequest.getClass().getName() :</span>
-            &quot;no BR&quot;));
-<span class="nc bnc" id="L454" title="All 4 branches missed.">    if (httpPage != null &amp;&amp; httpPage.getPagerole() == PageRole.ERROR) {</span>
+<span class="fc bfc" id="L467" title="All 2 branches covered.">    logger.debug(&quot;HttpPage: {} businessRequest: {}&quot;,</span>
+<span class="pc bpc" id="L468" title="1 of 2 branches missed.">                 httpPage != null? httpPage.getPagename() : &quot;no page&quot;,</span>
+<span class="pc" id="L469">                 businessRequest != null? businessRequest.getClass().getName() :</span>
+                     &quot;no BR&quot;);
+<span class="fc bfc" id="L471" title="All 4 branches covered.">    if (httpPage != null &amp;&amp; httpPage.getPagerole() == PageRole.ERROR) {</span>
       try {
-<span class="nc" id="L456">        httpPage</span>
-<span class="nc" id="L457">            .setValue(businessRequest, AbstractHttpField.ERRORINFO, errorMesg,</span>
+<span class="fc" id="L473">        httpPage</span>
+<span class="fc" id="L474">            .setValue(businessRequest, AbstractHttpField.ERRORINFO, errorMesg,</span>
                       FieldPosition.BODY);
-<span class="nc" id="L459">      } catch (final HttpIncorrectRequestException e) {</span>
+<span class="nc" id="L476">      } catch (final HttpIncorrectRequestException e) {</span>
         // ignore
-<span class="nc" id="L461">      }</span>
+<span class="fc" id="L478">      }</span>
     }
-<span class="nc bnc" id="L463" title="All 2 branches missed.">    final String answer =</span>
-<span class="nc" id="L464">        httpPage != null? httpPage.getHtmlPage(businessRequest) : &quot;BAD REQUEST&quot;;</span>
+<span class="fc bfc" id="L480" title="All 2 branches covered.">    final String answer =</span>
+<span class="fc" id="L481">        httpPage != null? httpPage.getHtmlPage(businessRequest) : &quot;BAD REQUEST&quot;;</span>
     final int length;
     // Convert the response content to a ByteBuf.
-<span class="nc" id="L467">    final ByteBuf buf =</span>
-<span class="nc" id="L468">        Unpooled.wrappedBuffer(answer.getBytes(WaarpStringUtils.UTF8));</span>
-<span class="nc" id="L469">    final FullHttpResponse response = getResponse(buf);</span>
-<span class="nc" id="L470">    response.headers().set(HttpHeaderNames.CONTENT_TYPE,</span>
-<span class="nc" id="L471">                           businessRequest.getContentType());</span>
-<span class="nc" id="L472">    response.headers().set(HttpHeaderNames.REFERER, request.uri());</span>
-<span class="nc" id="L473">    length = buf.readableBytes();</span>
-<span class="nc bnc" id="L474" title="All 2 branches missed.">    if (!willClose) {</span>
+<span class="fc" id="L484">    final ByteBuf buf =</span>
+<span class="fc" id="L485">        Unpooled.wrappedBuffer(answer.getBytes(WaarpStringUtils.UTF8));</span>
+<span class="fc" id="L486">    final FullHttpResponse response = getResponse(buf);</span>
+<span class="pc bpc" id="L487" title="1 of 2 branches missed.">    if (businessRequest == null) {</span>
+<span class="fc" id="L488">      response.headers().set(HttpHeaderNames.CONTENT_TYPE, &quot;text/html&quot;);</span>
+    } else {
+<span class="nc" id="L490">      response.headers().set(HttpHeaderNames.CONTENT_TYPE,</span>
+<span class="nc" id="L491">                             businessRequest.getContentType());</span>
+    }
+<span class="fc" id="L493">    response.headers().set(HttpHeaderNames.REFERER, request.uri());</span>
+<span class="fc" id="L494">    length = buf.readableBytes();</span>
+<span class="pc bpc" id="L495" title="1 of 2 branches missed.">    if (!willClose) {</span>
       // There's no need to add 'Content-Length' header
       // if this is the last response.
-<span class="nc" id="L477">      response.headers()</span>
-<span class="nc" id="L478">              .set(HttpHeaderNames.CONTENT_LENGTH, String.valueOf(length));</span>
+<span class="nc" id="L498">      response.headers()</span>
+<span class="nc" id="L499">              .set(HttpHeaderNames.CONTENT_LENGTH, String.valueOf(length));</span>
     }
     // Write the response.
-<span class="nc" id="L481">    final ChannelFuture future = ctx.writeAndFlush(response);</span>
+<span class="fc" id="L502">    final ChannelFuture future = ctx.writeAndFlush(response);</span>
     // Close the connection after the write operation is done if necessary.
-<span class="nc bnc" id="L483" title="All 2 branches missed.">    if (willClose) {</span>
-<span class="nc" id="L484">      logger.debug(&quot;Will close&quot;);</span>
-<span class="nc" id="L485">      future.addListener(WaarpSslUtility.SSLCLOSE);</span>
+<span class="pc bpc" id="L504" title="1 of 2 branches missed.">    if (willClose) {</span>
+<span class="fc" id="L505">      logger.debug(&quot;Will close&quot;);</span>
+<span class="fc" id="L506">      future.addListener(WaarpSslUtility.SSLCLOSE);</span>
     }
-<span class="nc" id="L487">  }</span>
+<span class="fc" id="L508">  }</span>
 
   /**
    * Could be used for other method (as validation of an authent cookie)
@@ -505,17 +526,19 @@ public abstract class HttpRequestHandler
    */
   protected void addBusinessCookie(final FullHttpResponse response,
                                    final Set&lt;String&gt; cookieNames) {
-<span class="nc bnc" id="L508" title="All 2 branches missed.">    for (final AbstractHttpField field : httpPage</span>
-<span class="nc" id="L509">        .getFieldsForRequest(businessRequest).values()) {</span>
-<span class="nc bnc" id="L510" title="All 2 branches missed.">      if (field.isFieldcookieset() &amp;&amp;</span>
-<span class="nc bnc" id="L511" title="All 2 branches missed.">          !cookieNames.contains(field.getFieldname())) {</span>
-<span class="nc" id="L512">        response.headers().add(HttpHeaderNames.SET_COOKIE,</span>
-                               ServerCookieEncoder.LAX
-<span class="nc" id="L514">                                   .encode(field.getFieldname(),</span>
-                                           field.fieldvalue));
-      }
-<span class="nc" id="L517">    }</span>
-<span class="nc" id="L518">  }</span>
+<span class="fc bfc" id="L529" title="All 2 branches covered.">    if (httpPage != null) {</span>
+<span class="pc bpc" id="L530" title="1 of 2 branches missed.">      for (final AbstractHttpField field : httpPage</span>
+<span class="fc" id="L531">          .getFieldsForRequest(businessRequest).values()) {</span>
+<span class="nc bnc" id="L532" title="All 2 branches missed.">        if (field.isFieldcookieset() &amp;&amp;</span>
+<span class="nc bnc" id="L533" title="All 2 branches missed.">            !cookieNames.contains(field.getFieldname())) {</span>
+<span class="nc" id="L534">          response.headers().add(HttpHeaderNames.SET_COOKIE,</span>
+                                 ServerCookieEncoder.LAX
+<span class="nc" id="L536">                                     .encode(field.getFieldname(),</span>
+                                             field.fieldvalue));
+        }
+<span class="nc" id="L539">      }</span>
+    }
+<span class="fc" id="L541">  }</span>
 
   /**
    * Method to set Cookies in response
@@ -524,35 +547,35 @@ public abstract class HttpRequestHandler
    */
   protected void setCookieEncoder(final FullHttpResponse response) {
     final Set&lt;Cookie&gt; cookies;
-<span class="nc" id="L527">    final String value = request.headers().get(HttpHeaderNames.COOKIE);</span>
-<span class="nc bnc" id="L528" title="All 2 branches missed.">    if (value == null) {</span>
-<span class="nc" id="L529">      cookies = Collections.emptySet();</span>
+<span class="fc" id="L550">    final String value = request.headers().get(HttpHeaderNames.COOKIE);</span>
+<span class="pc bpc" id="L551" title="1 of 2 branches missed.">    if (value == null) {</span>
+<span class="fc" id="L552">      cookies = Collections.emptySet();</span>
     } else {
-<span class="nc" id="L531">      cookies = ServerCookieDecoder.LAX.decode(value);</span>
+<span class="nc" id="L554">      cookies = ServerCookieDecoder.LAX.decode(value);</span>
     }
-<span class="nc" id="L533">    boolean foundCookieSession = false;</span>
-<span class="nc" id="L534">    final Set&lt;String&gt; cookiesName = new HashSet&lt;String&gt;();</span>
-<span class="nc bnc" id="L535" title="All 2 branches missed.">    if (!cookies.isEmpty()) {</span>
+<span class="fc" id="L556">    boolean foundCookieSession = false;</span>
+<span class="fc" id="L557">    final Set&lt;String&gt; cookiesName = new HashSet&lt;String&gt;();</span>
+<span class="pc bpc" id="L558" title="1 of 2 branches missed.">    if (!cookies.isEmpty()) {</span>
       // Reset the cookies if necessary.
-<span class="nc bnc" id="L537" title="All 2 branches missed.">      for (final Cookie cookie : cookies) {</span>
-<span class="nc bnc" id="L538" title="All 2 branches missed.">        if (isCookieValid(cookie)) {</span>
-<span class="nc" id="L539">          response.headers().add(HttpHeaderNames.SET_COOKIE,</span>
-<span class="nc" id="L540">                                 ServerCookieEncoder.LAX.encode(cookie));</span>
-<span class="nc bnc" id="L541" title="All 2 branches missed.">          if (cookie.name().equals(cookieSession)) {</span>
-<span class="nc" id="L542">            foundCookieSession = true;</span>
+<span class="nc bnc" id="L560" title="All 2 branches missed.">      for (final Cookie cookie : cookies) {</span>
+<span class="nc bnc" id="L561" title="All 2 branches missed.">        if (isCookieValid(cookie)) {</span>
+<span class="nc" id="L562">          response.headers().add(HttpHeaderNames.SET_COOKIE,</span>
+<span class="nc" id="L563">                                 ServerCookieEncoder.LAX.encode(cookie));</span>
+<span class="nc bnc" id="L564" title="All 2 branches missed.">          if (cookie.name().equals(cookieSession)) {</span>
+<span class="nc" id="L565">            foundCookieSession = true;</span>
           }
-<span class="nc" id="L544">          cookiesName.add(cookie.name());</span>
+<span class="nc" id="L567">          cookiesName.add(cookie.name());</span>
         }
-<span class="nc" id="L546">      }</span>
+<span class="nc" id="L569">      }</span>
     }
-<span class="nc bnc" id="L548" title="All 2 branches missed.">    if (!foundCookieSession) {</span>
-<span class="nc" id="L549">      response.headers().add(HttpHeaderNames.SET_COOKIE, ServerCookieEncoder.LAX</span>
-<span class="nc" id="L550">          .encode(cookieSession, session.getCookieSession()));</span>
-<span class="nc" id="L551">      cookiesName.add(cookieSession);</span>
+<span class="pc bpc" id="L571" title="1 of 2 branches missed.">    if (!foundCookieSession) {</span>
+<span class="fc" id="L572">      response.headers().add(HttpHeaderNames.SET_COOKIE, ServerCookieEncoder.LAX</span>
+<span class="fc" id="L573">          .encode(cookieSession, session.getCookieSession()));</span>
+<span class="fc" id="L574">      cookiesName.add(cookieSession);</span>
     }
-<span class="nc" id="L553">    addBusinessCookie(response, cookiesName);</span>
-<span class="nc" id="L554">    cookiesName.clear();</span>
-<span class="nc" id="L555">  }</span>
+<span class="fc" id="L576">    addBusinessCookie(response, cookiesName);</span>
+<span class="fc" id="L577">    cookiesName.clear();</span>
+<span class="fc" id="L578">  }</span>
 
   /**
    * @param buf might be null
@@ -562,43 +585,43 @@ public abstract class HttpRequestHandler
   protected FullHttpResponse getResponse(final ByteBuf buf) {
     // Decide whether to close the connection or not.
     final FullHttpResponse response;
-<span class="nc bnc" id="L565" title="All 2 branches missed.">    if (request == null) {</span>
-<span class="nc bnc" id="L566" title="All 2 branches missed.">      if (buf != null) {</span>
-<span class="nc" id="L567">        response =</span>
+<span class="pc bpc" id="L588" title="1 of 2 branches missed.">    if (request == null) {</span>
+<span class="nc bnc" id="L589" title="All 2 branches missed.">      if (buf != null) {</span>
+<span class="nc" id="L590">        response =</span>
             new DefaultFullHttpResponse(HttpVersion.HTTP_1_0, status, buf);
-<span class="nc" id="L569">        response.headers().add(HttpHeaderNames.CONTENT_LENGTH,</span>
-<span class="nc" id="L570">                               response.content().readableBytes());</span>
+<span class="nc" id="L592">        response.headers().add(HttpHeaderNames.CONTENT_LENGTH,</span>
+<span class="nc" id="L593">                               response.content().readableBytes());</span>
       } else {
-<span class="nc" id="L572">        response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_0, status);</span>
+<span class="nc" id="L595">        response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_0, status);</span>
       }
-<span class="nc" id="L574">      setCookieEncoder(response);</span>
-<span class="nc" id="L575">      willClose = true;</span>
-<span class="nc" id="L576">      return response;</span>
+<span class="nc" id="L597">      setCookieEncoder(response);</span>
+<span class="nc" id="L598">      willClose = true;</span>
+<span class="nc" id="L599">      return response;</span>
     }
-<span class="nc" id="L578">    boolean keepAlive = HttpUtil.isKeepAlive(request);</span>
-<span class="nc bnc" id="L579" title="All 2 branches missed.">    willClose |= status != HttpResponseStatus.OK || HttpHeaderValues.CLOSE</span>
-<span class="nc bnc" id="L580" title="All 2 branches missed.">        .contentEqualsIgnoreCase(</span>
-<span class="nc" id="L581">            request.headers().get(HttpHeaderNames.CONNECTION)) ||</span>
-<span class="nc bnc" id="L582" title="All 4 branches missed.">                 request.protocolVersion().equals(HttpVersion.HTTP_1_0) &amp;&amp;</span>
+<span class="fc" id="L601">    boolean keepAlive = HttpUtil.isKeepAlive(request);</span>
+<span class="fc bfc" id="L602" title="All 2 branches covered.">    willClose |= status != HttpResponseStatus.OK || HttpHeaderValues.CLOSE</span>
+<span class="pc bpc" id="L603" title="1 of 2 branches missed.">        .contentEqualsIgnoreCase(</span>
+<span class="fc" id="L604">            request.headers().get(HttpHeaderNames.CONNECTION)) ||</span>
+<span class="pc bnc" id="L605" title="All 4 branches missed.">                 request.protocolVersion().equals(HttpVersion.HTTP_1_0) &amp;&amp;</span>
                  !keepAlive;
-<span class="nc bnc" id="L584" title="All 2 branches missed.">    if (willClose) {</span>
-<span class="nc" id="L585">      keepAlive = false;</span>
+<span class="pc bpc" id="L607" title="1 of 2 branches missed.">    if (willClose) {</span>
+<span class="fc" id="L608">      keepAlive = false;</span>
     }
     // Build the response object.
-<span class="nc bnc" id="L588" title="All 2 branches missed.">    if (buf != null) {</span>
-<span class="nc" id="L589">      response =</span>
-<span class="nc" id="L590">          new DefaultFullHttpResponse(request.protocolVersion(), status, buf);</span>
-<span class="nc" id="L591">      response.headers().add(HttpHeaderNames.CONTENT_LENGTH,</span>
-<span class="nc" id="L592">                             response.content().readableBytes());</span>
+<span class="pc bpc" id="L611" title="1 of 2 branches missed.">    if (buf != null) {</span>
+<span class="fc" id="L612">      response =</span>
+<span class="fc" id="L613">          new DefaultFullHttpResponse(request.protocolVersion(), status, buf);</span>
+<span class="fc" id="L614">      response.headers().add(HttpHeaderNames.CONTENT_LENGTH,</span>
+<span class="fc" id="L615">                             response.content().readableBytes());</span>
     } else {
-<span class="nc" id="L594">      response = new DefaultFullHttpResponse(request.protocolVersion(), status);</span>
+<span class="nc" id="L617">      response = new DefaultFullHttpResponse(request.protocolVersion(), status);</span>
     }
-<span class="nc bnc" id="L596" title="All 2 branches missed.">    if (keepAlive) {</span>
-<span class="nc" id="L597">      response.headers()</span>
-<span class="nc" id="L598">              .set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);</span>
+<span class="pc bpc" id="L619" title="1 of 2 branches missed.">    if (keepAlive) {</span>
+<span class="nc" id="L620">      response.headers()</span>
+<span class="nc" id="L621">              .set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);</span>
     }
-<span class="nc" id="L600">    setCookieEncoder(response);</span>
-<span class="nc" id="L601">    return response;</span>
+<span class="fc" id="L623">    setCookieEncoder(response);</span>
+<span class="fc" id="L624">    return response;</span>
   }
 
   /**
@@ -626,55 +649,57 @@ public abstract class HttpRequestHandler
   protected void finalData(final ChannelHandlerContext ctx)
       throws HttpIncorrectRequestException {
     try {
-<span class="nc" id="L629">      businessValidRequestAfterAllDataReceived(ctx);</span>
-<span class="nc bnc" id="L630" title="All 2 branches missed.">      if (!httpPage.isRequestValid(businessRequest)) {</span>
-<span class="nc" id="L631">        throw new HttpIncorrectRequestException(&quot;Request unvalid&quot;);</span>
+<span class="fc" id="L652">      businessValidRequestAfterAllDataReceived(ctx);</span>
+<span class="fc bfc" id="L653" title="All 2 branches covered.">      if (httpPage == null) {</span>
+        // Cached
+<span class="fc" id="L655">        return;</span>
       }
-<span class="nc bnc" id="L633" title="All 6 branches missed.">      switch (httpPage.getPagerole()) {</span>
+<span class="pc bpc" id="L657" title="1 of 2 branches missed.">      if (!httpPage.isRequestValid(businessRequest)) {</span>
+<span class="nc" id="L658">        throw new HttpIncorrectRequestException(&quot;Request unvalid&quot;);</span>
+      }
+<span class="pc bpc" id="L660" title="1 of 2 branches missed.">      final DbSession dbSession = DbConstantGateway.admin != null?</span>
+<span class="pc" id="L661">          DbConstantGateway.admin.getSession() : null;</span>
+<span class="pc bpc" id="L662" title="1 of 6 branches missed.">      switch (httpPage.getPagerole()) {</span>
         case DELETE:
-<span class="nc" id="L635">          session.setFilename(getFilename());</span>
-<span class="nc" id="L636">          finalDelete(ctx);</span>
-<span class="nc" id="L637">          WaarpActionLogger</span>
-<span class="nc" id="L638">              .logAction(DbConstant.admin.getSession(), session, &quot;Delete OK&quot;,</span>
-                         status, UpdatedInfo.DONE);
-<span class="nc" id="L640">          break;</span>
-        case GETDOWNLOAD:
-<span class="nc" id="L642">          finalGet(ctx);</span>
-<span class="nc" id="L643">          WaarpActionLogger</span>
-<span class="nc" id="L644">              .logAction(DbConstant.admin.getSession(), session, &quot;Download OK&quot;,</span>
-                         status, UpdatedInfo.DONE);
-<span class="nc" id="L646">          break;</span>
-        case POST:
-<span class="nc" id="L648">          finalPost(ctx);</span>
-<span class="nc" id="L649">          WaarpActionLogger</span>
-<span class="nc" id="L650">              .logAction(DbConstant.admin.getSession(), session, &quot;Post OK&quot;,</span>
-                         status, UpdatedInfo.DONE);
-<span class="nc" id="L652">          break;</span>
-        case POSTUPLOAD:
-<span class="nc" id="L654">          finalPostUpload(ctx);</span>
-<span class="nc" id="L655">          WaarpActionLogger.logAction(DbConstant.admin.getSession(), session,</span>
-                                      &quot;PostUpload OK&quot;, status,
+<span class="fc" id="L664">          session.setFilename(getFilename());</span>
+<span class="fc" id="L665">          finalDelete(ctx);</span>
+<span class="fc" id="L666">          WaarpActionLogger.logAction(dbSession, session, &quot;Delete OK&quot;, status,</span>
                                       UpdatedInfo.DONE);
-<span class="nc" id="L658">          break;</span>
+<span class="fc" id="L668">          break;</span>
+        case GETDOWNLOAD:
+<span class="fc" id="L670">          finalGet(ctx);</span>
+<span class="fc" id="L671">          WaarpActionLogger.logAction(dbSession, session, &quot;Download OK&quot;, status,</span>
+                                      UpdatedInfo.DONE);
+<span class="fc" id="L673">          break;</span>
+        case POST:
+<span class="fc" id="L675">          finalPost(ctx);</span>
+<span class="fc" id="L676">          WaarpActionLogger.logAction(dbSession, session, &quot;Post OK&quot;, status,</span>
+                                      UpdatedInfo.DONE);
+<span class="fc" id="L678">          break;</span>
+        case POSTUPLOAD:
+<span class="nc" id="L680">          finalPostUpload(ctx);</span>
+<span class="nc" id="L681">          WaarpActionLogger</span>
+<span class="nc" id="L682">              .logAction(dbSession, session, &quot;PostUpload OK&quot;, status,</span>
+                         UpdatedInfo.DONE);
+<span class="nc" id="L684">          break;</span>
         case PUT:
-<span class="nc" id="L660">          finalPut(ctx);</span>
-<span class="nc" id="L661">          WaarpActionLogger</span>
-<span class="nc" id="L662">              .logAction(DbConstant.admin.getSession(), session, &quot;Put OK&quot;,</span>
-                         status, UpdatedInfo.DONE);
-<span class="nc" id="L664">          break;</span>
+<span class="fc" id="L686">          finalPut(ctx);</span>
+<span class="fc" id="L687">          WaarpActionLogger.logAction(dbSession, session, &quot;Put OK&quot;, status,</span>
+                                      UpdatedInfo.DONE);
+<span class="fc" id="L689">          break;</span>
         default:
           // real error =&gt; 400
-<span class="nc" id="L667">          status = HttpResponseStatus.BAD_REQUEST;</span>
-<span class="nc" id="L668">          throw new HttpIncorrectRequestException(&quot;Unknown request&quot;);</span>
+<span class="fc" id="L692">          status = HttpResponseStatus.BAD_REQUEST;</span>
+<span class="fc" id="L693">          throw new HttpIncorrectRequestException(&quot;Unknown request&quot;);</span>
       }
-<span class="nc" id="L670">    } catch (final HttpIncorrectRequestException e) {</span>
+<span class="fc" id="L695">    } catch (final HttpIncorrectRequestException e) {</span>
       // real error =&gt; 400
-<span class="nc bnc" id="L672" title="All 2 branches missed.">      if (status == HttpResponseStatus.OK) {</span>
-<span class="nc" id="L673">        status = HttpResponseStatus.BAD_REQUEST;</span>
+<span class="pc bpc" id="L697" title="1 of 2 branches missed.">      if (status == HttpResponseStatus.OK) {</span>
+<span class="nc" id="L698">        status = HttpResponseStatus.BAD_REQUEST;</span>
       }
-<span class="nc" id="L675">      throw e;</span>
-<span class="nc" id="L676">    }</span>
-<span class="nc" id="L677">  }</span>
+<span class="fc" id="L700">      throw e;</span>
+<span class="fc" id="L701">    }</span>
+<span class="fc" id="L702">  }</span>
 
   /**
    * Method that will use the uploaded file and prepare the result
@@ -744,8 +769,8 @@ public abstract class HttpRequestHandler
    */
   protected void getFile(final ChannelHandlerContext ctx)
       throws HttpIncorrectRequestException {
-<span class="nc" id="L747">    finalData(ctx);</span>
-<span class="nc" id="L748">  }</span>
+<span class="fc" id="L772">    finalData(ctx);</span>
+<span class="fc" id="L773">  }</span>
 
   /**
    * Method that get delete data
@@ -754,10 +779,10 @@ public abstract class HttpRequestHandler
    */
   protected void delete(final ChannelHandlerContext ctx)
       throws HttpIncorrectRequestException {
-<span class="nc" id="L757">    finalData(ctx);</span>
-<span class="nc" id="L758">    writeSimplePage(ctx);</span>
-<span class="nc" id="L759">    clean();</span>
-<span class="nc" id="L760">  }</span>
+<span class="fc" id="L782">    finalData(ctx);</span>
+<span class="fc" id="L783">    writeSimplePage(ctx);</span>
+<span class="fc" id="L784">    clean();</span>
+<span class="fc" id="L785">  }</span>
 
   /**
    * Method that get post data
@@ -769,26 +794,26 @@ public abstract class HttpRequestHandler
   protected void post(final ChannelHandlerContext ctx)
       throws HttpIncorrectRequestException {
     try {
-<span class="nc" id="L772">      decoder =</span>
+<span class="fc" id="L797">      decoder =</span>
           new HttpPostRequestDecoder(HttpBusinessFactory.factory, request);
-<span class="nc" id="L774">    } catch (final ErrorDataDecoderException e1) {</span>
-<span class="nc" id="L775">      status = HttpResponseStatus.NOT_ACCEPTABLE;</span>
-<span class="nc" id="L776">      throw new HttpIncorrectRequestException(e1);</span>
-<span class="nc" id="L777">    } catch (final Exception e1) {</span>
+<span class="nc" id="L799">    } catch (final ErrorDataDecoderException e1) {</span>
+<span class="nc" id="L800">      status = HttpResponseStatus.NOT_ACCEPTABLE;</span>
+<span class="nc" id="L801">      throw new HttpIncorrectRequestException(e1);</span>
+<span class="nc" id="L802">    } catch (final Exception e1) {</span>
       // GETDOWNLOAD Method: should not try to create a HttpPostRequestDecoder
       // So OK but stop here
-<span class="nc" id="L780">      status = HttpResponseStatus.NOT_ACCEPTABLE;</span>
-<span class="nc" id="L781">      throw new HttpIncorrectRequestException(e1);</span>
-<span class="nc" id="L782">    }</span>
+<span class="nc" id="L805">      status = HttpResponseStatus.NOT_ACCEPTABLE;</span>
+<span class="nc" id="L806">      throw new HttpIncorrectRequestException(e1);</span>
+<span class="fc" id="L807">    }</span>
 
-<span class="nc bnc" id="L784" title="All 2 branches missed.">    if (request instanceof FullHttpRequest) {</span>
+<span class="pc bpc" id="L809" title="1 of 2 branches missed.">    if (request instanceof FullHttpRequest) {</span>
       // Not chunk version
-<span class="nc" id="L786">      readHttpDataAllReceive(ctx);</span>
-<span class="nc" id="L787">      finalData(ctx);</span>
-<span class="nc" id="L788">      writeSimplePage(ctx);</span>
-<span class="nc" id="L789">      clean();</span>
+<span class="nc" id="L811">      readHttpDataAllReceive(ctx);</span>
+<span class="nc" id="L812">      finalData(ctx);</span>
+<span class="nc" id="L813">      writeSimplePage(ctx);</span>
+<span class="nc" id="L814">      clean();</span>
     }
-<span class="nc" id="L791">  }</span>
+<span class="fc" id="L816">  }</span>
 
   /**
    * Method that get a chunk of data
@@ -802,46 +827,52 @@ public abstract class HttpRequestHandler
                            final HttpContent chunk)
       throws HttpIncorrectRequestException {
     // New chunk is received: only for Post!
+<span class="fc bfc" id="L830" title="All 2 branches covered.">    if (decoder == null) {</span>
+<span class="fc" id="L831">      finalData(ctx);</span>
+<span class="fc" id="L832">      writeSimplePage(ctx);</span>
+<span class="fc" id="L833">      clean();</span>
+<span class="fc" id="L834">      return;</span>
+    }
     try {
-<span class="nc" id="L806">      decoder.offer(chunk);</span>
-<span class="nc" id="L807">    } catch (final ErrorDataDecoderException e1) {</span>
-<span class="nc" id="L808">      status = HttpResponseStatus.NOT_ACCEPTABLE;</span>
-<span class="nc" id="L809">      throw new HttpIncorrectRequestException(e1);</span>
-<span class="nc" id="L810">    }</span>
+<span class="fc" id="L837">      decoder.offer(chunk);</span>
+<span class="nc" id="L838">    } catch (final ErrorDataDecoderException e1) {</span>
+<span class="nc" id="L839">      status = HttpResponseStatus.NOT_ACCEPTABLE;</span>
+<span class="nc" id="L840">      throw new HttpIncorrectRequestException(e1);</span>
+<span class="fc" id="L841">    }</span>
     // example of reading chunk by chunk (minimize memory usage due to
     // Factory)
-<span class="nc" id="L813">    readHttpDataChunkByChunk(ctx);</span>
+<span class="fc" id="L844">    readHttpDataChunkByChunk(ctx);</span>
     // example of reading only if at the end
-<span class="nc bnc" id="L815" title="All 2 branches missed.">    if (chunk instanceof LastHttpContent) {</span>
-<span class="nc" id="L816">      finalData(ctx);</span>
-<span class="nc" id="L817">      writeSimplePage(ctx);</span>
-<span class="nc" id="L818">      clean();</span>
+<span class="pc bpc" id="L846" title="1 of 2 branches missed.">    if (chunk instanceof LastHttpContent) {</span>
+<span class="fc" id="L847">      finalData(ctx);</span>
+<span class="fc" id="L848">      writeSimplePage(ctx);</span>
+<span class="fc" id="L849">      clean();</span>
     }
-<span class="nc" id="L820">  }</span>
+<span class="fc" id="L851">  }</span>
 
   @Override
   public void exceptionCaught(final ChannelHandlerContext ctx,
-                              final Throwable cause) throws Exception {
-<span class="nc bnc" id="L825" title="All 2 branches missed.">    if (ctx.channel().isActive()) {</span>
-<span class="nc bnc" id="L826" title="All 4 branches missed.">      if (cause != null &amp;&amp; cause.getMessage() != null) {</span>
-<span class="nc" id="L827">        logger.warn(&quot;Exception {}&quot;, cause.getMessage(), cause);</span>
+                              final Throwable cause) {
+<span class="nc bnc" id="L856" title="All 2 branches missed.">    if (ctx.channel().isActive()) {</span>
+<span class="nc bnc" id="L857" title="All 4 branches missed.">      if (cause != null &amp;&amp; cause.getMessage() != null) {</span>
+<span class="nc" id="L858">        logger.warn(&quot;Exception {}&quot;, cause.getMessage(), cause);</span>
       } else {
-<span class="nc" id="L829">        logger.warn(&quot;Exception Received&quot;, cause);</span>
+<span class="nc" id="L860">        logger.warn(&quot;Exception Received&quot;, cause);</span>
       }
-<span class="nc bnc" id="L831" title="All 2 branches missed.">      if (cause instanceof ClosedChannelException) {</span>
-<span class="nc" id="L832">        return;</span>
+<span class="nc bnc" id="L862" title="All 2 branches missed.">      if (cause instanceof ClosedChannelException) {</span>
+<span class="nc" id="L863">        return;</span>
       }
-<span class="nc" id="L834">      status = HttpResponseStatus.INTERNAL_SERVER_ERROR;</span>
-<span class="nc" id="L835">      writeErrorPage(ctx);</span>
+<span class="nc" id="L865">      status = HttpResponseStatus.INTERNAL_SERVER_ERROR;</span>
+<span class="nc" id="L866">      writeErrorPage(ctx);</span>
     }
-<span class="nc" id="L837">  }</span>
+<span class="nc" id="L868">  }</span>
 
   @Override
   public void channelInactive(final ChannelHandlerContext ctx)
       throws Exception {
-<span class="nc" id="L842">    super.channelInactive(ctx);</span>
-<span class="nc" id="L843">    clean();</span>
-<span class="nc" id="L844">  }</span>
+<span class="fc" id="L873">    super.channelInactive(ctx);</span>
+<span class="fc" id="L874">    clean();</span>
+<span class="fc" id="L875">  }</span>
 
   /**
    * Read all InterfaceHttpData from finished transfer
@@ -854,17 +885,17 @@ public abstract class HttpRequestHandler
       throws HttpIncorrectRequestException {
     final List&lt;InterfaceHttpData&gt; datas;
     try {
-<span class="nc" id="L857">      datas = decoder.getBodyHttpDatas();</span>
-<span class="nc" id="L858">    } catch (final NotEnoughDataDecoderException e1) {</span>
+<span class="nc" id="L888">      datas = decoder.getBodyHttpDatas();</span>
+<span class="nc" id="L889">    } catch (final NotEnoughDataDecoderException e1) {</span>
       // Should not be!
-<span class="nc" id="L860">      logger.warn(&quot;decoder issue&quot;, e1);</span>
-<span class="nc" id="L861">      status = HttpResponseStatus.NOT_ACCEPTABLE;</span>
-<span class="nc" id="L862">      throw new HttpIncorrectRequestException(e1);</span>
-<span class="nc" id="L863">    }</span>
-<span class="nc bnc" id="L864" title="All 2 branches missed.">    for (final InterfaceHttpData data : datas) {</span>
-<span class="nc" id="L865">      readHttpData(data, ctx);</span>
-<span class="nc" id="L866">    }</span>
-<span class="nc" id="L867">  }</span>
+<span class="nc" id="L891">      logger.warn(&quot;decoder issue&quot;, e1);</span>
+<span class="nc" id="L892">      status = HttpResponseStatus.NOT_ACCEPTABLE;</span>
+<span class="nc" id="L893">      throw new HttpIncorrectRequestException(e1);</span>
+<span class="nc" id="L894">    }</span>
+<span class="nc bnc" id="L895" title="All 2 branches missed.">    for (final InterfaceHttpData data : datas) {</span>
+<span class="nc" id="L896">      readHttpData(data, ctx);</span>
+<span class="nc" id="L897">    }</span>
+<span class="nc" id="L898">  }</span>
 
   /**
    * Read request by chunk and getting values from chunk to chunk
@@ -876,17 +907,17 @@ public abstract class HttpRequestHandler
   protected void readHttpDataChunkByChunk(final ChannelHandlerContext ctx)
       throws HttpIncorrectRequestException {
     try {
-<span class="nc bnc" id="L879" title="All 2 branches missed.">      while (decoder.hasNext()) {</span>
-<span class="nc" id="L880">        final InterfaceHttpData data = decoder.next();</span>
-<span class="nc bnc" id="L881" title="All 2 branches missed.">        if (data != null) {</span>
+<span class="pc bpc" id="L910" title="1 of 2 branches missed.">      while (decoder.hasNext()) {</span>
+<span class="nc" id="L911">        final InterfaceHttpData data = decoder.next();</span>
+<span class="nc bnc" id="L912" title="All 2 branches missed.">        if (data != null) {</span>
           // new value
-<span class="nc" id="L883">          readHttpData(data, ctx);</span>
+<span class="nc" id="L914">          readHttpData(data, ctx);</span>
         }
-<span class="nc" id="L885">      }</span>
-<span class="nc" id="L886">    } catch (final EndOfDataDecoderException e1) {</span>
+<span class="nc" id="L916">      }</span>
+<span class="nc" id="L917">    } catch (final EndOfDataDecoderException e1) {</span>
       // end
-<span class="nc" id="L888">    }</span>
-<span class="nc" id="L889">  }</span>
+<span class="fc" id="L919">    }</span>
+<span class="fc" id="L920">  }</span>
 
   /**
    * Read one Data
@@ -899,40 +930,40 @@ public abstract class HttpRequestHandler
   protected void readHttpData(final InterfaceHttpData data,
                               final ChannelHandlerContext ctx)
       throws HttpIncorrectRequestException {
-<span class="nc bnc" id="L902" title="All 2 branches missed.">    if (data.getHttpDataType() == HttpDataType.Attribute) {</span>
-<span class="nc" id="L903">      final Attribute attribute = (Attribute) data;</span>
-<span class="nc" id="L904">      final String name = attribute.getName();</span>
+<span class="nc bnc" id="L933" title="All 2 branches missed.">    if (data.getHttpDataType() == HttpDataType.Attribute) {</span>
+<span class="nc" id="L934">      final Attribute attribute = (Attribute) data;</span>
+<span class="nc" id="L935">      final String name = attribute.getName();</span>
       try {
-<span class="nc" id="L906">        final String value = attribute.getValue();</span>
-<span class="nc" id="L907">        httpPage.setValue(businessRequest, name, value, FieldPosition.BODY);</span>
-<span class="nc" id="L908">      } catch (final IOException e) {</span>
+<span class="nc" id="L937">        final String value = attribute.getValue();</span>
+<span class="nc" id="L938">        httpPage.setValue(businessRequest, name, value, FieldPosition.BODY);</span>
+<span class="nc" id="L939">      } catch (final IOException e) {</span>
         // Error while reading data from File, only print name and
         // error
-<span class="nc" id="L911">        attribute.delete();</span>
-<span class="nc" id="L912">        status = HttpResponseStatus.INTERNAL_SERVER_ERROR;</span>
-<span class="nc" id="L913">        throw new HttpIncorrectRequestException(e);</span>
-<span class="nc" id="L914">      }</span>
-<span class="nc" id="L915">      attribute.delete();</span>
-<span class="nc bnc" id="L916" title="All 2 branches missed.">    } else if (data.getHttpDataType() == HttpDataType.FileUpload) {</span>
-<span class="nc" id="L917">      final FileUpload fileUpload = (FileUpload) data;</span>
-<span class="nc bnc" id="L918" title="All 2 branches missed.">      if (fileUpload.isCompleted()) {</span>
-<span class="nc" id="L919">        final AbstractHttpField field =</span>
-<span class="nc" id="L920">            httpPage.getField(businessRequest, fileUpload.getName());</span>
-<span class="nc bnc" id="L921" title="All 2 branches missed.">        if (field != null &amp;&amp;</span>
-<span class="nc bnc" id="L922" title="All 2 branches missed.">            field.getFieldtype() == FieldRole.BUSINESS_INPUT_FILE) {</span>
-<span class="nc" id="L923">          httpPage.setValue(businessRequest, field.getFieldname(), fileUpload);</span>
+<span class="nc" id="L942">        attribute.delete();</span>
+<span class="nc" id="L943">        status = HttpResponseStatus.INTERNAL_SERVER_ERROR;</span>
+<span class="nc" id="L944">        throw new HttpIncorrectRequestException(e);</span>
+<span class="nc" id="L945">      }</span>
+<span class="nc" id="L946">      attribute.delete();</span>
+<span class="nc bnc" id="L947" title="All 2 branches missed.">    } else if (data.getHttpDataType() == HttpDataType.FileUpload) {</span>
+<span class="nc" id="L948">      final FileUpload fileUpload = (FileUpload) data;</span>
+<span class="nc bnc" id="L949" title="All 2 branches missed.">      if (fileUpload.isCompleted()) {</span>
+<span class="nc" id="L950">        final AbstractHttpField field =</span>
+<span class="nc" id="L951">            httpPage.getField(businessRequest, fileUpload.getName());</span>
+<span class="nc bnc" id="L952" title="All 2 branches missed.">        if (field != null &amp;&amp;</span>
+<span class="nc bnc" id="L953" title="All 2 branches missed.">            field.getFieldtype() == FieldRole.BUSINESS_INPUT_FILE) {</span>
+<span class="nc" id="L954">          httpPage.setValue(businessRequest, field.getFieldname(), fileUpload);</span>
         } else {
-<span class="nc" id="L925">          logger.warn(&quot;File received but no variable for it&quot;);</span>
-<span class="nc" id="L926">          fileUpload.delete();</span>
+<span class="nc" id="L956">          logger.warn(&quot;File received but no variable for it&quot;);</span>
+<span class="nc" id="L957">          fileUpload.delete();</span>
         }
-<span class="nc" id="L928">      } else {</span>
-<span class="nc" id="L929">        logger.warn(&quot;File still pending but should not&quot;);</span>
-<span class="nc" id="L930">        fileUpload.delete();</span>
+<span class="nc" id="L959">      } else {</span>
+<span class="nc" id="L960">        logger.warn(&quot;File still pending but should not&quot;);</span>
+<span class="nc" id="L961">        fileUpload.delete();</span>
       }
-<span class="nc" id="L932">    } else {</span>
-<span class="nc" id="L933">      logger.warn(&quot;Unknown element: &quot; + data);</span>
+<span class="nc" id="L963">    } else {</span>
+<span class="nc" id="L964">      logger.warn(&quot;Unknown element: &quot; + data);</span>
     }
-<span class="nc" id="L935">  }</span>
+<span class="nc" id="L966">  }</span>
 
   /**
    * Default Session Cookie generator
@@ -940,7 +971,7 @@ public abstract class HttpRequestHandler
    * @return the new session cookie value
    */
   protected String getNewCookieSession() {
-<span class="nc" id="L943">    return &quot;Waarp&quot; + Long.toHexString(random.nextLong());</span>
+<span class="fc" id="L974">    return &quot;Waarp&quot; + Long.toHexString(random.nextLong());</span>
   }
 
   /**
@@ -949,17 +980,17 @@ public abstract class HttpRequestHandler
    * @param ctx
    */
   protected void createNewSessionAtConnection(final ChannelHandlerContext ctx) {
-<span class="nc" id="L952">    session = new HttpSession();</span>
-<span class="nc" id="L953">    session.setHttpAuth(new DefaultHttpAuth(session));</span>
-<span class="nc" id="L954">    session.setCookieSession(getNewCookieSession());</span>
-<span class="nc" id="L955">    session.setCurrentCommand(PageRole.HTML);</span>
-<span class="nc" id="L956">  }</span>
+<span class="fc" id="L983">    session = new HttpSession();</span>
+<span class="fc" id="L984">    session.setHttpAuth(new DefaultHttpAuth(session));</span>
+<span class="fc" id="L985">    session.setCookieSession(getNewCookieSession());</span>
+<span class="fc" id="L986">    session.setCurrentCommand(PageRole.HTML);</span>
+<span class="fc" id="L987">  }</span>
 
   @Override
   public void channelActive(final ChannelHandlerContext ctx) throws Exception {
-<span class="nc" id="L960">    super.channelActive(ctx);</span>
-<span class="nc" id="L961">    createNewSessionAtConnection(ctx);</span>
-<span class="nc" id="L962">  }</span>
+<span class="fc" id="L991">    super.channelActive(ctx);</span>
+<span class="fc" id="L992">    createNewSessionAtConnection(ctx);</span>
+<span class="fc" id="L993">  }</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

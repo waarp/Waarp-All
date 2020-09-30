@@ -863,7 +863,7 @@
 <a class="jxr_linenumber" name="L855" href="#L855">855</a>           logger.debug(<span class="jxr_string">"Recv ICAP Preview Status Continue"</span>);
 <a class="jxr_linenumber" name="L856" href="#L856">856</a>           <strong class="jxr_keyword">return</strong> 0; <em class="jxr_comment">//Continue transfer</em>
 <a class="jxr_linenumber" name="L857" href="#L857">857</a>         <strong class="jxr_keyword">case</strong> 200:
-<a class="jxr_linenumber" name="L858" href="#L858">858</a>           logger.debug(<span class="jxr_string">"Recv ICAP Preview Status Abort"</span>);
+<a class="jxr_linenumber" name="L858" href="#L858">858</a>           logger.info(<span class="jxr_string">"Recv ICAP Preview Status Abort"</span>);
 <a class="jxr_linenumber" name="L859" href="#L859">859</a>           <strong class="jxr_keyword">return</strong> -1;
 <a class="jxr_linenumber" name="L860" href="#L860">860</a>         <strong class="jxr_keyword">case</strong> 204:
 <a class="jxr_linenumber" name="L861" href="#L861">861</a>           logger.debug(<span class="jxr_string">"Recv ICAP Preview Status Accepted"</span>);
@@ -926,7 +926,7 @@
 <a class="jxr_linenumber" name="L918" href="#L918">918</a>             getHeaderHttp();
 <a class="jxr_linenumber" name="L919" href="#L919">919</a>           }
 <a class="jxr_linenumber" name="L920" href="#L920">920</a>         }
-<a class="jxr_linenumber" name="L921" href="#L921">921</a>         logger.debug(<span class="jxr_string">"Final status with check {}"</span>, finalStatus);
+<a class="jxr_linenumber" name="L921" href="#L921">921</a>         logger.info(<span class="jxr_string">"Final status with check {}"</span>, finalStatus);
 <a class="jxr_linenumber" name="L922" href="#L922">922</a>         <strong class="jxr_keyword">return</strong> finalStatus;
 <a class="jxr_linenumber" name="L923" href="#L923">923</a>       }
 <a class="jxr_linenumber" name="L924" href="#L924">924</a>     }
@@ -1199,46 +1199,44 @@
 <a class="jxr_linenumber" name="L1191" href="#L1191">1191</a>       <strong class="jxr_keyword">if</strong> (withFlush) {
 <a class="jxr_linenumber" name="L1192" href="#L1192">1192</a>         out.flush();
 <a class="jxr_linenumber" name="L1193" href="#L1193">1193</a>       }
-<a class="jxr_linenumber" name="L1194" href="#L1194">1194</a>       logger.trace(<span class="jxr_string">"SEND Request:\n{}"</span>, requestHeader);
-<a class="jxr_linenumber" name="L1195" href="#L1195">1195</a>     } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> SocketTimeoutException e) {
-<a class="jxr_linenumber" name="L1196" href="#L1196">1196</a>       logger.error(TIMEOUT_OCCURS_WITH_THE_SERVER_SINCE, serverIP, port,
-<a class="jxr_linenumber" name="L1197" href="#L1197">1197</a>                    e.getMessage());
-<a class="jxr_linenumber" name="L1198" href="#L1198">1198</a>       <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> <a name="IcapException" href="../../../org/waarp/icap/IcapException.html#IcapException">IcapException</a>(TIMEOUT_OCCURS_WITH_THE_SERVER, e,
-<a class="jxr_linenumber" name="L1199" href="#L1199">1199</a>                               IcapError.ICAP_TIMEOUT_ERROR);
-<a class="jxr_linenumber" name="L1200" href="#L1200">1200</a>     } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> IOException e) {
-<a class="jxr_linenumber" name="L1201" href="#L1201">1201</a>       logger.error(<span class="jxr_string">"Client cannot communicate with ICAP Server: {}"</span>,
-<a class="jxr_linenumber" name="L1202" href="#L1202">1202</a>                    e.getMessage());
-<a class="jxr_linenumber" name="L1203" href="#L1203">1203</a>       <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> <a name="IcapException" href="../../../org/waarp/icap/IcapException.html#IcapException">IcapException</a>(<span class="jxr_string">"Client cannot communicate with ICAP Server"</span>, e,
-<a class="jxr_linenumber" name="L1204" href="#L1204">1204</a>                               IcapError.ICAP_NETWORK_ERROR);
-<a class="jxr_linenumber" name="L1205" href="#L1205">1205</a>     }
-<a class="jxr_linenumber" name="L1206" href="#L1206">1206</a>   }
-<a class="jxr_linenumber" name="L1207" href="#L1207">1207</a> 
-<a class="jxr_linenumber" name="L1208" href="#L1208">1208</a>   <em class="jxr_javadoccomment">/**</em>
-<a class="jxr_linenumber" name="L1209" href="#L1209">1209</a> <em class="jxr_javadoccomment">   * Sends bytes of data from a byte-array through the socket connection.</em>
-<a class="jxr_linenumber" name="L1210" href="#L1210">1210</a> <em class="jxr_javadoccomment">   *</em>
-<a class="jxr_linenumber" name="L1211" href="#L1211">1211</a> <em class="jxr_javadoccomment">   * @param chunk The byte-array to send</em>
-<a class="jxr_linenumber" name="L1212" href="#L1212">1212</a> <em class="jxr_javadoccomment">   *</em>
-<a class="jxr_linenumber" name="L1213" href="#L1213">1213</a> <em class="jxr_javadoccomment">   * @throws IcapException if a network error is raised</em>
-<a class="jxr_linenumber" name="L1214" href="#L1214">1214</a> <em class="jxr_javadoccomment">   */</em>
-<a class="jxr_linenumber" name="L1215" href="#L1215">1215</a>   <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">void</strong> sendBytes(<strong class="jxr_keyword">final</strong> byte[] chunk, <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong> length)
-<a class="jxr_linenumber" name="L1216" href="#L1216">1216</a>       <strong class="jxr_keyword">throws</strong> <a name="IcapException" href="../../../org/waarp/icap/IcapException.html#IcapException">IcapException</a> {
-<a class="jxr_linenumber" name="L1217" href="#L1217">1217</a>     <strong class="jxr_keyword">try</strong> {
-<a class="jxr_linenumber" name="L1218" href="#L1218">1218</a>       out.write(chunk, 0, length);
-<a class="jxr_linenumber" name="L1219" href="#L1219">1219</a>       logger.trace(<span class="jxr_string">"SEND {} bytes"</span>, length);
-<a class="jxr_linenumber" name="L1220" href="#L1220">1220</a>     } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> SocketTimeoutException e) {
-<a class="jxr_linenumber" name="L1221" href="#L1221">1221</a>       logger.error(TIMEOUT_OCCURS_WITH_THE_SERVER_SINCE, serverIP, port,
-<a class="jxr_linenumber" name="L1222" href="#L1222">1222</a>                    e.getMessage());
-<a class="jxr_linenumber" name="L1223" href="#L1223">1223</a>       <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> <a name="IcapException" href="../../../org/waarp/icap/IcapException.html#IcapException">IcapException</a>(TIMEOUT_OCCURS_WITH_THE_SERVER, e,
-<a class="jxr_linenumber" name="L1224" href="#L1224">1224</a>                               IcapError.ICAP_TIMEOUT_ERROR);
-<a class="jxr_linenumber" name="L1225" href="#L1225">1225</a>     } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> IOException e) {
-<a class="jxr_linenumber" name="L1226" href="#L1226">1226</a>       logger.error(<span class="jxr_string">"Client cannot communicate with ICAP Server: {}"</span>,
-<a class="jxr_linenumber" name="L1227" href="#L1227">1227</a>                    e.getMessage());
-<a class="jxr_linenumber" name="L1228" href="#L1228">1228</a>       <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> <a name="IcapException" href="../../../org/waarp/icap/IcapException.html#IcapException">IcapException</a>(<span class="jxr_string">"Writing to ICAP Server cannot be done"</span>, e,
-<a class="jxr_linenumber" name="L1229" href="#L1229">1229</a>                               IcapError.ICAP_NETWORK_ERROR);
-<a class="jxr_linenumber" name="L1230" href="#L1230">1230</a>     }
-<a class="jxr_linenumber" name="L1231" href="#L1231">1231</a>   }
-<a class="jxr_linenumber" name="L1232" href="#L1232">1232</a> 
-<a class="jxr_linenumber" name="L1233" href="#L1233">1233</a> }
+<a class="jxr_linenumber" name="L1194" href="#L1194">1194</a>     } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> SocketTimeoutException e) {
+<a class="jxr_linenumber" name="L1195" href="#L1195">1195</a>       logger.error(TIMEOUT_OCCURS_WITH_THE_SERVER_SINCE, serverIP, port,
+<a class="jxr_linenumber" name="L1196" href="#L1196">1196</a>                    e.getMessage());
+<a class="jxr_linenumber" name="L1197" href="#L1197">1197</a>       <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> <a name="IcapException" href="../../../org/waarp/icap/IcapException.html#IcapException">IcapException</a>(TIMEOUT_OCCURS_WITH_THE_SERVER, e,
+<a class="jxr_linenumber" name="L1198" href="#L1198">1198</a>                               IcapError.ICAP_TIMEOUT_ERROR);
+<a class="jxr_linenumber" name="L1199" href="#L1199">1199</a>     } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> IOException e) {
+<a class="jxr_linenumber" name="L1200" href="#L1200">1200</a>       logger.error(<span class="jxr_string">"Client cannot communicate with ICAP Server: {}"</span>,
+<a class="jxr_linenumber" name="L1201" href="#L1201">1201</a>                    e.getMessage());
+<a class="jxr_linenumber" name="L1202" href="#L1202">1202</a>       <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> <a name="IcapException" href="../../../org/waarp/icap/IcapException.html#IcapException">IcapException</a>(<span class="jxr_string">"Client cannot communicate with ICAP Server"</span>, e,
+<a class="jxr_linenumber" name="L1203" href="#L1203">1203</a>                               IcapError.ICAP_NETWORK_ERROR);
+<a class="jxr_linenumber" name="L1204" href="#L1204">1204</a>     }
+<a class="jxr_linenumber" name="L1205" href="#L1205">1205</a>   }
+<a class="jxr_linenumber" name="L1206" href="#L1206">1206</a> 
+<a class="jxr_linenumber" name="L1207" href="#L1207">1207</a>   <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L1208" href="#L1208">1208</a> <em class="jxr_javadoccomment">   * Sends bytes of data from a byte-array through the socket connection.</em>
+<a class="jxr_linenumber" name="L1209" href="#L1209">1209</a> <em class="jxr_javadoccomment">   *</em>
+<a class="jxr_linenumber" name="L1210" href="#L1210">1210</a> <em class="jxr_javadoccomment">   * @param chunk The byte-array to send</em>
+<a class="jxr_linenumber" name="L1211" href="#L1211">1211</a> <em class="jxr_javadoccomment">   *</em>
+<a class="jxr_linenumber" name="L1212" href="#L1212">1212</a> <em class="jxr_javadoccomment">   * @throws IcapException if a network error is raised</em>
+<a class="jxr_linenumber" name="L1213" href="#L1213">1213</a> <em class="jxr_javadoccomment">   */</em>
+<a class="jxr_linenumber" name="L1214" href="#L1214">1214</a>   <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">void</strong> sendBytes(<strong class="jxr_keyword">final</strong> byte[] chunk, <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong> length)
+<a class="jxr_linenumber" name="L1215" href="#L1215">1215</a>       <strong class="jxr_keyword">throws</strong> <a name="IcapException" href="../../../org/waarp/icap/IcapException.html#IcapException">IcapException</a> {
+<a class="jxr_linenumber" name="L1216" href="#L1216">1216</a>     <strong class="jxr_keyword">try</strong> {
+<a class="jxr_linenumber" name="L1217" href="#L1217">1217</a>       out.write(chunk, 0, length);
+<a class="jxr_linenumber" name="L1218" href="#L1218">1218</a>     } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> SocketTimeoutException e) {
+<a class="jxr_linenumber" name="L1219" href="#L1219">1219</a>       logger.error(TIMEOUT_OCCURS_WITH_THE_SERVER_SINCE, serverIP, port,
+<a class="jxr_linenumber" name="L1220" href="#L1220">1220</a>                    e.getMessage());
+<a class="jxr_linenumber" name="L1221" href="#L1221">1221</a>       <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> <a name="IcapException" href="../../../org/waarp/icap/IcapException.html#IcapException">IcapException</a>(TIMEOUT_OCCURS_WITH_THE_SERVER, e,
+<a class="jxr_linenumber" name="L1222" href="#L1222">1222</a>                               IcapError.ICAP_TIMEOUT_ERROR);
+<a class="jxr_linenumber" name="L1223" href="#L1223">1223</a>     } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> IOException e) {
+<a class="jxr_linenumber" name="L1224" href="#L1224">1224</a>       logger.error(<span class="jxr_string">"Client cannot communicate with ICAP Server: {}"</span>,
+<a class="jxr_linenumber" name="L1225" href="#L1225">1225</a>                    e.getMessage());
+<a class="jxr_linenumber" name="L1226" href="#L1226">1226</a>       <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> <a name="IcapException" href="../../../org/waarp/icap/IcapException.html#IcapException">IcapException</a>(<span class="jxr_string">"Writing to ICAP Server cannot be done"</span>, e,
+<a class="jxr_linenumber" name="L1227" href="#L1227">1227</a>                               IcapError.ICAP_NETWORK_ERROR);
+<a class="jxr_linenumber" name="L1228" href="#L1228">1228</a>     }
+<a class="jxr_linenumber" name="L1229" href="#L1229">1229</a>   }
+<a class="jxr_linenumber" name="L1230" href="#L1230">1230</a> 
+<a class="jxr_linenumber" name="L1231" href="#L1231">1231</a> }
 </pre>
 <hr/>
 <div id="footer">Copyright &#169; 2009&#x2013;2020 <a href="http://www.waarp.fr">Waarp</a>. All rights reserved.</div>

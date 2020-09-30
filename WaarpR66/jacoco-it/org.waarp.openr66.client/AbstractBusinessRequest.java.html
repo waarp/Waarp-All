@@ -54,9 +54,9 @@ public abstract class AbstractBusinessRequest implements Runnable {
    */
   protected static volatile WaarpLogger logger;
 
-<span class="nc" id="L57">  protected static final String INFO_ARGS =</span>
-<span class="nc" id="L58">      Messages.getString(&quot;AbstractBusinessRequest.0&quot;) //$NON-NLS-1$</span>
-<span class="nc" id="L59">      + Messages.getString(&quot;Message.OutputFormat&quot;);</span>
+<span class="fc" id="L57">  protected static final String INFO_ARGS =</span>
+<span class="fc" id="L58">      Messages.getString(&quot;AbstractBusinessRequest.0&quot;) //$NON-NLS-1$</span>
+<span class="fc" id="L59">      + Messages.getString(&quot;Message.OutputFormat&quot;);</span>
 
   protected final R66Future future;
 
@@ -72,29 +72,29 @@ public abstract class AbstractBusinessRequest implements Runnable {
                                     final R66Future future,
                                     final String remoteHost,
                                     final NetworkTransaction networkTransaction,
-<span class="nc" id="L75">                                    final BusinessRequestPacket packet) {</span>
-<span class="nc bnc" id="L76" title="All 2 branches missed.">    if (logger == null) {</span>
-<span class="nc" id="L77">      logger = WaarpLoggerFactory.getLogger(clasz);</span>
+<span class="fc" id="L75">                                    final BusinessRequestPacket packet) {</span>
+<span class="fc bfc" id="L76" title="All 2 branches covered.">    if (logger == null) {</span>
+<span class="fc" id="L77">      logger = WaarpLoggerFactory.getLogger(clasz);</span>
     }
-<span class="nc" id="L79">    this.future = future;</span>
-<span class="nc" id="L80">    this.remoteHost = remoteHost;</span>
-<span class="nc" id="L81">    this.networkTransaction = networkTransaction;</span>
-<span class="nc" id="L82">    businessPacket = packet;</span>
-<span class="nc" id="L83">  }</span>
+<span class="fc" id="L79">    this.future = future;</span>
+<span class="fc" id="L80">    this.remoteHost = remoteHost;</span>
+<span class="fc" id="L81">    this.networkTransaction = networkTransaction;</span>
+<span class="fc" id="L82">    businessPacket = packet;</span>
+<span class="fc" id="L83">  }</span>
 
   @Override
   public void run() {
     try {
-<span class="nc" id="L88">      initRequest();</span>
-<span class="nc" id="L89">      sendRequest();</span>
-<span class="nc" id="L90">    } catch (final OpenR66ProtocolNoConnectionException ignored) {</span>
+<span class="fc" id="L88">      initRequest();</span>
+<span class="fc" id="L89">      sendRequest();</span>
+<span class="fc" id="L90">    } catch (final OpenR66ProtocolNoConnectionException ignored) {</span>
       // notning
-<span class="nc" id="L92">    }</span>
-<span class="nc" id="L93">  }</span>
+<span class="fc" id="L92">    }</span>
+<span class="fc" id="L93">  }</span>
 
   public void initRequest() throws OpenR66ProtocolNoConnectionException {
-<span class="nc" id="L96">    final DbHostAuth host = R66Auth.getServerAuth(remoteHost);</span>
-<span class="nc bnc" id="L97" title="All 2 branches missed.">    if (host == null) {</span>
+<span class="fc" id="L96">    final DbHostAuth host = R66Auth.getServerAuth(remoteHost);</span>
+<span class="pc bpc" id="L97" title="1 of 2 branches missed.">    if (host == null) {</span>
 <span class="nc" id="L98">      future.setResult(null);</span>
 <span class="nc" id="L99">      final OpenR66ProtocolNoConnectionException e2 =</span>
           new OpenR66ProtocolNoConnectionException(
@@ -105,7 +105,7 @@ public abstract class AbstractBusinessRequest implements Runnable {
     }
     final SocketAddress socketServerAddress;
     try {
-<span class="nc" id="L108">      socketServerAddress = host.getSocketAddress();</span>
+<span class="fc" id="L108">      socketServerAddress = host.getSocketAddress();</span>
 <span class="nc" id="L109">    } catch (final IllegalArgumentException e) {</span>
 <span class="nc" id="L110">      future.setResult(null);</span>
 <span class="nc" id="L111">      final OpenR66ProtocolNoConnectionException e2 =</span>
@@ -114,34 +114,34 @@ public abstract class AbstractBusinessRequest implements Runnable {
               host); //$NON-NLS-1$
 <span class="nc" id="L115">      future.setFailure(e2);</span>
 <span class="nc" id="L116">      throw e2;</span>
-<span class="nc" id="L117">    }</span>
-<span class="nc" id="L118">    final boolean isSSL = host.isSsl();</span>
-<span class="nc" id="L119">    localChannelReference = networkTransaction</span>
-<span class="nc" id="L120">        .createConnectionWithRetry(socketServerAddress, isSSL, future);</span>
-<span class="nc bnc" id="L121" title="All 2 branches missed.">    if (localChannelReference == null) {</span>
-<span class="nc" id="L122">      future.setResult(null);</span>
-<span class="nc" id="L123">      final OpenR66ProtocolNoConnectionException e =</span>
+<span class="fc" id="L117">    }</span>
+<span class="fc" id="L118">    final boolean isSSL = host.isSsl();</span>
+<span class="fc" id="L119">    localChannelReference = networkTransaction</span>
+<span class="fc" id="L120">        .createConnectionWithRetry(socketServerAddress, isSSL, future);</span>
+<span class="fc bfc" id="L121" title="All 2 branches covered.">    if (localChannelReference == null) {</span>
+<span class="fc" id="L122">      future.setResult(null);</span>
+<span class="fc" id="L123">      final OpenR66ProtocolNoConnectionException e =</span>
           new OpenR66ProtocolNoConnectionException(
-<span class="nc" id="L125">              Messages.getString(ADMIN_R_66_OPERATIONS_GUI_188) +</span>
+<span class="fc" id="L125">              Messages.getString(ADMIN_R_66_OPERATIONS_GUI_188) +</span>
               host); //$NON-NLS-1$
-<span class="nc" id="L127">      future.setFailure(e);</span>
-<span class="nc" id="L128">      throw e;</span>
+<span class="fc" id="L127">      future.setFailure(e);</span>
+<span class="fc" id="L128">      throw e;</span>
     }
-<span class="nc" id="L130">    localChannelReference.sessionNewState(R66FiniteDualStates.BUSINESSR);</span>
-<span class="nc" id="L131">  }</span>
+<span class="fc" id="L130">    localChannelReference.sessionNewState(R66FiniteDualStates.BUSINESSR);</span>
+<span class="fc" id="L131">  }</span>
 
   public void sendRequest() {
     try {
-<span class="nc" id="L135">      ChannelUtils</span>
-<span class="nc" id="L136">          .writeAbstractLocalPacket(localChannelReference, businessPacket,</span>
+<span class="fc" id="L135">      ChannelUtils</span>
+<span class="fc" id="L136">          .writeAbstractLocalPacket(localChannelReference, businessPacket,</span>
                                     false);
 <span class="nc" id="L138">    } catch (final OpenR66ProtocolPacketException e) {</span>
 <span class="nc" id="L139">      future.setResult(null);</span>
 <span class="nc" id="L140">      future.setFailure(e);</span>
 <span class="nc" id="L141">      localChannelReference.close();</span>
-<span class="nc" id="L142">    }</span>
+<span class="fc" id="L142">    }</span>
 
-<span class="nc" id="L144">  }</span>
+<span class="fc" id="L144">  }</span>
 
   /**
    * Dummy Main method
@@ -180,25 +180,24 @@ public abstract class AbstractBusinessRequest implements Runnable {
      * rhost, networkTransaction, packet); transaction.run(); future.awaitUninterruptibly()
      */
 <span class="nc" id="L182">    final long time2 = System.currentTimeMillis();</span>
-<span class="nc" id="L183">    logger.debug(&quot;Finish Business Request: &quot; + future.isSuccess());</span>
+<span class="nc" id="L183">    logger.debug(&quot;Finish Business Request: {}&quot;, future.isSuccess());</span>
 <span class="nc" id="L184">    final long delay = time2 - time1;</span>
 <span class="nc bnc" id="L185" title="All 2 branches missed.">    if (future.isSuccess()) {</span>
 <span class="nc" id="L186">      logger.info(</span>
-          &quot;Business Request in status: SUCCESS&quot; + &quot;    &lt;REMOTE&gt;&quot; + rhost +
-          &quot;&lt;/REMOTE&gt;&quot; + &quot;    delay: &quot; + delay);
+          &quot;Business Request in status: SUCCESS    &lt;REMOTE&gt;{}&lt;/REMOTE&gt;    delay: {}&quot;,
+<span class="nc" id="L188">          rhost, delay);</span>
     } else {
 <span class="nc" id="L190">      logger.info(</span>
-          &quot;Business Request in status: FAILURE&quot; + &quot;    &lt;REMOTE&gt;&quot; + rhost +
-<span class="nc" id="L192">          &quot;&lt;/REMOTE&gt;&quot; + &quot;    &lt;ERROR&gt;&quot; + future.getCause() + &quot;&lt;/ERROR&gt;&quot; +</span>
-          &quot;    delay: &quot; + delay);
-<span class="nc bnc" id="L194" title="All 2 branches missed.">      if (DetectionUtils.isJunit()) {</span>
-<span class="nc" id="L195">        return;</span>
+          &quot;Business Request in status: FAILURE    &lt;REMOTE&gt;{}&lt;/REMOTE&gt;    &lt;ERROR&gt;{}&lt;/ERROR&gt;    delay: {}&quot;,
+<span class="nc" id="L192">          rhost, future.getCause(), delay);</span>
+<span class="nc bnc" id="L193" title="All 2 branches missed.">      if (DetectionUtils.isJunit()) {</span>
+<span class="nc" id="L194">        return;</span>
       }
-<span class="nc" id="L197">      networkTransaction.closeAll();</span>
-<span class="nc" id="L198">      System.exit(ErrorCode.Unknown.ordinal());//NOSONAR</span>
+<span class="nc" id="L196">      networkTransaction.closeAll();</span>
+<span class="nc" id="L197">      System.exit(ErrorCode.Unknown.ordinal());//NOSONAR</span>
     }
-<span class="nc" id="L200">    networkTransaction.closeAll();</span>
-<span class="nc" id="L201">  }</span>
+<span class="nc" id="L199">    networkTransaction.closeAll();</span>
+<span class="nc" id="L200">  }</span>
 
   protected static String rhost;
   protected static String classname;
@@ -213,45 +212,45 @@ public abstract class AbstractBusinessRequest implements Runnable {
    * @return True if all parameters were found and correct
    */
   protected static boolean getParams(final String[] args) {
-<span class="nc bnc" id="L216" title="All 2 branches missed.">    if (logger == null) {</span>
-<span class="nc" id="L217">      logger = WaarpLoggerFactory.getLogger(AbstractBusinessRequest.class);</span>
+<span class="nc bnc" id="L215" title="All 2 branches missed.">    if (logger == null) {</span>
+<span class="nc" id="L216">      logger = WaarpLoggerFactory.getLogger(AbstractBusinessRequest.class);</span>
     }
-<span class="nc bnc" id="L219" title="All 2 branches missed.">    if (args.length &lt; 3) {</span>
-<span class="nc" id="L220">      logger.error(INFO_ARGS);</span>
-<span class="nc" id="L221">      return false;</span>
+<span class="nc bnc" id="L218" title="All 2 branches missed.">    if (args.length &lt; 3) {</span>
+<span class="nc" id="L219">      logger.error(INFO_ARGS);</span>
+<span class="nc" id="L220">      return false;</span>
     }
-<span class="nc" id="L223">    if (!FileBasedConfiguration</span>
-<span class="nc bnc" id="L224" title="All 2 branches missed.">        .setClientConfigurationFromXml(Configuration.configuration, args[0])) {</span>
-<span class="nc" id="L225">      logger.error(</span>
-<span class="nc" id="L226">          Messages.getString(&quot;Configuration.NeedCorrectConfig&quot;)); //$NON-NLS-1$</span>
-<span class="nc" id="L227">      return false;</span>
+<span class="nc" id="L222">    if (!FileBasedConfiguration</span>
+<span class="nc bnc" id="L223" title="All 2 branches missed.">        .setClientConfigurationFromXml(Configuration.configuration, args[0])) {</span>
+<span class="nc" id="L224">      logger.error(</span>
+<span class="nc" id="L225">          Messages.getString(&quot;Configuration.NeedCorrectConfig&quot;)); //$NON-NLS-1$</span>
+<span class="nc" id="L226">      return false;</span>
     }
     // Now set default values from configuration
-<span class="nc bnc" id="L230" title="All 2 branches missed.">    for (int i = 1; i &lt; args.length; i++) {</span>
-<span class="nc bnc" id="L231" title="All 2 branches missed.">      if (&quot;-to&quot;.equalsIgnoreCase(args[i])) {</span>
-<span class="nc" id="L232">        i++;</span>
-<span class="nc" id="L233">        rhost = args[i];</span>
-<span class="nc bnc" id="L234" title="All 2 branches missed.">        if (Configuration.configuration.getAliases().containsKey(rhost)) {</span>
-<span class="nc" id="L235">          rhost = Configuration.configuration.getAliases().get(rhost);</span>
+<span class="nc bnc" id="L229" title="All 2 branches missed.">    for (int i = 1; i &lt; args.length; i++) {</span>
+<span class="nc bnc" id="L230" title="All 2 branches missed.">      if (&quot;-to&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L231">        i++;</span>
+<span class="nc" id="L232">        rhost = args[i];</span>
+<span class="nc bnc" id="L233" title="All 2 branches missed.">        if (Configuration.configuration.getAliases().containsKey(rhost)) {</span>
+<span class="nc" id="L234">          rhost = Configuration.configuration.getAliases().get(rhost);</span>
         }
-<span class="nc bnc" id="L237" title="All 2 branches missed.">      } else if (&quot;-class&quot;.equalsIgnoreCase(args[i])) {</span>
-<span class="nc" id="L238">        i++;</span>
-<span class="nc" id="L239">        classname = args[i];</span>
-<span class="nc bnc" id="L240" title="All 2 branches missed.">      } else if (&quot;-arg&quot;.equalsIgnoreCase(args[i])) {</span>
-<span class="nc" id="L241">        i++;</span>
-<span class="nc" id="L242">        classarg = args[i];</span>
-<span class="nc bnc" id="L243" title="All 2 branches missed.">      } else if (&quot;-nolog&quot;.equalsIgnoreCase(args[i])) {</span>
-<span class="nc" id="L244">        nolog = true;</span>
-<span class="nc" id="L245">        i++;</span>
+<span class="nc bnc" id="L236" title="All 2 branches missed.">      } else if (&quot;-class&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L237">        i++;</span>
+<span class="nc" id="L238">        classname = args[i];</span>
+<span class="nc bnc" id="L239" title="All 2 branches missed.">      } else if (&quot;-arg&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L240">        i++;</span>
+<span class="nc" id="L241">        classarg = args[i];</span>
+<span class="nc bnc" id="L242" title="All 2 branches missed.">      } else if (&quot;-nolog&quot;.equalsIgnoreCase(args[i])) {</span>
+<span class="nc" id="L243">        nolog = true;</span>
+<span class="nc" id="L244">        i++;</span>
       }
     }
-<span class="nc" id="L248">    OutputFormat.getParams(args);</span>
-<span class="nc bnc" id="L249" title="All 4 branches missed.">    if (rhost != null &amp;&amp; classname != null) {</span>
-<span class="nc" id="L250">      return true;</span>
+<span class="nc" id="L247">    OutputFormat.getParams(args);</span>
+<span class="nc bnc" id="L248" title="All 4 branches missed.">    if (rhost != null &amp;&amp; classname != null) {</span>
+<span class="nc" id="L249">      return true;</span>
     }
-<span class="nc" id="L252">    logger.error(Messages.getString(&quot;AbstractBusinessRequest.NeedMoreArgs&quot;,</span>
+<span class="nc" id="L251">    logger.error(Messages.getString(&quot;AbstractBusinessRequest.NeedMoreArgs&quot;,</span>
                                     &quot;(-to -class)&quot;) + INFO_ARGS); //$NON-NLS-1$
-<span class="nc" id="L254">    return false;</span>
+<span class="nc" id="L253">    return false;</span>
   }
 
 }

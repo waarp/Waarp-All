@@ -125,67 +125,65 @@ public class HttpRestInformationR66Handler extends HttpRestAbstractR66Handler {
 <span class="nc" id="L125">          setError(handler, result, HttpResponseStatus.NOT_ACCEPTABLE);</span>
         }
 <span class="nc" id="L127">      } else {</span>
-<span class="nc" id="L128">        logger.info(&quot;Validation is ignored: &quot; + json);</span>
+<span class="nc" id="L128">        logger.info(&quot;Validation is ignored: {}&quot;, json);</span>
 <span class="nc" id="L129">        result.setDetail(&quot;Unknown command&quot;);</span>
 <span class="nc" id="L130">        setError(handler, result, json, HttpResponseStatus.PRECONDITION_FAILED);</span>
       }
 <span class="nc" id="L132">    } catch (final OpenR66ProtocolNotAuthenticatedException e) {</span>
 <span class="nc" id="L133">      throw new HttpInvalidAuthenticationException(e);</span>
-<span class="nc" id="L134">    } catch (final OpenR66ProtocolPacketException e) {</span>
+<span class="nc" id="L134">    } catch (final OpenR66ProtocolNoDataException e) {</span>
 <span class="nc" id="L135">      throw new HttpIncorrectRequestException(e);</span>
-<span class="nc" id="L136">    } catch (final OpenR66ProtocolNoDataException e) {</span>
-<span class="nc" id="L137">      throw new HttpIncorrectRequestException(e);</span>
-<span class="nc" id="L138">    }</span>
-<span class="nc" id="L139">  }</span>
+<span class="nc" id="L136">    }</span>
+<span class="nc" id="L137">  }</span>
 
   @Override
   protected ArrayNode getDetailedAllow() {
-<span class="fc" id="L143">    final ArrayNode node = JsonHandler.createArrayNode();</span>
+<span class="fc" id="L141">    final ArrayNode node = JsonHandler.createArrayNode();</span>
 
-<span class="pc bpc" id="L145" title="1 of 2 branches missed.">    if (methods.contains(METHOD.GET)) {</span>
-<span class="fc" id="L146">      InformationJsonPacket node3 = new InformationJsonPacket(</span>
-<span class="fc" id="L147">          (byte) InformationPacket.ASKENUM.ASKEXIST.ordinal(),</span>
+<span class="pc bpc" id="L143" title="1 of 2 branches missed.">    if (methods.contains(METHOD.GET)) {</span>
+<span class="fc" id="L144">      InformationJsonPacket node3 = new InformationJsonPacket(</span>
+<span class="fc" id="L145">          (byte) InformationPacket.ASKENUM.ASKEXIST.ordinal(),</span>
           &quot;The rule name associated with the remote repository&quot;,
           &quot;The filename to look for if any&quot;);
-<span class="fc" id="L150">      node3.setComment(&quot;Information request (GET)&quot;);</span>
+<span class="fc" id="L148">      node3.setComment(&quot;Information request (GET)&quot;);</span>
       ObjectNode node2;
-<span class="fc" id="L152">      ArrayNode node1 = JsonHandler.createArrayNode().add(&quot;path&quot;);</span>
+<span class="fc" id="L150">      ArrayNode node1 = JsonHandler.createArrayNode().add(&quot;path&quot;);</span>
       try {
-<span class="fc" id="L154">        node2 = RestArgument.fillDetailedAllow(METHOD.GET, path,</span>
+<span class="fc" id="L152">        node2 = RestArgument.fillDetailedAllow(METHOD.GET, path,</span>
                                                ACTIONS_TYPE.GetInformation
-<span class="fc" id="L156">                                                   .name(),</span>
-<span class="fc" id="L157">                                               node3.createObjectNode(), node1);</span>
-<span class="fc" id="L158">        node.add(node2);</span>
-<span class="nc" id="L159">      } catch (final OpenR66ProtocolPacketException ignored) {</span>
+<span class="fc" id="L154">                                                   .name(),</span>
+<span class="fc" id="L155">                                               node3.createObjectNode(), node1);</span>
+<span class="fc" id="L156">        node.add(node2);</span>
+<span class="nc" id="L157">      } catch (final OpenR66ProtocolPacketException ignored) {</span>
         // ignore
-<span class="fc" id="L161">      }</span>
+<span class="fc" id="L159">      }</span>
 
-<span class="fc" id="L163">      node3 = new InformationJsonPacket(Long.MIN_VALUE, false, &quot;remoteHost&quot;);</span>
-<span class="fc" id="L164">      node3.setComment(&quot;Information on Transfer request (GET)&quot;);</span>
-<span class="fc" id="L165">      node1 = JsonHandler.createArrayNode();</span>
-<span class="fc" id="L166">      final ObjectNode node1b = JsonHandler.createObjectNode();</span>
-<span class="fc" id="L167">      node1b.put(AbstractDbData.JSON_MODEL, DbTaskRunner.class.getSimpleName());</span>
-<span class="fc bfc" id="L168" title="All 2 branches covered.">      for (final DbTaskRunner.Columns column : DbTaskRunner.Columns.values()) {</span>
-<span class="fc" id="L169">        node1b.put(column.name(), DbTaskRunner.dbTypes[column.ordinal()]);</span>
+<span class="fc" id="L161">      node3 = new InformationJsonPacket(Long.MIN_VALUE, false, &quot;remoteHost&quot;);</span>
+<span class="fc" id="L162">      node3.setComment(&quot;Information on Transfer request (GET)&quot;);</span>
+<span class="fc" id="L163">      node1 = JsonHandler.createArrayNode();</span>
+<span class="fc" id="L164">      final ObjectNode node1b = JsonHandler.createObjectNode();</span>
+<span class="fc" id="L165">      node1b.put(AbstractDbData.JSON_MODEL, DbTaskRunner.class.getSimpleName());</span>
+<span class="fc bfc" id="L166" title="All 2 branches covered.">      for (final DbTaskRunner.Columns column : DbTaskRunner.Columns.values()) {</span>
+<span class="fc" id="L167">        node1b.put(column.name(), DbTaskRunner.dbTypes[column.ordinal()]);</span>
       }
-<span class="fc" id="L171">      node1.add(node1b);</span>
+<span class="fc" id="L169">      node1.add(node1b);</span>
       try {
-<span class="fc" id="L173">        node2 = RestArgument.fillDetailedAllow(METHOD.GET, path,</span>
+<span class="fc" id="L171">        node2 = RestArgument.fillDetailedAllow(METHOD.GET, path,</span>
                                                ACTIONS_TYPE.GetInformation
-<span class="fc" id="L175">                                                   .name(),</span>
-<span class="fc" id="L176">                                               node3.createObjectNode(), node1);</span>
-<span class="fc" id="L177">        node.add(node2);</span>
-<span class="nc" id="L178">      } catch (final OpenR66ProtocolPacketException ignored) {</span>
+<span class="fc" id="L173">                                                   .name(),</span>
+<span class="fc" id="L174">                                               node3.createObjectNode(), node1);</span>
+<span class="fc" id="L175">        node.add(node2);</span>
+<span class="nc" id="L176">      } catch (final OpenR66ProtocolPacketException ignored) {</span>
         // ignore
-<span class="fc" id="L180">      }</span>
+<span class="fc" id="L178">      }</span>
     }
 
-<span class="fc" id="L183">    final ObjectNode node2 = RestArgument</span>
-<span class="fc" id="L184">        .fillDetailedAllow(METHOD.OPTIONS, path, COMMAND_TYPE.OPTIONS.name(),</span>
+<span class="fc" id="L181">    final ObjectNode node2 = RestArgument</span>
+<span class="fc" id="L182">        .fillDetailedAllow(METHOD.OPTIONS, path, COMMAND_TYPE.OPTIONS.name(),</span>
                            null, null);
-<span class="fc" id="L186">    node.add(node2);</span>
+<span class="fc" id="L184">    node.add(node2);</span>
 
-<span class="fc" id="L188">    return node;</span>
+<span class="fc" id="L186">    return node;</span>
   }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

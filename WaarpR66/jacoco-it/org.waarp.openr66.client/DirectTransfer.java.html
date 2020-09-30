@@ -102,13 +102,13 @@ public class DirectTransfer extends AbstractTransfer {
 <span class="fc" id="L102">        exc = null;</span>
 <span class="fc" id="L103">        break;</span>
 <span class="nc" id="L104">      } catch (final OpenR66RunnerErrorException e) {</span>
-<span class="nc" id="L105">        logger.debug(&quot;Cannot Transfer&quot;, e);</span>
+<span class="nc" id="L105">        logger.info(&quot;Cannot Transfer&quot;, e);</span>
 <span class="nc" id="L106">        future.setResult(</span>
             new R66Result(e, null, true, ErrorCode.Internal, taskRunner));
 <span class="nc" id="L108">        future.setFailure(e);</span>
 <span class="nc" id="L109">        return;</span>
 <span class="nc" id="L110">      } catch (final OpenR66ProtocolNoConnectionException e) {</span>
-<span class="nc" id="L111">        logger.debug(&quot;Cannot Connect&quot;, e);</span>
+<span class="nc" id="L111">        logger.info(&quot;Cannot Connect&quot;, e);</span>
 <span class="nc" id="L112">        future.setResult(</span>
             new R66Result(e, null, true, ErrorCode.ConnectionImpossible,
                           taskRunner));
@@ -125,7 +125,7 @@ public class DirectTransfer extends AbstractTransfer {
 <span class="nc" id="L125">        future.setFailure(e);</span>
 <span class="nc" id="L126">        return;</span>
 <span class="nc" id="L127">      } catch (final OpenR66ProtocolPacketException e) {</span>
-<span class="nc" id="L128">        logger.debug(&quot;Bad Protocol&quot;, e);</span>
+<span class="nc" id="L128">        logger.info(&quot;Bad Protocol&quot;, e);</span>
 <span class="nc" id="L129">        future.setResult(</span>
             new R66Result(e, null, true, ErrorCode.TransferError, taskRunner));
 <span class="nc" id="L131">        future.setFailure(e);</span>
@@ -137,7 +137,7 @@ public class DirectTransfer extends AbstractTransfer {
     }
 <span class="pc bpc" id="L138" title="1 of 2 branches missed.">    if (exc != null) {</span>
 <span class="nc" id="L139">      taskRunner.setLocalChannelReference(new LocalChannelReference());</span>
-<span class="nc" id="L140">      logger.debug(&quot;Cannot Connect&quot;, exc);</span>
+<span class="nc" id="L140">      logger.info(&quot;Cannot Connect&quot;, exc);</span>
 <span class="nc" id="L141">      future.setResult(</span>
           new R66Result(exc, null, true, ErrorCode.ConnectionImpossible,
                         taskRunner));
@@ -185,12 +185,12 @@ public class DirectTransfer extends AbstractTransfer {
                              ismd5, block, idt, networkTransaction);
 <span class="nc" id="L186">      transaction.transferArgs.setFollowId(sFollowId);</span>
 <span class="nc" id="L187">      transaction.normalInfoAsWarn = snormalInfoAsWarn;</span>
-<span class="nc" id="L188">      logger.debug(</span>
-<span class="nc" id="L189">          &quot;rhost: &quot; + rhost + ':' + transaction.transferArgs.getRemoteHost());</span>
+<span class="nc" id="L188">      logger.debug(&quot;rhost: {}:{}&quot;, rhost,</span>
+<span class="nc" id="L189">                   transaction.transferArgs.getRemoteHost());</span>
 <span class="nc" id="L190">      transaction.run();</span>
 <span class="nc" id="L191">      future.awaitOrInterruptible();</span>
 <span class="nc" id="L192">      final long time2 = System.currentTimeMillis();</span>
-<span class="nc" id="L193">      logger.debug(&quot;finish transfer: &quot; + future.isSuccess());</span>
+<span class="nc" id="L193">      logger.debug(&quot;finish transfer: {}&quot;, future.isSuccess());</span>
 <span class="nc" id="L194">      final long delay = time2 - time1;</span>
 <span class="nc" id="L195">      final R66Result result = future.getResult();</span>
 <span class="nc" id="L196">      final OutputFormat outputFormat =</span>
@@ -199,7 +199,7 @@ public class DirectTransfer extends AbstractTransfer {
 <span class="nc" id="L199">        prepareOkOutputFormat(delay, result, outputFormat);</span>
 <span class="nc bnc" id="L200" title="All 2 branches missed.">        if (transaction.normalInfoAsWarn) {</span>
 <span class="nc" id="L201">          logger.warn(outputFormat.loggerOut());</span>
-        } else {
+<span class="nc bnc" id="L202" title="All 2 branches missed.">        } else if (logger.isInfoEnabled()) {</span>
 <span class="nc" id="L203">          logger.info(outputFormat.loggerOut());</span>
         }
 <span class="nc bnc" id="L205" title="All 2 branches missed.">        if (!OutputFormat.isQuiet()) {</span>
@@ -244,8 +244,8 @@ public class DirectTransfer extends AbstractTransfer {
 <span class="nc" id="L244">    } catch (final Throwable e) {</span>
 <span class="nc" id="L245">      logger.error(&quot;Exception&quot;, e);</span>
     } finally {
-<span class="nc" id="L247">      logger.debug(</span>
-<span class="nc" id="L248">          &quot;finish transfer: &quot; + future.isDone() + ':' + future.isSuccess());</span>
+<span class="nc" id="L247">      logger</span>
+<span class="nc" id="L248">          .debug(&quot;finish transfer: {}:{}&quot;, future.isDone(), future.isSuccess());</span>
 <span class="nc bnc" id="L249" title="All 2 branches missed.">      if (!DetectionUtils.isJunit()) {</span>
 <span class="nc" id="L250">        networkTransaction.closeAll();</span>
         // In case something wrong append

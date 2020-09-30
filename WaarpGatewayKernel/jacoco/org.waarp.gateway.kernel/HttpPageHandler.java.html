@@ -20,7 +20,8 @@
 package org.waarp.gateway.kernel;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
-import org.waarp.common.database.DbConstant;
+import org.waarp.common.database.DbSession;
+import org.waarp.gateway.kernel.database.DbConstantGateway;
 import org.waarp.gateway.kernel.database.WaarpActionLogger;
 import org.waarp.gateway.kernel.exception.HttpIncorrectRequestException;
 import org.waarp.gateway.kernel.session.HttpSession;
@@ -44,9 +45,9 @@ public class HttpPageHandler {
   /**
    * @param hashmap
    */
-<span class="fc" id="L47">  public HttpPageHandler(final Map&lt;String, HttpPage&gt; hashmap) {</span>
-<span class="fc" id="L48">    setHashmap(hashmap);</span>
-<span class="fc" id="L49">  }</span>
+<span class="fc" id="L48">  public HttpPageHandler(final Map&lt;String, HttpPage&gt; hashmap) {</span>
+<span class="fc" id="L49">    setHashmap(hashmap);</span>
+<span class="fc" id="L50">  }</span>
 
   /**
    * @param code
@@ -54,8 +55,8 @@ public class HttpPageHandler {
    * @return an HttpPage according to the error code (400, 404, 500, ...)
    */
   public HttpPage getHttpPage(final int code) {
-<span class="nc" id="L57">    final String scode = Integer.toString(code);</span>
-<span class="nc" id="L58">    return getHashmap().get(scode);</span>
+<span class="fc" id="L58">    final String scode = Integer.toString(code);</span>
+<span class="fc" id="L59">    return getHashmap().get(scode);</span>
   }
 
   /**
@@ -70,103 +71,83 @@ public class HttpPageHandler {
   public HttpPage getHttpPage(final String uri, final String method,
                               final HttpSession session)
       throws HttpIncorrectRequestException {
-<span class="nc" id="L73">    HttpPage page = getHashmap().get(uri);</span>
-<span class="nc bnc" id="L74" title="All 2 branches missed.">    if (page == null) {</span>
-<span class="nc" id="L75">      return null;</span>
+<span class="fc" id="L74">    HttpPage page = getHashmap().get(uri);</span>
+<span class="fc bfc" id="L75" title="All 2 branches covered.">    if (page == null) {</span>
+<span class="fc" id="L76">      return null;</span>
     }
-<span class="nc bnc" id="L77" title="All 7 branches missed.">    switch (page.getPagerole()) {</span>
+<span class="fc bfc" id="L78" title="All 2 branches covered.">    if (&quot;HEAD&quot;.equalsIgnoreCase(method)) {</span>
+<span class="fc" id="L79">      return page;</span>
+    }
+<span class="pc bpc" id="L81" title="2 of 7 branches missed.">    switch (page.getPagerole()) {</span>
       case DELETE:
-<span class="nc bnc" id="L79" title="All 2 branches missed.">        if (!&quot;DELETE&quot;.equalsIgnoreCase(method)) {</span>
-          // error
-<span class="nc" id="L81">          WaarpActionLogger</span>
-<span class="nc" id="L82">              .logErrorAction(DbConstant.admin.getSession(), session,</span>
-<span class="nc" id="L83">                              INCORRECT_PAGE + page.getPagerole(),</span>
-                              HttpResponseStatus.BAD_REQUEST);
-<span class="nc bnc" id="L85" title="All 4 branches missed.">          if (page.getErrorpage() != null &amp;&amp; page.getErrorpage().length() &gt; 1) {</span>
-<span class="nc" id="L86">            page = getHashmap().get(page.getErrorpage());</span>
-          } else {
-<span class="nc" id="L88">            page = null;</span>
-          }
+<span class="pc bpc" id="L83" title="1 of 2 branches missed.">        if (!&quot;DELETE&quot;.equalsIgnoreCase(method)) {</span>
+<span class="nc" id="L84">          page = getHttpPageError(session, page);</span>
         }
         break;
       case HTML:
       case MENU:
         // no check
-<span class="nc" id="L95">        break;</span>
+<span class="fc" id="L90">        break;</span>
       case GETDOWNLOAD:
-<span class="nc bnc" id="L97" title="All 2 branches missed.">        if (!&quot;GET&quot;.equalsIgnoreCase(method)) {</span>
+<span class="pc bpc" id="L92" title="1 of 2 branches missed.">        if (!&quot;GET&quot;.equalsIgnoreCase(method)) {</span>
           // error
-<span class="nc" id="L99">          WaarpActionLogger</span>
-<span class="nc" id="L100">              .logErrorAction(DbConstant.admin.getSession(), session,</span>
-<span class="nc" id="L101">                              INCORRECT_PAGE + page.getPagerole(),</span>
-                              HttpResponseStatus.BAD_REQUEST);
-<span class="nc bnc" id="L103" title="All 4 branches missed.">          if (page.getErrorpage() != null &amp;&amp; page.getErrorpage().length() &gt; 1) {</span>
-<span class="nc" id="L104">            page = getHashmap().get(page.getErrorpage());</span>
-          } else {
-<span class="nc" id="L106">            page = null;</span>
-          }
+<span class="nc" id="L94">          page = getHttpPageError(session, page);</span>
         }
         break;
       case POST:
       case POSTUPLOAD:
-<span class="nc bnc" id="L112" title="All 2 branches missed.">        if (!&quot;POST&quot;.equalsIgnoreCase(method)) {</span>
+<span class="fc bfc" id="L99" title="All 2 branches covered.">        if (!&quot;POST&quot;.equalsIgnoreCase(method)) {</span>
           // error
-<span class="nc" id="L114">          WaarpActionLogger</span>
-<span class="nc" id="L115">              .logErrorAction(DbConstant.admin.getSession(), session,</span>
-<span class="nc" id="L116">                              INCORRECT_PAGE + page.getPagerole(),</span>
-                              HttpResponseStatus.BAD_REQUEST);
-<span class="nc bnc" id="L118" title="All 4 branches missed.">          if (page.getErrorpage() != null &amp;&amp; page.getErrorpage().length() &gt; 1) {</span>
-<span class="nc" id="L119">            page = getHashmap().get(page.getErrorpage());</span>
-          } else {
-<span class="nc" id="L121">            page = null;</span>
-          }
+<span class="fc" id="L101">          page = getHttpPageError(session, page);</span>
         }
         break;
       case PUT:
-<span class="nc bnc" id="L126" title="All 2 branches missed.">        if (!&quot;PUT&quot;.equalsIgnoreCase(method)) {</span>
+<span class="pc bpc" id="L105" title="1 of 2 branches missed.">        if (!&quot;PUT&quot;.equalsIgnoreCase(method)) {</span>
           // error
-<span class="nc" id="L128">          WaarpActionLogger</span>
-<span class="nc" id="L129">              .logErrorAction(DbConstant.admin.getSession(), session,</span>
-<span class="nc" id="L130">                              INCORRECT_PAGE + page.getPagerole(),</span>
-                              HttpResponseStatus.BAD_REQUEST);
-<span class="nc bnc" id="L132" title="All 4 branches missed.">          if (page.getErrorpage() != null &amp;&amp; page.getErrorpage().length() &gt; 1) {</span>
-<span class="nc" id="L133">            page = getHashmap().get(page.getErrorpage());</span>
-          } else {
-<span class="nc" id="L135">            page = null;</span>
-          }
+<span class="nc" id="L107">          page = getHttpPageError(session, page);</span>
         }
         break;
       case ERROR:
-<span class="nc" id="L140">        break;</span>
+<span class="nc" id="L111">        break;</span>
       default:
         // error
-<span class="nc" id="L143">        WaarpActionLogger.logErrorAction(DbConstant.admin.getSession(), session,</span>
-<span class="nc" id="L144">                                         INCORRECT_PAGE + page.getPagerole(),</span>
-                                         HttpResponseStatus.BAD_REQUEST);
-<span class="nc bnc" id="L146" title="All 4 branches missed.">        if (page.getErrorpage() != null || page.getErrorpage().length() &gt; 1) {</span>
-<span class="nc" id="L147">          page = getHashmap().get(page.getErrorpage());</span>
-        } else {
-<span class="nc" id="L149">          page = null;</span>
-        }
+<span class="nc" id="L114">        page = getHttpPageError(session, page);</span>
     }
-<span class="nc bnc" id="L152" title="All 2 branches missed.">    if (page == null) {</span>
-<span class="nc" id="L153">      throw new HttpIncorrectRequestException(&quot;No Page found&quot;);</span>
+<span class="fc bfc" id="L116" title="All 2 branches covered.">    if (page == null) {</span>
+<span class="fc" id="L117">      throw new HttpIncorrectRequestException(&quot;No Page found&quot;);</span>
     }
-<span class="nc" id="L155">    return page;</span>
+<span class="fc" id="L119">    return page;</span>
+  }
+
+  private HttpPage getHttpPageError(final HttpSession session, HttpPage page) {
+    // error
+<span class="pc bpc" id="L124" title="1 of 2 branches missed.">    final DbSession dbSession =</span>
+<span class="pc" id="L125">        DbConstantGateway.admin != null? DbConstantGateway.admin.getSession() :</span>
+            null;
+<span class="fc" id="L127">    WaarpActionLogger.logErrorAction(dbSession, session,</span>
+<span class="fc" id="L128">                                     INCORRECT_PAGE + page.getPagerole() + &quot;:&quot; +</span>
+<span class="fc" id="L129">                                     page.getPagename(),</span>
+                                     HttpResponseStatus.BAD_REQUEST);
+<span class="pc bpc" id="L131" title="3 of 4 branches missed.">    if (page.getErrorpage() != null &amp;&amp; page.getErrorpage().length() &gt; 1) {</span>
+<span class="nc" id="L132">      page = getHashmap().get(page.getErrorpage());</span>
+    } else {
+<span class="fc" id="L134">      page = null;</span>
+    }
+<span class="fc" id="L136">    return page;</span>
   }
 
   /**
    * @return the hashmap
    */
   public Map&lt;String, HttpPage&gt; getHashmap() {
-<span class="fc" id="L162">    return hashmap;</span>
+<span class="fc" id="L143">    return hashmap;</span>
   }
 
   /**
    * @param hashmap the hashmap to set
    */
   private void setHashmap(final Map&lt;String, HttpPage&gt; hashmap) {
-<span class="fc" id="L169">    this.hashmap = hashmap;</span>
-<span class="fc" id="L170">  }</span>
+<span class="fc" id="L150">    this.hashmap = hashmap;</span>
+<span class="fc" id="L151">  }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

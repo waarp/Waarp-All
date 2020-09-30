@@ -356,12 +356,11 @@ public class R66PrivateMib extends WaarpPrivateMib {
 <span class="nc" id="L356">      return;</span>
     }
 <span class="pc bpc" id="L358" title="1 of 2 branches missed.">    if (logger.isDebugEnabled()) {</span>
-<span class="nc" id="L359">      logger.debug(</span>
-          &quot;Notify: &quot; + NotificationElements.InfoTask + ':' + message + ':' +
-<span class="nc" id="L361">          runner.toShortString());</span>
+<span class="nc" id="L359">      logger.debug(&quot;Notify: {}:{}:{}&quot;, NotificationElements.InfoTask, message,</span>
+<span class="nc" id="L360">                   runner.toShortString());</span>
     }
-<span class="fc" id="L363">    notifyInternalTask(message, runner);</span>
-<span class="fc" id="L364">  }</span>
+<span class="fc" id="L362">    notifyInternalTask(message, runner);</span>
+<span class="fc" id="L363">  }</span>
 
   /**
    * Send a notification (trap or inform) for all events on a single Transfer
@@ -371,16 +370,15 @@ public class R66PrivateMib extends WaarpPrivateMib {
    * @param runner
    */
   public void notifyTask(final String message, final DbTaskRunner runner) {
-<span class="fc bfc" id="L374" title="All 2 branches covered.">    if (!TrapLevel.AllEvents.isLevelValid(agent.getTrapLevel())) {</span>
-<span class="fc" id="L375">      return;</span>
+<span class="fc bfc" id="L373" title="All 2 branches covered.">    if (!TrapLevel.AllEvents.isLevelValid(agent.getTrapLevel())) {</span>
+<span class="fc" id="L374">      return;</span>
     }
-<span class="pc bpc" id="L377" title="1 of 2 branches missed.">    if (logger.isDebugEnabled()) {</span>
-<span class="nc" id="L378">      logger.debug(</span>
-          &quot;Notify: &quot; + NotificationElements.InfoTask + ':' + message + ':' +
-<span class="nc" id="L380">          runner.toShortString());</span>
+<span class="pc bpc" id="L376" title="1 of 2 branches missed.">    if (logger.isDebugEnabled()) {</span>
+<span class="nc" id="L377">      logger.debug(&quot;Notify: {}:{}:{}&quot;, NotificationElements.InfoTask, message,</span>
+<span class="nc" id="L378">                   runner.toShortString());</span>
     }
-<span class="fc" id="L382">    notifyInternalTask(message, runner);</span>
-<span class="fc" id="L383">  }</span>
+<span class="fc" id="L380">    notifyInternalTask(message, runner);</span>
+<span class="fc" id="L381">  }</span>
 
   /**
    * Trap/Notification
@@ -392,43 +390,43 @@ public class R66PrivateMib extends WaarpPrivateMib {
   private void notify(final NotificationElements element, final String message,
                       final String message2) {
     try {
-<span class="pc bpc" id="L395" title="1 of 2 branches missed.">      if (logger.isDebugEnabled()) {</span>
-<span class="nc" id="L396">        logger.debug(&quot;Notify: &quot; + element + ':' + message + ':' + message2);</span>
+<span class="pc bpc" id="L393" title="1 of 2 branches missed.">      if (logger.isDebugEnabled()) {</span>
+<span class="nc" id="L394">        logger.debug(&quot;Notify: {}:{}:{}&quot;, element, message, message2);</span>
       }
-<span class="fc" id="L398">      agent.getNotificationOriginator()</span>
-<span class="fc" id="L399">           .notify(new OctetString(&quot;public&quot;), element.getOID(rootOIDWaarpNotif),</span>
+<span class="fc" id="L396">      agent.getNotificationOriginator()</span>
+<span class="fc" id="L397">           .notify(new OctetString(&quot;public&quot;), element.getOID(rootOIDWaarpNotif),</span>
                    new VariableBinding[] {
+<span class="fc" id="L399">                       new VariableBinding(element.getOID(rootOIDWaarpNotif, 1),</span>
+<span class="fc" id="L400">                                           new OctetString(element.name())),</span>
 <span class="fc" id="L401">                       new VariableBinding(element.getOID(rootOIDWaarpNotif, 1),</span>
-<span class="fc" id="L402">                                           new OctetString(element.name())),</span>
-<span class="fc" id="L403">                       new VariableBinding(element.getOID(rootOIDWaarpNotif, 1),</span>
                                            new OctetString(message)),
-<span class="fc" id="L405">                       new VariableBinding(element.getOID(rootOIDWaarpNotif, 1),</span>
+<span class="fc" id="L403">                       new VariableBinding(element.getOID(rootOIDWaarpNotif, 1),</span>
                                            new OctetString(message2)),
                        new VariableBinding(SnmpConstants.sysDescr,
-<span class="fc" id="L408">                                           snmpv2.getDescr()),</span>
+<span class="fc" id="L406">                                           snmpv2.getDescr()),</span>
                        new VariableBinding(SnmpConstants.sysObjectID,
-<span class="fc" id="L410">                                           snmpv2.getObjectID()),</span>
+<span class="fc" id="L408">                                           snmpv2.getObjectID()),</span>
                        new VariableBinding(SnmpConstants.sysContact,
-<span class="fc" id="L412">                                           snmpv2.getContact()),</span>
+<span class="fc" id="L410">                                           snmpv2.getContact()),</span>
                        new VariableBinding(SnmpConstants.sysName,
-<span class="fc" id="L414">                                           snmpv2.getName()),</span>
+<span class="fc" id="L412">                                           snmpv2.getName()),</span>
                        new VariableBinding(SnmpConstants.sysLocation,
-<span class="fc" id="L416">                                           snmpv2.getLocation())</span>
+<span class="fc" id="L414">                                           snmpv2.getLocation())</span>
                    });
-<span class="nc" id="L418">    } catch (final NullPointerException ignored) {</span>
+<span class="nc" id="L416">    } catch (final NullPointerException ignored) {</span>
       // nothing
-<span class="fc" id="L420">    }</span>
-<span class="fc" id="L421">  }</span>
+<span class="fc" id="L418">    }</span>
+<span class="fc" id="L419">  }</span>
 
   @Override
   public void updateServices(final WaarpMOScalar scalar) {
     // nothing
-<span class="fc" id="L426">  }</span>
+<span class="fc" id="L424">  }</span>
 
   @Override
   public void updateServices(final MOScope range) {
     // nothing
-<span class="nc" id="L431">  }</span>
+<span class="nc" id="L429">  }</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

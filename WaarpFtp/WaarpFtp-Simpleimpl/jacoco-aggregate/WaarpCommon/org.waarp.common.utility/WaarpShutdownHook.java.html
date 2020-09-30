@@ -188,7 +188,7 @@ public abstract class WaarpShutdownHook extends Thread {
 <span class="nc" id="L188">        }</span>
       }
 <span class="fc" id="L190">      isShutdownOver = true;</span>
-<span class="fc" id="L191">      logger.info(&quot;Should restart? &quot; + isRestart());</span>
+<span class="fc" id="L191">      logger.info(&quot;Should restart? {}&quot;, isRestart());</span>
       try {
 <span class="fc" id="L193">        restartApplication();</span>
 <span class="nc" id="L194">      } catch (final IOException e1) {</span>
@@ -197,7 +197,7 @@ public abstract class WaarpShutdownHook extends Thread {
 <span class="fc" id="L197">      shutdownHook.serviceStopped();</span>
 <span class="fc" id="L198">      SysErrLogger.FAKE_LOGGER.syserr(&quot;Halt System&quot;);</span>
       try {
-<span class="fc" id="L200">        Thread.sleep(100);</span>
+<span class="fc" id="L200">        Thread.sleep(WaarpNettyUtil.SIMPLE_DELAY_MS);</span>
 <span class="nc" id="L201">      } catch (final InterruptedException e) {//NOSONAR</span>
 <span class="nc" id="L202">        SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
 <span class="pc" id="L203">      }</span>
@@ -208,7 +208,7 @@ public abstract class WaarpShutdownHook extends Thread {
 <span class="fc" id="L208">      shutdownHook.exitService();</span>
 <span class="fc" id="L209">      isShutdownOver = true;</span>
 <span class="fc" id="L210">      shutdownHook.serviceStopped();</span>
-<span class="fc" id="L211">      logger.info(&quot;Should restart? &quot; + isRestart());</span>
+<span class="fc" id="L211">      logger.info(&quot;Should restart? {}&quot;, isRestart());</span>
       try {
 <span class="fc" id="L213">        restartApplication();</span>
 <span class="nc" id="L214">      } catch (final IOException e1) {</span>
@@ -298,7 +298,7 @@ public abstract class WaarpShutdownHook extends Thread {
               &quot;Error while trying to restart the &quot; + &quot;application&quot;);
         }
 <span class="nc" id="L300">        cmd.append(applArgs);</span>
-<span class="nc" id="L301">        logger.debug(&quot;Should restart with:\n&quot; + cmd);</span>
+<span class="nc" id="L301">        logger.debug(&quot;Should restart with:\n{}&quot;, cmd);</span>
 <span class="nc" id="L302">        logger.warn(&quot;Should restart&quot;);</span>
 <span class="nc" id="L303">        Runtime.getRuntime().exec(cmd.toString()); //NOSONAR</span>
 <span class="nc" id="L304">      } catch (final Throwable e) {</span>
@@ -398,7 +398,7 @@ public abstract class WaarpShutdownHook extends Thread {
 <span class="pc bpc" id="L398" title="1 of 2 branches missed.">    if (isShutdownOver) {</span>
 <span class="nc bnc" id="L399" title="All 4 branches missed.">      if (shutdownHook != null &amp;&amp; shutdownHook.serviceStopped()) {</span>
         try {
-<span class="nc" id="L401">          Thread.sleep(100);</span>
+<span class="nc" id="L401">          Thread.sleep(WaarpNettyUtil.SIMPLE_DELAY_MS);</span>
 <span class="nc" id="L402">        } catch (final InterruptedException e) {//NOSONAR</span>
 <span class="nc" id="L403">          SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
 <span class="nc" id="L404">        }</span>
@@ -414,7 +414,7 @@ public abstract class WaarpShutdownHook extends Thread {
 <span class="nc" id="L414">    } catch (final Throwable t) {</span>
 <span class="nc bnc" id="L415" title="All 4 branches missed.">      if (shutdownHook != null &amp;&amp; shutdownHook.serviceStopped()) {</span>
         try {
-<span class="nc" id="L417">          Thread.sleep(100);</span>
+<span class="nc" id="L417">          Thread.sleep(WaarpNettyUtil.SIMPLE_DELAY_MS);</span>
 <span class="nc" id="L418">        } catch (final InterruptedException e) {//NOSONAR</span>
 <span class="nc" id="L419">          SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
 <span class="nc" id="L420">        }</span>
@@ -454,7 +454,7 @@ public abstract class WaarpShutdownHook extends Thread {
 <span class="fc" id="L454">      logger.error(&quot;System will force EXIT&quot;);</span>
 <span class="pc bpc" id="L455" title="2 of 4 branches missed.">      if (shutdownHook != null &amp;&amp; shutdownHook.serviceStopped()) {</span>
         try {
-<span class="fc" id="L457">          Thread.sleep(100);</span>
+<span class="fc" id="L457">          Thread.sleep(WaarpNettyUtil.SIMPLE_DELAY_MS);</span>
 <span class="nc" id="L458">        } catch (final InterruptedException e) {//NOSONAR</span>
 <span class="nc" id="L459">          SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
 <span class="fc" id="L460">        }</span>

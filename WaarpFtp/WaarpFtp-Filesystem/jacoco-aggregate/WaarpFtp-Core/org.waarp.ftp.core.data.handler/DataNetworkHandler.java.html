@@ -148,7 +148,7 @@ public class DataNetworkHandler extends SimpleChannelInboundHandler&lt;DataBlock
   @Override
   public void channelInactive(final ChannelHandlerContext ctx)
       throws Exception {
-<span class="nc bnc" id="L151" title="All 2 branches missed.">    logger.debug(&quot;Data Channel closed with a session ? &quot; + (session != null));</span>
+<span class="nc bnc" id="L151" title="All 2 branches missed.">    logger.debug(&quot;Data Channel closed with a session ? {}&quot;, session != null);</span>
 <span class="nc bnc" id="L152" title="All 2 branches missed.">    if (session != null) {</span>
 <span class="nc bnc" id="L153" title="All 2 branches missed.">      if (!session.getDataConn().checkCorrectChannel(ctx.channel())) {</span>
 <span class="nc bnc" id="L154" title="All 2 branches missed.">        for (int i = 0; i &lt; FtpInternalConfiguration.RETRYNB; i++) {</span>
@@ -208,13 +208,13 @@ public class DataNetworkHandler extends SimpleChannelInboundHandler&lt;DataBlock
    * Initialize the Handler.
    */
   @Override
-  public void channelActive(final ChannelHandlerContext ctx) throws Exception {
+  public void channelActive(final ChannelHandlerContext ctx) {
 <span class="nc" id="L212">    final Channel channel = ctx.channel();</span>
 <span class="nc" id="L213">    channel.config().setAutoRead(false);</span>
 <span class="nc bnc" id="L214" title="All 2 branches missed.">    if (session == null) {</span>
 <span class="nc" id="L215">      setSession(channel);</span>
     }
-<span class="nc" id="L217">    logger.debug(&quot;Data Channel opened as &quot; + channel);</span>
+<span class="nc" id="L217">    logger.debug(&quot;Data Channel opened as {}&quot;, channel);</span>
 <span class="nc bnc" id="L218" title="All 2 branches missed.">    if (session == null) {</span>
 <span class="nc" id="L219">      logger</span>
 <span class="nc" id="L220">          .debug(&quot;DataChannel immediately closed since no session is assigned&quot;);</span>
@@ -225,7 +225,7 @@ public class DataNetworkHandler extends SimpleChannelInboundHandler&lt;DataBlock
 <span class="nc" id="L225">    dataChannel = channel;</span>
 <span class="nc" id="L226">    dataBusinessHandler.setFtpSession(getFtpSession());</span>
 <span class="nc" id="L227">    FtpChannelUtils.addDataChannel(channel, session.getConfiguration());</span>
-<span class="nc" id="L228">    logger.debug(&quot;DataChannel connected: &quot; + session.getReplyCode());</span>
+<span class="nc" id="L228">    logger.debug(&quot;DataChannel connected: {}&quot;, session.getReplyCode());</span>
 <span class="nc bnc" id="L229" title="All 2 branches missed.">    if (session.getReplyCode().getCode() &gt;= 400) {</span>
       // shall not be except if an error early occurs
 <span class="nc bnc" id="L231" title="All 2 branches missed.">      switch (session.getCurrentCommand().getCode()) {</span>
@@ -234,9 +234,9 @@ public class DataNetworkHandler extends SimpleChannelInboundHandler&lt;DataBlock
         case STOR:
         case STOU:
           // close the data channel immediately
-<span class="nc" id="L237">          logger.debug(&quot;DataChannel immediately closed since &quot; +</span>
-<span class="nc" id="L238">                       session.getCurrentCommand().getCode() +</span>
-                       &quot; is not ok at startup&quot;);
+<span class="nc" id="L237">          logger.info(</span>
+              &quot;DataChannel immediately closed since {} is not ok at startup&quot;,
+<span class="nc" id="L239">              session.getCurrentCommand().getCode());</span>
 <span class="nc" id="L240">          WaarpSslUtility.closingSslChannel(ctx.channel());</span>
 <span class="nc" id="L241">          return;</span>
         default:
@@ -251,7 +251,7 @@ public class DataNetworkHandler extends SimpleChannelInboundHandler&lt;DataBlock
 <span class="nc" id="L251">      logger.debug(&quot;DataChannel fully configured&quot;);</span>
     } else {
       // Cannot continue
-<span class="nc" id="L254">      logger.debug(&quot;Connected but no more alive so will disconnect&quot;);</span>
+<span class="nc" id="L254">      logger.info(&quot;Connected but no more alive so will disconnect&quot;);</span>
 <span class="nc" id="L255">      session.getDataConn().getFtpTransferControl()</span>
 <span class="nc" id="L256">             .setOpenedDataChannel(null, this);</span>
     }
@@ -295,9 +295,9 @@ public class DataNetworkHandler extends SimpleChannelInboundHandler&lt;DataBlock
    */
   @Override
   public void exceptionCaught(final ChannelHandlerContext ctx,
-                              final Throwable cause) throws Exception {
+                              final Throwable cause) {
 <span class="nc bnc" id="L299" title="All 2 branches missed.">    if (session == null) {</span>
-<span class="nc" id="L300">      logger.debug(&quot;Error without any session active {}&quot;, cause);</span>
+<span class="nc" id="L300">      logger.info(&quot;Error without any session active {}&quot;, cause);</span>
 <span class="nc" id="L301">      return;</span>
     }
 <span class="nc bnc" id="L303" title="All 2 branches missed.">    if (cause instanceof ConnectException) {</span>
@@ -377,7 +377,7 @@ public class DataNetworkHandler extends SimpleChannelInboundHandler&lt;DataBlock
           }
 <span class="nc" id="L378">        } catch (final FtpNoTransferException e) {</span>
           try {
-<span class="nc" id="L380">            Thread.sleep(100);</span>
+<span class="nc" id="L380">            Thread.sleep(WaarpNettyUtil.SIMPLE_DELAY_MS);</span>
 <span class="nc" id="L381">          } catch (final InterruptedException e1) {//NOSONAR</span>
 <span class="nc" id="L382">            SysErrLogger.FAKE_LOGGER.ignoreLog(e1);</span>
 <span class="nc" id="L383">            break;</span>
@@ -385,7 +385,7 @@ public class DataNetworkHandler extends SimpleChannelInboundHandler&lt;DataBlock
 <span class="nc" id="L385">        }</span>
       }
 <span class="nc bnc" id="L387" title="All 2 branches missed.">      if (ftpTransfer == null) {</span>
-<span class="nc" id="L388">        logger.debug(&quot;No ExecutionFtpTransfer found&quot;);</span>
+<span class="nc" id="L388">        logger.info(&quot;No ExecutionFtpTransfer found&quot;);</span>
 <span class="nc" id="L389">        session.getDataConn().getFtpTransferControl()</span>
 <span class="nc" id="L390">               .setTransferAbortedFromInternal(true);</span>
 <span class="nc" id="L391">        return;</span>

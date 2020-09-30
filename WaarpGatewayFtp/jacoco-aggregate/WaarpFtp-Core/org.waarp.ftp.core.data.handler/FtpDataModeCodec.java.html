@@ -21,6 +21,7 @@ package org.waarp.ftp.core.data.handler;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageCodec;
 import org.waarp.common.exception.InvalidArgumentException;
@@ -104,117 +105,117 @@ public class FtpDataModeCodec extends ByteToMessageCodec&lt;DataBlock&gt; {
    * that the DataNetworkHandler is
    * ready
    */
-<span class="fc" id="L107">  private final WaarpFuture codecLocked = new WaarpFuture();</span>
+<span class="fc" id="L108">  private final WaarpFuture codecLocked = new WaarpFuture();</span>
 
   /**
    * @param mode
    * @param structure
    */
   public FtpDataModeCodec(final TransferMode mode,
-<span class="fc" id="L114">                          final TransferStructure structure) {</span>
-<span class="fc" id="L115">    this.mode = mode;</span>
-<span class="fc" id="L116">    this.structure = structure;</span>
-<span class="fc" id="L117">  }</span>
+<span class="fc" id="L115">                          final TransferStructure structure) {</span>
+<span class="fc" id="L116">    this.mode = mode;</span>
+<span class="fc" id="L117">    this.structure = structure;</span>
+<span class="fc" id="L118">  }</span>
 
   /**
    * Inform the Codec that DataNetworkHandler is ready (called from
    * DataNetworkHandler after setCorrectCodec).
    */
   public void setCodecReady() {
-<span class="fc" id="L124">    codecLocked.setSuccess();</span>
-<span class="fc" id="L125">  }</span>
+<span class="fc" id="L125">    codecLocked.setSuccess();</span>
+<span class="fc" id="L126">  }</span>
 
   protected DataBlock decodeRecordStandard(final ByteBuf buf,
                                            final int length) {
-<span class="nc" id="L129">    final ByteBuf newbuf = ByteBufAllocator.DEFAULT.buffer(length, length);</span>
-<span class="nc bnc" id="L130" title="All 2 branches missed.">    if (lastbyte == 0xFF) {</span>
-<span class="nc bnc" id="L131" title="All 2 branches missed.">      if (readByteForDataBlock(buf, newbuf)) {</span>
-<span class="nc" id="L132">        lastbyte = 0;</span>
+<span class="nc" id="L130">    final ByteBuf newbuf = ByteBufAllocator.DEFAULT.buffer(length, length);</span>
+<span class="nc bnc" id="L131" title="All 2 branches missed.">    if (lastbyte == 0xFF) {</span>
+<span class="nc bnc" id="L132" title="All 2 branches missed.">      if (readByteForDataBlock(buf, newbuf)) {</span>
+<span class="nc" id="L133">        lastbyte = 0;</span>
       }
     }
     try {
-<span class="nc bnc" id="L136" title="All 2 branches missed.">      while (buf.readableBytes() &gt; 0) {</span>
-<span class="nc" id="L137">        lastbyte = buf.readUnsignedByte();</span>
-<span class="nc bnc" id="L138" title="All 2 branches missed.">        if (lastbyte == 0xFF) {</span>
-<span class="nc" id="L139">          readByteForDataBlock(buf, newbuf);</span>
+<span class="nc bnc" id="L137" title="All 2 branches missed.">      while (buf.readableBytes() &gt; 0) {</span>
+<span class="nc" id="L138">        lastbyte = buf.readUnsignedByte();</span>
+<span class="nc bnc" id="L139" title="All 2 branches missed.">        if (lastbyte == 0xFF) {</span>
+<span class="nc" id="L140">          readByteForDataBlock(buf, newbuf);</span>
         } else {
-<span class="nc" id="L141">          newbuf.writeByte((byte) (lastbyte &amp; 0xFF));</span>
+<span class="nc" id="L142">          newbuf.writeByte((byte) (lastbyte &amp; 0xFF));</span>
         }
-<span class="nc" id="L143">        lastbyte = 0;</span>
+<span class="nc" id="L144">        lastbyte = 0;</span>
       }
-<span class="nc" id="L145">    } catch (final IndexOutOfBoundsException e) {</span>
+<span class="nc" id="L146">    } catch (final IndexOutOfBoundsException e) {</span>
       // End of read
-<span class="nc" id="L147">    }</span>
-<span class="nc" id="L148">    dataBlock.setBlock(newbuf);</span>
-<span class="nc" id="L149">    return dataBlock;</span>
+<span class="nc" id="L148">    }</span>
+<span class="nc" id="L149">    dataBlock.setBlock(newbuf);</span>
+<span class="nc" id="L150">    return dataBlock;</span>
   }
 
   private boolean readByteForDataBlock(final ByteBuf buf,
                                        final ByteBuf newbuf) {
-<span class="nc" id="L154">    final int nextbyte = buf.readUnsignedByte();</span>
-<span class="nc bnc" id="L155" title="All 2 branches missed.">    if (nextbyte == 0xFF) {</span>
-<span class="nc" id="L156">      newbuf.writeByte((byte) (lastbyte &amp; 0xFF));</span>
-<span class="nc" id="L157">      return false;</span>
+<span class="nc" id="L155">    final int nextbyte = buf.readUnsignedByte();</span>
+<span class="nc bnc" id="L156" title="All 2 branches missed.">    if (nextbyte == 0xFF) {</span>
+<span class="nc" id="L157">      newbuf.writeByte((byte) (lastbyte &amp; 0xFF));</span>
+<span class="nc" id="L158">      return false;</span>
     } else {
-<span class="nc bnc" id="L159" title="All 2 branches missed.">      if (nextbyte == 1) {</span>
-<span class="nc" id="L160">        dataBlock.setEOR(true);</span>
-<span class="nc bnc" id="L161" title="All 2 branches missed.">      } else if (nextbyte == 2) {</span>
-<span class="nc" id="L162">        dataBlock.setEOF(true);</span>
-<span class="nc bnc" id="L163" title="All 2 branches missed.">      } else if (nextbyte == 3) {</span>
-<span class="nc" id="L164">        dataBlock.setEOR(true);</span>
-<span class="nc" id="L165">        dataBlock.setEOF(true);</span>
+<span class="nc bnc" id="L160" title="All 2 branches missed.">      if (nextbyte == 1) {</span>
+<span class="nc" id="L161">        dataBlock.setEOR(true);</span>
+<span class="nc bnc" id="L162" title="All 2 branches missed.">      } else if (nextbyte == 2) {</span>
+<span class="nc" id="L163">        dataBlock.setEOF(true);</span>
+<span class="nc bnc" id="L164" title="All 2 branches missed.">      } else if (nextbyte == 3) {</span>
+<span class="nc" id="L165">        dataBlock.setEOR(true);</span>
+<span class="nc" id="L166">        dataBlock.setEOF(true);</span>
       }
-<span class="nc" id="L167">      return true;</span>
+<span class="nc" id="L168">      return true;</span>
     }
   }
 
   protected DataBlock decodeRecord(final ByteBuf buf, final int length) {
     final FtpSeekAheadData sad;
     try {
-<span class="nc" id="L174">      sad = new FtpSeekAheadData(buf);</span>
-<span class="nc" id="L175">    } catch (final SeekAheadNoBackArrayException e1) {</span>
-<span class="nc" id="L176">      return decodeRecordStandard(buf, length);</span>
-<span class="nc" id="L177">    }</span>
-<span class="nc" id="L178">    final ByteBuf newbuf = ByteBufAllocator.DEFAULT.buffer(length, length);</span>
-<span class="nc bnc" id="L179" title="All 2 branches missed.">    if (lastbyte == 0xFF) {</span>
-<span class="nc bnc" id="L180" title="All 2 branches missed.">      if (readBytesFromSad(sad, newbuf)) {</span>
-<span class="nc" id="L181">        lastbyte = 0;</span>
+<span class="nc" id="L175">      sad = new FtpSeekAheadData(buf);</span>
+<span class="nc" id="L176">    } catch (final SeekAheadNoBackArrayException e1) {</span>
+<span class="nc" id="L177">      return decodeRecordStandard(buf, length);</span>
+<span class="nc" id="L178">    }</span>
+<span class="nc" id="L179">    final ByteBuf newbuf = ByteBufAllocator.DEFAULT.buffer(length, length);</span>
+<span class="nc bnc" id="L180" title="All 2 branches missed.">    if (lastbyte == 0xFF) {</span>
+<span class="nc bnc" id="L181" title="All 2 branches missed.">      if (readBytesFromSad(sad, newbuf)) {</span>
+<span class="nc" id="L182">        lastbyte = 0;</span>
       }
     }
     try {
-<span class="nc bnc" id="L185" title="All 2 branches missed.">      while (sad.pos &lt; sad.limit) {</span>
-<span class="nc" id="L186">        lastbyte = sad.bytes[sad.pos++] &amp; 0xFF;</span>
-<span class="nc bnc" id="L187" title="All 2 branches missed.">        if (lastbyte == 0xFF) {</span>
-<span class="nc" id="L188">          readBytesFromSad(sad, newbuf);</span>
+<span class="nc bnc" id="L186" title="All 2 branches missed.">      while (sad.pos &lt; sad.limit) {</span>
+<span class="nc" id="L187">        lastbyte = sad.bytes[sad.pos++] &amp; 0xFF;</span>
+<span class="nc bnc" id="L188" title="All 2 branches missed.">        if (lastbyte == 0xFF) {</span>
+<span class="nc" id="L189">          readBytesFromSad(sad, newbuf);</span>
         } else {
-<span class="nc" id="L190">          newbuf.writeByte((byte) (lastbyte &amp; 0xFF));</span>
+<span class="nc" id="L191">          newbuf.writeByte((byte) (lastbyte &amp; 0xFF));</span>
         }
-<span class="nc" id="L192">        lastbyte = 0;</span>
+<span class="nc" id="L193">        lastbyte = 0;</span>
       }
-<span class="nc" id="L194">    } catch (final IndexOutOfBoundsException e) {</span>
+<span class="nc" id="L195">    } catch (final IndexOutOfBoundsException e) {</span>
       // End of read
-<span class="nc" id="L196">    }</span>
-<span class="nc" id="L197">    sad.setReadPosition(0);</span>
-<span class="nc" id="L198">    dataBlock.setBlock(newbuf);</span>
-<span class="nc" id="L199">    return dataBlock;</span>
+<span class="nc" id="L197">    }</span>
+<span class="nc" id="L198">    sad.setReadPosition(0);</span>
+<span class="nc" id="L199">    dataBlock.setBlock(newbuf);</span>
+<span class="nc" id="L200">    return dataBlock;</span>
   }
 
   private boolean readBytesFromSad(final FtpSeekAheadData sad,
                                    final ByteBuf newbuf) {
-<span class="nc" id="L204">    final int nextbyte = sad.bytes[sad.pos++] &amp; 0xFF;</span>
-<span class="nc bnc" id="L205" title="All 2 branches missed.">    if (nextbyte == 0xFF) {</span>
-<span class="nc" id="L206">      newbuf.writeByte((byte) (lastbyte &amp; 0xFF));</span>
-<span class="nc" id="L207">      return false;</span>
+<span class="nc" id="L205">    final int nextbyte = sad.bytes[sad.pos++] &amp; 0xFF;</span>
+<span class="nc bnc" id="L206" title="All 2 branches missed.">    if (nextbyte == 0xFF) {</span>
+<span class="nc" id="L207">      newbuf.writeByte((byte) (lastbyte &amp; 0xFF));</span>
+<span class="nc" id="L208">      return false;</span>
     } else {
-<span class="nc bnc" id="L209" title="All 2 branches missed.">      if (nextbyte == 1) {</span>
-<span class="nc" id="L210">        dataBlock.setEOR(true);</span>
-<span class="nc bnc" id="L211" title="All 2 branches missed.">      } else if (nextbyte == 2) {</span>
-<span class="nc" id="L212">        dataBlock.setEOF(true);</span>
-<span class="nc bnc" id="L213" title="All 2 branches missed.">      } else if (nextbyte == 3) {</span>
-<span class="nc" id="L214">        dataBlock.setEOR(true);</span>
-<span class="nc" id="L215">        dataBlock.setEOF(true);</span>
+<span class="nc bnc" id="L210" title="All 2 branches missed.">      if (nextbyte == 1) {</span>
+<span class="nc" id="L211">        dataBlock.setEOR(true);</span>
+<span class="nc bnc" id="L212" title="All 2 branches missed.">      } else if (nextbyte == 2) {</span>
+<span class="nc" id="L213">        dataBlock.setEOF(true);</span>
+<span class="nc bnc" id="L214" title="All 2 branches missed.">      } else if (nextbyte == 3) {</span>
+<span class="nc" id="L215">        dataBlock.setEOR(true);</span>
+<span class="nc" id="L216">        dataBlock.setEOF(true);</span>
       }
-<span class="nc" id="L217">      return true;</span>
+<span class="nc" id="L218">      return true;</span>
     }
   }
 
@@ -222,41 +223,41 @@ public class FtpDataModeCodec extends ByteToMessageCodec&lt;DataBlock&gt; {
   protected void decode(final ChannelHandlerContext ctx, final ByteBuf buf,
                         final List&lt;Object&gt; out) throws Exception {
     // First test if the connection is fully ready (block might be
-    // transfered
+    // transferred
     // by client before connection is ready)
-<span class="pc bpc" id="L227" title="1 of 2 branches missed.">    if (!isReady) {</span>
-<span class="pc bpc" id="L228" title="1 of 2 branches missed.">      if (!codecLocked.awaitOrInterruptible()) {</span>
-<span class="nc" id="L229">        throw new InvalidArgumentException(</span>
+<span class="fc bfc" id="L228" title="All 2 branches covered.">    if (!isReady) {</span>
+<span class="pc bpc" id="L229" title="1 of 2 branches missed.">      if (!codecLocked.awaitOrInterruptible()) {</span>
+<span class="nc" id="L230">        throw new InvalidArgumentException(</span>
             &quot;Codec not unlocked while should be&quot;);
       }
-<span class="fc" id="L232">      isReady = true;</span>
+<span class="fc" id="L233">      isReady = true;</span>
     }
-<span class="pc bpc" id="L234" title="1 of 2 branches missed.">    if (buf.readableBytes() == 0) {</span>
-<span class="nc" id="L235">      return;</span>
+<span class="pc bpc" id="L235" title="1 of 2 branches missed.">    if (buf.readableBytes() == 0) {</span>
+<span class="nc" id="L236">      return;</span>
     }
     // If STREAM Mode, no task to do, just next filter
-<span class="pc bpc" id="L238" title="1 of 2 branches missed.">    if (mode == TransferMode.STREAM) {</span>
-<span class="fc" id="L239">      dataBlock = new DataBlock();</span>
-<span class="pc bpc" id="L240" title="1 of 2 branches missed.">      if (structure != TransferStructure.RECORD) {</span>
-<span class="fc" id="L241">        final ByteBuf newbuf = buf.slice();</span>
-<span class="fc" id="L242">        buf.readerIndex(buf.readableBytes());</span>
-<span class="fc" id="L243">        newbuf.retain();</span>
-<span class="fc" id="L244">        dataBlock.setBlock(newbuf);</span>
-<span class="fc" id="L245">        out.add(dataBlock);</span>
-<span class="fc" id="L246">        return;</span>
+<span class="pc bpc" id="L239" title="1 of 2 branches missed.">    if (mode == TransferMode.STREAM) {</span>
+<span class="fc" id="L240">      dataBlock = new DataBlock();</span>
+<span class="pc bpc" id="L241" title="1 of 2 branches missed.">      if (structure != TransferStructure.RECORD) {</span>
+<span class="fc" id="L242">        final ByteBuf newbuf = buf.slice();</span>
+<span class="fc" id="L243">        buf.readerIndex(buf.readableBytes());</span>
+<span class="fc" id="L244">        newbuf.retain();</span>
+<span class="fc" id="L245">        dataBlock.setBlock(newbuf);</span>
+<span class="fc" id="L246">        out.add(dataBlock);</span>
+<span class="fc" id="L247">        return;</span>
       }
       // Except if RECORD Structure!
-<span class="nc" id="L249">      final int length = buf.readableBytes();</span>
-<span class="nc" id="L250">      out.add(decodeRecord(buf, length));</span>
-<span class="nc" id="L251">      return;</span>
-<span class="nc bnc" id="L252" title="All 2 branches missed.">    } else if (mode == TransferMode.BLOCK) {</span>
+<span class="nc" id="L250">      final int length = buf.readableBytes();</span>
+<span class="nc" id="L251">      out.add(decodeRecord(buf, length));</span>
+<span class="nc" id="L252">      return;</span>
+<span class="nc bnc" id="L253" title="All 2 branches missed.">    } else if (mode == TransferMode.BLOCK) {</span>
       // Now we are in BLOCK Mode
       // Make sure if the length field was received.
-<span class="nc bnc" id="L255" title="All 2 branches missed.">      if (buf.readableBytes() &lt; 3) {</span>
+<span class="nc bnc" id="L256" title="All 2 branches missed.">      if (buf.readableBytes() &lt; 3) {</span>
         // The length field was not received yet - return null.
         // This method will be invoked again when more packets are
         // received and appended to the buffer.
-<span class="nc" id="L259">        return;</span>
+<span class="nc" id="L260">        return;</span>
       }
 
       // The length field is in the buffer.
@@ -265,112 +266,76 @@ public class FtpDataModeCodec extends ByteToMessageCodec&lt;DataBlock&gt; {
       // because the whole frame might not be in the buffer yet.
       // We will reset the buffer position to the marked position if
       // there's not enough bytes in the buffer.
-<span class="nc" id="L268">      buf.markReaderIndex();</span>
+<span class="nc" id="L269">      buf.markReaderIndex();</span>
 
-<span class="nc bnc" id="L270" title="All 2 branches missed.">      if (dataBlock == null) {</span>
-<span class="nc" id="L271">        dataBlock = new DataBlock();</span>
+<span class="nc bnc" id="L271" title="All 2 branches missed.">      if (dataBlock == null) {</span>
+<span class="nc" id="L272">        dataBlock = new DataBlock();</span>
       }
       // Read the descriptor
-<span class="nc" id="L274">      dataBlock.setDescriptor(buf.readByte());</span>
+<span class="nc" id="L275">      dataBlock.setDescriptor(buf.readByte());</span>
 
       // Read the length field.
-<span class="nc" id="L277">      final byte upper = buf.readByte();</span>
-<span class="nc" id="L278">      final byte lower = buf.readByte();</span>
-<span class="nc" id="L279">      dataBlock.setByteCount(upper, lower);</span>
+<span class="nc" id="L278">      final byte upper = buf.readByte();</span>
+<span class="nc" id="L279">      final byte lower = buf.readByte();</span>
+<span class="nc" id="L280">      dataBlock.setByteCount(upper, lower);</span>
 
       // Make sure if there's enough bytes in the buffer.
-<span class="nc bnc" id="L282" title="All 2 branches missed.">      if (buf.readableBytes() &lt; dataBlock.getByteCount()) {</span>
+<span class="nc bnc" id="L283" title="All 2 branches missed.">      if (buf.readableBytes() &lt; dataBlock.getByteCount()) {</span>
         // The whole bytes were not received yet - return null.
         // This method will be invoked again when more packets are
         // received and appended to the buffer.
 
         // Reset to the marked position to read the length field again
         // next time.
-<span class="nc" id="L289">        buf.resetReaderIndex();</span>
+<span class="nc" id="L290">        buf.resetReaderIndex();</span>
 
-<span class="nc" id="L291">        return;</span>
+<span class="nc" id="L292">        return;</span>
       }
-<span class="nc bnc" id="L293" title="All 2 branches missed.">      if (dataBlock.getByteCount() &gt; 0) {</span>
+<span class="nc bnc" id="L294" title="All 2 branches missed.">      if (dataBlock.getByteCount() &gt; 0) {</span>
         // There's enough bytes in the buffer. Read it.
-<span class="nc" id="L295">        dataBlock.setBlock(buf.readBytes(dataBlock.getByteCount()));</span>
+<span class="nc" id="L296">        dataBlock.setBlock(buf.readBytes(dataBlock.getByteCount()));</span>
       }
-<span class="nc" id="L297">      final DataBlock returnDataBlock = dataBlock;</span>
+<span class="nc" id="L298">      final DataBlock returnDataBlock = dataBlock;</span>
       // Free the datablock for next frame
-<span class="nc" id="L299">      dataBlock = null;</span>
+<span class="nc" id="L300">      dataBlock = null;</span>
       // Successfully decoded a frame. Return the decoded frame.
-<span class="nc" id="L301">      out.add(returnDataBlock);</span>
-<span class="nc" id="L302">      return;</span>
+<span class="nc" id="L302">      out.add(returnDataBlock);</span>
+<span class="nc" id="L303">      return;</span>
     }
     // Type unimplemented
-<span class="nc" id="L305">    throw new InvalidArgumentException(&quot;Mode unimplemented: &quot; + mode.name());</span>
+<span class="nc" id="L306">    throw new InvalidArgumentException(&quot;Mode unimplemented: &quot; + mode.name());</span>
   }
 
-  protected ByteBuf encodeRecordStandard(final DataBlock msg,
-                                         final ByteBuf buffer) {
+  protected ByteBuf encodeRecord(final DataBlock msg, final byte[] buffer) {
 <span class="nc" id="L310">    final int size = msg.getByteCount();</span>
 <span class="nc" id="L311">    final ByteBuf newbuf = ByteBufAllocator.DEFAULT.buffer(size, size);</span>
     int newbyte;
     try {
-<span class="nc bnc" id="L314" title="All 2 branches missed.">      while (buffer.readableBytes() &gt; 0) {</span>
-<span class="nc" id="L315">        newbyte = buffer.readUnsignedByte();</span>
-<span class="nc bnc" id="L316" title="All 2 branches missed.">        if (newbyte == 0xFF) {</span>
-<span class="nc" id="L317">          newbuf.writeByte((byte) 0xFF);</span>
+<span class="nc" id="L314">      int pos = 0;</span>
+<span class="nc" id="L315">      final int limit = buffer.length;</span>
+<span class="nc bnc" id="L316" title="All 2 branches missed.">      while (pos &lt; limit) {</span>
+<span class="nc" id="L317">        newbyte = buffer[pos++] &amp; 0xFF;</span>
+<span class="nc bnc" id="L318" title="All 2 branches missed.">        if (newbyte == 0xFF) {</span>
+<span class="nc" id="L319">          newbuf.writeByte((byte) 0xFF);</span>
         }
-<span class="nc" id="L319">        newbuf.writeByte((byte) (newbyte &amp; 0xFF));</span>
+<span class="nc" id="L321">        newbuf.writeByte((byte) (newbyte &amp; 0xFF));</span>
       }
-<span class="nc" id="L321">    } catch (final IndexOutOfBoundsException e) {</span>
+<span class="nc" id="L323">    } catch (final IndexOutOfBoundsException e) {</span>
       // end of read
-<span class="nc" id="L323">    }</span>
-<span class="nc" id="L324">    int value = 0;</span>
-<span class="nc bnc" id="L325" title="All 2 branches missed.">    if (msg.isEOF()) {</span>
-<span class="nc" id="L326">      value += 2;</span>
+<span class="nc" id="L325">    }</span>
+<span class="nc" id="L326">    int value = 0;</span>
+<span class="nc bnc" id="L327" title="All 2 branches missed.">    if (msg.isEOF()) {</span>
+<span class="nc" id="L328">      value += 2;</span>
     }
-<span class="nc bnc" id="L328" title="All 2 branches missed.">    if (msg.isEOR()) {</span>
-<span class="nc" id="L329">      value += 1;</span>
+<span class="nc bnc" id="L330" title="All 2 branches missed.">    if (msg.isEOR()) {</span>
+<span class="nc" id="L331">      value += 1;</span>
     }
-<span class="nc bnc" id="L331" title="All 2 branches missed.">    if (value &gt; 0) {</span>
-<span class="nc" id="L332">      newbuf.writeByte((byte) 0xFF);</span>
-<span class="nc" id="L333">      newbuf.writeByte((byte) (value &amp; 0xFF));</span>
+<span class="nc bnc" id="L333" title="All 2 branches missed.">    if (value &gt; 0) {</span>
+<span class="nc" id="L334">      newbuf.writeByte((byte) 0xFF);</span>
+<span class="nc" id="L335">      newbuf.writeByte((byte) (value &amp; 0xFF));</span>
     }
-<span class="nc" id="L335">    msg.clear();</span>
-<span class="nc" id="L336">    return newbuf;</span>
-  }
-
-  protected ByteBuf encodeRecord(final DataBlock msg, final ByteBuf buffer) {
-    final FtpSeekAheadData sad;
-    try {
-<span class="nc" id="L342">      sad = new FtpSeekAheadData(buffer);</span>
-<span class="nc" id="L343">    } catch (final SeekAheadNoBackArrayException e1) {</span>
-<span class="nc" id="L344">      return encodeRecordStandard(msg, buffer);</span>
-<span class="nc" id="L345">    }</span>
-<span class="nc" id="L346">    final int size = msg.getByteCount();</span>
-<span class="nc" id="L347">    final ByteBuf newbuf = ByteBufAllocator.DEFAULT.buffer(size, size);</span>
-    int newbyte;
-    try {
-<span class="nc bnc" id="L350" title="All 2 branches missed.">      while (sad.pos &lt; sad.limit) {</span>
-<span class="nc" id="L351">        newbyte = sad.bytes[sad.pos++] &amp; 0xFF;</span>
-<span class="nc bnc" id="L352" title="All 2 branches missed.">        if (newbyte == 0xFF) {</span>
-<span class="nc" id="L353">          newbuf.writeByte((byte) 0xFF);</span>
-        }
-<span class="nc" id="L355">        newbuf.writeByte((byte) (newbyte &amp; 0xFF));</span>
-      }
-<span class="nc" id="L357">    } catch (final IndexOutOfBoundsException e) {</span>
-      // end of read
-<span class="nc" id="L359">    }</span>
-<span class="nc" id="L360">    int value = 0;</span>
-<span class="nc bnc" id="L361" title="All 2 branches missed.">    if (msg.isEOF()) {</span>
-<span class="nc" id="L362">      value += 2;</span>
-    }
-<span class="nc bnc" id="L364" title="All 2 branches missed.">    if (msg.isEOR()) {</span>
-<span class="nc" id="L365">      value += 1;</span>
-    }
-<span class="nc bnc" id="L367" title="All 2 branches missed.">    if (value &gt; 0) {</span>
-<span class="nc" id="L368">      newbuf.writeByte((byte) 0xFF);</span>
-<span class="nc" id="L369">      newbuf.writeByte((byte) (value &amp; 0xFF));</span>
-    }
-<span class="nc" id="L371">    msg.clear();</span>
-<span class="nc" id="L372">    sad.setReadPosition(0);</span>
-<span class="nc" id="L373">    return newbuf;</span>
+<span class="nc" id="L337">    msg.clear();</span>
+<span class="nc" id="L338">    return newbuf;</span>
   }
 
   /**
@@ -384,109 +349,110 @@ public class FtpDataModeCodec extends ByteToMessageCodec&lt;DataBlock&gt; {
    */
   protected ByteBuf encode(final DataBlock msg)
       throws InvalidArgumentException {
-<span class="fc bfc" id="L387" title="All 2 branches covered.">    if (msg.isCleared()) {</span>
-<span class="fc" id="L388">      return null;</span>
+<span class="fc bfc" id="L352" title="All 2 branches covered.">    if (msg.isCleared()) {</span>
+<span class="fc" id="L353">      return null;</span>
     }
-<span class="fc" id="L390">    final ByteBuf buffer = msg.getBlock();</span>
-<span class="pc bpc" id="L391" title="1 of 2 branches missed.">    if (mode == TransferMode.STREAM) {</span>
+<span class="fc" id="L355">    final byte[] bytes = msg.getByteBlock();</span>
+<span class="pc bpc" id="L356" title="1 of 2 branches missed.">    if (mode == TransferMode.STREAM) {</span>
       // If record structure, special attention
-<span class="pc bpc" id="L393" title="1 of 2 branches missed.">      if (structure == TransferStructure.RECORD) {</span>
-<span class="nc" id="L394">        return encodeRecord(msg, buffer);</span>
+<span class="pc bpc" id="L358" title="1 of 2 branches missed.">      if (structure == TransferStructure.RECORD) {</span>
+<span class="nc" id="L359">        return encodeRecord(msg, bytes);</span>
       }
-<span class="fc" id="L396">      msg.clear();</span>
-<span class="fc" id="L397">      return buffer;</span>
-<span class="nc bnc" id="L398" title="All 2 branches missed.">    } else if (mode == TransferMode.BLOCK) {</span>
-<span class="nc" id="L399">      int length = msg.getByteCount();</span>
-<span class="nc bnc" id="L400" title="All 2 branches missed.">      final int size = length &gt; 0xFFFF? 0xFFFF + 3 : length + 3;</span>
-<span class="nc" id="L401">      final ByteBuf newbuf = ByteBufAllocator.DEFAULT.buffer(size, size);</span>
-<span class="nc" id="L402">      final byte[] header = { 0, 0, 0 };</span>
+<span class="fc" id="L361">      msg.clear();</span>
+<span class="fc" id="L362">      return Unpooled.wrappedBuffer(bytes);</span>
+<span class="nc bnc" id="L363" title="All 2 branches missed.">    } else if (mode == TransferMode.BLOCK) {</span>
+<span class="nc" id="L364">      int length = msg.getByteCount();</span>
+<span class="nc bnc" id="L365" title="All 2 branches missed.">      final int size = length &gt; 0xFFFF? 0xFFFF + 3 : length + 3;</span>
+<span class="nc" id="L366">      final ByteBuf newbuf = ByteBufAllocator.DEFAULT.buffer(size, size);</span>
+<span class="nc" id="L367">      final byte[] header = { 0, 0, 0 };</span>
       // Is there any data left
-<span class="nc bnc" id="L404" title="All 2 branches missed.">      if (length == 0) {</span>
+<span class="nc bnc" id="L369" title="All 2 branches missed.">      if (length == 0) {</span>
         // It could be an empty block for EOR or EOF
-<span class="nc bnc" id="L406" title="All 4 branches missed.">        if (msg.isEOF() || msg.isEOR()) {</span>
-<span class="nc" id="L407">          header[0] = msg.getDescriptor();</span>
-<span class="nc" id="L408">          header[1] = 0;</span>
-<span class="nc" id="L409">          header[2] = 0;</span>
-<span class="nc" id="L410">          newbuf.writeBytes(header);</span>
+<span class="nc bnc" id="L371" title="All 4 branches missed.">        if (msg.isEOF() || msg.isEOR()) {</span>
+<span class="nc" id="L372">          header[0] = msg.getDescriptor();</span>
+<span class="nc" id="L373">          header[1] = 0;</span>
+<span class="nc" id="L374">          header[2] = 0;</span>
+<span class="nc" id="L375">          newbuf.writeBytes(header);</span>
           // Next call will be the last one
-<span class="nc" id="L412">          msg.clear();</span>
+<span class="nc" id="L377">          msg.clear();</span>
           // return the last block
-<span class="nc" id="L414">          return newbuf;</span>
+<span class="nc" id="L379">          return newbuf;</span>
         }
         // This was the very last call
-<span class="nc" id="L417">        msg.clear();</span>
+<span class="nc" id="L382">        msg.clear();</span>
         // return the end of encode
-<span class="nc" id="L419">        return null;</span>
+<span class="nc" id="L384">        return null;</span>
       }
       // Is this a Restart so only Markers
-<span class="nc bnc" id="L422" title="All 2 branches missed.">      if (msg.isRESTART()) {</span>
-<span class="nc" id="L423">        header[0] = msg.getDescriptor();</span>
-<span class="nc" id="L424">        header[1] = msg.getByteCountUpper();</span>
-<span class="nc" id="L425">        header[2] = msg.getByteCountLower();</span>
-<span class="nc" id="L426">        newbuf.writeBytes(header);</span>
-<span class="nc" id="L427">        newbuf.writeBytes(msg.getByteMarkers());</span>
+<span class="nc bnc" id="L387" title="All 2 branches missed.">      if (msg.isRESTART()) {</span>
+<span class="nc" id="L388">        header[0] = msg.getDescriptor();</span>
+<span class="nc" id="L389">        header[1] = msg.getByteCountUpper();</span>
+<span class="nc" id="L390">        header[2] = msg.getByteCountLower();</span>
+<span class="nc" id="L391">        newbuf.writeBytes(header);</span>
+<span class="nc" id="L392">        newbuf.writeBytes(msg.getByteMarkers());</span>
         // Next call will be the last one
-<span class="nc" id="L429">        msg.clear();</span>
+<span class="nc" id="L394">        msg.clear();</span>
         // return the last block
-<span class="nc" id="L431">        return newbuf;</span>
+<span class="nc" id="L396">        return newbuf;</span>
       }
       // Work on sub block, ignoring descriptor since it is not the last
       // one
-<span class="nc bnc" id="L435" title="All 2 branches missed.">      if (length &gt; 0xFFFF) {</span>
-<span class="nc" id="L436">        header[0] = 0;</span>
-<span class="nc" id="L437">        header[1] = (byte) 0xFF;</span>
-<span class="nc" id="L438">        header[2] = (byte) 0xFF;</span>
-<span class="nc" id="L439">        newbuf.writeBytes(header);</span>
+<span class="nc bnc" id="L400" title="All 2 branches missed.">      if (length &gt; 0xFFFF) {</span>
+<span class="nc" id="L401">        header[0] = 0;</span>
+<span class="nc" id="L402">        header[1] = (byte) 0xFF;</span>
+<span class="nc" id="L403">        header[2] = (byte) 0xFF;</span>
+<span class="nc" id="L404">        newbuf.writeBytes(header);</span>
         // Now take the first 0xFFFF bytes from buffer
-<span class="nc" id="L441">        newbuf.writeBytes(msg.getBlock(), 0xFFFF);</span>
-<span class="nc" id="L442">        length -= 0xFFFF;</span>
-<span class="nc" id="L443">        msg.setByteCount(length);</span>
+<span class="nc" id="L406">        newbuf.writeBytes(bytes, msg.getOffset(), 0xFFFF);</span>
+<span class="nc" id="L407">        msg.addOffset(0xFFFF);</span>
+<span class="nc" id="L408">        length -= 0xFFFF;</span>
+<span class="nc" id="L409">        msg.setByteCount(length);</span>
         // return the sub block
-<span class="nc" id="L445">        return newbuf;</span>
+<span class="nc" id="L411">        return newbuf;</span>
       }
       // Last final block, using the descriptor
-<span class="nc" id="L448">      header[0] = msg.getDescriptor();</span>
-<span class="nc" id="L449">      header[1] = msg.getByteCountUpper();</span>
-<span class="nc" id="L450">      header[2] = msg.getByteCountLower();</span>
-<span class="nc" id="L451">      newbuf.writeBytes(header);</span>
+<span class="nc" id="L414">      header[0] = msg.getDescriptor();</span>
+<span class="nc" id="L415">      header[1] = msg.getByteCountUpper();</span>
+<span class="nc" id="L416">      header[2] = msg.getByteCountLower();</span>
+<span class="nc" id="L417">      newbuf.writeBytes(header);</span>
       // real data
-<span class="nc" id="L453">      newbuf.writeBytes(buffer, length);</span>
+<span class="nc" id="L419">      newbuf.writeBytes(bytes, msg.getOffset(), length);</span>
       // Next call will be the last one
-<span class="nc" id="L455">      msg.clear();</span>
+<span class="nc" id="L421">      msg.clear();</span>
       // return the last block
-<span class="nc" id="L457">      return newbuf;</span>
+<span class="nc" id="L423">      return newbuf;</span>
     }
     // Mode unimplemented
-<span class="nc" id="L460">    throw new InvalidArgumentException(&quot;Mode unimplemented: &quot; + mode.name());</span>
+<span class="nc" id="L426">    throw new InvalidArgumentException(&quot;Mode unimplemented: &quot; + mode.name());</span>
   }
 
   /**
    * @return the mode
    */
   public TransferMode getMode() {
-<span class="nc" id="L467">    return mode;</span>
+<span class="nc" id="L433">    return mode;</span>
   }
 
   /**
    * @param mode the mode to set
    */
   public void setMode(final TransferMode mode) {
-<span class="fc" id="L474">    this.mode = mode;</span>
-<span class="fc" id="L475">  }</span>
+<span class="fc" id="L440">    this.mode = mode;</span>
+<span class="fc" id="L441">  }</span>
 
   /**
    * @return the structure
    */
   public TransferStructure getStructure() {
-<span class="nc" id="L481">    return structure;</span>
+<span class="nc" id="L447">    return structure;</span>
   }
 
   /**
    * @param structure the structure to set
    */
   public void setStructure(final TransferStructure structure) {
-<span class="fc" id="L488">    this.structure = structure;</span>
-<span class="fc" id="L489">  }</span>
+<span class="fc" id="L454">    this.structure = structure;</span>
+<span class="fc" id="L455">  }</span>
 
   @Override
   protected void encode(final ChannelHandlerContext ctx, final DataBlock msg,
@@ -494,19 +460,19 @@ public class FtpDataModeCodec extends ByteToMessageCodec&lt;DataBlock&gt; {
     // First test if the connection is fully ready (block might be
     // transfered
     // by client before connection is ready)
-<span class="pc bpc" id="L497" title="1 of 2 branches missed.">    if (!isReady) {</span>
-<span class="pc bpc" id="L498" title="1 of 2 branches missed.">      if (!codecLocked.awaitOrInterruptible()) {</span>
-<span class="nc" id="L499">        throw new InvalidArgumentException(</span>
+<span class="pc bpc" id="L463" title="1 of 2 branches missed.">    if (!isReady) {</span>
+<span class="pc bpc" id="L464" title="1 of 2 branches missed.">      if (!codecLocked.awaitOrInterruptible()) {</span>
+<span class="nc" id="L465">        throw new InvalidArgumentException(</span>
             &quot;Codec not unlocked while should be&quot;);
       }
-<span class="fc" id="L502">      isReady = true;</span>
+<span class="fc" id="L468">      isReady = true;</span>
     }
-<span class="fc" id="L504">    ByteBuf next = encode(msg);</span>
+<span class="fc" id="L470">    ByteBuf next = encode(msg);</span>
     // Could be splitten in several block
-<span class="fc bfc" id="L506" title="All 2 branches covered.">    while (next != null) {</span>
-<span class="fc" id="L507">      out.writeBytes(next);</span>
-<span class="fc" id="L508">      next = encode(msg);</span>
+<span class="fc bfc" id="L472" title="All 2 branches covered.">    while (next != null) {</span>
+<span class="fc" id="L473">      out.writeBytes(next);</span>
+<span class="fc" id="L474">      next = encode(msg);</span>
     }
-<span class="fc" id="L510">  }</span>
+<span class="fc" id="L476">  }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

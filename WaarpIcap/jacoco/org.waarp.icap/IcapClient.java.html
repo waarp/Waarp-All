@@ -855,7 +855,7 @@ public class IcapClient implements Closeable {
 <span class="fc" id="L855">          logger.debug(&quot;Recv ICAP Preview Status Continue&quot;);</span>
 <span class="fc" id="L856">          return 0; //Continue transfer</span>
         case 200:
-<span class="fc" id="L858">          logger.debug(&quot;Recv ICAP Preview Status Abort&quot;);</span>
+<span class="fc" id="L858">          logger.info(&quot;Recv ICAP Preview Status Abort&quot;);</span>
 <span class="fc" id="L859">          return -1;</span>
         case 204:
 <span class="fc" id="L861">          logger.debug(&quot;Recv ICAP Preview Status Accepted&quot;);</span>
@@ -918,7 +918,7 @@ public class IcapClient implements Closeable {
 <span class="nc" id="L918">            getHeaderHttp();</span>
           }
         }
-<span class="fc" id="L921">        logger.debug(&quot;Final status with check {}&quot;, finalStatus);</span>
+<span class="fc" id="L921">        logger.info(&quot;Final status with check {}&quot;, finalStatus);</span>
 <span class="fc" id="L922">        return finalStatus;</span>
       }
     }
@@ -1191,19 +1191,18 @@ public class IcapClient implements Closeable {
 <span class="fc bfc" id="L1191" title="All 2 branches covered.">      if (withFlush) {</span>
 <span class="fc" id="L1192">        out.flush();</span>
       }
-<span class="fc" id="L1194">      logger.trace(&quot;SEND Request:\n{}&quot;, requestHeader);</span>
-<span class="nc" id="L1195">    } catch (final SocketTimeoutException e) {</span>
-<span class="nc" id="L1196">      logger.error(TIMEOUT_OCCURS_WITH_THE_SERVER_SINCE, serverIP, port,</span>
-<span class="nc" id="L1197">                   e.getMessage());</span>
-<span class="nc" id="L1198">      throw new IcapException(TIMEOUT_OCCURS_WITH_THE_SERVER, e,</span>
+<span class="nc" id="L1194">    } catch (final SocketTimeoutException e) {</span>
+<span class="nc" id="L1195">      logger.error(TIMEOUT_OCCURS_WITH_THE_SERVER_SINCE, serverIP, port,</span>
+<span class="nc" id="L1196">                   e.getMessage());</span>
+<span class="nc" id="L1197">      throw new IcapException(TIMEOUT_OCCURS_WITH_THE_SERVER, e,</span>
                               IcapError.ICAP_TIMEOUT_ERROR);
-<span class="nc" id="L1200">    } catch (final IOException e) {</span>
-<span class="nc" id="L1201">      logger.error(&quot;Client cannot communicate with ICAP Server: {}&quot;,</span>
-<span class="nc" id="L1202">                   e.getMessage());</span>
-<span class="nc" id="L1203">      throw new IcapException(&quot;Client cannot communicate with ICAP Server&quot;, e,</span>
+<span class="nc" id="L1199">    } catch (final IOException e) {</span>
+<span class="nc" id="L1200">      logger.error(&quot;Client cannot communicate with ICAP Server: {}&quot;,</span>
+<span class="nc" id="L1201">                   e.getMessage());</span>
+<span class="nc" id="L1202">      throw new IcapException(&quot;Client cannot communicate with ICAP Server&quot;, e,</span>
                               IcapError.ICAP_NETWORK_ERROR);
-<span class="fc" id="L1205">    }</span>
-<span class="fc" id="L1206">  }</span>
+<span class="fc" id="L1204">    }</span>
+<span class="fc" id="L1205">  }</span>
 
   /**
    * Sends bytes of data from a byte-array through the socket connection.
@@ -1215,20 +1214,19 @@ public class IcapClient implements Closeable {
   private void sendBytes(final byte[] chunk, final int length)
       throws IcapException {
     try {
-<span class="fc" id="L1218">      out.write(chunk, 0, length);</span>
-<span class="fc" id="L1219">      logger.trace(&quot;SEND {} bytes&quot;, length);</span>
-<span class="nc" id="L1220">    } catch (final SocketTimeoutException e) {</span>
-<span class="nc" id="L1221">      logger.error(TIMEOUT_OCCURS_WITH_THE_SERVER_SINCE, serverIP, port,</span>
-<span class="nc" id="L1222">                   e.getMessage());</span>
-<span class="nc" id="L1223">      throw new IcapException(TIMEOUT_OCCURS_WITH_THE_SERVER, e,</span>
+<span class="fc" id="L1217">      out.write(chunk, 0, length);</span>
+<span class="nc" id="L1218">    } catch (final SocketTimeoutException e) {</span>
+<span class="nc" id="L1219">      logger.error(TIMEOUT_OCCURS_WITH_THE_SERVER_SINCE, serverIP, port,</span>
+<span class="nc" id="L1220">                   e.getMessage());</span>
+<span class="nc" id="L1221">      throw new IcapException(TIMEOUT_OCCURS_WITH_THE_SERVER, e,</span>
                               IcapError.ICAP_TIMEOUT_ERROR);
-<span class="nc" id="L1225">    } catch (final IOException e) {</span>
-<span class="nc" id="L1226">      logger.error(&quot;Client cannot communicate with ICAP Server: {}&quot;,</span>
-<span class="nc" id="L1227">                   e.getMessage());</span>
-<span class="nc" id="L1228">      throw new IcapException(&quot;Writing to ICAP Server cannot be done&quot;, e,</span>
+<span class="nc" id="L1223">    } catch (final IOException e) {</span>
+<span class="nc" id="L1224">      logger.error(&quot;Client cannot communicate with ICAP Server: {}&quot;,</span>
+<span class="nc" id="L1225">                   e.getMessage());</span>
+<span class="nc" id="L1226">      throw new IcapException(&quot;Writing to ICAP Server cannot be done&quot;, e,</span>
                               IcapError.ICAP_NETWORK_ERROR);
-<span class="fc" id="L1230">    }</span>
-<span class="fc" id="L1231">  }</span>
+<span class="fc" id="L1228">    }</span>
+<span class="fc" id="L1229">  }</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

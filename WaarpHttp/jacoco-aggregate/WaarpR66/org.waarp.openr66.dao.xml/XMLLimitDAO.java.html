@@ -53,7 +53,7 @@ public class XMLLimitDAO implements LimitDAO {
    * HashTable in case of lack of database
    */
   private static final ConcurrentHashMap&lt;String, Limit&gt;
-<span class="nc" id="L56">      dbR66ConfigurationHashMap = new ConcurrentHashMap&lt;String, Limit&gt;();</span>
+<span class="fc" id="L56">      dbR66ConfigurationHashMap = new ConcurrentHashMap&lt;String, Limit&gt;();</span>
 
   public static final String HOSTID_FIELD = &quot;hostid&quot;;
   public static final String SESSION_LIMIT_FILED = &quot;sessionlimit&quot;;
@@ -67,9 +67,9 @@ public class XMLLimitDAO implements LimitDAO {
 
   private final File file;
 
-<span class="nc" id="L70">  public XMLLimitDAO(final String filePath) throws DAOConnectionException {</span>
-<span class="nc" id="L71">    file = new File(filePath);</span>
-<span class="nc" id="L72">  }</span>
+<span class="fc" id="L70">  public XMLLimitDAO(final String filePath) {</span>
+<span class="fc" id="L71">    file = new File(filePath);</span>
+<span class="fc" id="L72">  }</span>
 
   @Override
   public void close() {
@@ -77,22 +77,22 @@ public class XMLLimitDAO implements LimitDAO {
 <span class="nc" id="L77">  }</span>
 
   @Override
-  public void delete(final Limit limit) throws DAOConnectionException {
-<span class="nc" id="L81">    dbR66ConfigurationHashMap.remove(limit.getHostid());</span>
-<span class="nc" id="L82">  }</span>
+  public void delete(final Limit limit) {
+<span class="fc" id="L81">    dbR66ConfigurationHashMap.remove(limit.getHostid());</span>
+<span class="fc" id="L82">  }</span>
 
   @Override
-  public void deleteAll() throws DAOConnectionException {
-<span class="nc" id="L86">    dbR66ConfigurationHashMap.clear();</span>
-<span class="nc" id="L87">  }</span>
+  public void deleteAll() {
+<span class="fc" id="L86">    dbR66ConfigurationHashMap.clear();</span>
+<span class="fc" id="L87">  }</span>
 
   @Override
   public List&lt;Limit&gt; getAll() throws DAOConnectionException {
-<span class="nc bnc" id="L91" title="All 2 branches missed.">    if (!file.exists()) {</span>
+<span class="pc bpc" id="L91" title="1 of 2 branches missed.">    if (!file.exists()) {</span>
 <span class="nc" id="L92">      throw new DAOConnectionException(&quot;File doesn't exist&quot;);</span>
     }
     try {
-<span class="nc" id="L95">      final DocumentBuilderFactory dbf = getDocumentBuilderFactory();</span>
+<span class="fc" id="L95">      final DocumentBuilderFactory dbf = getDocumentBuilderFactory();</span>
 <span class="nc" id="L96">      final Document document = dbf.newDocumentBuilder().parse(file);</span>
       // File contains only 1 entry
 <span class="nc" id="L98">      final List&lt;Limit&gt; res = new ArrayList&lt;Limit&gt;(1);</span>
@@ -101,8 +101,8 @@ public class XMLLimitDAO implements LimitDAO {
 <span class="nc" id="L101">      dbR66ConfigurationHashMap.put(limit.getHostid(), limit);</span>
       // Iterate through all found nodes
 <span class="nc" id="L103">      return res;</span>
-<span class="nc" id="L104">    } catch (final SAXException e) {</span>
-<span class="nc" id="L105">      throw new DAOConnectionException(e);</span>
+<span class="fc" id="L104">    } catch (final SAXException e) {</span>
+<span class="fc" id="L105">      throw new DAOConnectionException(e);</span>
 <span class="nc" id="L106">    } catch (final ParserConfigurationException e) {</span>
 <span class="nc" id="L107">      throw new DAOConnectionException(e);</span>
 <span class="nc" id="L108">    } catch (final IOException e) {</span>
@@ -112,14 +112,14 @@ public class XMLLimitDAO implements LimitDAO {
 
   @Override
   public boolean exist(final String hostid) throws DAOConnectionException {
-<span class="nc bnc" id="L115" title="All 2 branches missed.">    if (dbR66ConfigurationHashMap.containsKey(hostid)) {</span>
-<span class="nc" id="L116">      return true;</span>
+<span class="fc bfc" id="L115" title="All 2 branches covered.">    if (dbR66ConfigurationHashMap.containsKey(hostid)) {</span>
+<span class="fc" id="L116">      return true;</span>
     }
-<span class="nc bnc" id="L118" title="All 2 branches missed.">    if (!file.exists()) {</span>
+<span class="pc bpc" id="L118" title="1 of 2 branches missed.">    if (!file.exists()) {</span>
 <span class="nc" id="L119">      throw new DAOConnectionException(&quot;File doesn't exist&quot;);</span>
     }
     try {
-<span class="nc" id="L122">      final DocumentBuilderFactory dbf = getDocumentBuilderFactory();</span>
+<span class="fc" id="L122">      final DocumentBuilderFactory dbf = getDocumentBuilderFactory();</span>
 <span class="nc" id="L123">      final Document document = dbf.newDocumentBuilder().parse(file);</span>
       // Setup XPath variable
 <span class="nc" id="L125">      final SimpleVariableResolver resolver = new SimpleVariableResolver();</span>
@@ -131,8 +131,8 @@ public class XMLLimitDAO implements LimitDAO {
       // Query will return &quot;&quot; if nothing is found
 <span class="nc bnc" id="L132" title="All 2 branches missed.">      return xpe.evaluate(document) != null &amp;&amp;</span>
 <span class="nc bnc" id="L133" title="All 2 branches missed.">             !xpe.evaluate(document).isEmpty();</span>
-<span class="nc" id="L134">    } catch (final SAXException e) {</span>
-<span class="nc" id="L135">      throw new DAOConnectionException(e);</span>
+<span class="fc" id="L134">    } catch (final SAXException e) {</span>
+<span class="fc" id="L135">      throw new DAOConnectionException(e);</span>
 <span class="nc" id="L136">    } catch (final XPathExpressionException e) {</span>
 <span class="nc" id="L137">      throw new DAOConnectionException(e);</span>
 <span class="nc" id="L138">    } catch (final ParserConfigurationException e) {</span>
@@ -145,26 +145,26 @@ public class XMLLimitDAO implements LimitDAO {
   @Override
   public List&lt;Limit&gt; find(final List&lt;Filter&gt; fitlers)
       throws DAOConnectionException {
-<span class="nc" id="L148">    throw new DAOConnectionException(&quot;Operation not supported on XML DAO&quot;);</span>
+<span class="fc" id="L148">    throw new DAOConnectionException(&quot;Operation not supported on XML DAO&quot;);</span>
   }
 
   @Override
-  public void insert(final Limit limit) throws DAOConnectionException {
-<span class="nc" id="L153">    dbR66ConfigurationHashMap.put(limit.getHostid(), limit);</span>
-<span class="nc" id="L154">  }</span>
+  public void insert(final Limit limit) {
+<span class="fc" id="L153">    dbR66ConfigurationHashMap.put(limit.getHostid(), limit);</span>
+<span class="fc" id="L154">  }</span>
 
   @Override
   public Limit select(final String hostid)
       throws DAOConnectionException, DAONoDataException {
-<span class="nc" id="L159">    Limit limit = dbR66ConfigurationHashMap.get(hostid);</span>
-<span class="nc bnc" id="L160" title="All 2 branches missed.">    if (limit != null) {</span>
-<span class="nc" id="L161">      return limit;</span>
+<span class="fc" id="L159">    Limit limit = dbR66ConfigurationHashMap.get(hostid);</span>
+<span class="fc bfc" id="L160" title="All 2 branches covered.">    if (limit != null) {</span>
+<span class="fc" id="L161">      return limit;</span>
     }
-<span class="nc bnc" id="L163" title="All 2 branches missed.">    if (!file.exists()) {</span>
+<span class="pc bpc" id="L163" title="1 of 2 branches missed.">    if (!file.exists()) {</span>
 <span class="nc" id="L164">      throw new DAOConnectionException(&quot;File doesn't exist&quot;);</span>
     }
     try {
-<span class="nc" id="L167">      final DocumentBuilderFactory dbf = getDocumentBuilderFactory();</span>
+<span class="fc" id="L167">      final DocumentBuilderFactory dbf = getDocumentBuilderFactory();</span>
 <span class="nc" id="L168">      final Document document = dbf.newDocumentBuilder().parse(file);</span>
       // Setup XPath variable
 <span class="nc" id="L170">      final SimpleVariableResolver resolver = new SimpleVariableResolver();</span>
@@ -181,8 +181,8 @@ public class XMLLimitDAO implements LimitDAO {
 <span class="nc" id="L181">        return limit;</span>
       }
 <span class="nc" id="L183">      throw new DAONoDataException(&quot;Limit not found&quot;);</span>
-<span class="nc" id="L184">    } catch (final SAXException e) {</span>
-<span class="nc" id="L185">      throw new DAOConnectionException(e);</span>
+<span class="fc" id="L184">    } catch (final SAXException e) {</span>
+<span class="fc" id="L185">      throw new DAOConnectionException(e);</span>
 <span class="nc" id="L186">    } catch (final XPathExpressionException e) {</span>
 <span class="nc" id="L187">      throw new DAOConnectionException(e);</span>
 <span class="nc" id="L188">    } catch (final ParserConfigurationException e) {</span>
@@ -193,9 +193,9 @@ public class XMLLimitDAO implements LimitDAO {
   }
 
   @Override
-  public void update(final Limit limit) throws DAOConnectionException {
-<span class="nc" id="L197">    dbR66ConfigurationHashMap.put(limit.getHostid(), limit);</span>
-<span class="nc" id="L198">  }</span>
+  public void update(final Limit limit) {
+<span class="fc" id="L197">    dbR66ConfigurationHashMap.put(limit.getHostid(), limit);</span>
+<span class="fc" id="L198">  }</span>
 
   private Limit getFromNode(final Node parent) {
 <span class="nc" id="L201">    final Limit res = new Limit();</span>

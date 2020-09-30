@@ -20,7 +20,6 @@
 package org.waarp.openr66.protocol.localhandler;
 
 import io.netty.channel.Channel;
-import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.traffic.ChannelTrafficShapingHandler;
 import org.waarp.common.database.DbSession;
 import org.waarp.common.guid.IntegerUuid;
@@ -56,8 +55,8 @@ public class LocalChannelReference {
   /**
    * Internal Logger
    */
-<span class="fc" id="L59">  private static final WaarpLogger logger =</span>
-<span class="fc" id="L60">      WaarpLoggerFactory.getLogger(LocalChannelReference.class);</span>
+<span class="fc" id="L58">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L59">      WaarpLoggerFactory.getLogger(LocalChannelReference.class);</span>
 
   /**
    * Network Channel Ref
@@ -76,7 +75,7 @@ public class LocalChannelReference {
   /**
    * Server Actions handler
    */
-<span class="pc" id="L79">  private final TransferActions serverHandler = new TransferActions();</span>
+<span class="pc" id="L78">  private final TransferActions serverHandler = new TransferActions();</span>
 
   /**
    * Local Id
@@ -100,22 +99,22 @@ public class LocalChannelReference {
   /**
    * Future on Valid Starting Request
    */
-<span class="pc" id="L103">  private final R66Future futureValidRequest = new R66Future(true);</span>
+<span class="pc" id="L102">  private final R66Future futureValidRequest = new R66Future(true);</span>
 
   /**
    * Future on Transfer if any
    */
-<span class="pc" id="L108">  private R66Future futureEndTransfer = new R66Future(true);</span>
+<span class="pc" id="L107">  private R66Future futureEndTransfer = new R66Future(true);</span>
 
   /**
    * Future on Connection
    */
-<span class="pc" id="L113">  private final R66Future futureConnection = new R66Future(true);</span>
+<span class="pc" id="L112">  private final R66Future futureConnection = new R66Future(true);</span>
 
   /**
    * Future on Startup
    */
-<span class="pc" id="L118">  private final R66Future futureStartup = new R66Future(true);</span>
+<span class="pc" id="L117">  private final R66Future futureStartup = new R66Future(true);</span>
 
   /**
    * Session
@@ -125,12 +124,12 @@ public class LocalChannelReference {
   /**
    * Last error message
    */
-<span class="pc" id="L128">  private String errorMessage = &quot;NoError&quot;;</span>
+<span class="pc" id="L127">  private String errorMessage = &quot;NoError&quot;;</span>
 
   /**
    * Last error code
    */
-<span class="pc" id="L133">  private ErrorCode code = ErrorCode.Unknown;</span>
+<span class="pc" id="L132">  private ErrorCode code = ErrorCode.Unknown;</span>
 
   /**
    * RecvThroughHandler
@@ -167,165 +166,157 @@ public class LocalChannelReference {
   public LocalChannelReference(final NetworkChannelReference networkChannelRef,
                                final Integer remoteId,
                                final R66Future futureRequest)
-<span class="fc" id="L170">      throws OpenR66ProtocolRemoteShutdownException {</span>
-<span class="fc" id="L171">    this.networkChannelRef = networkChannelRef;</span>
-<span class="fc" id="L172">    networkServerHandler =</span>
-<span class="fc" id="L173">        (NetworkServerHandler) this.networkChannelRef.channel().pipeline().get(</span>
+<span class="fc" id="L169">      throws OpenR66ProtocolRemoteShutdownException {</span>
+<span class="fc" id="L170">    this.networkChannelRef = networkChannelRef;</span>
+<span class="fc" id="L171">    networkServerHandler =</span>
+<span class="fc" id="L172">        (NetworkServerHandler) this.networkChannelRef.channel().pipeline().get(</span>
             NetworkServerInitializer.NETWORK_HANDLER);
-<span class="fc" id="L175">    localId = new IntegerUuid().getInt();</span>
-<span class="fc" id="L176">    this.remoteId = remoteId;</span>
-<span class="fc bfc" id="L177" title="All 2 branches covered.">    if (futureRequest == null) {</span>
-<span class="fc" id="L178">      this.futureRequest = new R66Future(true);</span>
+<span class="fc" id="L174">    localId = new IntegerUuid().getInt();</span>
+<span class="fc" id="L175">    this.remoteId = remoteId;</span>
+<span class="fc bfc" id="L176" title="All 2 branches covered.">    if (futureRequest == null) {</span>
+<span class="fc" id="L177">      this.futureRequest = new R66Future(true);</span>
     } else {
-<span class="pc bpc" id="L180" title="1 of 2 branches missed.">      if (futureRequest.isDone()) {</span>
-<span class="nc" id="L181">        futureRequest.reset();</span>
+<span class="pc bpc" id="L179" title="1 of 2 branches missed.">      if (futureRequest.isDone()) {</span>
+<span class="nc" id="L180">        futureRequest.reset();</span>
       }
-<span class="fc" id="L183">      this.futureRequest = futureRequest;</span>
+<span class="fc" id="L182">      this.futureRequest = futureRequest;</span>
     }
-<span class="fc" id="L185">    cts = (ChannelTrafficShapingHandler) networkChannelRef.channel().pipeline()</span>
-<span class="fc" id="L186">                                                          .get(</span>
+<span class="fc" id="L184">    cts = (ChannelTrafficShapingHandler) networkChannelRef.channel().pipeline()</span>
+<span class="fc" id="L185">                                                          .get(</span>
                                                               NetworkServerInitializer.LIMITCHANNEL);
-<span class="fc" id="L188">    LocalServerHandler.channelActive(serverHandler);</span>
-<span class="fc" id="L189">    serverHandler.setLocalChannelReference(this);</span>
-<span class="fc" id="L190">    networkChannelRef.add(this);</span>
-<span class="fc" id="L191">  }</span>
+<span class="fc" id="L187">    LocalServerHandler.channelActive(serverHandler);</span>
+<span class="fc" id="L188">    serverHandler.setLocalChannelReference(this);</span>
+<span class="fc" id="L189">    networkChannelRef.add(this);</span>
+<span class="fc" id="L190">  }</span>
 
   /**
    * Special empty LCR constructor
    */
-<span class="nc" id="L196">  public LocalChannelReference() {</span>
-<span class="nc" id="L197">    networkChannelRef = null;</span>
-<span class="nc" id="L198">    networkServerHandler = null;</span>
-<span class="nc" id="L199">    localId = 0;</span>
-<span class="nc" id="L200">    futureRequest = new R66Future(true);</span>
-<span class="nc" id="L201">    cts = null;</span>
-<span class="nc" id="L202">    serverHandler.localChannelReference = this;</span>
-<span class="nc" id="L203">  }</span>
+<span class="nc" id="L195">  public LocalChannelReference() {</span>
+<span class="nc" id="L196">    networkChannelRef = null;</span>
+<span class="nc" id="L197">    networkServerHandler = null;</span>
+<span class="nc" id="L198">    localId = 0;</span>
+<span class="nc" id="L199">    futureRequest = new R66Future(true);</span>
+<span class="nc" id="L200">    cts = null;</span>
+<span class="nc" id="L201">    serverHandler.localChannelReference = this;</span>
+<span class="nc" id="L202">  }</span>
 
   /**
    * Close the localChannelReference
    */
   public void close() {
-<span class="fc" id="L209">    LocalServerHandler.channelInactive(serverHandler);</span>
-<span class="pc bpc" id="L210" title="1 of 2 branches missed.">    if (networkChannelRef != null) {</span>
-<span class="fc" id="L211">      networkChannelRef.remove(this);</span>
+<span class="fc" id="L208">    LocalServerHandler.channelInactive(serverHandler);</span>
+<span class="pc bpc" id="L209" title="1 of 2 branches missed.">    if (networkChannelRef != null) {</span>
+<span class="fc" id="L210">      networkChannelRef.remove(this);</span>
     }
-<span class="fc" id="L213">    final LocalTransaction lt =</span>
-<span class="fc" id="L214">        Configuration.configuration.getLocalTransaction();</span>
-<span class="pc bpc" id="L215" title="1 of 2 branches missed.">    if (lt != null) {</span>
-<span class="fc" id="L216">      lt.remove(this);</span>
+<span class="fc" id="L212">    final LocalTransaction lt =</span>
+<span class="fc" id="L213">        Configuration.configuration.getLocalTransaction();</span>
+<span class="fc bfc" id="L214" title="All 2 branches covered.">    if (lt != null) {</span>
+<span class="fc" id="L215">      lt.remove(this);</span>
     }
-<span class="fc" id="L218">  }</span>
+<span class="fc" id="L217">  }</span>
 
   /**
    * @return the networkChannelRef
    */
   public Channel getNetworkChannel() {
-<span class="fc" id="L224">    return networkChannelRef.channel();</span>
+<span class="fc" id="L223">    return networkChannelRef.channel();</span>
   }
 
   /**
    * @return the id
    */
   public Integer getLocalId() {
-<span class="fc" id="L231">    return localId;</span>
+<span class="fc" id="L230">    return localId;</span>
   }
 
   /**
    * @return the remoteId
    */
   public Integer getRemoteId() {
-<span class="fc" id="L238">    return remoteId;</span>
+<span class="fc" id="L237">    return remoteId;</span>
   }
 
   /**
    * @return the ChannelTrafficShapingHandler
    */
   public ChannelTrafficShapingHandler getChannelTrafficShapingHandler() {
-<span class="nc" id="L245">    return cts;</span>
+<span class="nc" id="L244">    return cts;</span>
   }
 
   /**
    * @return the networkChannelObject
    */
   public NetworkChannelReference getNetworkChannelObject() {
-<span class="fc" id="L252">    return networkChannelRef;</span>
+<span class="fc" id="L251">    return networkChannelRef;</span>
   }
 
   /**
    * @return the networkServerHandler
    */
   public NetworkServerHandler getNetworkServerHandler() {
-<span class="fc" id="L259">    return networkServerHandler;</span>
+<span class="fc" id="L258">    return networkServerHandler;</span>
   }
 
   /**
    * @return the serverHandler
    */
   public TransferActions getServerHandler() {
-<span class="fc" id="L266">    return serverHandler;</span>
-  }
-
-  /**
-   * @return the channelHandlerContextNetwork
-   */
-  public ChannelHandlerContext getChannelHandlerContextNetwork() {
-<span class="nc" id="L273">    return networkChannelRef.channel().pipeline()</span>
-<span class="nc" id="L274">                            .context(NetworkServerInitializer.NETWORK_HANDLER);</span>
+<span class="fc" id="L265">    return serverHandler;</span>
   }
 
   /**
    * @return the actual dbSession
    */
   public DbSession getDbSession() {
-<span class="pc bpc" id="L281" title="1 of 2 branches missed.">    if (networkServerHandler != null) {</span>
-<span class="fc" id="L282">      return networkServerHandler.getDbSession();</span>
+<span class="pc bpc" id="L272" title="1 of 2 branches missed.">    if (networkServerHandler != null) {</span>
+<span class="fc" id="L273">      return networkServerHandler.getDbSession();</span>
     }
-<span class="nc" id="L284">    logger.info(&quot;SHOULD NOT BE&quot;);</span>
-<span class="nc" id="L285">    return admin.getSession();</span>
+<span class="nc" id="L275">    logger.info(&quot;SHOULD NOT BE&quot;);</span>
+<span class="nc" id="L276">    return admin.getSession();</span>
   }
 
   /**
    * @param remoteId the remoteId to set
    */
   public void setRemoteId(final Integer remoteId) {
-<span class="fc" id="L292">    this.remoteId = remoteId;</span>
-<span class="fc" id="L293">  }</span>
+<span class="fc" id="L283">    this.remoteId = remoteId;</span>
+<span class="fc" id="L284">  }</span>
 
   /**
    * @return the session
    */
   public R66Session getSession() {
-<span class="fc" id="L299">    return session;</span>
+<span class="fc" id="L290">    return session;</span>
   }
 
   /**
    * @param session the session to set
    */
   public void setSession(final R66Session session) {
-<span class="fc" id="L306">    this.session = session;</span>
-<span class="fc" id="L307">  }</span>
+<span class="fc" id="L297">    this.session = session;</span>
+<span class="fc" id="L298">  }</span>
 
   /**
    * @return the current errorMessage
    */
   public String getErrorMessage() {
-<span class="fc" id="L313">    return errorMessage;</span>
+<span class="fc" id="L304">    return errorMessage;</span>
   }
 
   /**
    * @param errorMessage the errorMessage to set
    */
   public void setErrorMessage(final String errorMessage, final ErrorCode code) {
-<span class="fc" id="L320">    this.errorMessage = errorMessage;</span>
-<span class="fc" id="L321">    this.code = code;</span>
-<span class="fc" id="L322">  }</span>
+<span class="fc" id="L311">    this.errorMessage = errorMessage;</span>
+<span class="fc" id="L312">    this.code = code;</span>
+<span class="fc" id="L313">  }</span>
 
   /**
    * @return the code
    */
   public ErrorCode getCurrentCode() {
-<span class="fc" id="L328">    return code;</span>
+<span class="fc" id="L319">    return code;</span>
   }
 
   /**
@@ -334,32 +325,32 @@ public class LocalChannelReference {
    * @param validate
    */
   public void validateStartup(final boolean validate) {
-<span class="pc bpc" id="L337" title="1 of 2 branches missed.">    if (futureStartup.isDone()) {</span>
-<span class="nc" id="L338">      return;</span>
+<span class="pc bpc" id="L328" title="1 of 2 branches missed.">    if (futureStartup.isDone()) {</span>
+<span class="nc" id="L329">      return;</span>
     }
-<span class="pc bpc" id="L340" title="1 of 2 branches missed.">    if (validate) {</span>
-<span class="fc" id="L341">      futureStartup.setSuccess();</span>
+<span class="pc bpc" id="L331" title="1 of 2 branches missed.">    if (validate) {</span>
+<span class="fc" id="L332">      futureStartup.setSuccess();</span>
     } else {
-<span class="nc" id="L343">      futureStartup.cancel();</span>
+<span class="nc" id="L334">      futureStartup.cancel();</span>
     }
-<span class="fc" id="L345">  }</span>
+<span class="fc" id="L336">  }</span>
 
   /**
    * @return the futureValidateStartup
    */
   public R66Future getFutureValidateStartup() {
-<span class="pc bpc" id="L351" title="1 of 2 branches missed.">    if (!futureStartup.awaitOrInterruptible()) {</span>
-<span class="nc" id="L352">      validateStartup(false);</span>
-<span class="nc" id="L353">      return futureStartup;</span>
+<span class="pc bpc" id="L342" title="1 of 2 branches missed.">    if (!futureStartup.awaitOrInterruptible()) {</span>
+<span class="nc" id="L343">      validateStartup(false);</span>
+<span class="nc" id="L344">      return futureStartup;</span>
     }
-<span class="fc" id="L355">    return futureStartup;</span>
+<span class="fc" id="L346">    return futureStartup;</span>
   }
 
   /**
    * @return True if the connection is validated (in OK or KO status)
    */
   public boolean isConnectionValidate() {
-<span class="nc" id="L362">    return futureConnection.isDone();</span>
+<span class="nc" id="L353">    return futureConnection.isDone();</span>
   }
 
   /**
@@ -369,54 +360,54 @@ public class LocalChannelReference {
    */
   public void validateConnection(final boolean validate,
                                  final R66Result result) {
-<span class="pc bpc" id="L372" title="1 of 2 branches missed.">    if (futureConnection.isDone()) {</span>
-<span class="nc" id="L373">      logger.debug(&quot;LocalChannelReference already validated: &quot; +</span>
-<span class="nc" id="L374">                   futureConnection.isSuccess());</span>
-<span class="nc" id="L375">      return;</span>
+<span class="pc bpc" id="L363" title="1 of 2 branches missed.">    if (futureConnection.isDone()) {</span>
+<span class="nc" id="L364">      logger.debug(&quot;LocalChannelReference already validated: {}&quot;,</span>
+<span class="nc" id="L365">                   futureConnection.isSuccess());</span>
+<span class="nc" id="L366">      return;</span>
     }
-<span class="fc" id="L377">    logger.debug(&quot;Validation of connection {}&quot;, validate);</span>
-<span class="pc bpc" id="L378" title="1 of 2 branches missed.">    if (validate) {</span>
-<span class="fc" id="L379">      futureConnection.setResult(result);</span>
-<span class="fc" id="L380">      futureConnection.setSuccess();</span>
+<span class="fc" id="L368">    logger.debug(&quot;Validation of connection {}&quot;, validate);</span>
+<span class="pc bpc" id="L369" title="1 of 2 branches missed.">    if (validate) {</span>
+<span class="fc" id="L370">      futureConnection.setResult(result);</span>
+<span class="fc" id="L371">      futureConnection.setSuccess();</span>
     } else {
-<span class="nc" id="L382">      futureConnection.setResult(result);</span>
-<span class="nc" id="L383">      setErrorMessage(result.getMessage(), result.getCode());</span>
-<span class="nc" id="L384">      futureConnection.cancel();</span>
+<span class="nc" id="L373">      futureConnection.setResult(result);</span>
+<span class="nc" id="L374">      setErrorMessage(result.getMessage(), result.getCode());</span>
+<span class="nc" id="L375">      futureConnection.cancel();</span>
     }
-<span class="fc" id="L386">  }</span>
+<span class="fc" id="L377">  }</span>
 
   /**
    * @return the futureValidateConnection
    */
   public R66Future getFutureValidateConnection() {
     final R66Result result;
-<span class="fc" id="L393">    final Channel channel = networkChannelRef.channel();</span>
-<span class="pc bpc" id="L394" title="2 of 4 branches missed.">    if (channel != null &amp;&amp; channel.isActive()) {</span>
-<span class="pc bpc" id="L395" title="1 of 2 branches missed.">      if (!futureConnection.awaitOrInterruptible()) {</span>
-<span class="nc bnc" id="L396" title="All 2 branches missed.">        if (futureConnection.isDone()) {</span>
-<span class="nc" id="L397">          return futureConnection;</span>
+<span class="fc" id="L384">    final Channel channel = networkChannelRef.channel();</span>
+<span class="pc bpc" id="L385" title="2 of 4 branches missed.">    if (channel != null &amp;&amp; channel.isActive()) {</span>
+<span class="pc bpc" id="L386" title="1 of 2 branches missed.">      if (!futureConnection.awaitOrInterruptible()) {</span>
+<span class="nc bnc" id="L387" title="All 2 branches missed.">        if (futureConnection.isDone()) {</span>
+<span class="nc" id="L388">          return futureConnection;</span>
         } else {
-<span class="nc" id="L399">          logger.warn(&quot;Cannot get Connection due to out of Time: {}&quot;, this);</span>
-<span class="nc" id="L400">          result = new R66Result(</span>
+<span class="nc" id="L390">          logger.warn(&quot;Cannot get Connection due to out of Time: {}&quot;, this);</span>
+<span class="nc" id="L391">          result = new R66Result(</span>
               new OpenR66ProtocolNoConnectionException(&quot;Out of time&quot;), session,
               false, ErrorCode.ConnectionImpossible, null);
-<span class="nc" id="L403">          validateConnection(false, result);</span>
-<span class="nc" id="L404">          return futureConnection;</span>
+<span class="nc" id="L394">          validateConnection(false, result);</span>
+<span class="nc" id="L395">          return futureConnection;</span>
         }
       } else {
-<span class="fc" id="L407">        return futureConnection;</span>
+<span class="fc" id="L398">        return futureConnection;</span>
       }
     }
-<span class="nc bnc" id="L410" title="All 2 branches missed.">    if (futureConnection.isDone()) {</span>
-<span class="nc" id="L411">      return futureConnection;</span>
+<span class="nc bnc" id="L401" title="All 2 branches missed.">    if (futureConnection.isDone()) {</span>
+<span class="nc" id="L402">      return futureConnection;</span>
     }
 
-<span class="nc" id="L414">    logger.info(&quot;Cannot get Connection due to out of Time: {}&quot;, this);</span>
-<span class="nc" id="L415">    result =</span>
+<span class="nc" id="L405">    logger.info(&quot;Cannot get Connection due to out of Time: {}&quot;, this);</span>
+<span class="nc" id="L406">    result =</span>
         new R66Result(new OpenR66ProtocolNoConnectionException(&quot;Out of time&quot;),
                       session, false, ErrorCode.ConnectionImpossible, null);
-<span class="nc" id="L418">    validateConnection(false, result);</span>
-<span class="nc" id="L419">    return futureConnection;</span>
+<span class="nc" id="L409">    validateConnection(false, result);</span>
+<span class="nc" id="L410">    return futureConnection;</span>
   }
 
   /**
@@ -425,23 +416,23 @@ public class LocalChannelReference {
    * @param finalValue
    */
   public void validateEndTransfer(final R66Result finalValue) {
-<span class="pc bpc" id="L428" title="1 of 2 branches missed.">    if (!futureEndTransfer.isDone()) {</span>
-<span class="fc" id="L429">      futureEndTransfer.setResult(finalValue);</span>
-<span class="fc" id="L430">      futureEndTransfer.setSuccess();</span>
+<span class="pc bpc" id="L419" title="1 of 2 branches missed.">    if (!futureEndTransfer.isDone()) {</span>
+<span class="fc" id="L420">      futureEndTransfer.setResult(finalValue);</span>
+<span class="fc" id="L421">      futureEndTransfer.setSuccess();</span>
     } else {
-<span class="nc" id="L432">      logger.debug(&quot;Could not validate since Already validated: &quot; +</span>
-<span class="nc" id="L433">                   futureEndTransfer.isSuccess() + ' ' + finalValue);</span>
-<span class="nc bnc" id="L434" title="All 2 branches missed.">      if (!futureEndTransfer.getResult().isAnswered()) {</span>
-<span class="nc" id="L435">        futureEndTransfer.getResult().setAnswered(finalValue.isAnswered());</span>
+<span class="nc" id="L423">      logger.debug(&quot;Could not validate since Already validated: {} {}&quot;,</span>
+<span class="nc" id="L424">                   futureEndTransfer.isSuccess(), finalValue);</span>
+<span class="nc bnc" id="L425" title="All 2 branches missed.">      if (!futureEndTransfer.getResult().isAnswered()) {</span>
+<span class="nc" id="L426">        futureEndTransfer.getResult().setAnswered(finalValue.isAnswered());</span>
       }
     }
-<span class="fc" id="L438">  }</span>
+<span class="fc" id="L429">  }</span>
 
   /**
    * @return the futureEndTransfer
    */
   public R66Future getFutureEndTransfer() {
-<span class="fc" id="L444">    return futureEndTransfer;</span>
+<span class="fc" id="L435">    return futureEndTransfer;</span>
   }
 
   /**
@@ -450,35 +441,35 @@ public class LocalChannelReference {
    * @throws OpenR66Exception
    */
   public void waitReadyForSendThrough() throws OpenR66Exception {
-<span class="nc" id="L453">    logger.debug(&quot;Wait for End of Prepare Transfer&quot;);</span>
-<span class="nc" id="L454">    futureEndTransfer.awaitOrInterruptible();</span>
-<span class="nc bnc" id="L455" title="All 2 branches missed.">    if (futureEndTransfer.isSuccess()) {</span>
+<span class="nc" id="L444">    logger.debug(&quot;Wait for End of Prepare Transfer&quot;);</span>
+<span class="nc" id="L445">    futureEndTransfer.awaitOrInterruptible();</span>
+<span class="nc bnc" id="L446" title="All 2 branches missed.">    if (futureEndTransfer.isSuccess()) {</span>
       // reset since transfer will start now
-<span class="nc" id="L457">      futureEndTransfer = new R66Future(true);</span>
+<span class="nc" id="L448">      futureEndTransfer = new R66Future(true);</span>
     } else {
-<span class="nc bnc" id="L459" title="All 2 branches missed.">      if (futureEndTransfer.getResult() != null &amp;&amp;</span>
-<span class="nc bnc" id="L460" title="All 2 branches missed.">          futureEndTransfer.getResult().getException() != null) {</span>
-<span class="nc" id="L461">        throw futureEndTransfer.getResult().getException();</span>
-<span class="nc bnc" id="L462" title="All 2 branches missed.">      } else if (futureEndTransfer.getCause() != null) {</span>
-<span class="nc" id="L463">        throw new OpenR66RunnerErrorException(futureEndTransfer.getCause());</span>
+<span class="nc bnc" id="L450" title="All 2 branches missed.">      if (futureEndTransfer.getResult() != null &amp;&amp;</span>
+<span class="nc bnc" id="L451" title="All 2 branches missed.">          futureEndTransfer.getResult().getException() != null) {</span>
+<span class="nc" id="L452">        throw futureEndTransfer.getResult().getException();</span>
+<span class="nc bnc" id="L453" title="All 2 branches missed.">      } else if (futureEndTransfer.getCause() != null) {</span>
+<span class="nc" id="L454">        throw new OpenR66RunnerErrorException(futureEndTransfer.getCause());</span>
       } else {
-<span class="nc" id="L465">        throw new OpenR66RunnerErrorException(&quot;Unknown reason&quot;);</span>
+<span class="nc" id="L456">        throw new OpenR66RunnerErrorException(&quot;Unknown reason&quot;);</span>
       }
     }
-<span class="nc" id="L468">  }</span>
+<span class="nc" id="L459">  }</span>
 
   /**
    * @return the futureValidRequest
    */
   public R66Future getFutureValidRequest() {
-<span class="fc" id="L474">    return futureValidRequest;</span>
+<span class="fc" id="L465">    return futureValidRequest;</span>
   }
 
   /**
    * @return the futureRequest
    */
   public R66Future getFutureRequest() {
-<span class="fc" id="L481">    return futureRequest;</span>
+<span class="fc" id="L472">    return futureRequest;</span>
   }
 
   /**
@@ -487,77 +478,81 @@ public class LocalChannelReference {
    * @param finalvalue
    */
   public void invalidateRequest(final R66Result finalvalue) {
-<span class="fc" id="L490">    R66Result finalValue = finalvalue;</span>
-<span class="pc bpc" id="L491" title="1 of 2 branches missed.">    if (finalValue == null) {</span>
-<span class="nc" id="L492">      finalValue =</span>
-<span class="nc" id="L493">          new R66Result(session, false, ErrorCode.Unknown, session.getRunner());</span>
+<span class="fc" id="L481">    R66Result finalValue = finalvalue;</span>
+<span class="pc bpc" id="L482" title="1 of 2 branches missed.">    if (finalValue == null) {</span>
+<span class="nc" id="L483">      finalValue =</span>
+<span class="nc" id="L484">          new R66Result(session, false, ErrorCode.Unknown, session.getRunner());</span>
     }
-<span class="fc" id="L495">    logger.debug(</span>
-<span class="fc" id="L496">        &quot;FST: &quot; + futureStartup.isDone() + &quot;:&quot; + futureStartup.isSuccess() +</span>
-<span class="fc" id="L497">        &quot; FCT: &quot; + futureConnection.isDone() + ':' +</span>
-<span class="fc" id="L498">        futureConnection.isSuccess() + &quot; FET: &quot; + futureEndTransfer.isDone() +</span>
-<span class="fc" id="L499">        ':' + futureEndTransfer.isSuccess() + &quot; FVR: &quot; +</span>
-<span class="fc" id="L500">        futureValidRequest.isDone() + ':' + futureValidRequest.isSuccess() +</span>
-<span class="fc" id="L501">        &quot; FR: &quot; + futureRequest.isDone() + ':' + futureRequest.isSuccess() +</span>
-<span class="fc" id="L502">        ' ' + finalValue.getMessage());</span>
-<span class="pc bpc" id="L503" title="1 of 2 branches missed.">    if (!futureStartup.isDone()) {</span>
-<span class="nc" id="L504">      futureStartup.setResult(finalValue);</span>
-<span class="nc bnc" id="L505" title="All 2 branches missed.">      if (finalValue.getException() != null) {</span>
-<span class="nc" id="L506">        futureStartup.setFailure(finalValue.getException());</span>
+<span class="pc bpc" id="L486" title="1 of 2 branches missed.">    if (logger.isDebugEnabled()) {</span>
+<span class="nc" id="L487">      logger.debug(</span>
+<span class="nc" id="L488">          &quot;FST: &quot; + futureStartup.isDone() + &quot;:&quot; + futureStartup.isSuccess() +</span>
+<span class="nc" id="L489">          &quot; FCT: &quot; + futureConnection.isDone() + ':' +</span>
+<span class="nc" id="L490">          futureConnection.isSuccess() + &quot; FET: &quot; + futureEndTransfer.isDone() +</span>
+<span class="nc" id="L491">          ':' + futureEndTransfer.isSuccess() + &quot; FVR: &quot; +</span>
+<span class="nc" id="L492">          futureValidRequest.isDone() + ':' + futureValidRequest.isSuccess() +</span>
+<span class="nc" id="L493">          &quot; FR: &quot; + futureRequest.isDone() + ':' + futureRequest.isSuccess() +</span>
+<span class="nc" id="L494">          ' ' + finalValue.getMessage());</span>
+    }
+<span class="pc bpc" id="L496" title="1 of 2 branches missed.">    if (!futureStartup.isDone()) {</span>
+<span class="nc" id="L497">      futureStartup.setResult(finalValue);</span>
+<span class="nc bnc" id="L498" title="All 2 branches missed.">      if (finalValue.getException() != null) {</span>
+<span class="nc" id="L499">        futureStartup.setFailure(finalValue.getException());</span>
       } else {
-<span class="nc" id="L508">        futureStartup.cancel();</span>
+<span class="nc" id="L501">        futureStartup.cancel();</span>
       }
     }
-<span class="pc bpc" id="L511" title="1 of 2 branches missed.">    if (!futureConnection.isDone()) {</span>
-<span class="nc" id="L512">      futureConnection.setResult(finalValue);</span>
-<span class="nc bnc" id="L513" title="All 2 branches missed.">      if (finalValue.getException() != null) {</span>
-<span class="nc" id="L514">        futureConnection.setFailure(finalValue.getException());</span>
+<span class="pc bpc" id="L504" title="1 of 2 branches missed.">    if (!futureConnection.isDone()) {</span>
+<span class="nc" id="L505">      futureConnection.setResult(finalValue);</span>
+<span class="nc bnc" id="L506" title="All 2 branches missed.">      if (finalValue.getException() != null) {</span>
+<span class="nc" id="L507">        futureConnection.setFailure(finalValue.getException());</span>
       } else {
-<span class="nc" id="L516">        futureConnection.cancel();</span>
+<span class="nc" id="L509">        futureConnection.cancel();</span>
       }
     }
-<span class="fc bfc" id="L519" title="All 2 branches covered.">    if (!futureEndTransfer.isDone()) {</span>
-<span class="fc" id="L520">      futureEndTransfer.setResult(finalValue);</span>
-<span class="pc bpc" id="L521" title="1 of 2 branches missed.">      if (finalValue.getException() != null) {</span>
-<span class="fc" id="L522">        futureEndTransfer.setFailure(finalValue.getException());</span>
+<span class="pc bpc" id="L512" title="1 of 2 branches missed.">    if (!futureEndTransfer.isDone()) {</span>
+<span class="fc" id="L513">      futureEndTransfer.setResult(finalValue);</span>
+<span class="pc bpc" id="L514" title="1 of 2 branches missed.">      if (finalValue.getException() != null) {</span>
+<span class="fc" id="L515">        futureEndTransfer.setFailure(finalValue.getException());</span>
       } else {
-<span class="nc" id="L524">        futureEndTransfer.cancel();</span>
+<span class="nc" id="L517">        futureEndTransfer.cancel();</span>
       }
     }
-<span class="fc bfc" id="L527" title="All 2 branches covered.">    if (!futureValidRequest.isDone()) {</span>
-<span class="fc" id="L528">      futureValidRequest.setResult(finalValue);</span>
-<span class="pc bpc" id="L529" title="1 of 2 branches missed.">      if (finalValue.getException() != null) {</span>
-<span class="fc" id="L530">        futureValidRequest.setFailure(finalValue.getException());</span>
+<span class="pc bpc" id="L520" title="1 of 2 branches missed.">    if (!futureValidRequest.isDone()) {</span>
+<span class="fc" id="L521">      futureValidRequest.setResult(finalValue);</span>
+<span class="pc bpc" id="L522" title="1 of 2 branches missed.">      if (finalValue.getException() != null) {</span>
+<span class="fc" id="L523">        futureValidRequest.setFailure(finalValue.getException());</span>
       } else {
-<span class="nc" id="L532">        futureValidRequest.cancel();</span>
+<span class="nc" id="L525">        futureValidRequest.cancel();</span>
       }
     }
-<span class="fc" id="L535">    logger.trace(&quot;Invalidate Request&quot;,</span>
-                 new Exception(&quot;DEBUG Trace for &quot; + &quot;Invalidation&quot;));
-<span class="pc bpc" id="L537" title="1 of 2 branches missed.">    if (finalValue.getCode() != ErrorCode.ServerOverloaded) {</span>
-<span class="fc bfc" id="L538" title="All 2 branches covered.">      if (!futureRequest.isDone()) {</span>
-<span class="fc" id="L539">        setErrorMessage(finalValue.getMessage(), finalValue.getCode());</span>
-<span class="fc" id="L540">        futureRequest.setResult(finalValue);</span>
-<span class="pc bpc" id="L541" title="1 of 2 branches missed.">        if (finalValue.getException() != null) {</span>
-<span class="fc" id="L542">          futureRequest.setFailure(finalValue.getException());</span>
+<span class="pc bpc" id="L528" title="1 of 2 branches missed.">    if (logger.isTraceEnabled()) {</span>
+<span class="nc" id="L529">      logger.trace(&quot;Invalidate Request&quot;,</span>
+                   new Exception(&quot;DEBUG Trace for &quot; + &quot;Invalidation&quot;));
+    }
+<span class="pc bpc" id="L532" title="1 of 2 branches missed.">    if (finalValue.getCode() != ErrorCode.ServerOverloaded) {</span>
+<span class="pc bpc" id="L533" title="1 of 2 branches missed.">      if (!futureRequest.isDone()) {</span>
+<span class="fc" id="L534">        setErrorMessage(finalValue.getMessage(), finalValue.getCode());</span>
+<span class="fc" id="L535">        futureRequest.setResult(finalValue);</span>
+<span class="pc bpc" id="L536" title="1 of 2 branches missed.">        if (finalValue.getException() != null) {</span>
+<span class="fc" id="L537">          futureRequest.setFailure(finalValue.getException());</span>
         } else {
-<span class="nc" id="L544">          futureRequest.cancel();</span>
+<span class="nc" id="L539">          futureRequest.cancel();</span>
         }
       } else {
-<span class="fc" id="L547">        logger.debug(&quot;Could not invalidate since Already finished: &quot; +</span>
-<span class="fc" id="L548">                     futureEndTransfer.getResult());</span>
+<span class="nc" id="L542">        logger.debug(&quot;Could not invalidate since Already finished: {}&quot;,</span>
+<span class="nc" id="L543">                     futureEndTransfer.getResult());</span>
       }
     } else {
-<span class="nc" id="L551">      setErrorMessage(finalValue.getMessage(), finalValue.getCode());</span>
-<span class="nc" id="L552">      logger.debug(&quot;Overloaded&quot;);</span>
+<span class="nc" id="L546">      setErrorMessage(finalValue.getMessage(), finalValue.getCode());</span>
+<span class="nc" id="L547">      logger.info(&quot;Server Overloaded&quot;);</span>
     }
-<span class="pc bpc" id="L554" title="1 of 2 branches missed.">    if (session != null) {</span>
-<span class="fc" id="L555">      final DbTaskRunner runner = session.getRunner();</span>
-<span class="pc bpc" id="L556" title="1 of 4 branches missed.">      if (runner != null &amp;&amp; runner.isSender()) {</span>
-<span class="fc" id="L557">        NetworkTransaction.stopRetrieve(this);</span>
+<span class="pc bpc" id="L549" title="1 of 2 branches missed.">    if (session != null) {</span>
+<span class="fc" id="L550">      final DbTaskRunner runner = session.getRunner();</span>
+<span class="pc bpc" id="L551" title="2 of 4 branches missed.">      if (runner != null &amp;&amp; runner.isSender()) {</span>
+<span class="nc" id="L552">        NetworkTransaction.stopRetrieve(this);</span>
       }
     }
-<span class="fc" id="L560">  }</span>
+<span class="fc" id="L555">  }</span>
 
   /**
    * Validate the current Request
@@ -565,73 +560,73 @@ public class LocalChannelReference {
    * @param finalValue
    */
   public void validateRequest(final R66Result finalValue) {
-<span class="fc" id="L568">    setErrorMessage(&quot;NoError&quot;, null);</span>
-<span class="pc bpc" id="L569" title="1 of 2 branches missed.">    if (!futureEndTransfer.isDone()) {</span>
-<span class="nc" id="L570">      logger.debug(&quot;Will validate EndTransfer&quot;);</span>
-<span class="nc" id="L571">      validateEndTransfer(finalValue);</span>
+<span class="fc" id="L563">    setErrorMessage(&quot;NoError&quot;, null);</span>
+<span class="fc bfc" id="L564" title="All 2 branches covered.">    if (!futureEndTransfer.isDone()) {</span>
+<span class="fc" id="L565">      logger.debug(&quot;Will validate EndTransfer&quot;);</span>
+<span class="fc" id="L566">      validateEndTransfer(finalValue);</span>
     }
-<span class="fc bfc" id="L573" title="All 2 branches covered.">    if (!futureValidRequest.isDone()) {</span>
-<span class="fc" id="L574">      futureValidRequest.setResult(finalValue);</span>
-<span class="fc" id="L575">      futureValidRequest.setSuccess();</span>
+<span class="fc bfc" id="L568" title="All 2 branches covered.">    if (!futureValidRequest.isDone()) {</span>
+<span class="fc" id="L569">      futureValidRequest.setResult(finalValue);</span>
+<span class="fc" id="L570">      futureValidRequest.setSuccess();</span>
     }
-<span class="fc" id="L577">    logger.debug(&quot;Validate Request&quot;);</span>
-<span class="pc bpc" id="L578" title="1 of 2 branches missed.">    if (!futureRequest.isDone()) {</span>
-<span class="pc bpc" id="L579" title="1 of 2 branches missed.">      if (finalValue.getOther() == null &amp;&amp;</span>
-<span class="pc bpc" id="L580" title="1 of 2 branches missed.">          session.getBusinessObject() != null &amp;&amp;</span>
-<span class="nc bnc" id="L581" title="All 2 branches missed.">          session.getBusinessObject().getInfo(session) != null) {</span>
-<span class="nc" id="L582">        finalValue.setOther(session.getBusinessObject().getInfo(session));</span>
+<span class="fc" id="L572">    logger.debug(&quot;Validate Request&quot;);</span>
+<span class="fc bfc" id="L573" title="All 2 branches covered.">    if (!futureRequest.isDone()) {</span>
+<span class="fc bfc" id="L574" title="All 2 branches covered.">      if (finalValue.getOther() == null &amp;&amp;</span>
+<span class="pc bpc" id="L575" title="1 of 2 branches missed.">          session.getBusinessObject() != null &amp;&amp;</span>
+<span class="nc bnc" id="L576" title="All 2 branches missed.">          session.getBusinessObject().getInfo(session) != null) {</span>
+<span class="nc" id="L577">        finalValue.setOther(session.getBusinessObject().getInfo(session));</span>
       }
-<span class="fc" id="L584">      futureRequest.setResult(finalValue);</span>
-<span class="fc" id="L585">      futureRequest.setSuccess();</span>
+<span class="fc" id="L579">      futureRequest.setResult(finalValue);</span>
+<span class="fc" id="L580">      futureRequest.setSuccess();</span>
     } else {
-<span class="nc" id="L587">      logger.info(</span>
-<span class="nc" id="L588">          &quot;Already validated: &quot; + futureRequest.isSuccess() + ' ' + finalValue);</span>
-<span class="nc bnc" id="L589" title="All 2 branches missed.">      if (!futureRequest.getResult().isAnswered()) {</span>
-<span class="nc" id="L590">        futureRequest.getResult().setAnswered(finalValue.isAnswered());</span>
+<span class="fc" id="L582">      logger.info(&quot;Already validated: {} {}&quot;, futureRequest.isSuccess(),</span>
+                  finalValue);
+<span class="pc bpc" id="L584" title="1 of 2 branches missed.">      if (!futureRequest.getResult().isAnswered()) {</span>
+<span class="nc" id="L585">        futureRequest.getResult().setAnswered(finalValue.isAnswered());</span>
       }
     }
-<span class="fc" id="L593">  }</span>
+<span class="fc" id="L588">  }</span>
 
   private long getMinLimit(final long a, final long b) {
-<span class="fc" id="L596">    long res = a;</span>
-<span class="fc bfc" id="L597" title="All 2 branches covered.">    if (a &lt;= 0) {</span>
-<span class="fc" id="L598">      res = b;</span>
-<span class="pc bpc" id="L599" title="2 of 4 branches missed.">    } else if (b &gt; 0 &amp;&amp; b &lt; a) {</span>
-<span class="nc" id="L600">      res = b;</span>
+<span class="fc" id="L591">    long res = a;</span>
+<span class="fc bfc" id="L592" title="All 2 branches covered.">    if (a &lt;= 0) {</span>
+<span class="fc" id="L593">      res = b;</span>
+<span class="pc bpc" id="L594" title="2 of 4 branches missed.">    } else if (b &gt; 0 &amp;&amp; b &lt; a) {</span>
+<span class="nc" id="L595">      res = b;</span>
     }
-<span class="fc" id="L602">    return res;</span>
+<span class="fc" id="L597">    return res;</span>
   }
 
   public void setChannelLimit(final boolean isSender, final long limit) {
-<span class="fc" id="L606">    final ChannelTrafficShapingHandler limitHandler =</span>
-<span class="fc" id="L607">        (ChannelTrafficShapingHandler) networkChannelRef.channel().pipeline()</span>
-<span class="fc" id="L608">                                                        .get(</span>
+<span class="fc" id="L601">    final ChannelTrafficShapingHandler limitHandler =</span>
+<span class="fc" id="L602">        (ChannelTrafficShapingHandler) networkChannelRef.channel().pipeline()</span>
+<span class="fc" id="L603">                                                        .get(</span>
                                                             NetworkServerInitializer.LIMITCHANNEL);
-<span class="fc bfc" id="L610" title="All 2 branches covered.">    if (isSender) {</span>
-<span class="fc" id="L611">      limitHandler.setWriteLimit(limit);</span>
-<span class="fc" id="L612">      logger.info(&quot;Will write at {} Bytes/sec&quot;, limit);</span>
+<span class="fc bfc" id="L605" title="All 2 branches covered.">    if (isSender) {</span>
+<span class="fc" id="L606">      limitHandler.setWriteLimit(limit);</span>
+<span class="fc" id="L607">      logger.info(&quot;Will write at {} Bytes/sec&quot;, limit);</span>
     } else {
-<span class="fc" id="L614">      limitHandler.setReadLimit(limit);</span>
-<span class="fc" id="L615">      logger.info(&quot;Will read at {} Bytes/sec&quot;, limit);</span>
+<span class="fc" id="L609">      limitHandler.setReadLimit(limit);</span>
+<span class="fc" id="L610">      logger.info(&quot;Will read at {} Bytes/sec&quot;, limit);</span>
     }
-<span class="fc" id="L617">  }</span>
+<span class="fc" id="L612">  }</span>
 
   public long getChannelLimit(final boolean isSender) {
     final long global;
     final long channel;
-<span class="fc bfc" id="L622" title="All 2 branches covered.">    if (isSender) {</span>
-<span class="fc" id="L623">      global = Configuration.configuration.getServerGlobalWriteLimit();</span>
-<span class="fc" id="L624">      channel = Configuration.configuration.getServerChannelWriteLimit();</span>
+<span class="fc bfc" id="L617" title="All 2 branches covered.">    if (isSender) {</span>
+<span class="fc" id="L618">      global = Configuration.configuration.getServerGlobalWriteLimit();</span>
+<span class="fc" id="L619">      channel = Configuration.configuration.getServerChannelWriteLimit();</span>
     } else {
-<span class="fc" id="L626">      global = Configuration.configuration.getServerGlobalReadLimit();</span>
-<span class="fc" id="L627">      channel = Configuration.configuration.getServerChannelReadLimit();</span>
+<span class="fc" id="L621">      global = Configuration.configuration.getServerGlobalReadLimit();</span>
+<span class="fc" id="L622">      channel = Configuration.configuration.getServerChannelReadLimit();</span>
     }
-<span class="fc" id="L629">    return getMinLimit(global, channel);</span>
+<span class="fc" id="L624">    return getMinLimit(global, channel);</span>
   }
 
   @Override
   public String toString() {
-<span class="nc bnc" id="L634" title="All 4 branches missed.">    return &quot;LCR: L: &quot; + localId + &quot; R: &quot; + remoteId + &quot; Startup[&quot; +</span>
+<span class="nc bnc" id="L629" title="All 4 branches missed.">    return &quot;LCR: L: &quot; + localId + &quot; R: &quot; + remoteId + &quot; Startup[&quot; +</span>
            futureStartup + &quot;] Conn[&quot; + futureConnection +
            &quot;] ValidRequestRequest[&quot; + futureValidRequest + &quot;] EndTransfer[&quot; +
            (futureEndTransfer != null? futureEndTransfer : &quot;noEndTransfer&quot;) +
@@ -643,14 +638,14 @@ public class LocalChannelReference {
    * @return the recvThroughHandler
    */
   public RecvThroughHandler getRecvThroughHandler() {
-<span class="fc" id="L646">    return recvThroughHandler;</span>
+<span class="fc" id="L641">    return recvThroughHandler;</span>
   }
 
   /**
    * @return True if in RecvThrough Mode
    */
   public boolean isRecvThroughMode() {
-<span class="fc bfc" id="L653" title="All 2 branches covered.">    return recvThroughHandler != null;</span>
+<span class="fc bfc" id="L648" title="All 2 branches covered.">    return recvThroughHandler != null;</span>
   }
 
   /**
@@ -658,36 +653,36 @@ public class LocalChannelReference {
    */
   public void setRecvThroughHandler(
       final RecvThroughHandler recvThroughHandler) {
-<span class="fc" id="L661">    this.recvThroughHandler = recvThroughHandler;</span>
-<span class="fc" id="L662">  }</span>
+<span class="fc" id="L656">    this.recvThroughHandler = recvThroughHandler;</span>
+<span class="fc" id="L657">  }</span>
 
   /**
    * @return True if in SendThrough Mode
    */
   public boolean isSendThroughMode() {
-<span class="fc" id="L668">    return isSendThroughMode;</span>
+<span class="fc" id="L663">    return isSendThroughMode;</span>
   }
 
   /**
    * @param isSendThroughMode the isSendThroughMode to set
    */
   public void setSendThroughMode(final boolean isSendThroughMode) {
-<span class="fc" id="L675">    this.isSendThroughMode = isSendThroughMode;</span>
-<span class="fc" id="L676">  }</span>
+<span class="fc" id="L670">    this.isSendThroughMode = isSendThroughMode;</span>
+<span class="fc" id="L671">  }</span>
 
   /**
    * @return the clientRunner
    */
   public ClientRunner getClientRunner() {
-<span class="nc" id="L682">    return clientRunner;</span>
+<span class="nc" id="L677">    return clientRunner;</span>
   }
 
   /**
    * @param clientRunner the clientRunner to set
    */
   public void setClientRunner(final ClientRunner clientRunner) {
-<span class="fc" id="L689">    this.clientRunner = clientRunner;</span>
-<span class="fc" id="L690">  }</span>
+<span class="fc" id="L684">    this.clientRunner = clientRunner;</span>
+<span class="fc" id="L685">  }</span>
 
   /**
    * Shortcut to set a new state in Session
@@ -695,26 +690,26 @@ public class LocalChannelReference {
    * @param desiredState
    */
   public void sessionNewState(final R66FiniteDualStates desiredState) {
-<span class="pc bpc" id="L698" title="1 of 2 branches missed.">    if (session != null) {</span>
-<span class="fc" id="L699">      session.newState(desiredState);</span>
+<span class="pc bpc" id="L693" title="1 of 2 branches missed.">    if (session != null) {</span>
+<span class="fc" id="L694">      session.newState(desiredState);</span>
     }
-<span class="fc" id="L701">  }</span>
+<span class="fc" id="L696">  }</span>
 
   /**
    * @return the current state or TEST if no session exists
    */
   public R66FiniteDualStates getSessionState() {
-<span class="pc bpc" id="L707" title="1 of 2 branches missed.">    if (session != null) {</span>
-<span class="fc" id="L708">      return session.getState();</span>
+<span class="pc bpc" id="L702" title="1 of 2 branches missed.">    if (session != null) {</span>
+<span class="fc" id="L703">      return session.getState();</span>
     }
-<span class="nc" id="L710">    return R66FiniteDualStates.TEST;</span>
+<span class="nc" id="L705">    return R66FiniteDualStates.TEST;</span>
   }
 
   /**
    * @return the hashComputeDuringTransfer
    */
   public String getHashComputeDuringTransfer() {
-<span class="fc" id="L717">    return hashComputeDuringTransfer;</span>
+<span class="nc" id="L712">    return hashComputeDuringTransfer;</span>
   }
 
   /**
@@ -723,49 +718,49 @@ public class LocalChannelReference {
    */
   public void setHashComputeDuringTransfer(
       final String hashComputeDuringTransfer) {
-<span class="fc" id="L726">    this.hashComputeDuringTransfer = hashComputeDuringTransfer;</span>
-<span class="fc" id="L727">  }</span>
+<span class="fc" id="L721">    this.hashComputeDuringTransfer = hashComputeDuringTransfer;</span>
+<span class="fc" id="L722">  }</span>
 
   public void setPartialHash() {
-<span class="nc" id="L730">    partialHash = true;</span>
-<span class="nc" id="L731">  }</span>
+<span class="nc" id="L725">    partialHash = true;</span>
+<span class="nc" id="L726">  }</span>
 
   public boolean isPartialHash() {
-<span class="fc" id="L734">    return partialHash;</span>
+<span class="fc" id="L729">    return partialHash;</span>
   }
 
   /**
    * @return the partner
    */
   public PartnerConfiguration getPartner() {
-<span class="fc" id="L741">    return partner;</span>
+<span class="fc" id="L736">    return partner;</span>
   }
 
   /**
    * @param hostId the partner to set
    */
   public void setPartner(final String hostId) {
-<span class="fc" id="L748">    logger.debug(&quot;host:&quot; + hostId);</span>
-<span class="fc" id="L749">    partner = Configuration.configuration.getVersions().get(hostId);</span>
-<span class="pc bpc" id="L750" title="1 of 2 branches missed.">    if (partner == null) {</span>
-<span class="nc" id="L751">      partner =</span>
-<span class="nc" id="L752">          new PartnerConfiguration(hostId, R66Versions.V2_4_12.getVersion());</span>
+<span class="fc" id="L743">    logger.debug(&quot;host: {}&quot;, hostId);</span>
+<span class="fc" id="L744">    partner = Configuration.configuration.getVersions().get(hostId);</span>
+<span class="pc bpc" id="L745" title="1 of 2 branches missed.">    if (partner == null) {</span>
+<span class="nc" id="L746">      partner =</span>
+<span class="nc" id="L747">          new PartnerConfiguration(hostId, R66Versions.V2_4_12.getVersion());</span>
     }
-<span class="fc" id="L754">  }</span>
+<span class="fc" id="L749">  }</span>
 
   /**
    * @return the requestId
    */
   public String getRequestId() {
-<span class="fc" id="L760">    return requestId;</span>
+<span class="fc" id="L755">    return requestId;</span>
   }
 
   /**
    * @param requestId the requestId to set
    */
   public void setRequestId(final String requestId) {
-<span class="fc" id="L767">    this.requestId = requestId;</span>
-<span class="fc" id="L768">  }</span>
+<span class="fc" id="L762">    this.requestId = requestId;</span>
+<span class="fc" id="L763">  }</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

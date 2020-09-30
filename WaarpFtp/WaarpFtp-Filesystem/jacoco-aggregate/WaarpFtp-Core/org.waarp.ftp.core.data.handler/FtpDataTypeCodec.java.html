@@ -19,8 +19,6 @@
  */
 package org.waarp.ftp.core.data.handler;
 
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageCodec;
@@ -129,17 +127,17 @@ class FtpDataTypeCodec extends MessageToMessageCodec&lt;DataBlock, DataBlock&gt;
    * @param type
    * @param subType
    */
-<span class="nc" id="L132">  FtpDataTypeCodec(final TransferType type, final TransferSubType subType) {</span>
-<span class="nc" id="L133">    setCharset(null);</span>
-<span class="nc" id="L134">    this.type = type;</span>
-<span class="nc" id="L135">    this.subType = subType;</span>
-<span class="nc" id="L136">  }</span>
+<span class="nc" id="L130">  FtpDataTypeCodec(final TransferType type, final TransferSubType subType) {</span>
+<span class="nc" id="L131">    setCharset(null);</span>
+<span class="nc" id="L132">    this.type = type;</span>
+<span class="nc" id="L133">    this.subType = subType;</span>
+<span class="nc" id="L134">  }</span>
 
   /**
    * @return the subType
    */
   public TransferSubType getSubType() {
-<span class="nc" id="L142">    return subType;</span>
+<span class="nc" id="L140">    return subType;</span>
   }
 
   /**
@@ -148,15 +146,15 @@ class FtpDataTypeCodec extends MessageToMessageCodec&lt;DataBlock, DataBlock&gt;
    */
   public void setFullType(final TransferType type,
                           final TransferSubType subType) {
-<span class="nc" id="L151">    this.type = type;</span>
-<span class="nc" id="L152">    this.subType = subType;</span>
-<span class="nc" id="L153">  }</span>
+<span class="nc" id="L149">    this.type = type;</span>
+<span class="nc" id="L150">    this.subType = subType;</span>
+<span class="nc" id="L151">  }</span>
 
   /**
    * @return the type
    */
   public TransferType getType() {
-<span class="nc" id="L159">    return type;</span>
+<span class="nc" id="L157">    return type;</span>
   }
 
   /**
@@ -165,72 +163,67 @@ class FtpDataTypeCodec extends MessageToMessageCodec&lt;DataBlock, DataBlock&gt;
    * @param charset
    */
   private void setCharset(final Charset charset) {
-<span class="nc bnc" id="L168" title="All 2 branches missed.">    if (charset == null) {</span>
-<span class="nc" id="L169">      charsetName = Charset.defaultCharset();</span>
+<span class="nc bnc" id="L166" title="All 2 branches missed.">    if (charset == null) {</span>
+<span class="nc" id="L167">      charsetName = Charset.defaultCharset();</span>
     } else {
-<span class="nc" id="L171">      charsetName = charset;</span>
+<span class="nc" id="L169">      charsetName = charset;</span>
     }
-<span class="nc" id="L173">  }</span>
+<span class="nc" id="L171">  }</span>
 
   @Override
   protected void decode(final ChannelHandlerContext ctx, final DataBlock msg,
                         final List&lt;Object&gt; out) throws Exception {
     // Is an ASCII or EBCDIC mode or IMAGE mode
-<span class="nc bnc" id="L179" title="All 2 branches missed.">    if (type == TransferType.IMAGE) {</span>
-<span class="nc" id="L180">      out.add(msg);</span>
-<span class="nc" id="L181">      return;</span>
-<span class="nc bnc" id="L182" title="All 4 branches missed.">    } else if (type == TransferType.ASCII || type == TransferType.EBCDIC) {</span>
-<span class="nc" id="L183">      final ByteBuf buffer = msg.getBlock();</span>
-<span class="nc" id="L184">      msg.setBlock(decode(buffer));</span>
-<span class="nc" id="L185">      out.add(msg);</span>
-<span class="nc" id="L186">      return;</span>
+<span class="nc bnc" id="L177" title="All 2 branches missed.">    if (type == TransferType.IMAGE) {</span>
+<span class="nc" id="L178">      out.add(msg);</span>
+<span class="nc" id="L179">      return;</span>
+<span class="nc bnc" id="L180" title="All 4 branches missed.">    } else if (type == TransferType.ASCII || type == TransferType.EBCDIC) {</span>
+<span class="nc" id="L181">      final byte[] bytes = msg.getByteBlock();</span>
+<span class="nc" id="L182">      msg.setBlock(decode(bytes));</span>
+<span class="nc" id="L183">      out.add(msg);</span>
+<span class="nc" id="L184">      return;</span>
     }
     // Type unimplemented
-<span class="nc" id="L189">    throw new InvalidArgumentException(</span>
-<span class="nc" id="L190">        &quot;Type unimplemented in &quot; + getClass().getName() + &quot; codec &quot; +</span>
-<span class="nc" id="L191">        type.name());</span>
+<span class="nc" id="L187">    throw new InvalidArgumentException(</span>
+<span class="nc" id="L188">        &quot;Type unimplemented in &quot; + getClass().getName() + &quot; codec &quot; +</span>
+<span class="nc" id="L189">        type.name());</span>
   }
 
   /**
    * @param byteBuf
    *
    * @return the byteBuf
-   *
-   * @throws Exception
    */
-  protected ByteBuf decode(final ByteBuf byteBuf) throws Exception {
-<span class="nc" id="L202">    return Unpooled.copiedBuffer(byteBuf.toString(type.charset), charsetName);</span>
+  protected byte[] decode(final byte[] byteBuf) {
+<span class="nc" id="L198">    return new String(byteBuf, type.charset).getBytes(charsetName);</span>
   }
 
   @Override
   protected void encode(final ChannelHandlerContext ctx, final DataBlock msg,
                         final List&lt;Object&gt; out) throws Exception {
     // Is an ASCII or EBCDIC mode or IMAGE mode
-<span class="nc bnc" id="L209" title="All 2 branches missed.">    if (type == TransferType.IMAGE) {</span>
-<span class="nc" id="L210">      out.add(msg);</span>
-<span class="nc" id="L211">      return;</span>
-<span class="nc bnc" id="L212" title="All 4 branches missed.">    } else if (type == TransferType.ASCII || type == TransferType.EBCDIC) {</span>
-<span class="nc" id="L213">      final ByteBuf buffer = msg.getBlock();</span>
-<span class="nc" id="L214">      msg.setBlock(encode(buffer));</span>
-<span class="nc" id="L215">      out.add(msg);</span>
-<span class="nc" id="L216">      return;</span>
+<span class="nc bnc" id="L205" title="All 2 branches missed.">    if (type == TransferType.IMAGE) {</span>
+<span class="nc" id="L206">      out.add(msg);</span>
+<span class="nc" id="L207">      return;</span>
+<span class="nc bnc" id="L208" title="All 4 branches missed.">    } else if (type == TransferType.ASCII || type == TransferType.EBCDIC) {</span>
+<span class="nc" id="L209">      final byte[] bytes = msg.getByteBlock();</span>
+<span class="nc" id="L210">      msg.setBlock(encode(bytes));</span>
+<span class="nc" id="L211">      out.add(msg);</span>
+<span class="nc" id="L212">      return;</span>
     }
     // Type unimplemented
-<span class="nc" id="L219">    throw new InvalidArgumentException(</span>
-<span class="nc" id="L220">        &quot;Type unimplemented in &quot; + getClass().getName() + &quot; codec &quot; +</span>
-<span class="nc" id="L221">        type.name());</span>
+<span class="nc" id="L215">    throw new InvalidArgumentException(</span>
+<span class="nc" id="L216">        &quot;Type unimplemented in &quot; + getClass().getName() + &quot; codec &quot; +</span>
+<span class="nc" id="L217">        type.name());</span>
   }
 
   /**
    * @param byteBuf
    *
    * @return the encoded buffer
-   *
-   * @throws Exception
    */
-  protected ByteBuf encode(final ByteBuf byteBuf) throws Exception {
-<span class="nc" id="L232">    final String chString = byteBuf.toString(charsetName);</span>
-<span class="nc" id="L233">    return Unpooled.copiedBuffer(chString, type.charset);</span>
+  protected byte[] encode(final byte[] byteBuf) {
+<span class="nc" id="L226">    return new String(byteBuf, charsetName).getBytes(type.charset);</span>
   }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

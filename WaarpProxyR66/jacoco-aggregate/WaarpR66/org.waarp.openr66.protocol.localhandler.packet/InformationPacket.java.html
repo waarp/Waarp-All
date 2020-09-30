@@ -21,7 +21,6 @@ package org.waarp.openr66.protocol.localhandler.packet;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
-import io.netty.buffer.Unpooled;
 import org.waarp.common.utility.WaarpNettyUtil;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
 import org.waarp.openr66.protocol.localhandler.LocalChannelReference;
@@ -35,8 +34,8 @@ public class InformationPacket extends AbstractLocalPacket {
 
   private static final String NOT_ENOUGH_DATA = &quot;Not enough data&quot;;
 
-<span class="fc" id="L38">  public enum ASKENUM {</span>
-<span class="fc" id="L39">    ASKEXIST, ASKMLSDETAIL, ASKLIST, ASKMLSLIST</span>
+<span class="fc" id="L37">  public enum ASKENUM {</span>
+<span class="fc" id="L38">    ASKEXIST, ASKMLSDETAIL, ASKLIST, ASKMLSLIST</span>
   }
 
   private final String rulename;
@@ -60,22 +59,22 @@ public class InformationPacket extends AbstractLocalPacket {
                                                    final int endLength,
                                                    final ByteBuf buf)
       throws OpenR66ProtocolPacketException {
-<span class="pc bpc" id="L63" title="1 of 2 branches missed.">    if (headerLength - 1 &lt;= 0) {</span>
-<span class="nc" id="L64">      throw new OpenR66ProtocolPacketException(NOT_ENOUGH_DATA);</span>
+<span class="pc bpc" id="L62" title="1 of 2 branches missed.">    if (headerLength - 1 &lt;= 0) {</span>
+<span class="nc" id="L63">      throw new OpenR66ProtocolPacketException(NOT_ENOUGH_DATA);</span>
     }
-<span class="pc bpc" id="L66" title="1 of 2 branches missed.">    if (middleLength != 1) {</span>
-<span class="nc" id="L67">      throw new OpenR66ProtocolPacketException(NOT_ENOUGH_DATA);</span>
+<span class="pc bpc" id="L65" title="1 of 2 branches missed.">    if (middleLength != 1) {</span>
+<span class="nc" id="L66">      throw new OpenR66ProtocolPacketException(NOT_ENOUGH_DATA);</span>
     }
-<span class="fc" id="L69">    final byte[] bheader = new byte[headerLength - 1];</span>
-<span class="fc" id="L70">    final byte[] bend = new byte[endLength];</span>
-<span class="fc" id="L71">    buf.readBytes(bheader);</span>
-<span class="fc" id="L72">    final byte request = buf.readByte();</span>
-<span class="pc bpc" id="L73" title="1 of 2 branches missed.">    if (endLength &gt; 0) {</span>
-<span class="fc" id="L74">      buf.readBytes(bend);</span>
+<span class="fc" id="L68">    final byte[] bheader = new byte[headerLength - 1];</span>
+<span class="fc" id="L69">    final byte[] bend = new byte[endLength];</span>
+<span class="fc" id="L70">    buf.readBytes(bheader);</span>
+<span class="fc" id="L71">    final byte request = buf.readByte();</span>
+<span class="pc bpc" id="L72" title="1 of 2 branches missed.">    if (endLength &gt; 0) {</span>
+<span class="fc" id="L73">      buf.readBytes(bend);</span>
     }
-<span class="fc" id="L76">    final String sheader = new String(bheader);</span>
-<span class="fc" id="L77">    final String send = new String(bend);</span>
-<span class="fc" id="L78">    return new InformationPacket(sheader, request, send);</span>
+<span class="fc" id="L75">    final String sheader = new String(bheader);</span>
+<span class="fc" id="L76">    final String send = new String(bend);</span>
+<span class="fc" id="L77">    return new InformationPacket(sheader, request, send);</span>
   }
 
   /**
@@ -84,53 +83,53 @@ public class InformationPacket extends AbstractLocalPacket {
    * @param filename
    */
   public InformationPacket(final String rulename, final byte request,
-<span class="fc" id="L87">                           final String filename) {</span>
-<span class="fc" id="L88">    this.rulename = rulename;</span>
-<span class="fc" id="L89">    requestedInfo = request;</span>
-<span class="fc" id="L90">    this.filename = filename;</span>
-<span class="fc" id="L91">  }</span>
+<span class="fc" id="L86">                           final String filename) {</span>
+<span class="fc" id="L87">    this.rulename = rulename;</span>
+<span class="fc" id="L88">    requestedInfo = request;</span>
+<span class="fc" id="L89">    this.filename = filename;</span>
+<span class="fc" id="L90">  }</span>
 
   @Override
   public boolean hasGlobalBuffer() {
-<span class="fc" id="L95">    return true;</span>
+<span class="fc" id="L94">    return true;</span>
   }
 
   @Override
   public void createAllBuffers(final LocalChannelReference lcr,
                                final int networkHeader)
       throws OpenR66ProtocolPacketException {
-<span class="pc bpc" id="L102" title="1 of 2 branches missed.">    if (rulename == null) {</span>
-<span class="nc" id="L103">      throw new OpenR66ProtocolPacketException(NOT_ENOUGH_DATA);</span>
+<span class="pc bpc" id="L101" title="1 of 2 branches missed.">    if (rulename == null) {</span>
+<span class="nc" id="L102">      throw new OpenR66ProtocolPacketException(NOT_ENOUGH_DATA);</span>
     }
-<span class="fc" id="L105">    final byte[] headerBytes = rulename.getBytes();</span>
-<span class="fc" id="L106">    final int headerSize = headerBytes.length;</span>
-<span class="fc" id="L107">    final int middleSize = 1;</span>
-<span class="pc bpc" id="L108" title="1 of 2 branches missed.">    final byte[] endBytes = filename != null? filename.getBytes() : EMPTY_ARRAY;</span>
-<span class="fc" id="L109">    final int endSize = endBytes.length;</span>
-<span class="fc" id="L110">    final int globalSize =</span>
+<span class="fc" id="L104">    final byte[] headerBytes = rulename.getBytes();</span>
+<span class="fc" id="L105">    final int headerSize = headerBytes.length;</span>
+<span class="fc" id="L106">    final int middleSize = 1;</span>
+<span class="pc bpc" id="L107" title="1 of 2 branches missed.">    final byte[] endBytes = filename != null? filename.getBytes() : EMPTY_ARRAY;</span>
+<span class="fc" id="L108">    final int endSize = endBytes.length;</span>
+<span class="fc" id="L109">    final int globalSize =</span>
         networkHeader + LOCAL_HEADER_SIZE + headerSize + middleSize + endSize;
-<span class="fc" id="L112">    int offset = networkHeader + LOCAL_HEADER_SIZE;</span>
-<span class="fc" id="L113">    global = ByteBufAllocator.DEFAULT.buffer(globalSize, globalSize);</span>
-<span class="fc" id="L114">    header = WaarpNettyUtil.slice(global, offset, headerSize);</span>
-<span class="fc" id="L115">    header.writeBytes(headerBytes);</span>
-<span class="fc" id="L116">    offset += headerSize;</span>
-<span class="fc" id="L117">    middle = WaarpNettyUtil.slice(global, offset, middleSize);</span>
-<span class="fc" id="L118">    middle.writeByte(requestedInfo);</span>
-<span class="fc" id="L119">    offset += middleSize;</span>
-<span class="fc" id="L120">    end = WaarpNettyUtil.slice(global, offset, endSize);</span>
-<span class="pc bpc" id="L121" title="1 of 2 branches missed.">    if (filename != null) {</span>
-<span class="fc" id="L122">      end.writeBytes(endBytes);</span>
+<span class="fc" id="L111">    int offset = networkHeader + LOCAL_HEADER_SIZE;</span>
+<span class="fc" id="L112">    global = ByteBufAllocator.DEFAULT.buffer(globalSize, globalSize);</span>
+<span class="fc" id="L113">    header = WaarpNettyUtil.slice(global, offset, headerSize);</span>
+<span class="fc" id="L114">    header.writeBytes(headerBytes);</span>
+<span class="fc" id="L115">    offset += headerSize;</span>
+<span class="fc" id="L116">    middle = WaarpNettyUtil.slice(global, offset, middleSize);</span>
+<span class="fc" id="L117">    middle.writeByte(requestedInfo);</span>
+<span class="fc" id="L118">    offset += middleSize;</span>
+<span class="fc" id="L119">    end = WaarpNettyUtil.slice(global, offset, endSize);</span>
+<span class="pc bpc" id="L120" title="1 of 2 branches missed.">    if (filename != null) {</span>
+<span class="fc" id="L121">      end.writeBytes(endBytes);</span>
     }
-<span class="fc" id="L124">  }</span>
+<span class="fc" id="L123">  }</span>
 
   @Override
   public byte getType() {
-<span class="fc" id="L128">    return LocalPacketFactory.INFORMATIONPACKET;</span>
+<span class="fc" id="L127">    return LocalPacketFactory.INFORMATIONPACKET;</span>
   }
 
   @Override
   public String toString() {
-<span class="fc" id="L133">    return &quot;InformationPacket: &quot; + requestedInfo + ' ' + rulename + ' ' +</span>
+<span class="fc" id="L132">    return &quot;InformationPacket: &quot; + requestedInfo + ' ' + rulename + ' ' +</span>
            filename;
   }
 
@@ -138,24 +137,24 @@ public class InformationPacket extends AbstractLocalPacket {
    * @return the requestId
    */
   public byte getRequest() {
-<span class="fc" id="L141">    return requestedInfo;</span>
+<span class="fc" id="L140">    return requestedInfo;</span>
   }
 
   /**
    * @return the rulename
    */
   public String getRulename() {
-<span class="fc" id="L148">    return rulename;</span>
+<span class="fc" id="L147">    return rulename;</span>
   }
 
   /**
    * @return the filename
    */
   public String getFilename() {
-<span class="pc bpc" id="L155" title="1 of 2 branches missed.">    if (filename != null) {</span>
-<span class="fc" id="L156">      return filename;</span>
+<span class="pc bpc" id="L154" title="1 of 2 branches missed.">    if (filename != null) {</span>
+<span class="fc" id="L155">      return filename;</span>
     } else {
-<span class="nc" id="L158">      return &quot;&quot;;</span>
+<span class="nc" id="L157">      return &quot;&quot;;</span>
     }
   }
 }

@@ -55,13 +55,13 @@ import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder.NotEnoughDat
 import io.netty.handler.codec.http.multipart.InterfaceHttpData;
 import io.netty.handler.codec.http.multipart.InterfaceHttpData.HttpDataType;
 import org.waarp.common.crypto.ssl.WaarpSslUtility;
-import org.waarp.common.database.DbConstant;
 import org.waarp.common.database.DbSession;
 import org.waarp.common.exception.CryptoException;
 import org.waarp.common.json.JsonHandler;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.utility.WaarpStringUtils;
+import org.waarp.gateway.kernel.database.DbConstantGateway;
 import org.waarp.gateway.kernel.exception.HttpForbiddenRequestException;
 import org.waarp.gateway.kernel.exception.HttpIncorrectRequestException;
 import org.waarp.gateway.kernel.exception.HttpInvalidAuthenticationException;
@@ -267,7 +267,7 @@ public abstract class HttpRestHandler
 <span class="nc" id="L267">    }</span>
 
     @Override
-    public void operationComplete(final ChannelFuture future) throws Exception {
+    public void operationComplete(final ChannelFuture future) {
 <span class="nc" id="L271">      handler.clean();</span>
 <span class="nc" id="L272">    }</span>
   }
@@ -327,7 +327,7 @@ public abstract class HttpRestHandler
    *     dbSession if none)
    */
   public DbSession getDbSession() {
-<span class="pc bpc" id="L330" title="1 of 2 branches missed.">    return dbSession == null? DbConstant.admin.getSession() : dbSession;</span>
+<span class="pc bpc" id="L330" title="1 of 2 branches missed.">    return dbSession == null? DbConstantGateway.admin.getSession() : dbSession;</span>
   }
 
   /**
@@ -402,7 +402,7 @@ public abstract class HttpRestHandler
 
   @Override
   protected void channelRead0(final ChannelHandlerContext ctx,
-                              final HttpObject msg) throws Exception {
+                              final HttpObject msg) {
 <span class="fc" id="L406">    logger.debug(&quot;Msg Received&quot;);</span>
     try {
 <span class="fc bfc" id="L408" title="All 2 branches covered.">      if (msg instanceof HttpRequest) {</span>
@@ -788,7 +788,7 @@ public abstract class HttpRestHandler
 
   @Override
   public void exceptionCaught(final ChannelHandlerContext ctx,
-                              final Throwable cause) throws Exception {
+                              final Throwable cause) {
 <span class="pc bpc" id="L792" title="1 of 2 branches missed.">    if (ctx.channel().isActive()) {</span>
 <span class="nc bnc" id="L793" title="All 4 branches missed.">      if (cause != null &amp;&amp; cause.getMessage() != null) {</span>
 <span class="nc" id="L794">        logger.warn(&quot;Exception {}&quot;, cause.getMessage(), cause);</span>

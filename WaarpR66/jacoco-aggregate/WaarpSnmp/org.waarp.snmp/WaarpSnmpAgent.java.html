@@ -112,7 +112,7 @@ public class WaarpSnmpAgent extends BaseAgent {
                         final WaarpInterfaceMonitor monitor,
                         final WaarpInterfaceMib mib)
       throws IllegalArgumentException {
-    /**
+    /*
      * Creates a base agent with boot-counter, config file, and a CommandProcessor for processing SNMP requests.
      *
      * Parameters:
@@ -143,7 +143,7 @@ public class WaarpSnmpAgent extends BaseAgent {
 <span class="fc" id="L143">    hasV2 = SnmpConfiguration.hasV2;</span>
 <span class="fc" id="L144">    hasV3 = SnmpConfiguration.hasV3;</span>
 
-<span class="fc" id="L146">    logger.debug(&quot;SNMP Configuration loaded: &quot; + address[0] + ':' + nbThread);</span>
+<span class="fc" id="L146">    logger.debug(&quot;SNMP Configuration loaded: {}:{}&quot;, address[0], nbThread);</span>
 <span class="fc" id="L147">    workerPool = ThreadPool.create(&quot;SnmpRequestPool&quot;, nbThread);</span>
 <span class="fc" id="L148">    agent.setWorkerPool(workerPool);</span>
 <span class="fc" id="L149">    setMonitor(monitor);</span>
@@ -206,7 +206,7 @@ public class WaarpSnmpAgent extends BaseAgent {
    * @param moGroup
    */
   public void unregisterManagedObject(final MOGroup moGroup) {
-<span class="fc" id="L209">    logger.debug(&quot;Unregister &quot; + moGroup);</span>
+<span class="fc" id="L209">    logger.debug(&quot;Unregister {}&quot;, moGroup);</span>
 <span class="fc" id="L210">    moGroup.unregisterMOs(server, getContext(moGroup));</span>
 <span class="fc" id="L211">  }</span>
 
@@ -217,7 +217,7 @@ public class WaarpSnmpAgent extends BaseAgent {
   @Override
   protected void addUsmUser(final USM usm) {
 <span class="fc bfc" id="L219" title="All 2 branches covered.">    for (final UsmUser userlist : listUsmUser) {</span>
-<span class="fc" id="L220">      logger.debug(&quot;User: &quot; + userlist);</span>
+<span class="fc" id="L220">      logger.debug(&quot;User: {}&quot;, userlist);</span>
 <span class="fc" id="L221">      usm.addUser(userlist.getSecurityName(), usm.getLocalEngineID(), userlist);</span>
 <span class="fc" id="L222">    }</span>
 <span class="fc" id="L223">    final UsmUser usernotify =</span>
@@ -235,13 +235,13 @@ public class WaarpSnmpAgent extends BaseAgent {
 <span class="fc" id="L235">    targetMIB.addDefaultTDomains();</span>
 
 <span class="fc bfc" id="L237" title="All 2 branches covered.">    for (final TargetElement element : listTargetElements) {</span>
-<span class="fc" id="L238">      logger.debug(&quot;AddTarget: &quot; + element);</span>
+<span class="fc" id="L238">      logger.debug(&quot;AddTarget: {}&quot;, element);</span>
 <span class="fc" id="L239">      targetMIB.addTargetAddress(element.name, element.transportDomain,</span>
                                  element.address, element.timeout,
                                  element.retries, element.tagList,
                                  element.params, element.storageType);
 <span class="fc" id="L243">    }</span>
-    /**
+    /*
      * Example
      *
      * targetMIB.addTargetAddress(new OctetString(&quot;notificationV2c&quot;), TransportDomains.transportDomainUdpIpv4, new
@@ -250,7 +250,7 @@ public class WaarpSnmpAgent extends BaseAgent {
      * TransportDomains.transportDomainUdpIpv4, new OctetString(new UdpAddress(&quot;127.0.0.1/1162&quot;).getValue()), 200,
      * 1, new OctetString(&quot;notify&quot;), new OctetString(&quot;v3notify&quot;), StorageType.permanent);
      */
-<span class="fc" id="L253">    logger.debug(&quot;HasV2: &quot; + hasV2 + &quot; HasV3: &quot; + hasV3);</span>
+<span class="fc" id="L253">    logger.debug(&quot;HasV2: {} HasV3: {}&quot;, hasV2, hasV3);</span>
 <span class="pc bpc" id="L254" title="1 of 2 branches missed.">    if (hasV2) {</span>
 <span class="fc" id="L255">      targetMIB.addTargetParams(new OctetString(SnmpConfiguration.V2C),</span>
                                 MessageProcessingModel.MPv2c,
@@ -292,8 +292,8 @@ public class WaarpSnmpAgent extends BaseAgent {
                   new OctetString(&quot;v3group&quot;), StorageType.nonVolatile);
 
 <span class="fc bfc" id="L294" title="All 2 branches covered.">    for (final UsmUser user : listUsmUser) {</span>
-<span class="fc" id="L295">      logger.debug(&quot;Groups: &quot; + user.getSecurityName() + &quot; Restricted? &quot; +</span>
-<span class="fc bfc" id="L296" title="All 2 branches covered.">                   (user.getPrivacyProtocol() == null));</span>
+<span class="fc" id="L295">      logger.debug(&quot;Groups: {} Restricted? {}&quot;, user.getSecurityName(),</span>
+<span class="fc bfc" id="L296" title="All 2 branches covered.">                   user.getPrivacyProtocol() == null);</span>
 <span class="fc bfc" id="L297" title="All 2 branches covered.">      if (user.getPrivacyProtocol() == null) {</span>
 <span class="fc" id="L298">        vacm.addGroup(SecurityModel.SECURITY_MODEL_USM,</span>
 <span class="fc" id="L299">                      new OctetString(user.getSecurityName()),</span>
@@ -416,8 +416,8 @@ public class WaarpSnmpAgent extends BaseAgent {
    * @throws IOException
    */
   public void start() throws IOException {
-<span class="fc" id="L419">    logger.debug(</span>
-        &quot;WaarpSnmpAgent starting: &quot; + address[0] + &quot; 1 on &quot; + address.length);
+<span class="fc" id="L419">    logger.debug(&quot;WaarpSnmpAgent starting: {} 1 on {}&quot;, address[0],</span>
+<span class="fc" id="L420">                 address.length);</span>
     try {
 <span class="fc" id="L422">      init();</span>
 <span class="nc" id="L423">    } catch (final IOException e) {</span>

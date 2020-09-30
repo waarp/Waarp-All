@@ -30,43 +30,37 @@
 <a class="jxr_linenumber" name="L22" href="#L22">22</a>  
 <a class="jxr_linenumber" name="L23" href="#L23">23</a>  <strong class="jxr_keyword">import</strong> org.waarp.common.logging.WaarpLogger;
 <a class="jxr_linenumber" name="L24" href="#L24">24</a>  <strong class="jxr_keyword">import</strong> org.waarp.common.logging.WaarpLoggerFactory;
-<a class="jxr_linenumber" name="L25" href="#L25">25</a>  <strong class="jxr_keyword">import</strong> org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
-<a class="jxr_linenumber" name="L26" href="#L26">26</a>  <strong class="jxr_keyword">import</strong> org.waarp.openr66.server.R66Server;
-<a class="jxr_linenumber" name="L27" href="#L27">27</a>  
-<a class="jxr_linenumber" name="L28" href="#L28">28</a>  <strong class="jxr_keyword">import</strong> javax.servlet.ServletException;
-<a class="jxr_linenumber" name="L29" href="#L29">29</a>  <strong class="jxr_keyword">import</strong> java.io.File;
-<a class="jxr_linenumber" name="L30" href="#L30">30</a>  <strong class="jxr_keyword">import</strong> java.util.concurrent.atomic.AtomicBoolean;
-<a class="jxr_linenumber" name="L31" href="#L31">31</a>  
-<a class="jxr_linenumber" name="L32" href="#L32">32</a>  <em class="jxr_javadoccomment">/**</em>
-<a class="jxr_linenumber" name="L33" href="#L33">33</a>  <em class="jxr_javadoccomment"> * Point to startup Waarp R66 server a unique time</em>
-<a class="jxr_linenumber" name="L34" href="#L34">34</a>  <em class="jxr_javadoccomment"> */</em>
-<a class="jxr_linenumber" name="L35" href="#L35">35</a>  <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">class</strong> <a name="WaarpStartup" href="../../../../org/waarp/http/protocol/WaarpStartup.html#WaarpStartup">WaarpStartup</a> {
-<a class="jxr_linenumber" name="L36" href="#L36">36</a>    <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> <a name="WaarpLogger" href="../../../../org/waarp/common/logging/WaarpLogger.html#WaarpLogger">WaarpLogger</a> logger =
-<a class="jxr_linenumber" name="L37" href="#L37">37</a>        WaarpLoggerFactory.getLogger(WaarpStartup.<strong class="jxr_keyword">class</strong>);
-<a class="jxr_linenumber" name="L38" href="#L38">38</a>    <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> AtomicBoolean STARTED = <strong class="jxr_keyword">new</strong> AtomicBoolean(false);
-<a class="jxr_linenumber" name="L39" href="#L39">39</a>  
-<a class="jxr_linenumber" name="L40" href="#L40">40</a>    <strong class="jxr_keyword">private</strong> <a name="WaarpStartup" href="../../../../org/waarp/http/protocol/WaarpStartup.html#WaarpStartup">WaarpStartup</a>() {
-<a class="jxr_linenumber" name="L41" href="#L41">41</a>      <em class="jxr_comment">// Empty and private</em>
-<a class="jxr_linenumber" name="L42" href="#L42">42</a>    }
-<a class="jxr_linenumber" name="L43" href="#L43">43</a>  
-<a class="jxr_linenumber" name="L44" href="#L44">44</a>    <em class="jxr_javadoccomment">/**</em>
-<a class="jxr_linenumber" name="L45" href="#L45">45</a>  <em class="jxr_javadoccomment">   * Will try to start the Waarp R66 server (next calls will be ignored)</em>
-<a class="jxr_linenumber" name="L46" href="#L46">46</a>  <em class="jxr_javadoccomment">   *</em>
-<a class="jxr_linenumber" name="L47" href="#L47">47</a>  <em class="jxr_javadoccomment">   * @throws ServletException</em>
-<a class="jxr_linenumber" name="L48" href="#L48">48</a>  <em class="jxr_javadoccomment">   */</em>
-<a class="jxr_linenumber" name="L49" href="#L49">49</a>    <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">void</strong> startupWaarp(<strong class="jxr_keyword">final</strong> File configurationFile)
-<a class="jxr_linenumber" name="L50" href="#L50">50</a>        <strong class="jxr_keyword">throws</strong> ServletException {
-<a class="jxr_linenumber" name="L51" href="#L51">51</a>      <strong class="jxr_keyword">if</strong> (STARTED.compareAndSet(false, <strong class="jxr_keyword">true</strong>)) {
-<a class="jxr_linenumber" name="L52" href="#L52">52</a>        <strong class="jxr_keyword">try</strong> {
-<a class="jxr_linenumber" name="L53" href="#L53">53</a>          R66Server.main(<strong class="jxr_keyword">new</strong> String[] { configurationFile.getAbsolutePath() });
-<a class="jxr_linenumber" name="L54" href="#L54">54</a>          logger.info(<span class="jxr_string">"Start Done"</span>);
-<a class="jxr_linenumber" name="L55" href="#L55">55</a>        } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> <a name="OpenR66ProtocolPacketException" href="../../../../org/waarp/openr66/protocol/exception/OpenR66ProtocolPacketException.html#OpenR66ProtocolPacketException">OpenR66ProtocolPacketException</a> e) {
-<a class="jxr_linenumber" name="L56" href="#L56">56</a>          logger.error(e);
-<a class="jxr_linenumber" name="L57" href="#L57">57</a>          <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> ServletException(<span class="jxr_string">"Cannot start R66 Server"</span>);
-<a class="jxr_linenumber" name="L58" href="#L58">58</a>        }
-<a class="jxr_linenumber" name="L59" href="#L59">59</a>      }
-<a class="jxr_linenumber" name="L60" href="#L60">60</a>    }
-<a class="jxr_linenumber" name="L61" href="#L61">61</a>  }
+<a class="jxr_linenumber" name="L25" href="#L25">25</a>  <strong class="jxr_keyword">import</strong> org.waarp.openr66.server.R66Server;
+<a class="jxr_linenumber" name="L26" href="#L26">26</a>  
+<a class="jxr_linenumber" name="L27" href="#L27">27</a>  <strong class="jxr_keyword">import</strong> javax.servlet.ServletException;
+<a class="jxr_linenumber" name="L28" href="#L28">28</a>  <strong class="jxr_keyword">import</strong> java.io.File;
+<a class="jxr_linenumber" name="L29" href="#L29">29</a>  <strong class="jxr_keyword">import</strong> java.util.concurrent.atomic.AtomicBoolean;
+<a class="jxr_linenumber" name="L30" href="#L30">30</a>  
+<a class="jxr_linenumber" name="L31" href="#L31">31</a>  <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L32" href="#L32">32</a>  <em class="jxr_javadoccomment"> * Point to startup Waarp R66 server a unique time</em>
+<a class="jxr_linenumber" name="L33" href="#L33">33</a>  <em class="jxr_javadoccomment"> */</em>
+<a class="jxr_linenumber" name="L34" href="#L34">34</a>  <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">class</strong> <a name="WaarpStartup" href="../../../../org/waarp/http/protocol/WaarpStartup.html#WaarpStartup">WaarpStartup</a> {
+<a class="jxr_linenumber" name="L35" href="#L35">35</a>    <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> <a name="WaarpLogger" href="../../../../org/waarp/common/logging/WaarpLogger.html#WaarpLogger">WaarpLogger</a> logger =
+<a class="jxr_linenumber" name="L36" href="#L36">36</a>        WaarpLoggerFactory.getLogger(WaarpStartup.<strong class="jxr_keyword">class</strong>);
+<a class="jxr_linenumber" name="L37" href="#L37">37</a>    <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> AtomicBoolean STARTED = <strong class="jxr_keyword">new</strong> AtomicBoolean(false);
+<a class="jxr_linenumber" name="L38" href="#L38">38</a>  
+<a class="jxr_linenumber" name="L39" href="#L39">39</a>    <strong class="jxr_keyword">private</strong> <a name="WaarpStartup" href="../../../../org/waarp/http/protocol/WaarpStartup.html#WaarpStartup">WaarpStartup</a>() {
+<a class="jxr_linenumber" name="L40" href="#L40">40</a>      <em class="jxr_comment">// Empty and private</em>
+<a class="jxr_linenumber" name="L41" href="#L41">41</a>    }
+<a class="jxr_linenumber" name="L42" href="#L42">42</a>  
+<a class="jxr_linenumber" name="L43" href="#L43">43</a>    <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L44" href="#L44">44</a>  <em class="jxr_javadoccomment">   * Will try to start the Waarp R66 server (next calls will be ignored)</em>
+<a class="jxr_linenumber" name="L45" href="#L45">45</a>  <em class="jxr_javadoccomment">   *</em>
+<a class="jxr_linenumber" name="L46" href="#L46">46</a>  <em class="jxr_javadoccomment">   * @throws ServletException</em>
+<a class="jxr_linenumber" name="L47" href="#L47">47</a>  <em class="jxr_javadoccomment">   */</em>
+<a class="jxr_linenumber" name="L48" href="#L48">48</a>    <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">void</strong> startupWaarp(<strong class="jxr_keyword">final</strong> File configurationFile)
+<a class="jxr_linenumber" name="L49" href="#L49">49</a>        <strong class="jxr_keyword">throws</strong> ServletException {
+<a class="jxr_linenumber" name="L50" href="#L50">50</a>      <strong class="jxr_keyword">if</strong> (STARTED.compareAndSet(false, <strong class="jxr_keyword">true</strong>)) {
+<a class="jxr_linenumber" name="L51" href="#L51">51</a>        R66Server.main(<strong class="jxr_keyword">new</strong> String[] { configurationFile.getAbsolutePath() });
+<a class="jxr_linenumber" name="L52" href="#L52">52</a>        logger.info(<span class="jxr_string">"Start Done"</span>);
+<a class="jxr_linenumber" name="L53" href="#L53">53</a>      }
+<a class="jxr_linenumber" name="L54" href="#L54">54</a>    }
+<a class="jxr_linenumber" name="L55" href="#L55">55</a>  }
 </pre>
 <hr/>
 <div id="footer">Copyright &#169; 2009&#x2013;2020 <a href="http://www.waarp.fr">Waarp</a>. All rights reserved.</div>

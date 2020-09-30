@@ -84,116 +84,115 @@
 <a class="jxr_linenumber" name="L76" href="#L76">76</a>  <em class="jxr_comment">     * case of status 0. The previous file should be deleted by the script or will be deleted in case of status 0.</em>
 <a class="jxr_linenumber" name="L77" href="#L77">77</a>  <em class="jxr_comment">     * If the status is 1, no change is made to the file.</em>
 <a class="jxr_linenumber" name="L78" href="#L78">78</a>  <em class="jxr_comment">     */</em>
-<a class="jxr_linenumber" name="L79" href="#L79">79</a>      logger.info(<span class="jxr_string">"ExecMove with "</span> + argRule + ':' + argTransfer + <span class="jxr_string">" and {}"</span>,
-<a class="jxr_linenumber" name="L80" href="#L80">80</a>                  session);
-<a class="jxr_linenumber" name="L81" href="#L81">81</a>      <strong class="jxr_keyword">final</strong> String finalname = applyTransferSubstitutions(argRule);
-<a class="jxr_linenumber" name="L82" href="#L82">82</a>  
-<a class="jxr_linenumber" name="L83" href="#L83">83</a>      <em class="jxr_comment">// Force the WaitForValidation</em>
-<a class="jxr_linenumber" name="L84" href="#L84">84</a>      waitForValidation = <strong class="jxr_keyword">true</strong>;
-<a class="jxr_linenumber" name="L85" href="#L85">85</a>      <strong class="jxr_keyword">if</strong> (Configuration.configuration.isUseLocalExec() &amp;&amp; useLocalExec) {
-<a class="jxr_linenumber" name="L86" href="#L86">86</a>        <strong class="jxr_keyword">final</strong> <a name="LocalExecClient" href="../../../../../org/waarp/openr66/context/ta<a name="LocalExecClient" href="../../../../../org/waarp/openr66/context/task/localexec/LocalExecClient.html#LocalExecClient">LocalExecClient</a>calExecClient.html#LocalExecClient">LocalExecClient</a> localExecClient = <strong class="jxr_keyword">new</strong> <a name="LocalExecClient" href="../../../../../org/waarp/openr66/context/task/localexec/LocalExecClient.html#LocalExecClient">LocalExecClient</a>();
-<a class="jxr_linenumber" name="L87" href="#L87">87</a>        <strong class="jxr_keyword">if</strong> (localExecClient.connect()) {
-<a class="jxr_linenumber" name="L88" href="#L88">88</a>          localExecClient.runOneCommand(finalname, delay, waitForValidation,
-<a class="jxr_linenumber" name="L89" href="#L89">89</a>                                        futureCompletion);
-<a class="jxr_linenumber" name="L90" href="#L90">90</a>          <strong class="jxr_keyword">final</strong> <a name="LocalExecResult" href="../../../../../org/waarp/commandexec/utils/LocalExecResult.html#LocalExecResult">LocalExecResult</a> result = localExecClient.getLocalExecResult();
-<a class="jxr_linenumber" name="L91" href="#L91">91</a>          move(result.getStatus(), result.getResult(), finalname);
-<a class="jxr_linenumber" name="L92" href="#L92">92</a>          localExecClient.disconnect();
-<a class="jxr_linenumber" name="L93" href="#L93">93</a>          <strong class="jxr_keyword">return</strong>;
-<a class="jxr_linenumber" name="L94" href="#L94">94</a>        } <em class="jxr_comment">// else continue</em>
-<a class="jxr_linenumber" name="L95" href="#L95">95</a>      }
-<a class="jxr_linenumber" name="L96" href="#L96">96</a>  
-<a class="jxr_linenumber" name="L97" href="#L97">97</a>      <strong class="jxr_keyword">final</strong> PrepareCommandExec prepareCommandExec =
-<a class="jxr_linenumber" name="L98" href="#L98">98</a>          <strong class="jxr_keyword">new</strong> PrepareCommandExec(finalname, false, waitForValidation).invoke();
-<a class="jxr_linenumber" name="L99" href="#L99">99</a>      <strong class="jxr_keyword">if</strong> (prepareCommandExec.isError()) {
-<a class="jxr_linenumber" name="L100" href="#L100">100</a>       <strong class="jxr_keyword">return</strong>;
-<a class="jxr_linenumber" name="L101" href="#L101">101</a>     }
-<a class="jxr_linenumber" name="L102" href="#L102">102</a>     <strong class="jxr_keyword">final</strong> CommandLine commandLine = prepareCommandExec.getCommandLine();
-<a class="jxr_linenumber" name="L103" href="#L103">103</a>     <strong class="jxr_keyword">final</strong> DefaultExecutor defaultExecutor =
-<a class="jxr_linenumber" name="L104" href="#L104">104</a>         prepareCommandExec.getDefaultExecutor();
-<a class="jxr_linenumber" name="L105" href="#L105">105</a>     <strong class="jxr_keyword">final</strong> PipedInputStream inputStream = prepareCommandExec.getInputStream();
-<a class="jxr_linenumber" name="L106" href="#L106">106</a>     <strong class="jxr_keyword">final</strong> PipedOutputStream outputStream = prepareCommandExec.getOutputStream();
-<a class="jxr_linenumber" name="L107" href="#L107">107</a>     <strong class="jxr_keyword">final</strong> PumpStreamHandler pumpStreamHandler =
-<a class="jxr_linenumber" name="L108" href="#L108">108</a>         prepareCommandExec.getPumpStreamHandler();
-<a class="jxr_linenumber" name="L109" href="#L109">109</a>     <strong class="jxr_keyword">final</strong> ExecuteWatchdog watchdog = prepareCommandExec.getWatchdog();
-<a class="jxr_linenumber" name="L110" href="#L110">110</a>     <strong class="jxr_keyword">final</strong> <a name="LastLineReader" href="../../../../../org/waarp/openr66/context/t<a name="LastLineReader" href="../../../../../org/waarp/openr66/context/task/LastLineReader.html#LastLineReader">LastLineReader</a>ader.html#LastLineReader">LastLineReader</a> lastLineReader = <strong class="jxr_keyword">new</strong> <a name="LastLineReader" href="../../../../../org/waarp/openr66/context/task/LastLineReader.html#LastLineReader">LastLineReader</a>(inputStream);
-<a class="jxr_linenumber" name="L111" href="#L111">111</a>     lastLineReader
-<a class="jxr_linenumber" name="L112" href="#L112">112</a>         .setName(<span class="jxr_string">"LastLineReader"</span> + session.getRunner().getSpecialId());
-<a class="jxr_linenumber" name="L113" href="#L113">113</a>     lastLineReader.setDaemon(<strong class="jxr_keyword">true</strong>);
-<a class="jxr_linenumber" name="L114" href="#L114">114</a>     Configuration.configuration.getExecutorService().execute(lastLineReader);
-<a class="jxr_linenumber" name="L115" href="#L115">115</a>     <strong class="jxr_keyword">final</strong> ExecuteCommand executeCommand =
-<a class="jxr_linenumber" name="L116" href="#L116">116</a>         <strong class="jxr_keyword">new</strong> ExecuteCommand(commandLine, defaultExecutor, inputStream,
-<a class="jxr_linenumber" name="L117" href="#L117">117</a>                            outputStream, pumpStreamHandler, lastLineReader)
-<a class="jxr_linenumber" name="L118" href="#L118">118</a>             .invoke();
-<a class="jxr_linenumber" name="L119" href="#L119">119</a>     <strong class="jxr_keyword">if</strong> (executeCommand.isError()) {
-<a class="jxr_linenumber" name="L120" href="#L120">120</a>       <strong class="jxr_keyword">return</strong>;
-<a class="jxr_linenumber" name="L121" href="#L121">121</a>     }
-<a class="jxr_linenumber" name="L122" href="#L122">122</a>     <strong class="jxr_keyword">int</strong> status = executeCommand.getStatus();
-<a class="jxr_linenumber" name="L123" href="#L123">123</a>     <strong class="jxr_keyword">final</strong> String newname;
-<a class="jxr_linenumber" name="L124" href="#L124">124</a>     <strong class="jxr_keyword">if</strong> (defaultExecutor.isFailure(status) &amp;&amp; watchdog != <strong class="jxr_keyword">null</strong> &amp;&amp;
-<a class="jxr_linenumber" name="L125" href="#L125">125</a>         watchdog.killedProcess()) {
-<a class="jxr_linenumber" name="L126" href="#L126">126</a>       <em class="jxr_comment">// kill by the watchdoc (time out)</em>
-<a class="jxr_linenumber" name="L127" href="#L127">127</a>       status = -1;
-<a class="jxr_linenumber" name="L128" href="#L128">128</a>       newname = <span class="jxr_string">"TimeOut"</span>;
-<a class="jxr_linenumber" name="L129" href="#L129">129</a>     } <strong class="jxr_keyword">else</strong> {
-<a class="jxr_linenumber" name="L130" href="#L130">130</a>       newname = lastLineReader.getLastLine();
-<a class="jxr_linenumber" name="L131" href="#L131">131</a>       <strong class="jxr_keyword">if</strong> (status == 0 &amp;&amp; (newname == <strong class="jxr_keyword">null</strong> || newname.isEmpty())) {
-<a class="jxr_linenumber" name="L132" href="#L132">132</a>         status = 1;
-<a class="jxr_linenumber" name="L133" href="#L133">133</a>       }
-<a class="jxr_linenumber" name="L134" href="#L134">134</a>     }
-<a class="jxr_linenumber" name="L135" href="#L135">135</a>     move(status, newname, commandLine.toString());
-<a class="jxr_linenumber" name="L136" href="#L136">136</a>   }
-<a class="jxr_linenumber" name="L137" href="#L137">137</a> 
-<a class="jxr_linenumber" name="L138" href="#L138">138</a>   <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">void</strong> move(<strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong> status, <strong class="jxr_keyword">final</strong> String newName,
-<a class="jxr_linenumber" name="L139" href="#L139">139</a>                     <strong class="jxr_keyword">final</strong> String commandLine) {
-<a class="jxr_linenumber" name="L140" href="#L140">140</a>     <strong class="jxr_keyword">if</strong> (newName == <strong class="jxr_keyword">null</strong>) {
-<a class="jxr_linenumber" name="L141" href="#L141">141</a>       logger.error(<span class="jxr_string">"Status: "</span> + status + <span class="jxr_string">" Exec in error with "</span> + commandLine +
-<a class="jxr_linenumber" name="L142" href="#L142">142</a>                    <span class="jxr_string">" returns no line"</span>);
-<a class="jxr_linenumber" name="L143" href="#L143">143</a>       futureCompletion.cancel();
-<a class="jxr_linenumber" name="L144" href="#L144">144</a>       <strong class="jxr_keyword">return</strong>;
-<a class="jxr_linenumber" name="L145" href="#L145">145</a>     }
-<a class="jxr_linenumber" name="L146" href="#L146">146</a>     <strong class="jxr_keyword">final</strong> String newname = newName.replace('&#92;&#92;', '/');
-<a class="jxr_linenumber" name="L147" href="#L147">147</a>     <strong class="jxr_keyword">if</strong> (status == 0) {
-<a class="jxr_linenumber" name="L148" href="#L148">148</a>       <strong class="jxr_keyword">if</strong> (newname.indexOf(' ') &gt; 0) {
-<a class="jxr_linenumber" name="L149" href="#L149">149</a>         logger.warn(<span class="jxr_string">"Exec returns a multiple string in final line: "</span> + newname);
-<a class="jxr_linenumber" name="L150" href="#L150">150</a>         <em class="jxr_comment">// XXX FIXME: should not split String[] args = newname.split(" ")</em>
-<a class="jxr_linenumber" name="L151" href="#L151">151</a>         <em class="jxr_comment">// newname = args[args.length - 1]</em>
-<a class="jxr_linenumber" name="L152" href="#L152">152</a>       }
-<a class="jxr_linenumber" name="L153" href="#L153">153</a>       <em class="jxr_comment">// now test if the previous file was deleted (should be)</em>
-<a class="jxr_linenumber" name="L154" href="#L154">154</a>       <strong class="jxr_keyword">final</strong> File file = <strong class="jxr_keyword">new</strong> File(newname);
-<a class="jxr_linenumber" name="L155" href="#L155">155</a>       <strong class="jxr_keyword">if</strong> (!file.exists()) {
-<a class="jxr_linenumber" name="L156" href="#L156">156</a>         logger
-<a class="jxr_linenumber" name="L157" href="#L157">157</a>             .warn(<span class="jxr_string">"New file does not exist at the end of the exec: "</span> + newname);
-<a class="jxr_linenumber" name="L158" href="#L158">158</a>       }
-<a class="jxr_linenumber" name="L159" href="#L159">159</a>       <em class="jxr_comment">// now replace the file with the new one</em>
-<a class="jxr_linenumber" name="L160" href="#L160">160</a>       <strong class="jxr_keyword">try</strong> {
-<a class="jxr_linenumber" name="L161" href="#L161">161</a>         session.getFile().replaceFilename(newname, <strong class="jxr_keyword">true</strong>);
-<a class="jxr_linenumber" name="L162" href="#L162">162</a>       } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> <a name="CommandAbstractException" href="../../../../../org/waarp/common/command/exception/CommandAbstractException.html#CommandAbstractException">CommandAbstractException</a> e) {
-<a class="jxr_linenumber" name="L163" href="#L163">163</a>         logger.warn(<span class="jxr_string">"Exec in warning with "</span> + commandLine, e);
-<a class="jxr_linenumber" name="L164" href="#L164">164</a>       }
-<a class="jxr_linenumber" name="L165" href="#L165">165</a>       session.getRunner().setFileMoved(newname, <strong class="jxr_keyword">true</strong>);
-<a class="jxr_linenumber" name="L166" href="#L166">166</a>       <strong class="jxr_keyword">final</strong> <a name="R66Result" href="../../../../../org/waarp/openr66/context/R66Result.html#R66Result">R66Result</a> result =
-<a class="jxr_linenumber" name="L167" href="#L167">167</a>           <strong class="jxr_keyword">new</strong> <a name="R66Result" href="../../../../../org/waarp/openr66/context/R66Result.html#R66Result">R66Result</a>(session, <strong class="jxr_keyword">true</strong>, ErrorCode.CompleteOk,
-<a class="jxr_linenumber" name="L168" href="#L168">168</a>                         session.getRunner());
-<a class="jxr_linenumber" name="L169" href="#L169">169</a>       result.setOther(newname);
-<a class="jxr_linenumber" name="L170" href="#L170">170</a>       futureCompletion.setResult(result);
-<a class="jxr_linenumber" name="L171" href="#L171">171</a>       futureCompletion.setSuccess();
-<a class="jxr_linenumber" name="L172" href="#L172">172</a>       logger.info(<span class="jxr_string">"Exec OK with {} returns {}"</span>, commandLine, newname);
-<a class="jxr_linenumber" name="L173" href="#L173">173</a>     } <strong class="jxr_keyword">else</strong> <strong class="jxr_keyword">if</strong> (status == 1) {
-<a class="jxr_linenumber" name="L174" href="#L174">174</a>       logger
-<a class="jxr_linenumber" name="L175" href="#L175">175</a>           .warn(<span class="jxr_string">"Exec in warning with "</span> + commandLine + <span class="jxr_string">" returns "</span> + newname);
-<a class="jxr_linenumber" name="L176" href="#L176">176</a>       session.getRunner().setErrorExecutionStatus(ErrorCode.Warning);
-<a class="jxr_linenumber" name="L177" href="#L177">177</a>       <strong class="jxr_keyword">final</strong> <a name="R66Result" href="../../../../../org/waarp/openr66/context/R66Result.html#R66Result">R66Result</a> result =
-<a class="jxr_linenumber" name="L178" href="#L178">178</a>           <strong class="jxr_keyword">new</strong> <a name="R66Result" href="../../../../../org/waarp/openr66/context/R66Result.html#R66Result">R66Result</a>(session, <strong class="jxr_keyword">true</strong>, ErrorCode.Warning, session.getRunner());
-<a class="jxr_linenumber" name="L179" href="#L179">179</a>       result.setOther(newname);
-<a class="jxr_linenumber" name="L180" href="#L180">180</a>       futureCompletion.setResult(result);
-<a class="jxr_linenumber" name="L181" href="#L181">181</a>       futureCompletion.setSuccess();
-<a class="jxr_linenumber" name="L182" href="#L182">182</a>     } <strong class="jxr_keyword">else</strong> {
-<a class="jxr_linenumber" name="L183" href="#L183">183</a>       logger.error(<span class="jxr_string">"Status: "</span> + status + <span class="jxr_string">" Exec in error with "</span> + commandLine +
-<a class="jxr_linenumber" name="L184" href="#L184">184</a>                    <span class="jxr_string">" returns "</span> + newname);
-<a class="jxr_linenumber" name="L185" href="#L185">185</a>       futureCompletion.cancel();
-<a class="jxr_linenumber" name="L186" href="#L186">186</a>     }
-<a class="jxr_linenumber" name="L187" href="#L187">187</a>   }
-<a class="jxr_linenumber" name="L188" href="#L188">188</a> }
+<a class="jxr_linenumber" name="L79" href="#L79">79</a>      logger.info(<span class="jxr_string">"ExecMove with {}:{} and {}"</span>, argRule, argTransfer, session);
+<a class="jxr_linenumber" name="L80" href="#L80">80</a>      <strong class="jxr_keyword">final</strong> String finalname = applyTransferSubstitutions(argRule);
+<a class="jxr_linenumber" name="L81" href="#L81">81</a>  
+<a class="jxr_linenumber" name="L82" href="#L82">82</a>      <em class="jxr_comment">// Force the WaitForValidation</em>
+<a class="jxr_linenumber" name="L83" href="#L83">83</a>      waitForValidation = <strong class="jxr_keyword">true</strong>;
+<a class="jxr_linenumber" name="L84" href="#L84">84</a>      <strong class="jxr_keyword">if</strong> (Configuration.configuration.isUseLocalExec() &amp;&amp; useLocalExec) {
+<a class="jxr_linenumber" name="L85" href="#L85">85</a>        <strong class="jxr_keyword">final</strong> <a name="LocalExecClient" href="../../../../../org/waarp/openr66/context/ta<a name="LocalExecClient" href="../../../../../org/waarp/openr66/context/task/localexec/LocalExecClient.html#LocalExecClient">LocalExecClient</a>calExecClient.html#LocalExecClient">LocalExecClient</a> localExecClient = <strong class="jxr_keyword">new</strong> <a name="LocalExecClient" href="../../../../../org/waarp/openr66/context/task/localexec/LocalExecClient.html#LocalExecClient">LocalExecClient</a>();
+<a class="jxr_linenumber" name="L86" href="#L86">86</a>        <strong class="jxr_keyword">if</strong> (localExecClient.connect()) {
+<a class="jxr_linenumber" name="L87" href="#L87">87</a>          localExecClient.runOneCommand(finalname, delay, waitForValidation,
+<a class="jxr_linenumber" name="L88" href="#L88">88</a>                                        futureCompletion);
+<a class="jxr_linenumber" name="L89" href="#L89">89</a>          <strong class="jxr_keyword">final</strong> <a name="LocalExecResult" href="../../../../../org/waarp/commandexec/utils/LocalExecResult.html#LocalExecResult">LocalExecResult</a> result = localExecClient.getLocalExecResult();
+<a class="jxr_linenumber" name="L90" href="#L90">90</a>          move(result.getStatus(), result.getResult(), finalname);
+<a class="jxr_linenumber" name="L91" href="#L91">91</a>          localExecClient.disconnect();
+<a class="jxr_linenumber" name="L92" href="#L92">92</a>          <strong class="jxr_keyword">return</strong>;
+<a class="jxr_linenumber" name="L93" href="#L93">93</a>        } <em class="jxr_comment">// else continue</em>
+<a class="jxr_linenumber" name="L94" href="#L94">94</a>      }
+<a class="jxr_linenumber" name="L95" href="#L95">95</a>  
+<a class="jxr_linenumber" name="L96" href="#L96">96</a>      <strong class="jxr_keyword">final</strong> PrepareCommandExec prepareCommandExec =
+<a class="jxr_linenumber" name="L97" href="#L97">97</a>          <strong class="jxr_keyword">new</strong> PrepareCommandExec(finalname, false, waitForValidation).invoke();
+<a class="jxr_linenumber" name="L98" href="#L98">98</a>      <strong class="jxr_keyword">if</strong> (prepareCommandExec.isError()) {
+<a class="jxr_linenumber" name="L99" href="#L99">99</a>        <strong class="jxr_keyword">return</strong>;
+<a class="jxr_linenumber" name="L100" href="#L100">100</a>     }
+<a class="jxr_linenumber" name="L101" href="#L101">101</a>     <strong class="jxr_keyword">final</strong> CommandLine commandLine = prepareCommandExec.getCommandLine();
+<a class="jxr_linenumber" name="L102" href="#L102">102</a>     <strong class="jxr_keyword">final</strong> DefaultExecutor defaultExecutor =
+<a class="jxr_linenumber" name="L103" href="#L103">103</a>         prepareCommandExec.getDefaultExecutor();
+<a class="jxr_linenumber" name="L104" href="#L104">104</a>     <strong class="jxr_keyword">final</strong> PipedInputStream inputStream = prepareCommandExec.getInputStream();
+<a class="jxr_linenumber" name="L105" href="#L105">105</a>     <strong class="jxr_keyword">final</strong> PipedOutputStream outputStream = prepareCommandExec.getOutputStream();
+<a class="jxr_linenumber" name="L106" href="#L106">106</a>     <strong class="jxr_keyword">final</strong> PumpStreamHandler pumpStreamHandler =
+<a class="jxr_linenumber" name="L107" href="#L107">107</a>         prepareCommandExec.getPumpStreamHandler();
+<a class="jxr_linenumber" name="L108" href="#L108">108</a>     <strong class="jxr_keyword">final</strong> ExecuteWatchdog watchdog = prepareCommandExec.getWatchdog();
+<a class="jxr_linenumber" name="L109" href="#L109">109</a>     <strong class="jxr_keyword">final</strong> <a name="LastLineReader" href="../../../../../org/waarp/openr66/context/t<a name="LastLineReader" href="../../../../../org/waarp/openr66/context/task/LastLineReader.html#LastLineReader">LastLineReader</a>ader.html#LastLineReader">LastLineReader</a> lastLineReader = <strong class="jxr_keyword">new</strong> <a name="LastLineReader" href="../../../../../org/waarp/openr66/context/task/LastLineReader.html#LastLineReader">LastLineReader</a>(inputStream);
+<a class="jxr_linenumber" name="L110" href="#L110">110</a>     lastLineReader
+<a class="jxr_linenumber" name="L111" href="#L111">111</a>         .setName(<span class="jxr_string">"LastLineReader"</span> + session.getRunner().getSpecialId());
+<a class="jxr_linenumber" name="L112" href="#L112">112</a>     lastLineReader.setDaemon(<strong class="jxr_keyword">true</strong>);
+<a class="jxr_linenumber" name="L113" href="#L113">113</a>     Configuration.configuration.getExecutorService().execute(lastLineReader);
+<a class="jxr_linenumber" name="L114" href="#L114">114</a>     <strong class="jxr_keyword">final</strong> ExecuteCommand executeCommand =
+<a class="jxr_linenumber" name="L115" href="#L115">115</a>         <strong class="jxr_keyword">new</strong> ExecuteCommand(commandLine, defaultExecutor, inputStream,
+<a class="jxr_linenumber" name="L116" href="#L116">116</a>                            outputStream, pumpStreamHandler, lastLineReader)
+<a class="jxr_linenumber" name="L117" href="#L117">117</a>             .invoke();
+<a class="jxr_linenumber" name="L118" href="#L118">118</a>     <strong class="jxr_keyword">if</strong> (executeCommand.isError()) {
+<a class="jxr_linenumber" name="L119" href="#L119">119</a>       <strong class="jxr_keyword">return</strong>;
+<a class="jxr_linenumber" name="L120" href="#L120">120</a>     }
+<a class="jxr_linenumber" name="L121" href="#L121">121</a>     <strong class="jxr_keyword">int</strong> status = executeCommand.getStatus();
+<a class="jxr_linenumber" name="L122" href="#L122">122</a>     <strong class="jxr_keyword">final</strong> String newname;
+<a class="jxr_linenumber" name="L123" href="#L123">123</a>     <strong class="jxr_keyword">if</strong> (defaultExecutor.isFailure(status) &amp;&amp; watchdog != <strong class="jxr_keyword">null</strong> &amp;&amp;
+<a class="jxr_linenumber" name="L124" href="#L124">124</a>         watchdog.killedProcess()) {
+<a class="jxr_linenumber" name="L125" href="#L125">125</a>       <em class="jxr_comment">// kill by the watchdoc (time out)</em>
+<a class="jxr_linenumber" name="L126" href="#L126">126</a>       status = -1;
+<a class="jxr_linenumber" name="L127" href="#L127">127</a>       newname = <span class="jxr_string">"TimeOut"</span>;
+<a class="jxr_linenumber" name="L128" href="#L128">128</a>     } <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="L129" href="#L129">129</a>       newname = lastLineReader.getLastLine();
+<a class="jxr_linenumber" name="L130" href="#L130">130</a>       <strong class="jxr_keyword">if</strong> (status == 0 &amp;&amp; (newname == <strong class="jxr_keyword">null</strong> || newname.isEmpty())) {
+<a class="jxr_linenumber" name="L131" href="#L131">131</a>         status = 1;
+<a class="jxr_linenumber" name="L132" href="#L132">132</a>       }
+<a class="jxr_linenumber" name="L133" href="#L133">133</a>     }
+<a class="jxr_linenumber" name="L134" href="#L134">134</a>     move(status, newname, commandLine.toString());
+<a class="jxr_linenumber" name="L135" href="#L135">135</a>   }
+<a class="jxr_linenumber" name="L136" href="#L136">136</a> 
+<a class="jxr_linenumber" name="L137" href="#L137">137</a>   <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">void</strong> move(<strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong> status, <strong class="jxr_keyword">final</strong> String newName,
+<a class="jxr_linenumber" name="L138" href="#L138">138</a>                     <strong class="jxr_keyword">final</strong> String commandLine) {
+<a class="jxr_linenumber" name="L139" href="#L139">139</a>     <strong class="jxr_keyword">if</strong> (newName == <strong class="jxr_keyword">null</strong>) {
+<a class="jxr_linenumber" name="L140" href="#L140">140</a>       logger.error(<span class="jxr_string">"Status: "</span> + status + <span class="jxr_string">" Exec in error with "</span> + commandLine +
+<a class="jxr_linenumber" name="L141" href="#L141">141</a>                    <span class="jxr_string">" returns no line"</span>);
+<a class="jxr_linenumber" name="L142" href="#L142">142</a>       futureCompletion.cancel();
+<a class="jxr_linenumber" name="L143" href="#L143">143</a>       <strong class="jxr_keyword">return</strong>;
+<a class="jxr_linenumber" name="L144" href="#L144">144</a>     }
+<a class="jxr_linenumber" name="L145" href="#L145">145</a>     <strong class="jxr_keyword">final</strong> String newname = newName.replace('&#92;&#92;', '/');
+<a class="jxr_linenumber" name="L146" href="#L146">146</a>     <strong class="jxr_keyword">if</strong> (status == 0) {
+<a class="jxr_linenumber" name="L147" href="#L147">147</a>       <strong class="jxr_keyword">if</strong> (newname.indexOf(' ') &gt; 0) {
+<a class="jxr_linenumber" name="L148" href="#L148">148</a>         logger.warn(<span class="jxr_string">"Exec returns a multiple string in final line: "</span> + newname);
+<a class="jxr_linenumber" name="L149" href="#L149">149</a>         <em class="jxr_comment">// XXX FIXME: should not split String[] args = newname.split(" ")</em>
+<a class="jxr_linenumber" name="L150" href="#L150">150</a>         <em class="jxr_comment">// newname = args[args.length - 1]</em>
+<a class="jxr_linenumber" name="L151" href="#L151">151</a>       }
+<a class="jxr_linenumber" name="L152" href="#L152">152</a>       <em class="jxr_comment">// now test if the previous file was deleted (should be)</em>
+<a class="jxr_linenumber" name="L153" href="#L153">153</a>       <strong class="jxr_keyword">final</strong> File file = <strong class="jxr_keyword">new</strong> File(newname);
+<a class="jxr_linenumber" name="L154" href="#L154">154</a>       <strong class="jxr_keyword">if</strong> (!file.exists()) {
+<a class="jxr_linenumber" name="L155" href="#L155">155</a>         logger
+<a class="jxr_linenumber" name="L156" href="#L156">156</a>             .warn(<span class="jxr_string">"New file does not exist at the end of the exec: "</span> + newname);
+<a class="jxr_linenumber" name="L157" href="#L157">157</a>       }
+<a class="jxr_linenumber" name="L158" href="#L158">158</a>       <em class="jxr_comment">// now replace the file with the new one</em>
+<a class="jxr_linenumber" name="L159" href="#L159">159</a>       <strong class="jxr_keyword">try</strong> {
+<a class="jxr_linenumber" name="L160" href="#L160">160</a>         session.getFile().replaceFilename(newname, <strong class="jxr_keyword">true</strong>);
+<a class="jxr_linenumber" name="L161" href="#L161">161</a>       } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> <a name="CommandAbstractException" href="../../../../../org/waarp/common/command/exception/CommandAbstractException.html#CommandAbstractException">CommandAbstractException</a> e) {
+<a class="jxr_linenumber" name="L162" href="#L162">162</a>         logger.warn(<span class="jxr_string">"Exec in warning with "</span> + commandLine, e);
+<a class="jxr_linenumber" name="L163" href="#L163">163</a>       }
+<a class="jxr_linenumber" name="L164" href="#L164">164</a>       session.getRunner().setFileMoved(newname, <strong class="jxr_keyword">true</strong>);
+<a class="jxr_linenumber" name="L165" href="#L165">165</a>       <strong class="jxr_keyword">final</strong> <a name="R66Result" href="../../../../../org/waarp/openr66/context/R66Result.html#R66Result">R66Result</a> result =
+<a class="jxr_linenumber" name="L166" href="#L166">166</a>           <strong class="jxr_keyword">new</strong> <a name="R66Result" href="../../../../../org/waarp/openr66/context/R66Result.html#R66Result">R66Result</a>(session, <strong class="jxr_keyword">true</strong>, ErrorCode.CompleteOk,
+<a class="jxr_linenumber" name="L167" href="#L167">167</a>                         session.getRunner());
+<a class="jxr_linenumber" name="L168" href="#L168">168</a>       result.setOther(newname);
+<a class="jxr_linenumber" name="L169" href="#L169">169</a>       futureCompletion.setResult(result);
+<a class="jxr_linenumber" name="L170" href="#L170">170</a>       futureCompletion.setSuccess();
+<a class="jxr_linenumber" name="L171" href="#L171">171</a>       logger.info(<span class="jxr_string">"Exec OK with {} returns {}"</span>, commandLine, newname);
+<a class="jxr_linenumber" name="L172" href="#L172">172</a>     } <strong class="jxr_keyword">else</strong> <strong class="jxr_keyword">if</strong> (status == 1) {
+<a class="jxr_linenumber" name="L173" href="#L173">173</a>       logger
+<a class="jxr_linenumber" name="L174" href="#L174">174</a>           .warn(<span class="jxr_string">"Exec in warning with "</span> + commandLine + <span class="jxr_string">" returns "</span> + newname);
+<a class="jxr_linenumber" name="L175" href="#L175">175</a>       session.getRunner().setErrorExecutionStatus(ErrorCode.Warning);
+<a class="jxr_linenumber" name="L176" href="#L176">176</a>       <strong class="jxr_keyword">final</strong> <a name="R66Result" href="../../../../../org/waarp/openr66/context/R66Result.html#R66Result">R66Result</a> result =
+<a class="jxr_linenumber" name="L177" href="#L177">177</a>           <strong class="jxr_keyword">new</strong> <a name="R66Result" href="../../../../../org/waarp/openr66/context/R66Result.html#R66Result">R66Result</a>(session, <strong class="jxr_keyword">true</strong>, ErrorCode.Warning, session.getRunner());
+<a class="jxr_linenumber" name="L178" href="#L178">178</a>       result.setOther(newname);
+<a class="jxr_linenumber" name="L179" href="#L179">179</a>       futureCompletion.setResult(result);
+<a class="jxr_linenumber" name="L180" href="#L180">180</a>       futureCompletion.setSuccess();
+<a class="jxr_linenumber" name="L181" href="#L181">181</a>     } <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="L182" href="#L182">182</a>       logger.error(<span class="jxr_string">"Status: "</span> + status + <span class="jxr_string">" Exec in error with "</span> + commandLine +
+<a class="jxr_linenumber" name="L183" href="#L183">183</a>                    <span class="jxr_string">" returns "</span> + newname);
+<a class="jxr_linenumber" name="L184" href="#L184">184</a>       futureCompletion.cancel();
+<a class="jxr_linenumber" name="L185" href="#L185">185</a>     }
+<a class="jxr_linenumber" name="L186" href="#L186">186</a>   }
+<a class="jxr_linenumber" name="L187" href="#L187">187</a> }
 </pre>
 <hr/>
 <div id="footer">Copyright &#169; 2009&#x2013;2020 <a href="http://www.waarp.fr">Waarp</a>. All rights reserved.</div>

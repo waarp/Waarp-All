@@ -123,38 +123,37 @@ public class EndTransferPacket extends AbstractLocalPacket {
 
   @Override
   public void createAllBuffers(final LocalChannelReference lcr,
-                               final int networkHeader)
-      throws OpenR66ProtocolPacketException {
-<span class="fc" id="L128">    final int headerSize = 1;</span>
-<span class="fc" id="L129">    final int middleSize = 1;</span>
-<span class="pc bpc" id="L130" title="1 of 2 branches missed.">    final byte[] endBytes =</span>
-<span class="pc" id="L131">        hashOptional != null? hashOptional.getBytes(WaarpStringUtils.UTF8) :</span>
+                               final int networkHeader) {
+<span class="fc" id="L127">    final int headerSize = 1;</span>
+<span class="fc" id="L128">    final int middleSize = 1;</span>
+<span class="pc bpc" id="L129" title="1 of 2 branches missed.">    final byte[] endBytes =</span>
+<span class="pc" id="L130">        hashOptional != null? hashOptional.getBytes(WaarpStringUtils.UTF8) :</span>
             EMPTY_ARRAY;
-<span class="fc" id="L133">    final int endSize = endBytes.length;</span>
-<span class="fc" id="L134">    final int globalSize =</span>
+<span class="fc" id="L132">    final int endSize = endBytes.length;</span>
+<span class="fc" id="L133">    final int globalSize =</span>
         networkHeader + LOCAL_HEADER_SIZE + headerSize + middleSize + endSize;
-<span class="fc" id="L136">    int offset = networkHeader + LOCAL_HEADER_SIZE;</span>
-<span class="fc" id="L137">    global = ByteBufAllocator.DEFAULT.buffer(globalSize, globalSize);</span>
-<span class="fc" id="L138">    header = WaarpNettyUtil.slice(global, offset, headerSize);</span>
-<span class="fc" id="L139">    header.writeByte(request);</span>
-<span class="fc" id="L140">    offset += headerSize;</span>
-<span class="fc" id="L141">    middle = WaarpNettyUtil.slice(global, offset, middleSize);</span>
-<span class="fc" id="L142">    middle.writeByte(way);</span>
-<span class="fc" id="L143">    offset += middleSize;</span>
-<span class="fc" id="L144">    end = WaarpNettyUtil.slice(global, offset, endSize);</span>
-<span class="pc bpc" id="L145" title="1 of 2 branches missed.">    if (hashOptional != null) {</span>
-<span class="fc" id="L146">      end.writeBytes(endBytes);</span>
+<span class="fc" id="L135">    int offset = networkHeader + LOCAL_HEADER_SIZE;</span>
+<span class="fc" id="L136">    global = ByteBufAllocator.DEFAULT.buffer(globalSize, globalSize);</span>
+<span class="fc" id="L137">    header = WaarpNettyUtil.slice(global, offset, headerSize);</span>
+<span class="fc" id="L138">    header.writeByte(request);</span>
+<span class="fc" id="L139">    offset += headerSize;</span>
+<span class="fc" id="L140">    middle = WaarpNettyUtil.slice(global, offset, middleSize);</span>
+<span class="fc" id="L141">    middle.writeByte(way);</span>
+<span class="fc" id="L142">    offset += middleSize;</span>
+<span class="fc" id="L143">    end = WaarpNettyUtil.slice(global, offset, endSize);</span>
+<span class="pc bpc" id="L144" title="1 of 2 branches missed.">    if (hashOptional != null) {</span>
+<span class="fc" id="L145">      end.writeBytes(endBytes);</span>
     }
-<span class="fc" id="L148">  }</span>
+<span class="fc" id="L147">  }</span>
 
   @Override
   public byte getType() {
-<span class="fc" id="L152">    return LocalPacketFactory.ENDTRANSFERPACKET;</span>
+<span class="fc" id="L151">    return LocalPacketFactory.ENDTRANSFERPACKET;</span>
   }
 
   @Override
   public String toString() {
-<span class="nc bnc" id="L157" title="All 2 branches missed.">    return &quot;EndTransferPacket: &quot; + request + ' ' + way +</span>
+<span class="nc bnc" id="L156" title="All 2 branches missed.">    return &quot;EndTransferPacket: &quot; + request + ' ' + way +</span>
            (hashOptional != null? ' ' + hashOptional : &quot;&quot;);
   }
 
@@ -162,36 +161,36 @@ public class EndTransferPacket extends AbstractLocalPacket {
    * @return the requestId
    */
   public byte getRequest() {
-<span class="nc" id="L165">    return request;</span>
+<span class="nc" id="L164">    return request;</span>
   }
 
   /**
    * @return True if this packet is to be validated
    */
   public boolean isToValidate() {
-<span class="fc bfc" id="L172" title="All 2 branches covered.">    return way == ASKVALIDATE;</span>
+<span class="fc bfc" id="L171" title="All 2 branches covered.">    return way == ASKVALIDATE;</span>
   }
 
   /**
    * Validate the connection
    */
   public void validate() {
-<span class="fc" id="L179">    way = ANSWERVALIDATE;</span>
-<span class="fc" id="L180">    clear();</span>
-<span class="fc" id="L181">  }</span>
+<span class="fc" id="L178">    way = ANSWERVALIDATE;</span>
+<span class="fc" id="L179">    clear();</span>
+<span class="fc" id="L180">  }</span>
 
   /**
    * @return the optional
    */
   public String getOptional() {
-<span class="fc" id="L187">    return hashOptional;</span>
+<span class="fc" id="L186">    return hashOptional;</span>
   }
 
   /**
    * @param optional the optional to set
    */
   public void setOptional(final String optional) {
-<span class="nc" id="L194">    hashOptional = optional;</span>
-<span class="nc" id="L195">  }</span>
+<span class="nc" id="L193">    hashOptional = optional;</span>
+<span class="nc" id="L194">  }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

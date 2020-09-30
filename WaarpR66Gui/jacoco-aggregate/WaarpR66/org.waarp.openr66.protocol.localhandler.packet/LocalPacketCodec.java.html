@@ -22,8 +22,6 @@ package org.waarp.openr66.protocol.localhandler.packet;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageCodec;
-import org.waarp.common.logging.WaarpLogger;
-import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
 
 import java.util.List;
@@ -31,66 +29,58 @@ import java.util.List;
 /**
  * Local Packet Decoder
  */
-<span class="nc" id="L34">public class LocalPacketCodec extends ByteToMessageCodec&lt;AbstractLocalPacket&gt; {</span>
-  /**
-   * Internal Logger
-   */
-<span class="fc" id="L38">  private static final WaarpLogger logger =</span>
-<span class="fc" id="L39">      WaarpLoggerFactory.getLogger(LocalPacketCodec.class);</span>
+<span class="nc" id="L32">public class LocalPacketCodec extends ByteToMessageCodec&lt;AbstractLocalPacket&gt; {</span>
 
   @Override
   protected void decode(final ChannelHandlerContext ctx, final ByteBuf buf,
                         final List&lt;Object&gt; out) throws Exception {
     // Make sure if the length field was received.
-<span class="nc bnc" id="L45" title="All 2 branches missed.">    if (buf.readableBytes() &lt; 4) {</span>
+<span class="nc bnc" id="L38" title="All 2 branches missed.">    if (buf.readableBytes() &lt; 4) {</span>
       // The length field was not received yet - return null.
       // This method will be invoked again when more packets are
       // received and appended to the buffer.
-<span class="nc" id="L49">      return;</span>
+<span class="nc" id="L42">      return;</span>
     }
-<span class="nc" id="L51">    final AbstractLocalPacket newbuf = decodeNetworkPacket(buf);</span>
-<span class="nc bnc" id="L52" title="All 2 branches missed.">    if (newbuf != null) {</span>
-<span class="nc" id="L53">      out.add(newbuf);</span>
+<span class="nc" id="L44">    final AbstractLocalPacket newbuf = decodeNetworkPacket(buf);</span>
+<span class="nc bnc" id="L45" title="All 2 branches missed.">    if (newbuf != null) {</span>
+<span class="nc" id="L46">      out.add(newbuf);</span>
     }
-<span class="nc" id="L55">  }</span>
+<span class="nc" id="L48">  }</span>
 
   public static AbstractLocalPacket decodeNetworkPacket(final ByteBuf buf)
       throws OpenR66ProtocolPacketException {
     // Mark the current buffer position
-<span class="fc" id="L60">    buf.markReaderIndex();</span>
+<span class="fc" id="L53">    buf.markReaderIndex();</span>
     // Read the length field
-<span class="fc" id="L62">    final int length = buf.readInt();</span>
-<span class="pc bpc" id="L63" title="1 of 2 branches missed.">    if (buf.readableBytes() &lt; length) {</span>
-<span class="nc" id="L64">      buf.resetReaderIndex();</span>
-<span class="nc" id="L65">      return null;</span>
+<span class="fc" id="L55">    final int length = buf.readInt();</span>
+<span class="pc bpc" id="L56" title="1 of 2 branches missed.">    if (buf.readableBytes() &lt; length) {</span>
+<span class="nc" id="L57">      buf.resetReaderIndex();</span>
+<span class="nc" id="L58">      return null;</span>
     }
     // Now we can read the header
     // Header: Header length field (4 bytes) = Middle length field (4
     // bytes), End length field (4 bytes), type field (1 byte), ...
-<span class="fc" id="L70">    final int middleLength = buf.readInt();</span>
-<span class="fc" id="L71">    final int endLength = buf.readInt();</span>
+<span class="fc" id="L63">    final int middleLength = buf.readInt();</span>
+<span class="fc" id="L64">    final int endLength = buf.readInt();</span>
     // check if the packet is complete
-<span class="pc bpc" id="L73" title="1 of 2 branches missed.">    if (middleLength + endLength + length - 8 &gt; buf.readableBytes()) {</span>
-<span class="nc" id="L74">      buf.resetReaderIndex();</span>
-<span class="nc" id="L75">      return null;</span>
+<span class="pc bpc" id="L66" title="1 of 2 branches missed.">    if (middleLength + endLength + length - 8 &gt; buf.readableBytes()) {</span>
+<span class="nc" id="L67">      buf.resetReaderIndex();</span>
+<span class="nc" id="L68">      return null;</span>
     }
     // createPacketFromByteBuf read the buffer
-<span class="fc" id="L78">    final AbstractLocalPacket rv = LocalPacketFactory</span>
-<span class="fc" id="L79">        .createPacketFromByteBuf(length - 8, middleLength, endLength, buf);</span>
-<span class="fc" id="L80">    logger.trace(&quot;received local packet {}&quot;, rv.getType());</span>
-<span class="fc" id="L81">    return rv;</span>
+<span class="fc" id="L71">    return LocalPacketFactory</span>
+<span class="fc" id="L72">        .createPacketFromByteBuf(length - 8, middleLength, endLength, buf);</span>
   }
 
   @Override
   protected void encode(final ChannelHandlerContext ctx,
                         final AbstractLocalPacket msg, final ByteBuf out)
       throws Exception {
-<span class="nc" id="L88">    logger.trace(&quot;sending local packet {}&quot;, msg.getType());</span>
-<span class="nc" id="L89">    final ByteBuf buf = msg.getLocalPacket(null);</span>
-<span class="nc" id="L90">    out.writeBytes(buf);</span>
-<span class="nc" id="L91">    buf.release();</span>
-<span class="nc" id="L92">    msg.clear();</span>
-<span class="nc" id="L93">  }</span>
+<span class="nc" id="L79">    final ByteBuf buf = msg.getLocalPacket(null);</span>
+<span class="nc" id="L80">    out.writeBytes(buf);</span>
+<span class="nc" id="L81">    buf.release();</span>
+<span class="nc" id="L82">    msg.clear();</span>
+<span class="nc" id="L83">  }</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

@@ -200,59 +200,53 @@ public abstract class SendThroughClient extends AbstractTransfer {
 <span class="nc" id="L200">          localChannelReference = runner.initRequest();</span>
 <span class="nc" id="L201">          exc = null;</span>
 <span class="nc" id="L202">          break;</span>
-<span class="nc" id="L203">        } catch (final OpenR66RunnerErrorException e) {</span>
-<span class="nc" id="L204">          logger.error(&quot;Cannot Transfer&quot;, e);</span>
+<span class="nc" id="L203">        } catch (final OpenR66ProtocolNoConnectionException e) {</span>
+<span class="nc" id="L204">          logger.error(&quot;Cannot Connect&quot;, e);</span>
 <span class="nc" id="L205">          future.setResult(</span>
-              new R66Result(e, null, true, ErrorCode.Internal, taskRunner));
-<span class="nc" id="L207">          future.setFailure(e);</span>
-<span class="nc" id="L208">          return false;</span>
-<span class="nc" id="L209">        } catch (final OpenR66ProtocolNoConnectionException e) {</span>
-<span class="nc" id="L210">          logger.error(&quot;Cannot Connect&quot;, e);</span>
-<span class="nc" id="L211">          future.setResult(</span>
               new R66Result(e, null, true, ErrorCode.ConnectionImpossible,
                             taskRunner));
-<span class="nc" id="L214">          finalizeInErrorTransferRequest(runner, taskRunner,</span>
+<span class="nc" id="L208">          finalizeInErrorTransferRequest(runner, taskRunner,</span>
                                          ErrorCode.ConnectionImpossible);
+<span class="nc" id="L210">          future.setFailure(e);</span>
+<span class="nc" id="L211">          return false;</span>
+<span class="nc" id="L212">        } catch (final OpenR66ProtocolPacketException e) {</span>
+<span class="nc" id="L213">          logger.error(&quot;Bad Protocol&quot;, e);</span>
+<span class="nc" id="L214">          future.setResult(new R66Result(e, null, true, ErrorCode.TransferError,</span>
+                                         taskRunner));
 <span class="nc" id="L216">          future.setFailure(e);</span>
 <span class="nc" id="L217">          return false;</span>
-<span class="nc" id="L218">        } catch (final OpenR66ProtocolPacketException e) {</span>
-<span class="nc" id="L219">          logger.error(&quot;Bad Protocol&quot;, e);</span>
-<span class="nc" id="L220">          future.setResult(new R66Result(e, null, true, ErrorCode.TransferError,</span>
-                                         taskRunner));
-<span class="nc" id="L222">          future.setFailure(e);</span>
-<span class="nc" id="L223">          return false;</span>
-<span class="nc" id="L224">        } catch (final OpenR66ProtocolNotYetConnectionException e) {</span>
-<span class="nc" id="L225">          logger.debug(&quot;Not Yet Connected&quot;, e);</span>
-<span class="nc" id="L226">          exc = e;</span>
+<span class="nc" id="L218">        } catch (final OpenR66ProtocolNotYetConnectionException e) {</span>
+<span class="nc" id="L219">          logger.debug(&quot;Not Yet Connected&quot;, e);</span>
+<span class="nc" id="L220">          exc = e;</span>
         }
       }
-<span class="nc bnc" id="L229" title="All 2 branches missed.">      if (exc != null) {</span>
-<span class="nc" id="L230">        taskRunner.setLocalChannelReference(new LocalChannelReference());</span>
-<span class="nc" id="L231">        logger.error(&quot;Cannot Connect&quot;, exc);</span>
-<span class="nc" id="L232">        future.setResult(</span>
+<span class="nc bnc" id="L223" title="All 2 branches missed.">      if (exc != null) {</span>
+<span class="nc" id="L224">        taskRunner.setLocalChannelReference(new LocalChannelReference());</span>
+<span class="nc" id="L225">        logger.error(&quot;Cannot Connect&quot;, exc);</span>
+<span class="nc" id="L226">        future.setResult(</span>
             new R66Result(exc, null, true, ErrorCode.ConnectionImpossible,
                           taskRunner));
-<span class="nc" id="L235">        future.setFailure(exc);</span>
-<span class="nc" id="L236">        return false;</span>
+<span class="nc" id="L229">        future.setFailure(exc);</span>
+<span class="nc" id="L230">        return false;</span>
       }
       try {
-<span class="nc" id="L239">        localChannelReference.waitReadyForSendThrough();</span>
-<span class="nc" id="L240">      } catch (final OpenR66Exception e) {</span>
-<span class="nc" id="L241">        logger.error(&quot;Cannot Transfer&quot;, e);</span>
-<span class="nc" id="L242">        future.setResult(</span>
+<span class="nc" id="L233">        localChannelReference.waitReadyForSendThrough();</span>
+<span class="nc" id="L234">      } catch (final OpenR66Exception e) {</span>
+<span class="nc" id="L235">        logger.error(&quot;Cannot Transfer&quot;, e);</span>
+<span class="nc" id="L236">        future.setResult(</span>
             new R66Result(e, null, true, ErrorCode.Internal, taskRunner));
-<span class="nc" id="L244">        future.setFailure(e);</span>
-<span class="nc" id="L245">        return false;</span>
-<span class="nc" id="L246">      }</span>
+<span class="nc" id="L238">        future.setFailure(e);</span>
+<span class="nc" id="L239">        return false;</span>
+<span class="nc" id="L240">      }</span>
       // now start the send from external data
-<span class="nc" id="L248">      return true;</span>
+<span class="nc" id="L242">      return true;</span>
     } finally {
-<span class="nc bnc" id="L250" title="All 6 branches missed.">      if (taskRunner != null &amp;&amp; (future.isFailed() || nolog)) {</span>
+<span class="nc bnc" id="L244" title="All 6 branches missed.">      if (taskRunner != null &amp;&amp; (future.isFailed() || nolog)) {</span>
         try {
-<span class="nc" id="L252">          taskRunner.delete();</span>
-<span class="nc" id="L253">        } catch (final WaarpDatabaseException ignored) {</span>
+<span class="nc" id="L246">          taskRunner.delete();</span>
+<span class="nc" id="L247">        } catch (final WaarpDatabaseException ignored) {</span>
           // nothing
-<span class="nc" id="L255">        }</span>
+<span class="nc" id="L249">        }</span>
       }
     }
   }
@@ -263,70 +257,70 @@ public abstract class SendThroughClient extends AbstractTransfer {
   public void finalizeRequest() {
     try {
       try {
-<span class="nc" id="L266">        ChannelUtils.writeEndTransfer(localChannelReference);</span>
-<span class="nc" id="L267">      } catch (final OpenR66ProtocolPacketException e) {</span>
+<span class="nc" id="L260">        ChannelUtils.writeEndTransfer(localChannelReference);</span>
+<span class="nc" id="L261">      } catch (final OpenR66ProtocolPacketException e) {</span>
         // An error occurs!
         try {
-<span class="nc" id="L270">          localChannelReference.getSession().setFinalizeTransfer(false,</span>
+<span class="nc" id="L264">          localChannelReference.getSession().setFinalizeTransfer(false,</span>
                                                                  new R66Result(
                                                                      e,
                                                                      localChannelReference
-<span class="nc" id="L274">                                                                         .getSession(),</span>
+<span class="nc" id="L268">                                                                         .getSession(),</span>
                                                                      false,
                                                                      ErrorCode.Internal,
                                                                      taskRunner));
-<span class="nc" id="L278">        } catch (final OpenR66RunnerErrorException e1) {</span>
-<span class="nc" id="L279">          transferInError(e1);</span>
-<span class="nc" id="L280">          return;</span>
-<span class="nc" id="L281">        } catch (final OpenR66ProtocolSystemException e1) {</span>
-<span class="nc" id="L282">          transferInError(e1);</span>
-<span class="nc" id="L283">          return;</span>
-<span class="nc" id="L284">        }</span>
-<span class="nc" id="L285">      }</span>
-<span class="nc" id="L286">      localChannelReference.getFutureEndTransfer().awaitOrInterruptible();</span>
-<span class="nc" id="L287">      logger.debug(&quot;Await future End Transfer done: &quot; +</span>
-<span class="nc" id="L288">                   localChannelReference.getFutureEndTransfer().isSuccess());</span>
-<span class="nc bnc" id="L289" title="All 2 branches missed.">      if (localChannelReference.getFutureEndTransfer().isSuccess()) {</span>
+<span class="nc" id="L272">        } catch (final OpenR66RunnerErrorException e1) {</span>
+<span class="nc" id="L273">          transferInError(e1);</span>
+<span class="nc" id="L274">          return;</span>
+<span class="nc" id="L275">        } catch (final OpenR66ProtocolSystemException e1) {</span>
+<span class="nc" id="L276">          transferInError(e1);</span>
+<span class="nc" id="L277">          return;</span>
+<span class="nc" id="L278">        }</span>
+<span class="nc" id="L279">      }</span>
+<span class="nc" id="L280">      localChannelReference.getFutureEndTransfer().awaitOrInterruptible();</span>
+<span class="nc" id="L281">      logger.debug(&quot;Await future End Transfer done: {}&quot;,</span>
+<span class="nc" id="L282">                   localChannelReference.getFutureEndTransfer().isSuccess());</span>
+<span class="nc bnc" id="L283" title="All 2 branches missed.">      if (localChannelReference.getFutureEndTransfer().isSuccess()) {</span>
         // send a validation
-<span class="nc" id="L291">        localChannelReference.sessionNewState(R66FiniteDualStates.ENDREQUESTS);</span>
-<span class="nc" id="L292">        final EndRequestPacket validPacket =</span>
-<span class="nc" id="L293">            new EndRequestPacket(ErrorCode.CompleteOk.ordinal());</span>
-<span class="nc" id="L294">        final R66Session session = localChannelReference.getSession();</span>
-<span class="nc bnc" id="L295" title="All 4 branches missed.">        if (session != null &amp;&amp; session.getExtendedProtocol() &amp;&amp;</span>
-<span class="nc bnc" id="L296" title="All 2 branches missed.">            session.getBusinessObject() != null &amp;&amp;</span>
-<span class="nc bnc" id="L297" title="All 2 branches missed.">            session.getBusinessObject().getInfo(session) != null) {</span>
-<span class="nc" id="L298">          validPacket.setOptional(session.getBusinessObject().getInfo(session));</span>
+<span class="nc" id="L285">        localChannelReference.sessionNewState(R66FiniteDualStates.ENDREQUESTS);</span>
+<span class="nc" id="L286">        final EndRequestPacket validPacket =</span>
+<span class="nc" id="L287">            new EndRequestPacket(ErrorCode.CompleteOk.ordinal());</span>
+<span class="nc" id="L288">        final R66Session session = localChannelReference.getSession();</span>
+<span class="nc bnc" id="L289" title="All 4 branches missed.">        if (session != null &amp;&amp; session.getExtendedProtocol() &amp;&amp;</span>
+<span class="nc bnc" id="L290" title="All 2 branches missed.">            session.getBusinessObject() != null &amp;&amp;</span>
+<span class="nc bnc" id="L291" title="All 2 branches missed.">            session.getBusinessObject().getInfo(session) != null) {</span>
+<span class="nc" id="L292">          validPacket.setOptional(session.getBusinessObject().getInfo(session));</span>
         }
         try {
-<span class="nc" id="L301">          ChannelUtils</span>
-<span class="nc" id="L302">              .writeAbstractLocalPacket(localChannelReference, validPacket,</span>
+<span class="nc" id="L295">          ChannelUtils</span>
+<span class="nc" id="L296">              .writeAbstractLocalPacket(localChannelReference, validPacket,</span>
                                         true);
-<span class="nc" id="L304">        } catch (final OpenR66ProtocolPacketException ignored) {</span>
+<span class="nc" id="L298">        } catch (final OpenR66ProtocolPacketException ignored) {</span>
           // nothing
-<span class="nc" id="L306">        }</span>
-<span class="nc bnc" id="L307" title="All 2 branches missed.">        if (!localChannelReference.getFutureRequest().awaitOrInterruptible()) {</span>
+<span class="nc" id="L300">        }</span>
+<span class="nc bnc" id="L301" title="All 2 branches missed.">        if (!localChannelReference.getFutureRequest().awaitOrInterruptible()) {</span>
           // valid it however
-<span class="nc" id="L309">          localChannelReference.validateRequest(</span>
-<span class="nc" id="L310">              localChannelReference.getFutureEndTransfer().getResult());</span>
+<span class="nc" id="L303">          localChannelReference.validateRequest(</span>
+<span class="nc" id="L304">              localChannelReference.getFutureEndTransfer().getResult());</span>
         }
-<span class="nc bnc" id="L312" title="All 4 branches missed.">        if (taskRunner != null &amp;&amp; taskRunner.isSelfRequested()) {</span>
-<span class="nc" id="L313">          localChannelReference.close();</span>
+<span class="nc bnc" id="L306" title="All 4 branches missed.">        if (taskRunner != null &amp;&amp; taskRunner.isSelfRequested()) {</span>
+<span class="nc" id="L307">          localChannelReference.close();</span>
         }
-<span class="nc" id="L315">      } else {</span>
-<span class="nc" id="L316">        transferInError(null);</span>
+<span class="nc" id="L309">      } else {</span>
+<span class="nc" id="L310">        transferInError(null);</span>
       }
     } finally {
-<span class="nc bnc" id="L319" title="All 2 branches missed.">      if (taskRunner != null) {</span>
-<span class="nc bnc" id="L320" title="All 6 branches missed.">        if (future.isDone() &amp;&amp; !future.isSuccess() || nolog) {</span>
+<span class="nc bnc" id="L313" title="All 2 branches missed.">      if (taskRunner != null) {</span>
+<span class="nc bnc" id="L314" title="All 6 branches missed.">        if (future.isDone() &amp;&amp; !future.isSuccess() || nolog) {</span>
           try {
-<span class="nc" id="L322">            taskRunner.delete();</span>
-<span class="nc" id="L323">          } catch (final WaarpDatabaseException ignored) {</span>
+<span class="nc" id="L316">            taskRunner.delete();</span>
+<span class="nc" id="L317">          } catch (final WaarpDatabaseException ignored) {</span>
             // nothing
-<span class="nc" id="L325">          }</span>
+<span class="nc" id="L319">          }</span>
         }
       }
     }
-<span class="nc" id="L329">  }</span>
+<span class="nc" id="L323">  }</span>
 
   /**
    * To be used in case of error after a correct initiate of the request
@@ -334,27 +328,27 @@ public abstract class SendThroughClient extends AbstractTransfer {
    * @param e
    */
   public void transferInError(final OpenR66Exception e) {
-<span class="nc" id="L337">    if (!localChannelReference.getFutureEndTransfer().getResult()</span>
-<span class="nc bnc" id="L338" title="All 2 branches missed.">                              .isAnswered()) {</span>
-<span class="nc" id="L339">      final R66Result result =</span>
-<span class="nc" id="L340">          new R66Result(e, localChannelReference.getSession(), true,</span>
+<span class="nc" id="L331">    if (!localChannelReference.getFutureEndTransfer().getResult()</span>
+<span class="nc bnc" id="L332" title="All 2 branches missed.">                              .isAnswered()) {</span>
+<span class="nc" id="L333">      final R66Result result =</span>
+<span class="nc" id="L334">          new R66Result(e, localChannelReference.getSession(), true,</span>
                         ErrorCode.TransferError, taskRunner);
-<span class="nc" id="L342">      logger.error(&quot;Transfer in error&quot;, e);</span>
-<span class="nc" id="L343">      localChannelReference.sessionNewState(R66FiniteDualStates.ERROR);</span>
-<span class="nc" id="L344">      final ErrorPacket error = new ErrorPacket(&quot;Transfer in error&quot;,</span>
+<span class="nc" id="L336">      logger.error(&quot;Transfer in error&quot;, e);</span>
+<span class="nc" id="L337">      localChannelReference.sessionNewState(R66FiniteDualStates.ERROR);</span>
+<span class="nc" id="L338">      final ErrorPacket error = new ErrorPacket(&quot;Transfer in error&quot;,</span>
                                                 ErrorCode.TransferError
-<span class="nc" id="L346">                                                    .getCode(),</span>
+<span class="nc" id="L340">                                                    .getCode(),</span>
                                                 ErrorPacket.FORWARDCLOSECODE);
       try {
-<span class="nc" id="L349">        ChannelUtils</span>
-<span class="nc" id="L350">            .writeAbstractLocalPacket(localChannelReference, error, true);</span>
-<span class="nc" id="L351">      } catch (final OpenR66ProtocolPacketException ignored) {</span>
+<span class="nc" id="L343">        ChannelUtils</span>
+<span class="nc" id="L344">            .writeAbstractLocalPacket(localChannelReference, error, true);</span>
+<span class="nc" id="L345">      } catch (final OpenR66ProtocolPacketException ignored) {</span>
         // nothing
-<span class="nc" id="L353">      }</span>
-<span class="nc" id="L354">      localChannelReference.invalidateRequest(result);</span>
+<span class="nc" id="L347">      }</span>
+<span class="nc" id="L348">      localChannelReference.invalidateRequest(result);</span>
     }
-<span class="nc" id="L356">    localChannelReference.close();</span>
-<span class="nc" id="L357">  }</span>
+<span class="nc" id="L350">    localChannelReference.close();</span>
+<span class="nc" id="L351">  }</span>
 
   /**
    * Write the next block when the channel is ready to prevent OOM
@@ -363,14 +357,12 @@ public abstract class SendThroughClient extends AbstractTransfer {
    *
    * @return the ChannelFuture on the write operation
    *
-   * @throws OpenR66RunnerErrorException
    * @throws OpenR66ProtocolPacketException
-   * @throws OpenR66ProtocolSystemException
    */
   public ChannelFuture writeWhenPossible(final DataBlock block)
-      throws OpenR66RunnerErrorException, OpenR66ProtocolPacketException,
-             OpenR66ProtocolSystemException {
-<span class="nc" id="L373">    return RetrieveRunner.writeWhenPossible(block, localChannelReference, null);</span>
+      throws OpenR66ProtocolPacketException {
+<span class="nc" id="L364">    return RetrieveRunner</span>
+<span class="nc" id="L365">        .writeWhenPossible(block, localChannelReference, null, null);</span>
   }
 
   /**
@@ -381,14 +373,14 @@ public abstract class SendThroughClient extends AbstractTransfer {
    * @return the DataBlock associated to the data
    */
   public DataBlock transformToDataBlock(final byte[] data) {
-<span class="nc" id="L384">    final DataBlock block = new DataBlock();</span>
-<span class="nc bnc" id="L385" title="All 2 branches missed.">    if (data == null) {</span>
+<span class="nc" id="L376">    final DataBlock block = new DataBlock();</span>
+<span class="nc bnc" id="L377" title="All 2 branches missed.">    if (data == null) {</span>
       // last block
-<span class="nc" id="L387">      block.setEOF(true);</span>
+<span class="nc" id="L379">      block.setEOF(true);</span>
     } else {
-<span class="nc" id="L389">      block.setBlock(data);</span>
+<span class="nc" id="L381">      block.setBlock(data);</span>
     }
-<span class="nc" id="L391">    return block;</span>
+<span class="nc" id="L383">    return block;</span>
   }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

@@ -153,70 +153,71 @@ public class HttpSessionAbstract implements HttpSession {
 <span class="fc" id="L153">        runner.insert();</span>
 <span class="fc" id="L154">        runner = new DbTaskRunner(identifier, runner.getRequester(),</span>
 <span class="fc" id="L155">                                  runner.getRequested());</span>
-<span class="fc" id="L156">        logger.debug(&quot;{} {} {}&quot;, identifier, user, requested);</span>
-<span class="nc" id="L157">      } catch (final WaarpDatabaseException ex) {</span>
-<span class="nc" id="L158">        error(ex, business);</span>
-<span class="fc" id="L159">      }</span>
-<span class="nc" id="L160">    } catch (final WaarpDatabaseException e) {</span>
-<span class="nc" id="L161">      error(e, business);</span>
-<span class="nc" id="L162">      throw new IllegalArgumentException(e);</span>
-<span class="fc" id="L163">    }</span>
-<span class="fc" id="L164">    runner.setOriginalFilename(filename);</span>
-<span class="fc" id="L165">    runner.setFilename(filename);</span>
+<span class="fc bfc" id="L156" title="All 2 branches covered.">        runner.setSender(!uploadMode);</span>
+<span class="fc" id="L157">        logger.debug(&quot;{} {} {}&quot;, identifier, user, requested);</span>
+<span class="nc" id="L158">      } catch (final WaarpDatabaseException ex) {</span>
+<span class="nc" id="L159">        error(ex, business);</span>
+<span class="fc" id="L160">      }</span>
+<span class="nc" id="L161">    } catch (final WaarpDatabaseException e) {</span>
+<span class="nc" id="L162">      error(e, business);</span>
+<span class="nc" id="L163">      throw new IllegalArgumentException(e);</span>
+<span class="fc" id="L164">    }</span>
+<span class="fc" id="L165">    runner.setOriginalFilename(filename);</span>
+<span class="fc" id="L166">    runner.setFilename(filename);</span>
     try {
-<span class="pc bpc" id="L167" title="1 of 2 branches missed.">      if (runner.restart(false)) {</span>
-<span class="fc" id="L168">        runner.saveStatus();</span>
+<span class="pc bpc" id="L168" title="1 of 2 branches missed.">      if (runner.restart(false)) {</span>
+<span class="fc" id="L169">        runner.saveStatus();</span>
       }
-<span class="nc" id="L170">    } catch (final OpenR66RunnerErrorException ignored) {</span>
+<span class="nc" id="L171">    } catch (final OpenR66RunnerErrorException ignored) {</span>
       // nothing
-<span class="fc" id="L172">    }</span>
+<span class="fc" id="L173">    }</span>
     try {
-<span class="fc" id="L174">      session.setRunner(runner);</span>
-<span class="fc" id="L175">      session.setFileBeforePreRunner();</span>
-<span class="fc" id="L176">    } catch (final OpenR66RunnerErrorException e) {</span>
-<span class="pc bpc" id="L177" title="1 of 2 branches missed.">      if (runner.getErrorInfo() == ErrorCode.InitOk ||</span>
-<span class="pc bpc" id="L178" title="1 of 2 branches missed.">          runner.getErrorInfo() == ErrorCode.PreProcessingOk ||</span>
-<span class="pc bpc" id="L179" title="1 of 2 branches missed.">          runner.getErrorInfo() == ErrorCode.TransferOk) {</span>
-<span class="nc" id="L180">        runner.setErrorExecutionStatus(ErrorCode.ExternalOp);</span>
+<span class="fc" id="L175">      session.setRunner(runner);</span>
+<span class="fc" id="L176">      session.setFileBeforePreRunner();</span>
+<span class="fc" id="L177">    } catch (final OpenR66RunnerErrorException e) {</span>
+<span class="pc bpc" id="L178" title="1 of 2 branches missed.">      if (runner.getErrorInfo() == ErrorCode.InitOk ||</span>
+<span class="pc bpc" id="L179" title="1 of 2 branches missed.">          runner.getErrorInfo() == ErrorCode.PreProcessingOk ||</span>
+<span class="pc bpc" id="L180" title="1 of 2 branches missed.">          runner.getErrorInfo() == ErrorCode.TransferOk) {</span>
+<span class="nc" id="L181">        runner.setErrorExecutionStatus(ErrorCode.ExternalOp);</span>
       }
       try {
-<span class="fc" id="L183">        runner.saveStatus();</span>
-<span class="nc" id="L184">      } catch (final OpenR66RunnerErrorException e1) {</span>
-<span class="nc" id="L185">        logger.error(&quot;Cannot save Status: &quot; + runner, e1);</span>
-<span class="fc" id="L186">      }</span>
-<span class="fc" id="L187">      runner.clean();</span>
-<span class="nc" id="L188">      error(e, business);</span>
-<span class="fc" id="L189">    }</span>
-<span class="fc" id="L190">    session.setReady(true);</span>
-<span class="fc" id="L191">    session.newState(REQUESTD);</span>
+<span class="fc" id="L184">        runner.saveStatus();</span>
+<span class="nc" id="L185">      } catch (final OpenR66RunnerErrorException e1) {</span>
+<span class="nc" id="L186">        logger.error(&quot;Cannot save Status: &quot; + runner, e1);</span>
+<span class="fc" id="L187">      }</span>
+<span class="fc" id="L188">      runner.clean();</span>
+<span class="nc" id="L189">      error(e, business);</span>
+<span class="fc" id="L190">    }</span>
+<span class="fc" id="L191">    session.setReady(true);</span>
+<span class="fc" id="L192">    session.newState(REQUESTD);</span>
     try {
-<span class="fc" id="L193">      runner.saveStatus();</span>
-<span class="nc" id="L194">    } catch (final OpenR66RunnerErrorException e1) {</span>
-<span class="nc" id="L195">      logger.error(&quot;Cannot save Status: &quot; + runner, e1);</span>
-<span class="fc" id="L196">    }</span>
-<span class="fc" id="L197">    return runner;</span>
+<span class="fc" id="L194">      runner.saveStatus();</span>
+<span class="nc" id="L195">    } catch (final OpenR66RunnerErrorException e1) {</span>
+<span class="nc" id="L196">      logger.error(&quot;Cannot save Status: &quot; + runner, e1);</span>
+<span class="fc" id="L197">    }</span>
+<span class="fc" id="L198">    return runner;</span>
   }
 
   @Override
   public void error(final Exception e, final R66BusinessInterface business)
       throws IllegalArgumentException {
-<span class="fc" id="L203">    logger.error(e);</span>
-<span class="pc bpc" id="L204" title="1 of 2 branches missed.">    if (business != null) {</span>
-<span class="nc" id="L205">      business.checkAtError(session);</span>
+<span class="fc" id="L204">    logger.error(e);</span>
+<span class="pc bpc" id="L205" title="1 of 2 branches missed.">    if (business != null) {</span>
+<span class="nc" id="L206">      business.checkAtError(session);</span>
     }
-<span class="fc" id="L207">    session.newState(R66FiniteDualStates.ERROR);</span>
-<span class="fc bfc" id="L208" title="All 2 branches covered.">    if (session.getRunner() != null) {</span>
-<span class="fc" id="L209">      final DbTaskRunner runner = session.getRunner();</span>
-<span class="fc" id="L210">      runner.setErrorExecutionStatus(ErrorCode.TransferError);</span>
-<span class="fc" id="L211">      runner.setErrorTask();</span>
+<span class="fc" id="L208">    session.newState(R66FiniteDualStates.ERROR);</span>
+<span class="fc bfc" id="L209" title="All 2 branches covered.">    if (session.getRunner() != null) {</span>
+<span class="fc" id="L210">      final DbTaskRunner runner = session.getRunner();</span>
+<span class="fc" id="L211">      runner.setErrorExecutionStatus(ErrorCode.TransferError);</span>
+<span class="fc" id="L212">      runner.setErrorTask();</span>
       try {
-<span class="fc" id="L213">        runner.run();</span>
-<span class="fc" id="L214">        runner.saveStatus();</span>
-<span class="nc" id="L215">      } catch (final OpenR66RunnerErrorException ignore) {</span>
-<span class="nc" id="L216">        logger.debug(ignore);</span>
-<span class="fc" id="L217">      }</span>
+<span class="fc" id="L214">        runner.run();</span>
+<span class="fc" id="L215">        runner.saveStatus();</span>
+<span class="nc" id="L216">      } catch (final OpenR66RunnerErrorException ignore) {</span>
+<span class="nc" id="L217">        logger.debug(ignore);</span>
+<span class="fc" id="L218">      }</span>
     }
-<span class="fc" id="L219">    throw new IllegalArgumentException(e);</span>
+<span class="fc" id="L220">    throw new IllegalArgumentException(e);</span>
   }
 
   /**
@@ -230,35 +231,35 @@ public class HttpSessionAbstract implements HttpSession {
   protected void preTasks(final R66BusinessInterface business,
                           final DbTaskRunner runner)
       throws IllegalArgumentException {
-<span class="fc" id="L233">    runner.reset();</span>
-<span class="fc" id="L234">    runner.changeUpdatedInfo(UpdatedInfo.RUNNING);</span>
+<span class="fc" id="L234">    runner.reset();</span>
+<span class="fc" id="L235">    runner.changeUpdatedInfo(UpdatedInfo.RUNNING);</span>
     try {
-<span class="fc" id="L236">      runner.saveStatus();</span>
-<span class="nc" id="L237">    } catch (final OpenR66RunnerErrorException e) {</span>
-<span class="nc" id="L238">      error(e, business);</span>
-<span class="fc" id="L239">    }</span>
+<span class="fc" id="L237">      runner.saveStatus();</span>
+<span class="nc" id="L238">    } catch (final OpenR66RunnerErrorException e) {</span>
+<span class="nc" id="L239">      error(e, business);</span>
+<span class="fc" id="L240">    }</span>
     // Now create the associated file
     try {
-<span class="fc" id="L242">      session.setFileBeforePreRunner();</span>
-<span class="pc bpc" id="L243" title="1 of 2 branches missed.">      if (runner.getStep() &lt;= TASKSTEP.PRETASK.ordinal()) {</span>
-<span class="fc" id="L244">        runner.setPreTask();</span>
-<span class="fc" id="L245">        runner.saveStatus();</span>
-<span class="fc" id="L246">        runner.run();</span>
-<span class="fc" id="L247">        runner.saveStatus();</span>
-<span class="fc" id="L248">        session.setFileAfterPreRunner(true);</span>
+<span class="fc" id="L243">      session.setFileBeforePreRunner();</span>
+<span class="pc bpc" id="L244" title="1 of 2 branches missed.">      if (runner.getStep() &lt;= TASKSTEP.PRETASK.ordinal()) {</span>
+<span class="fc" id="L245">        runner.setPreTask();</span>
+<span class="fc" id="L246">        runner.saveStatus();</span>
+<span class="fc" id="L247">        runner.run();</span>
+<span class="fc" id="L248">        runner.saveStatus();</span>
+<span class="fc" id="L249">        session.setFileAfterPreRunner(true);</span>
       }
-<span class="nc" id="L250">    } catch (final OpenR66RunnerErrorException e) {</span>
-<span class="nc" id="L251">      error(e, business);</span>
-<span class="nc" id="L252">    } catch (final CommandAbstractException e) {</span>
-<span class="nc" id="L253">      error(e, business);</span>
-<span class="pc" id="L254">    }</span>
-<span class="fc" id="L255">    session.newState(DATAR);</span>
+<span class="nc" id="L251">    } catch (final OpenR66RunnerErrorException e) {</span>
+<span class="nc" id="L252">      error(e, business);</span>
+<span class="nc" id="L253">    } catch (final CommandAbstractException e) {</span>
+<span class="nc" id="L254">      error(e, business);</span>
+<span class="pc" id="L255">    }</span>
+<span class="fc" id="L256">    session.newState(DATAR);</span>
     try {
-<span class="fc" id="L257">      runner.saveStatus();</span>
-<span class="nc" id="L258">    } catch (final OpenR66RunnerErrorException e1) {</span>
-<span class="nc" id="L259">      logger.error(&quot;Cannot save Status: &quot; + runner, e1);</span>
-<span class="fc" id="L260">    }</span>
-<span class="fc" id="L261">  }</span>
+<span class="fc" id="L258">      runner.saveStatus();</span>
+<span class="nc" id="L259">    } catch (final OpenR66RunnerErrorException e1) {</span>
+<span class="nc" id="L260">      logger.error(&quot;Cannot save Status: &quot; + runner, e1);</span>
+<span class="fc" id="L261">    }</span>
+<span class="fc" id="L262">  }</span>
 
   /**
    * Set the transfer to be starting
@@ -266,45 +267,45 @@ public class HttpSessionAbstract implements HttpSession {
    * @param runner
    */
   protected void startTransfer(final DbTaskRunner runner) {
-<span class="fc" id="L269">    runner.setTransferTask(0);</span>
+<span class="fc" id="L270">    runner.setTransferTask(0);</span>
     try {
-<span class="fc" id="L271">      runner.saveStatus();</span>
-<span class="nc" id="L272">    } catch (final OpenR66RunnerErrorException e1) {</span>
-<span class="nc" id="L273">      logger.error(&quot;Cannot save Status: &quot; + runner, e1);</span>
-<span class="fc" id="L274">    }</span>
-<span class="fc" id="L275">  }</span>
+<span class="fc" id="L272">      runner.saveStatus();</span>
+<span class="nc" id="L273">    } catch (final OpenR66RunnerErrorException e1) {</span>
+<span class="nc" id="L274">      logger.error(&quot;Cannot save Status: &quot; + runner, e1);</span>
+<span class="fc" id="L275">    }</span>
+<span class="fc" id="L276">  }</span>
 
   /**
    * Run post tasks on finished transfer
    */
   protected void runPostTask() {
-<span class="fc" id="L281">    final DbTaskRunner runner = session.getRunner();</span>
-<span class="fc" id="L282">    runner.setPostTask();</span>
+<span class="fc" id="L282">    final DbTaskRunner runner = session.getRunner();</span>
+<span class="fc" id="L283">    runner.setPostTask();</span>
     try {
-<span class="fc" id="L284">      session.newState(ENDTRANSFERR);</span>
-<span class="fc" id="L285">      logger.debug(&quot;Post actions {}&quot;, session);</span>
-<span class="fc" id="L286">      runner.run();</span>
-<span class="fc" id="L287">      runner.saveStatus();</span>
-<span class="fc" id="L288">      session.newState(ENDREQUESTS);</span>
-<span class="nc" id="L289">    } catch (final OpenR66RunnerErrorException e) {</span>
-<span class="nc" id="L290">      error(e, session.getBusinessObject());</span>
-<span class="fc" id="L291">    }</span>
-<span class="fc" id="L292">    session.newState(CLOSEDCHANNEL);</span>
-<span class="fc" id="L293">    session.partialClear();</span>
-<span class="fc" id="L294">    runner.setAllDone();</span>
+<span class="fc" id="L285">      session.newState(ENDTRANSFERR);</span>
+<span class="fc" id="L286">      logger.debug(&quot;Post actions {}&quot;, session);</span>
+<span class="fc" id="L287">      runner.run();</span>
+<span class="fc" id="L288">      runner.saveStatus();</span>
+<span class="fc" id="L289">      session.newState(ENDREQUESTS);</span>
+<span class="nc" id="L290">    } catch (final OpenR66RunnerErrorException e) {</span>
+<span class="nc" id="L291">      error(e, session.getBusinessObject());</span>
+<span class="fc" id="L292">    }</span>
+<span class="fc" id="L293">    session.newState(CLOSEDCHANNEL);</span>
+<span class="fc" id="L294">    session.partialClear();</span>
+<span class="fc" id="L295">    runner.setAllDone();</span>
     try {
-<span class="fc" id="L296">      runner.saveStatus();</span>
-<span class="nc" id="L297">    } catch (final OpenR66RunnerErrorException ignored) {</span>
+<span class="fc" id="L297">      runner.saveStatus();</span>
+<span class="nc" id="L298">    } catch (final OpenR66RunnerErrorException ignored) {</span>
       // nothing
-<span class="fc" id="L299">    }</span>
-<span class="fc" id="L300">    runner.clean();</span>
-<span class="fc" id="L301">  }</span>
+<span class="fc" id="L300">    }</span>
+<span class="fc" id="L301">    runner.clean();</span>
+<span class="fc" id="L302">  }</span>
 
   /**
    * @return the current DbTaskRunner if any (null if not)
    */
   public DbTaskRunner getDbTaskRunner() {
-<span class="nc" id="L307">    return session.getRunner();</span>
+<span class="nc" id="L308">    return session.getRunner();</span>
   }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

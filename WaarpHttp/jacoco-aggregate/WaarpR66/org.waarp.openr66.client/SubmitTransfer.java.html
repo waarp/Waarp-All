@@ -59,7 +59,7 @@ public class SubmitTransfer extends AbstractTransfer {
     }
 <span class="fc" id="L60">    final DbTaskRunner taskRunner = initRequest();</span>
 <span class="pc bpc" id="L61" title="1 of 2 branches missed.">    if (taskRunner == null) {</span>
-<span class="nc" id="L62">      logger.debug(&quot;Cannot prepare task&quot;);</span>
+<span class="nc" id="L62">      logger.info(&quot;Cannot prepare task&quot;);</span>
 <span class="nc bnc" id="L63" title="All 4 branches missed.">      if (future.isFailed() &amp;&amp; future.getResult() != null) {</span>
 <span class="nc" id="L64">        return;</span>
       }
@@ -74,7 +74,7 @@ public class SubmitTransfer extends AbstractTransfer {
       // Resubmit call, some checks are needed
 <span class="nc bnc" id="L75" title="All 2 branches missed.">      if (!taskRunner.restart(true)) {</span>
         // cannot be done from there =&gt; must be done through IHM
-<span class="nc" id="L77">        logger.debug(&quot;Cannot prepare task from there. IHM must be used&quot;);</span>
+<span class="nc" id="L77">        logger.info(&quot;Cannot prepare task from there. IHM must be used&quot;);</span>
 <span class="nc" id="L78">        final R66Result result = new R66Result(</span>
             new OpenR66DatabaseGlobalException(
                 &quot;Cannot prepare task from there. IHM must be used&quot;), null, true,
@@ -89,7 +89,7 @@ public class SubmitTransfer extends AbstractTransfer {
 <span class="pc bpc" id="L89" title="1 of 2 branches missed.">    if (!taskRunner.forceSaveStatus()) {</span>
       try {
 <span class="nc bnc" id="L91" title="All 2 branches missed.">        if (!taskRunner.specialSubmit()) {</span>
-<span class="nc" id="L92">          logger.debug(&quot;Cannot prepare task&quot;);</span>
+<span class="nc" id="L92">          logger.info(&quot;Cannot prepare task&quot;);</span>
 <span class="nc" id="L93">          final R66Result result = new R66Result(</span>
               new OpenR66DatabaseGlobalException(&quot;Cannot prepare Task&quot;), null,
               true, ErrorCode.Internal, taskRunner);
@@ -98,7 +98,7 @@ public class SubmitTransfer extends AbstractTransfer {
 <span class="nc" id="L98">          return;</span>
         }
 <span class="nc" id="L100">      } catch (final WaarpDatabaseException e) {</span>
-<span class="nc" id="L101">        logger.debug(&quot;Cannot prepare task&quot;);</span>
+<span class="nc" id="L101">        logger.info(&quot;Cannot prepare task&quot;);</span>
 <span class="nc" id="L102">        final R66Result result = new R66Result(</span>
             new OpenR66DatabaseGlobalException(&quot;Cannot prepare Task&quot;), null,
             true, ErrorCode.Internal, taskRunner);
@@ -155,7 +155,7 @@ public class SubmitTransfer extends AbstractTransfer {
 <span class="nc" id="L155">      prepareSubmitOkOutputFormat(runner, outputFormat);</span>
 <span class="nc bnc" id="L156" title="All 2 branches missed.">      if (transaction.normalInfoAsWarn) {</span>
 <span class="nc" id="L157">        logger.warn(outputFormat.loggerOut());</span>
-      } else {
+<span class="nc bnc" id="L158" title="All 2 branches missed.">      } else if (logger.isInfoEnabled()) {</span>
 <span class="nc" id="L159">        logger.info(outputFormat.loggerOut());</span>
       }
 <span class="nc bnc" id="L161" title="All 2 branches missed.">      if (!OutputFormat.isQuiet()) {</span>

@@ -21,7 +21,6 @@ package org.waarp.ftp.core.command.rfc2428;
 
 import org.waarp.common.command.ReplyCode;
 import org.waarp.common.command.exception.Reply425Exception;
-import org.waarp.common.command.exception.Reply501Exception;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.ftp.core.command.AbstractCommand;
@@ -35,66 +34,66 @@ import java.net.InetSocketAddress;
 /**
  * EPSV command
  */
-<span class="nc" id="L38">public class EPSV extends AbstractCommand {</span>
+<span class="nc" id="L37">public class EPSV extends AbstractCommand {</span>
   /**
    * Internal Logger
    */
-<span class="nc" id="L42">  private static final WaarpLogger logger =</span>
-<span class="nc" id="L43">      WaarpLoggerFactory.getLogger(EPSV.class);</span>
+<span class="nc" id="L41">  private static final WaarpLogger logger =</span>
+<span class="nc" id="L42">      WaarpLoggerFactory.getLogger(EPSV.class);</span>
 
   @Override
-  public void exec() throws Reply425Exception, Reply501Exception {
+  public void exec() throws Reply425Exception {
     // No Check if any argument
     // Take a new port: 3 attempts
-<span class="nc" id="L49">    boolean isInit = false;</span>
-<span class="nc" id="L50">    int newport = -1;</span>
-<span class="nc bnc" id="L51" title="All 2 branches missed.">    for (int i = 1; i &lt;= FtpInternalConfiguration.RETRYNB; i++) {</span>
-<span class="nc" id="L52">      newport = FtpDataAsyncConn.getNewPassivePort(getConfiguration());</span>
-<span class="nc bnc" id="L53" title="All 2 branches missed.">      if (newport == -1) {</span>
-<span class="nc" id="L54">        throw new Reply425Exception(&quot;No port available&quot;);</span>
+<span class="nc" id="L48">    boolean isInit = false;</span>
+<span class="nc" id="L49">    int newport = -1;</span>
+<span class="nc bnc" id="L50" title="All 2 branches missed.">    for (int i = 1; i &lt;= FtpInternalConfiguration.RETRYNB; i++) {</span>
+<span class="nc" id="L51">      newport = FtpDataAsyncConn.getNewPassivePort(getConfiguration());</span>
+<span class="nc bnc" id="L52" title="All 2 branches missed.">      if (newport == -1) {</span>
+<span class="nc" id="L53">        throw new Reply425Exception(&quot;No port available&quot;);</span>
       }
-<span class="nc bnc" id="L56" title="All 2 branches missed.">      if (getSession().getDataConn().isPassiveMode()) {</span>
+<span class="nc bnc" id="L55" title="All 2 branches missed.">      if (getSession().getDataConn().isPassiveMode()) {</span>
         // Previous mode was Passive so remove the current configuration
-<span class="nc" id="L58">        final InetSocketAddress local =</span>
-<span class="nc" id="L59">            getSession().getDataConn().getLocalAddress();</span>
-<span class="nc" id="L60">        final InetAddress remote =</span>
-<span class="nc" id="L61">            getSession().getDataConn().getRemoteAddress().getAddress();</span>
-<span class="nc" id="L62">        getConfiguration().delFtpSession(remote, local);</span>
+<span class="nc" id="L57">        final InetSocketAddress local =</span>
+<span class="nc" id="L58">            getSession().getDataConn().getLocalAddress();</span>
+<span class="nc" id="L59">        final InetAddress remote =</span>
+<span class="nc" id="L60">            getSession().getDataConn().getRemoteAddress().getAddress();</span>
+<span class="nc" id="L61">        getConfiguration().delFtpSession(remote, local);</span>
       }
-<span class="nc" id="L64">      logger.info(&quot;EPSV: set Passive Port {}&quot;, newport);</span>
-<span class="nc" id="L65">      getSession().getDataConn().setLocalPort(newport);</span>
-<span class="nc" id="L66">      getSession().getDataConn().setPassive();</span>
+<span class="nc" id="L63">      logger.info(&quot;EPSV: set Passive Port {}&quot;, newport);</span>
+<span class="nc" id="L64">      getSession().getDataConn().setLocalPort(newport);</span>
+<span class="nc" id="L65">      getSession().getDataConn().setPassive();</span>
       // Init the connection
       try {
-<span class="nc bnc" id="L69" title="All 2 branches missed.">        if (getSession().getDataConn().initPassiveConnection()) {</span>
-<span class="nc" id="L70">          isInit = true;</span>
-<span class="nc" id="L71">          break;</span>
+<span class="nc bnc" id="L68" title="All 2 branches missed.">        if (getSession().getDataConn().initPassiveConnection()) {</span>
+<span class="nc" id="L69">          isInit = true;</span>
+<span class="nc" id="L70">          break;</span>
         }
-<span class="nc" id="L73">      } catch (final Reply425Exception e) {</span>
-<span class="nc" id="L74">        logger.warn(&quot;EPSV refused at try: &quot; + i + &quot; with port: &quot; + newport, e);</span>
-<span class="nc" id="L75">      }</span>
+<span class="nc" id="L72">      } catch (final Reply425Exception e) {</span>
+<span class="nc" id="L73">        logger.warn(&quot;EPSV refused at try: &quot; + i + &quot; with port: &quot; + newport, e);</span>
+<span class="nc" id="L74">      }</span>
     }
-<span class="nc bnc" id="L77" title="All 2 branches missed.">    if (!isInit) {</span>
-<span class="nc" id="L78">      throw new Reply425Exception(&quot;Extended Passive mode not started&quot;);</span>
+<span class="nc bnc" id="L76" title="All 2 branches missed.">    if (!isInit) {</span>
+<span class="nc" id="L77">      throw new Reply425Exception(&quot;Extended Passive mode not started&quot;);</span>
     }
     // Return the address in Ftp format
-<span class="nc" id="L81">    final InetSocketAddress local =</span>
-<span class="nc" id="L82">        getSession().getDataConn().getLocalAddress();</span>
-<span class="nc" id="L83">    final String slocal = &quot;Entering Extended Passive Mode (&quot; +</span>
-<span class="nc" id="L84">                          FtpChannelUtils.get2428Address(local) + ')';</span>
-<span class="nc" id="L85">    final InetAddress remote =</span>
-<span class="nc" id="L86">        getSession().getDataConn().getRemoteAddress().getAddress();</span>
+<span class="nc" id="L80">    final InetSocketAddress local =</span>
+<span class="nc" id="L81">        getSession().getDataConn().getLocalAddress();</span>
+<span class="nc" id="L82">    final String slocal = &quot;Entering Extended Passive Mode (&quot; +</span>
+<span class="nc" id="L83">                          FtpChannelUtils.get2428Address(local) + ')';</span>
+<span class="nc" id="L84">    final InetAddress remote =</span>
+<span class="nc" id="L85">        getSession().getDataConn().getRemoteAddress().getAddress();</span>
     // Add the current FtpSession into the reference of session since the
     // client will open the connection
-<span class="nc" id="L89">    getConfiguration().setNewFtpSession(remote, local, getSession());</span>
-<span class="nc" id="L90">    getSession().setReplyCode(ReplyCode.REPLY_229_ENTERING_PASSIVE_MODE,</span>
+<span class="nc" id="L88">    getConfiguration().setNewFtpSession(remote, local, getSession());</span>
+<span class="nc" id="L89">    getSession().setReplyCode(ReplyCode.REPLY_229_ENTERING_PASSIVE_MODE,</span>
                               &quot;Entering Extended Passive Mode (|||&quot; + newport +
                               &quot;|)&quot;);
-<span class="nc" id="L93">    logger.info(&quot;EPSV: answer ready on {}&quot;, slocal);</span>
+<span class="nc" id="L92">    logger.info(&quot;EPSV: answer ready on {}&quot;, slocal);</span>
     /*
      * Could be:this.getFtpSession().setReplyCode(ReplyCode. REPLY_229_ENTERING_PASSIVE_MODE, slocal)
      */
-<span class="nc" id="L97">  }</span>
+<span class="nc" id="L96">  }</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

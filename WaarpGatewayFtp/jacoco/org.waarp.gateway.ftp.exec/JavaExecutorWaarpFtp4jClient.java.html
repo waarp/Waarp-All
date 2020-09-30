@@ -107,307 +107,109 @@ public class JavaExecutorWaarpFtp4jClient implements GatewayRunnable {
    * (get,put,append) &lt;br&gt; [-post extraCommand2 with ',' as separator of arguments]&quot; &lt;br&gt;
    **/
   @Override
-  /*public void run() {
-    logger.info(&quot;FtpTransfer with &quot; + args.length + &quot; arguments&quot;);
-    if (args.length &lt; 10) {
-      status = -1;
-      logger.error(&quot;Not enough arguments&quot;);
-      return;
-    }
-    String filepath = null;
-    String filename = null;
-    String requested = null;
-    int port = 21;
-    String user = null;
-    String pwd = null;
-    String acct = null;
-    boolean isPassive = true;
-    int ssl = 0; // -1 native, 1 auth
-    String cwd = null;
-    int digest = 0; // 1 CRC, 2 MD5, 3 SHA1
-    String command;
-    int codeCommand = 0; // -1 get, 1 put, 2 append
-    String preArgs = null;
-    String postArgs = null;
-    for (int i = 0; i &lt; args.length; i++) {
-      if (&quot;-file&quot;.equalsIgnoreCase(args[i])) {
-        i++;
-        filepath = args[i];
-        filename = new File(filepath).getName();
-      } else if (&quot;-to&quot;.equalsIgnoreCase(args[i])) {
-        i++;
-        requested = args[i];
-      } else if (&quot;-port&quot;.equalsIgnoreCase(args[i])) {
-        i++;
-        port = Integer.parseInt(args[i]);
-      } else if (&quot;-user&quot;.equalsIgnoreCase(args[i])) {
-        i++;
-        user = args[i];
-      } else if (&quot;-pwd&quot;.equalsIgnoreCase(args[i])) {
-        i++;
-        pwd = args[i];
-      } else if (&quot;-account&quot;.equalsIgnoreCase(args[i])) {
-        i++;
-        acct = args[i];
-      } else if (&quot;-mode&quot;.equalsIgnoreCase(args[i])) {
-        i++;
-        isPassive = &quot;passive&quot;.equalsIgnoreCase(args[i]);
-      } else if (&quot;-ssl&quot;.equalsIgnoreCase(args[i])) {
-        i++;
-        if (&quot;implicit&quot;.equalsIgnoreCase(args[i])) {
-          ssl = -1;
-        } else if (&quot;explicit&quot;.equalsIgnoreCase(args[i])) {
-          ssl = 1;
-        } else {
-          ssl = 0;
-        }
-      } else if (&quot;-cwd&quot;.equalsIgnoreCase(args[i])) {
-        i++;
-        cwd = args[i];
-      } else if (&quot;-digest&quot;.equalsIgnoreCase(args[i])) {
-        i++;
-        if (&quot;crc&quot;.equalsIgnoreCase(args[i])) {
-          digest = 1;
-        } else if (&quot;md5&quot;.equalsIgnoreCase(args[i])) {
-          digest = 2;
-        } else if (&quot;sha1&quot;.equalsIgnoreCase(args[i])) {
-          digest = 3;
-        } else {
-          digest = 0;
-        }
-      } else if (&quot;-pre&quot;.equalsIgnoreCase(args[i])) {
-        i++;
-        preArgs = args[i].replace(',', ' ');
-      } else if (&quot;-post&quot;.equalsIgnoreCase(args[i])) {
-        i++;
-        postArgs = args[i].replace(',', ' ');
-      } else if (&quot;-command&quot;.equalsIgnoreCase(args[i])) {
-        i++;
-        command = args[i];
-        // get,put,append,list
-        // -1 get, 1 put, 2 append
-        if (&quot;get&quot;.equalsIgnoreCase(command)) {
-          codeCommand = -1;
-        } else if (&quot;put&quot;.equalsIgnoreCase(command)) {
-          codeCommand = 1;
-        } else if (&quot;append&quot;.equalsIgnoreCase(command)) {
-          codeCommand = 2;
-        } else {
-          // error
-          codeCommand = 0;
-        }
-      }
-    }
-    if (filepath == null || requested == null || port &lt;= 0 || user == null ||
-        pwd == null || codeCommand == 0) {
-      status = -2;
-      final int code = (filepath == null? 1 : 0) + (requested == null? 10 : 0) +
-                       (port &lt;= 0? 100 : 0) + (user == null? 1000 : 0) +
-                       (pwd == null? 10000 : 0) +
-                       (codeCommand == 0? 100000 : 0);
-      logger.error(&quot;Not enough arguments: &quot; + code);
-      return;
-    }
-    int timeout = 30000;
-    if (delay &gt; 1000) {
-      timeout = delay;
-    }
-    final WaarpFtp4jClient ftpClient =
-        new WaarpFtp4jClient(requested, port, user, pwd, acct, isPassive, ssl,
-                             5000, timeout);
-    boolean connected = false;
-    for (int i = 0; i &lt; 3; i++) {
-      if (ftpClient.connect()) {
-        connected = true;
-        break;
-      }
-    }
-    if (!connected) {
-      status = -3;
-      logger.error(ftpClient.getResult());
-      return;
-    }
-    try {
-      if (cwd != null &amp;&amp; !ftpClient.changeDir(cwd)) {
-        ftpClient.makeDir(cwd);
-        if (!ftpClient.changeDir(cwd)) {
-          logger.warn(&quot;Cannot change od directory: &quot; + cwd);
-        }
-      }
-      if (preArgs != null) {
-        final String[] result = ftpClient.executeCommand(preArgs);
-        for (final String string : result) {
-          logger.debug(&quot;PRE: &quot; + string);
-        }
-      }
-      if (!ftpClient.transferFile(filepath, filename, codeCommand)) {
-        status = -4;
-        logger.error(ftpClient.getResult());
-        return;
-      }
-      if (digest &gt; 0) {
-        // digest check
-        String params;
-        DigestAlgo algo;
-        switch (digest) {
-          case 1: // CRC
-            params = &quot;XCRC &quot;;
-            algo = DigestAlgo.CRC32;
-            break;
-          case 2: // MD5
-            params = &quot;XMD5 &quot;;
-            algo = DigestAlgo.MD5;
-            break;
-          case 3: // SHA1
-          default:
-            params = &quot;XSHA1 &quot;;
-            algo = DigestAlgo.SHA1;
-            break;
-        }
-        params += filename;
-        String[] values = ftpClient.executeCommand(params);
-        String hashresult = null;
-        if (values != null) {
-          values = BLANK.split(values[0]);
-          hashresult = values.length &gt; 3? values[1] : values[0];
-        }
-        if (hashresult == null) {
-          status = -5;
-          logger.error(&quot;Hash cannot be computed: &quot; + ftpClient.getResult());
-          return;
-        }
-        // now check locally
-        String hash;
-        try {
-          hash = FilesystemBasedDigest.getHex(
-              FilesystemBasedDigest.getHash(new File(filepath), false, algo));
-        } catch (final IOException e) {
-          hash = null;
-        }
-        if (hash == null || !hash.equalsIgnoreCase(hashresult)) {
-          status = -6;
-          logger.error(&quot;Hash not equal: &quot; + ftpClient.getResult());
-          return;
-        }
-      }
-      if (postArgs != null) {
-        final String[] result = ftpClient.executeCommand(postArgs);
-        for (final String string : result) {
-          logger.debug(&quot;POST: &quot; + string);
-        }
-      }
-    } finally {
-      ftpClient.logout();
-    }
-    logger.info(
-        &quot;FTP transfer in\n    SUCCESS\n    &quot; + filepath + &quot;\n    &lt;REMOTE&gt;&quot; +
-        requested + &quot;&lt;/REMOTE&gt;&quot;);
-    status = 0;
-  }*/
-
   public void run() {
-<span class="nc" id="L309">    logger.info(&quot;FtpTransfer with &quot; + args.length + &quot; arguments&quot;);</span>
+<span class="nc" id="L111">    logger.info(&quot;FtpTransfer with {} arguments&quot;, args.length);</span>
     final FtpArgs ftpArgs;
     try {
-<span class="nc" id="L312">      ftpArgs = FtpArgs.getFtpArgs(args);</span>
-<span class="nc" id="L313">    } catch (final OpenR66RunnerErrorException e) {</span>
-<span class="nc" id="L314">      status = -2;</span>
-<span class="nc" id="L315">      logger.error(&quot;Not enough arguments&quot;, e);</span>
-<span class="nc" id="L316">      return;</span>
-<span class="nc" id="L317">    }</span>
-<span class="nc" id="L318">    int timeout = 30000;</span>
-<span class="nc bnc" id="L319" title="All 2 branches missed.">    if (delay &gt; 1000) {</span>
-<span class="nc" id="L320">      timeout = delay;</span>
+<span class="nc" id="L114">      ftpArgs = FtpArgs.getFtpArgs(args);</span>
+<span class="nc" id="L115">    } catch (final OpenR66RunnerErrorException e) {</span>
+<span class="nc" id="L116">      status = -2;</span>
+<span class="nc" id="L117">      logger.error(&quot;Not enough arguments&quot;, e);</span>
+<span class="nc" id="L118">      return;</span>
+<span class="nc" id="L119">    }</span>
+<span class="nc" id="L120">    int timeout = 30000;</span>
+<span class="nc bnc" id="L121" title="All 2 branches missed.">    if (delay &gt; 1000) {</span>
+<span class="nc" id="L122">      timeout = delay;</span>
     }
-<span class="nc" id="L322">    final WaarpFtp4jClient ftpClient =</span>
-<span class="nc" id="L323">        new WaarpFtp4jClient(ftpArgs.getRequested(), ftpArgs.getPort(),</span>
-<span class="nc" id="L324">                             ftpArgs.getUser(), ftpArgs.getPwd(),</span>
-<span class="nc" id="L325">                             ftpArgs.getAcct(), ftpArgs.isPassive(),</span>
-<span class="nc" id="L326">                             ftpArgs.getSsl(), 5000, timeout);</span>
-<span class="nc" id="L327">    boolean connected = false;</span>
-<span class="nc bnc" id="L328" title="All 2 branches missed.">    for (int i = 0; i &lt; 3; i++) {</span>
-<span class="nc bnc" id="L329" title="All 2 branches missed.">      if (ftpClient.connect()) {</span>
-<span class="nc" id="L330">        connected = true;</span>
-<span class="nc" id="L331">        break;</span>
+<span class="nc" id="L124">    final WaarpFtp4jClient ftpClient =</span>
+<span class="nc" id="L125">        new WaarpFtp4jClient(ftpArgs.getRequested(), ftpArgs.getPort(),</span>
+<span class="nc" id="L126">                             ftpArgs.getUser(), ftpArgs.getPwd(),</span>
+<span class="nc" id="L127">                             ftpArgs.getAcct(), ftpArgs.isPassive(),</span>
+<span class="nc" id="L128">                             ftpArgs.getSsl(), 5000, timeout);</span>
+<span class="nc" id="L129">    boolean connected = false;</span>
+<span class="nc bnc" id="L130" title="All 2 branches missed.">    for (int i = 0; i &lt; 3; i++) {</span>
+<span class="nc bnc" id="L131" title="All 2 branches missed.">      if (ftpClient.connect()) {</span>
+<span class="nc" id="L132">        connected = true;</span>
+<span class="nc" id="L133">        break;</span>
       }
     }
-<span class="nc bnc" id="L334" title="All 2 branches missed.">    if (!connected) {</span>
-<span class="nc" id="L335">      status = -3;</span>
-<span class="nc" id="L336">      logger.error(ftpClient.getResult());</span>
-<span class="nc" id="L337">      return;</span>
+<span class="nc bnc" id="L136" title="All 2 branches missed.">    if (!connected) {</span>
+<span class="nc" id="L137">      status = -3;</span>
+<span class="nc" id="L138">      logger.error(ftpClient.getResult());</span>
+<span class="nc" id="L139">      return;</span>
     }
     try {
-<span class="nc bnc" id="L340" title="All 4 branches missed.">      if (ftpArgs.getCwd() != null &amp;&amp; !ftpClient.changeDir(ftpArgs.getCwd())) {</span>
-<span class="nc" id="L341">        ftpClient.makeDir(ftpArgs.getCwd());</span>
-<span class="nc bnc" id="L342" title="All 2 branches missed.">        if (!ftpClient.changeDir(ftpArgs.getCwd())) {</span>
-<span class="nc" id="L343">          logger.warn(&quot;Cannot change od directory: &quot; + ftpArgs.getCwd());</span>
+<span class="nc bnc" id="L142" title="All 4 branches missed.">      if (ftpArgs.getCwd() != null &amp;&amp; !ftpClient.changeDir(ftpArgs.getCwd())) {</span>
+<span class="nc" id="L143">        ftpClient.makeDir(ftpArgs.getCwd());</span>
+<span class="nc bnc" id="L144" title="All 2 branches missed.">        if (!ftpClient.changeDir(ftpArgs.getCwd())) {</span>
+<span class="nc" id="L145">          logger.warn(&quot;Cannot change od directory: &quot; + ftpArgs.getCwd());</span>
         }
       }
-<span class="nc bnc" id="L346" title="All 2 branches missed.">      if (ftpArgs.getPreArgs() != null) {</span>
-<span class="nc" id="L347">        final String[] result = ftpClient.executeCommand(ftpArgs.getPreArgs());</span>
-<span class="nc bnc" id="L348" title="All 2 branches missed.">        for (final String string : result) {</span>
-<span class="nc" id="L349">          logger.debug(&quot;PRE: &quot; + string);</span>
+<span class="nc bnc" id="L148" title="All 2 branches missed.">      if (ftpArgs.getPreArgs() != null) {</span>
+<span class="nc" id="L149">        final String[] result = ftpClient.executeCommand(ftpArgs.getPreArgs());</span>
+<span class="nc bnc" id="L150" title="All 2 branches missed.">        for (final String string : result) {</span>
+<span class="nc" id="L151">          logger.debug(&quot;PRE: {}&quot;, string);</span>
         }
       }
-<span class="nc bnc" id="L352" title="All 2 branches missed.">      if (!ftpClient.transferFile(ftpArgs.getFilepath(), ftpArgs.getFilename(),</span>
-<span class="nc" id="L353">                                  ftpArgs.getCodeCommand())) {</span>
-<span class="nc" id="L354">        status = -4;</span>
-<span class="nc" id="L355">        logger.error(ftpClient.getResult());</span>
-<span class="nc" id="L356">        return;</span>
+<span class="nc bnc" id="L154" title="All 2 branches missed.">      if (!ftpClient.transferFile(ftpArgs.getFilepath(), ftpArgs.getFilename(),</span>
+<span class="nc" id="L155">                                  ftpArgs.getCodeCommand())) {</span>
+<span class="nc" id="L156">        status = -4;</span>
+<span class="nc" id="L157">        logger.error(ftpClient.getResult());</span>
+<span class="nc" id="L158">        return;</span>
       }
-<span class="nc bnc" id="L358" title="All 2 branches missed.">      if (ftpArgs.getDigest() != null) {</span>
-<span class="nc" id="L359">        String[] values = ftpClient.executeCommand(ftpArgs.getDigestCommand());</span>
-<span class="nc" id="L360">        String hashresult = null;</span>
-<span class="nc bnc" id="L361" title="All 2 branches missed.">        if (values != null) {</span>
-<span class="nc" id="L362">          values = BLANK.split(values[0]);</span>
-<span class="nc bnc" id="L363" title="All 2 branches missed.">          hashresult = values.length &gt; 3? values[1] : values[0];</span>
+<span class="nc bnc" id="L160" title="All 2 branches missed.">      if (ftpArgs.getDigest() != null) {</span>
+<span class="nc" id="L161">        String[] values = ftpClient.executeCommand(ftpArgs.getDigestCommand());</span>
+<span class="nc" id="L162">        String hashresult = null;</span>
+<span class="nc bnc" id="L163" title="All 2 branches missed.">        if (values != null) {</span>
+<span class="nc" id="L164">          values = BLANK.split(values[0]);</span>
+<span class="nc bnc" id="L165" title="All 2 branches missed.">          hashresult = values.length &gt; 3? values[1] : values[0];</span>
         }
-<span class="nc bnc" id="L365" title="All 2 branches missed.">        if (hashresult == null) {</span>
-<span class="nc" id="L366">          status = -5;</span>
-<span class="nc" id="L367">          logger.error(&quot;Hash cannot be computed: &quot; + ftpClient.getResult());</span>
-<span class="nc" id="L368">          return;</span>
+<span class="nc bnc" id="L167" title="All 2 branches missed.">        if (hashresult == null) {</span>
+<span class="nc" id="L168">          status = -5;</span>
+<span class="nc" id="L169">          logger.error(&quot;Hash cannot be computed: &quot; + ftpClient.getResult());</span>
+<span class="nc" id="L170">          return;</span>
         }
         // now check locally
         String hash;
         try {
-<span class="nc" id="L373">          hash = FilesystemBasedDigest.getHex(FilesystemBasedDigest.getHash(</span>
-<span class="nc" id="L374">              new File(ftpArgs.getFilepath()), false, ftpArgs.getDigest()));</span>
-<span class="nc" id="L375">        } catch (final IOException e) {</span>
-<span class="nc" id="L376">          hash = null;</span>
-<span class="nc" id="L377">        }</span>
-<span class="nc bnc" id="L378" title="All 4 branches missed.">        if (hash == null || !hash.equalsIgnoreCase(hashresult)) {</span>
-<span class="nc" id="L379">          status = -6;</span>
-<span class="nc" id="L380">          logger.error(&quot;Hash not equal: &quot; + ftpClient.getResult());</span>
-<span class="nc" id="L381">          return;</span>
+<span class="nc" id="L175">          hash = FilesystemBasedDigest.getHex(FilesystemBasedDigest.getHash(</span>
+<span class="nc" id="L176">              new File(ftpArgs.getFilepath()), false, ftpArgs.getDigest()));</span>
+<span class="nc" id="L177">        } catch (final IOException e) {</span>
+<span class="nc" id="L178">          hash = null;</span>
+<span class="nc" id="L179">        }</span>
+<span class="nc bnc" id="L180" title="All 4 branches missed.">        if (hash == null || !hash.equalsIgnoreCase(hashresult)) {</span>
+<span class="nc" id="L181">          status = -6;</span>
+<span class="nc" id="L182">          logger.error(&quot;Hash not equal: &quot; + ftpClient.getResult());</span>
+<span class="nc" id="L183">          return;</span>
         }
       }
-<span class="nc bnc" id="L384" title="All 2 branches missed.">      if (ftpArgs.getPostArgs() != null) {</span>
-<span class="nc" id="L385">        final String[] result = ftpClient.executeCommand(ftpArgs.getPostArgs());</span>
-<span class="nc bnc" id="L386" title="All 2 branches missed.">        for (final String string : result) {</span>
-<span class="nc" id="L387">          logger.debug(&quot;POST: &quot; + string);</span>
+<span class="nc bnc" id="L186" title="All 2 branches missed.">      if (ftpArgs.getPostArgs() != null) {</span>
+<span class="nc" id="L187">        final String[] result = ftpClient.executeCommand(ftpArgs.getPostArgs());</span>
+<span class="nc bnc" id="L188" title="All 2 branches missed.">        for (final String string : result) {</span>
+<span class="nc" id="L189">          logger.debug(&quot;POST: {}&quot;, string);</span>
         }
       }
     } finally {
-<span class="nc" id="L391">      ftpClient.logout();</span>
+<span class="nc" id="L193">      ftpClient.logout();</span>
     }
-<span class="nc" id="L393">    logger.info(&quot;FTP transfer in\n    SUCCESS\n    &quot; + ftpArgs.getFilepath() +</span>
-<span class="nc" id="L394">                &quot;\n    &lt;REMOTE&gt;&quot; + ftpArgs.getRequested() + &quot;&lt;/REMOTE&gt;&quot;);</span>
-<span class="nc" id="L395">    status = 0;</span>
-<span class="nc" id="L396">  }</span>
+<span class="nc" id="L195">    logger.info(&quot;FTP transfer in\n    SUCCESS\n    {}\n    &lt;REMOTE&gt;{}&lt;/REMOTE&gt;&quot;,</span>
+<span class="nc" id="L196">                ftpArgs.getFilepath(), ftpArgs.getRequested());</span>
+<span class="nc" id="L197">    status = 0;</span>
+<span class="nc" id="L198">  }</span>
 
   @Override
   public void setArgs(final boolean waitForValidation,
                       final boolean useLocalExec, final int delay,
                       final String[] args) {
-<span class="nc" id="L402">    this.waitForValidation = waitForValidation;</span>
-<span class="nc" id="L403">    this.useLocalExec = useLocalExec;</span>
-<span class="nc" id="L404">    this.delay = delay;</span>
-<span class="nc" id="L405">    this.args = args;</span>
-<span class="nc" id="L406">  }</span>
+<span class="nc" id="L204">    this.waitForValidation = waitForValidation;</span>
+<span class="nc" id="L205">    this.useLocalExec = useLocalExec;</span>
+<span class="nc" id="L206">    this.delay = delay;</span>
+<span class="nc" id="L207">    this.args = args;</span>
+<span class="nc" id="L208">  }</span>
 
   @Override
   public int getFinalStatus() {
-<span class="nc" id="L410">    return status;</span>
+<span class="nc" id="L212">    return status;</span>
   }
 
 }

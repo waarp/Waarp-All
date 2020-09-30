@@ -316,7 +316,7 @@ public class FileMonitor {
   private void createChkFile() {
     try {
 <span class="fc bfc" id="L318" title="All 2 branches covered.">      if (!checkFile.createNewFile()) {</span>
-<span class="fc" id="L319">        logger.debug(&quot;Cannot create Check File&quot;);</span>
+<span class="fc" id="L319">        logger.info(&quot;Cannot create Check File&quot;);</span>
       }
 <span class="nc" id="L321">    } catch (final IOException ignored) {</span>
 <span class="nc" id="L322">      SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);</span>
@@ -325,7 +325,7 @@ public class FileMonitor {
 
   private void deleteChkFile() {
 <span class="fc bfc" id="L327" title="All 2 branches covered.">    if (!checkFile.delete()) {</span>
-<span class="fc" id="L328">      logger.debug(&quot;Cannot delete Check File&quot;);</span>
+<span class="fc" id="L328">      logger.info(&quot;Cannot delete Check File&quot;);</span>
     }
 <span class="fc" id="L330">  }</span>
 
@@ -581,7 +581,7 @@ public class FileMonitor {
     }
 <span class="fc" id="L582">    synchronized (directories) {</span>
 <span class="fc bfc" id="L583" title="All 2 branches covered.">      for (final File directory : directories) {</span>
-<span class="fc" id="L584">        logger.info(&quot;Scan: &quot; + directory);</span>
+<span class="fc" id="L584">        logger.info(&quot;Scan: {}&quot;, directory);</span>
 <span class="fc" id="L585">        fileItemsChanged = checkOneDir(fileItemsChanged, directory);</span>
 <span class="fc" id="L586">      }</span>
 <span class="fc" id="L587">    }</span>
@@ -639,8 +639,8 @@ public class FileMonitor {
     } else {
 <span class="fc" id="L640">      createChkFile();</span>
     }
-<span class="fc bfc" id="L642" title="All 2 branches covered.">    if (checkStop()) {</span>
-<span class="fc" id="L643">      return false;</span>
+<span class="pc bpc" id="L642" title="1 of 2 branches missed.">    if (checkStop()) {</span>
+<span class="nc" id="L643">      return false;</span>
     }
 <span class="fc" id="L645">    logger.debug(&quot;Finishing step&quot;);</span>
 
@@ -726,117 +726,131 @@ public class FileMonitor {
 <span class="fc" id="L726">            continue;</span>
           }
 <span class="fc" id="L728">        }</span>
-<span class="fc" id="L729">        logger.debug(&quot;File check: &quot; + fileItem);</span>
+<span class="fc" id="L729">        logger.debug(&quot;File check: {}&quot;, fileItem);</span>
 <span class="fc" id="L730">        final long size = fileItem.file.length();</span>
 <span class="fc bfc" id="L731" title="All 2 branches covered.">        if (size != fileItem.size) {</span>
-          // changed or second size check
-<span class="fc" id="L733">          fileItem.size = size;</span>
-<span class="fc" id="L734">          fileItemsChanged = true;</span>
-<span class="fc" id="L735">          fileItem.status = Status.CHANGING;</span>
-<span class="fc" id="L736">          logger.debug(&quot;File Size check: &quot; + fileItem + &quot;(&quot; + size + &quot;)&quot;);</span>
-<span class="fc" id="L737">          continue;</span>
+<span class="fc" id="L732">          fileItemsChanged = isFileItemsChangedOnSize(fileItem, size);</span>
+<span class="fc" id="L733">          continue;</span>
         }
-<span class="fc" id="L739">        final long lastTimeModified = fileItem.file.lastModified();</span>
-<span class="fc bfc" id="L740" title="All 2 branches covered.">        if (lastTimeModified != fileItem.lastTime) {</span>
-          // changed or second time check
-<span class="fc" id="L742">          fileItem.lastTime = lastTimeModified;</span>
-<span class="fc bfc" id="L743" title="All 4 branches covered.">          if (!ignoreAlreadyUsed &amp;&amp; fileItem.used) {</span>
-<span class="fc" id="L744">            fileItem.hash = null;</span>
-          }
-<span class="fc" id="L746">          fileItemsChanged = true;</span>
-<span class="fc" id="L747">          fileItem.status = Status.CHANGING;</span>
-<span class="fc" id="L748">          logger.debug(</span>
-              &quot;File Change check: &quot; + fileItem + &quot;(&quot; + lastTimeModified + &quot;)&quot;);
-<span class="fc" id="L750">          continue;</span>
+<span class="fc" id="L735">        final long lastTimeModified = fileItem.file.lastModified();</span>
+<span class="fc bfc" id="L736" title="All 2 branches covered.">        if (lastTimeModified != fileItem.lastTime) {</span>
+<span class="fc" id="L737">          fileItemsChanged =</span>
+<span class="fc" id="L738">              isFileItemsChangedOnLastTimeModified(fileItem, lastTimeModified);</span>
+<span class="fc" id="L739">          continue;</span>
         }
         // now check Hash or third time
         try {
-<span class="fc" id="L754">          final byte[] hash =</span>
-<span class="fc" id="L755">              FilesystemBasedDigest.getHash(fileItem.file, true, digest);</span>
-<span class="pc bpc" id="L756" title="1 of 4 branches missed.">          if (hash == null || fileItem.hash == null) {</span>
-<span class="fc" id="L757">            fileItem.hash = hash;</span>
-<span class="fc" id="L758">            fileItemsChanged = true;</span>
-<span class="fc" id="L759">            fileItem.status = Status.CHANGING;</span>
-<span class="fc" id="L760">            logger.debug(&quot;File Hash0 check: &quot; + fileItem);</span>
-<span class="fc" id="L761">            continue;</span>
+<span class="fc" id="L743">          final byte[] hash =</span>
+<span class="fc" id="L744">              FilesystemBasedDigest.getHash(fileItem.file, true, digest);</span>
+<span class="pc bpc" id="L745" title="1 of 4 branches missed.">          if (hash == null || fileItem.hash == null) {</span>
+            // First set
+<span class="fc" id="L747">            fileItemsChanged = isFileItemsChangedOnHash(fileItem, hash);</span>
+<span class="fc" id="L748">            continue;</span>
           }
-<span class="pc bpc" id="L763" title="1 of 2 branches missed.">          if (!Arrays.equals(hash, fileItem.hash)) {</span>
-<span class="nc" id="L764">            fileItem.hash = hash;</span>
-<span class="nc" id="L765">            fileItemsChanged = true;</span>
-<span class="nc" id="L766">            fileItem.status = Status.CHANGING;</span>
-<span class="nc" id="L767">            logger.debug(&quot;File Hash1 check: &quot; + fileItem);</span>
-<span class="nc" id="L768">            continue;</span>
+<span class="pc bpc" id="L750" title="1 of 2 branches missed.">          if (!Arrays.equals(hash, fileItem.hash)) {</span>
+            // Second check true
+<span class="nc" id="L752">            fileItemsChanged = isFileItemsChangedOnHash(fileItem, hash);</span>
+<span class="nc" id="L753">            continue;</span>
           } else {
-<span class="fc bfc" id="L770" title="All 2 branches covered.">            setIfAlreadyUsed(fileItem, fileItem.status != Status.DONE);</span>
+<span class="fc bfc" id="L755" title="All 2 branches covered.">            setIfAlreadyUsed(fileItem, fileItem.status != Status.DONE);</span>
           }
-<span class="pc bpc" id="L772" title="1 of 2 branches missed.">          if (checkStop()) {</span>
-<span class="nc" id="L773">            return false;</span>
+<span class="pc bpc" id="L757" title="1 of 2 branches missed.">          if (checkStop()) {</span>
+<span class="nc" id="L758">            return false;</span>
           }
-<span class="fc" id="L775">          boolean toIgnore = false;</span>
-<span class="pc bpc" id="L776" title="1 of 6 branches missed.">          if (!ignoreAlreadyUsed &amp;&amp; fileItem.used &amp;&amp;</span>
+<span class="fc" id="L760">          boolean toIgnore = false;</span>
+<span class="pc bpc" id="L761" title="1 of 6 branches missed.">          if (!ignoreAlreadyUsed &amp;&amp; fileItem.used &amp;&amp;</span>
               fileItem.specialId != DbConstant.ILLEGALVALUE) {
-<span class="fc bfc" id="L778" title="All 2 branches covered.">            if (fileItem.status != Status.RESTART) {</span>
-<span class="fc" id="L779">              logger.debug(&quot;File Ignore check: &quot; + fileItem);</span>
-<span class="fc" id="L780">              toIgnore = true;</span>
+<span class="fc bfc" id="L763" title="All 2 branches covered.">            if (fileItem.status != Status.RESTART) {</span>
+<span class="fc" id="L764">              logger.debug(&quot;File Ignore check: {}&quot;, fileItem);</span>
+<span class="fc" id="L765">              toIgnore = true;</span>
             }
           }
-<span class="fc" id="L783">          logger.debug(&quot;File Run check: &quot; + fileItem);</span>
+<span class="fc" id="L768">          logger.debug(&quot;File Run check: {}&quot;, fileItem);</span>
           // now time and hash are the same so act on it
-<span class="fc" id="L785">          fileItem.timeUsed = System.currentTimeMillis();</span>
-<span class="pc bpc" id="L786" title="1 of 2 branches missed.">          if (commandValidFileFactory != null) {</span>
-<span class="nc" id="L787">            final FileMonitorCommandRunnableFuture torun =</span>
-<span class="nc" id="L788">                commandValidFileFactory.create(fileItem);</span>
-<span class="nc bnc" id="L789" title="All 2 branches missed.">            if (!torun.checkFileItemBusiness(fileItem)) {</span>
-<span class="nc" id="L790">              logger.debug(&quot;File Ignore Business check: &quot; + fileItem);</span>
-<span class="nc" id="L791">              continue;</span>
+<span class="fc" id="L770">          fileItem.timeUsed = System.currentTimeMillis();</span>
+<span class="pc bpc" id="L771" title="1 of 2 branches missed.">          if (commandValidFileFactory != null) {</span>
+<span class="nc" id="L772">            final FileMonitorCommandRunnableFuture torun =</span>
+<span class="nc" id="L773">                commandValidFileFactory.create(fileItem);</span>
+<span class="nc bnc" id="L774" title="All 2 branches missed.">            if (!torun.checkFileItemBusiness(fileItem)) {</span>
+<span class="nc" id="L775">              logger.debug(&quot;File Ignore Business check: {}&quot;, fileItem);</span>
+<span class="nc" id="L776">              continue;</span>
             }
-<span class="nc bnc" id="L793" title="All 2 branches missed.">            if (toIgnore) {</span>
-<span class="nc" id="L794">              continue;</span>
+<span class="nc bnc" id="L778" title="All 2 branches missed.">            if (toIgnore) {</span>
+<span class="nc" id="L779">              continue;</span>
             }
-<span class="nc bnc" id="L796" title="All 2 branches missed.">            if (executor != null) {</span>
-<span class="nc" id="L797">              final Future&lt;?&gt; torunFuture = executor.submit(torun);</span>
-<span class="nc" id="L798">              results.add(torunFuture);</span>
-<span class="nc" id="L799">            } else {</span>
-<span class="nc" id="L800">              torun.run(fileItem);</span>
+<span class="nc bnc" id="L781" title="All 2 branches missed.">            if (executor != null) {</span>
+<span class="nc" id="L782">              final Future&lt;?&gt; torunFuture = executor.submit(torun);</span>
+<span class="nc" id="L783">              results.add(torunFuture);</span>
+<span class="nc" id="L784">            } else {</span>
+<span class="nc" id="L785">              torun.run(fileItem);</span>
             }
-<span class="pc bpc" id="L802" title="1 of 2 branches missed.">          } else if (commandValidFile != null) {</span>
-<span class="fc bfc" id="L803" title="All 2 branches covered.">            if (!commandValidFile.checkFileItemBusiness(fileItem)) {</span>
-<span class="fc" id="L804">              logger.debug(&quot;File Ignore Business check: &quot; + fileItem);</span>
-<span class="fc" id="L805">              continue;</span>
+<span class="pc bpc" id="L787" title="1 of 2 branches missed.">          } else if (commandValidFile != null) {</span>
+<span class="fc bfc" id="L788" title="All 2 branches covered.">            if (!commandValidFile.checkFileItemBusiness(fileItem)) {</span>
+<span class="fc" id="L789">              logger.debug(&quot;File Ignore Business check: {}&quot;, fileItem);</span>
+<span class="fc" id="L790">              continue;</span>
             }
-<span class="fc bfc" id="L807" title="All 2 branches covered.">            if (toIgnore) {</span>
-<span class="fc" id="L808">              continue;</span>
+<span class="fc bfc" id="L792" title="All 2 branches covered.">            if (toIgnore) {</span>
+<span class="fc" id="L793">              continue;</span>
             }
-<span class="fc" id="L810">            commandValidFile.run(fileItem);</span>
+<span class="fc" id="L795">            commandValidFile.run(fileItem);</span>
           } else {
-<span class="nc bnc" id="L812" title="All 2 branches missed.">            if (toIgnore) {</span>
-<span class="nc" id="L813">              continue;</span>
+<span class="nc bnc" id="L797" title="All 2 branches missed.">            if (toIgnore) {</span>
+<span class="nc" id="L798">              continue;</span>
             }
-<span class="nc" id="L815">            toUse.add(fileItem);</span>
+<span class="nc" id="L800">            toUse.add(fileItem);</span>
           }
-<span class="fc" id="L817">          fileItemsChanged = true;</span>
-<span class="nc" id="L818">        } catch (final Throwable e) {</span>
-<span class="nc" id="L819">          setThreadName();</span>
-<span class="nc" id="L820">          logger.error(&quot;Error during final file check&quot;, e);</span>
-<span class="fc" id="L821">        }</span>
+<span class="fc" id="L802">          fileItemsChanged = true;</span>
+<span class="nc" id="L803">        } catch (final Throwable e) {</span>
+<span class="nc" id="L804">          setThreadName();</span>
+<span class="nc" id="L805">          logger.error(&quot;Error during final file check&quot;, e);</span>
+<span class="fc" id="L806">        }</span>
       }
-<span class="fc bfc" id="L823" title="All 2 branches covered.">      if (scanSubDir) {</span>
-<span class="fc" id="L824">        files = directory.listFiles();</span>
-<span class="fc bfc" id="L825" title="All 2 branches covered.">        for (final File file : files) {</span>
-<span class="pc bpc" id="L826" title="1 of 2 branches missed.">          if (checkStop()) {</span>
-<span class="nc" id="L827">            return false;</span>
+<span class="fc bfc" id="L808" title="All 2 branches covered.">      if (scanSubDir) {</span>
+<span class="fc" id="L809">        files = directory.listFiles();</span>
+<span class="fc bfc" id="L810" title="All 2 branches covered.">        for (final File file : files) {</span>
+<span class="pc bpc" id="L811" title="1 of 2 branches missed.">          if (checkStop()) {</span>
+<span class="nc" id="L812">            return false;</span>
           }
-<span class="fc bfc" id="L829" title="All 2 branches covered.">          if (file.isDirectory()) {</span>
-<span class="fc" id="L830">            fileItemsChanged = checkOneDir(fileItemsChanged, file);</span>
+<span class="fc bfc" id="L814" title="All 2 branches covered.">          if (file.isDirectory()) {</span>
+<span class="fc" id="L815">            fileItemsChanged = checkOneDir(fileItemsChanged, file);</span>
           }
         }
       }
-<span class="nc" id="L834">    } catch (final Throwable e) {</span>
-<span class="nc" id="L835">      setThreadName();</span>
-<span class="nc" id="L836">      logger.error(&quot;Issue during Directory and File Checking&quot;, e);</span>
+<span class="nc" id="L819">    } catch (final Throwable e) {</span>
+<span class="nc" id="L820">      setThreadName();</span>
+<span class="nc" id="L821">      logger.error(&quot;Issue during Directory and File Checking&quot;, e);</span>
       // ignore
-<span class="fc" id="L838">    }</span>
-<span class="fc" id="L839">    return fileItemsChanged;</span>
+<span class="fc" id="L823">    }</span>
+<span class="fc" id="L824">    return fileItemsChanged;</span>
+  }
+
+  private boolean isFileItemsChangedOnHash(final FileItem fileItem,
+                                           final byte[] hash) {
+<span class="fc" id="L829">    fileItem.hash = hash;</span>
+<span class="fc" id="L830">    fileItem.status = Status.CHANGING;</span>
+<span class="fc" id="L831">    logger.debug(&quot;File Hash check: {}&quot;, fileItem);</span>
+<span class="fc" id="L832">    return true;</span>
+  }
+
+  private boolean isFileItemsChangedOnLastTimeModified(final FileItem fileItem,
+                                                       final long lastTimeModified) {
+    // changed or second time check
+<span class="fc" id="L838">    fileItem.lastTime = lastTimeModified;</span>
+<span class="fc bfc" id="L839" title="All 4 branches covered.">    if (!ignoreAlreadyUsed &amp;&amp; fileItem.used) {</span>
+<span class="fc" id="L840">      fileItem.hash = null;</span>
+    }
+<span class="fc" id="L842">    fileItem.status = Status.CHANGING;</span>
+<span class="fc" id="L843">    logger.debug(&quot;File Change check: {}({})&quot;, fileItem, lastTimeModified);</span>
+<span class="fc" id="L844">    return true;</span>
+  }
+
+  private boolean isFileItemsChangedOnSize(final FileItem fileItem,
+                                           final long size) {
+    // changed or second size check
+<span class="fc" id="L850">    fileItem.size = size;</span>
+<span class="fc" id="L851">    fileItem.status = Status.CHANGING;</span>
+<span class="fc" id="L852">    logger.debug(&quot;File Size check: {}({})&quot;, fileItem, size);</span>
+<span class="fc" id="L853">    return true;</span>
   }
 
   /**
@@ -848,43 +862,43 @@ public class FileMonitor {
     /**
      * @param fileMonitor
      */
-<span class="fc" id="L851">    protected FileMonitorTimerTask(final FileMonitor fileMonitor) {</span>
-<span class="pc bpc" id="L852" title="1 of 2 branches missed.">      if (logger == null) {</span>
-<span class="nc" id="L853">        logger = WaarpLoggerFactory.getLogger(FileMonitor.class);</span>
+<span class="fc" id="L865">    protected FileMonitorTimerTask(final FileMonitor fileMonitor) {</span>
+<span class="pc bpc" id="L866" title="1 of 2 branches missed.">      if (logger == null) {</span>
+<span class="nc" id="L867">        logger = WaarpLoggerFactory.getLogger(FileMonitor.class);</span>
       }
-<span class="fc" id="L855">      this.fileMonitor = fileMonitor;</span>
-<span class="fc" id="L856">    }</span>
+<span class="fc" id="L869">      this.fileMonitor = fileMonitor;</span>
+<span class="fc" id="L870">    }</span>
 
     @Override
-    public void run(final Timeout timeout) throws Exception {
+    public void run(final Timeout timeout) {
       try {
-<span class="fc bfc" id="L861" title="All 2 branches covered.">        if (fileMonitor.checkFiles()) {</span>
-<span class="fc" id="L862">          fileMonitor.setThreadName();</span>
-<span class="pc bpc" id="L863" title="1 of 2 branches missed.">          if (fileMonitor.timer != null) {</span>
+<span class="fc bfc" id="L875" title="All 2 branches covered.">        if (fileMonitor.checkFiles()) {</span>
+<span class="fc" id="L876">          fileMonitor.setThreadName();</span>
+<span class="pc bpc" id="L877" title="1 of 2 branches missed.">          if (fileMonitor.timer != null) {</span>
             try {
-<span class="fc" id="L865">              fileMonitor.timer.newTimeout(this, fileMonitor.elapseTime,</span>
+<span class="fc" id="L879">              fileMonitor.timer.newTimeout(this, fileMonitor.elapseTime,</span>
                                            TimeUnit.MILLISECONDS);
-<span class="nc" id="L867">            } catch (final Throwable e) {</span>
-<span class="nc" id="L868">              logger.error(&quot;Error while pushing next filemonitor step&quot;, e);</span>
+<span class="nc" id="L881">            } catch (final Throwable e) {</span>
+<span class="nc" id="L882">              logger.error(&quot;Error while pushing next filemonitor step&quot;, e);</span>
               // ignore and stop
-<span class="nc" id="L870">              fileMonitor.internalfuture.setSuccess();</span>
-<span class="pc" id="L871">            }</span>
+<span class="nc" id="L884">              fileMonitor.internalfuture.setSuccess();</span>
+<span class="pc" id="L885">            }</span>
           } else {
-<span class="nc" id="L873">            logger.warn(&quot;No Timer found&quot;);</span>
-<span class="nc" id="L874">            fileMonitor.internalfuture.setSuccess();</span>
+<span class="nc" id="L887">            logger.warn(&quot;No Timer found&quot;);</span>
+<span class="nc" id="L888">            fileMonitor.internalfuture.setSuccess();</span>
           }
         } else {
-<span class="fc" id="L877">          fileMonitor.setThreadName();</span>
-<span class="fc" id="L878">          logger.warn(&quot;Stop file found&quot;);</span>
-<span class="fc" id="L879">          fileMonitor.deleteChkFile();</span>
-<span class="fc" id="L880">          fileMonitor.internalfuture.setSuccess();</span>
+<span class="fc" id="L891">          fileMonitor.setThreadName();</span>
+<span class="fc" id="L892">          logger.warn(&quot;Stop file found&quot;);</span>
+<span class="fc" id="L893">          fileMonitor.deleteChkFile();</span>
+<span class="fc" id="L894">          fileMonitor.internalfuture.setSuccess();</span>
         }
-<span class="nc" id="L882">      } catch (final Throwable e) {</span>
-<span class="nc" id="L883">        fileMonitor.setThreadName();</span>
-<span class="nc" id="L884">        logger.error(&quot;Issue during Directory and File Checking&quot;, e);</span>
-<span class="nc" id="L885">        fileMonitor.internalfuture.setSuccess();</span>
-<span class="fc" id="L886">      }</span>
-<span class="fc" id="L887">    }</span>
+<span class="nc" id="L896">      } catch (final Throwable e) {</span>
+<span class="nc" id="L897">        fileMonitor.setThreadName();</span>
+<span class="nc" id="L898">        logger.error(&quot;Issue during Directory and File Checking&quot;, e);</span>
+<span class="nc" id="L899">        fileMonitor.internalfuture.setSuccess();</span>
+<span class="fc" id="L900">      }</span>
+<span class="fc" id="L901">    }</span>
 
   }
 
@@ -899,47 +913,47 @@ public class FileMonitor {
      * @param informationMonitorCommand
      */
     protected FileMonitorTimerInformationTask(
-<span class="nc" id="L902">        final FileMonitorCommandRunnableFuture informationMonitorCommand) {</span>
-<span class="nc bnc" id="L903" title="All 2 branches missed.">      if (logger == null) {</span>
-<span class="nc" id="L904">        logger = WaarpLoggerFactory.getLogger(FileMonitor.class);</span>
+<span class="nc" id="L916">        final FileMonitorCommandRunnableFuture informationMonitorCommand) {</span>
+<span class="nc bnc" id="L917" title="All 2 branches missed.">      if (logger == null) {</span>
+<span class="nc" id="L918">        logger = WaarpLoggerFactory.getLogger(FileMonitor.class);</span>
       }
-<span class="nc" id="L906">      this.informationMonitorCommand = informationMonitorCommand;</span>
-<span class="nc" id="L907">    }</span>
+<span class="nc" id="L920">      this.informationMonitorCommand = informationMonitorCommand;</span>
+<span class="nc" id="L921">    }</span>
 
     @Override
-    public void run(final Timeout timeout) throws Exception {
+    public void run(final Timeout timeout) {
       try {
-<span class="nc" id="L912">        Thread.currentThread().setName(&quot;FileMonitorInformation_&quot; + name);</span>
-<span class="nc bnc" id="L913" title="All 2 branches missed.">        if (!checkStop()) {</span>
-<span class="nc" id="L914">          informationMonitorCommand.run(null);</span>
-<span class="nc bnc" id="L915" title="All 4 branches missed.">          if (timerWaarp != null &amp;&amp; !checkStop()) {</span>
+<span class="nc" id="L926">        Thread.currentThread().setName(&quot;FileMonitorInformation_&quot; + name);</span>
+<span class="nc bnc" id="L927" title="All 2 branches missed.">        if (!checkStop()) {</span>
+<span class="nc" id="L928">          informationMonitorCommand.run(null);</span>
+<span class="nc bnc" id="L929" title="All 4 branches missed.">          if (timerWaarp != null &amp;&amp; !checkStop()) {</span>
             try {
-<span class="nc" id="L917">              timerWaarp</span>
-<span class="nc" id="L918">                  .newTimeout(this, elapseWaarpTime, TimeUnit.MILLISECONDS);</span>
-<span class="nc" id="L919">            } catch (final Throwable e) {</span>
+<span class="nc" id="L931">              timerWaarp</span>
+<span class="nc" id="L932">                  .newTimeout(this, elapseWaarpTime, TimeUnit.MILLISECONDS);</span>
+<span class="nc" id="L933">            } catch (final Throwable e) {</span>
               // stop and ignore
-<span class="nc" id="L921">              logger.error(&quot;Error during nex filemonitor information step&quot;, e);</span>
-<span class="nc" id="L922">              internalfuture.setSuccess();</span>
-<span class="nc" id="L923">            }</span>
+<span class="nc" id="L935">              logger.error(&quot;Error during nex filemonitor information step&quot;, e);</span>
+<span class="nc" id="L936">              internalfuture.setSuccess();</span>
+<span class="nc" id="L937">            }</span>
           } else {
-<span class="nc bnc" id="L925" title="All 2 branches missed.">            if (timerWaarp != null) {</span>
-<span class="nc" id="L926">              logger.warn(&quot;Stop file found&quot;);</span>
+<span class="nc bnc" id="L939" title="All 2 branches missed.">            if (timerWaarp != null) {</span>
+<span class="nc" id="L940">              logger.warn(&quot;Stop file found&quot;);</span>
             } else {
-<span class="nc" id="L928">              logger.warn(&quot;No Timer found&quot;);</span>
+<span class="nc" id="L942">              logger.warn(&quot;No Timer found&quot;);</span>
             }
-<span class="nc" id="L930">            internalfuture.setSuccess();</span>
+<span class="nc" id="L944">            internalfuture.setSuccess();</span>
           }
         } else {
-<span class="nc" id="L933">          logger.warn(&quot;Stop file found&quot;);</span>
-<span class="nc" id="L934">          internalfuture.setSuccess();</span>
+<span class="nc" id="L947">          logger.warn(&quot;Stop file found&quot;);</span>
+<span class="nc" id="L948">          internalfuture.setSuccess();</span>
         }
-<span class="nc" id="L936">      } catch (final Throwable e) {</span>
+<span class="nc" id="L950">      } catch (final Throwable e) {</span>
         // stop and ignore
-<span class="nc" id="L938">        Thread.currentThread().setName(&quot;FileMonitorInformation_&quot; + name);</span>
-<span class="nc" id="L939">        logger.error(&quot;Error during nex filemonitor information step&quot;, e);</span>
-<span class="nc" id="L940">        internalfuture.setSuccess();</span>
-<span class="nc" id="L941">      }</span>
-<span class="nc" id="L942">    }</span>
+<span class="nc" id="L952">        Thread.currentThread().setName(&quot;FileMonitorInformation_&quot; + name);</span>
+<span class="nc" id="L953">        logger.error(&quot;Error during nex filemonitor information step&quot;, e);</span>
+<span class="nc" id="L954">        internalfuture.setSuccess();</span>
+<span class="nc" id="L955">      }</span>
+<span class="nc" id="L956">    }</span>
   }
 
   /**
@@ -960,9 +974,9 @@ public class FileMonitor {
     public AtomicLong todayok;
     public AtomicLong todayerror;
 
-<span class="nc" id="L963">    public FileMonitorInformation() {</span>
+<span class="nc" id="L977">    public FileMonitorInformation() {</span>
       // empty constructor for JSON
-<span class="nc" id="L965">    }</span>
+<span class="nc" id="L979">    }</span>
 
     protected FileMonitorInformation(final String name,
                                      final ConcurrentHashMap&lt;String, FileItem&gt; fileItems,
@@ -974,25 +988,25 @@ public class FileMonitor {
                                      final AtomicLong globalok,
                                      final AtomicLong globalerror,
                                      final AtomicLong todayok,
-<span class="fc" id="L977">                                     final AtomicLong todayerror) {</span>
-<span class="fc" id="L978">      this.name = name;</span>
-<span class="fc" id="L979">      this.fileItems = fileItems;</span>
-<span class="fc" id="L980">      this.removedFileItems = removedFileItems;</span>
-<span class="fc" id="L981">      this.directories = directories;</span>
-<span class="fc" id="L982">      this.stopFile = stopFile;</span>
-<span class="fc" id="L983">      this.statusFile = statusFile;</span>
-<span class="fc" id="L984">      this.elapseTime = elapseTime;</span>
-<span class="fc" id="L985">      this.scanSubDir = scanSubDir;</span>
-<span class="fc" id="L986">      this.globalok = globalok;</span>
-<span class="fc" id="L987">      this.globalerror = globalerror;</span>
-<span class="fc" id="L988">      this.todayok = todayok;</span>
-<span class="fc" id="L989">      this.todayerror = todayerror;</span>
-<span class="fc" id="L990">    }</span>
+<span class="fc" id="L991">                                     final AtomicLong todayerror) {</span>
+<span class="fc" id="L992">      this.name = name;</span>
+<span class="fc" id="L993">      this.fileItems = fileItems;</span>
+<span class="fc" id="L994">      this.removedFileItems = removedFileItems;</span>
+<span class="fc" id="L995">      this.directories = directories;</span>
+<span class="fc" id="L996">      this.stopFile = stopFile;</span>
+<span class="fc" id="L997">      this.statusFile = statusFile;</span>
+<span class="fc" id="L998">      this.elapseTime = elapseTime;</span>
+<span class="fc" id="L999">      this.scanSubDir = scanSubDir;</span>
+<span class="fc" id="L1000">      this.globalok = globalok;</span>
+<span class="fc" id="L1001">      this.globalerror = globalerror;</span>
+<span class="fc" id="L1002">      this.todayok = todayok;</span>
+<span class="fc" id="L1003">      this.todayerror = todayerror;</span>
+<span class="fc" id="L1004">    }</span>
 
   }
 
-<span class="fc" id="L994">  public enum Status {</span>
-<span class="fc" id="L995">    START, CHANGING, VALID, DONE, RESTART</span>
+<span class="fc" id="L1008">  public enum Status {</span>
+<span class="fc" id="L1009">    START, CHANGING, VALID, DONE, RESTART</span>
   }
 
   /**
@@ -1002,32 +1016,32 @@ public class FileMonitor {
     public File file;
     public long size;
     public byte[] hash;
-<span class="pc" id="L1005">    public long lastTime = Long.MIN_VALUE;</span>
-<span class="pc" id="L1006">    public long timeUsed = Long.MIN_VALUE;</span>
+<span class="pc" id="L1019">    public long lastTime = Long.MIN_VALUE;</span>
+<span class="pc" id="L1020">    public long timeUsed = Long.MIN_VALUE;</span>
     public boolean used;
-<span class="pc" id="L1008">    public Status status = Status.START;</span>
-<span class="pc" id="L1009">    public long specialId = DbConstant.ILLEGALVALUE;</span>
+<span class="pc" id="L1022">    public Status status = Status.START;</span>
+<span class="pc" id="L1023">    public long specialId = DbConstant.ILLEGALVALUE;</span>
 
-<span class="nc" id="L1011">    public FileItem() {</span>
+<span class="nc" id="L1025">    public FileItem() {</span>
       // empty constructor for JSON
-<span class="nc" id="L1013">    }</span>
+<span class="nc" id="L1027">    }</span>
 
     /**
      * @param file
      */
-<span class="fc" id="L1018">    protected FileItem(final File file) {</span>
-<span class="fc" id="L1019">      this.file = file;</span>
-<span class="fc" id="L1020">    }</span>
+<span class="fc" id="L1032">    protected FileItem(final File file) {</span>
+<span class="fc" id="L1033">      this.file = file;</span>
+<span class="fc" id="L1034">    }</span>
 
     @Override
     public int hashCode() {
-<span class="nc" id="L1024">      return file.hashCode();</span>
+<span class="nc" id="L1038">      return file.hashCode();</span>
     }
 
     @Override
     public boolean equals(final Object obj) {
       // equality is based on file itself
-<span class="nc bnc" id="L1030" title="All 4 branches missed.">      return obj instanceof FileItem &amp;&amp; file.equals(((FileItem) obj).file);</span>
+<span class="nc bnc" id="L1044" title="All 4 branches missed.">      return obj instanceof FileItem &amp;&amp; file.equals(((FileItem) obj).file);</span>
     }
 
     /**
@@ -1037,86 +1051,86 @@ public class FileMonitor {
      *     file as in equals)
      */
     public boolean isStrictlySame(final FileItem item) {
-<span class="nc bnc" id="L1040" title="All 2 branches missed.">      return item != null &amp;&amp;</span>
-<span class="nc bnc" id="L1041" title="All 2 branches missed.">             file.getAbsolutePath().equals(item.file.getAbsolutePath()) &amp;&amp;</span>
-<span class="nc bnc" id="L1042" title="All 8 branches missed.">             file.length() == item.size &amp;&amp; lastTime == item.lastTime &amp;&amp;</span>
+<span class="nc bnc" id="L1054" title="All 2 branches missed.">      return item != null &amp;&amp;</span>
+<span class="nc bnc" id="L1055" title="All 2 branches missed.">             file.getAbsolutePath().equals(item.file.getAbsolutePath()) &amp;&amp;</span>
+<span class="nc bnc" id="L1056" title="All 8 branches missed.">             file.length() == item.size &amp;&amp; lastTime == item.lastTime &amp;&amp;</span>
              timeUsed == item.timeUsed &amp;&amp; used == item.used &amp;&amp;
-<span class="nc bnc" id="L1044" title="All 4 branches missed.">             status.equals(item.status) &amp;&amp;</span>
-<span class="nc bnc" id="L1045" title="All 4 branches missed.">             (hash != null? Arrays.equals(hash, item.hash) : item.hash == null);</span>
+<span class="nc bnc" id="L1058" title="All 4 branches missed.">             status.equals(item.status) &amp;&amp;</span>
+<span class="nc bnc" id="L1059" title="All 4 branches missed.">             (hash != null? Arrays.equals(hash, item.hash) : item.hash == null);</span>
     }
 
     @Override
     public String toString() {
-<span class="fc" id="L1050">      return file.getAbsolutePath() + &quot; : &quot; + size + &quot; : &quot; + specialId + &quot; : &quot; +</span>
+<span class="fc" id="L1064">      return file.getAbsolutePath() + &quot; : &quot; + size + &quot; : &quot; + specialId + &quot; : &quot; +</span>
              used + &quot; : &quot; + status + &quot; : &quot; + lastTime + &quot; : &quot; + timeUsed;
     }
 
     @Override
     public FileItem clone() { //NOSONAR
-<span class="fc" id="L1056">      final FileItem clone = new FileItem(file);</span>
-<span class="fc" id="L1057">      clone.hash = hash;</span>
-<span class="fc" id="L1058">      clone.lastTime = lastTime;</span>
-<span class="fc" id="L1059">      clone.timeUsed = timeUsed;</span>
-<span class="fc" id="L1060">      clone.used = used;</span>
-<span class="fc" id="L1061">      clone.specialId = specialId;</span>
-<span class="fc" id="L1062">      clone.status = status;</span>
-<span class="fc" id="L1063">      clone.size = size;</span>
-<span class="fc" id="L1064">      return clone;</span>
+<span class="fc" id="L1070">      final FileItem clone = new FileItem(file);</span>
+<span class="fc" id="L1071">      clone.hash = hash;</span>
+<span class="fc" id="L1072">      clone.lastTime = lastTime;</span>
+<span class="fc" id="L1073">      clone.timeUsed = timeUsed;</span>
+<span class="fc" id="L1074">      clone.used = used;</span>
+<span class="fc" id="L1075">      clone.specialId = specialId;</span>
+<span class="fc" id="L1076">      clone.status = status;</span>
+<span class="fc" id="L1077">      clone.size = size;</span>
+<span class="fc" id="L1078">      return clone;</span>
     }
   }
 
   public static void main(final String[] args) {
-<span class="nc bnc" id="L1069" title="All 2 branches missed.">    if (logger == null) {</span>
-<span class="nc" id="L1070">      logger = WaarpLoggerFactory.getLogger(FileMonitor.class);</span>
+<span class="nc bnc" id="L1083" title="All 2 branches missed.">    if (logger == null) {</span>
+<span class="nc" id="L1084">      logger = WaarpLoggerFactory.getLogger(FileMonitor.class);</span>
     }
-<span class="nc bnc" id="L1072" title="All 2 branches missed.">    if (args.length &lt; 3) {</span>
-<span class="nc" id="L1073">      SysErrLogger.FAKE_LOGGER</span>
-<span class="nc" id="L1074">          .syserr(&quot;Need a statusfile, a stopfile and a directory to test&quot;);</span>
-<span class="nc" id="L1075">      return;</span>
+<span class="nc bnc" id="L1086" title="All 2 branches missed.">    if (args.length &lt; 3) {</span>
+<span class="nc" id="L1087">      SysErrLogger.FAKE_LOGGER</span>
+<span class="nc" id="L1088">          .syserr(&quot;Need a statusfile, a stopfile and a directory to test&quot;);</span>
+<span class="nc" id="L1089">      return;</span>
     }
-<span class="nc" id="L1077">    final File file = new File(args[0]);</span>
-<span class="nc bnc" id="L1078" title="All 4 branches missed.">    if (file.exists() &amp;&amp; !file.isFile()) {</span>
-<span class="nc" id="L1079">      SysErrLogger.FAKE_LOGGER.syserr(&quot;Not a correct status file&quot;);</span>
-<span class="nc" id="L1080">      return;</span>
+<span class="nc" id="L1091">    final File file = new File(args[0]);</span>
+<span class="nc bnc" id="L1092" title="All 4 branches missed.">    if (file.exists() &amp;&amp; !file.isFile()) {</span>
+<span class="nc" id="L1093">      SysErrLogger.FAKE_LOGGER.syserr(&quot;Not a correct status file&quot;);</span>
+<span class="nc" id="L1094">      return;</span>
     }
-<span class="nc" id="L1082">    final File stopfile = new File(args[1]);</span>
-<span class="nc bnc" id="L1083" title="All 4 branches missed.">    if (file.exists() &amp;&amp; !file.isFile()) {</span>
-<span class="nc" id="L1084">      SysErrLogger.FAKE_LOGGER.syserr(&quot;Not a correct stop file&quot;);</span>
-<span class="nc" id="L1085">      return;</span>
+<span class="nc" id="L1096">    final File stopfile = new File(args[1]);</span>
+<span class="nc bnc" id="L1097" title="All 4 branches missed.">    if (file.exists() &amp;&amp; !file.isFile()) {</span>
+<span class="nc" id="L1098">      SysErrLogger.FAKE_LOGGER.syserr(&quot;Not a correct stop file&quot;);</span>
+<span class="nc" id="L1099">      return;</span>
     }
-<span class="nc" id="L1087">    final File dir = new File(args[2]);</span>
-<span class="nc bnc" id="L1088" title="All 2 branches missed.">    if (!dir.isDirectory()) {</span>
-<span class="nc" id="L1089">      SysErrLogger.FAKE_LOGGER.syserr(&quot;Not a directory&quot;);</span>
-<span class="nc" id="L1090">      return;</span>
+<span class="nc" id="L1101">    final File dir = new File(args[2]);</span>
+<span class="nc bnc" id="L1102" title="All 2 branches missed.">    if (!dir.isDirectory()) {</span>
+<span class="nc" id="L1103">      SysErrLogger.FAKE_LOGGER.syserr(&quot;Not a directory&quot;);</span>
+<span class="nc" id="L1104">      return;</span>
     }
-<span class="nc" id="L1092">    final FileMonitorCommandRunnableFuture filemonitor =</span>
-<span class="nc" id="L1093">        new FileMonitorCommandRunnableFuture() {</span>
+<span class="nc" id="L1106">    final FileMonitorCommandRunnableFuture filemonitor =</span>
+<span class="nc" id="L1107">        new FileMonitorCommandRunnableFuture() {</span>
           @Override
           public void run(final FileItem file) {
-<span class="nc" id="L1096">            SysErrLogger.FAKE_LOGGER</span>
-<span class="nc" id="L1097">                .syserr(&quot;File New: &quot; + file.file.getAbsolutePath());</span>
-<span class="nc" id="L1098">            finalizeValidFile(true, 0);</span>
-<span class="nc" id="L1099">          }</span>
+<span class="nc" id="L1110">            SysErrLogger.FAKE_LOGGER</span>
+<span class="nc" id="L1111">                .syserr(&quot;File New: &quot; + file.file.getAbsolutePath());</span>
+<span class="nc" id="L1112">            finalizeValidFile(true, 0);</span>
+<span class="nc" id="L1113">          }</span>
         };
-<span class="nc" id="L1101">    final FileMonitor monitor =</span>
+<span class="nc" id="L1115">    final FileMonitor monitor =</span>
         new FileMonitor(&quot;test&quot;, file, stopfile, dir, null, 0,
                         new RegexFileFilter(
                             RegexFileFilter.REGEX_XML_EXTENSION), false,
-<span class="nc" id="L1105">                        filemonitor, new FileMonitorCommandRunnableFuture() {</span>
+<span class="nc" id="L1119">                        filemonitor, new FileMonitorCommandRunnableFuture() {</span>
           @Override
           public void run(final FileItem file) {
-<span class="nc" id="L1108">            SysErrLogger.FAKE_LOGGER</span>
-<span class="nc" id="L1109">                .syserr(&quot;File Del: &quot; + file.file.getAbsolutePath());</span>
-<span class="nc" id="L1110">          }</span>
-<span class="nc" id="L1111">        }, new FileMonitorCommandRunnableFuture() {</span>
+<span class="nc" id="L1122">            SysErrLogger.FAKE_LOGGER</span>
+<span class="nc" id="L1123">                .syserr(&quot;File Del: &quot; + file.file.getAbsolutePath());</span>
+<span class="nc" id="L1124">          }</span>
+<span class="nc" id="L1125">        }, new FileMonitorCommandRunnableFuture() {</span>
           @Override
           public void run(final FileItem unused) {
-<span class="nc" id="L1114">            SysErrLogger.FAKE_LOGGER.syserr(&quot;Check done&quot;);</span>
-<span class="nc" id="L1115">          }</span>
+<span class="nc" id="L1128">            SysErrLogger.FAKE_LOGGER.syserr(&quot;Check done&quot;);</span>
+<span class="nc" id="L1129">          }</span>
         });
-<span class="nc" id="L1117">    filemonitor.setMonitor(monitor);</span>
-<span class="nc" id="L1118">    monitor.start();</span>
-<span class="nc" id="L1119">    monitor.waitForStopFile();</span>
-<span class="nc" id="L1120">  }</span>
+<span class="nc" id="L1131">    filemonitor.setMonitor(monitor);</span>
+<span class="nc" id="L1132">    monitor.start();</span>
+<span class="nc" id="L1133">    monitor.waitForStopFile();</span>
+<span class="nc" id="L1134">  }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

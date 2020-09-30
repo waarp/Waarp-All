@@ -242,11 +242,11 @@ public abstract class AbstractTask implements Runnable {
     } else {
 <span class="nc" id="L243">      this.argRule = null;</span>
     }
-<span class="pc bpc" id="L245" title="1 of 2 branches missed.">    if (argTransfer != null) {</span>
+<span class="fc bfc" id="L245" title="All 2 branches covered.">    if (argTransfer != null) {</span>
 <span class="fc" id="L246">      this.argTransfer =</span>
 <span class="fc" id="L247">          argTransfer.replaceAll(WaarpStringUtils.BLANK_REGEX, &quot; &quot;);</span>
     } else {
-<span class="nc" id="L249">      this.argTransfer = null;</span>
+<span class="fc" id="L249">      this.argTransfer = null;</span>
     }
 <span class="fc" id="L251">    this.session = session;</span>
 <span class="fc" id="L252">    futureCompletion = new R66Future(true);</span>
@@ -263,8 +263,8 @@ public abstract class AbstractTask implements Runnable {
    * @return True if the operation is in success status
    */
   public boolean isSuccess() {
-<span class="nc" id="L266">    futureCompletion.awaitOrInterruptible();</span>
-<span class="nc" id="L267">    return futureCompletion.isSuccess();</span>
+<span class="fc" id="L266">    futureCompletion.awaitOrInterruptible();</span>
+<span class="fc" id="L267">    return futureCompletion.isSuccess();</span>
   }
 
   /**
@@ -299,201 +299,225 @@ public abstract class AbstractTask implements Runnable {
 <span class="nc" id="L299">      useLocalExec = true;</span>
 <span class="nc" id="L300">      WaarpStringUtils.replaceAll(builder, LOCALEXEC, &quot;&quot;);</span>
     }
-<span class="fc" id="L302">    File trueFile = null;</span>
-<span class="pc bpc" id="L303" title="1 of 2 branches missed.">    if (session.getFile() != null) {</span>
-<span class="fc" id="L304">      trueFile = session.getFile().getTrueFile();</span>
-    }
-<span class="pc bpc" id="L306" title="1 of 2 branches missed.">    if (trueFile != null) {</span>
-<span class="fc" id="L307">      WaarpStringUtils</span>
-<span class="fc" id="L308">          .replaceAll(builder, TRUEFULLPATH, trueFile.getAbsolutePath());</span>
-<span class="fc" id="L309">      WaarpStringUtils.replaceAll(builder, TRUEFILENAME, R66Dir</span>
-<span class="fc" id="L310">          .getFinalUniqueFilename(session.getFile()));</span>
-<span class="fc" id="L311">      WaarpStringUtils</span>
-<span class="fc" id="L312">          .replaceAll(builder, FILESIZE, Long.toString(trueFile.length()));</span>
-    } else {
-<span class="nc" id="L314">      WaarpStringUtils.replaceAll(builder, TRUEFULLPATH, &quot;nofile&quot;);</span>
-<span class="nc" id="L315">      WaarpStringUtils.replaceAll(builder, TRUEFILENAME, &quot;nofile&quot;);</span>
-<span class="nc" id="L316">      WaarpStringUtils.replaceAll(builder, FILESIZE, &quot;0&quot;);</span>
-    }
-<span class="fc" id="L318">    final DbTaskRunner runner = session.getRunner();</span>
-<span class="pc bpc" id="L319" title="1 of 2 branches missed.">    if (runner != null) {</span>
-<span class="fc" id="L320">      WaarpStringUtils</span>
-<span class="fc" id="L321">          .replaceAll(builder, ORIGINALFULLPATH, runner.getOriginalFilename());</span>
-<span class="fc" id="L322">      WaarpStringUtils.replaceAll(builder, ORIGINALFILENAME, R66File</span>
-<span class="fc" id="L323">          .getBasename(runner.getOriginalFilename()));</span>
-<span class="fc" id="L324">      WaarpStringUtils.replaceAll(builder, RULE, runner.getRuleId());</span>
-    }
-<span class="fc" id="L326">    DateFormat dateFormat = new SimpleDateFormat(&quot;yyyyMMdd&quot;);</span>
-<span class="fc" id="L327">    final Date date = new Date();</span>
-<span class="fc" id="L328">    WaarpStringUtils.replaceAll(builder, DATE, dateFormat.format(date));</span>
-<span class="fc" id="L329">    dateFormat = new SimpleDateFormat(&quot;HHmmss&quot;);</span>
-<span class="fc" id="L330">    WaarpStringUtils.replaceAll(builder, HOUR, dateFormat.format(date));</span>
-<span class="pc bpc" id="L331" title="1 of 2 branches missed.">    if (session.getAuth() != null) {</span>
-<span class="fc" id="L332">      WaarpStringUtils</span>
-<span class="fc" id="L333">          .replaceAll(builder, REMOTEHOST, session.getAuth().getUser());</span>
+<span class="fc" id="L302">    substituteFile(builder);</span>
+<span class="fc" id="L303">    final DbTaskRunner runner = substituteRunner(builder);</span>
+<span class="fc" id="L304">    substituteDate(builder);</span>
+<span class="fc" id="L305">    substituteHost(builder);</span>
+<span class="fc" id="L306">    WaarpStringUtils.replaceAll(builder, BLOCKSIZE,</span>
+<span class="fc" id="L307">                                Integer.toString(session.getBlockSize()));</span>
+<span class="fc" id="L308">    substitutePath(builder, runner);</span>
+<span class="fc" id="L309">    WaarpStringUtils.replaceAll(builder, HOMEPATH,</span>
+<span class="fc" id="L310">                                Configuration.configuration.getBaseDirectory());</span>
+<span class="fc" id="L311">    substituteErrorCode(builder);</span>
+    // finalname
+<span class="pc bpc" id="L313" title="2 of 4 branches missed.">    if (argFormat != null &amp;&amp; argFormat.length &gt; 0) {</span>
       try {
-<span class="fc" id="L335">        WaarpStringUtils.replaceAll(builder, LOCALHOST,</span>
-                                    Configuration.configuration
-<span class="fc" id="L337">                                        .getHostId(session.getAuth().isSsl()));</span>
-<span class="nc" id="L338">      } catch (final OpenR66ProtocolNoSslException e) {</span>
-        // replace by standard name
-<span class="nc" id="L340">        WaarpStringUtils.replaceAll(builder, LOCALHOST,</span>
-<span class="nc" id="L341">                                    Configuration.configuration.getHostId());</span>
-<span class="fc" id="L342">      }</span>
+<span class="fc" id="L315">        return String.format(builder.toString(), argFormat);</span>
+<span class="nc" id="L316">      } catch (final Exception e) {</span>
+        // ignored error since bad argument in static rule info
+<span class="nc" id="L318">        logger.error(&quot;Bad format in Rule: {&quot; + builder + &quot;} &quot; + e.getMessage());</span>
+      }
     }
-<span class="pc bpc" id="L344" title="1 of 2 branches missed.">    if (session.getRemoteAddress() != null) {</span>
-<span class="fc" id="L345">      WaarpStringUtils.replaceAll(builder, REMOTEHOSTADDR,</span>
-<span class="fc" id="L346">                                  session.getRemoteAddress().toString());</span>
-<span class="fc" id="L347">      WaarpStringUtils.replaceAll(builder, LOCALHOSTADDR,</span>
-<span class="fc" id="L348">                                  session.getLocalAddress().toString());</span>
+<span class="nc" id="L321">    return builder.toString();</span>
+  }
+
+  private void substituteErrorCode(final StringBuilder builder) {
+<span class="pc bpc" id="L325" title="1 of 2 branches missed.">    if (session.getLocalChannelReference() == null) {</span>
+<span class="nc" id="L326">      WaarpStringUtils.replaceAll(builder, ERRORMSG, &quot;NoError&quot;);</span>
+<span class="nc" id="L327">      WaarpStringUtils.replaceAll(builder, ERRORCODE, &quot;-&quot;);</span>
+<span class="nc" id="L328">      WaarpStringUtils</span>
+<span class="nc" id="L329">          .replaceAll(builder, ERRORSTRCODE, ErrorCode.Unknown.name());</span>
     } else {
-<span class="nc" id="L350">      WaarpStringUtils.replaceAll(builder, REMOTEHOSTADDR, &quot;unknown&quot;);</span>
-<span class="nc" id="L351">      WaarpStringUtils.replaceAll(builder, LOCALHOSTADDR, &quot;unknown&quot;);</span>
+      try {
+<span class="fc" id="L332">        WaarpStringUtils.replaceAll(builder, ERRORMSG,</span>
+<span class="fc" id="L333">                                    session.getLocalChannelReference()</span>
+<span class="fc" id="L334">                                           .getErrorMessage());</span>
+<span class="nc" id="L335">      } catch (final NullPointerException e) {</span>
+<span class="nc" id="L336">        WaarpStringUtils.replaceAll(builder, ERRORMSG, &quot;NoError&quot;);</span>
+<span class="fc" id="L337">      }</span>
+      try {
+<span class="fc" id="L339">        WaarpStringUtils.replaceAll(builder, ERRORCODE,</span>
+<span class="fc" id="L340">                                    session.getLocalChannelReference()</span>
+<span class="fc" id="L341">                                           .getCurrentCode().getCode());</span>
+<span class="nc" id="L342">      } catch (final NullPointerException e) {</span>
+<span class="nc" id="L343">        WaarpStringUtils.replaceAll(builder, ERRORCODE, &quot;-&quot;);</span>
+<span class="fc" id="L344">      }</span>
+      try {
+<span class="fc" id="L346">        WaarpStringUtils.replaceAll(builder, ERRORSTRCODE,</span>
+<span class="fc" id="L347">                                    session.getLocalChannelReference()</span>
+<span class="fc" id="L348">                                           .getCurrentCode().name());</span>
+<span class="nc" id="L349">      } catch (final NullPointerException e) {</span>
+<span class="nc" id="L350">        WaarpStringUtils</span>
+<span class="nc" id="L351">            .replaceAll(builder, ERRORSTRCODE, ErrorCode.Unknown.name());</span>
+<span class="fc" id="L352">      }</span>
     }
-<span class="pc bpc" id="L353" title="1 of 2 branches missed.">    if (runner != null) {</span>
-<span class="fc" id="L354">      WaarpStringUtils.replaceAll(builder, TRANSFERID,</span>
-<span class="fc" id="L355">                                  Long.toString(runner.getSpecialId()));</span>
-<span class="fc" id="L356">      final String requester = runner.getRequester();</span>
-<span class="fc" id="L357">      WaarpStringUtils.replaceAll(builder, REQUESTERHOST, requester);</span>
-<span class="fc" id="L358">      final String requested = runner.getRequested();</span>
-<span class="fc" id="L359">      WaarpStringUtils.replaceAll(builder, REQUESTEDHOST, requested);</span>
-<span class="fc" id="L360">      WaarpStringUtils.replaceAll(builder, FULLTRANSFERID,</span>
-<span class="fc" id="L361">                                  runner.getSpecialId() + &quot;_&quot; + requester +</span>
-                                  '_' + requested);
-<span class="fc" id="L363">      WaarpStringUtils.replaceAll(builder, RANKTRANSFER,</span>
-<span class="fc" id="L364">                                  Integer.toString(runner.getRank()));</span>
-    }
-<span class="fc" id="L366">    WaarpStringUtils.replaceAll(builder, BLOCKSIZE,</span>
-<span class="fc" id="L367">                                Integer.toString(session.getBlockSize()));</span>
-<span class="fc" id="L368">    R66Dir dir = new R66Dir(session);</span>
-<span class="pc bpc" id="L369" title="1 of 2 branches missed.">    if (runner != null) {</span>
-<span class="pc bpc" id="L370" title="1 of 4 branches missed.">      if (runner.isRecvThrough() || runner.isSendThrough()) {</span>
+<span class="fc" id="L354">  }</span>
+
+  private void substitutePath(final StringBuilder builder,
+                              final DbTaskRunner runner) {
+<span class="fc" id="L358">    R66Dir dir = new R66Dir(session);</span>
+<span class="pc bpc" id="L359" title="1 of 2 branches missed.">    if (runner != null) {</span>
+<span class="pc bpc" id="L360" title="1 of 4 branches missed.">      if (runner.isRecvThrough() || runner.isSendThrough()) {</span>
         try {
-<span class="fc" id="L372">          dir.changeDirectoryNotChecked(runner.getRule().getRecvPath());</span>
-<span class="fc" id="L373">          WaarpStringUtils.replaceAll(builder, INPATH, dir.getFullPath());</span>
-<span class="nc" id="L374">        } catch (final CommandAbstractException ignored) {</span>
+<span class="fc" id="L362">          dir.changeDirectoryNotChecked(runner.getRule().getRecvPath());</span>
+<span class="fc" id="L363">          WaarpStringUtils.replaceAll(builder, INPATH, dir.getFullPath());</span>
+<span class="nc" id="L364">        } catch (final CommandAbstractException ignored) {</span>
           // nothing
-<span class="fc" id="L376">        }</span>
-<span class="fc" id="L377">        dir = new R66Dir(session);</span>
+<span class="fc" id="L366">        }</span>
+<span class="fc" id="L367">        dir = new R66Dir(session);</span>
         try {
-<span class="fc" id="L379">          dir.changeDirectoryNotChecked(runner.getRule().getSendPath());</span>
-<span class="fc" id="L380">          WaarpStringUtils.replaceAll(builder, OUTPATH, dir.getFullPath());</span>
-<span class="nc" id="L381">        } catch (final CommandAbstractException ignored) {</span>
+<span class="fc" id="L369">          dir.changeDirectoryNotChecked(runner.getRule().getSendPath());</span>
+<span class="fc" id="L370">          WaarpStringUtils.replaceAll(builder, OUTPATH, dir.getFullPath());</span>
+<span class="nc" id="L371">        } catch (final CommandAbstractException ignored) {</span>
           // nothing
-<span class="fc" id="L383">        }</span>
-<span class="fc" id="L384">        dir = new R66Dir(session);</span>
+<span class="fc" id="L373">        }</span>
+<span class="fc" id="L374">        dir = new R66Dir(session);</span>
         try {
-<span class="fc" id="L386">          dir.changeDirectoryNotChecked(runner.getRule().getWorkPath());</span>
-<span class="fc" id="L387">          WaarpStringUtils.replaceAll(builder, WORKPATH, dir.getFullPath());</span>
-<span class="nc" id="L388">        } catch (final CommandAbstractException ignored) {</span>
+<span class="fc" id="L376">          dir.changeDirectoryNotChecked(runner.getRule().getWorkPath());</span>
+<span class="fc" id="L377">          WaarpStringUtils.replaceAll(builder, WORKPATH, dir.getFullPath());</span>
+<span class="nc" id="L378">        } catch (final CommandAbstractException ignored) {</span>
           // nothing
-<span class="fc" id="L390">        }</span>
-<span class="fc" id="L391">        dir = new R66Dir(session);</span>
+<span class="fc" id="L380">        }</span>
+<span class="fc" id="L381">        dir = new R66Dir(session);</span>
         try {
-<span class="fc" id="L393">          dir.changeDirectoryNotChecked(runner.getRule().getArchivePath());</span>
-<span class="fc" id="L394">          WaarpStringUtils.replaceAll(builder, ARCHPATH, dir.getFullPath());</span>
-<span class="nc" id="L395">        } catch (final CommandAbstractException ignored) {</span>
+<span class="fc" id="L383">          dir.changeDirectoryNotChecked(runner.getRule().getArchivePath());</span>
+<span class="fc" id="L384">          WaarpStringUtils.replaceAll(builder, ARCHPATH, dir.getFullPath());</span>
+<span class="nc" id="L385">        } catch (final CommandAbstractException ignored) {</span>
           // nothing
-<span class="pc" id="L397">        }</span>
+<span class="pc" id="L387">        }</span>
       } else {
         try {
-<span class="fc" id="L400">          dir.changeDirectory(runner.getRule().getRecvPath());</span>
-<span class="fc" id="L401">          WaarpStringUtils.replaceAll(builder, INPATH, dir.getFullPath());</span>
-<span class="nc" id="L402">        } catch (final CommandAbstractException ignored) {</span>
+<span class="fc" id="L390">          dir.changeDirectory(runner.getRule().getRecvPath());</span>
+<span class="fc" id="L391">          WaarpStringUtils.replaceAll(builder, INPATH, dir.getFullPath());</span>
+<span class="nc" id="L392">        } catch (final CommandAbstractException ignored) {</span>
           // nothing
-<span class="fc" id="L404">        }</span>
-<span class="fc" id="L405">        dir = new R66Dir(session);</span>
+<span class="fc" id="L394">        }</span>
+<span class="fc" id="L395">        dir = new R66Dir(session);</span>
         try {
-<span class="fc" id="L407">          dir.changeDirectory(runner.getRule().getSendPath());</span>
-<span class="fc" id="L408">          WaarpStringUtils.replaceAll(builder, OUTPATH, dir.getFullPath());</span>
-<span class="nc" id="L409">        } catch (final CommandAbstractException ignored) {</span>
+<span class="fc" id="L397">          dir.changeDirectory(runner.getRule().getSendPath());</span>
+<span class="fc" id="L398">          WaarpStringUtils.replaceAll(builder, OUTPATH, dir.getFullPath());</span>
+<span class="nc" id="L399">        } catch (final CommandAbstractException ignored) {</span>
           // nothing
-<span class="fc" id="L411">        }</span>
-<span class="fc" id="L412">        dir = new R66Dir(session);</span>
+<span class="fc" id="L401">        }</span>
+<span class="fc" id="L402">        dir = new R66Dir(session);</span>
         try {
-<span class="fc" id="L414">          dir.changeDirectory(runner.getRule().getWorkPath());</span>
-<span class="fc" id="L415">          WaarpStringUtils.replaceAll(builder, WORKPATH, dir.getFullPath());</span>
-<span class="nc" id="L416">        } catch (final CommandAbstractException ignored) {</span>
+<span class="fc" id="L404">          dir.changeDirectory(runner.getRule().getWorkPath());</span>
+<span class="fc" id="L405">          WaarpStringUtils.replaceAll(builder, WORKPATH, dir.getFullPath());</span>
+<span class="nc" id="L406">        } catch (final CommandAbstractException ignored) {</span>
           // nothing
-<span class="fc" id="L418">        }</span>
-<span class="fc" id="L419">        dir = new R66Dir(session);</span>
+<span class="fc" id="L408">        }</span>
+<span class="fc" id="L409">        dir = new R66Dir(session);</span>
         try {
-<span class="fc" id="L421">          dir.changeDirectory(runner.getRule().getArchivePath());</span>
-<span class="fc" id="L422">          WaarpStringUtils.replaceAll(builder, ARCHPATH, dir.getFullPath());</span>
-<span class="nc" id="L423">        } catch (final CommandAbstractException ignored) {</span>
+<span class="fc" id="L411">          dir.changeDirectory(runner.getRule().getArchivePath());</span>
+<span class="fc" id="L412">          WaarpStringUtils.replaceAll(builder, ARCHPATH, dir.getFullPath());</span>
+<span class="nc" id="L413">        } catch (final CommandAbstractException ignored) {</span>
           // nothing
-<span class="pc" id="L425">        }</span>
+<span class="pc" id="L415">        }</span>
       }
     } else {
       try {
-<span class="nc" id="L429">        dir.changeDirectory(Configuration.configuration.getInPath());</span>
-<span class="nc" id="L430">        WaarpStringUtils.replaceAll(builder, INPATH, dir.getFullPath());</span>
-<span class="nc" id="L431">      } catch (final CommandAbstractException ignored) {</span>
+<span class="nc" id="L419">        dir.changeDirectory(Configuration.configuration.getInPath());</span>
+<span class="nc" id="L420">        WaarpStringUtils.replaceAll(builder, INPATH, dir.getFullPath());</span>
+<span class="nc" id="L421">      } catch (final CommandAbstractException ignored) {</span>
         // nothing
-<span class="nc" id="L433">      }</span>
-<span class="nc" id="L434">      dir = new R66Dir(session);</span>
+<span class="nc" id="L423">      }</span>
+<span class="nc" id="L424">      dir = new R66Dir(session);</span>
       try {
-<span class="nc" id="L436">        dir.changeDirectory(Configuration.configuration.getOutPath());</span>
-<span class="nc" id="L437">        WaarpStringUtils.replaceAll(builder, OUTPATH, dir.getFullPath());</span>
-<span class="nc" id="L438">      } catch (final CommandAbstractException ignored) {</span>
+<span class="nc" id="L426">        dir.changeDirectory(Configuration.configuration.getOutPath());</span>
+<span class="nc" id="L427">        WaarpStringUtils.replaceAll(builder, OUTPATH, dir.getFullPath());</span>
+<span class="nc" id="L428">      } catch (final CommandAbstractException ignored) {</span>
         // nothing
-<span class="nc" id="L440">      }</span>
-<span class="nc" id="L441">      dir = new R66Dir(session);</span>
+<span class="nc" id="L430">      }</span>
+<span class="nc" id="L431">      dir = new R66Dir(session);</span>
       try {
-<span class="nc" id="L443">        dir.changeDirectory(Configuration.configuration.getWorkingPath());</span>
-<span class="nc" id="L444">        WaarpStringUtils.replaceAll(builder, WORKPATH, dir.getFullPath());</span>
-<span class="nc" id="L445">      } catch (final CommandAbstractException ignored) {</span>
+<span class="nc" id="L433">        dir.changeDirectory(Configuration.configuration.getWorkingPath());</span>
+<span class="nc" id="L434">        WaarpStringUtils.replaceAll(builder, WORKPATH, dir.getFullPath());</span>
+<span class="nc" id="L435">      } catch (final CommandAbstractException ignored) {</span>
         // nothing
-<span class="nc" id="L447">      }</span>
-<span class="nc" id="L448">      dir = new R66Dir(session);</span>
+<span class="nc" id="L437">      }</span>
+<span class="nc" id="L438">      dir = new R66Dir(session);</span>
       try {
-<span class="nc" id="L450">        dir.changeDirectory(Configuration.configuration.getArchivePath());</span>
-<span class="nc" id="L451">        WaarpStringUtils.replaceAll(builder, ARCHPATH, dir.getFullPath());</span>
-<span class="nc" id="L452">      } catch (final CommandAbstractException ignored) {</span>
+<span class="nc" id="L440">        dir.changeDirectory(Configuration.configuration.getArchivePath());</span>
+<span class="nc" id="L441">        WaarpStringUtils.replaceAll(builder, ARCHPATH, dir.getFullPath());</span>
+<span class="nc" id="L442">      } catch (final CommandAbstractException ignored) {</span>
         // nothing
-<span class="nc" id="L454">      }</span>
+<span class="nc" id="L444">      }</span>
     }
-<span class="fc" id="L456">    WaarpStringUtils.replaceAll(builder, HOMEPATH,</span>
-<span class="fc" id="L457">                                Configuration.configuration.getBaseDirectory());</span>
-<span class="pc bpc" id="L458" title="1 of 2 branches missed.">    if (session.getLocalChannelReference() == null) {</span>
-<span class="nc" id="L459">      WaarpStringUtils.replaceAll(builder, ERRORMSG, &quot;NoError&quot;);</span>
-<span class="nc" id="L460">      WaarpStringUtils.replaceAll(builder, ERRORCODE, &quot;-&quot;);</span>
-<span class="nc" id="L461">      WaarpStringUtils</span>
-<span class="nc" id="L462">          .replaceAll(builder, ERRORSTRCODE, ErrorCode.Unknown.name());</span>
+<span class="fc" id="L446">  }</span>
+
+  private void substituteHost(final StringBuilder builder) {
+<span class="pc bpc" id="L449" title="1 of 2 branches missed.">    if (session.getAuth() != null) {</span>
+<span class="fc" id="L450">      WaarpStringUtils</span>
+<span class="fc" id="L451">          .replaceAll(builder, REMOTEHOST, session.getAuth().getUser());</span>
+      try {
+<span class="fc" id="L453">        WaarpStringUtils.replaceAll(builder, LOCALHOST,</span>
+                                    Configuration.configuration
+<span class="fc" id="L455">                                        .getHostId(session.getAuth().isSsl()));</span>
+<span class="nc" id="L456">      } catch (final OpenR66ProtocolNoSslException e) {</span>
+        // replace by standard name
+<span class="nc" id="L458">        WaarpStringUtils.replaceAll(builder, LOCALHOST,</span>
+<span class="nc" id="L459">                                    Configuration.configuration.getHostId());</span>
+<span class="fc" id="L460">      }</span>
+    }
+<span class="pc bpc" id="L462" title="1 of 2 branches missed.">    if (session.getRemoteAddress() != null) {</span>
+<span class="fc" id="L463">      WaarpStringUtils.replaceAll(builder, REMOTEHOSTADDR,</span>
+<span class="fc" id="L464">                                  session.getRemoteAddress().toString());</span>
+<span class="fc" id="L465">      WaarpStringUtils.replaceAll(builder, LOCALHOSTADDR,</span>
+<span class="fc" id="L466">                                  session.getLocalAddress().toString());</span>
     } else {
-      try {
-<span class="fc" id="L465">        WaarpStringUtils.replaceAll(builder, ERRORMSG,</span>
-<span class="fc" id="L466">                                    session.getLocalChannelReference()</span>
-<span class="fc" id="L467">                                           .getErrorMessage());</span>
-<span class="nc" id="L468">      } catch (final NullPointerException e) {</span>
-<span class="nc" id="L469">        WaarpStringUtils.replaceAll(builder, ERRORMSG, &quot;NoError&quot;);</span>
-<span class="fc" id="L470">      }</span>
-      try {
-<span class="fc" id="L472">        WaarpStringUtils.replaceAll(builder, ERRORCODE,</span>
-<span class="fc" id="L473">                                    session.getLocalChannelReference()</span>
-<span class="fc" id="L474">                                           .getCurrentCode().getCode());</span>
-<span class="nc" id="L475">      } catch (final NullPointerException e) {</span>
-<span class="nc" id="L476">        WaarpStringUtils.replaceAll(builder, ERRORCODE, &quot;-&quot;);</span>
-<span class="fc" id="L477">      }</span>
-      try {
-<span class="fc" id="L479">        WaarpStringUtils.replaceAll(builder, ERRORSTRCODE,</span>
-<span class="fc" id="L480">                                    session.getLocalChannelReference()</span>
-<span class="fc" id="L481">                                           .getCurrentCode().name());</span>
-<span class="nc" id="L482">      } catch (final NullPointerException e) {</span>
-<span class="nc" id="L483">        WaarpStringUtils</span>
-<span class="nc" id="L484">            .replaceAll(builder, ERRORSTRCODE, ErrorCode.Unknown.name());</span>
-<span class="fc" id="L485">      }</span>
+<span class="nc" id="L468">      WaarpStringUtils.replaceAll(builder, REMOTEHOSTADDR, &quot;unknown&quot;);</span>
+<span class="nc" id="L469">      WaarpStringUtils.replaceAll(builder, LOCALHOSTADDR, &quot;unknown&quot;);</span>
     }
-    // finalname
-<span class="pc bpc" id="L488" title="2 of 4 branches missed.">    if (argFormat != null &amp;&amp; argFormat.length &gt; 0) {</span>
-      try {
-<span class="fc" id="L490">        return String.format(builder.toString(), argFormat);</span>
-<span class="nc" id="L491">      } catch (final Exception e) {</span>
-        // ignored error since bad argument in static rule info
-<span class="nc" id="L493">        logger.error(&quot;Bad format in Rule: {&quot; + builder + &quot;} &quot; + e.getMessage());</span>
-      }
+<span class="fc" id="L471">  }</span>
+
+  private void substituteDate(final StringBuilder builder) {
+<span class="fc" id="L474">    DateFormat dateFormat = new SimpleDateFormat(&quot;yyyyMMdd&quot;);</span>
+<span class="fc" id="L475">    final Date date = new Date();</span>
+<span class="fc" id="L476">    WaarpStringUtils.replaceAll(builder, DATE, dateFormat.format(date));</span>
+<span class="fc" id="L477">    dateFormat = new SimpleDateFormat(&quot;HHmmss&quot;);</span>
+<span class="fc" id="L478">    WaarpStringUtils.replaceAll(builder, HOUR, dateFormat.format(date));</span>
+<span class="fc" id="L479">  }</span>
+
+  private DbTaskRunner substituteRunner(final StringBuilder builder) {
+<span class="fc" id="L482">    final DbTaskRunner runner = session.getRunner();</span>
+<span class="pc bpc" id="L483" title="1 of 2 branches missed.">    if (runner != null) {</span>
+<span class="fc" id="L484">      WaarpStringUtils</span>
+<span class="fc" id="L485">          .replaceAll(builder, ORIGINALFULLPATH, runner.getOriginalFilename());</span>
+<span class="fc" id="L486">      WaarpStringUtils.replaceAll(builder, ORIGINALFILENAME, R66File</span>
+<span class="fc" id="L487">          .getBasename(runner.getOriginalFilename()));</span>
+<span class="fc" id="L488">      WaarpStringUtils.replaceAll(builder, RULE, runner.getRuleId());</span>
+<span class="fc" id="L489">      WaarpStringUtils.replaceAll(builder, TRANSFERID,</span>
+<span class="fc" id="L490">                                  Long.toString(runner.getSpecialId()));</span>
+<span class="fc" id="L491">      final String requester = runner.getRequester();</span>
+<span class="fc" id="L492">      WaarpStringUtils.replaceAll(builder, REQUESTERHOST, requester);</span>
+<span class="fc" id="L493">      final String requested = runner.getRequested();</span>
+<span class="fc" id="L494">      WaarpStringUtils.replaceAll(builder, REQUESTEDHOST, requested);</span>
+<span class="fc" id="L495">      WaarpStringUtils.replaceAll(builder, FULLTRANSFERID,</span>
+<span class="fc" id="L496">                                  runner.getSpecialId() + &quot;_&quot; + requester +</span>
+                                  '_' + requested);
+<span class="fc" id="L498">      WaarpStringUtils.replaceAll(builder, RANKTRANSFER,</span>
+<span class="fc" id="L499">                                  Integer.toString(runner.getRank()));</span>
     }
-<span class="nc" id="L496">    return builder.toString();</span>
+<span class="fc" id="L501">    return runner;</span>
   }
+
+  private void substituteFile(final StringBuilder builder) {
+<span class="fc" id="L505">    File trueFile = null;</span>
+<span class="pc bpc" id="L506" title="1 of 2 branches missed.">    if (session.getFile() != null) {</span>
+<span class="fc" id="L507">      trueFile = session.getFile().getTrueFile();</span>
+    }
+<span class="pc bpc" id="L509" title="1 of 2 branches missed.">    if (trueFile != null) {</span>
+<span class="fc" id="L510">      WaarpStringUtils</span>
+<span class="fc" id="L511">          .replaceAll(builder, TRUEFULLPATH, trueFile.getAbsolutePath());</span>
+<span class="fc" id="L512">      WaarpStringUtils.replaceAll(builder, TRUEFILENAME, R66Dir</span>
+<span class="fc" id="L513">          .getFinalUniqueFilename(session.getFile()));</span>
+<span class="fc" id="L514">      WaarpStringUtils</span>
+<span class="fc" id="L515">          .replaceAll(builder, FILESIZE, Long.toString(trueFile.length()));</span>
+    } else {
+<span class="nc" id="L517">      WaarpStringUtils.replaceAll(builder, TRUEFULLPATH, &quot;nofile&quot;);</span>
+<span class="nc" id="L518">      WaarpStringUtils.replaceAll(builder, TRUEFILENAME, &quot;nofile&quot;);</span>
+<span class="nc" id="L519">      WaarpStringUtils.replaceAll(builder, FILESIZE, &quot;0&quot;);</span>
+    }
+<span class="fc" id="L521">  }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

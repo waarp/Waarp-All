@@ -188,81 +188,80 @@
 <a class="jxr_linenumber" name="L180" href="#L180">180</a> <em class="jxr_comment">     * rhost, networkTransaction, packet); transaction.run(); future.awaitUninterruptibly()</em>
 <a class="jxr_linenumber" name="L181" href="#L181">181</a> <em class="jxr_comment">     */</em>
 <a class="jxr_linenumber" name="L182" href="#L182">182</a>     <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">long</strong> time2 = System.currentTimeMillis();
-<a class="jxr_linenumber" name="L183" href="#L183">183</a>     logger.debug(<span class="jxr_string">"Finish Business Request: "</span> + future.isSuccess());
+<a class="jxr_linenumber" name="L183" href="#L183">183</a>     logger.debug(<span class="jxr_string">"Finish Business Request: {}"</span>, future.isSuccess());
 <a class="jxr_linenumber" name="L184" href="#L184">184</a>     <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">long</strong> delay = time2 - time1;
 <a class="jxr_linenumber" name="L185" href="#L185">185</a>     <strong class="jxr_keyword">if</strong> (future.isSuccess()) {
 <a class="jxr_linenumber" name="L186" href="#L186">186</a>       logger.info(
-<a class="jxr_linenumber" name="L187" href="#L187">187</a>           <span class="jxr_string">"Business Request in status: SUCCESS"</span> + <span class="jxr_string">"    &lt;REMOTE&gt;"</span> + rhost +
-<a class="jxr_linenumber" name="L188" href="#L188">188</a>           <span class="jxr_string">"&lt;/REMOTE&gt;"</span> + <span class="jxr_string">"    delay: "</span> + delay);
+<a class="jxr_linenumber" name="L187" href="#L187">187</a>           <span class="jxr_string">"Business Request in status: SUCCESS    &lt;REMOTE&gt;{}&lt;/REMOTE&gt;    delay: {}"</span>,
+<a class="jxr_linenumber" name="L188" href="#L188">188</a>           rhost, delay);
 <a class="jxr_linenumber" name="L189" href="#L189">189</a>     } <strong class="jxr_keyword">else</strong> {
 <a class="jxr_linenumber" name="L190" href="#L190">190</a>       logger.info(
-<a class="jxr_linenumber" name="L191" href="#L191">191</a>           <span class="jxr_string">"Business Request in status: FAILURE"</span> + <span class="jxr_string">"    &lt;REMOTE&gt;"</span> + rhost +
-<a class="jxr_linenumber" name="L192" href="#L192">192</a>           <span class="jxr_string">"&lt;/REMOTE&gt;"</span> + <span class="jxr_string">"    &lt;ERROR&gt;"</span> + future.getCause() + <span class="jxr_string">"&lt;/ERROR&gt;"</span> +
-<a class="jxr_linenumber" name="L193" href="#L193">193</a>           <span class="jxr_string">"    delay: "</span> + delay);
-<a class="jxr_linenumber" name="L194" href="#L194">194</a>       <strong class="jxr_keyword">if</strong> (DetectionUtils.isJunit()) {
-<a class="jxr_linenumber" name="L195" href="#L195">195</a>         <strong class="jxr_keyword">return</strong>;
-<a class="jxr_linenumber" name="L196" href="#L196">196</a>       }
-<a class="jxr_linenumber" name="L197" href="#L197">197</a>       networkTransaction.closeAll();
-<a class="jxr_linenumber" name="L198" href="#L198">198</a>       System.exit(ErrorCode.Unknown.ordinal());<em class="jxr_comment">//NOSONAR</em>
-<a class="jxr_linenumber" name="L199" href="#L199">199</a>     }
-<a class="jxr_linenumber" name="L200" href="#L200">200</a>     networkTransaction.closeAll();
-<a class="jxr_linenumber" name="L201" href="#L201">201</a>   }
-<a class="jxr_linenumber" name="L202" href="#L202">202</a> 
-<a class="jxr_linenumber" name="L203" href="#L203">203</a>   <strong class="jxr_keyword">protected</strong> <strong class="jxr_keyword">static</strong> String rhost;
-<a class="jxr_linenumber" name="L204" href="#L204">204</a>   <strong class="jxr_keyword">protected</strong> <strong class="jxr_keyword">static</strong> String classname;
-<a class="jxr_linenumber" name="L205" href="#L205">205</a>   <strong class="jxr_keyword">protected</strong> <strong class="jxr_keyword">static</strong> String classarg;
-<a class="jxr_linenumber" name="L206" href="#L206">206</a>   <strong class="jxr_keyword">protected</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">boolean</strong> nolog;
-<a class="jxr_linenumber" name="L207" href="#L207">207</a> 
-<a class="jxr_linenumber" name="L208" href="#L208">208</a>   <em class="jxr_javadoccomment">/**</em>
-<a class="jxr_linenumber" name="L209" href="#L209">209</a> <em class="jxr_javadoccomment">   * Parse the parameter and set current values</em>
-<a class="jxr_linenumber" name="L210" href="#L210">210</a> <em class="jxr_javadoccomment">   *</em>
-<a class="jxr_linenumber" name="L211" href="#L211">211</a> <em class="jxr_javadoccomment">   * @param args</em>
-<a class="jxr_linenumber" name="L212" href="#L212">212</a> <em class="jxr_javadoccomment">   *</em>
-<a class="jxr_linenumber" name="L213" href="#L213">213</a> <em class="jxr_javadoccomment">   * @return True if all parameters were found and correct</em>
-<a class="jxr_linenumber" name="L214" href="#L214">214</a> <em class="jxr_javadoccomment">   */</em>
-<a class="jxr_linenumber" name="L215" href="#L215">215</a>   <strong class="jxr_keyword">protected</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">boolean</strong> getParams(<strong class="jxr_keyword">final</strong> String[] args) {
-<a class="jxr_linenumber" name="L216" href="#L216">216</a>     <strong class="jxr_keyword">if</strong> (logger == <strong class="jxr_keyword">null</strong>) {
-<a class="jxr_linenumber" name="L217" href="#L217">217</a>       logger = WaarpLoggerFactory.getLogger(AbstractBusinessRequest.<strong class="jxr_keyword">class</strong>);
-<a class="jxr_linenumber" name="L218" href="#L218">218</a>     }
-<a class="jxr_linenumber" name="L219" href="#L219">219</a>     <strong class="jxr_keyword">if</strong> (args.length &lt; 3) {
-<a class="jxr_linenumber" name="L220" href="#L220">220</a>       logger.error(INFO_ARGS);
-<a class="jxr_linenumber" name="L221" href="#L221">221</a>       <strong class="jxr_keyword">return</strong> false;
-<a class="jxr_linenumber" name="L222" href="#L222">222</a>     }
-<a class="jxr_linenumber" name="L223" href="#L223">223</a>     <strong class="jxr_keyword">if</strong> (!FileBasedConfiguration
-<a class="jxr_linenumber" name="L224" href="#L224">224</a>         .setClientConfigurationFromXml(Configuration.configuration, args[0])) {
-<a class="jxr_linenumber" name="L225" href="#L225">225</a>       logger.error(
-<a class="jxr_linenumber" name="L226" href="#L226">226</a>           Messages.getString(<span class="jxr_string">"Configuration.NeedCorrectConfig"</span>)); <em class="jxr_comment">//$NON-NLS-1$</em>
-<a class="jxr_linenumber" name="L227" href="#L227">227</a>       <strong class="jxr_keyword">return</strong> false;
-<a class="jxr_linenumber" name="L228" href="#L228">228</a>     }
-<a class="jxr_linenumber" name="L229" href="#L229">229</a>     <em class="jxr_comment">// Now set default values from configuration</em>
-<a class="jxr_linenumber" name="L230" href="#L230">230</a>     <strong class="jxr_keyword">for</strong> (<strong class="jxr_keyword">int</strong> i = 1; i &lt; args.length; i++) {
-<a class="jxr_linenumber" name="L231" href="#L231">231</a>       <strong class="jxr_keyword">if</strong> (<span class="jxr_string">"-to"</span>.equalsIgnoreCase(args[i])) {
-<a class="jxr_linenumber" name="L232" href="#L232">232</a>         i++;
-<a class="jxr_linenumber" name="L233" href="#L233">233</a>         rhost = args[i];
-<a class="jxr_linenumber" name="L234" href="#L234">234</a>         <strong class="jxr_keyword">if</strong> (Configuration.configuration.getAliases().containsKey(rhost)) {
-<a class="jxr_linenumber" name="L235" href="#L235">235</a>           rhost = Configuration.configuration.getAliases().get(rhost);
-<a class="jxr_linenumber" name="L236" href="#L236">236</a>         }
-<a class="jxr_linenumber" name="L237" href="#L237">237</a>       } <strong class="jxr_keyword">else</strong> <strong class="jxr_keyword">if</strong> (<span class="jxr_string">"-class"</span>.equalsIgnoreCase(args[i])) {
-<a class="jxr_linenumber" name="L238" href="#L238">238</a>         i++;
-<a class="jxr_linenumber" name="L239" href="#L239">239</a>         classname = args[i];
-<a class="jxr_linenumber" name="L240" href="#L240">240</a>       } <strong class="jxr_keyword">else</strong> <strong class="jxr_keyword">if</strong> (<span class="jxr_string">"-arg"</span>.equalsIgnoreCase(args[i])) {
-<a class="jxr_linenumber" name="L241" href="#L241">241</a>         i++;
-<a class="jxr_linenumber" name="L242" href="#L242">242</a>         classarg = args[i];
-<a class="jxr_linenumber" name="L243" href="#L243">243</a>       } <strong class="jxr_keyword">else</strong> <strong class="jxr_keyword">if</strong> (<span class="jxr_string">"-nolog"</span>.equalsIgnoreCase(args[i])) {
-<a class="jxr_linenumber" name="L244" href="#L244">244</a>         nolog = <strong class="jxr_keyword">true</strong>;
-<a class="jxr_linenumber" name="L245" href="#L245">245</a>         i++;
-<a class="jxr_linenumber" name="L246" href="#L246">246</a>       }
-<a class="jxr_linenumber" name="L247" href="#L247">247</a>     }
-<a class="jxr_linenumber" name="L248" href="#L248">248</a>     OutputFormat.getParams(args);
-<a class="jxr_linenumber" name="L249" href="#L249">249</a>     <strong class="jxr_keyword">if</strong> (rhost != <strong class="jxr_keyword">null</strong> &amp;&amp; classname != <strong class="jxr_keyword">null</strong>) {
-<a class="jxr_linenumber" name="L250" href="#L250">250</a>       <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">true</strong>;
-<a class="jxr_linenumber" name="L251" href="#L251">251</a>     }
-<a class="jxr_linenumber" name="L252" href="#L252">252</a>     logger.error(Messages.getString(<span class="jxr_string">"AbstractBusinessRequest.NeedMoreArgs"</span>,
-<a class="jxr_linenumber" name="L253" href="#L253">253</a>                                     <span class="jxr_string">"(-to -class)"</span>) + INFO_ARGS); <em class="jxr_comment">//$NON-NLS-1$</em>
-<a class="jxr_linenumber" name="L254" href="#L254">254</a>     <strong class="jxr_keyword">return</strong> false;
-<a class="jxr_linenumber" name="L255" href="#L255">255</a>   }
-<a class="jxr_linenumber" name="L256" href="#L256">256</a> 
-<a class="jxr_linenumber" name="L257" href="#L257">257</a> }
+<a class="jxr_linenumber" name="L191" href="#L191">191</a>           <span class="jxr_string">"Business Request in status: FAILURE    &lt;REMOTE&gt;{}&lt;/REMOTE&gt;    &lt;ERROR&gt;{}&lt;/ERROR&gt;    delay: {}"</span>,
+<a class="jxr_linenumber" name="L192" href="#L192">192</a>           rhost, future.getCause(), delay);
+<a class="jxr_linenumber" name="L193" href="#L193">193</a>       <strong class="jxr_keyword">if</strong> (DetectionUtils.isJunit()) {
+<a class="jxr_linenumber" name="L194" href="#L194">194</a>         <strong class="jxr_keyword">return</strong>;
+<a class="jxr_linenumber" name="L195" href="#L195">195</a>       }
+<a class="jxr_linenumber" name="L196" href="#L196">196</a>       networkTransaction.closeAll();
+<a class="jxr_linenumber" name="L197" href="#L197">197</a>       System.exit(ErrorCode.Unknown.ordinal());<em class="jxr_comment">//NOSONAR</em>
+<a class="jxr_linenumber" name="L198" href="#L198">198</a>     }
+<a class="jxr_linenumber" name="L199" href="#L199">199</a>     networkTransaction.closeAll();
+<a class="jxr_linenumber" name="L200" href="#L200">200</a>   }
+<a class="jxr_linenumber" name="L201" href="#L201">201</a> 
+<a class="jxr_linenumber" name="L202" href="#L202">202</a>   <strong class="jxr_keyword">protected</strong> <strong class="jxr_keyword">static</strong> String rhost;
+<a class="jxr_linenumber" name="L203" href="#L203">203</a>   <strong class="jxr_keyword">protected</strong> <strong class="jxr_keyword">static</strong> String classname;
+<a class="jxr_linenumber" name="L204" href="#L204">204</a>   <strong class="jxr_keyword">protected</strong> <strong class="jxr_keyword">static</strong> String classarg;
+<a class="jxr_linenumber" name="L205" href="#L205">205</a>   <strong class="jxr_keyword">protected</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">boolean</strong> nolog;
+<a class="jxr_linenumber" name="L206" href="#L206">206</a> 
+<a class="jxr_linenumber" name="L207" href="#L207">207</a>   <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L208" href="#L208">208</a> <em class="jxr_javadoccomment">   * Parse the parameter and set current values</em>
+<a class="jxr_linenumber" name="L209" href="#L209">209</a> <em class="jxr_javadoccomment">   *</em>
+<a class="jxr_linenumber" name="L210" href="#L210">210</a> <em class="jxr_javadoccomment">   * @param args</em>
+<a class="jxr_linenumber" name="L211" href="#L211">211</a> <em class="jxr_javadoccomment">   *</em>
+<a class="jxr_linenumber" name="L212" href="#L212">212</a> <em class="jxr_javadoccomment">   * @return True if all parameters were found and correct</em>
+<a class="jxr_linenumber" name="L213" href="#L213">213</a> <em class="jxr_javadoccomment">   */</em>
+<a class="jxr_linenumber" name="L214" href="#L214">214</a>   <strong class="jxr_keyword">protected</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">boolean</strong> getParams(<strong class="jxr_keyword">final</strong> String[] args) {
+<a class="jxr_linenumber" name="L215" href="#L215">215</a>     <strong class="jxr_keyword">if</strong> (logger == <strong class="jxr_keyword">null</strong>) {
+<a class="jxr_linenumber" name="L216" href="#L216">216</a>       logger = WaarpLoggerFactory.getLogger(AbstractBusinessRequest.<strong class="jxr_keyword">class</strong>);
+<a class="jxr_linenumber" name="L217" href="#L217">217</a>     }
+<a class="jxr_linenumber" name="L218" href="#L218">218</a>     <strong class="jxr_keyword">if</strong> (args.length &lt; 3) {
+<a class="jxr_linenumber" name="L219" href="#L219">219</a>       logger.error(INFO_ARGS);
+<a class="jxr_linenumber" name="L220" href="#L220">220</a>       <strong class="jxr_keyword">return</strong> false;
+<a class="jxr_linenumber" name="L221" href="#L221">221</a>     }
+<a class="jxr_linenumber" name="L222" href="#L222">222</a>     <strong class="jxr_keyword">if</strong> (!FileBasedConfiguration
+<a class="jxr_linenumber" name="L223" href="#L223">223</a>         .setClientConfigurationFromXml(Configuration.configuration, args[0])) {
+<a class="jxr_linenumber" name="L224" href="#L224">224</a>       logger.error(
+<a class="jxr_linenumber" name="L225" href="#L225">225</a>           Messages.getString(<span class="jxr_string">"Configuration.NeedCorrectConfig"</span>)); <em class="jxr_comment">//$NON-NLS-1$</em>
+<a class="jxr_linenumber" name="L226" href="#L226">226</a>       <strong class="jxr_keyword">return</strong> false;
+<a class="jxr_linenumber" name="L227" href="#L227">227</a>     }
+<a class="jxr_linenumber" name="L228" href="#L228">228</a>     <em class="jxr_comment">// Now set default values from configuration</em>
+<a class="jxr_linenumber" name="L229" href="#L229">229</a>     <strong class="jxr_keyword">for</strong> (<strong class="jxr_keyword">int</strong> i = 1; i &lt; args.length; i++) {
+<a class="jxr_linenumber" name="L230" href="#L230">230</a>       <strong class="jxr_keyword">if</strong> (<span class="jxr_string">"-to"</span>.equalsIgnoreCase(args[i])) {
+<a class="jxr_linenumber" name="L231" href="#L231">231</a>         i++;
+<a class="jxr_linenumber" name="L232" href="#L232">232</a>         rhost = args[i];
+<a class="jxr_linenumber" name="L233" href="#L233">233</a>         <strong class="jxr_keyword">if</strong> (Configuration.configuration.getAliases().containsKey(rhost)) {
+<a class="jxr_linenumber" name="L234" href="#L234">234</a>           rhost = Configuration.configuration.getAliases().get(rhost);
+<a class="jxr_linenumber" name="L235" href="#L235">235</a>         }
+<a class="jxr_linenumber" name="L236" href="#L236">236</a>       } <strong class="jxr_keyword">else</strong> <strong class="jxr_keyword">if</strong> (<span class="jxr_string">"-class"</span>.equalsIgnoreCase(args[i])) {
+<a class="jxr_linenumber" name="L237" href="#L237">237</a>         i++;
+<a class="jxr_linenumber" name="L238" href="#L238">238</a>         classname = args[i];
+<a class="jxr_linenumber" name="L239" href="#L239">239</a>       } <strong class="jxr_keyword">else</strong> <strong class="jxr_keyword">if</strong> (<span class="jxr_string">"-arg"</span>.equalsIgnoreCase(args[i])) {
+<a class="jxr_linenumber" name="L240" href="#L240">240</a>         i++;
+<a class="jxr_linenumber" name="L241" href="#L241">241</a>         classarg = args[i];
+<a class="jxr_linenumber" name="L242" href="#L242">242</a>       } <strong class="jxr_keyword">else</strong> <strong class="jxr_keyword">if</strong> (<span class="jxr_string">"-nolog"</span>.equalsIgnoreCase(args[i])) {
+<a class="jxr_linenumber" name="L243" href="#L243">243</a>         nolog = <strong class="jxr_keyword">true</strong>;
+<a class="jxr_linenumber" name="L244" href="#L244">244</a>         i++;
+<a class="jxr_linenumber" name="L245" href="#L245">245</a>       }
+<a class="jxr_linenumber" name="L246" href="#L246">246</a>     }
+<a class="jxr_linenumber" name="L247" href="#L247">247</a>     OutputFormat.getParams(args);
+<a class="jxr_linenumber" name="L248" href="#L248">248</a>     <strong class="jxr_keyword">if</strong> (rhost != <strong class="jxr_keyword">null</strong> &amp;&amp; classname != <strong class="jxr_keyword">null</strong>) {
+<a class="jxr_linenumber" name="L249" href="#L249">249</a>       <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">true</strong>;
+<a class="jxr_linenumber" name="L250" href="#L250">250</a>     }
+<a class="jxr_linenumber" name="L251" href="#L251">251</a>     logger.error(Messages.getString(<span class="jxr_string">"AbstractBusinessRequest.NeedMoreArgs"</span>,
+<a class="jxr_linenumber" name="L252" href="#L252">252</a>                                     <span class="jxr_string">"(-to -class)"</span>) + INFO_ARGS); <em class="jxr_comment">//$NON-NLS-1$</em>
+<a class="jxr_linenumber" name="L253" href="#L253">253</a>     <strong class="jxr_keyword">return</strong> false;
+<a class="jxr_linenumber" name="L254" href="#L254">254</a>   }
+<a class="jxr_linenumber" name="L255" href="#L255">255</a> 
+<a class="jxr_linenumber" name="L256" href="#L256">256</a> }
 </pre>
 <hr/>
 <div id="footer">Copyright &#169; 2009&#x2013;2020 <a href="http://www.waarp.fr">Waarp</a>. All rights reserved.</div>

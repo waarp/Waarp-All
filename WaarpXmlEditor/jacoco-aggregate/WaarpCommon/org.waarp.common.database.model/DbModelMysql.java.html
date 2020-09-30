@@ -20,7 +20,6 @@
 package org.waarp.common.database.model;
 
 import com.mysql.jdbc.Driver;
-import com.mysql.jdbc.jdbc2.optional.MysqlConnectionPoolDataSource;
 import org.waarp.common.database.DbAdmin;
 import org.waarp.common.database.DbConnectionPool;
 import org.waarp.common.database.DbSession;
@@ -29,6 +28,9 @@ import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 
+import javax.sql.ConnectionPoolDataSource;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -41,41 +43,101 @@ public abstract class DbModelMysql extends DbModelCommonMariadbMySql {
   /**
    * Internal Logger
    */
-<span class="nc" id="L44">  private static final WaarpLogger logger =</span>
-<span class="nc" id="L45">      WaarpLoggerFactory.getLogger(DbModelMysql.class);</span>
+<span class="nc" id="L46">  private static final WaarpLogger logger =</span>
+<span class="nc" id="L47">      WaarpLoggerFactory.getLogger(DbModelMysql.class);</span>
 
-<span class="nc" id="L47">  private static final DbType type = DbType.MySQL;</span>
+<span class="nc" id="L49">  private static final DbType type = DbType.MySQL;</span>
+  private static final String MYSQL_CONNECTION_POOL_DATA_SOURCE_JRE6 =
+      &quot;com.mysql.jdbc.jdbc2.optional.MysqlConnectionPoolDataSource&quot;;
+  private static final String MYSQL_CONNECTION_POOL_DATA_SOURCE_JRE8 =
+      &quot;com.mysql.cj.jdbc.MysqlConnectionPoolDataSource&quot;;
+  public static final String MYSQL_DRIVER_JRE6 = &quot;com.mysql.jdbc.Driver&quot;;
+  public static final String MYSQL_DRIVER_JRE8 = &quot;com.mysql.cj.jdbc.Driver&quot;;
+  private static final String
+      CANNOT_INITIALIZE_MYSQL_CONNECTION_POOL_DATA_SOURCE =
+      &quot;Cannot initialize MysqlConnectionPoolDataSource&quot;;
 
-<span class="nc" id="L49">  protected static class DbTypeResolverMySQL</span>
+<span class="nc" id="L60">  protected static class DbTypeResolverMySQL</span>
       extends DbModelAbstract.DbTypeResolver {
 
     @Override
     public String getType(final int sqlType) {
-<span class="nc" id="L54">      return DBType.getType(sqlType);</span>
+<span class="nc" id="L65">      return DBType.getType(sqlType);</span>
     }
 
     @Override
     public String getCreateTable() {
-<span class="nc" id="L59">      return &quot;CREATE TABLE IF NOT EXISTS &quot;;</span>
+<span class="nc" id="L70">      return &quot;CREATE TABLE IF NOT EXISTS &quot;;</span>
     }
 
     @Override
     public String getCreateIndex() {
-<span class="nc" id="L64">      return &quot;CREATE INDEX IF NOT EXISTS &quot;;</span>
+<span class="nc" id="L75">      return &quot;CREATE INDEX IF NOT EXISTS &quot;;</span>
     }
 
   }
 
   static {
-<span class="nc" id="L70">    dbTypeResolver = new DbTypeResolverMySQL();</span>
-<span class="nc" id="L71">  }</span>
+<span class="nc" id="L81">    dbTypeResolver = new DbTypeResolverMySQL();</span>
+<span class="nc" id="L82">  }</span>
 
-  protected MysqlConnectionPoolDataSource mysqlConnectionPoolDataSource;
+  protected ConnectionPoolDataSource mysqlConnectionPoolDataSource;
   protected DbConnectionPool pool;
 
   @Override
   public DbType getDbType() {
-<span class="nc" id="L78">    return type;</span>
+<span class="nc" id="L89">    return type;</span>
+  }
+
+  /**
+   * @return a ConnectionPoolDataSource as MysqlConnectionPoolDataSource
+   *
+   * @throws WaarpDatabaseNoConnectionException if class not found
+   */
+  private ConnectionPoolDataSource createMysqlConnectionPoolDataSource(
+      final String dbServer, final String dbUser, final String dbPwd)
+      throws WaarpDatabaseNoConnectionException {
+<span class="nc" id="L100">    Class&lt;?&gt; mysqlConnectionPoolDataSourceClass = null;</span>
+    try {
+<span class="nc" id="L102">      mysqlConnectionPoolDataSourceClass =</span>
+<span class="nc" id="L103">          Class.forName(MYSQL_CONNECTION_POOL_DATA_SOURCE_JRE6);</span>
+<span class="nc" id="L104">    } catch (final ClassNotFoundException e) {</span>
+      try {
+<span class="nc" id="L106">        mysqlConnectionPoolDataSourceClass =</span>
+<span class="nc" id="L107">            Class.forName(MYSQL_CONNECTION_POOL_DATA_SOURCE_JRE8);</span>
+<span class="nc" id="L108">      } catch (final ClassNotFoundException classNotFoundException) {</span>
+<span class="nc" id="L109">        logger.error(CANNOT_INITIALIZE_MYSQL_CONNECTION_POOL_DATA_SOURCE);</span>
+<span class="nc" id="L110">        throw new WaarpDatabaseNoConnectionException(</span>
+            CANNOT_INITIALIZE_MYSQL_CONNECTION_POOL_DATA_SOURCE, e);
+<span class="nc" id="L112">      }</span>
+<span class="nc" id="L113">    }</span>
+    try {
+<span class="nc" id="L115">      final ConnectionPoolDataSource cpds =</span>
+          (ConnectionPoolDataSource) mysqlConnectionPoolDataSourceClass
+<span class="nc" id="L117">              .newInstance();</span>
+<span class="nc" id="L118">      Method method = mysqlConnectionPoolDataSourceClass</span>
+<span class="nc" id="L119">          .getMethod(&quot;setUrl&quot;, dbServer.getClass());</span>
+<span class="nc" id="L120">      method.invoke(cpds, dbServer);</span>
+<span class="nc" id="L121">      method = mysqlConnectionPoolDataSourceClass</span>
+<span class="nc" id="L122">          .getMethod(&quot;setUser&quot;, dbUser.getClass());</span>
+<span class="nc" id="L123">      method.invoke(cpds, dbUser);</span>
+<span class="nc" id="L124">      method = mysqlConnectionPoolDataSourceClass</span>
+<span class="nc" id="L125">          .getMethod(&quot;setPassword&quot;, dbPwd.getClass());</span>
+<span class="nc" id="L126">      method.invoke(cpds, dbPwd);</span>
+<span class="nc" id="L127">      return cpds;</span>
+<span class="nc" id="L128">    } catch (final InstantiationException e) {</span>
+<span class="nc" id="L129">      throw new WaarpDatabaseNoConnectionException(</span>
+          CANNOT_INITIALIZE_MYSQL_CONNECTION_POOL_DATA_SOURCE, e);
+<span class="nc" id="L131">    } catch (final IllegalAccessException e) {</span>
+<span class="nc" id="L132">      throw new WaarpDatabaseNoConnectionException(</span>
+          CANNOT_INITIALIZE_MYSQL_CONNECTION_POOL_DATA_SOURCE, e);
+<span class="nc" id="L134">    } catch (final NoSuchMethodException e) {</span>
+<span class="nc" id="L135">      throw new WaarpDatabaseNoConnectionException(</span>
+          CANNOT_INITIALIZE_MYSQL_CONNECTION_POOL_DATA_SOURCE, e);
+<span class="nc" id="L137">    } catch (final InvocationTargetException e) {</span>
+<span class="nc" id="L138">      throw new WaarpDatabaseNoConnectionException(</span>
+          CANNOT_INITIALIZE_MYSQL_CONNECTION_POOL_DATA_SOURCE, e);
+    }
   }
 
   /**
@@ -93,17 +155,15 @@ public abstract class DbModelMysql extends DbModelCommonMariadbMySql {
                          final String dbpasswd, final Timer timer,
                          final long delay)
       throws WaarpDatabaseNoConnectionException {
-<span class="nc" id="L96">    this();</span>
-<span class="nc" id="L97">    mysqlConnectionPoolDataSource = new MysqlConnectionPoolDataSource();</span>
-<span class="nc" id="L98">    mysqlConnectionPoolDataSource.setUrl(dbserver);</span>
-<span class="nc" id="L99">    mysqlConnectionPoolDataSource.setUser(dbuser);</span>
-<span class="nc" id="L100">    mysqlConnectionPoolDataSource.setPassword(dbpasswd);</span>
+<span class="nc" id="L158">    this();</span>
+<span class="nc" id="L159">    mysqlConnectionPoolDataSource =</span>
+<span class="nc" id="L160">        createMysqlConnectionPoolDataSource(dbserver, dbuser, dbpasswd);</span>
     // Create a pool with no limit
-<span class="nc" id="L102">    pool = new DbConnectionPool(mysqlConnectionPoolDataSource, timer, delay);</span>
-<span class="nc" id="L103">    logger.info(</span>
-<span class="nc" id="L104">        &quot;Some info: MaxConn: &quot; + pool.getMaxConnections() + &quot; LogTimeout: &quot; +</span>
-<span class="nc" id="L105">        pool.getLoginTimeout() + &quot; ForceClose: &quot; + pool.getTimeoutForceClose());</span>
-<span class="nc" id="L106">  }</span>
+<span class="nc" id="L162">    pool = new DbConnectionPool(mysqlConnectionPoolDataSource, timer, delay);</span>
+<span class="nc" id="L163">    logger.info(&quot;Some info: MaxConn: {} LogTimeout: {} ForceClose: {}&quot;,</span>
+<span class="nc" id="L164">                pool.getMaxConnections(), pool.getLoginTimeout(),</span>
+<span class="nc" id="L165">                pool.getTimeoutForceClose());</span>
+<span class="nc" id="L166">  }</span>
 
   /**
    * Create the object and initialize if necessary the driver
@@ -117,85 +177,88 @@ public abstract class DbModelMysql extends DbModelCommonMariadbMySql {
   protected DbModelMysql(final String dbserver, final String dbuser,
                          final String dbpasswd)
       throws WaarpDatabaseNoConnectionException {
-<span class="nc" id="L120">    this();</span>
-<span class="nc" id="L121">    mysqlConnectionPoolDataSource = new MysqlConnectionPoolDataSource();</span>
-<span class="nc" id="L122">    mysqlConnectionPoolDataSource.setUrl(dbserver);</span>
-<span class="nc" id="L123">    mysqlConnectionPoolDataSource.setUser(dbuser);</span>
-<span class="nc" id="L124">    mysqlConnectionPoolDataSource.setPassword(dbpasswd);</span>
+<span class="nc" id="L180">    this();</span>
+<span class="nc" id="L181">    mysqlConnectionPoolDataSource =</span>
+<span class="nc" id="L182">        createMysqlConnectionPoolDataSource(dbserver, dbuser, dbpasswd);</span>
     // Create a pool with no limit
-<span class="nc" id="L126">    pool = new DbConnectionPool(mysqlConnectionPoolDataSource);</span>
-<span class="nc" id="L127">    logger.warn(</span>
-<span class="nc" id="L128">        &quot;Some info: MaxConn: &quot; + pool.getMaxConnections() + &quot; LogTimeout: &quot; +</span>
-<span class="nc" id="L129">        pool.getLoginTimeout() + &quot; ForceClose: &quot; + pool.getTimeoutForceClose());</span>
-<span class="nc" id="L130">  }</span>
+<span class="nc" id="L184">    pool = new DbConnectionPool(mysqlConnectionPoolDataSource);</span>
+<span class="nc" id="L185">    logger.warn(</span>
+<span class="nc" id="L186">        &quot;Some info: MaxConn: &quot; + pool.getMaxConnections() + &quot; LogTimeout: &quot; +</span>
+<span class="nc" id="L187">        pool.getLoginTimeout() + &quot; ForceClose: &quot; + pool.getTimeoutForceClose());</span>
+<span class="nc" id="L188">  }</span>
 
   /**
    * Create the object and initialize if necessary the driver
    *
    * @throws WaarpDatabaseNoConnectionException
    */
-<span class="nc" id="L137">  protected DbModelMysql() throws WaarpDatabaseNoConnectionException {</span>
-<span class="nc bnc" id="L138" title="All 2 branches missed.">    if (DbModelFactory.classLoaded.contains(type.name())) {</span>
-<span class="nc" id="L139">      return;</span>
+<span class="nc" id="L195">  protected DbModelMysql() throws WaarpDatabaseNoConnectionException {</span>
+<span class="nc bnc" id="L196" title="All 2 branches missed.">    if (DbModelFactory.classLoaded.contains(type.name())) {</span>
+<span class="nc" id="L197">      return;</span>
     }
     try {
-<span class="nc" id="L142">      DriverManager.registerDriver(new Driver());</span>
-<span class="nc" id="L143">      DbModelFactory.classLoaded.add(type.name());</span>
-<span class="nc" id="L144">    } catch (final SQLException e) {</span>
+<span class="nc" id="L200">      DriverManager.registerDriver(new Driver());</span>
+<span class="nc" id="L201">      DbModelFactory.classLoaded.add(type.name());</span>
+<span class="nc" id="L202">    } catch (final SQLException e) {</span>
       // SQLException
-<span class="nc" id="L146">      logger.error(</span>
-<span class="nc" id="L147">          &quot;Cannot register Driver &quot; + type.name() + ' ' + e.getMessage());</span>
-<span class="nc" id="L148">      DbSession.error(e);</span>
-<span class="nc" id="L149">      throw new WaarpDatabaseNoConnectionException(</span>
-<span class="nc" id="L150">          &quot;Cannot load database drive:&quot; + type.name(), e);</span>
-<span class="nc" id="L151">    }</span>
-<span class="nc" id="L152">  }</span>
+<span class="nc" id="L204">      logger.error(</span>
+<span class="nc" id="L205">          &quot;Cannot register Driver &quot; + type.name() + ' ' + e.getMessage());</span>
+<span class="nc" id="L206">      DbSession.error(e);</span>
+<span class="nc" id="L207">      throw new WaarpDatabaseNoConnectionException(</span>
+<span class="nc" id="L208">          &quot;Cannot load database drive:&quot; + type.name(), e);</span>
+<span class="nc" id="L209">    }</span>
+<span class="nc" id="L210">  }</span>
 
   @Override
   public void releaseResources() {
-<span class="nc bnc" id="L156" title="All 2 branches missed.">    if (pool != null) {</span>
+<span class="nc bnc" id="L214" title="All 2 branches missed.">    if (pool != null) {</span>
       try {
-<span class="nc" id="L158">        pool.dispose();</span>
-<span class="nc" id="L159">      } catch (final SQLException ignored) {</span>
-<span class="nc" id="L160">        SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);</span>
-<span class="nc" id="L161">      }</span>
+<span class="nc" id="L216">        pool.dispose();</span>
+<span class="nc" id="L217">      } catch (final SQLException ignored) {</span>
+<span class="nc" id="L218">        SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);</span>
+<span class="nc" id="L219">      }</span>
     }
-<span class="nc" id="L163">    pool = null;</span>
-<span class="nc" id="L164">  }</span>
+<span class="nc" id="L221">    pool = null;</span>
+<span class="nc" id="L222">  }</span>
 
   @Override
   public synchronized int currentNumberOfPooledConnections() {
-<span class="nc bnc" id="L168" title="All 2 branches missed.">    if (pool != null) {</span>
-<span class="nc" id="L169">      return pool.getActiveConnections();</span>
+<span class="nc bnc" id="L226" title="All 2 branches missed.">    if (pool != null) {</span>
+<span class="nc" id="L227">      return pool.getActiveConnections();</span>
     }
-<span class="nc" id="L171">    return DbAdmin.getNbConnection();</span>
+<span class="nc" id="L229">    return DbAdmin.getNbConnection();</span>
   }
 
   @Override
   public Connection getDbConnection(final String server, final String user,
                                     final String passwd) throws SQLException {
-<span class="nc" id="L177">    synchronized (this) {</span>
-<span class="nc bnc" id="L178" title="All 2 branches missed.">      if (pool != null) {</span>
+<span class="nc" id="L235">    synchronized (this) {</span>
+<span class="nc bnc" id="L236" title="All 2 branches missed.">      if (pool != null) {</span>
         try {
-<span class="nc" id="L180">          return pool.getConnection();</span>
-<span class="nc" id="L181">        } catch (final SQLException e) {</span>
+<span class="nc" id="L238">          return pool.getConnection();</span>
+<span class="nc" id="L239">        } catch (final SQLException e) {</span>
           // try to renew the pool
-<span class="nc" id="L183">          mysqlConnectionPoolDataSource = new MysqlConnectionPoolDataSource();</span>
-<span class="nc" id="L184">          mysqlConnectionPoolDataSource.setUrl(server);</span>
-<span class="nc" id="L185">          mysqlConnectionPoolDataSource.setUser(user);</span>
-<span class="nc" id="L186">          mysqlConnectionPoolDataSource.setPassword(passwd);</span>
-<span class="nc" id="L187">          pool.resetPoolDataSource(mysqlConnectionPoolDataSource);</span>
           try {
-<span class="nc" id="L189">            return pool.getConnection();</span>
-<span class="nc" id="L190">          } catch (final SQLException e2) {</span>
-<span class="nc" id="L191">            pool.dispose();</span>
-<span class="nc" id="L192">            pool = null;</span>
-<span class="nc" id="L193">            return super.getDbConnection(server, user, passwd);</span>
+<span class="nc" id="L242">            mysqlConnectionPoolDataSource =</span>
+<span class="nc" id="L243">                createMysqlConnectionPoolDataSource(server, user, passwd);</span>
+<span class="nc" id="L244">          } catch (final WaarpDatabaseNoConnectionException e1) {</span>
+<span class="nc" id="L245">            logger.debug(&quot;Cannot found MySQLPooled class&quot;, e1);</span>
+<span class="nc" id="L246">            pool.dispose();</span>
+<span class="nc" id="L247">            pool = null;</span>
+<span class="nc" id="L248">            return super.getDbConnection(server, user, passwd);</span>
+<span class="nc" id="L249">          }</span>
+<span class="nc" id="L250">          pool.resetPoolDataSource(mysqlConnectionPoolDataSource);</span>
+          try {
+<span class="nc" id="L252">            return pool.getConnection();</span>
+<span class="nc" id="L253">          } catch (final SQLException e2) {</span>
+<span class="nc" id="L254">            pool.dispose();</span>
+<span class="nc" id="L255">            pool = null;</span>
+<span class="nc" id="L256">            return super.getDbConnection(server, user, passwd);</span>
           }
         }
       }
-<span class="nc" id="L197">    }</span>
-<span class="nc" id="L198">    return super.getDbConnection(server, user, passwd);</span>
+<span class="nc" id="L260">    }</span>
+<span class="nc" id="L261">    return super.getDbConnection(server, user, passwd);</span>
   }
 
 }

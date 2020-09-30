@@ -1316,8 +1316,7 @@ import org.waarp.ftp.core.session.FtpSession;
    * 534, 535&lt;br&gt;
    * APPE&lt;br&gt;
    * 534, 535
-   */
-  /**
+   *
    * Security Association Setup AUTH TLS (Control) or AUTH SSL (Control and
    * Data)&lt;br&gt;
    * 234*&lt;br&gt;
@@ -1325,7 +1324,7 @@ import org.waarp.ftp.core.session.FtpSession;
    * &lt;br&gt;
    * AUTH TLS -&gt; 234 -&gt; USER or ([PBSZ 0] PROT P then USER) -&gt; 2xy
    */
-<span class="nc" id="L1328">  AUTH(org.waarp.ftp.core.command.rfc4217.AUTH.class, null,</span>
+<span class="nc" id="L1327">  AUTH(org.waarp.ftp.core.command.rfc4217.AUTH.class, null,</span>
        org.waarp.ftp.core.command.rfc4217.PROT.class,
        org.waarp.ftp.core.command.rfc4217.PBSZ.class,
        org.waarp.ftp.core.command.access.USER.class),
@@ -1335,7 +1334,7 @@ import org.waarp.ftp.core.session.FtpSession;
    * 200&lt;br&gt;
    * 500, 533*, 534*
    */
-<span class="nc" id="L1338">  CCC(org.waarp.ftp.core.command.rfc4217.CCC.class, null),</span>
+<span class="nc" id="L1337">  CCC(org.waarp.ftp.core.command.rfc4217.CCC.class, null),</span>
   /**
    * Data protection negotiation commands&lt;br&gt;
    * PROT P (Data)&lt;br&gt;
@@ -1343,14 +1342,14 @@ import org.waarp.ftp.core.session.FtpSession;
    * 200&lt;br&gt;
    * 504, 536*, 503, 534*, 431* 500, 501, 421, 530
    */
-<span class="nc" id="L1346">  PROT(org.waarp.ftp.core.command.rfc4217.PROT.class, null),</span>
+<span class="nc" id="L1345">  PROT(org.waarp.ftp.core.command.rfc4217.PROT.class, null),</span>
   /**
    * Data protection negotiation commands&lt;br&gt;
    * PBSZ 0&lt;br&gt;
    * 200&lt;br&gt;
    * 503, 500, 501, 421, 530
    */
-<span class="nc" id="L1353">  PBSZ(org.waarp.ftp.core.command.rfc4217.PBSZ.class, null);</span>
+<span class="nc" id="L1352">  PBSZ(org.waarp.ftp.core.command.rfc4217.PBSZ.class, null);</span>
 
   /**
    * The Class that implements this command
@@ -1369,11 +1368,11 @@ import org.waarp.ftp.core.session.FtpSession;
 
   FtpCommandCode(final Class&lt;? extends AbstractCommand&gt; command,
                  final Class&lt;? extends AbstractCommand&gt; previousValid,
-<span class="nc" id="L1372">                 final Class&lt;?&gt;... nextValids) {</span>
-<span class="nc" id="L1373">    this.command = command;</span>
-<span class="nc" id="L1374">    this.previousValid = previousValid;</span>
-<span class="nc" id="L1375">    this.nextValids = nextValids;</span>
-<span class="nc" id="L1376">  }</span>
+<span class="nc" id="L1371">                 final Class&lt;?&gt;... nextValids) {</span>
+<span class="nc" id="L1372">    this.command = command;</span>
+<span class="nc" id="L1373">    this.previousValid = previousValid;</span>
+<span class="nc" id="L1374">    this.nextValids = nextValids;</span>
+<span class="nc" id="L1375">  }</span>
 
   /**
    * Get the corresponding AbstractCommand object from the line received from
@@ -1388,43 +1387,43 @@ import org.waarp.ftp.core.session.FtpSession;
   public static AbstractCommand getFromLine(final FtpSession session,
                                             final String line) {
     FtpCommandCode ftpCommandCode;
-<span class="nc" id="L1391">    String newline = line;</span>
-<span class="nc bnc" id="L1392" title="All 2 branches missed.">    if (newline == null) {</span>
-<span class="nc" id="L1393">      ftpCommandCode = Unknown;</span>
-<span class="nc" id="L1394">      newline = &quot;&quot;;</span>
+<span class="nc" id="L1390">    String newline = line;</span>
+<span class="nc bnc" id="L1391" title="All 2 branches missed.">    if (newline == null) {</span>
+<span class="nc" id="L1392">      ftpCommandCode = Unknown;</span>
+<span class="nc" id="L1393">      newline = &quot;&quot;;</span>
     }
     final String command;
     String arg;
-<span class="nc bnc" id="L1398" title="All 2 branches missed.">    if (newline.indexOf(' ') == -1) {</span>
-<span class="nc" id="L1399">      command = newline;</span>
-<span class="nc" id="L1400">      arg = null;</span>
+<span class="nc bnc" id="L1397" title="All 2 branches missed.">    if (newline.indexOf(' ') == -1) {</span>
+<span class="nc" id="L1398">      command = newline;</span>
+<span class="nc" id="L1399">      arg = null;</span>
     } else {
-<span class="nc" id="L1402">      command = newline.substring(0, newline.indexOf(' '));</span>
-<span class="nc" id="L1403">      arg = newline.substring(newline.indexOf(' ') + 1);</span>
-<span class="nc bnc" id="L1404" title="All 2 branches missed.">      if (arg.length() == 0) {</span>
-<span class="nc" id="L1405">        arg = null;</span>
+<span class="nc" id="L1401">      command = newline.substring(0, newline.indexOf(' '));</span>
+<span class="nc" id="L1402">      arg = newline.substring(newline.indexOf(' ') + 1);</span>
+<span class="nc bnc" id="L1403" title="All 2 branches missed.">      if (arg.length() == 0) {</span>
+<span class="nc" id="L1404">        arg = null;</span>
       }
     }
-<span class="nc" id="L1408">    final String COMMAND = command.toUpperCase();</span>
+<span class="nc" id="L1407">    final String COMMAND = command.toUpperCase();</span>
     try {
-<span class="nc" id="L1410">      ftpCommandCode = valueOf(COMMAND);</span>
-<span class="nc" id="L1411">    } catch (final IllegalArgumentException e) {</span>
-<span class="nc" id="L1412">      ftpCommandCode = Unknown;</span>
-<span class="nc" id="L1413">    }</span>
+<span class="nc" id="L1409">      ftpCommandCode = valueOf(COMMAND);</span>
+<span class="nc" id="L1410">    } catch (final IllegalArgumentException e) {</span>
+<span class="nc" id="L1411">      ftpCommandCode = Unknown;</span>
+<span class="nc" id="L1412">    }</span>
     AbstractCommand abstractCommand;
     try {
-<span class="nc" id="L1416">      abstractCommand = ftpCommandCode.command.newInstance();</span>
-<span class="nc" id="L1417">    } catch (final InstantiationException e) {</span>
-<span class="nc" id="L1418">      abstractCommand = new UnknownCommand();</span>
-<span class="nc" id="L1419">      abstractCommand.setArgs(session, COMMAND, arg, Unknown);</span>
-<span class="nc" id="L1420">      return abstractCommand;</span>
-<span class="nc" id="L1421">    } catch (final IllegalAccessException e) {</span>
-<span class="nc" id="L1422">      abstractCommand = new UnknownCommand();</span>
-<span class="nc" id="L1423">      abstractCommand.setArgs(session, COMMAND, arg, Unknown);</span>
-<span class="nc" id="L1424">      return abstractCommand;</span>
-<span class="nc" id="L1425">    }</span>
-<span class="nc" id="L1426">    abstractCommand.setArgs(session, COMMAND, arg, ftpCommandCode);</span>
-<span class="nc" id="L1427">    return abstractCommand;</span>
+<span class="nc" id="L1415">      abstractCommand = ftpCommandCode.command.newInstance();</span>
+<span class="nc" id="L1416">    } catch (final InstantiationException e) {</span>
+<span class="nc" id="L1417">      abstractCommand = new UnknownCommand();</span>
+<span class="nc" id="L1418">      abstractCommand.setArgs(session, COMMAND, arg, Unknown);</span>
+<span class="nc" id="L1419">      return abstractCommand;</span>
+<span class="nc" id="L1420">    } catch (final IllegalAccessException e) {</span>
+<span class="nc" id="L1421">      abstractCommand = new UnknownCommand();</span>
+<span class="nc" id="L1422">      abstractCommand.setArgs(session, COMMAND, arg, Unknown);</span>
+<span class="nc" id="L1423">      return abstractCommand;</span>
+<span class="nc" id="L1424">    }</span>
+<span class="nc" id="L1425">    abstractCommand.setArgs(session, COMMAND, arg, ftpCommandCode);</span>
+<span class="nc" id="L1426">    return abstractCommand;</span>
   }
 
   /**
@@ -1436,7 +1435,7 @@ import org.waarp.ftp.core.session.FtpSession;
    *     ...)
    */
   public static boolean isStoreLikeCommand(final FtpCommandCode command) {
-<span class="nc bnc" id="L1439" title="All 6 branches missed.">    return command == APPE || command == STOR || command == STOU;</span>
+<span class="nc bnc" id="L1438" title="All 6 branches missed.">    return command == APPE || command == STOR || command == STOU;</span>
   }
 
   /**
@@ -1447,7 +1446,7 @@ import org.waarp.ftp.core.session.FtpSession;
    * @return True if the command is a Retrieve like operation (RETR, ...)
    */
   public static boolean isRetrLikeCommand(final FtpCommandCode command) {
-<span class="nc bnc" id="L1450" title="All 2 branches missed.">    return command == RETR;</span>
+<span class="nc bnc" id="L1449" title="All 2 branches missed.">    return command == RETR;</span>
   }
 
   /**
@@ -1458,7 +1457,7 @@ import org.waarp.ftp.core.session.FtpSession;
    * @return True if the command is a Retrieve or Store like operation
    */
   public static boolean isStorOrRetrLikeCommand(final FtpCommandCode command) {
-<span class="nc bnc" id="L1461" title="All 4 branches missed.">    return isRetrLikeCommand(command) || isStoreLikeCommand(command);</span>
+<span class="nc bnc" id="L1460" title="All 4 branches missed.">    return isRetrLikeCommand(command) || isStoreLikeCommand(command);</span>
   }
 
   /**
@@ -1471,7 +1470,7 @@ import org.waarp.ftp.core.session.FtpSession;
    *     MLST, ...)
    */
   public static boolean isListLikeCommand(final FtpCommandCode command) {
-<span class="nc bnc" id="L1474" title="All 8 branches missed.">    return command == LIST || command == NLST || command == MLSD ||</span>
+<span class="nc bnc" id="L1473" title="All 8 branches missed.">    return command == LIST || command == NLST || command == MLSD ||</span>
            command == MLST;
   }
 
@@ -1484,8 +1483,8 @@ import org.waarp.ftp.core.session.FtpSession;
    */
   public static boolean isDataConnectionUsageCommand(
       final FtpCommandCode command) {
-<span class="nc bnc" id="L1487" title="All 4 branches missed.">    return isRetrLikeCommand(command) || isStoreLikeCommand(command) ||</span>
-<span class="nc bnc" id="L1488" title="All 2 branches missed.">           isListLikeCommand(command);</span>
+<span class="nc bnc" id="L1486" title="All 4 branches missed.">    return isRetrLikeCommand(command) || isStoreLikeCommand(command) ||</span>
+<span class="nc bnc" id="L1487" title="All 2 branches missed.">           isListLikeCommand(command);</span>
   }
 
   /**
@@ -1498,7 +1497,7 @@ import org.waarp.ftp.core.session.FtpSession;
    *     ...)
    */
   public static boolean isSpecialCommand(final FtpCommandCode command) {
-<span class="nc bnc" id="L1501" title="All 8 branches missed.">    return command == QUIT || command == ABOR || command == NOOP ||</span>
+<span class="nc bnc" id="L1500" title="All 8 branches missed.">    return command == QUIT || command == ABOR || command == NOOP ||</span>
            command == STAT;
   }
 
@@ -1511,7 +1510,7 @@ import org.waarp.ftp.core.session.FtpSession;
    *     ACCT)
    */
   public static boolean isSslOrAuthCommand(final FtpCommandCode command) {
-<span class="nc bnc" id="L1514" title="All 10 branches missed.">    return command == AUTH || command == PBSZ || command == PROT ||</span>
+<span class="nc bnc" id="L1513" title="All 10 branches missed.">    return command == AUTH || command == PBSZ || command == PROT ||</span>
            command == PASS || command == ACCT;
   }
 
@@ -1524,14 +1523,14 @@ import org.waarp.ftp.core.session.FtpSession;
    *     ...)
    */
   public static boolean isExtensionCommand(final FtpCommandCode command) {
-<span class="nc bnc" id="L1527" title="All 12 branches missed.">    return command == XMD5 || command == XCRC || command == XSHA1 ||</span>
+<span class="nc bnc" id="L1526" title="All 12 branches missed.">    return command == XMD5 || command == XCRC || command == XSHA1 ||</span>
            command == XDIGEST || command == INTERNALSHUTDOWN ||
            command == LIMITBANDWIDTH;
   }
 
   @Override
   public String toString() {
-<span class="nc" id="L1534">    return name();</span>
+<span class="nc" id="L1533">    return name();</span>
   }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

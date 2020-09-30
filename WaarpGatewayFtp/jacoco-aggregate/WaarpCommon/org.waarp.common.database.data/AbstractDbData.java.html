@@ -442,22 +442,6 @@ public abstract class AbstractDbData {
 <span class="fc" id="L442">  }</span>
 
   /**
-   * Set one value to a DbPreparedStatement
-   *
-   * @param preparedStatement
-   * @param value
-   *
-   * @throws WaarpDatabaseNoConnectionException
-   * @throws WaarpDatabaseSqlException
-   */
-  protected void setValue(final DbPreparedStatement preparedStatement,
-                          final DbValue value)
-      throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
-<span class="nc" id="L456">    final PreparedStatement ps = preparedStatement.getPreparedStatement();</span>
-<span class="nc" id="L457">    setTrueValue(ps, value, 1);</span>
-<span class="nc" id="L458">  }</span>
-
-  /**
    * Set several values to a DbPreparedStatement
    *
    * @param preparedStatement
@@ -469,12 +453,12 @@ public abstract class AbstractDbData {
   protected void setValues(final DbPreparedStatement preparedStatement,
                            final DbValue[] values)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
-<span class="fc" id="L472">    final PreparedStatement ps = preparedStatement.getPreparedStatement();</span>
-<span class="fc bfc" id="L473" title="All 2 branches covered.">    for (int i = 0; i &lt; values.length; i++) {</span>
-<span class="fc" id="L474">      final DbValue value = values[i];</span>
-<span class="fc" id="L475">      setTrueValue(ps, value, i + 1);</span>
+<span class="fc" id="L456">    final PreparedStatement ps = preparedStatement.getPreparedStatement();</span>
+<span class="fc bfc" id="L457" title="All 2 branches covered.">    for (int i = 0; i &lt; values.length; i++) {</span>
+<span class="fc" id="L458">      final DbValue value = values[i];</span>
+<span class="fc" id="L459">      setTrueValue(ps, value, i + 1);</span>
     }
-<span class="fc" id="L477">  }</span>
+<span class="fc" id="L461">  }</span>
 
   /**
    * Get one value into DbValue from ResultSet
@@ -487,75 +471,59 @@ public abstract class AbstractDbData {
   public static void getTrueValue(final ResultSet rs, final DbValue value)
       throws WaarpDatabaseSqlException {
     try {
-<span class="pc bpc" id="L490" title="10 of 14 branches missed.">      switch (value.type) {</span>
+<span class="pc bpc" id="L474" title="10 of 14 branches missed.">      switch (value.type) {</span>
         case Types.VARCHAR:
         case Types.LONGVARCHAR:
-<span class="fc" id="L493">          value.setValue(rs.getString(value.getColumn()));</span>
-<span class="fc" id="L494">          break;</span>
+<span class="fc" id="L477">          value.setValue(rs.getString(value.getColumn()));</span>
+<span class="fc" id="L478">          break;</span>
         case Types.BIT:
-<span class="nc" id="L496">          value.setValue(rs.getBoolean(value.getColumn()));</span>
-<span class="nc" id="L497">          break;</span>
+<span class="nc" id="L480">          value.setValue(rs.getBoolean(value.getColumn()));</span>
+<span class="nc" id="L481">          break;</span>
         case Types.TINYINT:
-<span class="nc" id="L499">          value.setValue(rs.getByte(value.getColumn()));</span>
-<span class="nc" id="L500">          break;</span>
+<span class="nc" id="L483">          value.setValue(rs.getByte(value.getColumn()));</span>
+<span class="nc" id="L484">          break;</span>
         case Types.SMALLINT:
-<span class="nc" id="L502">          value.setValue(rs.getShort(value.getColumn()));</span>
-<span class="nc" id="L503">          break;</span>
+<span class="nc" id="L486">          value.setValue(rs.getShort(value.getColumn()));</span>
+<span class="nc" id="L487">          break;</span>
         case Types.INTEGER:
-<span class="fc" id="L505">          value.setValue(rs.getInt(value.getColumn()));</span>
-<span class="fc" id="L506">          break;</span>
+<span class="fc" id="L489">          value.setValue(rs.getInt(value.getColumn()));</span>
+<span class="fc" id="L490">          break;</span>
         case Types.BIGINT:
-<span class="fc" id="L508">          value.setValue(rs.getLong(value.getColumn()));</span>
-<span class="fc" id="L509">          break;</span>
+<span class="fc" id="L492">          value.setValue(rs.getLong(value.getColumn()));</span>
+<span class="fc" id="L493">          break;</span>
         case Types.REAL:
-<span class="nc" id="L511">          value.setValue(rs.getFloat(value.getColumn()));</span>
-<span class="nc" id="L512">          break;</span>
+<span class="nc" id="L495">          value.setValue(rs.getFloat(value.getColumn()));</span>
+<span class="nc" id="L496">          break;</span>
         case Types.DOUBLE:
-<span class="nc" id="L514">          value.setValue(rs.getDouble(value.getColumn()));</span>
-<span class="nc" id="L515">          break;</span>
+<span class="nc" id="L498">          value.setValue(rs.getDouble(value.getColumn()));</span>
+<span class="nc" id="L499">          break;</span>
         case Types.VARBINARY:
-<span class="nc" id="L517">          value.setValue(rs.getBytes(value.getColumn()));</span>
-<span class="nc" id="L518">          break;</span>
+<span class="nc" id="L501">          value.setValue(rs.getBytes(value.getColumn()));</span>
+<span class="nc" id="L502">          break;</span>
         case Types.DATE:
-<span class="nc" id="L520">          value.setValue(rs.getDate(value.getColumn()));</span>
-<span class="nc" id="L521">          break;</span>
+<span class="nc" id="L504">          value.setValue(rs.getDate(value.getColumn()));</span>
+<span class="nc" id="L505">          break;</span>
         case Types.TIMESTAMP:
-<span class="fc" id="L523">          value.setValue(rs.getTimestamp(value.getColumn()));</span>
-<span class="fc" id="L524">          break;</span>
+<span class="fc" id="L507">          value.setValue(rs.getTimestamp(value.getColumn()));</span>
+<span class="fc" id="L508">          break;</span>
         case Types.CLOB:
-<span class="nc" id="L526">          value.setValue(rs.getClob(value.getColumn()).getCharacterStream());</span>
-<span class="nc" id="L527">          break;</span>
+<span class="nc" id="L510">          value.setValue(rs.getClob(value.getColumn()).getCharacterStream());</span>
+<span class="nc" id="L511">          break;</span>
         case Types.BLOB:
-<span class="nc" id="L529">          value.setValue(rs.getBlob(value.getColumn()).getBinaryStream());</span>
-<span class="nc" id="L530">          break;</span>
+<span class="nc" id="L513">          value.setValue(rs.getBlob(value.getColumn()).getBinaryStream());</span>
+<span class="nc" id="L514">          break;</span>
         default:
-<span class="nc" id="L532">          throw new WaarpDatabaseSqlException(</span>
+<span class="nc" id="L516">          throw new WaarpDatabaseSqlException(</span>
               &quot;Type not supported: &quot; + value.type + &quot; for &quot; +
-<span class="nc" id="L534">              value.getColumn());</span>
+<span class="nc" id="L518">              value.getColumn());</span>
       }
-<span class="nc" id="L536">    } catch (final SQLException e) {</span>
-<span class="nc" id="L537">      DbSession.error(e);</span>
-<span class="nc" id="L538">      throw new WaarpDatabaseSqlException(</span>
+<span class="nc" id="L520">    } catch (final SQLException e) {</span>
+<span class="nc" id="L521">      DbSession.error(e);</span>
+<span class="nc" id="L522">      throw new WaarpDatabaseSqlException(</span>
           &quot;Getting values in error: &quot; + value.type + &quot; for &quot; +
-<span class="nc" id="L540">          value.getColumn(), e);</span>
-<span class="fc" id="L541">    }</span>
-<span class="fc" id="L542">  }</span>
-
-  /**
-   * Get one value into DbValue from DbPreparedStatement
-   *
-   * @param preparedStatement
-   * @param value
-   *
-   * @throws WaarpDatabaseNoConnectionException
-   * @throws WaarpDatabaseSqlException
-   */
-  protected void getValue(final DbPreparedStatement preparedStatement,
-                          final DbValue value)
-      throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
-<span class="nc" id="L556">    final ResultSet rs = preparedStatement.getResultSet();</span>
-<span class="nc" id="L557">    getTrueValue(rs, value);</span>
-<span class="nc" id="L558">  }</span>
+<span class="nc" id="L524">          value.getColumn(), e);</span>
+<span class="fc" id="L525">    }</span>
+<span class="fc" id="L526">  }</span>
 
   /**
    * Get several values into DbValue from DbPreparedStatement
@@ -569,38 +537,19 @@ public abstract class AbstractDbData {
   protected void getValues(final DbPreparedStatement preparedStatement,
                            final DbValue[] values)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
-<span class="fc" id="L572">    final ResultSet rs = preparedStatement.getResultSet();</span>
-<span class="fc bfc" id="L573" title="All 2 branches covered.">    for (final DbValue value : values) {</span>
-<span class="fc" id="L574">      getTrueValue(rs, value);</span>
+<span class="fc" id="L540">    final ResultSet rs = preparedStatement.getResultSet();</span>
+<span class="fc bfc" id="L541" title="All 2 branches covered.">    for (final DbValue value : values) {</span>
+<span class="fc" id="L542">      getTrueValue(rs, value);</span>
     }
-<span class="fc" id="L576">    setFromArray();</span>
-<span class="fc" id="L577">  }</span>
+<span class="fc" id="L544">    setFromArray();</span>
+<span class="fc" id="L545">  }</span>
 
   /**
-   * Get Values from PreparedStatement
-   *
-   * @param preparedStatement
-   *
-   * @return True if OK, else False
-   */
-  public boolean get(final DbPreparedStatement preparedStatement) {
-    try {
-<span class="nc" id="L588">      getValues(preparedStatement, allFields);</span>
-<span class="nc" id="L589">    } catch (final WaarpDatabaseNoConnectionException e1) {</span>
-<span class="nc" id="L590">      return false;</span>
-<span class="nc" id="L591">    } catch (final WaarpDatabaseSqlException e1) {</span>
-<span class="nc" id="L592">      return false;</span>
-<span class="nc" id="L593">    }</span>
-<span class="nc" id="L594">    isSaved = true;</span>
-<span class="nc" id="L595">    return true;</span>
-  }
-
-  /**
-   * @return the runner as Json
+   * @return the object as Json
    */
   public String asJson() {
-<span class="nc" id="L602">    final ObjectNode node = getJson();</span>
-<span class="nc" id="L603">    return JsonHandler.writeAsString(node);</span>
+<span class="nc" id="L551">    final ObjectNode node = getJson();</span>
+<span class="nc" id="L552">    return JsonHandler.writeAsString(node);</span>
   }
 
   /**
@@ -609,51 +558,51 @@ public abstract class AbstractDbData {
    * @return The ObjectNode Json equivalent
    */
   public ObjectNode getJson() {
-<span class="nc" id="L612">    final ObjectNode node = JsonHandler.createObjectNode();</span>
-<span class="nc" id="L613">    node.put(JSON_MODEL, getClass().getSimpleName());</span>
-<span class="nc bnc" id="L614" title="All 2 branches missed.">    for (final DbValue value : allFields) {</span>
-<span class="nc bnc" id="L615" title="All 12 branches missed.">      switch (value.type) {</span>
+<span class="nc" id="L561">    final ObjectNode node = JsonHandler.createObjectNode();</span>
+<span class="nc" id="L562">    node.put(JSON_MODEL, getClass().getSimpleName());</span>
+<span class="nc bnc" id="L563" title="All 2 branches missed.">    for (final DbValue value : allFields) {</span>
+<span class="nc bnc" id="L564" title="All 12 branches missed.">      switch (value.type) {</span>
         case Types.VARCHAR:
         case Types.LONGVARCHAR:
-<span class="nc" id="L618">          node.put(value.getColumn(), (String) value.getValue());</span>
-<span class="nc" id="L619">          break;</span>
+<span class="nc" id="L567">          node.put(value.getColumn(), (String) value.getValue());</span>
+<span class="nc" id="L568">          break;</span>
         case Types.BIT:
-<span class="nc" id="L621">          node.put(value.getColumn(), (Boolean) value.getValue());</span>
-<span class="nc" id="L622">          break;</span>
+<span class="nc" id="L570">          node.put(value.getColumn(), (Boolean) value.getValue());</span>
+<span class="nc" id="L571">          break;</span>
         case Types.TINYINT:
-<span class="nc" id="L624">          node.put(value.getColumn(), (Byte) value.getValue());</span>
-<span class="nc" id="L625">          break;</span>
+<span class="nc" id="L573">          node.put(value.getColumn(), (Byte) value.getValue());</span>
+<span class="nc" id="L574">          break;</span>
         case Types.SMALLINT:
-<span class="nc" id="L627">          node.put(value.getColumn(), (Short) value.getValue());</span>
-<span class="nc" id="L628">          break;</span>
+<span class="nc" id="L576">          node.put(value.getColumn(), (Short) value.getValue());</span>
+<span class="nc" id="L577">          break;</span>
         case Types.INTEGER:
-<span class="nc" id="L630">          node.put(value.getColumn(), (Integer) value.getValue());</span>
-<span class="nc" id="L631">          break;</span>
+<span class="nc" id="L579">          node.put(value.getColumn(), (Integer) value.getValue());</span>
+<span class="nc" id="L580">          break;</span>
         case Types.BIGINT:
-<span class="nc" id="L633">          node.put(value.getColumn(), (Long) value.getValue());</span>
-<span class="nc" id="L634">          break;</span>
+<span class="nc" id="L582">          node.put(value.getColumn(), (Long) value.getValue());</span>
+<span class="nc" id="L583">          break;</span>
         case Types.REAL:
-<span class="nc" id="L636">          node.put(value.getColumn(), (Float) value.getValue());</span>
-<span class="nc" id="L637">          break;</span>
+<span class="nc" id="L585">          node.put(value.getColumn(), (Float) value.getValue());</span>
+<span class="nc" id="L586">          break;</span>
         case Types.DOUBLE:
-<span class="nc" id="L639">          node.put(value.getColumn(), (Double) value.getValue());</span>
-<span class="nc" id="L640">          break;</span>
+<span class="nc" id="L588">          node.put(value.getColumn(), (Double) value.getValue());</span>
+<span class="nc" id="L589">          break;</span>
         case Types.VARBINARY:
-<span class="nc" id="L642">          node.put(value.getColumn(), (byte[]) value.getValue());</span>
-<span class="nc" id="L643">          break;</span>
+<span class="nc" id="L591">          node.put(value.getColumn(), (byte[]) value.getValue());</span>
+<span class="nc" id="L592">          break;</span>
         case Types.DATE:
-<span class="nc" id="L645">          node.put(value.getColumn(), ((Date) value.getValue()).getTime());</span>
-<span class="nc" id="L646">          break;</span>
+<span class="nc" id="L594">          node.put(value.getColumn(), ((Date) value.getValue()).getTime());</span>
+<span class="nc" id="L595">          break;</span>
         case Types.TIMESTAMP:
-<span class="nc" id="L648">          node.put(value.getColumn(), ((Timestamp) value.getValue()).getTime());</span>
-<span class="nc" id="L649">          break;</span>
+<span class="nc" id="L597">          node.put(value.getColumn(), ((Timestamp) value.getValue()).getTime());</span>
+<span class="nc" id="L598">          break;</span>
         case Types.CLOB:
         case Types.BLOB:
         default:
-<span class="nc" id="L653">          node.put(value.getColumn(), &quot;Unsupported type=&quot; + value.type);</span>
+<span class="nc" id="L602">          node.put(value.getColumn(), &quot;Unsupported type=&quot; + value.type);</span>
       }
     }
-<span class="nc" id="L656">    return node;</span>
+<span class="nc" id="L605">    return node;</span>
   }
 
   /**
@@ -667,60 +616,60 @@ public abstract class AbstractDbData {
    */
   public void setFromJson(final ObjectNode node, final boolean ignorePrimaryKey)
       throws WaarpDatabaseSqlException {
-<span class="nc" id="L670">    DbValue[] list = allFields;</span>
-<span class="nc bnc" id="L671" title="All 2 branches missed.">    if (ignorePrimaryKey) {</span>
-<span class="nc" id="L672">      list = otherFields;</span>
+<span class="nc" id="L619">    DbValue[] list = allFields;</span>
+<span class="nc bnc" id="L620" title="All 2 branches missed.">    if (ignorePrimaryKey) {</span>
+<span class="nc" id="L621">      list = otherFields;</span>
     }
-<span class="nc bnc" id="L674" title="All 2 branches missed.">    for (final DbValue value : list) {</span>
-<span class="nc bnc" id="L675" title="All 2 branches missed.">      if (&quot;UPDATEDINFO&quot;.equalsIgnoreCase(value.getColumn())) {</span>
-<span class="nc" id="L676">        continue;</span>
+<span class="nc bnc" id="L623" title="All 2 branches missed.">    for (final DbValue value : list) {</span>
+<span class="nc bnc" id="L624" title="All 2 branches missed.">      if (&quot;UPDATEDINFO&quot;.equalsIgnoreCase(value.getColumn())) {</span>
+<span class="nc" id="L625">        continue;</span>
       }
-<span class="nc" id="L678">      final JsonNode item = node.get(value.getColumn());</span>
-<span class="nc bnc" id="L679" title="All 6 branches missed.">      if (item != null &amp;&amp; !item.isMissingNode() &amp;&amp; !item.isNull()) {</span>
-<span class="nc" id="L680">        isSaved = false;</span>
-<span class="nc bnc" id="L681" title="All 9 branches missed.">        switch (value.type) {</span>
+<span class="nc" id="L627">      final JsonNode item = node.get(value.getColumn());</span>
+<span class="nc bnc" id="L628" title="All 6 branches missed.">      if (item != null &amp;&amp; !item.isMissingNode() &amp;&amp; !item.isNull()) {</span>
+<span class="nc" id="L629">        isSaved = false;</span>
+<span class="nc bnc" id="L630" title="All 9 branches missed.">        switch (value.type) {</span>
           case Types.VARCHAR:
           case Types.LONGVARCHAR:
-<span class="nc" id="L684">            value.setValue(item.asText());</span>
-<span class="nc" id="L685">            break;</span>
+<span class="nc" id="L633">            value.setValue(item.asText());</span>
+<span class="nc" id="L634">            break;</span>
           case Types.BIT:
-<span class="nc" id="L687">            value.setValue(item.asBoolean());</span>
-<span class="nc" id="L688">            break;</span>
+<span class="nc" id="L636">            value.setValue(item.asBoolean());</span>
+<span class="nc" id="L637">            break;</span>
           case Types.TINYINT:
           case Types.SMALLINT:
           case Types.INTEGER:
-<span class="nc" id="L692">            value.setValue(item.asInt());</span>
-<span class="nc" id="L693">            break;</span>
+<span class="nc" id="L641">            value.setValue(item.asInt());</span>
+<span class="nc" id="L642">            break;</span>
           case Types.BIGINT:
-<span class="nc" id="L695">            value.setValue(item.asLong());</span>
-<span class="nc" id="L696">            break;</span>
+<span class="nc" id="L644">            value.setValue(item.asLong());</span>
+<span class="nc" id="L645">            break;</span>
           case Types.REAL:
           case Types.DOUBLE:
-<span class="nc" id="L699">            value.setValue(item.asDouble());</span>
-<span class="nc" id="L700">            break;</span>
+<span class="nc" id="L648">            value.setValue(item.asDouble());</span>
+<span class="nc" id="L649">            break;</span>
           case Types.VARBINARY:
             try {
-<span class="nc" id="L703">              value.setValue(item.binaryValue());</span>
-<span class="nc" id="L704">            } catch (final IOException e) {</span>
-<span class="nc" id="L705">              throw new WaarpDatabaseSqlException(</span>
+<span class="nc" id="L652">              value.setValue(item.binaryValue());</span>
+<span class="nc" id="L653">            } catch (final IOException e) {</span>
+<span class="nc" id="L654">              throw new WaarpDatabaseSqlException(</span>
                   &quot;Issue while assigning array of bytes&quot;, e);
-<span class="nc" id="L707">            }</span>
+<span class="nc" id="L656">            }</span>
             break;
           case Types.DATE:
-<span class="nc" id="L710">            value.setValue(new Date(item.asLong()));</span>
-<span class="nc" id="L711">            break;</span>
+<span class="nc" id="L659">            value.setValue(new Date(item.asLong()));</span>
+<span class="nc" id="L660">            break;</span>
           case Types.TIMESTAMP:
-<span class="nc" id="L713">            value.setValue(new Timestamp(item.asLong()));</span>
-<span class="nc" id="L714">            break;</span>
+<span class="nc" id="L662">            value.setValue(new Timestamp(item.asLong()));</span>
+<span class="nc" id="L663">            break;</span>
           case Types.CLOB:
           case Types.BLOB:
           default:
-<span class="nc" id="L718">            throw new WaarpDatabaseSqlException(</span>
+<span class="nc" id="L667">            throw new WaarpDatabaseSqlException(</span>
                 &quot;Unsupported type: &quot; + value.type);
         }
       }
     }
-<span class="nc" id="L723">    setFromArray();</span>
-<span class="nc" id="L724">  }</span>
+<span class="nc" id="L672">    setFromArray();</span>
+<span class="nc" id="L673">  }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

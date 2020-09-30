@@ -19,7 +19,6 @@
  */
 package org.waarp.gateway.kernel.database.model;
 
-import org.waarp.common.database.DbConstant;
 import org.waarp.common.database.DbPreparedStatement;
 import org.waarp.common.database.DbRequest;
 import org.waarp.common.database.DbSession;
@@ -28,6 +27,7 @@ import org.waarp.common.database.exception.WaarpDatabaseNoDataException;
 import org.waarp.common.database.exception.WaarpDatabaseSqlException;
 import org.waarp.common.database.model.DbModelMysql;
 import org.waarp.common.logging.SysErrLogger;
+import org.waarp.gateway.kernel.database.DbConstantGateway;
 import org.waarp.gateway.kernel.database.data.DbTransferLog;
 
 import java.sql.SQLException;
@@ -137,7 +137,7 @@ public class DbModelMysqlKernel extends DbModelMysql {
     }
 <span class="nc" id="L138">    action = new StringBuilder(</span>
         &quot;INSERT INTO Sequences (name, seq) VALUES ('&quot; + DbTransferLog.fieldseq +
-        &quot;', &quot; + (DbConstant.ILLEGALVALUE + 1) + ')');
+        &quot;', &quot; + (DbConstantGateway.ILLEGALVALUE + 1) + ')');
 <span class="nc" id="L141">    SysErrLogger.FAKE_LOGGER.sysout(action);</span>
     try {
 <span class="nc" id="L143">      request.query(action.toString());</span>
@@ -190,7 +190,7 @@ public class DbModelMysqlKernel extends DbModelMysql {
              WaarpDatabaseNoDataException {
 <span class="nc" id="L191">    lock.lock();</span>
     try {
-<span class="nc" id="L193">      long result = DbConstant.ILLEGALVALUE;</span>
+<span class="nc" id="L193">      long result = DbConstantGateway.ILLEGALVALUE;</span>
 <span class="nc" id="L194">      String action =</span>
           &quot;SELECT seq FROM Sequences WHERE name = '&quot; + DbTransferLog.fieldseq +
           &quot;' FOR UPDATE&quot;;
@@ -241,16 +241,14 @@ public class DbModelMysqlKernel extends DbModelMysql {
   }
 
   @Override
-  public boolean upgradeDb(final DbSession session, final String version)
-      throws WaarpDatabaseNoConnectionException {
-<span class="nc" id="L246">    return false;</span>
+  public boolean upgradeDb(final DbSession session, final String version) {
+<span class="nc" id="L245">    return false;</span>
   }
 
   @Override
   public boolean needUpgradeDb(final DbSession session, final String version,
-                               final boolean tryFix)
-      throws WaarpDatabaseNoConnectionException {
-<span class="nc" id="L253">    return false;</span>
+                               final boolean tryFix) {
+<span class="nc" id="L251">    return false;</span>
   }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

@@ -94,7 +94,7 @@ public class BusinessRequest extends AbstractBusinessRequest {
 <span class="nc" id="L94">    future.awaitOrInterruptible();</span>
 
 <span class="nc" id="L96">    final long time2 = System.currentTimeMillis();</span>
-<span class="nc" id="L97">    logger.debug(&quot;Finish Business Request: &quot; + future.isSuccess());</span>
+<span class="nc" id="L97">    logger.debug(&quot;Finish Business Request: {}&quot;, future.isSuccess());</span>
 <span class="nc" id="L98">    final long delay = time2 - time1;</span>
 <span class="nc" id="L99">    final OutputFormat outputFormat =</span>
 <span class="nc" id="L100">        new OutputFormat(BusinessRequest.class.getSimpleName(), args);</span>
@@ -106,29 +106,31 @@ public class BusinessRequest extends AbstractBusinessRequest {
                                     &quot;RequestInformation.Success&quot;)); //$NON-NLS-1$
 <span class="nc" id="L107">      outputFormat.setValue(FIELDS.remote.name(), rhost);</span>
 <span class="nc" id="L108">      outputFormat.setValue(&quot;delay&quot;, delay);</span>
-<span class="nc" id="L109">      logger.info(outputFormat.loggerOut());</span>
-<span class="nc bnc" id="L110" title="All 2 branches missed.">      if (!OutputFormat.isQuiet()) {</span>
-<span class="nc" id="L111">        outputFormat.sysout();</span>
+<span class="nc bnc" id="L109" title="All 2 branches missed.">      if (logger.isInfoEnabled()) {</span>
+<span class="nc" id="L110">        logger.info(outputFormat.loggerOut());</span>
+      }
+<span class="nc bnc" id="L112" title="All 2 branches missed.">      if (!OutputFormat.isQuiet()) {</span>
+<span class="nc" id="L113">        outputFormat.sysout();</span>
       }
     } else {
-<span class="nc" id="L114">      outputFormat.setValue(FIELDS.status.name(), 2);</span>
-<span class="nc" id="L115">      outputFormat.setValue(FIELDS.statusTxt.name(),</span>
-<span class="nc" id="L116">                            Messages.getString(&quot;BusinessRequest.6&quot;) + Messages</span>
-<span class="nc" id="L117">                                .getString(</span>
+<span class="nc" id="L116">      outputFormat.setValue(FIELDS.status.name(), 2);</span>
+<span class="nc" id="L117">      outputFormat.setValue(FIELDS.statusTxt.name(),</span>
+<span class="nc" id="L118">                            Messages.getString(&quot;BusinessRequest.6&quot;) + Messages</span>
+<span class="nc" id="L119">                                .getString(</span>
                                     &quot;RequestInformation.Failure&quot;)); //$NON-NLS-1$
-<span class="nc" id="L119">      outputFormat.setValue(FIELDS.remote.name(), rhost);</span>
-<span class="nc" id="L120">      outputFormat.setValue(&quot;delay&quot;, delay);</span>
-<span class="nc" id="L121">      logger.error(outputFormat.loggerOut(), future.getCause());</span>
-<span class="nc" id="L122">      outputFormat.setValue(FIELDS.error.name(), future.getCause().toString());</span>
-<span class="nc bnc" id="L123" title="All 2 branches missed.">      if (!OutputFormat.isQuiet()) {</span>
-<span class="nc" id="L124">        outputFormat.sysout();</span>
+<span class="nc" id="L121">      outputFormat.setValue(FIELDS.remote.name(), rhost);</span>
+<span class="nc" id="L122">      outputFormat.setValue(&quot;delay&quot;, delay);</span>
+<span class="nc" id="L123">      logger.error(outputFormat.loggerOut(), future.getCause());</span>
+<span class="nc" id="L124">      outputFormat.setValue(FIELDS.error.name(), future.getCause().toString());</span>
+<span class="nc bnc" id="L125" title="All 2 branches missed.">      if (!OutputFormat.isQuiet()) {</span>
+<span class="nc" id="L126">        outputFormat.sysout();</span>
       }
-<span class="nc" id="L126">      networkTransaction.closeAll();</span>
-<span class="nc" id="L127">      System.exit(ErrorCode.Unknown.ordinal());//NOSONAR</span>
+<span class="nc" id="L128">      networkTransaction.closeAll();</span>
+<span class="nc" id="L129">      System.exit(ErrorCode.Unknown.ordinal());//NOSONAR</span>
     }
-<span class="nc" id="L129">    networkTransaction.closeAll();</span>
-<span class="nc" id="L130">    System.exit(0);//NOSONAR</span>
-<span class="nc" id="L131">  }</span>
+<span class="nc" id="L131">    networkTransaction.closeAll();</span>
+<span class="nc" id="L132">    System.exit(0);//NOSONAR</span>
+<span class="nc" id="L133">  }</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

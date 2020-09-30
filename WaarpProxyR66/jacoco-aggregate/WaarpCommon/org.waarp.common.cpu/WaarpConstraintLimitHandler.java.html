@@ -271,16 +271,14 @@ public abstract class WaarpConstraintLimitHandler implements Runnable {
   private double getLastLA() {
 <span class="fc" id="L272">    final long newTime = System.currentTimeMillis();</span>
     // first check if last test was done too shortly
-<span class="fc bfc" id="L274" title="All 2 branches covered.">    if (newTime - lastTime &lt; waitForNetOp &gt;&gt; 1) {</span>
-      // If last test was wrong, then redo the test
-<span class="pc bpc" id="L276" title="1 of 2 branches missed.">      if (lastLA &lt;= cpuLimit) {</span>
-        // last test was OK, so Continue
-<span class="fc" id="L278">        return lastLA;</span>
-      }
+    // If last test was wrong, then redo the test
+<span class="pc bpc" id="L275" title="1 of 4 branches missed.">    if (newTime - lastTime &lt; waitForNetOp &gt;&gt; 1 &amp;&amp; lastLA &lt;= cpuLimit) {</span>
+      // last test was OK, so Continue
+<span class="fc" id="L277">      return lastLA;</span>
     }
-<span class="fc" id="L281">    lastTime = newTime;</span>
-<span class="fc" id="L282">    lastLA = cpuManagement.getLoadAverage();</span>
-<span class="fc" id="L283">    return lastLA;</span>
+<span class="fc" id="L279">    lastTime = newTime;</span>
+<span class="fc" id="L280">    lastLA = cpuManagement.getLoadAverage();</span>
+<span class="fc" id="L281">    return lastLA;</span>
   }
 
   /**
@@ -288,29 +286,29 @@ public abstract class WaarpConstraintLimitHandler implements Runnable {
    *     server mode
    */
   public boolean checkConstraints() {
-<span class="pc bpc" id="L291" title="1 of 2 branches missed.">    if (!isServer) {</span>
-<span class="nc" id="L292">      return false;</span>
+<span class="pc bpc" id="L289" title="1 of 2 branches missed.">    if (!isServer) {</span>
+<span class="nc" id="L290">      return false;</span>
     }
-<span class="pc bpc" id="L294" title="2 of 6 branches missed.">    if (useCpuLimits &amp;&amp; cpuLimit &lt; 1 &amp;&amp; cpuLimit &gt; 0) {</span>
-<span class="fc" id="L295">      getLastLA();</span>
-<span class="pc bpc" id="L296" title="1 of 2 branches missed.">      if (lastLA &lt;= cpuLimit) {</span>
-<span class="fc" id="L297">        lastAlert = NOALERT;</span>
-<span class="fc" id="L298">        return false;</span>
+<span class="pc bpc" id="L292" title="2 of 6 branches missed.">    if (useCpuLimits &amp;&amp; cpuLimit &lt; 1 &amp;&amp; cpuLimit &gt; 0) {</span>
+<span class="fc" id="L293">      getLastLA();</span>
+<span class="pc bpc" id="L294" title="1 of 2 branches missed.">      if (lastLA &lt;= cpuLimit) {</span>
+<span class="fc" id="L295">        lastAlert = NOALERT;</span>
+<span class="fc" id="L296">        return false;</span>
       }
-<span class="nc" id="L300">      lastAlert = &quot;CPU Constraint: &quot; + lastLA + &quot; &gt; &quot; + cpuLimit;</span>
-<span class="nc" id="L301">      logger.debug(lastAlert);</span>
-<span class="nc" id="L302">      return true;</span>
+<span class="nc" id="L298">      lastAlert = &quot;CPU Constraint: &quot; + lastLA + &quot; &gt; &quot; + cpuLimit;</span>
+<span class="nc" id="L299">      logger.info(lastAlert);</span>
+<span class="nc" id="L300">      return true;</span>
     }
-<span class="pc bpc" id="L304" title="1 of 2 branches missed.">    if (channelLimit &gt; 0) {</span>
-<span class="nc" id="L305">      final int nb = getNumberLocalChannel();</span>
-<span class="nc bnc" id="L306" title="All 2 branches missed.">      if (channelLimit &lt; nb) {</span>
-<span class="nc" id="L307">        lastAlert = &quot;LocalNetwork Constraint: &quot; + nb + &quot; &gt; &quot; + channelLimit;</span>
-<span class="nc" id="L308">        logger.debug(lastAlert);</span>
-<span class="nc" id="L309">        return true;</span>
+<span class="pc bpc" id="L302" title="1 of 2 branches missed.">    if (channelLimit &gt; 0) {</span>
+<span class="nc" id="L303">      final int nb = getNumberLocalChannel();</span>
+<span class="nc bnc" id="L304" title="All 2 branches missed.">      if (channelLimit &lt; nb) {</span>
+<span class="nc" id="L305">        lastAlert = &quot;LocalNetwork Constraint: &quot; + nb + &quot; &gt; &quot; + channelLimit;</span>
+<span class="nc" id="L306">        logger.info(lastAlert);</span>
+<span class="nc" id="L307">        return true;</span>
       }
     }
-<span class="fc" id="L312">    lastAlert = NOALERT;</span>
-<span class="fc" id="L313">    return false;</span>
+<span class="fc" id="L310">    lastAlert = NOALERT;</span>
+<span class="fc" id="L311">    return false;</span>
   }
 
   /**
@@ -329,44 +327,44 @@ public abstract class WaarpConstraintLimitHandler implements Runnable {
    *     server mode
    */
   public boolean checkConstraintsSleep(final int step) {
-<span class="fc bfc" id="L332" title="All 2 branches covered.">    if (!isServer) {</span>
-<span class="fc" id="L333">      return false;</span>
+<span class="fc bfc" id="L330" title="All 2 branches covered.">    if (!isServer) {</span>
+<span class="fc" id="L331">      return false;</span>
     }
-<span class="fc" id="L335">    long delayNew = waitForNetOp &gt;&gt; 1;</span>
-<span class="pc bpc" id="L336" title="5 of 6 branches missed.">    if (useCpuLimits &amp;&amp; cpuLimit &lt; 1 &amp;&amp; cpuLimit &gt; 0) {</span>
-<span class="nc" id="L337">      final long newTime = System.currentTimeMillis();</span>
+<span class="fc" id="L333">    long delayNew = waitForNetOp &gt;&gt; 1;</span>
+<span class="pc bpc" id="L334" title="5 of 6 branches missed.">    if (useCpuLimits &amp;&amp; cpuLimit &lt; 1 &amp;&amp; cpuLimit &gt; 0) {</span>
+<span class="nc" id="L335">      final long newTime = System.currentTimeMillis();</span>
       // first check if last test was done too shortly
-<span class="nc bnc" id="L339" title="All 2 branches missed.">      if (newTime - lastTime &lt; delayNew) {</span>
+<span class="nc bnc" id="L337" title="All 2 branches missed.">      if (newTime - lastTime &lt; delayNew) {</span>
         // If last test was wrong, then wait a bit then redo the test
-<span class="nc bnc" id="L341" title="All 2 branches missed.">        if (lastLA &gt; cpuLimit) {</span>
-<span class="nc" id="L342">          final double sleep =</span>
-<span class="nc" id="L343">              lastLA * delayNew * (step + 1) * random.nextFloat();</span>
-<span class="nc" id="L344">          final long shorttime = ((long) sleep / 10) * 10;</span>
-<span class="nc bnc" id="L345" title="All 2 branches missed.">          if (shorttime &gt;= 10) {</span>
+<span class="nc bnc" id="L339" title="All 2 branches missed.">        if (lastLA &gt; cpuLimit) {</span>
+<span class="nc" id="L340">          final double sleep =</span>
+<span class="nc" id="L341">              lastLA * delayNew * (step + 1) * random.nextFloat();</span>
+<span class="nc" id="L342">          final long shorttime = ((long) sleep / 10) * 10;</span>
+<span class="nc bnc" id="L343" title="All 2 branches missed.">          if (shorttime &gt;= 10) {</span>
             try {
-<span class="nc" id="L347">              Thread.sleep(shorttime);</span>
-<span class="nc" id="L348">            } catch (final InterruptedException ignore) {//NOSONAR</span>
-<span class="nc" id="L349">              SysErrLogger.FAKE_LOGGER.ignoreLog(ignore);</span>
-<span class="nc" id="L350">            }</span>
+<span class="nc" id="L345">              Thread.sleep(shorttime);</span>
+<span class="nc" id="L346">            } catch (final InterruptedException ignore) {//NOSONAR</span>
+<span class="nc" id="L347">              SysErrLogger.FAKE_LOGGER.ignoreLog(ignore);</span>
+<span class="nc" id="L348">            }</span>
           }
-<span class="nc" id="L352">        } else {</span>
+<span class="nc" id="L350">        } else {</span>
           // last test was OK, so Continue
-<span class="nc" id="L354">          lastAlert = NOALERT;</span>
-<span class="nc" id="L355">          return false;</span>
+<span class="nc" id="L352">          lastAlert = NOALERT;</span>
+<span class="nc" id="L353">          return false;</span>
         }
       }
     }
-<span class="pc bpc" id="L359" title="1 of 2 branches missed.">    if (checkConstraints()) {</span>
-<span class="nc" id="L360">      delayNew = getSleepTime() * (step + 1);</span>
+<span class="pc bpc" id="L357" title="1 of 2 branches missed.">    if (checkConstraints()) {</span>
+<span class="nc" id="L358">      delayNew = getSleepTime() * (step + 1);</span>
       try {
-<span class="nc" id="L362">        Thread.sleep(delayNew);</span>
-<span class="nc" id="L363">      } catch (final InterruptedException ignore) {//NOSONAR</span>
-<span class="nc" id="L364">        SysErrLogger.FAKE_LOGGER.ignoreLog(ignore);</span>
-<span class="nc" id="L365">      }</span>
-<span class="nc" id="L366">      return true;</span>
+<span class="nc" id="L360">        Thread.sleep(delayNew);</span>
+<span class="nc" id="L361">      } catch (final InterruptedException ignore) {//NOSONAR</span>
+<span class="nc" id="L362">        SysErrLogger.FAKE_LOGGER.ignoreLog(ignore);</span>
+<span class="nc" id="L363">      }</span>
+<span class="nc" id="L364">      return true;</span>
     } else {
-<span class="fc" id="L368">      lastAlert = NOALERT;</span>
-<span class="fc" id="L369">      return false;</span>
+<span class="fc" id="L366">      lastAlert = NOALERT;</span>
+<span class="fc" id="L367">      return false;</span>
     }
   }
 
@@ -374,36 +372,36 @@ public abstract class WaarpConstraintLimitHandler implements Runnable {
    * @return a time below TIMEOUTCON with a random
    */
   public long getSleepTime() {
-<span class="nc" id="L377">    return (((long) (timeoutCon * random.nextFloat()) + 5000) / 10) * 10;</span>
+<span class="nc" id="L375">    return (((long) (timeoutCon * random.nextFloat()) + 5000) / 10) * 10;</span>
   }
 
   /**
    * @return the cpuLimit
    */
   public double getCpuLimit() {
-<span class="nc" id="L384">    return cpuLimit;</span>
+<span class="nc" id="L382">    return cpuLimit;</span>
   }
 
   /**
    * @param cpuLimit the cpuLimit to set
    */
   public void setCpuLimit(final double cpuLimit) {
-<span class="nc" id="L391">    this.cpuLimit = cpuLimit;</span>
-<span class="nc" id="L392">  }</span>
+<span class="nc" id="L389">    this.cpuLimit = cpuLimit;</span>
+<span class="nc" id="L390">  }</span>
 
   /**
    * @return the channelLimit
    */
   public int getChannelLimit() {
-<span class="nc" id="L398">    return channelLimit;</span>
+<span class="nc" id="L396">    return channelLimit;</span>
   }
 
   /**
    * @param channelLimit the channelLimit to set
    */
   public void setChannelLimit(final int channelLimit) {
-<span class="nc" id="L405">    this.channelLimit = channelLimit;</span>
-<span class="nc" id="L406">  }</span>
+<span class="nc" id="L403">    this.channelLimit = channelLimit;</span>
+<span class="nc" id="L404">  }</span>
 
   /**
    * Get the current setting on Read Limit (supposed to be not the value in
@@ -431,22 +429,22 @@ public abstract class WaarpConstraintLimitHandler implements Runnable {
    * @param handler
    */
   public void setHandler(final AbstractTrafficShapingHandler handler) {
-<span class="fc" id="L434">    this.handler = handler;</span>
-<span class="pc bpc" id="L435" title="2 of 6 branches missed.">    if (!constraintInactive &amp;&amp; this.handler != null &amp;&amp; useBandwidthLimit) {</span>
-<span class="pc bpc" id="L436" title="1 of 2 branches missed.">      if (executor != null) {</span>
-<span class="nc" id="L437">        executor.shutdownNow();</span>
+<span class="fc" id="L432">    this.handler = handler;</span>
+<span class="pc bpc" id="L433" title="2 of 6 branches missed.">    if (!constraintInactive &amp;&amp; this.handler != null &amp;&amp; useBandwidthLimit) {</span>
+<span class="pc bpc" id="L434" title="1 of 2 branches missed.">      if (executor != null) {</span>
+<span class="nc" id="L435">        executor.shutdownNow();</span>
       }
-<span class="fc" id="L439">      logger.debug(&quot;Activate Throttle bandwidth according to CPU usage&quot;);</span>
-<span class="fc" id="L440">      executor = new ScheduledThreadPoolExecutor(1);</span>
-<span class="fc" id="L441">      executor</span>
-<span class="fc" id="L442">          .scheduleWithFixedDelay(this, delay, delay, TimeUnit.MILLISECONDS);</span>
+<span class="fc" id="L437">      logger.debug(&quot;Activate Throttle bandwidth according to CPU usage&quot;);</span>
+<span class="fc" id="L438">      executor = new ScheduledThreadPoolExecutor(1);</span>
+<span class="fc" id="L439">      executor</span>
+<span class="fc" id="L440">          .scheduleWithFixedDelay(this, delay, delay, TimeUnit.MILLISECONDS);</span>
     } else {
-<span class="pc bpc" id="L444" title="1 of 2 branches missed.">      if (executor != null) {</span>
-<span class="nc" id="L445">        executor.shutdownNow();</span>
-<span class="nc" id="L446">        executor = null;</span>
+<span class="pc bpc" id="L442" title="1 of 2 branches missed.">      if (executor != null) {</span>
+<span class="nc" id="L443">        executor.shutdownNow();</span>
+<span class="nc" id="L444">        executor = null;</span>
       }
     }
-<span class="fc" id="L449">  }</span>
+<span class="fc" id="L447">  }</span>
 
   /**
    * Check every delay if the current cpu usage needs to relax or to
@@ -455,88 +453,86 @@ public abstract class WaarpConstraintLimitHandler implements Runnable {
    */
   @Override
   public void run() {
-<span class="pc bpc" id="L458" title="1 of 2 branches missed.">    if (constraintInactive) {</span>
-<span class="nc" id="L459">      return;</span>
+<span class="pc bpc" id="L456" title="1 of 2 branches missed.">    if (constraintInactive) {</span>
+<span class="nc" id="L457">      return;</span>
     }
-<span class="fc" id="L461">    final double curLA = getLastLA();</span>
-<span class="pc bpc" id="L462" title="1 of 2 branches missed.">    if (!useBandwidthLimit) {</span>
-<span class="nc" id="L463">      return;</span>
+<span class="fc" id="L459">    final double curLA = getLastLA();</span>
+<span class="pc bpc" id="L460" title="1 of 2 branches missed.">    if (!useBandwidthLimit) {</span>
+<span class="nc" id="L461">      return;</span>
     }
-<span class="pc bpc" id="L465" title="1 of 2 branches missed.">    if (curLA &gt; highCpuLimit) {</span>
+<span class="pc bpc" id="L463" title="1 of 2 branches missed.">    if (curLA &gt; highCpuLimit) {</span>
       final CurLimits curlimit;
-<span class="nc bnc" id="L467" title="All 2 branches missed.">      if (curLimits.isEmpty()) {</span>
+<span class="nc bnc" id="L465" title="All 2 branches missed.">      if (curLimits.isEmpty()) {</span>
         // get current limit setting
-<span class="nc" id="L469">        curlimit = new CurLimits(getReadLimit(), getWriteLimit());</span>
-<span class="nc bnc" id="L470" title="All 2 branches missed.">        if (curlimit.read == 0) {</span>
+<span class="nc" id="L467">        curlimit = new CurLimits(getReadLimit(), getWriteLimit());</span>
+<span class="nc bnc" id="L468" title="All 2 branches missed.">        if (curlimit.read == 0) {</span>
           // take the current bandwidth
-<span class="nc" id="L472">          curlimit.read = handler.trafficCounter().lastReadThroughput();</span>
-<span class="nc bnc" id="L473" title="All 2 branches missed.">          if (curlimit.read &lt; limitLowBandwidth) {</span>
-<span class="nc" id="L474">            curlimit.read = 0;</span>
+<span class="nc" id="L470">          curlimit.read = handler.trafficCounter().lastReadThroughput();</span>
+<span class="nc bnc" id="L471" title="All 2 branches missed.">          if (curlimit.read &lt; limitLowBandwidth) {</span>
+<span class="nc" id="L472">            curlimit.read = 0;</span>
           }
         }
-<span class="nc bnc" id="L477" title="All 2 branches missed.">        if (curlimit.write == 0) {</span>
+<span class="nc bnc" id="L475" title="All 2 branches missed.">        if (curlimit.write == 0) {</span>
           // take the current bandwidth
-<span class="nc" id="L479">          curlimit.write = handler.trafficCounter().lastWriteThroughput();</span>
-<span class="nc bnc" id="L480" title="All 2 branches missed.">          if (curlimit.write &lt; limitLowBandwidth) {</span>
-<span class="nc" id="L481">            curlimit.write = 0;</span>
+<span class="nc" id="L477">          curlimit.write = handler.trafficCounter().lastWriteThroughput();</span>
+<span class="nc bnc" id="L478" title="All 2 branches missed.">          if (curlimit.write &lt; limitLowBandwidth) {</span>
+<span class="nc" id="L479">            curlimit.write = 0;</span>
           }
         }
       } else {
-<span class="nc" id="L485">        curlimit = curLimits.getLast();</span>
+<span class="nc" id="L483">        curlimit = curLimits.getLast();</span>
       }
-<span class="nc" id="L487">      long newread = (long) (curlimit.read * (1 - percentageDecreaseRatio));</span>
-<span class="nc bnc" id="L488" title="All 2 branches missed.">      if (newread &lt; limitLowBandwidth) {</span>
-<span class="nc" id="L489">        newread = limitLowBandwidth;</span>
+<span class="nc" id="L485">      long newread = (long) (curlimit.read * (1 - percentageDecreaseRatio));</span>
+<span class="nc bnc" id="L486" title="All 2 branches missed.">      if (newread &lt; limitLowBandwidth) {</span>
+<span class="nc" id="L487">        newread = limitLowBandwidth;</span>
       }
-<span class="nc" id="L491">      long newwrite = (long) (curlimit.write * (1 - percentageDecreaseRatio));</span>
-<span class="nc bnc" id="L492" title="All 2 branches missed.">      if (newwrite &lt; limitLowBandwidth) {</span>
-<span class="nc" id="L493">        newwrite = limitLowBandwidth;</span>
+<span class="nc" id="L489">      long newwrite = (long) (curlimit.write * (1 - percentageDecreaseRatio));</span>
+<span class="nc bnc" id="L490" title="All 2 branches missed.">      if (newwrite &lt; limitLowBandwidth) {</span>
+<span class="nc" id="L491">        newwrite = limitLowBandwidth;</span>
       }
-<span class="nc" id="L495">      final CurLimits newlimit = new CurLimits(newread, newwrite);</span>
-<span class="nc bnc" id="L496" title="All 6 branches missed.">      if (curLimits.isEmpty() || curlimit.read != newread ||</span>
+<span class="nc" id="L493">      final CurLimits newlimit = new CurLimits(newread, newwrite);</span>
+<span class="nc bnc" id="L494" title="All 6 branches missed.">      if (curLimits.isEmpty() || curlimit.read != newread ||</span>
           curlimit.write != newwrite) {
         // Not same limit so add this limit
-<span class="nc" id="L499">        curLimits.add(newlimit);</span>
-<span class="nc" id="L500">        logger.debug(</span>
-            &quot;Set new low limit since CPU = &quot; + curLA + ' ' + newwrite + ':' +
-            newread);
-<span class="nc" id="L503">        handler.configure(newlimit.write, newlimit.read);</span>
-<span class="nc" id="L504">        nbSinceLastDecrease += PAYLOAD;</span>
+<span class="nc" id="L497">        curLimits.add(newlimit);</span>
+<span class="nc" id="L498">        logger.info(&quot;Set new low limit since CPU = {} {}:{}&quot;, curLA, newwrite,</span>
+<span class="nc" id="L499">                    newread);</span>
+<span class="nc" id="L500">        handler.configure(newlimit.write, newlimit.read);</span>
+<span class="nc" id="L501">        nbSinceLastDecrease += PAYLOAD;</span>
       }
-<span class="pc bfc" id="L506" title="All 2 branches covered.">    } else if (curLA &lt; lowCpuLimit) {</span>
-<span class="pc bpc" id="L507" title="1 of 2 branches missed.">      if (curLimits.isEmpty()) {</span>
+<span class="pc bfc" id="L503" title="All 2 branches covered.">    } else if (curLA &lt; lowCpuLimit) {</span>
+<span class="pc bpc" id="L504" title="1 of 2 branches missed.">      if (curLimits.isEmpty()) {</span>
         // nothing to do
-<span class="fc" id="L509">        return;</span>
+<span class="fc" id="L506">        return;</span>
       }
-<span class="nc bnc" id="L511" title="All 2 branches missed.">      if (nbSinceLastDecrease &gt; 0) {</span>
-<span class="nc" id="L512">        nbSinceLastDecrease--;</span>
+<span class="nc bnc" id="L508" title="All 2 branches missed.">      if (nbSinceLastDecrease &gt; 0) {</span>
+<span class="nc" id="L509">        nbSinceLastDecrease--;</span>
         // wait a bit more in case
-<span class="nc" id="L514">        return;</span>
+<span class="nc" id="L511">        return;</span>
       }
-<span class="nc" id="L516">      nbSinceLastDecrease = 0;</span>
-<span class="nc" id="L517">      curLimits.pollLast();</span>
+<span class="nc" id="L513">      nbSinceLastDecrease = 0;</span>
+<span class="nc" id="L514">      curLimits.pollLast();</span>
       final CurLimits newlimit;
-<span class="nc bnc" id="L519" title="All 2 branches missed.">      if (curLimits.isEmpty()) {</span>
+<span class="nc bnc" id="L516" title="All 2 branches missed.">      if (curLimits.isEmpty()) {</span>
         // reset to default limits
-<span class="nc" id="L521">        final long newread = getReadLimit();</span>
-<span class="nc" id="L522">        final long newwrite = getWriteLimit();</span>
-<span class="nc" id="L523">        logger.debug(</span>
-            &quot;restore limit since CPU = &quot; + curLA + ' ' + newwrite + ':' +
-            newread);
-<span class="nc" id="L526">        handler.configure(newwrite, newread);</span>
-<span class="nc" id="L527">      } else {</span>
+<span class="nc" id="L518">        final long newread = getReadLimit();</span>
+<span class="nc" id="L519">        final long newwrite = getWriteLimit();</span>
+<span class="nc" id="L520">        logger.info(&quot;restore limit since CPU = {} {}:{}&quot;, curLA, newwrite,</span>
+<span class="nc" id="L521">                    newread);</span>
+<span class="nc" id="L522">        handler.configure(newwrite, newread);</span>
+<span class="nc" id="L523">      } else {</span>
         // set next upper values
-<span class="nc" id="L529">        newlimit = curLimits.getLast();</span>
-<span class="nc" id="L530">        final long newread = newlimit.read;</span>
-<span class="nc" id="L531">        final long newwrite = newlimit.write;</span>
-<span class="nc" id="L532">        logger.debug(</span>
-            &quot;Set new upper limit since CPU = &quot; + curLA + ' ' + newwrite + ':' +
-            newread);
-<span class="nc" id="L535">        handler.configure(newwrite, newread);</span>
+<span class="nc" id="L525">        newlimit = curLimits.getLast();</span>
+<span class="nc" id="L526">        final long newread = newlimit.read;</span>
+<span class="nc" id="L527">        final long newwrite = newlimit.write;</span>
+<span class="nc" id="L528">        logger</span>
+<span class="nc" id="L529">            .info(&quot;Set new upper limit since CPU = {} {}:{}&quot;, +curLA, newwrite,</span>
+<span class="nc" id="L530">                  newread);</span>
+<span class="nc" id="L531">        handler.configure(newwrite, newread);</span>
         // give extra payload to prevent a brutal return to normal
-<span class="nc" id="L537">        nbSinceLastDecrease = PAYLOAD;</span>
+<span class="nc" id="L533">        nbSinceLastDecrease = PAYLOAD;</span>
       }
     }
-<span class="fc" id="L540">  }</span>
+<span class="fc" id="L536">  }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

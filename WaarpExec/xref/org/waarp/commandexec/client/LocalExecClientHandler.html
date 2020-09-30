@@ -84,7 +84,7 @@
 <a class="jxr_linenumber" name="L76" href="#L76">76</a>      <strong class="jxr_keyword">if</strong> (!ready.awaitOrInterruptible() &amp;&amp; channel == <strong class="jxr_keyword">null</strong>) {
 <a class="jxr_linenumber" name="L77" href="#L77">77</a>        <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> RuntimeException(<span class="jxr_string">"Cannot get client connected"</span>);
 <a class="jxr_linenumber" name="L78" href="#L78">78</a>      }
-<a class="jxr_linenumber" name="L79" href="#L79">79</a>      logger.debug(<span class="jxr_string">"write command: "</span> + <strong class="jxr_keyword">this</strong>.command);
+<a class="jxr_linenumber" name="L79" href="#L79">79</a>      logger.debug(<span class="jxr_string">"write command: {}"</span>, <strong class="jxr_keyword">this</strong>.command);
 <a class="jxr_linenumber" name="L80" href="#L80">80</a>      <strong class="jxr_keyword">if</strong> (<strong class="jxr_keyword">this</strong>.delay != 0) {
 <a class="jxr_linenumber" name="L81" href="#L81">81</a>        WaarpNettyUtil.awaitOrInterrupted(
 <a class="jxr_linenumber" name="L82" href="#L82">82</a>            channel.writeAndFlush(<strong class="jxr_keyword">this</strong>.delay + <span class="jxr_string">" "</span> + <strong class="jxr_keyword">this</strong>.command + '\n'));
@@ -168,64 +168,63 @@
 <a class="jxr_linenumber" name="L160" href="#L160">160</a>   }
 <a class="jxr_linenumber" name="L161" href="#L161">161</a> 
 <a class="jxr_linenumber" name="L162" href="#L162">162</a>   @Override
-<a class="jxr_linenumber" name="L163" href="#L163">163</a>   <strong class="jxr_keyword">protected</strong> <strong class="jxr_keyword">void</strong> channelRead0(<strong class="jxr_keyword">final</strong> ChannelHandlerContext ctx, String mesg)
-<a class="jxr_linenumber" name="L164" href="#L164">164</a>       <strong class="jxr_keyword">throws</strong> Exception {
-<a class="jxr_linenumber" name="L165" href="#L165">165</a>     <em class="jxr_comment">// Add the line received from the server.</em>
-<a class="jxr_linenumber" name="L166" href="#L166">166</a>     <em class="jxr_comment">// If first message, then take the status and then the message</em>
-<a class="jxr_linenumber" name="L167" href="#L167">167</a>     <strong class="jxr_keyword">if</strong> (firstMessage) {
-<a class="jxr_linenumber" name="L168" href="#L168">168</a>       firstMessage = false;
-<a class="jxr_linenumber" name="L169" href="#L169">169</a>       <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong> pos = mesg.indexOf(' ');
-<a class="jxr_linenumber" name="L170" href="#L170">170</a>       <strong class="jxr_keyword">try</strong> {
-<a class="jxr_linenumber" name="L171" href="#L171">171</a>         result.setStatus(Integer.parseInt(mesg.substring(0, pos)));
-<a class="jxr_linenumber" name="L172" href="#L172">172</a>       } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> NumberFormatException e1) {
-<a class="jxr_linenumber" name="L173" href="#L173">173</a>         <em class="jxr_comment">// Error</em>
-<a class="jxr_linenumber" name="L174" href="#L174">174</a>         logger
-<a class="jxr_linenumber" name="L175" href="#L175">175</a>             .debug(command + ':' + <span class="jxr_string">"Bad Transmission: "</span> + mesg + <span class="jxr_string">"\n\t"</span> + back);
-<a class="jxr_linenumber" name="L176" href="#L176">176</a>         result.set(LocalExecDefaultResult.BadTransmition);
-<a class="jxr_linenumber" name="L177" href="#L177">177</a>         back.append(mesg);
-<a class="jxr_linenumber" name="L178" href="#L178">178</a>         actionBeforeClose(ctx.channel());
-<a class="jxr_linenumber" name="L179" href="#L179">179</a>         WaarpSslUtility.closingSslChannel(ctx.channel());
-<a class="jxr_linenumber" name="L180" href="#L180">180</a>         <strong class="jxr_keyword">return</strong>;
-<a class="jxr_linenumber" name="L181" href="#L181">181</a>       }
-<a class="jxr_linenumber" name="L182" href="#L182">182</a>       mesg = mesg.substring(pos + 1);
-<a class="jxr_linenumber" name="L183" href="#L183">183</a>       <strong class="jxr_keyword">if</strong> (mesg.startsWith(LocalExecDefaultResult.ENDOFCOMMAND)) {
-<a class="jxr_linenumber" name="L184" href="#L184">184</a>         logger.debug(command + ':' + <span class="jxr_string">"Receive End of Command"</span>);
-<a class="jxr_linenumber" name="L185" href="#L185">185</a>         result.setResult(LocalExecDefaultResult.NoMessage.getResult());
-<a class="jxr_linenumber" name="L186" href="#L186">186</a>         back.append(result.getResult());
-<a class="jxr_linenumber" name="L187" href="#L187">187</a>         finalizeMessage();
-<a class="jxr_linenumber" name="L188" href="#L188">188</a>       } <strong class="jxr_keyword">else</strong> {
-<a class="jxr_linenumber" name="L189" href="#L189">189</a>         result.setResult(mesg);
-<a class="jxr_linenumber" name="L190" href="#L190">190</a>         back.append(mesg);
-<a class="jxr_linenumber" name="L191" href="#L191">191</a>       }
-<a class="jxr_linenumber" name="L192" href="#L192">192</a>     } <strong class="jxr_keyword">else</strong> <strong class="jxr_keyword">if</strong> (mesg.startsWith(LocalExecDefaultResult.ENDOFCOMMAND)) {
-<a class="jxr_linenumber" name="L193" href="#L193">193</a>       logger.debug(command + ':' + <span class="jxr_string">"Receive End of Command"</span>);
-<a class="jxr_linenumber" name="L194" href="#L194">194</a>       finalizeMessage();
-<a class="jxr_linenumber" name="L195" href="#L195">195</a>     } <strong class="jxr_keyword">else</strong> {
-<a class="jxr_linenumber" name="L196" href="#L196">196</a>       back.append('\n').append(mesg);
-<a class="jxr_linenumber" name="L197" href="#L197">197</a>     }
-<a class="jxr_linenumber" name="L198" href="#L198">198</a>   }
-<a class="jxr_linenumber" name="L199" href="#L199">199</a> 
-<a class="jxr_linenumber" name="L200" href="#L200">200</a>   @Override
-<a class="jxr_linenumber" name="L201" href="#L201">201</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> exceptionCaught(<strong class="jxr_keyword">final</strong> ChannelHandlerContext ctx,
-<a class="jxr_linenumber" name="L202" href="#L202">202</a>                               <strong class="jxr_keyword">final</strong> Throwable cause) <strong class="jxr_keyword">throws</strong> Exception {
-<a class="jxr_linenumber" name="L203" href="#L203">203</a>     logger.warn(command + ':' +
-<a class="jxr_linenumber" name="L204" href="#L204">204</a>                 <span class="jxr_string">"Unexpected exception from Outband while get information: "</span> +
-<a class="jxr_linenumber" name="L205" href="#L205">205</a>                 firstMessage, cause);
-<a class="jxr_linenumber" name="L206" href="#L206">206</a>     <strong class="jxr_keyword">if</strong> (firstMessage) {
-<a class="jxr_linenumber" name="L207" href="#L207">207</a>       firstMessage = false;
-<a class="jxr_linenumber" name="L208" href="#L208">208</a>       result.set(LocalExecDefaultResult.BadTransmition);
-<a class="jxr_linenumber" name="L209" href="#L209">209</a>       result.setException((Exception) cause);
-<a class="jxr_linenumber" name="L210" href="#L210">210</a>       back = <strong class="jxr_keyword">new</strong> StringBuilder(<span class="jxr_string">"Error in LocalExec: "</span>)
-<a class="jxr_linenumber" name="L211" href="#L211">211</a>           .append(result.getException().getMessage()).append('\n');
-<a class="jxr_linenumber" name="L212" href="#L212">212</a>     } <strong class="jxr_keyword">else</strong> {
-<a class="jxr_linenumber" name="L213" href="#L213">213</a>       back.append(<span class="jxr_string">"\nERROR while receiving answer: "</span>);
-<a class="jxr_linenumber" name="L214" href="#L214">214</a>       result.setException((Exception) cause);
-<a class="jxr_linenumber" name="L215" href="#L215">215</a>       back.append(result.getException().getMessage()).append('\n');
-<a class="jxr_linenumber" name="L216" href="#L216">216</a>     }
-<a class="jxr_linenumber" name="L217" href="#L217">217</a>     actionBeforeClose(ctx.channel());
-<a class="jxr_linenumber" name="L218" href="#L218">218</a>     WaarpSslUtility.closingSslChannel(ctx.channel());
-<a class="jxr_linenumber" name="L219" href="#L219">219</a>   }
-<a class="jxr_linenumber" name="L220" href="#L220">220</a> }
+<a class="jxr_linenumber" name="L163" href="#L163">163</a>   <strong class="jxr_keyword">protected</strong> <strong class="jxr_keyword">void</strong> channelRead0(<strong class="jxr_keyword">final</strong> ChannelHandlerContext ctx, String mesg) {
+<a class="jxr_linenumber" name="L164" href="#L164">164</a>     <em class="jxr_comment">// Add the line received from the server.</em>
+<a class="jxr_linenumber" name="L165" href="#L165">165</a>     <em class="jxr_comment">// If first message, then take the status and then the message</em>
+<a class="jxr_linenumber" name="L166" href="#L166">166</a>     <strong class="jxr_keyword">if</strong> (firstMessage) {
+<a class="jxr_linenumber" name="L167" href="#L167">167</a>       firstMessage = false;
+<a class="jxr_linenumber" name="L168" href="#L168">168</a>       <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong> pos = mesg.indexOf(' ');
+<a class="jxr_linenumber" name="L169" href="#L169">169</a>       <strong class="jxr_keyword">try</strong> {
+<a class="jxr_linenumber" name="L170" href="#L170">170</a>         result.setStatus(Integer.parseInt(mesg.substring(0, pos)));
+<a class="jxr_linenumber" name="L171" href="#L171">171</a>       } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> NumberFormatException e1) {
+<a class="jxr_linenumber" name="L172" href="#L172">172</a>         <em class="jxr_comment">// Error</em>
+<a class="jxr_linenumber" name="L173" href="#L173">173</a>         logger
+<a class="jxr_linenumber" name="L174" href="#L174">174</a>             .debug(command + ':' + <span class="jxr_string">"Bad Transmission: "</span> + mesg + <span class="jxr_string">"\n\t"</span> + back);
+<a class="jxr_linenumber" name="L175" href="#L175">175</a>         result.set(LocalExecDefaultResult.BadTransmition);
+<a class="jxr_linenumber" name="L176" href="#L176">176</a>         back.append(mesg);
+<a class="jxr_linenumber" name="L177" href="#L177">177</a>         actionBeforeClose(ctx.channel());
+<a class="jxr_linenumber" name="L178" href="#L178">178</a>         WaarpSslUtility.closingSslChannel(ctx.channel());
+<a class="jxr_linenumber" name="L179" href="#L179">179</a>         <strong class="jxr_keyword">return</strong>;
+<a class="jxr_linenumber" name="L180" href="#L180">180</a>       }
+<a class="jxr_linenumber" name="L181" href="#L181">181</a>       mesg = mesg.substring(pos + 1);
+<a class="jxr_linenumber" name="L182" href="#L182">182</a>       <strong class="jxr_keyword">if</strong> (mesg.startsWith(LocalExecDefaultResult.ENDOFCOMMAND)) {
+<a class="jxr_linenumber" name="L183" href="#L183">183</a>         logger.debug(<span class="jxr_string">"{}:Receive End of Command"</span>, command);
+<a class="jxr_linenumber" name="L184" href="#L184">184</a>         result.setResult(LocalExecDefaultResult.NoMessage.getResult());
+<a class="jxr_linenumber" name="L185" href="#L185">185</a>         back.append(result.getResult());
+<a class="jxr_linenumber" name="L186" href="#L186">186</a>         finalizeMessage();
+<a class="jxr_linenumber" name="L187" href="#L187">187</a>       } <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="L188" href="#L188">188</a>         result.setResult(mesg);
+<a class="jxr_linenumber" name="L189" href="#L189">189</a>         back.append(mesg);
+<a class="jxr_linenumber" name="L190" href="#L190">190</a>       }
+<a class="jxr_linenumber" name="L191" href="#L191">191</a>     } <strong class="jxr_keyword">else</strong> <strong class="jxr_keyword">if</strong> (mesg.startsWith(LocalExecDefaultResult.ENDOFCOMMAND)) {
+<a class="jxr_linenumber" name="L192" href="#L192">192</a>       logger.debug(<span class="jxr_string">"{}:Receive End of Command"</span>, command);
+<a class="jxr_linenumber" name="L193" href="#L193">193</a>       finalizeMessage();
+<a class="jxr_linenumber" name="L194" href="#L194">194</a>     } <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="L195" href="#L195">195</a>       back.append('\n').append(mesg);
+<a class="jxr_linenumber" name="L196" href="#L196">196</a>     }
+<a class="jxr_linenumber" name="L197" href="#L197">197</a>   }
+<a class="jxr_linenumber" name="L198" href="#L198">198</a> 
+<a class="jxr_linenumber" name="L199" href="#L199">199</a>   @Override
+<a class="jxr_linenumber" name="L200" href="#L200">200</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> exceptionCaught(<strong class="jxr_keyword">final</strong> ChannelHandlerContext ctx,
+<a class="jxr_linenumber" name="L201" href="#L201">201</a>                               <strong class="jxr_keyword">final</strong> Throwable cause) {
+<a class="jxr_linenumber" name="L202" href="#L202">202</a>     logger.warn(command + ':' +
+<a class="jxr_linenumber" name="L203" href="#L203">203</a>                 <span class="jxr_string">"Unexpected exception from Outband while get information: "</span> +
+<a class="jxr_linenumber" name="L204" href="#L204">204</a>                 firstMessage, cause);
+<a class="jxr_linenumber" name="L205" href="#L205">205</a>     <strong class="jxr_keyword">if</strong> (firstMessage) {
+<a class="jxr_linenumber" name="L206" href="#L206">206</a>       firstMessage = false;
+<a class="jxr_linenumber" name="L207" href="#L207">207</a>       result.set(LocalExecDefaultResult.BadTransmition);
+<a class="jxr_linenumber" name="L208" href="#L208">208</a>       result.setException((Exception) cause);
+<a class="jxr_linenumber" name="L209" href="#L209">209</a>       back = <strong class="jxr_keyword">new</strong> StringBuilder(<span class="jxr_string">"Error in LocalExec: "</span>)
+<a class="jxr_linenumber" name="L210" href="#L210">210</a>           .append(result.getException().getMessage()).append('\n');
+<a class="jxr_linenumber" name="L211" href="#L211">211</a>     } <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="L212" href="#L212">212</a>       back.append(<span class="jxr_string">"\nERROR while receiving answer: "</span>);
+<a class="jxr_linenumber" name="L213" href="#L213">213</a>       result.setException((Exception) cause);
+<a class="jxr_linenumber" name="L214" href="#L214">214</a>       back.append(result.getException().getMessage()).append('\n');
+<a class="jxr_linenumber" name="L215" href="#L215">215</a>     }
+<a class="jxr_linenumber" name="L216" href="#L216">216</a>     actionBeforeClose(ctx.channel());
+<a class="jxr_linenumber" name="L217" href="#L217">217</a>     WaarpSslUtility.closingSslChannel(ctx.channel());
+<a class="jxr_linenumber" name="L218" href="#L218">218</a>   }
+<a class="jxr_linenumber" name="L219" href="#L219">219</a> }
 </pre>
 <hr/>
 <div id="footer">Copyright &#169; 2009&#x2013;2020 <a href="http://www.waarp.fr">Waarp</a>. All rights reserved.</div>

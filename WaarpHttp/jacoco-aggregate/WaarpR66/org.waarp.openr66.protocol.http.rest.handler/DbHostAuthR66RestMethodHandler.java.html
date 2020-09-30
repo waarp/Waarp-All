@@ -31,7 +31,6 @@ import org.waarp.common.json.JsonHandler;
 import org.waarp.common.role.RoleDefault.ROLE;
 import org.waarp.gateway.kernel.exception.HttpForbiddenRequestException;
 import org.waarp.gateway.kernel.exception.HttpIncorrectRequestException;
-import org.waarp.gateway.kernel.exception.HttpInvalidAuthenticationException;
 import org.waarp.gateway.kernel.exception.HttpNotFoundRequestException;
 import org.waarp.gateway.kernel.rest.DataModelRestMethodHandler;
 import org.waarp.gateway.kernel.rest.HttpRestHandler;
@@ -52,15 +51,15 @@ public class DbHostAuthR66RestMethodHandler
       &quot;HostId as VARCHAR in URI as &quot;;
   public static final String BASEURI = &quot;hosts&quot;;
 
-<span class="fc" id="L55">  public enum FILTER_ARGS {</span>
-<span class="fc" id="L56">    HOSTID(&quot;host name&quot;), ADDRESS(&quot;ADDRESS of this partner&quot;),</span>
-<span class="fc" id="L57">    ISSSL(&quot;is Ssl entry&quot;), ISACTIVE(&quot;is Active entry&quot;);</span>
+<span class="fc" id="L54">  public enum FILTER_ARGS {</span>
+<span class="fc" id="L55">    HOSTID(&quot;host name&quot;), ADDRESS(&quot;ADDRESS of this partner&quot;),</span>
+<span class="fc" id="L56">    ISSSL(&quot;is Ssl entry&quot;), ISACTIVE(&quot;is Active entry&quot;);</span>
 
     public final String type;
 
-<span class="fc" id="L61">    FILTER_ARGS(final String type) {</span>
-<span class="fc" id="L62">      this.type = type;</span>
-<span class="fc" id="L63">    }</span>
+<span class="fc" id="L60">    FILTER_ARGS(final String type) {</span>
+<span class="fc" id="L61">      this.type = type;</span>
+<span class="fc" id="L62">    }</span>
   }
 
   /**
@@ -69,29 +68,28 @@ public class DbHostAuthR66RestMethodHandler
    */
   public DbHostAuthR66RestMethodHandler(final RestConfiguration config,
                                         final METHOD... method) {
-<span class="fc" id="L72">    super(BASEURI, config, method);</span>
-<span class="fc" id="L73">  }</span>
+<span class="fc" id="L71">    super(BASEURI, config, method);</span>
+<span class="fc" id="L72">  }</span>
 
   @Override
   protected DbHostAuth getItem(final HttpRestHandler handler,
                                final RestArgument arguments,
                                final RestArgument result, final Object body)
-      throws HttpIncorrectRequestException, HttpInvalidAuthenticationException,
-             HttpNotFoundRequestException {
-<span class="fc" id="L81">    final ObjectNode arg = arguments.getUriArgs().deepCopy();</span>
-<span class="fc" id="L82">    arg.setAll(arguments.getBody());</span>
+      throws HttpNotFoundRequestException {
+<span class="fc" id="L79">    final ObjectNode arg = arguments.getUriArgs().deepCopy();</span>
+<span class="fc" id="L80">    arg.setAll(arguments.getBody());</span>
     try {
-<span class="fc" id="L84">      final JsonNode node = RestArgument.getId(arg);</span>
+<span class="fc" id="L82">      final JsonNode node = RestArgument.getId(arg);</span>
       final String id;
-<span class="pc bpc" id="L86" title="1 of 2 branches missed.">      if (node.isMissingNode()) {</span>
+<span class="pc bpc" id="L84" title="1 of 2 branches missed.">      if (node.isMissingNode()) {</span>
         // shall not be but continue however
-<span class="nc" id="L88">        id = arg.path(DbHostAuth.Columns.HOSTID.name()).asText();</span>
+<span class="nc" id="L86">        id = arg.path(DbHostAuth.Columns.HOSTID.name()).asText();</span>
       } else {
-<span class="fc" id="L90">        id = node.asText();</span>
+<span class="fc" id="L88">        id = node.asText();</span>
       }
-<span class="fc" id="L92">      return new DbHostAuth(id);</span>
-<span class="fc" id="L93">    } catch (final WaarpDatabaseException e) {</span>
-<span class="fc" id="L94">      throw new HttpNotFoundRequestException(</span>
+<span class="fc" id="L90">      return new DbHostAuth(id);</span>
+<span class="fc" id="L91">    } catch (final WaarpDatabaseException e) {</span>
+<span class="fc" id="L92">      throw new HttpNotFoundRequestException(</span>
           &quot;Issue while reading from database &quot; + arg + &quot; was &quot; + arguments, e);
     }
   }
@@ -100,13 +98,13 @@ public class DbHostAuthR66RestMethodHandler
   protected DbHostAuth createItem(final HttpRestHandler handler,
                                   final RestArgument arguments,
                                   final RestArgument result, final Object body)
-      throws HttpIncorrectRequestException, HttpInvalidAuthenticationException {
-<span class="fc" id="L104">    final ObjectNode arg = arguments.getUriArgs().deepCopy();</span>
-<span class="fc" id="L105">    arg.setAll(arguments.getBody());</span>
+      throws HttpIncorrectRequestException {
+<span class="fc" id="L102">    final ObjectNode arg = arguments.getUriArgs().deepCopy();</span>
+<span class="fc" id="L103">    arg.setAll(arguments.getBody());</span>
     try {
-<span class="fc" id="L107">      return new DbHostAuth(arg);</span>
-<span class="nc" id="L108">    } catch (final WaarpDatabaseException e) {</span>
-<span class="nc" id="L109">      throw new HttpIncorrectRequestException(</span>
+<span class="fc" id="L105">      return new DbHostAuth(arg);</span>
+<span class="nc" id="L106">    } catch (final WaarpDatabaseException e) {</span>
+<span class="nc" id="L107">      throw new HttpIncorrectRequestException(</span>
           &quot;Issue while inserting into database&quot;, e);
     }
   }
@@ -115,29 +113,29 @@ public class DbHostAuthR66RestMethodHandler
   protected DbPreparedStatement getPreparedStatement(
       final HttpRestHandler handler, final RestArgument arguments,
       final RestArgument result, final Object body)
-      throws HttpIncorrectRequestException, HttpInvalidAuthenticationException {
-<span class="fc" id="L119">    final ObjectNode arg = arguments.getUriArgs().deepCopy();</span>
-<span class="fc" id="L120">    arg.setAll(arguments.getBody());</span>
-<span class="fc" id="L121">    String host = arg.path(FILTER_ARGS.HOSTID.name()).asText();</span>
-<span class="pc bpc" id="L122" title="2 of 4 branches missed.">    if (host == null || host.isEmpty()) {</span>
-<span class="fc" id="L123">      host = null;</span>
+      throws HttpIncorrectRequestException {
+<span class="fc" id="L117">    final ObjectNode arg = arguments.getUriArgs().deepCopy();</span>
+<span class="fc" id="L118">    arg.setAll(arguments.getBody());</span>
+<span class="fc" id="L119">    String host = arg.path(FILTER_ARGS.HOSTID.name()).asText();</span>
+<span class="pc bpc" id="L120" title="2 of 4 branches missed.">    if (host == null || host.isEmpty()) {</span>
+<span class="fc" id="L121">      host = null;</span>
     }
-<span class="fc" id="L125">    String address = arg.path(FILTER_ARGS.ADDRESS.name()).asText();</span>
-<span class="pc bpc" id="L126" title="2 of 4 branches missed.">    if (address == null || address.isEmpty()) {</span>
-<span class="fc" id="L127">      address = null;</span>
+<span class="fc" id="L123">    String address = arg.path(FILTER_ARGS.ADDRESS.name()).asText();</span>
+<span class="pc bpc" id="L124" title="2 of 4 branches missed.">    if (address == null || address.isEmpty()) {</span>
+<span class="fc" id="L125">      address = null;</span>
     }
-<span class="fc" id="L129">    final boolean isssl = arg.path(FILTER_ARGS.ISSSL.name()).asBoolean(false);</span>
-<span class="fc" id="L130">    final boolean isactive =</span>
-<span class="fc" id="L131">        arg.path(FILTER_ARGS.ISACTIVE.name()).asBoolean(false);</span>
+<span class="fc" id="L127">    final boolean isssl = arg.path(FILTER_ARGS.ISSSL.name()).asBoolean(false);</span>
+<span class="fc" id="L128">    final boolean isactive =</span>
+<span class="fc" id="L129">        arg.path(FILTER_ARGS.ISACTIVE.name()).asBoolean(false);</span>
     try {
-<span class="fc" id="L133">      return DbHostAuth</span>
-<span class="fc" id="L134">          .getFilterPrepareStament(handler.getDbSession(), host, address, isssl,</span>
+<span class="fc" id="L131">      return DbHostAuth</span>
+<span class="fc" id="L132">          .getFilterPrepareStament(handler.getDbSession(), host, address, isssl,</span>
                                    isactive);
-<span class="nc" id="L136">    } catch (final WaarpDatabaseNoConnectionException e) {</span>
-<span class="nc" id="L137">      throw new HttpIncorrectRequestException(</span>
+<span class="nc" id="L134">    } catch (final WaarpDatabaseNoConnectionException e) {</span>
+<span class="nc" id="L135">      throw new HttpIncorrectRequestException(</span>
           &quot;Issue while reading from database&quot;, e);
-<span class="nc" id="L139">    } catch (final WaarpDatabaseSqlException e) {</span>
-<span class="nc" id="L140">      throw new HttpIncorrectRequestException(</span>
+<span class="nc" id="L137">    } catch (final WaarpDatabaseSqlException e) {</span>
+<span class="nc" id="L138">      throw new HttpIncorrectRequestException(</span>
           &quot;Issue while reading from database&quot;, e);
     }
   }
@@ -147,90 +145,90 @@ public class DbHostAuthR66RestMethodHandler
       final DbPreparedStatement statement)
       throws HttpIncorrectRequestException, HttpNotFoundRequestException {
     try {
-<span class="fc" id="L150">      return DbHostAuth.getFromStatement(statement);</span>
-<span class="nc" id="L151">    } catch (final WaarpDatabaseNoConnectionException e) {</span>
-<span class="nc" id="L152">      throw new HttpIncorrectRequestException(</span>
+<span class="fc" id="L148">      return DbHostAuth.getFromStatement(statement);</span>
+<span class="nc" id="L149">    } catch (final WaarpDatabaseNoConnectionException e) {</span>
+<span class="nc" id="L150">      throw new HttpIncorrectRequestException(</span>
           &quot;Issue while selecting from database&quot;, e);
-<span class="nc" id="L154">    } catch (final WaarpDatabaseSqlException e) {</span>
-<span class="nc" id="L155">      throw new HttpNotFoundRequestException(</span>
+<span class="nc" id="L152">    } catch (final WaarpDatabaseSqlException e) {</span>
+<span class="nc" id="L153">      throw new HttpNotFoundRequestException(</span>
           &quot;Issue while selecting from database&quot;, e);
     }
   }
 
   @Override
   protected ArrayNode getDetailedAllow() {
-<span class="fc" id="L162">    final ArrayNode node = JsonHandler.createArrayNode();</span>
+<span class="fc" id="L160">    final ArrayNode node = JsonHandler.createArrayNode();</span>
 
-<span class="fc" id="L164">    final ObjectNode node1 = JsonHandler.createObjectNode();</span>
-<span class="fc" id="L165">    node1.put(AbstractDbData.JSON_MODEL, DbHostAuth.class.getSimpleName());</span>
-<span class="fc bfc" id="L166" title="All 2 branches covered.">    for (final DbHostAuth.Columns column : DbHostAuth.Columns.values()) {</span>
-<span class="fc" id="L167">      node1.put(column.name(), DbHostAuth.dbTypes[column.ordinal()]);</span>
+<span class="fc" id="L162">    final ObjectNode node1 = JsonHandler.createObjectNode();</span>
+<span class="fc" id="L163">    node1.put(AbstractDbData.JSON_MODEL, DbHostAuth.class.getSimpleName());</span>
+<span class="fc bfc" id="L164" title="All 2 branches covered.">    for (final DbHostAuth.Columns column : DbHostAuth.Columns.values()) {</span>
+<span class="fc" id="L165">      node1.put(column.name(), DbHostAuth.dbTypes[column.ordinal()]);</span>
     }
 
     ObjectNode node2;
     ObjectNode node3;
-<span class="pc bpc" id="L172" title="1 of 2 branches missed.">    if (methods.contains(METHOD.GET)) {</span>
-<span class="fc" id="L173">      node2 = RestArgument</span>
-<span class="fc" id="L174">          .fillDetailedAllow(METHOD.GET, path + &quot;/id&quot;, COMMAND_TYPE.GET.name(),</span>
-<span class="fc" id="L175">                             JsonHandler.createObjectNode()</span>
-<span class="fc" id="L176">                                        .put(DbHostAuth.Columns.HOSTID.name(),</span>
+<span class="pc bpc" id="L170" title="1 of 2 branches missed.">    if (methods.contains(METHOD.GET)) {</span>
+<span class="fc" id="L171">      node2 = RestArgument</span>
+<span class="fc" id="L172">          .fillDetailedAllow(METHOD.GET, path + &quot;/id&quot;, COMMAND_TYPE.GET.name(),</span>
+<span class="fc" id="L173">                             JsonHandler.createObjectNode()</span>
+<span class="fc" id="L174">                                        .put(DbHostAuth.Columns.HOSTID.name(),</span>
                                              HOST_ID_AS_VARCHAR_IN_URI_AS +
                                              path + &quot;/id&quot;), node1);
-<span class="fc" id="L179">      node.add(node2);</span>
-<span class="fc" id="L180">      node3 = JsonHandler.createObjectNode();</span>
-<span class="fc bfc" id="L181" title="All 2 branches covered.">      for (final FILTER_ARGS arg : FILTER_ARGS.values()) {</span>
-<span class="fc" id="L182">        node3.put(arg.name(), arg.type);</span>
+<span class="fc" id="L177">      node.add(node2);</span>
+<span class="fc" id="L178">      node3 = JsonHandler.createObjectNode();</span>
+<span class="fc bfc" id="L179" title="All 2 branches covered.">      for (final FILTER_ARGS arg : FILTER_ARGS.values()) {</span>
+<span class="fc" id="L180">        node3.put(arg.name(), arg.type);</span>
       }
-<span class="fc" id="L184">      node2 = RestArgument</span>
-<span class="fc" id="L185">          .fillDetailedAllow(METHOD.GET, path, COMMAND_TYPE.MULTIGET.name(),</span>
-<span class="fc" id="L186">                             node3, JsonHandler.createArrayNode().add(node1));</span>
-<span class="fc" id="L187">      node.add(node2);</span>
+<span class="fc" id="L182">      node2 = RestArgument</span>
+<span class="fc" id="L183">          .fillDetailedAllow(METHOD.GET, path, COMMAND_TYPE.MULTIGET.name(),</span>
+<span class="fc" id="L184">                             node3, JsonHandler.createArrayNode().add(node1));</span>
+<span class="fc" id="L185">      node.add(node2);</span>
     }
-<span class="pc bpc" id="L189" title="1 of 2 branches missed.">    if (methods.contains(METHOD.PUT)) {</span>
-<span class="fc" id="L190">      node3 = JsonHandler.createObjectNode();</span>
-<span class="fc" id="L191">      node3.put(DbHostAuth.Columns.HOSTID.name(),</span>
+<span class="pc bpc" id="L187" title="1 of 2 branches missed.">    if (methods.contains(METHOD.PUT)) {</span>
+<span class="fc" id="L188">      node3 = JsonHandler.createObjectNode();</span>
+<span class="fc" id="L189">      node3.put(DbHostAuth.Columns.HOSTID.name(),</span>
                 HOST_ID_AS_VARCHAR_IN_URI_AS + path + &quot;/id&quot;);
-<span class="fc bfc" id="L193" title="All 2 branches covered.">      for (final DbHostAuth.Columns column : DbHostAuth.Columns.values()) {</span>
-<span class="fc bfc" id="L194" title="All 2 branches covered.">        if (column.name().equalsIgnoreCase(DbHostAuth.Columns.HOSTID.name())) {</span>
-<span class="fc" id="L195">          continue;</span>
+<span class="fc bfc" id="L191" title="All 2 branches covered.">      for (final DbHostAuth.Columns column : DbHostAuth.Columns.values()) {</span>
+<span class="fc bfc" id="L192" title="All 2 branches covered.">        if (column.name().equalsIgnoreCase(DbHostAuth.Columns.HOSTID.name())) {</span>
+<span class="fc" id="L193">          continue;</span>
         }
-<span class="fc" id="L197">        node3.put(column.name(), DbHostAuth.dbTypes[column.ordinal()]);</span>
+<span class="fc" id="L195">        node3.put(column.name(), DbHostAuth.dbTypes[column.ordinal()]);</span>
       }
-<span class="fc" id="L199">      node2 = RestArgument.fillDetailedAllow(METHOD.PUT, path + &quot;/id&quot;,</span>
-<span class="fc" id="L200">                                             COMMAND_TYPE.UPDATE.name(), node3,</span>
+<span class="fc" id="L197">      node2 = RestArgument.fillDetailedAllow(METHOD.PUT, path + &quot;/id&quot;,</span>
+<span class="fc" id="L198">                                             COMMAND_TYPE.UPDATE.name(), node3,</span>
                                              node1);
-<span class="fc" id="L202">      node.add(node2);</span>
+<span class="fc" id="L200">      node.add(node2);</span>
     }
-<span class="pc bpc" id="L204" title="1 of 2 branches missed.">    if (methods.contains(METHOD.DELETE)) {</span>
-<span class="fc" id="L205">      node3 = JsonHandler.createObjectNode();</span>
-<span class="fc" id="L206">      node3.put(DbHostAuth.Columns.HOSTID.name(),</span>
+<span class="pc bpc" id="L202" title="1 of 2 branches missed.">    if (methods.contains(METHOD.DELETE)) {</span>
+<span class="fc" id="L203">      node3 = JsonHandler.createObjectNode();</span>
+<span class="fc" id="L204">      node3.put(DbHostAuth.Columns.HOSTID.name(),</span>
                 HOST_ID_AS_VARCHAR_IN_URI_AS + path + &quot;/id&quot;);
-<span class="fc" id="L208">      node2 = RestArgument.fillDetailedAllow(METHOD.DELETE, path + &quot;/id&quot;,</span>
-<span class="fc" id="L209">                                             COMMAND_TYPE.DELETE.name(), node3,</span>
+<span class="fc" id="L206">      node2 = RestArgument.fillDetailedAllow(METHOD.DELETE, path + &quot;/id&quot;,</span>
+<span class="fc" id="L207">                                             COMMAND_TYPE.DELETE.name(), node3,</span>
                                              node1);
-<span class="fc" id="L211">      node.add(node2);</span>
+<span class="fc" id="L209">      node.add(node2);</span>
     }
-<span class="pc bpc" id="L213" title="1 of 2 branches missed.">    if (methods.contains(METHOD.POST)) {</span>
-<span class="fc" id="L214">      node3 = JsonHandler.createObjectNode();</span>
-<span class="fc bfc" id="L215" title="All 2 branches covered.">      for (final DbHostAuth.Columns column : DbHostAuth.Columns.values()) {</span>
-<span class="fc" id="L216">        node3.put(column.name(), DbHostAuth.dbTypes[column.ordinal()]);</span>
+<span class="pc bpc" id="L211" title="1 of 2 branches missed.">    if (methods.contains(METHOD.POST)) {</span>
+<span class="fc" id="L212">      node3 = JsonHandler.createObjectNode();</span>
+<span class="fc bfc" id="L213" title="All 2 branches covered.">      for (final DbHostAuth.Columns column : DbHostAuth.Columns.values()) {</span>
+<span class="fc" id="L214">        node3.put(column.name(), DbHostAuth.dbTypes[column.ordinal()]);</span>
       }
-<span class="fc" id="L218">      node2 = RestArgument</span>
-<span class="fc" id="L219">          .fillDetailedAllow(METHOD.POST, path, COMMAND_TYPE.CREATE.name(),</span>
+<span class="fc" id="L216">      node2 = RestArgument</span>
+<span class="fc" id="L217">          .fillDetailedAllow(METHOD.POST, path, COMMAND_TYPE.CREATE.name(),</span>
                              node3, node1);
-<span class="fc" id="L221">      node.add(node2);</span>
+<span class="fc" id="L219">      node.add(node2);</span>
     }
-<span class="fc" id="L223">    node2 = RestArgument</span>
-<span class="fc" id="L224">        .fillDetailedAllow(METHOD.OPTIONS, path, COMMAND_TYPE.OPTIONS.name(),</span>
+<span class="fc" id="L221">    node2 = RestArgument</span>
+<span class="fc" id="L222">        .fillDetailedAllow(METHOD.OPTIONS, path, COMMAND_TYPE.OPTIONS.name(),</span>
                            null, null);
-<span class="fc" id="L226">    node.add(node2);</span>
+<span class="fc" id="L224">    node.add(node2);</span>
 
-<span class="fc" id="L228">    return node;</span>
+<span class="fc" id="L226">    return node;</span>
   }
 
   @Override
   public String getPrimaryPropertyName() {
-<span class="fc" id="L233">    return Columns.HOSTID.name();</span>
+<span class="fc" id="L231">    return Columns.HOSTID.name();</span>
   }
 
   @Override
@@ -239,13 +237,13 @@ public class DbHostAuthR66RestMethodHandler
                                     final RestArgument result,
                                     final METHOD method)
       throws HttpForbiddenRequestException {
-<span class="fc" id="L242">    final HttpRestR66Handler r66handler = (HttpRestR66Handler) handler;</span>
-<span class="fc" id="L243">    final R66Session session = r66handler.getServerHandler().getSession();</span>
-<span class="pc bpc" id="L244" title="1 of 2 branches missed.">    if (!session.getAuth().isValidRole(ROLE.HOST)) {</span>
-<span class="nc" id="L245">      throw new HttpForbiddenRequestException(</span>
+<span class="fc" id="L240">    final HttpRestR66Handler r66handler = (HttpRestR66Handler) handler;</span>
+<span class="fc" id="L241">    final R66Session session = r66handler.getServerHandler().getSession();</span>
+<span class="pc bpc" id="L242" title="1 of 2 branches missed.">    if (!session.getAuth().isValidRole(ROLE.HOST)) {</span>
+<span class="nc" id="L243">      throw new HttpForbiddenRequestException(</span>
           &quot;Partner must have ConfigAdmin role&quot;);
     }
-<span class="fc" id="L248">  }</span>
+<span class="fc" id="L246">  }</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

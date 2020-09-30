@@ -27,14 +27,14 @@
 <a class="jxr_linenumber" name="L19" href="#L19">19</a>  <em class="jxr_comment"> */</em>
 <a class="jxr_linenumber" name="L20" href="#L20">20</a>  <strong class="jxr_keyword">package</strong> org.waarp.gateway.kernel.database.model;
 <a class="jxr_linenumber" name="L21" href="#L21">21</a>  
-<a class="jxr_linenumber" name="L22" href="#L22">22</a>  <strong class="jxr_keyword">import</strong> org.waarp.common.database.DbConstant;
-<a class="jxr_linenumber" name="L23" href="#L23">23</a>  <strong class="jxr_keyword">import</strong> org.waarp.common.database.DbRequest;
-<a class="jxr_linenumber" name="L24" href="#L24">24</a>  <strong class="jxr_keyword">import</strong> org.waarp.common.database.DbSession;
-<a class="jxr_linenumber" name="L25" href="#L25">25</a>  <strong class="jxr_keyword">import</strong> org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
-<a class="jxr_linenumber" name="L26" href="#L26">26</a>  <strong class="jxr_keyword">import</strong> org.waarp.common.database.exception.WaarpDatabaseNoDataException;
-<a class="jxr_linenumber" name="L27" href="#L27">27</a>  <strong class="jxr_keyword">import</strong> org.waarp.common.database.exception.WaarpDatabaseSqlException;
-<a class="jxr_linenumber" name="L28" href="#L28">28</a>  <strong class="jxr_keyword">import</strong> org.waarp.common.database.model.DbModelPostgresql;
-<a class="jxr_linenumber" name="L29" href="#L29">29</a>  <strong class="jxr_keyword">import</strong> org.waarp.common.logging.SysErrLogger;
+<a class="jxr_linenumber" name="L22" href="#L22">22</a>  <strong class="jxr_keyword">import</strong> org.waarp.common.database.DbRequest;
+<a class="jxr_linenumber" name="L23" href="#L23">23</a>  <strong class="jxr_keyword">import</strong> org.waarp.common.database.DbSession;
+<a class="jxr_linenumber" name="L24" href="#L24">24</a>  <strong class="jxr_keyword">import</strong> org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
+<a class="jxr_linenumber" name="L25" href="#L25">25</a>  <strong class="jxr_keyword">import</strong> org.waarp.common.database.exception.WaarpDatabaseNoDataException;
+<a class="jxr_linenumber" name="L26" href="#L26">26</a>  <strong class="jxr_keyword">import</strong> org.waarp.common.database.exception.WaarpDatabaseSqlException;
+<a class="jxr_linenumber" name="L27" href="#L27">27</a>  <strong class="jxr_keyword">import</strong> org.waarp.common.database.model.DbModelPostgresql;
+<a class="jxr_linenumber" name="L28" href="#L28">28</a>  <strong class="jxr_keyword">import</strong> org.waarp.common.logging.SysErrLogger;
+<a class="jxr_linenumber" name="L29" href="#L29">29</a>  <strong class="jxr_keyword">import</strong> org.waarp.gateway.kernel.database.DbConstantGateway;
 <a class="jxr_linenumber" name="L30" href="#L30">30</a>  <strong class="jxr_keyword">import</strong> org.waarp.gateway.kernel.database.data.DbTransferLog;
 <a class="jxr_linenumber" name="L31" href="#L31">31</a>  
 <a class="jxr_linenumber" name="L32" href="#L32">32</a>  <em class="jxr_javadoccomment">/**</em>
@@ -115,8 +115,8 @@
 <a class="jxr_linenumber" name="L107" href="#L107">107</a>     <em class="jxr_comment">// cptrunner</em>
 <a class="jxr_linenumber" name="L108" href="#L108">108</a>     action = <strong class="jxr_keyword">new</strong> StringBuilder(
 <a class="jxr_linenumber" name="L109" href="#L109">109</a>         <span class="jxr_string">"CREATE SEQUENCE "</span> + DbTransferLog.fieldseq + <span class="jxr_string">" MINVALUE "</span> +
-<a class="jxr_linenumber" name="L110" href="#L110">110</a>         (DbConstant.ILLEGALVALUE + 1) + <span class="jxr_string">" RESTART WITH "</span> +
-<a class="jxr_linenumber" name="L111" href="#L111">111</a>         (DbConstant.ILLEGALVALUE + 1));
+<a class="jxr_linenumber" name="L110" href="#L110">110</a>         (DbConstantGateway.ILLEGALVALUE + 1) + <span class="jxr_string">" RESTART WITH "</span> +
+<a class="jxr_linenumber" name="L111" href="#L111">111</a>         (DbConstantGateway.ILLEGALVALUE + 1));
 <a class="jxr_linenumber" name="L112" href="#L112">112</a>     SysErrLogger.FAKE_LOGGER.sysout(action);
 <a class="jxr_linenumber" name="L113" href="#L113">113</a>     <strong class="jxr_keyword">try</strong> {
 <a class="jxr_linenumber" name="L114" href="#L114">114</a>       request.query(action.toString());
@@ -143,18 +143,16 @@
 <a class="jxr_linenumber" name="L135" href="#L135">135</a>   }
 <a class="jxr_linenumber" name="L136" href="#L136">136</a> 
 <a class="jxr_linenumber" name="L137" href="#L137">137</a>   @Override
-<a class="jxr_linenumber" name="L138" href="#L138">138</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">boolean</strong> upgradeDb(<strong class="jxr_keyword">final</strong> DbSession session, <strong class="jxr_keyword">final</strong> String version)
-<a class="jxr_linenumber" name="L139" href="#L139">139</a>       <strong class="jxr_keyword">throws</strong> WaarpDatabaseNoConnectionException {
-<a class="jxr_linenumber" name="L140" href="#L140">140</a>     <strong class="jxr_keyword">return</strong> false;
-<a class="jxr_linenumber" name="L141" href="#L141">141</a>   }
-<a class="jxr_linenumber" name="L142" href="#L142">142</a> 
-<a class="jxr_linenumber" name="L143" href="#L143">143</a>   @Override
-<a class="jxr_linenumber" name="L144" href="#L144">144</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">boolean</strong> needUpgradeDb(<strong class="jxr_keyword">final</strong> DbSession session, <strong class="jxr_keyword">final</strong> String version,
-<a class="jxr_linenumber" name="L145" href="#L145">145</a>                                <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">boolean</strong> tryFix)
-<a class="jxr_linenumber" name="L146" href="#L146">146</a>       <strong class="jxr_keyword">throws</strong> WaarpDatabaseNoConnectionException {
-<a class="jxr_linenumber" name="L147" href="#L147">147</a>     <strong class="jxr_keyword">return</strong> false;
-<a class="jxr_linenumber" name="L148" href="#L148">148</a>   }
-<a class="jxr_linenumber" name="L149" href="#L149">149</a> }
+<a class="jxr_linenumber" name="L138" href="#L138">138</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">boolean</strong> upgradeDb(<strong class="jxr_keyword">final</strong> DbSession session, <strong class="jxr_keyword">final</strong> String version) {
+<a class="jxr_linenumber" name="L139" href="#L139">139</a>     <strong class="jxr_keyword">return</strong> false;
+<a class="jxr_linenumber" name="L140" href="#L140">140</a>   }
+<a class="jxr_linenumber" name="L141" href="#L141">141</a> 
+<a class="jxr_linenumber" name="L142" href="#L142">142</a>   @Override
+<a class="jxr_linenumber" name="L143" href="#L143">143</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">boolean</strong> needUpgradeDb(<strong class="jxr_keyword">final</strong> DbSession session, <strong class="jxr_keyword">final</strong> String version,
+<a class="jxr_linenumber" name="L144" href="#L144">144</a>                                <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">boolean</strong> tryFix) {
+<a class="jxr_linenumber" name="L145" href="#L145">145</a>     <strong class="jxr_keyword">return</strong> false;
+<a class="jxr_linenumber" name="L146" href="#L146">146</a>   }
+<a class="jxr_linenumber" name="L147" href="#L147">147</a> }
 </pre>
 <hr/>
 <div id="footer">Copyright &#169; 2009&#x2013;2020 <a href="http://www.waarp.fr">Waarp</a>. All rights reserved.</div>

@@ -238,7 +238,7 @@
 <a class="jxr_linenumber" name="L230" href="#L230">230</a>     passiveMode = false;
 <a class="jxr_linenumber" name="L231" href="#L231">231</a>     isBind = false;
 <a class="jxr_linenumber" name="L232" href="#L232">232</a>     remotePort = remoteAddress.getPort();
-<a class="jxr_linenumber" name="L233" href="#L233">233</a>     logger.debug(<span class="jxr_string">"SetActive: "</span> + <strong class="jxr_keyword">this</strong>);
+<a class="jxr_linenumber" name="L233" href="#L233">233</a>     logger.debug(<span class="jxr_string">"SetActive: {}"</span>, <strong class="jxr_keyword">this</strong>);
 <a class="jxr_linenumber" name="L234" href="#L234">234</a>   }
 <a class="jxr_linenumber" name="L235" href="#L235">235</a> 
 <a class="jxr_linenumber" name="L236" href="#L236">236</a>   <em class="jxr_javadoccomment">/**</em>
@@ -251,7 +251,7 @@
 <a class="jxr_linenumber" name="L243" href="#L243">243</a>     resetLocalAddress();
 <a class="jxr_linenumber" name="L244" href="#L244">244</a>     passiveMode = <strong class="jxr_keyword">true</strong>;
 <a class="jxr_linenumber" name="L245" href="#L245">245</a>     isBind = false;
-<a class="jxr_linenumber" name="L246" href="#L246">246</a>     logger.debug(<span class="jxr_string">"SetPassive: "</span> + <strong class="jxr_keyword">this</strong>);
+<a class="jxr_linenumber" name="L246" href="#L246">246</a>     logger.debug(<span class="jxr_string">"SetPassive: {}"</span>, <strong class="jxr_keyword">this</strong>);
 <a class="jxr_linenumber" name="L247" href="#L247">247</a>   }
 <a class="jxr_linenumber" name="L248" href="#L248">248</a> 
 <a class="jxr_linenumber" name="L249" href="#L249">249</a>   <em class="jxr_javadoccomment">/**</em>
@@ -495,26 +495,25 @@
 <a class="jxr_linenumber" name="L487" href="#L487">487</a> <em class="jxr_javadoccomment">   *</em>
 <a class="jxr_linenumber" name="L488" href="#L488">488</a> <em class="jxr_javadoccomment">   * @param dataChannel the new Data Channel</em>
 <a class="jxr_linenumber" name="L489" href="#L489">489</a> <em class="jxr_javadoccomment">   *</em>
-<a class="jxr_linenumber" name="L490" href="#L490">490</a> <em class="jxr_javadoccomment">   * @throws InterruptedException</em>
-<a class="jxr_linenumber" name="L491" href="#L491">491</a> <em class="jxr_javadoccomment">   * @throws Reply425Exception</em>
-<a class="jxr_linenumber" name="L492" href="#L492">492</a> <em class="jxr_javadoccomment">   */</em>
-<a class="jxr_linenumber" name="L493" href="#L493">493</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> setNewOpenedDataChannel(<strong class="jxr_keyword">final</strong> Channel dataChannel)
-<a class="jxr_linenumber" name="L494" href="#L494">494</a>       <strong class="jxr_keyword">throws</strong> InterruptedException, Reply425Exception {
-<a class="jxr_linenumber" name="L495" href="#L495">495</a>     <strong class="jxr_keyword">this</strong>.dataChannel = dataChannel;
-<a class="jxr_linenumber" name="L496" href="#L496">496</a>     <strong class="jxr_keyword">if</strong> (dataChannel == <strong class="jxr_keyword">null</strong>) {
-<a class="jxr_linenumber" name="L497" href="#L497">497</a>       <strong class="jxr_keyword">final</strong> String curmode;
-<a class="jxr_linenumber" name="L498" href="#L498">498</a>       <strong class="jxr_keyword">if</strong> (isPassiveMode()) {
-<a class="jxr_linenumber" name="L499" href="#L499">499</a>         curmode = <span class="jxr_string">"passive"</span>;
-<a class="jxr_linenumber" name="L500" href="#L500">500</a>       } <strong class="jxr_keyword">else</strong> {
-<a class="jxr_linenumber" name="L501" href="#L501">501</a>         curmode = <span class="jxr_string">"active"</span>;
-<a class="jxr_linenumber" name="L502" href="#L502">502</a>       }
-<a class="jxr_linenumber" name="L503" href="#L503">503</a>       <em class="jxr_comment">// Cannot open connection</em>
-<a class="jxr_linenumber" name="L504" href="#L504">504</a>       <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> Reply425Exception(
-<a class="jxr_linenumber" name="L505" href="#L505">505</a>           <span class="jxr_string">"Cannot open "</span> + curmode + <span class="jxr_string">" data connection"</span>);
-<a class="jxr_linenumber" name="L506" href="#L506">506</a>     }
-<a class="jxr_linenumber" name="L507" href="#L507">507</a>     isBind = <strong class="jxr_keyword">true</strong>;
-<a class="jxr_linenumber" name="L508" href="#L508">508</a>   }
-<a class="jxr_linenumber" name="L509" href="#L509">509</a> }
+<a class="jxr_linenumber" name="L490" href="#L490">490</a> <em class="jxr_javadoccomment">   * @throws Reply425Exception</em>
+<a class="jxr_linenumber" name="L491" href="#L491">491</a> <em class="jxr_javadoccomment">   */</em>
+<a class="jxr_linenumber" name="L492" href="#L492">492</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> setNewOpenedDataChannel(<strong class="jxr_keyword">final</strong> Channel dataChannel)
+<a class="jxr_linenumber" name="L493" href="#L493">493</a>       <strong class="jxr_keyword">throws</strong> Reply425Exception {
+<a class="jxr_linenumber" name="L494" href="#L494">494</a>     <strong class="jxr_keyword">this</strong>.dataChannel = dataChannel;
+<a class="jxr_linenumber" name="L495" href="#L495">495</a>     <strong class="jxr_keyword">if</strong> (dataChannel == <strong class="jxr_keyword">null</strong>) {
+<a class="jxr_linenumber" name="L496" href="#L496">496</a>       <strong class="jxr_keyword">final</strong> String curmode;
+<a class="jxr_linenumber" name="L497" href="#L497">497</a>       <strong class="jxr_keyword">if</strong> (isPassiveMode()) {
+<a class="jxr_linenumber" name="L498" href="#L498">498</a>         curmode = <span class="jxr_string">"passive"</span>;
+<a class="jxr_linenumber" name="L499" href="#L499">499</a>       } <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="L500" href="#L500">500</a>         curmode = <span class="jxr_string">"active"</span>;
+<a class="jxr_linenumber" name="L501" href="#L501">501</a>       }
+<a class="jxr_linenumber" name="L502" href="#L502">502</a>       <em class="jxr_comment">// Cannot open connection</em>
+<a class="jxr_linenumber" name="L503" href="#L503">503</a>       <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> Reply425Exception(
+<a class="jxr_linenumber" name="L504" href="#L504">504</a>           <span class="jxr_string">"Cannot open "</span> + curmode + <span class="jxr_string">" data connection"</span>);
+<a class="jxr_linenumber" name="L505" href="#L505">505</a>     }
+<a class="jxr_linenumber" name="L506" href="#L506">506</a>     isBind = <strong class="jxr_keyword">true</strong>;
+<a class="jxr_linenumber" name="L507" href="#L507">507</a>   }
+<a class="jxr_linenumber" name="L508" href="#L508">508</a> }
 </pre>
 <hr/>
 <div id="footer">Copyright &#169; 2009&#x2013;2020 <a href="http://www.waarp.fr">Waarp</a>. All rights reserved.</div>

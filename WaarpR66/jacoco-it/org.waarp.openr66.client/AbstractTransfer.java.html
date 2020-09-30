@@ -237,7 +237,7 @@ public abstract class AbstractTransfer implements Runnable {
           }
         }
       }
-<span class="fc" id="L240">      logger.debug(&quot;Filesize: &quot; + originalSize);</span>
+<span class="fc" id="L240">      logger.debug(&quot;Filesize: {}&quot;, originalSize);</span>
 <span class="fc" id="L241">      final String sep =</span>
 <span class="fc" id="L242">          PartnerConfiguration.getSeparator(transferArgs.getRemoteHost());</span>
 <span class="fc" id="L243">      final RequestPacket request =</span>
@@ -417,20 +417,20 @@ public abstract class AbstractTransfer implements Runnable {
 <span class="fc" id="L417">    normalInfoAsWarn = normalInfoAsWarn1;</span>
 <span class="fc" id="L418">  }</span>
 
-  public List&lt;String&gt; getRemoteFiles(final DbRule dbrule,
-                                     final String[] localfilenames,
+  public List&lt;String&gt; getRemoteFiles(final String[] localfilenames,
                                      final String requested,
                                      final NetworkTransaction networkTransaction) {
-<span class="nc" id="L424">    final List&lt;String&gt; files = new ArrayList&lt;String&gt;();</span>
-<span class="nc bnc" id="L425" title="All 2 branches missed.">    for (final String filenameNew : localfilenames) {</span>
-<span class="nc bnc" id="L426" title="All 4 branches missed.">      if (!(filenameNew.contains(&quot;*&quot;) || filenameNew.contains(&quot;?&quot;) ||</span>
-<span class="nc bnc" id="L427" title="All 2 branches missed.">            filenameNew.contains(&quot;~&quot;))) {</span>
-<span class="nc" id="L428">        files.add(filenameNew);</span>
+<span class="nc" id="L423">    final List&lt;String&gt; files = new ArrayList&lt;String&gt;();</span>
+<span class="nc bnc" id="L424" title="All 2 branches missed.">    for (final String filenameNew : localfilenames) {</span>
+<span class="nc bnc" id="L425" title="All 4 branches missed.">      if (!(filenameNew.contains(&quot;*&quot;) || filenameNew.contains(&quot;?&quot;) ||</span>
+<span class="nc bnc" id="L426" title="All 2 branches missed.">            filenameNew.contains(&quot;~&quot;))) {</span>
+<span class="nc" id="L427">        files.add(filenameNew);</span>
       } else {
         // remote query
-<span class="nc" id="L431">        final R66Future futureInfo = new R66Future(true);</span>
-<span class="nc" id="L432">        logger.info(Messages.getString(&quot;Transfer.3&quot;) + filenameNew + &quot; to &quot; +</span>
-                    requested); //$NON-NLS-1$
+<span class="nc" id="L430">        final R66Future futureInfo = new R66Future(true);</span>
+<span class="nc" id="L431">        logger</span>
+<span class="nc" id="L432">            .info(&quot;{} {} to {}&quot;, Messages.getString(&quot;Transfer.3&quot;), filenameNew,</span>
+                  requested); //$NON-NLS-1$
 <span class="nc" id="L434">        final RequestInformation info =</span>
             new RequestInformation(futureInfo, requested,
 <span class="nc" id="L436">                                   transferArgs.getRulename(), filenameNew,</span>
@@ -475,12 +475,12 @@ public abstract class AbstractTransfer implements Runnable {
 <span class="fc bfc" id="L475" title="All 2 branches covered.">      for (final String filenameNew : localfilenames) {</span>
 <span class="pc bpc" id="L476" title="3 of 4 branches missed.">        if (!(filenameNew.contains(&quot;*&quot;) || filenameNew.contains(&quot;?&quot;) ||</span>
 <span class="nc bnc" id="L477" title="All 2 branches missed.">              filenameNew.contains(&quot;~&quot;))) {</span>
-<span class="nc" id="L478">          logger.info(&quot;Direct add: &quot; + filenameNew);</span>
+<span class="nc" id="L478">          logger.info(&quot;Direct add: {}&quot;, filenameNew);</span>
 <span class="nc" id="L479">          files.add(filenameNew);</span>
         } else {
           // local: must check
-<span class="fc" id="L482">          logger.info(</span>
-<span class="fc" id="L483">              &quot;Local Ask for &quot; + filenameNew + &quot; from &quot; + dir.getFullPath());</span>
+<span class="fc" id="L482">          logger</span>
+<span class="fc" id="L483">              .info(&quot;Local Ask for {} from {}&quot;, filenameNew, dir.getFullPath());</span>
           final List&lt;String&gt; list;
           try {
 <span class="fc" id="L486">            list = dir.list(filenameNew);</span>
@@ -513,12 +513,12 @@ public abstract class AbstractTransfer implements Runnable {
 <span class="nc bnc" id="L513" title="All 2 branches missed.">    if (logger == null) {</span>
 <span class="nc" id="L514">      logger = WaarpLoggerFactory.getLogger(AbstractTransfer.class);</span>
     }
-<span class="nc" id="L516">    logger.info(&quot;Try RequestTransfer to &quot; + host);</span>
+<span class="nc" id="L516">    logger.info(&quot;Try RequestTransfer to {}&quot;, host);</span>
     final SocketAddress socketAddress;
     try {
 <span class="nc" id="L519">      socketAddress = host.getSocketAddress();</span>
 <span class="nc" id="L520">    } catch (final IllegalArgumentException e) {</span>
-<span class="nc" id="L521">      logger.debug(&quot;Cannot connect to &quot; + host);</span>
+<span class="nc" id="L521">      logger.debug(&quot;Cannot connect to {}&quot;, host);</span>
 <span class="nc" id="L522">      future.setResult(new R66Result(new OpenR66ProtocolNoConnectionException(</span>
 <span class="nc" id="L523">          &quot;Cannot connect to server &quot; + host.getHostid()), null, true,</span>
                                      ErrorCode.ConnectionImpossible, null));
@@ -530,7 +530,7 @@ public abstract class AbstractTransfer implements Runnable {
 <span class="nc" id="L530">    final LocalChannelReference localChannelReference = networkTransaction</span>
 <span class="nc" id="L531">        .createConnectionWithRetry(socketAddress, isSSL, future);</span>
 <span class="nc bnc" id="L532" title="All 2 branches missed.">    if (localChannelReference == null) {</span>
-<span class="nc" id="L533">      logger.debug(&quot;Cannot connect to &quot; + host);</span>
+<span class="nc" id="L533">      logger.debug(&quot;Cannot connect to {}&quot;, host);</span>
 <span class="nc" id="L534">      future.setResult(new R66Result(new OpenR66ProtocolNoConnectionException(</span>
 <span class="nc" id="L535">          &quot;Cannot connect to server &quot; + host.getHostid()), null, true,</span>
                                      ErrorCode.ConnectionImpossible, null));

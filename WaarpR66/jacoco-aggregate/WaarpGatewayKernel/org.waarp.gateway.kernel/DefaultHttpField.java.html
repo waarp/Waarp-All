@@ -170,41 +170,40 @@ public class DefaultHttpField extends AbstractHttpField {
   }
 
   @Override
-  public String getHtmlTabField(final HttpPage page)
-      throws HttpIncorrectRequestException {
-<span class="nc" id="L175">    final StringBuilder builder =</span>
-<span class="nc" id="L176">        new StringBuilder().append(getFieldinfo()).append(&quot;&lt;/TD&gt;&lt;TD&gt;&quot;);</span>
-<span class="nc bnc" id="L177" title="All 2 branches missed.">    if (fieldvalue != null) {</span>
-<span class="nc" id="L178">      builder.append(fieldvalue);</span>
+  public String getHtmlTabField(final HttpPage page) {
+<span class="nc" id="L174">    final StringBuilder builder =</span>
+<span class="nc" id="L175">        new StringBuilder().append(getFieldinfo()).append(&quot;&lt;/TD&gt;&lt;TD&gt;&quot;);</span>
+<span class="nc bnc" id="L176" title="All 2 branches missed.">    if (fieldvalue != null) {</span>
+<span class="nc" id="L177">      builder.append(fieldvalue);</span>
     }
-<span class="nc" id="L180">    return builder.toString();</span>
+<span class="nc" id="L179">    return builder.toString();</span>
   }
 
   @Override
   public DefaultHttpField clone() {
-<span class="nc" id="L185">    return new DefaultHttpField(getFieldname(), getFieldtype(), getFieldinfo(),</span>
-<span class="nc" id="L186">                                fieldvalue, isFieldvisibility(),</span>
-<span class="nc" id="L187">                                isFieldmandatory(), isFieldcookieset(),</span>
-<span class="nc" id="L188">                                isFieldtovalidate(), getFieldposition(),</span>
-<span class="nc" id="L189">                                getFieldrank());</span>
+<span class="fc" id="L184">    return new DefaultHttpField(getFieldname(), getFieldtype(), getFieldinfo(),</span>
+<span class="fc" id="L185">                                fieldvalue, isFieldvisibility(),</span>
+<span class="fc" id="L186">                                isFieldmandatory(), isFieldcookieset(),</span>
+<span class="fc" id="L187">                                isFieldtovalidate(), getFieldposition(),</span>
+<span class="fc" id="L188">                                getFieldrank());</span>
   }
 
   @Override
   public void setStringValue(final String value)
       throws HttpIncorrectRequestException {
-<span class="nc bnc" id="L195" title="All 3 branches missed.">    switch (getFieldtype()) {</span>
+<span class="nc bnc" id="L194" title="All 3 branches missed.">    switch (getFieldtype()) {</span>
       case BUSINESS_INPUT_CHECKBOX:
-<span class="nc bnc" id="L197" title="All 2 branches missed.">        if (fieldvalue != null) {</span>
-<span class="nc bnc" id="L198" title="All 2 branches missed.">          if (fieldvalue.length() &gt; 0) {</span>
-<span class="nc" id="L199">            fieldvalue += ',' + value;</span>
+<span class="nc bnc" id="L196" title="All 2 branches missed.">        if (fieldvalue != null) {</span>
+<span class="nc bnc" id="L197" title="All 2 branches missed.">          if (fieldvalue.length() &gt; 0) {</span>
+<span class="nc" id="L198">            fieldvalue += ',' + value;</span>
           } else {
-<span class="nc" id="L201">            fieldvalue = value;</span>
+<span class="nc" id="L200">            fieldvalue = value;</span>
           }
         } else {
-<span class="nc" id="L204">          fieldvalue = value;</span>
+<span class="nc" id="L203">          fieldvalue = value;</span>
         }
-<span class="nc" id="L206">        setPresent(true);</span>
-<span class="nc" id="L207">        break;</span>
+<span class="nc" id="L205">        setPresent(true);</span>
+<span class="nc" id="L206">        break;</span>
       case BUSINESS_INPUT_FILE:
       case BUSINESS_INPUT_HIDDEN:
       case BUSINESS_INPUT_IMAGE:
@@ -214,37 +213,37 @@ public class DefaultHttpField extends AbstractHttpField {
       case BUSINESS_SELECT:
       case BUSINESS_TEXTAREA:
       case BUSINESS_COOKIE:
-<span class="nc bnc" id="L217" title="All 2 branches missed.">        if (isPresent()) {</span>
+<span class="nc bnc" id="L216" title="All 2 branches missed.">        if (isPresent()) {</span>
           // should not be
-<span class="nc" id="L219">          throw new HttpIncorrectRequestException(</span>
-<span class="nc" id="L220">              &quot;Field already filled: &quot; + getFieldname());</span>
+<span class="nc" id="L218">          throw new HttpIncorrectRequestException(</span>
+<span class="nc" id="L219">              &quot;Field already filled: &quot; + getFieldname());</span>
         }
-<span class="nc" id="L222">        fieldvalue = value;</span>
-<span class="nc" id="L223">        setPresent(true);</span>
-<span class="nc" id="L224">        break;</span>
+<span class="nc" id="L221">        fieldvalue = value;</span>
+<span class="nc" id="L222">        setPresent(true);</span>
+<span class="nc" id="L223">        break;</span>
       default:
         break;
     }
-<span class="nc" id="L228">  }</span>
+<span class="nc" id="L227">  }</span>
 
   @Override
   public void setFileUpload(final FileUpload fileUpload)
       throws HttpIncorrectRequestException {
-<span class="nc bnc" id="L233" title="All 2 branches missed.">    if (getFieldtype() == FieldRole.BUSINESS_INPUT_FILE) {</span>
-<span class="nc bnc" id="L234" title="All 2 branches missed.">      if (isPresent()) {</span>
+<span class="nc bnc" id="L232" title="All 2 branches missed.">    if (getFieldtype() == FieldRole.BUSINESS_INPUT_FILE) {</span>
+<span class="nc bnc" id="L233" title="All 2 branches missed.">      if (isPresent()) {</span>
         // should not be
-<span class="nc" id="L236">        throw new HttpIncorrectRequestException(</span>
-<span class="nc" id="L237">            &quot;Field already filled: &quot; + getFieldname());</span>
+<span class="nc" id="L235">        throw new HttpIncorrectRequestException(</span>
+<span class="nc" id="L236">            &quot;Field already filled: &quot; + getFieldname());</span>
       }
-<span class="nc" id="L239">      this.fileUpload = fileUpload;</span>
-<span class="nc" id="L240">      fieldvalue = fileUpload.getFilename();</span>
-<span class="nc" id="L241">      setPresent(true);</span>
+<span class="nc" id="L238">      this.fileUpload = fileUpload;</span>
+<span class="nc" id="L239">      fieldvalue = fileUpload.getFilename();</span>
+<span class="nc" id="L240">      setPresent(true);</span>
     } else {
       // should not be
-<span class="nc" id="L244">      throw new HttpIncorrectRequestException(</span>
-<span class="nc" id="L245">          &quot;Field with wrong type (should be File): &quot; + getFieldname());</span>
+<span class="nc" id="L243">      throw new HttpIncorrectRequestException(</span>
+<span class="nc" id="L244">          &quot;Field with wrong type (should be File): &quot; + getFieldname());</span>
     }
-<span class="nc" id="L247">  }</span>
+<span class="nc" id="L246">  }</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

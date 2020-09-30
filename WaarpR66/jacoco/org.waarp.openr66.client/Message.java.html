@@ -129,16 +129,16 @@ public class Message implements Runnable {
 
   public Message(final NetworkTransaction networkTransaction,
                  final R66Future future, final DbHostAuth hostAuth,
-<span class="nc" id="L132">                 final TestPacket packet) {</span>
-<span class="nc bnc" id="L133" title="All 2 branches missed.">    if (logger == null) {</span>
-<span class="nc" id="L134">      logger = WaarpLoggerFactory.getLogger(Message.class);</span>
+<span class="fc" id="L132">                 final TestPacket packet) {</span>
+<span class="pc bpc" id="L133" title="1 of 2 branches missed.">    if (logger == null) {</span>
+<span class="fc" id="L134">      logger = WaarpLoggerFactory.getLogger(Message.class);</span>
     }
-<span class="nc" id="L136">    this.networkTransaction = networkTransaction;</span>
-<span class="nc" id="L137">    this.future = future;</span>
-<span class="nc" id="L138">    requested = null;</span>
-<span class="nc" id="L139">    testPacket = packet;</span>
-<span class="nc" id="L140">    this.hostAuth = hostAuth;</span>
-<span class="nc" id="L141">  }</span>
+<span class="fc" id="L136">    this.networkTransaction = networkTransaction;</span>
+<span class="fc" id="L137">    this.future = future;</span>
+<span class="fc" id="L138">    requested = null;</span>
+<span class="fc" id="L139">    testPacket = packet;</span>
+<span class="fc" id="L140">    this.hostAuth = hostAuth;</span>
+<span class="fc" id="L141">  }</span>
 
   @Override
   public void run() {
@@ -147,14 +147,14 @@ public class Message implements Runnable {
     }
     // Connection
     final DbHostAuth host;
-<span class="pc bpc" id="L150" title="1 of 2 branches missed.">    if (hostAuth == null) {</span>
+<span class="fc bfc" id="L150" title="All 2 branches covered.">    if (hostAuth == null) {</span>
 <span class="fc" id="L151">      host = R66Auth.getServerAuth(requested);</span>
     } else {
-<span class="nc" id="L153">      host = hostAuth;</span>
+<span class="fc" id="L153">      host = hostAuth;</span>
     }
 <span class="pc bpc" id="L155" title="1 of 2 branches missed.">    if (host == null) {</span>
-<span class="nc" id="L156">      logger.debug(</span>
-<span class="nc" id="L157">          Messages.getString(&quot;Message.HostNotFound&quot;) + requested); //$NON-NLS-1$</span>
+<span class="nc" id="L156">      logger.info(&quot;{} {}&quot;, Messages.getString(&quot;Message.HostNotFound&quot;),</span>
+                  requested); //$NON-NLS-1$
 <span class="nc" id="L158">      final R66Result result =</span>
           new R66Result(null, true, ErrorCode.ConnectionImpossible, null);
 <span class="nc" id="L160">      future.setResult(result);</span>
@@ -177,8 +177,8 @@ public class Message implements Runnable {
 <span class="fc" id="L177">        .createConnectionWithRetry(socketAddress, isSSL, future);</span>
 <span class="fc" id="L178">    socketAddress = null;</span>
 <span class="pc bpc" id="L179" title="1 of 2 branches missed.">    if (localChannelReference == null) {</span>
-<span class="nc" id="L180">      logger.debug(Messages.getString(&quot;AdminR66OperationsGui.188&quot;) +</span>
-                   requested); //$NON-NLS-1$
+<span class="nc" id="L180">      logger.info(&quot;{} {}&quot;, Messages.getString(&quot;AdminR66OperationsGui.188&quot;),</span>
+                  requested); //$NON-NLS-1$
 <span class="nc" id="L182">      final R66Result result =</span>
           new R66Result(null, true, ErrorCode.ConnectionImpossible, null);
 <span class="nc" id="L184">      future.setResult(result);</span>

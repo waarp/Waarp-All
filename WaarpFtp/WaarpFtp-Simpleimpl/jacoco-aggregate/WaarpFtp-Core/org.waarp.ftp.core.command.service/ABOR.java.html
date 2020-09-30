@@ -20,35 +20,34 @@
 package org.waarp.ftp.core.command.service;
 
 import org.waarp.common.command.ReplyCode;
-import org.waarp.common.command.exception.CommandAbstractException;
 import org.waarp.ftp.core.command.AbstractCommand;
 import org.waarp.ftp.core.exception.FtpNoTransferException;
 
 /**
  * ABOR command
  */
-<span class="nc" id="L30">public class ABOR extends AbstractCommand {</span>
+<span class="nc" id="L29">public class ABOR extends AbstractCommand {</span>
   @Override
-  public void exec() throws CommandAbstractException {
+  public void exec() {
     // First check if the data connection is opened
-<span class="nc bnc" id="L34" title="All 2 branches missed.">    if (getSession().getDataConn().isActive()) {</span>
+<span class="nc bnc" id="L33" title="All 2 branches missed.">    if (getSession().getDataConn().isActive()) {</span>
       // Now check if the data connection is currently used
       try {
-<span class="nc" id="L37">        getSession().getDataConn().getFtpTransferControl()</span>
-<span class="nc" id="L38">                    .getExecutingFtpTransfer();</span>
-<span class="nc" id="L39">      } catch (final FtpNoTransferException e) {</span>
-<span class="nc" id="L40">        getSession().getDataConn().getFtpTransferControl().clear();</span>
-<span class="nc" id="L41">        getSession()</span>
-<span class="nc" id="L42">            .setReplyCode(ReplyCode.REPLY_226_CLOSING_DATA_CONNECTION, null);</span>
-<span class="nc" id="L43">        return;</span>
-<span class="nc" id="L44">      }</span>
-<span class="nc" id="L45">      getSession().getDataConn().getFtpTransferControl()</span>
-<span class="nc" id="L46">                  .setTransferAbortedFromInternal(false);</span>
-<span class="nc" id="L47">      return;</span>
+<span class="nc" id="L36">        getSession().getDataConn().getFtpTransferControl()</span>
+<span class="nc" id="L37">                    .getExecutingFtpTransfer();</span>
+<span class="nc" id="L38">      } catch (final FtpNoTransferException e) {</span>
+<span class="nc" id="L39">        getSession().getDataConn().getFtpTransferControl().clear();</span>
+<span class="nc" id="L40">        getSession()</span>
+<span class="nc" id="L41">            .setReplyCode(ReplyCode.REPLY_226_CLOSING_DATA_CONNECTION, null);</span>
+<span class="nc" id="L42">        return;</span>
+<span class="nc" id="L43">      }</span>
+<span class="nc" id="L44">      getSession().getDataConn().getFtpTransferControl()</span>
+<span class="nc" id="L45">                  .setTransferAbortedFromInternal(false);</span>
+<span class="nc" id="L46">      return;</span>
     }
-<span class="nc" id="L49">    getSession()</span>
-<span class="nc" id="L50">        .setReplyCode(ReplyCode.REPLY_226_CLOSING_DATA_CONNECTION, null);</span>
-<span class="nc" id="L51">  }</span>
+<span class="nc" id="L48">    getSession()</span>
+<span class="nc" id="L49">        .setReplyCode(ReplyCode.REPLY_226_CLOSING_DATA_CONNECTION, null);</span>
+<span class="nc" id="L50">  }</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

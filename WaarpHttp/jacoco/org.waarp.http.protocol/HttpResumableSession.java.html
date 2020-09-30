@@ -34,7 +34,6 @@ import org.waarp.openr66.context.filesystem.R66Dir;
 import org.waarp.openr66.context.filesystem.R66File;
 import org.waarp.openr66.context.task.exception.OpenR66RunnerErrorException;
 import org.waarp.openr66.database.data.DbTaskRunner;
-import org.waarp.openr66.protocol.exception.OpenR66ProtocolSystemException;
 
 import java.io.File;
 import java.io.IOException;
@@ -49,13 +48,13 @@ import static org.waarp.openr66.context.R66FiniteDualStates.*;
  * Http Resumable session
  */
 public class HttpResumableSession extends HttpSessionAbstract {
-<span class="fc" id="L52">  private static final WaarpLogger logger =</span>
-<span class="fc" id="L53">      WaarpLoggerFactory.getLogger(HttpResumableSession.class);</span>
+<span class="fc" id="L51">  private static final WaarpLogger logger =</span>
+<span class="fc" id="L52">      WaarpLoggerFactory.getLogger(HttpResumableSession.class);</span>
 
-<span class="fc" id="L55">  private final Set&lt;HttpResumableChunkNumber&gt; uploadedChunks =</span>
-<span class="fc" id="L56">      ConcurrentUtility.newConcurrentSet();</span>
+<span class="fc" id="L54">  private final Set&lt;HttpResumableChunkNumber&gt; uploadedChunks =</span>
+<span class="fc" id="L55">      ConcurrentUtility.newConcurrentSet();</span>
   private final HttpResumableInfo httpResumableInfo;
-<span class="fc" id="L58">  private long size = 0L;</span>
+<span class="fc" id="L57">  private long size = 0L;</span>
 
   /**
    * Constructor for an Http Resumable Session
@@ -71,16 +70,16 @@ public class HttpResumableSession extends HttpSessionAbstract {
                        final String rulename, final String comment,
                        final HttpAuthent authent)
       throws IllegalArgumentException {
-<span class="fc" id="L74">    super(authent);</span>
-<span class="fc" id="L75">    this.httpResumableInfo = resumableInfo;</span>
-<span class="fc bfc" id="L76" title="All 2 branches covered.">    if (!DetectionUtils.isJunit()) {</span>
-<span class="fc" id="L77">      final R66BusinessInterface business =</span>
-<span class="fc" id="L78">          checkAuthentR66Business(this, session, authent);</span>
-<span class="fc" id="L79">      final DbTaskRunner runner =</span>
-<span class="fc" id="L80">          getDbTaskRunner(authent.getUserId(), rulename, comment, business);</span>
-<span class="fc" id="L81">      preTasks(business, runner);</span>
+<span class="fc" id="L73">    super(authent);</span>
+<span class="fc" id="L74">    this.httpResumableInfo = resumableInfo;</span>
+<span class="fc bfc" id="L75" title="All 2 branches covered.">    if (!DetectionUtils.isJunit()) {</span>
+<span class="fc" id="L76">      final R66BusinessInterface business =</span>
+<span class="fc" id="L77">          checkAuthentR66Business(this, session, authent);</span>
+<span class="fc" id="L78">      final DbTaskRunner runner =</span>
+<span class="fc" id="L79">          getDbTaskRunner(authent.getUserId(), rulename, comment, business);</span>
+<span class="fc" id="L80">      preTasks(business, runner);</span>
     }
-<span class="fc" id="L83">  }</span>
+<span class="fc" id="L82">  }</span>
 
   /**
    * Adapted method to resumable context
@@ -95,11 +94,11 @@ public class HttpResumableSession extends HttpSessionAbstract {
   private DbTaskRunner getDbTaskRunner(final String user, final String rulename,
                                        final String comment,
                                        final R66BusinessInterface business) {
-<span class="fc" id="L98">    final long uuid =</span>
-<span class="fc" id="L99">        UUID.nameUUIDFromBytes(httpResumableInfo.getIdentifier().getBytes())</span>
-<span class="fc" id="L100">            .getMostSignificantBits();</span>
-<span class="fc" id="L101">    return getDbTaskRunner(user, httpResumableInfo.getFilename(), rulename,</span>
-<span class="fc" id="L102">                           uuid, comment, httpResumableInfo.getChunkSize(),</span>
+<span class="fc" id="L97">    final long uuid =</span>
+<span class="fc" id="L98">        UUID.nameUUIDFromBytes(httpResumableInfo.getIdentifier().getBytes())</span>
+<span class="fc" id="L99">            .getMostSignificantBits();</span>
+<span class="fc" id="L100">    return getDbTaskRunner(user, httpResumableInfo.getFilename(), rulename,</span>
+<span class="fc" id="L101">                           uuid, comment, httpResumableInfo.getChunkSize(),</span>
                            business, true);
   }
 
@@ -107,7 +106,7 @@ public class HttpResumableSession extends HttpSessionAbstract {
    * @return the current HttpResumableInfo
    */
   public HttpResumableInfo getHttpResumableInfo() {
-<span class="fc" id="L110">    return httpResumableInfo;</span>
+<span class="fc" id="L109">    return httpResumableInfo;</span>
   }
 
   /**
@@ -122,22 +121,22 @@ public class HttpResumableSession extends HttpSessionAbstract {
    */
   public boolean tryWrite(final HttpResumableInfo resumableInfo,
                           final InputStream stream) throws IOException {
-<span class="pc bpc" id="L125" title="1 of 4 branches missed.">    if (!session.isAuthenticated() || !session.isReady()) {</span>
-<span class="fc" id="L126">      logger.error(&quot;Not authenticated or not Ready&quot;);</span>
-<span class="fc" id="L127">      return false;</span>
+<span class="pc bpc" id="L124" title="1 of 4 branches missed.">    if (!session.isAuthenticated() || !session.isReady()) {</span>
+<span class="fc" id="L125">      logger.error(&quot;Not authenticated or not Ready&quot;);</span>
+<span class="fc" id="L126">      return false;</span>
     }
-<span class="pc bpc" id="L129" title="1 of 2 branches missed.">    if (!valid(resumableInfo)) {</span>
-<span class="nc" id="L130">      return false;</span>
+<span class="pc bpc" id="L128" title="1 of 2 branches missed.">    if (!valid(resumableInfo)) {</span>
+<span class="nc" id="L129">      return false;</span>
     }
-<span class="fc" id="L132">    final HttpResumableChunkNumber chunkNumber =</span>
-<span class="fc" id="L133">        new HttpResumableChunkNumber(resumableInfo.getChunkNumber());</span>
-<span class="fc bfc" id="L134" title="All 2 branches covered.">    if (uploadedChunks.contains(chunkNumber)) {</span>
-<span class="fc" id="L135">      return false;</span>
+<span class="fc" id="L131">    final HttpResumableChunkNumber chunkNumber =</span>
+<span class="fc" id="L132">        new HttpResumableChunkNumber(resumableInfo.getChunkNumber());</span>
+<span class="fc bfc" id="L133" title="All 2 branches covered.">    if (uploadedChunks.contains(chunkNumber)) {</span>
+<span class="fc" id="L134">      return false;</span>
     }
-<span class="fc" id="L137">    write(resumableInfo, stream);</span>
-<span class="fc" id="L138">    uploadedChunks.add(chunkNumber);</span>
-<span class="fc" id="L139">    session.getRunner().incrementRank();</span>
-<span class="fc" id="L140">    return true;</span>
+<span class="fc" id="L136">    write(resumableInfo, stream);</span>
+<span class="fc" id="L137">    uploadedChunks.add(chunkNumber);</span>
+<span class="fc" id="L138">    session.getRunner().incrementRank();</span>
+<span class="fc" id="L139">    return true;</span>
   }
 
   /**
@@ -148,13 +147,13 @@ public class HttpResumableSession extends HttpSessionAbstract {
    * @return true if ok
    */
   public boolean valid(final HttpResumableInfo resumableInfo) {
-<span class="fc bfc" id="L151" title="All 2 branches covered.">    return (resumableInfo.getChunkSize() &gt; 0 &amp;&amp;</span>
-<span class="fc bfc" id="L152" title="All 2 branches covered.">            resumableInfo.getTotalSize() &gt; 0 &amp;&amp;</span>
-<span class="fc bfc" id="L153" title="All 2 branches covered.">            resumableInfo.getChunkNumber() &gt; 0 &amp;&amp;</span>
-<span class="fc bfc" id="L154" title="All 2 branches covered.">            !Strings.isNullOrEmpty(resumableInfo.getIdentifier()) &amp;&amp;</span>
-<span class="fc bfc" id="L155" title="All 2 branches covered.">            !Strings.isNullOrEmpty(resumableInfo.getFilename()) &amp;&amp;</span>
-<span class="fc bfc" id="L156" title="All 2 branches covered.">            !Strings.isNullOrEmpty(resumableInfo.getRelativePath()) &amp;&amp;</span>
-<span class="fc bfc" id="L157" title="All 2 branches covered.">            httpResumableInfo.isCompatible(resumableInfo));</span>
+<span class="fc bfc" id="L150" title="All 2 branches covered.">    return (resumableInfo.getChunkSize() &gt; 0 &amp;&amp;</span>
+<span class="fc bfc" id="L151" title="All 2 branches covered.">            resumableInfo.getTotalSize() &gt; 0 &amp;&amp;</span>
+<span class="fc bfc" id="L152" title="All 2 branches covered.">            resumableInfo.getChunkNumber() &gt; 0 &amp;&amp;</span>
+<span class="fc bfc" id="L153" title="All 2 branches covered.">            !Strings.isNullOrEmpty(resumableInfo.getIdentifier()) &amp;&amp;</span>
+<span class="fc bfc" id="L154" title="All 2 branches covered.">            !Strings.isNullOrEmpty(resumableInfo.getFilename()) &amp;&amp;</span>
+<span class="fc bfc" id="L155" title="All 2 branches covered.">            !Strings.isNullOrEmpty(resumableInfo.getRelativePath()) &amp;&amp;</span>
+<span class="fc bfc" id="L156" title="All 2 branches covered.">            httpResumableInfo.isCompatible(resumableInfo));</span>
   }
 
   /**
@@ -167,29 +166,29 @@ public class HttpResumableSession extends HttpSessionAbstract {
    */
   private void write(final HttpResumableInfo info, final InputStream stream)
       throws IOException {
-<span class="fc" id="L170">    final File file = session.getFile().getTrueFile();</span>
-<span class="fc" id="L171">    RandomAccessFile raf = null;</span>
+<span class="fc" id="L169">    final File file = session.getFile().getTrueFile();</span>
+<span class="fc" id="L170">    RandomAccessFile raf = null;</span>
     try {
-<span class="fc" id="L173">      raf = new RandomAccessFile(file, &quot;rw&quot;);</span>
+<span class="fc" id="L172">      raf = new RandomAccessFile(file, &quot;rw&quot;);</span>
       //Seek to position
-<span class="fc" id="L175">      raf.seek((info.getChunkNumber() - 1) * (long) info.getChunkSize());</span>
-<span class="fc" id="L176">      final byte[] bytes = new byte[info.getChunkSize()];</span>
+<span class="fc" id="L174">      raf.seek((info.getChunkNumber() - 1) * (long) info.getChunkSize());</span>
+<span class="fc" id="L175">      final byte[] bytes = new byte[info.getChunkSize()];</span>
       while (true) {
-<span class="fc" id="L178">        final int r = stream.read(bytes);</span>
-<span class="fc bfc" id="L179" title="All 2 branches covered.">        if (r &lt; 0) {</span>
-<span class="fc" id="L180">          break;</span>
+<span class="fc" id="L177">        final int r = stream.read(bytes);</span>
+<span class="fc bfc" id="L178" title="All 2 branches covered.">        if (r &lt; 0) {</span>
+<span class="fc" id="L179">          break;</span>
         }
-<span class="fc" id="L182">        raf.write(bytes, 0, r);</span>
-<span class="fc" id="L183">        size += r;</span>
-<span class="fc" id="L184">      }</span>
+<span class="fc" id="L181">        raf.write(bytes, 0, r);</span>
+<span class="fc" id="L182">        size += r;</span>
+<span class="fc" id="L183">      }</span>
     } finally {
-<span class="pc bpc" id="L186" title="1 of 2 branches missed.">      if (raf != null) {</span>
-<span class="fc" id="L187">        raf.close();</span>
+<span class="pc bpc" id="L185" title="1 of 2 branches missed.">      if (raf != null) {</span>
+<span class="fc" id="L186">        raf.close();</span>
       }
-<span class="fc" id="L189">      stream.close();</span>
+<span class="fc" id="L188">      stream.close();</span>
     }
 
-<span class="fc" id="L192">  }</span>
+<span class="fc" id="L191">  }</span>
 
   /**
    * Check if the resumableInfo block is already written (previously received)
@@ -199,9 +198,9 @@ public class HttpResumableSession extends HttpSessionAbstract {
    * @return True if contained
    */
   public boolean contains(final HttpResumableInfo resumableInfo) {
-<span class="fc" id="L202">    final HttpResumableChunkNumber chunkNumber =</span>
-<span class="fc" id="L203">        new HttpResumableChunkNumber(resumableInfo.getChunkNumber());</span>
-<span class="fc" id="L204">    return uploadedChunks.contains(chunkNumber);</span>
+<span class="fc" id="L201">    final HttpResumableChunkNumber chunkNumber =</span>
+<span class="fc" id="L202">        new HttpResumableChunkNumber(resumableInfo.getChunkNumber());</span>
+<span class="fc" id="L203">    return uploadedChunks.contains(chunkNumber);</span>
   }
 
   /**
@@ -212,67 +211,65 @@ public class HttpResumableSession extends HttpSessionAbstract {
    * @return True if finished
    */
   public boolean checkIfUploadFinished(final String sha256) {
-<span class="fc" id="L215">    logger.debug(&quot;Write until now: {} for {}&quot;, size,</span>
-<span class="fc" id="L216">                 httpResumableInfo.getTotalSize());</span>
+<span class="fc" id="L214">    logger.debug(&quot;Write until now: {} for {}&quot;, size,</span>
+<span class="fc" id="L215">                 httpResumableInfo.getTotalSize());</span>
     //check if upload finished
-<span class="fc bfc" id="L218" title="All 2 branches covered.">    if (size != httpResumableInfo.getTotalSize()) {</span>
-<span class="fc" id="L219">      return false;</span>
+<span class="fc bfc" id="L217" title="All 2 branches covered.">    if (size != httpResumableInfo.getTotalSize()) {</span>
+<span class="fc" id="L218">      return false;</span>
     }
-<span class="pc bpc" id="L221" title="1 of 2 branches missed.">    if (session.getState() == CLOSEDCHANNEL) {</span>
-<span class="nc" id="L222">      return true;</span>
+<span class="pc bpc" id="L220" title="1 of 2 branches missed.">    if (session.getState() == CLOSEDCHANNEL) {</span>
+<span class="nc" id="L221">      return true;</span>
     }
-<span class="fc" id="L224">    logger.debug(&quot;Final block received! {}&quot;, session);</span>
-<span class="fc" id="L225">    session.newState(ENDTRANSFERS);</span>
+<span class="fc" id="L223">    logger.debug(&quot;Final block received! {}&quot;, session);</span>
+<span class="fc" id="L224">    session.newState(ENDTRANSFERS);</span>
     //Upload finished, change filename.
-<span class="fc" id="L227">    final R66File r66File = session.getFile();</span>
-<span class="fc" id="L228">    final File file = r66File.getTrueFile();</span>
-<span class="pc bpc" id="L229" title="1 of 2 branches missed.">    if (file.isFile()) {</span>
+<span class="fc" id="L226">    final R66File r66File = session.getFile();</span>
+<span class="fc" id="L227">    final File file = r66File.getTrueFile();</span>
+<span class="pc bpc" id="L228" title="1 of 2 branches missed.">    if (file.isFile()) {</span>
       // Now if sha256 is given, compute it and compare
-<span class="fc bfc" id="L231" title="All 2 branches covered.">      if (!Strings.isNullOrEmpty(sha256)) {</span>
+<span class="fc bfc" id="L230" title="All 2 branches covered.">      if (!Strings.isNullOrEmpty(sha256)) {</span>
         try {
-<span class="fc" id="L233">          final byte[] bin =</span>
-<span class="fc" id="L234">              FilesystemBasedDigest.getHash(file, false, DigestAlgo.SHA256);</span>
-<span class="fc bfc" id="L235" title="All 2 branches covered.">          if (!FilesystemBasedDigest.digestEquals(sha256, bin)) {</span>
-<span class="fc" id="L236">            logger.error(&quot;Digests differs: {} {}&quot;, sha256,</span>
-<span class="fc" id="L237">                         FilesystemBasedDigest.getHex(bin));</span>
-<span class="pc" id="L238">            error(new OpenR66RunnerErrorException(&quot;Digest differs&quot;),</span>
-<span class="fc" id="L239">                  session.getBusinessObject());</span>
+<span class="fc" id="L232">          final byte[] bin =</span>
+<span class="fc" id="L233">              FilesystemBasedDigest.getHash(file, false, DigestAlgo.SHA256);</span>
+<span class="fc bfc" id="L234" title="All 2 branches covered.">          if (!FilesystemBasedDigest.digestEquals(sha256, bin)) {</span>
+<span class="fc" id="L235">            logger.error(&quot;Digests differs: {} {}&quot;, sha256,</span>
+<span class="fc" id="L236">                         FilesystemBasedDigest.getHex(bin));</span>
+<span class="pc" id="L237">            error(new OpenR66RunnerErrorException(&quot;Digest differs&quot;),</span>
+<span class="fc" id="L238">                  session.getBusinessObject());</span>
           }
-<span class="fc" id="L241">          logger.info(&quot;Digest OK&quot;);</span>
-<span class="nc" id="L242">        } catch (final IOException ignore) {</span>
-<span class="nc" id="L243">          logger.warn(ignore);</span>
-<span class="pc" id="L244">        }</span>
+<span class="fc" id="L240">          logger.info(&quot;Digest OK&quot;);</span>
+<span class="nc" id="L241">        } catch (final IOException ignore) {</span>
+<span class="nc" id="L242">          logger.warn(ignore);</span>
+<span class="pc" id="L243">        }</span>
       } else {
-<span class="fc" id="L246">        logger.info(&quot;NO DIGEST given&quot;);</span>
+<span class="fc" id="L245">        logger.info(&quot;NO DIGEST given&quot;);</span>
       }
-<span class="fc" id="L248">      final DbTaskRunner runner = session.getRunner();</span>
+<span class="fc" id="L247">      final DbTaskRunner runner = session.getRunner();</span>
       try {
-<span class="fc" id="L250">        final String finalpath = R66Dir.getFinalUniqueFilename(r66File);</span>
-<span class="fc" id="L251">        logger.debug(&quot;File to move from {} to {}&quot;,</span>
-<span class="fc" id="L252">                     r66File.getTrueFile().getAbsolutePath(), finalpath);</span>
-<span class="pc bpc" id="L253" title="1 of 2 branches missed.">        if (!r66File.renameTo(runner.getRule().setRecvPath(finalpath))) {</span>
-<span class="nc" id="L254">          logger.error(&quot;Cannot move file to final position {}&quot;,</span>
-<span class="nc" id="L255">                       runner.getRule().setRecvPath(finalpath));</span>
+<span class="fc" id="L249">        final String finalpath = R66Dir.getFinalUniqueFilename(r66File);</span>
+<span class="fc" id="L250">        logger.debug(&quot;File to move from {} to {}&quot;,</span>
+<span class="fc" id="L251">                     r66File.getTrueFile().getAbsolutePath(), finalpath);</span>
+<span class="pc bpc" id="L252" title="1 of 2 branches missed.">        if (!r66File.renameTo(runner.getRule().setRecvPath(finalpath))) {</span>
+<span class="nc" id="L253">          logger.error(&quot;Cannot move file to final position {}&quot;,</span>
+<span class="nc" id="L254">                       runner.getRule().setRecvPath(finalpath));</span>
         }
-<span class="fc" id="L257">        runner.setFilename(r66File.getFile());</span>
-<span class="fc" id="L258">        runner.saveStatus();</span>
-<span class="fc" id="L259">        runPostTask();</span>
-<span class="fc" id="L260">        authent.finalizeTransfer(this, session);</span>
-<span class="nc" id="L261">      } catch (final OpenR66RunnerErrorException e) {</span>
-<span class="nc" id="L262">        error(e, session.getBusinessObject());</span>
-<span class="nc" id="L263">      } catch (final OpenR66ProtocolSystemException e) {</span>
-<span class="nc" id="L264">        error(e, session.getBusinessObject());</span>
-<span class="nc" id="L265">      } catch (final CommandAbstractException e) {</span>
-<span class="nc" id="L266">        error(e, session.getBusinessObject());</span>
-<span class="pc" id="L267">      }</span>
-<span class="fc" id="L268">      return true;</span>
+<span class="fc" id="L256">        runner.setFilename(r66File.getFile());</span>
+<span class="fc" id="L257">        runner.saveStatus();</span>
+<span class="fc" id="L258">        runPostTask();</span>
+<span class="fc" id="L259">        authent.finalizeTransfer(this, session);</span>
+<span class="nc" id="L260">      } catch (final OpenR66RunnerErrorException e) {</span>
+<span class="nc" id="L261">        error(e, session.getBusinessObject());</span>
+<span class="nc" id="L262">      } catch (final CommandAbstractException e) {</span>
+<span class="nc" id="L263">        error(e, session.getBusinessObject());</span>
+<span class="pc" id="L264">      }</span>
+<span class="fc" id="L265">      return true;</span>
     }
-<span class="nc" id="L270">    return true;</span>
+<span class="nc" id="L267">    return true;</span>
   }
 
   @Override
   public String toString() {
-<span class="fc" id="L275">    return &quot;RS: {&quot; + uploadedChunks.toString() + &quot;, &quot; + session.toString() +</span>
+<span class="fc" id="L272">    return &quot;RS: {&quot; + uploadedChunks.toString() + &quot;, &quot; + session.toString() +</span>
            &quot;, &quot; + httpResumableInfo + &quot;}&quot;;
   }
 }

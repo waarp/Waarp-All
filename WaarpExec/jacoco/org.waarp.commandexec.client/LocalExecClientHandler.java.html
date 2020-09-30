@@ -76,7 +76,7 @@ public class LocalExecClientHandler
 <span class="pc bpc" id="L76" title="3 of 4 branches missed.">    if (!ready.awaitOrInterruptible() &amp;&amp; channel == null) {</span>
 <span class="nc" id="L77">      throw new RuntimeException(&quot;Cannot get client connected&quot;);</span>
     }
-<span class="fc" id="L79">    logger.debug(&quot;write command: &quot; + this.command);</span>
+<span class="fc" id="L79">    logger.debug(&quot;write command: {}&quot;, this.command);</span>
 <span class="fc bfc" id="L80" title="All 2 branches covered.">    if (this.delay != 0) {</span>
 <span class="fc" id="L81">      WaarpNettyUtil.awaitOrInterrupted(</span>
 <span class="fc" id="L82">          channel.writeAndFlush(this.delay + &quot; &quot; + this.command + '\n'));</span>
@@ -160,62 +160,61 @@ public class LocalExecClientHandler
 <span class="nc" id="L160">  }</span>
 
   @Override
-  protected void channelRead0(final ChannelHandlerContext ctx, String mesg)
-      throws Exception {
+  protected void channelRead0(final ChannelHandlerContext ctx, String mesg) {
     // Add the line received from the server.
     // If first message, then take the status and then the message
-<span class="fc bfc" id="L167" title="All 2 branches covered.">    if (firstMessage) {</span>
-<span class="fc" id="L168">      firstMessage = false;</span>
-<span class="fc" id="L169">      final int pos = mesg.indexOf(' ');</span>
+<span class="fc bfc" id="L166" title="All 2 branches covered.">    if (firstMessage) {</span>
+<span class="fc" id="L167">      firstMessage = false;</span>
+<span class="fc" id="L168">      final int pos = mesg.indexOf(' ');</span>
       try {
-<span class="fc" id="L171">        result.setStatus(Integer.parseInt(mesg.substring(0, pos)));</span>
-<span class="nc" id="L172">      } catch (final NumberFormatException e1) {</span>
+<span class="fc" id="L170">        result.setStatus(Integer.parseInt(mesg.substring(0, pos)));</span>
+<span class="nc" id="L171">      } catch (final NumberFormatException e1) {</span>
         // Error
-<span class="nc" id="L174">        logger</span>
-<span class="nc" id="L175">            .debug(command + ':' + &quot;Bad Transmission: &quot; + mesg + &quot;\n\t&quot; + back);</span>
-<span class="nc" id="L176">        result.set(LocalExecDefaultResult.BadTransmition);</span>
-<span class="nc" id="L177">        back.append(mesg);</span>
-<span class="nc" id="L178">        actionBeforeClose(ctx.channel());</span>
-<span class="nc" id="L179">        WaarpSslUtility.closingSslChannel(ctx.channel());</span>
-<span class="nc" id="L180">        return;</span>
-<span class="fc" id="L181">      }</span>
-<span class="fc" id="L182">      mesg = mesg.substring(pos + 1);</span>
-<span class="pc bpc" id="L183" title="1 of 2 branches missed.">      if (mesg.startsWith(LocalExecDefaultResult.ENDOFCOMMAND)) {</span>
-<span class="nc" id="L184">        logger.debug(command + ':' + &quot;Receive End of Command&quot;);</span>
-<span class="nc" id="L185">        result.setResult(LocalExecDefaultResult.NoMessage.getResult());</span>
-<span class="nc" id="L186">        back.append(result.getResult());</span>
-<span class="nc" id="L187">        finalizeMessage();</span>
+<span class="nc" id="L173">        logger</span>
+<span class="nc" id="L174">            .debug(command + ':' + &quot;Bad Transmission: &quot; + mesg + &quot;\n\t&quot; + back);</span>
+<span class="nc" id="L175">        result.set(LocalExecDefaultResult.BadTransmition);</span>
+<span class="nc" id="L176">        back.append(mesg);</span>
+<span class="nc" id="L177">        actionBeforeClose(ctx.channel());</span>
+<span class="nc" id="L178">        WaarpSslUtility.closingSslChannel(ctx.channel());</span>
+<span class="nc" id="L179">        return;</span>
+<span class="fc" id="L180">      }</span>
+<span class="fc" id="L181">      mesg = mesg.substring(pos + 1);</span>
+<span class="pc bpc" id="L182" title="1 of 2 branches missed.">      if (mesg.startsWith(LocalExecDefaultResult.ENDOFCOMMAND)) {</span>
+<span class="nc" id="L183">        logger.debug(&quot;{}:Receive End of Command&quot;, command);</span>
+<span class="nc" id="L184">        result.setResult(LocalExecDefaultResult.NoMessage.getResult());</span>
+<span class="nc" id="L185">        back.append(result.getResult());</span>
+<span class="nc" id="L186">        finalizeMessage();</span>
       } else {
-<span class="fc" id="L189">        result.setResult(mesg);</span>
-<span class="fc" id="L190">        back.append(mesg);</span>
+<span class="fc" id="L188">        result.setResult(mesg);</span>
+<span class="fc" id="L189">        back.append(mesg);</span>
       }
-<span class="fc bfc" id="L192" title="All 2 branches covered.">    } else if (mesg.startsWith(LocalExecDefaultResult.ENDOFCOMMAND)) {</span>
-<span class="fc" id="L193">      logger.debug(command + ':' + &quot;Receive End of Command&quot;);</span>
-<span class="fc" id="L194">      finalizeMessage();</span>
+<span class="fc bfc" id="L191" title="All 2 branches covered.">    } else if (mesg.startsWith(LocalExecDefaultResult.ENDOFCOMMAND)) {</span>
+<span class="fc" id="L192">      logger.debug(&quot;{}:Receive End of Command&quot;, command);</span>
+<span class="fc" id="L193">      finalizeMessage();</span>
     } else {
-<span class="fc" id="L196">      back.append('\n').append(mesg);</span>
+<span class="fc" id="L195">      back.append('\n').append(mesg);</span>
     }
-<span class="fc" id="L198">  }</span>
+<span class="fc" id="L197">  }</span>
 
   @Override
   public void exceptionCaught(final ChannelHandlerContext ctx,
-                              final Throwable cause) throws Exception {
-<span class="nc" id="L203">    logger.warn(command + ':' +</span>
+                              final Throwable cause) {
+<span class="nc" id="L202">    logger.warn(command + ':' +</span>
                 &quot;Unexpected exception from Outband while get information: &quot; +
                 firstMessage, cause);
-<span class="nc bnc" id="L206" title="All 2 branches missed.">    if (firstMessage) {</span>
-<span class="nc" id="L207">      firstMessage = false;</span>
-<span class="nc" id="L208">      result.set(LocalExecDefaultResult.BadTransmition);</span>
-<span class="nc" id="L209">      result.setException((Exception) cause);</span>
-<span class="nc" id="L210">      back = new StringBuilder(&quot;Error in LocalExec: &quot;)</span>
-<span class="nc" id="L211">          .append(result.getException().getMessage()).append('\n');</span>
+<span class="nc bnc" id="L205" title="All 2 branches missed.">    if (firstMessage) {</span>
+<span class="nc" id="L206">      firstMessage = false;</span>
+<span class="nc" id="L207">      result.set(LocalExecDefaultResult.BadTransmition);</span>
+<span class="nc" id="L208">      result.setException((Exception) cause);</span>
+<span class="nc" id="L209">      back = new StringBuilder(&quot;Error in LocalExec: &quot;)</span>
+<span class="nc" id="L210">          .append(result.getException().getMessage()).append('\n');</span>
     } else {
-<span class="nc" id="L213">      back.append(&quot;\nERROR while receiving answer: &quot;);</span>
-<span class="nc" id="L214">      result.setException((Exception) cause);</span>
-<span class="nc" id="L215">      back.append(result.getException().getMessage()).append('\n');</span>
+<span class="nc" id="L212">      back.append(&quot;\nERROR while receiving answer: &quot;);</span>
+<span class="nc" id="L213">      result.setException((Exception) cause);</span>
+<span class="nc" id="L214">      back.append(result.getException().getMessage()).append('\n');</span>
     }
-<span class="nc" id="L217">    actionBeforeClose(ctx.channel());</span>
-<span class="nc" id="L218">    WaarpSslUtility.closingSslChannel(ctx.channel());</span>
-<span class="nc" id="L219">  }</span>
+<span class="nc" id="L216">    actionBeforeClose(ctx.channel());</span>
+<span class="nc" id="L217">    WaarpSslUtility.closingSslChannel(ctx.channel());</span>
+<span class="nc" id="L218">  }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

@@ -21,7 +21,6 @@ package org.waarp.openr66.protocol.localhandler.packet;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
-import io.netty.buffer.Unpooled;
 import org.waarp.common.utility.WaarpNettyUtil;
 import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
@@ -60,22 +59,22 @@ public class EndRequestPacket extends AbstractLocalPacket {
                                                   final int endLength,
                                                   final ByteBuf buf)
       throws OpenR66ProtocolPacketException {
-<span class="pc bpc" id="L63" title="1 of 2 branches missed.">    if (headerLength - 1 != 4) {</span>
-<span class="nc" id="L64">      throw new OpenR66ProtocolPacketException(&quot;Not enough data&quot;);</span>
+<span class="pc bpc" id="L62" title="1 of 2 branches missed.">    if (headerLength - 1 != 4) {</span>
+<span class="nc" id="L63">      throw new OpenR66ProtocolPacketException(&quot;Not enough data&quot;);</span>
     }
-<span class="pc bpc" id="L66" title="1 of 2 branches missed.">    if (middleLength != 1) {</span>
-<span class="nc" id="L67">      throw new OpenR66ProtocolPacketException(&quot;Not enough data&quot;);</span>
+<span class="pc bpc" id="L65" title="1 of 2 branches missed.">    if (middleLength != 1) {</span>
+<span class="nc" id="L66">      throw new OpenR66ProtocolPacketException(&quot;Not enough data&quot;);</span>
     }
-<span class="fc" id="L69">    final int bheader = buf.readInt();</span>
-<span class="fc" id="L70">    final byte valid = buf.readByte();</span>
+<span class="fc" id="L68">    final int bheader = buf.readInt();</span>
+<span class="fc" id="L69">    final byte valid = buf.readByte();</span>
     final String optional;
-<span class="pc bpc" id="L72" title="1 of 2 branches missed.">    if (endLength &gt; 0) {</span>
-<span class="nc" id="L73">      optional =</span>
-<span class="nc" id="L74">          buf.toString(buf.readerIndex(), endLength, Charset.defaultCharset());</span>
-<span class="nc" id="L75">      buf.skipBytes(endLength);</span>
-<span class="nc" id="L76">      return new EndRequestPacket(bheader, valid, optional);</span>
+<span class="pc bpc" id="L71" title="1 of 2 branches missed.">    if (endLength &gt; 0) {</span>
+<span class="nc" id="L72">      optional =</span>
+<span class="nc" id="L73">          buf.toString(buf.readerIndex(), endLength, Charset.defaultCharset());</span>
+<span class="nc" id="L74">      buf.skipBytes(endLength);</span>
+<span class="nc" id="L75">      return new EndRequestPacket(bheader, valid, optional);</span>
     }
-<span class="fc" id="L78">    return new EndRequestPacket(bheader, valid);</span>
+<span class="fc" id="L77">    return new EndRequestPacket(bheader, valid);</span>
   }
 
   /**
@@ -84,68 +83,67 @@ public class EndRequestPacket extends AbstractLocalPacket {
    * @param optional
    */
   private EndRequestPacket(final int code, final byte valid,
-<span class="nc" id="L87">                           final String optional) {</span>
-<span class="nc" id="L88">    this.code = code;</span>
-<span class="nc" id="L89">    way = valid;</span>
-<span class="nc" id="L90">    this.optional = optional;</span>
-<span class="nc" id="L91">  }</span>
+<span class="nc" id="L86">                           final String optional) {</span>
+<span class="nc" id="L87">    this.code = code;</span>
+<span class="nc" id="L88">    way = valid;</span>
+<span class="nc" id="L89">    this.optional = optional;</span>
+<span class="nc" id="L90">  }</span>
 
   /**
    * @param code
    * @param valid
    */
-<span class="fc" id="L97">  private EndRequestPacket(final int code, final byte valid) {</span>
-<span class="fc" id="L98">    this.code = code;</span>
-<span class="fc" id="L99">    way = valid;</span>
-<span class="fc" id="L100">  }</span>
+<span class="fc" id="L96">  private EndRequestPacket(final int code, final byte valid) {</span>
+<span class="fc" id="L97">    this.code = code;</span>
+<span class="fc" id="L98">    way = valid;</span>
+<span class="fc" id="L99">  }</span>
 
   /**
    * @param code
    */
-<span class="fc" id="L105">  public EndRequestPacket(final int code) {</span>
-<span class="fc" id="L106">    this.code = code;</span>
-<span class="fc" id="L107">    way = ASKVALIDATE;</span>
-<span class="fc" id="L108">  }</span>
+<span class="fc" id="L104">  public EndRequestPacket(final int code) {</span>
+<span class="fc" id="L105">    this.code = code;</span>
+<span class="fc" id="L106">    way = ASKVALIDATE;</span>
+<span class="fc" id="L107">  }</span>
 
   @Override
   public boolean hasGlobalBuffer() {
-<span class="fc" id="L112">    return true;</span>
+<span class="fc" id="L111">    return true;</span>
   }
 
   @Override
   public void createAllBuffers(final LocalChannelReference lcr,
-                               final int networkHeader)
-      throws OpenR66ProtocolPacketException {
-<span class="fc" id="L119">    final int headerSize = 4;</span>
-<span class="fc" id="L120">    final int middleSize = 1;</span>
-<span class="pc bpc" id="L121" title="1 of 2 branches missed.">    final byte[] endBytes =</span>
-<span class="pc" id="L122">        optional != null? optional.getBytes(WaarpStringUtils.UTF8) :</span>
+                               final int networkHeader) {
+<span class="fc" id="L117">    final int headerSize = 4;</span>
+<span class="fc" id="L118">    final int middleSize = 1;</span>
+<span class="pc bpc" id="L119" title="1 of 2 branches missed.">    final byte[] endBytes =</span>
+<span class="pc" id="L120">        optional != null? optional.getBytes(WaarpStringUtils.UTF8) :</span>
             EMPTY_ARRAY;
-<span class="fc" id="L124">    final int endSize = endBytes.length;</span>
-<span class="fc" id="L125">    final int globalSize =</span>
+<span class="fc" id="L122">    final int endSize = endBytes.length;</span>
+<span class="fc" id="L123">    final int globalSize =</span>
         networkHeader + LOCAL_HEADER_SIZE + headerSize + middleSize + endSize;
-<span class="fc" id="L127">    int offset = networkHeader + LOCAL_HEADER_SIZE;</span>
-<span class="fc" id="L128">    global = ByteBufAllocator.DEFAULT.buffer(globalSize, globalSize);</span>
-<span class="fc" id="L129">    header = WaarpNettyUtil.slice(global, offset, headerSize);</span>
-<span class="fc" id="L130">    header.writeInt(code);</span>
-<span class="fc" id="L131">    offset += headerSize;</span>
-<span class="fc" id="L132">    middle = WaarpNettyUtil.slice(global, offset, middleSize);</span>
-<span class="fc" id="L133">    middle.writeByte(way);</span>
-<span class="fc" id="L134">    offset += middleSize;</span>
-<span class="fc" id="L135">    end = WaarpNettyUtil.slice(global, offset, endSize);</span>
-<span class="pc bpc" id="L136" title="1 of 2 branches missed.">    if (optional != null) {</span>
-<span class="nc" id="L137">      end.writeBytes(endBytes);</span>
+<span class="fc" id="L125">    int offset = networkHeader + LOCAL_HEADER_SIZE;</span>
+<span class="fc" id="L126">    global = ByteBufAllocator.DEFAULT.buffer(globalSize, globalSize);</span>
+<span class="fc" id="L127">    header = WaarpNettyUtil.slice(global, offset, headerSize);</span>
+<span class="fc" id="L128">    header.writeInt(code);</span>
+<span class="fc" id="L129">    offset += headerSize;</span>
+<span class="fc" id="L130">    middle = WaarpNettyUtil.slice(global, offset, middleSize);</span>
+<span class="fc" id="L131">    middle.writeByte(way);</span>
+<span class="fc" id="L132">    offset += middleSize;</span>
+<span class="fc" id="L133">    end = WaarpNettyUtil.slice(global, offset, endSize);</span>
+<span class="pc bpc" id="L134" title="1 of 2 branches missed.">    if (optional != null) {</span>
+<span class="nc" id="L135">      end.writeBytes(endBytes);</span>
     }
-<span class="fc" id="L139">  }</span>
+<span class="fc" id="L137">  }</span>
 
   @Override
   public byte getType() {
-<span class="fc" id="L143">    return LocalPacketFactory.ENDREQUESTPACKET;</span>
+<span class="fc" id="L141">    return LocalPacketFactory.ENDREQUESTPACKET;</span>
   }
 
   @Override
   public String toString() {
-<span class="nc bnc" id="L148" title="All 2 branches missed.">    return &quot;EndRequestPacket: &quot; + code + ' ' + way +</span>
+<span class="nc bnc" id="L146" title="All 2 branches missed.">    return &quot;EndRequestPacket: &quot; + code + ' ' + way +</span>
            (optional != null? ' ' + optional : &quot;&quot;);
   }
 
@@ -153,37 +151,37 @@ public class EndRequestPacket extends AbstractLocalPacket {
    * @return the code
    */
   public int getCode() {
-<span class="nc" id="L156">    return code;</span>
+<span class="nc" id="L154">    return code;</span>
   }
 
   /**
    * @return True if this packet is to be validated
    */
   public boolean isToValidate() {
-<span class="fc bfc" id="L163" title="All 2 branches covered.">    return way == ASKVALIDATE;</span>
+<span class="fc bfc" id="L161" title="All 2 branches covered.">    return way == ASKVALIDATE;</span>
   }
 
   /**
    * Validate the connection
    */
   public void validate() {
-<span class="fc" id="L170">    way = ANSWERVALIDATE;</span>
-<span class="fc" id="L171">    clear();</span>
-<span class="fc" id="L172">  }</span>
+<span class="fc" id="L168">    way = ANSWERVALIDATE;</span>
+<span class="fc" id="L169">    clear();</span>
+<span class="fc" id="L170">  }</span>
 
   /**
    * @return the optional
    */
   public String getOptional() {
-<span class="fc" id="L178">    return optional;</span>
+<span class="fc" id="L176">    return optional;</span>
   }
 
   /**
    * @param optional the optional to set
    */
   public void setOptional(final String optional) {
-<span class="fc" id="L185">    this.optional = optional;</span>
-<span class="fc" id="L186">  }</span>
+<span class="fc" id="L183">    this.optional = optional;</span>
+<span class="fc" id="L184">  }</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

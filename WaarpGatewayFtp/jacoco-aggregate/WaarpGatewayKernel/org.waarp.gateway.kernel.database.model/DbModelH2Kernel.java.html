@@ -19,7 +19,6 @@
  */
 package org.waarp.gateway.kernel.database.model;
 
-import org.waarp.common.database.DbConstant;
 import org.waarp.common.database.DbRequest;
 import org.waarp.common.database.DbSession;
 import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
@@ -27,6 +26,7 @@ import org.waarp.common.database.exception.WaarpDatabaseNoDataException;
 import org.waarp.common.database.exception.WaarpDatabaseSqlException;
 import org.waarp.common.database.model.DbModelH2;
 import org.waarp.common.logging.SysErrLogger;
+import org.waarp.gateway.kernel.database.DbConstantGateway;
 import org.waarp.gateway.kernel.database.data.DbTransferLog;
 
 /**
@@ -114,8 +114,8 @@ public class DbModelH2Kernel extends DbModelH2 {
     // cptrunner
 <span class="fc" id="L115">    action = new StringBuilder(</span>
         &quot;CREATE SEQUENCE IF NOT EXISTS &quot; + DbTransferLog.fieldseq +
-        &quot; START WITH &quot; + (DbConstant.ILLEGALVALUE + 1) + &quot; MINVALUE &quot; +
-        (DbConstant.ILLEGALVALUE + 1));
+        &quot; START WITH &quot; + (DbConstantGateway.ILLEGALVALUE + 1) + &quot; MINVALUE &quot; +
+        (DbConstantGateway.ILLEGALVALUE + 1));
 <span class="fc" id="L119">    SysErrLogger.FAKE_LOGGER.sysout(action);</span>
     try {
 <span class="fc" id="L121">      request.query(action.toString());</span>
@@ -125,7 +125,7 @@ public class DbModelH2Kernel extends DbModelH2 {
       // version &lt;= 1.2.173
 <span class="nc" id="L126">      action = new StringBuilder(</span>
           &quot;CREATE SEQUENCE IF NOT EXISTS &quot; + DbTransferLog.fieldseq +
-          &quot; START WITH &quot; + (DbConstant.ILLEGALVALUE + 1));
+          &quot; START WITH &quot; + (DbConstantGateway.ILLEGALVALUE + 1));
 <span class="nc" id="L129">      SysErrLogger.FAKE_LOGGER.sysout(action);</span>
       try {
 <span class="nc" id="L131">        request.query(action.toString());</span>
@@ -155,16 +155,14 @@ public class DbModelH2Kernel extends DbModelH2 {
   }
 
   @Override
-  public boolean upgradeDb(final DbSession session, final String version)
-      throws WaarpDatabaseNoConnectionException {
-<span class="nc" id="L160">    return false;</span>
+  public boolean upgradeDb(final DbSession session, final String version) {
+<span class="nc" id="L159">    return false;</span>
   }
 
   @Override
   public boolean needUpgradeDb(final DbSession session, final String version,
-                               final boolean tryFix)
-      throws WaarpDatabaseNoConnectionException {
-<span class="nc" id="L167">    return false;</span>
+                               final boolean tryFix) {
+<span class="nc" id="L165">    return false;</span>
   }
 
 }

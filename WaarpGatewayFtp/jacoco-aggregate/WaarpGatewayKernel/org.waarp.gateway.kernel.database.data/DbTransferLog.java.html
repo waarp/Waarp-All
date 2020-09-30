@@ -21,7 +21,6 @@ package org.waarp.gateway.kernel.database.data;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import org.dom4j.Document;
-import org.waarp.common.database.DbConstant;
 import org.waarp.common.database.DbPreparedStatement;
 import org.waarp.common.database.DbSession;
 import org.waarp.common.database.data.AbstractDbData;
@@ -40,6 +39,7 @@ import org.waarp.common.xml.XmlUtil;
 import org.waarp.common.xml.XmlValue;
 import org.waarp.gateway.kernel.HttpPage.PageRole;
 import org.waarp.gateway.kernel.HttpPageHandler;
+import org.waarp.gateway.kernel.database.DbConstantGateway;
 
 import java.io.IOException;
 import java.io.InvalidObjectException;
@@ -270,7 +270,7 @@ public class DbTransferLog extends AbstractDbData {
 <span class="nc" id="L270">  }</span>
 
   @Override
-  protected void setFromArray() throws WaarpDatabaseSqlException {
+  protected void setFromArray() {
 <span class="nc" id="L274">    filename = (String) allFields[Columns.FILENAME.ordinal()].getValue();</span>
 <span class="nc" id="L275">    mode = (String) allFields[Columns.MODETRANS.ordinal()].getValue();</span>
 <span class="nc" id="L276">    start = (Timestamp) allFields[Columns.STARTTRANS.ordinal()].getValue();</span>
@@ -353,7 +353,7 @@ public class DbTransferLog extends AbstractDbData {
 <span class="nc" id="L353">      return;</span>
     }
 <span class="nc bnc" id="L355" title="All 2 branches missed.">    if (dbSession == null) {</span>
-<span class="nc bnc" id="L356" title="All 2 branches missed.">      if (specialId == DbConstant.ILLEGALVALUE) {</span>
+<span class="nc bnc" id="L356" title="All 2 branches missed.">      if (specialId == DbConstantGateway.ILLEGALVALUE) {</span>
         // New SpecialId is not possible with No Database Model
 <span class="nc" id="L358">        createNoDbSpecialId();</span>
       }
@@ -361,9 +361,9 @@ public class DbTransferLog extends AbstractDbData {
 <span class="nc" id="L361">      return;</span>
     }
     // First need to find a new id if id is not ok
-<span class="nc bnc" id="L364" title="All 2 branches missed.">    if (specialId == DbConstant.ILLEGALVALUE) {</span>
+<span class="nc bnc" id="L364" title="All 2 branches missed.">    if (specialId == DbConstantGateway.ILLEGALVALUE) {</span>
 <span class="nc" id="L365">      specialId = dbSession.getAdmin().getDbModel().nextSequence(dbSession);</span>
-<span class="nc" id="L366">      logger.debug(&quot;Try Insert create a new Id from sequence: &quot; + specialId);</span>
+<span class="nc" id="L366">      logger.debug(&quot;Try Insert create a new Id from sequence: {}&quot;, specialId);</span>
 <span class="nc" id="L367">      setPrimaryKey();</span>
     }
 <span class="nc" id="L369">    super.insert();</span>
@@ -379,7 +379,7 @@ public class DbTransferLog extends AbstractDbData {
 <span class="nc" id="L379">      return;</span>
     }
 <span class="nc bnc" id="L381" title="All 2 branches missed.">    if (dbSession == null) {</span>
-<span class="nc bnc" id="L382" title="All 2 branches missed.">      if (specialId == DbConstant.ILLEGALVALUE) {</span>
+<span class="nc bnc" id="L382" title="All 2 branches missed.">      if (specialId == DbConstantGateway.ILLEGALVALUE) {</span>
         // New SpecialId is not possible with No Database Model
 <span class="nc" id="L384">        createNoDbSpecialId();</span>
       }
@@ -387,9 +387,9 @@ public class DbTransferLog extends AbstractDbData {
 <span class="nc" id="L387">      return;</span>
     }
     // First need to find a new id if id is not ok
-<span class="nc bnc" id="L390" title="All 2 branches missed.">    if (specialId == DbConstant.ILLEGALVALUE) {</span>
+<span class="nc bnc" id="L390" title="All 2 branches missed.">    if (specialId == DbConstantGateway.ILLEGALVALUE) {</span>
 <span class="nc" id="L391">      specialId = dbSession.getAdmin().getDbModel().nextSequence(dbSession);</span>
-<span class="nc" id="L392">      logger.debug(&quot;Try Insert create a new Id from sequence: &quot; + specialId);</span>
+<span class="nc" id="L392">      logger.debug(&quot;Try Insert create a new Id from sequence: {}&quot;, specialId);</span>
 <span class="nc" id="L393">      setPrimaryKey();</span>
     }
 <span class="nc" id="L395">    setToArray();</span>

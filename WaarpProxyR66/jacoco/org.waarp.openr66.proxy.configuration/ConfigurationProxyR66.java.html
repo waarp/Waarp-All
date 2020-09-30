@@ -93,7 +93,7 @@ public class ConfigurationProxyR66 extends Configuration {
 
   @Override
   public void r66Startup() {
-<span class="fc" id="L96">    logger.debug(&quot;Start R66: &quot; + getHostSslId());</span>
+<span class="fc" id="L96">    logger.debug(&quot;Start R66: {}&quot;, getHostSslId());</span>
     // add into configuration
 <span class="fc" id="L98">    getConstraintLimitHandler().setServer(true);</span>
     // Global Server
@@ -110,7 +110,7 @@ public class ConfigurationProxyR66 extends Configuration {
 <span class="fc" id="L110">      final List&lt;ChannelFuture&gt; futures = new ArrayList&lt;ChannelFuture&gt;();</span>
 <span class="fc bfc" id="L111" title="All 2 branches covered.">      for (final ProxyEntry entry : ProxyEntry.proxyEntries.values()) {</span>
 <span class="fc bfc" id="L112" title="All 2 branches covered.">        if (!entry.isLocalSsl()) {</span>
-<span class="fc" id="L113">          logger.debug(&quot;Future Activation: &quot; + entry.getLocalSocketAddress());</span>
+<span class="fc" id="L113">          logger.debug(&quot;Future Activation: {}&quot;, entry.getLocalSocketAddress());</span>
 <span class="fc" id="L114">          futures.add(serverBootstrap.bind(entry.getLocalSocketAddress()));</span>
         }
 <span class="fc" id="L116">      }</span>
@@ -119,7 +119,7 @@ public class ConfigurationProxyR66 extends Configuration {
 <span class="pc bpc" id="L119" title="1 of 2 branches missed.">        if (future.isSuccess()) {</span>
 <span class="fc" id="L120">          bindNoSSL = future.channel();</span>
 <span class="fc" id="L121">          serverChannelGroup.add(bindNoSSL);</span>
-<span class="fc" id="L122">          logger.debug(&quot;Activation: &quot; + bindNoSSL.localAddress());</span>
+<span class="fc" id="L122">          logger.debug(&quot;Activation: {}&quot;, bindNoSSL.localAddress());</span>
         } else {
 <span class="nc" id="L124">          logger.warn(</span>
 <span class="nc" id="L125">              Messages.getString(&quot;Configuration.NOSSLDeactivated&quot;) + &quot; for &quot; +</span>
@@ -153,7 +153,7 @@ public class ConfigurationProxyR66 extends Configuration {
 <span class="pc bpc" id="L153" title="1 of 2 branches missed.">        if (future.isSuccess()) {</span>
 <span class="fc" id="L154">          bindSSL = future.channel();</span>
 <span class="fc" id="L155">          serverChannelGroup.add(bindSSL);</span>
-<span class="fc" id="L156">          logger.debug(&quot;SslActivation: &quot; + bindSSL.localAddress());</span>
+<span class="fc" id="L156">          logger.debug(&quot;SslActivation: {}&quot;, bindSSL.localAddress());</span>
         } else {
 <span class="nc" id="L158">          logger.warn(</span>
 <span class="nc" id="L159">              Messages.getString(&quot;Configuration.SSLMODEDeactivated&quot;) + &quot; for &quot; +</span>

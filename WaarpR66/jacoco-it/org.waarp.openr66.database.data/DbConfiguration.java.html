@@ -59,44 +59,33 @@ public class DbConfiguration extends AbstractDbDataDao&lt;Limit&gt; {
 
   public static final String table = &quot; CONFIGURATION &quot;;
 
-  // ALL TABLE SHOULD IMPLEMENT THIS
-  public static final int NBPRKEY = 1;
-
-<span class="fc" id="L65">  protected static final String selectAllFields =</span>
-<span class="fc" id="L66">      Columns.READGLOBALLIMIT.name() + ',' + Columns.WRITEGLOBALLIMIT.name() +</span>
-<span class="fc" id="L67">      ',' + Columns.READSESSIONLIMIT.name() + ',' +</span>
-<span class="fc" id="L68">      Columns.WRITESESSIONLIMIT.name() + ',' + Columns.DELAYLIMIT.name() + ',' +</span>
-<span class="fc" id="L69">      Columns.UPDATEDINFO.name() + ',' + Columns.HOSTID.name();</span>
-
-<span class="fc" id="L71">  protected static final String updateAllFields =</span>
-<span class="fc" id="L72">      Columns.READGLOBALLIMIT.name() + &quot;=?,&quot; + Columns.WRITEGLOBALLIMIT.name() +</span>
-<span class="fc" id="L73">      &quot;=?,&quot; + Columns.READSESSIONLIMIT.name() + &quot;=?,&quot; +</span>
-<span class="fc" id="L74">      Columns.WRITESESSIONLIMIT.name() + &quot;=?,&quot; + Columns.DELAYLIMIT.name() +</span>
-<span class="fc" id="L75">      &quot;=?,&quot; + Columns.UPDATEDINFO.name() + &quot;=?&quot;;</span>
-
-  protected static final String insertAllValues = &quot; (?,?,?,?,?,?,?) &quot;;
+<span class="fc" id="L62">  protected static final String selectAllFields =</span>
+<span class="fc" id="L63">      Columns.READGLOBALLIMIT.name() + ',' + Columns.WRITEGLOBALLIMIT.name() +</span>
+<span class="fc" id="L64">      ',' + Columns.READSESSIONLIMIT.name() + ',' +</span>
+<span class="fc" id="L65">      Columns.WRITESESSIONLIMIT.name() + ',' + Columns.DELAYLIMIT.name() + ',' +</span>
+<span class="fc" id="L66">      Columns.UPDATEDINFO.name() + ',' + Columns.HOSTID.name();</span>
 
   @Override
   protected String getTable() {
-<span class="nc" id="L81">    return table;</span>
+<span class="nc" id="L70">    return table;</span>
   }
 
   @Override
   protected AbstractDAO&lt;Limit&gt; getDao() throws DAOConnectionException {
-<span class="nc" id="L86">    return DAOFactory.getInstance().getLimitDAO();</span>
+<span class="nc" id="L75">    return DAOFactory.getInstance().getLimitDAO();</span>
   }
 
   @Override
   protected String getPrimaryKey() {
-<span class="nc bnc" id="L91" title="All 2 branches missed.">    if (pojo != null) {</span>
-<span class="nc" id="L92">      return pojo.getHostid();</span>
+<span class="nc bnc" id="L80" title="All 2 branches missed.">    if (pojo != null) {</span>
+<span class="nc" id="L81">      return pojo.getHostid();</span>
     }
-<span class="nc" id="L94">    throw new IllegalArgumentException(&quot;pojo is null&quot;);</span>
+<span class="nc" id="L83">    throw new IllegalArgumentException(&quot;pojo is null&quot;);</span>
   }
 
   @Override
   protected String getPrimaryField() {
-<span class="nc" id="L99">    return Columns.HOSTID.name();</span>
+<span class="nc" id="L88">    return Columns.HOSTID.name();</span>
   }
 
 
@@ -109,17 +98,17 @@ public class DbConfiguration extends AbstractDbDataDao&lt;Limit&gt; {
    * @param del Delay Limit
    */
   public DbConfiguration(final String hostid, final long rg, final long wg,
-<span class="nc" id="L112">                         final long rs, final long ws, final long del) {</span>
-<span class="nc" id="L113">    pojo = new Limit(hostid, rg, wg, rs, ws, del);</span>
-<span class="nc" id="L114">  }</span>
+<span class="nc" id="L101">                         final long rs, final long ws, final long del) {</span>
+<span class="nc" id="L102">    pojo = new Limit(hostid, rg, wg, rs, ws, del);</span>
+<span class="nc" id="L103">  }</span>
 
-<span class="nc" id="L116">  public DbConfiguration(final Limit limit) {</span>
-<span class="nc bnc" id="L117" title="All 2 branches missed.">    if (limit == null) {</span>
-<span class="nc" id="L118">      throw new IllegalArgumentException(</span>
+<span class="nc" id="L105">  public DbConfiguration(final Limit limit) {</span>
+<span class="nc bnc" id="L106" title="All 2 branches missed.">    if (limit == null) {</span>
+<span class="nc" id="L107">      throw new IllegalArgumentException(</span>
           &quot;Argument in constructor cannot be null&quot;);
     }
-<span class="nc" id="L121">    this.pojo = limit;</span>
-<span class="nc" id="L122">  }</span>
+<span class="nc" id="L110">    this.pojo = limit;</span>
+<span class="nc" id="L111">  }</span>
 
   /**
    * Constructor from Json
@@ -129,14 +118,14 @@ public class DbConfiguration extends AbstractDbDataDao&lt;Limit&gt; {
    * @throws WaarpDatabaseSqlException
    */
   public DbConfiguration(final ObjectNode source)
-<span class="nc" id="L132">      throws WaarpDatabaseSqlException {</span>
-<span class="nc" id="L133">    pojo = new Limit();</span>
-<span class="nc" id="L134">    setFromJson(source, false);</span>
-<span class="nc bnc" id="L135" title="All 4 branches missed.">    if (pojo.getHostid() == null || pojo.getHostid().isEmpty()) {</span>
-<span class="nc" id="L136">      throw new WaarpDatabaseSqlException(</span>
+<span class="nc" id="L121">      throws WaarpDatabaseSqlException {</span>
+<span class="nc" id="L122">    pojo = new Limit();</span>
+<span class="nc" id="L123">    setFromJson(source, false);</span>
+<span class="nc bnc" id="L124" title="All 4 branches missed.">    if (pojo.getHostid() == null || pojo.getHostid().isEmpty()) {</span>
+<span class="nc" id="L125">      throw new WaarpDatabaseSqlException(</span>
           &quot;Not enough argument to create the object&quot;);
     }
-<span class="nc" id="L139">  }</span>
+<span class="nc" id="L128">  }</span>
 
   /**
    * Read json object into Array then setFromArray
@@ -149,105 +138,104 @@ public class DbConfiguration extends AbstractDbDataDao&lt;Limit&gt; {
   @Override
   public void setFromJson(final ObjectNode node, final boolean ignorePrimaryKey)
       throws WaarpDatabaseSqlException {
-<span class="nc" id="L152">    super.setFromJson(node, ignorePrimaryKey);</span>
-<span class="nc bnc" id="L153" title="All 4 branches missed.">    if (pojo.getHostid() == null || pojo.getHostid().isEmpty()) {</span>
-<span class="nc" id="L154">      throw new WaarpDatabaseSqlException(</span>
+<span class="nc" id="L141">    super.setFromJson(node, ignorePrimaryKey);</span>
+<span class="nc bnc" id="L142" title="All 4 branches missed.">    if (pojo.getHostid() == null || pojo.getHostid().isEmpty()) {</span>
+<span class="nc" id="L143">      throw new WaarpDatabaseSqlException(</span>
           &quot;Not enough argument to create the object&quot;);
     }
-<span class="nc" id="L157">  }</span>
+<span class="nc" id="L146">  }</span>
 
   /**
    * @param hostid
    *
    * @throws WaarpDatabaseException
    */
-<span class="fc" id="L164">  public DbConfiguration(final String hostid) throws WaarpDatabaseException {</span>
-<span class="fc" id="L165">    LimitDAO limitAccess = null;</span>
+<span class="fc" id="L153">  public DbConfiguration(final String hostid) throws WaarpDatabaseException {</span>
+<span class="fc" id="L154">    LimitDAO limitAccess = null;</span>
     try {
-<span class="fc" id="L167">      limitAccess = DAOFactory.getInstance().getLimitDAO();</span>
-<span class="nc" id="L168">      pojo = limitAccess.select(hostid);</span>
-<span class="nc" id="L169">    } catch (final DAOConnectionException e) {</span>
-<span class="nc" id="L170">      throw new WaarpDatabaseException(e);</span>
-<span class="fc" id="L171">    } catch (final DAONoDataException e) {</span>
-<span class="fc" id="L172">      pojo = new Limit(hostid, 0L);</span>
+<span class="fc" id="L156">      limitAccess = DAOFactory.getInstance().getLimitDAO();</span>
+<span class="nc" id="L157">      pojo = limitAccess.select(hostid);</span>
+<span class="nc" id="L158">    } catch (final DAOConnectionException e) {</span>
+<span class="nc" id="L159">      throw new WaarpDatabaseException(e);</span>
+<span class="fc" id="L160">    } catch (final DAONoDataException e) {</span>
+<span class="fc" id="L161">      pojo = new Limit(hostid, 0L);</span>
     } finally {
-<span class="fc" id="L174">      DAOFactory.closeDAO(limitAccess);</span>
+<span class="fc" id="L163">      DAOFactory.closeDAO(limitAccess);</span>
     }
-<span class="fc" id="L176">  }</span>
+<span class="fc" id="L165">  }</span>
 
   /**
    * Private constructor for Commander only
    */
-<span class="nc" id="L181">  private DbConfiguration() {</span>
-<span class="nc" id="L182">    pojo = new Limit();</span>
-<span class="nc" id="L183">  }</span>
+<span class="nc" id="L170">  private DbConfiguration() {</span>
+<span class="nc" id="L171">    pojo = new Limit();</span>
+<span class="nc" id="L172">  }</span>
 
   @Override
   protected void setFromJson(final String field, final JsonNode value) {
-<span class="nc bnc" id="L187" title="All 2 branches missed.">    if (value == null) {</span>
-<span class="nc" id="L188">      return;</span>
+<span class="nc bnc" id="L176" title="All 2 branches missed.">    if (value == null) {</span>
+<span class="nc" id="L177">      return;</span>
     }
-<span class="nc bnc" id="L190" title="All 2 branches missed.">    for (final Columns column : Columns.values()) {</span>
-<span class="nc bnc" id="L191" title="All 2 branches missed.">      if (column.name().equalsIgnoreCase(field)) {</span>
-<span class="nc bnc" id="L192" title="All 8 branches missed.">        switch (column) {</span>
+<span class="nc bnc" id="L179" title="All 2 branches missed.">    for (final Columns column : Columns.values()) {</span>
+<span class="nc bnc" id="L180" title="All 2 branches missed.">      if (column.name().equalsIgnoreCase(field)) {</span>
+<span class="nc bnc" id="L181" title="All 8 branches missed.">        switch (column) {</span>
           case READGLOBALLIMIT:
-<span class="nc" id="L194">            pojo.setReadGlobalLimit(value.asLong());</span>
-<span class="nc" id="L195">            break;</span>
+<span class="nc" id="L183">            pojo.setReadGlobalLimit(value.asLong());</span>
+<span class="nc" id="L184">            break;</span>
           case WRITEGLOBALLIMIT:
-<span class="nc" id="L197">            pojo.setWriteGlobalLimit(value.asLong());</span>
-<span class="nc" id="L198">            break;</span>
+<span class="nc" id="L186">            pojo.setWriteGlobalLimit(value.asLong());</span>
+<span class="nc" id="L187">            break;</span>
           case READSESSIONLIMIT:
-<span class="nc" id="L200">            pojo.setReadSessionLimit(value.asLong());</span>
-<span class="nc" id="L201">            break;</span>
+<span class="nc" id="L189">            pojo.setReadSessionLimit(value.asLong());</span>
+<span class="nc" id="L190">            break;</span>
           case WRITESESSIONLIMIT:
-<span class="nc" id="L203">            pojo.setWriteSessionLimit(value.asLong());</span>
-<span class="nc" id="L204">            break;</span>
+<span class="nc" id="L192">            pojo.setWriteSessionLimit(value.asLong());</span>
+<span class="nc" id="L193">            break;</span>
           case DELAYLIMIT:
-<span class="nc" id="L206">            pojo.setDelayLimit(value.asLong());</span>
-<span class="nc" id="L207">            break;</span>
+<span class="nc" id="L195">            pojo.setDelayLimit(value.asLong());</span>
+<span class="nc" id="L196">            break;</span>
           case UPDATEDINFO:
-<span class="nc" id="L209">            pojo.setUpdatedInfo(</span>
-<span class="nc" id="L210">                org.waarp.openr66.pojo.UpdatedInfo.valueOf(value.asInt()));</span>
-<span class="nc" id="L211">            break;</span>
+<span class="nc" id="L198">            pojo.setUpdatedInfo(</span>
+<span class="nc" id="L199">                org.waarp.openr66.pojo.UpdatedInfo.valueOf(value.asInt()));</span>
+<span class="nc" id="L200">            break;</span>
           case HOSTID:
-<span class="nc" id="L213">            pojo.setHostid(value.asText());</span>
+<span class="nc" id="L202">            pojo.setHostid(value.asText());</span>
             break;
         }
       }
     }
-<span class="nc" id="L218">  }</span>
+<span class="nc" id="L207">  }</span>
 
   /**
    * @return the array of DbConfiguration from Updated status
    *
    * @throws WaarpDatabaseNoConnectionException
-   * @throws WaarpDatabaseSqlException
    */
   public static DbConfiguration[] getUpdatedPrepareStament()
-      throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
-<span class="fc" id="L228">    final List&lt;Filter&gt; filters = new ArrayList&lt;Filter&gt;();</span>
-<span class="fc" id="L229">    filters.add(new Filter(DBLimitDAO.HOSTID_FIELD, &quot;=&quot;,</span>
-<span class="fc" id="L230">                           Configuration.configuration.getHostId()));</span>
-<span class="fc" id="L231">    filters.add(new Filter(DBLimitDAO.UPDATED_INFO_FIELD, &quot;=&quot;,</span>
-<span class="fc" id="L232">                           UpdatedInfo.TOSUBMIT.ordinal()));</span>
+      throws WaarpDatabaseNoConnectionException {
+<span class="fc" id="L216">    final List&lt;Filter&gt; filters = new ArrayList&lt;Filter&gt;();</span>
+<span class="fc" id="L217">    filters.add(new Filter(DBLimitDAO.HOSTID_FIELD, &quot;=&quot;,</span>
+<span class="fc" id="L218">                           Configuration.configuration.getHostId()));</span>
+<span class="fc" id="L219">    filters.add(new Filter(DBLimitDAO.UPDATED_INFO_FIELD, &quot;=&quot;,</span>
+<span class="fc" id="L220">                           UpdatedInfo.TOSUBMIT.ordinal()));</span>
 
-<span class="fc" id="L234">    LimitDAO limitAccess = null;</span>
+<span class="fc" id="L222">    LimitDAO limitAccess = null;</span>
     List&lt;Limit&gt; limits;
     try {
-<span class="fc" id="L237">      limitAccess = DAOFactory.getInstance().getLimitDAO();</span>
-<span class="fc" id="L238">      limits = limitAccess.find(filters);</span>
-<span class="nc" id="L239">    } catch (final DAOConnectionException e) {</span>
-<span class="nc" id="L240">      throw new WaarpDatabaseNoConnectionException(e);</span>
+<span class="fc" id="L225">      limitAccess = DAOFactory.getInstance().getLimitDAO();</span>
+<span class="fc" id="L226">      limits = limitAccess.find(filters);</span>
+<span class="nc" id="L227">    } catch (final DAOConnectionException e) {</span>
+<span class="nc" id="L228">      throw new WaarpDatabaseNoConnectionException(e);</span>
     } finally {
-<span class="fc" id="L242">      DAOFactory.closeDAO(limitAccess);</span>
+<span class="fc" id="L230">      DAOFactory.closeDAO(limitAccess);</span>
     }
-<span class="fc" id="L244">    final DbConfiguration[] res = new DbConfiguration[limits.size()];</span>
-<span class="fc" id="L245">    int i = 0;</span>
-<span class="pc bpc" id="L246" title="1 of 2 branches missed.">    for (final Limit limit : limits) {</span>
-<span class="nc" id="L247">      res[i] = new DbConfiguration(limit);</span>
-<span class="nc" id="L248">      i++;</span>
-<span class="nc" id="L249">    }</span>
-<span class="fc" id="L250">    return res;</span>
+<span class="fc" id="L232">    final DbConfiguration[] res = new DbConfiguration[limits.size()];</span>
+<span class="fc" id="L233">    int i = 0;</span>
+<span class="pc bpc" id="L234" title="1 of 2 branches missed.">    for (final Limit limit : limits) {</span>
+<span class="nc" id="L235">      res[i] = new DbConfiguration(limit);</span>
+<span class="nc" id="L236">      i++;</span>
+<span class="nc" id="L237">    }</span>
+<span class="fc" id="L238">    return res;</span>
   }
 
   /**
@@ -265,84 +253,84 @@ public class DbConfiguration extends AbstractDbDataDao&lt;Limit&gt; {
   public static DbPreparedStatement getFilterPrepareStament(
       final DbSession session, final String hostid, final long limitBandwith)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
-<span class="nc" id="L268">    final DbPreparedStatement preparedStatement =</span>
+<span class="nc" id="L256">    final DbPreparedStatement preparedStatement =</span>
         new DbPreparedStatement(session);
-<span class="nc" id="L270">    final String request = &quot;SELECT &quot; + selectAllFields + &quot; FROM &quot; + table;</span>
-<span class="nc" id="L271">    String condition = null;</span>
-<span class="nc bnc" id="L272" title="All 2 branches missed.">    if (hostid != null) {</span>
-<span class="nc" id="L273">      condition =</span>
-<span class="nc" id="L274">          &quot; WHERE &quot; + Columns.HOSTID.name() + &quot; LIKE '%&quot; + hostid + &quot;%' &quot;;</span>
+<span class="nc" id="L258">    final String request = &quot;SELECT &quot; + selectAllFields + &quot; FROM &quot; + table;</span>
+<span class="nc" id="L259">    String condition = null;</span>
+<span class="nc bnc" id="L260" title="All 2 branches missed.">    if (hostid != null) {</span>
+<span class="nc" id="L261">      condition =</span>
+<span class="nc" id="L262">          &quot; WHERE &quot; + Columns.HOSTID.name() + &quot; LIKE '%&quot; + hostid + &quot;%' &quot;;</span>
     }
-<span class="nc bnc" id="L276" title="All 2 branches missed.">    if (limitBandwith &gt;= 0) {</span>
-<span class="nc bnc" id="L277" title="All 2 branches missed.">      if (condition == null) {</span>
-<span class="nc" id="L278">        condition = &quot; WHERE &quot;;</span>
+<span class="nc bnc" id="L264" title="All 2 branches missed.">    if (limitBandwith &gt;= 0) {</span>
+<span class="nc bnc" id="L265" title="All 2 branches missed.">      if (condition == null) {</span>
+<span class="nc" id="L266">        condition = &quot; WHERE &quot;;</span>
       } else {
-<span class="nc" id="L280">        condition += &quot; AND &quot;;</span>
+<span class="nc" id="L268">        condition += &quot; AND &quot;;</span>
       }
-<span class="nc bnc" id="L282" title="All 2 branches missed.">      if (limitBandwith == 0) {</span>
-<span class="nc" id="L283">        condition += &quot;(&quot; + Columns.READGLOBALLIMIT + &quot; == 0 AND &quot; +</span>
+<span class="nc bnc" id="L270" title="All 2 branches missed.">      if (limitBandwith == 0) {</span>
+<span class="nc" id="L271">        condition += &quot;(&quot; + Columns.READGLOBALLIMIT + &quot; == 0 AND &quot; +</span>
                      Columns.READSESSIONLIMIT + &quot; == 0 AND &quot; +
                      Columns.WRITEGLOBALLIMIT + &quot; == 0 AND &quot; +
                      Columns.WRITESESSIONLIMIT + &quot; == 0)&quot;;
       } else {
-<span class="nc" id="L288">        condition +=</span>
+<span class="nc" id="L276">        condition +=</span>
             &quot;(&quot; + Columns.READGLOBALLIMIT + &quot; &gt; &quot; + limitBandwith + &quot; OR &quot; +
             Columns.READSESSIONLIMIT + &quot; &gt; &quot; + limitBandwith + &quot; OR &quot; +
             Columns.WRITEGLOBALLIMIT + &quot; &gt; &quot; + limitBandwith + &quot; OR &quot; +
             Columns.WRITESESSIONLIMIT + &quot; &gt; &quot; + limitBandwith + ')';
       }
     }
-<span class="nc bnc" id="L295" title="All 2 branches missed.">    if (condition != null) {</span>
-<span class="nc" id="L296">      preparedStatement.createPrepareStatement(</span>
-<span class="nc" id="L297">          request + condition + &quot; ORDER BY &quot; + Columns.HOSTID.name());</span>
+<span class="nc bnc" id="L283" title="All 2 branches missed.">    if (condition != null) {</span>
+<span class="nc" id="L284">      preparedStatement.createPrepareStatement(</span>
+<span class="nc" id="L285">          request + condition + &quot; ORDER BY &quot; + Columns.HOSTID.name());</span>
     } else {
-<span class="nc" id="L299">      preparedStatement.createPrepareStatement(</span>
-<span class="nc" id="L300">          request + &quot; ORDER BY &quot; + Columns.HOSTID.name());</span>
+<span class="nc" id="L287">      preparedStatement.createPrepareStatement(</span>
+<span class="nc" id="L288">          request + &quot; ORDER BY &quot; + Columns.HOSTID.name());</span>
     }
-<span class="nc" id="L302">    return preparedStatement;</span>
+<span class="nc" id="L290">    return preparedStatement;</span>
   }
 
   public static DbConfiguration getFromStatement(
       final DbPreparedStatement statement)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
-<span class="nc" id="L308">    final DbConfiguration dbConfiguration = new DbConfiguration();</span>
-<span class="nc" id="L309">    AbstractDAO&lt;Limit&gt; limitDAO = null;</span>
+<span class="nc" id="L296">    final DbConfiguration dbConfiguration = new DbConfiguration();</span>
+<span class="nc" id="L297">    AbstractDAO&lt;Limit&gt; limitDAO = null;</span>
     try {
-<span class="nc" id="L311">      limitDAO = dbConfiguration.getDao();</span>
-<span class="nc" id="L312">      dbConfiguration.pojo = ((StatementExecutor&lt;Limit&gt;) limitDAO)</span>
-<span class="nc" id="L313">          .getFromResultSet(statement.getResultSet());</span>
-<span class="nc" id="L314">      return dbConfiguration;</span>
-<span class="nc" id="L315">    } catch (final SQLException e) {</span>
-<span class="nc" id="L316">      DbSession.error(e);</span>
-<span class="nc" id="L317">      throw new WaarpDatabaseSqlException(&quot;Getting values in error&quot;, e);</span>
-<span class="nc" id="L318">    } catch (final DAOConnectionException e) {</span>
-<span class="nc" id="L319">      throw new WaarpDatabaseSqlException(&quot;Getting values in error&quot;, e);</span>
+<span class="nc" id="L299">      limitDAO = dbConfiguration.getDao();</span>
+<span class="nc" id="L300">      dbConfiguration.pojo = ((StatementExecutor&lt;Limit&gt;) limitDAO)</span>
+<span class="nc" id="L301">          .getFromResultSet(statement.getResultSet());</span>
+<span class="nc" id="L302">      return dbConfiguration;</span>
+<span class="nc" id="L303">    } catch (final SQLException e) {</span>
+<span class="nc" id="L304">      DbSession.error(e);</span>
+<span class="nc" id="L305">      throw new WaarpDatabaseSqlException(&quot;Getting values in error&quot;, e);</span>
+<span class="nc" id="L306">    } catch (final DAOConnectionException e) {</span>
+<span class="nc" id="L307">      throw new WaarpDatabaseSqlException(&quot;Getting values in error&quot;, e);</span>
     } finally {
-<span class="nc" id="L321">      DAOFactory.closeDAO(limitDAO);</span>
+<span class="nc" id="L309">      DAOFactory.closeDAO(limitDAO);</span>
     }
   }
 
   @Override
   public void changeUpdatedInfo(final UpdatedInfo info) {
-<span class="nc" id="L327">    pojo.setUpdatedInfo(org.waarp.openr66.pojo.UpdatedInfo.fromLegacy(info));</span>
-<span class="nc" id="L328">  }</span>
+<span class="nc" id="L315">    pojo.setUpdatedInfo(org.waarp.openr66.pojo.UpdatedInfo.fromLegacy(info));</span>
+<span class="nc" id="L316">  }</span>
 
   /**
    * Update configuration according to new value of limits
    */
   public void updateConfiguration() {
-<span class="fc" id="L334">    Configuration.configuration.changeNetworkLimit(pojo.getWriteGlobalLimit(),</span>
-<span class="fc" id="L335">                                                   pojo.getReadGlobalLimit(),</span>
-<span class="fc" id="L336">                                                   pojo.getWriteSessionLimit(),</span>
-<span class="fc" id="L337">                                                   pojo.getReadSessionLimit(),</span>
-<span class="fc" id="L338">                                                   pojo.getDelayLimit());</span>
-<span class="fc" id="L339">  }</span>
+<span class="fc" id="L322">    Configuration.configuration.changeNetworkLimit(pojo.getWriteGlobalLimit(),</span>
+<span class="fc" id="L323">                                                   pojo.getReadGlobalLimit(),</span>
+<span class="fc" id="L324">                                                   pojo.getWriteSessionLimit(),</span>
+<span class="fc" id="L325">                                                   pojo.getReadSessionLimit(),</span>
+<span class="fc" id="L326">                                                   pojo.getDelayLimit());</span>
+<span class="fc" id="L327">  }</span>
 
   /**
    * @return True if this Configuration refers to the current host
    */
   public boolean isOwnConfiguration() {
-<span class="nc" id="L345">    return pojo.getHostid().equals(Configuration.configuration.getHostId());</span>
+<span class="nc" id="L333">    return pojo.getHostid().equals(Configuration.configuration.getHostId());</span>
   }
 
 }
