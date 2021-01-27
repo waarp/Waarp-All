@@ -7,6 +7,16 @@ La procédure de mise à jour est disponible ici: :any:`upgrade`
 Non publié
 ==========
 
+Waarp R66 3.5.2 (2021-02-01)
+============================
+
+Correctifs
+----------
+
+- Amélioration de la fermeture oportuniste des connexions réseaux
+- Mise à jour des dépendances
+
+
 Waarp R66 3.5.1 (2020-09-01)
 ============================
 
