@@ -48,6 +48,7 @@ import org.waarp.openr66.protocol.localhandler.packet.EndTransferPacket;
 import org.waarp.openr66.protocol.localhandler.packet.ErrorPacket;
 import org.waarp.openr66.protocol.localhandler.packet.LocalPacketFactory;
 import org.waarp.openr66.protocol.localhandler.packet.RequestPacket;
+import org.waarp.openr66.protocol.networkhandler.NetworkChannelReference;
 import org.waarp.openr66.protocol.networkhandler.NetworkServerHandler;
 import org.waarp.openr66.protocol.networkhandler.NetworkTransaction;
 import org.waarp.openr66.protocol.networkhandler.packet.NetworkPacket;
@@ -250,12 +251,16 @@ public class ChannelUtils extends Thread {
         }
       });
     }
+    final NetworkServerHandler nsh =
+            localChannelReference.getNetworkServerHandler();
+    if (nsh != null) {
+      nsh.resetKeepAlive();
+    }
+    NetworkChannelReference ncr = localChannelReference.getNetworkChannelObject();
+    if (ncr != null) {
+      ncr.use();
+    }
     if (wait) {
-      final NetworkServerHandler nsh =
-          localChannelReference.getNetworkServerHandler();
-      if (nsh != null) {
-        nsh.resetKeepAlive();
-      }
       WaarpNettyUtil.awaitOrInterrupted(future);
     }
     return future;

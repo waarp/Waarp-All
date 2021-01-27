@@ -1082,30 +1082,14 @@ public class NetworkTransaction {
 
     @Override
     public void run(final Timeout timeout) {
-      networkChannelReference.lock
-          .lock(Configuration.WAITFORNETOP, TimeUnit.MILLISECONDS);
-      try {
-        logger.debug("NC count: {}", networkChannelReference);
-        if (networkChannelReference.nbLocalChannels() <= 0) {
-          long time = networkChannelReference
-              .checkLastTime(Configuration.configuration.getTimeoutCon() * 2);
-          if (time > Configuration.RETRYINMS &&
-              Configuration.configuration.isTimerCloseReady()) {
-            logger.debug("NC reschedule at {} : {}", time,
-                         networkChannelReference);
-            // will re execute this request later on
-            time = (time / 10) * 10 + 100; // round to 10
-            Configuration.configuration.getTimerClose().newTimeout(this, time,
-                                                                   TimeUnit.MILLISECONDS);
-            return;
-          }
-          logger.info("Closing NETWORK channel {}", networkChannelReference);
-          networkChannelReference.isShuttingDown = true;
-          WaarpSslUtility.closingSslChannel(networkChannelReference.channel);
-        }
-        inCloseRunning.remove(networkChannelReference.channel.id());
-      } finally {
-        networkChannelReference.lock.unlock();
+      long time = networkChannelReference.shutdownAllowed();
+      if (time > 0) {
+        Configuration.configuration.getTimerClose().newTimeout(this, time,
+                TimeUnit.MILLISECONDS);
+        return;
+      } else if (time == 0) {
+        networkChannelReference.isShuttingDown = true;
+        WaarpSslUtility.closingSslChannel(networkChannelReference.channel);
       }
     }
 
@@ -1132,19 +1116,21 @@ public class NetworkTransaction {
       }
       final int count = networkChannelReference.nbLocalChannels();
       if (count <= 0) {
+        logger.debug("Will try to Close con: {}", networkChannelReference);
         final CloseFutureChannel cfc;
         try {
           cfc = new CloseFutureChannel(networkChannelReference);
           Configuration.configuration.getTimerClose().newTimeout(cfc,
-                                                                 Configuration.configuration
-                                                                     .getTimeoutCon() *
-                                                                 2,
-                                                                 TimeUnit.MILLISECONDS);
+                  Configuration.configuration.getTimeoutCon() * 2,
+                  TimeUnit.MILLISECONDS);
         } catch (final OpenR66RunnerErrorException ignored) {
           // nothing
         } catch (final IllegalStateException ignored) {
           // nothing
         }
+      } else {
+        networkChannelReference.use();
+        logger.debug("Ignore shutdown after checking");
       }
       logger.debug("NC left: {}", networkChannelReference);
       return count;
