@@ -61,9 +61,7 @@ public class ChannelCloseTimer implements TimerTask {
     if (future != null) {
       WaarpNettyUtil.awaitOrInterrupted(future);
     }
-    if (channel != null) {
-      WaarpSslUtility.closingSslChannel(channel);
-    } else if (connectionActions != null) {
+    if (connectionActions != null) {
       if (noConcurrencyDbSession != null && admin != null &&
           admin.getSession() != null &&
           !noConcurrencyDbSession.equals(admin.getSession())) {
@@ -71,6 +69,8 @@ public class ChannelCloseTimer implements TimerTask {
         noConcurrencyDbSession = null;
       }
       connectionActions.getLocalChannelReference().close();
+    } else if (channel != null) {
+      WaarpSslUtility.closingSslChannel(channel);
     }
   }
 

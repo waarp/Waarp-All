@@ -23,10 +23,12 @@ import org.waarp.common.command.exception.CommandAbstractException;
 import org.waarp.common.digest.FilesystemBasedDigest;
 import org.waarp.common.digest.FilesystemBasedDigest.DigestAlgo;
 import org.waarp.common.file.AbstractDir;
+import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.openr66.context.R66Session;
 import org.waarp.openr66.context.filesystem.R66File;
 import org.waarp.openr66.context.task.exception.OpenR66RunnerErrorException;
+import org.waarp.openr66.protocol.configuration.Configuration;
 
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
@@ -97,9 +99,18 @@ public final class FileUtils {
           // File should already exist but cannot use special code ('*?')
           final R66File file2 =
               new R66File(session, session.getDir(), filename);
+          for (int i = 0; i < Configuration.RETRYNB; i++) {
+            if (!file2.canRead()) {
+              try {
+                Thread.sleep(Configuration.RETRYINMS);
+              } catch (InterruptedException e) { // Ignore
+                SysErrLogger.FAKE_LOGGER.ignoreLog(e);
+              }
+            }
+          }
           if (!file2.canRead()) {
             throw new OpenR66RunnerErrorException(
-                "File cannot be read: " + file.getTrueFile().getAbsolutePath());
+                    "File cannot be read: " + file.getTrueFile().getAbsolutePath());
           }
           file = file2;
         }

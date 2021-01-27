@@ -22,6 +22,8 @@ package org.waarp.openr66.protocol.networkhandler;
 import io.netty.channel.Channel;
 import org.waarp.common.future.WaarpLock;
 import org.waarp.common.logging.SysErrLogger;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.lru.ConcurrentUtility;
 import org.waarp.openr66.context.ErrorCode;
 import org.waarp.openr66.context.R66Result;
@@ -38,12 +40,22 @@ import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.ArrayList;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
+
+import static org.waarp.openr66.protocol.configuration.Configuration.RETRYINMS;
+import static org.waarp.openr66.protocol.configuration.Configuration.RETRYNB;
 
 /**
  * NetworkChannelReference object to keep Network channel open while some local
  * channels are attached to it.
  */
 public class NetworkChannelReference {
+  /**
+   * Internal Logger
+   */
+  private static final WaarpLogger logger =
+          WaarpLoggerFactory.getLogger(NetworkChannelReference.class);
+
   private static final LocalChannelReference[] LCR_0_LENGTH =
       new LocalChannelReference[0];
 
@@ -172,49 +184,119 @@ public class NetworkChannelReference {
    * Shutdown All Local Channels associated with this NCR
    */
   public void shutdownAllLocalChannels() {
-    isShuttingDown = true;
-    final LocalChannelReference[] localChannelReferenceArray =
-        localChannelReferences.toArray(LCR_0_LENGTH);
-    final ArrayList<LocalChannelReference> toCloseLater =
-        new ArrayList<LocalChannelReference>();
-    for (final LocalChannelReference localChannelReference : localChannelReferenceArray) {
-      localChannelReference.getFutureRequest().awaitOrInterruptible(
-          Configuration.configuration.getTimeoutCon() / 3);
-      if (!localChannelReference.getFutureRequest().isDone()) {
-        localChannelReference.getFutureValidRequest().awaitOrInterruptible(
-            Configuration.configuration.getTimeoutCon() / 3);
-        if (localChannelReference.getFutureValidRequest().isDone() &&
-            localChannelReference.getFutureValidRequest().isFailed()) {
-          toCloseLater.add(localChannelReference);
-          continue;
-        } else {
-          final R66Result finalValue =
-              new R66Result(localChannelReference.getSession(), true,
+    lock.lock(Configuration.WAITFORNETOP, TimeUnit.MILLISECONDS);
+    try {
+      logger.info("Will shutdown all local channels");
+      isShuttingDown = true;
+      final LocalChannelReference[] localChannelReferenceArray =
+              localChannelReferences.toArray(LCR_0_LENGTH);
+      final ArrayList<LocalChannelReference> toCloseLater =
+              new ArrayList<LocalChannelReference>();
+      for (final LocalChannelReference localChannelReference : localChannelReferenceArray) {
+        localChannelReference.getFutureRequest().awaitOrInterruptible(
+                Configuration.configuration.getTimeoutCon() / 3);
+        if (!localChannelReference.getFutureRequest().isDone()) {
+          localChannelReference.getFutureValidRequest().awaitOrInterruptible(
+                  Configuration.configuration.getTimeoutCon() / 3);
+          if (localChannelReference.getFutureValidRequest().isDone() &&
+                  localChannelReference.getFutureValidRequest().isFailed()) {
+            toCloseLater.add(localChannelReference);
+            continue;
+          } else {
+            final R66Result finalValue =
+                    new R66Result(localChannelReference.getSession(), true,
                             ErrorCode.Shutdown, null);
-          if (localChannelReference.getSession() != null) {
-            try {
-              localChannelReference.getSession().tryFinalizeRequest(finalValue);
-            } catch (final OpenR66RunnerErrorException ignored) {
-              // nothing
-            } catch (final OpenR66ProtocolSystemException ignored) {
-              // nothing
+            if (localChannelReference.getSession() != null) {
+              try {
+                localChannelReference.getSession().tryFinalizeRequest(finalValue);
+              } catch (final OpenR66RunnerErrorException ignored) {
+                // nothing
+              } catch (final OpenR66ProtocolSystemException ignored) {
+                // nothing
+              }
             }
           }
         }
+        localChannelReference.close();
       }
-      localChannelReference.close();
+      try {
+        Thread.sleep(Configuration.WAITFORNETOP);
+      } catch (final InterruptedException e) {//NOSONAR
+        SysErrLogger.FAKE_LOGGER.ignoreLog(e);
+      }
+      for (final LocalChannelReference localChannelReference : toCloseLater) {
+        localChannelReference.getFutureRequest().awaitOrInterruptible(
+                Configuration.configuration.getTimeoutCon() / 3);
+        localChannelReference.close();
+      }
+      toCloseLater.clear();
+    } finally {
+      lock.unlock();
     }
+  }
+
+  /**
+   *
+   * @param localChannelReference the localChannelReference to be closed
+   * @return True if the localChannelReference is the only one still active or there is no more LCR
+   */
+  public boolean isLastLocalChannelActive(LocalChannelReference localChannelReference) {
+    boolean someActive = isSomeLocalChannelsActive();
+    return (someActive && localChannelReferences.contains(localChannelReference) && localChannelReferences.size() == 1)
+            || (localChannelReferences.size() == 0);
+  }
+
+  /**
+   *
+   * @return -1 if not allowed, 0 if allowed, else time in ms before ready to recheck
+   */
+  public long shutdownAllowed() {
+    lock.lock(Configuration.WAITFORNETOP, TimeUnit.MILLISECONDS);
     try {
-      Thread.sleep(Configuration.WAITFORNETOP);
-    } catch (final InterruptedException e) {//NOSONAR
-      SysErrLogger.FAKE_LOGGER.ignoreLog(e);
+      logger.debug("NC count: {}", this);
+      if (nbLocalChannels() <= 0) {
+        boolean reallyShutdownNetwork = true;
+        for (int i = 0; i < RETRYNB; i++) {
+          try {
+            Thread.sleep(RETRYINMS);
+          } catch (InterruptedException e) { // Ignore
+            SysErrLogger.FAKE_LOGGER.ignoreLog(e);
+          }
+          if (nbLocalChannels() != 0) {
+            reallyShutdownNetwork = false;
+            break;
+          }
+        }
+        if (reallyShutdownNetwork) {
+          long time = checkLastTime(Configuration.configuration.getTimeoutCon() * 2);
+          if (time > Configuration.RETRYINMS &&
+                  Configuration.configuration.isTimerCloseReady()) {
+            logger.debug("NC reschedule at {} : {}", time,
+                    this);
+            // will re execute this request later on
+            time = (time / 10) * 10 + 100; // round to 10
+            return time;
+          }
+          logger.info("Closing NETWORK channel {}", this);
+          return  0;
+        } else {
+          use();
+          logger.debug("Ignore closing Network channel");
+          return -1;
+        }
+      }
+      return -1;
+    } finally {
+      lock.unlock();
     }
-    for (final LocalChannelReference localChannelReference : toCloseLater) {
-      localChannelReference.getFutureRequest().awaitOrInterruptible(
-          Configuration.configuration.getTimeoutCon() / 3);
-      localChannelReference.close();
-    }
-    toCloseLater.clear();
+  }
+
+  public void lockNetwork() {
+    lock.lock(Configuration.WAITFORNETOP, TimeUnit.MILLISECONDS);
+  }
+
+  public void unlockNetwork() {
+    lock.unlock();
   }
 
   public int nbLocalChannels() {
@@ -225,17 +307,22 @@ public class NetworkChannelReference {
    * @return True if at least one LocalChannel is not yet finished (OK or Error)
    */
   public boolean isSomeLocalChannelsActive() {
-    for (final LocalChannelReference localChannelReference : localChannelReferences) {
-      final R66Session session = localChannelReference.getSession();
-      if (session != null) {
-        final DbTaskRunner runner = session.getRunner();
-        if (runner != null && !runner.isFinished() &&
-            runner.getGlobalStep() != TASKSTEP.NOTASK) {
-          return true;
+    lock.lock(Configuration.WAITFORNETOP, TimeUnit.MILLISECONDS);
+    try {
+      for (final LocalChannelReference localChannelReference : localChannelReferences) {
+        final R66Session session = localChannelReference.getSession();
+        if (session != null) {
+          final DbTaskRunner runner = session.getRunner();
+          if (runner != null && !runner.isFinished() &&
+                  runner.getGlobalStep() != TASKSTEP.NOTASK) {
+            return true;
+          }
         }
       }
+      return false;
+    } finally {
+      lock.unlock();
     }
-    return false;
   }
 
   @Override
