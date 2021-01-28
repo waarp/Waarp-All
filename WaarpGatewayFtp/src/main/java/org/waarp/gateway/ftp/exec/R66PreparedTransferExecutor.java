@@ -37,6 +37,7 @@ import org.waarp.openr66.protocol.localhandler.packet.RequestPacket;
 import java.io.File;
 
 import static org.waarp.common.database.DbConstant.*;
+import static org.waarp.common.file.filesystembased.FilesystemBasedFileImpl.*;
 
 /**
  * R66PreparedTransferExecutor class. If the command starts with "REFUSED", the
@@ -166,7 +167,7 @@ public class R66PreparedTransferExecutor extends AbstractExecutor {
     long originalSize = -1;
     if (RequestPacket.isSendMode(mode) && !RequestPacket.isThroughMode(mode)) {
       final File file = new File(transferArgs.getFilename());
-      if (file.canRead()) {
+      if (canRead(file)) {
         originalSize = file.length();
       }
     }

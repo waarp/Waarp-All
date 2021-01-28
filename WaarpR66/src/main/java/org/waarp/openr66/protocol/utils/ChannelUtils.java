@@ -252,11 +252,12 @@ public class ChannelUtils extends Thread {
       });
     }
     final NetworkServerHandler nsh =
-            localChannelReference.getNetworkServerHandler();
+        localChannelReference.getNetworkServerHandler();
     if (nsh != null) {
       nsh.resetKeepAlive();
     }
-    NetworkChannelReference ncr = localChannelReference.getNetworkChannelObject();
+    NetworkChannelReference ncr =
+        localChannelReference.getNetworkChannelObject();
     if (ncr != null) {
       ncr.use();
     }

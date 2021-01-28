@@ -1259,11 +1259,15 @@ public class ServerActions extends ConnectionActions {
     final NetworkChannelReference ncr =
         localChannelReference.getNetworkChannelObject();
     ncr.lockNetwork();
-    long time = ncr.shutdownAllowed();
-    if (time == 0) {
-      logger.info("Will close networkChannel {}", ncr.nbLocalChannels());
-      NetworkTransaction.shuttingDownNetworkChannel(ncr);
-      NetworkTransaction.shuttingdownNetworkChannelsPerHostID(ncr.getHostId());
+    try {
+      long time = ncr.shutdownAllowed();
+      if (time == 0) {
+        logger.info("Will close networkChannel {}", ncr.nbLocalChannels());
+        NetworkTransaction.shuttingDownNetworkChannel(ncr);
+        NetworkTransaction.shuttingdownNetworkChannelsPerHostID(ncr.getHostId());
+      }
+    } finally {
+      ncr.unlockNetwork();
     }
   }
 
