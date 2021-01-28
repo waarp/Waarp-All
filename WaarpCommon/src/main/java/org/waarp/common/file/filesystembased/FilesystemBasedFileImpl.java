@@ -28,6 +28,7 @@ import org.waarp.common.file.DataBlock;
 import org.waarp.common.file.DirInterface;
 import org.waarp.common.file.FileUtils;
 import org.waarp.common.file.SessionInterface;
+import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 
@@ -279,13 +280,34 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
     return fileOutputStream != null;
   }
 
+  /**
+   * Adapt File.canRead() to leverage synchronization error with filesystem
+   *
+   * @param file
+   *
+   * @return as with File.canRead()
+   */
+  public static boolean canRead(File file) {
+    for (int i = 0; i < 3; i++) {
+      if (file.canRead()) {
+        return true;
+      }
+      try {
+        Thread.sleep(10);
+      } catch (InterruptedException ignored) { // Ignored
+        SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
+      }
+    }
+    return file.canRead();
+  }
+
   @Override
   public boolean canRead() throws CommandAbstractException {
     checkIdentify();
     if (!isReady) {
       return false;
     }
-    return getFileFromPath(currentFile).canRead();
+    return canRead(getFileFromPath(currentFile));
   }
 
   @Override
@@ -331,7 +353,7 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
       return false;
     }
     final File file = getFileFromPath(currentFile);
-    if (file.canRead()) {
+    if (canRead(file)) {
       final File newFile = getFileFromPath(path);
       if (newFile.exists()) {
         logger.warn("Target file already exists: " + newFile.getAbsolutePath());

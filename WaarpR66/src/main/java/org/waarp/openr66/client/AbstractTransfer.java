@@ -62,6 +62,7 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 import static org.waarp.common.database.DbConstant.*;
+import static org.waarp.common.file.filesystembased.FilesystemBasedFileImpl.*;
 
 /**
  * Abstract class for Transfer operation
@@ -230,7 +231,7 @@ public abstract class AbstractTransfer implements Runnable {
         } catch (final OpenR66RunnerErrorException ignored) {
           SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
         }
-        if (file.canRead()) {
+        if (canRead(file)) {
           originalSize = file.length();
           if (originalSize == 0) {
             originalSize = -1;

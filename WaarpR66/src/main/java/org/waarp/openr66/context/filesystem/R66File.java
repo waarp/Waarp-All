@@ -286,7 +286,7 @@ public class R66File extends FilesystemBasedFileImpl {
     if (isExternal) {
       final File file = new File(currentFile);
       logger.debug("Final File: {} CanRead: {}", file, file.canRead());
-      return file.canRead();
+      return canRead(file);
     }
     return super.canRead();
   }
@@ -447,7 +447,7 @@ public class R66File extends FilesystemBasedFileImpl {
   public long length() throws CommandAbstractException {
     if (isExternal) {
       final File file = new File(currentFile);
-      if (file.canRead()) {
+      if (canRead(file)) {
         return file.length();
       } else {
         return -1;
@@ -481,7 +481,7 @@ public class R66File extends FilesystemBasedFileImpl {
       return false;
     }
     final File file = getTrueFile();
-    if (file.canRead()) {
+    if (canRead(file)) {
       File newFile = getFileFromPath(path);
       File parentFile = newFile.getParentFile();
       if (parentFile == null) {
@@ -546,7 +546,7 @@ public class R66File extends FilesystemBasedFileImpl {
       return false;
     }
     final File file = getTrueFile();
-    if (file.canRead()) {
+    if (canRead(file)) {
       File newFile = new File(path);
       File parentFile = newFile.getParentFile();
       if (parentFile == null) {

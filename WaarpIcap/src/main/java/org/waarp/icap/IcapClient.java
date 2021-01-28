@@ -42,6 +42,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.waarp.common.file.filesystembased.FilesystemBasedFileImpl.*;
+
 /**
  * The IcapClient allows to do 3 actions:</br>
  * <ul>
@@ -350,7 +352,7 @@ public class IcapClient implements Closeable {
       }
     } else {
       final File file = new File(filename);
-      if (!file.canRead()) {
+      if (!canRead(file)) {
         logger.error("File does not exist: {}", file.getAbsolutePath());
         throw new IcapException(
             "File cannot be found: " + file.getAbsolutePath(),

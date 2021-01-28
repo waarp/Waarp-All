@@ -1085,7 +1085,7 @@ public class NetworkTransaction {
       long time = networkChannelReference.shutdownAllowed();
       if (time > 0) {
         Configuration.configuration.getTimerClose().newTimeout(this, time,
-                TimeUnit.MILLISECONDS);
+                                                               TimeUnit.MILLISECONDS);
         return;
       } else if (time == 0) {
         networkChannelReference.isShuttingDown = true;
@@ -1121,8 +1121,10 @@ public class NetworkTransaction {
         try {
           cfc = new CloseFutureChannel(networkChannelReference);
           Configuration.configuration.getTimerClose().newTimeout(cfc,
-                  Configuration.configuration.getTimeoutCon() * 2,
-                  TimeUnit.MILLISECONDS);
+                                                                 Configuration.configuration
+                                                                     .getTimeoutCon() *
+                                                                 2,
+                                                                 TimeUnit.MILLISECONDS);
         } catch (final OpenR66RunnerErrorException ignored) {
           // nothing
         } catch (final IllegalStateException ignored) {

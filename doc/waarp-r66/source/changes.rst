@@ -13,7 +13,8 @@ Waarp R66 3.5.2 (2021-02-01)
 Correctifs
 ----------
 
-- Amélioration de la fermeture oportuniste des connexions réseaux
+- Amélioration de la fermeture opportuniste des connexions réseaux
+- Amélioration de la liaison JVM/Filesystem lors du test de lisibilité
 - Mise à jour des dépendances
 
 
