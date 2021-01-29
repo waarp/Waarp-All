@@ -544,7 +544,7 @@ public class Configuration {
   /**
    * Maximum number of concurrent active transfer by submission.
    */
-  private int runnerThread = 1000;
+  private int runnerThread = Commander.LIMIT_SUBMIT;
   /**
    * Delay in ms between two steps of Commander
    */
@@ -2277,10 +2277,10 @@ public class Configuration {
    * @param runnerTHREAD the rUNNER_THREAD to set
    */
   public void setRunnerThread(final int runnerTHREAD) {
-    if (runnerTHREAD > Commander.LIMIT_SUBMIT) {
+    if (runnerTHREAD > Commander.LIMIT_MAX_SUBMIT) {
       logger.warn("RunnerThread at {} will be limited to default maximum {}",
-                  runnerTHREAD, Commander.LIMIT_SUBMIT);
-      runnerThread = Commander.LIMIT_SUBMIT;
+                  runnerTHREAD, Commander.LIMIT_MAX_SUBMIT);
+      runnerThread = Commander.LIMIT_MAX_SUBMIT;
     } else {
       runnerThread = runnerTHREAD <= 1? 2 : runnerTHREAD;
     }

@@ -15,6 +15,7 @@ Correctifs
 
 - Amélioration de la fermeture opportuniste des connexions réseaux
 - Amélioration de la liaison JVM/Filesystem lors du test de lisibilité
+- Acroissement de la limite de RUNLIMIT à 10000, maintient du défaut à 1000
 - Mise à jour des dépendances
 
 
