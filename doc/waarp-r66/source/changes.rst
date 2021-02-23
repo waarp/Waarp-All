@@ -7,7 +7,7 @@ La procédure de mise à jour est disponible ici: :any:`upgrade`
 Non publié
 ==========
 
-Waarp R66 3.5.2 (2021-02-01)
+Waarp R66 3.5.2 (2021-02-23)
 ============================
 
 Correctifs
@@ -16,6 +16,8 @@ Correctifs
 - Amélioration de la fermeture opportuniste des connexions réseaux
 - Amélioration de la liaison JVM/Filesystem lors du test de lisibilité
 - Acroissement de la limite de RUNLIMIT à 10000, maintient du défaut à 1000
+- Fix de la Gateway FTP pour les clients sous Windows qui abusivement envoient
+  une commande OPTS avant l'authentification
 - Mise à jour des dépendances
 
 
