@@ -21,10 +21,11 @@ package org.waarp.openr66.protocol.localhandler.packet;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 import org.waarp.common.json.JsonHandler;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.WaarpNettyUtil;
+import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.openr66.context.ErrorCode;
 import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.configuration.PartnerConfiguration;
@@ -365,7 +366,8 @@ public class RequestPacket extends AbstractLocalPacket {
   @Override
   public void createEnd(final LocalChannelReference lcr) {
     if (transferInformation != null) {
-      end = Unpooled.wrappedBuffer(transferInformation.getBytes());
+      end = WaarpNettyUtil
+          .wrappedBuffer(transferInformation.getBytes(WaarpStringUtils.UTF8));
     }
   }
 
@@ -380,13 +382,13 @@ public class RequestPacket extends AbstractLocalPacket {
       final ObjectNode node = JsonHandler.createObjectNode();
       JsonHandler.setValue(node, FIELDS.rule, rulename);
       JsonHandler.setValue(node, FIELDS.mode, mode);
-      header =
-          Unpooled.wrappedBuffer(JsonHandler.writeAsString(node).getBytes());
+      header = WaarpNettyUtil.wrappedBuffer(
+          JsonHandler.writeAsString(node).getBytes(WaarpStringUtils.UTF8));
     } else {
-      header = Unpooled.wrappedBuffer(rulename.getBytes(),
-                                      PartnerConfiguration.BLANK_SEPARATOR_FIELD
-                                          .getBytes(),
-                                      Integer.toString(mode).getBytes());
+      header = WaarpNettyUtil.wrappedBuffer(rulename.getBytes(),
+                                            PartnerConfiguration.BLANK_SEPARATOR_FIELD
+                                                .getBytes(),
+                                            Integer.toString(mode).getBytes());
     }
   }
 
@@ -408,11 +410,14 @@ public class RequestPacket extends AbstractLocalPacket {
       JsonHandler.setValue(node, FIELDS.length, originalSize);
       // Add limit if specified
       JsonHandler.setValue(node, FIELDS.limit, limit);
-      middle = Unpooled
-          .wrappedBuffer(away, JsonHandler.writeAsString(node).getBytes());
+      middle = WaarpNettyUtil.wrappedBuffer(away,
+                                            JsonHandler.writeAsString(node)
+                                                       .getBytes(
+                                                           WaarpStringUtils.UTF8));
     } else {
-      middle = Unpooled
-          .wrappedBuffer(away, filename.getBytes(), separator.getBytes(),
+      middle = WaarpNettyUtil
+          .wrappedBuffer(away, filename.getBytes(WaarpStringUtils.UTF8),
+                         separator.getBytes(),
                          Integer.toString(blocksize).getBytes(),
                          separator.getBytes(),
                          Integer.toString(rank).getBytes(),

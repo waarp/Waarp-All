@@ -1264,7 +1264,8 @@ public class ServerActions extends ConnectionActions {
       if (time == 0) {
         logger.info("Will close networkChannel {}", ncr.nbLocalChannels());
         NetworkTransaction.shuttingDownNetworkChannel(ncr);
-        NetworkTransaction.shuttingdownNetworkChannelsPerHostID(ncr.getHostId());
+        NetworkTransaction
+            .shuttingdownNetworkChannelsPerHostID(ncr.getHostId());
       }
     } finally {
       ncr.unlockNetwork();

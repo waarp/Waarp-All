@@ -21,7 +21,6 @@ package org.waarp.openr66.protocol.localhandler.packet;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
-import io.netty.buffer.Unpooled;
 import org.waarp.common.digest.FilesystemBasedDigest;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
@@ -123,7 +122,7 @@ public class DataPacket extends AbstractLocalPacket {
 
   @Override
   public void createEnd(final LocalChannelReference lcr) {
-    end = Unpooled.wrappedBuffer(key);
+    end = WaarpNettyUtil.wrappedBuffer(key);
   }
 
   @Override
@@ -137,7 +136,7 @@ public class DataPacket extends AbstractLocalPacket {
     if (dataRecv != null) {
       middle = dataRecv;
     } else {
-      middle = Unpooled.wrappedBuffer(data);
+      middle = WaarpNettyUtil.wrappedBuffer(data);
     }
   }
 
