@@ -117,10 +117,10 @@ public class R66File extends FilesystemBasedFileImpl {
       }
       try {
 <span class="fc" id="L119">        block = readDataBlock();</span>
-<span class="fc" id="L120">      } catch (final FileEndOfTransferException e) {</span>
+<span class="nc" id="L120">      } catch (final FileEndOfTransferException e) {</span>
         // Last block (in fact, no data to read)
-<span class="fc" id="L122">        retrieveDone = true;</span>
-<span class="fc" id="L123">        return;</span>
+<span class="nc" id="L122">        retrieveDone = true;</span>
+<span class="nc" id="L123">        return;</span>
 <span class="fc" id="L124">      }</span>
 <span class="pc bpc" id="L125" title="1 of 2 branches missed.">      if (block == null) {</span>
         // Last block (in fact, no data to read)
@@ -152,8 +152,8 @@ public class R66File extends FilesystemBasedFileImpl {
 <span class="pc bpc" id="L152" title="2 of 6 branches missed.">      while (block != null &amp;&amp; !block.isEOF() &amp;&amp; running.get() &amp;&amp;</span>
 <span class="pc bpc" id="L153" title="1 of 2 branches missed.">             !Thread.interrupted()) {</span>
 <span class="fc" id="L154">        WaarpNettyUtil.awaitOrInterrupted(future1);</span>
-<span class="pc bpc" id="L155" title="1 of 2 branches missed.">        if (!future1.isSuccess()) {</span>
-<span class="nc" id="L156">          return;</span>
+<span class="fc bfc" id="L155" title="All 2 branches covered.">        if (!future1.isSuccess()) {</span>
+<span class="fc" id="L156">          return;</span>
         }
 <span class="pc bpc" id="L158" title="3 of 4 branches missed.">        if (!running.get() &amp;&amp; Thread.interrupted()) {</span>
 <span class="nc" id="L159">          return;</span>
@@ -186,8 +186,8 @@ public class R66File extends FilesystemBasedFileImpl {
       // Wait for last write
 <span class="pc bpc" id="L187" title="1 of 2 branches missed.">      if (future1 != null) {</span>
 <span class="fc" id="L188">        WaarpNettyUtil.awaitOrInterrupted(future1);</span>
-<span class="pc bpc" id="L189" title="1 of 2 branches missed.">        if (!future1.isSuccess()) {</span>
-<span class="nc" id="L190">          return;</span>
+<span class="fc bfc" id="L189" title="All 2 branches covered.">        if (!future1.isSuccess()) {</span>
+<span class="fc" id="L190">          return;</span>
         }
       }
 <span class="fc" id="L193">      retrieveDone = true;</span>
@@ -203,17 +203,17 @@ public class R66File extends FilesystemBasedFileImpl {
                                                      ErrorCode.Internal,
 <span class="nc" id="L204">                                                     getSession().getRunner()));</span>
     } finally {
-<span class="fc bfc" id="L206" title="All 2 branches covered.">      if (block != null) {</span>
+<span class="pc bpc" id="L206" title="1 of 2 branches missed.">      if (block != null) {</span>
 <span class="fc" id="L207">        block.clear();</span>
       }
-<span class="pc bpc" id="L209" title="1 of 2 branches missed.">      if (retrieveDone) {</span>
+<span class="fc bfc" id="L209" title="All 2 branches covered.">      if (retrieveDone) {</span>
 <span class="fc" id="L210">        String hash = null;</span>
-<span class="fc bfc" id="L211" title="All 2 branches covered.">        if (digestGlobal != null) {</span>
+<span class="pc bpc" id="L211" title="1 of 2 branches missed.">        if (digestGlobal != null) {</span>
 <span class="fc" id="L212">          hash = FilesystemBasedDigest.getHex(digestGlobal.Final());</span>
         }
         try {
-<span class="fc bfc" id="L215" title="All 2 branches covered.">          if (hash == null) {</span>
-<span class="fc" id="L216">            ChannelUtils.writeEndTransfer(localChannelReference);</span>
+<span class="pc bpc" id="L215" title="1 of 2 branches missed.">          if (hash == null) {</span>
+<span class="nc" id="L216">            ChannelUtils.writeEndTransfer(localChannelReference);</span>
           } else {
 <span class="fc" id="L218">            ChannelUtils.writeEndTransfer(localChannelReference, hash);</span>
           }
@@ -227,10 +227,10 @@ public class R66File extends FilesystemBasedFileImpl {
 <span class="fc" id="L227">        }</span>
 <span class="fc" id="L228">      } else {</span>
         // An error occurs!
-<span class="nc" id="L230">        getSession().setFinalizeTransfer(false, new R66Result(</span>
+<span class="fc" id="L230">        getSession().setFinalizeTransfer(false, new R66Result(</span>
             new OpenR66ProtocolSystemException(&quot;Transfer in error&quot;),
-<span class="nc" id="L232">            getSession(), false, ErrorCode.TransferError,</span>
-<span class="nc" id="L233">            getSession().getRunner()));</span>
+<span class="fc" id="L232">            getSession(), false, ErrorCode.TransferError,</span>
+<span class="fc" id="L233">            getSession().getRunner()));</span>
       }
     }
 <span class="fc" id="L236">  }</span>
@@ -286,7 +286,7 @@ public class R66File extends FilesystemBasedFileImpl {
 <span class="fc bfc" id="L286" title="All 2 branches covered.">    if (isExternal) {</span>
 <span class="fc" id="L287">      final File file = new File(currentFile);</span>
 <span class="fc" id="L288">      logger.debug(&quot;Final File: {} CanRead: {}&quot;, file, file.canRead());</span>
-<span class="fc" id="L289">      return file.canRead();</span>
+<span class="fc" id="L289">      return canRead(file);</span>
     }
 <span class="fc" id="L291">    return super.canRead();</span>
   }
@@ -447,7 +447,7 @@ public class R66File extends FilesystemBasedFileImpl {
   public long length() throws CommandAbstractException {
 <span class="pc bpc" id="L448" title="1 of 2 branches missed.">    if (isExternal) {</span>
 <span class="nc" id="L449">      final File file = new File(currentFile);</span>
-<span class="nc bnc" id="L450" title="All 2 branches missed.">      if (file.canRead()) {</span>
+<span class="nc bnc" id="L450" title="All 2 branches missed.">      if (canRead(file)) {</span>
 <span class="nc" id="L451">        return file.length();</span>
       } else {
 <span class="nc" id="L453">        return -1;</span>
@@ -481,7 +481,7 @@ public class R66File extends FilesystemBasedFileImpl {
 <span class="nc" id="L481">      return false;</span>
     }
 <span class="nc" id="L483">    final File file = getTrueFile();</span>
-<span class="nc bnc" id="L484" title="All 2 branches missed.">    if (file.canRead()) {</span>
+<span class="nc bnc" id="L484" title="All 2 branches missed.">    if (canRead(file)) {</span>
 <span class="nc" id="L485">      File newFile = getFileFromPath(path);</span>
 <span class="nc" id="L486">      File parentFile = newFile.getParentFile();</span>
 <span class="nc bnc" id="L487" title="All 2 branches missed.">      if (parentFile == null) {</span>
@@ -546,7 +546,7 @@ public class R66File extends FilesystemBasedFileImpl {
 <span class="nc" id="L546">      return false;</span>
     }
 <span class="nc" id="L548">    final File file = getTrueFile();</span>
-<span class="nc bnc" id="L549" title="All 2 branches missed.">    if (file.canRead()) {</span>
+<span class="nc bnc" id="L549" title="All 2 branches missed.">    if (canRead(file)) {</span>
 <span class="nc" id="L550">      File newFile = new File(path);</span>
 <span class="nc" id="L551">      File parentFile = newFile.getParentFile();</span>
 <span class="nc bnc" id="L552" title="All 2 branches missed.">      if (parentFile == null) {</span>

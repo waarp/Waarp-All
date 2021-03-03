@@ -2567,7 +2567,7 @@ public class DbTaskRunner extends AbstractDbDataDao&lt;Transfer&gt; {
    * @return True if this runner is finished, either in success or in error
    */
   public boolean isFinished() {
-<span class="pc bpc" id="L2570" title="1 of 4 branches missed.">    return isAllDone() || isInError();</span>
+<span class="fc bfc" id="L2570" title="All 4 branches covered.">    return isAllDone() || isInError();</span>
   }
 
   /**
@@ -2575,7 +2575,7 @@ public class DbTaskRunner extends AbstractDbDataDao&lt;Transfer&gt; {
    */
   public boolean isInError() {
 <span class="fc bfc" id="L2577" title="All 2 branches covered.">    return pojo.getGlobalStep() == Transfer.TASKSTEP.ERRORTASK &amp;&amp;</span>
-<span class="pc bpc" id="L2578" title="1 of 2 branches missed.">           pojo.getStepStatus() != ErrorCode.Running;</span>
+<span class="fc bfc" id="L2578" title="All 2 branches covered.">           pojo.getStepStatus() != ErrorCode.Running;</span>
   }
 
   /**
@@ -2749,10 +2749,10 @@ public class DbTaskRunner extends AbstractDbDataDao&lt;Transfer&gt; {
 <span class="nc" id="L2749">      throw new OpenR66RunnerEndTasksException(&quot;No tasks!&quot;);</span>
     }
 <span class="fc" id="L2751">    R66Session tempSession = session;</span>
-<span class="pc bpc" id="L2752" title="1 of 2 branches missed.">    if (tempSession == null) {</span>
-<span class="nc" id="L2753">      tempSession = new R66Session();</span>
-<span class="nc bnc" id="L2754" title="All 2 branches missed.">      if (tempSession.getRunner() == null) {</span>
-<span class="nc" id="L2755">        tempSession.setNoSessionRunner(this, localChannelReference);</span>
+<span class="fc bfc" id="L2752" title="All 2 branches covered.">    if (tempSession == null) {</span>
+<span class="fc" id="L2753">      tempSession = new R66Session();</span>
+<span class="pc bpc" id="L2754" title="1 of 2 branches missed.">      if (tempSession.getRunner() == null) {</span>
+<span class="fc" id="L2755">        tempSession.setNoSessionRunner(this, localChannelReference);</span>
       }
     } else {
 <span class="pc bpc" id="L2758" title="1 of 2 branches missed.">      if (tempSession.getRunner() == null) {</span>
@@ -2773,7 +2773,7 @@ public class DbTaskRunner extends AbstractDbDataDao&lt;Transfer&gt; {
 <span class="fc" id="L2773">    NetworkServerHandler nsh = null;</span>
 <span class="pc bpc" id="L2774" title="1 of 2 branches missed.">    if (lcr != null) {</span>
 <span class="fc" id="L2775">      nsh = lcr.getNetworkServerHandler();</span>
-<span class="pc bpc" id="L2776" title="1 of 2 branches missed.">      if (nsh != null) {</span>
+<span class="fc bfc" id="L2776" title="All 2 branches covered.">      if (nsh != null) {</span>
 <span class="fc" id="L2777">        nsh.resetKeepAlive();</span>
       }
     }
@@ -2782,7 +2782,7 @@ public class DbTaskRunner extends AbstractDbDataDao&lt;Transfer&gt; {
 <span class="fc" id="L2782">    task.run();</span>
 <span class="fc" id="L2783">    task.getFutureCompletion().awaitOrInterruptible();</span>
     // Possible long task
-<span class="pc bpc" id="L2785" title="1 of 2 branches missed.">    if (nsh != null) {</span>
+<span class="fc bfc" id="L2785" title="All 2 branches covered.">    if (nsh != null) {</span>
 <span class="fc" id="L2786">      nsh.resetKeepAlive();</span>
     }
 <span class="pc bpc" id="L2788" title="1 of 2 branches missed.">    if (task.getType() == TaskType.RESCHEDULE) {</span>
@@ -2875,8 +2875,8 @@ public class DbTaskRunner extends AbstractDbDataDao&lt;Transfer&gt; {
         }
       case ERRORTASK:
         try {
-<span class="pc bpc" id="L2878" title="1 of 2 branches missed.">          if (isSender()) {</span>
-<span class="nc" id="L2879">            return runNextTask(rule.getSerrorTasksArray());</span>
+<span class="fc bfc" id="L2878" title="All 2 branches covered.">          if (isSender()) {</span>
+<span class="fc" id="L2879">            return runNextTask(rule.getSerrorTasksArray());</span>
           } else {
 <span class="fc" id="L2881">            return runNextTask(rule.getRerrorTasksArray());</span>
           }
@@ -2983,7 +2983,7 @@ public class DbTaskRunner extends AbstractDbDataDao&lt;Transfer&gt; {
 <span class="fc" id="L2983">      logger</span>
 <span class="fc" id="L2984">          .debug(&quot;ContinueTransfer: {} status:{}:{}&quot;, continueTransfer, status,</span>
                  finalValue);
-<span class="pc bpc" id="L2986" title="1 of 2 branches missed.">      if (finalValue.getException() == null) {</span>
+<span class="fc bfc" id="L2986" title="All 2 branches covered.">      if (finalValue.getException() == null) {</span>
 <span class="fc" id="L2987">        finalValue.setException(new OpenR66RunnerException(&quot;Trace for error&quot;));</span>
       }
 <span class="fc" id="L2989">      errorTransfer(finalValue, file, localChannelReference);</span>
@@ -3073,7 +3073,7 @@ public class DbTaskRunner extends AbstractDbDataDao&lt;Transfer&gt; {
                              poststep == 0)) {
 <span class="fc" id="L3074">      resultFileMove(localChannelReference, file, error);</span>
       // check if necessary once more the hash
-<span class="pc bpc" id="L3076" title="1 of 2 branches missed.">      if (Configuration.configuration.isLocalDigest()) {</span>
+<span class="fc bfc" id="L3076" title="All 2 branches covered.">      if (Configuration.configuration.isLocalDigest()) {</span>
 <span class="fc" id="L3077">        String hash = null;</span>
 <span class="pc bpc" id="L3078" title="1 of 2 branches missed.">        if (localChannelReference != null &amp;&amp;</span>
 <span class="pc bpc" id="L3079" title="1 of 2 branches missed.">            !localChannelReference.isPartialHash() &amp;&amp;</span>
@@ -3209,8 +3209,8 @@ public class DbTaskRunner extends AbstractDbDataDao&lt;Transfer&gt; {
 <span class="nc" id="L3209">      finalValue.setAnswered(true);</span>
     }
 <span class="fc" id="L3211">    logger.debug(&quot;status: {} wasNotError:{}:{}&quot;, getStatus(),</span>
-<span class="pc bpc" id="L3212" title="1 of 2 branches missed.">                 getGlobalStep() != TASKSTEP.ERRORTASK, finalValue);</span>
-<span class="pc bpc" id="L3213" title="1 of 2 branches missed.">    if (getGlobalStep() != TASKSTEP.ERRORTASK) {</span>
+<span class="fc bfc" id="L3212" title="All 2 branches covered.">                 getGlobalStep() != TASKSTEP.ERRORTASK, finalValue);</span>
+<span class="fc bfc" id="L3213" title="All 2 branches covered.">    if (getGlobalStep() != TASKSTEP.ERRORTASK) {</span>
       // errorstep was not already executed
       // real error
 <span class="pc bpc" id="L3216" title="1 of 2 branches missed.">      if (localChannelReference != null) {</span>
@@ -3218,20 +3218,20 @@ public class DbTaskRunner extends AbstractDbDataDao&lt;Transfer&gt; {
 <span class="fc" id="L3218">            .setErrorMessage(finalValue.getMessage(), finalValue.getCode());</span>
       }
       // First send error mesg
-<span class="pc bpc" id="L3221" title="3 of 4 branches missed.">      if (!finalValue.isAnswered() &amp;&amp; localChannelReference != null) {</span>
-<span class="nc" id="L3222">        localChannelReference.sessionNewState(R66FiniteDualStates.ERROR);</span>
-<span class="nc" id="L3223">        final ErrorPacket errorPacket = new ErrorPacket(finalValue.getMessage(),</span>
-<span class="nc" id="L3224">                                                        finalValue.getCode()</span>
-<span class="nc" id="L3225">                                                                  .getCode(),</span>
+<span class="pc bpc" id="L3221" title="1 of 4 branches missed.">      if (!finalValue.isAnswered() &amp;&amp; localChannelReference != null) {</span>
+<span class="fc" id="L3222">        localChannelReference.sessionNewState(R66FiniteDualStates.ERROR);</span>
+<span class="fc" id="L3223">        final ErrorPacket errorPacket = new ErrorPacket(finalValue.getMessage(),</span>
+<span class="fc" id="L3224">                                                        finalValue.getCode()</span>
+<span class="fc" id="L3225">                                                                  .getCode(),</span>
                                                         ErrorPacket.FORWARDCLOSECODE);
         try {
-<span class="nc" id="L3228">          ChannelUtils</span>
-<span class="nc" id="L3229">              .writeAbstractLocalPacket(localChannelReference, errorPacket,</span>
+<span class="fc" id="L3228">          ChannelUtils</span>
+<span class="fc" id="L3229">              .writeAbstractLocalPacket(localChannelReference, errorPacket,</span>
                                         true);
-<span class="nc" id="L3231">          finalValue.setAnswered(true);</span>
+<span class="fc" id="L3231">          finalValue.setAnswered(true);</span>
 <span class="nc" id="L3232">        } catch (final OpenR66ProtocolPacketException e1) {</span>
           // should not be
-<span class="nc" id="L3234">        }</span>
+<span class="fc" id="L3234">        }</span>
       }
       // now run error task
 <span class="fc" id="L3237">      setErrorTask();</span>
@@ -3326,7 +3326,7 @@ public class DbTaskRunner extends AbstractDbDataDao&lt;Transfer&gt; {
    * Delete the temporary empty file (retrieved file at rank 0)
    */
   public void deleteTempFile() {
-<span class="pc bpc" id="L3329" title="1 of 4 branches missed.">    if (!isSender() &amp;&amp; getRank() == 0) {</span>
+<span class="fc bfc" id="L3329" title="All 4 branches covered.">    if (!isSender() &amp;&amp; getRank() == 0) {</span>
       try {
 <span class="pc bpc" id="L3331" title="1 of 2 branches missed.">        if (session != null) {</span>
 <span class="fc" id="L3332">          final R66File file = session.getFile();</span>

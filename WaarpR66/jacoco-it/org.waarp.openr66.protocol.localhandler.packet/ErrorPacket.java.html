@@ -80,44 +80,44 @@ public class ErrorPacket extends AbstractLocalPacket {
    * @param middle
    * @param code
    */
-<span class="nc" id="L83">  public ErrorPacket(final String header, final String middle, final int code) {</span>
-<span class="nc" id="L84">    sheader = header;</span>
-<span class="nc" id="L85">    smiddle = middle;</span>
-<span class="nc" id="L86">    this.code = code;</span>
-<span class="nc" id="L87">  }</span>
+<span class="fc" id="L83">  public ErrorPacket(final String header, final String middle, final int code) {</span>
+<span class="fc" id="L84">    sheader = header;</span>
+<span class="fc" id="L85">    smiddle = middle;</span>
+<span class="fc" id="L86">    this.code = code;</span>
+<span class="fc" id="L87">  }</span>
 
   @Override
   public boolean hasGlobalBuffer() {
-<span class="nc" id="L91">    return true;</span>
+<span class="fc" id="L91">    return true;</span>
   }
 
   @Override
   public void createAllBuffers(final LocalChannelReference lcr,
                                final int networkHeader) {
-<span class="nc bnc" id="L97" title="All 2 branches missed.">    final byte[] headerBytes =</span>
-<span class="nc" id="L98">        sheader != null? sheader.getBytes() : EMPTY_ARRAY;</span>
-<span class="nc" id="L99">    final int headerSize = headerBytes.length;</span>
-<span class="nc bnc" id="L100" title="All 2 branches missed.">    final byte[] middleBytes =</span>
-<span class="nc" id="L101">        smiddle != null? smiddle.getBytes() : EMPTY_ARRAY;</span>
-<span class="nc" id="L102">    final int middleSize = middleBytes.length;</span>
-<span class="nc" id="L103">    final int endSize = 4;</span>
-<span class="nc" id="L104">    final int globalSize =</span>
+<span class="pc bpc" id="L97" title="1 of 2 branches missed.">    final byte[] headerBytes =</span>
+<span class="pc" id="L98">        sheader != null? sheader.getBytes() : EMPTY_ARRAY;</span>
+<span class="fc" id="L99">    final int headerSize = headerBytes.length;</span>
+<span class="pc bpc" id="L100" title="1 of 2 branches missed.">    final byte[] middleBytes =</span>
+<span class="pc" id="L101">        smiddle != null? smiddle.getBytes() : EMPTY_ARRAY;</span>
+<span class="fc" id="L102">    final int middleSize = middleBytes.length;</span>
+<span class="fc" id="L103">    final int endSize = 4;</span>
+<span class="fc" id="L104">    final int globalSize =</span>
         networkHeader + LOCAL_HEADER_SIZE + headerSize + middleSize + endSize;
-<span class="nc" id="L106">    int offset = networkHeader + LOCAL_HEADER_SIZE;</span>
-<span class="nc" id="L107">    global = ByteBufAllocator.DEFAULT.buffer(globalSize, globalSize);</span>
-<span class="nc" id="L108">    header = WaarpNettyUtil.slice(global, offset, headerSize);</span>
-<span class="nc bnc" id="L109" title="All 2 branches missed.">    if (sheader != null) {</span>
-<span class="nc" id="L110">      header.writeBytes(headerBytes);</span>
+<span class="fc" id="L106">    int offset = networkHeader + LOCAL_HEADER_SIZE;</span>
+<span class="fc" id="L107">    global = ByteBufAllocator.DEFAULT.buffer(globalSize, globalSize);</span>
+<span class="fc" id="L108">    header = WaarpNettyUtil.slice(global, offset, headerSize);</span>
+<span class="pc bpc" id="L109" title="1 of 2 branches missed.">    if (sheader != null) {</span>
+<span class="fc" id="L110">      header.writeBytes(headerBytes);</span>
     }
-<span class="nc" id="L112">    offset += headerSize;</span>
-<span class="nc" id="L113">    middle = WaarpNettyUtil.slice(global, offset, middleSize);</span>
-<span class="nc bnc" id="L114" title="All 2 branches missed.">    if (smiddle != null) {</span>
-<span class="nc" id="L115">      middle.writeBytes(middleBytes);</span>
+<span class="fc" id="L112">    offset += headerSize;</span>
+<span class="fc" id="L113">    middle = WaarpNettyUtil.slice(global, offset, middleSize);</span>
+<span class="pc bpc" id="L114" title="1 of 2 branches missed.">    if (smiddle != null) {</span>
+<span class="fc" id="L115">      middle.writeBytes(middleBytes);</span>
     }
-<span class="nc" id="L117">    offset += middleSize;</span>
-<span class="nc" id="L118">    end = WaarpNettyUtil.slice(global, offset, endSize);</span>
-<span class="nc" id="L119">    end.writeInt(code);</span>
-<span class="nc" id="L120">  }</span>
+<span class="fc" id="L117">    offset += middleSize;</span>
+<span class="fc" id="L118">    end = WaarpNettyUtil.slice(global, offset, endSize);</span>
+<span class="fc" id="L119">    end.writeInt(code);</span>
+<span class="fc" id="L120">  }</span>
 
   @Override
   public String toString() {
@@ -126,7 +126,7 @@ public class ErrorPacket extends AbstractLocalPacket {
 
   @Override
   public byte getType() {
-<span class="nc" id="L129">    return LocalPacketFactory.ERRORPACKET;</span>
+<span class="fc" id="L129">    return LocalPacketFactory.ERRORPACKET;</span>
   }
 
   /**
@@ -147,7 +147,7 @@ public class ErrorPacket extends AbstractLocalPacket {
    * @return the code
    */
   public int getCode() {
-<span class="nc" id="L150">    return code;</span>
+<span class="fc" id="L150">    return code;</span>
   }
 
 }

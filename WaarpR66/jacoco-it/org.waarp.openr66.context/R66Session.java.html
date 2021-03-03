@@ -261,21 +261,21 @@ public class R66Session implements SessionInterface {
 
   public void partialClear() {
     // First check if a transfer was on going
-<span class="pc bpc" id="L264" title="3 of 6 branches missed.">    if (runner != null &amp;&amp; !runner.isFinished() &amp;&amp; !runner.continueTransfer()) {</span>
-<span class="nc bnc" id="L265" title="All 2 branches missed.">      if (localChannelReference != null) {</span>
-<span class="nc bnc" id="L266" title="All 2 branches missed.">        if (!localChannelReference.getFutureRequest().isDone()) {</span>
-<span class="nc" id="L267">          final R66Result result = new R66Result(</span>
+<span class="fc bfc" id="L264" title="All 6 branches covered.">    if (runner != null &amp;&amp; !runner.isFinished() &amp;&amp; !runner.continueTransfer()) {</span>
+<span class="pc bpc" id="L265" title="1 of 2 branches missed.">      if (localChannelReference != null) {</span>
+<span class="pc bpc" id="L266" title="1 of 2 branches missed.">        if (!localChannelReference.getFutureRequest().isDone()) {</span>
+<span class="fc" id="L267">          final R66Result result = new R66Result(</span>
               new OpenR66RunnerErrorException(&quot;Close before ending&quot;), this,
               true, ErrorCode.Disconnection,
               runner);// True since called from closed
-<span class="nc" id="L271">          result.setRunner(runner);</span>
+<span class="fc" id="L271">          result.setRunner(runner);</span>
           try {
-<span class="nc" id="L273">            setFinalizeTransfer(false, result);</span>
+<span class="fc" id="L273">            setFinalizeTransfer(false, result);</span>
 <span class="nc" id="L274">          } catch (final OpenR66RunnerErrorException ignored) {</span>
             // nothing
 <span class="nc" id="L276">          } catch (final OpenR66ProtocolSystemException ignored) {</span>
             // nothing
-<span class="nc" id="L278">          }</span>
+<span class="pc" id="L278">          }</span>
         }
       }
     }
@@ -429,16 +429,16 @@ public class R66Session implements SessionInterface {
    */
   public void setNoSessionRunner(final DbTaskRunner runner,
                                  final LocalChannelReference localChannelReference) {
-<span class="nc" id="L432">    this.runner = runner;</span>
+<span class="fc" id="L432">    this.runner = runner;</span>
     // Warning: the file is not correctly setup
     try {
 <span class="nc" id="L435">      file = (R66File) dir.setFile(this.runner.getFilename(), false);</span>
-<span class="nc" id="L436">    } catch (final CommandAbstractException ignored) {</span>
+<span class="fc" id="L436">    } catch (final CommandAbstractException ignored) {</span>
       // nothing
 <span class="nc" id="L438">    }</span>
-<span class="nc" id="L439">    auth.specialNoSessionAuth(false, Configuration.configuration.getHostId());</span>
-<span class="nc" id="L440">    this.localChannelReference = localChannelReference;</span>
-<span class="nc bnc" id="L441" title="All 2 branches missed.">    if (this.localChannelReference == null) {</span>
+<span class="fc" id="L439">    auth.specialNoSessionAuth(false, Configuration.configuration.getHostId());</span>
+<span class="fc" id="L440">    this.localChannelReference = localChannelReference;</span>
+<span class="pc bpc" id="L441" title="1 of 2 branches missed.">    if (this.localChannelReference == null) {</span>
 <span class="nc bnc" id="L442" title="All 2 branches missed.">      if (this.runner.getLocalChannelReference() != null) {</span>
 <span class="nc" id="L443">        this.localChannelReference = this.runner.getLocalChannelReference();</span>
       } else {
@@ -448,9 +448,9 @@ public class R66Session implements SessionInterface {
 <span class="nc" id="L448">          .setErrorMessage(this.runner.getErrorInfo().getMesg(),</span>
 <span class="nc" id="L449">                           this.runner.getErrorInfo());</span>
     }
-<span class="nc" id="L451">    runner.setLocalChannelReference(this.localChannelReference);</span>
-<span class="nc" id="L452">    this.localChannelReference.setSession(this);</span>
-<span class="nc" id="L453">  }</span>
+<span class="fc" id="L451">    runner.setLocalChannelReference(this.localChannelReference);</span>
+<span class="fc" id="L452">    this.localChannelReference.setSession(this);</span>
+<span class="fc" id="L453">  }</span>
 
   /**
    * Set the File from the runner before PRE operation are done
@@ -1147,9 +1147,9 @@ public class R66Session implements SessionInterface {
 <span class="fc bfc" id="L1147" title="All 2 branches covered.">    if (getLocalChannelReference().getFutureRequest().isDone()) {</span>
 <span class="fc" id="L1148">      return;</span>
     }
-<span class="pc bpc" id="L1150" title="1 of 2 branches missed.">    if (runner == null) {</span>
-<span class="nc" id="L1151">      localChannelReference.invalidateRequest(errorValue);</span>
-<span class="nc" id="L1152">      return;</span>
+<span class="fc bfc" id="L1150" title="All 2 branches covered.">    if (runner == null) {</span>
+<span class="fc" id="L1151">      localChannelReference.invalidateRequest(errorValue);</span>
+<span class="fc" id="L1152">      return;</span>
     }
     // do the real end
 <span class="pc bpc" id="L1155" title="1 of 2 branches missed.">    if (runner.getStatus() == ErrorCode.CompleteOk) {</span>
@@ -1205,7 +1205,7 @@ public class R66Session implements SessionInterface {
   public String toString() {
 <span class="pc bpc" id="L1206" title="1 of 2 branches missed.">    return &quot;Session: FS[&quot; + state.getCurrent() + &quot;] &quot; + status + &quot;  &quot; +</span>
 <span class="pc bpc" id="L1207" title="1 of 2 branches missed.">           (auth != null? auth.toString() : &quot;no Auth&quot;) + &quot;     &quot; +</span>
-<span class="pc bpc" id="L1208" title="1 of 2 branches missed.">           (dir != null? dir.toString() : &quot;no Dir&quot;) + &quot;     &quot; +</span>
+<span class="pc bfc" id="L1208" title="All 2 branches covered.">           (dir != null? dir.toString() : &quot;no Dir&quot;) + &quot;     &quot; +</span>
 <span class="pc bpc" id="L1209" title="1 of 2 branches missed.">           (file != null? file.toString() : &quot;no File&quot;) + &quot;     &quot; +</span>
 <span class="pc" id="L1210">           (runner != null? runner.toShortString() : &quot;no Runner&quot;);</span>
   }

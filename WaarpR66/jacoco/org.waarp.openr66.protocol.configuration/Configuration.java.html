@@ -544,7 +544,7 @@ public class Configuration {
   /**
    * Maximum number of concurrent active transfer by submission.
    */
-<span class="fc" id="L547">  private int runnerThread = 1000;</span>
+<span class="fc" id="L547">  private int runnerThread = Commander.LIMIT_SUBMIT;</span>
   /**
    * Delay in ms between two steps of Commander
    */
@@ -1352,7 +1352,7 @@ public class Configuration {
   }
 
   public boolean isTimerCloseReady() {
-<span class="fc bfc" id="L1355" title="All 2 branches covered.">    return !timerCloseClosed.get();</span>
+<span class="pc bpc" id="L1355" title="1 of 2 branches missed.">    return !timerCloseClosed.get();</span>
   }
 
   /**
@@ -2277,10 +2277,10 @@ public class Configuration {
    * @param runnerTHREAD the rUNNER_THREAD to set
    */
   public void setRunnerThread(final int runnerTHREAD) {
-<span class="pc bpc" id="L2280" title="1 of 2 branches missed.">    if (runnerTHREAD &gt; Commander.LIMIT_SUBMIT) {</span>
+<span class="pc bpc" id="L2280" title="1 of 2 branches missed.">    if (runnerTHREAD &gt; Commander.LIMIT_MAX_SUBMIT) {</span>
 <span class="nc" id="L2281">      logger.warn(&quot;RunnerThread at {} will be limited to default maximum {}&quot;,</span>
-<span class="nc" id="L2282">                  runnerTHREAD, Commander.LIMIT_SUBMIT);</span>
-<span class="nc" id="L2283">      runnerThread = Commander.LIMIT_SUBMIT;</span>
+<span class="nc" id="L2282">                  runnerTHREAD, Commander.LIMIT_MAX_SUBMIT);</span>
+<span class="nc" id="L2283">      runnerThread = Commander.LIMIT_MAX_SUBMIT;</span>
     } else {
 <span class="pc bpc" id="L2285" title="1 of 2 branches missed.">      runnerThread = runnerTHREAD &lt;= 1? 2 : runnerTHREAD;</span>
     }

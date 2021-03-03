@@ -209,12 +209,12 @@ public class NetworkServerHandler
     }
 <span class="fc bfc" id="L210" title="All 2 branches covered.">    if (evt instanceof IdleStateEvent) {</span>
 <span class="pc bpc" id="L211" title="1 of 2 branches missed.">      if (networkChannelReference != null &amp;&amp; networkChannelReference</span>
-<span class="fc bfc" id="L212" title="All 2 branches covered.">                                                 .checkLastTime(</span>
+<span class="pc bpc" id="L212" title="1 of 2 branches missed.">                                                 .checkLastTime(</span>
                                                      Configuration.configuration
 <span class="fc" id="L214">                                                         .getTimeoutCon() *</span>
                                                      2) &lt;= 0) {
-<span class="fc" id="L216">        resetKeepAlive();</span>
-<span class="fc" id="L217">        return;</span>
+<span class="nc" id="L216">        resetKeepAlive();</span>
+<span class="nc" id="L217">        return;</span>
       }
 <span class="pc bpc" id="L219" title="1 of 2 branches missed.">      if (keepAlivedSent.get() &gt; 0) {</span>
 <span class="nc bnc" id="L220" title="All 2 branches missed.">        final int nbLocalChannels = networkChannelReference != null?</span>
@@ -425,15 +425,15 @@ public class NetworkServerHandler
   @Override
   public void exceptionCaught(final ChannelHandlerContext ctx,
                               final Throwable cause) {
-<span class="fc" id="L428">    final Channel channel = ctx.channel();</span>
-<span class="pc bpc" id="L429" title="1 of 2 branches missed.">    if (isBlackListed) {</span>
+<span class="nc" id="L428">    final Channel channel = ctx.channel();</span>
+<span class="nc bnc" id="L429" title="All 2 branches missed.">    if (isBlackListed) {</span>
 <span class="nc" id="L430">      logger.info(&quot;While partner is blacklisted, Network Channel Exception: {}&quot;,</span>
 <span class="nc" id="L431">                  channel.id(), cause.getClass().getName() + &quot; : &quot; + cause);</span>
       // ignore
 <span class="nc" id="L433">      return;</span>
     }
-<span class="fc" id="L435">    logger.debug(&quot;Network Channel Exception: {}&quot;, channel.id(), cause);</span>
-<span class="pc bpc" id="L436" title="1 of 2 branches missed.">    if (cause instanceof ReadTimeoutException) {</span>
+<span class="nc" id="L435">    logger.debug(&quot;Network Channel Exception: {}&quot;, channel.id(), cause);</span>
+<span class="nc bnc" id="L436" title="All 2 branches missed.">    if (cause instanceof ReadTimeoutException) {</span>
 <span class="nc" id="L437">      final ReadTimeoutException exception = (ReadTimeoutException) cause;</span>
       // No read for too long
 <span class="nc" id="L439">      logger.error(&quot;ReadTimeout so Will close NETWORK channel {}&quot;,</span>
@@ -442,25 +442,25 @@ public class NetworkServerHandler
 <span class="nc" id="L442">      ChannelCloseTimer.closeFutureChannel(channel);</span>
 <span class="nc" id="L443">      return;</span>
     }
-<span class="pc bpc" id="L445" title="1 of 2 branches missed.">    if (cause instanceof BindException) {</span>
+<span class="nc bnc" id="L445" title="All 2 branches missed.">    if (cause instanceof BindException) {</span>
       // received when not yet connected
 <span class="nc" id="L447">      logger.debug(&quot;BindException&quot;);</span>
 <span class="nc" id="L448">      ChannelCloseTimer.closeFutureChannel(channel);</span>
 <span class="nc" id="L449">      return;</span>
     }
-<span class="fc" id="L451">    final OpenR66Exception exception = OpenR66ExceptionTrappedFactory</span>
-<span class="fc" id="L452">        .getExceptionFromTrappedException(channel, cause);</span>
-<span class="pc bpc" id="L453" title="1 of 2 branches missed.">    if (exception != null) {</span>
-<span class="pc bpc" id="L454" title="1 of 2 branches missed.">      if (exception instanceof OpenR66ProtocolBusinessNoWriteBackException) {</span>
-<span class="pc bpc" id="L455" title="1 of 2 branches missed.">        if (networkChannelReference != null &amp;&amp;</span>
-<span class="pc bpc" id="L456" title="1 of 2 branches missed.">            networkChannelReference.nbLocalChannels() &gt; 0) {</span>
+<span class="nc" id="L451">    final OpenR66Exception exception = OpenR66ExceptionTrappedFactory</span>
+<span class="nc" id="L452">        .getExceptionFromTrappedException(channel, cause);</span>
+<span class="nc bnc" id="L453" title="All 2 branches missed.">    if (exception != null) {</span>
+<span class="nc bnc" id="L454" title="All 2 branches missed.">      if (exception instanceof OpenR66ProtocolBusinessNoWriteBackException) {</span>
+<span class="nc bnc" id="L455" title="All 2 branches missed.">        if (networkChannelReference != null &amp;&amp;</span>
+<span class="nc bnc" id="L456" title="All 2 branches missed.">            networkChannelReference.nbLocalChannels() &gt; 0) {</span>
 <span class="nc" id="L457">          logger.info(&quot;Network Channel Exception: {} {}&quot;, channel.id(),</span>
 <span class="nc" id="L458">                      exception.getClass().getName() + &quot; : &quot; +</span>
 <span class="nc" id="L459">                      exception.getMessage());</span>
         }
-<span class="fc" id="L461">        logger.debug(&quot;Will close NETWORK channel&quot;);</span>
-<span class="fc" id="L462">        ChannelCloseTimer.closeFutureChannel(channel);</span>
-<span class="fc" id="L463">        return;</span>
+<span class="nc" id="L461">        logger.debug(&quot;Will close NETWORK channel&quot;);</span>
+<span class="nc" id="L462">        ChannelCloseTimer.closeFutureChannel(channel);</span>
+<span class="nc" id="L463">        return;</span>
 <span class="nc bnc" id="L464" title="All 2 branches missed.">      } else if (exception instanceof OpenR66ProtocolNoConnectionException) {</span>
 <span class="nc" id="L465">        logger.info(&quot;Connection impossible with NETWORK channel {}&quot;,</span>
 <span class="nc" id="L466">                    exception.getClass().getName() + &quot; : &quot; +</span>

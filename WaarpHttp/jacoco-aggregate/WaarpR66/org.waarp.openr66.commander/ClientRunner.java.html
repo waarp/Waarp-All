@@ -203,22 +203,22 @@ public class ClientRunner extends Thread {
 <span class="nc" id="L203">        logger.error(&quot;Runner Error: {} {}&quot;, e.getMessage(),</span>
 <span class="nc" id="L204">                     taskRunner.toShortString());</span>
 <span class="nc" id="L205">        return;</span>
-<span class="nc" id="L206">      } catch (final OpenR66ProtocolNoConnectionException e) {</span>
-<span class="nc" id="L207">        logger.error(&quot;No connection Error {}&quot;, e.getMessage());</span>
-<span class="nc bnc" id="L208" title="All 2 branches missed.">        if (localChannelReference != null) {</span>
+<span class="fc" id="L206">      } catch (final OpenR66ProtocolNoConnectionException e) {</span>
+<span class="fc" id="L207">        logger.error(&quot;No connection Error {}&quot;, e.getMessage());</span>
+<span class="pc bpc" id="L208" title="1 of 2 branches missed.">        if (localChannelReference != null) {</span>
 <span class="nc" id="L209">          localChannelReference</span>
 <span class="nc" id="L210">              .setErrorMessage(ErrorCode.ConnectionImpossible.getMesg(),</span>
                                ErrorCode.ConnectionImpossible);
         }
-<span class="nc" id="L213">        taskRunner.setErrorTask();</span>
+<span class="fc" id="L213">        taskRunner.setErrorTask();</span>
         try {
-<span class="nc" id="L215">          taskRunner.forceSaveStatus();</span>
-<span class="nc" id="L216">          taskRunner.run();</span>
+<span class="fc" id="L215">          taskRunner.forceSaveStatus();</span>
+<span class="fc" id="L216">          taskRunner.run();</span>
 <span class="nc" id="L217">        } catch (final OpenR66RunnerErrorException e1) {</span>
 <span class="nc" id="L218">          changeUpdatedInfo(UpdatedInfo.INERROR, ErrorCode.ConnectionImpossible,</span>
                             true);
-<span class="nc" id="L220">        }</span>
-<span class="nc" id="L221">        return;</span>
+<span class="fc" id="L220">        }</span>
+<span class="fc" id="L221">        return;</span>
 <span class="nc" id="L222">      } catch (final OpenR66ProtocolPacketException e) {</span>
 <span class="nc" id="L223">        logger.error(&quot;Protocol Error&quot;, e);</span>
 <span class="nc" id="L224">        return;</span>
@@ -316,7 +316,7 @@ public class ClientRunner extends Thread {
 <span class="fc bfc" id="L316" title="All 2 branches covered.">    if (localChannelReference.getFutureValidRequest().isSuccess()) {</span>
 <span class="fc" id="L317">      return finishTransfer(localChannelReference);</span>
 <span class="fc" id="L318">    } else if (</span>
-<span class="pc bpc" id="L319" title="1 of 2 branches missed.">        localChannelReference.getFutureValidRequest().getResult() != null &amp;&amp;</span>
+<span class="fc bfc" id="L319" title="All 2 branches covered.">        localChannelReference.getFutureValidRequest().getResult() != null &amp;&amp;</span>
 <span class="pc bpc" id="L320" title="1 of 2 branches missed.">        localChannelReference.getFutureValidRequest().getResult().getCode() ==</span>
         ErrorCode.ServerOverloaded) {
 <span class="nc" id="L322">      return tryAgainTransferOnOverloaded(true, localChannelReference);</span>
@@ -534,10 +534,10 @@ public class ClientRunner extends Thread {
 <span class="fc" id="L534">          .createConnectionWithRetryWithAuthenticationException(socketAddress,</span>
                                                                 isSSL,
                                                                 futureRequest);
-<span class="nc" id="L537">    } catch (final OpenR66ProtocolNotAuthenticatedException e1) {</span>
-<span class="nc" id="L538">      changeUpdatedInfo(UpdatedInfo.INERROR, ErrorCode.BadAuthent, true);</span>
-<span class="nc" id="L539">      taskRunner.setLocalChannelReference(new LocalChannelReference());</span>
-<span class="nc" id="L540">      throw new OpenR66ProtocolNoConnectionException(</span>
+<span class="fc" id="L537">    } catch (final OpenR66ProtocolNotAuthenticatedException e1) {</span>
+<span class="fc" id="L538">      changeUpdatedInfo(UpdatedInfo.INERROR, ErrorCode.BadAuthent, true);</span>
+<span class="fc" id="L539">      taskRunner.setLocalChannelReference(new LocalChannelReference());</span>
+<span class="fc" id="L540">      throw new OpenR66ProtocolNoConnectionException(</span>
           CANNOT_CONNECT_TO_SERVER + host +
           &quot; cannot be authenticated so stop retry here&quot;, e1);
 <span class="fc" id="L543">    }</span>

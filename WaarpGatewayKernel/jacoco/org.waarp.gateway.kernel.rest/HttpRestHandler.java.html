@@ -382,19 +382,19 @@ public abstract class HttpRestHandler
 <span class="fc" id="L382">    final String uri = arguments.getBaseUri();</span>
 <span class="fc" id="L383">    boolean restFound = false;</span>
 <span class="fc" id="L384">    RestMethodHandler handlerNew = restHashMap.get(uri);</span>
-<span class="pc bpc" id="L385" title="1 of 2 branches missed.">    if (handlerNew != null) {</span>
+<span class="fc bfc" id="L385" title="All 2 branches covered.">    if (handlerNew != null) {</span>
 <span class="fc" id="L386">      handlerNew.checkHandlerSessionCorrectness(this, arguments, response);</span>
 <span class="pc bpc" id="L387" title="1 of 2 branches missed.">      if (handlerNew.isMethodIncluded(method)) {</span>
 <span class="fc" id="L388">        restFound = true;</span>
       }
     }
-<span class="pc bpc" id="L391" title="3 of 4 branches missed.">    if (handlerNew == null &amp;&amp; method == METHOD.OPTIONS) {</span>
+<span class="pc bpc" id="L391" title="1 of 4 branches missed.">    if (handlerNew == null &amp;&amp; method == METHOD.OPTIONS) {</span>
 <span class="nc" id="L392">      handlerNew = rootHandler;</span>
       // use Options default handler
 <span class="nc" id="L394">      restFound = true;</span>
     }
-<span class="pc bpc" id="L396" title="1 of 2 branches missed.">    if (!restFound) {</span>
-<span class="nc" id="L397">      throw new HttpMethodNotAllowedRequestException(</span>
+<span class="fc bfc" id="L396" title="All 2 branches covered.">    if (!restFound) {</span>
+<span class="fc" id="L397">      throw new HttpMethodNotAllowedRequestException(</span>
           &quot;No Method found for that URI: &quot; + uri);
     }
 <span class="fc" id="L400">    return handlerNew;</span>
@@ -465,22 +465,22 @@ public abstract class HttpRestHandler
       } else {
 <span class="nc" id="L466">        forceClosing(ctx);</span>
       }
-<span class="nc" id="L468">    } catch (final HttpMethodNotAllowedRequestException e1) {</span>
-<span class="nc bnc" id="L469" title="All 2 branches missed.">      if (handler != null) {</span>
+<span class="fc" id="L468">    } catch (final HttpMethodNotAllowedRequestException e1) {</span>
+<span class="pc bpc" id="L469" title="1 of 2 branches missed.">      if (handler != null) {</span>
 <span class="nc" id="L470">        status =</span>
 <span class="nc" id="L471">            handler.handleException(this, arguments, response, jsonObject, e1);</span>
       }
-<span class="nc bnc" id="L473" title="All 2 branches missed.">      if (status == HttpResponseStatus.OK) {</span>
-<span class="nc" id="L474">        status = HttpResponseStatus.METHOD_NOT_ALLOWED;</span>
+<span class="pc bpc" id="L473" title="1 of 2 branches missed.">      if (status == HttpResponseStatus.OK) {</span>
+<span class="fc" id="L474">        status = HttpResponseStatus.METHOD_NOT_ALLOWED;</span>
       }
-<span class="nc" id="L476">      logger.warn(&quot;Error&quot;, e1);</span>
-<span class="nc bnc" id="L477" title="All 2 branches missed.">      if (response.getDetail().isEmpty()) {</span>
-<span class="nc" id="L478">        response.setDetail(e1.getMessage());</span>
+<span class="fc" id="L476">      logger.warn(&quot;Error&quot;, e1);</span>
+<span class="pc bpc" id="L477" title="1 of 2 branches missed.">      if (response.getDetail().isEmpty()) {</span>
+<span class="fc" id="L478">        response.setDetail(e1.getMessage());</span>
       }
-<span class="nc bnc" id="L480" title="All 2 branches missed.">      if (handler != null) {</span>
+<span class="pc bpc" id="L480" title="1 of 2 branches missed.">      if (handler != null) {</span>
 <span class="nc" id="L481">        finalizeSend(ctx);</span>
       } else {
-<span class="nc" id="L483">        forceClosing(ctx);</span>
+<span class="fc" id="L483">        forceClosing(ctx);</span>
       }
 <span class="fc" id="L485">    } catch (final HttpForbiddenRequestException e1) {</span>
 <span class="pc bpc" id="L486" title="1 of 2 branches missed.">      if (handler != null) {</span>
@@ -660,13 +660,13 @@ public abstract class HttpRestHandler
 <span class="nc" id="L660">      return httpResponse;</span>
     }
 <span class="fc" id="L662">    boolean keepAlive = HttpUtil.isKeepAlive(request);</span>
-<span class="pc bpc" id="L663" title="2 of 4 branches missed.">    setWillClose(isWillClose() || status != HttpResponseStatus.OK ||</span>
+<span class="pc bpc" id="L663" title="1 of 4 branches missed.">    setWillClose(isWillClose() || status != HttpResponseStatus.OK ||</span>
 <span class="pc bpc" id="L664" title="1 of 2 branches missed.">                 HttpHeaderValues.CLOSE.contentEqualsIgnoreCase(</span>
 <span class="fc" id="L665">                     request.headers().get(HttpHeaderNames.CONNECTION)) ||</span>
 <span class="pc bpc" id="L666" title="3 of 4 branches missed.">                 request.protocolVersion().equals(HttpVersion.HTTP_1_0) &amp;&amp;</span>
                  !keepAlive);
-<span class="pc bpc" id="L668" title="1 of 2 branches missed.">    if (isWillClose()) {</span>
-<span class="nc" id="L669">      keepAlive = false;</span>
+<span class="fc bfc" id="L668" title="All 2 branches covered.">    if (isWillClose()) {</span>
+<span class="fc" id="L669">      keepAlive = false;</span>
     }
     // Build the response object.
     final FullHttpResponse httpResponse;
@@ -680,7 +680,7 @@ public abstract class HttpRestHandler
 <span class="nc" id="L680">      httpResponse =</span>
 <span class="nc" id="L681">          new DefaultFullHttpResponse(request.protocolVersion(), status);</span>
     }
-<span class="pc bpc" id="L683" title="1 of 2 branches missed.">    if (keepAlive) {</span>
+<span class="fc bfc" id="L683" title="All 2 branches covered.">    if (keepAlive) {</span>
 <span class="fc" id="L684">      httpResponse.headers()</span>
 <span class="fc" id="L685">                  .set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);</span>
     }
@@ -738,14 +738,14 @@ public abstract class HttpRestHandler
 
   protected void finalizeSend(final ChannelHandlerContext ctx) {
     final ChannelFuture future;
-<span class="pc bpc" id="L741" title="1 of 2 branches missed.">    if (arguments.getMethod() == METHOD.OPTIONS) {</span>
+<span class="fc bfc" id="L741" title="All 2 branches covered.">    if (arguments.getMethod() == METHOD.OPTIONS) {</span>
 <span class="fc" id="L742">      future = handler.sendOptionsResponse(this, ctx, response, status);</span>
     } else {
-<span class="nc" id="L744">      future = handler</span>
-<span class="nc" id="L745">          .sendResponse(this, ctx, arguments, response, jsonObject, status);</span>
+<span class="fc" id="L744">      future = handler</span>
+<span class="fc" id="L745">          .sendResponse(this, ctx, arguments, response, jsonObject, status);</span>
     }
-<span class="pc bpc" id="L747" title="1 of 2 branches missed.">    if (future != null) {</span>
-<span class="nc" id="L748">      future.addListener(WaarpSslUtility.SSLCLOSE);</span>
+<span class="fc bfc" id="L747" title="All 2 branches covered.">    if (future != null) {</span>
+<span class="fc" id="L748">      future.addListener(WaarpSslUtility.SSLCLOSE);</span>
     }
 <span class="fc" id="L750">    clean();</span>
 <span class="fc" id="L751">    logger.debug(&quot;Cleaned&quot;);</span>
@@ -789,25 +789,25 @@ public abstract class HttpRestHandler
   @Override
   public void exceptionCaught(final ChannelHandlerContext ctx,
                               final Throwable cause) {
-<span class="pc bpc" id="L792" title="1 of 2 branches missed.">    if (ctx.channel().isActive()) {</span>
-<span class="nc bnc" id="L793" title="All 4 branches missed.">      if (cause != null &amp;&amp; cause.getMessage() != null) {</span>
-<span class="nc" id="L794">        logger.warn(&quot;Exception {}&quot;, cause.getMessage(), cause);</span>
+<span class="fc bfc" id="L792" title="All 2 branches covered.">    if (ctx.channel().isActive()) {</span>
+<span class="pc bpc" id="L793" title="2 of 4 branches missed.">      if (cause != null &amp;&amp; cause.getMessage() != null) {</span>
+<span class="fc" id="L794">        logger.warn(&quot;Exception {}&quot;, cause.getMessage(), cause);</span>
       } else {
 <span class="nc" id="L796">        logger.warn(&quot;Exception Received&quot;, cause);</span>
       }
-<span class="nc bnc" id="L798" title="All 4 branches missed.">      if (cause instanceof ClosedChannelException ||</span>
+<span class="pc bpc" id="L798" title="2 of 4 branches missed.">      if (cause instanceof ClosedChannelException ||</span>
           cause instanceof IOException) {
 <span class="nc" id="L800">        return;</span>
       }
-<span class="nc bnc" id="L802" title="All 2 branches missed.">      if (handler != null) {</span>
-<span class="nc" id="L803">        status = handler.handleException(this, arguments, response, jsonObject,</span>
+<span class="pc bpc" id="L802" title="1 of 2 branches missed.">      if (handler != null) {</span>
+<span class="fc" id="L803">        status = handler.handleException(this, arguments, response, jsonObject,</span>
                                          (Exception) cause);
       }
-<span class="nc bnc" id="L806" title="All 2 branches missed.">      if (status == HttpResponseStatus.OK) {</span>
+<span class="pc bpc" id="L806" title="1 of 2 branches missed.">      if (status == HttpResponseStatus.OK) {</span>
 <span class="nc" id="L807">        status = HttpResponseStatus.INTERNAL_SERVER_ERROR;</span>
       }
-<span class="nc bnc" id="L809" title="All 2 branches missed.">      if (handler != null) {</span>
-<span class="nc" id="L810">        finalizeSend(ctx);</span>
+<span class="pc bpc" id="L809" title="1 of 2 branches missed.">      if (handler != null) {</span>
+<span class="fc" id="L810">        finalizeSend(ctx);</span>
       } else {
 <span class="nc" id="L812">        forceClosing(ctx);</span>
       }

@@ -75,7 +75,7 @@ public class LocalChannelReference {
   /**
    * Server Actions handler
    */
-<span class="pc" id="L78">  private final TransferActions serverHandler = new TransferActions();</span>
+<span class="fc" id="L78">  private final TransferActions serverHandler = new TransferActions();</span>
 
   /**
    * Local Id
@@ -99,22 +99,22 @@ public class LocalChannelReference {
   /**
    * Future on Valid Starting Request
    */
-<span class="pc" id="L102">  private final R66Future futureValidRequest = new R66Future(true);</span>
+<span class="fc" id="L102">  private final R66Future futureValidRequest = new R66Future(true);</span>
 
   /**
    * Future on Transfer if any
    */
-<span class="pc" id="L107">  private R66Future futureEndTransfer = new R66Future(true);</span>
+<span class="fc" id="L107">  private R66Future futureEndTransfer = new R66Future(true);</span>
 
   /**
    * Future on Connection
    */
-<span class="pc" id="L112">  private final R66Future futureConnection = new R66Future(true);</span>
+<span class="fc" id="L112">  private final R66Future futureConnection = new R66Future(true);</span>
 
   /**
    * Future on Startup
    */
-<span class="pc" id="L117">  private final R66Future futureStartup = new R66Future(true);</span>
+<span class="fc" id="L117">  private final R66Future futureStartup = new R66Future(true);</span>
 
   /**
    * Session
@@ -124,12 +124,12 @@ public class LocalChannelReference {
   /**
    * Last error message
    */
-<span class="pc" id="L127">  private String errorMessage = &quot;NoError&quot;;</span>
+<span class="fc" id="L127">  private String errorMessage = &quot;NoError&quot;;</span>
 
   /**
    * Last error code
    */
-<span class="pc" id="L132">  private ErrorCode code = ErrorCode.Unknown;</span>
+<span class="fc" id="L132">  private ErrorCode code = ErrorCode.Unknown;</span>
 
   /**
    * RecvThroughHandler
@@ -192,14 +192,14 @@ public class LocalChannelReference {
   /**
    * Special empty LCR constructor
    */
-<span class="nc" id="L195">  public LocalChannelReference() {</span>
-<span class="nc" id="L196">    networkChannelRef = null;</span>
-<span class="nc" id="L197">    networkServerHandler = null;</span>
-<span class="nc" id="L198">    localId = 0;</span>
-<span class="nc" id="L199">    futureRequest = new R66Future(true);</span>
-<span class="nc" id="L200">    cts = null;</span>
-<span class="nc" id="L201">    serverHandler.localChannelReference = this;</span>
-<span class="nc" id="L202">  }</span>
+<span class="fc" id="L195">  public LocalChannelReference() {</span>
+<span class="fc" id="L196">    networkChannelRef = null;</span>
+<span class="fc" id="L197">    networkServerHandler = null;</span>
+<span class="fc" id="L198">    localId = 0;</span>
+<span class="fc" id="L199">    futureRequest = new R66Future(true);</span>
+<span class="fc" id="L200">    cts = null;</span>
+<span class="fc" id="L201">    serverHandler.localChannelReference = this;</span>
+<span class="fc" id="L202">  }</span>
 
   /**
    * Close the localChannelReference
@@ -366,13 +366,13 @@ public class LocalChannelReference {
 <span class="nc" id="L366">      return;</span>
     }
 <span class="fc" id="L368">    logger.debug(&quot;Validation of connection {}&quot;, validate);</span>
-<span class="pc bpc" id="L369" title="1 of 2 branches missed.">    if (validate) {</span>
+<span class="fc bfc" id="L369" title="All 2 branches covered.">    if (validate) {</span>
 <span class="fc" id="L370">      futureConnection.setResult(result);</span>
 <span class="fc" id="L371">      futureConnection.setSuccess();</span>
     } else {
-<span class="nc" id="L373">      futureConnection.setResult(result);</span>
-<span class="nc" id="L374">      setErrorMessage(result.getMessage(), result.getCode());</span>
-<span class="nc" id="L375">      futureConnection.cancel();</span>
+<span class="fc" id="L373">      futureConnection.setResult(result);</span>
+<span class="fc" id="L374">      setErrorMessage(result.getMessage(), result.getCode());</span>
+<span class="fc" id="L375">      futureConnection.cancel();</span>
     }
 <span class="fc" id="L377">  }</span>
 
@@ -382,7 +382,7 @@ public class LocalChannelReference {
   public R66Future getFutureValidateConnection() {
     final R66Result result;
 <span class="fc" id="L384">    final Channel channel = networkChannelRef.channel();</span>
-<span class="pc bpc" id="L385" title="2 of 4 branches missed.">    if (channel != null &amp;&amp; channel.isActive()) {</span>
+<span class="pc bpc" id="L385" title="1 of 4 branches missed.">    if (channel != null &amp;&amp; channel.isActive()) {</span>
 <span class="pc bpc" id="L386" title="1 of 2 branches missed.">      if (!futureConnection.awaitOrInterruptible()) {</span>
 <span class="nc bnc" id="L387" title="All 2 branches missed.">        if (futureConnection.isDone()) {</span>
 <span class="nc" id="L388">          return futureConnection;</span>
@@ -398,16 +398,16 @@ public class LocalChannelReference {
 <span class="fc" id="L398">        return futureConnection;</span>
       }
     }
-<span class="nc bnc" id="L401" title="All 2 branches missed.">    if (futureConnection.isDone()) {</span>
+<span class="pc bpc" id="L401" title="1 of 2 branches missed.">    if (futureConnection.isDone()) {</span>
 <span class="nc" id="L402">      return futureConnection;</span>
     }
 
-<span class="nc" id="L405">    logger.info(&quot;Cannot get Connection due to out of Time: {}&quot;, this);</span>
-<span class="nc" id="L406">    result =</span>
+<span class="fc" id="L405">    logger.info(&quot;Cannot get Connection due to out of Time: {}&quot;, this);</span>
+<span class="fc" id="L406">    result =</span>
         new R66Result(new OpenR66ProtocolNoConnectionException(&quot;Out of time&quot;),
                       session, false, ErrorCode.ConnectionImpossible, null);
-<span class="nc" id="L409">    validateConnection(false, result);</span>
-<span class="nc" id="L410">    return futureConnection;</span>
+<span class="fc" id="L409">    validateConnection(false, result);</span>
+<span class="fc" id="L410">    return futureConnection;</span>
   }
 
   /**
@@ -501,28 +501,28 @@ public class LocalChannelReference {
 <span class="nc" id="L501">        futureStartup.cancel();</span>
       }
     }
-<span class="pc bpc" id="L504" title="1 of 2 branches missed.">    if (!futureConnection.isDone()) {</span>
-<span class="nc" id="L505">      futureConnection.setResult(finalValue);</span>
-<span class="nc bnc" id="L506" title="All 2 branches missed.">      if (finalValue.getException() != null) {</span>
-<span class="nc" id="L507">        futureConnection.setFailure(finalValue.getException());</span>
+<span class="fc bfc" id="L504" title="All 2 branches covered.">    if (!futureConnection.isDone()) {</span>
+<span class="fc" id="L505">      futureConnection.setResult(finalValue);</span>
+<span class="fc bfc" id="L506" title="All 2 branches covered.">      if (finalValue.getException() != null) {</span>
+<span class="fc" id="L507">        futureConnection.setFailure(finalValue.getException());</span>
       } else {
-<span class="nc" id="L509">        futureConnection.cancel();</span>
+<span class="fc" id="L509">        futureConnection.cancel();</span>
       }
     }
-<span class="pc bpc" id="L512" title="1 of 2 branches missed.">    if (!futureEndTransfer.isDone()) {</span>
+<span class="fc bfc" id="L512" title="All 2 branches covered.">    if (!futureEndTransfer.isDone()) {</span>
 <span class="fc" id="L513">      futureEndTransfer.setResult(finalValue);</span>
-<span class="pc bpc" id="L514" title="1 of 2 branches missed.">      if (finalValue.getException() != null) {</span>
+<span class="fc bfc" id="L514" title="All 2 branches covered.">      if (finalValue.getException() != null) {</span>
 <span class="fc" id="L515">        futureEndTransfer.setFailure(finalValue.getException());</span>
       } else {
-<span class="nc" id="L517">        futureEndTransfer.cancel();</span>
+<span class="fc" id="L517">        futureEndTransfer.cancel();</span>
       }
     }
-<span class="pc bpc" id="L520" title="1 of 2 branches missed.">    if (!futureValidRequest.isDone()) {</span>
+<span class="fc bfc" id="L520" title="All 2 branches covered.">    if (!futureValidRequest.isDone()) {</span>
 <span class="fc" id="L521">      futureValidRequest.setResult(finalValue);</span>
-<span class="pc bpc" id="L522" title="1 of 2 branches missed.">      if (finalValue.getException() != null) {</span>
+<span class="fc bfc" id="L522" title="All 2 branches covered.">      if (finalValue.getException() != null) {</span>
 <span class="fc" id="L523">        futureValidRequest.setFailure(finalValue.getException());</span>
       } else {
-<span class="nc" id="L525">        futureValidRequest.cancel();</span>
+<span class="fc" id="L525">        futureValidRequest.cancel();</span>
       }
     }
 <span class="pc bpc" id="L528" title="1 of 2 branches missed.">    if (logger.isTraceEnabled()) {</span>
@@ -530,17 +530,17 @@ public class LocalChannelReference {
                    new Exception(&quot;DEBUG Trace for &quot; + &quot;Invalidation&quot;));
     }
 <span class="pc bpc" id="L532" title="1 of 2 branches missed.">    if (finalValue.getCode() != ErrorCode.ServerOverloaded) {</span>
-<span class="pc bpc" id="L533" title="1 of 2 branches missed.">      if (!futureRequest.isDone()) {</span>
+<span class="fc bfc" id="L533" title="All 2 branches covered.">      if (!futureRequest.isDone()) {</span>
 <span class="fc" id="L534">        setErrorMessage(finalValue.getMessage(), finalValue.getCode());</span>
 <span class="fc" id="L535">        futureRequest.setResult(finalValue);</span>
-<span class="pc bpc" id="L536" title="1 of 2 branches missed.">        if (finalValue.getException() != null) {</span>
+<span class="fc bfc" id="L536" title="All 2 branches covered.">        if (finalValue.getException() != null) {</span>
 <span class="fc" id="L537">          futureRequest.setFailure(finalValue.getException());</span>
         } else {
-<span class="nc" id="L539">          futureRequest.cancel();</span>
+<span class="fc" id="L539">          futureRequest.cancel();</span>
         }
       } else {
-<span class="nc" id="L542">        logger.debug(&quot;Could not invalidate since Already finished: {}&quot;,</span>
-<span class="nc" id="L543">                     futureEndTransfer.getResult());</span>
+<span class="fc" id="L542">        logger.debug(&quot;Could not invalidate since Already finished: {}&quot;,</span>
+<span class="fc" id="L543">                     futureEndTransfer.getResult());</span>
       }
     } else {
 <span class="nc" id="L546">      setErrorMessage(finalValue.getMessage(), finalValue.getCode());</span>
@@ -548,8 +548,8 @@ public class LocalChannelReference {
     }
 <span class="pc bpc" id="L549" title="1 of 2 branches missed.">    if (session != null) {</span>
 <span class="fc" id="L550">      final DbTaskRunner runner = session.getRunner();</span>
-<span class="pc bpc" id="L551" title="2 of 4 branches missed.">      if (runner != null &amp;&amp; runner.isSender()) {</span>
-<span class="nc" id="L552">        NetworkTransaction.stopRetrieve(this);</span>
+<span class="fc bfc" id="L551" title="All 4 branches covered.">      if (runner != null &amp;&amp; runner.isSender()) {</span>
+<span class="fc" id="L552">        NetworkTransaction.stopRetrieve(this);</span>
       }
     }
 <span class="fc" id="L555">  }</span>

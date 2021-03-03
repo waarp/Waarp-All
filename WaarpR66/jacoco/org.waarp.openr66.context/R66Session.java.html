@@ -536,10 +536,10 @@ public class R66Session implements SessionInterface {
 <span class="nc" id="L536">          throw e;</span>
 <span class="fc" id="L537">        }</span>
         try {
-<span class="fc bfc" id="L539" title="All 2 branches covered.">          if (runner.isRecvThrough()) {</span>
+<span class="pc bpc" id="L539" title="1 of 2 branches missed.">          if (runner.isRecvThrough()) {</span>
             // no test on file since it does not really exist
-<span class="fc" id="L541">            logger.debug(FILE_IS_IN_THROUGH_MODE, file);</span>
-<span class="fc" id="L542">            runner.deleteTempFile();</span>
+<span class="nc" id="L541">            logger.debug(FILE_IS_IN_THROUGH_MODE, file);</span>
+<span class="nc" id="L542">            runner.deleteTempFile();</span>
 <span class="pc bpc" id="L543" title="1 of 2 branches missed.">          } else if (!file.canWrite()) {</span>
 <span class="nc" id="L544">            runner.deleteTempFile();</span>
 <span class="nc" id="L545">            throw new OpenR66RunnerErrorException(FILE_CANNOT_BE_WRITE);</span>
@@ -996,7 +996,7 @@ public class R66Session implements SessionInterface {
 <span class="nc" id="L996">      throw new OpenR66RunnerErrorException(</span>
           &quot;Renaming file not correct since transfer already started&quot;);
     }
-<span class="fc bfc" id="L999" title="All 2 branches covered.">    if (!runner.isRecvThrough()) {</span>
+<span class="pc bpc" id="L999" title="1 of 2 branches missed.">    if (!runner.isRecvThrough()) {</span>
 <span class="fc" id="L1000">      runner.deleteTempFile();</span>
     }
     // Now rename it
@@ -1060,8 +1060,8 @@ public class R66Session implements SessionInterface {
        */
 <span class="nc" id="L1061">      return;</span>
     }
-<span class="pc bpc" id="L1063" title="1 of 2 branches missed.">    if (runner.isInError()) {</span>
-<span class="nc bnc" id="L1064" title="All 2 branches missed.">      if (logger.isDebugEnabled()) {</span>
+<span class="fc bfc" id="L1063" title="All 2 branches covered.">    if (runner.isInError()) {</span>
+<span class="pc bpc" id="L1064" title="1 of 2 branches missed.">      if (logger.isDebugEnabled()) {</span>
 <span class="nc" id="L1065">        logger.debug(&quot;Transfer already done in error but {} on {} {}&quot;, status,</span>
 <span class="nc" id="L1066">                     file, runner.toShortString(),</span>
 <span class="nc" id="L1067">                     new OpenR66RunnerErrorException(finalValue.toString()));</span>
@@ -1070,7 +1070,7 @@ public class R66Session implements SessionInterface {
       /*
        * if (! status) runner.finalizeTransfer(localChannelReference, file, finalValue, status)
        */
-<span class="nc" id="L1073">      return;</span>
+<span class="fc" id="L1073">      return;</span>
     }
 <span class="pc bpc" id="L1075" title="1 of 2 branches missed.">    if (localChannelReference.getFutureRequest().isDone()) {</span>
 <span class="nc bnc" id="L1076" title="All 2 branches missed.">      if (logger.isDebugEnabled()) {</span>
@@ -1144,20 +1144,20 @@ public class R66Session implements SessionInterface {
 <span class="pc bpc" id="L1144" title="1 of 2 branches missed.">    if (getLocalChannelReference() == null) {</span>
 <span class="nc" id="L1145">      return;</span>
     }
-<span class="fc bfc" id="L1147" title="All 2 branches covered.">    if (getLocalChannelReference().getFutureRequest().isDone()) {</span>
-<span class="fc" id="L1148">      return;</span>
+<span class="pc bpc" id="L1147" title="1 of 2 branches missed.">    if (getLocalChannelReference().getFutureRequest().isDone()) {</span>
+<span class="nc" id="L1148">      return;</span>
     }
-<span class="pc bpc" id="L1150" title="1 of 2 branches missed.">    if (runner == null) {</span>
+<span class="fc bfc" id="L1150" title="All 2 branches covered.">    if (runner == null) {</span>
 <span class="fc" id="L1151">      localChannelReference.invalidateRequest(errorValue);</span>
 <span class="fc" id="L1152">      return;</span>
     }
     // do the real end
-<span class="nc bnc" id="L1155" title="All 2 branches missed.">    if (runner.getStatus() == ErrorCode.CompleteOk) {</span>
+<span class="pc bpc" id="L1155" title="1 of 2 branches missed.">    if (runner.getStatus() == ErrorCode.CompleteOk) {</span>
 <span class="nc" id="L1156">      runner.setAllDone();</span>
 <span class="nc" id="L1157">      runner.forceSaveStatus();</span>
 <span class="nc" id="L1158">      localChannelReference.validateRequest(</span>
           new R66Result(this, true, ErrorCode.CompleteOk, runner));
-<span class="nc bnc" id="L1160" title="All 2 branches missed.">    } else if (runner.getStatus() == ErrorCode.TransferOk &amp;&amp;</span>
+<span class="pc bpc" id="L1160" title="1 of 2 branches missed.">    } else if (runner.getStatus() == ErrorCode.TransferOk &amp;&amp;</span>
 <span class="nc bnc" id="L1161" title="All 2 branches missed.">               (!runner.isSender() ||</span>
 <span class="nc bnc" id="L1162" title="All 2 branches missed.">                errorValue.getCode() == ErrorCode.QueryAlreadyFinished)) {</span>
       // Try to finalize it
@@ -1182,9 +1182,9 @@ public class R66Session implements SessionInterface {
 <span class="nc" id="L1182">      }</span>
     } else {
       // invalidate Request
-<span class="nc" id="L1185">      setFinalizeTransfer(false, errorValue);</span>
+<span class="fc" id="L1185">      setFinalizeTransfer(false, errorValue);</span>
     }
-<span class="nc" id="L1187">  }</span>
+<span class="fc" id="L1187">  }</span>
 
   /**
    * @return the file

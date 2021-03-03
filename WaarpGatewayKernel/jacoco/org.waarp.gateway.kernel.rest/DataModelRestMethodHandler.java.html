@@ -450,21 +450,21 @@ public abstract class DataModelRestMethodHandler&lt;E extends AbstractDbData&gt;
                                     final RestArgument result,
                                     final Object body,
                                     final HttpResponseStatus status) {
-<span class="nc" id="L453">    final String answer = result.toString();</span>
-<span class="nc" id="L454">    final ByteBuf buffer =</span>
-<span class="nc" id="L455">        Unpooled.wrappedBuffer(answer.getBytes(WaarpStringUtils.UTF8));</span>
-<span class="nc" id="L456">    final HttpResponse response = handler.getResponse(buffer);</span>
-<span class="nc bnc" id="L457" title="All 2 branches missed.">    if (status == HttpResponseStatus.UNAUTHORIZED) {</span>
+<span class="fc" id="L453">    final String answer = result.toString();</span>
+<span class="fc" id="L454">    final ByteBuf buffer =</span>
+<span class="fc" id="L455">        Unpooled.wrappedBuffer(answer.getBytes(WaarpStringUtils.UTF8));</span>
+<span class="fc" id="L456">    final HttpResponse response = handler.getResponse(buffer);</span>
+<span class="pc bpc" id="L457" title="1 of 2 branches missed.">    if (status == HttpResponseStatus.UNAUTHORIZED) {</span>
 <span class="nc" id="L458">      return ctx.writeAndFlush(response);</span>
     }
-<span class="nc" id="L460">    response.headers().add(HttpHeaderNames.CONTENT_TYPE, &quot;application/json&quot;);</span>
-<span class="nc" id="L461">    response.headers().add(HttpHeaderNames.REFERER, handler.getRequest().uri());</span>
-<span class="nc" id="L462">    logger.debug(&quot;Will write: {}&quot;, body);</span>
-<span class="nc" id="L463">    final ChannelFuture future = ctx.writeAndFlush(response);</span>
-<span class="nc bnc" id="L464" title="All 2 branches missed.">    if (handler.isWillClose()) {</span>
-<span class="nc" id="L465">      SysErrLogger.FAKE_LOGGER</span>
-<span class="nc" id="L466">          .syserr(&quot;Will close session in DataModelRestMethodHandler&quot;);</span>
-<span class="nc" id="L467">      return future;</span>
+<span class="fc" id="L460">    response.headers().add(HttpHeaderNames.CONTENT_TYPE, &quot;application/json&quot;);</span>
+<span class="fc" id="L461">    response.headers().add(HttpHeaderNames.REFERER, handler.getRequest().uri());</span>
+<span class="fc" id="L462">    logger.debug(&quot;Will write: {}&quot;, body);</span>
+<span class="fc" id="L463">    final ChannelFuture future = ctx.writeAndFlush(response);</span>
+<span class="pc bpc" id="L464" title="1 of 2 branches missed.">    if (handler.isWillClose()) {</span>
+<span class="fc" id="L465">      SysErrLogger.FAKE_LOGGER</span>
+<span class="fc" id="L466">          .syserr(&quot;Will close session in DataModelRestMethodHandler&quot;);</span>
+<span class="fc" id="L467">      return future;</span>
     }
 <span class="nc" id="L469">    return null;</span>
   }

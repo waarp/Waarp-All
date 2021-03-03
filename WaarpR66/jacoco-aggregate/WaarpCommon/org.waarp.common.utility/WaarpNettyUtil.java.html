@@ -22,6 +22,7 @@ package org.waarp.common.utility;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
@@ -55,11 +56,11 @@ public final class WaarpNettyUtil {
   }
 
   private static int getSoBufSize(final int maxBufSize) {
-<span class="fc" id="L58">    int soBuf = Math.min(maxBufSize * 16, BUFFER_SIZE_1MB);</span>
-<span class="fc bfc" id="L59" title="All 2 branches covered.">    if (soBuf &lt; maxBufSize * 4) {</span>
-<span class="fc" id="L60">      soBuf = maxBufSize * 4;</span>
+<span class="fc" id="L59">    int soBuf = Math.min(maxBufSize * 16, BUFFER_SIZE_1MB);</span>
+<span class="fc bfc" id="L60" title="All 2 branches covered.">    if (soBuf &lt; maxBufSize * 4) {</span>
+<span class="fc" id="L61">      soBuf = maxBufSize * 4;</span>
     }
-<span class="fc" id="L62">    return soBuf;</span>
+<span class="fc" id="L63">    return soBuf;</span>
   }
 
   /**
@@ -72,8 +73,8 @@ public final class WaarpNettyUtil {
   public static void setBootstrap(final Bootstrap bootstrap,
                                   final EventLoopGroup group,
                                   final int timeout) {
-<span class="fc" id="L75">    setBootstrap(bootstrap, group, timeout, DEFAULT_LOW_WATER_MARK, true);</span>
-<span class="fc" id="L76">  }</span>
+<span class="fc" id="L76">    setBootstrap(bootstrap, group, timeout, DEFAULT_LOW_WATER_MARK, true);</span>
+<span class="fc" id="L77">  }</span>
 
   /**
    * Add default configuration for client bootstrap
@@ -88,23 +89,23 @@ public final class WaarpNettyUtil {
                                   final EventLoopGroup group, final int timeout,
                                   final int maxBufSize,
                                   final boolean autoRead) {
-<span class="fc" id="L91">    bootstrap.channel(NioSocketChannel.class);</span>
-<span class="fc" id="L92">    bootstrap.group(group);</span>
-<span class="fc" id="L93">    bootstrap.option(ChannelOption.TCP_NODELAY, false);</span>
-<span class="fc" id="L94">    bootstrap.option(ChannelOption.SO_REUSEADDR, true);</span>
-<span class="fc" id="L95">    bootstrap.option(ChannelOption.SO_KEEPALIVE, true);</span>
-<span class="fc" id="L96">    bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, timeout);</span>
-<span class="fc" id="L97">    final int so_buf = getSoBufSize(maxBufSize);</span>
-<span class="fc" id="L98">    final int lowWaterMark = Math.min(DEFAULT_LOW_WATER_MARK, maxBufSize / 2);</span>
-<span class="fc" id="L99">    bootstrap.option(ChannelOption.SO_RCVBUF, so_buf);</span>
-<span class="fc" id="L100">    bootstrap.option(ChannelOption.SO_SNDBUF, so_buf);</span>
-<span class="fc" id="L101">    bootstrap.option(ChannelOption.WRITE_BUFFER_WATER_MARK,</span>
+<span class="fc" id="L92">    bootstrap.channel(NioSocketChannel.class);</span>
+<span class="fc" id="L93">    bootstrap.group(group);</span>
+<span class="fc" id="L94">    bootstrap.option(ChannelOption.TCP_NODELAY, false);</span>
+<span class="fc" id="L95">    bootstrap.option(ChannelOption.SO_REUSEADDR, true);</span>
+<span class="fc" id="L96">    bootstrap.option(ChannelOption.SO_KEEPALIVE, true);</span>
+<span class="fc" id="L97">    bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, timeout);</span>
+<span class="fc" id="L98">    final int so_buf = getSoBufSize(maxBufSize);</span>
+<span class="fc" id="L99">    final int lowWaterMark = Math.min(DEFAULT_LOW_WATER_MARK, maxBufSize / 2);</span>
+<span class="fc" id="L100">    bootstrap.option(ChannelOption.SO_RCVBUF, so_buf);</span>
+<span class="fc" id="L101">    bootstrap.option(ChannelOption.SO_SNDBUF, so_buf);</span>
+<span class="fc" id="L102">    bootstrap.option(ChannelOption.WRITE_BUFFER_WATER_MARK,</span>
                      new WriteBufferWaterMark(lowWaterMark, maxBufSize));
-<span class="fc" id="L103">    bootstrap.option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);</span>
-<span class="fc bfc" id="L104" title="All 2 branches covered.">    if (!autoRead) {</span>
-<span class="fc" id="L105">      bootstrap.option(ChannelOption.AUTO_READ, false);</span>
+<span class="fc" id="L104">    bootstrap.option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);</span>
+<span class="fc bfc" id="L105" title="All 2 branches covered.">    if (!autoRead) {</span>
+<span class="fc" id="L106">      bootstrap.option(ChannelOption.AUTO_READ, false);</span>
     }
-<span class="fc" id="L107">  }</span>
+<span class="fc" id="L108">  }</span>
 
   /**
    * Add default configuration for server bootstrap
@@ -116,8 +117,8 @@ public final class WaarpNettyUtil {
   public static void setServerBootstrap(final ServerBootstrap bootstrap,
                                         final EventLoopGroup group,
                                         final int timeout) {
-<span class="fc" id="L119">    setServerBootstrap(bootstrap, group, timeout, DEFAULT_LOW_WATER_MARK, true);</span>
-<span class="fc" id="L120">  }</span>
+<span class="fc" id="L120">    setServerBootstrap(bootstrap, group, timeout, DEFAULT_LOW_WATER_MARK, true);</span>
+<span class="fc" id="L121">  }</span>
 
   /**
    * Add default configuration for server bootstrap
@@ -132,26 +133,26 @@ public final class WaarpNettyUtil {
                                         final EventLoopGroup group,
                                         final int timeout, final int maxBufSize,
                                         final boolean autoRead) {
-<span class="fc" id="L135">    bootstrap.channel(NioServerSocketChannel.class);</span>
-<span class="fc" id="L136">    bootstrap.group(group);</span>
+<span class="fc" id="L136">    bootstrap.channel(NioServerSocketChannel.class);</span>
+<span class="fc" id="L137">    bootstrap.group(group);</span>
     // bootstrap.option(ChannelOption.TCP_NODELAY, true)
-<span class="fc" id="L138">    bootstrap.option(ChannelOption.SO_REUSEADDR, true);</span>
-<span class="fc" id="L139">    bootstrap.childOption(ChannelOption.TCP_NODELAY, false);</span>
-<span class="fc" id="L140">    bootstrap.childOption(ChannelOption.SO_REUSEADDR, true);</span>
-<span class="fc" id="L141">    bootstrap.childOption(ChannelOption.SO_KEEPALIVE, true);</span>
-<span class="fc" id="L142">    bootstrap.childOption(ChannelOption.CONNECT_TIMEOUT_MILLIS, timeout);</span>
-<span class="fc" id="L143">    final int so_buf = getSoBufSize(maxBufSize);</span>
-<span class="fc" id="L144">    final int lowWaterMark = Math.min(DEFAULT_LOW_WATER_MARK, maxBufSize / 2);</span>
-<span class="fc" id="L145">    bootstrap.childOption(ChannelOption.SO_RCVBUF, so_buf);</span>
-<span class="fc" id="L146">    bootstrap.childOption(ChannelOption.SO_SNDBUF, so_buf);</span>
-<span class="fc" id="L147">    bootstrap.childOption(ChannelOption.WRITE_BUFFER_WATER_MARK,</span>
+<span class="fc" id="L139">    bootstrap.option(ChannelOption.SO_REUSEADDR, true);</span>
+<span class="fc" id="L140">    bootstrap.childOption(ChannelOption.TCP_NODELAY, false);</span>
+<span class="fc" id="L141">    bootstrap.childOption(ChannelOption.SO_REUSEADDR, true);</span>
+<span class="fc" id="L142">    bootstrap.childOption(ChannelOption.SO_KEEPALIVE, true);</span>
+<span class="fc" id="L143">    bootstrap.childOption(ChannelOption.CONNECT_TIMEOUT_MILLIS, timeout);</span>
+<span class="fc" id="L144">    final int so_buf = getSoBufSize(maxBufSize);</span>
+<span class="fc" id="L145">    final int lowWaterMark = Math.min(DEFAULT_LOW_WATER_MARK, maxBufSize / 2);</span>
+<span class="fc" id="L146">    bootstrap.childOption(ChannelOption.SO_RCVBUF, so_buf);</span>
+<span class="fc" id="L147">    bootstrap.childOption(ChannelOption.SO_SNDBUF, so_buf);</span>
+<span class="fc" id="L148">    bootstrap.childOption(ChannelOption.WRITE_BUFFER_WATER_MARK,</span>
                           new WriteBufferWaterMark(lowWaterMark, maxBufSize));
-<span class="fc" id="L149">    bootstrap</span>
-<span class="fc" id="L150">        .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);</span>
-<span class="fc bfc" id="L151" title="All 2 branches covered.">    if (!autoRead) {</span>
-<span class="fc" id="L152">      bootstrap.childOption(ChannelOption.AUTO_READ, false);</span>
+<span class="fc" id="L150">    bootstrap</span>
+<span class="fc" id="L151">        .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);</span>
+<span class="fc bfc" id="L152" title="All 2 branches covered.">    if (!autoRead) {</span>
+<span class="fc" id="L153">      bootstrap.childOption(ChannelOption.AUTO_READ, false);</span>
     }
-<span class="fc" id="L154">  }</span>
+<span class="fc" id="L155">  }</span>
 
   /**
    * @param future
@@ -160,15 +161,15 @@ public final class WaarpNettyUtil {
    */
   public static boolean awaitOrInterrupted(final Future&lt;?&gt; future) {
     try {
-<span class="pc bpc" id="L163" title="1 of 2 branches missed.">      while (!Thread.interrupted()) {</span>
-<span class="fc bfc" id="L164" title="All 2 branches covered.">        if (future.await(TIMEOUT_MILLIS)) {</span>
-<span class="fc" id="L165">          return true;</span>
+<span class="pc bpc" id="L164" title="1 of 2 branches missed.">      while (!Thread.interrupted()) {</span>
+<span class="fc bfc" id="L165" title="All 2 branches covered.">        if (future.await(TIMEOUT_MILLIS)) {</span>
+<span class="fc" id="L166">          return true;</span>
         }
       }
-<span class="nc" id="L168">    } catch (final InterruptedException e) {//NOSONAR</span>
-<span class="nc" id="L169">      SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
-<span class="nc" id="L170">    }</span>
-<span class="nc" id="L171">    return false;</span>
+<span class="nc" id="L169">    } catch (final InterruptedException e) {//NOSONAR</span>
+<span class="nc" id="L170">      SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
+<span class="nc" id="L171">    }</span>
+<span class="nc" id="L172">    return false;</span>
   }
 
   /**
@@ -180,13 +181,13 @@ public final class WaarpNettyUtil {
   public static boolean awaitOrInterrupted(final Future&lt;?&gt; future,
                                            final long timeMilliseconds) {
     try {
-<span class="fc bfc" id="L183" title="All 2 branches covered.">      if (future.await(timeMilliseconds)) {</span>
-<span class="pc bpc" id="L184" title="1 of 2 branches missed.">        return !Thread.interrupted();</span>
+<span class="pc bpc" id="L184" title="1 of 2 branches missed.">      if (future.await(timeMilliseconds)) {</span>
+<span class="pc bpc" id="L185" title="1 of 2 branches missed.">        return !Thread.interrupted();</span>
       }
-<span class="nc" id="L186">    } catch (final InterruptedException e) {//NOSONAR</span>
-<span class="nc" id="L187">      SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
-<span class="fc" id="L188">    }</span>
-<span class="fc" id="L189">    return false;</span>
+<span class="nc" id="L187">    } catch (final InterruptedException e) {//NOSONAR</span>
+<span class="nc" id="L188">      SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
+<span class="nc" id="L189">    }</span>
+<span class="nc" id="L190">    return false;</span>
   }
 
   /**
@@ -197,15 +198,15 @@ public final class WaarpNettyUtil {
    */
   public static boolean awaitIsSuccessOfInterrupted(final Future&lt;?&gt; future) {
     try {
-<span class="nc bnc" id="L200" title="All 2 branches missed.">      while (!Thread.interrupted()) {</span>
-<span class="nc bnc" id="L201" title="All 2 branches missed.">        if (future.await(TIMEOUT_MILLIS)) {</span>
-<span class="nc" id="L202">          return future.isSuccess();</span>
+<span class="nc bnc" id="L201" title="All 2 branches missed.">      while (!Thread.interrupted()) {</span>
+<span class="nc bnc" id="L202" title="All 2 branches missed.">        if (future.await(TIMEOUT_MILLIS)) {</span>
+<span class="nc" id="L203">          return future.isSuccess();</span>
         }
       }
-<span class="nc" id="L205">    } catch (final InterruptedException e) {//NOSONAR</span>
-<span class="nc" id="L206">      SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
-<span class="nc" id="L207">    }</span>
-<span class="nc" id="L208">    return false;</span>
+<span class="nc" id="L206">    } catch (final InterruptedException e) {//NOSONAR</span>
+<span class="nc" id="L207">      SysErrLogger.FAKE_LOGGER.ignoreLog(e);</span>
+<span class="nc" id="L208">    }</span>
+<span class="nc" id="L209">    return false;</span>
   }
 
   /**
@@ -216,10 +217,10 @@ public final class WaarpNettyUtil {
    * @return True if the ByteBuf is released
    */
   public static boolean release(final ByteBuf byteBuf) {
-<span class="fc bfc" id="L219" title="All 4 branches covered.">    if (byteBuf == null || byteBuf.refCnt() &lt;= 0) {</span>
-<span class="fc" id="L220">      return true;</span>
+<span class="fc bfc" id="L220" title="All 4 branches covered.">    if (byteBuf == null || byteBuf.refCnt() &lt;= 0) {</span>
+<span class="fc" id="L221">      return true;</span>
     }
-<span class="fc" id="L222">    return byteBuf.release();</span>
+<span class="fc" id="L223">    return byteBuf.release();</span>
   }
 
   /**
@@ -228,12 +229,12 @@ public final class WaarpNettyUtil {
    * @param byteBuf
    */
   public static void releaseCompletely(final ByteBuf byteBuf) {
-<span class="pc bpc" id="L231" title="2 of 4 branches missed.">    if (byteBuf != null &amp;&amp; byteBuf.refCnt() != 0) {</span>
-<span class="fc bfc" id="L232" title="All 2 branches covered.">      while (!byteBuf.release()) {</span>
+<span class="pc bpc" id="L232" title="2 of 4 branches missed.">    if (byteBuf != null &amp;&amp; byteBuf.refCnt() != 0) {</span>
+<span class="fc bfc" id="L233" title="All 2 branches covered.">      while (!byteBuf.release()) {</span>
         // Nothing
       }
     }
-<span class="fc" id="L236">  }</span>
+<span class="fc" id="L237">  }</span>
 
   /**
    * Utility method to return a ByteBuf slice with Write ready.
@@ -247,9 +248,28 @@ public final class WaarpNettyUtil {
    */
   public static ByteBuf slice(final ByteBuf byteBuf, final int start,
                               final int size) {
-<span class="fc" id="L250">    final ByteBuf bufSliced = byteBuf.slice(start, size);</span>
-<span class="fc" id="L251">    bufSliced.writerIndex(0);</span>
-<span class="fc" id="L252">    return bufSliced;</span>
+<span class="fc" id="L251">    final ByteBuf bufSliced = byteBuf.slice(start, size);</span>
+<span class="fc" id="L252">    bufSliced.writerIndex(0);</span>
+<span class="fc" id="L253">    return bufSliced;</span>
+  }
+
+  /**
+   * Replace the arrays with one Pooled ByteBuf (not wrapped)
+   *
+   * @param arrays
+   *
+   * @return the ByteBuf from pool
+   */
+  public static ByteBuf wrappedBuffer(byte[]... arrays) {
+<span class="fc" id="L264">    int size = 0;</span>
+<span class="fc bfc" id="L265" title="All 2 branches covered.">    for (byte[] array : arrays) {</span>
+<span class="fc" id="L266">      size += array.length;</span>
+    }
+<span class="fc" id="L268">    final ByteBuf finalByteBuf = ByteBufAllocator.DEFAULT.buffer(size);</span>
+<span class="fc bfc" id="L269" title="All 2 branches covered.">    for (byte[] array : arrays) {</span>
+<span class="fc" id="L270">      finalByteBuf.writeBytes(array);</span>
+    }
+<span class="fc" id="L272">    return finalByteBuf;</span>
   }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
