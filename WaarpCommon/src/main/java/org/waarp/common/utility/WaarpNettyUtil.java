@@ -22,6 +22,7 @@ package org.waarp.common.utility;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
@@ -250,5 +251,24 @@ public final class WaarpNettyUtil {
     final ByteBuf bufSliced = byteBuf.slice(start, size);
     bufSliced.writerIndex(0);
     return bufSliced;
+  }
+
+  /**
+   * Replace the arrays with one Pooled ByteBuf (not wrapped)
+   *
+   * @param arrays
+   *
+   * @return the ByteBuf from pool
+   */
+  public static ByteBuf wrappedBuffer(byte[]... arrays) {
+    int size = 0;
+    for (byte[] array : arrays) {
+      size += array.length;
+    }
+    final ByteBuf finalByteBuf = ByteBufAllocator.DEFAULT.buffer(size);
+    for (byte[] array : arrays) {
+      finalByteBuf.writeBytes(array);
+    }
+    return finalByteBuf;
   }
 }

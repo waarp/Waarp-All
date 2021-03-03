@@ -34,7 +34,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class ScenarioLoopBenchmarkPostGreSqlIT extends ScenarioBaseLoopBenchmark {
+public class ScenarioLoopBenchmarkPostGreSqlIT
+    extends ScenarioBaseLoopBenchmark {
   @Rule(order = Integer.MIN_VALUE)
   public TestWatcher watchman = new TestWatcherJunit4();
 

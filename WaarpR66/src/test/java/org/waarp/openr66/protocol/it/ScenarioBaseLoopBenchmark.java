@@ -30,7 +30,12 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
-import org.junit.*;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Assume;
+import org.junit.Before;
+import org.junit.FixMethodOrder;
+import org.junit.Test;
 import org.junit.runners.MethodSorters;
 import org.testcontainers.containers.JdbcDatabaseContainer;
 import org.waarp.common.command.exception.Reply550Exception;
@@ -61,7 +66,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.Assert.*;
-import static org.waarp.openr66.protocol.it.ScenarioBase.IT_LONG_TEST;
+import static org.waarp.openr66.protocol.it.ScenarioBase.*;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public abstract class ScenarioBaseLoopBenchmark extends TestAbstract {
@@ -92,7 +97,8 @@ public abstract class ScenarioBaseLoopBenchmark extends TestAbstract {
 
   public static void setUpBeforeClass() throws Exception {
     ResourceLeakDetector.setLevel(Level.SIMPLE);
-    final ClassLoader classLoader = ScenarioBaseLoopBenchmark.class.getClassLoader();
+    final ClassLoader classLoader =
+        ScenarioBaseLoopBenchmark.class.getClassLoader();
     File file =
         new File(classLoader.getResource(RESOURCES_SERVER_1_XML).getFile());
     dirResources = file.getParentFile().getParentFile().getParentFile();
@@ -200,7 +206,8 @@ public abstract class ScenarioBaseLoopBenchmark extends TestAbstract {
 
   public static void setUp3DbBeforeClass() throws Exception {
     deleteBase();
-    final ClassLoader classLoader = ScenarioBaseLoopBenchmark.class.getClassLoader();
+    final ClassLoader classLoader =
+        ScenarioBaseLoopBenchmark.class.getClassLoader();
     DetectionUtils.setJunit(true);
     File file =
         new File(classLoader.getResource(RESOURCES_SERVER_1_XML).getFile());
@@ -311,9 +318,9 @@ public abstract class ScenarioBaseLoopBenchmark extends TestAbstract {
     final long startTime = System.currentTimeMillis();
     try {
       httpClient = HttpClientBuilder.create().setConnectionManagerShared(true)
-              .disableAutomaticRetries().build();
+                                    .disableAutomaticRetries().build();
       HttpGet request =
-              new HttpGet("http://127.0.0.1:8098/v2/transfers?limit=100000");
+          new HttpGet("http://127.0.0.1:8098/v2/transfers?limit=100000");
       CloseableHttpResponse response = null;
       try {
         response = httpClient.execute(request);
@@ -364,8 +371,9 @@ public abstract class ScenarioBaseLoopBenchmark extends TestAbstract {
     }
     final long stopTime = System.currentTimeMillis();
     totalTransfers = nb - totalTransfers;
-    logger.warn("Duration {} for {} item so {} items/s", (stopTime - startTime) / 1000.0, totalTransfers,
-            totalTransfers / ((stopTime - startTime) / 1000.0));
+    logger.warn("Duration {} for {} item so {} items/s",
+                (stopTime - startTime) / 1000.0, totalTransfers,
+                totalTransfers / ((stopTime - startTime) / 1000.0));
     Configuration.configuration.setTimeoutCon(100);
     WaarpLoggerFactory.setLogLevel(WaarpLogLevel.ERROR);
     for (int pid : PIDS) {
@@ -422,7 +430,7 @@ public abstract class ScenarioBaseLoopBenchmark extends TestAbstract {
     for (int i = 1; i <= NUMBER_FILES; i++) {
       int size = i * factor;
       final R66Future future = new R66Future(true);
-      futures[i-1] = future;
+      futures[i - 1] = future;
       /*
       final TestTransferNoDb transaction =
               new TestTransferNoDb(future, "server2-ssl", "hello" + size, "loop",
@@ -434,9 +442,9 @@ public abstract class ScenarioBaseLoopBenchmark extends TestAbstract {
        */
 
       final SubmitTransfer transaction =
-              new SubmitTransfer(future, serverName, "hello" + size, ruleName,
-                      "Test Loop Send " + size, true, BLOCK_SIZE,
-                      DbConstantR66.ILLEGALVALUE, null);
+          new SubmitTransfer(future, serverName, "hello" + size, ruleName,
+                             "Test Loop Send " + size, true, BLOCK_SIZE,
+                             DbConstantR66.ILLEGALVALUE, null);
       TransferArgs.forceAnalyzeFollow(transaction);
       transaction.setNormalInfoAsWarn(false);
       transaction.run();
@@ -449,7 +457,7 @@ public abstract class ScenarioBaseLoopBenchmark extends TestAbstract {
 
   @Test
   public void test01_LoopBenchmarkSendsSyncSslNoLimit()
-          throws IOException, InterruptedException {
+      throws IOException, InterruptedException {
     logger.warn("Start {} {}", Processes.getCurrentMethodName(), NUMBER_FILES);
     int factor = initBenchmark();
     String serverName = "server2-ssl";
@@ -458,21 +466,22 @@ public abstract class ScenarioBaseLoopBenchmark extends TestAbstract {
     runLoopInit(ruleName, serverName, factor);
     long timestop = System.currentTimeMillis();
     logger.warn("Direct {}, Recv {}, LimitBandwidth {} " +
-                    "({} seconds,  {} MBPS vs {} " +
-                    "and {}) of size {} with block size {}", true, false, NUMBER_FILES,
-            (timestop - timestart) / 1000,
-            NUMBER_FILES * (factor * (NUMBER_FILES / 2)) / 1000.0 / (timestop - timestart),
-            Configuration.configuration.getServerGlobalReadLimit() /
-                    1000000.0,
-            Configuration.configuration.getServerChannelReadLimit() /
-                    1000000.0, (factor * (NUMBER_FILES / 2)), BLOCK_SIZE);
+                "({} seconds,  {} MBPS vs {} " +
+                "and {}) of size {} with block size {}", true, false,
+                NUMBER_FILES, (timestop - timestart) / 1000,
+                NUMBER_FILES * (factor * (NUMBER_FILES / 2)) / 1000.0 /
+                (timestop - timestart),
+                Configuration.configuration.getServerGlobalReadLimit() /
+                1000000.0,
+                Configuration.configuration.getServerChannelReadLimit() /
+                1000000.0, (factor * (NUMBER_FILES / 2)), BLOCK_SIZE);
     checkMemory();
     logger.warn("End {}", Processes.getCurrentMethodName());
   }
 
   @Test
   public void test02_LoopBenchmarkSendsSyncNoLimit()
-          throws IOException, InterruptedException {
+      throws IOException, InterruptedException {
     logger.warn("Start {} {}", Processes.getCurrentMethodName(), NUMBER_FILES);
     int factor = initBenchmark();
     String serverName = "server2";
@@ -481,14 +490,15 @@ public abstract class ScenarioBaseLoopBenchmark extends TestAbstract {
     runLoopInit(ruleName, serverName, factor);
     long timestop = System.currentTimeMillis();
     logger.warn("Direct {}, Recv {}, LimitBandwidth {} " +
-                    "({} seconds,  {} MBPS vs {} " +
-                    "and {}) of size {} with block size {}", true, false, NUMBER_FILES,
-            (timestop - timestart) / 1000,
-            NUMBER_FILES * (factor + (NUMBER_FILES / 2)) / 1000.0 / (timestop - timestart),
-            Configuration.configuration.getServerGlobalReadLimit() /
-                    1000000.0,
-            Configuration.configuration.getServerChannelReadLimit() /
-                    1000000.0, (factor + (NUMBER_FILES / 2)), BLOCK_SIZE);
+                "({} seconds,  {} MBPS vs {} " +
+                "and {}) of size {} with block size {}", true, false,
+                NUMBER_FILES, (timestop - timestart) / 1000,
+                NUMBER_FILES * (factor + (NUMBER_FILES / 2)) / 1000.0 /
+                (timestop - timestart),
+                Configuration.configuration.getServerGlobalReadLimit() /
+                1000000.0,
+                Configuration.configuration.getServerChannelReadLimit() /
+                1000000.0, (factor + (NUMBER_FILES / 2)), BLOCK_SIZE);
     checkMemory();
     logger.warn("End {}", Processes.getCurrentMethodName());
   }
