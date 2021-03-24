@@ -47,25 +47,25 @@ The following applications are deprecated and won't be maintained anymore:
 
 ### Build from source
 
-Just clone the project and use maven to build it.
+Just clone the project and use Maven version 3.6.3 to build it.
 
-*Even though Java 6 is supported at runtime, Java 8 is required to build the
+*Even though Java 6 is supported at runtime, Java 8 or 11 is required to build the
 project*
 
 ```sh
 git clone https://github.com/waarp/Waarp-All.git
 cd Waarp-All
-mvn package
+mvn -P jre11 package
 ```
 
-mvn package also runs the full test suite, which takes quite some time (for more
+`mvn -P jre11 package` also runs the full test suite, which takes quite some time (for more
 information about setting up your environment to run the tests, see below).
 
 If you want to build the jars without running the tests, use the following
 command instead:
 
 ```sh
-mvn package -D skipTests
+mvn -P jre11 -D skipTests package 
 ```
 
 After that, you will find the JARs for each module and application in their
@@ -88,7 +88,7 @@ The full test suite (including integration tests on several databases) requires
 From the root of the project, run the command:
 
 ```sh
-mvn test
+mvn -P jre11 test
 ```
 
 ### Build the documentation
