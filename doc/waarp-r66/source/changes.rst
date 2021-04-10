@@ -7,7 +7,78 @@ La procédure de mise à jour est disponible ici: :any:`upgrade`
 Non publié
 ==========
 
-Waarp R66 3.5.2 (2021-02-23)
+Waarp R66 3.6.0 (2021-04-03)
+============================
+
+Nouvelles fonctionnalités
+-------------------------
+
+- Ajout de l'option activepassive pour Gateway FTP avec pour valeur
+  1 = Active, -1 = Passive, 0 = les deux modes autorisés
+- Waarp R66: Ajout d'une option de logs asynchrones poussés vers une API REST
+  externe (par exemple un Logstash avec un Elasticsearch ou avec maintenance
+  dans le logiciel Waarp Manager) pour permettre
+  la surveillance globale des transferts de un ou plusieurs moniteurs Waarp
+  R66
+
+Correctifs
+----------
+
+- Amélioration de la gestion des Threads Clients et Servers
+- Amélioration des Threads pour Recv avec minimum/maximum optimisés
+- Accroissement de la limite de RUNLIMIT à 50000, maintient du défaut à 1000
+- Benchmark sur multiple serveurs Waarp en mode cluster
+- Benchmark sur Serveur FTP et Gateway FTP
+- Fixes de bug liés à la lecture XML des règles, de la gestion de client sans base
+- Mise à jour des dépendances
+
+Benchmarks FTP
+--------------
+
+Les nouveaux benchmarks FTP donnent les résultats suivants.
+
+=========== ====== ======== ======= ====== =============
+Application Client Nb vCore Passive Active CPU
+=========== ====== ======== ======= ====== =============
+Serveur FTP Apache 4        52/s    60/s   40% CPU
+Serveur FTP Waarp  4        61/s    69/s   40% CPU
+Gateway FTP Waarp  4        50/s    61/s   40% CPU
+=========== ====== ======== ======= ====== =============
+
+Il ressort de ces benchmarks qu'il est important d'avoir au moins 2 core (threads)
+dédiés par serveur Waarp Gateway FTP pour être optimal. En terme de mémoire,
+4 GB étaient alloués à chaque instance.
+Le client Waarp (basé sur FTP4J) est plus performant que l'implémentation Apache.
+
+
+Benchmarks R66
+--------------
+
+Les nouveaux benchmarks R66 donnent les résultats suivants.
+
+========================= ======== === ============ ==== =========
+Contexte                  Nb vCore TLS Transferts/s CPU  Gain
+========================= ======== === ============ ==== =========
+V3.0 Loop 2 Serveurs      4        Oui 30/s         100% Référence
+V3.2 Loop 2 Serveurs      4        Oui 60/s         100% 200%
+V3.5.2 Loop 2 Serveurs    4        Oui 77/s         100% 257%
+V3.6.0 Loop 2 Serveurs    4        Oui 84/s         100% 280%
+V3.6.0 Loop 2 Serveurs    8        Oui 366/s        80%  1220%
+V3.6.0 Loop 2 Serveurs    4        Non 103/s        100% Référence
+V3.6.0 Loop 2 Serveurs    8        Non 418/s        75%  406%
+V3.6.0 Cluster 2 Serveurs 4        Oui 77/s         100% Référence
+V3.6.0 Cluster 2 Serveurs 8        Oui 133/s        80%  173%
+V3.6.0 Cluster 2 Serveurs 4        Non 89/s         100% Référence
+V3.6.0 Cluster 2 Serveurs 8        Non 184/s        45%  207%
+========================= ======== === ============ ==== =========
+
+
+Il ressort de ces benchmarks qu'il est important d'avoir au moins 4 core (threads)
+dédiés par serveur Waarp R66 pour être optimal. En terme de mémoire,
+4 GB étaient alloués à chaque instance.
+
+
+Waarp R66 3.5.2 (2021-03-03)
 ============================
 
 Correctifs

@@ -113,9 +113,13 @@ Balise                       Description
 ============================ ==============
 **network**
 serverport                   Communications R66 en clair
+serveraddresses              Adresses utilisées pour le protocole R66 (séparées par des virgules)
 serversslport                Communications R66 chiffrées
+serverssladdresses           Adresses utilisées pour le protocole R66 en SSL (séparées par des virgules)
 serverhttpport               Interface web de suivi (désactivée par défaut)
+serverhttpaddresses          Adresses utilisées pour l'interface web de supervision (séparées par des virgules)
 serverhttpsport              Interface web d’administration (désactivée par défaut)
+serverhttpsaddresses         Adresses utilisées pour l'interface web HTTPS d'administration (séparées par des virgules)
 serverrestport               Interface REST des serveurs WaarpR66 autonomes (désactivée par défaut)
 ============================ ==============
 

@@ -103,7 +103,7 @@ memorylimit       Integer N    1000000000 Quantité maximale de mémoire utilis�
 sessionlimit      Integer N    1GB        Bande passante maximale utilisée pour une session (en octets)
 globallimit       Integer N    100GB      Bande passante globale maximale utilisée (en octets)
 delaylimit        Integer N    10000      Délais entre deux vérifications de bande passante. Plus cette valeur est faible, plus le contrôle de la bande passante sera précis. Attention toutefois à ne pas donner de valeur trop faible (en ms)
-runlimit          Integer N    10000      Nombre maximal de transferts actifs simultanés
+runlimit          Integer N    1000       Nombre maximal de transferts actifs simultanés (maximum is 50000)
 delaycommand      Integer N    5000       Délais entre deux exécutions du Commander (en ms)
 delayretry        Integer N    30000      Délais entre deux tentatives de transfert en cas d'erreur (en ms)
 timeoutcon        Integer N    30000      Délais de timeout d'une connexion (en ms)

@@ -76,6 +76,7 @@ import org.waarp.openr66.protocol.http.restv2.RestServiceInitializer;
 import org.waarp.openr66.protocol.localhandler.LocalTransaction;
 import org.waarp.openr66.protocol.localhandler.Monitoring;
 import org.waarp.openr66.protocol.localhandler.RetrieveRunner;
+import org.waarp.openr66.protocol.monitoring.MonitorExporterTransfers;
 import org.waarp.openr66.protocol.networkhandler.NetworkServerInitializer;
 import org.waarp.openr66.protocol.networkhandler.NetworkTransaction;
 import org.waarp.openr66.protocol.networkhandler.R66ConstraintLimitHandler;
@@ -136,6 +137,7 @@ public class Configuration {
   public static final String SnmpVersion = "Waarp OpenR66 " + Version.ID;
   public static final String SnmpDefaultLocalization = "Paris, France";
   public static final int SnmpService = 72;
+
   /**
    * Time elapse for retry in ms
    */
@@ -478,6 +480,7 @@ public class Configuration {
   protected final ExecutorService execOtherWorker =
       Executors.newCachedThreadPool(new WaarpThreadFactory("OtherWorker"));
 
+  protected EventLoopGroup serverGroup;
   protected EventLoopGroup workerGroup;
   protected EventLoopGroup handlerGroup;
   protected EventLoopGroup subTaskGroup;
@@ -626,6 +629,15 @@ public class Configuration {
 
   private int maxfilenamelength = 255;
 
+  private MonitorExporterTransfers monitorExporterTransfers = null;
+
+  private String monitorExporterUrl = null;
+  private String monitorExporterEndPoint = null;
+  private int monitorExporterDelay = 1000;
+  private boolean monitorExporterKeepConnection = false;
+  private boolean monitorIntervalIncluded = true;
+  private boolean monitorTransformLongAsString = false;
+
   private int timeStat;
 
   private int limitCache = 5000;
@@ -645,7 +657,7 @@ public class Configuration {
       new R66ShutdownHook(getShutdownConfiguration());
     }
     computeNbThreads();
-    scheduledExecutorService = Executors.newScheduledThreadPool(2,
+    scheduledExecutorService = Executors.newScheduledThreadPool(4,
                                                                 new WaarpThreadFactory(
                                                                     "ScheduledRestartTask"));
     // Init FiniteStates
@@ -773,11 +785,13 @@ public class Configuration {
     }
     // To verify against limit of database
     setRunnerThread(getRunnerThread());
+    serverGroup = new NioEventLoopGroup(getServerThread(),
+                                        new WaarpThreadFactory("Service"));
     workerGroup = new NioEventLoopGroup(getClientThread(),
                                         new WaarpThreadFactory("Worker"));
     handlerGroup = new NioEventLoopGroup(getClientThread(),
                                          new WaarpThreadFactory("Handler"));
-    subTaskGroup = new NioEventLoopGroup(getServerThread(),
+    subTaskGroup = new NioEventLoopGroup(getClientThread(),
                                          new WaarpThreadFactory("SubTask"));
     final RejectedExecutionHandler rejectedExecutionHandler =
         new RejectedExecutionHandler() {
@@ -803,9 +817,13 @@ public class Configuration {
           }
         };
 
+    int nbRunnerThread = getRunnerThread();
+    if (nbRunnerThread == 1) {
+      nbRunnerThread = 2;
+    }
     retrieveRunnerGroup =
-        new ThreadPoolRunnerExecutor(getRunnerThread(), getRunnerThread() * 3,
-                                     1, TimeUnit.SECONDS,
+        new ThreadPoolRunnerExecutor(nbRunnerThread / 2, nbRunnerThread * 3, 1,
+                                     TimeUnit.SECONDS,
                                      new SynchronousQueue<Runnable>(),
                                      new WaarpThreadFactory("RetrieveRunner"),
                                      rejectedExecutionHandler);
@@ -836,7 +854,7 @@ public class Configuration {
   }
 
   public void serverPipelineInit() {
-    httpWorkerGroup = new NioEventLoopGroup(getClientThread(),
+    httpWorkerGroup = new NioEventLoopGroup(getServerThread() * 10,
                                             new WaarpThreadFactory(
                                                 "HttpWorker"));
   }
@@ -875,6 +893,7 @@ public class Configuration {
     startMonitoring();
     launchStatistics();
     startRestSupport();
+    startMonitorExporterTransfers();
 
     logger.info("Current launched threads: " +
                 ManagementFactory.getThreadMXBean().getThreadCount());
@@ -939,9 +958,10 @@ public class Configuration {
         new DefaultChannelGroup("OpenR66Connected", subTaskGroup.next());
     if (isUseNOSSL()) {
       serverBootstrap = new ServerBootstrap();
-      WaarpNettyUtil.setServerBootstrap(serverBootstrap, workerGroup,
-                                        (int) getTimeoutCon(),
-                                        getBlockSize() + 64, false);
+      WaarpNettyUtil
+          .setServerBootstrap(serverBootstrap, serverGroup, workerGroup,
+                              (int) getTimeoutCon(), getBlockSize() + 64,
+                              false);
       networkServerInitializer = new NetworkServerInitializer(true);
       serverBootstrap.childHandler(networkServerInitializer);
       final String[] serverIps = getServerIpsAddresses();
@@ -955,9 +975,10 @@ public class Configuration {
 
     if (isUseSSL() && getHostSslId() != null) {
       serverSslBootstrap = new ServerBootstrap();
-      WaarpNettyUtil.setServerBootstrap(serverSslBootstrap, workerGroup,
-                                        (int) getTimeoutCon(),
-                                        getBlockSize() + 64, false);
+      WaarpNettyUtil
+          .setServerBootstrap(serverSslBootstrap, serverGroup, workerGroup,
+                              (int) getTimeoutCon(), getBlockSize() + 64,
+                              false);
       networkSslServerInitializer = new NetworkSslServerInitializer(false);
       serverSslBootstrap.childHandler(networkSslServerInitializer);
       final String[] serverIps = getServerSslAddresses();
@@ -995,8 +1016,9 @@ public class Configuration {
         new DefaultChannelGroup("HttpOpenR66", subTaskGroup.next());
     // Configure the server.
     httpBootstrap = new ServerBootstrap();
-    WaarpNettyUtil.setServerBootstrap(httpBootstrap, httpWorkerGroup,
-                                      (int) getTimeoutCon());
+    WaarpNettyUtil
+        .setServerBootstrap(httpBootstrap, httpWorkerGroup, httpWorkerGroup,
+                            (int) getTimeoutCon());
     // Set up the event pipeline factory.
     httpBootstrap.childHandler(new HttpInitializer(isUseHttpCompression()));
     // Bind and start to accept incoming connections.
@@ -1009,8 +1031,9 @@ public class Configuration {
     // Configure the server.
     httpsBootstrap = new ServerBootstrap();
     // Set up the event pipeline factory.
-    WaarpNettyUtil.setServerBootstrap(httpsBootstrap, httpWorkerGroup,
-                                      (int) getTimeoutCon());
+    WaarpNettyUtil
+        .setServerBootstrap(httpsBootstrap, httpWorkerGroup, httpWorkerGroup,
+                            (int) getTimeoutCon());
     if (getHttpModel() == 0) {
       httpsBootstrap
           .childHandler(new HttpSslInitializer(isUseHttpCompression()));
@@ -1113,6 +1136,9 @@ public class Configuration {
     if (subTaskGroup != null && !subTaskGroup.isShuttingDown()) {
       subTaskGroup.shutdownGracefully();
     }
+    if (serverGroup != null && !serverGroup.isShuttingDown()) {
+      serverGroup.shutdownGracefully();
+    }
     if (retrieveRunnerGroup != null && !retrieveRunnerGroup.isShutdown()) {
 
       retrieveRunnerGroup.shutdown();
@@ -1141,6 +1167,9 @@ public class Configuration {
     }
     if (subTaskGroup != null && !subTaskGroup.isShuttingDown()) {
       subTaskGroup.shutdownGracefully(10, 10, TimeUnit.MILLISECONDS);
+    }
+    if (serverGroup != null && !serverGroup.isShuttingDown()) {
+      serverGroup.shutdownGracefully(10, 10, TimeUnit.MILLISECONDS);
     }
     if (retrieveRunnerGroup != null && !retrieveRunnerGroup.isShutdown()) {
       retrieveRunnerGroup.shutdownNow();
@@ -1253,6 +1282,18 @@ public class Configuration {
   public void launchInFixedDelay(final Thread thread, final long delay,
                                  final TimeUnit unit) {
     scheduledExecutorService.schedule(thread, delay, unit);
+  }
+
+  /**
+   * submit a task in a repeated delay
+   *
+   * @param thread
+   * @param delay
+   * @param unit
+   */
+  public void scheduleWithFixedDelay(final Thread thread, final long delay,
+                                     final TimeUnit unit) {
+    scheduledExecutorService.scheduleWithFixedDelay(thread, delay, delay, unit);
   }
 
   public void setupLimitHandler() {
@@ -1780,7 +1821,11 @@ public class Configuration {
    * @param clientTHREAD the cLIENT_THREAD to set
    */
   public void setClientThread(final int clientTHREAD) {
-    clientThread = clientTHREAD;
+    if (clientTHREAD > Commander.LIMIT_MAX_SUBMIT) {
+      clientThread = Commander.LIMIT_MAX_SUBMIT;
+    } else {
+      clientThread = clientTHREAD;
+    }
   }
 
   /**
@@ -2662,6 +2707,48 @@ public class Configuration {
    */
   public void setTimeLimitCache(final long timeLimitCache) {
     this.timeLimitCache = timeLimitCache;
+  }
+
+  /**
+   * Set the parameters for MonitorExporterTransfers
+   *
+   * @param url
+   * @param endpoint
+   * @param delay
+   * @param keepConnection
+   * @param monitorIntervalIncluded
+   * @param monitorTransformLongAsString
+   */
+  public void setMonitorExporterTransfers(final String url,
+                                          final String endpoint,
+                                          final int delay,
+                                          final boolean keepConnection,
+                                          final boolean monitorIntervalIncluded,
+                                          final boolean monitorTransformLongAsString) {
+    this.monitorExporterDelay = delay;
+    this.monitorExporterUrl = url;
+    this.monitorExporterEndPoint = endpoint;
+    this.monitorExporterKeepConnection = keepConnection;
+    this.monitorIntervalIncluded = monitorIntervalIncluded;
+    this.monitorTransformLongAsString = monitorTransformLongAsString;
+  }
+
+  /**
+   * Start the Monitor Exporter Transfers (through REST API)
+   */
+  public void startMonitorExporterTransfers() {
+    if (monitorExporterUrl != null && monitorExporterEndPoint != null &&
+        monitorExporterDelay > 500) {
+      this.monitorExporterTransfers =
+          new MonitorExporterTransfers(monitorExporterUrl,
+                                       monitorExporterEndPoint,
+                                       monitorExporterKeepConnection,
+                  monitorIntervalIncluded,
+                                       monitorTransformLongAsString,
+                                       getHttpWorkerGroup());
+      scheduleWithFixedDelay(monitorExporterTransfers, monitorExporterDelay,
+                             TimeUnit.MILLISECONDS);
+    }
   }
 
   /**

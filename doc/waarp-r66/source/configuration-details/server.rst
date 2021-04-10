@@ -51,31 +51,48 @@ authentfile string N           Fichier XML contenant l'authentification des part
 Section ``server``
 ------------------
 
-====================== ======= ==== ========= =============
-Balise                 Type    Obl. Défaut    Signification
-====================== ======= ==== ========= =============
-serveradmin            string  O              Nom d'utilisateur de l'administrateur utilisé pour accéder à l'interface web d'administration
-serverpasswd           string  O              Mot de passe de l'administrateur encryptée avec la clef « cryptokey » utilisé pour accéder à l'interface web d'administration
-usenossl               boolean N    True      Active le mode non-SSL
-usessl                 boolean N    False     Active le mode SSL
-usehttpcomp            boolean N    False     Si le mode SSL  est activé, active la compression SSL
-uselocalexec           boolean N    False     Par défaut, Waarp R66 utilise System.exec() pour exécuter les processus externes. Cela peut poser des problèmes de performance (limitations de la JDK). L'utilisation de GoldenGate LocalExec Daemon peut permettre d'obtenir de meilleures performance par délégation d'exécution.
-lexecadd               string  N    127.0.0.1 Adresse sur laquelle écoute le daemon LocalExec
-lexecport              integer N    9999      Port sur lequel écoute le daemon LocalExec
-httpadmin              string  O              Chemin vers le dossier où sont stockées les sources de l'interface d'administration web
-admkeypath             string  O              Chemin vers le fichier JKS contenant le certificat HTTPS pour l'interface web d'administration
-admkeystorepass        string  O              Mot de passe du fichier JKS contenant le certificat HTTPS pour l'interface web d'administration
-admkeypass             string  O              Mot de passe certificat HTTPS pour l'interface web d'administration contenu dans le fichier JKS.
-checkaddress           boolean N    False     Si « True », le serveur R66 vérifie l'adresse IP de l'hôte distant qui demande une connexion
-checkclientaddress     boolean N    False     Si « True », le serveur R66 vérifie l'adresse IP des clients qui demandent une connexion
-multiplemonitors       integer O    1         Nombre de serveurs qui agissent dans le même groupe comme une seule instance R66
-pastlimit              integer N    86400000  Profondeur maximale affichées dans l'interface HTTP de monitoring en ms
-minimaldelay           integer N    5000      Intervalle de rafraîchissement automatique de l'interface HTTP de monitoring en ms
-snmpconfig             string  N              Chemin vers le fichier de configuration de l'agent SNMP (voir :ref:`référence <snmp-xml>`)
-multiplemonitors       integer N    1         Nombre d'instances dans un cluster de serveurs Waarp R66
-businessfactorynetwork string   N    null     Indique la classe Factory pour les comportements "métiers" à associer à Waarp (Embedded)
-====================== ======= ==== ========= =============
 
+.. versionadded:: 3.6.0
+
+   Ajout des options ``pushmonitorurl``, ``pushmonitorendpoint``,
+   ``pushmonitordelay``
+
+================================ ======= ==== ========= =============
+Balise                           Type    Obl. Défaut    Signification
+================================ ======= ==== ========= =============
+serveradmin                      string  O              Nom d'utilisateur de l'administrateur utilisé pour accéder à l'interface web d'administration
+serverpasswd                     string  O              Mot de passe de l'administrateur encryptée avec la clef « cryptokey » utilisé pour accéder à l'interface web d'administration
+usenossl                         boolean N    True      Active le mode non-SSL
+usessl                           boolean N    False     Active le mode SSL
+usehttpcomp                      boolean N    False     Si le mode SSL  est activé, active la compression SSL
+uselocalexec                     boolean N    False     Par défaut, Waarp R66 utilise System.exec() pour exécuter les processus externes. Cela peut poser des problèmes de performance (limitations de la JDK). L'utilisation de GoldenGate LocalExec Daemon peut permettre d'obtenir de meilleures performance par délégation d'exécution.
+lexecadd                         string  N    127.0.0.1 Adresse sur laquelle écoute le daemon LocalExec
+lexecport                        integer N    9999      Port sur lequel écoute le daemon LocalExec
+httpadmin                        string  O              Chemin vers le dossier où sont stockées les sources de l'interface d'administration web
+admkeypath                       string  O              Chemin vers le fichier JKS contenant le certificat HTTPS pour l'interface web d'administration
+admkeystorepass                  string  O              Mot de passe du fichier JKS contenant le certificat HTTPS pour l'interface web d'administration
+admkeypass                       string  O              Mot de passe certificat HTTPS pour l'interface web d'administration contenu dans le fichier JKS.
+checkaddress                     boolean N    False     Si « True », le serveur R66 vérifie l'adresse IP de l'hôte distant qui demande une connexion
+checkclientaddress               boolean N    False     Si « True », le serveur R66 vérifie l'adresse IP des clients qui demandent une connexion
+multiplemonitors                 integer O    1         Nombre de serveurs qui agissent dans le même groupe comme une seule instance R66
+pastlimit                        integer N    86400000  Profondeur maximale affichées dans l'interface HTTP de monitoring en ms
+minimaldelay                     integer N    5000      Intervalle de rafraîchissement automatique de l'interface HTTP de monitoring en ms
+snmpconfig                       string  N              Chemin vers le fichier de configuration de l'agent SNMP (voir :ref:`référence <snmp-xml>`)
+multiplemonitors                 integer N    1         Nombre d'instances dans un cluster de serveurs Waarp R66
+businessfactorynetwork           string  N    null      Indique la classe Factory pour les comportements "métiers" à associer à Waarp (Embedded)
+pushmonitorurl                   string  N    null      URL de base pour les exports du moniteur en mode POST HTTP(S) JSON
+pushmonitorendpoint              string  N    null      End point à ajouter à l'URL de base
+pushmonitordelay                 integer N    1000      Délai entre deux vérifications de changement de statuts sur les transferts
+pushmonitorkeepconnection        boolean N    True      Si « True », la connexion HTTP(S) sera en Keep-Alive (pas de réouverture sauf si le serveur la ferme), sinon la connexion sera réinitialisée pour chaque appel
+pushmonitorintervalincluded      boolean N    True      Si « True », les informations de l'intervalle utilisé seront fournies
+pushmonitortransformlongasstring boolean N    False     Si « True », les nombres « long » seront convertis en chaîne de caractères, sinon ils seront numériques
+================================ ======= ==== ========= =============
+
+.. seealso::
+
+  Une documentation complète de la configuration du monitoring en mode export REST HTTP(S)
+  est disponible
+  :any:`ici <setup-monitor>`
 
 .. _server-xml-network:
 
@@ -196,7 +213,7 @@ memorylimit       Integer N    1000000000 Quantité maximale de mémoire utilis�
 sessionlimit      Integer N    1GB        Bande passante maximale utilisée pour une session (en octets)
 globallimit       Integer N    100GB      Bande passante globale maximale utilisée (en octets)
 delaylimit        Integer N    10000      Délais entre deux vérifications de bande passante. Plus cette valeur est faible, plus le contrôle de la bande passante sera précis. Attention toutefois à ne pas donner de valeur trop faible (en ms)
-runlimit          Integer N    1000       Nombre maximal de transferts actifs simultanés
+runlimit          Integer N    1000       Nombre maximal de transferts actifs simultanés (maximum 50000)
 delaycommand      Integer N    5000       Délais entre deux exécutions du Commander (en ms)
 delayretry        Integer N    30000      Délais entre deux tentatives de transfert en cas d'erreur (en ms)
 timeoutcon        Integer N    30000      Délais de timeout d'une connexion (en ms)
@@ -427,6 +444,12 @@ Exemple complet
            <multiplemonitors>1</multiplemonitors>
            <!-- Might be removed if not needed -->
            <snmpconfig>/etc/waarp/snmpconfig.xml</snmpconfig>
+           <pushmonitorurl>http://127.0.0.1:8999</pushmonitorurl>
+           <pushmonitorendpoint>/log</pushmonitorendpoint>
+           <pushmonitordelay>1000</pushmonitordelay>
+           <pushmonitorkeepconnection>true</pushmonitorkeepconnection>
+           <pushmonitorintervalincluded>true</pushmonitorintervalincluded>
+           <pushmonitortransformlongasstring>false</pushmonitortransformlongasstring>
        </server>
        <network>
            <serverport>6666</serverport>
