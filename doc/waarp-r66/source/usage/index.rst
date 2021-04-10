@@ -6,3 +6,4 @@ Utilisation
 
    filewatcher
    icap-configuration
+   monitor-exporter

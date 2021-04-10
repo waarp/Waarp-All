@@ -335,6 +335,35 @@ public class FileBasedElements {
    */
   public static final String XML_BUSINESS_FACTORY = "businessfactory";
   /**
+   * URL as http://myrest.org for PUSH REST JSON Monitor
+   */
+  public static final String XML_PUSH_MONITOR_URL = "pushmonitorurl";
+  /**
+   * End Point as /status such as URL + end point give
+   * http://myrest.org/status for PUSH REST JSON Monitor
+   */
+  public static final String XML_PUSH_MONITOR_ENDPOINT = "pushmonitorendpoint";
+  /**
+   * Delay in ms between 2 attempts for PUSH REST JSON Monitor
+   */
+  public static final String XML_PUSH_MONITOR_DELAY = "pushmonitordelay";
+  /**
+   * Keep connection between 2 attempts for PUSH REST JSON Monitor
+   */
+  public static final String XML_PUSH_MONITOR_KEEP_CONNECTION =
+      "pushmonitorkeepconnection";
+  /**
+   * Keep Monitor Interval Included
+   */
+  public static final String XML_PUSH_MONITOR_INTERVAL_INCLUDED =
+          "pushmonitorintervalincluded";
+  /**
+   * Keep monitorTransformLongAsString
+   */
+  public static final String XML_PUSH_MONITOR_TRANSFORM_LONG_AS_STRING =
+          "pushmonitortransformlongasstring";
+
+  /**
    * Usage of CPU Limit
    */
   public static final String XML_CSTRT_USECPULIMIT = "usecpulimit";
@@ -429,7 +458,13 @@ public class FileBasedElements {
       new XmlDecl(XmlType.LONG, XML_MONITOR_MINIMALDELAY),
       new XmlDecl(XmlType.STRING, XML_MONITOR_SNMP_CONFIG),
       new XmlDecl(XmlType.INTEGER, XML_MULTIPLE_MONITORS),
-      new XmlDecl(XmlType.STRING, XML_BUSINESS_FACTORY)
+      new XmlDecl(XmlType.STRING, XML_BUSINESS_FACTORY),
+      new XmlDecl(XmlType.STRING, XML_PUSH_MONITOR_URL),
+      new XmlDecl(XmlType.STRING, XML_PUSH_MONITOR_ENDPOINT),
+      new XmlDecl(XmlType.INTEGER, XML_PUSH_MONITOR_DELAY),
+      new XmlDecl(XmlType.BOOLEAN, XML_PUSH_MONITOR_KEEP_CONNECTION),
+      new XmlDecl(XmlType.BOOLEAN, XML_PUSH_MONITOR_INTERVAL_INCLUDED),
+      new XmlDecl(XmlType.BOOLEAN, XML_PUSH_MONITOR_TRANSFORM_LONG_AS_STRING)
   };
   /**
    * Default number of threads in pool for Server.

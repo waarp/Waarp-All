@@ -70,6 +70,7 @@ import org.waarp.openr66.protocol.configuration.R66SystemProperties;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolSystemException;
 import org.waarp.openr66.protocol.http.adminssl.HttpResponsiveSslHandler;
 import org.waarp.openr66.protocol.http.rest.HttpRestR66Handler.RESTHANDLERS;
+import org.waarp.openr66.protocol.monitoring.MonitorExporterTransfers;
 import org.waarp.openr66.protocol.networkhandler.R66ConstraintLimitHandler;
 import org.waarp.openr66.protocol.networkhandler.ssl.NetworkSslServerInitializer;
 import org.waarp.openr66.server.ServerInitDatabase;
@@ -198,6 +199,11 @@ public class FileBasedConfiguration {
     }
   }
 
+  private static boolean isDbInactive(final Configuration configuration) {
+    return admin == null || admin.getTypeDriver() == DbType.none ||
+           configuration.isSaveTaskRunnerWithNoDb();
+  }
+
   /**
    * @param config
    *
@@ -206,7 +212,7 @@ public class FileBasedConfiguration {
   private static boolean loadAuthentication(final Configuration config) {
     XmlHash hashConfig = new XmlHash(hashRootConfig.get(XML_IDENTITY));
     try {
-      if (config.isSaveTaskRunnerWithNoDb()) {
+      if (isDbInactive(config)) {
         // if no database, must load authentication from file
         final XmlValue value = hashConfig.get(XML_AUTHENTIFICATION_FILE);
         if (value != null && !value.isEmpty()) {
@@ -331,6 +337,59 @@ public class FileBasedConfiguration {
           logger.error("Bad Business Factory class", e);
           return false;
         }
+      }
+      value = hashConfig.get(XML_PUSH_MONITOR_URL);
+      if (value != null && !value.isEmpty()) {
+        try {
+          ParametersChecker.checkSanityString(value.getString());
+        } catch (final InvalidArgumentException e) {
+          logger.error("Bad Business Factory class", e);
+          return false;
+        }
+        String url = value.getString();
+        // Default value
+        String endpoint = "/";
+        value = hashConfig.get(XML_PUSH_MONITOR_ENDPOINT);
+        if (value != null && !value.isEmpty()) {
+          try {
+            ParametersChecker.checkSanityString(value.getString());
+          } catch (final InvalidArgumentException e) {
+            logger.error("Bad Business Factory class", e);
+            return false;
+          }
+          endpoint = value.getString();
+        }
+        // Default value
+        int delay = 1000;
+        value = hashConfig.get(XML_PUSH_MONITOR_DELAY);
+        if (value != null && !value.isEmpty()) {
+          delay = value.getInteger();
+          if (delay < 0) {
+            delay = 1000;
+          }
+          if (delay < 500) {
+            delay = 500;
+          }
+        }
+        // Default value
+        boolean keep = MonitorExporterTransfers.MONITOR_KEEP_CONNECTION_DEFAULT;
+        value = hashConfig.get(XML_PUSH_MONITOR_KEEP_CONNECTION);
+        if (value != null && !value.isEmpty()) {
+          keep = value.getBoolean();
+        }
+        // Default value
+        boolean intervalIncluded = MonitorExporterTransfers.MONITOR_INTERVAL_INCLUDED_DEFAULT;
+        value = hashConfig.get(XML_PUSH_MONITOR_INTERVAL_INCLUDED);
+        if (value != null && !value.isEmpty()) {
+          intervalIncluded = value.getBoolean();
+        }
+        // Default value
+        boolean longAsString = MonitorExporterTransfers.MONITOR_LONG_AS_STRING_DEFAULT;
+        value = hashConfig.get(XML_PUSH_MONITOR_TRANSFORM_LONG_AS_STRING);
+        if (value != null && !value.isEmpty()) {
+          longAsString = value.getBoolean();
+        }
+        config.setMonitorExporterTransfers(url, endpoint, delay, keep, intervalIncluded, longAsString);
       }
       return true;
     } finally {
@@ -1266,7 +1325,7 @@ public class FileBasedConfiguration {
    * @return True if OK
    */
   private static boolean loadFromDatabase(final Configuration config) {
-    if (!config.isSaveTaskRunnerWithNoDb()) {
+    if (!isDbInactive(config)) {
       // load from database the limit to apply
       try {
         final DbConfiguration configuration =
@@ -2127,7 +2186,7 @@ public class FileBasedConfiguration {
       logger.error("Cannot load configuration from Database");
       return false;
     }
-    if (config.isSaveTaskRunnerWithNoDb()) {
+    if (isDbInactive(config)) {
       // if no database, must load authentication from file
       if (!loadAuthentication(config)) {
         logger.error(CANNOT_LOAD_AUTHENTICATION_CONFIGURATION);
