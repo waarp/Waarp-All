@@ -100,6 +100,7 @@ public class FtpClientThread implements Runnable {
                                        isSsl);
     // Thread.yield();
     // System.err.println(id+" connect");
+    long start = System.currentTimeMillis();
     if (!client.connect()) {
       logger.error(id + " Cant connect");
       FtpClientTest.numberKO.incrementAndGet();
@@ -117,7 +118,8 @@ public class FtpClientThread implements Runnable {
       logger.info(id + " change type");
       client.changeFileType(true);
       if (type <= 0) {
-        logger.warn(id + " change mode passive");
+        long modeChange = System.currentTimeMillis();
+        logger.warn("{} change mode passive {}", id, (modeChange-start));
         client.changeMode(true);
         if (type <= -10) {
           for (int i = 0; i < numberIteration; i++) {
@@ -167,10 +169,13 @@ public class FtpClientThread implements Runnable {
             }
           }
         }
+        long endTransfer = System.currentTimeMillis();
+        logger.warn("{} end mode passive {}/s", id, numberIteration*2*1000/(endTransfer - modeChange));
         Thread.yield();
       }
       if (type >= 0) {
-        logger.warn(id + " change mode active");
+        long modeChange = System.currentTimeMillis();
+        logger.warn("{} change mode active {}", id, (modeChange-start));
         client.changeMode(false);
         if (type >= 10) {
           for (int i = 0; i < numberIteration; i++) {
@@ -221,6 +226,8 @@ public class FtpClientThread implements Runnable {
             }
           }
         }
+        long endTransfer = System.currentTimeMillis();
+        logger.warn("{} end mode active {}/s", id, numberIteration*2*1000/(endTransfer - modeChange));
       }
       String[] results = client.executeSiteCommand("XCRC " + remoteFilename);
       for (final String string : results) {

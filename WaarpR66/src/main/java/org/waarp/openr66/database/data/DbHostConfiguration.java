@@ -26,6 +26,7 @@ import org.dom4j.DocumentException;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
 import org.dom4j.Node;
+import org.joda.time.DateTime;
 import org.waarp.common.database.DbPreparedStatement;
 import org.waarp.common.database.DbSession;
 import org.waarp.common.database.exception.WaarpDatabaseException;
@@ -163,7 +164,7 @@ public class DbHostConfiguration extends AbstractDbDataDao<Business> {
   };
 
   public enum OtherFields {
-    root, version, seeallid
+    root, version, seeallid, lastMonitoringDateTime
   }
 
   protected static final String selectAllFields =
@@ -1224,4 +1225,109 @@ public class DbHostConfiguration extends AbstractDbDataDao<Business> {
     }
   }
 
+  /**
+   * @return the last DateTime for Monitoring
+   */
+  public DateTime getLastDateTimeMonitoring() {
+    Element others = getOtherElement();
+    if (others != null) {
+      final Element lastMonitoringDT = (Element) others
+          .selectSingleNode(OtherFields.lastMonitoringDateTime.name());
+      if (lastMonitoringDT != null) {
+        String dateTime = lastMonitoringDT.getText();
+        if (dateTime != null && !dateTime.isEmpty()) {
+          try {
+            return DateTime.parse(lastMonitoringDT.getText());
+          } catch (Exception ignored) {
+            return null;
+          }
+        }
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Update the last DateTime for Monitoring for this HostId
+   *
+   * @param lastDateTime
+   */
+  public void updateLastDateTimeMonitoring(final DateTime lastDateTime) {
+    Element others = getOtherElement();
+    if (others != null) {
+      final Element lastMonitoringDT = (Element) others
+          .selectSingleNode(OtherFields.lastMonitoringDateTime.name());
+      if (lastMonitoringDT != null) {
+        lastMonitoringDT.setText(lastDateTime.toString());
+      } else {
+        others.addElement(OtherFields.lastMonitoringDateTime.name())
+              .addText(lastDateTime.toString());
+      }
+    } else {
+      others = DocumentHelper.createElement(OtherFields.root.name());
+      others.addElement(OtherFields.lastMonitoringDateTime.name())
+            .addText(lastDateTime.toString());
+    }
+    setOtherElement(others);
+    try {
+      update();
+    } catch (final WaarpDatabaseException e) {
+      logger.debug("Not update?", e);
+      // ignore
+    }
+  }
+
+  /**
+   * @param hostid
+   *
+   * @return the last DateTime for Monitoring
+   */
+  public static DateTime getLastDateTimeMonitoring(final String hostid) {
+    DbHostConfiguration hostConfiguration;
+    try {
+      hostConfiguration = new DbHostConfiguration(hostid);
+    } catch (final WaarpDatabaseNoDataException e) {
+      hostConfiguration = new DbHostConfiguration(hostid, "", "", "", "");
+      try {
+        hostConfiguration.insert();
+      } catch (final WaarpDatabaseException e1) {
+        logger.debug("Not inserted?", e1);
+        // ignore and return
+        return null;
+      }
+    } catch (final WaarpDatabaseException e) {
+      logger.debug("Not found?", e);
+      // ignore and return
+      return null;
+    }
+    return hostConfiguration.getLastDateTimeMonitoring();
+  }
+
+  /**
+   * Update the last DateTime for Monitoring for this HostId
+   *
+   * @param hostid
+   * @param lastDateTime
+   */
+  public static void updateLastDateTimeMonitoring(final String hostid,
+                                                  final DateTime lastDateTime) {
+    DbHostConfiguration hostConfiguration;
+    try {
+      hostConfiguration = new DbHostConfiguration(hostid);
+    } catch (final WaarpDatabaseNoDataException e) {
+      hostConfiguration = new DbHostConfiguration(hostid, "", "", "", "");
+      try {
+        hostConfiguration.insert();
+      } catch (final WaarpDatabaseException e1) {
+        logger.debug("Not inserted?", e1);
+        // ignore and return
+        return;
+      }
+    } catch (final WaarpDatabaseException e) {
+      logger.debug("Not found?", e);
+      // ignore and return
+      return;
+    }
+    hostConfiguration.updateLastDateTimeMonitoring(lastDateTime);
+  }
 }

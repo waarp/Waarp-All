@@ -335,7 +335,7 @@ public class DbAdmin {
   @Override
   public String toString() {
     return "Admin: " + typeDriver.name() + ':' + server + ':' + user + ':' +
-           passwd.length();
+           (passwd == null? 0 : passwd.length());
   }
 
   /**

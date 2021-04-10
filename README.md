@@ -12,14 +12,14 @@ integrate transfers in larger business transactions.
 
 Current applications are:
 * Waarp R66: the transfer agent that implements the R66 protocol
-  ([source](https://github.com/waarp/Waarp-All/tree/v3.2/WaarpR66))
+  ([source](https://github.com/waarp/Waarp-All/tree/v3.5/WaarpR66))
 * Waarp Gateway FTP: a service to interconnect FTP- and R66-based file exchanges
-  ([source](https://github.com/waarp/Waarp-All/tree/v3.2/WaarpGatewayFtp))
+  ([source](https://github.com/waarp/Waarp-All/tree/v3.5/WaarpGatewayFtp))
 * Waarp Password: a tool to generate the password files used by Waarp R66 and
   Waarp Gateway FTP
-  ([source](https://github.com/waarp/Waarp-All/tree/v3.2/WaarpPassword))
+  ([source](https://github.com/waarp/Waarp-All/tree/v3.5/WaarpPassword))
 * Waarp FTP: a fast and extensible FTP server based on Netty
-  ([source](https://github.com/waarp/Waarp-All/tree/v3.2/WaarpFtp))
+  ([source](https://github.com/waarp/Waarp-All/tree/v3.5/WaarpFtp))
 
 The following applications are deprecated and won't be maintained anymore:
 - Waarp Administrator
@@ -27,8 +27,8 @@ The following applications are deprecated and won't be maintained anymore:
 
 ## Features
 
-* Supports Java 6-8
-* Supports multiple databases: Postgresql, MySQL, MariaDB,  Oracle DB, H2
+* Supports Java 6, 8 and 11 in different Jars
+* Supports multiple databases: Postgresql (recommended), MySQL, MariaDB,  Oracle DB, H2
 * Unlimited number of transfers
 * Unlimited number of connections
 * Traceability
@@ -38,8 +38,10 @@ The following applications are deprecated and won't be maintained anymore:
 * Encrypted connections with TLS
 * Partners authentication (with login/password and/or strong TLS client
   authentication)
+* Pre and Post actions, and Error actions, both on sender and receiver sides
 * Works in clusters
 * REST API
+* Support for ICAP servers submission (antivirus for example) 
 * And much much more!
 
 
@@ -47,29 +49,38 @@ The following applications are deprecated and won't be maintained anymore:
 
 ### Build from source
 
-Just clone the project and use maven to build it.
+Just clone the project and use Maven version 3.6.3 minimum to build it.
 
-*Even though Java 6 is supported at runtime, Java 8 is required to build the
+*Even though Java 6 is supported at runtime, Java 8 or 11 is required to build the
 project*
 
 ```sh
 git clone https://github.com/waarp/Waarp-All.git
 cd Waarp-All
-mvn package
+mvn -P jre11 package
 ```
 
-mvn package also runs the full test suite, which takes quite some time (for more
+You can use a JDK 11 with `jre11` profile, and a JDK 8 with `jre8` or `jre6` profiles.
+
+`mvn -P jre11 package` also runs the full test suite, which takes quite some time (for more
 information about setting up your environment to run the tests, see below).
 
 If you want to build the jars without running the tests, use the following
 command instead:
 
 ```sh
-mvn package -D skipTests
+mvn -p jre11 -D skipTests package
 ```
 
 After that, you will find the JARs for each module and application in their
 respective `target` directory (ex: `./WaarpR66/target/WaarpR66-*.jar`)
+
+And moreover, you will have also a shaded jar that include all dependencies,
+except Oracle JDBC for licence issue, under name `WaarpR66-X.Y.Z-jar-with-depencencies.jar`, or
+equivalent for all runnable jars.
+
+A detailed documentation (in French) is also available in the directory 'doc/releasing.md'.
+
 
 ### Installation
 
@@ -88,7 +99,7 @@ The full test suite (including integration tests on several databases) requires
 From the root of the project, run the command:
 
 ```sh
-mvn test
+mvn -P jre11 test
 ```
 
 ### Build the documentation

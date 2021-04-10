@@ -426,8 +426,9 @@ public class HttpRestR66Handler extends HttpRestHandler {
     // Configure the server.
     final ServerBootstrap httpBootstrap = new ServerBootstrap();
     WaarpNettyUtil.setServerBootstrap(httpBootstrap, Configuration.configuration
-        .getHttpWorkerGroup(), (int) Configuration.configuration
-        .getTimeoutCon());
+                                          .getHttpWorkerGroup(), Configuration.configuration.getHttpWorkerGroup(),
+                                      (int) Configuration.configuration
+                                          .getTimeoutCon());
     // Set up the event pipeline factory.
     if (restConfiguration.isRestSsl()) {
       httpBootstrap.childHandler(new HttpRestR66Initializer(false, Configuration

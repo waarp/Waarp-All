@@ -146,7 +146,7 @@ public class NetworkTransaction {
   public NetworkTransaction() {
     networkChannelGroup = new DefaultChannelGroup("NetworkChannels",
                                                   Configuration.configuration
-                                                      .getHandlerGroup()
+                                                      .getSubTaskGroup()
                                                       .next());
     Configuration.configuration.setupLimitHandler();
     clientBootstrap = new Bootstrap();

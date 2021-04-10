@@ -42,6 +42,21 @@ public class FtpApacheClientTransactionTest extends WaarpFtpClient {
    */
   public FtpApacheClientTransactionTest(String server, int port,
                                         String username, String passwd,
+                                        String account, int isSsl,
+                                        boolean trace) {
+    super(server, port, username, passwd, account, false, isSsl, 0, 10000, trace);
+    final File dir = new File("/tmp/GGFTP/" + username + '/' + account);
+    dir.mkdirs();
+  }
+  /**
+   * @param server
+   * @param port
+   * @param username
+   * @param passwd
+   * @param account
+   */
+  public FtpApacheClientTransactionTest(String server, int port,
+                                        String username, String passwd,
                                         String account, int isSsl) {
     super(server, port, username, passwd, account, false, isSsl, 0, 10000);
     final File dir = new File("/tmp/GGFTP/" + username + '/' + account);
@@ -98,6 +113,53 @@ public class FtpApacheClientTransactionTest extends WaarpFtpClient {
         results = listFiles();
         for (final String string : results) {
           System.err.println("LIST: " + string);
+        }
+        return true;
+      } else {
+        output = new NullOutputStream();
+        status = ftpClient.retrieveFile(remote, output);
+        output.flush();
+        output.close();
+        return status;
+      }
+    } catch (final IOException e) {
+      if (output != null) {
+        try {
+          output.close();
+        } catch (final IOException ignored) {
+        }
+      }
+      if (fileInputStream != null) {
+        try {
+          fileInputStream.close();
+        } catch (final IOException ignored) {
+        }
+      }
+      e.printStackTrace();
+      return false;
+    }
+  }
+
+  /**
+   * Ask to transfer a file
+   *
+   * @param local
+   * @param remote
+   * @param store
+   *
+   * @return True if the file is correctly transfered
+   */
+  public boolean simpleTransferFile(String local, String remote,
+                                    boolean store) {
+    boolean status = false;
+    OutputStream output = null;
+    final FileInputStream fileInputStream = null;
+    try {
+      if (store) {
+        status = transferFile(local, remote, 1);
+        if (!status) {
+          System.err.println("Cannot finalize store like operation");
+          return false;
         }
         return true;
       } else {

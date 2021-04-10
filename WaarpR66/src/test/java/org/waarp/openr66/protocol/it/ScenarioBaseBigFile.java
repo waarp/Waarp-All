@@ -83,7 +83,7 @@ public abstract class ScenarioBaseBigFile extends TestAbstract {
   public static int NUMBER_FILES = 1;
   public static int LARGE_SIZE = 500000000;
   public static int BANDWIDTH = 10000000;
-  public static int BLOCK_SIZE = 65536;
+  public static int BLOCK_SIZE = 1048576;
   public static long MAX_USED_MEMORY = 536870912;
 
   private static int r66Pid1 = 999999;

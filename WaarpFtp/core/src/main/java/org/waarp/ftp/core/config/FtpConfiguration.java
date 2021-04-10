@@ -48,6 +48,11 @@ public abstract class FtpConfiguration {
    */
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(FtpConfiguration.class);
+  /**
+   * Global Accessor
+   */
+  public static Object ftpConfiguration;
+
   // FTP Configuration: Externals
   /**
    * Default session limit 64Mbit, so up to 8 full simultaneous clients
@@ -182,6 +187,11 @@ public abstract class FtpConfiguration {
   private int maxGlobalMemory = 1073741824;
 
   /**
+   * 1 = Active, -1 = Passive, 0 = Both
+   */
+  private int activePassiveMode = 0;
+
+  /**
    * General Configuration Object
    */
   private final HashMap<String, Object> properties =
@@ -212,6 +222,7 @@ public abstract class FtpConfiguration {
     this.businessHandler = businessHandler;
     internalConfiguration = new FtpInternalConfiguration(this);
     this.fileParameter = fileParameter;
+    ftpConfiguration = this;
   }
 
   /**
@@ -685,6 +696,21 @@ public abstract class FtpConfiguration {
    */
   public static void setDataTimeoutCon(final long dATATIMEOUTCON) {
     dataTimeoutCon = dATATIMEOUTCON;
+  }
+
+  /**
+   * @return the active (1) or passive (-1) or both (0) mode
+   */
+  public int getActivePassiveMode() {
+    return activePassiveMode;
+  }
+
+  /**
+   * @param activePassiveModeArg the mode to set (1 = Active, -1 = Passive, 0 = Both - default -)
+   */
+  public void setActivePassiveMode(final int activePassiveModeArg) {
+    activePassiveMode =
+        activePassiveModeArg < 0? -1 : (activePassiveModeArg > 0? 1 : 0);
   }
 
   /**

@@ -82,8 +82,9 @@ public class WaarpNettyUtilTest {
     WaarpNettyUtil.setBootstrap(clientBootstrap, workerGroup, 10000);
     clientBootstrap.handler(new HttpClientInitializer(null));
 
+    final EventLoopGroup serverGroup = new NioEventLoopGroup();
     final ServerBootstrap bootstrap = new ServerBootstrap();
-    WaarpNettyUtil.setServerBootstrap(bootstrap, workerGroup, 30000);
+    WaarpNettyUtil.setServerBootstrap(bootstrap, serverGroup, workerGroup, 30000);
     bootstrap.childHandler(new HttpServerInitializer(null));
     ChannelFuture future = null;
     try {
@@ -111,6 +112,7 @@ public class WaarpNettyUtilTest {
         }
       }
       workerGroup.shutdownGracefully();
+      serverGroup.shutdownGracefully();
       System.out.println("NoSsl 1 group done");
     }
   }
@@ -146,8 +148,9 @@ public class WaarpNettyUtilTest {
 
     clientBootstrap.handler(new HttpClientInitializer(waarpSslContextFactory));
 
+    final EventLoopGroup serverGroup = new NioEventLoopGroup();
     final ServerBootstrap bootstrap = new ServerBootstrap();
-    WaarpNettyUtil.setServerBootstrap(bootstrap, workerGroup, 30000);
+    WaarpNettyUtil.setServerBootstrap(bootstrap, serverGroup, workerGroup, 30000);
     bootstrap.childHandler(new HttpServerInitializer(waarpSslContextFactory));
     ChannelFuture future = null;
     try {
@@ -184,6 +187,7 @@ public class WaarpNettyUtilTest {
         }
       }
       workerGroup.shutdownGracefully();
+      serverGroup.shutdownGracefully();
       System.out.println("Ssl done");
     }
   }
@@ -203,8 +207,9 @@ public class WaarpNettyUtilTest {
     WaarpNettyUtil.setBootstrap(clientBootstrap, workerGroup, 10000);
     clientBootstrap.handler(new HttpClientInitializer(null));
 
+    final EventLoopGroup serverGroup = new NioEventLoopGroup();
     final ServerBootstrap bootstrap = new ServerBootstrap();
-    WaarpNettyUtil.setServerBootstrap(bootstrap, workerGroup, 30000);
+    WaarpNettyUtil.setServerBootstrap(bootstrap, serverGroup, workerGroup, 30000);
     bootstrap.childHandler(new HttpServerInitializer(null));
     ChannelFuture future = null;
     try {
@@ -246,6 +251,7 @@ public class WaarpNettyUtilTest {
       constraintLimitHandler.release();
       trafficShapingHandler.release();
       workerGroup.shutdownGracefully();
+      serverGroup.shutdownGracefully();
       System.out.println("Traffic and Constraint done");
     }
 
