@@ -159,7 +159,8 @@ public class LocalExecSslClientTest extends Thread {
 
     // configure the server
     final ServerBootstrap bootstrapServer = new ServerBootstrap();
-    WaarpNettyUtil.setServerBootstrap(bootstrapServer, workerGroup, 1000);
+    WaarpNettyUtil
+        .setServerBootstrap(bootstrapServer, workerGroup, workerGroup, 1000);
 
     // Configure the pipeline factory.
     final WaarpSslContextFactory waarpSslContextFactoryServer =

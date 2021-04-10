@@ -111,30 +111,35 @@ public final class WaarpNettyUtil {
    * Add default configuration for server bootstrap
    *
    * @param bootstrap
-   * @param group
+   * @param parentGroup
+   * @param childGroup
    * @param timeout
    */
   public static void setServerBootstrap(final ServerBootstrap bootstrap,
-                                        final EventLoopGroup group,
+                                        final EventLoopGroup parentGroup,
+                                        final EventLoopGroup childGroup,
                                         final int timeout) {
-    setServerBootstrap(bootstrap, group, timeout, DEFAULT_LOW_WATER_MARK, true);
+    setServerBootstrap(bootstrap, parentGroup, childGroup, timeout,
+                       DEFAULT_LOW_WATER_MARK, true);
   }
 
   /**
    * Add default configuration for server bootstrap
    *
    * @param bootstrap
-   * @param group
+   * @param parentGroup
+   * @param childGroup
    * @param timeout
    * @param maxBufSize
    * @param autoRead
    */
   public static void setServerBootstrap(final ServerBootstrap bootstrap,
-                                        final EventLoopGroup group,
+                                        final EventLoopGroup parentGroup,
+                                        final EventLoopGroup childGroup,
                                         final int timeout, final int maxBufSize,
                                         final boolean autoRead) {
     bootstrap.channel(NioServerSocketChannel.class);
-    bootstrap.group(group);
+    bootstrap.group(parentGroup, childGroup);
     // bootstrap.option(ChannelOption.TCP_NODELAY, true)
     bootstrap.option(ChannelOption.SO_REUSEADDR, true);
     bootstrap.childOption(ChannelOption.TCP_NODELAY, false);

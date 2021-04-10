@@ -24,6 +24,7 @@ import org.waarp.common.command.exception.Reply501Exception;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.ftp.core.command.AbstractCommand;
+import org.waarp.ftp.core.config.FtpConfiguration;
 import org.waarp.ftp.core.utils.FtpChannelUtils;
 
 import java.net.InetAddress;
@@ -41,6 +42,12 @@ public class PORT extends AbstractCommand {
 
   @Override
   public void exec() throws Reply501Exception {
+    // Check if Active mode is OK
+    if (((FtpConfiguration) (FtpConfiguration.ftpConfiguration))
+            .getActivePassiveMode() < 0) {
+      // Passive only
+      throw new Reply501Exception("Active mode not allowed");
+    }
     // First Check if any argument
     if (!hasArg()) {
       final InetSocketAddress inetSocketAddress =

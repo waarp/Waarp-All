@@ -69,19 +69,17 @@ public class InternalRunner {
         new WaarpThreadFactory("InternalRunner", false));
     isRunning = true;
     final BlockingQueue<Runnable> workQueue = new SynchronousQueue<Runnable>();
-    threadPoolExecutor =
-        new ThreadPoolExecutor(Configuration.configuration.getRunnerThread(),
-                               Configuration.configuration.getRunnerThread() *
-                               2, 1000, TimeUnit.MILLISECONDS, workQueue,
-                               new WaarpThreadFactory("ClientRunner"),
-                               new RejectedExecutionHandler() {
-                                 @Override
-                                 public void rejectedExecution(
-                                     final Runnable runnable,
-                                     final ThreadPoolExecutor threadPoolExecutor) {
-                                   logger.debug("Task rescheduled");
-                                 }
-                               });
+    threadPoolExecutor = new ThreadPoolExecutor(
+        Configuration.configuration.getRunnerThread() / 2,
+        Configuration.configuration.getRunnerThread() * 2, 1000,
+        TimeUnit.MILLISECONDS, workQueue,
+        new WaarpThreadFactory("ClientRunner"), new RejectedExecutionHandler() {
+      @Override
+      public void rejectedExecution(final Runnable runnable,
+                                    final ThreadPoolExecutor threadPoolExecutor) {
+        logger.debug("Task rescheduled");
+      }
+    });
     scheduledFuture = scheduledExecutorService.scheduleWithFixedDelay(commander,
                                                                       Configuration.configuration
                                                                           .getDelayCommander(),

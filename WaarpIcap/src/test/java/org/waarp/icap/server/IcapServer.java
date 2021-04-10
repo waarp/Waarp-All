@@ -80,8 +80,8 @@ public class IcapServer {
                                              new WaarpThreadFactory(
                                                  "IcapServer"));
     WaarpNettyUtil
-        .setServerBootstrap(bootstrap, workerGroup, 30000, ZERO_COPY_CHUNK_SIZE,
-                            true);
+        .setServerBootstrap(bootstrap, workerGroup, workerGroup, 30000,
+                            ZERO_COPY_CHUNK_SIZE, true);
 
     // Configure the pipeline factory.
     icapServerInitializer = new IcapServerInitializer(delay, executor);

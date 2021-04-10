@@ -75,7 +75,8 @@ public class LocalExecServer {
     // Configure the server.
     try {
       final ServerBootstrap bootstrap = new ServerBootstrap();
-      WaarpNettyUtil.setServerBootstrap(bootstrap, workerGroup, 30000);
+      WaarpNettyUtil
+          .setServerBootstrap(bootstrap, workerGroup, workerGroup, 30000);
 
       // Configure the pipeline factory.
       bootstrap.childHandler(new LocalExecServerInitializer(delay, executor));

@@ -198,7 +198,7 @@ public abstract class AbstractFtpClientTest {
     numberOK.set(0);
     final File localFilename = new File("/tmp/ftpfile.bin");
     testFtp4J("127.0.0.1", 2021, "fred", "fred2", "a", SSL_MODE,
-              localFilename.getAbsolutePath(), 0, 50, 1, 1);
+              localFilename.getAbsolutePath(), 0, 50, 1, 100);
   }
 
 }

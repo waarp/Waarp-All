@@ -25,6 +25,7 @@ import org.waarp.common.command.exception.Reply501Exception;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.ftp.core.command.AbstractCommand;
+import org.waarp.ftp.core.config.FtpConfiguration;
 import org.waarp.ftp.core.config.FtpInternalConfiguration;
 import org.waarp.ftp.core.data.FtpDataAsyncConn;
 import org.waarp.ftp.core.utils.FtpChannelUtils;
@@ -44,6 +45,12 @@ public class PASV extends AbstractCommand {
 
   @Override
   public void exec() throws Reply425Exception, Reply501Exception {
+    // Check if Passive mode is OK
+    if (((FtpConfiguration) (FtpConfiguration.ftpConfiguration))
+            .getActivePassiveMode() > 0) {
+      // Active only
+      throw new Reply501Exception("Passive mode not allowed");
+    }
     // First Check if any argument
     if (hasArg()) {
       throw new Reply501Exception("No argument allowed");

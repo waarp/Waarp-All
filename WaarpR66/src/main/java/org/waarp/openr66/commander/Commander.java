@@ -64,7 +64,7 @@ public class Commander implements CommanderInterface {
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(Commander.class);
 
-  public static final int LIMIT_MAX_SUBMIT = 10000;
+  public static final int LIMIT_MAX_SUBMIT = 50000;
   public static final int LIMIT_SUBMIT = 1000;
 
   private InternalRunner internalRunner;

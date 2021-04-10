@@ -101,7 +101,8 @@ public class LocalExecSslServer {
     // Configure the server.
     try {
       final ServerBootstrap bootstrap = new ServerBootstrap();
-      WaarpNettyUtil.setServerBootstrap(bootstrap, workerGroup, 30000);
+      WaarpNettyUtil
+          .setServerBootstrap(bootstrap, workerGroup, workerGroup, 30000);
 
       // Load the KeyStore (No certificates)
       final WaarpSecureKeyStore WaarpSecureKeyStoreNew =

@@ -276,13 +276,32 @@ public class XMLRuleDAO implements RuleDAO {
           final Node taskNode = tasksList.item(j);
           if (taskNode.getNodeType() == Node.ELEMENT_NODE) {
             final Element task = (Element) taskNode;
-            final String type =
-                task.getElementsByTagName(TYPE_FIELD).item(0).getTextContent();
-            final String path =
-                task.getElementsByTagName(PATH_FIELD).item(0).getTextContent();
-            final int delay = Integer.parseInt(
-                task.getElementsByTagName(DELAY_FIELD).item(0)
-                    .getTextContent());
+            NodeList nodeList = task.getElementsByTagName(TYPE_FIELD);
+            if (nodeList == null || nodeList.getLength() == 0) {
+              logger.error("Field not found in Rule: " + TYPE_FIELD);
+              continue;
+            }
+            final String type = nodeList.item(0).getTextContent();
+            nodeList = task.getElementsByTagName(PATH_FIELD);
+            final String path;
+            if (nodeList != null && nodeList.getLength() > 0) {
+              path = nodeList.item(0).getTextContent();
+            } else {
+              path = "";
+            }
+            nodeList = task.getElementsByTagName(DELAY_FIELD);
+            final int delay;
+            if (nodeList != null && nodeList.getLength() > 0) {
+              int tmpDelay = 0;
+              try {
+                tmpDelay = Integer.parseInt(nodeList.item(0).getTextContent());
+              } catch (NumberFormatException ignored) {
+                // ignore
+              }
+              delay = tmpDelay;
+            } else {
+              delay = 0;
+            }
             res.add(new RuleTask(type, path, delay));
           }
         }

@@ -101,7 +101,8 @@ public class ConfigurationProxyR66 extends Configuration {
         new DefaultChannelGroup("OpenR66", subTaskGroup.next());
     if (isUseNOSSL()) {
       serverBootstrap = new ServerBootstrap();
-      WaarpNettyUtil.setServerBootstrap(serverBootstrap, workerGroup,
+      WaarpNettyUtil.setServerBootstrap(serverBootstrap, serverGroup,
+                                        workerGroup,
                                         (int) getTimeoutCon(),
                                         getBlockSize() + 64, false);
       networkServerInitializer = new NetworkServerInitializerProxy(true);
@@ -134,7 +135,8 @@ public class ConfigurationProxyR66 extends Configuration {
 
     if (isUseSSL() && getHostSslId() != null) {
       serverSslBootstrap = new ServerBootstrap();
-      WaarpNettyUtil.setServerBootstrap(serverSslBootstrap, workerGroup,
+      WaarpNettyUtil.setServerBootstrap(serverSslBootstrap, serverGroup,
+                                        workerGroup,
                                         (int) getTimeoutCon(),
                                         getBlockSize() + 64, false);
       networkSslServerInitializer = new NetworkSslServerInitializerProxy(false);
@@ -184,6 +186,7 @@ public class ConfigurationProxyR66 extends Configuration {
     // Configure the server.
     httpBootstrap = new ServerBootstrap();
     WaarpNettyUtil.setServerBootstrap(httpBootstrap, httpWorkerGroup,
+                                      httpWorkerGroup,
                                       (int) getTimeoutCon());
     // Set up the event pipeline factory.
     httpBootstrap.childHandler(new HttpInitializer(isUseHttpCompression()));
@@ -200,7 +203,7 @@ public class ConfigurationProxyR66 extends Configuration {
     // Configure the server.
     httpsBootstrap = new ServerBootstrap();
     // Set up the event pipeline factory.
-    WaarpNettyUtil.setServerBootstrap(httpsBootstrap, httpWorkerGroup,
+    WaarpNettyUtil.setServerBootstrap(httpsBootstrap, httpWorkerGroup, httpWorkerGroup,
                                       (int) getTimeoutCon());
     httpsBootstrap.childHandler(new HttpSslInitializer(isUseHttpCompression()));
     // Bind and start to accept incoming connections.

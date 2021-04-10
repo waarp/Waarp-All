@@ -93,7 +93,7 @@ public abstract class ScenarioBaseLoop extends TestAbstract {
       "/tmp/R66/scenario_big_file_limitbdw/" + SERVER_1_REWRITTEN_XML;
   public static int NUMBER_FILES = 1;
   public static int BANDWIDTH = 100000000;
-  public static int BLOCK_SIZE = 65536;
+  public static int BLOCK_SIZE = 1048576;
   public static long MAX_USED_MEMORY = 2048 * 1024 * 1024;
 
   private static int r66Pid1 = 999999;
@@ -126,6 +126,8 @@ public abstract class ScenarioBaseLoop extends TestAbstract {
       Processes.setJvmArgsDefault("-Xms1024m -Xmx1024m ");
     } else if ("-Xmx2048m".equalsIgnoreCase(xmx)) {
       Processes.setJvmArgsDefault("-Xms2048m -Xmx2048m ");
+    } else if ("-Xmx4096m".equalsIgnoreCase(xmx)) {
+      Processes.setJvmArgsDefault("-Xms4096m -Xmx4096m ");
     } else {
       Processes.setJvmArgsDefault("-Xms1024m -Xmx1024m ");
     }
@@ -343,7 +345,7 @@ public abstract class ScenarioBaseLoop extends TestAbstract {
     int nb = 0;
     int every10sec = 10;
     HttpGet request =
-            new HttpGet("http://127.0.0.1:8098/v2/transfers?limit=100000");
+        new HttpGet("http://127.0.0.1:8098/v2/transfers?limit=100000");
     final long startTime = System.currentTimeMillis();
     try {
       httpClient = HttpClientBuilder.create().setConnectionManagerShared(true)
@@ -398,8 +400,9 @@ public abstract class ScenarioBaseLoop extends TestAbstract {
     }
     final long stopTime = System.currentTimeMillis();
     totalTransfers -= nb;
-    logger.warn("Duration {} for {} item so {} items/s", (stopTime - startTime) / 1000.0, totalTransfers,
-            totalTransfers / ((stopTime - startTime) / 1000.0));
+    logger.warn("Duration {} for {} item so {} items/s",
+                (stopTime - startTime) / 1000.0, totalTransfers,
+                totalTransfers / ((stopTime - startTime) / 1000.0));
     Configuration.configuration.setTimeoutCon(100);
     WaarpLoggerFactory.setLogLevel(WaarpLogLevel.ERROR);
     for (int pid : PIDS) {
@@ -543,66 +546,7 @@ public abstract class ScenarioBaseLoop extends TestAbstract {
 
   @Test
   public void test03_LoopBigSendsSyncSslNoLimit()
-          throws IOException, InterruptedException {
-    if (SystemPropertyUtil.get(IT_LONG_TEST, false)) {
-      NUMBER_FILES = 700;
-    } else {
-      NUMBER_FILES = -1;
-      logger.warn("Test disabled without IT_LONG_TEST");
-      Assume.assumeTrue("If the Long term tests are allowed",
-                        SystemPropertyUtil.get(IT_LONG_TEST, false));
-      return;
-    }
-    logger.warn("Start {} {}", Processes.getCurrentMethodName(), NUMBER_FILES);
-    int limit = 700;
-    int middleSize = 360 - (limit / 2);
-
-    Assume.assumeNotNull(networkTransaction);
-      Configuration.configuration.changeNetworkLimit(0, 0, 0, 0, 1000);
-    File baseDir = new File("/tmp/R66/scenario_big_file_limitbdw/R1/out/");
-    for (int i = 0; i < limit; i++) {
-      int size = (middleSize + i) * 1024;
-      File fileOut = new File(baseDir, "hello" + size);
-      final File outHello = generateOutFile(fileOut.getAbsolutePath(), size);
-    }
-    logger.warn("End of file creations");
-    long timestart = System.currentTimeMillis();
-    R66Future[] futures = new R66Future[limit];
-    for (int i = 0; i < limit; i++) {
-      int size = (middleSize + i) * 1024;
-      final R66Future future = new R66Future(true);
-      futures[i] = future;
-      final TestTransferNoDb transaction =
-                new TestTransferNoDb(future, "server2-ssl", "hello" + size, "loop",
-                        "Test Loop Send", true, BLOCK_SIZE,
-                        DbConstantR66.ILLEGALVALUE,
-                        networkTransaction);
-      transaction.setNormalInfoAsWarn(false);
-      transaction.run();
-    }
-    for (int i = 0; i < limit; i++) {
-      futures[i].awaitOrInterruptible();
-      assertTrue(futures[i].isSuccess());
-    }
-    //logger.info("Runner: {}", future.getRunner());
-    long timestop = System.currentTimeMillis();
-    logger.warn("Direct {}, Recv {}, LimitBandwidth {} " +
-                    "({} seconds,  {} MBPS vs {} " +
-                    "and {}) of size {} with block size {}", true, false, limit,
-            (timestop - timestart) / 1000,
-            limit * 180*1024 / 1000.0 / (timestop - timestart),
-            Configuration.configuration.getServerGlobalReadLimit() /
-                    1000000.0,
-            Configuration.configuration.getServerChannelReadLimit() /
-                    1000000.0, limit *180*1024, BLOCK_SIZE);
-    checkMemory();
-    logger.warn("End {}", Processes.getCurrentMethodName());
-  }
-
-
-  @Test
-  public void test04_LoopBigSendsSyncNoLimit()
-          throws IOException, InterruptedException {
+      throws IOException, InterruptedException {
     if (SystemPropertyUtil.get(IT_LONG_TEST, false)) {
       NUMBER_FILES = 700;
     } else {
@@ -632,10 +576,9 @@ public abstract class ScenarioBaseLoop extends TestAbstract {
       final R66Future future = new R66Future(true);
       futures[i] = future;
       final TestTransferNoDb transaction =
-              new TestTransferNoDb(future, "server2", "hello" + size, "loop",
-                      "Test Loop Send", true, BLOCK_SIZE,
-                      DbConstantR66.ILLEGALVALUE,
-                      networkTransaction);
+          new TestTransferNoDb(future, "server2-ssl", "hello" + size, "loop",
+                               "Test Loop Send", true, BLOCK_SIZE,
+                               DbConstantR66.ILLEGALVALUE, networkTransaction);
       transaction.setNormalInfoAsWarn(false);
       transaction.run();
     }
@@ -646,14 +589,72 @@ public abstract class ScenarioBaseLoop extends TestAbstract {
     //logger.info("Runner: {}", future.getRunner());
     long timestop = System.currentTimeMillis();
     logger.warn("Direct {}, Recv {}, LimitBandwidth {} " +
-                    "({} seconds,  {} MBPS vs {} " +
-                    "and {}) of size {} with block size {}", true, false, limit,
-            (timestop - timestart) / 1000,
-            limit * 180*1024 / 1000.0 / (timestop - timestart),
-            Configuration.configuration.getServerGlobalReadLimit() /
-                    1000000.0,
-            Configuration.configuration.getServerChannelReadLimit() /
-                    1000000.0, limit *180*1024, BLOCK_SIZE);
+                "({} seconds,  {} MBPS vs {} " +
+                "and {}) of size {} with block size {}", true, false, limit,
+                (timestop - timestart) / 1000,
+                limit * 180 * 1024 / 1000.0 / (timestop - timestart),
+                Configuration.configuration.getServerGlobalReadLimit() /
+                1000000.0,
+                Configuration.configuration.getServerChannelReadLimit() /
+                1000000.0, limit * 180 * 1024, BLOCK_SIZE);
+    checkMemory();
+    logger.warn("End {}", Processes.getCurrentMethodName());
+  }
+
+
+  @Test
+  public void test04_LoopBigSendsSyncNoLimit()
+      throws IOException, InterruptedException {
+    if (SystemPropertyUtil.get(IT_LONG_TEST, false)) {
+      NUMBER_FILES = 700;
+    } else {
+      NUMBER_FILES = -1;
+      logger.warn("Test disabled without IT_LONG_TEST");
+      Assume.assumeTrue("If the Long term tests are allowed",
+                        SystemPropertyUtil.get(IT_LONG_TEST, false));
+      return;
+    }
+    logger.warn("Start {} {}", Processes.getCurrentMethodName(), NUMBER_FILES);
+    int limit = 700;
+    int middleSize = 360 - (limit / 2);
+
+    Assume.assumeNotNull(networkTransaction);
+    Configuration.configuration.changeNetworkLimit(0, 0, 0, 0, 1000);
+    File baseDir = new File("/tmp/R66/scenario_big_file_limitbdw/R1/out/");
+    for (int i = 0; i < limit; i++) {
+      int size = (middleSize + i) * 1024;
+      File fileOut = new File(baseDir, "hello" + size);
+      final File outHello = generateOutFile(fileOut.getAbsolutePath(), size);
+    }
+    logger.warn("End of file creations");
+    long timestart = System.currentTimeMillis();
+    R66Future[] futures = new R66Future[limit];
+    for (int i = 0; i < limit; i++) {
+      int size = (middleSize + i) * 1024;
+      final R66Future future = new R66Future(true);
+      futures[i] = future;
+      final TestTransferNoDb transaction =
+          new TestTransferNoDb(future, "server2", "hello" + size, "loop",
+                               "Test Loop Send", true, BLOCK_SIZE,
+                               DbConstantR66.ILLEGALVALUE, networkTransaction);
+      transaction.setNormalInfoAsWarn(false);
+      transaction.run();
+    }
+    for (int i = 0; i < limit; i++) {
+      futures[i].awaitOrInterruptible();
+      assertTrue(futures[i].isSuccess());
+    }
+    //logger.info("Runner: {}", future.getRunner());
+    long timestop = System.currentTimeMillis();
+    logger.warn("Direct {}, Recv {}, LimitBandwidth {} " +
+                "({} seconds,  {} MBPS vs {} " +
+                "and {}) of size {} with block size {}", true, false, limit,
+                (timestop - timestart) / 1000,
+                limit * 180 * 1024 / 1000.0 / (timestop - timestart),
+                Configuration.configuration.getServerGlobalReadLimit() /
+                1000000.0,
+                Configuration.configuration.getServerChannelReadLimit() /
+                1000000.0, limit * 180 * 1024, BLOCK_SIZE);
     checkMemory();
     logger.warn("End {}", Processes.getCurrentMethodName());
   }

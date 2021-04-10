@@ -311,7 +311,7 @@ public abstract class ScenarioBaseLoopBenchmark extends TestAbstract {
   @AfterClass
   public static void tearDownAfterClass() throws Exception {
     CloseableHttpClient httpClient = null;
-    int max = SystemPropertyUtil.get(IT_LONG_TEST, false)? 4000 : 500;
+    int max = SystemPropertyUtil.get(IT_LONG_TEST, false)? 8000 : 500;
     int totalTransfers = max;
     int nb = 0;
     int every10sec = 10;
@@ -409,13 +409,13 @@ public abstract class ScenarioBaseLoopBenchmark extends TestAbstract {
 
   private int initBenchmark() throws IOException {
     NUMBER_FILES = SystemPropertyUtil.get(IT_LONG_TEST, false)? 2000 : 200;
-    int factor = 360 * 1024 * 2 / NUMBER_FILES;
+    int factor = 250 * 1024 * 2 / NUMBER_FILES;
     Assume.assumeNotNull(networkTransaction);
     Configuration.configuration.changeNetworkLimit(0, 0, 0, 0, 1000);
     File baseDir = new File("/tmp/R66/" + PATH_COMMON + "/R1/out/");
     File baseDir2 = new File("/tmp/R66/" + PATH_COMMON + "/R2/out/");
     for (int i = 1; i <= NUMBER_FILES; i++) {
-      int size = i * factor;
+      int size = 10000 + i * factor;
       File fileOut = new File(baseDir, "hello" + size);
       final File outHello = generateOutFile(fileOut.getAbsolutePath(), size);
       File fileOut2 = new File(baseDir2, "hello" + size);
@@ -428,7 +428,7 @@ public abstract class ScenarioBaseLoopBenchmark extends TestAbstract {
   private void runLoopInit(String ruleName, String serverName, int factor) {
     R66Future[] futures = new R66Future[NUMBER_FILES];
     for (int i = 1; i <= NUMBER_FILES; i++) {
-      int size = i * factor;
+      int size = 10000 + i * factor;
       final R66Future future = new R66Future(true);
       futures[i - 1] = future;
       /*
@@ -469,7 +469,7 @@ public abstract class ScenarioBaseLoopBenchmark extends TestAbstract {
                 "({} seconds,  {} MBPS vs {} " +
                 "and {}) of size {} with block size {}", true, false,
                 NUMBER_FILES, (timestop - timestart) / 1000,
-                NUMBER_FILES * (factor * (NUMBER_FILES / 2)) / 1000.0 /
+                NUMBER_FILES * (10000 + factor * (NUMBER_FILES / 2)) / 1000.0 /
                 (timestop - timestart),
                 Configuration.configuration.getServerGlobalReadLimit() /
                 1000000.0,
@@ -493,7 +493,7 @@ public abstract class ScenarioBaseLoopBenchmark extends TestAbstract {
                 "({} seconds,  {} MBPS vs {} " +
                 "and {}) of size {} with block size {}", true, false,
                 NUMBER_FILES, (timestop - timestart) / 1000,
-                NUMBER_FILES * (factor + (NUMBER_FILES / 2)) / 1000.0 /
+                NUMBER_FILES * (10000 + factor + (NUMBER_FILES / 2)) / 1000.0 /
                 (timestop - timestart),
                 Configuration.configuration.getServerGlobalReadLimit() /
                 1000000.0,

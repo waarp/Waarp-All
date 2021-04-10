@@ -262,6 +262,10 @@ public class FileBasedConfiguration extends FtpConfiguration {
       new XmlDecl(XmlType.STRING, XML_DBPASSWD)
   };
   /**
+   * Allow PASSIVE = -1 / ACTIVE = 1 / Both = 0
+   */
+  private static final String XML_ACTIVE_OR_PASSIVE = "activepassive";
+  /**
    * Should a file be deleted when a Store like command is aborted
    */
   private static final String XML_DELETEONABORT = "deleteonabort";
@@ -361,6 +365,7 @@ public class FileBasedConfiguration extends FtpConfiguration {
    */
   private static final XmlDecl[] configLimitDecls = {
       // limit
+     new XmlDecl(XmlType.INTEGER, XML_ACTIVE_OR_PASSIVE),
       new XmlDecl(XmlType.BOOLEAN, XML_DELETEONABORT),
       new XmlDecl(XmlType.LONG, XML_LIMITSESSION),
       new XmlDecl(XmlType.LONG, XML_LIMITGLOBAL),
@@ -637,8 +642,14 @@ public class FileBasedConfiguration extends FtpConfiguration {
    * ChannelGroup
    */
   private ChannelGroup httpChannelGroup;
+
   /**
-   * Worker Group for Http
+   * Server Group for HTTP
+   */
+  private EventLoopGroup serverGroup;
+
+  /**
+   * Worker Group for HTTP
    */
   private EventLoopGroup workerGroup;
 
@@ -1006,6 +1017,10 @@ public class FileBasedConfiguration extends FtpConfiguration {
     if (value != null && !value.isEmpty()) {
       setDeleteOnAbort(value.getBoolean());
     }
+    value = hashConfig.get(XML_ACTIVE_OR_PASSIVE);
+    if (value != null && !value.isEmpty()) {
+      setActivePassiveMode(value.getInteger());
+    }
     // We use Apache Commons IO
     FilesystemBasedDirJdkAbstract.ueApacheCommonsIo = true;
     return true;
@@ -1344,10 +1359,13 @@ public class FileBasedConfiguration extends FtpConfiguration {
     httpExecutor = new NioEventLoopGroup(getServerThread() * 10,
                                          new WaarpThreadFactory(
                                              "HttpExecutor"));
+    serverGroup = new NioEventLoopGroup(getServerThread(),
+                                        new WaarpThreadFactory("HTTP_Server"));
     workerGroup = new NioEventLoopGroup(getServerThread() * 10,
                                         new WaarpThreadFactory("HTTP_Worker"));
     WaarpNettyUtil
-        .setServerBootstrap(httpsBootstrap, workerGroup, (int) getTimeoutCon());
+        .setServerBootstrap(httpsBootstrap, serverGroup, workerGroup,
+                            (int) getTimeoutCon());
 
     // Configure the pipeline factory.
     httpsBootstrap.childHandler(new HttpSslInitializer(isUseHttpCompression()));
@@ -1823,6 +1841,12 @@ public class FileBasedConfiguration extends FtpConfiguration {
     }
     if (getAgentSnmp() != null) {
       getAgentSnmp().stop();
+    }
+    if (workerGroup != null) {
+      workerGroup.shutdownGracefully();
+    }
+    if (serverGroup != null) {
+      serverGroup.shutdownGracefully();
     }
     DbAdmin.closeAllConnection();
   }
