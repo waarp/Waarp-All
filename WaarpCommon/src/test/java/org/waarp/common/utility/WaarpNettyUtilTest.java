@@ -84,7 +84,8 @@ public class WaarpNettyUtilTest {
 
     final EventLoopGroup serverGroup = new NioEventLoopGroup();
     final ServerBootstrap bootstrap = new ServerBootstrap();
-    WaarpNettyUtil.setServerBootstrap(bootstrap, serverGroup, workerGroup, 30000);
+    WaarpNettyUtil
+        .setServerBootstrap(bootstrap, serverGroup, workerGroup, 30000);
     bootstrap.childHandler(new HttpServerInitializer(null));
     ChannelFuture future = null;
     try {
@@ -150,7 +151,8 @@ public class WaarpNettyUtilTest {
 
     final EventLoopGroup serverGroup = new NioEventLoopGroup();
     final ServerBootstrap bootstrap = new ServerBootstrap();
-    WaarpNettyUtil.setServerBootstrap(bootstrap, serverGroup, workerGroup, 30000);
+    WaarpNettyUtil
+        .setServerBootstrap(bootstrap, serverGroup, workerGroup, 30000);
     bootstrap.childHandler(new HttpServerInitializer(waarpSslContextFactory));
     ChannelFuture future = null;
     try {
@@ -209,7 +211,8 @@ public class WaarpNettyUtilTest {
 
     final EventLoopGroup serverGroup = new NioEventLoopGroup();
     final ServerBootstrap bootstrap = new ServerBootstrap();
-    WaarpNettyUtil.setServerBootstrap(bootstrap, serverGroup, workerGroup, 30000);
+    WaarpNettyUtil
+        .setServerBootstrap(bootstrap, serverGroup, workerGroup, 30000);
     bootstrap.childHandler(new HttpServerInitializer(null));
     ChannelFuture future = null;
     try {

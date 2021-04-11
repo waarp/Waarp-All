@@ -22,7 +22,6 @@ package org.waarp.openr66.protocol.monitoring;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
-import io.netty.handler.codec.http.HttpContent;
 import io.netty.handler.codec.http.HttpObject;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -52,7 +51,7 @@ public class HttpClientHandler extends SimpleChannelInboundHandler<HttpObject> {
           response.status().code() == 200 || response.status().code() == 201);
     }
     if (msg instanceof LastHttpContent && !httpClient.isKeepConnection()) {
-        ctx.close();
+      ctx.close();
     }
   }
 

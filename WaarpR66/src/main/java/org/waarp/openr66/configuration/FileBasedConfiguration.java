@@ -378,18 +378,21 @@ public class FileBasedConfiguration {
           keep = value.getBoolean();
         }
         // Default value
-        boolean intervalIncluded = MonitorExporterTransfers.MONITOR_INTERVAL_INCLUDED_DEFAULT;
+        boolean intervalIncluded =
+            MonitorExporterTransfers.MONITOR_INTERVAL_INCLUDED_DEFAULT;
         value = hashConfig.get(XML_PUSH_MONITOR_INTERVAL_INCLUDED);
         if (value != null && !value.isEmpty()) {
           intervalIncluded = value.getBoolean();
         }
         // Default value
-        boolean longAsString = MonitorExporterTransfers.MONITOR_LONG_AS_STRING_DEFAULT;
+        boolean longAsString =
+            MonitorExporterTransfers.MONITOR_LONG_AS_STRING_DEFAULT;
         value = hashConfig.get(XML_PUSH_MONITOR_TRANSFORM_LONG_AS_STRING);
         if (value != null && !value.isEmpty()) {
           longAsString = value.getBoolean();
         }
-        config.setMonitorExporterTransfers(url, endpoint, delay, keep, intervalIncluded, longAsString);
+        config.setMonitorExporterTransfers(url, endpoint, delay, keep,
+                                           intervalIncluded, longAsString);
       }
       return true;
     } finally {

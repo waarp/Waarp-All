@@ -149,7 +149,8 @@ public class HttpRestTestHandler extends HttpRestHandler {
     final EventLoopGroup workerGroup = new NioEventLoopGroup();
     // Configure the server.
     final ServerBootstrap httpBootstrap = new ServerBootstrap();
-    WaarpNettyUtil.setServerBootstrap(httpBootstrap, workerGroup, workerGroup, 30000);
+    WaarpNettyUtil
+        .setServerBootstrap(httpBootstrap, workerGroup, workerGroup, 30000);
 
     // Configure the pipeline factory.
     httpBootstrap.childHandler(new HttpRestInitializer(restConfiguration));

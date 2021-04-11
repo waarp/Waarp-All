@@ -178,10 +178,10 @@ public class FtpClientPerfTestIT {
       client.disconnect();
     }
     long stop = System.currentTimeMillis();
-    logger.warn("Do Transfer {} at {}/s {} passive {}/s active/s",
-                numberOK.get(),
-                numberOK.get() * 1000.0 / (stop - start),
-                (c2-c1)*1000.0/(t2-t1), (c3-c2)*1000.0/(t3-t2));
+    logger
+        .warn("Do Transfer {} at {}/s {} passive {}/s active/s", numberOK.get(),
+              numberOK.get() * 1000.0 / (stop - start),
+              (c2 - c1) * 1000.0 / (t2 - t1), (c3 - c2) * 1000.0 / (t3 - t2));
     assertEquals("No KO", 0, numberKO.get());
   }
 
@@ -274,10 +274,10 @@ public class FtpClientPerfTestIT {
       client.disconnect();
     }
     long stop = System.currentTimeMillis();
-    logger.warn("Do Transfer {} at {}/s {} passive {}/s active/s",
-                numberOK.get(),
-                numberOK.get() * 1000.0 / (stop - start),
-                (c2-c1)*1000.0/(t2-t1), (c3-c2)*1000.0/(t3-t2));
+    logger
+        .warn("Do Transfer {} at {}/s {} passive {}/s active/s", numberOK.get(),
+              numberOK.get() * 1000.0 / (stop - start),
+              (c2 - c1) * 1000.0 / (t2 - t1), (c3 - c2) * 1000.0 / (t3 - t2));
     assertEquals("No KO", 0, numberKO.get());
   }
 

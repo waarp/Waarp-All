@@ -365,7 +365,7 @@ public class FileBasedConfiguration extends FtpConfiguration {
    */
   private static final XmlDecl[] configLimitDecls = {
       // limit
-     new XmlDecl(XmlType.INTEGER, XML_ACTIVE_OR_PASSIVE),
+      new XmlDecl(XmlType.INTEGER, XML_ACTIVE_OR_PASSIVE),
       new XmlDecl(XmlType.BOOLEAN, XML_DELETEONABORT),
       new XmlDecl(XmlType.LONG, XML_LIMITSESSION),
       new XmlDecl(XmlType.LONG, XML_LIMITGLOBAL),
@@ -1363,9 +1363,8 @@ public class FileBasedConfiguration extends FtpConfiguration {
                                         new WaarpThreadFactory("HTTP_Server"));
     workerGroup = new NioEventLoopGroup(getServerThread() * 10,
                                         new WaarpThreadFactory("HTTP_Worker"));
-    WaarpNettyUtil
-        .setServerBootstrap(httpsBootstrap, serverGroup, workerGroup,
-                            (int) getTimeoutCon());
+    WaarpNettyUtil.setServerBootstrap(httpsBootstrap, serverGroup, workerGroup,
+                                      (int) getTimeoutCon());
 
     // Configure the pipeline factory.
     httpsBootstrap.childHandler(new HttpSslInitializer(isUseHttpCompression()));

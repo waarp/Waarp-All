@@ -77,7 +77,6 @@ public class HttpClient {
   private WaarpFuture futurePost = null;
 
   /**
-   *
    * @param remoteBaseUrl as 'http://myhost.com:8080' or 'https://myhost.com:8443'
    * @param endpoint as '/waarpr66monitor' or simply '/'
    * @param keepConnection True to keep the connexion opened, False to release the connexion each time
@@ -139,11 +138,11 @@ public class HttpClient {
   }
 
   /**
-   *
    * @param monitoredTransfers the Json objet to push as POST
    * @param start the DateTime for the 'from' interval
    * @param stop the DateTime for the 'to' interval
    * @param serverId the serverId that is sending this monitoring information
+   *
    * @return True if the POST succeeded
    */
   public boolean post(ObjectNode monitoredTransfers, DateTime start,
@@ -190,7 +189,8 @@ public class HttpClient {
     headers.set(HEADER_WAARP_START, start == null? "" : start.toString());
     headers.set(HEADER_WAARP_STOP, stop.toString());
     headers.set(HttpHeaderNames.CONTENT_LENGTH, length);
-    headers.set(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.APPLICATION_JSON);
+    headers
+        .set(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.APPLICATION_JSON);
     final HttpRequest request =
         new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST,
                                finalUri.toASCIIString(), headers);

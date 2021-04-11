@@ -76,8 +76,8 @@ public class ScenarioLoopBenchmarkMonitoringPostGreSqlIT
     // Start Repetitive Monitoring
     MonitorExporterTransfers monitorExporterTransfers =
         new MonitorExporterTransfers("http://localhost:" + port, "/", true,
-                                     true, true,
-                                     Configuration.configuration.getHttpWorkerGroup());
+                                     true, true, Configuration.configuration
+                                         .getHttpWorkerGroup());
     Configuration.configuration
         .scheduleWithFixedDelay(monitorExporterTransfers, 1, TimeUnit.SECONDS);
     ResourceLeakDetector.setLevel(Level.PARANOID);

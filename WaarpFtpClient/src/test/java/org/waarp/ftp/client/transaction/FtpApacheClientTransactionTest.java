@@ -44,10 +44,12 @@ public class FtpApacheClientTransactionTest extends WaarpFtpClient {
                                         String username, String passwd,
                                         String account, int isSsl,
                                         boolean trace) {
-    super(server, port, username, passwd, account, false, isSsl, 0, 10000, trace);
+    super(server, port, username, passwd, account, false, isSsl, 0, 10000,
+          trace);
     final File dir = new File("/tmp/GGFTP/" + username + '/' + account);
     dir.mkdirs();
   }
+
   /**
    * @param server
    * @param port

@@ -180,16 +180,20 @@ public class DbXmlDAOTest extends DBAllDAOTest {
     {
       final XMLRuleDAO dao = new XMLRuleDAO(path);
       dao.deleteAll();
-      dao.insert(new org.waarp.openr66.pojo.Rule("default", 1,
-                                                 SingletonUtils.<String>singletonList(),
-                                                 "/in", "/out", "/arch",
-                                                 "/work",
-                                                 SingletonUtils.<RuleTask>singletonList(),
-                                                 SingletonUtils.<RuleTask>singletonList(),
-                                                 SingletonUtils.<RuleTask>singletonList(),
-                                                 SingletonUtils.<RuleTask>singletonList(),
-                                                 SingletonUtils.<RuleTask>singletonList(),
-                                                 SingletonUtils.<RuleTask>singletonList(),
+      dao.insert(new org.waarp.openr66.pojo.Rule("default", 1, SingletonUtils
+          .<String>singletonList(), "/in", "/out", "/arch", "/work",
+                                                 SingletonUtils
+                                                     .<RuleTask>singletonList(),
+                                                 SingletonUtils
+                                                     .<RuleTask>singletonList(),
+                                                 SingletonUtils
+                                                     .<RuleTask>singletonList(),
+                                                 SingletonUtils
+                                                     .<RuleTask>singletonList(),
+                                                 SingletonUtils
+                                                     .<RuleTask>singletonList(),
+                                                 SingletonUtils
+                                                     .<RuleTask>singletonList(),
                                                  UpdatedInfo.UNKNOWN));
       List<String> hosts = new ArrayList<String>();
       hosts.add("blabla");
@@ -206,22 +210,28 @@ public class DbXmlDAOTest extends DBAllDAOTest {
       ruleTasks3.add(new RuleTask("test", "aa", 1));
       dao.insert(
           new org.waarp.openr66.pojo.Rule("dummy", 1, hosts, "/in", "/out",
-                                          "/arch", "/work",
-                                          SingletonUtils.<RuleTask>singletonList(),
+                                          "/arch", "/work", SingletonUtils
+                                              .<RuleTask>singletonList(),
                                           ruleTasks, ruleTasks2, ruleTasks3,
-                                          SingletonUtils.<RuleTask>singletonList(),
-                                          SingletonUtils.<RuleTask>singletonList(),
+                                          SingletonUtils
+                                              .<RuleTask>singletonList(),
+                                          SingletonUtils
+                                              .<RuleTask>singletonList(),
                                           UpdatedInfo.UNKNOWN));
-      dao.insert(new org.waarp.openr66.pojo.Rule("dummy2", 3,
-                                                 SingletonUtils.<String>singletonList(),
-                                                 "/in", "/out", "/arch",
-                                                 "/work",
-                                                 SingletonUtils.<RuleTask>singletonList(),
-                                                 SingletonUtils.<RuleTask>singletonList(),
-                                                 SingletonUtils.<RuleTask>singletonList(),
-                                                 SingletonUtils.<RuleTask>singletonList(),
-                                                 SingletonUtils.<RuleTask>singletonList(),
-                                                 SingletonUtils.<RuleTask>singletonList(),
+      dao.insert(new org.waarp.openr66.pojo.Rule("dummy2", 3, SingletonUtils
+          .<String>singletonList(), "/in", "/out", "/arch", "/work",
+                                                 SingletonUtils
+                                                     .<RuleTask>singletonList(),
+                                                 SingletonUtils
+                                                     .<RuleTask>singletonList(),
+                                                 SingletonUtils
+                                                     .<RuleTask>singletonList(),
+                                                 SingletonUtils
+                                                     .<RuleTask>singletonList(),
+                                                 SingletonUtils
+                                                     .<RuleTask>singletonList(),
+                                                 SingletonUtils
+                                                     .<RuleTask>singletonList(),
                                                  UpdatedInfo.UNKNOWN));
     }
 

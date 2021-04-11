@@ -2743,7 +2743,7 @@ public class Configuration {
           new MonitorExporterTransfers(monitorExporterUrl,
                                        monitorExporterEndPoint,
                                        monitorExporterKeepConnection,
-                  monitorIntervalIncluded,
+                                       monitorIntervalIncluded,
                                        monitorTransformLongAsString,
                                        getHttpWorkerGroup());
       scheduleWithFixedDelay(monitorExporterTransfers, monitorExporterDelay,
