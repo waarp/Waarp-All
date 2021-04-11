@@ -93,7 +93,7 @@ public class ShutdownPacket extends AbstractLocalPacket {
     final int globalSize =
         networkHeader + LOCAL_HEADER_SIZE + sizeKey + sizeMiddle;
     int offset = networkHeader + LOCAL_HEADER_SIZE;
-    global = ByteBufAllocator.DEFAULT.buffer(globalSize, globalSize);
+    global = ByteBufAllocator.DEFAULT.ioBuffer(globalSize, globalSize);
     if (key != null) {
       header = WaarpNettyUtil.slice(global, offset, sizeKey);
       header.writeBytes(key);

@@ -340,6 +340,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
           "Argument in constructor cannot be null");
     }
     this.pojo = transfer;
+    checkThroughMode();
     checkMapInfo();
   }
 
@@ -466,6 +467,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
     if (rule != null && !pojo.getRule().equals(rule.getIdRule())) {
       throw new WaarpDatabaseNoDataException("Rule does not correspond");
     }
+    checkThroughMode();
   }
 
   /**
@@ -492,6 +494,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
       DAOFactory.closeDAO(transferAccess);
     }
     rule = new DbRule(getRuleId());
+    checkThroughMode();
   }
 
   /**
@@ -726,6 +729,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
     } finally {
       DAOFactory.closeDAO(transferAccess);
     }
+    checkThroughMode();
   }
 
   /**
@@ -880,7 +884,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
   }
 
   /**
-   * Update Runner using special PreparedStatement
+   * Update Runner
    *
    * @throws WaarpDatabaseException
    */
@@ -2394,12 +2398,12 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
   /**
    * @param map the Map to add as Json string to transferInformation
    */
-  public void setTransferMap(final Map<String, Object> map) {
+  public void setTransferMap(final Map<String, ?> map) {
     final String noMap = getOtherInfoOutOfMap().trim();
     internalSetNoMapMap(map, noMap);
   }
 
-  private void internalSetNoMapMap(final Map<String, Object> map,
+  private void internalSetNoMapMap(final Map<String, ?> map,
                                    final String noMap) {
     if (noMap.isEmpty()) {
       pojo.setTransferInfo(JsonHandler.writeAsStringEscaped(map));
@@ -2407,6 +2411,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
       pojo.setTransferInfo(noMap + " " + JsonHandler.writeAsStringEscaped(map));
     }
   }
+
 
   /**
    * @param transferInfo the transfer Information to set
@@ -2778,7 +2783,9 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
       }
     }
     final AbstractTask task = getTask(tasks[getStep()], tempSession);
-    logger.debug("{} Task: {}", toLogRunStep(), task.getClass().getName());
+    if (logger.isDebugEnabled()) {
+      logger.debug("{} Task: {}", toLogRunStep(), task.getClass().getName());
+    }
     task.run();
     task.getFutureCompletion().awaitOrInterruptible();
     // Possible long task

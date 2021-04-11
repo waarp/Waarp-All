@@ -20,6 +20,8 @@
 
 package org.waarp.openr66.protocol.junit;
 
+import io.netty.util.ResourceLeakDetector;
+import io.netty.util.ResourceLeakDetector.Level;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -31,8 +33,10 @@ import org.junit.runners.MethodSorters;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.StaleElementReferenceException;
 import org.waarp.common.logging.SysErrLogger;
+import org.waarp.common.logging.WaarpLogLevel;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
 import org.waarp.common.role.RoleDefault.ROLE;
 import org.waarp.common.utility.NullPrintStream;
 import org.waarp.common.utility.TestWatcherJunit4;
@@ -91,6 +95,7 @@ public class RestNoAuthentTest extends TestAbstract {
 
   @BeforeClass
   public static void setUpBeforeClass() throws Exception {
+    ResourceLeakDetector.setLevel(Level.PARANOID);
     System.setErr(new NullPrintStream());
     final ClassLoader classLoader = NetworkClientTest.class.getClassLoader();
     final File file =
@@ -109,6 +114,8 @@ public class RestNoAuthentTest extends TestAbstract {
    */
   @AfterClass
   public static void tearDownAfterClass() throws Exception {
+    WaarpLoggerFactory.setDefaultFactoryIfNotSame(
+        new WaarpSlf4JLoggerFactory(WaarpLogLevel.NONE));
     Thread.sleep(100);
     System.setErr(err);
     finalizeDriver();

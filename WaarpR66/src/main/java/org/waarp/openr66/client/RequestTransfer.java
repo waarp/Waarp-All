@@ -25,7 +25,7 @@ import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
-import org.waarp.common.utility.DetectionUtils;
+import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.openr66.client.utils.OutputFormat;
 import org.waarp.openr66.client.utils.OutputFormat.FIELDS;
 import org.waarp.openr66.commander.CommanderNoDb;
@@ -51,7 +51,6 @@ import org.waarp.openr66.protocol.localhandler.packet.ValidPacket;
 import org.waarp.openr66.protocol.localhandler.packet.json.RestartTransferJsonPacket;
 import org.waarp.openr66.protocol.localhandler.packet.json.StopOrCancelJsonPacket;
 import org.waarp.openr66.protocol.networkhandler.NetworkTransaction;
-import org.waarp.openr66.protocol.utils.ChannelUtils;
 import org.waarp.openr66.protocol.utils.R66Future;
 
 import java.text.ParseException;
@@ -648,11 +647,8 @@ public class RequestTransfer implements Runnable {
       if (admin != null) {
         admin.close();
       }
-      if (DetectionUtils.isJunit()) {
-        return;
-      }
-      ChannelUtils.stopLogger();
-      System.exit(1);//NOSONAR
+      WaarpSystemUtil.systemExit(1);
+      return;
     }
     int value = 99;
     try {
@@ -697,10 +693,12 @@ public class RequestTransfer implements Runnable {
         }
       }
     } finally {
-      if (admin != null) {
-        admin.close();
+      if (!WaarpSystemUtil.isJunit()) {
+        if (admin != null) {
+          admin.close();
+        }
+        WaarpSystemUtil.systemExit(value);
       }
-      System.exit(value);//NOSONAR
     }
   }
 

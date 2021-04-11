@@ -89,7 +89,7 @@ public class FtpClientThread implements Runnable {
     remoteFilename = local.getName();
     numberIteration = nb;
     this.type = type;
-    this.delay = (delay / 10) * 10;
+    this.delay = delay;
     this.isSsl = isSsl;
     final File dir = new File("/tmp/GGFTP/T" + id + '/' + account);
     dir.mkdirs();
@@ -191,9 +191,16 @@ public class FtpClientThread implements Runnable {
               FtpClientTest.numberKO.incrementAndGet();
               return;
             } else {
+              System.out.print('.');
               FtpClientTest.numberOK.incrementAndGet();
             }
+            try {
+              Thread.sleep(delay);
+            } catch (InterruptedException e) {
+              // Ignore
+            }
           }
+          System.out.println();
         } else {
           for (int i = 0; i < numberIteration; i++) {
             logger.info(id + " transfer passive store " + i);
@@ -202,6 +209,7 @@ public class FtpClientThread implements Runnable {
               FtpClientTest.numberKO.incrementAndGet();
               return;
             } else {
+              System.out.print('.');
               FtpClientTest.numberOK.incrementAndGet();
             }
             if (!client.deleteFile(remoteFilename)) {
@@ -211,7 +219,13 @@ public class FtpClientThread implements Runnable {
             } else {
               FtpClientTest.numberOK.incrementAndGet();
             }
+            try {
+              Thread.sleep(delay);
+            } catch (InterruptedException e) {
+              // Ignore
+            }
           }
+          System.out.println();
           if (!client.transferFile(localFilename, remoteFilename, true)) {
             logger.warn("Cant store file passive mode " + id);
             FtpClientTest.numberKO.incrementAndGet();
@@ -227,9 +241,16 @@ public class FtpClientThread implements Runnable {
               FtpClientTest.numberKO.incrementAndGet();
               return;
             } else {
+              System.out.print('.');
               FtpClientTest.numberOK.incrementAndGet();
             }
+            try {
+              Thread.sleep(delay);
+            } catch (InterruptedException e) {
+              // Ignore
+            }
           }
+          System.out.println();
         }
         Thread.yield();
       }
@@ -244,10 +265,16 @@ public class FtpClientThread implements Runnable {
               FtpClientTest.numberKO.incrementAndGet();
               return;
             } else {
+              System.out.print('.');
               FtpClientTest.numberOK.incrementAndGet();
             }
+            try {
+              Thread.sleep(delay);
+            } catch (InterruptedException e) {
+              // Ignore
+            }
           }
-          Thread.yield();
+          System.out.println();
         } else {
           for (int i = 0; i < numberIteration; i++) {
             logger.info(id + " transfer active store " + i);
@@ -256,6 +283,7 @@ public class FtpClientThread implements Runnable {
               FtpClientTest.numberKO.incrementAndGet();
               return;
             } else {
+              System.out.print('.');
               FtpClientTest.numberOK.incrementAndGet();
             }
             if (!client.deleteFile(remoteFilename)) {
@@ -265,7 +293,13 @@ public class FtpClientThread implements Runnable {
             } else {
               FtpClientTest.numberOK.incrementAndGet();
             }
+            try {
+              Thread.sleep(delay);
+            } catch (InterruptedException e) {
+              // Ignore
+            }
           }
+          System.out.println();
           if (!client.transferFile(localFilename, remoteFilename, true)) {
             logger.warn("Cant store file active mode " + id);
             FtpClientTest.numberKO.incrementAndGet();
@@ -281,9 +315,16 @@ public class FtpClientThread implements Runnable {
               FtpClientTest.numberKO.incrementAndGet();
               return;
             } else {
+              System.out.print('.');
               FtpClientTest.numberOK.incrementAndGet();
             }
+            try {
+              Thread.sleep(delay);
+            } catch (InterruptedException e) {
+              // Ignore
+            }
           }
+          System.out.println();
         }
       }
       results = client.executeSiteCommand("XCRC " + remoteFilename);

@@ -28,8 +28,8 @@ import org.waarp.common.logging.WaarpLogLevel;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
-import org.waarp.common.utility.DetectionUtils;
 import org.waarp.common.utility.FileTestUtils;
+import org.waarp.common.utility.WaarpSystemUtil;
 
 import java.io.File;
 import java.io.IOException;
@@ -58,7 +58,7 @@ public abstract class TestAbstractMinimal {
       logger = WaarpLoggerFactory.getLogger(TestAbstractMinimal.class);
     }
     final ClassLoader classLoader = TestAbstractMinimal.class.getClassLoader();
-    DetectionUtils.setJunit(true);
+    WaarpSystemUtil.setJunit(true);
     final File file;
     if (serverInitBaseDirectory.charAt(0) == '/') {
       file =
@@ -89,8 +89,8 @@ public abstract class TestAbstractMinimal {
     conf.mkdir();
     logger.warn("Copy from {} to {}", dirConf, conf);
     final File[] copied = FileUtils.copyRecursive(dirConf, conf, false);
-    for (final File fileCopied : copied) {
-      System.out.print(fileCopied.getAbsolutePath() + ' ');
+    if (copied != null && copied.length > 0) {
+      System.out.print(copied[0].getAbsolutePath() + ' ');
     }
     final File web = new File(tmp, "web");
     final File webSrc = new File(
@@ -98,8 +98,8 @@ public abstract class TestAbstractMinimal {
         "WaarpR66/src/main/httpadmin/i18n");
     logger.warn("Copy from {} to {}", webSrc, web);
     final File[] copied2 = FileUtils.copyRecursive(webSrc, web, false);
-    for (final File fileCopied : copied2) {
-      System.out.print(fileCopied.getAbsolutePath() + ' ');
+    if (copied2 != null && copied2.length > 0) {
+      System.out.print(copied2[0].getAbsolutePath() + ' ');
     }
     System.out.println(" Done");
   }

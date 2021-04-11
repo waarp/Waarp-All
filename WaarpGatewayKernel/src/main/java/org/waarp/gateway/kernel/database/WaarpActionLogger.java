@@ -157,7 +157,6 @@ public final class WaarpActionLogger {
     final String sessionContexte = session.toString();
     final long specialId = session.getLogid();
     logger.error(rcode.code() + ":" + message + ' ' + sessionContexte);
-    logger.warn("To Change to debug Log", new Exception("Log"));
     if (dbSession != null && specialId != DbConstantGateway.ILLEGALVALUE) {
       final PageRole code = session.getCurrentCommand();
       switch (code) {

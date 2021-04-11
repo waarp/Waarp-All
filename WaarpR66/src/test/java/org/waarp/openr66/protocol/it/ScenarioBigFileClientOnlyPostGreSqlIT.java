@@ -34,8 +34,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class ScenarioBigFileClientOnlyPostGreSqlIT
-    extends ScenarioBaseBigFileClientOnly {
+public class ScenarioBigFileClientOnlyPostGreSqlIT extends ScenarioBaseBigFile {
   @Rule(order = Integer.MIN_VALUE)
   public TestWatcher watchman = new TestWatcherJunit4();
 
@@ -44,7 +43,7 @@ public class ScenarioBigFileClientOnlyPostGreSqlIT
 
   static {
     TMPFSMAP.clear();
-    TMPFSMAP.put("/var/lib/postgresql/data", "rw");
+    TMPFSMAP.put("/tmp/postgresql/data", "rw");
   }
 
   @ClassRule
@@ -61,6 +60,7 @@ public class ScenarioBigFileClientOnlyPostGreSqlIT
   @BeforeClass
   public static void setup() throws Exception {
     logger.warn("START PostGreSQL IT TEST");
+    SERVER1_IN_JUNIT = false;
     scenarioBase = new ScenarioBigFileClientOnlyPostGreSqlIT();
     setUpBeforeClass();
   }

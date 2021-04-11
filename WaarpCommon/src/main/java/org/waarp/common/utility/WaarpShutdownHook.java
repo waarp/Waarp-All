@@ -322,7 +322,7 @@ public abstract class WaarpShutdownHook extends Thread {
    * Extra call to ensure exit after long delay
    */
   public void launchFinalExit() {
-    if (DetectionUtils.isJunit()) {
+    if (WaarpSystemUtil.isJunit()) {
       return;
     }
     final Timer timer = new Timer("WaarpFinalExit", true);

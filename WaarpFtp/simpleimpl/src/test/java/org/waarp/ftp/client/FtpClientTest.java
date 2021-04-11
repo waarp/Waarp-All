@@ -29,8 +29,8 @@ import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
-import org.waarp.common.utility.DetectionUtils;
 import org.waarp.common.utility.TestWatcherJunit4;
+import org.waarp.common.utility.WaarpSystemUtil;
 
 import java.io.IOException;
 
@@ -69,7 +69,7 @@ public class FtpClientTest extends AbstractFtpClientTest {
       SysErrLogger.FAKE_LOGGER.syserr(
           "Usage: " + FtpClientTest.class.getSimpleName() +
           " server port user pwd acct localfilename nbThread nbIter");
-      DetectionUtils.systemExit(1);
+      WaarpSystemUtil.systemExit(1);
       return;
     }
     server = args[0];
@@ -106,7 +106,9 @@ public class FtpClientTest extends AbstractFtpClientTest {
 
   @BeforeClass
   public static void startServer() throws IOException {
+    ResourceLeakDetector.setLevel(Level.PARANOID);
     SSL_MODE = 0;
+    DELAY = 1;
     startServer0();
   }
 

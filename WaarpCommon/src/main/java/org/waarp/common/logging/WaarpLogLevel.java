@@ -55,5 +55,9 @@ public enum WaarpLogLevel {
   /**
    * 'ERROR' log level.
    */
-  ERROR
+  ERROR,
+  /**
+   * 'NONE' log level.
+   */
+  NONE
 }

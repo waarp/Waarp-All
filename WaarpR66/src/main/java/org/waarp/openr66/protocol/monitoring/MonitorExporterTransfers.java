@@ -94,6 +94,9 @@ import static org.waarp.openr66.protocol.http.restv2.RestConstants.*;
  *    ]
  *  }
  * }</pre>
+ * And the header of the HTTP request will contain:<br>
+ * X-WAARP-ID (as the host Id), X-WAARP-START (as the waarpMonitor.from),
+ * X-WAARP-STOP  (as the waarpMonitor.to)
  */
 public class MonitorExporterTransfers extends Thread {
   private static final WaarpLogger logger =
@@ -102,6 +105,10 @@ public class MonitorExporterTransfers extends Thread {
   public static final boolean MONITOR_KEEP_CONNECTION_DEFAULT = true;
   public static final boolean MONITOR_INTERVAL_INCLUDED_DEFAULT = true;
   public static final boolean MONITOR_LONG_AS_STRING_DEFAULT = false;
+
+  public static final String HEADER_WAARP_ID = "X-WAARP-ID";
+  public static final String HEADER_WAARP_START = "X-WAARP-START";
+  public static final String HEADER_WAARP_STOP = "X-WAARP-STOP";
 
   public static final String SPECIAL_ID = "specialId";
   public static final String FOLLOW_ID = "followId";
@@ -244,7 +251,7 @@ public class MonitorExporterTransfers extends Thread {
     transferList.clear();
     if (httpClient.post(monitoredTransfers, lastDateTime, now,
                         Configuration.configuration.getHostId())) {
-      logger.warn("Transferred from {} to {} = {}", lastDateTime, now, size);
+      logger.info("Transferred from {} to {} = {}", lastDateTime, now, size);
       lastDateTime = now;
       lastTimestamp = timestamp;
       hostConfiguration.updateLastDateTimeMonitoring(lastDateTime);

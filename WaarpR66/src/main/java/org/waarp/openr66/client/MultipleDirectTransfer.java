@@ -23,7 +23,7 @@ import org.waarp.common.database.exception.WaarpDatabaseException;
 import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
-import org.waarp.common.utility.DetectionUtils;
+import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.openr66.client.utils.OutputFormat;
 import org.waarp.openr66.client.utils.OutputFormat.FIELDS;
 import org.waarp.openr66.context.ErrorCode;
@@ -32,7 +32,6 @@ import org.waarp.openr66.database.data.DbRule;
 import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.configuration.Messages;
 import org.waarp.openr66.protocol.networkhandler.NetworkTransaction;
-import org.waarp.openr66.protocol.utils.ChannelUtils;
 import org.waarp.openr66.protocol.utils.R66Future;
 
 import java.util.ArrayList;
@@ -121,11 +120,12 @@ public class MultipleDirectTransfer extends DirectTransfer {
               if (result == null || result.getRunner() == null) {
                 prepareKoOutputFormat(future, outputFormat);
                 outputFormat.sysout();
-                if (DetectionUtils.isJunit()) {
+                if (WaarpSystemUtil.isJunit()) {
                   return;
                 }
                 networkTransaction.closeAll();
-                System.exit(ErrorCode.Unknown.ordinal());//NOSONAR
+                WaarpSystemUtil.systemExit(ErrorCode.Unknown.ordinal());
+                return;
               }
               prepareKoOutputFormat(future, result, outputFormat);
               getResults().add(outputFormat);
@@ -202,11 +202,8 @@ public class MultipleDirectTransfer extends DirectTransfer {
       if (admin != null) {
         admin.close();
       }
-      if (DetectionUtils.isJunit()) {
-        return;
-      }
-      ChannelUtils.stopLogger();
-      System.exit(2);//NOSONAR
+      WaarpSystemUtil.systemExit(2);
+      return;
     }
 
     Configuration.configuration.pipelineInit();
@@ -267,18 +264,18 @@ public class MultipleDirectTransfer extends DirectTransfer {
             result.sysout();
           }
         }
-        if (DetectionUtils.isJunit()) {
+        if (WaarpSystemUtil.isJunit()) {
           return;
         }
         networkTransaction.closeAll();
-        System.exit(multipleDirectTransfer.getErrorMultiple());//NOSONAR
+        WaarpSystemUtil.systemExit(multipleDirectTransfer.getErrorMultiple());
       }
     } catch (final Throwable e) {
       logger.error("Exception", e);
     } finally {
-      if (!DetectionUtils.isJunit()) {
+      if (!WaarpSystemUtil.isJunit()) {
         networkTransaction.closeAll();
-        System.exit(0);//NOSONAR
+        WaarpSystemUtil.systemExit(0);
       }
     }
   }

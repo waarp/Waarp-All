@@ -24,10 +24,9 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.waarp.common.file.FileUtils;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
-import org.waarp.common.utility.WaarpStringUtils;
+import org.waarp.common.xml.XmlUtil;
 import org.waarp.openr66.configuration.ExtensionFilter;
 import org.waarp.openr66.dao.Filter;
 import org.waarp.openr66.dao.RuleDAO;
@@ -45,16 +44,15 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static org.waarp.openr66.dao.DAOFactory.*;
+import static org.waarp.openr66.dao.database.DBRuleDAO.*;
 
 public class XMLRuleDAO implements RuleDAO {
 
@@ -68,26 +66,11 @@ public class XMLRuleDAO implements RuleDAO {
       new ConcurrentHashMap<String, Rule>();
 
   public static final String ROOT_LIST = "rules";
-  public static final String ROOT_ELEMENT = "rule";
-
-  public static final String RULENAME_FIELD = "idrule";
-  public static final String HOSTIDS_LIST = "hostids";
-  public static final String MODE_FIELD = "mode";
-  public static final String SEND_PATH_FIELD = "sendpath";
-  public static final String RECV_PATH_FIELD = "recvpath";
-  public static final String ARCH_PATH_FIELD = "archivepath";
-  public static final String WORK_PATH_FIELD = "workpath";
-  public static final String RPRE_TASKS_FIELD = "rpretasks";
-  public static final String RPOST_TASKS_FIELD = "rposttasks";
-  public static final String RERROR_TASKS_FIELD = "rerrortasks";
-  public static final String SPRE_TASKS_FIELD = "spretasks";
-  public static final String SPOST_TASKS_FIELD = "sposttasks";
-  public static final String SERROR_TASKS_FIELD = "serrortasks";
 
   private static final String XML_GET_ALL = "//rule";
   private static final File[] FILE_0_LENGTH = new File[0];
 
-  public XMLRuleDAO(final String filePath) {
+  public XMLRuleDAO() {
     // Nothing to do
   }
 
@@ -129,6 +112,7 @@ public class XMLRuleDAO implements RuleDAO {
 
     final File[] files = getRuleFiles();
     for (final File ruleFile : files) {
+      logger.debug("Load file {}", ruleFile.getAbsolutePath());
       try {
         final DocumentBuilderFactory dbf = getDocumentBuilderFactory();
         final Document document = dbf.newDocumentBuilder().parse(ruleFile);
@@ -194,75 +178,50 @@ public class XMLRuleDAO implements RuleDAO {
     final NodeList children = parent.getChildNodes();
     for (int j = 0; j < children.getLength(); j++) {
       final Node node = children.item(j);
-      if (node.getNodeName().equals(RULENAME_FIELD)) {
-        res.setName(node.getTextContent());
-      } else if (node.getNodeName().equals(HOSTIDS_LIST)) {
-        res.setHostids(retrieveHostids(node.getTextContent()));
-      } else if (node.getNodeName().equals(MODE_FIELD)) {
-        res.setMode(Integer.parseInt(node.getTextContent()));
+      final String content = XmlUtil.getExtraTrimed(node.getTextContent());
+      if (node.getNodeName().equals(ID_FIELD)) {
+        res.setName(content);
+      } else if (node.getNodeName().equals(HOSTIDS_FIELD)) {
+        res.setHostids(retrieveHostids(node));
+      } else if (node.getNodeName().equals(MODE_TRANS_FIELD)) {
+        res.setMode(Integer.parseInt(content));
       } else if (node.getNodeName().equals(SEND_PATH_FIELD)) {
-        res.setSendPath(node.getTextContent());
+        res.setSendPath(content);
       } else if (node.getNodeName().equals(RECV_PATH_FIELD)) {
-        res.setRecvPath(node.getTextContent());
-      } else if (node.getNodeName().equals(ARCH_PATH_FIELD)) {
-        res.setArchivePath(node.getTextContent());
+        res.setRecvPath(content);
+      } else if (node.getNodeName().equals(ARCHIVE_PATH_FIELD)) {
+        res.setArchivePath(content);
       } else if (node.getNodeName().equals(WORK_PATH_FIELD)) {
-        res.setWorkPath(node.getTextContent());
-      } else if (node.getNodeName().equals(RPRE_TASKS_FIELD)) {
+        res.setWorkPath(content);
+      } else if (node.getNodeName().equals(R_PRE_TASKS_FIELD)) {
         res.setRPreTasks(retrieveTasks(node));
-      } else if (node.getNodeName().equals(RPOST_TASKS_FIELD)) {
+      } else if (node.getNodeName().equals(R_POST_TASKS_FIELD)) {
         res.setRPostTasks(retrieveTasks(node));
-      } else if (node.getNodeName().equals(RERROR_TASKS_FIELD)) {
+      } else if (node.getNodeName().equals(R_ERROR_TASKS_FIELD)) {
         res.setRErrorTasks(retrieveTasks(node));
-      } else if (node.getNodeName().equals(SPRE_TASKS_FIELD)) {
+      } else if (node.getNodeName().equals(S_PRE_TASKS_FIELD)) {
         res.setSPreTasks(retrieveTasks(node));
-      } else if (node.getNodeName().equals(SPOST_TASKS_FIELD)) {
+      } else if (node.getNodeName().equals(S_POST_TASKS_FIELD)) {
         res.setSPostTasks(retrieveTasks(node));
-      } else if (node.getNodeName().equals(SERROR_TASKS_FIELD)) {
+      } else if (node.getNodeName().equals(S_ERROR_TASKS_FIELD)) {
         res.setSErrorTasks(retrieveTasks(node));
       }
     }
     return res;
   }
 
-  public static final String HOSTID_FIELD = "hostid";
-
-  private List<String> retrieveHostids(final String xml)
+  private List<String> retrieveHostids(final Node xml)
       throws DAOConnectionException {
     final ArrayList<String> res = new ArrayList<String>();
-    if (xml == null || xml.isEmpty()) {
+    if (xml == null || !xml.hasChildNodes()) {
       return res;
     }
-    Document document;
-    InputStream stream = null;
-    try {
-      stream = new ByteArrayInputStream(xml.getBytes(WaarpStringUtils.UTF8));
-      final DocumentBuilderFactory dbf = getDocumentBuilderFactory();
-      document = dbf.newDocumentBuilder().parse(stream);
-    } catch (final IOException e) {
-      throw new DAOConnectionException(e);
-    } catch (final ParserConfigurationException e) {
-      throw new DAOConnectionException(e);
-    } catch (final SAXException e) {
-      throw new DAOConnectionException(e);
-    } finally {
-      if (stream != null) {
-        FileUtils.close(stream);
-      }
-    }
-    document.getDocumentElement().normalize();
-
-    final NodeList hostsList = document.getElementsByTagName(HOSTID_FIELD);
+    final NodeList hostsList = xml.getChildNodes();
     for (int i = 0; i < hostsList.getLength(); i++) {
-      res.add(hostsList.item(i).getTextContent());
+      res.add(XmlUtil.getExtraTrimed(hostsList.item(i).getTextContent()));
     }
     return res;
   }
-
-  public static final String TASK_NODE = "task";
-  public static final String TYPE_FIELD = "type";
-  public static final String PATH_FIELD = "path";
-  public static final String DELAY_FIELD = "delay";
 
   private List<RuleTask> retrieveTasks(final Node src) {
     final List<RuleTask> res = new ArrayList<RuleTask>();
@@ -281,11 +240,12 @@ public class XMLRuleDAO implements RuleDAO {
               logger.error("Field not found in Rule: " + TYPE_FIELD);
               continue;
             }
-            final String type = nodeList.item(0).getTextContent();
+            final String type =
+                XmlUtil.getExtraTrimed(nodeList.item(0).getTextContent());
             nodeList = task.getElementsByTagName(PATH_FIELD);
             final String path;
             if (nodeList != null && nodeList.getLength() > 0) {
-              path = nodeList.item(0).getTextContent();
+              path = XmlUtil.getExtraTrimed(nodeList.item(0).getTextContent());
             } else {
               path = "";
             }
@@ -294,7 +254,8 @@ public class XMLRuleDAO implements RuleDAO {
             if (nodeList != null && nodeList.getLength() > 0) {
               int tmpDelay = 0;
               try {
-                tmpDelay = Integer.parseInt(nodeList.item(0).getTextContent());
+                tmpDelay = Integer.parseInt(
+                    XmlUtil.getExtraTrimed(nodeList.item(0).getTextContent()));
               } catch (NumberFormatException ignored) {
                 // ignore
               }
@@ -302,7 +263,9 @@ public class XMLRuleDAO implements RuleDAO {
             } else {
               delay = 0;
             }
-            res.add(new RuleTask(type, path, delay));
+            RuleTask ruleTask = new RuleTask(type, path, delay);
+            logger.debug("Task {}", ruleTask);
+            res.add(ruleTask);
           }
         }
       }

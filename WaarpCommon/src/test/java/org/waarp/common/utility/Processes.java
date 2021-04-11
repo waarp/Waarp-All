@@ -41,6 +41,7 @@ import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.lang.management.ManagementFactory;
 import java.lang.reflect.Field;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.IllegalFormatException;
@@ -399,16 +400,22 @@ public final class Processes {
 
       // add some vm args
       final Argument jvmArgs = javaTask.createJvmarg();
+      final ClassLoader classLoader = Processes.class.getClassLoader();
+      URL url = classLoader.getResource("logback-test.xml");
+      String logbackConf = "";
+      if (url != null) {
+        logbackConf = " -Dlogback.configurationFile=" + url.getFile();
+      }
       if (jvmArgsDefault != null) {
         if (jvmArgsDefault.contains("-Xmx")) {
-          jvmArgs.setLine(jvmArgsDefault);
+          jvmArgs.setLine(jvmArgsDefault + logbackConf);
         } else {
-          jvmArgs.setLine("-Xms1024m -Xmx1024m " + jvmArgsDefault);
+          jvmArgs
+              .setLine("-Xms1024m -Xmx1024m " + jvmArgsDefault + logbackConf);
         }
       } else {
-        jvmArgs.setLine("-Xms1024m -Xmx1024m ");
+        jvmArgs.setLine("-Xms1024m -Xmx1024m " + logbackConf);
       }
-
       // added some args for to class to launch
       final Argument taskArgs = javaTask.createArg();
       final StringBuilder builder = new StringBuilder();

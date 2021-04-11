@@ -24,32 +24,20 @@ import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.ExecuteException;
 import org.apache.commons.exec.ExecuteWatchdog;
 import org.apache.commons.exec.PumpStreamHandler;
-import org.waarp.common.command.exception.CommandAbstractException;
 import org.waarp.common.file.FileUtils;
 import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
-import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.openr66.context.ErrorCode;
 import org.waarp.openr66.context.R66Result;
 import org.waarp.openr66.context.R66Session;
-import org.waarp.openr66.context.filesystem.R66Dir;
-import org.waarp.openr66.context.filesystem.R66File;
 import org.waarp.openr66.context.task.exception.OpenR66RunnerErrorException;
-import org.waarp.openr66.database.data.DbTaskRunner;
 import org.waarp.openr66.protocol.configuration.Configuration;
-import org.waarp.openr66.protocol.exception.OpenR66ProtocolNoSslException;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -63,11 +51,8 @@ public abstract class AbstractExecTask extends AbstractTask {
    */
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(AbstractExecTask.class);
-  private static final Pattern COMPILE_BLANK = WaarpStringUtils.BLANK;
   private static final Pattern COMPILE_REPLACE_ALL =
       Pattern.compile("#([A-Z]+)#");
-  private static final Pattern COMPILE_HASH =
-      Pattern.compile("#", Pattern.LITERAL);
 
   /**
    * Constructor
@@ -80,26 +65,6 @@ public abstract class AbstractExecTask extends AbstractTask {
   AbstractExecTask(final TaskType type, final int delay, final String argRule,
                    final String argTransfer, final R66Session session) {
     super(type, delay, argRule, argTransfer, session);
-  }
-
-  /**
-   * Apply transferInfo substitutions
-   *
-   * @param line the line to format
-   *
-   * @return the line after substitutions
-   */
-  protected String applyTransferSubstitutions(final String line) {
-    final Object[] argFormat = COMPILE_BLANK.split(argTransfer);
-    if (argFormat != null && argFormat.length > 0) {
-      try {
-        return String.format(line, argFormat);
-      } catch (final Exception e) {
-        // ignored error since bad argument in static rule info
-        logger.error("Bad format in Rule: {" + line + "} " + e.getMessage());
-      }
-    }
-    return line;
   }
 
   /**
@@ -133,292 +98,6 @@ public abstract class AbstractExecTask extends AbstractTask {
     }
 
     return commandLine;
-  }
-
-  /**
-   * Generates a substitution map as expected by Apache Commons Exec
-   * CommandLine
-   */
-  protected Map<String, Object> getSubstitutionMap() {
-    final Map<String, Object> rv = new HashMap<String, Object>();
-    rv.put(
-        COMPILE_HASH.matcher(NOWAIT).replaceAll(Matcher.quoteReplacement("")),
-        "");
-    rv.put(COMPILE_HASH.matcher(LOCALEXEC)
-                       .replaceAll(Matcher.quoteReplacement("")), "");
-
-    substituteFile(rv);
-
-    final DbTaskRunner runner = substituteRunner(rv);
-
-    substituteDate(rv);
-
-    substituteHost(rv);
-    rv.put(COMPILE_HASH.matcher(BLOCKSIZE)
-                       .replaceAll(Matcher.quoteReplacement("")),
-           session.getBlockSize());
-
-    final R66Dir dir = new R66Dir(session);
-    substitutePath(rv, runner, dir);
-    rv.put(
-        COMPILE_HASH.matcher(HOMEPATH).replaceAll(Matcher.quoteReplacement("")),
-        Configuration.configuration.getBaseDirectory());
-    substituteErrorCode(rv);
-    return rv;
-  }
-
-  private void substituteErrorCode(final Map<String, Object> rv) {
-    if (session.getLocalChannelReference() == null) {
-      rv.put(COMPILE_HASH.matcher(ERRORMSG)
-                         .replaceAll(Matcher.quoteReplacement("")), "NoError");
-      rv.put(COMPILE_HASH.matcher(ERRORCODE)
-                         .replaceAll(Matcher.quoteReplacement("")), "-");
-      rv.put(COMPILE_HASH.matcher(ERRORSTRCODE)
-                         .replaceAll(Matcher.quoteReplacement("")),
-             ErrorCode.Unknown.name());
-    } else {
-      try {
-        rv.put(COMPILE_HASH.matcher(ERRORMSG)
-                           .replaceAll(Matcher.quoteReplacement("")),
-               session.getLocalChannelReference().getErrorMessage());
-      } catch (final NullPointerException e) {
-        rv.put(COMPILE_HASH.matcher(ERRORMSG)
-                           .replaceAll(Matcher.quoteReplacement("")),
-               "NoError");
-      }
-      try {
-        rv.put(COMPILE_HASH.matcher(ERRORCODE)
-                           .replaceAll(Matcher.quoteReplacement("")),
-               session.getLocalChannelReference().getCurrentCode().getCode());
-      } catch (final NullPointerException e) {
-        rv.put(COMPILE_HASH.matcher(ERRORCODE)
-                           .replaceAll(Matcher.quoteReplacement("")), "-");
-      }
-      try {
-        rv.put(COMPILE_HASH.matcher(ERRORSTRCODE)
-                           .replaceAll(Matcher.quoteReplacement("")),
-               session.getLocalChannelReference().getCurrentCode().name());
-      } catch (final NullPointerException e) {
-        rv.put(COMPILE_HASH.matcher(ERRORSTRCODE)
-                           .replaceAll(Matcher.quoteReplacement("")),
-               ErrorCode.Unknown.name());
-      }
-    }
-  }
-
-  private void substitutePath(final Map<String, Object> rv,
-                              final DbTaskRunner runner, R66Dir dir) {
-    if (runner != null) {
-      if (runner.isRecvThrough() || runner.isSendThrough()) {
-        try {
-          dir.changeDirectoryNotChecked(runner.getRule().getRecvPath());
-          rv.put(COMPILE_HASH.matcher(INPATH)
-                             .replaceAll(Matcher.quoteReplacement("")),
-                 dir.getFullPath());
-        } catch (final CommandAbstractException ignored) {
-          // nothing
-        }
-        dir = new R66Dir(session);
-        try {
-          dir.changeDirectoryNotChecked(runner.getRule().getSendPath());
-          rv.put(COMPILE_HASH.matcher(OUTPATH)
-                             .replaceAll(Matcher.quoteReplacement("")),
-                 dir.getFullPath());
-        } catch (final CommandAbstractException ignored) {
-          // nothing
-        }
-        dir = new R66Dir(session);
-        try {
-          dir.changeDirectoryNotChecked(runner.getRule().getWorkPath());
-          rv.put(COMPILE_HASH.matcher(WORKPATH)
-                             .replaceAll(Matcher.quoteReplacement("")),
-                 dir.getFullPath());
-        } catch (final CommandAbstractException ignored) {
-          // nothing
-        }
-        dir = new R66Dir(session);
-        try {
-          dir.changeDirectoryNotChecked(runner.getRule().getArchivePath());
-          rv.put(COMPILE_HASH.matcher(ARCHPATH)
-                             .replaceAll(Matcher.quoteReplacement("")),
-                 dir.getFullPath());
-        } catch (final CommandAbstractException ignored) {
-          // nothing
-        }
-      } else {
-        try {
-          dir.changeDirectory(runner.getRule().getRecvPath());
-          rv.put(COMPILE_HASH.matcher(INPATH)
-                             .replaceAll(Matcher.quoteReplacement("")),
-                 dir.getFullPath());
-        } catch (final CommandAbstractException ignored) {
-          // nothing
-        }
-        dir = new R66Dir(session);
-        try {
-          dir.changeDirectory(runner.getRule().getSendPath());
-          rv.put(COMPILE_HASH.matcher(OUTPATH)
-                             .replaceAll(Matcher.quoteReplacement("")),
-                 dir.getFullPath());
-        } catch (final CommandAbstractException ignored) {
-          // nothing
-        }
-        dir = new R66Dir(session);
-        try {
-          dir.changeDirectory(runner.getRule().getWorkPath());
-          rv.put(COMPILE_HASH.matcher(WORKPATH)
-                             .replaceAll(Matcher.quoteReplacement("")),
-                 dir.getFullPath());
-        } catch (final CommandAbstractException ignored) {
-          // nothing
-        }
-        dir = new R66Dir(session);
-        try {
-          dir.changeDirectory(runner.getRule().getArchivePath());
-          rv.put(COMPILE_HASH.matcher(ARCHPATH)
-                             .replaceAll(Matcher.quoteReplacement("")),
-                 dir.getFullPath());
-        } catch (final CommandAbstractException ignored) {
-          // nothing
-        }
-      }
-    } else {
-      try {
-        dir.changeDirectory(Configuration.configuration.getInPath());
-        rv.put(COMPILE_HASH.matcher(INPATH)
-                           .replaceAll(Matcher.quoteReplacement("")),
-               dir.getFullPath());
-      } catch (final CommandAbstractException ignored) {
-        // nothing
-      }
-      dir = new R66Dir(session);
-      try {
-        dir.changeDirectory(Configuration.configuration.getOutPath());
-        rv.put(COMPILE_HASH.matcher(OUTPATH)
-                           .replaceAll(Matcher.quoteReplacement("")),
-               dir.getFullPath());
-      } catch (final CommandAbstractException ignored) {
-        // nothing
-      }
-      dir = new R66Dir(session);
-      try {
-        dir.changeDirectory(Configuration.configuration.getWorkingPath());
-        rv.put(COMPILE_HASH.matcher(WORKPATH)
-                           .replaceAll(Matcher.quoteReplacement("")),
-               dir.getFullPath());
-      } catch (final CommandAbstractException ignored) {
-        // nothing
-      }
-      dir = new R66Dir(session);
-      try {
-        dir.changeDirectory(Configuration.configuration.getArchivePath());
-        rv.put(COMPILE_HASH.matcher(ARCHPATH)
-                           .replaceAll(Matcher.quoteReplacement("")),
-               dir.getFullPath());
-      } catch (final CommandAbstractException ignored) {
-        // nothing
-      }
-    }
-  }
-
-  private void substituteHost(final Map<String, Object> rv) {
-    if (session.getAuth() != null) {
-      rv.put(COMPILE_HASH.matcher(REMOTEHOST)
-                         .replaceAll(Matcher.quoteReplacement("")),
-             session.getAuth().getUser());
-      String localhost;
-      try {
-        localhost =
-            Configuration.configuration.getHostId(session.getAuth().isSsl());
-      } catch (final OpenR66ProtocolNoSslException e) {
-        // replace by standard name
-        localhost = Configuration.configuration.getHostId();
-      }
-      rv.put(COMPILE_HASH.matcher(LOCALHOST)
-                         .replaceAll(Matcher.quoteReplacement("")), localhost);
-    }
-    if (session.getRemoteAddress() != null) {
-      rv.put(COMPILE_HASH.matcher(REMOTEHOSTADDR)
-                         .replaceAll(Matcher.quoteReplacement("")),
-             session.getRemoteAddress().toString());
-      rv.put(COMPILE_HASH.matcher(LOCALHOSTADDR)
-                         .replaceAll(Matcher.quoteReplacement("")),
-             session.getLocalAddress().toString());
-    } else {
-      rv.put(COMPILE_HASH.matcher(REMOTEHOSTADDR)
-                         .replaceAll(Matcher.quoteReplacement("")), "unknown");
-      rv.put(COMPILE_HASH.matcher(LOCALHOSTADDR)
-                         .replaceAll(Matcher.quoteReplacement("")), "unknown");
-    }
-  }
-
-  private void substituteDate(final Map<String, Object> rv) {
-    DateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
-    final Date date = new Date();
-    rv.put(COMPILE_HASH.matcher(DATE).replaceAll(Matcher.quoteReplacement("")),
-           dateFormat.format(date));
-    dateFormat = new SimpleDateFormat("HHmmss");
-    rv.put(COMPILE_HASH.matcher(HOUR).replaceAll(Matcher.quoteReplacement("")),
-           dateFormat.format(date));
-  }
-
-  private DbTaskRunner substituteRunner(final Map<String, Object> rv) {
-    final DbTaskRunner runner = session.getRunner();
-    if (runner != null) {
-      rv.put(COMPILE_HASH.matcher(ORIGINALFULLPATH)
-                         .replaceAll(Matcher.quoteReplacement("")),
-             runner.getOriginalFilename());
-      rv.put(COMPILE_HASH.matcher(ORIGINALFILENAME)
-                         .replaceAll(Matcher.quoteReplacement("")),
-             R66File.getBasename(runner.getOriginalFilename()));
-      rv.put(
-          COMPILE_HASH.matcher(RULE).replaceAll(Matcher.quoteReplacement("")),
-          runner.getRuleId());
-    }
-    if (runner != null) {
-      rv.put(COMPILE_HASH.matcher(TRANSFERID)
-                         .replaceAll(Matcher.quoteReplacement("")),
-             runner.getSpecialId());
-      rv.put(COMPILE_HASH.matcher(REQUESTERHOST)
-                         .replaceAll(Matcher.quoteReplacement("")),
-             runner.getRequester());
-      rv.put(COMPILE_HASH.matcher(REQUESTEDHOST)
-                         .replaceAll(Matcher.quoteReplacement("")),
-             runner.getRequested());
-      rv.put(COMPILE_HASH.matcher(FULLTRANSFERID)
-                         .replaceAll(Matcher.quoteReplacement("")),
-             runner.getSpecialId() + "_" + runner.getRequester() + '_' +
-             runner.getRequested());
-      rv.put(COMPILE_HASH.matcher(RANKTRANSFER)
-                         .replaceAll(Matcher.quoteReplacement("")),
-             Integer.toString(runner.getRank()));
-    }
-    return runner;
-  }
-
-  private void substituteFile(final Map<String, Object> rv) {
-    File trueFile = null;
-    if (session.getFile() != null) {
-      trueFile = session.getFile().getTrueFile();
-    }
-    if (trueFile != null) {
-      rv.put(COMPILE_HASH.matcher(TRUEFULLPATH)
-                         .replaceAll(Matcher.quoteReplacement("")),
-             trueFile.getAbsolutePath());
-      rv.put(COMPILE_HASH.matcher(TRUEFILENAME)
-                         .replaceAll(Matcher.quoteReplacement("")),
-             R66Dir.getFinalUniqueFilename(session.getFile()));
-      rv.put(COMPILE_HASH.matcher(FILESIZE)
-                         .replaceAll(Matcher.quoteReplacement("")),
-             Long.toString(trueFile.length()));
-    } else {
-      rv.put(COMPILE_HASH.matcher(TRUEFULLPATH)
-                         .replaceAll(Matcher.quoteReplacement("")), "nofile");
-      rv.put(COMPILE_HASH.matcher(TRUEFILENAME)
-                         .replaceAll(Matcher.quoteReplacement("")), "nofile");
-      rv.put(COMPILE_HASH.matcher(FILESIZE)
-                         .replaceAll(Matcher.quoteReplacement("")), "0");
-    }
   }
 
   /**

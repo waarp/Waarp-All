@@ -31,10 +31,10 @@ import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.utility.WaarpNettyUtil;
 import org.waarp.common.utility.WaarpShutdownHook;
+import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.openr66.protocol.exception.OpenR66Exception;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolNetworkException;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolNoConnectionException;
-import org.waarp.openr66.protocol.utils.ChannelUtils;
 import org.waarp.openr66.proxy.network.ssl.NetworkSslServerHandler;
 import org.waarp.openr66.proxy.network.ssl.NetworkSslServerInitializerProxy;
 
@@ -122,12 +122,15 @@ public class NetworkTransaction {
     }
     if (channel == null) {
       if (lastException != null) {
-        logger.info("Cannot connect : {}", lastException.getMessage());
+        logger.info("Proxy Cannot connect : {}", lastException.getMessage());
       } else {
-        logger.info("Cannot connect!");
+        logger.info("Proxy Cannot connect!");
       }
     } else if (lastException != null) {
-      logger.debug("Connection retried since {}", lastException.getMessage());
+      logger.debug("Proxy Connection retried since {}",
+                   lastException.getMessage());
+    } else {
+      logger.info("Proxy Connected");
     }
     return channel;
   }
@@ -153,18 +156,18 @@ public class NetworkTransaction {
     boolean valid = false;
     for (int i = 0; i < RETRYNB * 2; i++) {
       if (configuration.getConstraintLimitHandler().checkConstraintsSleep(i)) {
-        logger.info("Constraints exceeded: {}", i);
+        logger.info("Proxy Constraints exceeded: {}", i);
       } else {
-        logger.debug("Constraints NOT exceeded");
+        logger.debug("Proxy Constraints NOT exceeded");
         valid = true;
         break;
       }
     }
     if (!valid) {
       // Limit is locally exceeded
-      logger.debug("Overloaded local system");
+      logger.debug("Proxy Overloaded local system");
       throw new OpenR66ProtocolNetworkException(
-          "Cannot connect to remote server due to local overload");
+          "Proxy Cannot connect to remote server due to local overload");
     }
     try {
       channel = createNewConnection(socketAddress, isSSL);
@@ -210,7 +213,7 @@ public class NetworkTransaction {
         }
       } catch (final ChannelPipelineException e) {
         throw new OpenR66ProtocolNoConnectionException(
-            "Cannot connect to remote server due to a channel exception");
+            "Proxy Cannot connect to remote server due to a channel exception");
       }
       try {
         channelFuture.await(configuration.getTimeoutCon() / 3);
@@ -220,10 +223,10 @@ public class NetworkTransaction {
       if (channelFuture.isSuccess()) {
         final Channel channel = channelFuture.channel();
         if (isSSL && !NetworkSslServerHandler.isSslConnectedChannel(channel)) {
-          logger.info("KO CONNECT since SSL handshake is over");
+          logger.info("Proxy KO CONNECT since SSL handshake is over");
           channel.close();
           throw new OpenR66ProtocolNoConnectionException(
-              "Cannot finish connect to remote server");
+              "Proxy Cannot finish connect to remote server");
         }
         networkChannelGroup.add(channel);
         return channel;
@@ -235,27 +238,28 @@ public class NetworkTransaction {
         }
         if (!channelFuture.isDone()) {
           throw new OpenR66ProtocolNoConnectionException(
-              "Cannot connect to remote server due to interruption");
+              "Proxy Cannot connect to remote server due to interruption");
         }
         if (channelFuture.cause() instanceof ConnectException) {
-          logger.debug("KO CONNECT: {}", channelFuture.cause().getMessage());
+          logger.debug("Proxy KO CONNECT: {}",
+                       channelFuture.cause().getMessage());
           throw new OpenR66ProtocolNoConnectionException(
-              "Cannot connect to remote server", channelFuture.cause());
+              "Proxy Cannot connect to remote server", channelFuture.cause());
         } else {
-          logger.debug("KO CONNECT but retry", channelFuture.cause());
+          logger.debug("Proxy KO CONNECT but retry", channelFuture.cause());
         }
       }
     }
     final Throwable cause = channelFuture == null? null : channelFuture.cause();
-    throw new OpenR66ProtocolNetworkException("Cannot connect to remote server",
-                                              cause);
+    throw new OpenR66ProtocolNetworkException(
+        "Proxy Cannot connect to remote server", cause);
   }
 
   /**
-   * Close all Network Ttransaction
+   * Close all Network Transaction
    */
   public void closeAll() {
-    logger.debug("close All Network Channels");
+    logger.debug("Proxy close All Network Channels");
     try {
       Thread.sleep(RETRYINMS * 2);
     } catch (final InterruptedException e) {//NOSONAR
@@ -274,8 +278,8 @@ public class NetworkTransaction {
       SysErrLogger.FAKE_LOGGER.ignoreLog(e);
     }
     configuration.clientStop();
-    logger.debug("Last action before exit");
-    ChannelUtils.stopLogger();
+    logger.debug("Proxy Last action before exit");
+    WaarpSystemUtil.stopLogger();
   }
 
   /**

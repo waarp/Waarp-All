@@ -53,7 +53,7 @@ public class HttpRestR66Initializer extends ChannelInitializer<SocketChannel> {
     // Enable HTTPS if necessary.
     if (waarpSslContextFactory != null) {
       final SslHandler handler =
-          waarpSslContextFactory.initInitializer(true, false);
+          waarpSslContextFactory.createHandlerServer(false, ch);
       pipeline.addLast("ssl", handler);
     }
 

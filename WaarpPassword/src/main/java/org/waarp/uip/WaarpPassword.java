@@ -25,9 +25,9 @@ import org.waarp.common.crypto.KeyObject;
 import org.waarp.common.exception.CryptoException;
 import org.waarp.common.file.FileUtils;
 import org.waarp.common.logging.SysErrLogger;
-import org.waarp.common.utility.DetectionUtils;
 import org.waarp.common.utility.SystemPropertyUtil;
 import org.waarp.common.utility.WaarpStringUtils;
+import org.waarp.common.utility.WaarpSystemUtil;
 
 import java.io.BufferedReader;
 import java.io.DataInputStream;
@@ -77,19 +77,15 @@ public class WaarpPassword {
   public static void main(final String[] args) throws Exception {
     if (!loadOptions(args)) {
       // Bad options
-      if (DetectionUtils.isJunit()) {
-        return;
-      }
-      System.exit(2);//NOSONAR
+      WaarpSystemUtil.systemExit(2);
+      return;
     }
     final WaarpPassword waarpPassword = new WaarpPassword();
     if (po == null && pi == null) {
       // stop
       SysErrLogger.FAKE_LOGGER.sysout("Key written");
-      if (DetectionUtils.isJunit()) {
-        return;
-      }
-      System.exit(0);//NOSONAR
+      WaarpSystemUtil.systemExit(0);
+      return;
     }
     if (waarpPassword.clearPassword == null ||
         waarpPassword.clearPassword.length() == 0) {
@@ -97,10 +93,8 @@ public class WaarpPassword {
       final String newp = waarpPassword.readString();
       if (newp == null || newp.length() == 0) {
         SysErrLogger.FAKE_LOGGER.syserr("No password as input");
-        if (DetectionUtils.isJunit()) {
-          return;
-        }
-        System.exit(4);//NOSONAR
+        WaarpSystemUtil.systemExit(4);
+        return;
       }
       waarpPassword.setClearPassword(newp);
       if (po != null) {

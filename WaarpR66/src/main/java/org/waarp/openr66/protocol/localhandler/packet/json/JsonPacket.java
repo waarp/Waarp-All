@@ -47,7 +47,7 @@ public class JsonPacket {
       return (ObjectNode) JsonHandler.mapper.readTree(value);
     } catch (final JsonProcessingException e) {
       throw new OpenR66ProtocolPacketException("Json exception", e);
-    } catch (final IOException e) {
+    } catch (final Exception e) {
       throw new OpenR66ProtocolPacketException("Json exception", e);
     }
   }

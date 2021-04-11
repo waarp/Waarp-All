@@ -76,7 +76,8 @@ public class HttpServerExampleHandler
       ObjectNode objectNode = JsonHandler.getFromString(param);
       ArrayNode arrayNode =
           (ArrayNode) objectNode.get(MonitorExporterTransfers.RESULTS);
-      String hostId = objectNode.get(MonitorExporterTransfers.HOST_ID).asText();
+      String hostId =
+          request.headers().get(MonitorExporterTransfers.HEADER_WAARP_ID);
       Map<String, JsonNode> serverMap = virtualMap.get(hostId);
       if (serverMap == null) {
         serverMap = new HashMap<String, JsonNode>();
@@ -89,7 +90,7 @@ public class HttpServerExampleHandler
             jsonNode.get(MonitorExporterTransfers.UNIQUE_ID).asText();
         serverMap.put(uniqueId, jsonNode);
       }
-      logger.info("Receive monitoring from {} ({} servers referenced) with " +
+      logger.warn("Receive monitoring from {} ({} servers referenced) with " +
                   "{} transfers; now have {} transfers", hostId,
                   virtualMap.size(), arrayNode.size(), serverMap.size());
     } else {

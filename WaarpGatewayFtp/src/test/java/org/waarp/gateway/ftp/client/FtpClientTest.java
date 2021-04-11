@@ -46,9 +46,9 @@ import org.waarp.common.logging.WaarpLogLevel;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
-import org.waarp.common.utility.DetectionUtils;
 import org.waarp.common.utility.FileTestUtils;
 import org.waarp.common.utility.TestWatcherJunit4;
+import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.gateway.ftp.ExecGatewayFtpServer;
 import org.waarp.gateway.ftp.ServerInitDatabase;
 import org.waarp.gateway.ftp.client.transaction.Ftp4JClientTransactionTest;
@@ -175,7 +175,7 @@ public class FtpClientTest {
     WaarpLoggerFactory.setDefaultFactoryIfNotSame(
         new WaarpSlf4JLoggerFactory(WaarpLogLevel.WARN));
     ResourceLeakDetector.setLevel(Level.PARANOID);
-    DetectionUtils.setJunit(true);
+    WaarpSystemUtil.setJunit(true);
     // R66 Home
     File home = new File("/tmp/FTP");
     home.mkdirs();
@@ -231,6 +231,8 @@ public class FtpClientTest {
   @AfterClass
   public static void stopServer() throws InterruptedException {
     logger.warn("Will shutdown from client");
+    WaarpLoggerFactory.setDefaultFactoryIfNotSame(
+        new WaarpSlf4JLoggerFactory(WaarpLogLevel.NONE));
     try {
       Thread.sleep(200);
     } catch (final InterruptedException ignored) {
@@ -274,7 +276,7 @@ public class FtpClientTest {
     numberOK.set(0);
     final File localFilename = new File("/tmp/ftpfile.bin");
     testFtp4J("127.0.0.1", 2021, "fred", key, "a", 0,
-              localFilename.getAbsolutePath(), 0, 50, true, 1, 1);
+              localFilename.getAbsolutePath(), 0, 5, true, 1, 1);
   }
 
   public static void initiateWebDriver(File file) {

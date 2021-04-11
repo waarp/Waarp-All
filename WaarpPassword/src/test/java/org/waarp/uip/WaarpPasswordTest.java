@@ -24,9 +24,9 @@ import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestWatcher;
-import org.waarp.common.utility.DetectionUtils;
 import org.waarp.common.utility.TestWatcherJunit4;
 import org.waarp.common.utility.WaarpStringUtils;
+import org.waarp.common.utility.WaarpSystemUtil;
 
 import java.io.File;
 
@@ -37,7 +37,7 @@ public class WaarpPasswordTest {
 
   @Test
   public void testWaarpPassword() throws Exception {
-    DetectionUtils.setJunit(true);
+    WaarpSystemUtil.setJunit(true);
     int step = 0;
     System.out.println("Step " + step++);
     {

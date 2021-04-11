@@ -23,12 +23,11 @@ import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
-import org.waarp.common.utility.DetectionUtils;
+import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.openr66.configuration.FileBasedConfiguration;
 import org.waarp.openr66.database.data.DbTaskRunner;
 import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolBusinessException;
-import org.waarp.openr66.protocol.utils.ChannelUtils;
 
 import java.io.File;
 
@@ -57,7 +56,8 @@ public class LogImport {
     if (args.length < 2) {
       SysErrLogger.FAKE_LOGGER
           .syserr("Need configuration file and the logfile to import");
-      System.exit(1);//NOSONAR
+      WaarpSystemUtil.systemExit(1);
+      return;
     }
     try {
       if (!FileBasedConfiguration
@@ -67,11 +67,7 @@ public class LogImport {
         if (admin != null) {
           admin.close();
         }
-        if (DetectionUtils.isJunit()) {
-          return;
-        }
-        ChannelUtils.stopLogger();
-        System.exit(1);//NOSONAR
+        WaarpSystemUtil.systemExit(1);
         return;
       }
       final long time1 = System.currentTimeMillis();
@@ -84,11 +80,7 @@ public class LogImport {
         if (admin != null) {
           admin.close();
         }
-        if (DetectionUtils.isJunit()) {
-          return;
-        }
-        ChannelUtils.stopLogger();
-        System.exit(1);//NOSONAR
+        WaarpSystemUtil.systemExit(1);
         return;
       }
       final long time2 = System.currentTimeMillis();
@@ -98,7 +90,7 @@ public class LogImport {
       if (admin != null) {
         admin.close();
       }
-      System.exit(0);//NOSONAR
+      WaarpSystemUtil.systemExit(0);
     }
   }
 }

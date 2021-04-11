@@ -44,7 +44,11 @@ public enum R66Versions {
   /**
    * Add support for FileInformation change
    */
-  V3_0_4;
+  V3_0_4,
+  /**
+   * From version 3.1, no real change
+   */
+  V3_1_0;
 
   public String getVersion() {
     return name().substring(1).replace('_', '.');

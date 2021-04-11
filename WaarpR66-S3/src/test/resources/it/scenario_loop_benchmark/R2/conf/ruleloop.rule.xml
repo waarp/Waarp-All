@@ -1,0 +1,64 @@
+<rule>
+  <idrule>loop</idrule>
+  <mode>5</mode>
+  <rpretasks>
+    <tasks>
+    </tasks>
+  </rpretasks>
+  <rposttasks>
+    <tasks>
+      <task>
+        <type>S3PUTR66DELETE</type>
+        <path>-URL %s -accessKey accessKey -secretKey secretKey -bucketName
+          bucket-test -targetName %s -setTags key1:value1
+        </path>
+        <delay/>
+        <rank>0</rank>
+      </task>
+      <task>
+        <type>TRANSFER</type>
+        <path>-file #ORIGINALFILENAME# -to #REQUESTERHOST# -rule loop
+          -copyinfo
+        </path>
+        <delay/>
+        <rank>1</rank>
+      </task>
+    </tasks>
+  </rposttasks>
+  <rerrortasks>
+    <tasks>
+      <task>
+        <type>LOG</type>
+        <path>erreur</path>
+        <delay>1</delay>
+        <rank>0</rank>
+      </task>
+    </tasks>
+  </rerrortasks>
+  <serrortasks>
+    <tasks>
+      <task>
+        <type>LOG</type>
+        <path>erreur</path>
+        <delay>1</delay>
+        <rank>0</rank>
+      </task>
+    </tasks>
+  </serrortasks>
+  <sposttasks>
+    <tasks>
+    </tasks>
+  </sposttasks>
+  <spretasks>
+    <tasks>
+      <task>
+        <type>S3GETDELETE</type>
+        <path>-URL %s -accessKey accessKey -secretKey secretKey -bucketName
+          bucket-test -sourceName %s -file #TRUEFULLPATH# -getTags key1
+        </path>
+        <delay/>
+        <rank>0</rank>
+      </task>
+    </tasks>
+  </spretasks>
+</rule>

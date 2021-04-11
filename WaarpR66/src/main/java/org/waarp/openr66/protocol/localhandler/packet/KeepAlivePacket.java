@@ -84,7 +84,7 @@ public class KeepAlivePacket extends AbstractLocalPacket {
                                final int networkHeader) {
     final int globalSize = networkHeader + LOCAL_HEADER_SIZE + 1;
     final int offset = networkHeader + LOCAL_HEADER_SIZE;
-    global = ByteBufAllocator.DEFAULT.buffer(globalSize, globalSize);
+    global = ByteBufAllocator.DEFAULT.ioBuffer(globalSize, globalSize);
     middle = WaarpNettyUtil.slice(global, offset, 1);
     middle.writeByte(way);
     end = Unpooled.EMPTY_BUFFER;

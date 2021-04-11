@@ -26,7 +26,7 @@ import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
-import org.waarp.common.utility.DetectionUtils;
+import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.ftp.client.transaction.Ftp4JClientTransactionTest;
 import org.waarp.ftp.client.transaction.FtpClientThread;
 
@@ -70,7 +70,7 @@ public class FtpClientTest {
     if (args.length < 8) {
       System.err.println("Usage: " + FtpClientTest.class.getSimpleName() +
                          " server port user pwd acct localfilename nbThread nbIter");
-      DetectionUtils.systemExit(1);
+      WaarpSystemUtil.systemExit(1);
       return;
     }
     server = args[0];

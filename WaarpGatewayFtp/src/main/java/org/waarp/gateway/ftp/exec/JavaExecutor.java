@@ -27,6 +27,7 @@ import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.utility.ParametersChecker;
+import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.common.utility.WaarpThreadFactory;
 
 import java.util.concurrent.ExecutorService;
@@ -71,8 +72,8 @@ public class JavaExecutor extends AbstractExecutor {
     }
     final GatewayRunnable runnable;
     try {
-      runnable = (GatewayRunnable) Class.forName(className)//NOSONAR
-                                        .newInstance();//NOSONAR
+      runnable =
+          (GatewayRunnable) WaarpSystemUtil.newInstance(className);//NOSONAR
     } catch (final Exception e) {
       logger.error("ExecJava command is not available: " + className, e);
       throw new Reply421Exception("Pre Exec command is not executable");

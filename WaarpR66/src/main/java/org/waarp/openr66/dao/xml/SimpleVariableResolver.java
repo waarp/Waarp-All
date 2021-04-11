@@ -27,7 +27,7 @@ import java.util.Map;
 
 public class SimpleVariableResolver implements XPathVariableResolver {
 
-  private static final Map<QName, Object> vars = new HashMap<QName, Object>();
+  private final Map<QName, Object> vars = new HashMap<QName, Object>();
 
   public void addVariable(final QName name, final Object value) {
     vars.put(name, value);

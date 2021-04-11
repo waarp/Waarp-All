@@ -24,13 +24,12 @@ import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
-import org.waarp.common.utility.DetectionUtils;
+import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.openr66.configuration.FileBasedConfiguration;
 import org.waarp.openr66.database.data.DbTaskRunner;
 import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolBusinessException;
 import org.waarp.openr66.protocol.localhandler.ServerActions;
-import org.waarp.openr66.protocol.utils.ChannelUtils;
 
 import java.io.File;
 
@@ -59,7 +58,8 @@ public class ServerExportConfiguration {
       SysErrLogger.FAKE_LOGGER.syserr(
           "Need configuration file and the directory " + "where to " +
           "export");
-      System.exit(1);//NOSONAR
+      WaarpSystemUtil.systemExit(1);
+      return;
     }
     try {
       if (!FileBasedConfiguration
@@ -69,11 +69,7 @@ public class ServerExportConfiguration {
         if (admin != null) {
           admin.close();
         }
-        if (DetectionUtils.isJunit()) {
-          return;
-        }
-        ChannelUtils.stopLogger();
-        System.exit(1);//NOSONAR
+        WaarpSystemUtil.systemExit(1);
         return;
       }
       final String directory = args[1];
@@ -99,26 +95,20 @@ public class ServerExportConfiguration {
       } catch (final WaarpDatabaseException e1) {
         logger.error("Error", e1);
         admin.close();
-        if (DetectionUtils.isJunit()) {
-          return;
-        }
-        ChannelUtils.stopLogger();
-        System.exit(2);//NOSONAR
+        WaarpSystemUtil.systemExit(2);
+        return;
       } catch (final OpenR66ProtocolBusinessException e1) {
         logger.error("Error", e1);
         admin.close();
-        if (DetectionUtils.isJunit()) {
-          return;
-        }
-        ChannelUtils.stopLogger();
-        System.exit(2);//NOSONAR
+        WaarpSystemUtil.systemExit(2);
+        return;
       }
       logger.info("End of Export");
     } finally {
       if (admin != null) {
         admin.close();
       }
-      System.exit(0);//NOSONAR
+      WaarpSystemUtil.systemExit(0);
     }
   }
 

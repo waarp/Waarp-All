@@ -66,12 +66,11 @@ public class NetworkSslServerInitializer
     final SslHandler sslHandler;
     if (isClient) {
       // Not server: no clientAuthent, no renegotiation
-      sslHandler = getWaarpSslContextFactory().initInitializer(false, false);
+      sslHandler = getWaarpSslContextFactory().createHandlerClient(ch);
     } else {
       // Server: no renegotiation still, but possible clientAuthent
-      sslHandler = getWaarpSslContextFactory().initInitializer(true,
-                                                               getWaarpSslContextFactory()
-                                                                   .needClientAuthentication());
+      sslHandler = getWaarpSslContextFactory().createHandlerServer(
+          getWaarpSslContextFactory().needClientAuthentication(), ch);
     }
     pipeline.addLast(SSL_HANDLER, sslHandler);
     logger.debug("Create IdleStateHandler with {} ms",

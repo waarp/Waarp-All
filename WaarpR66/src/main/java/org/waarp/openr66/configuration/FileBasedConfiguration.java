@@ -49,6 +49,7 @@ import org.waarp.common.role.RoleDefault;
 import org.waarp.common.role.RoleDefault.ROLE;
 import org.waarp.common.utility.ParametersChecker;
 import org.waarp.common.utility.SystemPropertyUtil;
+import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.common.xml.XmlHash;
 import org.waarp.common.xml.XmlRootHash;
 import org.waarp.common.xml.XmlUtil;
@@ -330,9 +331,9 @@ public class FileBasedConfiguration {
           return false;
         }
         try {
-          config.setR66BusinessFactory((R66BusinessFactoryInterface) Class
-              .forName(value.getString())//NOSONAR
-              .newInstance());//NOSONAR
+          config.setR66BusinessFactory(
+              (R66BusinessFactoryInterface) WaarpSystemUtil
+                  .newInstance(value.getString()));//NOSONAR
         } catch (final Exception e) {
           logger.error("Bad Business Factory class", e);
           return false;
@@ -608,9 +609,9 @@ public class FileBasedConfiguration {
           return false;
         }
         try {
-          config.setR66BusinessFactory((R66BusinessFactoryInterface) Class
-              .forName(value.getString())//NOSONAR
-              .newInstance());//NOSONAR
+          config.setR66BusinessFactory(
+              (R66BusinessFactoryInterface) WaarpSystemUtil
+                  .newInstance(value.getString()));//NOSONAR
         } catch (final Exception e) {
           logger.error("Bad Business Factory class", e);
           return false;
@@ -669,6 +670,22 @@ public class FileBasedConfiguration {
 
   public static boolean loadMinimalDirectory(final Configuration config,
                                              final XmlHash hashConfig) {
+    final XmlValue xfactories = hashConfig.get(XML_EXTENDED_TASK_FACTORIES);
+    if (xfactories != null && !xfactories.isEmpty()) {
+      final String sextendedFactoryClassList = xfactories.getString();
+      // Initiate Extended Task Factory
+      final String[] extendedFactories = sextendedFactoryClassList.split(",");
+      for (final String extendedFactory : extendedFactories) {
+        try {
+          WaarpSystemUtil.newInstance(extendedFactory);
+          logger.warn("Added ExtendedTaskFactory: {}", extendedFactory);
+        } catch (Exception e) {
+          logger.error(Messages.getString(
+              "ServerInitDatabase.ExtendedTaskFactory.error") +
+                       extendedFactory + " = " + e.getMessage());
+        }
+      }
+    }
     final XmlValue value = hashConfig.get(XML_SERVER_HOME);
     if (value == null || value.isEmpty()) {
       logger.error(

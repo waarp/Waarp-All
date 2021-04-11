@@ -780,7 +780,7 @@ class MD5 {
    **/
   static byte[] getHash(final InputStream stream) throws IOException {
     try {
-      final byte[] buf = new byte[(int) ZERO_COPY_CHUNK_SIZE];
+      final byte[] buf = new byte[ZERO_COPY_CHUNK_SIZE];
       final MD5 md5 = new MD5();
       int read;
       while ((read = stream.read(buf)) >= 0) {

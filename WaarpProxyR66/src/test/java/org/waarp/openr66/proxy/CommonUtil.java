@@ -40,10 +40,11 @@ import org.waarp.common.logging.WaarpLogLevel;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
-import org.waarp.common.utility.DetectionUtils;
 import org.waarp.common.utility.FileTestUtils;
+import org.waarp.common.utility.NullPrintStream;
 import org.waarp.common.utility.Processes;
 import org.waarp.common.utility.WaarpShutdownHook;
+import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.openr66.configuration.FileBasedConfiguration;
 import org.waarp.openr66.dao.DAOFactory;
 import org.waarp.openr66.dao.TransferDAO;
@@ -101,12 +102,13 @@ public abstract class CommonUtil {
   public static DriverType driverType = DriverType.PHANTOMJS;
 
   public static void launchServers() throws Exception {
+    System.setErr(new NullPrintStream());
     WaarpLoggerFactory.setDefaultFactoryIfNotSame(
         new WaarpSlf4JLoggerFactory(WaarpLogLevel.WARN));
     ResourceLeakDetector.setLevel(Level.PARANOID);
     logger = WaarpLoggerFactory.getLogger(CommonUtil.class);
     // Setup directories : /tmp/R66 and sub dirs
-    DetectionUtils.setJunit(true);
+    WaarpSystemUtil.setJunit(true);
     setupResources();
     // Setup files needed for test (recv/send)
     toSend = new File(home, "in/toSend.txt");
@@ -115,6 +117,7 @@ public abstract class CommonUtil {
     generateOutFile(toRecv.getAbsolutePath(), 10000);
 
     // Launch R66 remote server using resources/r66 directory
+    System.setErr(err);
     setUpDbBeforeClass();
     setUpBeforeClassServer(true, OPEN_R_66_AUTHENT_THROUGH_PROXY_XML);
     // Launch R66Proxy server using resources directory
@@ -128,6 +131,8 @@ public abstract class CommonUtil {
 
   @AfterClass
   public static void stopServers() throws Exception {
+    WaarpLoggerFactory.setDefaultFactoryIfNotSame(
+        new WaarpSlf4JLoggerFactory(WaarpLogLevel.NONE));
     System.setErr(err);
     Configuration.configuration.setTimeoutCon(100);
     finalizeDriver();
@@ -171,8 +176,8 @@ public abstract class CommonUtil {
       conf.mkdir();
       // Copy to final home directory
       final File[] copied = FileUtils.copyRecursive(r66Resources, conf, false);
-      for (final File fileCopied : copied) {
-        System.out.print(fileCopied.getAbsolutePath() + ' ');
+      if (copied != null && copied.length > 0) {
+        System.out.print(copied[0].getAbsolutePath() + ' ');
       }
       System.out.println(" Done");
     } else {
@@ -406,6 +411,7 @@ public abstract class CommonUtil {
   }
 
   public static void initiateWebDriver(File file) {
+    System.setErr(new NullPrintStream());
     File libdir = file.getParentFile().getParentFile().getParentFile();
     // test-classes -> target -> WaarpR66 -> lib -> geckodriver (linux x64)
     File libPhantomJS = new File("/tmp/phantomjs-2.1.1");
@@ -424,17 +430,21 @@ public abstract class CommonUtil {
       e.printStackTrace();
       fail(e.getMessage());
     }
+    System.setErr(err);
   }
 
   public static void reloadDriver() throws InterruptedException {
+    System.setErr(new NullPrintStream());
     if (driver != null) {
       finalizeDriver();
       Thread.sleep(200);
     }
     driver = initializeDriver();
+    System.setErr(err);
   }
 
   public static WebDriver initializeDriver() throws InterruptedException {
+    System.setErr(new NullPrintStream());
     WebDriver driver;
     switch (driverType) {
       case PHANTOMJS:
@@ -444,10 +454,12 @@ public abstract class CommonUtil {
     driver.manage().timeouts().implicitlyWait(5, TimeUnit.SECONDS);
     //driver.manage().timeouts().pageLoadTimeout(10, TimeUnit.SECONDS);
     Thread.sleep(10);
+    System.setErr(err);
     return driver;
   }
 
   private static WebDriver createPhantomJSDriver() {
+    System.setErr(new NullPrintStream());
     DesiredCapabilities desiredCapabilities =
         new DesiredCapabilities("phantomjs", "", Platform.ANY);
     desiredCapabilities.setCapability(
@@ -482,15 +494,18 @@ public abstract class CommonUtil {
 
     PhantomJSDriver phantomJSDriver = new PhantomJSDriver(desiredCapabilities);
     phantomJSDriver.setLogLevel(java.util.logging.Level.OFF);
+    System.setErr(err);
     return phantomJSDriver;
   }
 
   public static void finalizeDriver() throws InterruptedException {
+    System.setErr(new NullPrintStream());
     // 17 | close |  |  |
     // driver.close();
     driver.quit();
     driver = null;
     Thread.sleep(10);
+    System.setErr(err);
   }
 
 }

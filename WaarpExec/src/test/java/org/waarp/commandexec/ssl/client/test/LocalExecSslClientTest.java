@@ -48,6 +48,7 @@ import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
 import org.waarp.common.utility.DetectionUtils;
 import org.waarp.common.utility.TestWatcherJunit4;
 import org.waarp.common.utility.WaarpNettyUtil;
+import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.common.utility.WaarpThreadFactory;
 
 import java.io.File;
@@ -104,7 +105,7 @@ public class LocalExecSslClientTest extends Thread {
   private Channel channel;
 
   {
-    DetectionUtils.setJunit(true);
+    WaarpSystemUtil.setJunit(true);
   }
 
   /**
@@ -118,7 +119,7 @@ public class LocalExecSslClientTest extends Thread {
     WaarpLoggerFactory.setDefaultFactoryIfNotSame(
         new WaarpSlf4JLoggerFactory(WaarpLogLevel.WARN));
     ResourceLeakDetector.setLevel(Level.PARANOID);
-    DetectionUtils.setJunit(true);
+    WaarpSystemUtil.setJunit(true);
     InetAddress addr;
     final byte[] loop = { 127, 0, 0, 1 };
     try {

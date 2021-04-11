@@ -1181,3 +1181,211 @@ Exemple:
 Ceci enverra (``put``) le fichier ``/path/file`` au serveur FTP ``remotehost`` sur le port ``port`` en
 utilisant les ``username`` et ``password``.
 
+
+Tâches agissant sur l'emplacement du fichier via un stockage S3
+---------------------------------------------------------------
+
+S3GET
+"""""
+
+Copie le fichier depuis un stockage S3 Objet comme argument et remplace le fichier
+actuel avec ce fichier comme source.
+
+- ``Delay`` est ignoré.
+- La commande finale est fonction des arguments ``Path`` et ``Transfer Information``.
+- Le fichier est marqué comme déplacé.
+
+La règle à utiliser doit être en mode THROUGHMODE, soit
+``SENDMD5THROUGHMODE`` ou ``SENDTHROUGHMODE`` (respectivement ``7`` ou ``5``) en mode ``SEND``,
+soit ``RECVMD5THROUGHMODE`` ou ``RECVTHROUGHMODE`` (respectivement ``8`` ou ``6``) en mdoe ``RECV``,
+car le fichier n'existe pas au démarrage.
+
+Le format est le suivant :
+
+- ``-URL url`` du service S3
+- ``-accessKey access Key`` du service S3
+- ``-secretKey secret Key`` du service S3
+- ``-bucketName bucket Name`` où est stocké l'objet
+- ``-sourceName source Name`` dans le bucket pour sélectionner l'objet final
+- ``-file final File path`` absolue ou relatif depuis le chemin IN
+- [``-getTags`` [``*`` or ``liste`` de noms de tag séparés par des virgules sans espace]]
+
+Les actions seront dans l'ordre :
+
+1) connexion au service S3 en utilisant la clef d'accès et la clef de secret
+2) Récupère depuis le bucket l'objet source et le stocke dans le fichier spécifié
+3) Si getTags is positionné, les informations sont ajoutées au transferInfo et fileInfo
+4) le fichier courrant est positionné sur ce nouveau fichier reçu (équivalent à la tâche R66 ``RENAME``)
+5) l'émetteur envoie une mise à jour (nom et taille)
+
+Exemple:
+
+.. code-block:: xml
+
+    <tasks>
+      <task>
+        <type>S3GET</type>
+        <path>-URL %s -accessKey %s -secretKey %s -bucketName %s -sourceName %s -file #TRUEFULLPATH# -getTags key1,key2</path>
+        <delay/>
+        <rank>0</rank>
+      </task>
+    </tasks>
+
+S3GETDELETE
+"""""""""""
+
+Copie le fichier depuis un stockage S3 Objet comme argument et remplace le fichier
+actuel avec ce fichier comme source et efface l'objet source.
+
+- ``Delay`` est ignoré.
+- La commande finale est fonction des arguments ``Path`` et ``Transfer Information``.
+- Le fichier est marqué comme déplacé.
+
+La règle à utiliser doit être en mode THROUGHMODE, soit
+``SENDMD5THROUGHMODE`` ou ``SENDTHROUGHMODE`` (respectivement ``7`` ou ``5``) en mode ``SEND``,
+soit ``RECVMD5THROUGHMODE`` ou ``RECVTHROUGHMODE`` (respectivement ``8`` ou ``6``) en mdoe ``RECV``,
+car le fichier n'existe pas au démarrage.
+
+Le format est le suivant :
+
+- ``-URL url`` du service S3
+- ``-accessKey access Key`` du service S3
+- ``-secretKey secret Key`` du service S3
+- ``-bucketName bucket Name`` où est stocké l'objet
+- ``-sourceName source Name`` dans le bucket pour sélectionner l'objet final
+- ``-file final File path`` absolue ou relatif depuis le chemin IN
+- [``-getTags`` [``*`` or ``liste`` de noms de tag séparés par des virgules sans espace]]
+
+Les actions seront dans l'ordre :
+
+1) connexion au service S3 en utilisant la clef d'accès et la clef de secret
+2) Récupère depuis le bucket l'objet source et le stocke dans le fichier spécifié
+3) Si getTags is positionné, les informations sont ajoutées au transferInfo et fileInfo
+4) le fichier courrant est positionné sur ce nouveau fichier reçu (équivalent à la tâche R66 ``RENAME``)
+5) l'émetteur envoie une mise à jour (nom et taille)
+6) l'objet S3 est effacé
+
+Exemple:
+
+.. code-block:: xml
+
+    <tasks>
+      <task>
+        <type>S3GETDELETE</type>
+        <path>-URL %s -accessKey %s -secretKey %s -bucketName %s -sourceName %s -file #TRUEFULLPATH# -getTags key1,key2</path>
+        <delay/>
+        <rank>0</rank>
+      </task>
+    </tasks>
+
+S3DELETE
+""""""""
+
+Efface l'objet S3.
+
+- ``Delay`` est ignoré.
+- La commande finale est fonction des arguments ``Path`` et ``Transfer Information``.
+- Le fichier courant n'est pas modifié.
+
+Le format est le suivant :
+
+- ``-URL url`` du service S3
+- ``-accessKey access Key`` du service S3
+- ``-secretKey secret Key`` du service S3
+- ``-bucketName bucket Name`` où est stocké l'objet
+- ``-sourceName source Name`` dans le bucket pour sélectionner l'objet final
+
+Les actions seront dans l'ordre :
+
+1) connexion au service S3 en utilisant la clef d'accès et la clef de secret
+2) l'objet S3 est effacé
+
+Exemple:
+
+.. code-block:: xml
+
+    <tasks>
+      <task>
+        <type>S3DELETE</type>
+        <path>-URL %s -accessKey %s -secretKey %s -bucketName %s -sourceName %s</path>
+        <delay/>
+        <rank>0</rank>
+      </task>
+    </tasks>
+
+
+S3PUT
+"""""
+
+Copie le fichier courant ver un stockage S3 Objet.
+
+- ``Delay`` est ignoré.
+- La commande finale est fonction des arguments ``Path`` et ``Transfer Information``.
+- Le fichier courant est inchangé.
+
+Le format est le suivant :
+
+- ``-URL url`` du service S3
+- ``-accessKey access Key`` du service S3
+- ``-secretKey secret Key`` du service S3
+- ``-bucketName bucket Name`` où est stocké l'objet
+- ``-targetName target Name`` dans le bucket pour sélectionner l'objet final
+- [``-setTags`` [``clef:valeur,clef:valeur`` de ``clef:valeur`` séparés par des virgules sans espace]]
+
+Les actions seront dans l'ordre :
+
+1) connexion au service S3 en utilisant la clef d'accès et la clef de secret
+2) Stocke le fichier courant dans le bucket l'objet destination
+3) Si setTags is positionné, les informations sont ajoutées à l'objet S3
+
+Exemple:
+
+.. code-block:: xml
+
+    <tasks>
+      <task>
+        <type>S3PUT</type>
+        <path>-URL %s -accessKey %s -secretKey %s -bucketName %s -targetName %s -setTags key1:value1,key2:value2</path>
+        <delay/>
+        <rank>0</rank>
+      </task>
+    </tasks>
+
+S3PUTR66DELETE
+""""""""""""""
+
+Copie le fichier courant ver un stockage S3 Objet et efface le fichier courant.
+
+- ``Delay`` est ignoré.
+- La commande finale est fonction des arguments ``Path`` et ``Transfer Information``.
+- Le fichier courant est inchangé.
+
+Le format est le suivant :
+
+- ``-URL url`` du service S3
+- ``-accessKey access Key`` du service S3
+- ``-secretKey secret Key`` du service S3
+- ``-bucketName bucket Name`` où est stocké l'objet
+- ``-targetName target Name`` dans le bucket pour sélectionner l'objet final
+- [``-setTags`` [``clef:valeur,clef:valeur`` de ``clef:valeur`` séparés par des virgules sans espace]]
+
+Les actions seront dans l'ordre :
+
+1) connexion au service S3 en utilisant la clef d'accès et la clef de secret
+2) Stocke le fichier courant dans le bucket l'objet destination
+3) Si setTags is positionné, les informations sont ajoutées à l'objet S3
+4) le fichier courrant est supprimé (équivalent à la tâche ``DELETE``)
+
+Exemple:
+
+.. code-block:: xml
+
+    <tasks>
+      <task>
+        <type>S3PUTDELETE</type>
+        <path>-URL %s -accessKey %s -secretKey %s -bucketName %s -targetName %s -setTags key1:value1,key2:value2</path>
+        <delay/>
+        <rank>0</rank>
+      </task>
+    </tasks>
+

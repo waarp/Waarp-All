@@ -431,8 +431,9 @@ public class NetworkHandler extends SimpleChannelInboundHandler<String> {
           logger.debug("Add Explicitely SSL support to Command");
           // add the SSL support
           sslHandler = FtpsInitializer.waarpSslContextFactory
-              .initInitializer(true, FtpsInitializer.waarpSslContextFactory
-                  .needClientAuthentication());
+              .createHandlerServer(FtpsInitializer.waarpSslContextFactory
+                                       .needClientAuthentication(),
+                                   ctx.channel());
           session.prepareSsl();
           WaarpSslUtility.addSslHandler(future, ctx.pipeline(), sslHandler,
                                         new GenericFutureListener<Future<? super Channel>>() {

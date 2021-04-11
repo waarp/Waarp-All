@@ -249,6 +249,11 @@ public class FileBasedElements {
    */
   public static final String XML_CONFIGPATH = "conf";
   /**
+   * Extended Task Factory configuration
+   */
+  public static final String XML_EXTENDED_TASK_FACTORIES =
+      "extendedtaskfactories";
+  /**
    * Structure of the Configuration file
    */
   private static final XmlDecl[] configDirectoryDecls = {
@@ -258,7 +263,8 @@ public class FileBasedElements {
       new XmlDecl(XmlType.STRING, XML_OUTPATH),
       new XmlDecl(XmlType.STRING, XML_ARCHIVEPATH),
       new XmlDecl(XmlType.STRING, XML_WORKINGPATH),
-      new XmlDecl(XmlType.STRING, XML_CONFIGPATH)
+      new XmlDecl(XmlType.STRING, XML_CONFIGPATH),
+      new XmlDecl(XmlType.STRING, XML_EXTENDED_TASK_FACTORIES)
   };
   /**
    * HTTP Admin Directory

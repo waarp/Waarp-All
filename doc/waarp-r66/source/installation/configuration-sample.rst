@@ -23,6 +23,7 @@ client.xml
       <arch>./temp/arch</arch>
       <work>./work/</work>
       <conf>./temp/conf</conf>
+      <extendedtaskfactories>org.waarp.openr66.s3.taskfactory.S3TaskFactory</extendedtaskfactories>
     </directory>
     <db>
       <dbdriver>postgresql</dbdriver>
@@ -79,6 +80,7 @@ server.xml
       <arch>./temp/arch</arch>
       <work>./work/</work>
       <conf>./temp/conf</conf>
+      <extendedtaskfactories>org.waarp.openr66.s3.taskfactory.S3TaskFactory</extendedtaskfactories>
     </directory>
     <db>
       <dbdriver>postgresql</dbdriver>

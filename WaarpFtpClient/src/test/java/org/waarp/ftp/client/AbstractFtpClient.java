@@ -43,8 +43,8 @@ import org.waarp.common.logging.WaarpLogLevel;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
-import org.waarp.common.utility.DetectionUtils;
 import org.waarp.common.utility.FileTestUtils;
+import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.ftp.FtpServer;
 import org.waarp.ftp.client.transaction.Ftp4JClientTransactionTest;
 import org.waarp.ftp.client.transaction.FtpClientThread;
@@ -79,7 +79,7 @@ public abstract class AbstractFtpClient {
     WaarpLoggerFactory.setDefaultFactoryIfNotSame(
         new WaarpSlf4JLoggerFactory(WaarpLogLevel.WARN));
     ResourceLeakDetector.setLevel(Level.PARANOID);
-    DetectionUtils.setJunit(true);
+    WaarpSystemUtil.setJunit(true);
     final File file = new File("/tmp/GGFTP/fred/a");
     file.mkdirs();
     FtpServer.startFtpServer("config.xml", "src/test/resources/sslconfig.xml",
@@ -92,6 +92,8 @@ public abstract class AbstractFtpClient {
   @AfterClass
   public static void stopServer() {
     logger.warn("Will shutdown from client");
+    WaarpLoggerFactory.setDefaultFactoryIfNotSame(
+        new WaarpSlf4JLoggerFactory(WaarpLogLevel.NONE));
     try {
       Thread.sleep(200);
     } catch (final InterruptedException ignored) {//NOSONAR
@@ -140,7 +142,7 @@ public abstract class AbstractFtpClient {
     numberOK.set(0);
     final File localFilename = new File("/tmp/ftpfile.bin");
     testFtp4J("127.0.0.1", port, "fred", "fred2", "a", SSL_MODE,
-              localFilename.getAbsolutePath(), 0, 50, true, 1, 1);
+              localFilename.getAbsolutePath(), 0, 3, true, 1, 1);
   }
 
   public void testFtp4J(String server, int port, String username, String passwd,

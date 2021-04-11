@@ -33,7 +33,6 @@ public final class DetectionUtils {
   private static final boolean IS_WINDOWS;
   private static final boolean IS_UNIX_IBM;
   private static final int NUMBERTHREAD;
-  private static boolean isJunit;
 
   static {
     final String os = SystemPropertyUtil.get("os.name").toLowerCase();
@@ -53,46 +52,6 @@ public final class DetectionUtils {
   }
 
   private DetectionUtils() {
-  }
-
-  /**
-   * Replacement for System.exit(value)
-   *
-   * @param value
-   */
-  public static void systemExit(final int value) {
-    if (!isJunit()) {
-      System.exit(value);//NOSONAR
-    }
-  }
-
-  /**
-   * Replacement for Runtime.getRuntime().halt(value)
-   *
-   * @param value
-   */
-  public static void runtimeGetRuntimeHalt(final int value) {
-    if (!isJunit()) {
-      Runtime.getRuntime().halt(value);//NOSONAR
-    }
-  }
-
-  /**
-   * JUnit usage only
-   *
-   * @return True if in JUnit role
-   */
-  public static boolean isJunit() {
-    return isJunit;
-  }
-
-  /**
-   * JUnit usage only
-   *
-   * @param isJunit
-   */
-  public static void setJunit(final boolean isJunit) {
-    DetectionUtils.isJunit = isJunit;
   }
 
   /**

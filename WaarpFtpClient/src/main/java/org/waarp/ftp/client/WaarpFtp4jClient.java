@@ -41,7 +41,6 @@ import java.io.IOException;
 import java.net.SocketException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
 import java.security.cert.X509Certificate;
 
 import static org.waarp.common.digest.WaarpBC.*;
@@ -142,13 +141,13 @@ public class WaarpFtp4jClient {
       };
       final SSLContext sslContext;
       try {
-        sslContext = getInstance();
+        sslContext = getInstanceJDK();
         sslContext.init(null, trustManager, getSecureRandom());
       } catch (final NoSuchAlgorithmException e) {
         throw new IllegalArgumentException("Bad algorithm", e);
       } catch (final KeyManagementException e) {
         throw new IllegalArgumentException("Bad KeyManagement", e);
-      } catch (final NoSuchProviderException e) {
+      } catch (final Exception e) {
         throw new IllegalArgumentException("Bad Provider", e);
       }
       final SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();

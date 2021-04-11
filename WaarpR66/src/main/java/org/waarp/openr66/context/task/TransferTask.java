@@ -71,7 +71,7 @@ import java.util.Map;
  * [-notlogWarn |   Specify to log final result as Info if OK<br>
  * -logWarn]        Specify to log final result as Warn if OK<br>
  */
-public class TransferTask extends AbstractExecTask {
+public class TransferTask extends AbstractTask {
   /**
    * Internal Logger
    */
@@ -129,10 +129,14 @@ public class TransferTask extends AbstractExecTask {
       }
       TransferArgs.getAllInfo(transferArgs, 0, args, copied);
     } else {
+      logger.error("Not enough argument in Transfer");
       futureCompletion.setFailure(
           new OpenR66RunnerErrorException("Not enough argument in Transfer"));
       return;
     }
+    logger.debug("TransferArgs: {} Rule: {} Filename: {}",
+                 transferArgs.getTransferInfo(), transferArgs.getRulename(),
+                 transferArgs.getFilename());
     final R66Future future = new R66Future(true);
     final SubmitTransfer transaction =
         new SubmitTransfer(future, transferArgs.getRemoteHost(),

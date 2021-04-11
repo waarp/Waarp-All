@@ -63,8 +63,7 @@ public class HttpTestRestClientInitializer
 
     // Enable HTTPS if necessary.
     if (waarpSslContextFactory != null) {
-      final SslHandler handler =
-          waarpSslContextFactory.initInitializer(false, false);
+      final SslHandler handler = waarpSslContextFactory.createHandlerClient(ch);
       pipeline.addLast("ssl", handler);
     }
 

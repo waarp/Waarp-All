@@ -53,6 +53,7 @@ public class HttpMonitoringCloseTest extends HttpMonitoringAbstract {
    */
   @BeforeClass
   public static void setUpBeforeClass() throws Exception {
+    ResourceLeakDetector.setLevel(Level.PARANOID);
     final ClassLoader classLoader =
         HttpMonitoringCloseTest.class.getClassLoader();
     final File file =

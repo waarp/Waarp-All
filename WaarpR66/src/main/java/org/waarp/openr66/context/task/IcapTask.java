@@ -82,7 +82,7 @@ import org.waarp.openr66.context.task.exception.OpenR66RunnerErrorException;
  * -ignoreNetworkError -- -file #TRUEFULLPATH# -to
  * requestedHost -rule rule [-copyinfo] [-info information]<br>
  */
-public class IcapTask extends AbstractExecTask {
+public class IcapTask extends AbstractTask {
   /**
    * Internal Logger
    */

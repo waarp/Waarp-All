@@ -38,9 +38,9 @@ import org.waarp.common.logging.WaarpLogLevel;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
-import org.waarp.common.utility.DetectionUtils;
 import org.waarp.common.utility.FileTestUtils;
 import org.waarp.common.utility.TestWatcherJunit4;
+import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.gateway.ftp.ExecGatewayFtpServer;
 import org.waarp.gateway.ftp.ServerInitDatabase;
 import org.waarp.gateway.ftp.client.transaction.Ftp4JClientTransactionTest;
@@ -79,7 +79,7 @@ public class FtpClientPerfTestIT {
     WaarpLoggerFactory.setDefaultFactoryIfNotSame(
         new WaarpSlf4JLoggerFactory(WaarpLogLevel.WARN));
     ResourceLeakDetector.setLevel(Level.PARANOID);
-    DetectionUtils.setJunit(true);
+    WaarpSystemUtil.setJunit(true);
     // R66 Home
     File home = new File("/tmp/FTP");
     home.mkdirs();
@@ -131,6 +131,8 @@ public class FtpClientPerfTestIT {
   @AfterClass
   public static void stopServer() {
     logger.warn("Will shutdown from client");
+    WaarpLoggerFactory.setDefaultFactoryIfNotSame(
+        new WaarpSlf4JLoggerFactory(WaarpLogLevel.NONE));
     try {
       Thread.sleep(200);
     } catch (final InterruptedException ignored) {

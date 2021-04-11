@@ -39,6 +39,58 @@ Les outils suivants sont nécessaires. Des variantes peuvent être utilisées :
   au moins 8 Go de mémoire disponibles ainsi que 20 Go de disques (pour les
   sources et compilation) et 10 Go sur le répertoire `/tmp`
 
+### 1.1  Installer localement les JAR de dépendances si nécessaires
+
+Certains jars sont inclus dans le projet car ils dépendent de projets non forcément
+disponibles sur tous les sites repository de Maven. Pour faciliter la compilation
+et leur inclusion, il peut être nécessaire de les inclure statiquement.
+
+Sont concernés :
+
+- `netty-http-java6` : fork de la version netty-http mais pour JRE 6
+- `selenium-java` : pour avoir une version compatible JRE 6
+- `Waarp-Shaded-Parent` : le parent de ces deux jars
+
+Pour mettre à jour ces jars, veuillez utiliser la procéduire suivante :
+
+- Installer dans Artifactory et le depôt local `.m2` via la commande
+  `mvn clean deploy -P release` depuis le projet spécifique `Waarp-Shaded-Parent`
+- Copier les répertoires depuis le dépôt local `.m2` les dossiers correspondants
+
+  - `.m2/repository/Waarp/Waarp-Shaded-Parent/1.0.3/` dans `lib/Waarp/Waarp-Shaded-Parent/1.0.3/`
+  - `.m2/repository/Waarp/selenium-java/3.141.59/` dans `lib/Waarp/selenium-java/3.141.59/`
+  - `.m2/repository/Waarp/netty-http-java6/1.5.0/` dans `lib/Waarp/netty-http-java6/1.5.0/`
+  
+- Mettre à jour dans chacun des dossiers parents le fichier `maven-metadata-local.xml` pour ne conserver
+  que la dernière version (`lastest`, `release` et `version`) et la dernière date de mise à jour
+  (`lastUpdated`) ; par exemple :
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata>
+  <groupId>Waarp</groupId>
+  <artifactId>Waarp-Shaded-Parent</artifactId>
+  <versioning>
+    <latest>1.0.3</latest>
+    <release>1.0.3</release>
+    <versions>
+      <version>1.0.3</version>
+    </versions>
+    <lastUpdated>20210424111617</lastUpdated>
+  </versioning>
+</metadata>
+```
+  
+Les jars suivants n'ont a priori pas à etre mis à jour (principalement car
+soit ils ne sont plus maintenus mais utiles, soit utilisables pour des
+packages non maintenus comme WaarpAdministrator ou WaarpXmlEditor).
+
+- `ftp4j` en version 1.7.2 absente des repository Maven
+- `javasysmon` en version 0.3.6 absente des repository Maven
+- `sun plugin` en version 1.6 absente des repository Maven
+- `Xerces`, `XML-APIS` en version 2.5.0 absente des repository Maven
+- `XMLEditor` en version 2.2 absente des repository Maven
+
 
 ## 2  Vérification
 
@@ -58,12 +110,14 @@ documentation.
 Dans la section `profiles`, 3 profils sont importants et doivent faire l'objet
 d'une mise à jour pour une nouvelle version :
 
+Le champ à modifier est `waarp.version` avec une valeur du type `x.y.z`.
+
 ##### 2.2.1.1  Profil `jre6`
 
 Dans ce profil, la compilation cible JRE6 et les paquets seront nommés de
 manière standard `NomPackage-version.jar`.
 
-Le champ à modifier est `waarp.version` avec une valeur du type `x.y.z`.
+
 
 **IMPORTANT** : chaque commande Maven doit être accompagnée de l'option
 spécifiant le profil : **`mvn -P jre6 ...`**. Une JDK8 est nécessaire.
@@ -73,8 +127,6 @@ spécifiant le profil : **`mvn -P jre6 ...`**. Une JDK8 est nécessaire.
 Dans ce profil, la compilation cible JRE8 et les paquets seront nommés de
 manière standard `NomPackage-version-jre8.jar`.
 
-Le champ à modifier est `waarp.version` avec une valeur du type `x.y.z-jre8`.
-
 **IMPORTANT** : chaque commande Maven doit être accompagnée de l'option
 spécifiant le profil : **`mvn -P jre8 ...`**. Une JDK8 est nécessaire.
 
@@ -82,8 +134,6 @@ spécifiant le profil : **`mvn -P jre8 ...`**. Une JDK8 est nécessaire.
 
 Dans ce profil, la compilation cible JRE11 et les paquets seront nommés de
 manière standard `NomPackage-version-jre11.jar`.
-
-Le champ à modifier est `waarp.version` avec une valeur du type `x.y.z-jre11`.
 
 **IMPORTANT** : chaque commande Maven doit être accompagnée de l'option
 spécifiant le profil : **`mvn -P jre11 ...`**. **Une JDK11 est nécessaire.**

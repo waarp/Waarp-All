@@ -26,6 +26,7 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.TrustManagerFactorySpi;
 import java.security.KeyStore;
+import java.security.cert.X509Certificate;
 
 /**
  * A SecureTrustManagerFactory
@@ -76,6 +77,13 @@ public class WaarpSecureTrustManagerFactory extends TrustManagerFactorySpi {
    */
   public boolean needAuthentication() {
     return needAuthentication;
+  }
+
+  /**
+   * @return the list of TrustManagers
+   */
+  public X509Certificate[] getX509Certificates() {
+    return ((WaarpX509TrustManager) trustManager[0]).getAcceptedIssuers();
   }
 
   /**

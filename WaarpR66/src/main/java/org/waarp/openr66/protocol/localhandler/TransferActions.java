@@ -443,6 +443,8 @@ public class TransferActions extends ServerActions {
   }
 
   private void sendDataFromRequest(final DbTaskRunner runner) {
+    logger.debug("Try to send Data: isSender {} isSendThrough {}",
+                 runner.isSender(), runner.isSendThrough());
     if (runner.isSender()) {
       if (runner.isSendThrough()) {
         // it is legal to send data from now
@@ -874,7 +876,7 @@ public class TransferActions extends ServerActions {
     }
     // Check global size
     final long originalSize = session.getRunner().getOriginalSize();
-    if (originalSize >= 0) {
+    if (originalSize > 0) {
       if (session.getRunner().getBlocksize() *
           (session.getRunner().getRank() - 1) > originalSize) {
         // cannot continue

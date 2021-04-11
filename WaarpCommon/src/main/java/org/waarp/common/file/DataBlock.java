@@ -138,7 +138,10 @@ public class DataBlock {
     byteCount = block.readableBytes();
     this.block = new byte[byteCount];
     offsetBuf = 0;
-    blockBuf = null;
+    if (blockBuf != null) {
+      blockBuf.release();
+      blockBuf = null;
+    }
     block.readBytes(this.block);
     block.release();
   }
@@ -164,7 +167,10 @@ public class DataBlock {
     } else {
       byteCount = this.block.length;
     }
-    blockBuf = null;
+    if (blockBuf != null) {
+      blockBuf.release();
+      blockBuf = null;
+    }
     offsetBuf = 0;
   }
 
@@ -320,6 +326,10 @@ public class DataBlock {
    * Clear the object
    */
   public void clear() {
+    if (blockBuf != null) {
+      blockBuf.release();
+      blockBuf = null;
+    }
     block = null;
     byteCount = -1;
     descriptor = 0;

@@ -62,6 +62,11 @@ public class RuleTask {
     return res + "</task>";
   }
 
+  @Override
+  public String toString() {
+    return getXML();
+  }
+
   public String getType() {
     return type;
   }

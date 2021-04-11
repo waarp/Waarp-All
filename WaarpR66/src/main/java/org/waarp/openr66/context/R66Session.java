@@ -431,12 +431,12 @@ public class R66Session implements SessionInterface {
                                  final LocalChannelReference localChannelReference) {
     this.runner = runner;
     // Warning: the file is not correctly setup
+    auth.specialNoSessionAuth(false, Configuration.configuration.getHostId());
     try {
       file = (R66File) dir.setFile(this.runner.getFilename(), false);
     } catch (final CommandAbstractException ignored) {
       // nothing
     }
-    auth.specialNoSessionAuth(false, Configuration.configuration.getHostId());
     this.localChannelReference = localChannelReference;
     if (this.localChannelReference == null) {
       if (this.runner.getLocalChannelReference() != null) {
@@ -740,6 +740,9 @@ public class R66Session implements SessionInterface {
   public void setRunner(final DbTaskRunner runner)
       throws OpenR66RunnerErrorException {
     this.runner = runner;
+    if (localChannelReference != null) {
+      this.runner.setLocalChannelReference(localChannelReference);
+    }
     this.isSender = runner.isSender();
     logger.debug("Runner to set: {} {}", runner.shallIgnoreSave(), runner);
     this.runner.checkThroughMode();

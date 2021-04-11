@@ -27,7 +27,6 @@ import org.junit.Test;
 import org.junit.rules.TestWatcher;
 import org.waarp.common.utility.TestWatcherJunit4;
 
-import java.io.IOException;
 import java.util.Map;
 
 import static org.junit.Assert.*;
@@ -96,7 +95,7 @@ public class JsonHandlerTest {
     } catch (final JsonProcessingException e) {
       fail(e.getMessage());
       return;
-    } catch (final IOException e) {
+    } catch (final Exception e) {
       fail(e.getMessage());
       return;
     }

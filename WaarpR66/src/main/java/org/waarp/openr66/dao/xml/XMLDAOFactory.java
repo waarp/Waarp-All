@@ -28,18 +28,8 @@ import org.waarp.openr66.dao.MultipleMonitorDAO;
 import org.waarp.openr66.dao.RuleDAO;
 import org.waarp.openr66.dao.TransferDAO;
 import org.waarp.openr66.dao.exception.DAOConnectionException;
-import org.waarp.openr66.protocol.configuration.Configuration;
 
 public class XMLDAOFactory extends DAOFactory {
-
-  private final String confDir = Configuration.configuration.getConfigPath();
-
-  private final String businessFile = confDir + "/business.xml";
-  private final String hostFile = Configuration.configuration.getAuthFile();
-  private final String limitFile = confDir + "/limit.xml";
-  private final String ruleFile = confDir;
-  private final String transferFile =
-      Configuration.configuration.getArchivePath();
 
   public XMLDAOFactory() {
     // Empty
@@ -47,17 +37,17 @@ public class XMLDAOFactory extends DAOFactory {
 
   @Override
   public BusinessDAO getBusinessDAO() {
-    return new XMLBusinessDAO(businessFile);
+    return new XMLBusinessDAO();
   }
 
   @Override
   public HostDAO getHostDAO() {
-    return new XMLHostDAO(hostFile);
+    return new XMLHostDAO();
   }
 
   @Override
   public LimitDAO getLimitDAO() throws DAOConnectionException {
-    return new XMLLimitDAO(limitFile);
+    return new XMLLimitDAO();
   }
 
   @Override
@@ -69,11 +59,11 @@ public class XMLDAOFactory extends DAOFactory {
 
   @Override
   public RuleDAO getRuleDAO() {
-    return new XMLRuleDAO(ruleFile);
+    return new XMLRuleDAO();
   }
 
   @Override
   public TransferDAO getTransferDAO() {
-    return new XMLTransferDAO(transferFile);
+    return new XMLTransferDAO();
   }
 }

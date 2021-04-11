@@ -22,7 +22,7 @@ package org.waarp.openr66.client;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
-import org.waarp.common.utility.DetectionUtils;
+import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.openr66.client.utils.OutputFormat;
 import org.waarp.openr66.client.utils.OutputFormat.FIELDS;
 import org.waarp.openr66.context.ErrorCode;
@@ -30,7 +30,6 @@ import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.configuration.Messages;
 import org.waarp.openr66.protocol.localhandler.packet.BusinessRequestPacket;
 import org.waarp.openr66.protocol.networkhandler.NetworkTransaction;
-import org.waarp.openr66.protocol.utils.ChannelUtils;
 import org.waarp.openr66.protocol.utils.R66Future;
 
 import static org.waarp.common.database.DbConstant.*;
@@ -73,11 +72,8 @@ public class BusinessRequest extends AbstractBusinessRequest {
       if (admin != null) {
         admin.close();
       }
-      if (DetectionUtils.isJunit()) {
-        return;
-      }
-      ChannelUtils.stopLogger();
-      System.exit(2);//NOSONAR
+      WaarpSystemUtil.systemExit(2);
+      return;
     }
     Configuration.configuration.pipelineInit();
     final NetworkTransaction networkTransaction = new NetworkTransaction();
@@ -126,10 +122,11 @@ public class BusinessRequest extends AbstractBusinessRequest {
         outputFormat.sysout();
       }
       networkTransaction.closeAll();
-      System.exit(ErrorCode.Unknown.ordinal());//NOSONAR
+      WaarpSystemUtil.systemExit(ErrorCode.Unknown.ordinal());
+      return;
     }
     networkTransaction.closeAll();
-    System.exit(0);//NOSONAR
+    WaarpSystemUtil.systemExit(0);
   }
 
 }

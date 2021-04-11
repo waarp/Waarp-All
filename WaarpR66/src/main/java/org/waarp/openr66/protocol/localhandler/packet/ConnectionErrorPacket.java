@@ -86,7 +86,7 @@ public class ConnectionErrorPacket extends AbstractLocalPacket {
     final int globalSize =
         networkHeader + LOCAL_HEADER_SIZE + headerSize + middleSize;
     int offset = networkHeader + LOCAL_HEADER_SIZE;
-    global = ByteBufAllocator.DEFAULT.buffer(globalSize, globalSize);
+    global = ByteBufAllocator.DEFAULT.ioBuffer(globalSize, globalSize);
     header = WaarpNettyUtil.slice(global, offset, headerSize);
     if (sheader != null) {
       header.writeBytes(sheaderByte);

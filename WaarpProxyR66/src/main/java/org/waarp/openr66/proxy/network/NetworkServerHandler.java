@@ -108,7 +108,7 @@ public class NetworkServerHandler
       proxyChannel = bridge.getSource().getNetworkChannel();
     }
     clientFuture.setSuccess();
-    logger.info("setBridge: {} {}", isServer, (bridge != null?
+    logger.info("Proxy setBridge: {} {}", isServer, (bridge != null?
         bridge.getProxyEntry() + " proxyChannelId: " + proxyChannel.id() :
         "nobridge"));
   }
@@ -143,16 +143,18 @@ public class NetworkServerHandler
         final ProxyEntry entry = ProxyEntry.get(localAddress.toString());
         if (entry == null) {
           // error
-          // XXX FIXME need to send error !
-          WaarpSslUtility.closingSslChannel(networkChannel);
+          exceptionCaught(ctx, new OpenR66ProtocolNoConnectionException(
+              "Cannot found Proxy Entry: connection aborted"));
+          // WaarpSslUtility.closingSslChannel(networkChannel);
           logger.error("No proxy configuration found for: " + localAddress);
           return;
         }
         bridge = new ProxyBridge(entry, this);
         bridge.initializeProxy();
         if (!bridge.waitForRemoteConnection()) {
+          exceptionCaught(ctx, new OpenR66ProtocolNoConnectionException(
+              "Proxy Cannot connect to remote Server: connection aborted"));
           logger.error("No connection for proxy: " + localAddress);
-          WaarpSslUtility.closingSslChannel(networkChannel);
           return;
         }
         proxyChannel = bridge.getProxified().networkChannel;
@@ -162,13 +164,14 @@ public class NetworkServerHandler
       } else {
         clientFuture.awaitOrInterruptible(configuration.getTimeoutCon());
         if (bridge == null || !clientFuture.isDone()) {
+          exceptionCaught(ctx, new OpenR66ProtocolNoConnectionException(
+              "Proxy Cannot connect to remote Server: connection aborted"));
           logger.error("No connection for proxy: " + localAddress);
-          WaarpSslUtility.closingSslChannel(networkChannel);
           return;
         }
         bridge.remoteConnected();
       }
-      logger.debug("Network Channel Connected: {} ", ctx.channel().id());
+      logger.debug("Proxy Network Channel Connected: {} ", ctx.channel().id());
     } finally {
       ctx.read();
     }
@@ -187,10 +190,11 @@ public class NetworkServerHandler
           keepAlivedSent.getAndIncrement();
           return;
         }
-        logger.error("Not getting KAlive: closing channel");
+        logger.error("Proxy Not getting KAlive: closing channel");
         if (configuration.getR66Mib() != null) {
-          configuration.getR66Mib().notifyWarning("KeepAlive get no answer",
-                                                  "Closing network connection");
+          configuration.getR66Mib()
+                       .notifyWarning("Proxy KeepAlive get no answer",
+                                      "Closing network connection");
         }
         ChannelCloseTimer.closeFutureChannel(ctx.channel());
       } else {
@@ -199,7 +203,7 @@ public class NetworkServerHandler
         final NetworkPacket response =
             new NetworkPacket(ChannelUtils.NOCHANNEL, ChannelUtils.NOCHANNEL,
                               keepAlivePacket, null);
-        logger.info("Write KAlive");
+        logger.info("Proxy Write KAlive");
         ctx.channel().writeAndFlush(response);
       }
     }
@@ -217,13 +221,13 @@ public class NetworkServerHandler
         resetKeepAlive();
         // Will forward
       } else if (msg.getCode() == LocalPacketFactory.CONNECTERRORPACKET) {
-        logger.debug("NetworkRecv: {}", msg);
+        logger.debug("Proxy NetworkRecv: {}", msg);
         // Special code to STOP here
         if (msg.getLocalId() == ChannelUtils.NOCHANNEL) {
           // No way to know what is wrong: close all connections with
           // remote host
           logger.error(
-              "Will close NETWORK channel, Cannot continue connection with remote Host: " +
+              "Proxy Will close NETWORK channel, Cannot continue connection with remote Host: " +
               msg + " : " + ctx.channel().remoteAddress());
           WaarpSslUtility.closingSslChannel(ctx.channel());
           msg.clear();
@@ -241,10 +245,10 @@ public class NetworkServerHandler
                 new NetworkPacket(ChannelUtils.NOCHANNEL,
                                   ChannelUtils.NOCHANNEL, keepAlivePacket,
                                   null);
-            logger.info("Answer KAlive");
+            logger.info("Proxy Answer KAlive");
             ctx.channel().writeAndFlush(response);
           } else {
-            logger.info("Get KAlive");
+            logger.info("Proxy Get KAlive");
           }
         } catch (final OpenR66ProtocolPacketException ignored) {
           // nothing
@@ -268,7 +272,7 @@ public class NetworkServerHandler
   public void exceptionCaught(final ChannelHandlerContext ctx,
                               final Throwable cause) {
     final Channel channel = ctx.channel();
-    logger.debug("Network Channel Exception: {}", channel.id(), cause);
+    logger.debug("Proxy Network Channel Exception: {}", channel.id(), cause);
     if (cause instanceof ReadTimeoutException) {
       final ReadTimeoutException exception = (ReadTimeoutException) cause;
       // No read for too long
@@ -328,6 +332,7 @@ public class NetworkServerHandler
     try {
       if (channel.isActive()) {
         NetworkPacket networkPacket = null;
+        logger.info("Proxy Error to send {}", error);
         try {
           networkPacket = new NetworkPacket(localId, remoteId, error, null);
         } catch (final OpenR66ProtocolPacketException ignored) {

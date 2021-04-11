@@ -58,7 +58,7 @@ public class NoOpPacket extends AbstractLocalPacket {
   public void createAllBuffers(final LocalChannelReference lcr,
                                final int networkHeader) {
     final int globalSize = networkHeader + LOCAL_HEADER_SIZE;
-    global = ByteBufAllocator.DEFAULT.buffer(globalSize, globalSize);
+    global = ByteBufAllocator.DEFAULT.ioBuffer(globalSize, globalSize);
     end = Unpooled.EMPTY_BUFFER;
     header = Unpooled.EMPTY_BUFFER;
     middle = Unpooled.EMPTY_BUFFER;

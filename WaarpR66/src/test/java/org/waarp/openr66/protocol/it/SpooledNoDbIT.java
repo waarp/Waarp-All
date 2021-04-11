@@ -20,8 +20,42 @@
 
 package org.waarp.openr66.protocol.it;
 
-public class SpooledNoDbIT extends SpooledIT {
-  static {
+import io.netty.util.ResourceLeakDetector;
+import io.netty.util.ResourceLeakDetector.Level;
+import org.junit.BeforeClass;
+import org.waarp.common.utility.Processes;
+import org.waarp.common.utility.SystemPropertyUtil;
+
+import java.io.File;
+
+import static org.waarp.openr66.protocol.it.ScenarioBase.*;
+
+public class SpooledNoDbIT extends SpooledITAbstract {
+  /**
+   * @throws Exception
+   */
+  @BeforeClass
+  public static void setUpBeforeClass() throws Exception {
     noDb = true;
+    logger.warn("DEBUG retest {}", noDb);
+    if (!SystemPropertyUtil.get(IT_LONG_TEST, false)) {
+      ResourceLeakDetector.setLevel(Level.PARANOID);
+    } else {
+      ResourceLeakDetector.setLevel(Level.SIMPLE);
+    }
+    final ClassLoader classLoader = SpooledIT.class.getClassLoader();
+    final File file =
+        new File(classLoader.getResource("logback-test.xml").getFile());
+    setUpBeforeClassMinimal(LINUX_CONFIG_CONFIG_SERVER_INIT_B_XML);
+    setUpDbBeforeClass();
+    setUpBeforeClassServer(LINUX_CONFIG_CONFIG_SERVER_INIT_A_XML);
+    Processes.setJvmArgsDefault("-Xms2048m -Xmx2048m ");
+    File configFile = new File(dir, CONFIG_SERVER_A_MINIMAL_XML);
+    r66Pid1 = startServer(configFile.getAbsolutePath());
+    Processes.setJvmArgsDefault(null);
+    Thread.sleep(2000);
+    logger.warn("Is No DB ? {}", noDb);
+    setUpBeforeClassClient(
+        noDb? CONFIG_CLIENT_A_NODB_XML : CONFIG_CLIENT_A_XML);
   }
 }

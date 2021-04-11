@@ -19,11 +19,9 @@
  */
 package org.waarp.openr66.protocol.utils;
 
-import ch.qos.logback.classic.LoggerContext;
 import io.netty.channel.ChannelFuture;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
-import org.slf4j.LoggerFactory;
 import org.waarp.common.database.DbAdmin;
 import org.waarp.common.digest.FilesystemBasedDigest;
 import org.waarp.common.digest.FilesystemBasedDigest.DigestAlgo;
@@ -31,10 +29,9 @@ import org.waarp.common.file.DataBlock;
 import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
-import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
-import org.waarp.common.utility.DetectionUtils;
 import org.waarp.common.utility.WaarpNettyUtil;
 import org.waarp.common.utility.WaarpShutdownHook;
+import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.openr66.context.R66FiniteDualStates;
 import org.waarp.openr66.context.task.localexec.LocalExecClient;
 import org.waarp.openr66.database.data.DbTaskRunner;
@@ -330,20 +327,7 @@ public class ChannelUtils extends Thread {
     logger.warn(Messages.getString("ChannelUtils.15")); //$NON-NLS-1$
     SysErrLogger.FAKE_LOGGER
         .syserr(Messages.getString("ChannelUtils.15")); //$NON-NLS-1$
-    stopLogger();
-  }
-
-  public static void stopLogger() {
-    if (DetectionUtils.isJunit()) {
-      return;
-    }
-    if (WaarpLoggerFactory
-            .getDefaultFactory() instanceof WaarpSlf4JLoggerFactory &&
-        !DetectionUtils.isJunit()) {
-      final LoggerContext lc =
-          (LoggerContext) LoggerFactory.getILoggerFactory();
-      lc.stop();
-    }
+    WaarpSystemUtil.stopLogger();
   }
 
   /**

@@ -27,6 +27,7 @@ import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
+import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.common.utility.WaarpThreadFactory;
 
 import java.util.Scanner;
@@ -86,7 +87,7 @@ public abstract class ServiceLauncher implements Daemon {
     logger.debug("Engine {}", className);
     try {
       engineLauncherInstance =
-          (ServiceLauncher) Class.forName(className).newInstance();//NOSONAR
+          (ServiceLauncher) WaarpSystemUtil.newInstance(className);//NOSONAR
     } catch (final Throwable e) {
       logger.error("Engine not correctly initialized", e);
       System.exit(2);//NOSONAR

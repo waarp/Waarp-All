@@ -20,13 +20,13 @@
 package org.waarp.ftp.core.control;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.DelimiterBasedFrameDecoder;
 import io.netty.util.concurrent.EventExecutorGroup;
 import org.waarp.common.command.ReplyCode;
+import org.waarp.common.utility.WaarpNettyUtil;
 import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.ftp.core.config.FtpConfiguration;
 import org.waarp.ftp.core.session.FtpSession;
@@ -39,9 +39,11 @@ public class FtpInitializer extends ChannelInitializer<SocketChannel> {
    * CRLF, CRNUL, LF delimiters
    */
   protected static final ByteBuf[] delimiter = {
-      Unpooled.wrappedBuffer(ReplyCode.CRLF.getBytes(WaarpStringUtils.UTF8)),
-      Unpooled.wrappedBuffer(ReplyCode.CRNUL.getBytes(WaarpStringUtils.UTF8)),
-      Unpooled.wrappedBuffer(ReplyCode.LF.getBytes(WaarpStringUtils.UTF8))
+      WaarpNettyUtil.wrappedBuffer(
+          ReplyCode.CRLF.getBytes(WaarpStringUtils.UTF8)),
+      WaarpNettyUtil.wrappedBuffer(
+          ReplyCode.CRNUL.getBytes(WaarpStringUtils.UTF8)),
+      WaarpNettyUtil.wrappedBuffer(ReplyCode.LF.getBytes(WaarpStringUtils.UTF8))
   };
 
   protected static final FtpControlStringDecoder ftpControlStringDecoder =

@@ -46,11 +46,11 @@ import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
 import org.waarp.common.role.RoleDefault;
-import org.waarp.common.utility.DetectionUtils;
 import org.waarp.common.utility.SystemPropertyUtil;
 import org.waarp.common.utility.WaarpNettyUtil;
 import org.waarp.common.utility.WaarpShutdownHook;
 import org.waarp.common.utility.WaarpShutdownHook.ShutdownConfiguration;
+import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.common.utility.WaarpThreadFactory;
 import org.waarp.gateway.kernel.rest.HttpRestHandler;
 import org.waarp.gateway.kernel.rest.RestConfiguration;
@@ -83,7 +83,6 @@ import org.waarp.openr66.protocol.networkhandler.R66ConstraintLimitHandler;
 import org.waarp.openr66.protocol.networkhandler.ssl.NetworkSslServerInitializer;
 import org.waarp.openr66.protocol.snmp.R66PrivateMib;
 import org.waarp.openr66.protocol.snmp.R66VariableFactory;
-import org.waarp.openr66.protocol.utils.ChannelUtils;
 import org.waarp.openr66.protocol.utils.R66ShutdownHook;
 import org.waarp.openr66.protocol.utils.Version;
 import org.waarp.openr66.thrift.R66ThriftServerService;
@@ -881,10 +880,8 @@ public class Configuration {
     logger.debug("Use NoSSL: {} Use SSL: {}", isUseNOSSL(), isUseSSL());
     if (!isUseNOSSL() && !isUseSSL()) {
       logger.error(Messages.getString("Configuration.NoSSL")); //$NON-NLS-1$
-      if (DetectionUtils.isJunit()) {
-        return;
-      }
-      System.exit(-1);//NOSONAR
+      WaarpSystemUtil.systemExit(-1);
+      return;
     }
     pipelineInit();
     serverPipelineInit();
@@ -1200,7 +1197,7 @@ public class Configuration {
     }
     shutdownGracefully();
     if (execOtherWorker != null) {
-      if (!DetectionUtils.isJunit()) {
+      if (!WaarpSystemUtil.isJunit()) {
         execOtherWorker.shutdownNow();
       }
     }
@@ -1227,7 +1224,7 @@ public class Configuration {
   public void clientStop(final boolean shutdownQuickly) {
     WaarpSslUtility.forceCloseAllSslChannels();
     if (!configuration.isServer()) {
-      ChannelUtils.stopLogger();
+      WaarpSystemUtil.stopLogger();
     }
     if (scheduledExecutorService != null) {
       scheduledExecutorService.shutdown();

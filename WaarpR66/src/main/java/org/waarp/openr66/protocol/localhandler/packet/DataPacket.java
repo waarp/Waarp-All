@@ -127,7 +127,7 @@ public class DataPacket extends AbstractLocalPacket {
 
   @Override
   public void createHeader(final LocalChannelReference lcr) {
-    header = ByteBufAllocator.DEFAULT.buffer(4, 4);
+    header = ByteBufAllocator.DEFAULT.ioBuffer(4, 4);
     header.writeInt(packetRank);
   }
 

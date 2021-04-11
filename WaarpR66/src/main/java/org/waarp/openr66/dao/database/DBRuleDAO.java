@@ -48,9 +48,6 @@ import static org.waarp.openr66.dao.DAOFactory.*;
  * Implementation of RuleDAO for standard SQL databases
  */
 public class DBRuleDAO extends StatementExecutor<Rule> implements RuleDAO {
-
-  protected static final String TABLE = "rules";
-
   public static final String ID_FIELD = "idrule";
   public static final String HOSTIDS_FIELD = "hostids";
   public static final String MODE_TRANS_FIELD = "modetrans";
@@ -65,6 +62,12 @@ public class DBRuleDAO extends StatementExecutor<Rule> implements RuleDAO {
   public static final String S_POST_TASKS_FIELD = "sposttasks";
   public static final String S_ERROR_TASKS_FIELD = "serrortasks";
   public static final String UPDATED_INFO_FIELD = "updatedinfo";
+
+  public static final String TABLE = "rules";
+  public static final String TASK_NODE = "task";
+  public static final String TYPE_FIELD = "type";
+  public static final String PATH_FIELD = "path";
+  public static final String DELAY_FIELD = "delay";
 
   protected static final String SQL_DELETE_ALL = "DELETE FROM " + TABLE;
   protected static final String SQL_DELETE =
@@ -100,6 +103,7 @@ public class DBRuleDAO extends StatementExecutor<Rule> implements RuleDAO {
   private static final SynchronizedLruCache<String, Rule>
       reentrantConcurrentHashMap =
       new SynchronizedLruCache<String, Rule>(500, 180000);
+  protected static final String HOSTID = "hostid";
 
   public DBRuleDAO(final Connection con) {
     super(con);
@@ -214,7 +218,7 @@ public class DBRuleDAO extends StatementExecutor<Rule> implements RuleDAO {
     }
     document.getDocumentElement().normalize();
 
-    final NodeList hostsList = document.getElementsByTagName("hostid");
+    final NodeList hostsList = document.getElementsByTagName(HOSTID);
     for (int i = 0; i < hostsList.getLength(); i++) {
       res.add(hostsList.item(i).getTextContent());
     }
@@ -238,17 +242,17 @@ public class DBRuleDAO extends StatementExecutor<Rule> implements RuleDAO {
     }
     document.getDocumentElement().normalize();
 
-    final NodeList tasksList = document.getElementsByTagName("task");
+    final NodeList tasksList = document.getElementsByTagName(TASK_NODE);
     for (int i = 0; i < tasksList.getLength(); i++) {
       final Node node = tasksList.item(i);
       if (node.getNodeType() == Node.ELEMENT_NODE) {
         final Element e = (Element) node;
         final String type =
-            e.getElementsByTagName("type").item(0).getTextContent();
+            e.getElementsByTagName(TYPE_FIELD).item(0).getTextContent();
         final String path =
-            e.getElementsByTagName("path").item(0).getTextContent();
-        final int delay = Integer
-            .parseInt(e.getElementsByTagName("delay").item(0).getTextContent());
+            e.getElementsByTagName(PATH_FIELD).item(0).getTextContent();
+        final int delay = Integer.parseInt(
+            e.getElementsByTagName(DELAY_FIELD).item(0).getTextContent());
         res.add(new RuleTask(type, path, delay));
       }
     }

@@ -25,8 +25,7 @@ import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
-import org.waarp.common.utility.DetectionUtils;
-import org.waarp.ftp.core.utils.FtpChannelUtils;
+import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.gateway.ftp.config.FileBasedConfiguration;
 import org.waarp.gateway.ftp.control.ExecBusinessHandler;
 import org.waarp.gateway.ftp.data.FileSystemBasedDataBusinessHandler;
@@ -81,11 +80,8 @@ public class ServerInitDatabase {
       if (DbConstantFtp.gatewayAdmin != null) {
         DbConstantFtp.gatewayAdmin.close();
       }
-      if (DetectionUtils.isJunit()) {
-        return;
-      }
-      FtpChannelUtils.stopLogger();
-      System.exit(1);//NOSONAR
+      WaarpSystemUtil.systemExit(1);
+      return;
     }
     final FileBasedConfiguration configuration =
         new FileBasedConfiguration(ExecGatewayFtpServer.class,
@@ -98,11 +94,7 @@ public class ServerInitDatabase {
         if (DbConstantFtp.gatewayAdmin != null) {
           DbConstantFtp.gatewayAdmin.close();
         }
-        if (DetectionUtils.isJunit()) {
-          return;
-        }
-        FtpChannelUtils.stopLogger();
-        System.exit(1);//NOSONAR
+        WaarpSystemUtil.systemExit(1);
         return;
       }
       if (database) {

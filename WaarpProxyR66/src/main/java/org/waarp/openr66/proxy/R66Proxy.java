@@ -24,6 +24,7 @@ import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
 import org.waarp.common.utility.WaarpShutdownHook;
+import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.openr66.proxy.configuration.ConfigurationProxyR66;
 import org.waarp.openr66.proxy.configuration.FileBasedConfiguration;
 
@@ -59,7 +60,7 @@ public class R66Proxy {
           .error("Cannot start Proxy OpenR66 for " + configuration.getHostId());
       SysErrLogger.FAKE_LOGGER.syserr(
           "Cannot start Proxy OpenR66 for " + configuration.getHostId());
-      System.exit(1);//NOSONAR
+      WaarpSystemUtil.systemExit(1);
     }
   }
 

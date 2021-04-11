@@ -28,9 +28,9 @@ import org.waarp.common.logging.WaarpLogLevel;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
-import org.waarp.common.utility.DetectionUtils;
 import org.waarp.common.utility.FileTestUtils;
 import org.waarp.common.utility.SystemPropertyUtil;
+import org.waarp.common.utility.WaarpSystemUtil;
 
 import java.io.File;
 import java.io.IOException;
@@ -65,7 +65,7 @@ public abstract class TestAbstractMinimal {
       logger = WaarpLoggerFactory.getLogger(TestAbstractMinimal.class);
     }
     final ClassLoader classLoader = TestAbstractMinimal.class.getClassLoader();
-    DetectionUtils.setJunit(true);
+    WaarpSystemUtil.setJunit(true);
     final File file;
     if (serverInitBaseDirectory.charAt(0) == '/') {
       file = new File(
@@ -102,8 +102,8 @@ public abstract class TestAbstractMinimal {
     conf.mkdir();
     logger.warn("Copy from {} to {}", dirConf, conf);
     final File[] copied = FileUtils.copyRecursive(dirConf, conf, false);
-    for (final File fileCopied : copied) {
-      System.out.print(fileCopied.getAbsolutePath() + ' ');
+    if (copied != null && copied.length > 0) {
+      System.out.print(copied[0].getAbsolutePath() + ' ');
     }
     System.out.println(" Done");
     File baseWeb =
@@ -115,8 +115,8 @@ public abstract class TestAbstractMinimal {
     if (webSrc.isDirectory()) {
       logger.warn("Copy Web from {} to {}", webSrc, web);
       final File[] copiedWeb = FileUtils.copyRecursive(webSrc, web, false);
-      for (final File fileCopied : copiedWeb) {
-        System.out.print(fileCopied.getAbsolutePath() + ' ');
+      if (copiedWeb != null && copiedWeb.length > 0) {
+        System.out.print(copiedWeb[0].getAbsolutePath() + ' ');
       }
       System.out.println(" Done");
     } else {
@@ -127,8 +127,8 @@ public abstract class TestAbstractMinimal {
       logger.warn("CopyResp Web from {} to {}", webRespSrc, webResp);
       final File[] copiedWebResp =
           FileUtils.copyRecursive(webRespSrc, webResp, false);
-      for (final File fileCopied : copiedWebResp) {
-        System.out.print(fileCopied.getAbsolutePath() + ' ');
+      if (copiedWebResp != null && copiedWebResp.length > 0) {
+        System.out.print(copiedWebResp[0].getAbsolutePath() + ' ');
       }
       System.out.println(" Done");
     } else {

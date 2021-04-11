@@ -87,7 +87,7 @@ public class FtpClientThread implements Runnable {
     remoteFilename = local.getName();
     numberIteration = nb;
     this.type = type;
-    this.delay = (delay / 10) * 10;
+    this.delay = delay;
     this.isSsl = isSsl;
     final File dir = new File("/tmp/GGFTP/T" + id + '/' + account);
     dir.mkdirs();
@@ -131,6 +131,11 @@ public class FtpClientThread implements Runnable {
             } else {
               FtpClientTest.numberOK.incrementAndGet();
             }
+            try {
+              Thread.sleep(delay);
+            } catch (InterruptedException e) {
+              // Ignore
+            }
           }
         } else {
           for (int i = 0; i < numberIteration; i++) {
@@ -149,6 +154,11 @@ public class FtpClientThread implements Runnable {
             } else {
               FtpClientTest.numberOK.incrementAndGet();
             }
+            try {
+              Thread.sleep(delay);
+            } catch (InterruptedException e) {
+              // Ignore
+            }
           }
           if (!client.transferFile(localFilename, remoteFilename, true)) {
             logger.warn("Cant store file passive mode " + id);
@@ -166,6 +176,11 @@ public class FtpClientThread implements Runnable {
               return;
             } else {
               FtpClientTest.numberOK.incrementAndGet();
+            }
+            try {
+              Thread.sleep(delay);
+            } catch (InterruptedException e) {
+              // Ignore
             }
           }
         }
@@ -188,6 +203,11 @@ public class FtpClientThread implements Runnable {
             } else {
               FtpClientTest.numberOK.incrementAndGet();
             }
+            try {
+              Thread.sleep(delay);
+            } catch (InterruptedException e) {
+              // Ignore
+            }
           }
           Thread.yield();
         } else {
@@ -207,6 +227,11 @@ public class FtpClientThread implements Runnable {
             } else {
               FtpClientTest.numberOK.incrementAndGet();
             }
+            try {
+              Thread.sleep(delay);
+            } catch (InterruptedException e) {
+              // Ignore
+            }
           }
           if (!client.transferFile(localFilename, remoteFilename, true)) {
             logger.warn("Cant store file active mode " + id);
@@ -224,6 +249,11 @@ public class FtpClientThread implements Runnable {
               return;
             } else {
               FtpClientTest.numberOK.incrementAndGet();
+            }
+            try {
+              Thread.sleep(delay);
+            } catch (InterruptedException e) {
+              // Ignore
             }
           }
         }

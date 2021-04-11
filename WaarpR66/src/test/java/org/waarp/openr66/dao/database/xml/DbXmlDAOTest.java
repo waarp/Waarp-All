@@ -67,7 +67,6 @@ public class DbXmlDAOTest extends DBAllDAOTest {
   @Rule(order = Integer.MIN_VALUE)
   public TestWatcher watchman = new TestWatcherJunit4();
 
-  static final String path = "/tmp/R66/arch";
   DAOFactoryTest factoryTest = new DAOFactoryTest();
 
   @Override
@@ -80,26 +79,24 @@ public class DbXmlDAOTest extends DBAllDAOTest {
     DAOFactoryTest() {
       XMLTransferDAO.createLruCache(1000, 10000);
       Configuration.configuration.setBaseDirectory("/tmp/R66");
-      /*
       Configuration.configuration.setArchivePath("/arch");
-      new File(Configuration.configuration.getBaseDirectory() +
-               Configuration.configuration.getArchivePath()).mkdirs();
-       */
+      Configuration.configuration.setAuthFile("/tmp/R66/conf/Authent.xml");
+
     }
 
     @Override
     public BusinessDAO getBusinessDAO() throws DAOConnectionException {
-      return new XMLBusinessDAO(path);
+      return new XMLBusinessDAO();
     }
 
     @Override
     public HostDAO getHostDAO() throws DAOConnectionException {
-      return new XMLHostDAO(path);
+      return new XMLHostDAO();
     }
 
     @Override
     public LimitDAO getLimitDAO() throws DAOConnectionException {
-      return new XMLLimitDAO(path);
+      return new XMLLimitDAO();
     }
 
     @Override
@@ -110,7 +107,7 @@ public class DbXmlDAOTest extends DBAllDAOTest {
 
     @Override
     public RuleDAO getRuleDAO() throws DAOConnectionException {
-      return new XMLRuleDAO(path);
+      return new XMLRuleDAO();
     }
 
     @Override
@@ -134,14 +131,14 @@ public class DbXmlDAOTest extends DBAllDAOTest {
   public void initDB() {
     // Init through Map
     {
-      final XMLLimitDAO dao = new XMLLimitDAO(path);
+      final XMLLimitDAO dao = new XMLLimitDAO();
       dao.deleteAll();
       dao.insert(new Limit("server1", 5, 1, 2, 3, 4, UpdatedInfo.valueOf(1)));
       dao.insert(new Limit("server2", 2, 2, 3, 2, 2, UpdatedInfo.valueOf(0)));
       dao.insert(new Limit("server3", 3, 5, 6, 3, 4, UpdatedInfo.valueOf(0)));
     }
     {
-      final XMLBusinessDAO dao = new XMLBusinessDAO(path);
+      final XMLBusinessDAO dao = new XMLBusinessDAO();
       dao.deleteAll();
       dao.insert(
           new Business("server1", "joyaux", "marchand", "le borgne", "misc",
@@ -161,7 +158,7 @@ public class DbXmlDAOTest extends DBAllDAOTest {
     }
 
     {
-      final XMLHostDAO dao = new XMLHostDAO(path);
+      final XMLHostDAO dao = new XMLHostDAO();
       dao.deleteAll();
       dao.insert(new Host("server1", "127.0.0.1", 6666,
                           "303465626439323336346235616136306332396630346461353132616361346265303639646336633661383432653235"
@@ -178,7 +175,7 @@ public class DbXmlDAOTest extends DBAllDAOTest {
     }
 
     {
-      final XMLRuleDAO dao = new XMLRuleDAO(path);
+      final XMLRuleDAO dao = new XMLRuleDAO();
       dao.deleteAll();
       dao.insert(new org.waarp.openr66.pojo.Rule("default", 1, SingletonUtils
           .<String>singletonList(), "/in", "/out", "/arch", "/work",
@@ -236,7 +233,7 @@ public class DbXmlDAOTest extends DBAllDAOTest {
     }
 
     try {
-      final XMLTransferDAO dao = new XMLTransferDAO(path);
+      final XMLTransferDAO dao = new XMLTransferDAO();
       dao.deleteAll();
       DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
       dao.insert(new Transfer(-9223372036854775807L, "default", 1,
@@ -301,7 +298,7 @@ public class DbXmlDAOTest extends DBAllDAOTest {
 
   @Override
   public TransferDAO getDAO(Connection con) throws DAOConnectionException {
-    return new XMLTransferDAO(path);
+    return new XMLTransferDAO();
   }
 
 }

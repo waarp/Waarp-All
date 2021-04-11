@@ -36,10 +36,10 @@ import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogLevel;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
-import org.waarp.common.utility.DetectionUtils;
 import org.waarp.common.utility.Processes;
 import org.waarp.common.utility.SystemPropertyUtil;
 import org.waarp.common.utility.WaarpStringUtils;
+import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.openr66.client.MultipleSubmitTransfer;
 import org.waarp.openr66.client.SubmitTransfer;
 import org.waarp.openr66.commander.InternalRunner;
@@ -203,7 +203,7 @@ public abstract class ScenarioBase extends TestAbstract {
   public static void setUp3DbBeforeClass() throws Exception {
     deleteBase();
     final ClassLoader classLoader = ScenarioBase.class.getClassLoader();
-    DetectionUtils.setJunit(true);
+    WaarpSystemUtil.setJunit(true);
     File file =
         new File(classLoader.getResource(RESOURCES_SERVER_1_XML).getFile());
     final String newfile = file.getAbsolutePath().replace("target/test-classes",
@@ -246,7 +246,7 @@ public abstract class ScenarioBase extends TestAbstract {
   }
 
   public static void initiateDb(String serverInit) {
-    DetectionUtils.setJunit(true);
+    WaarpSystemUtil.setJunit(true);
     final File file;
     final File dir2;
     if (serverInit.charAt(0) == '/') {
@@ -303,6 +303,8 @@ public abstract class ScenarioBase extends TestAbstract {
    */
   @AfterClass
   public static void tearDownAfterClass() throws Exception {
+    WaarpLoggerFactory.setDefaultFactoryIfNotSame(
+        new WaarpSlf4JLoggerFactory(WaarpLogLevel.NONE));
     for (int pid : PIDS) {
       Processes.kill(pid, true);
     }

@@ -23,7 +23,7 @@ import io.netty.util.ResourceLeakDetector;
 import io.netty.util.ResourceLeakDetector.Level;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
-import org.waarp.common.utility.DetectionUtils;
+import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.openr66.client.RecvThroughClient;
 import org.waarp.openr66.client.RecvThroughHandler;
 import org.waarp.openr66.client.TransferArgs;
@@ -76,7 +76,7 @@ public class TestRecvThroughClient extends RecvThroughClient {
       if (DbConstantR66.admin != null) {
         DbConstantR66.admin.close();
       }
-      DetectionUtils.systemExit(1);
+      WaarpSystemUtil.systemExit(1);
       return;
     }
     Configuration.configuration.pipelineInit();
@@ -112,20 +112,20 @@ public class TestRecvThroughClient extends RecvThroughClient {
         if (result == null || result.getRunner() == null) {
           logger.warn("Transfer in Error with no Id", future.getCause());
           networkTransaction.closeAll();
-          DetectionUtils.systemExit(1);
+          WaarpSystemUtil.systemExit(1);
           return;
         }
         if (result.getRunner().getErrorInfo() == ErrorCode.Warning) {
           logger.warn("Transfer in Warning with Id: " +
                       result.getRunner().getSpecialId(), future.getCause());
           networkTransaction.closeAll();
-          DetectionUtils.systemExit(result.getCode().ordinal());
+          WaarpSystemUtil.systemExit(result.getCode().ordinal());
         } else {
           logger.error(
               "Transfer in Error with Id: " + result.getRunner().getSpecialId(),
               future.getCause());
           networkTransaction.closeAll();
-          DetectionUtils.systemExit(result.getCode().ordinal());
+          WaarpSystemUtil.systemExit(result.getCode().ordinal());
         }
       }
     } finally {

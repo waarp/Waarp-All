@@ -20,6 +20,8 @@
 
 package org.waarp.openr66.proxy;
 
+import io.netty.util.ResourceLeakDetector;
+import io.netty.util.ResourceLeakDetector.Level;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
@@ -39,6 +41,7 @@ public class R66ProxyResponsiveTest extends CommonUtil {
 
   @BeforeClass
   public static void launchConfig() throws Exception {
+    ResourceLeakDetector.setLevel(Level.PARANOID);
     CONFIG_PROXY_XML = "config-proxy-Responsive.xml";
     launchServers();
   }
