@@ -123,7 +123,6 @@ public class MonitorExporterTransfers extends Thread {
   private Timestamp lastTimestamp;
 
   /**
-   *
    * @param remoteBaseUrl as 'http://myhost.com:8080' or 'https://myhost.com:8443'
    * @param endpoint as '/waarpr66monitor' or simply '/'
    * @param keepConnection True to keep the connexion opened, False to release the connexion each time
@@ -234,7 +233,7 @@ public class MonitorExporterTransfers extends Thread {
       if (intervalMonitoringIncluded) {
         ObjectNode waarpMonitor = item.putObject(WAARP_MONITOR);
         waarpMonitor.put(FROM_DATE_TIME,
-                lastDateTime != null ? lastDateTime.toString() : "");
+                         lastDateTime != null? lastDateTime.toString() : "");
         waarpMonitor.put(TO_DATE_TIME, now.toString());
         waarpMonitor.put(INDEX_NAME, owner.toLowerCase());
       }

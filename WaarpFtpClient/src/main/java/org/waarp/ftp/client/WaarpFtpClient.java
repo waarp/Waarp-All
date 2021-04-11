@@ -79,9 +79,10 @@ public class WaarpFtpClient {
                         final String pwd, final String acct,
                         final boolean isPassive, final int ssl,
                         final int controlTimeout, final int timeout) {
-    this(server, port, user, pwd, acct, isPassive, ssl, controlTimeout,
-         timeout, true);
+    this(server, port, user, pwd, acct, isPassive, ssl, controlTimeout, timeout,
+         true);
   }
+
   /**
    * WARNING: SSL mode (FTPS and FTPSE) are not working due to a bug in Apache
    * Commons-Net
@@ -123,7 +124,8 @@ public class WaarpFtpClient {
       ftpClient.setDataTimeout(timeout);
     }
     if (trace) {
-      ftpClient.addProtocolCommandListener(new PrintCommandListener(new PrintWriter(System.out), true));
+      ftpClient.addProtocolCommandListener(
+          new PrintCommandListener(new PrintWriter(System.out), true));
     }
   }
 

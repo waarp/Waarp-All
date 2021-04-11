@@ -82,7 +82,8 @@ public class HttpTest {
     final EventLoopGroup workerGroup = new NioEventLoopGroup();
     // Configure the server.
     final ServerBootstrap httpBootstrap = new ServerBootstrap();
-    WaarpNettyUtil.setServerBootstrap(httpBootstrap, workerGroup, workerGroup, 500);
+    WaarpNettyUtil
+        .setServerBootstrap(httpBootstrap, workerGroup, workerGroup, 500);
     // Configure the pipeline factory.
     HashMap<String, HttpPage> map = new HashMap<String, HttpPage>();
     PageRole pageRole = PageRole.DELETE;
