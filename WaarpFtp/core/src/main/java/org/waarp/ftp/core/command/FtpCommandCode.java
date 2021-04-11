@@ -19,12 +19,15 @@
  */
 package org.waarp.ftp.core.command;
 
+import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.ftp.core.command.internal.ConnectionCommand;
 import org.waarp.ftp.core.command.internal.IncorrectCommand;
 import org.waarp.ftp.core.command.internal.UnimplementedCommand;
 import org.waarp.ftp.core.command.internal.UnknownCommand;
 import org.waarp.ftp.core.file.FtpFile;
 import org.waarp.ftp.core.session.FtpSession;
+
+import java.lang.reflect.InvocationTargetException;
 
 /**
  * This class must reassemble all the commands that could be implemented. The
@@ -1413,12 +1416,21 @@ public enum FtpCommandCode {
     }
     AbstractCommand abstractCommand;
     try {
-      abstractCommand = ftpCommandCode.command.newInstance();
+      abstractCommand =
+          (AbstractCommand) WaarpSystemUtil.newInstance(ftpCommandCode.command);
     } catch (final InstantiationException e) {
       abstractCommand = new UnknownCommand();
       abstractCommand.setArgs(session, COMMAND, arg, Unknown);
       return abstractCommand;
     } catch (final IllegalAccessException e) {
+      abstractCommand = new UnknownCommand();
+      abstractCommand.setArgs(session, COMMAND, arg, Unknown);
+      return abstractCommand;
+    } catch (InvocationTargetException e) {
+      abstractCommand = new UnknownCommand();
+      abstractCommand.setArgs(session, COMMAND, arg, Unknown);
+      return abstractCommand;
+    } catch (NoSuchMethodException e) {
       abstractCommand = new UnknownCommand();
       abstractCommand.setArgs(session, COMMAND, arg, Unknown);
       return abstractCommand;

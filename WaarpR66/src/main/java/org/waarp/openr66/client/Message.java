@@ -23,6 +23,7 @@ import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
+import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.openr66.client.utils.OutputFormat;
 import org.waarp.openr66.configuration.FileBasedConfiguration;
 import org.waarp.openr66.context.ErrorCode;
@@ -204,15 +205,16 @@ public class Message implements Runnable {
     }
     if (args.length < 5) {
       logger.error(infoArgs);
-      System.exit(1);//NOSONAR
+      WaarpSystemUtil.systemExit(1);
+      return;
     }
     if (!getParams(args)) {
       logger.error(Messages.getString("Configuration.WrongInit")); //$NON-NLS-1$
       if (admin != null) {
         admin.close();
       }
-      ChannelUtils.stopLogger();
-      System.exit(1);//NOSONAR
+      WaarpSystemUtil.systemExit(1);
+      return;
     }
     NetworkTransaction networkTransaction = null;
     int value = 3;
@@ -253,13 +255,15 @@ public class Message implements Runnable {
         }
       }
     } finally {
-      if (networkTransaction != null) {
-        networkTransaction.closeAll();
+      if (!WaarpSystemUtil.isJunit()) {
+        if (networkTransaction != null) {
+          networkTransaction.closeAll();
+        }
+        if (admin != null) {
+          admin.close();
+        }
+        WaarpSystemUtil.systemExit(value);
       }
-      if (admin != null) {
-        admin.close();
-      }
-      System.exit(value);//NOSONAR
     }
   }
 

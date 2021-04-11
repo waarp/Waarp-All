@@ -27,7 +27,7 @@ import org.waarp.common.digest.FilesystemBasedDigest.DigestAlgo;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.lru.ConcurrentUtility;
-import org.waarp.common.utility.DetectionUtils;
+import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.http.protocol.servlet.HttpAuthent;
 import org.waarp.openr66.context.R66BusinessInterface;
 import org.waarp.openr66.context.filesystem.R66Dir;
@@ -72,7 +72,7 @@ public class HttpResumableSession extends HttpSessionAbstract {
       throws IllegalArgumentException {
     super(authent);
     this.httpResumableInfo = resumableInfo;
-    if (!DetectionUtils.isJunit()) {
+    if (!WaarpSystemUtil.isJunit()) {
       final R66BusinessInterface business =
           checkAuthentR66Business(this, session, authent);
       final DbTaskRunner runner =

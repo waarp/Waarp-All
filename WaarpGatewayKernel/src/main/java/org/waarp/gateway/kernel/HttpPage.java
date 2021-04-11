@@ -27,9 +27,11 @@ import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.utility.ParametersChecker;
 import org.waarp.common.utility.SingletonUtils;
 import org.waarp.common.utility.WaarpStringUtils;
+import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.gateway.kernel.AbstractHttpField.FieldPosition;
 import org.waarp.gateway.kernel.exception.HttpIncorrectRequestException;
 
+import java.lang.reflect.InvocationTargetException;
 import java.net.SocketAddress;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -114,9 +116,15 @@ public class HttpPage {
       throw new IllegalArgumentException(e.getMessage());
     }
     @SuppressWarnings("unchecked")
-    final Class<HttpBusinessFactory> clasz =
-        (Class<HttpBusinessFactory>) Class.forName(classname);//NOSONAR
-    final HttpBusinessFactory factory = clasz.newInstance();//NOSONAR
+    final HttpBusinessFactory factory;
+    try {
+      factory =
+          (HttpBusinessFactory) WaarpSystemUtil.newInstance(classname);//NOSONAR
+    } catch (NoSuchMethodException e) {
+      throw new InstantiationException(e.getMessage());
+    } catch (InvocationTargetException e) {
+      throw new InstantiationException(e.getMessage());
+    }
     setHttpBusinessFactory(factory);//NOSONAR
   }
 

@@ -26,7 +26,7 @@ import org.waarp.common.digest.FilesystemBasedDigest;
 import org.waarp.common.digest.FilesystemBasedDigest.DigestAlgo;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
-import org.waarp.common.utility.DetectionUtils;
+import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.http.protocol.servlet.HttpAuthent;
 import org.waarp.openr66.context.ErrorCode;
 import org.waarp.openr66.context.R66BusinessInterface;
@@ -77,7 +77,7 @@ public class HttpDownloadSession extends HttpSessionAbstract {
     this.rulename = rulename;
     this.comment = comment;
     this.identifier = identifier;
-    if (!DetectionUtils.isJunit()) {
+    if (!WaarpSystemUtil.isJunit()) {
       final R66BusinessInterface business =
           checkAuthentR66Business(this, session, authent);
       runner =
@@ -108,7 +108,7 @@ public class HttpDownloadSession extends HttpSessionAbstract {
     this.rulename = "norule";
     this.comment = "nocomment";
     this.identifier = identifier;
-    if (!DetectionUtils.isJunit()) {
+    if (!WaarpSystemUtil.isJunit()) {
       final R66BusinessInterface business =
           checkAuthentR66Business(this, session, authent);
 

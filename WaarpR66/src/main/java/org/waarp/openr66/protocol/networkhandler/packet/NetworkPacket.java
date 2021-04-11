@@ -21,7 +21,6 @@ package org.waarp.openr66.protocol.networkhandler.packet;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
-import io.netty.buffer.Unpooled;
 import org.waarp.common.utility.WaarpNettyUtil;
 import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
@@ -128,9 +127,10 @@ public class NetworkPacket {
       return buffer;
     }
     final ByteBuf buf = ByteBufAllocator.DEFAULT
-        .buffer(NETWORK_HEADER_SIZE, NETWORK_HEADER_SIZE);
+        .ioBuffer(NETWORK_HEADER_SIZE, NETWORK_HEADER_SIZE);
     writeNetworkHeader(buf, buffer.capacity());
-    buffer = Unpooled.wrappedBuffer(buf, buffer);
+    buffer = ByteBufAllocator.DEFAULT.compositeDirectBuffer(2)
+                                     .addComponents(buf, buffer);
     uniqueBuffer = true;
     return buffer;
   }

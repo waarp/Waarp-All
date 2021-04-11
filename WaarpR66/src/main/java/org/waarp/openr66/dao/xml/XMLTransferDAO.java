@@ -24,6 +24,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.waarp.common.file.FileUtils;
 import org.waarp.common.guid.LongUuid;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
@@ -53,6 +54,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.waarp.openr66.dao.DAOFactory.*;
+import static org.waarp.openr66.dao.database.DBTransferDAO.*;
 
 public class XMLTransferDAO implements TransferDAO {
 
@@ -62,31 +64,12 @@ public class XMLTransferDAO implements TransferDAO {
   public static final String ROOT_LIST = "taskrunners";
   public static final String ROOT_ELEMENT = "runner";
 
-  public static final String GLOBAL_STEP_FIELD = "globalstep";
-  public static final String LAST_GLOBAL_STEP_FIELD = "globallaststep";
-  public static final String STEP_FIELD = "step";
-  public static final String RANK_FIELD = "rank";
-  public static final String STEP_STATUS_FIELD = "stepstatus";
-  public static final String RETRIEVE_MODE_FIELD = "retrievemode";
-  public static final String FILENAME_FIELD = "filename";
-  public static final String IS_MOVED_FIELD = "ismoved";
-  public static final String RULE_FIELD = "idrule";
-  public static final String BLOCK_SIZE_FIELD = "blocksz";
-  public static final String ORIGINAL_NAME_FIELD = "originalname";
-  public static final String FILE_INFO_FIELD = "fileinfo";
-  public static final String TRANSFER_INFO_FIELD = "transferInfo";
-  public static final String TRANSFER_MODE_FIELD = "modetrans";
-  public static final String START_FIELD = "starttrans";
-  public static final String STOP_FIELD = "stoptrans";
-  public static final String INFO_STATUS_FIELD = "infostatus";
-  public static final String OWNER_FIELD = "ownerreq";
-  public static final String REQUESTER_FIELD = "requester";
-  public static final String REQUESTED_FIELD = "requested";
-  public static final String ID_FIELD = "specialid";
 
   private static final String XML_SELECT =
-      "//runner[" + "specialid=$specialid and requester='$requester' and " +
-      "requested='$requested' and ownerreq='ownerreq']";
+      "//runner[" + ID_FIELD + "='$" + ID_FIELD + "' and " + REQUESTER_FIELD +
+      "='$" + REQUESTER_FIELD + "' and " + REQUESTED_FIELD + "='$" +
+      REQUESTED_FIELD + "' and " + OWNER_REQUEST_FIELD + "='$" +
+      OWNER_REQUEST_FIELD + "']";
   private static final String XML_GET_ALL = "runner";
 
   /**
@@ -94,6 +77,16 @@ public class XMLTransferDAO implements TransferDAO {
    * maximum (< 200 MB?) for 180s
    */
   private static SynchronizedLruCache<Long, Transfer> dbR66TaskHashMap;
+
+  private static boolean noFile = false;
+
+  /**
+   * @param newNoFile if True, no file will be created but only on Memory
+   *     using LruCache
+   */
+  public static void setNoFile(final boolean newNoFile) {
+    noFile = newNoFile;
+  }
 
   /**
    * Create the LRU cache
@@ -145,10 +138,8 @@ public class XMLTransferDAO implements TransferDAO {
     dbR66TaskHashMap.updateTtl(specialId);
   }
 
-  private File file;
-
-  public XMLTransferDAO(final String filePath) {
-    file = new File(filePath);
+  public XMLTransferDAO() {
+    // Empty
   }
 
   @Override
@@ -176,10 +167,18 @@ public class XMLTransferDAO implements TransferDAO {
   @Override
   public void deleteAll() {
     dbR66TaskHashMap.clear();
+    final File arch = new File(Configuration.configuration.getBaseDirectory() +
+                               Configuration.configuration.getArchivePath());
+    if (arch.isDirectory()) {
+      FileUtils.forceDeleteRecursiveDir(arch);
+    }
   }
 
   @Override
   public List<Transfer> getAll() throws DAOConnectionException {
+    if (noFile) {
+      return new ArrayList<Transfer>(dbR66TaskHashMap.values());
+    }
     final File arch = new File(Configuration.configuration.getArchivePath());
     final File[] runnerFiles = arch.listFiles();
     final List<Transfer> res = new ArrayList<Transfer>();
@@ -227,7 +226,7 @@ public class XMLTransferDAO implements TransferDAO {
     if (dbR66TaskHashMap.contains(id)) {
       return true;
     }
-    file = getFile(requester, requested, id);
+    final File file = getFile(requester, requested, id);
     return file.exists();
   }
 
@@ -327,10 +326,14 @@ public class XMLTransferDAO implements TransferDAO {
       transfer.setId(new LongUuid().getLong());
     }
     dbR66TaskHashMap.put(transfer.getId(), transfer);
-    file = getFile(transfer.getRequester(), transfer.getRequested(),
-                   transfer.getId());
+    if (noFile) {
+      return;
+    }
+    final File file = getFile(transfer.getRequester(), transfer.getRequested(),
+                              transfer.getId());
     if (file.exists()) {
-      throw new DAOConnectionException("File already exist");
+      throw new DAOConnectionException(
+          "File already exist: " + file.getAbsolutePath());
     }
     try {
       final DocumentBuilderFactory dbf = getDocumentBuilderFactory();
@@ -352,7 +355,10 @@ public class XMLTransferDAO implements TransferDAO {
     if (dbR66TaskHashMap.contains(id)) {
       return dbR66TaskHashMap.get(id);
     }
-    file = getFile(requester, requested, id);
+    if (noFile) {
+      throw new DAONoDataException("Transfer cannot be found");
+    }
+    final File file = getFile(requester, requested, id);
     if (!file.exists()) {
       throw new DAONoDataException("Transfer cannot be found");
     }
@@ -389,42 +395,71 @@ public class XMLTransferDAO implements TransferDAO {
   @Override
   public void update(final Transfer transfer) throws DAOConnectionException {
     dbR66TaskHashMap.put(transfer.getId(), transfer);
-    file = getFile(transfer.getRequester(), transfer.getRequested(),
-                   transfer.getId());
+    if (noFile) {
+      return;
+    }
+    final File file = getFile(transfer.getRequester(), transfer.getRequested(),
+                              transfer.getId());
     if (!file.exists()) {
       throw new DAOConnectionException("File doesn't exist");
     }
     try {
       final DocumentBuilderFactory dbf = getDocumentBuilderFactory();
       final Document document = dbf.newDocumentBuilder().parse(file);
-      // Setup XPath variable
-      final SimpleVariableResolver resolver = new SimpleVariableResolver();
-      resolver.addVariable(new QName(null, ID_FIELD), transfer.getId());
-      resolver.addVariable(new QName(null, REQUESTER_FIELD),
-                           transfer.getRequester());
-      resolver.addVariable(new QName(null, REQUESTED_FIELD),
-                           transfer.getRequested());
-      resolver.addVariable(new QName(null, OWNER_FIELD),
-                           transfer.getOwnerRequest());
-      // Setup XPath query
-      final XPath xPath = XPathFactory.newInstance().newXPath();
-      xPath.setXPathVariableResolver(resolver);
-      final XPathExpression xpe = xPath.compile(XML_SELECT);
-      // Retrieve node and remove it
-      final Node node = (Node) xpe.evaluate(document, XPathConstants.NODE);
+      final Element root = document.getDocumentElement();
+      Node node = null;
+      if (root.hasChildNodes()) {
+        final NodeList nodeList = root.getChildNodes();
+        final int nb = nodeList.getLength();
+        for (int i = 0; i < nb; i++) {
+          int found = 4;
+          node = nodeList.item(0);
+          if (node.hasChildNodes()) {
+            final NodeList nodeChildList = node.getChildNodes();
+            final int nbChild = nodeChildList.getLength();
+            for (int j = 0; j < nbChild; j++) {
+              final Node child = nodeChildList.item(j);
+              if (child.getNodeName().equals(ID_FIELD) && child.getTextContent()
+                                                               .equals(
+                                                                   Long.toString(
+                                                                       transfer
+                                                                           .getId()))) {
+                found++;
+              } else if (child.getNodeName().equals(OWNER_REQUEST_FIELD) &&
+                         child.getTextContent()
+                              .equals(transfer.getOwnerRequest())) {
+                found++;
+              } else if (child.getNodeName().equals(REQUESTER_FIELD) &&
+                         child.getTextContent()
+                              .equals(transfer.getRequester())) {
+                found++;
+              } else if (child.getNodeName().equals(REQUESTED_FIELD) &&
+                         child.getTextContent()
+                              .equals(transfer.getRequested())) {
+                found++;
+              }
+              if (found == 0) {
+                break;
+              }
+            }
+            if (found == 0) {
+              break;
+            }
+          }
+        }
+      }
       if (node == null) {
-        logger.warn("Entry not found cannot update");
+        logger.warn("Entry not found cannot update for {} {} {} {}",
+                    transfer.getId(), transfer.getRequester(),
+                    transfer.getRequested(), transfer.getOwnerRequest());
         return;
       }
       node.getParentNode().removeChild(node);
       // Insert updated node
-      final Element root = document.getDocumentElement();
       root.appendChild(getNode(document, transfer));
       // Write document in file
       XMLUtils.writeToFile(file, document);
     } catch (final SAXException e) {
-      throw new DAOConnectionException(e);
-    } catch (final XPathExpressionException e) {
       throw new DAOConnectionException(e);
     } catch (final ParserConfigurationException e) {
       throw new DAOConnectionException(e);
@@ -440,13 +475,13 @@ public class XMLTransferDAO implements TransferDAO {
       final Node node = children.item(j);
       if (node.getNodeName().equals(ID_FIELD)) {
         res.setId(Long.parseLong(node.getTextContent()));
-      } else if (node.getNodeName().equals(OWNER_FIELD)) {
+      } else if (node.getNodeName().equals(OWNER_REQUEST_FIELD)) {
         res.setOwnerRequest(node.getTextContent());
       } else if (node.getNodeName().equals(REQUESTER_FIELD)) {
         res.setRequester(node.getTextContent());
       } else if (node.getNodeName().equals(REQUESTED_FIELD)) {
         res.setRequested(node.getTextContent());
-      } else if (node.getNodeName().equals(RULE_FIELD)) {
+      } else if (node.getNodeName().equals(ID_RULE_FIELD)) {
         res.setRule(node.getTextContent());
       } else if (node.getNodeName().equals(RETRIEVE_MODE_FIELD)) {
         res.setRetrieveMode(Boolean.parseBoolean(node.getTextContent()));
@@ -467,7 +502,7 @@ public class XMLTransferDAO implements TransferDAO {
       } else if (node.getNodeName().equals(GLOBAL_STEP_FIELD)) {
         res.setGlobalStep(
             Transfer.TASKSTEP.valueOf(Integer.parseInt(node.getTextContent())));
-      } else if (node.getNodeName().equals(LAST_GLOBAL_STEP_FIELD)) {
+      } else if (node.getNodeName().equals(GLOBAL_LAST_STEP_FIELD)) {
         res.setLastGlobalStep(
             Transfer.TASKSTEP.valueOf(Integer.parseInt(node.getTextContent())));
       } else if (node.getNodeName().equals(STEP_FIELD)) {
@@ -478,9 +513,9 @@ public class XMLTransferDAO implements TransferDAO {
         res.setStepStatus(ErrorCode.getFromCode(node.getTextContent()));
       } else if (node.getNodeName().equals(INFO_STATUS_FIELD)) {
         res.setInfoStatus(ErrorCode.getFromCode(node.getTextContent()));
-      } else if (node.getNodeName().equals(START_FIELD)) {
+      } else if (node.getNodeName().equals(TRANSFER_START_FIELD)) {
         res.setStart(Timestamp.valueOf(node.getTextContent()));
-      } else if (node.getNodeName().equals(STOP_FIELD)) {
+      } else if (node.getNodeName().equals(TRANSFER_STOP_FIELD)) {
         res.setStop(Timestamp.valueOf(node.getTextContent()));
       }
     }
@@ -491,13 +526,14 @@ public class XMLTransferDAO implements TransferDAO {
     final Node res = doc.createElement(ROOT_ELEMENT);
     res.appendChild(
         XMLUtils.createNode(doc, ID_FIELD, Long.toString(transfer.getId())));
-    res.appendChild(
-        XMLUtils.createNode(doc, OWNER_FIELD, transfer.getOwnerRequest()));
+    res.appendChild(XMLUtils.createNode(doc, OWNER_REQUEST_FIELD,
+                                        transfer.getOwnerRequest()));
     res.appendChild(
         XMLUtils.createNode(doc, REQUESTER_FIELD, transfer.getRequester()));
     res.appendChild(
         XMLUtils.createNode(doc, REQUESTED_FIELD, transfer.getRequested()));
-    res.appendChild(XMLUtils.createNode(doc, RULE_FIELD, transfer.getRule()));
+    res.appendChild(
+        XMLUtils.createNode(doc, ID_RULE_FIELD, transfer.getRule()));
     res.appendChild(XMLUtils.createNode(doc, RETRIEVE_MODE_FIELD, Boolean
         .toString(transfer.getRetrieveMode())));
     res.appendChild(XMLUtils.createNode(doc, TRANSFER_MODE_FIELD, Integer
@@ -518,7 +554,7 @@ public class XMLTransferDAO implements TransferDAO {
         .toString(transfer.getBlockSize())));
     res.appendChild(XMLUtils.createNode(doc, GLOBAL_STEP_FIELD, Integer
         .toString(transfer.getGlobalStep().ordinal())));
-    res.appendChild(XMLUtils.createNode(doc, LAST_GLOBAL_STEP_FIELD, Integer
+    res.appendChild(XMLUtils.createNode(doc, GLOBAL_LAST_STEP_FIELD, Integer
         .toString(transfer.getLastGlobalStep().ordinal())));
     res.appendChild(XMLUtils.createNode(doc, STEP_FIELD,
                                         Integer.toString(transfer.getStep())));
@@ -528,10 +564,10 @@ public class XMLTransferDAO implements TransferDAO {
                                         transfer.getStepStatus().getCode()));
     res.appendChild(XMLUtils.createNode(doc, INFO_STATUS_FIELD,
                                         transfer.getInfoStatus().getCode()));
-    res.appendChild(
-        XMLUtils.createNode(doc, START_FIELD, transfer.getStart().toString()));
-    res.appendChild(
-        XMLUtils.createNode(doc, STOP_FIELD, transfer.getStop().toString()));
+    res.appendChild(XMLUtils.createNode(doc, TRANSFER_START_FIELD,
+                                        transfer.getStart().toString()));
+    res.appendChild(XMLUtils.createNode(doc, TRANSFER_STOP_FIELD,
+                                        transfer.getStop().toString()));
     return res;
   }
 }

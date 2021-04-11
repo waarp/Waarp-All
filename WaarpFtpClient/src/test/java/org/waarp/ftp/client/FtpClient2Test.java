@@ -20,6 +20,8 @@
 
 package org.waarp.ftp.client;
 
+import io.netty.util.ResourceLeakDetector;
+import io.netty.util.ResourceLeakDetector.Level;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Rule;
@@ -44,6 +46,7 @@ public class FtpClient2Test extends AbstractFtpClientWithApache {
 
   @BeforeClass
   public static void startServer() throws IOException {
+    ResourceLeakDetector.setLevel(Level.PARANOID);
     SSL_MODE = 0;
     startServer0();
   }

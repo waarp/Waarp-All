@@ -78,7 +78,7 @@ public abstract class AbstractWaarpLogger implements WaarpLogger, Serializable {
       case ERROR:
         return isErrorEnabled();
       default:
-        return true;
+        return false;
     }
   }
 
@@ -124,9 +124,9 @@ public abstract class AbstractWaarpLogger implements WaarpLogger, Serializable {
         warn(msg, cause);
         break;
       case ERROR:
-      default:
         error(msg, cause);
         break;
+      default:
     }
   }
 
@@ -146,9 +146,9 @@ public abstract class AbstractWaarpLogger implements WaarpLogger, Serializable {
         warn(cause);
         break;
       case ERROR:
-      default:
         error(cause);
         break;
+      default:
     }
   }
 
@@ -168,9 +168,9 @@ public abstract class AbstractWaarpLogger implements WaarpLogger, Serializable {
         warn(msg);
         break;
       case ERROR:
-      default:
         error(msg);
         break;
+      default:
     }
   }
 
@@ -191,9 +191,9 @@ public abstract class AbstractWaarpLogger implements WaarpLogger, Serializable {
         warn(format, arg);
         break;
       case ERROR:
-      default:
         error(format, arg);
         break;
+      default:
     }
   }
 
@@ -214,9 +214,9 @@ public abstract class AbstractWaarpLogger implements WaarpLogger, Serializable {
         warn(format, argA, argB);
         break;
       case ERROR:
-      default:
         error(format, argA, argB);
         break;
+      default:
     }
   }
 
@@ -237,9 +237,9 @@ public abstract class AbstractWaarpLogger implements WaarpLogger, Serializable {
         warn(format, arguments);
         break;
       case ERROR:
-      default:
         error(format, arguments);
         break;
+      default:
     }
   }
 

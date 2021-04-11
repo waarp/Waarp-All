@@ -77,6 +77,10 @@ Section ``directory``
    Les dossiers par défaut indiqués sont relatifs au dossier
    ``serverhome``.
 
+.. versionadded:: 3.6.0
+
+   Ajout de l'option ``extendedtaskfactories``
+
 ========================== ======= ==== ========= =============
 Balise                     Type    Obl. Défaut    Signification
 ========================== ======= ==== ========= =============
@@ -86,6 +90,7 @@ out                        String  N    OUT       Chemin du dossier par défaut 
 arch                       String  N    ARCH      Chemin du dossier utilisé pour les archives (chemin relatif à « serverhome »)
 work                       String  N    WORK      Chemin du dossier utilisé par défaut pour stocker les fichiers en cours de réception (chemin relatif à « serverhome »)
 conf                       String  N    CONF      Chemin vers le dossier contenant la configuration du serveur
+extendedtaskfactories      String  N    vide      Liste (séparée par des virgules) des TaskFactory en tant qu'extension pour ajouter des tâches à WaarpR66
 ========================== ======= ==== ========= =============
 
 

@@ -24,6 +24,7 @@ import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
 import org.waarp.common.utility.WaarpShutdownHook;
+import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.openr66.configuration.FileBasedConfiguration;
 import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.configuration.Messages;
@@ -65,7 +66,7 @@ public class R66Server {
         SysErrLogger.FAKE_LOGGER.syserr(
             Messages.getString("R66Server.CannotStart") +
             Configuration.configuration.getHostId()); //$NON-NLS-1$
-        System.exit(1);//NOSONAR
+        WaarpSystemUtil.systemExit(1);
       }
     } catch (final Throwable e) {
       logger.error(Messages.getString("R66Server.StartError"), e); //$NON-NLS-1$

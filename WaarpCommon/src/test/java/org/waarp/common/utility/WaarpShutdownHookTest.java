@@ -50,7 +50,7 @@ public class WaarpShutdownHookTest {
 
   @BeforeClass
   public static void setup() {
-    DetectionUtils.setJunit(true);
+    WaarpSystemUtil.setJunit(true);
     WaarpShutdownHook.removeShutdownHook();
   }
 

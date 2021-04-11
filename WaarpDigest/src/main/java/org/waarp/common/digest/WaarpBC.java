@@ -20,17 +20,25 @@
 
 package org.waarp.common.digest;
 
+import io.netty.handler.ssl.ClientAuth;
 import io.netty.handler.ssl.OpenSsl;
+import io.netty.handler.ssl.SslContext;
+import io.netty.handler.ssl.SslContextBuilder;
 
+import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.Provider;
 import java.security.SecureRandom;
 import java.security.Security;
+import java.security.cert.X509Certificate;
 
 public class WaarpBC {
   public static final String PROTOCOL = "TLS";
+  public static final long DEFAULT_SESSIONCACHE_TIMEOUTSEC = 60;
+  public static final long DEFAULT_SESSIONCACHE_SIZE = 1024;
   private static volatile boolean initialized = false;
   private static boolean specialSecureRandom = false;
 
@@ -120,8 +128,37 @@ public class WaarpBC {
     }
   }
 
-  public static SSLContext getInstance()
-      throws NoSuchAlgorithmException, NoSuchProviderException {
+  public static SslContext getInstanceForServer(
+      KeyManagerFactory keyManagerFactory, X509Certificate[] x509Certificates,
+      boolean clientNeedAuthentication) throws SSLException {
+    SslContextBuilder builder = SslContextBuilder.forServer(keyManagerFactory)
+                                                 .sslProvider(SslContext
+                                                                  .defaultServerProvider());
+    if (x509Certificates != null) {
+      builder.trustManager(x509Certificates);
+    }
+    builder.clientAuth(
+        clientNeedAuthentication? ClientAuth.REQUIRE : ClientAuth.NONE);
+    builder.sessionCacheSize(DEFAULT_SESSIONCACHE_SIZE)
+           .sessionTimeout(DEFAULT_SESSIONCACHE_TIMEOUTSEC);
+    return builder.build();
+  }
+
+  public static SslContext getInstanceForClient(
+      KeyManagerFactory keyManagerFactory, X509Certificate[] x509Certificates)
+      throws NoSuchAlgorithmException, NoSuchProviderException, SSLException {
+    SslContextBuilder builder = SslContextBuilder.forClient().sslProvider(
+        SslContext.defaultClientProvider()).keyManager(keyManagerFactory);
+    if (x509Certificates != null) {
+      builder.trustManager(x509Certificates);
+    }
+    builder.sessionCacheSize(DEFAULT_SESSIONCACHE_SIZE)
+           .sessionTimeout(DEFAULT_SESSIONCACHE_TIMEOUTSEC);
+    return builder.build();
+  }
+
+  public static SSLContext getInstanceJDK()
+      throws NoSuchAlgorithmException, NoSuchAlgorithmException {
     return SSLContext.getInstance(PROTOCOL);
   }
 

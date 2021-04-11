@@ -146,7 +146,7 @@ public class FileMonitorTest {
         new FileMonitorCommandRunnableFuture() {
           @Override
           public void run(FileItem unused) {
-            logger.warn("Check done");
+            logger.info("Check done");
             countCheck.incrementAndGet();
           }
         };
@@ -381,7 +381,7 @@ public class FileMonitorTest {
         new FileMonitorCommandRunnableFuture() {
           @Override
           public void run(FileItem unused) {
-            logger.warn("Check done");
+            logger.info("Check done");
             countCheck.incrementAndGet();
           }
         };
@@ -593,7 +593,7 @@ public class FileMonitorTest {
         new FileMonitorCommandRunnableFuture() {
           @Override
           public void run(FileItem unused) {
-            logger.warn("Check done");
+            logger.info("Check done");
           }
         };
     final FileMonitor fileMonitor =

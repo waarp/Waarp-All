@@ -28,8 +28,8 @@ import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
-import org.waarp.common.utility.DetectionUtils;
 import org.waarp.common.utility.Version;
+import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.openr66.client.Message;
 import org.waarp.openr66.configuration.FileBasedConfiguration;
 import org.waarp.openr66.context.ErrorCode;
@@ -41,7 +41,6 @@ import org.waarp.openr66.protocol.configuration.Messages;
 import org.waarp.openr66.protocol.localhandler.packet.TestPacket;
 import org.waarp.openr66.protocol.localhandler.packet.ValidPacket;
 import org.waarp.openr66.protocol.networkhandler.NetworkTransaction;
-import org.waarp.openr66.protocol.utils.ChannelUtils;
 import org.waarp.openr66.protocol.utils.R66Future;
 
 import javax.swing.JEditorPane;
@@ -90,10 +89,10 @@ public class R66Environment {
       if (admin != null) {
         admin.close();
       }
-      if (DetectionUtils.isJunit()) {
+      if (WaarpSystemUtil.isJunit()) {
         return;
       }
-      ChannelUtils.stopLogger();
+      WaarpSystemUtil.stopLogger();
       System.exit(2);//NOSONAR
     }
     Configuration.configuration.pipelineInit();

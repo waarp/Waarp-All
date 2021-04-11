@@ -24,6 +24,7 @@ import org.waarp.common.database.exception.WaarpDatabaseException;
 import org.waarp.common.guid.LongUuid;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.http.protocol.HttpDownloadSession;
 
 import javax.servlet.ServletException;
@@ -31,6 +32,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
@@ -181,7 +183,8 @@ public class DownloadServlet extends AbstractServlet {
     }
 
     try {
-      final HttpAuthent authent = authentClass.newInstance();
+      final HttpAuthent authent =
+          (HttpAuthent) WaarpSystemUtil.newInstance(authentClass);
       authent.initializeAuthent(arguments);
       if (check) {
         try {
@@ -198,6 +201,10 @@ public class DownloadServlet extends AbstractServlet {
     } catch (final IllegalAccessException e) {
       throw new ServletException(INVALID_REQUEST_PARAMS, e);
     } catch (final InstantiationException e) {
+      throw new ServletException(INVALID_REQUEST_PARAMS, e);
+    } catch (InvocationTargetException e) {
+      throw new ServletException(INVALID_REQUEST_PARAMS, e);
+    } catch (NoSuchMethodException e) {
       throw new ServletException(INVALID_REQUEST_PARAMS, e);
     }
   }

@@ -24,14 +24,13 @@ import io.netty.util.ResourceLeakDetector.Level;
 import org.waarp.common.database.exception.WaarpDatabaseException;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
-import org.waarp.common.utility.DetectionUtils;
+import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.openr66.client.ProgressBarTransfer;
 import org.waarp.openr66.context.ErrorCode;
 import org.waarp.openr66.context.R66Result;
 import org.waarp.openr66.database.DbConstantR66;
 import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.networkhandler.NetworkTransaction;
-import org.waarp.openr66.protocol.utils.ChannelUtils;
 import org.waarp.openr66.protocol.utils.R66Future;
 
 /**
@@ -72,11 +71,11 @@ public class TestProgressBarTransfer extends ProgressBarTransfer {
       if (DbConstantR66.admin != null) {
         DbConstantR66.admin.close();
       }
-      if (DetectionUtils.isJunit()) {
+      if (WaarpSystemUtil.isJunit()) {
         return;
       }
-      ChannelUtils.stopLogger();
-      DetectionUtils.systemExit(2);
+      WaarpSystemUtil.stopLogger();
+      WaarpSystemUtil.systemExit(2);
       return;
     }
     final long time1 = System.currentTimeMillis();
@@ -124,7 +123,7 @@ public class TestProgressBarTransfer extends ProgressBarTransfer {
         if (result == null || result.getRunner() == null) {
           logger.error("Transfer in     FAILURE with no Id", future.getCause());
           networkTransaction.closeAll();
-          DetectionUtils.systemExit(ErrorCode.Unknown.ordinal());
+          WaarpSystemUtil.systemExit(ErrorCode.Unknown.ordinal());
           return;
         }
         if (result.getRunner().getErrorInfo() == ErrorCode.Warning) {
@@ -132,22 +131,22 @@ public class TestProgressBarTransfer extends ProgressBarTransfer {
                       result.getRunner().toShortString() + "     <REMOTE>" +
                       rhost + "</REMOTE>", future.getCause());
           networkTransaction.closeAll();
-          DetectionUtils.systemExit(result.getCode().ordinal());
+          WaarpSystemUtil.systemExit(result.getCode().ordinal());
         } else {
           logger.error("Transfer in     FAILURE     " +
                        result.getRunner().toShortString() + "     <REMOTE>" +
                        rhost + "</REMOTE>", future.getCause());
           networkTransaction.closeAll();
-          DetectionUtils.systemExit(result.getCode().ordinal());
+          WaarpSystemUtil.systemExit(result.getCode().ordinal());
         }
       }
     } finally {
       networkTransaction.closeAll();
       // In case something wrong append
       if (future.isDone() && future.isSuccess()) {
-        DetectionUtils.systemExit(0);
+        WaarpSystemUtil.systemExit(0);
       } else {
-        DetectionUtils.systemExit(66);
+        WaarpSystemUtil.systemExit(66);
       }
     }
   }

@@ -588,7 +588,8 @@ public final class XmlUtil {
    * @return the trimed string
    */
   public static String getExtraTrimed(final String string) {
-    return string.replaceAll("^[\\s]*|[\\s]*$", "");
+    return string.replaceAll("[\\s]+", " ").trim();
+    // was ("^[\\s]*|[\\s]*$ ", "")
   }
 
   /**

@@ -90,7 +90,7 @@ public class JsonHandler {
       return (ObjectNode) mapper.readTree(value);
     } catch (final JsonProcessingException e) {
       throw e;
-    } catch (final IOException e) {
+    } catch (final Exception e) {
       return null;
     }
   }
@@ -110,7 +110,7 @@ public class JsonHandler {
       return (ObjectNode) mapper.readTree(value);
     } catch (final JsonProcessingException e) {
       return null;
-    } catch (final IOException e) {
+    } catch (final Exception e) {
       return null;
     }
   }

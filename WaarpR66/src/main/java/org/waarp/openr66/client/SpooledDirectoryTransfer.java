@@ -31,6 +31,7 @@ import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
 import org.waarp.common.utility.WaarpShutdownHook;
+import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.common.utility.WaarpThreadFactory;
 import org.waarp.common.xml.XmlDecl;
 import org.waarp.common.xml.XmlHash;
@@ -47,7 +48,6 @@ import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.configuration.Messages;
 import org.waarp.openr66.protocol.localhandler.packet.BusinessRequestPacket;
 import org.waarp.openr66.protocol.networkhandler.NetworkTransaction;
-import org.waarp.openr66.protocol.utils.ChannelUtils;
 import org.waarp.openr66.protocol.utils.R66Future;
 
 import java.io.File;
@@ -1364,8 +1364,7 @@ public class SpooledDirectoryTransfer implements Runnable {
         admin.close();
       }
       if (normalStart) {
-        ChannelUtils.stopLogger();
-        System.exit(2);//NOSONAR
+        WaarpSystemUtil.systemExit(2);
       }
       return false;
     }
@@ -1409,7 +1408,7 @@ public class SpooledDirectoryTransfer implements Runnable {
       if (normalStart) {
         WaarpShutdownHook.shutdownWillStart();
         networkTransactionStatic.closeAll();
-        System.exit(0);//NOSONAR
+        WaarpSystemUtil.systemExit(0);
       }
     }
   }

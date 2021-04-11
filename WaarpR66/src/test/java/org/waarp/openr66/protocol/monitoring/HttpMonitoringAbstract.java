@@ -30,6 +30,9 @@ import org.junit.runners.MethodSorters;
 import org.waarp.common.database.exception.WaarpDatabaseException;
 import org.waarp.common.digest.FilesystemBasedDigest;
 import org.waarp.common.file.FileUtils;
+import org.waarp.common.logging.WaarpLogLevel;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
 import org.waarp.common.utility.Processes;
 import org.waarp.openr66.client.MultipleDirectTransfer;
 import org.waarp.openr66.client.SpooledDirectoryTransfer;
@@ -83,6 +86,8 @@ public abstract class HttpMonitoringAbstract extends TestAbstract {
    */
   @AfterClass
   public static void tearDownAfterClass() throws Exception {
+    WaarpLoggerFactory.setDefaultFactoryIfNotSame(
+        new WaarpSlf4JLoggerFactory(WaarpLogLevel.NONE));
     Thread.sleep(100);
     for (final DbTaskRunner dbTaskRunner : dbTaskRunners) {
       try {

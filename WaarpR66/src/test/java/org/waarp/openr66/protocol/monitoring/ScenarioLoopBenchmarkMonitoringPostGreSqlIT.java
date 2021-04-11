@@ -30,6 +30,7 @@ import org.junit.rules.TestWatcher;
 import org.junit.runners.MethodSorters;
 import org.testcontainers.containers.JdbcDatabaseContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
+import org.waarp.common.utility.SystemPropertyUtil;
 import org.waarp.common.utility.TestWatcherJunit4;
 import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.it.ScenarioBaseLoopBenchmark;
@@ -49,7 +50,7 @@ public class ScenarioLoopBenchmarkMonitoringPostGreSqlIT
 
   static {
     TMPFSMAP.clear();
-    TMPFSMAP.put("/var/lib/postgresql/data", "rw");
+    TMPFSMAP.put("/tmp/postgresql/data", "rw");
   }
 
   @ClassRule
@@ -60,6 +61,7 @@ public class ScenarioLoopBenchmarkMonitoringPostGreSqlIT
           "max_wal_senders=0").withTmpFs(TMPFSMAP);
 
   private static HttpServerExample httpServerExample;
+  private static boolean useExternalLogstash = false;
   private static final int port = 5044;
 
   public JdbcDatabaseContainer getJDC() {
@@ -68,16 +70,28 @@ public class ScenarioLoopBenchmarkMonitoringPostGreSqlIT
 
   @BeforeClass
   public static void setup() throws Exception {
+    useExternalLogstash = SystemPropertyUtil.get("useExternalLogstash", false);
     logger.warn("START PostGreSQL IT TEST");
     scenarioBase = new ScenarioLoopBenchmarkMonitoringPostGreSqlIT();
     setUpBeforeClass();
-    // Start Fake Server HTTP REST
-    // httpServerExample = new HttpServerExample(port);
-    // Start Repetitive Monitoring
-    MonitorExporterTransfers monitorExporterTransfers =
-        new MonitorExporterTransfers("http://localhost:" + port, "/", true,
-                                     true, true, Configuration.configuration
-                                         .getHttpWorkerGroup());
+    MonitorExporterTransfers monitorExporterTransfers;
+    if (useExternalLogstash) {
+      // Use an external Logstash instance already started
+      // Start Repetitive Monitoring
+      monitorExporterTransfers =
+          new MonitorExporterTransfers("http://localhost:" + port, "/", true,
+                                       true, true, Configuration.configuration
+                                           .getHttpWorkerGroup());
+
+    } else {
+      // Start Fake Server HTTP REST
+      httpServerExample = new HttpServerExample(port);
+      // Start Repetitive Monitoring
+      monitorExporterTransfers =
+          new MonitorExporterTransfers("http://localhost:" + port, "/", true,
+                                       true, false, Configuration.configuration
+                                           .getHttpWorkerGroup());
+    }
     Configuration.configuration
         .scheduleWithFixedDelay(monitorExporterTransfers, 1, TimeUnit.SECONDS);
     ResourceLeakDetector.setLevel(Level.PARANOID);

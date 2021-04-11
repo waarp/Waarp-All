@@ -28,6 +28,7 @@ import org.waarp.openr66.dao.HostDAO;
 import org.waarp.openr66.dao.exception.DAOConnectionException;
 import org.waarp.openr66.dao.exception.DAONoDataException;
 import org.waarp.openr66.pojo.Host;
+import org.waarp.openr66.protocol.configuration.Configuration;
 import org.xml.sax.SAXException;
 
 import javax.xml.namespace.QName;
@@ -45,6 +46,7 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static org.waarp.openr66.dao.DAOFactory.*;
+import static org.waarp.openr66.dao.database.DBHostDAO.*;
 
 public class XMLHostDAO implements HostDAO {
 
@@ -54,23 +56,13 @@ public class XMLHostDAO implements HostDAO {
   private static final ConcurrentHashMap<String, Host> dbR66HostAuthHashMap =
       new ConcurrentHashMap<String, Host>();
 
-  public static final String HOSTID_FIELD = "hostid";
-  public static final String ADDRESS_FIELD = "address";
-  public static final String PORT_FIELD = "port";
-  public static final String IS_SSL_FIELD = "isssl";
-  public static final String IS_CLIENT_FIELD = "isclient";
-  public static final String IS_ACTIVE_FIELD = "isactive";
-  public static final String IS_PROXIFIED_FIELD = "isproxified";
-  public static final String HOSTKEY_FIELD = "key";
-  public static final String ADMINROLE_FIELD = "adminrole";
-
   private static final String XML_SELECT = "/authent/entry[hostid=$hostid]";
   private static final String XML_GET_ALL = "/authent/entry";
 
   private final File file;
 
-  public XMLHostDAO(final String filePath) {
-    file = new File(filePath);
+  public XMLHostDAO() {
+    file = new File(Configuration.configuration.getAuthFile());
   }
 
   @Override

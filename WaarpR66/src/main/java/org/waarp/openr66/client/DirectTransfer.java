@@ -23,7 +23,7 @@ import org.waarp.common.database.exception.WaarpDatabaseException;
 import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
-import org.waarp.common.utility.DetectionUtils;
+import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.openr66.client.utils.OutputFormat;
 import org.waarp.openr66.commander.ClientRunner;
 import org.waarp.openr66.context.ErrorCode;
@@ -37,7 +37,6 @@ import org.waarp.openr66.protocol.exception.OpenR66ProtocolNotYetConnectionExcep
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
 import org.waarp.openr66.protocol.localhandler.LocalChannelReference;
 import org.waarp.openr66.protocol.networkhandler.NetworkTransaction;
-import org.waarp.openr66.protocol.utils.ChannelUtils;
 import org.waarp.openr66.protocol.utils.R66Future;
 
 import static org.waarp.common.database.DbConstant.*;
@@ -168,11 +167,8 @@ public class DirectTransfer extends AbstractTransfer {
       if (admin != null) {
         admin.close();
       }
-      if (DetectionUtils.isJunit()) {
-        return;
-      }
-      ChannelUtils.stopLogger();
-      System.exit(2);//NOSONAR
+      WaarpSystemUtil.systemExit(2);
+      return;
     }
     final long time1 = System.currentTimeMillis();
     final R66Future future = new R66Future(true);
@@ -214,45 +210,46 @@ public class DirectTransfer extends AbstractTransfer {
                         result.getRunner().toShortString(), e);
           }
         }
-        if (DetectionUtils.isJunit()) {
+        if (WaarpSystemUtil.isJunit()) {
           return;
         }
         networkTransaction.closeAll();
-        System.exit(0);//NOSONAR
+        WaarpSystemUtil.systemExit(0);
       } else {
         if (result == null || result.getRunner() == null) {
           prepareKoOutputFormat(future, outputFormat);
           if (!OutputFormat.isQuiet()) {
             outputFormat.sysout();
           }
-          if (DetectionUtils.isJunit()) {
+          if (WaarpSystemUtil.isJunit()) {
             return;
           }
           networkTransaction.closeAll();
-          System.exit(ErrorCode.Unknown.ordinal());//NOSONAR
+          WaarpSystemUtil.systemExit(ErrorCode.Unknown.ordinal());
+          return;
         }
         prepareKoOutputFormat(future, result, outputFormat);
         if (!OutputFormat.isQuiet()) {
           outputFormat.sysout();
         }
-        if (DetectionUtils.isJunit()) {
+        if (WaarpSystemUtil.isJunit()) {
           return;
         }
         networkTransaction.closeAll();
-        System.exit(result.getCode().ordinal());//NOSONAR
+        WaarpSystemUtil.systemExit(result.getCode().ordinal());
       }
     } catch (final Throwable e) {
       logger.error("Exception", e);
     } finally {
       logger
           .debug("finish transfer: {}:{}", future.isDone(), future.isSuccess());
-      if (!DetectionUtils.isJunit()) {
+      if (!WaarpSystemUtil.isJunit()) {
         networkTransaction.closeAll();
         // In case something wrong append
         if (future.isDone() && future.isSuccess()) {
-          System.exit(0);//NOSONAR
+          WaarpSystemUtil.systemExit(0);
         } else {
-          System.exit(66);//NOSONAR
+          WaarpSystemUtil.systemExit(66);
         }
       }
     }

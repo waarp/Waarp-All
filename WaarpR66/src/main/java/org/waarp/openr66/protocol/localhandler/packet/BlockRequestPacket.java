@@ -81,7 +81,7 @@ public class BlockRequestPacket extends AbstractLocalPacket {
     middle = Unpooled.EMPTY_BUFFER;
     final int globalSize = networkHeader + LOCAL_HEADER_SIZE + 1 + key.length;
     final int offset = networkHeader + LOCAL_HEADER_SIZE;
-    global = ByteBufAllocator.DEFAULT.buffer(globalSize, globalSize);
+    global = ByteBufAllocator.DEFAULT.ioBuffer(globalSize, globalSize);
     header = WaarpNettyUtil.slice(global, offset, 1 + key.length);
     header.writeByte(block? 1 : 0);
     header.writeBytes(key);

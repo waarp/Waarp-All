@@ -21,6 +21,8 @@
 package org.waarp.http.protocol.servlet;
 
 import com.google.common.io.ByteSource;
+import io.netty.util.ResourceLeakDetector;
+import io.netty.util.ResourceLeakDetector.Level;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -47,9 +49,10 @@ import org.waarp.common.digest.FilesystemBasedDigest.DigestAlgo;
 import org.waarp.common.logging.WaarpLogLevel;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
-import org.waarp.common.utility.DetectionUtils;
+import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
 import org.waarp.common.utility.TestWatcherJunit4;
 import org.waarp.common.utility.WaarpStringUtils;
+import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.openr66.database.data.DbHostAuth;
 import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.utils.ChannelUtils;
@@ -96,6 +99,7 @@ public class UploadServletTest extends TestAbstract {
 
   @BeforeClass
   public static void startJetty() throws Exception {
+    ResourceLeakDetector.setLevel(Level.PARANOID);
     WaarpLoggerFactory.setLogLevel(WaarpLogLevel.INFO);
     final ClassLoader classLoader = UploadServletTest.class.getClassLoader();
     URL url = classLoader.getResource("config/logback.xml");
@@ -110,7 +114,7 @@ public class UploadServletTest extends TestAbstract {
                            CONFIG_SERVER_A_MINIMAL_XML, false);
 
     // Create Server
-    DetectionUtils.setJunit(false);
+    WaarpSystemUtil.setJunit(false);
     server = new Server();
     ServerConnector connector = new ServerConnector(server);
     connector.setReuseAddress(true);
@@ -144,6 +148,8 @@ public class UploadServletTest extends TestAbstract {
 
   @AfterClass
   public static void stopJetty() throws Exception {
+    WaarpLoggerFactory.setDefaultFactoryIfNotSame(
+        new WaarpSlf4JLoggerFactory(WaarpLogLevel.NONE));
     try {
       if (server != null) {
         server.stop();

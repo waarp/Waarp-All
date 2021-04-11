@@ -23,6 +23,11 @@ import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.openr66.context.R66Session;
 import org.waarp.openr66.context.task.exception.OpenR66RunnerErrorException;
+import org.waarp.openr66.context.task.extension.AbstractExtendedTaskFactory;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * This enum class references all available tasks.
@@ -33,11 +38,14 @@ import org.waarp.openr66.context.task.exception.OpenR66RunnerErrorException;
 public enum TaskType {
   LOG, MOVE, MOVERENAME, COPY, COPYRENAME, EXEC, EXECMOVE, LINKRENAME, TRANSFER,
   VALIDFILEPATH, DELETE, TAR, ZIP, EXECOUTPUT, RESCHEDULE, EXECJAVA, TRANSCODE,
-  SNMP, FTP, RENAME, RESTART, UNZEROED, CHMOD, CHKFILE, ICAP;
+  SNMP, FTP, RENAME, RESTART, UNZEROED, CHMOD, CHKFILE, ICAP, EXTENDED;
 
-  private static final String UNVALID_TASK = "Unvalid Task: ";
+  public static final String UNVALID_TASK = "Unvalid Task: ";
 
-  private static final String NAME_UNKNOWN = "name unknown: ";
+  public static final String NAME_UNKNOWN = "name unknown: ";
+
+  private static final Map<String, AbstractExtendedTaskFactory>
+      extendedTaskType = new HashMap<String, AbstractExtendedTaskFactory>();
 
   final int type;
 
@@ -54,6 +62,39 @@ public enum TaskType {
   }
 
   /**
+   * Allow to add extended task that will be denoted as EXTENDED
+   *
+   * @param associatedTaskNames if a previously TASK name was already set, it is replaced by the new Factory, including standard TASK_TYPE
+   * @param extendedTaskFactory the Factory to use to create the associated Task with its name
+   */
+  public static void addExtendedTaskFactory(Set<String> associatedTaskNames,
+                                            AbstractExtendedTaskFactory extendedTaskFactory) {
+    for (String associatedName : associatedTaskNames) {
+      logger.debug("Add {} with {}", associatedName,
+                   extendedTaskFactory.getName());
+      extendedTaskType.put(associatedName, extendedTaskFactory);
+    }
+  }
+
+  /**
+   * Check if the given Task exists
+   *
+   * @param task
+   *
+   * @return True if this task is known
+   */
+  public static boolean isValidTask(String task) {
+    try {
+      TaskType.valueOf(task);
+      return true;
+    } catch (final IllegalArgumentException e) {
+      logger
+          .debug("{} is in keys: {}", task, extendedTaskType.containsKey(task));
+      return extendedTaskType.containsKey(task);
+    }
+  }
+
+  /**
    * @param type
    * @param argRule
    * @param delay
@@ -63,10 +104,10 @@ public enum TaskType {
    *
    * @throws OpenR66RunnerErrorException
    */
-  public static AbstractTask getTaskFromId(final TaskType type,
-                                           final String argRule,
-                                           final int delay,
-                                           final R66Session session)
+  private static AbstractTask getTaskFromId(final TaskType type,
+                                            final String argRule,
+                                            final int delay,
+                                            final R66Session session)
       throws OpenR66RunnerErrorException {
     switch (type) {
       case LOG:
@@ -160,6 +201,8 @@ public enum TaskType {
       case ICAP:
         return new IcapTask(argRule, delay,
                             session.getRunner().getFileInformation(), session);
+      case EXTENDED:
+        // Should not arrived here
       default:
         logger.error(NAME_UNKNOWN + type.name);
         throw new OpenR66RunnerErrorException(UNVALID_TASK + type.name);
@@ -181,6 +224,11 @@ public enum TaskType {
                                            final int delay,
                                            final R66Session session)
       throws OpenR66RunnerErrorException {
+    // EXTENDED first
+    AbstractExtendedTaskFactory factory = extendedTaskType.get(name);
+    if (factory != null) {
+      return factory.getTaskFromId(name, argRule, delay, session);
+    }
     final TaskType type;
     try {
       type = valueOf(name);
@@ -211,6 +259,11 @@ public enum TaskType {
                                                       final int delay,
                                                       final R66Session session)
       throws OpenR66RunnerErrorException {
+    // EXTENDED first
+    AbstractExtendedTaskFactory factory = extendedTaskType.get(name);
+    if (factory != null) {
+      return factory.getTaskFromIdForBusiness(name, argRule, delay, session);
+    }
     final TaskType type;
     try {
       type = valueOf(name);
@@ -218,6 +271,7 @@ public enum TaskType {
       logger.error("name empty " + name);
       throw new OpenR66RunnerErrorException(UNVALID_TASK + name);
     } catch (final IllegalArgumentException e) {
+      // FIXME EXTENDED
       logger.error(NAME_UNKNOWN + name);
       throw new OpenR66RunnerErrorException(UNVALID_TASK + name);
     }
@@ -248,6 +302,8 @@ public enum TaskType {
         return new RestartServerTask(argRule, delay, "", session);
       case ICAP:
         return new IcapTask(argRule, delay, "", session);
+      case EXTENDED:
+        // Not allowed
       case MOVE:
       case MOVERENAME:
       case COPY:

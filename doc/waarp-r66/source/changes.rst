@@ -13,13 +13,18 @@ Waarp R66 3.6.0 (2021-04-03)
 Nouvelles fonctionnalités
 -------------------------
 
-- Ajout de l'option activepassive pour Gateway FTP avec pour valeur
+- Ajout de l'option ``activepassive`` pour Gateway FTP avec pour valeur
   1 = Active, -1 = Passive, 0 = les deux modes autorisés
-- Waarp R66: Ajout d'une option de logs asynchrones poussés vers une API REST
+- Waarp R66 : Ajout d'une option de logs asynchrones poussés vers une API REST
   externe (par exemple un Logstash avec un Elasticsearch ou avec maintenance
-  dans le logiciel Waarp Manager) pour permettre
-  la surveillance globale des transferts de un ou plusieurs moniteurs Waarp
-  R66
+  dans le logiciel Waarp Manager) pour permettre la surveillance globale des
+  transferts de un ou plusieurs moniteurs Waarp R66
+- Waarp R66 : Ajout de la possibilité d'étendre les tâches de Waarp R66 via
+  un TaskFactory
+- WaarpR66 : Création d'une TaskFactory pour ajouter des tâches R66 qui
+  permettent de lire, écrire ou effacer des fichiers depuis un stockage S3
+  pouvant servir de source ou cible dans le cas de transferts
+  (org.waarp.openr66.s3.taskfactory.S3TaskFactory)
 
 Correctifs
 ----------
@@ -28,6 +33,8 @@ Correctifs
 - Amélioration des Threads pour Recv avec minimum/maximum optimisés
 - Accroissement de la limite de RUNLIMIT à 50000, maintient du défaut à 1000
 - Benchmark sur multiple serveurs Waarp en mode cluster
+- Fixe l'usage de Netty Native OpenSSL ou BoringSsl (performances TLS)
+- Fixe Waarp R66Proxy
 - Benchmark sur Serveur FTP et Gateway FTP
 - Fixes de bug liés à la lecture XML des règles, de la gestion de client sans base
 - Mise à jour des dépendances

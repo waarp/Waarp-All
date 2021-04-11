@@ -24,6 +24,7 @@ import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.utility.ParametersChecker;
+import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.common.utility.WaarpThreadFactory;
 import org.waarp.openr66.context.ErrorCode;
 import org.waarp.openr66.context.R66Result;
@@ -108,7 +109,7 @@ public class ExecJavaTask extends AbstractTask {
     }
     final R66Runnable runnable;
     try {
-      runnable = (R66Runnable) Class.forName(className).newInstance();//NOSONAR
+      runnable = (R66Runnable) WaarpSystemUtil.newInstance(className);//NOSONAR
     } catch (final Exception e) {
       logger.error("ExecJava command is not available: " + className, e);
       final R66Result result =

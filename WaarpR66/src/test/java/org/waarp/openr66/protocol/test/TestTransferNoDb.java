@@ -25,8 +25,8 @@ import org.waarp.common.command.exception.CommandAbstractException;
 import org.waarp.common.guid.JvmProcessId;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
-import org.waarp.common.utility.DetectionUtils;
 import org.waarp.common.utility.FileTestUtils;
+import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.openr66.client.DirectTransfer;
 import org.waarp.openr66.client.TransferArgs;
 import org.waarp.openr66.context.ErrorCode;
@@ -72,7 +72,7 @@ public class TestTransferNoDb extends DirectTransfer {
       if (DbConstantR66.admin != null) {
         DbConstantR66.admin.close();
       }
-      DetectionUtils.systemExit(1);
+      WaarpSystemUtil.systemExit(1);
       return;
     }
     getSpecialParams(args, 1);

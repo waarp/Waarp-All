@@ -83,7 +83,7 @@ public final class WaarpStringUtils {
           " bytes).");
     }
     try {
-      return Files.toString(file, UTF8);
+      return Files.asCharSource(file, UTF8).read();
     } catch (final IOException e) {
       logger.error("Error on File while trying to read: " + filename, e);
       throw new FileTransferException("Error on File while trying to read", e);

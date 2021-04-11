@@ -23,7 +23,7 @@ import org.waarp.common.database.exception.WaarpDatabaseException;
 import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
-import org.waarp.common.utility.DetectionUtils;
+import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.openr66.client.utils.OutputFormat;
 import org.waarp.openr66.client.utils.OutputFormat.FIELDS;
 import org.waarp.openr66.context.R66Result;
@@ -32,7 +32,6 @@ import org.waarp.openr66.database.data.DbTaskRunner;
 import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.configuration.Messages;
 import org.waarp.openr66.protocol.networkhandler.NetworkTransaction;
-import org.waarp.openr66.protocol.utils.ChannelUtils;
 import org.waarp.openr66.protocol.utils.R66Future;
 
 import java.sql.Timestamp;
@@ -93,20 +92,14 @@ public class MultipleSubmitTransfer extends SubmitTransfer {
     } catch (final WaarpDatabaseException e) {
       logger.error(Messages.getString("SubmitTransfer.2") +
                    transferArgs.getRulename()); //$NON-NLS-1$
-      if (DetectionUtils.isJunit()) {
-        return;
-      }
-      ChannelUtils.stopLogger();
-      System.exit(2);//NOSONAR
+      WaarpSystemUtil.systemExit(2);
+      return;
     }
     if (!submit && dbrule.isRecvMode() && networkTransaction == null) {
       logger.error(Messages.getString("Configuration.WrongInit") +
                    " => -client argument is missing"); //$NON-NLS-1$
-      if (DetectionUtils.isJunit()) {
-        return;
-      }
-      ChannelUtils.stopLogger();
-      System.exit(2);//NOSONAR
+      WaarpSystemUtil.systemExit(2);
+      return;
     }
     List<String> files = null;
     if (dbrule.isSendMode()) {
@@ -199,11 +192,8 @@ public class MultipleSubmitTransfer extends SubmitTransfer {
       if (admin != null) {
         admin.close();
       }
-      if (DetectionUtils.isJunit()) {
-        return;
-      }
-      ChannelUtils.stopLogger();
-      System.exit(1);//NOSONAR
+      WaarpSystemUtil.systemExit(1);
+      return;
     }
     NetworkTransaction networkTransaction = null;
     if (!submit) {
@@ -246,11 +236,7 @@ public class MultipleSubmitTransfer extends SubmitTransfer {
           networkTransaction = null;
         }
         admin.close();
-        if (DetectionUtils.isJunit()) {
-          return;
-        }
-        ChannelUtils.stopLogger();
-        System.exit(0);//NOSONAR
+        WaarpSystemUtil.systemExit(0);
       } else {
         outputFormat.setValue(FIELDS.status.name(), 2);
         outputFormat.setValue(FIELDS.statusTxt.name(), "Multiple " + Messages
@@ -273,11 +259,7 @@ public class MultipleSubmitTransfer extends SubmitTransfer {
           networkTransaction = null;
         }
         admin.close();
-        if (DetectionUtils.isJunit()) {
-          return;
-        }
-        ChannelUtils.stopLogger();
-        System.exit(transaction.getErrorMultiple());//NOSONAR
+        WaarpSystemUtil.systemExit(transaction.getErrorMultiple());
       }
     } finally {
       if (networkTransaction != null) {

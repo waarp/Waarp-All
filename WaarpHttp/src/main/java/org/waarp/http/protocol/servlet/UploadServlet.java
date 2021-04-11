@@ -25,6 +25,7 @@ import com.google.common.io.ByteSource;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.utility.WaarpStringUtils;
+import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.http.protocol.HttpHelper;
 import org.waarp.http.protocol.HttpResumableInfo;
 import org.waarp.http.protocol.HttpResumableSession;
@@ -38,6 +39,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -222,7 +224,8 @@ public class UploadServlet extends AbstractServlet {
     final HttpSessions sessions = HttpSessions.getInstance();
 
     try {
-      final HttpAuthent authent = authentClass.newInstance();
+      final HttpAuthent authent =
+          (HttpAuthent) WaarpSystemUtil.newInstance(authentClass);
       authent.initializeAuthent(arguments);
       final HttpResumableSession session = sessions
           .getOrCreateResumableSession(resumableInfo, rulename, comment,
@@ -237,6 +240,10 @@ public class UploadServlet extends AbstractServlet {
     } catch (final IllegalAccessException e) {
       throw new ServletException(INVALID_REQUEST_PARAMS, e);
     } catch (final InstantiationException e) {
+      throw new ServletException(INVALID_REQUEST_PARAMS, e);
+    } catch (InvocationTargetException e) {
+      throw new ServletException(INVALID_REQUEST_PARAMS, e);
+    } catch (NoSuchMethodException e) {
       throw new ServletException(INVALID_REQUEST_PARAMS, e);
     }
   }

@@ -63,10 +63,6 @@ public class HttpClient {
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(HttpClient.class);
 
-  private static final String HEADER_WAARP_ID = "X-WAARP-ID";
-  private static final String HEADER_WAARP_START = "X-WAARP-START";
-  private static final String HEADER_WAARP_STOP = "X-WAARP-STOP";
-
   private final URI finalUri;
   private final String host;
   private final boolean keepConnection;
@@ -185,9 +181,10 @@ public class HttpClient {
     } else {
       headers.set(HttpHeaderNames.CONNECTION, HttpHeaderValues.CLOSE);
     }
-    headers.set(HEADER_WAARP_ID, serverId);
-    headers.set(HEADER_WAARP_START, start == null? "" : start.toString());
-    headers.set(HEADER_WAARP_STOP, stop.toString());
+    headers.set(MonitorExporterTransfers.HEADER_WAARP_ID, serverId);
+    headers.set(MonitorExporterTransfers.HEADER_WAARP_START,
+                start == null? "" : start.toString());
+    headers.set(MonitorExporterTransfers.HEADER_WAARP_STOP, stop.toString());
     headers.set(HttpHeaderNames.CONTENT_LENGTH, length);
     headers
         .set(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.APPLICATION_JSON);

@@ -33,7 +33,6 @@ import org.waarp.ftp.core.config.FtpConfiguration;
 import org.waarp.ftp.core.config.FtpInternalConfiguration;
 import org.waarp.ftp.core.control.ftps.FtpsInitializer;
 import org.waarp.ftp.core.session.FtpSession;
-import org.waarp.ftp.core.utils.FtpChannelUtils;
 
 /**
  *
@@ -109,13 +108,9 @@ class FtpsTemporaryFirstHandler extends ChannelDuplexHandler {
     // Server: no renegotiation still, but possible clientAuthent
     // Mode is always as SSL Server mode.
     final SslHandler sslHandler = FtpsInitializer.waarpSslContextFactory
-        .initInitializer(true, FtpsInitializer.waarpSslContextFactory
-            .needClientAuthentication(), FtpChannelUtils
-                             .getRemoteInetSocketAddress(
-                                 session.getControlChannel()).getAddress()
-                             .getHostAddress(), FtpChannelUtils
-                             .getRemoteInetSocketAddress(
-                                 session.getControlChannel()).getPort());
+        .createHandlerServer(
+            FtpsInitializer.waarpSslContextFactory.needClientAuthentication(),
+            ctx.channel());
     WaarpSslUtility.addSslOpenedChannel(channel);
     // Get the SslHandler and begin handshake ASAP.
     logger.debug("SSL found but need handshake: {}", ctx.channel());

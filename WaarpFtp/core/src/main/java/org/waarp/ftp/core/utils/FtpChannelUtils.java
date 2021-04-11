@@ -24,11 +24,12 @@ import io.netty.channel.Channel;
 import org.slf4j.LoggerFactory;
 import org.waarp.common.crypto.ssl.WaarpSslUtility;
 import org.waarp.common.logging.SysErrLogger;
+import org.waarp.common.logging.WaarpLogLevel;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
-import org.waarp.common.utility.DetectionUtils;
 import org.waarp.common.utility.WaarpShutdownHook;
+import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.ftp.core.config.FtpConfiguration;
 
 import java.net.InetAddress;
@@ -413,12 +414,14 @@ public class FtpChannelUtils implements Runnable {
   }
 
   public static void stopLogger() {
-    if (DetectionUtils.isJunit()) {
+    if (WaarpSystemUtil.isJunit()) {
       return;
     }
+    WaarpLoggerFactory.setDefaultFactoryIfNotSame(
+        new WaarpSlf4JLoggerFactory(WaarpLogLevel.NONE));
     if (WaarpLoggerFactory
             .getDefaultFactory() instanceof WaarpSlf4JLoggerFactory &&
-        !DetectionUtils.isJunit()) {
+        !WaarpSystemUtil.isJunit()) {
       final LoggerContext lc =
           (LoggerContext) LoggerFactory.getILoggerFactory();
       lc.stop();

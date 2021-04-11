@@ -27,6 +27,7 @@ import org.waarp.common.file.DirInterface;
 import org.waarp.common.file.filesystembased.FilesystemBasedFileParameterImpl;
 import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.utility.WaarpStringUtils;
+import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.gateway.ftp.config.FileBasedConfiguration;
 import org.waarp.gateway.ftp.control.ExecBusinessHandler;
 import org.waarp.gateway.ftp.data.FileSystemBasedDataBusinessHandler;
@@ -230,16 +231,17 @@ public class LogExport {
   public static void main(final String[] args) {
     try {
       if (!initialize(args)) {
-        System.exit(1);//NOSONAR
+        WaarpSystemUtil.systemExit(1);
+        return;
       }
 
       final String message = run();
 
       if (message.contains("successfully")) {
-        System.exit(0);//NOSONAR
+        WaarpSystemUtil.systemExit(0);
       } else {
         SysErrLogger.FAKE_LOGGER.syserr(message);
-        System.exit(1);//NOSONAR
+        WaarpSystemUtil.systemExit(1);
       }
 
     } finally {

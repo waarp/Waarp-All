@@ -1235,10 +1235,8 @@ public abstract class DBAllDAOTest extends TestAbstract {
 
   @Test
   public void test06_GetAllTransfer() throws Exception {
-    Configuration.configuration.setArchivePath("/arch");
     final TransferDAO dao = getDAO(getConnection());
     assertEquals(4, dao.getAll().size());
-    Configuration.configuration.setArchivePath(null);
   }
 
   @Test

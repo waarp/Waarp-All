@@ -420,7 +420,7 @@ public class AdminR66OperationsGui extends JFrame {
     {
       globReadLimit = new JFormattedTextField();
       globReadLimit.setMinimumSize(new Dimension(100, 20));
-      globReadLimit.setValue(new Long(0));
+      globReadLimit.setValue(Long.valueOf(0));
       final GridBagConstraints gbc_globReadLimit = new GridBagConstraints();
       gbc_globReadLimit.insets = new Insets(0, 0, 5, 5);
       gbc_globReadLimit.fill = GridBagConstraints.HORIZONTAL;
@@ -450,7 +450,7 @@ public class AdminR66OperationsGui extends JFrame {
     {
       sessionWriteLimit = new JFormattedTextField();
       sessionWriteLimit.setMinimumSize(new Dimension(100, 20));
-      sessionWriteLimit.setValue(new Long(0));
+      sessionWriteLimit.setValue(Long.valueOf(0));
       final GridBagConstraints gbc_sessionWriteLimit = new GridBagConstraints();
       gbc_sessionWriteLimit.insets = new Insets(0, 0, 5, 5);
       gbc_sessionWriteLimit.fill = GridBagConstraints.HORIZONTAL;
@@ -471,7 +471,7 @@ public class AdminR66OperationsGui extends JFrame {
     {
       sessionReadLimit = new JFormattedTextField();
       sessionReadLimit.setMinimumSize(new Dimension(100, 20));
-      sessionReadLimit.setValue(new Long(0));
+      sessionReadLimit.setValue(Long.valueOf(0));
       final GridBagConstraints gbc_sessionReadLimit = new GridBagConstraints();
       gbc_sessionReadLimit.insets = new Insets(0, 0, 5, 5);
       gbc_sessionReadLimit.fill = GridBagConstraints.HORIZONTAL;

@@ -23,7 +23,7 @@ import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
-import org.waarp.common.utility.DetectionUtils;
+import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.openr66.client.utils.OutputFormat;
 import org.waarp.openr66.client.utils.OutputFormat.FIELDS;
 import org.waarp.openr66.configuration.FileBasedConfiguration;
@@ -259,11 +259,8 @@ public class RequestInformation implements Runnable {
       if (admin != null) {
         admin.close();
       }
-      if (DetectionUtils.isJunit()) {
-        return;
-      }
-      ChannelUtils.stopLogger();
-      System.exit(1);//NOSONAR
+      WaarpSystemUtil.systemExit(1);
+      return;
     }
     NetworkTransaction networkTransaction = null;
     int value = 3;
@@ -333,13 +330,15 @@ public class RequestInformation implements Runnable {
     } catch (final Throwable e) {
       logger.error("Exception", e);
     } finally {
-      if (networkTransaction != null) {
-        networkTransaction.closeAll();
+      if (!WaarpSystemUtil.isJunit()) {
+        if (networkTransaction != null) {
+          networkTransaction.closeAll();
+        }
+        if (admin != null) {
+          admin.close();
+        }
+        WaarpSystemUtil.systemExit(value);
       }
-      if (admin != null) {
-        admin.close();
-      }
-      System.exit(value);//NOSONAR
     }
   }
 

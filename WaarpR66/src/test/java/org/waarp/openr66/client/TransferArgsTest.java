@@ -20,6 +20,8 @@
 
 package org.waarp.openr66.client;
 
+import io.netty.util.ResourceLeakDetector;
+import io.netty.util.ResourceLeakDetector.Level;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Rule;
@@ -27,6 +29,9 @@ import org.junit.Test;
 import org.junit.rules.TestWatcher;
 import org.waarp.common.digest.FilesystemBasedDigest;
 import org.waarp.common.logging.SysErrLogger;
+import org.waarp.common.logging.WaarpLogLevel;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
 import org.waarp.common.utility.TestWatcherJunit4;
 import org.waarp.openr66.client.utils.OutputFormat;
 import org.waarp.openr66.context.R66FiniteDualStates;
@@ -71,6 +76,7 @@ public class TransferArgsTest extends TestAbstract {
    */
   @BeforeClass
   public static void setUpBeforeClass() throws Exception {
+    ResourceLeakDetector.setLevel(Level.PARANOID);
     final ClassLoader classLoader = NetworkClientTest.class.getClassLoader();
     final File file =
         new File(classLoader.getResource("logback-test.xml").getFile());
@@ -87,6 +93,9 @@ public class TransferArgsTest extends TestAbstract {
    */
   @AfterClass
   public static void tearDownAfterClass() throws Exception {
+    WaarpLoggerFactory.setDefaultFactoryIfNotSame(
+        new WaarpSlf4JLoggerFactory(WaarpLogLevel.NONE));
+
     Thread.sleep(100);
     final DbHostAuth host = new DbHostAuth("hostas");
     final SocketAddress socketServerAddress;

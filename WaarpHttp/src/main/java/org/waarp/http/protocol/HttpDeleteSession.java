@@ -24,7 +24,7 @@ import org.waarp.common.command.exception.CommandAbstractException;
 import org.waarp.common.database.exception.WaarpDatabaseException;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
-import org.waarp.common.utility.DetectionUtils;
+import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.http.protocol.servlet.HttpAuthent;
 import org.waarp.openr66.context.R66BusinessInterface;
 import org.waarp.openr66.context.R66FiniteDualStates;
@@ -56,7 +56,7 @@ public class HttpDeleteSession extends HttpSessionAbstract {
     super(authent);
     this.identifier = identifier;
     final DbTaskRunner runner;
-    if (!DetectionUtils.isJunit()) {
+    if (!WaarpSystemUtil.isJunit()) {
       checkAuthentR66Business(this, session, authent);
       runner = getDbTaskRunner(authent.getUserId(), identifier);
       try {

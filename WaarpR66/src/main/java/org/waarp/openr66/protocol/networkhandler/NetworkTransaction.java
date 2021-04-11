@@ -39,6 +39,7 @@ import org.waarp.common.lru.ConcurrentUtility;
 import org.waarp.common.lru.SynchronizedLruCache;
 import org.waarp.common.utility.WaarpNettyUtil;
 import org.waarp.common.utility.WaarpShutdownHook;
+import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.openr66.context.ErrorCode;
 import org.waarp.openr66.context.R66Result;
 import org.waarp.openr66.context.R66Session;
@@ -1382,7 +1383,7 @@ public class NetworkTransaction {
     Configuration.configuration.clientStop(quickShutdown);
     if (!Configuration.configuration.isServer()) {
       logger.debug("Last action before exit");
-      ChannelUtils.stopLogger();
+      WaarpSystemUtil.stopLogger();
     }
   }
 

@@ -24,14 +24,13 @@ import org.waarp.common.database.exception.WaarpDatabaseException;
 import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
-import org.waarp.common.utility.DetectionUtils;
+import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.openr66.client.utils.OutputFormat;
 import org.waarp.openr66.context.ErrorCode;
 import org.waarp.openr66.context.R66Result;
 import org.waarp.openr66.database.data.DbTaskRunner;
 import org.waarp.openr66.protocol.configuration.Messages;
 import org.waarp.openr66.protocol.exception.OpenR66DatabaseGlobalException;
-import org.waarp.openr66.protocol.utils.ChannelUtils;
 import org.waarp.openr66.protocol.utils.R66Future;
 
 import java.sql.Timestamp;
@@ -135,11 +134,8 @@ public class SubmitTransfer extends AbstractTransfer {
       if (admin != null) {
         admin.close();
       }
-      if (DetectionUtils.isJunit()) {
-        return;
-      }
-      ChannelUtils.stopLogger();
-      System.exit(1);//NOSONAR
+      WaarpSystemUtil.systemExit(1);
+      return;
     }
     final R66Future future = new R66Future(true);
     final SubmitTransfer transaction =
@@ -166,18 +162,17 @@ public class SubmitTransfer extends AbstractTransfer {
       if (!OutputFormat.isQuiet()) {
         outputFormat.sysout();
       }
-      if (DetectionUtils.isJunit()) {
+      if (WaarpSystemUtil.isJunit()) {
         return;
       }
       admin.close();
-      ChannelUtils.stopLogger();
-      System.exit(future.getResult().getCode().ordinal());
-    }
-    admin.close();
-    if (DetectionUtils.isJunit()) {
+      WaarpSystemUtil.systemExit(future.getResult().getCode().ordinal());
       return;
     }
-    System.exit(0);//NOSONAR
+    if (!WaarpSystemUtil.isJunit()) {
+      admin.close();
+      WaarpSystemUtil.systemExit(0);
+    }
   }
 
 }

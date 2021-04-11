@@ -96,6 +96,7 @@ public final class RuleFileBasedConfiguration {
       new XmlDecl(XmlType.STRING, DbRule.TASK_TYPE),
       new XmlDecl(XmlType.STRING, DbRule.TASK_PATH),
       new XmlDecl(XmlType.LONG, DbRule.TASK_DELAY),
+      new XmlDecl(XmlType.INTEGER, DbRule.TASK_RANK),
       new XmlDecl(XmlType.STRING, DbRule.TASK_COMMENT)
   };
   public static final XmlDecl[] tasksDecl =
@@ -190,16 +191,16 @@ public final class RuleFileBasedConfiguration {
   public static String[][] getTasksRule(final XmlValue value) {
     final List<XmlValue[]> list = (List<XmlValue[]>) value.getList();
     if (list == null || list.isEmpty()) {
-      logger.debug("NoRule for {}", value.getName());
       // Unable to find the tasks for Rule, setting to the default
       return STRINGS_0_0_LENGTH;
     }
-    final String[][] taskArray = new String[list.size()][4];
+    final String[][] taskArray = new String[list.size()][5];
     for (int i = 0; i < list.size(); i++) {
       taskArray[i][0] = null;
       taskArray[i][1] = null;
       taskArray[i][2] = null;
       taskArray[i][3] = null;
+      taskArray[i][4] = null;
     }
     int rank = 0;
     for (final XmlValue[] subvals : list) {
@@ -229,11 +230,16 @@ public final class RuleFileBasedConfiguration {
       } else {
         comment = valcomment.getString();
       }
+      final XmlValue valrank = hash.get(DbRule.TASK_RANK);
+      final String srank;
+      if (valrank == null || valrank.isEmpty()) {
+        srank = Integer.toString(rank);
+      } else {
+        srank = valrank.getIntoString();
+      }
       taskArray[rank][0] = valtype.getString().toUpperCase();
       // CHECK TASK_TYPE
-      try {
-        TaskType.valueOf(taskArray[rank][0]);
-      } catch (final IllegalArgumentException e) {
+      if (!TaskType.isValidTask(taskArray[rank][0])) {
         // Bad Type
         logger.warn("Bad Type of Task: " + taskArray[rank][0]);
         continue;
@@ -241,8 +247,7 @@ public final class RuleFileBasedConfiguration {
       taskArray[rank][1] = valpath.getString();
       taskArray[rank][2] = delay;
       taskArray[rank][3] = comment;
-      logger.debug("RuleTask: {}:{}:{}:{}", valtype.getString(),
-                   valpath.getString(), delay, comment);
+      taskArray[rank][4] = srank;
       rank++;
       hash.clear();
     }
@@ -570,6 +575,9 @@ public final class RuleFileBasedConfiguration {
         if (array[rank].length > 3) {
           task.add(newElement(DbRule.TASK_COMMENT, array[rank][3]));
         }
+        if (array[rank].length > 4) {
+          task.add(newElement(DbRule.TASK_RANK, array[rank][4]));
+        }
         roottasks.add(task);
       }
     }
@@ -586,6 +594,9 @@ public final class RuleFileBasedConfiguration {
         task.add(newElement(DbRule.TASK_DELAY, array[rank][2]));
         if (array[rank].length > 3) {
           task.add(newElement(DbRule.TASK_COMMENT, array[rank][3]));
+        }
+        if (array[rank].length > 4) {
+          task.add(newElement(DbRule.TASK_RANK, array[rank][4]));
         }
         roottasks.add(task);
       }
@@ -604,6 +615,9 @@ public final class RuleFileBasedConfiguration {
         if (array[rank].length > 3) {
           task.add(newElement(DbRule.TASK_COMMENT, array[rank][3]));
         }
+        if (array[rank].length > 4) {
+          task.add(newElement(DbRule.TASK_RANK, array[rank][4]));
+        }
         roottasks.add(task);
       }
     }
@@ -620,6 +634,9 @@ public final class RuleFileBasedConfiguration {
         task.add(newElement(DbRule.TASK_DELAY, array[rank][2]));
         if (array[rank].length > 3) {
           task.add(newElement(DbRule.TASK_COMMENT, array[rank][3]));
+        }
+        if (array[rank].length > 4) {
+          task.add(newElement(DbRule.TASK_RANK, array[rank][4]));
         }
         roottasks.add(task);
       }
@@ -638,6 +655,9 @@ public final class RuleFileBasedConfiguration {
         if (array[rank].length > 3) {
           task.add(newElement(DbRule.TASK_COMMENT, array[rank][3]));
         }
+        if (array[rank].length > 4) {
+          task.add(newElement(DbRule.TASK_RANK, array[rank][4]));
+        }
         roottasks.add(task);
       }
     }
@@ -654,6 +674,9 @@ public final class RuleFileBasedConfiguration {
         task.add(newElement(DbRule.TASK_DELAY, array[rank][2]));
         if (array[rank].length > 3) {
           task.add(newElement(DbRule.TASK_COMMENT, array[rank][3]));
+        }
+        if (array[rank].length > 4) {
+          task.add(newElement(DbRule.TASK_RANK, array[rank][4]));
         }
         roottasks.add(task);
       }

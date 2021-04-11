@@ -21,7 +21,6 @@
 package org.waarp.icap.server;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
@@ -32,12 +31,13 @@ import io.netty.handler.codec.DelimiterBasedFrameDecoder;
 import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
 import io.netty.util.concurrent.EventExecutorGroup;
+import org.waarp.common.utility.WaarpNettyUtil;
 import org.waarp.common.utility.WaarpStringUtils;
 
 import static org.waarp.common.file.FileUtils.*;
 
 public class IcapServerInitializer extends ChannelInitializer<SocketChannel> {
-  private static final ByteBuf RNRN = Unpooled.wrappedBuffer(new byte[] {
+  private static final ByteBuf RNRN = WaarpNettyUtil.wrappedBuffer(new byte[] {
       '\r', '\n', '\r', '\n'
   });
 

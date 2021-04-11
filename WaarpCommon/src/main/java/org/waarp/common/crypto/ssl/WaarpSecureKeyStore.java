@@ -26,6 +26,7 @@ import org.waarp.common.logging.WaarpLoggerFactory;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.TrustManagerFactory;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -187,7 +188,8 @@ public class WaarpSecureKeyStore {
     }
     FileInputStream inputStream = null;
     try {
-      inputStream = new FileInputStream(keyStoreFilename);
+      final File temp = new File(keystoreFilename).getAbsoluteFile();
+      inputStream = new FileInputStream(temp);
       keyStore.load(inputStream, getKeyStorePassword());
     } catch (final NoSuchAlgorithmException e) {
       logger.error(CANNOT_CREATE_KEY_STORE_INSTANCE, e);
@@ -331,7 +333,8 @@ public class WaarpSecureKeyStore {
     }
     FileInputStream inputStream = null;
     try {
-      inputStream = new FileInputStream(truststoreFilename);
+      final File temp = new File(truststoreFilename).getAbsoluteFile();
+      inputStream = new FileInputStream(temp);
       keyTrustStore.load(inputStream, getKeyTrustStorePassword());
     } catch (final NoSuchAlgorithmException e) {
       logger.error(CANNOT_CREATE_TRUST_MANAGER_FACTORY_INSTANCE, e);

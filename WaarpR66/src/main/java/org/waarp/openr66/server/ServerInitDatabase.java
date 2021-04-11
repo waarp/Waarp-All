@@ -26,8 +26,8 @@ import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
-import org.waarp.common.utility.DetectionUtils;
 import org.waarp.common.utility.WaarpStringUtils;
+import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.openr66.configuration.AuthenticationFileBasedConfiguration;
 import org.waarp.openr66.configuration.FileBasedConfiguration;
 import org.waarp.openr66.configuration.RuleFileBasedConfiguration;
@@ -35,7 +35,6 @@ import org.waarp.openr66.database.data.DbHostConfiguration;
 import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.configuration.Messages;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolSystemException;
-import org.waarp.openr66.protocol.utils.ChannelUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -63,6 +62,7 @@ public class ServerInitDatabase {
   static String sdirconfig;
   static String shostauth;
   static String slimitconfig;
+  static String sextendedFactoryClassList = null;
 
   private ServerInitDatabase() {
   }
@@ -101,6 +101,9 @@ public class ServerInitDatabase {
       } else if ("-auth".equalsIgnoreCase(args[i])) {
         i++;
         shostauth = args[i];
+      } else if ("-loadExtendedTaskFactory".equalsIgnoreCase(args[i])) {
+        i++;
+        sextendedFactoryClassList = args[i];
       }
     }
     return true;
@@ -121,11 +124,8 @@ public class ServerInitDatabase {
       if (admin != null) {
         admin.close();
       }
-      if (DetectionUtils.isJunit()) {
-        return;
-      }
-      ChannelUtils.stopLogger();
-      System.exit(2);//NOSONAR
+      WaarpSystemUtil.systemExit(2);
+      return;
     }
 
     try {
@@ -135,11 +135,8 @@ public class ServerInitDatabase {
         System.err
             .format(Messages.getString("Configuration.NeedCorrectConfig"));
         SysErrLogger.FAKE_LOGGER.syserr();
-        if (DetectionUtils.isJunit()) {
-          return;
-        }
-        ChannelUtils.stopLogger();
-        System.exit(2);//NOSONAR
+        WaarpSystemUtil.systemExit(2);
+        return;
       }
       if (database) {
         // Init database
@@ -151,6 +148,20 @@ public class ServerInitDatabase {
             .sysoutFormat(Messages.getString("ServerInitDatabase.Create.Done"));
         SysErrLogger.FAKE_LOGGER.sysout();
       }
+      if (sextendedFactoryClassList != null) {
+        // Load extended Factory for Task Type
+        String[] extendedFactories = sextendedFactoryClassList.split(",");
+        for (String extendedFactory : extendedFactories) {
+          try {
+            WaarpSystemUtil.newInstance(extendedFactory);
+          } catch (Exception e) {
+            SysErrLogger.FAKE_LOGGER.sysoutFormat(Messages.getString(
+                "ServerInitDatabase.ExtendedTaskFactory.error") +
+                                                  e.getMessage());
+            SysErrLogger.FAKE_LOGGER.sysout();
+          }
+        }
+      }
       if (upgradeDb) {
         // try to upgrade DB schema
         SysErrLogger.FAKE_LOGGER.sysoutFormat(
@@ -161,10 +172,8 @@ public class ServerInitDatabase {
           SysErrLogger.FAKE_LOGGER.syserr(
               Messages.getString("ServerInitDatabase.SchemaNotUptodate"));
           SysErrLogger.FAKE_LOGGER.syserr();
-          if (DetectionUtils.isJunit()) {
-            return;
-          }
-          System.exit(1);//NOSONAR
+          WaarpSystemUtil.systemExit(1);
+          return;
         }
         SysErrLogger.FAKE_LOGGER.sysoutFormat(
             Messages.getString("ServerInitDatabase.Upgrade.Done"));
@@ -185,20 +194,16 @@ public class ServerInitDatabase {
           if (!loadRules(dirConfig)) {
             SysErrLogger.FAKE_LOGGER.sysoutFormat(
                 Messages.getString("ServerInitDatabase.LoadRule.Failed"));
-            if (DetectionUtils.isJunit()) {
-              return;
-            }
-            System.exit(1);//NOSONAR
+            WaarpSystemUtil.systemExit(1);
+            return;
           }
         } else {
           System.err.format(
               Messages.getString("ServerInitDatabase.LoadRule.NoDirectory"),
               sdirconfig);
           SysErrLogger.FAKE_LOGGER.syserr();
-          if (DetectionUtils.isJunit()) {
-            return;
-          }
-          System.exit(1);//NOSONAR
+          WaarpSystemUtil.systemExit(1);
+          return;
         }
         SysErrLogger.FAKE_LOGGER.sysoutFormat(
             Messages.getString("ServerInitDatabase.LoadRule.Done"));
@@ -214,10 +219,8 @@ public class ServerInitDatabase {
           System.err
               .format(Messages.getString("ServerInitDatabase.LoadAuth.Failed"));
           SysErrLogger.FAKE_LOGGER.syserr();
-          if (DetectionUtils.isJunit()) {
-            return;
-          }
-          System.exit(1);//NOSONAR
+          WaarpSystemUtil.systemExit(1);
+          return;
         }
         System.out
             .format(Messages.getString("ServerInitDatabase.LoadAuth.Done"));
@@ -235,10 +238,8 @@ public class ServerInitDatabase {
           System.err.format(
               Messages.getString("ServerInitDatabase.LoadLimit.Failed"));
           SysErrLogger.FAKE_LOGGER.syserr();
-          if (DetectionUtils.isJunit()) {
-            return;
-          }
-          System.exit(1);//NOSONAR
+          WaarpSystemUtil.systemExit(1);
+          return;
         }
         System.out
             .format(Messages.getString("ServerInitDatabase.LoadLimit.Done"));
@@ -278,18 +279,12 @@ public class ServerInitDatabase {
       SysErrLogger.FAKE_LOGGER
           .sysout(Messages.getString("ServerInitDatabase.LoadDone"));
       SysErrLogger.FAKE_LOGGER.sysout();
-      if (DetectionUtils.isJunit()) {
-        return;
-      }
-      System.exit(0);//NOSONAR
+      WaarpSystemUtil.systemExit(0);
     } catch (final WaarpDatabaseException e) {
       SysErrLogger.FAKE_LOGGER
           .syserr(Messages.getString("ServerInitDatabase.ErrDatabase"));
       SysErrLogger.FAKE_LOGGER.syserr();
-      if (DetectionUtils.isJunit()) {
-        return;
-      }
-      System.exit(3);//NOSONAR
+      WaarpSystemUtil.systemExit(3);
     } finally {
       if (admin != null) {
         admin.close();

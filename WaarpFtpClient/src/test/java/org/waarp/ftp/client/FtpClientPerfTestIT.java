@@ -35,9 +35,9 @@ import org.waarp.common.logging.WaarpLogLevel;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
-import org.waarp.common.utility.DetectionUtils;
 import org.waarp.common.utility.FileTestUtils;
 import org.waarp.common.utility.TestWatcherJunit4;
+import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.ftp.FtpServer;
 import org.waarp.ftp.client.transaction.Ftp4JClientTransactionTest;
 import org.waarp.ftp.client.transaction.FtpApacheClientTransactionTest;
@@ -70,7 +70,7 @@ public class FtpClientPerfTestIT {
     WaarpLoggerFactory.setDefaultFactoryIfNotSame(
         new WaarpSlf4JLoggerFactory(WaarpLogLevel.WARN));
     ResourceLeakDetector.setLevel(Level.PARANOID);
-    DetectionUtils.setJunit(true);
+    WaarpSystemUtil.setJunit(true);
     final File file = new File("/tmp/GGFTP/fred/a");
     file.mkdirs();
     FtpServer.startFtpServer("config.xml", "src/test/resources/sslconfig.xml",
@@ -83,6 +83,8 @@ public class FtpClientPerfTestIT {
   @AfterClass
   public static void stopServer() {
     logger.warn("Will shutdown from client");
+    WaarpLoggerFactory.setDefaultFactoryIfNotSame(
+        new WaarpSlf4JLoggerFactory(WaarpLogLevel.NONE));
     try {
       Thread.sleep(200);
     } catch (final InterruptedException ignored) {//NOSONAR
@@ -138,7 +140,7 @@ public class FtpClientPerfTestIT {
     numberOK.set(0);
     final File localFilename = new File("/tmp/ftpfile.bin");
 
-    final int delay = 2;
+    final int delay = 3;
 
     final FtpApacheClientTransactionTest client =
         new FtpApacheClientTransactionTest("127.0.0.1", port, "fred", "fred2",
@@ -205,6 +207,7 @@ public class FtpClientPerfTestIT {
     } else {
       FtpClientTest.numberOK.incrementAndGet();
     }
+    Thread.yield();
     if (!client.simpleTransferFile(localFilename.getAbsolutePath(),
                                    localFilename.getName(), true)) {
       logger.warn("Cant store file {} mode ", smode);
@@ -229,7 +232,7 @@ public class FtpClientPerfTestIT {
     numberOK.set(0);
     final File localFilename = new File("/tmp/ftpfile.bin");
     testFtp4J("127.0.0.1", port, "fred", "fred2", "a", SSL_MODE,
-              localFilename.getAbsolutePath(), 0, 2, true, 1, 1);
+              localFilename.getAbsolutePath(), 0, 3, true, 1, 1);
   }
 
   public void testFtp4J(String server, int port, String username, String passwd,
@@ -302,6 +305,10 @@ public class FtpClientPerfTestIT {
     } else {
       numberOK.incrementAndGet();
     }
+    try {
+      Thread.sleep(delay);
+    } catch (InterruptedException e) {
+    }
     if (!client
         .transferFile(localFilename.getAbsolutePath(), localFilename.getName(),
                       true)) {
@@ -311,13 +318,20 @@ public class FtpClientPerfTestIT {
     } else {
       numberOK.incrementAndGet();
     }
-    Thread.yield();
+    try {
+      Thread.sleep(delay);
+    } catch (InterruptedException e) {
+    }
     logger.info(" transfer {} retr ", smode);
     if (!client.transferFile(null, localFilename.getName(), false)) {
       logger.warn("Cant retrieve file {} mode ", smode);
       numberKO.incrementAndGet();
     } else {
       numberOK.incrementAndGet();
+    }
+    try {
+      Thread.sleep(delay);
+    } catch (InterruptedException e) {
     }
   }
 }

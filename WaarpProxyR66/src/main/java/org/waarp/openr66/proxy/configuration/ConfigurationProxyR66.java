@@ -25,9 +25,9 @@ import io.netty.channel.group.DefaultChannelGroup;
 import org.waarp.common.database.exception.WaarpDatabaseSqlException;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
-import org.waarp.common.utility.DetectionUtils;
 import org.waarp.common.utility.WaarpNettyUtil;
 import org.waarp.common.utility.WaarpShutdownHook;
+import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.configuration.Messages;
 import org.waarp.openr66.proxy.network.NetworkServerInitializerProxy;
@@ -74,10 +74,8 @@ public class ConfigurationProxyR66 extends Configuration {
     if (!isUseNOSSL() && !isUseSSL()) {
       logger.error(
           "OpenR66 has neither NOSSL nor SSL support included! Stop here!");
-      if (DetectionUtils.isJunit()) {
-        return;
-      }
-      System.exit(-1);//NOSONAR
+      WaarpSystemUtil.systemExit(-1);
+      return;
     }
     pipelineInit();
     serverPipelineInit();

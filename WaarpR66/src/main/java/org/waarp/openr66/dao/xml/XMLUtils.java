@@ -22,6 +22,7 @@ package org.waarp.openr66.dao.xml;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
+import org.waarp.common.file.FileUtils;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 
@@ -33,6 +34,8 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 
 public final class XMLUtils {
 
@@ -52,15 +55,25 @@ public final class XMLUtils {
   public static void writeToFile(final File file, final Document document) {
     final TransformerFactory factory =//NOSONAR
         TransformerFactory.newInstance();//NOSONAR
+    FileOutputStream outputStream = null;
     try {
       factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
       final Transformer transformer = factory.newTransformer();
       transformer.setOutputProperty(OutputKeys.INDENT, "yes");
       final DOMSource domSource = new DOMSource(document);
-      final StreamResult streamResult = new StreamResult(file);
+      outputStream = new FileOutputStream(file);
+      final StreamResult streamResult = new StreamResult(outputStream);
       transformer.transform(domSource, streamResult);
     } catch (final TransformerException e) {
-      logger.error("Error while writing document to file: {}", e.getMessage());
+      logger
+          .error("Error while writing document to file: {}", e.getMessage(), e);
+    } catch (FileNotFoundException e) {
+      logger
+          .error("Error while writing document to file: {}", e.getMessage(), e);
+    } finally {
+      if (outputStream != null) {
+        FileUtils.close(outputStream);
+      }
     }
   }
 }

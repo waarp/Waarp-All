@@ -270,7 +270,7 @@ public final class WaarpNettyUtil {
     for (byte[] array : arrays) {
       size += array.length;
     }
-    final ByteBuf finalByteBuf = ByteBufAllocator.DEFAULT.buffer(size);
+    final ByteBuf finalByteBuf = ByteBufAllocator.DEFAULT.ioBuffer(size);
     for (byte[] array : arrays) {
       finalByteBuf.writeBytes(array);
     }

@@ -21,12 +21,12 @@ package org.waarp.ftp.core.data.handler;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
-import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageCodec;
 import org.waarp.common.exception.InvalidArgumentException;
 import org.waarp.common.file.DataBlock;
 import org.waarp.common.future.WaarpFuture;
+import org.waarp.common.utility.WaarpNettyUtil;
 import org.waarp.ftp.core.command.FtpArgumentCode.TransferMode;
 import org.waarp.ftp.core.command.FtpArgumentCode.TransferStructure;
 import org.waarp.ftp.core.data.handler.FtpSeekAheadData.SeekAheadNoBackArrayException;
@@ -308,7 +308,7 @@ public class FtpDataModeCodec extends ByteToMessageCodec<DataBlock> {
 
   protected ByteBuf encodeRecord(final DataBlock msg, final byte[] buffer) {
     final int size = msg.getByteCount();
-    final ByteBuf newbuf = ByteBufAllocator.DEFAULT.buffer(size, size);
+    final ByteBuf newbuf = ByteBufAllocator.DEFAULT.ioBuffer(size);
     int newbyte;
     try {
       int pos = 0;
@@ -359,11 +359,11 @@ public class FtpDataModeCodec extends ByteToMessageCodec<DataBlock> {
         return encodeRecord(msg, bytes);
       }
       msg.clear();
-      return Unpooled.wrappedBuffer(bytes);
+      return WaarpNettyUtil.wrappedBuffer(bytes);
     } else if (mode == TransferMode.BLOCK) {
       int length = msg.getByteCount();
       final int size = length > 0xFFFF? 0xFFFF + 3 : length + 3;
-      final ByteBuf newbuf = ByteBufAllocator.DEFAULT.buffer(size, size);
+      final ByteBuf newbuf = ByteBufAllocator.DEFAULT.ioBuffer(size, size);
       final byte[] header = { 0, 0, 0 };
       // Is there any data left
       if (length == 0) {
@@ -471,6 +471,7 @@ public class FtpDataModeCodec extends ByteToMessageCodec<DataBlock> {
     // Could be splitten in several block
     while (next != null) {
       out.writeBytes(next);
+      next.release();
       next = encode(msg);
     }
   }

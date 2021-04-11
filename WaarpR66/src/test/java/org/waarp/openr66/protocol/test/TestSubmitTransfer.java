@@ -23,7 +23,7 @@ import io.netty.util.ResourceLeakDetector;
 import io.netty.util.ResourceLeakDetector.Level;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
-import org.waarp.common.utility.DetectionUtils;
+import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.openr66.client.SubmitTransfer;
 import org.waarp.openr66.client.TransferArgs;
 import org.waarp.openr66.database.DbConstantR66;
@@ -61,7 +61,7 @@ public class TestSubmitTransfer extends SubmitTransfer {
       if (DbConstantR66.admin != null) {
         DbConstantR66.admin.close();
       }
-      DetectionUtils.systemExit(1);
+      WaarpSystemUtil.systemExit(1);
       return;
     }
     getSpecialParams(args, 1);

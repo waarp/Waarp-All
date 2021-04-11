@@ -22,7 +22,7 @@ package org.waarp.openr66.client;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
-import org.waarp.common.utility.DetectionUtils;
+import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.openr66.client.utils.OutputFormat;
 import org.waarp.openr66.configuration.FileBasedConfiguration;
 import org.waarp.openr66.context.ErrorCode;
@@ -159,11 +159,8 @@ public abstract class AbstractBusinessRequest implements Runnable {
       if (admin != null) {
         admin.close();
       }
-      if (DetectionUtils.isJunit()) {
-        return;
-      }
-      ChannelUtils.stopLogger();
-      System.exit(2);//NOSONAR
+      WaarpSystemUtil.systemExit(2);
+      return;
     }
 
     Configuration.configuration.pipelineInit();
@@ -190,11 +187,11 @@ public abstract class AbstractBusinessRequest implements Runnable {
       logger.info(
           "Business Request in status: FAILURE    <REMOTE>{}</REMOTE>    <ERROR>{}</ERROR>    delay: {}",
           rhost, future.getCause(), delay);
-      if (DetectionUtils.isJunit()) {
+      if (WaarpSystemUtil.isJunit()) {
         return;
       }
-      networkTransaction.closeAll();
-      System.exit(ErrorCode.Unknown.ordinal());//NOSONAR
+      WaarpSystemUtil.systemExit(ErrorCode.Unknown.ordinal());
+      return;
     }
     networkTransaction.closeAll();
   }

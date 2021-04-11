@@ -276,12 +276,16 @@ public class DbModelOracleR66 extends DbModelOracle {
     }
 
     DbHostConfiguration.updateVersionDb(Configuration.configuration.getHostId(),
-                                        R66Versions.V2_4_25.getVersion());
+                                        R66Versions.V3_1_0.getVersion());
   }
 
   @Override
   public boolean upgradeDb(final DbSession session, final String version)
       throws WaarpDatabaseNoConnectionException {
+    if (PartnerConfiguration
+        .isVersion2GEQVersion1(version, R66Versions.V3_0_4.getVersion())) {
+      return true;
+    }
     if (PartnerConfiguration
         .isVersion2GEQVersion1(version, R66Versions.V2_4_13.getVersion())) {
       SysErrLogger.FAKE_LOGGER.sysout(
@@ -392,7 +396,7 @@ public class DbModelOracleR66 extends DbModelOracle {
       }
     }
     DbHostConfiguration.updateVersionDb(Configuration.configuration.getHostId(),
-                                        R66Versions.V2_4_25.getVersion());
+                                        R66Versions.V3_1_0.getVersion());
     return true;
   }
 

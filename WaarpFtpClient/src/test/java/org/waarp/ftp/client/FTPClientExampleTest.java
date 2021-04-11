@@ -33,7 +33,7 @@ import org.apache.commons.net.io.CopyStreamListener;
 import org.apache.commons.net.util.TrustManagerUtils;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
-import org.waarp.common.utility.DetectionUtils;
+import org.waarp.common.utility.WaarpSystemUtil;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -164,7 +164,7 @@ public final class FTPClientExampleTest {
     if (remain < minParams) // server, user, pass, remote, local [protocol]
     {
       System.err.println(USAGE);
-      DetectionUtils.systemExit(1);
+      WaarpSystemUtil.systemExit(1);
       return;
     }
 
@@ -264,7 +264,7 @@ public final class FTPClientExampleTest {
       if (!FTPReply.isPositiveCompletion(reply)) {
         ftp.disconnect();
         System.err.println("FTP server refused connection.");
-        DetectionUtils.systemExit(1);
+        WaarpSystemUtil.systemExit(1);
         return;
       }
     } catch (final IOException e) {
@@ -278,7 +278,7 @@ public final class FTPClientExampleTest {
       }
       System.err.println("Could not connect to server.");
       e.printStackTrace();
-      DetectionUtils.systemExit(1);
+      WaarpSystemUtil.systemExit(1);
       return;
     }
 
@@ -424,7 +424,7 @@ public final class FTPClientExampleTest {
       }
     }
 
-    DetectionUtils.systemExit(error? 1 : 0);
+    WaarpSystemUtil.systemExit(error? 1 : 0);
   } // end main
 
   private static CopyStreamListener createListener() {

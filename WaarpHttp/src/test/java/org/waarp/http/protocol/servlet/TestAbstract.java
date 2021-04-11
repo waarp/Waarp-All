@@ -24,8 +24,8 @@ import org.apache.tools.ant.Project;
 import org.junit.After;
 import org.junit.Before;
 import org.waarp.common.database.exception.WaarpDatabaseException;
-import org.waarp.common.utility.DetectionUtils;
 import org.waarp.common.utility.Processes;
+import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.openr66.client.utils.OutputFormat.FIELDS;
 import org.waarp.openr66.configuration.FileBasedConfiguration;
 import org.waarp.openr66.context.R66FiniteDualStates;
@@ -70,7 +70,7 @@ public abstract class TestAbstract extends TestAbstractMinimal {
     String serverInit = "config/config-serverInitA.xml";
     setUpBeforeClassMinimal(serverInit);
     final ClassLoader classLoader = TestAbstract.class.getClassLoader();
-    DetectionUtils.setJunit(true);
+    WaarpSystemUtil.setJunit(true);
     File file = new File(classLoader.getResource(serverInit).getFile());
     final String newfile = file.getAbsolutePath().replace("target/test-classes",
                                                           "src/test/resources");
@@ -105,7 +105,7 @@ public abstract class TestAbstract extends TestAbstractMinimal {
   }
 
   public static void initiateDb(String serverInit) {
-    DetectionUtils.setJunit(true);
+    WaarpSystemUtil.setJunit(true);
     final File file = new File(dir, serverInit);
     logger.warn("File {} exists? {}", file, file.isFile());
     final File fileAuth = new File(dir, "OpenR66-authent-A.xml");

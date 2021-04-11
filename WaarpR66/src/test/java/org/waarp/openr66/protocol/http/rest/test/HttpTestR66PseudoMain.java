@@ -26,7 +26,7 @@ import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
-import org.waarp.common.utility.DetectionUtils;
+import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.gateway.kernel.rest.HttpRestHandler;
 import org.waarp.gateway.kernel.rest.RestConfiguration;
 import org.waarp.gateway.kernel.rest.RestConfiguration.CRUD;
@@ -73,7 +73,7 @@ public class HttpTestR66PseudoMain {
     final String pathTemp = "/tmp";
     if (!R66Server.initialize(args[0])) {
       SysErrLogger.FAKE_LOGGER.syserr("Error during startup");
-      DetectionUtils.systemExit(1);
+      WaarpSystemUtil.systemExit(1);
       return;
     }
 

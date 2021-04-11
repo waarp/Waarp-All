@@ -27,6 +27,7 @@ import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
 import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.WaarpSystemUtil;
 
 import javax.sql.ConnectionPoolDataSource;
 import java.lang.reflect.InvocationTargetException;
@@ -113,8 +114,8 @@ public abstract class DbModelMysql extends DbModelCommonMariadbMySql {
     }
     try {
       final ConnectionPoolDataSource cpds =
-          (ConnectionPoolDataSource) mysqlConnectionPoolDataSourceClass
-              .newInstance();
+          (ConnectionPoolDataSource) WaarpSystemUtil
+              .newInstance(mysqlConnectionPoolDataSourceClass);
       Method method = mysqlConnectionPoolDataSourceClass
           .getMethod("setUrl", dbServer.getClass());
       method.invoke(cpds, dbServer);

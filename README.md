@@ -12,14 +12,14 @@ integrate transfers in larger business transactions.
 
 Current applications are:
 * Waarp R66: the transfer agent that implements the R66 protocol
-  ([source](https://github.com/waarp/Waarp-All/tree/v3.5/WaarpR66))
+  ([source](https://github.com/waarp/Waarp-All/tree/v3.6/WaarpR66))
 * Waarp Gateway FTP: a service to interconnect FTP- and R66-based file exchanges
-  ([source](https://github.com/waarp/Waarp-All/tree/v3.5/WaarpGatewayFtp))
+  ([source](https://github.com/waarp/Waarp-All/tree/v3.6/WaarpGatewayFtp))
 * Waarp Password: a tool to generate the password files used by Waarp R66 and
   Waarp Gateway FTP
-  ([source](https://github.com/waarp/Waarp-All/tree/v3.5/WaarpPassword))
+  ([source](https://github.com/waarp/Waarp-All/tree/v3.6/WaarpPassword))
 * Waarp FTP: a fast and extensible FTP server based on Netty
-  ([source](https://github.com/waarp/Waarp-All/tree/v3.5/WaarpFtp))
+  ([source](https://github.com/waarp/Waarp-All/tree/v3.6/WaarpFtp))
 
 The following applications are deprecated and won't be maintained anymore:
 - Waarp Administrator
@@ -41,7 +41,8 @@ The following applications are deprecated and won't be maintained anymore:
 * Pre and Post actions, and Error actions, both on sender and receiver sides
 * Works in clusters
 * REST API
-* Support for ICAP servers submission (antivirus for example) 
+* Support for ICAP servers submission (antivirus for example)
+* Support for S3 access with GET, PUT and DELETE operations
 * And much much more!
 
 
@@ -79,7 +80,7 @@ And moreover, you will have also a shaded jar that include all dependencies,
 except Oracle JDBC for licence issue, under name `WaarpR66-X.Y.Z-jar-with-depencencies.jar`, or
 equivalent for all runnable jars.
 
-A detailed documentation (in French) is also available in the directory 'doc/releasing.md'.
+A detailed documentation (in French) is also available in the directory `doc/releasing.md`.
 
 
 ### Installation

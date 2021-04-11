@@ -108,6 +108,10 @@ public class DbRule extends AbstractDbDataDao<Rule> {
   /**
    * Internal context XML fields
    */
+  public static final String TASK_RANK = "rank";
+  /**
+   * Internal context XML fields
+   */
   public static final String TASK_COMMENT = "comment";
 
   protected static final String selectAllFields =
@@ -557,7 +561,6 @@ public class DbRule extends AbstractDbDataDao<Rule> {
     try {
       document = XmlUtil.getNewSaxReader().read(reader);
     } catch (final DocumentException e) {
-      logger.info("Unable to read the tasks for Rule: " + tasks, e);
       // No tasks so setting to the default!
       FileUtils.close(reader);
       return STRINGS_0_0_LENGTH;

@@ -95,6 +95,8 @@ public class WaarpLoggerListener implements BuildListener {
       case Project.MSG_ERR:
         wlevel = WaarpLogLevel.ERROR;
         break;
+      default:
+        wlevel = WaarpLogLevel.NONE;
     }
   }
 

@@ -23,10 +23,10 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageCodec;
 import org.waarp.common.utility.WaarpNettyUtil;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
 import org.waarp.openr66.protocol.localhandler.packet.KeepAlivePacket;
 import org.waarp.openr66.protocol.localhandler.packet.LocalPacketCodec;
 import org.waarp.openr66.protocol.localhandler.packet.LocalPacketFactory;
-import org.waarp.openr66.protocol.localhandler.packet.NoOpPacket;
 import org.waarp.openr66.protocol.networkhandler.packet.NetworkPacket;
 import org.waarp.openr66.protocol.utils.ChannelUtils;
 
@@ -50,6 +50,10 @@ public class NetworkPacketCodec extends ByteToMessageCodec<NetworkPacket> {
     buf.markReaderIndex();
     // Read the length field
     final int length = buf.readInt();
+    if (length < 9) {
+      throw new OpenR66ProtocolPacketException(
+          "Incorrect decode first field in Network Packet: " + length + " < 9");
+    }
     if (buf.readableBytes() < length) {
       buf.resetReaderIndex();
       return;
@@ -75,12 +79,11 @@ public class NetworkPacketCodec extends ByteToMessageCodec<NetworkPacket> {
                               keepAlivePacket, null);
         ctx.writeAndFlush(response.getNetworkPacket());
       }
-      // Replaced by a NoOp packet
-      networkPacket =
-          new NetworkPacket(localId, remoteId, new NoOpPacket(), null);
+      // Ignore Packet
       final NetworkServerHandler nsh =
           (NetworkServerHandler) ctx.pipeline().last();
       nsh.resetKeepAlive();
+      return;
     }
     out.add(networkPacket);
   }
@@ -89,7 +92,10 @@ public class NetworkPacketCodec extends ByteToMessageCodec<NetworkPacket> {
   protected void encode(final ChannelHandlerContext ctx,
                         final NetworkPacket msg, final ByteBuf out) {
     final ByteBuf finalBuf = msg.getNetworkPacket();
+    // NetworkPacket in Proxy has bad writerIndex
+    finalBuf.writerIndex(finalBuf.capacity());
     out.writeBytes(finalBuf);
     WaarpNettyUtil.releaseCompletely(finalBuf);
+    // DO NOT clear msg
   }
 }

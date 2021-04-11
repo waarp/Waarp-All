@@ -260,7 +260,7 @@ public class TransferArgs {
       checkOutput(cmd);
     } catch (final ParseException e) {
       printHelp();
-      logger.error("Arguments are incorrect", e);
+      logger.error("Arguments are incorrect {}", e.getMessage());
       return null;
     }
     return finalizeTransferArgs(analyseFollow, transferArgs1);
@@ -398,9 +398,9 @@ public class TransferArgs {
         logger.error("No transfer found with this id and partner");
         logger.error(Messages.getString("AbstractBusinessRequest.NeedMoreArgs",
                                         "(-to -rule -file | -to -id with " +
-                                        "existing id transfer)")
+                                        "existing id transfer): {}")
                      //$NON-NLS-1$
-            , e);
+            , e.getMessage());
         return null;
       } catch (final WaarpDatabaseException e) {
         logger.error(Messages.getString("AbstractBusinessRequest.NeedMoreArgs",

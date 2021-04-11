@@ -61,9 +61,10 @@ public class WaarpSlf4JLoggerFactory extends WaarpLoggerFactory {
         logger.setLevel(Level.ERROR); //NOSONAR
         break;
       case WARN:
-      default:
         logger.setLevel(Level.WARN); //NOSONAR
         break;
+      default:
+        logger.setLevel(Level.OFF); //NOSONAR
     }
   }
 
@@ -119,6 +120,6 @@ public class WaarpSlf4JLoggerFactory extends WaarpLoggerFactory {
     } else if (logger.isErrorEnabled()) {
       return WaarpLogLevel.ERROR;
     }
-    return null;
+    return WaarpLogLevel.NONE;
   }
 }

@@ -23,7 +23,7 @@ import org.waarp.common.digest.FilesystemBasedDigest;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
-import org.waarp.common.utility.DetectionUtils;
+import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.openr66.configuration.FileBasedConfiguration;
 import org.waarp.openr66.context.ErrorCode;
 import org.waarp.openr66.context.R66FiniteDualStates;
@@ -67,11 +67,7 @@ public class ServerShutdown {
         WaarpLoggerFactory.getLogger(ServerShutdown.class);
     if (args.length < 1) {
       logger.error(INFO_ARGS);
-      if (DetectionUtils.isJunit()) {
-        return;
-      }
-      ChannelUtils.stopLogger();
-      System.exit(1);//NOSONAR
+      WaarpSystemUtil.systemExit(1);
       return;
     }
     if (!FileBasedConfiguration
@@ -81,11 +77,7 @@ public class ServerShutdown {
       if (admin != null) {
         admin.close();
       }
-      if (DetectionUtils.isJunit()) {
-        return;
-      }
-      ChannelUtils.stopLogger();
-      System.exit(1);//NOSONAR
+      WaarpSystemUtil.systemExit(1);
       return;
     }
     boolean useSsl = true;
@@ -116,11 +108,7 @@ public class ServerShutdown {
       if (admin != null) {
         admin.close();
       }
-      if (DetectionUtils.isJunit()) {
-        return;
-      }
-      ChannelUtils.stopLogger();
-      System.exit(1);//NOSONAR
+      WaarpSystemUtil.systemExit(1);
       return;
     }
     if (isunblock && isblock) {
@@ -128,11 +116,7 @@ public class ServerShutdown {
       if (admin != null) {
         admin.close();
       }
-      if (DetectionUtils.isJunit()) {
-        return;
-      }
-      ChannelUtils.stopLogger();
-      System.exit(1);//NOSONAR
+      WaarpSystemUtil.systemExit(1);
       return;
     }
     final byte[] key;
@@ -153,11 +137,7 @@ public class ServerShutdown {
       socketServerAddress = host.getSocketAddress();
     } catch (final IllegalArgumentException e) {
       logger.error("Needs a correct configuration file as first argument");
-      if (DetectionUtils.isJunit()) {
-        return;
-      }
-      ChannelUtils.stopLogger();
-      System.exit(1);//NOSONAR
+      WaarpSystemUtil.systemExit(1);
       return;
     }
     Configuration.configuration.pipelineInit();
@@ -213,10 +193,7 @@ public class ServerShutdown {
       }
     }
     networkTransaction.closeAll();
-    if (DetectionUtils.isJunit()) {
-      return;
-    }
-    System.exit(value);//NOSONAR
+    WaarpSystemUtil.systemExit(value);
   }
 
 }

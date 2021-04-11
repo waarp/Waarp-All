@@ -44,7 +44,7 @@ public class ScenarioLoopBenchmarkPostGreSqlIT
 
   static {
     TMPFSMAP.clear();
-    TMPFSMAP.put("/var/lib/postgresql/data", "rw");
+    TMPFSMAP.put("/tmp/postgresql/data", "rw");
   }
 
   @ClassRule

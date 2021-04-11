@@ -62,7 +62,7 @@ public abstract class AbstractLocalPacket {
   public abstract boolean hasGlobalBuffer();
 
   /**
-   * Prepare the 2 buffers Header, Middle and End
+   * Prepare the 3 buffers Header, Middle and End
    *
    * @throws OpenR66ProtocolPacketException
    */
@@ -147,8 +147,8 @@ public abstract class AbstractLocalPacket {
       buf = global;
     } else {
       // 3 header lengths+type
-      buf = ByteBufAllocator.DEFAULT.buffer(globalHeader + LOCAL_HEADER_SIZE,
-                                            globalHeader + LOCAL_HEADER_SIZE);
+      buf = ByteBufAllocator.DEFAULT.ioBuffer(globalHeader + LOCAL_HEADER_SIZE,
+                                              globalHeader + LOCAL_HEADER_SIZE);
       if (header == null) {
         createHeader(lcr);
       }
@@ -184,7 +184,9 @@ public abstract class AbstractLocalPacket {
       buf.writerIndex(buf.capacity());
       return buf;
     }
-    return Unpooled.wrappedBuffer(buf, newHeader, newMiddle, newEnd);
+    return ByteBufAllocator.DEFAULT.compositeDirectBuffer(4)
+                                   .addComponents(buf, newHeader, newMiddle,
+                                                  newEnd);
   }
 
   public void clear() {

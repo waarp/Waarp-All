@@ -25,8 +25,8 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestWatcher;
-import org.waarp.common.utility.DetectionUtils;
 import org.waarp.common.utility.TestWatcherJunit4;
+import org.waarp.common.utility.WaarpSystemUtil;
 
 import static org.junit.Assert.*;
 
@@ -54,7 +54,7 @@ public class HttpResumableSessionTest {
 
   @Before
   public void before() throws Exception {
-    DetectionUtils.setJunit(true);
+    WaarpSystemUtil.setJunit(true);
     resumableInfo =
         new HttpResumableInfo(chunkNumber, chunkSize, totalSize, identifier,
                               filename, relativePath);

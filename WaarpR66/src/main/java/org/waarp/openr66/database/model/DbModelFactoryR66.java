@@ -98,6 +98,10 @@ public class DbModelFactoryR66 extends DbModelFactory {
                                     final DbSession session,
                                     final String version)
       throws WaarpDatabaseNoConnectionException {
+    if (PartnerConfiguration
+        .isVersion2GEQVersion1(version, R66Versions.V3_0_4.getVersion())) {
+      return true;
+    }
     // Check if the database is up to date
     DbRequest request = null;
     if (PartnerConfiguration
@@ -371,13 +375,17 @@ public class DbModelFactoryR66 extends DbModelFactory {
     }
 
     DbHostConfiguration.updateVersionDb(Configuration.configuration.getHostId(),
-                                        R66Versions.V2_4_25.getVersion());
+                                        R66Versions.V3_1_0.getVersion());
   }
 
   static boolean upgradeDbMariaDbMySQL(final DbTypeResolver dbTypeResolver,
                                        final DbSession session,
                                        final String version)
       throws WaarpDatabaseNoConnectionException {
+    if (PartnerConfiguration
+        .isVersion2GEQVersion1(version, R66Versions.V3_0_4.getVersion())) {
+      return true;
+    }
     if (PartnerConfiguration
         .isVersion2GEQVersion1(version, R66Versions.V2_4_13.getVersion())) {
       SysErrLogger.FAKE_LOGGER.sysout(
@@ -487,7 +495,7 @@ public class DbModelFactoryR66 extends DbModelFactory {
       }
     }
     DbHostConfiguration.updateVersionDb(Configuration.configuration.getHostId(),
-                                        R66Versions.V2_4_25.getVersion());
+                                        R66Versions.V3_1_0.getVersion());
     return true;
   }
 }

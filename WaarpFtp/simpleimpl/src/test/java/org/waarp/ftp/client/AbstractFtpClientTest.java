@@ -51,6 +51,7 @@ public abstract class AbstractFtpClientTest {
   public static AtomicLong numberOK = new AtomicLong(0);
   public static AtomicLong numberKO = new AtomicLong(0);
   static int SSL_MODE = 0; //-1 native, 1 auth
+  static int DELAY = 3;
   /**
    * Internal Logger
    */
@@ -102,9 +103,9 @@ public abstract class AbstractFtpClientTest {
                               isSSL));
       if (delay > 0) {
         try {
-          final long newdel = ((delay / 3) / 10) * 10;
+          final long newdel = delay;
           if (newdel == 0) {
-            Thread.yield();
+            Thread.sleep(2);
           } else {
             Thread.sleep(newdel);
           }
@@ -161,6 +162,8 @@ public abstract class AbstractFtpClientTest {
   @AfterClass
   public static void stopServer() {
     logger.warn("Will shutdown from client");
+    WaarpLoggerFactory.setDefaultFactoryIfNotSame(
+        new WaarpSlf4JLoggerFactory(WaarpLogLevel.NONE));
     try {
       Thread.sleep(200);
     } catch (final InterruptedException ignored) {//NOSONAR
@@ -198,7 +201,7 @@ public abstract class AbstractFtpClientTest {
     numberOK.set(0);
     final File localFilename = new File("/tmp/ftpfile.bin");
     testFtp4J("127.0.0.1", 2021, "fred", "fred2", "a", SSL_MODE,
-              localFilename.getAbsolutePath(), 0, 50, 1, 100);
+              localFilename.getAbsolutePath(), 0, DELAY, 1, 100);
   }
 
 }

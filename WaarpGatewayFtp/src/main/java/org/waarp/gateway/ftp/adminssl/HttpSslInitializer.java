@@ -48,7 +48,7 @@ public class HttpSslInitializer extends ChannelInitializer<SocketChannel> {
     final ChannelPipeline pipeline = ch.pipeline();
     // Add SSL handler first to encrypt and decrypt everything.
     final SslHandler sslhandler =
-        waarpSslContextFactory.initInitializer(true, false);
+        waarpSslContextFactory.createHandlerServer(false, ch);
     pipeline.addLast("ssl", sslhandler);
 
     pipeline.addLast("codec", new HttpServerCodec());

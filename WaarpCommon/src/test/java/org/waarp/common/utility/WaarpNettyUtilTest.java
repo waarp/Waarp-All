@@ -129,7 +129,7 @@ public class WaarpNettyUtilTest {
     assertTrue("File Should exists", file.exists());
     final String keyStorePasswd = "testsslnocert";
     final String keyPassword = "testalias";
-    final WaarpSecureKeyStore WaarpSecureKeyStore =
+    final WaarpSecureKeyStore waarpSecureKeyStore =
         new WaarpSecureKeyStore(file.getAbsolutePath(), keyStorePasswd,
                                 keyPassword);
     // Include certificates
@@ -138,10 +138,10 @@ public class WaarpNettyUtilTest {
         new File(classLoader.getResource(trustStoreFilename).getFile());
     assertTrue("File2 Should exists", file2.exists());
     final String trustStorePasswd = "testcert";
-    WaarpSecureKeyStore
+    waarpSecureKeyStore
         .initTrustStore(file2.getAbsolutePath(), trustStorePasswd, true);
     final WaarpSslContextFactory waarpSslContextFactory =
-        new WaarpSslContextFactory(WaarpSecureKeyStore);
+        new WaarpSslContextFactory(waarpSecureKeyStore);
 
     final EventLoopGroup workerGroup = new NioEventLoopGroup();
     final Bootstrap clientBootstrap = new Bootstrap();
@@ -298,9 +298,9 @@ public class WaarpNettyUtilTest {
       final ChannelPipeline pipeline = ch.pipeline();
       if (sslContextFactory != null) {
         // Add SSL as first element in the pipeline
-        final SslHandler sslhandler = sslContextFactory.initInitializer(true,
-                                                                        sslContextFactory
-                                                                            .needClientAuthentication());
+        final SslHandler sslhandler = sslContextFactory
+            .createHandlerServer(sslContextFactory.needClientAuthentication(),
+                                 ch);
         pipeline.addLast("ssl", sslhandler);
         WaarpSslUtility.addSslOpenedChannel(ch);
       }
@@ -371,9 +371,7 @@ public class WaarpNettyUtilTest {
       // Enable HTTPS if necessary.
       if (sslContextFactory != null) {
         // Add SSL as first element in the pipeline
-        final SslHandler sslhandler = sslContextFactory.initInitializer(false,
-                                                                        sslContextFactory
-                                                                            .needClientAuthentication());
+        final SslHandler sslhandler = sslContextFactory.createHandlerClient(ch);
         pipeline.addLast("ssl", sslhandler);
         WaarpSslUtility.addSslOpenedChannel(ch);
       }

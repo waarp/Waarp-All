@@ -20,6 +20,8 @@
 
 package org.waarp.http.protocol.servlet;
 
+import io.netty.util.ResourceLeakDetector;
+import io.netty.util.ResourceLeakDetector.Level;
 import org.eclipse.jetty.http.HttpStatus;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
@@ -38,9 +40,10 @@ import org.waarp.common.digest.FilesystemBasedDigest.DigestAlgo;
 import org.waarp.common.logging.WaarpLogLevel;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
-import org.waarp.common.utility.DetectionUtils;
+import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
 import org.waarp.common.utility.TestWatcherJunit4;
 import org.waarp.common.utility.WaarpStringUtils;
+import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.openr66.database.data.DbHostAuth;
 import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.utils.ChannelUtils;
@@ -82,6 +85,7 @@ public class DownloadServletTest extends TestAbstract {
 
   @BeforeClass
   public static void startJetty() throws Exception {
+    ResourceLeakDetector.setLevel(Level.PARANOID);
     WaarpLoggerFactory.setLogLevel(WaarpLogLevel.INFO);
     final ClassLoader classLoader = DownloadServletTest.class.getClassLoader();
     URL url = classLoader.getResource("config/logback.xml");
@@ -96,7 +100,7 @@ public class DownloadServletTest extends TestAbstract {
                            CONFIG_SERVER_A_MINIMAL_XML, false);
 
     // Create Server
-    DetectionUtils.setJunit(false);
+    WaarpSystemUtil.setJunit(false);
     server = new Server();
     ServerConnector connector = new ServerConnector(server);
     connector.setReuseAddress(true);
@@ -130,6 +134,8 @@ public class DownloadServletTest extends TestAbstract {
 
   @AfterClass
   public static void stopJetty() throws Exception {
+    WaarpLoggerFactory.setDefaultFactoryIfNotSame(
+        new WaarpSlf4JLoggerFactory(WaarpLogLevel.NONE));
     try {
       if (server != null) {
         server.stop();

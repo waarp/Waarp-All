@@ -30,6 +30,7 @@ out                          String (OUT)         Dossier par défaut d'envoie
 arch                         String (ARCH)        Dossier par défaut d'archive
 work                         String (WORK)        Dossier par défaut de travail
 conf                         String (CONF)        Dossier par défaut de configuration
+extendedtaskfactories        String (vide)        Liste (séparée par des virgules) des TaskFactory en tant qu'extension pour ajouter des tâches à WaarpR66
 
 **db**
 dbdriver                     String               Driver JDBC à utiliser pour se connecter à la base de données (mysql, postgresql, h2)
