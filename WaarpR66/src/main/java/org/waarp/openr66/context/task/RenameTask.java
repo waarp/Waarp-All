@@ -62,7 +62,7 @@ public class RenameTask extends AbstractTask {
     } catch (final CommandAbstractException e) {
       logger.error(
           "Rename to " + finalname + " with " + argRule + ':' + argTransfer +
-          " and " + session, e);
+          " and " + session + ": {}", e.getMessage());
       futureCompletion.setFailure(new OpenR66ProtocolSystemException(e));
       return;
     }

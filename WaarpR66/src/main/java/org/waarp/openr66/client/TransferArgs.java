@@ -405,9 +405,8 @@ public class TransferArgs {
       } catch (final WaarpDatabaseException e) {
         logger.error(Messages.getString("AbstractBusinessRequest.NeedMoreArgs",
                                         "(-to -rule -file | -to -id) with a " +
-                                        "correct database connexion")
-                     //$NON-NLS-1$
-            , e);
+                                        "correct database connexion: {}",
+                                        e.getMessage()));//$NON-NLS-1$
         return null;
       }
     }

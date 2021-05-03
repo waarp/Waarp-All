@@ -20,10 +20,13 @@
 
 package org.waarp.common.filemonitor;
 
+import io.netty.util.ResourceLeakDetector;
+import io.netty.util.ResourceLeakDetector.Level;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Assume;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestWatcher;
@@ -32,6 +35,7 @@ import org.waarp.common.filemonitor.FileMonitor.Status;
 import org.waarp.common.logging.WaarpLogLevel;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
 import org.waarp.common.utility.FileTestUtils;
 import org.waarp.common.utility.TestWatcherJunit4;
 
@@ -56,6 +60,13 @@ public class FileMonitorTest {
   private static final int SMALL_WAIT = 100;
   private static final int FILE_SIZE = 100;
   private static final int MINIMAL_WAIT = 10;
+
+  @BeforeClass
+  public static void beforeClass() {
+    WaarpLoggerFactory.setDefaultFactoryIfNotSame(
+        new WaarpSlf4JLoggerFactory(WaarpLogLevel.WARN));
+    ResourceLeakDetector.setLevel(Level.PARANOID);
+  }
 
   @Before
   public void setUp() throws Exception {

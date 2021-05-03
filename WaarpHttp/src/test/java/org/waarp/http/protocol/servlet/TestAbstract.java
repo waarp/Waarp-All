@@ -145,7 +145,7 @@ public abstract class TestAbstract extends TestAbstractMinimal {
     logger.warn("Send {}", informationPacket);
     ChannelUtils
         .writeAbstractLocalPacket(localChannelReference, informationPacket,
-                                  false);
+                                  true);
     if (informationPacket instanceof KeepAlivePacket ||
         informationPacket instanceof NoOpPacket) {
       // do no await

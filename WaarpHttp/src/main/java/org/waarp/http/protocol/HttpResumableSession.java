@@ -20,13 +20,13 @@
 
 package org.waarp.http.protocol;
 
-import com.google.common.base.Strings;
 import org.waarp.common.command.exception.CommandAbstractException;
 import org.waarp.common.digest.FilesystemBasedDigest;
 import org.waarp.common.digest.FilesystemBasedDigest.DigestAlgo;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.lru.ConcurrentUtility;
+import org.waarp.common.utility.ParametersChecker;
 import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.http.protocol.servlet.HttpAuthent;
 import org.waarp.openr66.context.R66BusinessInterface;
@@ -150,9 +150,9 @@ public class HttpResumableSession extends HttpSessionAbstract {
     return (resumableInfo.getChunkSize() > 0 &&
             resumableInfo.getTotalSize() > 0 &&
             resumableInfo.getChunkNumber() > 0 &&
-            !Strings.isNullOrEmpty(resumableInfo.getIdentifier()) &&
-            !Strings.isNullOrEmpty(resumableInfo.getFilename()) &&
-            !Strings.isNullOrEmpty(resumableInfo.getRelativePath()) &&
+            ParametersChecker.isNotEmpty(resumableInfo.getIdentifier()) &&
+            ParametersChecker.isNotEmpty(resumableInfo.getFilename()) &&
+            ParametersChecker.isNotEmpty(resumableInfo.getRelativePath()) &&
             httpResumableInfo.isCompatible(resumableInfo));
   }
 
@@ -227,7 +227,7 @@ public class HttpResumableSession extends HttpSessionAbstract {
     final File file = r66File.getTrueFile();
     if (file.isFile()) {
       // Now if sha256 is given, compute it and compare
-      if (!Strings.isNullOrEmpty(sha256)) {
+      if (ParametersChecker.isNotEmpty(sha256)) {
         try {
           final byte[] bin =
               FilesystemBasedDigest.getHash(file, false, DigestAlgo.SHA256);

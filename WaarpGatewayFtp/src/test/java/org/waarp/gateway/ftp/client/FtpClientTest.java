@@ -24,6 +24,7 @@ import io.netty.util.ResourceLeakDetector;
 import io.netty.util.ResourceLeakDetector.Level;
 import org.junit.AfterClass;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
@@ -83,6 +84,7 @@ public class FtpClientTest {
   public static AtomicLong numberKO = new AtomicLong(0);
   static String key;
   public static WebDriver driver = null;
+  private static int DELAY = 10;
 
   public enum DriverType {
     PHANTOMJS
@@ -226,13 +228,24 @@ public class FtpClientTest {
     key = configuration.getCryptoKey().decryptHexInString("c5f4876737cf351a");
 
     ExecGatewayFtpServer.main(new String[] { file.getAbsolutePath() });
+    try {
+      Thread.sleep(500);
+    } catch (InterruptedException e) {
+      // Wait for server started
+    }
+    System.gc();
+    try {
+      Thread.sleep(500);
+    } catch (InterruptedException e) {
+      // Wait for server started
+    }
   }
 
   @AfterClass
   public static void stopServer() throws InterruptedException {
     logger.warn("Will shutdown from client");
     WaarpLoggerFactory.setDefaultFactoryIfNotSame(
-        new WaarpSlf4JLoggerFactory(WaarpLogLevel.NONE));
+        new WaarpSlf4JLoggerFactory(WaarpLogLevel.WARN));
     try {
       Thread.sleep(200);
     } catch (final InterruptedException ignored) {
@@ -244,21 +257,21 @@ public class FtpClientTest {
                                          0);
       if (!client.connect()) {
         logger.warn("Cant connect");
-        numberKO.incrementAndGet();
-        return;
-      }
-      try {
-        final String[] results =
-            client.executeSiteCommand("internalshutdown pwdhttp");
-        System.err.print("SHUTDOWN: ");
-        for (final String string : results) {
-          System.err.println(string);
+      } else {
+        try {
+          final String[] results =
+              client.executeSiteCommand("internalshutdown pwdhttp");
+          System.err.print("SHUTDOWN: ");
+          for (final String string : results) {
+            System.err.println(string);
+          }
+        } finally {
+          client.disconnect();
         }
-      } finally {
-        client.disconnect();
       }
     } finally {
       logger.warn("Will stop server");
+      WaarpSystemUtil.stopLogger(true);
       FileBasedConfiguration.fileBasedConfiguration.setShutdown(true);
       FileBasedConfiguration.fileBasedConfiguration.releaseResources();
       try {
@@ -270,13 +283,28 @@ public class FtpClientTest {
     }
   }
 
+  @Before
+  public void before() {
+    try {
+      Thread.sleep(100);
+    } catch (InterruptedException e) {
+      // Wait for server started
+    }
+    System.gc();
+    try {
+      Thread.sleep(100);
+    } catch (InterruptedException e) {
+      // Wait for server started
+    }
+  }
+
   @Test
   public void testFtp4JSimple() throws IOException {
     numberKO.set(0);
     numberOK.set(0);
     final File localFilename = new File("/tmp/ftpfile.bin");
     testFtp4J("127.0.0.1", 2021, "fred", key, "a", 0,
-              localFilename.getAbsolutePath(), 0, 5, true, 1, 1);
+              localFilename.getAbsolutePath(), 0, DELAY, true, 1, 1);
   }
 
   public static void initiateWebDriver(File file) {

@@ -23,6 +23,7 @@ import org.apache.commons.exec.CommandLine;
 import org.waarp.common.json.JsonHandler;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.ParametersChecker;
 import org.waarp.openr66.client.SubmitTransfer;
 import org.waarp.openr66.client.TransferArgs;
 import org.waarp.openr66.context.R66Session;
@@ -119,7 +120,7 @@ public class TransferTask extends AbstractTask {
       // not already copied
       final DbTaskRunner taskRunner = session.getRunner();
       final String follow = taskRunner.getFollowId();
-      if (copied == null && follow != null && !follow.isEmpty() &&
+      if (copied == null && ParametersChecker.isNotEmpty(follow) &&
           !transferArgs.getTransferInfo()
                        .contains(TransferArgs.FOLLOW_JSON_KEY)) {
         transferArgs.setFollowId(follow);

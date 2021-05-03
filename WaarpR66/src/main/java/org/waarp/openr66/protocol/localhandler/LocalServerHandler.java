@@ -109,7 +109,6 @@ public final class LocalServerHandler {
       logger.error(e.getMessage());
       exceptionCaught(localChannelReference.getServerHandler(), e);
     } catch (final Exception e) {
-      logger.error(e);
       exceptionCaught(localChannelReference.getServerHandler(), e);
     } finally {
       networkPacket.clear();

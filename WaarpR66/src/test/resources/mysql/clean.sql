@@ -1,3 +1,8 @@
+DROP INDEX idx_config on configuration;
+DROP INDEX idx_hostconf on hostconfig;
+DROP INDEX idx_host on hosts;
+DROP INDEX idx_rule on rules;
+DROP INDEX idx_run_filter on runner;
 DROP TABLE configuration;
 DROP TABLE hostconfig;
 DROP TABLE hosts;

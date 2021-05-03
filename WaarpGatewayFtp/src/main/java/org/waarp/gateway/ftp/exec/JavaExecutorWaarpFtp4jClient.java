@@ -114,7 +114,7 @@ public class JavaExecutorWaarpFtp4jClient implements GatewayRunnable {
       ftpArgs = FtpArgs.getFtpArgs(args);
     } catch (final OpenR66RunnerErrorException e) {
       status = -2;
-      logger.error("Not enough arguments", e);
+      logger.error("Not enough arguments: {}", e.getMessage());
       return;
     }
     int timeout = 30000;

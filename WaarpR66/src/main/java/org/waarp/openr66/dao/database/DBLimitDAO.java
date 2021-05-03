@@ -20,6 +20,7 @@
 
 package org.waarp.openr66.dao.database;
 
+import org.waarp.common.database.exception.WaarpDatabaseSqlException;
 import org.waarp.openr66.dao.LimitDAO;
 import org.waarp.openr66.pojo.Limit;
 import org.waarp.openr66.pojo.UpdatedInfo;
@@ -132,12 +133,16 @@ public class DBLimitDAO extends StatementExecutor<Limit> implements LimitDAO {
 
   @Override
   public Limit getFromResultSet(final ResultSet set) throws SQLException {
-    return new Limit(set.getString(HOSTID_FIELD),
-                     set.getLong(DELAY_LIMIT_FIELD),
-                     set.getLong(READ_GLOBAL_LIMIT_FIELD),
-                     set.getLong(WRITE_GLOBAL_LIMIT_FIELD),
-                     set.getLong(READ_SESSION_LIMIT_FIELD),
-                     set.getLong(WRITE_SESSION_LIMIT_FIELD),
-                     UpdatedInfo.valueOf(set.getInt(UPDATED_INFO_FIELD)));
+    try {
+      return new Limit(set.getString(HOSTID_FIELD),
+                       set.getLong(DELAY_LIMIT_FIELD),
+                       set.getLong(READ_GLOBAL_LIMIT_FIELD),
+                       set.getLong(WRITE_GLOBAL_LIMIT_FIELD),
+                       set.getLong(READ_SESSION_LIMIT_FIELD),
+                       set.getLong(WRITE_SESSION_LIMIT_FIELD),
+                       UpdatedInfo.valueOf(set.getInt(UPDATED_INFO_FIELD)));
+    } catch (WaarpDatabaseSqlException e) {
+      throw new SQLException(e);
+    }
   }
 }

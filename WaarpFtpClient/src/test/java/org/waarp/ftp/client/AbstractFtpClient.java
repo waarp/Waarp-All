@@ -22,16 +22,6 @@ package org.waarp.ftp.client;
 
 import io.netty.util.ResourceLeakDetector;
 import io.netty.util.ResourceLeakDetector.Level;
-import org.apache.commons.net.PrintCommandListener;
-import org.apache.commons.net.ftp.FTP;
-import org.apache.commons.net.ftp.FTPClient;
-import org.apache.commons.net.ftp.FTPClientConfig;
-import org.apache.commons.net.ftp.FTPConnectionClosedException;
-import org.apache.commons.net.ftp.FTPFile;
-import org.apache.commons.net.ftp.FTPReply;
-import org.apache.commons.net.ftp.FTPSClient;
-import org.apache.commons.net.io.CopyStreamEvent;
-import org.apache.commons.net.io.CopyStreamListener;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
@@ -44,18 +34,14 @@ import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
 import org.waarp.common.utility.FileTestUtils;
+import org.waarp.common.utility.Version;
 import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.ftp.FtpServer;
 import org.waarp.ftp.client.transaction.Ftp4JClientTransactionTest;
 import org.waarp.ftp.client.transaction.FtpClientThread;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -68,6 +54,7 @@ public abstract class AbstractFtpClient {
   public static AtomicLong numberOK = new AtomicLong(0);
   public static AtomicLong numberKO = new AtomicLong(0);
   static int SSL_MODE = 0; //-1 native, 1 auth
+  protected static int DELAY = 10;
   /**
    * Internal Logger
    */
@@ -87,13 +74,24 @@ public abstract class AbstractFtpClient {
     final File localFilename = new File("/tmp/ftpfile.bin");
     FileTestUtils.createTestFile(localFilename, 100);
     logger.warn("Will start server");
+    try {
+      Thread.sleep(500);
+    } catch (InterruptedException e) {
+      // Wait for server started
+    }
+    System.gc();
+    try {
+      Thread.sleep(500);
+    } catch (InterruptedException e) {
+      // Wait for server started
+    }
   }
 
   @AfterClass
   public static void stopServer() {
     logger.warn("Will shutdown from client");
     WaarpLoggerFactory.setDefaultFactoryIfNotSame(
-        new WaarpSlf4JLoggerFactory(WaarpLogLevel.NONE));
+        new WaarpSlf4JLoggerFactory(WaarpLogLevel.WARN));
     try {
       Thread.sleep(200);
     } catch (final InterruptedException ignored) {//NOSONAR
@@ -103,20 +101,20 @@ public abstract class AbstractFtpClient {
                                        SSL_MODE);
     if (!client.connect()) {
       logger.warn("Cant connect");
-      FtpClientTest.numberKO.incrementAndGet();
-      return;
-    }
-    try {
-      final String[] results =
-          client.executeSiteCommand("internalshutdown abcdef");
-      System.err.print("SHUTDOWN: ");
-      for (final String string : results) {
-        System.err.println(string);
+    } else {
+      try {
+        final String[] results =
+            client.executeSiteCommand("internalshutdown abcdef");
+        System.out.print("SHUTDOWN: ");
+        for (final String string : results) {
+          System.out.println(string);
+        }
+      } finally {
+        client.disconnect();
       }
-    } finally {
-      client.disconnect();
     }
     logger.warn("Will stop server");
+    WaarpSystemUtil.stopLogger(true);
     FtpServer.stopFtpServer();
     final File file = new File("/tmp/GGFTP");
     FileUtils.forceDeleteRecursiveDir(file);
@@ -127,13 +125,30 @@ public abstract class AbstractFtpClient {
     }
   }
 
+  public static boolean versionJavaCompatible() {
+    boolean valid = Version.artifactId().contains("-jre") || SSL_MODE != 1;
+    logger.warn("Java {} SSL_MODE {} = Valid {}", Version.version(), SSL_MODE,
+                valid);
+    return valid;
+  }
+
   @Before
   public void clean() throws InterruptedException {
     File file = new File("/tmp/GGFTP");
     FileUtils.forceDeleteRecursiveDir(file);
     file = new File("/tmp/GGFTP/fredo/a");
     file.mkdirs();
-    Thread.sleep(100);
+    try {
+      Thread.sleep(100);
+    } catch (InterruptedException e) {
+      // Wait for server started
+    }
+    System.gc();
+    try {
+      Thread.sleep(100);
+    } catch (InterruptedException e) {
+      // Wait for server started
+    }
   }
 
   @Test
@@ -142,7 +157,7 @@ public abstract class AbstractFtpClient {
     numberOK.set(0);
     final File localFilename = new File("/tmp/ftpfile.bin");
     testFtp4J("127.0.0.1", port, "fred", "fred2", "a", SSL_MODE,
-              localFilename.getAbsolutePath(), 0, 3, true, 1, 1);
+              localFilename.getAbsolutePath(), 0, DELAY, true, 1, 1);
   }
 
   public void testFtp4J(String server, int port, String username, String passwd,
@@ -157,22 +172,26 @@ public abstract class AbstractFtpClient {
     logger.warn("First connexion");
     if (!client.connect()) {
       logger.error("Can't connect");
-      FtpClientTest.numberKO.incrementAndGet();
+      if (AbstractFtpClient.versionJavaCompatible()) {
+        numberKO.incrementAndGet();
+      }
       Assert.assertEquals("No KO", 0, numberKO.get());
       return;
     }
     try {
       logger.warn("Create Dirs");
       for (int i = 0; i < numberThread; i++) {
+        System.out.print('.');
         client.makeDir("T" + i);
       }
+      System.out.println();
       logger.warn("Feature commands");
-      System.err.println("SITE: " + client.featureEnabled("SITE"));
-      System.err.println("SITE CRC: " + client.featureEnabled("SITE XCRC"));
-      System.err.println("CRC: " + client.featureEnabled("XCRC"));
-      System.err.println("MD5: " + client.featureEnabled("XMD5"));
-      System.err.println("SHA1: " + client.featureEnabled("XSHA1"));
-      System.err.println("DIGEST: " + client.featureEnabled("XDIGEST"));
+      System.out.println("SITE: " + client.featureEnabled("SITE"));
+      System.out.println("SITE CRC: " + client.featureEnabled("SITE XCRC"));
+      System.out.println("CRC: " + client.featureEnabled("XCRC"));
+      System.out.println("MD5: " + client.featureEnabled("XMD5"));
+      System.out.println("SHA1: " + client.featureEnabled("XSHA1"));
+      System.out.println("DIGEST: " + client.featureEnabled("XDIGEST"));
     } finally {
       logger.warn("Logout");
       client.logout();
@@ -199,7 +218,7 @@ public abstract class AbstractFtpClient {
         date2 = System.currentTimeMillis() - 120000 * 60;
         executorService.shutdownNow();
         if (!executorService.awaitTermination(60, TimeUnit.SECONDS)) {
-          System.err.println("Really not shutdown normally");
+          logger.error("Really not shutdown normally");
         }
       } else {
         date2 = System.currentTimeMillis();
@@ -223,190 +242,54 @@ public abstract class AbstractFtpClient {
                                      String password, String account,
                                      boolean localActive, String local,
                                      String remote) {
-    final boolean mustCallProtP = SSL_MODE > 0;
-    final boolean binaryTransfer = true;
+    final WaarpFtpClient waarpFtpClient =
+        new WaarpFtpClient(server, port, username, password, account,
+                           !localActive, SSL_MODE, 30000, 30000, true);
     boolean error = false;
-    final boolean useEpsvWithIPv4 = false;
-    final boolean lenient = false;
-    final FTPClient ftp;
-    ftp = new FTPClient();
 
-    ftp.setCopyStreamListener(createListener());
-    ftp.setControlKeepAliveTimeout(30000);
-    ftp.setControlKeepAliveReplyTimeout(30000);
-    ftp.setListHiddenFiles(true);
-    // suppress login details
-    ftp.addProtocolCommandListener(
-        new PrintCommandListener(new PrintWriter(System.out), true));
-
-    try {
-      int reply;
-      if (port > 0) {
-        ftp.connect(server, port);
-      } else {
-        ftp.connect(server);
-      }
-      System.out.println("Connected to " + server + " on " +
-                         (port > 0? port : ftp.getDefaultPort()));
-
-      // After connection attempt, you should check the reply code to verify
-      // success.
-      reply = ftp.getReplyCode();
-
-      if (!FTPReply.isPositiveCompletion(reply)) {
-        ftp.disconnect();
-        System.err.println("FTP server refused connection.");
-        fail("Can't connect");
-        return;
-      }
-    } catch (final IOException e) {
-      if (ftp.getDataConnectionMode() ==
-          FTPClient.ACTIVE_LOCAL_DATA_CONNECTION_MODE) {
-        try {
-          ftp.disconnect();
-        } catch (final IOException f) {
-          // do nothing
-        }
-      }
-      System.err.println("Could not connect to server.");
-      e.printStackTrace();
+    boolean connected = waarpFtpClient.connect();
+    // After connection attempt, you should check the reply code to verify
+    // success.
+    if (!connected) {
+      logger.error("FTP server refused connection.");
       fail("Can't connect");
       return;
     }
 
-    __main:
     try {
-      if (account == null) {
-        if (!ftp.login(username, password)) {
-          ftp.logout();
-          error = true;
-          break __main;
-        }
-      } else {
-        if (!ftp.login(username, password, account)) {
-          ftp.logout();
-          error = true;
-          break __main;
-        }
-      }
-      System.out.println("Remote system is " + ftp.getSystemType());
-
-      if (binaryTransfer) {
-        ftp.setFileType(FTP.BINARY_FILE_TYPE);
-      }
-
-      // Use passive mode as default because most of us are
-      // behind firewalls these days.
-      if (localActive) {
-        ftp.enterLocalActiveMode();
-      } else {
-        ftp.enterLocalPassiveMode();
-      }
-
-      ftp.setUseEPSVwithIPv4(useEpsvWithIPv4);
-
-      if (mustCallProtP) {
-        ((FTPSClient) ftp).execPBSZ(0);
-        ((FTPSClient) ftp).execPROT("P");
-      }
-
-      InputStream input;
-
-      input = new FileInputStream(local);
-
-      if (!ftp.storeFile(remote, input)) {
+      if (!waarpFtpClient.store(local, remote)) {
         error = true;
-        input.close();
         return;
       }
-      input.close();
-
-      OutputStream output;
-
-      output = new FileOutputStream(local);
-
-      if (!ftp.retrieveFile(remote, output)) {
+      if (!waarpFtpClient.retrieve(local, remote)) {
         error = true;
-        output.close();
         return;
       }
-      output.close();
-      if (lenient) {
-        final FTPClientConfig config = new FTPClientConfig();
-        config.setLenientFutureDates(true);
-        ftp.configure(config);
-      }
 
-      for (final FTPFile f : ftp.listFiles(remote)) {
-        System.out.println(f.getRawListing());
-        System.out.println(f.toFormattedString());
+      for (final String f : waarpFtpClient.listFiles(remote)) {
+        System.out.println(f);
       }
-      for (final FTPFile f : ftp.mlistDir(remote)) {
-        System.out.println(f.getRawListing());
-        System.out.println(f.toFormattedString());
+      for (final String f : waarpFtpClient.mlistFiles(remote)) {
+        System.out.println(f);
       }
-      final FTPFile f = ftp.mlistFile(remote);
-      if (f != null) {
-        System.out.println(f.toFormattedString());
-      }
-      final String[] results = ftp.listNames(remote);
-      if (results != null) {
-        for (final String s : ftp.listNames(remote)) {
-          System.out.println(s);
-        }
-      }
-      if (!ftp.deleteFile(remote)) {
+      if (!waarpFtpClient.deleteFile(remote)) {
         error = true;
-        System.out.println("Failed delete");
+        logger.error("Failed delete");
       }
       // boolean feature check
-      if (ftp.features()) {
+      String[] features = waarpFtpClient.features();
+      if (features != null) {
         // Command listener has already printed the output
       } else {
-        System.out.println("Failed: " + ftp.getReplyString());
+        logger.error("Failed: " + waarpFtpClient.getResult());
         error = true;
       }
 
-      ftp.noop(); // check that control connection is working OK
-    } catch (final FTPConnectionClosedException e) {
-      error = true;
-      System.err.println("Server closed connection.");
-      e.printStackTrace();
-    } catch (final IOException e) {
-      error = true;
-      e.printStackTrace();
+      waarpFtpClient.noop(); // check that control connection is working OK
     } finally {
-      if (ftp.getDataConnectionMode() ==
-          FTPClient.ACTIVE_LOCAL_DATA_CONNECTION_MODE) {
-        try {
-          ftp.disconnect();
-        } catch (final IOException f) {
-          // do nothing
-        }
-      }
+      waarpFtpClient.disconnect();
       assertFalse("Error occurs", error);
     }
   }
 
-  private static CopyStreamListener createListener() {
-    return new CopyStreamListener() {
-      private long megsTotal;
-
-      @Override
-      public void bytesTransferred(CopyStreamEvent event) {
-        bytesTransferred(event.getTotalBytesTransferred(),
-                         event.getBytesTransferred(), event.getStreamSize());
-      }
-
-      @Override
-      public void bytesTransferred(long totalBytesTransferred,
-                                   int bytesTransferred, long streamSize) {
-        final long megs = totalBytesTransferred / 1000000;
-        for (long l = megsTotal; l < megs; l++) {
-          System.err.print("#");
-        }
-        megsTotal = megs;
-      }
-    };
-  }
 }

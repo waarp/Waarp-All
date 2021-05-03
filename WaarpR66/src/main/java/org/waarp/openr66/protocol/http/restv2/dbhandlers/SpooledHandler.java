@@ -21,7 +21,6 @@
 package org.waarp.openr66.protocol.http.restv2.dbhandlers;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.cdap.http.AbstractHttpHandler;
 import io.cdap.http.HttpResponder;
@@ -104,7 +103,7 @@ public class SpooledHandler extends AbstractRestDbHandler {
                              final String nameStr,
                              @QueryParam(STATUS) @DefaultValue("")
                              final String statusStr) {
-
+    checkSanity(nameStr, statusStr);
     final ArrayList<RestError> errors = new ArrayList<RestError>();
     final String argName;
     if (nameStr.trim().isEmpty()) {
@@ -131,7 +130,7 @@ public class SpooledHandler extends AbstractRestDbHandler {
     final ArrayNode arrayNode = JsonHandler.createArrayNode();
     final int nbFiles =
         SpooledInformTask.buildSpooledJson(arrayNode, argStatus, argName);
-    final ObjectNode responseObject = new ObjectNode(JsonNodeFactory.instance);
+    final ObjectNode responseObject = JsonHandler.createObjectNode();
     final ArrayNode resultList = responseObject.putArray("results");
     resultList.addAll(arrayNode);
     responseObject.put("totalResults", arrayNode.size());

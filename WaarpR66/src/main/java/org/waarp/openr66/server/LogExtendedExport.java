@@ -23,6 +23,7 @@ import org.waarp.common.database.exception.WaarpDatabaseException;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
+import org.waarp.common.utility.ParametersChecker;
 import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.openr66.client.AbstractTransfer;
 import org.waarp.openr66.client.DirectTransfer;
@@ -200,8 +201,7 @@ public class LogExtendedExport implements Runnable {
     }
     localChannelReference.sessionNewState(R66FiniteDualStates.VALIDOTHER);
     try {
-      ChannelUtils
-          .writeAbstractLocalPacket(localChannelReference, valid, false);
+      ChannelUtils.writeAbstractLocalPacket(localChannelReference, valid, true);
     } catch (final OpenR66ProtocolPacketException e) {
       logger.error("Bad Protocol", e);
       localChannelReference.close();
@@ -215,8 +215,7 @@ public class LogExtendedExport implements Runnable {
     newFuture.awaitOrInterruptible();
     logger.info("Request done with {}",
                 newFuture.isSuccess()? "success" : "error");
-    if (newFuture.isSuccess() && ruleDownload != null &&
-        !ruleDownload.isEmpty()) {
+    if (newFuture.isSuccess() && ParametersChecker.isNotEmpty(ruleDownload)) {
       try {
         importLog(newFuture);
       } catch (final OpenR66ProtocolBusinessException e) {
@@ -248,7 +247,7 @@ public class LogExtendedExport implements Runnable {
             (LogResponseJsonPacket) packet.getJsonRequest();
         final String fileExported = res.getFilename();
         // download logs
-        if (fileExported != null && !fileExported.isEmpty()) {
+        if (ParametersChecker.isNotEmpty(fileExported)) {
           final String ruleToExport = ruleDownload;
           final R66Future futuretemp = new R66Future(true);
           final DirectTransfer transfer =
@@ -447,9 +446,13 @@ public class LogExtendedExport implements Runnable {
         }
       } else {
         if (result.getCode() == ErrorCode.Warning) {
-          logger.warn("LogExtendedExport is     WARNED", future.getCause());
+          logger.warn("LogExtendedExport is     WARNED" + " : {}",
+                      future.getCause() != null?
+                          future.getCause().getMessage() : "");
         } else {
-          logger.error("LogExtendedExport in     FAILURE", future.getCause());
+          logger.error("LogExtendedExport in     FAILURE" + " : {}",
+                       future.getCause() != null?
+                           future.getCause().getMessage() : "");
         }
         networkTransaction.closeAll();
         System.exit(result.getCode().ordinal());//NOSONAR

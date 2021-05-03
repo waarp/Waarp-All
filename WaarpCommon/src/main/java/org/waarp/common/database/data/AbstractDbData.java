@@ -27,6 +27,7 @@ import org.waarp.common.database.exception.WaarpDatabaseException;
 import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
 import org.waarp.common.database.exception.WaarpDatabaseNoDataException;
 import org.waarp.common.database.exception.WaarpDatabaseSqlException;
+import org.waarp.common.database.model.DbModelAbstract;
 import org.waarp.common.json.JsonHandler;
 
 import java.io.IOException;
@@ -306,7 +307,7 @@ public abstract class AbstractDbData {
   /**
    * Internal function to set to Array used to push data to database
    */
-  protected abstract void setToArray();
+  protected abstract void setToArray() throws WaarpDatabaseSqlException;
 
   /**
    * Internal function to retrieve data from Array to pull data from database
@@ -314,6 +315,66 @@ public abstract class AbstractDbData {
    * @throws WaarpDatabaseSqlException
    */
   protected abstract void setFromArray() throws WaarpDatabaseSqlException;
+
+  /**
+   * Validate Byte array max length
+   *
+   * @param values the values to check against Types.VARBINARY
+   *
+   * @throws WaarpDatabaseSqlException if length is not acceptable
+   */
+  public static void validateLength(final byte[]... values)
+      throws WaarpDatabaseSqlException {
+    for (final byte[] value : values) {
+      if (value != null && value.length > DbModelAbstract.MAX_BINARY * 2) {
+        throw new WaarpDatabaseSqlException(
+            "BINARY value exceed max size: " + value.length + " (" +
+            DbModelAbstract.MAX_BINARY + ")");
+      }
+    }
+  }
+
+  /**
+   * Validate String max length
+   *
+   * @param type between Types.VARCHAR, NVARCHAR, LONGVARCHAR
+   * @param values the values to check against same type
+   *
+   * @throws WaarpDatabaseSqlException if length is not acceptable
+   */
+  public static void validateLength(final int type, final String... values)
+      throws WaarpDatabaseSqlException {
+    for (final String value : values) {
+      if (value == null) {
+        continue;
+      }
+      switch (type) {
+        case Types.VARCHAR:
+          if (value.length() > DbModelAbstract.MAX_VARCHAR) {
+            throw new WaarpDatabaseSqlException(
+                "VARCHAR value exceed max size: " + value.length() + " (" +
+                DbModelAbstract.MAX_VARCHAR + ")");
+          }
+          break;
+        case Types.NVARCHAR:
+          if (value.length() > DbModelAbstract.MAX_KEY_VARCHAR) {
+            throw new WaarpDatabaseSqlException(
+                "VARCHAR as KEY value exceed max size: " + value.length() +
+                " (" + DbModelAbstract.MAX_KEY_VARCHAR + ")");
+          }
+          break;
+        case Types.LONGVARCHAR:
+          if (value.length() > DbModelAbstract.MAX_LONGVARCHAR) {
+            throw new WaarpDatabaseSqlException(
+                "LONGVARCHAR value exceed max size: " + value.length() + " (" +
+                DbModelAbstract.MAX_LONGVARCHAR + ")");
+          }
+          break;
+        default:
+          break;
+      }
+    }
+  }
 
   /**
    * Set Value into PreparedStatement
@@ -328,20 +389,34 @@ public abstract class AbstractDbData {
                                   final DbValue value, final int rank)
       throws WaarpDatabaseSqlException {
     try {
+      final String svalue;
       switch (value.type) {
         case Types.VARCHAR:
           if (value.getValue() == null) {
             ps.setNull(rank, Types.VARCHAR);
             break;
           }
-          ps.setString(rank, (String) value.getValue());
+          svalue = (String) value.getValue();
+          validateLength(Types.VARCHAR, svalue);
+          ps.setString(rank, svalue);
+          break;
+        case Types.NVARCHAR:
+          if (value.getValue() == null) {
+            ps.setNull(rank, Types.VARCHAR);
+            break;
+          }
+          svalue = (String) value.getValue();
+          validateLength(Types.NVARCHAR, svalue);
+          ps.setString(rank, svalue);
           break;
         case Types.LONGVARCHAR:
           if (value.getValue() == null) {
             ps.setNull(rank, Types.LONGVARCHAR);
             break;
           }
-          ps.setString(rank, (String) value.getValue());
+          svalue = (String) value.getValue();
+          validateLength(Types.LONGVARCHAR, svalue);
+          ps.setString(rank, svalue);
           break;
         case Types.BIT:
           if (value.getValue() == null) {
@@ -397,7 +472,9 @@ public abstract class AbstractDbData {
             ps.setNull(rank, Types.VARBINARY);
             break;
           }
-          ps.setBytes(rank, (byte[]) value.getValue());
+          final byte[] bvalue = (byte[]) value.getValue();
+          validateLength(bvalue);
+          ps.setBytes(rank, bvalue);
           break;
         case Types.DATE:
           if (value.getValue() == null) {
@@ -473,6 +550,7 @@ public abstract class AbstractDbData {
     try {
       switch (value.type) {
         case Types.VARCHAR:
+        case Types.NVARCHAR:
         case Types.LONGVARCHAR:
           value.setValue(rs.getString(value.getColumn()));
           break;
@@ -563,6 +641,7 @@ public abstract class AbstractDbData {
     for (final DbValue value : allFields) {
       switch (value.type) {
         case Types.VARCHAR:
+        case Types.NVARCHAR:
         case Types.LONGVARCHAR:
           node.put(value.getColumn(), (String) value.getValue());
           break;
@@ -629,8 +708,11 @@ public abstract class AbstractDbData {
         isSaved = false;
         switch (value.type) {
           case Types.VARCHAR:
+          case Types.NVARCHAR:
           case Types.LONGVARCHAR:
-            value.setValue(item.asText());
+            final String svalue = item.asText();
+            validateLength(value.type, svalue);
+            value.setValue(svalue);
             break;
           case Types.BIT:
             value.setValue(item.asBoolean());
@@ -649,7 +731,9 @@ public abstract class AbstractDbData {
             break;
           case Types.VARBINARY:
             try {
-              value.setValue(item.binaryValue());
+              final byte[] bvalue = item.binaryValue();
+              validateLength(bvalue);
+              value.setValue(bvalue);
             } catch (final IOException e) {
               throw new WaarpDatabaseSqlException(
                   "Issue while assigning array of bytes", e);

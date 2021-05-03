@@ -23,7 +23,6 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandler;
-import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.DefaultChannelGroup;
@@ -69,8 +68,8 @@ public final class WaarpSslUtility {
         @Override
         public void operationComplete(final ChannelFuture future) {
           if (future.channel().isActive()) {
-            final SslThread thread = new SslThread(future.channel());
-            thread.start();
+            future.channel().eventLoop()
+                  .submit(new SslThread(future.channel()));
           }
         }
       };
@@ -104,6 +103,7 @@ public final class WaarpSslUtility {
                                    final GenericFutureListener<? extends Future<? super Channel>> listener) {
     if (future == null) {
       logger.debug("Add SslHandler: {}", pipeline.channel());
+      pipeline.channel().config().setAutoRead(true);
       pipeline.addFirst("SSL", sslHandler);
       ((SslHandler) sslHandler).handshakeFuture().addListener(listener);
     } else {
@@ -111,6 +111,7 @@ public final class WaarpSslUtility {
         @Override
         public void operationComplete(final Future future) {
           logger.debug("Add SslHandler: {}", pipeline.channel());
+          pipeline.channel().config().setAutoRead(true);
           pipeline.addFirst("SSL", sslHandler);
           ((SslHandler) sslHandler).handshakeFuture().addListener(listener);
         }
@@ -138,11 +139,11 @@ public final class WaarpSslUtility {
       final Future<Channel> handshakeFuture = sslHandler.handshakeFuture();
       WaarpNettyUtil.awaitOrInterrupted(handshakeFuture,
                                         sslHandler.getHandshakeTimeoutMillis() +
-                                        100);
+                                        1000);
       logger.debug("Handshake: {}:{}", handshakeFuture.isSuccess(), channel,
                    handshakeFuture.cause());
       if (!handshakeFuture.isSuccess()) {
-        channel.close();
+        channel.close().awaitUninterruptibly(100);
         return false;
       }
     } else {
@@ -199,6 +200,9 @@ public final class WaarpSslUtility {
           .debug("Close the channel and returns the ChannelFuture: " + channel);
       return channel.closeFuture();
     }
+    if (channel.closeFuture().isDone()) {
+      return channel.closeFuture();
+    }
     logger.debug("Already closed");
     return channel.newSucceededFuture();
   }
@@ -210,7 +214,7 @@ public final class WaarpSslUtility {
    *     removed
    *     the sslhandler
    * @param channel
-   * @param close True to close the channel, else to only remove it
+   * @param close True to close the channel, else to only remove the SslHandler
    */
   @SuppressWarnings({ "rawtypes", "unchecked" })
   public static void removingSslHandler(final ChannelFuture future,
@@ -232,7 +236,7 @@ public final class WaarpSslUtility {
           waitForSslClose(channel, sslHandler, close);
         }
       } else {
-        if (channel.isActive()) {
+        if (close) {
           channel.close();
         }
       }
@@ -242,23 +246,21 @@ public final class WaarpSslUtility {
   private static void waitForSslClose(final Channel channel,
                                       final SslHandler sslHandler,
                                       final boolean close) {
-    logger.debug("Found SslHandler and wait for Ssl.close() : {}", channel);
-    final ChannelHandlerContext cht = channel.pipeline().context(sslHandler);
-    if (cht.channel().isActive()) {
-      cht.close()
-         .addListener(new GenericFutureListener<Future<? super Void>>() {
-           @Override
-           public void operationComplete(final Future<? super Void> future) {
-             logger.debug("Ssl closed: {}", channel);
-             if (!close) {
-               channel.pipeline().remove(sslHandler);
-             } else {
-               if (channel.isActive()) {
-                 channel.close();
-               }
-             }
-           }
-         });
+    logger.debug("Found SslHandler and wait for Ssl.closeOutbound() : {}",
+                 channel);
+    if (channel.isActive()) {
+      sslHandler.closeOutbound()
+                .addListener(new GenericFutureListener<Future<? super Void>>() {
+                  @Override
+                  public void operationComplete(
+                      final Future<? super Void> future) {
+                    logger.debug("Ssl closed: {}", channel);
+                    channel.pipeline().remove(sslHandler);
+                    if (close && channel.isActive()) {
+                      channel.close();
+                    }
+                  }
+                });
     }
   }
 
@@ -293,7 +295,7 @@ public final class WaarpSslUtility {
   /**
    * Thread used to ensure we are not in IO thread when waiting
    */
-  private static class SslThread extends Thread {
+  private static class SslThread implements Runnable {
     private final Channel channel;
 
     /**
@@ -301,8 +303,6 @@ public final class WaarpSslUtility {
      */
     private SslThread(final Channel channel) {
       this.channel = channel;
-      setDaemon(true);
-      setName("SSLTHREAD_" + getName());
     }
 
     @Override

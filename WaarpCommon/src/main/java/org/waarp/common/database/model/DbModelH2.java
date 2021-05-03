@@ -67,6 +67,11 @@ public abstract class DbModelH2 extends DbModelAbstract {
     public String getCreateIndex() {
       return "CREATE INDEX IF NOT EXISTS ";
     }
+
+    @Override
+    public DbType getDbType() {
+      return type;
+    }
   }
 
   static {
@@ -162,14 +167,16 @@ public abstract class DbModelH2 extends DbModelAbstract {
   }
 
   protected enum DBType {
-    CHAR(Types.CHAR, " CHAR(3) "), VARCHAR(Types.VARCHAR, " VARCHAR(8096) "),
-    NVARCHAR(Types.NVARCHAR, " VARCHAR(8096) "),
-    LONGVARCHAR(Types.LONGVARCHAR, " LONGVARCHAR "),
+    CHAR(Types.CHAR, " CHAR(3) "),
+    VARCHAR(Types.VARCHAR, " VARCHAR(" + MAX_VARCHAR + ") "),
+    NVARCHAR(Types.NVARCHAR, " VARCHAR(" + MAX_KEY_VARCHAR + ") "),
+    LONGVARCHAR(Types.LONGVARCHAR, " VARCHAR(" + MAX_LONGVARCHAR + ") "),
     BIT(Types.BIT, " BOOLEAN "), TINYINT(Types.TINYINT, " TINYINT "),
     SMALLINT(Types.SMALLINT, " SMALLINT "), INTEGER(Types.INTEGER, " INTEGER "),
     BIGINT(Types.BIGINT, " BIGINT "), REAL(Types.REAL, " REAL "),
-    DOUBLE(Types.DOUBLE, " DOUBLE "), VARBINARY(Types.VARBINARY, " BINARY "),
-    DATE(Types.DATE, " DATE "), TIMESTAMP(Types.TIMESTAMP, " TIMESTAMP "),
+    DOUBLE(Types.DOUBLE, " DOUBLE "),
+    VARBINARY(Types.VARBINARY, " VARBINARY(" + (MAX_BINARY * 2) + ") "),
+    DATE(Types.DATE, " DATE "), TIMESTAMP(Types.TIMESTAMP, " TIMESTAMP(3) "),
     CLOB(Types.CLOB, " CLOB "), BLOB(Types.BLOB, " BLOB ");
 
     public final int type;

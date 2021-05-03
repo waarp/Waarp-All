@@ -29,6 +29,7 @@ import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
 import org.waarp.openr66.context.R66Session;
+import org.waarp.openr66.context.task.extension.AbstractExtendedTaskFactory;
 import org.waarp.openr66.dao.DAOFactory;
 import org.waarp.openr66.dao.xml.XMLTransferDAO;
 import org.waarp.openr66.database.data.DbRule;
@@ -46,6 +47,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.Set;
 
 import static org.junit.Assert.*;
 
@@ -88,13 +90,22 @@ public class S3TasksTest {
       "<tasks><task><type>" + S3TaskType.S3DELETE.name() + "</type><path>" +
       argS3Delete + "</path><delay>0</delay><comment></comment></task></tasks>";
 
-  private static final S3TaskFactory s3TaskFactory = new S3TaskFactory();
+  // Should be automatic: private static final S3TaskFactory s3TaskFactory = new S3TaskFactory();
+  private static S3TaskFactory s3TaskFactory;
 
   @BeforeClass
   public static void beforeClass() throws WaarpDatabaseException {
     WaarpLoggerFactory.setDefaultFactoryIfNotSame(
         new WaarpSlf4JLoggerFactory(WaarpLogLevel.WARN));
     ResourceLeakDetector.setLevel(ResourceLeakDetector.Level.PARANOID);
+    Set<AbstractExtendedTaskFactory> set = TaskType.getExtendedFactories();
+    AbstractExtendedTaskFactory futureFactory = null;
+    for (AbstractExtendedTaskFactory extendedTaskFactory : set) {
+      if (extendedTaskFactory instanceof S3TaskFactory) {
+        futureFactory = extendedTaskFactory;
+      }
+    }
+    s3TaskFactory = (S3TaskFactory) futureFactory;
     final String strTmp = System.getProperty("java.io.tmpdir");
     Configuration.configuration.setBaseDirectory(strTmp);
     File file = new File(strTmp + "/arch");

@@ -80,9 +80,9 @@ public class FtpApacheClientTransactionTest extends WaarpFtpClient {
     final FileInputStream fileInputStream = null;
     try {
       if (store) {
-        status = transferFile(local, remote, 1);
+        status = store(local, remote);
         if (!status) {
-          System.err.println("Cannot finalize store like operation");
+          logger.error("Cannot finalize store like operation");
           return false;
         }
         /*
@@ -91,82 +91,35 @@ public class FtpApacheClientTransactionTest extends WaarpFtpClient {
          */
         String[] results = executeSiteCommand("XCRC " + remote);
         for (final String string : results) {
-          System.err.println("XCRC: " + string);
+          logger.info("XCRC: " + string);
         }
         results = executeSiteCommand("XMD5 " + remote);
         for (final String string : results) {
-          System.err.println("XMD5: " + string);
+          logger.info("XMD5: " + string);
         }
         results = executeSiteCommand("XSHA1 " + remote);
         for (final String string : results) {
-          System.err.println("XSHA1: " + string);
+          logger.info("XSHA1: " + string);
         }
         for (DigestAlgo algo : DigestAlgo.values()) {
           results =
               executeSiteCommand("XDIGEST " + algo.algoName + " " + remote);
           for (final String string : results) {
-            System.err.println("XDIGEST " + algo.algoName + ": " + string);
+            logger.info("XDIGEST " + algo.algoName + ": " + string);
           }
           results = executeSiteCommand("XDIGEST " + algo.name() + " " + remote);
           for (final String string : results) {
-            System.err.println("XDIGEST " + algo.algoName + ": " + string);
+            logger.info("XDIGEST " + algo.algoName + ": " + string);
           }
         }
         results = listFiles();
         for (final String string : results) {
-          System.err.println("LIST: " + string);
+          logger.info("LIST: " + string);
         }
         return true;
       } else {
         output = new NullOutputStream();
-        status = ftpClient.retrieveFile(remote, output);
-        output.flush();
-        output.close();
-        return status;
-      }
-    } catch (final IOException e) {
-      if (output != null) {
-        try {
-          output.close();
-        } catch (final IOException ignored) {
-        }
-      }
-      if (fileInputStream != null) {
-        try {
-          fileInputStream.close();
-        } catch (final IOException ignored) {
-        }
-      }
-      e.printStackTrace();
-      return false;
-    }
-  }
-
-  /**
-   * Ask to transfer a file
-   *
-   * @param local
-   * @param remote
-   * @param store
-   *
-   * @return True if the file is correctly transfered
-   */
-  public boolean simpleTransferFile(String local, String remote,
-                                    boolean store) {
-    boolean status = false;
-    OutputStream output = null;
-    final FileInputStream fileInputStream = null;
-    try {
-      if (store) {
-        status = transferFile(local, remote, 1);
-        if (!status) {
-          System.err.println("Cannot finalize store like operation");
-          return false;
-        }
-        return true;
-      } else {
-        output = new NullOutputStream();
-        status = ftpClient.retrieveFile(remote, output);
+        status = retrieve(output, remote);
         output.flush();
         output.close();
         return status;

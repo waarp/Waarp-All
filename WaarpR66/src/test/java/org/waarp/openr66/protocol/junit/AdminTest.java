@@ -24,6 +24,7 @@ import io.netty.util.ResourceLeakDetector;
 import io.netty.util.ResourceLeakDetector.Level;
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Rule;
@@ -34,13 +35,12 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.StaleElementReferenceException;
 import org.waarp.common.logging.SysErrLogger;
-import org.waarp.common.logging.WaarpLogLevel;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
-import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
 import org.waarp.common.utility.NullPrintStream;
 import org.waarp.common.utility.TestWatcherJunit4;
 import org.waarp.common.utility.Version;
+import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.openr66.protocol.configuration.Configuration;
 
 import java.io.File;
@@ -65,6 +65,8 @@ public class AdminTest extends TestAbstract {
   private static final int WAIT = 300;
   private static PrintStream err;
 
+  private static boolean RUN_TEST = true;
+
   @BeforeClass
   public static void setUpBeforeClass() throws Exception {
     ResourceLeakDetector.setLevel(Level.PARANOID);
@@ -75,7 +77,12 @@ public class AdminTest extends TestAbstract {
         new File(classLoader.getResource("logback-test.xml").getFile());
     if (file.exists()) {
       driverType = DriverType.PHANTOMJS;
-      initiateWebDriver(file.getParentFile());
+      try {
+        initiateWebDriver(file.getParentFile());
+      } catch (NoSuchMethodError e) {
+        RUN_TEST = false;
+        return;
+      }
     }
     setUpDbBeforeClass();
     setUpBeforeClassServer(LINUX_CONFIG_CONFIG_SERVER_INIT_A_XML,
@@ -87,8 +94,10 @@ public class AdminTest extends TestAbstract {
    */
   @AfterClass
   public static void tearDownAfterClass() throws Exception {
-    WaarpLoggerFactory.setDefaultFactoryIfNotSame(
-        new WaarpSlf4JLoggerFactory(WaarpLogLevel.NONE));
+    WaarpSystemUtil.stopLogger(true);
+    if (!RUN_TEST) {
+      return;
+    }
     Thread.sleep(100);
     finalizeDriver();
     System.setErr(err);
@@ -103,12 +112,16 @@ public class AdminTest extends TestAbstract {
 
   @After
   public void restartDriver() throws InterruptedException {
+    if (!RUN_TEST) {
+      return;
+    }
     reloadDriver();
     Thread.sleep(100);
   }
 
   @Test
   public void test05_HttpSimpleAdmin() throws InterruptedException {
+    Assume.assumeTrue("Driver not loaded", RUN_TEST);
     try {
       // Test name: TestResponsiveMonitor
       // Step # | name | target | value | comment
@@ -179,6 +192,7 @@ public class AdminTest extends TestAbstract {
 
   @Test
   public void test01_Basic() throws InterruptedException {
+    Assume.assumeTrue("Driver not loaded", RUN_TEST);
     try {
       // Test name: TestResponsiveAdmin
       // Step # | name | target | value | comment
@@ -300,6 +314,7 @@ public class AdminTest extends TestAbstract {
 
   @Test
   public void test06_RestR66V2Simple() throws Exception {
+    Assume.assumeTrue("Driver not loaded", RUN_TEST);
     // Must be executed AFTER testCreateUserAdmin since it will use testb2
     // First with no authent: should fail
     try {
@@ -358,6 +373,7 @@ public class AdminTest extends TestAbstract {
 
   @Test
   public void test02_Business() throws InterruptedException {
+    Assume.assumeTrue("Driver not loaded", RUN_TEST);
     try {
       // Test name: HostConfig
       // Step # | name | target | value
@@ -472,6 +488,7 @@ public class AdminTest extends TestAbstract {
 
   @Test
   public void test08_System() throws InterruptedException {
+    Assume.assumeTrue("Driver not loaded", RUN_TEST);
     try {
       // Step # | name | target | value
       // 1 | open | / |
@@ -598,6 +615,7 @@ public class AdminTest extends TestAbstract {
 
   @Test
   public void test03_CreateUser() throws InterruptedException {
+    Assume.assumeTrue("Driver not loaded", RUN_TEST);
     // Test name: TestCreateUser2
     try {
       // Step # | name | target | value
@@ -700,6 +718,7 @@ public class AdminTest extends TestAbstract {
 
   @Test
   public void test04_CreateUserAdmin() throws InterruptedException {
+    Assume.assumeTrue("Driver not loaded", RUN_TEST);
     // Test name: TestCreateUser2
     try {
       // Step # | name | target | value
@@ -760,6 +779,7 @@ public class AdminTest extends TestAbstract {
 
   @Test
   public void test09_InteractiveShutdown() throws InterruptedException {
+    Assume.assumeTrue("Driver not loaded", RUN_TEST);
     try {
       // Test name: TestInteract
       // Step # | name | target | value

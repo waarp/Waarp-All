@@ -20,8 +20,6 @@
 package org.waarp.openr66.protocol.networkhandler;
 
 import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.timeout.IdleStateEvent;
@@ -36,6 +34,7 @@ import org.waarp.common.utility.WaarpShutdownHook;
 import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.exception.OpenR66Exception;
 import org.waarp.openr66.protocol.exception.OpenR66ExceptionTrappedFactory;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolBlackListedException;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolBusinessNoWriteBackException;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolNoConnectionException;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
@@ -95,6 +94,10 @@ public class NetworkServerHandler
    * Is this network connection being refused (black listed)
    */
   protected volatile boolean isBlackListed;
+  /**
+   * Is this network connection being refused (shutting down)
+   */
+  protected volatile boolean isShuttingDown;
 
   /**
    *
@@ -117,8 +120,10 @@ public class NetworkServerHandler
                       ctx.channel().id(),
                       networkChannelReference.nbLocalChannels());
           // Give an extra time if necessary to let the local channel being closed
+          final int nb =
+              Math.min(10, networkChannelReference.nbLocalChannels());
           try {
-            Thread.sleep(Configuration.RETRYINMS * 2);
+            Thread.sleep(Configuration.RETRYINMS * nb);
           } catch (final InterruptedException e1) {//NOSONAR
             SysErrLogger.FAKE_LOGGER.ignoreLog(e1);
           }
@@ -179,6 +184,13 @@ public class NetworkServerHandler
             NetworkTransaction.addNetworkChannel(netChannel, isSSL);
       } catch (final OpenR66ProtocolRemoteShutdownException e2) {
         logger.warn("Connection refused since Partner is in Shutdown from " +
+                    remoteAddress + " : {}", e2.getMessage());
+        isShuttingDown = true;
+        // close immediately the connection
+        WaarpSslUtility.closingSslChannel(netChannel);
+        return;
+      } catch (final OpenR66ProtocolBlackListedException e2) {
+        logger.warn("Connection refused since Partner is Black Listed from " +
                     remoteAddress + " : {}", e2.getMessage());
         isBlackListed = true;
         // close immediately the connection
@@ -272,7 +284,7 @@ public class NetworkServerHandler
   public void channelRead0(final ChannelHandlerContext ctx,
                            final NetworkPacket msg) {
     try {
-      if (isBlackListed) {
+      if (isBlackListed || isShuttingDown) {
         // ignore message since close on going
         msg.clear();
         return;
@@ -289,9 +301,17 @@ public class NetworkServerHandler
         if (msg.getLocalId() == ChannelUtils.NOCHANNEL) {
           final int nb = networkChannelReference.nbLocalChannels();
           if (nb > 0) {
-            logger.warn(
-                "Temptative of connection failed but still some connection are there so not closing the server channel immediately: " +
-                nb);
+            try {
+              logger.warn(
+                  "Tentative of connection failed ({}) but still some connection" +
+                  " are there so not closing the server channel immediately: {}",
+                  LocalPacketCodec.decodeNetworkPacket(msg.getBuffer()), nb);
+            } catch (OpenR66ProtocolPacketException ignore) {
+              logger.warn(
+                  "Tentative of connection failed but still some connection" +
+                  " are there so not closing the server channel immediately: {}",
+                  nb);
+            }
             msg.clear();
             return;
           }
@@ -426,7 +446,7 @@ public class NetworkServerHandler
   public void exceptionCaught(final ChannelHandlerContext ctx,
                               final Throwable cause) {
     final Channel channel = ctx.channel();
-    if (isBlackListed) {
+    if (isBlackListed || isShuttingDown) {
       logger.info("While partner is blacklisted, Network Channel Exception: {}",
                   channel.id(), cause.getClass().getName() + " : " + cause);
       // ignore
@@ -506,12 +526,10 @@ public class NetworkServerHandler
       }
       if (networkPacket != null) {
         final NetworkPacket finalNP = networkPacket;
-        final ChannelFuture future = channel.writeAndFlush(networkPacket);
-        future.addListener(new ChannelFutureListener() {
+        channel.eventLoop().submit(new Runnable() {
           @Override
-          public void operationComplete(final ChannelFuture future)
-              throws Exception {
-            future.await(Configuration.WAITFORNETOP);
+          public void run() {
+            channel.writeAndFlush(finalNP).awaitUninterruptibly();
             finalNP.clear();
           }
         });

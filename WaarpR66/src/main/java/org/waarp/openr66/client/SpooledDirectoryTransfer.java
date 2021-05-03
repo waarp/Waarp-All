@@ -227,7 +227,8 @@ public class SpooledDirectoryTransfer implements Runnable {
     try {
       dbrule = new DbRule(ruleName);
     } catch (final WaarpDatabaseException e1) {
-      logger.error(Messages.getString("Transfer.18"), e1); //$NON-NLS-1$
+      logger.error(Messages.getString("Transfer.18") + ": {}",
+                   e1.getMessage()); //$NON-NLS-1$
       future.setFailure(e1);
       if (Configuration.configuration
               .getShutdownConfiguration().serviceFuture != null) {
@@ -672,8 +673,9 @@ public class SpooledDirectoryTransfer implements Runnable {
             try {
               runner.delete();
             } catch (final WaarpDatabaseException e) {
-              logger.warn("Cannot apply nolog to     " + runner.toShortString(),
-                          e);
+              logger.warn(
+                  "Cannot apply nolog to     " + runner.toShortString() +
+                  " : {}", e.getMessage());
             }
           }
           DbTaskRunner.removeNoDbSpecialId(newSpecialId);
@@ -726,8 +728,8 @@ public class SpooledDirectoryTransfer implements Runnable {
         if (admin.getSession() != null) {
           admin.getSession().checkConnectionNoException();
         }
-        logger.warn(Messages.getString("RequestTransfer.5") + host,
-                    e); //$NON-NLS-1$
+        logger.warn(Messages.getString("RequestTransfer.5") + host + " : {}",
+                    e.getMessage()); //$NON-NLS-1$
       }
     }
 
@@ -771,8 +773,9 @@ public class SpooledDirectoryTransfer implements Runnable {
               if (admin.getSession() != null) {
                 admin.getSession().checkConnectionNoException();
               }
-              logger.warn(Messages.getString("RequestTransfer.5") + host,
-                          e); //$NON-NLS-1$
+              logger.warn(
+                  Messages.getString("RequestTransfer.5") + host + " : {}",
+                  e.getMessage()); //$NON-NLS-1$
             }
           }
         }
@@ -1031,9 +1034,8 @@ public class SpooledDirectoryTransfer implements Runnable {
     try {
       document = XmlUtil.getNewSaxReader().read(filename);
     } catch (final DocumentException e) {
-      logger.error(
-          Messages.getString("FileBasedConfiguration.CannotReadXml") + filename,
-          e); //$NON-NLS-1$
+      logger.error(Messages.getString("FileBasedConfiguration.CannotReadXml") +
+                   filename + ": {}", e.getMessage()); //$NON-NLS-1$
       return false;
     }
     if (document == null) {

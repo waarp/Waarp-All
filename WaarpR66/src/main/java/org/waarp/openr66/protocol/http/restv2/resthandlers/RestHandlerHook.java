@@ -34,6 +34,7 @@ import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.role.RoleDefault;
 import org.waarp.common.role.RoleDefault.ROLE;
 import org.waarp.common.utility.BaseXx;
+import org.waarp.common.utility.ParametersChecker;
 import org.waarp.openr66.dao.DAOFactory;
 import org.waarp.openr66.dao.HostDAO;
 import org.waarp.openr66.dao.exception.DAOConnectionException;
@@ -255,7 +256,7 @@ public class RestHandlerHook implements HandlerHook {
                                    final List<MediaType> consumedTypes) {
 
     final String contentTypeHeader = request.headers().get(CONTENT_TYPE);
-    if (contentTypeHeader == null || contentTypeHeader.isEmpty()) {
+    if (ParametersChecker.isEmpty(contentTypeHeader)) {
       return true;
     }
 

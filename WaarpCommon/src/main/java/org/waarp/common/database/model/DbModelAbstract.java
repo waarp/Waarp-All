@@ -39,6 +39,22 @@ import java.util.ConcurrentModificationException;
  * This Abstract class regroups common methods for all implementation classes.
  */
 public abstract class DbModelAbstract implements DbModel {
+  /**
+   * Max size in Binary mode, store in BASE64 mode (so x2)
+   */
+  public static final int MAX_BINARY = 256;
+  /**
+   * Max size in LONGVARCHAR (except ORACLE = 4000)
+   */
+  public static final int MAX_LONGVARCHAR = 12 * 1024;
+  /**
+   * Max Key size in VARCHAR
+   */
+  public static final int MAX_KEY_VARCHAR = 256;
+  /**
+   * Max VARCHAR size (except ORACLE = 4000)
+   */
+  public static final int MAX_VARCHAR = 8096;
   protected static DbTypeResolver dbTypeResolver;
 
   public abstract static class DbTypeResolver {
@@ -59,6 +75,8 @@ public abstract class DbModelAbstract implements DbModel {
     public String getCreateIndex() {
       return "CREATE INDEX ";
     }
+
+    public abstract DbType getDbType();
   }
 
   public DbTypeResolver getDbTypeResolver() {

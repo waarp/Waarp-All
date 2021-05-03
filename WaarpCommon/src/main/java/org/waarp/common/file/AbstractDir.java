@@ -27,6 +27,7 @@ import org.waarp.common.command.exception.Reply553Exception;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.utility.DetectionUtils;
+import org.waarp.common.utility.ParametersChecker;
 import org.waarp.common.utility.WaarpStringUtils;
 
 import java.io.File;
@@ -204,7 +205,7 @@ public abstract class AbstractDir implements DirInterface {
    */
   protected String consolidatePath(final String path)
       throws CommandAbstractException {
-    if (path == null || path.isEmpty()) {
+    if (ParametersChecker.isEmpty(path)) {
       throw new Reply501Exception("Path must not be empty");
     }
     // First check if the path is relative or absolute

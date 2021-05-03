@@ -28,6 +28,7 @@ import org.waarp.common.file.AbstractDir;
 import org.waarp.common.file.DataBlock;
 import org.waarp.common.file.FileUtils;
 import org.waarp.common.file.filesystembased.FilesystemBasedFileImpl;
+import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.utility.WaarpNettyUtil;
@@ -104,12 +105,28 @@ public class R66File extends FilesystemBasedFileImpl {
   public void retrieveBlocking(final AtomicBoolean running)
       throws OpenR66RunnerErrorException, OpenR66ProtocolSystemException {
     boolean retrieveDone = false;
+    String errorMesg = "";
     final LocalChannelReference localChannelReference =
         getSession().getLocalChannelReference();
     FilesystemBasedDigest digestGlobal = null;
     final FilesystemBasedDigest digestBlock =
         ((R66Session) session).getDigestBlock();
     logger.debug("File to retrieve: {}", this);
+    long toRead = 0;
+    try {
+      long length = length();
+      toRead = (length - getPosition());
+      if (!isReady || toRead <= 0) {
+        logger.error(
+            "File is not ready to be retrieved or nothing to read: Filename {} isReady {} initialLength {} position {}",
+            getBasename(), isReady, length, getPosition());
+        errorMesg = "File is not ready to be retrieved or nothing to read: " +
+                    "Filename " + getBasename() + " isReady " + isReady + " " +
+                    "initialLength " + length + " position " + getPosition();
+      }
+    } catch (CommandAbstractException e) {
+      logger.warn(e.getMessage());
+    }
     DataBlock block = null;
     try {
       if (!isReady) {
@@ -118,11 +135,29 @@ public class R66File extends FilesystemBasedFileImpl {
       try {
         block = readDataBlock();
       } catch (final FileEndOfTransferException e) {
+        if (toRead > 0) {
+          // Should not be
+          retrieveDone = false;
+          errorMesg = "File is ready to be retrieved and needs to read but " +
+                      "EndOfTransfer: " + "Filename " + getBasename() +
+                      " isReady " + isReady + " " + "toRead " + toRead +
+                      " position " + getPosition();
+          return;
+        }
         // Last block (in fact, no data to read)
         retrieveDone = true;
         return;
       }
       if (block == null) {
+        if (toRead > 0) {
+          // Should not be
+          retrieveDone = false;
+          errorMesg = "File is ready to be retrieved and needs to read but " +
+                      "no Read: " + "Filename " + getBasename() + " isReady " +
+                      isReady + " " + "toRead " + toRead + " position " +
+                      getPosition();
+          return;
+        }
         // Last block (in fact, no data to read)
         retrieveDone = true;
         return;
@@ -153,9 +188,12 @@ public class R66File extends FilesystemBasedFileImpl {
              !Thread.interrupted()) {
         WaarpNettyUtil.awaitOrInterrupted(future1);
         if (!future1.isSuccess()) {
+          errorMesg = "Message not written: " + future1.cause() != null?
+              future1.cause().getMessage() : " no cause";
           return;
         }
         if (!running.get() && Thread.interrupted()) {
+          errorMesg = "Running stopped";
           return;
         }
         try {
@@ -165,6 +203,10 @@ public class R66File extends FilesystemBasedFileImpl {
           WaarpNettyUtil.awaitOrInterrupted(future1);
           if (future1.isSuccess()) {
             retrieveDone = true;
+          } else {
+            errorMesg =
+                "Message not written in loop: " + future1.cause() != null?
+                    future1.cause().getMessage() : " no cause";
           }
           return;
         }
@@ -181,12 +223,15 @@ public class R66File extends FilesystemBasedFileImpl {
       }
       if (!running.get() && Thread.interrupted()) {
         // stopped
+        errorMesg = "Running stopped step 2";
         return;
       }
       // Wait for last write
       if (future1 != null) {
         WaarpNettyUtil.awaitOrInterrupted(future1);
         if (!future1.isSuccess()) {
+          errorMesg = "Message not written at end: " + future1.cause() != null?
+              future1.cause().getMessage() : " no cause";
           return;
         }
       }
@@ -205,6 +250,11 @@ public class R66File extends FilesystemBasedFileImpl {
     } finally {
       if (block != null) {
         block.clear();
+      }
+      try {
+        closeFile();
+      } catch (CommandAbstractException ignore) {
+        SysErrLogger.FAKE_LOGGER.ignoreLog(ignore);
       }
       if (retrieveDone) {
         String hash = null;
@@ -227,10 +277,11 @@ public class R66File extends FilesystemBasedFileImpl {
         }
       } else {
         // An error occurs!
+        logger.error("Cannot send file: " + errorMesg);
         getSession().setFinalizeTransfer(false, new R66Result(
-            new OpenR66ProtocolSystemException("Transfer in error"),
-            getSession(), false, ErrorCode.TransferError,
-            getSession().getRunner()));
+            new OpenR66ProtocolSystemException(
+                "Transfer in error: " + errorMesg), getSession(), false,
+            ErrorCode.TransferError, getSession().getRunner()));
       }
     }
   }
@@ -247,7 +298,8 @@ public class R66File extends FilesystemBasedFileImpl {
     try {
       return getFileFromPath(getFile());
     } catch (final CommandAbstractException e) {
-      logger.warn("Exception while getting file: " + this, e);
+      logger.warn("Exception while getting file: " + this + " : {}",
+                  e.getMessage());
       return null;
     }
   }
@@ -350,10 +402,11 @@ public class R66File extends FilesystemBasedFileImpl {
         }
       }
     } catch (final FileNotFoundException e) {
-      logger.error("FileInterface not found in getFileInputStream:", e);
+      logger.error("FileInterface not found in getFileInputStream: {}",
+                   e.getMessage());
       return null;
     } catch (final IOException e) {
-      logger.error("Change position in getFileInputStream:", e);
+      logger.error("Change position in getFileInputStream: {}", e.getMessage());
       return null;
     }
     return fileInputStream;
@@ -373,10 +426,10 @@ public class R66File extends FilesystemBasedFileImpl {
       raf = new RandomAccessFile(trueFile, "rw");//NOSONAR
       raf.seek(getPosition());
     } catch (final FileNotFoundException e) {
-      logger.error("File not found in getRandomFile:", e);
+      logger.error("File not found in getRandomFile: {}", e.getMessage());
       return null;
     } catch (final IOException e) {
-      logger.error("Change position in getRandomFile:", e);
+      logger.error("Change position in getRandomFile: {}", e.getMessage());
       return null;
     }
     return raf;
@@ -411,7 +464,8 @@ public class R66File extends FilesystemBasedFileImpl {
         raf.setLength(getPosition());
         org.waarp.common.file.FileUtils.close(raf);
       } catch (final IOException e) {
-        logger.error("Change position in getFileOutputStream:", e);
+        logger.error("Change position in getFileOutputStream: {}",
+                     e.getMessage());
         return null;
       }
     }
@@ -419,7 +473,7 @@ public class R66File extends FilesystemBasedFileImpl {
     try {
       fos = new FileOutputStream(trueFile, append);
     } catch (final FileNotFoundException e) {
-      logger.error("File not found in getRandomFile:", e);
+      logger.error("File not found in getRandomFile: {}", e.getMessage());
       return null;
     }
     return fos;

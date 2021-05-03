@@ -169,7 +169,7 @@ public abstract class AbstractExecTask extends AbstractTask {
           FileUtils.close(inputStream);
           logger.error(
               "Exception: " + e1.getMessage() + " Exec in error with " +
-              commandLine, e1);
+              commandLine + ": {}", e1.getMessage());
           futureCompletion.setFailure(e1);
           myResult = true;
           return this;

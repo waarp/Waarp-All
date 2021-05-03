@@ -158,7 +158,8 @@ public abstract class SendThroughClient extends AbstractTransfer {
     try {
       rule = new DbRule(transferArgs.getRulename());
     } catch (final WaarpDatabaseException e) {
-      logger.error("Cannot get Rule: " + transferArgs.getRulename(), e);
+      logger.error("Cannot get Rule: " + transferArgs.getRulename() + ": {}",
+                   e.getMessage());
       future.setResult(
           new R66Result(new OpenR66DatabaseGlobalException(e), null, true,
                         ErrorCode.Internal, null));
@@ -184,7 +185,7 @@ public abstract class SendThroughClient extends AbstractTransfer {
         taskRunner = new DbTaskRunner(rule, isSender, request,
                                       transferArgs.getRemoteHost(), null);
       } catch (final WaarpDatabaseException e) {
-        logger.error("Cannot get task", e);
+        logger.error("Cannot get task: {}", e.getMessage());
         future.setResult(
             new R66Result(new OpenR66DatabaseGlobalException(e), null, true,
                           ErrorCode.Internal, null));

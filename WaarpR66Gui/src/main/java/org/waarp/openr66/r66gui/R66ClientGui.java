@@ -24,6 +24,7 @@ import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
+import org.waarp.common.utility.ParametersChecker;
 import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.configuration.Messages;
 
@@ -550,7 +551,7 @@ public class R66ClientGui {
     startRequest();
     disableAllButtons();
     environnement.hostId = (String) comboBoxHosts.getSelectedItem();
-    if (environnement.hostId == null || environnement.hostId.trim().isEmpty()) {
+    if (ParametersChecker.isEmpty(environnement.hostId)) {
       environnement.hostId =
           Messages.getString("R66ClientGui.26"); //$NON-NLS-1$
       environnement.guiResultat =
@@ -574,28 +575,26 @@ public class R66ClientGui {
     environnement.isMD5 = checkBoxMD5.isSelected();
 
     boolean ok = true;
-    if (environnement.hostId == null || environnement.hostId.trim().isEmpty()) {
+    if (ParametersChecker.isEmpty(environnement.hostId)) {
       environnement.hostId =
           Messages.getString("R66ClientGui.26"); //$NON-NLS-1$
       ok = false;
     } else {
       environnement.hostId = environnement.hostId.trim();
     }
-    if (environnement.filePath == null ||
-        environnement.filePath.trim().isEmpty()) {
+    if (ParametersChecker.isEmpty(environnement.filePath)) {
       environnement.filePath =
           Messages.getString("R66ClientGui.30"); //$NON-NLS-1$
       ok = false;
     } else {
       environnement.filePath = environnement.filePath.trim();
     }
-    if (environnement.information == null ||
-        environnement.information.trim().isEmpty()) {
+    if (ParametersChecker.isEmpty(environnement.information)) {
       environnement.information = "";
     } else {
       environnement.information = environnement.information.trim();
     }
-    if (environnement.ruleId == null || environnement.ruleId.trim().isEmpty()) {
+    if (ParametersChecker.isEmpty(environnement.ruleId)) {
       environnement.ruleId =
           Messages.getString("R66ClientGui.32"); //$NON-NLS-1$
       ok = false;

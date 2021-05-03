@@ -136,7 +136,7 @@ public abstract class TestAbstract extends TestAbstractMinimal {
     logger.warn("Send {}", informationPacket);
     ChannelUtils
         .writeAbstractLocalPacket(localChannelReference, informationPacket,
-                                  false);
+                                  true);
     if (informationPacket instanceof KeepAlivePacket ||
         informationPacket instanceof NoOpPacket) {
       // do no await
@@ -157,12 +157,12 @@ public abstract class TestAbstract extends TestAbstractMinimal {
     } else {
       final ValidPacket info = (ValidPacket) r66result.getOther();
       if (info != null && scode != -1) {
-        logger.warn("nb: {}", Integer.parseInt(info.getSmiddle()));
+        logger.debug("nb: {}", Integer.parseInt(info.getSmiddle()));
         final String[] files = info.getSheader().split("\n");
         int i = 0;
         for (final String file : files) {
           i++;
-          logger.warn("file: {} {}", i, file);
+          logger.debug("file: {} {}", i, file);
         }
       } else {
         if (info != null && info.getSheader() != null) {
@@ -314,7 +314,7 @@ public abstract class TestAbstract extends TestAbstractMinimal {
     }
     if (file.exists()) {
       dir = file.getParentFile();
-      System.err.println("Find serverInit file: " + file.getAbsolutePath());
+      logger.debug("Find serverInit file: " + file.getAbsolutePath());
       ServerInitDatabase.main(new String[] {
           file.getAbsolutePath(), "-initdb", "-dir", dir.getAbsolutePath(),
           "-auth", new File(dir, "OpenR66-authent-A.xml").getAbsolutePath(),
@@ -330,21 +330,21 @@ public abstract class TestAbstract extends TestAbstractMinimal {
           file2 = new File(dir, serverConfig);
         }
         if (file2.exists()) {
-          System.err.println("Find server file: " + file2.getAbsolutePath());
+          logger.debug("Find server file: " + file2.getAbsolutePath());
           R66Server.main(new String[] { file2.getAbsolutePath() });
           logger.warn("Start Done");
+          Thread.sleep(1000);
         } else {
-          System.err
-              .println("Cannot find server file: " + file2.getAbsolutePath());
+          logger.error("Cannot find server file: " + file2.getAbsolutePath());
         }
       }
     } else {
-      System.err
-          .println("Cannot find serverInit file: " + file.getAbsolutePath());
+      logger.error("Cannot find serverInit file: " + file.getAbsolutePath());
     }
   }
 
   public static void tearDownAfterClassServer() throws Exception {
+    WaarpSystemUtil.stopLogger(true);
     Configuration.configuration.setTimeoutCon(100);
     ChannelUtils.exit();
     deleteBase();
@@ -373,8 +373,8 @@ public abstract class TestAbstract extends TestAbstractMinimal {
     }
     logger.warn("Will try to load {}", clientConfigFile);
     if (clientConfigFile.isFile()) {
-      System.err.println(
-          "Find serverInit file: " + clientConfigFile.getAbsolutePath());
+      logger
+          .debug("Find serverInit file: " + clientConfigFile.getAbsolutePath());
       if (!FileBasedConfiguration
           .setClientConfigurationFromXml(Configuration.configuration,
                                          clientConfigFile.getAbsolutePath())) {
@@ -422,6 +422,7 @@ public abstract class TestAbstract extends TestAbstractMinimal {
   }
 
   public static void tearDownAfterClassClient() throws Exception {
+    WaarpSystemUtil.stopLogger(true);
     Configuration.configuration.setTimeoutCon(100);
     if (networkTransaction != null) {
       networkTransaction.closeAll();

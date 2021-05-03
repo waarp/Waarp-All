@@ -20,9 +20,9 @@
 
 package org.waarp.http.protocol;
 
-import com.google.common.base.Strings;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.ParametersChecker;
 
 /**
  * Http Helper methods
@@ -44,14 +44,14 @@ public class HttpHelper {
    * @return the long value or def is null or empty or not parsable
    */
   public static long toLong(final String value, final long def) {
-    if (Strings.isNullOrEmpty(value)) {
+    if (ParametersChecker.isEmpty(value)) {
       return def;
     }
 
     try {
       return Long.parseLong(value);
     } catch (final NumberFormatException e) {
-      logger.warn(e);
+      logger.warn(e.getMessage());
       return def;
     }
   }
@@ -65,13 +65,13 @@ public class HttpHelper {
    * @return the int value or def is null or empty or not parsable
    */
   public static int toInt(final String value, final int def) {
-    if (Strings.isNullOrEmpty(value)) {
+    if (ParametersChecker.isEmpty(value)) {
       return def;
     }
     try {
       return Integer.parseInt(value);
     } catch (final NumberFormatException e) {
-      logger.warn(e);
+      logger.warn(e.getMessage());
       return def;
     }
   }

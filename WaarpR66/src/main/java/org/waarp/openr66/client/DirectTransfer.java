@@ -207,7 +207,8 @@ public class DirectTransfer extends AbstractTransfer {
             result.getRunner().delete();
           } catch (final WaarpDatabaseException e) {
             logger.warn("Cannot apply nolog to     " +
-                        result.getRunner().toShortString(), e);
+                        result.getRunner().toShortString() + " : {}",
+                        e.getMessage());
           }
         }
         if (WaarpSystemUtil.isJunit()) {

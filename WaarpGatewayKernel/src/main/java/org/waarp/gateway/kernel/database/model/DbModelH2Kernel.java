@@ -81,10 +81,10 @@ public class DbModelH2Kernel extends DbModelH2 {
     try {
       request.query(action.toString());
     } catch (final WaarpDatabaseNoConnectionException e) {
-      SysErrLogger.FAKE_LOGGER.syserr(e);
+      SysErrLogger.FAKE_LOGGER.ignoreLog(e);
       return;
     } catch (final WaarpDatabaseSqlException e) {
-      SysErrLogger.FAKE_LOGGER.syserr(e);
+      SysErrLogger.FAKE_LOGGER.ignoreLog(e);
       // XXX FIX No return
     } finally {
       request.close();
@@ -102,10 +102,10 @@ public class DbModelH2Kernel extends DbModelH2 {
     try {
       request.query(action.toString());
     } catch (final WaarpDatabaseNoConnectionException e) {
-      SysErrLogger.FAKE_LOGGER.syserr(e);
+      SysErrLogger.FAKE_LOGGER.ignoreLog(e);
       return;
     } catch (final WaarpDatabaseSqlException e) {
-      SysErrLogger.FAKE_LOGGER.syserr(e);
+      SysErrLogger.FAKE_LOGGER.ignoreLog(e);
       // XXX FIX No return
     } finally {
       request.close();
@@ -120,7 +120,7 @@ public class DbModelH2Kernel extends DbModelH2 {
     try {
       request.query(action.toString());
     } catch (final WaarpDatabaseNoConnectionException e) {
-      SysErrLogger.FAKE_LOGGER.syserr(e);
+      SysErrLogger.FAKE_LOGGER.ignoreLog(e);
     } catch (final WaarpDatabaseSqlException e) {
       // version <= 1.2.173
       action = new StringBuilder(
@@ -130,9 +130,9 @@ public class DbModelH2Kernel extends DbModelH2 {
       try {
         request.query(action.toString());
       } catch (final WaarpDatabaseNoConnectionException e2) {
-        SysErrLogger.FAKE_LOGGER.syserr(e2);
+        SysErrLogger.FAKE_LOGGER.ignoreLog(e2);
       } catch (final WaarpDatabaseSqlException e2) {
-        SysErrLogger.FAKE_LOGGER.syserr(e2);
+        SysErrLogger.FAKE_LOGGER.ignoreLog(e2);
       } finally {
         request.close();
       }

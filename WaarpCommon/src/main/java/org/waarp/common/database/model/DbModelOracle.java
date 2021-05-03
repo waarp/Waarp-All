@@ -59,6 +59,11 @@ public abstract class DbModelOracle extends DbModelAbstract {
     public String getType(final int sqlType) {
       return DBType.getType(sqlType);
     }
+
+    @Override
+    public DbType getDbType() {
+      return type;
+    }
   }
 
   static {
@@ -207,14 +212,14 @@ public abstract class DbModelOracle extends DbModelAbstract {
 
   protected enum DBType {
     CHAR(Types.CHAR, " CHAR(3) "), VARCHAR(Types.VARCHAR, " VARCHAR2(4000) "),
-    NVARCHAR(Types.NVARCHAR, " VARCHAR2(1000) "),
-    LONGVARCHAR(Types.LONGVARCHAR, " CLOB "), BIT(Types.BIT, " CHAR(1) "),
-    TINYINT(Types.TINYINT, " SMALLINT "),
+    NVARCHAR(Types.NVARCHAR, " VARCHAR2(" + MAX_KEY_VARCHAR + ") "),
+    LONGVARCHAR(Types.LONGVARCHAR, " VARCHAR2(4000) "),
+    BIT(Types.BIT, " CHAR(1) "), TINYINT(Types.TINYINT, " SMALLINT "),
     SMALLINT(Types.SMALLINT, " SMALLINT "), INTEGER(Types.INTEGER, " INTEGER "),
     BIGINT(Types.BIGINT, " NUMBER(38,0) "), REAL(Types.REAL, " REAL "),
     DOUBLE(Types.DOUBLE, " DOUBLE PRECISION "),
-    VARBINARY(Types.VARBINARY, " BLOB "), DATE(Types.DATE, " DATE "),
-    TIMESTAMP(Types.TIMESTAMP, " TIMESTAMP ");
+    VARBINARY(Types.VARBINARY, " RAW(" + (MAX_BINARY * 2) + ") "),
+    DATE(Types.DATE, " DATE "), TIMESTAMP(Types.TIMESTAMP, " TIMESTAMP(3) ");
 
     public final int type;
 

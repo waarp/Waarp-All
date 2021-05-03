@@ -21,8 +21,10 @@
 package org.waarp.openr66.protocol.http.restv2.converters;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.waarp.common.database.exception.WaarpDatabaseSqlException;
+import org.waarp.common.json.JsonHandler;
+import org.waarp.common.logging.SysErrLogger;
 import org.waarp.openr66.pojo.Limit;
 import org.waarp.openr66.protocol.http.restv2.errors.RestError;
 import org.waarp.openr66.protocol.http.restv2.errors.RestErrorException;
@@ -60,7 +62,7 @@ public final class LimitsConverter {
    * @return the converted ObjectNode
    */
   public static ObjectNode limitToNode(final Limit limits) {
-    final ObjectNode node = new ObjectNode(JsonNodeFactory.instance);
+    final ObjectNode node = JsonHandler.createObjectNode();
     node.put(READ_GLOBAL_LIMIT, limits.getReadGlobalLimit());
     node.put(WRITE_GLOBAL_LIMIT, limits.getWriteGlobalLimit());
     node.put(READ_SESSION_LIMIT, limits.getReadSessionLimit());
@@ -81,7 +83,12 @@ public final class LimitsConverter {
    *     represent a Limit object
    */
   public static Limit nodeToNewLimit(final ObjectNode object) {
-    final Limit emptyLimits = new Limit(serverName(), 0, 0, 0, 0, 0);
+    Limit emptyLimits = null;
+    try {
+      emptyLimits = new Limit(serverName(), 0, 0, 0, 0, 0);
+    } catch (WaarpDatabaseSqlException e) {
+      SysErrLogger.FAKE_LOGGER.syserr(e);
+    }
     return nodeToUpdatedLimit(object, emptyLimits);
   }
 

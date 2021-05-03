@@ -124,8 +124,9 @@ public class RequestTransfer implements Runnable {
         try {
           sspecialId = Long.parseLong(args[i]);
         } catch (final NumberFormatException e) {
-          logger.error(Messages.getString("RequestTransfer.1") + args[i],
-                       e); //$NON-NLS-1$
+          logger
+              .error(Messages.getString("RequestTransfer.1") + args[i] + ": {}",
+                     e.getMessage()); //$NON-NLS-1$
           return false;
         }
       } else if ("-to".equalsIgnoreCase(args[i])) {
@@ -138,8 +139,9 @@ public class RequestTransfer implements Runnable {
         try {
           srequester = Configuration.configuration.getHostId(srequested);
         } catch (final WaarpDatabaseException e) {
-          logger.error(Messages.getString("RequestTransfer.5") + srequested,
-                       e); //$NON-NLS-1$
+          logger.error(
+              Messages.getString("RequestTransfer.5") + srequested + ": {}",
+              e.getMessage()); //$NON-NLS-1$
           return false;
         }
       } else if ("-from".equalsIgnoreCase(args[i])) {
@@ -152,8 +154,9 @@ public class RequestTransfer implements Runnable {
         try {
           srequested = Configuration.configuration.getHostId(srequester);
         } catch (final WaarpDatabaseException e) {
-          logger.error(Messages.getString("RequestTransfer.5") + srequester,
-                       e); //$NON-NLS-1$
+          logger.error(
+              Messages.getString("RequestTransfer.5") + srequester + ": {}",
+              e.getMessage()); //$NON-NLS-1$
           return false;
         }
       } else if ("-cancel".equalsIgnoreCase(args[i])) {

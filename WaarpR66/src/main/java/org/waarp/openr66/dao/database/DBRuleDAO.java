@@ -24,7 +24,9 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.waarp.common.database.exception.WaarpDatabaseSqlException;
 import org.waarp.common.lru.SynchronizedLruCache;
+import org.waarp.common.utility.ParametersChecker;
 import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.openr66.dao.RuleDAO;
 import org.waarp.openr66.dao.exception.DAOConnectionException;
@@ -186,25 +188,29 @@ public class DBRuleDAO extends StatementExecutor<Rule> implements RuleDAO {
   @Override
   public Rule getFromResultSet(final ResultSet set)
       throws SQLException, DAOConnectionException {
-    return new Rule(set.getString(ID_FIELD), set.getInt(MODE_TRANS_FIELD),
-                    retrieveHostids(set.getString(HOSTIDS_FIELD)),
-                    set.getString(RECV_PATH_FIELD),
-                    set.getString(SEND_PATH_FIELD),
-                    set.getString(ARCHIVE_PATH_FIELD),
-                    set.getString(WORK_PATH_FIELD),
-                    retrieveTasks(set.getString(R_PRE_TASKS_FIELD)),
-                    retrieveTasks(set.getString(R_POST_TASKS_FIELD)),
-                    retrieveTasks(set.getString(R_ERROR_TASKS_FIELD)),
-                    retrieveTasks(set.getString(S_PRE_TASKS_FIELD)),
-                    retrieveTasks(set.getString(S_POST_TASKS_FIELD)),
-                    retrieveTasks(set.getString(S_ERROR_TASKS_FIELD)),
-                    UpdatedInfo.valueOf(set.getInt(UPDATED_INFO_FIELD)));
+    try {
+      return new Rule(set.getString(ID_FIELD), set.getInt(MODE_TRANS_FIELD),
+                      retrieveHostids(set.getString(HOSTIDS_FIELD)),
+                      set.getString(RECV_PATH_FIELD),
+                      set.getString(SEND_PATH_FIELD),
+                      set.getString(ARCHIVE_PATH_FIELD),
+                      set.getString(WORK_PATH_FIELD),
+                      retrieveTasks(set.getString(R_PRE_TASKS_FIELD)),
+                      retrieveTasks(set.getString(R_POST_TASKS_FIELD)),
+                      retrieveTasks(set.getString(R_ERROR_TASKS_FIELD)),
+                      retrieveTasks(set.getString(S_PRE_TASKS_FIELD)),
+                      retrieveTasks(set.getString(S_POST_TASKS_FIELD)),
+                      retrieveTasks(set.getString(S_ERROR_TASKS_FIELD)),
+                      UpdatedInfo.valueOf(set.getInt(UPDATED_INFO_FIELD)));
+    } catch (WaarpDatabaseSqlException e) {
+      throw new SQLException(e);
+    }
   }
 
   private List<String> retrieveHostids(final String xml)
       throws DAOConnectionException {
     final ArrayList<String> res = new ArrayList<String>();
-    if (xml == null || xml.isEmpty()) {
+    if (ParametersChecker.isEmpty(xml)) {
       return res;
     }
     final Document document;
@@ -228,7 +234,7 @@ public class DBRuleDAO extends StatementExecutor<Rule> implements RuleDAO {
   private List<RuleTask> retrieveTasks(final String xml)
       throws DAOConnectionException {
     final ArrayList<RuleTask> res = new ArrayList<RuleTask>();
-    if (xml == null || xml.isEmpty()) {
+    if (ParametersChecker.isEmpty(xml)) {
       return res;
     }
     final Document document;

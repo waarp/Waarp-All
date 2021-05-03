@@ -140,7 +140,7 @@ public abstract class DataModelRestMethodHandler<E extends AbstractDbData>
       final String json = body.toString(WaarpStringUtils.UTF8);
       node = JsonHandler.getFromStringExc(json);
     } catch (final UnsupportedCharsetException e) {
-      logger.warn("Error", e);
+      logger.warn("Error" + " : {}", e.getMessage());
       throw new HttpIncorrectRequestException(e);
     } catch (final JsonProcessingException e) {
       result.setDetail("ERROR: JSON body cannot be parsed");

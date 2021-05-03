@@ -28,6 +28,7 @@ import org.waarp.openr66.context.ErrorCode;
 import org.waarp.openr66.context.R66FiniteDualStates;
 import org.waarp.openr66.context.R66Result;
 import org.waarp.openr66.context.R66Session;
+import org.waarp.openr66.context.filesystem.R66File;
 import org.waarp.openr66.context.task.exception.OpenR66RunnerErrorException;
 import org.waarp.openr66.database.data.DbTaskRunner.TASKSTEP;
 import org.waarp.openr66.protocol.configuration.Configuration;
@@ -97,7 +98,7 @@ public class RetrieveRunner extends Thread {
       try {
         if (session.getRunner().getGloballaststep() ==
             TASKSTEP.POSTTASK.ordinal()) {
-          logger.debug("Restart from POSTTASK: EndTransfer");
+          logger.warn("Restart from POSTTASK: EndTransfer");
           // restart from PostTask global step so just end now
           try {
             ChannelUtils.writeEndTransfer(localChannelReference);
@@ -108,7 +109,16 @@ public class RetrieveRunner extends Thread {
           }
         } else {
           logger.debug("Start retrieve operation (send)");
-          session.getFile().retrieveBlocking(running);
+          final R66File r66File = session.getFile();
+          if (r66File == null) {
+            logger.error("R66File null : {}", r66File);
+            transferInError(
+                new OpenR66RunnerErrorException("R66File not setup"));
+            logger.info(END_RETRIEVE_IN_ERROR);
+            return;
+          } else {
+            r66File.retrieveBlocking(running);
+          }
         }
       } catch (final OpenR66RunnerErrorException e) {
         transferInError(e);
@@ -118,6 +128,11 @@ public class RetrieveRunner extends Thread {
         transferInError(e);
         logger.info(END_RETRIEVE_IN_ERROR);
         return;
+      } catch (final Exception e) {
+        logger.info("TRACE for unknown Exception ", e);
+        transferInError(new OpenR66RunnerErrorException(e));
+        logger.info(END_RETRIEVE_IN_ERROR);
+        return;
       }
       localChannelReference.getFutureEndTransfer().awaitOrInterruptible();
       logger.debug("Await future End Transfer done: {}",
@@ -125,7 +140,6 @@ public class RetrieveRunner extends Thread {
       if (localChannelReference.getFutureEndTransfer().isDone() &&
           localChannelReference.getFutureEndTransfer().isSuccess()) {
         // send a validation
-        requestValidDone = true;
         localChannelReference.sessionNewState(R66FiniteDualStates.ENDREQUESTS);
         final EndRequestPacket validPacket =
             new EndRequestPacket(ErrorCode.CompleteOk.ordinal());
@@ -138,6 +152,7 @@ public class RetrieveRunner extends Thread {
           ChannelUtils
               .writeAbstractLocalPacket(localChannelReference, validPacket,
                                         true);
+          requestValidDone = true;
         } catch (final OpenR66ProtocolPacketException ignored) {
           // nothing
         }

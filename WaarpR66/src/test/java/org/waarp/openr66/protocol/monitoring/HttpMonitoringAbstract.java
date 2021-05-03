@@ -30,10 +30,8 @@ import org.junit.runners.MethodSorters;
 import org.waarp.common.database.exception.WaarpDatabaseException;
 import org.waarp.common.digest.FilesystemBasedDigest;
 import org.waarp.common.file.FileUtils;
-import org.waarp.common.logging.WaarpLogLevel;
-import org.waarp.common.logging.WaarpLoggerFactory;
-import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
 import org.waarp.common.utility.Processes;
+import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.openr66.client.MultipleDirectTransfer;
 import org.waarp.openr66.client.SpooledDirectoryTransfer;
 import org.waarp.openr66.client.SpooledDirectoryTransfer.Arguments;
@@ -86,14 +84,14 @@ public abstract class HttpMonitoringAbstract extends TestAbstract {
    */
   @AfterClass
   public static void tearDownAfterClass() throws Exception {
-    WaarpLoggerFactory.setDefaultFactoryIfNotSame(
-        new WaarpSlf4JLoggerFactory(WaarpLogLevel.NONE));
+    WaarpSystemUtil.stopLogger(true);
     Thread.sleep(100);
     for (final DbTaskRunner dbTaskRunner : dbTaskRunners) {
       try {
         dbTaskRunner.delete();
       } catch (final WaarpDatabaseException e) {
-        logger.warn("Cannot apply nolog to " + dbTaskRunner, e);
+        logger.warn("Cannot apply nolog to " + dbTaskRunner + " : {}",
+                    e.getMessage());
       }
     }
     final DbHostAuth host = new DbHostAuth("hostas");
@@ -191,7 +189,7 @@ public abstract class HttpMonitoringAbstract extends TestAbstract {
         logger.error("Interrupted", e);
         return;
       } catch (WaarpDatabaseException e) {
-        logger.error("Cannot found DbTaskRunner", e);
+        logger.error("Cannot found DbTaskRunner: {}", e.getMessage());
         return;
       }
     }
@@ -481,7 +479,7 @@ public abstract class HttpMonitoringAbstract extends TestAbstract {
       arguments.setParallel(false);
       arguments.setLimitParallel(1);
       arguments.setMinimalSize(100);
-      arguments.setLogWarn(true);
+      arguments.setLogWarn(false);
       arguments.setIgnoreAlreadyUsed(ignoreAlreadyUsed);
 
       spooledDirectoryTransfer =
@@ -510,18 +508,22 @@ public abstract class HttpMonitoringAbstract extends TestAbstract {
       dbTaskRunners.add(result.getRunner());
     } else {
       if (result == null || result.getRunner() == null) {
-        logger.warn("Transfer in Error with no Id", future.getCause());
+        logger.warn("Transfer in Error with no Id" + " : {}",
+                    future.getCause() != null? future.getCause().getMessage() :
+                        "");
         assertTrue("Result should not be null, neither runner", false);
       }
       if (result.getRunner().getErrorInfo() == ErrorCode.Warning) {
-        logger.warn(
-            "Transfer in Warning with Id: " + result.getRunner().getSpecialId(),
-            future.getCause());
+        logger.warn("Transfer in Warning with Id: " +
+                    result.getRunner().getSpecialId() + " : {}",
+                    future.getCause() != null? future.getCause().getMessage() :
+                        "");
         assertTrue("Transfer in Warning", false);
       } else {
         logger.error(
-            "Transfer in Error with Id: " + result.getRunner().getSpecialId(),
-            future.getCause());
+            "Transfer in Error with Id: " + result.getRunner().getSpecialId() +
+            " : {}",
+            future.getCause() != null? future.getCause().getMessage() : "");
         assertTrue("Transfer in Error", false);
       }
     }

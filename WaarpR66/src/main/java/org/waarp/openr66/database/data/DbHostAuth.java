@@ -19,6 +19,7 @@
  */
 package org.waarp.openr66.database.data;
 
+import com.fasterxml.jackson.core.Base64Variants;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -33,6 +34,7 @@ import org.waarp.common.json.JsonHandler;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.role.RoleDefault;
+import org.waarp.common.utility.ParametersChecker;
 import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.openr66.context.R66Session;
 import org.waarp.openr66.dao.AbstractDAO;
@@ -83,7 +85,7 @@ public class DbHostAuth extends AbstractDbDataDao<Host> {
   }
 
   public static final int[] dbTypes = {
-      Types.VARCHAR, Types.INTEGER, Types.BIT, Types.VARBINARY, Types.BIT,
+      Types.NVARCHAR, Types.INTEGER, Types.BIT, Types.VARBINARY, Types.BIT,
       Types.BIT, Types.BIT, Types.BIT, Types.INTEGER, Types.NVARCHAR
   };
 
@@ -95,6 +97,10 @@ public class DbHostAuth extends AbstractDbDataDao<Host> {
       Columns.ADMINROLE.name() + ',' + Columns.ISCLIENT.name() + ',' +
       Columns.ISACTIVE.name() + ',' + Columns.ISPROXIFIED.name() + ',' +
       Columns.UPDATEDINFO.name() + ',' + Columns.HOSTID.name();
+
+  public static final Columns[] indexes = {
+      Columns.UPDATEDINFO
+  };
 
   @Override
   protected void initObject() {
@@ -135,7 +141,8 @@ public class DbHostAuth extends AbstractDbDataDao<Host> {
    */
   public DbHostAuth(final String hostid, final String address, final int port,
                     final boolean isSSL, final byte[] hostkey,
-                    final boolean adminrole, final boolean isClient) {
+                    final boolean adminrole, final boolean isClient)
+      throws WaarpDatabaseSqlException {
     pojo = new Host(hostid, address, port, hostkey, isSSL, isClient, false,
                     adminrole);
     if (hostkey != null) {
@@ -145,7 +152,7 @@ public class DbHostAuth extends AbstractDbDataDao<Host> {
             Configuration.configuration.getCryptoKey().cryptToHex(hostkey)
                                        .getBytes(WaarpStringUtils.UTF8));
       } catch (final Exception e) {
-        logger.warn("Error while cyphering hostkey", e);
+        logger.warn("Error while cyphering hostkey" + " : {}", e.getMessage());
         pojo.setHostkey(VALUE_0_BYTE);
       }
     }
@@ -153,6 +160,7 @@ public class DbHostAuth extends AbstractDbDataDao<Host> {
       pojo.setClient(true);
       pojo.setAddress(DEFAULT_CLIENT_ADDRESS);
     }
+    checkValues();
     isSaved = false;
   }
 
@@ -170,12 +178,17 @@ public class DbHostAuth extends AbstractDbDataDao<Host> {
   }
 
   @Override
+  protected void checkValues() throws WaarpDatabaseSqlException {
+    pojo.checkValues();
+  }
+
+  @Override
   public void setFromJson(final ObjectNode node, final boolean ignorePrimaryKey)
       throws WaarpDatabaseSqlException {
     super.setFromJson(node, ignorePrimaryKey);
     if (pojo.getHostkey() == null || pojo.getHostkey().length == 0 ||
-        pojo.getAddress() == null || pojo.getAddress().isEmpty() ||
-        pojo.getHostid() == null || pojo.getHostid().isEmpty()) {
+        ParametersChecker.isEmpty(pojo.getAddress()) ||
+        ParametersChecker.isEmpty(pojo.getHostid())) {
       throw new WaarpDatabaseSqlException(
           "Not enough argument to create the object");
     }
@@ -187,10 +200,76 @@ public class DbHostAuth extends AbstractDbDataDao<Host> {
       } catch (final Exception e) {
         pojo.setHostkey(VALUE_0_BYTE);
       }
+      isSaved = false;
     }
     if (pojo.getPort() < 0) {
       pojo.setClient(true);
       pojo.setAddress(DEFAULT_CLIENT_ADDRESS);
+      isSaved = false;
+    }
+    if (!ignorePrimaryKey) {
+      try {
+        insert();
+      } catch (final WaarpDatabaseException e) {
+        try {
+          update();
+        } catch (final WaarpDatabaseException ex) {
+          logger.error("Cannot save item: {}", ex.getMessage());
+        }
+      }
+    }
+  }
+
+  @Override
+  protected void setFromJson(final String field, final JsonNode value) {
+    if (value == null) {
+      return;
+    }
+    for (final Columns column : Columns.values()) {
+      if (column.name().equalsIgnoreCase(field)) {
+        switch (column) {
+          case ADDRESS:
+            pojo.setAddress(value.asText());
+            break;
+          case ADMINROLE:
+            pojo.setAdmin(value.asBoolean());
+            break;
+          case HOSTKEY:
+            // Change from Base64 to Byte for HostKey
+            try {
+              final byte[] key =
+                  Base64Variants.getDefaultVariant().decode(value.asText());
+              pojo.setHostkey(key);
+            } catch (IllegalArgumentException e) {
+              logger.warn("HostKey not in Base64 from Jackson: {}",
+                          e.getMessage());
+              pojo.setHostkey(value.asText().getBytes(WaarpStringUtils.UTF8));
+            }
+            break;
+          case ISACTIVE:
+            pojo.setActive(value.asBoolean());
+            break;
+          case ISCLIENT:
+            pojo.setClient(value.asBoolean());
+            break;
+          case ISPROXIFIED:
+            pojo.setProxified(value.asBoolean());
+            break;
+          case ISSSL:
+            pojo.setSSL(value.asBoolean());
+            break;
+          case PORT:
+            pojo.setPort(value.asInt());
+            break;
+          case UPDATEDINFO:
+            pojo.setUpdatedInfo(
+                org.waarp.openr66.pojo.UpdatedInfo.valueOf(value.asInt()));
+            break;
+          case HOSTID:
+            pojo.setHostid(value.asText());
+            break;
+        }
+      }
     }
   }
 
@@ -242,50 +321,6 @@ public class DbHostAuth extends AbstractDbDataDao<Host> {
       res.add(hostAuth);
     }
     return res.toArray(new DbHostAuth[0]);
-  }
-
-  @Override
-  protected void setFromJson(final String field, final JsonNode value) {
-    if (value == null) {
-      return;
-    }
-    for (final Columns column : Columns.values()) {
-      if (column.name().equalsIgnoreCase(field)) {
-        switch (column) {
-          case ADDRESS:
-            pojo.setAddress(value.asText());
-            break;
-          case ADMINROLE:
-            pojo.setAdmin(value.asBoolean());
-            break;
-          case HOSTKEY:
-            pojo.setHostkey(value.asText().getBytes(WaarpStringUtils.UTF8));
-            break;
-          case ISACTIVE:
-            pojo.setActive(value.asBoolean());
-            break;
-          case ISCLIENT:
-            pojo.setClient(value.asBoolean());
-            break;
-          case ISPROXIFIED:
-            pojo.setProxified(value.asBoolean());
-            break;
-          case ISSSL:
-            pojo.setSSL(value.asBoolean());
-            break;
-          case PORT:
-            pojo.setPort(value.asInt());
-            break;
-          case UPDATEDINFO:
-            pojo.setUpdatedInfo(
-                org.waarp.openr66.pojo.UpdatedInfo.valueOf(value.asInt()));
-            break;
-          case HOSTID:
-            pojo.setHostid(value.asText());
-            break;
-        }
-      }
-    }
   }
 
   /**
@@ -399,10 +434,10 @@ public class DbHostAuth extends AbstractDbDataDao<Host> {
     final String request =
         "SELECT " + selectAllFields + " FROM " + table + " WHERE ";
     String condition = null;
-    if (host != null) {
+    if (ParametersChecker.isNotEmpty(host)) {
       condition = Columns.HOSTID.name() + " LIKE '%" + host + "%' ";
     }
-    if (addr != null) {
+    if (ParametersChecker.isNotEmpty(addr)) {
       if (condition != null) {
         condition += " AND ";
       } else {
@@ -446,10 +481,10 @@ public class DbHostAuth extends AbstractDbDataDao<Host> {
         new DbPreparedStatement(session);
     final String request = "SELECT " + selectAllFields + " FROM " + table;
     String condition = null;
-    if (host != null) {
+    if (ParametersChecker.isNotEmpty(host)) {
       condition = Columns.HOSTID.name() + " LIKE '%" + host + "%' ";
     }
-    if (addr != null) {
+    if (ParametersChecker.isNotEmpty(addr)) {
       if (condition != null) {
         condition += " AND ";
       } else {
@@ -469,6 +504,7 @@ public class DbHostAuth extends AbstractDbDataDao<Host> {
 
   @Override
   public void changeUpdatedInfo(final UpdatedInfo info) {
+    isSaved = false;
     pojo.setUpdatedInfo(org.waarp.openr66.pojo.UpdatedInfo.fromLegacy(info));
   }
 
@@ -483,6 +519,7 @@ public class DbHostAuth extends AbstractDbDataDao<Host> {
    * @param isActive the isActive to set
    */
   public void setActive(final boolean isActive) {
+    isSaved = false;
     pojo.setActive(isActive);
   }
 
@@ -497,6 +534,7 @@ public class DbHostAuth extends AbstractDbDataDao<Host> {
    * @param isProxified the isProxified to set
    */
   public void setProxified(final boolean isProxified) {
+    isSaved = false;
     pojo.setProxified(isProxified);
   }
 

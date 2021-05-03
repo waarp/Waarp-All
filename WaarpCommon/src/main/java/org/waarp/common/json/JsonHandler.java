@@ -31,6 +31,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.waarp.common.logging.SysErrLogger;
+import org.waarp.common.utility.ParametersChecker;
 
 import java.io.File;
 import java.io.IOException;
@@ -379,7 +380,7 @@ public class JsonHandler {
    */
   public static void setValue(final ObjectNode node, final String field,
                               final String value) {
-    if (value == null || value.isEmpty()) {
+    if (ParametersChecker.isEmpty(value)) {
       return;
     }
     node.put(field, value);
@@ -532,7 +533,7 @@ public class JsonHandler {
    */
   public static void setValue(final ObjectNode node, final Enum<?> field,
                               final String value) {
-    if (value == null || value.isEmpty()) {
+    if (ParametersChecker.isEmpty(value)) {
       return;
     }
     node.put(field.name(), value);
@@ -572,7 +573,7 @@ public class JsonHandler {
    * @return the corresponding HashMap
    */
   public static Map<String, Object> getMapFromString(final String value) {
-    if (value != null && !value.isEmpty()) {
+    if (ParametersChecker.isNotEmpty(value)) {
       Map<String, Object> info = null;
       try {
         info =

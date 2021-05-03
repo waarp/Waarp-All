@@ -45,6 +45,7 @@ import org.waarp.ftp.core.file.FtpDir;
 import java.io.File;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Main class that stores any information that must be accessible from anywhere
@@ -70,7 +71,7 @@ public class FtpSession implements SessionInterface {
   /**
    * Associated Binary connection
    */
-  private volatile FtpDataAsyncConn dataConn;
+  private FtpDataAsyncConn dataConn;
 
   /**
    * Ftp Authentication
@@ -94,7 +95,7 @@ public class FtpSession implements SessionInterface {
   /**
    * Is the current command finished
    */
-  private volatile boolean isCurrentCommandFinished = true;
+  private AtomicBoolean isCurrentCommandFinished = new AtomicBoolean(true);
 
   /**
    * Associated Reply Code
@@ -119,15 +120,15 @@ public class FtpSession implements SessionInterface {
   /**
    * Is the current session using SSL on Control
    */
-  private volatile boolean isSsl;
+  private AtomicBoolean isSsl = new AtomicBoolean(false);
   /**
    * Is the current session will using SSL on Control
    */
-  private volatile WaarpFuture waitForSsl;
+  private WaarpFuture waitForSsl;
   /**
    * WIll all data be using SSL
    */
-  private volatile boolean isDataSsl;
+  private AtomicBoolean isDataSsl = new AtomicBoolean(false);
 
   /**
    * Constructor
@@ -183,7 +184,7 @@ public class FtpSession implements SessionInterface {
    * This function is called when the Command Channel is connected (from
    * channelConnected of the NetworkHandler)
    */
-  public void setControlConnected() {
+  public synchronized void setControlConnected() {
     dataConn = new FtpDataAsyncConn(this);
     // AuthInterface must be done before FtpFile
     ftpAuth = businessHandler.getBusinessNewAuth();
@@ -230,7 +231,7 @@ public class FtpSession implements SessionInterface {
   public void setNextCommand(final CommandInterface command) {
     previousCommand = currentCommand;
     currentCommand = (AbstractCommand) command;
-    isCurrentCommandFinished = false;
+    isCurrentCommandFinished.set(false);
   }
 
   /**
@@ -255,7 +256,7 @@ public class FtpSession implements SessionInterface {
    */
   public void setPreviousAsCurrentCommand() {
     currentCommand = previousCommand;
-    isCurrentCommandFinished = true;
+    isCurrentCommandFinished.set(true);
   }
 
   /**
@@ -264,14 +265,14 @@ public class FtpSession implements SessionInterface {
    *     new one)
    */
   public boolean isCurrentCommandFinished() {
-    return isCurrentCommandFinished;
+    return isCurrentCommandFinished.get();
   }
 
   /**
    * Set the Current Command as finished
    */
   public void setCurrentCommandFinished() {
-    isCurrentCommandFinished = true;
+    isCurrentCommandFinished.set(true);
   }
 
   /**
@@ -477,11 +478,11 @@ public class FtpSession implements SessionInterface {
   }
 
   public boolean isSsl() {
-    return isSsl;
+    return isSsl.get();
   }
 
   public void setSsl(final boolean isSsl) {
-    this.isSsl = isSsl;
+    this.isSsl.set(isSsl);
     if (waitForSsl != null) {
       if (isSsl) {
         waitForSsl.setSuccess();
@@ -491,31 +492,30 @@ public class FtpSession implements SessionInterface {
     }
   }
 
-  public void prepareSsl() {
+  public synchronized void prepareSsl() {
     waitForSsl = new WaarpFuture(true);
   }
 
   public boolean isSslReady() {
     if (waitForSsl != null) {
-      for (int i = 0; i < 10; i++) {
+      for (int i = 0; i < 20; i++) {
         if (waitForSsl.awaitOrInterruptible(100)) {
           break;
         }
         Thread.yield();
       }
-      logger.debug("DEBUG : {}:{}:{}",
-                   waitForSsl != null? waitForSsl.isDone() : "not Finished",
-                   isSsl, getControlChannel());
+      logger.debug("DEBUG : {}:{}:{}", waitForSsl.isDone(), isSsl.get(),
+                   getControlChannel());
     }
-    return isSsl;
+    return isSsl.get();
   }
 
   public boolean isDataSsl() {
-    return isDataSsl;
+    return isDataSsl.get();
   }
 
   public void setDataSsl(final boolean isDataSsl) {
-    this.isDataSsl = isDataSsl;
+    this.isDataSsl.set(isDataSsl);
   }
 
 }

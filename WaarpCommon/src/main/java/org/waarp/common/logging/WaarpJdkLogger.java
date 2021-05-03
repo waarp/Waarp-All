@@ -74,6 +74,30 @@ public class WaarpJdkLogger extends AbstractWaarpLogger {
     this.logger = logger;
   }
 
+  @Override
+  public void setLevel(final WaarpLogLevel level) {
+    switch (level) {
+      case TRACE:
+        logger.setLevel(Level.FINEST);
+        break;
+      case DEBUG:
+        logger.setLevel(Level.FINE);
+        break;
+      case INFO:
+        logger.setLevel(Level.INFO);
+        break;
+      case WARN:
+        logger.setLevel(Level.WARNING);
+        break;
+      case ERROR:
+        logger.setLevel(Level.SEVERE);
+        break;
+      case NONE:
+        logger.setLevel(Level.OFF);
+        break;
+    }
+  }
+
   /**
    * Is this logger instance enabled for the FINEST level?
    *
@@ -82,6 +106,11 @@ public class WaarpJdkLogger extends AbstractWaarpLogger {
   @Override
   public boolean isTraceEnabled() {
     return logger.isLoggable(Level.FINEST);
+  }
+
+  @Override
+  public void junit(final int callee, final String msg) {
+    logger.warning(msg);
   }
 
   /**

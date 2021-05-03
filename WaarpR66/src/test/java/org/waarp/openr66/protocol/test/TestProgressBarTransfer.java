@@ -74,7 +74,7 @@ public class TestProgressBarTransfer extends ProgressBarTransfer {
       if (WaarpSystemUtil.isJunit()) {
         return;
       }
-      WaarpSystemUtil.stopLogger();
+      WaarpSystemUtil.stopLogger(false);
       WaarpSystemUtil.systemExit(2);
       return;
     }
@@ -116,7 +116,8 @@ public class TestProgressBarTransfer extends ProgressBarTransfer {
             result.getRunner().delete();
           } catch (final WaarpDatabaseException e) {
             logger.warn("Cannot apply nolog to     " +
-                        result.getRunner().toShortString(), e);
+                        result.getRunner().toShortString() + " : {}",
+                        e.getMessage());
           }
         }
       } else {
@@ -129,7 +130,8 @@ public class TestProgressBarTransfer extends ProgressBarTransfer {
         if (result.getRunner().getErrorInfo() == ErrorCode.Warning) {
           logger.warn("Transfer is     WARNED     " +
                       result.getRunner().toShortString() + "     <REMOTE>" +
-                      rhost + "</REMOTE>", future.getCause());
+                      rhost + "</REMOTE>" + " : {}", future.getCause() != null?
+                          future.getCause().getMessage() : "");
           networkTransaction.closeAll();
           WaarpSystemUtil.systemExit(result.getCode().ordinal());
         } else {

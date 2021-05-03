@@ -27,6 +27,7 @@ import org.waarp.commandexec.utils.LocalExecResult;
 import org.waarp.common.command.exception.CommandAbstractException;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.ParametersChecker;
 import org.waarp.openr66.context.ErrorCode;
 import org.waarp.openr66.context.R66Result;
 import org.waarp.openr66.context.R66Session;
@@ -127,7 +128,7 @@ public class ExecMoveTask extends AbstractExecTask {
       newname = "TimeOut";
     } else {
       newname = lastLineReader.getLastLine();
-      if (status == 0 && (newname == null || newname.isEmpty())) {
+      if (status == 0 && ParametersChecker.isEmpty(newname)) {
         status = 1;
       }
     }
@@ -159,7 +160,8 @@ public class ExecMoveTask extends AbstractExecTask {
       try {
         session.getFile().replaceFilename(newname, true);
       } catch (final CommandAbstractException e) {
-        logger.warn("Exec in warning with " + commandLine, e);
+        logger.warn("Exec in warning with " + commandLine + " : {}",
+                    e.getMessage());
       }
       session.getRunner().setFileMoved(newname, true);
       final R66Result result =

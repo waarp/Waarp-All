@@ -25,6 +25,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestWatcher;
+import org.waarp.common.database.exception.WaarpDatabaseSqlException;
 import org.waarp.common.json.JsonHandler;
 import org.waarp.common.utility.TestWatcherJunit4;
 import org.waarp.openr66.pojo.Business;
@@ -37,7 +38,7 @@ public class DbHostConfigurationTest {
   public TestWatcher watchman = new TestWatcherJunit4();
 
   @Test
-  public void testJsonSerialisation() {
+  public void testJsonSerialisation() throws WaarpDatabaseSqlException {
     Business business =
         new Business("Test", "business", "roles", "aliases", "others",
                      UpdatedInfo.UNKNOWN);

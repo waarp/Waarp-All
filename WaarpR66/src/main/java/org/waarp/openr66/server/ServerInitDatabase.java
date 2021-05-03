@@ -26,6 +26,7 @@ import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
+import org.waarp.common.utility.ParametersChecker;
 import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.openr66.configuration.AuthenticationFileBasedConfiguration;
@@ -259,13 +260,13 @@ public class ServerInitDatabase {
         try {
           hostConfiguration =
               new DbHostConfiguration(Configuration.configuration.getHostId());
-          if (salias != null && !salias.isEmpty()) {
+          if (ParametersChecker.isNotEmpty(salias)) {
             hostConfiguration.setAliases(salias);
           }
-          if (sbusiness != null && !sbusiness.isEmpty()) {
+          if (ParametersChecker.isNotEmpty(sbusiness)) {
             hostConfiguration.setBusiness(sbusiness);
           }
-          if (sroles != null && !sroles.isEmpty()) {
+          if (ParametersChecker.isNotEmpty(sroles)) {
             hostConfiguration.setRoles(sroles);
           }
           hostConfiguration.update();
@@ -299,7 +300,7 @@ public class ServerInitDatabase {
       try {
         final String value =
             FileUtils.readFileToString(file, WaarpStringUtils.UTF8);
-        if (value != null && !value.trim().isEmpty()) {
+        if (ParametersChecker.isNotEmpty(value)) {
           res = value.replaceAll("\r|\n|  ", " ").trim();
         }
       } catch (final IOException e) {

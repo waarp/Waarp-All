@@ -45,6 +45,7 @@ import org.waarp.common.file.FileUtils;
 import org.waarp.common.json.JsonHandler;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.ParametersChecker;
 import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.common.xml.XmlUtil;
 import org.waarp.openr66.client.TransferArgs;
@@ -127,6 +128,10 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
   private static final String UNSUPPORTED_ENCODING = "Unsupported Encoding";
   private static final String CANNOT_DELETE_WRONG_XML_FILE =
       "Cannot delete wrong XML file";
+  private static final String FOLLOW_ID_LIKE =
+      "%\"" + TransferArgs.FOLLOW_JSON_KEY + "\": ";
+  public static final String AND = " AND ";
+  public static final String SELECT_COUNT = "SELECT COUNT(";
 
   /**
    * Create the LRU cache
@@ -161,28 +166,41 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
   }
 
   public enum Columns {
-    GLOBALSTEP, GLOBALLASTSTEP, STEP, RANK, STEPSTATUS, RETRIEVEMODE, FILENAME,
-    ISMOVED, IDRULE, BLOCKSZ, ORIGINALNAME, FILEINFO, TRANSFERINFO, MODETRANS,
-    STARTTRANS, STOPTRANS, INFOSTATUS, UPDATEDINFO, OWNERREQ, REQUESTER,
-    REQUESTED, SPECIALID
+    SPECIALID, GLOBALSTEP, GLOBALLASTSTEP, STEP, RANK, BLOCKSZ, MODETRANS,
+    UPDATEDINFO, STEPSTATUS, INFOSTATUS, RETRIEVEMODE, ISMOVED, STARTTRANS,
+    STOPTRANS, OWNERREQ, REQUESTER, REQUESTED, IDRULE, FILENAME, ORIGINALNAME,
+    FILEINFO, TRANSFERINFO
   }
 
   public static final int[] dbTypes = {
-      Types.INTEGER, Types.INTEGER, Types.INTEGER, Types.INTEGER, Types.CHAR,
-      Types.BIT, Types.VARCHAR, Types.BIT, Types.NVARCHAR, Types.INTEGER,
-      Types.VARCHAR, Types.LONGVARCHAR, Types.LONGVARCHAR, Types.INTEGER,
-      Types.TIMESTAMP, Types.TIMESTAMP, Types.CHAR, Types.INTEGER,
-      Types.NVARCHAR, Types.NVARCHAR, Types.NVARCHAR, Types.BIGINT
+      Types.BIGINT, Types.INTEGER, Types.INTEGER, Types.INTEGER, Types.INTEGER,
+      Types.INTEGER, Types.INTEGER, Types.INTEGER, Types.CHAR, Types.CHAR,
+      Types.BIT, Types.BIT, Types.TIMESTAMP, Types.TIMESTAMP, Types.NVARCHAR,
+      Types.NVARCHAR, Types.NVARCHAR, Types.NVARCHAR, Types.VARCHAR,
+      Types.VARCHAR, Types.VARCHAR, Types.VARCHAR
   };
 
   public static final String table = " RUNNER ";
 
   public static final String fieldseq = "RUNSEQ";
 
-  public static final Columns[] indexes = {
-      Columns.STARTTRANS, Columns.OWNERREQ, Columns.STEPSTATUS,
-      Columns.UPDATEDINFO, Columns.GLOBALSTEP, Columns.INFOSTATUS,
-      Columns.SPECIALID
+  public static final String[] indexesNames = {
+      "IDX_RUN_FILTER"
+  };
+  public static final Columns[][] indexes = {
+      { // General
+          Columns.OWNERREQ, Columns.STARTTRANS, Columns.UPDATEDINFO,
+          Columns.STEPSTATUS, Columns.INFOSTATUS, Columns.GLOBALLASTSTEP,
+          Columns.GLOBALSTEP, Columns.REQUESTED, Columns.STOPTRANS
+      }
+  };
+
+  /**
+   * Special For DbTaskRunner
+   */
+  public static final String[] PRIMARY_KEY = {
+      Columns.SPECIALID.name(), Columns.REQUESTER.name(),
+      Columns.REQUESTED.name(), Columns.OWNERREQ.name()
   };
 
   public static final String XMLRUNNERS = "taskrunners";
@@ -211,24 +229,9 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
   private boolean isSendThrough;
   private long originalSize = -1;
 
-  /**
-   * Special For DbTaskRunner
-   */
-  public static final int NBPRKEY = 4;
   // ALL TABLE SHOULD IMPLEMENT THIS
 
-  protected static final String selectAllFields =
-      Columns.GLOBALSTEP.name() + ',' + Columns.GLOBALLASTSTEP.name() + ',' +
-      Columns.STEP.name() + ',' + Columns.RANK.name() + ',' +
-      Columns.STEPSTATUS.name() + ',' + Columns.RETRIEVEMODE.name() + ',' +
-      Columns.FILENAME.name() + ',' + Columns.ISMOVED.name() + ',' +
-      Columns.IDRULE.name() + ',' + Columns.BLOCKSZ.name() + ',' +
-      Columns.ORIGINALNAME.name() + ',' + Columns.FILEINFO.name() + ',' +
-      Columns.TRANSFERINFO.name() + ',' + Columns.MODETRANS.name() + ',' +
-      Columns.STARTTRANS.name() + ',' + Columns.STOPTRANS.name() + ',' +
-      Columns.INFOSTATUS.name() + ',' + Columns.UPDATEDINFO.name() + ',' +
-      Columns.OWNERREQ.name() + ',' + Columns.REQUESTER.name() + ',' +
-      Columns.REQUESTED.name() + ',' + Columns.SPECIALID.name();
+  protected static final String selectAllFields = " * ";
 
   @Override
   protected void initObject() {
@@ -331,6 +334,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
   }
 
   private void setStopNow() {
+    isSaved = false;
     pojo.setStop(new Timestamp(System.currentTimeMillis()));
   }
 
@@ -510,7 +514,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
                       final String requested, final String owner)
       throws WaarpDatabaseException {
     this(id, requester, requested);
-    if (owner == null || owner.isEmpty()) {
+    if (ParametersChecker.isEmpty(owner)) {
       pojo.setOwnerRequest(Configuration.configuration.getHostId());
     } else {
       pojo.setOwnerRequest(owner);
@@ -548,6 +552,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
         new DbTaskRunner(taskRunner.getSpecialId(), taskRunner.getRequester(),
                          taskRunner.getRequested());
     runner.setSender(taskRunner.isSender());
+    runner.isSaved = true;
     return runner;
   }
 
@@ -603,7 +608,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
             break;
           case OWNERREQ:
             String owner = item.asText();
-            if (owner == null || owner.isEmpty()) {
+            if (ParametersChecker.isEmpty(owner)) {
               owner = Configuration.configuration.getHostId();
             }
             pojo.setOwnerRequest(owner);
@@ -651,9 +656,6 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
             pojo.setTransferInfo(text);
             break;
           }
-          case UPDATEDINFO:
-            // ignore
-            break;
           default:
             break;
         }
@@ -683,24 +685,24 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
       // ignore
       rule = null;
     }
-    if (pojo.getFilename() == null || pojo.getFilename().isEmpty()) {
+    if (ParametersChecker.isEmpty(pojo.getFilename())) {
       throw new WaarpDatabaseSqlException(
           "Cannot create a transfer without filename");
-    } else if (pojo.getRule() == null || pojo.getRule().isEmpty()) {
+    } else if (ParametersChecker.isEmpty(pojo.getRule())) {
       throw new WaarpDatabaseSqlException(
           "Cannot create a transfer without rule");
-    } else if (pojo.getOwnerRequest() == null ||
-               pojo.getOwnerRequest().isEmpty()) {
+    } else if (ParametersChecker.isEmpty(pojo.getOwnerRequest())) {
       throw new WaarpDatabaseSqlException(
           "Cannot create a transfer without owner");
-    } else if (pojo.getRequester() == null || pojo.getRequester().isEmpty()) {
+    } else if (ParametersChecker.isEmpty(pojo.getRequester())) {
       throw new WaarpDatabaseSqlException(
           "Cannot create a transfer without requester");
-    } else if (pojo.getRequested() == null || pojo.getRequested().isEmpty()) {
+    } else if (ParametersChecker.isEmpty(pojo.getRequested())) {
       throw new WaarpDatabaseSqlException(
           "Cannot create a transfer without requested");
     }
     checkThroughMode();
+    checkValues();
   }
 
   /**
@@ -730,6 +732,11 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
       DAOFactory.closeDAO(transferAccess);
     }
     checkThroughMode();
+  }
+
+  @Override
+  protected void checkValues() throws WaarpDatabaseSqlException {
+    pojo.checkValues();
   }
 
   /**
@@ -855,6 +862,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
       } else {
         transferAccess.update(pojo);
       }
+      isSaved = true;
     } catch (final DAOConnectionException e) {
       throw new WaarpDatabaseException(e);
     } catch (final DAONoDataException e) {
@@ -866,6 +874,9 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
 
   @Override
   public void update() throws WaarpDatabaseException {
+    if (isSaved) {
+      return;
+    }
     // SNMP notification
     checkSnmp();
     // FIX SelfRequest
@@ -890,10 +901,12 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    */
   protected void optimizedUpdate() throws WaarpDatabaseException {
     setStopNow();
+    checkValues();
     TransferDAO transferAccess = null;
     try {
       transferAccess = DAOFactory.getInstance().getTransferDAO();
       transferAccess.update(pojo);
+      isSaved = true;
     } catch (final DAOConnectionException e) {
       throw new WaarpDatabaseException(e);
     } catch (final DAONoDataException e) {
@@ -1038,9 +1051,8 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
         try {
           dbTaskRunner.rule = new DbRule(dbTaskRunner.getRuleId());
         } catch (final WaarpDatabaseException e) {
-          logger.warn(
-              "Rule cannot be found for DbTaskRunner: " + dbTaskRunner.asJson(),
-              e);
+          logger.warn("Rule cannot be found for DbTaskRunner: " +
+                      dbTaskRunner.asJson() + " : {}", e.getMessage());
         }
       }
       dbTaskRunner.checkThroughMode();
@@ -1120,75 +1132,81 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    */
   private static void getFilterCondition(
       final DbPreparedStatement preparedStatement, final String srcrequest,
-      final int limit, final String orderby, final String startid,
-      final String stopid, final Timestamp start, final Timestamp stop,
-      final String rule, final String req, final boolean pending,
-      final boolean transfer, final boolean error, final boolean done,
-      final boolean all)
+      final int limit, final String whereCond, final String orderby,
+      final String startid, final String stopid, final Timestamp start,
+      final Timestamp stop, final String rule, final String req,
+      final boolean pending, final boolean transfer, final boolean error,
+      final boolean done, final boolean all)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
     String request = srcrequest;
-    if (startid == null && stopid == null && start == null && stop == null &&
-        rule == null && req == null && all) {
+    if (ParametersChecker.isEmpty(startid) &&
+        ParametersChecker.isEmpty(stopid) && start == null && stop == null &&
+        ParametersChecker.isEmpty(rule) && ParametersChecker.isEmpty(req) &&
+        all) {
       // finish
+      if (ParametersChecker.isNotEmpty(whereCond)) {
+        request += " WHERE " + whereCond + orderby;
+      }
       if (limit > 0) {
         request = preparedStatement.getDbSession().getAdmin().getDbModel()
-                                   .limitRequest(selectAllFields,
-                                                 request + orderby, limit);
-      } else {
-        request += orderby;
+                                   .limitRequest(selectAllFields, request,
+                                                 limit);
       }
       preparedStatement.createPrepareStatement(request);
       return;
     }
     request += " WHERE ";
-    final StringBuilder scondition = new StringBuilder();
-    boolean hasCondition = false;
+    final StringBuilder scondition = new StringBuilder(whereCond);
+    boolean hasCondition = ParametersChecker.isNotEmpty(whereCond);
     if (start != null && stop != null) {
-      scondition.append(Columns.STARTTRANS.name()).append(" >= ? AND ")
-                .append(Columns.STARTTRANS.name()).append(" <= ? ");
+      if (hasCondition) {
+        scondition.append(AND);
+      }
+      scondition.append(Columns.STARTTRANS.name()).append(" BETWEEN ? AND ? ");
       hasCondition = true;
     } else if (start != null) {
+      if (hasCondition) {
+        scondition.append(AND);
+      }
       scondition.append(Columns.STARTTRANS.name()).append(" >= ? ");
       hasCondition = true;
     } else if (stop != null) {
+      if (hasCondition) {
+        scondition.append(AND);
+      }
       scondition.append(Columns.STARTTRANS.name()).append(" <= ? ");
       hasCondition = true;
     }
-    if (startid != null) {
+    if (ParametersChecker.isNotEmpty(startid, stopid)) {
       if (hasCondition) {
-        scondition.append(" AND ");
+        scondition.append(AND);
+      }
+      hasCondition = true;
+      scondition.append(Columns.SPECIALID.name()).append(" BETWEEN ? AND ? ");
+    } else if (ParametersChecker.isNotEmpty(startid)) {
+      if (hasCondition) {
+        scondition.append(AND);
       }
       hasCondition = true;
       scondition.append(Columns.SPECIALID.name()).append(" >= ? ");
-    }
-    if (stopid != null) {
+    } else if (ParametersChecker.isNotEmpty(stopid)) {
       if (hasCondition) {
-        scondition.append(" AND ");
+        scondition.append(AND);
       }
       hasCondition = true;
       scondition.append(Columns.SPECIALID.name()).append(" <= ? ");
     }
-    if (rule != null) {
+    if (ParametersChecker.isNotEmpty(rule)) {
       if (hasCondition) {
-        scondition.append(" AND ");
+        scondition.append(AND);
       }
       hasCondition = true;
       scondition.append(Columns.IDRULE.name()).append(" LIKE '%").append(rule)
                 .append("%' ");
     }
-    if (req != null) {
-      if (hasCondition) {
-        scondition.append(" AND ");
-      }
-      hasCondition = true;
-      scondition.append("( ").append(Columns.REQUESTED.name())
-                .append(" LIKE '%").append(req).append("%' OR ")
-                .append(Columns.REQUESTER.name()).append(" LIKE '%").append(req)
-                .append("%' )");
-    }
     if (!all) {
       if (hasCondition) {
-        scondition.append(" AND ");
+        scondition.append(AND);
       }
       hasCondition = true;
       scondition.append("( ");
@@ -1202,8 +1220,8 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
         if (hasone) {
           scondition.append(" OR ");
         }
-        scondition.append("( ").append(Columns.UPDATEDINFO.name()).append(" = ")
-                  .append(UpdatedInfo.RUNNING.ordinal()).append(" )");
+        scondition.append(Columns.UPDATEDINFO.name()).append(" = ")
+                  .append(UpdatedInfo.RUNNING.ordinal()).append(" ");
         hasone = true;
       }
       if (error) {
@@ -1212,10 +1230,9 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
         }
         scondition.append(Columns.GLOBALSTEP.name()).append(" = ")
                   .append(TASKSTEP.ERRORTASK.ordinal()).append(" OR ")
-                  .append(Columns.UPDATEDINFO.name()).append(" = ")
-                  .append(UpdatedInfo.INERROR.ordinal()).append(" OR ")
-                  .append(Columns.UPDATEDINFO.name()).append(" = ")
-                  .append(UpdatedInfo.INTERRUPTED.ordinal());
+                  .append(Columns.UPDATEDINFO.name()).append(" IN(")
+                  .append(UpdatedInfo.INERROR.ordinal()).append(", ")
+                  .append(UpdatedInfo.INTERRUPTED.ordinal()).append(") ");
         hasone = true;
       }
       if (done) {
@@ -1231,7 +1248,17 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
       if (!hasone) {
         scondition.append(Columns.UPDATEDINFO.name()).append(" IS NOT NULL ");
       }
-      scondition.append(" )");
+      scondition.append(") ");
+    }
+    if (ParametersChecker.isNotEmpty(req)) {
+      if (hasCondition) {
+        scondition.append(AND);
+      }
+      hasCondition = true;
+      scondition.append("( ").append(Columns.REQUESTED.name())
+                .append(" LIKE '%").append(req).append("%' OR ")
+                .append(Columns.REQUESTER.name()).append(" LIKE '%").append(req)
+                .append("%' )");
     }
     if (limit > 0) {
       scondition.insert(0, request).append(orderby);
@@ -1257,7 +1284,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
         preparedStatement.getPreparedStatement().setTimestamp(rank, stop);
         rank++;
       }
-      if (startid != null) {
+      if (ParametersChecker.isNotEmpty(startid)) {
         long value = ILLEGALVALUE;
         try {
           value = Long.parseLong(startid);
@@ -1267,7 +1294,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
         preparedStatement.getPreparedStatement().setLong(rank, value);
         rank++;
       }
-      if (stopid != null) {
+      if (ParametersChecker.isNotEmpty(stopid)) {
         long value = Long.MAX_VALUE;
         try {
           value = Long.parseLong(stopid);
@@ -1275,7 +1302,6 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
           // ignore then
         }
         preparedStatement.getPreparedStatement().setLong(rank, value);
-        rank++;
       }
     } catch (final SQLException e) {
       preparedStatement.realClose();
@@ -1348,29 +1374,21 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
     final DbPreparedStatement preparedStatement =
         new DbPreparedStatement(session);
     final String request = "SELECT " + selectAllFields + " FROM " + table;
+    String whereCond = "";
     String orderby = "";
-    if (startid == null && stopid == null && start == null && stop == null &&
-        rule == null && req == null && all) {
-      if (owner == null || owner.isEmpty()) {
-        orderby = " WHERE " + getLimitWhereCondition();
-      } else if (!"*".equals(owner)) {
-        orderby = " WHERE " + Columns.OWNERREQ + " = '" + owner + "' ";
-      }
-    } else {
-      if (owner == null || owner.isEmpty()) {
-        orderby = " AND " + getLimitWhereCondition();
-      } else if (!"*".equals(owner)) {
-        orderby = " AND " + Columns.OWNERREQ + " = '" + owner + "' ";
-      }
+    if (ParametersChecker.isEmpty(owner)) {
+      whereCond = getLimitWhereCondition();
+    } else if (!"*".equals(owner)) {
+      whereCond = Columns.OWNERREQ + " = '" + owner + "' ";
     }
     if (orderBySpecialId) {
-      orderby += " ORDER BY " + Columns.SPECIALID.name() + " DESC ";
+      orderby = " ORDER BY " + Columns.SPECIALID.name() + " DESC ";
     } else {
-      orderby += " ORDER BY " + Columns.STARTTRANS.name() + " DESC ";
+      orderby = " ORDER BY " + Columns.STARTTRANS.name() + " DESC ";
     }
-    getFilterCondition(preparedStatement, request, limit, orderby, startid,
-                       stopid, start, stop, rule, req, pending, transfer, error,
-                       done, all);
+    getFilterCondition(preparedStatement, request, limit, whereCond, orderby,
+                       startid, stopid, start, stop, rule, req, pending,
+                       transfer, error, done, all);
     return preparedStatement;
   }
 
@@ -1380,9 +1398,8 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    * @return the associated Filter
    */
   public static Filter getFollowIdFilter(final String followId) {
-    return new Filter(DBTransferDAO.TRANSFER_INFO_FIELD, "LIKE",
-                      "%" + TransferArgs.FOLLOW_JSON_KEY + "%" + followId +
-                      "%");
+    return new Filter(DBTransferDAO.TRANSFER_INFO_FIELD, Filter.LIKE,
+                      FOLLOW_ID_LIKE + followId + "%");
   }
 
   /**
@@ -1441,13 +1458,13 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
       final UpdatedInfo info, final boolean orderByStart, final int limit)
       throws WaarpDatabaseNoConnectionException {
     final List<Filter> filters = new ArrayList<Filter>(3);
+    filters.add(new Filter(DBTransferDAO.OWNER_REQUEST_FIELD, "=",
+                           Configuration.configuration.getHostId()));
+    filters.add(new Filter(DBTransferDAO.TRANSFER_START_FIELD, "<=",
+                           new Timestamp(System.currentTimeMillis())));
     filters.add(new Filter(DBTransferDAO.UPDATED_INFO_FIELD, "=",
                            org.waarp.openr66.pojo.UpdatedInfo.fromLegacy(info)
                                                              .ordinal()));
-    filters.add(new Filter(DBTransferDAO.TRANSFER_START_FIELD, "<=",
-                           new Timestamp(System.currentTimeMillis())));
-    filters.add(new Filter(DBTransferDAO.OWNER_REQUEST_FIELD, "=",
-                           Configuration.configuration.getHostId()));
     TransferDAO transferAccess = null;
     List<Transfer> transfers;
     try {
@@ -1484,10 +1501,9 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
       final DbSession session)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
     final String request =
-        "SELECT COUNT(" + Columns.SPECIALID.name() + ") FROM " + table +
-        " WHERE " + Columns.STARTTRANS.name() + " >= ? AND " +
-        getLimitWhereCondition() + " AND " + Columns.UPDATEDINFO.name() +
-        " = ? ";
+        SELECT_COUNT + Columns.SPECIALID.name() + ") FROM " + table +
+        " WHERE " + getLimitWhereCondition() + AND + Columns.STARTTRANS.name() +
+        " >= ? AND " + Columns.UPDATEDINFO.name() + " = ? ";
     final DbPreparedStatement pstt = new DbPreparedStatement(session, request);
     session.addLongTermPreparedStatement(pstt);
     return pstt;
@@ -1537,16 +1553,14 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
       final DbSession session, final TASKSTEP globalstep)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
     String request =
-        "SELECT COUNT(" + Columns.SPECIALID.name() + ") FROM " + table;
+        SELECT_COUNT + Columns.SPECIALID.name() + ") FROM " + table;
     if (globalstep != null) {
-      request +=
-          " WHERE " + Columns.GLOBALSTEP.name() + " = " + globalstep.ordinal() +
-          " AND ";
-      request +=
-          Columns.STARTTRANS.name() + " >= ? AND " + getLimitWhereCondition();
+      request += " WHERE " + getLimitWhereCondition() + AND +
+                 Columns.STARTTRANS.name() + " >= ? AND " +
+                 Columns.GLOBALSTEP.name() + " " + "= " + globalstep.ordinal();
     } else {
-      request += " WHERE " + Columns.STARTTRANS.name() + " >= ? AND " +
-                 getLimitWhereCondition();
+      request += " WHERE " + getLimitWhereCondition() + AND +
+                 Columns.STARTTRANS.name() + " >= ? ";
     }
     final DbPreparedStatement prep = new DbPreparedStatement(session, request);
     session.addLongTermPreparedStatement(prep);
@@ -1566,10 +1580,11 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
       final DbSession session)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
     String request =
-        "SELECT COUNT(" + Columns.SPECIALID.name() + ") FROM " + table;
-    request += " WHERE " + Columns.STARTTRANS.name() + " >= ? ";
-    request += " AND " + Columns.INFOSTATUS.name() + " = ? AND " +
-               getLimitWhereCondition();
+        SELECT_COUNT + Columns.SPECIALID.name() + ") FROM " + table;
+    request +=
+        " WHERE " + getLimitWhereCondition() + AND + Columns.STARTTRANS.name() +
+        " >= ? ";
+    request += AND + Columns.INFOSTATUS.name() + " = ? ";
     final DbPreparedStatement prep = new DbPreparedStatement(session, request);
     session.addLongTermPreparedStatement(prep);
     return prep;
@@ -1620,17 +1635,15 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
       final DbSession session, final ErrorCode status)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
     String request =
-        "SELECT COUNT(" + Columns.SPECIALID.name() + ") FROM " + table;
+        SELECT_COUNT + Columns.SPECIALID.name() + ") FROM " + table;
+    request += " WHERE " + getLimitWhereCondition();
+    request += AND + Columns.STARTTRANS.name() + " >= ? ";
+    request += AND + Columns.UPDATEDINFO.name() + " = " +
+               UpdatedInfo.RUNNING.ordinal();
     if (status != null) {
       request +=
-          " WHERE " + Columns.STEPSTATUS.name() + " = '" + status.getCode() +
-          "' AND " + getLimitWhereCondition();
-    } else {
-      request += " WHERE " + getLimitWhereCondition();
+          AND + Columns.STEPSTATUS.name() + " = '" + status.getCode() + '\'';
     }
-    request += " AND " + Columns.STARTTRANS.name() + " >= ? ";
-    request += " AND " + Columns.UPDATEDINFO.name() + " = " +
-               UpdatedInfo.RUNNING.ordinal();
     final DbPreparedStatement prep = new DbPreparedStatement(session, request);
     session.addLongTermPreparedStatement(prep);
     return prep;
@@ -1652,7 +1665,8 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
       final DbSession session, final boolean in)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
     String request =
-        "SELECT COUNT(" + Columns.SPECIALID.name() + ") FROM " + table;
+        SELECT_COUNT + Columns.SPECIALID.name() + ") FROM " + table;
+    request += " WHERE " + getLimitWhereCondition() + " ";
     final String requesterd;
     final String from = Configuration.configuration.getHostId();
     final String sfrom = Configuration.configuration.getHostSslId();
@@ -1662,17 +1676,14 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
       requesterd = Columns.REQUESTER.name();
     }
     if (from != null && sfrom != null) {
-      request +=
-          " WHERE ((" + requesterd + " = '" + from + "' OR " + requesterd +
-          " = '" + sfrom + "') ";
+      request += AND + requesterd + " IN('" + from + "', '" + sfrom + "') ";
     } else if (from != null) {
-      request += " WHERE (" + requesterd + " = '" + from + "' ";
+      request += AND + requesterd + " = '" + from + "' ";
     } else {
-      request += " WHERE (" + requesterd + " = '" + sfrom + "' ";
+      request += AND + requesterd + " = '" + sfrom + "' ";
     }
-    request += " AND " + getLimitWhereCondition() + ") ";
-    request += " AND " + Columns.STARTTRANS.name() + " >= ? ";
-    request += " AND " + Columns.UPDATEDINFO.name() + " = " +
+    request += AND + Columns.STARTTRANS.name() + " >= ? ";
+    request += AND + Columns.UPDATEDINFO.name() + " = " +
                UpdatedInfo.INERROR.ordinal();
     final DbPreparedStatement prep = new DbPreparedStatement(session, request);
     session.addLongTermPreparedStatement(prep);
@@ -1696,7 +1707,8 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
       final DbSession session, final boolean in, final boolean running)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
     String request =
-        "SELECT COUNT(" + Columns.SPECIALID.name() + ") FROM " + table;
+        SELECT_COUNT + Columns.SPECIALID.name() + ") FROM " + table;
+    request += " WHERE " + getLimitWhereCondition() + " ";
     final String requesterd;
     final String from = Configuration.configuration.getHostId();
     final String sfrom = Configuration.configuration.getHostSslId();
@@ -1706,18 +1718,15 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
       requesterd = Columns.REQUESTER.name();
     }
     if (from != null && sfrom != null) {
-      request +=
-          " WHERE ((" + requesterd + " = '" + from + "' OR " + requesterd +
-          " = '" + sfrom + "') ";
+      request += AND + requesterd + " IN('" + from + "', '" + sfrom + "') ";
     } else if (from != null) {
-      request += " WHERE (" + requesterd + " = '" + from + "' ";
+      request += AND + requesterd + " = '" + from + "' ";
     } else {
-      request += " WHERE (" + requesterd + " = '" + sfrom + "' ";
+      request += AND + requesterd + " = '" + sfrom + "' ";
     }
-    request += " AND " + getLimitWhereCondition() + ") ";
-    request += " AND " + Columns.STARTTRANS.name() + " >= ? ";
+    request += AND + Columns.STARTTRANS.name() + " >= ? ";
     if (running) {
-      request += " AND " + Columns.UPDATEDINFO.name() + " = " +
+      request += AND + Columns.UPDATEDINFO.name() + " = " +
                  UpdatedInfo.RUNNING.ordinal();
     }
     final DbPreparedStatement prep = new DbPreparedStatement(session, request);
@@ -1765,7 +1774,8 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
     try {
       pstt.getPreparedStatement().setTimestamp(1, startlimit);
     } catch (final SQLException e) {
-      logger.error("Database SQL Error: Cannot set timestamp", e);
+      logger.error("Database SQL Error: Cannot set timestamp: {}",
+                   e.getMessage());
       throw new WaarpDatabaseSqlException("Cannot set timestamp", e);
     }
   }
@@ -1789,9 +1799,8 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
         new DbPreparedStatement(session);
     String request = "SELECT " + selectAllFields + " FROM " + table;
     if (start != null && stop != null) {
-      request += " WHERE " + Columns.STARTTRANS.name() + " >= ? AND " +
-                 Columns.STARTTRANS.name() + " <= ? AND " +
-                 getLimitWhereCondition() + " ORDER BY " +
+      request += " WHERE " + getLimitWhereCondition() + AND +
+                 Columns.STARTTRANS.name() + " BETWEEN ? AND ? ORDER BY " +
                  Columns.SPECIALID.name() + " DESC ";
       preparedStatement.createPrepareStatement(request);
       try {
@@ -1802,8 +1811,8 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
         throw new WaarpDatabaseSqlException(e);
       }
     } else if (start != null) {
-      request += " WHERE " + Columns.STARTTRANS.name() + " >= ? AND " +
-                 getLimitWhereCondition() + " ORDER BY " +
+      request += " WHERE " + getLimitWhereCondition() + AND +
+                 Columns.STARTTRANS.name() + " >= ? ORDER BY " +
                  Columns.SPECIALID.name() + " DESC ";
       preparedStatement.createPrepareStatement(request);
       try {
@@ -1813,8 +1822,8 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
         throw new WaarpDatabaseSqlException(e);
       }
     } else if (stop != null) {
-      request += " WHERE " + Columns.STARTTRANS.name() + " <= ? AND " +
-                 getLimitWhereCondition() + " ORDER BY " +
+      request += " WHERE " + getLimitWhereCondition() + AND +
+                 Columns.STARTTRANS.name() + " <= ? ORDER BY " +
                  Columns.SPECIALID.name() + " DESC ";
       preparedStatement.createPrepareStatement(request);
       try {
@@ -1851,12 +1860,13 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
     final DbPreparedStatement preparedStatement =
         new DbPreparedStatement(session);
     String request =
-        "DELETE FROM " + table + " WHERE (" + Columns.GLOBALLASTSTEP + " = " +
-        TASKSTEP.ALLDONETASK.ordinal() + " OR " + Columns.UPDATEDINFO + " = " +
-        UpdatedInfo.DONE.ordinal() + ") AND " + getLimitWhereCondition();
+        "DELETE FROM " + table + " WHERE " + getLimitWhereCondition() + AND +
+        "(" + Columns.UPDATEDINFO + " = " + UpdatedInfo.DONE.ordinal() +
+        " OR " + Columns.GLOBALLASTSTEP + " = " +
+        TASKSTEP.ALLDONETASK.ordinal() + ") ";
     try {
       if (start != null && stop != null) {
-        request += " AND " + Columns.STARTTRANS.name() + " >= ? AND " +
+        request += AND + Columns.STARTTRANS.name() + " >= ? AND " +
                    Columns.STOPTRANS.name() + " <= ? ";
         preparedStatement.createPrepareStatement(request);
         try {
@@ -1867,7 +1877,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
           throw new WaarpDatabaseSqlException(e);
         }
       } else if (start != null) {
-        request += " AND " + Columns.STARTTRANS.name() + " >= ? ";
+        request += AND + Columns.STARTTRANS.name() + " >= ? ";
         preparedStatement.createPrepareStatement(request);
         try {
           preparedStatement.getPreparedStatement().setTimestamp(1, start);
@@ -1876,7 +1886,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
           throw new WaarpDatabaseSqlException(e);
         }
       } else if (stop != null) {
-        request += " AND " + Columns.STOPTRANS.name() + " <= ? ";
+        request += AND + Columns.STOPTRANS.name() + " <= ? ";
         preparedStatement.createPrepareStatement(request);
         try {
           preparedStatement.getPreparedStatement().setTimestamp(1, stop);
@@ -1910,8 +1920,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    * @param all
    *
    * @return the DbPreparedStatement according to the filter and ALLDONE,
-   *     ERROR
-   *     globallaststep
+   *     ERROR globallaststep
    *
    * @throws WaarpDatabaseNoConnectionException
    * @throws WaarpDatabaseSqlException
@@ -1932,32 +1941,34 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
     final DbPreparedStatement preparedStatement =
         new DbPreparedStatement(session);
     final String request = "DELETE FROM " + table;
-    final String orderby;
-    if (startid == null && stopid == null && start == null && stop == null &&
-        rule == null && req == null && all) {
-      orderby = " WHERE (" + Columns.GLOBALLASTSTEP + " = " +
-                TASKSTEP.ALLDONETASK.ordinal() + " OR " + Columns.UPDATEDINFO +
-                " = " + UpdatedInfo.DONE.ordinal() + ") AND " +
-                getLimitWhereCondition();
+    final String orderby = "";
+    final String whereCond;
+    if (ParametersChecker.isEmpty(startid) &&
+        ParametersChecker.isEmpty(stopid) && start == null && stop == null &&
+        ParametersChecker.isEmpty(rule) && ParametersChecker.isEmpty(req) &&
+        all) {
+      whereCond =
+          getLimitWhereCondition() + " AND (" + Columns.UPDATEDINFO + " = " +
+          UpdatedInfo.DONE.ordinal() + " OR " + Columns.GLOBALLASTSTEP + " = " +
+          TASKSTEP.ALLDONETASK.ordinal() + ") ";
     } else {
       if (all) {
-        orderby = " AND (" + Columns.GLOBALLASTSTEP + " = " +
-                  TASKSTEP.ALLDONETASK.ordinal() + " OR " +
-                  Columns.UPDATEDINFO + " = " + UpdatedInfo.DONE.ordinal() +
-                  " OR " + Columns.UPDATEDINFO + " = " +
-                  UpdatedInfo.INERROR.ordinal() + ") AND " +
-                  getLimitWhereCondition();
+        whereCond =
+            getLimitWhereCondition() + " AND (" + Columns.UPDATEDINFO + " IN(" +
+            UpdatedInfo.DONE.ordinal() + ", " + UpdatedInfo.INERROR.ordinal() +
+            ") OR " + Columns.GLOBALLASTSTEP + " = " +
+            TASKSTEP.ALLDONETASK.ordinal() + ") ";
       } else {
-        orderby = " AND " + Columns.UPDATEDINFO + " <> " +
-                  UpdatedInfo.RUNNING.ordinal() + " AND " +
-                  getLimitWhereCondition();// limit by field
+        whereCond =
+            getLimitWhereCondition() + AND + Columns.UPDATEDINFO + " <> " +
+            UpdatedInfo.RUNNING.ordinal();// limit by field
       }
     }
     int nb;
     try {
-      getFilterCondition(preparedStatement, request, 0, orderby, startid,
-                         stopid, start, stop, rule, req, pending, transfer,
-                         error, done, all);
+      getFilterCondition(preparedStatement, request, 0, whereCond, orderby,
+                         startid, stopid, start, stop, rule, req, pending,
+                         transfer, error, done, all);
       nb = preparedStatement.executeUpdate();
       logger.info("Purge {} from {}", nb, request);
     } finally {
@@ -1981,18 +1992,18 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
     // Change RUNNING and INTERRUPTED to TOSUBMIT since they should be ready
     final String request =
         "UPDATE " + table + " SET " + Columns.UPDATEDINFO.name() + '=' +
-        AbstractDbData.UpdatedInfo.TOSUBMIT.ordinal() + " WHERE (" +
+        AbstractDbData.UpdatedInfo.TOSUBMIT.ordinal() + " WHERE " +
+        getLimitWhereCondition() + " AND (" + Columns.UPDATEDINFO.name() +
+        " = " + AbstractDbData.UpdatedInfo.RUNNING.ordinal() + " OR " +
         Columns.UPDATEDINFO.name() + " = " +
-        AbstractDbData.UpdatedInfo.RUNNING.ordinal() + " OR " +
-        Columns.UPDATEDINFO.name() + " = " +
-        AbstractDbData.UpdatedInfo.INTERRUPTED.ordinal() + ") AND " +
-        getLimitWhereCondition();
+        AbstractDbData.UpdatedInfo.INTERRUPTED.ordinal() + ")";
     final DbPreparedStatement initial = new DbPreparedStatement(session);
     try {
       initial.createPrepareStatement(request);
       initial.executeUpdate();
     } catch (final WaarpDatabaseNoConnectionException e) {
-      logger.error("Database No Connection Error: Cannot execute Commander", e);
+      logger.error("Database No Connection Error: Cannot execute Commander: {}",
+                   e.getMessage());
     } catch (final WaarpDatabaseSqlException e) {
       logger.error("Database SQL Error: Cannot execute Commander", e);
     } finally {
@@ -2013,6 +2024,8 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
     // Update all UpdatedInfo to DONE where GlobalLastStep = ALLDONETASK and
     // status = CompleteOk
     final List<Filter> filters = new ArrayList<Filter>();
+    filters.add(new Filter(DBTransferDAO.OWNER_REQUEST_FIELD, "=",
+                           Configuration.configuration.getHostId()));
     filters.add(new Filter(DBTransferDAO.UPDATED_INFO_FIELD, "<>",
                            UpdatedInfo.DONE.ordinal()));
     filters.add(new Filter(DBTransferDAO.UPDATED_INFO_FIELD, ">",
@@ -2021,8 +2034,6 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
                            Transfer.TASKSTEP.ALLDONETASK.ordinal()));
     filters.add(new Filter(DBTransferDAO.STEP_STATUS_FIELD, ">",
                            ErrorCode.CompleteOk.getCode()));
-    filters.add(new Filter(DBTransferDAO.OWNER_REQUEST_FIELD, ">",
-                           Configuration.configuration.getHostId()));
 
     TransferDAO transferAccess = null;
     try {
@@ -2172,7 +2183,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
       try {
         update();
       } catch (final WaarpDatabaseException e) {
-        logger.error("Cannot save transfer status", e);
+        logger.error("Cannot save transfer status: {}", e.getMessage());
       }
       logger.warn("StopOrCancel: {}     {}", code.getMesg(), toShortString());
       return true;
@@ -2187,6 +2198,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
   @Override
   public void changeUpdatedInfo(final UpdatedInfo info) {
     setStopNow();
+    isSaved = false;
     pojo.setUpdatedInfo(
         org.waarp.openr66.pojo.UpdatedInfo.valueOf(info.ordinal()));
   }
@@ -2245,6 +2257,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    */
   public void setRankAtStartup(final int rank) {
     if (pojo.getRank() > rank) {
+      isSaved = false;
       pojo.setRank(rank);
     }
   }
@@ -2253,6 +2266,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    * @param blocksize the block size to set
    */
   public void setBlocksize(final int blocksize) {
+    isSaved = false;
     pojo.setBlockSize(blocksize);
   }
 
@@ -2260,6 +2274,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    * @param filename the filename to set
    */
   public void setFilename(final String filename) {
+    isSaved = false;
     pojo.setFilename(filename);
   }
 
@@ -2269,6 +2284,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    */
   public void setFileMoved(final String newFilename,
                            final boolean isFileMoved) {
+    isSaved = false;
     pojo.setIsMoved(isFileMoved);
     pojo.setFilename(newFilename);
   }
@@ -2277,6 +2293,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    * @param originalFilename the originalFilename to set
    */
   public void setOriginalFilename(final String originalFilename) {
+    isSaved = false;
     pojo.setOriginalName(originalFilename);
   }
 
@@ -2293,6 +2310,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    * @param status
    */
   public void setExecutionStatus(final ErrorCode status) {
+    isSaved = false;
     pojo.setStepStatus(status);
   }
 
@@ -2405,6 +2423,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
 
   private void internalSetNoMapMap(final Map<String, ?> map,
                                    final String noMap) {
+    isSaved = false;
     if (noMap.isEmpty()) {
       pojo.setTransferInfo(JsonHandler.writeAsStringEscaped(map));
     } else {
@@ -3198,6 +3217,10 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
     if (finalValue.getException() != null) {
       logger.error("Transfer KO on " + file + " due to " +
                    finalValue.getException().getMessage());
+      if ("Trace for error"
+          .equalsIgnoreCase(finalValue.getException().getMessage())) {
+        logger.error(finalValue.getException());
+      }
     } else {
       logger.error("Transfer KO on " + file + " due to " + finalValue);
     }
@@ -3208,7 +3231,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
       changeUpdatedInfo(UpdatedInfo.INERROR);
       saveStatus();
       finalValue.setAnswered(true);
-    } else if (runnerStatus == ErrorCode.StoppedTransfer &&
+    } else if (runnerStatus == ErrorCode.StoppedTransfer ||
                runnerStatus == ErrorCode.Shutdown) {
       // just save runner and stop
       changeUpdatedInfo(UpdatedInfo.INERROR);
@@ -3342,7 +3365,8 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
           }
         }
       } catch (final CommandAbstractException e1) {
-        logger.warn("Cannot delete temporary empty file", e1);
+        logger.warn("Cannot delete temporary empty file" + " : {}",
+                    e1.getMessage());
       }
     }
   }
@@ -3841,7 +3865,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
       }
       xmlWriter.writeClose(root);
     } catch (final IOException e) {
-      logger.error(CANNOT_WRITE_XML_FILE, e);
+      logger.error(CANNOT_WRITE_XML_FILE + ": {}", e.getMessage());
       throw new OpenR66ProtocolBusinessException(
           "Cannot write file: " + e.getMessage());
     }
@@ -3923,10 +3947,10 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
       nbAndSpecialId = writeXML(preparedStatement, xmlWriter);
       isOk = true;
     } catch (final FileNotFoundException e) {
-      logger.error(CANNOT_WRITE_XML_FILE, e);
+      logger.error(CANNOT_WRITE_XML_FILE + ": {}", e.getMessage());
       throw new OpenR66ProtocolBusinessException("File not found");
     } catch (final UnsupportedEncodingException e) {
-      logger.error(CANNOT_WRITE_XML_FILE, e);
+      logger.error(CANNOT_WRITE_XML_FILE + ": {}", e.getMessage());
       throw new OpenR66ProtocolBusinessException(UNSUPPORTED_ENCODING);
     } finally {
       if (xmlWriter != null) {
@@ -3940,7 +3964,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
           if (!file.delete()) {
             logger.info(CANNOT_DELETE_WRONG_XML_FILE);
           }
-          logger.error(CANNOT_WRITE_XML_FILE, e);
+          logger.error(CANNOT_WRITE_XML_FILE + ": {}", e.getMessage());
           throw new OpenR66ProtocolBusinessException(//NOSONAR
                                                      UNSUPPORTED_ENCODING);//NOSONAR
         } catch (final IOException e) {
@@ -3949,7 +3973,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
           if (!file.delete()) {
             logger.info(CANNOT_DELETE_WRONG_XML_FILE);
           }
-          logger.error(CANNOT_WRITE_XML_FILE, e);
+          logger.error(CANNOT_WRITE_XML_FILE + ": {}", e.getMessage());
           throw new OpenR66ProtocolBusinessException(//NOSONAR
                                                      UNSUPPORTED_ENCODING);//NOSONAR
         }
@@ -4036,7 +4060,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
     if (followId != null) {
       node.put(TransferArgs.FOLLOW_JSON_KEY, followId);
     } else {
-      node.put(TransferArgs.FOLLOW_JSON_KEY, "none");
+      node.put(TransferArgs.FOLLOW_JSON_KEY, "");
     }
     return node;
   }
@@ -4081,7 +4105,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
             break;
           case OWNERREQ:
             String owner = value.asText();
-            if (owner == null || owner.isEmpty()) {
+            if (ParametersChecker.isEmpty(owner)) {
               owner = Configuration.configuration.getHostId();
             }
             pojo.setOwnerRequest(owner);
@@ -4200,7 +4224,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
     try {
       document = DocumentHelper.parseText(xml);
     } catch (final DocumentException e1) {
-      logger.warn("Cant parse XML", e1);
+      logger.warn("Cant parse XML" + " : {}", e1.getMessage());
       throw new OpenR66ProtocolBusinessException("Cannot parse the XML input");
     }
     final DbTaskRunner runner = new DbTaskRunner();
@@ -4314,6 +4338,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    */
   private void setSenderForUpdate() {
     if (isSelfRequest()) {
+      isSaved = false;
       pojo.setRetrieveMode(RequestPacket.isRecvMode(pojo.getTransferMode()));
     }
   }

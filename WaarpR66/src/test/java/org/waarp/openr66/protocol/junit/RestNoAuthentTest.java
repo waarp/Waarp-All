@@ -24,6 +24,7 @@ import io.netty.util.ResourceLeakDetector;
 import io.netty.util.ResourceLeakDetector.Level;
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Rule;
@@ -41,6 +42,7 @@ import org.waarp.common.role.RoleDefault.ROLE;
 import org.waarp.common.utility.NullPrintStream;
 import org.waarp.common.utility.TestWatcherJunit4;
 import org.waarp.common.utility.Version;
+import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.openr66.client.TransferArgsTest;
 import org.waarp.openr66.context.ErrorCode;
 import org.waarp.openr66.dao.TransferDAO;
@@ -93,6 +95,8 @@ public class RestNoAuthentTest extends TestAbstract {
   private static final int WAIT = 300;
   private static PrintStream err = System.err;
 
+  private static boolean RUN_TEST = true;
+
   @BeforeClass
   public static void setUpBeforeClass() throws Exception {
     ResourceLeakDetector.setLevel(Level.PARANOID);
@@ -102,7 +106,12 @@ public class RestNoAuthentTest extends TestAbstract {
         new File(classLoader.getResource("logback-test.xml").getFile());
     if (file.exists()) {
       driverType = DriverType.PHANTOMJS;
-      initiateWebDriver(file.getParentFile());
+      try {
+        initiateWebDriver(file.getParentFile());
+      } catch (NoSuchMethodError e) {
+        RUN_TEST = false;
+        return;
+      }
     }
     setUpDbBeforeClass();
     setUpBeforeClassServer(LINUX_CONFIG_CONFIG_SERVER_INIT_A_XML,
@@ -114,8 +123,10 @@ public class RestNoAuthentTest extends TestAbstract {
    */
   @AfterClass
   public static void tearDownAfterClass() throws Exception {
-    WaarpLoggerFactory.setDefaultFactoryIfNotSame(
-        new WaarpSlf4JLoggerFactory(WaarpLogLevel.NONE));
+    WaarpSystemUtil.stopLogger(true);
+    if (!RUN_TEST) {
+      return;
+    }
     Thread.sleep(100);
     System.setErr(err);
     finalizeDriver();
@@ -130,12 +141,16 @@ public class RestNoAuthentTest extends TestAbstract {
 
   @After
   public void restartDriver() throws InterruptedException {
+    if (!RUN_TEST) {
+      return;
+    }
     reloadDriver();
     Thread.sleep(100);
   }
 
   @Test
   public void testRestR66NoAuthent() throws Exception {
+    Assume.assumeTrue("Driver not loaded", RUN_TEST);
     try {
       // Test Rest V1
       // Step # | name | target | value | comment
@@ -219,6 +234,7 @@ public class RestNoAuthentTest extends TestAbstract {
 
   @Test
   public void testRestR66NoAuthentFollowId() throws Exception {
+    Assume.assumeTrue("Driver not loaded", RUN_TEST);
     try {
       final String baseUri = "http://localhost:8088/";
       // 2 | type | V2 [  |
@@ -370,15 +386,20 @@ public class RestNoAuthentTest extends TestAbstract {
 
   @Test
   public void testRestR66NoAuthentExternal() throws Exception {
+    Assume.assumeTrue("Driver not loaded", RUN_TEST);
     HttpTestRestR66Client.keydesfilename =
         new File(dirResources, "certs/test-key.des").getAbsolutePath();
     logger.info("Key filename: {}", HttpTestRestR66Client.keydesfilename);
+
     HttpTestRestR66Client.main(new String[] { "1" });
+    WaarpLoggerFactory.setDefaultFactoryIfNotSame(
+        new WaarpSlf4JLoggerFactory(WaarpLogLevel.WARN));
   }
 
 
   @Test
   public void testAsRestV2Role() {
+    Assume.assumeTrue("Driver not loaded", RUN_TEST);
     List<ROLE> roles = HostConfigConverter.getRoles("hosta");
     assertTrue(roles.contains(ROLE.CONFIGADMIN));
     assertTrue(roles.contains(ROLE.SYSTEM));

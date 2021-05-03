@@ -142,14 +142,14 @@ public class HttpSessionAbstract implements HttpSession {
       }
     } catch (final WaarpDatabaseNoDataException e) {
       // Not found so create it
-      final Transfer transfer =
-          new Transfer(user, rulename, rule.getMode(), !uploadMode, filename,
-                       comment, chunkSize);
-      transfer.setRequested(requested);
-      transfer.setRequester(user);
-      transfer.setId(identifier);
-      runner = new DbTaskRunner(transfer);
       try {
+        final Transfer transfer =
+            new Transfer(user, rulename, rule.getMode(), !uploadMode, filename,
+                         comment, chunkSize);
+        transfer.setRequested(requested);
+        transfer.setRequester(user);
+        transfer.setId(identifier);
+        runner = new DbTaskRunner(transfer);
         runner.insert();
         runner = new DbTaskRunner(identifier, runner.getRequester(),
                                   runner.getRequested());
@@ -157,6 +157,7 @@ public class HttpSessionAbstract implements HttpSession {
         logger.debug("{} {} {}", identifier, user, requested);
       } catch (final WaarpDatabaseException ex) {
         error(ex, business);
+        throw new IllegalArgumentException(e);
       }
     } catch (final WaarpDatabaseException e) {
       error(e, business);
@@ -183,7 +184,7 @@ public class HttpSessionAbstract implements HttpSession {
       try {
         runner.saveStatus();
       } catch (final OpenR66RunnerErrorException e1) {
-        logger.error("Cannot save Status: " + runner, e1);
+        logger.error("Cannot save Status: " + runner + ": {}", e1.getMessage());
       }
       runner.clean();
       error(e, business);
@@ -193,7 +194,7 @@ public class HttpSessionAbstract implements HttpSession {
     try {
       runner.saveStatus();
     } catch (final OpenR66RunnerErrorException e1) {
-      logger.error("Cannot save Status: " + runner, e1);
+      logger.error("Cannot save Status: " + runner + ": {}", e1.getMessage());
     }
     return runner;
   }
@@ -201,7 +202,7 @@ public class HttpSessionAbstract implements HttpSession {
   @Override
   public void error(final Exception e, final R66BusinessInterface business)
       throws IllegalArgumentException {
-    logger.error(e);
+    logger.error(e.getMessage());
     if (business != null) {
       business.checkAtError(session);
     }
@@ -213,8 +214,8 @@ public class HttpSessionAbstract implements HttpSession {
       try {
         runner.run();
         runner.saveStatus();
-      } catch (final OpenR66RunnerErrorException ignore) {
-        logger.debug(ignore);
+      } catch (final OpenR66RunnerErrorException e1) {
+        logger.debug(e1);
       }
     }
     throw new IllegalArgumentException(e);
@@ -257,7 +258,7 @@ public class HttpSessionAbstract implements HttpSession {
     try {
       runner.saveStatus();
     } catch (final OpenR66RunnerErrorException e1) {
-      logger.error("Cannot save Status: " + runner, e1);
+      logger.error("Cannot save Status: " + runner + ": {}", e1.getMessage());
     }
   }
 
@@ -271,7 +272,7 @@ public class HttpSessionAbstract implements HttpSession {
     try {
       runner.saveStatus();
     } catch (final OpenR66RunnerErrorException e1) {
-      logger.error("Cannot save Status: " + runner, e1);
+      logger.error("Cannot save Status: " + runner + ": {}", e1.getMessage());
     }
   }
 

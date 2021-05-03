@@ -323,7 +323,7 @@ public class DbPreparedStatement {
     } catch (final SQLException e) {
       logger.error(
           "SQL Exception executeUpdate:" + request + ' ' + e.getMessage());
-      logger.info("SQL Exception full stack trace", e);
+      logger.debug("SQL Exception full stack trace", e);
       DbSession.error(e);
       ls.checkConnectionNoException();
       throw new WaarpDatabaseSqlException(
@@ -447,4 +447,8 @@ public class DbPreparedStatement {
     this.isReady = isReady;
   }
 
+  @Override
+  public String toString() {
+    return request;
+  }
 }

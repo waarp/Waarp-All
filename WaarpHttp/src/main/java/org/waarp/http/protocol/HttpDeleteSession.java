@@ -130,7 +130,7 @@ public class HttpDeleteSession extends HttpSessionAbstract {
   @Override
   public void error(final Exception e, final R66BusinessInterface business)
       throws IllegalArgumentException {
-    logger.error(e);
+    logger.error(e.getMessage());
     if (business != null) {
       business.checkAtError(session);
     }

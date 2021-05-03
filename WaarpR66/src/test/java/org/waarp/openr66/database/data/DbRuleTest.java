@@ -24,6 +24,7 @@ package org.waarp.openr66.database.data;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.junit.Test;
 import org.junit.rules.TestWatcher;
+import org.waarp.common.database.exception.WaarpDatabaseSqlException;
 import org.waarp.common.json.JsonHandler;
 import org.waarp.common.utility.TestWatcherJunit4;
 import org.waarp.openr66.pojo.Rule;
@@ -41,7 +42,7 @@ public class DbRuleTest {
   public TestWatcher watchman = new TestWatcherJunit4();
 
   @Test
-  public void testJsonSerialisation() {
+  public void testJsonSerialisation() throws WaarpDatabaseSqlException {
     List<String> hosts = Arrays.asList("sup1");
 
     List<RuleTask> spretasks = new ArrayList<RuleTask>();

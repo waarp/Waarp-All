@@ -421,7 +421,8 @@ public final class HttpXmlDefinition {
     try {
       document = XmlUtil.getNewSaxReader().read(filename);
     } catch (final DocumentException e) {
-      logger.error("Unable to read the XML Config file: " + filename, e);
+      logger.error("Unable to read the XML Config file: " + filename + ": {}",
+                   e.getMessage());
       throw new InvalidArgumentException(
           "Unable to read XML file: " + filename);
     }

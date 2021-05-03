@@ -23,6 +23,7 @@ package org.waarp.ftp.client.transaction;
 import org.waarp.common.digest.FilesystemBasedDigest.DigestAlgo;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.ftp.client.AbstractFtpClient;
 import org.waarp.ftp.client.FtpClientTest;
 
 import java.io.File;
@@ -102,7 +103,9 @@ public class FtpClientThread implements Runnable {
     // System.err.println(id+" connect");
     if (!client.connect()) {
       logger.error(id + " Cant connect");
-      FtpClientTest.numberKO.incrementAndGet();
+      if (AbstractFtpClient.versionJavaCompatible()) {
+        FtpClientTest.numberKO.incrementAndGet();
+      }
       return;
     }
     try {
@@ -128,6 +131,7 @@ public class FtpClientThread implements Runnable {
               return;
             } else {
               FtpClientTest.numberOK.incrementAndGet();
+              System.out.print('.');
             }
             try {
               Thread.sleep(delay);
@@ -135,6 +139,7 @@ public class FtpClientThread implements Runnable {
               // Ignore
             }
           }
+          System.out.println();
         } else {
           for (int i = 0; i < numberIteration; i++) {
             logger.info(id + " transfer passive store " + i);
@@ -144,6 +149,7 @@ public class FtpClientThread implements Runnable {
               return;
             } else {
               FtpClientTest.numberOK.incrementAndGet();
+              System.out.print('.');
             }
             if (!client.deleteFile(remoteFilename)) {
               logger.warn(" Cant delete file passive mode " + id);
@@ -151,6 +157,7 @@ public class FtpClientThread implements Runnable {
               return;
             } else {
               FtpClientTest.numberOK.incrementAndGet();
+              System.out.print('.');
             }
             try {
               Thread.sleep(delay);
@@ -158,6 +165,8 @@ public class FtpClientThread implements Runnable {
               // Ignore
             }
           }
+          System.out.println();
+
           if (!client.transferFile(localFilename, remoteFilename, true)) {
             logger.warn("Cant store file passive mode " + id);
             FtpClientTest.numberKO.incrementAndGet();
@@ -174,6 +183,7 @@ public class FtpClientThread implements Runnable {
               return;
             } else {
               FtpClientTest.numberOK.incrementAndGet();
+              System.out.print('.');
             }
             try {
               Thread.sleep(delay);
@@ -181,6 +191,8 @@ public class FtpClientThread implements Runnable {
               // Ignore
             }
           }
+          System.out.println();
+
         }
         Thread.yield();
       }
@@ -196,6 +208,7 @@ public class FtpClientThread implements Runnable {
               return;
             } else {
               FtpClientTest.numberOK.incrementAndGet();
+              System.out.print('.');
             }
             try {
               Thread.sleep(delay);
@@ -203,6 +216,8 @@ public class FtpClientThread implements Runnable {
               // Ignore
             }
           }
+          System.out.println();
+
           Thread.yield();
         } else {
           for (int i = 0; i < numberIteration; i++) {
@@ -213,6 +228,7 @@ public class FtpClientThread implements Runnable {
               return;
             } else {
               FtpClientTest.numberOK.incrementAndGet();
+              System.out.print('.');
             }
             if (!client.deleteFile(remoteFilename)) {
               logger.warn("Cant delete file active mode " + id);
@@ -220,6 +236,7 @@ public class FtpClientThread implements Runnable {
               return;
             } else {
               FtpClientTest.numberOK.incrementAndGet();
+              System.out.print('.');
             }
             try {
               Thread.sleep(delay);
@@ -227,6 +244,7 @@ public class FtpClientThread implements Runnable {
               // Ignore
             }
           }
+          System.out.println();
           if (!client.transferFile(localFilename, remoteFilename, true)) {
             logger.warn("Cant store file active mode " + id);
             FtpClientTest.numberKO.incrementAndGet();
@@ -243,6 +261,7 @@ public class FtpClientThread implements Runnable {
               return;
             } else {
               FtpClientTest.numberOK.incrementAndGet();
+              System.out.print('.');
             }
             try {
               Thread.sleep(delay);
@@ -250,35 +269,36 @@ public class FtpClientThread implements Runnable {
               // Ignore
             }
           }
+          System.out.println();
         }
       }
       String[] results = client.executeSiteCommand("XCRC " + remoteFilename);
       for (final String string : results) {
-        logger.warn("XCRC: {}", string);
+        logger.info("XCRC: {}", string);
       }
       results = client.executeSiteCommand("XMD5 " + remoteFilename);
       for (final String string : results) {
-        logger.warn("XCRC: {}", string);
+        logger.info("XCRC: {}", string);
       }
       results = client.executeSiteCommand("XSHA1 " + remoteFilename);
       for (final String string : results) {
-        logger.warn("XCRC: {}", string);
+        logger.info("XCRC: {}", string);
       }
       for (DigestAlgo algo : DigestAlgo.values()) {
         results = client.executeSiteCommand(
             "XDIGEST " + algo.algoName + " " + remoteFilename);
         for (final String string : results) {
-          logger.warn("XDIGEST {}: {}", algo.algoName, string);
+          logger.info("XDIGEST {}: {}", algo.algoName, string);
         }
         results = client.executeSiteCommand(
             "XDIGEST " + algo.name() + " " + remoteFilename);
         for (final String string : results) {
-          logger.warn("XDIGEST {}: {}", algo.name(), string);
+          logger.info("XDIGEST {}: {}", algo.name(), string);
         }
       }
       results = client.listFiles();
       for (final String string : results) {
-        logger.warn("LIST: {}", string);
+        logger.info("LIST: {}", string);
       }
     } finally {
       logger.warn(id + " disconnect {}:{}", FtpClientTest.numberOK.get(),

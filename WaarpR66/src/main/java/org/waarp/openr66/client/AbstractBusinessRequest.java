@@ -134,7 +134,7 @@ public abstract class AbstractBusinessRequest implements Runnable {
     try {
       ChannelUtils
           .writeAbstractLocalPacket(localChannelReference, businessPacket,
-                                    false);
+                                    true);
     } catch (final OpenR66ProtocolPacketException e) {
       future.setResult(null);
       future.setFailure(e);

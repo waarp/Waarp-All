@@ -127,12 +127,16 @@ public abstract class CommonUtil {
     // Move to clientB
     setUpBeforeClassClient(CONFIG_CLIENT_B_XML);
     Configuration.configuration.setTimeoutCon(100);
+    try {
+      Thread.sleep(1000);
+    } catch (InterruptedException e) {
+      // Wait for server started
+    }
   }
 
   @AfterClass
   public static void stopServers() throws Exception {
-    WaarpLoggerFactory.setDefaultFactoryIfNotSame(
-        new WaarpSlf4JLoggerFactory(WaarpLogLevel.NONE));
+    WaarpSystemUtil.stopLogger(true);
     System.setErr(err);
     Configuration.configuration.setTimeoutCon(100);
     finalizeDriver();

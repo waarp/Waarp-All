@@ -77,7 +77,7 @@ public class FtpInternalConfiguration {
   /**
    * Number of retry before error
    */
-  public static final int RETRYNB = 3;
+  public static final int RETRYNB = 10;
 
   /**
    * Hack to say Windows or Unix (USR1 not OK on Windows)
@@ -333,7 +333,7 @@ public class FtpInternalConfiguration {
     try {
       future = future.sync();
     } catch (final InterruptedException e) {//NOSONAR
-      logger.error("Cannot start command conections", e);
+      logger.error("Cannot start command conections: {}", e.getMessage());
       throw new FtpNoConnectionException("Can't initiate the FTP server", e);
     }
     if (!future.isSuccess()) {

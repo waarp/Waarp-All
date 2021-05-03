@@ -21,13 +21,65 @@
 package org.waarp.openr66.dao;
 
 public class Filter {
+  public static final String LIKE = "LIKE";
+  public static final String BETWEEN = "BETWEEN";
+  public static final String IN = "IN";
+  private static final byte B_SINGLE = 's';
+  private static final byte B_MULTIPLE = 'm';
   public final String key;
   public final String operand;
   public final Object value;
+  private final int nbArgs;
+  private final byte specialOperand;
 
-  public Filter(final String key, final String operand, final Object value) {
+  public Filter(final String key, final String operand,
+                final Object... values) {
     this.key = key;
     this.operand = operand;
-    this.value = value;
+    nbArgs = values.length;
+    if (nbArgs == 1) {
+      this.value = values[0];
+      specialOperand = B_SINGLE;
+    } else {
+      this.value = values;
+      specialOperand = B_MULTIPLE;
+    }
+  }
+
+  /**
+   * @return the number of values for the operand (0 for 1, 1 for 2 or (n-1)
+   *     for n)
+   */
+  public int nbAdditionnalParams() {
+    return nbArgs - 1;
+  }
+
+  /**
+   * Helper
+   *
+   * @param builder
+   *
+   * @return the associated value
+   */
+  public Object append(final StringBuilder builder) {
+    if (nbArgs == 1) {
+      builder.append(key).append(' ').append(operand).append(" ? ");
+    } else {
+      if (BETWEEN.equalsIgnoreCase(operand)) {
+        // Object is a Object[2]
+        builder.append(key).append(' ').append(BETWEEN).append(" ? AND ? ");
+      } else if (IN.equalsIgnoreCase((operand))) {
+        // Object is a Object[n]
+        builder.append(key).append(' ').append(IN).append("(?");
+        for (int i = 1; i < nbArgs; i++) {
+          builder.append(", ?");
+        }
+        builder.append(") ");
+      } else {
+        throw new IllegalArgumentException(
+            "Command seems to not support multiple arguments: " + operand);
+      }
+    }
+    return value;
   }
 }

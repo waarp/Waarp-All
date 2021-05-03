@@ -29,6 +29,7 @@ import io.netty.handler.traffic.TrafficCounter;
 import org.waarp.common.exception.FileTransferException;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.ParametersChecker;
 import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.gateway.kernel.http.HttpWriteCacheEnable;
 import org.waarp.openr66.context.R66Session;
@@ -107,7 +108,8 @@ public class HttpFormattedHandlerProxyR66 extends HttpFormattedHandler {
     try {
       value = WaarpStringUtils.readFileException(filename);
     } catch (final FileTransferException e) {
-      logger.error("Error while trying to read: " + filename, e);
+      logger.error("Error while trying to read: " + filename + ": {}",
+                   e.getMessage());
       return "";
     }
     final StringBuilder builder = new StringBuilder(value);
@@ -173,7 +175,7 @@ public class HttpFormattedHandlerProxyR66 extends HttpFormattedHandler {
     final boolean extraBoolean = false;
     if (!params.isEmpty()) {
       final String langarg = getTrimValue("setLng");
-      if (langarg != null && !langarg.isEmpty()) {
+      if (ParametersChecker.isNotEmpty(langarg)) {
         lang = langarg;
       }
     }

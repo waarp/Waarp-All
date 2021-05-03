@@ -20,6 +20,7 @@
 
 package org.waarp.openr66.dao.database;
 
+import org.waarp.common.database.exception.WaarpDatabaseSqlException;
 import org.waarp.common.lru.SynchronizedLruCache;
 import org.waarp.openr66.dao.BusinessDAO;
 import org.waarp.openr66.pojo.Business;
@@ -105,7 +106,9 @@ public class DBBusinessDAO extends StatementExecutor<Business>
   }
 
   @Override
-  protected Object[] getInsertValues(final Business business) {
+  protected Object[] getInsertValues(final Business business)
+      throws WaarpDatabaseSqlException {
+    business.checkValues();
     return new Object[] {
         business.getHostid(), business.getBusiness(), business.getRoles(),
         business.getAliases(), business.getOthers(),
@@ -119,7 +122,9 @@ public class DBBusinessDAO extends StatementExecutor<Business>
   }
 
   @Override
-  protected Object[] getUpdateValues(final Business business) {
+  protected Object[] getUpdateValues(final Business business)
+      throws WaarpDatabaseSqlException {
+    business.checkValues();
     return new Object[] {
         business.getHostid(), business.getBusiness(), business.getRoles(),
         business.getAliases(), business.getOthers(),
@@ -144,11 +149,15 @@ public class DBBusinessDAO extends StatementExecutor<Business>
 
   @Override
   public Business getFromResultSet(final ResultSet set) throws SQLException {
-    return new Business(set.getString(HOSTID_FIELD),
-                        set.getString(BUSINESS_FIELD),
-                        set.getString(ROLES_FIELD),
-                        set.getString(ALIASES_FIELD),
-                        set.getString(OTHERS_FIELD),
-                        UpdatedInfo.valueOf(set.getInt(UPDATED_INFO_FIELD)));
+    try {
+      return new Business(set.getString(HOSTID_FIELD),
+                          set.getString(BUSINESS_FIELD),
+                          set.getString(ROLES_FIELD),
+                          set.getString(ALIASES_FIELD),
+                          set.getString(OTHERS_FIELD),
+                          UpdatedInfo.valueOf(set.getInt(UPDATED_INFO_FIELD)));
+    } catch (WaarpDatabaseSqlException e) {
+      throw new SQLException(e);
+    }
   }
 }

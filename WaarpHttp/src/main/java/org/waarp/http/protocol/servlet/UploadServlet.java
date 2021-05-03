@@ -20,10 +20,10 @@
 
 package org.waarp.http.protocol.servlet;
 
-import com.google.common.base.Strings;
 import com.google.common.io.ByteSource;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.ParametersChecker;
 import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.http.protocol.HttpHelper;
@@ -110,19 +110,19 @@ public class UploadServlet extends AbstractServlet {
             }
           }
         }
-      } catch (final ServletException ignored) {
-        logger.warn("MULTIPART MODE BUT error", ignored);
+      } catch (final ServletException e) {
+        logger.warn("MULTIPART MODE BUT error {}", e.getMessage());
         try {
           inputStream = request.getInputStream();
-        } catch (final IOException ignore) {
-          throw new ServletException(INVALID_BLOCK, ignore);
+        } catch (final IOException e2) {
+          throw new ServletException(INVALID_BLOCK + ": " + e2.getMessage());
         }
-      } catch (final IOException ignored) {
-        logger.warn("MULTIPART MODE BUT error", ignored);
+      } catch (final IOException e) {
+        logger.warn("MULTIPART MODE BUT error {}", e.getMessage());
         try {
           inputStream = request.getInputStream();
-        } catch (final IOException ignore) {
-          throw new ServletException(INVALID_BLOCK, ignore);
+        } catch (final IOException e2) {
+          throw new ServletException(INVALID_BLOCK + ": " + e2.getMessage());
         }
       }
     } else {
@@ -133,47 +133,57 @@ public class UploadServlet extends AbstractServlet {
       }
       try {
         inputStream = request.getInputStream();
-      } catch (final IOException ignore) {
-        throw new ServletException(INVALID_BLOCK, ignore);
+      } catch (final IOException e) {
+        throw new ServletException(INVALID_BLOCK + ": " + e.getMessage());
       }
     }
     logger.warn("PARAMS: {}", arguments);
     resumableInfo = getResumableInfo(arguments);
     logger.debug("RECV: {}", resumableInfo);
-    session = getResumableSession(arguments, resumableInfo);//NOSONAR
+    try {
+      session = getResumableSession(arguments, resumableInfo);//NOSONAR
+    } catch (ServletException e) {
+      logger.error(e.getMessage());
+      response.setStatus(400);
+      return;
+    }
     logger.debug("SESSION: {}", session);
     try {
       if (!session.tryWrite(resumableInfo, inputStream)) {
         throw new ServletException(INVALID_BLOCK);
       }
     } catch (final IOException e) {
-      throw new ServletException(INVALID_BLOCK, e);
+      throw new ServletException(INVALID_BLOCK + ": " + e.getMessage());
     }
 
     String sha = arguments.get(SHA_256);
-    if (!Strings.isNullOrEmpty(sha) && sha.equalsIgnoreCase("undefined")) {
+    if (ParametersChecker.isNotEmpty(sha) &&
+        sha.equalsIgnoreCase("undefined")) {
       sha = null;
     }
-    if (session.checkIfUploadFinished(sha)) {
-      // Check if all chunks uploaded, and change filename
-      logger.warn("ALL USER TRANSFER FINISHED: {}", session);
-      HttpSessions.getInstance().removeSession(session);
-      response.setStatus(200);
-      try {
-        response.getWriter().print("All finished.");
-      } catch (final IOException ignore) {
-        logger.debug(ignore);
+    try {
+      if (session.checkIfUploadFinished(sha)) {
+        // Check if all chunks uploaded, and change filename
+        logger.warn("ALL USER TRANSFER FINISHED: {}", session);
+        HttpSessions.getInstance().removeSession(session);
+        response.setStatus(200);
+        try {
+          response.getWriter().print("All finished.");
+        } catch (final IOException ignore) {
+          logger.debug(ignore);
+        }
+      } else {
+        logger.debug("PARTIAL UPLOAD: {}", session);
+        response.setStatus(201);
+        try {
+          response.getWriter().print("Upload");
+        } catch (final IOException ignore) {
+          logger.debug(ignore);
+        }
       }
-    } else {
-      logger.debug("PARTIAL UPLOAD: {}", session);
-      response.setStatus(201);
-      try {
-        response.getWriter().print("Upload");
-      } catch (final IOException ignore) {
-        logger.debug(ignore);
-      }
+    } catch (IllegalArgumentException e) {
+      throw new ServletException(e);
     }
-
   }
 
   /**
@@ -236,15 +246,11 @@ public class UploadServlet extends AbstractServlet {
       }
       return session;
     } catch (final IllegalArgumentException e) {
-      throw new ServletException(INVALID_REQUEST_PARAMS, e);
-    } catch (final IllegalAccessException e) {
-      throw new ServletException(INVALID_REQUEST_PARAMS, e);
-    } catch (final InstantiationException e) {
-      throw new ServletException(INVALID_REQUEST_PARAMS, e);
+      throw new ServletException(
+          INVALID_REQUEST_PARAMS + ": " + e.getMessage());
     } catch (InvocationTargetException e) {
-      throw new ServletException(INVALID_REQUEST_PARAMS, e);
-    } catch (NoSuchMethodException e) {
-      throw new ServletException(INVALID_REQUEST_PARAMS, e);
+      throw new ServletException(
+          INVALID_REQUEST_PARAMS + ": " + e.getMessage());
     }
   }
 
@@ -260,8 +266,14 @@ public class UploadServlet extends AbstractServlet {
     }
     final HttpResumableInfo resumableInfo = getResumableInfo(arguments);
     logger.debug("RECVGET: {}", resumableInfo);
-    final HttpResumableSession session =
-        getResumableSession(arguments, resumableInfo);
+    final HttpResumableSession session;
+    try {
+      session = getResumableSession(arguments, resumableInfo);//NOSONAR
+    } catch (ServletException e) {
+      logger.error(e.getMessage());
+      response.setStatus(400);
+      return;
+    }
     logger.debug("SESSION: {}", session);
     if (session.contains(resumableInfo)) {
       logger.info("ALREADY: {}", session);

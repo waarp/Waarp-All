@@ -151,12 +151,12 @@ public interface XmlSerializable {
   /**
    * A container for a list of hosts for XML (de)serialisation purposes.
    */
-  @XmlRootElement(name = XML_AUTHENTIFICATION_ROOT)
+  @XmlRootElement(name = XML_AUTHENTICATION_ROOT)
   final class Hosts implements XmlSerializable {
     /**
      * The list of {@link Host}.
      */
-    @XmlElement(name = XML_AUTHENTIFICATION_ENTRY)
+    @XmlElement(name = XML_AUTHENTICATION_ENTRY)
     public List<Host> hosts = new ArrayList<Host>();
 
     public Hosts() {

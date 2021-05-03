@@ -168,7 +168,9 @@ public class Commander implements CommanderInterface {
               DbMultipleMonitor.getFromStatement(preparedStatementLock);
         }
       } catch (final WaarpDatabaseNoConnectionException e) {
-        logger.error(DATABASE_NO_CONNECTION_ERROR_CANNOT_EXECUTE_COMMANDER, e);
+        logger.error(
+            DATABASE_NO_CONNECTION_ERROR_CANNOT_EXECUTE_COMMANDER + ": {}",
+            e.getMessage());
         try {
           noCommitAdmin.getDbModel()
                        .validConnection(noCommitAdmin.getSession());
@@ -200,7 +202,9 @@ public class Commander implements CommanderInterface {
         } catch (final WaarpDatabaseNoConnectionException ignored) {
           // nothing
         }
-        logger.error(DATABASE_NO_CONNECTION_ERROR_CANNOT_EXECUTE_COMMANDER, e);
+        logger.error(
+            DATABASE_NO_CONNECTION_ERROR_CANNOT_EXECUTE_COMMANDER + ": {}",
+            e.getMessage());
         return;
       } catch (final WaarpDatabaseSqlException e) {
         try {
@@ -208,7 +212,8 @@ public class Commander implements CommanderInterface {
         } catch (final WaarpDatabaseNoConnectionException ignored) {
           // nothing
         }
-        logger.error(DATABASE_SQL_ERROR_CANNOT_EXECUTE_COMMANDER, e);
+        logger.error(DATABASE_SQL_ERROR_CANNOT_EXECUTE_COMMANDER + ": {}",
+                     e.getMessage());
         // XXX no return since table might not be initialized
         if (shallReturnInCaseError) {
           return;
@@ -219,7 +224,8 @@ public class Commander implements CommanderInterface {
         } catch (final WaarpDatabaseNoConnectionException ignored) {
           // nothing
         }
-        logger.error(DATABASE_ERROR_CANNOT_EXECUTE_COMMANDER, e);
+        logger.error(DATABASE_ERROR_CANNOT_EXECUTE_COMMANDER + ": {}",
+                     e.getMessage());
         // XXX no return since table might not be initialized
         if (shallReturnInCaseError) {
           return;
@@ -246,7 +252,9 @@ public class Commander implements CommanderInterface {
         } catch (final WaarpDatabaseNoConnectionException ignored) {
           // nothing
         }
-        logger.error(DATABASE_NO_CONNECTION_ERROR_CANNOT_EXECUTE_COMMANDER, e);
+        logger.error(
+            DATABASE_NO_CONNECTION_ERROR_CANNOT_EXECUTE_COMMANDER + ": {}",
+            e.getMessage());
         return;
       } catch (final WaarpDatabaseSqlException e) {
         try {
@@ -254,7 +262,8 @@ public class Commander implements CommanderInterface {
         } catch (final WaarpDatabaseNoConnectionException ignored) {
           // nothing
         }
-        logger.error(DATABASE_SQL_ERROR_CANNOT_EXECUTE_COMMANDER, e);
+        logger.error(DATABASE_SQL_ERROR_CANNOT_EXECUTE_COMMANDER + ": {}",
+                     e.getMessage());
         return;
       } catch (final WaarpDatabaseNoDataException e) {
         try {
@@ -262,7 +271,8 @@ public class Commander implements CommanderInterface {
         } catch (final WaarpDatabaseNoConnectionException ignored) {
           // nothing
         }
-        logger.error(DATABASE_ERROR_CANNOT_EXECUTE_COMMANDER, e);
+        logger.error(DATABASE_ERROR_CANNOT_EXECUTE_COMMANDER + ": {}",
+                     e.getMessage());
         return;
       } catch (final WaarpDatabaseException e) {
         try {
@@ -270,7 +280,8 @@ public class Commander implements CommanderInterface {
         } catch (final WaarpDatabaseNoConnectionException ignored) {
           // nothing
         }
-        logger.error(DATABASE_ERROR_CANNOT_EXECUTE_COMMANDER, e);
+        logger.error(DATABASE_ERROR_CANNOT_EXECUTE_COMMANDER + ": {}",
+                     e.getMessage());
         return;
       }
       logger.debug("end commander");

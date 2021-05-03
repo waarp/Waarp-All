@@ -130,12 +130,18 @@ public class DownloadServletTest extends TestAbstract {
     int port = connector.getLocalPort();
     serverUri = new URI(String.format("http://%s:%d/WaarpHttp", host, port));
     logger.warn("URI = {}", serverUri.toString());
+    try {
+      Thread.sleep(1000);
+    } catch (InterruptedException e) {
+      // Wait for server started
+    }
+    WaarpLoggerFactory.setDefaultFactoryIfNotSame(
+        new WaarpSlf4JLoggerFactory(WaarpLogLevel.WARN));
   }
 
   @AfterClass
   public static void stopJetty() throws Exception {
-    WaarpLoggerFactory.setDefaultFactoryIfNotSame(
-        new WaarpSlf4JLoggerFactory(WaarpLogLevel.NONE));
+    WaarpSystemUtil.stopLogger(true);
     try {
       if (server != null) {
         server.stop();
@@ -246,7 +252,7 @@ public class DownloadServletTest extends TestAbstract {
     }
     printResponse(http, null);
     MatcherAssert.assertThat("Response Code", http.getResponseCode(),
-                             is(HttpStatus.INTERNAL_SERVER_ERROR_500));
+                             is(HttpStatus.BAD_REQUEST_400));
     http.disconnect();
   }
 
@@ -284,7 +290,7 @@ public class DownloadServletTest extends TestAbstract {
     }
     printResponse(http, null);
     MatcherAssert.assertThat("Response Code", http.getResponseCode(),
-                             is(HttpStatus.INTERNAL_SERVER_ERROR_500));
+                             is(HttpStatus.BAD_REQUEST_400));
     http.disconnect();
   }
 

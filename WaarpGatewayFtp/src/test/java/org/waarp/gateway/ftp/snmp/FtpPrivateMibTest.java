@@ -137,13 +137,18 @@ public class FtpPrivateMibTest {
     key = configuration.getCryptoKey().decryptHexInString("c5f4876737cf351a");
 
     ExecGatewayFtpServer.main(new String[] { file.getAbsolutePath() });
+    try {
+      Thread.sleep(1000);
+    } catch (InterruptedException e) {
+      // Wait for server started
+    }
   }
 
   @AfterClass
   public static void stopServer() throws InterruptedException {
     logger.warn("Will shutdown from client");
     WaarpLoggerFactory.setDefaultFactoryIfNotSame(
-        new WaarpSlf4JLoggerFactory(WaarpLogLevel.NONE));
+        new WaarpSlf4JLoggerFactory(WaarpLogLevel.WARN));
     try {
       Thread.sleep(200);
     } catch (final InterruptedException ignored) {
@@ -154,20 +159,21 @@ public class FtpPrivateMibTest {
                                          0);
       if (!client.connect()) {
         logger.warn("Cant connect");
-        return;
-      }
-      try {
-        final String[] results =
-            client.executeSiteCommand("internalshutdown pwdhttp");
-        System.err.print("SHUTDOWN: ");
-        for (final String string : results) {
-          System.err.println(string);
+      } else {
+        try {
+          final String[] results =
+              client.executeSiteCommand("internalshutdown pwdhttp");
+          System.err.print("SHUTDOWN: ");
+          for (final String string : results) {
+            System.err.println(string);
+          }
+        } finally {
+          client.disconnect();
         }
-      } finally {
-        client.disconnect();
       }
     } finally {
       logger.warn("Will stop server");
+      WaarpSystemUtil.stopLogger(true);
       FileBasedConfiguration.fileBasedConfiguration.setShutdown(true);
       FileBasedConfiguration.fileBasedConfiguration.releaseResources();
       try {

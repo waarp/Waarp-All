@@ -75,7 +75,8 @@ public class JavaExecutor extends AbstractExecutor {
       runnable =
           (GatewayRunnable) WaarpSystemUtil.newInstance(className);//NOSONAR
     } catch (final Exception e) {
-      logger.error("ExecJava command is not available: " + className, e);
+      logger.error("ExecJava command is not available: " + className + ": {}",
+                   e.getMessage());
       throw new Reply421Exception("Pre Exec command is not executable");
     }
     runnable.setArgs(true, useLocalExec, (int) delay, args);

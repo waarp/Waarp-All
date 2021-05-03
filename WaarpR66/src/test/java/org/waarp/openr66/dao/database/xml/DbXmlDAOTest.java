@@ -23,6 +23,7 @@ package org.waarp.openr66.dao.database.xml;
 import org.junit.Rule;
 import org.junit.rules.TestWatcher;
 import org.testcontainers.containers.JdbcDatabaseContainer;
+import org.waarp.common.database.exception.WaarpDatabaseSqlException;
 import org.waarp.common.utility.SingletonUtils;
 import org.waarp.common.utility.TestWatcherJunit4;
 import org.waarp.openr66.context.ErrorCode;
@@ -128,7 +129,7 @@ public class DbXmlDAOTest extends DBAllDAOTest {
   }
 
   @Override
-  public void initDB() {
+  public void initDB() throws WaarpDatabaseSqlException {
     // Init through Map
     {
       final XMLLimitDAO dao = new XMLLimitDAO();

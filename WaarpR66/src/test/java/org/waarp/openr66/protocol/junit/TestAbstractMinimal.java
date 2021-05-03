@@ -80,8 +80,8 @@ public abstract class TestAbstractMinimal {
       logger.warn(dir.getAbsolutePath());
       createBaseR66Directory(dir, "/tmp/R66");
     } else {
-      System.err.println("Cannot find serverInitBaseDirectory file: " +
-                         file.getAbsolutePath());
+      logger.error("Cannot find serverInitBaseDirectory file: " +
+                   file.getAbsolutePath());
     }
   }
 
@@ -103,9 +103,9 @@ public abstract class TestAbstractMinimal {
     logger.warn("Copy from {} to {}", dirConf, conf);
     final File[] copied = FileUtils.copyRecursive(dirConf, conf, false);
     if (copied != null && copied.length > 0) {
-      System.out.print(copied[0].getAbsolutePath() + ' ');
+      logger.debug("{}", copied[0]);
     }
-    System.out.println(" Done");
+    logger.debug(" Done");
     File baseWeb =
         dir.getParentFile().getParentFile().getParentFile().getParentFile();
     if (baseWeb.getAbsolutePath().contains("src/test/resources")) {
@@ -116,9 +116,9 @@ public abstract class TestAbstractMinimal {
       logger.warn("Copy Web from {} to {}", webSrc, web);
       final File[] copiedWeb = FileUtils.copyRecursive(webSrc, web, false);
       if (copiedWeb != null && copiedWeb.length > 0) {
-        System.out.print(copiedWeb[0].getAbsolutePath() + ' ');
+        logger.debug("{}", copiedWeb[0]);
       }
-      System.out.println(" Done");
+      logger.debug(" Done");
     } else {
       logger.warn("Http dir does not exists: " + webSrc.getAbsolutePath());
     }
@@ -128,9 +128,9 @@ public abstract class TestAbstractMinimal {
       final File[] copiedWebResp =
           FileUtils.copyRecursive(webRespSrc, webResp, false);
       if (copiedWebResp != null && copiedWebResp.length > 0) {
-        System.out.print(copiedWebResp[0].getAbsolutePath() + ' ');
+        logger.debug("{}", copiedWebResp[0]);
       }
-      System.out.println(" Done");
+      logger.debug(" Done");
     } else {
       logger.warn("Http dir does not exists: " + webRespSrc.getAbsolutePath());
     }
@@ -140,6 +140,7 @@ public abstract class TestAbstractMinimal {
    *
    */
   public static void tearDownAfterClassMinimal() {
+    WaarpSystemUtil.stopLogger(true);
     final File tmp = new File("/tmp/R66");
     tmp.mkdirs();
     FileUtils.forceDeleteRecursiveDir(tmp);

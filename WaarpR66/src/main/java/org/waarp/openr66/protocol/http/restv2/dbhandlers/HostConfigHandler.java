@@ -100,7 +100,6 @@ public class HostConfigHandler extends AbstractRestDbHandler {
   @RequiredRole(READONLY)
   public void getConfig(final HttpRequest request,
                         final HttpResponder responder) {
-
     BusinessDAO businessDAO = null;
     try {
       businessDAO = DAO_FACTORY.getBusinessDAO();
@@ -138,13 +137,13 @@ public class HostConfigHandler extends AbstractRestDbHandler {
   @RequiredRole(CONFIGADMIN)
   public void initializeConfig(final HttpRequest request,
                                final HttpResponder responder) {
-
     BusinessDAO businessDAO = null;
     try {
       businessDAO = DAO_FACTORY.getBusinessDAO();
 
       if (!businessDAO.exist(serverName())) {
         final ObjectNode requestObject = JsonUtils.deserializeRequest(request);
+        checkSanity(requestObject);
         final Business config =
             HostConfigConverter.nodeToNewBusiness(requestObject);
         businessDAO.insert(config);
@@ -176,7 +175,6 @@ public class HostConfigHandler extends AbstractRestDbHandler {
   @RequiredRole(CONFIGADMIN)
   public void updateConfig(final HttpRequest request,
                            final HttpResponder responder) {
-
     BusinessDAO businessDAO = null;
 
     try {
@@ -187,6 +185,7 @@ public class HostConfigHandler extends AbstractRestDbHandler {
       }
 
       final ObjectNode requestObject = JsonUtils.deserializeRequest(request);
+      checkSanity(requestObject);
       final Business oldConfig = businessDAO.select(serverName());
       final Business newConfig =
           HostConfigConverter.nodeToUpdatedBusiness(requestObject, oldConfig);
@@ -217,7 +216,6 @@ public class HostConfigHandler extends AbstractRestDbHandler {
   @RequiredRole(CONFIGADMIN)
   public void deleteConfig(final HttpRequest request,
                            final HttpResponder responder) {
-
     BusinessDAO businessDAO = null;
     try {
       businessDAO = DAO_FACTORY.getBusinessDAO();

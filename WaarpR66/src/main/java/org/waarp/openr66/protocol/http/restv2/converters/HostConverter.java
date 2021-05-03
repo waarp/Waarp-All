@@ -21,8 +21,11 @@
 package org.waarp.openr66.protocol.http.restv2.converters;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.waarp.common.database.exception.WaarpDatabaseSqlException;
+import org.waarp.common.json.JsonHandler;
+import org.waarp.common.logging.SysErrLogger;
+import org.waarp.common.utility.ParametersChecker;
 import org.waarp.openr66.pojo.Host;
 import org.waarp.openr66.protocol.http.restv2.errors.RestError;
 import org.waarp.openr66.protocol.http.restv2.errors.RestErrorException;
@@ -117,7 +120,7 @@ public final class HostConverter {
    * @return the converted ObjectNode
    */
   public static ObjectNode hostToNode(final Host host) {
-    final ObjectNode node = new ObjectNode(JsonNodeFactory.instance);
+    final ObjectNode node = JsonHandler.createObjectNode();
     node.put(HOST_NAME, host.getHostid());
     node.put(ADDRESS, host.getAddress());
     node.put(PORT, host.getPort());
@@ -144,8 +147,13 @@ public final class HostConverter {
    *     occurred
    */
   public static Host nodeToNewHost(final ObjectNode object) {
-    final Host emptyHost =
-        new Host(null, null, -1, null, false, false, false, false, true);
+    Host emptyHost = null;
+    try {
+      emptyHost =
+          new Host(null, null, -1, null, false, false, false, false, true);
+    } catch (WaarpDatabaseSqlException e) {
+      SysErrLogger.FAKE_LOGGER.syserr(e);
+    }
 
     return nodeToUpdatedHost(object, emptyHost);
   }
@@ -284,10 +292,10 @@ public final class HostConverter {
    */
   private static List<RestError> checkRequiredFields(final Host host) {
     final List<RestError> errors = new ArrayList<RestError>();
-    if (host.getHostid() == null || host.getHostid().isEmpty()) {
+    if (ParametersChecker.isEmpty(host.getHostid())) {
       errors.add(MISSING_FIELD(HOST_NAME));
     }
-    if (host.getAddress() == null || host.getAddress().isEmpty()) {
+    if (ParametersChecker.isEmpty(host.getAddress())) {
       errors.add(MISSING_FIELD(ADDRESS));
     }
     if (host.getPort() == -1) {

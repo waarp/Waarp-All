@@ -23,6 +23,7 @@ package org.waarp.openr66.pojo;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestWatcher;
+import org.waarp.common.database.exception.WaarpDatabaseSqlException;
 import org.waarp.common.json.JsonHandler;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
@@ -43,7 +44,7 @@ public class TransferTest {
       WaarpLoggerFactory.getLogger(TransferTest.class);
 
   @Test
-  public void testJsonSerialisation() {
+  public void testJsonSerialisation() throws WaarpDatabaseSqlException {
     Transfer transfer =
         new Transfer(12345, "myrule", 2, "myfile.dat", "myoriginalfile.dat",
                      "myfileinfo", true, 42, false, "me", "me", "other",

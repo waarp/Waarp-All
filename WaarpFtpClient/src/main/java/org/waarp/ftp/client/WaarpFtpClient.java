@@ -27,28 +27,25 @@ import org.apache.commons.net.ftp.FTPReply;
 import org.apache.commons.net.ftp.FTPSClient;
 import org.apache.commons.net.util.TrustManagerUtils;
 import org.waarp.common.file.FileUtils;
-import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.net.SocketException;
 
 /**
  * FTP Client using Apache Commons net FTP client (not working using FTPS or
  * FTPSE)
  */
-public class WaarpFtpClient {
-  private static final String LOGIN_IN_ERROR = "Login in error";
-
+public class WaarpFtpClient implements WaarpFtpClientInterface {
   /**
    * Internal Logger
    */
-  private static final WaarpLogger logger =
+  protected static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(WaarpFtpClient.class);
 
   final String server;
@@ -123,36 +120,48 @@ public class WaarpFtpClient {
     if (timeout > 0) {
       ftpClient.setDataTimeout(timeout);
     }
+    ftpClient.setListHiddenFiles(true);
     if (trace) {
       ftpClient.addProtocolCommandListener(
           new PrintCommandListener(new PrintWriter(System.out), true));
     }
   }
 
-  /**
-   * Try to connect to the server and goes with the authentication
-   *
-   * @return True if connected and authenticated, else False
-   */
+  @Override
+  public String getResult() {
+    return result;
+  }
+
+  @Override
   public boolean connect() {
     result = null;
     boolean isActive = false;
     try {
-      try {
-        ftpClient.connect(server, port);
-      } catch (final SocketException e) {
-        result = "Connection in error";
-        logger.error(result, e);
-        return false;
-      } catch (final IOException e) {
-        result = "Connection in error";
-        logger.error(result, e);
+      Thread.yield();
+      Exception lastExcemption = null;
+      for (int i = 0; i < 3; i++) {
+        try {
+          if (port > 0) {
+            ftpClient.connect(server, port);
+          } else {
+            ftpClient.connect(server);
+          }
+          lastExcemption = null;
+          Thread.yield();
+          break;
+        } catch (final Exception e) {
+          result = CONNECTION_IN_ERROR;
+          lastExcemption = e;
+        }
+      }
+      if (lastExcemption != null) {
+        logger.error(result + ": {}", lastExcemption.getMessage());
         return false;
       }
       final int reply = ftpClient.getReplyCode();
       if (!FTPReply.isPositiveCompletion(reply)) {
         disconnect();
-        result = "Connection in error: " + reply;
+        result = CONNECTION_IN_ERROR + ": " + reply;
         logger.error(result);
         return false;
       }
@@ -173,17 +182,9 @@ public class WaarpFtpClient {
         }
       } catch (final IOException e) {
         result = LOGIN_IN_ERROR;
-        logger.error(result, e);
+        logger.error(result + ": {}", e.getMessage());
         return false;
       }
-      try {
-        ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
-      } catch (final IOException e1) {
-        result = "Set BINARY in error";
-        logger.error(result, e1);
-        return false;
-      }
-      changeMode(isPassive);
       ftpClient.setUseEPSVwithIPv4(false);
       if (ssl == 1) {
         // now send request for PROT (AUTH already sent)
@@ -196,10 +197,18 @@ public class WaarpFtpClient {
         } catch (final IOException e) {
           logout();
           result = "Explicit SSL in error";
-          logger.error(result, e);
+          logger.error(result + ": {}", e.getMessage());
           return false;
         }
       }
+      try {
+        ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
+      } catch (final IOException e1) {
+        result = SET_BINARY_IN_ERROR;
+        logger.error(result + ": {}", e1.getMessage());
+        return false;
+      }
+      changeMode(isPassive);
       isActive = true;
       return true;
     } finally {
@@ -207,13 +216,13 @@ public class WaarpFtpClient {
                        FTPClient.ACTIVE_LOCAL_DATA_CONNECTION_MODE) {
         disconnect();
       }
+      Thread.yield();
     }
   }
 
-  /**
-   * Logout from the Control connection
-   */
+  @Override
   public void logout() {
+    result = null;
     try {
       ftpClient.logout();
     } catch (final IOException e) {
@@ -228,60 +237,41 @@ public class WaarpFtpClient {
     }
   }
 
-  /**
-   * Disconnect the Ftp Client
-   */
+  @Override
   public void disconnect() {
+    result = null;
     try {
       ftpClient.disconnect();
     } catch (final IOException e) {
-      logger.debug("Disconnection in error", e);
+      logger.debug(DISCONNECTION_IN_ERROR, e);
     }
   }
 
-  /**
-   * Create a new directory
-   *
-   * @param newDir
-   *
-   * @return True if created
-   */
+  @Override
   public boolean makeDir(final String newDir) {
     result = null;
     try {
       return ftpClient.makeDirectory(newDir);
     } catch (final IOException e) {
-      result = "MKDIR in error";
-      logger.info(result, e);
+      result = MKDIR_IN_ERROR;
+      logger.error(result + ": {}", e.getMessage());
       return false;
     }
   }
 
-  /**
-   * Change remote directory
-   *
-   * @param newDir
-   *
-   * @return True if the change is OK
-   */
+  @Override
   public boolean changeDir(final String newDir) {
     result = null;
     try {
       return ftpClient.changeWorkingDirectory(newDir);
     } catch (final IOException e) {
-      result = "CHDIR in error";
-      logger.info(result, e);
+      result = CHDIR_IN_ERROR;
+      logger.error(result + ": {}", e.getMessage());
       return false;
     }
   }
 
-  /**
-   * Change the FileType of Transfer (Binary true, ASCII false)
-   *
-   * @param binaryTransfer
-   *
-   * @return True if the change is OK
-   */
+  @Override
   public boolean changeFileType(final boolean binaryTransfer) {
     result = null;
     try {
@@ -291,18 +281,15 @@ public class WaarpFtpClient {
         return ftpClient.setFileType(FTP.ASCII_FILE_TYPE);
       }
     } catch (final IOException e) {
-      result = "FileType in error";
-      logger.warn(result, e);
+      result = FILE_TYPE_IN_ERROR;
+      logger.error(result + ": {}", e.getMessage());
       return false;
     }
   }
 
-  /**
-   * Change to passive (true) or active (false) mode
-   *
-   * @param passive
-   */
+  @Override
   public void changeMode(final boolean passive) {
+    result = null;
     isPassive = passive;
     if (isPassive) {
       ftpClient.enterLocalPassiveMode();
@@ -311,49 +298,60 @@ public class WaarpFtpClient {
     }
   }
 
-  /**
-   * Ask to transfer a file
-   *
-   * @param local local filepath (limited to path if get, else full
-   *     path)
-   * @param remote filename
-   * @param getStoreOrAppend -1 = get, 1 = store, 2 = append
-   *
-   * @return True if the file is correctly transfered
-   */
+  @Override
+  public boolean store(final String local, final String remote) {
+    return transferFile(local, remote, 1);
+  }
+
+  @Override
+  public boolean store(final InputStream local, final String remote) {
+    return transferFile(local, remote, 1);
+  }
+
+  @Override
+  public boolean append(final String local, final String remote) {
+    return transferFile(local, remote, 2);
+  }
+
+  @Override
+  public boolean append(final InputStream local, final String remote) {
+    return transferFile(local, remote, 2);
+  }
+
+  @Override
+  public boolean retrieve(final String local, final String remote) {
+    return transferFile(local, remote, -1);
+  }
+
+  @Override
+  public boolean retrieve(final OutputStream local, final String remote) {
+    return transferFile(local, remote);
+  }
+
+  @Override
   public boolean transferFile(final String local, final String remote,
                               final int getStoreOrAppend) {
     result = null;
-    final boolean status;
-    FileOutputStream output = null;
+    OutputStream output = null;
     FileInputStream fileInputStream = null;
     try {
       if (getStoreOrAppend > 0) {
         fileInputStream = new FileInputStream(local);
-        if (getStoreOrAppend == 1) {
-          status = ftpClient.storeFile(remote, fileInputStream);
-        } else {
-          // append
-          status = ftpClient.appendFile(remote, fileInputStream);
-        }
-        if (!status) {
-          result = "Cannot finalize store like operation";
-          logger.error(result);
-          return false;
-        }
+        return transferFile(fileInputStream, remote, getStoreOrAppend);
       } else {
-        output = new FileOutputStream(new File(local, remote));
-        status = ftpClient.retrieveFile(remote, output);
-        if (!status) {
-          result = "Cannot finalize retrieve like operation";
-          logger.error(result);
-          return false;
+        if (local == null) {
+          // test
+          logger.debug("Will DLD nullStream: {}", remote);
+          output = new NullOutputStream();
+        } else {
+          logger.debug("Will DLD to local: {} into {}", remote, local);
+          output = new FileOutputStream(local);
         }
+        return transferFile(output, remote);
       }
-      return true;
     } catch (final IOException e) {
-      result = "Cannot finalize operation";
-      logger.error(result, e);
+      result = CANNOT_FINALIZE_TRANSFER_OPERATION;
+      logger.error(result + ": {}", e.getMessage());
       return false;
     } finally {
       FileUtils.close(output);
@@ -361,12 +359,64 @@ public class WaarpFtpClient {
     }
   }
 
-  /**
-   * @return the list of files as returned by the FTP command
-   */
-  public String[] listFiles() {
+
+  @Override
+  public boolean transferFile(final InputStream local, final String remote,
+                              final int getStoreOrAppend) {
+    result = null;
+    final boolean status;
     try {
-      final FTPFile[] list = ftpClient.listFiles();
+      if (getStoreOrAppend == 1) {
+        status = ftpClient.storeFile(remote, local);
+      } else {
+        // append
+        status = ftpClient.appendFile(remote, local);
+      }
+      if (!status) {
+        result = CANNOT_FINALIZE_STORE_LIKE_OPERATION;
+        logger.error(result);
+        return false;
+      }
+      return true;
+    } catch (IOException e) {
+      result = CANNOT_FINALIZE_STORE_LIKE_OPERATION;
+      logger.error(result + ": {}", e.getMessage());
+      return false;
+    } finally {
+      Thread.yield();
+    }
+  }
+
+  @Override
+  public boolean transferFile(final OutputStream local, final String remote) {
+    result = null;
+    final boolean status;
+    try {
+      status = ftpClient.retrieveFile(remote, local);
+      if (!status) {
+        result = CANNOT_FINALIZE_RETRIEVE_LIKE_OPERATION;
+        logger.error(result);
+        return false;
+      }
+      return true;
+    } catch (final IOException e) {
+      result = CANNOT_FINALIZE_RETRIEVE_LIKE_OPERATION;
+      logger.error(result + ": {}", e.getMessage());
+      return false;
+    } finally {
+      try {
+        Thread.sleep(1);
+      } catch (InterruptedException e) {//NOSONAR
+        // Ignore
+      }
+    }
+  }
+
+  @Override
+  public String[] listFiles(final String remote) {
+    result = null;
+    try {
+      final FTPFile[] list = ftpClient.listFiles(remote);
       final String[] results = new String[list.length];
       int i = 0;
       for (final FTPFile file : list) {
@@ -375,41 +425,90 @@ public class WaarpFtpClient {
       }
       return results;
     } catch (final IOException e) {
-      result = "Cannot finalize transfer operation";
-      logger.error(result, e);
+      result = CANNOT_FINALIZE_TRANSFER_OPERATION;
+      logger.error(result + ": {}", e.getMessage());
       return null;
     }
   }
 
-  /**
-   * @param feature
-   *
-   * @return True if the feature is listed
-   */
-  public boolean featureEnabled(final String feature) {
+  @Override
+  public String[] listFiles() {
+    return listFiles((String) null);
+  }
+
+  @Override
+  public String[] mlistFiles(final String remote) {
+    result = null;
     try {
-      SysErrLogger.FAKE_LOGGER.sysout(ftpClient.features());
+      final FTPFile[] list = ftpClient.mlistDir(remote);
+      final String[] results = new String[list.length];
+      int i = 0;
+      for (final FTPFile file : list) {
+        results[i] = file.toFormattedString();
+        i++;
+      }
+      return results;
+    } catch (final IOException e) {
+      result = CANNOT_FINALIZE_TRANSFER_OPERATION;
+      logger.error(result + ": {}", e.getMessage());
+      return null;
+    }
+  }
+
+  @Override
+  public String[] mlistFiles() {
+    return mlistFiles((String) null);
+  }
+
+  @Override
+  public String[] features() {
+    result = null;
+    try {
+      if (ftpClient.features()) {
+        final String resultNew = ftpClient.getReplyString();
+        return resultNew.split("\\n");
+      }
+      return null;
+    } catch (final IOException e) {
+      result = CANNOT_EXECUTE_OPERATION_FEATURE;
+      logger.error(result + ": {}", e.getMessage());
+      return null;
+    }
+  }
+
+  @Override
+  public boolean featureEnabled(final String feature) {
+    result = null;
+    try {
       if (ftpClient.featureValue(feature) == null) {
         final String resultNew = ftpClient.getReplyString();
         return resultNew.contains(feature.toUpperCase());
       }
       return true;
     } catch (final IOException e) {
-      result = "Cannot execute operation Feature";
-      logger.error(result, e);
+      result = CANNOT_EXECUTE_OPERATION_FEATURE;
+      logger.error(result + ": {}", e.getMessage());
       return false;
     }
   }
 
-  /**
-   * @param params
-   *
-   * @return the string lines returned by the command params
-   */
+  @Override
+  public boolean deleteFile(final String remote) {
+    result = null;
+    try {
+      ftpClient.deleteFile(remote);
+      return true;
+    } catch (IOException e) {
+      result = CANNOT_EXECUTE_OPERATION_SITE;
+      logger.error(result + ": {}", e.getMessage());
+      return false;
+    }
+  }
+
+  @Override
   public String[] executeCommand(final String params) {
     result = null;
     try {
-      SysErrLogger.FAKE_LOGGER.sysout(params);
       final int pos = params.indexOf(' ');
       String command = params;
       String args = null;
@@ -424,21 +523,16 @@ public class WaarpFtpClient {
       }
       return results;
     } catch (final IOException e) {
-      result = "Cannot execute operation Site";
-      logger.error(result, e);
+      result = CANNOT_EXECUTE_OPERATION_SITE;
+      logger.error(result + ": {}", e.getMessage());
       return null;
     }
   }
 
-  /**
-   * @param params
-   *
-   * @return the string lines returned by the SITE command params
-   */
+  @Override
   public String[] executeSiteCommand(final String params) {
     result = null;
     try {
-      SysErrLogger.FAKE_LOGGER.sysout("SITE " + params);
       String[] results = ftpClient.doCommandAsStrings("SITE", params);
       if (results == null) {
         results = new String[1];
@@ -446,9 +540,19 @@ public class WaarpFtpClient {
       }
       return results;
     } catch (final IOException e) {
-      result = "Cannot execute operation Site";
-      logger.error(result, e);
+      result = CANNOT_EXECUTE_OPERATION_SITE;
+      logger.error(result + ": {}", e.getMessage());
       return null;
+    }
+  }
+
+  @Override
+  public void noop() {
+    try {
+      ftpClient.noop();
+    } catch (IOException e) {
+      result = NOOP_ERROR;
+      logger.error(result + ": {}", e.getMessage());
     }
   }
 

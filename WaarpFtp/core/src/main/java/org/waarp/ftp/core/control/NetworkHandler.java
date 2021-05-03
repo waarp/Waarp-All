@@ -131,13 +131,13 @@ public class NetworkHandler extends SimpleChannelInboundHandler<String> {
     }
     // Wait for any command running before closing (bad client sometimes
     // don't wait for answer)
-    int limit = 100;
+    int limit = 200;
     while (session.getDataConn().getFtpTransferControl()
                   .isFtpTransferExecuting()) {
       Thread.sleep(WaarpNettyUtil.MINIMAL_DELAY_MS);
       limit--;
       if (limit <= 0) {
-        logger.warn("Waiting for transfer finished but 1s is not enough");
+        logger.warn("Waiting for transfer finished but 2s is not enough");
         break; // wait at most 1s
       }
     }
@@ -301,7 +301,7 @@ public class NetworkHandler extends SimpleChannelInboundHandler<String> {
       }
       // Default message
       session.setReplyCode(ReplyCode.REPLY_200_COMMAND_OKAY, null);
-      // Special check for SSL AUTH/PBSZ/PROT/USER/PASS/ACCT
+      // Special check for SSL AUTH/PBSZ/PROT/USER/PASS/ACCT/CCC
       if (FtpCommandCode.isSslOrAuthCommand(command.getCode())) {
         session.setNextCommand(command);
         messageRunAnswer(ctx);
@@ -432,7 +432,7 @@ public class NetworkHandler extends SimpleChannelInboundHandler<String> {
           // add the SSL support
           sslHandler = FtpsInitializer.waarpSslContextFactory
               .createHandlerServer(FtpsInitializer.waarpSslContextFactory
-                                       .needClientAuthentication(),
+                                       .needClientAuthentication(), false,
                                    ctx.channel());
           session.prepareSsl();
           WaarpSslUtility.addSslHandler(future, ctx.pipeline(), sslHandler,
@@ -448,7 +448,7 @@ public class NetworkHandler extends SimpleChannelInboundHandler<String> {
                                                       "During Handshake";
                                               logger.error(
                                                   "Cannot finalize Ssl Command channel {}",
-                                                  error2);
+                                                  error2, future.cause());
                                               callForSnmp(
                                                   "SSL Connection Error",
                                                   error2);

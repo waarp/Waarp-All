@@ -61,33 +61,13 @@ public class DbModelH2R66 extends DbModelH2 {
     final String primaryKey = " PRIMARY KEY ";
     final String notNull = " NOT NULL ";
     final DbRequest request = DbModelFactoryR66
-        .subCreateTableMariaDbMySQLPostgreSQL(dbTypeResolver, session,
-                                              createTableH2, primaryKey,
-                                              notNull);
+        .subCreateTableMariaDbMySQLH2PostgreSQL(dbTypeResolver, session,
+                                                createTableH2, primaryKey,
+                                                notNull);
     if (request == null) {
       return;
     }
     StringBuilder action;
-    // Index Runner
-    action = new StringBuilder(
-        "CREATE INDEX IF NOT EXISTS IDX_RUNNER ON " + DbTaskRunner.table + '(');
-    final DbTaskRunner.Columns[] icolumns = DbTaskRunner.indexes;
-    for (int i = 0; i < icolumns.length - 1; i++) {
-      action.append(icolumns[i].name()).append(", ");
-    }
-    action.append(icolumns[icolumns.length - 1].name()).append(')');
-    SysErrLogger.FAKE_LOGGER.sysout(action);
-    try {
-      request.query(action.toString());
-    } catch (final WaarpDatabaseNoConnectionException e) {
-      SysErrLogger.FAKE_LOGGER.syserr(e);
-      return;
-    } catch (final WaarpDatabaseSqlException e) {
-      SysErrLogger.FAKE_LOGGER.syserr(e);
-      // XXX FIX no return
-    } finally {
-      request.close();
-    }
 
     // cptrunner
     action = new StringBuilder(
@@ -98,7 +78,7 @@ public class DbModelH2R66 extends DbModelH2 {
     try {
       request.query(action.toString());
     } catch (final WaarpDatabaseNoConnectionException e) {
-      SysErrLogger.FAKE_LOGGER.syserr(e);
+      SysErrLogger.FAKE_LOGGER.ignoreLog(e);
       return;
     } catch (final WaarpDatabaseSqlException e) {
       // version <= 1.2.173
@@ -109,13 +89,11 @@ public class DbModelH2R66 extends DbModelH2 {
       try {
         request.query(action.toString());
       } catch (final WaarpDatabaseNoConnectionException e2) {
-        SysErrLogger.FAKE_LOGGER.syserr(e2);
+        SysErrLogger.FAKE_LOGGER.ignoreLog(e2);
         return;
       } catch (final WaarpDatabaseSqlException e2) {
-        SysErrLogger.FAKE_LOGGER.syserr(e2);
+        SysErrLogger.FAKE_LOGGER.ignoreLog(e2);
         // XXX FIX no return
-      } finally {
-        request.close();
       }
       // XXX FIX no return
     } finally {
@@ -159,7 +137,7 @@ public class DbModelH2R66 extends DbModelH2 {
       try {
         request.query(action.toString());
       } catch (final WaarpDatabaseSqlException e) {
-        SysErrLogger.FAKE_LOGGER.syserr(e);
+        SysErrLogger.FAKE_LOGGER.ignoreLog(e);
         return false;
       } finally {
         request.close();
@@ -180,7 +158,7 @@ public class DbModelH2R66 extends DbModelH2 {
         SysErrLogger.FAKE_LOGGER.sysout("Command: " + command);
         request.query(command);
       } catch (final WaarpDatabaseSqlException e) {
-        SysErrLogger.FAKE_LOGGER.syserr(e);
+        SysErrLogger.FAKE_LOGGER.ignoreLog(e);
         return false;
       } finally {
         request.close();
@@ -201,7 +179,7 @@ public class DbModelH2R66 extends DbModelH2 {
         SysErrLogger.FAKE_LOGGER.sysout("Command: " + command);
         request.query(command);
       } catch (final WaarpDatabaseSqlException e) {
-        SysErrLogger.FAKE_LOGGER.syserr(e);
+        SysErrLogger.FAKE_LOGGER.ignoreLog(e);
         return false;
       } finally {
         request.close();
@@ -217,7 +195,7 @@ public class DbModelH2R66 extends DbModelH2 {
         SysErrLogger.FAKE_LOGGER.sysout("Command: " + command);
         request.query(command);
       } catch (final WaarpDatabaseSqlException e) {
-        SysErrLogger.FAKE_LOGGER.syserr(e);
+        SysErrLogger.FAKE_LOGGER.ignoreLog(e);
         return false;
       } finally {
         request.close();
@@ -237,7 +215,7 @@ public class DbModelH2R66 extends DbModelH2 {
         SysErrLogger.FAKE_LOGGER.sysout("Command: " + command);
         request.query(command);
       } catch (final WaarpDatabaseSqlException e) {
-        SysErrLogger.FAKE_LOGGER.syserr(e);
+        SysErrLogger.FAKE_LOGGER.ignoreLog(e);
         return false;
       } finally {
         request.close();
@@ -251,8 +229,30 @@ public class DbModelH2R66 extends DbModelH2 {
         SysErrLogger.FAKE_LOGGER.sysout("Command: " + command);
         request.query(command);
       } catch (final WaarpDatabaseSqlException e) {
-        SysErrLogger.FAKE_LOGGER.syserr(e);
+        SysErrLogger.FAKE_LOGGER.ignoreLog(e);
         return false;
+      } finally {
+        request.close();
+      }
+    }
+    if (PartnerConfiguration
+        .isVersion2GTVersion1(version, R66Versions.V3_0_4.getVersion())) {
+      SysErrLogger.FAKE_LOGGER.sysout(
+          version + " to " + R66Versions.V3_0_4.getVersion() + "? " + true);
+      final DbRequest request = new DbRequest(session);
+      try {
+        final String command = "DROP INDEX IF EXISTS IDX_RUNNER ";
+        try {
+          SysErrLogger.FAKE_LOGGER.sysout("Command: " + command);
+          request.query(command);
+        } catch (final WaarpDatabaseNoConnectionException e) {
+          SysErrLogger.FAKE_LOGGER.ignoreLog(e);
+          return false;
+        } catch (final WaarpDatabaseSqlException e) {
+          SysErrLogger.FAKE_LOGGER.ignoreLog(e);
+          // XXX FIX no return
+        }
+        DbModelFactoryR66.createIndex30(dbTypeResolver, request);
       } finally {
         request.close();
       }

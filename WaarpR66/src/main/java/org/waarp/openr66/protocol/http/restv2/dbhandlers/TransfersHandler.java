@@ -21,7 +21,6 @@
 package org.waarp.openr66.protocol.http.restv2.dbhandlers;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.cdap.http.HttpResponder;
 import io.netty.handler.codec.http.DefaultHttpHeaders;
@@ -29,7 +28,9 @@ import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpRequest;
 import org.joda.time.DateTime;
 import org.waarp.common.database.data.AbstractDbData;
+import org.waarp.common.json.JsonHandler;
 import org.waarp.common.role.RoleDefault.ROLE;
+import org.waarp.common.utility.ParametersChecker;
 import org.waarp.openr66.dao.DAOFactory;
 import org.waarp.openr66.dao.Filter;
 import org.waarp.openr66.dao.TransferDAO;
@@ -57,6 +58,8 @@ import static javax.ws.rs.core.HttpHeaders.*;
 import static javax.ws.rs.core.MediaType.*;
 import static org.waarp.openr66.dao.database.DBTransferDAO.*;
 import static org.waarp.openr66.protocol.http.restv2.RestConstants.*;
+import static org.waarp.openr66.protocol.http.restv2.RestConstants.GetLogsParams.*;
+import static org.waarp.openr66.protocol.http.restv2.RestConstants.GetTransfersParams.STATUS;
 import static org.waarp.openr66.protocol.http.restv2.RestConstants.GetTransfersParams.*;
 import static org.waarp.openr66.protocol.http.restv2.errors.RestErrors.*;
 
@@ -143,7 +146,8 @@ public class TransfersHandler extends AbstractRestDbHandler {
                              final String stopTrans,
                              @QueryParam(FOLLOW_ID) @DefaultValue("")
                              final String followId) {
-
+    checkSanity(limitStr, offsetStr, orderStr, ruleID, partner, statusStr,
+                filename, startTrans, stopTrans, followId);
     final ArrayList<RestError> errors = new ArrayList<RestError>();
 
     int limit = 20;
@@ -166,32 +170,40 @@ public class TransfersHandler extends AbstractRestDbHandler {
     }
 
     final List<Filter> filters = new ArrayList<Filter>();
-    if (!startTrans.isEmpty()) {
+    if (ParametersChecker.isNotEmpty(startTrans, stopTrans)) {
       try {
-        final DateTime start = DateTime.parse(startTrans);
-        filters.add(new Filter(TRANSFER_START_FIELD, ">=", start.getMillis()));
+        filters.add(new Filter(TRANSFER_START_FIELD, Filter.BETWEEN,
+                               DateTime.parse(startTrans),
+                               DateTime.parse(stopTrans)));
       } catch (final IllegalArgumentException e) {
-        errors.add(ILLEGAL_PARAMETER_VALUE(START_TRANS, startTrans));
+        errors.add(ILLEGAL_PARAMETER_VALUE(START, startTrans));
+        errors.add(ILLEGAL_PARAMETER_VALUE(STOP, stopTrans));
+      }
+    } else if (ParametersChecker.isNotEmpty(startTrans)) {
+      try {
+        final DateTime lowerDate = DateTime.parse(startTrans);
+        filters.add(new Filter(TRANSFER_START_FIELD, ">=", lowerDate));
+      } catch (final IllegalArgumentException e) {
+        errors.add(ILLEGAL_PARAMETER_VALUE(START, startTrans));
+      }
+    } else if (ParametersChecker.isNotEmpty(stopTrans)) {
+      try {
+        final DateTime upperDate = DateTime.parse(stopTrans);
+        filters.add(new Filter(TRANSFER_START_FIELD, "<=", upperDate));
+      } catch (final IllegalArgumentException e) {
+        errors.add(ILLEGAL_PARAMETER_VALUE(STOP, stopTrans));
       }
     }
-    if (!stopTrans.isEmpty()) {
-      try {
-        final DateTime stop = DateTime.parse(stopTrans);
-        filters.add(new Filter(TRANSFER_START_FIELD, "<=", stop.getMillis()));
-      } catch (final IllegalArgumentException e) {
-        errors.add(ILLEGAL_PARAMETER_VALUE(STOP_TRANS, stopTrans));
-      }
-    }
-    if (!ruleID.isEmpty()) {
+    if (ParametersChecker.isNotEmpty(ruleID)) {
       filters.add(new Filter(ID_RULE_FIELD, "=", ruleID));
     }
-    if (!partner.isEmpty()) {
+    if (ParametersChecker.isNotEmpty(partner)) {
       filters.add(new Filter(REQUESTED_FIELD, "=", partner));
     }
-    if (!filename.isEmpty()) {
+    if (ParametersChecker.isNotEmpty(filename)) {
       filters.add(new Filter(FILENAME_FIELD, "=", filename));
     }
-    if (!statusStr.isEmpty()) {
+    if (ParametersChecker.isNotEmpty(statusStr)) {
       try {
         final int status_nbr =
             AbstractDbData.UpdatedInfo.valueOf(statusStr).ordinal();
@@ -200,7 +212,7 @@ public class TransfersHandler extends AbstractRestDbHandler {
         errors.add(ILLEGAL_PARAMETER_VALUE(STATUS, statusStr));
       }
     }
-    if (!followId.isEmpty()) {
+    if (ParametersChecker.isNotEmpty(followId)) {
       filters.add(DbTaskRunner.getFollowIdFilter(followId));
     }
 
@@ -220,7 +232,7 @@ public class TransfersHandler extends AbstractRestDbHandler {
       DAOFactory.closeDAO(transferDAO);
     }
 
-    final ObjectNode responseObject = new ObjectNode(JsonNodeFactory.instance);
+    final ObjectNode responseObject = JsonHandler.createObjectNode();
     final ArrayNode resultList = responseObject.putArray("results");
     for (final Transfer transfer : transferList) {
       resultList.add(TransferConverter.transferToNode(transfer));
@@ -245,8 +257,8 @@ public class TransfersHandler extends AbstractRestDbHandler {
   @RequiredRole(ROLE.TRANSFER)
   public void createTransfer(final HttpRequest request,
                              final HttpResponder responder) {
-
     final ObjectNode requestObject = JsonUtils.deserializeRequest(request);
+    checkSanity(requestObject);
     final Transfer transfer =
         TransferConverter.nodeToNewTransfer(requestObject);
 

@@ -25,6 +25,7 @@ import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.service.EngineAbstract;
+import org.waarp.common.utility.ParametersChecker;
 import org.waarp.common.utility.SystemPropertyUtil;
 import org.waarp.common.utility.WaarpShutdownHook;
 import org.waarp.openr66.client.SpooledDirectoryTransfer;
@@ -74,14 +75,14 @@ public class SpooledEngine extends EngineAbstract {
           final String key = (String) okey;
           final String val = prop.getProperty(key);
           if ("xmlfile".equals(key)) {
-            if (val != null && !val.trim().isEmpty()) {
+            if (ParametersChecker.isNotEmpty(val)) {
               array.add(0, val);
             } else {
               throw new Exception("Initialization in error: missing xmlfile");
             }
           } else {
             array.add('-' + key);
-            if (val != null && !val.trim().isEmpty()) {
+            if (ParametersChecker.isNotEmpty(val)) {
               array.add(val);
             }
           }

@@ -116,7 +116,7 @@ public final class JsonUtils {
       }
     } catch (final JsonParseException e) {
       final String contentType = request.headers().get(CONTENT_TYPE);
-      if (contentType == null || contentType.isEmpty()) {
+      if (ParametersChecker.isEmpty(contentType)) {
         throw new NotSupportedException(APPLICATION_JSON);
       } else {
         throw new RestErrorException(MALFORMED_JSON(e.getLocation().getLineNr(),

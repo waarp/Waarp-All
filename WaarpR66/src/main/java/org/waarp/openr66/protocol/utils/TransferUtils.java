@@ -276,7 +276,7 @@ public final class TransferUtils {
         // inform local instead of remote
         LocalServerHandler.channelRead0(lcr, perror);
       } catch (final Exception e) {
-        logger.warn("Write local packet error", e);
+        logger.warn("Write local packet error" + " : {}", e.getMessage());
       }
       result = ErrorCode.StoppedTransfer;
     } else {
@@ -438,8 +438,8 @@ public final class TransferUtils {
           }
         }
       } catch (final CommandAbstractException e1) {
-        logger.warn(Messages.getString("TransferUtils.19") + name,
-                    e1); //$NON-NLS-1$
+        logger.warn(Messages.getString("TransferUtils.19") + name + " : {}",
+                    e1.getMessage()); //$NON-NLS-1$
       } catch (final WaarpDatabaseException ignored) {
         // nothing
       }

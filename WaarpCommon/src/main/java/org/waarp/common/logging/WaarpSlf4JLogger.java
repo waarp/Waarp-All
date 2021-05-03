@@ -20,6 +20,7 @@
 
 package org.waarp.common.logging;
 
+import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 
 /**
@@ -41,8 +42,37 @@ public class WaarpSlf4JLogger extends AbstractWaarpLogger {
   }
 
   @Override
+  public void setLevel(final WaarpLogLevel level) {
+    switch (level) {
+      case TRACE:
+        logger.setLevel(Level.TRACE);
+        break;
+      case DEBUG:
+        logger.setLevel(Level.DEBUG);
+        break;
+      case INFO:
+        logger.setLevel(Level.INFO);
+        break;
+      case WARN:
+        logger.setLevel(Level.WARN);
+        break;
+      case ERROR:
+        logger.setLevel(Level.ERROR);
+        break;
+      case NONE:
+        logger.setLevel(Level.OFF);
+        break;
+    }
+  }
+
+  @Override
   public boolean isTraceEnabled() {
     return logger.isTraceEnabled();
+  }
+
+  @Override
+  public void junit(final int callee, final String msg) {
+    logger.warn(getLoggerMethodAndLineCallee(callee + 1) + msg);
   }
 
   @Override

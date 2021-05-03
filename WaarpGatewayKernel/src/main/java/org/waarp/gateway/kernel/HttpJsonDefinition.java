@@ -164,15 +164,18 @@ public class HttpJsonDefinition {
     try {
       cpages = JsonHandler.mapper.readValue(file, ConfigHttpPages.class);
     } catch (final JsonParseException e) {
-      logger.error(UNABLE_TO_READ_THE_JSON_CONFIG_FILE + filename, e);
+      logger.error(UNABLE_TO_READ_THE_JSON_CONFIG_FILE + filename + ": {}",
+                   e.getMessage());
       throw new InvalidArgumentException(UNABLE_TO_READ_JSON_FILE + filename,
                                          e);
     } catch (final JsonMappingException e) {
-      logger.error(UNABLE_TO_READ_THE_JSON_CONFIG_FILE + filename, e);
+      logger.error(UNABLE_TO_READ_THE_JSON_CONFIG_FILE + filename + ": {}",
+                   e.getMessage());
       throw new InvalidArgumentException(UNABLE_TO_READ_JSON_FILE + filename,
                                          e);
     } catch (final IOException e) {
-      logger.error(UNABLE_TO_READ_THE_JSON_CONFIG_FILE + filename, e);
+      logger.error(UNABLE_TO_READ_THE_JSON_CONFIG_FILE + filename + ": {}",
+                   e.getMessage());
       throw new InvalidArgumentException(UNABLE_TO_READ_JSON_FILE + filename,
                                          e);
     }

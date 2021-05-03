@@ -196,7 +196,9 @@ public class ConnectionFactory {
                                     SystemPropertyUtil.WAARP_DATABASE_CONNECTION_MAX,
                                     MAX_CONNECTIONS_DEFAULT));
     } catch (final SQLException e) {
-      logger.warn("Cannot fetch maximum connection allowed from database", e);
+      logger.warn(
+          "Cannot fetch maximum connection allowed from database" + " : {}",
+          e.getMessage());
     } finally {
       if (con != null) {
         con.close();

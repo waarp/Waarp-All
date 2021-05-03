@@ -21,14 +21,15 @@
 package org.waarp.openr66.protocol.http.restv2.dbhandlers;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.cdap.http.HttpResponder;
 import io.netty.handler.codec.http.DefaultHttpHeaders;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpRequest;
+import org.waarp.common.json.JsonHandler;
 import org.waarp.common.role.RoleDefault.ROLE;
+import org.waarp.common.utility.ParametersChecker;
 import org.waarp.openr66.dao.DAOFactory;
 import org.waarp.openr66.dao.Filter;
 import org.waarp.openr66.dao.HostDAO;
@@ -129,7 +130,8 @@ public class HostsHandler extends AbstractRestDbHandler {
                           @QueryParam(ADDRESS) final String address,
                           @QueryParam(IS_SSL) final String isSSL_str,
                           @QueryParam(IS_ACTIVE) final String isActive_str) {
-
+    checkSanity(limit_str, offset_str, order_str, address, isActive_str,
+                isActive_str);
     final List<RestError> errors = new ArrayList<RestError>();
 
     int limit = 20;
@@ -159,14 +161,14 @@ public class HostsHandler extends AbstractRestDbHandler {
 
     boolean isSSL = false;
     boolean isActive = false;
-    if (isSSL_str != null) {
+    if (ParametersChecker.isNotEmpty(isSSL_str)) {
       try {
         isSSL = RestUtils.stringToBoolean(isSSL_str);
       } catch (final IllegalArgumentException e) {
         errors.add(ILLEGAL_PARAMETER_VALUE(IS_SSL, isSSL_str));
       }
     }
-    if (isActive_str != null) {
+    if (ParametersChecker.isNotEmpty(isActive_str)) {
       try {
         isActive = RestUtils.stringToBoolean(isActive_str);
       } catch (final IllegalArgumentException e) {
@@ -179,13 +181,13 @@ public class HostsHandler extends AbstractRestDbHandler {
     }
 
     final List<Filter> filters = new ArrayList<Filter>();
-    if (address != null) {
+    if (ParametersChecker.isNotEmpty(address)) {
       filters.add(new Filter(ADDRESS_FIELD, "=", address));
     }
-    if (isSSL_str != null) {
+    if (ParametersChecker.isNotEmpty(isSSL_str)) {
       filters.add(new Filter(IS_SSL_FIELD, "=", isSSL));
     }
-    if (isActive_str != null) {
+    if (ParametersChecker.isNotEmpty(isActive_str)) {
       filters.add(new Filter(IS_ACTIVE_FIELD, "=", isActive));
     }
     List<Host> hosts;
@@ -202,12 +204,12 @@ public class HostsHandler extends AbstractRestDbHandler {
     final int totalResults = hosts.size();
     Collections.sort(hosts, order.comparator);
 
-    final ArrayNode results = new ArrayNode(JsonNodeFactory.instance);
+    final ArrayNode results = JsonHandler.createArrayNode();
     for (int i = offset; i < offset + limit && i < hosts.size(); i++) {
       results.add(HostConverter.hostToNode(hosts.get(i)));
     }
 
-    final ObjectNode responseObject = new ObjectNode(JsonNodeFactory.instance);
+    final ObjectNode responseObject = JsonHandler.createObjectNode();
     responseObject.put("totalResults", totalResults);
     responseObject.set("results", results);
 
@@ -228,8 +230,8 @@ public class HostsHandler extends AbstractRestDbHandler {
   @RequiredRole(ROLE.HOST)
   public void addHost(final HttpRequest request,
                       final HttpResponder responder) {
-
     final ObjectNode requestObject = JsonUtils.deserializeRequest(request);
+    checkSanity(requestObject);
     final Host host = HostConverter.nodeToNewHost(requestObject);
 
     HostDAO hostDAO = null;

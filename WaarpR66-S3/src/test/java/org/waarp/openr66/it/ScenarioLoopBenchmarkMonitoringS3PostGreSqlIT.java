@@ -31,11 +31,9 @@ import org.junit.rules.TestWatcher;
 import org.junit.runners.MethodSorters;
 import org.testcontainers.containers.JdbcDatabaseContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
-import org.waarp.common.logging.WaarpLogLevel;
-import org.waarp.common.logging.WaarpLoggerFactory;
-import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
 import org.waarp.common.utility.SystemPropertyUtil;
 import org.waarp.common.utility.TestWatcherJunit4;
+import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolNetworkException;
 import org.waarp.openr66.protocol.monitoring.MonitorExporterTransfers;
@@ -143,9 +141,8 @@ public class ScenarioLoopBenchmarkMonitoringS3PostGreSqlIT
 
   @AfterClass
   public static void tearDownContainerAfterClass() throws Exception {
-    WaarpLoggerFactory.setDefaultFactoryIfNotSame(
-        new WaarpSlf4JLoggerFactory(WaarpLogLevel.NONE));
     tearDownAfterClass(getDelegateThread());
+    WaarpSystemUtil.stopLogger(true);
     container.stop();
   }
 

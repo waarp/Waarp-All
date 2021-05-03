@@ -129,6 +129,7 @@ public abstract class ScenarioBase extends TestAbstract {
     } else {
       setUpBeforeClassClient(configFile.getAbsolutePath());
     }
+    Thread.sleep(1000);
     Processes.setJvmArgsDefault(null);
     WaarpLoggerFactory.setDefaultFactoryIfNotSame(
         new WaarpSlf4JLoggerFactory(WaarpLogLevel.WARN));
@@ -303,8 +304,7 @@ public abstract class ScenarioBase extends TestAbstract {
    */
   @AfterClass
   public static void tearDownAfterClass() throws Exception {
-    WaarpLoggerFactory.setDefaultFactoryIfNotSame(
-        new WaarpSlf4JLoggerFactory(WaarpLogLevel.NONE));
+    WaarpSystemUtil.stopLogger(true);
     for (int pid : PIDS) {
       Processes.kill(pid, true);
     }

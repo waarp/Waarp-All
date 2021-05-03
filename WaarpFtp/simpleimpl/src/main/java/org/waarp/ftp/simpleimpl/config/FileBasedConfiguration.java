@@ -196,7 +196,8 @@ public class FileBasedConfiguration extends FtpConfiguration {
     try {
       document = XmlUtil.getNewSaxReader().read(filename);
     } catch (final DocumentException e) {
-      logger.error("Unable to read the XML Config file: " + filename, e);
+      logger.error("Unable to read the XML Config file: " + filename + ": {}",
+                   e.getMessage());
       return false;
     }
     if (document == null) {
@@ -320,8 +321,9 @@ public class FileBasedConfiguration extends FtpConfiguration {
     try {
       document = XmlUtil.getNewSaxReader().read(fileauthent);
     } catch (final DocumentException e) {
-      logger.error("Unable to read the XML Authentication file: " + fileauthent,
-                   e);
+      logger.error(
+          "Unable to read the XML Authentication file: " + fileauthent + ": {}",
+          e.getMessage());
       return false;
     }
     if (document == null) {

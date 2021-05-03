@@ -36,12 +36,10 @@ import org.junit.rules.TestWatcher;
 import org.junit.runners.MethodSorters;
 import org.waarp.common.file.FileUtils;
 import org.waarp.common.json.JsonHandler;
-import org.waarp.common.logging.WaarpLogLevel;
-import org.waarp.common.logging.WaarpLoggerFactory;
-import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
 import org.waarp.common.utility.Processes;
 import org.waarp.common.utility.SystemPropertyUtil;
 import org.waarp.common.utility.TestWatcherJunit4;
+import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.openr66.client.SpooledDirectoryTransfer;
 import org.waarp.openr66.client.SpooledDirectoryTransfer.Arguments;
 import org.waarp.openr66.protocol.configuration.Configuration;
@@ -139,6 +137,7 @@ public abstract class SpooledITAbstract extends TestAbstract {
           .getPidOfRunnerCommandLinux("java", R66Server.class.getName(), PIDS);
       PIDS.add(pid);
       logger.warn("Start Done: {}", pid);
+      Thread.sleep(1000);
       return pid;
     } else {
       System.err.println("Cannot find server file: " + file2.getAbsolutePath());
@@ -152,8 +151,7 @@ public abstract class SpooledITAbstract extends TestAbstract {
    */
   @AfterClass
   public static void tearDownAfterClass() throws Exception {
-    WaarpLoggerFactory.setDefaultFactoryIfNotSame(
-        new WaarpSlf4JLoggerFactory(WaarpLogLevel.NONE));
+    WaarpSystemUtil.stopLogger(true);
     for (int pid : PIDS) {
       Processes.kill(pid, true);
     }

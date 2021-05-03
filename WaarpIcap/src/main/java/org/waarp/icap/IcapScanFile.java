@@ -607,7 +607,7 @@ public class IcapScanFile {
             FileUtils.copy(file, to, true, false);
             logger.warn("File is moved to " + to.getAbsolutePath());
           } catch (final Reply550Exception e) {
-            logger.error("Cannot move to directory", e);
+            logger.error("Cannot move to directory: {}", e.getMessage());
             throw new IOException("Cannot move to directory", e);
           }
         } else {
@@ -621,8 +621,7 @@ public class IcapScanFile {
             FileUtils.copy(file, dir, true, false);
             logger.warn("File is moved to " + dir.getAbsolutePath());
           } catch (final Reply550Exception e) {
-            logger.error("Cannot move to file", e);
-            logger.error("Cannot move to file", e);
+            logger.error("Cannot move to file: {}", e.getMessage());
           }
         } else {
           logger.error("Move path is not a directory or existing sub-path");
@@ -841,13 +840,13 @@ public class IcapScanFile {
       icapScanFile = getIcapScanFileArgs(args);
     } catch (final IcapException e) {
       printHelp();
-      logger.error("Arguments are incorrect", e);
+      logger.error("Arguments are incorrect: {}", e.getMessage());
       return STATUS_BAD_ARGUMENT;
     }
     try {
       return icapScanFile.scanFile();
     } catch (final IcapException e) {
-      logger.error("Error during scan", e);
+      logger.error("Error during scan: {}", e.getMessage());
       if (e.getError() == IcapError.ICAP_CANT_CONNECT ||
           e.getError() == IcapError.ICAP_NETWORK_ERROR ||
           e.getError() == IcapError.ICAP_TIMEOUT_ERROR) {
@@ -866,7 +865,7 @@ public class IcapScanFile {
       }
       return STATUS_ICAP_ISSUE;
     } catch (final IOException e) {
-      logger.error("Moving file is in error", e);
+      logger.error("Moving file is in error: {}", e.getMessage());
       return STATUS_KO_SCAN_POST_ACTION_ERROR;
     }
   }

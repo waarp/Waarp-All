@@ -168,7 +168,7 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
 
   private String unallowedResponsive(final String mesg) {
     final String index = REQUEST.unallowed.read(this);
-    if (index == null || index.isEmpty()) {
+    if (ParametersChecker.isEmpty(index)) {
       return error(mesg);
     }
     return index.replaceAll(REPLACEMENT.XXXERRORMESGXXX.toString(), mesg);
@@ -685,13 +685,13 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
           return head.replace(XXXRESULTXXX, errorText)
                      .replace(XXXDATAJSONXXX, "[]");
         }
-        final DbHostAuth dbhost = new DbHostAuth(host, addr, iport, ssl,
-                                                 key.getBytes(
-                                                     WaarpStringUtils.UTF8),
-                                                 admin, isclient);
-        dbhost.setActive(isactive);
-        dbhost.setProxified(isproxified);
+        final DbHostAuth dbhost;
         try {
+          dbhost = new DbHostAuth(host, addr, iport, ssl,
+                                  key.getBytes(WaarpStringUtils.UTF8), admin,
+                                  isclient);
+          dbhost.setActive(isactive);
+          dbhost.setProxified(isproxified);
           dbhost.insert();
         } catch (final WaarpDatabaseException e) {
           errorText = Messages.getString("HttpSslHandler.14") + e.getMessage()
@@ -750,13 +750,13 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
           return head.replace(XXXRESULTXXX, errorText)
                      .replace(XXXDATAJSONXXX, "[]");
         }
-        final DbHostAuth dbhost = new DbHostAuth(host, addr, iport, ssl,
-                                                 key.getBytes(
-                                                     WaarpStringUtils.UTF8),
-                                                 admin, isclient);
-        dbhost.setActive(isactive);
-        dbhost.setProxified(isproxified);
+        final DbHostAuth dbhost;
         try {
+          dbhost = new DbHostAuth(host, addr, iport, ssl,
+                                  key.getBytes(WaarpStringUtils.UTF8), admin,
+                                  isclient);
+          dbhost.setActive(isactive);
+          dbhost.setProxified(isproxified);
           if (dbhost.exist()) {
             dbhost.update();
           } else {
@@ -776,7 +776,7 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
         head = head.replace(XXXDATAJSONXXX, '[' + json + ']');
       } else if ("TestConn".equalsIgnoreCase(parm)) {
         final String host = getTrimValue("host");
-        if (host == null || host.isEmpty()) {
+        if (ParametersChecker.isEmpty(host)) {
           errorText = Messages.getString("HttpSslHandler.17") + B_CENTER_P2;
           head = resetOptionHosts(head, "", "", false, true);
           head =
@@ -817,7 +817,7 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
         }
       } else if ("CloseConn".equalsIgnoreCase(parm)) {
         final String host = getTrimValue("host");
-        if (host == null || host.isEmpty()) {
+        if (ParametersChecker.isEmpty(host)) {
           errorText = Messages.getString("HttpSslHandler.17") + B_CENTER_P2;
           head = resetOptionHosts(head, "", "", false, true);
           head =
@@ -850,7 +850,7 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
         }
       } else if ("Delete".equalsIgnoreCase(parm)) {
         final String host = getTrimValue("host");
-        if (host == null || host.isEmpty()) {
+        if (ParametersChecker.isEmpty(host)) {
           errorText = Messages.getString("HttpSslHandler.23") + B_CENTER_P2;
           head = resetOptionHosts(head, "", "", false, true);
           head =
@@ -1018,11 +1018,12 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
                        ':' + rpost + ':' + rerr + ':' + spre + ':' + spost +
                        ':' + serr);
         }
-        final DbRule dbrule =
-            new DbRule(rule, hostids, (tmode != null? tmode.ordinal() : 0),
-                       recvp, sendp, archp, workp, rpre, rpost, rerr, spre,
-                       spost, serr);
+        final DbRule dbrule;
         try {
+          dbrule =
+              new DbRule(rule, hostids, (tmode != null? tmode.ordinal() : 0),
+                         recvp, sendp, archp, workp, rpre, rpost, rerr, spre,
+                         spost, serr);
           if ("Create".equalsIgnoreCase(parm)) {
             dbrule.insert();
           } else {
@@ -1170,7 +1171,7 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
         head = head.replace(XXXDATAJSONXXX, builder.toString());
       } else if ("Delete".equalsIgnoreCase(parm)) {
         final String rule = getTrimValue("rule");
-        if (rule == null || rule.isEmpty()) {
+        if (ParametersChecker.isEmpty(rule)) {
           errorText = Messages.getString("HttpSslHandler.29"); //$NON-NLS-1$
           head = resetOptionRules(head, "", null, -3);
           head = createExport(head, errorText, null);
@@ -1250,7 +1251,7 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
       }
     }
     if (spooled.contains("XXXSPOOLEDXXX")) {
-      if (name != null && !name.isEmpty()) {
+      if (ParametersChecker.isNotEmpty(name)) {
         // name is specified
         uri = request.uri();
         if (istatus != 0) {
@@ -1268,7 +1269,7 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
         return spooled.replace("XXXSPOOLEDXXX", builder.toString());
       }
     }
-    if (name != null && !name.isEmpty()) {
+    if (ParametersChecker.isNotEmpty(name)) {
       // name is specified
       uri = request.uri();
       if (istatus != 0) {
@@ -1330,14 +1331,14 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
 
   private String system() {
     getParamsResponsive();
-    DbHostConfiguration config;
+    DbHostConfiguration config = null;
     try {
       config = new DbHostConfiguration(Configuration.configuration.getHostId());
     } catch (final WaarpDatabaseException e2) {
-      config =
-          new DbHostConfiguration(Configuration.configuration.getHostId(), "",
-                                  "", "", "");
       try {
+        config =
+            new DbHostConfiguration(Configuration.configuration.getHostId(), "",
+                                    "", "", "");
         config.insert();
       } catch (final WaarpDatabaseException ignored) {
         // nothing
@@ -1585,8 +1586,8 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
                 ParametersChecker.ZERO_ARRAY_STRING));
           } catch (final InvalidArgumentException e) {
             logger.error(
-                "Arguments incompatible with Security: " + paramCheck.getKey(),
-                e);
+                "Arguments incompatible with Security: " + paramCheck.getKey() +
+                ": {}", e.getMessage());
             invalidEntry = true;
           }
         }
@@ -1680,7 +1681,7 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
           values = params.get("name");
           if (values != null) {
             name = values.get(0);
-            if (name == null || name.isEmpty()) {
+            if (ParametersChecker.isEmpty(name)) {
               getMenu = true;
             }
           }
@@ -1692,7 +1693,7 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
           values = params.get("passwd");
           if (values != null) {
             password = values.get(0);
-            getMenu = password == null || password.isEmpty();
+            getMenu = ParametersChecker.isEmpty(password);
           } else {
             getMenu = true;
           }

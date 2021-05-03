@@ -175,27 +175,32 @@ public class WaarpFtp4jClient {
     result = null;
     boolean isActive = false;
     try {
-      try {
-        ftpClient.connect(server, port);
-      } catch (final SocketException e) {
-        result = "Connection in error";
-        logger.error(result, e);
-        return false;
-      } catch (final IOException e) {
-        result = "Connection in error";
-        logger.error(result, e);
-        return false;
-      } catch (final IllegalStateException e) {
-        result = "Connection in error";
-        logger.error(result, e);
-        return false;
-      } catch (final FTPIllegalReplyException e) {
-        result = "Connection in error";
-        logger.error(result, e);
-        return false;
-      } catch (final FTPException e) {
-        result = "Connection in error";
-        logger.error(result, e);
+      Exception lastExcemption = null;
+      for (int i = 0; i < 10; i++) {
+        try {
+          ftpClient.connect(server, port);
+          lastExcemption = null;
+          Thread.yield();
+          break;
+        } catch (final SocketException e) {
+          result = "Connection in error";
+          lastExcemption = e;
+        } catch (final IOException e) {
+          result = "Connection in error";
+          lastExcemption = e;
+        } catch (final IllegalStateException e) {
+          result = "Connection in error";
+          lastExcemption = e;
+        } catch (final FTPIllegalReplyException e) {
+          result = "Connection in error";
+          lastExcemption = e;
+        } catch (final FTPException e) {
+          result = "Connection in error";
+          lastExcemption = e;
+        }
+      }
+      if (lastExcemption != null) {
+        logger.error(result, lastExcemption);
         return false;
       }
       try {
@@ -413,7 +418,7 @@ public class WaarpFtp4jClient {
       return true;
     } catch (final IllegalArgumentException e) {
       result = "FileType in error";
-      logger.warn(result, e);
+      logger.warn(result + " : {}", e.getMessage());
       return false;
     }
   }

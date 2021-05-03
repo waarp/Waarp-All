@@ -263,7 +263,7 @@ public class DbSession {
     // handle any errors
     logger.error(
         "SQLException: " + ex.getMessage() + " SQLState: " + ex.getSQLState() +
-        "VendorError: " + ex.getErrorCode());
+        " VendorError: " + ex.getErrorCode());
   }
 
   /**
@@ -470,10 +470,14 @@ public class DbSession {
       try {
         longterm.recreatePreparedStatement();
       } catch (final WaarpDatabaseNoConnectionException e) {
-        logger.warn("Error while recreation of Long Term PreparedStatement", e);
+        logger.warn(
+            "Error while recreation of Long Term PreparedStatement" + " : {}",
+            e.getMessage());
         elast = e;
       } catch (final WaarpDatabaseSqlException e) {
-        logger.warn("Error while recreation of Long Term PreparedStatement", e);
+        logger.warn(
+            "Error while recreation of Long Term PreparedStatement" + " : {}",
+            e.getMessage());
         e2last = e;
       }
     }

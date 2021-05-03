@@ -55,6 +55,7 @@ import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.traffic.GlobalTrafficShapingHandler;
 import io.netty.util.ResourceLeakDetector;
 import io.netty.util.ResourceLeakDetector.Level;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestWatcher;
@@ -63,6 +64,9 @@ import org.waarp.common.crypto.ssl.WaarpSecureKeyStore;
 import org.waarp.common.crypto.ssl.WaarpSslContextFactory;
 import org.waarp.common.crypto.ssl.WaarpSslUtility;
 import org.waarp.common.exception.CryptoException;
+import org.waarp.common.logging.WaarpLogLevel;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
 
 import java.io.File;
 import java.net.URL;
@@ -74,6 +78,12 @@ public class WaarpNettyUtilTest {
   @Rule(order = Integer.MIN_VALUE)
   public TestWatcher watchman = new TestWatcherJunit4();
 
+  @BeforeClass
+  public static void beforeClass() {
+    WaarpLoggerFactory.setDefaultFactoryIfNotSame(
+        new WaarpSlf4JLoggerFactory(WaarpLogLevel.WARN));
+    ResourceLeakDetector.setLevel(Level.PARANOID);
+  }
 
   @Test
   public void setServerBootstrap1Group() {
@@ -172,7 +182,7 @@ public class WaarpNettyUtilTest {
              .set(HttpHeaderNames.ACCEPT_ENCODING, HttpHeaderValues.GZIP);
       clientChannel.writeAndFlush(request)
                    .addListener(WaarpSslUtility.SSLCLOSE);
-      WaarpSslUtility.waitForClosingSslChannel(clientChannel, 100);
+      WaarpSslUtility.waitForClosingSslChannel(clientChannel, 1000);
       clientChannel.closeFuture().sync();
       WaarpSslUtility.closingSslChannel(clientChannel);
       WaarpSslUtility.forceCloseAllSslChannels();

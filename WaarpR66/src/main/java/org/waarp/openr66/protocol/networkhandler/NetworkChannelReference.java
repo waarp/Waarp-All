@@ -241,12 +241,12 @@ public class NetworkChannelReference {
    * @return True if the localChannelReference is the only one still active or there is no more LCR
    */
   public boolean isLastLocalChannelActive(
-      LocalChannelReference localChannelReference) {
-    boolean someActive = isSomeLocalChannelsActive();
+      final LocalChannelReference localChannelReference) {
+    final boolean someActive = isSomeLocalChannelsActive();
     return
         (someActive && localChannelReferences.contains(localChannelReference) &&
          localChannelReferences.size() == 1) ||
-        (localChannelReferences.size() == 0);
+        localChannelReferences.isEmpty();
   }
 
   /**
@@ -261,7 +261,7 @@ public class NetworkChannelReference {
         for (int i = 0; i < RETRYNB; i++) {
           try {
             Thread.sleep(RETRYINMS);
-          } catch (InterruptedException e) { // Ignore
+          } catch (InterruptedException e) { // NOSONAR
             SysErrLogger.FAKE_LOGGER.ignoreLog(e);
           }
           if (nbLocalChannels() != 0) {

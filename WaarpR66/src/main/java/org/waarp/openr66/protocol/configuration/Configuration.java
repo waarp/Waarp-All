@@ -699,7 +699,7 @@ public class Configuration {
                          .getBoolean(R66SystemProperties.OPENR66_CHROOT_CHECKED,
                                      true));
     setBlacklistBadAuthent(SystemPropertyUtil.getBoolean(
-        R66SystemProperties.OPENR66_BLACKLIST_BADAUTHENT, true));
+        R66SystemProperties.OPENR66_BLACKLIST_BADAUTHENT, !isHostProxyfied()));
     setMaxfilenamelength(SystemPropertyUtil.getInt(
         R66SystemProperties.OPENR66_FILENAME_MAXLENGTH, 255));
     setTimeStat(
@@ -1224,7 +1224,7 @@ public class Configuration {
   public void clientStop(final boolean shutdownQuickly) {
     WaarpSslUtility.forceCloseAllSslChannels();
     if (!configuration.isServer()) {
-      WaarpSystemUtil.stopLogger();
+      WaarpSystemUtil.stopLogger(false);
     }
     if (scheduledExecutorService != null) {
       scheduledExecutorService.shutdown();
@@ -1549,27 +1549,27 @@ public class Configuration {
     try {
       result += configuration.localTransaction.hashStatus() + '\n';
     } catch (final Exception e) {
-      logger.warn(ISSUE_WHILE_DEBUGGING, e);
+      logger.warn(ISSUE_WHILE_DEBUGGING + " : {}", e.getMessage());
     }
     try {
       result += ClientRunner.hashStatus() + '\n';
     } catch (final Exception e) {
-      logger.warn(ISSUE_WHILE_DEBUGGING, e);
+      logger.warn(ISSUE_WHILE_DEBUGGING + " : {}", e.getMessage());
     }
     try {
       result += DbTaskRunner.hashStatus() + '\n';
     } catch (final Exception e) {
-      logger.warn(ISSUE_WHILE_DEBUGGING, e);
+      logger.warn(ISSUE_WHILE_DEBUGGING + " : {}", e.getMessage());
     }
     try {
       result += HttpSslHandler.hashStatus() + '\n';
     } catch (final Exception e) {
-      logger.warn(ISSUE_WHILE_DEBUGGING, e);
+      logger.warn(ISSUE_WHILE_DEBUGGING + " : {}", e.getMessage());
     }
     try {
       result += NetworkTransaction.hashStatus();
     } catch (final Exception e) {
-      logger.warn(ISSUE_WHILE_DEBUGGING, e);
+      logger.warn(ISSUE_WHILE_DEBUGGING + " : {}", e.getMessage());
     }
     return result;
   }

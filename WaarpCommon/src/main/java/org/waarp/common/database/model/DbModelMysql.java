@@ -20,6 +20,7 @@
 package org.waarp.common.database.model;
 
 import com.mysql.jdbc.Driver;
+import io.netty.util.internal.PlatformDependent;
 import org.waarp.common.database.DbAdmin;
 import org.waarp.common.database.DbConnectionPool;
 import org.waarp.common.database.DbSession;
@@ -30,7 +31,6 @@ import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.utility.WaarpSystemUtil;
 
 import javax.sql.ConnectionPoolDataSource;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -73,9 +73,13 @@ public abstract class DbModelMysql extends DbModelCommonMariadbMySql {
 
     @Override
     public String getCreateIndex() {
-      return "CREATE INDEX IF NOT EXISTS ";
+      return "CREATE INDEX ";
     }
 
+    @Override
+    public DbType getDbType() {
+      return type;
+    }
   }
 
   static {
@@ -99,14 +103,31 @@ public abstract class DbModelMysql extends DbModelCommonMariadbMySql {
       final String dbServer, final String dbUser, final String dbPwd)
       throws WaarpDatabaseNoConnectionException {
     Class<?> mysqlConnectionPoolDataSourceClass = null;
-    try {
-      mysqlConnectionPoolDataSourceClass =
-          Class.forName(MYSQL_CONNECTION_POOL_DATA_SOURCE_JRE6);
-    } catch (final ClassNotFoundException e) {
+    if (PlatformDependent.javaVersion() >= 8) {
       try {
+        Class.forName(MYSQL_DRIVER_JRE8);
         mysqlConnectionPoolDataSourceClass =
             Class.forName(MYSQL_CONNECTION_POOL_DATA_SOURCE_JRE8);
-      } catch (final ClassNotFoundException classNotFoundException) {
+      } catch (Exception e) {
+        try {
+          mysqlConnectionPoolDataSourceClass =
+              Class.forName(MYSQL_CONNECTION_POOL_DATA_SOURCE_JRE6);
+        } catch (ClassNotFoundException classNotFoundException) {
+          try {
+            mysqlConnectionPoolDataSourceClass =
+                Class.forName(MYSQL_CONNECTION_POOL_DATA_SOURCE_JRE8);
+          } catch (ClassNotFoundException e2) {
+            logger.error(CANNOT_INITIALIZE_MYSQL_CONNECTION_POOL_DATA_SOURCE);
+            throw new WaarpDatabaseNoConnectionException(
+                CANNOT_INITIALIZE_MYSQL_CONNECTION_POOL_DATA_SOURCE, e);
+          }
+        }
+      }
+    } else {
+      try {
+        mysqlConnectionPoolDataSourceClass =
+            Class.forName(MYSQL_CONNECTION_POOL_DATA_SOURCE_JRE6);
+      } catch (ClassNotFoundException e) {
         logger.error(CANNOT_INITIALIZE_MYSQL_CONNECTION_POOL_DATA_SOURCE);
         throw new WaarpDatabaseNoConnectionException(
             CANNOT_INITIALIZE_MYSQL_CONNECTION_POOL_DATA_SOURCE, e);
@@ -126,16 +147,7 @@ public abstract class DbModelMysql extends DbModelCommonMariadbMySql {
           .getMethod("setPassword", dbPwd.getClass());
       method.invoke(cpds, dbPwd);
       return cpds;
-    } catch (final InstantiationException e) {
-      throw new WaarpDatabaseNoConnectionException(
-          CANNOT_INITIALIZE_MYSQL_CONNECTION_POOL_DATA_SOURCE, e);
-    } catch (final IllegalAccessException e) {
-      throw new WaarpDatabaseNoConnectionException(
-          CANNOT_INITIALIZE_MYSQL_CONNECTION_POOL_DATA_SOURCE, e);
-    } catch (final NoSuchMethodException e) {
-      throw new WaarpDatabaseNoConnectionException(
-          CANNOT_INITIALIZE_MYSQL_CONNECTION_POOL_DATA_SOURCE, e);
-    } catch (final InvocationTargetException e) {
+    } catch (final Exception e) {
       throw new WaarpDatabaseNoConnectionException(
           CANNOT_INITIALIZE_MYSQL_CONNECTION_POOL_DATA_SOURCE, e);
     }

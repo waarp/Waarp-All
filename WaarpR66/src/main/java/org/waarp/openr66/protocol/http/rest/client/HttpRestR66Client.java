@@ -24,9 +24,9 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.http.HttpMethod;
-import org.waarp.common.database.DbSession;
 import org.waarp.common.database.data.AbstractDbData;
 import org.waarp.common.json.JsonHandler;
+import org.waarp.common.utility.ParametersChecker;
 import org.waarp.gateway.kernel.exception.HttpIncorrectRequestException;
 import org.waarp.gateway.kernel.rest.DataModelRestMethodHandler;
 import org.waarp.gateway.kernel.rest.HttpRestHandler;
@@ -106,7 +106,7 @@ public class HttpRestR66Client extends HttpRestClientHelper {
     final ObjectNode node = bodyResponse.getAnswer();
     final String model = node.path(AbstractDbData.JSON_MODEL).asText();
     try {
-      if (model != null && !model.isEmpty()) {
+      if (ParametersChecker.isNotEmpty(model)) {
         return RESTHANDLERS.valueOf(model);
       }
     } catch (final Exception ignored) {
@@ -138,7 +138,7 @@ public class HttpRestR66Client extends HttpRestClientHelper {
    */
   public String getPrimaryPropertyName(final String model) {
     try {
-      if (model != null && !model.isEmpty()) {
+      if (ParametersChecker.isNotEmpty(model)) {
         final RESTHANDLERS dbdata = RESTHANDLERS.valueOf(model);
         final DataModelRestMethodHandler<?> handler =
             (DataModelRestMethodHandler<?>) HttpRestHandler.defaultConfiguration.restHashMap
@@ -152,7 +152,6 @@ public class HttpRestR66Client extends HttpRestClientHelper {
   }
 
   /**
-   * @param dbSession
    * @param future
    *
    * @return the DbData allocated from result if any, else null
@@ -160,20 +159,18 @@ public class HttpRestR66Client extends HttpRestClientHelper {
    * @throws HttpIncorrectRequestException
    */
   @SuppressWarnings("unchecked")
-  public AbstractDbData getDbDataFromFuture(final DbSession dbSession,
-                                            final RestFuture future)
+  public AbstractDbData getDbDataFromFuture(final RestFuture future)
       throws HttpIncorrectRequestException {
     if (future.getRestArgument() != null) {
       final RestArgument arg = future.getRestArgument();
       final ObjectNode node = arg.getAnswer();
       final String model = node.path(AbstractDbData.JSON_MODEL).asText();
       try {
-        if (model != null && !model.isEmpty()) {
+        if (ParametersChecker.isNotEmpty(model)) {
           final RESTHANDLERS rmodel = RESTHANDLERS.valueOf(model);
           try {
             return (AbstractDbData) rmodel.clasz
-                .getConstructor(DbSession.class, ObjectNode.class)
-                .newInstance(dbSession, node);
+                .getConstructor(ObjectNode.class).newInstance(node);
           } catch (final Exception e) {
             throw new HttpIncorrectRequestException(e);
           }

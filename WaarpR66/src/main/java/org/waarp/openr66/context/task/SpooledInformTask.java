@@ -29,6 +29,7 @@ import org.waarp.common.filemonitor.FileMonitor.FileMonitorInformation;
 import org.waarp.common.json.JsonHandler;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.ParametersChecker;
 import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.openr66.client.SpooledDirectoryTransfer;
 import org.waarp.openr66.protocol.configuration.Configuration;
@@ -433,7 +434,7 @@ public class SpooledInformTask extends AbstractExecJavaTask {
   public static int buildSpooledJson(final ArrayNode array, final int status,
                                      final String name) {
     int nb = 0;
-    if (name == null || name.isEmpty()) {
+    if (ParametersChecker.isEmpty(name)) {
       synchronized (spooledInformationMap) {
         final Set<String> names = spooledInformationMap.keySet();
         for (final String nameInternal : names) {

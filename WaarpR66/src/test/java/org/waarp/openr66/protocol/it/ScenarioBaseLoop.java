@@ -142,6 +142,7 @@ public abstract class ScenarioBaseLoop extends TestAbstract {
     } else {
       setUpBeforeClassClient(configFile.getAbsolutePath());
     }
+    Thread.sleep(1000);
     Processes.setJvmArgsDefault(null);
     WaarpLoggerFactory.setDefaultFactoryIfNotSame(
         new WaarpSlf4JLoggerFactory(WaarpLogLevel.WARN));
@@ -325,11 +326,9 @@ public abstract class ScenarioBaseLoop extends TestAbstract {
    */
   @AfterClass
   public static void tearDownAfterClass() throws Exception {
-    WaarpLoggerFactory.setDefaultFactoryIfNotSame(
-        new WaarpSlf4JLoggerFactory(WaarpLogLevel.NONE));
+    WaarpSystemUtil.stopLogger(true);
     if (NUMBER_FILES == -1) {
       Configuration.configuration.setTimeoutCon(100);
-      WaarpLoggerFactory.setLogLevel(WaarpLogLevel.ERROR);
       for (int pid : PIDS) {
         Processes.kill(pid, true);
       }
@@ -406,7 +405,6 @@ public abstract class ScenarioBaseLoop extends TestAbstract {
                 (stopTime - startTime) / 1000.0, totalTransfers,
                 totalTransfers / ((stopTime - startTime) / 1000.0));
     Configuration.configuration.setTimeoutCon(100);
-    WaarpLoggerFactory.setLogLevel(WaarpLogLevel.ERROR);
     for (int pid : PIDS) {
       Processes.kill(pid, true);
     }

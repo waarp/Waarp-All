@@ -155,7 +155,7 @@ public class ServerShutdown {
     } else {
       localChannelReference.sessionNewState(R66FiniteDualStates.SHUTDOWN);
     }
-    ChannelUtils.writeAbstractLocalPacket(localChannelReference, packet, false);
+    ChannelUtils.writeAbstractLocalPacket(localChannelReference, packet, true);
     localChannelReference.getFutureRequest().awaitOrInterruptible();
     int value = 66;
     if (isblock || isunblock) {

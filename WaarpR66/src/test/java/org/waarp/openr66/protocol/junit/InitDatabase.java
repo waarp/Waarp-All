@@ -28,9 +28,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.waarp.common.database.exception.WaarpDatabaseException;
 import org.waarp.common.digest.FilesystemBasedDigest;
-import org.waarp.common.logging.WaarpLogLevel;
-import org.waarp.common.logging.WaarpLoggerFactory;
-import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
+import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.openr66.context.R66FiniteDualStates;
 import org.waarp.openr66.database.data.DbHostAuth;
 import org.waarp.openr66.protocol.configuration.Configuration;
@@ -81,8 +79,7 @@ public class InitDatabase extends TestAbstract {
    */
   @AfterClass
   public static void tearDownAfterClass() throws Exception {
-    WaarpLoggerFactory.setDefaultFactoryIfNotSame(
-        new WaarpSlf4JLoggerFactory(WaarpLogLevel.NONE));
+    WaarpSystemUtil.stopLogger(true);
     Thread.sleep(100);
     final DbHostAuth host = new DbHostAuth("hostas");
     final SocketAddress socketServerAddress;

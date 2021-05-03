@@ -23,6 +23,7 @@ package org.waarp.openr66.dao.xml;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.waarp.common.utility.ParametersChecker;
 import org.waarp.openr66.dao.Filter;
 import org.waarp.openr66.dao.HostDAO;
 import org.waarp.openr66.dao.exception.DAOConnectionException;
@@ -132,8 +133,7 @@ public class XMLHostDAO implements HostDAO {
       xPath.setXPathVariableResolver(resolver);
       final XPathExpression xpe = xPath.compile(XML_SELECT);
       // Query will return "" if nothing is found
-      return xpe.evaluate(document) != null &&
-             !xpe.evaluate(document).isEmpty();
+      return ParametersChecker.isNotEmpty(xpe.evaluate(document));
     } catch (final SAXException e) {
       throw new DAOConnectionException(e);
     } catch (final XPathExpressionException e) {

@@ -27,8 +27,10 @@ import org.waarp.common.database.data.AbstractDbData;
 import org.waarp.common.database.exception.WaarpDatabaseException;
 import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
 import org.waarp.common.database.exception.WaarpDatabaseSqlException;
+import org.waarp.common.exception.InvalidArgumentException;
 import org.waarp.common.json.JsonHandler;
 import org.waarp.common.role.RoleDefault.ROLE;
+import org.waarp.common.utility.ParametersChecker;
 import org.waarp.gateway.kernel.exception.HttpForbiddenRequestException;
 import org.waarp.gateway.kernel.exception.HttpIncorrectRequestException;
 import org.waarp.gateway.kernel.exception.HttpInvalidAuthenticationException;
@@ -78,6 +80,11 @@ public class DbConfigurationR66RestMethodHandler
                                     final RestArgument result,
                                     final Object body)
       throws HttpNotFoundRequestException {
+    try {
+      HttpRestV1Utils.checkSanity(arguments);
+    } catch (InvalidArgumentException e) {
+      throw new HttpNotFoundRequestException("Issue on values", e);
+    }
     final ObjectNode arg = arguments.getUriArgs().deepCopy();
     arg.setAll(arguments.getBody());
     try {
@@ -102,6 +109,11 @@ public class DbConfigurationR66RestMethodHandler
                                        final RestArgument result,
                                        final Object body)
       throws HttpIncorrectRequestException {
+    try {
+      HttpRestV1Utils.checkSanity(arguments);
+    } catch (InvalidArgumentException e) {
+      throw new HttpIncorrectRequestException("Issue on values", e);
+    }
     final ObjectNode arg = arguments.getUriArgs().deepCopy();
     arg.setAll(arguments.getBody());
     try {
@@ -117,10 +129,15 @@ public class DbConfigurationR66RestMethodHandler
       final HttpRestHandler handler, final RestArgument arguments,
       final RestArgument result, final Object body)
       throws HttpIncorrectRequestException {
+    try {
+      HttpRestV1Utils.checkSanity(arguments);
+    } catch (InvalidArgumentException e) {
+      throw new HttpIncorrectRequestException("Issue on values", e);
+    }
     final ObjectNode arg = arguments.getUriArgs().deepCopy();
     arg.setAll(arguments.getBody());
     String host = arg.path(FILTER_ARGS.HOSTID.name()).asText();
-    if (host == null || host.isEmpty()) {
+    if (ParametersChecker.isEmpty(host)) {
       host = null;
     }
     final int limit = arg.path(FILTER_ARGS.BANDWIDTH.name()).asInt(-1);
@@ -238,6 +255,11 @@ public class DbConfigurationR66RestMethodHandler
                      final Object body)
       throws HttpIncorrectRequestException, HttpInvalidAuthenticationException,
              HttpNotFoundRequestException {
+    try {
+      HttpRestV1Utils.checkSanity(arguments);
+    } catch (InvalidArgumentException e) {
+      throw new HttpIncorrectRequestException("Issue on values", e);
+    }
     super.put(handler, arguments, result, body);
     final DbConfiguration item = getItem(handler, arguments, result, body);
     if (item.isOwnConfiguration()) {
@@ -251,6 +273,11 @@ public class DbConfigurationR66RestMethodHandler
                                     final RestArgument result,
                                     final METHOD method)
       throws HttpForbiddenRequestException {
+    try {
+      HttpRestV1Utils.checkSanity(arguments);
+    } catch (InvalidArgumentException e) {
+      throw new HttpForbiddenRequestException("Issue on values", e);
+    }
     final HttpRestR66Handler r66handler = (HttpRestR66Handler) handler;
     final R66Session session = r66handler.getServerHandler().getSession();
     if (!session.getAuth().isValidRole(ROLE.CONFIGADMIN)) {

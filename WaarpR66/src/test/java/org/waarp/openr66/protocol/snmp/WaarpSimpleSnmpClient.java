@@ -64,7 +64,7 @@ public class WaarpSimpleSnmpClient {
     try {
       start();
     } catch (final IOException e) {
-      SysErrLogger.FAKE_LOGGER.syserr(e);
+      SysErrLogger.FAKE_LOGGER.ignoreLog(e);
       throw new RuntimeException(e);
     }
   }

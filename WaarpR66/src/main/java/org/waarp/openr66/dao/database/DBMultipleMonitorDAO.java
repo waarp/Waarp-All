@@ -20,6 +20,7 @@
 
 package org.waarp.openr66.dao.database;
 
+import org.waarp.common.database.exception.WaarpDatabaseSqlException;
 import org.waarp.openr66.dao.MultipleMonitorDAO;
 import org.waarp.openr66.pojo.MultipleMonitor;
 
@@ -123,9 +124,13 @@ public class DBMultipleMonitorDAO extends StatementExecutor<MultipleMonitor>
   @Override
   public MultipleMonitor getFromResultSet(final ResultSet set)
       throws SQLException {
-    return new MultipleMonitor(set.getString(HOSTID_FIELD),
-                               set.getInt(COUNT_CONFIG_FIELD),
-                               set.getInt(COUNT_HOST_FIELD),
-                               set.getInt(COUNT_RULE_FIELD));
+    try {
+      return new MultipleMonitor(set.getString(HOSTID_FIELD),
+                                 set.getInt(COUNT_CONFIG_FIELD),
+                                 set.getInt(COUNT_HOST_FIELD),
+                                 set.getInt(COUNT_RULE_FIELD));
+    } catch (WaarpDatabaseSqlException e) {
+      throw new SQLException(e);
+    }
   }
 }

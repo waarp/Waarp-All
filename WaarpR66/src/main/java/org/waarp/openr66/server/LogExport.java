@@ -237,9 +237,13 @@ public class LogExport implements Runnable {
         }
       } else {
         if (result.getCode() == ErrorCode.Warning) {
-          logger.warn("LogExport is     WARNED", future.getCause());
+          logger.warn("LogExport is     WARNED" + " : {}",
+                      future.getCause() != null?
+                          future.getCause().getMessage() : "");
         } else {
-          logger.error("LogExport in     FAILURE", future.getCause());
+          logger.error("LogExport in     FAILURE" + " : {}",
+                       future.getCause() != null?
+                           future.getCause().getMessage() : "");
         }
         networkTransaction.closeAll();
         System.exit(result.getCode().ordinal());//NOSONAR

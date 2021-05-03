@@ -456,7 +456,7 @@ public abstract class HttpRestHandler
       if (status == HttpResponseStatus.OK) {
         status = HttpResponseStatus.BAD_REQUEST;
       }
-      logger.warn("Error", e1);
+      logger.warn("Error: {}", e1.getMessage(), e1);
       if (response.getDetail().isEmpty()) {
         response.setDetail(e1.getMessage());
       }
@@ -473,7 +473,7 @@ public abstract class HttpRestHandler
       if (status == HttpResponseStatus.OK) {
         status = HttpResponseStatus.METHOD_NOT_ALLOWED;
       }
-      logger.warn("Error", e1);
+      logger.warn("Error: {}", e1.getMessage());
       if (response.getDetail().isEmpty()) {
         response.setDetail(e1.getMessage());
       }
@@ -490,7 +490,7 @@ public abstract class HttpRestHandler
       if (status == HttpResponseStatus.OK) {
         status = HttpResponseStatus.FORBIDDEN;
       }
-      logger.warn("Error", e1);
+      logger.warn("Error: {}", e1.getMessage());
       if (response.getDetail().isEmpty()) {
         response.setDetail(e1.getMessage());
       }
@@ -507,7 +507,7 @@ public abstract class HttpRestHandler
       if (status == HttpResponseStatus.OK) {
         status = HttpResponseStatus.UNAUTHORIZED;
       }
-      logger.warn("Error", e1);
+      logger.warn("Error: {}", e1.getMessage());
       if (response.getDetail().isEmpty()) {
         response.setDetail(e1.getMessage());
       }
@@ -524,7 +524,7 @@ public abstract class HttpRestHandler
       if (status == HttpResponseStatus.OK) {
         status = HttpResponseStatus.NOT_FOUND;
       }
-      logger.warn("Error", e1);
+      logger.warn("Error: {}", e1.getMessage());
       if (response.getDetail().isEmpty()) {
         response.setDetail(e1.getMessage());
       }
@@ -571,7 +571,7 @@ public abstract class HttpRestHandler
       datas = decoder.getBodyHttpDatas();
     } catch (final NotEnoughDataDecoderException e1) {
       // Should not be!
-      logger.warn("decoder issue", e1);
+      logger.warn("decoder issue: {}", e1.getMessage());
       status = HttpResponseStatus.NOT_ACCEPTABLE;
       throw new HttpIncorrectRequestException(e1);
     }
@@ -791,7 +791,7 @@ public abstract class HttpRestHandler
                               final Throwable cause) {
     if (ctx.channel().isActive()) {
       if (cause != null && cause.getMessage() != null) {
-        logger.warn("Exception {}", cause.getMessage(), cause);
+        logger.warn("Exception {}", cause.getMessage());
       } else {
         logger.warn("Exception Received", cause);
       }

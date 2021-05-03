@@ -3,6 +3,7 @@ package org.waarp.openr66.pojo;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestWatcher;
+import org.waarp.common.database.exception.WaarpDatabaseSqlException;
 import org.waarp.common.json.JsonHandler;
 import org.waarp.common.utility.TestWatcherJunit4;
 
@@ -14,7 +15,7 @@ public class LimitTest {
 
 
   @Test
-  public void testJson() {
+  public void testJson() throws WaarpDatabaseSqlException {
     Limit limit = new Limit("hostid", 10, 20, 30, 40, 50, UpdatedInfo.TOSUBMIT);
 
     String expected =

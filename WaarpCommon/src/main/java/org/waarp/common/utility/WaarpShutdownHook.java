@@ -337,7 +337,7 @@ public abstract class WaarpShutdownHook extends Thread {
    */
   private static String getArgs() {
     final String test = System.getProperty(SUN_JAVA_COMMAND);
-    if (test != null && !test.isEmpty()) {
+    if (ParametersChecker.isNotEmpty(test)) {
       // compute args directly
       // program main and program arguments
       final String[] mainCommand = test.split(" ");
@@ -383,7 +383,7 @@ public abstract class WaarpShutdownHook extends Thread {
     }
     final String path = ManagementFactory.getRuntimeMXBean().getClassPath();
     final StringBuilder newArgs = new StringBuilder();
-    if (path != null && !path.isEmpty()) {
+    if (ParametersChecker.isNotEmpty(path)) {
       newArgs.append("-cp ").append(path);
     }
     newArgs.append(' ').append(main.getName());

@@ -23,6 +23,7 @@ package org.waarp.ftp.client.transaction;
 import org.waarp.common.digest.FilesystemBasedDigest.DigestAlgo;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.ftp.client.AbstractFtpClientTest;
 import org.waarp.ftp.client.FtpClientTest;
 
 import java.io.File;
@@ -100,11 +101,13 @@ public class FtpClientThread implements Runnable {
     final Ftp4JClientTransactionTest client =
         new Ftp4JClientTransactionTest(server, port, username, passwd, account,
                                        isSsl);
-    // Thread.yield();
+    Thread.yield();
     // System.err.println(id+" connect");
     if (!client.connect()) {
       logger.error(id + " Cant connect");
-      FtpClientTest.numberKO.incrementAndGet();
+      if (AbstractFtpClientTest.versionJavaCompatible()) {
+        FtpClientTest.numberKO.incrementAndGet();
+      }
       return;
     }
     try {

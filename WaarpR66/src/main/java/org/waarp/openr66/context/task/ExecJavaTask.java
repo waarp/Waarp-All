@@ -92,7 +92,7 @@ public class ExecJavaTask extends AbstractTask {
     try {
       ParametersChecker.checkSanityString(className);
     } catch (final InvalidArgumentException e) {
-      logger.error("ExecJava command is not correct", e);
+      logger.error("ExecJava command is not correct: {}", e.getMessage());
       final R66Result result =
           new R66Result(session, false, ErrorCode.CommandNotFound,
                         session.getRunner());
@@ -111,7 +111,8 @@ public class ExecJavaTask extends AbstractTask {
     try {
       runnable = (R66Runnable) WaarpSystemUtil.newInstance(className);//NOSONAR
     } catch (final Exception e) {
-      logger.error("ExecJava command is not available: " + className, e);
+      logger.error("ExecJava command is not available: " + className + ": {}",
+                   e.getMessage());
       final R66Result result =
           new R66Result(session, false, ErrorCode.CommandNotFound,
                         session.getRunner());

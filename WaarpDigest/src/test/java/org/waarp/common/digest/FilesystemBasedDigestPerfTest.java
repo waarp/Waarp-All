@@ -22,7 +22,9 @@ package org.waarp.common.digest;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import io.netty.util.ResourceLeakDetector;
+import io.netty.util.ResourceLeakDetector.Level;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.waarp.common.digest.FilesystemBasedDigest.DigestAlgo;
 
@@ -33,8 +35,6 @@ import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
-import java.security.Provider;
-import java.security.Security;
 
 import static org.junit.Assert.*;
 
@@ -49,6 +49,11 @@ public class FilesystemBasedDigestPerfTest {
   }
 
   private static final byte[] TESTPHRASEBYTES = TESTPHRASE.getBytes();
+
+  @BeforeClass
+  public static void beforeClass() {
+    ResourceLeakDetector.setLevel(Level.PARANOID);
+  }
 
   @Test
   public void testGetHashByteBufDigestAlgo() {
@@ -112,11 +117,6 @@ public class FilesystemBasedDigestPerfTest {
         System.out
             .println("Buf Fast Algo: " + algo + " Time: " + (end - start));
       }
-      Security.addProvider(new BouncyCastleProvider());
-      Provider[] providers = Security.getProviders();
-      for (Provider provider : providers) {
-        System.out.println("Provider: " + provider.getName());
-      }
       FilesystemBasedDigest.setUseFastMd5(false);
       FilesystemBasedDigest digest = new FilesystemBasedDigest(DigestAlgo.MD5);
       digest.Update(TESTPHRASEBYTES, 0, TESTPHRASEBYTES.length);
@@ -152,21 +152,6 @@ public class FilesystemBasedDigestPerfTest {
       System.out.println("Buf Algo: MD5 Native1 Time: " + (end - start));
       digest2 = MessageDigest.getInstance("MD5", "SUN");
       System.out.println(digest2.getProvider().getName());
-      digest2 = MessageDigest.getInstance("MD5", "BC");
-      digest2.update(TESTPHRASEBYTES, 0, TESTPHRASEBYTES.length);
-      bmd52 = digest2.digest();
-      hex2 = FilesystemBasedDigest.getHex(bmd52);
-      start = System.currentTimeMillis();
-      for (int i = 0; i < COUNT; i++) {
-        digest2 = MessageDigest.getInstance("MD5", "BC");
-        digest2.update(TESTPHRASEBYTES, 0, TESTPHRASEBYTES.length);
-        bmd52 = digest2.digest();
-        hex2 = FilesystemBasedDigest.getHex(bmd52);
-        assertTrue("Native2 Hex Not Equals",
-                   FilesystemBasedDigest.digestEquals(hex2, bmd52));
-      }
-      end = System.currentTimeMillis();
-      System.out.println("Buf Algo: MD5 Native2 Time: " + (end - start));
       digest = new FilesystemBasedDigest(DigestAlgo.SHA512);
       digest.Update(TESTPHRASEBYTES, 0, TESTPHRASEBYTES.length);
       bmd5 = digest.Final();
@@ -200,23 +185,6 @@ public class FilesystemBasedDigestPerfTest {
       end = System.currentTimeMillis();
       System.out.println("Buf Algo: Native1 Time: " + (end - start));
       digest2 = MessageDigest.getInstance("SHA-512", "SUN");
-      System.out.println(digest2.getProvider().getName());
-      digest2 = MessageDigest.getInstance("SHA-512", "BC");
-      digest2.update(TESTPHRASEBYTES, 0, TESTPHRASEBYTES.length);
-      bmd52 = digest2.digest();
-      hex2 = FilesystemBasedDigest.getHex(bmd52);
-      start = System.currentTimeMillis();
-      for (int i = 0; i < COUNT; i++) {
-        digest2 = MessageDigest.getInstance("SHA-512", "BC");
-        digest2.update(TESTPHRASEBYTES, 0, TESTPHRASEBYTES.length);
-        bmd52 = digest2.digest();
-        hex2 = FilesystemBasedDigest.getHex(bmd52);
-        assertTrue("Native2 Hex Not Equals",
-                   FilesystemBasedDigest.digestEquals(hex2, bmd52));
-      }
-      end = System.currentTimeMillis();
-      System.out.println("Buf Algo: Native2 Time: " + (end - start));
-      digest2 = MessageDigest.getInstance("SHA-512", "BC");
       System.out.println(digest2.getProvider().getName());
       digest2 = MessageDigest.getInstance("SHA-512");
       digest2.update(TESTPHRASEBYTES, 0, TESTPHRASEBYTES.length);

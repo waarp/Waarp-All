@@ -28,6 +28,7 @@ import org.joda.time.DateTime;
 import org.waarp.common.crypto.Des;
 import org.waarp.common.crypto.ssl.WaarpSslUtility;
 import org.waarp.common.database.exception.WaarpDatabaseException;
+import org.waarp.common.database.exception.WaarpDatabaseSqlException;
 import org.waarp.common.digest.FilesystemBasedDigest;
 import org.waarp.common.exception.CryptoException;
 import org.waarp.common.guid.LongUuid;
@@ -213,6 +214,7 @@ public class HttpTestRestR66Client implements Runnable {
       long start = System.currentTimeMillis();
       rank = 2;
       RESTHANDLERS handler1 = RESTHANDLERS.DbConfiguration;
+      logger.warn("Start " + handler1.uri);
       try {
         multiDataRequests(handler1);
       } catch (final HttpInvalidAuthenticationException e) {
@@ -220,6 +222,7 @@ public class HttpTestRestR66Client implements Runnable {
         fail("Cant connect");
       }
       handler1 = RESTHANDLERS.DbHostAuth;
+      logger.warn("Start " + handler1.uri);
       try {
         multiDataRequests(handler1);
       } catch (final HttpInvalidAuthenticationException e) {
@@ -227,6 +230,7 @@ public class HttpTestRestR66Client implements Runnable {
         fail("Cant connect");
       }
       handler1 = RESTHANDLERS.DbHostConfiguration;
+      logger.warn("Start " + handler1.uri);
       try {
         multiDataRequests(handler1);
       } catch (final HttpInvalidAuthenticationException e) {
@@ -234,6 +238,7 @@ public class HttpTestRestR66Client implements Runnable {
         fail("Cant connect");
       }
       handler1 = RESTHANDLERS.DbRule;
+      logger.warn("Start " + handler1.uri);
       try {
         multiDataRequests(handler1);
       } catch (final HttpInvalidAuthenticationException e) {
@@ -241,6 +246,7 @@ public class HttpTestRestR66Client implements Runnable {
         fail("Cant connect");
       }
       handler1 = RESTHANDLERS.DbTaskRunner;
+      logger.warn("Start " + handler1.uri);
       try {
         multiDataRequests(handler1);
       } catch (final HttpInvalidAuthenticationException e) {
@@ -339,22 +345,27 @@ public class HttpTestRestR66Client implements Runnable {
           // assertTrue("Action should be ok", future.isSuccess());
         }
         // Need Hostzz
-        channel = clientHelper
-            .getChannel(host, HttpTestR66PseudoMain.config.getRestPort());
-        if (channel != null) {
-          AbstractDbDataDao dbData;
-          dbData = new DbHostAuth(hostid + rank, address,
-                                  HttpTestR66PseudoMain.config.getRestPort(),
-                                  false, hostkey.getBytes(), true, false);
-          logger.warn("Send query: " + RESTHANDLERS.DbHostAuth.uri);
-          final RestFuture future = clientHelper
-              .sendQuery(HttpTestR66PseudoMain.config, channel, HttpMethod.POST,
-                         host, RESTHANDLERS.DbHostAuth.uri, key, value, null,
-                         dbData.toJson());
-          future.awaitOrInterruptible();
+        try {
+          channel = clientHelper
+              .getChannel(host, HttpTestR66PseudoMain.config.getRestPort());
+          if (channel != null) {
+            AbstractDbDataDao dbData;
+            dbData = new DbHostAuth(hostid + rank, address,
+                                    HttpTestR66PseudoMain.config.getRestPort(),
+                                    false, hostkey.getBytes(), true, false);
+            logger.warn("Send query: " + RESTHANDLERS.DbHostAuth.uri);
+            final RestFuture future = clientHelper
+                .sendQuery(HttpTestR66PseudoMain.config, channel,
+                           HttpMethod.POST, host, RESTHANDLERS.DbHostAuth.uri,
+                           key, value, null, dbData.toJson());
+            future.awaitOrInterruptible();
+            WaarpSslUtility.closingSslChannel(channel);
+            logger.warn("Sent query: " + RESTHANDLERS.DbHostAuth.uri);
+            assertTrue("Action should be ok", future.isSuccess());
+          }
+        } catch (Exception e) {
+          logger.error(e);
           WaarpSslUtility.closingSslChannel(channel);
-          logger.warn("Sent query: " + RESTHANDLERS.DbHostAuth.uri);
-          assertTrue("Action should be ok", future.isSuccess());
         }
       }
 
@@ -1040,18 +1051,34 @@ public class HttpTestRestR66Client implements Runnable {
       throws HttpInvalidAuthenticationException {
     switch (data) {
       case DbConfiguration:
-        return new DbConfiguration(hostid + rank, limit, limit, limit, limit,
-                                   delaylimit);
+        try {
+          return new DbConfiguration(hostid + rank, limit, limit, limit, limit,
+                                     delaylimit);
+        } catch (WaarpDatabaseSqlException e) {
+          throw new HttpInvalidAuthenticationException(e);
+        }
       case DbHostAuth:
-        return new DbHostAuth(hostid + rank, address,
-                              HttpTestR66PseudoMain.config.getRestPort(), false,
-                              hostkey.getBytes(), false, false);
+        try {
+          return new DbHostAuth(hostid + rank, address,
+                                HttpTestR66PseudoMain.config.getRestPort(),
+                                false, hostkey.getBytes(), false, false);
+        } catch (WaarpDatabaseSqlException e) {
+          throw new HttpInvalidAuthenticationException(e);
+        }
       case DbHostConfiguration:
-        return new DbHostConfiguration(hostid + rank, business, roles, aliases,
-                                       others);
+        try {
+          return new DbHostConfiguration(hostid + rank, business, roles,
+                                         aliases, others);
+        } catch (WaarpDatabaseSqlException e) {
+          throw new HttpInvalidAuthenticationException(e);
+        }
       case DbRule:
-        return new DbRule(idRule, ids, 2, "/recv", "/send", "/arch", "/work",
-                          tasks, tasks, tasks, tasks, tasks, tasks);
+        try {
+          return new DbRule(idRule, ids, 2, "/recv", "/send", "/arch", "/work",
+                            tasks, tasks, tasks, tasks, tasks, tasks);
+        } catch (WaarpDatabaseSqlException e) {
+          throw new HttpInvalidAuthenticationException(e);
+        }
       case DbTaskRunner:
         final ObjectNode source = JsonHandler.createObjectNode();
         source.put(Columns.IDRULE.name(), "rule3");

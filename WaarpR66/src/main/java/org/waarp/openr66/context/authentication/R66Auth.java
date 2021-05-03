@@ -23,8 +23,10 @@ import org.waarp.common.command.NextCommandReply;
 import org.waarp.common.command.exception.Reply421Exception;
 import org.waarp.common.command.exception.Reply530Exception;
 import org.waarp.common.database.exception.WaarpDatabaseException;
+import org.waarp.common.database.exception.WaarpDatabaseSqlException;
 import org.waarp.common.file.DirInterface;
 import org.waarp.common.file.filesystembased.FilesystemBasedAuthImpl;
+import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.role.RoleDefault;
@@ -234,7 +236,8 @@ public class R66Auth extends FilesystemBasedAuthImpl {
       auth = new DbHostAuth(server);
     } catch (final WaarpDatabaseException e) {
       if (!server.equals(Configuration.configuration.getHostId())) {
-        logger.warn("Cannot find the authentication " + server, e);
+        logger.warn("Cannot find the authentication " + server + " : {}",
+                    e.getMessage());
       }
       return null;
     }
@@ -256,13 +259,17 @@ public class R66Auth extends FilesystemBasedAuthImpl {
       // nothing
     }
     if (auth == null) {
-      auth =
-          new DbHostAuth(hostid, "127.0.0.1", 6666, isSSL, null, true, false);
+      try {
+        auth =
+            new DbHostAuth(hostid, "127.0.0.1", 6666, isSSL, null, true, false);
+      } catch (WaarpDatabaseSqlException e) {
+        SysErrLogger.FAKE_LOGGER.syserr(e);
+      }
     }
     role.clear();
     currentAuth = auth;
     setIsIdentified(true);
-    user = auth.getHostid();
+    user = auth.getHostid(); // NOSONAR
     try {
       setRootFromAuth();
     } catch (final Reply421Exception ignored) {

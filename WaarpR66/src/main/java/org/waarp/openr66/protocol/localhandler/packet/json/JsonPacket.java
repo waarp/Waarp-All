@@ -25,6 +25,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.waarp.common.json.JsonHandler;
+import org.waarp.common.utility.ParametersChecker;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
 
 import java.io.IOException;
@@ -106,7 +107,7 @@ public class JsonPacket {
    */
   public static JsonPacket createFromBuffer(final String value)
       throws JsonParseException, JsonMappingException, IOException {
-    if (value != null && !value.isEmpty()) {
+    if (ParametersChecker.isNotEmpty(value)) {
       return JsonHandler.mapper.readValue(value, JsonPacket.class);
     }
     return null;

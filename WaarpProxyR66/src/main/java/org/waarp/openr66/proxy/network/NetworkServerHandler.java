@@ -20,14 +20,11 @@
 package org.waarp.openr66.proxy.network;
 
 import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.handler.timeout.ReadTimeoutException;
 import org.waarp.common.crypto.ssl.WaarpSslUtility;
-import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.openr66.protocol.exception.OpenR66Exception;
@@ -44,7 +41,6 @@ import org.waarp.openr66.protocol.networkhandler.packet.NetworkPacket;
 import org.waarp.openr66.protocol.utils.ChannelCloseTimer;
 import org.waarp.openr66.protocol.utils.ChannelUtils;
 import org.waarp.openr66.protocol.utils.R66Future;
-import org.waarp.openr66.proxy.configuration.ConfigurationProxyR66;
 
 import java.net.BindException;
 import java.net.SocketAddress;
@@ -329,29 +325,24 @@ public class NetworkServerHandler
    */
   void writeError(final Channel channel, final Integer remoteId,
                   final Integer localId, final AbstractLocalPacket error) {
-    try {
-      if (channel.isActive()) {
-        NetworkPacket networkPacket = null;
-        logger.info("Proxy Error to send {}", error);
-        try {
-          networkPacket = new NetworkPacket(localId, remoteId, error, null);
-        } catch (final OpenR66ProtocolPacketException ignored) {
-          // nothing
-        }
-        if (networkPacket != null) {
-          final NetworkPacket finalNP = networkPacket;
-          final ChannelFuture future = channel.writeAndFlush(networkPacket);
-          future.await(ConfigurationProxyR66.WAITFORNETOP);
-          future.addListener(new ChannelFutureListener() {
-            @Override
-            public void operationComplete(final ChannelFuture future) {
-              finalNP.clear();
-            }
-          });
-        }
+    if (channel.isActive()) {
+      NetworkPacket networkPacket = null;
+      logger.info("Proxy Error to send {}", error);
+      try {
+        networkPacket = new NetworkPacket(localId, remoteId, error, null);
+      } catch (final OpenR66ProtocolPacketException ignored) {
+        // nothing
       }
-    } catch (final InterruptedException e) {//NOSONAR
-      SysErrLogger.FAKE_LOGGER.ignoreLog(e);
+      if (networkPacket != null) {
+        final NetworkPacket finalNP = networkPacket;
+        channel.eventLoop().submit(new Runnable() {
+          @Override
+          public void run() {
+            channel.writeAndFlush(finalNP).awaitUninterruptibly();
+            finalNP.clear();
+          }
+        });
+      }
     }
   }
 

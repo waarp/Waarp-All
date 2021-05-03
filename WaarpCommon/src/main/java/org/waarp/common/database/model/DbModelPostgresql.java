@@ -55,6 +55,11 @@ public abstract class DbModelPostgresql extends DbModelAbstract {
     public String getType(final int sqlType) {
       return DBType.getType(sqlType);
     }
+
+    @Override
+    public DbType getDbType() {
+      return type;
+    }
   }
 
   static {
@@ -102,14 +107,16 @@ public abstract class DbModelPostgresql extends DbModelAbstract {
   }
 
   protected enum DBType {
-    CHAR(Types.CHAR, " CHAR(3) "), VARCHAR(Types.VARCHAR, " VARCHAR(8096) "),
-    NVARCHAR(Types.NVARCHAR, " VARCHAR(8096) "),
-    LONGVARCHAR(Types.LONGVARCHAR, " TEXT "), BIT(Types.BIT, " BOOLEAN "),
-    TINYINT(Types.TINYINT, " INT2 "), SMALLINT(Types.SMALLINT, " SMALLINT "),
-    INTEGER(Types.INTEGER, " INTEGER "), BIGINT(Types.BIGINT, " BIGINT "),
-    REAL(Types.REAL, " REAL "), DOUBLE(Types.DOUBLE, " DOUBLE PRECISION "),
+    CHAR(Types.CHAR, " CHAR(3) "),
+    VARCHAR(Types.VARCHAR, " VARCHAR(" + MAX_VARCHAR + ") "),
+    NVARCHAR(Types.NVARCHAR, " VARCHAR(" + MAX_KEY_VARCHAR + ") "),
+    LONGVARCHAR(Types.LONGVARCHAR, " VARCHAR(" + MAX_LONGVARCHAR + ") "),
+    BIT(Types.BIT, " BOOLEAN "), TINYINT(Types.TINYINT, " INT2 "),
+    SMALLINT(Types.SMALLINT, " SMALLINT "), INTEGER(Types.INTEGER, " INTEGER "),
+    BIGINT(Types.BIGINT, " BIGINT "), REAL(Types.REAL, " REAL "),
+    DOUBLE(Types.DOUBLE, " DOUBLE PRECISION "),
     VARBINARY(Types.VARBINARY, " BYTEA "), DATE(Types.DATE, " DATE "),
-    TIMESTAMP(Types.TIMESTAMP, " TIMESTAMP ");
+    TIMESTAMP(Types.TIMESTAMP, " TIMESTAMP(3) ");
 
     public final int type;
 
@@ -166,9 +173,9 @@ public abstract class DbModelPostgresql extends DbModelAbstract {
     try {
       request.query(action);
     } catch (final WaarpDatabaseNoConnectionException e) {
-      SysErrLogger.FAKE_LOGGER.syserr(e);
+      SysErrLogger.FAKE_LOGGER.ignoreLog(e);
     } catch (final WaarpDatabaseSqlException e) {
-      SysErrLogger.FAKE_LOGGER.syserr(e);
+      SysErrLogger.FAKE_LOGGER.ignoreLog(e);
     } finally {
       request.close();
     }

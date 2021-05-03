@@ -306,7 +306,8 @@ public final class RuleFileBasedConfiguration {
     try {
       document = XmlUtil.getNewSaxReader().read(file);
     } catch (final DocumentException e) {
-      logger.error(UNABLE_TO_READ_THE_XML_RULE_FILE + file.getName(), e);
+      logger.error(UNABLE_TO_READ_THE_XML_RULE_FILE + file.getName() + ": {}",
+                   e.getMessage());
       throw new OpenR66ProtocolSystemException(UNABLE_TO_READ_THE_XML_RULE_FILE,
                                                e);
     }
@@ -343,7 +344,8 @@ public final class RuleFileBasedConfiguration {
     try {
       document = XmlUtil.getNewSaxReader().read(file);
     } catch (final DocumentException e) {
-      logger.error(UNABLE_TO_READ_THE_XML_RULE_FILE + file.getName(), e);
+      logger.error(UNABLE_TO_READ_THE_XML_RULE_FILE + file.getName() + ": {}",
+                   e.getMessage());
       throw new OpenR66ProtocolSystemException(UNABLE_TO_READ_THE_XML_RULE_FILE,
                                                e);
     }

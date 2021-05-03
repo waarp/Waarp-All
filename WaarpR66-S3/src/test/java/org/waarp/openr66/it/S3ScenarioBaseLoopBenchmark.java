@@ -77,8 +77,10 @@ public abstract class S3ScenarioBaseLoopBenchmark extends S3TestAbstract {
   private static final String PATH_COMMON = "scenario_loop_benchmark";
   private static final String SERVER_1_XML = "R1/conf/server_1_SQLDB.xml";
   private static final String SERVER_1_REWRITTEN_XML = "R1/conf/server.xml";
+  // Server 1 uses explicit loading
   private static final String RESOURCES_SERVER_1_XML =
       "it/" + PATH_COMMON + "/" + SERVER_1_XML;
+  // Server 2 uses implicit loading
   private static final String SERVER_2_XML = "R2/conf/server_2.xml";
 
   private static final List<Integer> PIDS = new ArrayList<Integer>();
@@ -135,6 +137,7 @@ public abstract class S3ScenarioBaseLoopBenchmark extends S3TestAbstract {
     } else {
       setUpBeforeClassClient(configFile.getAbsolutePath());
     }
+    Thread.sleep(1000);
     Processes.setJvmArgsDefault(null);
     WaarpLoggerFactory.setDefaultFactoryIfNotSame(
         new WaarpSlf4JLoggerFactory(WaarpLogLevel.WARN));
@@ -384,8 +387,8 @@ public abstract class S3ScenarioBaseLoopBenchmark extends S3TestAbstract {
     logger.warn("Duration {} for {} item so {} items/s",
                 (stopTime - startTime) / 1000.0, totalTransfers,
                 totalTransfers / ((stopTime - startTime) / 1000.0));
+    WaarpSystemUtil.stopLogger(true);
     Configuration.configuration.setTimeoutCon(100);
-    WaarpLoggerFactory.setLogLevel(WaarpLogLevel.ERROR);
     for (int pid : PIDS) {
       Processes.kill(pid, true);
     }

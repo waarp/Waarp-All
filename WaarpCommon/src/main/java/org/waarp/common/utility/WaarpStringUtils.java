@@ -85,7 +85,8 @@ public final class WaarpStringUtils {
     try {
       return Files.asCharSource(file, UTF8).read();
     } catch (final IOException e) {
-      logger.error("Error on File while trying to read: " + filename, e);
+      logger.error("Error on File while trying to read: " + filename + ": {}",
+                   e.getMessage());
       throw new FileTransferException("Error on File while trying to read", e);
     }
   }
@@ -101,7 +102,8 @@ public final class WaarpStringUtils {
     try {
       return readFileException(filename);
     } catch (final FileTransferException e) {
-      logger.error("Error while trying to read: " + filename, e);
+      logger.error("Error while trying to read: " + filename + ": {}",
+                   e.getMessage());
       return "";
     }
   }
@@ -129,7 +131,7 @@ public final class WaarpStringUtils {
         final Date ddate = format.parse(ndate);
         tdate = new Timestamp(ddate.getTime());
       } catch (final ParseException e) {
-        logger.debug("start", e);
+        logger.debug("start {}", e.getMessage());
       }
     }
     return tdate;
@@ -170,7 +172,7 @@ public final class WaarpStringUtils {
         }
         tdate = new Timestamp(ddate.getTime());
       } catch (final ParseException e) {
-        logger.debug("start", e);
+        logger.debug("start {}", e.getMessage());
       }
     }
     return tdate;

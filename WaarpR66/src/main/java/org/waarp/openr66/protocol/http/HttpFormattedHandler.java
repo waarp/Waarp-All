@@ -287,8 +287,8 @@ public class HttpFormattedHandler
               ParametersChecker.ZERO_ARRAY_STRING));
         } catch (final InvalidArgumentException e) {
           logger.error(
-              "Arguments incompatible with Security: " + paramCheck.getKey(),
-              e);
+              "Arguments incompatible with Security: " + paramCheck.getKey() +
+              ": {}", e.getMessage());
           invalidEntry = true;
         }
       }
@@ -334,7 +334,7 @@ public class HttpFormattedHandler
         }
       }
       final String langarg = getTrimValue("setLng");
-      if (langarg != null && !langarg.isEmpty()) {
+      if (ParametersChecker.isNotEmpty(langarg)) {
         lang = langarg;
       }
     }
@@ -787,7 +787,7 @@ public class HttpFormattedHandler
     } else {
       uri = "Spooled.html";
     }
-    if (name != null && !name.isEmpty()) {
+    if (ParametersChecker.isNotEmpty(name)) {
       // name is specified
       uri = request.uri();
       if (istatus != 0) {

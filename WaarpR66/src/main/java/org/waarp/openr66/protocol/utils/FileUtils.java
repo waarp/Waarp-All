@@ -80,7 +80,8 @@ public final class FileUtils {
           try {
             file = (R66File) session.getDir().setFile(filename, false);
           } catch (final CommandAbstractException e) {
-            logger.warn("File not placed in normal directory", e);
+            logger.warn("File not placed in normal directory" + " : {}",
+                        e.getMessage());
             // file is not under normal base directory, so is external
             // File should already exist but can be using special code ('*?')
             file = session.getDir().setFileNoCheck(filename);

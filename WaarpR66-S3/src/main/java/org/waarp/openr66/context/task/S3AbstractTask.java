@@ -73,7 +73,7 @@ public abstract class S3AbstractTask extends AbstractTask {
   }
 
   protected void finalizeInError(final Exception e, final String message) {
-    logger.error("{} {}", getS3TaskType().name(), message, e);
+    logger.error("{} {}: {}", getS3TaskType().name(), message, e.getMessage());
     futureCompletion.setFailure(
         new OpenR66RunnerErrorException(getS3TaskType() + " " + message, e));
   }

@@ -87,7 +87,7 @@ public final class StringUtils {
   public static String getClassName(final Object object) {
     final Class<?> clasz = object.getClass();
     String name = clasz.getSimpleName();
-    if (name != null && !name.isEmpty()) {
+    if (ParametersChecker.isNotEmpty(name)) {
       return name;
     } else {
       name = clasz.getName();

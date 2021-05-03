@@ -125,7 +125,7 @@ public class HttpRestClientSimpleResponseHandler
             final String json = cumulativeBody.toString(WaarpStringUtils.UTF8);
             jsonObject = JsonHandler.getFromString(json);
           } catch (final Throwable e2) {
-            logger.warn("Error", e2);
+            logger.warn("Error" + " : {}", e2.getMessage());
             throw new HttpIncorrectRequestException(e2);
           }
           cumulativeBody = null;

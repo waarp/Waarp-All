@@ -30,6 +30,7 @@ import org.waarp.common.exception.FileTransferException;
 import org.waarp.common.logging.WaarpLogLevel;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.ParametersChecker;
 import org.waarp.common.utility.Version;
 import org.waarp.common.utility.WaarpShutdownHook;
 import org.waarp.common.utility.WaarpStringUtils;
@@ -402,7 +403,7 @@ public class HttpSslHandlerProxyR66 extends HttpSslHandler {
           values = params.get("name");
           if (values != null) {
             name = values.get(0);
-            if (name == null || name.isEmpty()) {
+            if (ParametersChecker.isEmpty(name)) {
               getMenu = true;
             }
           }
@@ -414,7 +415,7 @@ public class HttpSslHandlerProxyR66 extends HttpSslHandler {
           values = params.get("passwd");
           if (values != null) {
             password = values.get(0);
-            getMenu = password == null || password.isEmpty();
+            getMenu = ParametersChecker.isEmpty(password);
           } else {
             getMenu = true;
           }

@@ -32,6 +32,7 @@ import org.waarp.common.digest.FilesystemBasedDigest;
 import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.ParametersChecker;
 import org.waarp.common.utility.WaarpNettyUtil;
 import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.gateway.kernel.exception.HttpInvalidAuthenticationException;
@@ -319,7 +320,7 @@ public class HttpRestR66Handler extends HttpRestHandler {
     String key = null;
     if (restConfiguration.isRestAuthenticated()) {
       user = arguments.getXAuthUser();
-      if (user == null || user.isEmpty()) {
+      if (ParametersChecker.isEmpty(user)) {
         status = HttpResponseStatus.UNAUTHORIZED;
         throw new HttpInvalidAuthenticationException("Empty Authentication");
       }
@@ -334,7 +335,7 @@ public class HttpRestR66Handler extends HttpRestHandler {
                            WaarpStringUtils.UTF8);
         }
       }
-      if (key == null || key.isEmpty()) {
+      if (ParametersChecker.isEmpty(key)) {
         status = HttpResponseStatus.UNAUTHORIZED;
         throw new HttpInvalidAuthenticationException("Wrong Authentication");
       }

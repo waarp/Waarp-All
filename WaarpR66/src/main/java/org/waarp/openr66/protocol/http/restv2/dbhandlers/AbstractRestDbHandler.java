@@ -20,12 +20,22 @@
 
 package org.waarp.openr66.protocol.http.restv2.dbhandlers;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.cdap.http.AbstractHttpHandler;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpRequest;
+import org.waarp.common.exception.InvalidArgumentException;
+import org.waarp.common.json.JsonHandler;
+import org.waarp.common.utility.ParametersChecker;
 import org.waarp.gateway.kernel.rest.RestConfiguration.CRUD;
+import org.waarp.openr66.protocol.http.restv2.errors.RestError;
+import org.waarp.openr66.protocol.http.restv2.errors.RestErrorException;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static io.netty.handler.codec.http.HttpMethod.*;
+import static org.waarp.openr66.protocol.http.restv2.errors.RestErrors.*;
 
 /**
  * This abstract class represents a handler for the WaarpR66 REST API. A handler
@@ -102,6 +112,27 @@ public abstract class AbstractRestDbHandler extends AbstractHttpHandler {
       return CRUD.UPDATE.isValid(crud);
     } else {
       return method.equals(OPTIONS);
+    }
+  }
+
+  protected void checkSanity(final String... strings) {
+    try {
+      ParametersChecker.checkSanityString(strings);
+    } catch (InvalidArgumentException e) {
+      List<RestError> errors = new ArrayList<RestError>(1);
+      errors.add(ILLEGAL_FIELD_VALUE("argument", "Content Not Allowed"));
+      throw new RestErrorException(errors);
+    }
+  }
+
+  protected void checkSanity(final ObjectNode objectNode) {
+    try {
+      ParametersChecker
+          .checkSanityString(JsonHandler.writeAsString(objectNode));
+    } catch (InvalidArgumentException e) {
+      List<RestError> errors = new ArrayList<RestError>(1);
+      errors.add(ILLEGAL_FIELD_VALUE("argument", "Content Not Allowed"));
+      throw new RestErrorException(errors);
     }
   }
 }
