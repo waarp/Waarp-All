@@ -24,6 +24,7 @@ import io.netty.util.ResourceLeakDetector.Level;
 import org.waarp.common.command.exception.CommandAbstractException;
 import org.waarp.common.database.DbAdmin;
 import org.waarp.common.database.exception.WaarpDatabaseException;
+import org.waarp.common.database.exception.WaarpDatabaseSqlException;
 import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogLevel;
 import org.waarp.common.logging.WaarpLoggerFactory;
@@ -78,7 +79,7 @@ public class TestTasks {
   /**
    * @param args
    */
-  public static void main(String[] args) {
+  public static void main(String[] args) throws WaarpDatabaseSqlException {
     WaarpLoggerFactory.setDefaultFactoryIfNotSame(
         new WaarpSlf4JLoggerFactory(WaarpLogLevel.WARN));
     ResourceLeakDetector.setLevel(Level.PARANOID);

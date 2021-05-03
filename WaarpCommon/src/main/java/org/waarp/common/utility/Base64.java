@@ -1446,7 +1446,7 @@ public final class Base64 {
 
         } // end try
         catch (final IOException e) {
-          SysErrLogger.FAKE_LOGGER.syserr(e);
+          SysErrLogger.FAKE_LOGGER.ignoreLog(e);
           // Just return originally-decoded bytes
         } // end catch
         finally {

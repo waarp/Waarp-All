@@ -98,7 +98,7 @@ public class HostIdHandler extends AbstractRestDbHandler {
   @RequiredRole(READONLY)
   public void getHost(final HttpRequest request, final HttpResponder responder,
                       @PathParam(URI_ID) final String id) {
-
+    checkSanity(id);
     HostDAO hostDAO = null;
     try {
       hostDAO = DAO_FACTORY.getHostDAO();
@@ -135,7 +135,7 @@ public class HostIdHandler extends AbstractRestDbHandler {
   public void updateHost(final HttpRequest request,
                          final HttpResponder responder,
                          @PathParam(URI_ID) final String id) {
-
+    checkSanity(id);
     HostDAO hostDAO = null;
     try {
       hostDAO = DAO_FACTORY.getHostDAO();
@@ -147,6 +147,7 @@ public class HostIdHandler extends AbstractRestDbHandler {
       }
 
       final ObjectNode requestObject = JsonUtils.deserializeRequest(request);
+      checkSanity(requestObject);
       final Host newHost =
           HostConverter.nodeToUpdatedHost(requestObject, oldHost);
 
@@ -179,7 +180,7 @@ public class HostIdHandler extends AbstractRestDbHandler {
   public void deleteHost(final HttpRequest request,
                          final HttpResponder responder,
                          @PathParam(URI_ID) final String id) {
-
+    checkSanity(id);
     HostDAO hostDAO = null;
     try {
       hostDAO = DAO_FACTORY.getHostDAO();
@@ -214,6 +215,7 @@ public class HostIdHandler extends AbstractRestDbHandler {
   @RequiredRole(NOACCESS)
   public void options(final HttpRequest request, final HttpResponder responder,
                       @PathParam(URI_ID) final String id) {
+    checkSanity(id);
     responder.sendStatus(OK, OPTIONS_HEADERS);
   }
 }

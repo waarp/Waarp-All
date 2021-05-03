@@ -357,7 +357,7 @@ public abstract class HttpRequestHandler
         status = HttpResponseStatus.BAD_REQUEST;
       }
       errorMesg = e1.getMessage();
-      logger.warn("Error", e1);
+      logger.warn("Error {}", e1.getMessage());
       writeErrorPage(ctx);
     }
   }
@@ -855,7 +855,7 @@ public abstract class HttpRequestHandler
                               final Throwable cause) {
     if (ctx.channel().isActive()) {
       if (cause != null && cause.getMessage() != null) {
-        logger.warn("Exception {}", cause.getMessage(), cause);
+        logger.warn("Exception {}", cause.getMessage());
       } else {
         logger.warn("Exception Received", cause);
       }
@@ -888,7 +888,7 @@ public abstract class HttpRequestHandler
       datas = decoder.getBodyHttpDatas();
     } catch (final NotEnoughDataDecoderException e1) {
       // Should not be!
-      logger.warn("decoder issue", e1);
+      logger.warn("decoder issue" + " : {}", e1.getMessage());
       status = HttpResponseStatus.NOT_ACCEPTABLE;
       throw new HttpIncorrectRequestException(e1);
     }

@@ -59,6 +59,7 @@ public abstract class AbstractDbDataDao<E> extends AbstractDbData {
 
   protected abstract String getTable();
 
+  protected abstract void checkValues() throws WaarpDatabaseSqlException;
 
   protected abstract AbstractDAO<E> getDao() throws DAOConnectionException;
 
@@ -128,6 +129,7 @@ public abstract class AbstractDbDataDao<E> extends AbstractDbData {
     if (isSaved) {
       return;
     }
+    checkValues();
     AbstractDAO<E> abstractDAO = null;
     try {
       abstractDAO = getDao();
@@ -152,6 +154,7 @@ public abstract class AbstractDbDataDao<E> extends AbstractDbData {
     if (isSaved) {
       return;
     }
+    checkValues();
     AbstractDAO<E> abstractDAO = null;
     try {
       abstractDAO = getDao();
@@ -259,7 +262,9 @@ public abstract class AbstractDbDataDao<E> extends AbstractDbData {
         }
       }
       setFromJson(entry.getKey(), entry.getValue());
+      isSaved = false;
     }
+    checkValues();
     if (!ignorePrimaryKey && foundPrimaryKey) {
       try {
         insert();
@@ -267,7 +272,7 @@ public abstract class AbstractDbDataDao<E> extends AbstractDbData {
         try {
           update();
         } catch (final WaarpDatabaseException ex) {
-          logger.error("Cannot save item", ex);
+          logger.error("Cannot save item: {}", ex.getMessage());
         }
       }
     }

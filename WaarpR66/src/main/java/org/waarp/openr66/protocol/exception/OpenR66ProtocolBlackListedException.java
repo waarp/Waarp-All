@@ -17,9 +17,45 @@
  *  You should have received a copy of the GNU General Public License along with
  * Waarp . If not, see <http://www.gnu.org/licenses/>.
  */
+package org.waarp.openr66.protocol.exception;
 
-package org.waarp.openr66.database.properties;
+/**
+ * Protocol Exception for remote black listed host
+ */
+public class OpenR66ProtocolBlackListedException extends OpenR66Exception {
 
-public class R66MariaDBProperties extends R66DbProperties {
+  /**
+   *
+   */
+  private static final long serialVersionUID = 5871418368412513995L;
+
+  /**
+   *
+   */
+  public OpenR66ProtocolBlackListedException() {
+  }
+
+  /**
+   * @param arg0
+   * @param arg1
+   */
+  public OpenR66ProtocolBlackListedException(final String arg0,
+                                             final Throwable arg1) {
+    super(arg0, arg1);
+  }
+
+  /**
+   * @param arg0
+   */
+  public OpenR66ProtocolBlackListedException(final String arg0) {
+    super(arg0);
+  }
+
+  /**
+   * @param arg0
+   */
+  public OpenR66ProtocolBlackListedException(final Throwable arg0) {
+    super(arg0);
+  }
 
 }

@@ -23,6 +23,8 @@ package org.waarp.openr66.pojo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import org.waarp.common.database.exception.WaarpDatabaseSqlException;
+import org.waarp.common.utility.ParametersChecker;
 import org.waarp.openr66.protocol.http.restv2.utils.XmlSerializable.Rules.Tasks;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -32,9 +34,11 @@ import javax.xml.bind.annotation.XmlElementDecl;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.waarp.common.database.data.AbstractDbData.*;
 import static org.waarp.openr66.configuration.RuleFileBasedConfiguration.*;
 
 /**
@@ -166,10 +170,11 @@ public class Rule {
               final List<RuleTask> rPre, final List<RuleTask> rPost,
               final List<RuleTask> rError, final List<RuleTask> sPre,
               final List<RuleTask> sPost, final List<RuleTask> sError,
-              final UpdatedInfo updatedInfo) {
+              final UpdatedInfo updatedInfo) throws WaarpDatabaseSqlException {
     this(name, mode, hostids, recvPath, sendPath, archivePath, workPath, rPre,
          rPost, rError, sPre, sPost, sError);
     this.updatedInfo = updatedInfo;
+    checkValues();
   }
 
   public Rule(final String name, final int mode, final List<String> hostids,
@@ -177,7 +182,8 @@ public class Rule {
               final String archivePath, final String workPath,
               final List<RuleTask> rPre, final List<RuleTask> rPost,
               final List<RuleTask> rError, final List<RuleTask> sPre,
-              final List<RuleTask> sPost, final List<RuleTask> sError) {
+              final List<RuleTask> sPost, final List<RuleTask> sError)
+      throws WaarpDatabaseSqlException {
     this.name = name;
     this.mode = mode;
     this.hostids = hostids;
@@ -191,23 +197,36 @@ public class Rule {
     sPreTasks = sPre;
     sPostTasks = sPost;
     sErrorTasks = sError;
+    checkValues();
   }
 
   public Rule(final String name, final int mode, final List<String> hostids,
               final String recvPath, final String sendPath,
-              final String archivePath, final String workPath) {
+              final String archivePath, final String workPath)
+      throws WaarpDatabaseSqlException {
     this(name, mode, hostids, recvPath, sendPath, archivePath, workPath,
          new ArrayList<RuleTask>(), new ArrayList<RuleTask>(),
          new ArrayList<RuleTask>(), new ArrayList<RuleTask>(),
          new ArrayList<RuleTask>(), new ArrayList<RuleTask>());
   }
 
-  public Rule(final String name, final int mode, final List<String> hostids) {
+  public Rule(final String name, final int mode, final List<String> hostids)
+      throws WaarpDatabaseSqlException {
     this(name, mode, hostids, "", "", "", "");
   }
 
-  public Rule(final String name, final int mode) {
+  public Rule(final String name, final int mode)
+      throws WaarpDatabaseSqlException {
     this(name, mode, new ArrayList<String>());
+  }
+
+  @JsonIgnore
+  public void checkValues() throws WaarpDatabaseSqlException {
+    validateLength(Types.NVARCHAR, name);
+    validateLength(Types.VARCHAR, recvPath, sendPath, archivePath, workPath);
+    validateLength(Types.LONGVARCHAR, getXMLHostids(), getXMLRErrorTasks(),
+                   getXMLRPreTasks(), getXMLRPostTasks(), getXMLSErrorTasks(),
+                   getXMLSPreTasks(), getXMLSPostTasks());
   }
 
   public boolean isAuthorized(final String hostid) {
@@ -286,7 +305,7 @@ public class Rule {
   }
 
   private String checkPath(final String path) {
-    if (path == null || path.trim().isEmpty()) {
+    if (ParametersChecker.isEmpty(path)) {
       return "";
     }
     return path.replace("//", "/").replaceAll("[\\\\]+", "\\\\");

@@ -22,6 +22,7 @@ package org.waarp.ftp.client;
 
 import io.netty.util.ResourceLeakDetector;
 import io.netty.util.ResourceLeakDetector.Level;
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Test;
 import org.waarp.common.logging.SysErrLogger;
@@ -30,6 +31,8 @@ import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
 import org.waarp.common.utility.FileTestUtils;
+import org.waarp.common.utility.Version;
+import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.ftp.FtpServer;
 import org.waarp.ftp.client.transaction.Ftp4JClientTransactionTest;
 import org.waarp.ftp.client.transaction.FtpClientThread;
@@ -51,7 +54,7 @@ public abstract class AbstractFtpClientTest {
   public static AtomicLong numberOK = new AtomicLong(0);
   public static AtomicLong numberKO = new AtomicLong(0);
   static int SSL_MODE = 0; //-1 native, 1 auth
-  static int DELAY = 3;
+  static int DELAY = 10;
   /**
    * Internal Logger
    */
@@ -70,7 +73,9 @@ public abstract class AbstractFtpClientTest {
     logger.warn("First connexion");
     if (!client.connect()) {
       logger.error("Can't connect");
-      AbstractFtpClientTest.numberKO.incrementAndGet();
+      if (versionJavaCompatible()) {
+        numberKO.incrementAndGet();
+      }
       assertEquals("No KO", 0, numberKO.get());
       return;
     }
@@ -157,13 +162,24 @@ public abstract class AbstractFtpClientTest {
     final File localFilename = new File("/tmp/ftpfile.bin");
     FileTestUtils.createTestFile(localFilename, 1000);
     logger.warn("Will start server");
+    try {
+      Thread.sleep(500);
+    } catch (InterruptedException e) {
+      // Wait for server started
+    }
+    System.gc();
+    try {
+      Thread.sleep(500);
+    } catch (InterruptedException e) {
+      // Wait for server started
+    }
   }
 
   @AfterClass
   public static void stopServer() {
     logger.warn("Will shutdown from client");
     WaarpLoggerFactory.setDefaultFactoryIfNotSame(
-        new WaarpSlf4JLoggerFactory(WaarpLogLevel.NONE));
+        new WaarpSlf4JLoggerFactory(WaarpLogLevel.WARN));
     try {
       Thread.sleep(200);
     } catch (final InterruptedException ignored) {//NOSONAR
@@ -173,26 +189,47 @@ public abstract class AbstractFtpClientTest {
                                        SSL_MODE);
     if (!client.connect()) {
       logger.warn("Cant connect");
-      numberKO.incrementAndGet();
-      return;
-    }
-
-    try {
-      final String[] results =
-          client.executeSiteCommand("internalshutdown abcdef");
-      SysErrLogger.FAKE_LOGGER.syserrNoLn("SHUTDOWN: ");
-      for (final String string : results) {
-        SysErrLogger.FAKE_LOGGER.syserr(string);
+    } else {
+      try {
+        final String[] results =
+            client.executeSiteCommand("internalshutdown abcdef");
+        SysErrLogger.FAKE_LOGGER.syserrNoLn("SHUTDOWN: ");
+        for (final String string : results) {
+          SysErrLogger.FAKE_LOGGER.syserr(string);
+        }
+      } finally {
+        client.disconnect();
       }
-    } finally {
-      client.disconnect();
     }
     logger.warn("Will stop server");
+    WaarpSystemUtil.stopLogger(true);
     FtpServer.stopFtpServer();
     try {
       Thread.sleep(1000);
     } catch (final InterruptedException ignored) {//NOSONAR
     }
+  }
+
+  @After
+  public void after() {
+    try {
+      Thread.sleep(100);
+    } catch (InterruptedException e) {
+      // Wait for server started
+    }
+    System.gc();
+    try {
+      Thread.sleep(100);
+    } catch (InterruptedException e) {
+      // Wait for server started
+    }
+  }
+
+  public static boolean versionJavaCompatible() {
+    boolean valid = Version.artifactId().contains("-jre") || SSL_MODE != 1;
+    logger.warn("Java {} SSL_MODE {} = Valid {}", Version.version(), SSL_MODE,
+                valid);
+    return valid;
   }
 
   @Test
@@ -201,7 +238,7 @@ public abstract class AbstractFtpClientTest {
     numberOK.set(0);
     final File localFilename = new File("/tmp/ftpfile.bin");
     testFtp4J("127.0.0.1", 2021, "fred", "fred2", "a", SSL_MODE,
-              localFilename.getAbsolutePath(), 0, DELAY, 1, 100);
+              localFilename.getAbsolutePath(), 0, DELAY, 1, 10);
   }
 
 }

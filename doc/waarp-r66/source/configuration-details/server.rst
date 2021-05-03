@@ -189,7 +189,9 @@ Section ``directory``
 
 .. versionadded:: 3.6.0
 
-   Ajout de l'option ``extendedtaskfactories``
+   Ajout de l'option ``extendedtaskfactories`` : pour la Factory
+   ``org.waarp.openr66.s3.taskfactory.S3TaskFactory``, si la classe est dans le
+   claspath, il n'est pas nécessaire de l'ajouter.
 
 ========================== ======= ==== ========= =============
 Balise                     Type    Obl. Défaut    Signification

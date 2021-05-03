@@ -92,7 +92,7 @@ public class DbMultipleMonitor extends AbstractDbDataDao<MultipleMonitor> {
    * @param cr count for Rule
    */
   public DbMultipleMonitor(final String hostid, final int cc, final int ch,
-                           final int cr) {
+                           final int cr) throws WaarpDatabaseSqlException {
     pojo = new MultipleMonitor(hostid, cc, ch, cr);
   }
 
@@ -114,6 +114,11 @@ public class DbMultipleMonitor extends AbstractDbDataDao<MultipleMonitor> {
     } finally {
       DBDAOFactory.closeDAO(monitorAccess);
     }
+  }
+
+  @Override
+  protected void checkValues() throws WaarpDatabaseSqlException {
+    pojo.checkValues();
   }
 
   @Override
@@ -280,6 +285,7 @@ public class DbMultipleMonitor extends AbstractDbDataDao<MultipleMonitor> {
    * @param countConfig the countConfig to set
    */
   private void setCountConfig(final int countConfig) {
+    isSaved = false;
     pojo.setCountConfig(countConfig);
   }
 
@@ -294,6 +300,7 @@ public class DbMultipleMonitor extends AbstractDbDataDao<MultipleMonitor> {
    * @param countHost the countHost to set
    */
   private void setCountHost(final int countHost) {
+    isSaved = false;
     pojo.setCountHost(countHost);
   }
 
@@ -308,6 +315,7 @@ public class DbMultipleMonitor extends AbstractDbDataDao<MultipleMonitor> {
    * @param countRule the countRule to set
    */
   private void setCountRule(final int countRule) {
+    isSaved = false;
     pojo.setCountRule(countRule);
   }
 }

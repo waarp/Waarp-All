@@ -31,10 +31,12 @@ import org.waarp.common.transcode.CharsetsUtil;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.Assert.*;
+import static org.waarp.common.utility.SingletonUtils.*;
 
 public class FileConvertTest {
   @Rule(order = Integer.MIN_VALUE)
@@ -59,9 +61,15 @@ public class FileConvertTest {
 
   @Test
   public void testCharsetsUtils() {
-    CharsetsUtil.printOutCharsetsAvailable(0);
-    CharsetsUtil.printOutCharsetsAvailable(1);
-    CharsetsUtil.printOutCharsetsAvailable(2);
+    PrintStream out = System.out;
+    try {
+      System.setOut(new PrintStream(singletonOutputStream()));
+      CharsetsUtil.printOutCharsetsAvailable(0);
+      CharsetsUtil.printOutCharsetsAvailable(1);
+      CharsetsUtil.printOutCharsetsAvailable(2);
+    } finally {
+      System.setOut(out);
+    }
     assertTrue(true);
   }
 

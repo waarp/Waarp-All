@@ -20,10 +20,14 @@
 
 package org.waarp.common.database.properties;
 
+import io.netty.util.internal.PlatformDependent;
+
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+
+import static org.waarp.common.database.model.DbModelMysql.*;
 
 /**
  * MySQL Database Model
@@ -31,14 +35,24 @@ import java.sql.Statement;
 public class MySQLProperties implements DbProperties {
   public static final String PROTOCOL = "mysql";
 
-  private static final String DRIVER_NAME = "com.mysql.jdbc.Driver";
   private static final String VALIDATION_QUERY = "select 1";
-  private static final String MAX_CONNECTION_QUERY =
-      "select GLOBAL_VALUE " + "from INFORMATION_SCHEMA.SYSTEM_VARIABLES " +
-      "where VARIABLE_NAME LIKE 'max_connections'";
+
+  private final String driverName;
 
   public MySQLProperties() {
-    // nothing
+    if (PlatformDependent.javaVersion() >= 8) {
+      String driver = MYSQL_DRIVER_JRE6;
+      try {
+        Class.forName(MYSQL_DRIVER_JRE8);
+        driver = MYSQL_DRIVER_JRE8;
+      } catch (Exception e) {
+        driver = MYSQL_DRIVER_JRE6;
+      } finally {
+        driverName = driver;
+      }
+    } else {
+      driverName = MYSQL_DRIVER_JRE6;
+    }
   }
 
   public static String getProtocolID() {
@@ -47,7 +61,7 @@ public class MySQLProperties implements DbProperties {
 
   @Override
   public String getDriverName() {
-    return DRIVER_NAME;
+    return driverName;
   }
 
   @Override
@@ -62,7 +76,6 @@ public class MySQLProperties implements DbProperties {
     ResultSet rs = null;
     try {
       stm = connection.createStatement();
-      //rs = stm.executeQuery(MAX_CONNECTION_QUERY);
       rs = stm.executeQuery("SELECT @@GLOBAL.max_connections");
       if (!rs.next()) {
         throw new SQLException("Cannot find max connection");

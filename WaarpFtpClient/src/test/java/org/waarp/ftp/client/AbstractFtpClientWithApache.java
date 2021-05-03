@@ -80,14 +80,14 @@ public abstract class AbstractFtpClientWithApache extends AbstractFtpClient {
     if (!client
         .transferFile(localFilename.getAbsolutePath(), localFilename.getName(),
                       true)) {
-      logger.warn("Cant store file {} mode ", smode);
+      logger.error("Cant store file {} mode ", smode);
       FtpClientTest.numberKO.incrementAndGet();
       return;
     } else {
       FtpClientTest.numberOK.incrementAndGet();
     }
     if (!client.deleteFile(localFilename.getName())) {
-      logger.warn(" Cant delete file {} mode ", smode);
+      logger.error(" Cant delete file {} mode ", smode);
       FtpClientTest.numberKO.incrementAndGet();
       return;
     } else {
@@ -96,7 +96,7 @@ public abstract class AbstractFtpClientWithApache extends AbstractFtpClient {
     if (!client
         .transferFile(localFilename.getAbsolutePath(), localFilename.getName(),
                       true)) {
-      logger.warn("Cant store file {} mode ", smode);
+      logger.error("Cant store file {} mode ", smode);
       FtpClientTest.numberKO.incrementAndGet();
       return;
     } else {
@@ -104,8 +104,8 @@ public abstract class AbstractFtpClientWithApache extends AbstractFtpClient {
     }
     Thread.yield();
     logger.info(" transfer {} retr ", smode);
-    if (!client.transferFile(null, localFilename.getName(), false)) {
-      logger.warn("Cant retrieve file {} mode ", smode);
+    if (!client.retrieve((String) null, localFilename.getName())) {
+      logger.error("Cant retrieve file {} mode ", smode);
       FtpClientTest.numberKO.incrementAndGet();
     } else {
       FtpClientTest.numberOK.incrementAndGet();
@@ -133,12 +133,12 @@ public abstract class AbstractFtpClientWithApache extends AbstractFtpClient {
       logger.warn("Create Dirs");
       client.makeDir("T" + 0);
       logger.warn("Feature commands");
-      System.err.println("SITE: " + client.featureEnabled("SITE"));
-      System.err.println("SITE CRC: " + client.featureEnabled("SITE XCRC"));
-      System.err.println("CRC: " + client.featureEnabled("XCRC"));
-      System.err.println("MD5: " + client.featureEnabled("XMD5"));
-      System.err.println("SHA1: " + client.featureEnabled("XSHA1"));
-      System.err.println("DIGEST: " + client.featureEnabled("XDIGEST"));
+      System.out.println("SITE: " + client.featureEnabled("SITE"));
+      System.out.println("SITE CRC: " + client.featureEnabled("SITE XCRC"));
+      System.out.println("CRC: " + client.featureEnabled("XCRC"));
+      System.out.println("MD5: " + client.featureEnabled("XMD5"));
+      System.out.println("SHA1: " + client.featureEnabled("XSHA1"));
+      System.out.println("DIGEST: " + client.featureEnabled("XDIGEST"));
       client.changeDir("T0");
       client.changeFileType(true);
       client.changeMode(true);

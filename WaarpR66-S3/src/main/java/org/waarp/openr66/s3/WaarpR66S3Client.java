@@ -20,7 +20,6 @@
 package org.waarp.openr66.s3;
 
 import com.google.common.base.Function;
-import com.google.common.base.Strings;
 import com.google.common.collect.Iterators;
 import io.minio.BucketExistsArgs;
 import io.minio.GetObjectArgs;
@@ -67,6 +66,11 @@ import static org.waarp.common.file.FileUtils.*;
 public class WaarpR66S3Client {
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(WaarpR66S3Client.class);
+  public static final String BUCKET_OR_TARGET_CANNOT_BE_NULL_OR_EMPTY =
+      "Bucket or Target cannot be null or empty";
+  public static final String S_3_ISSUE = "S3 issue: ";
+  public static final String BUCKET_OR_SOURCE_CANNOT_BE_NULL_OR_EMPTY =
+      "Bucket or Source cannot be null or empty";
 
   private final MinioClient minioClient;
 
@@ -103,7 +107,7 @@ public class WaarpR66S3Client {
                            final File file, final Map<String, String> tags)
       throws OpenR66ProtocolNetworkException {
     ParametersChecker
-        .checkParameter("Bucket or Target cannot be null or empty", bucketName,
+        .checkParameter(BUCKET_OR_TARGET_CANNOT_BE_NULL_OR_EMPTY, bucketName,
                         targetName);
     ParametersChecker.checkParameter("File cannot be null", file);
     if (!file.canRead()) {
@@ -139,17 +143,18 @@ public class WaarpR66S3Client {
                    response.versionId(), response.etag(), response.region());
       return response.versionId();
     } catch (final MinioException | IOException | NoSuchAlgorithmException | InvalidKeyException e) {
-      logger.error(e);
+      logger.error(e.getMessage());
       error = true;
-      throw new OpenR66ProtocolNetworkException("S3 issue: " + e.getMessage(),
-                                                e);
+      throw new OpenR66ProtocolNetworkException(S_3_ISSUE + e.getMessage(), e);
     } finally {
       if (error && uploaded) {
         // Clean incompletely object creation
         try {
           deleteFile(bucketName, targetName);
         } catch (final Exception e) {
-          logger.warn("Error while cleaning S3 file incompletely created", e);
+          logger.warn(
+              "Error while cleaning S3 file incompletely created" + " : {}",
+              e.getMessage());
         }
       }
     }
@@ -168,7 +173,7 @@ public class WaarpR66S3Client {
                       final Map<String, String> tags)
       throws OpenR66ProtocolNetworkException {
     ParametersChecker
-        .checkParameter("Bucket or Target cannot be null or empty", bucketName,
+        .checkParameter(BUCKET_OR_TARGET_CANNOT_BE_NULL_OR_EMPTY, bucketName,
                         targetName);
     try {
       if (tags != null && !tags.isEmpty()) {
@@ -177,9 +182,8 @@ public class WaarpR66S3Client {
                              .tags(tags).build());
       }
     } catch (final MinioException | IOException | NoSuchAlgorithmException | InvalidKeyException e) {
-      logger.error(e);
-      throw new OpenR66ProtocolNetworkException("S3 issue: " + e.getMessage(),
-                                                e);
+      logger.error(e.getMessage());
+      throw new OpenR66ProtocolNetworkException(S_3_ISSUE + e.getMessage(), e);
     }
   }
 
@@ -197,7 +201,7 @@ public class WaarpR66S3Client {
                                           final String sourceName)
       throws OpenR66ProtocolNetworkException {
     ParametersChecker
-        .checkParameter("Bucket or Target cannot be null or empty", bucketName,
+        .checkParameter(BUCKET_OR_TARGET_CANNOT_BE_NULL_OR_EMPTY, bucketName,
                         sourceName);
     try {
       final Retention retention = minioClient.getObjectRetention(
@@ -205,9 +209,8 @@ public class WaarpR66S3Client {
                                 .build());
       return retention.retainUntilDate();
     } catch (final MinioException | InvalidKeyException | IOException | NoSuchAlgorithmException e) {
-      logger.error(e);
-      throw new OpenR66ProtocolNetworkException("S3 issue: " + e.getMessage(),
-                                                e);
+      logger.error(e.getMessage());
+      throw new OpenR66ProtocolNetworkException(S_3_ISSUE + e.getMessage(), e);
     }
   }
 
@@ -225,7 +228,7 @@ public class WaarpR66S3Client {
                                     final ZonedDateTime retentionUntil)
       throws OpenR66ProtocolNetworkException {
     ParametersChecker
-        .checkParameter("Bucket or Target cannot be null or empty", bucketName,
+        .checkParameter(BUCKET_OR_TARGET_CANNOT_BE_NULL_OR_EMPTY, bucketName,
                         targetName);
     ParametersChecker
         .checkParameter("Retention cannot be null", retentionUntil);
@@ -242,9 +245,8 @@ public class WaarpR66S3Client {
                                 .config(config).bypassGovernanceMode(true)
                                 .build());
     } catch (final MinioException | InvalidKeyException | IOException | NoSuchAlgorithmException e) {
-      logger.error(e);
-      throw new OpenR66ProtocolNetworkException("S3 issue: " + e.getMessage(),
-                                                e);
+      logger.error(e.getMessage());
+      throw new OpenR66ProtocolNetworkException(S_3_ISSUE + e.getMessage(), e);
     }
   }
 
@@ -265,19 +267,16 @@ public class WaarpR66S3Client {
                                      final boolean getTags)
       throws OpenR66ProtocolNetworkException {
     ParametersChecker
-        .checkParameter("Bucket or Source cannot be null or empty", bucketName,
+        .checkParameter(BUCKET_OR_SOURCE_CANNOT_BE_NULL_OR_EMPTY, bucketName,
                         sourceName);
     ParametersChecker.checkParameter("File cannot be null", file);
     boolean downloaded = false;
     boolean error = false;
-    try {
-      // Get input stream to have content of 'my-objectname' from 'my-bucketname'
-      final InputStream stream = minioClient.getObject(
-          GetObjectArgs.builder().bucket(bucketName).object(sourceName)
-                       .build());
-
-      // Read the input stream and print to the console till EOF.
-      final FileOutputStream outputStream = new FileOutputStream(file);
+    // Get input stream to have content of 'my-objectname' from 'my-bucketname'
+    // Read the input stream and print to the console till EOF.
+    try (final InputStream stream = minioClient.getObject(
+        GetObjectArgs.builder().bucket(bucketName).object(sourceName).build());
+         final FileOutputStream outputStream = new FileOutputStream(file)) {
       final byte[] buf = new byte[ZERO_COPY_CHUNK_SIZE];
       int bytesRead;
       while ((bytesRead = stream.read(buf, 0, buf.length)) >= 0) {
@@ -297,8 +296,7 @@ public class WaarpR66S3Client {
     } catch (final MinioException | IOException | NoSuchAlgorithmException | InvalidKeyException e) {
       logger.info(e);
       error = true;
-      throw new OpenR66ProtocolNetworkException("S3 issue: " + e.getMessage(),
-                                                e);
+      throw new OpenR66ProtocolNetworkException(S_3_ISSUE + e.getMessage(), e);
     } finally {
       if (error && downloaded) {
         // Delete wrongly deleted file
@@ -321,7 +319,7 @@ public class WaarpR66S3Client {
                                      final String sourceName)
       throws OpenR66ProtocolNetworkException {
     ParametersChecker
-        .checkParameter("Bucket or Source cannot be null or empty", bucketName,
+        .checkParameter(BUCKET_OR_SOURCE_CANNOT_BE_NULL_OR_EMPTY, bucketName,
                         sourceName);
     try {
       final Tags tags = minioClient.getObjectTags(
@@ -330,9 +328,8 @@ public class WaarpR66S3Client {
 
       return tags.get();
     } catch (final MinioException | IOException | NoSuchAlgorithmException | InvalidKeyException e) {
-      logger.error(e);
-      throw new OpenR66ProtocolNetworkException("S3 issue: " + e.getMessage(),
-                                                e);
+      logger.error(e.getMessage());
+      throw new OpenR66ProtocolNetworkException(S_3_ISSUE + e.getMessage(), e);
     }
   }
 
@@ -347,7 +344,7 @@ public class WaarpR66S3Client {
   public void deleteFile(final String bucketName, final String sourceName)
       throws OpenR66ProtocolNetworkException {
     ParametersChecker
-        .checkParameter("Bucket or Source cannot be null or empty", bucketName,
+        .checkParameter(BUCKET_OR_SOURCE_CANNOT_BE_NULL_OR_EMPTY, bucketName,
                         sourceName);
     try {
       // Remove object.
@@ -355,9 +352,8 @@ public class WaarpR66S3Client {
           RemoveObjectArgs.builder().bucket(bucketName).object(sourceName)
                           .build());
     } catch (final MinioException | IOException | NoSuchAlgorithmException | InvalidKeyException e) {
-      logger.error(e);
-      throw new OpenR66ProtocolNetworkException("S3 issue: " + e.getMessage(),
-                                                e);
+      logger.error(e.getMessage());
+      throw new OpenR66ProtocolNetworkException(S_3_ISSUE + e.getMessage(), e);
     }
   }
 
@@ -385,8 +381,7 @@ public class WaarpR66S3Client {
       // Remove object.
       final ListObjectsArgs.Builder builder =
           ListObjectsArgs.builder().bucket(bucketName).recursive(recursively);
-      if (!Strings.isNullOrEmpty(optionalNameStartWith) &&
-          !optionalNameStartWith.trim().isEmpty()) {
+      if (ParametersChecker.isNotEmpty(optionalNameStartWith)) {
         builder.prefix(optionalNameStartWith);
       }
       if (limit > 0) {
@@ -408,15 +403,14 @@ public class WaarpR66S3Client {
                 }
                 return null;
               } catch (final MinioException | InvalidKeyException | IOException | NoSuchAlgorithmException e) {
-                logger.error(e);
+                logger.error(e.getMessage());
                 return null;
               }
             }
           });
     } catch (final Exception e) {
-      logger.error(e);
-      throw new OpenR66ProtocolNetworkException("S3 issue: " + e.getMessage(),
-                                                e);
+      logger.error(e.getMessage());
+      throw new OpenR66ProtocolNetworkException(S_3_ISSUE + e.getMessage(), e);
     }
   }
 }

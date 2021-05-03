@@ -35,6 +35,7 @@ import org.waarp.common.file.FileUtils;
 import org.waarp.common.json.JsonHandler;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.ParametersChecker;
 import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.common.xml.XmlUtil;
 import org.waarp.common.xml.XmlValue;
@@ -83,13 +84,17 @@ public class DbRule extends AbstractDbDataDao<Rule> {
   }
 
   public static final int[] dbTypes = {
-      Types.LONGVARCHAR, Types.INTEGER, Types.NVARCHAR, Types.NVARCHAR,
-      Types.NVARCHAR, Types.NVARCHAR, Types.LONGVARCHAR, Types.LONGVARCHAR,
+      Types.LONGVARCHAR, Types.INTEGER, Types.VARCHAR, Types.VARCHAR,
+      Types.VARCHAR, Types.VARCHAR, Types.LONGVARCHAR, Types.LONGVARCHAR,
       Types.LONGVARCHAR, Types.LONGVARCHAR, Types.LONGVARCHAR,
       Types.LONGVARCHAR, Types.INTEGER, Types.NVARCHAR
   };
 
   public static final String table = " RULES ";
+
+  public static final Columns[] indexes = {
+      Columns.UPDATEDINFO
+  };
 
   /**
    * Internal context XML fields
@@ -152,19 +157,19 @@ public class DbRule extends AbstractDbDataDao<Rule> {
   }
 
   protected final void checkPath() {
-    if (getRecvPath() != null && !getRecvPath().isEmpty() &&
+    if (ParametersChecker.isNotEmpty(getRecvPath()) &&
         getRecvPath().charAt(0) != DirInterface.SEPARATORCHAR) {
       pojo.setRecvPath(DirInterface.SEPARATOR + getRecvPath());
     }
-    if (getSendPath() != null && !getSendPath().isEmpty() &&
+    if (ParametersChecker.isNotEmpty(getSendPath()) &&
         getSendPath().charAt(0) != DirInterface.SEPARATORCHAR) {
       pojo.setSendPath(DirInterface.SEPARATOR + getSendPath());
     }
-    if (getArchivePath() != null && !getArchivePath().isEmpty() &&
+    if (ParametersChecker.isNotEmpty(getArchivePath()) &&
         getArchivePath().charAt(0) != DirInterface.SEPARATORCHAR) {
       pojo.setArchivePath(DirInterface.SEPARATOR + getArchivePath());
     }
-    if (getWorkPath() != null && !getWorkPath().isEmpty() &&
+    if (ParametersChecker.isNotEmpty(getWorkPath()) &&
         getWorkPath().charAt(0) != DirInterface.SEPARATORCHAR) {
       pojo.setWorkPath(DirInterface.SEPARATOR + getWorkPath());
     }
@@ -190,7 +195,8 @@ public class DbRule extends AbstractDbDataDao<Rule> {
                 final String archivePath, final String workPath,
                 final String rpreTasks, final String rpostTasks,
                 final String rerrorTasks, final String spreTasks,
-                final String spostTasks, final String serrorTasks) {
+                final String spostTasks, final String serrorTasks)
+      throws WaarpDatabaseSqlException {
     pojo = new Rule(idRule, mode, Arrays.asList(getIdsRule(ids)), recvPath,
                     sendPath, archivePath, workPath,
                     fromLegacyTasks(getTasksRule(rpreTasks)),
@@ -255,7 +261,8 @@ public class DbRule extends AbstractDbDataDao<Rule> {
                 final String[][] rerrortasksArray,
                 final String[][] spretasksArray,
                 final String[][] sposttasksArray,
-                final String[][] serrortasksArray) {
+                final String[][] serrortasksArray)
+      throws WaarpDatabaseSqlException {
     if (idsArrayRef == null) {
       idsArrayRef = STRING_0_LENGTH;
     }
@@ -280,11 +287,16 @@ public class DbRule extends AbstractDbDataDao<Rule> {
   public DbRule(final ObjectNode source) throws WaarpDatabaseSqlException {
     pojo = new Rule();
     setFromJson(source, false);
-    if (getIdRule() == null || getIdRule().isEmpty()) {
+    if (ParametersChecker.isEmpty(getIdRule())) {
       throw new WaarpDatabaseSqlException(
           "Not enough argument to create the object");
     }
     checkPath();
+  }
+
+  @Override
+  protected void checkValues() throws WaarpDatabaseSqlException {
+    pojo.checkValues();
   }
 
   @Override
@@ -509,6 +521,7 @@ public class DbRule extends AbstractDbDataDao<Rule> {
 
   @Override
   public void changeUpdatedInfo(final UpdatedInfo info) {
+    isSaved = false;
     pojo.setUpdatedInfo(org.waarp.openr66.pojo.UpdatedInfo.fromLegacy(info));
   }
 
@@ -533,7 +546,8 @@ public class DbRule extends AbstractDbDataDao<Rule> {
           XmlUtil.read(document, RuleFileBasedConfiguration.hostsDecls);
       return RuleFileBasedConfiguration.getHostIds(values[0]);
     } catch (final DocumentException e) {
-      logger.warn("Unable to read the ids for Rule: " + idsref, e);
+      logger.warn("Unable to read the ids for Rule: " + idsref + " : {}",
+                  e.getMessage());
       // No ids so setting to the default!
       return STRING_0_LENGTH;
     } finally {
@@ -552,7 +566,7 @@ public class DbRule extends AbstractDbDataDao<Rule> {
    * @return Array of tasks or empty array if in error.
    */
   private String[][] getTasksRule(final String tasks) {
-    if (tasks == null) {
+    if (ParametersChecker.isEmpty(tasks)) {
       // No tasks so setting to the default!
       return STRINGS_0_0_LENGTH;
     }
@@ -581,7 +595,7 @@ public class DbRule extends AbstractDbDataDao<Rule> {
    * @return the full String path
    */
   public String setRecvPath(final String filename) {
-    if (pojo.getRecvPath() != null && !pojo.getRecvPath().isEmpty()) {
+    if (ParametersChecker.isNotEmpty(pojo.getRecvPath())) {
       return pojo.getRecvPath() + DirInterface.SEPARATOR + filename;
     }
     return Configuration.configuration.getInPath() + DirInterface.SEPARATOR +
@@ -751,7 +765,7 @@ public class DbRule extends AbstractDbDataDao<Rule> {
         new DbPreparedStatement(session);
     final String request = "SELECT " + selectAllFields + " FROM " + table;
     String condition = null;
-    if (rule != null) {
+    if (ParametersChecker.isNotEmpty(rule)) {
       condition = " WHERE " + Columns.IDRULE.name() + " LIKE '%" + rule + "%' ";
     }
     if (mode >= 0) {
@@ -928,7 +942,7 @@ public class DbRule extends AbstractDbDataDao<Rule> {
    * @return the recvPath
    */
   public String getRecvPath() {
-    if (getRuleRecvPath() == null || getRuleRecvPath().trim().isEmpty()) {
+    if (ParametersChecker.isEmpty(getRuleRecvPath())) {
       return Configuration.configuration.getInPath();
     }
     return getRuleRecvPath();
@@ -938,7 +952,7 @@ public class DbRule extends AbstractDbDataDao<Rule> {
    * @return the sendPath
    */
   public String getSendPath() {
-    if (getRuleSendPath() == null || getRuleSendPath().trim().isEmpty()) {
+    if (ParametersChecker.isEmpty(getRuleSendPath())) {
       return Configuration.configuration.getOutPath();
     }
     return getRuleSendPath();
@@ -948,7 +962,7 @@ public class DbRule extends AbstractDbDataDao<Rule> {
    * @return the archivePath
    */
   public String getArchivePath() {
-    if (getRuleArchivePath() == null || getRuleArchivePath().trim().isEmpty()) {
+    if (ParametersChecker.isEmpty(getRuleArchivePath())) {
       return Configuration.configuration.getArchivePath();
     }
     return getRuleArchivePath();
@@ -958,7 +972,7 @@ public class DbRule extends AbstractDbDataDao<Rule> {
    * @return the workPath
    */
   public String getWorkPath() {
-    if (getRuleWorkPath() == null || getRuleWorkPath().trim().isEmpty()) {
+    if (ParametersChecker.isEmpty(getRuleWorkPath())) {
       return Configuration.configuration.getWorkingPath();
     }
     return getRuleWorkPath();
@@ -1059,7 +1073,9 @@ public class DbRule extends AbstractDbDataDao<Rule> {
     final int size = tasks.length;
     final List<RuleTask> res = new ArrayList<RuleTask>(size);
     for (final String[] task : tasks) {
-      res.add(new RuleTask(task[0], task[1], Integer.parseInt(task[2])));
+      if (task.length >= 3) {
+        res.add(new RuleTask(task[0], task[1], Integer.parseInt(task[2])));
+      }
     }
     return res;
   }

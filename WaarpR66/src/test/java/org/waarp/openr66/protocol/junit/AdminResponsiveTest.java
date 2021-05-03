@@ -24,6 +24,7 @@ import io.netty.util.ResourceLeakDetector;
 import io.netty.util.ResourceLeakDetector.Level;
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Rule;
@@ -35,12 +36,11 @@ import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
-import org.waarp.common.logging.WaarpLogLevel;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
-import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
 import org.waarp.common.utility.NullPrintStream;
 import org.waarp.common.utility.TestWatcherJunit4;
+import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.openr66.protocol.configuration.Configuration;
 
 import java.io.File;
@@ -65,6 +65,8 @@ public class AdminResponsiveTest extends TestAbstract {
   private static final int WAIT = 300;
   private static PrintStream err;
 
+  private static boolean RUN_TEST = true;
+
   @BeforeClass
   public static void setUpBeforeClass() throws Exception {
     ResourceLeakDetector.setLevel(Level.PARANOID);
@@ -75,7 +77,12 @@ public class AdminResponsiveTest extends TestAbstract {
         new File(classLoader.getResource("logback-test.xml").getFile());
     if (file.exists()) {
       driverType = DriverType.PHANTOMJS;
-      initiateWebDriver(file.getParentFile());
+      try {
+        initiateWebDriver(file.getParentFile());
+      } catch (NoSuchMethodError e) {
+        RUN_TEST = false;
+        return;
+      }
     }
     setUpDbBeforeClass();
     setUpBeforeClassServer(LINUX_CONFIG_CONFIG_SERVER_INIT_A_XML,
@@ -87,8 +94,10 @@ public class AdminResponsiveTest extends TestAbstract {
    */
   @AfterClass
   public static void tearDownAfterClass() throws Exception {
-    WaarpLoggerFactory.setDefaultFactoryIfNotSame(
-        new WaarpSlf4JLoggerFactory(WaarpLogLevel.NONE));
+    WaarpSystemUtil.stopLogger(true);
+    if (!RUN_TEST) {
+      return;
+    }
     Thread.sleep(100);
     finalizeDriver();
     System.setErr(err);
@@ -103,12 +112,16 @@ public class AdminResponsiveTest extends TestAbstract {
 
   @After
   public void restartDriver() throws InterruptedException {
+    if (!RUN_TEST) {
+      return;
+    }
     reloadDriver();
     Thread.sleep(100);
   }
 
   @Test
   public void test04_WebHttpSimpleAdmin() throws InterruptedException {
+    Assume.assumeTrue("Driver not loaded", RUN_TEST);
     try {
       // Test name: TestResponsiveMonitor
       // Step # | name | target | value | comment
@@ -180,6 +193,7 @@ public class AdminResponsiveTest extends TestAbstract {
 
   @Test
   public void test05_WebHttpsBasic() throws InterruptedException {
+    Assume.assumeTrue("Driver not loaded", RUN_TEST);
     try {
       // Test name: TestResponsiveAdmin
       // Step # | name | target | value | comment
@@ -252,6 +266,7 @@ public class AdminResponsiveTest extends TestAbstract {
 
   @Test
   public void test06_WebInteractiveResponsive() throws InterruptedException {
+    Assume.assumeTrue("Driver not loaded", RUN_TEST);
     try {
       // Test name: TestInteractResponsive
       // Step # | name | target | value
@@ -327,6 +342,7 @@ public class AdminResponsiveTest extends TestAbstract {
 
   @Test
   public void test01_WebBusiness() throws InterruptedException {
+    Assume.assumeTrue("Driver not loaded", RUN_TEST);
     try {
       // Test name: HostConfig
       // Step # | name | target | value
@@ -481,6 +497,7 @@ public class AdminResponsiveTest extends TestAbstract {
 
   @Test
   public void test07_WebSystem() throws InterruptedException {
+    Assume.assumeTrue("Driver not loaded", RUN_TEST);
     try {
       // Test name: SystemResponsive
       // Step # | name | target | value
@@ -638,6 +655,7 @@ public class AdminResponsiveTest extends TestAbstract {
 
   @Test
   public void test02_WebCreateUser() throws InterruptedException {
+    Assume.assumeTrue("Driver not loaded", RUN_TEST);
     // Test name: TestCreateUser
     try {
       // Step # | name | target | value
@@ -800,6 +818,7 @@ public class AdminResponsiveTest extends TestAbstract {
 
   @Test
   public void test03_WebCreateUserAdmin() throws InterruptedException {
+    Assume.assumeTrue("Driver not loaded", RUN_TEST);
     // Test name: TestCreateUser
     try {
       // Step # | name | target | value
@@ -861,6 +880,7 @@ public class AdminResponsiveTest extends TestAbstract {
 
   @Test
   public void test08_WebShutdown() throws InterruptedException {
+    Assume.assumeTrue("Driver not loaded", RUN_TEST);
     // Test name: TestConnectShutdown
     // Step # | name | target | value
     try {

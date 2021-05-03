@@ -182,8 +182,7 @@ public class WaarpLoggerListener implements BuildListener {
   @Override
   public void targetStarted(BuildEvent event) {
     if (Project.MSG_INFO <= msgOutputLevel &&
-        event.getTarget().getName() != null &&
-        !event.getTarget().getName().isEmpty()) {
+        ParametersChecker.isNotEmpty(event.getTarget().getName())) {
       final String msg =
           StringUtils.LINE_SEP + event.getTarget().getName() + ':';
 

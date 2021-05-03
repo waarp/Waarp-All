@@ -35,6 +35,7 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
 import io.netty.util.ResourceLeakDetector;
 import io.netty.util.ResourceLeakDetector.Level;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestWatcher;
@@ -65,6 +66,13 @@ import static org.junit.Assert.*;
 public class HttpTest {
   @Rule(order = Integer.MIN_VALUE)
   public TestWatcher watchman = new TestWatcherJunit4();
+
+  @BeforeClass
+  public static void beforeClass() {
+    WaarpLoggerFactory.setDefaultFactoryIfNotSame(
+        new WaarpSlf4JLoggerFactory(WaarpLogLevel.WARN));
+    ResourceLeakDetector.setLevel(Level.PARANOID);
+  }
 
 
   @Test

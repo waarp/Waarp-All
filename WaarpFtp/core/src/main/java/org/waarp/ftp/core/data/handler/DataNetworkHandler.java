@@ -95,7 +95,7 @@ public class DataNetworkHandler extends SimpleChannelInboundHandler<DataBlock> {
   /**
    * The associated FtpTransfer
    */
-  private volatile FtpTransfer ftpTransfer;
+  private FtpTransfer ftpTransfer;
 
   /**
    * Constructor from DataBusinessHandler
@@ -151,7 +151,7 @@ public class DataNetworkHandler extends SimpleChannelInboundHandler<DataBlock> {
     logger.debug("Data Channel closed with a session ? {}", session != null);
     if (session != null) {
       if (!session.getDataConn().checkCorrectChannel(ctx.channel())) {
-        for (int i = 0; i < FtpInternalConfiguration.RETRYNB; i++) {
+        for (int i = 0; i < FtpInternalConfiguration.RETRYNB * 10; i++) {
           Thread.sleep(FtpInternalConfiguration.RETRYINMS);
           if (session.getDataConn().checkCorrectChannel(ctx.channel())) {
             break;
@@ -181,7 +181,7 @@ public class DataNetworkHandler extends SimpleChannelInboundHandler<DataBlock> {
 
   protected void setSession(final Channel channel) {
     // First get the ftpSession from inetaddresses
-    for (int i = 0; i < FtpInternalConfiguration.RETRYNB; i++) {
+    for (int i = 0; i < 10; i++) {
       session = configuration.getFtpSession(channel, isActive);
       if (session == null) {
         logger.warn("Session not found at try " + i);
@@ -244,14 +244,18 @@ public class DataNetworkHandler extends SimpleChannelInboundHandler<DataBlock> {
       }
     }
     if (isStillAlive()) {
-      setCorrectCodec();
+      try {
+        setCorrectCodec();
+      } catch (FtpNoConnectionException e) {
+        logger.error(e.getMessage());
+      }
       unlockModeCodec();
       session.getDataConn().getFtpTransferControl()
              .setOpenedDataChannel(channel, this);
       logger.debug("DataChannel fully configured");
     } else {
       // Cannot continue
-      logger.info("Connected but no more alive so will disconnect");
+      logger.warn("Connected but no more alive so will disconnect");
       session.getDataConn().getFtpTransferControl()
              .setOpenedDataChannel(null, this);
     }
@@ -261,7 +265,11 @@ public class DataNetworkHandler extends SimpleChannelInboundHandler<DataBlock> {
    * Set the CODEC according to the mode. Must be called after each call of
    * MODE, STRU or TYPE
    */
-  public void setCorrectCodec() {
+  public void setCorrectCodec() throws FtpNoConnectionException {
+    if (channelPipeline == null) {
+      logger.error("No channelPipeline defined while session is ", session);
+      throw new FtpNoConnectionException("No Data socket opened");
+    }
     final FtpDataModeCodec modeCodec =
         (FtpDataModeCodec) channelPipeline.get(FtpDataInitializer.CODEC_MODE);
     final FtpDataTypeCodec typeCodec =
@@ -357,7 +365,7 @@ public class DataNetworkHandler extends SimpleChannelInboundHandler<DataBlock> {
     }
   }
 
-  public void setFtpTransfer(final FtpTransfer ftpTransfer) {
+  public synchronized void setFtpTransfer(final FtpTransfer ftpTransfer) {
     this.ftpTransfer = ftpTransfer;
   }
 
@@ -365,10 +373,10 @@ public class DataNetworkHandler extends SimpleChannelInboundHandler<DataBlock> {
    * Act as needed according to the receive DataBlock message
    */
   @Override
-  public void channelRead0(final ChannelHandlerContext ctx,
-                           final DataBlock dataBlock) {
+  public synchronized void channelRead0(final ChannelHandlerContext ctx,
+                                        final DataBlock dataBlock) {
     if (ftpTransfer == null) {
-      for (int i = 0; i < 10; i++) {
+      for (int i = 0; i < 20; i++) {
         try {
           ftpTransfer = session.getDataConn().getFtpTransferControl()
                                .getExecutingFtpTransfer();
@@ -377,7 +385,7 @@ public class DataNetworkHandler extends SimpleChannelInboundHandler<DataBlock> {
           }
         } catch (final FtpNoTransferException e) {
           try {
-            Thread.sleep(WaarpNettyUtil.SIMPLE_DELAY_MS);
+            wait(WaarpNettyUtil.SIMPLE_DELAY_MS);
           } catch (final InterruptedException e1) {//NOSONAR
             SysErrLogger.FAKE_LOGGER.ignoreLog(e1);
             break;

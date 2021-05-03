@@ -19,7 +19,6 @@
  */
 package org.waarp.openr66.context.task;
 
-import com.google.common.base.Strings;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
@@ -175,9 +174,9 @@ public class S3TaskArgs {
       final String sgetTags =
           cmd.hasOption(ARG_GET_TAGS)? cmd.getOptionValue(ARG_GET_TAGS) : null;
       Set<String> getTags = null;
-      if (sgetTags != null && !sgetTags.trim().isEmpty()) {
+      if (ParametersChecker.isNotEmpty(sgetTags)) {
         getTags = new HashSet<>();
-        final String[] keys = sgetTags.split(",");
+        final String[] keys = sgetTags.split(","); // NOSONAR
         boolean star = false;
         for (final String key : keys) {
           if (key.equalsIgnoreCase("*")) {
@@ -198,9 +197,9 @@ public class S3TaskArgs {
       final String ssetTags =
           cmd.hasOption(ARG_SET_TAGS)? cmd.getOptionValue(ARG_SET_TAGS) : null;
       Map<String, String> setTags = null;
-      if (ssetTags != null && !ssetTags.trim().isEmpty()) {
+      if (ParametersChecker.isNotEmpty(ssetTags)) {
         setTags = new HashMap<>();
-        final String[] keyvalues = ssetTags.split(",");
+        final String[] keyvalues = ssetTags.split(","); // NOSONAR
         for (final String key : keyvalues) {
           if (key.isEmpty()) {
             printHelp(type, options);
@@ -220,7 +219,7 @@ public class S3TaskArgs {
                             sourceName, targetName, file, getTags, setTags);
     } catch (final ParseException | MalformedURLException e) {
       printHelp(type, options);
-      logger.error("Arguments are incorrect", e);
+      logger.error("Arguments are incorrect: {}", e.getMessage());
       return null;
     }
   }
@@ -261,12 +260,12 @@ public class S3TaskArgs {
     if ((type == S3TaskFactory.S3TaskType.S3GET ||
          type == S3TaskFactory.S3TaskType.S3GETDELETE ||
          type == S3TaskFactory.S3TaskType.S3DELETE) &&
-        Strings.isNullOrEmpty(sourceName) && file == null) {
+        ParametersChecker.isEmpty(sourceName) && file == null) {
       throw new IllegalArgumentException(EMPTY_STRING_NOT_ALLOWED);
     }
     if ((type == S3TaskFactory.S3TaskType.S3PUT ||
          type == S3TaskFactory.S3TaskType.S3PUTR66DELETE) &&
-        Strings.isNullOrEmpty(targetName)) {
+        ParametersChecker.isEmpty(targetName)) {
       throw new IllegalArgumentException(EMPTY_STRING_NOT_ALLOWED);
     }
     this.url = url;

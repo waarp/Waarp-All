@@ -85,4 +85,22 @@ public class DbModelFactory {
     dbModels.add(dbModel);
     return new DbAdmin(dbModel, dbserver, dbuser, dbpasswd, write);
   }
+
+  /**
+   * Check if current DbModels are one of given DbType
+   *
+   * @param types
+   *
+   * @return True if present
+   */
+  public static boolean containsDbType(DbType... types) {
+    for (DbModel dbModel : dbModels) {
+      for (DbType dbType : types) {
+        if (dbModel.getDbType() == dbType) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
 }

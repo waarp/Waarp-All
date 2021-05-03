@@ -24,7 +24,9 @@ Nouvelles fonctionnalités
 - WaarpR66 : Création d'une TaskFactory pour ajouter des tâches R66 qui
   permettent de lire, écrire ou effacer des fichiers depuis un stockage S3
   pouvant servir de source ou cible dans le cas de transferts
-  (org.waarp.openr66.s3.taskfactory.S3TaskFactory)
+  (org.waarp.openr66.s3.taskfactory.S3TaskFactory) ; cette Factory est
+  chargée dynamiquement si la classe correspondante est dans le classpath
+  (uniquement disponible en JRE 8 et au-dessus).
 
 Correctifs
 ----------
@@ -33,10 +35,17 @@ Correctifs
 - Amélioration des Threads pour Recv avec minimum/maximum optimisés
 - Accroissement de la limite de RUNLIMIT à 50000, maintient du défaut à 1000
 - Benchmark sur multiple serveurs Waarp en mode cluster
+- Benchmark avec le Monitoring
 - Fixe l'usage de Netty Native OpenSSL ou BoringSsl (performances TLS)
 - Fixe Waarp R66Proxy
-- Benchmark sur Serveur FTP et Gateway FTP
+- Fixe les configurations des bases de données, notamment les index et les tailles
+- Fixe les vérifications API REST (V1 et V2) (sanity)
+- Fixe la transformation Json <-> DbHostAuth
 - Fixes de bug liés à la lecture XML des règles, de la gestion de client sans base
+- Fixes des bugs de stabilités FTP
+- Benchmark sur Serveur FTP et Gateway FTP (avec H2 et PostgreSQL)
+- Amélioration des Types SQL, index et requêtes SQL (R66 principalement)
+- Amélioration du code
 - Mise à jour des dépendances
 
 Benchmarks FTP
@@ -44,13 +53,16 @@ Benchmarks FTP
 
 Les nouveaux benchmarks FTP donnent les résultats suivants.
 
-=========== ====== ======== ======= ====== =============
-Application Client Nb vCore Passive Active CPU
-=========== ====== ======== ======= ====== =============
-Serveur FTP Apache 4        52/s    60/s   40% CPU
-Serveur FTP Waarp  4        61/s    69/s   40% CPU
-Gateway FTP Waarp  4        50/s    61/s   40% CPU
-=========== ====== ======== ======= ====== =============
+=================== ====== ======== ======= ====== =============
+Application         Client Nb vCore Passive Active CPU
+=================== ====== ======== ======= ====== =============
+Serveur FTP         Apache 4        58/s    62/s   40% CPU
+Serveur FTP         Waarp  4        108/s   155/s  40% CPU
+Gateway FTP H2      Apache 4        76/s    95/s   40% CPU
+Gateway FTP H2      Waarp  4        100/s   101/s  40% CPU
+Gateway FTP Postgre Apache 4        75/s    96/s   40% CPU
+Gateway FTP Postgre Waarp  4        94/s    97/s   40% CPU
+=================== ====== ======== ======= ====== =============
 
 Il ressort de ces benchmarks qu'il est important d'avoir au moins 2 core (threads)
 dédiés par serveur Waarp Gateway FTP pour être optimal. En terme de mémoire,
@@ -63,21 +75,25 @@ Benchmarks R66
 
 Les nouveaux benchmarks R66 donnent les résultats suivants.
 
-========================= ======== === ============ ==== =========
-Contexte                  Nb vCore TLS Transferts/s CPU  Gain
-========================= ======== === ============ ==== =========
-V3.0 Loop 2 Serveurs      4        Oui 30/s         100% Référence
-V3.2 Loop 2 Serveurs      4        Oui 60/s         100% 200%
-V3.5.2 Loop 2 Serveurs    4        Oui 77/s         100% 257%
-V3.6.0 Loop 2 Serveurs    4        Oui 84/s         100% 280%
-V3.6.0 Loop 2 Serveurs    8        Oui 366/s        80%  1220%
-V3.6.0 Loop 2 Serveurs    4        Non 103/s        100% Référence
-V3.6.0 Loop 2 Serveurs    8        Non 418/s        75%  406%
-V3.6.0 Cluster 2 Serveurs 4        Oui 77/s         100% Référence
-V3.6.0 Cluster 2 Serveurs 8        Oui 133/s        80%  173%
-V3.6.0 Cluster 2 Serveurs 4        Non 89/s         100% Référence
-V3.6.0 Cluster 2 Serveurs 8        Non 184/s        45%  207%
-========================= ======== === ============ ==== =========
+============================== ======== === ============ ==== =========
+Contexte                       Nb vCore TLS Transferts/s CPU  Gain
+============================== ======== === ============ ==== =========
+V3.0 Loop 2 Serveurs           4        Oui 30/s         100% Référence
+V3.2 Loop 2 Serveurs           4        Oui 60/s         100% 200%
+V3.5.2 Loop 2 Serveurs         4        Oui 77/s         100% 257%
+V3.6.0 Loop 2 Serveurs         4        Oui 77/s         100% 280%
+V3.6.0 Loop 2 Serveurs         8        Oui 366/s        80%  1220%
+V3.6.0 Loop 2 Serveurs         4        Non 103/s        100% Référence
+V3.6.0 Loop 2 Serveurs         8        Non 418/s        75%  406%
+V3.6.0 Loop 2 Serveurs Monitor 4        Oui 76/s         75%  406%
+V3.6.0 Loop 2 Serveurs Monitor 8        Oui /s           75%  406%
+V3.6.0 Loop 2 Serveurs Monitor 4        Non 103/s        75%  406%
+V3.6.0 Loop 2 Serveurs Monitor 8        Non /s           75%  406%
+V3.6.0 Cluster 2 Serveurs      4        Oui 41/s         100% Référence
+V3.6.0 Cluster 2 Serveurs      8        Oui 133/s        80%  173%
+V3.6.0 Cluster 2 Serveurs      4        Non 42/s         100% Référence
+V3.6.0 Cluster 2 Serveurs      8        Non 184/s        45%  207%
+============================== ======== === ============ ==== =========
 
 
 Il ressort de ces benchmarks qu'il est important d'avoir au moins 4 core (threads)

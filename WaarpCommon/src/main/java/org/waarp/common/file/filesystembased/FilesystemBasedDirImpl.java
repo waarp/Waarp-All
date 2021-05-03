@@ -36,6 +36,7 @@ import org.waarp.common.file.filesystembased.specific.FilesystemBasedDirJdkAbstr
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.utility.DetectionUtils;
+import org.waarp.common.utility.ParametersChecker;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -428,7 +429,7 @@ public abstract class FilesystemBasedDirImpl extends AbstractDir {
     checkIdentify();
     // First get all base directories
     String newpath = path;
-    if (newpath == null || newpath.isEmpty()) {
+    if (ParametersChecker.isEmpty(newpath)) {
       newpath = currentDir;
     }
     if (newpath.startsWith("-a") || newpath.startsWith("-A")) {
@@ -471,7 +472,7 @@ public abstract class FilesystemBasedDirImpl extends AbstractDir {
     checkIdentify();
     boolean listAllFiles = false;
     String newpath = path;
-    if (newpath == null || newpath.isEmpty()) {
+    if (ParametersChecker.isEmpty(newpath)) {
       newpath = currentDir;
     }
     if (newpath.startsWith("-a") || newpath.startsWith("-A")) {

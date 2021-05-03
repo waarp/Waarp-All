@@ -198,7 +198,7 @@ public class HttpRestClientHelper {
       result = RestArgument.getBaseAuthent(hmacSha256, encoder, user, pwd);
       logger.debug("Authent encoded");
     } catch (final HttpInvalidAuthenticationException e) {
-      logger.error(e.getMessage(), e);
+      logger.error(e.getMessage());
       future.setFailure(e);
       return future;
     }
@@ -387,7 +387,7 @@ public class HttpRestClientHelper {
       host = realUri.getHost();
       path = realUri.getPath();
     } catch (final URISyntaxException e) {
-      logger.error("Error", e);
+      logger.error("Error: {}", e.getMessage());
       return;
     }
     final HttpRestClientHelper client = new HttpRestClientHelper(path, 1, 30000,

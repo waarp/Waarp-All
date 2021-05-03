@@ -73,7 +73,7 @@ public abstract class AbstractTransfer implements Runnable {
   /**
    * Internal Logger
    */
-  protected static volatile WaarpLogger logger;
+  protected static WaarpLogger logger;
 
   protected static final String INFO_ARGS =
       Messages.getString("AbstractTransfer.0") //$NON-NLS-1$
@@ -150,7 +150,7 @@ public abstract class AbstractTransfer implements Runnable {
     }
     try {
       ChannelUtils
-          .writeAbstractLocalPacket(localChannelReference, packet, false);
+          .writeAbstractLocalPacket(localChannelReference, packet, true);
     } catch (final OpenR66ProtocolPacketException e) {
       RequestTransfer.logger
           .error(Messages.getString("RequestTransfer.63") + host); //$NON-NLS-1$
@@ -177,7 +177,8 @@ public abstract class AbstractTransfer implements Runnable {
     try {
       dbRule = new DbRule(transferArgs.getRulename());
     } catch (final WaarpDatabaseException e) {
-      logger.error("Cannot get Rule: " + transferArgs.getRulename(), e);
+      logger.error("Cannot get Rule: " + transferArgs.getRulename() + ": {}",
+                   e.getMessage());
       future.setResult(
           new R66Result(new OpenR66DatabaseGlobalException(e), null, true,
                         ErrorCode.Internal, null));
@@ -194,7 +195,7 @@ public abstract class AbstractTransfer implements Runnable {
         taskRunner = new DbTaskRunner(transferArgs.getId(),
                                       transferArgs.getRemoteHost());
       } catch (final WaarpDatabaseException e) {
-        logger.error("Cannot get task", e);
+        logger.error("Cannot get task: {}", e.getMessage());
         future.setResult(
             new R66Result(new OpenR66DatabaseGlobalException(e), null, true,
                           ErrorCode.QueryRemotelyUnknown, null));
@@ -254,7 +255,7 @@ public abstract class AbstractTransfer implements Runnable {
                                       transferArgs.getRemoteHost(),
                                       transferArgs.getStartTime());
       } catch (final WaarpDatabaseException e) {
-        logger.error("Cannot get task", e);
+        logger.error("Cannot get task: {}", e.getMessage());
         future.setResult(
             new R66Result(new OpenR66DatabaseGlobalException(e), null, true,
                           ErrorCode.Internal, null));
@@ -265,7 +266,7 @@ public abstract class AbstractTransfer implements Runnable {
     try {
       taskRunner.saveStatus();
     } catch (final OpenR66RunnerErrorException e) {
-      logger.error("Cannot save task", e);
+      logger.error("Cannot save task: {}", e.getMessage());
       future.setResult(
           new R66Result(new OpenR66DatabaseGlobalException(e), null, true,
                         ErrorCode.Internal, null));
@@ -469,8 +470,8 @@ public abstract class AbstractTransfer implements Runnable {
     final R66Dir dir = new R66Dir(session);
     try {
       dir.changeDirectory(dbrule.getSendPath());
-    } catch (final CommandAbstractException ignored) {
-      SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
+    } catch (final CommandAbstractException e) {
+      SysErrLogger.FAKE_LOGGER.ignoreLog(e);
     }
     if (localfilenames != null) {
       for (final String filenameNew : localfilenames) {
@@ -562,10 +563,12 @@ public abstract class AbstractTransfer implements Runnable {
                                 .getString(
                                     "RequestInformation.Failure")); //$NON-NLS-1$
     }
+    final String mesg = future.getCause() != null//NOSONAR
+        ? future.getCause().getMessage() : "";
     if (result.getRunner().getErrorInfo() == ErrorCode.Warning) {
-      logger.warn(outputFormat.loggerOut(), future.getCause());
+      logger.warn(outputFormat.loggerOut() + " : {}" + mesg);
     } else {
-      logger.error(outputFormat.loggerOut(), future.getCause());
+      logger.error(outputFormat.loggerOut() + " : {}" + mesg);
     }
     if (future.getCause() != null) {
       outputFormat

@@ -64,7 +64,7 @@ public class MoveRenameTask extends AbstractTask {
     } catch (final Reply550Exception e) {
       logger.error(
           "Move and Rename to " + finalname + " with " + argRule + ':' +
-          argTransfer + " and " + session, e);
+          argTransfer + " and " + session + ": {}", e.getMessage());
       futureCompletion.setFailure(e);
       return;
     }

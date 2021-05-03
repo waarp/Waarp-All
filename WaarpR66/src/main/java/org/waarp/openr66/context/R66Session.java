@@ -1185,6 +1185,10 @@ public class R66Session implements SessionInterface {
       }
     } else {
       // invalidate Request
+      logger.error(
+          "Runner {} will be shutdown while in status {} and future status will be {}",
+          runner.getSpecialId(), runner.getStatus().getMesg(),
+          errorValue.getCode().getMesg());
       setFinalizeTransfer(false, errorValue);
     }
   }

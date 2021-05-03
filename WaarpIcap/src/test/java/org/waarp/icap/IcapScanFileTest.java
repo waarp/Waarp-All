@@ -20,14 +20,18 @@
 
 package org.waarp.icap;
 
+import io.netty.util.ResourceLeakDetector;
+import io.netty.util.ResourceLeakDetector.Level;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestWatcher;
 import org.waarp.common.logging.WaarpLogLevel;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
 import org.waarp.common.utility.TestWatcherJunit4;
 import org.waarp.icap.server.IcapServer;
 import org.waarp.icap.server.IcapServerHandler;
@@ -48,6 +52,13 @@ public class IcapScanFileTest {
 
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(IcapScanFileTest.class);
+
+  @BeforeClass
+  public static void beforeClass() {
+    WaarpLoggerFactory.setDefaultFactoryIfNotSame(
+        new WaarpSlf4JLoggerFactory(WaarpLogLevel.WARN));
+    ResourceLeakDetector.setLevel(Level.PARANOID);
+  }
 
   @Before
   public void before() throws Exception {
@@ -695,30 +706,35 @@ public class IcapScanFileTest {
   @Test
   public void testMain() throws Exception {
     try {
+      logger.warn("Shall raised an exception");
       IcapScanFile.scanFile(null);
       fail("Should raised an exception");
     } catch (IllegalArgumentException e) {
       logger.debug("Exception intended", e);
     }
     try {
+      logger.warn("Shall raised an exception");
       IcapScanFile.scanFile(new String[] { "notEmpty" }, null);
       fail("Should raised an exception");
     } catch (IllegalArgumentException e) {
       logger.debug("Exception intended", e);
     }
     try {
+      logger.warn("Shall raised an exception");
       IcapScanFile.scanFile((String[]) null, new String[] { "notEmpty" });
       fail("Should raised an exception");
     } catch (IllegalArgumentException e) {
       logger.debug("Exception intended", e);
     }
     try {
+      logger.warn("Shall raised an exception");
       IcapScanFile.scanFile(new String[0]);
       fail("Should raised an exception");
     } catch (IllegalArgumentException e) {
       logger.debug("Exception intended", e);
     }
     try {
+      logger.warn("Shall raised an exception");
       IcapScanFile.scanFile(new String[] { "notEmpty" }, new String[0]);
       fail("Should raised an exception");
     } catch (IllegalArgumentException e) {

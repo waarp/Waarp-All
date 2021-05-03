@@ -2,6 +2,7 @@ package org.waarp.openr66.pojo;
 
 import org.junit.Test;
 import org.junit.rules.TestWatcher;
+import org.waarp.common.database.exception.WaarpDatabaseSqlException;
 import org.waarp.common.json.JsonHandler;
 import org.waarp.common.utility.TestWatcherJunit4;
 
@@ -18,7 +19,7 @@ public class RuleTest {
 
 
   @Test
-  public void testJson() {
+  public void testJson() throws WaarpDatabaseSqlException {
     List<String> hosts = Arrays.asList("sup1");
 
     List<RuleTask> spretasks = new ArrayList<RuleTask>();

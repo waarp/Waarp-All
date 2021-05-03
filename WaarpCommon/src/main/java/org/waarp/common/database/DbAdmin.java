@@ -226,7 +226,8 @@ public class DbAdmin {
         try {
           setSession(new DbSession(this, false));
         } catch (final WaarpDatabaseNoConnectionException e) {
-          logger.warn("Attempt of connection in error: " + i, e);
+          logger.warn("Attempt of connection in error: " + i + " : {}",
+                      e.getMessage());
           continue;
         }
         isReadOnly = false;
@@ -241,7 +242,8 @@ public class DbAdmin {
         try {
           setSession(new DbSession(this, true));
         } catch (final WaarpDatabaseNoConnectionException e) {
-          logger.warn("Attempt of connection in error: " + i, e);
+          logger.warn("Attempt of connection in error: " + i + " : {}",
+                      e.getMessage());
           continue;
         }
         isReadOnly = true;

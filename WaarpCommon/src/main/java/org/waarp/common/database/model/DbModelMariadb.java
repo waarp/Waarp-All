@@ -63,6 +63,10 @@ public abstract class DbModelMariadb extends DbModelCommonMariadbMySql {
       return "CREATE INDEX IF NOT EXISTS ";
     }
 
+    @Override
+    public DbType getDbType() {
+      return type;
+    }
   }
 
   static {

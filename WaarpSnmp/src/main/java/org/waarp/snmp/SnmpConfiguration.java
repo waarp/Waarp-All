@@ -38,6 +38,7 @@ import org.snmp4j.smi.TransportIpAddress;
 import org.snmp4j.smi.UdpAddress;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.ParametersChecker;
 import org.waarp.common.xml.XmlDecl;
 import org.waarp.common.xml.XmlHash;
 import org.waarp.common.xml.XmlType;
@@ -229,7 +230,7 @@ public final class SnmpConfiguration {
       address = values.toArray(address);
       final String[] tmp = new String[length];
       for (int j = 0; j < length; j++) {
-        if (address[j] != null && !address[j].trim().isEmpty()) {
+        if (ParametersChecker.isNotEmpty(address[j])) {
           tmp[nb] = address[j];
           nb++;
         }
@@ -602,7 +603,8 @@ public final class SnmpConfiguration {
       document = XmlUtil.getNewSaxReader().read(file);
     } catch (final DocumentException e) {
       logger.error(
-          "Unable to read the XML Config file: " + file.getAbsolutePath(), e);
+          "Unable to read the XML Config file: " + file.getAbsolutePath() +
+          ": {}", e.getMessage());
       return false;
     }
     if (document == null) {

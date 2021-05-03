@@ -23,6 +23,7 @@ package org.waarp.openr66.pojo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
+import org.waarp.common.database.exception.WaarpDatabaseSqlException;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.openr66.context.ErrorCode;
@@ -36,10 +37,12 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import java.sql.Timestamp;
+import java.sql.Types;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.waarp.common.database.data.AbstractDbData.*;
 import static org.waarp.openr66.dao.database.DBTransferDAO.*;
 
 /**
@@ -236,7 +239,8 @@ public class Transfer {
                   final int step, final ErrorCode stepStatus,
                   final ErrorCode infoStatus, final int rank,
                   final Timestamp start, final Timestamp stop,
-                  final UpdatedInfo updatedInfo) {
+                  final UpdatedInfo updatedInfo)
+      throws WaarpDatabaseSqlException {
     this(id, rule, mode, filename, originalName, fileInfo, isMoved, blockSize,
          retrieveMode, ownerReq, requester, requested, transferInfo, globalStep,
          lastGlobalStep, step, stepStatus, infoStatus, rank, start, stop);
@@ -277,7 +281,8 @@ public class Transfer {
                   final TASKSTEP globalStep, final TASKSTEP lastGlobalStep,
                   final int step, final ErrorCode stepStatus,
                   final ErrorCode infoStatus, final int rank,
-                  final Timestamp start, final Timestamp stop) {
+                  final Timestamp start, final Timestamp stop)
+      throws WaarpDatabaseSqlException {
     this.id = id;
     this.rule = rule;
     transferMode = mode;
@@ -299,6 +304,7 @@ public class Transfer {
     this.rank = rank;
     this.start = start;
     this.stop = stop;
+    checkValues();
   }
 
   /**
@@ -313,7 +319,7 @@ public class Transfer {
   public Transfer(final String remote, final String rule, final int ruleMode,
                   final boolean retrieveMode, final String file,
                   final String fileInfo, final int blockSize,
-                  final Timestamp start) {
+                  final Timestamp start) throws WaarpDatabaseSqlException {
     ownerRequest = Configuration.configuration.getHostId();
     requester = Configuration.configuration.getHostId();
     requested = remote;
@@ -325,6 +331,7 @@ public class Transfer {
     this.fileInfo = fileInfo;
     this.blockSize = blockSize;
     this.start = start;
+    checkValues();
   }
 
   /**
@@ -338,7 +345,8 @@ public class Transfer {
    */
   public Transfer(final String remote, final String rule, final int ruleMode,
                   final boolean retrieveMode, final String file,
-                  final String fileInfo, final int blockSize) {
+                  final String fileInfo, final int blockSize)
+      throws WaarpDatabaseSqlException {
     this(remote, rule, ruleMode, retrieveMode, file, fileInfo, blockSize,
          new Timestamp(new Date().getTime()));
   }
@@ -348,6 +356,13 @@ public class Transfer {
    */
   public Transfer() {
     // Nothing
+  }
+
+  @JsonIgnore
+  public void checkValues() throws WaarpDatabaseSqlException {
+    validateLength(Types.NVARCHAR, rule, ownerRequest, requested, requester);
+    validateLength(Types.VARCHAR, filename, originalName, fileInfo,
+                   transferInfo);
   }
 
   public long getId() {

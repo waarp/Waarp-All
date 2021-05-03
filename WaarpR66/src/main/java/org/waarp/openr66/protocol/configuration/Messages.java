@@ -21,6 +21,7 @@
 package org.waarp.openr66.protocol.configuration;
 
 import org.waarp.common.logging.SysErrLogger;
+import org.waarp.common.utility.ParametersChecker;
 import org.waarp.common.utility.SystemPropertyUtil;
 
 import java.text.MessageFormat;
@@ -38,7 +39,7 @@ public class Messages {
     try {
       setSlocale(
           SystemPropertyUtil.get(R66SystemProperties.OPENR66_LOCALE, "en"));
-      if (getSlocale() == null || getSlocale().isEmpty()) {
+      if (ParametersChecker.isEmpty(getSlocale())) {
         setSlocale("en");
       }
       init(new Locale(getSlocale()));

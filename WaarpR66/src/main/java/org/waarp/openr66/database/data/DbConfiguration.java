@@ -26,6 +26,7 @@ import org.waarp.common.database.DbSession;
 import org.waarp.common.database.exception.WaarpDatabaseException;
 import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
 import org.waarp.common.database.exception.WaarpDatabaseSqlException;
+import org.waarp.common.utility.ParametersChecker;
 import org.waarp.openr66.dao.AbstractDAO;
 import org.waarp.openr66.dao.DAOFactory;
 import org.waarp.openr66.dao.Filter;
@@ -65,6 +66,10 @@ public class DbConfiguration extends AbstractDbDataDao<Limit> {
       Columns.WRITESESSIONLIMIT.name() + ',' + Columns.DELAYLIMIT.name() + ',' +
       Columns.UPDATEDINFO.name() + ',' + Columns.HOSTID.name();
 
+  public static final Columns[] indexes = {
+      Columns.HOSTID, Columns.UPDATEDINFO
+  };
+
   @Override
   protected String getTable() {
     return table;
@@ -98,7 +103,8 @@ public class DbConfiguration extends AbstractDbDataDao<Limit> {
    * @param del Delay Limit
    */
   public DbConfiguration(final String hostid, final long rg, final long wg,
-                         final long rs, final long ws, final long del) {
+                         final long rs, final long ws, final long del)
+      throws WaarpDatabaseSqlException {
     pojo = new Limit(hostid, rg, wg, rs, ws, del);
   }
 
@@ -121,10 +127,15 @@ public class DbConfiguration extends AbstractDbDataDao<Limit> {
       throws WaarpDatabaseSqlException {
     pojo = new Limit();
     setFromJson(source, false);
-    if (pojo.getHostid() == null || pojo.getHostid().isEmpty()) {
+    if (ParametersChecker.isEmpty(pojo.getHostid())) {
       throw new WaarpDatabaseSqlException(
           "Not enough argument to create the object");
     }
+  }
+
+  @Override
+  protected void checkValues() throws WaarpDatabaseSqlException {
+    pojo.checkValues();
   }
 
   /**
@@ -139,7 +150,7 @@ public class DbConfiguration extends AbstractDbDataDao<Limit> {
   public void setFromJson(final ObjectNode node, final boolean ignorePrimaryKey)
       throws WaarpDatabaseSqlException {
     super.setFromJson(node, ignorePrimaryKey);
-    if (pojo.getHostid() == null || pojo.getHostid().isEmpty()) {
+    if (ParametersChecker.isEmpty(pojo.getHostid())) {
       throw new WaarpDatabaseSqlException(
           "Not enough argument to create the object");
     }
@@ -257,7 +268,7 @@ public class DbConfiguration extends AbstractDbDataDao<Limit> {
         new DbPreparedStatement(session);
     final String request = "SELECT " + selectAllFields + " FROM " + table;
     String condition = null;
-    if (hostid != null) {
+    if (ParametersChecker.isNotEmpty(hostid)) {
       condition =
           " WHERE " + Columns.HOSTID.name() + " LIKE '%" + hostid + "%' ";
     }
@@ -312,6 +323,7 @@ public class DbConfiguration extends AbstractDbDataDao<Limit> {
 
   @Override
   public void changeUpdatedInfo(final UpdatedInfo info) {
+    isSaved = false;
     pojo.setUpdatedInfo(org.waarp.openr66.pojo.UpdatedInfo.fromLegacy(info));
   }
 

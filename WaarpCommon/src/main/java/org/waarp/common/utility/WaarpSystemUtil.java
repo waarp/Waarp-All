@@ -1,7 +1,5 @@
 package org.waarp.common.utility;
 
-import ch.qos.logback.classic.LoggerContext;
-import org.slf4j.LoggerFactory;
 import org.waarp.common.logging.WaarpLogLevel;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
@@ -26,26 +24,28 @@ public class WaarpSystemUtil {
     if (isJunit()) {
       return;
     }
-    stopLogger();
+    stopLogger(false);
     System.exit(value);//NOSONAR
   }
 
   /**
    * Stop logger
    */
-  public static void stopLogger() {
-    if (isJunit()) {
+  public static void stopLogger(final boolean force) {
+    if (!force && isJunit()) {
+      return;
+    }
+    if (WaarpLoggerFactory.getLogLevel() == WaarpLogLevel.NONE) {
       return;
     }
     WaarpLoggerFactory.setDefaultFactoryIfNotSame(
         new WaarpSlf4JLoggerFactory(WaarpLogLevel.NONE));
-    if (WaarpLoggerFactory
-            .getDefaultFactory() instanceof WaarpSlf4JLoggerFactory &&
-        !isJunit()) {
-      final LoggerContext lc =
-          (LoggerContext) LoggerFactory.getILoggerFactory();
-      lc.stop();
-    }
+    WaarpLoggerFactory.getLogger("io.netty").setLevel(WaarpLogLevel.NONE);
+    WaarpLoggerFactory.getLogger("io.netty.channel.AbstractChannel")
+                      .setLevel(WaarpLogLevel.NONE);
+    WaarpLoggerFactory
+        .getLogger("io.netty.util.concurrent.AbstractEventExecutor")
+        .setLevel(WaarpLogLevel.NONE);
   }
 
   /**
@@ -53,15 +53,15 @@ public class WaarpSystemUtil {
    *
    * @return a new Instance for this Class
    *
-   * @throws NoSuchMethodException
    * @throws InvocationTargetException
-   * @throws InstantiationException
-   * @throws IllegalAccessException
    */
   public static Object newInstance(Class classz)
-      throws NoSuchMethodException, InvocationTargetException,
-             InstantiationException, IllegalAccessException {
-    return classz.getDeclaredConstructor(EMPTY_CLASS_ARRAY).newInstance();
+      throws InvocationTargetException {
+    try {
+      return classz.getDeclaredConstructor(EMPTY_CLASS_ARRAY).newInstance();
+    } catch (Exception e) {
+      throw new InvocationTargetException(e);
+    }
   }
 
   /**
@@ -69,17 +69,18 @@ public class WaarpSystemUtil {
    *
    * @return a new Instance for this Class
    *
-   * @throws ClassNotFoundException
-   * @throws NoSuchMethodException
    * @throws InvocationTargetException
-   * @throws InstantiationException
-   * @throws IllegalAccessException
    */
   public static Object newInstance(String className)
-      throws ClassNotFoundException, NoSuchMethodException,
-             InvocationTargetException, InstantiationException,
-             IllegalAccessException {
-    return newInstance(Class.forName(className));
+      throws InvocationTargetException {
+    try {
+      return newInstance(Class.forName(className));
+    } catch (Exception e) {
+      if (e instanceof InvocationTargetException) {
+        throw (InvocationTargetException) e;
+      }
+      throw new InvocationTargetException(e);
+    }
   }
 
   /**

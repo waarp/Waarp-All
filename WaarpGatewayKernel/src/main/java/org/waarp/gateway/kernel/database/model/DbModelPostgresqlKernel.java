@@ -75,10 +75,10 @@ public class DbModelPostgresqlKernel extends DbModelPostgresql {
     try {
       request.query(action.toString());
     } catch (final WaarpDatabaseNoConnectionException e) {
-      SysErrLogger.FAKE_LOGGER.syserr(e);
+      SysErrLogger.FAKE_LOGGER.ignoreLog(e);
       return;
     } catch (final WaarpDatabaseSqlException e) {
-      SysErrLogger.FAKE_LOGGER.syserr(e);
+      SysErrLogger.FAKE_LOGGER.ignoreLog(e);
       // XXX FIX No return
     } finally {
       request.close();
@@ -95,10 +95,10 @@ public class DbModelPostgresqlKernel extends DbModelPostgresql {
     try {
       request.query(action.toString());
     } catch (final WaarpDatabaseNoConnectionException e) {
-      SysErrLogger.FAKE_LOGGER.syserr(e);
+      SysErrLogger.FAKE_LOGGER.ignoreLog(e);
       return;
     } catch (final WaarpDatabaseSqlException e) {
-      SysErrLogger.FAKE_LOGGER.syserr(e);
+      SysErrLogger.FAKE_LOGGER.ignoreLog(e);
       // XXX FIX No return
     } finally {
       request.close();
@@ -113,9 +113,9 @@ public class DbModelPostgresqlKernel extends DbModelPostgresql {
     try {
       request.query(action.toString());
     } catch (final WaarpDatabaseNoConnectionException e) {
-      SysErrLogger.FAKE_LOGGER.syserr(e);
+      SysErrLogger.FAKE_LOGGER.ignoreLog(e);
     } catch (final WaarpDatabaseSqlException e) {
-      SysErrLogger.FAKE_LOGGER.syserr(e);
+      SysErrLogger.FAKE_LOGGER.ignoreLog(e);
     } finally {
       request.close();
     }

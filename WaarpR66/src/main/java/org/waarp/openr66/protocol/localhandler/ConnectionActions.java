@@ -318,7 +318,9 @@ public abstract class ConnectionActions {
     try {
       auth = new DbHostAuth(packet.getHostId());
     } catch (final WaarpDatabaseException e) {
-      logger.warn("Cannot find the authentication " + packet.getHostId(), e);
+      logger.warn(
+          "Cannot find the authentication " + packet.getHostId() + " : {}",
+          e.getMessage());
     }
     if (auth != null && !auth.isActive()) {
       e1 = new Reply530Exception(
@@ -396,7 +398,8 @@ public abstract class ConnectionActions {
       return;
     } catch (final Reply421Exception e1) {
       session.newState(ERROR);
-      logger.error("Service unavailable: " + packet.getHostId(), e1);
+      logger.error("Service unavailable: " + packet.getHostId() + ": {}",
+                   e1.getMessage());
       final R66Result result = new R66Result(
           new OpenR66ProtocolSystemException("Service unavailable", e1),
           session, true, ErrorCode.ConnectionImpossible, null);
@@ -486,7 +489,7 @@ public abstract class ConnectionActions {
       // only requested
       packet.validate(session.getAuth().isSsl());
       ChannelUtils
-          .writeAbstractLocalPacket(localChannelReference, packet, false);
+          .writeAbstractLocalPacket(localChannelReference, packet, true);
       session.setStatus(98);
     }
     logger.debug("Partner: {} from {}", localChannelReference.getPartner(),

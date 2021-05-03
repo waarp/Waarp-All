@@ -29,9 +29,12 @@ import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.multipart.FileUpload;
+import org.waarp.common.exception.InvalidArgumentException;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.ParametersChecker;
 import org.waarp.common.utility.WaarpStringUtils;
+import org.waarp.gateway.kernel.exception.HttpForbiddenRequestException;
 import org.waarp.gateway.kernel.exception.HttpIncorrectRequestException;
 import org.waarp.gateway.kernel.rest.HttpRestHandler;
 import org.waarp.gateway.kernel.rest.HttpRestHandler.METHOD;
@@ -78,8 +81,13 @@ public abstract class HttpRestAbstractR66Handler extends RestMethodHandler {
   @Override
   public void checkHandlerSessionCorrectness(final HttpRestHandler handler,
                                              final RestArgument arguments,
-                                             final RestArgument result) {
-    // no check to do here ?
+                                             final RestArgument result)
+      throws HttpForbiddenRequestException {
+    try {
+      HttpRestV1Utils.checkSanity(arguments);
+    } catch (InvalidArgumentException e) {
+      throw new HttpForbiddenRequestException("Issue on values", e);
+    }
     logger.debug("debug");
   }
 
@@ -171,18 +179,24 @@ public abstract class HttpRestAbstractR66Handler extends RestMethodHandler {
     final JsonPacket packet;
     try {
       final String json = body.toString(WaarpStringUtils.UTF8);
+      try {
+        ParametersChecker.checkSanityString(json);
+      } catch (InvalidArgumentException e) {
+        throw new HttpIncorrectRequestException("Issue on values", e);
+      }
       packet = JsonPacket.createFromBuffer(json);
     } catch (final JsonParseException e) {
-      logger.warn("Error: " + body.toString(WaarpStringUtils.UTF8), e);
+      logger.warn("Error: " + body.toString(WaarpStringUtils.UTF8) + " : {}",
+                  e.getMessage());
       throw new HttpIncorrectRequestException(e);
     } catch (final JsonMappingException e) {
-      logger.warn("Error", e);
+      logger.warn("Error" + " : {}", e.getMessage());
       throw new HttpIncorrectRequestException(e);
     } catch (final IOException e) {
-      logger.warn("Error", e);
+      logger.warn("Error" + " : {}", e.getMessage());
       throw new HttpIncorrectRequestException(e);
     } catch (final UnsupportedCharsetException e) {
-      logger.warn("Error", e);
+      logger.warn("Error" + " : {}", e.getMessage());
       throw new HttpIncorrectRequestException(e);
     }
     return packet;

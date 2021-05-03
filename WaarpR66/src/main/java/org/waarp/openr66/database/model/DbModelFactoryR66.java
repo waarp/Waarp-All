@@ -30,6 +30,8 @@ import org.waarp.common.database.model.DbModelAbstract.DbTypeResolver;
 import org.waarp.common.database.model.DbModelFactory;
 import org.waarp.common.database.model.DbType;
 import org.waarp.common.logging.SysErrLogger;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.openr66.database.data.DbConfiguration;
 import org.waarp.openr66.database.data.DbHostAuth;
 import org.waarp.openr66.database.data.DbHostConfiguration;
@@ -48,6 +50,8 @@ import static org.waarp.common.database.DbConstant.*;
  * Factory to store the Database Model object
  */
 public class DbModelFactoryR66 extends DbModelFactory {
+  private static final WaarpLogger logger =
+      WaarpLoggerFactory.getLogger(DbModelFactoryR66.class);
 
   private static final String ALTER_TABLE = "ALTER TABLE ";
   private static final String ADD_COLUMN = " ADD COLUMN ";
@@ -166,7 +170,6 @@ public class DbModelFactoryR66 extends DbModelFactory {
         }
       }
     }
-    request = null;
     if (PartnerConfiguration
         .isVersion2GTVersion1(version, R66Versions.V2_4_25.getVersion())) {
       if (upgradeDbMariaDbMySQL(dbTypeResolver, session, version)) {
@@ -177,10 +180,20 @@ public class DbModelFactoryR66 extends DbModelFactory {
         return true;
       }
     }
+    if (PartnerConfiguration
+        .isVersion2GTVersion1(version, R66Versions.V3_0_4.getVersion())) {
+      if (upgradeDbMariaDbMySQL(dbTypeResolver, session, version)) {
+        DbHostConfiguration
+            .updateVersionDb(Configuration.configuration.getHostId(),
+                             R66Versions.V3_0_4.getVersion());
+      } else {
+        return true;
+      }
+    }
     return false;
   }
 
-  static DbRequest subCreateTableMariaDbMySQLPostgreSQL(
+  static DbRequest subCreateTableMariaDbMySQLH2PostgreSQL(
       final DbTypeResolver dbTypeResolver, final DbSession session,
       final String createTableH2, final String primaryKey, final String notNull)
       throws WaarpDatabaseNoConnectionException {
@@ -201,14 +214,15 @@ public class DbModelFactoryR66 extends DbModelFactory {
     if (executeRequestAction(session, action)) {
       return null;
     }
-    final DbMultipleMonitor multipleMonitor =
-        new DbMultipleMonitor(Configuration.configuration.getHostId(), 0, 0, 0);
     try {
+      final DbMultipleMonitor multipleMonitor =
+          new DbMultipleMonitor(Configuration.configuration.getHostId(), 0, 0,
+                                0);
       if (!multipleMonitor.exist()) {
         multipleMonitor.insert();
       }
     } catch (final WaarpDatabaseException e1) {
-      SysErrLogger.FAKE_LOGGER.syserr(e1);
+      SysErrLogger.FAKE_LOGGER.ignoreLog(e1);
     }
 
     // Configuration
@@ -292,15 +306,144 @@ public class DbModelFactoryR66 extends DbModelFactory {
     }
     // Several columns for primary key
     action.append(" CONSTRAINT runner_pk ").append(primaryKey).append('(');
-    for (int i = DbTaskRunner.NBPRKEY; i > 1; i--) {
-      action.append(acolumns[acolumns.length - i].name()).append(',');
+    for (int i = 0; i < DbTaskRunner.PRIMARY_KEY.length - 1; i++) {
+      action.append(DbTaskRunner.PRIMARY_KEY[i]).append(',');
     }
-    action.append(acolumns[acolumns.length - 1].name()).append("))");
+    action.append(DbTaskRunner.PRIMARY_KEY[DbTaskRunner.PRIMARY_KEY.length - 1])
+          .append("))");
     SysErrLogger.FAKE_LOGGER.sysout(action);
     if (executeRequestAction(session, action)) {
       return null;
     }
+    DbRequest request = null;
+    try {
+      request = new DbRequest(session);
+      if (!DbModelFactoryR66.createIndex30(dbTypeResolver, request)) {
+        return null;
+      }
+    } finally {
+      if (request != null) {
+        request.close();
+      }
+    }
     return new DbRequest(session);
+  }
+
+  static boolean createIndex30(final DbTypeResolver dbTypeResolver,
+                               final DbRequest request) {
+    final String createIndex;
+    if (containsDbType(DbType.MySQL, DbType.Oracle)) {
+      createIndex = "CREATE INDEX ";
+    } else {
+      createIndex = "CREATE INDEX IF NOT EXISTS ";
+    }
+    StringBuilder action;
+    // Index LimitDAO/DbConfiguration
+    {
+      action = new StringBuilder(
+          createIndex + " IDX_CONFIG ON " + DbConfiguration.table + '(');
+      final DbConfiguration.Columns[] icolumns = DbConfiguration.indexes;
+      for (int i = 0; i < icolumns.length - 1; i++) {
+        action.append(icolumns[i].name()).append(", ");
+      }
+      action.append(icolumns[icolumns.length - 1].name()).append(')');
+      SysErrLogger.FAKE_LOGGER.sysout(action);
+      try {
+        request.query(action.toString());
+      } catch (final WaarpDatabaseNoConnectionException e) {
+        SysErrLogger.FAKE_LOGGER.ignoreLog(e);
+        return false;
+      } catch (final WaarpDatabaseSqlException e) {
+        SysErrLogger.FAKE_LOGGER.ignoreLog(e);
+        // XXX FIX no return
+      }
+    }
+
+    // Index BusinessDAO/DbHostConfiguration
+    {
+      action = new StringBuilder(
+          createIndex + " IDX_HOSTCONF ON " + DbHostConfiguration.table + '(');
+      final DbHostConfiguration.Columns[] icolumns =
+          DbHostConfiguration.indexes;
+      for (int i = 0; i < icolumns.length - 1; i++) {
+        action.append(icolumns[i].name()).append(", ");
+      }
+      action.append(icolumns[icolumns.length - 1].name()).append(')');
+      SysErrLogger.FAKE_LOGGER.sysout(action);
+      try {
+        request.query(action.toString());
+      } catch (final WaarpDatabaseNoConnectionException e) {
+        SysErrLogger.FAKE_LOGGER.ignoreLog(e);
+        return false;
+      } catch (final WaarpDatabaseSqlException e) {
+        SysErrLogger.FAKE_LOGGER.ignoreLog(e);
+        // XXX FIX no return
+      }
+    }
+
+    // Index HostDAO/DbHostAuth
+    {
+      action = new StringBuilder(
+          createIndex + " IDX_HOST ON " + DbHostAuth.table + '(');
+      final DbHostAuth.Columns[] icolumns = DbHostAuth.indexes;
+      for (int i = 0; i < icolumns.length - 1; i++) {
+        action.append(icolumns[i].name()).append(", ");
+      }
+      action.append(icolumns[icolumns.length - 1].name()).append(')');
+      SysErrLogger.FAKE_LOGGER.sysout(action);
+      try {
+        request.query(action.toString());
+      } catch (final WaarpDatabaseNoConnectionException e) {
+        SysErrLogger.FAKE_LOGGER.ignoreLog(e);
+        return false;
+      } catch (final WaarpDatabaseSqlException e) {
+        SysErrLogger.FAKE_LOGGER.ignoreLog(e);
+        // XXX FIX no return
+      }
+    }
+
+    // Index RuleDAO/DbRule
+    {
+      action =
+          new StringBuilder(createIndex + " IDX_RULE ON " + DbRule.table + '(');
+      final DbRule.Columns[] icolumns = DbRule.indexes;
+      for (int i = 0; i < icolumns.length - 1; i++) {
+        action.append(icolumns[i].name()).append(", ");
+      }
+      action.append(icolumns[icolumns.length - 1].name()).append(')');
+      SysErrLogger.FAKE_LOGGER.sysout(action);
+      try {
+        request.query(action.toString());
+      } catch (final WaarpDatabaseNoConnectionException e) {
+        SysErrLogger.FAKE_LOGGER.ignoreLog(e);
+        return false;
+      } catch (final WaarpDatabaseSqlException e) {
+        SysErrLogger.FAKE_LOGGER.ignoreLog(e);
+        // XXX FIX no return
+      }
+    }
+    // Index TransferDAT/DbTaskRunner
+    for (int j = 0; j < DbTaskRunner.indexesNames.length; j++) {
+      final String name = DbTaskRunner.indexesNames[j];
+      action = new StringBuilder(
+          createIndex + name + " ON " + DbTaskRunner.table + '(');
+      final DbTaskRunner.Columns[] idxcolumns = DbTaskRunner.indexes[j];
+      for (int i = 0; i < idxcolumns.length - 1; i++) {
+        action.append(idxcolumns[i].name()).append(", ");
+      }
+      action.append(idxcolumns[idxcolumns.length - 1].name()).append(')');
+      SysErrLogger.FAKE_LOGGER.sysout(action);
+      try {
+        request.query(action.toString());
+      } catch (final WaarpDatabaseNoConnectionException e) {
+        SysErrLogger.FAKE_LOGGER.ignoreLog(e);
+        return false;
+      } catch (final WaarpDatabaseSqlException e) {
+        SysErrLogger.FAKE_LOGGER.ignoreLog(e);
+        // XXX FIX no return
+      }
+    }
+    return true;
   }
 
   private static boolean executeRequestAction(final DbSession session,
@@ -317,10 +460,10 @@ public class DbModelFactoryR66 extends DbModelFactory {
     try {
       request.query(action);
     } catch (final WaarpDatabaseNoConnectionException e) {
-      SysErrLogger.FAKE_LOGGER.syserr(e);
+      SysErrLogger.FAKE_LOGGER.ignoreLog(e);
       return true;
     } catch (final WaarpDatabaseSqlException e) {
-      SysErrLogger.FAKE_LOGGER.syserr(e);
+      SysErrLogger.FAKE_LOGGER.ignoreLog(e);
       // XXX FIX no return
     } finally {
       request.close();
@@ -336,32 +479,21 @@ public class DbModelFactoryR66 extends DbModelFactory {
     final String primaryKey = " PRIMARY KEY ";
     final String notNull = " NOT NULL ";
     final DbRequest request =
-        subCreateTableMariaDbMySQLPostgreSQL(dbTypeResolver, session,
-                                             createTableH2, primaryKey,
-                                             notNull);
+        subCreateTableMariaDbMySQLH2PostgreSQL(dbTypeResolver, session,
+                                               createTableH2, primaryKey,
+                                               notNull);
     if (request == null) {
       return;
     }
+    request.close();
     StringBuilder action;
-    // Index Runner
-    action = new StringBuilder(
-        "CREATE INDEX IDX_RUNNER ON " + DbTaskRunner.table + '(');
-    final DbTaskRunner.Columns[] icolumns = DbTaskRunner.indexes;
-    for (int i = 0; i < icolumns.length - 1; i++) {
-      action.append(icolumns[i].name()).append(", ");
-    }
-    action.append(icolumns[icolumns.length - 1].name()).append(')');
-    SysErrLogger.FAKE_LOGGER.sysout(action);
-    if (executeRequestAction(session, action)) {
-      return;
-    }
     // cptrunner
     /*
      * # Table to handle any number of sequences
      */
     action = new StringBuilder(
-        "CREATE TABLE Sequences (name VARCHAR(22) NOT NULL PRIMARY KEY," +
-        "seq BIGINT NOT NULL)");
+        "CREATE TABLE IF NOT EXISTS Sequences (name VARCHAR(22) NOT NULL " +
+        "PRIMARY KEY, seq BIGINT NOT NULL)");
     SysErrLogger.FAKE_LOGGER.sysout(action);
     if (executeRequestAction(session, action)) {
       return;
@@ -427,7 +559,7 @@ public class DbModelFactoryR66 extends DbModelFactory {
                                DbTaskRunner.Columns.FILEINFO.name();
         request.query(command);
       } catch (final WaarpDatabaseSqlException e) {
-        SysErrLogger.FAKE_LOGGER.syserr(e);
+        SysErrLogger.FAKE_LOGGER.ignoreLog(e);
         // return false
       } finally {
         request.close();
@@ -450,7 +582,7 @@ public class DbModelFactoryR66 extends DbModelFactory {
                   DbHostAuth.Columns.ISACTIVE.name() + " = " + true;
         request.query(command);
       } catch (final WaarpDatabaseSqlException e) {
-        SysErrLogger.FAKE_LOGGER.syserr(e);
+        SysErrLogger.FAKE_LOGGER.ignoreLog(e);
         // return false
       } finally {
         request.close();
@@ -467,7 +599,7 @@ public class DbModelFactoryR66 extends DbModelFactory {
                   DbHostAuth.Columns.ISPROXIFIED.name() + " = " + false;
         request.query(command);
       } catch (final WaarpDatabaseSqlException e) {
-        SysErrLogger.FAKE_LOGGER.syserr(e);
+        SysErrLogger.FAKE_LOGGER.ignoreLog(e);
         // return false
       } finally {
         request.close();
@@ -492,6 +624,32 @@ public class DbModelFactoryR66 extends DbModelFactory {
                             .ordinal()]) + " NOT NULL ";
       if (executeRequestAction(session, command)) {
         return false;
+      }
+    }
+    if (PartnerConfiguration
+        .isVersion2GTVersion1(version, R66Versions.V3_0_4.getVersion())) {
+      SysErrLogger.FAKE_LOGGER.sysout(
+          version + " to " + R66Versions.V3_0_4.getVersion() + "? " + true);
+      final DbRequest request = new DbRequest(session);
+      String onTable = " ON " + DbTaskRunner.table;
+      if (containsDbType(DbType.Oracle, DbType.PostGreSQL, DbType.H2)) {
+        onTable = "";
+      }
+      try {
+        final String command = "DROP INDEX IDX_RUNNER " + onTable;
+        try {
+          SysErrLogger.FAKE_LOGGER.sysout("Command: " + command);
+          request.query(command);
+        } catch (final WaarpDatabaseNoConnectionException e) {
+          SysErrLogger.FAKE_LOGGER.ignoreLog(e);
+          return false;
+        } catch (final WaarpDatabaseSqlException e) {
+          SysErrLogger.FAKE_LOGGER.ignoreLog(e);
+          // XXX FIX no return
+        }
+        DbModelFactoryR66.createIndex30(dbTypeResolver, request);
+      } finally {
+        request.close();
       }
     }
     DbHostConfiguration.updateVersionDb(Configuration.configuration.getHostId(),

@@ -20,11 +20,17 @@
 
 package org.waarp.http.protocol;
 
+import io.netty.util.ResourceLeakDetector;
+import io.netty.util.ResourceLeakDetector.Level;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestWatcher;
+import org.waarp.common.logging.WaarpLogLevel;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
 import org.waarp.common.utility.TestWatcherJunit4;
 
 import static org.junit.Assert.*;
@@ -49,6 +55,13 @@ public class HttpResumableInfoTest {
   final String filename = "filename.txt";
   final String relativePath = "relative/path/filename.txt";
   HttpResumableInfo resumableInfo;
+
+  @BeforeClass
+  public static void beforeClass() {
+    WaarpLoggerFactory.setDefaultFactoryIfNotSame(
+        new WaarpSlf4JLoggerFactory(WaarpLogLevel.WARN));
+    ResourceLeakDetector.setLevel(Level.PARANOID);
+  }
 
   @Before
   public void before() throws Exception {

@@ -62,6 +62,7 @@ import static org.waarp.openr66.protocol.configuration.Configuration.*;
 public class HttpClient {
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(HttpClient.class);
+  public static final String HTTPS = "https";
 
   private final URI finalUri;
   private final String host;
@@ -81,7 +82,7 @@ public class HttpClient {
   public HttpClient(final String remoteBaseUrl, final String endpoint,
                     final boolean keepConnection, final EventLoopGroup group) {
     this.keepConnection = keepConnection;
-    String uri;
+    final String uri;
     if (remoteBaseUrl.endsWith("/")) {
       uri = remoteBaseUrl + endpoint;
     } else {
@@ -90,33 +91,34 @@ public class HttpClient {
 
     try {
       finalUri = new URI(uri);
-    } catch (URISyntaxException e) {
-      logger.error("URI syntax error", e);
+    } catch (final URISyntaxException e) {
+      logger.error("URI syntax error: {}", e.getMessage());
       throw new IllegalArgumentException(e);
     }
-    String scheme = finalUri.getScheme() == null? "http" : finalUri.getScheme();
+    final String scheme =
+        finalUri.getScheme() == null? "http" : finalUri.getScheme();
     host = finalUri.getHost() == null? "127.0.0.1" : finalUri.getHost();
     port = finalUri.getPort();
     if (port == -1) {
       if ("http".equalsIgnoreCase(scheme)) {
         port = 80;
-      } else if ("https".equalsIgnoreCase(scheme)) {
+      } else if (HTTPS.equalsIgnoreCase(scheme)) {
         port = 443;
       }
     }
 
-    if (!"http".equalsIgnoreCase(scheme) && !"https".equalsIgnoreCase(scheme)) {
+    if (!"http".equalsIgnoreCase(scheme) && !HTTPS.equalsIgnoreCase(scheme)) {
       logger.error("Only HTTP(S) is supported.");
       throw new IllegalArgumentException("Only HTTP(S) is supported.");
     }
 
-    boolean ssl = "https".equalsIgnoreCase(scheme);
+    final boolean ssl = HTTPS.equalsIgnoreCase(scheme);
     final SslContext sslCtx;
     if (ssl) {
       try {
         sslCtx = SslContextBuilder.forClient().trustManager(
             InsecureTrustManagerFactory.INSTANCE).build();
-      } catch (SSLException e) {
+      } catch (final SSLException e) {
         logger.error("SslContext error", e);
         throw new IllegalArgumentException(e);
       }
@@ -141,21 +143,20 @@ public class HttpClient {
    *
    * @return True if the POST succeeded
    */
-  public boolean post(ObjectNode monitoredTransfers, DateTime start,
-                      DateTime stop, String serverId) {
+  public boolean post(final ObjectNode monitoredTransfers, final DateTime start,
+                      final DateTime stop, final String serverId) {
     logger.debug("Start Post from {} to {} as {}", start, stop, serverId);
-    if (keepConnection) {
-      if (remoteRestChannel != null && !remoteRestChannel.isActive()) {
-        remoteRestChannel.close();
-        remoteRestChannel = null;
-      }
+    if (keepConnection && remoteRestChannel != null &&
+        !remoteRestChannel.isActive()) {
+      remoteRestChannel.close();
+      remoteRestChannel = null;
     }
     if (remoteRestChannel == null) {
-      ChannelFuture future =
+      final ChannelFuture future =
           bootstrap.connect(SocketUtils.socketAddress(host, port));
       try {
         remoteRestChannel = future.sync().channel();
-      } catch (InterruptedException e) {
+      } catch (InterruptedException e) {//NOSONAR
         logger.error(e);
         return false;
       }
@@ -169,11 +170,11 @@ public class HttpClient {
       bbody = body.getBytes(WaarpStringUtils.UTF_8);
       length = body.length();
     } catch (UnsupportedEncodingException e) {
-      logger.error(e);
+      logger.error(e.getMessage());
       return false;
     }
     final ByteBuf buf = Unpooled.wrappedBuffer(bbody);
-    HttpHeaders headers = new DefaultHttpHeaders(true);
+    final HttpHeaders headers = new DefaultHttpHeaders(true);
     // Header set
     headers.set(HttpHeaderNames.HOST, host);
     if (keepConnection) {
@@ -207,13 +208,13 @@ public class HttpClient {
         logger.debug("Wait for Close connection");
         remoteRestChannel.closeFuture().sync();
         remoteRestChannel = null;
-      } catch (InterruptedException e) {
+      } catch (InterruptedException e) {//NOSONAR
         logger.error(e);
         // ignore
       }
     }
     futurePost.awaitOrInterruptible();
-    boolean result = futurePost.isSuccess();
+    final boolean result = futurePost.isSuccess();
     logger.info("End Post from {} to {} as {} with {}", start, stop, serverId,
                 result);
     return result;
@@ -223,7 +224,7 @@ public class HttpClient {
     return keepConnection;
   }
 
-  public void setStatus(boolean ok) {
+  public void setStatus(final boolean ok) {
     if (ok) {
       futurePost.setSuccess();
     } else {

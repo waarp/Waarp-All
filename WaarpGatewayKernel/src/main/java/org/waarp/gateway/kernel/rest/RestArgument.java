@@ -446,7 +446,7 @@ public class RestArgument {
   public METHOD getMethod() {
     final String text =
         arguments.path(REST_ROOT_FIELD.ARG_METHOD.field).asText();
-    if (text == null || text.isEmpty()) {
+    if (ParametersChecker.isEmpty(text)) {
       return METHOD.TRACE;
     }
     try {
@@ -688,7 +688,7 @@ public class RestArgument {
   public COMMAND_TYPE getCommand() {
     final String cmd =
         arguments.path(REST_ROOT_FIELD.JSON_COMMAND.field).asText();
-    if (cmd != null && !cmd.isEmpty()) {
+    if (ParametersChecker.isNotEmpty(cmd)) {
       try {
         return COMMAND_TYPE.valueOf(cmd);
       } catch (final Exception e) {
@@ -852,7 +852,7 @@ public class RestArgument {
       throws HttpInvalidAuthenticationException {
     final DateTime dateTime = new DateTime();
     final String date = getXAuthTimestamp();
-    if (date != null && !date.isEmpty()) {
+    if (ParametersChecker.isNotEmpty(date)) {
       final DateTime received = DateTime.parse(date);
       if (maxInterval > 0) {
         final Duration duration = new Duration(received, dateTime);
@@ -930,7 +930,7 @@ public class RestArgument {
           .put(REST_ROOT_FIELD.ARG_X_AUTH_TIMESTAMP.field.toLowerCase(), date);
     }
     final String user = getXAuthUser();
-    if (user != null && !user.isEmpty()) {
+    if (ParametersChecker.isNotEmpty(user)) {
       treeMap.put(REST_ROOT_FIELD.ARG_X_AUTH_USER.field.toLowerCase(), user);
     }
     if (maxInterval > 0 && received != null) {

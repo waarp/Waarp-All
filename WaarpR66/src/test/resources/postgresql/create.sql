@@ -9,7 +9,7 @@ CREATE TABLE public.configuration (
     writesessionlimit bigint NOT NULL,
     delaylimit bigint NOT NULL,
     updatedinfo integer NOT NULL,
-    hostid character varying(8096) NOT NULL
+    hostid character varying(250) NOT NULL
 );
 
 --
@@ -17,12 +17,12 @@ CREATE TABLE public.configuration (
 --
 
 CREATE TABLE public.hostconfig (
-    business text NOT NULL,
-    roles text NOT NULL,
-    aliases text NOT NULL,
-    others text NOT NULL,
+    business VARCHAR(16000) NOT NULL,
+    roles VARCHAR(16000) NOT NULL,
+    aliases VARCHAR(16000) NOT NULL,
+    others VARCHAR(16000) NOT NULL,
     updatedinfo integer NOT NULL,
-    hostid character varying(8096) NOT NULL
+    hostid character varying(250) NOT NULL
 );
 
 --
@@ -30,7 +30,7 @@ CREATE TABLE public.hostconfig (
 --
 
 CREATE TABLE public.hosts (
-    address character varying(8096) NOT NULL,
+    address character varying(250) NOT NULL,
     port integer NOT NULL,
     isssl boolean NOT NULL,
     hostkey bytea NOT NULL,
@@ -39,7 +39,7 @@ CREATE TABLE public.hosts (
     isactive boolean NOT NULL,
     isproxified boolean NOT NULL,
     updatedinfo integer NOT NULL,
-    hostid character varying(8096) NOT NULL
+    hostid character varying(250) NOT NULL
 );
 
 --
@@ -50,7 +50,7 @@ CREATE TABLE public.multiplemonitor (
     countconfig integer NOT NULL,
     counthost integer NOT NULL,
     countrule integer NOT NULL,
-    hostid character varying(8096) NOT NULL
+    hostid character varying(250) NOT NULL
 );
 
 --
@@ -58,20 +58,20 @@ CREATE TABLE public.multiplemonitor (
 --
 
 CREATE TABLE public.rules (
-    hostids text,
+    hostids VARCHAR(16000),
     modetrans integer,
     recvpath character varying(8096),
     sendpath character varying(8096),
     archivepath character varying(8096),
     workpath character varying(8096),
-    rpretasks text,
-    rposttasks text,
-    rerrortasks text,
-    spretasks text,
-    sposttasks text,
-    serrortasks text,
+    rpretasks VARCHAR(16000),
+    rposttasks VARCHAR(16000),
+    rerrortasks VARCHAR(16000),
+    spretasks VARCHAR(16000),
+    sposttasks VARCHAR(16000),
+    serrortasks VARCHAR(16000),
     updatedinfo integer,
-    idrule character varying(8096) NOT NULL
+    idrule character varying(250) NOT NULL
 );
 
 --
@@ -79,28 +79,28 @@ CREATE TABLE public.rules (
 --
 
 CREATE TABLE public.runner (
+    specialid bigint NOT NULL,
     globalstep integer NOT NULL,
     globallaststep integer NOT NULL,
     step integer NOT NULL,
     rank integer NOT NULL,
-    stepstatus character(3) NOT NULL,
-    retrievemode boolean NOT NULL,
-    filename character varying(8096) NOT NULL,
-    ismoved boolean NOT NULL,
-    idrule character varying(8096) NOT NULL,
     blocksz integer NOT NULL,
-    originalname character varying(8096) NOT NULL,
-    fileinfo text NOT NULL,
-    transferinfo text NOT NULL,
     modetrans integer NOT NULL,
+    updatedinfo integer NOT NULL,
+    stepstatus character(3) NOT NULL,
+    infostatus character(3) NOT NULL,
+    retrievemode boolean NOT NULL,
+    ismoved boolean NOT NULL,
     starttrans timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     stoptrans timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    infostatus character(3) NOT NULL,
-    updatedinfo integer NOT NULL,
-    ownerreq character varying(8096) NOT NULL,
-    requester character varying(8096) NOT NULL,
-    requested character varying(8096) NOT NULL,
-    specialid bigint NOT NULL
+    ownerreq character varying(250) NOT NULL,
+    requester character varying(250) NOT NULL,
+    requested character varying(250) NOT NULL,
+    idrule character varying(250) NOT NULL,
+    filename character varying(8096) NOT NULL,
+    originalname character varying(8096) NOT NULL,
+    fileinfo VARCHAR(8096) NOT NULL,
+    transferinfo VARCHAR(8096) NOT NULL
 );
 
 --
@@ -160,11 +160,14 @@ ALTER TABLE ONLY public.rules
 --
 
 ALTER TABLE ONLY public.runner
-    ADD CONSTRAINT runner_pk PRIMARY KEY (ownerreq, requester, requested, specialid);
+    ADD CONSTRAINT runner_pk PRIMARY KEY (specialid, ownerreq, requester, requested);
 
 --
--- Name: idx_runner; Type: INDEX; Schema: public;
+-- Type: INDEX; Schema: public;
 --
 
-CREATE INDEX idx_runner ON public.runner USING btree (starttrans, ownerreq, stepstatus, updatedinfo, globalstep, infostatus, specialid);
-
+CREATE INDEX IF NOT EXISTS idx_config ON public.configuration USING btree (hostid, updatedinfo);
+CREATE INDEX IF NOT EXISTS idx_hostconf ON public.hostconfig USING btree (hostid, updatedinfo);
+CREATE INDEX IF NOT EXISTS idx_host ON public.hosts USING btree (updatedinfo);
+CREATE INDEX IF NOT EXISTS idx_rule ON public.rules USING btree (updatedinfo);
+CREATE INDEX  IF NOT EXISTS idx_run_filter ON public.runner USING btree (ownerreq, starttrans, updatedinfo, stepstatus, infostatus, globallaststep, globalstep, requested, stoptrans);

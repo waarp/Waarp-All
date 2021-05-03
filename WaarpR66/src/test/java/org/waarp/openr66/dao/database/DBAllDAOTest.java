@@ -20,6 +20,9 @@
 
 package org.waarp.openr66.dao.database;
 
+import io.netty.util.ResourceLeakDetector;
+import io.netty.util.ResourceLeakDetector.Level;
+import io.netty.util.internal.PlatformDependent;
 import org.junit.After;
 import org.junit.Assume;
 import org.junit.Before;
@@ -28,10 +31,15 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 import org.testcontainers.containers.JdbcDatabaseContainer;
 import org.waarp.common.command.exception.Reply550Exception;
+import org.waarp.common.database.exception.WaarpDatabaseSqlException;
 import org.waarp.common.database.model.DbModelMysql;
 import org.waarp.common.digest.FilesystemBasedDigest;
 import org.waarp.common.file.FileUtils;
+import org.waarp.common.json.JsonHandler;
 import org.waarp.common.logging.SysErrLogger;
+import org.waarp.common.logging.WaarpLogLevel;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
 import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.openr66.context.ErrorCode;
 import org.waarp.openr66.context.R66FiniteDualStates;
@@ -46,6 +54,7 @@ import org.waarp.openr66.dao.TransferDAO;
 import org.waarp.openr66.dao.exception.DAOConnectionException;
 import org.waarp.openr66.dao.exception.DAONoDataException;
 import org.waarp.openr66.database.data.DbHostAuth;
+import org.waarp.openr66.database.data.DbTaskRunner;
 import org.waarp.openr66.pojo.Business;
 import org.waarp.openr66.pojo.Host;
 import org.waarp.openr66.pojo.Limit;
@@ -87,6 +96,12 @@ public abstract class DBAllDAOTest extends TestAbstract {
   private Connection con;
   private final DAOFactoryTest factoryTest = new DAOFactoryTest();
   protected File configFile = null;
+
+  static {
+    WaarpLoggerFactory.setDefaultFactoryIfNotSame(
+        new WaarpSlf4JLoggerFactory(WaarpLogLevel.WARN));
+    ResourceLeakDetector.setLevel(Level.PARANOID);
+  }
 
   protected static final Map<String, String> TMPFSMAP =
       new HashMap<String, String>();
@@ -190,7 +205,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
 
   public abstract Connection getConnection() throws SQLException;
 
-  public abstract void initDB() throws SQLException;
+  public abstract void initDB() throws SQLException, WaarpDatabaseSqlException;
 
   @After
   public void wrapUp() {
@@ -232,9 +247,9 @@ public abstract class DBAllDAOTest extends TestAbstract {
       target = "h2";
     } else if (driver.equalsIgnoreCase("oracle.jdbc.OracleDriver")) {
       target = "oracle";
-      jdbcUrl = "jdbc:oracle:thin:@//localhost:1521/test";
+      String shouldJdbcUrl = "jdbc:oracle:thin:@//localhost:1521/test";
       SysErrLogger.FAKE_LOGGER
-          .syserr(jdbcUrl + " while should be something like " + jdbcUrl);
+          .syserr(jdbcUrl + " while should be something like " + shouldJdbcUrl);
       throw new UnsupportedOperationException(
           "Unsupported Test for Oracle since wrong JDBC driver");
     } else if (driver.equalsIgnoreCase("org.postgresql.Driver")) {
@@ -242,6 +257,13 @@ public abstract class DBAllDAOTest extends TestAbstract {
     } else if (DbModelMysql.MYSQL_DRIVER_JRE6.equalsIgnoreCase(driver) ||
                DbModelMysql.MYSQL_DRIVER_JRE8.equalsIgnoreCase(driver)) {
       target = "mysql";
+      if (DbModelMysql.MYSQL_DRIVER_JRE8.equalsIgnoreCase(driver) &&
+          PlatformDependent.javaVersion() > 8) {
+        SysErrLogger.FAKE_LOGGER.syserr(
+            "JDBC MySQL not OK using TestContainers under JRE > 8: " + jdbcUrl);
+        throw new UnsupportedOperationException(
+            "Unsupported Test for MySQL and JRE > 8 using testContainers");
+      }
     } else {
       SysErrLogger.FAKE_LOGGER.syserr("Cannot find driver for " + driver);
     }
@@ -282,8 +304,9 @@ public abstract class DBAllDAOTest extends TestAbstract {
     try {
       fileconf = getServerConfigFile();
     } catch (UnsupportedOperationException e) {
-      SysErrLogger.FAKE_LOGGER
-          .syserr("Database not supported by this test Start Stop R66", e);
+      SysErrLogger.FAKE_LOGGER.syserr(
+          "Database not supported by this test Start Stop R66: " +
+          e.getMessage());
       Assume.assumeNoException(e);
       return;
     }
@@ -1405,6 +1428,30 @@ public abstract class DBAllDAOTest extends TestAbstract {
     final TransferDAO dao = getDAO(getConnection());
     assertEquals(3, dao.find(map).size());
   }
+
+  @Test
+  public void test06_FindTransferFollow() throws Exception {
+    if (checkXml()) {
+      return;
+    }
+    final TransferDAO dao = getDAO(getConnection());
+    Transfer transfer =
+        dao.select(-9223372036854775805L, "server1", "server2", "server1");
+    logger.warn("Should find this one: {}", JsonHandler.prettyPrint(transfer));
+    transfer = dao.select(0L, "server1", "server2", "server1");
+    logger.warn("May find this one too: {}", JsonHandler.prettyPrint(transfer));
+    final ArrayList<Filter> map = new ArrayList<Filter>();
+    map.add(DbTaskRunner.getFollowIdFilter("123456789"));
+
+    int count = dao.find(map).size();
+    logger.warn("Should find 1 but possibly 2: {}", count);
+    assertTrue(count >= 1);
+    map.clear();
+    map.add(DbTaskRunner.getFollowIdFilter("1234567890"));
+    logger.warn("Must find 1: {}", count);
+    assertEquals(1, dao.find(map).size());
+  }
+
 
   private boolean checkXml() {
     if (con == null) {

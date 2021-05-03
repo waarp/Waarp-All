@@ -153,7 +153,7 @@ public class FileBasedConfiguration {
     final XmlValue value = hashConfig.get(XML_LOCALE);
     if (value != null && !value.isEmpty()) {
       final String locale = value.getString();
-      if (locale == null || locale.isEmpty()) {
+      if (ParametersChecker.isEmpty(locale)) {
         return;
       }
       Messages.init(new Locale(locale));
@@ -327,7 +327,7 @@ public class FileBasedConfiguration {
         try {
           ParametersChecker.checkSanityString(value.getString());
         } catch (final InvalidArgumentException e) {
-          logger.error("Bad Business Factory class", e);
+          logger.error("Bad Business Factory class: {}", e.getMessage());
           return false;
         }
         try {
@@ -335,7 +335,7 @@ public class FileBasedConfiguration {
               (R66BusinessFactoryInterface) WaarpSystemUtil
                   .newInstance(value.getString()));//NOSONAR
         } catch (final Exception e) {
-          logger.error("Bad Business Factory class", e);
+          logger.error("Bad Business Factory class: {}", e.getMessage());
           return false;
         }
       }
@@ -344,7 +344,7 @@ public class FileBasedConfiguration {
         try {
           ParametersChecker.checkSanityString(value.getString());
         } catch (final InvalidArgumentException e) {
-          logger.error("Bad Business Factory class", e);
+          logger.error("Bad Business Factory class: {}", e.getMessage());
           return false;
         }
         String url = value.getString();
@@ -355,7 +355,7 @@ public class FileBasedConfiguration {
           try {
             ParametersChecker.checkSanityString(value.getString());
           } catch (final InvalidArgumentException e) {
-            logger.error("Bad Business Factory class", e);
+            logger.error("Bad Business Factory class: {}", e.getMessage());
             return false;
           }
           endpoint = value.getString();
@@ -456,8 +456,8 @@ public class FileBasedConfiguration {
         decodedByteKeys = config.getCryptoKey().decryptHexInBytes(passwd);
       } catch (final Exception e) {
         logger.error(
-            "Unable to Decrypt Server Password in Config file from: " + passwd,
-            e);
+            "Unable to Decrypt Server Password in Config file from: " + passwd +
+            ": {}", e.getMessage());
         return false;
       }
     } else {
@@ -473,8 +473,8 @@ public class FileBasedConfiguration {
         decodedByteKeys = config.getCryptoKey().decryptHexFile(key);
       } catch (final Exception e2) {
         logger.error(
-            "Unable to Decrypt Server Password in Config file from: " + skey,
-            e2);
+            "Unable to Decrypt Server Password in Config file from: " + skey +
+            ": {}", e2.getMessage());
         return false;
       }
     }
@@ -487,7 +487,7 @@ public class FileBasedConfiguration {
       return false;
     }
     final String path = value.getString();
-    if (path == null || path.isEmpty()) {
+    if (ParametersChecker.isEmpty(path)) {
       logger.error(Messages.getString(FILE_BASED_CONFIGURATION_NO_SET_CONFIG) +
                    "Http Admin Base"); //$NON-NLS-1$
       return false;
@@ -520,7 +520,7 @@ public class FileBasedConfiguration {
     value = hashConfig.get(XML_PATH_ADMIN_KEYPATH);
     if (value != null && !value.isEmpty()) {
       final String keypath = value.getString();
-      if (keypath == null || keypath.isEmpty()) {
+      if (ParametersChecker.isEmpty(keypath)) {
         logger.error("Bad Key Path");
         return false;
       }
@@ -530,7 +530,7 @@ public class FileBasedConfiguration {
         return false;
       }
       final String keystorepass = value.getString();
-      if (keystorepass == null || keystorepass.isEmpty()) {
+      if (ParametersChecker.isEmpty(keystorepass)) {
         logger.error("Bad KeyStore Passwd");
         return false;
       }
@@ -540,7 +540,7 @@ public class FileBasedConfiguration {
         return false;
       }
       final String keypass = value.getString();
-      if (keypass == null || keypass.isEmpty()) {
+      if (ParametersChecker.isEmpty(keypass)) {
         logger.error("Bad Key Passwd");
         return false;
       }
@@ -605,7 +605,7 @@ public class FileBasedConfiguration {
         try {
           ParametersChecker.checkSanityString(value.getString());
         } catch (final InvalidArgumentException e) {
-          logger.error("Bad Business Factory class", e);
+          logger.error("Bad Business Factory class: {}", e.getMessage());
           return false;
         }
         try {
@@ -613,7 +613,7 @@ public class FileBasedConfiguration {
               (R66BusinessFactoryInterface) WaarpSystemUtil
                   .newInstance(value.getString()));//NOSONAR
         } catch (final Exception e) {
-          logger.error("Bad Business Factory class", e);
+          logger.error("Bad Business Factory class: {}", e.getMessage());
           return false;
         }
       }
@@ -857,15 +857,15 @@ public class FileBasedConfiguration {
       value = hashConfig.get(XML_SERVER_HOSTID);
       if (value != null && !value.isEmpty()) {
         config.setHostId(value.getString());
-        final DbConfiguration configuration =
-            new DbConfiguration(config.getHostId(),
-                                config.getServerGlobalReadLimit(),
-                                config.getServerGlobalWriteLimit(),
-                                config.getServerChannelReadLimit(),
-                                config.getServerChannelWriteLimit(),
-                                config.getDelayLimit());
-        configuration.changeUpdatedInfo(UpdatedInfo.TOSUBMIT);
         try {
+          final DbConfiguration configuration =
+              new DbConfiguration(config.getHostId(),
+                                  config.getServerGlobalReadLimit(),
+                                  config.getServerGlobalWriteLimit(),
+                                  config.getServerChannelReadLimit(),
+                                  config.getServerChannelWriteLimit(),
+                                  config.getDelayLimit());
+          configuration.changeUpdatedInfo(UpdatedInfo.TOSUBMIT);
           if (configuration.exist()) {
             configuration.update();
           } else {
@@ -1006,7 +1006,7 @@ public class FileBasedConfiguration {
         }
       } else {
         final String keypath = value.getString();
-        if (keypath == null || keypath.isEmpty()) {
+        if (ParametersChecker.isEmpty(keypath)) {
           logger.error("Bad Key Path");
           return false;
         }
@@ -1016,7 +1016,7 @@ public class FileBasedConfiguration {
           return false;
         }
         final String keystorepass = value.getString();
-        if (keystorepass == null || keystorepass.isEmpty()) {
+        if (ParametersChecker.isEmpty(keystorepass)) {
           logger.error("Bad KeyStore Passwd");
           return false;
         }
@@ -1026,7 +1026,7 @@ public class FileBasedConfiguration {
           return false;
         }
         final String keypass = value.getString();
-        if (keypass == null || keypass.isEmpty()) {
+        if (ParametersChecker.isEmpty(keypass)) {
           logger.error("Bad Key Passwd");
           return false;
         }
@@ -1046,7 +1046,7 @@ public class FileBasedConfiguration {
                                    .initEmptyTrustStore();
       } else {
         final String keypath = value.getString();
-        if (keypath == null || keypath.isEmpty()) {
+        if (ParametersChecker.isEmpty(keypath)) {
           logger.error("Bad TRUST Key Path");
           return false;
         }
@@ -1056,7 +1056,7 @@ public class FileBasedConfiguration {
           return false;
         }
         final String keystorepass = value.getString();
-        if (keystorepass == null || keystorepass.isEmpty()) {
+        if (ParametersChecker.isEmpty(keystorepass)) {
           logger.error("Bad TRUST KeyStore Passwd");
           return false;
         }
@@ -1218,13 +1218,13 @@ public class FileBasedConfiguration {
                   config.initializeKey(file);
                 } catch (final CryptoException e) {
                   logger.error(
-                      "Unable to load REST Key from Config file: " + fileKey,
-                      e);
+                      "Unable to load REST Key from Config file: " + fileKey +
+                      ": {}", e.getMessage());
                   return false;
                 } catch (final IOException e) {
                   logger.error(
-                      "Unable to load REST Key from Config file: " + fileKey,
-                      e);
+                      "Unable to load REST Key from Config file: " + fileKey +
+                      ": {}", e.getMessage());
                   return false;
                 }
               }
@@ -1368,8 +1368,9 @@ public class FileBasedConfiguration {
                          e); //$NON-NLS-1$
             return false;
           } catch (final WaarpDatabaseException e) {
-            logger.error(Messages.getString("FileBasedConfiguration.NoRule"),
-                         e); //$NON-NLS-1$
+            logger.error(
+                Messages.getString("FileBasedConfiguration.NoRule") + ": {}",
+                e.getMessage()); //$NON-NLS-1$
             return false;
           }
         } else {
@@ -1446,9 +1447,10 @@ public class FileBasedConfiguration {
           return false;
         }
         final String dbpasswd = value.getString();
-        if (dbdriver == null || dbserver == null || dbuser == null ||
-            dbpasswd == null || dbdriver.isEmpty() || dbserver.isEmpty() ||
-            dbuser.isEmpty() || dbpasswd.isEmpty()) {
+        if (ParametersChecker.isEmpty(dbdriver) ||
+            ParametersChecker.isEmpty(dbserver) ||
+            ParametersChecker.isEmpty(dbuser) ||
+            ParametersChecker.isEmpty(dbpasswd)) {
           logger.error(
               Messages.getString(FILE_BASED_CONFIGURATION_NOT_FOUND_CONFIG) +
               "Correct DB data"); //$NON-NLS-1$
@@ -1461,10 +1463,10 @@ public class FileBasedConfiguration {
           try {
             ConnectionFactory.initialize(dbserver, dbuser, dbpasswd);
           } catch (final UnsupportedOperationException e) {
-            logger.error(e);
+            logger.error(e.getMessage());
             return false;
           } catch (final SQLException e) {
-            logger.error("Cannot create ConnectionFactory", e);
+            logger.error("Cannot create ConnectionFactory: {}", e.getMessage());
             return false;
           }
           DAOFactory.initialize(ConnectionFactory.getInstance());
@@ -1507,8 +1509,9 @@ public class FileBasedConfiguration {
             try {
               request.select("SELECT * FROM " + DbConfiguration.table);
             } catch (final WaarpDatabaseSqlException e) {
-              logger.warn(Messages.getString("Database.DbNotInitiated"),
-                          e); //$NON-NLS-1$
+              logger
+                  .warn(Messages.getString("Database.DbNotInitiated") + " : {}",
+                        e.getMessage()); //$NON-NLS-1$
               return true;
             } finally {
               request.close();
@@ -1735,7 +1738,7 @@ public class FileBasedConfiguration {
       }
 
       String path = value.getString();
-      if (path == null || path.isEmpty()) {
+      if (ParametersChecker.isEmpty(path)) {
         throw new OpenR66ProtocolSystemException(
             Messages.getString("FileBasedConfiguration.NotCorrectPath") +
             fromXML); //$NON-NLS-1$
@@ -1771,7 +1774,7 @@ public class FileBasedConfiguration {
     } catch (final DocumentException e) {
       logger.error(
           Messages.getString(FILE_BASED_CONFIGURATION_CANNOT_READ_XML) +
-          filename, e); //$NON-NLS-1$
+          filename + ": {}", e.getMessage()); //$NON-NLS-1$
       return false;
     }
     if (document == null) {
@@ -1818,7 +1821,7 @@ public class FileBasedConfiguration {
     } catch (final DocumentException e) {
       logger.error(
           Messages.getString(FILE_BASED_CONFIGURATION_CANNOT_READ_XML) +
-          filename, e); //$NON-NLS-1$
+          filename + ": {}", e.getMessage()); //$NON-NLS-1$
       return false;
     }
     if (document == null) {
@@ -1890,7 +1893,7 @@ public class FileBasedConfiguration {
     } catch (final DocumentException e) {
       logger.error(
           Messages.getString(FILE_BASED_CONFIGURATION_CANNOT_READ_XML) +
-          filename, e); //$NON-NLS-1$
+          filename + ": {}", e.getMessage()); //$NON-NLS-1$
       return false;
     }
     if (document == null) {
@@ -1974,7 +1977,7 @@ public class FileBasedConfiguration {
     } catch (final DocumentException e) {
       logger.error(
           Messages.getString(FILE_BASED_CONFIGURATION_CANNOT_READ_XML) +
-          filename, e); //$NON-NLS-1$
+          filename + ": {}", e.getMessage()); //$NON-NLS-1$
       return false;
     }
     if (document == null) {
@@ -2057,7 +2060,7 @@ public class FileBasedConfiguration {
     } catch (final DocumentException e) {
       logger.error(
           Messages.getString(FILE_BASED_CONFIGURATION_CANNOT_READ_XML) +
-          filename, e); //$NON-NLS-1$
+          filename + ": {}", e.getMessage()); //$NON-NLS-1$
       return false;
     }
     if (document == null) {
@@ -2165,7 +2168,7 @@ public class FileBasedConfiguration {
     } catch (final DocumentException e) {
       logger.error(
           Messages.getString(FILE_BASED_CONFIGURATION_CANNOT_READ_XML) +
-          filename, e); //$NON-NLS-1$
+          filename + ": {}", e.getMessage()); //$NON-NLS-1$
       return false;
     }
     if (document == null) {
@@ -2217,7 +2220,8 @@ public class FileBasedConfiguration {
       config.setHostAuth(new DbHostAuth(config.getHostId()));
     } catch (final WaarpDatabaseException e) {
       logger.error("Current Host is {}", config.getHostId());
-      logger.error(CANNOT_FIND_AUTHENTICATION_FOR_CURRENT_HOST, e);
+      logger.error(CANNOT_FIND_AUTHENTICATION_FOR_CURRENT_HOST + ": {}",
+                   e.getMessage());
       return false;
     }
     if (config.getHostAuth() == null) {
@@ -2270,7 +2274,7 @@ public class FileBasedConfiguration {
     } catch (final DocumentException e) {
       logger.error(
           Messages.getString(FILE_BASED_CONFIGURATION_CANNOT_READ_XML) +
-          filename, e); //$NON-NLS-1$
+          filename + ": {}", e.getMessage()); //$NON-NLS-1$
       return false;
     }
     if (document == null) {

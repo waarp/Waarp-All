@@ -9,7 +9,7 @@ CREATE TABLE configuration (
     writesessionlimit NUMBER NOT NULL,
     delaylimit NUMBER NOT NULL,
     updatedinfo NUMBER NOT NULL,
-    hostid VARCHAR(1500) NOT NULL
+    hostid VARCHAR2(250) NOT NULL
 );
 
 --
@@ -22,7 +22,7 @@ CREATE TABLE hostconfig (
     aliases VARCHAR2(4000) NOT NULL,
     others VARCHAR2(4000) NOT NULL,
     updatedinfo NUMBER NOT NULL,
-    hostid VARCHAR(1500) NOT NULL
+    hostid VARCHAR2(250) NOT NULL
 );
 
 --
@@ -30,16 +30,16 @@ CREATE TABLE hostconfig (
 --
 
 CREATE TABLE hosts (
-    address VARCHAR(1500) NOT NULL,
+    address VARCHAR2(250) NOT NULL,
     port NUMBER NOT NULL,
     isssl NUMBER(1) NOT NULL,
-    hostkey RAW(2000) NOT NULL,
+    hostkey RAW(1024) NOT NULL,
     adminrole NUMBER(1) NOT NULL,
     isclient NUMBER(1) NOT NULL,
     isactive NUMBER(1) NOT NULL,
     isproxified NUMBER(1) NOT NULL,
     updatedinfo NUMBER NOT NULL,
-    hostid VARCHAR(1500) NOT NULL
+    hostid VARCHAR2(250) NOT NULL
 );
 
 --
@@ -50,7 +50,7 @@ CREATE TABLE multiplemonitor (
     countconfig NUMBER NOT NULL,
     counthost NUMBER NOT NULL,
     countrule NUMBER NOT NULL,
-    hostid VARCHAR(1500) NOT NULL
+    hostid VARCHAR2(250) NOT NULL
 );
 
 --
@@ -60,10 +60,10 @@ CREATE TABLE multiplemonitor (
 CREATE TABLE rules (
     hostids VARCHAR2(4000),
     modetrans NUMBER(1),
-    recvpath VARCHAR(1500),
-    sendpath VARCHAR(1500),
-    archivepath VARCHAR(1500),
-    workpath VARCHAR(1500),
+    recvpath VARCHAR2(4000),
+    sendpath VARCHAR2(4000),
+    archivepath VARCHAR2(4000),
+    workpath VARCHAR2(4000),
     rpretasks VARCHAR2(4000),
     rposttasks VARCHAR2(4000),
     rerrortasks VARCHAR2(4000),
@@ -71,7 +71,7 @@ CREATE TABLE rules (
     sposttasks VARCHAR2(4000),
     serrortasks VARCHAR2(4000),
     updatedinfo NUMBER,
-    idrule VARCHAR(1500) NOT NULL
+    idrule VARCHAR2(250) NOT NULL
 );
 
 --
@@ -84,12 +84,12 @@ CREATE TABLE runner (
     step NUMBER NOT NULL,
     rank NUMBER NOT NULL,
     stepstatus CHAR(3) NOT NULL,
-    retrievemode NUMBER NOT NULL,
-    filename VARCHAR(1500) NOT NULL,
+    retrievemode NUMBER(1) NOT NULL,
+    filename VARCHAR2(4000) NOT NULL,
     ismoved NUMBER(1) NOT NULL,
-    idrule VARCHAR(1500) NOT NULL,
+    idrule VARCHAR2(250) NOT NULL,
     blocksz NUMBER NOT NULL,
-    originalname VARCHAR(1500) NOT NULL,
+    originalname VARCHAR2(4000) NOT NULL,
     fileinfo VARCHAR2(4000) NOT NULL,
     transferinfo VARCHAR2(4000) NOT NULL,
     modetrans NUMBER NOT NULL,
@@ -97,9 +97,9 @@ CREATE TABLE runner (
     stoptrans TIMESTAMP NOT NULL,
     infostatus CHAR(3) NOT NULL,
     updatedinfo NUMBER NOT NULL,
-    ownerreq VARCHAR(1500) NOT NULL,
-    requester VARCHAR(1500) NOT NULL,
-    requested VARCHAR(1500) NOT NULL,
+    ownerreq VARCHAR2(250) NOT NULL,
+    requester VARCHAR2(250) NOT NULL,
+    requested VARCHAR2(250) NOT NULL,
     specialid NUMBER NOT NULL
 );
 
@@ -161,3 +161,11 @@ ALTER TABLE rules
 
 ALTER TABLE runner
     ADD CONSTRAINT runner_pk PRIMARY KEY (ownerreq, requester, requested, specialid);
+
+
+
+CREATE INDEX idx_config ON configuration (hostid, updatedinfo);
+CREATE INDEX idx_hostconf ON hostconfig (hostid, updatedinfo);
+CREATE INDEX idx_host ON hosts (updatedinfo);
+CREATE INDEX idx_rule ON rules (updatedinfo);
+CREATE INDEX idx_run_filter ON runner (ownerreq, starttrans, updatedinfo, stepstatus, infostatus, globallaststep, globalstep, requested, stoptrans);

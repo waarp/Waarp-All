@@ -274,9 +274,12 @@ public class ChannelUtils extends Thread {
       Configuration.configuration.getConstraintLimitHandler().release();
     }
     // First try to StopAll
-    TransferUtils
-        .stopSelectedTransfers(admin.getSession(), 0, null, null, null, null,
-                               null, null, null, null, null, true, true, true);
+    if (admin != null) {
+      TransferUtils
+          .stopSelectedTransfers(admin.getSession(), 0, null, null, null, null,
+                                 null, null, null, null, null, true, true,
+                                 true);
+    }
     Configuration.configuration.setShutdown(true);
     Configuration.configuration.prepareServerStop();
     long delay = Configuration.configuration.getTimeoutCon();
@@ -327,7 +330,7 @@ public class ChannelUtils extends Thread {
     logger.warn(Messages.getString("ChannelUtils.15")); //$NON-NLS-1$
     SysErrLogger.FAKE_LOGGER
         .syserr(Messages.getString("ChannelUtils.15")); //$NON-NLS-1$
-    WaarpSystemUtil.stopLogger();
+    WaarpSystemUtil.stopLogger(false);
   }
 
   /**

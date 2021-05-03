@@ -19,17 +19,12 @@
  */
 package org.waarp.ftp.core.utils;
 
-import ch.qos.logback.classic.LoggerContext;
 import io.netty.channel.Channel;
-import org.slf4j.LoggerFactory;
 import org.waarp.common.crypto.ssl.WaarpSslUtility;
 import org.waarp.common.logging.SysErrLogger;
-import org.waarp.common.logging.WaarpLogLevel;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
-import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
 import org.waarp.common.utility.WaarpShutdownHook;
-import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.ftp.core.config.FtpConfiguration;
 
 import java.net.InetAddress;
@@ -206,7 +201,7 @@ public class FtpChannelUtils implements Runnable {
       try {
         inetAddress = InetAddress.getByName(infos[start]);
       } catch (final UnknownHostException e) {
-        logger.error("Bad IPV4 format", e);
+        logger.error("Bad IPV4 format: {}", e.getMessage());
         return null;
       }
     } else {
@@ -214,7 +209,7 @@ public class FtpChannelUtils implements Runnable {
       try {
         inetAddress = InetAddress.getByName(infos[start]);
       } catch (final UnknownHostException e) {
-        logger.error("Bad IPV6 format", e);
+        logger.error("Bad IPV6 format: {}", e.getMessage());
         return null;
       }
     }
@@ -411,21 +406,6 @@ public class FtpChannelUtils implements Runnable {
   @Override
   public void run() {
     exit(configuration);
-  }
-
-  public static void stopLogger() {
-    if (WaarpSystemUtil.isJunit()) {
-      return;
-    }
-    WaarpLoggerFactory.setDefaultFactoryIfNotSame(
-        new WaarpSlf4JLoggerFactory(WaarpLogLevel.NONE));
-    if (WaarpLoggerFactory
-            .getDefaultFactory() instanceof WaarpSlf4JLoggerFactory &&
-        !WaarpSystemUtil.isJunit()) {
-      final LoggerContext lc =
-          (LoggerContext) LoggerFactory.getILoggerFactory();
-      lc.stop();
-    }
   }
 
 }

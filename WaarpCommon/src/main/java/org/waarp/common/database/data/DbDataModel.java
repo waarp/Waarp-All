@@ -48,7 +48,7 @@ public class DbDataModel extends AbstractDbData {
 
   public static final int[] dbTypes = {
       Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT,
-      Types.INTEGER, Types.VARCHAR
+      Types.INTEGER, Types.NVARCHAR
   };
 
   public static final String table = " CONFIGURATION ";
@@ -113,7 +113,8 @@ public class DbDataModel extends AbstractDbData {
   }
 
   @Override
-  protected void setToArray() {
+  protected void setToArray() throws WaarpDatabaseSqlException {
+    validateLength(Types.NVARCHAR, hostid);
     allFields[Columns.HOSTID.ordinal()].setValue(hostid);
     allFields[Columns.READGLOBALLIMIT.ordinal()].setValue(readgloballimit);
     allFields[Columns.WRITEGLOBALLIMIT.ordinal()].setValue(writegloballimit);
@@ -182,7 +183,7 @@ public class DbDataModel extends AbstractDbData {
    */
   public DbDataModel(final DbSession dbSession, final String hostid,
                      final long rg, final long wg, final long rs, final long ws,
-                     final long del) {
+                     final long del) throws WaarpDatabaseSqlException {
     super(dbSession);
     this.hostid = hostid;
     readgloballimit = rg;

@@ -46,19 +46,21 @@ public abstract class DbModelCommonMariadbMySql extends DbModelAbstract {
       WaarpLoggerFactory.getLogger(DbModelCommonMariadbMySql.class);
 
   protected enum DBType {
-    CHAR(Types.CHAR, " CHAR(3) "), VARCHAR(Types.VARCHAR, " VARCHAR(8096) "),
+    CHAR(Types.CHAR, " CHAR(3) "),
+    VARCHAR(Types.VARCHAR, " VARCHAR(" + MAX_VARCHAR + ") "),
     /**
      * Used in replacement of VARCHAR for MYSQL/MARIADB (limitation of size
      * if
      * in Primary Key)
      */
-    NVARCHAR(Types.VARCHAR, " VARCHAR(255) "),
-    LONGVARCHAR(Types.LONGVARCHAR, " TEXT "), BIT(Types.BIT, " BOOLEAN "),
+    NVARCHAR(Types.VARCHAR, " VARCHAR(" + MAX_KEY_VARCHAR + ") "),
+    LONGVARCHAR(Types.LONGVARCHAR, " TEXT "), BIT(Types.BIT, " " + "BOOLEAN "),
     TINYINT(Types.TINYINT, " TINYINT "), SMALLINT(Types.SMALLINT, " SMALLINT "),
     INTEGER(Types.INTEGER, " INTEGER "), BIGINT(Types.BIGINT, " BIGINT "),
     REAL(Types.REAL, " FLOAT "), DOUBLE(Types.DOUBLE, " DOUBLE "),
-    VARBINARY(Types.VARBINARY, " BLOB "), DATE(Types.DATE, " DATE "),
-    TIMESTAMP(Types.TIMESTAMP, " TIMESTAMP ");
+    VARBINARY(Types.VARBINARY, " VARBINARY(" + (MAX_BINARY * 2) + ") "),
+    DATE(Types.DATE, " " + "DATE "),
+    TIMESTAMP(Types.TIMESTAMP, " TIMESTAMP(3) ");
 
     public final int type;
 

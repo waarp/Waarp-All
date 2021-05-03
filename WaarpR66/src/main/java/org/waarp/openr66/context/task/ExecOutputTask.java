@@ -181,7 +181,8 @@ public class ExecOutputTask extends AbstractExecTask {
         try {
           session.getFile().replaceFilename(newfilename, true);
         } catch (final CommandAbstractException e) {
-          logger.warn("Exec in warning with " + commandLine, e);
+          logger.warn("Exec in warning with " + commandLine + " : {}",
+                      e.getMessage());
         }
         session.getRunner().setFileMoved(newfilename, true);
       }

@@ -188,7 +188,7 @@ public class CommanderNoDb implements CommanderInterface {
           return;
         }
       } catch (final WaarpDatabaseException e) {
-        logger.error("Error in Commander", e);
+        logger.error("Error in Commander: {}", e.getMessage());
       }
     }
   }

@@ -89,7 +89,8 @@ public class R66EmbeddedServiceImpl implements R66Service.Iface {
     try {
       rule = new DbRule(request.getRule());
     } catch (final WaarpDatabaseException e) {
-      logger.warn("Cannot get Rule: " + request.getRule(), e);
+      logger.warn("Cannot get Rule: " + request.getRule() + " : {}",
+                  e.getMessage());
       return null;
     }
     int mode = rule.getMode();
@@ -107,7 +108,7 @@ public class R66EmbeddedServiceImpl implements R66Service.Iface {
         // requested
         taskRunner.setSenderByRequestToValidate(true);
       } catch (final WaarpDatabaseException e) {
-        logger.warn("Cannot get task", e);
+        logger.warn("Cannot get task" + " : {}", e.getMessage());
         return null;
       }
     } else {
@@ -124,7 +125,7 @@ public class R66EmbeddedServiceImpl implements R66Service.Iface {
         taskRunner = new DbTaskRunner(rule, isRetrieve, requestPacket,
                                       request.getDestuid(), ttimestart);
       } catch (final WaarpDatabaseException e) {
-        logger.warn("Cannot get task", e);
+        logger.warn("Cannot get task" + " : {}", e.getMessage());
         return null;
       }
     }
@@ -312,7 +313,8 @@ public class R66EmbeddedServiceImpl implements R66Service.Iface {
                            ErrorCode.valueOf(resulttest.getCode().name()),
                            resulttest.getMessage());
     } catch (final WaarpDatabaseException e1) {
-      logger.warn("Exception while trying to restart transfer", e1);
+      logger.warn("Exception while trying to restart transfer" + " : {}",
+                  e1.getMessage());
       return new R66Result(request.getMode(), ErrorCode.Internal,
                            "Exception while trying to restart transfer");
     }
@@ -463,7 +465,7 @@ public class R66EmbeddedServiceImpl implements R66Service.Iface {
       }
       return list;
     } catch (final CommandAbstractException e) {
-      logger.warn("Error occurs during: " + request, e);
+      logger.warn("Error occurs during: " + request + " : {}", e.getMessage());
       list.add("Error occurs during: " + request);
       return list;
     }

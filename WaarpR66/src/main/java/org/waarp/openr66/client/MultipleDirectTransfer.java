@@ -85,7 +85,8 @@ public class MultipleDirectTransfer extends DirectTransfer {
     try {
       dbrule = new DbRule(transferArgs.getRulename());
     } catch (final WaarpDatabaseException e1) {
-      logger.error(Messages.getString("Transfer.18"), e1); //$NON-NLS-1$
+      logger.error(Messages.getString("Transfer.18") + ": {}",
+                   e1.getMessage()); //$NON-NLS-1$
       future.setFailure(e1);
       return;
     }
@@ -164,8 +165,8 @@ public class MultipleDirectTransfer extends DirectTransfer {
         result.getRunner().delete();
       } catch (final WaarpDatabaseException e) {
         logger.warn(
-            "Cannot apply nolog to     " + result.getRunner().toShortString(),
-            e);
+            "Cannot apply nolog to     " + result.getRunner().toShortString() +
+            " : {}", e.getMessage());
       }
     }
   }

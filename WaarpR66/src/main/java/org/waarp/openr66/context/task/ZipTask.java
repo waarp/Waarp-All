@@ -85,7 +85,7 @@ public class ZipTask extends AbstractTask {
           ZipUtility.unZip(zipFile, directory);
           zip = true;
         } catch (final IOException e) {
-          logger.warn("Error while unzip", e);
+          logger.warn("Error while unzip" + " : {}", e.getMessage());
           zip = false;
         }
         break;

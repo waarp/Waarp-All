@@ -20,10 +20,10 @@
 
 package org.waarp.openr66.protocol.http.restv2.converters;
 
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.joda.time.DateTime;
 import org.joda.time.Period;
+import org.waarp.common.json.JsonHandler;
 import org.waarp.openr66.protocol.localhandler.Monitoring;
 
 import static org.waarp.openr66.protocol.configuration.Configuration.*;
@@ -63,7 +63,7 @@ public final class ServerStatusMaker {
     final int seconds = period.toStandardSeconds().getSeconds();
     final Monitoring mon = configuration.getMonitoring();
     mon.run(seconds, true);
-    final ObjectNode server = new ObjectNode(JsonNodeFactory.instance);
+    final ObjectNode server = JsonHandler.createObjectNode();
 
     server.put("serverName", serverName());
     server.put("date", DateTime.now().toString());

@@ -421,7 +421,7 @@ public class WaarpSnmpAgent extends BaseAgent {
     try {
       init();
     } catch (final IOException e) {
-      logger.warn("Error while SNMP starts ", e);
+      logger.warn("Error while SNMP starts " + " : {}", e.getMessage());
       throw e;
     }
     addShutdownHook();

@@ -79,6 +79,9 @@ public class TransferActions extends ServerActions {
    */
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(TransferActions.class);
+  public static final String RANK_SET = "Rank set: {}";
+  public static final String RUNNER_BEFORE_ANY_ACTION =
+      "Runner before any action: {} {}";
 
   public TransferActions() {
     // nothing
@@ -114,10 +117,10 @@ public class TransferActions extends ServerActions {
           // In case Wildcard was used
           logger.debug("New FILENAME: {}", runner.getOriginalFilename());
           packet.setFilename(runner.getOriginalFilename());
-          logger.debug("Rank set: {}", runner.getRank());
+          logger.debug(RANK_SET, runner.getRank());
           packet.setRank(runner.getRank());
         } else {
-          logger.debug("Rank set: {}", runner.getRank());
+          logger.debug(RANK_SET, runner.getRank());
           packet.setRank(runner.getRank());
         }
       }
@@ -203,8 +206,7 @@ public class TransferActions extends ServerActions {
       packet.setSpecialId(runner.getSpecialId());
     }
     runner.setSender(isRetrieve);
-    logger.debug("Runner before any action: {} {}", runner.shallIgnoreSave(),
-                 runner);
+    logger.debug(RUNNER_BEFORE_ANY_ACTION, runner.shallIgnoreSave(), runner);
     // Check now if request is a valid one
     if (packet.getCode() != ErrorCode.InitOk.code) {
       createErrorFromRequestInitKo(packet, runner);
@@ -259,9 +261,7 @@ public class TransferActions extends ServerActions {
     final long remoteLimit = packet.getLimit();
     long localLimit = localChannelReference.getChannelLimit(runner.isSender());
     // Take the minimum speed
-    if (localLimit <= 0) {
-      localLimit = remoteLimit;
-    } else if (remoteLimit > 0 && remoteLimit < localLimit) {
+    if (localLimit <= 0 || (remoteLimit > 0 && remoteLimit < localLimit)) {
       localLimit = remoteLimit;
     }
     localChannelReference.setChannelLimit(runner.isSender(), localLimit);
@@ -419,10 +419,10 @@ public class TransferActions extends ServerActions {
         // In case Wildcard was used
         logger.debug("New FILENAME: {}", runner.getOriginalFilename());
         packet.setFilename(runner.getOriginalFilename());
-        logger.debug("Rank set: {}", runner.getRank());
+        logger.debug(RANK_SET, runner.getRank());
         packet.setRank(runner.getRank());
       } else {
-        logger.debug("Rank set: {}", runner.getRank());
+        logger.debug(RANK_SET, runner.getRank());
         packet.setRank(runner.getRank());
       }
       packet.validate();
@@ -455,6 +455,11 @@ public class TransferActions extends ServerActions {
         // Automatically send data now
         logger.debug("Now ready to continue with runRetrieve");
         NetworkTransaction.runRetrieve(session);
+        try {
+          Thread.sleep(Configuration.RETRYINMS);
+        } catch (InterruptedException ignore) { //NOSONAR
+          SysErrLogger.FAKE_LOGGER.ignoreLog(ignore);
+        }
       }
     }
   }
@@ -520,8 +525,7 @@ public class TransferActions extends ServerActions {
                                   + packet.getSpecialId()), packet);
         return null;
       }
-      logger.debug("Runner before any action: {} {}", runner.shallIgnoreSave(),
-                   runner);
+      logger.debug(RUNNER_BEFORE_ANY_ACTION, runner.shallIgnoreSave(), runner);
       // ok to restart
       try {
         if (runner.restart(false)) {
@@ -563,9 +567,9 @@ public class TransferActions extends ServerActions {
           lcr.getServerHandler().tryFinalizeRequest(
               new R66Result(lcr.getSession(), false, ErrorCode.Internal,
                             runner));
-        } catch (final OpenR66RunnerErrorException ignore) {
+        } catch (final OpenR66RunnerErrorException ignore) {//NOSONAR
           SysErrLogger.FAKE_LOGGER.ignoreLog(ignore);
-        } catch (final OpenR66ProtocolSystemException ignore) {
+        } catch (final OpenR66ProtocolSystemException ignore) {//NOSONAR
           SysErrLogger.FAKE_LOGGER.ignoreLog(ignore);
         }
         lcr.close();
@@ -597,8 +601,8 @@ public class TransferActions extends ServerActions {
         // Special case of no database client
         try {
           runner = new DbTaskRunner(session, rule, isRetrieve, packet);
-          logger.debug("Runner before any action: {} {}",
-                       runner.shallIgnoreSave(), runner);
+          logger.debug(RUNNER_BEFORE_ANY_ACTION, runner.shallIgnoreSave(),
+                       runner);
         } catch (final WaarpDatabaseException e1) {
           session.setStatus(35);
           endInitRequestInError(ErrorCode.QueryRemotelyUnknown, null,
@@ -630,8 +634,7 @@ public class TransferActions extends ServerActions {
         runner.setFilename(packet.getFilename());
       }
     }
-    logger.debug("Runner before any action: {} {}", runner.shallIgnoreSave(),
-                 runner);
+    logger.debug(RUNNER_BEFORE_ANY_ACTION, runner.shallIgnoreSave(), runner);
     try {
       if (runner.restart(false) && !runner.isSelfRequest()) {
         runner.saveStatus();
@@ -669,8 +672,7 @@ public class TransferActions extends ServerActions {
       try {
         runner = new DbTaskRunner(session, rule, isRetrieve, packet);
         logger
-            .debug("Runner before any action: {} {}", runner.shallIgnoreSave(),
-                   runner);
+            .debug(RUNNER_BEFORE_ANY_ACTION, runner.shallIgnoreSave(), runner);
       } catch (final WaarpDatabaseException e1) {
         session.setStatus(33);
         endInitRequestInError(ErrorCode.QueryRemotelyUnknown, null,
@@ -852,7 +854,8 @@ public class TransferActions extends ServerActions {
                     session.getRunner().getRank());
         session.getRunner().setRankAtStartup(packet.getPacketRank());
         session.getRestart().restartMarker(
-            session.getRunner().getBlocksize() * session.getRunner().getRank());
+            (long) session.getRunner().getBlocksize() *
+            session.getRunner().getRank());
         try {
           session.getFile().restartMarker(session.getRestart());
         } catch (final CommandAbstractException e) {
@@ -877,7 +880,7 @@ public class TransferActions extends ServerActions {
     // Check global size
     final long originalSize = session.getRunner().getOriginalSize();
     if (originalSize > 0) {
-      if (session.getRunner().getBlocksize() *
+      if ((long) session.getRunner().getBlocksize() *
           (session.getRunner().getRank() - 1) > originalSize) {
         // cannot continue
         logger.error(Messages.getString("LocalServerHandler.16") +
@@ -1036,12 +1039,15 @@ public class TransferActions extends ServerActions {
     final long originalSize = session.getRunner().getOriginalSize();
     logger.debug("OSize: {} isSender: {}", originalSize,
                  session.getRunner().isSender());
+    try {
+      session.getFile().closeFile();
+    } catch (final CommandAbstractException e) {
+      SysErrLogger.FAKE_LOGGER.ignoreLog(e);
+    }
     if (packet.isToValidate()) {
       // check if possible originalSize
-      if (originalSize > 0) {
-        if (checkOriginalSize(originalSize)) {
-          return;
-        }
+      if (originalSize > 0 && checkOriginalSize(originalSize)) {
+        return;
       }
       // check if possible Global Digest
       if (checkGlobalDigest(packet)) {
@@ -1051,11 +1057,10 @@ public class TransferActions extends ServerActions {
       fromEndTransferSToTransferR(packet);
     } else {
       session.newState(ENDTRANSFERR);
-      if (!localChannelReference.getFutureRequest().isDone()) {
-        // Validation of end of transfer
-        if (endTransferR()) {
-          // nothing
-        }
+      // Validation of end of transfer
+      if (!localChannelReference.getFutureRequest().isDone() &&
+          endTransferR()) {
+        // nothing
       }
     }
   }
@@ -1070,7 +1075,7 @@ public class TransferActions extends ServerActions {
       packet.validate();
       try {
         ChannelUtils
-            .writeAbstractLocalPacket(localChannelReference, packet, false);
+            .writeAbstractLocalPacket(localChannelReference, packet, true);
       } catch (final OpenR66ProtocolPacketException e) {
         // ignore
       }
@@ -1150,9 +1155,12 @@ public class TransferActions extends ServerActions {
       if (!session.getRunner().isRecvThrough() &&
           session.getFile().length() != originalSize ||
           session.getFile().length() == 0) {
+        String sizesDiffer = ": size differs from " + originalSize + " to " +
+                             session.getFile().length() + " at rank " +
+                             session.getRunner().getRank();
         final R66Result result = new R66Result(new OpenR66RunnerErrorException(
-            Messages.getString("LocalServerHandler.18")),
-                                               //$NON-NLS-1$
+            Messages.getString("LocalServerHandler.18") + sizesDiffer),//$NON
+                                               // -NLS-1$
                                                session, true,
                                                ErrorCode.TransferError,
                                                session.getRunner());
@@ -1164,8 +1172,9 @@ public class TransferActions extends ServerActions {
           // nothing
         }
         final ErrorPacket error = new ErrorPacket(
-            "Final size in error, transfer in error and rank should be reset to 0",
-            ErrorCode.TransferError.getCode(), ErrorPacket.FORWARDCLOSECODE);
+            "Final size in error, transfer in error and rank should be reset to 0" +
+            sizesDiffer, ErrorCode.TransferError.getCode(),
+            ErrorPacket.FORWARDCLOSECODE);
         try {
           ChannelUtils
               .writeAbstractLocalPacket(localChannelReference, error, true);
@@ -1182,6 +1191,29 @@ public class TransferActions extends ServerActions {
     return false;
   }
 
+  private void errorEndTransferR() {
+    session.newState(ERROR);
+    final ErrorPacket error;
+    if (localChannelReference.getFutureRequest().getResult() != null) {
+      final R66Result result =
+          localChannelReference.getFutureRequest().getResult();
+      error = new ErrorPacket(
+          "Error while finalizing transfer: " + result.getMessage(),
+          result.getCode().getCode(), ErrorPacket.FORWARDCLOSECODE);
+    } else {
+      error = new ErrorPacket("Error while finalizing transfer",
+                              ErrorCode.FinalOp.getCode(),
+                              ErrorPacket.FORWARDCLOSECODE);
+    }
+    try {
+      ChannelUtils.writeAbstractLocalPacket(localChannelReference, error, true);
+    } catch (final OpenR66ProtocolPacketException ignored) {
+      // nothing
+    }
+    session.setStatus(23);
+    ChannelCloseTimer.closeFutureTransaction(this);
+  }
+
   private boolean endTransferR() {
     // Finish with post Operation
     R66Result result = new R66Result(session, false, ErrorCode.TransferOk,
@@ -1189,48 +1221,10 @@ public class TransferActions extends ServerActions {
     try {
       session.setFinalizeTransfer(true, result);
     } catch (final OpenR66RunnerErrorException e) {
-      session.newState(ERROR);
-      final ErrorPacket error;
-      if (localChannelReference.getFutureRequest().getResult() != null) {
-        result = localChannelReference.getFutureRequest().getResult();
-        error = new ErrorPacket(
-            "Error while finalizing transfer: " + result.getMessage(),
-            result.getCode().getCode(), ErrorPacket.FORWARDCLOSECODE);
-      } else {
-        error = new ErrorPacket("Error while finalizing transfer",
-                                ErrorCode.FinalOp.getCode(),
-                                ErrorPacket.FORWARDCLOSECODE);
-      }
-      try {
-        ChannelUtils
-            .writeAbstractLocalPacket(localChannelReference, error, true);
-      } catch (final OpenR66ProtocolPacketException ignored) {
-        // nothing
-      }
-      session.setStatus(23);
-      ChannelCloseTimer.closeFutureTransaction(this);
+      errorEndTransferR();
       return true;
     } catch (final OpenR66ProtocolSystemException e) {
-      session.newState(ERROR);
-      final ErrorPacket error;
-      if (localChannelReference.getFutureRequest().getResult() != null) {
-        result = localChannelReference.getFutureRequest().getResult();
-        error = new ErrorPacket(
-            "Error while finalizing transfer: " + result.getMessage(),
-            result.getCode().getCode(), ErrorPacket.FORWARDCLOSECODE);
-      } else {
-        error = new ErrorPacket("Error while finalizing transfer",
-                                ErrorCode.FinalOp.getCode(),
-                                ErrorPacket.FORWARDCLOSECODE);
-      }
-      try {
-        ChannelUtils
-            .writeAbstractLocalPacket(localChannelReference, error, true);
-      } catch (final OpenR66ProtocolPacketException ignored) {
-        // nothing
-      }
-      session.setStatus(23);
-      ChannelCloseTimer.closeFutureTransaction(this);
+      errorEndTransferR();
       return true;
     }
     return false;
@@ -1373,13 +1367,11 @@ public class TransferActions extends ServerActions {
     // The filename or filesize from sender is changed due to PreTask so change it too in receiver
     // comment, filename, filesize
     // Close only if an error occurs!
-    if (runner != null) {
-      if (newSize > 0) {
-        runner.setOriginalSize(newSize);
-        // Check if a CHKFILE task was supposely needed to run
-        if (checkIfAnyTaskCheckFile(newfilename, newSize, runner)) {
-          return;
-        }
+    if (runner != null && newSize > 0) {
+      runner.setOriginalSize(newSize);
+      // Check if a CHKFILE task was supposely needed to run
+      if (checkIfAnyTaskCheckFile(newfilename, newSize, runner)) {
+        return;
       }
     }
     // check if send is already on going

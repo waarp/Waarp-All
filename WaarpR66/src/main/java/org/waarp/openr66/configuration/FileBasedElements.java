@@ -28,78 +28,78 @@ public class FileBasedElements {
   /**
    * Authentication Fields
    */
-  public static final String XML_AUTHENTIFICATION_ROOT = "authent";
+  public static final String XML_AUTHENTICATION_ROOT = "authent";
   /**
    * Authentication Fields
    */
-  public static final String XML_AUTHENTIFICATION_ENTRY = "entry";
+  public static final String XML_AUTHENTICATION_ENTRY = "entry";
   /**
    * Authentication Fields
    */
-  public static final String XML_AUTHENTIFICATION_HOSTID = "hostid";
+  public static final String XML_AUTHENTICATION_HOSTID = "hostid";
   /**
    * Authentication Fields
    */
-  public static final String XML_AUTHENTIFICATION_KEYFILE = "keyfile";
+  public static final String XML_AUTHENTICATION_KEYFILE = "keyfile";
   /**
    * Authentication Fields
    */
-  public static final String XML_AUTHENTIFICATION_KEY = "key";
+  public static final String XML_AUTHENTICATION_KEY = "key";
   /**
    * Authentication Fields
    */
-  public static final String XML_AUTHENTIFICATION_ADMIN = "admin";
+  public static final String XML_AUTHENTICATION_ADMIN = "admin";
   /**
    * Authentication Fields
    */
-  public static final String XML_AUTHENTIFICATION_ADDRESS = "address";
+  public static final String XML_AUTHENTICATION_ADDRESS = "address";
   /**
    * Authentication Fields
    */
-  public static final String XML_AUTHENTIFICATION_PORT = "port";
+  public static final String XML_AUTHENTICATION_PORT = "port";
   /**
    * Authentication Fields
    */
-  public static final String XML_AUTHENTIFICATION_ISSSL = "isssl";
+  public static final String XML_AUTHENTICATION_ISSSL = "isssl";
   /**
    * Authentication Fields
    */
-  public static final String XML_AUTHENTIFICATION_ISCLIENT = "isclient";
+  public static final String XML_AUTHENTICATION_ISCLIENT = "isclient";
   /**
    * Authentication Fields
    */
-  public static final String XML_AUTHENTIFICATION_ISACTIVE = "isactive";
+  public static final String XML_AUTHENTICATION_ISACTIVE = "isactive";
   /**
    * Authentication Fields
    */
-  public static final String XML_AUTHENTIFICATION_ISPROXIFIED = "isproxified";
+  public static final String XML_AUTHENTICATION_ISPROXIFIED = "isproxified";
   /**
    * Authentication Fields
    */
-  public static final String XML_AUTHENTIFICATION_BASED =
-      '/' + XML_AUTHENTIFICATION_ROOT + '/' + XML_AUTHENTIFICATION_ENTRY;
+  public static final String XML_AUTHENTICATION_BASED =
+      '/' + XML_AUTHENTICATION_ROOT + '/' + XML_AUTHENTICATION_ENTRY;
   /**
    * Structure of the Configuration file
    */
   private static final XmlDecl[] configAuthenticationDecls = {
       // identity
-      new XmlDecl(XmlType.STRING, XML_AUTHENTIFICATION_HOSTID),
-      new XmlDecl(XmlType.STRING, XML_AUTHENTIFICATION_KEYFILE),
-      new XmlDecl(XmlType.STRING, XML_AUTHENTIFICATION_KEY),
-      new XmlDecl(XmlType.BOOLEAN, XML_AUTHENTIFICATION_ADMIN),
-      new XmlDecl(XmlType.STRING, XML_AUTHENTIFICATION_ADDRESS),
-      new XmlDecl(XmlType.INTEGER, XML_AUTHENTIFICATION_PORT),
-      new XmlDecl(XmlType.BOOLEAN, XML_AUTHENTIFICATION_ISSSL),
-      new XmlDecl(XmlType.BOOLEAN, XML_AUTHENTIFICATION_ISCLIENT),
-      new XmlDecl(XmlType.BOOLEAN, XML_AUTHENTIFICATION_ISACTIVE),
-      new XmlDecl(XmlType.BOOLEAN, XML_AUTHENTIFICATION_ISPROXIFIED)
+      new XmlDecl(XmlType.STRING, XML_AUTHENTICATION_HOSTID),
+      new XmlDecl(XmlType.STRING, XML_AUTHENTICATION_KEYFILE),
+      new XmlDecl(XmlType.STRING, XML_AUTHENTICATION_KEY),
+      new XmlDecl(XmlType.BOOLEAN, XML_AUTHENTICATION_ADMIN),
+      new XmlDecl(XmlType.STRING, XML_AUTHENTICATION_ADDRESS),
+      new XmlDecl(XmlType.INTEGER, XML_AUTHENTICATION_PORT),
+      new XmlDecl(XmlType.BOOLEAN, XML_AUTHENTICATION_ISSSL),
+      new XmlDecl(XmlType.BOOLEAN, XML_AUTHENTICATION_ISCLIENT),
+      new XmlDecl(XmlType.BOOLEAN, XML_AUTHENTICATION_ISACTIVE),
+      new XmlDecl(XmlType.BOOLEAN, XML_AUTHENTICATION_ISPROXIFIED)
   };
   /**
    * Global Structure for Server Configuration
    */
   public static final XmlDecl[] authentElements = {
-      new XmlDecl(XML_AUTHENTIFICATION_ENTRY, XmlType.XVAL,
-                  XML_AUTHENTIFICATION_BASED, configAuthenticationDecls, true)
+      new XmlDecl(XML_AUTHENTICATION_ENTRY, XmlType.XVAL,
+                  XML_AUTHENTICATION_BASED, configAuthenticationDecls, true)
   };
   /**
    * XML_LOCALE

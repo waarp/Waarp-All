@@ -85,10 +85,10 @@ public class DbModelOracleKernel extends DbModelOracle {
     try {
       request.query(action.toString());
     } catch (final WaarpDatabaseNoConnectionException e) {
-      SysErrLogger.FAKE_LOGGER.syserr(e);
+      SysErrLogger.FAKE_LOGGER.ignoreLog(e);
       return;
     } catch (final WaarpDatabaseSqlException e) {
-      SysErrLogger.FAKE_LOGGER.syserr(e);
+      SysErrLogger.FAKE_LOGGER.ignoreLog(e);
       // XXX FIX No return
     } finally {
       request.close();
@@ -105,10 +105,10 @@ public class DbModelOracleKernel extends DbModelOracle {
     try {
       request.query(action.toString());
     } catch (final WaarpDatabaseNoConnectionException e) {
-      SysErrLogger.FAKE_LOGGER.syserr(e);
+      SysErrLogger.FAKE_LOGGER.ignoreLog(e);
       return;
     } catch (final WaarpDatabaseSqlException e) {
-      SysErrLogger.FAKE_LOGGER.syserr(e);
+      SysErrLogger.FAKE_LOGGER.ignoreLog(e);
       // XXX FIX No return
     } finally {
       request.close();
@@ -123,9 +123,9 @@ public class DbModelOracleKernel extends DbModelOracle {
     try {
       request.query(action.toString());
     } catch (final WaarpDatabaseNoConnectionException e) {
-      SysErrLogger.FAKE_LOGGER.syserr(e);
+      SysErrLogger.FAKE_LOGGER.ignoreLog(e);
     } catch (final WaarpDatabaseSqlException e) {
-      SysErrLogger.FAKE_LOGGER.syserr(e);
+      SysErrLogger.FAKE_LOGGER.ignoreLog(e);
     } finally {
       request.close();
     }
@@ -149,10 +149,10 @@ public class DbModelOracleKernel extends DbModelOracle {
       request.query(action);
       request.query(action2);
     } catch (final WaarpDatabaseNoConnectionException e) {
-      SysErrLogger.FAKE_LOGGER.syserr(e);
+      SysErrLogger.FAKE_LOGGER.ignoreLog(e);
       return;
     } catch (final WaarpDatabaseSqlException e) {
-      SysErrLogger.FAKE_LOGGER.syserr(e);
+      SysErrLogger.FAKE_LOGGER.ignoreLog(e);
       return;
     } finally {
       request.close();

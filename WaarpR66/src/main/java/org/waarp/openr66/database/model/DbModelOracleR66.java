@@ -36,6 +36,8 @@ import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.configuration.PartnerConfiguration;
 import org.waarp.openr66.protocol.utils.R66Versions;
 
+import java.sql.Types;
+
 import static org.waarp.common.database.DbConstant.*;
 
 /**
@@ -87,22 +89,23 @@ public class DbModelOracleR66 extends DbModelOracle {
     try {
       request.query(action.toString());
     } catch (final WaarpDatabaseNoConnectionException e) {
-      SysErrLogger.FAKE_LOGGER.syserr(e);
+      SysErrLogger.FAKE_LOGGER.ignoreLog(e);
       return;
     } catch (final WaarpDatabaseSqlException e) {
-      SysErrLogger.FAKE_LOGGER.syserr(e);
+      SysErrLogger.FAKE_LOGGER.ignoreLog(e);
       // XXX FIX no return
     } finally {
       request.close();
     }
-    final DbMultipleMonitor multipleMonitor =
-        new DbMultipleMonitor(Configuration.configuration.getHostId(), 0, 0, 0);
     try {
+      final DbMultipleMonitor multipleMonitor =
+          new DbMultipleMonitor(Configuration.configuration.getHostId(), 0, 0,
+                                0);
       if (!multipleMonitor.exist()) {
         multipleMonitor.insert();
       }
     } catch (final WaarpDatabaseException e1) {
-      SysErrLogger.FAKE_LOGGER.syserr(e1);
+      SysErrLogger.FAKE_LOGGER.ignoreLog(e1);
     }
 
     // Configuration
@@ -123,10 +126,10 @@ public class DbModelOracleR66 extends DbModelOracle {
     try {
       request.query(action.toString());
     } catch (final WaarpDatabaseNoConnectionException e) {
-      SysErrLogger.FAKE_LOGGER.syserr(e);
+      SysErrLogger.FAKE_LOGGER.ignoreLog(e);
       return;
     } catch (final WaarpDatabaseSqlException e) {
-      SysErrLogger.FAKE_LOGGER.syserr(e);
+      SysErrLogger.FAKE_LOGGER.ignoreLog(e);
       // XXX FIX no return
     } finally {
       request.close();
@@ -151,10 +154,10 @@ public class DbModelOracleR66 extends DbModelOracle {
     try {
       request.query(action.toString());
     } catch (final WaarpDatabaseNoConnectionException e) {
-      SysErrLogger.FAKE_LOGGER.syserr(e);
+      SysErrLogger.FAKE_LOGGER.ignoreLog(e);
       return;
     } catch (final WaarpDatabaseSqlException e) {
-      SysErrLogger.FAKE_LOGGER.syserr(e);
+      SysErrLogger.FAKE_LOGGER.ignoreLog(e);
       // XXX FIX no return
     } finally {
       request.close();
@@ -177,10 +180,10 @@ public class DbModelOracleR66 extends DbModelOracle {
     try {
       request.query(action.toString());
     } catch (final WaarpDatabaseNoConnectionException e) {
-      SysErrLogger.FAKE_LOGGER.syserr(e);
+      SysErrLogger.FAKE_LOGGER.ignoreLog(e);
       return;
     } catch (final WaarpDatabaseSqlException e) {
-      SysErrLogger.FAKE_LOGGER.syserr(e);
+      SysErrLogger.FAKE_LOGGER.ignoreLog(e);
       // XXX FIX no return
     } finally {
       request.close();
@@ -202,10 +205,10 @@ public class DbModelOracleR66 extends DbModelOracle {
     try {
       request.query(action.toString());
     } catch (final WaarpDatabaseNoConnectionException e) {
-      SysErrLogger.FAKE_LOGGER.syserr(e);
+      SysErrLogger.FAKE_LOGGER.ignoreLog(e);
       return;
     } catch (final WaarpDatabaseSqlException e) {
-      SysErrLogger.FAKE_LOGGER.syserr(e);
+      SysErrLogger.FAKE_LOGGER.ignoreLog(e);
       // XXX FIX no return
     } finally {
       request.close();
@@ -216,44 +219,35 @@ public class DbModelOracleR66 extends DbModelOracle {
     final DbTaskRunner.Columns[] acolumns = DbTaskRunner.Columns.values();
     for (int i = 0; i < acolumns.length; i++) {
       action.append(acolumns[i].name())
-            .append(DBType.getType(DbTaskRunner.dbTypes[i])).append(notNull)
-            .append(", ");
+            .append(DBType.getType(DbTaskRunner.dbTypes[i])).append(notNull);
+      if (DbTaskRunner.dbTypes[i] == Types.TIMESTAMP) {
+        action.append(" DEFAULT CURRENT_TIMESTAMP(3)");
+      }
+      action.append(", ");
     }
     // Several columns for primary key
     action.append(constraint + " runner_pk " + primaryKey + '(');
-    for (int i = DbTaskRunner.NBPRKEY; i > 1; i--) {
-      action.append(acolumns[acolumns.length - i].name()).append(',');
+    for (int i = 0; i < DbTaskRunner.PRIMARY_KEY.length - 1; i++) {
+      action.append(DbTaskRunner.PRIMARY_KEY[i]).append(',');
     }
-    action.append(acolumns[acolumns.length - 1].name()).append("))");
+    action.append(DbTaskRunner.PRIMARY_KEY[DbTaskRunner.PRIMARY_KEY.length - 1])
+          .append("))");
     SysErrLogger.FAKE_LOGGER.sysout(action);
     try {
       request.query(action.toString());
     } catch (final WaarpDatabaseNoConnectionException e) {
-      SysErrLogger.FAKE_LOGGER.syserr(e);
+      SysErrLogger.FAKE_LOGGER.ignoreLog(e);
       return;
     } catch (final WaarpDatabaseSqlException e) {
-      SysErrLogger.FAKE_LOGGER.syserr(e);
+      SysErrLogger.FAKE_LOGGER.ignoreLog(e);
       // XXX FIX no return
     } finally {
       request.close();
     }
-    // Index Runner
-    action = new StringBuilder(
-        "CREATE INDEX IDX_RUNNER ON " + DbTaskRunner.table + '(');
-    final DbTaskRunner.Columns[] icolumns = DbTaskRunner.indexes;
-    for (int i = 0; i < icolumns.length - 1; i++) {
-      action.append(icolumns[i].name()).append(", ");
-    }
-    action.append(icolumns[icolumns.length - 1].name()).append(')');
-    SysErrLogger.FAKE_LOGGER.sysout(action);
+    // Index
     try {
-      request.query(action.toString());
-    } catch (final WaarpDatabaseNoConnectionException e) {
-      SysErrLogger.FAKE_LOGGER.syserr(e);
-      return;
-    } catch (final WaarpDatabaseSqlException e) {
-      SysErrLogger.FAKE_LOGGER.syserr(e);
-      // XXX FIX no return
+      request = new DbRequest(session);
+      DbModelFactoryR66.createIndex30(dbTypeResolver, request);
     } finally {
       request.close();
     }
@@ -266,10 +260,10 @@ public class DbModelOracleR66 extends DbModelOracle {
     try {
       request.query(action.toString());
     } catch (final WaarpDatabaseNoConnectionException e) {
-      SysErrLogger.FAKE_LOGGER.syserr(e);
+      SysErrLogger.FAKE_LOGGER.ignoreLog(e);
       return;
     } catch (final WaarpDatabaseSqlException e) {
-      SysErrLogger.FAKE_LOGGER.syserr(e);
+      SysErrLogger.FAKE_LOGGER.ignoreLog(e);
       return;
     } finally {
       request.close();
@@ -315,7 +309,7 @@ public class DbModelOracleR66 extends DbModelOracle {
       try {
         request.query(action.toString());
       } catch (final WaarpDatabaseSqlException e) {
-        SysErrLogger.FAKE_LOGGER.syserr(e);
+        SysErrLogger.FAKE_LOGGER.ignoreLog(e);
         return false;
       } finally {
         request.close();
@@ -334,7 +328,7 @@ public class DbModelOracleR66 extends DbModelOracle {
       try {
         request.query(command);
       } catch (final WaarpDatabaseSqlException e) {
-        SysErrLogger.FAKE_LOGGER.syserr(e);
+        SysErrLogger.FAKE_LOGGER.ignoreLog(e);
         // return false
       } finally {
         request.close();
@@ -354,7 +348,7 @@ public class DbModelOracleR66 extends DbModelOracle {
       try {
         request.query(command);
       } catch (final WaarpDatabaseSqlException e) {
-        SysErrLogger.FAKE_LOGGER.syserr(e);
+        SysErrLogger.FAKE_LOGGER.ignoreLog(e);
         // return false
       } finally {
         request.close();
@@ -367,7 +361,7 @@ public class DbModelOracleR66 extends DbModelOracle {
       try {
         request.query(command);
       } catch (final WaarpDatabaseSqlException e) {
-        SysErrLogger.FAKE_LOGGER.syserr(e);
+        SysErrLogger.FAKE_LOGGER.ignoreLog(e);
         // return false
       } finally {
         request.close();
@@ -389,8 +383,30 @@ public class DbModelOracleR66 extends DbModelOracle {
         SysErrLogger.FAKE_LOGGER.sysout("Command: " + command);
         request.query(command);
       } catch (final WaarpDatabaseSqlException e) {
-        SysErrLogger.FAKE_LOGGER.syserr(e);
+        SysErrLogger.FAKE_LOGGER.ignoreLog(e);
         return false;
+      } finally {
+        request.close();
+      }
+    }
+    if (PartnerConfiguration
+        .isVersion2GTVersion1(version, R66Versions.V3_0_4.getVersion())) {
+      SysErrLogger.FAKE_LOGGER.sysout(
+          version + " to " + R66Versions.V3_0_4.getVersion() + "? " + true);
+      final DbRequest request = new DbRequest(session);
+      try {
+        final String command = "DROP INDEX IF EXISTS IDX_RUNNER ";
+        try {
+          SysErrLogger.FAKE_LOGGER.sysout("Command: " + command);
+          request.query(command);
+        } catch (final WaarpDatabaseNoConnectionException e) {
+          SysErrLogger.FAKE_LOGGER.ignoreLog(e);
+          return false;
+        } catch (final WaarpDatabaseSqlException e) {
+          SysErrLogger.FAKE_LOGGER.ignoreLog(e);
+          // XXX FIX no return
+        }
+        DbModelFactoryR66.createIndex30(dbTypeResolver, request);
       } finally {
         request.close();
       }

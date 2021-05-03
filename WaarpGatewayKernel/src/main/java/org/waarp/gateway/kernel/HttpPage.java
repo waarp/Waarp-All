@@ -120,8 +120,6 @@ public class HttpPage {
     try {
       factory =
           (HttpBusinessFactory) WaarpSystemUtil.newInstance(classname);//NOSONAR
-    } catch (NoSuchMethodException e) {
-      throw new InstantiationException(e.getMessage());
     } catch (InvocationTargetException e) {
       throw new InstantiationException(e.getMessage());
     }

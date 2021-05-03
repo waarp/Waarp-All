@@ -27,6 +27,7 @@ import org.waarp.common.file.AbstractDir;
 import org.waarp.common.file.AuthInterface;
 import org.waarp.common.file.DirInterface;
 import org.waarp.common.file.SessionInterface;
+import org.waarp.common.utility.ParametersChecker;
 
 import java.util.regex.Pattern;
 
@@ -254,7 +255,7 @@ public abstract class FilesystemBasedAuthImpl implements AuthInterface {
    * @return the full path as a String
    */
   public String getAbsolutePath(final String path) {
-    if (path == null || path.isEmpty()) {
+    if (ParametersChecker.isEmpty(path)) {
       return getBaseDirectory();
     }
     return AbstractDir

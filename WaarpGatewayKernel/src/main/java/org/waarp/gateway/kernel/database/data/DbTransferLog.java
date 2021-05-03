@@ -71,8 +71,8 @@ public class DbTransferLog extends AbstractDbData {
   }
 
   public static final int[] dbTypes = {
-      Types.VARCHAR, Types.VARCHAR, Types.TIMESTAMP, Types.TIMESTAMP,
-      Types.LONGVARCHAR, Types.INTEGER, Types.INTEGER, Types.NVARCHAR,
+      Types.VARCHAR, Types.NVARCHAR, Types.TIMESTAMP, Types.TIMESTAMP,
+      Types.VARCHAR, Types.INTEGER, Types.INTEGER, Types.NVARCHAR,
       Types.NVARCHAR, Types.NVARCHAR, Types.BIGINT
   };
 
@@ -250,11 +250,13 @@ public class DbTransferLog extends AbstractDbData {
   }
 
   @Override
-  protected void setToArray() {
+  protected void setToArray() throws WaarpDatabaseSqlException {
     // FILENAME, MODETRANS,
     // STARTTRANS, STOPTRANS, TRANSINFO
     // INFOSTATUS, UPDATEDINFO
     // USERID, ACCOUNTID, SPECIALID
+    validateLength(Types.VARCHAR, filename, infotransf);
+    validateLength(Types.NVARCHAR, mode, user, account, hostid);
     allFields[Columns.FILENAME.ordinal()].setValue(filename);
     allFields[Columns.MODETRANS.ordinal()].setValue(mode);
     allFields[Columns.STARTTRANS.ordinal()].setValue(start);
@@ -406,7 +408,7 @@ public class DbTransferLog extends AbstractDbData {
           throw new WaarpDatabaseNoDataException(NO_ROW_FOUND2);
         }
       } catch (final WaarpDatabaseSqlException e) {
-        logger.error("Problem while inserting", e);
+        logger.error("Problem while inserting: {}", e.getMessage());
         final DbPreparedStatement find = new DbPreparedStatement(dbSession);
         try {
           find.createPrepareStatement(
@@ -793,7 +795,8 @@ public class DbTransferLog extends AbstractDbData {
     try {
       pstt.getPreparedStatement().setTimestamp(1, startlimit);
     } catch (final SQLException e) {
-      logger.error("Database SQL Error: Cannot set timestamp", e);
+      logger.error("Database SQL Error: Cannot set timestamp: {}",
+                   e.getMessage());
       throw new WaarpDatabaseSqlException("Cannot set timestamp", e);
     }
   }
@@ -1111,7 +1114,7 @@ public class DbTransferLog extends AbstractDbData {
     try {
       root.addValue(values);
     } catch (final InvalidObjectException e) {
-      logger.error("Error during Write DbTransferLog file", e);
+      logger.error("Error during Write DbTransferLog file: {}", e.getMessage());
       return ERROR_DURING_PURGE;
     }
     try {
@@ -1161,7 +1164,8 @@ public class DbTransferLog extends AbstractDbData {
           try {
             root.addValue(values);
           } catch (final InvalidObjectException e) {
-            logger.error("Error during Write DbTransferLog file", e);
+            logger.error("Error during Write DbTransferLog file: {}",
+                         e.getMessage());
             return ERROR_DURING_PURGE;
           }
           log.delete();

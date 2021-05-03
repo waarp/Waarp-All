@@ -225,11 +225,11 @@ public final class CharsetsUtil {
       }
       success = true;
     } catch (final FileNotFoundException e) {
-      logger.warn("File not found", e);
+      logger.warn("File not found: {}", e.getMessage());
     } catch (final UnsupportedEncodingException e) {
-      logger.warn("Unsupported Encoding", e);
+      logger.warn("Unsupported Encoding: {}", e.getMessage());
     } catch (final IOException e) {
-      logger.warn("File IOException", e);
+      logger.warn("File IOException: {}", e.getMessage());
     } finally {
       FileUtils.close(reader);
       FileUtils.close(fileInputStream);

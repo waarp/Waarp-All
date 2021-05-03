@@ -193,10 +193,11 @@ public class IcapTask extends AbstractTask {
             if (transferTask.futureCompletion.isSuccess()) {
               futureCompletion
                   .setResult(transferTask.futureCompletion.getResult());
-              logger.info("ICAP ended in KO on file but resend is OK for {}",
-                          session.getFile().getTrueFile().getAbsolutePath());
+              logger.info(
+                  "ICAP ended in KO on file but resend as requested is OK for {}",
+                  session.getFile().getTrueFile().getAbsolutePath());
               futureCompletion.setFailure(new OpenR66RunnerErrorException(
-                  "ICAP ended in KO on file but resend is OK"));
+                  "ICAP ended in KO on file but resend as requested is OK"));
             } else {
               logger.error(
                   "ICAP KO with Resend in error with " + argRule + ':' +

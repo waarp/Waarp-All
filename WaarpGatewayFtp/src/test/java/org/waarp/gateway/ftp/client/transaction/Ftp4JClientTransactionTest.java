@@ -60,7 +60,7 @@ public class Ftp4JClientTransactionTest extends WaarpFtp4jClient {
    * @return True if the file is correctly transfered
    */
   public boolean transferFile(String local, String remote, boolean store) {
-    final boolean status = transferFile(local, remote, store? 1 : 0);
+    final boolean status = transferFile(local, remote, store? 1 : -1);
     logger.info("Transfer {} to {} using {} is {}", local, remote,
                 store? "STOR" : "RETR", status);
     return status;

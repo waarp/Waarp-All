@@ -69,12 +69,27 @@ public interface WaarpLogger {
   String name();
 
   /**
+   * Change the Level
+   *
+   * @param level
+   */
+  void setLevel(WaarpLogLevel level);
+
+  /**
    * Is the logger instance enabled for the TRACE level?
    *
    * @return True if this Logger is enabled for the TRACE level, false
    *     otherwise.
    */
   boolean isTraceEnabled();
+
+  /**
+   * Special logger call (WARN mode) to print callee address, not logger place
+   *
+   * @param callee distance from logger call for which to print the classname
+   * @param msg
+   */
+  void junit(int callee, String msg);
 
   /**
    * Log a message at the TRACE level.

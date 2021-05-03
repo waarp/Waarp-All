@@ -65,11 +65,9 @@ public final class XMLUtils {
       final StreamResult streamResult = new StreamResult(outputStream);
       transformer.transform(domSource, streamResult);
     } catch (final TransformerException e) {
-      logger
-          .error("Error while writing document to file: {}", e.getMessage(), e);
+      logger.error("Error while writing document to file: {}", e.getMessage());
     } catch (FileNotFoundException e) {
-      logger
-          .error("Error while writing document to file: {}", e.getMessage(), e);
+      logger.error("Error while writing document to file: {}", e.getMessage());
     } finally {
       if (outputStream != null) {
         FileUtils.close(outputStream);

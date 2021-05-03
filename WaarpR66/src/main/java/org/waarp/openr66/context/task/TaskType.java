@@ -19,13 +19,16 @@
  */
 package org.waarp.openr66.context.task;
 
+import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.openr66.context.R66Session;
 import org.waarp.openr66.context.task.exception.OpenR66RunnerErrorException;
 import org.waarp.openr66.context.task.extension.AbstractExtendedTaskFactory;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -45,7 +48,9 @@ public enum TaskType {
   public static final String NAME_UNKNOWN = "name unknown: ";
 
   private static final Map<String, AbstractExtendedTaskFactory>
-      extendedTaskType = new HashMap<String, AbstractExtendedTaskFactory>();
+      extendedTaskTypeMap = new HashMap<String, AbstractExtendedTaskFactory>();
+  private static final Set<AbstractExtendedTaskFactory> extendedTaskTypeSet =
+      new HashSet<AbstractExtendedTaskFactory>();
 
   final int type;
 
@@ -72,8 +77,28 @@ public enum TaskType {
     for (String associatedName : associatedTaskNames) {
       logger.debug("Add {} with {}", associatedName,
                    extendedTaskFactory.getName());
-      extendedTaskType.put(associatedName, extendedTaskFactory);
+      extendedTaskTypeMap.put(associatedName, extendedTaskFactory);
+      extendedTaskTypeSet.add(extendedTaskFactory);
     }
+  }
+
+  static {
+    // Try to load S3 Tasks if S3TaskFactory exists
+    try {
+      Class s3TaskFactoryClass =
+          Class.forName("org.waarp.openr66.s3.taskfactory.S3TaskFactory");
+      WaarpSystemUtil.newInstance(s3TaskFactoryClass);
+    } catch (Exception ignore) {
+      // Not found and ignore
+      SysErrLogger.FAKE_LOGGER.ignoreLog(ignore);
+    }
+  }
+
+  /**
+   * @return the current Set of ExtendedTaskFactories
+   */
+  public static Set<AbstractExtendedTaskFactory> getExtendedFactories() {
+    return extendedTaskTypeSet;
   }
 
   /**
@@ -88,9 +113,9 @@ public enum TaskType {
       TaskType.valueOf(task);
       return true;
     } catch (final IllegalArgumentException e) {
-      logger
-          .debug("{} is in keys: {}", task, extendedTaskType.containsKey(task));
-      return extendedTaskType.containsKey(task);
+      logger.debug("{} is in keys: {}", task,
+                   extendedTaskTypeMap.containsKey(task));
+      return extendedTaskTypeMap.containsKey(task);
     }
   }
 
@@ -225,7 +250,7 @@ public enum TaskType {
                                            final R66Session session)
       throws OpenR66RunnerErrorException {
     // EXTENDED first
-    AbstractExtendedTaskFactory factory = extendedTaskType.get(name);
+    AbstractExtendedTaskFactory factory = extendedTaskTypeMap.get(name);
     if (factory != null) {
       return factory.getTaskFromId(name, argRule, delay, session);
     }
@@ -260,7 +285,7 @@ public enum TaskType {
                                                       final R66Session session)
       throws OpenR66RunnerErrorException {
     // EXTENDED first
-    AbstractExtendedTaskFactory factory = extendedTaskType.get(name);
+    AbstractExtendedTaskFactory factory = extendedTaskTypeMap.get(name);
     if (factory != null) {
       return factory.getTaskFromIdForBusiness(name, argRule, delay, session);
     }

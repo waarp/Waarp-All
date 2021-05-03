@@ -138,6 +138,25 @@ public final class ParametersChecker {
   }
 
   /**
+   * Check if any parameter are null or empty and if so, return true
+   *
+   * @param parameters set of parameters
+   *
+   * @return True if any is null or empty or containing only spaces
+   */
+  public static boolean isEmpty(final String... parameters) {
+    if (parameters == null) {
+      return true;
+    }
+    for (final String parameter : parameters) {
+      if (Strings.isNullOrEmpty(parameter) || parameter.trim().isEmpty()) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
    * Check if any parameter are null or empty and if so, throw an
    * IllegalArgumentException
    *
@@ -238,7 +257,7 @@ public final class ParametersChecker {
   public static void checkSanityString(final String... strings)
       throws InvalidArgumentException {
     for (final String field : strings) {
-      if (field == null || field.isEmpty()) {
+      if (isEmpty(field)) {
         continue;
       }
       if (UNPRINTABLE_PATTERN.matcher(field).find()) {

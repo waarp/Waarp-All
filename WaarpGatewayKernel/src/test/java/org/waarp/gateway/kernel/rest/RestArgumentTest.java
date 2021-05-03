@@ -20,11 +20,16 @@
 
 package org.waarp.gateway.kernel.rest;
 
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.netty.util.ResourceLeakDetector;
+import io.netty.util.ResourceLeakDetector.Level;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestWatcher;
+import org.waarp.common.json.JsonHandler;
+import org.waarp.common.logging.WaarpLogLevel;
+import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
 import org.waarp.common.utility.TestWatcherJunit4;
 
 import static org.junit.Assert.*;
@@ -33,6 +38,13 @@ public class RestArgumentTest {
   @Rule(order = Integer.MIN_VALUE)
   public TestWatcher watchman = new TestWatcherJunit4();
 
+  @BeforeClass
+  public static void beforeClass() {
+    WaarpLoggerFactory.setDefaultFactoryIfNotSame(
+        new WaarpSlf4JLoggerFactory(WaarpLogLevel.WARN));
+    ResourceLeakDetector.setLevel(Level.PARANOID);
+  }
+
 
   @Test
   public void testAddFilterNPE() {
@@ -40,6 +52,6 @@ public class RestArgumentTest {
     ra.addFilter(null);
 
     assertEquals("filters should be an empty ObjectNode",
-                 new ObjectNode(JsonNodeFactory.instance), ra.getFilter());
+                 JsonHandler.createObjectNode(), ra.getFilter());
   }
 }

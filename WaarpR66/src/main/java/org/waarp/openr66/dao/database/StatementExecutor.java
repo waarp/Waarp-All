@@ -20,6 +20,7 @@
 
 package org.waarp.openr66.dao.database;
 
+import org.waarp.common.database.exception.WaarpDatabaseSqlException;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.lru.SynchronizedLruCache;
@@ -34,7 +35,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 public abstract class StatementExecutor<E> implements AbstractDAO<E> {
@@ -96,6 +96,9 @@ public abstract class StatementExecutor<E> implements AbstractDAO<E> {
 
   protected void setParameters(final PreparedStatement stm,
                                final Object... values) throws SQLException {
+    if (values == null) {
+      return;
+    }
     for (int i = 0; i < values.length; i++) {
       stm.setObject(i + 1, values[i]);
     }
@@ -130,7 +133,8 @@ public abstract class StatementExecutor<E> implements AbstractDAO<E> {
     try {
       stm.close();
     } catch (final SQLException e) {
-      logger.warn("An error occurs while closing the statement.", e);
+      logger.warn("An error occurs while closing the statement." + " : {}",
+                  e.getMessage());
     }
   }
 
@@ -141,7 +145,8 @@ public abstract class StatementExecutor<E> implements AbstractDAO<E> {
     try {
       rs.close();
     } catch (final SQLException e) {
-      logger.warn("An error occurs while closing the resultSet.", e);
+      logger.warn("An error occurs while closing the resultSet." + " : {}",
+                  e.getMessage());
     }
   }
 
@@ -149,7 +154,8 @@ public abstract class StatementExecutor<E> implements AbstractDAO<E> {
     try {
       connection.close();
     } catch (final SQLException e) {
-      logger.warn("Cannot properly close the database connection", e);
+      logger.warn("Cannot properly close the database connection" + " : {}",
+                  e.getMessage());
     }
   }
 
@@ -161,11 +167,13 @@ public abstract class StatementExecutor<E> implements AbstractDAO<E> {
 
   protected abstract String getExistRequest();
 
-  protected abstract Object[] getInsertValues(E e1);
+  protected abstract Object[] getInsertValues(E e1)
+      throws WaarpDatabaseSqlException;
 
   protected abstract String getInsertRequest();
 
-  protected abstract Object[] getUpdateValues(E e1);
+  protected abstract Object[] getUpdateValues(E e1)
+      throws WaarpDatabaseSqlException;
 
   protected abstract String getUpdateRequest();
 
@@ -230,27 +238,50 @@ public abstract class StatementExecutor<E> implements AbstractDAO<E> {
     return es;
   }
 
+  String prepareFindQuery(final List<Filter> filters, final Object[] params) {
+    final StringBuilder query = new StringBuilder(getGetAllRequest());
+    if (filters.isEmpty()) {
+      return query.toString();
+    }
+    query.append(WHERE);
+    String prefix = "";
+    int i = 0;
+    for (Filter filter : filters) {
+      query.append(prefix);
+      if (filter.nbAdditionnalParams() > 0) {
+        final Object[] objects = (Object[]) filter.append(query);
+        for (final Object o : objects) {
+          params[i++] = o;
+        }
+      } else {
+        params[i] = filter.append(query);
+        i++;
+      }
+      prefix = " AND ";
+    }
+    return query.toString();
+  }
+
+  Object[] prepareFindParams(final List<Filter> filters) {
+    Object[] params = null;
+    if (filters != null) {
+      int len = filters.size();
+      for (Filter filter : filters) {
+        len += filter.nbAdditionnalParams();
+      }
+      params = new Object[len];
+    }
+    return params;
+  }
+
   @Override
   public List<E> find(final List<Filter> filters)
       throws DAOConnectionException {
     final ArrayList<E> es = new ArrayList<E>();
     // Create the SQL query
-    final StringBuilder query = new StringBuilder(getGetAllRequest());
-    final Object[] params = new Object[filters.size()];
-    final Iterator<Filter> it = filters.listIterator();
-    if (it.hasNext()) {
-      query.append(" WHERE ");
-    }
-    String prefix = "";
-    int i = 0;
-    while (it.hasNext()) {
-      query.append(prefix);
-      final Filter filter = it.next();
-      query.append(filter.key).append(' ').append(filter.operand).append(" ?");
-      params[i] = filter.value;
-      i++;
-      prefix = " AND ";
-    }
+    final Object[] params = prepareFindParams(filters);
+    final StringBuilder query =
+        new StringBuilder(prepareFindQuery(filters, params));
     // Execute query
     PreparedStatement stm = null;
     ResultSet res = null;
@@ -326,7 +357,12 @@ public abstract class StatementExecutor<E> implements AbstractDAO<E> {
       // Need to check since all does not accept getId
       addToCache(getId(e1), e1);
     }
-    final Object[] params = getInsertValues(e1);
+    final Object[] params;
+    try {
+      params = getInsertValues(e1);
+    } catch (WaarpDatabaseSqlException e) {
+      throw new DAOConnectionException(e);
+    }
 
     PreparedStatement stm = null;
     try {
@@ -347,7 +383,12 @@ public abstract class StatementExecutor<E> implements AbstractDAO<E> {
       // Need to check since all does not accept getId
       addToCache(getId(e1), e1);
     }
-    final Object[] params = getUpdateValues(e1);
+    final Object[] params;
+    try {
+      params = getUpdateValues(e1);
+    } catch (WaarpDatabaseSqlException e) {
+      throw new DAOConnectionException(e);
+    }
 
     PreparedStatement stm = null;
     try {

@@ -20,8 +20,8 @@
 
 package org.waarp.openr66.protocol.http.restv2.errors;
 
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.waarp.common.json.JsonHandler;
 
 import java.io.Serializable;
 import java.util.Locale;
@@ -86,7 +86,7 @@ public class RestError implements Serializable {
     final String message =
         String.format(lang, bundle.getString(msgKey), (Object[]) args);
 
-    final ObjectNode response = new ObjectNode(JsonNodeFactory.instance);
+    final ObjectNode response = JsonHandler.createObjectNode();
     response.put("message", message);
     response.put("errorCode", code);
     return response;

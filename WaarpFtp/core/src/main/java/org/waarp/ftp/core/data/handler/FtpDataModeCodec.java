@@ -32,6 +32,7 @@ import org.waarp.ftp.core.command.FtpArgumentCode.TransferStructure;
 import org.waarp.ftp.core.data.handler.FtpSeekAheadData.SeekAheadNoBackArrayException;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * First CODEC :<br>
@@ -98,7 +99,7 @@ public class FtpDataModeCodec extends ByteToMessageCodec<DataBlock> {
   /**
    * Is the underlying DataNetworkHandler ready to receive block
    */
-  private volatile boolean isReady;
+  private AtomicBoolean isReady = new AtomicBoolean(false);
 
   /**
    * Blocking step between DataNetworkHandler and this Codec in order to wait
@@ -225,12 +226,12 @@ public class FtpDataModeCodec extends ByteToMessageCodec<DataBlock> {
     // First test if the connection is fully ready (block might be
     // transferred
     // by client before connection is ready)
-    if (!isReady) {
+    if (!isReady.get()) {
       if (!codecLocked.awaitOrInterruptible()) {
         throw new InvalidArgumentException(
             "Codec not unlocked while should be");
       }
-      isReady = true;
+      isReady.set(true);
     }
     if (buf.readableBytes() == 0) {
       return;
@@ -460,12 +461,12 @@ public class FtpDataModeCodec extends ByteToMessageCodec<DataBlock> {
     // First test if the connection is fully ready (block might be
     // transfered
     // by client before connection is ready)
-    if (!isReady) {
+    if (!isReady.get()) {
       if (!codecLocked.awaitOrInterruptible()) {
         throw new InvalidArgumentException(
             "Codec not unlocked while should be");
       }
-      isReady = true;
+      isReady.set(true);
     }
     ByteBuf next = encode(msg);
     // Could be splitten in several block

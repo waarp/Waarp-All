@@ -129,6 +129,7 @@ public class FtpClientThread implements Runnable {
               FtpClientTest.numberKO.incrementAndGet();
               return;
             } else {
+              System.out.print('.');
               FtpClientTest.numberOK.incrementAndGet();
             }
             try {
@@ -152,6 +153,7 @@ public class FtpClientThread implements Runnable {
               FtpClientTest.numberKO.incrementAndGet();
               return;
             } else {
+              System.out.print('.');
               FtpClientTest.numberOK.incrementAndGet();
             }
             try {
@@ -165,6 +167,7 @@ public class FtpClientThread implements Runnable {
             FtpClientTest.numberKO.incrementAndGet();
             return;
           } else {
+            System.out.print('.');
             FtpClientTest.numberOK.incrementAndGet();
           }
           Thread.yield();
@@ -175,6 +178,7 @@ public class FtpClientThread implements Runnable {
               FtpClientTest.numberKO.incrementAndGet();
               return;
             } else {
+              System.out.print('.');
               FtpClientTest.numberOK.incrementAndGet();
             }
             try {
@@ -184,6 +188,7 @@ public class FtpClientThread implements Runnable {
             }
           }
         }
+        System.out.println();
         long endTransfer = System.currentTimeMillis();
         logger.warn("{} end mode passive {}/s", id,
                     numberIteration * 2 * 1000 / (endTransfer - modeChange));
@@ -201,6 +206,7 @@ public class FtpClientThread implements Runnable {
               FtpClientTest.numberKO.incrementAndGet();
               return;
             } else {
+              System.out.print('.');
               FtpClientTest.numberOK.incrementAndGet();
             }
             try {
@@ -218,6 +224,7 @@ public class FtpClientThread implements Runnable {
               FtpClientTest.numberKO.incrementAndGet();
               return;
             } else {
+              System.out.print('.');
               FtpClientTest.numberOK.incrementAndGet();
             }
             if (!client.deleteFile(remoteFilename)) {
@@ -225,6 +232,7 @@ public class FtpClientThread implements Runnable {
               FtpClientTest.numberKO.incrementAndGet();
               return;
             } else {
+              System.out.print('.');
               FtpClientTest.numberOK.incrementAndGet();
             }
             try {
@@ -238,6 +246,7 @@ public class FtpClientThread implements Runnable {
             FtpClientTest.numberKO.incrementAndGet();
             return;
           } else {
+            System.out.print('.');
             FtpClientTest.numberOK.incrementAndGet();
           }
           Thread.yield();
@@ -248,6 +257,7 @@ public class FtpClientThread implements Runnable {
               FtpClientTest.numberKO.incrementAndGet();
               return;
             } else {
+              System.out.print('.');
               FtpClientTest.numberOK.incrementAndGet();
             }
             try {
@@ -257,6 +267,8 @@ public class FtpClientThread implements Runnable {
             }
           }
         }
+        System.out.println();
+
         long endTransfer = System.currentTimeMillis();
         logger.warn("{} end mode active {}/s", id,
                     numberIteration * 2 * 1000 / (endTransfer - modeChange));

@@ -46,6 +46,7 @@ import org.waarp.openr66.context.R66Session;
 import org.waarp.openr66.context.task.exception.OpenR66RunnerErrorException;
 import org.waarp.openr66.database.data.DbHostAuth;
 import org.waarp.openr66.protocol.configuration.Configuration;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolBlackListedException;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolNetworkException;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolNoConnectionException;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolNoDataException;
@@ -387,6 +388,10 @@ public class NetworkTransaction {
             createConnection(socketAddress, isSSL, futureRequest);
         break;
       } catch (final OpenR66ProtocolRemoteShutdownException e) {
+        logger.warn("Cannot connect : {}", e.getMessage());
+        logger.debug(e);
+        break;
+      } catch (final OpenR66ProtocolBlackListedException e) {
         logger.error("Cannot connect : {}", e.getMessage());
         logger.debug(e);
         break;
@@ -426,6 +431,7 @@ public class NetworkTransaction {
    *
    * @throws OpenR66ProtocolNetworkException
    * @throws OpenR66ProtocolRemoteShutdownException
+   * @throws OpenR66ProtocolBlackListedException
    * @throws OpenR66ProtocolNoConnectionException
    * @throws OpenR66ProtocolNotAuthenticatedException
    */
@@ -434,7 +440,8 @@ public class NetworkTransaction {
       final R66Future futureRequest) throws OpenR66ProtocolNetworkException,
                                             OpenR66ProtocolRemoteShutdownException,
                                             OpenR66ProtocolNoConnectionException,
-                                            OpenR66ProtocolNotAuthenticatedException {
+                                            OpenR66ProtocolNotAuthenticatedException,
+                                            OpenR66ProtocolBlackListedException {
     NetworkChannelReference networkChannelReference = null;
     LocalChannelReference localChannelReference;
     boolean ok = false;
@@ -502,12 +509,14 @@ public class NetworkTransaction {
    *
    * @throws OpenR66ProtocolNetworkException
    * @throws OpenR66ProtocolRemoteShutdownException
+   * @throws OpenR66ProtocolBlackListedException
    * @throws OpenR66ProtocolNoConnectionException
    */
   private NetworkChannelReference createNewConnection(
       final SocketAddress socketServerAddress, final boolean isSSL)
       throws OpenR66ProtocolNetworkException,
              OpenR66ProtocolRemoteShutdownException,
+             OpenR66ProtocolBlackListedException,
              OpenR66ProtocolNoConnectionException {
     final WaarpLock socketLock = getChannelLock(socketServerAddress);
     NetworkChannelReference networkChannelReference;
@@ -642,7 +651,6 @@ public class NetworkTransaction {
   private void sendValidationConnection(
       final LocalChannelReference localChannelReference)
       throws OpenR66ProtocolNetworkException,
-
              OpenR66ProtocolNotAuthenticatedException {
     final AuthentPacket authent;
 
@@ -740,10 +748,12 @@ public class NetworkTransaction {
    * @param isSsl
    *
    * @throws OpenR66ProtocolRemoteShutdownException
+   * @throws OpenR66ProtocolBlackListedException
    */
   public static NetworkChannelReference addNetworkChannel(final Channel channel,
                                                           final boolean isSsl)
-      throws OpenR66ProtocolRemoteShutdownException {
+      throws OpenR66ProtocolRemoteShutdownException,
+             OpenR66ProtocolBlackListedException {
     final SocketAddress socketAddress = channel.remoteAddress();
     final WaarpLock socketLock = getChannelLock(socketAddress);
     socketLock.lock();
@@ -806,8 +816,7 @@ public class NetworkTransaction {
                                                      false);
           Configuration.configuration.getTimerClose().newTimeout(timerTask,
                                                                  Configuration.configuration
-                                                                     .getTimeoutCon() *
-                                                                 3,
+                                                                     .getTimeoutCon(),
                                                                  TimeUnit.MILLISECONDS);
         } catch (final OpenR66RunnerErrorException e) {
           // ignore
@@ -846,8 +855,7 @@ public class NetworkTransaction {
                                                      false);
           Configuration.configuration.getTimerClose().newTimeout(timerTask,
                                                                  Configuration.configuration
-                                                                     .getTimeoutCon() *
-                                                                 3,
+                                                                     .getTimeoutCon(),
                                                                  TimeUnit.MILLISECONDS);
         } catch (final OpenR66RunnerErrorException e) {
           // ignore
@@ -892,7 +900,7 @@ public class NetworkTransaction {
         Configuration.configuration.getTimerClose().newTimeout(timerTask,
                                                                Configuration.configuration
                                                                    .getTimeoutCon() *
-                                                               10,
+                                                               5,
                                                                TimeUnit.MILLISECONDS);
       } catch (final OpenR66RunnerErrorException e) {
         // ignore
@@ -924,9 +932,7 @@ public class NetworkTransaction {
    * @param address
    *
    * @return True if this address (associated channel) is currently in
-   *     shutdown
-   *     (or if this channel is not
-   *     valid)
+   *     shutdown (or if this channel is not valid)
    */
   public static boolean isShuttingdownNetworkChannel(
       final SocketAddress address) {
@@ -1188,6 +1194,9 @@ public class NetworkTransaction {
     } catch (final OpenR66ProtocolNoDataException e) {
       logger.debug("NOT FOUND SO NO SHUTDOWN");
       return true;
+    } catch (OpenR66ProtocolBlackListedException e) {
+      logger.warn("BLACK LISTED HOST");
+      return false;
     }
   }
 
@@ -1201,11 +1210,13 @@ public class NetworkTransaction {
    *
    * @throws OpenR66ProtocolRemoteShutdownException
    * @throws OpenR66ProtocolNoDataException
+   * @throws OpenR66ProtocolBlackListedException
    */
   private static NetworkChannelReference getRemoteChannel(
       final SocketAddress address)
       throws OpenR66ProtocolRemoteShutdownException,
-             OpenR66ProtocolNoDataException {
+             OpenR66ProtocolNoDataException,
+             OpenR66ProtocolBlackListedException {
     if (WaarpShutdownHook.isShutdownStarting()) {
       logger.debug("IS IN SHUTDOWN");
       throw new OpenR66ProtocolRemoteShutdownException(
@@ -1225,7 +1236,7 @@ public class NetworkTransaction {
     nc = getBlacklistNCR(address);
     if (nc != null) {
       logger.debug("HOST IN BLACKLISTED STATUS: {}", address);
-      throw new OpenR66ProtocolRemoteShutdownException(
+      throw new OpenR66ProtocolBlackListedException(
           "Remote Host is blacklisted");
     }
     nc = getNCR(address);
@@ -1383,7 +1394,7 @@ public class NetworkTransaction {
     Configuration.configuration.clientStop(quickShutdown);
     if (!Configuration.configuration.isServer()) {
       logger.debug("Last action before exit");
-      WaarpSystemUtil.stopLogger();
+      WaarpSystemUtil.stopLogger(false);
     }
   }
 

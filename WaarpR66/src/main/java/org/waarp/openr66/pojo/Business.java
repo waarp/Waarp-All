@@ -20,7 +20,13 @@
 
 package org.waarp.openr66.pojo;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.waarp.common.database.exception.WaarpDatabaseSqlException;
+
+import java.sql.Types;
+
+import static org.waarp.common.database.data.AbstractDbData.*;
 
 /**
  * Business data object
@@ -54,19 +60,27 @@ public class Business {
 
   public Business(final String hostid, final String business,
                   final String roles, final String aliases, final String others,
-                  final UpdatedInfo updatedInfo) {
+                  final UpdatedInfo updatedInfo)
+      throws WaarpDatabaseSqlException {
     this(hostid, business, roles, aliases, others);
     this.updatedInfo = updatedInfo;
   }
 
   public Business(final String hostid, final String business,
-                  final String roles, final String aliases,
-                  final String others) {
+                  final String roles, final String aliases, final String others)
+      throws WaarpDatabaseSqlException {
     this.hostid = hostid;
     this.business = business;
     this.roles = roles;
     this.aliases = aliases;
     this.others = others;
+    checkValues();
+  }
+
+  @JsonIgnore
+  public void checkValues() throws WaarpDatabaseSqlException {
+    validateLength(Types.LONGVARCHAR, business, roles, aliases, others);
+    validateLength(Types.NVARCHAR, hostid);
   }
 
   public String getHostid() {

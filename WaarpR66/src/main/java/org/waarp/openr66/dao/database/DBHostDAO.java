@@ -20,6 +20,7 @@
 
 package org.waarp.openr66.dao.database;
 
+import org.waarp.common.database.exception.WaarpDatabaseSqlException;
 import org.waarp.common.lru.SynchronizedLruCache;
 import org.waarp.openr66.dao.HostDAO;
 import org.waarp.openr66.pojo.Host;
@@ -113,7 +114,9 @@ public class DBHostDAO extends StatementExecutor<Host> implements HostDAO {
   }
 
   @Override
-  protected Object[] getInsertValues(final Host host) {
+  protected Object[] getInsertValues(final Host host)
+      throws WaarpDatabaseSqlException {
+    host.checkValues();
     return new Object[] {
         host.getHostid(), host.getAddress(), host.getPort(), host.isSSL(),
         host.isClient(), host.isActive(), host.isProxified(), host.getHostkey(),
@@ -127,7 +130,9 @@ public class DBHostDAO extends StatementExecutor<Host> implements HostDAO {
   }
 
   @Override
-  protected Object[] getUpdateValues(final Host host) {
+  protected Object[] getUpdateValues(final Host host)
+      throws WaarpDatabaseSqlException {
+    host.checkValues();
     return new Object[] {
         host.getHostid(), host.getAddress(), host.getPort(), host.isSSL(),
         host.isClient(), host.isActive(), host.isProxified(), host.getHostkey(),
@@ -152,13 +157,17 @@ public class DBHostDAO extends StatementExecutor<Host> implements HostDAO {
 
   @Override
   public Host getFromResultSet(final ResultSet set) throws SQLException {
-    return new Host(set.getString(HOSTID_FIELD), set.getString(ADDRESS_FIELD),
-                    set.getInt(PORT_FIELD), set.getBytes(HOSTKEY_FIELD),
-                    set.getBoolean(IS_SSL_FIELD),
-                    set.getBoolean(IS_CLIENT_FIELD),
-                    set.getBoolean(IS_PROXIFIED_FIELD),
-                    set.getBoolean(ADMINROLE_FIELD),
-                    set.getBoolean(IS_ACTIVE_FIELD),
-                    UpdatedInfo.valueOf(set.getInt(UPDATED_INFO_FIELD)));
+    try {
+      return new Host(set.getString(HOSTID_FIELD), set.getString(ADDRESS_FIELD),
+                      set.getInt(PORT_FIELD), set.getBytes(HOSTKEY_FIELD),
+                      set.getBoolean(IS_SSL_FIELD),
+                      set.getBoolean(IS_CLIENT_FIELD),
+                      set.getBoolean(IS_PROXIFIED_FIELD),
+                      set.getBoolean(ADMINROLE_FIELD),
+                      set.getBoolean(IS_ACTIVE_FIELD),
+                      UpdatedInfo.valueOf(set.getInt(UPDATED_INFO_FIELD)));
+    } catch (WaarpDatabaseSqlException e) {
+      throw new SQLException(e);
+    }
   }
 }

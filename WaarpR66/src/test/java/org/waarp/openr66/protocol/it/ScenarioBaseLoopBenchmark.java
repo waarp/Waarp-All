@@ -126,6 +126,7 @@ public abstract class ScenarioBaseLoopBenchmark extends TestAbstract {
     } else {
       setUpBeforeClassClient(configFile.getAbsolutePath());
     }
+    Thread.sleep(1000);
     Processes.setJvmArgsDefault(null);
     WaarpLoggerFactory.setDefaultFactoryIfNotSame(
         new WaarpSlf4JLoggerFactory(WaarpLogLevel.WARN));
@@ -310,8 +311,6 @@ public abstract class ScenarioBaseLoopBenchmark extends TestAbstract {
    */
   @AfterClass
   public static void tearDownAfterClass() throws Exception {
-    WaarpLoggerFactory.setDefaultFactoryIfNotSame(
-        new WaarpSlf4JLoggerFactory(WaarpLogLevel.NONE));
     CloseableHttpClient httpClient = null;
     int max = SystemPropertyUtil.get(IT_LONG_TEST, false)? 8000 : 500;
     int totalTransfers = max;
@@ -376,8 +375,8 @@ public abstract class ScenarioBaseLoopBenchmark extends TestAbstract {
     logger.warn("Duration {} for {} item so {} items/s",
                 (stopTime - startTime) / 1000.0, totalTransfers,
                 totalTransfers / ((stopTime - startTime) / 1000.0));
+    WaarpSystemUtil.stopLogger(true);
     Configuration.configuration.setTimeoutCon(100);
-    WaarpLoggerFactory.setLogLevel(WaarpLogLevel.ERROR);
     for (int pid : PIDS) {
       Processes.kill(pid, true);
     }
@@ -417,7 +416,7 @@ public abstract class ScenarioBaseLoopBenchmark extends TestAbstract {
     File baseDir = new File("/tmp/R66/" + PATH_COMMON + "/R1/out/");
     File baseDir2 = new File("/tmp/R66/" + PATH_COMMON + "/R2/out/");
     for (int i = 1; i <= NUMBER_FILES; i++) {
-      int size = 10000 + i * factor;
+      int size = i * factor;
       File fileOut = new File(baseDir, "hello" + size);
       final File outHello = generateOutFile(fileOut.getAbsolutePath(), size);
       File fileOut2 = new File(baseDir2, "hello" + size);
@@ -430,7 +429,7 @@ public abstract class ScenarioBaseLoopBenchmark extends TestAbstract {
   private void runLoopInit(String ruleName, String serverName, int factor) {
     R66Future[] futures = new R66Future[NUMBER_FILES];
     for (int i = 1; i <= NUMBER_FILES; i++) {
-      int size = 10000 + i * factor;
+      int size = i * factor;
       final R66Future future = new R66Future(true);
       futures[i - 1] = future;
       /*
@@ -471,7 +470,7 @@ public abstract class ScenarioBaseLoopBenchmark extends TestAbstract {
                 "({} seconds,  {} MBPS vs {} " +
                 "and {}) of size {} with block size {}", true, false,
                 NUMBER_FILES, (timestop - timestart) / 1000,
-                NUMBER_FILES * (10000 + factor * (NUMBER_FILES / 2)) / 1000.0 /
+                NUMBER_FILES * (factor * (NUMBER_FILES / 2)) / 1000.0 /
                 (timestop - timestart),
                 Configuration.configuration.getServerGlobalReadLimit() /
                 1000000.0,
@@ -495,7 +494,7 @@ public abstract class ScenarioBaseLoopBenchmark extends TestAbstract {
                 "({} seconds,  {} MBPS vs {} " +
                 "and {}) of size {} with block size {}", true, false,
                 NUMBER_FILES, (timestop - timestart) / 1000,
-                NUMBER_FILES * (10000 + factor + (NUMBER_FILES / 2)) / 1000.0 /
+                NUMBER_FILES * (factor + (NUMBER_FILES / 2)) / 1000.0 /
                 (timestop - timestart),
                 Configuration.configuration.getServerGlobalReadLimit() /
                 1000000.0,

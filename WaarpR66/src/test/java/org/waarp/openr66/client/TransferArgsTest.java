@@ -29,10 +29,8 @@ import org.junit.Test;
 import org.junit.rules.TestWatcher;
 import org.waarp.common.digest.FilesystemBasedDigest;
 import org.waarp.common.logging.SysErrLogger;
-import org.waarp.common.logging.WaarpLogLevel;
-import org.waarp.common.logging.WaarpLoggerFactory;
-import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
 import org.waarp.common.utility.TestWatcherJunit4;
+import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.openr66.client.utils.OutputFormat;
 import org.waarp.openr66.context.R66FiniteDualStates;
 import org.waarp.openr66.database.data.DbHostAuth;
@@ -93,8 +91,7 @@ public class TransferArgsTest extends TestAbstract {
    */
   @AfterClass
   public static void tearDownAfterClass() throws Exception {
-    WaarpLoggerFactory.setDefaultFactoryIfNotSame(
-        new WaarpSlf4JLoggerFactory(WaarpLogLevel.NONE));
+    WaarpSystemUtil.stopLogger(true);
 
     Thread.sleep(100);
     final DbHostAuth host = new DbHostAuth("hostas");
@@ -570,6 +567,36 @@ public class TransferArgsTest extends TestAbstract {
     assertEquals("1234", transferArgs.getFollowId());
     assertTrue(transferArgs.getTransferInfo().startsWith(
         FOLLOWARGJSON + " 1234} other {'test': 'test2'} no_information " +
+        "extra-info"));
+    assertTrue(transferArgs.getTransferInfo().contains(FOLLOW_JSON_KEY));
+
+
+    String[] argsCompleteWithArgumentMinus = {
+        TransferArgs.TO_ARG, "hosta-2", TransferArgs.FILE_ARG,
+        "testTaskBig-2.txt", TransferArgs.RULE_ARG, "rule-3",
+        TransferArgs.HASH_ARG, TransferArgs.BLOCK_ARG, "1000",
+        TransferArgs.INFO_ARG, "no-information", "extra-info"
+    };
+    transferArgs =
+        TransferArgs.getParamsInternal(0, argsCompleteWithArgumentMinus, false);
+    assertNotNull(transferArgs);
+    assertEquals("hosta-2", transferArgs.getRemoteHost());
+    assertEquals("testTaskBig-2.txt", transferArgs.getFilename());
+    assertEquals("rule-3", transferArgs.getRulename());
+    assertEquals("no-information", transferArgs.getTransferInfo());
+    assertEquals(true, transferArgs.isMD5());
+    assertEquals(1000, transferArgs.getBlockSize());
+    assertFalse(transferArgs.isNolog());
+    assertTrue(transferArgs.isNormalInfoAsWarn());
+    assertEquals(ILLEGALVALUE, transferArgs.getId());
+    assertTrue(transferArgs.getFollowId().isEmpty());
+    assertNotEquals("1234", transferArgs.getFollowId());
+    TransferArgs.getAllInfo(transferArgs, 0, argsCompleteWithArgumentMinus,
+                            FOLLOWARGJSON + " 1234} other {'test': 'test2'}");
+    logger.warn(transferArgs.getTransferInfo());
+    assertEquals("1234", transferArgs.getFollowId());
+    assertTrue(transferArgs.getTransferInfo().startsWith(
+        FOLLOWARGJSON + " 1234} other {'test': 'test2'} no-information " +
         "extra-info"));
     assertTrue(transferArgs.getTransferInfo().contains(FOLLOW_JSON_KEY));
   }

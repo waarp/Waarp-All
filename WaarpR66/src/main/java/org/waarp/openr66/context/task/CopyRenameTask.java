@@ -71,7 +71,7 @@ public class CopyRenameTask extends AbstractTask {
     } catch (final Reply550Exception e1) {
       logger.error(
           "Copy and Rename to " + finalname + " with " + argRule + ':' +
-          argTransfer + " and " + session, e1);
+          argTransfer + " and " + session + ": {}", e1.getMessage());
       futureCompletion.setFailure(new OpenR66ProtocolSystemException(e1));
       return;
     }

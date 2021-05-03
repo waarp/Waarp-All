@@ -597,10 +597,10 @@ public class FileMonitor {
         logger.info("Interruption so exit");
         error = true;
       } catch (final ExecutionException e) {
-        logger.error("Exception during execution", e);
+        logger.error("Exception during execution: {}", e.getMessage());
         error = true;
       } catch (final Throwable e) {
-        logger.error("Exception during execution", e);
+        logger.error("Exception during execution: {}", e.getMessage());
         error = true;
       }
     }
@@ -802,7 +802,7 @@ public class FileMonitor {
           fileItemsChanged = true;
         } catch (final Throwable e) {
           setThreadName();
-          logger.error("Error during final file check", e);
+          logger.error("Error during final file check: {}", e.getMessage());
         }
       }
       if (scanSubDir) {
@@ -818,7 +818,8 @@ public class FileMonitor {
       }
     } catch (final Throwable e) {
       setThreadName();
-      logger.error("Issue during Directory and File Checking", e);
+      logger.error("Issue during Directory and File Checking: {}",
+                   e.getMessage());
       // ignore
     }
     return fileItemsChanged;
@@ -879,7 +880,8 @@ public class FileMonitor {
               fileMonitor.timer.newTimeout(this, fileMonitor.elapseTime,
                                            TimeUnit.MILLISECONDS);
             } catch (final Throwable e) {
-              logger.error("Error while pushing next filemonitor step", e);
+              logger.error("Error while pushing next filemonitor step: {}",
+                           e.getMessage());
               // ignore and stop
               fileMonitor.internalfuture.setSuccess();
             }
@@ -895,7 +897,8 @@ public class FileMonitor {
         }
       } catch (final Throwable e) {
         fileMonitor.setThreadName();
-        logger.error("Issue during Directory and File Checking", e);
+        logger.error("Issue during Directory and File Checking: {}",
+                     e.getMessage());
         fileMonitor.internalfuture.setSuccess();
       }
     }
@@ -932,7 +935,8 @@ public class FileMonitor {
                   .newTimeout(this, elapseWaarpTime, TimeUnit.MILLISECONDS);
             } catch (final Throwable e) {
               // stop and ignore
-              logger.error("Error during nex filemonitor information step", e);
+              logger.error("Error during nex filemonitor information step: {}",
+                           e.getMessage());
               internalfuture.setSuccess();
             }
           } else {
@@ -950,7 +954,8 @@ public class FileMonitor {
       } catch (final Throwable e) {
         // stop and ignore
         Thread.currentThread().setName("FileMonitorInformation_" + name);
-        logger.error("Error during nex filemonitor information step", e);
+        logger.error("Error during nex filemonitor information step: {}",
+                     e.getMessage());
         internalfuture.setSuccess();
       }
     }

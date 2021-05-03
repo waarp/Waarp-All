@@ -56,14 +56,13 @@ import org.waarp.common.database.exception.WaarpDatabaseSqlException;
 import org.waarp.common.digest.FilesystemBasedDigest;
 import org.waarp.common.file.FileUtils;
 import org.waarp.common.json.JsonHandler;
-import org.waarp.common.logging.WaarpLogLevel;
-import org.waarp.common.logging.WaarpLoggerFactory;
-import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
 import org.waarp.common.role.RoleDefault;
 import org.waarp.common.utility.FileTestUtils;
+import org.waarp.common.utility.ParametersChecker;
 import org.waarp.common.utility.Processes;
 import org.waarp.common.utility.TestWatcherJunit4;
 import org.waarp.common.utility.Version;
+import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.icap.server.IcapServer;
 import org.waarp.icap.server.IcapServerHandler;
 import org.waarp.openr66.client.Message;
@@ -181,8 +180,7 @@ public class NetworkClientTest extends TestAbstract {
    */
   @AfterClass
   public static void tearDownAfterClass() throws Exception {
-    WaarpLoggerFactory.setDefaultFactoryIfNotSame(
-        new WaarpSlf4JLoggerFactory(WaarpLogLevel.NONE));
+    WaarpSystemUtil.stopLogger(true);
     Thread.sleep(100);
     for (final DbTaskRunner dbTaskRunner : dbTaskRunners) {
       try {
@@ -839,7 +837,7 @@ public class NetworkClientTest extends TestAbstract {
     } else {
       error++;
     }
-    if (followId == null || followId.isEmpty()) {
+    if (ParametersChecker.isEmpty(followId)) {
       success++;
     } else {
       logger.warn("Cannot check FollowId");
@@ -1327,7 +1325,6 @@ public class NetworkClientTest extends TestAbstract {
   public void test70_SpooledWrongHost()
       throws IOException, InterruptedException {
     logger.warn("Start Test of Spooled Retry Transfer");
-    //WaarpLoggerFactory.setLogLevel(WaarpLogLevel.DEBUG);
     SpooledThread spooledThread = new SpooledThread();
     spooledThread.ignoreAlreadyUsed = false;
     spooledThread.submit = false;
@@ -1596,7 +1593,7 @@ public class NetworkClientTest extends TestAbstract {
       } else {
         if (runner != null) {
           DbTaskRunner dbTaskRunner = null;
-          for (int i = 0; i < 10; i++) {
+          for (int i = 0; i < 20; i++) {
             try {
               dbTaskRunner = new DbTaskRunner(runner.getSpecialId() + 1,
                                               runner.getRequester(),
@@ -2279,7 +2276,7 @@ public class NetworkClientTest extends TestAbstract {
       arguments.setParallel(false);
       arguments.setLimitParallel(1);
       arguments.setMinimalSize(100);
-      arguments.setLogWarn(true);
+      arguments.setLogWarn(false);
       arguments.setIgnoreAlreadyUsed(ignoreAlreadyUsed);
 
       spooledDirectoryTransfer =

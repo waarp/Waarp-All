@@ -25,6 +25,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestWatcher;
+import org.waarp.common.database.exception.WaarpDatabaseSqlException;
 import org.waarp.common.json.JsonHandler;
 import org.waarp.common.utility.TestWatcherJunit4;
 import org.waarp.common.utility.WaarpStringUtils;
@@ -42,7 +43,7 @@ public class DbTaskRunnerTest {
   public TestWatcher watchman = new TestWatcherJunit4();
 
   @Test
-  public void testJsonSerialisation() {
+  public void testJsonSerialisation() throws WaarpDatabaseSqlException {
     Transfer transfer =
         new Transfer(12345L, "myrule", 2, "myfile.dat", "myoriginalfile.dat",
                      "myfileinfo", true, 42, false, "me", "me", "other", "",
@@ -63,7 +64,7 @@ public class DbTaskRunnerTest {
         "\"GLOBALSTEP\":3," + "\"GLOBALLASTSTEP\":2," + "\"STEP\":53," +
         "\"STEPSTATUS\":\"M  \"," + "\"INFOSTATUS\":\"U  \"," + "\"RANK\":72," +
         "\"STARTTRANS\":1581092031000," + "\"STOPTRANS\":1581092131000," +
-        "\"UPDATEDINFO\":5," + "\"ORIGINALSIZE\":-1" + ",\"follow\":\"none\"}";
+        "\"UPDATEDINFO\":5," + "\"ORIGINALSIZE\":-1" + ",\"follow\":\"\"}";
 
 
     ObjectNode asJson = dbTransfer.getJson();
@@ -73,7 +74,8 @@ public class DbTaskRunnerTest {
   }
 
   @Test
-  public void testJsonSerialisationInfoComplex() {
+  public void testJsonSerialisationInfoComplex()
+      throws WaarpDatabaseSqlException {
     Transfer transfer =
         new Transfer(12345L, "myrule", 2, "myfile.dat", "myoriginalfile.dat",
                      "myfileinfo", true, 42, false, "me", "me", "other",
@@ -96,7 +98,7 @@ public class DbTaskRunnerTest {
         "\"GLOBALLASTSTEP\":2," + "\"STEP\":53," + "\"STEPSTATUS\":\"M  \"," +
         "\"INFOSTATUS\":\"U  \"," + "\"RANK\":72," +
         "\"STARTTRANS\":1581092031000," + "\"STOPTRANS\":1581092131000," +
-        "\"UPDATEDINFO\":5," + "\"ORIGINALSIZE\":-1" + ",\"follow\":\"none\"}";
+        "\"UPDATEDINFO\":5," + "\"ORIGINALSIZE\":-1" + ",\"follow\":\"\"}";
 
 
     ObjectNode asJson = dbTransfer.getJson();
@@ -172,7 +174,7 @@ public class DbTaskRunnerTest {
                "\",\"INFOSTATUS\":\"U  \",\"RANK\":72," +
                "\"STARTTRANS\":1581092031000," +
                "\"STOPTRANS\":1581092131000,\"UPDATEDINFO\":5," +
-               "\"ORIGINALSIZE\":-1,\"follow\":\"none\"}]";
+               "\"ORIGINALSIZE\":-1,\"follow\":\"\"}]";
     assertEquals(expected, cleaned);
   }
 }

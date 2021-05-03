@@ -182,7 +182,7 @@ public class IcapClientTest {
       logger.warn("Disconnection OK");
     } catch (IcapException e) {
       logger.error(e);
-      fail("Should failed");
+      fail("Shall not failed");
     }
     icapClient = new IcapClient("127.0.0.1", 9999, "avscan");
     icapClient.close();
@@ -201,7 +201,7 @@ public class IcapClientTest {
       logger.warn("ReConnection without disconnection OK");
     } catch (IcapException e) {
       logger.error(e);
-      fail("Should failed");
+      fail("Shall not failed");
     }
     logger.warn("No preview");
     IcapServerHandler.setIsPreviewOkTest(false);

@@ -64,9 +64,9 @@ public class DbModelPostgresqlR66 extends DbModelPostgresql {
         serverVersion = request.getResultSet().getInt("server_version_num");
       }
     } catch (final WaarpDatabaseNoConnectionException e) {
-      SysErrLogger.FAKE_LOGGER.syserr(e);
+      SysErrLogger.FAKE_LOGGER.ignoreLog(e);
     } catch (final WaarpDatabaseSqlException e) {
-      SysErrLogger.FAKE_LOGGER.syserr(e);
+      SysErrLogger.FAKE_LOGGER.ignoreLog(e);
       // XXX FIX no return
     } catch (final SQLException e) {
       SysErrLogger.FAKE_LOGGER.syserr(e);
@@ -80,54 +80,32 @@ public class DbModelPostgresqlR66 extends DbModelPostgresql {
   public void createTables(final DbSession session)
       throws WaarpDatabaseNoConnectionException {
     // Create tables: configuration, hosts, rules, runner, cptrunner
-    final String createTableH2 = "CREATE TABLE ";
+    final String createTableH2 = "CREATE TABLE IF NOT EXISTS ";
     final String primaryKey = " PRIMARY KEY ";
     final String notNull = " NOT NULL ";
     DbRequest request = DbModelFactoryR66
-        .subCreateTableMariaDbMySQLPostgreSQL(dbTypeResolver, session,
-                                              createTableH2, primaryKey,
-                                              notNull);
+        .subCreateTableMariaDbMySQLH2PostgreSQL(dbTypeResolver, session,
+                                                createTableH2, primaryKey,
+                                                notNull);
     if (request == null) {
       return;
     }
-    StringBuilder action;
-    // Index Runner
-    action = new StringBuilder(
-        "CREATE INDEX IDX_RUNNER ON " + DbTaskRunner.table + '(');
-    final DbTaskRunner.Columns[] icolumns = DbTaskRunner.indexes;
-    for (int i = 0; i < icolumns.length - 1; i++) {
-      action.append(icolumns[i].name()).append(", ");
-    }
-    action.append(icolumns[icolumns.length - 1].name()).append(')');
-    SysErrLogger.FAKE_LOGGER.sysout(action);
     try {
-      request.query(action.toString());
-    } catch (final WaarpDatabaseNoConnectionException e) {
-      SysErrLogger.FAKE_LOGGER.syserr(e);
-      request = null;
-      return;
-    } catch (final WaarpDatabaseSqlException e) {
-      SysErrLogger.FAKE_LOGGER.syserr(e);
-      // XXX FIX no return
-    } finally {
-      if (request != null) {
-        request.close();
+      // cptrunner
+      StringBuilder action = new StringBuilder(
+          "CREATE SEQUENCE IF NOT EXISTS " + DbTaskRunner.fieldseq +
+          " MINVALUE " + (ILLEGALVALUE + 1) + " START WITH " +
+          (ILLEGALVALUE + 1));
+      SysErrLogger.FAKE_LOGGER.sysout(action);
+      try {
+        request.query(action.toString());
+      } catch (final WaarpDatabaseNoConnectionException e) {
+        SysErrLogger.FAKE_LOGGER.ignoreLog(e);
+        return;
+      } catch (final WaarpDatabaseSqlException e) {
+        SysErrLogger.FAKE_LOGGER.ignoreLog(e);
+        // XXX FIX no return
       }
-    }
-
-    // cptrunner
-    action = new StringBuilder(
-        "CREATE SEQUENCE " + DbTaskRunner.fieldseq + " MINVALUE " +
-        (ILLEGALVALUE + 1) + " START WITH " + (ILLEGALVALUE + 1));
-    SysErrLogger.FAKE_LOGGER.sysout(action);
-    try {
-      request.query(action.toString());
-    } catch (final WaarpDatabaseNoConnectionException e) {
-      SysErrLogger.FAKE_LOGGER.syserr(e);
-      return;
-    } catch (final WaarpDatabaseSqlException e) {
-      SysErrLogger.FAKE_LOGGER.syserr(e);
-      // XXX FIX no return
     } finally {
       request.close();
     }
@@ -144,15 +122,18 @@ public class DbModelPostgresqlR66 extends DbModelPostgresql {
         .isVersion2GEQVersion1(version, R66Versions.V3_0_4.getVersion())) {
       return true;
     }
+    String ifExists = "";
+    String ifNotExists = "";
+    final int serverVersion = getServerVersion(session);
+    if (serverVersion >= 90100) {
+      ifExists = " IF EXISTS ";
+      ifNotExists = " IF NOT EXISTS ";
+    }
     if (PartnerConfiguration
         .isVersion2GEQVersion1(version, R66Versions.V2_4_13.getVersion())) {
       SysErrLogger.FAKE_LOGGER.sysout(
           version + " to " + R66Versions.V2_4_13.getVersion() + "? " + true);
-      String createTableH2 = "CREATE TABLE ";
-      final int serverVersion = getServerVersion(session);
-      if (serverVersion >= 90100) {
-        createTableH2 = "CREATE TABLE IF NOT EXISTS ";
-      }
+      String createTableH2 = "CREATE TABLE " + ifNotExists;
       final String primaryKey = " PRIMARY KEY ";
       final String notNull = " NOT NULL ";
 
@@ -174,7 +155,7 @@ public class DbModelPostgresqlR66 extends DbModelPostgresql {
       try {
         request.query(action.toString());
       } catch (final WaarpDatabaseSqlException e) {
-        SysErrLogger.FAKE_LOGGER.syserr(e);
+        SysErrLogger.FAKE_LOGGER.ignoreLog(e);
         return false;
       } finally {
         request.close();
@@ -194,7 +175,7 @@ public class DbModelPostgresqlR66 extends DbModelPostgresql {
       try {
         request.query(command);
       } catch (final WaarpDatabaseSqlException e) {
-        SysErrLogger.FAKE_LOGGER.syserr(e);
+        SysErrLogger.FAKE_LOGGER.ignoreLog(e);
         // return false
       } finally {
         request.close();
@@ -214,7 +195,7 @@ public class DbModelPostgresqlR66 extends DbModelPostgresql {
       try {
         request.query(command);
       } catch (final WaarpDatabaseSqlException e) {
-        SysErrLogger.FAKE_LOGGER.syserr(e);
+        SysErrLogger.FAKE_LOGGER.ignoreLog(e);
         // return false
       } finally {
         request.close();
@@ -229,7 +210,7 @@ public class DbModelPostgresqlR66 extends DbModelPostgresql {
       try {
         request.query(command);
       } catch (final WaarpDatabaseSqlException e) {
-        SysErrLogger.FAKE_LOGGER.syserr(e);
+        SysErrLogger.FAKE_LOGGER.ignoreLog(e);
         // return false
       } finally {
         request.close();
@@ -254,8 +235,30 @@ public class DbModelPostgresqlR66 extends DbModelPostgresql {
         SysErrLogger.FAKE_LOGGER.sysout("Command: " + command);
         request.query(command);
       } catch (final WaarpDatabaseSqlException e) {
-        SysErrLogger.FAKE_LOGGER.syserr(e);
+        SysErrLogger.FAKE_LOGGER.ignoreLog(e);
         return false;
+      } finally {
+        request.close();
+      }
+    }
+    if (PartnerConfiguration
+        .isVersion2GTVersion1(version, R66Versions.V3_0_4.getVersion())) {
+      SysErrLogger.FAKE_LOGGER.sysout(
+          version + " to " + R66Versions.V3_0_4.getVersion() + "? " + true);
+      final DbRequest request = new DbRequest(session);
+      try {
+        final String command = "DROP INDEX " + ifExists + " IDX_RUNNER ";
+        try {
+          SysErrLogger.FAKE_LOGGER.sysout("Command: " + command);
+          request.query(command);
+        } catch (final WaarpDatabaseNoConnectionException e) {
+          SysErrLogger.FAKE_LOGGER.ignoreLog(e);
+          return false;
+        } catch (final WaarpDatabaseSqlException e) {
+          SysErrLogger.FAKE_LOGGER.ignoreLog(e);
+          // XXX FIX no return
+        }
+        DbModelFactoryR66.createIndex30(dbTypeResolver, request);
       } finally {
         request.close();
       }
@@ -264,6 +267,7 @@ public class DbModelPostgresqlR66 extends DbModelPostgresql {
                                         R66Versions.V3_1_0.getVersion());
     return true;
   }
+
 
   @Override
   public boolean needUpgradeDb(final DbSession session, final String version,

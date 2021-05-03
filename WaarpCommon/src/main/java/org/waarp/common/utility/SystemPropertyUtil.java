@@ -19,7 +19,6 @@
  */
 package org.waarp.common.utility;
 
-import com.google.common.base.Strings;
 import org.waarp.common.exception.InvalidArgumentException;
 import org.waarp.common.logging.SysErrLogger;
 
@@ -102,7 +101,7 @@ public final class SystemPropertyUtil {
     }
     // Ensure Pooled allocator except if something different set
     if (!contains(IO_NETTY_ALLOCATOR_TYPE) ||
-        Strings.isNullOrEmpty(get(IO_NETTY_ALLOCATOR_TYPE))) {
+        ParametersChecker.isEmpty(get(IO_NETTY_ALLOCATOR_TYPE))) {
       try {
         System.setProperty(IO_NETTY_ALLOCATOR_TYPE, IO_POOLED);
         synchronized (PROPS) {
@@ -118,7 +117,7 @@ public final class SystemPropertyUtil {
     }
     // Ensure minimize DIRECT except if something different set
     if (!contains(IO_NETTY_NOPREFERDIRECT) ||
-        Strings.isNullOrEmpty(get(IO_NETTY_NOPREFERDIRECT))) {
+        ParametersChecker.isEmpty(get(IO_NETTY_NOPREFERDIRECT))) {
       try {
         System.setProperty(IO_NETTY_NOPREFERDIRECT, "true");
         synchronized (PROPS) {
@@ -134,7 +133,7 @@ public final class SystemPropertyUtil {
     }
     // Ensure minimize Direct except if something different set
     if (!contains(IO_NETTY_MAXDIRECTMEMORY) ||
-        Strings.isNullOrEmpty(get(IO_NETTY_MAXDIRECTMEMORY))) {
+        ParametersChecker.isNotEmpty(get(IO_NETTY_MAXDIRECTMEMORY))) {
       try {
         System.setProperty(IO_NETTY_MAXDIRECTMEMORY, "0");
         synchronized (PROPS) {

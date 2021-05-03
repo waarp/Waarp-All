@@ -22,8 +22,9 @@ package org.waarp.openr66.protocol.http.restv2.converters;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.waarp.common.database.exception.WaarpDatabaseSqlException;
+import org.waarp.common.json.JsonHandler;
 import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.role.RoleDefault.ROLE;
 import org.waarp.common.utility.SingletonUtils;
@@ -80,7 +81,7 @@ public final class HostConfigConverter {
     final ArrayNode roles = getRolesArray(hostConfig);
     final ArrayNode aliasArray = getAliasArray(hostConfig);
 
-    final ObjectNode node = new ObjectNode(JsonNodeFactory.instance);
+    final ObjectNode node = JsonHandler.createObjectNode();
     node.putArray(BUSINESS).addAll(business);
     node.putArray(ROLES).addAll(roles);
     node.putArray(ALIASES).addAll(aliasArray);
@@ -100,9 +101,14 @@ public final class HostConfigConverter {
    *     represent a Business object
    */
   public static Business nodeToNewBusiness(final ObjectNode object) {
-    final Business emptyBusiness =
-        new Business(serverName(), "", "<roles></roles>", "<aliases></aliases>",
-                     "<root><version></version></root>");
+    Business emptyBusiness = null;
+    try {
+      emptyBusiness = new Business(serverName(), "", "<roles></roles>",
+                                   "<aliases></aliases>",
+                                   "<root><version></version></root>");
+    } catch (WaarpDatabaseSqlException e) {
+      SysErrLogger.FAKE_LOGGER.syserr(e);
+    }
 
     return nodeToUpdatedBusiness(object, emptyBusiness);
   }
@@ -236,15 +242,15 @@ public final class HostConfigConverter {
    * @return the server's list of known aliases
    */
   private static ArrayNode getAliasArray(final Business hostConfig) {
-    final ArrayNode array = new ArrayNode(JsonNodeFactory.instance);
+    final ArrayNode array = JsonHandler.createArrayNode();
     if (hostConfig.getAliases() != null) {
       try {
         final Aliases aliases =
             XmlUtils.xmlToObject(hostConfig.getAliases(), Aliases.class);
 
         for (final AliasEntry alias : aliases.aliases) {
-          final ObjectNode node = new ObjectNode(JsonNodeFactory.instance);
-          final ArrayNode aliasIds = new ArrayNode(JsonNodeFactory.instance);
+          final ObjectNode node = JsonHandler.createObjectNode();
+          final ArrayNode aliasIds = JsonHandler.createArrayNode();
 
           for (final String aliasId : alias.aliasList) {
             aliasIds.add(aliasId);
@@ -271,15 +277,15 @@ public final class HostConfigConverter {
    * @return the server's list of known aliases
    */
   private static ArrayNode getRolesArray(final Business hostConfig) {
-    final ArrayNode array = new ArrayNode(JsonNodeFactory.instance);
+    final ArrayNode array = JsonHandler.createArrayNode();
     if (hostConfig.getRoles() != null) {
       try {
         final Roles roles =
             XmlUtils.xmlToObject(hostConfig.getRoles(), Roles.class);
 
         for (final RoleEntry role : roles.roles) {
-          final ObjectNode node = new ObjectNode(JsonNodeFactory.instance);
-          final ArrayNode roleTypes = new ArrayNode(JsonNodeFactory.instance);
+          final ObjectNode node = JsonHandler.createObjectNode();
+          final ArrayNode roleTypes = JsonHandler.createArrayNode();
 
           for (final ROLE roleType : role.roleList) {
             roleTypes.add(roleType.name());
@@ -307,7 +313,7 @@ public final class HostConfigConverter {
    * @return the server's list of known aliases
    */
   private static ArrayNode getBusinessArray(final Business hostConfig) {
-    final ArrayNode array = new ArrayNode(JsonNodeFactory.instance);
+    final ArrayNode array = JsonHandler.createArrayNode();
     if (hostConfig.getBusiness() != null) {
       try {
         final Businesses business =

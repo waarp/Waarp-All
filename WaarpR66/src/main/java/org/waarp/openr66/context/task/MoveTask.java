@@ -67,7 +67,7 @@ public class MoveTask extends AbstractTask {
     } catch (final Reply550Exception e) {
       logger.error(
           "Move with " + argRule + ':' + argTransfer + " to " + finalname +
-          " and " + session, e);
+          " and " + session + ": {}", e.getMessage());
       futureCompletion.setFailure(e);
       return;
     }

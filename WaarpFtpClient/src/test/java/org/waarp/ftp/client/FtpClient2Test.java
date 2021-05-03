@@ -48,6 +48,7 @@ public class FtpClient2Test extends AbstractFtpClientWithApache {
   public static void startServer() throws IOException {
     ResourceLeakDetector.setLevel(Level.PARANOID);
     SSL_MODE = 0;
+    DELAY = 10;
     startServer0();
   }
 

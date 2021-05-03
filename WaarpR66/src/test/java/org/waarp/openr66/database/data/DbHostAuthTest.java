@@ -25,6 +25,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestWatcher;
+import org.waarp.common.database.exception.WaarpDatabaseSqlException;
 import org.waarp.common.json.JsonHandler;
 import org.waarp.common.utility.TestWatcherJunit4;
 
@@ -36,7 +37,7 @@ public class DbHostAuthTest {
   public TestWatcher watchman = new TestWatcherJunit4();
 
   @Test
-  public void testJsonSerialisation() {
+  public void testJsonSerialisation() throws WaarpDatabaseSqlException {
     DbHostAuth dbHostConf =
         new DbHostAuth("hostid", "127.0.0.1", 6666, false, null, true, true);
 

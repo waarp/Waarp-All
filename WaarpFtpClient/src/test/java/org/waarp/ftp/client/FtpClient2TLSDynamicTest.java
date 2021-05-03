@@ -37,6 +37,7 @@ public class FtpClient2TLSDynamicTest extends AbstractFtpClient {
   public static void startServer() throws IOException {
     ResourceLeakDetector.setLevel(Level.PARANOID);
     SSL_MODE = 1;
+    DELAY = 15;
     startServer0();
   }
 }

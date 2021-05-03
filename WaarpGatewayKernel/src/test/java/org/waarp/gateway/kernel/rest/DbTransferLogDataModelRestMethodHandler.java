@@ -29,6 +29,7 @@ import org.waarp.common.database.exception.WaarpDatabaseException;
 import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
 import org.waarp.common.database.exception.WaarpDatabaseSqlException;
 import org.waarp.common.json.JsonHandler;
+import org.waarp.common.utility.ParametersChecker;
 import org.waarp.gateway.kernel.database.DbConstantGateway;
 import org.waarp.gateway.kernel.database.data.DbTransferLog;
 import org.waarp.gateway.kernel.database.data.DbTransferLog.Columns;
@@ -135,23 +136,23 @@ public class DbTransferLogDataModelRestMethodHandler
     final ObjectNode arg = arguments.getUriArgs().deepCopy();
     arg.setAll(arguments.getBody());
     String modetrans = arg.path(FILTER_ARGS.MODETRANS.name()).asText();
-    if (modetrans == null || modetrans.isEmpty()) {
+    if (ParametersChecker.isEmpty(modetrans)) {
       modetrans = null;
     }
     String accountid = arg.path(FILTER_ARGS.ACCOUNTID.name()).asText();
-    if (accountid == null || accountid.isEmpty()) {
+    if (ParametersChecker.isEmpty(accountid)) {
       accountid = null;
     }
     String userid = arg.path(FILTER_ARGS.USERID.name()).asText();
-    if (userid == null || userid.isEmpty()) {
+    if (ParametersChecker.isEmpty(userid)) {
       userid = null;
     }
     String filename = arg.path(FILTER_ARGS.FILENAME.name()).asText();
-    if (filename == null || filename.isEmpty()) {
+    if (ParametersChecker.isEmpty(filename)) {
       filename = null;
     }
     String infostatus = arg.path(FILTER_ARGS.INFOSTATUS.name()).asText();
-    if (infostatus == null || infostatus.isEmpty()) {
+    if (ParametersChecker.isEmpty(infostatus)) {
       infostatus = null;
     }
     try {

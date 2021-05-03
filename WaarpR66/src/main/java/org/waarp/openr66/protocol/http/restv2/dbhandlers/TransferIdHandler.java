@@ -98,7 +98,7 @@ public class TransferIdHandler extends AbstractRestDbHandler {
                           final HttpResponder responder,
                           @PathParam(URI_ID) final String uri)
       throws UnsupportedEncodingException {
-
+    checkSanity(uri);
     final String key = URLDecoder.decode(uri, UTF8_CHARSET.name());
     final Pattern pattern = Pattern.compile("(-?\\d+)_(.+)");
     final Matcher matcher = pattern.matcher(key);
@@ -155,7 +155,7 @@ public class TransferIdHandler extends AbstractRestDbHandler {
                               final HttpResponder responder,
                               @PathParam(URI_ID) final String uri)
       throws UnsupportedEncodingException {
-
+    checkSanity(uri);
     final String key = URLDecoder.decode(uri, WaarpStringUtils.UTF_8);
     final Pattern pattern = Pattern.compile("(-?\\d+)_(.+)");
     final Matcher matcher = pattern.matcher(key);
@@ -219,7 +219,7 @@ public class TransferIdHandler extends AbstractRestDbHandler {
                            final HttpResponder responder,
                            @PathParam(URI_ID) final String uri)
       throws UnsupportedEncodingException {
-
+    checkSanity(uri);
     final String key = URLDecoder.decode(uri, WaarpStringUtils.UTF8.name());
     final Pattern pattern = Pattern.compile("(-?\\d+)_(.+)");
     final Matcher matcher = pattern.matcher(key);
@@ -281,7 +281,7 @@ public class TransferIdHandler extends AbstractRestDbHandler {
                              final HttpResponder responder,
                              @PathParam(URI_ID) final String uri)
       throws UnsupportedEncodingException {
-
+    checkSanity(uri);
     final String key = URLDecoder.decode(uri, WaarpStringUtils.UTF8.name());
     final Pattern pattern = Pattern.compile("(-?\\d+)_(.+)");
     final Matcher matcher = pattern.matcher(key);
@@ -342,6 +342,7 @@ public class TransferIdHandler extends AbstractRestDbHandler {
   @RequiredRole(NOACCESS)
   public void options(final HttpRequest request, final HttpResponder responder,
                       @PathParam(URI_ID) final String uri) {
+    checkSanity(uri);
     final HttpHeaders allow = new DefaultHttpHeaders();
     allow.add(ALLOW, HttpMethod.OPTIONS);
     responder.sendStatus(OK, allow);
@@ -355,7 +356,7 @@ public class TransferIdHandler extends AbstractRestDbHandler {
                          final HttpResponder responder,
                          @PathParam(URI_ID) final String uri,
                          @PathParam("ep") final String ep) {
-
+    checkSanity(uri, ep);
     final HttpHeaders allow = new DefaultHttpHeaders();
     final List<HttpMethod> methods = new ArrayList<HttpMethod>();
 

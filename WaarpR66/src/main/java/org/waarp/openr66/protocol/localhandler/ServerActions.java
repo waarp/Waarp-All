@@ -37,6 +37,7 @@ import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.role.RoleDefault.ROLE;
+import org.waarp.common.utility.ParametersChecker;
 import org.waarp.common.utility.WaarpShutdownHook;
 import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.openr66.client.AbstractTransfer;
@@ -175,7 +176,7 @@ public class ServerActions extends ConnectionActions {
       packet.clear();
     } else {
       ChannelUtils
-          .writeAbstractLocalPacket(localChannelReference, packet, false);
+          .writeAbstractLocalPacket(localChannelReference, packet, true);
     }
   }
 
@@ -201,7 +202,7 @@ public class ServerActions extends ConnectionActions {
       try {
         id = Long.parseLong(rulename);
       } catch (final NumberFormatException e) {
-        logger.error("Incorrect Transfer ID", e);
+        logger.error("Incorrect Transfer ID: {}", e.getMessage());
         throw new OpenR66ProtocolNoDataException("Incorrect Transfer ID", e);
       }
     }
@@ -425,7 +426,7 @@ public class ServerActions extends ConnectionActions {
         srule = "Rule:OK";
         brule = true;
       } catch (final WaarpDatabaseNoConnectionException e) {
-        logger.error("Error", e);
+        logger.error("Error: {}", e.getMessage());
         srule = "Rule:KO";
         brule = false;
       } catch (final WaarpDatabaseSqlException e) {
@@ -520,9 +521,9 @@ public class ServerActions extends ConnectionActions {
     final boolean isPurge =
         packet.getTypeValid() == LocalPacketFactory.LOGPURGEPACKET;
     final Timestamp start =
-        sstart == null || sstart.isEmpty()? null : Timestamp.valueOf(sstart);
+        ParametersChecker.isEmpty(sstart)? null : Timestamp.valueOf(sstart);
     final Timestamp stop =
-        sstop == null || sstop.isEmpty()? null : Timestamp.valueOf(sstop);
+        ParametersChecker.isEmpty(sstop)? null : Timestamp.valueOf(sstop);
     packet.clear();
     // create export of log and optionally purge them from database
     final String filename = Configuration.configuration.getBaseDirectory() +
@@ -686,7 +687,7 @@ public class ServerActions extends ConnectionActions {
     int rank = -1;
     if (session.getRunner() != null && session.getRunner().isInTransfer()) {
       final String srank = packet.getSmiddle();
-      if (srank != null && !srank.isEmpty()) {
+      if (ParametersChecker.isNotEmpty(srank)) {
         // Save last rank from remote point of view
         try {
           rank = Integer.parseInt(srank);
@@ -1442,7 +1443,7 @@ public class ServerActions extends ConnectionActions {
     try {
       local = Configuration.configuration.getHostId(session.getAuth().isSsl());
     } catch (final OpenR66ProtocolNoSslException e1) {
-      logger.warn("Local Ssl Host is unknown", e1);
+      logger.warn("Local Ssl Host is unknown" + " : {}", e1.getMessage());
     }
     if (shost != null || hostid != ILLEGALVALUE && local != null) {
       DbHostAuth[] oldHosts = null;
@@ -1521,7 +1522,7 @@ public class ServerActions extends ConnectionActions {
           importedrule = true;
           logger.debug("Rule configuration imported from {}", srule);
         } catch (final WaarpDatabaseNoConnectionException e) {
-          logger.error("Error", e);
+          logger.error("Error: {}", e.getMessage());
           importedrule = false;
         } catch (final WaarpDatabaseSqlException e) {
           logger.error("Error", e);
@@ -2124,7 +2125,7 @@ public class ServerActions extends ConnectionActions {
         // inform local instead of remote
         LocalServerHandler.channelRead0(lcr, error);
       } catch (final Exception e) {
-        logger.warn("Write local packet error", e);
+        logger.warn("Write local packet error" + " : {}", e.getMessage());
       }
       resulttest = new R66Result(session, true, ErrorCode.CompleteOk,
                                  session.getRunner());
@@ -2644,7 +2645,7 @@ public class ServerActions extends ConnectionActions {
           "Not authenticated while Information received");
     }
     String remote = session.getAuth().getUser();
-    if (jsonOutput && remoteHost != null && !remoteHost.isEmpty()) {
+    if (jsonOutput && ParametersChecker.isNotEmpty(remoteHost)) {
       remote = remoteHost;
     }
     final String local;
@@ -2753,7 +2754,8 @@ public class ServerActions extends ConnectionActions {
     try {
       rule = new DbRule(request.getRulename());
     } catch (final WaarpDatabaseException e) {
-      logger.warn("Cannot get Rule: " + request.getRulename(), e);
+      logger.warn("Cannot get Rule: " + request.getRulename() + " : {}",
+                  e.getMessage());
       return null;
     }
     int mode = rule.getMode();
@@ -2771,7 +2773,7 @@ public class ServerActions extends ConnectionActions {
         // requested
         taskRunner.setSenderByRequestToValidate(true);
       } catch (final WaarpDatabaseException e) {
-        logger.warn("Cannot get task", e);
+        logger.warn("Cannot get task" + " : {}", e.getMessage());
         return null;
       }
     } else {
@@ -2788,7 +2790,7 @@ public class ServerActions extends ConnectionActions {
         taskRunner = new DbTaskRunner(rule, isRetrieve, requestPacket,
                                       request.getRequested(), ttimestart);
       } catch (final WaarpDatabaseException e) {
-        logger.warn("Cannot get task", e);
+        logger.warn("Cannot get task" + " : {}", e.getMessage());
         return null;
       }
     }

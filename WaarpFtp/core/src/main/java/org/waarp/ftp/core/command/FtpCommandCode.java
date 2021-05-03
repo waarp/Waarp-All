@@ -27,8 +27,6 @@ import org.waarp.ftp.core.command.internal.UnknownCommand;
 import org.waarp.ftp.core.file.FtpFile;
 import org.waarp.ftp.core.session.FtpSession;
 
-import java.lang.reflect.InvocationTargetException;
-
 /**
  * This class must reassemble all the commands that could be implemented. The
  * comment says the object of the
@@ -1418,19 +1416,7 @@ public enum FtpCommandCode {
     try {
       abstractCommand =
           (AbstractCommand) WaarpSystemUtil.newInstance(ftpCommandCode.command);
-    } catch (final InstantiationException e) {
-      abstractCommand = new UnknownCommand();
-      abstractCommand.setArgs(session, COMMAND, arg, Unknown);
-      return abstractCommand;
-    } catch (final IllegalAccessException e) {
-      abstractCommand = new UnknownCommand();
-      abstractCommand.setArgs(session, COMMAND, arg, Unknown);
-      return abstractCommand;
-    } catch (InvocationTargetException e) {
-      abstractCommand = new UnknownCommand();
-      abstractCommand.setArgs(session, COMMAND, arg, Unknown);
-      return abstractCommand;
-    } catch (NoSuchMethodException e) {
+    } catch (final Exception e) {
       abstractCommand = new UnknownCommand();
       abstractCommand.setArgs(session, COMMAND, arg, Unknown);
       return abstractCommand;
@@ -1515,16 +1501,17 @@ public enum FtpCommandCode {
   }
 
   /**
-   * True if the command is Ssl related (AUTH, PBSZ, PROT, USER, PASS, ACCT)
+   * True if the command is Ssl related (AUTH, PBSZ, PROT, USER, PASS, ACCT,
+   * CCC)
    *
    * @param command
    *
    * @return True if the command is Ssl related (AUTH, PBSZ, PROT, USER, PASS,
-   *     ACCT)
+   *     ACCT, CCC)
    */
   public static boolean isSslOrAuthCommand(final FtpCommandCode command) {
     return command == AUTH || command == PBSZ || command == PROT ||
-           command == PASS || command == ACCT;
+           command == PASS || command == ACCT || command == CCC;
   }
 
   /**

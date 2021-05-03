@@ -101,7 +101,6 @@ public class LimitsHandler extends AbstractRestDbHandler {
   @RequiredRole(LIMIT)
   public void getLimits(final HttpRequest request,
                         final HttpResponder responder) {
-
     LimitDAO limitDAO = null;
     try {
       limitDAO = DAO_FACTORY.getLimitDAO();
@@ -138,13 +137,13 @@ public class LimitsHandler extends AbstractRestDbHandler {
   @RequiredRole(READONLY)
   public void initializeLimits(final HttpRequest request,
                                final HttpResponder responder) {
-
     LimitDAO limitDAO = null;
     try {
       limitDAO = DAO_FACTORY.getLimitDAO();
 
       if (!limitDAO.exist(serverName())) {
         final ObjectNode requestObject = JsonUtils.deserializeRequest(request);
+        checkSanity(requestObject);
         final Limit limits = LimitsConverter.nodeToNewLimit(requestObject);
         limitDAO.insert(limits);
 
@@ -180,7 +179,6 @@ public class LimitsHandler extends AbstractRestDbHandler {
   @RequiredRole(LIMIT)
   public void updateLimits(final HttpRequest request,
                            final HttpResponder responder) {
-
     LimitDAO limitDAO = null;
     try {
       limitDAO = DAO_FACTORY.getLimitDAO();
@@ -191,7 +189,7 @@ public class LimitsHandler extends AbstractRestDbHandler {
       }
 
       final ObjectNode requestObject = JsonUtils.deserializeRequest(request);
-
+      checkSanity(requestObject);
       final Limit oldLimits = limitDAO.select(serverName());
       final Limit newLimits =
           LimitsConverter.nodeToUpdatedLimit(requestObject, oldLimits);

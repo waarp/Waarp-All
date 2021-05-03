@@ -21,10 +21,13 @@
 package org.waarp.openr66.protocol.http.restv2.converters;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.joda.time.DateTime;
 import org.waarp.common.database.exception.WaarpDatabaseException;
+import org.waarp.common.database.exception.WaarpDatabaseSqlException;
+import org.waarp.common.json.JsonHandler;
+import org.waarp.common.logging.SysErrLogger;
+import org.waarp.common.utility.ParametersChecker;
 import org.waarp.openr66.dao.DAOFactory;
 import org.waarp.openr66.dao.HostDAO;
 import org.waarp.openr66.dao.RuleDAO;
@@ -131,7 +134,7 @@ public final class TransferConverter {
    * @return the corresponding ObjectNode
    */
   public static ObjectNode transferToNode(final Transfer transfer) {
-    final ObjectNode node = new ObjectNode(JsonNodeFactory.instance);
+    final ObjectNode node = JsonHandler.createObjectNode();
     node.put(TRANSFER_ID, transfer.getId());
     node.put(GLOBAL_STEP, transfer.getGlobalStep().toString());
     node.put(GLOBAL_LAST_STEP, transfer.getLastGlobalStep().toString());
@@ -170,8 +173,14 @@ public final class TransferConverter {
    *     occurred
    */
   public static Transfer nodeToNewTransfer(final ObjectNode object) {
-    final Transfer defaultTransfer =
-        new Transfer(null, null, -1, false, null, null, ZERO_COPY_CHUNK_SIZE);
+    Transfer defaultTransfer = null;
+    try {
+      defaultTransfer =
+          new Transfer(null, null, -1, false, null, null, ZERO_COPY_CHUNK_SIZE);
+    } catch (WaarpDatabaseSqlException e) {
+      SysErrLogger.FAKE_LOGGER.syserr(e);
+      throw new IllegalArgumentException(e);
+    }
     defaultTransfer.setRequester(serverName());
     defaultTransfer.setOwnerRequest(serverName());
     defaultTransfer.setBlockSize(Configuration.configuration.getBlockSize());
@@ -278,14 +287,13 @@ public final class TransferConverter {
    */
   private static List<RestError> checkRequiredFields(final Transfer transfer) {
     final List<RestError> errors = new ArrayList<RestError>();
-    if (transfer.getRule() == null || transfer.getRule().isEmpty()) {
+    if (ParametersChecker.isEmpty(transfer.getRule())) {
       errors.add(MISSING_FIELD(RULE));
     }
-    if (transfer.getOriginalName() == null ||
-        transfer.getOriginalName().isEmpty()) {
+    if (ParametersChecker.isEmpty(transfer.getOriginalName())) {
       errors.add(MISSING_FIELD(FILENAME));
     }
-    if (transfer.getRequested() == null || transfer.getRequested().isEmpty()) {
+    if (ParametersChecker.isEmpty(transfer.getRequested())) {
       errors.add(MISSING_FIELD(REQUESTED));
     }
 

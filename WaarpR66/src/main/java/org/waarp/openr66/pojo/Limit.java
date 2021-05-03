@@ -20,7 +20,13 @@
 
 package org.waarp.openr66.pojo;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.waarp.common.database.exception.WaarpDatabaseSqlException;
+
+import java.sql.Types;
+
+import static org.waarp.common.database.data.AbstractDbData.*;
 
 /**
  * Limit data object
@@ -58,7 +64,7 @@ public class Limit {
   public Limit(final String hostid, final long delayLimit,
                final long readGlobalLimit, final long writeGlobalLimit,
                final long readSessionLimit, final long writeSessionLimit,
-               final UpdatedInfo updatedInfo) {
+               final UpdatedInfo updatedInfo) throws WaarpDatabaseSqlException {
     this(hostid, delayLimit, readGlobalLimit, writeGlobalLimit,
          readSessionLimit, writeSessionLimit);
     this.updatedInfo = updatedInfo;
@@ -66,17 +72,25 @@ public class Limit {
 
   public Limit(final String hostid, final long delayLimit,
                final long readGlobalLimit, final long writeGlobalLimit,
-               final long readSessionLimit, final long writeSessionLimit) {
+               final long readSessionLimit, final long writeSessionLimit)
+      throws WaarpDatabaseSqlException {
     this.hostid = hostid;
     this.delayLimit = delayLimit;
     this.readGlobalLimit = readGlobalLimit;
     this.writeGlobalLimit = writeGlobalLimit;
     this.readSessionLimit = readSessionLimit;
     this.writeSessionLimit = writeSessionLimit;
+    checkValues();
   }
 
-  public Limit(final String hostid, final long delayLimit) {
+  public Limit(final String hostid, final long delayLimit)
+      throws WaarpDatabaseSqlException {
     this(hostid, delayLimit, 0, 0, 0, 0);
+  }
+
+  @JsonIgnore
+  public void checkValues() throws WaarpDatabaseSqlException {
+    validateLength(Types.NVARCHAR, hostid);
   }
 
   public String getHostid() {

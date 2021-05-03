@@ -96,7 +96,8 @@ public class AddDigestJavaTask extends AbstractExecJavaTask {
       key = FilesystemBasedDigest.getHex(FilesystemBasedDigest.getHash(
           session.getFile().getTrueFile(), true, digest));
     } catch (final IOException e1) {
-      logger.error("Digest not correctly computed: " + algo, e1);
+      logger.error("Digest not correctly computed: " + algo + ": {}",
+                   e1.getMessage());
       status = 4;
       return;
     }

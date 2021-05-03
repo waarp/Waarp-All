@@ -287,14 +287,14 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
    *
    * @return as with File.canRead()
    */
-  public static boolean canRead(File file) {
+  public static boolean canRead(final File file) {
     for (int i = 0; i < 3; i++) {
       if (file.canRead()) {
         return true;
       }
       try {
         Thread.sleep(10);
-      } catch (InterruptedException ignored) { // Ignored
+      } catch (InterruptedException ignored) { //NOSONAR
         SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
       }
     }
@@ -483,7 +483,7 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
     try {
       fileOutputStream.write(buffer, offset, length);
     } catch (final IOException e2) {
-      logger.error("Error during write:", e2);
+      logger.error("Error during write: {}", e2.getMessage());
       try {
         closeFile();
       } catch (final CommandAbstractException ignored) {
@@ -560,7 +560,7 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
         }
         sizeout += sizeread;
       } catch (final IOException e) {
-        logger.error(ERROR_DURING_GET, e);
+        logger.error(ERROR_DURING_GET + " {}", e.getMessage());
         try {
           closeFile();
         } catch (final CommandAbstractException ignored) {
@@ -614,11 +614,11 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
       }
     } catch (final FileNotFoundException e) {
       FileUtils.close(fileInputStreamTemp);
-      logger.error("File not found in getFileInputStream:", e);
+      logger.error("File not found in getFileInputStream: {}", e.getMessage());
       return null;
     } catch (final IOException e) {
       FileUtils.close(fileInputStreamTemp);
-      logger.error("Change position in getFileInputStream:", e);
+      logger.error("Change position in getFileInputStream: {}", e.getMessage());
       return null;
     }
     return fileInputStreamTemp;
@@ -645,10 +645,10 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
       raf = new RandomAccessFile(trueFile, "rw");//NOSONAR
       raf.seek(position);
     } catch (final FileNotFoundException e) {
-      logger.error("File not found in getRandomFile:", e);
+      logger.error("File not found in getRandomFile: {}", e.getMessage());
       return null;
     } catch (final IOException e) {
-      logger.error("Change position in getRandomFile:", e);
+      logger.error("Change position in getRandomFile: {}", e.getMessage());
       return null;
     }
     return raf;
@@ -684,7 +684,8 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
         raf.setLength(position);
         FileUtils.close(raf);
       } catch (final IOException e) {
-        logger.error("Change position in getFileOutputStream:", e);
+        logger.error("Change position in getFileOutputStream: {}",
+                     e.getMessage());
         return null;
       }
       logger.debug("New size: {}:{}", trueFile.length(), position);
@@ -693,7 +694,7 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
     try {
       fos = new FileOutputStream(trueFile, append);
     } catch (final FileNotFoundException e) {
-      logger.error("File not found in getRandomFile:", e);
+      logger.error("File not found in getRandomFile: {}", e.getMessage());
       return null;
     }
     return fos;

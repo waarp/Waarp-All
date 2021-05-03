@@ -279,7 +279,7 @@ public class NetworkTransaction {
     }
     configuration.clientStop();
     logger.debug("Proxy Last action before exit");
-    WaarpSystemUtil.stopLogger();
+    WaarpSystemUtil.stopLogger(false);
   }
 
   /**

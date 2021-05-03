@@ -20,7 +20,6 @@
 
 package org.waarp.openr66.protocol.http.restv2.dbhandlers;
 
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.cdap.http.HttpResponder;
 import io.netty.handler.codec.http.DefaultHttpHeaders;
@@ -29,6 +28,8 @@ import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpRequest;
 import org.joda.time.DateTime;
 import org.joda.time.Period;
+import org.waarp.common.json.JsonHandler;
+import org.waarp.common.utility.ParametersChecker;
 import org.waarp.common.utility.WaarpShutdownHook;
 import org.waarp.gateway.kernel.rest.RestConfiguration.CRUD;
 import org.waarp.openr66.context.ErrorCode;
@@ -191,6 +192,7 @@ public class ServerHandler extends AbstractRestDbHandler {
                         final HttpResponder responder,
                         @QueryParam(PERIOD) @DefaultValue("P1DT0H0M0S")
                         final String periodStr) {
+    checkSanity(periodStr);
     try {
       final Period period = Period.parse(periodStr);
       final ObjectNode status = ServerStatusMaker.exportAsJson(period);
@@ -356,7 +358,8 @@ public class ServerHandler extends AbstractRestDbHandler {
                       final String stopID,
                       @QueryParam(REQUESTED) @DefaultValue("")
                       final String requester) {
-
+    checkSanity(purgeStr, cleanStr, statusStr, rule, start, stop, startID,
+                stopID, requester);
     final List<RestError> errors = new ArrayList<RestError>();
     RestUtils.getLocale(request);
     final List<Filter> filters = new ArrayList<Filter>();
@@ -376,16 +379,22 @@ public class ServerHandler extends AbstractRestDbHandler {
     } catch (final IllegalArgumentException e) {
       errors.add(ILLEGAL_PARAMETER_VALUE(CLEAN, cleanStr));
     }
-
-    if (!start.isEmpty()) {
+    if (ParametersChecker.isNotEmpty(start, stop)) {
+      try {
+        filters.add(new Filter(TRANSFER_START_FIELD, Filter.BETWEEN,
+                               DateTime.parse(start), DateTime.parse(stop)));
+      } catch (final IllegalArgumentException e) {
+        errors.add(ILLEGAL_PARAMETER_VALUE(START, start));
+        errors.add(ILLEGAL_PARAMETER_VALUE(STOP, stop));
+      }
+    } else if (ParametersChecker.isNotEmpty(start)) {
       try {
         final DateTime lowerDate = DateTime.parse(start);
         filters.add(new Filter(TRANSFER_START_FIELD, ">=", lowerDate));
       } catch (final IllegalArgumentException e) {
         errors.add(ILLEGAL_PARAMETER_VALUE(START, start));
       }
-    }
-    if (!stop.isEmpty()) {
+    } else if (ParametersChecker.isNotEmpty(stop)) {
       try {
         final DateTime upperDate = DateTime.parse(stop);
         filters.add(new Filter(TRANSFER_START_FIELD, "<=", upperDate));
@@ -393,15 +402,23 @@ public class ServerHandler extends AbstractRestDbHandler {
         errors.add(ILLEGAL_PARAMETER_VALUE(STOP, stop));
       }
     }
-    if (!startID.isEmpty()) {
+    if (ParametersChecker.isNotEmpty(startID, stopID)) {
+      try {
+        filters.add(
+            new Filter(ID_FIELD, Filter.BETWEEN, Long.parseLong(startID),
+                       Long.parseLong(stopID)));
+      } catch (final NumberFormatException e) {
+        errors.add(ILLEGAL_PARAMETER_VALUE(START_ID, startID));
+        errors.add(ILLEGAL_PARAMETER_VALUE(STOP_ID, stopID));
+      }
+    } else if (ParametersChecker.isNotEmpty(startID)) {
       try {
         final Long lowerID = Long.parseLong(startID);
         filters.add(new Filter(ID_FIELD, ">=", lowerID));
       } catch (final NumberFormatException e) {
         errors.add(ILLEGAL_PARAMETER_VALUE(START_ID, startID));
       }
-    }
-    if (!stopID.isEmpty()) {
+    } else if (ParametersChecker.isNotEmpty(stopID)) {
       try {
         final Long upperID = Long.parseLong(stopID);
         filters.add(new Filter(ID_FIELD, "<=", upperID));
@@ -454,8 +471,7 @@ public class ServerHandler extends AbstractRestDbHandler {
         }
       }
 
-      final ObjectNode responseObject =
-          new ObjectNode(JsonNodeFactory.instance);
+      final ObjectNode responseObject = JsonHandler.createObjectNode();
       responseObject.put("filePath", filePath);
       responseObject.put("exported", exported);
       responseObject.put("purged", purged);
@@ -506,7 +522,7 @@ public class ServerHandler extends AbstractRestDbHandler {
                         final String aliasStr,
                         @QueryParam(EXPORT_ROLES) @DefaultValue("false")
                         final String roleStr) {
-
+    checkSanity(hostStr, ruleStr, businessStr, aliasStr, roleStr);
     final List<RestError> errors = new ArrayList<RestError>();
 
     boolean host = false;
@@ -555,7 +571,7 @@ public class ServerHandler extends AbstractRestDbHandler {
     final String rolesFilePath =
         CONFIGS_PATH + File.separator + serverName() + "_roles.xml";
 
-    final ObjectNode responseObject = new ObjectNode(JsonNodeFactory.instance);
+    final ObjectNode responseObject = JsonHandler.createObjectNode();
 
     HostDAO hostDAO = null;
     RuleDAO ruleDAO = null;
@@ -668,7 +684,9 @@ public class ServerHandler extends AbstractRestDbHandler {
                         final String aliasFile,
                         @QueryParam(ROLE_FILE) @DefaultValue("")
                         final String roleFile) {
-
+    checkSanity(purgeHostStr, purgeRuleStr, purgeBusinessStr, purgeAliasStr,
+                purgeRoleStr, hostFile, ruleFile, businessFile, aliasFile,
+                ruleFile);
     final List<RestError> errors = new ArrayList<RestError>();
     RestUtils.getLocale(request);
 
@@ -711,7 +729,7 @@ public class ServerHandler extends AbstractRestDbHandler {
     RuleDAO ruleDAO = null;
     BusinessDAO businessDAO = null;
 
-    final ObjectNode responseObject = new ObjectNode(JsonNodeFactory.instance);
+    final ObjectNode responseObject = JsonHandler.createObjectNode();
 
     try {
       hostDAO = DAO_FACTORY.getHostDAO();
@@ -830,6 +848,7 @@ public class ServerHandler extends AbstractRestDbHandler {
   public void command_options(final HttpRequest request,
                               final HttpResponder responder,
                               @PathParam("ep") final String ep) {
+    checkSanity(ep);
     final HttpHeaders allow = new DefaultHttpHeaders();
     final List<HttpMethod> options = new ArrayList<HttpMethod>();
 

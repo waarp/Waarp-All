@@ -82,7 +82,7 @@ public class AuthenticationFileBasedConfiguration {
     }
     final XmlValue[] values = XmlUtil.read(document, authentElements);
     final XmlHash hash = new XmlHash(values);
-    XmlValue value = hash.get(XML_AUTHENTIFICATION_ENTRY);
+    XmlValue value = hash.get(XML_AUTHENTICATION_ENTRY);
     final List<XmlValue[]> list = (List<XmlValue[]>) value.getList();
     final Iterator<XmlValue[]> iterator = list.iterator();
     File key;
@@ -90,14 +90,14 @@ public class AuthenticationFileBasedConfiguration {
     while (iterator.hasNext()) {
       final XmlValue[] subvalues = iterator.next();
       final XmlHash subHash = new XmlHash(subvalues);
-      value = subHash.get(XML_AUTHENTIFICATION_HOSTID);
+      value = subHash.get(XML_AUTHENTICATION_HOSTID);
       if (value == null || value.isEmpty()) {
         continue;
       }
       final String refHostId = value.getString();
-      value = subHash.get(XML_AUTHENTIFICATION_KEYFILE);
+      value = subHash.get(XML_AUTHENTICATION_KEYFILE);
       if (value == null || value.isEmpty()) {
-        value = subHash.get(XML_AUTHENTIFICATION_KEY);
+        value = subHash.get(XML_AUTHENTICATION_KEY);
         if (value == null || value.isEmpty()) {
           // Allow empty key
           byteKeys = null;
@@ -132,58 +132,58 @@ public class AuthenticationFileBasedConfiguration {
         }
       }
       boolean isAdmin = false;
-      value = subHash.get(XML_AUTHENTIFICATION_ADMIN);
+      value = subHash.get(XML_AUTHENTICATION_ADMIN);
       if (value != null && !value.isEmpty()) {
         isAdmin = value.getBoolean();
       }
-      value = subHash.get(XML_AUTHENTIFICATION_ADDRESS);
+      value = subHash.get(XML_AUTHENTICATION_ADDRESS);
       if (value == null || value.isEmpty()) {
         continue;
       }
       final String address = value.getString();
       final int port;
-      value = subHash.get(XML_AUTHENTIFICATION_PORT);
+      value = subHash.get(XML_AUTHENTICATION_PORT);
       if (value != null && !value.isEmpty()) {
         port = value.getInteger();
       } else {
         continue;
       }
       boolean isSsl = false;
-      value = subHash.get(XML_AUTHENTIFICATION_ISSSL);
+      value = subHash.get(XML_AUTHENTICATION_ISSSL);
       if (value != null && !value.isEmpty()) {
         isSsl = value.getBoolean();
       }
       boolean isClient = false;
-      value = subHash.get(XML_AUTHENTIFICATION_ISCLIENT);
+      value = subHash.get(XML_AUTHENTICATION_ISCLIENT);
       if (value != null && !value.isEmpty()) {
         isClient = value.getBoolean();
       }
       boolean isActive = true;
-      value = subHash.get(XML_AUTHENTIFICATION_ISACTIVE);
+      value = subHash.get(XML_AUTHENTICATION_ISACTIVE);
       if (value != null && !value.isEmpty()) {
         isActive = value.getBoolean();
       }
       boolean isProxified = false;
-      value = subHash.get(XML_AUTHENTIFICATION_ISPROXIFIED);
+      value = subHash.get(XML_AUTHENTICATION_ISPROXIFIED);
       if (value != null && !value.isEmpty()) {
         isProxified = value.getBoolean();
       }
-      final DbHostAuth auth =
-          new DbHostAuth(refHostId, address, port, isSsl, byteKeys, isAdmin,
-                         isClient);
-      auth.setActive(isActive);
-      auth.setProxified(isProxified);
       try {
+        final DbHostAuth auth =
+            new DbHostAuth(refHostId, address, port, isSsl, byteKeys, isAdmin,
+                           isClient);
+        auth.setActive(isActive);
+        auth.setProxified(isProxified);
         if (auth.exist()) {
           auth.update();
         } else {
           auth.insert();
         }
+        logger.debug("Add {} {}", refHostId, auth);
       } catch (final WaarpDatabaseException e) {
         logger.error("Cannot create Authentication for hostId {}", refHostId);
         continue;
       }
-      logger.debug("Add {} {}", refHostId, auth);
     }
     hash.clear();
     return true;
@@ -216,13 +216,13 @@ public class AuthenticationFileBasedConfiguration {
       throws OpenR66ProtocolSystemException,
              WaarpDatabaseNoConnectionException {
     final Document document = DocumentHelper.createDocument();
-    final Element root = document.addElement(XML_AUTHENTIFICATION_ROOT);
+    final Element root = document.addElement(XML_AUTHENTICATION_ROOT);
     final DbHostAuth[] hosts = DbHostAuth.getAllHosts();
     logger.debug("Will write DbHostAuth: {} in {}", hosts.length, filename);
     for (final DbHostAuth auth : hosts) {
       logger.debug("Will write DbHostAuth: {}", auth.getHostid());
-      final Element entry = new DefaultElement(XML_AUTHENTIFICATION_ENTRY);
-      entry.add(newElement(XML_AUTHENTIFICATION_HOSTID, auth.getHostid()));
+      final Element entry = new DefaultElement(XML_AUTHENTICATION_ENTRY);
+      entry.add(newElement(XML_AUTHENTICATION_HOSTID, auth.getHostid()));
       final byte[] key = auth.getHostkey();
       String encode;
       try {
@@ -230,19 +230,19 @@ public class AuthenticationFileBasedConfiguration {
       } catch (final Exception e) {
         encode = "";
       }
-      entry.add(newElement(XML_AUTHENTIFICATION_KEY, encode));
-      entry.add(newElement(XML_AUTHENTIFICATION_ADMIN,
+      entry.add(newElement(XML_AUTHENTICATION_KEY, encode));
+      entry.add(newElement(XML_AUTHENTICATION_ADMIN,
                            Boolean.toString(auth.isAdminrole())));
-      entry.add(newElement(XML_AUTHENTIFICATION_ADDRESS, auth.getAddress()));
-      entry.add(newElement(XML_AUTHENTIFICATION_PORT,
+      entry.add(newElement(XML_AUTHENTICATION_ADDRESS, auth.getAddress()));
+      entry.add(newElement(XML_AUTHENTICATION_PORT,
                            Integer.toString(auth.getPort())));
-      entry.add(newElement(XML_AUTHENTIFICATION_ISSSL,
-                           Boolean.toString(auth.isSsl())));
-      entry.add(newElement(XML_AUTHENTIFICATION_ISCLIENT,
+      entry.add(
+          newElement(XML_AUTHENTICATION_ISSSL, Boolean.toString(auth.isSsl())));
+      entry.add(newElement(XML_AUTHENTICATION_ISCLIENT,
                            Boolean.toString(auth.isClient())));
-      entry.add(newElement(XML_AUTHENTIFICATION_ISACTIVE,
+      entry.add(newElement(XML_AUTHENTICATION_ISACTIVE,
                            Boolean.toString(auth.isActive())));
-      entry.add(newElement(XML_AUTHENTIFICATION_ISPROXIFIED,
+      entry.add(newElement(XML_AUTHENTICATION_ISPROXIFIED,
                            Boolean.toString(auth.isProxified())));
       root.add(entry);
     }

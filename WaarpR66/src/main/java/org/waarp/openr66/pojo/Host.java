@@ -22,30 +22,33 @@ package org.waarp.openr66.pojo;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.waarp.common.database.exception.WaarpDatabaseSqlException;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+import java.sql.Types;
 
+import static org.waarp.common.database.data.AbstractDbData.*;
 import static org.waarp.openr66.configuration.FileBasedElements.*;
 
 /**
  * Host data object
  */
-@XmlType(name = XML_AUTHENTIFICATION_ENTRY)
+@XmlType(name = XML_AUTHENTICATION_ENTRY)
 @XmlAccessorType(XmlAccessType.FIELD)
 public class Host {
-  @XmlElement(name = XML_AUTHENTIFICATION_HOSTID)
+  @XmlElement(name = XML_AUTHENTICATION_HOSTID)
   @JsonProperty("HOSTID")
   private String hostid;
 
-  @XmlElement(name = XML_AUTHENTIFICATION_ADDRESS)
+  @XmlElement(name = XML_AUTHENTICATION_ADDRESS)
   @JsonProperty("ADDRESS")
   private String address;
 
-  @XmlElement(name = XML_AUTHENTIFICATION_PORT)
+  @XmlElement(name = XML_AUTHENTICATION_PORT)
   @JsonProperty("PORT")
   private int port;
 
@@ -53,23 +56,23 @@ public class Host {
   @JsonProperty("HOSTKEY")
   private byte[] hostkey;
 
-  @XmlElement(name = XML_AUTHENTIFICATION_ISSSL)
+  @XmlElement(name = XML_AUTHENTICATION_ISSSL)
   @JsonProperty("ISSSL")
   private boolean ssl;
 
-  @XmlElement(name = XML_AUTHENTIFICATION_ISCLIENT)
+  @XmlElement(name = XML_AUTHENTICATION_ISCLIENT)
   @JsonProperty("ISCLIENT")
   private boolean client;
 
-  @XmlElement(name = XML_AUTHENTIFICATION_ISPROXIFIED)
+  @XmlElement(name = XML_AUTHENTICATION_ISPROXIFIED)
   @JsonProperty("ISPROXIFIED")
   private boolean proxified;
 
-  @XmlElement(name = XML_AUTHENTIFICATION_ADMIN)
+  @XmlElement(name = XML_AUTHENTICATION_ADMIN)
   @JsonProperty("ADMINROLE")
   private boolean admin = true;
 
-  @XmlElement(name = XML_AUTHENTIFICATION_ISACTIVE)
+  @XmlElement(name = XML_AUTHENTICATION_ISACTIVE)
   @JsonProperty("ISACTIVE")
   private boolean active = true;
 
@@ -86,7 +89,8 @@ public class Host {
   public Host(final String hostid, final String address, final int port,
               final byte[] hostkey, final boolean ssl, final boolean client,
               final boolean proxified, final boolean admin,
-              final boolean active, final UpdatedInfo updatedInfo) {
+              final boolean active, final UpdatedInfo updatedInfo)
+      throws WaarpDatabaseSqlException {
     this(hostid, address, port, hostkey, ssl, client, proxified, admin, active);
     this.updatedInfo = updatedInfo;
   }
@@ -94,7 +98,7 @@ public class Host {
   public Host(final String hostid, final String address, final int port,
               final byte[] hostkey, final boolean ssl, final boolean client,
               final boolean proxified, final boolean admin,
-              final boolean active) {
+              final boolean active) throws WaarpDatabaseSqlException {
     this.hostid = hostid;
     this.hostkey = hostkey;
     // Force client status if unvalid port
@@ -105,17 +109,26 @@ public class Host {
     this.proxified = proxified;
     this.admin = admin;
     this.active = active;
+    checkValues();
   }
 
   public Host(final String hostid, final String address, final int port,
               final byte[] hostkey, final boolean ssl, final boolean client,
-              final boolean proxified, final boolean admin) {
+              final boolean proxified, final boolean admin)
+      throws WaarpDatabaseSqlException {
     this(hostid, address, port, hostkey, ssl, client, proxified, admin, true);
   }
 
   public Host(final String hostid, final String address, final int port,
-              final byte[] hostkey, final boolean ssl, final boolean client) {
-    this(hostid, address, port, hostkey, ssl, client, false, true);
+              final byte[] hostkey, final boolean ssl, final boolean client)
+      throws WaarpDatabaseSqlException {
+    this(hostid, address, port, hostkey, ssl, client, false, true, true);
+  }
+
+  @JsonIgnore
+  public void checkValues() throws WaarpDatabaseSqlException {
+    validateLength(hostkey);
+    validateLength(Types.NVARCHAR, address, hostid);
   }
 
   public String getHostid() {
@@ -146,7 +159,7 @@ public class Host {
     return hostkey;
   }
 
-  @XmlElement(name = XML_AUTHENTIFICATION_KEY)
+  @XmlElement(name = XML_AUTHENTICATION_KEY)
   @JsonIgnore
   public String getKey() {
     return new String(hostkey);

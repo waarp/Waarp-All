@@ -99,7 +99,7 @@ public abstract class HttpRestR66ClientResponseHandler
         final String json = cumulativeBody.toString(WaarpStringUtils.UTF8);
         jsonObject = JsonHandler.getFromString(json);
       } catch (final UnsupportedCharsetException e2) {
-        logger.warn("Error", e2);
+        logger.warn("Error" + " : {}", e2.getMessage());
         throw new HttpIncorrectRequestException(e2);
       }
       cumulativeBody = null;
@@ -407,7 +407,7 @@ public abstract class HttpRestR66ClientResponseHandler
             final String json = cumulativeBody.toString(WaarpStringUtils.UTF8);
             jsonObject = JsonHandler.getFromString(json);
           } catch (final Throwable e2) {
-            logger.warn("Error", e2);
+            logger.warn("Error" + " : {}", e2.getMessage());
             throw new HttpIncorrectRequestException(e2);
           }
           cumulativeBody.release();
@@ -446,7 +446,7 @@ public abstract class HttpRestR66ClientResponseHandler
       }
       return;
     }
-    logger.warn("Error", cause);
+    logger.warn("Error: {}", cause.getMessage());
     if (ctx.channel() != null && restFuture != null) {
       restFuture.setFailure(cause);
     }

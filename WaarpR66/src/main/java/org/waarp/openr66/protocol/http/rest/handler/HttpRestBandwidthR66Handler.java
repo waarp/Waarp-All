@@ -23,6 +23,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import org.waarp.common.database.data.AbstractDbData;
+import org.waarp.common.exception.InvalidArgumentException;
 import org.waarp.common.json.JsonHandler;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
@@ -64,6 +65,11 @@ public class HttpRestBandwidthR66Handler extends HttpRestAbstractR66Handler {
                                 final RestArgument arguments,
                                 final RestArgument result, final Object body)
       throws HttpInvalidAuthenticationException {
+    try {
+      HttpRestV1Utils.checkSanity(arguments);
+    } catch (InvalidArgumentException e) {
+      throw new HttpInvalidAuthenticationException("Issue on values", e);
+    }
     logger.debug("debug: {} ### {}", arguments, result);
     if (body != null) {
       logger.debug("Obj: {}", body);

@@ -3,6 +3,7 @@ package org.waarp.openr66.pojo;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestWatcher;
+import org.waarp.common.database.exception.WaarpDatabaseSqlException;
 import org.waarp.common.json.JsonHandler;
 import org.waarp.common.utility.TestWatcherJunit4;
 
@@ -14,7 +15,7 @@ public class HostTest {
 
 
   @Test
-  public void testJson() {
+  public void testJson() throws WaarpDatabaseSqlException {
     byte[] rawbytes = { 0xA, 0x2 };
     Host host =
         new Host("hostid", "127.0.0.1", 6666, rawbytes, false, true, true, true,
@@ -32,7 +33,7 @@ public class HostTest {
   }
 
   @Test
-  public void testNegativePort() {
+  public void testNegativePort() throws WaarpDatabaseSqlException {
     byte[] rawbytes = { 0xA, 0x2 };
     Host host =
         new Host("hostid", "127.0.0.1", -42, rawbytes, false, true, true, true,

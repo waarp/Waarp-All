@@ -22,7 +22,6 @@ package org.waarp.openr66.protocol.monitoring;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.netty.channel.EventLoopGroup;
 import org.joda.time.DateTime;
@@ -150,20 +149,20 @@ public class MonitorExporterTransfers extends Thread {
     DbHostConfiguration temp = null;
     try {
       temp = new DbHostConfiguration(Configuration.configuration.getHostId());
-    } catch (WaarpDatabaseException e) {
-      logger.error(e);
+    } catch (WaarpDatabaseException e) {//NOSONAR
+      logger.error(e.getMessage());
     }
     if (temp == null) {
       DbHostConfiguration
           .getLastDateTimeMonitoring(Configuration.configuration.getHostId());
       try {
         temp = new DbHostConfiguration(Configuration.configuration.getHostId());
-      } catch (WaarpDatabaseException e) {
-        logger.error(e);
+      } catch (WaarpDatabaseException e) {//NOSONAR
+        logger.error(e.getMessage());
       }
     }
     this.hostConfiguration = temp;
-    lastDateTime = hostConfiguration.getLastDateTimeMonitoring();
+    lastDateTime = hostConfiguration.getLastDateTimeMonitoring();//NOSONAR
     if (lastDateTime != null) {
       lastTimestamp = new Timestamp(lastDateTime.getMillis());
     }
@@ -171,15 +170,19 @@ public class MonitorExporterTransfers extends Thread {
 
   @Override
   public void run() {
-    DateTime now = new DateTime();
-    Timestamp timestamp = new Timestamp(now.getMillis());
+    final DateTime now = new DateTime();
+    final Timestamp timestamp = new Timestamp(now.getMillis());
     logger.info("Start from {} to {}", lastDateTime, now);
-    TransferConverter.Order order = TransferConverter.Order.ascId;
-    final List<Filter> filters = new ArrayList<Filter>();
+    final TransferConverter.Order order = TransferConverter.Order.ascId;
+    final List<Filter> filters = new ArrayList<Filter>(3);
+    filters.add(new Filter(OWNER_REQUEST_FIELD, "=",
+                           Configuration.configuration.getHostId()));
     if (lastTimestamp != null) {
-      filters.add(new Filter(TRANSFER_STOP_FIELD, ">=", lastTimestamp));
+      filters.add(new Filter(TRANSFER_STOP_FIELD, Filter.BETWEEN, lastTimestamp,
+                             timestamp));
+    } else {
+      filters.add(new Filter(TRANSFER_STOP_FIELD, "<=", timestamp));
     }
-    filters.add(new Filter(TRANSFER_STOP_FIELD, "<=", timestamp));
     TransferDAO transferDAO = null;
     List<Transfer> transferList;
     try {
@@ -187,7 +190,7 @@ public class MonitorExporterTransfers extends Thread {
       transferList = transferDAO.find(filters, order.column, order.ascend);
       logger.debug("Get List {}", transferList.size());
     } catch (final DAOConnectionException e) {
-      logger.error(e);
+      logger.error(e.getMessage());
       throw new InternalServerErrorException(e);
     } finally {
       DAOFactory.closeDAO(transferDAO);
@@ -201,15 +204,15 @@ public class MonitorExporterTransfers extends Thread {
     }
     logger.debug("Create Json");
 
-    final ObjectNode monitoredTransfers =
-        new ObjectNode(JsonNodeFactory.instance);
+    final ObjectNode monitoredTransfers = JsonHandler.createObjectNode();
     final ArrayNode resultList = monitoredTransfers.putArray(RESULTS);
     final String owner = Configuration.configuration.getHostId();
     for (final Transfer transfer : transferList) {
-      ObjectNode item = TransferConverter.transferToNode(transfer);
-      long specialId = item.get(TransferFields.TRANSFER_ID).asLong();
-      String transferInfo = item.get(TransferFields.TRANSFER_INFO).asText();
-      ObjectNode root = JsonHandler.getFromString(transferInfo);
+      final ObjectNode item = TransferConverter.transferToNode(transfer);
+      final long specialId = item.get(TransferFields.TRANSFER_ID).asLong();
+      final String transferInfo =
+          item.get(TransferFields.TRANSFER_INFO).asText();
+      final ObjectNode root = JsonHandler.getFromString(transferInfo);
       long followId = Long.MIN_VALUE;
       long originalSize = -1;
       if (root != null) {
@@ -231,14 +234,14 @@ public class MonitorExporterTransfers extends Thread {
         item.put(FOLLOW_ID, followId);
         item.put(ORIGINAL_SIZE, originalSize);
       }
-      String uniqueId =
+      final String uniqueId =
           owner + "." + item.get(TransferFields.REQUESTER).asText() + "." +
           item.get(TransferFields.REQUESTED).asText() + "." + specialId;
       item.put(UNIQUE_ID, uniqueId);
       item.put(HOST_ID, owner);
       item.remove(TransferFields.TRANSFER_ID);
       if (intervalMonitoringIncluded) {
-        ObjectNode waarpMonitor = item.putObject(WAARP_MONITOR);
+        final ObjectNode waarpMonitor = item.putObject(WAARP_MONITOR);
         waarpMonitor.put(FROM_DATE_TIME,
                          lastDateTime != null? lastDateTime.toString() : "");
         waarpMonitor.put(TO_DATE_TIME, now.toString());
@@ -246,7 +249,7 @@ public class MonitorExporterTransfers extends Thread {
       }
       resultList.add(item);
     }
-    int size = resultList.size();
+    final int size = resultList.size();
     logger.debug("Create Json {}", size);
     transferList.clear();
     if (httpClient.post(monitoredTransfers, lastDateTime, now,

@@ -86,7 +86,7 @@ public class TarTask extends AbstractTask {
           TarUtility.unTar(tarFile, directory);
           tar = true;
         } catch (final IOException e) {
-          logger.warn("Error while untar", e);
+          logger.warn("Error while untar: {}", e.getMessage());
           tar = false;
         }
         break;

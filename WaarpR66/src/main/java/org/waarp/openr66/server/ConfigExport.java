@@ -146,8 +146,7 @@ public class ConfigExport implements Runnable {
                               LocalPacketFactory.CONFEXPORTPACKET);
     }
     try {
-      ChannelUtils
-          .writeAbstractLocalPacket(localChannelReference, valid, false);
+      ChannelUtils.writeAbstractLocalPacket(localChannelReference, valid, true);
     } catch (final OpenR66ProtocolPacketException e) {
       logger.error("Bad Protocol", e);
       localChannelReference.close();
@@ -275,9 +274,13 @@ public class ConfigExport implements Runnable {
         }
       } else {
         if (result.getCode() == ErrorCode.Warning) {
-          logger.warn("ConfigExport is     WARNED", future.getCause());
+          logger.warn("ConfigExport is     WARNED" + " : {}",
+                      future.getCause() != null?
+                          future.getCause().getMessage() : "");
         } else {
-          logger.error("ConfigExport in     FAILURE", future.getCause());
+          logger.error("ConfigExport in     FAILURE" + " : {}",
+                       future.getCause() != null?
+                           future.getCause().getMessage() : "");
         }
         networkTransaction.closeAll();
         System.exit(result.getCode().ordinal());//NOSONAR

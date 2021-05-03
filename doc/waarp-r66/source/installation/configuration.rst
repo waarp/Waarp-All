@@ -157,7 +157,7 @@ out                          Dossier où sont cherchés les fichiers à transfé
 work                         Dossier tampon où sont stockés les fichiers en cours de réception
 arch                         Dossier d’export XML de l’historique des transferts
 conf                         Dossier d’export XML de la configuration de l’instance
-extendedtaskfactories        Liste (séparée par des virgules) des TaskFactory en tant qu'extension pour ajouter des tâches à WaarpR66
+extendedtaskfactories        Liste (séparée par des virgules) des TaskFactory en tant qu'extension pour ajouter des tâches à WaarpR66 (implicite pour la Factory ``org.waarp.openr66.s3.taskfactory.S3TaskFactory``, si la classe est dans le  claspath).
 ============================ ==============
 
 DB

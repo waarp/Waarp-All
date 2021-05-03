@@ -23,6 +23,7 @@ package org.waarp.icap;
 import com.google.common.io.Files;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.ParametersChecker;
 import org.waarp.common.utility.WaarpStringUtils;
 
 import java.io.ByteArrayInputStream;
@@ -149,11 +150,11 @@ public class IcapClient implements Closeable {
    */
   public IcapClient(final String serverIP, final int port,
                     final String icapService, final int previewSize) {
-    if (icapService == null || icapService.trim().isEmpty()) {
+    if (ParametersChecker.isEmpty(icapService)) {
       throw new IllegalArgumentException("IcapService must not be empty");
     }
     this.icapService = icapService;
-    if (serverIP == null || serverIP.trim().isEmpty()) {
+    if (ParametersChecker.isEmpty(serverIP)) {
       throw new IllegalArgumentException("Server IP must not be empty");
     }
     this.serverIP = serverIP;
@@ -312,7 +313,7 @@ public class IcapClient implements Closeable {
    *     bad headers)
    */
   public boolean scanFile(final String filename) throws IcapException {
-    if (filename == null || filename.trim().isEmpty()) {
+    if (ParametersChecker.isEmpty(filename)) {
       throw new IllegalArgumentException("Filename must not be empty");
     }
     if (client == null) {
@@ -341,7 +342,7 @@ public class IcapClient implements Closeable {
           inputStream = new ByteArrayInputStream(array);
           length = array.length;
         } catch (final IOException e) {
-          logger.error("File EICAR TEST does not exist", e);
+          logger.error("File EICAR TEST does not exist: {}", e.getMessage());
           throw new IcapException("File EICAR TEST cannot be found",
                                   IcapError.ICAP_ARGUMENT_ERROR);
         }
@@ -529,7 +530,7 @@ public class IcapClient implements Closeable {
    * @return This
    */
   public IcapClient setKeyIcapPreview(final String keyIcapPreview) {
-    if (keyIcapPreview != null && keyIcapPreview.isEmpty()) {
+    if (ParametersChecker.isEmpty(keyIcapPreview)) {
       this.keyIcapPreview = null;
     } else {
       this.keyIcapPreview = keyIcapPreview;
@@ -553,8 +554,7 @@ public class IcapClient implements Closeable {
    */
   public IcapClient setSubStringFromKeyIcapPreview(
       final String subStringFromKeyIcapPreview) {
-    if (subStringFromKeyIcapPreview != null &&
-        subStringFromKeyIcapPreview.isEmpty()) {
+    if (ParametersChecker.isEmpty(subStringFromKeyIcapPreview)) {
       this.subStringFromKeyIcapPreview = null;
     } else {
       this.subStringFromKeyIcapPreview = subStringFromKeyIcapPreview;
@@ -578,7 +578,7 @@ public class IcapClient implements Closeable {
    */
   public IcapClient setSubstringHttpStatus200(
       final String substringHttpStatus200) {
-    if (substringHttpStatus200 != null && substringHttpStatus200.isEmpty()) {
+    if (ParametersChecker.isEmpty(substringHttpStatus200)) {
       this.substringHttpStatus200 = null;
     } else {
       this.substringHttpStatus200 = substringHttpStatus200;
@@ -601,7 +601,7 @@ public class IcapClient implements Closeable {
    * @return This
    */
   public IcapClient setKeyIcap200(final String keyIcap200) {
-    if (keyIcap200 != null && keyIcap200.isEmpty()) {
+    if (ParametersChecker.isEmpty(keyIcap200)) {
       this.keyIcap200 = null;
     } else {
       this.keyIcap200 = keyIcap200;
@@ -625,7 +625,7 @@ public class IcapClient implements Closeable {
    */
   public IcapClient setSubStringFromKeyIcap200(
       final String subStringFromKeyIcap200) {
-    if (subStringFromKeyIcap200 != null && subStringFromKeyIcap200.isEmpty()) {
+    if (ParametersChecker.isEmpty(subStringFromKeyIcap200)) {
       this.subStringFromKeyIcap200 = null;
     } else {
       this.subStringFromKeyIcap200 = subStringFromKeyIcap200;
@@ -648,7 +648,7 @@ public class IcapClient implements Closeable {
    * @return This
    */
   public IcapClient setKeyIcap204(final String keyIcap204) {
-    if (keyIcap204 != null && keyIcap204.isEmpty()) {
+    if (ParametersChecker.isEmpty(keyIcap204)) {
       this.keyIcap204 = null;
     } else {
       this.keyIcap204 = keyIcap204;
@@ -672,7 +672,7 @@ public class IcapClient implements Closeable {
    */
   public IcapClient setSubStringFromKeyIcap204(
       final String subStringFromKeyIcap204) {
-    if (subStringFromKeyIcap204 != null && subStringFromKeyIcap204.isEmpty()) {
+    if (ParametersChecker.isEmpty(subStringFromKeyIcap204)) {
       this.subStringFromKeyIcap204 = null;
     } else {
       this.subStringFromKeyIcap204 = subStringFromKeyIcap204;
@@ -909,8 +909,7 @@ public class IcapClient implements Closeable {
         boolean finalStatus = checkAgainstIcapHeader(finalResult, keyIcap200,
                                                      subStringFromKeyIcap200,
                                                      false);
-        if (substringHttpStatus200 != null &&
-            !substringHttpStatus200.isEmpty()) {
+        if (ParametersChecker.isNotEmpty(substringHttpStatus200)) {
           parseMe = getHeaderHttp();
           logger.warn("{} contains {} = {}", parseMe, substringHttpStatus200,
                       parseMe.contains(substringHttpStatus200));

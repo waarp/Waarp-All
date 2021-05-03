@@ -38,6 +38,7 @@ import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.role.RoleDefault;
 import org.waarp.common.role.RoleDefault.ROLE;
+import org.waarp.common.utility.ParametersChecker;
 import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.common.xml.XmlDecl;
 import org.waarp.common.xml.XmlHash;
@@ -88,6 +89,10 @@ public class DbHostConfiguration extends AbstractDbDataDao<Business> {
   public static final int[] dbTypes = {
       Types.LONGVARCHAR, Types.LONGVARCHAR, Types.LONGVARCHAR,
       Types.LONGVARCHAR, Types.INTEGER, Types.NVARCHAR
+  };
+
+  public static final Columns[] indexes = {
+      Columns.HOSTID, Columns.UPDATEDINFO
   };
 
   public static final String table = " HOSTCONFIG ";
@@ -210,7 +215,8 @@ public class DbHostConfiguration extends AbstractDbDataDao<Business> {
    */
   public DbHostConfiguration(final String hostid, final String business,
                              final String roles, final String aliases,
-                             final String others) {
+                             final String others)
+      throws WaarpDatabaseSqlException {
     this.pojo = new Business(hostid, business, roles, aliases, others);
   }
 
@@ -233,7 +239,7 @@ public class DbHostConfiguration extends AbstractDbDataDao<Business> {
       throws WaarpDatabaseSqlException {
     pojo = new Business();
     setFromJson(source, false);
-    if (pojo.getHostid() == null || pojo.getHostid().isEmpty()) {
+    if (ParametersChecker.isEmpty(pojo.getHostid())) {
       throw new WaarpDatabaseSqlException(
           "Not enough argument to create the object");
     }
@@ -254,11 +260,16 @@ public class DbHostConfiguration extends AbstractDbDataDao<Business> {
     } catch (final DAOConnectionException e) {
       throw new WaarpDatabaseException(e);
     } catch (final DAONoDataException e) {
-      throw new WaarpDatabaseNoDataException(
-          "DbHostConfiguration not " + "found", e);
+      throw new WaarpDatabaseNoDataException("DbHostConfiguration not found",
+                                             e);
     } finally {
       DAOFactory.closeDAO(businessAccess);
     }
+  }
+
+  @Override
+  protected void checkValues() throws WaarpDatabaseSqlException {
+    pojo.checkValues();
   }
 
   /**
@@ -351,8 +362,8 @@ public class DbHostConfiguration extends AbstractDbDataDao<Business> {
       document = XmlUtil.getNewSaxReader().read(reader);
     } catch (final DocumentException e) {
       logger.error(
-          Messages.getString("FileBasedConfiguration.CannotReadXml") + input,
-          e); //$NON-NLS-1$
+          Messages.getString("FileBasedConfiguration.CannotReadXml") + input +
+          ": {}", e.getMessage()); //$NON-NLS-1$
       return;
     }
     if (document == null) {
@@ -458,7 +469,7 @@ public class DbHostConfiguration extends AbstractDbDataDao<Business> {
    * @return the element for the content of the other part
    */
   public Element getOtherElement() {
-    if (pojo.getOthers() != null && !pojo.getOthers().isEmpty()) {
+    if (ParametersChecker.isNotEmpty(pojo.getOthers())) {
       final Document document;
       try {
         document = DocumentHelper.parseText(pojo.getOthers());
@@ -623,11 +634,11 @@ public class DbHostConfiguration extends AbstractDbDataDao<Business> {
         new DbPreparedStatement(session);
     final String request = "SELECT " + selectAllFields + " FROM " + table;
     String condition = null;
-    if (hostid != null) {
+    if (ParametersChecker.isNotEmpty(hostid)) {
       condition =
           " WHERE " + Columns.HOSTID.name() + " LIKE '%" + hostid + "%' ";
     }
-    if (business != null) {
+    if (ParametersChecker.isNotEmpty(business)) {
       if (condition != null) {
         condition +=
             " AND " + Columns.BUSINESS.name() + " LIKE '%" + business + "%' ";
@@ -636,7 +647,7 @@ public class DbHostConfiguration extends AbstractDbDataDao<Business> {
             " WHERE " + Columns.BUSINESS.name() + " LIKE '%" + business + "%' ";
       }
     }
-    if (role != null) {
+    if (ParametersChecker.isNotEmpty(role)) {
       if (condition != null) {
         condition += " AND " + Columns.ROLES.name() + " LIKE '%" + role + "%' ";
       } else {
@@ -644,7 +655,7 @@ public class DbHostConfiguration extends AbstractDbDataDao<Business> {
             " WHERE " + Columns.ROLES.name() + " LIKE '%" + role + "%' ";
       }
     }
-    if (alias != null) {
+    if (ParametersChecker.isNotEmpty(alias)) {
       if (condition != null) {
         condition +=
             " AND " + Columns.ALIASES.name() + " LIKE '%" + alias + "%' ";
@@ -653,7 +664,7 @@ public class DbHostConfiguration extends AbstractDbDataDao<Business> {
             " WHERE " + Columns.ALIASES.name() + " LIKE '%" + alias + "%' ";
       }
     }
-    if (other != null) {
+    if (ParametersChecker.isNotEmpty(other)) {
       if (condition != null) {
         condition +=
             " AND " + Columns.OTHERS.name() + " LIKE '%" + other + "%' ";
@@ -674,6 +685,7 @@ public class DbHostConfiguration extends AbstractDbDataDao<Business> {
 
   @Override
   public void changeUpdatedInfo(final UpdatedInfo info) {
+    isSaved = false;
     pojo.setUpdatedInfo(org.waarp.openr66.pojo.UpdatedInfo.fromLegacy(info));
   }
 
@@ -702,7 +714,7 @@ public class DbHostConfiguration extends AbstractDbDataDao<Business> {
    */
   private boolean updateSet(final String source, final String path,
                             final HashSet<String> set) {
-    if (source != null && !source.isEmpty()) {
+    if (ParametersChecker.isNotEmpty(source)) {
       final Document document;
       StringReader reader = null;
       try {
@@ -710,7 +722,8 @@ public class DbHostConfiguration extends AbstractDbDataDao<Business> {
         document = XmlUtil.getNewSaxReader().read(reader);
       } catch (final DocumentException e) {
         logger.error(
-            "Unable to read the XML Config " + path + " string: " + source, e);
+            "Unable to read the XML Config " + path + " string: " + source +
+            ": {}", e.getMessage());
         FileUtils.close(reader);
         return false;
       }
@@ -755,6 +768,7 @@ public class DbHostConfiguration extends AbstractDbDataDao<Business> {
     }
     if (purged) {
       config.getBusinessWhiteSet().clear();
+      isSaved = false;
     } else {
       final String businessStr = getBusiness();
       if (!updateSet(businessStr, XML_BUSINESS + '/' + XML_BUSINESSID, set)) {
@@ -762,7 +776,7 @@ public class DbHostConfiguration extends AbstractDbDataDao<Business> {
       }
     }
     config.getBusinessWhiteSet().addAll(set);
-    if (newbusiness != null && !newbusiness.isEmpty() || purged) {
+    if (ParametersChecker.isNotEmpty(newbusiness) || purged) {
       final Document document = DocumentHelper
           .createDocument(DocumentHelper.createElement(XML_BUSINESS));
       final Element root = document.getRootElement();
@@ -800,6 +814,7 @@ public class DbHostConfiguration extends AbstractDbDataDao<Business> {
       }
       final String xml = root.asXML();
       this.pojo.setBusiness(xml);
+      isSaved = false;
       document.clearContent();
     }
     // Aliases
@@ -826,6 +841,7 @@ public class DbHostConfiguration extends AbstractDbDataDao<Business> {
       }
       final String xml = root.asXML();
       this.pojo.setAliases(xml);
+      isSaved = false;
       document.clearContent();
     }
 
@@ -864,6 +880,7 @@ public class DbHostConfiguration extends AbstractDbDataDao<Business> {
       }
       final String xml = root.asXML();
       this.pojo.setRoles(xml);
+      isSaved = false;
       document.clearContent();
     }
 
@@ -897,7 +914,7 @@ public class DbHostConfiguration extends AbstractDbDataDao<Business> {
                             final String keypath, final String valpath,
                             final String split,
                             final HashMap<String, HashSet<String>> map) {
-    if (source != null && !source.isEmpty()) {
+    if (ParametersChecker.isNotEmpty(source)) {
       final Document document;
       StringReader reader = null;
       try {
@@ -905,7 +922,8 @@ public class DbHostConfiguration extends AbstractDbDataDao<Business> {
         document = XmlUtil.getNewSaxReader().read(reader);
       } catch (final DocumentException e) {
         logger.error(
-            "Unable to read the XML Config " + path + " string: " + source, e);
+            "Unable to read the XML Config " + path + " string: " + source +
+            ": {}", e.getMessage());
         FileUtils.close(reader);
         return false;
       }
@@ -966,6 +984,7 @@ public class DbHostConfiguration extends AbstractDbDataDao<Business> {
     if (purged) {
       config.getReverseAliases().clear();
       config.getAliases().clear();
+      isSaved = false;
     } else {
       final String alias = getAliases();
       if (!updateMap(alias, XML_ALIASES + '/' + XML_ALIAS, XML_REALID,
@@ -973,7 +992,7 @@ public class DbHostConfiguration extends AbstractDbDataDao<Business> {
         return false;
       }
     }
-    if (newalias != null && !newalias.isEmpty() || purged) {
+    if (ParametersChecker.isNotEmpty(newalias) || purged) {
       final Document document = DocumentHelper
           .createDocument(DocumentHelper.createElement(XML_ALIASES));
       final Element root = document.getRootElement();
@@ -1056,6 +1075,7 @@ public class DbHostConfiguration extends AbstractDbDataDao<Business> {
     }
     if (purged) {
       config.getRoles().clear();
+      isSaved = false;
     } else {
       final String roles = getRoles();
       if (!updateMap(roles, XML_ROLES + '/' + XML_ROLE, XML_ROLEID, XML_ROLESET,
@@ -1063,7 +1083,7 @@ public class DbHostConfiguration extends AbstractDbDataDao<Business> {
         return false;
       }
     }
-    if (newroles != null && !newroles.isEmpty() || purged) {
+    if (ParametersChecker.isNotEmpty(newroles) || purged) {
       final Document document = DocumentHelper
           .createDocument(DocumentHelper.createElement(XML_ROLES));
       final Element root = document.getRootElement();
@@ -1190,8 +1210,8 @@ public class DbHostConfiguration extends AbstractDbDataDao<Business> {
     try {
       hostConfiguration = new DbHostConfiguration(hostid);
     } catch (final WaarpDatabaseNoDataException e) {
-      hostConfiguration = new DbHostConfiguration(hostid, "", "", "", "");
       try {
+        hostConfiguration = new DbHostConfiguration(hostid, "", "", "", "");
         hostConfiguration.insert();
       } catch (final WaarpDatabaseException e1) {
         logger.debug("Not inserted?", e1);
@@ -1235,7 +1255,7 @@ public class DbHostConfiguration extends AbstractDbDataDao<Business> {
           .selectSingleNode(OtherFields.lastMonitoringDateTime.name());
       if (lastMonitoringDT != null) {
         String dateTime = lastMonitoringDT.getText();
-        if (dateTime != null && !dateTime.isEmpty()) {
+        if (ParametersChecker.isNotEmpty(dateTime)) {
           try {
             return DateTime.parse(lastMonitoringDT.getText());
           } catch (Exception ignored) {
@@ -1287,8 +1307,8 @@ public class DbHostConfiguration extends AbstractDbDataDao<Business> {
     try {
       hostConfiguration = new DbHostConfiguration(hostid);
     } catch (final WaarpDatabaseNoDataException e) {
-      hostConfiguration = new DbHostConfiguration(hostid, "", "", "", "");
       try {
+        hostConfiguration = new DbHostConfiguration(hostid, "", "", "", "");
         hostConfiguration.insert();
       } catch (final WaarpDatabaseException e1) {
         logger.debug("Not inserted?", e1);
@@ -1315,8 +1335,8 @@ public class DbHostConfiguration extends AbstractDbDataDao<Business> {
     try {
       hostConfiguration = new DbHostConfiguration(hostid);
     } catch (final WaarpDatabaseNoDataException e) {
-      hostConfiguration = new DbHostConfiguration(hostid, "", "", "", "");
       try {
+        hostConfiguration = new DbHostConfiguration(hostid, "", "", "", "");
         hostConfiguration.insert();
       } catch (final WaarpDatabaseException e1) {
         logger.debug("Not inserted?", e1);

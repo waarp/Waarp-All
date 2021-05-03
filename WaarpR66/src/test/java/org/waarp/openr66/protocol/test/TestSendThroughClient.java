@@ -123,19 +123,24 @@ public class TestSendThroughClient extends SendThroughClient {
           try {
             result.getRunner().delete();
           } catch (final WaarpDatabaseException e) {
-            logger.warn("Cannot apply nolog to " + result.getRunner(), e);
+            logger.warn("Cannot apply nolog to " + result.getRunner() + " : {}",
+                        e.getMessage());
           }
         }
       } else {
         if (result == null || result.getRunner() == null) {
-          logger.warn("Transfer in Error with no Id", future.getCause());
+          logger.warn("Transfer in Error with no Id" + " : {}",
+                      future.getCause() != null?
+                          future.getCause().getMessage() : "");
           networkTransaction.closeAll();
           WaarpSystemUtil.systemExit(1);
           return;
         }
         if (result.getRunner().getErrorInfo() == ErrorCode.Warning) {
           logger.warn("Transfer in Warning with Id: " +
-                      result.getRunner().getSpecialId(), future.getCause());
+                      result.getRunner().getSpecialId() + " : {}",
+                      future.getCause() != null?
+                          future.getCause().getMessage() : "");
           networkTransaction.closeAll();
           WaarpSystemUtil.systemExit(result.getCode().ordinal());
         } else {

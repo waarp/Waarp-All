@@ -20,6 +20,8 @@
 
 package org.waarp.openr66.dao.database;
 
+import org.waarp.common.database.exception.WaarpDatabaseSqlException;
+import org.waarp.common.utility.ParametersChecker;
 import org.waarp.openr66.context.ErrorCode;
 import org.waarp.openr66.dao.Filter;
 import org.waarp.openr66.dao.TransferDAO;
@@ -33,7 +35,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import static org.waarp.openr66.database.DbConstantR66.*;
@@ -74,53 +75,48 @@ public abstract class DBTransferDAO extends StatementExecutor<Transfer>
   public static final String UPDATED_INFO_FIELD = "updatedInfo";
 
   // CRUD requests
+  protected static final String PRIMARY_KEY_WHERE =
+      ID_FIELD + " = ? AND " + REQUESTER_FIELD + " = ? AND " + REQUESTED_FIELD +
+      " = ? AND " + OWNER_REQUEST_FIELD + " = ? ";
   protected static final String SQL_DELETE =
-      "DELETE FROM " + TABLE + WHERE + ID_FIELD + " = ? AND " +
-      REQUESTER_FIELD + " = ? AND " + REQUESTED_FIELD + " = ? AND " +
-      OWNER_REQUEST_FIELD + " = ?";
+      "DELETE FROM " + TABLE + WHERE + PRIMARY_KEY_WHERE;
   protected static final String SQL_DELETE_ALL = "DELETE FROM " + TABLE;
   protected static final String SQL_EXIST =
-      "SELECT 1 FROM " + TABLE + WHERE + ID_FIELD + " = ? AND " +
-      REQUESTER_FIELD + " = ? AND " + REQUESTED_FIELD + " = ? AND " +
-      OWNER_REQUEST_FIELD + " = ?";
+      "SELECT 1 FROM " + TABLE + WHERE + PRIMARY_KEY_WHERE;
   protected static final String SQL_GET_ALL = "SELECT * FROM " + TABLE;
   protected static final String SQL_INSERT =
-      "INSERT INTO " + TABLE + " (" + GLOBAL_STEP_FIELD + ", " +
-      GLOBAL_LAST_STEP_FIELD + ", " + STEP_FIELD + ", " + RANK_FIELD + ", " +
-      STEP_STATUS_FIELD + ", " + RETRIEVE_MODE_FIELD + ", " + FILENAME_FIELD +
-      ", " + IS_MOVED_FIELD + ", " + ID_RULE_FIELD + ", " + BLOCK_SIZE_FIELD +
-      ", " + ORIGINAL_NAME_FIELD + ", " + FILE_INFO_FIELD + ", " +
-      TRANSFER_INFO_FIELD + ", " + TRANSFER_MODE_FIELD + ", " +
+      "INSERT INTO " + TABLE + " (" + ID_FIELD + ", " + GLOBAL_STEP_FIELD +
+      ", " + GLOBAL_LAST_STEP_FIELD + ", " + STEP_FIELD + ", " + RANK_FIELD +
+      ", " + BLOCK_SIZE_FIELD + ", " + TRANSFER_MODE_FIELD + ", " +
+      UPDATED_INFO_FIELD + ", " + STEP_STATUS_FIELD + ", " + INFO_STATUS_FIELD +
+      ", " + RETRIEVE_MODE_FIELD + ", " + IS_MOVED_FIELD + ", " +
       TRANSFER_START_FIELD + ", " + TRANSFER_STOP_FIELD + ", " +
-      INFO_STATUS_FIELD + ", " + OWNER_REQUEST_FIELD + ", " + REQUESTED_FIELD +
-      ", " + REQUESTER_FIELD + ", " + ID_FIELD + ", " + UPDATED_INFO_FIELD +
+      OWNER_REQUEST_FIELD + ", " + REQUESTED_FIELD + ", " + REQUESTER_FIELD +
+      ", " + ID_RULE_FIELD + ", " + FILENAME_FIELD + ", " +
+      ORIGINAL_NAME_FIELD + ", " + FILE_INFO_FIELD + ", " +
+      TRANSFER_INFO_FIELD +
       ") VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
   protected static final String SQL_SELECT =
-      "SELECT * FROM " + TABLE + WHERE + ID_FIELD + " = ? AND " +
-      REQUESTER_FIELD + " = ? AND " + REQUESTED_FIELD + " = ? AND " +
-      OWNER_REQUEST_FIELD + " = ?";
+      "SELECT * FROM " + TABLE + WHERE + PRIMARY_KEY_WHERE;
   protected static final String SQL_UPDATE =
       "UPDATE " + TABLE + " SET " + ID_FIELD + PARAMETER_COMMA +
       GLOBAL_STEP_FIELD + PARAMETER_COMMA + GLOBAL_LAST_STEP_FIELD +
       PARAMETER_COMMA + STEP_FIELD + PARAMETER_COMMA + RANK_FIELD +
+      PARAMETER_COMMA + BLOCK_SIZE_FIELD + PARAMETER_COMMA +
+      TRANSFER_MODE_FIELD + PARAMETER_COMMA + UPDATED_INFO_FIELD +
       PARAMETER_COMMA + STEP_STATUS_FIELD + PARAMETER_COMMA +
-      RETRIEVE_MODE_FIELD + PARAMETER_COMMA + FILENAME_FIELD + PARAMETER_COMMA +
-      IS_MOVED_FIELD + PARAMETER_COMMA + ID_RULE_FIELD + PARAMETER_COMMA +
-      BLOCK_SIZE_FIELD + PARAMETER_COMMA + ORIGINAL_NAME_FIELD +
-      PARAMETER_COMMA + FILE_INFO_FIELD + PARAMETER_COMMA +
-      TRANSFER_INFO_FIELD + PARAMETER_COMMA + TRANSFER_MODE_FIELD +
-      PARAMETER_COMMA + TRANSFER_START_FIELD + PARAMETER_COMMA +
-      TRANSFER_STOP_FIELD + PARAMETER_COMMA + INFO_STATUS_FIELD +
+      INFO_STATUS_FIELD + PARAMETER_COMMA + RETRIEVE_MODE_FIELD +
+      PARAMETER_COMMA + IS_MOVED_FIELD + PARAMETER_COMMA +
+      TRANSFER_START_FIELD + PARAMETER_COMMA + TRANSFER_STOP_FIELD +
       PARAMETER_COMMA + OWNER_REQUEST_FIELD + PARAMETER_COMMA +
-      REQUESTED_FIELD + PARAMETER_COMMA + REQUESTER_FIELD + PARAMETER_COMMA +
-      UPDATED_INFO_FIELD + " = ?  WHERE " + OWNER_REQUEST_FIELD + " = ? AND " +
-      REQUESTER_FIELD + " = ? AND " + REQUESTED_FIELD + " = ? AND " + ID_FIELD +
-      " = ?";
+      REQUESTER_FIELD + PARAMETER_COMMA + REQUESTED_FIELD + PARAMETER_COMMA +
+      ID_RULE_FIELD + PARAMETER_COMMA + FILENAME_FIELD + PARAMETER_COMMA +
+      ORIGINAL_NAME_FIELD + PARAMETER_COMMA + FILE_INFO_FIELD +
+      PARAMETER_COMMA + TRANSFER_INFO_FIELD + " = ?  WHERE " +
+      PRIMARY_KEY_WHERE;
   private static final String SQL_UPDATE_LIMITED_RANK =
       "UPDATE " + TABLE + " SET " + RANK_FIELD + PARAMETER_COMMA +
-      TRANSFER_STOP_FIELD + " = ?  WHERE " + OWNER_REQUEST_FIELD + " = ? AND " +
-      REQUESTER_FIELD + " = ? AND " + REQUESTED_FIELD + " = ? AND " + ID_FIELD +
-      " = ?";
+      TRANSFER_STOP_FIELD + " = ?  WHERE " + PRIMARY_KEY_WHERE;
 
   protected String getDeleteRequest() {
     return SQL_DELETE;
@@ -150,7 +146,7 @@ public abstract class DBTransferDAO extends StatementExecutor<Transfer>
     return SQL_UPDATE;
   }
 
-  private String getUpdateLimitedRankRequest() {
+  String getUpdateLimitedRankRequest() {
     return SQL_UPDATE_LIMITED_RANK;
   }
 
@@ -161,17 +157,16 @@ public abstract class DBTransferDAO extends StatementExecutor<Transfer>
   @Override
   protected Object[] getInsertValues(final Transfer transfer) {
     return new Object[] {
-        transfer.getGlobalStep().ordinal(),
+        transfer.getId(), transfer.getGlobalStep().ordinal(),
         transfer.getLastGlobalStep().ordinal(), transfer.getStep(),
-        transfer.getRank(), transfer.getStepStatus().getCode(),
-        transfer.getRetrieveMode(), transfer.getFilename(),
-        transfer.getIsMoved(), transfer.getRule(), transfer.getBlockSize(),
+        transfer.getRank(), transfer.getBlockSize(), transfer.getTransferMode(),
+        transfer.getUpdatedInfo().ordinal(), transfer.getStepStatus().getCode(),
+        transfer.getInfoStatus().getCode(), transfer.getRetrieveMode(),
+        transfer.getIsMoved(), transfer.getStart(), transfer.getStop(),
+        transfer.getOwnerRequest(), transfer.getRequested(),
+        transfer.getRequester(), transfer.getRule(), transfer.getFilename(),
         transfer.getOriginalName(), transfer.getFileInfo(),
-        transfer.getTransferInfo(), transfer.getTransferMode(),
-        transfer.getStart(), transfer.getStop(),
-        transfer.getInfoStatus().getCode(), transfer.getOwnerRequest(),
-        transfer.getRequested(), transfer.getRequester(), transfer.getId(),
-        transfer.getUpdatedInfo().ordinal()
+        transfer.getTransferInfo()
     };
   }
 
@@ -180,24 +175,35 @@ public abstract class DBTransferDAO extends StatementExecutor<Transfer>
     return new Object[] {
         transfer.getId(), transfer.getGlobalStep().ordinal(),
         transfer.getLastGlobalStep().ordinal(), transfer.getStep(),
-        transfer.getRank(), transfer.getStepStatus().getCode(),
-        transfer.getRetrieveMode(), transfer.getFilename(),
-        transfer.getIsMoved(), transfer.getRule(), transfer.getBlockSize(),
+        transfer.getRank(), transfer.getBlockSize(), transfer.getTransferMode(),
+        transfer.getUpdatedInfo().ordinal(), transfer.getStepStatus().getCode(),
+        transfer.getInfoStatus().getCode(), transfer.getRetrieveMode(),
+        transfer.getIsMoved(), transfer.getStart(), transfer.getStop(),
+        transfer.getOwnerRequest(), transfer.getRequester(),
+        transfer.getRequested(), transfer.getRule(), transfer.getFilename(),
         transfer.getOriginalName(), transfer.getFileInfo(),
-        transfer.getTransferInfo(), transfer.getTransferMode(),
-        transfer.getStart(), transfer.getStop(),
-        transfer.getInfoStatus().getCode(), transfer.getOwnerRequest(),
-        transfer.getRequested(), transfer.getRequester(),
-        transfer.getUpdatedInfo().ordinal(), transfer.getOwnerRequest(),
-        transfer.getRequester(), transfer.getRequested(), transfer.getId()
+        transfer.getTransferInfo(), transfer.getId(), transfer.getRequester(),
+        transfer.getRequested(), transfer.getOwnerRequest()
     };
   }
 
-  private Object[] getUpdateLimitedRankValues(final Transfer transfer) {
+  Object[] getUpdateLimitedRankValues(final Transfer transfer) {
     return new Object[] {
-        transfer.getRank(), transfer.getStop(), transfer.getOwnerRequest(),
-        transfer.getRequester(), transfer.getRequested(), transfer.getId()
+        transfer.getRank(), transfer.getStop(), transfer.getId(),
+        transfer.getRequester(), transfer.getRequested(),
+        transfer.getOwnerRequest()
     };
+  }
+
+  Object[] getPrimaryKeyValues(final Transfer transfer) {
+    return getPrimaryKeyValues(transfer.getId(), transfer.getOwnerRequest(),
+                               transfer.getRequester(),
+                               transfer.getRequested());
+  }
+
+  Object[] getPrimaryKeyValues(long id, String owner, String requester,
+                               String requested) {
+    return new Object[] { id, requester, requested, owner };
   }
 
   public void updateRank(final Transfer e1)
@@ -224,10 +230,7 @@ public abstract class DBTransferDAO extends StatementExecutor<Transfer>
   public void delete(final Transfer transfer)
       throws DAOConnectionException, DAONoDataException {
     PreparedStatement stm = null;
-    final Object[] params = {
-        transfer.getId(), transfer.getRequester(), transfer.getRequested(),
-        transfer.getOwnerRequest()
-    };
+    final Object[] params = getPrimaryKeyValues(transfer);
     try {
       stm = connection.prepareStatement(getDeleteRequest());
       setParameters(stm, params);
@@ -243,32 +246,12 @@ public abstract class DBTransferDAO extends StatementExecutor<Transfer>
     }
   }
 
-  private String prepareFindQuery(final List<Filter> filters,
-                                  final Object[] params) {
-    final StringBuilder query = new StringBuilder(getGetAllRequest());
-    final Iterator<Filter> it = filters.listIterator();
-    if (it.hasNext()) {
-      query.append(WHERE);
-    }
-    String prefix = "";
-    int i = 0;
-    while (it.hasNext()) {
-      query.append(prefix);
-      final Filter filter = it.next();
-      query.append(filter.key).append(' ').append(filter.operand).append(" ?");
-      params[i] = filter.value;
-      i++;
-      prefix = " AND ";
-    }
-    return query.toString();
-  }
-
   @Override
   public List<Transfer> find(final List<Filter> filters, final int limit)
       throws DAOConnectionException {
     final ArrayList<Transfer> transfers = new ArrayList<Transfer>();
     // Create the SQL query
-    final Object[] params = new Object[filters.size()];
+    final Object[] params = prepareFindParams(filters);
     final StringBuilder query =
         new StringBuilder(prepareFindQuery(filters, params));
     // Set LIMIT
@@ -299,7 +282,7 @@ public abstract class DBTransferDAO extends StatementExecutor<Transfer>
                              final int offset) throws DAOConnectionException {
     final ArrayList<Transfer> transfers = new ArrayList<Transfer>();
     // Create the SQL query
-    final Object[] params = new Object[filters.size()];
+    final Object[] params = prepareFindParams(filters);
     final StringBuilder query =
         new StringBuilder(prepareFindQuery(filters, params));
     // Set LIMIT
@@ -307,7 +290,7 @@ public abstract class DBTransferDAO extends StatementExecutor<Transfer>
       query.append(LIMIT2).append(limit);
     }
     // Set OFFSET
-    if (limit > 0) {
+    if (offset > 0) {
       query.append(" OFFSET ").append(offset);
     }
     // Execute query
@@ -335,11 +318,11 @@ public abstract class DBTransferDAO extends StatementExecutor<Transfer>
       throws DAOConnectionException {
     final ArrayList<Transfer> transfers = new ArrayList<Transfer>();
     // Create the SQL query
-    final Object[] params = new Object[filters.size()];
+    final Object[] params = prepareFindParams(filters);
     final StringBuilder query =
         new StringBuilder(prepareFindQuery(filters, params));
     // Set ORDER BY
-    if (column != null && !column.isEmpty()) {
+    if (ParametersChecker.isNotEmpty(column)) {
       query.append(" ORDER BY ").append(column);
       if (!ascend) {
         query.append(" DESC");
@@ -370,11 +353,11 @@ public abstract class DBTransferDAO extends StatementExecutor<Transfer>
       throws DAOConnectionException {
     final ArrayList<Transfer> transfers = new ArrayList<Transfer>();
     // Create the SQL query
-    final Object[] params = new Object[filters.size()];
+    final Object[] params = prepareFindParams(filters);
     final StringBuilder query =
         new StringBuilder(prepareFindQuery(filters, params));
     // Set ORDER BY
-    if (column != null && !column.isEmpty()) {
+    if (ParametersChecker.isNotEmpty(column)) {
       query.append(" ORDER BY ").append(column);
       if (!ascend) {
         query.append(" DESC");
@@ -409,7 +392,7 @@ public abstract class DBTransferDAO extends StatementExecutor<Transfer>
                              final int offset) throws DAOConnectionException {
     final ArrayList<Transfer> transfers = new ArrayList<Transfer>();
     // Create the SQL query
-    final Object[] params = new Object[filters.size()];
+    final Object[] params = prepareFindParams(filters);
     final StringBuilder query =
         new StringBuilder(prepareFindQuery(filters, params));
     // Set ORDER BY
@@ -422,7 +405,7 @@ public abstract class DBTransferDAO extends StatementExecutor<Transfer>
       query.append(LIMIT2).append(limit);
     }
     // Set OFFSET
-    if (limit > 0) {
+    if (offset > 0) {
       query.append(" OFFSET ").append(offset);
     }
     // Execute query
@@ -450,7 +433,8 @@ public abstract class DBTransferDAO extends StatementExecutor<Transfer>
       throws DAOConnectionException {
     PreparedStatement stm = null;
     ResultSet res = null;
-    final Object[] params = { id, requester, requested, owner };
+    final Object[] params =
+        getPrimaryKeyValues(id, owner, requester, requested);
     try {
       stm = connection.prepareStatement(getExistRequest());
       setParameters(stm, params);
@@ -470,7 +454,8 @@ public abstract class DBTransferDAO extends StatementExecutor<Transfer>
       throws DAOConnectionException, DAONoDataException {
     PreparedStatement stm = null;
     ResultSet res = null;
-    final Object[] params = { id, requester, requested, owner };
+    final Object[] params =
+        getPrimaryKeyValues(id, owner, requester, requested);
     try {
       stm = connection.prepareStatement(getSelectRequest());
       setParameters(stm, params);
@@ -500,28 +485,33 @@ public abstract class DBTransferDAO extends StatementExecutor<Transfer>
 
   @Override
   public Transfer getFromResultSet(final ResultSet set) throws SQLException {
-    return new Transfer(set.getLong(ID_FIELD), set.getString(ID_RULE_FIELD),
-                        set.getInt(TRANSFER_MODE_FIELD),
-                        set.getString(FILENAME_FIELD),
-                        set.getString(ORIGINAL_NAME_FIELD),
-                        set.getString(FILE_INFO_FIELD),
-                        set.getBoolean(IS_MOVED_FIELD),
-                        set.getInt(BLOCK_SIZE_FIELD),
-                        set.getBoolean(RETRIEVE_MODE_FIELD),
-                        set.getString(OWNER_REQUEST_FIELD),
-                        set.getString(REQUESTER_FIELD),
-                        set.getString(REQUESTED_FIELD),
-                        set.getString(TRANSFER_INFO_FIELD), Transfer.TASKSTEP
-                            .valueOf(set.getInt(GLOBAL_STEP_FIELD)),
-                        Transfer.TASKSTEP
-                            .valueOf(set.getInt(GLOBAL_LAST_STEP_FIELD)),
-                        set.getInt(STEP_FIELD),
-                        ErrorCode.getFromCode(set.getString(STEP_STATUS_FIELD)),
-                        ErrorCode.getFromCode(set.getString(INFO_STATUS_FIELD)),
-                        set.getInt(RANK_FIELD),
-                        set.getTimestamp(TRANSFER_START_FIELD),
-                        set.getTimestamp(TRANSFER_STOP_FIELD),
-                        UpdatedInfo.valueOf(set.getInt(UPDATED_INFO_FIELD)));
+    try {
+      return new Transfer(set.getLong(ID_FIELD), set.getString(ID_RULE_FIELD),
+                          set.getInt(TRANSFER_MODE_FIELD),
+                          set.getString(FILENAME_FIELD),
+                          set.getString(ORIGINAL_NAME_FIELD),
+                          set.getString(FILE_INFO_FIELD),
+                          set.getBoolean(IS_MOVED_FIELD),
+                          set.getInt(BLOCK_SIZE_FIELD),
+                          set.getBoolean(RETRIEVE_MODE_FIELD),
+                          set.getString(OWNER_REQUEST_FIELD),
+                          set.getString(REQUESTER_FIELD),
+                          set.getString(REQUESTED_FIELD),
+                          set.getString(TRANSFER_INFO_FIELD), Transfer.TASKSTEP
+                              .valueOf(set.getInt(GLOBAL_STEP_FIELD)),
+                          Transfer.TASKSTEP
+                              .valueOf(set.getInt(GLOBAL_LAST_STEP_FIELD)),
+                          set.getInt(STEP_FIELD), ErrorCode
+                              .getFromCode(set.getString(STEP_STATUS_FIELD)),
+                          ErrorCode
+                              .getFromCode(set.getString(INFO_STATUS_FIELD)),
+                          set.getInt(RANK_FIELD),
+                          set.getTimestamp(TRANSFER_START_FIELD),
+                          set.getTimestamp(TRANSFER_STOP_FIELD),
+                          UpdatedInfo.valueOf(set.getInt(UPDATED_INFO_FIELD)));
+    } catch (WaarpDatabaseSqlException e) {
+      throw new SQLException(e);
+    }
   }
 
 

@@ -155,7 +155,7 @@ public class FileConvert extends Thread {
       FileUtils.copy(source, destination, false, false);
       return true;
     } catch (final Reply550Exception e) {
-      logger.error("FileConvert copy back in error", e);
+      logger.error("FileConvert copy back in error: {}", e.getMessage());
       return false;
     }
   }
@@ -220,10 +220,12 @@ public class FileConvert extends Thread {
       }
       return result;
     } catch (final FileNotFoundException e) {
-      logger.error("FileConvert in error: " + input + ':' + unix2dos, e);
+      logger.error("FileConvert in error: " + input + ':' + unix2dos + ": {}",
+                   e.getMessage());
       return false;
     } catch (final IOException e) {
-      logger.error("FileConvert in error: " + input + ':' + unix2dos, e);
+      logger.error("FileConvert in error: " + input + ':' + unix2dos + ": {}",
+                   e.getMessage());
       return false;
     } finally {
       if (tmpFile != null) {

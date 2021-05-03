@@ -70,7 +70,9 @@ public class EPSV extends AbstractCommand {
           break;
         }
       } catch (final Reply425Exception e) {
-        logger.warn("EPSV refused at try: " + i + " with port: " + newport, e);
+        logger.warn(
+            "EPSV refused at try: " + i + " with port: " + newport + " : {}",
+            e.getMessage());
       }
     }
     if (!isInit) {

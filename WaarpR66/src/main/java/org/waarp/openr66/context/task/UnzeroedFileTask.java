@@ -23,6 +23,7 @@ import org.waarp.common.file.AbstractDir;
 import org.waarp.common.file.FileUtils;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.ParametersChecker;
 import org.waarp.openr66.context.R66Session;
 import org.waarp.openr66.context.task.exception.OpenR66RunnerException;
 
@@ -64,7 +65,7 @@ public class UnzeroedFileTask extends AbstractTask {
   @Override
   public void run() {
     final File currentFile = session.getFile().getTrueFile();
-    final String toWrite = argRule == null || argRule.isEmpty()? " " : argRule;
+    final String toWrite = ParametersChecker.isEmpty(argRule)? " " : argRule;
     final String curpath =
         AbstractDir.normalizePath(currentFile.getAbsolutePath());
     if (currentFile.exists() && currentFile.length() == 0) {

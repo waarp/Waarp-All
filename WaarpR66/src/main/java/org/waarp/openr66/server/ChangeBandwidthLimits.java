@@ -249,9 +249,13 @@ public class ChangeBandwidthLimits implements Runnable {
         }
       } else {
         if (result.getCode() == ErrorCode.Warning) {
-          logger.warn("Bandwidth is     WARNED", future.getCause());
+          logger.warn("Bandwidth is     WARNED" + " : {}",
+                      future.getCause() != null?
+                          future.getCause().getMessage() : "");
         } else {
-          logger.error("Bandwidth in     FAILURE", future.getCause());
+          logger.error("Bandwidth in     FAILURE" + " : {}",
+                       future.getCause() != null?
+                           future.getCause().getMessage() : "");
         }
         networkTransaction.closeAll();
         System.exit(result.getCode().ordinal());//NOSONAR

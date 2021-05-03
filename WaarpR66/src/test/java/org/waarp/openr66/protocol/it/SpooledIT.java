@@ -44,7 +44,6 @@ public class SpooledIT extends SpooledITAbstract {
   @BeforeClass
   public static void setUpBeforeClass() throws Exception {
     noDb = false;
-    logger.warn("DEBUG retest {}", noDb);
     if (!SystemPropertyUtil.get(IT_LONG_TEST, false)) {
       ResourceLeakDetector.setLevel(Level.PARANOID);
     } else {

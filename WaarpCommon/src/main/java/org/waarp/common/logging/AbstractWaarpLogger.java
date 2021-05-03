@@ -332,6 +332,17 @@ public abstract class AbstractWaarpLogger implements WaarpLogger, Serializable {
   }
 
   /**
+   * To be used only by Logger (rank 5)
+   *
+   * @return "MethodName(FileName:LineNumber)"
+   */
+  public static String getLoggerMethodAndLineCallee(int deep) {
+    final StackTraceElement elt =
+        Thread.currentThread().getStackTrace()[LOGLEVEL + deep];
+    return getMethodAndLine(elt);
+  }
+
+  /**
    * @param rank is the current depth of call+1 (immediate = 1+1=2)
    *
    * @return "ClassAndMethodName(FileName:LineNumber)"

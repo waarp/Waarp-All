@@ -21,8 +21,8 @@
 package org.waarp.openr66.protocol.http.restv2.errors;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.waarp.common.json.JsonHandler;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -74,11 +74,11 @@ public class RestErrorException extends RuntimeException {
    * @return the serialized list of errors.
    */
   public ObjectNode makeNode(final Locale lang) {
-    final ArrayNode errorsArray = new ArrayNode(JsonNodeFactory.instance);
+    final ArrayNode errorsArray = JsonHandler.createArrayNode();
     for (final RestError error : errors) {
       errorsArray.add(error.makeNode(lang));
     }
-    final ObjectNode response = new ObjectNode(JsonNodeFactory.instance);
+    final ObjectNode response = JsonHandler.createObjectNode();
     response.putArray("errors").addAll(errorsArray);
 
     return response;

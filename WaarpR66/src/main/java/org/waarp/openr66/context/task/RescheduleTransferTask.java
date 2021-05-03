@@ -305,7 +305,7 @@ public class RescheduleTransferTask extends AbstractTask {
         try {
           limit = (Integer) root.get(CPTLIMIT);
         } catch (final Exception e) {
-          logger.warn("Bad Long format: CPTLIMIT", e);
+          logger.warn("Bad Long format: CPTLIMIT" + " : {}", e.getMessage());
           return false;
         }
         if (limit != null) {

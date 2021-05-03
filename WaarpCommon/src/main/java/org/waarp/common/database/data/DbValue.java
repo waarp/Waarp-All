@@ -125,9 +125,14 @@ public class DbValue {
     setColumn(name);
   }
 
-  public DbValue(final String value, final String name, final boolean LONG) {
+  public DbValue(final String value, final String name,
+                 final boolean trueLongOrFalseKey) {
     setValue(value);
-    type = Types.LONGVARCHAR;
+    if (trueLongOrFalseKey) {
+      type = Types.LONGVARCHAR;
+    } else {
+      type = Types.NVARCHAR;
+    }
     setColumn(name);
   }
 
@@ -276,6 +281,8 @@ public class DbValue {
     switch (type) {
       case Types.VARCHAR:
         return "VARCHAR";
+      case Types.NVARCHAR:
+        return "NVARCHAR";
       case Types.LONGVARCHAR:
         return "LONGVARCHAR";
       case Types.BIT:
@@ -310,6 +317,7 @@ public class DbValue {
   public Object getValue() throws IllegalAccessError {
     switch (type) {
       case Types.VARCHAR:
+      case Types.NVARCHAR:
       case Types.LONGVARCHAR:
       case Types.BIT:
       case Types.TINYINT:
@@ -332,6 +340,7 @@ public class DbValue {
   public String getValueAsString() throws WaarpDatabaseSqlException {
     switch (type) {
       case Types.VARCHAR:
+      case Types.NVARCHAR:
       case Types.LONGVARCHAR:
         return (String) getValue();
       case Types.BIT:
@@ -400,6 +409,7 @@ public class DbValue {
       throws WaarpDatabaseSqlException {
     switch (type) {
       case Types.VARCHAR:
+      case Types.NVARCHAR:
       case Types.LONGVARCHAR:
         setValue(svalue);
         break;

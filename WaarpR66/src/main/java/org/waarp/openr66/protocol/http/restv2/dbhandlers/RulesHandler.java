@@ -21,13 +21,13 @@
 package org.waarp.openr66.protocol.http.restv2.dbhandlers;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.cdap.http.HttpResponder;
 import io.netty.handler.codec.http.DefaultHttpHeaders;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpRequest;
+import org.waarp.common.json.JsonHandler;
 import org.waarp.common.role.RoleDefault.ROLE;
 import org.waarp.openr66.dao.DAOFactory;
 import org.waarp.openr66.dao.Filter;
@@ -114,7 +114,7 @@ public class RulesHandler extends AbstractRestDbHandler {
                           final String orderStr,
                           @QueryParam(MODE_TRANS) @DefaultValue("")
                           final String modeTransStr) {
-
+    checkSanity(limitStr, offsetStr, orderStr, modeTransStr);
     final List<RestError> errors = new ArrayList<RestError>();
 
     int limit = 20;
@@ -170,12 +170,12 @@ public class RulesHandler extends AbstractRestDbHandler {
     final int totalResults = rules.size();
     Collections.sort(rules, order.comparator);
 
-    final ArrayNode results = new ArrayNode(JsonNodeFactory.instance);
+    final ArrayNode results = JsonHandler.createArrayNode();
     for (int i = offset; i < offset + limit && i < rules.size(); i++) {
       results.add(ruleToNode(rules.get(i)));
     }
 
-    final ObjectNode responseObject = new ObjectNode(JsonNodeFactory.instance);
+    final ObjectNode responseObject = JsonHandler.createObjectNode();
     responseObject.put("totalResults", totalResults);
     responseObject.set("results", results);
     final String responseText = nodeToString(responseObject);
@@ -197,8 +197,8 @@ public class RulesHandler extends AbstractRestDbHandler {
   @RequiredRole(ROLE.RULE)
   public void addRule(final HttpRequest request,
                       final HttpResponder responder) {
-
     final ObjectNode requestObject = deserializeRequest(request);
+    checkSanity(requestObject);
     final Rule rule = nodeToNewRule(requestObject);
 
     RuleDAO ruleDAO = null;

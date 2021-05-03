@@ -22,8 +22,11 @@ package org.waarp.openr66.protocol.http.restv2.converters;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.waarp.common.database.exception.WaarpDatabaseSqlException;
+import org.waarp.common.json.JsonHandler;
+import org.waarp.common.logging.SysErrLogger;
+import org.waarp.common.utility.ParametersChecker;
 import org.waarp.common.xml.XmlUtil;
 import org.waarp.openr66.context.task.TaskType;
 import org.waarp.openr66.pojo.Rule;
@@ -168,7 +171,7 @@ public final class RuleConverter {
    * @return the converted ObjectNode
    */
   public static ObjectNode ruleToNode(final Rule rule) {
-    final ObjectNode node = new ObjectNode(JsonNodeFactory.instance);
+    final ObjectNode node = JsonHandler.createObjectNode();
     node.put(RULE_NAME, rule.getName());
     node.putArray(HOST_IDS).addAll(getHostIdsArray(rule.getHostids()));
     node.put(MODE_TRANS, ModeTrans.fromCode(rule.getMode()).name());
@@ -197,11 +200,16 @@ public final class RuleConverter {
    *     represent a Rule object.
    */
   public static Rule nodeToNewRule(final ObjectNode object) {
-    final Rule emptyRule =
-        new Rule(null, -1, new ArrayList<String>(), "", "", "", "",
-                 new ArrayList<RuleTask>(), new ArrayList<RuleTask>(),
-                 new ArrayList<RuleTask>(), new ArrayList<RuleTask>(),
-                 new ArrayList<RuleTask>(), new ArrayList<RuleTask>());
+    Rule emptyRule = null;
+    try {
+      emptyRule = new Rule(null, -1, new ArrayList<String>(), "", "", "", "",
+                           new ArrayList<RuleTask>(), new ArrayList<RuleTask>(),
+                           new ArrayList<RuleTask>(), new ArrayList<RuleTask>(),
+                           new ArrayList<RuleTask>(),
+                           new ArrayList<RuleTask>());
+    } catch (WaarpDatabaseSqlException e) {
+      SysErrLogger.FAKE_LOGGER.syserr(e);
+    }
 
     return nodeToUpdatedRule(object, emptyRule);
   }
@@ -368,7 +376,7 @@ public final class RuleConverter {
    * @return the corresponding ArrayNode
    */
   private static ArrayNode getHostIdsArray(final List<String> hostIds) {
-    final ArrayNode array = new ArrayNode(JsonNodeFactory.instance);
+    final ArrayNode array = JsonHandler.createArrayNode();
     for (final String host : hostIds) {
       array.add(host);
     }
@@ -383,9 +391,9 @@ public final class RuleConverter {
    * @return the corresponding ArrayNode
    */
   private static ArrayNode getTaskArray(final List<RuleTask> tasks) {
-    final ArrayNode array = new ArrayNode(JsonNodeFactory.instance);
+    final ArrayNode array = JsonHandler.createArrayNode();
     for (final RuleTask task : tasks) {
-      final ObjectNode object = new ObjectNode(JsonNodeFactory.instance);
+      final ObjectNode object = JsonHandler.createObjectNode();
       object.put(TASK_TYPE, task.getType());
       object.put(TASK_ARGUMENTS, task.getPath());
       object.put(TASK_DELAY, task.getDelay());
@@ -407,7 +415,7 @@ public final class RuleConverter {
    */
   private static List<RestError> checkRequiredFields(final Rule rule) {
     final List<RestError> errors = new ArrayList<RestError>();
-    if (rule.getName() == null || rule.getName().isEmpty()) {
+    if (ParametersChecker.isEmpty(rule.getName())) {
       errors.add(MISSING_FIELD(RULE_NAME));
     }
     if (rule.getMode() == -1) {

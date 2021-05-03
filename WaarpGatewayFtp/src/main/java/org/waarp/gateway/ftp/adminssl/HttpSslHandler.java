@@ -850,7 +850,7 @@ public class HttpSslHandler
         // Nothing to do
         return;
       }
-      logger.warn("Exception in HttpSslHandler", cause);
+      logger.warn("Exception in HttpSslHandler: {}", cause.getMessage());
     }
     if (ctx.channel().isActive()) {
       sendError(ctx, HttpResponseStatus.BAD_REQUEST);

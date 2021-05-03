@@ -92,7 +92,7 @@ public class R66Environment {
       if (WaarpSystemUtil.isJunit()) {
         return;
       }
-      WaarpSystemUtil.stopLogger();
+      WaarpSystemUtil.stopLogger(false);
       System.exit(2);//NOSONAR
     }
     Configuration.configuration.pipelineInit();

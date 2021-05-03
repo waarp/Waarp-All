@@ -151,9 +151,8 @@ public class R66PreparedTransferExecutor extends AbstractExecutor {
     try {
       rule = new DbRule(transferArgs.getRulename());
     } catch (final WaarpDatabaseException e) {
-      logger.error(
-          "Cannot get Rule: " + transferArgs.getRulename() + " since {}\n    " +
-          message, e.getMessage());
+      logger.error("Cannot get Rule: {} since {}\n    {}",
+                   transferArgs.getRulename(), e.getMessage(), message);
       throw new Reply421Exception(
           "Cannot get Rule: " + transferArgs.getRulename() + "\n    " +
           message);
@@ -185,8 +184,8 @@ public class R66PreparedTransferExecutor extends AbstractExecutor {
                                     transferArgs.getRemoteHost(),
                                     transferArgs.getStartTime());
     } catch (final WaarpDatabaseException e) {
-      logger.error("Cannot get new task since {}\n    " + message,
-                   e.getMessage());
+      logger.error("Cannot get new task since {}\n    {}", e.getMessage(),
+                   message);
       throw new Reply421Exception(CANNOT_GET_NEW_TASK + message);
     }
     taskRunner.changeUpdatedInfo(UpdatedInfo.TOSUBMIT);
@@ -197,8 +196,8 @@ public class R66PreparedTransferExecutor extends AbstractExecutor {
           throw new Reply421Exception(CANNOT_GET_NEW_TASK + message);
         }
       } catch (final WaarpDatabaseException e) {
-        logger.error("Cannot prepare task since {}\n    " + message,
-                     e.getMessage());
+        logger.error("Cannot prepare task since {}\n    {}", e.getMessage(),
+                     message);
         throw new Reply421Exception(CANNOT_GET_NEW_TASK + message);
       }
     }

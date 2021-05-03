@@ -101,7 +101,7 @@ public class RuleIdHandler extends AbstractRestDbHandler {
   @RequiredRole(NOACCESS)
   public void getRule(final HttpRequest request, final HttpResponder responder,
                       @PathParam(URI_ID) final String id) {
-
+    checkSanity(id);
     RuleDAO ruleDAO = null;
     try {
       ruleDAO = DAO_FACTORY.getRuleDAO();
@@ -137,7 +137,7 @@ public class RuleIdHandler extends AbstractRestDbHandler {
   public void updateRule(final HttpRequest request,
                          final HttpResponder responder,
                          @PathParam(URI_ID) final String id) {
-
+    checkSanity(id);
     RuleDAO ruleDAO = null;
     try {
       ruleDAO = DAO_FACTORY.getRuleDAO();
@@ -149,6 +149,7 @@ public class RuleIdHandler extends AbstractRestDbHandler {
       }
 
       final ObjectNode requestObject = JsonUtils.deserializeRequest(request);
+      checkSanity(requestObject);
       final Rule newRule =
           RuleConverter.nodeToUpdatedRule(requestObject, oldRule);
 
@@ -182,6 +183,7 @@ public class RuleIdHandler extends AbstractRestDbHandler {
   public void deleteRule(final HttpRequest request,
                          final HttpResponder responder,
                          @PathParam(URI_ID) final String id) {
+    checkSanity(id);
     TransferDAO transferDAO = null;
     try {
       transferDAO = DAO_FACTORY.getTransferDAO();
@@ -233,6 +235,7 @@ public class RuleIdHandler extends AbstractRestDbHandler {
   @RequiredRole(NOACCESS)
   public void options(final HttpRequest request, final HttpResponder responder,
                       @PathParam(URI_ID) final String id) {
+    checkSanity(id);
     responder.sendStatus(OK, OPTIONS_HEADERS);
   }
 }

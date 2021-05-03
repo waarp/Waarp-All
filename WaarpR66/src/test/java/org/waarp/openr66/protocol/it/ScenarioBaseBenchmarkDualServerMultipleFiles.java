@@ -136,6 +136,7 @@ public abstract class ScenarioBaseBenchmarkDualServerMultipleFiles
           configFile1.getParentFile().getAbsolutePath() + CLIENT_3_XML);
       setUpBeforeClassClient(configFile1.getAbsolutePath());
     }
+    Thread.sleep(1000);
     Processes.setJvmArgsDefault(null);
     WaarpLoggerFactory.setDefaultFactoryIfNotSame(
         new WaarpSlf4JLoggerFactory(WaarpLogLevel.WARN));
@@ -415,8 +416,7 @@ public abstract class ScenarioBaseBenchmarkDualServerMultipleFiles
    */
   @AfterClass
   public static void tearDownAfterClass() throws Exception {
-    WaarpLoggerFactory.setDefaultFactoryIfNotSame(
-        new WaarpSlf4JLoggerFactory(WaarpLogLevel.NONE));
+    WaarpSystemUtil.stopLogger(true);
     for (int pid : PIDS) {
       Processes.kill(pid, true);
     }

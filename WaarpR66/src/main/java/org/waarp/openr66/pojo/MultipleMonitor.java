@@ -20,6 +20,13 @@
 
 package org.waarp.openr66.pojo;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.waarp.common.database.exception.WaarpDatabaseSqlException;
+
+import java.sql.Types;
+
+import static org.waarp.common.database.data.AbstractDbData.*;
+
 /**
  * MultipleMonitor data object
  */
@@ -41,11 +48,18 @@ public class MultipleMonitor {
   }
 
   public MultipleMonitor(final String hostid, final int countConfig,
-                         final int countHost, final int countRule) {
+                         final int countHost, final int countRule)
+      throws WaarpDatabaseSqlException {
     this.hostid = hostid;
     this.countConfig = countConfig;
     this.countHost = countHost;
     this.countRule = countRule;
+    checkValues();
+  }
+
+  @JsonIgnore
+  public void checkValues() throws WaarpDatabaseSqlException {
+    validateLength(Types.NVARCHAR, hostid);
   }
 
   public String getHostid() {

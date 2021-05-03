@@ -39,6 +39,8 @@ import org.snmp4j.security.UsmUser;
 import org.snmp4j.smi.OctetString;
 import org.waarp.common.database.DbAdmin;
 import org.waarp.common.database.DbConstant;
+import org.waarp.common.database.exception.WaarpDatabaseSqlException;
+import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogLevel;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
@@ -145,13 +147,18 @@ public class R66PrivateMibTest {
   }
 
   public static void sendNotification() {
-    Transfer transfer =
-        new Transfer(1, "rule", 1, "filename", "originalName", "fileInfo",
-                     false, 4096, true, "ownerReq", "requester", "requested",
-                     "transferInfo", TASKSTEP.NOTASK, TASKSTEP.PRETASK, 0,
-                     ErrorCode.InitOk, ErrorCode.CompleteOk, 10,
-                     new Timestamp(new Date().getTime()),
-                     new Timestamp(new Date().getTime()), UpdatedInfo.DONE);
+    Transfer transfer = null;
+    try {
+      transfer =
+          new Transfer(1, "rule", 1, "filename", "originalName", "fileInfo",
+                       false, 4096, true, "ownerReq", "requester", "requested",
+                       "transferInfo", TASKSTEP.NOTASK, TASKSTEP.PRETASK, 0,
+                       ErrorCode.InitOk, ErrorCode.CompleteOk, 10,
+                       new Timestamp(new Date().getTime()),
+                       new Timestamp(new Date().getTime()), UpdatedInfo.DONE);
+    } catch (WaarpDatabaseSqlException e) {
+      SysErrLogger.FAKE_LOGGER.syserr(e);
+    }
     DbTaskRunner dbTaskRunner = new DbTaskRunner(transfer);
 
     test.notifyError("Message1", "Message2");

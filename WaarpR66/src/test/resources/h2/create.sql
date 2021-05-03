@@ -122,5 +122,5 @@ CREATE SEQUENCE runseq
 CREATE INDEX idx_runner ON runner (
   starttrans, ownerreq, stepstatus, updatedinfo, globalstep, infostatus,
   specialid);
-
+CREATE INDEX idx_run_filter ON runner (ownerreq, starttrans, updatedinfo, stepstatus, infostatus, globallaststep, globalstep, requested, stoptrans);
 
