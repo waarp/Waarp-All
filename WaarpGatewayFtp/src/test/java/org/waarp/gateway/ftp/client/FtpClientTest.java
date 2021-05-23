@@ -119,6 +119,11 @@ public class FtpClientTest {
       for (int i = 0; i < numberThread; i++) {
         client.makeDir("T" + i);
       }
+      try {
+        Thread.sleep(10);
+      } catch (InterruptedException e) {
+        // Ignore
+      }
       logger.warn("Feature commands");
       System.err.println("SITE: " + client.featureEnabled("SITE"));
       System.err.println("SITE CRC: " + client.featureEnabled("SITE XCRC"));

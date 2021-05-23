@@ -30,13 +30,15 @@ out                          String (OUT)         Dossier par défaut d'envoie
 arch                         String (ARCH)        Dossier par défaut d'archive
 work                         String (WORK)        Dossier par défaut de travail
 conf                         String (CONF)        Dossier par défaut de configuration
-extendedtaskfactories        String (vide)        Liste (séparée par des virgules) des TaskFactory en tant qu'extension pour ajouter des tâches à WaarpR66
 
 **db**
 dbdriver                     String               Driver JDBC à utiliser pour se connecter à la base de données (mysql, postgresql, h2)
 dbserver                     String               URI JDBC de connection à la base de données (jdbc:type://[host:port]....). Veuillez vous référer à la documentation de votre base de donnée pour la syntaxe correcte
 dbuser                       String               Utilisateur à utiliser pour se connecter à la base de données
 dbpasswd                     String               Mot de passe de l’utilisateur
+
+**extendTaskFactory**
+extendedtaskfactories        String (vide)        Liste (séparée par des virgules) des TaskFactory en tant qu'extension pour ajouter des tâches à WaarpR66
 ============================ ==================== ==============
 
 server.xml
@@ -71,12 +73,6 @@ checkaddress                     Boolean (False)      R66 vérifiera l'addresse 
 checkclientaddress               Boolean (False)      R66 vérifiera l'addresse IP distance du client distant
 multiplemonitors                 Integer (1)          Défini le nombre de serveur du même groupe considéré comme une unique instance R66
 businessfactorynetwork           String               Nom de classe complet de la Business Factory. (org.waarp.openr66.context.R66DefaultBusinessFactory)
-pushmonitorurl                   String (null)        URL de base pour les exports du moniteur en mode POST HTTP(S) JSON
-pushmonitorendpoint              String (null)        End point à ajouter à l'URL de base
-pushmonitordelay                 Integer (1000)       Délai entre deux vérifications de changement de statuts sur les transferts
-pushmonitorkeepconnection        Boolean (True)       Si « True », la connexion HTTP(S) sera en Keep-Alive (pas de réouverture sauf si le serveur la ferme), sinon la connexion sera réinitialisée pour chaque appel
-pushmonitorintervalincluded      Boolean (True)       Si « True », les informations de l'intervalle utilisé seront fournies
-pushmonitortransformlongasstring Boolean (False)      Si « True », les nombres « long » seront convertis en chaîne de caractères, sinon ils seront numériques
 
 **network**
 serverport                       Integer (6666)       Port utilisé pour les connections en clair
@@ -158,6 +154,17 @@ roleset                          StringArray          Les nouveaux rôle attribu
 alias                            Array                Permets d'utiliser des alias au lieu des hostid
 realid                           String               Hostid aliassé (l'alias est local)
 aliasid                          StringArray          L'ensemble des alias de l'hostid
+
+**extendTaskFactory**
+extendedtaskfactories            String (vide)        Liste (séparée par des virgules) des TaskFactory en tant qu'extension pour ajouter des tâches à WaarpR66
+
+**pushMonitor**
+url                              String (null)        URL de base pour les exports du moniteur en mode POST HTTP(S) JSON
+endpoint                         String (null)        End point à ajouter à l'URL de base
+delay                            Integer (1000)       Délai entre deux vérifications de changement de statuts sur les transferts
+keepconnection                   Boolean (True)       Si « True », la connexion HTTP(S) sera en Keep-Alive (pas de réouverture sauf si le serveur la ferme), sinon la connexion sera réinitialisée pour chaque appel
+intervalincluded                 Boolean (True)       Si « True », les informations de l'intervalle utilisé seront fournies
+transformlongasstring            Boolean (False)      Si « True », les nombres « long » seront convertis en chaîne de caractères, sinon ils seront numériques
 ================================ ==================== ==============
 
 Les balises <roles> et <aliases> contiennent des listes d'option. Exemple:

@@ -68,7 +68,7 @@ class FtpsTemporaryFirstHandler extends ChannelDuplexHandler {
     for (int i = 0; i < FtpInternalConfiguration.RETRYNB; i++) {
       session = configuration.getFtpSessionNoRemove(channel, active);
       if (session == null) {
-        logger.warn("Session not found at try " + i);
+        logger.debug("Session not found at try " + i);
         try {
           Thread.sleep(FtpInternalConfiguration.RETRYINMS);
         } catch (final InterruptedException e1) {//NOSONAR

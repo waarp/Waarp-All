@@ -234,6 +234,72 @@ public class FileBasedConfiguration {
     }
   }
 
+  private static boolean loadPushMonitorParam(final Configuration config) {
+    XmlHash hashConfig = new XmlHash(hashRootConfig.get(XML_PUSH_MONITOR));
+    try {
+      XmlValue value;
+      value = hashConfig.get(XML_PUSH_MONITOR_URL);
+      if (value != null && !value.isEmpty()) {
+        try {
+          ParametersChecker.checkSanityString(value.getString());
+        } catch (final InvalidArgumentException e) {
+          logger.error("Bad Push Monitor URL: {}", e.getMessage());
+          return false;
+        }
+        String url = value.getString();
+        // Default value
+        String endpoint = "/";
+        value = hashConfig.get(XML_PUSH_MONITOR_ENDPOINT);
+        if (value != null && !value.isEmpty()) {
+          try {
+            ParametersChecker.checkSanityString(value.getString());
+          } catch (final InvalidArgumentException e) {
+            logger.error("Bad Push Monitor EndPoint: {}", e.getMessage());
+            return false;
+          }
+          endpoint = value.getString();
+        }
+        // Default value
+        int delay = 1000;
+        value = hashConfig.get(XML_PUSH_MONITOR_DELAY);
+        if (value != null && !value.isEmpty()) {
+          delay = value.getInteger();
+          if (delay < 0) {
+            delay = 1000;
+          }
+          if (delay < 500) {
+            delay = 500;
+          }
+        }
+        // Default value
+        boolean keep = MonitorExporterTransfers.MONITOR_KEEP_CONNECTION_DEFAULT;
+        value = hashConfig.get(XML_PUSH_MONITOR_KEEP_CONNECTION);
+        if (value != null && !value.isEmpty()) {
+          keep = value.getBoolean();
+        }
+        // Default value
+        boolean intervalIncluded =
+            MonitorExporterTransfers.MONITOR_INTERVAL_INCLUDED_DEFAULT;
+        value = hashConfig.get(XML_PUSH_MONITOR_INTERVAL_INCLUDED);
+        if (value != null && !value.isEmpty()) {
+          intervalIncluded = value.getBoolean();
+        }
+        // Default value
+        boolean longAsString =
+            MonitorExporterTransfers.MONITOR_LONG_AS_STRING_DEFAULT;
+        value = hashConfig.get(XML_PUSH_MONITOR_TRANSFORM_LONG_AS_STRING);
+        if (value != null && !value.isEmpty()) {
+          longAsString = value.getBoolean();
+        }
+        config.setMonitorExporterTransfers(url, endpoint, delay, keep,
+                                           intervalIncluded, longAsString);
+      }
+      return true;
+    } finally {
+      hashConfig.clear();
+    }
+  }
+
   /**
    * @param config
    *
@@ -338,62 +404,6 @@ public class FileBasedConfiguration {
           logger.error("Bad Business Factory class: {}", e.getMessage());
           return false;
         }
-      }
-      value = hashConfig.get(XML_PUSH_MONITOR_URL);
-      if (value != null && !value.isEmpty()) {
-        try {
-          ParametersChecker.checkSanityString(value.getString());
-        } catch (final InvalidArgumentException e) {
-          logger.error("Bad Business Factory class: {}", e.getMessage());
-          return false;
-        }
-        String url = value.getString();
-        // Default value
-        String endpoint = "/";
-        value = hashConfig.get(XML_PUSH_MONITOR_ENDPOINT);
-        if (value != null && !value.isEmpty()) {
-          try {
-            ParametersChecker.checkSanityString(value.getString());
-          } catch (final InvalidArgumentException e) {
-            logger.error("Bad Business Factory class: {}", e.getMessage());
-            return false;
-          }
-          endpoint = value.getString();
-        }
-        // Default value
-        int delay = 1000;
-        value = hashConfig.get(XML_PUSH_MONITOR_DELAY);
-        if (value != null && !value.isEmpty()) {
-          delay = value.getInteger();
-          if (delay < 0) {
-            delay = 1000;
-          }
-          if (delay < 500) {
-            delay = 500;
-          }
-        }
-        // Default value
-        boolean keep = MonitorExporterTransfers.MONITOR_KEEP_CONNECTION_DEFAULT;
-        value = hashConfig.get(XML_PUSH_MONITOR_KEEP_CONNECTION);
-        if (value != null && !value.isEmpty()) {
-          keep = value.getBoolean();
-        }
-        // Default value
-        boolean intervalIncluded =
-            MonitorExporterTransfers.MONITOR_INTERVAL_INCLUDED_DEFAULT;
-        value = hashConfig.get(XML_PUSH_MONITOR_INTERVAL_INCLUDED);
-        if (value != null && !value.isEmpty()) {
-          intervalIncluded = value.getBoolean();
-        }
-        // Default value
-        boolean longAsString =
-            MonitorExporterTransfers.MONITOR_LONG_AS_STRING_DEFAULT;
-        value = hashConfig.get(XML_PUSH_MONITOR_TRANSFORM_LONG_AS_STRING);
-        if (value != null && !value.isEmpty()) {
-          longAsString = value.getBoolean();
-        }
-        config.setMonitorExporterTransfers(url, endpoint, delay, keep,
-                                           intervalIncluded, longAsString);
       }
       return true;
     } finally {
@@ -661,6 +671,9 @@ public class FileBasedConfiguration {
             "Working"); //$NON-NLS-1$
         return false;
       }
+      if (!loadExtendTaskFactory(config)) {
+        return false;
+      }
       return true;
     } finally {
       hashConfig.clear();
@@ -668,24 +681,34 @@ public class FileBasedConfiguration {
     }
   }
 
-  public static boolean loadMinimalDirectory(final Configuration config,
-                                             final XmlHash hashConfig) {
-    final XmlValue xfactories = hashConfig.get(XML_EXTENDED_TASK_FACTORIES);
-    if (xfactories != null && !xfactories.isEmpty()) {
-      final String sextendedFactoryClassList = xfactories.getString();
-      // Initiate Extended Task Factory
-      final String[] extendedFactories = sextendedFactoryClassList.split(",");
-      for (final String extendedFactory : extendedFactories) {
-        try {
-          WaarpSystemUtil.newInstance(extendedFactory);
-          logger.warn("Added ExtendedTaskFactory: {}", extendedFactory);
-        } catch (Exception e) {
-          logger.error(Messages.getString(
-              "ServerInitDatabase.ExtendedTaskFactory.error") +
-                       extendedFactory + " = " + e.getMessage());
+  private static boolean loadExtendTaskFactory(final Configuration config) {
+    XmlHash hashConfig =
+        new XmlHash(hashRootConfig.get(XML_EXTEND_TASK_FACTORY));
+    try {
+      final XmlValue xfactories = hashConfig.get(XML_EXTENDED_TASK_FACTORIES);
+      if (xfactories != null && !xfactories.isEmpty()) {
+        final String sextendedFactoryClassList = xfactories.getString();
+        // Initiate Extended Task Factory
+        final String[] extendedFactories = sextendedFactoryClassList.split(",");
+        for (final String extendedFactory : extendedFactories) {
+          try {
+            WaarpSystemUtil.newInstance(extendedFactory);
+            logger.warn("Added ExtendedTaskFactory: {}", extendedFactory);
+          } catch (Exception e) {
+            logger.error(Messages.getString(
+                "ServerInitDatabase.ExtendedTaskFactory.error") +
+                         extendedFactory + " = " + e.getMessage());
+          }
         }
       }
+      return true;
+    } finally {
+      hashConfig.clear();
     }
+  }
+
+  public static boolean loadMinimalDirectory(final Configuration config,
+                                             final XmlHash hashConfig) {
     final XmlValue value = hashConfig.get(XML_SERVER_HOME);
     if (value == null || value.isEmpty()) {
       logger.error(
@@ -2048,11 +2071,14 @@ public class FileBasedConfiguration {
    *
    * @param config
    * @param filename
+   * @param isStartupServer If True, will also load configuration for startup
+   *     of server, else only what is necessary for instance for Initialize database
    *
    * @return True if OK
    */
   public static boolean setConfigurationServerFromXml(
-      final Configuration config, final String filename) {
+      final Configuration config, final String filename,
+      final boolean isStartupServer) {
     final Document document;
     // Open config file
     try {
@@ -2084,6 +2110,12 @@ public class FileBasedConfiguration {
       logger.error("Cannot load Server Parameters");
       return false;
     }
+    if (isStartupServer) {
+      if (!loadPushMonitorParam(config)) {
+        logger.error("Cannot load Server Push Monitor Parameters");
+        return false;
+      }
+    }
     if (!loadDirectory(config)) {
       logger.error(CANNOT_LOAD_DIRECTORY_CONFIGURATION);
       return false;
@@ -2100,9 +2132,11 @@ public class FileBasedConfiguration {
       logger.error("Cannot load Network configuration");
       return false;
     }
-    if (!loadRest(config)) {
-      logger.error("Cannot load REST configuration");
-      return false;
+    if (isStartupServer) {
+      if (!loadRest(config)) {
+        logger.error("Cannot load REST configuration");
+        return false;
+      }
     }
     if (!loadFromDatabase(config)) {
       logger.error("Cannot load configuration from Database");

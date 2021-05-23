@@ -302,10 +302,11 @@ public class PartnerConfiguration {
     major2 = Integer.parseInt(vals[0]);
     rank2 = Integer.parseInt(vals[1]);
     subversion2 = Integer.parseInt(vals[2]);
-    final boolean b = major1 < major2 || major1 == major2 && (rank1 < rank2 ||
-                                                              rank1 == rank2 &&
-                                                              subversion1 <=
-                                                              subversion2);
+    final boolean b = major1 < major2 || (major1 == major2 && (rank1 < rank2 ||
+                                                               (rank1 ==
+                                                                rank2 &&
+                                                                subversion1 <=
+                                                                subversion2)));
     logger.trace("1: {}:{}:{} <=? {}:{}:{} = {}", major1, rank1, subversion1,
                  major2, rank2, subversion2, b);
     return b;
@@ -338,10 +339,11 @@ public class PartnerConfiguration {
     major2 = Integer.parseInt(vals[0]);
     rank2 = Integer.parseInt(vals[1]);
     subversion2 = Integer.parseInt(vals[2]);
-    final boolean b = major1 < major2 || major1 == major2 && (rank1 < rank2 ||
-                                                              rank1 == rank2 &&
-                                                              subversion1 <
-                                                              subversion2);
+    final boolean b = major1 < major2 || (major1 == major2 && (rank1 < rank2 ||
+                                                               (rank1 ==
+                                                                rank2 &&
+                                                                subversion1 <
+                                                                subversion2)));
     logger.debug("1: {}:{}:{} <? {}:{}:{} = {}", major1, rank1, subversion1,
                  major2, rank2, subversion2, b);
     return b;

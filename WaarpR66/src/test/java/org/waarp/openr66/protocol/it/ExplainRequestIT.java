@@ -500,48 +500,54 @@ public class ExplainRequestIT extends TestAbstract {
     for (Transfer transfer1 : list) {
       logger.warn("{}", JsonHandler.prettyPrint(transfer1));
     }
+    // FollowId
+    logger.warn("Follow Id with Owner: {}", followId);
+    filters = new ArrayList<Filter>(2);
+    filters.add(getFollowIdFilter(followId));
+    filters.add(getOwnerFilter());
+    daoExplain.find(filters, 100);
+    // Basic example
+    daoExplain.find(filters, DBTransferDAO.TRANSFER_START_FIELD, true, 100);
+    list = daoSrc.find(filters);
+    for (Transfer transfer1 : list) {
+      logger.warn("{}", JsonHandler.prettyPrint(transfer1));
+    }
     // Web
     logger.warn("Web");
     filters = new ArrayList<Filter>(2);
-    filters.add(new Filter(DBTransferDAO.OWNER_REQUEST_FIELD, "=",
-                           Configuration.configuration.getHostId()));
+    filters.add(DbTaskRunner.getOwnerFilter());
     filters.add(new Filter(DBTransferDAO.STEP_STATUS_FIELD, "=",
                            ErrorCode.Running.getCode()));
     daoExplain.find(filters, DBTransferDAO.TRANSFER_START_FIELD, false, 100);
     filters = new ArrayList<Filter>(2);
     filters.add(
         new Filter(UPDATED_INFO_FIELD, "=", UpdatedInfo.INTERRUPTED.ordinal()));
-    filters.add(new Filter(DBTransferDAO.OWNER_REQUEST_FIELD, "=",
-                           Configuration.configuration.getHostId()));
+    filters.add(DbTaskRunner.getOwnerFilter());
     daoExplain.find(filters, DBTransferDAO.TRANSFER_START_FIELD, false, 100);
     filters = new ArrayList<Filter>(3);
     filters.add(new Filter(DBTransferDAO.UPDATED_INFO_FIELD, "=",
                            UpdatedInfo.INTERRUPTED.ordinal()));
-    filters.add(new Filter(DBTransferDAO.OWNER_REQUEST_FIELD, "=",
-                           Configuration.configuration.getHostId()));
+    filters.add(DbTaskRunner.getOwnerFilter());
     filters.add(new Filter(DBTransferDAO.TRANSFER_START_FIELD, "<=",
                            new Timestamp(System.currentTimeMillis())));
     daoExplain.find(filters, DBTransferDAO.TRANSFER_START_FIELD, false, 100);
     filters = new ArrayList<Filter>(3);
     filters.add(new Filter(GLOBAL_STEP_FIELD, "=",
                            Transfer.TASKSTEP.ERRORTASK.ordinal()));
-    filters.add(new Filter(DBTransferDAO.OWNER_REQUEST_FIELD, "=",
-                           Configuration.configuration.getHostId()));
+    filters.add(DbTaskRunner.getOwnerFilter());
     filters.add(new Filter(DBTransferDAO.TRANSFER_START_FIELD, "<=",
                            new Timestamp(System.currentTimeMillis())));
     daoExplain.find(filters, DBTransferDAO.TRANSFER_START_FIELD, false, 100);
     filters = new ArrayList<Filter>(2);
     filters.add(new Filter(GLOBAL_STEP_FIELD, "=",
                            Transfer.TASKSTEP.ERRORTASK.ordinal()));
-    filters.add(new Filter(DBTransferDAO.OWNER_REQUEST_FIELD, "=",
-                           Configuration.configuration.getHostId()));
+    filters.add(DbTaskRunner.getOwnerFilter());
     daoExplain.find(filters, DBTransferDAO.TRANSFER_START_FIELD, false, 100);
 
     // Commander
     logger.warn("Commander");
     filters = new ArrayList<Filter>(3);
-    filters.add(new Filter(DBTransferDAO.OWNER_REQUEST_FIELD, "=",
-                           Configuration.configuration.getHostId()));
+    filters.add(DbTaskRunner.getOwnerFilter());
     filters.add(new Filter(DBTransferDAO.TRANSFER_START_FIELD, "<=",
                            new Timestamp(System.currentTimeMillis())));
     filters.add(new Filter(DBTransferDAO.UPDATED_INFO_FIELD, "=",
@@ -554,8 +560,7 @@ public class ExplainRequestIT extends TestAbstract {
     // Commander, Web Export, Log Purge
     logger.warn("Commander, Web Export, Log Purge");
     filters = new ArrayList<Filter>();
-    filters.add(new Filter(DBTransferDAO.OWNER_REQUEST_FIELD, "=",
-                           Configuration.configuration.getHostId()));
+    filters.add(DbTaskRunner.getOwnerFilter());
     filters.add(new Filter(DBTransferDAO.UPDATED_INFO_FIELD, "<>",
                            AbstractDbData.UpdatedInfo.DONE.ordinal()));
     filters.add(new Filter(DBTransferDAO.UPDATED_INFO_FIELD, ">",
@@ -679,8 +684,7 @@ public class ExplainRequestIT extends TestAbstract {
     Timestamp timestamp = new Timestamp(now.getMillis());
     TransferConverter.Order order = TransferConverter.Order.ascId;
     filters = new ArrayList<Filter>(3);
-    filters.add(new Filter(OWNER_REQUEST_FIELD, "=",
-                           Configuration.configuration.getHostId()));
+    filters.add(DbTaskRunner.getOwnerFilter());
     filters
         .add(new Filter(TRANSFER_STOP_FIELD, Filter.BETWEEN, start, timestamp));
     daoExplain.find(filters, order.column, order.ascend);

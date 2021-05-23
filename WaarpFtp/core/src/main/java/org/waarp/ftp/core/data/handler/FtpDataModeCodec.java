@@ -29,6 +29,7 @@ import org.waarp.common.future.WaarpFuture;
 import org.waarp.common.utility.WaarpNettyUtil;
 import org.waarp.ftp.core.command.FtpArgumentCode.TransferMode;
 import org.waarp.ftp.core.command.FtpArgumentCode.TransferStructure;
+import org.waarp.ftp.core.config.FtpInternalConfiguration;
 import org.waarp.ftp.core.data.handler.FtpSeekAheadData.SeekAheadNoBackArrayException;
 
 import java.util.List;
@@ -224,10 +225,10 @@ public class FtpDataModeCodec extends ByteToMessageCodec<DataBlock> {
   protected void decode(final ChannelHandlerContext ctx, final ByteBuf buf,
                         final List<Object> out) throws Exception {
     // First test if the connection is fully ready (block might be
-    // transferred
-    // by client before connection is ready)
+    // transferred by client before connection is ready)
     if (!isReady.get()) {
-      if (!codecLocked.awaitOrInterruptible()) {
+      if (!codecLocked
+          .awaitOrInterruptible(FtpInternalConfiguration.RETRYINMS)) {
         throw new InvalidArgumentException(
             "Codec not unlocked while should be");
       }
@@ -462,7 +463,8 @@ public class FtpDataModeCodec extends ByteToMessageCodec<DataBlock> {
     // transfered
     // by client before connection is ready)
     if (!isReady.get()) {
-      if (!codecLocked.awaitOrInterruptible()) {
+      if (!codecLocked
+          .awaitOrInterruptible(FtpInternalConfiguration.RETRYINMS)) {
         throw new InvalidArgumentException(
             "Codec not unlocked while should be");
       }

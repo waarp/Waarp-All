@@ -24,6 +24,7 @@ import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.ftp.client.WaarpFtp4jClient;
+import org.waarp.ftp.core.config.FtpInternalConfiguration;
 import org.waarp.openr66.context.task.FtpArgs;
 import org.waarp.openr66.context.task.exception.OpenR66RunnerErrorException;
 
@@ -118,7 +119,7 @@ public class JavaExecutorWaarpFtp4jClient implements GatewayRunnable {
       return;
     }
     int timeout = 30000;
-    if (delay > 1000) {
+    if (delay > 10000) {
       timeout = delay;
     }
     final WaarpFtp4jClient ftpClient =
@@ -141,6 +142,11 @@ public class JavaExecutorWaarpFtp4jClient implements GatewayRunnable {
     try {
       if (ftpArgs.getCwd() != null && !ftpClient.changeDir(ftpArgs.getCwd())) {
         ftpClient.makeDir(ftpArgs.getCwd());
+        try {
+          Thread.sleep(FtpInternalConfiguration.RETRYINMS);
+        } catch (InterruptedException e) {// NOSONAR
+          // Ignore
+        }
         if (!ftpClient.changeDir(ftpArgs.getCwd())) {
           logger.warn("Cannot change od directory: " + ftpArgs.getCwd());
         }

@@ -57,6 +57,6 @@ INSERT INTO public.rules VALUES ('<hostids></hostids>', 3, '/in', '/out', '/arch
 
 INSERT INTO public.runner VALUES (-9223372036854775807, 5, 0, 0, 0, 65536, 1,5, 'C  ', 'C  ', true, false, '2018-06-27 14:31:37.738', '2018-06-27 14:31:58.042', 'server1', 'server1', 'server2','default', 'data/server1/log/client.log',  'data/server1/log/client.log', 'noinfo', '{"ORIGINALSIZE":18391}' );
 INSERT INTO public.runner VALUES (-9223372036854775806,5, 0, 0, 0, 65536,  1,4, 'C  ', 'C  ', true, false, '2018-06-20 14:36:00.116', '2018-06-20 14:36:20.374', 'server1', 'server1', 'server2','default', 'data/server1/log/client.log',    'data/server1/log/client.log', 'noinfo', '{"ORIGINALSIZE":52587}' );
-INSERT INTO public.runner VALUES (-9223372036854775805, 5, 0, 0, 0, 65536, 1, 4,'C  ', 'C  ',true, false, '2018-06-22 14:39:01.28', '2018-06-22 14:39:21.518', 'server1', 'server1', 'server2', 'tintin','tintin', 'tintin', 'noinfo', '{"ORIGINALSIZE":-1, "follow": 123456789}' );
-INSERT INTO public.runner VALUES (0,5, 0, 0, 0, 65536, 1, 4, 'C  ', 'C  ',true, false, '2018-06-24 14:39:01.28', '2018-06-24 14:39:21.518', 'server1', 'server1', 'server2','default', 'tintin',   'tintin', 'noinfo', '{"ORIGINALSIZE":-1, "follow": 1234567890}' );
+INSERT INTO public.runner VALUES (-9223372036854775805, 5, 0, 0, 0, 65536, 1, 4,'C  ', 'C  ',true, false, '2018-06-22 14:39:01.28', '2018-06-22 14:39:21.518', 'server1', 'server1', 'server2', 'tintin','tintin', 'tintin', 'noinfo', '{"ORIGINALSIZE":-1, "follow":123456789}' );
+INSERT INTO public.runner VALUES (0,5, 0, 0, 0, 65536, 1, 4, 'C  ', 'C  ',true, false, '2018-06-24 14:39:01.28', '2018-06-24 14:39:21.518', 'server1', 'server1', 'server2','default', 'tintin',   'tintin', 'noinfo', '{"ORIGINALSIZE":-1, "follow":1234567890}' );
 

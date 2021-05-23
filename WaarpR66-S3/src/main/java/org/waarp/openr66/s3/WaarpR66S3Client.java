@@ -121,7 +121,7 @@ public class WaarpR66S3Client {
       final boolean found = minioClient
           .bucketExists(BucketExistsArgs.builder().bucket(bucketName).build());
       if (!found) {
-        // Make a new bucket called 'asiatrip'.
+        // Make a new bucket
         minioClient
             .makeBucket(MakeBucketArgs.builder().bucket(bucketName).build());
       } else {
@@ -272,8 +272,7 @@ public class WaarpR66S3Client {
     ParametersChecker.checkParameter("File cannot be null", file);
     boolean downloaded = false;
     boolean error = false;
-    // Get input stream to have content of 'my-objectname' from 'my-bucketname'
-    // Read the input stream and print to the console till EOF.
+    // Get input stream
     try (final InputStream stream = minioClient.getObject(
         GetObjectArgs.builder().bucket(bucketName).object(sourceName).build());
          final FileOutputStream outputStream = new FileOutputStream(file)) {
@@ -378,7 +377,7 @@ public class WaarpR66S3Client {
     ParametersChecker
         .checkParameter("Bucket cannot be null or empty", bucketName);
     try {
-      // Remove object.
+      // List recursively
       final ListObjectsArgs.Builder builder =
           ListObjectsArgs.builder().bucket(bucketName).recursive(recursively);
       if (ParametersChecker.isNotEmpty(optionalNameStartWith)) {

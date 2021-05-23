@@ -23,14 +23,15 @@ client.xml
 Le tableau ci-dessous détail les groupes utilisés dans la configuration d'un client WaarpR66.
 La description de ces groupes est détaillée plus bas.
 
-========== ==============
-Balise     Status
-========== ==============
-identity   Obligatoire
-ssl        Si utilisation de SSL
-directory  Recommandé
-db         Si utilisation d'une base de données
-========== ==============
+================= ==============
+Balise            Status
+================= ==============
+identity          Obligatoire
+ssl               Si utilisation de SSL
+directory         Recommandé
+db                Si utilisation d'une base de données
+extendTaskFactory Si nécessité d'ajouter des extensions de tâches
+================= ==============
 
 server.xml
 **********
@@ -38,16 +39,18 @@ server.xml
 Le tableau ci-dessous détail les groupes utilisés dans la configuration d'un serveur WaarpR66.
 La description de ces groupes est détaillée plus bas.
 
-========== ==============
-Balise     Description
-========== ==============
-identity   Obligatoire
-ssl        Si utilisation de SSL
-server     Obligatoire
-network    Recommandé
-directory  Recommandé
-db         Obligatoire
-========== ==============
+================= ==============
+Balise            Description
+================= ==============
+identity          Obligatoire
+ssl               Si utilisation de SSL
+server            Obligatoire
+network           Recommandé
+directory         Recommandé
+db                Obligatoire
+extendTaskFactory Si nécessité d'ajouter des extensions de tâches
+pushMonitor       Si nécessaire pour un monitoring en mode PUSH REST Json vers un serveur tiers
+================= ==============
 
 .. note::
 
@@ -157,7 +160,6 @@ out                          Dossier où sont cherchés les fichiers à transfé
 work                         Dossier tampon où sont stockés les fichiers en cours de réception
 arch                         Dossier d’export XML de l’historique des transferts
 conf                         Dossier d’export XML de la configuration de l’instance
-extendedtaskfactories        Liste (séparée par des virgules) des TaskFactory en tant qu'extension pour ajouter des tâches à WaarpR66 (implicite pour la Factory ``org.waarp.openr66.s3.taskfactory.S3TaskFactory``, si la classe est dans le  claspath).
 ============================ ==============
 
 DB
@@ -180,6 +182,58 @@ dbpasswd                     Le mot de passe de l’utilisateur
 .. note::
   Il est possible de faire fonctionner les moniteurs sans base de données. 
   Les fichiers `authent.xml` et `rules.xml` seront utilisés comme source de configuration.
+
+
+ExtendTaskFactory
+=================
+
+
+.. versionadded:: 3.6.0
+
+   Ajout du sous-ensemble ``extendTaskFactory`` qui contient
+   l'option ``extendedtaskfactories`` : pour la Factory
+   ``org.waarp.openr66.s3.taskfactory.S3TaskFactory``, si la classe est dans le
+   claspath, il n'est pas nécessaire de l'ajouter.
+
+Le groupe `<extendTaskFactory>` permet de définir des Task Factories additionnelles
+pour étendre les capacités de R66.
+
+============================ ==============
+Balise                       Description
+============================ ==============
+**extendTaskFactory**
+extendedtaskfactories        Liste (séparée par des virgules) des TaskFactory en tant qu'extension pour ajouter des tâches à WaarpR66 (implicite pour la Factory ``org.waarp.openr66.s3.taskfactory.S3TaskFactory``, si la classe est dans le  claspath).
+============================ ==============
+
+
+
+PushMonitor
+===========
+
+Cette section décrit comment monitorer R66 via des appels REST HTTP(s) vers
+un serveur tiers (en mode PUSH).
+
+.. versionadded:: 3.6.0
+
+   Ajout du sous-ensemble ``pushMonitor`` qui contient
+   Ajout des options ``url``, ``endpoint``,
+   ``delay``, ``keepconnection``,
+   ``intervalincluded``, ``transformlongasstring``
+
+Le groupe `<pushMonitor>` permet de définir les parammètres pour que le serveur R66
+envoie son monitoring des transferts vers un serveur tiers en mode API REST Json.
+
+================================ ==============
+Balise                           Description
+================================ ==============
+**pushMonitor**
+url                              URL de base pour les exports du moniteur en mode POST HTTP(S) JSON
+endpoint                         End point à ajouter à l'URL de base
+delay                            Délai entre deux vérifications de changement de statuts sur les transferts
+keepconnection                   Si « True », la connexion HTTP(S) sera en Keep-Alive (pas de réouverture sauf si le serveur la ferme), sinon la connexion sera réinitialisée pour chaque appel
+intervalincluded                 Si « True », les informations de l'intervalle utilisé seront fournies
+transformlongasstring            Si « True », les nombres « long » seront convertis en chaîne de caractères, sinon ils seront numériques
+================================ ==============
 
 
 logback-{client,server}.xml

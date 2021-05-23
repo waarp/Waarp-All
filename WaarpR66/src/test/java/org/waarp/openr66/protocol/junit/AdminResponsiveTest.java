@@ -87,6 +87,7 @@ public class AdminResponsiveTest extends TestAbstract {
     setUpDbBeforeClass();
     setUpBeforeClassServer(LINUX_CONFIG_CONFIG_SERVER_INIT_A_XML,
                            CONFIG_SERVER_A_MINIMAL_RESPONSIVE_XXML, true);
+    Thread.sleep(100);
   }
 
   /**
@@ -116,7 +117,7 @@ public class AdminResponsiveTest extends TestAbstract {
       return;
     }
     reloadDriver();
-    Thread.sleep(100);
+    Thread.sleep(500);
   }
 
   @Test
@@ -278,6 +279,7 @@ public class AdminResponsiveTest extends TestAbstract {
       driver.findElement(By.id("name")).sendKeys("monadmin");
       // 4 | click | id=submit |  |
       driver.findElement(By.id("submit")).click();
+      Thread.sleep(WAIT);
       assertTrue(
           driver.getCurrentUrl().equals("https://127.0.0.1:8867/index.html"));
       // 5 | open | https://127.0.0.1:8867/ |  |
@@ -326,6 +328,7 @@ public class AdminResponsiveTest extends TestAbstract {
       driver.findElement(By.cssSelector(".btn:nth-child(2) > span")).click();
       // 26 | click | id=update-button |
       driver.findElement(By.id("update-button")).click();
+      Thread.sleep(WAIT);
     } catch (NoSuchElementException e) {
       e.printStackTrace();
       fail(e.getMessage());
@@ -366,6 +369,7 @@ public class AdminResponsiveTest extends TestAbstract {
       // 6 | click | css=.selected > td:nth-child(11) |
       driver.findElement(By.cssSelector(".selected > td:nth-child(11)"))
             .click();
+      Thread.sleep(WAIT);
       String page = driver.getPageSource();
       assertFalse(page.contains("(ReverseAlias: mytest )"));
       // 7 | click | linkText=SYSTEM |
@@ -478,11 +482,9 @@ public class AdminResponsiveTest extends TestAbstract {
       Thread.sleep(WAIT);
       // 40 | click | css=.odd:nth-child(3) |
       driver.findElement(By.cssSelector(".odd:nth-child(3)")).click();
+      Thread.sleep(WAIT);
       page = driver.getPageSource();
       assertTrue(page.contains("(ReverseAlias: mytest ) (Business: Allowed)"));
-
-      // Disconnection
-      driver.get("https://127.0.0.1:8867/Logout.html");
     } catch (NoSuchElementException e) {
       e.printStackTrace();
       fail(e.getMessage());
@@ -491,7 +493,11 @@ public class AdminResponsiveTest extends TestAbstract {
       fail(e.getMessage());
     } finally {
       // Disconnection
-      driver.get("https://127.0.0.1:8867/Logout.html");
+      try {
+        driver.get("https://127.0.0.1:8867/Logout.html");
+      } catch (Exception e) {
+        // Ignore
+      }
     }
   }
 
@@ -607,7 +613,7 @@ public class AdminResponsiveTest extends TestAbstract {
       page = driver.getPageSource();
       assertTrue(page.contains("Configuration Saved"));
       // 36 | click | name=loglevel |
-      driver.findElement(By.name("loglevel")).click();
+      driver.findElement(By.id("logdebug")).click();
       // 37 | click | css=.form-group:nth-child(3) > .btn-warning |
       driver.findElement(
           By.cssSelector(".form-group:nth-child(3) > .btn-warning")).click();
@@ -615,7 +621,7 @@ public class AdminResponsiveTest extends TestAbstract {
       page = driver.getPageSource();
       assertTrue(page.contains("New language is: DEBUG"));
       // 38 | click | css=input:nth-child(6) |
-      driver.findElement(By.cssSelector("input:nth-child(6)")).click();
+      driver.findElement(By.id("logwarn")).click();
       // 39 | click | css=.form-group:nth-child(3) > .btn-warning |
       driver.findElement(
           By.cssSelector(".form-group:nth-child(3) > .btn-warning")).click();
@@ -649,7 +655,11 @@ public class AdminResponsiveTest extends TestAbstract {
           "You need to login to access to the OpenR66 Administrator."));
     } finally {
       // Disconnection
-      driver.get("https://127.0.0.1:8867/Logout.html");
+      try {
+        driver.get("https://127.0.0.1:8867/Logout.html");
+      } catch (Exception e) {
+        // Ignore
+      }
     }
   }
 
@@ -809,10 +819,13 @@ public class AdminResponsiveTest extends TestAbstract {
       Thread.sleep(WAIT);
       page = driver.getPageSource();
       assertFalse(page.contains("Your profile does not allow this function."));
-      Thread.sleep(WAIT);
     } finally {
       // Disconnection
-      driver.get("https://127.0.0.1:8867/Logout.html");
+      try {
+        driver.get("https://127.0.0.1:8867/Logout.html");
+      } catch (Exception e) {
+        // Ignore
+      }
     }
   }
 
@@ -871,15 +884,88 @@ public class AdminResponsiveTest extends TestAbstract {
       Thread.sleep(WAIT);
       page = driver.getPageSource();
       assertFalse(page.contains("Your profile does not allow this function."));
-      Thread.sleep(WAIT);
     } finally {
       // Disconnection
-      driver.get("https://127.0.0.1:8867/Logout.html");
+      try {
+        driver.get("https://127.0.0.1:8867/Logout.html");
+      } catch (Exception e) {
+        // Ignore
+      }
     }
   }
 
   @Test
-  public void test08_WebShutdown() throws InterruptedException {
+  public void test08_createAndFollow() throws InterruptedException {
+    Assume.assumeTrue("Driver not loaded", RUN_TEST);
+    try {
+      driver.get("https://127.0.0.1:8867/");
+      Thread.sleep(WAIT);
+      driver.findElement(By.id("passwd")).sendKeys("pwdhttp");
+      driver.findElement(By.id("name")).sendKeys("monadmin");
+      driver.findElement(By.id("submit")).click();
+      Thread.sleep(WAIT);
+      driver.get("https://127.0.0.1:8867/CreateTransfer.html");
+      Thread.sleep(WAIT);
+      driver.findElement(By.id("IDRULE")).click();
+      {
+        WebElement dropdown = driver.findElement(By.id("IDRULE"));
+        dropdown.findElement(By.xpath("//option[. = 'rule3']")).click();
+      }
+      driver.findElement(By.cssSelector("#IDRULE > option:nth-child(2)"))
+            .click();
+      driver.findElement(By.id("REQUESTED")).click();
+      {
+        WebElement dropdown = driver.findElement(By.id("REQUESTED"));
+        dropdown.findElement(By.xpath("//option[. = 'hostas']")).click();
+      }
+      driver.findElement(By.cssSelector("#REQUESTED > option:nth-child(2)"))
+            .click();
+      driver.findElement(By.id("FILENAME")).sendKeys("test");
+      driver.findElement(By.id("TRANSFERINFO")).sendKeys("mon info");
+      driver.findElement(By.id("STARTTRANS")).sendKeys("2200/12/31 23:59");
+      driver.findElement(By.id("FOLLOWID")).sendKeys("10");
+      driver.findElement(By.id("BLOCKSZ")).sendKeys("65535");
+      driver.findElement(By.id("create-button")).click();
+      Thread.sleep(WAIT);
+      driver.findElement(By.id("FILENAME")).sendKeys("test2");
+      driver.findElement(By.id("TRANSFERINFO")).sendKeys("my info");
+      driver.findElement(By.id("STARTTRANS")).sendKeys("2300/12/31 23:59");
+      driver.findElement(By.id("FOLLOWID")).sendKeys("20");
+      driver.findElement(By.id("create-button")).click();
+      Thread.sleep(WAIT);
+      Thread.sleep(WAIT);
+      driver.findElement(By.cssSelector(".odd > td:nth-child(2)")).click();
+      driver.findElement(By.cssSelector(".btn:nth-child(2) > span")).click();
+      driver.findElement(By.id("FOLLOWID")).sendKeys("25");
+      driver.findElement(By.id("update-button")).click();
+      Thread.sleep(WAIT);
+      driver.get("https://127.0.0.1:8867/CreateTransfer.html");
+      Thread.sleep(WAIT);
+      driver.findElement(By.id("FollowId0")).sendKeys("20");
+      driver.findElement(By.id("TopSearch")).click();
+      Thread.sleep(WAIT);
+      driver.get("https://127.0.0.1:8867/CreateTransfer.html");
+      Thread.sleep(WAIT);
+      driver.findElement(By.id("FollowId0")).sendKeys("10");
+      driver.findElement(By.id("TopSearch")).click();
+      Thread.sleep(WAIT);
+      driver.get("https://127.0.0.1:8867/CreateTransfer.html");
+      Thread.sleep(WAIT);
+      driver.findElement(By.id("FollowId0")).sendKeys("25");
+      driver.findElement(By.id("TopSearch")).click();
+      Thread.sleep(WAIT);
+    } finally {
+      // Disconnection
+      try {
+        driver.get("https://127.0.0.1:8867/Logout.html");
+      } catch (Exception e) {
+        // Ignore
+      }
+    }
+  }
+
+  @Test
+  public void test09_WebShutdown() throws InterruptedException {
     Assume.assumeTrue("Driver not loaded", RUN_TEST);
     // Test name: TestConnectShutdown
     // Step # | name | target | value
@@ -905,9 +991,14 @@ public class AdminResponsiveTest extends TestAbstract {
       // 11 | click | css=.text-right:nth-child(3) > .btn |
       driver.findElement(By.cssSelector(".text-right:nth-child(3) > .btn"))
             .click();
+      Thread.sleep(WAIT);
     } finally {
       // Disconnection
-      driver.get("https://127.0.0.1:8867/Logout.html");
+      try {
+        driver.get("https://127.0.0.1:8867/Logout.html");
+      } catch (Exception e) {
+        // Ignore
+      }
     }
   }
 

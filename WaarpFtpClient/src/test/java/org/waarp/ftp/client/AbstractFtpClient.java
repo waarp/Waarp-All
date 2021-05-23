@@ -184,6 +184,11 @@ public abstract class AbstractFtpClient {
         System.out.print('.');
         client.makeDir("T" + i);
       }
+      try {
+        Thread.sleep(10);
+      } catch (InterruptedException e) {
+        // Ignore
+      }
       System.out.println();
       logger.warn("Feature commands");
       System.out.println("SITE: " + client.featureEnabled("SITE"));

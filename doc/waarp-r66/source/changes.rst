@@ -15,18 +15,38 @@ Nouvelles fonctionnalités
 
 - Ajout de l'option ``activepassive`` pour Gateway FTP avec pour valeur
   1 = Active, -1 = Passive, 0 = les deux modes autorisés
+- Ajout d'une erreur si le certificat a une date de validité dépassée au démarrage
+
+  - Pas d'erreur d'exécution, il appartient à l'administrateur de gérer
+    les certificats qui sont ingérés dans le keystore ou le truststore
+
+- Waarp R66 : Ajout d'un écran dans l'administrateur Web pour créer ou modifier
+  un Transfert via l'interface Web
+
+  - L'initiateur est le serveur courant
+  - Il est possible de définir la règle, le serveur partenaire distant,
+    les informations de transferts (potentiellement vide),
+    le fichier a envoyer (local au serveur et son existence est non testé),
+    optionnellement la date de démarrage (si vide, immédiat), et enfin
+    optionnellement le numéro de suivi (si vide, il sera assigné automatiquement)
+  - Il est possible de modifier également un transfert qui n'a pas démarré
+    (toujours avec pour condition le serveur initiateur étant le serveur local)
+
+- Waarp R66 : Ajout d'une possibilité de recherche des transferts associés
+  à un numéro de suivi (en fonction des droits)
 - Waarp R66 : Ajout d'une option de logs asynchrones poussés vers une API REST
-  externe (par exemple un Logstash avec un Elasticsearch ou avec maintenance
-  dans le logiciel Waarp Manager) pour permettre la surveillance globale des
-  transferts de un ou plusieurs moniteurs Waarp R66
+  externe (par exemple un lecteur API REST pour un Elasticsearch ou avec une
+  évolution dans le logiciel Waarp Manager) pour permettre la surveillance
+  globale des transferts de un ou plusieurs moniteurs Waarp R66
 - Waarp R66 : Ajout de la possibilité d'étendre les tâches de Waarp R66 via
   un TaskFactory
 - WaarpR66 : Création d'une TaskFactory pour ajouter des tâches R66 qui
   permettent de lire, écrire ou effacer des fichiers depuis un stockage S3
   pouvant servir de source ou cible dans le cas de transferts
-  (org.waarp.openr66.s3.taskfactory.S3TaskFactory) ; cette Factory est
-  chargée dynamiquement si la classe correspondante est dans le classpath
-  (uniquement disponible en JRE 8 et au-dessus).
+  (org.waarp.openr66.s3.taskfactory.S3TaskFactory) ;
+
+  - cette Factory est chargée dynamiquement si la classe correspondante est
+    dans le classpath (uniquement disponible en JRE 8 et au-dessus).
 
 Correctifs
 ----------
@@ -46,7 +66,7 @@ Correctifs
 - Benchmark sur Serveur FTP et Gateway FTP (avec H2 et PostgreSQL)
 - Amélioration des Types SQL, index et requêtes SQL (R66 principalement)
 - Amélioration du code
-- Mise à jour des dépendances
+- Mise à jour des dépendances, JAR et javascript
 
 Benchmarks FTP
 --------------
@@ -59,9 +79,9 @@ Application         Client Nb vCore Passive Active CPU
 Serveur FTP         Apache 4        58/s    62/s   40% CPU
 Serveur FTP         Waarp  4        108/s   155/s  40% CPU
 Gateway FTP H2      Apache 4        76/s    95/s   40% CPU
-Gateway FTP H2      Waarp  4        100/s   101/s  40% CPU
+Gateway FTP H2      Waarp  4        82/s    117/s  40% CPU
 Gateway FTP Postgre Apache 4        75/s    96/s   40% CPU
-Gateway FTP Postgre Waarp  4        94/s    97/s   40% CPU
+Gateway FTP Postgre Waarp  4        81/s    97/s   40% CPU
 =================== ====== ======== ======= ====== =============
 
 Il ressort de ces benchmarks qu'il est important d'avoir au moins 2 core (threads)
@@ -81,7 +101,7 @@ Contexte                       Nb vCore TLS Transferts/s CPU  Gain
 V3.0 Loop 2 Serveurs           4        Oui 30/s         100% Référence
 V3.2 Loop 2 Serveurs           4        Oui 60/s         100% 200%
 V3.5.2 Loop 2 Serveurs         4        Oui 77/s         100% 257%
-V3.6.0 Loop 2 Serveurs         4        Oui 77/s         100% 280%
+V3.6.0 Loop 2 Serveurs         4        Oui 76/s         100% 280%
 V3.6.0 Loop 2 Serveurs         8        Oui 366/s        80%  1220%
 V3.6.0 Loop 2 Serveurs         4        Non 103/s        100% Référence
 V3.6.0 Loop 2 Serveurs         8        Non 418/s        75%  406%

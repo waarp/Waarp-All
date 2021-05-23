@@ -111,6 +111,9 @@ public abstract class TestAbstractMinimal {
     if (baseWeb.getAbsolutePath().contains("src/test/resources")) {
       baseWeb = baseWeb.getParentFile().getParentFile().getParentFile();
     }
+    if (baseWeb.getAbsolutePath().contains("/src")) {
+      baseWeb = baseWeb.getParentFile();
+    }
     File webSrc = new File(baseWeb, "src/main/httpadmin/i18n");
     if (webSrc.isDirectory()) {
       logger.warn("Copy Web from {} to {}", webSrc, web);

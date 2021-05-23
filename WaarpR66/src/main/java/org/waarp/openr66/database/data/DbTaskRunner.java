@@ -48,7 +48,6 @@ import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.utility.ParametersChecker;
 import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.common.xml.XmlUtil;
-import org.waarp.openr66.client.TransferArgs;
 import org.waarp.openr66.context.ErrorCode;
 import org.waarp.openr66.context.R66FiniteDualStates;
 import org.waarp.openr66.context.R66Result;
@@ -103,6 +102,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static org.waarp.common.database.DbConstant.*;
+import static org.waarp.openr66.client.TransferArgs.*;
 
 /**
  * Task Runner from pre operation to transfer to post operation, except in case
@@ -128,8 +128,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
   private static final String UNSUPPORTED_ENCODING = "Unsupported Encoding";
   private static final String CANNOT_DELETE_WRONG_XML_FILE =
       "Cannot delete wrong XML file";
-  private static final String FOLLOW_ID_LIKE =
-      "%\"" + TransferArgs.FOLLOW_JSON_KEY + "\": ";
+  private static final String FOLLOW_ID_LIKE = "%\"" + FOLLOW_JSON_KEY + "\":";
   public static final String AND = " AND ";
   public static final String SELECT_COUNT = "SELECT COUNT(";
 
@@ -1403,10 +1402,19 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
   }
 
   /**
+   * @return the Filter on current Owner
+   */
+  public static Filter getOwnerFilter() {
+    return new Filter(DBTransferDAO.OWNER_REQUEST_FIELD, "=",
+                      Configuration.configuration.getHostId());
+  }
+
+  /**
    * @param followId the followId to find
    * @param orderByStart If true, sort on Start ; If false, does not
-   *     set the limit on start
+   *     set the order on start
    * @param limit the limit of items
+   * @param allOwner if admin role, can resolve for all Owners
    *
    * @return the DbPreparedStatement for getting Updated Object
    *
@@ -1415,10 +1423,15 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    */
   public static DbTaskRunner[] getSelectSameFollowId(final String followId,
                                                      final boolean orderByStart,
-                                                     final int limit)
+                                                     final int limit,
+                                                     final boolean allOwner)
       throws WaarpDatabaseNoConnectionException {
-    final List<Filter> filters = new ArrayList<Filter>(1);
+    final List<Filter> filters = new ArrayList<Filter>(2);
     filters.add(getFollowIdFilter(followId));
+    if (!allOwner) {
+      filters.add(new Filter(Columns.OWNERREQ.toString(), "=",
+                             Configuration.configuration.getHostId()));
+    }
     TransferDAO transferAccess = null;
     List<Transfer> transfers;
     try {
@@ -1457,9 +1470,8 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
   public static DbTaskRunner[] getSelectFromInfoPrepareStatement(
       final UpdatedInfo info, final boolean orderByStart, final int limit)
       throws WaarpDatabaseNoConnectionException {
-    final List<Filter> filters = new ArrayList<Filter>(3);
-    filters.add(new Filter(DBTransferDAO.OWNER_REQUEST_FIELD, "=",
-                           Configuration.configuration.getHostId()));
+    final List<Filter> filters = new ArrayList<Filter>(4);
+    filters.add(getOwnerFilter());
     filters.add(new Filter(DBTransferDAO.TRANSFER_START_FIELD, "<=",
                            new Timestamp(System.currentTimeMillis())));
     filters.add(new Filter(DBTransferDAO.UPDATED_INFO_FIELD, "=",
@@ -2024,8 +2036,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
     // Update all UpdatedInfo to DONE where GlobalLastStep = ALLDONETASK and
     // status = CompleteOk
     final List<Filter> filters = new ArrayList<Filter>();
-    filters.add(new Filter(DBTransferDAO.OWNER_REQUEST_FIELD, "=",
-                           Configuration.configuration.getHostId()));
+    filters.add(getOwnerFilter());
     filters.add(new Filter(DBTransferDAO.UPDATED_INFO_FIELD, "<>",
                            UpdatedInfo.DONE.ordinal()));
     filters.add(new Filter(DBTransferDAO.UPDATED_INFO_FIELD, ">",
@@ -2488,11 +2499,18 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    * @return the Follow Id or null if not exists
    */
   public String getFollowId() {
-    final Object followId = getFromTransferMap(TransferArgs.FOLLOW_JSON_KEY);
+    final Object followId = getFromTransferMap(FOLLOW_JSON_KEY);
     if (followId != null) {
       return followId.toString();
     }
     return null;
+  }
+
+  /**
+   * @param followId the followId to set
+   */
+  public void setFollowId(long followId) {
+    addToTransferMap(FOLLOW_JSON_KEY, followId);
   }
 
   public String getTransferInfo() {
@@ -2542,6 +2560,17 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    */
   public String getRuleId() {
     return pojo.getRule();
+  }
+
+  /**
+   * @param ruleId the RuleId to set
+   *
+   * @throws WaarpDatabaseException if the RuleId is wrong
+   */
+  public void setRuleId(final String ruleId) throws WaarpDatabaseException {
+    rule = new DbRule(ruleId);
+    pojo.setRule(ruleId);
+    isSaved = false;
   }
 
   /**
@@ -4058,9 +4087,9 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
     node.put(JSON_ORIGINALSIZE, originalSize);
     final String followId = getFollowId();
     if (followId != null) {
-      node.put(TransferArgs.FOLLOW_JSON_KEY, followId);
+      node.put(FOLLOW_JSON_KEY, followId);
     } else {
-      node.put(TransferArgs.FOLLOW_JSON_KEY, "");
+      node.put(FOLLOW_JSON_KEY, "");
     }
     return node;
   }

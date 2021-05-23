@@ -18,6 +18,7 @@ Les directives de configuration sont réparties en 7 sections :
 - :ref:`limit <client-xml-limit>`: paramétrage de l'utilisation des
   ressources et du comportement interne du serveur
 - :ref:`db <client-xml-db>`: paramétrage de la base de données
+- :ref:`extendTaskFactory <client-ExtendTaskFactories>`: paramétrage d'extension de tâches
 
 .. _client-xml-identity:
 
@@ -77,12 +78,6 @@ Section ``directory``
    Les dossiers par défaut indiqués sont relatifs au dossier
    ``serverhome``.
 
-.. versionadded:: 3.6.0
-
-   Ajout de l'option ``extendedtaskfactories`` : pour la Factory
-   ``org.waarp.openr66.s3.taskfactory.S3TaskFactory``, si la classe est dans le
-   claspath, il n'est pas nécessaire de l'ajouter.
-
 ========================== ======= ==== ========= =============
 Balise                     Type    Obl. Défaut    Signification
 ========================== ======= ==== ========= =============
@@ -92,7 +87,6 @@ out                        String  N    OUT       Chemin du dossier par défaut 
 arch                       String  N    ARCH      Chemin du dossier utilisé pour les archives (chemin relatif à « serverhome »)
 work                       String  N    WORK      Chemin du dossier utilisé par défaut pour stocker les fichiers en cours de réception (chemin relatif à « serverhome »)
 conf                       String  N    CONF      Chemin vers le dossier contenant la configuration du serveur
-extendedtaskfactories      String  N    vide      Liste (séparée par des virgules) des TaskFactory en tant qu'extension pour ajouter des tâches à WaarpR66
 ========================== ======= ==== ========= =============
 
 
@@ -162,6 +156,24 @@ dbcheck           boolean N    True       *(déprécié)* Utiliser ``autoUpgrade
 ================= ======= ==== ========== =============
 
 
+.. _client-ExtendTaskFactory:
+
+Section ``ExtendTaskFactory``
+-----------------------------
+
+.. versionadded:: 3.6.0
+
+   Ajout du sous-ensemble ``extendTaskFactory`` qui contient
+   l'option ``extendedtaskfactories`` : pour la Factory
+   ``org.waarp.openr66.s3.taskfactory.S3TaskFactory``, si la classe est dans le
+   claspath, il n'est pas nécessaire de l'ajouter.
+
+========================== ======= ==== ========= =============
+Balise                     Type    Obl. Défaut    Signification
+========================== ======= ==== ========= =============
+extendedtaskfactories      String  N    vide      Liste (séparée par des virgules) des TaskFactory en tant qu'extension pour ajouter des tâches à WaarpR66
+========================== ======= ==== ========= =============
+
 
 .. _client-xml-example:
 
@@ -209,6 +221,9 @@ Exemple complet
            <dbpasswd>password</dbpasswd>
            <autoUpgrade>false</autoUpgrade>
      </db>
+    <extendTaskFactory>
+      <extendedtaskfactories>org.waarp.openr66.s3.taskfactory.S3TaskFactory</extendedtaskfactories>
+    </extendTaskFactory>
    </config>
 
 

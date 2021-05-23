@@ -216,7 +216,7 @@
             <configuration>
               <rules>
                 <enforceBytecodeVersion>
-                  <maxJdkVersion>1.7</maxJdkVersion>
+                  <maxJdkVersion>1.6</maxJdkVersion>
                   <excludes>
                     <exclude>org.mariadb.jdbc:mariadb-java-client</exclude>
                     <exclude>mysql:mysql-connector-java</exclude>
@@ -226,77 +226,6 @@
                 </enforceBytecodeVersion>
               </rules>
               <fail>true</fail>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-shade-plugin</artifactId>
-        <version>${maven-shade-plugin}</version>
-        <executions>
-          <execution>
-            <phase>package</phase>
-            <goals>
-              <goal>shade</goal>
-            </goals>
-            <configuration>
-              <minimizeJar>false</minimizeJar>
-              <promoteTransitiveDependencies>true</promoteTransitiveDependencies>
-              <createDependencyReducedPom>true</createDependencyReducedPom>
-              <createSourcesJar>false</createSourcesJar>
-              <keepDependenciesWithProvidedScope>true</keepDependenciesWithProvidedScope>
-              <shadedArtifactAttached>false</shadedArtifactAttached>
-              <useBaseVersion>true</useBaseVersion>
-              <transformers>
-                <transformer
-                  implementation="org.apache.maven.plugins.shade.resource.ApacheLicenseResourceTransformer"/>
-                <transformer
-                  implementation="org.apache.maven.plugins.shade.resource.ApacheNoticeResourceTransformer">
-                  <addHeader>false</addHeader>
-                </transformer>
-                <transformer
-                  implementation="org.apache.maven.plugins.shade.resource.ResourceBundleAppendingTransformer"/>
-                <transformer
-                  implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
-                <transformer
-                  implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                  <manifestEntries>
-                    <X-Compile-Source-JDK>${java.version}</X-Compile-Source-JDK>
-                    <X-Compile-Target-JDK>${java.version}</X-Compile-Target-JDK>
-                  </manifestEntries>
-                </transformer>
-              </transformers>
-              <artifactSet>
-                <includes>
-                  <include>*</include>
-                </includes>
-                <excludes>
-                  <exclude>classworlds:classworlds</exclude>
-                  <exclude>junit</exclude>
-                  <exclude>jmock</exclude>
-                  <exclude>org.apache.maven:lib:tests</exclude>
-                  <exclude>com.github.jnr</exclude>
-                  <exclude>org.assertj</exclude>
-                  <exclude>com.google.code.gson:*</exclude>
-                  <exclude>io.rest-assured</exclude>
-                  <exclude>org.easymock</exclude>
-                  <exclude>org.mockito</exclude>
-                  <exclude>org.testcontainers</exclude>
-                  <exclude>net.java.dev.jna</exclude>
-                  <exclude>org.apache.ant</exclude>
-                  <exclude>Oracle</exclude>
-                  <exclude>com.oracle.database.*</exclude>
-                  <!-- ic.cdap.netty-http -->
-                  <exclude>io.netty</exclude>
-                  <exclude>javax.ws.rs</exclude>
-                  <exclude>org.slf4j</exclude>
-                  <exclude>commons-beanutils</exclude>
-                  <exclude>commons-logging</exclude>
-                  <exclude>com.google.code.findbugs</exclude>
-                  <exclude>commons-collections</exclude>
-                </excludes>
-              </artifactSet>
             </configuration>
           </execution>
         </executions>

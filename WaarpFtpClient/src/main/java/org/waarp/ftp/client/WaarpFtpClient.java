@@ -27,6 +27,7 @@ import org.apache.commons.net.ftp.FTPReply;
 import org.apache.commons.net.ftp.FTPSClient;
 import org.apache.commons.net.util.TrustManagerUtils;
 import org.waarp.common.file.FileUtils;
+import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 
@@ -47,6 +48,7 @@ public class WaarpFtpClient implements WaarpFtpClientInterface {
    */
   protected static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(WaarpFtpClient.class);
+  private static final int DEFAULT_WAIT = 2;
 
   final String server;
   int port = 21;
@@ -137,7 +139,7 @@ public class WaarpFtpClient implements WaarpFtpClientInterface {
     result = null;
     boolean isActive = false;
     try {
-      Thread.yield();
+      waitAfterDataCommand();
       Exception lastExcemption = null;
       for (int i = 0; i < 3; i++) {
         try {
@@ -147,12 +149,12 @@ public class WaarpFtpClient implements WaarpFtpClientInterface {
             ftpClient.connect(server);
           }
           lastExcemption = null;
-          Thread.yield();
           break;
         } catch (final Exception e) {
           result = CONNECTION_IN_ERROR;
           lastExcemption = e;
         }
+        waitAfterDataCommand();
       }
       if (lastExcemption != null) {
         logger.error(result + ": {}", lastExcemption.getMessage());
@@ -216,7 +218,6 @@ public class WaarpFtpClient implements WaarpFtpClientInterface {
                        FTPClient.ACTIVE_LOCAL_DATA_CONNECTION_MODE) {
         disconnect();
       }
-      Thread.yield();
     }
   }
 
@@ -255,6 +256,7 @@ public class WaarpFtpClient implements WaarpFtpClientInterface {
     } catch (final IOException e) {
       result = MKDIR_IN_ERROR;
       logger.error(result + ": {}", e.getMessage());
+      waitAfterDataCommand();
       return false;
     }
   }
@@ -296,6 +298,7 @@ public class WaarpFtpClient implements WaarpFtpClientInterface {
     } else {
       ftpClient.enterLocalActiveMode();
     }
+    waitAfterDataCommand();
   }
 
   @Override
@@ -383,7 +386,7 @@ public class WaarpFtpClient implements WaarpFtpClientInterface {
       logger.error(result + ": {}", e.getMessage());
       return false;
     } finally {
-      Thread.yield();
+      waitAfterDataCommand();
     }
   }
 
@@ -404,11 +407,7 @@ public class WaarpFtpClient implements WaarpFtpClientInterface {
       logger.error(result + ": {}", e.getMessage());
       return false;
     } finally {
-      try {
-        Thread.sleep(1);
-      } catch (InterruptedException e) {//NOSONAR
-        // Ignore
-      }
+      waitAfterDataCommand();
     }
   }
 
@@ -428,6 +427,8 @@ public class WaarpFtpClient implements WaarpFtpClientInterface {
       result = CANNOT_FINALIZE_TRANSFER_OPERATION;
       logger.error(result + ": {}", e.getMessage());
       return null;
+    } finally {
+      waitAfterDataCommand();
     }
   }
 
@@ -452,6 +453,8 @@ public class WaarpFtpClient implements WaarpFtpClientInterface {
       result = CANNOT_FINALIZE_TRANSFER_OPERATION;
       logger.error(result + ": {}", e.getMessage());
       return null;
+    } finally {
+      waitAfterDataCommand();
     }
   }
 
@@ -556,4 +559,18 @@ public class WaarpFtpClient implements WaarpFtpClientInterface {
     }
   }
 
+  /**
+   * Used on Data Commands to prevent too fast command iterations
+   */
+  static void waitAfterDataCommand() {
+    if (DEFAULT_WAIT > 0) {
+      try {
+        Thread.sleep(DEFAULT_WAIT);
+      } catch (InterruptedException e) { //NOSONAR
+        SysErrLogger.FAKE_LOGGER.ignoreLog(e);
+      }
+    } else {
+      Thread.yield();
+    }
+  }
 }

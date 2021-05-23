@@ -17,27 +17,7 @@
  *  You should have received a copy of the GNU General Public License along with
  * Waarp . If not, see <http://www.gnu.org/licenses/>.
  */
-
-package org.waarp.ftp.client;
-
-import io.netty.util.ResourceLeakDetector;
-import io.netty.util.ResourceLeakDetector.Level;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.rules.TestWatcher;
-import org.waarp.common.utility.TestWatcherJunit4;
-
-import java.io.IOException;
-
-public class FtpClient2TLSNativeTest extends AbstractFtpClient {
-  @Rule(order = Integer.MIN_VALUE)
-  public TestWatcher watchman = new TestWatcherJunit4();
-
-  @BeforeClass
-  public static void startServer() throws IOException {
-    ResourceLeakDetector.setLevel(Level.PARANOID);
-    SSL_MODE = -1;
-    DELAY = 1;
-    startServer0();
-  }
-}
+package org.waarp.openr66.elasticsearch;
+/**
+ * This module contains the Elasticsearch connection for monitoring capabilities
+ */

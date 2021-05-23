@@ -19,6 +19,8 @@
  */
 package org.waarp.openr66.protocol.http.adminssl;
 
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.FullHttpRequest;
@@ -26,15 +28,20 @@ import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.QueryStringDecoder;
 import io.netty.handler.codec.http.cookie.DefaultCookie;
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 import org.waarp.common.command.exception.Reply421Exception;
 import org.waarp.common.command.exception.Reply530Exception;
 import org.waarp.common.database.DbPreparedStatement;
+import org.waarp.common.database.data.AbstractDbData.UpdatedInfo;
 import org.waarp.common.database.exception.WaarpDatabaseException;
 import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
 import org.waarp.common.database.exception.WaarpDatabaseSqlException;
 import org.waarp.common.digest.FilesystemBasedDigest;
 import org.waarp.common.exception.InvalidArgumentException;
 import org.waarp.common.file.DirInterface;
+import org.waarp.common.json.JsonHandler;
 import org.waarp.common.logging.WaarpLogLevel;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
@@ -45,6 +52,8 @@ import org.waarp.common.utility.WaarpShutdownHook;
 import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.gateway.kernel.http.HttpWriteCacheEnable;
 import org.waarp.openr66.client.Message;
+import org.waarp.openr66.client.SubmitTransfer;
+import org.waarp.openr66.client.utils.OutputFormat;
 import org.waarp.openr66.context.ErrorCode;
 import org.waarp.openr66.context.R66FiniteDualStates;
 import org.waarp.openr66.context.R66Result;
@@ -54,11 +63,13 @@ import org.waarp.openr66.database.data.DbHostAuth;
 import org.waarp.openr66.database.data.DbHostConfiguration;
 import org.waarp.openr66.database.data.DbRule;
 import org.waarp.openr66.database.data.DbTaskRunner;
+import org.waarp.openr66.database.data.DbTaskRunner.Columns;
 import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.configuration.Messages;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolBusinessException;
 import org.waarp.openr66.protocol.localhandler.LocalChannelReference;
 import org.waarp.openr66.protocol.localhandler.LocalServerHandler;
+import org.waarp.openr66.protocol.localhandler.LocalTransaction;
 import org.waarp.openr66.protocol.localhandler.ServerActions;
 import org.waarp.openr66.protocol.localhandler.packet.ErrorPacket;
 import org.waarp.openr66.protocol.localhandler.packet.RequestPacket;
@@ -77,6 +88,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
+
+import static org.waarp.openr66.client.TransferArgs.*;
 
 /**
  *
@@ -104,7 +118,8 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
     ListingReload(LISTING_PAGE), CancelRestart("CancelRestart.html"),
     Export("Export.html"), Hosts("Hosts.html"), Rules("Rules.html"),
     System("System.html"), SystemLimited("SystemLimited.html"),
-    Spooled("Spooled.html"), SpooledDetailed("Spooled.html");
+    Spooled("Spooled.html"), SpooledDetailed("Spooled.html"),
+    CreateTransfer("CreateTransfer.html");
 
     private final String header;
 
@@ -135,8 +150,8 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
      * @return the content of the unique file
      */
     public String read(final HttpResponsiveSslHandler handler) {
-      return handler.readFileHeader(
-          Configuration.configuration.getHttpBasePath() + header);
+      return handler
+          .readFile(Configuration.configuration.getHttpBasePath() + header);
     }
   }
 
@@ -146,6 +161,8 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
   private static final String XXXRESULTXXX = "XXXRESULTXXX";
   private static final String XXXDATAJSONXXX = "XXXDATAJSONXXX";
   private static final String XXXHOSTSIDSXXX = "XXXHOSTSIDSXXX";
+  private static final String XXXRULEIDSXXX = "XXXRULEIDSXXX";
+  private static final String XXXBLOCKSIZEXXX = "XXXBLOCKSIZEXXX";
 
   private String indexResponsive() {
     final String index = REQUEST.index.read(this);
@@ -223,21 +240,13 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
       final boolean isNotReload = !"Reload".equalsIgnoreCase(parm);
       if (FILTER2.equalsIgnoreCase(parm) || !isNotReload) {
         head = getFilter(errorText, head, isNotReload);
-      } else {
-        head = resetOptionTransfer(head, "", "", "", "", "", "", false, false,
-                                   false, false, true);
-        head =
-            setDbTaskRunnerJsonData(head, errorText, "", "", null, null, "", "",
-                                    false, false, false, false, true);
       }
-    } else {
-      head =
-          resetOptionTransfer(head, "", "", "", "", "", "", false, false, false,
-                              false, true);
-      head =
-          setDbTaskRunnerJsonData(head, errorText, "", "", null, null, "", "",
-                                  false, false, false, false, true);
     }
+    head =
+        resetOptionTransfer(head, "", "", "", "", "", "", false, false, false,
+                            false, true);
+    head = setDbTaskRunnerJsonData(head, errorText, "", "", null, null, "", "",
+                                   false, false, false, false, true);
     return head.replace(XXXRESULTXXX, errorText).replace(XXXDATAJSONXXX, "[]");
   }
 
@@ -439,40 +448,75 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
               "<BR/>";
         }
         errorText += "<br><b>" + comment + "</b>";
-      } else {
-        head = resetOptionTransfer(head, "", "", "", "", "", "", false, false,
-                                   false, false, true);
-        head =
-            setDbTaskRunnerJsonData(head, errorText, "", "", null, null, "", "",
-                                    false, false, false, false, true);
       }
-    } else {
-      head =
-          resetOptionTransfer(head, "", "", "", "", "", "", false, false, false,
-                              false, true);
-      head =
-          setDbTaskRunnerJsonData(head, errorText, "", "", null, null, "", "",
-                                  false, false, false, false, true);
     }
+    head =
+        resetOptionTransfer(head, "", "", "", "", "", "", false, false, false,
+                            false, true);
+    head = setDbTaskRunnerJsonData(head, errorText, "", "", null, null, "", "",
+                                   false, false, false, false, true);
     return head.replace(XXXRESULTXXX, errorText).replace(XXXDATAJSONXXX, "[]");
   }
 
-  private String getHeadSearchCancelRestart(String head,
-                                            final String errorText) {
-    final String startid = getTrimValue("startid");
-    final String stopid =
-        startid == null? null : Long.toString(Long.parseLong(startid) + 1);
-    head = setDbTaskRunnerJsonData(head, errorText, startid, stopid, null, null,
-                                   null, null, false, false, false, false,
-                                   true);
-    head =
-        resetOptionTransfer(head, startid == null? "" : startid, stopid, "", "",
-                            "", "", false, false, false, false, true);
+  private String getHeadSearchCancelRestart(String head, String errorText) {
+    final String followId = getTrimValue("followId");
+    if (followId != null) {
+      try {
+        int limit = getLimitRow();
+        DbTaskRunner[] dbTaskRunners = DbTaskRunner
+            .getSelectSameFollowId(followId, true, limit,
+                                   "*".equals(checkAuthorizedToSeeAll()));
+        final ArrayNode arrayNode = JsonHandler.createArrayNode();
+        final LocalTransaction localTransaction =
+            Configuration.configuration.getLocalTransaction();
+        int nb = 0;
+        for (DbTaskRunner runner : dbTaskRunners) {
+          final ObjectNode node = runner.getJson();
+          node.put(Columns.SPECIALID.name(),
+                   Long.toString(runner.getSpecialId()));
+          if (localTransaction == null) {
+            node.put("Running", false);
+          } else {
+            node.put("Running", localTransaction.contained(runner.getKey()));
+          }
+          arrayNode.add(node);
+          nb++;
+          if (nb >= limit) {
+            break;
+          }
+        }
+        String json = WaarpStringUtils.cleanJsonForHtml(
+            JsonHandler.writeAsString(arrayNode)
+                       .replaceAll("(\\\"\\{)([^}]+)(\\}\\\")", "\"{$2}\"")
+                       .replaceAll("([^\\\\])(\\\\\")([a-zA-Z_0-9]+)(\\\\\")",
+                                   "$1\\\\\"$3\\\\\""));
+        head = head.replace(XXXDATAJSONXXX, json);
+      } catch (WaarpDatabaseNoConnectionException e) {
+        logger.warn(OPEN_R66_WEB_ERROR2, e.getMessage());
+        errorText +=
+            Messages.getString("ErrorCode.17") + ": " + e.getMessage() +
+            "<BR/>";
+        head = head.replace(XXXRESULTXXX, errorText);
+      }
+      head =
+          resetOptionTransfer(head, "", "", "", "", "", "", false, false, false,
+                              false, true);
+    } else {
+      final String startid = getTrimValue("startid");
+      final String stopid =
+          startid == null? null : Long.toString(Long.parseLong(startid) + 1);
+      head =
+          setDbTaskRunnerJsonData(head, errorText, startid, stopid, null, null,
+                                  null, null, false, false, false, false, true);
+      head =
+          resetOptionTransfer(head, startid == null? "" : startid, stopid, "",
+                              "", "", "", false, false, false, false, true);
+    }
     return head;
   }
 
-  private String getHeadNoParam(final REQUEST cancelRestart, final String s) {
-    String head = cancelRestart.read(this);
+  private String getHeadNoParam(final REQUEST request, final String s) {
+    String head = request.read(this);
     head =
         resetOptionTransfer(head, "", "", "", "", "", "", false, false, false,
                             false, true);
@@ -483,14 +527,13 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
 
   private String export() {
     getParamsResponsive();
+    String body = REQUEST.Export.read(this);
     if (params == null) {
-      String body = REQUEST.Export.read(this);
       body =
           resetOptionTransfer(body, "", "", "", "", "", "", false, false, false,
                               true, false);
       return body.replace(XXXRESULTXXX, "");
     }
-    String body = REQUEST.Export.read(this);
     String start = getValue("start");
     String stop = getValue("stop");
     final String rule = getTrimValue("rule");
@@ -606,6 +649,264 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
         //$NON-NLS-1$
         "<B>" + Messages.getString("HttpSslHandler.12"))) + "</B>" +
            errorMsg; //$NON-NLS-1$
+  }
+
+  private String setCreateTransferJsonData(final String head,
+                                           String errorText) {
+    String result = head;
+    try {
+      DbHostAuth[] dbHostAuths = DbHostAuth.getAllHosts();
+      ArrayNode arrayNode = JsonHandler.createArrayNode();
+      for (DbHostAuth dbHostAuth : dbHostAuths) {
+        arrayNode.add(dbHostAuth.getHostid());
+      }
+      result =
+          result.replace(XXXHOSTSIDSXXX, JsonHandler.writeAsString(arrayNode));
+      DbRule[] dbRules = DbRule.getAllRules();
+      arrayNode = JsonHandler.createArrayNode();
+      for (DbRule dbRule : dbRules) {
+        arrayNode.add(dbRule.getIdRule());
+      }
+      result =
+          result.replace(XXXRULEIDSXXX, JsonHandler.writeAsString(arrayNode));
+      result = result.replace(XXXBLOCKSIZEXXX,
+                              "" + Configuration.configuration.getBlockSize());
+      // select only not yet executed transfers
+      return setDbTaskRunnerJsonData(result, errorText, "", "", null, null, "",
+                                     "", true, false, false, false, false);
+    } catch (final WaarpDatabaseException e) {
+      logger.warn(OPEN_R66_WEB_ERROR2, e.getMessage());
+      errorText +=
+          Messages.getString("ErrorCode.17") + ": " + e.getMessage() + "<BR/>";
+      return head.replace(XXXRESULTXXX, errorText);
+    }
+  }
+
+  private String createTransfer() {
+    getParamsResponsive();
+    String head = REQUEST.CreateTransfer.read(this);
+    String errorText = "";
+    if (params == null) {
+      head = setCreateTransferJsonData(head, errorText);
+      return head.replace(XXXRESULTXXX, errorText)
+                 .replace(XXXDATAJSONXXX, "[]");
+    }
+    final List<String> parms = params.get(ACTION2);
+    if (parms != null) {
+      final String parm = parms.get(0);
+      final String rule = getTrimValue("rule");
+      final String host = getTrimValue("host");
+      final String filename = getTrimValue("filename");
+      String transferinfo = getTrimValue("transferinfo");
+      String startdate = getTrimValue("startdate");
+      final String blocksize = getTrimValue("blocksize");
+      String followid = getTrimValue("followid");
+      if (transferinfo == null) {
+        transferinfo = "";
+      }
+      String actionError = "";
+      int iaction = 0;
+      if ("Create".equalsIgnoreCase(parm)) {
+        iaction = 1;
+        actionError = Messages
+            .getString("HttpSslHandler.CannotCreateTransfer");//$NON-NLS-1$
+      } else if ("Update".equalsIgnoreCase(parm)) {
+        iaction = 2;
+        actionError = Messages
+            .getString("HttpSslHandler.CannotUpdateTransfer");//$NON-NLS-1$
+      }
+      if (iaction > 0) {
+        int iblocksize = Configuration.configuration.getBlockSize();
+        if (blocksize != null) {
+          try {
+            iblocksize = Integer.parseInt(blocksize);
+            if (iblocksize > Configuration.configuration.getBlockSize()) {
+              iblocksize = Configuration.configuration.getBlockSize();
+            }
+          } catch (final NumberFormatException e1) {
+            errorText =
+                actionError + e1.getMessage() + B_CENTER_P2; //$NON-NLS-1$
+            head = setCreateTransferJsonData(head, errorText);
+            return head.replace(XXXRESULTXXX, errorText)
+                       .replace(XXXDATAJSONXXX, "[]");
+          }
+        }
+        long lfollowId = Long.MIN_VALUE;
+        if (followid != null) {
+          try {
+            lfollowId = Long.parseLong(followid);
+          } catch (final NumberFormatException e1) {
+            errorText =
+                actionError + e1.getMessage() + B_CENTER_P2; //$NON-NLS-1$
+            head = setCreateTransferJsonData(head, errorText);
+            return head.replace(XXXRESULTXXX, errorText)
+                       .replace(XXXDATAJSONXXX, "[]");
+          }
+        }
+        DateTime dateTime = null;
+        if (startdate != null) {
+          final DateTimeFormatter formatter =
+              DateTimeFormat.forPattern("yyyy/MM/dd HH:mm");
+          try {
+            dateTime = formatter.parseDateTime(startdate);
+          } catch (Exception e) {
+            errorText =
+                actionError + e.getMessage() + B_CENTER_P2; //$NON-NLS-1$
+            head = setCreateTransferJsonData(head, errorText);
+            return head.replace(XXXRESULTXXX, errorText)
+                       .replace(XXXDATAJSONXXX, "[]");
+          }
+        }
+        if (iaction == 1) {
+          if (logger.isDebugEnabled()) {
+            Set<Entry<String, List<String>>> entries = params.entrySet();
+            for (Entry<String, List<String>> entry : entries) {
+              String vals = "";
+              for (String val : entry.getValue()) {
+                vals += val + ";";
+              }
+              logger.debug("CREATE {} = {}", entry.getKey(), vals);
+            }
+          }
+          // Create Runner
+          if (ParametersChecker.isEmpty(host, rule, filename)) {
+            errorText = actionError; //$NON-NLS-1$
+            head = setCreateTransferJsonData(head, errorText);
+            return head.replace(XXXRESULTXXX, errorText)
+                       .replace(XXXDATAJSONXXX, "[]");
+          }
+          try {
+            if (followid != null) {
+              Map<String, Object> map = new HashMap<String, Object>();
+              map.put(FOLLOW_JSON_KEY, lfollowId);
+              transferinfo += " " + JsonHandler.writeAsStringEscaped(map);
+            }
+            final R66Future future = new R66Future(true);
+            final SubmitTransfer submitTransfer =
+                new SubmitTransfer(future, host, filename, rule, transferinfo,
+                                   true, iblocksize, DbConstantR66.ILLEGALVALUE,
+                                   dateTime != null?
+                                       new Timestamp(dateTime.getMillis()) :
+                                       null);
+            submitTransfer.setNormalInfoAsWarn(false);
+            submitTransfer.run();
+            future.awaitOrInterruptible();
+            final OutputFormat outputFormat =
+                new OutputFormat(SubmitTransfer.class.getSimpleName(), null);
+            final DbTaskRunner runner = future.getResult().getRunner();
+            if (future.isSuccess()) {
+              SubmitTransfer.prepareSubmitOkOutputFormat(runner, outputFormat);
+            } else {
+              SubmitTransfer
+                  .prepareSubmitKoOutputFormat(future, runner, outputFormat);
+            }
+            errorText = outputFormat.loggerOut();
+            head = setCreateTransferJsonData(head, errorText);
+            return head.replace(XXXRESULTXXX, errorText)
+                       .replace(XXXDATAJSONXXX, "[]");
+          } catch (final Exception e) {
+            logger.error("Create TaskRunner in error: {}", e.getMessage());
+            errorText = actionError + e.getMessage()
+                        //$NON-NLS-1$
+                        + B_CENTER_P2;
+            head = setCreateTransferJsonData(head, errorText);
+            return head.replace(XXXRESULTXXX, errorText)
+                       .replace(XXXDATAJSONXXX, "[]");
+          }
+        } else if (iaction == 2) {
+          if (logger.isDebugEnabled()) {
+            Set<Entry<String, List<String>>> entries = params.entrySet();
+            for (Entry<String, List<String>> entry : entries) {
+              String vals = "";
+              for (String val : entry.getValue()) {
+                vals += val + ";";
+              }
+              logger.debug("UPDATE {} = {}", entry.getKey(), vals);
+            }
+          }
+          final String owner = getTrimValue("OWNERREQ");
+          final String requester = getTrimValue("REQUESTER");
+          final String requested = getTrimValue("REQUESTED");
+          final String specialId = getTrimValue("SPECIALID");
+          if (ParametersChecker
+              .isEmpty(rule, filename, owner, requested, requester,
+                       specialId)) {
+            logger.debug("Some Fields are null: {} {} {} {} {} {}", rule,
+                         filename, owner, requested, requester, specialId);
+            errorText = actionError + " some arguments are empty"; //$NON-NLS-1$
+            head = setCreateTransferJsonData(head, errorText);
+            return head.replace(XXXRESULTXXX, errorText)
+                       .replace(XXXDATAJSONXXX, "[]");
+          }
+          // Try to update
+          try {
+            long lspecialId = Long.parseLong(specialId);
+            logger
+                .debug("Search for: {} {} {} {}", lspecialId, owner, requester,
+                       requested);
+            DbTaskRunner runner =
+                new DbTaskRunner(lspecialId, requester, requested, owner);
+            if (ParametersChecker.isNotEmpty(host) && !requested.equals(host)) {
+              errorText = actionError + " Requested Host cannot be changed"
+                          //$NON-NLS-1$
+                          + B_CENTER_P2;
+              head = setCreateTransferJsonData(head, errorText);
+              return head.replace(XXXRESULTXXX, errorText)
+                         .replace(XXXDATAJSONXXX, "[]");
+            }
+            if (ParametersChecker.isNotEmpty(rule) &&
+                !runner.getRuleId().equals(rule)) {
+              runner.setRuleId(rule);
+            }
+            if (ParametersChecker.isNotEmpty(filename) &&
+                !runner.getFilename().equals(filename)) {
+              runner.setFilename(filename);
+              runner.setOriginalFilename(filename);
+            }
+            if (dateTime != null &&
+                !dateTime.isEqual(runner.getStart().getTime())) {
+              runner.setStart(new Timestamp(dateTime.getMillis()));
+            }
+            if (runner.getBlocksize() != iblocksize) {
+              runner.setBlocksize(iblocksize);
+            }
+            if (followid != null &&
+                !followid.trim().equals(runner.getFollowId())) {
+              Map<String, Object> map =
+                  DbTaskRunner.getMapFromString(transferinfo);
+              String outOfMap =
+                  DbTaskRunner.getOutOfMapFromString(transferinfo);
+              map.put(FOLLOW_JSON_KEY, lfollowId);
+              outOfMap += " " + JsonHandler.writeAsStringEscaped(map);
+              transferinfo = outOfMap;
+              runner.setFileInformation(transferinfo);
+              runner.setFollowId(lfollowId);
+            } else {
+              runner.setFileInformation(transferinfo);
+            }
+            runner.changeUpdatedInfo(UpdatedInfo.TOSUBMIT);
+            runner.update();
+            final OutputFormat outputFormat =
+                new OutputFormat(SubmitTransfer.class.getSimpleName(), null);
+            SubmitTransfer.prepareSubmitOkOutputFormat(runner, outputFormat);
+            errorText = outputFormat.loggerOut();
+            head = setCreateTransferJsonData(head, errorText);
+            return head.replace(XXXRESULTXXX, errorText)
+                       .replace(XXXDATAJSONXXX, "[]");
+          } catch (Exception e) {
+            errorText = actionError + e.getMessage()
+                        //$NON-NLS-1$
+                        + B_CENTER_P2;
+            logger.error("Update TaskRunner in error: {}", e.getMessage());
+            head = setCreateTransferJsonData(head, errorText);
+            return head.replace(XXXRESULTXXX, errorText)
+                       .replace(XXXDATAJSONXXX, "[]");
+          }
+        }
+      }
+    }
+    head = setCreateTransferJsonData(head, errorText);
+    return head.replace(XXXRESULTXXX, errorText).replace(XXXDATAJSONXXX, "[]");
   }
 
   private String setDbHostAuthJsonData(final String head, String errorText,
@@ -889,14 +1190,10 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
         head = resetOptionHosts(head, "", "", false, dbhost.isActive());
         return head.replace(XXXRESULTXXX, errorText)
                    .replace(XXXDATAJSONXXX, "[]");
-      } else {
-        head = resetOptionHosts(head, "", "", false, true);
-        head = setDbHostAuthJsonData(head, errorText, null, null, false, true);
       }
-    } else {
-      head = resetOptionHosts(head, "", "", false, true);
-      head = setDbHostAuthJsonData(head, errorText, null, null, false, true);
     }
+    head = resetOptionHosts(head, "", "", false, true);
+    head = setDbHostAuthJsonData(head, errorText, null, null, false, true);
     return head.replace(XXXRESULTXXX, errorText).replace(XXXDATAJSONXXX, "[]");
   }
 
@@ -1208,14 +1505,10 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
             head.replace(XXXDATAJSONXXX, '[' + dbrule.getJsonAsString() + ']');
         return head.replace(XXXRESULTXXX, errorText)
                    .replace(XXXDATAJSONXXX, "[]");
-      } else {
-        head = resetOptionRules(head, "", null, -3);
-        head = createExport(head, errorText, null);
       }
-    } else {
-      head = resetOptionRules(head, "", null, -3);
-      head = createExport(head, errorText, null);
     }
+    head = resetOptionRules(head, "", null, -3);
+    head = createExport(head, errorText, null);
     return head.replace(XXXRESULTXXX, errorText).replace(XXXDATAJSONXXX, "[]");
   }
 
@@ -1860,6 +2153,14 @@ public class HttpResponsiveSslHandler extends HttpSslHandler {
           break;
         case SpooledDetailed:
           responseContent.append(spooled(true));
+          break;
+        case CreateTransfer:
+          if (authentHttp.getAuth().isValidRole(ROLE.TRANSFER)) {
+            responseContent.append(createTransfer());
+          } else {
+            responseContent.append(unallowedResponsive(
+                Messages.getString("HttpSslHandler.CreateTransferNotAllowed")));
+          }
           break;
         default:
           responseContent.append(indexResponsive());

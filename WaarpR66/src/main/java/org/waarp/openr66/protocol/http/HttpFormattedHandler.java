@@ -445,8 +445,7 @@ public class HttpFormattedHandler
       // Find Status = RUNNING transfer
       filters.add(new Filter(DBTransferDAO.STEP_STATUS_FIELD, "=",
                              ErrorCode.Running.getCode()));
-      filters.add(new Filter(DBTransferDAO.OWNER_REQUEST_FIELD, "=",
-                             Configuration.configuration.getHostId()));
+      filters.add(DbTaskRunner.getOwnerFilter());
       transfers = transferAccess
           .find(filters, DBTransferDAO.TRANSFER_START_FIELD, false, nb);
       addRunners(transfers, ErrorCode.Running.getMesg(), nb);
@@ -456,8 +455,7 @@ public class HttpFormattedHandler
       // Find UpdatedInfo = INTERUPTED transfer
       filters.add(new Filter(DBTransferDAO.UPDATED_INFO_FIELD, "=",
                              UpdatedInfo.INTERRUPTED.ordinal()));
-      filters.add(new Filter(DBTransferDAO.OWNER_REQUEST_FIELD, "=",
-                             Configuration.configuration.getHostId()));
+      filters.add(DbTaskRunner.getOwnerFilter());
       filters.add(new Filter(DBTransferDAO.TRANSFER_START_FIELD, "<",
                              new Timestamp(System.currentTimeMillis())));
       transfers = transferAccess
@@ -469,8 +467,7 @@ public class HttpFormattedHandler
       // Find UpdatedInfo = TOSUBMIT transfer
       filters.add(new Filter(DBTransferDAO.UPDATED_INFO_FIELD, "=",
                              UpdatedInfo.TOSUBMIT.ordinal()));
-      filters.add(new Filter(DBTransferDAO.OWNER_REQUEST_FIELD, "=",
-                             Configuration.configuration.getHostId()));
+      filters.add(DbTaskRunner.getOwnerFilter());
       filters.add(new Filter(DBTransferDAO.TRANSFER_START_FIELD, "<",
                              new Timestamp(System.currentTimeMillis())));
       transfers = transferAccess
@@ -482,8 +479,7 @@ public class HttpFormattedHandler
       // Find Status = INITOK transfer
       filters.add(new Filter(DBTransferDAO.STEP_STATUS_FIELD, "=",
                              ErrorCode.InitOk.getCode()));
-      filters.add(new Filter(DBTransferDAO.OWNER_REQUEST_FIELD, "=",
-                             Configuration.configuration.getHostId()));
+      filters.add(DbTaskRunner.getOwnerFilter());
       transfers = transferAccess
           .find(filters, DBTransferDAO.TRANSFER_START_FIELD, false, nb);
       addRunners(transfers, ErrorCode.InitOk.getMesg(), nb);
@@ -493,8 +489,7 @@ public class HttpFormattedHandler
       // Find Status = PREPROCESSINGOK transfer
       filters.add(new Filter(DBTransferDAO.STEP_STATUS_FIELD, "=",
                              ErrorCode.PreProcessingOk.getCode()));
-      filters.add(new Filter(DBTransferDAO.OWNER_REQUEST_FIELD, "=",
-                             Configuration.configuration.getHostId()));
+      filters.add(DbTaskRunner.getOwnerFilter());
       transfers = transferAccess
           .find(filters, DBTransferDAO.TRANSFER_START_FIELD, false, nb);
       addRunners(transfers, ErrorCode.PreProcessingOk.getMesg(), nb);
@@ -504,8 +499,7 @@ public class HttpFormattedHandler
       // Find Status = TRANSFEROK transfer
       filters.add(new Filter(DBTransferDAO.STEP_STATUS_FIELD, "=",
                              ErrorCode.TransferOk.getCode()));
-      filters.add(new Filter(DBTransferDAO.OWNER_REQUEST_FIELD, "=",
-                             Configuration.configuration.getHostId()));
+      filters.add(DbTaskRunner.getOwnerFilter());
       transfers = transferAccess
           .find(filters, DBTransferDAO.TRANSFER_START_FIELD, false, nb);
       addRunners(transfers, ErrorCode.TransferOk.getMesg(), nb);
@@ -515,8 +509,7 @@ public class HttpFormattedHandler
       // Find Status = POSTPROCESSING transfer
       filters.add(new Filter(DBTransferDAO.STEP_STATUS_FIELD, "=",
                              ErrorCode.PostProcessingOk.getCode()));
-      filters.add(new Filter(DBTransferDAO.OWNER_REQUEST_FIELD, "=",
-                             Configuration.configuration.getHostId()));
+      filters.add(DbTaskRunner.getOwnerFilter());
       transfers = transferAccess
           .find(filters, DBTransferDAO.TRANSFER_START_FIELD, false, nb);
       addRunners(transfers, ErrorCode.PostProcessingOk.getMesg(), nb);
@@ -546,8 +539,7 @@ public class HttpFormattedHandler
       // Find UpdatedInfo = INERROR transfer
       filters.add(new Filter(DBTransferDAO.UPDATED_INFO_FIELD, "=",
                              UpdatedInfo.INERROR.ordinal()));
-      filters.add(new Filter(DBTransferDAO.OWNER_REQUEST_FIELD, "=",
-                             Configuration.configuration.getHostId()));
+      filters.add(DbTaskRunner.getOwnerFilter());
       filters.add(new Filter(DBTransferDAO.TRANSFER_START_FIELD, "<",
                              new Timestamp(System.currentTimeMillis())));
       transfers = transferAccess
@@ -559,8 +551,7 @@ public class HttpFormattedHandler
       // Find UpdatedInfo = INTERUPTED transfer
       filters.add(new Filter(DBTransferDAO.UPDATED_INFO_FIELD, "=",
                              UpdatedInfo.INTERRUPTED.ordinal()));
-      filters.add(new Filter(DBTransferDAO.OWNER_REQUEST_FIELD, "=",
-                             Configuration.configuration.getHostId()));
+      filters.add(DbTaskRunner.getOwnerFilter());
       filters.add(new Filter(DBTransferDAO.TRANSFER_START_FIELD, "<",
                              new Timestamp(System.currentTimeMillis())));
       transfers = transferAccess
@@ -572,8 +563,7 @@ public class HttpFormattedHandler
       // Find GlobalStep = ERRORTASK transfer
       filters.add(new Filter(DBTransferDAO.GLOBAL_STEP_FIELD, "=",
                              Transfer.TASKSTEP.ERRORTASK.ordinal()));
-      filters.add(new Filter(DBTransferDAO.OWNER_REQUEST_FIELD, "=",
-                             Configuration.configuration.getHostId()));
+      filters.add(DbTaskRunner.getOwnerFilter());
       filters.add(new Filter(DBTransferDAO.TRANSFER_START_FIELD, "<",
                              new Timestamp(System.currentTimeMillis())));
       transfers = transferAccess
@@ -606,8 +596,7 @@ public class HttpFormattedHandler
       final List<Filter> filters = new ArrayList<Filter>();
       filters.add(new Filter(DBTransferDAO.STEP_STATUS_FIELD, "=",
                              ErrorCode.CompleteOk.getCode()));
-      filters.add(new Filter(DBTransferDAO.OWNER_REQUEST_FIELD, "=",
-                             Configuration.configuration.getHostId()));
+      filters.add(DbTaskRunner.getOwnerFilter());
 
       transfers = transferAccess
           .find(filters, DBTransferDAO.TRANSFER_START_FIELD, false, nb);
@@ -637,8 +626,7 @@ public class HttpFormattedHandler
       transferAccess = DAOFactory.getInstance().getTransferDAO();
 
       final List<Filter> filters = new ArrayList<Filter>();
-      filters.add(new Filter(DBTransferDAO.OWNER_REQUEST_FIELD, "=",
-                             Configuration.configuration.getHostId()));
+      filters.add(DbTaskRunner.getOwnerFilter());
 
       transfers = transferAccess
           .find(filters, DBTransferDAO.TRANSFER_START_FIELD, false, nb);
@@ -670,8 +658,7 @@ public class HttpFormattedHandler
       // Find UpdatedInfo = INERROR transfer
       filters.add(new Filter(DBTransferDAO.UPDATED_INFO_FIELD, "=",
                              UpdatedInfo.INERROR.ordinal()));
-      filters.add(new Filter(DBTransferDAO.OWNER_REQUEST_FIELD, "=",
-                             Configuration.configuration.getHostId()));
+      filters.add(DbTaskRunner.getOwnerFilter());
 
       transfers = transferAccess
           .find(filters, DBTransferDAO.TRANSFER_START_FIELD, false, 1);
@@ -685,8 +672,7 @@ public class HttpFormattedHandler
       // Find UpdatedInfo = INTERUPTED transfer
       filters.add(new Filter(DBTransferDAO.UPDATED_INFO_FIELD, "=",
                              UpdatedInfo.INTERRUPTED.ordinal()));
-      filters.add(new Filter(DBTransferDAO.OWNER_REQUEST_FIELD, "=",
-                             Configuration.configuration.getHostId()));
+      filters.add(DbTaskRunner.getOwnerFilter());
 
       transfers = transferAccess
           .find(filters, DBTransferDAO.TRANSFER_START_FIELD, false, 1);
@@ -700,8 +686,7 @@ public class HttpFormattedHandler
       // Find GLOBAL_STEP = Error transfer
       filters.add(new Filter(DBTransferDAO.GLOBAL_STEP_FIELD, "=",
                              Transfer.TASKSTEP.ERRORTASK.ordinal()));
-      filters.add(new Filter(DBTransferDAO.OWNER_REQUEST_FIELD, "=",
-                             Configuration.configuration.getHostId()));
+      filters.add(DbTaskRunner.getOwnerFilter());
 
       transfers = transferAccess
           .find(filters, DBTransferDAO.TRANSFER_START_FIELD, false, 1);

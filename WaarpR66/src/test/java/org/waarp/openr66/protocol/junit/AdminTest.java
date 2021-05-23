@@ -473,6 +473,7 @@ public class AdminTest extends TestAbstract {
       driver.findElement(By.cssSelector("tr:nth-child(4)")).click();
       page = driver.getPageSource();
       assertTrue(page.contains("(ReverseAlias: mytest ) (Business: Allowed)"));
+      Thread.sleep(WAIT);
 
     } catch (NoSuchElementException e) {
       e.printStackTrace();
@@ -839,6 +840,7 @@ public class AdminTest extends TestAbstract {
       driver.findElement(By.linkText("SYSTEM")).click();
       // 26 | click | css=form:nth-child(11) > input |
       driver.findElement(By.cssSelector("form:nth-child(11) > input")).click();
+      Thread.sleep(WAIT);
     } finally {
       // 45 | click | linkText=LOGOUT |
       driver.findElement(By.linkText("LOGOUT")).click();

@@ -19,6 +19,11 @@ suivantes (selon la distribution) :
    # avec le package rpm
    yum install path/to/waarp-r66.rpm
 
+Pour la mise à jour de la base, il est utile de lancer la commande suivante :
+
+.. code-block:: bash
+
+    waarp-r66server {hostid} initdb -upgradeDb
 
 Avec les archives autonomes
 ===========================
@@ -38,6 +43,10 @@ la suivante :
    - Pour windows seulement : réinstaller les services depuis la nouvelle
      installation.
    - Pour linux : mettre à jour les chemins du service avec les nouveaux dossiers.
+
+6. Mettre à jour le schéma de la base (si elle est utilisée) :
+
+   - ``waarp-r66server {hostid} initdb -upgradeDb``
 
    Enfin, redémarrer les services.
 

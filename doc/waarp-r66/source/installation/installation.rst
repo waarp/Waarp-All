@@ -16,8 +16,8 @@ Les prérequis pour WaarpR66 sont les suivants :
 
   * Pour un client : 128Mo de RAM minimum ; 512Mo recommandés
   * Pour un serveur : 512Mo de RAM minimum ; au moins 1Go recommandés.
-    L'utilisation dépend de la charge du service. Par exemple, un serveur Waarp R66 a besoin
-    d'au moins 2Go pour traiter 5 000 transferts simultanés.
+    L'utilisation dépend de la charge du service. Par exemple, un serveur Waarp
+    R66 a besoininstallation.rst d'au moins 2Go pour traiter 5 000 transferts simultanés.
 
   Par ailleurs, ces valeurs ne prennent en compte que les besoins des services
   R66. Si des transferts lancent des processus externes dans les chaînes de

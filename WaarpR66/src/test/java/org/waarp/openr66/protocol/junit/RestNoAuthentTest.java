@@ -253,8 +253,7 @@ public class RestNoAuthentTest extends TestAbstract {
       String requester = "hosta";
       String requested = "hosta";
       String followId = "12345";
-      String transferInfo =
-          TransferArgsTest.FOLLOWARGJSON + " " + followId + "}";
+      String transferInfo = TransferArgsTest.FOLLOWARGJSON + followId + "}";
       TASKSTEP globalStep = TASKSTEP.ALLDONETASK;
       TASKSTEP lastGlobalStep = TASKSTEP.ALLDONETASK;
       int step = 0;
@@ -347,11 +346,12 @@ public class RestNoAuthentTest extends TestAbstract {
 
       // Now directly
       DbTaskRunner[] taskRunners =
-          DbTaskRunner.getSelectSameFollowId(followId, true, 20);
+          DbTaskRunner.getSelectSameFollowId(followId, true, 20, true);
       assertEquals(3, taskRunners.length);
-      taskRunners = DbTaskRunner.getSelectSameFollowId(followId, false, 20);
+      taskRunners =
+          DbTaskRunner.getSelectSameFollowId(followId, false, 20, true);
       assertEquals(3, taskRunners.length);
-      taskRunners = DbTaskRunner.getSelectSameFollowId(followId, true, 2);
+      taskRunners = DbTaskRunner.getSelectSameFollowId(followId, true, 2, true);
       assertEquals(2, taskRunners.length);
 
       // Now with args
@@ -371,7 +371,7 @@ public class RestNoAuthentTest extends TestAbstract {
       assertFalse(first != -1);
 
       // Now directly
-      taskRunners = DbTaskRunner.getSelectSameFollowId("125", true, 20);
+      taskRunners = DbTaskRunner.getSelectSameFollowId("125", true, 20, true);
       assertEquals(0, taskRunners.length);
     } catch (NoSuchElementException e) {
       e.printStackTrace();

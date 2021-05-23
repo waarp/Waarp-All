@@ -122,6 +122,11 @@ public class FtpClientThread implements Runnable {
       if (type <= 0) {
         logger.warn(id + " change mode passive");
         client.changeMode(true);
+        try {
+          Thread.sleep(delay);
+        } catch (InterruptedException e) {
+          // Ignore
+        }
         if (type <= -10) {
           for (int i = 0; i < numberIteration; i++) {
             logger.info(id + " transfer passive store " + i);
@@ -165,7 +170,6 @@ public class FtpClientThread implements Runnable {
               // Ignore
             }
           }
-          System.out.println();
 
           if (!client.transferFile(localFilename, remoteFilename, true)) {
             logger.warn("Cant store file passive mode " + id);
@@ -173,8 +177,14 @@ public class FtpClientThread implements Runnable {
             return;
           } else {
             FtpClientTest.numberOK.incrementAndGet();
+            System.out.print('.');
           }
-          Thread.yield();
+          try {
+            Thread.sleep(delay);
+          } catch (InterruptedException e) {
+            // Ignore
+          }
+          System.out.println();
           for (int i = 0; i < numberIteration; i++) {
             logger.info(id + " transfer passive retr " + i);
             if (!client.transferFile(null, remoteFilename, false)) {
@@ -199,6 +209,11 @@ public class FtpClientThread implements Runnable {
       if (type >= 0) {
         logger.warn(id + " change mode active");
         client.changeMode(false);
+        try {
+          Thread.sleep(delay);
+        } catch (InterruptedException e) {
+          // Ignore
+        }
         if (type >= 10) {
           for (int i = 0; i < numberIteration; i++) {
             logger.info(id + " transfer active store " + i);
@@ -251,8 +266,13 @@ public class FtpClientThread implements Runnable {
             return;
           } else {
             FtpClientTest.numberOK.incrementAndGet();
+            System.out.print('.');
           }
-          Thread.yield();
+          try {
+            Thread.sleep(delay);
+          } catch (InterruptedException e) {
+            // Ignore
+          }
           for (int i = 0; i < numberIteration; i++) {
             logger.info(id + " transfer active retr " + i);
             if (!client.transferFile(null, remoteFilename, false)) {

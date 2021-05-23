@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html>
 <!--[if lt IE 7]>
 <html
@@ -29,6 +27,8 @@
   <!-- Bootstrap CSS -->
   <link rel="stylesheet" href="css/magic-bootstrap-min.css">
   <link rel="stylesheet" href="datatable/css/jquery.dataTables.min.css">
+  <!-- Bootstrap DateTimePicker -->
+  <link rel="stylesheet" type="text/css" href="css/jquery.datetimepicker.min.css"/>
   <!-- JQuery -->
   <script type="text/javascript" src="js/jquery-1.12.4.min.js"></script>
   <!-- I18NEXT -->
@@ -37,21 +37,61 @@
 var setLng="XXXLANGXXX";
 if (setLng.length > 4) { setLng = "en"; }
 var EdgeWindows10=navigator.userAgent.search('Windows NT 10') > 0 && navigator.userAgent.search('Edge/') > 0;
-
   </script>
   <script src="js/modernizr-3.6.0-respond-1.4.2.min.js"></script>
   <!-- Bootstrap -->
   <script type="text/javascript" src="js/bootstrap.min.js"></script>
   <script type="text/javascript" src="datatable/datatables.min.js"></script>
-  <script type="text/javascript"
-          src="datatable/pdfmake-0.1.20/pdfmake.min.js"></script>
-  <script type="text/javascript"
-          src="datatable/pdfmake-0.1.20/vfs_fonts.js"></script>
-  <script type="text/javascript" src="res/tooltip.js"></script>
-
+  <script src="res/tooltip.js"></script>
+  <!-- special Javascript for DateTimePicker -->
+  <script type="text/javascript" src="js/jquery.datetimepicker.full.min.js"></script>
   <!-- special Javascript -->
   <script type="text/javascript">
 var table;
+function validButton(rank) {
+	if (rank >= 0) {
+		table.$('tr.selected').removeClass('selected');
+		var row = table.row(rank);
+		row.nodes().to$().addClass('selected');
+		var json = row.data();
+		for (key in json) {
+			if (key != "@model") {
+			  switch(key) {
+			    case "REQUESTED":
+  	  			$('#'+key).val(json[key]);
+  	  			$('#OLDREQUESTED').val(json[key]);
+			      break;
+			    case "STARTTRANS":
+            var unix_timestamp = json[key];
+            var date = new Date(unix_timestamp);
+            var year = date.getFullYear();
+            var month = "0" + (date.getMonth()+1);
+            var day = "0" + date.getDate();
+            var hours = "0" + date.getHours();
+            var minutes = "0" + date.getMinutes();
+            var formattedDateTime = year + '/' + month.substr(-2) + '/' + day.substr(-2) + ' ' +
+              hours.substr(-2) + ':' + minutes.substr(-2);
+            $('#'+key).val(formattedDateTime);
+			      break;
+			    case "TRANSFERINFO":
+			      break;
+			    case "FILEINFO":
+  			  	$('#TRANSFERINFO').val(json[key]);
+			      break;
+			    case "follow":
+			    	$('#FOLLOWID').val(json[key]);
+			      break;
+			    default:
+  	  			$('#'+key).val(json[key]);
+  		  }
+			}
+		}
+		$('#update-button').removeClass("disabled");
+		$('#create-button').addClass("disabled");
+		$('#REQUESTED').prop('disabled', true);
+	}
+	return false;
+}
 jQuery.extend( jQuery.fn.dataTableExt.oSort, {
     "specialid-asc": function ( a, b ) {
       return ((a[0]=='-'&&b[0]=='-') ? -1: 1) * a.localeCompare(b, undefined, {
@@ -59,7 +99,6 @@ jQuery.extend( jQuery.fn.dataTableExt.oSort, {
         sensitivity: 'base'
       });
     },
-
     "specialid-desc": function ( a, b ) {
       return -1 * ((a[0]=='-'&&b[0]=='-') ? -1: 1) * a.localeCompare(b, undefined, {
         numeric: true,
@@ -85,25 +124,11 @@ var prepareTable = function() {
 		else if (full.RETRIEVEMODE) {return data+' Push'+pushString; }
 		else {return data+' Pull'+pullString;}
 	};
-	var renderSubmit = function (data, type, full, meta) {
-		return '<form method="post" class="form-inline container-fluid" name="CANCELRESTART" action="/CancelRestart.html"><div class="row">'+
-		  '<input type="hidden" name="specid" value="'+full.SPECIALID+'">'+
-		  '<input type="hidden" name="reqd" value="'+full.REQUESTED+'">'+
-		  '<input type="hidden" name="reqr" value="'+full.REQUESTER+'">'+
-		  (full.GLOBALSTEP == 4 ? '<button type="button" class="btn btn-default btn-xs" disabled="disabled">No Action</button>' : (full.GLOBALSTEP == 5 ?
-		  '<input type="submit" class="btn btn-danger btn-xs" value="CancelClean" name="ACTION"></div><div class="row">'+
-		  '<input type="submit" class="btn btn-info btn-xs" value="Stop" name="ACTION">'+
-		  '<input type="submit" class="btn btn-primary btn-xs" value="Restart" name="ACTION"></div></form>' : 
-		  '<input type="submit" class="btn btn-warning btn-xs" value="Cancel" name="ACTION"> '+
-		  '<input type="submit" class="btn btn-danger btn-xs" value="CancelClean" name="ACTION"></div><div class="row">'+
-		  '<input type="submit" class="btn btn-info btn-xs" value="Stop" name="ACTION">'));
-	};
 	var createdCellFilename = function (td, cellData, rowData, row, col) {if ( cellData.length > 20) {$(td).css('word-break', 'break-all');}};
 	var renderGeneric = function (data, type, full, meta) {return changeValueColumn(data, meta.col);};
 
 	var myData = XXXDATAJSONXXX;
-	var myColumns = [{ data: "@model", orderable: false, title :"Actions", render: renderSubmit},
-					  { data: "SPECIALID", title : i18n.t("menu2.entete1"), render: renderSpecialId, type: "specialid"},
+	var myColumns = [{ data: "SPECIALID", title : i18n.t("menu2.entete1"), render: renderSpecialId, type: "specialid"},
 					  { data: "IDRULE", title :i18n.t("menu2.entete2")},
 					  { data: "MODETRANS", title :i18n.t("menu2.entete24"), render: renderGeneric},
 					  { data: "OWNERREQ", title :i18n.t("menu2.entete25"), render: renderOWNERREQ},
@@ -123,6 +148,9 @@ var prepareTable = function() {
 					  { data: "RANK", title :i18n.t("menu2.entete10"), render: function(data, type, row, meta) {
 						  var gsize = row.ORIGINALSIZE;
 						  if (gsize > 0) {var percent = ~~(data*row.BLOCKSZ/gsize*100); if (percent > 100) percent = 100;
+							if (type == 'export' || type == 'exportXls') {
+								return data+' ['+percent+'%]';
+							}
 							return blockString1+data+blockString2+percent+blockString3;} else {return data;}
 					  }},
 					  { data: "BLOCKSZ", title :i18n.t("menu2.entete22")},
@@ -134,32 +162,30 @@ var prepareTable = function() {
 					];
 	var changeValueColumn = function(data, col) {
 		switch (col) {
-		case 3:
+		case 2:
 			return TRANSFERMODE[data];
-		case 9:
+		case 8:
 			return JSON.stringify(data);
+		case 10:
 		case 11:
-		case 12:
 			return TASKSTEP[data];
-		case 13:
-		case 15:
+		case 12:
+		case 14:
 			return ErrorCode[data.trim()];
-		case 16:
+		case 15:
 			return UpdatedInfo[data];
+		case 21:
 		case 22:
-		case 23:
-			return renderTimestamp(data);
+			return new Date(data).toISOString().replace('T', ' ');
 		default:
 			return data;
 		}
 	};
 	var nbcol = myColumns.length;
-	var range=[];var rangevisible=[];for(var i=1;i < nbcol;i++){range[i-1]=i;rangevisible[i-1]=i+":visible"}
 	var row = document.getElementById("myTable4").createTFoot().insertRow(0);
 	for (var i = 0; i < nbcol; i++) {
 		row.insertCell(0);
 	}
-	var printButton = printButtonFunction(EdgeWindows10, "Selection", "XXXHOSTIDXXX-", i18n.t("menu2.sous-menu2"), { selected: true }, rangevisible);
 	table = $('#myTable4').DataTable({
 		"lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
 		"pagingType": "full_numbers",
@@ -172,20 +198,21 @@ var prepareTable = function() {
 		select: true,
 		buttons: [
 			{ extend: 'colvis' },
-			{ extend: 'copy', exportOptions: { orthogonal: 'export', columns: rangevisible }
+			{ text: 'Edit', enabled: false, action: function () { var id = table.rows( { selected: true } ); if (id.length > 0) {validButton( id[0] );} }
+      },
+      { extend: 'copy', exportOptions: { orthogonal: 'export', columns: ':visible' }
 			},
-			{ extend: 'excel', title: "XXXHOSTIDXXX-"+i18n.t("menu2.sous-menu2"),
-			  exportOptions: { orthogonal: 'exportXls', columns: rangevisible }
+			{ extend: 'excel', title: "XXXHOSTIDXXX-"+i18n.t("app.menu2"),
+			  exportOptions: { orthogonal: 'exportXls', columns: ':visible' }
 			},
-			{ extend: 'csv', title: "XXXHOSTIDXXX-"+i18n.t("menu2.sous-menu2"),
-			  exportOptions: { orthogonal: 'export', columns: rangevisible }
-			},
-			printButton[0], printButton[1], printButton[2], printButton[3]
+			{ extend: 'csv', title: "XXXHOSTIDXXX-"+i18n.t("app.menu2"),
+			  exportOptions: { orthogonal: 'export', columns: ':visible' }
+			}
 		],
 		initComplete: function () {
 			this.api().columns().every( function () {
 				var column = this;
-				if (column.index() == 0 || column.index() == 9) {
+				if (column.index() == 8) {
 					return;
 				}
 				var select = $('<select><option value=""></option></select>')
@@ -211,8 +238,15 @@ var prepareTable = function() {
 			} );
 		}
 	 });
+	 table.on( 'select', function ( e, dt, type, indexes ) {
+	   var selectedRows = table.rows( { selected: true } ).count();
+		 table.button( 1 ).enable( selectedRows === 1 );
+	 } )
+	 .on( 'deselect', function ( e, dt, type, indexes ) {
+		 var selectedRows = table.rows( { selected: true } ).count();
+		  table.button( 1 ).enable( selectedRows === 1 );
+	 } );
 };
-
   </script>
 </head>
 <body>
@@ -251,12 +285,11 @@ var prepareTable = function() {
             class="caret"></span></a>
             <ul class="dropdown-menu" role="menu"
                 aria-labelledby="dropdownMenu2">
-              <li><a data-i18n="menu2.sous-menu5"
-                     href="CreateTransfer.html">CREATE TRANSFER</a></li>
+              <li class="active"><a data-i18n="menu2.sous-menu5"
+                                    href="CreateTransfer.html">CREATE or MODIFY TRANSFER</a></li>
               <li><a data-i18n="menu2.sous-menu1"
                      href="Listing.html">LISTING</a></li>
-              <li class="active"><a data-i18n="menu2.sous-menu2"
-                                    href="CancelRestart.html">CANCEL-RESTART</a>
+              <li><a data-i18n="menu2.sous-menu2" href="CancelRestart.html">CANCEL-RESTART</a>
               </li>
               <li><a data-i18n="menu2.sous-menu3" href="Export.html">EXPORT</a>
               </li>
@@ -306,7 +339,7 @@ var prepareTable = function() {
                                              id="FollowId0" name="followId"
                                              placeholder="FollowId">
           </div>
-          <button type="submit" class="btn btn-default btn-sm" value="Search"
+          <button type="submit" class="btn btn-default btn-sm" id="TopSearch" value="Search"
                   name="ACTION" data-i18n="[title]app.searchhelp"><label
             class="control-label" data-i18n="app.search">Search</label></button>
         </form>
@@ -316,147 +349,146 @@ var prepareTable = function() {
   <div class="cover-image"></div>
 </div>
 <div class="panel panel-default">
-  <div class="panel-heading"><h3 class="panel-title"
-                                 data-i18n="menu2.sous-titre2">
-    Cancel-Restart</h3></div>
+  <div class="panel-heading"><h3 class="panel-title" data-i18n="menu2.sous-titre5">Create Transfer</h3></div>
   <div class="panel-body"><small>
-    <form class="form-inline container-fluid" id="filterForm" method="POST"
-          name="FILTER" action="/CancelRestart.html">
+    <form class="form-inline container-fluid" id="editForm" method="POST"
+          name="CREATE" action="/CreateTransfer.html">
       <div class="row">
         <div class="form-group col-md-3 text-right">
-          <label class="control-label" for="startid" data-i18n="menu2.filtre2">From
-            Id</label>
-          <input type="text" class="form-control input-sm" id="startid"
-                 name="startid" placeholder="1234567890123456789"
-                 value="XXXSTARTIDXXX">
-          <span id="startidhelp" class="glyphicon glyphicon-info-sign"
-                aria-hidden="true"></span>
-          <script type="text/javascript">
-            createTooltip("startidhelp", "menu2.filtre3");
-          </script>
-        </div>
-        <div class="form-group col-md-3 text-right">
-          <label class="control-label" for="stopid" data-i18n="menu2.filtre4">To
-            Id</label>
-          <input type="text" class="form-control input-sm" id="stopid"
-                 name="stopid" placeholder="1234567890123456789"
-                 value="XXXSTOPIDXXX">
-          <span id="stopidhelp" class="glyphicon glyphicon-info-sign"
-                aria-hidden="true"></span>
-          <script type="text/javascript">
-            createTooltip("stopidhelp", "menu2.filtre5");
-          </script>
-        </div>
-        <div class="form-group col-md-3 text-right">
-          <label class="control-label" for="start" data-i18n="menu2.filtre6">From
-            date</label>
-          <input type="datetime" class="form-control input-sm" id="start"
-                 name="start" placeholder="2009-09-19 09:54:05.492"
-                 value="XXXSTARTXXX">
-          <span id="starthelp" class="glyphicon glyphicon-info-sign"
-                aria-hidden="true"></span>
-          <script type="text/javascript">
-            createTooltip("starthelp", "menu2.filtre7");
-          </script>
-        </div>
-        <div class="form-group col-md-3 text-right">
-          <label class="control-label" for="stop" data-i18n="menu2.filtre8">To
-            date</label>
-          <input type="datetime" class="form-control input-sm" id="stop"
-                 name="stop" placeholder="2009-09-19 09:54:05.492"
-                 value="XXXSTOPXXX">
-          <span id="stophelp" class="glyphicon glyphicon-info-sign"
-                aria-hidden="true"></span>
-          <script type="text/javascript">
-            createTooltip("stophelp", "menu2.filtre9");
-          </script>
-        </div>
-      </div>
-      <div class="row">
-        <div class="form-group col-md-3 text-right">
-          <label class="control-label" for="rule" data-i18n="menu2.filtre10">Rule</label>
-          <input type="text" class="form-control input-sm" id="rule" name="rule"
-                 placeholder="rule name" value="XXXRULEXXX">
-          <span id="rulehelp" class="glyphicon glyphicon-info-sign"
-                aria-hidden="true"></span>
-          <script type="text/javascript">
-            createTooltip("rulehelp", "menu2.filtre11");
-          </script>
-        </div>
-        <div class="form-group col-md-3 text-right">
-          <label class="control-label" for="req" data-i18n="menu2.filtre12">Requested/Requester</label>
-          <input type="text" class="form-control input-sm" id="req" name="req"
-                 placeholder="partner name" value="XXXREQXXX">
-          <span id="reqhelp" class="glyphicon glyphicon-info-sign"
-                aria-hidden="true"></span>
-          <script type="text/javascript">
-            createTooltip("reqhelp", "menu2.filtre13");
-          </script>
-        </div>
-        <div class="form-group col-md-3 text-right">
-          <input type="checkbox" name="pending" value="ON" XXXPENDXXX><label
-          data-i18n="menu2.filtre14">Pending</label>
-          <input type="checkbox" name="transfer" value="ON" XXXTRANSXXX><label
-          data-i18n="menu2.filtre15">In Transfer</label>
-          <div class="clearfix"></div>
-          <input type="checkbox" name="error" value="ON" XXXERRXXX><label
-          data-i18n="menu2.filtre16">In Error</label>
-          <input type="checkbox" name="done" value="ON" XXXDONEXXX><label
-          data-i18n="menu2.filtre17">Done</label>
-          <input type="checkbox" name="all" id="checkall" value="ON" XXXALLXXX><label
-          data-i18n="menu2.filtre18">All</label>
-        </div>
-      </div>
-      <div class="row">
-        <div class="form-group col-md-4 text-right">
-          <label class="control-label" for="LIMITROW" data-i18n="menu2.text16">Limit
-            rows to</label>
-          <input type="number" id="LIMITROW" name="LIMITROW" size="4"
-                 value="XXXLIMITROWXXX"> <label data-i18n="menu2.text17">first
-          results.</label>
-        </div>
-        <div class="form-group col-md-1 text-right">
-          <input type="reset" value="Reset" class="btn btn-default btn-sm"
-                 name="ACTION" data-i18n="[title]app.help1">
+          <label class="control-label" for="IDRULE" data-i18n="menu7.entete2">Rule</label>
+          <select class="form-control select-sm" id="IDRULE"
+                  name="rule" placeholder="rule name" required></select>
           <script>
-function clearFields() {
-  $('#startid').val('');
-  $('#stopid').val('');
-  $('#start').val('');
-  $('#stop').val('');
-  $('#rule').val('');
-  $('#req').val('');
-  $('input:checkbox').removeAttr('checked');
-  $('#checkall').prop("checked", true);
-};
+            var ruleids=XXXRULEIDSXXX;
+            var $select = $('#IDRULE');
+            $.each(ruleids, function(key, val){
+              $select.append(new Option(val, val));
+            });
           </script>
-          <input type="button" value="Clear" class="btn btn-default btn-sm"
-                 name="ACTION" data-i18n="[title]app.help7" onclick="clearFields()">
+          <span id="IDRULEhelp" class="glyphicon glyphicon-info-sign"
+                aria-hidden="true"></span>
+          <script type="text/javascript">
+            createTooltip("IDRULEhelp", "menu7.text2");
+          </script>
         </div>
-        <div class="form-group col-md-2 text-right">
-          <input type="submit" value="Filter" class="btn btn-primary btn-sm"
-                 name="ACTION" data-i18n="[title]app.help4">
-          <input type="submit" value="Reload" class="btn btn-primary btn-sm"
-                 name="ACTION" data-i18n="[title]app.help5">
+        <div class="form-group col-md-3 text-right">
+          <label class="control-label" for="REQUESTED" data-i18n="menu7.entete3">Requested Host
+            Id</label>
+          <select class="form-control select-sm" id="REQUESTED"
+                  name="host" placeholder="host id" required></select>
+          <span id="REQUESTEDhelp" class="glyphicon glyphicon-info-sign"
+                aria-hidden="true"></span>
+          <script type="text/javascript">
+            createTooltip("REQUESTEDhelp", "menu7.text3");
+          </script>
+          <script>
+            var hostids=XXXHOSTSIDSXXX;
+            var $select = $('#REQUESTED');
+            $.each(hostids, function(key, val){
+              $select.append(new Option(val, val));
+            });
+          </script>
         </div>
-        <div class="form-group col-md-1 text-right">
-          <input type="submit" value="StopAll" class="btn btn-warning btn-sm"
-                 name="ACTION">
-          <!--  <input type="submit" value="StopCleanAll" name="ACTION"> -->
+        <div class="form-group col-md-3 text-right">
+          <label class="control-label" for="FILENAME"
+                 data-i18n="menu7.entete4">Filename</label>
+          <input type="text" class="form-control input-sm" id="FILENAME"
+                 name="filename" placeholder="filename" required>
+          <span id="FILENAMEhelp" class="glyphicon glyphicon-info-sign"
+                aria-hidden="true"></span>
+          <script type="text/javascript">
+            createTooltip("FILENAMEhelp", "menu7.text4");
+          </script>
         </div>
-        <div class="form-group col-md-1 text-right">
-          <input type="submit" value="RestartAll" class="btn btn-info btn-sm"
-                 name="ACTION">
+        <div class="form-group col-md-3 text-left">
+          <label class="control-label" for="TRANSFERINFO"
+                 data-i18n="menu7.entete5">Transfer Info</label>
+          <input type="text" class="form-control input-sm" id="TRANSFERINFO"
+                 name="transferinfo" placeholder="transfer info">
+          <span id="TRANSFERINFOhelp" class="glyphicon glyphicon-info-sign"
+                aria-hidden="true"></span>
+          <script type="text/javascript">
+            createTooltip("TRANSFERINFOhelp", "menu7.text5");
+          </script>
+        </div>
+      </div>
+      <div class="row">
+        <div class="form-group col-md-3 text-right">
+          <label class="control-label" for="STARTTRANS"
+                 data-i18n="menu7.entete6">Start</label>
+          <div class="input-group date">
+            <input type="text" class="form-control input-sm" id="STARTTRANS"
+                   name="startdate" placeholder="start date">
+            <div class="input-group-addon">
+              <span class="glyphicon glyphicon-th"></span>
+            </div>
+          </div>
+          <span id="STARTTRANShelp" class="glyphicon glyphicon-info-sign"
+                aria-hidden="true"></span>
+          <script type="text/javascript">
+            createTooltip("STARTTRANShelp", "menu7.text6");
+          </script>
+        </div>
+        <script>
+          $.datetimepicker.setLocale(setLng);
+          $('#STARTTRANS').datetimepicker({
+           minDate: new Date(),
+           step: 10,
+           roundTime: 'floor',
+           format: 'Y/m/d H:i',
+           mask:true, // '9999/19/39 29:59' - digit is the maximum possible for a cell
+          });
+        </script>
+        <div class="form-group col-md-3 text-right">
+          <label class="control-label" for="BLOCKSZ"
+                 data-i18n="menu7.entete7">Block Size</label>
+          <input type="number" class="form-control input-sm" id="BLOCKSZ"
+                 name="blocksize" placeholder="blocksize" value=XXXBLOCKSIZEXXX>
+          <span id="BLOCKSZhelp" class="glyphicon glyphicon-info-sign"
+                aria-hidden="true"></span>
+          <script type="text/javascript">
+            createTooltip("BLOCKSZhelp", "menu7.text7");
+          </script>
+        </div>
+        <div class="form-group col-md-3 text-left">
+          <label class="control-label" for="FOLLOWID"
+                 data-i18n="menu7.entete8">FollowId</label>
+          <input type="number" class="form-control input-sm" id="FOLLOWID"
+                 name="followid" placeholder="followId">
+          <span id="FOLLOWIDhelp" class="glyphicon glyphicon-info-sign"
+                aria-hidden="true"></span>
+          <script type="text/javascript">
+            createTooltip("FOLLOWIDhelp", "menu7.text8");
+          </script>
+        </div>
+        <input type="hidden" name="OWNERREQ" id="OWNERREQ" value="">
+        <input type="hidden" name="REQUESTER" id="REQUESTER" value="">
+        <input type="hidden" name="REQUESTED" id="OLDREQUESTED" value="">
+        <input type="hidden" name="SPECIALID" id="SPECIALID" value="">
+      </div>
+      <div class="row">
+        <div class="form-group col-md-3 text-right">
+          <input type="reset" value="Clear" class="btn btn-default btn-sm"
+                 onclick="$('#create-button').removeClass('disabled');$('#update-button').addClass('disabled');$('#REQUESTED').prop('disabled', false);"
+                 data-i18n="[title]app.help1">
+        </div>
+        <div class="form-group col-md-3 text-right">
+          <button type="submit" class="btn btn-primary btn-sm disabled"
+                  id="update-button" value="Update" name="ACTION"
+                  data-i18n="[title]app.help3">Update
+          </button>
+        </div>
+        <div class="form-group col-md-3 text-right">
+          <button type="submit" class="btn btn-warning btn-sm"
+                  id="create-button" value="Create" name="ACTION"
+                  data-i18n="[title]app.help2">Create
+          </button>
         </div>
       </div>
     </form>
-  </small></div>
-  <div class="col-md12"><label data-i18n="menu2.text18"><I>Cancel</I> = stop and
-    finish definitively the transfer;
-    <I>CancelClean</I> = stop and finish definitively the transfer plus clean
-    temporary file if any;
-    <I>Stop</I> = stop the transfer, being able to restart it;
-    <I>Restart</I> = try to restart a transfer</label></div>
+  </small>
+    <div class="row"></div>
+  </div>
 </div>
 <table class="table table-condensed table-bordered hover order-column"
        id="myTable4">

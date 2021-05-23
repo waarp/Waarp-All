@@ -1185,6 +1185,11 @@ utilisant les ``username`` et ``password``.
 Tâches agissant sur l'emplacement du fichier via un stockage S3
 ---------------------------------------------------------------
 
+.. versionadded:: 3.6.0
+
+   Les tâches ci-dessous sont nouvelles et supportées avec le module WaarpR66-S3.
+
+
 S3GET
 """""
 

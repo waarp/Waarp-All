@@ -66,12 +66,12 @@ TO_TIMESTAMP('2018-06-20 14:36:00.116','YYYY-MM-DD HH24:MI:SS.FF'),
 TO_TIMESTAMP('2018-06-20 14:36:20.374','YYYY-MM-DD HH24:MI:SS.FF'), 'C  ', 4, 'server1', 'server1', 'server2',
 -9223372036854775806);
 INSERT INTO runner VALUES (5, 0, 0, 0, 'C  ', 1, 'tintin', 0, 'tintin', 65536,
-'tintin', 'noinfo','{"ORIGINALSIZE":-1, "follow": 123456789}', 1,
+'tintin', 'noinfo','{"ORIGINALSIZE":-1, "follow":123456789}', 1,
 TO_TIMESTAMP('2018-06-22 14:39:01.28','YYYY-MM-DD HH24:MI:SS.FF'),
 TO_TIMESTAMP('2018-06-22 14:39:21.518','YYYY-MM-DD HH24:MI:SS.FF'),
 'C  ', 4, 'server1', 'server1', 'server2', -9223372036854775805);
 INSERT INTO runner VALUES (5, 0, 0, 0, 'C  ', 1, 'tintin', 0, 'default', 65536,
-'tintin', 'noinfo', '{"ORIGINALSIZE":-1, "follow": 1234567890}', 1,
+'tintin', 'noinfo', '{"ORIGINALSIZE":-1, "follow":1234567890}', 1,
 TO_TIMESTAMP('2018-06-24 14:39:01.28','YYYY-MM-DD HH24:MI:SS.FF'),
 TO_TIMESTAMP('2018-06-24 14:39:21.518','YYYY-MM-DD HH24:MI:SS.FF'),
 'C  ', 4, 'server1', 'server1', 'server2', 0);
