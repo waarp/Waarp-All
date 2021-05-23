@@ -174,6 +174,11 @@ public class FtpTransferTask extends AbstractTask {
     try {
       if (ftpArgs.getCwd() != null && !ftpClient.changeDir(ftpArgs.getCwd())) {
         ftpClient.makeDir(ftpArgs.getCwd());
+        try {
+          Thread.sleep(Configuration.RETRYINMS);
+        } catch (InterruptedException e) {// NOSONAR
+          // Ignore
+        }
         if (!ftpClient.changeDir(ftpArgs.getCwd())) {
           logger.warn("Cannot change od directory: " + ftpArgs.getCwd());
         }

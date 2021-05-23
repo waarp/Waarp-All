@@ -23,7 +23,6 @@ client.xml
       <arch>./temp/arch</arch>
       <work>./work/</work>
       <conf>./temp/conf</conf>
-      <extendedtaskfactories>org.waarp.openr66.s3.taskfactory.S3TaskFactory</extendedtaskfactories>
     </directory>
     <db>
       <dbdriver>postgresql</dbdriver>
@@ -62,10 +61,8 @@ server.xml
       <checkclientaddress>False</checkclientaddress>
       <pastlimit>86400000</pastlimit>
       <minimaldelay>5000</minimaldelay>
+      <digest>7</digest>
       <multiplemonitors>1</multiplemonitors>
-      <pushmonitorurl>http://127.0.0.1:8999</pushmonitorurl>
-      <pushmonitorendpoint>/log</pushmonitorendpoint>
-      <pushmonitordelay>1000</pushmonitordelay>
     </server>
     <network>
       <serverport>6666</serverport>
@@ -80,7 +77,6 @@ server.xml
       <arch>./temp/arch</arch>
       <work>./work/</work>
       <conf>./temp/conf</conf>
-      <extendedtaskfactories>org.waarp.openr66.s3.taskfactory.S3TaskFactory</extendedtaskfactories>
     </directory>
     <db>
       <dbdriver>postgresql</dbdriver>

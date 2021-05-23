@@ -6,7 +6,8 @@ Démarage
 
    installation
    instance-creation
-..   configuration
+   miseajour
+   configuration
    configuration-sample
    initialisation
    

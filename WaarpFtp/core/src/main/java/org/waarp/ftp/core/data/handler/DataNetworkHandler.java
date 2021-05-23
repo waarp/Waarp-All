@@ -181,10 +181,10 @@ public class DataNetworkHandler extends SimpleChannelInboundHandler<DataBlock> {
 
   protected void setSession(final Channel channel) {
     // First get the ftpSession from inetaddresses
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < FtpInternalConfiguration.RETRYNB; i++) {
       session = configuration.getFtpSession(channel, isActive);
       if (session == null) {
-        logger.warn("Session not found at try " + i);
+        logger.debug("Session not found at try " + i);
         try {
           Thread.sleep(FtpInternalConfiguration.RETRYINMS);
         } catch (final InterruptedException e1) {//NOSONAR
@@ -217,7 +217,7 @@ public class DataNetworkHandler extends SimpleChannelInboundHandler<DataBlock> {
     logger.debug("Data Channel opened as {}", channel);
     if (session == null) {
       logger
-          .debug("DataChannel immediately closed since no session is assigned");
+          .warn("DataChannel immediately closed since no session is assigned");
       WaarpSslUtility.closingSslChannel(ctx.channel());
       return;
     }
@@ -234,7 +234,7 @@ public class DataNetworkHandler extends SimpleChannelInboundHandler<DataBlock> {
         case STOR:
         case STOU:
           // close the data channel immediately
-          logger.info(
+          logger.warn(
               "DataChannel immediately closed since {} is not ok at startup",
               session.getCurrentCommand().getCode());
           WaarpSslUtility.closingSslChannel(ctx.channel());

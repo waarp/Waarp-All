@@ -249,11 +249,6 @@ public class FileBasedElements {
    */
   public static final String XML_CONFIGPATH = "conf";
   /**
-   * Extended Task Factory configuration
-   */
-  public static final String XML_EXTENDED_TASK_FACTORIES =
-      "extendedtaskfactories";
-  /**
    * Structure of the Configuration file
    */
   private static final XmlDecl[] configDirectoryDecls = {
@@ -263,7 +258,18 @@ public class FileBasedElements {
       new XmlDecl(XmlType.STRING, XML_OUTPATH),
       new XmlDecl(XmlType.STRING, XML_ARCHIVEPATH),
       new XmlDecl(XmlType.STRING, XML_WORKINGPATH),
-      new XmlDecl(XmlType.STRING, XML_CONFIGPATH),
+      new XmlDecl(XmlType.STRING, XML_CONFIGPATH)
+  };
+  /**
+   * Extended Task Factory configuration
+   */
+  public static final String XML_EXTENDED_TASK_FACTORIES =
+      "extendedtaskfactories";
+  /**
+   * Structure of the Configuration file
+   */
+  private static final XmlDecl[] configExtendTaskFactoryDecls = {
+      // extendTaskFactory
       new XmlDecl(XmlType.STRING, XML_EXTENDED_TASK_FACTORIES)
   };
   /**
@@ -340,34 +346,6 @@ public class FileBasedElements {
    * DEBUG mode.
    */
   public static final String XML_BUSINESS_FACTORY = "businessfactory";
-  /**
-   * URL as http://myrest.org for PUSH REST JSON Monitor
-   */
-  public static final String XML_PUSH_MONITOR_URL = "pushmonitorurl";
-  /**
-   * End Point as /status such as URL + end point give
-   * http://myrest.org/status for PUSH REST JSON Monitor
-   */
-  public static final String XML_PUSH_MONITOR_ENDPOINT = "pushmonitorendpoint";
-  /**
-   * Delay in ms between 2 attempts for PUSH REST JSON Monitor
-   */
-  public static final String XML_PUSH_MONITOR_DELAY = "pushmonitordelay";
-  /**
-   * Keep connection between 2 attempts for PUSH REST JSON Monitor
-   */
-  public static final String XML_PUSH_MONITOR_KEEP_CONNECTION =
-      "pushmonitorkeepconnection";
-  /**
-   * Keep Monitor Interval Included
-   */
-  public static final String XML_PUSH_MONITOR_INTERVAL_INCLUDED =
-      "pushmonitorintervalincluded";
-  /**
-   * Keep monitorTransformLongAsString
-   */
-  public static final String XML_PUSH_MONITOR_TRANSFORM_LONG_AS_STRING =
-      "pushmonitortransformlongasstring";
 
   /**
    * Usage of CPU Limit
@@ -464,7 +442,41 @@ public class FileBasedElements {
       new XmlDecl(XmlType.LONG, XML_MONITOR_MINIMALDELAY),
       new XmlDecl(XmlType.STRING, XML_MONITOR_SNMP_CONFIG),
       new XmlDecl(XmlType.INTEGER, XML_MULTIPLE_MONITORS),
-      new XmlDecl(XmlType.STRING, XML_BUSINESS_FACTORY),
+      new XmlDecl(XmlType.STRING, XML_BUSINESS_FACTORY)
+  };
+  /**
+   * URL as http://myrest.org for PUSH REST JSON Monitor
+   */
+  public static final String XML_PUSH_MONITOR_URL = "url";
+  /**
+   * End Point as /status such as URL + end point give
+   * http://myrest.org/status for PUSH REST JSON Monitor
+   */
+  public static final String XML_PUSH_MONITOR_ENDPOINT = "endpoint";
+  /**
+   * Delay in ms between 2 attempts for PUSH REST JSON Monitor
+   */
+  public static final String XML_PUSH_MONITOR_DELAY = "delay";
+  /**
+   * Keep connection between 2 attempts for PUSH REST JSON Monitor
+   */
+  public static final String XML_PUSH_MONITOR_KEEP_CONNECTION =
+      "keepconnection";
+  /**
+   * Keep Monitor Interval Included
+   */
+  public static final String XML_PUSH_MONITOR_INTERVAL_INCLUDED =
+      "intervalincluded";
+  /**
+   * Keep monitorTransformLongAsString
+   */
+  public static final String XML_PUSH_MONITOR_TRANSFORM_LONG_AS_STRING =
+      "transformlongasstring";
+  /**
+   * Structure of the Configuration file: Push Monitor for Server only
+   */
+  private static final XmlDecl[] configServerPushMonitorParamDecls = {
+      // pushMonitor
       new XmlDecl(XmlType.STRING, XML_PUSH_MONITOR_URL),
       new XmlDecl(XmlType.STRING, XML_PUSH_MONITOR_ENDPOINT),
       new XmlDecl(XmlType.INTEGER, XML_PUSH_MONITOR_DELAY),
@@ -700,6 +712,8 @@ public class FileBasedElements {
   public static final String XML_NETWORK = "network";
   public static final String XML_SSL = "ssl";
   public static final String XML_DB = "db";
+  public static final String XML_EXTEND_TASK_FACTORY = "extendTaskFactory";
+  public static final String XML_PUSH_MONITOR = "pushMonitor";
   /**
    * Global Structure for Submit only Client Configuration
    */
@@ -711,7 +725,9 @@ public class FileBasedElements {
       new XmlDecl(XML_LIMIT, XmlType.XVAL, XML_ROOT + XML_LIMIT,
                   configSubmitLimitDecls, false),
       new XmlDecl(XML_DB, XmlType.XVAL, XML_ROOT + XML_DB, configDbDecls,
-                  false),
+                  false), new XmlDecl(XML_EXTEND_TASK_FACTORY, XmlType.XVAL,
+                                      XML_ROOT + XML_EXTEND_TASK_FACTORY,
+                                      configExtendTaskFactoryDecls, false),
       new XmlDecl(DbHostConfiguration.XML_ALIASES, XmlType.XVAL,
                   XML_ROOT + DbHostConfiguration.XML_ALIASES + '/' +
                   DbHostConfiguration.XML_ALIAS,
@@ -735,7 +751,9 @@ public class FileBasedElements {
       new XmlDecl(XML_REST, XmlType.XVAL, XML_ROOT + XML_REST, configRestDecls,
                   false),
       new XmlDecl(XML_DB, XmlType.XVAL, XML_ROOT + XML_DB, configDbDecls,
-                  false),
+                  false), new XmlDecl(XML_EXTEND_TASK_FACTORY, XmlType.XVAL,
+                                      XML_ROOT + XML_EXTEND_TASK_FACTORY,
+                                      configExtendTaskFactoryDecls, false),
       new XmlDecl(DbHostConfiguration.XML_BUSINESS, XmlType.STRING,
                   XML_ROOT + DbHostConfiguration.XML_BUSINESS + '/' +
                   DbHostConfiguration.XML_BUSINESSID, true),
@@ -763,7 +781,11 @@ public class FileBasedElements {
       new XmlDecl(XML_REST, XmlType.XVAL, XML_ROOT + XML_REST, configRestDecls,
                   true),
       new XmlDecl(XML_DB, XmlType.XVAL, XML_ROOT + XML_DB, configDbDecls,
-                  false),
+                  false), new XmlDecl(XML_EXTEND_TASK_FACTORY, XmlType.XVAL,
+                                      XML_ROOT + XML_EXTEND_TASK_FACTORY,
+                                      configExtendTaskFactoryDecls, false),
+      new XmlDecl(XML_PUSH_MONITOR, XmlType.XVAL, XML_ROOT + XML_PUSH_MONITOR,
+                  configServerPushMonitorParamDecls, false),
       new XmlDecl(DbHostConfiguration.XML_BUSINESS, XmlType.STRING,
                   XML_ROOT + DbHostConfiguration.XML_BUSINESS + '/' +
                   DbHostConfiguration.XML_BUSINESSID, true),

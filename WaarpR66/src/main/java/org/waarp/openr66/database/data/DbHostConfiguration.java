@@ -56,6 +56,8 @@ import org.waarp.openr66.dao.exception.DAONoDataException;
 import org.waarp.openr66.pojo.Business;
 import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.configuration.Messages;
+import org.waarp.openr66.protocol.configuration.PartnerConfiguration;
+import org.waarp.openr66.protocol.utils.R66Versions;
 import org.waarp.openr66.protocol.utils.Version;
 
 import java.io.StringReader;
@@ -1203,9 +1205,11 @@ public class DbHostConfiguration extends AbstractDbDataDao<Business> {
    *
    * @param hostid
    * @param version
+   *
+   * @return the version updated
    */
-  public static void updateVersionDb(final String hostid,
-                                     final String version) {
+  public static String updateVersionDb(final String hostid,
+                                       final String version) {
     DbHostConfiguration hostConfiguration;
     try {
       hostConfiguration = new DbHostConfiguration(hostid);
@@ -1216,19 +1220,25 @@ public class DbHostConfiguration extends AbstractDbDataDao<Business> {
       } catch (final WaarpDatabaseException e1) {
         logger.debug("Not inserted?", e1);
         // ignore and return
-        return;
+        return R66Versions.V2_4_12.name();
       }
     } catch (final WaarpDatabaseException e) {
       logger.debug("Not found?", e);
       // ignore and return
-      return;
+      return R66Versions.V2_4_12.name();
     }
     Element others = hostConfiguration.getOtherElement();
     if (others != null) {
       final Element eversion =
           (Element) others.selectSingleNode(OtherFields.version.name());
       if (eversion != null) {
-        eversion.setText(version);
+        String currentVersion = eversion.getText();
+        if (PartnerConfiguration
+            .isVersion2GTVersion1(currentVersion, version)) {
+          eversion.setText(version);
+        } else {
+          return currentVersion;
+        }
       } else {
         others.addElement(OtherFields.version.name()).addText(Version.ID);
       }
@@ -1243,6 +1253,7 @@ public class DbHostConfiguration extends AbstractDbDataDao<Business> {
       logger.debug("Not update?", e);
       // ignore
     }
+    return version;
   }
 
   /**

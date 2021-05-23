@@ -42,7 +42,7 @@ public abstract class DbModelAbstract implements DbModel {
   /**
    * Max size in Binary mode, store in BASE64 mode (so x2)
    */
-  public static final int MAX_BINARY = 256;
+  public static final int MAX_BINARY = 255;
   /**
    * Max size in LONGVARCHAR (except ORACLE = 4000)
    */
@@ -50,7 +50,7 @@ public abstract class DbModelAbstract implements DbModel {
   /**
    * Max Key size in VARCHAR
    */
-  public static final int MAX_KEY_VARCHAR = 256;
+  public static final int MAX_KEY_VARCHAR = 255;
   /**
    * Max VARCHAR size (except ORACLE = 4000)
    */

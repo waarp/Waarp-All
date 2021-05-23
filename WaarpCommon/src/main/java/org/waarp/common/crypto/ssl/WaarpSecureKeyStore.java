@@ -19,6 +19,7 @@
  */
 package org.waarp.common.crypto.ssl;
 
+import org.joda.time.DateTime;
 import org.waarp.common.exception.CryptoException;
 import org.waarp.common.file.FileUtils;
 import org.waarp.common.logging.WaarpLogger;
@@ -39,6 +40,9 @@ import java.security.UnrecoverableKeyException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
+import java.util.Date;
+import java.util.Enumeration;
 
 import static org.waarp.common.digest.WaarpBC.*;
 
@@ -206,6 +210,7 @@ public class WaarpSecureKeyStore {
     } finally {
       FileUtils.close(inputStream);
     }
+    checkExpiryDate(keyStore);
     initKeyManagerFactory();
   }
 
@@ -355,6 +360,7 @@ public class WaarpSecureKeyStore {
     } finally {
       FileUtils.close(inputStream);
     }
+    checkExpiryDate(keyTrustStore);
     final TrustManagerFactory trustManagerFactory;
     try {
       trustManagerFactory = TrustManagerFactory
@@ -558,4 +564,39 @@ public class WaarpSecureKeyStore {
     return keyManagerFactory;
   }
 
+  /**
+   * @param keystore
+   *
+   * @return True if all certificates are OK
+   */
+  public static boolean checkExpiryDate(final KeyStore keystore) {
+    final Enumeration<String> aliases;
+    try {
+      aliases = keystore.aliases();
+    } catch (final KeyStoreException e) {//NOSONAR
+      logger.warn("Cannot get Aliases: {}", e.getMessage());
+      return true;
+    }
+    Date expiryDate;
+    boolean valid = true;
+    for (; aliases.hasMoreElements(); ) {
+      final String alias = aliases.nextElement();
+      try {
+        expiryDate =
+            ((X509Certificate) keystore.getCertificate(alias)).getNotAfter();
+        final DateTime dateTime = new DateTime(expiryDate);
+        if (dateTime.isBeforeNow()) {
+          logger.error("Certificate {} has an expiry date before today: {}",
+                       alias, dateTime);
+          valid = false;
+        } else {
+          logger.debug("Certificate {} has an expiry date over today: {}", alias,
+                      dateTime);
+        }
+      } catch (final KeyStoreException e) {//NOSONAR
+        logger.warn("Cannot get Expiry Date: {}", e.getMessage());
+      }
+    }
+    return valid;
+  }
 }

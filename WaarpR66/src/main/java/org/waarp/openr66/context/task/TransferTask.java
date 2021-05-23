@@ -124,8 +124,8 @@ public class TransferTask extends AbstractTask {
           !transferArgs.getTransferInfo()
                        .contains(TransferArgs.FOLLOW_JSON_KEY)) {
         transferArgs.setFollowId(follow);
-        final Map<String, String> map = new HashMap<String, String>();
-        map.put(TransferArgs.FOLLOW_JSON_KEY, follow);
+        final Map<String, Long> map = new HashMap<String, Long>();
+        map.put(TransferArgs.FOLLOW_JSON_KEY, Long.parseLong(follow));
         copied = JsonHandler.writeAsStringEscaped(map);
       }
       TransferArgs.getAllInfo(transferArgs, 0, args, copied);

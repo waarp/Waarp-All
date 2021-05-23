@@ -61,34 +61,33 @@ Configuration
 
 .. code-block:: xml
 
-    <server>
-      ...
-      <pushmonitorurl>http://127.0.0.1:8999</pushmonitorurl>
-      <pushmonitorendpoint>/log</pushmonitorendpoint>
-      <pushmonitordelay>1000</pushmonitordelay>
-      <pushmonitorkeepconnection>True</pushmonitorkeepconnection>
-      <pushmonitorintervalincluded>True</pushmonitorintervalincluded>
-      <pushmonitortransformlongasstring>False</pushmonitortransformlongasstring>
-    </server>
+    <pushMonitor>
+      <url>http://127.0.0.1:8999</url>
+      <endpoint>/log</endpoint>
+      <delay>1000</delay>
+      <keepconnection>True</keepconnection>
+      <intervalincluded>True</intervalincluded>
+      <transformlongasstring>False</transformlongasstring>
+    </pushMonitor>
 
 Description des paramètres :
 
-- ``pushmonitorurl`` indique l'URL de base du service REST HTTP(S) distant
-- ``pushmonitorendpoint`` indique l'extension URI du service REST HTTP(S) distant
+- ``url`` indique l'URL de base du service REST HTTP(S) distant
+- ``endpoint`` indique l'extension URI du service REST HTTP(S) distant
 
   - Ainsi, pour l'exemple, l'URI complète sera ``http://127.0.0.1:8999/log``
 
-- ``pushmonitordelay`` indique le délai en ms entre deux vérifications pour récupérer les
+- ``delay`` indique le délai en ms entre deux vérifications pour récupérer les
   transferts dont l'information aurait changée. Par défaut, la valeur est de ``1000`` ms.
-- ``pushmonitorkeepconnection`` Si « True », la connexion HTTP(S) sera en Keep-Alive
+- ``keepconnection`` Si « True », la connexion HTTP(S) sera en Keep-Alive
   (pas de réouverture sauf si le serveur la ferme), sinon la connexion sera réinitialisée
   pour chaque appel
 
   - Avec la valeur ``True``, les performances sont améliorées en évitant les reconnexions.
 
-- ``pushmonitorintervalincluded`` indique si les informations de l'intervalle utilisé seront fournies
-- ``pushmonitortransformlongasstring`` indique si les nombres « long » seront convertis en chaîne de caractères,
-  sinon ils seront numériques
+- ``intervalincluded`` indique si les informations de l'intervalle utilisé seront fournies
+- ``transformlongasstring`` indique si les nombres « long » seront convertis en chaîne de caractères,
+  sinon ils seront numériques (certaines API REST ne supportent pas des long sur 64 bits)
 
   - Utile notamment avec ELK car les nombres longs (identifiant unique) sont trop long lors du parsing et sont
     tronqués.
@@ -103,7 +102,7 @@ ainsi de limiter le nombre de possibles doublons qui seraient renvoyés lors du
 redémarrage.
 
 Si besoin, vous pouvez modifier cette valeur directement dans la base pour
-refléter le timestamp à utiliser comme point de départ.
+refléter le timestamp à utiliser comme point de départ (``lastMonitoringDateTime``).
 
 
 Cas particulier des clusters
@@ -125,7 +124,7 @@ Exemple de configuration d'un Logstash
 Il est possible par exemple de router vers un service Logstash les logs JSON ainsi
 produits.
 
-La configuration du Logstash peut être la suivante : (avec le mode ``pushmonitortransformlongasstring`` as True)
+La configuration du Logstash peut être la suivante : (avec le mode ``transformlongasstring`` as True)
 
 .. code-block:: text
 

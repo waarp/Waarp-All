@@ -108,7 +108,7 @@ public class DbModelH2R66 extends DbModelH2 {
   public boolean upgradeDb(final DbSession session, final String version)
       throws WaarpDatabaseNoConnectionException {
     if (PartnerConfiguration
-        .isVersion2GEQVersion1(version, R66Versions.V3_0_4.getVersion())) {
+        .isVersion2GEQVersion1(R66Versions.V3_1_0.getVersion(), version)) {
       return true;
     }
     if (PartnerConfiguration
@@ -240,6 +240,10 @@ public class DbModelH2R66 extends DbModelH2 {
       SysErrLogger.FAKE_LOGGER.sysout(
           version + " to " + R66Versions.V3_0_4.getVersion() + "? " + true);
       final DbRequest request = new DbRequest(session);
+      // Change Type for all Tables
+      DbModelFactoryR66
+          .upgradeTable30(dbTypeResolver, request, " ALTER COLUMN ", " ",
+                          " NOT NULL ");
       try {
         final String command = "DROP INDEX IF EXISTS IDX_RUNNER ";
         try {

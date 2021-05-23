@@ -175,8 +175,7 @@ public class MonitorExporterTransfers extends Thread {
     logger.info("Start from {} to {}", lastDateTime, now);
     final TransferConverter.Order order = TransferConverter.Order.ascId;
     final List<Filter> filters = new ArrayList<Filter>(3);
-    filters.add(new Filter(OWNER_REQUEST_FIELD, "=",
-                           Configuration.configuration.getHostId()));
+    filters.add(DbTaskRunner.getOwnerFilter());
     if (lastTimestamp != null) {
       filters.add(new Filter(TRANSFER_STOP_FIELD, Filter.BETWEEN, lastTimestamp,
                              timestamp));

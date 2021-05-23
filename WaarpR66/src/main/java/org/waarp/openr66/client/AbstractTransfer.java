@@ -637,9 +637,9 @@ public abstract class AbstractTransfer implements Runnable {
         .setValue(FIELDS.originalPath.name(), runner.getOriginalFilename());
   }
 
-  protected static void prepareSubmitKoOutputFormat(final R66Future future,
-                                                    final DbTaskRunner runner,
-                                                    final OutputFormat outputFormat) {
+  public static void prepareSubmitKoOutputFormat(final R66Future future,
+                                                 final DbTaskRunner runner,
+                                                 final OutputFormat outputFormat) {
     if (logger == null) {
       logger = WaarpLoggerFactory.getLogger(AbstractTransfer.class);
     }
@@ -664,8 +664,8 @@ public abstract class AbstractTransfer implements Runnable {
     }
   }
 
-  protected static void prepareSubmitOkOutputFormat(final DbTaskRunner runner,
-                                                    final OutputFormat outputFormat) {
+  public static void prepareSubmitOkOutputFormat(final DbTaskRunner runner,
+                                                 final OutputFormat outputFormat) {
     if (logger == null) {
       logger = WaarpLoggerFactory.getLogger(AbstractTransfer.class);
     }

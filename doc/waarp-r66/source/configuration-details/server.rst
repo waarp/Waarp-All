@@ -29,6 +29,8 @@ Les directives de configuration sont réparties en 11 sections :
 - :ref:`business <server-xml-business>`: paramétrage des composantes métiers (Mode ``Embedded``)
 - :ref:`roles <server-xml-roles>`: paramétrage des rôles autorisés des partenaires
 - :ref:`aliases <server-xml-aliases>`: paramétrage d'alias (nom de remplacement) pour des partenaires
+- :ref:`extendTaskFactory <extendTaskFactory>`: paramétrage d'extension de tâches
+- :ref:`monitor <server-xml-monitor>`: paramétrage d'extension du monitoring en mode PUSH REST http(s)
 
 Il existe également des options étendues à la JVM : :ref:`ExtraOptions <Extra-Waarp-options>`
 
@@ -51,11 +53,6 @@ authentfile string N           Fichier XML contenant l'authentification des part
 Section ``server``
 ------------------
 
-
-.. versionadded:: 3.6.0
-
-   Ajout des options ``pushmonitorurl``, ``pushmonitorendpoint``,
-   ``pushmonitordelay``
 
 ================================ ======= ==== ========= =============
 Balise                           Type    Obl. Défaut    Signification
@@ -80,19 +77,7 @@ minimaldelay                     integer N    5000      Intervalle de rafraîchi
 snmpconfig                       string  N              Chemin vers le fichier de configuration de l'agent SNMP (voir :ref:`référence <snmp-xml>`)
 multiplemonitors                 integer N    1         Nombre d'instances dans un cluster de serveurs Waarp R66
 businessfactorynetwork           string  N    null      Indique la classe Factory pour les comportements "métiers" à associer à Waarp (Embedded)
-pushmonitorurl                   string  N    null      URL de base pour les exports du moniteur en mode POST HTTP(S) JSON
-pushmonitorendpoint              string  N    null      End point à ajouter à l'URL de base
-pushmonitordelay                 integer N    1000      Délai entre deux vérifications de changement de statuts sur les transferts
-pushmonitorkeepconnection        boolean N    True      Si « True », la connexion HTTP(S) sera en Keep-Alive (pas de réouverture sauf si le serveur la ferme), sinon la connexion sera réinitialisée pour chaque appel
-pushmonitorintervalincluded      boolean N    True      Si « True », les informations de l'intervalle utilisé seront fournies
-pushmonitortransformlongasstring boolean N    False     Si « True », les nombres « long » seront convertis en chaîne de caractères, sinon ils seront numériques
 ================================ ======= ==== ========= =============
-
-.. seealso::
-
-  Une documentation complète de la configuration du monitoring en mode export REST HTTP(S)
-  est disponible
-  :any:`ici <setup-monitor>`
 
 .. _server-xml-network:
 
@@ -187,12 +172,6 @@ Section ``directory``
    Les dossiers par défaut indiqués sont relatifs au dossier
    ``serverhome``.
 
-.. versionadded:: 3.6.0
-
-   Ajout de l'option ``extendedtaskfactories`` : pour la Factory
-   ``org.waarp.openr66.s3.taskfactory.S3TaskFactory``, si la classe est dans le
-   claspath, il n'est pas nécessaire de l'ajouter.
-
 ========================== ======= ==== ========= =============
 Balise                     Type    Obl. Défaut    Signification
 ========================== ======= ==== ========= =============
@@ -202,7 +181,6 @@ out                        String  N    OUT       Chemin du dossier par défaut 
 arch                       String  N    ARCH      Chemin du dossier utilisé pour les archives (chemin relatif à « serverhome »)
 work                       String  N    WORK      Chemin du dossier utilisé par défaut pour stocker les fichiers en cours de réception (chemin relatif à « serverhome »)
 conf                       String  N    CONF      Chemin vers le dossier contenant la configuration du serveur
-extendedtaskfactories      String  N    vide      Liste (séparée par des virgules) des TaskFactory en tant qu'extension pour ajouter des tâches à WaarpR66
 ========================== ======= ==== ========= =============
 
 
@@ -388,6 +366,58 @@ aliasid           string  O               liste de noms alias équiavelents, sé
 ================= ======= ==== ========== =============
 
 
+.. _ExtendTaskFactory:
+
+Section ``ExtendTaskFactory``
+-----------------------------
+
+.. versionadded:: 3.6.0
+
+   Ajout du sous-ensemble ``extendTaskFactory`` qui contient
+   l'option ``extendedtaskfactories`` : pour la Factory
+   ``org.waarp.openr66.s3.taskfactory.S3TaskFactory``, si la classe est dans le
+   claspath, il n'est pas nécessaire de l'ajouter.
+
+========================== ======= ==== ========= =============
+Balise                     Type    Obl. Défaut    Signification
+========================== ======= ==== ========= =============
+extendedtaskfactories      String  N    vide      Liste (séparée par des virgules) des TaskFactory en tant qu'extension pour ajouter des tâches à WaarpR66
+========================== ======= ==== ========= =============
+
+
+.. _server-xml-monitor:
+
+Section ``pushMonitor``
+-------------------
+
+Cette section décrit comment monitorer R66 via des appels REST HTTP(s) vers
+un serveur tiers (en mode PUSH).
+
+.. versionadded:: 3.6.0
+
+   Ajout du sous-ensemble ``pushMonitor`` qui contient
+   Ajout des options ``url``, ``endpoint``,
+   ``delay``, ``keepconnection``,
+   ``intervalincluded``, ``transformlongasstring``
+
+===================== ======= ==== ========= =============
+Balise                Type    Obl. Défaut    Signification
+===================== ======= ==== ========= =============
+url                   string  N    null      URL de base pour les exports du moniteur en mode POST HTTP(S) JSON
+endpoint              string  N    null      End point à ajouter à l'URL de base
+delay                 integer N    1000      Délai entre deux vérifications de changement de statuts sur les transferts
+keepconnection        boolean N    True      Si « True », la connexion HTTP(S) sera en Keep-Alive (pas de réouverture sauf si le serveur la ferme), sinon la connexion sera réinitialisée pour chaque appel
+intervalincluded      boolean N    True      Si « True », les informations de l'intervalle utilisé seront fournies
+transformlongasstring boolean N    False     Si « True », les nombres « long » seront convertis en chaîne de caractères, sinon ils seront numériques
+===================== ======= ==== ========= =============
+
+.. seealso::
+
+  Une documentation complète de la configuration du monitoring en mode export REST HTTP(S)
+  est disponible
+  :any:`ici <setup-monitor>`
+
+
 .. _Extra-Waarp-options:
 
 Section ``ExtraOptions``
@@ -451,12 +481,6 @@ Exemple complet
            <multiplemonitors>1</multiplemonitors>
            <!-- Might be removed if not needed -->
            <snmpconfig>/etc/waarp/snmpconfig.xml</snmpconfig>
-           <pushmonitorurl>http://127.0.0.1:8999</pushmonitorurl>
-           <pushmonitorendpoint>/log</pushmonitorendpoint>
-           <pushmonitordelay>1000</pushmonitordelay>
-           <pushmonitorkeepconnection>true</pushmonitorkeepconnection>
-           <pushmonitorintervalincluded>true</pushmonitorintervalincluded>
-           <pushmonitortransformlongasstring>false</pushmonitortransformlongasstring>
        </server>
        <network>
            <serverport>6666</serverport>
@@ -529,4 +553,15 @@ Exemple complet
            <dbpasswd>password</dbpasswd>
            <autoUpgrade>false</autoUpgrade>
        </db>
+       <extendTaskFactory>
+           <extendedtaskfactories>org.waarp.openr66.s3.taskfactory.S3TaskFactory</extendedtaskfactories>
+       </extendTaskFactory>
+       <pushMonitor>
+           <url>http://127.0.0.1:8999</url>
+           <endpoint>/log</endpoint>
+           <delay>1000</delay>
+           <keepconnection>true</keepconnection>
+           <intervalincluded>true</intervalincluded>
+           <transformlongasstring>false</transformlongasstring>
+       </monitor>
    </config>

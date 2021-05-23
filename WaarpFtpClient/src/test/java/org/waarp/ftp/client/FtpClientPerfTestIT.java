@@ -206,6 +206,11 @@ public class FtpClientPerfTestIT {
     try {
       logger.warn("Create Dirs");
       client.makeDir("T" + 0);
+      try {
+        Thread.sleep(10);
+      } catch (InterruptedException e) {
+        // Ignore
+      }
       client.changeDir("T0");
       client.changeFileType(true);
       client.changeMode(true);
@@ -307,6 +312,11 @@ public class FtpClientPerfTestIT {
     try {
       logger.warn("Create Dirs");
       client.makeDir("T" + 0);
+      try {
+        Thread.sleep(10);
+      } catch (InterruptedException e) {
+        // Ignore
+      }
       client.changeDir("T0");
       client.changeFileType(true);
       client.changeMode(true);

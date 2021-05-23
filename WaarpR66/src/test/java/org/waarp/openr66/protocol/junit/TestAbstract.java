@@ -23,6 +23,7 @@ package org.waarp.openr66.protocol.junit;
 import org.apache.tools.ant.Project;
 import org.junit.After;
 import org.junit.Before;
+import org.openqa.selenium.Dimension;
 import org.openqa.selenium.Platform;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.logging.LogType;
@@ -222,6 +223,7 @@ public abstract class TestAbstract extends TestAbstractMinimal {
         driver = createPhantomJSDriver();
     }
     driver.manage().timeouts().implicitlyWait(5, TimeUnit.SECONDS);
+    driver.manage().window().setSize(new Dimension(1920, 1080));
     //driver.manage().timeouts().pageLoadTimeout(10, TimeUnit.SECONDS);
     Thread.sleep(10);
     return driver;
@@ -268,7 +270,11 @@ public abstract class TestAbstract extends TestAbstractMinimal {
     // 17 | close |  |  |
     // driver.close();
     if (driver != null) {
-      driver.quit();
+      try {
+        driver.quit();
+      } catch (Exception e) {
+        // Ignore
+      }
       driver = null;
     }
     Thread.sleep(10);
@@ -330,7 +336,7 @@ public abstract class TestAbstract extends TestAbstractMinimal {
           file2 = new File(dir, serverConfig);
         }
         if (file2.exists()) {
-          logger.debug("Find server file: " + file2.getAbsolutePath());
+          logger.warn("Find server file: " + file2.getAbsolutePath());
           R66Server.main(new String[] { file2.getAbsolutePath() });
           logger.warn("Start Done");
           Thread.sleep(1000);

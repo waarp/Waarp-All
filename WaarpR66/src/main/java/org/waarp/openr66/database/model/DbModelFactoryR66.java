@@ -55,7 +55,6 @@ public class DbModelFactoryR66 extends DbModelFactory {
 
   private static final String ALTER_TABLE = "ALTER TABLE ";
   private static final String ADD_COLUMN = " ADD COLUMN ";
-  private static final String AFTER = " AFTER ";
 
   /**
    * Initialize the Database Model according to arguments.
@@ -99,12 +98,11 @@ public class DbModelFactoryR66 extends DbModelFactory {
   }
 
   static boolean needUpgradeDbAllDb(final DbTypeResolver dbTypeResolver,
-                                    final DbSession session,
-                                    final String version)
+                                    final DbSession session, String version)
       throws WaarpDatabaseNoConnectionException {
     if (PartnerConfiguration
-        .isVersion2GEQVersion1(version, R66Versions.V3_0_4.getVersion())) {
-      return true;
+        .isVersion2GEQVersion1(R66Versions.V3_1_0.getVersion(), version)) {
+      return false;
     }
     // Check if the database is up to date
     DbRequest request = null;
@@ -118,11 +116,11 @@ public class DbModelFactoryR66 extends DbModelFactory {
             DbHostConfiguration.Columns.HOSTID + " = '" +
             Configuration.configuration.getHostId() + '\'');
         request.close();
-        DbHostConfiguration
+        version = DbHostConfiguration
             .updateVersionDb(Configuration.configuration.getHostId(),
                              R66Versions.V2_4_13.getVersion());
       } catch (final WaarpDatabaseSqlException e) {
-        return !upgradeDbMariaDbMySQL(dbTypeResolver, session, version);
+        return !session.getAdmin().getDbModel().upgradeDb(session, version);
       } finally {
         if (request != null) {
           request.close();
@@ -139,11 +137,11 @@ public class DbModelFactoryR66 extends DbModelFactory {
             DbTaskRunner.table + " where " + DbTaskRunner.Columns.SPECIALID +
             " = " + ILLEGALVALUE);
         request.close();
-        DbHostConfiguration
+        version = DbHostConfiguration
             .updateVersionDb(Configuration.configuration.getHostId(),
                              R66Versions.V2_4_17.getVersion());
       } catch (final WaarpDatabaseSqlException e) {
-        return !upgradeDbMariaDbMySQL(dbTypeResolver, session, version);
+        return !session.getAdmin().getDbModel().upgradeDb(session, version);
       } finally {
         if (request != null) {
           request.close();
@@ -159,11 +157,11 @@ public class DbModelFactoryR66 extends DbModelFactory {
             "select " + DbHostAuth.Columns.ISACTIVE.name() + " from " +
             DbHostAuth.table + " where " + DbHostAuth.Columns.PORT + " = " + 0);
         request.close();
-        DbHostConfiguration
+        version = DbHostConfiguration
             .updateVersionDb(Configuration.configuration.getHostId(),
                              R66Versions.V2_4_23.getVersion());
       } catch (final WaarpDatabaseSqlException e) {
-        return !upgradeDbMariaDbMySQL(dbTypeResolver, session, version);
+        return !session.getAdmin().getDbModel().upgradeDb(session, version);
       } finally {
         if (request != null) {
           request.close();
@@ -172,8 +170,8 @@ public class DbModelFactoryR66 extends DbModelFactory {
     }
     if (PartnerConfiguration
         .isVersion2GTVersion1(version, R66Versions.V2_4_25.getVersion())) {
-      if (upgradeDbMariaDbMySQL(dbTypeResolver, session, version)) {
-        DbHostConfiguration
+      if (session.getAdmin().getDbModel().upgradeDb(session, version)) {
+        version = DbHostConfiguration
             .updateVersionDb(Configuration.configuration.getHostId(),
                              R66Versions.V2_4_25.getVersion());
       } else {
@@ -182,10 +180,20 @@ public class DbModelFactoryR66 extends DbModelFactory {
     }
     if (PartnerConfiguration
         .isVersion2GTVersion1(version, R66Versions.V3_0_4.getVersion())) {
-      if (upgradeDbMariaDbMySQL(dbTypeResolver, session, version)) {
-        DbHostConfiguration
+      if (session.getAdmin().getDbModel().upgradeDb(session, version)) {
+        version = DbHostConfiguration
             .updateVersionDb(Configuration.configuration.getHostId(),
                              R66Versions.V3_0_4.getVersion());
+      } else {
+        return true;
+      }
+    }
+    if (PartnerConfiguration
+        .isVersion2GTVersion1(version, R66Versions.V3_1_0.getVersion())) {
+      if (session.getAdmin().getDbModel().upgradeDb(session, version)) {
+        DbHostConfiguration
+            .updateVersionDb(Configuration.configuration.getHostId(),
+                             R66Versions.V3_1_0.getVersion());
       } else {
         return true;
       }
@@ -327,6 +335,82 @@ public class DbModelFactoryR66 extends DbModelFactory {
       }
     }
     return new DbRequest(session);
+  }
+
+  static boolean upgradeTable30(final DbTypeResolver dbTypeResolver,
+                                final DbRequest request, final String modify,
+                                final String type, final String notNull) {
+    String alter = "ALTER TABLE ";
+    try {
+      SysErrLogger.FAKE_LOGGER.sysout("Start Schema Upgrading Types for: " +
+                                      dbTypeResolver.getDbType().name());
+      // Multiple Mode
+      {
+        final String changeType = alter + DbMultipleMonitor.table + modify;
+        final DbMultipleMonitor.Columns[] mcolumns =
+            DbMultipleMonitor.Columns.values();
+        for (int i = 0; i < mcolumns.length; i++) {
+          request.query(changeType + mcolumns[i].name() + type +
+                        dbTypeResolver.getType(DbMultipleMonitor.dbTypes[i]) +
+                        notNull);
+        }
+      }
+      // Configuration
+      {
+        final String changeType = alter + DbConfiguration.table + modify;
+        final DbConfiguration.Columns[] mcolumns =
+            DbConfiguration.Columns.values();
+        for (int i = 0; i < mcolumns.length; i++) {
+          request.query(changeType + mcolumns[i].name() + type +
+                        dbTypeResolver.getType(DbConfiguration.dbTypes[i]) +
+                        notNull);
+        }
+      }
+      // HostConfiguration
+      {
+        final String changeType = alter + DbHostConfiguration.table + modify;
+        final DbHostConfiguration.Columns[] mcolumns =
+            DbHostConfiguration.Columns.values();
+        for (int i = 0; i < mcolumns.length; i++) {
+          request.query(changeType + mcolumns[i].name() + type +
+                        dbTypeResolver.getType(DbHostConfiguration.dbTypes[i]) +
+                        notNull);
+        }
+      }
+      // hosts
+      {
+        final String changeType = alter + DbHostAuth.table + modify;
+        final DbHostAuth.Columns[] mcolumns = DbHostAuth.Columns.values();
+        for (int i = 0; i < mcolumns.length; i++) {
+          request.query(changeType + mcolumns[i].name() + type +
+                        dbTypeResolver.getType(DbHostAuth.dbTypes[i]) +
+                        notNull);
+        }
+      }
+      // rules
+      {
+        final String changeType = alter + DbRule.table + modify;
+        final DbRule.Columns[] mcolumns = DbRule.Columns.values();
+        for (int i = 0; i < mcolumns.length; i++) {
+          request.query(changeType + mcolumns[i].name() + type +
+                        dbTypeResolver.getType(DbRule.dbTypes[i]) + notNull);
+        }
+      }
+      // runner
+      {
+        final String changeType = alter + DbTaskRunner.table + modify;
+        final DbTaskRunner.Columns[] mcolumns = DbTaskRunner.Columns.values();
+        for (int i = 0; i < mcolumns.length; i++) {
+          request.query(changeType + mcolumns[i].name() + type +
+                        dbTypeResolver.getType(DbTaskRunner.dbTypes[i]) +
+                        notNull);
+        }
+      }
+      return true;
+    } catch (Exception e) {
+      logger.warn("Error during update tables {}", e.getMessage());
+    }
+    return false;
   }
 
   static boolean createIndex30(final DbTypeResolver dbTypeResolver,
@@ -515,7 +599,7 @@ public class DbModelFactoryR66 extends DbModelFactory {
                                        final String version)
       throws WaarpDatabaseNoConnectionException {
     if (PartnerConfiguration
-        .isVersion2GEQVersion1(version, R66Versions.V3_0_4.getVersion())) {
+        .isVersion2GEQVersion1(R66Versions.V3_1_0.getVersion(), version)) {
       return true;
     }
     if (PartnerConfiguration
@@ -555,8 +639,7 @@ public class DbModelFactoryR66 extends DbModelFactory {
                                DbTaskRunner.Columns.TRANSFERINFO.name() + ' ' +
                                dbTypeResolver.getType(
                                    DbTaskRunner.dbTypes[DbTaskRunner.Columns.TRANSFERINFO
-                                       .ordinal()]) + AFTER +
-                               DbTaskRunner.Columns.FILEINFO.name();
+                                       .ordinal()]);
         request.query(command);
       } catch (final WaarpDatabaseSqlException e) {
         SysErrLogger.FAKE_LOGGER.ignoreLog(e);
@@ -575,8 +658,7 @@ public class DbModelFactoryR66 extends DbModelFactory {
                          DbHostAuth.Columns.ISACTIVE.name() + ' ' +
                          dbTypeResolver.getType(
                              DbHostAuth.dbTypes[DbHostAuth.Columns.ISACTIVE
-                                 .ordinal()]) + AFTER +
-                         DbHostAuth.Columns.ISCLIENT.name();
+                                 .ordinal()]);
         request.query(command);
         command = "UPDATE " + DbHostAuth.table + " SET " +
                   DbHostAuth.Columns.ISACTIVE.name() + " = " + true;
@@ -592,8 +674,7 @@ public class DbModelFactoryR66 extends DbModelFactory {
                          DbHostAuth.Columns.ISPROXIFIED.name() + ' ' +
                          dbTypeResolver.getType(
                              DbHostAuth.dbTypes[DbHostAuth.Columns.ISPROXIFIED
-                                 .ordinal()]) + AFTER +
-                         DbHostAuth.Columns.ISACTIVE.name();
+                                 .ordinal()]);
         request.query(command);
         command = "UPDATE " + DbHostAuth.table + " SET " +
                   DbHostAuth.Columns.ISPROXIFIED.name() + " = " + false;
@@ -631,6 +712,9 @@ public class DbModelFactoryR66 extends DbModelFactory {
       SysErrLogger.FAKE_LOGGER.sysout(
           version + " to " + R66Versions.V3_0_4.getVersion() + "? " + true);
       final DbRequest request = new DbRequest(session);
+      // Change Type for all Tables
+      DbModelFactoryR66.upgradeTable30(dbTypeResolver, request, " MODIFY ", " ",
+                                       " NOT NULL ");
       String onTable = " ON " + DbTaskRunner.table;
       if (containsDbType(DbType.Oracle, DbType.PostGreSQL, DbType.H2)) {
         onTable = "";

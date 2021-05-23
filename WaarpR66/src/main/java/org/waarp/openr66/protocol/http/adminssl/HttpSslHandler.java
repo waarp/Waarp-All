@@ -222,13 +222,13 @@ public class HttpSslHandler
      * @return the content of the unique file
      */
     public String readFileUnique(final HttpSslHandler handler) {
-      return handler.readFileHeader(
-          Configuration.configuration.getHttpBasePath() + header);
+      return handler
+          .readFile(Configuration.configuration.getHttpBasePath() + header);
     }
 
     public String readHeader(final HttpSslHandler handler) {
-      return handler.readFileHeader(
-          Configuration.configuration.getHttpBasePath() + header);
+      return handler
+          .readFile(Configuration.configuration.getHttpBasePath() + header);
     }
 
     public String readBodyHeader() {
@@ -281,7 +281,7 @@ public class HttpSslHandler
     return "HttpSslHandler: [sessions: " + sessions.size() + "] ";
   }
 
-  String readFileHeader(final String filename) {
+  String readFile(final String filename) {
     final String value;
     try {
       value = WaarpStringUtils.readFileException(filename);
@@ -344,7 +344,7 @@ public class HttpSslHandler
     final List<String> varlist = params.get(varname);
     if (varlist != null && !varlist.isEmpty()) {
       String value = params.get(varname).get(0).trim();
-      if (value.isEmpty()) {
+      if (ParametersChecker.isEmpty(value)) {
         value = null;
       }
       return value;

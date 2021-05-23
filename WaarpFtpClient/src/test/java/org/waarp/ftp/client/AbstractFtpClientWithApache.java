@@ -132,6 +132,11 @@ public abstract class AbstractFtpClientWithApache extends AbstractFtpClient {
     try {
       logger.warn("Create Dirs");
       client.makeDir("T" + 0);
+      try {
+        Thread.sleep(10);
+      } catch (InterruptedException e) {
+        // Ignore
+      }
       logger.warn("Feature commands");
       System.out.println("SITE: " + client.featureEnabled("SITE"));
       System.out.println("SITE CRC: " + client.featureEnabled("SITE XCRC"));

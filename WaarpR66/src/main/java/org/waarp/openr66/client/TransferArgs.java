@@ -549,8 +549,9 @@ public class TransferArgs {
       if (!abstractTransfer.transferArgs.getTransferInfo()
                                         .contains(FOLLOW_JSON_KEY)) {
         // Add FOLLOW ID to transferArgs
-        final Map<String, String> map = new HashMap<String, String>();
-        map.put(FOLLOW_JSON_KEY, abstractTransfer.transferArgs.getFollowId());
+        final Map<String, Object> map = new HashMap<String, Object>();
+        map.put(FOLLOW_JSON_KEY,
+                Long.parseLong(abstractTransfer.transferArgs.getFollowId()));
         abstractTransfer.transferArgs.setTransferInfo(
             abstractTransfer.transferArgs.getTransferInfo() + " " +
             JsonHandler.writeAsStringEscaped(map));

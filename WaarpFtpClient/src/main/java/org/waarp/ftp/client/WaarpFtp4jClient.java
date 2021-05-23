@@ -25,6 +25,7 @@ import it.sauronsoftware.ftp4j.FTPConnector;
 import it.sauronsoftware.ftp4j.FTPFile;
 import it.sauronsoftware.ftp4j.FTPReply;
 import org.waarp.common.file.FileUtils;
+import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 
@@ -54,6 +55,7 @@ public class WaarpFtp4jClient implements WaarpFtpClientInterface {
    */
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(WaarpFtp4jClient.class);
+  private static final int DEFAULT_WAIT = 1;
 
   static {
     initializedTlsContext();
@@ -174,13 +176,12 @@ public class WaarpFtp4jClient implements WaarpFtpClientInterface {
     result = null;
     boolean isActive = false;
     try {
-      Thread.yield();
+      waitAfterDataCommand();
       Exception lastExcemption = null;
       for (int i = 0; i < 3; i++) {
         try {
           ftpClient.connect(server, port);
           lastExcemption = null;
-          Thread.yield();
           break;
         } catch (final SocketException e) {
           result = CONNECTION_IN_ERROR;
@@ -189,6 +190,7 @@ public class WaarpFtp4jClient implements WaarpFtpClientInterface {
           result = CONNECTION_IN_ERROR;
           lastExcemption = e;
         }
+        waitAfterDataCommand();
       }
       if (lastExcemption != null) {
         logger.error(result + ": {}", lastExcemption.getMessage());
@@ -219,7 +221,6 @@ public class WaarpFtp4jClient implements WaarpFtpClientInterface {
         ftpClient.setAutoNoopTimeout(keepalive);
       }
       isActive = true;
-      Thread.yield();
       return true;
     } finally {
       if (!isActive && !ftpClient.isPassive()) {
@@ -266,6 +267,7 @@ public class WaarpFtp4jClient implements WaarpFtpClientInterface {
     } catch (final Exception e) {
       result = MKDIR_IN_ERROR;
       logger.error(result + ": {}", e.getMessage());
+      waitAfterDataCommand();
       return false;
     }
   }
@@ -309,6 +311,7 @@ public class WaarpFtp4jClient implements WaarpFtpClientInterface {
     result = null;
     isPassive = passive;
     ftpClient.setPassive(passive);
+    waitAfterDataCommand();
   }
 
   @Override
@@ -387,14 +390,10 @@ public class WaarpFtp4jClient implements WaarpFtpClientInterface {
     logger.debug("Will STOR to: {}", remote);
     try {
       if (getStoreOrAppend == 1) {
-        ftpClient.upload(remote, local, 0, 0,
-                         new DataTimeOutListener(ftpClient, timeout, "STOR",
-                                                 "stream"));
+        ftpClient.upload(remote, local, 0, 0, null);
       } else {
         // append
-        ftpClient.append(remote, local, 0,
-                         new DataTimeOutListener(ftpClient, timeout, "APPE",
-                                                 "stream"));
+        ftpClient.append(remote, local, 0, null);
       }
       result = null;
       return true;
@@ -402,7 +401,7 @@ public class WaarpFtp4jClient implements WaarpFtpClientInterface {
       logger.error(result + ": {}", e.getMessage());
       return false;
     } finally {
-      Thread.yield();
+      waitAfterDataCommand();
     }
   }
 
@@ -412,16 +411,14 @@ public class WaarpFtp4jClient implements WaarpFtpClientInterface {
     result = CANNOT_FINALIZE_RETRIEVE_LIKE_OPERATION;
     logger.debug("Will DLD nullStream: {}", remote);
     try {
-      ftpClient.download(remote, local, 0,
-                         new DataTimeOutListener(ftpClient, timeout, "RETR",
-                                                 remote));
+      ftpClient.download(remote, local, 0, null);
       result = null;
       return true;
     } catch (final Exception e) {
       logger.error(result + ": {}", e.getMessage());
       return false;
     } finally {
-      Thread.yield();
+      waitAfterDataCommand();
     }
   }
 
@@ -442,6 +439,8 @@ public class WaarpFtp4jClient implements WaarpFtpClientInterface {
       result = CANNOT_FINALIZE_TRANSFER_OPERATION;
       logger.error(result + ": {}", e.getMessage());
       return null;
+    } finally {
+      waitAfterDataCommand();
     }
   }
 
@@ -558,4 +557,18 @@ public class WaarpFtp4jClient implements WaarpFtpClientInterface {
     }
   }
 
+  /**
+   * Used on Data Commands to prevent too fast command iterations
+   */
+  static void waitAfterDataCommand() {
+    if (DEFAULT_WAIT > 0) {
+      try {
+        Thread.sleep(DEFAULT_WAIT);
+      } catch (InterruptedException e) { //NOSONAR
+        SysErrLogger.FAKE_LOGGER.ignoreLog(e);
+      }
+    } else {
+      Thread.yield();
+    }
+  }
 }
