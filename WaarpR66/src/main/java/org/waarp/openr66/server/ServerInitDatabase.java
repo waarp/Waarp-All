@@ -183,7 +183,8 @@ public class ServerInitDatabase {
       // Try to load some element directly into database from first
       // configuration file
       FileBasedConfiguration
-          .setConfigurationServerFromXml(Configuration.configuration, args[0], false);
+          .setConfigurationServerFromXml(Configuration.configuration, args[0],
+                                         false);
       if (sdirconfig != null) {
         // load Rules
         SysErrLogger.FAKE_LOGGER.sysoutFormat(

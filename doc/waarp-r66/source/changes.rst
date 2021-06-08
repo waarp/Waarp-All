@@ -35,9 +35,9 @@ Nouvelles fonctionnalités
 - Waarp R66 : Ajout d'une possibilité de recherche des transferts associés
   à un numéro de suivi (en fonction des droits)
 - Waarp R66 : Ajout d'une option de logs asynchrones poussés vers une API REST
-  externe (par exemple un lecteur API REST pour un Elasticsearch ou avec une
-  évolution dans le logiciel Waarp Manager) pour permettre la surveillance
-  globale des transferts de un ou plusieurs moniteurs Waarp R66
+  externe ou vers un Elasticsearch (ce dernier uniquement JRE >=8) pour
+  permettre la surveillance globale des transferts de un ou plusieurs moniteurs
+  Waarp R66
 - Waarp R66 : Ajout de la possibilité d'étendre les tâches de Waarp R66 via
   un TaskFactory
 - WaarpR66 : Création d'une TaskFactory pour ajouter des tâches R66 qui
@@ -45,7 +45,7 @@ Nouvelles fonctionnalités
   pouvant servir de source ou cible dans le cas de transferts
   (org.waarp.openr66.s3.taskfactory.S3TaskFactory) ;
 
-  - cette Factory est chargée dynamiquement si la classe correspondante est
+  - Cette Factory est chargée dynamiquement si la classe correspondante est
     dans le classpath (uniquement disponible en JRE 8 et au-dessus).
 
 Correctifs

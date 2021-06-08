@@ -76,6 +76,7 @@ import org.waarp.openr66.protocol.http.restv2.RestServiceInitializer;
 import org.waarp.openr66.protocol.localhandler.LocalTransaction;
 import org.waarp.openr66.protocol.localhandler.Monitoring;
 import org.waarp.openr66.protocol.localhandler.RetrieveRunner;
+import org.waarp.openr66.protocol.monitoring.ElasticsearchClientBuilder;
 import org.waarp.openr66.protocol.monitoring.MonitorExporterTransfers;
 import org.waarp.openr66.protocol.networkhandler.NetworkServerInitializer;
 import org.waarp.openr66.protocol.networkhandler.NetworkTransaction;
@@ -630,12 +631,20 @@ public class Configuration {
 
   private MonitorExporterTransfers monitorExporterTransfers = null;
 
+  private boolean isMonitorExporterApiRest;
   private String monitorExporterUrl = null;
   private String monitorExporterEndPoint = null;
   private int monitorExporterDelay = 1000;
   private boolean monitorExporterKeepConnection = false;
   private boolean monitorIntervalIncluded = true;
   private boolean monitorTransformLongAsString = false;
+  private String monitorUsername = null;
+  private String monitorPwd = null;
+  private String monitorToken = null;
+  private String monitorApiKey = null;
+  private String monitorPrefix = null;
+  private String monitorIndex = null;
+  private boolean monitorCompression = true;
 
   private int timeStat;
 
@@ -1011,36 +1020,36 @@ public class Configuration {
         " HTTPS: " + getServerHttpsPort());
     httpChannelGroup =
         new DefaultChannelGroup("HttpOpenR66", subTaskGroup.next());
-    // Configure the server.
-    httpBootstrap = new ServerBootstrap();
-    WaarpNettyUtil
-        .setServerBootstrap(httpBootstrap, httpWorkerGroup, httpWorkerGroup,
-                            (int) getTimeoutCon());
-    // Set up the event pipeline factory.
-    httpBootstrap.childHandler(new HttpInitializer(isUseHttpCompression()));
-    // Bind and start to accept incoming connections.
     if (getServerHttpport() > 0) {
+      // Configure the server.
+      httpBootstrap = new ServerBootstrap();
+      WaarpNettyUtil
+          .setServerBootstrap(httpBootstrap, httpWorkerGroup, httpWorkerGroup,
+                              (int) getTimeoutCon());
+      // Set up the event pipeline factory.
+      httpBootstrap.childHandler(new HttpInitializer(isUseHttpCompression()));
+      // Bind and start to accept incoming connections.
       final String[] serverIps = getServerHttpAddresses();
       bindTo(serverIps, getServerHttpport(), httpBootstrap,
              "Can't start HTTP service");
     }
     // Now start the HTTPS support
-    // Configure the server.
-    httpsBootstrap = new ServerBootstrap();
-    // Set up the event pipeline factory.
-    WaarpNettyUtil
-        .setServerBootstrap(httpsBootstrap, httpWorkerGroup, httpWorkerGroup,
-                            (int) getTimeoutCon());
-    if (getHttpModel() == 0) {
-      httpsBootstrap
-          .childHandler(new HttpSslInitializer(isUseHttpCompression()));
-    } else {
-      // Default
-      httpsBootstrap.childHandler(
-          new HttpReponsiveSslInitializer(isUseHttpCompression()));
-    }
     // Bind and start to accept incoming connections.
     if (getServerHttpsPort() > 0) {
+      // Configure the server.
+      httpsBootstrap = new ServerBootstrap();
+      // Set up the event pipeline factory.
+      WaarpNettyUtil
+          .setServerBootstrap(httpsBootstrap, httpWorkerGroup, httpWorkerGroup,
+                              (int) getTimeoutCon());
+      if (getHttpModel() == 0) {
+        httpsBootstrap
+            .childHandler(new HttpSslInitializer(isUseHttpCompression()));
+      } else {
+        // Default
+        httpsBootstrap.childHandler(
+            new HttpReponsiveSslInitializer(isUseHttpCompression()));
+      }
       final String[] serverIps = getServerHttpsAddresses();
       bindTo(serverIps, getServerHttpsPort(), httpsBootstrap,
              "Can't start HTTPS service");
@@ -1188,6 +1197,14 @@ public class Configuration {
     }
     timerCleanLruCache.cancel();
     timerStatistic.cancel();
+    if (monitorExporterTransfers != null) {
+      try {
+        monitorExporterTransfers.close();
+      } catch (IOException e) {
+        SysErrLogger.FAKE_LOGGER.ignoreLog(e);
+      }
+      monitorExporterTransfers = null;
+    }
     if (getAgentSnmp() != null) {
       getAgentSnmp().stop();
       setAgentSnmp(null);
@@ -2707,14 +2724,15 @@ public class Configuration {
   }
 
   /**
-   * Set the parameters for MonitorExporterTransfers
+   * Set the parameters for MonitorExporterTransfers using API REST
    *
-   * @param url
-   * @param endpoint
-   * @param delay
-   * @param keepConnection
-   * @param monitorIntervalIncluded
-   * @param monitorTransformLongAsString
+   * @param url as 'http://myhost.com:8080' or 'https://myhost.com:8443'
+   * @param endpoint as '/waarpr66monitor' or simply '/'
+   * @param keepConnection True to keep the connexion opened, False to release the connexion each time
+   * @param monitorIntervalIncluded True to include the interval information within 'waarpMonitor'
+   *     field
+   * @param monitorTransformLongAsString True to transform Long as String (ELK)
+   * @param delay delay between 2 exports
    */
   public void setMonitorExporterTransfers(final String url,
                                           final String endpoint,
@@ -2728,6 +2746,64 @@ public class Configuration {
     this.monitorExporterKeepConnection = keepConnection;
     this.monitorIntervalIncluded = monitorIntervalIncluded;
     this.monitorTransformLongAsString = monitorTransformLongAsString;
+    isMonitorExporterApiRest = true;
+  }
+
+  /**
+   * Set the parameters for MonitorExporterTransfers using Elasticsearch (JRE
+   * >= 8)
+   *
+   * @param remoteBaseUrl as 'http://myelastic.com:9200' or 'https://myelastic.com:9201'
+   * @param username username to connect to Elasticsearch if any (Basic
+   *     authentication) (nullable)
+   * @param pwd password to connect to Elasticsearch if any (Basic
+   *     authentication) (nullable)
+   * @param token access token (Bearer Token authorization
+   *     by Header) (nullable)
+   * @param apiKey API Key (Base64 of 'apiId:apiKey') (ApiKey authorization
+   *     by Header) (nullable)
+   * @param prefix as '/prefix' or null if none
+   * @param index as 'waarpr66monitor' as the index name within
+   *     Elasticsearch, including extra dynamic information
+   * @param intervalMonitoringIncluded True to include the interval information within 'waarpMonitor' field
+   * @param transformLongAsString True to transform Long as String (ELK)
+   * @param compression True to compress REST exchanges between the client
+   *     and the Elasticsearch server
+   * @param delay delay between 2 exports
+   *
+   * @return True if the Elasticsearch factory is available
+   */
+  public boolean setMonitorExporterTransfers(final String remoteBaseUrl,
+                                             final String username,
+                                             final String pwd,
+                                             final String token,
+                                             final String apiKey,
+                                             final String prefix,
+                                             final String index,
+                                             final boolean intervalMonitoringIncluded,
+                                             final boolean transformLongAsString,
+                                             final boolean compression,
+                                             final int delay) {
+    this.monitorExporterDelay = delay;
+    this.monitorExporterUrl = remoteBaseUrl;
+    this.monitorIntervalIncluded = intervalMonitoringIncluded;
+    this.monitorTransformLongAsString = transformLongAsString;
+    this.monitorUsername = username;
+    this.monitorPwd = pwd;
+    this.monitorToken = token;
+    this.monitorApiKey = apiKey;
+    this.monitorPrefix = prefix;
+    this.monitorIndex = index;
+    this.monitorCompression = compression;
+    isMonitorExporterApiRest = false;
+    try {
+      ElasticsearchClientBuilder.getFactory();
+    } catch (Exception e) {
+      logger.error("Elasticsearch for MonitorExpoerter is not available in " +
+                   "the classpath: {}", e.getMessage());
+      return false;
+    }
+    return true;
   }
 
   /**
@@ -2736,13 +2812,23 @@ public class Configuration {
   public void startMonitorExporterTransfers() {
     if (monitorExporterUrl != null && monitorExporterEndPoint != null &&
         monitorExporterDelay > 500) {
-      this.monitorExporterTransfers =
-          new MonitorExporterTransfers(monitorExporterUrl,
-                                       monitorExporterEndPoint,
-                                       monitorExporterKeepConnection,
-                                       monitorIntervalIncluded,
-                                       monitorTransformLongAsString,
-                                       getHttpWorkerGroup());
+      if (isMonitorExporterApiRest) {
+        this.monitorExporterTransfers =
+            new MonitorExporterTransfers(monitorExporterUrl,
+                                         monitorExporterEndPoint,
+                                         monitorExporterKeepConnection,
+                                         monitorIntervalIncluded,
+                                         monitorTransformLongAsString,
+                                         getHttpWorkerGroup());
+      } else {
+        this.monitorExporterTransfers =
+            new MonitorExporterTransfers(monitorExporterUrl, monitorUsername,
+                                         monitorPwd, monitorToken,
+                                         monitorApiKey, monitorPrefix,
+                                         monitorIndex, monitorIntervalIncluded,
+                                         monitorTransformLongAsString,
+                                         monitorCompression);
+      }
       scheduleWithFixedDelay(monitorExporterTransfers, monitorExporterDelay,
                              TimeUnit.MILLISECONDS);
     }

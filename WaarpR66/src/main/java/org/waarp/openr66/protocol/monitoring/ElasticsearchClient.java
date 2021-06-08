@@ -18,9 +18,25 @@
  * Waarp . If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- * Classes implementing Monitoring to send to external Monitor for OpenR66
- * as JSON status from time to time, using either a REST API or Elasticsearch
- * as destination (Elasticsearch from JRE 8 using Waarp-S3 module)
- */
 package org.waarp.openr66.protocol.monitoring;
+
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.joda.time.DateTime;
+
+import java.io.Closeable;
+
+public interface ElasticsearchClient extends Closeable {
+
+  /**
+   * Will use a "bulk" request to upsert data into ElasticSearch
+   *
+   * @param monitoredTransfers the Json objet to push as POST
+   * @param start the DateTime for the 'from' interval
+   * @param stop the DateTime for the 'to' interval
+   * @param serverId the serverId that is sending this monitoring information
+   *
+   * @return True if the Bulk upsert succeeded
+   */
+  boolean post(final ObjectNode monitoredTransfers, final DateTime start,
+               final DateTime stop, final String serverId);
+}

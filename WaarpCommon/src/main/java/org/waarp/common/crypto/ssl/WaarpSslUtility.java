@@ -276,7 +276,7 @@ public final class WaarpSslUtility {
                                                  final long delay) {
     if (!WaarpNettyUtil.awaitOrInterrupted(channel.closeFuture(), delay)) {
       try {
-        channel.pipeline().remove(WaarpSslHandler.class);
+        channel.pipeline().remove(SslHandler.class);
         logger.debug("try to close anyway");
         if (channel.isActive()) {
           WaarpNettyUtil.awaitOrInterrupted(channel.close(), delay);

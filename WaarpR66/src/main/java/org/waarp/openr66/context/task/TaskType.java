@@ -82,11 +82,13 @@ public enum TaskType {
     }
   }
 
+  public static final String S_3_TASK_FACTORY =
+      "org.waarp.openr66.s3.taskfactory.S3TaskFactory";
+
   static {
     // Try to load S3 Tasks if S3TaskFactory exists
     try {
-      Class s3TaskFactoryClass =
-          Class.forName("org.waarp.openr66.s3.taskfactory.S3TaskFactory");
+      Class s3TaskFactoryClass = Class.forName(S_3_TASK_FACTORY);
       WaarpSystemUtil.newInstance(s3TaskFactoryClass);
     } catch (Exception ignore) {
       // Not found and ignore

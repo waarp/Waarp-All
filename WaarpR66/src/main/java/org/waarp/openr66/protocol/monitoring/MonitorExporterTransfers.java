@@ -24,11 +24,14 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.netty.channel.EventLoopGroup;
+import org.apache.http.HttpHost;
 import org.joda.time.DateTime;
 import org.waarp.common.database.exception.WaarpDatabaseException;
+import org.waarp.common.exception.InvalidArgumentException;
 import org.waarp.common.json.JsonHandler;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.ParametersChecker;
 import org.waarp.openr66.client.TransferArgs;
 import org.waarp.openr66.dao.DAOFactory;
 import org.waarp.openr66.dao.Filter;
@@ -41,6 +44,10 @@ import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.http.restv2.converters.TransferConverter;
 
 import javax.ws.rs.InternalServerErrorException;
+import java.io.Closeable;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
@@ -97,7 +104,7 @@ import static org.waarp.openr66.protocol.http.restv2.RestConstants.*;
  * X-WAARP-ID (as the host Id), X-WAARP-START (as the waarpMonitor.from),
  * X-WAARP-STOP  (as the waarpMonitor.to)
  */
-public class MonitorExporterTransfers extends Thread {
+public class MonitorExporterTransfers extends Thread implements Closeable {
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(MonitorExporterTransfers.class);
 
@@ -122,7 +129,9 @@ public class MonitorExporterTransfers extends Thread {
 
   private final boolean intervalMonitoringIncluded;
   private final boolean transformLongAsString;
+  private final boolean asApiRest;
   private final HttpClient httpClient;
+  private final ElasticsearchClient elasticsearchClient;
   private final DbHostConfiguration hostConfiguration;
 
   private DateTime lastDateTime;
@@ -134,7 +143,9 @@ public class MonitorExporterTransfers extends Thread {
    * @param keepConnection True to keep the connexion opened, False to release the connexion each time
    * @param intervalMonitoringIncluded True to include the interval information within 'waarpMonitor' field
    * @param transformLongAsString True to transform Long as String (ELK)
-   * @param group the EventLoopGroup to use
+   * @param group the EventLoopGroup to use for HttpClient
+   *
+   * @throws IllegalArgumentException if the setup is in error
    */
   public MonitorExporterTransfers(final String remoteBaseUrl,
                                   final String endpoint,
@@ -142,14 +153,24 @@ public class MonitorExporterTransfers extends Thread {
                                   final boolean intervalMonitoringIncluded,
                                   final boolean transformLongAsString,
                                   final EventLoopGroup group) {
+    try {
+      ParametersChecker.checkSanityString(remoteBaseUrl, endpoint);
+    } catch (InvalidArgumentException e) {
+      throw new IllegalArgumentException(e);
+    }
+    if (ParametersChecker.isEmpty(remoteBaseUrl)) {
+      throw new IllegalArgumentException("RemoteBaseUrl cannot be null");
+    }
     this.intervalMonitoringIncluded = intervalMonitoringIncluded;
     this.transformLongAsString = transformLongAsString;
+    this.asApiRest = true;
+    this.elasticsearchClient = null;
     this.httpClient =
         new HttpClient(remoteBaseUrl, endpoint, keepConnection, group);
     DbHostConfiguration temp = null;
     try {
       temp = new DbHostConfiguration(Configuration.configuration.getHostId());
-    } catch (WaarpDatabaseException e) {//NOSONAR
+    } catch (final WaarpDatabaseException e) {//NOSONAR
       logger.error(e.getMessage());
     }
     if (temp == null) {
@@ -157,7 +178,111 @@ public class MonitorExporterTransfers extends Thread {
           .getLastDateTimeMonitoring(Configuration.configuration.getHostId());
       try {
         temp = new DbHostConfiguration(Configuration.configuration.getHostId());
-      } catch (WaarpDatabaseException e) {//NOSONAR
+      } catch (final WaarpDatabaseException e) {//NOSONAR
+        logger.error(e.getMessage());
+      }
+    }
+    this.hostConfiguration = temp;
+    lastDateTime = hostConfiguration.getLastDateTimeMonitoring();//NOSONAR
+    if (lastDateTime != null) {
+      lastTimestamp = new Timestamp(lastDateTime.getMillis());
+    }
+  }
+
+  /**
+   * The index can be a combination of a fixed name and extra dynamic
+   * information:<br>
+   * <ul>
+   *   <li>%%WAARPHOST%% to be replaced by R66 host name</li>
+   *   <li>%%DATETIME%% to be replaced by date in format YYYY.MM.dd.HH.mm</li>
+   *   <li>%%DATEHOUR%% to be replaced by date in format YYYY.MM.dd.HH</li>
+   *   <li>%%DATE%% to be replaced by date in format YYYY.MM.dd</li>
+   *   <li>%%YEARMONTH%% to be replaced by date in format YYYY.MM</li>
+   *   <li>%%YEAR%% to be replaced by date in format YYYY</li>
+   * </ul>
+   * <br>DATE is about current last-time check.<br>
+   * So 'waarpr66-%%WAARPHOST%%-%%DATE%%' will give for instance
+   * 'waarpr66-hosta-2021-06-21' as index name.
+   *
+   * @param remoteBaseUrl as 'http://myelastic.com:9200' or 'https://myelastic.com:9201'
+   * @param username username to connect to Elasticsearch if any (Basic
+   *     authentication) (nullable)
+   * @param pwd password to connect to Elasticsearch if any (Basic
+   *     authentication) (nullable)
+   * @param token access token (Bearer Token authorization
+   *     by Header) (nullable)
+   * @param apiKey API Key (Base64 of 'apiId:apiKey') (ApiKey authorization
+   *     by Header) (nullable)
+   * @param prefix as '/prefix' or null if none
+   * @param index as 'waarpr66monitor' as the index name within
+   *     Elasticsearch, including extra dynamic information
+   * @param intervalMonitoringIncluded True to include the interval information within 'waarpMonitor' field
+   * @param transformLongAsString True to transform Long as String (ELK)
+   * @param compression True to compress REST exchanges between the client
+   *     and the Elasticsearch server
+   *
+   * @throws IllegalArgumentException if the setup is in error
+   */
+  public MonitorExporterTransfers(final String remoteBaseUrl,
+                                  final String username, final String pwd,
+                                  final String token, final String apiKey,
+                                  final String prefix, final String index,
+                                  final boolean intervalMonitoringIncluded,
+                                  final boolean transformLongAsString,
+                                  final boolean compression) {
+    try {
+      ParametersChecker.checkSanityString(remoteBaseUrl, index);
+    } catch (InvalidArgumentException e) {
+      throw new IllegalArgumentException(e);
+    }
+    if (ParametersChecker.isEmpty(remoteBaseUrl, index)) {
+      throw new IllegalArgumentException(
+          "RemoteBaseUrl or Index cannot be null");
+    }
+    this.intervalMonitoringIncluded = intervalMonitoringIncluded;
+    this.transformLongAsString = transformLongAsString;
+    this.asApiRest = false;
+    this.httpClient = null;
+    final String[] urls = remoteBaseUrl.split(",");
+    final ArrayList<HttpHost> httpHostArray =
+        new ArrayList<HttpHost>(urls.length);
+    for (final String url : urls) {
+      try {
+        final URI finalUri = new URI(url);
+        final String host =
+            finalUri.getHost() == null? "127.0.0.1" : finalUri.getHost();
+        final int port = finalUri.getPort();
+        final String scheme =
+            finalUri.getScheme() == null? "http" : finalUri.getScheme();
+        logger.info("Elasticsearch from {} Host: {} on port {} using {}", url,
+                    host, port, scheme);
+        httpHostArray.add(new HttpHost(host, port, scheme));
+      } catch (final URISyntaxException e) {
+        logger.error("URI syntax error: {}", e.getMessage());
+        throw new IllegalArgumentException(e);
+      }
+    }
+    this.elasticsearchClient = ElasticsearchClientBuilder.getFactory()
+                                                         .createElasticsearchClient(
+                                                             username, pwd,
+                                                             token, apiKey,
+                                                             prefix, index,
+                                                             compression,
+                                                             httpHostArray
+                                                                 .toArray(
+                                                                     new HttpHost[0]));
+    DbHostConfiguration temp = null;
+    try {
+      temp = new DbHostConfiguration(Configuration.configuration.getHostId());
+    } catch (final WaarpDatabaseException e) {//NOSONAR
+      logger.error(e.getMessage());
+    }
+    if (temp == null) {
+      DbHostConfiguration
+          .getLastDateTimeMonitoring(Configuration.configuration.getHostId());
+      try {
+        temp = new DbHostConfiguration(Configuration.configuration.getHostId());
+      } catch (final WaarpDatabaseException e) {//NOSONAR
         logger.error(e.getMessage());
       }
     }
@@ -251,15 +376,37 @@ public class MonitorExporterTransfers extends Thread {
     final int size = resultList.size();
     logger.debug("Create Json {}", size);
     transferList.clear();
-    if (httpClient.post(monitoredTransfers, lastDateTime, now,
-                        Configuration.configuration.getHostId())) {
-      logger.info("Transferred from {} to {} = {}", lastDateTime, now, size);
+    if (asApiRest) {
+      if (httpClient.post(monitoredTransfers, lastDateTime, now,
+                          Configuration.configuration.getHostId())) {
+        logger.info("Transferred from {} to {} = {}", lastDateTime, now, size);
+        lastDateTime = now;
+        lastTimestamp = timestamp;
+        hostConfiguration.updateLastDateTimeMonitoring(lastDateTime);
+      } else {
+        logger.error("Not Transferred from {} to {} = {}", lastDateTime, now,
+                     size);
+      }
+    } else if (elasticsearchClient.post(monitoredTransfers, lastDateTime, now,
+                                        Configuration.configuration
+                                            .getHostId())) {
+      logger.info("ES Transferred from {} to {} = {}", lastDateTime, now, size);
       lastDateTime = now;
       lastTimestamp = timestamp;
       hostConfiguration.updateLastDateTimeMonitoring(lastDateTime);
     } else {
-      logger
-          .error("Not Transferred from {} to {} = {}", lastDateTime, now, size);
+      logger.error("ES Not Transferred from {} to {} = {}", lastDateTime, now,
+                   size);
+    }
+  }
+
+  @Override
+  public void close() throws IOException {
+    if (httpClient != null) {
+      httpClient.close();
+    }
+    if (elasticsearchClient != null) {
+      elasticsearchClient.close();
     }
   }
 }

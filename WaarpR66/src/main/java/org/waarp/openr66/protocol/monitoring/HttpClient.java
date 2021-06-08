@@ -48,8 +48,11 @@ import org.waarp.common.utility.WaarpNettyUtil;
 import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.http.restv2.utils.JsonUtils;
+import org.waarp.openr66.protocol.networkhandler.ssl.NetworkSslServerInitializer;
 
 import javax.net.ssl.SSLException;
+import java.io.Closeable;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -59,7 +62,7 @@ import static org.waarp.openr66.protocol.configuration.Configuration.*;
 /**
  * HttpClient used by the MonitorExporterTransfers
  */
-public class HttpClient {
+public class HttpClient implements Closeable {
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(HttpClient.class);
   public static final String HTTPS = "https";
@@ -116,7 +119,9 @@ public class HttpClient {
     final SslContext sslCtx;
     if (ssl) {
       try {
-        sslCtx = SslContextBuilder.forClient().trustManager(
+        sslCtx = SslContextBuilder.forClient().keyManager(
+            NetworkSslServerInitializer.getWaarpSecureKeyStore()
+                                       .getKeyManagerFactory()).trustManager(
             InsecureTrustManagerFactory.INSTANCE).build();
       } catch (final SSLException e) {
         logger.error("SslContext error", e);
@@ -229,6 +234,14 @@ public class HttpClient {
       futurePost.setSuccess();
     } else {
       futurePost.cancel();
+    }
+  }
+
+  @Override
+  public void close() throws IOException {
+    if (remoteRestChannel != null && !remoteRestChannel.isActive()) {
+      remoteRestChannel.close();
+      remoteRestChannel = null;
     }
   }
 }

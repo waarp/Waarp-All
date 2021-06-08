@@ -20,12 +20,18 @@
 
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <artifactId>WaarpProxyR66</artifactId>
-  <name>Waarp Proxy in R66 protocol</name>
-  <description>Waarp Proxy in R66 protocol</description>
-  <url>http://waarp.github.com/WaarpProxyR66</url>
+  <artifactId>WaarpR66-Extensions</artifactId>
+  <name>Waarp Extensions for JRE 8 and greater</name>
+  <description>
+    Waarp S3 Client supports file, both as source or destination, for
+    Waarp R66.
+    Waarp Elasticsearch supports
+    extends Exporter Monitor for Waarp R66.
+    (JRE 8 and greater)
+  </description>
+  <url>http://waarp.github.com/WaarpR66</url>
   <inceptionYear>2009</inceptionYear>
   <parent>
     <groupId>Waarp</groupId>
@@ -33,6 +39,33 @@
     <version>${revision}</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
+
+  <properties>
+    <reuseThreadTest>false</reuseThreadTest>
+    <module.project>true</module.project>
+
+    <waarp.directory.version>org.waarp.openr66.s3
+    </waarp.directory.version>
+    <waarp.module.version>org/waarp/openr66/s3
+    </waarp.module.version>
+  </properties>
+
+  <profiles>
+    <profile>
+      <id>development</id>
+      <properties>
+        <skipITs>true</skipITs>
+      </properties>
+    </profile>
+    <profile>
+      <id>integration-tests</id>
+      <properties>
+        <skipITs>false</skipITs>
+      </properties>
+    </profile>
+  </profiles>
+
+
   <dependencies>
     <dependency>
       <groupId>Waarp</groupId>
@@ -77,6 +110,14 @@
     <dependency>
       <groupId>Waarp</groupId>
       <artifactId>netty-http-java6</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>Waarp</groupId>
+      <artifactId>WaarpHttp</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>Waarp</groupId>
+      <artifactId>WaarpGatewayFtp</artifactId>
     </dependency>
     <dependency>
       <groupId>ch.qos.logback</groupId>
@@ -326,8 +367,61 @@
       <artifactId>jaxb-core</artifactId>
     </dependency>
     <dependency>
+      <groupId>org.apache.httpcomponents</groupId>
+      <artifactId>httpclient</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>javax.servlet</groupId>
+      <artifactId>javax.servlet-api</artifactId>
+      <version>${javax.servlet.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.httpcomponents</groupId>
+      <artifactId>httpcore</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.minio</groupId>
+      <artifactId>minio</artifactId>
+      <version>${minio.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.elasticsearch.client</groupId>
+      <artifactId>elasticsearch-rest-high-level-client</artifactId>
+      <version>${elastic-rest.version}</version>
+    </dependency>
+    <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>mariadb</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>mysql</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>oracle-xe</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>postgresql</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>elasticsearch</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -350,6 +444,14 @@
     </dependency>
     <dependency>
       <groupId>Waarp</groupId>
+      <artifactId>WaarpIcap</artifactId>
+      <classifier>tests</classifier>
+      <type>test-jar</type>
+      <version>${revision}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.seleniumhq.selenium</groupId>
       <artifactId>selenium-java</artifactId>
       <scope>test</scope>
     </dependency>
@@ -364,14 +466,6 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
-  <properties>
-    <reuseThreadTest>false</reuseThreadTest>
-    <module.project>true</module.project>
-
-    <waarp.directory.version>org.waarp.openr66.proxy.utils
-    </waarp.directory.version>
-    <waarp.module.version>org/waarp/openr66/proxy/utils</waarp.module.version>
-  </properties>
 
   <build>
     <plugins>
@@ -381,4 +475,5 @@
       </plugin>
     </plugins>
   </build>
+
 </project>
