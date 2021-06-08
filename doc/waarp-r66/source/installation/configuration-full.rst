@@ -159,12 +159,22 @@ aliasid                          StringArray          L'ensemble des alias de l'
 extendedtaskfactories            String (vide)        Liste (séparée par des virgules) des TaskFactory en tant qu'extension pour ajouter des tâches à WaarpR66
 
 **pushMonitor**
+*Partie commune*
 url                              String (null)        URL de base pour les exports du moniteur en mode POST HTTP(S) JSON
-endpoint                         String (null)        End point à ajouter à l'URL de base
 delay                            Integer (1000)       Délai entre deux vérifications de changement de statuts sur les transferts
-keepconnection                   Boolean (True)       Si « True », la connexion HTTP(S) sera en Keep-Alive (pas de réouverture sauf si le serveur la ferme), sinon la connexion sera réinitialisée pour chaque appel
 intervalincluded                 Boolean (True)       Si « True », les informations de l'intervalle utilisé seront fournies
 transformlongasstring            Boolean (False)      Si « True », les nombres « long » seront convertis en chaîne de caractères, sinon ils seront numériques
+*Partie API REST*
+endpoint                         String (null)        End point à ajouter à l'URL de base
+keepconnection                   Boolean (True)       Si « True », la connexion HTTP(S) sera en Keep-Alive (pas de réouverture sauf si le serveur la ferme), sinon la connexion sera réinitialisée pour chaque appel
+*Partie Elasticsearch*
+index                            String (null)        Contient le nom de l'index avec de possibles substitutions, dont ``%%WARPHOST%%`` pour le nom du host concerné, et les ``%%DATETIME%%``, ``%%DATEHOUR%%``, ``%%DATE%%``, ``%%YEARMONTH%%``, ``%%YEAR%%`` pour des substitutions de date et heure partiellement (``yyyy.MM.dd.HH.mm`` à ``yyyy``)
+prefix                           String (null)        Spécifie si nécessaire un prefix global dans le cas d'usage d'un Proxy devant Elasticsearch
+username                         String (null)        Spécifie si nécessaire le username (et son password) dans le cadre d'une authentification basique
+paswd                            String (null)        Spécifie si nécessaire le password dans le cadre d'une authentification basique
+token                            String (null)        Spécifie si nécessaire le token  dans le cadre d'une authentification via Token
+apiKey                           String (null)        Spécifie si nécessaire le password dans le cadre d'une authentification via ApiKey (format ``apiId:apiKey``)
+compression                      Boolean (True)       Spécifie si les flux sont compresser (par défaut True)
 ================================ ==================== ==============
 
 Les balises <roles> et <aliases> contiennent des listes d'option. Exemple:

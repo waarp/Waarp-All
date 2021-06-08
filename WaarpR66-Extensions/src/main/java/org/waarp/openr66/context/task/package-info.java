@@ -17,10 +17,8 @@
  *  You should have received a copy of the GNU General Public License along with
  * Waarp . If not, see <http://www.gnu.org/licenses/>.
  */
-
+package org.waarp.openr66.context.task;
 /**
- * Classes implementing Monitoring to send to external Monitor for OpenR66
- * as JSON status from time to time, using either a REST API or Elasticsearch
- * as destination (Elasticsearch from JRE 8 using Waarp-S3 module)
+ * This module contains the S3 Tasks for Waarp R66
+ * as source and target File
  */
-package org.waarp.openr66.protocol.monitoring;

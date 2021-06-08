@@ -565,6 +565,20 @@ public class WaarpSecureKeyStore {
   }
 
   /**
+   * @return the KeyStore
+   */
+  public KeyStore getKeyStore() {
+    return keyStore;
+  }
+
+  /**
+   * @return the Trust KeyStore
+   */
+  public KeyStore getKeyTrustStore() {
+    return keyTrustStore;
+  }
+
+  /**
    * @param keystore
    *
    * @return True if all certificates are OK
@@ -590,8 +604,9 @@ public class WaarpSecureKeyStore {
                        alias, dateTime);
           valid = false;
         } else {
-          logger.debug("Certificate {} has an expiry date over today: {}", alias,
-                      dateTime);
+          logger
+              .debug("Certificate {} has an expiry date over today: {}", alias,
+                     dateTime);
         }
       } catch (final KeyStoreException e) {//NOSONAR
         logger.warn("Cannot get Expiry Date: {}", e.getMessage());

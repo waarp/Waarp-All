@@ -444,24 +444,15 @@ public class FileBasedElements {
       new XmlDecl(XmlType.INTEGER, XML_MULTIPLE_MONITORS),
       new XmlDecl(XmlType.STRING, XML_BUSINESS_FACTORY)
   };
+  // Common part with REST API and Elasticsearch API
   /**
    * URL as http://myrest.org for PUSH REST JSON Monitor
    */
   public static final String XML_PUSH_MONITOR_URL = "url";
   /**
-   * End Point as /status such as URL + end point give
-   * http://myrest.org/status for PUSH REST JSON Monitor
-   */
-  public static final String XML_PUSH_MONITOR_ENDPOINT = "endpoint";
-  /**
    * Delay in ms between 2 attempts for PUSH REST JSON Monitor
    */
   public static final String XML_PUSH_MONITOR_DELAY = "delay";
-  /**
-   * Keep connection between 2 attempts for PUSH REST JSON Monitor
-   */
-  public static final String XML_PUSH_MONITOR_KEEP_CONNECTION =
-      "keepconnection";
   /**
    * Keep Monitor Interval Included
    */
@@ -472,17 +463,78 @@ public class FileBasedElements {
    */
   public static final String XML_PUSH_MONITOR_TRANSFORM_LONG_AS_STRING =
       "transformlongasstring";
+
+  // Specific REST API Part
+  /**
+   * End Point as /status such as URL + end point give
+   * http://myrest.org/status for PUSH REST JSON Monitor
+   */
+  public static final String XML_PUSH_MONITOR_ENDPOINT = "endpoint";
+  /**
+   * Keep connection between 2 attempts for PUSH REST JSON Monitor
+   */
+  public static final String XML_PUSH_MONITOR_KEEP_CONNECTION =
+      "keepconnection";
+
+  // Specific REST API Part
+  /**
+   * Contains the index name, with possible substitution as %%WARPHOST%%
+   * %%DATETIME%%, %%DATEHOUR%%, %%DATE%%, %%YEARMONTH%%, %%YEAR%%.
+   * The index name will be finally lower cased.
+   */
+  public static final String XML_PUSH_MONITOR_ES_INDEX = "index";
+  /**
+   * Specify a possible prefix to add to each request, in particular if
+   * Elasticsearch is behind a Proxy
+   * (Default: null)
+   */
+  public static final String XML_PUSH_MONITOR_ES_PREFIX = "prefix";
+  /**
+   * If a username/password is necessary as Basic Authentication
+   * (Default: null)
+   */
+  public static final String XML_PUSH_MONITOR_ES_USERNAME = "username";
+  /**
+   * If a username/password is necessary as Basic Authentication
+   * (Default: null)
+   */
+  public static final String XML_PUSH_MONITOR_ES_PWD = "paswd";
+  /**
+   * If a token is necessary as fixed Bearer Token
+   * (Default: null)
+   */
+  public static final String XML_PUSH_MONITOR_ES_TOKEN = "token";
+  /**
+   * If a token is necessary as fixed Bearer API Key as 'apiId:apiKey'
+   * (Default: null)
+   */
+  public static final String XML_PUSH_MONITOR_ES_APIKEY = "apiKey";
+  /**
+   * Defines if the Elasticsearch client will use compression (Default: True)
+   */
+  public static final String XML_PUSH_MONITOR_ES_COMPRESSION = "compression";
+
   /**
    * Structure of the Configuration file: Push Monitor for Server only
    */
   private static final XmlDecl[] configServerPushMonitorParamDecls = {
       // pushMonitor
+      // Common
       new XmlDecl(XmlType.STRING, XML_PUSH_MONITOR_URL),
-      new XmlDecl(XmlType.STRING, XML_PUSH_MONITOR_ENDPOINT),
       new XmlDecl(XmlType.INTEGER, XML_PUSH_MONITOR_DELAY),
-      new XmlDecl(XmlType.BOOLEAN, XML_PUSH_MONITOR_KEEP_CONNECTION),
       new XmlDecl(XmlType.BOOLEAN, XML_PUSH_MONITOR_INTERVAL_INCLUDED),
-      new XmlDecl(XmlType.BOOLEAN, XML_PUSH_MONITOR_TRANSFORM_LONG_AS_STRING)
+      new XmlDecl(XmlType.BOOLEAN, XML_PUSH_MONITOR_TRANSFORM_LONG_AS_STRING),
+      // REST Api
+      new XmlDecl(XmlType.BOOLEAN, XML_PUSH_MONITOR_KEEP_CONNECTION),
+      new XmlDecl(XmlType.STRING, XML_PUSH_MONITOR_ENDPOINT),
+      // Elasticsearch client API
+      new XmlDecl(XmlType.STRING, XML_PUSH_MONITOR_ES_INDEX),
+      new XmlDecl(XmlType.STRING, XML_PUSH_MONITOR_ES_PREFIX),
+      new XmlDecl(XmlType.STRING, XML_PUSH_MONITOR_ES_USERNAME),
+      new XmlDecl(XmlType.STRING, XML_PUSH_MONITOR_ES_PWD),
+      new XmlDecl(XmlType.STRING, XML_PUSH_MONITOR_ES_TOKEN),
+      new XmlDecl(XmlType.STRING, XML_PUSH_MONITOR_ES_APIKEY),
+      new XmlDecl(XmlType.BOOLEAN, XML_PUSH_MONITOR_ES_COMPRESSION)
   };
   /**
    * Default number of threads in pool for Server.

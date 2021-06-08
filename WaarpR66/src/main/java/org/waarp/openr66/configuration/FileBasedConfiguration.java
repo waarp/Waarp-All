@@ -238,6 +238,7 @@ public class FileBasedConfiguration {
     XmlHash hashConfig = new XmlHash(hashRootConfig.get(XML_PUSH_MONITOR));
     try {
       XmlValue value;
+      // Common part API REST and Elasticsearch
       value = hashConfig.get(XML_PUSH_MONITOR_URL);
       if (value != null && !value.isEmpty()) {
         try {
@@ -247,18 +248,6 @@ public class FileBasedConfiguration {
           return false;
         }
         String url = value.getString();
-        // Default value
-        String endpoint = "/";
-        value = hashConfig.get(XML_PUSH_MONITOR_ENDPOINT);
-        if (value != null && !value.isEmpty()) {
-          try {
-            ParametersChecker.checkSanityString(value.getString());
-          } catch (final InvalidArgumentException e) {
-            logger.error("Bad Push Monitor EndPoint: {}", e.getMessage());
-            return false;
-          }
-          endpoint = value.getString();
-        }
         // Default value
         int delay = 1000;
         value = hashConfig.get(XML_PUSH_MONITOR_DELAY);
@@ -270,12 +259,6 @@ public class FileBasedConfiguration {
           if (delay < 500) {
             delay = 500;
           }
-        }
-        // Default value
-        boolean keep = MonitorExporterTransfers.MONITOR_KEEP_CONNECTION_DEFAULT;
-        value = hashConfig.get(XML_PUSH_MONITOR_KEEP_CONNECTION);
-        if (value != null && !value.isEmpty()) {
-          keep = value.getBoolean();
         }
         // Default value
         boolean intervalIncluded =
@@ -291,8 +274,130 @@ public class FileBasedConfiguration {
         if (value != null && !value.isEmpty()) {
           longAsString = value.getBoolean();
         }
-        config.setMonitorExporterTransfers(url, endpoint, delay, keep,
-                                           intervalIncluded, longAsString);
+        // Determine API REST or Elasticsearch through INDEX presence
+        // Elasticsearch Specific
+        String index = null;
+        value = hashConfig.get(XML_PUSH_MONITOR_ES_INDEX);
+        if (value != null && !value.isEmpty()) {
+          try {
+            ParametersChecker.checkSanityString(value.getString());
+          } catch (final InvalidArgumentException e) {
+            logger.error("Bad Push Monitor Index: {}", e.getMessage());
+            return false;
+          }
+          index = value.getString();
+        }
+        // API REST Specific
+        // Default value
+        String endpoint = "/";
+        value = hashConfig.get(XML_PUSH_MONITOR_ENDPOINT);
+        if (value != null && !value.isEmpty()) {
+          if (index != null) {
+            logger.error("Bad Push Monitor: both Index for Elasticsearch and " +
+                         "EndPoint for REST API are specified, while only one" +
+                         " can be specified");
+            return false;
+          }
+          try {
+            ParametersChecker.checkSanityString(value.getString());
+          } catch (final InvalidArgumentException e) {
+            logger.error("Bad Push Monitor EndPoint: {}", e.getMessage());
+            return false;
+          }
+          endpoint = value.getString();
+        }
+        if (index == null) {
+          // API REST Specific continue
+          // Default value
+          boolean keep =
+              MonitorExporterTransfers.MONITOR_KEEP_CONNECTION_DEFAULT;
+          value = hashConfig.get(XML_PUSH_MONITOR_KEEP_CONNECTION);
+          if (value != null && !value.isEmpty()) {
+            keep = value.getBoolean();
+          }
+          config.setMonitorExporterTransfers(url, endpoint, delay, keep,
+                                             intervalIncluded, longAsString);
+        } else {
+          // Elasticsearch Specific continue
+          String prefix = null;
+          value = hashConfig.get(XML_PUSH_MONITOR_ES_PREFIX);
+          if (value != null && !value.isEmpty()) {
+            try {
+              ParametersChecker.checkSanityString(value.getString());
+            } catch (final InvalidArgumentException e) {
+              logger.error("Bad Push Monitor Prefix: {}", e.getMessage());
+              return false;
+            }
+            prefix = value.getString();
+          }
+          String username = null;
+          value = hashConfig.get(XML_PUSH_MONITOR_ES_USERNAME);
+          if (value != null && !value.isEmpty()) {
+            try {
+              ParametersChecker.checkSanityString(value.getString());
+            } catch (final InvalidArgumentException e) {
+              logger.error("Bad Push Monitor Username: {}", e.getMessage());
+              return false;
+            }
+            username = value.getString();
+          }
+          String pwd = null;
+          value = hashConfig.get(XML_PUSH_MONITOR_ES_PWD);
+          if (value != null && !value.isEmpty()) {
+            try {
+              ParametersChecker.checkSanityString(value.getString());
+            } catch (final InvalidArgumentException e) {
+              logger.error("Bad Push Monitor Password: {}", e.getMessage());
+              return false;
+            }
+            pwd = value.getString();
+          }
+          if ((username != null && pwd == null) ||
+              (pwd != null && username == null)) {
+            logger.error("Username and Password must be both specified");
+            return false;
+          }
+          String token = null;
+          value = hashConfig.get(XML_PUSH_MONITOR_ES_TOKEN);
+          if (value != null && !value.isEmpty()) {
+            try {
+              ParametersChecker.checkSanityString(value.getString());
+            } catch (final InvalidArgumentException e) {
+              logger.error("Bad Push Monitor Token: {}", e.getMessage());
+              return false;
+            }
+            token = value.getString();
+          }
+          String apikey = null;
+          value = hashConfig.get(XML_PUSH_MONITOR_ES_APIKEY);
+          if (value != null && !value.isEmpty()) {
+            try {
+              ParametersChecker.checkSanityString(value.getString());
+            } catch (final InvalidArgumentException e) {
+              logger.error("Bad Push Monitor ApiKey: {}", e.getMessage());
+              return false;
+            }
+            apikey = value.getString();
+          }
+          boolean compression = true;
+          value = hashConfig.get(XML_PUSH_MONITOR_ES_COMPRESSION);
+          if (value != null && !value.isEmpty()) {
+            try {
+              ParametersChecker.checkSanityString(value.getString());
+            } catch (final InvalidArgumentException e) {
+              logger.error("Bad Push Monitor Compression: {}", e.getMessage());
+              return false;
+            }
+            compression = value.getBoolean();
+          }
+          if (config
+              .setMonitorExporterTransfers(url, username, pwd, token, apikey,
+                                           prefix, index, intervalIncluded,
+                                           longAsString, compression, delay)) {
+            logger.error("Elasticsearch Factory not available");
+            return false;
+          }
+        }
       }
       return true;
     } finally {

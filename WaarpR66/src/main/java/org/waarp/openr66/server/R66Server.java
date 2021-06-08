@@ -78,7 +78,8 @@ public class R66Server {
       logger = WaarpLoggerFactory.getLogger(R66Server.class);
     }
     if (!FileBasedConfiguration
-        .setConfigurationServerFromXml(Configuration.configuration, config, true)) {
+        .setConfigurationServerFromXml(Configuration.configuration, config,
+                                       true)) {
       logger.error(
           Messages.getString("Configuration.NeedCorrectConfig")); //$NON-NLS-1$
       return false;

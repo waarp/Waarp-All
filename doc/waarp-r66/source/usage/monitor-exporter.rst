@@ -1,7 +1,7 @@
 .. _setup-monitor:
 
-Configuration du Monitoring en mode PUSH HTTP(S) REST
-#####################################################
+Configuration du Monitoring en mode PUSH HTTP(S) REST ou vers un service Elasticsearch
+######################################################################################
 
 .. versionadded:: 3.6.0
 
@@ -11,6 +11,10 @@ Description générale
 Le moniteur en mode export REST JSON des états des transferts permet
 d'envoyer en mode POST vers un service REST HTTP(S) de son choix
 l'état des transferts à intervalles réguliers.
+
+Il permet au choix de le faire vers une simple API REST ou vers un
+serveur Elasticsearch. La configuration est différente mais le
+fonctionnement est globalement le même.
 
 Seuls les transferts ayant subi un changement sont envoyés.
 
@@ -58,6 +62,10 @@ Le format du JSON est comme suit :
 
 Configuration
 -------------
+Une seule configuration est possible. Si ``index`` est positionné, il s'agit d'une configuration pour
+Elasticsearch, sinon pour API REST.
+
+Pour un POST sur une API REST :
 
 .. code-block:: xml
 
@@ -76,21 +84,79 @@ Description des paramètres :
 - ``endpoint`` indique l'extension URI du service REST HTTP(S) distant
 
   - Ainsi, pour l'exemple, l'URI complète sera ``http://127.0.0.1:8999/log``
+  - Si HTTPS est utilisé, le KeyStore et TrustStore par défaut de Waarp seront utilisés
 
 - ``delay`` indique le délai en ms entre deux vérifications pour récupérer les
-  transferts dont l'information aurait changée. Par défaut, la valeur est de ``1000`` ms.
+  transferts dont l'information aurait changée. Par défaut, la valeur est de ``1000`` ms. La valeur
+  minimale est de 500ms.
 - ``keepconnection`` Si « True », la connexion HTTP(S) sera en Keep-Alive
   (pas de réouverture sauf si le serveur la ferme), sinon la connexion sera réinitialisée
-  pour chaque appel
+  pour chaque appel (défaut: False)
 
   - Avec la valeur ``True``, les performances sont améliorées en évitant les reconnexions.
 
-- ``intervalincluded`` indique si les informations de l'intervalle utilisé seront fournies
+- ``intervalincluded`` indique si les informations de l'intervalle utilisé seront fournies (défaut: True)
 - ``transformlongasstring`` indique si les nombres « long » seront convertis en chaîne de caractères,
-  sinon ils seront numériques (certaines API REST ne supportent pas des long sur 64 bits)
+  sinon ils seront numériques (certaines API REST ne supportent pas des long sur 64 bits) (défaut: True)
 
   - Utile notamment avec ELK car les nombres longs (identifiant unique) sont trop long lors du parsing et sont
     tronqués.
+
+Pour une indexation par Bulk sur Elasticsearch :
+
+.. code-block:: xml
+
+    <pushMonitor>
+      <url>http://127.0.0.1:8999</url>
+      <prefix>/pathPrefix</prefix>
+      <delay>1000</delay>
+      <index>indexName</index>
+      <username>username</username><paswd>password</passwd>
+      <token>token</token>
+      <apiKey>apiKey</apiKey>
+      <intervalincluded>True</intervalincluded>
+      <transformlongasstring>False</transformlongasstring>
+      <compression>True</compression>
+    </pushMonitor>
+
+Description des paramètres :
+
+- ``url`` indique l'URL de base du service REST HTTP(S) distant ; plusieurs url sont possibles, séparées
+  par ','
+- ``prefix`` indique un prefix à ajouter à chaque requête, notamment si Elasticsearch est derrière un Proxy
+  (non obligatoire)
+- ``delay`` indique le délai en ms entre deux vérifications pour récupérer les
+  transferts dont l'information aurait changée. Par défaut, la valeur est de ``1000`` ms. La valeur
+  minimale est de 500ms.
+- ``intervalincluded`` indique si les informations de l'intervalle utilisé seront fournies (défaut: True)
+- ``transformlongasstring`` indique si les nombres « long » seront convertis en chaîne de caractères,
+  sinon ils seront numériques (certaines API REST ne supportent pas des long sur 64 bits) (défaut: False)
+
+  - Utile notamment avec ELK car les nombres longs (identifiant unique) sont trop long lors du parsing et sont
+    tronqués.
+
+- ``index`` contient le nom de l'index. Des substitutions sont possibles pour avoir de multiples index :
+
+  - ``%%WAARPHOST%%`` remplacé par le nom du serveur R66
+  - ``%%DATETIME%%`` remplacé par la date au format ``YYYY.MM.dd.HH.mm``
+  - ``%%DATEHOUR%%`` remplacé par la date au format ``YYYY.MM.dd.HH``
+  - ``%%DATE%%`` remplacé par la date au format ``YYYY.MM.dd``
+  - ``%%YEARMONTH%%`` remplacé par la date au format ``YYYY.MM``
+  - ``%%YEAR%%`` remplacé par la date au format ``YYYY``
+  - La date considérée est la date lors du dernier déclenchement du monitoring
+  - Le nom de l'index sera en minuscule, quelque soit la casse d'origine (exigence Elasticsearch)
+  - Ainsi ``waarpR66-%%WAARPHOST%%-%%DATE%%`` donnerait
+   ``waarpr66-hosta-2021-06-21``
+
+- Si une authentification est nécessaire, plusieurs options sont possibles :
+
+  - Authentification Basic : ``username`` et ``paswd`` contienent l'authentification Basic
+  - Bearer Token : ``token`` contenant le token d'accès
+  - ApiKey : ``apiKey`` contenant la clef d'API sous la forme ``apiId:apiKey``
+
+- ``compression`` spécifie si les transferts d'information vers Elasticsearch utiliseront
+  la compression (``True``) ou pas (``False``) (défaut: ``True``)
+
 
 Dernière date de vérification
 """""""""""""""""""""""""""""
@@ -122,7 +188,7 @@ Exemple de configuration d'un Logstash
 """"""""""""""""""""""""""""""""""""""
 
 Il est possible par exemple de router vers un service Logstash les logs JSON ainsi
-produits.
+produits via une API REST (et non directement dans Elasticsearch).
 
 La configuration du Logstash peut être la suivante : (avec le mode ``transformlongasstring`` as True)
 

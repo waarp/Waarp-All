@@ -181,15 +181,15 @@ public class ConfigurationProxyR66 extends Configuration {
         " HTTPS: " + getServerHttpsPort());
     httpChannelGroup =
         new DefaultChannelGroup("HttpOpenR66", subTaskGroup.next());
-    // Configure the server.
-    httpBootstrap = new ServerBootstrap();
-    WaarpNettyUtil
-        .setServerBootstrap(httpBootstrap, httpWorkerGroup, httpWorkerGroup,
-                            (int) getTimeoutCon());
-    // Set up the event pipeline factory.
-    httpBootstrap.childHandler(new HttpInitializer(isUseHttpCompression()));
-    // Bind and start to accept incoming connections.
     if (getServerHttpport() > 0) {
+      // Configure the server.
+      httpBootstrap = new ServerBootstrap();
+      WaarpNettyUtil
+          .setServerBootstrap(httpBootstrap, httpWorkerGroup, httpWorkerGroup,
+                              (int) getTimeoutCon());
+      // Set up the event pipeline factory.
+      httpBootstrap.childHandler(new HttpInitializer(isUseHttpCompression()));
+      // Bind and start to accept incoming connections.
       final ChannelFuture future =
           httpBootstrap.bind(new InetSocketAddress(getServerHttpport()))
                        .awaitUninterruptibly();
@@ -198,15 +198,16 @@ public class ConfigurationProxyR66 extends Configuration {
       }
     }
     // Now start the HTTPS support
-    // Configure the server.
-    httpsBootstrap = new ServerBootstrap();
-    // Set up the event pipeline factory.
-    WaarpNettyUtil
-        .setServerBootstrap(httpsBootstrap, httpWorkerGroup, httpWorkerGroup,
-                            (int) getTimeoutCon());
-    httpsBootstrap.childHandler(new HttpSslInitializer(isUseHttpCompression()));
-    // Bind and start to accept incoming connections.
     if (getServerHttpsPort() > 0) {
+      // Configure the server.
+      httpsBootstrap = new ServerBootstrap();
+      // Set up the event pipeline factory.
+      WaarpNettyUtil
+          .setServerBootstrap(httpsBootstrap, httpWorkerGroup, httpWorkerGroup,
+                              (int) getTimeoutCon());
+      httpsBootstrap
+          .childHandler(new HttpSslInitializer(isUseHttpCompression()));
+      // Bind and start to accept incoming connections.
       final ChannelFuture future =
           httpsBootstrap.bind(new InetSocketAddress(getServerHttpsPort()))
                         .awaitUninterruptibly();
