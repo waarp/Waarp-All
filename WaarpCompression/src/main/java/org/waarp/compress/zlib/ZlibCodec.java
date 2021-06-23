@@ -1,0 +1,198 @@
+/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see <http://www.gnu.org/licenses/>.
+ */
+
+package org.waarp.compress.zlib;
+
+import org.waarp.common.file.FileUtils;
+import org.waarp.compress.CompressorCodec;
+import org.waarp.compress.MalformedInputException;
+
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.zip.DeflaterOutputStream;
+import java.util.zip.InflaterOutputStream;
+
+/**
+ * ZSTD JNI Codec implementation
+ */
+public class ZlibCodec implements CompressorCodec {
+
+  @Override
+  public int maxCompressedLength(final int uncompressedSize) {
+    return uncompressedSize;
+  }
+
+  @Override
+  public byte[] compress(final byte[] input, final int length) {
+    ByteArrayOutputStream bos = null;
+    DeflaterOutputStream out = null;
+    try {
+      bos = new ByteArrayOutputStream(length);
+      out = new DeflaterOutputStream(bos);
+      out.write(input);
+      out.close();
+      bos.close();
+      return bos.toByteArray();
+    } catch (final Exception e) {
+      throw new MalformedInputException(e);
+    } finally {
+      FileUtils.close(out);
+      FileUtils.close(bos);
+    }
+  }
+
+  @Override
+  public int compress(final byte[] input, final int inputLength,
+                      final byte[] output, final int maxOutputLength)
+      throws MalformedInputException {
+    ByteArrayOutputStream bos = null;
+    DeflaterOutputStream out = null;
+    try {
+      bos = new ByteArrayOutputStream(inputLength);
+      out = new DeflaterOutputStream(bos);
+      out.write(input, 0, inputLength);
+      out.close();
+      bos.close();
+      final byte[] bytes = bos.toByteArray();
+      System.arraycopy(bytes, 0, output, 0, bytes.length);
+      return bytes.length;
+    } catch (final Exception e) {
+      throw new MalformedInputException(e);
+    } finally {
+      FileUtils.close(out);
+      FileUtils.close(bos);
+    }
+  }
+
+  @Override
+  public byte[] decompress(final byte[] compressed, final int length)
+      throws MalformedInputException {
+    ByteArrayOutputStream bos = null;
+    InflaterOutputStream out = null;
+    try {
+      bos = new ByteArrayOutputStream(length << 2);
+      out = new InflaterOutputStream(bos);
+      out.write(compressed);
+      out.close();
+      bos.close();
+      return bos.toByteArray();
+    } catch (final Exception e) {
+      throw new MalformedInputException(e);
+    } finally {
+      FileUtils.close(out);
+      FileUtils.close(bos);
+    }
+  }
+
+  @Override
+  public long compress(final File input, final File output)
+      throws MalformedInputException {
+    InputStream inputStream = null;
+    OutputStream outputStream = null;
+    DeflaterOutputStream out = null;
+    try {
+      inputStream = new FileInputStream(input);
+      outputStream = new FileOutputStream(output);
+      out = new DeflaterOutputStream(outputStream);
+      final byte[] buffer = new byte[64 * 1024];
+      while (true) {
+        final int r = inputStream.read(buffer);
+        if (r == -1) {
+          break;
+        }
+        out.write(buffer, 0, r);
+      }
+      out.flush();
+      FileUtils.close(out);
+      out = null;
+      return output.length();
+    } catch (final Exception e) {
+      throw new MalformedInputException(e);
+    } finally {
+      FileUtils.close(out);
+      FileUtils.close(inputStream);
+      FileUtils.close(outputStream);
+    }
+  }
+
+  @Override
+  public int decompress(final byte[] input, final int inputLength,
+                        final byte[] output, final int maxOutputLength)
+      throws MalformedInputException {
+    ByteArrayOutputStream bos = null;
+    InflaterOutputStream out = null;
+    try {
+      bos = new ByteArrayOutputStream(maxOutputLength);
+      out = new InflaterOutputStream(bos);
+      out.write(input, 0, inputLength);
+      out.close();
+      bos.close();
+      final byte[] bytes = bos.toByteArray();
+      System.arraycopy(bytes, 0, output, 0, bytes.length);
+      return bytes.length;
+    } catch (final Exception e) {
+      throw new MalformedInputException(e);
+    } finally {
+      FileUtils.close(out);
+      FileUtils.close(bos);
+    }
+  }
+
+  @Override
+  public long decompress(final File input, final File output)
+      throws MalformedInputException {
+    InputStream inputStream = null;
+    OutputStream outputStream = null;
+    InflaterOutputStream out = null;
+    try {
+      inputStream = new FileInputStream(input);
+      outputStream = new FileOutputStream(output);
+      out = new InflaterOutputStream(outputStream);
+      final byte[] buffer = new byte[64 * 1024];
+      while (true) {
+        final int r = inputStream.read(buffer);
+        if (r == -1) {
+          break;
+        }
+        out.write(buffer, 0, r);
+      }
+      out.flush();
+      FileUtils.close(out);
+      out = null;
+      return output.length();
+    } catch (final Exception e) {
+      throw new MalformedInputException(e);
+    } finally {
+      FileUtils.close(out);
+      FileUtils.close(inputStream);
+      FileUtils.close(outputStream);
+    }
+  }
+
+  @Override
+  public int getDecompressedSize(final byte[] compressed, final int length) {
+    return 0;
+  }
+
+}

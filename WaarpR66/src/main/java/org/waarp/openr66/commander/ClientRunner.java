@@ -144,6 +144,7 @@ public class ClientRunner extends Thread {
       taskRunner.forceSaveStatus();
       return;
     }
+    boolean status = false;
     try {
       if (activeRunners != null) {
         activeRunners.add(this);
@@ -169,6 +170,7 @@ public class ClientRunner extends Thread {
                                taskRunner.getRequested());
           reloaded.setSender(taskRunner.isSender());
           session.setRunner(reloaded);
+          session.setBlockSize(reloaded.getBlocksize());
           final File file = new File(reloaded.getFullFilePath());
           if (!file.isFile()) {
             logger.warn("File not found: {}", file.getAbsolutePath());
@@ -182,19 +184,48 @@ public class ClientRunner extends Thread {
             reloaded.update();
             return;
           }
+          status = true;
         } catch (final CommandAbstractException e) {
-          // Wrong path? Ignore
-          logger.warn(e);
+          if (Configuration.configuration.isShutdown()) {
+            // ignore since shutdown
+            logger.warn(e.getMessage());
+          } else {
+            // Wrong path? Ignore
+            logger.warn(e);
+          }
         } catch (final OpenR66RunnerErrorException e) {
-          // Wrong run error? Ignore
-          logger.warn(e);
+          if (Configuration.configuration.isShutdown()) {
+            // ignore since shutdown
+            logger.warn(e.getMessage());
+          } else {
+            // Wrong run error? Ignore
+            logger.warn(e);
+          }
         } catch (final WaarpDatabaseException e) {
-          // Wrong dbtask? Ignore
-          logger.warn(e);
+          if (Configuration.configuration.isShutdown()) {
+            // ignore since shutdown
+            logger.warn(e.getMessage());
+          } else {
+            // Wrong dbtask? Ignore
+            logger.warn(e);
+          }
         } catch (final OpenR66ProtocolNoSslException e) {
-          // Wrong ssl? Ignore
-          logger.warn(e);
+          if (Configuration.configuration.isShutdown()) {
+            // ignore since shutdown
+            logger.warn(e.getMessage());
+          } else {
+            // Wrong ssl? Ignore
+            logger.warn(e);
+          }
         }
+      } else {
+        status = true;
+      }
+      if (Configuration.configuration.isShutdown() || Thread.interrupted() ||
+          !status) {
+        taskRunner.changeUpdatedInfo(UpdatedInfo.TOSUBMIT);
+        taskRunner.forceSaveStatus();
+        return;
       }
       final R66Future transfer;
       try {
@@ -495,12 +526,12 @@ public class ClientRunner extends Thread {
     boolean restartPost = false;
     if (taskRunner.getGloballaststep() == TASKSTEP.POSTTASK.ordinal()) {
       // Send a validation to requested
-      if (!taskRunner.isSelfRequested()) {
+      if (!taskRunner.isRequestOnRequested()) {
         // restart
         restartPost = true;
       }
     }
-    if (taskRunner.isSelfRequested()) {
+    if (taskRunner.isRequestOnRequested()) {
       // Don't have to restart a task for itself (or should use requester)
       logger.warn("Requested host cannot initiate itself the request");
       changeUpdatedInfo(UpdatedInfo.INERROR, ErrorCode.LoopSelfRequestedHost,

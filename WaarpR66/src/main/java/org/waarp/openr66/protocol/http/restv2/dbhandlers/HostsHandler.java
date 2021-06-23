@@ -115,6 +115,8 @@ public class HostsHandler extends AbstractRestDbHandler {
    * @param isActive_str HTTP query parameter, filter hosts that are
    *     active, or those that aren't. Leave empty
    *     to get both.
+   * @param countOrder if true is specified, it turns out to be a "count"
+   *     request only
    */
   @GET
   @Consumes(APPLICATION_FORM_URLENCODED)
@@ -129,11 +131,22 @@ public class HostsHandler extends AbstractRestDbHandler {
                           final String order_str,
                           @QueryParam(ADDRESS) final String address,
                           @QueryParam(IS_SSL) final String isSSL_str,
-                          @QueryParam(IS_ACTIVE) final String isActive_str) {
+                          @QueryParam(IS_ACTIVE) final String isActive_str,
+                          @QueryParam(COUNT_ORDER) @DefaultValue("")
+                          final String countOrder) {
     checkSanity(limit_str, offset_str, order_str, address, isActive_str,
-                isActive_str);
+                isActive_str, countOrder);
     final List<RestError> errors = new ArrayList<RestError>();
 
+    boolean count = false;
+    try {
+      if (ParametersChecker.isNotEmpty(countOrder) &&
+          RestUtils.stringToBoolean(countOrder)) {
+        count = true;
+      }
+    } catch (final Exception ignore) {
+      // Ignore
+    }
     int limit = 20;
     int offset = 0;
     HostConverter.Order order = HostConverter.Order.ascId;
@@ -190,29 +203,41 @@ public class HostsHandler extends AbstractRestDbHandler {
     if (ParametersChecker.isNotEmpty(isActive_str)) {
       filters.add(new Filter(IS_ACTIVE_FIELD, "=", isActive));
     }
-    List<Host> hosts;
     HostDAO hostDAO = null;
-    try {
-      hostDAO = DAO_FACTORY.getHostDAO();
-      hosts = hostDAO.find(filters);
-    } catch (final DAOConnectionException e) {
-      throw new InternalServerErrorException(e);
-    } finally {
-      DAOFactory.closeDAO(hostDAO);
-    }
-
-    final int totalResults = hosts.size();
-    Collections.sort(hosts, order.comparator);
-
-    final ArrayNode results = JsonHandler.createArrayNode();
-    for (int i = offset; i < offset + limit && i < hosts.size(); i++) {
-      results.add(HostConverter.hostToNode(hosts.get(i)));
-    }
-
     final ObjectNode responseObject = JsonHandler.createObjectNode();
-    responseObject.put("totalResults", totalResults);
-    responseObject.set("results", results);
+    if (count) {
+      long nbCount = -1;
+      try {
+        hostDAO = DAO_FACTORY.getHostDAO();
+        nbCount = hostDAO.count(filters);
+      } catch (final DAOConnectionException e) {
+        throw new InternalServerErrorException(e);
+      } finally {
+        DAOFactory.closeDAO(hostDAO);
+      }
+      responseObject.put("totalResults", nbCount);
+    } else {
+      List<Host> hosts;
+      try {
+        hostDAO = DAO_FACTORY.getHostDAO();
+        hosts = hostDAO.find(filters);
+      } catch (final DAOConnectionException e) {
+        throw new InternalServerErrorException(e);
+      } finally {
+        DAOFactory.closeDAO(hostDAO);
+      }
 
+      final int totalResults = hosts.size();
+      Collections.sort(hosts, order.comparator);
+
+      final ArrayNode results = JsonHandler.createArrayNode();
+      for (int i = offset; i < offset + limit && i < hosts.size(); i++) {
+        results.add(HostConverter.hostToNode(hosts.get(i)));
+      }
+
+      responseObject.put("totalResults", totalResults);
+      responseObject.set("results", results);
+    }
     final String responseText = JsonUtils.nodeToString(responseObject);
     responder.sendJson(OK, responseText);
   }

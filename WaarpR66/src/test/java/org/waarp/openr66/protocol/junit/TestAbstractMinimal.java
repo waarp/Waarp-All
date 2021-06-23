@@ -29,8 +29,10 @@ import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
 import org.waarp.common.utility.FileTestUtils;
+import org.waarp.common.utility.Processes;
 import org.waarp.common.utility.SystemPropertyUtil;
 import org.waarp.common.utility.WaarpSystemUtil;
+import org.waarp.openr66.server.R66Server;
 
 import java.io.File;
 import java.io.IOException;
@@ -63,6 +65,23 @@ public abstract class TestAbstractMinimal {
     }
     if (logger == null) {
       logger = WaarpLoggerFactory.getLogger(TestAbstractMinimal.class);
+    }
+    int pid;
+    if ((pid =
+        Processes.getPidOfRunnerJavaCommandLinux(R66Server.class.getName())) !=
+        -1) {
+      logger.error(
+          "####################### R66 SERVER STILL RUNNING {} ###################",
+          pid);
+      System.err.println(
+          "####################### R66 SERVER STILL RUNNING " + pid +
+          " ###################");
+      Processes.kill(pid, false);
+    } else {
+      logger.warn(
+          "####################### NO R66 SERVER RUNNING ###################");
+      System.out.println(
+          "####################### NO R66 SERVER RUNNING ###################");
     }
     final ClassLoader classLoader = TestAbstractMinimal.class.getClassLoader();
     WaarpSystemUtil.setJunit(true);

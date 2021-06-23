@@ -140,7 +140,7 @@ public class TestRecvThroughClient extends RecvThroughClient {
 
   public static class TestRecvThroughHandler extends RecvThroughHandler {
     @Override
-    public void writeBytes(byte[] buffer)
+    public void writeBytes(final byte[] buffer, final int length)
         throws OpenR66ProtocolBusinessException {
       // one should use the array for its own goal
       // logger.debug("Write {}", array.length);

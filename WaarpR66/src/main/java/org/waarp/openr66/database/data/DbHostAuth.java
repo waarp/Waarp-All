@@ -822,7 +822,7 @@ public class DbHostAuth extends AbstractDbDataDao<Host> {
     HostDAO hostAccess = null;
     try {
       hostAccess = DAOFactory.getInstance().getHostDAO();
-      return !hostAccess.find(filters).isEmpty();
+      return hostAccess.count(filters) > 0;
     } catch (final DAOConnectionException e) {
       logger.error("DAO Access error", e);
       return false;

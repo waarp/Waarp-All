@@ -46,8 +46,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Map;
-import java.util.Set;
 
 import static org.junit.Assert.*;
 
@@ -98,9 +98,10 @@ public class S3TasksTest {
     WaarpLoggerFactory.setDefaultFactoryIfNotSame(
         new WaarpSlf4JLoggerFactory(WaarpLogLevel.WARN));
     ResourceLeakDetector.setLevel(ResourceLeakDetector.Level.PARANOID);
-    Set<AbstractExtendedTaskFactory> set = TaskType.getExtendedFactories();
+    Collection<AbstractExtendedTaskFactory> collection =
+        TaskType.getExtendedFactories();
     AbstractExtendedTaskFactory futureFactory = null;
-    for (AbstractExtendedTaskFactory extendedTaskFactory : set) {
+    for (AbstractExtendedTaskFactory extendedTaskFactory : collection) {
       if (extendedTaskFactory instanceof S3TaskFactory) {
         futureFactory = extendedTaskFactory;
       }

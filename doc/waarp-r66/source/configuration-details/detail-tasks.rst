@@ -409,6 +409,39 @@ Ceci déclenchera un ``UNZIP`` depuis l'archive ZIP ``/path/sourcetarfile``
 vers le dossier ``/path/targetdirectory``. Le fichier n'est pas marqué comme
 déplacé.
 
+COMPRESS
+""""""""
+
+.. versionadded:: 3.6.0
+
+   La tâche de compression unitaire efficace et performante est ajoutée.
+
+Crée un fichier compressé au format ZSTD depuis le fichier courant comme source et comme destination
+si spécifié le nom du fichier, sinon le nom du fichier existant avec l'extension ``.zstd``, ou inversement
+décompresse le fichier courant vers le om du fichier spécifié, et si non spécifié le nom du fichier courant
+existant avec l'extension ``.unzstd``.
+
+- Une fois le ``Path`` transformé selon les remplacements dynamiques, il est utilisé comme ``String
+  Format`` avec le ``Transfer Information`` utilisé en entrée (``String.format(Path,Info)``).
+- Si ``delay`` est ``1``, il s'agit d'une décompression
+- Si ``delay`` est ``0``, il s'agit d'une compression
+- Le fichier est marqué comme déplacé et modifié pour la nouvelle cible.
+
+Exemple:
+
+.. code-block:: xml
+
+  <task>
+    <type>COMPRESS</type>
+    <path>/path/targetdirectory/newFile.zstd</path>
+    <delay>0</delay>
+  </task>
+
+Ceci déclenchera une compression au format ZSTD du fichier courant vers
+vers le fichier ``/path/targetdirectory/newFile.zstd``.
+Le fichier est marqué comme déplacé avec ce nouveau fichier.
+
+
 TRANSCODE
 """""""""
 
@@ -725,7 +758,6 @@ Exemple 4:
   </task>
 
 Même cas que l'exemple 3 plus minimaliste et réaliste.
-
 
 
 Tâches exécutant un sous-traitement

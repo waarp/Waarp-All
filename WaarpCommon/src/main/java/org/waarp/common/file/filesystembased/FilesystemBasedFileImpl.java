@@ -38,7 +38,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.util.Arrays;
 
 /**
  * File implementation for Filesystem Based
@@ -386,15 +385,16 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
   public DataBlock readDataBlock()
       throws FileTransferException, FileEndOfTransferException {
     if (isReady) {
-      final DataBlock dataBlock = new DataBlock();
-      final byte[] buffer = getByteBlock(getSession().getBlockSize());
-      if (buffer != null) {
-        dataBlock.setBlock(buffer);
-        if (dataBlock.getByteCount() < getSession().getBlockSize()) {
-          dataBlock.setEOF(true);
-        }
-        return dataBlock;
-      }
+      return getByteBlock(getSession().getBlockSize());
+    }
+    throw new FileTransferException(NO_FILE_IS_READY);
+  }
+
+  @Override
+  public DataBlock readDataBlock(final byte[] bufferGiven)
+      throws FileTransferException, FileEndOfTransferException {
+    if (isReady) {
+      return getByteBlock(bufferGiven);
     }
     throw new FileTransferException(NO_FILE_IS_READY);
   }
@@ -528,27 +528,55 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
    * size to 2^32 bytes.
    * <p>
    * The returned block is limited to sizeblock. If the returned block is less
-   * than sizeblock length, it is the
+   * than sizeblock length, through lastReadSize, it is the
    * last block to read.
    *
    * @param sizeblock is the limit size for the block array
    *
-   * @return the resulting block of bytes (even empty)
+   * @return the resulting DataBlock (even empty or partial)
    *
    * @throws FileTransferException
    * @throws FileEndOfTransferException
    */
-  private byte[] getByteBlock(final int sizeblock)
+  private DataBlock getByteBlock(final int sizeblock)
       throws FileTransferException, FileEndOfTransferException {
     if (!isReady) {
       throw new FileTransferException(NO_FILE_IS_READY);
     }
     if (fileInputStream == null) {
+      checkByteBufSize(sizeblock);
+    }
+    return getByteBlock(reusableBytes);
+  }
+
+  /**
+   * Get the current block of bytes of the current FileInterface. There is
+   * therefore no limitation of the file
+   * size to 2^32 bytes.
+   * <p>
+   * The returned block is limited to sizeblock. If the returned block is less
+   * than sizeblock length, through lastReadSize, it is the
+   * last block to read.
+   *
+   * @param bufferGiven buffer to use with the limit size for the block array
+   *
+   * @return the resulting DataBlock (even empty or partial)
+   *
+   * @throws FileTransferException
+   * @throws FileEndOfTransferException
+   */
+  private DataBlock getByteBlock(final byte[] bufferGiven)
+      throws FileTransferException, FileEndOfTransferException {
+    if (!isReady) {
+      throw new FileTransferException(NO_FILE_IS_READY);
+    }
+    final int sizeblock = bufferGiven.length;
+    if (fileInputStream == null) {
       fileInputStream = getFileInputStream();
       if (fileInputStream == null) {
         throw new FileTransferException(INTERNAL_ERROR_FILE_IS_NOT_READY);
       }
-      checkByteBufSize(sizeblock);
+      reusableBytes = bufferGiven;
     }
     int sizeout = 0;
     while (sizeout < sizeblock) {
@@ -579,9 +607,10 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
       throw new FileEndOfTransferException("End of file");
     }
     position += sizeout;
-    byte[] buffer = reusableBytes;
+    final DataBlock dataBlock = new DataBlock();
+    dataBlock.setBlock(reusableBytes, sizeout);
     if (sizeout < sizeblock) {// last block
-      buffer = Arrays.copyOfRange(reusableBytes, 0, sizeout);
+      dataBlock.setEOF(true);
       try {
         closeFile();
       } catch (final CommandAbstractException ignored) {
@@ -589,7 +618,7 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
       }
       isReady = false;
     }
-    return buffer;
+    return dataBlock;
   }
 
   protected FileInputStream getFileInputStream() {

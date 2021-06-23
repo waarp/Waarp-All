@@ -73,6 +73,19 @@ public class XMLLimitDAO implements LimitDAO {
     throw new DAOConnectionException("Operation not supported on XML DAO");
   }
 
+  /**
+   * {@link DAOConnectionException}
+   *
+   * @return count only if filters is empty or null
+   */
+  @Override
+  public long count(final List<Filter> fitlers) throws DAOConnectionException {
+    if (fitlers == null || fitlers.isEmpty()) {
+      return dbR66ConfigurationHashMap.size();
+    }
+    throw new DAOConnectionException("Operation not supported on XML DAO");
+  }
+
   @Override
   public void insert(final Limit limit) {
     dbR66ConfigurationHashMap.put(limit.getHostid(), limit);

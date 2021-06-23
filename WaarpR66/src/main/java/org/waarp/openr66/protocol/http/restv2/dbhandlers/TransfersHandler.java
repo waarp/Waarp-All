@@ -41,6 +41,7 @@ import org.waarp.openr66.protocol.http.restv2.converters.TransferConverter;
 import org.waarp.openr66.protocol.http.restv2.errors.RestError;
 import org.waarp.openr66.protocol.http.restv2.errors.RestErrorException;
 import org.waarp.openr66.protocol.http.restv2.utils.JsonUtils;
+import org.waarp.openr66.protocol.http.restv2.utils.RestUtils;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
@@ -120,6 +121,8 @@ public class TransfersHandler extends AbstractRestDbHandler {
    * @param stopTrans upper bound for the transfers' starting date
    * @param followId the followId to find, should be the only one, except
    *     LIMIT, OFFSET, ORDER
+   * @param countOrder if true is specified, it turns out to be a "count"
+   *     request only
    */
   @GET
   @Consumes(APPLICATION_FORM_URLENCODED)
@@ -145,11 +148,22 @@ public class TransfersHandler extends AbstractRestDbHandler {
                              @QueryParam(STOP_TRANS) @DefaultValue("")
                              final String stopTrans,
                              @QueryParam(FOLLOW_ID) @DefaultValue("")
-                             final String followId) {
+                             final String followId,
+                             @QueryParam(COUNT_ORDER) @DefaultValue("")
+                             final String countOrder) {
     checkSanity(limitStr, offsetStr, orderStr, ruleID, partner, statusStr,
-                filename, startTrans, stopTrans, followId);
+                filename, startTrans, stopTrans, followId, countOrder);
     final ArrayList<RestError> errors = new ArrayList<RestError>();
 
+    boolean count = false;
+    try {
+      if (ParametersChecker.isNotEmpty(countOrder) &&
+          RestUtils.stringToBoolean(countOrder)) {
+        count = true;
+      }
+    } catch (final Exception ignore) {
+      // Ignore
+    }
     int limit = 20;
     try {
       limit = Integer.parseInt(limitStr);
@@ -221,23 +235,35 @@ public class TransfersHandler extends AbstractRestDbHandler {
     }
 
     TransferDAO transferDAO = null;
-    List<Transfer> transferList;
-    try {
-      transferDAO = DAO_FACTORY.getTransferDAO();
-      transferList =
-          transferDAO.find(filters, order.column, order.ascend, limit, offset);
-    } catch (final DAOConnectionException e) {
-      throw new InternalServerErrorException(e);
-    } finally {
-      DAOFactory.closeDAO(transferDAO);
-    }
-
     final ObjectNode responseObject = JsonHandler.createObjectNode();
-    final ArrayNode resultList = responseObject.putArray("results");
-    for (final Transfer transfer : transferList) {
-      resultList.add(TransferConverter.transferToNode(transfer));
+    if (count) {
+      long nbCount = -1;
+      try {
+        transferDAO = DAO_FACTORY.getTransferDAO();
+        nbCount = transferDAO.count(filters);
+      } catch (final DAOConnectionException e) {
+        throw new InternalServerErrorException(e);
+      } finally {
+        DAOFactory.closeDAO(transferDAO);
+      }
+      responseObject.put("totalResults", nbCount);
+    } else {
+      List<Transfer> transferList;
+      try {
+        transferDAO = DAO_FACTORY.getTransferDAO();
+        transferList = transferDAO
+            .find(filters, order.column, order.ascend, limit, offset);
+      } catch (final DAOConnectionException e) {
+        throw new InternalServerErrorException(e);
+      } finally {
+        DAOFactory.closeDAO(transferDAO);
+      }
+      final ArrayNode resultList = responseObject.putArray("results");
+      for (final Transfer transfer : transferList) {
+        resultList.add(TransferConverter.transferToNode(transfer));
+      }
+      responseObject.put("totalResults", transferList.size());
     }
-    responseObject.put("totalResults", transferList.size());
     final String responseText = JsonUtils.nodeToString(responseObject);
     responder.sendJson(OK, responseText);
   }

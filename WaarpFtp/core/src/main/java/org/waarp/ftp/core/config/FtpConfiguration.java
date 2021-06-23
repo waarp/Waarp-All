@@ -102,7 +102,7 @@ public abstract class FtpConfiguration {
   /**
    * True if the service is going to shutdown
    */
-  private volatile boolean isShutdown;
+  private boolean isShutdown;
 
   /**
    * Default number of threads in pool for Server. The default value is for

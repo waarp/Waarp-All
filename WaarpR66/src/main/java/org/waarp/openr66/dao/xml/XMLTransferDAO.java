@@ -242,6 +242,19 @@ public class XMLTransferDAO implements TransferDAO {
   }
 
   /**
+   * {@link DAOConnectionException}
+   *
+   * @return count only if filters is empty or null
+   */
+  @Override
+  public long count(final List<Filter> fitlers) throws DAOConnectionException {
+    if (fitlers == null || fitlers.isEmpty()) {
+      return dbR66TaskHashMap.size();
+    }
+    throw new DAOConnectionException("Operation not supported on XML DAO");
+  }
+
+  /**
    * {@link UnsupportedOperationException}
    *
    * @return never

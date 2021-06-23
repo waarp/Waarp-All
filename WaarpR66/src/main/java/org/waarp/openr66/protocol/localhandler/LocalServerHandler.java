@@ -24,6 +24,7 @@ import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.utility.WaarpShutdownHook;
 import org.waarp.openr66.context.ErrorCode;
 import org.waarp.openr66.context.R66Result;
+import org.waarp.openr66.context.R66Session;
 import org.waarp.openr66.context.task.exception.OpenR66RunnerErrorException;
 import org.waarp.openr66.context.task.exception.OpenR66RunnerException;
 import org.waarp.openr66.database.data.DbTaskRunner;
@@ -168,6 +169,16 @@ public final class LocalServerHandler {
             logger.debug("DATA RANK: {} : {}",
                          ((DataPacket) packet).getPacketRank(),
                          serverHandler.getSession().getRunner().getRank());
+          }
+          ((DataPacket) packet)
+              .createByteBufFromRecv(serverHandler.getSession());
+          logger.debug("DATA RANK: {} : {} for {} bytes",
+                       ((DataPacket) packet).getPacketRank(),
+                       serverHandler.getSession().getRunner().getRank(),
+                       ((DataPacket) packet).getLengthPacket());
+          if (localChannelReference.getSession().isCompressionEnabled()) {
+            R66Session.getCodec().uncompress(((DataPacket) packet),
+                                             serverHandler.getSession());
           }
           serverHandler.data((DataPacket) packet);
           break;
@@ -338,7 +349,7 @@ public final class LocalServerHandler {
             // potential file size changed
             serverHandler.requestChangeNameSize(newfilename, newSize);
           } else {
-            serverHandler.jsonCommand((JsonCommandPacket) packet);
+            serverHandler.jsonCommand((JsonCommandPacket) packet, json);
           }
           break;
         }

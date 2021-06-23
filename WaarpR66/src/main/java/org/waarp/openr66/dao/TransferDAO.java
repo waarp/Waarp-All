@@ -87,6 +87,17 @@ public interface TransferDAO extends AbstractDAO<Transfer> {
                       int limit, int offset) throws DAOConnectionException;
 
   /**
+   * Retrieve Transfer objects count with the given filters
+   *
+   * @param filters List of filter
+   *
+   * @return the count of Transfer objects
+   *
+   * @throws DAOConnectionException If data access error occurs
+   */
+  long count(List<Filter> filters) throws DAOConnectionException;
+
+  /**
    * Retrieve the Transfer object with the specified Special ID from the
    * persistance layer
    *

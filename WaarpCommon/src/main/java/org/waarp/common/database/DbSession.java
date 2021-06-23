@@ -87,7 +87,7 @@ public class DbSession {
   /**
    * To be used when a local Channel is over
    */
-  private volatile boolean isDisActive = true;
+  private boolean isDisActive = true;
 
   /**
    * List all DbPrepareStatement with long term usage to enable the recreation

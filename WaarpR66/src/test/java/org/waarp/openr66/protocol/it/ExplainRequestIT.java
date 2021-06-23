@@ -506,6 +506,7 @@ public class ExplainRequestIT extends TestAbstract {
     filters.add(getFollowIdFilter(followId));
     filters.add(getOwnerFilter());
     daoExplain.find(filters, 100);
+    daoExplain.find(filters, 100, 10);
     // Basic example
     daoExplain.find(filters, DBTransferDAO.TRANSFER_START_FIELD, true, 100);
     list = daoSrc.find(filters);
@@ -688,6 +689,12 @@ public class ExplainRequestIT extends TestAbstract {
     filters
         .add(new Filter(TRANSFER_STOP_FIELD, Filter.BETWEEN, start, timestamp));
     daoExplain.find(filters, order.column, order.ascend);
+
+    // Other request
+    logger.warn("Other requests");
+    daoExplain.count(filters);
+    daoExplain.updateRank(transfer);
+
 
     // Filter on rule and owner (not standard)
     logger.warn("Not Standards");

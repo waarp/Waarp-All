@@ -73,6 +73,9 @@ Pour un POST sur une API REST :
       <url>http://127.0.0.1:8999</url>
       <endpoint>/log</endpoint>
       <delay>1000</delay>
+      <basicAuthent>basicAuthent</basicAuthent>
+      <token>token</token>
+      <apiKey>apiKey</apiKey>
       <keepconnection>True</keepconnection>
       <intervalincluded>True</intervalincluded>
       <transformlongasstring>False</transformlongasstring>
@@ -101,6 +104,12 @@ Description des paramètres :
 
   - Utile notamment avec ELK car les nombres longs (identifiant unique) sont trop long lors du parsing et sont
     tronqués.
+
+- Si une authentification est nécessaire, plusieurs options sont possibles (unique) :
+
+  - Authentification Basic : ``basicAuthent`` contient l'authentification Basic au format Base 64
+  - Bearer Token : ``token`` contenant le token d'accès
+  - ApiKey : ``apiKey`` contenant la clef d'API sous la forme ``apiId:apiKey``
 
 Pour une indexation par Bulk sur Elasticsearch :
 
@@ -148,7 +157,7 @@ Description des paramètres :
   - Ainsi ``waarpR66-%%WAARPHOST%%-%%DATE%%`` donnerait
    ``waarpr66-hosta-2021-06-21``
 
-- Si une authentification est nécessaire, plusieurs options sont possibles :
+- Si une authentification est nécessaire, plusieurs options sont possibles (unique) :
 
   - Authentification Basic : ``username`` et ``paswd`` contienent l'authentification Basic
   - Bearer Token : ``token`` contenant le token d'accès
@@ -183,6 +192,12 @@ il en était.
 Si c'est un problème plus grave (le serveur physique est indisponible), vous
 pouvez alors activer cette fonction en la basculant sur un autre membre du cluster.
 
+Pour Elasticsearch
+""""""""""""""""""
+
+Si la connection est directe avec Elasticsearch (ou au travers d'un proxy),
+il n'est pas besoin d'utiliser l'option ``transformlongasstring``, en la laissant
+à ``False`` par défaut.
 
 Exemple de configuration d'un Logstash
 """"""""""""""""""""""""""""""""""""""

@@ -75,20 +75,23 @@ public class ScenarioLoopBenchmarkMonitoringS3PostGreSqlIT
     return db;
   }
 
+  static MonitorExporterTransfers monitorExporterTransfers;
+
   @BeforeClass
   public static void setup() throws Exception {
+    rulename = "loop";
     final boolean useExternalLogstash =
         SystemPropertyUtil.get("useExternalLogstash", false);
     logger.warn("START PostGreSQL IT TEST");
     scenarioBase = new ScenarioLoopBenchmarkMonitoringS3PostGreSqlIT();
     setUpBeforeClass();
-    final MonitorExporterTransfers monitorExporterTransfers;
     if (useExternalLogstash) {
       // Use an external Logstash instance already started
       // Start Repetitive Monitoring
       monitorExporterTransfers =
-          new MonitorExporterTransfers("http://localhost:" + port, "/", true,
-                                       true, true, Configuration.configuration
+          new MonitorExporterTransfers("http://localhost:" + port, "/", null,
+                                       null, null, true, true, true,
+                                       Configuration.configuration
                                            .getHttpWorkerGroup());
 
     } else {
@@ -96,8 +99,9 @@ public class ScenarioLoopBenchmarkMonitoringS3PostGreSqlIT
       final HttpServerExample httpServerExample = new HttpServerExample(port);
       // Start Repetitive Monitoring
       monitorExporterTransfers =
-          new MonitorExporterTransfers("http://localhost:" + port, "/", true,
-                                       true, false, Configuration.configuration
+          new MonitorExporterTransfers("http://localhost:" + port, "/", null,
+                                       null, null, true, true, false,
+                                       Configuration.configuration
                                            .getHttpWorkerGroup());
     }
     Configuration.configuration
@@ -142,6 +146,7 @@ public class ScenarioLoopBenchmarkMonitoringS3PostGreSqlIT
   @AfterClass
   public static void tearDownContainerAfterClass() throws Exception {
     tearDownAfterClass(getDelegateThread());
+    monitorExporterTransfers.close();
     WaarpSystemUtil.stopLogger(true);
     container.stop();
   }

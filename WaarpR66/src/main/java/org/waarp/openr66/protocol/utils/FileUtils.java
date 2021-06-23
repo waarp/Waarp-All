@@ -116,26 +116,28 @@ public final class FileUtils {
 
   /**
    * @param buffer
+   * @param size
    * @param algo for packet only
    * @param digestGlobal
    *
    * @return the hash from the given Buffer
    */
-  public static byte[] getHash(final byte[] buffer, final DigestAlgo algo,
+  public static byte[] getHash(final byte[] buffer, final int size,
+                               final DigestAlgo algo,
                                final FilesystemBasedDigest digestGlobal) {
-    if (buffer == null || buffer.length == 0) {
+    if (buffer == null || size == 0) {
       return EMPTY_ARRAY;
     }
     final byte[] newkey;
     try {
       if (digestGlobal == null) {
-        newkey = FilesystemBasedDigest.getHash(buffer, algo);
+        newkey = FilesystemBasedDigest.getHash(buffer, size, algo);
       } else {
         final FilesystemBasedDigest digestPacket =
             new FilesystemBasedDigest(algo);
-        digestPacket.Update(buffer, 0, buffer.length);
+        digestPacket.Update(buffer, 0, size);
         newkey = digestPacket.Final();
-        digestGlobal.Update(buffer, 0, buffer.length);
+        digestGlobal.Update(buffer, 0, size);
       }
     } catch (final IOException e) {
       return EMPTY_ARRAY;
@@ -151,18 +153,19 @@ public final class FileUtils {
    * @param digestGlobal
    * @param digestLocal
    * @param buffer
+   * @param size size of the buffer
    */
   public static void computeGlobalHash(final FilesystemBasedDigest digestGlobal,
                                        final FilesystemBasedDigest digestLocal,
-                                       final byte[] buffer) {
-    if (buffer == null || buffer.length == 0) {
+                                       final byte[] buffer, int size) {
+    if (buffer == null || size == 0) {
       return;
     }
     if (digestGlobal != null) {
-      digestGlobal.Update(buffer, 0, buffer.length);
+      digestGlobal.Update(buffer, 0, size);
     }
     if (digestLocal != null) {
-      digestLocal.Update(buffer, 0, buffer.length);
+      digestLocal.Update(buffer, 0, size);
     }
   }
 }

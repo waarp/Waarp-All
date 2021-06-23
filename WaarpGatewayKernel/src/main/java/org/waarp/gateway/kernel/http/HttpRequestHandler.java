@@ -120,7 +120,7 @@ public abstract class HttpRequestHandler
   protected HttpRequest request;
   protected HttpMethod method;
 
-  protected volatile boolean willClose;
+  protected boolean willClose;
 
   /**
    * Clean method

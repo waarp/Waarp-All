@@ -62,7 +62,8 @@ public class PartnerConfiguration {
   public enum FIELDS {
     HOSTID("nohostid"), VERSION(R66Versions.V2_4_12.getVersion()),
     DIGESTALGO(DigestAlgo.MD5.algoName), FILESIZE(false), FINALHASH(false),
-    PROXIFIED(false), SEPARATOR(BLANK_SEPARATOR_FIELD);
+    PROXIFIED(false), SEPARATOR(BLANK_SEPARATOR_FIELD),
+    R66VERSION(R66Versions.V2_4_12.getVersion()), COMPRESSION(false);
 
     final String name;
     final Object defaultValue;
@@ -75,9 +76,13 @@ public class PartnerConfiguration {
 
   private final String id;
   private final ObjectNode root = JsonHandler.createObjectNode();
+  private final String version;
+  private final String r66Version;
   private final boolean useJson;
-  private boolean changeFileInfoEnabled;
+  private final boolean changeFileInfoEnabled;
   private final DigestAlgo digestAlgo;
+  private final boolean compression;
+  private final String separator;
 
   /**
    * Constructor for an external HostId
@@ -89,13 +94,13 @@ public class PartnerConfiguration {
     this.id = id;
     JsonHandler.setValue(root, FIELDS.HOSTID, id);
     final int pos = json == null? -1 : json.lastIndexOf('{');
-    final String version;
     if (pos > 1) {
       version = json.substring(0, pos - 1);
     } else {
-      version = "";
+      version = json;
     }
     JsonHandler.setValue(root, FIELDS.VERSION, version);
+    String r66 = R66Versions.V2_4_12.getVersion();
     if (isVersion2GEQVersion1(R66Versions.V2_4_12.getVersion(), version)) {
       JsonHandler.setValue(root, FIELDS.FILESIZE, true);
       JsonHandler.setValue(root, FIELDS.FINALHASH, true);
@@ -111,9 +116,11 @@ public class PartnerConfiguration {
                          (Boolean) FIELDS.PROXIFIED.defaultValue);
     String sep = getSEPARATOR_FIELD();
     if (!isVersion2GEQVersion1(R66Versions.V2_4_13.getVersion(), version)) {
+      r66 = R66Versions.V2_4_12.getVersion();
       sep = BLANK_SEPARATOR_FIELD;
     }
     if (isVersion2GEQVersion1(R66Versions.V2_4_17.getVersion(), version)) {
+      r66 = R66Versions.V2_4_17.getVersion();
       logger.debug("UseJson for {}:{}", id, json);
       useJson = true;
     } else {
@@ -121,8 +128,18 @@ public class PartnerConfiguration {
       useJson = false;
     }
     if (isVersion2GEQVersion1(R66Versions.V3_0_4.getVersion(), version)) {
+      r66 = R66Versions.V3_0_4.getVersion();
       changeFileInfoEnabled = true;
+    } else {
+      changeFileInfoEnabled = false;
     }
+    boolean comp = false;
+    if (isVersion2GEQVersion1(R66Versions.V3_1_0.getVersion(), version)) {
+      r66 = R66Versions.V3_1_0.getVersion();
+      comp = true;
+    }
+    JsonHandler.setValue(root, FIELDS.R66VERSION, r66);
+    JsonHandler.setValue(root, FIELDS.COMPRESSION, comp);
     JsonHandler.setValue(root, FIELDS.SEPARATOR, sep);
 
     if (json != null && pos > 1) {
@@ -136,6 +153,9 @@ public class PartnerConfiguration {
       Configuration.configuration.setBlacklistBadAuthent(false);
     }
     digestAlgo = getDigestAlgoInternal();
+    compression = root.get(FIELDS.COMPRESSION.name).asBoolean();
+    r66Version = root.get(FIELDS.R66VERSION.name).asText();
+    separator = root.get(FIELDS.SEPARATOR.name).asText();
     logger.debug("Info on HostId: {}", root);
   }
 
@@ -147,6 +167,7 @@ public class PartnerConfiguration {
   public PartnerConfiguration(final String id) {
     this.id = id;
     JsonHandler.setValue(root, FIELDS.HOSTID, id);
+    version = Version.ID;
     JsonHandler.setValue(root, FIELDS.VERSION, Version.ID);
     JsonHandler.setValue(root, FIELDS.FILESIZE, true);
     JsonHandler.setValue(root, FIELDS.FINALHASH,
@@ -156,8 +177,15 @@ public class PartnerConfiguration {
     JsonHandler.setValue(root, FIELDS.PROXIFIED,
                          Configuration.configuration.isHostProxyfied());
     JsonHandler.setValue(root, FIELDS.SEPARATOR, getSEPARATOR_FIELD());
+    JsonHandler.setValue(root, FIELDS.R66VERSION,
+                         org.waarp.common.utility.Version.version());
+    r66Version = org.waarp.common.utility.Version.version();
+    compression = Configuration.configuration.isCompressionAvailable();
+    JsonHandler.setValue(root, FIELDS.COMPRESSION, compression);
     useJson = true;
+    changeFileInfoEnabled = true;
     digestAlgo = getDigestAlgoInternal();
+    separator = getSEPARATOR_FIELD();
     logger.debug("Info on HostId: {}", root);
   }
 
@@ -172,7 +200,21 @@ public class PartnerConfiguration {
    * @return the version for this Host
    */
   public String getVersion() {
-    return root.path(FIELDS.VERSION.name).asText();
+    return version;
+  }
+
+  /**
+   * @return the R66Version for this Host
+   */
+  public String getR66Version() {
+    return r66Version;
+  }
+
+  /**
+   * @return True if compression is supported
+   */
+  public boolean isCompression() {
+    return compression;
   }
 
   /**
@@ -220,7 +262,7 @@ public class PartnerConfiguration {
    * @return the separator for this Host
    */
   public String getSeperator() {
-    return root.path(FIELDS.SEPARATOR.name).asText();
+    return separator;
   }
 
   /**
@@ -245,6 +287,11 @@ public class PartnerConfiguration {
     return getVersion() + '.' + JsonHandler.writeAsString(root);
   }
 
+  /**
+   * @param algo
+   *
+   * @return the DigestAlgo corresponding
+   */
   public static DigestAlgo getDigestAlgo(final String algo) {
     for (final DigestAlgo alg : DigestAlgo.values()) {
       if (alg.algoName.equals(algo)) {

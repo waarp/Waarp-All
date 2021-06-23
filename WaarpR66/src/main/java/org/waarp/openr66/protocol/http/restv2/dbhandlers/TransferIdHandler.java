@@ -32,11 +32,13 @@ import org.waarp.openr66.dao.TransferDAO;
 import org.waarp.openr66.dao.exception.DAOConnectionException;
 import org.waarp.openr66.dao.exception.DAONoDataException;
 import org.waarp.openr66.pojo.Transfer;
+import org.waarp.openr66.pojo.Transfer.TASKSTEP;
 import org.waarp.openr66.protocol.http.restv2.converters.TransferConverter;
 import org.waarp.openr66.protocol.http.restv2.utils.JsonUtils;
 import org.waarp.openr66.protocol.localhandler.ServerActions;
 
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.OPTIONS;
@@ -64,6 +66,20 @@ import static org.waarp.openr66.protocol.http.restv2.RestConstants.*;
  */
 @Path(TRANSFER_ID_HANDLER_URI)
 public class TransferIdHandler extends AbstractRestDbHandler {
+  /**
+   * The content of the 'Allow' header sent when an 'OPTIONS' request is made
+   * on the handler.
+   */
+  private static final HttpHeaders OPTIONS_HEADERS;
+
+  static {
+    OPTIONS_HEADERS = new DefaultHttpHeaders();
+    final List<HttpMethod> allow = new ArrayList<HttpMethod>();
+    allow.add(HttpMethod.GET);
+    allow.add(HttpMethod.DELETE);
+    allow.add(HttpMethod.OPTIONS);
+    OPTIONS_HEADERS.add(ALLOW, allow);
+  }
 
   /**
    * Initializes the handler with the given CRUD mask.
@@ -84,7 +100,7 @@ public class TransferIdHandler extends AbstractRestDbHandler {
    * **NOTE:** The {@code uri} parameter refers to the concatenation of the
    * transfer's id, and the name of the
    * host to which the transfer was requested, separated by an underscore
-   * character.
+   * character.</p>
    *
    * @param request the HttpRequest made to the resource
    * @param responder the HttpResponder which sends the reply to the
@@ -140,7 +156,7 @@ public class TransferIdHandler extends AbstractRestDbHandler {
    * **NOTE:** The {@code uri} parameter refers to the concatenation of the
    * transfer's id, and the name of the
    * host to which the transfer was requested, separated by an underscore
-   * character.
+   * character.</p>
    *
    * @param request the HttpRequest made to the resource
    * @param responder the HttpResponder which sends the reply to the
@@ -204,7 +220,7 @@ public class TransferIdHandler extends AbstractRestDbHandler {
    * **NOTE:** The {@code uri} parameter refers to the concatenation of the
    * transfer's id, and the name of the
    * host to which the transfer was requested, separated by an underscore
-   * character.
+   * character.</p>
    *
    * @param request the HttpRequest made to the resource
    * @param responder the HttpResponder which sends the reply to the
@@ -266,7 +282,7 @@ public class TransferIdHandler extends AbstractRestDbHandler {
    * **NOTE:** The {@code uri} parameter refers to the concatenation of the
    * transfer's id, and the name of the
    * host to which the transfer was requested, separated by an underscore
-   * character.
+   * character.</p>
    *
    * @param request the HttpRequest made to the resource
    * @param responder the HttpResponder which sends the reply to the
@@ -323,6 +339,65 @@ public class TransferIdHandler extends AbstractRestDbHandler {
   }
 
   /**
+   * Method called to delete a Transfer entry from the database.
+   * Note that if the Transfer were already started, the delete
+   * cannot be achieved and NOT_FOUND will be returned.
+   * <p>
+   * **NOTE:** The {@code uri} parameter refers to the concatenation of the
+   * transfer's id, and the name of the
+   * host to which the transfer was requested, separated by an underscore
+   * character.</p>
+   *
+   * @param request the HttpRequest made on the resource
+   * @param responder the HttpResponder which sends the reply to the
+   *     request
+   * @param uri the transfer's unique identifier
+   */
+  @DELETE
+  @Consumes(WILDCARD)
+  @RequiredRole(SYSTEM)
+  public void deleteTransfer(final HttpRequest request,
+                             final HttpResponder responder,
+                             @PathParam(URI_ID) final String uri)
+      throws UnsupportedEncodingException {
+    checkSanity(uri);
+    final String key = URLDecoder.decode(uri, UTF8_CHARSET.name());
+    final Pattern pattern = Pattern.compile("(-?\\d+)_(.+)");
+    final Matcher matcher = pattern.matcher(key);
+    if (!matcher.find()) {
+      responder.sendStatus(NOT_FOUND);
+      return;
+    }
+    final String id = matcher.group(1);
+    final String requested = matcher.group(2);
+    TransferDAO transferDAO = null;
+    try {
+      final long transID = Long.parseLong(id);
+      transferDAO = DAO_FACTORY.getTransferDAO();
+      if (!transferDAO
+          .exist(transID, serverName(requested), requested, serverName())) {
+        responder.sendStatus(NOT_FOUND);
+      } else {
+        final Transfer transfer = transferDAO
+            .select(transID, serverName(requested), requested, serverName());
+        if (transfer.getGlobalStep() == TASKSTEP.NOTASK &&
+            transfer.getLastGlobalStep() == TASKSTEP.NOTASK) {
+          responder.sendStatus(NOT_FOUND);
+        } else {
+          transferDAO.delete(transfer);
+          responder.sendStatus(NO_CONTENT);
+        }
+      }
+    } catch (final DAOConnectionException e) {
+      throw new InternalServerErrorException(e);
+    } catch (final DAONoDataException e) {
+      responder.sendStatus(NOT_FOUND);
+    } finally {
+      DAOFactory.closeDAO(transferDAO);
+    }
+  }
+
+  /**
    * Method called to get a list of all allowed HTTP methods on this entry
    * point. The HTTP methods are sent as
    * an array in the reply's headers.
@@ -330,7 +405,7 @@ public class TransferIdHandler extends AbstractRestDbHandler {
    * **NOTE:** The {@code uri} parameter refers to the concatenation of the
    * transfer's id, and the name of the
    * host to which the transfer was requested, separated by an underscore
-   * character.
+   * character.</p>
    *
    * @param request the HttpRequest made to the resource
    * @param responder the HttpResponder which sends the reply to the
@@ -343,9 +418,7 @@ public class TransferIdHandler extends AbstractRestDbHandler {
   public void options(final HttpRequest request, final HttpResponder responder,
                       @PathParam(URI_ID) final String uri) {
     checkSanity(uri);
-    final HttpHeaders allow = new DefaultHttpHeaders();
-    allow.add(ALLOW, HttpMethod.OPTIONS);
-    responder.sendStatus(OK, allow);
+    responder.sendStatus(OK, OPTIONS_HEADERS);
   }
 
   @Path("{ep}")

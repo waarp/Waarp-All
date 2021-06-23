@@ -20,7 +20,10 @@ paths:
                     title: Total de réponses
                     minimum: 0
                     format: int32
-                    description: Le nombre total d'entrées respectant les filtres donnés.
+                    description: >-
+                      Le nombre total d'entrées respectant les filtres donnés.
+                      Si le paramètre countOrder=true est donnée, seule
+                      valeur retournée.
                     type: integer
                   results:
                     title: Réponses
@@ -33,14 +36,14 @@ paths:
                       $ref: '#/components/schemas/ObjectHost'
                 required:
                   - totalResults
-                  - results
         '400':
           $ref: '#/components/responses/trait_returnsBadRequest_400'
         '415':
           $ref: '#/components/responses/trait_checksContentType_415'
       description: >
         Renvoie l'ensemble des hôtes conformes aux filtres passés en paramètres
-        de requête.
+        de requête, ou simplement le décompte si countOrder=true est passé en
+        paramètre..
 
         Les hôtes peuvent être filtrés par addresse, sur leur utilisation de
         SSL, ou sur le fait qu'ils soient actifs ou non.
@@ -114,6 +117,15 @@ paths:
             actifs. Et si le paramètre est faux, que ceux inactifs.
 
             Si le paramètre n'est pas défini, aucun filtrage ne sera fait.
+          schema:
+            type: boolean
+        - name: countOrder
+          in: query
+          description: >
+            Si ce paramètre est vrai, la réponse ne contiendra que le nombre
+            des hôtes selon les conditions, sinon la liste réelle.
+
+            Si le paramètre n'est pas défini, la liste est retournée.
           schema:
             type: boolean
 components:

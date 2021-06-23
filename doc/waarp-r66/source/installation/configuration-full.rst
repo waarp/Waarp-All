@@ -126,6 +126,7 @@ fastmd5                          SODLL                Path vers la JNI. Si vide,
 checkversion                     Boolean (True)       Utilisation du protocole etendu (>= 2.3), accès à plus de retour d'information en fin de transfert
 globaldigest                     Boolean (True)       Utilisation d'un digest global (MD5, SHA1, ...) par transfert de fichier
 localdigest                      Boolean (True)       Utilisation d'un digest local (MD5, SHA1, ...) en fin de transfert (optionnel)
+compression                      Boolean (False)      Active ou Désactive la compression à la volée par bloc, puis en fonction du partenaire
 
 **db**
 dbdriver                         address              Driver JDBC à utiliser pour se connecter à la base de données (mysql, postgresql, h2)
@@ -164,17 +165,18 @@ url                              String (null)        URL de base pour les expor
 delay                            Integer (1000)       Délai entre deux vérifications de changement de statuts sur les transferts
 intervalincluded                 Boolean (True)       Si « True », les informations de l'intervalle utilisé seront fournies
 transformlongasstring            Boolean (False)      Si « True », les nombres « long » seront convertis en chaîne de caractères, sinon ils seront numériques
+token                            String (null)        Spécifie si nécessaire le token  dans le cadre d'une authentification via Token
+apiKey                           String (null)        Spécifie si nécessaire le password dans le cadre d'une authentification via ApiKey (format ``apiId:apiKey``)
 *Partie API REST*
 endpoint                         String (null)        End point à ajouter à l'URL de base
 keepconnection                   Boolean (True)       Si « True », la connexion HTTP(S) sera en Keep-Alive (pas de réouverture sauf si le serveur la ferme), sinon la connexion sera réinitialisée pour chaque appel
+basicAuthent                     String (null)        Spécifie si nécessaire l'authentification basique
 *Partie Elasticsearch*
 index                            String (null)        Contient le nom de l'index avec de possibles substitutions, dont ``%%WARPHOST%%`` pour le nom du host concerné, et les ``%%DATETIME%%``, ``%%DATEHOUR%%``, ``%%DATE%%``, ``%%YEARMONTH%%``, ``%%YEAR%%`` pour des substitutions de date et heure partiellement (``yyyy.MM.dd.HH.mm`` à ``yyyy``)
 prefix                           String (null)        Spécifie si nécessaire un prefix global dans le cas d'usage d'un Proxy devant Elasticsearch
 username                         String (null)        Spécifie si nécessaire le username (et son password) dans le cadre d'une authentification basique
 paswd                            String (null)        Spécifie si nécessaire le password dans le cadre d'une authentification basique
-token                            String (null)        Spécifie si nécessaire le token  dans le cadre d'une authentification via Token
-apiKey                           String (null)        Spécifie si nécessaire le password dans le cadre d'une authentification via ApiKey (format ``apiId:apiKey``)
-compression                      Boolean (True)       Spécifie si les flux sont compresser (par défaut True)
+compression                      Boolean (True)       Spécifie si les flux sont compressés (par défaut True)
 ================================ ==================== ==============
 
 Les balises <roles> et <aliases> contiennent des listes d'option. Exemple:
@@ -228,6 +230,7 @@ Il est possible de limiter l'usage de la mémoire en usant des paramètres suiva
    (non recomandé)
  * `serverrestport` : si le moteur REST est sans usage, vous pouvez le désactiver (`-1`, valeur par défaut)
  * `usethrift` : si le moteur THRIFT est sans usage,  vous pouvez le désactiver (`0`, valeur par défaut)
+ * `pushMonitor` : si le Push Monitoring Exporter est sans usage, ne pas le déclarer
 
 *Limitation des ressources*
 
@@ -238,6 +241,7 @@ Il est possible de limiter l'usage de la mémoire en usant des paramètres suiva
    HTTP et les réponses REST (minimum conseillé 100 Mo)
  * `runlimit`: Possibilité de limiter le nombre de transferts simultanés (il est avisé de ne pas mettre moins
    de 2)
+ * `compression`: Possibilité de ne pas activer la compression à la volée (moins de mémoire et de cpu)
  * de limiter l'impact processeur via une gestion adaptative de la bande passante globale :
    * `usecpulimit` à `True` : ceci active la fonctionnalité
    * `usejdkcpulimit` de préférence, laisser à `False` ou *ignoré* (permet de choisir l'implémentation
@@ -267,8 +271,10 @@ Il est possible de limiter l'usage de la mémoire en usant des paramètres suiva
    * *chiffres comparés à `SHA-256` (159ms JDK11, 192ms JDK8)*
  * `globaldigest` : Possibilité de le désactiver mais recommandé à `True` (environ 25% de gains)
  * `localdigest` : Possibilité de le désactiver (`False`) (environ 20% de gains)
- * `runlimit` : Possibilité d'augmenter ou de diminuer la valeur par défaut (1000) entre 2 et 50000
-transferts concurrents
+ * `runlimit` : Possibilité d'augmenter ou de diminuer la valeur par défaut (1000) entre 2 et 50000 transferts concurrents
+ * `compression`: Permet d'activer (désativée par défaut) la possibilité de compression à la volée des blocs
+   et donc la vitesse des transferts sur des environnements à réseau contraint
+
 
 La performance d'autres éléments peuvent jouer :
 

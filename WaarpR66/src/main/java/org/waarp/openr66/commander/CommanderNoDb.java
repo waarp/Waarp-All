@@ -168,7 +168,7 @@ public class CommanderNoDb implements CommanderInterface {
             // already running
             continue;
           }
-          if (taskRunner.isSelfRequested()) {
+          if (taskRunner.isRequestOnRequested()) {
             // cannot schedule a request where the host is the requested host
             taskRunner.changeUpdatedInfo(UpdatedInfo.INTERRUPTED);
             taskRunner.update();

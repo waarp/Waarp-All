@@ -320,20 +320,26 @@ public abstract class ScenarioBaseLoopBenchmark extends TestAbstract {
     try {
       httpClient = HttpClientBuilder.create().setConnectionManagerShared(true)
                                     .disableAutomaticRetries().build();
-      HttpGet request =
-          new HttpGet("http://127.0.0.1:8098/v2/transfers?limit=100000");
+      final HttpGet request =
+          new HttpGet("http://127.0.0.1:8098/v2/transfers?countOrder=true");
       CloseableHttpResponse response = null;
       try {
         response = httpClient.execute(request);
-        assertEquals(200, response.getStatusLine().getStatusCode());
-        String content = EntityUtils.toString(response.getEntity());
-        ObjectNode node = JsonHandler.getFromString(content);
-        if (node != null) {
-          JsonNode number = node.findValue("totalResults");
-          int newNb = number.asInt();
-          max += newNb;
-          totalTransfers = newNb;
-          logger.warn("Found {} transfers", newNb);
+        if (300 > response.getStatusLine().getStatusCode()) {
+          String content = EntityUtils.toString(response.getEntity());
+          ObjectNode node = JsonHandler.getFromString(content);
+          if (node != null) {
+            JsonNode number = node.findValue("totalResults");
+            if (number != null) {
+              long newNb = number.asLong();
+              max += newNb;
+              totalTransfers = (int) newNb;
+              logger.warn("Found {} transfers", newNb);
+            }
+          }
+        } else {
+          logger.warn("Result not OK: {}",
+                      response.getStatusLine().getStatusCode());
         }
       } finally {
         if (response != null) {
@@ -343,16 +349,22 @@ public abstract class ScenarioBaseLoopBenchmark extends TestAbstract {
       while (nb < max) {
         try {
           response = httpClient.execute(request);
-          assertEquals(200, response.getStatusLine().getStatusCode());
+          if (400 <= response.getStatusLine().getStatusCode()) {
+            logger.warn("Result not OK: {}",
+                        response.getStatusLine().getStatusCode());
+            break;
+          }
           String content = EntityUtils.toString(response.getEntity());
           ObjectNode node = JsonHandler.getFromString(content);
           if (node != null) {
             JsonNode number = node.findValue("totalResults");
-            int newNb = number.asInt();
-            if (newNb != nb || every10sec == 0) {
-              every10sec = 10;
-              nb = newNb;
-              logger.warn("Found {} transfers", nb);
+            if (number != null) {
+              int newNb = number.asInt();
+              if (newNb != nb || every10sec == 0) {
+                every10sec = 10;
+                nb = newNb;
+                logger.warn("Found {} transfers", nb);
+              }
             }
             every10sec--;
           }
@@ -408,19 +420,21 @@ public abstract class ScenarioBaseLoopBenchmark extends TestAbstract {
     }
   }
 
-  private int initBenchmark() throws IOException {
+  private int initBenchmark() throws IOException, Reply550Exception {
     NUMBER_FILES = SystemPropertyUtil.get(IT_LONG_TEST, false)? 2000 : 200;
     int factor = 250 * 1024 * 2 / NUMBER_FILES;
     Assume.assumeNotNull(networkTransaction);
     Configuration.configuration.changeNetworkLimit(0, 0, 0, 0, 1000);
     File baseDir = new File("/tmp/R66/" + PATH_COMMON + "/R1/out/");
     File baseDir2 = new File("/tmp/R66/" + PATH_COMMON + "/R2/out/");
+    baseDir.mkdirs();
+    baseDir2.mkdirs();
     for (int i = 1; i <= NUMBER_FILES; i++) {
       int size = i * factor;
       File fileOut = new File(baseDir, "hello" + size);
       final File outHello = generateOutFile(fileOut.getAbsolutePath(), size);
       File fileOut2 = new File(baseDir2, "hello" + size);
-      final File outHello2 = generateOutFile(fileOut2.getAbsolutePath(), size);
+      FileUtils.copy(fileOut, fileOut2, false, false);
     }
     logger.warn("End of file creations");
     return factor;
@@ -458,7 +472,7 @@ public abstract class ScenarioBaseLoopBenchmark extends TestAbstract {
 
   @Test
   public void test01_LoopBenchmarkSendsSyncSslNoLimit()
-      throws IOException, InterruptedException {
+      throws IOException, Reply550Exception {
     logger.warn("Start {} {}", Processes.getCurrentMethodName(), NUMBER_FILES);
     int factor = initBenchmark();
     String serverName = "server2-ssl";
@@ -482,7 +496,7 @@ public abstract class ScenarioBaseLoopBenchmark extends TestAbstract {
 
   @Test
   public void test02_LoopBenchmarkSendsSyncNoLimit()
-      throws IOException, InterruptedException {
+      throws IOException, Reply550Exception {
     logger.warn("Start {} {}", Processes.getCurrentMethodName(), NUMBER_FILES);
     int factor = initBenchmark();
     String serverName = "server2";

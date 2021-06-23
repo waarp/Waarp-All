@@ -222,9 +222,17 @@ public class TransferActions extends ServerActions {
     }
     logger
         .debug("Filesize: {}:{}", packet.getOriginalSize(), runner.isSender());
+    logger.debug("I am {} acting as sender {} while packet said {} and " +
+                 "runner said {} and session said {} but will changed",
+                 Configuration.configuration.getHostId(), isRetrieve,
+                 packet.isRetrieve(), runner.isSender(), session.isSender());
     boolean shouldInformBack = false;
     try {
       session.setRunner(runner);
+      if (packet.isToValidate() && isRetrieve && session.isSender() == false) {
+        logger.warn("isSend is True while requested is called on a {} mode",
+                    packet.isRetrieve()? "Retrieve" : "Receive");
+      }
       // Fix to ensure that recv request are not trying to access to not chroot files
       session.startup(Configuration.configuration.isChrootChecked() &&
                       packet.isToValidate() && runner.isSender());
@@ -894,10 +902,6 @@ public class TransferActions extends ServerActions {
       }
     }
     // if MD5 check MD5
-    // Get reusable buffer and set internal content to byte Array
-    final byte[] reusableBuffer =
-        session.getReusableBuffer(packet.getLengthPacket());
-    packet.createByteBufFromRecv(reusableBuffer);
     if (RequestPacket.isMD5Mode(session.getRunner().getMode())) {
       logger.debug("AlgoDigest: {}",
                    (localChannelReference.getPartner() != null?
@@ -937,13 +941,15 @@ public class TransferActions extends ServerActions {
       }
     } else if (Configuration.configuration.isGlobalDigest()) {
       // Only Global digests
-      FileUtils.computeGlobalHash(globalDigest, localDigest, packet.getData());
+      FileUtils.computeGlobalHash(globalDigest, localDigest, packet.getData(),
+                                  packet.getLengthPacket());
     }
     if (session.getRunner().isRecvThrough() &&
         localChannelReference.isRecvThroughMode()) {
       try {
         localChannelReference.getRecvThroughHandler()
-                             .writeBytes(packet.getData());
+                             .writeBytes(packet.getData(),
+                                         packet.getLengthPacket());
         session.getRunner().incrementRank();
         if (packet.getPacketRank() % 100 == 1) {
           logger.debug("Good RANK: {} : {}", packet.getPacketRank(),
@@ -955,6 +961,7 @@ public class TransferActions extends ServerActions {
     } else {
       final DataBlock dataBlock = new DataBlock();
       dataBlock.setBlock(packet.getData());
+      dataBlock.setByteCount(packet.getLengthPacket());
       try {
         session.getFile().writeDataBlock(dataBlock);
         session.getRunner().incrementRank();
@@ -1299,7 +1306,7 @@ public class TransferActions extends ServerActions {
       }
     }
     if (runner != null &&
-        (runner.isSelfRequested() || runner.isSelfRequest())) {
+        (runner.isRequestOnRequested() || runner.isSelfRequest())) {
       ChannelCloseTimer.closeFutureTransaction(this);
     }
   }
@@ -1369,7 +1376,7 @@ public class TransferActions extends ServerActions {
     // Close only if an error occurs!
     if (runner != null && newSize > 0) {
       runner.setOriginalSize(newSize);
-      // Check if a CHKFILE task was supposely needed to run
+      // Check if a CHKFILE task was supposedly needed to run
       if (checkIfAnyTaskCheckFile(newfilename, newSize, runner)) {
         return;
       }

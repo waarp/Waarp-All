@@ -68,7 +68,7 @@ public class LocalExecServerHandler
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(LocalExecServerHandler.class);
 
-  protected volatile boolean answered;
+  protected boolean answered;
 
   /**
    * Is the Local Exec Server going Shutdown

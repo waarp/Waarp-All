@@ -663,12 +663,25 @@ public class FilesystemBasedDigest {
    */
   public static byte[] getHash(final byte[] buffer, final DigestAlgo algo)
       throws IOException {
-    Checksum checksum = null;
-    final int length = buffer.length;
+    return getHash(buffer, buffer.length, algo);
+  }
+
+  /**
+   * Get hash with given byte array
+   *
+   * @param buffer this buffer will not be changed
+   * @param length the real size of the buffer
+   * @param algo
+   *
+   * @return the hash
+   *
+   * @throws IOException
+   */
+  public static byte[] getHash(final byte[] buffer, final int length,
+                               final DigestAlgo algo) throws IOException {
     switch (algo) {
       case ADLER32:
-        checksum = new Adler32();
-        return getBytesCrcByteBuf(checksum, buffer, 0, length);
+        return getBytesCrcByteBuf(new Adler32(), buffer, 0, length);
       case CRC32:
         return getBytesCrcByteBuf(null, buffer, 0, length);
       case MD5:

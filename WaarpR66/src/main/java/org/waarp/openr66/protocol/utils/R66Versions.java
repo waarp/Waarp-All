@@ -50,7 +50,13 @@ public enum R66Versions {
    */
   V3_1_0;
 
+  private final String version;
+
+  R66Versions() {
+    version = name().substring(1).replace('_', '.');
+  }
+
   public String getVersion() {
-    return name().substring(1).replace('_', '.');
+    return version;
   }
 }

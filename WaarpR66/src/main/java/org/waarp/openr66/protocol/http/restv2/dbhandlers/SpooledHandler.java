@@ -30,10 +30,12 @@ import io.netty.handler.codec.http.HttpRequest;
 import org.waarp.common.json.JsonHandler;
 import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.role.RoleDefault.ROLE;
+import org.waarp.common.utility.ParametersChecker;
 import org.waarp.openr66.context.task.SpooledInformTask;
 import org.waarp.openr66.protocol.http.restv2.errors.RestError;
 import org.waarp.openr66.protocol.http.restv2.errors.RestErrorException;
 import org.waarp.openr66.protocol.http.restv2.utils.JsonUtils;
+import org.waarp.openr66.protocol.http.restv2.utils.RestUtils;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
@@ -91,8 +93,10 @@ public class SpooledHandler extends AbstractRestDbHandler {
    * @param request the HttpRequest made on the resource
    * @param responder the HttpResponder which sends the reply to the request
    * @param nameStr the name of the FileMonitor or empty for all
-   * @param statusStr 0 or empty for all, 1 for active ones, 0 for inactive
+   * @param statusStr 0 or empty for all, 1 for active ones, -1 for inactive
    *     ones
+   * @param countOrder if true is specified, it turns out to be a "count"
+   *     request only of current files
    */
   @GET
   @Consumes(APPLICATION_FORM_URLENCODED)
@@ -102,8 +106,19 @@ public class SpooledHandler extends AbstractRestDbHandler {
                              @QueryParam("name") @DefaultValue("")
                              final String nameStr,
                              @QueryParam(STATUS) @DefaultValue("")
-                             final String statusStr) {
-    checkSanity(nameStr, statusStr);
+                             final String statusStr,
+                             @QueryParam(COUNT_ORDER) @DefaultValue("")
+                             final String countOrder) {
+    checkSanity(nameStr, statusStr, countOrder);
+    boolean count = false;
+    try {
+      if (ParametersChecker.isNotEmpty(countOrder) &&
+          RestUtils.stringToBoolean(countOrder)) {
+        count = true;
+      }
+    } catch (final Exception ignore) {
+      // Ignore
+    }
     final ArrayList<RestError> errors = new ArrayList<RestError>();
     final String argName;
     if (nameStr.trim().isEmpty()) {
@@ -127,14 +142,23 @@ public class SpooledHandler extends AbstractRestDbHandler {
       throw new RestErrorException(errors);
     }
 
-    final ArrayNode arrayNode = JsonHandler.createArrayNode();
-    final int nbFiles =
-        SpooledInformTask.buildSpooledJson(arrayNode, argStatus, argName);
     final ObjectNode responseObject = JsonHandler.createObjectNode();
-    final ArrayNode resultList = responseObject.putArray("results");
-    resultList.addAll(arrayNode);
-    responseObject.put("totalResults", arrayNode.size());
-    responseObject.put("totalSubResults", nbFiles);
+    if (count) {
+      final int nbFiles =
+          SpooledInformTask.buildSpooledJson(null, argStatus, argName);
+      final int nbEntries =
+          SpooledInformTask.getSpooledJsonEntriesNumber(argStatus, argName);
+      responseObject.put("totalResults", nbEntries);
+      responseObject.put("totalSubResults", nbFiles);
+    } else {
+      final ArrayNode arrayNode = JsonHandler.createArrayNode();
+      final int nbFiles =
+          SpooledInformTask.buildSpooledJson(arrayNode, argStatus, argName);
+      final ArrayNode resultList = responseObject.putArray("results");
+      resultList.addAll(arrayNode);
+      responseObject.put("totalResults", arrayNode.size());
+      responseObject.put("totalSubResults", nbFiles);
+    }
     final String responseText = JsonUtils.nodeToString(responseObject);
     responder.sendJson(OK, responseText);
   }

@@ -1194,7 +1194,7 @@ public class NetworkTransaction {
     } catch (final OpenR66ProtocolNoDataException e) {
       logger.debug("NOT FOUND SO NO SHUTDOWN");
       return true;
-    } catch (OpenR66ProtocolBlackListedException e) {
+    } catch (final OpenR66ProtocolBlackListedException e) {
       logger.warn("BLACK LISTED HOST");
       return false;
     }

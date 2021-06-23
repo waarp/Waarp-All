@@ -304,7 +304,7 @@ public abstract class SendThroughClient extends AbstractTransfer {
           localChannelReference.validateRequest(
               localChannelReference.getFutureEndTransfer().getResult());
         }
-        if (taskRunner != null && taskRunner.isSelfRequested()) {
+        if (taskRunner != null && taskRunner.isRequestOnRequested()) {
           localChannelReference.close();
         }
       } else {
@@ -329,26 +329,28 @@ public abstract class SendThroughClient extends AbstractTransfer {
    * @param e
    */
   public void transferInError(final OpenR66Exception e) {
-    if (!localChannelReference.getFutureEndTransfer().getResult()
-                              .isAnswered()) {
-      final R66Result result =
-          new R66Result(e, localChannelReference.getSession(), true,
-                        ErrorCode.TransferError, taskRunner);
-      logger.error("Transfer in error", e);
-      localChannelReference.sessionNewState(R66FiniteDualStates.ERROR);
-      final ErrorPacket error = new ErrorPacket("Transfer in error",
-                                                ErrorCode.TransferError
-                                                    .getCode(),
-                                                ErrorPacket.FORWARDCLOSECODE);
-      try {
-        ChannelUtils
-            .writeAbstractLocalPacket(localChannelReference, error, true);
-      } catch (final OpenR66ProtocolPacketException ignored) {
-        // nothing
+    if (localChannelReference != null) {
+      if (!localChannelReference.getFutureEndTransfer().getResult()
+                                .isAnswered()) {
+        final R66Result result =
+            new R66Result(e, localChannelReference.getSession(), true,
+                          ErrorCode.TransferError, taskRunner);
+        logger.error("Transfer in error", e);
+        localChannelReference.sessionNewState(R66FiniteDualStates.ERROR);
+        final ErrorPacket error = new ErrorPacket("Transfer in error",
+                                                  ErrorCode.TransferError
+                                                      .getCode(),
+                                                  ErrorPacket.FORWARDCLOSECODE);
+        try {
+          ChannelUtils
+              .writeAbstractLocalPacket(localChannelReference, error, true);
+        } catch (final OpenR66ProtocolPacketException ignored) {
+          // nothing
+        }
+        localChannelReference.invalidateRequest(result);
       }
-      localChannelReference.invalidateRequest(result);
+      localChannelReference.close();
     }
-    localChannelReference.close();
   }
 
   /**
@@ -370,16 +372,17 @@ public abstract class SendThroughClient extends AbstractTransfer {
    * Utility method for send through mode
    *
    * @param data the data byte, if null it is the last block
+   * @param length length of data
    *
    * @return the DataBlock associated to the data
    */
-  public DataBlock transformToDataBlock(final byte[] data) {
+  public DataBlock transformToDataBlock(final byte[] data, final int length) {
     final DataBlock block = new DataBlock();
     if (data == null) {
       // last block
       block.setEOF(true);
     } else {
-      block.setBlock(data);
+      block.setBlock(data, length);
     }
     return block;
   }

@@ -1,0 +1,78 @@
+/*
+ * This file is part of Waarp Project (named also Waarp or GG).
+ *
+ *  Copyright (c) 2019, Waarp SAS, and individual contributors by the @author
+ *  tags. See the COPYRIGHT.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ *  All Waarp Project is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with
+ * Waarp . If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.waarp.compress.zstdunsafe;
+
+import java.util.Arrays;
+
+class Histogram {
+  private Histogram() {
+  }
+
+  // TODO: _count parallel heuristic for large inputs
+  private static void _count(final Object inputBase, final int inputSize,
+                             final int[] counts) {
+    long input = sun.misc.Unsafe.ARRAY_BYTE_BASE_OFFSET;
+
+    Arrays.fill(counts, 0);
+
+    for (int i = 0; i < inputSize; i++) {
+      final int symbol = UnsafeUtil.UNSAFE.getByte(inputBase, input) & 0xFF;
+      input++;
+      counts[symbol]++;
+    }
+  }
+
+  public static int findLargestCount(final int[] counts, final int maxSymbol) {
+    int max = 0;
+    for (int i = 0; i <= maxSymbol; i++) {
+      if (counts[i] > max) {
+        max = counts[i];
+      }
+    }
+
+    return max;
+  }
+
+  public static int findMaxSymbol(final int[] counts, int maxSymbol) {
+    while (counts[maxSymbol] == 0) {
+      maxSymbol--;
+    }
+    return maxSymbol;
+  }
+
+  public static void count(final byte[] input, final int length,
+                           final int[] counts) {
+    _count(input, length, counts);
+  }
+}

@@ -79,8 +79,9 @@ public class ScenarioLoopBenchmarkMonitoringPostGreSqlIT
       // Use an external Logstash instance already started
       // Start Repetitive Monitoring
       monitorExporterTransfers =
-          new MonitorExporterTransfers("http://localhost:" + port, "/", true,
-                                       true, true, Configuration.configuration
+          new MonitorExporterTransfers("http://localhost:" + port, "/", null,
+                                       null, null, true, true, true,
+                                       Configuration.configuration
                                            .getHttpWorkerGroup());
 
     } else {
@@ -88,8 +89,9 @@ public class ScenarioLoopBenchmarkMonitoringPostGreSqlIT
       httpServerExample = new HttpServerExample(port);
       // Start Repetitive Monitoring
       monitorExporterTransfers =
-          new MonitorExporterTransfers("http://localhost:" + port, "/", true,
-                                       true, false, Configuration.configuration
+          new MonitorExporterTransfers("http://localhost:" + port, "/", null,
+                                       null, null, true, true, false,
+                                       Configuration.configuration
                                            .getHttpWorkerGroup());
     }
     Configuration.configuration

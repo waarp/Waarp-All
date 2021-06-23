@@ -217,9 +217,10 @@ un serveur tiers (en mode PUSH).
 
    Ajout du sous-ensemble ``pushMonitor`` qui contient
    les options communes ``url``, ``delay``,
-   ``intervalincluded``, ``transformlongasstring``,
-   les options spécifiques``endpoint`` et ``keepconnection`` sont liées à une API REST en destination,
-   les options spécifiques``index``, ``prefix``,  ``username``, ``paswd``, ``token``, ``apiKey`` et
+   ``intervalincluded``, ``transformlongasstring``, ``token``, ``apiKey``,
+   les options spécifiques``endpoint``, ``keepconnection`` et  ``basicAuthent`` sont liées à une API REST en
+   destination,
+   les options spécifiques``index``, ``prefix``,  ``username``, ``paswd``  et
    ``compression`` sont liées à Elasticsearch en destination.
 
 Le groupe `<pushMonitor>` permet de définir les parammètres pour que le serveur R66
@@ -234,17 +235,18 @@ url                              URL de base pour les exports du moniteur en mod
 delay                            Délai entre deux vérifications de changement de statuts sur les transferts
 intervalincluded                 Si « True », les informations de l'intervalle utilisé seront fournies
 transformlongasstring            Si « True », les nombres « long » seront convertis en chaîne de caractères, sinon ils seront numériques
+token                            Spécifie si nécessaire le token  dans le cadre d'une authentification via Token
+apiKey                           Spécifie si nécessaire le password dans le cadre d'une authentification via ApiKey (format ``apiId:apiKey``)
 *Partie API REST*
 endpoint                         End point à ajouter à l'URL de base
 keepconnection                   Si « True », la connexion HTTP(S) sera en Keep-Alive (pas de réouverture sauf si le serveur la ferme), sinon la connexion sera réinitialisée pour chaque appel
+basicAuthent                     Spécifie si nécessaire l'authentification basique
 *Partie Elasticsearch*
 index                            Contient le nom de l'index avec de possibles substitutions, dont ``%%WARPHOST%%`` pour le nom du host concerné, et les ``%%DATETIME%%``, ``%%DATEHOUR%%``, ``%%DATE%%``, ``%%YEARMONTH%%``, ``%%YEAR%%`` pour des substitutions de date et heure partiellement (``yyyy.MM.dd.HH.mm`` à ``yyyy``)
 prefix                           Spécifie si nécessaire un prefix global dans le cas d'usage d'un Proxy devant Elasticsearch
 username                         Spécifie si nécessaire le username (et son password) dans le cadre d'une authentification basique
 paswd                            Spécifie si nécessaire le password dans le cadre d'une authentification basique
-token                            Spécifie si nécessaire le token  dans le cadre d'une authentification via Token
-apiKey                           Spécifie si nécessaire le password dans le cadre d'une authentification via ApiKey (format ``apiId:apiKey``)
-compression                      Spécifie si les flux sont compresser (par défaut True)
+compression                      Spécifie si les flux sont compressés (par défaut True)
 ================================ ==============
 
 

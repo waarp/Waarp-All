@@ -21,7 +21,6 @@
 package org.waarp.openr66.protocol.junit;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.netty.util.ResourceLeakDetector;
 import io.netty.util.ResourceLeakDetector.Level;
@@ -128,9 +127,7 @@ import java.lang.reflect.Method;
 import java.net.SocketAddress;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -721,6 +718,47 @@ public class NetworkClientTest extends TestAbstract {
   }
 
   @Test
+  public void test5_DirectTransferCompressCheck() throws Exception {
+    final File totest = generateOutFile("/tmp/R66/out/testTask.txt", 10000);
+    final R66Future future = new R66Future(true);
+    logger.warn("Start Test of DirectTransferCompressCheck");
+    final long time1 = System.currentTimeMillis();
+    final TestTransferNoDb transaction =
+        new TestTransferNoDb(future, "hostas", "testTask.txt", "rule3compress",
+                             "Test SendDirect Compress", true, 8192,
+                             DbConstantR66.ILLEGALVALUE, networkTransaction);
+    transaction.run();
+    int success = 0;
+    int error = 0;
+    future.awaitOrInterruptible();
+    String followId = null;
+    if (future.getRunner() != null) {
+      dbTaskRunners.add(future.getRunner());
+    }
+    if (future.isSuccess()) {
+      success++;
+    } else {
+      error++;
+    }
+    File to = new File("/tmp/R66/in/testTask.txt");
+    if (totest.length() == to.length()) {
+      success++;
+    } else {
+      logger
+          .error("File sizes differs: {} vs {}", totest.length(), to.length());
+      error++;
+    }
+    final long time2 = System.currentTimeMillis();
+    logger.warn("Success: " + success + " Error: " + error + " NB/s: " +
+                success * 1000 / (time2 - time1));
+    totest.delete();
+
+    assertEquals("Success should be total", 2, success);
+
+    assertEquals("Errors should be 0", 0, error);
+  }
+
+  @Test
   public void test5_DirectTransferFollowCheck() throws Exception {
     final File totest = generateOutFile("/tmp/R66/out/testTask.txt", 10);
     final R66Future future = new R66Future(true);
@@ -749,40 +787,31 @@ public class NetworkClientTest extends TestAbstract {
       try {
         httpClient = HttpClientBuilder.create().setConnectionManagerShared(true)
                                       .disableAutomaticRetries().build();
-        HttpGet request =
-            new HttpGet("http://127.0.0.1:8088/v2/transfers?limit=1000");
+        HttpGet request = new HttpGet(
+            "http://127.0.0.1:8088/v2/transfers?countOrder=true&followId=" +
+            followId);
         CloseableHttpResponse response = null;
         try {
           int nb = 0;
           int max = 2;
           while (nb < max) {
             response = httpClient.execute(request);
-            assertEquals(200, response.getStatusLine().getStatusCode());
+            if (400 <= response.getStatusLine().getStatusCode()) {
+              break;
+            }
             String content = EntityUtils.toString(response.getEntity());
             ObjectNode node = JsonHandler.getFromString(content);
             if (node != null) {
-              Iterator<Entry<String, JsonNode>> iterator = node.fields();
-              while (iterator.hasNext()) {
-                Entry<String, JsonNode> entry = iterator.next();
-                if (entry.getKey().equals("results")) {
-                  ArrayNode arrayNode = (ArrayNode) entry.getValue();
-                  Iterator<JsonNode> iterator1 = arrayNode.elements();
-                  while (iterator1.hasNext()) {
-                    JsonNode internalNode = iterator1.next();
-                    JsonNode value = internalNode.findValue("fileInfo");
-                    if (value != null) {
-                      if (value.asText().contains(followId)) {
-                        nb++;
-                        logger.warn("FileInfo found: {}", value.asText());
-                      }
-                    }
-                  }
-                  if (nb >= max) {
-                    success++;
-                    break;
-                  } else {
-                    nb = 0;
-                  }
+              JsonNode number = node.findValue("totalResults");
+              if (number != null) {
+                long newNb = number.asLong();
+                nb = (int) newNb;
+                if (nb >= max) {
+                  success++;
+                  logger.warn("Found {} transfers with followId", newNb);
+                  break;
+                } else {
+                  nb = 0;
                 }
               }
             }
@@ -1008,12 +1037,13 @@ public class NetworkClientTest extends TestAbstract {
 
   @Test
   public void test5_DirectTransferWrong() throws Exception {
-    final File totest = generateOutFile("/tmp/R66/out/testTask.txt", 10);
+    final File totest =
+        generateOutFile("/tmp/R66/out/testTaskWrongHost.txt", 10);
     final R66Future future = new R66Future(true);
     logger.warn("Start Test of DirectTransfer");
     final long time1 = System.currentTimeMillis();
     final TestTransferNoDb transaction =
-        new TestTransferNoDb(future, "hostbs", "testTask.txt", "rule3",
+        new TestTransferNoDb(future, "hostbs", "testTaskWrongHost.txt", "rule3",
                              "Test SendDirect Small", true, 8192,
                              DbConstantR66.ILLEGALVALUE, networkTransaction);
     transaction.run();
@@ -1044,14 +1074,16 @@ public class NetworkClientTest extends TestAbstract {
       logger.warn("Cannot set executable property to {}", commandLine);
       return;
     }
-    final File totest = generateOutFile("/tmp/R66/out/testTask.txt", 10);
+    final File totest =
+        generateOutFile("/tmp/R66/out/testTaskWrongExec.txt", 10);
     final R66Future future = new R66Future(true);
     logger.warn("Start Test of DirectTransfer");
     final long time1 = System.currentTimeMillis();
     final TestTransferNoDb transaction =
-        new TestTransferNoDb(future, "hostas", "testTask.txt", "rulewrongexec",
-                             "Test SendDirect Small", true, 8192,
-                             DbConstantR66.ILLEGALVALUE, networkTransaction);
+        new TestTransferNoDb(future, "hostas", "testTaskWrongExec.txt",
+                             "rulewrongexec", "Test SendDirect Small", true,
+                             8192, DbConstantR66.ILLEGALVALUE,
+                             networkTransaction);
     transaction.run();
     int success = 0;
     int error = 0;
@@ -1075,13 +1107,14 @@ public class NetworkClientTest extends TestAbstract {
 
   @Test
   public void test5_DirectTransferWrongHost() throws Exception {
-    final File totest = generateOutFile("/tmp/R66/out/testTask.txt", 10);
+    final File totest =
+        generateOutFile("/tmp/R66/out/testTaskWrongHost.txt", 10);
     final R66Future future = new R66Future(true);
     logger.warn("Start Test of DirectTransfer");
     final long time1 = System.currentTimeMillis();
     final TestTransferNoDb transaction =
-        new TestTransferNoDb(future, "hostunknowns", "testTask.txt", "rule3",
-                             "Test SendDirect Small", true, 8192,
+        new TestTransferNoDb(future, "hostunknowns", "testTaskWrongHost",
+                             "rule3", "Test SendDirect Small", true, 8192,
                              DbConstantR66.ILLEGALVALUE, networkTransaction);
     transaction.run();
     int success = 0;
@@ -1110,7 +1143,7 @@ public class NetworkClientTest extends TestAbstract {
     logger.warn("Start Test of DirectTransfer");
     final long time1 = System.currentTimeMillis();
     final TestTransferNoDb transaction =
-        new TestTransferNoDb(future, "hostbs", "testTaskNew.txt", "rule4",
+        new TestTransferNoDb(future, "hostbs", "testTaskNotExists.txt", "rule4",
                              "Test RecvDirect Small", true, 8192,
                              DbConstantR66.ILLEGALVALUE, networkTransaction);
     transaction.run();

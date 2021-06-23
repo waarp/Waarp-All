@@ -48,6 +48,7 @@ public class DBLimitDAO extends StatementExecutor<Limit> implements LimitDAO {
   protected static final String SQL_DELETE =
       "DELETE FROM " + TABLE + WHERE + HOSTID_FIELD + PARAMETER;
   protected static final String SQL_GET_ALL = "SELECT * FROM " + TABLE;
+  protected static final String SQL_COUNT_ALL = SQL_COUNT_ALL_PREFIX + TABLE;
   protected static final String SQL_EXIST =
       "SELECT 1 FROM " + TABLE + WHERE + HOSTID_FIELD + PARAMETER;
   protected static final String SQL_SELECT =
@@ -84,6 +85,11 @@ public class DBLimitDAO extends StatementExecutor<Limit> implements LimitDAO {
   @Override
   protected String getGetAllRequest() {
     return SQL_GET_ALL;
+  }
+
+  @Override
+  protected String getCountRequest() {
+    return SQL_COUNT_ALL;
   }
 
   @Override

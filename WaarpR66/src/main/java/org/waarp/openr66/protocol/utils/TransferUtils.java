@@ -89,7 +89,7 @@ public final class TransferUtils {
           finalResult
               .setOther(Messages.getString("TransferUtils.1")); //$NON-NLS-1$
         } else {
-          if (taskRunner.isSelfRequested() &&
+          if (taskRunner.isRequestOnRequested() &&
               taskRunner.getGloballaststep() < TASKSTEP.POSTTASK.ordinal()) {
             // send a VALID packet with VALID code to the requester except if client
             final DbHostAuth host =
@@ -193,7 +193,7 @@ public final class TransferUtils {
     final R66Session session = new R66Session();
     session.setStatus(50);
     final String remoteId =
-        taskRunner.isSelfRequested()? taskRunner.getRequester() :
+        taskRunner.isRequestOnRequested()? taskRunner.getRequester() :
             taskRunner.getRequested();
     session.getAuth().specialNoSessionAuth(false, remoteId);
     session.setNoSessionRunner(taskRunner, localChannelReference);

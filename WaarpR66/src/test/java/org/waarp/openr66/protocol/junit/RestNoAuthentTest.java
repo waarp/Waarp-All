@@ -22,6 +22,12 @@ package org.waarp.openr66.protocol.junit;
 
 import io.netty.util.ResourceLeakDetector;
 import io.netty.util.ResourceLeakDetector.Level;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.util.EntityUtils;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assume;
@@ -70,6 +76,7 @@ import org.waarp.openr66.protocol.http.restv2.dbhandlers.RequiredRole;
 import org.waarp.openr66.protocol.junit.NetworkClientTest.RestHandlerHookForTest;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.lang.reflect.Method;
 import java.sql.Timestamp;
@@ -97,6 +104,8 @@ public class RestNoAuthentTest extends TestAbstract {
 
   private static boolean RUN_TEST = true;
 
+  private CloseableHttpClient httpClient = null;
+
   @BeforeClass
   public static void setUpBeforeClass() throws Exception {
     ResourceLeakDetector.setLevel(Level.PARANOID);
@@ -104,15 +113,6 @@ public class RestNoAuthentTest extends TestAbstract {
     final ClassLoader classLoader = NetworkClientTest.class.getClassLoader();
     final File file =
         new File(classLoader.getResource("logback-test.xml").getFile());
-    if (file.exists()) {
-      driverType = DriverType.PHANTOMJS;
-      try {
-        initiateWebDriver(file.getParentFile());
-      } catch (NoSuchMethodError e) {
-        RUN_TEST = false;
-        return;
-      }
-    }
     setUpDbBeforeClass();
     setUpBeforeClassServer(LINUX_CONFIG_CONFIG_SERVER_INIT_A_XML,
                            CONFIG_SERVER_A_MINIMAL_RESPONSIVE_XXML, true);
@@ -129,7 +129,6 @@ public class RestNoAuthentTest extends TestAbstract {
     }
     Thread.sleep(100);
     System.setErr(err);
-    finalizeDriver();
     // Shutdown server
     logger.warn("Shutdown Server");
     Configuration.configuration.setTimeoutCon(100);
@@ -144,83 +143,122 @@ public class RestNoAuthentTest extends TestAbstract {
     if (!RUN_TEST) {
       return;
     }
-    reloadDriver();
     Thread.sleep(100);
+  }
+
+  private void createHttpClient() {
+    if (httpClient != null) {
+      try {
+        httpClient.close();
+      } catch (IOException e) {
+        // ignore
+      }
+    }
+    httpClient = HttpClientBuilder.create().setConnectionManagerShared(true)
+                                  .disableAutomaticRetries().build();
+  }
+
+  private String restAccess(String baseuri, String url) {
+    HttpGet request = new HttpGet(baseuri + url);
+    CloseableHttpResponse response = null;
+    try {
+      response = httpClient.execute(request);
+      SysErrLogger.FAKE_LOGGER.sysout(
+          baseuri + url + " = " + response.getStatusLine().getStatusCode());
+      String result = EntityUtils.toString(response.getEntity());
+      if (response.getStatusLine().getStatusCode() >= 400) {
+        createHttpClient();
+        logger.warn("Error message: {}", result);
+      }
+      return result;
+    } catch (ClientProtocolException e) {
+      fail("Error on: " + baseuri + url + " = " + e.getMessage());
+    } catch (IOException e) {
+      fail("Error on: " + baseuri + url + " = " + e.getMessage());
+    } finally {
+      if (response != null) {
+        try {
+          response.close();
+        } catch (IOException e) {
+          e.printStackTrace();
+        }
+      }
+    }
+    return null;
   }
 
   @Test
   public void testRestR66NoAuthent() throws Exception {
     Assume.assumeTrue("Driver not loaded", RUN_TEST);
     try {
+      createHttpClient();
       // Test Rest V1
       // Step # | name | target | value | comment
       // 1 | open | V1 |  |
       final String baseUri = "http://localhost:8088/";
-      driver.get(baseUri + DbTaskRunnerR66RestMethodHandler.BASEURI);
-      SysErrLogger.FAKE_LOGGER.sysout(driver.getCurrentUrl());
-      assertTrue(driver.getPageSource().contains("answer"));
-      driver.get(baseUri + DbConfigurationR66RestMethodHandler.BASEURI);
-      SysErrLogger.FAKE_LOGGER.sysout(driver.getCurrentUrl());
-      assertTrue(driver.getPageSource().contains("answer"));
-      driver.get(baseUri + DbHostAuthR66RestMethodHandler.BASEURI);
-      SysErrLogger.FAKE_LOGGER.sysout(driver.getCurrentUrl());
-      assertTrue(driver.getPageSource().contains("answer"));
-      driver.get(baseUri + DbHostConfigurationR66RestMethodHandler.BASEURI);
-      SysErrLogger.FAKE_LOGGER.sysout(driver.getCurrentUrl());
-      assertTrue(driver.getPageSource().contains("answer"));
-      driver.get(baseUri + DbRuleR66RestMethodHandler.BASEURI);
-      SysErrLogger.FAKE_LOGGER.sysout(driver.getCurrentUrl());
-      assertTrue(driver.getPageSource().contains("answer"));
-      driver.get(baseUri + HttpRestBandwidthR66Handler.BASEURI);
-      SysErrLogger.FAKE_LOGGER.sysout(driver.getCurrentUrl());
-      assertTrue(driver.getPageSource().contains("answer"));
-      driver.get(baseUri + HttpRestConfigR66Handler.BASEURI);
-      SysErrLogger.FAKE_LOGGER.sysout(driver.getCurrentUrl());
-      SysErrLogger.FAKE_LOGGER.syserr(driver.getPageSource());
+      String page =
+          restAccess(baseUri, DbTaskRunnerR66RestMethodHandler.BASEURI);
+      assertTrue(page.contains("answer"));
+      page = restAccess(baseUri, DbConfigurationR66RestMethodHandler.BASEURI);
+      assertTrue(page.contains("answer"));
+      page = restAccess(baseUri, DbHostAuthR66RestMethodHandler.BASEURI);
+      assertTrue(page.contains("answer"));
+      page =
+          restAccess(baseUri, DbHostConfigurationR66RestMethodHandler.BASEURI);
+      assertTrue(page.contains("answer"));
+      page = restAccess(baseUri, DbRuleR66RestMethodHandler.BASEURI);
+      assertTrue(page.contains("answer"));
+      page = restAccess(baseUri, HttpRestBandwidthR66Handler.BASEURI);
+      assertTrue(page.contains("answer"));
+      page = restAccess(baseUri, HttpRestConfigR66Handler.BASEURI);
       // Complex command
-      assertTrue(driver.getPageSource().contains("Bad Request"));
-      driver.get(baseUri + HttpRestControlR66Handler.BASEURI);
-      SysErrLogger.FAKE_LOGGER.sysout(driver.getCurrentUrl());
-      SysErrLogger.FAKE_LOGGER.syserr(driver.getPageSource());
+      assertTrue(page.contains("Bad Request"));
+      page = restAccess(baseUri, HttpRestControlR66Handler.BASEURI);
       // Complex command
-      assertTrue(driver.getPageSource().contains("Bad Request"));
-      driver.get(baseUri + HttpRestInformationR66Handler.BASEURI);
-      SysErrLogger.FAKE_LOGGER.sysout(driver.getCurrentUrl());
-      SysErrLogger.FAKE_LOGGER.syserr(driver.getPageSource());
+      assertTrue(page.contains("Bad Request"));
+      page = restAccess(baseUri, HttpRestInformationR66Handler.BASEURI);
       // Complex command
-      assertTrue(driver.getPageSource().contains("Bad Request"));
-      driver.get(baseUri + HttpRestLogR66Handler.BASEURI);
-      SysErrLogger.FAKE_LOGGER.sysout(driver.getCurrentUrl());
-      SysErrLogger.FAKE_LOGGER.syserr(driver.getPageSource());
+      assertTrue(page.contains("Bad Request"));
+      page = restAccess(baseUri, HttpRestLogR66Handler.BASEURI);
       // Complex command
-      assertTrue(driver.getPageSource().contains("Bad Request"));
-      driver.get(baseUri + HttpRestServerR66Handler.BASEURI);
-      SysErrLogger.FAKE_LOGGER.sysout(driver.getCurrentUrl());
-      assertTrue(driver.getPageSource().contains("results"));
+      assertTrue(page.contains("Bad Request"));
+      page = restAccess(baseUri, HttpRestServerR66Handler.BASEURI);
+      assertTrue(page.contains("results"));
 
       // 2 | type | V2 [  |
       String v2BaseUri = baseUri + "v2/";
-      driver.get(v2BaseUri + "transfers");
-      SysErrLogger.FAKE_LOGGER.sysout(driver.getCurrentUrl());
-      assertTrue(driver.getPageSource().contains("results"));
-      driver.get(v2BaseUri + "hostconfig");
-      SysErrLogger.FAKE_LOGGER.sysout(driver.getCurrentUrl());
-      assertTrue(driver.getPageSource().contains("business"));
-      assertTrue(driver.getPageSource().contains(Version.fullIdentifier()));
-      assertTrue(driver.getPageSource()
-                       .contains(org.waarp.openr66.protocol.utils.Version.ID));
-      driver.get(v2BaseUri + "hosts");
-      SysErrLogger.FAKE_LOGGER.sysout(driver.getCurrentUrl());
-      assertTrue(driver.getPageSource().contains("results"));
-      driver.get(v2BaseUri + "limits");
-      SysErrLogger.FAKE_LOGGER.sysout(driver.getCurrentUrl());
-      assertTrue(driver.getPageSource().contains("results"));
-      driver.get(v2BaseUri + "rules");
-      SysErrLogger.FAKE_LOGGER.sysout(driver.getCurrentUrl());
-      assertTrue(driver.getPageSource().contains("results"));
-      driver.get(v2BaseUri + "server/status");
-      SysErrLogger.FAKE_LOGGER.sysout(driver.getCurrentUrl());
-      assertTrue(driver.getPageSource().contains("serverName"));
+      page = restAccess(v2BaseUri, "transfers");
+      assertTrue(page.contains("results"));
+      page = restAccess(v2BaseUri, "hostconfig");
+      assertTrue(page.contains("business"));
+      assertTrue(page.contains(Version.fullIdentifier()));
+      assertTrue(page.contains(org.waarp.openr66.protocol.utils.Version.ID));
+      page = restAccess(v2BaseUri, "hosts");
+      assertTrue(page.contains("results"));
+      page = restAccess(v2BaseUri, "rules");
+      assertTrue(page.contains("results"));
+      page = restAccess(v2BaseUri, "filemonitors");
+      assertTrue(page.contains("results"));
+      page = restAccess(v2BaseUri, "limits");
+      // Not found assertTrue(page.contains("results"))
+      page = restAccess(v2BaseUri, "server/status");
+      assertTrue(page.contains("serverName"));
+
+      page = restAccess(v2BaseUri, "transfers?countOrder=true");
+      assertTrue(page.contains("totalResults"));
+      assertFalse(page.contains("results"));
+
+      page = restAccess(v2BaseUri, "hosts?countOrder=true");
+      assertTrue(page.contains("totalResults"));
+      assertFalse(page.contains("results"));
+
+      page = restAccess(v2BaseUri, "rules?countOrder=true");
+      assertTrue(page.contains("totalResults"));
+      assertFalse(page.contains("results"));
+
+      page = restAccess(v2BaseUri, "filemonitors?countOrder=true");
+      assertTrue(page.contains("totalResults"));
+      assertFalse(page.contains("results"));
     } catch (NoSuchElementException e) {
       e.printStackTrace();
       fail(e.getMessage());
@@ -228,7 +266,8 @@ public class RestNoAuthentTest extends TestAbstract {
       e.printStackTrace();
       fail(e.getMessage());
     } finally {
-      // Nothing
+      httpClient.close();
+      httpClient = null;
     }
   }
 
@@ -236,6 +275,7 @@ public class RestNoAuthentTest extends TestAbstract {
   public void testRestR66NoAuthentFollowId() throws Exception {
     Assume.assumeTrue("Driver not loaded", RUN_TEST);
     try {
+      createHttpClient();
       final String baseUri = "http://localhost:8088/";
       // 2 | type | V2 [  |
       String v2BaseUri = baseUri + "v2/";
@@ -249,8 +289,8 @@ public class RestNoAuthentTest extends TestAbstract {
       boolean isMoved = false;
       int blockSize = 8192;
       boolean retrieveMode = false;
-      String ownerReq = "hosta";
-      String requester = "hosta";
+      String ownerReq = "test";
+      String requester = "test";
       String requested = "hosta";
       String followId = "12345";
       String transferInfo = TransferArgsTest.FOLLOWARGJSON + followId + "}";
@@ -301,10 +341,8 @@ public class RestNoAuthentTest extends TestAbstract {
                        updatedInfo);
       transferDAO.insert(transfer4);
 
-      driver.get(v2BaseUri + "transfers");
-      SysErrLogger.FAKE_LOGGER.sysout(driver.getCurrentUrl());
-      String page = driver.getPageSource();
-      assertTrue(driver.getPageSource().contains("results"));
+      String page = restAccess(v2BaseUri, "transfers");
+      assertTrue(page.contains("results"));
       int first = page.indexOf(followId);
       assertTrue(first != -1);
       int second = page.indexOf(followId, first + 1);
@@ -323,10 +361,8 @@ public class RestNoAuthentTest extends TestAbstract {
       assertTrue(fourth != -1);
 
       // Now with args
-      driver.get(v2BaseUri + "transfers?followId=" + followId);
-      SysErrLogger.FAKE_LOGGER.sysout(driver.getCurrentUrl());
-      page = driver.getPageSource();
-      assertTrue(driver.getPageSource().contains("results"));
+      page = restAccess(v2BaseUri, "transfers?followId=" + followId);
+      assertTrue(page.contains("results"));
       first = page.indexOf(followId);
       assertTrue(first != -1);
       second = page.indexOf(followId, first + 1);
@@ -355,16 +391,14 @@ public class RestNoAuthentTest extends TestAbstract {
       assertEquals(2, taskRunners.length);
 
       // Now with args
-      driver.get(v2BaseUri + "transfers/" + taskRunners[0].getSpecialId());
-      SysErrLogger.FAKE_LOGGER.sysout(driver.getCurrentUrl());
-      page = driver.getPageSource();
-      assertTrue(driver.getPageSource().contains(taskRunners[0].getFollowId()));
+      page = restAccess(v2BaseUri,
+                        "transfers/" + taskRunners[0].getSpecialId() + "_" +
+                        requested);
+      assertTrue(page.contains(taskRunners[0].getFollowId()));
 
       // Now with wrong args
-      driver.get(v2BaseUri + "transfers?followId=125");
-      SysErrLogger.FAKE_LOGGER.sysout(driver.getCurrentUrl());
-      page = driver.getPageSource();
-      assertTrue(driver.getPageSource().contains("results"));
+      page = restAccess(v2BaseUri, "transfers?followId=125");
+      assertTrue(page.contains("results"));
       first = page.indexOf(followId);
       assertFalse(first != -1);
       first = page.indexOf(rule);
@@ -373,6 +407,15 @@ public class RestNoAuthentTest extends TestAbstract {
       // Now directly
       taskRunners = DbTaskRunner.getSelectSameFollowId("125", true, 20, true);
       assertEquals(0, taskRunners.length);
+
+      // Using count
+      page = restAccess(v2BaseUri, "transfers?countOrder=true");
+      assertTrue(page.contains("totalResults\":4"));
+
+      page = restAccess(v2BaseUri,
+                        "transfers?countOrder=true&followId=" + followId);
+      assertTrue(page.contains("totalResults\":3"));
+
     } catch (NoSuchElementException e) {
       e.printStackTrace();
       fail(e.getMessage());
@@ -380,7 +423,8 @@ public class RestNoAuthentTest extends TestAbstract {
       e.printStackTrace();
       fail(e.getMessage());
     } finally {
-      // Nothing
+      httpClient.close();
+      httpClient = null;
     }
   }
 

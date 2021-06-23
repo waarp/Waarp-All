@@ -30,6 +30,7 @@ import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.state.MachineState;
+import org.waarp.compress.WaarpZstdCodec;
 import org.waarp.openr66.context.authentication.R66Auth;
 import org.waarp.openr66.context.filesystem.R66Dir;
 import org.waarp.openr66.context.filesystem.R66File;
@@ -41,9 +42,11 @@ import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolSystemException;
 import org.waarp.openr66.protocol.localhandler.LocalChannelReference;
 import org.waarp.openr66.protocol.localhandler.packet.RequestPacket;
+import org.waarp.openr66.protocol.localhandler.packet.compression.ZstdCompressionCodecDataPacket;
 import org.waarp.openr66.protocol.utils.FileUtils;
 
 import java.io.File;
+import java.lang.ref.SoftReference;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.security.NoSuchAlgorithmException;
@@ -62,6 +65,13 @@ public class R66Session implements SessionInterface {
   private static final String FILE_IS_IN_THROUGH_MODE =
       "File is in through mode: {}";
   private static final String FILE_CANNOT_BE_WRITE = "File cannot be write";
+
+  /**
+   * Global Codec for packet compression
+   */
+  private static final ZstdCompressionCodecDataPacket codec =
+      Configuration.configuration.isCompressionAvailable()?
+          new ZstdCompressionCodecDataPacket() : null;
 
   /**
    * Block size used during file transfer
@@ -95,7 +105,7 @@ public class R66Session implements SessionInterface {
   /**
    * Does this session is Ready to serve a request
    */
-  private volatile boolean isReady;
+  private boolean isReady;
   /**
    * Used to prevent deny of service
    */
@@ -129,9 +139,21 @@ public class R66Session implements SessionInterface {
 
   private final HashMap<String, R66Dir> dirsFromSession =
       new HashMap<String, R66Dir>();
-  private byte[] reusableBuffer;
+  private SoftReference<byte[]> reusableBuffer = null;
+  private SoftReference<byte[]> reusableDataPacketBuffer = null;
+  private SoftReference<byte[]> reusableCompressionBuffer = null;
   private FilesystemBasedDigest digestBlock = null;
   private boolean isSender;
+  private boolean isCompressionEnabled;
+  private int compressionMaxSize =
+      WaarpZstdCodec.getMaxCompressedSize(blockSize);
+
+  /**
+   * @return the compression codec
+   */
+  public static ZstdCompressionCodecDataPacket getCodec() {
+    return codec;
+  }
 
   /**
    * Create the session
@@ -142,6 +164,7 @@ public class R66Session implements SessionInterface {
     dir = new R66Dir(this);
     restart = new R66Restart(this);
     state = R66FiniteDualStates.newSessionMachineState();
+    isCompressionEnabled = Configuration.configuration.isCompressionAvailable();
   }
 
   /**
@@ -214,25 +237,7 @@ public class R66Session implements SessionInterface {
 
   @Override
   public void clear() {
-    // First check if a transfer was on going
-    if (runner != null && !runner.isFinished() && !runner.continueTransfer()) {
-      if (localChannelReference != null) {
-        if (!localChannelReference.getFutureRequest().isDone()) {
-          final R66Result result = new R66Result(
-              new OpenR66RunnerErrorException("Close before ending"), this,
-              true, ErrorCode.Disconnection,
-              runner);// True since called from closed
-          result.setRunner(runner);
-          try {
-            setFinalizeTransfer(false, result);
-          } catch (final OpenR66RunnerErrorException ignored) {
-            // nothing
-          } catch (final OpenR66ProtocolSystemException ignored) {
-            // nothing
-          }
-        }
-      }
-    }
+    partialClear();
     if (dir != null) {
       dir.clear();
     }
@@ -250,13 +255,6 @@ public class R66Session implements SessionInterface {
       }
       R66FiniteDualStates.endSessionMachineSate(state);
     }
-    // No clean of file since it can be used after channel is closed
-    isReady = false;
-    if (businessObject != null) {
-      businessObject.releaseResources(this);
-      businessObject = null;
-    }
-    digestBlock = null;
   }
 
   public void partialClear() {
@@ -286,6 +284,18 @@ public class R66Session implements SessionInterface {
       businessObject = null;
     }
     digestBlock = null;
+    if (reusableBuffer != null) {
+      reusableBuffer.clear();
+    }
+    reusableBuffer = null;
+    if (reusableDataPacketBuffer != null) {
+      reusableDataPacketBuffer.clear();
+    }
+    reusableDataPacketBuffer = null;
+    if (reusableCompressionBuffer != null) {
+      reusableCompressionBuffer.clear();
+    }
+    reusableCompressionBuffer = null;
   }
 
   @Override
@@ -299,16 +309,80 @@ public class R66Session implements SessionInterface {
   }
 
   /**
-   * @param blockSize
-   *
-   * @return the reusable buffer per Session
+   * @param blocksize the blocksize to set
    */
-  public byte[] getReusableBuffer(final int blockSize) {
-    if (reusableBuffer == null || reusableBuffer.length != blockSize) {
-      reusableBuffer = null;
-      reusableBuffer = new byte[blockSize];
+  public void setBlockSize(final int blocksize) {
+    blockSize = blocksize;
+    compressionMaxSize = WaarpZstdCodec.getMaxCompressedSize(blockSize);
+  }
+
+  private SoftReference<byte[]> getBuffer(SoftReference<byte[]> softReference,
+                                          final int length) {
+    if (softReference == null) {
+      softReference = new SoftReference<byte[]>(new byte[length]);
+      return softReference;
     }
-    return reusableBuffer;
+    final byte[] buffer = softReference.get();
+    if (buffer != null && buffer.length >= length) {
+      return softReference;
+    }
+    softReference.clear();
+    softReference = new SoftReference<byte[]>(new byte[length]);
+    return softReference;
+  }
+
+  /**
+   * @param length the target size
+   *
+   * @return the reusable buffer for sending per Session
+   */
+  public byte[] getReusableBuffer(final int length) {
+    reusableBuffer = getBuffer(reusableBuffer, length);
+    return reusableBuffer.get();
+  }
+
+  /**
+   * @param length the target size
+   *
+   * @return the reusable buffer for received DataPacket per Session
+   */
+  public byte[] getReusableDataPacketBuffer(final int length) {
+    reusableDataPacketBuffer = getBuffer(reusableDataPacketBuffer, length);
+    return reusableDataPacketBuffer.get();
+  }
+
+  /**
+   * @param length the original size
+   *
+   * @return the possible reusable compression buffer per Session
+   */
+  public byte[] getSessionReusableCompressionBuffer(final int length) {
+    reusableCompressionBuffer = getBuffer(reusableCompressionBuffer,
+                                          WaarpZstdCodec
+                                              .getMaxCompressedSize(length));
+    return reusableCompressionBuffer.get();
+  }
+
+  /**
+   * @return True if compression is enabled in this session
+   */
+  public boolean isCompressionEnabled() {
+    return isCompressionEnabled;
+  }
+
+  /**
+   * @param compressionEnabled True if compression is enabled in this session
+   */
+  public void setCompressionEnabled(final boolean compressionEnabled) {
+    isCompressionEnabled = compressionEnabled;
+    logger.debug("Compression enabled? {}", compressionEnabled);
+  }
+
+  /**
+   * @return the current max compression size according to block size
+   */
+  public int getCompressionMaxSize() {
+    return compressionMaxSize;
   }
 
   /**
@@ -330,13 +404,6 @@ public class R66Session implements SessionInterface {
    */
   public FilesystemBasedDigest getDigestBlock() {
     return digestBlock;
-  }
-
-  /**
-   * @param blocksize the blocksize to set
-   */
-  public void setBlockSize(final int blocksize) {
-    blockSize = blocksize;
   }
 
   @Override
@@ -461,13 +528,13 @@ public class R66Session implements SessionInterface {
     // check first if the next step is the PRE task from beginning
     try {
       file = FileUtils.getFile(logger, this, runner.getOriginalFilename(),
-                               runner.isPreTaskStarting(), runner.isSender(),
+                               runner.isPreTaskStarting(), isSender,
                                runner.isSendThrough(), file);
     } catch (final OpenR66RunnerErrorException e) {
       runner.setErrorExecutionStatus(ErrorCode.FileNotFound);
       throw e;
     }
-    if (runner.isSender() && !runner.isSendThrough()) {
+    if (isSender && !runner.isSendThrough()) {
       // possibly resolved filename
       try {
         runner.setOriginalFilename(file.getFile());
@@ -587,7 +654,7 @@ public class R66Session implements SessionInterface {
     if (isSender != runner.isSender()) {
       logger.warn("Not same SenderSide {} {}", isSender, runner.isSender());
     }
-    if (isSender && runner.isSender()) {
+    if (isSender) {
       try {
         if (file == null) {
           try {
@@ -920,6 +987,11 @@ public class R66Session implements SessionInterface {
 
   private void initializeTransfer(final boolean checkNotExternal)
       throws OpenR66RunnerErrorException {
+    if (runner.isSelfRequest() && runner.getRule().isSendMode()) {
+      // It might be the sender and initiator side, already changed by
+      // receiver, reset globalLastStep and globalStep
+      runner.setInitialTask();
+    }
     if (runner.getGloballaststep() == TASKSTEP.NOTASK.ordinal() ||
         runner.getGloballaststep() == TASKSTEP.PRETASK.ordinal()) {
       setFileBeforePreRunner();
@@ -1227,5 +1299,13 @@ public class R66Session implements SessionInterface {
    */
   public HashMap<String, R66Dir> getDirsFromSession() {
     return dirsFromSession;
+  }
+
+  /**
+   * @return True if according to session, it is the sender side (to byPass
+   *     send to itself issue)
+   */
+  public boolean isSender() {
+    return isSender;
   }
 }

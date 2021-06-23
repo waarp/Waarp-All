@@ -717,6 +717,7 @@ public class ServerActions extends ConnectionActions {
    * Receive a json request
    *
    * @param packet
+   * @param json
    *
    * @throws OpenR66ProtocolNotAuthenticatedException
    * @throws OpenR66RunnerErrorException
@@ -726,7 +727,7 @@ public class ServerActions extends ConnectionActions {
    * @throws OpenR66ProtocolPacketException
    * @throws OpenR66ProtocolNoDataException
    */
-  public void jsonCommand(final JsonCommandPacket packet)
+  public void jsonCommand(final JsonCommandPacket packet, final JsonPacket json)
       throws OpenR66ProtocolNotAuthenticatedException,
              OpenR66RunnerErrorException, OpenR66ProtocolSystemException,
              OpenR66ProtocolBusinessException, OpenR66ProtocolShutdownException,
@@ -740,13 +741,11 @@ public class ServerActions extends ConnectionActions {
       throw new OpenR66ProtocolNotAuthenticatedException(
           "Not authenticated while Valid received");
     }
-    final JsonPacket json = packet.getJsonRequest();
     if (json == null) {
       jsonCommandEmptyJson(packet);
       return;
     }
-    json.setRequestUserPacket(packet.getTypeValid());
-    switch (packet.getTypeValid()) {
+    switch (json.getRequestUserPacket()) {
       case LocalPacketFactory.SHUTDOWNPACKET: {
         jsonCommandShutdown(packet, (ShutdownRequestJsonPacket) json);
         break;
@@ -1296,7 +1295,7 @@ public class ServerActions extends ConnectionActions {
         // Save last rank from remote point of view
         runner.setRankAtStartup(rank);
         session.setFinalizeTransfer(false, result);
-      } else if (!runner.isSender()) {
+      } else if (!session.isSender()) {
         // is receiver so informs back for the rank to use next time
         final int newrank = runner.getRank();
         try {

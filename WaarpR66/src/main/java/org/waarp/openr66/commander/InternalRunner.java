@@ -51,7 +51,7 @@ public class InternalRunner {
   private final ScheduledExecutorService scheduledExecutorService;
   private ScheduledFuture<?> scheduledFuture;
   private CommanderInterface commander;
-  private volatile boolean isRunning = true;
+  private boolean isRunning = true;
   private final ThreadPoolExecutor threadPoolExecutor;
   private final NetworkTransaction networkTransaction;
 

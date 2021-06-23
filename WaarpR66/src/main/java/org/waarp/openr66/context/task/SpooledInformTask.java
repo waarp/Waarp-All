@@ -424,6 +424,37 @@ public class SpooledInformTask extends AbstractExecJavaTask {
   /**
    * For REST V2 service
    *
+   * @param status if 0, get all Spooled, 1 active ones, -1 inactive ones
+   * @param name if null or empty, will get all Spooled
+   *
+   * @return the total number of valid "Entries" from request arguments of
+   *     SpooledInformation
+   */
+  public static int getSpooledJsonEntriesNumber(final int status,
+                                                final String name) {
+    int nb = 0;
+    if (ParametersChecker.isEmpty(name)) {
+      synchronized (spooledInformationMap) {
+        final Set<String> names = spooledInformationMap.keySet();
+        for (final String nameInternal : names) {
+          // per Name
+          if (checkValidEntrySpooled(status, nameInternal) != null) {
+            nb++;
+          }
+        }
+      }
+    } else {
+      synchronized (spooledInformationMap) {
+        // per Name
+        nb = checkValidEntrySpooled(status, name) != null? 1 : 0;
+      }
+    }
+    return nb;
+  }
+
+  /**
+   * For REST V2 service
+   *
    * @param array the ArrayNode to fill with the results
    * @param status if 0, get all Spooled, 1 active ones, -1 inactive ones
    * @param name if null or empty, will get all Spooled
@@ -453,6 +484,35 @@ public class SpooledInformTask extends AbstractExecJavaTask {
   }
 
   /**
+   * Check if this entry is valid according to status and time
+   *
+   * @param status
+   * @param name
+   *
+   * @return the SpooledInformation if OK, else null
+   */
+  private static SpooledInformation checkValidEntrySpooled(final int status,
+                                                           final String name) {
+    final SpooledInformation inform = spooledInformationMap.get(name);
+    if (inform == null) {
+      return null;
+    }
+    final long time = inform.lastUpdate.getTime() +
+                      Configuration.configuration.getTimeoutCon();
+    final long curtime = System.currentTimeMillis();
+    if (status != 0) {
+      if (time + Configuration.configuration.getTimeoutCon() < curtime) {
+        if (status < 0) {
+          return null;
+        }
+      } else if (status > 0) {
+        return null;
+      }
+    }
+    return inform;
+  }
+
+  /**
    * @param detailed
    * @param status
    * @param array
@@ -466,71 +526,71 @@ public class SpooledInformTask extends AbstractExecJavaTask {
                                              final ArrayNode array,
                                              final String name,
                                              final boolean strict) {
-    final SpooledInformation inform = spooledInformationMap.get(name);
+    final SpooledInformation inform = checkValidEntrySpooled(status, name);
     if (inform == null) {
       return 0;
     }
     final long time = inform.lastUpdate.getTime() +
                       Configuration.configuration.getTimeoutCon();
     final long curtime = System.currentTimeMillis();
-    if (status != 0) {
-      if (time + Configuration.configuration.getTimeoutCon() < curtime) {
-        if (status < 0) {
-          return 0;
-        }
-      } else if (status > 0) {
-        return 0;
-      }
-    }
-    final ObjectNode elt = JsonHandler.createObjectNode();
-    elt.put("NAME", name.replace(',', ' '));
-    elt.put("HOST", inform.host);
-    if (strict) {
-      elt.put("LAST_UPDATE", inform.lastUpdate.getTime());
-    } else {
-      final String val;
-      if (time + Configuration.configuration.getTimeoutCon() < curtime) {
-        val = "bg-danger";
-      } else if (time < curtime) {
-        val = "bg-warning";
-      } else {
-        val = "bg-success";
-      }
-      elt.put("LAST_UPDATE", val + ' ' + inform.lastUpdate.getTime());
-    }
     int nb = 0;
-    if (inform.fileMonitorInformation != null) {
-      elt.put("GLOBALOK", inform.fileMonitorInformation.globalok.get());
-      elt.put("GLOBALERROR", inform.fileMonitorInformation.globalerror.get());
-      elt.put("TODAYOK", inform.fileMonitorInformation.todayok.get());
-      elt.put("TODAYERROR", inform.fileMonitorInformation.todayerror.get());
-      elt.put("INTERVAL", inform.fileMonitorInformation.elapseTime);
-      elt.put("STOPFILE", inform.fileMonitorInformation.stopFile.getPath());
-      elt.put("STATUSFILE", inform.fileMonitorInformation.statusFile.getPath());
-      elt.put("SUBDIRS", inform.fileMonitorInformation.scanSubDir);
-      final StringBuilder dirs = new StringBuilder();
-      final StringBuilder dirs2 = new StringBuilder();
-      int i = 0;
-      for (final File dir : inform.fileMonitorInformation.directories) {
-        i++;
-        dirs.append(dir).append('(').append(i).append(") ");
-        dirs2.append(dir).append(' ');
+    if (array == null) {
+      if (inform.fileMonitorInformation != null &&
+          inform.fileMonitorInformation.fileItems != null) {
+        nb = inform.fileMonitorInformation.fileItems.size();
       }
-      elt.put("DIRECTORIES", dirs.toString());
-      if (detailed && inform.fileMonitorInformation.fileItems != null) {
-        buildSpooledJsonFiles(elt, inform, dirs2.toString().split(" "), strict);
+    } else {
+      final ObjectNode elt = JsonHandler.createObjectNode();
+      elt.put("NAME", name.replace(',', ' '));
+      elt.put("HOST", inform.host);
+      if (strict) {
+        elt.put("LAST_UPDATE", inform.lastUpdate.getTime());
       } else {
-        // simply print number of files
-        if (inform.fileMonitorInformation.fileItems != null) {
-          elt.putArray("FILES")
-             .add(inform.fileMonitorInformation.fileItems.size());
+        final String val;
+        if (time + Configuration.configuration.getTimeoutCon() < curtime) {
+          val = "bg-danger";
+        } else if (time < curtime) {
+          val = "bg-warning";
         } else {
-          elt.putArray("FILES").add(0);
+          val = "bg-success";
         }
+        elt.put("LAST_UPDATE", val + ' ' + inform.lastUpdate.getTime());
       }
-      nb = inform.fileMonitorInformation.fileItems.size();
+      if (inform.fileMonitorInformation != null) {
+        elt.put("GLOBALOK", inform.fileMonitorInformation.globalok.get());
+        elt.put("GLOBALERROR", inform.fileMonitorInformation.globalerror.get());
+        elt.put("TODAYOK", inform.fileMonitorInformation.todayok.get());
+        elt.put("TODAYERROR", inform.fileMonitorInformation.todayerror.get());
+        elt.put("INTERVAL", inform.fileMonitorInformation.elapseTime);
+        elt.put("STOPFILE", inform.fileMonitorInformation.stopFile.getPath());
+        elt.put("STATUSFILE",
+                inform.fileMonitorInformation.statusFile.getPath());
+        elt.put("SUBDIRS", inform.fileMonitorInformation.scanSubDir);
+        final StringBuilder dirs = new StringBuilder();
+        final StringBuilder dirs2 = new StringBuilder();
+        int i = 0;
+        for (final File dir : inform.fileMonitorInformation.directories) {
+          i++;
+          dirs.append(dir).append('(').append(i).append(") ");
+          dirs2.append(dir).append(' ');
+        }
+        elt.put("DIRECTORIES", dirs.toString());
+        if (detailed && inform.fileMonitorInformation.fileItems != null) {
+          buildSpooledJsonFiles(elt, inform, dirs2.toString().split(" "),
+                                strict);
+        } else {
+          // simply print number of files
+          if (inform.fileMonitorInformation.fileItems != null) {
+            elt.putArray("FILES")
+               .add(inform.fileMonitorInformation.fileItems.size());
+          } else {
+            elt.putArray("FILES").add(0);
+          }
+        }
+        nb = inform.fileMonitorInformation.fileItems.size();
+      }
+      array.add(elt);
     }
-    array.add(elt);
     return nb;
   }
 

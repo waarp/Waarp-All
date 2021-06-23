@@ -75,6 +75,7 @@ public class DBRuleDAO extends StatementExecutor<Rule> implements RuleDAO {
   protected static final String SQL_DELETE =
       "DELETE FROM " + TABLE + WHERE + ID_FIELD + PARAMETER;
   protected static final String SQL_GET_ALL = "SELECT * FROM " + TABLE;
+  protected static final String SQL_COUNT_ALL = SQL_COUNT_ALL_PREFIX + TABLE;
   protected static final String SQL_EXIST =
       "SELECT 1 FROM " + TABLE + WHERE + ID_FIELD + PARAMETER;
   protected static final String SQL_SELECT =
@@ -134,6 +135,11 @@ public class DBRuleDAO extends StatementExecutor<Rule> implements RuleDAO {
   @Override
   protected String getGetAllRequest() {
     return SQL_GET_ALL;
+  }
+
+  @Override
+  protected String getCountRequest() {
+    return SQL_COUNT_ALL;
   }
 
   @Override

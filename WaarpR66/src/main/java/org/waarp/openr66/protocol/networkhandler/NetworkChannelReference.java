@@ -61,7 +61,7 @@ public class NetworkChannelReference {
   /**
    * Does this Network Channel is in shutdown
    */
-  protected volatile boolean isShuttingDown;
+  protected boolean isShuttingDown;
   /**
    * Associated LocalChannelReference
    */

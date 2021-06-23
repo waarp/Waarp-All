@@ -241,4 +241,17 @@ public interface FileInterface {
    */
   DataBlock readDataBlock()
       throws FileEndOfTransferException, FileTransferException;
+
+  /**
+   * Read a new block for FileInterface
+   *
+   * @param buffer use the given buffer to read
+   *
+   * @return dataBlock
+   *
+   * @throws FileEndOfTransferException
+   * @throws FileTransferException
+   */
+  DataBlock readDataBlock(byte[] buffer)
+      throws FileEndOfTransferException, FileTransferException;
 }

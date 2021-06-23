@@ -22,9 +22,11 @@ package org.waarp.openr66.protocol.test;
 import io.netty.util.ResourceLeakDetector;
 import io.netty.util.ResourceLeakDetector.Level;
 import org.waarp.common.command.exception.CommandAbstractException;
+import org.waarp.common.command.exception.Reply550Exception;
 import org.waarp.common.database.DbAdmin;
 import org.waarp.common.database.exception.WaarpDatabaseException;
 import org.waarp.common.database.exception.WaarpDatabaseSqlException;
+import org.waarp.common.file.FileUtils;
 import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogLevel;
 import org.waarp.common.logging.WaarpLoggerFactory;
@@ -33,6 +35,7 @@ import org.waarp.openr66.configuration.FileBasedConfiguration;
 import org.waarp.openr66.context.ErrorCode;
 import org.waarp.openr66.context.R66Session;
 import org.waarp.openr66.context.task.ChModTask;
+import org.waarp.openr66.context.task.CompressTask;
 import org.waarp.openr66.context.task.CopyRenameTask;
 import org.waarp.openr66.context.task.CopyTask;
 import org.waarp.openr66.context.task.DeleteTask;
@@ -287,6 +290,30 @@ public class TestTasks {
         "TRANSCODE: " + transcodeTask.getFutureCompletion().isSuccess());
     assertTrue("TRANSCODE should be OK",
                transcodeTask.getFutureCompletion().isSuccess());
+
+    // COMPRESS
+    final CompressTask compressTask =
+        new CompressTask(out + "/move.zstd", 0, argTransfer, session);
+    compressTask.run();
+    compressTask.getFutureCompletion().awaitOrInterruptible();
+    System.out
+        .println("COMPRESS: " + compressTask.getFutureCompletion().isSuccess());
+    assertTrue("COMPRESS should be OK",
+               compressTask.getFutureCompletion().isSuccess());
+    final CompressTask decompressTask =
+        new CompressTask(out + "/testTask.txt", 1, argTransfer, session);
+    decompressTask.run();
+    decompressTask.getFutureCompletion().awaitOrInterruptible();
+    System.out.println(
+        "DECOMPRESS: " + decompressTask.getFutureCompletion().isSuccess());
+    assertTrue("DECOMPRESS should be OK",
+               decompressTask.getFutureCompletion().isSuccess());
+    File file1 = new File(out + "/" + filename);
+    try {
+      FileUtils.copy(file1, file, false, false);
+    } catch (Reply550Exception e) {
+      SysErrLogger.FAKE_LOGGER.syserr(e);
+    }
 
     // MOVERENAME
     final MoveRenameTask moveReameTask =

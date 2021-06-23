@@ -30,13 +30,14 @@ public abstract class RecvThroughHandler {
    * This method will be called for each valid packet received to be written
    *
    * @param buffer
+   * @param length
    *
    * @throws OpenR66ProtocolBusinessException This exception has to be
    *     throw
    *     if any error occurs during write
    *     in business process.
    */
-  public abstract void writeBytes(byte[] buffer)
+  public abstract void writeBytes(byte[] buffer, int length)
       throws OpenR66ProtocolBusinessException;
 
   /**

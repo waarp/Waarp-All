@@ -37,7 +37,7 @@ public final class ServerStatusMaker {
   /**
    * Date of the last time the server status was requested.
    */
-  private static volatile DateTime lastRun;
+  private static DateTime lastRun;
 
   /**
    * Makes the default constructor of this utility class inaccessible.

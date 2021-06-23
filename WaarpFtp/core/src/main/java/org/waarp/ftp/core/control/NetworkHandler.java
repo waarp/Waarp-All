@@ -84,7 +84,7 @@ public class NetworkHandler extends SimpleChannelInboundHandler<String> {
   /**
    * ChannelHandlerContext that could be used whenever needed
    */
-  private volatile ChannelHandlerContext ctx;
+  private ChannelHandlerContext ctx;
 
   /**
    * Constructor from session

@@ -384,9 +384,8 @@ public class DbRule extends AbstractDbDataDao<Rule> {
       final Filter filter =
           new Filter(DbTaskRunner.Columns.IDRULE.name(), "=", this.getIdRule());
       filters.add(filter);
-      final List<Transfer> transfers = transferDAO.find(filters);
-      if (!transfers.isEmpty()) {
-        transfers.clear();
+      final long nb = transferDAO.count(filters);
+      if (nb > 0) {
         throw new WaarpDatabaseNoDataException("Rule " + this.getIdRule() +
                                                " is still used by TaskRunner therefore it cannot be deleted.");
       }
@@ -714,22 +713,22 @@ public class DbRule extends AbstractDbDataDao<Rule> {
     if (isSender) {
       switch (step) {
         case PRETASK:
-          return "S:{" + pojo.getXMLRPreTasks().replace('\n', ' ') + '}';
+          return "S:{" + pojo.getXMLSPreTasks().replace('\n', ' ') + '}';
         case POSTTASK:
-          return "S:{" + pojo.getXMLRPostTasks().replace('\n', ' ') + '}';
+          return "S:{" + pojo.getXMLSPostTasks().replace('\n', ' ') + '}';
         case ERRORTASK:
-          return "S:{" + pojo.getXMLRErrorTasks().replace('\n', ' ') + '}';
+          return "S:{" + pojo.getXMLSErrorTasks().replace('\n', ' ') + '}';
         default:
           return "S:{no task}";
       }
     } else {
       switch (step) {
         case PRETASK:
-          return "R:{" + pojo.getXMLSPreTasks().replace('\n', ' ') + '}';
+          return "R:{" + pojo.getXMLRPreTasks().replace('\n', ' ') + '}';
         case POSTTASK:
-          return "R:{" + pojo.getXMLSPostTasks().replace('\n', ' ') + '}';
+          return "R:{" + pojo.getXMLRPostTasks().replace('\n', ' ') + '}';
         case ERRORTASK:
-          return "R:{" + pojo.getXMLSErrorTasks().replace('\n', ' ') + '}';
+          return "R:{" + pojo.getXMLRErrorTasks().replace('\n', ' ') + '}';
         default:
           return "R:{no task}";
       }

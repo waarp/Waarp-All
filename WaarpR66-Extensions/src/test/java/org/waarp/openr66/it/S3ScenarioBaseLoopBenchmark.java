@@ -104,6 +104,7 @@ public abstract class S3ScenarioBaseLoopBenchmark extends S3TestAbstract {
   static final String SECRET_KEY = "secretKey";
   static final String BUCKET = "bucket-test";
   static final String FILEPATHSRC = "/directory1/s3file";
+  static String rulename = "loop";
 
   public static void setUpBeforeClass() throws Exception {
     ResourceLeakDetector.setLevel(Level.SIMPLE);
@@ -332,19 +333,20 @@ public abstract class S3ScenarioBaseLoopBenchmark extends S3TestAbstract {
       httpClient = HttpClientBuilder.create().setConnectionManagerShared(true)
                                     .disableAutomaticRetries().build();
       HttpGet request =
-          new HttpGet("http://127.0.0.1:8098/v2/transfers?limit=100000");
+          new HttpGet("http://127.0.0.1:8098/v2/transfers?countOrder=true");
       CloseableHttpResponse response = null;
       try {
         response = httpClient.execute(request);
-        assertEquals(200, response.getStatusLine().getStatusCode());
-        String content = EntityUtils.toString(response.getEntity());
-        ObjectNode node = JsonHandler.getFromString(content);
-        if (node != null) {
-          JsonNode number = node.findValue("totalResults");
-          int newNb = number.asInt();
-          max += newNb;
-          totalTransfers = newNb;
-          logger.warn("Found {} transfers", newNb);
+        if (200 == response.getStatusLine().getStatusCode()) {
+          String content = EntityUtils.toString(response.getEntity());
+          ObjectNode node = JsonHandler.getFromString(content);
+          if (node != null) {
+            JsonNode number = node.findValue("totalResults");
+            long newNb = number.asLong();
+            max += newNb;
+            totalTransfers = (int) newNb;
+            logger.warn("Found {} transfers", newNb);
+          }
         }
       } finally {
         if (response != null) {
@@ -355,7 +357,9 @@ public abstract class S3ScenarioBaseLoopBenchmark extends S3TestAbstract {
         try {
           delegate.run();
           response = httpClient.execute(request);
-          assertEquals(200, response.getStatusLine().getStatusCode());
+          if (200 != response.getStatusLine().getStatusCode()) {
+            break;
+          }
           String content = EntityUtils.toString(response.getEntity());
           ObjectNode node = JsonHandler.getFromString(content);
           if (node != null) {
@@ -424,20 +428,34 @@ public abstract class S3ScenarioBaseLoopBenchmark extends S3TestAbstract {
   }
 
   private int initBenchmark(int gap)
-      throws IOException, OpenR66ProtocolNetworkException {
+      throws IOException, OpenR66ProtocolNetworkException, Reply550Exception {
     NUMBER_FILES = SystemPropertyUtil.get(IT_LONG_TEST, false)? 2000 : 10;
     int factor = 250 * 1024 * 2 / NUMBER_FILES;
     Assume.assumeNotNull(networkTransaction);
     Configuration.configuration.changeNetworkLimit(0, 0, 0, 0, 1000);
-    File baseDir = new File("/tmp/R66/" + PATH_COMMON + "/R1/test/");
-    baseDir.mkdirs();
-    WaarpR66S3Client client =
-        new WaarpR66S3Client(ACCESS_KEY, SECRET_KEY, s3Url);
-    for (int i = 1; i <= NUMBER_FILES; i++) {
-      int size = 10000 + i * factor + gap;
-      File fileOut = new File(baseDir, "hello" + size);
-      final File outHello = generateOutFile(fileOut.getAbsolutePath(), size);
-      client.createFile(BUCKET, FILEPATHSRC + size, outHello, null);
+    if (rulename.equalsIgnoreCase("loop")) {
+      File baseDir = new File("/tmp/R66/" + PATH_COMMON + "/R1/test/");
+      baseDir.mkdirs();
+      WaarpR66S3Client client =
+          new WaarpR66S3Client(ACCESS_KEY, SECRET_KEY, s3Url);
+      for (int i = 1; i <= NUMBER_FILES; i++) {
+        int size = (10000 + i * factor) + gap;
+        File fileOut = new File(baseDir, "hello" + size);
+        final File outHello = generateOutFile(fileOut.getAbsolutePath(), size);
+        client.createFile(BUCKET, FILEPATHSRC + size, outHello, null);
+      }
+    } else {
+      File baseDir = new File("/tmp/R66/" + PATH_COMMON + "/R1/out/");
+      baseDir.mkdirs();
+      File baseDir2 = new File("/tmp/R66/" + PATH_COMMON + "/R2/out/");
+      baseDir2.mkdirs();
+      for (int i = 1; i <= NUMBER_FILES; i++) {
+        int size = (10000 + i * factor) + gap;
+        File fileOut = new File(baseDir, "hello" + size);
+        generateOutFile(fileOut.getAbsolutePath(), size);
+        File fileOut2 = new File(baseDir2, "hello" + size);
+        FileUtils.copy(fileOut, fileOut2, false, false);
+      }
     }
     logger.warn("End of file creations");
     return factor;
@@ -452,7 +470,7 @@ public abstract class S3ScenarioBaseLoopBenchmark extends S3TestAbstract {
     }
     R66Future[] futures = new R66Future[NUMBER_FILES];
     for (int i = 1; i <= NUMBER_FILES; i++) {
-      int size = 10000 + i * factor;
+      int size = (10000 + i * factor) + gap;
       final R66Future future = new R66Future(true);
       futures[i - 1] = future;
       /*
@@ -466,12 +484,10 @@ public abstract class S3ScenarioBaseLoopBenchmark extends S3TestAbstract {
        */
 
       final SubmitTransfer transaction =
-          new SubmitTransfer(future, serverName, "hello" + (size + gap),
-                             ruleName,
+          new SubmitTransfer(future, serverName, "hello" + size, ruleName,
                              (s3Url == null? "" : s3Url) + " " + FILEPATHSRC +
-                             (size + gap) + " Test Loop Send " + (size + gap),
-                             true, BLOCK_SIZE, DbConstantR66.ILLEGALVALUE,
-                             null);
+                             size + " Test Loop Send " + size, true, BLOCK_SIZE,
+                             DbConstantR66.ILLEGALVALUE, null);
       TransferArgs.forceAnalyzeFollow(transaction);
       transaction.setNormalInfoAsWarn(false);
       transaction.run();
@@ -484,12 +500,11 @@ public abstract class S3ScenarioBaseLoopBenchmark extends S3TestAbstract {
 
   @Test
   public void test01_LoopBenchmarkSendsSyncSslNoLimit()
-      throws IOException, InterruptedException,
-             OpenR66ProtocolNetworkException {
+      throws IOException, OpenR66ProtocolNetworkException, Reply550Exception {
     logger.warn("Start {} {}", Processes.getCurrentMethodName(), NUMBER_FILES);
     int factor = initBenchmark(0);
     String serverName = "server2-ssl";
-    String ruleName = "loop";
+    String ruleName = rulename;
     long timestart = System.currentTimeMillis();
     runLoopInit(ruleName, serverName, factor, 0);
     long timestop = System.currentTimeMillis();
@@ -509,12 +524,11 @@ public abstract class S3ScenarioBaseLoopBenchmark extends S3TestAbstract {
 
   @Test
   public void test02_LoopBenchmarkSendsSyncNoLimit()
-      throws IOException, InterruptedException,
-             OpenR66ProtocolNetworkException {
+      throws IOException, OpenR66ProtocolNetworkException, Reply550Exception {
     logger.warn("Start {} {}", Processes.getCurrentMethodName(), NUMBER_FILES);
     int factor = initBenchmark(1);
     String serverName = "server2";
-    String ruleName = "loop";
+    String ruleName = rulename;
     long timestart = System.currentTimeMillis();
     runLoopInit(ruleName, serverName, factor, 1);
     long timestop = System.currentTimeMillis();

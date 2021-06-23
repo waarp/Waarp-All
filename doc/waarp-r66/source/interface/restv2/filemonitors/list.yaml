@@ -22,6 +22,8 @@ paths:
                     format: int32
                     description: >-
                       Le nombre total de FileMonitors trouvés.
+                      Si le paramètre countOrder=true est donnée, seule
+                      valeur retournée avec totalSubResults.
                     type: integer
                   totalSubResults:
                     title: Total des sous réponses
@@ -29,6 +31,8 @@ paths:
                     format: int32
                     description: >-
                       Le nombre total de Files dans les FileMonitors trouvés.
+                      Si le paramètre countOrder=true est donnée, seule
+                      valeur retournée avec totalResults.
                     type: integer
                   results:
                     title: Réponses
@@ -40,12 +44,12 @@ paths:
                 required:
                   - totalResults
                   - totalSubResults
-                  - results
         '400':
           $ref: '#/components/responses/trait_returnsBadRequest_400'
       description: >
         Renvoie une liste des FileMonitors reçus par le serveur respectant les
-        filtres donnés en paramètres de requête.
+        filtres donnés en paramètres de requête, ou simplement le décompte si
+        countOrder=true est passé en paramètre.
       operationId: Lister les FileMonitors
       parameters:
         - name: name
@@ -63,6 +67,15 @@ paths:
             maximum: 1
             format: int32
             type: integer
+        - name: countOrder
+          in: query
+          description: >
+            Si ce paramètre est vrai, la réponse ne contiendra que le nombre
+            des hôtes selon les conditions, sinon la liste réelle.
+
+            Si le paramètre n'est pas défini, la liste est retournée.
+          schema:
+            type: boolean
 components:
   schemas:
     ObjectFileMonitorFile:

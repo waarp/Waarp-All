@@ -57,10 +57,12 @@ import static org.waarp.openr66.protocol.http.restv2.RestConstants.*;
 
 /**
  * The Monitor exports Transfers into a Json Format to a remote API REST
+ * or an Elasticsearch server (if JRE >= 8)
  * in order to allow to monitor multiple Waarp Servers from one central
- * monitoring, such as using Elasticsearch with Kibana/Grafana, through
- * a Logstash engine\n\n<br>
- * \n<br>
+ * monitoring, such as using Elasticsearch with Kibana/Grafana through RESP
+ * API from Logstash engine or equivalent, or your own REST API server
+ * or a Elasticsearch server.<br>
+ * <br>
  * Json format is:
  * <pre>{@code
  *  {
@@ -130,25 +132,38 @@ public class MonitorExporterTransfers extends Thread implements Closeable {
   private final boolean intervalMonitoringIncluded;
   private final boolean transformLongAsString;
   private final boolean asApiRest;
-  private final HttpClient httpClient;
-  private final ElasticsearchClient elasticsearchClient;
+  private final HttpMonitoringExporterClient httpMonitoringExporterClient;
+  private final ElasticsearchMonitoringExporterClient
+      elasticsearchMonitoringExporterClient;
   private final DbHostConfiguration hostConfiguration;
 
   private DateTime lastDateTime;
   private Timestamp lastTimestamp;
 
   /**
+   * Note that only one among (basicAuthent, token, apikey) is allowed and
+   * will be taken into account.
+   *
    * @param remoteBaseUrl as 'http://myhost.com:8080' or 'https://myhost.com:8443'
    * @param endpoint as '/waarpr66monitor' or simply '/'
+   * @param basicAuthent Basic Authent in Base64 format to connect to
+   *     REST API if any (Basic authentication from 'username:paswwd')
+   *     (nullable)
+   * @param token access token (Bearer Token authorization
+   *     by Header) (nullable)
+   * @param apiKey API Key (Base64 of 'apiId:apiKey') (ApiKey authorization
+   *     by Header) (nullable)
    * @param keepConnection True to keep the connexion opened, False to release the connexion each time
    * @param intervalMonitoringIncluded True to include the interval information within 'waarpMonitor' field
    * @param transformLongAsString True to transform Long as String (ELK)
-   * @param group the EventLoopGroup to use for HttpClient
+   * @param group the EventLoopGroup to use for HttpMonitoringExporterClient
    *
    * @throws IllegalArgumentException if the setup is in error
    */
   public MonitorExporterTransfers(final String remoteBaseUrl,
                                   final String endpoint,
+                                  final String basicAuthent, final String token,
+                                  final String apiKey,
                                   final boolean keepConnection,
                                   final boolean intervalMonitoringIncluded,
                                   final boolean transformLongAsString,
@@ -164,9 +179,11 @@ public class MonitorExporterTransfers extends Thread implements Closeable {
     this.intervalMonitoringIncluded = intervalMonitoringIncluded;
     this.transformLongAsString = transformLongAsString;
     this.asApiRest = true;
-    this.elasticsearchClient = null;
-    this.httpClient =
-        new HttpClient(remoteBaseUrl, endpoint, keepConnection, group);
+    this.elasticsearchMonitoringExporterClient = null;
+    this.httpMonitoringExporterClient =
+        new HttpMonitoringExporterClient(remoteBaseUrl, basicAuthent, token,
+                                         apiKey, endpoint, keepConnection,
+                                         group);
     DbHostConfiguration temp = null;
     try {
       temp = new DbHostConfiguration(Configuration.configuration.getHostId());
@@ -202,9 +219,14 @@ public class MonitorExporterTransfers extends Thread implements Closeable {
    * </ul>
    * <br>DATE is about current last-time check.<br>
    * So 'waarpr66-%%WAARPHOST%%-%%DATE%%' will give for instance
-   * 'waarpr66-hosta-2021-06-21' as index name.
+   * 'waarpr66-hosta-2021-06-21' as index name.<br>
+   * Note that only one among (username/pwd, token, apikey) is allowed and
+   * will be taken into account.
    *
    * @param remoteBaseUrl as 'http://myelastic.com:9200' or 'https://myelastic.com:9201'
+   * @param prefix as '/prefix' or null if none
+   * @param index as 'waarpr66monitor' as the index name within
+   *     Elasticsearch, including extra dynamic information
    * @param username username to connect to Elasticsearch if any (Basic
    *     authentication) (nullable)
    * @param pwd password to connect to Elasticsearch if any (Basic
@@ -213,9 +235,6 @@ public class MonitorExporterTransfers extends Thread implements Closeable {
    *     by Header) (nullable)
    * @param apiKey API Key (Base64 of 'apiId:apiKey') (ApiKey authorization
    *     by Header) (nullable)
-   * @param prefix as '/prefix' or null if none
-   * @param index as 'waarpr66monitor' as the index name within
-   *     Elasticsearch, including extra dynamic information
    * @param intervalMonitoringIncluded True to include the interval information within 'waarpMonitor' field
    * @param transformLongAsString True to transform Long as String (ELK)
    * @param compression True to compress REST exchanges between the client
@@ -224,9 +243,9 @@ public class MonitorExporterTransfers extends Thread implements Closeable {
    * @throws IllegalArgumentException if the setup is in error
    */
   public MonitorExporterTransfers(final String remoteBaseUrl,
+                                  final String prefix, final String index,
                                   final String username, final String pwd,
                                   final String token, final String apiKey,
-                                  final String prefix, final String index,
                                   final boolean intervalMonitoringIncluded,
                                   final boolean transformLongAsString,
                                   final boolean compression) {
@@ -242,7 +261,7 @@ public class MonitorExporterTransfers extends Thread implements Closeable {
     this.intervalMonitoringIncluded = intervalMonitoringIncluded;
     this.transformLongAsString = transformLongAsString;
     this.asApiRest = false;
-    this.httpClient = null;
+    this.httpMonitoringExporterClient = null;
     final String[] urls = remoteBaseUrl.split(",");
     final ArrayList<HttpHost> httpHostArray =
         new ArrayList<HttpHost>(urls.length);
@@ -262,15 +281,14 @@ public class MonitorExporterTransfers extends Thread implements Closeable {
         throw new IllegalArgumentException(e);
       }
     }
-    this.elasticsearchClient = ElasticsearchClientBuilder.getFactory()
-                                                         .createElasticsearchClient(
-                                                             username, pwd,
-                                                             token, apiKey,
-                                                             prefix, index,
-                                                             compression,
-                                                             httpHostArray
-                                                                 .toArray(
-                                                                     new HttpHost[0]));
+    this.elasticsearchMonitoringExporterClient =
+        ElasticsearchMonitoringExporterClientBuilder.getFactory()
+                                                    .createElasticsearchClient(
+                                                        username, pwd, token,
+                                                        apiKey, prefix, index,
+                                                        compression,
+                                                        httpHostArray.toArray(
+                                                            new HttpHost[0]));
     DbHostConfiguration temp = null;
     try {
       temp = new DbHostConfiguration(Configuration.configuration.getHostId());
@@ -377,8 +395,9 @@ public class MonitorExporterTransfers extends Thread implements Closeable {
     logger.debug("Create Json {}", size);
     transferList.clear();
     if (asApiRest) {
-      if (httpClient.post(monitoredTransfers, lastDateTime, now,
-                          Configuration.configuration.getHostId())) {
+      if (httpMonitoringExporterClient
+          .post(monitoredTransfers, lastDateTime, now,
+                Configuration.configuration.getHostId())) {
         logger.info("Transferred from {} to {} = {}", lastDateTime, now, size);
         lastDateTime = now;
         lastTimestamp = timestamp;
@@ -387,9 +406,9 @@ public class MonitorExporterTransfers extends Thread implements Closeable {
         logger.error("Not Transferred from {} to {} = {}", lastDateTime, now,
                      size);
       }
-    } else if (elasticsearchClient.post(monitoredTransfers, lastDateTime, now,
-                                        Configuration.configuration
-                                            .getHostId())) {
+    } else if (elasticsearchMonitoringExporterClient
+        .post(monitoredTransfers, lastDateTime, now,
+              Configuration.configuration.getHostId())) {
       logger.info("ES Transferred from {} to {} = {}", lastDateTime, now, size);
       lastDateTime = now;
       lastTimestamp = timestamp;
@@ -402,11 +421,11 @@ public class MonitorExporterTransfers extends Thread implements Closeable {
 
   @Override
   public void close() throws IOException {
-    if (httpClient != null) {
-      httpClient.close();
+    if (httpMonitoringExporterClient != null) {
+      httpMonitoringExporterClient.close();
     }
-    if (elasticsearchClient != null) {
-      elasticsearchClient.close();
+    if (elasticsearchMonitoringExporterClient != null) {
+      elasticsearchMonitoringExporterClient.close();
     }
   }
 }

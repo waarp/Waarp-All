@@ -326,7 +326,6 @@ public abstract class ScenarioBaseLoop extends TestAbstract {
    */
   @AfterClass
   public static void tearDownAfterClass() throws Exception {
-    WaarpSystemUtil.stopLogger(true);
     if (NUMBER_FILES == -1) {
       Configuration.configuration.setTimeoutCon(100);
       for (int pid : PIDS) {
@@ -346,7 +345,7 @@ public abstract class ScenarioBaseLoop extends TestAbstract {
     int nb = 0;
     int every10sec = 10;
     HttpGet request =
-        new HttpGet("http://127.0.0.1:8098/v2/transfers?limit=100000");
+        new HttpGet("http://127.0.0.1:8098/v2/transfers?countOrder=true");
     final long startTime = System.currentTimeMillis();
     try {
       httpClient = HttpClientBuilder.create().setConnectionManagerShared(true)
@@ -354,15 +353,16 @@ public abstract class ScenarioBaseLoop extends TestAbstract {
       CloseableHttpResponse response = null;
       try {
         response = httpClient.execute(request);
-        assertEquals(200, response.getStatusLine().getStatusCode());
         String content = EntityUtils.toString(response.getEntity());
         ObjectNode node = JsonHandler.getFromString(content);
         if (node != null) {
           JsonNode number = node.findValue("totalResults");
-          int newNb = number.asInt();
-          max += newNb;
-          totalTransfers = max;
-          logger.warn("Found {} transfers", newNb);
+          if (number != null) {
+            long newNb = number.asLong();
+            max += newNb;
+            totalTransfers = (int) newNb;
+            logger.warn("Found {} transfers", newNb);
+          }
         }
       } finally {
         if (response != null) {
@@ -372,16 +372,21 @@ public abstract class ScenarioBaseLoop extends TestAbstract {
       while (nb < max) {
         try {
           response = httpClient.execute(request);
-          assertEquals(200, response.getStatusLine().getStatusCode());
+          if (400 <= response.getStatusLine().getStatusCode()) {
+            logger
+                .warn("Bad Code {}", response.getStatusLine().getStatusCode());
+          }
           String content = EntityUtils.toString(response.getEntity());
           ObjectNode node = JsonHandler.getFromString(content);
           if (node != null) {
             JsonNode number = node.findValue("totalResults");
-            int newNb = number.asInt();
-            if (newNb != nb || every10sec == 0) {
-              every10sec = 10;
-              nb = newNb;
-              logger.warn("Found {} transfers", nb);
+            if (number != null) {
+              int newNb = number.asInt();
+              if (newNb != nb || every10sec == 0) {
+                every10sec = 10;
+                nb = newNb;
+                logger.warn("Found {} transfers", nb);
+              }
             }
             every10sec--;
           }
@@ -404,6 +409,7 @@ public abstract class ScenarioBaseLoop extends TestAbstract {
     logger.warn("Duration {} for {} item so {} items/s",
                 (stopTime - startTime) / 1000.0, totalTransfers,
                 totalTransfers / ((stopTime - startTime) / 1000.0));
+    WaarpSystemUtil.stopLogger(true);
     Configuration.configuration.setTimeoutCon(100);
     for (int pid : PIDS) {
       Processes.kill(pid, true);

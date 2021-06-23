@@ -131,6 +131,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
   private static final String FOLLOW_ID_LIKE = "%\"" + FOLLOW_JSON_KEY + "\":";
   public static final String AND = " AND ";
   public static final String SELECT_COUNT = "SELECT COUNT(";
+  public static final String TRACE_FOR_ERROR = "Trace for error";
 
   /**
    * Create the LRU cache
@@ -218,7 +219,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
 
   private R66Session session;
 
-  private volatile boolean continueTransfer = true;
+  private boolean continueTransfer = true;
 
   private boolean rescheduledTransfer;
 
@@ -309,9 +310,9 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
 
   public void checkThroughMode() {
     isRecvThrough = RequestPacket
-        .isRecvThroughMode(pojo.getTransferMode(), isSelfRequested());
+        .isRecvThroughMode(pojo.getTransferMode(), isRequestOnRequested());
     isSendThrough = RequestPacket
-        .isSendThroughMode(pojo.getTransferMode(), isSelfRequested());
+        .isSendThroughMode(pojo.getTransferMode(), isRequestOnRequested());
 
     if (localChannelReference != null) {
       if (localChannelReference.isRecvThroughMode()) {
@@ -460,8 +461,18 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
       pojo = transferAccess.select(id, requester, requested,
                                    Configuration.configuration.getHostId());
     } catch (final DAOConnectionException e) {
+      if (Configuration.configuration.isShutdown()) {
+        // ignore since shutdown
+        throw new WaarpDatabaseException(
+            "Shutdown on going so database not accessible");
+      }
       throw new WaarpDatabaseException(e);
     } catch (final DAONoDataException e) {
+      if (Configuration.configuration.isShutdown()) {
+        // ignore since shutdown
+        throw new WaarpDatabaseException(
+            "Shutdown on going so database not accessible");
+      }
       throw new WaarpDatabaseNoDataException(TRANSFER_NOT_FOUND, e);
     } finally {
       DAOFactory.closeDAO(transferAccess);
@@ -2140,7 +2151,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    */
   public boolean restart(final boolean submit) {
     // Restart if not Requested
-    if (submit && isSelfRequested()) {
+    if (submit && isRequestOnRequested()) {
       if (pojo.getLastGlobalStep() != Transfer.TASKSTEP.ALLDONETASK ||
           pojo.getLastGlobalStep() != Transfer.TASKSTEP.ERRORTASK) {
         // nothing
@@ -2152,7 +2163,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
       // if not submit and transfertask and receiver AND not requester
       // If requester and receiver => rank is already decreased when request is sent
       if (!submit && pojo.getGlobalStep() == Transfer.TASKSTEP.TRANSFERTASK &&
-          !pojo.getRetrieveMode() && isSelfRequested()) {
+          !pojo.getRetrieveMode() && isRequestOnRequested()) {
         logger.debug("Will try to restart transfer {}", this);
         restartRank();
         logger.debug("New restart for transfer is {}", this);
@@ -2337,6 +2348,16 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    */
   public boolean isSender() {
     return pojo.getRetrieveMode();
+  }
+
+  /**
+   * @return if is Sender from Session
+   */
+  public boolean isSessionSender() {
+    if (session == null) {
+      return isSender();
+    }
+    return session.isSender();
   }
 
   /**
@@ -2795,8 +2816,8 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
       logger.debug("{}:{}:{}:{}:{} Sender: {} {}", (session == null),
                    session == null? "norunner" : session.getRunner() == null,
                    toLogRunStep(), getStep(),
-                   tasks == null? "null" : tasks.length, isSender(),
-                   rule.printTasks(isSender(), getGlobalStep()));
+                   tasks == null? "null" : tasks.length, isSessionSender(),
+                   rule.printTasks(isSessionSender(), getGlobalStep()));
     }
     if (tasks == null) {
       throw new OpenR66RunnerEndTasksException("No tasks!");
@@ -2896,13 +2917,13 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
       }
     }
     if (logger.isDebugEnabled()) {
-      logger.debug("{} Sender: {} {}", toLogRunStep(), isSender(),
-                   rule.printTasks(isSender(), getGlobalStep()));
+      logger.debug("{} Sender: {} {}", toLogRunStep(), isSessionSender(),
+                   rule.printTasks(isSessionSender(), getGlobalStep()));
     }
     switch (getGlobalStep()) {
       case PRETASK:
         try {
-          if (isSender()) {
+          if (isSessionSender()) {
             return runNextTask(rule.getSpreTasksArray());
           } else {
             return runNextTask(rule.getRpreTasksArray());
@@ -2916,7 +2937,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
         }
       case POSTTASK:
         try {
-          if (isSender()) {
+          if (isSessionSender()) {
             return runNextTask(rule.getSpostTasksArray());
           } else {
             return runNextTask(rule.getRpostTasksArray());
@@ -2930,7 +2951,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
         }
       case ERRORTASK:
         try {
-          if (isSender()) {
+          if (isSessionSender()) {
             return runNextTask(rule.getSerrorTasksArray());
           } else {
             return runNextTask(rule.getRerrorTasksArray());
@@ -2956,7 +2977,8 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
     if (logger.isDebugEnabled()) {
       try {
         logger.debug("{} Status: {} Sender: {} {}", toLogRunStep(), getStatus(),
-                     isSender(), rule.printTasks(isSender(), getGlobalStep()));
+                     isSessionSender(),
+                     rule.printTasks(isSessionSender(), getGlobalStep()));
       } catch (final NullPointerException ignored) {
         // Ignored
       }
@@ -3039,7 +3061,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
           .debug("ContinueTransfer: {} status:{}:{}", continueTransfer, status,
                  finalValue);
       if (finalValue.getException() == null) {
-        finalValue.setException(new OpenR66RunnerException("Trace for error"));
+        finalValue.setException(new OpenR66RunnerException(TRACE_FOR_ERROR));
       }
       errorTransfer(finalValue, file, localChannelReference);
     }
@@ -3050,7 +3072,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
       final R66Result finalValue)
       throws OpenR66RunnerErrorException, OpenR66ProtocolSystemException {
     // First move the file
-    if (isSender()) {
+    if (session.isSender()) {
       // Nothing to do since it is the original file
       setPostTask();
       if (!shallIgnoreSave()) {
@@ -3246,7 +3268,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
     if (finalValue.getException() != null) {
       logger.error("Transfer KO on " + file + " due to " +
                    finalValue.getException().getMessage());
-      if ("Trace for error"
+      if (TRACE_FOR_ERROR
           .equalsIgnoreCase(finalValue.getException().getMessage())) {
         logger.error(finalValue.getException());
       }
@@ -3385,7 +3407,7 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    * Delete the temporary empty file (retrieved file at rank 0)
    */
   public void deleteTempFile() {
-    if (!isSender() && getRank() == 0) {
+    if (!isSessionSender() && getRank() == 0) {
       try {
         if (session != null) {
           final R66File file = session.getFile();
@@ -3441,7 +3463,8 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
 
   public String toShortString() {
     return "<RULE>" + getRuleId() + "</RULE><ID>" + getSpecialId() +
-           "</ID><FILE>" + getFilename() + "</FILE>     <STEP>" +
+           "</ID><FILE>" + getFilename() + "</FILE><ORIGINALFILE>" +
+           getOriginalFilename() + "</ORIGINALFILE>     <STEP>" +
            getGlobalStep() + '(' + getLastGlobalStep() + "):" + getStep() +
            ':' + getStatus().getMesg() + "</STEP><RANK>" + getRank() +
            "</RANK><BLOCKSIZE>" + getBlocksize() + "</BLOCKSIZE>     <SENDER>" +
@@ -3667,11 +3690,10 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
   }
 
   /**
-   * @return True if the current host is the requested host (to prevent
-   *     request
-   *     to itself)
+   * @return True if the current host is the requested host but not requester
+   *     (to prevent request to itself)
    */
-  public boolean isSelfRequested() {
+  public boolean isRequestOnRequested() {
     if (pojo.getRequested().equals(Configuration.configuration.getHostId()) ||
         pojo.getRequested()
             .equals(Configuration.configuration.getHostSslId())) {
@@ -3688,8 +3710,8 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
    * @return True if this is a self request and current action is on Requested
    */
   public boolean shallIgnoreSave() {
-    return isSelfRequest() && (isSender() && getRule().isSendMode() ||
-                               !isSender() && getRule().isRecvMode());
+    return isSelfRequest() && (isSessionSender() && getRule().isSendMode() ||
+                               !isSessionSender() && getRule().isRecvMode());
   }
 
   /**

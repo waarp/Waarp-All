@@ -33,6 +33,7 @@ import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.openr66.client.SendThroughClient;
 import org.waarp.openr66.context.ErrorCode;
 import org.waarp.openr66.context.R66Result;
+import org.waarp.openr66.context.R66Session;
 import org.waarp.openr66.context.filesystem.R66File;
 import org.waarp.openr66.database.DbConstantR66;
 import org.waarp.openr66.protocol.configuration.Configuration;
@@ -158,12 +159,15 @@ public class TestSendThroughClient extends SendThroughClient {
   }
 
   public boolean sendFile() {
-    final R66File r66file = localChannelReference.getSession().getFile();
+    final R66Session session = localChannelReference.getSession();
+    final R66File r66file = session.getFile();
     boolean retrieveDone = false;
     DataBlock block = null;
+    final byte[] reusableBuffer =
+        session.getReusableBuffer(session.getBlockSize());
     try {
       try {
-        block = r66file.readDataBlock();
+        block = r66file.readDataBlock(reusableBuffer);
       } catch (final FileEndOfTransferException e) {
         // Last block (in fact, no data to read)
         retrieveDone = true;
@@ -185,7 +189,7 @@ public class TestSendThroughClient extends SendThroughClient {
           return false;
         }
         try {
-          block = r66file.readDataBlock();
+          block = r66file.readDataBlock(reusableBuffer);
         } catch (final FileEndOfTransferException e) {
           // Wait for last write
           retrieveDone = true;
