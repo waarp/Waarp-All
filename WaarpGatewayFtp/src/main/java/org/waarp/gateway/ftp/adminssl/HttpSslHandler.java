@@ -98,13 +98,13 @@ public class HttpSslHandler
   private FileBasedAuth authentHttp = new FileBasedAuth(ftpSession);
 
   private FullHttpRequest request;
-  private volatile boolean newSession;
-  private volatile Cookie admin;
+  private boolean newSession;
+  private Cookie admin;
   private final StringBuilder responseContent = new StringBuilder();
   private String uriRequest;
   private Map<String, List<String>> params;
-  private volatile boolean forceClose;
-  private volatile boolean shutdown;
+  private boolean forceClose;
+  private boolean shutdown;
 
   private static final String FTPSESSIONString = "FTPSESSION";
 

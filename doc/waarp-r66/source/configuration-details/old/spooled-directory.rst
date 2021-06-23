@@ -17,7 +17,8 @@ Spooled Directory
 
 .. option:: spooled
    
-   *This* will allow to precise SpooledDirectoryTransfer options directly in the configuration file(from version 2.4.22).
+   Ceci autorise de spécifier des options précises dans le fichier de configuration
+  (depuis la version 2.4.22).
 
 .. option:: name
 

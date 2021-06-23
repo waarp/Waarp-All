@@ -26,6 +26,7 @@ import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.utility.ParametersChecker;
 import org.waarp.common.utility.WaarpNettyUtil;
+import org.waarp.openr66.context.R66Session;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
 import org.waarp.openr66.protocol.localhandler.LocalChannelReference;
 import org.waarp.openr66.protocol.utils.FileUtils;
@@ -43,7 +44,7 @@ public class DataPacket extends AbstractLocalPacket {
 
   private final int packetRank;
 
-  private final int lengthPacket;
+  private int lengthPacket;
 
   private byte[] data;
   private ByteBuf dataRecv;
@@ -99,14 +100,27 @@ public class DataPacket extends AbstractLocalPacket {
   /**
    * @param packetRank
    * @param data
+   * @param length
    * @param key
    */
-  public DataPacket(final int packetRank, final byte[] data, final byte[] key) {
+  public DataPacket(final int packetRank, final byte[] data, final int length,
+                    final byte[] key) {
     this.packetRank = packetRank;
     this.data = data;
     this.dataRecv = null;
     this.key = key == null? EMPTY_ARRAY : key;
-    lengthPacket = data.length;
+    lengthPacket = length;
+  }
+
+  /**
+   * When using compression/decompression, data can be changed
+   *
+   * @param data
+   * @param length
+   */
+  public void updateFromCompressionCodec(final byte[] data, final int length) {
+    this.data = data;
+    lengthPacket = length;
   }
 
   @Override
@@ -137,6 +151,7 @@ public class DataPacket extends AbstractLocalPacket {
       middle = dataRecv;
     } else {
       middle = WaarpNettyUtil.wrappedBuffer(data);
+      middle.writerIndex(lengthPacket);
     }
   }
 
@@ -165,17 +180,19 @@ public class DataPacket extends AbstractLocalPacket {
   }
 
   /**
-   * Only for Network incoming buffer
+   * Transform the DataPacket to have a byte array instead of ByteBuf
    *
-   * @return the Data ByteBuf
+   * @param session to allow to get reusable buffer
    */
-  public ByteBuf getRecvData() {
-    return dataRecv;
-  }
-
-  public void createByteBufFromRecv(final byte[] buffer) {
-    dataRecv.getBytes(dataRecv.readerIndex(), buffer);
-    data = buffer;
+  public void createByteBufFromRecv(final R66Session session) {
+    // Get reusable buffer and set internal content to byte Array
+    if (data == null) {
+      final byte[] buffer = session.getReusableDataPacketBuffer(lengthPacket);
+      dataRecv.getBytes(dataRecv.readerIndex(), buffer, 0, lengthPacket);
+      data = buffer;
+      dataRecv.release();
+      dataRecv = null;
+    }
   }
 
   /**
@@ -204,19 +221,25 @@ public class DataPacket extends AbstractLocalPacket {
         .checkParameter("Data is not setup correctly", data, logger);
     if (key == null || key.length == 0) {
       if (digestGlobal != null || digestLocal != null) {
-        FileUtils.computeGlobalHash(digestGlobal, digestLocal, data);
+        FileUtils
+            .computeGlobalHash(digestGlobal, digestLocal, data, lengthPacket);
       }
       logger.error("Should received a Digest but don't");
       return false;
     }
-    digestBlock.Update(data, 0, data.length);
+    digestBlock.Update(data, 0, lengthPacket);
     final byte[] newkey = digestBlock.Final();
-    FileUtils.computeGlobalHash(digestGlobal, digestLocal, data);
+    FileUtils.computeGlobalHash(digestGlobal, digestLocal, data, lengthPacket);
     final boolean equal = Arrays.equals(key, newkey);
     if (!equal) {
       logger.error("DIGEST {} != {} for {} bytes using {} at rank {}",
                    FilesystemBasedDigest.getHex(key),
-                   FilesystemBasedDigest.getHex(newkey), data.length,
+                   FilesystemBasedDigest.getHex(newkey), lengthPacket,
+                   digestBlock.getAlgo(), packetRank);
+    } else if (logger.isDebugEnabled()) {
+      logger.debug("DIGEST {} == {} for {} bytes using {} at rank {}",
+                   FilesystemBasedDigest.getHex(key),
+                   FilesystemBasedDigest.getHex(newkey), lengthPacket,
                    digestBlock.getAlgo(), packetRank);
     }
     return equal;
@@ -229,5 +252,6 @@ public class DataPacket extends AbstractLocalPacket {
     dataRecv = null;
     data = null;
     key = null;
+    lengthPacket = 0;
   }
 }

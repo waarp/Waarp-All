@@ -20,32 +20,12 @@
 package org.waarp.openr66.protocol.localhandler.packet;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.ByteToMessageCodec;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
-
-import java.util.List;
 
 /**
  * Local Packet Decoder
  */
-public class LocalPacketCodec extends ByteToMessageCodec<AbstractLocalPacket> {
-
-  @Override
-  protected void decode(final ChannelHandlerContext ctx, final ByteBuf buf,
-                        final List<Object> out) throws Exception {
-    // Make sure if the length field was received.
-    if (buf.readableBytes() < 4) {
-      // The length field was not received yet - return null.
-      // This method will be invoked again when more packets are
-      // received and appended to the buffer.
-      return;
-    }
-    final AbstractLocalPacket newbuf = decodeNetworkPacket(buf);
-    if (newbuf != null) {
-      out.add(newbuf);
-    }
-  }
+public class LocalPacketCodec {
 
   public static AbstractLocalPacket decodeNetworkPacket(final ByteBuf buf)
       throws OpenR66ProtocolPacketException {
@@ -70,16 +50,6 @@ public class LocalPacketCodec extends ByteToMessageCodec<AbstractLocalPacket> {
     // createPacketFromByteBuf read the buffer
     return LocalPacketFactory
         .createPacketFromByteBuf(length - 8, middleLength, endLength, buf);
-  }
-
-  @Override
-  protected void encode(final ChannelHandlerContext ctx,
-                        final AbstractLocalPacket msg, final ByteBuf out)
-      throws Exception {
-    final ByteBuf buf = msg.getLocalPacket(null);
-    out.writeBytes(buf);
-    buf.release();
-    msg.clear();
   }
 
 }

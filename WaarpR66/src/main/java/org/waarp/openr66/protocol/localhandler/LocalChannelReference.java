@@ -32,7 +32,6 @@ import org.waarp.openr66.context.R66FiniteDualStates;
 import org.waarp.openr66.context.R66Result;
 import org.waarp.openr66.context.R66Session;
 import org.waarp.openr66.context.task.exception.OpenR66RunnerErrorException;
-import org.waarp.openr66.database.data.DbTaskRunner;
 import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.configuration.PartnerConfiguration;
 import org.waarp.openr66.protocol.exception.OpenR66Exception;
@@ -154,7 +153,7 @@ public class LocalChannelReference {
   /**
    * PartnerConfiguration
    */
-  private volatile PartnerConfiguration partner;
+  private PartnerConfiguration partner;
 
   /**
    * @param networkChannelRef
@@ -547,8 +546,7 @@ public class LocalChannelReference {
       logger.info("Server Overloaded");
     }
     if (session != null) {
-      final DbTaskRunner runner = session.getRunner();
-      if (runner != null && runner.isSender()) {
+      if (session.isSender()) {
         NetworkTransaction.stopRetrieve(this);
       }
     }

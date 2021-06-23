@@ -80,11 +80,11 @@ public abstract class ConnectionActions {
   /**
    * Session
    */
-  protected volatile R66Session session;
+  protected R66Session session;
   /**
    * Local Channel Reference
    */
-  protected volatile LocalChannelReference localChannelReference;
+  protected LocalChannelReference localChannelReference;
   /**
    * Global Digest in receive
    */
@@ -169,7 +169,7 @@ public abstract class ConnectionActions {
         }
       }
       if (mustFinalize && runner != null) {
-        if (runner.isSelfRequested() && localChannelReference != null) {
+        if (runner.isRequestOnRequested() && localChannelReference != null) {
           final R66Future transfer = localChannelReference.getFutureRequest();
           // Since requested : log
           final R66Result result = transfer.getResult();
@@ -474,6 +474,10 @@ public abstract class ConnectionActions {
         return;
       }
     }
+    // Check compression
+    session.setCompressionEnabled(
+        localChannelReference.getPartner().isCompression() &&
+        Configuration.configuration.isCompressionAvailable());
     final R66Result result =
         new R66Result(session, true, ErrorCode.InitOk, null);
     session.newState(AUTHENTD);
@@ -598,7 +602,7 @@ public abstract class ConnectionActions {
         exception =
             new OpenR66ProtocolBusinessCancelException(packet.toString());
       } else {
-        if (runner.isSender()) {
+        if (session.isSender()) {
           exception = new OpenR66ProtocolBusinessQueryAlreadyFinishedException(
               packet.getSheader());
           runner.finishTransferTask(code);

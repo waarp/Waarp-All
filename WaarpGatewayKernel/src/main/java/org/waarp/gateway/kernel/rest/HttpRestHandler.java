@@ -229,9 +229,9 @@ public abstract class HttpRestHandler
   protected HttpRequest request;
   protected RestMethodHandler handler;
 
-  protected volatile DbSession dbSession;
+  protected DbSession dbSession;
 
-  private volatile boolean willClose;
+  private boolean willClose;
 
   /**
    * Arguments received
@@ -393,6 +393,7 @@ public abstract class HttpRestHandler
       // use Options default handler
       restFound = true;
     }
+    logger.debug("{} {} {}", method, uri, restFound);
     if (!restFound) {
       throw new HttpMethodNotAllowedRequestException(
           "No Method found for that URI: " + uri);

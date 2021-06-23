@@ -350,6 +350,23 @@ public abstract class TestAbstract extends TestAbstractMinimal {
   }
 
   public static void tearDownAfterClassServer() throws Exception {
+    int pid;
+    if ((pid =
+        Processes.getPidOfRunnerJavaCommandLinux(R66Server.class.getName())) !=
+        -1) {
+      logger.error(
+          "####################### R66 SERVER STILL RUNNING {} ###################",
+          pid);
+      System.err.println(
+          "####################### R66 SERVER STILL RUNNING " + pid +
+          " ###################");
+      Processes.kill(pid, false);
+    } else {
+      logger.warn(
+          "####################### NO R66 SERVER RUNNING ###################");
+      System.out.println(
+          "####################### NO R66 SERVER RUNNING ###################");
+    }
     WaarpSystemUtil.stopLogger(true);
     Configuration.configuration.setTimeoutCon(100);
     ChannelUtils.exit();

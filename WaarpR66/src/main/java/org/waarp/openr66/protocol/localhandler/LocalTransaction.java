@@ -256,7 +256,7 @@ public class LocalTransaction {
         final R66Session session = localChannelReference.getSession();
         final DbTaskRunner runner = session.getRunner();
         if (runner != null && runner.isInTransfer()) {
-          if (!runner.isSender()) {
+          if (!session.isSender()) {
             final int newrank = runner.getRank();
             packet.setSmiddle(Integer.toString(newrank));
           }

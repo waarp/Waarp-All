@@ -93,11 +93,11 @@ public class NetworkServerHandler
   /**
    * Is this network connection being refused (black listed)
    */
-  protected volatile boolean isBlackListed;
+  protected boolean isBlackListed;
   /**
    * Is this network connection being refused (shutting down)
    */
-  protected volatile boolean isShuttingDown;
+  protected boolean isShuttingDown;
 
   /**
    *

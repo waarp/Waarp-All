@@ -306,8 +306,42 @@ public class FileBasedConfiguration {
           }
           endpoint = value.getString();
         }
+        String token = null;
+        value = hashConfig.get(XML_PUSH_MONITOR_TOKEN);
+        if (value != null && !value.isEmpty()) {
+          try {
+            ParametersChecker.checkSanityString(value.getString());
+          } catch (final InvalidArgumentException e) {
+            logger.error("Bad Push Monitor Token: {}", e.getMessage());
+            return false;
+          }
+          token = value.getString();
+        }
+        String apikey = null;
+        value = hashConfig.get(XML_PUSH_MONITOR_APIKEY);
+        if (value != null && !value.isEmpty()) {
+          try {
+            ParametersChecker.checkSanityString(value.getString());
+          } catch (final InvalidArgumentException e) {
+            logger.error("Bad Push Monitor ApiKey: {}", e.getMessage());
+            return false;
+          }
+          apikey = value.getString();
+        }
         if (index == null) {
           // API REST Specific continue
+          String basicAuthent = null;
+          value = hashConfig.get(XML_PUSH_MONITOR_BASIC_AUTHENT);
+          if (value != null && !value.isEmpty()) {
+            try {
+              ParametersChecker.checkSanityString(value.getString());
+            } catch (final InvalidArgumentException e) {
+              logger
+                  .error("Bad Push Monitor Basic Authent: {}", e.getMessage());
+              return false;
+            }
+            basicAuthent = value.getString();
+          }
           // Default value
           boolean keep =
               MonitorExporterTransfers.MONITOR_KEEP_CONNECTION_DEFAULT;
@@ -315,7 +349,8 @@ public class FileBasedConfiguration {
           if (value != null && !value.isEmpty()) {
             keep = value.getBoolean();
           }
-          config.setMonitorExporterTransfers(url, endpoint, delay, keep,
+          config.setMonitorExporterTransfers(url, basicAuthent, token, apikey,
+                                             endpoint, delay, keep,
                                              intervalIncluded, longAsString);
         } else {
           // Elasticsearch Specific continue
@@ -356,28 +391,6 @@ public class FileBasedConfiguration {
               (pwd != null && username == null)) {
             logger.error("Username and Password must be both specified");
             return false;
-          }
-          String token = null;
-          value = hashConfig.get(XML_PUSH_MONITOR_ES_TOKEN);
-          if (value != null && !value.isEmpty()) {
-            try {
-              ParametersChecker.checkSanityString(value.getString());
-            } catch (final InvalidArgumentException e) {
-              logger.error("Bad Push Monitor Token: {}", e.getMessage());
-              return false;
-            }
-            token = value.getString();
-          }
-          String apikey = null;
-          value = hashConfig.get(XML_PUSH_MONITOR_ES_APIKEY);
-          if (value != null && !value.isEmpty()) {
-            try {
-              ParametersChecker.checkSanityString(value.getString());
-            } catch (final InvalidArgumentException e) {
-              logger.error("Bad Push Monitor ApiKey: {}", e.getMessage());
-              return false;
-            }
-            apikey = value.getString();
           }
           boolean compression = true;
           value = hashConfig.get(XML_PUSH_MONITOR_ES_COMPRESSION);
@@ -776,9 +789,7 @@ public class FileBasedConfiguration {
             "Working"); //$NON-NLS-1$
         return false;
       }
-      if (!loadExtendTaskFactory(config)) {
-        return false;
-      }
+      loadExtendTaskFactory(config);
       return true;
     } finally {
       hashConfig.clear();
@@ -933,6 +944,10 @@ public class FileBasedConfiguration {
       value = hashConfig.get(XML_LOCALDIGEST);
       if (value != null && !value.isEmpty()) {
         config.setLocalDigest(value.getBoolean());
+      }
+      value = hashConfig.get(XML_COMPRESSION);
+      if (value != null && !value.isEmpty()) {
+        config.setCompressionAvailable(value.getBoolean());
       }
       alreadySetLimit = true;
       return true;

@@ -106,11 +106,7 @@ public class R66File extends FilesystemBasedFileImpl {
       throws OpenR66RunnerErrorException, OpenR66ProtocolSystemException {
     boolean retrieveDone = false;
     String errorMesg = "";
-    final LocalChannelReference localChannelReference =
-        getSession().getLocalChannelReference();
     FilesystemBasedDigest digestGlobal = null;
-    final FilesystemBasedDigest digestBlock =
-        ((R66Session) session).getDigestBlock();
     logger.debug("File to retrieve: {}", this);
     long toRead = 0;
     try {
@@ -127,13 +123,19 @@ public class R66File extends FilesystemBasedFileImpl {
     } catch (CommandAbstractException e) {
       logger.warn(e.getMessage());
     }
+    final LocalChannelReference localChannelReference =
+        getSession().getLocalChannelReference();
+    final FilesystemBasedDigest digestBlock =
+        ((R66Session) session).getDigestBlock();
     DataBlock block = null;
+    final byte[] buffer =
+        ((R66Session) session).getReusableBuffer(session.getBlockSize());
     try {
       if (!isReady) {
         return;
       }
       try {
-        block = readDataBlock();
+        block = readDataBlock(buffer);
       } catch (final FileEndOfTransferException e) {
         if (toRead > 0) {
           // Should not be
@@ -197,7 +199,7 @@ public class R66File extends FilesystemBasedFileImpl {
           return;
         }
         try {
-          block = readDataBlock();
+          block = readDataBlock(buffer);
         } catch (final FileEndOfTransferException e) {
           // Wait for last write
           WaarpNettyUtil.awaitOrInterrupted(future1);

@@ -74,9 +74,8 @@ public abstract class CommonUtil {
   static String CONFIG_PROXY_XML = "config-proxy.xml";
   private static final String CONFIG_SERVER_INIT_B_XML =
       "config-serverInitB.xml";
-  private static final String CONFIG_CLIENT_B_XML = "config-clientB.xml";
-  private static final String CONFIG_SERVER_A_MINIMAL_XML =
-      "config-serverA-minimal.xml";
+  static String CONFIG_CLIENT_B_XML = "config-clientB.xml";
+  static String CONFIG_SERVER_A_MINIMAL_XML = "config-serverA-minimal.xml";
   private static final String CONFIG_SERVER_INIT_A_XML =
       "config-serverInitA.xml";
   protected static WaarpLogger logger;
@@ -94,6 +93,7 @@ public abstract class CommonUtil {
   static boolean testShouldFailed;
   public static WebDriver driver = null;
   public static PrintStream err = System.err;
+  static boolean useCompression = false;
 
   public enum DriverType {
     PHANTOMJS // Works for R66
@@ -126,6 +126,7 @@ public abstract class CommonUtil {
     Configuration.configuration.setTimeoutCon(100);
     // Move to clientB
     setUpBeforeClassClient(CONFIG_CLIENT_B_XML);
+
     Configuration.configuration.setTimeoutCon(100);
     try {
       Thread.sleep(1000);
@@ -338,6 +339,7 @@ public abstract class CommonUtil {
 
   static void setUpBeforeClassClient(String clientConfig) throws Exception {
     final File clientConfigFile = new File(r66Resources, clientConfig);
+    Configuration.configuration.setCompressionAvailable(useCompression);
     if (clientConfigFile.isFile()) {
       System.err.println(
           "Find serverInit file: " + clientConfigFile.getAbsolutePath());
@@ -349,9 +351,11 @@ public abstract class CommonUtil {
         return;
       }
     } else {
-      logger.error("Needs a correct configuration file as first argument");
+      logger.error("Needs a correct configuration file as first argument {}",
+                   clientConfigFile);
       return;
     }
+    Configuration.configuration.setCompressionAvailable(useCompression);
     Configuration.configuration.pipelineInit();
     networkTransaction = new NetworkTransaction();
     DbTaskRunner.clearCache();

@@ -337,6 +337,7 @@ public final class RestConstants {
     public static final String ADDRESS = "address";
     public static final String IS_SSL = "isSSL";
     public static final String IS_ACTIVE = "isActive";
+    public static final String COUNT_ORDER = "countOrder";
 
     private GetHostsParams() {
     }
@@ -351,6 +352,7 @@ public final class RestConstants {
     public static final String OFFSET = "offset";
     public static final String ORDER = "order";
     public static final String MODE_TRANS = "modeTrans";
+    public static final String COUNT_ORDER = "countOrder";
 
     private GetRulesParams() {
     }
@@ -436,6 +438,7 @@ public final class RestConstants {
     public static final String START_TRANS = "startTrans";
     public static final String STOP_TRANS = "stopTrans";
     public static final String FOLLOW_ID = "followId";
+    public static final String COUNT_ORDER = "countOrder";
 
     private GetTransfersParams() {
     }

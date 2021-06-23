@@ -34,7 +34,6 @@ import org.waarp.openr66.dao.exception.DAOConnectionException;
 import org.waarp.openr66.dao.exception.DAONoDataException;
 import org.waarp.openr66.database.data.DbTaskRunner;
 import org.waarp.openr66.pojo.Rule;
-import org.waarp.openr66.pojo.Transfer;
 import org.waarp.openr66.protocol.http.restv2.converters.RuleConverter;
 import org.waarp.openr66.protocol.http.restv2.utils.JsonUtils;
 
@@ -191,9 +190,8 @@ public class RuleIdHandler extends AbstractRestDbHandler {
       final Filter filter =
           new Filter(DbTaskRunner.Columns.IDRULE.name(), "=", id);
       filters.add(filter);
-      final List<Transfer> transferList = transferDAO.find(filters);
-      if (!transferList.isEmpty()) {
-        transferList.clear();
+      final long nb = transferDAO.count(filters);
+      if (nb > 0) {
         responder.sendStatus(NOT_FOUND);
       }
     } catch (final DAOConnectionException e) {

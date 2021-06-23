@@ -84,6 +84,7 @@ public abstract class DBTransferDAO extends StatementExecutor<Transfer>
   protected static final String SQL_EXIST =
       "SELECT 1 FROM " + TABLE + WHERE + PRIMARY_KEY_WHERE;
   protected static final String SQL_GET_ALL = "SELECT * FROM " + TABLE;
+  protected static final String SQL_COUNT_ALL = SQL_COUNT_ALL_PREFIX + TABLE;
   protected static final String SQL_INSERT =
       "INSERT INTO " + TABLE + " (" + ID_FIELD + ", " + GLOBAL_STEP_FIELD +
       ", " + GLOBAL_LAST_STEP_FIELD + ", " + STEP_FIELD + ", " + RANK_FIELD +
@@ -140,6 +141,10 @@ public abstract class DBTransferDAO extends StatementExecutor<Transfer>
 
   protected String getSelectRequest() {
     return SQL_SELECT;
+  }
+
+  protected String getCountRequest() {
+    return SQL_COUNT_ALL;
   }
 
   protected String getUpdateRequest() {

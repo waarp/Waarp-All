@@ -142,6 +142,19 @@ public class XMLRuleDAO implements RuleDAO {
     return res;
   }
 
+  /**
+   * {@link DAOConnectionException}
+   *
+   * @return count only if filters is empty or null
+   */
+  @Override
+  public long count(final List<Filter> fitlers) throws DAOConnectionException {
+    if (fitlers == null || fitlers.isEmpty()) {
+      return dbR66RuleHashMap.size();
+    }
+    throw new DAOConnectionException("Operation not supported on XML DAO");
+  }
+
   @Override
   public boolean exist(final String rulename) {
     return dbR66RuleHashMap.containsKey(rulename);

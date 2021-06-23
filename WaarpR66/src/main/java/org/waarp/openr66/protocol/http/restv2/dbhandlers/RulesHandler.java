@@ -29,6 +29,7 @@ import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpRequest;
 import org.waarp.common.json.JsonHandler;
 import org.waarp.common.role.RoleDefault.ROLE;
+import org.waarp.common.utility.ParametersChecker;
 import org.waarp.openr66.dao.DAOFactory;
 import org.waarp.openr66.dao.Filter;
 import org.waarp.openr66.dao.RuleDAO;
@@ -36,6 +37,7 @@ import org.waarp.openr66.dao.exception.DAOConnectionException;
 import org.waarp.openr66.pojo.Rule;
 import org.waarp.openr66.protocol.http.restv2.errors.RestError;
 import org.waarp.openr66.protocol.http.restv2.errors.RestErrorException;
+import org.waarp.openr66.protocol.http.restv2.utils.RestUtils;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
@@ -113,10 +115,21 @@ public class RulesHandler extends AbstractRestDbHandler {
                           @QueryParam(ORDER) @DefaultValue("ascName")
                           final String orderStr,
                           @QueryParam(MODE_TRANS) @DefaultValue("")
-                          final String modeTransStr) {
-    checkSanity(limitStr, offsetStr, orderStr, modeTransStr);
+                          final String modeTransStr,
+                          @QueryParam(COUNT_ORDER) @DefaultValue("")
+                          final String countOrder) {
+    checkSanity(limitStr, offsetStr, orderStr, modeTransStr, countOrder);
     final List<RestError> errors = new ArrayList<RestError>();
 
+    boolean count = false;
+    try {
+      if (ParametersChecker.isNotEmpty(countOrder) &&
+          RestUtils.stringToBoolean(countOrder)) {
+        count = true;
+      }
+    } catch (final Exception ignore) {
+      // Ignore
+    }
     int limit = 20;
     int offset = 0;
     Order order = ascName;
@@ -149,35 +162,45 @@ public class RulesHandler extends AbstractRestDbHandler {
     if (!errors.isEmpty()) {
       throw new RestErrorException(errors);
     }
-
     final List<Filter> filters = new ArrayList<Filter>();
     if (modeTrans != null) {
       filters.add(new Filter(MODE_TRANS_FIELD, "=",
                              Integer.toString(modeTrans.ordinal())));
     }
 
-    List<Rule> rules;
-    RuleDAO ruleDAO = null;
-    try {
-      ruleDAO = DAO_FACTORY.getRuleDAO();
-      rules = ruleDAO.find(filters);
-    } catch (final DAOConnectionException e) {
-      throw new InternalServerErrorException(e);
-    } finally {
-      DAOFactory.closeDAO(ruleDAO);
-    }
-
-    final int totalResults = rules.size();
-    Collections.sort(rules, order.comparator);
-
-    final ArrayNode results = JsonHandler.createArrayNode();
-    for (int i = offset; i < offset + limit && i < rules.size(); i++) {
-      results.add(ruleToNode(rules.get(i)));
-    }
-
     final ObjectNode responseObject = JsonHandler.createObjectNode();
-    responseObject.put("totalResults", totalResults);
-    responseObject.set("results", results);
+    RuleDAO ruleDAO = null;
+    if (count) {
+      long nbCount = -1;
+      try {
+        ruleDAO = DAO_FACTORY.getRuleDAO();
+        nbCount = ruleDAO.count(filters);
+      } catch (final DAOConnectionException e) {
+        throw new InternalServerErrorException(e);
+      } finally {
+        DAOFactory.closeDAO(ruleDAO);
+      }
+      responseObject.put("totalResults", nbCount);
+    } else {
+      List<Rule> rules;
+      try {
+        ruleDAO = DAO_FACTORY.getRuleDAO();
+        rules = ruleDAO.find(filters);
+      } catch (final DAOConnectionException e) {
+        throw new InternalServerErrorException(e);
+      } finally {
+        DAOFactory.closeDAO(ruleDAO);
+      }
+      final int totalResults = rules.size();
+      Collections.sort(rules, order.comparator);
+
+      final ArrayNode results = JsonHandler.createArrayNode();
+      for (int i = offset; i < offset + limit && i < rules.size(); i++) {
+        results.add(ruleToNode(rules.get(i)));
+      }
+      responseObject.put("totalResults", totalResults);
+      responseObject.set("results", results);
+    }
     final String responseText = nodeToString(responseObject);
     responder.sendJson(OK, responseText);
   }

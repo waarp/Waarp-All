@@ -76,7 +76,7 @@ import org.waarp.openr66.protocol.http.restv2.RestServiceInitializer;
 import org.waarp.openr66.protocol.localhandler.LocalTransaction;
 import org.waarp.openr66.protocol.localhandler.Monitoring;
 import org.waarp.openr66.protocol.localhandler.RetrieveRunner;
-import org.waarp.openr66.protocol.monitoring.ElasticsearchClientBuilder;
+import org.waarp.openr66.protocol.monitoring.ElasticsearchMonitoringExporterClientBuilder;
 import org.waarp.openr66.protocol.monitoring.MonitorExporterTransfers;
 import org.waarp.openr66.protocol.networkhandler.NetworkServerInitializer;
 import org.waarp.openr66.protocol.networkhandler.NetworkTransaction;
@@ -388,7 +388,7 @@ public class Configuration {
   /**
    * True if the service is going to shutdown
    */
-  private volatile boolean isShutdown;
+  private boolean isShutdown;
 
   /**
    * Limit in Write byte/s to apply globally to the FTP Server
@@ -603,7 +603,7 @@ public class Configuration {
    */
   private R66PrivateMib r66Mib;
 
-  protected volatile boolean configured;
+  protected boolean configured;
 
   private static WaarpSecureKeyStore waarpSecureKeyStore;
 
@@ -638,6 +638,7 @@ public class Configuration {
   private boolean monitorExporterKeepConnection = false;
   private boolean monitorIntervalIncluded = true;
   private boolean monitorTransformLongAsString = false;
+  private String monitorBasicAuthent = null;
   private String monitorUsername = null;
   private String monitorPwd = null;
   private String monitorToken = null;
@@ -645,6 +646,8 @@ public class Configuration {
   private String monitorPrefix = null;
   private String monitorIndex = null;
   private boolean monitorCompression = true;
+
+  private boolean compressionAvailable = false;
 
   private int timeStat;
 
@@ -781,7 +784,8 @@ public class Configuration {
            isCheckClientAddress() + ", snmpActive: " +
            (getAgentSnmp() != null) + ", chrootChecked: " + isChrootChecked() +
            ", blacklist: " + isBlacklistBadAuthent() + ", isHostProxified: " +
-           isHostProxyfied() + '}';
+           isHostProxyfied() + ", isCompressionEnabled: " +
+           isCompressionAvailable() + '}';
   }
 
   /**
@@ -900,7 +904,6 @@ public class Configuration {
     launchStatistics();
     startRestSupport();
     startMonitorExporterTransfers();
-
     logger.info("Current launched threads: " +
                 ManagementFactory.getThreadMXBean().getThreadCount());
   }
@@ -2727,6 +2730,12 @@ public class Configuration {
    * Set the parameters for MonitorExporterTransfers using API REST
    *
    * @param url as 'http://myhost.com:8080' or 'https://myhost.com:8443'
+   * @param basicAuthent Basic Authent in Base64 to connect to REST API if
+   *     any (Basic authentication) (nullable)
+   * @param token access token (Bearer Token authorization
+   *     by Header) (nullable)
+   * @param apiKey API Key (Base64 of 'apiId:apiKey') (ApiKey authorization
+   *     by Header) (nullable)
    * @param endpoint as '/waarpr66monitor' or simply '/'
    * @param keepConnection True to keep the connexion opened, False to release the connexion each time
    * @param monitorIntervalIncluded True to include the interval information within 'waarpMonitor'
@@ -2735,6 +2744,9 @@ public class Configuration {
    * @param delay delay between 2 exports
    */
   public void setMonitorExporterTransfers(final String url,
+                                          final String basicAuthent,
+                                          final String token,
+                                          final String apiKey,
                                           final String endpoint,
                                           final int delay,
                                           final boolean keepConnection,
@@ -2746,7 +2758,24 @@ public class Configuration {
     this.monitorExporterKeepConnection = keepConnection;
     this.monitorIntervalIncluded = monitorIntervalIncluded;
     this.monitorTransformLongAsString = monitorTransformLongAsString;
+    this.monitorBasicAuthent = basicAuthent;
+    this.monitorToken = token;
+    this.monitorApiKey = apiKey;
     isMonitorExporterApiRest = true;
+  }
+
+  /**
+   * @return True if the compression is available
+   */
+  public boolean isCompressionAvailable() {
+    return compressionAvailable;
+  }
+
+  /**
+   * @param compressionAvailable
+   */
+  public void setCompressionAvailable(final boolean compressionAvailable) {
+    this.compressionAvailable = compressionAvailable;
   }
 
   /**
@@ -2797,7 +2826,7 @@ public class Configuration {
     this.monitorCompression = compression;
     isMonitorExporterApiRest = false;
     try {
-      ElasticsearchClientBuilder.getFactory();
+      ElasticsearchMonitoringExporterClientBuilder.getFactory();
     } catch (Exception e) {
       logger.error("Elasticsearch for MonitorExpoerter is not available in " +
                    "the classpath: {}", e.getMessage());
@@ -2816,16 +2845,18 @@ public class Configuration {
         this.monitorExporterTransfers =
             new MonitorExporterTransfers(monitorExporterUrl,
                                          monitorExporterEndPoint,
+                                         monitorBasicAuthent, monitorToken,
+                                         monitorApiKey,
                                          monitorExporterKeepConnection,
                                          monitorIntervalIncluded,
                                          monitorTransformLongAsString,
                                          getHttpWorkerGroup());
       } else {
         this.monitorExporterTransfers =
-            new MonitorExporterTransfers(monitorExporterUrl, monitorUsername,
+            new MonitorExporterTransfers(monitorExporterUrl, monitorPrefix,
+                                         monitorIndex, monitorUsername,
                                          monitorPwd, monitorToken,
-                                         monitorApiKey, monitorPrefix,
-                                         monitorIndex, monitorIntervalIncluded,
+                                         monitorApiKey, monitorIntervalIncluded,
                                          monitorTransformLongAsString,
                                          monitorCompression);
       }

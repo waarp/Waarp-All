@@ -27,10 +27,14 @@ import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpRequest;
 import org.waarp.openr66.dao.DAOFactory;
+import org.waarp.openr66.dao.Filter;
 import org.waarp.openr66.dao.HostDAO;
+import org.waarp.openr66.dao.TransferDAO;
 import org.waarp.openr66.dao.exception.DAOConnectionException;
 import org.waarp.openr66.dao.exception.DAONoDataException;
+import org.waarp.openr66.database.data.DbTaskRunner.Columns;
 import org.waarp.openr66.pojo.Host;
+import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.http.restv2.converters.HostConverter;
 import org.waarp.openr66.protocol.http.restv2.utils.JsonUtils;
 
@@ -168,6 +172,9 @@ public class HostIdHandler extends AbstractRestDbHandler {
 
   /**
    * Method called to delete a host entry from the database.
+   * Note that if the host is used in any related Transfers, or if the host
+   * is the current host, the delete
+   * cannot be achieved and NOT_FOUND will be returned.
    *
    * @param request the HttpRequest made on the resource
    * @param responder the HttpResponder which sends the reply to the
@@ -188,6 +195,30 @@ public class HostIdHandler extends AbstractRestDbHandler {
       if (host == null) {
         responder.sendStatus(NOT_FOUND);
       } else {
+        if (Configuration.configuration.getHostId().equals(id) ||
+            Configuration.configuration.getHostSslId().equals(id)) {
+          responder.sendStatus(NOT_FOUND);
+        } else {
+          TransferDAO transferDAO = null;
+          try {
+            transferDAO = DAO_FACTORY.getTransferDAO();
+            final List<Filter> filters = new ArrayList<Filter>();
+            Filter filter = new Filter(Columns.REQUESTED.name(), "=", id);
+            filters.add(filter);
+            long nb = transferDAO.count(filters);
+            filters.clear();
+            filter = new Filter(Columns.REQUESTER.name(), "=", id);
+            filters.add(filter);
+            nb += transferDAO.count(filters);
+            if (nb > 0) {
+              responder.sendStatus(NOT_FOUND);
+            }
+          } catch (final DAOConnectionException e) {
+            throw new InternalServerErrorException(e);
+          } finally {
+            DAOFactory.closeDAO(transferDAO);
+          }
+        }
         hostDAO.delete(host);
         responder.sendStatus(NO_CONTENT);
       }

@@ -27,8 +27,8 @@ import org.waarp.openr66.context.R66Session;
 import org.waarp.openr66.context.task.exception.OpenR66RunnerErrorException;
 import org.waarp.openr66.context.task.extension.AbstractExtendedTaskFactory;
 
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -41,7 +41,8 @@ import java.util.Set;
 public enum TaskType {
   LOG, MOVE, MOVERENAME, COPY, COPYRENAME, EXEC, EXECMOVE, LINKRENAME, TRANSFER,
   VALIDFILEPATH, DELETE, TAR, ZIP, EXECOUTPUT, RESCHEDULE, EXECJAVA, TRANSCODE,
-  SNMP, FTP, RENAME, RESTART, UNZEROED, CHMOD, CHKFILE, ICAP, EXTENDED;
+  SNMP, FTP, RENAME, RESTART, UNZEROED, CHMOD, CHKFILE, ICAP, EXTENDED,
+  COMPRESS;
 
   public static final String UNVALID_TASK = "Unvalid Task: ";
 
@@ -49,8 +50,6 @@ public enum TaskType {
 
   private static final Map<String, AbstractExtendedTaskFactory>
       extendedTaskTypeMap = new HashMap<String, AbstractExtendedTaskFactory>();
-  private static final Set<AbstractExtendedTaskFactory> extendedTaskTypeSet =
-      new HashSet<AbstractExtendedTaskFactory>();
 
   final int type;
 
@@ -78,7 +77,6 @@ public enum TaskType {
       logger.debug("Add {} with {}", associatedName,
                    extendedTaskFactory.getName());
       extendedTaskTypeMap.put(associatedName, extendedTaskFactory);
-      extendedTaskTypeSet.add(extendedTaskFactory);
     }
   }
 
@@ -99,8 +97,8 @@ public enum TaskType {
   /**
    * @return the current Set of ExtendedTaskFactories
    */
-  public static Set<AbstractExtendedTaskFactory> getExtendedFactories() {
-    return extendedTaskTypeSet;
+  public static Collection<AbstractExtendedTaskFactory> getExtendedFactories() {
+    return extendedTaskTypeMap.values();
   }
 
   /**
@@ -228,6 +226,10 @@ public enum TaskType {
       case ICAP:
         return new IcapTask(argRule, delay,
                             session.getRunner().getFileInformation(), session);
+      case COMPRESS:
+        return new CompressTask(argRule, delay,
+                                session.getRunner().getFileInformation(),
+                                session);
       case EXTENDED:
         // Should not arrived here
       default:
@@ -345,6 +347,7 @@ public enum TaskType {
       case UNZEROED:
       case CHMOD:
       case CHKFILE:
+      case COMPRESS:
         throw new OpenR66RunnerErrorException(UNVALID_TASK + type.name);
       default:
         logger.error(NAME_UNKNOWN + type.name);

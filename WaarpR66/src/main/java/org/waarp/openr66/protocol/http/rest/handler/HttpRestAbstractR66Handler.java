@@ -103,7 +103,7 @@ public abstract class HttpRestAbstractR66Handler extends RestMethodHandler {
                           final RestArgument result,
                           final HttpResponseStatus code) {
     handler.setStatus(HttpResponseStatus.BAD_REQUEST);
-    handler.setWillClose(true);
+    handler.setWillClose(false);
     result.setResult(code);
   }
 

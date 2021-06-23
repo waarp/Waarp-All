@@ -85,7 +85,7 @@ import org.waarp.openr66.protocol.utils.R66Future;
 public class TestSendThroughForward extends SendThroughClient {
   public TestRecvThroughForwardHandler handler;
   public DbSession dbSession;
-  public volatile boolean foundEOF;
+  public boolean foundEOF;
   protected DbTaskRunner sourceRunner;
 
   /**
@@ -241,14 +241,14 @@ public class TestSendThroughForward extends SendThroughClient {
     protected TestSendThroughForward client;
 
     @Override
-    public void writeBytes(byte[] buffer)
+    public void writeBytes(final byte[] buffer, final int length)
         throws OpenR66ProtocolBusinessException {
       final DataBlock block = new DataBlock();
-      if (buffer.length == 0) {
+      if (length == 0) {
         // last block
         block.setEOF(true);
       } else {
-        block.setBlock(buffer);
+        block.setBlock(buffer, length);
       }
       try {
         if (!WaarpNettyUtil

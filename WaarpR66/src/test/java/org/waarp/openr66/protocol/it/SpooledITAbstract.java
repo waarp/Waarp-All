@@ -204,7 +204,7 @@ public abstract class SpooledITAbstract extends TestAbstract {
       httpClient = HttpClientBuilder.create().setConnectionManagerShared(true)
                                     .disableAutomaticRetries().build();
       HttpGet request = new HttpGet(
-          "http://127.0.0.1:8088/v2/filemonitors?name=SpooledClient");
+          "http://127.0.0.1:8088/v2/filemonitors?name=SpooledClient&countOrder=true");
       CloseableHttpResponse response = null;
       int nb = 0;
       int every10sec = 10;
@@ -212,16 +212,20 @@ public abstract class SpooledITAbstract extends TestAbstract {
       while (nb < max) {
         try {
           response = httpClient.execute(request);
-          assertEquals(200, response.getStatusLine().getStatusCode());
+          if (400 <= response.getStatusLine().getStatusCode()) {
+            break;
+          }
           String content = EntityUtils.toString(response.getEntity());
           ObjectNode node = JsonHandler.getFromString(content);
           if (node != null) {
             JsonNode number = node.findValue("totalSubResults");
-            int newNb = number.asInt();
-            if (newNb != nb || every10sec == 0) {
-              every10sec = 10;
-              nb = newNb;
-              logger.warn("Found {} spooled files vs {}", nb, max);
+            if (number != null) {
+              int newNb = number.asInt();
+              if (newNb != nb || every10sec == 0) {
+                every10sec = 10;
+                nb = newNb;
+                logger.warn("Found {} spooled files vs {}", nb, max);
+              }
             }
             every10sec--;
           }
@@ -234,9 +238,9 @@ public abstract class SpooledITAbstract extends TestAbstract {
       }
       logger.warn("Final found {} spooled files", nb);
       request = new HttpGet(
-          "http://127.0.0.1:8088/v2/transfers?status=DONE&limit=10000");
+          "http://127.0.0.1:8088/v2/transfers?status=DONE&countOrder=true");
       HttpGet request2 = new HttpGet(
-          "http://127.0.0.1:8088/v2/transfers?status=INERROR&limit=10000");
+          "http://127.0.0.1:8088/v2/transfers?status=INERROR&countOrder=true");
 
       response = null;
       nb = 0;
@@ -247,17 +251,21 @@ public abstract class SpooledITAbstract extends TestAbstract {
       while (totalNb < max) {
         try {
           response = httpClient.execute(request);
-          assertEquals(200, response.getStatusLine().getStatusCode());
+          if (400 <= response.getStatusLine().getStatusCode()) {
+            break;
+          }
           String content = EntityUtils.toString(response.getEntity());
           ObjectNode node = JsonHandler.getFromString(content);
           if (node != null) {
             JsonNode number = node.findValue("totalResults");
-            int newNb = number.asInt();
-            if (newNb != nb || every10sec == 0) {
-              every10sec = 10;
-              nb = newNb;
-              totalNb = nb + nb2;
-              logger.warn("Found {} Transfers vs {}", nb, max);
+            if (number != null) {
+              long newNb = number.asLong();
+              if (newNb != nb || every10sec == 0) {
+                every10sec = 10;
+                nb = (int) newNb;
+                totalNb = nb + nb2;
+                logger.warn("Found {} Transfers vs {}", nb, max);
+              }
             }
           }
         } finally {
@@ -267,17 +275,21 @@ public abstract class SpooledITAbstract extends TestAbstract {
         }
         try {
           response = httpClient.execute(request2);
-          assertEquals(200, response.getStatusLine().getStatusCode());
+          if (400 <= response.getStatusLine().getStatusCode()) {
+            break;
+          }
           String content = EntityUtils.toString(response.getEntity());
           ObjectNode node = JsonHandler.getFromString(content);
           if (node != null) {
             JsonNode number = node.findValue("totalResults");
-            int newNb = number.asInt();
-            if (newNb != nb2 || every10sec == 0) {
-              every10sec = 10;
-              nb2 = newNb;
-              totalNb = nb + nb2;
-              logger.warn("Found {} Transfers in Error vs {}", nb2, max);
+            if (number != null) {
+              long newNb = number.asLong();
+              if (newNb != nb2 || every10sec == 0) {
+                every10sec = 10;
+                nb2 = (int) newNb;
+                totalNb = nb + nb2;
+                logger.warn("Found {} Transfers in Error vs {}", nb2, max);
+              }
             }
           }
         } finally {

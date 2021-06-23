@@ -48,6 +48,15 @@ Nouvelles fonctionnalités
   - Cette Factory est chargée dynamiquement si la classe correspondante est
     dans le classpath (uniquement disponible en JRE 8 et au-dessus).
 
+- WaarpR66 : Ajout du support de la compression basée sur ZTSD. Cet algorithme
+  est à la fois rapide, peu consommateur et très performant en compression.
+  Il est utilisable via une tâche ``COMPRESS`` spécifique.
+- WaarpR66 : Ajout de la compression à la volée au niveau des blocs (avec
+  l'algorithme ZSTD). Il est activable par la configuration ``compression`` à
+  ``True`` dans la partie ``limit`` du fichier de configuration (active
+  la compression par bloc si le partenaire l'autorise aussi).
+  (Désactivé par défaut pour réduire la consommation CPU et mémoire)
+
 Correctifs
 ----------
 
@@ -65,7 +74,8 @@ Correctifs
 - Fixes des bugs de stabilités FTP
 - Benchmark sur Serveur FTP et Gateway FTP (avec H2 et PostgreSQL)
 - Amélioration des Types SQL, index et requêtes SQL (R66 principalement)
-- Amélioration du code
+- Fixe de la gestion des transferts à soi-même
+- Amélioration du code et de la gestion mémoire
 - Mise à jour des dépendances, JAR et javascript
 
 Benchmarks FTP

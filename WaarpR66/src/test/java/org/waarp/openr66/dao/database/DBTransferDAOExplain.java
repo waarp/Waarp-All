@@ -277,6 +277,16 @@ public class DBTransferDAOExplain extends DBTransferDAO {
   }
 
   @Override
+  public long count(final List<Filter> filters) throws DAOConnectionException {
+    // Create the SQL query
+    final Object[] params = prepareFindParams(filters);
+    final StringBuilder query =
+        new StringBuilder(prepareCountQuery(filters, params));
+    explainP1(replaceArgs(query.toString(), params));
+    return 0;
+  }
+
+  @Override
   public boolean exist(final long id, final String requester,
                        final String requested, final String owner)
       throws DAOConnectionException {

@@ -154,7 +154,7 @@ public class HttpSslHandler
 
   protected FullHttpRequest request;
   protected boolean newSession;
-  protected volatile Cookie admin;
+  protected Cookie admin;
   protected final StringBuilder responseContent = new StringBuilder();
   protected String uriRequest;
   protected Map<String, List<String>> params;

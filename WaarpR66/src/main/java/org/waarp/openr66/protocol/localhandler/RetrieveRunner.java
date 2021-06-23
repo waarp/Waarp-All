@@ -170,7 +170,7 @@ public class RetrieveRunner extends Thread {
               localChannelReference.getFutureEndTransfer().getResult());
         }
         if (session.getRunner() != null &&
-            session.getRunner().isSelfRequested()) {
+            session.getRunner().isRequestOnRequested()) {
           localChannelReference.close();
         }
         done = true;
@@ -253,7 +253,7 @@ public class RetrieveRunner extends Thread {
       localChannelReference.validateRequest(
           localChannelReference.getFutureEndTransfer().getResult());
       if (session.getRunner() != null &&
-          session.getRunner().isSelfRequested()) {
+          session.getRunner().isRequestOnRequested()) {
         localChannelReference.close();
       }
     } else {

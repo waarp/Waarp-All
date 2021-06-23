@@ -153,6 +153,10 @@ public class Commander implements CommanderInterface {
   @Override
   public void run() {
     Thread.currentThread().setName("OpenR66Commander");
+    if (Configuration.configuration.isShutdown()) {
+      // Stop
+      return;
+    }
     if (admin.getSession() != null && admin.getSession().isDisActive()) {
       admin.getSession().checkConnectionNoException();
     }
@@ -306,6 +310,10 @@ public class Commander implements CommanderInterface {
 
   private void checkConfiguration(final DbMultipleMonitor multipleMonitor)
       throws WaarpDatabaseException {
+    if (Configuration.configuration.isShutdown()) {
+      // Stop
+      return;
+    }
     final DbConfiguration[] configurations =
         DbConfiguration.getUpdatedPrepareStament();
     int i = 0;
@@ -336,6 +344,10 @@ public class Commander implements CommanderInterface {
 
   private void checkHostConfiguration(final DbMultipleMonitor multipleMonitor)
       throws WaarpDatabaseException {
+    if (Configuration.configuration.isShutdown()) {
+      // Stop
+      return;
+    }
     final DbHostConfiguration[] configurations =
         DbHostConfiguration.getUpdatedPrepareStament();
     int i = 0;
@@ -366,6 +378,10 @@ public class Commander implements CommanderInterface {
 
   private void checkHostAuthent(final DbMultipleMonitor multipleMonitor)
       throws WaarpDatabaseException {
+    if (Configuration.configuration.isShutdown()) {
+      // Stop
+      return;
+    }
     final DbHostAuth[] auths = DbHostAuth.getUpdatedPreparedStatement();
     int i = 0;
     boolean mm = false;
@@ -399,6 +415,10 @@ public class Commander implements CommanderInterface {
 
   private void checkRule(final DbMultipleMonitor multipleMonitor)
       throws WaarpDatabaseException {
+    if (Configuration.configuration.isShutdown()) {
+      // Stop
+      return;
+    }
     final DbRule[] rules = DbRule.getUpdatedPrepareStament();
     int i = 0;
     boolean mm = false;
@@ -430,6 +450,10 @@ public class Commander implements CommanderInterface {
 
   private void checkTaskRunner(final DbMultipleMonitor multipleMonitor)
       throws WaarpDatabaseException {
+    if (Configuration.configuration.isShutdown()) {
+      // Stop
+      return;
+    }
     // No specific HA mode since the other servers will wait for the commit on Lock
     final int maxRunnable =
         Math.min(Configuration.configuration.getRunnerThread(),
@@ -460,7 +484,7 @@ public class Commander implements CommanderInterface {
           // already running
           continue;
         }
-        if (taskRunner.isSelfRequested()) {
+        if (taskRunner.isRequestOnRequested()) {
           // cannot schedule a request where the host is the requested host
           taskRunner.changeUpdatedInfo(UpdatedInfo.INTERRUPTED);
           try {

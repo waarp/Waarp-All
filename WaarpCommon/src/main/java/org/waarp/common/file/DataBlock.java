@@ -152,6 +152,16 @@ public class DataBlock {
    * @param block the block to set
    */
   public void setBlock(final byte[] block) {
+    setBlock(block, block != null? block.length : 0);
+  }
+
+  /**
+   * Set the block and the byte count
+   *
+   * @param block the block to set
+   * @param size the real size to set
+   */
+  public void setBlock(final byte[] block, final int size) {
     if (isRESTART) {
       this.block = null;
       markers = new int[6];
@@ -165,7 +175,7 @@ public class DataBlock {
     if (this.block == null) {
       byteCount = 0;
     } else {
-      byteCount = this.block.length;
+      byteCount = size;
     }
     if (blockBuf != null) {
       blockBuf.release();

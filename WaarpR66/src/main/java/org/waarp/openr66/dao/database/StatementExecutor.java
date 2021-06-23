@@ -44,7 +44,8 @@ public abstract class StatementExecutor<E> implements AbstractDAO<E> {
   protected static final String WHERE = " WHERE ";
   protected static final String PARAMETER = " = ?";
   protected static final String PARAMETER_COMMA = " = ?, ";
-
+  protected static final String SQL_COUNT_ALL_PREFIX =
+      "SELECT COUNT(*) AS total FROM ";
   protected final Connection connection;
 
   public abstract E getFromResultSet(ResultSet set)
@@ -162,6 +163,8 @@ public abstract class StatementExecutor<E> implements AbstractDAO<E> {
   protected abstract String getId(E e1);
 
   protected abstract String getSelectRequest();
+
+  protected abstract String getCountRequest();
 
   protected abstract String getGetAllRequest();
 
@@ -299,6 +302,59 @@ public abstract class StatementExecutor<E> implements AbstractDAO<E> {
       closeStatement(stm);
     }
     return es;
+  }
+
+  String prepareCountQuery(final List<Filter> filters, final Object[] params) {
+    final StringBuilder query = new StringBuilder(getCountRequest());
+    if (filters.isEmpty()) {
+      return query.toString();
+    }
+    query.append(WHERE);
+    String prefix = "";
+    int i = 0;
+    for (Filter filter : filters) {
+      query.append(prefix);
+      if (filter.nbAdditionnalParams() > 0) {
+        final Object[] objects = (Object[]) filter.append(query);
+        for (final Object o : objects) {
+          params[i++] = o;
+        }
+      } else {
+        params[i] = filter.append(query);
+        i++;
+      }
+      prefix = " AND ";
+    }
+    return query.toString();
+  }
+
+  @Override
+  public long count(final List<Filter> filters) throws DAOConnectionException {
+    // Create the SQL query
+    final Object[] params = prepareFindParams(filters);
+    final StringBuilder query =
+        new StringBuilder(prepareCountQuery(filters, params));
+    // Execute query
+    PreparedStatement stm = null;
+    ResultSet res = null;
+    long total = -1;
+    try {
+      stm = connection.prepareStatement(query.toString());
+      setParameters(stm, params);
+      res = executeQuery(stm);
+      if (res.next()) {
+        total = res.getLong("total");
+      }
+    } catch (final SQLException e) {
+      throw new DAOConnectionException(e);
+    } finally {
+      closeResultSet(res);
+      closeStatement(stm);
+    }
+    if (total < 0) {
+      throw new DAOConnectionException("Count cannot be retrieved");
+    }
+    return total;
   }
 
   @Override

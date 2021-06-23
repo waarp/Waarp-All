@@ -41,13 +41,23 @@ public interface AbstractDAO<E> extends Cloneable {
 
   /**
    * Retrieve all objects corresponding to the given filters in a List
-   * from the persistance lsayer
+   * from the persistance layer
    *
    * @param filters List of filter
    *
    * @throws DAOConnectionException If data access error occurs
    */
   List<E> find(List<Filter> filters) throws DAOConnectionException;
+
+  /**
+   * Count all objects corresponding to the given filters
+   * from the persistance layer
+   *
+   * @param filters List of filter
+   *
+   * @throws DAOConnectionException If data access error occurs
+   */
+  long count(List<Filter> filters) throws DAOConnectionException;
 
   /**
    * Retrieve the object with the specified id from the persistance

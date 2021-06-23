@@ -103,7 +103,8 @@ public class HostConfigHandler extends AbstractRestDbHandler {
     BusinessDAO businessDAO = null;
     try {
       businessDAO = DAO_FACTORY.getBusinessDAO();
-      final Business business = businessDAO.select(serverName());
+      final String host = serverName();
+      final Business business = businessDAO.select(host);
       if (business != null) {
         final ObjectNode responseObject =
             HostConfigConverter.businessToNode(business);
@@ -205,7 +206,7 @@ public class HostConfigHandler extends AbstractRestDbHandler {
   }
 
   /**
-   * Method called to delete a host's configuration entry in the database.
+   * Method called to delete the current host's configuration entry in the database.
    *
    * @param request the HttpRequest made on the resource
    * @param responder the HttpResponder which sends the reply to the

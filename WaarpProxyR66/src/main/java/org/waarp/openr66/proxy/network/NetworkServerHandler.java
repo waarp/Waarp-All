@@ -62,19 +62,19 @@ public class NetworkServerHandler
   /**
    * The underlying Network Channel
    */
-  private volatile Channel networkChannel;
+  private Channel networkChannel;
   /**
    * The underlying Proxified associated Channel
    */
-  private volatile Channel proxyChannel;
+  private Channel proxyChannel;
   /**
    * The associated bridge
    */
-  private volatile ProxyBridge bridge;
+  private ProxyBridge bridge;
   /**
    * Does this Handler is for SSL
    */
-  protected volatile boolean isSSL;
+  protected boolean isSSL;
   /**
    * Is this Handler a server side
    */
@@ -154,9 +154,8 @@ public class NetworkServerHandler
           return;
         }
         proxyChannel = bridge.getProxified().networkChannel;
-        logger.warn("Connected: " + isServer + ' ' + (bridge != null?
-            bridge.getProxyEntry() + " proxyChannelId: " + proxyChannel.id() :
-            "nobridge"));
+        logger.warn("Connected: " + isServer + ' ' + bridge.getProxyEntry() +
+                    " proxyChannelId: " + proxyChannel.id());
       } else {
         clientFuture.awaitOrInterruptible(configuration.getTimeoutCon());
         if (bridge == null || !clientFuture.isDone()) {

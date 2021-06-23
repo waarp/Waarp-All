@@ -90,6 +90,14 @@ public final class Processes {
     return pid;
   }
 
+  public static int getPidOfRunnerJavaCommandLinux(String filterByCommand) {
+    try {
+      return getPidOfRunnerCommandLinux("java", filterByCommand);
+    } catch (final Exception e) {
+      return -1;
+    }
+  }
+
   public static int getPidOfRunnerCommandLinux(String filterByRunner,
                                                String filterByCommand) {
     List<String> args = Arrays

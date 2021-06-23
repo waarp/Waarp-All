@@ -33,6 +33,7 @@ import org.waarp.common.utility.WaarpNettyUtil;
 import org.waarp.common.utility.WaarpShutdownHook;
 import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.openr66.context.R66FiniteDualStates;
+import org.waarp.openr66.context.R66Session;
 import org.waarp.openr66.context.task.localexec.LocalExecClient;
 import org.waarp.openr66.database.data.DbTaskRunner;
 import org.waarp.openr66.protocol.configuration.Configuration;
@@ -149,26 +150,37 @@ public class ChannelUtils extends Thread {
     byte[] md5 = {};
     final DbTaskRunner runner = localChannelReference.getSession().getRunner();
     final byte[] dataBlock = block.getByteBlock();
+    final int length = block.getByteCount();
     if (digestBlock != null) {
       if (digestGlobal != null) {
-        digestGlobal.Update(dataBlock, 0, dataBlock.length);
+        digestGlobal.Update(dataBlock, 0, length);
       }
-      digestBlock.Update(dataBlock, 0, dataBlock.length);
+      digestBlock.Update(dataBlock, 0, length);
       md5 = digestBlock.Final();
     } else if (RequestPacket.isSendThroughMode(runner.getMode()) &&
                RequestPacket.isMD5Mode(runner.getMode())) {
       final DigestAlgo algo =
           localChannelReference.getPartner().getDigestAlgo();
-      md5 = FileUtils.getHash(dataBlock, algo, digestGlobal);
+      md5 = FileUtils.getHash(dataBlock, length, algo, digestGlobal);
     } else if (digestGlobal != null) {
-      digestGlobal.Update(dataBlock, 0, dataBlock.length);
+      digestGlobal.Update(dataBlock, 0, length);
     }
     if (runner.getRank() % 100 == 1 ||
         localChannelReference.getSessionState() != R66FiniteDualStates.DATAS) {
       localChannelReference.sessionNewState(R66FiniteDualStates.DATAS);
     }
     final DataPacket data =
-        new DataPacket(runner.getRank(), block.getByteBlock(), md5);
+        new DataPacket(runner.getRank(), dataBlock, length, md5);
+    if (localChannelReference.getSession().isCompressionEnabled()) {
+      R66Session.getCodec().compress(data, localChannelReference.getSession());
+    }
+    if (logger.isDebugEnabled()) {
+      logger.debug("DIGEST {} for {} to {} bytes at rank{} using {} at rank {}",
+                   FilesystemBasedDigest.getHex(data.getKey()), length,
+                   data.getLengthPacket(), data.getPacketRank(),
+                   localChannelReference.getPartner().getDigestAlgo(),
+                   runner.getRank());
+    }
     final ChannelFuture future =
         writeAbstractLocalPacket(localChannelReference, data, false);
     runner.incrementRank();
@@ -323,10 +335,10 @@ public class ChannelUtils extends Thread {
     }
     logger.info("Exit Shutdown Connected Client");
     terminateClientChannels();
-    logger.info("Exit Shutdown Db Connection");
-    DbAdmin.closeAllConnection();
     logger.info("Exit Shutdown ServerStop");
     Configuration.configuration.serverStop();
+    logger.info("Exit Shutdown Db Connection");
+    DbAdmin.closeAllConnection();
     logger.warn(Messages.getString("ChannelUtils.15")); //$NON-NLS-1$
     SysErrLogger.FAKE_LOGGER
         .syserr(Messages.getString("ChannelUtils.15")); //$NON-NLS-1$

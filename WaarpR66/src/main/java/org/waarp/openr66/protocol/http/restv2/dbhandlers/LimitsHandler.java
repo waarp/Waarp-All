@@ -104,11 +104,11 @@ public class LimitsHandler extends AbstractRestDbHandler {
     LimitDAO limitDAO = null;
     try {
       limitDAO = DAO_FACTORY.getLimitDAO();
-      if (limitDAO.exist(serverName())) {
-        final Limit limits = limitDAO.select(serverName());
+      final String host = serverName();
+      if (limitDAO.exist(host)) {
+        final Limit limits = limitDAO.select(host);
         final ObjectNode responseObject = LimitsConverter.limitToNode(limits);
         final String responseText = JsonUtils.nodeToString(responseObject);
-
         responder.sendJson(OK, responseText);
       } else {
         responder.sendStatus(NOT_FOUND);

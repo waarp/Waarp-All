@@ -463,7 +463,16 @@ public class FileBasedElements {
    */
   public static final String XML_PUSH_MONITOR_TRANSFORM_LONG_AS_STRING =
       "transformlongasstring";
-
+  /**
+   * If a token is necessary as fixed Bearer Token
+   * (Default: null)
+   */
+  public static final String XML_PUSH_MONITOR_TOKEN = "token";
+  /**
+   * If a token is necessary as fixed Bearer API Key as 'apiId:apiKey'
+   * (Default: null)
+   */
+  public static final String XML_PUSH_MONITOR_APIKEY = "apiKey";
   // Specific REST API Part
   /**
    * End Point as /status such as URL + end point give
@@ -475,8 +484,13 @@ public class FileBasedElements {
    */
   public static final String XML_PUSH_MONITOR_KEEP_CONNECTION =
       "keepconnection";
+  /**
+   * If a Base 64 Bearer Basic Authentication is necessary
+   * (Default: null)
+   */
+  public static final String XML_PUSH_MONITOR_BASIC_AUTHENT = "basicAuthent";
 
-  // Specific REST API Part
+  // Specific Elasticsearch Part
   /**
    * Contains the index name, with possible substitution as %%WARPHOST%%
    * %%DATETIME%%, %%DATEHOUR%%, %%DATE%%, %%YEARMONTH%%, %%YEAR%%.
@@ -500,16 +514,6 @@ public class FileBasedElements {
    */
   public static final String XML_PUSH_MONITOR_ES_PWD = "paswd";
   /**
-   * If a token is necessary as fixed Bearer Token
-   * (Default: null)
-   */
-  public static final String XML_PUSH_MONITOR_ES_TOKEN = "token";
-  /**
-   * If a token is necessary as fixed Bearer API Key as 'apiId:apiKey'
-   * (Default: null)
-   */
-  public static final String XML_PUSH_MONITOR_ES_APIKEY = "apiKey";
-  /**
    * Defines if the Elasticsearch client will use compression (Default: True)
    */
   public static final String XML_PUSH_MONITOR_ES_COMPRESSION = "compression";
@@ -524,16 +528,19 @@ public class FileBasedElements {
       new XmlDecl(XmlType.INTEGER, XML_PUSH_MONITOR_DELAY),
       new XmlDecl(XmlType.BOOLEAN, XML_PUSH_MONITOR_INTERVAL_INCLUDED),
       new XmlDecl(XmlType.BOOLEAN, XML_PUSH_MONITOR_TRANSFORM_LONG_AS_STRING),
+      new XmlDecl(XmlType.STRING, XML_PUSH_MONITOR_TOKEN),
+      new XmlDecl(XmlType.STRING, XML_PUSH_MONITOR_APIKEY),
+
       // REST Api
       new XmlDecl(XmlType.BOOLEAN, XML_PUSH_MONITOR_KEEP_CONNECTION),
       new XmlDecl(XmlType.STRING, XML_PUSH_MONITOR_ENDPOINT),
+      new XmlDecl(XmlType.STRING, XML_PUSH_MONITOR_BASIC_AUTHENT),
+
       // Elasticsearch client API
       new XmlDecl(XmlType.STRING, XML_PUSH_MONITOR_ES_INDEX),
       new XmlDecl(XmlType.STRING, XML_PUSH_MONITOR_ES_PREFIX),
       new XmlDecl(XmlType.STRING, XML_PUSH_MONITOR_ES_USERNAME),
       new XmlDecl(XmlType.STRING, XML_PUSH_MONITOR_ES_PWD),
-      new XmlDecl(XmlType.STRING, XML_PUSH_MONITOR_ES_TOKEN),
-      new XmlDecl(XmlType.STRING, XML_PUSH_MONITOR_ES_APIKEY),
       new XmlDecl(XmlType.BOOLEAN, XML_PUSH_MONITOR_ES_COMPRESSION)
   };
   /**
@@ -658,6 +665,10 @@ public class FileBasedElements {
    */
   public static final String XML_LOCALDIGEST = "localdigest";
   /**
+   * Enabling compression (default true)
+   */
+  public static final String XML_COMPRESSION = "compression";
+  /**
    * Structure of the Configuration file
    */
   private static final XmlDecl[] configLimitDecls = {
@@ -690,10 +701,11 @@ public class FileBasedElements {
       new XmlDecl(XmlType.INTEGER, XML_USETHRIFT),
       new XmlDecl(XmlType.BOOLEAN, XML_CHECKVERSION),
       new XmlDecl(XmlType.BOOLEAN, XML_GLOBALDIGEST),
-      new XmlDecl(XmlType.BOOLEAN, XML_LOCALDIGEST)
+      new XmlDecl(XmlType.BOOLEAN, XML_LOCALDIGEST),
+      new XmlDecl(XmlType.BOOLEAN, XML_COMPRESSION)
   };
   /**
-   * SERVER REST interface SHA address usage (and not all available IPs)
+   * SERVER REST interface address usage (and not all available IPs)
    */
   public static final String XML_REST_ADDRESS = "restaddress";
   /**
