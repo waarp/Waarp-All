@@ -243,6 +243,7 @@ Il est possible de limiter l'usage de la mémoire en usant des paramètres suiva
    de 2)
  * `compression`: Possibilité de ne pas activer la compression à la volée (moins de mémoire et de cpu)
  * de limiter l'impact processeur via une gestion adaptative de la bande passante globale :
+
    * `usecpulimit` à `True` : ceci active la fonctionnalité
    * `usejdkcpulimit` de préférence, laisser à `False` ou *ignoré* (permet de choisir l'implémentation
      sous-jacente analysant les ressources CPU)
@@ -250,12 +251,13 @@ Il est possible de limiter l'usage de la mémoire en usant des paramètres suiva
      conseillé `0.2`, en pratique `0.5` comme minimum) ; cette valeur détermine le seuil à partir duquel la
      bande passante globale sera progressivement diminuée afin de réduire l'activité CPU, puis remontée
    * `connlimit` en laissant à `0` ou *ignoré* (permet de limiter le nombre maximum de connexion mais
-      souvent trop restrictif)
+     souvent trop restrictif)
 
 **Performances**
 
- * Usage de règles dans un mode sans empreinte par paquet de données (`SENDMODE`=1, `RECVMODE`=2) au lieu des
-   modes avec empreinte par paquet de données (`SENDMD5MODE`=3, `RECVMD5MODE`=4) (environ 15% de gains)
+ * Usage de règles dans un mode sans empreinte par paquet de données (``SENDMODE`` = 1, ``RECVMODE`` = 2) au
+   lieu des modes avec empreinte par paquet de données (``SENDMD5MODE`` = 3, ``RECVMD5MODE`` = 4) (environ 15%
+   de gains)
  * `blocksize` : Possibilité d'augmenter la taille par défaut de 64KB à par exemple 256KB (en pratique,
    inutile d'aller au-delà), permettant de diminuer le nombre de paquets de données ainsi émis (uniquement
    valable sur de gros transferts)
@@ -264,11 +266,13 @@ Il est possible de limiter l'usage de la mémoire en usant des paramètres suiva
    exemple `10 x blocksize`)
  * `digest`: Possibilité de choisir des algorithmes plus performants (`CRC32`=0, `MD5`=2) ou avec moins de
    risques de collisions (`SHA-XXX` tel que `SHA-512`=7) (`SHA-512` est conseillé car très efficace)
+
    * `CRC32` est le plus performant (95% avec 6ms JDK11, 10ms JDK8) mais avec le plus de collisions,
    * `MD5` performant (55% avec 88ms JDK11, 105ms JDK8) mais avec encore des collisions
    * `SHA-512` est le plus performant des SHA (au moins 25% avec 70ms JDK11, 153ms JDK8) et aux collisions
      infimes
    * *chiffres comparés à `SHA-256` (159ms JDK11, 192ms JDK8)*
+
  * `globaldigest` : Possibilité de le désactiver mais recommandé à `True` (environ 25% de gains)
  * `localdigest` : Possibilité de le désactiver (`False`) (environ 20% de gains)
  * `runlimit` : Possibilité d'augmenter ou de diminuer la valeur par défaut (1000) entre 2 et 50000 transferts concurrents
@@ -279,12 +283,16 @@ Il est possible de limiter l'usage de la mémoire en usant des paramètres suiva
 La performance d'autres éléments peuvent jouer :
 
  * La vitesse du processeur et de la mémoire
+
    * Il est conseillé de disposer d'au moins 2 coeurs et au moins 2 Go de mémoire disponible totalement
      pour Waarp, une valeur optimale étant 4 coeurs et 8 Go de mémoire
+
  * La vitesse du stockage sur lequel sont écrits les fichiers (limite naturelle du transfert)
+
    * Il est conseillé de disposer de disques très rapides (SSD ou FC). La vitesse en lecture (émission) ou
      en écriture (réception) peuvent en être impactées. Ceci concerne a minima le répertoire `WORK` et `IN`
      et dans une moindre mesure (lecture) `OUT`.
+
  * La vitesse et la latence du réseau sur lequel transite les données (limite naturelle du transfert)
 
 *Mini-Benchmark*
@@ -347,7 +355,7 @@ Il ressort de ces benchmarks qu'il est important d'avoir au moins 4 core (thread
 dédiés par serveur Waarp R66 pour être optimal. En terme de mémoire,
 4 GB étaient alloués à chaque instance.
 
-*Benchmarks Waarp Gateway FTP et Waarp FTP Server *
+*Benchmarks Waarp Gateway FTP et Waarp FTP Server*
 
 Il s'agit de benchmarks orientés FTP (Serveur ou Gateway).
 

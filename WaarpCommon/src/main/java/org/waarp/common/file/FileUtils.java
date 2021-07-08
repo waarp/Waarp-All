@@ -608,4 +608,28 @@ public final class FileUtils {
     }
     return total;
   }
+
+  /**
+   * Helper method to write from InputStream to OutputStream,
+   * closing streams
+   *
+   * @param blockSize
+   * @param inputStream
+   * @param out
+   *
+   * @throws IOException
+   */
+  public static void copy(final int blockSize, final InputStream inputStream,
+                          final OutputStream out) throws IOException {
+    final byte[] buffer = new byte[blockSize];
+    while (true) {
+      final int r = inputStream.read(buffer);
+      if (r == -1) {
+        break;
+      }
+      out.write(buffer, 0, r);
+    }
+    out.flush();
+    close(out);
+  }
 }

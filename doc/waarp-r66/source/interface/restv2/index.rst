@@ -10,7 +10,8 @@ En cas de besoin, une documentation un peu plus exhaustive peut être consultée
 `ici <../../_static/restv2/html/index.html#docs/summary/summary>`_.
 
 Une specification détaillée écrite en RAML peut également être téléchargée si nécessaire en utilisant
-:download:`ce lien <../../_static/restv2/RAML10-RESTv2_fr.yaml>`.
+:download:`ce lien <../../_static/restv2/RAML10-RESTv2_fr.yaml>` ou au format OpenAPI 3.0
+:download:`ce lien <OAS30-RESTv2_fr.yaml>`.
 
 .. toctree::
    :maxdepth: 2

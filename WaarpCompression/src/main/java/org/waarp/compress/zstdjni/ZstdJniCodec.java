@@ -97,7 +97,6 @@ public class ZstdJniCodec implements CompressorCodec {
       inputStream = new FileInputStream(input);
       buffer = ByteStreams.toByteArray(inputStream);
       outputStream = new FileOutputStream(output);
-      // Need to store in front the various position of block
       final byte[] bufferCompression =
           new byte[maxCompressedLength(buffer.length)];
       final int length = (int) Zstd
@@ -137,16 +136,7 @@ public class ZstdJniCodec implements CompressorCodec {
       final byte[] buffer;
       inputStream = new ZstdInputStream(new FileInputStream(input));
       outputStream = new FileOutputStream(output);
-      buffer = new byte[Zstd.blockSizeMax()];
-      while (true) {
-        final int r = inputStream.read(buffer);
-        if (r == -1) {
-          break;
-        }
-        outputStream.write(buffer, 0, r);
-      }
-      outputStream.flush();
-      FileUtils.close(outputStream);
+      FileUtils.copy(Zstd.blockSizeMax(), inputStream, outputStream);
       outputStream = null;
       return output.length();
     } catch (final Exception e) {

@@ -188,6 +188,7 @@
   <properties>
     <root.directory>${maven.multiModuleProjectDirectory}</root.directory>
     <module.project>false</module.project>
+    <nocode.project>false</nocode.project>
     <reuseThreadTest>false</reuseThreadTest>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -208,6 +209,10 @@
     <sonar.sources>src/main/java</sonar.sources>
     <sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
     <sonar.coverage.jacoco.xmlReportPaths>
+      ${root.directory}/WaarpCompression/target/site/jacoco/jacoco.xml,
+      ${root.directory}/WaarpCompression/target/site/jacoco-aggregate/jacoco.xml,
+      ${root.directory}/WaarpR66-Extensions/target/site/jacoco/jacoco.xml,
+      ${root.directory}/WaarpR66-Extensions/target/site/jacoco-aggregate/jacoco.xml,
       ${root.directory}/WaarpHttp/target/site/jacoco/jacoco.xml,
       ${root.directory}/WaarpHttp/target/site/jacoco-aggregate/jacoco.xml,
       ${root.directory}/WaarpIcap/target/site/jacoco/jacoco.xml,
@@ -255,7 +260,7 @@
       **/src/test/**/*
     </sonar.test.exclusions>
     <sonar.java.binaries>
-      ${root.directory}/WaarpAdministrator/target/classes,${root.directory}/WaarpDigest/target/classes,${root.directory}/WaarpCommon/target/classes,${root.directory}/WaarpIcap/target/classes,${root.directory}/WaarpExec/target/classes,${root.directory}/WaarpSnmp/target/classes,${root.directory}/WaarpThrift/target/classes,${root.directory}/WaarpPassword/target/classes,${root.directory}/WaarpFtp/target/classes,${root.directory}/WaarpFtp/core/target/classes,${root.directory}/WaarpFtp/filesystem/target/classes,${root.directory}/WaarpFtp/simpleimpl/target/classes,${root.directory}/WaarpFtpClient/target/classes,${root.directory}/WaarpGatewayKernel/target/classes,${root.directory}/WaarpR66/target/classes,${root.directory}/WaarpGatewayFtp/target/classes,${root.directory}/WaarpProxyR66/target/classes,${root.directory}/WaarpR66Gui/target/classes,${root.directory}/WaarpXmlEditor/target/classes,${root.directory}/WaarpAdministrator/target/classes,${root.directory}/WaarpHttp/target/classes
+      ${root.directory}/WaarpAdministrator/target/classes,${root.directory}/WaarpDigest/target/classes,${root.directory}/WaarpCommon/target/classes,${root.directory}/WaarpIcap/target/classes,${root.directory}/WaarpExec/target/classes,${root.directory}/WaarpSnmp/target/classes,${root.directory}/WaarpThrift/target/classes,${root.directory}/WaarpPassword/target/classes,${root.directory}/WaarpFtp/target/classes,${root.directory}/WaarpFtp/core/target/classes,${root.directory}/WaarpFtp/filesystem/target/classes,${root.directory}/WaarpFtp/simpleimpl/target/classes,${root.directory}/WaarpFtpClient/target/classes,${root.directory}/WaarpGatewayKernel/target/classes,${root.directory}/WaarpR66/target/classes,${root.directory}/WaarpGatewayFtp/target/classes,${root.directory}/WaarpProxyR66/target/classes,${root.directory}/WaarpR66Gui/target/classes,${root.directory}/WaarpXmlEditor/target/classes,${root.directory}/WaarpAdministrator/target/classes,${root.directory}/WaarpHttp/target/classes,${root.directory}/WaarpCompression/target/classes,${root.directory}/WaarpR66-Extensions/target/classes
     </sonar.java.binaries>
     <sonar.surefire.reportsPath>target/surefire-reports
     </sonar.surefire.reportsPath>
@@ -287,8 +292,6 @@
     <commons-logging.version>1.2</commons-logging.version>
     <commons-beanutils.version>1.9.4</commons-beanutils.version>
     <commons-cli.version>1.4</commons-cli.version>
-    <postgresql.version>42.2.21.jre6</postgresql.version><!--42.2.14.jre6 last
-    version-->
     <oracle.version>11.2.0.4</oracle.version>
     <jaxen.version>1.2.0</jaxen.version>
     <xerces.version>2.12.1</xerces.version>
@@ -362,6 +365,9 @@
     <spotbugs-maven-plugin-version>4.2.3</spotbugs-maven-plugin-version>
     <spotbugs.version>4.3.0</spotbugs.version>
     <maven-install-version>2.5.2</maven-install-version>
+    <jdeb.vafer.version>1.9</jdeb.vafer.version>
+    <maven.rpm-maven-plugin.version>2.2.0</maven.rpm-maven-plugin.version>
+    <exec.maven.version>3.0.0</exec.maven.version>
   </properties>
 
 
@@ -377,6 +383,7 @@
           <artifactId>maven-surefire-plugin</artifactId>
           <version>${maven.surefire.version}</version>
           <configuration>
+            <skip>${nocode.project}</skip>
             <!-- <argLine>${jvm.option}</argLine> -->
             <runOrder>alphabetical</runOrder>
             <!-- Non Parallel mode -->
@@ -404,6 +411,7 @@
           <artifactId>maven-failsafe-plugin</artifactId>
           <version>${maven.failsafe.version}</version>
           <configuration>
+            <skip>${nocode.project}</skip>
             <parallel>none</parallel>
             <threadCount>1</threadCount>
             <perCoreThreadCount>false</perCoreThreadCount>
@@ -489,6 +497,7 @@
           <artifactId>license-maven-plugin</artifactId>
           <version>${license-maven-plugin.version}</version>
           <configuration>
+            <skip>${nocode.project}</skip>
             <offline>true</offline>
           </configuration>
           <dependencies>
@@ -660,6 +669,26 @@
           </executions>
         </plugin>
 
+        <plugin>
+          <!-- Debian packaging -->
+          <artifactId>jdeb</artifactId>
+          <groupId>org.vafer</groupId>
+          <version>${jdeb.vafer.version}</version>
+        </plugin>
+
+        <plugin>
+          <!-- RPM packaging -->
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>rpm-maven-plugin</artifactId>
+          <version>${maven.rpm-maven-plugin.version}</version>
+        </plugin>
+
+        <plugin>
+          <!-- Will run Sphinx -->
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>exec-maven-plugin</artifactId>
+          <version>${exec.maven.version}</version>
+        </plugin>
       </plugins>
 
     </pluginManagement>
@@ -670,6 +699,7 @@
         <artifactId>flatten-maven-plugin</artifactId>
         <version>${flatten-maven.version}</version>
         <configuration>
+          <skip>${nocode.project}</skip>
           <updatePomFile>true</updatePomFile>
         </configuration>
         <executions>
@@ -694,6 +724,7 @@
         <artifactId>dependency-check-maven</artifactId>
         <version>${maven.dependencycheck.version}</version>
         <configuration>
+          <skip>${nocode.project}</skip>
           <skipProvidedScope>true</skipProvidedScope>
           <skipRuntimeScope>true</skipRuntimeScope>
           <skipTestScope>true</skipTestScope>
@@ -715,6 +746,7 @@
         <artifactId>versions-maven-plugin</artifactId>
         <version>${versions-maven-plugin.version}</version>
         <configuration>
+          <skip>${nocode.project}</skip>
           <rulesUri>
             file:///${project.basedir}/maven-version-rules.xml
           </rulesUri>
@@ -737,6 +769,7 @@
               <goal>jar</goal>
             </goals>
             <configuration>
+              <skip>${nocode.project}</skip>
               <attach>true</attach>
             </configuration>
           </execution>
@@ -747,6 +780,7 @@
               <goal>jar-no-fork</goal>
             </goals>
             <configuration>
+              <skip>${nocode.project}</skip>
               <attach>true</attach>
             </configuration>
           </execution>
@@ -765,6 +799,7 @@
           </execution>
         </executions>
         <configuration>
+          <runOnlyAtExecutionRoot>true</runOnlyAtExecutionRoot>
           <descriptors>
             <descriptor>${basedir}/src/assembly/default.xml</descriptor>
           </descriptors>
@@ -806,24 +841,27 @@
               <goal>run</goal>
             </goals>
             <configuration>
+              <skip>${nocode.project}</skip>
               <target>
+                <taskdef resource="net/sf/antcontrib/antlib.xml"/>
                 <mkdir dir="${project.build.directory}"/>
                 <mkdir dir="${project.build.directory}/classes"/>
-                <taskdef resource="net/sf/antcontrib/antlib.xml"/>
                 <mkdir dir="${project.build.directory}/site"/>
                 <if>
                   <available file="${project.basedir}/src/main/resources"
                              type="dir"/>
                   <then>
                     <copy toDir="${project.build.directory}/">
-                      <fileset dir="${project.basedir}/src/main/resources/"/>
+                      <fileset
+                        dir="${project.basedir}/src/main/resources/"/>
                     </copy>
                   </then>
                 </if>
                 <if>
                   <or>
                     <equals arg1="${project.artifactId}" arg2="WaarpFtp"/>
-                    <equals arg1="${project.artifactId}" arg2="WaarpFtp-Core"/>
+                    <equals arg1="${project.artifactId}"
+                            arg2="WaarpFtp-Core"/>
                     <equals arg1="${project.artifactId}"
                             arg2="WaarpFtp-Filesystem"/>
                     <equals arg1="${project.artifactId}"
@@ -862,6 +900,7 @@
               <goal>run</goal>
             </goals>
             <configuration>
+              <skip>${nocode.project}</skip>
               <target>
                 <taskdef resource="net/sf/antcontrib/antlib.xml"/>
                 <if>
@@ -873,8 +912,9 @@
                     <!-- copy if exists resources into tmp resources (empty before) then add to zip -->
                     <mkdir dir="${basedir}/target/resources"/>
                     <if>
-                      <available file="${project.basedir}/src/main/resources"
-                                 type="dir"/>
+                      <available
+                        file="${project.basedir}/src/main/resources"
+                        type="dir"/>
                       <then>
                         <copy toDir="${basedir}/target/resources/">
                           <fileset
@@ -898,7 +938,8 @@
                         <exclude name="**/.*/**"/>
                         <include name="**"/>
                       </zipfileset>
-                      <zipfileset dir="${basedir}/target/resources" prefix="./"
+                      <zipfileset dir="${basedir}/target/resources"
+                                  prefix="./"
                                   erroronmissingarchive="false"/>
                       <zipfileset filemode="644"
                                   src="${project.build.directory}/${project.build.finalName}.orig.jar"
@@ -923,7 +964,8 @@
                         <exclude name="**/.*/**"/>
                         <include name="**"/>
                       </zipfileset>
-                      <zipfileset dir="${basedir}/target/resources" prefix="./"
+                      <zipfileset dir="${basedir}/target/resources"
+                                  prefix="./"
                                   erroronmissingarchive="false"/>
                       <zipfileset filemode="644"
                                   src="${project.build.directory}/${project.build.finalName}-sources.orig.jar"
@@ -967,6 +1009,7 @@
           </dependency>
         </dependencies>
         <configuration>
+          <skip>${nocode.project}</skip>
           <includeFilterFile>
             ${root.directory}/assembly/spotbugs-security-include.xml
           </includeFilterFile>
@@ -993,6 +1036,7 @@
         <artifactId>maven-pmd-plugin</artifactId>
         <version>${maven-pmd-plugin.version}</version>
         <configuration>
+          <skip>${nocode.project}</skip>
           <targetJdk>1.6</targetJdk>
           <rulesets>
             <ruleset>${root.directory}/src/assembly/pmd-exclude.xml</ruleset>
@@ -1023,10 +1067,10 @@
         <artifactId>maven-deploy-plugin</artifactId>
         <version>3.0.0-M1</version><!-- 2.8.1 -->
         <configuration>
+          <skip>${nocode.project}</skip>
           <updateReleaseInfo>true</updateReleaseInfo>
         </configuration>
       </plugin>
-
     </plugins>
     <resources>
       <resource>
@@ -1054,6 +1098,7 @@
             <artifactId>maven-deploy-plugin</artifactId>
             <version>3.0.0-M1</version><!-- 2.8.1 -->
             <configuration>
+              <skip>${nocode.project}</skip>
               <updateReleaseInfo>true</updateReleaseInfo>
             </configuration>
           </plugin>
@@ -1065,6 +1110,9 @@
       <activation>
         <activeByDefault>true</activeByDefault>
       </activation>
+      <modules>
+        <module>WaarpPackaging6</module>
+      </modules>
       <properties>
         <java.version>1.6</java.version>
         <maven.compiler.source>1.6</maven.compiler.source>
@@ -1083,6 +1131,7 @@
         <h2.version>1.4.191</h2.version><!--Java6 version -->
         <mariadb.version>1.7.4</mariadb.version><!--1.7.4 last version-->
         <mysql.version>5.1.49</mysql.version>
+        <postgresql.version>42.2.23.jre6</postgresql.version>
         <jackson.version>2.7.9</jackson.version><!--Java6 version -->
         <jackson-databind.version>2.7.9.6
         </jackson-databind.version><!--Java6 version -->
@@ -1101,8 +1150,10 @@
         <jersey-common.version>2.25.1
         </jersey-common.version><!-- Last 2.25.1 -->
         <log4j2.version>2.3</log4j2.version>
-        <javaassist.version>3.25.0-GA</javaassist.version><!--3.25.0-GA last version-->
-        <test-containers.version>1.14.3</test-containers.version><!-- last version Java 6-->
+        <javaassist.version>3.25.0-GA
+        </javaassist.version><!--3.25.0-GA last version-->
+        <test-containers.version>1.14.3
+        </test-containers.version><!-- last version Java 6-->
       </properties>
       <build>
         <plugins>
@@ -1150,6 +1201,7 @@
                   <goal>enforce</goal>
                 </goals>
                 <configuration>
+                  <skip>${nocode.project}</skip>
                   <rules>
                     <requireJavaVersion>
                       <!-- Enforce java 1.6 as minimum for compiling -->
@@ -1165,6 +1217,7 @@
               </execution>
               <execution>
                 <configuration>
+                  <skip>${nocode.project}</skip>
                   <fail>true</fail>
                   <rules>
                     <dependencyConvergence/>
@@ -1181,6 +1234,7 @@
                   <goal>enforce</goal>
                 </goals>
                 <configuration>
+                  <skip>${nocode.project}</skip>
                   <rules>
                     <enforceBytecodeVersion>
                       <maxJdkVersion>1.6</maxJdkVersion>
@@ -1210,6 +1264,7 @@
       <modules>
         <module>WaarpHttp</module>
         <module>WaarpR66-Extensions</module>
+        <module>WaarpPackaging</module>
       </modules>
       <properties>
         <java.version>1.8</java.version>
@@ -1228,6 +1283,7 @@
         <h2.version>1.4.200</h2.version>
         <mariadb.version>2.5.4</mariadb.version>
         <mysql.version>8.0.20</mysql.version>
+        <postgresql.version>42.2.23</postgresql.version>
         <jackson.version>2.12.3</jackson.version>
         <jackson-databind.version>2.12.3</jackson-databind.version>
         <dom4j.version>2.1.3</dom4j.version>
@@ -1296,6 +1352,7 @@
                   <goal>enforce</goal>
                 </goals>
                 <configuration>
+                  <skip>${nocode.project}</skip>
                   <rules>
                     <requireJavaVersion>
                       <!-- Enforce java 1.8 as minimum for compiling -->
@@ -1311,6 +1368,7 @@
               </execution>
               <execution>
                 <configuration>
+                  <skip>${nocode.project}</skip>
                   <fail>true</fail>
                   <rules>
                     <dependencyConvergence/>
@@ -1327,12 +1385,15 @@
                   <goal>enforce</goal>
                 </goals>
                 <configuration>
+                  <skip>${nocode.project}</skip>
                   <rules>
                     <enforceBytecodeVersion>
                       <maxJdkVersion>1.8</maxJdkVersion>
                       <excludes>
                         <!-- module-info in Java 9 -->
-                        <exclude>com.fasterxml.jackson.module:jackson-module-jaxb-annotations</exclude>
+                        <exclude>
+                          com.fasterxml.jackson.module:jackson-module-jaxb-annotations
+                        </exclude>
                       </excludes>
                     </enforceBytecodeVersion>
                   </rules>
@@ -1392,6 +1453,7 @@
       <modules>
         <module>WaarpHttp</module>
         <module>WaarpR66-Extensions</module>
+        <module>WaarpPackaging</module>
       </modules>
       <properties>
         <java.version>1.11</java.version>
@@ -1412,6 +1474,7 @@
         <mariadb.version>2.5.4</mariadb.version>
         <mysql.version>8.0.20</mysql.version>
         <jackson.version>2.12.3</jackson.version>
+        <postgresql.version>42.2.23</postgresql.version>
         <jackson-databind.version>2.12.3</jackson-databind.version>
         <dom4j.version>2.1.3</dom4j.version>
         <resteasy.client.version>4.6.1.Final</resteasy.client.version>
@@ -1464,6 +1527,7 @@
                   <goal>enforce</goal>
                 </goals>
                 <configuration>
+                  <skip>${nocode.project}</skip>
                   <rules>
                     <requireJavaVersion>
                       <!-- Enforce java 1.8 as minimum for compiling -->
@@ -1479,6 +1543,7 @@
               </execution>
               <execution>
                 <configuration>
+                  <skip>${nocode.project}</skip>
                   <fail>true</fail>
                   <rules>
                     <dependencyConvergence/>
@@ -1495,6 +1560,7 @@
                   <goal>enforce</goal>
                 </goals>
                 <configuration>
+                  <skip>${nocode.project}</skip>
                   <rules>
                     <enforceBytecodeVersion>
                       <maxJdkVersion>1.11</maxJdkVersion>
@@ -1559,6 +1625,7 @@
         <artifactId>dependency-check-maven</artifactId>
         <version>${maven.dependencycheck.version}</version>
         <configuration>
+          <skip>${nocode.project}</skip>
           <skipProvidedScope>true</skipProvidedScope>
           <skipRuntimeScope>true</skipRuntimeScope>
           <skipTestScope>true</skipTestScope>
@@ -1583,6 +1650,7 @@
         <artifactId>maven-jxr-plugin</artifactId>
         <version>${maven-jxr-plugin.version}</version>
         <configuration>
+          <skip>${nocode.project}</skip>
           <inputEncoding>UTF-8</inputEncoding>
           <outputEncoding>UTF-8</outputEncoding>
           <linkJavadoc>true</linkJavadoc>
@@ -1606,6 +1674,7 @@
         </version><!-- 2.7 -->
         <inherited>false</inherited>
         <configuration>
+          <skip>${nocode.project}</skip>
           <skipEmptyReport>true</skipEmptyReport>
           <dependencyDetailsEnabled>true</dependencyDetailsEnabled>
           <dependencyLocationsEnabled>false</dependencyLocationsEnabled>
@@ -1646,6 +1715,7 @@
           <reportSet>
             <id>dual-report</id>
             <configuration>
+              <skip>${nocode.project}</skip>
               <skip>${module.project}</skip>
               <basedir>.</basedir>
               <type>range</type>
@@ -1663,6 +1733,7 @@
         <artifactId>taglist-maven-plugin</artifactId>
         <version>${taglist-maven-plugin.version}</version><!-- 2.4 -->
         <configuration>
+          <skip>${nocode.project}</skip>
           <encoding>utf-8</encoding>
           <sourceFileLocale>en</sourceFileLocale>
           <emptyComments>false</emptyComments>
@@ -1709,6 +1780,7 @@
         <groupId>com.github.spotbugs</groupId>
         <artifactId>spotbugs-maven-plugin</artifactId>
         <configuration>
+          <skip>${nocode.project}</skip>
           <xmlOutput>true</xmlOutput>
           <xmlOutputDirectory>target/site</xmlOutputDirectory>
           <failOnError>false</failOnError>
@@ -1720,6 +1792,7 @@
         <artifactId>maven-pmd-plugin</artifactId>
         <version>${maven-pmd-plugin.version}</version>
         <configuration>
+          <skip>${nocode.project}</skip>
           <targetJdk>1.6</targetJdk>
           <rulesets>
             <ruleset>${root.directory}/src/assembly/pmd-exclude.xml</ruleset>
@@ -1739,6 +1812,7 @@
           <reportSet>
             <id>aggregate</id>
             <configuration>
+              <skip>${nocode.project}</skip>
               <skip>${module.project}</skip>
               <aggregate>true</aggregate>
               <doclet>org.jboss.apiviz.APIviz</doclet>
@@ -1766,7 +1840,7 @@
               <windowtitle>${project.name} ${project.version} API Reference
               </windowtitle>
               <sourcepath>
-                ${root.directory}/WaarpAdministrator/src/main/java:${root.directory}/WaarpAdministrator/target/generated-sources/annotations:${root.directory}/WaarpXmlEditor/src/main/java:${root.directory}/WaarpXmlEditor/target/generated-sources/annotations:${root.directory}/WaarpR66Gui/src/main/java:${root.directory}/WaarpR66Gui/target/generated-sources/annotations:${root.directory}/WaarpR66/src/main/java:${root.directory}/WaarpR66/target/generated-sources/annotations:${root.directory}/WaarpProxyR66/src/main/java:${root.directory}/WaarpProxyR66/target/generated-sources/annotations:${root.directory}/WaarpGatewayKernel/src/main/java:${root.directory}/WaarpGatewayKernel/target/generated-sources/annotations:${root.directory}/WaarpGatewayFtp/src/main/java:${root.directory}/WaarpGatewayFtp/target/generated-sources/annotations:${root.directory}/WaarpFtpClient/src/main/java:${root.directory}/WaarpFtpClient/target/generated-sources/annotations:${root.directory}/WaarpPassword/src/main/java:${root.directory}/WaarpPassword/target/generated-sources/annotations:${root.directory}/WaarpThrift/src/main/java:${root.directory}/WaarpThrift/target/generated-sources/annotations:${root.directory}/WaarpSnmp/src/main/java:${root.directory}/WaarpSnmp/target/generated-sources/annotations:${root.directory}/WaarpExec/src/main/java:${root.directory}/WaarpExec/target/generated-sources/annotations:${root.directory}/WaarpCommon/src/main/java:${root.directory}/WaarpCommon/target/generated-sources/annotations:${root.directory}/WaarpDigest/src/main/java:${root.directory}/WaarpDigest/target/generated-sources/annotations:${root.directory}/WaarpFtp/core/src/main/java:${root.directory}/WaarpFtp/core/target/generated-sources/annotations:${root.directory}/WaarpFtp/filesystem/src/main/java:${root.directory}/WaarpFtp/filesystem/target/generated-sources/annotations:${root.directory}/WaarpFtp/simpleimpl/src/main/java:${root.directory}/WaarpFtp/simpleimpl/target/generated-sources/annotations:${root.directory}/WaarpIcap/src/main/java:${root.directory}/WaarpIcap/target/generated-sources/annotations:${root.directory}/WaarpHttp/src/main/java:${root.directory}/WaarpHttp/target/generated-sources/annotations
+                ${root.directory}/WaarpAdministrator/src/main/java:${root.directory}/WaarpAdministrator/target/generated-sources/annotations:${root.directory}/WaarpXmlEditor/src/main/java:${root.directory}/WaarpXmlEditor/target/generated-sources/annotations:${root.directory}/WaarpR66Gui/src/main/java:${root.directory}/WaarpR66Gui/target/generated-sources/annotations:${root.directory}/WaarpR66/src/main/java:${root.directory}/WaarpR66/target/generated-sources/annotations:${root.directory}/WaarpProxyR66/src/main/java:${root.directory}/WaarpProxyR66/target/generated-sources/annotations:${root.directory}/WaarpGatewayKernel/src/main/java:${root.directory}/WaarpGatewayKernel/target/generated-sources/annotations:${root.directory}/WaarpGatewayFtp/src/main/java:${root.directory}/WaarpGatewayFtp/target/generated-sources/annotations:${root.directory}/WaarpFtpClient/src/main/java:${root.directory}/WaarpFtpClient/target/generated-sources/annotations:${root.directory}/WaarpPassword/src/main/java:${root.directory}/WaarpPassword/target/generated-sources/annotations:${root.directory}/WaarpThrift/src/main/java:${root.directory}/WaarpThrift/target/generated-sources/annotations:${root.directory}/WaarpSnmp/src/main/java:${root.directory}/WaarpSnmp/target/generated-sources/annotations:${root.directory}/WaarpExec/src/main/java:${root.directory}/WaarpExec/target/generated-sources/annotations:${root.directory}/WaarpCommon/src/main/java:${root.directory}/WaarpCommon/target/generated-sources/annotations:${root.directory}/WaarpDigest/src/main/java:${root.directory}/WaarpDigest/target/generated-sources/annotations:${root.directory}/WaarpFtp/core/src/main/java:${root.directory}/WaarpFtp/core/target/generated-sources/annotations:${root.directory}/WaarpFtp/filesystem/src/main/java:${root.directory}/WaarpFtp/filesystem/target/generated-sources/annotations:${root.directory}/WaarpFtp/simpleimpl/src/main/java:${root.directory}/WaarpFtp/simpleimpl/target/generated-sources/annotations:${root.directory}/WaarpIcap/src/main/java:${root.directory}/WaarpIcap/target/generated-sources/annotations:${root.directory}/WaarpHttp/src/main/java:${root.directory}/WaarpHttp/target/generated-sources/annotations:${root.directory}/WaarpCompression/src/main/java:${root.directory}/WaarpCompression/target/generated-sources/annotations:${root.directory}/WaarpR66-Extensions/src/main/java:${root.directory}/WaarpR66-Extensions/target/generated-sources/annotations
               </sourcepath>
               <additionalOptions>
                 -sourceclasspath ${root.directory}/target/classes
@@ -1774,6 +1848,8 @@
                 ${root.directory}/WaarpAdministrator/target/classes
                 -sourceclasspath ${root.directory}/WaarpDigest/target/classes
                 -sourceclasspath ${root.directory}/WaarpCommon/target/classes
+                -sourceclasspath
+                ${root.directory}/WaarpCompression/target/classes
                 -sourceclasspath ${root.directory}/WaarpExec/target/classes
                 -sourceclasspath ${root.directory}/WaarpSnmp/target/classes
                 -sourceclasspath ${root.directory}/WaarpThrift/target/classes
@@ -1788,6 +1864,8 @@
                 -sourceclasspath
                 ${root.directory}/WaarpGatewayKernel/target/classes
                 -sourceclasspath ${root.directory}/WaarpR66/target/classes
+                -sourceclasspath
+                ${root.directory}/WaarpR66-Extensions/target/classes
                 -sourceclasspath
                 ${root.directory}/WaarpGatewayFtp/target/classes
                 -sourceclasspath ${root.directory}/WaarpProxyR66/target/classes
@@ -1815,6 +1893,10 @@
                 <group>
                   <title>Waarp Common Crypto package</title>
                   <packages>org.waarp.common.crypto*</packages>
+                </group>
+                <group>
+                  <title>Waarp Common Compression package</title>
+                  <packages>org.waarp.common.compress*</packages>
                 </group>
                 <group>
                   <title>Waarp Common Database package</title>
@@ -1910,7 +1992,7 @@
                   <packages>org.waarp.openr66.configuration*</packages>
                 </group>
                 <group>
-                  <title>Waarp R66 Context Commander package</title>
+                  <title>Waarp R66 Context, Task and Commander package</title>
                   <packages>
                     org.waarp.openr66.context*:org.waarp.openr66.commander*
                   </packages>
@@ -1918,6 +2000,14 @@
                 <group>
                   <title>Waarp R66 Service Windows package</title>
                   <packages>org.waarp.openr66.service*</packages>
+                </group>
+                <group>
+                  <title>Waarp R66 Elasticsearch support package</title>
+                  <packages>org.waarp.openr66.elasticsearch*</packages>
+                </group>
+                <group>
+                  <title>Waarp R66 S3 support package</title>
+                  <packages>org.waarp.openr66.s3*</packages>
                 </group>
 
                 <group>
@@ -1993,6 +2083,7 @@
           </reportSet>
           <reportSet>
             <configuration>
+              <skip>${nocode.project}</skip>
               <attach>false</attach>
               <useStandardDocletOptions>true</useStandardDocletOptions>
               <charset>UTF-8</charset>
@@ -2023,6 +2114,10 @@
                 <group>
                   <title>Waarp Common Crypto package</title>
                   <packages>org.waarp.common.crypto*</packages>
+                </group>
+                <group>
+                  <title>Waarp Common Compression package</title>
+                  <packages>org.waarp.common.compress*</packages>
                 </group>
                 <group>
                   <title>Waarp Common Database package</title>
@@ -2118,7 +2213,7 @@
                   <packages>org.waarp.openr66.configuration*</packages>
                 </group>
                 <group>
-                  <title>Waarp R66 Context Commander package</title>
+                  <title>Waarp R66 Context, Task and Commander package</title>
                   <packages>
                     org.waarp.openr66.context*:org.waarp.openr66.commander*
                   </packages>
@@ -2126,6 +2221,14 @@
                 <group>
                   <title>Waarp R66 Service Windows package</title>
                   <packages>org.waarp.openr66.service*</packages>
+                </group>
+                <group>
+                  <title>Waarp R66 Elasticsearch support package</title>
+                  <packages>org.waarp.openr66.elasticsearch*</packages>
+                </group>
+                <group>
+                  <title>Waarp R66 S3 support package</title>
+                  <packages>org.waarp.openr66.s3*</packages>
                 </group>
 
                 <group>
@@ -2214,6 +2317,7 @@
         <reportSets>
           <reportSet>
             <configuration>
+              <skip>${nocode.project}</skip>
               <!-- Specific configuration for the aggregate report -->
             </configuration>
           </reportSet>
@@ -2284,6 +2388,12 @@
         <groupId>org.postgresql</groupId>
         <artifactId>postgresql</artifactId>
         <version>${postgresql.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>org.checkerframework</groupId>
+            <artifactId>checker-qual</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
 
       <!-- ######################## Netty dependencies ######################## -->
@@ -2519,7 +2629,8 @@
           </exclusion>
           <exclusion>
             <groupId>io.netty</groupId>
-            <artifactId>netty-testsuite-native-image-client-runtime-init</artifactId>
+            <artifactId>netty-testsuite-native-image-client-runtime-init
+            </artifactId>
           </exclusion>
           <exclusion>
             <groupId>io.netty</groupId>
@@ -2641,6 +2752,11 @@
       <dependency>
         <groupId>Waarp</groupId>
         <artifactId>WaarpHttp</artifactId>
+        <version>${revision}</version>
+      </dependency>
+      <dependency>
+        <groupId>Waarp</groupId>
+        <artifactId>WaarpR66-Extensions</artifactId>
         <version>${revision}</version>
       </dependency>
 

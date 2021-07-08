@@ -421,6 +421,8 @@ Pour générer un nouveau truststore depuis un keystore existant
   $ keytool -export -keystore keystore.jks -alias selfsigned -file cert.crt
   $ keytool -import -alias selfsigned -file cert.crt -keystore truststore.jks
 
+.. _certifs-rest:
+
 restsignkey
 ===========
 

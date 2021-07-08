@@ -1,0 +1,218 @@
+#!/bin/bash
+
+
+# $0: script name
+# $1: command
+# $2...n: opts
+
+R66_TYPE=server
+if [[ -e "/etc/waarp/conf.d/$1/$R66_TYPE.xml" ]]; then
+    R66_INST=$1
+    shift
+fi
+
+JAVA_XMX=${WAARP_XMX:-1g}
+JAVA_XMS=${WAARP_XMS:-512m}
+
+source /usr/share/waarp/variables.sh
+
+
+function usage {
+    cat << EOT
+usage: $0 HOSTID command options
+
+This script controls Waarp R66 server.
+given options will be fed to Waarp.
+
+Available commands:
+
+    start       Starts the server
+    stop        Stops the server
+    restart     Restarts the server
+    status      Tells whether the server is running or not
+    initdb      Initialize the database
+    loadconf    Loads the configuration in database
+    loadauth    Loads the authentication information in database
+    loadrule    Loads transfer rules in database
+    help        Displays this message
+EOT
+}
+
+PIDFILE=${PIDFILE:-${R66HOME}/var/log/r66server.pid}
+PID=$(cat "$PIDFILE" 2> /dev/null)
+
+CONFDIR=${CONFDIR:-${BINDIR}/../etc}
+SERVERCONF=${CONFDIR}/server.xml
+AUTHENTCONF=${CONFDIR}/authent-server.xml
+RULESDIR=${CONFDIR}
+
+function r66_running {
+    if [[ ! -f $PIDFILE ]]; then echo 1; return; fi
+    PID=$(cat "$PIDFILE" 2> /dev/null)
+    running=$(kill -0 "$PID" 2>&1 >/dev/null)
+    echo $?
+}
+
+function r66_start {
+    local retval pid
+    local listening=0
+
+    if [[ $WAARP_SERVICE = 1 ]]; then
+        $JAVARUNSERVER org.waarp.openr66.server.R66Server "${SERVERCONF}" >&- 2>&- &
+    else
+        $JAVARUNSERVER org.waarp.openr66.server.R66Server "${SERVERCONF}"
+    fi
+    retval=$?
+    pid=$!
+
+    if [[ $WAARP_SERVICE = 1 && $retval = 0 ]]; then
+        for i in $(seq 1 60); do
+            if which lsof >/dev/null 2>&1; then
+                listening=$(lsof -p $pid  | grep LISTEN | wc -l)
+            elif which ss >/dev/null 2>&1; then 
+                listening=$(ss -anptl | grep $pid | grep LISTEN | wc -l)
+            elif which netstat >/dev/null 2>&1; then 
+                listening=$(netstat -anptl | grep $pid | grep LISTEN | wc -l)
+            fi
+
+            if [[ $listening -gt 0 ]]; then
+                if [ -w "$(dirname "$PIDFILE")" ]; then
+                    echo $pid > "$PIDFILE"
+                fi
+                return 0
+            fi
+            sleep 1
+        done
+        return 1
+    fi
+
+    return $retval
+}
+
+function r66_stop {
+    echo -n "Stoping Waarp R66 Server... "
+    is_running=$(r66_running)
+    if [[ $is_running == "0" ]]
+    then
+        kill -s HUP "$PID"
+        retval=$?
+        echo "done"
+        rm "$PIDFILE"
+        return $retval
+    else
+      echo no process seems to be running
+      return 1
+    fi
+}
+
+function r66_status {
+    echo -n "Status of Waarp R66 Server... "
+    is_running=$(r66_running)
+    if [[ $is_running == 0 ]]
+    then
+        echo "running"
+    else
+        echo "not running"
+    fi
+}
+
+function r66_restart {
+    is_running=$(r66_running)
+    if [[ $is_running == "0" ]]
+    then
+        r66_stop
+    fi
+
+    r66_start
+}
+
+function r66_initdb {
+    echo -n "Initializing database... "
+    output=$($JAVARUNSERVER org.waarp.openr66.server.ServerInitDatabase "${SERVERCONF}" -initdb "$@")
+    retval=$?
+
+    if [[ "$output" == *"SQL Exception"* ]]; then
+        retval=2
+    fi
+
+    if (( ! retval ))
+    then
+        echo "done"
+        return 0
+    else
+        echo "*** ERROR ***"
+        echo -e "$output"
+        return $retval
+    fi
+}
+
+function r66_loadauth {
+    echo -n "Loading authentication information... "
+    output=$($JAVARUNSERVER org.waarp.openr66.server.ServerInitDatabase "${SERVERCONF}" -auth "$1")
+    retval=$?
+    if (( ! "$retval" ))
+    then
+        echo "done"
+        return 0
+    else
+        echo "*** ERROR ***"
+        echo -e "$output" >&2
+        return 1
+    fi
+}
+
+function r66_loadrule {
+    echo -n "Loading rule information... "
+    output=$($JAVARUNSERVER org.waarp.openr66.server.ServerInitDatabase "${SERVERCONF}" -dir "$1")
+    retval=$?
+    if (( ! "$retval" ))
+    then
+        echo "done"
+        return 0
+    else
+        echo "*** ERROR ***"
+        echo -e "$output" >&2
+        return 1
+    fi
+}
+
+function r66_loadconf {
+    echo "Loading configuration in database... "
+    r66_loadauth "${AUTHENTCONF}"
+    (( $? )) && return 1
+    r66_loadrule "${RULESDIR}"
+    (( $? )) && return 1
+    return 0
+}
+
+action=$1
+shift
+case $action in
+    start)
+        r66_start
+        ;;
+    stop)
+        r66_stop
+        ;;
+    restart)
+        r66_restart
+        ;;
+    status)
+        r66_status
+        ;;
+    initdb)
+        r66_initdb "$@"
+        ;;
+    loadconf)
+        r66_loadconf
+        ;;
+    loadauth)
+        r66_loadauth "$@"
+        ;;
+    loadrule)
+        r66_loadrule "$@"
+        ;;
+    *)
+        usage
+        ;;
+esac

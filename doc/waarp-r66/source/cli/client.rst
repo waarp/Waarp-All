@@ -944,3 +944,11 @@ Code   Signification
 ====== =============
 
 
+.. _error-codes:
+
+Les codes d'erreurs de manières générales indiquent :
+
+- 0 : pour OK
+- 1 : pour Warning
+- 2 et au-delà : pour une erreur différenciée et bloquante
+

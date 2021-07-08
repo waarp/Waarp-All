@@ -1,0 +1,141 @@
+#!/usr/bin/env bash
+
+##
+## VARIABLES
+##
+
+CURDIR="$(dirname "$(cd "$(dirname "$0")" && pwd)")"
+WORK_DIR=${WAARP_DIR:-$CURDIR}
+INST=$1
+LOGFILE="/var/log/waarp/$1/waarp-pull.log"
+LOCKFILE="/var/log/waarp/$1/waarp-pull.lock"
+STATUSFILE="/var/log/waarp/$1/waarp-pull.status"
+CONF_DIR="/etc/waarp/conf.d/$INST"
+LIST_FILE="$CONF_DIR/get-files.list"
+R66COMMAND="waarp-r66client"
+CURRENT_TRANSFERS=( "$(cat "$STATUSFILE")" )
+
+##
+## Functions
+##
+
+usage() {
+    cat <<EOT
+    Usage: $0 HOSTID
+
+Ce script peut être exécuté pour récupérer des fichiers distants disponibles 
+sur un serveur distant.
+
+L'interrogation des serveurs distants se fait en utilisant le protocole R66, 
+avec le client de l'instance HOSTID.
+
+Les fichiers du serveur distant doivent être situés dans un dossier de la forme
+
+  {outdir}/HOSTID/{identifiant du flux}
+
+où {outdir} est le dossier de départ du serveur distant et {identifiant du flux}
+est un identifiant arbitraire pour le flux.
+
+Les dossiers et serveurs interrogés sont listés dans le fichier 
+etc/conf.d/HOSTID/get-files.list, au format CSV, dans lequel chaque ligne est 
+de la forme :
+
+  identifiant du partenaire,identifiant du flux,règle de transfert
+EOT
+}
+
+log() {
+    echo "[$(date +'%Y-%m-%d %H:%M:%S.%N')] [$$] $@" >> "$LOGFILE"
+}
+
+lock() {
+    touch "$LOCKFILE"
+}
+
+unlock() {
+    rm -f "$LOCKFILE"
+}
+
+is_locked() {
+    [ -f "$LOCKFILE" ]
+}
+
+is_server() {
+    [ -f "$CONF_DIR/server.xml" ]
+}
+
+list_files() {
+    log "Vérification des fichiers sur $2 dans le dossier $3"
+    "$R66COMMAND" "$INST" getinfo -rule "$1" -to "$2" -file "$3" -list -property | grep "^file." | cut -d= -f2
+}
+
+get_files() {
+    local action=msend
+    if is_server; then 
+        action=masend
+    fi
+    "$R66COMMAND" "$INST" "$action" -rule "$1" -to "$2" -file "$3" -client
+}
+
+transfer_exists() {
+    [[ " ${CURRENT_TRANSFERS[*]} " == *" $1 "* ]]
+}
+
+##
+## MAIN
+##
+
+cd "$WORK_DIR" || exit 4
+
+log "Début du processus"
+
+if is_locked; then 
+    log "Un autre processus est en cours"
+    exit 0
+fi
+lock
+trap unlock EXIT
+
+if [ -z "$INST" ]; then
+    usage
+    exit 1
+fi
+if [ ! -d "$CONF_DIR" ]; then
+    echo "ERREUR: L'instance $INST n'existe pas"
+    exit 2
+fi
+
+if [ ! -f "$LIST_FILE" ]; then
+    log "Aucun fichier de configuration $LIST_FILE trouvé"
+    exit 0
+fi
+
+#
+declare -a file_list
+true >$STATUSFILE
+cat "$LIST_FILE" | while read -r line
+do
+    partner=$(echo "$line" | cut -d, -f1)
+    flowid=$(echo "$line" | cut -d, -f2)
+    rule=$(echo "$line" | cut -d, -f3)
+    
+    file_list=( )
+    while read -r i; do
+      file_list=( "${file_list[@]}" "$i" )
+    done < <(list_files "$rule" "$partner" "$INST/$flowid")
+    log "${#file_list[@]} fichiers disponibles"
+
+    for file in "${file_list[@]}"; do
+        filepath="$INST/$flowid/$file"
+        if transfer_exists "$filepath"; then
+            log "Un transfert existe déjà pour $filepath"
+        else
+            log "Création du transfert pour $filepath"
+            get_files "$rule" "$partner" "$filepath"
+        fi
+        echo "$filepath" >> $STATUSFILE
+    done
+done
+
+log "Fin du processus"
+#

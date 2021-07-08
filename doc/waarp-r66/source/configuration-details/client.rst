@@ -156,7 +156,7 @@ dbcheck           boolean N    True       *(déprécié)* Utiliser ``autoUpgrade
 ================= ======= ==== ========== =============
 
 
-.. _client-ExtendTaskFactory:
+.. _client-ExtendTaskFactories:
 
 Section ``ExtendTaskFactory``
 -----------------------------

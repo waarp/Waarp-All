@@ -1,0 +1,145 @@
+#!/bin/bash
+
+
+# $0: script name
+# $1: command
+# $2...n: opts
+
+R66_TYPE=gwftp
+if [[ -e "/etc/waarp/conf.d/$1/$R66_TYPE.xml" ]]; then
+    R66_INST=$1
+    shift
+fi
+
+source /usr/share/waarp/variables-gwftp.sh
+
+function usage {
+    cat <<EOT
+usage: $0 HOSTID command options
+
+This script controls Waarp R66 server.
+given options will be fed to Waarp.
+
+Available commands:
+
+    start       Starts the server
+    initdb      Initialize the database
+    logexport   Exports the transfer history in XML files and
+                optionnally purges thes from the database
+    help        Displays this message
+EOT
+}
+
+PIDFILE=${FTPPIDFILE:-${R66HOME}/var/log/gwftp.pid}
+PID=`cat $PIDFILE 2> /dev/null`
+
+CONFDIR=${CONFDIR:-${BINDIR}/../etc}
+R66CONF=${CONFDIR}/client.xml
+GWFTPCONF=${CONFDIR}/gwftp.xml
+AUTHENTCONF=${CONFDIR}/authent-ftp.xml
+
+
+function gwftp_start {
+    local retval pid
+    local listening=0
+
+    if [[ $WAARP_SERVICE = 1 ]]; then
+        $JAVARUNFTPSERVER org.waarp.gateway.ftp.ExecGatewayFtpServer ${GWFTPCONF} ${R66CONF} 2>&- >&- &
+    else
+        $JAVARUNFTPSERVER org.waarp.gateway.ftp.ExecGatewayFtpServer ${GWFTPCONF} ${R66CONF}
+    fi
+    retval=$?
+    pid=$!
+
+    if [[ $WAARP_SERVICE = 1 && $retval = 0 ]]; then
+        for i in $(seq 1 60); do
+            if which lsof >/dev/null 2>&1; then
+                listening=$(lsof -p $pid  | grep LISTEN | wc -l)
+            elif which ss >/dev/null 2>&1; then
+                listening=$(ss -anptl | grep $pid | grep LISTEN | wc -l)
+            elif which netstat >/dev/null 2>&1; then
+                listening=$(netstat -anptl | grep $pid | grep LISTEN | wc -l)
+            fi
+            listening=$(lsof -p $pid  | grep LISTEN|wc -l)
+
+            if [[ $listening -gt 0 ]]; then
+                if [ -w $(dirname $PIDFILE) ]; then
+                    echo $pid > $PIDFILE
+                fi
+                return 0
+            fi
+            sleep 1
+        done
+        return 1
+    fi
+
+    return $retval
+}
+
+function gwftp_initdb {
+    echo -n "Initializing database... "
+    output=$($JAVARUNFTPSERVER org.waarp.gateway.ftp.ServerInitDatabase ${GWFTPCONF} -initdb "$@")
+    retval=$?
+
+    if [[ "$output" == *"SQL Exception"* ]]; then
+        retval=2
+    fi
+
+    if (( ! $retval ))
+    then
+        echo "done"
+        return 0
+    else
+        echo "*** ERROR ***"
+        echo -e "$output"
+        return $retval
+    fi
+}
+
+# function gwftp_loadauth {
+#     echo -n "loading authent... "
+#     output=$(echo "quote SITE AUTHUPDATE" | ftp localhost 8021)
+#     retval=$?
+
+#     if (( ! $retval ))
+#     then
+#         echo "done"
+#         return 0
+#     else
+#         echo "*** ERROR ***"
+#         echo -e "$output"
+#         return $retval
+#     fi
+# }
+
+gwftp_logexport() {
+    echo -n "Exporting transfer log... " >&2
+    $JAVARUNFTPSERVER org.waarp.gateway.ftp.LogExport ${GWFTPCONF} "$@"
+    retval=$?
+    if (( ! $retval ))
+    then
+        echo "done" >&2
+        return 0
+    else
+        echo "*** ERROR ***" >&2
+        return $retval
+    fi
+    return $retval
+}
+
+action=$1
+shift
+case $action in
+    start)
+        gwftp_start
+        ;;
+    initdb)
+        gwftp_initdb "$@"
+        ;;
+    logexport)
+        gwftp_logexport "$@"
+        ;;
+    *)
+        usage
+        ;;
+esac

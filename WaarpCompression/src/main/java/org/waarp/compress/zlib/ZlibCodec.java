@@ -44,13 +44,13 @@ public class ZlibCodec implements CompressorCodec {
   }
 
   @Override
-  public byte[] compress(final byte[] input, final int length) {
+  public byte[] compress(final byte[] input, final int inputLength) {
     ByteArrayOutputStream bos = null;
     DeflaterOutputStream out = null;
     try {
-      bos = new ByteArrayOutputStream(length);
+      bos = new ByteArrayOutputStream(inputLength + 1024);
       out = new DeflaterOutputStream(bos);
-      out.write(input);
+      out.write(input, 0, inputLength);
       out.close();
       bos.close();
       return bos.toByteArray();
@@ -66,42 +66,12 @@ public class ZlibCodec implements CompressorCodec {
   public int compress(final byte[] input, final int inputLength,
                       final byte[] output, final int maxOutputLength)
       throws MalformedInputException {
-    ByteArrayOutputStream bos = null;
-    DeflaterOutputStream out = null;
     try {
-      bos = new ByteArrayOutputStream(inputLength);
-      out = new DeflaterOutputStream(bos);
-      out.write(input, 0, inputLength);
-      out.close();
-      bos.close();
-      final byte[] bytes = bos.toByteArray();
+      final byte[] bytes = compress(input, inputLength);
       System.arraycopy(bytes, 0, output, 0, bytes.length);
       return bytes.length;
     } catch (final Exception e) {
       throw new MalformedInputException(e);
-    } finally {
-      FileUtils.close(out);
-      FileUtils.close(bos);
-    }
-  }
-
-  @Override
-  public byte[] decompress(final byte[] compressed, final int length)
-      throws MalformedInputException {
-    ByteArrayOutputStream bos = null;
-    InflaterOutputStream out = null;
-    try {
-      bos = new ByteArrayOutputStream(length << 2);
-      out = new InflaterOutputStream(bos);
-      out.write(compressed);
-      out.close();
-      bos.close();
-      return bos.toByteArray();
-    } catch (final Exception e) {
-      throw new MalformedInputException(e);
-    } finally {
-      FileUtils.close(out);
-      FileUtils.close(bos);
     }
   }
 
@@ -115,16 +85,7 @@ public class ZlibCodec implements CompressorCodec {
       inputStream = new FileInputStream(input);
       outputStream = new FileOutputStream(output);
       out = new DeflaterOutputStream(outputStream);
-      final byte[] buffer = new byte[64 * 1024];
-      while (true) {
-        final int r = inputStream.read(buffer);
-        if (r == -1) {
-          break;
-        }
-        out.write(buffer, 0, r);
-      }
-      out.flush();
-      FileUtils.close(out);
+      FileUtils.copy(64 * 1024, inputStream, out);
       out = null;
       return output.length();
     } catch (final Exception e) {
@@ -137,25 +98,35 @@ public class ZlibCodec implements CompressorCodec {
   }
 
   @Override
-  public int decompress(final byte[] input, final int inputLength,
-                        final byte[] output, final int maxOutputLength)
+  public byte[] decompress(final byte[] compressed, final int length)
       throws MalformedInputException {
     ByteArrayOutputStream bos = null;
     InflaterOutputStream out = null;
     try {
-      bos = new ByteArrayOutputStream(maxOutputLength);
+      bos = new ByteArrayOutputStream(length << 2);
       out = new InflaterOutputStream(bos);
-      out.write(input, 0, inputLength);
+      out.write(compressed, 0, length);
       out.close();
       bos.close();
-      final byte[] bytes = bos.toByteArray();
-      System.arraycopy(bytes, 0, output, 0, bytes.length);
-      return bytes.length;
+      return bos.toByteArray();
     } catch (final Exception e) {
       throw new MalformedInputException(e);
     } finally {
       FileUtils.close(out);
       FileUtils.close(bos);
+    }
+  }
+
+  @Override
+  public int decompress(final byte[] input, final int inputLength,
+                        final byte[] output, final int maxOutputLength)
+      throws MalformedInputException {
+    try {
+      final byte[] bytes = decompress(input, inputLength);
+      System.arraycopy(bytes, 0, output, 0, bytes.length);
+      return bytes.length;
+    } catch (final Exception e) {
+      throw new MalformedInputException(e);
     }
   }
 
@@ -169,16 +140,7 @@ public class ZlibCodec implements CompressorCodec {
       inputStream = new FileInputStream(input);
       outputStream = new FileOutputStream(output);
       out = new InflaterOutputStream(outputStream);
-      final byte[] buffer = new byte[64 * 1024];
-      while (true) {
-        final int r = inputStream.read(buffer);
-        if (r == -1) {
-          break;
-        }
-        out.write(buffer, 0, r);
-      }
-      out.flush();
-      FileUtils.close(out);
+      FileUtils.copy(64 * 1024, inputStream, out);
       out = null;
       return output.length();
     } catch (final Exception e) {

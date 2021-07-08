@@ -1,0 +1,343 @@
+#!/bin/bash
+
+# $0: script name
+# $1: command
+# $2...n: opts
+
+R66_TYPE=client
+if [[ -e "/etc/waarp/conf.d/$1/$R66_TYPE.xml" ]]; then
+    R66_INST=$1
+    shift
+fi
+
+JAVA_XMX=${WAARP_XMX:-512m}
+JAVA_XMS=${WAARP_XMS:-128m}
+
+source /usr/share/waarp/variables.sh
+
+
+function usage {
+    cat << EOT
+usage: $0 HOSTID command options
+
+This script controls Waarp R66 client.
+given options will be fed to Waarp.
+
+Available commands:
+
+    send            Sends a file to the server
+    asend           Submits an asynchronous transfer
+    msend           Sends multiple files to the server
+    masend          Submits multiple asynchronous transfers
+    spool           Watches a directory to send files created there
+    gui             Starts the GUI transfer tool
+    getinfo         Gets information of files on remote hosts
+    transfer        Gets information about a transfer.
+                    Gives the possibility to restart/stop/cancel it.
+    initdb          Initialize the database
+    loadconf        Loads the configuration in database
+    loadauth        Loads the authentication information in database
+    loadrule        Loads transfer rules in database
+    log-export      Exports transfer history
+    config-export   Exports configuration
+    watcher start   Starts the filewatcher
+    watcher stop    Stops the filewatcher
+    watcher status  Status of the filewatcher
+    watcher restart Restarts the filewatcher
+    message         Ping a message to check connectivity
+    icaptest        Sends a file to an icap server
+    help            Displays this message
+EOT
+}
+
+CLIENTCONF=${CONFDIR}/client.xml
+AUTHENTCONF=${CONFDIR}/authent.xml
+RULESDIR=${CONFDIR}
+PIDFILE=${PIDFILE:-/var/lib/waarp/$R66_INST/r66watcher.pid}
+PID=$(cat "$PIDFILE" 2> /dev/null)
+
+function r66_send {
+    ${JAVARUNCLIENT} org.waarp.openr66.client.DirectTransfer "${CLIENTCONF}" "$@"
+    return $?
+}
+
+function r66_asend {
+    ${JAVARUNCLIENT} org.waarp.openr66.client.SubmitTransfer "${CLIENTCONF}" "$@"
+    return $?
+}
+
+function r66_msend {
+    ${JAVARUNCLIENT} org.waarp.openr66.client.MultipleDirectTransfer "${CLIENTCONF}" "$@"
+    return $?
+}
+
+function r66_masend {
+    ${JAVARUNCLIENT} org.waarp.openr66.client.MultipleSubmitTransfer "${CLIENTCONF}" "$@"
+    return $?
+}
+
+function r66_spool {
+    ${JAVARUNCLIENT} org.waarp.openr66.client.SpooledDirectoryTransfer "${CLIENTCONF}" "$@"
+    return $?
+}
+
+function r66_gui {
+    ${JAVARUNCLIENT} org.waarp.openr66.r66gui.R66ClientGui "${CLIENTCONF}" "$@"
+    return $?
+}
+
+function r66_getinfo {
+    ${JAVARUNCLIENT} org.waarp.openr66.client.RequestInformation "${CLIENTCONF}" "$@"
+    return $?
+}
+
+function r66_message {
+    ${JAVARUNCLIENT} org.waarp.openr66.client.Message "${CLIENTCONF}" "$@"
+    return $?
+}
+
+function r66_transfer {
+    ${JAVARUNCLIENT} org.waarp.openr66.client.RequestTransfer "${CLIENTCONF}" "$@"
+    return $?
+}
+
+function r66_initdb {
+    output=$($JAVARUNCLIENT org.waarp.openr66.server.ServerInitDatabase "${CLIENTCONF}" -initdb "$@")
+    retval=$?
+
+    if [[ "$output" == *"SQL Exception"* ]]; then
+        retval=2
+    fi
+
+    if (( ! retval ))
+    then
+        echo "done"
+        return 0
+    else
+        echo "*** ERROR ***"
+        echo -e "$output"
+        return $retval
+    fi
+}
+
+function r66_loadauth {
+    echo -n "Loading authentication information... "
+    output=$($JAVARUNCLIENT org.waarp.openr66.server.ServerInitDatabase "${CLIENTCONF}" -auth "$1")
+    retval=$?
+    if (( ! retval ))
+    then
+        echo "done"
+        return 0
+    else
+        echo "*** ERROR ***"
+        return 1
+    fi
+}
+
+function r66_loadrule {
+    echo -n "Loading rule information... "
+    output=$($JAVARUNCLIENT org.waarp.openr66.server.ServerInitDatabase "${CLIENTCONF}" -dir "$1")
+    retval=$?
+    if (( ! retval ))
+    then
+        echo "done"
+        return 0
+    else
+        echo "*** ERROR ***"
+        return 1
+    fi
+}
+
+function r66_loadlimit {
+    echo -n "Loading bandwidth limit information... "
+    output=$($JAVARUNCLIENT org.waarp.openr66.server.ServerInitDatabase "${CLIENTCONF}" -limit "$1")
+    retval=$?
+    if (( ! retval ))
+    then
+        echo "done"
+        return 0
+    else
+        echo "*** ERROR ***"
+        return 1
+    fi
+}
+
+function r66_loadconf {
+    echo "Loading configuration in database... "
+    r66_loadauth "${AUTHENTCONF}"
+    (( $? )) && return 1
+    r66_loadrule "${RULESDIR}"
+    (( $? )) && return 1
+    return 0
+}
+
+function r66_logexport {
+    echo -n "Exporting transfer history... "
+    output=$($JAVARUNCLIENT org.waarp.openr66.server.LogExport "${CLIENTCONF}" "$@")
+    retval=$?
+    if (( ! retval ))
+    then
+        echo "done"
+        return 0
+    else
+        echo "*** ERROR ***"
+        echo -e "$output" >&2
+        return 1
+    fi
+}
+
+function r66_configexport {
+    echo -n "Exporting configuration... "
+    $JAVARUNCLIENT org.waarp.openr66.server.ConfigExport "${CLIENTCONF}" "$@"
+    retval=$?
+    if (( ! retval ))
+    then
+        echo "done"
+        return 0
+    else
+        echo "*** ERROR ***"
+        return 1
+    fi
+}
+
+function r66_running {
+    if [[ ! -f $PIDFILE ]]; then echo 1; return; fi
+    PID=$(cat "$PIDFILE" 2> /dev/null)
+    kill -0 "$PID" >/dev/null 2>&1
+    echo $?
+}
+
+
+function r66_fw_start {
+    if [[ $WAARP_SERVICE = 1 ]]; then
+        ${JAVARUNCLIENT} org.waarp.openr66.client.SpooledDirectoryTransfer "${CLIENTCONF}" "$@" >&- 2>&- &
+    else
+        ${JAVARUNCLIENT} org.waarp.openr66.client.SpooledDirectoryTransfer "${CLIENTCONF}" "$@"
+    fi
+    retval=$?
+    pid=$!
+
+    if [[ $WAARP_SERVICE = 1 && $retval = 0 ]]; then
+        if [ -w "$(dirname "$PIDFILE")" ]; then
+            echo $pid > "$PIDFILE"
+        fi
+        return 0
+    fi
+
+    return $retval
+}
+
+function r66_fw_stop {
+    echo -n "Stoping Waarp R66 filewatcher... "
+    is_running=$(r66_running)
+    if [[ $is_running == "0" ]]
+    then
+        kill -s HUP "$PID"
+        retval=$?
+        echo "done"
+        rm "$PIDFILE"
+        return $retval
+    else
+      echo no process seems to be running
+      return 1
+    fi
+}
+
+function r66_fw_status {
+    echo -n "Status of Waarp R66 Server... "
+    is_running=$(r66_running)
+    if [[ $is_running == 0 ]]
+    then
+        echo "running"
+    else
+        echo "not running"
+    fi
+}
+
+function r66_fw_restart {
+    is_running=$(r66_running)
+    if [[ $is_running == "0" ]]
+    then
+        r66_fw_stop
+    fi
+
+    r66_fw_start "$@"
+}
+
+function r66_icaptest {
+    $JAVARUNCLIENT org.waarp.icap.IcapScanFile "$@"
+}
+
+ACTION=$1
+shift
+
+case $ACTION in
+    send)
+        r66_send "$@"
+        ;;
+    asend)
+        r66_asend "$@"
+        ;;
+    msend)
+        r66_msend "$@"
+        ;;
+    masend)
+        r66_masend "$@"
+        ;;
+    spool)
+        r66_spool "$@"
+        ;;
+    gui)
+        r66_gui "$@"
+        ;;
+    getinfo)
+        r66_getinfo "$@"
+        ;;
+    transfer)
+        r66_transfer "$@"
+        ;;
+    initdb)
+        r66_initdb "$@"
+        ;;
+    loadconf)
+        r66_loadconf
+        ;;
+    loadrule)
+        r66_loadrule "$@"
+        ;;
+    loadauth)
+        r66_loadauth "$@"
+        ;;
+    log-export)
+        r66_logexport "$@"
+        ;;
+    config-export)
+        r66_configexport "$@"
+        ;;
+    watcher)
+        case $1 in
+            start)
+                r66_fw_start "$@"
+                ;;
+            stop)
+                r66_fw_stop
+                ;;
+            restart)
+                r66_fw_restart "$@"
+                ;;
+            status)
+                r66_fw_status
+                ;;
+        esac
+        ;;
+    message)
+      r66_message "$@"
+      ;;
+    icaptest)
+      r66_icaptest "$@"
+      ;;
+
+    *)
+        usage
+        ;;
+esac

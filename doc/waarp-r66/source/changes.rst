@@ -384,7 +384,7 @@ Correctifs
   (version du protocole) et versionBin (version du code)
 
    - La version retournée par l'API V1 n'est plus conforme suite la mise à jour
-    automatique du schéma de la base de données.
+     automatique du schéma de la base de données.
 
 - Corrige une fuite mémoire API Rest
 - Corrige le cas du blocage d'un client lorsqu'il n'est pas reconnu par un
