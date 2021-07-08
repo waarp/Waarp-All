@@ -1,0 +1,40 @@
+<configuration>
+  <statusListener class="org.waarp.common.logging.PrintOnlyWarningLogbackStatusListener" />
+  <appender name="FILE"
+    class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <file>/var/log/waarp/{{app_name}}/client.log</file>
+    <append>true</append>
+
+    <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+      <fileNamePattern>/var/log/waarp/{{app_name}}/client.log.%d{yyyy-MM-dd}.%i.log.zip</fileNamePattern>
+      <maxHistory>30</maxHistory>
+      <maxFileSize>10MB</maxFileSize>
+    </rollingPolicy>
+
+    <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+      <pattern>
+        %date{dd/MM/yyyy/HH:mm:ss.SSS} %level [%logger] [%thread] %msg%n
+      </pattern>
+    </encoder>
+  </appender>
+
+  <appender name="STDOUT"
+    class="ch.qos.logback.core.ConsoleAppender">
+    <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+      <Pattern>%date{dd/MM/yyyy/HH:mm:ss.SSS} %level [%logger] [%thread] %msg%n</Pattern>
+    </encoder>
+  </appender>
+
+  <appender name="SYSLOG" class="ch.qos.logback.classic.net.SyslogAppender">
+    <syslogHost></syslogHost>
+    <Port></Port>
+    <facility>local0</facility>
+    <suffixPattern>[%thread] %logger %msg</suffixPattern>
+  </appender>
+
+  <root>
+    <level value="warn" />
+    <appender-ref ref="FILE" />
+    <!-- <appender-ref ref="SYSLOG" /> -->
+  </root>
+</configuration>

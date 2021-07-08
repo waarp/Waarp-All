@@ -1158,7 +1158,7 @@ L'orde des commandes sera alors :
 
 2. ``USER user``
 3. ``PASS pwd``
-4. ``ACCT account``, si ``-account` est renseigné
+4. ``ACCT account``, si ``-account`` est renseigné
 5. ``AUTH TLS``, ``PBSZ 0`` et ``PROT P``, si ``-ssl`` vaut ``explicit``
 6. ``PASV``, si ``-mode`` vaut ``passive``
 7. ``CWD remotepath``

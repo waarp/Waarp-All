@@ -121,7 +121,6 @@ public class ZstdUnsafeCodec implements CompressorCodec {
       inputStream = new FileInputStream(input);
       buffer = ByteStreams.toByteArray(inputStream);
       outputStream = new FileOutputStream(output);
-      // Need to store in front the various position of block
       final byte[] bufferCompression =
           new byte[maxCompressedLength(buffer.length)];
       final int length = compress(buffer, buffer.length, bufferCompression,
@@ -167,7 +166,6 @@ public class ZstdUnsafeCodec implements CompressorCodec {
       inputStream = new FileInputStream(input);
       final byte[] sourceArray = ByteStreams.toByteArray(inputStream);
       outputStream = new FileOutputStream(output);
-      // Need to store in front the various position of block
       buffer = new byte[getDecompressedSize(sourceArray, sourceArray.length)];
       final int length =
           decompress(sourceArray, sourceArray.length, buffer, buffer.length);

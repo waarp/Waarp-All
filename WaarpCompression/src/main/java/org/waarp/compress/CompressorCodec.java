@@ -46,7 +46,7 @@ public interface CompressorCodec {
   /**
    * @return the compressed byte array
    */
-  byte[] compress(byte[] input, final int length)
+  byte[] compress(byte[] input, final int inputLength)
       throws MalformedInputException;
 
   /**
@@ -114,4 +114,6 @@ public interface CompressorCodec {
    * @return the size of the decompressed array, 0 if unknown
    */
   int getDecompressedSize(final byte[] input, final int length);
+
+
 }

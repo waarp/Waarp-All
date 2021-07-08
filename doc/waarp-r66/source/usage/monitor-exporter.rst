@@ -155,7 +155,7 @@ Description des paramètres :
   - La date considérée est la date lors du dernier déclenchement du monitoring
   - Le nom de l'index sera en minuscule, quelque soit la casse d'origine (exigence Elasticsearch)
   - Ainsi ``waarpR66-%%WAARPHOST%%-%%DATE%%`` donnerait
-   ``waarpr66-hosta-2021-06-21``
+    ``waarpr66-hosta-2021-06-21``
 
 - Si une authentification est nécessaire, plusieurs options sont possibles (unique) :
 

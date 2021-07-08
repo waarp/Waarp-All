@@ -1,0 +1,39 @@
+all_instances() {
+    if [[ $# = 0 ]]; then
+        echo "Usage: all_instance INSTANCE_TYPE"
+        echo "       where INSTANCE_TYPE is 'server' or 'gwftp'"
+    fi
+    rv=
+    for candidate in $(ls $INSTANCES_CONF); do
+        if [ -f $INSTANCES_CONF/$candidate/$1.xml ]; then
+            rv+=" $candidate"
+        fi
+    done
+    echo $rv
+}
+
+check_instance_list() {
+    local rc=0 pat ALL_INSTANCES=$(all_instances $SERVICE_TYPE)
+    for instance in $*; do
+        pat='\b'$instance'\b'
+        if [[ ! $ALL_INSTANCES =~ $pat ]]; then
+            echo "ERROR: $SERVICE_NAME $instance is not configured."
+            rc=1
+        fi
+    done
+    return $rc
+}
+
+get_instance_list() {
+    local pat='\ball\b'
+    local list="$@"
+
+    # If no instance is given, get the default list in AUTOSTART
+    [[ $# = 0 ]] && list=$AUTOSTART
+
+    # If "all" is given in the list, return all existing instances
+    [[ "$list" =~ $pat ]] && list=$(all_instances $SERVICE_TYPE)
+
+    echo $list
+    return 0
+}

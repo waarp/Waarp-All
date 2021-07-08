@@ -18,5 +18,5 @@ Le détail des options de configuration est disponible sur le site de la
   
    Activation syslog: se reporter à la documentation Syslog du Linux utilisé ou en utilisant directement
    les options disponibles pour Logback pour s'interconnecter avec Syslog via un SyslogAppender (voir
-http://logback.qos.ch/manual/appenders.html#SyslogAppender).
+   http://logback.qos.ch/manual/appenders.html#SyslogAppender).
 

@@ -8,7 +8,8 @@ Les outils suivants sont nécessaires. Des variantes peuvent être utilisées :
   Java 1.6), Java 1.11 pour créer la version `jre11` (attention, pour les
   versions `jre6` et `jre8`, JRE8 est nécessaire)
 - Maven 3.6.3
-- Docker (19 par exemple)
+- Docker (19 par exemple) (optionnel)
+- PGP, Sphinx pour signer les packages et générer la documentation
 - Artifactory (ou équivalent) pour pré-publier les jar (via Docker sur le PC :
   https://www.jfrog.com/confluence/display/JFROG/Installing+Artifactory )
   - Note : Afin d'autoriser Maven à communiquer avec SonarQube, dans votre
@@ -48,7 +49,8 @@ et leur inclusion, il peut être nécessaire de les inclure statiquement.
 Sont concernés :
 
 - `netty-http-java6` : fork de la version netty-http mais pour JRE 6
-- `selenium-java` : pour avoir une version compatible JRE 6
+- `selenium-java` : pour avoir une version compatible JRE 6, mais la version Java 8 est 
+  normalement utilisée par tous les tests
 - `Waarp-Shaded-Parent` : le parent de ces deux jars
 
 Pour mettre à jour ces jars, veuillez utiliser la procéduire suivante :
@@ -88,8 +90,11 @@ packages non maintenus comme WaarpAdministrator ou WaarpXmlEditor).
 - `ftp4j` en version 1.7.2 absente des repository Maven
 - `javasysmon` en version 0.3.6 absente des repository Maven
 - `sun plugin` en version 1.6 absente des repository Maven
-- `Xerces`, `XML-APIS` en version 2.5.0 absente des repository Maven
-- `XMLEditor` en version 2.2 absente des repository Maven
+- `Xerces`, `XML-APIS` en version 2.5.0 absente des repository Maven pour les modules obsolètes 
+  WaarpXMLEditor et WaarpAdministrator
+  - Les autres modules utilisent les versions disponibles dans les repositories Maven
+- `XMLEditor` en version 2.2 absente des repository Maven pour les modules obsolètes
+  WaarpXMLEditor et WaarpAdministrator
 
 
 ## 2  Vérification
@@ -116,8 +121,6 @@ Le champ à modifier est `waarp.version` avec une valeur du type `x.y.z`.
 
 Dans ce profil, la compilation cible JRE6 et les paquets seront nommés de
 manière standard `NomPackage-version.jar`.
-
-
 
 **IMPORTANT** : chaque commande Maven doit être accompagnée de l'option
 spécifiant le profil : **`mvn -P jre6 ...`**. Une JDK8 est nécessaire.
@@ -201,7 +204,7 @@ environnement ad-hoc, basé sur Docker.
 #### 2.3.2  Autres tests
 
 Selon les besoins (par exemple, tests de résistance, de stress, de
-performances)…
+performances).
 
 Par exemple, pour lancer les tests IT de "longue durée", il faut exécuter la
 commande suivante :
@@ -228,8 +231,8 @@ SonarQube doit être actif durant cette étape.
   ou mauvaises pratiques, le cas échéant en rejouant tous les tests depuis le
   début.
 
-L'exclusion des 3 packages est en raison de l'absence de tests sur ces modules
-graphiques.
+L'exclusion des 4 packages est en raison de l'absence de tests sur ces modules
+graphiques ou le module dédié au packaging (DEB, RPM, TGZ, ZIP).
 
 SonarQube peut être arrêté une fois cette étape terminée.
 
@@ -237,9 +240,64 @@ SonarQube peut être arrêté une fois cette étape terminée.
 ## 3  Publication
 
 Il s’agit ici de préparer les éléments nécessaires pour la publication JAR,
-HTML et GITHUB.
+DEB, RPM, TAR.GZ, ZIP, HTML et GITHUB.
 
-### 3.1  Publication des JAR
+### 3.1  Création des packagings
+
+*Note: ne surtout pas faire un `clean` sur cette étape afin de conserver les packagings
+préalables pour entre les JRE 6, 8 et 11.*
+
+**A la fin des étapes pour jre6, 8 et 11, copier le contenu de `WaarpPackaging` et `WaarpPackaging6`
+dans un répertoire externe afin de les conserver.**
+
+En exécutant la commande
+`mvn -P jreX install -DskipTests -rf WaarpPackaging`, cela permet :
+
+- De générer la documentation au format HTML et au format PDF
+- De packager l'ensemble Waarp R66 et Waarp Gateway FTP en un seul package sous différentes formes
+  (ici présentés pour `jre11` mais valide pour `jre6` et `jre8` aussi)
+
+  - DEB : au format `waarp-all-3.6.0-jre11.deb` pour les Systèmes d'exploitation de type Debian
+  - RPM : au format `waarp-all-3.6.0-jre11_1.noarch.rpm` pour les Systèmes d'exploitation de type Redhat
+  - TGZ : au format `waarp-all-3.6.0-jre11.linux.tar.gz` pour les Systèmes d'exploitation de type Linux
+  - ZIP : au format `waarp-all-3.6.0-jre11.windows.zip` pour les Systèmes d'exploitation de type Windows
+  - JAR : un jar unique pour tous les programmes (sauf les dépréciés)
+    `Waarp-All-3.6.0-jre11-jar-with-dependencies.jar`
+
+Afin de pouvoir générer les packages DEB et RPM signés, il faut au préalable avoir une clef PGP
+et la renseigner dans le fichier général de configuration de Maven (`settings.xml`) sous la forme
+suivante :
+
+- Ajout d'un server pour la clef (RPM)
+
+```xml
+  <servers>
+     ...
+     <server>
+      <id>Waarp</id>
+      <passphrase>waarp@freder1c</passphrase>
+    </server>
+  </servers>
+```
+
+- Ajout dans le profil actif de propriétés :
+
+```xml
+  <profiles>
+    <profile>
+      <properties>
+        ...
+        <jdeb.keyring>chemin/secring.gpg</jdeb.keyring>
+        <jdeb.key>ID de la clef (suite de chiffres et de lettres de longueur 8)</jdeb.key>
+        <jdeb.passphrase>le mot de passe en clair ou chiffré via Maven</jdeb.passphrase>
+        <gpg.keyname>Le nom de la clef</gpg.keyname>
+        <gpg.passphrase>le mot de passe en clair ou chiffré via Maven</gpg.passphrase>
+      </properties>
+    </profile>
+  </profiles>
+```
+
+### 3.2  Publication des JAR
 
 Grâce à Artifactory (ou équivalent), qui doit être actif durant cette étape,
 via Maven, il est possible de pré-publier les Jar dans un dépôt local maven :
@@ -289,7 +347,11 @@ installer tous les jars pré-existants dans le dépôt (procédure manuelle ou
 automatisée si l’on peut), ceci afin de disposer d’un dépôt complet et
 correspondant à l’existant.
 
-### 3.2  HTML
+**Une fois les jar standards créés, importer dans Artifactory 
+les 4 jars créés dans la phase 3.1
+et recopiés dans un répertoire externe pour les référencer.**
+
+### 3.3  HTML
 
 Il s’agit ici de générer les pages automatisées Maven (Site Maven) du projet
 `Waarp-All`.
@@ -297,7 +359,7 @@ Pour cela, il est conseillé de disposer de 2 clones de `Waarp-All`, l’un pour
 s’occuper des sources java et constructions, l’autre pour ne gérer que la
 branche `gh-pages`.
 
-#### 3.2.1  Étape Site Maven
+#### 3.3.1  Étape Site Maven
 
 Cette étape permet de générer le Site Maven (dans `Waarp-All/target/staging`).
 
@@ -310,7 +372,7 @@ branche `gh-pages` prévu à cet effet et enfin publier :
 - `git commit -m « Nom de la release »`
 - `git push origin gh-pages`
 
-#### 3.2.2  Étape Site HTML global
+#### 3.3.2  Étape Site HTML global
 
 Dans cette étape, il s’agit de mettre à jour les fichiers Web du site global
 `Waarp` sous Github (tant que maintenu) :
@@ -325,7 +387,7 @@ Dans cette étape, il s’agit de mettre à jour les fichiers Web du site global
   - `git commit -m « Nom de la release »`
   - `git push origin gh-pages`
 
-### 3.3  GITHUB
+### 3.4  GITHUB
 
 Il s’agit ici de publier la release sous Github :
 
@@ -338,6 +400,33 @@ Il s’agit ici de publier la release sous Github :
   `Waarp-All/WaarpGatewayFtp/target/WaarpGatewayFtp-X.Y.Z-jar-with-dependencies.jar`
   et `Waarp-All/WaarpR66/target/WaarpR66-X.Y.Z-jar-with-dependencies.jar`)
   - Le cas échéant, y ajouter les versions JRE8 et JRE11.
+  - Il est conseillé de publier l'ensemble suivant :
+    - `WaarpGatewayFtp-X.Y.Z-jar-with-dependencies.jar`, 
+      `WaarpGatewayFtp-X.Y.Z-jre8-jar-with-dependencies.jar` et
+      `WaarpGatewayFtp-X.Y.Z-jre11-jar-with-dependencies.jar` 
+      situés dans `Waarp-All/WaarpGatewayFtp/target`
+    - `WaarpR66-X.Y.Z-jar-with-dependencies.jar`,
+      `WaarpR66-X.Y.Z-jre8-jar-with-dependencies.jar` et 
+      `WaarpR66-X.Y.Z-jre11-jar-with-dependencies.jar`
+      situés dans `Waarp-All/WaarpR66/target`
+    - `WaarpAll-3.6.0-jre6-jar-with-dependencies.jar`,
+      `WaarpAll-3.6.0-jre8-jar-with-dependencies.jar` et
+      `WaarpAll-3.6.0-jre11-jar-with-dependencies.jar`
+      situés dans `Waarp-All/WaarpPackaging/target` et `Waarp-All/WaarpPackaging6/target` : 
+      **IMPORTANT : ce package remplace tous les autres jar**
+    - `waarp-all-3.6.0-jre6.deb`, `waarp-all-3.6.0-jre8.deb`
+      et `waarp-all-3.6.0-jre11.deb` situés dans `Waarp-All/WaarpPackaging/target`
+      et `Waarp-All/WaarpPackaging6/target`
+    - `waarp-all-3.6.0-jre6_1.noarch.rpm`, `waarp-all-3.6.0-jre8_1.noarch.rpm` et
+      `waarp-all-3.6.0-jre11_1.noarch.rpm` situés dans 
+      `Waarp-All/WaarpPackaging/target` et `Waarp-All/WaarpPackaging6/target`
+    - `waarp-all-3.6.0-jre6.linux.tar.gz`, 
+      `waarp-all-3.6.0-jre8.linux.tar.gz` et `waarp-all-3.6.0-jre11.linux.tar.gz`
+      situés dans `Waarp-All/WaarpPackaging/target` et `Waarp-All/WaarpPackaging6/target`
+    - `waarp-all-3.6.0-jre6.windows.zip`,
+      `waarp-all-3.6.0-jre8.windows.zip` et
+      `waarp-all-3.6.0-jre11.windows.zip` situés dans `Waarp-All/WaarpPackaging/target`
+      et `Waarp-All/WaarpPackaging6/target`
 - Publier
 
 

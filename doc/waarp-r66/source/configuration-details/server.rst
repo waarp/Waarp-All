@@ -357,7 +357,7 @@ roleid            string  O               Id d'un partenaire
 roleset           string  O               liste de rôles autorisés, séparés par un "blanc" ou un "|", parmi:  NOACCESS,READONLY,TRANSFER,RULE,HOST,LIMIT,SYSTEM,LOGCONTROL,PARTNER(READONLY,TRANSFER),CONFIGADMIN(PARTNER,RULE,HOST),FULLADMIN(CONFIGADMIN,LIMIT,SYSTEM,LOGCONTROL)
 ================= ======= ==== ========== =============
 
-.. _server-xml-alias:
+.. _server-xml-aliases:
 
 Section ``aliases``
 --------------------
@@ -394,7 +394,7 @@ extendedtaskfactories      String  N    vide      Liste (séparée par des virgu
 .. _server-xml-monitor:
 
 Section ``pushMonitor``
--------------------
+-----------------------
 
 Cette section décrit comment monitorer R66 via des appels REST HTTP(s) vers
 un serveur tiers (en mode PUSH).
@@ -409,27 +409,27 @@ un serveur tiers (en mode PUSH).
    les options spécifiques``index``, ``prefix``,  ``username``, ``paswd``  et
    ``compression`` sont liées à Elasticsearch en destination.
 
-===================== ======= ==== ========= =============
-Balise                Type    Obl. Défaut    Signification
-===================== ======= ==== ========= =============
+====================== ======= ==== ========= =============
+Balise                 Type    Obl. Défaut    Signification
+====================== ======= ==== ========= =============
 *Partie commune*
-url                   string  N    null      URL de base pour les exports du moniteur en mode POST HTTP(S) JSON
-delay                 integer N    1000      Délai entre deux vérifications de changement de statuts sur les transferts
-intervalincluded      boolean N    True      Si « True », les informations de l'intervalle utilisé seront fournies
-transformlongasstring boolean N    False     Si « True », les nombres « long » seront convertis en chaîne de caractères, sinon ils seront numériques
-token                 string  N    null      Spécifie si nécessaire le token  dans le cadre d'une authentification via Token
-apiKey                string  N    null      Spécifie si nécessaire le password dans le cadre d'une authentification via ApiKey (format ``apiId:apiKey``)
+url                    string  N    null      URL de base pour les exports du moniteur en mode POST HTTP(S) JSON
+delay                  integer N    1000      Délai entre deux vérifications de changement de statuts sur les transferts
+intervalincluded       boolean N    True      Si « True », les informations de l'intervalle utilisé seront fournies
+transformlongasstring  boolean N    False     Si « True », les nombres « long » seront convertis en chaîne de caractères, sinon ils seront numériques
+token                  string  N    null      Spécifie si nécessaire le token  dans le cadre d'une authentification via Token
+apiKey                 string  N    null      Spécifie si nécessaire le password dans le cadre d'une authentification via ApiKey (format ``apiId:apiKey``)
 *Partie API REST*
-endpoint              string  N    null      End point à ajouter à l'URL de base
-keepconnection        boolean N    True      Si « True », la connexion HTTP(S) sera en Keep-Alive (pas de réouverture sauf si le serveur la ferme), sinon la connexion sera réinitialisée pour chaque appel
-basicAuthent          string  N    null      Spécifie si nécessaire l'authentification basique
+endpoint               string  N    null      End point à ajouter à l'URL de base
+keepconnection         boolean N    True      Si « True », la connexion HTTP(S) sera en Keep-Alive (pas de réouverture sauf si le serveur la ferme), sinon la connexion sera réinitialisée pour chaque appel
+basicAuthent           string  N    null      Spécifie si nécessaire l'authentification basique
 *Partie Elasticsearch*
-index                 string  N    null      Contient le nom de l'index avec de possibles substitutions, dont ``%%WARPHOST%%`` pour le nom du host concerné, et les ``%%DATETIME%%``, ``%%DATEHOUR%%``, ``%%DATE%%``, ``%%YEARMONTH%%``, ``%%YEAR%%`` pour des substitutions de date et heure partiellement (``yyyy.MM.dd.HH.mm`` à ``yyyy``)
-prefix                string  N    null      Spécifie si nécessaire un prefix global dans le cas d'usage d'un Proxy devant Elasticsearch
-username              string  N    null      Spécifie si nécessaire le username (et son password) dans le cadre d'une authentification basique
-paswd                 string  N    null      Spécifie si nécessaire le password dans le cadre d'une authentification basique
-compression           boolean N    True      Spécifie si les flux sont compressés (par défaut True)
-===================== ======= ==== ========= =============
+index                  string  N    null      Contient le nom de l'index avec de possibles substitutions, dont ``%%WARPHOST%%`` pour le nom du host concerné, et les ``%%DATETIME%%``, ``%%DATEHOUR%%``, ``%%DATE%%``, ``%%YEARMONTH%%``, ``%%YEAR%%`` pour des substitutions de date et heure partiellement (``yyyy.MM.dd.HH.mm`` à ``yyyy``)
+prefix                 string  N    null      Spécifie si nécessaire un prefix global dans le cas d'usage d'un Proxy devant Elasticsearch
+username               string  N    null      Spécifie si nécessaire le username (et son password) dans le cadre d'une authentification basique
+paswd                  string  N    null      Spécifie si nécessaire le password dans le cadre d'une authentification basique
+compression            boolean N    True      Spécifie si les flux sont compressés (par défaut True)
+====================== ======= ==== ========= =============
 
 .. seealso::
 
