@@ -226,6 +226,9 @@ public class TransferActions extends ServerActions {
                  "runner said {} and session said {} but will changed",
                  Configuration.configuration.getHostId(), isRetrieve,
                  packet.isRetrieve(), runner.isSender(), session.isSender());
+    session.setCompressionEnabled(session.isCompressionEnabled() && AbstractTask
+        .isCompressionRequested(runner.getFileInformation()));
+    runner.setBlockCompression(session.isCompressionEnabled());
     boolean shouldInformBack = false;
     try {
       session.setRunner(runner);

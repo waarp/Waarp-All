@@ -26,6 +26,7 @@ import org.waarp.common.database.exception.WaarpDatabaseSqlException;
 import org.waarp.common.json.JsonHandler;
 import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.utility.ParametersChecker;
+import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.openr66.pojo.Host;
 import org.waarp.openr66.protocol.http.restv2.errors.RestError;
 import org.waarp.openr66.protocol.http.restv2.errors.RestErrorException;
@@ -272,7 +273,8 @@ public final class HostConverter {
    */
   private static byte[] encryptPassword(final String password) {
     try {
-      return configuration.getCryptoKey().cryptToHex(password).getBytes();
+      return configuration.getCryptoKey().cryptToHex(password)
+                          .getBytes(WaarpStringUtils.UTF8);
     } catch (final Exception e) {
       throw new InternalServerErrorException(
           "Failed to encrypt the host password", e);

@@ -32,6 +32,7 @@ import org.waarp.common.logging.WaarpLogLevel;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
 import org.waarp.common.utility.TestWatcherJunit4;
+import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.common.utility.WaarpSystemUtil;
 
 import static org.junit.Assert.*;
@@ -73,7 +74,7 @@ public class HttpSessionsTest {
                               filename, relativePath);
     authent = new HttpAuthentDefaultExtended();
     authent.setUser("user");
-    authent.setKey("key".getBytes());
+    authent.setKey("key".getBytes(WaarpStringUtils.UTF8));
   }
 
   @After

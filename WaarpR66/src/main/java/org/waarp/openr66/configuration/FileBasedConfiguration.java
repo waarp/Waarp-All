@@ -869,6 +869,15 @@ public class FileBasedConfiguration {
   private static boolean alreadySetLimit;
 
   /**
+   * Mainly for Junit
+   */
+  public static void resetAlreadySetLimit() {
+    alreadySetLimit = false;
+    // Clear Partner
+    Configuration.configuration.getVersions().clear();
+  }
+
+  /**
    * @param config
    * @param updateLimit
    *
@@ -946,6 +955,9 @@ public class FileBasedConfiguration {
         config.setLocalDigest(value.getBoolean());
       }
       value = hashConfig.get(XML_COMPRESSION);
+      logger.debug("Compression {} {}", value != null && !value.isEmpty(),
+                   value != null && !value.isEmpty()? value.getBoolean() :
+                       false);
       if (value != null && !value.isEmpty()) {
         config.setCompressionAvailable(value.getBoolean());
       }

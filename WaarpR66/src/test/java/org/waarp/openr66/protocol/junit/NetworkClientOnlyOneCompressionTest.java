@@ -111,6 +111,7 @@ public class NetworkClientOnlyOneCompressionTest extends TestAbstract {
   @Rule(order = Integer.MIN_VALUE)
   public TestWatcher watchman = new TestWatcherJunit4();
 
+  private static final boolean SHOULD_COMPRESS = false;
 
   private static final int nbThread = 10;
   private static final ArrayList<DbTaskRunner> dbTaskRunners =
@@ -223,6 +224,33 @@ public class NetworkClientOnlyOneCompressionTest extends TestAbstract {
     tearDownAfterClassServer();
   }
 
+  private boolean isCheckCompressionOk(final DbTaskRunner taskRunner) {
+    if (taskRunner == null) {
+      return true;
+    }
+    try {
+      final DbTaskRunner taskRunner1 =
+          DbTaskRunner.reloadFromDatabase(taskRunner);
+      return SHOULD_COMPRESS == taskRunner1.isBlockCompression();
+    } catch (final WaarpDatabaseException e) {
+      logger.error(e.getMessage());
+      return true;
+    }
+  }
+
+  private void checkCompression(final DbTaskRunner taskRunner) {
+    if (taskRunner == null) {
+      return;
+    }
+    try {
+      final DbTaskRunner taskRunner1 =
+          DbTaskRunner.reloadFromDatabase(taskRunner);
+      assertEquals(SHOULD_COMPRESS, taskRunner1.isBlockCompression());
+    } catch (final WaarpDatabaseException e) {
+      fail(e.getMessage());
+    }
+  }
+
   @Test
   public void test2_PingPongPacket() throws WaarpDatabaseException {
     final DbHostAuth host = new DbHostAuth("hostb");
@@ -284,8 +312,8 @@ public class NetworkClientOnlyOneCompressionTest extends TestAbstract {
     final long time1 = System.currentTimeMillis();
     final TestProgressBarTransfer transaction =
         new TestProgressBarTransfer(future, "hostb", "testTaskBig.txt", "rule3",
-                                    "Test Send Small ProgressBar", true, 65536,
-                                    DbConstantR66.ILLEGALVALUE,
+                                    "Test Send Small ProgressBar #COMPRESS#",
+                                    true, 65536, DbConstantR66.ILLEGALVALUE,
                                     networkTransaction, 100);
     transaction.run();
     future.awaitOrInterruptible();
@@ -308,8 +336,8 @@ public class NetworkClientOnlyOneCompressionTest extends TestAbstract {
     R66Future future = new R66Future(true);
     TestRecvThroughClient transaction =
         new TestRecvThroughClient(future, handler, "hostb", "testTask.txt",
-                                  "rule6", "Test RecvThrough Small", true, 8192,
-                                  networkTransaction);
+                                  "rule6", "Test RecvThrough Small #COMPRESS#",
+                                  true, 8192, networkTransaction);
     long time1 = System.currentTimeMillis();
     transaction.run();
     future.awaitOrInterruptible();
@@ -326,8 +354,8 @@ public class NetworkClientOnlyOneCompressionTest extends TestAbstract {
     future = new R66Future(true);
     transaction =
         new TestRecvThroughClient(future, handler, "hostb", "testTaskBig.txt",
-                                  "rule6", "Test RecvThrough Big", true, 65536,
-                                  networkTransaction);
+                                  "rule6", "Test RecvThrough Big #COMPRESS#",
+                                  true, 65536, networkTransaction);
     time1 = System.currentTimeMillis();
     transaction.run();
     future.awaitOrInterruptible();
@@ -355,6 +383,8 @@ public class NetworkClientOnlyOneCompressionTest extends TestAbstract {
                         "no file") + " delay: " + delay + " kbps: " +
                     size * 8 / delay);
       }
+      // Check is compression correct
+      checkCompression(result.getRunner());
       // In case of success, delete the runner
       dbTaskRunners.add(result.getRunner());
     } else {
@@ -383,8 +413,8 @@ public class NetworkClientOnlyOneCompressionTest extends TestAbstract {
     R66Future future = new R66Future(true);
     TestSendThroughClient transaction =
         new TestSendThroughClient(future, "hostb", "testTask.txt", "rule5",
-                                  "Test SendThrough Small", true, 8192,
-                                  networkTransaction);
+                                  "Test SendThrough Small #COMPRESS#", true,
+                                  8192, networkTransaction);
     long time1 = System.currentTimeMillis();
     if (!transaction.initiateRequest()) {
       logger.error("Transfer in Error", future.getCause());
@@ -409,8 +439,8 @@ public class NetworkClientOnlyOneCompressionTest extends TestAbstract {
     future = new R66Future(true);
     transaction =
         new TestSendThroughClient(future, "hostb", "testTaskBig.txt", "rule5",
-                                  "Test SendThrough Big", true, 65536,
-                                  networkTransaction);
+                                  "Test SendThrough Big #COMPRESS#", true,
+                                  65536, networkTransaction);
     time1 = System.currentTimeMillis();
     if (!transaction.initiateRequest()) {
       logger.error("Transfer in Error", future.getCause());
@@ -446,8 +476,9 @@ public class NetworkClientOnlyOneCompressionTest extends TestAbstract {
       futures.add(future);
       final TestRecvThroughClient transaction =
           new TestRecvThroughClient(future, handler, "hostb", "testTask.txt",
-                                    "rule6", "Test Multiple RecvThrough", true,
-                                    8192, networkTransaction);
+                                    "rule6",
+                                    "Test Multiple RecvThrough #COMPRESS#",
+                                    true, 8192, networkTransaction);
       executorService.execute(transaction);
     }
     Thread.sleep(100);
@@ -456,6 +487,8 @@ public class NetworkClientOnlyOneCompressionTest extends TestAbstract {
       final R66Future future = futures.remove(0);
       future.awaitOrInterruptible();
       assertTrue(future.isSuccess());
+      // Check is compression correct
+      checkCompression(future.getRunner());
     }
     long timestop = System.currentTimeMillis();
     logger
@@ -476,7 +509,7 @@ public class NetworkClientOnlyOneCompressionTest extends TestAbstract {
       arrayFuture[i] = new R66Future(true);
       final TestTransferNoDb transaction =
           new TestTransferNoDb(arrayFuture[i], "hostb", "testTask.txt", "rule3",
-                               "Test SendDirect Small", true, 8192,
+                               "Test SendDirect Small #COMPRESS#", true, 8192,
                                DbConstantR66.ILLEGALVALUE, networkTransaction);
       executorService.execute(transaction);
     }
@@ -487,7 +520,8 @@ public class NetworkClientOnlyOneCompressionTest extends TestAbstract {
       if (arrayFuture[i].getRunner() != null) {
         dbTaskRunners.add(arrayFuture[i].getRunner());
       }
-      if (arrayFuture[i].isSuccess()) {
+      if (arrayFuture[i].isSuccess() &&
+          isCheckCompressionOk(arrayFuture[i].getRunner())) {
         success++;
       } else {
         error++;
@@ -510,7 +544,7 @@ public class NetworkClientOnlyOneCompressionTest extends TestAbstract {
     final long time1 = System.currentTimeMillis();
     final TestTransferNoDb transaction =
         new TestTransferNoDb(future, "hostb", "testTask.txt", "rule3compress",
-                             "Test SendDirect Compress", true, 8192,
+                             "Test SendDirect Compress #COMPRESS#", true, 8192,
                              DbConstantR66.ILLEGALVALUE, networkTransaction);
     transaction.run();
     int success = 0;
@@ -520,7 +554,7 @@ public class NetworkClientOnlyOneCompressionTest extends TestAbstract {
     if (future.getRunner() != null) {
       dbTaskRunners.add(future.getRunner());
     }
-    if (future.isSuccess()) {
+    if (future.isSuccess() && isCheckCompressionOk(future.getRunner())) {
       success++;
     } else {
       error++;
@@ -551,8 +585,9 @@ public class NetworkClientOnlyOneCompressionTest extends TestAbstract {
     final long time1 = System.currentTimeMillis();
     final TestTransferNoDb transaction =
         new TestTransferNoDb(future, "hostb", "testTask.txt", "retransfer",
-                             "Test SendDirect Retransfer", true, 8192,
-                             DbConstantR66.ILLEGALVALUE, networkTransaction);
+                             "Test SendDirect Retransfer #COMPRESS#", true,
+                             8192, DbConstantR66.ILLEGALVALUE,
+                             networkTransaction);
     transaction.run();
     int success = 0;
     int error = 0;
@@ -562,7 +597,7 @@ public class NetworkClientOnlyOneCompressionTest extends TestAbstract {
       followId = future.getRunner().getFollowId();
       dbTaskRunners.add(future.getRunner());
     }
-    if (future.isSuccess()) {
+    if (future.isSuccess() && isCheckCompressionOk(future.getRunner())) {
       success++;
     } else {
       error++;
@@ -634,8 +669,9 @@ public class NetworkClientOnlyOneCompressionTest extends TestAbstract {
     final long time1 = System.currentTimeMillis();
     final TestTransferNoDb transaction =
         new TestTransferNoDb(future, "hostb", "testTask.txt", "rule3",
-                             "Test SendDirect Retransfer -nofollow", true, 8192,
-                             DbConstantR66.ILLEGALVALUE, networkTransaction);
+                             "Test SendDirect Retransfer -nofollow #COMPRESS#",
+                             true, 8192, DbConstantR66.ILLEGALVALUE,
+                             networkTransaction);
     transaction.run();
     int success = 0;
     int error = 0;
@@ -645,7 +681,7 @@ public class NetworkClientOnlyOneCompressionTest extends TestAbstract {
       followId = future.getRunner().getFollowId();
       dbTaskRunners.add(future.getRunner());
     }
-    if (future.isSuccess()) {
+    if (future.isSuccess() && isCheckCompressionOk(future.getRunner())) {
       success++;
     } else {
       error++;
@@ -676,7 +712,7 @@ public class NetworkClientOnlyOneCompressionTest extends TestAbstract {
       arrayFuture[i] = new R66Future(true);
       final TestTransferNoDb transaction =
           new TestTransferNoDb(arrayFuture[i], "hostb", "testTask.txt", "rule3",
-                               "Test SendDirect Small", true,
+                               "Test SendDirect Small #COMPRESS#", true,
                                8192 * (i + 1) * 2, DbConstantR66.ILLEGALVALUE,
                                networkTransaction);
       transaction.run();
@@ -692,6 +728,7 @@ public class NetworkClientOnlyOneCompressionTest extends TestAbstract {
             arrayFuture[i].getRunner().getBlocksize() <= 8192 * (i + 1) * 2);
         assertTrue(arrayFuture[i].getRunner().getBlocksize() <=
                    Configuration.configuration.getBlockSize());
+        checkCompression(arrayFuture[i].getRunner());
         dbTaskRunners.add(arrayFuture[i].getRunner());
       }
       if (arrayFuture[i].isSuccess()) {
@@ -721,7 +758,7 @@ public class NetworkClientOnlyOneCompressionTest extends TestAbstract {
       final R66Future future = new R66Future(true);
       final TestTransferNoDb transaction =
           new TestTransferNoDb(future, "hostb", "testTask.txt", "rule3",
-                               "Test SendDirect Small", true, 8192,
+                               "Test SendDirect Small #COMPRESS#", true, 8192,
                                DbConstantR66.ILLEGALVALUE, networkTransaction);
       transaction.run();
       future.awaitOrInterruptible();
@@ -729,7 +766,7 @@ public class NetworkClientOnlyOneCompressionTest extends TestAbstract {
         dbTaskRunners.add(future.getRunner());
         specialId = future.getRunner().getSpecialId();
       }
-      if (future.isSuccess()) {
+      if (future.isSuccess() && isCheckCompressionOk(future.getRunner())) {
         success++;
         logger.warn("Success for first transfer");
       } else {
@@ -750,7 +787,7 @@ public class NetworkClientOnlyOneCompressionTest extends TestAbstract {
       logger.warn("Start second submit transfer");
       SubmitTransfer submitTransfer =
           new SubmitTransfer(future2, "hostb", localFilename, rule,
-                             "Test Send 2 Submit Small", true, 8192,
+                             "Test Send 2 Submit Small #COMPRESS#", true, 8192,
                              DbConstantR66.ILLEGALVALUE, newstart);
       logger.warn("Running second submit transfer");
       submitTransfer.run();
@@ -799,7 +836,12 @@ public class NetworkClientOnlyOneCompressionTest extends TestAbstract {
       try {
         DbTaskRunner checkedRunner = DbTaskRunner.reloadFromDatabase(runner);
         if (checkedRunner.isAllDone()) {
-          logger.warn("DbTaskRunner done");
+          logger.info("DbTaskRunner done");
+          if (!isCheckCompressionOk(checkedRunner)) {
+            logger.error("DbTaskRunner in error for compression");
+            fail("Compression shall be " + SHOULD_COMPRESS + " but is " +
+                 checkedRunner.isBlockCompression());
+          }
           return;
         } else if (checkedRunner.isInError()) {
           logger.error("DbTaskRunner in error");
@@ -824,7 +866,7 @@ public class NetworkClientOnlyOneCompressionTest extends TestAbstract {
     final long time1 = System.currentTimeMillis();
     final TestTransferNoDb transaction =
         new TestTransferNoDb(future, "hostfake", "testTask.txt", "rule3",
-                             "Test SendDirect Small", true, 8192,
+                             "Test SendDirect Small #COMPRESS#", true, 8192,
                              DbConstantR66.ILLEGALVALUE, networkTransaction);
     transaction.run();
     int success = 0;
@@ -860,7 +902,7 @@ public class NetworkClientOnlyOneCompressionTest extends TestAbstract {
     final long time1 = System.currentTimeMillis();
     final TestTransferNoDb transaction =
         new TestTransferNoDb(future, "hostb", "testTask.txt", "rulewrongexec",
-                             "Test SendDirect Small", true, 8192,
+                             "Test SendDirect Small #COMPRESS#", true, 8192,
                              DbConstantR66.ILLEGALVALUE, networkTransaction);
     transaction.run();
     int success = 0;
@@ -891,7 +933,7 @@ public class NetworkClientOnlyOneCompressionTest extends TestAbstract {
     final long time1 = System.currentTimeMillis();
     final TestTransferNoDb transaction =
         new TestTransferNoDb(future, "hostunknowns", "testTask.txt", "rule3",
-                             "Test SendDirect Small", true, 8192,
+                             "Test SendDirect Small #COMPRESS#", true, 8192,
                              DbConstantR66.ILLEGALVALUE, networkTransaction);
     transaction.run();
     int success = 0;
@@ -921,7 +963,7 @@ public class NetworkClientOnlyOneCompressionTest extends TestAbstract {
     final long time1 = System.currentTimeMillis();
     final TestTransferNoDb transaction =
         new TestTransferNoDb(future, "hostb", "testTaskNotExists.txt", "rule4",
-                             "Test RecvDirect Small", true, 8192,
+                             "Test RecvDirect Small #COMPRESS#", true, 8192,
                              DbConstantR66.ILLEGALVALUE, networkTransaction);
     transaction.run();
     int success = 0;
@@ -956,7 +998,7 @@ public class NetworkClientOnlyOneCompressionTest extends TestAbstract {
           new Timestamp(System.currentTimeMillis() + i * 10);
       final SubmitTransfer transaction =
           new SubmitTransfer(arrayFuture[i], "hostb", "testTask.txt", "rule3",
-                             "Test Send Submit Small", true, 8192,
+                             "Test Send Submit Small #COMPRESS#", true, 8192,
                              DbConstantR66.ILLEGALVALUE, newstart);
       transaction.run();
     }
@@ -1002,8 +1044,8 @@ public class NetworkClientOnlyOneCompressionTest extends TestAbstract {
     final long time1 = System.currentTimeMillis();
     final TestTransferNoDb transaction =
         new TestTransferNoDb(future, "hostb", "testTaskBig.txt", "rule3",
-                             "Test SendDirect Big With Traffic Shaping", true,
-                             8192, DbConstantR66.ILLEGALVALUE,
+                             "Test SendDirect Big With Traffic Shaping #COMPRESS#",
+                             true, 8192, DbConstantR66.ILLEGALVALUE,
                              networkTransaction);
     transaction.run();
     future.awaitOrInterruptible();
@@ -1031,8 +1073,8 @@ public class NetworkClientOnlyOneCompressionTest extends TestAbstract {
     final long time1 = System.currentTimeMillis();
     final TestTransferNoDb transaction =
         new TestTransferNoDb(future, "hostb", "testTaskBig.txt", "rule4",
-                             "Test RecvDirect Big With Traffic Shaping", true,
-                             8192, DbConstantR66.ILLEGALVALUE,
+                             "Test RecvDirect Big With Traffic Shaping #COMPRESS#",
+                             true, 8192, DbConstantR66.ILLEGALVALUE,
                              networkTransaction);
     transaction.run();
     future.awaitOrInterruptible();
@@ -1197,7 +1239,7 @@ public class NetworkClientOnlyOneCompressionTest extends TestAbstract {
       logger.warn("Start Test of DirectTransfer with Icap");
       final TestTransferNoDb transaction =
           new TestTransferNoDb(future, "hostb", "testTask.txt", "rule3icap",
-                               "Test SendDirect Small", true, 8192,
+                               "Test SendDirect Small #COMPRESS#", true, 8192,
                                DbConstantR66.ILLEGALVALUE, networkTransaction);
       transaction.run();
       future.awaitOrInterruptible();
@@ -1205,7 +1247,7 @@ public class NetworkClientOnlyOneCompressionTest extends TestAbstract {
       if (future.getRunner() != null) {
         runner = future.getRunner();
       }
-      if (future.isSuccess()) {
+      if (future.isSuccess() && isCheckCompressionOk(runner)) {
         success++;
       } else {
         error++;
@@ -1290,7 +1332,7 @@ public class NetworkClientOnlyOneCompressionTest extends TestAbstract {
     final R66Future futureTransfer = new R66Future(true);
     final TestTransferNoDb transaction =
         new TestTransferNoDb(futureTransfer, "hostb", "testTask.txt", "rule3",
-                             "Test SendDirect Small", true, 8192,
+                             "Test SendDirect Small #COMPRESS#", true, 8192,
                              DbConstantR66.ILLEGALVALUE, networkTransaction);
     transaction.run();
     futureTransfer.awaitOrInterruptible();
@@ -1362,7 +1404,7 @@ public class NetworkClientOnlyOneCompressionTest extends TestAbstract {
     final R66Future futureTransfer = new R66Future(true);
     final TestTransferNoDb transaction =
         new TestTransferNoDb(futureTransfer, "hostb", "testTask.txt", "rule3",
-                             "Test SendDirect Small", true, 8192,
+                             "Test SendDirect Small #COMPRESS#", true, 8192,
                              DbConstantR66.ILLEGALVALUE, networkTransaction);
     transaction.run();
     futureTransfer.awaitOrInterruptible();
@@ -1432,11 +1474,13 @@ public class NetworkClientOnlyOneCompressionTest extends TestAbstract {
     final R66Future futureTransfer = new R66Future(true);
     final TestTransferNoDb transaction =
         new TestTransferNoDb(futureTransfer, "hostb", "testTask.txt", "rule3",
-                             "Test SendDirect Small", true, 8192,
+                             "Test SendDirect Small #COMPRESS#", true, 8192,
                              DbConstantR66.ILLEGALVALUE, networkTransaction);
     transaction.run();
     futureTransfer.awaitOrInterruptible();
-    assertTrue("File transfer not ok", futureTransfer.isSuccess());
+    assertTrue("File transfer not ok", futureTransfer.isSuccess() &&
+                                       isCheckCompressionOk(
+                                           futureTransfer.getRunner()));
     final long id = futureTransfer.getRunner().getSpecialId();
     logger.warn("Remote Task: {}", id);
 
@@ -1446,8 +1490,8 @@ public class NetworkClientOnlyOneCompressionTest extends TestAbstract {
     final MultipleDirectTransfer multipleDirectTransfer =
         new MultipleDirectTransfer(future, "hostb,hostb",
                                    "testTask.txt,testTask.txt", "rule3",
-                                   "MultipleDirectTransfer", true, 1024,
-                                   DbConstantR66.ILLEGALVALUE,
+                                   "MultipleDirectTransfer #COMPRESS#", true,
+                                   1024, DbConstantR66.ILLEGALVALUE,
                                    networkTransaction);
     multipleDirectTransfer.run();
     future.awaitOrInterruptible();
@@ -1487,8 +1531,8 @@ public class NetworkClientOnlyOneCompressionTest extends TestAbstract {
     File file = generateOutFile("/tmp/R66/out/testTask.txt", 10);
     final MultipleSubmitTransfer multipleSubmitTransfer =
         new MultipleSubmitTransfer(future, "hostb", "/tmp/R66/out/testTask.txt",
-                                   "rule3", "Multiple Submit", true, 1024,
-                                   DbConstantR66.ILLEGALVALUE, null,
+                                   "rule3", "Multiple Submit #COMPRESS#", true,
+                                   1024, DbConstantR66.ILLEGALVALUE, null,
                                    networkTransaction);
     multipleSubmitTransfer.run();
     future.awaitOrInterruptible();
@@ -1608,7 +1652,7 @@ public class NetworkClientOnlyOneCompressionTest extends TestAbstract {
       arguments.setStatusFile("/tmp/R66/test/statusoutdirect1.json");
       arguments.setStopFile(TMP_R_66_TEST_STOPOUT_TXT);
       arguments.setRule("rule3del");
-      arguments.setFileInfo("fileInfo");
+      arguments.setFileInfo("fileInfo #COMPRESS#");
       arguments.setMd5(true);
       arguments.getRemoteHosts().add(host);
       if (waarpHost != null) {

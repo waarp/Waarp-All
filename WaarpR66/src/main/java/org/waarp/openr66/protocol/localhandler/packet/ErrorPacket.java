@@ -22,6 +22,7 @@ package org.waarp.openr66.protocol.localhandler.packet;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import org.waarp.common.utility.WaarpNettyUtil;
+import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
 import org.waarp.openr66.protocol.localhandler.LocalChannelReference;
 
@@ -71,7 +72,8 @@ public class ErrorPacket extends AbstractLocalPacket {
     if (endLength != 4) {
       throw new OpenR66ProtocolPacketException("Packet not correct");
     }
-    return new ErrorPacket(new String(bheader), new String(bmiddle),
+    return new ErrorPacket(new String(bheader, WaarpStringUtils.UTF8),
+                           new String(bmiddle, WaarpStringUtils.UTF8),
                            buf.readInt());
   }
 
@@ -95,10 +97,10 @@ public class ErrorPacket extends AbstractLocalPacket {
   public void createAllBuffers(final LocalChannelReference lcr,
                                final int networkHeader) {
     final byte[] headerBytes =
-        sheader != null? sheader.getBytes() : EMPTY_ARRAY;
+        sheader != null? sheader.getBytes(WaarpStringUtils.UTF8) : EMPTY_ARRAY;
     final int headerSize = headerBytes.length;
     final byte[] middleBytes =
-        smiddle != null? smiddle.getBytes() : EMPTY_ARRAY;
+        smiddle != null? smiddle.getBytes(WaarpStringUtils.UTF8) : EMPTY_ARRAY;
     final int middleSize = middleBytes.length;
     final int endSize = 4;
     final int globalSize =

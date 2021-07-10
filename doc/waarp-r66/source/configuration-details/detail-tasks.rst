@@ -5,6 +5,13 @@ Type de Task
 Format général d'une tâche
 --------------------------
 
+.. versionadded:: 3.6.0
+
+   Ajout de l'option ``#COMPRESS#`` qui, avec la configuration du serveur ``compression`` à Vrai,
+   permet de compresser un transfert en accord avec le partenaire (qui peut ne pas supporter la
+   compression et donc celle-ci sera non activée pour ce transfert).
+
+
 Une tâche est définie selon un format unifié XML :
 
 .. code-block:: xml
@@ -56,6 +63,9 @@ Une tâche est définie selon un format unifié XML :
   - ``#LOCALEXEC#`` : Utilisé par la tâche EXEC pour spécifier que la commande est à exécuter de manière
     distante (pas dans la JVM courante) mais au travers d'un démon ``LocalExec`` (spécifié dans la
     configuration globale
+  - ``COMPRESS`` : Utilisé en complément de l'option ``compression`` dans la configuration du serveur
+    pour indiquer la demande de pouvoire compresser par bloc un transfert (si le partenaire ne dispose
+    pas de l'option de compression, cela sera refusé).
 
 Par exemple, un ``Path`` défini comme :
 ``some #DATE# some2 #TRANSFERID# some3 #REMOTEHOST# some4``

@@ -352,7 +352,9 @@ public class HttpTestRestR66Client implements Runnable {
             AbstractDbDataDao dbData;
             dbData = new DbHostAuth(hostid + rank, address,
                                     HttpTestR66PseudoMain.config.getRestPort(),
-                                    false, hostkey.getBytes(), true, false);
+                                    false,
+                                    hostkey.getBytes(WaarpStringUtils.UTF8),
+                                    true, false);
             logger.warn("Send query: " + RESTHANDLERS.DbHostAuth.uri);
             final RestFuture future = clientHelper
                 .sendQuery(HttpTestR66PseudoMain.config, channel,
@@ -1061,7 +1063,8 @@ public class HttpTestRestR66Client implements Runnable {
         try {
           return new DbHostAuth(hostid + rank, address,
                                 HttpTestR66PseudoMain.config.getRestPort(),
-                                false, hostkey.getBytes(), false, false);
+                                false, hostkey.getBytes(WaarpStringUtils.UTF8),
+                                false, false);
         } catch (WaarpDatabaseSqlException e) {
           throw new HttpInvalidAuthenticationException(e);
         }

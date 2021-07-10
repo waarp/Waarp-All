@@ -238,9 +238,9 @@ public abstract class AbstractFtpClient {
     logger.warn(
         localFilename + ' ' + numberThread + ' ' + numberIteration + ' ' +
         type + " Real: " + (date2 - date1) + " OK: " + numberOK.get() +
-        " KO: " + numberKO.get() + " Trf/s: " +
-        numberOK.get() * 1000 / (date2 - date1));
-    assertEquals("No KO", 0, numberKO.get());
+        " KO: " + FtpClientTest.numberOK.get() + " Trf/s: " +
+        FtpClientTest.numberOK.get() * 1000 / (date2 - date1));
+    assertEquals("No KO", 0, FtpClientTest.numberKO.get());
   }
 
   public static void launchFtpClient(String server, int port, String username,

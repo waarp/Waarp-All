@@ -10,4 +10,5 @@ Démarage
    configuration
    configuration-sample
    initialisation
+   configuration-full.rst
    

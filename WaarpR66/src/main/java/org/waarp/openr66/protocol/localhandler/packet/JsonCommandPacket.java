@@ -24,6 +24,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import org.waarp.common.utility.WaarpNettyUtil;
+import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.openr66.protocol.localhandler.LocalChannelReference;
 import org.waarp.openr66.protocol.localhandler.packet.json.JsonPacket;
 
@@ -63,7 +64,8 @@ public class JsonCommandPacket extends AbstractLocalPacket {
       buf.readBytes(bmiddle);
     }
     bend = buf.readByte();
-    return new JsonCommandPacket(new String(bheader), new String(bmiddle),
+    return new JsonCommandPacket(new String(bheader, WaarpStringUtils.UTF8),
+                                 new String(bmiddle, WaarpStringUtils.UTF8),
                                  bend);
   }
 
@@ -110,9 +112,10 @@ public class JsonCommandPacket extends AbstractLocalPacket {
   public void createAllBuffers(final LocalChannelReference lcr,
                                final int networkHeader) {
     final byte[] headerBytes =
-        request != null? request.getBytes() : EMPTY_ARRAY;
+        request != null? request.getBytes(WaarpStringUtils.UTF8) : EMPTY_ARRAY;
     final int headerSize = headerBytes.length;
-    final byte[] middleBytes = result != null? result.getBytes() : EMPTY_ARRAY;
+    final byte[] middleBytes =
+        result != null? result.getBytes(WaarpStringUtils.UTF8) : EMPTY_ARRAY;
     final int middleSize = middleBytes.length;
     final int endSize = 1;
     final int globalSize =

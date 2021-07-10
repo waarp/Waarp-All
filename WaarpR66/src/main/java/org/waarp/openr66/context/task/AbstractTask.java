@@ -190,6 +190,12 @@ public abstract class AbstractTask implements Runnable {
    * LocalExec)
    */
   public static final String LOCALEXEC = "#LOCALEXEC#";
+  /**
+   * If specified, and if the partner allows Compression (from 3.6.0 and
+   * if compression is enabled), this will allow one transfer through
+   * TransferInformation to use compression by block.
+   */
+  public static final String COMPRESS = "#COMPRESS#";
 
   /**
    * Type of operation
@@ -280,6 +286,20 @@ public abstract class AbstractTask implements Runnable {
   }
 
   /**
+   * @param arg
+   *
+   * @return True if the argument contains #COMPRESS# and if the current host
+   *     allow compression
+   */
+  public static boolean isCompressionRequested(final String arg) {
+    logger.debug("isCompEnabled {} {}",
+                 Configuration.configuration.isCompressionAvailable(),
+                 arg.contains(COMPRESS));
+    return Configuration.configuration.isCompressionAvailable() &&
+           arg.contains(COMPRESS);
+  }
+
+  /**
    * @param arg as the Format string where FIXED items will be
    *     replaced by
    *     context values and next using
@@ -295,7 +315,7 @@ public abstract class AbstractTask implements Runnable {
   protected String getReplacedValue(final String arg,
                                     final Object[] argFormat) {
     final StringBuilder builder = new StringBuilder(arg);
-    // check NOWAIT and LOCALEXEC
+    // check NOWAIT and LOCALEXEC and COMPRESS
     if (arg.contains(NOWAIT)) {
       waitForValidation = false;
       WaarpStringUtils.replaceAll(builder, NOWAIT, "");
@@ -303,6 +323,9 @@ public abstract class AbstractTask implements Runnable {
     if (arg.contains(LOCALEXEC)) {
       useLocalExec = true;
       WaarpStringUtils.replaceAll(builder, LOCALEXEC, "");
+    }
+    if (arg.contains(COMPRESS)) {
+      WaarpStringUtils.replaceAll(builder, COMPRESS, "");
     }
     substituteFile(builder);
     final DbTaskRunner runner = substituteRunner(builder);
@@ -558,6 +581,9 @@ public abstract class AbstractTask implements Runnable {
         "");
     rv.put(COMPILE_HASH.matcher(LOCALEXEC)
                        .replaceAll(Matcher.quoteReplacement("")), "");
+    rv.put(
+        COMPILE_HASH.matcher(COMPRESS).replaceAll(Matcher.quoteReplacement("")),
+        "");
 
     substituteFile(rv);
 

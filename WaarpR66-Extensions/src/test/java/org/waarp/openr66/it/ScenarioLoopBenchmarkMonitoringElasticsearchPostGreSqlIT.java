@@ -215,8 +215,12 @@ public class ScenarioLoopBenchmarkMonitoringElasticsearchPostGreSqlIT
 
       @Override
       public void run() {
-        long numberEs = elasticsearchClient.countReferences("server1");
-        logger.warn("ES Contains {} items", numberEs);
+        try {
+          long numberEs = elasticsearchClient.countReferences("server1");
+          logger.warn("ES Contains {} items", numberEs);
+        } catch (final Exception e) {
+          // nothing
+        }
       }
     };
   }

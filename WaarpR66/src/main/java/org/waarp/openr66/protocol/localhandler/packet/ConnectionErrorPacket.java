@@ -23,6 +23,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.Unpooled;
 import org.waarp.common.utility.WaarpNettyUtil;
+import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.openr66.protocol.localhandler.LocalChannelReference;
 
 /**
@@ -56,7 +57,9 @@ public class ConnectionErrorPacket extends AbstractLocalPacket {
     if (middleLength > 0) {
       buf.readBytes(bmiddle);
     }
-    return new ConnectionErrorPacket(new String(bheader), new String(bmiddle));
+    return new ConnectionErrorPacket(new String(bheader, WaarpStringUtils.UTF8),
+                                     new String(bmiddle,
+                                                WaarpStringUtils.UTF8));
   }
 
   /**
@@ -78,10 +81,10 @@ public class ConnectionErrorPacket extends AbstractLocalPacket {
                                final int networkHeader) {
     end = Unpooled.EMPTY_BUFFER;
     final byte[] sheaderByte =
-        sheader != null? sheader.getBytes() : EMPTY_ARRAY;
+        sheader != null? sheader.getBytes(WaarpStringUtils.UTF8) : EMPTY_ARRAY;
     final int headerSize = sheaderByte.length;
     final byte[] smiddleByte =
-        smiddle != null? smiddle.getBytes() : EMPTY_ARRAY;
+        smiddle != null? smiddle.getBytes(WaarpStringUtils.UTF8) : EMPTY_ARRAY;
     final int middleSize = smiddleByte.length;
     final int globalSize =
         networkHeader + LOCAL_HEADER_SIZE + headerSize + middleSize;

@@ -22,7 +22,10 @@ package org.waarp.openr66.protocol.localhandler.packet;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import org.waarp.common.digest.FilesystemBasedDigest;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.utility.WaarpNettyUtil;
+import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.openr66.database.data.DbHostAuth;
 import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.configuration.PartnerConfiguration;
@@ -39,6 +42,9 @@ import org.waarp.openr66.protocol.utils.R66Versions;
  * version.{})
  */
 public class AuthentPacket extends AbstractLocalPacket {
+  private static final WaarpLogger logger =
+      WaarpLoggerFactory.getLogger(AuthentPacket.class);
+
   private static final String NOT_ENOUGH_DATA = "Not enough data";
 
   private static final byte ASKVALIDATE = 0;
@@ -92,9 +98,9 @@ public class AuthentPacket extends AbstractLocalPacket {
       // version
       final byte[] bversion = new byte[endLength - 5];
       buf.readBytes(bversion);
-      version = new String(bversion);
+      version = new String(bversion, WaarpStringUtils.UTF8);
     }
-    final String sheader = new String(bheader);
+    final String sheader = new String(bheader, WaarpStringUtils.UTF8);
     return new AuthentPacket(sheader, bmiddle, newId, valid, version);
   }
 
@@ -115,6 +121,7 @@ public class AuthentPacket extends AbstractLocalPacket {
     Configuration.configuration.getVersions().put(hostId,
                                                   new PartnerConfiguration(
                                                       hostId, version));
+    logger.debug("Receive version {}", version);
     this.version = version;
   }
 
@@ -135,6 +142,7 @@ public class AuthentPacket extends AbstractLocalPacket {
                                                                 hostId));
     }
     version = Configuration.configuration.getVersions().get(hostId).toString();
+    logger.debug("Will send version {}", version);
   }
 
   @Override
@@ -149,10 +157,11 @@ public class AuthentPacket extends AbstractLocalPacket {
     if (hostId == null || key == null) {
       throw new OpenR66ProtocolPacketException(NOT_ENOUGH_DATA);
     }
-    final byte[] hostIdByte = hostId.getBytes();
+    final byte[] hostIdByte = hostId.getBytes(WaarpStringUtils.UTF8);
     final int hostIdSize = hostIdByte.length;
     final int keySize = key.length;
-    final byte[] bversion = version != null? version.getBytes() : null;
+    final byte[] bversion =
+        version != null? version.getBytes(WaarpStringUtils.UTF8) : null;
     final int endSize = 5 + (version != null? bversion.length : 0);
     final int globalSize =
         networkHeader + hostIdSize + keySize + endSize + LOCAL_HEADER_SIZE;
@@ -231,6 +240,7 @@ public class AuthentPacket extends AbstractLocalPacket {
                                                                 hostId));
     }
     version = Configuration.configuration.getVersions().get(hostId).toString();
+    logger.debug("DEBUG validate version {}", version);
     clear();
   }
 }

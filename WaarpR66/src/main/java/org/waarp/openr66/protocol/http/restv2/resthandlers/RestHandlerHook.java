@@ -35,6 +35,7 @@ import org.waarp.common.role.RoleDefault;
 import org.waarp.common.role.RoleDefault.ROLE;
 import org.waarp.common.utility.BaseXx;
 import org.waarp.common.utility.ParametersChecker;
+import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.openr66.dao.DAOFactory;
 import org.waarp.openr66.dao.HostDAO;
 import org.waarp.openr66.dao.exception.DAOConnectionException;
@@ -302,8 +303,8 @@ public class RestHandlerHook implements HandlerHook {
     if (basicMatcher.find()) {
 
       final String[] credentials;
-      credentials =
-          new String(BaseXx.getFromBase64(basicMatcher.group(2))).split(":", 2);
+      credentials = new String(BaseXx.getFromBase64(basicMatcher.group(2)),
+                               WaarpStringUtils.UTF8).split(":", 2);
       if (credentials.length != 2) {
         throw new NotAllowedException(
             "Invalid header for Basic authentication.");
@@ -334,7 +335,8 @@ public class RestHandlerHook implements HandlerHook {
         throw new InternalServerErrorException(
             "An error occurred when encrypting the password", e);
       }
-      if (!Arrays.equals(host.getHostkey(), key.getBytes())) {
+      if (!Arrays
+          .equals(host.getHostkey(), key.getBytes(WaarpStringUtils.UTF8))) {
         throw new NotAllowedException("Invalid password.");
       }
 

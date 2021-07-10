@@ -44,6 +44,7 @@ import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
 import org.waarp.common.utility.TestWatcherJunit4;
 import org.waarp.common.utility.WaarpNettyUtil;
+import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.gateway.kernel.AbstractHttpField;
 import org.waarp.gateway.kernel.AbstractHttpField.FieldPosition;
 import org.waarp.gateway.kernel.AbstractHttpField.FieldRole;
@@ -84,7 +85,7 @@ public class HttpTest {
     ResourceLeakDetector.setLevel(Level.PARANOID);
     File pageFile = new File("/tmp/empty.txt");
     FileOutputStream outputStream = new FileOutputStream(pageFile);
-    outputStream.write("test".getBytes());
+    outputStream.write("test".getBytes(WaarpStringUtils.UTF8));
     outputStream.flush();
     outputStream.close();
     final EventLoopGroup workerGroup = new NioEventLoopGroup();

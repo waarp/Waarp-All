@@ -32,11 +32,10 @@
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    'sphinx.ext.todo',
     'sphinx.ext.ifconfig',
-    'sphinxcontrib.openapi',
-    'sphinxcontrib.httpdomain',
     'sphinx.ext.todo',
+    'sphinxcontrib.httpdomain',
+    'sphinxcontrib.openapi',
 ]
 
 # Add any paths that contain templates here, relative to this directory.

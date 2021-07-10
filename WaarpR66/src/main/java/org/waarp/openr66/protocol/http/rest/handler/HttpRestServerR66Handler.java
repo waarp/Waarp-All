@@ -28,6 +28,7 @@ import org.waarp.common.json.JsonHandler;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.utility.WaarpShutdownHook;
+import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.gateway.kernel.exception.HttpIncorrectRequestException;
 import org.waarp.gateway.kernel.exception.HttpInvalidAuthenticationException;
 import org.waarp.gateway.kernel.rest.DataModelRestMethodHandler.COMMAND_TYPE;
@@ -150,7 +151,7 @@ public class HttpRestServerR66Handler extends HttpRestAbstractR66Handler {
     if (methods.contains(METHOD.PUT)) {
       final ShutdownOrBlockJsonPacket node3 = new ShutdownOrBlockJsonPacket();
       node3.setComment("Shutdown Or Block request (PUT)");
-      node3.setKey("Key".getBytes());
+      node3.setKey("Key".getBytes(WaarpStringUtils.UTF8));
       final ObjectNode node2;
       final ArrayNode node1 = JsonHandler.createArrayNode();
       try {

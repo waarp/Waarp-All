@@ -23,6 +23,7 @@ package org.waarp.openr66.pojo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.waarp.common.database.exception.WaarpDatabaseSqlException;
+import org.waarp.common.utility.WaarpStringUtils;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -162,11 +163,11 @@ public class Host {
   @XmlElement(name = XML_AUTHENTICATION_KEY)
   @JsonIgnore
   public String getKey() {
-    return new String(hostkey);
+    return new String(hostkey, WaarpStringUtils.UTF8);
   }
 
   public void setKey(final String key) {
-    hostkey = key.getBytes();
+    hostkey = key.getBytes(WaarpStringUtils.UTF8);
   }
 
   public void setHostkey(final byte[] hostkey) {

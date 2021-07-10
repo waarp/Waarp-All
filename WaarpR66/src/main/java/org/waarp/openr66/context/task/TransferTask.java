@@ -108,17 +108,17 @@ public class TransferTask extends AbstractTask {
     }
     final TransferArgs transferArgs =
         TransferArgs.getParamsInternal(0, args, false);
+    final DbTaskRunner taskRunner = session.getRunner();
     if (transferArgs != null) {
       String copied = null;
       for (final String arg : args) {
         if ("-copyinfo".equalsIgnoreCase(arg)) {
-          copied = argTransfer;
+          copied = taskRunner.getFileInformation();
           break;
         }
       }
       // Force to get follow Id if present (and other elements from map) if
       // not already copied
-      final DbTaskRunner taskRunner = session.getRunner();
       final String follow = taskRunner.getFollowId();
       if (copied == null && ParametersChecker.isNotEmpty(follow) &&
           !transferArgs.getTransferInfo()

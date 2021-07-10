@@ -24,6 +24,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.waarp.common.utility.ParametersChecker;
+import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.openr66.dao.Filter;
 import org.waarp.openr66.dao.HostDAO;
 import org.waarp.openr66.dao.exception.DAOConnectionException;
@@ -235,7 +236,7 @@ public class XMLHostDAO implements HostDAO {
       } else if (node.getNodeName().equals(ADMINROLE_FIELD)) {
         res.setAdmin(Boolean.parseBoolean(node.getTextContent()));
       } else if (node.getNodeName().equals(HOSTKEY_FIELD)) {
-        res.setHostkey(node.getTextContent().getBytes());
+        res.setHostkey(node.getTextContent().getBytes(WaarpStringUtils.UTF8));
       }
     }
     return res;

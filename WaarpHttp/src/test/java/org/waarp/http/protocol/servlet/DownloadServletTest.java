@@ -299,7 +299,7 @@ public class DownloadServletTest extends TestAbstract {
     File file = new File("/tmp/R66/out/filename.txt");
     FileOutputStream outputStream = new FileOutputStream(file);
     String content = "File GET content downloaded";
-    outputStream.write(content.getBytes());
+    outputStream.write(content.getBytes(WaarpStringUtils.UTF8));
     outputStream.flush();
     outputStream.close();
 
@@ -347,7 +347,7 @@ public class DownloadServletTest extends TestAbstract {
     File file = new File("/tmp/R66/out/filename.txt");
     FileOutputStream outputStream = new FileOutputStream(file);
     String content = "File GET content downloaded";
-    outputStream.write(content.getBytes());
+    outputStream.write(content.getBytes(WaarpStringUtils.UTF8));
     outputStream.flush();
     outputStream.close();
 
@@ -424,7 +424,7 @@ public class DownloadServletTest extends TestAbstract {
     File file = new File("/tmp/R66/out/filename.txt");
     FileOutputStream outputStream = new FileOutputStream(file);
     String content = "File POST content downloaded";
-    outputStream.write(content.getBytes());
+    outputStream.write(content.getBytes(WaarpStringUtils.UTF8));
     outputStream.flush();
     outputStream.close();
     // Test GET

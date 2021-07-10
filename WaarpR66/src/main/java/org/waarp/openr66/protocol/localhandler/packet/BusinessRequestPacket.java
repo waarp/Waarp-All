@@ -22,6 +22,7 @@ package org.waarp.openr66.protocol.localhandler.packet;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import org.waarp.common.utility.WaarpNettyUtil;
+import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
 import org.waarp.openr66.protocol.localhandler.LocalChannelReference;
 
@@ -62,7 +63,8 @@ public class BusinessRequestPacket extends AbstractLocalPacket {
       throw new OpenR66ProtocolPacketException("Packet not correct");
     }
     final byte valid = buf.readByte();
-    return new BusinessRequestPacket(new String(bheader), delay, valid);
+    return new BusinessRequestPacket(new String(bheader, WaarpStringUtils.UTF8),
+                                     delay, valid);
   }
 
   public BusinessRequestPacket(final String header, final int delay,
@@ -86,7 +88,7 @@ public class BusinessRequestPacket extends AbstractLocalPacket {
   @Override
   public void createAllBuffers(final LocalChannelReference lcr,
                                final int networkHeader) {
-    final byte[] headerBytes = sheader.getBytes();
+    final byte[] headerBytes = sheader.getBytes(WaarpStringUtils.UTF8);
     final int headerSize = headerBytes.length;
     final int middleSize = 4;
     final int endSize = 1;

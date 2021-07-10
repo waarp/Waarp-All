@@ -448,8 +448,7 @@ public abstract class WaarpConstraintLimitHandler implements Runnable {
 
   /**
    * Check every delay if the current cpu usage needs to relax or to
-   * constraint
-   * the bandwidth
+   * constraint the bandwidth
    */
   @Override
   public void run() {
@@ -517,7 +516,7 @@ public abstract class WaarpConstraintLimitHandler implements Runnable {
         // reset to default limits
         final long newread = getReadLimit();
         final long newwrite = getWriteLimit();
-        logger.info("restore limit since CPU = {} {}:{}", curLA, newwrite,
+        logger.info("Restore limit since CPU = {} {}:{}", curLA, newwrite,
                     newread);
         handler.configure(newwrite, newread);
       } else {
@@ -525,9 +524,8 @@ public abstract class WaarpConstraintLimitHandler implements Runnable {
         newlimit = curLimits.getLast();
         final long newread = newlimit.read;
         final long newwrite = newlimit.write;
-        logger
-            .info("Set new upper limit since CPU = {} {}:{}", +curLA, newwrite,
-                  newread);
+        logger.info("Set new upper limit since CPU = {} {}:{}", curLA, newwrite,
+                    newread);
         handler.configure(newwrite, newread);
         // give extra payload to prevent a brutal return to normal
         nbSinceLastDecrease = PAYLOAD;

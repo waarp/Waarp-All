@@ -25,6 +25,7 @@ import org.junit.Test;
 import org.junit.rules.TestWatcher;
 import org.waarp.common.database.exception.WaarpDatabaseSqlException;
 import org.waarp.common.utility.TestWatcherJunit4;
+import org.waarp.common.utility.WaarpStringUtils;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -53,7 +54,7 @@ public class DbValueTest {
     DbValue valueL = new DbValue(0L);
     DbValue valueF = new DbValue((float) 0.1);
     DbValue valueD = new DbValue(0.1D);
-    DbValue valueA = new DbValue("string".getBytes());
+    DbValue valueA = new DbValue("string".getBytes(WaarpStringUtils.UTF8));
     DbValue valueDa = new DbValue(new Date(0));
     DbValue valueTm = new DbValue(new Timestamp(0));
     DbValue valueDaS = new DbValue(new java.sql.Date(0));
@@ -70,7 +71,8 @@ public class DbValueTest {
     DbValue valueL2 = new DbValue(0L, "L2");
     DbValue valueF2 = new DbValue((float) 0.1, "F2");
     DbValue valueD2 = new DbValue(0.1D, "F2");
-    DbValue valueA2 = new DbValue("string".getBytes(), "A2");
+    DbValue valueA2 =
+        new DbValue("string".getBytes(WaarpStringUtils.UTF8), "A2");
     DbValue valueDa2 = new DbValue(new Date(0), "Da2");
     DbValue valueTm2 = new DbValue(new Timestamp(0), "Ta2");
     DbValue valueDaS2 = new DbValue(new java.sql.Date(0), "DaS2");
@@ -173,7 +175,7 @@ public class DbValueTest {
     valueDaS.setValueFromString(valueDaS2.getValueAsString());
     File file = new File("/tmp/clob.txt");
     FileOutputStream outputStream = new FileOutputStream(file);
-    outputStream.write("content".getBytes());
+    outputStream.write("content".getBytes(WaarpStringUtils.UTF8));
     outputStream.flush();
     outputStream.close();
     valueClob.setValueFromString(file.getAbsolutePath());

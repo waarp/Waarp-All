@@ -26,6 +26,7 @@ import org.testcontainers.containers.JdbcDatabaseContainer;
 import org.waarp.common.database.exception.WaarpDatabaseSqlException;
 import org.waarp.common.utility.SingletonUtils;
 import org.waarp.common.utility.TestWatcherJunit4;
+import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.openr66.context.ErrorCode;
 import org.waarp.openr66.dao.BusinessDAO;
 import org.waarp.openr66.dao.DAOFactory;
@@ -163,16 +164,16 @@ public class DbXmlDAOTest extends DBAllDAOTest {
       dao.deleteAll();
       dao.insert(new Host("server1", "127.0.0.1", 6666,
                           "303465626439323336346235616136306332396630346461353132616361346265303639646336633661383432653235"
-                              .getBytes(), true, true, true, false, false,
-                          UpdatedInfo.valueOf(3)));
+                              .getBytes(WaarpStringUtils.UTF8), true, true,
+                          true, false, false, UpdatedInfo.valueOf(3)));
       dao.insert(new Host("server1-ssl", "127.0.0.1", 6666,
                           "303465626439323336346235616136306332396630346461353132616361346265303639646336633661383432653235"
-                              .getBytes(), true, false, false, false, true,
-                          UpdatedInfo.valueOf(0)));
+                              .getBytes(WaarpStringUtils.UTF8), true, false,
+                          false, false, true, UpdatedInfo.valueOf(0)));
       dao.insert(new Host("server2", "127.0.0.1", 6666,
                           "303465626439323336346235616136306332396630346461353132616361346265303639646336633661383432653235"
-                              .getBytes(), false, false, false, false, true,
-                          UpdatedInfo.valueOf(0)));
+                              .getBytes(WaarpStringUtils.UTF8), false, false,
+                          false, false, true, UpdatedInfo.valueOf(0)));
     }
 
     {
