@@ -23,6 +23,7 @@ import org.waarp.common.file.FileUtils;
 import org.waarp.common.logging.WaarpLogLevel;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.openr66.context.ErrorCode;
 import org.waarp.openr66.context.R66Session;
 
@@ -128,7 +129,7 @@ public class LogTask extends AbstractTask {
     try {
       final int len = args.length - 1;
       for (int i = 0; i < len; i++) {
-        outputStream.write(args[i].getBytes());
+        outputStream.write(args[i].getBytes(WaarpStringUtils.UTF8));
         outputStream.write(' ');
       }
       outputStream.write(' ');

@@ -24,6 +24,7 @@ import org.waarp.common.file.FileUtils;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.utility.ParametersChecker;
+import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.openr66.context.R66Session;
 import org.waarp.openr66.context.task.exception.OpenR66RunnerException;
 
@@ -72,7 +73,7 @@ public class UnzeroedFileTask extends AbstractTask {
       FileOutputStream out = null;
       try {
         out = new FileOutputStream(currentFile);
-        out.write(toWrite.getBytes());
+        out.write(toWrite.getBytes(WaarpStringUtils.UTF8));
         if (delay > 0) {
           if (delay > 1) {
             logger.warn("Unzeroed File: " + curpath + " from " + session);

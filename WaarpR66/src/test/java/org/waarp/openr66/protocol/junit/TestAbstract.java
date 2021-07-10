@@ -329,6 +329,7 @@ public abstract class TestAbstract extends TestAbstractMinimal {
       Configuration.configuration.setTimeoutCon(100);
       logger.warn("Init Done");
       if (start) {
+        FileBasedConfiguration.resetAlreadySetLimit();
         final File file2;
         if (serverConfig.startsWith("/")) {
           file2 = new File(serverConfig);

@@ -458,8 +458,8 @@ public abstract class ScenarioBaseLoopBenchmark extends TestAbstract {
 
       final SubmitTransfer transaction =
           new SubmitTransfer(future, serverName, "hello" + size, ruleName,
-                             "Test Loop Send " + size, true, BLOCK_SIZE,
-                             DbConstantR66.ILLEGALVALUE, null);
+                             "Test Loop Send " + size + " #COMPRESS#", true,
+                             BLOCK_SIZE, DbConstantR66.ILLEGALVALUE, null);
       TransferArgs.forceAnalyzeFollow(transaction);
       transaction.setNormalInfoAsWarn(false);
       transaction.run();

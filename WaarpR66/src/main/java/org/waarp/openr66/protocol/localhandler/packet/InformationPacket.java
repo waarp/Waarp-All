@@ -22,6 +22,7 @@ package org.waarp.openr66.protocol.localhandler.packet;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import org.waarp.common.utility.WaarpNettyUtil;
+import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
 import org.waarp.openr66.protocol.localhandler.LocalChannelReference;
 
@@ -72,8 +73,8 @@ public class InformationPacket extends AbstractLocalPacket {
     if (endLength > 0) {
       buf.readBytes(bend);
     }
-    final String sheader = new String(bheader);
-    final String send = new String(bend);
+    final String sheader = new String(bheader, WaarpStringUtils.UTF8);
+    final String send = new String(bend, WaarpStringUtils.UTF8);
     return new InformationPacket(sheader, request, send);
   }
 
@@ -101,10 +102,12 @@ public class InformationPacket extends AbstractLocalPacket {
     if (rulename == null) {
       throw new OpenR66ProtocolPacketException(NOT_ENOUGH_DATA);
     }
-    final byte[] headerBytes = rulename.getBytes();
+    final byte[] headerBytes = rulename.getBytes(WaarpStringUtils.UTF8);
     final int headerSize = headerBytes.length;
     final int middleSize = 1;
-    final byte[] endBytes = filename != null? filename.getBytes() : EMPTY_ARRAY;
+    final byte[] endBytes =
+        filename != null? filename.getBytes(WaarpStringUtils.UTF8) :
+            EMPTY_ARRAY;
     final int endSize = endBytes.length;
     final int globalSize =
         networkHeader + LOCAL_HEADER_SIZE + headerSize + middleSize + endSize;

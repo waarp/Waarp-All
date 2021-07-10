@@ -374,8 +374,9 @@ public class R66Session implements SessionInterface {
    * @param compressionEnabled True if compression is enabled in this session
    */
   public void setCompressionEnabled(final boolean compressionEnabled) {
+    logger.debug("Compression enabled? {} => {}", isCompressionEnabled,
+                 compressionEnabled);
     isCompressionEnabled = compressionEnabled;
-    logger.debug("Compression enabled? {}", compressionEnabled);
   }
 
   /**

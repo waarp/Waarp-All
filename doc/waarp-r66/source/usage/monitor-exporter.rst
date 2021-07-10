@@ -20,44 +20,44 @@ Seuls les transferts ayant subi un changement sont envoyés.
 
 Le format du JSON est comme suit :
 
-.. code-block:: json
+.. code-block::
 
-  {
-    "results": [                            # Array of Transfer information
-      {
-        "specialId": 12345,                     # Id as Long (-2^63 to 2^63 - 1)
-        "uniqueId": "owner.requester.requested.specialId", # Unique global Id
-        "hostId": "R66Owner",                   # R66 Owner (Server name)
-        "globalStep": "step",                   # Global Current Step
-        "globalLastStep": "laststep",           # Global Last Step previous Current
-        "step": 1,                              # Current Step in Global Current Step
-        "rank": 123,                            # Current Rank in transfer step
-        "status": "status",                     # Current status
-        "stepStatus": "stepstatus",             # Status of previous Step
-        "originalFilename": "originalFilename", # Original Filename
-        "originalSize": 123456,                 # Original file size
-        "filename": "filename",                 # Resolved local filename
-        "ruleName": "ruleName",                 # Rule name
-        "blockSize": 123,                       # Block size during transfer
-        "fileInfo": "fileInfo",                 # File information, containing associated file transfer information
-        "followId": 123456,                     # Follow Id as Long (-2^63 to 2^63 - 1)
-        "transferInfo": "transferInfo as Json", # Transfer internal information as Json String
-        "start": "2021-03-28T11:55:15Z",        # Start date time of the transfer operation
-        "stop": "2021-03-28T11:58:32Z",         # Current last date time event of the transfer operation
-        "requested": "requested",               # Requested R66 hostname
-        "requester": "requester",               # Requester R66 hostname
-        "retrieve": true,                       # True if the request is a Pull, False if it is a Push
-        "errorCode": "errorCode",               # Code of error as one char
-        "errorMessage": "errorMessage",         # String message of current Error
-        "waarpMonitor": {                       # Extra information for indexing if necessary
-          "from": "2021-03-28T11:58:15Z",       # filter from (could be empty if none)
-          "to": "2021-03-28T11:59:15Z",         # filter to
-          "index": "r66owner"                   # R66 Hostname lowercase
-        }
-      },
-      ...
-    ]
-  }
+    {
+      "results": [                            # Array of Transfer information
+        {
+          "specialId": 12345,                     # Id as Long (-2^63 to 2^63 - 1)
+          "uniqueId": "owner.requester.requested.specialId", # Unique global Id
+          "hostId": "R66Owner",                   # R66 Owner (Server name)
+          "globalStep": "step",                   # Global Current Step
+          "globalLastStep": "laststep",           # Global Last Step previous Current
+          "step": 1,                              # Current Step in Global Current Step
+          "rank": 123,                            # Current Rank in transfer step
+          "status": "status",                     # Current status
+          "stepStatus": "stepstatus",             # Status of previous Step
+          "originalFilename": "originalFilename", # Original Filename
+          "originalSize": 123456,                 # Original file size
+          "filename": "filename",                 # Resolved local filename
+          "ruleName": "ruleName",                 # Rule name
+          "blockSize": 123,                       # Block size during transfer
+          "fileInfo": "fileInfo",                 # File information, containing associated file transfer information
+          "followId": 123456,                     # Follow Id as Long (-2^63 to 2^63 - 1)
+          "transferInfo": "transferInfo as Json", # Transfer internal information as Json String
+          "start": "2021-03-28T11:55:15Z",        # Start date time of the transfer operation
+          "stop": "2021-03-28T11:58:32Z",         # Current last date time event of the transfer operation
+          "requested": "requested",               # Requested R66 hostname
+          "requester": "requester",               # Requester R66 hostname
+          "retrieve": true,                       # True if the request is a Pull, False if it is a Push
+          "errorCode": "errorCode",               # Code of error as one char
+          "errorMessage": "errorMessage",         # String message of current Error
+          "waarpMonitor": {                       # Extra information for indexing if necessary
+            "from": "2021-03-28T11:58:15Z",       # filter from (could be empty if none)
+            "to": "2021-03-28T11:59:15Z",         # filter to
+            "index": "r66owner"                   # R66 Hostname lowercase
+          }
+        },
+        ...
+      ]
+    }
 
 
 Configuration

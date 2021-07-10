@@ -125,20 +125,24 @@ public class ScenarioLoopBenchmarkMonitoringS3PostGreSqlIT
 
       @Override
       public void run() {
-        Iterator<String> iterator = null;
         try {
-          iterator = client.listObjectsFromBucket(BUCKET, null, true, 0);
-        } catch (OpenR66ProtocolNetworkException e) {
-          logger.warn(e);
-          return;
+          Iterator<String> iterator = null;
+          try {
+            iterator = client.listObjectsFromBucket(BUCKET, null, true, 0);
+          } catch (OpenR66ProtocolNetworkException e) {
+            logger.warn(e);
+            return;
+          }
+          int count = 0;
+          while (iterator.hasNext()) {
+            String next = iterator.next();
+            logger.debug("Contains {}", next);
+            count++;
+          }
+          logger.warn("Contains {} items", count);
+        } catch (final Exception e) {
+          // Ignore
         }
-        int count = 0;
-        while (iterator.hasNext()) {
-          String next = iterator.next();
-          logger.debug("Contains {}", next);
-          count++;
-        }
-        logger.warn("Contains {} items", count);
       }
     };
   }

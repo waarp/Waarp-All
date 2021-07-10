@@ -117,6 +117,8 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
 
   public static final String JSON_RESCHEDULE = "RESCHEDULE";
 
+  public static final String JSON_COMPRESSION = "COMPRESSION";
+
   /**
    * Internal Logger
    */
@@ -2394,6 +2396,11 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
   private void setMapFromFileInfo() {
     final Map<String, Object> mapFileInfo =
         getMapFromString(getFileInformation());
+    final boolean isBlocCompressed =
+        AbstractTask.isCompressionRequested(getFileInformation());
+    if (isBlocCompressed) {
+      mapFileInfo.put(JSON_COMPRESSION, true);
+    }
     final Map<String, Object> mapTransferInfo =
         getMapFromString(getTransferInfo());
     mapTransferInfo.putAll(mapFileInfo);
@@ -2534,6 +2541,37 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
     addToTransferMap(FOLLOW_JSON_KEY, followId);
   }
 
+  /**
+   * @return True if Block Compression is active (meaning both partners
+   *     allow it and the transfer asked for it through '#COMPRESS#')
+   */
+  public boolean isBlockCompression() {
+    final Object compression = getFromTransferMap(JSON_COMPRESSION);
+    if (compression != null) {
+      if (compression instanceof Boolean) {
+        return (Boolean) compression;
+      } else {
+        return Boolean.parseBoolean(compression.toString());
+      }
+    }
+    return false;
+  }
+
+  /**
+   * @param compression True if the Bock Compression is active
+   */
+  public void setBlockCompression(boolean compression) {
+    logger.debug("isblock {} => {}", isBlockCompression(), compression);
+    final Object compressionObject = getFromTransferMap(JSON_COMPRESSION);
+    if (compressionObject != null || compression) {
+      addToTransferMap(JSON_COMPRESSION, compression);
+    }
+
+  }
+
+  /**
+   * @return the Transfer Information (internal informations)
+   */
   public String getTransferInfo() {
     return pojo.getTransferInfo();
   }
@@ -3780,8 +3818,8 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
     }
     return new RequestPacket(pojo.getRule(), pojo.getTransferMode(),
                              pojo.getOriginalName(), pojo.getBlockSize(),
-                             pojo.getRank(), pojo.getId(),
-                             pojo.getTransferInfo(), originalSize, sep);
+                             pojo.getRank(), pojo.getId(), pojo.getFileInfo(),
+                             originalSize, sep);
   }
 
   /**

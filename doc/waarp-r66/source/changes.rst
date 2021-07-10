@@ -55,7 +55,20 @@ Nouvelles fonctionnalités
   l'algorithme ZSTD). Il est activable par la configuration ``compression`` à
   ``True`` dans la partie ``limit`` du fichier de configuration (active
   la compression par bloc si le partenaire l'autorise aussi).
-  (Désactivé par défaut pour réduire la consommation CPU et mémoire)
+  Cette option est à compléter par l'argument d'information transmis au partenaire
+  avec le mot clef ``#COMPRESS#`` qui indique qu'il souhaite compresser.
+
+  - Ainsi, si les 2 partenaires ont la compression active et si un transfert précise
+    dans son information de transfert ce mot clef, le transfert utilisera une
+    compression par bloc.
+  - Toute autre configuration ne déclenchera pas la
+    compression par bloc (notamment pour compatibilité ascendante).
+  - La configuration de compression globale est désactivée par défaut pour
+    réduire la consommation CPU et mémoire, mais elle peut être activée par défaut
+    sans difficulté et n'être jamais utilisée dans des transferts (pas d'argument
+    ``#COMPRESS#`` ou partenaire n'ayant pas activé cette option), ou n'être utilisée
+    que ponctuellement.
+
 
 Correctifs
 ----------
@@ -75,61 +88,8 @@ Correctifs
 - Benchmark sur Serveur FTP et Gateway FTP (avec H2 et PostgreSQL)
 - Amélioration des Types SQL, index et requêtes SQL (R66 principalement)
 - Fixe de la gestion des transferts à soi-même
-- Amélioration du code et de la gestion mémoire
+- Amélioration du code et de la gestion mémoire et de la documentation
 - Mise à jour des dépendances, JAR et javascript
-
-Benchmarks FTP
---------------
-
-Les nouveaux benchmarks FTP donnent les résultats suivants.
-
-=================== ====== ======== ======= ====== =============
-Application         Client Nb vCore Passive Active CPU
-=================== ====== ======== ======= ====== =============
-Serveur FTP         Apache 4        58/s    62/s   40% CPU
-Serveur FTP         Waarp  4        108/s   155/s  40% CPU
-Gateway FTP H2      Apache 4        76/s    95/s   40% CPU
-Gateway FTP H2      Waarp  4        82/s    117/s  40% CPU
-Gateway FTP Postgre Apache 4        75/s    96/s   40% CPU
-Gateway FTP Postgre Waarp  4        81/s    97/s   40% CPU
-=================== ====== ======== ======= ====== =============
-
-Il ressort de ces benchmarks qu'il est important d'avoir au moins 2 core (threads)
-dédiés par serveur Waarp Gateway FTP pour être optimal. En terme de mémoire,
-4 GB étaient alloués à chaque instance.
-Le client Waarp (basé sur FTP4J) est plus performant que l'implémentation Apache.
-
-
-Benchmarks R66
---------------
-
-Les nouveaux benchmarks R66 donnent les résultats suivants.
-
-============================== ======== === ============ ==== =========
-Contexte                       Nb vCore TLS Transferts/s CPU  Gain
-============================== ======== === ============ ==== =========
-V3.0 Loop 2 Serveurs           4        Oui 30/s         100% Référence
-V3.2 Loop 2 Serveurs           4        Oui 60/s         100% 200%
-V3.5.2 Loop 2 Serveurs         4        Oui 77/s         100% 257%
-V3.6.0 Loop 2 Serveurs         4        Oui 76/s         100% 280%
-V3.6.0 Loop 2 Serveurs         8        Oui 366/s        80%  1220%
-V3.6.0 Loop 2 Serveurs         4        Non 103/s        100% Référence
-V3.6.0 Loop 2 Serveurs         8        Non 418/s        75%  406%
-V3.6.0 Loop 2 Serveurs Monitor 4        Oui 76/s         75%  406%
-V3.6.0 Loop 2 Serveurs Monitor 8        Oui /s           75%  406%
-V3.6.0 Loop 2 Serveurs Monitor 4        Non 103/s        75%  406%
-V3.6.0 Loop 2 Serveurs Monitor 8        Non /s           75%  406%
-V3.6.0 Cluster 2 Serveurs      4        Oui 41/s         100% Référence
-V3.6.0 Cluster 2 Serveurs      8        Oui 133/s        80%  173%
-V3.6.0 Cluster 2 Serveurs      4        Non 42/s         100% Référence
-V3.6.0 Cluster 2 Serveurs      8        Non 184/s        45%  207%
-============================== ======== === ============ ==== =========
-
-
-Il ressort de ces benchmarks qu'il est important d'avoir au moins 4 core (threads)
-dédiés par serveur Waarp R66 pour être optimal. En terme de mémoire,
-4 GB étaient alloués à chaque instance.
-
 
 Waarp R66 3.5.2 (2021-03-03)
 ============================

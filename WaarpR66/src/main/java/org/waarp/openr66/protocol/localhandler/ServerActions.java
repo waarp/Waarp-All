@@ -1771,7 +1771,7 @@ public class ServerActions extends ConnectionActions {
             FileOutputStream outputStream = null;
             try {
               outputStream = new FileOutputStream(filename);
-              outputStream.write(sbusiness.getBytes());
+              outputStream.write(sbusiness.getBytes(WaarpStringUtils.UTF8));
             } finally {
               FileUtils.close(outputStream);
             }
@@ -1787,7 +1787,7 @@ public class ServerActions extends ConnectionActions {
             FileOutputStream outputStream = null;
             try {
               outputStream = new FileOutputStream(filename);
-              outputStream.write(salias.getBytes());
+              outputStream.write(salias.getBytes(WaarpStringUtils.UTF8));
             } finally {
               FileUtils.close(outputStream);
             }
@@ -1803,7 +1803,7 @@ public class ServerActions extends ConnectionActions {
             FileOutputStream outputStream = null;
             try {
               outputStream = new FileOutputStream(filename);
-              outputStream.write(sroles.getBytes());
+              outputStream.write(sroles.getBytes(WaarpStringUtils.UTF8));
             } finally {
               FileUtils.close(outputStream);
             }

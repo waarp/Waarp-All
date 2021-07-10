@@ -25,3 +25,9 @@ Une specification détaillée écrite en RAML peut également être télécharg�
    limits/index
    server/index
    filemonitors/index
+
+
+Documentation complète
+======================
+
+.. openapi:: OAS30-RESTv2_fr.yaml

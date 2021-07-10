@@ -231,9 +231,9 @@ public class RequestPacket extends AbstractLocalPacket {
     if (endLength > 0) {
       buf.readBytes(bend);
     }
-    final String sheader = new String(bheader);
-    final String smiddle = new String(bmiddle);
-    final String send = new String(bend);
+    final String sheader = new String(bheader, WaarpStringUtils.UTF8);
+    final String smiddle = new String(bmiddle, WaarpStringUtils.UTF8);
+    final String send = new String(bend, WaarpStringUtils.UTF8);
 
     // check if JSON on header since it will directly starts with a JSON, in contrary to middle
     if (sheader.startsWith(PartnerConfiguration.BAR_JSON_FIELD)) {
@@ -385,10 +385,12 @@ public class RequestPacket extends AbstractLocalPacket {
       header = WaarpNettyUtil.wrappedBuffer(
           JsonHandler.writeAsString(node).getBytes(WaarpStringUtils.UTF8));
     } else {
-      header = WaarpNettyUtil.wrappedBuffer(rulename.getBytes(),
-                                            PartnerConfiguration.BLANK_SEPARATOR_FIELD
-                                                .getBytes(),
-                                            Integer.toString(mode).getBytes());
+      header = WaarpNettyUtil
+          .wrappedBuffer(rulename.getBytes(WaarpStringUtils.UTF8),
+                         PartnerConfiguration.BLANK_SEPARATOR_FIELD
+                             .getBytes(WaarpStringUtils.UTF8),
+                         Integer.toString(mode)
+                                .getBytes(WaarpStringUtils.UTF8));
     }
   }
 
@@ -417,16 +419,20 @@ public class RequestPacket extends AbstractLocalPacket {
     } else {
       middle = WaarpNettyUtil
           .wrappedBuffer(away, filename.getBytes(WaarpStringUtils.UTF8),
-                         separator.getBytes(),
-                         Integer.toString(blocksize).getBytes(),
-                         separator.getBytes(),
-                         Integer.toString(rank).getBytes(),
-                         separator.getBytes(),
-                         Long.toString(specialId).getBytes(),
-                         separator.getBytes(),
-                         Character.toString(code).getBytes(),
-                         separator.getBytes(),
-                         Long.toString(originalSize).getBytes());
+                         separator.getBytes(WaarpStringUtils.UTF8),
+                         Integer.toString(blocksize)
+                                .getBytes(WaarpStringUtils.UTF8),
+                         separator.getBytes(WaarpStringUtils.UTF8),
+                         Integer.toString(rank).getBytes(WaarpStringUtils.UTF8),
+                         separator.getBytes(WaarpStringUtils.UTF8),
+                         Long.toString(specialId)
+                             .getBytes(WaarpStringUtils.UTF8),
+                         separator.getBytes(WaarpStringUtils.UTF8),
+                         Character.toString(code)
+                                  .getBytes(WaarpStringUtils.UTF8),
+                         separator.getBytes(WaarpStringUtils.UTF8),
+                         Long.toString(originalSize)
+                             .getBytes(WaarpStringUtils.UTF8));
     }
   }
 

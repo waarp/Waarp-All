@@ -316,10 +316,10 @@ public class UploadServletTest extends TestAbstract {
     http.setRequestProperty("Connection", "Keep-Alive");
     http.setRequestProperty("Cache-Control", "no-cache");
     http.setRequestProperty("Content-Type", "application/octet-stream");
-    http.setRequestProperty("Content-Length",
-                            Integer.toString(filecontent.getBytes().length));
+    http.setRequestProperty("Content-Length", Integer
+        .toString(filecontent.getBytes(WaarpStringUtils.UTF8).length));
     DataOutputStream request = new DataOutputStream(http.getOutputStream());
-    request.write(filecontent.getBytes());
+    request.write(filecontent.getBytes(WaarpStringUtils.UTF8));
     request.flush();
     request.close();
   }
@@ -578,7 +578,8 @@ public class UploadServletTest extends TestAbstract {
                              is(HttpStatus.INTERNAL_SERVER_ERROR_500));
     http.disconnect();
 
-    ByteArrayInputStream stream = new ByteArrayInputStream(content.getBytes());
+    ByteArrayInputStream stream =
+        new ByteArrayInputStream(content.getBytes(WaarpStringUtils.UTF8));
     String sha = FilesystemBasedDigest
         .getHex(FilesystemBasedDigest.getHash(stream, DigestAlgo.SHA256));
     stream.close();
@@ -784,7 +785,8 @@ public class UploadServletTest extends TestAbstract {
     for (Entry<String, String> entry : map.entrySet()) {
       entityBuilder.addTextBody(entry.getKey(), entry.getValue());
     }
-    entityBuilder.addBinaryBody(UploadServlet.FIELD_FILE, content.getBytes(),
+    entityBuilder.addBinaryBody(UploadServlet.FIELD_FILE,
+                                content.getBytes(WaarpStringUtils.UTF8),
                                 ContentType.create("application/octet-stream"),
                                 "filename");
     HttpEntity entity = entityBuilder.build();
@@ -820,7 +822,8 @@ public class UploadServletTest extends TestAbstract {
 
     // POST 1/2 bis
     MultipartEntityBuilder entityBuilder2 = MultipartEntityBuilder.create();
-    entityBuilder.addBinaryBody(UploadServlet.FIELD_FILE, content.getBytes(),
+    entityBuilder.addBinaryBody(UploadServlet.FIELD_FILE,
+                                content.getBytes(WaarpStringUtils.UTF8),
                                 ContentType.create("application/octet-stream"),
                                 "filename");
     HttpEntity entity2 = entityBuilder2.build();
@@ -862,7 +865,8 @@ public class UploadServletTest extends TestAbstract {
       entityBuilder.addTextBody(entry.getKey(), entry.getValue());
     }
     content = "A";
-    entityBuilder.addBinaryBody(UploadServlet.FIELD_FILE, content.getBytes(),
+    entityBuilder.addBinaryBody(UploadServlet.FIELD_FILE,
+                                content.getBytes(WaarpStringUtils.UTF8),
                                 ContentType.create("application/octet-stream"),
                                 "filename");
     entity = entityBuilder.build();

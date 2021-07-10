@@ -322,7 +322,8 @@ public abstract class S3ScenarioBaseLoopBenchmark extends S3TestAbstract {
     }
   }
 
-  public static void tearDownAfterClass(Thread delegate) throws Exception {
+  public static void tearDownAfterClass(final Thread delegate)
+      throws Exception {
     CloseableHttpClient httpClient = null;
     int max = SystemPropertyUtil.get(IT_LONG_TEST, false)? 8000 : 60;
     int totalTransfers = max;
@@ -332,17 +333,17 @@ public abstract class S3ScenarioBaseLoopBenchmark extends S3TestAbstract {
     try {
       httpClient = HttpClientBuilder.create().setConnectionManagerShared(true)
                                     .disableAutomaticRetries().build();
-      HttpGet request =
+      final HttpGet request =
           new HttpGet("http://127.0.0.1:8098/v2/transfers?countOrder=true");
       CloseableHttpResponse response = null;
       try {
         response = httpClient.execute(request);
         if (200 == response.getStatusLine().getStatusCode()) {
-          String content = EntityUtils.toString(response.getEntity());
-          ObjectNode node = JsonHandler.getFromString(content);
+          final String content = EntityUtils.toString(response.getEntity());
+          final ObjectNode node = JsonHandler.getFromString(content);
           if (node != null) {
-            JsonNode number = node.findValue("totalResults");
-            long newNb = number.asLong();
+            final JsonNode number = node.findValue("totalResults");
+            final long newNb = number.asLong();
             max += newNb;
             totalTransfers = (int) newNb;
             logger.warn("Found {} transfers", newNb);
@@ -360,11 +361,11 @@ public abstract class S3ScenarioBaseLoopBenchmark extends S3TestAbstract {
           if (200 != response.getStatusLine().getStatusCode()) {
             break;
           }
-          String content = EntityUtils.toString(response.getEntity());
-          ObjectNode node = JsonHandler.getFromString(content);
+          final String content = EntityUtils.toString(response.getEntity());
+          final ObjectNode node = JsonHandler.getFromString(content);
           if (node != null) {
-            JsonNode number = node.findValue("totalResults");
-            int newNb = number.asInt();
+            final JsonNode number = node.findValue("totalResults");
+            final int newNb = number.asInt();
             if (newNb != nb || every10sec == 0) {
               every10sec = 10;
               nb = newNb;
@@ -399,14 +400,14 @@ public abstract class S3ScenarioBaseLoopBenchmark extends S3TestAbstract {
     tearDownAfterClassClient();
     tearDownAfterClassMinimal();
     tearDownAfterClassServer();
-    File base = new File("/tmp/R66");
+    final File base = new File("/tmp/R66");
     FileUtils.deleteRecursiveDir(base);
   }
 
   @Before
   public void setUp() throws Exception {
     Configuration.configuration.setTimeoutCon(30000);
-    Runtime runtime = Runtime.getRuntime();
+    final Runtime runtime = Runtime.getRuntime();
     usedMemory = runtime.totalMemory() - runtime.freeMemory();
   }
 
@@ -419,41 +420,41 @@ public abstract class S3ScenarioBaseLoopBenchmark extends S3TestAbstract {
   }
 
   private void checkMemory() {
-    Runtime runtime = Runtime.getRuntime();
-    long newUsedMemory = runtime.totalMemory() - runtime.freeMemory();
+    final Runtime runtime = Runtime.getRuntime();
+    final long newUsedMemory = runtime.totalMemory() - runtime.freeMemory();
     if (newUsedMemory > MAX_USED_MEMORY) {
       logger.info("Used Memory > 2GB {} {}", usedMemory / 1048576.0,
                   newUsedMemory / 1048576.0);
     }
   }
 
-  private int initBenchmark(int gap)
+  private int initBenchmark(final int gap)
       throws IOException, OpenR66ProtocolNetworkException, Reply550Exception {
     NUMBER_FILES = SystemPropertyUtil.get(IT_LONG_TEST, false)? 2000 : 10;
-    int factor = 250 * 1024 * 2 / NUMBER_FILES;
+    final int factor = 250 * 1024 * 2 / NUMBER_FILES;
     Assume.assumeNotNull(networkTransaction);
     Configuration.configuration.changeNetworkLimit(0, 0, 0, 0, 1000);
     if (rulename.equalsIgnoreCase("loop")) {
-      File baseDir = new File("/tmp/R66/" + PATH_COMMON + "/R1/test/");
+      final File baseDir = new File("/tmp/R66/" + PATH_COMMON + "/R1/test/");
       baseDir.mkdirs();
-      WaarpR66S3Client client =
+      final WaarpR66S3Client client =
           new WaarpR66S3Client(ACCESS_KEY, SECRET_KEY, s3Url);
       for (int i = 1; i <= NUMBER_FILES; i++) {
-        int size = (10000 + i * factor) + gap;
-        File fileOut = new File(baseDir, "hello" + size);
+        final int size = (10000 + i * factor) + gap;
+        final File fileOut = new File(baseDir, "hello" + size);
         final File outHello = generateOutFile(fileOut.getAbsolutePath(), size);
         client.createFile(BUCKET, FILEPATHSRC + size, outHello, null);
       }
     } else {
-      File baseDir = new File("/tmp/R66/" + PATH_COMMON + "/R1/out/");
+      final File baseDir = new File("/tmp/R66/" + PATH_COMMON + "/R1/out/");
       baseDir.mkdirs();
-      File baseDir2 = new File("/tmp/R66/" + PATH_COMMON + "/R2/out/");
+      final File baseDir2 = new File("/tmp/R66/" + PATH_COMMON + "/R2/out/");
       baseDir2.mkdirs();
       for (int i = 1; i <= NUMBER_FILES; i++) {
-        int size = (10000 + i * factor) + gap;
-        File fileOut = new File(baseDir, "hello" + size);
+        final int size = (10000 + i * factor) + gap;
+        final File fileOut = new File(baseDir, "hello" + size);
         generateOutFile(fileOut.getAbsolutePath(), size);
-        File fileOut2 = new File(baseDir2, "hello" + size);
+        final File fileOut2 = new File(baseDir2, "hello" + size);
         FileUtils.copy(fileOut, fileOut2, false, false);
       }
     }

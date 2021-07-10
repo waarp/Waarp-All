@@ -1,8 +1,3 @@
-.. Waarp Doc documentation master file, created by
-   sphinx-quickstart on Thu Jan 19 16:41:53 2017.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
 =========
 Waarp R66
 =========

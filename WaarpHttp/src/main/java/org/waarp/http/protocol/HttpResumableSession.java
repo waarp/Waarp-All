@@ -27,6 +27,7 @@ import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.lru.ConcurrentUtility;
 import org.waarp.common.utility.ParametersChecker;
+import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.http.protocol.servlet.HttpAuthent;
 import org.waarp.openr66.context.R66BusinessInterface;
@@ -94,9 +95,9 @@ public class HttpResumableSession extends HttpSessionAbstract {
   private DbTaskRunner getDbTaskRunner(final String user, final String rulename,
                                        final String comment,
                                        final R66BusinessInterface business) {
-    final long uuid =
-        UUID.nameUUIDFromBytes(httpResumableInfo.getIdentifier().getBytes())
-            .getMostSignificantBits();
+    final long uuid = UUID.nameUUIDFromBytes(
+        httpResumableInfo.getIdentifier().getBytes(WaarpStringUtils.UTF8))
+                          .getMostSignificantBits();
     return getDbTaskRunner(user, httpResumableInfo.getFilename(), rulename,
                            uuid, comment, httpResumableInfo.getChunkSize(),
                            business, true);

@@ -33,6 +33,7 @@ import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
 import org.waarp.common.utility.TestWatcherJunit4;
+import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.icap.server.IcapServer;
 import org.waarp.icap.server.IcapServerHandler;
 
@@ -823,7 +824,8 @@ public class IcapClientTest {
   public void testPrivateReadChunk() throws Exception {
     IcapClientForTest icapClient =
         new IcapClientForTest("127.0.0.1", 1234, "avscan");
-    InputStream in = new ByteArrayInputStream("".getBytes());
+    InputStream in =
+        new ByteArrayInputStream("".getBytes(WaarpStringUtils.UTF8));
     byte[] buffer = new byte[1024];
     int len = 2048;
     try {
@@ -842,7 +844,7 @@ public class IcapClientTest {
       fail("Incorrect exception raised");
     }
     in.close();
-    in = new ByteArrayInputStream("12345".getBytes());
+    in = new ByteArrayInputStream("12345".getBytes(WaarpStringUtils.UTF8));
     try {
       int read = icapClient.readChunkForTest(in, buffer, len);
       assertEquals(5, read);
@@ -893,7 +895,8 @@ public class IcapClientTest {
   public void testPrivateGetHeader() throws Exception {
     IcapClientForTest icapClient =
         new IcapClientForTest("127.0.0.1", 1234, "avscan");
-    InputStream in = new ByteArrayInputStream("".getBytes());
+    InputStream in =
+        new ByteArrayInputStream("".getBytes(WaarpStringUtils.UTF8));
     try {
       String readed = icapClient.getHeaderIcapForTest(in);
       fail("Should raised an exception");
@@ -902,7 +905,7 @@ public class IcapClientTest {
     }
     in.close();
     in = new ByteArrayInputStream(
-        ("12345" + IcapClient.ICAP_TERMINATOR).getBytes());
+        ("12345" + IcapClient.ICAP_TERMINATOR).getBytes(WaarpStringUtils.UTF8));
     try {
       String readed = icapClient.getHeaderIcapForTest(in);
       fail("Should raised an exception");
@@ -911,7 +914,7 @@ public class IcapClientTest {
     }
     in.close();
     in = new ByteArrayInputStream(
-        ("12345" + IcapClient.HTTP_TERMINATOR).getBytes());
+        ("12345" + IcapClient.HTTP_TERMINATOR).getBytes(WaarpStringUtils.UTF8));
     try {
       String readed = icapClient.getHeaderHttpForTest(in);
       assertTrue(readed.startsWith("12345" + IcapClient.HTTP_TERMINATOR));
@@ -922,7 +925,8 @@ public class IcapClientTest {
     }
     in.close();
     in = new ByteArrayInputStream(
-        ("123456789012345" + IcapClient.ICAP_TERMINATOR).getBytes());
+        ("123456789012345" + IcapClient.ICAP_TERMINATOR)
+            .getBytes(WaarpStringUtils.UTF8));
     try {
       String readed = icapClient.getHeaderIcapForTest(in);
       assertEquals(19, readed.length());
@@ -932,7 +936,8 @@ public class IcapClientTest {
     }
     in.close();
     in = new ByteArrayInputStream(
-        ("123456789012345" + IcapClient.HTTP_TERMINATOR).getBytes());
+        ("123456789012345" + IcapClient.HTTP_TERMINATOR)
+            .getBytes(WaarpStringUtils.UTF8));
     try {
       String readed = icapClient.getHeaderHttpForTest(in);
       assertEquals(20, readed.length());
@@ -942,7 +947,8 @@ public class IcapClientTest {
     }
     in.close();
     in = new ByteArrayInputStream(
-        ("123456789012345" + IcapClient.ICAP_TERMINATOR).getBytes());
+        ("123456789012345" + IcapClient.ICAP_TERMINATOR)
+            .getBytes(WaarpStringUtils.UTF8));
     try {
       String readed = icapClient.getHeaderHttpForTest(in);
       assertTrue(
@@ -953,7 +959,8 @@ public class IcapClientTest {
       fail("Should not raised an exception");
     }
     in.close();
-    in = new ByteArrayInputStream(("12345678901234567890").getBytes());
+    in = new ByteArrayInputStream(
+        ("12345678901234567890").getBytes(WaarpStringUtils.UTF8));
     try {
       String readed = icapClient.getHeaderHttpForTest(in);
       logger.debug("Correct");
@@ -962,7 +969,8 @@ public class IcapClientTest {
       fail("Should not raised an exception");
     }
     in.close();
-    in = new ByteArrayInputStream(("12345678901234567890").getBytes());
+    in = new ByteArrayInputStream(
+        ("12345678901234567890").getBytes(WaarpStringUtils.UTF8));
     try {
       String readed = icapClient.getHeaderIcapForTest(in);
       fail("Should raised an exception");

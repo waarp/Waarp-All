@@ -12,6 +12,7 @@ import org.waarp.common.logging.WaarpLogLevel;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
 import org.waarp.common.utility.TestWatcherJunit4;
+import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.openr66.pojo.Host;
 import org.waarp.openr66.protocol.configuration.Configuration;
 
@@ -72,8 +73,9 @@ public class RestHandlerHookTest {
           new RestHandlerHookForTest(true, hmac, 10000);
 
       try {
-        final Host host =
-            new Host(user, "127.0.0.1", 1, hostkey.getBytes(), false, true);
+        final Host host = new Host(user, "127.0.0.1", 1,
+                                   hostkey.getBytes(WaarpStringUtils.UTF8),
+                                   false, true);
 
         hook.testValidateHMACredentials(host, timestamp, user, sig);
       } catch (InternalServerErrorException e) {
