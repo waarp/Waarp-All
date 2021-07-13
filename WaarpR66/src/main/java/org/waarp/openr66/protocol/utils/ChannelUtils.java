@@ -200,7 +200,7 @@ public class ChannelUtils extends Thread {
     final EndTransferPacket packet =
         new EndTransferPacket(LocalPacketFactory.REQUESTPACKET);
     localChannelReference.sessionNewState(R66FiniteDualStates.ENDTRANSFERS);
-    writeAbstractLocalPacket(localChannelReference, packet, true);
+    writeAbstractLocalPacket(localChannelReference, packet, false);
   }
 
   /**
@@ -217,7 +217,7 @@ public class ChannelUtils extends Thread {
     final EndTransferPacket packet =
         new EndTransferPacket(LocalPacketFactory.REQUESTPACKET, hash);
     localChannelReference.sessionNewState(R66FiniteDualStates.ENDTRANSFERS);
-    writeAbstractLocalPacket(localChannelReference, packet, true);
+    writeAbstractLocalPacket(localChannelReference, packet, false);
   }
 
   /**

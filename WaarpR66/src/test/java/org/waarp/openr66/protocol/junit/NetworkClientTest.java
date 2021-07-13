@@ -227,7 +227,7 @@ public class NetworkClientTest extends TestAbstract {
     logger.warn(roleDefault.toString());
     BusinessDAO businessDAO = null;
     try {
-      businessDAO = DAOFactory.getInstance().getBusinessDAO();
+      businessDAO = DAOFactory.getInstance().getBusinessDAO(true);
       Business business =
           businessDAO.select(Configuration.configuration.getHostId());
       logger.warn("HostConfig {} A: {} B: {} R: {} O: {}", business.getHostid(),
@@ -1016,11 +1016,11 @@ public class NetworkClientTest extends TestAbstract {
   private void waitForAllDone(DbTaskRunner runner) {
     while (true) {
       try {
-        DbTaskRunner checkedRunner = DbTaskRunner.reloadFromDatabase(runner);
-        if (checkedRunner.isAllDone()) {
+        runner.select();
+        if (runner.isAllDone()) {
           logger.warn("DbTaskRunner done");
           return;
-        } else if (checkedRunner.isInError()) {
+        } else if (runner.isInError()) {
           logger.error("DbTaskRunner in error");
           return;
         }
@@ -1312,10 +1312,20 @@ public class NetworkClientTest extends TestAbstract {
   @Test
   public void test70_Spooled() throws IOException, InterruptedException {
     logger.warn("Start Test of Spooled Transfer");
+    Thread.sleep(100);
     SpooledThread spooledThread = new SpooledThread();
     spooledThread.ignoreAlreadyUsed = false;
     spooledThread.submit = false;
     test_Spooled(spooledThread, 2);
+    if (spooledThread.spooledDirectoryTransfer.getSent() != 3) {
+      Thread.sleep(100);
+      if (spooledThread.spooledDirectoryTransfer.getSent() != 3) {
+        logger.error("Count of Sent is incorrect {} vs {}, while error is {}",
+                     spooledThread.spooledDirectoryTransfer.getSent(), 3,
+                     spooledThread.spooledDirectoryTransfer.getError());
+        return;
+      }
+    }
     assertEquals(3, spooledThread.spooledDirectoryTransfer.getSent());
     assertEquals(0, spooledThread.spooledDirectoryTransfer.getError());
   }
@@ -1535,11 +1545,10 @@ public class NetworkClientTest extends TestAbstract {
           logger.warn("Start wait for re-transfer: {}",
                       dbTaskRunner.toShortString());
           waitForAllDone(dbTaskRunner);
-          DbTaskRunner checkedRunner =
-              DbTaskRunner.reloadFromDatabase(dbTaskRunner);
+          dbTaskRunner.select();
           logger.warn("End wait for re-transfer: {}",
-                      checkedRunner.toShortString());
-          if (checkedRunner.isAllDone()) {
+                      dbTaskRunner.toShortString());
+          if (dbTaskRunner.isAllDone()) {
             success++;
           } else {
             error++;
@@ -1642,11 +1651,10 @@ public class NetworkClientTest extends TestAbstract {
           logger.warn("Start wait for re-transfer: {}",
                       dbTaskRunner.toShortString());
           waitForAllDone(dbTaskRunner);
-          DbTaskRunner checkedRunner =
-              DbTaskRunner.reloadFromDatabase(dbTaskRunner);
+          dbTaskRunner.select();
           logger.warn("End wait for re-transfer: {}",
-                      checkedRunner.toShortString());
-          if (checkedRunner.isAllDone()) {
+                      dbTaskRunner.toShortString());
+          if (dbTaskRunner.isAllDone()) {
             success++;
           } else {
             error++;
@@ -2236,8 +2244,8 @@ public class NetworkClientTest extends TestAbstract {
       final String[] argsServer = {
           file.getAbsolutePath()
       };
-      int pid = Processes
-          .executeJvm(project, homeDir, R66Server.class, argsServer, true);
+      int pid =
+          Processes.executeJvm(project, R66Server.class, argsServer, true);
       Thread.sleep(1000);
       if (!Processes.exists(pid)) {
         logger.warn("Process {} should be running", pid);

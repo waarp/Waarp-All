@@ -244,7 +244,7 @@ public class ServerHandler extends AbstractRestDbHandler {
                          final HttpResponder responder) {
     HostDAO hostDAO = null;
     try {
-      hostDAO = DAO_FACTORY.getHostDAO();
+      hostDAO = DAO_FACTORY.getHostDAO(false);
       final Host host = hostDAO.select(serverName());
       host.setActive(!host.isActive());
       hostDAO.update(host);
@@ -578,7 +578,7 @@ public class ServerHandler extends AbstractRestDbHandler {
     BusinessDAO businessDAO = null;
     try {
       if (host) {
-        hostDAO = DAO_FACTORY.getHostDAO();
+        hostDAO = DAO_FACTORY.getHostDAO(false);
         final List<Host> hostList = hostDAO.getAll();
 
         final Hosts hosts = new Hosts(hostList);
@@ -587,13 +587,13 @@ public class ServerHandler extends AbstractRestDbHandler {
         responseObject.put("fileHost", hostsFilePath);
       }
       if (rule) {
-        ruleDAO = DAO_FACTORY.getRuleDAO();
+        ruleDAO = DAO_FACTORY.getRuleDAO(false);
         final Rules rules = new Rules(ruleDAO.getAll());
 
         XmlUtils.saveObject(rules, rulesFilePath);
         responseObject.put("fileRule", rulesFilePath);
       }
-      businessDAO = DAO_FACTORY.getBusinessDAO();
+      businessDAO = DAO_FACTORY.getBusinessDAO(true);
       final Business businessEntry = businessDAO.select(serverName());
       if (business) {
         final String businessXML = businessEntry.getBusiness();
@@ -732,7 +732,7 @@ public class ServerHandler extends AbstractRestDbHandler {
     final ObjectNode responseObject = JsonHandler.createObjectNode();
 
     try {
-      hostDAO = DAO_FACTORY.getHostDAO();
+      hostDAO = DAO_FACTORY.getHostDAO(false);
       final Hosts hosts = XmlUtils.loadObject(hostFile, Hosts.class);
 
       // if a purge is requested, we can add the new entries without
@@ -753,7 +753,7 @@ public class ServerHandler extends AbstractRestDbHandler {
       }
       responseObject.put("purgedHost", TRUE.toString());
 
-      ruleDAO = DAO_FACTORY.getRuleDAO();
+      ruleDAO = DAO_FACTORY.getRuleDAO(false);
 
       final Rules rules = XmlUtils.loadObject(ruleFile, Rules.class);
 
@@ -774,7 +774,7 @@ public class ServerHandler extends AbstractRestDbHandler {
 
       responseObject.put("purgedRule", TRUE.toString());
 
-      businessDAO = DAO_FACTORY.getBusinessDAO();
+      businessDAO = DAO_FACTORY.getBusinessDAO(false);
       if (purgeBusiness) {
         final Business business = businessDAO.select(serverName());
 

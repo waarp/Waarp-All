@@ -208,7 +208,7 @@ public class HostsHandler extends AbstractRestDbHandler {
     if (count) {
       long nbCount = -1;
       try {
-        hostDAO = DAO_FACTORY.getHostDAO();
+        hostDAO = DAO_FACTORY.getHostDAO(false);
         nbCount = hostDAO.count(filters);
       } catch (final DAOConnectionException e) {
         throw new InternalServerErrorException(e);
@@ -219,7 +219,7 @@ public class HostsHandler extends AbstractRestDbHandler {
     } else {
       List<Host> hosts;
       try {
-        hostDAO = DAO_FACTORY.getHostDAO();
+        hostDAO = DAO_FACTORY.getHostDAO(false);
         hosts = hostDAO.find(filters);
       } catch (final DAOConnectionException e) {
         throw new InternalServerErrorException(e);
@@ -261,7 +261,7 @@ public class HostsHandler extends AbstractRestDbHandler {
 
     HostDAO hostDAO = null;
     try {
-      hostDAO = DAO_FACTORY.getHostDAO();
+      hostDAO = DAO_FACTORY.getHostDAO(false);
 
       if (!hostDAO.exist(host.getHostid())) {
         throw new RestErrorException(ALREADY_EXISTING(host.getHostid()));

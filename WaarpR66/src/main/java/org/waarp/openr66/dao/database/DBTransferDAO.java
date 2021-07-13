@@ -119,6 +119,13 @@ public abstract class DBTransferDAO extends StatementExecutor<Transfer>
       "UPDATE " + TABLE + " SET " + RANK_FIELD + PARAMETER_COMMA +
       TRANSFER_STOP_FIELD + " = ?  WHERE " + PRIMARY_KEY_WHERE;
 
+  private static final String
+      SQL_UPDATE_LIMITED_RANK_STOP_UPDATEDINFO_STEPSTATUS =
+      "UPDATE " + TABLE + " SET " + RANK_FIELD + PARAMETER_COMMA +
+      TRANSFER_STOP_FIELD + PARAMETER_COMMA + UPDATED_INFO_FIELD +
+      PARAMETER_COMMA + STEP_STATUS_FIELD + " = ?  " + "WHERE " +
+      PRIMARY_KEY_WHERE;
+
   protected String getDeleteRequest() {
     return SQL_DELETE;
   }
@@ -153,6 +160,10 @@ public abstract class DBTransferDAO extends StatementExecutor<Transfer>
 
   String getUpdateLimitedRankRequest() {
     return SQL_UPDATE_LIMITED_RANK;
+  }
+
+  String getUpdateRankUpdatedInfoStepStatusStopRequest() {
+    return SQL_UPDATE_LIMITED_RANK_STOP_UPDATEDINFO_STEPSTATUS;
   }
 
   protected DBTransferDAO(final Connection con) {
@@ -200,6 +211,16 @@ public abstract class DBTransferDAO extends StatementExecutor<Transfer>
     };
   }
 
+  Object[] getUpdateRankUpdatedInfoStepStatusStopValues(
+      final Transfer transfer) {
+    return new Object[] {
+        transfer.getRank(), transfer.getStop(),
+        transfer.getUpdatedInfo().ordinal(), transfer.getStepStatus().getCode(),
+        transfer.getId(), transfer.getRequester(), transfer.getRequested(),
+        transfer.getOwnerRequest()
+    };
+  }
+
   Object[] getPrimaryKeyValues(final Transfer transfer) {
     return getPrimaryKeyValues(transfer.getId(), transfer.getOwnerRequest(),
                                transfer.getRequester(),
@@ -218,6 +239,27 @@ public abstract class DBTransferDAO extends StatementExecutor<Transfer>
     PreparedStatement stm = null;
     try {
       stm = connection.prepareStatement(getUpdateLimitedRankRequest());
+      setParameters(stm, params);
+      try {
+        executeUpdate(stm);
+      } catch (final SQLException e2) {
+        throw new DAONoDataException(e2);
+      }
+    } catch (final SQLException e) {
+      throw new DAOConnectionException(e);
+    } finally {
+      closeStatement(stm);
+    }
+  }
+
+  public void updateRankUpdatedInfoStepStatusStop(final Transfer e1)
+      throws DAOConnectionException, DAONoDataException {
+    final Object[] params = getUpdateRankUpdatedInfoStepStatusStopValues(e1);
+
+    PreparedStatement stm = null;
+    try {
+      stm = connection
+          .prepareStatement(getUpdateRankUpdatedInfoStepStatusStopRequest());
       setParameters(stm, params);
       try {
         executeUpdate(stm);

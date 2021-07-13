@@ -190,8 +190,8 @@ public class DbHostConfiguration extends AbstractDbDataDao<Business> {
   }
 
   @Override
-  protected AbstractDAO<Business> getDao() throws DAOConnectionException {
-    return DAOFactory.getInstance().getBusinessDAO();
+  protected AbstractDAO<Business> getDao(final boolean isCacheable) throws DAOConnectionException {
+    return DAOFactory.getInstance().getBusinessDAO(isCacheable);
   }
 
   @Override
@@ -257,7 +257,7 @@ public class DbHostConfiguration extends AbstractDbDataDao<Business> {
       throws WaarpDatabaseException {
     BusinessDAO businessAccess = null;
     try {
-      businessAccess = DAOFactory.getInstance().getBusinessDAO();
+      businessAccess = DAOFactory.getInstance().getBusinessDAO(true);
       pojo = businessAccess.select(hostid);
     } catch (final DAOConnectionException e) {
       throw new WaarpDatabaseException(e);
@@ -567,7 +567,7 @@ public class DbHostConfiguration extends AbstractDbDataDao<Business> {
     final DbHostConfiguration dbHostConfiguration = new DbHostConfiguration();
     AbstractDAO<Business> businessDAO = null;
     try {
-      businessDAO = dbHostConfiguration.getDao();
+      businessDAO = dbHostConfiguration.getDao(false);
       dbHostConfiguration.pojo = ((StatementExecutor<Business>) businessDAO)
           .getFromResultSet(preparedStatement.getResultSet());
       return dbHostConfiguration;
@@ -598,7 +598,7 @@ public class DbHostConfiguration extends AbstractDbDataDao<Business> {
     BusinessDAO businessAccess = null;
     List<Business> businesses;
     try {
-      businessAccess = DAOFactory.getInstance().getBusinessDAO();
+      businessAccess = DAOFactory.getInstance().getBusinessDAO(false);
       businesses = businessAccess.find(filters);
     } catch (final DAOConnectionException e) {
       throw new WaarpDatabaseNoConnectionException(e);

@@ -102,7 +102,7 @@ public class HostConfigHandler extends AbstractRestDbHandler {
                         final HttpResponder responder) {
     BusinessDAO businessDAO = null;
     try {
-      businessDAO = DAO_FACTORY.getBusinessDAO();
+      businessDAO = DAO_FACTORY.getBusinessDAO(true);
       final String host = serverName();
       final Business business = businessDAO.select(host);
       if (business != null) {
@@ -140,7 +140,7 @@ public class HostConfigHandler extends AbstractRestDbHandler {
                                final HttpResponder responder) {
     BusinessDAO businessDAO = null;
     try {
-      businessDAO = DAO_FACTORY.getBusinessDAO();
+      businessDAO = DAO_FACTORY.getBusinessDAO(false);
 
       if (!businessDAO.exist(serverName())) {
         final ObjectNode requestObject = JsonUtils.deserializeRequest(request);
@@ -179,7 +179,7 @@ public class HostConfigHandler extends AbstractRestDbHandler {
     BusinessDAO businessDAO = null;
 
     try {
-      businessDAO = DAO_FACTORY.getBusinessDAO();
+      businessDAO = DAO_FACTORY.getBusinessDAO(false);
 
       if (!businessDAO.exist(serverName())) {
         responder.sendStatus(NOT_FOUND);
@@ -219,7 +219,7 @@ public class HostConfigHandler extends AbstractRestDbHandler {
                            final HttpResponder responder) {
     BusinessDAO businessDAO = null;
     try {
-      businessDAO = DAO_FACTORY.getBusinessDAO();
+      businessDAO = DAO_FACTORY.getBusinessDAO(false);
       if (businessDAO.exist(serverName())) {
         businessDAO.delete(businessDAO.select(serverName()));
         responder.sendStatus(NO_CONTENT);

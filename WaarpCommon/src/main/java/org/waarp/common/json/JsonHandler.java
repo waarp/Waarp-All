@@ -43,6 +43,9 @@ import java.util.Map;
  */
 public class JsonHandler {
 
+  public static final TypeReference<Map<String, Object>>
+      typeReferenceMapStringObject = new TypeReference<Map<String, Object>>() {
+  };
   /**
    * JSON parser
    */
@@ -576,9 +579,7 @@ public class JsonHandler {
     if (ParametersChecker.isNotEmpty(value)) {
       Map<String, Object> info = null;
       try {
-        info =
-            mapper.readValue(value, new TypeReference<Map<String, Object>>() {
-            });
+        info = mapper.readValue(value, typeReferenceMapStringObject);
       } catch (final JsonParseException ignored) {
         SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
       } catch (final JsonMappingException ignored) {

@@ -89,8 +89,6 @@ public class NetworkTransaction {
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(NetworkTransaction.class);
 
-  private static final Object SYNC_OBJECT = new Object();
-
   /**
    * To protect access to socketLocks when no address associated
    */
@@ -184,23 +182,15 @@ public class NetworkTransaction {
 
   public static String hashStatus() {
     final StringBuilder partial =
-        new StringBuilder("NetworkTransaction: [InShutdown: ").append(
-            networkChannelShutdownOnSocketAddressConcurrentHashMap.size())
-                                                              .append(
-                                                                  " Blacklisted: ")
-                                                              .append(
-                                                                  networkChannelBlacklistedOnInetSocketAddressConcurrentHashMap
-                                                                      .size())
-                                                              .append(
-                                                                  "\n RetrieveRunner: ")
-                                                              .append(
-                                                                  retrieveRunnerConcurrentHashMap
-                                                                      .size())
-                                                              .append(
-                                                                  " ClientNetworkChannels: ")
-                                                              .append(
-                                                                  clientNetworkChannelsPerHostId
-                                                                      .size());
+        new StringBuilder("NetworkTransaction: [InShutdown: ");
+    partial
+        .append(networkChannelShutdownOnSocketAddressConcurrentHashMap.size())
+        .append(" Blacklisted: ").append(
+        networkChannelBlacklistedOnInetSocketAddressConcurrentHashMap.size())
+        .append("\n RetrieveRunner: ")
+        .append(retrieveRunnerConcurrentHashMap.size())
+        .append(" ClientNetworkChannels: ")
+        .append(clientNetworkChannelsPerHostId.size());
     int nb = 0;
     for (final ClientNetworkChannels clientNetworkChannels : clientNetworkChannelsPerHostId
         .values()) {
@@ -223,7 +213,12 @@ public class NetworkTransaction {
   }
 
   private static WaarpLock getLockNCR(final SocketAddress sa) {
-    return reentrantLockOnSocketAddressConcurrentHashMap.get(sa.hashCode());
+    final int key = sa.hashCode();
+    final WaarpLock value = reentrantLockOnSocketAddressConcurrentHashMap.get(key);
+    if (value != null) {
+      reentrantLockOnSocketAddressConcurrentHashMap.updateTtl(key);
+    }
+    return value;
   }
 
   private static void addLockNCR(final SocketAddress sa, final WaarpLock lock) {
@@ -469,16 +464,15 @@ public class NetworkTransaction {
     }
     try {
       // Ensure networkChannelReference and localChannelReference are linked
-      synchronized (SYNC_OBJECT) {
-        networkChannelReference = createNewConnection(socketAddress, isSSL);
-        try {
-          localChannelReference =
-              Configuration.configuration.getLocalTransaction().createNewClient(
-                  networkChannelReference, ChannelUtils.NOCHANNEL,
-                  futureRequest, isSSL);
-        } catch (final NullPointerException e) {
-          throw new OpenR66ProtocolNetworkException(e);
-        }
+      networkChannelReference = createNewConnection(socketAddress, isSSL);
+      try {
+        localChannelReference =
+            Configuration.configuration.getLocalTransaction()
+                                       .createNewClient(networkChannelReference,
+                                                        ChannelUtils.NOCHANNEL,
+                                                        futureRequest, isSSL);
+      } catch (final NullPointerException e) {
+        throw new OpenR66ProtocolNetworkException(e);
       }
       ok = true;
     } finally {
@@ -676,7 +670,7 @@ public class NetworkTransaction {
             "Cannot connect to localChannel since SSL is not supported", null);
         try {
           ChannelUtils
-              .writeAbstractLocalPacket(localChannelReference, error, true);
+              .writeAbstractLocalPacket(localChannelReference, error, false);
         } catch (final OpenR66ProtocolPacketException ignored) {
           // nothing
         }
@@ -689,7 +683,7 @@ public class NetworkTransaction {
     localChannelReference.sessionNewState(AUTHENTR);
     try {
       ChannelUtils
-          .writeAbstractLocalPacket(localChannelReference, authent, true);
+          .writeAbstractLocalPacket(localChannelReference, authent, false);
     } catch (final OpenR66ProtocolPacketException e) {
       final R66Result finalValue = new R66Result(
           new OpenR66ProtocolSystemException("Wrong Authent Protocol", e),
@@ -703,7 +697,7 @@ public class NetworkTransaction {
             null);
         try {
           ChannelUtils
-              .writeAbstractLocalPacket(localChannelReference, error, true);
+              .writeAbstractLocalPacket(localChannelReference, error, false);
         } catch (final OpenR66ProtocolPacketException ignored) {
           // nothing
         }
@@ -729,7 +723,7 @@ public class NetworkTransaction {
             "Cannot connect to localChannel with Out of Time", null);
         try {
           ChannelUtils
-              .writeAbstractLocalPacket(localChannelReference, error, true);
+              .writeAbstractLocalPacket(localChannelReference, error, false);
         } catch (final OpenR66ProtocolPacketException ignored) {
           // nothing
         }
@@ -970,7 +964,7 @@ public class NetworkTransaction {
   public static void addClient(
       final NetworkChannelReference networkChannelReference,
       final String requester) {
-    synchronized (SYNC_OBJECT) {
+    synchronized (clientNetworkChannelsPerHostId) {
       if (networkChannelReference != null && requester != null) {
         ClientNetworkChannels clientNetworkChannels =
             clientNetworkChannelsPerHostId.get(requester);

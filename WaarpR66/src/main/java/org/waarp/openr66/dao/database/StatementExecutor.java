@@ -26,6 +26,7 @@ import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.lru.SynchronizedLruCache;
 import org.waarp.openr66.dao.AbstractDAO;
 import org.waarp.openr66.dao.Filter;
+import org.waarp.openr66.dao.database.DBDAOFactory.FakeConnection;
 import org.waarp.openr66.dao.exception.DAOConnectionException;
 import org.waarp.openr66.dao.exception.DAONoDataException;
 
@@ -46,7 +47,7 @@ public abstract class StatementExecutor<E> implements AbstractDAO<E> {
   protected static final String PARAMETER_COMMA = " = ?, ";
   protected static final String SQL_COUNT_ALL_PREFIX =
       "SELECT COUNT(*) AS total FROM ";
-  protected final Connection connection;
+  protected Connection connection;
 
   public abstract E getFromResultSet(ResultSet set)
       throws SQLException, DAOConnectionException;
@@ -73,7 +74,11 @@ public abstract class StatementExecutor<E> implements AbstractDAO<E> {
 
   protected E getFromCache(final String key) {
     if (isCachedEnable()) {
-      return getCache().get(key);
+      final E value = getCache().get(key);
+      if (value != null) {
+        getCache().updateTtl(key);
+      }
+      return value;
     }
     return null;
   }
@@ -362,6 +367,13 @@ public abstract class StatementExecutor<E> implements AbstractDAO<E> {
     if (isInCache(id)) {
       return true;
     }
+    if (connection instanceof FakeConnection) {
+      try {
+        connection = ((FakeConnection) connection).getRealConnection();
+      } catch (final SQLException throwables) {
+        throw new DAOConnectionException(throwables);
+      }
+    }
     PreparedStatement stm = null;
     ResultSet res = null;
     try {
@@ -384,6 +396,13 @@ public abstract class StatementExecutor<E> implements AbstractDAO<E> {
       final E found = getFromCache(id);
       if (found != null) {
         return found;
+      }
+    }
+    if (connection instanceof FakeConnection) {
+      try {
+        connection = ((FakeConnection) connection).getRealConnection();
+      } catch (final SQLException throwables) {
+        throw new DAOConnectionException(throwables);
       }
     }
     PreparedStatement stm = null;

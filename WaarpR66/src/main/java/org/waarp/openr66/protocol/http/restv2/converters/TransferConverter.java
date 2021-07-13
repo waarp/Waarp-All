@@ -191,7 +191,7 @@ public final class TransferConverter {
     ModeTrans mode;
     RuleDAO ruleDAO = null;
     try {
-      ruleDAO = DAO_FACTORY.getRuleDAO();
+      ruleDAO = DAO_FACTORY.getRuleDAO(true);
       final Rule rule = ruleDAO.select(transfer.getRule());
       mode = ModeTrans.fromCode(rule.getMode());
     } catch (final DAOConnectionException e) {
@@ -223,7 +223,7 @@ public final class TransferConverter {
   private static boolean ruleExists(final String rule) {
     RuleDAO ruleDAO = null;
     try {
-      ruleDAO = DAO_FACTORY.getRuleDAO();
+      ruleDAO = DAO_FACTORY.getRuleDAO(true);
       return ruleDAO.exist(rule);
     } catch (final DAOConnectionException e) {
       throw new InternalServerErrorException(e);
@@ -242,7 +242,7 @@ public final class TransferConverter {
   private static boolean hostExists(final String host) {
     HostDAO hostDAO = null;
     try {
-      hostDAO = DAO_FACTORY.getHostDAO();
+      hostDAO = DAO_FACTORY.getHostDAO(true);
       return hostDAO.exist(host);
     } catch (final DAOConnectionException e) {
       throw new InternalServerErrorException(e);
@@ -263,7 +263,7 @@ public final class TransferConverter {
   private static boolean canUseRule(final String host, final String rule) {
     RuleDAO ruleDAO = null;
     try {
-      ruleDAO = DAO_FACTORY.getRuleDAO();
+      ruleDAO = DAO_FACTORY.getRuleDAO(true);
       final List<String> hostIds = ruleDAO.select(rule).getHostids();
       return !hostIds.isEmpty() && !hostIds.contains(host);
     } catch (final DAOConnectionException e) {

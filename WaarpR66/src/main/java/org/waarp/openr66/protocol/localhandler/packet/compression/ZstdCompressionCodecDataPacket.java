@@ -81,9 +81,16 @@ public class ZstdCompressionCodecDataPacket {
       return;
     }
     try {
-      final byte[] toDeCompress =
-          waarpZstdCodec.getCompressorCodec().decompress(data, originalSize);
-      final int length = toDeCompress.length;
+      byte[] toDeCompress = session.getReusableBuffer(
+          waarpZstdCodec.getCompressorCodec()
+                        .getDecompressedSize(data, originalSize));
+      final int length = waarpZstdCodec.getCompressorCodec()
+                                       .decompress(data, originalSize,
+                                                   toDeCompress,
+                                                   toDeCompress.length);
+      if (length != toDeCompress.length) {
+        toDeCompress = Arrays.copyOf(toDeCompress, length);
+      }
       logger.debug("DataPacket Decompression is {} on {} for BlockSize {}",
                    originalSize, length, data.length);
       dataPacket.updateFromCompressionCodec(toDeCompress, length);

@@ -203,17 +203,59 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
         .getRelativePath(AbstractDir.normalizePath(file.getAbsolutePath()));
   }
 
+  /**
+   * Adapt File.isDirectory() to leverage synchronization error with filesystem
+   *
+   * @param file
+   *
+   * @return as with File.isDirectory()
+   */
+  public static boolean isDirectory(final File file) {
+    for (int i = 0; i < 3; i++) {
+      if (file.isDirectory()) {
+        return true;
+      }
+      try {
+        Thread.sleep(10);
+      } catch (InterruptedException ignored) { //NOSONAR
+        SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
+      }
+    }
+    return false;
+  }
+
   @Override
   public boolean isDirectory() throws CommandAbstractException {
     checkIdentify();
     final File dir1 = getFileFromPath(currentFile);
-    return dir1.isDirectory();
+    return isDirectory(dir1);
+  }
+
+  /**
+   * Adapt File.isFile() to leverage synchronization error with filesystem
+   *
+   * @param file
+   *
+   * @return as with File.isFile()
+   */
+  public static boolean isFile(final File file) {
+    for (int i = 0; i < 3; i++) {
+      if (file.isFile()) {
+        return true;
+      }
+      try {
+        Thread.sleep(10);
+      } catch (InterruptedException ignored) { //NOSONAR
+        SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
+      }
+    }
+    return false;
   }
 
   @Override
   public boolean isFile() throws CommandAbstractException {
     checkIdentify();
-    return getFileFromPath(currentFile).isFile();
+    return isFile(getFileFromPath(currentFile));
   }
 
   @Override
@@ -297,7 +339,7 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
         SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
       }
     }
-    return file.canRead();
+    return false;
   }
 
   @Override
@@ -322,13 +364,34 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
     return file.getParentFile().canWrite();
   }
 
+  /**
+   * Adapt File.exists() to leverage synchronization error with filesystem
+   *
+   * @param file
+   *
+   * @return as with File.exists()
+   */
+  public static boolean exists(final File file) {
+    for (int i = 0; i < 3; i++) {
+      if (file.exists()) {
+        return true;
+      }
+      try {
+        Thread.sleep(10);
+      } catch (InterruptedException ignored) { //NOSONAR
+        SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
+      }
+    }
+    return false;
+  }
+
   @Override
   public boolean exists() throws CommandAbstractException {
     checkIdentify();
     if (!isReady) {
       return false;
     }
-    return getFileFromPath(currentFile).exists();
+    return exists(getFileFromPath(currentFile));
   }
 
   @Override

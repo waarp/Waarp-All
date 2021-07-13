@@ -51,6 +51,7 @@ import org.waarp.common.utility.Version;
 import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.openr66.client.TransferArgsTest;
 import org.waarp.openr66.context.ErrorCode;
+import org.waarp.openr66.dao.DAOFactory;
 import org.waarp.openr66.dao.TransferDAO;
 import org.waarp.openr66.dao.database.DBDAOFactory;
 import org.waarp.openr66.database.data.DbTaskRunner;
@@ -274,12 +275,13 @@ public class RestNoAuthentTest extends TestAbstract {
   @Test
   public void testRestR66NoAuthentFollowId() throws Exception {
     Assume.assumeTrue("Driver not loaded", RUN_TEST);
+    TransferDAO transferDAO = null;
     try {
       createHttpClient();
       final String baseUri = "http://localhost:8088/";
       // 2 | type | V2 [  |
       String v2BaseUri = baseUri + "v2/";
-      TransferDAO transferDAO = DBDAOFactory.getInstance().getTransferDAO();
+      transferDAO = DBDAOFactory.getInstance().getTransferDAO();
       long id = 1;
       String rule = "rule3";
       int mode = 1;
@@ -423,6 +425,7 @@ public class RestNoAuthentTest extends TestAbstract {
       e.printStackTrace();
       fail(e.getMessage());
     } finally {
+      DAOFactory.closeDAO(transferDAO);
       httpClient.close();
       httpClient = null;
     }

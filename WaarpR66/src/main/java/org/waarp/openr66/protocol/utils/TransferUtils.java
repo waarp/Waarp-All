@@ -190,7 +190,7 @@ public final class TransferUtils {
   public static void finalizeTaskWithNoSession(final DbTaskRunner taskRunner,
                                                final LocalChannelReference localChannelReference)
       throws OpenR66RunnerErrorException {
-    final R66Session session = new R66Session();
+    final R66Session session = new R66Session(false);
     session.setStatus(50);
     final String remoteId =
         taskRunner.isRequestOnRequested()? taskRunner.getRequester() :

@@ -103,7 +103,8 @@ public abstract class AbstractExecTask extends AbstractTask {
   /**
    * For External command execution
    */
-  class PrepareCommandExec {
+static class PrepareCommandExec {
+    private final AbstractExecTask abstractTask;
     private final boolean noOutput;
     private final boolean waitForValidation;
     private final String finalname;
@@ -115,8 +116,9 @@ public abstract class AbstractExecTask extends AbstractTask {
     private PumpStreamHandler pumpStreamHandler;
     private ExecuteWatchdog watchdog;
 
-    PrepareCommandExec(final String finalname, final boolean noOutput,
+    PrepareCommandExec(final AbstractExecTask abstractTask, final String finalname, final boolean noOutput,
                        final boolean waitForValidation) {
+      this.abstractTask = abstractTask;
       this.finalname = finalname;
       this.noOutput = noOutput;
       this.waitForValidation = waitForValidation;
@@ -151,7 +153,7 @@ public abstract class AbstractExecTask extends AbstractTask {
     }
 
     public PrepareCommandExec invoke() {
-      commandLine = buildCommandLine(finalname);
+      commandLine = abstractTask.buildCommandLine(finalname);
       if (commandLine == null) {
         myResult = true;
         return this;
@@ -170,7 +172,7 @@ public abstract class AbstractExecTask extends AbstractTask {
           logger.error(
               "Exception: " + e1.getMessage() + " Exec in error with " +
               commandLine + ": {}", e1.getMessage());
-          futureCompletion.setFailure(e1);
+          abstractTask.futureCompletion.setFailure(e1);
           myResult = true;
           return this;
         }
@@ -180,8 +182,8 @@ public abstract class AbstractExecTask extends AbstractTask {
       final int[] correctValues = { 0, 1 };
       defaultExecutor.setExitValues(correctValues);
       watchdog = null;
-      if (delay > 0 && waitForValidation) {
-        watchdog = new ExecuteWatchdog(delay);
+      if (abstractTask.delay > 0 && waitForValidation) {
+        watchdog = new ExecuteWatchdog(abstractTask.delay);
         defaultExecutor.setWatchdog(watchdog);
       }
       myResult = false;
@@ -192,7 +194,8 @@ public abstract class AbstractExecTask extends AbstractTask {
   /**
    * For External command execution
    */
-  class ExecuteCommand {
+  static class ExecuteCommand {
+    private final AbstractExecTask abstractExecTask;
     private final CommandLine commandLine;
     private final DefaultExecutor defaultExecutor;
     private final PipedInputStream inputStream;
@@ -202,12 +205,13 @@ public abstract class AbstractExecTask extends AbstractTask {
     private boolean myResult;
     private int status;
 
-    ExecuteCommand(final CommandLine commandLine,
+    ExecuteCommand(final AbstractExecTask abstractExecTask, final CommandLine commandLine,
                    final DefaultExecutor defaultExecutor,
                    final PipedInputStream inputStream,
                    final PipedOutputStream outputStream,
                    final PumpStreamHandler pumpStreamHandler,
                    final Thread thread) {
+      this.abstractExecTask = abstractExecTask;
       this.commandLine = commandLine;
       this.defaultExecutor = defaultExecutor;
       this.inputStream = inputStream;
@@ -240,7 +244,7 @@ public abstract class AbstractExecTask extends AbstractTask {
             status = defaultExecutor.execute(commandLine);//NOSONAR
           } catch (final ExecuteException e1) {
             closeAllForExecution(true);
-            finalizeFromError(thread, status, commandLine, e1);
+            abstractExecTask.finalizeFromError(thread, status, commandLine, e1);
             myResult = true;
             return this;
           } catch (final IOException e1) {
@@ -248,13 +252,13 @@ public abstract class AbstractExecTask extends AbstractTask {
             logger.error(
                 "IOException: " + e.getMessage() + " . Exec in error with " +
                 commandLine);
-            futureCompletion.setFailure(e);
+            abstractExecTask.futureCompletion.setFailure(e);
             myResult = true;
             return this;
           }
         } else {
           closeAllForExecution(true);
-          finalizeFromError(thread, status, commandLine, e);
+          abstractExecTask.finalizeFromError(thread, status, commandLine, e);
           myResult = true;
           return this;
         }
@@ -263,15 +267,15 @@ public abstract class AbstractExecTask extends AbstractTask {
         logger.error(
             "IOException: " + e.getMessage() + " . Exec in error with " +
             commandLine);
-        futureCompletion.setFailure(e);
+        abstractExecTask.futureCompletion.setFailure(e);
         myResult = true;
         return this;
       }
       closeAllForExecution(false);
       if (thread != null) {
         try {
-          if (delay > 0) {
-            thread.join(delay);
+          if (abstractExecTask.delay > 0) {
+            thread.join(abstractExecTask.delay);
           } else {
             thread.join();
           }

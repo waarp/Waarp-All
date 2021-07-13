@@ -109,8 +109,7 @@ public abstract class SpooledITAbstract extends TestAbstract {
           "-limit", new File(dir, "limitConfiga.xml").getAbsolutePath()
       };
       Processes
-          .executeJvm(project, homeDir, ServerInitDatabase.class, argsServer,
-                      false);
+          .executeJvm(project, ServerInitDatabase.class, argsServer, false);
       logger.warn("Init Done");
     } else {
       System.err
@@ -132,7 +131,7 @@ public abstract class SpooledITAbstract extends TestAbstract {
       };
       // global ant project settings
       project = Processes.getProject(homeDir);
-      Processes.executeJvm(project, homeDir, R66Server.class, argsServer, true);
+      Processes.executeJvm(project, R66Server.class, argsServer, true);
       int pid = Processes
           .getPidOfRunnerCommandLinux("java", R66Server.class.getName(), PIDS);
       PIDS.add(pid);

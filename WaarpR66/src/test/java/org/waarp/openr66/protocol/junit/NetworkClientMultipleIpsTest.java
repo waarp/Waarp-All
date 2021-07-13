@@ -330,11 +330,11 @@ public class NetworkClientMultipleIpsTest extends TestAbstract {
   private void waitForAllDone(DbTaskRunner runner) {
     while (true) {
       try {
-        DbTaskRunner checkedRunner = DbTaskRunner.reloadFromDatabase(runner);
-        if (checkedRunner.isAllDone()) {
+        runner.select();
+        if (runner.isAllDone()) {
           logger.warn("DbTaskRunner done");
           return;
-        } else if (checkedRunner.isInError()) {
+        } else if (runner.isInError()) {
           logger.error("DbTaskRunner in error");
           return;
         }
@@ -425,8 +425,8 @@ public class NetworkClientMultipleIpsTest extends TestAbstract {
       final String[] argsServer = {
           file.getAbsolutePath()
       };
-      int pid = Processes
-          .executeJvm(project, homeDir, R66Server.class, argsServer, true);
+      int pid =
+          Processes.executeJvm(project, R66Server.class, argsServer, true);
       Thread.sleep(1000);
       int max = 10;
       while (Processes.exists(pid) && max > 0) {

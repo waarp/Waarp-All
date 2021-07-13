@@ -166,7 +166,7 @@ public class ServerActions extends ConnectionActions {
       session.newState(VALIDOTHER);
       localChannelReference.validateRequest(result);
       ChannelUtils
-          .writeAbstractLocalPacket(localChannelReference, validPacket, true);
+          .writeAbstractLocalPacket(localChannelReference, validPacket, false);
       logger.warn(
           "Valid TEST MESSAGE from " + session.getAuth().getUser() + " [" +
           localChannelReference.getNetworkChannel().remoteAddress() + "] Msg=" +
@@ -176,7 +176,7 @@ public class ServerActions extends ConnectionActions {
       packet.clear();
     } else {
       ChannelUtils
-          .writeAbstractLocalPacket(localChannelReference, packet, true);
+          .writeAbstractLocalPacket(localChannelReference, packet, false);
     }
   }
 
@@ -215,7 +215,7 @@ public class ServerActions extends ConnectionActions {
     }
     if (validPacket != null) {
       ChannelUtils
-          .writeAbstractLocalPacket(localChannelReference, validPacket, true);
+          .writeAbstractLocalPacket(localChannelReference, validPacket, false);
       localChannelReference.close();
     } else {
       session.newState(ERROR);
@@ -223,7 +223,8 @@ public class ServerActions extends ConnectionActions {
           new ErrorPacket("Error while Request " + request,
                           ErrorCode.Internal.getCode(),
                           ErrorPacket.FORWARDCLOSECODE);
-      ChannelUtils.writeAbstractLocalPacket(localChannelReference, error, true);
+      ChannelUtils
+          .writeAbstractLocalPacket(localChannelReference, error, false);
       ChannelCloseTimer
           .closeFutureTransaction(localChannelReference.getServerHandler());
     }
@@ -343,7 +344,8 @@ public class ServerActions extends ConnectionActions {
     }
     localChannelReference.validateRequest(result);
     try {
-      ChannelUtils.writeAbstractLocalPacket(localChannelReference, valid, true);
+      ChannelUtils
+          .writeAbstractLocalPacket(localChannelReference, valid, false);
     } catch (final OpenR66ProtocolPacketException ignored) {
       // nothing
     }
@@ -466,7 +468,8 @@ public class ServerActions extends ConnectionActions {
                         LocalPacketFactory.REQUESTUSERPACKET);
     localChannelReference.validateRequest(result);
     try {
-      ChannelUtils.writeAbstractLocalPacket(localChannelReference, valid, true);
+      ChannelUtils
+          .writeAbstractLocalPacket(localChannelReference, valid, false);
     } catch (final OpenR66ProtocolPacketException ignored) {
       // nothing
     }
@@ -494,7 +497,8 @@ public class ServerActions extends ConnectionActions {
                         LocalPacketFactory.REQUESTUSERPACKET);
     localChannelReference.validateRequest(result);
     try {
-      ChannelUtils.writeAbstractLocalPacket(localChannelReference, valid, true);
+      ChannelUtils
+          .writeAbstractLocalPacket(localChannelReference, valid, false);
     } catch (final OpenR66ProtocolPacketException ignored) {
       // ignore
     }
@@ -574,7 +578,8 @@ public class ServerActions extends ConnectionActions {
                         LocalPacketFactory.REQUESTUSERPACKET);
     localChannelReference.validateRequest(result);
     try {
-      ChannelUtils.writeAbstractLocalPacket(localChannelReference, valid, true);
+      ChannelUtils
+          .writeAbstractLocalPacket(localChannelReference, valid, false);
     } catch (final OpenR66ProtocolPacketException ignored) {
       // ignore
     }
@@ -653,7 +658,8 @@ public class ServerActions extends ConnectionActions {
     }
     // inform back the requester
     try {
-      ChannelUtils.writeAbstractLocalPacket(localChannelReference, valid, true);
+      ChannelUtils
+          .writeAbstractLocalPacket(localChannelReference, valid, false);
     } catch (final OpenR66ProtocolPacketException ignored) {
       // ignore
     }
@@ -674,7 +680,8 @@ public class ServerActions extends ConnectionActions {
     resulttest.setOther(packet);
     localChannelReference.validateRequest(resulttest);
     try {
-      ChannelUtils.writeAbstractLocalPacket(localChannelReference, valid, true);
+      ChannelUtils
+          .writeAbstractLocalPacket(localChannelReference, valid, false);
     } catch (final OpenR66ProtocolPacketException ignored) {
       // ignore
     }
@@ -705,7 +712,7 @@ public class ServerActions extends ConnectionActions {
       packet.setSmiddle(Integer.toString(rank));
       try {
         ChannelUtils
-            .writeAbstractLocalPacket(localChannelReference, packet, true);
+            .writeAbstractLocalPacket(localChannelReference, packet, false);
       } catch (final OpenR66ProtocolPacketException ignored) {
         // ignore
       }
@@ -817,7 +824,8 @@ public class ServerActions extends ConnectionActions {
                               LocalPacketFactory.REQUESTUSERPACKET);
     localChannelReference.validateRequest(resulttest);
     try {
-      ChannelUtils.writeAbstractLocalPacket(localChannelReference, valid, true);
+      ChannelUtils
+          .writeAbstractLocalPacket(localChannelReference, valid, false);
     } catch (final OpenR66ProtocolPacketException ignored) {
       // ignore
     }
@@ -845,7 +853,8 @@ public class ServerActions extends ConnectionActions {
                               LocalPacketFactory.REQUESTUSERPACKET);
     localChannelReference.validateRequest(result);
     try {
-      ChannelUtils.writeAbstractLocalPacket(localChannelReference, valid, true);
+      ChannelUtils
+          .writeAbstractLocalPacket(localChannelReference, valid, false);
     } catch (final OpenR66ProtocolPacketException ignored) {
       // ignore
     }
@@ -870,7 +879,8 @@ public class ServerActions extends ConnectionActions {
     logger.debug(valid.getRequest());
     localChannelReference.validateRequest(result);
     try {
-      ChannelUtils.writeAbstractLocalPacket(localChannelReference, valid, true);
+      ChannelUtils
+          .writeAbstractLocalPacket(localChannelReference, valid, false);
     } catch (final OpenR66ProtocolPacketException ignored) {
       // ignore
     }
@@ -910,7 +920,8 @@ public class ServerActions extends ConnectionActions {
                               LocalPacketFactory.REQUESTUSERPACKET);
     localChannelReference.validateRequest(result);
     try {
-      ChannelUtils.writeAbstractLocalPacket(localChannelReference, valid, true);
+      ChannelUtils
+          .writeAbstractLocalPacket(localChannelReference, valid, false);
     } catch (final OpenR66ProtocolPacketException ignored) {
       // ignore
     }
@@ -954,7 +965,8 @@ public class ServerActions extends ConnectionActions {
                               LocalPacketFactory.REQUESTUSERPACKET);
     localChannelReference.validateRequest(result);
     try {
-      ChannelUtils.writeAbstractLocalPacket(localChannelReference, valid, true);
+      ChannelUtils
+          .writeAbstractLocalPacket(localChannelReference, valid, false);
     } catch (final OpenR66ProtocolPacketException ignored) {
       // ignore
     }
@@ -1007,7 +1019,8 @@ public class ServerActions extends ConnectionActions {
     }
     // inform back the requester
     try {
-      ChannelUtils.writeAbstractLocalPacket(localChannelReference, valid, true);
+      ChannelUtils
+          .writeAbstractLocalPacket(localChannelReference, valid, false);
     } catch (final OpenR66ProtocolPacketException ignored) {
       // ignore
     }
@@ -1037,7 +1050,8 @@ public class ServerActions extends ConnectionActions {
     resulttest.setOther(packet);
     localChannelReference.validateRequest(resulttest);
     try {
-      ChannelUtils.writeAbstractLocalPacket(localChannelReference, valid, true);
+      ChannelUtils
+          .writeAbstractLocalPacket(localChannelReference, valid, false);
     } catch (final OpenR66ProtocolPacketException ignored) {
       // ignore
     }
@@ -1058,7 +1072,7 @@ public class ServerActions extends ConnectionActions {
       localChannelReference.validateRequest(result);
       try {
         ChannelUtils
-            .writeAbstractLocalPacket(localChannelReference, valid, true);
+            .writeAbstractLocalPacket(localChannelReference, valid, false);
       } catch (final OpenR66ProtocolPacketException ignored) {
         // ignore
       }
@@ -1071,7 +1085,8 @@ public class ServerActions extends ConnectionActions {
           "TransferRequest in error: for " + node + " since " +
           result.getMessage(), result.getCode().getCode(),
           ErrorPacket.FORWARDCLOSECODE);
-      ChannelUtils.writeAbstractLocalPacket(localChannelReference, error, true);
+      ChannelUtils
+          .writeAbstractLocalPacket(localChannelReference, error, false);
       ChannelCloseTimer
           .closeFutureTransaction(localChannelReference.getServerHandler());
     }
@@ -1091,14 +1106,15 @@ public class ServerActions extends ConnectionActions {
     }
     if (validPacket != null) {
       ChannelUtils
-          .writeAbstractLocalPacket(localChannelReference, validPacket, true);
+          .writeAbstractLocalPacket(localChannelReference, validPacket, false);
       localChannelReference.close();
     } else {
       session.newState(ERROR);
       final ErrorPacket error = new ErrorPacket("Error while Request " + json,
                                                 ErrorCode.Internal.getCode(),
                                                 ErrorPacket.FORWARDCLOSECODE);
-      ChannelUtils.writeAbstractLocalPacket(localChannelReference, error, true);
+      ChannelUtils
+          .writeAbstractLocalPacket(localChannelReference, error, false);
       ChannelCloseTimer
           .closeFutureTransaction(localChannelReference.getServerHandler());
     }
@@ -1140,7 +1156,7 @@ public class ServerActions extends ConnectionActions {
       // inform back the requester
       try {
         ChannelUtils
-            .writeAbstractLocalPacket(localChannelReference, valid, true);
+            .writeAbstractLocalPacket(localChannelReference, valid, false);
       } catch (final OpenR66ProtocolPacketException ignored) {
         // ignore
       }
@@ -1159,7 +1175,8 @@ public class ServerActions extends ConnectionActions {
           "BusinessRequest in error: for " + node + " since " +
           result.getMessage(), result.getCode().getCode(),
           ErrorPacket.FORWARDCLOSECODE);
-      ChannelUtils.writeAbstractLocalPacket(localChannelReference, error, true);
+      ChannelUtils
+          .writeAbstractLocalPacket(localChannelReference, error, false);
       session.setStatus(203);
     }
     session.setStatus(204);
@@ -1184,7 +1201,7 @@ public class ServerActions extends ConnectionActions {
                                 LocalPacketFactory.REQUESTUSERPACKET);
       try {
         ChannelUtils
-            .writeAbstractLocalPacket(localChannelReference, valid, true);
+            .writeAbstractLocalPacket(localChannelReference, valid, false);
       } catch (final OpenR66ProtocolPacketException ignored) {
         // ignore
       }
@@ -1211,7 +1228,7 @@ public class ServerActions extends ConnectionActions {
                                 LocalPacketFactory.SHUTDOWNPACKET);
       try {
         ChannelUtils
-            .writeAbstractLocalPacket(localChannelReference, valid, true);
+            .writeAbstractLocalPacket(localChannelReference, valid, false);
       } catch (final OpenR66ProtocolPacketException ignored) {
         // ignore
       }
@@ -1233,7 +1250,8 @@ public class ServerActions extends ConnectionActions {
     resulttest.setOther(packet);
     localChannelReference.validateRequest(resulttest);
     try {
-      ChannelUtils.writeAbstractLocalPacket(localChannelReference, valid, true);
+      ChannelUtils
+          .writeAbstractLocalPacket(localChannelReference, valid, false);
     } catch (final OpenR66ProtocolPacketException ignored) {
       // ignore
     }
@@ -2344,7 +2362,7 @@ public class ServerActions extends ConnectionActions {
         localChannelReference.validateRequest(result);
         try {
           ChannelUtils
-              .writeAbstractLocalPacket(localChannelReference, packet, true);
+              .writeAbstractLocalPacket(localChannelReference, packet, false);
         } catch (final OpenR66ProtocolPacketException ignored) {
           // ignore
         }
@@ -2364,7 +2382,8 @@ public class ServerActions extends ConnectionActions {
           "BusinessRequest in error: for " + packet + " since " +
           result.getMessage(), result.getCode().getCode(),
           ErrorPacket.FORWARDCLOSECODE);
-      ChannelUtils.writeAbstractLocalPacket(localChannelReference, error, true);
+      ChannelUtils
+          .writeAbstractLocalPacket(localChannelReference, error, false);
       session.setStatus(203);
     }
     session.setStatus(204);
@@ -2440,7 +2459,8 @@ public class ServerActions extends ConnectionActions {
         (packet.getBlock()? "Block" : "Unblock") + " new request",
         result.getCode().getCode(), LocalPacketFactory.REQUESTUSERPACKET);
     try {
-      ChannelUtils.writeAbstractLocalPacket(localChannelReference, valid, true);
+      ChannelUtils
+          .writeAbstractLocalPacket(localChannelReference, valid, false);
     } catch (final OpenR66ProtocolPacketException ignored) {
       // ignore
     }

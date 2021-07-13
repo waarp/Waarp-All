@@ -139,8 +139,8 @@ public class DbRule extends AbstractDbDataDao<Rule> {
   }
 
   @Override
-  protected AbstractDAO<Rule> getDao() throws DAOConnectionException {
-    return DAOFactory.getInstance().getRuleDAO();
+  protected AbstractDAO<Rule> getDao(final boolean isCacheable) throws DAOConnectionException {
+    return DAOFactory.getInstance().getRuleDAO(isCacheable);
   }
 
   @Override
@@ -216,7 +216,7 @@ public class DbRule extends AbstractDbDataDao<Rule> {
   public DbRule(final String idRule) throws WaarpDatabaseException {
     RuleDAO ruleAccess = null;
     try {
-      ruleAccess = DAOFactory.getInstance().getRuleDAO();
+      ruleAccess = DAOFactory.getInstance().getRuleDAO(true);
       pojo = ruleAccess.select(idRule);
     } catch (final DAOConnectionException e) {
       throw new WaarpDatabaseException(e);
@@ -392,9 +392,7 @@ public class DbRule extends AbstractDbDataDao<Rule> {
     } catch (final DAOConnectionException e) {
       throw new WaarpDatabaseNoConnectionException(e);
     } finally {
-      if (transferDAO != null) {
-        transferDAO.close();
-      }
+      DAOFactory.closeDAO(transferDAO);
     }
     super.delete();
   }
@@ -411,7 +409,7 @@ public class DbRule extends AbstractDbDataDao<Rule> {
     RuleDAO ruleAccess = null;
     List<Rule> rules;
     try {
-      ruleAccess = DAOFactory.getInstance().getRuleDAO();
+      ruleAccess = DAOFactory.getInstance().getRuleDAO(false);
       rules = ruleAccess.getAll();
       ruleAccess.deleteAll();
     } catch (final DAOConnectionException e) {
@@ -442,7 +440,7 @@ public class DbRule extends AbstractDbDataDao<Rule> {
     RuleDAO ruleAccess = null;
     List<Rule> rules;
     try {
-      ruleAccess = DAOFactory.getInstance().getRuleDAO();
+      ruleAccess = DAOFactory.getInstance().getRuleDAO(false);
       rules = ruleAccess.getAll();
     } catch (final DAOConnectionException e) {
       throw new WaarpDatabaseNoConnectionException(e);
@@ -474,7 +472,7 @@ public class DbRule extends AbstractDbDataDao<Rule> {
     final DbRule dbRule = new DbRule();
     AbstractDAO<Rule> ruleDAO = null;
     try {
-      ruleDAO = dbRule.getDao();
+      ruleDAO = dbRule.getDao(false);
       dbRule.pojo = ((StatementExecutor<Rule>) ruleDAO)
           .getFromResultSet(preparedStatement.getResultSet());
       return dbRule;
@@ -502,7 +500,7 @@ public class DbRule extends AbstractDbDataDao<Rule> {
     RuleDAO ruleAccess = null;
     List<Rule> rules;
     try {
-      ruleAccess = DAOFactory.getInstance().getRuleDAO();
+      ruleAccess = DAOFactory.getInstance().getRuleDAO(false);
       rules = ruleAccess.find(filters);
     } catch (final DAOConnectionException e) {
       throw new WaarpDatabaseNoConnectionException(e);

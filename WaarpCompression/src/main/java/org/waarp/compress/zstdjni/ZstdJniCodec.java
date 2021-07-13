@@ -70,24 +70,6 @@ public class ZstdJniCodec implements CompressorCodec {
   }
 
   @Override
-  public byte[] decompress(final byte[] compressed, final int length)
-      throws MalformedInputException {
-    try {
-      final int len = getDecompressedSize(compressed, length);
-      final byte[] target = new byte[len];
-      final int finalLen = decompress(compressed, length, target, len);
-      if (finalLen != len) {
-        throw new IllegalStateException(
-            "Issue on suggested decompressed size " + len + " while is " +
-            finalLen);
-      }
-      return target;
-    } catch (final Exception e) {
-      throw new MalformedInputException(e);
-    }
-  }
-
-  @Override
   public long compress(final File input, final File output)
       throws MalformedInputException {
     InputStream inputStream = null;
@@ -112,6 +94,24 @@ public class ZstdJniCodec implements CompressorCodec {
     } finally {
       FileUtils.close(inputStream);
       FileUtils.close(outputStream);
+    }
+  }
+
+  @Override
+  public byte[] decompress(final byte[] compressed, final int length)
+      throws MalformedInputException {
+    try {
+      final int len = getDecompressedSize(compressed, length);
+      final byte[] target = new byte[len];
+      final int finalLen = decompress(compressed, length, target, len);
+      if (finalLen != len) {
+        throw new IllegalStateException(
+            "Issue on suggested decompressed size " + len + " while is " +
+            finalLen);
+      }
+      return target;
+    } catch (final Exception e) {
+      throw new MalformedInputException(e);
     }
   }
 

@@ -146,6 +146,7 @@ public class DbTaskRunnerTest {
     // Test Html special version
     dbTransfer.setTransferInfo(JsonHandler.writeAsStringEscaped(
         DbTaskRunner.getMapFromString(dbTransfer.getTransferInfo())));
+    map = dbTransfer.getTransferMap();
     assertEquals(true, map.get("Test"));
     assertEquals("bar2", map.get("foo2"));
     assertEquals("bar", map.get("foo"));

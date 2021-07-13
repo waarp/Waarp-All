@@ -103,7 +103,7 @@ public class RuleIdHandler extends AbstractRestDbHandler {
     checkSanity(id);
     RuleDAO ruleDAO = null;
     try {
-      ruleDAO = DAO_FACTORY.getRuleDAO();
+      ruleDAO = DAO_FACTORY.getRuleDAO(true);
       final Rule rule = ruleDAO.select(id);
 
       if (rule == null) {
@@ -139,7 +139,7 @@ public class RuleIdHandler extends AbstractRestDbHandler {
     checkSanity(id);
     RuleDAO ruleDAO = null;
     try {
-      ruleDAO = DAO_FACTORY.getRuleDAO();
+      ruleDAO = DAO_FACTORY.getRuleDAO(false);
       final Rule oldRule = ruleDAO.select(id);
 
       if (oldRule == null) {
@@ -201,7 +201,7 @@ public class RuleIdHandler extends AbstractRestDbHandler {
     }
     RuleDAO ruleDAO = null;
     try {
-      ruleDAO = DAO_FACTORY.getRuleDAO();
+      ruleDAO = DAO_FACTORY.getRuleDAO(false);
       final Rule rule = ruleDAO.select(id);
       if (rule == null) {
         responder.sendStatus(NOT_FOUND);

@@ -67,9 +67,9 @@ public class DbMultipleMonitor extends AbstractDbDataDao<MultipleMonitor> {
   }
 
   @Override
-  protected AbstractDAO<MultipleMonitor> getDao()
+  protected AbstractDAO<MultipleMonitor> getDao(final boolean isCacheable)
       throws DAOConnectionException {
-    return DAOFactory.getInstance().getMultipleMonitorDAO();
+    return DAOFactory.getInstance().getMultipleMonitorDAO(isCacheable);
   }
 
   @Override
@@ -104,7 +104,7 @@ public class DbMultipleMonitor extends AbstractDbDataDao<MultipleMonitor> {
   public DbMultipleMonitor(final String hostid) throws WaarpDatabaseException {
     MultipleMonitorDAO monitorAccess = null;
     try {
-      monitorAccess = DAOFactory.getInstance().getMultipleMonitorDAO();
+      monitorAccess = DAOFactory.getInstance().getMultipleMonitorDAO(true);
       pojo = monitorAccess.select(hostid);
     } catch (final DAOConnectionException e) {
       throw new WaarpDatabaseException(e);
@@ -169,7 +169,7 @@ public class DbMultipleMonitor extends AbstractDbDataDao<MultipleMonitor> {
     final DbMultipleMonitor dbMm = new DbMultipleMonitor();
     AbstractDAO<MultipleMonitor> multipleDAO = null;
     try {
-      multipleDAO = dbMm.getDao();
+      multipleDAO = dbMm.getDao(false);
       dbMm.pojo = ((StatementExecutor<MultipleMonitor>) multipleDAO)
           .getFromResultSet(preparedStatement.getResultSet());
       return dbMm;

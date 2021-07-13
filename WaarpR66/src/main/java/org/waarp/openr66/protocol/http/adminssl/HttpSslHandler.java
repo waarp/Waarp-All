@@ -150,7 +150,7 @@ public class HttpSslHandler
       new ConcurrentHashMap<String, R66Session>();
   protected static final ThreadLocalRandom RANDOM = ThreadLocalRandom.current();
 
-  protected R66Session authentHttp = new R66Session();
+  protected R66Session authentHttp = new R66Session(false);
 
   protected FullHttpRequest request;
   protected boolean newSession;

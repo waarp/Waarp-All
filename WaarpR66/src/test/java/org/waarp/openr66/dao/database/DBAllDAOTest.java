@@ -113,7 +113,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
   class DAOFactoryTest extends DAOFactory {
 
     @Override
-    public BusinessDAO getBusinessDAO() throws DAOConnectionException {
+    public BusinessDAO getBusinessDAO(final boolean isCacheable) throws DAOConnectionException {
       try {
         return new DBBusinessDAO(getConnection());
       } catch (final SQLException e) {
@@ -124,7 +124,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
     }
 
     @Override
-    public HostDAO getHostDAO() throws DAOConnectionException {
+    public HostDAO getHostDAO(final boolean isCacheable) throws DAOConnectionException {
       try {
         return new DBHostDAO(getConnection());
       } catch (final SQLException e) {
@@ -135,7 +135,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
     }
 
     @Override
-    public LimitDAO getLimitDAO() throws DAOConnectionException {
+    public LimitDAO getLimitDAO(final boolean isCacheable) throws DAOConnectionException {
       try {
         return new DBLimitDAO(getConnection());
       } catch (final SQLException e) {
@@ -146,7 +146,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
     }
 
     @Override
-    public MultipleMonitorDAO getMultipleMonitorDAO()
+    public MultipleMonitorDAO getMultipleMonitorDAO(final boolean isCacheable)
         throws DAOConnectionException {
       try {
         return new DBMultipleMonitorDAO(getConnection());
@@ -158,7 +158,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
     }
 
     @Override
-    public RuleDAO getRuleDAO() throws DAOConnectionException {
+    public RuleDAO getRuleDAO(final boolean isCacheable) throws DAOConnectionException {
       try {
         return new DBRuleDAO(getConnection());
       } catch (final SQLException e) {
@@ -365,7 +365,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
   @Test
   public void test01_DeleteAllBusiness() {
     try {
-      final BusinessDAO dao = getDaoFactory().getBusinessDAO();
+      final BusinessDAO dao = getDaoFactory().getBusinessDAO(false);
       dao.deleteAll();
 
       checkSql("SELECT * FROM hostconfig");
@@ -378,7 +378,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
   @Test
   public void test01_DeleteBusiness() {
     try {
-      final BusinessDAO dao = getDaoFactory().getBusinessDAO();
+      final BusinessDAO dao = getDaoFactory().getBusinessDAO(false);
       dao.delete(new Business("server1", "", "", "", ""));
 
       checkSql("SELECT * FROM hostconfig where hostid = 'server1'");
@@ -391,7 +391,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
   @Test
   public void test01_GetAllBusiness() {
     try {
-      final BusinessDAO dao = getDaoFactory().getBusinessDAO();
+      final BusinessDAO dao = getDaoFactory().getBusinessDAO(false);
       assertEquals(5, dao.getAll().size());
     } catch (final DAOConnectionException e) {
       // Ignore since OK if XML
@@ -408,7 +408,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
   @Test
   public void test01_SelectBusiness() {
     try {
-      final BusinessDAO dao = getDaoFactory().getBusinessDAO();
+      final BusinessDAO dao = getDaoFactory().getBusinessDAO(true);
       final Business business = dao.select("server1");
 
       assertEquals("joyaux", business.getBusiness());
@@ -438,7 +438,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
   @Test
   public void test01_ExistBusiness() {
     try {
-      final BusinessDAO dao = getDaoFactory().getBusinessDAO();
+      final BusinessDAO dao = getDaoFactory().getBusinessDAO(true);
       assertTrue(dao.exist("server1"));
       assertFalse(dao.exist("ghost"));
     } catch (final DAOConnectionException e) {
@@ -456,7 +456,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
   @Test
   public void test01_InsertBusiness() {
     try {
-      final BusinessDAO dao = getDaoFactory().getBusinessDAO();
+      final BusinessDAO dao = getDaoFactory().getBusinessDAO(false);
       dao.insert(new Business("chacha", "lolo", "lala", "minou", "ect",
                               UpdatedInfo.TOSUBMIT));
 
@@ -486,7 +486,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
   @Test
   public void test01_UpdateBusiness() {
     try {
-      final BusinessDAO dao = getDaoFactory().getBusinessDAO();
+      final BusinessDAO dao = getDaoFactory().getBusinessDAO(false);
       dao.update(new Business("server2", "lolo", "lala", "minou", "ect",
                               UpdatedInfo.RUNNING));
       if (checkXml()) {
@@ -512,7 +512,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
     final ArrayList<Filter> map = new ArrayList<Filter>();
     map.add(new Filter(DBBusinessDAO.BUSINESS_FIELD, "=", "ba"));
     try {
-      final BusinessDAO dao = getDaoFactory().getBusinessDAO();
+      final BusinessDAO dao = getDaoFactory().getBusinessDAO(false);
       assertEquals(2, dao.find(map).size());
     } catch (final DAOConnectionException e) {
       // Ignore since OK if XML
@@ -533,7 +533,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
   @Test
   public void test02_DeleteAllHost() {
     try {
-      final HostDAO dao = getDaoFactory().getHostDAO();
+      final HostDAO dao = getDaoFactory().getHostDAO(false);
       dao.deleteAll();
 
       checkSql("SELECT * FROM hosts");
@@ -546,7 +546,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
   @Test
   public void test02_DeleteHost() {
     try {
-      final HostDAO dao = getDaoFactory().getHostDAO();
+      final HostDAO dao = getDaoFactory().getHostDAO(false);
       dao.delete(new Host("server1", "", 666, null, false, false));
 
       checkSql("SELECT * FROM hosts where hostid = 'server1'");
@@ -559,7 +559,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
   @Test
   public void test02_GetAllHost() {
     try {
-      final HostDAO dao = getDaoFactory().getHostDAO();
+      final HostDAO dao = getDaoFactory().getHostDAO(false);
       assertEquals(3, dao.getAll().size());
     } catch (final DAOConnectionException e) {
       // Ignore since OK if XML
@@ -576,7 +576,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
   @Test
   public void test02_SelectHost() {
     try {
-      final HostDAO dao = getDaoFactory().getHostDAO();
+      final HostDAO dao = getDaoFactory().getHostDAO(true);
       final Host host = dao.select("server1");
 
       assertEquals("server1", host.getHostid());
@@ -611,7 +611,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
   @Test
   public void test02_ExistHost() {
     try {
-      final HostDAO dao = getDaoFactory().getHostDAO();
+      final HostDAO dao = getDaoFactory().getHostDAO(true);
       assertTrue(dao.exist("server1"));
       assertFalse(dao.exist("ghost"));
     } catch (final DAOConnectionException e) {
@@ -629,7 +629,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
   @Test
   public void test02_InsertHost() {
     try {
-      final HostDAO dao = getDaoFactory().getHostDAO();
+      final HostDAO dao = getDaoFactory().getHostDAO(false);
       dao.insert(new Host("chacha", "address", 666,
                           "aaa".getBytes(WaarpStringUtils.UTF8), false, false));
       if (checkXml()) {
@@ -663,7 +663,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
   @Test
   public void test02_UpdateHost() {
     try {
-      final HostDAO dao = getDaoFactory().getHostDAO();
+      final HostDAO dao = getDaoFactory().getHostDAO(false);
       dao.update(new Host("server2", "address", 666,
                           "password".getBytes(WaarpStringUtils.UTF8), false,
                           false));
@@ -695,7 +695,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
     final ArrayList<Filter> map = new ArrayList<Filter>();
     map.add(new Filter(DBHostDAO.ADDRESS_FIELD, "=", "127.0.0.1"));
     try {
-      final HostDAO dao = getDaoFactory().getHostDAO();
+      final HostDAO dao = getDaoFactory().getHostDAO(false);
       assertEquals(2, dao.find(map).size());
     } catch (final DAOConnectionException e) {
       // Ignore since OK if XML
@@ -716,7 +716,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
   @Test
   public void test03_DeleteAllLimit() {
     try {
-      final LimitDAO dao = getDaoFactory().getLimitDAO();
+      final LimitDAO dao = getDaoFactory().getLimitDAO(false);
       dao.deleteAll();
 
       checkSql("SELECT * FROM configuration");
@@ -729,7 +729,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
   @Test
   public void test03_DeleteLimit() {
     try {
-      final LimitDAO dao = getDaoFactory().getLimitDAO();
+      final LimitDAO dao = getDaoFactory().getLimitDAO(false);
       dao.delete(new Limit("server1", 0L));
 
       checkSql("SELECT * FROM configuration where hostid = 'server1'");
@@ -742,7 +742,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
   @Test
   public void test03_GetAllLimit() {
     try {
-      final LimitDAO dao = getDaoFactory().getLimitDAO();
+      final LimitDAO dao = getDaoFactory().getLimitDAO(false);
       assertEquals(3, dao.getAll().size());
     } catch (final DAOConnectionException e) {
       // Ignore since OK if XML
@@ -759,7 +759,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
   @Test
   public void test03_SelectLimit() {
     try {
-      final LimitDAO dao = getDaoFactory().getLimitDAO();
+      final LimitDAO dao = getDaoFactory().getLimitDAO(true);
       final Limit limit = dao.select("server1");
 
       assertEquals("server1", limit.getHostid());
@@ -791,7 +791,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
   @Test
   public void test03_ExistLimit() {
     try {
-      final LimitDAO dao = getDaoFactory().getLimitDAO();
+      final LimitDAO dao = getDaoFactory().getLimitDAO(true);
       assertTrue(dao.exist("server1"));
       assertFalse(dao.exist("ghost"));
     } catch (final DAOConnectionException e) {
@@ -809,7 +809,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
   @Test
   public void test03_InsertLimit() {
     try {
-      final LimitDAO dao = getDaoFactory().getLimitDAO();
+      final LimitDAO dao = getDaoFactory().getLimitDAO(false);
       dao.insert(
           new Limit("chacha", 4L, 1L, 5L, 13L, 12, UpdatedInfo.TOSUBMIT));
       if (checkXml()) {
@@ -839,7 +839,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
   @Test
   public void test03_UpdateLimit() {
     try {
-      final LimitDAO dao = getDaoFactory().getLimitDAO();
+      final LimitDAO dao = getDaoFactory().getLimitDAO(false);
       dao.update(
           new Limit("server2", 4L, 1L, 5L, 13L, 12L, UpdatedInfo.RUNNING));
       if (checkXml()) {
@@ -866,7 +866,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
     final ArrayList<Filter> map = new ArrayList<Filter>();
     map.add(new Filter(DBLimitDAO.READ_SESSION_LIMIT_FIELD, ">", 2));
     try {
-      final LimitDAO dao = getDaoFactory().getLimitDAO();
+      final LimitDAO dao = getDaoFactory().getLimitDAO(false);
       assertEquals(2, dao.find(map).size());
     } catch (final DAOConnectionException e) {
       // Ignore since OK if XML
@@ -887,7 +887,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
   @Test
   public void test04_DeleteAllMultipleMonitor() {
     try {
-      final MultipleMonitorDAO dao = getDaoFactory().getMultipleMonitorDAO();
+      final MultipleMonitorDAO dao = getDaoFactory().getMultipleMonitorDAO(false);
       if (dao == null) {
         // ignore since XML
         return;
@@ -904,7 +904,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
   @Test
   public void test04_DeleteMultipleMonitor() {
     try {
-      final MultipleMonitorDAO dao = getDaoFactory().getMultipleMonitorDAO();
+      final MultipleMonitorDAO dao = getDaoFactory().getMultipleMonitorDAO(false);
       if (dao == null) {
         // ignore since XML
         return;
@@ -921,7 +921,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
   @Test
   public void test04_GetAllMultipleMonitor() {
     try {
-      final MultipleMonitorDAO dao = getDaoFactory().getMultipleMonitorDAO();
+      final MultipleMonitorDAO dao = getDaoFactory().getMultipleMonitorDAO(false);
       if (dao == null) {
         // ignore since XML
         return;
@@ -936,7 +936,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
   @Test
   public void test04_SelectMultipleMonitor() {
     try {
-      final MultipleMonitorDAO dao = getDaoFactory().getMultipleMonitorDAO();
+      final MultipleMonitorDAO dao = getDaoFactory().getMultipleMonitorDAO(true);
       if (dao == null) {
         // ignore since XML
         return;
@@ -962,7 +962,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
   @Test
   public void test04_ExistMultipleMonitor() {
     try {
-      final MultipleMonitorDAO dao = getDaoFactory().getMultipleMonitorDAO();
+      final MultipleMonitorDAO dao = getDaoFactory().getMultipleMonitorDAO(true);
       if (dao == null) {
         // ignore since XML
         return;
@@ -978,7 +978,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
   @Test
   public void test04_InsertMultipleMonitor() {
     try {
-      final MultipleMonitorDAO dao = getDaoFactory().getMultipleMonitorDAO();
+      final MultipleMonitorDAO dao = getDaoFactory().getMultipleMonitorDAO(false);
       if (dao == null) {
         // ignore since XML
         return;
@@ -1006,7 +1006,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
   @Test
   public void test04_UpdateMultipleMonitor() {
     try {
-      final MultipleMonitorDAO dao = getDaoFactory().getMultipleMonitorDAO();
+      final MultipleMonitorDAO dao = getDaoFactory().getMultipleMonitorDAO(false);
       if (dao == null) {
         // ignore since XML
         return;
@@ -1031,7 +1031,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
     final ArrayList<Filter> map = new ArrayList<Filter>();
     map.add(new Filter(DBMultipleMonitorDAO.COUNT_CONFIG_FIELD, "=", 0));
     try {
-      final MultipleMonitorDAO dao = getDaoFactory().getMultipleMonitorDAO();
+      final MultipleMonitorDAO dao = getDaoFactory().getMultipleMonitorDAO(false);
       if (dao == null) {
         // ignore since XML
         return;
@@ -1050,7 +1050,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
   @Test
   public void test05_DeleteAllRule() {
     try {
-      final RuleDAO dao = getDaoFactory().getRuleDAO();
+      final RuleDAO dao = getDaoFactory().getRuleDAO(false);
       dao.deleteAll();
 
       checkSql("SELECT * FROM rules");
@@ -1063,7 +1063,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
   @Test
   public void test05_DeleteRule() {
     try {
-      final RuleDAO dao = getDaoFactory().getRuleDAO();
+      final RuleDAO dao = getDaoFactory().getRuleDAO(false);
       dao.delete(new Rule("default", 1));
 
       checkSql("SELECT * FROM rules where idrule = 'default'");
@@ -1079,7 +1079,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
       return;
     }
     try {
-      final RuleDAO dao = getDaoFactory().getRuleDAO();
+      final RuleDAO dao = getDaoFactory().getRuleDAO(false);
       assertEquals(3, dao.getAll().size());
     } catch (final Exception e) {
       SysErrLogger.FAKE_LOGGER.syserr(e);
@@ -1090,7 +1090,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
   @Test
   public void test05_SelectRule() {
     try {
-      final RuleDAO dao = getDaoFactory().getRuleDAO();
+      final RuleDAO dao = getDaoFactory().getRuleDAO(true);
       final Rule rule = dao.select("dummy");
 
       assertEquals("dummy", rule.getName());
@@ -1128,7 +1128,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
   @Test
   public void test05_ExistRule() {
     try {
-      final RuleDAO dao = getDaoFactory().getRuleDAO();
+      final RuleDAO dao = getDaoFactory().getRuleDAO(true);
       assertTrue(dao.exist("dummy"));
       assertFalse(dao.exist("ghost"));
     } catch (final Exception e) {
@@ -1140,7 +1140,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
   @Test
   public void test05_InsertRule() {
     try {
-      final RuleDAO dao = getDaoFactory().getRuleDAO();
+      final RuleDAO dao = getDaoFactory().getRuleDAO(false);
       dao.insert(new Rule("chacha", 2));
       if (checkXml()) {
         return;
@@ -1180,7 +1180,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
   @Test
   public void test05_UpdateRule() {
     try {
-      final RuleDAO dao = getDaoFactory().getRuleDAO();
+      final RuleDAO dao = getDaoFactory().getRuleDAO(false);
       dao.update(new Rule("dummy", 2));
       if (checkXml()) {
         return;
@@ -1217,7 +1217,7 @@ public abstract class DBAllDAOTest extends TestAbstract {
     final ArrayList<Filter> map = new ArrayList<Filter>();
     map.add(new Filter(DBRuleDAO.MODE_TRANS_FIELD, "=", 1));
     try {
-      final RuleDAO dao = getDaoFactory().getRuleDAO();
+      final RuleDAO dao = getDaoFactory().getRuleDAO(false);
       assertEquals(2, dao.find(map).size());
     } catch (final DAOConnectionException e) {
       // Ignore since OK if XML

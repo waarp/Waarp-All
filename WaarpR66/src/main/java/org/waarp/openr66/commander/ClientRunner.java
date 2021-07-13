@@ -157,7 +157,7 @@ public class ClientRunner extends Thread {
       if (taskRunner.isSender() && !taskRunner.isSelfRequest() &&
           !taskRunner.isSendThrough()) {
         try {
-          final R66Session session = new R66Session();
+          final R66Session session = new R66Session(false);
           session.setReady(true);
           final boolean ssl = Configuration.configuration.isUseSSL();
           session.getAuth().specialNoSessionAuth(ssl,
@@ -622,7 +622,8 @@ public class ClientRunner extends Thread {
       localChannelReferenceTemp.sessionNewState(R66FiniteDualStates.REQUESTR);
       try {
         ChannelUtils
-            .writeAbstractLocalPacket(localChannelReferenceTemp, request, true);
+            .writeAbstractLocalPacket(localChannelReferenceTemp, request,
+                                      false);
       } catch (final OpenR66ProtocolPacketException e) {
         // propose to redo
         logger.warn("Cannot transfer request to " + host);
@@ -653,7 +654,7 @@ public class ClientRunner extends Thread {
     localChannelReferenceTemp.sessionNewState(R66FiniteDualStates.REQUESTR);
     try {
       ChannelUtils
-          .writeAbstractLocalPacket(localChannelReferenceTemp, request, true);
+          .writeAbstractLocalPacket(localChannelReferenceTemp, request, false);
     } catch (final OpenR66ProtocolPacketException e) {
       // propose to redo
       logger.warn("Cannot transfer request to " + host);

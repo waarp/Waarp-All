@@ -36,29 +36,29 @@ public class XMLDAOFactory extends DAOFactory {
   }
 
   @Override
-  public BusinessDAO getBusinessDAO() {
+  public BusinessDAO getBusinessDAO(final boolean isCacheable) {
     return new XMLBusinessDAO();
   }
 
   @Override
-  public HostDAO getHostDAO() {
+  public HostDAO getHostDAO(final boolean isCacheable) {
     return new XMLHostDAO();
   }
 
   @Override
-  public LimitDAO getLimitDAO() throws DAOConnectionException {
+  public LimitDAO getLimitDAO(final boolean isCacheable) throws DAOConnectionException {
     return new XMLLimitDAO();
   }
 
   @Override
-  public MultipleMonitorDAO getMultipleMonitorDAO()
+  public MultipleMonitorDAO getMultipleMonitorDAO(final boolean isCacheable)
       throws DAOConnectionException {
     throw new DAOConnectionException(
         "MultipleMonitor is not supported on XML DAO");
   }
 
   @Override
-  public RuleDAO getRuleDAO() {
+  public RuleDAO getRuleDAO(final boolean isCacheable) {
     return new XMLRuleDAO();
   }
 

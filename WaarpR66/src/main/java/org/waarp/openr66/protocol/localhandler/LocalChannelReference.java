@@ -744,6 +744,7 @@ public class LocalChannelReference {
       partner =
           new PartnerConfiguration(hostId, R66Versions.V2_4_12.getVersion());
     }
+    logger.debug("DEBUG {}", partner);
   }
 
   /**

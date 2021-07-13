@@ -33,6 +33,7 @@ import org.waarp.common.json.JsonHandler;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.openr66.dao.AbstractDAO;
+import org.waarp.openr66.dao.DAOFactory;
 import org.waarp.openr66.dao.exception.DAOConnectionException;
 import org.waarp.openr66.dao.exception.DAONoDataException;
 
@@ -61,7 +62,7 @@ public abstract class AbstractDbDataDao<E> extends AbstractDbData {
 
   protected abstract void checkValues() throws WaarpDatabaseSqlException;
 
-  protected abstract AbstractDAO<E> getDao() throws DAOConnectionException;
+  protected abstract AbstractDAO<E> getDao(final boolean isCacheable) throws DAOConnectionException;
 
   protected abstract String getPrimaryKey();
 
@@ -85,14 +86,12 @@ public abstract class AbstractDbDataDao<E> extends AbstractDbData {
   public boolean exist() throws WaarpDatabaseException {
     AbstractDAO<E> abstractDAO = null;
     try {
-      abstractDAO = getDao();
+      abstractDAO = getDao(true);
       return abstractDAO.exist(getPrimaryKey());
     } catch (final DAOConnectionException e) {
       throw new WaarpDatabaseNoConnectionException(e);
     } finally {
-      if (abstractDAO != null) {
-        abstractDAO.close();
-      }
+      DAOFactory.closeDAO(abstractDAO);
     }
   }
 
@@ -105,7 +104,7 @@ public abstract class AbstractDbDataDao<E> extends AbstractDbData {
   public void select() throws WaarpDatabaseException {
     AbstractDAO<E> abstractDAO = null;
     try {
-      abstractDAO = getDao();
+      abstractDAO = getDao(true);
       pojo = abstractDAO.select(getPrimaryKey());
       isSaved = true;
     } catch (final DAOConnectionException e) {
@@ -113,9 +112,7 @@ public abstract class AbstractDbDataDao<E> extends AbstractDbData {
     } catch (final DAONoDataException e) {
       throw new WaarpDatabaseNoDataException((e));
     } finally {
-      if (abstractDAO != null) {
-        abstractDAO.close();
-      }
+      DAOFactory.closeDAO(abstractDAO);
     }
   }
 
@@ -132,15 +129,13 @@ public abstract class AbstractDbDataDao<E> extends AbstractDbData {
     checkValues();
     AbstractDAO<E> abstractDAO = null;
     try {
-      abstractDAO = getDao();
+      abstractDAO = getDao(false);
       abstractDAO.insert(pojo);
       isSaved = true;
     } catch (final DAOConnectionException e) {
       throw new WaarpDatabaseNoConnectionException(e);
     } finally {
-      if (abstractDAO != null) {
-        abstractDAO.close();
-      }
+      DAOFactory.closeDAO(abstractDAO);
     }
   }
 
@@ -157,7 +152,7 @@ public abstract class AbstractDbDataDao<E> extends AbstractDbData {
     checkValues();
     AbstractDAO<E> abstractDAO = null;
     try {
-      abstractDAO = getDao();
+      abstractDAO = getDao(false);
       abstractDAO.update(pojo);
       isSaved = true;
     } catch (final DAOConnectionException e) {
@@ -165,9 +160,7 @@ public abstract class AbstractDbDataDao<E> extends AbstractDbData {
     } catch (final DAONoDataException e) {
       throw new WaarpDatabaseNoDataException((e));
     } finally {
-      if (abstractDAO != null) {
-        abstractDAO.close();
-      }
+      DAOFactory.closeDAO(abstractDAO);
     }
   }
 
@@ -180,7 +173,7 @@ public abstract class AbstractDbDataDao<E> extends AbstractDbData {
   public void delete() throws WaarpDatabaseException {
     AbstractDAO<E> abstractDAO = null;
     try {
-      abstractDAO = getDao();
+      abstractDAO = getDao(false);
       abstractDAO.delete(pojo);
       isSaved = false;
     } catch (final DAOConnectionException e) {
@@ -188,9 +181,7 @@ public abstract class AbstractDbDataDao<E> extends AbstractDbData {
     } catch (final DAONoDataException e) {
       throw new WaarpDatabaseNoDataException((e));
     } finally {
-      if (abstractDAO != null) {
-        abstractDAO.close();
-      }
+      DAOFactory.closeDAO(abstractDAO);
     }
   }
 
@@ -204,7 +195,8 @@ public abstract class AbstractDbDataDao<E> extends AbstractDbData {
   }
 
   /**
-   * @return the PoJo as Json
+   * @return the PoJo as Json (shall not be used except for native Json but
+   *     possibly incorrect
    */
   public String toJson() {
     return JsonHandler.writeAsString(pojo);

@@ -366,7 +366,11 @@ public class XMLTransferDAO implements TransferDAO {
                          final String requested, final String owner)
       throws DAOConnectionException, DAONoDataException {
     if (dbR66TaskHashMap.contains(id)) {
-      return dbR66TaskHashMap.get(id);
+      final Transfer value = dbR66TaskHashMap.get(id);
+      if (value != null) {
+        dbR66TaskHashMap.updateTtl(id);
+      }
+      return value;
     }
     if (noFile) {
       throw new DAONoDataException("Transfer cannot be found");

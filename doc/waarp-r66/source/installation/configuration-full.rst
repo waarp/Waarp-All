@@ -322,7 +322,7 @@ Les benchmarks suivants ont été réalisés sur un seul serveur à chaque fois,
 ================ ============== ============ ============ ========================
 Modèle           TLS            NoTLS        Accélération Description
 ================ ============== ============ ============ ========================
-Loop 2 coeurs    68/s           77/s         Référence    2 Serveurs en ping pong pour une taille moyenne de 250 Ko
+Loop 2 coeurs    68/s           79/s         Référence    2 Serveurs en ping pong pour une taille moyenne de 250 Ko
 Loop 2 coeurs    69/s           66/s         %            2 Serveurs en ping pong pour une taille moyenne de 250 Ko et Monitoring en mode PUSH REST
 Loop 4 coeurs    111/s          114/s        %            2 Serveurs en ping pong pour une taille moyenne de 250 Ko
 Loop 4 coeurs    103/s          103/s        %            2 Serveurs en ping pong pour une taille moyenne de 250 Ko et Monitoring en mode PUSH REST
@@ -341,12 +341,12 @@ Contexte                       Nb vCore TLS Transferts/s CPU  Gain
 ============================== ======== === ============ ==== =========
 V3.0 Loop 2 Serveurs           4        Oui 30/s         100% Référence
 V3.2 Loop 2 Serveurs           4        Oui 60/s         100% 200%
-V3.5.2 Loop 2 Serveurs         4        Oui 77/s         100% 257%
-V3.6.0 Loop 2 Serveurs         4        Oui 68/s         90%
-V3.6.0 Loop 2 Serveurs Compres 4        Oui 69/s         85%
+V3.5.2 Loop 2 Serveurs         4        Oui 71/s         100%
+V3.6.0 Loop 2 Serveurs         4        Oui 71/s         90%
+V3.6.0 Loop 2 Serveurs Compres 4        Oui 71/s         85%
 V3.6.0 Loop 2 Serveurs         8        Oui 111/s        55%
 V3.6.0 Loop 2 Serveurs Compres 8        Oui 109/s        70%
-V3.6.0 Loop 2 Serveurs         4        Non 77/s         80%  Référence
+V3.6.0 Loop 2 Serveurs         4        Non 79/s         80%  Référence
 V3.6.0 Loop 2 Serveurs Compres 4        Non 71/s         70%
 V3.6.0 Loop 2 Serveurs         8        Non 114/s        55%
 V3.6.0 Loop 2 Serveurs Compres 8        Non 102/s        60%
@@ -354,10 +354,10 @@ V3.6.0 Loop 2 Serveurs Monitor 4        Oui 69/s         90%
 V3.6.0 Loop 2 Serveurs Monitor 8        Oui 103/s        60%
 V3.6.0 Loop 2 Serveurs Monitor 4        Non 66/s         80%
 V3.6.0 Loop 2 Serveurs Monitor 8        Non 103/s        60%
-V3.6.0 Cluster 2 Serveurs      4        Oui 39/s         100% Référence
+V3.6.0 Cluster 2 Serveurs      4        Oui 37/s         100% Référence
 V3.6.0 Cluster 2 Serveurs      8        Oui 67/s         80%
-V3.6.0 Cluster 2 Serveurs      4        Non 39/s         100% Référence
-V3.6.0 Cluster 1 Serveurs      4        Non 60/s         70%
+V3.6.0 Cluster 2 Serveurs      4        Non 41/s         100% Référence
+V3.6.0 Cluster 1 Serveurs      4        Non 39/s         70%
 V3.6.0 Cluster 2 Serveurs      8        Non 67/s         70%
 ============================== ======== === ============ ==== =========
 

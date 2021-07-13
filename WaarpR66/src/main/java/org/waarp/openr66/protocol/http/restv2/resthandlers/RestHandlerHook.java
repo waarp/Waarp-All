@@ -315,7 +315,7 @@ public class RestHandlerHook implements HandlerHook {
       HostDAO hostDAO = null;
       Host host;
       try {
-        hostDAO = DAO_FACTORY.getHostDAO();
+        hostDAO = DAO_FACTORY.getHostDAO(true);
         if (!hostDAO.exist(user)) {
           throw new NotAllowedException("User does not exist.");
         }
@@ -366,7 +366,7 @@ public class RestHandlerHook implements HandlerHook {
       HostDAO hostDAO = null;
       Host host;
       try {
-        hostDAO = DAO_FACTORY.getHostDAO();
+        hostDAO = DAO_FACTORY.getHostDAO(true);
         if (!hostDAO.exist(authUser)) {
           throw new NotAllowedException("User does not exist.");
         }

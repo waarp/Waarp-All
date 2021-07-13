@@ -139,6 +139,9 @@ public class R66Session implements SessionInterface {
 
   private final HashMap<String, R66Dir> dirsFromSession =
       new HashMap<String, R66Dir>();
+  private static SoftReference<byte[]> reusableBufferStatic = null;
+  private static SoftReference<byte[]> reusableDataPacketBufferStatic = null;
+  private static SoftReference<byte[]> reusableCompressionBufferStatic = null;
   private SoftReference<byte[]> reusableBuffer = null;
   private SoftReference<byte[]> reusableDataPacketBuffer = null;
   private SoftReference<byte[]> reusableCompressionBuffer = null;
@@ -159,6 +162,24 @@ public class R66Session implements SessionInterface {
    * Create the session
    */
   public R66Session() {
+    isReady = false;
+    auth = new R66Auth(this);
+    dir = new R66Dir(this);
+    restart = new R66Restart(this);
+    state = R66FiniteDualStates.newSessionMachineState();
+    isCompressionEnabled = Configuration.configuration.isCompressionAvailable();
+    synchronized (logger) {
+      reusableBuffer = reusableBufferStatic;
+      reusableBufferStatic = null;
+      reusableDataPacketBuffer = reusableDataPacketBufferStatic;
+      reusableDataPacketBufferStatic = null;
+    }
+  }
+
+  /**
+   * Create the session without Buffers
+   */
+  public R66Session(final boolean noBuffer) {
     isReady = false;
     auth = new R66Auth(this);
     dir = new R66Dir(this);
@@ -284,17 +305,19 @@ public class R66Session implements SessionInterface {
       businessObject = null;
     }
     digestBlock = null;
-    if (reusableBuffer != null) {
-      reusableBuffer.clear();
+    if (reusableBuffer != null && reusableBufferStatic == null) {
+      reusableBufferStatic = reusableBuffer;
+    }
+    if (reusableDataPacketBuffer != null &&
+        reusableDataPacketBufferStatic == null) {
+      reusableDataPacketBufferStatic = reusableDataPacketBuffer;
+    }
+    if (reusableCompressionBuffer != null &&
+        reusableCompressionBufferStatic == null) {
+      reusableCompressionBufferStatic = reusableCompressionBuffer;
     }
     reusableBuffer = null;
-    if (reusableDataPacketBuffer != null) {
-      reusableDataPacketBuffer.clear();
-    }
     reusableDataPacketBuffer = null;
-    if (reusableCompressionBuffer != null) {
-      reusableCompressionBuffer.clear();
-    }
     reusableCompressionBuffer = null;
   }
 
@@ -377,6 +400,12 @@ public class R66Session implements SessionInterface {
     logger.debug("Compression enabled? {} => {}", isCompressionEnabled,
                  compressionEnabled);
     isCompressionEnabled = compressionEnabled;
+    if (isCompressionEnabled) {
+      synchronized (logger) {
+        reusableCompressionBuffer = reusableCompressionBufferStatic;
+        reusableCompressionBufferStatic = null;
+      }
+    }
   }
 
   /**

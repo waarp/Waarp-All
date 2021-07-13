@@ -217,11 +217,12 @@ public class ConnectionFactory {
     // Minimal value should be 2
     maxConnections = Math.max(max, MAX_IDLE_DEFAULT);
     ds.setMaxActive(maxConnections);
-    maxIdle = Math.min(Math.max(maxConnections / 2, MAX_IDLE_DEFAULT),
+    maxIdle = Math.min(Math.max(maxConnections / 2, MAX_IDLE_DEFAULT * 2),
                        maxConnections);
     if (maxIdle < GenericObjectPool.DEFAULT_MAX_IDLE) {
       ds.setMaxIdle(maxIdle);
     }
+    ds.setInitialSize(MAX_IDLE_DEFAULT);
   }
 
   /**
@@ -284,7 +285,6 @@ public class ConnectionFactory {
     sb.append(READONLY);
     sb.append(", max connecions:");
     sb.append(maxConnections);
-
     return sb.toString();
   }
 }

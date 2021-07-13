@@ -122,7 +122,7 @@ public abstract class ScenarioBaseBenchmarkDualServerMultipleFiles
     } else if ("-Xmx2048m".equalsIgnoreCase(xmx)) {
       Processes.setJvmArgsDefault("-Xms2048m -Xmx2048m ");
     } else {
-      Processes.setJvmArgsDefault("-Xms2048m -Xmx2048m ");
+      Processes.setMemoryAccordingToFreeMemory(SERVER1_IN_JUNIT? 3 : 4);
     }
     if (!SERVER1_IN_JUNIT) {
       r66Pid1 = startServer(configFile1.getAbsolutePath());
@@ -378,8 +378,7 @@ public abstract class ScenarioBaseBenchmarkDualServerMultipleFiles
         file.getAbsolutePath(), "-initdb", "-dir", dir2.getAbsolutePath(),
         "-auth", fileAuth.getAbsolutePath()
     };
-    Processes
-        .executeJvm(project, homeDir, ServerInitDatabase.class, args, false);
+    Processes.executeJvm(project, ServerInitDatabase.class, args, false);
     Configuration.configuration.setTimeoutCon(100);
     // For debug only ServerInitDatabase.main(args);
   }
@@ -398,7 +397,7 @@ public abstract class ScenarioBaseBenchmarkDualServerMultipleFiles
       };
       // global ant project settings
       project = Processes.getProject(homeDir);
-      Processes.executeJvm(project, homeDir, R66Server.class, argsServer, true);
+      Processes.executeJvm(project, R66Server.class, argsServer, true);
       int pid = Processes
           .getPidOfRunnerCommandLinux("java", R66Server.class.getName(), PIDS);
       PIDS.add(pid);

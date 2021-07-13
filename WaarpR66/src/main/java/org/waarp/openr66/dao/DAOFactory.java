@@ -111,8 +111,9 @@ public abstract class DAOFactory {
    * @return a ready to use BusinessDAO
    *
    * @throws DAOConnectionException if cannot create the DAO
+   * @param isCacheable
    */
-  public abstract BusinessDAO getBusinessDAO() throws DAOConnectionException;
+  public abstract BusinessDAO getBusinessDAO(final boolean isCacheable) throws DAOConnectionException;
 
   /**
    * Return a HostDAO
@@ -120,8 +121,9 @@ public abstract class DAOFactory {
    * @return a ready to use HostDAO
    *
    * @throws DAOConnectionException if cannot create the DAO
+   * @param isCacheable
    */
-  public abstract HostDAO getHostDAO() throws DAOConnectionException;
+  public abstract HostDAO getHostDAO(final boolean isCacheable) throws DAOConnectionException;
 
   /**
    * Return a LimitDAO
@@ -129,8 +131,9 @@ public abstract class DAOFactory {
    * @return a ready to use LimitDAO
    *
    * @throws DAOConnectionException if cannot create the DAO
+   * @param isCacheable
    */
-  public abstract LimitDAO getLimitDAO() throws DAOConnectionException;
+  public abstract LimitDAO getLimitDAO(final boolean isCacheable) throws DAOConnectionException;
 
   /**
    * Return a MultipleMonitorDAO
@@ -138,8 +141,10 @@ public abstract class DAOFactory {
    * @return a ready to use MultipleMonitorDAO
    *
    * @throws DAOConnectionException if cannot create the DAO
+   * @param isCacheable
    */
-  public abstract MultipleMonitorDAO getMultipleMonitorDAO()
+  public abstract MultipleMonitorDAO getMultipleMonitorDAO(
+      final boolean isCacheable)
       throws DAOConnectionException;
 
   /**
@@ -148,8 +153,9 @@ public abstract class DAOFactory {
    * @return a ready to use RuleDAO
    *
    * @throws DAOConnectionException if cannot create the DAO
+   * @param isCacheable
    */
-  public abstract RuleDAO getRuleDAO() throws DAOConnectionException;
+  public abstract RuleDAO getRuleDAO(final boolean isCacheable) throws DAOConnectionException;
 
   /**
    * Return a TransferDAO

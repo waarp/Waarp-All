@@ -123,7 +123,7 @@ public abstract class S3ScenarioBaseLoopBenchmark extends S3TestAbstract {
     setUp3DbBeforeClass();
     Configuration.configuration.setTimeoutCon(30000);
     if (SystemPropertyUtil.get(IT_LONG_TEST, false)) {
-      Processes.setJvmArgsDefault("-Xms4096m -Xmx4096m ");
+      Processes.setMemoryAccordingToFreeMemory(SERVER1_IN_JUNIT? 3 : 4);
     } else {
       Processes.setJvmArgsDefault("-Xms1024m -Xmx1024m ");
     }
@@ -289,8 +289,7 @@ public abstract class S3ScenarioBaseLoopBenchmark extends S3TestAbstract {
         "-auth", fileAuth.getAbsolutePath(), "-loadExtendedTaskFactory",
         "org.waarp.openr66.s3.taskfactory.S3TaskFactory"
     };
-    Processes
-        .executeJvm(project, homeDir, ServerInitDatabase.class, args, false);
+    Processes.executeJvm(project, ServerInitDatabase.class, args, false);
     Configuration.configuration.setTimeoutCon(30000);
     // For debug only ServerInitDatabase.main(args);
   }
@@ -309,7 +308,7 @@ public abstract class S3ScenarioBaseLoopBenchmark extends S3TestAbstract {
       };
       // global ant project settings
       project = Processes.getProject(homeDir);
-      Processes.executeJvm(project, homeDir, R66Server.class, argsServer, true);
+      Processes.executeJvm(project, R66Server.class, argsServer, true);
       int pid = Processes
           .getPidOfRunnerCommandLinux("java", R66Server.class.getName(), PIDS);
       PIDS.add(pid);

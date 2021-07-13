@@ -85,8 +85,7 @@ public class ProcessesTest {
   public void executeJvm() throws InterruptedException {
     File homeDir = new File("/tmp");
     Project project = Processes.getProject(homeDir);
-    int pid = Processes
-        .executeJvm(project, homeDir, ToRun.class, new String[0], true);
+    int pid = Processes.executeJvm(project, ToRun.class, new String[0], true);
     System.out.println(" While launched " + pid);
     assertTrue(Processes.exists(pid));
     int pid2 =

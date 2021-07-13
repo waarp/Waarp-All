@@ -173,7 +173,7 @@ public class RulesHandler extends AbstractRestDbHandler {
     if (count) {
       long nbCount = -1;
       try {
-        ruleDAO = DAO_FACTORY.getRuleDAO();
+        ruleDAO = DAO_FACTORY.getRuleDAO(false);
         nbCount = ruleDAO.count(filters);
       } catch (final DAOConnectionException e) {
         throw new InternalServerErrorException(e);
@@ -184,7 +184,7 @@ public class RulesHandler extends AbstractRestDbHandler {
     } else {
       List<Rule> rules;
       try {
-        ruleDAO = DAO_FACTORY.getRuleDAO();
+        ruleDAO = DAO_FACTORY.getRuleDAO(false);
         rules = ruleDAO.find(filters);
       } catch (final DAOConnectionException e) {
         throw new InternalServerErrorException(e);
@@ -226,7 +226,7 @@ public class RulesHandler extends AbstractRestDbHandler {
 
     RuleDAO ruleDAO = null;
     try {
-      ruleDAO = DAO_FACTORY.getRuleDAO();
+      ruleDAO = DAO_FACTORY.getRuleDAO(false);
 
       if (ruleDAO.exist(rule.getName())) {
         throw new RestErrorException(ALREADY_EXISTING(rule.getName()));

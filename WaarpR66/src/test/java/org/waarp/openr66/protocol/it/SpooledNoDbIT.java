@@ -48,7 +48,7 @@ public class SpooledNoDbIT extends SpooledITAbstract {
     setUpBeforeClassMinimal(LINUX_CONFIG_CONFIG_SERVER_INIT_B_XML);
     setUpDbBeforeClass();
     setUpBeforeClassServer(LINUX_CONFIG_CONFIG_SERVER_INIT_A_XML);
-    Processes.setJvmArgsDefault("-Xms2048m -Xmx2048m ");
+    Processes.setMemoryAccordingToFreeMemory(2);
     File configFile = new File(dir, CONFIG_SERVER_A_MINIMAL_XML);
     r66Pid1 = startServer(configFile.getAbsolutePath());
     Processes.setJvmArgsDefault(null);

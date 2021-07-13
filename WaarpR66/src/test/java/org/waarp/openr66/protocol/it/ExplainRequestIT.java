@@ -326,8 +326,7 @@ public class ExplainRequestIT extends TestAbstract {
         file.getAbsolutePath(), "-initdb", "-dir", dir2.getAbsolutePath(),
         "-auth", fileAuth.getAbsolutePath()
     };
-    Processes
-        .executeJvm(project, homeDir, ServerInitDatabase.class, args, false);
+    Processes.executeJvm(project, ServerInitDatabase.class, args, false);
     Configuration.configuration.setTimeoutCon(100);
     // For debug only ServerInitDatabase.main(args);
   }
@@ -346,7 +345,7 @@ public class ExplainRequestIT extends TestAbstract {
       };
       // global ant project settings
       project = Processes.getProject(homeDir);
-      Processes.executeJvm(project, homeDir, R66Server.class, argsServer, true);
+      Processes.executeJvm(project, R66Server.class, argsServer, true);
       int pid = Processes
           .getPidOfRunnerCommandLinux("java", R66Server.class.getName(), PIDS);
       PIDS.add(pid);
@@ -434,278 +433,285 @@ public class ExplainRequestIT extends TestAbstract {
     final TransferDAO daoSrc = DAOFactory.getInstance().getTransferDAO();
     final DBTransferDAOExplain daoExplain =
         new DBTransferDAOExplain((DBTransferDAO) daoSrc);
+    try {
+      logger.warn("Is PostgreSQL {}",
+                  DbModelFactoryR66.containsDbType(DbType.PostGreSQL));
+      logger.warn("Not any of H2, MySQL, MariaDB, Oracle {}", DbModelFactoryR66
+          .containsDbType(DbType.H2, DbType.MySQL, DbType.MariaDB,
+                          DbType.Oracle));
+      SysErrLogger.FAKE_LOGGER.sysout("\tINDEX NAME\tDEFINITION");
+      DbRequest dbRequest = new DbRequest(DbConstantR66.admin.getSession());
+      dbRequest.select(
+          "SELECT indexname, indexdef FROM pg_indexes WHERE tablename not like 'pg%'");
+      ResultSet resultSet = dbRequest.getResultSet();
+      while (resultSet.next()) {
+        SysErrLogger.FAKE_LOGGER.sysout(
+            "\t" + resultSet.getString(1) + "\t" + resultSet.getString(2));
+      }
+      resultSet.close();
+      dbRequest.close();
+      final String host = Configuration.configuration.getHostId();
+      // Standard requests
+      logger.warn("Standard Request");
+      daoExplain
+          .exist(Long.parseLong(followId), "server1", "server2", "server1");
 
-    logger.warn("Is PostgreSQL {}",
-                DbModelFactoryR66.containsDbType(DbType.PostGreSQL));
-    logger.warn("Not any of H2, MySQL, MariaDB, Oracle {}", DbModelFactoryR66
-        .containsDbType(DbType.H2, DbType.MySQL, DbType.MariaDB,
-                        DbType.Oracle));
-    SysErrLogger.FAKE_LOGGER.sysout("\tINDEX NAME\tDEFINITION");
-    DbRequest dbRequest = new DbRequest(DbConstantR66.admin.getSession());
-    dbRequest.select(
-        "SELECT indexname, indexdef FROM pg_indexes WHERE tablename not like 'pg%'");
-    ResultSet resultSet = dbRequest.getResultSet();
-    while (resultSet.next()) {
-      SysErrLogger.FAKE_LOGGER.sysout(
-          "\t" + resultSet.getString(1) + "\t" + resultSet.getString(2));
+      logger.warn("Standard Request");
+      daoExplain
+          .select(Long.parseLong(followId), "server1", "server2", "server1");
+
+      // Insert
+      logger.warn("Standard Request");
+      final Transfer transfer =
+          new Transfer("server2", "rule", 1, false, "file", "info", 3);
+      transfer.setRequester("dummy");
+      transfer.setOwnerRequest("dummy");
+      transfer.setStart(new Timestamp(1112242L));
+      transfer.setStop(new Timestamp(DateTime.now().getMillis()));
+      transfer.setTransferInfo("transfer info");
+      daoExplain.insert(transfer);
+
+      // Update
+      logger.warn("Standard Request");
+      daoExplain.update(
+          new Transfer(0L, "rule", 1, "test", "testOrig", "testInfo", true, 42,
+                       true, "server1", "server1", "server2", "transferInfo",
+                       Transfer.TASKSTEP.ERRORTASK,
+                       Transfer.TASKSTEP.TRANSFERTASK, 27, ErrorCode.CompleteOk,
+                       ErrorCode.Unknown, 64, new Timestamp(1122242L),
+                       new Timestamp(1123242L), UpdatedInfo.TOSUBMIT));
+
+      // Delete
+      logger.warn("Standard Request");
+      daoExplain.delete(
+          new Transfer(0L, "", 1, "", "", "", false, 0, false, "server1",
+                       "server1", "server2", "", Transfer.TASKSTEP.NOTASK,
+                       Transfer.TASKSTEP.NOTASK, 0, ErrorCode.Unknown,
+                       ErrorCode.Unknown, 0, null, null));
+
+      // FollowId
+      logger.warn("Follow Id: {}", followId);
+      List<Filter> filters = new ArrayList<Filter>(1);
+      filters.add(getFollowIdFilter(followId));
+      daoExplain.find(filters, 100);
+      // Basic example
+      daoExplain.find(filters, DBTransferDAO.TRANSFER_START_FIELD, true, 100);
+      List<Transfer> list = daoSrc.find(filters);
+      for (Transfer transfer1 : list) {
+        logger.warn("{}", JsonHandler.prettyPrint(transfer1));
+      }
+      // FollowId
+      logger.warn("Follow Id with Owner: {}", followId);
+      filters = new ArrayList<Filter>(2);
+      filters.add(getFollowIdFilter(followId));
+      filters.add(getOwnerFilter());
+      daoExplain.find(filters, 100);
+      daoExplain.find(filters, 100, 10);
+      // Basic example
+      daoExplain.find(filters, DBTransferDAO.TRANSFER_START_FIELD, true, 100);
+      list = daoSrc.find(filters);
+      for (Transfer transfer1 : list) {
+        logger.warn("{}", JsonHandler.prettyPrint(transfer1));
+      }
+      // Web
+      logger.warn("Web");
+      filters = new ArrayList<Filter>(2);
+      filters.add(DbTaskRunner.getOwnerFilter());
+      filters.add(new Filter(DBTransferDAO.STEP_STATUS_FIELD, "=",
+                             ErrorCode.Running.getCode()));
+      daoExplain.find(filters, DBTransferDAO.TRANSFER_START_FIELD, false, 100);
+      filters = new ArrayList<Filter>(2);
+      filters.add(new Filter(UPDATED_INFO_FIELD, "=",
+                             UpdatedInfo.INTERRUPTED.ordinal()));
+      filters.add(DbTaskRunner.getOwnerFilter());
+      daoExplain.find(filters, DBTransferDAO.TRANSFER_START_FIELD, false, 100);
+      filters = new ArrayList<Filter>(3);
+      filters.add(new Filter(DBTransferDAO.UPDATED_INFO_FIELD, "=",
+                             UpdatedInfo.INTERRUPTED.ordinal()));
+      filters.add(DbTaskRunner.getOwnerFilter());
+      filters.add(new Filter(DBTransferDAO.TRANSFER_START_FIELD, "<=",
+                             new Timestamp(System.currentTimeMillis())));
+      daoExplain.find(filters, DBTransferDAO.TRANSFER_START_FIELD, false, 100);
+      filters = new ArrayList<Filter>(3);
+      filters.add(new Filter(GLOBAL_STEP_FIELD, "=",
+                             Transfer.TASKSTEP.ERRORTASK.ordinal()));
+      filters.add(DbTaskRunner.getOwnerFilter());
+      filters.add(new Filter(DBTransferDAO.TRANSFER_START_FIELD, "<=",
+                             new Timestamp(System.currentTimeMillis())));
+      daoExplain.find(filters, DBTransferDAO.TRANSFER_START_FIELD, false, 100);
+      filters = new ArrayList<Filter>(2);
+      filters.add(new Filter(GLOBAL_STEP_FIELD, "=",
+                             Transfer.TASKSTEP.ERRORTASK.ordinal()));
+      filters.add(DbTaskRunner.getOwnerFilter());
+      daoExplain.find(filters, DBTransferDAO.TRANSFER_START_FIELD, false, 100);
+
+      // Commander
+      logger.warn("Commander");
+      filters = new ArrayList<Filter>(3);
+      filters.add(DbTaskRunner.getOwnerFilter());
+      filters.add(new Filter(DBTransferDAO.TRANSFER_START_FIELD, "<=",
+                             new Timestamp(System.currentTimeMillis())));
+      filters.add(new Filter(DBTransferDAO.UPDATED_INFO_FIELD, "=",
+                             org.waarp.openr66.pojo.UpdatedInfo
+                                 .fromLegacy(AbstractDbData.UpdatedInfo.DONE)
+                                 .ordinal()));
+      daoExplain.find(filters, 100);
+      daoExplain.find(filters, DBTransferDAO.TRANSFER_START_FIELD, true, 100);
+
+      // Commander, Web Export, Log Purge
+      logger.warn("Commander, Web Export, Log Purge");
+      filters = new ArrayList<Filter>();
+      filters.add(DbTaskRunner.getOwnerFilter());
+      filters.add(new Filter(DBTransferDAO.UPDATED_INFO_FIELD, "<>",
+                             AbstractDbData.UpdatedInfo.DONE.ordinal()));
+      filters.add(new Filter(DBTransferDAO.UPDATED_INFO_FIELD, ">",
+                             AbstractDbData.UpdatedInfo.UNKNOWN.ordinal()));
+      filters.add(new Filter(DBTransferDAO.GLOBAL_LAST_STEP_FIELD, "=",
+                             Transfer.TASKSTEP.ALLDONETASK.ordinal()));
+      filters.add(new Filter(DBTransferDAO.STEP_STATUS_FIELD, ">",
+                             ErrorCode.CompleteOk.getCode()));
+      daoExplain.find(filters);
+
+      // Log Purge
+      logger.warn("Log Purge");
+      DbSession admin = DbConstantR66.admin.getSession();
+      Timestamp start = new Timestamp(1);
+      Timestamp stop = new Timestamp(DateTime.now().getMillis());
+      DbPreparedStatement preparedStatement = DbTaskRunner
+          .getFilterPrepareStatement(admin, 100, true, "" + Long.MIN_VALUE, "2",
+                                     start, stop, "rule", host, false, false,
+                                     false, false, true);//1
+      Object[] args = { start, stop, Long.MIN_VALUE, 10000L };
+      daoExplain.explain(
+          DBTransferDAOExplain.replaceArgs(preparedStatement.toString(), args));
+      preparedStatement = DbTaskRunner
+          .getFilterPrepareStatement(admin, 100, true, "" + Long.MIN_VALUE, "2",
+                                     start, stop, "rule", host, false, false,
+                                     true, false, false);//1
+      daoExplain.explain(
+          DBTransferDAOExplain.replaceArgs(preparedStatement.toString(), args));
+      preparedStatement = DbTaskRunner
+          .getFilterPrepareStatement(admin, 100, true, null, null, start, stop,
+                                     null, null, true, false, false, false,
+                                     false);//2
+      args = new Object[] { start, stop };
+      daoExplain.explain(
+          DBTransferDAOExplain.replaceArgs(preparedStatement.toString(), args));
+      preparedStatement = DbTaskRunner
+          .getFilterPrepareStatement(admin, 100, true, null, null, start, stop,
+                                     null, null, false, true, true, true,
+                                     false);//2
+      args = new Object[] { start, stop };
+      daoExplain.explain(
+          DBTransferDAOExplain.replaceArgs(preparedStatement.toString(), args));
+      preparedStatement = DbTaskRunner
+          .getFilterPrepareStatement(admin, 100, true, null, null, null, null,
+                                     null, null, false, false, false, false,
+                                     true);//2
+      daoExplain.explain(preparedStatement.toString());
+
+      // Log export
+      logger.warn("Web Log");
+      preparedStatement =
+          DbTaskRunner.getLogPrepareStatement(admin, start, stop);
+      args = new Object[] { start, stop };
+      daoExplain.explain(
+          DBTransferDAOExplain.replaceArgs(preparedStatement.toString(), args));
+      // Log purge
+      String request =
+          "DELETE FROM " + table + " WHERE " + " " + Columns.OWNERREQ + " = '" +
+          Configuration.configuration.getHostId() + "' " + " AND " + "(" +
+          Columns.UPDATEDINFO + " = " +
+          AbstractDbData.UpdatedInfo.DONE.ordinal() + " OR " +
+          Columns.GLOBALLASTSTEP + " = " + TASKSTEP.ALLDONETASK.ordinal() +
+          ") ";
+      daoExplain.explain(request);
+      // Log purge & Web
+      request =
+          "DELETE FROM " + table + " WHERE " + " " + Columns.OWNERREQ + " = '" +
+          Configuration.configuration.getHostId() + "' " + " AND " + "(" +
+          Columns.UPDATEDINFO + " = " +
+          AbstractDbData.UpdatedInfo.DONE.ordinal() + " OR " +
+          Columns.GLOBALLASTSTEP + " = " + TASKSTEP.ALLDONETASK.ordinal() +
+          ") " + " AND " + Columns.STARTTRANS.name() + " >= ? AND " +
+          Columns.STOPTRANS.name() + " <= ? ";
+      args = new Object[] { start, stop };
+      daoExplain.explain(DBTransferDAOExplain.replaceArgs(request, args));
+
+      // Monitoring and SNMP
+      logger.warn("Monitoring & SNMP");
+      preparedStatement = DbTaskRunner.getCountInfoPrepareStatement(admin);
+      args = new Object[] { start, UpdatedInfo.TOSUBMIT.ordinal() };
+      daoExplain.explain(
+          DBTransferDAOExplain.replaceArgs(preparedStatement.toString(), args));
+      preparedStatement = DbTaskRunner
+          .getCountStepPrepareStatement(admin, TASKSTEP.ALLDONETASK);
+      args = new Object[] { start, TASKSTEP.ALLDONETASK.ordinal() };
+      daoExplain.explain(
+          DBTransferDAOExplain.replaceArgs(preparedStatement.toString(), args));
+      preparedStatement = DbTaskRunner.getCountStatusPrepareStatement(admin);
+      args = new Object[] { start, ErrorCode.CompleteOk.getCode() };
+      daoExplain.explain(
+          DBTransferDAOExplain.replaceArgs(preparedStatement.toString(), args));
+      preparedStatement = DbTaskRunner
+          .getCountStatusRunningPrepareStatement(admin, ErrorCode.CompleteOk);
+      args = new Object[] { start };
+      daoExplain.explain(
+          DBTransferDAOExplain.replaceArgs(preparedStatement.toString(), args));
+      preparedStatement =
+          DbTaskRunner.getCountInOutErrorPrepareStatement(admin, true);
+      args = new Object[] { start };
+      daoExplain.explain(
+          DBTransferDAOExplain.replaceArgs(preparedStatement.toString(), args));
+      preparedStatement =
+          DbTaskRunner.getCountInOutRunningPrepareStatement(admin, true, false);
+      args = new Object[] { start };
+      daoExplain.explain(
+          DBTransferDAOExplain.replaceArgs(preparedStatement.toString(), args));
+
+      // Startup
+      logger.warn("Startup");
+      request = "UPDATE RUNNER SET " + Columns.UPDATEDINFO.name() + '=' +
+                AbstractDbData.UpdatedInfo.TOSUBMIT.ordinal() + " WHERE " +
+                " " + Columns.OWNERREQ + " = '" +
+                Configuration.configuration.getHostId() + "' " + " AND (" +
+                Columns.UPDATEDINFO.name() + " = " +
+                AbstractDbData.UpdatedInfo.RUNNING.ordinal() + " OR " +
+                Columns.UPDATEDINFO.name() + " = " +
+                AbstractDbData.UpdatedInfo.INTERRUPTED.ordinal() + ")";
+      daoExplain.explain(request);
+
+      // Monitor JSON Push API
+      logger.warn("Monitor Push API");
+      DateTime now = new DateTime();
+      Timestamp timestamp = new Timestamp(now.getMillis());
+      TransferConverter.Order order = TransferConverter.Order.ascId;
+      filters = new ArrayList<Filter>(3);
+      filters.add(DbTaskRunner.getOwnerFilter());
+      filters.add(
+          new Filter(TRANSFER_STOP_FIELD, Filter.BETWEEN, start, timestamp));
+      daoExplain.find(filters, order.column, order.ascend);
+
+      // Other request
+      logger.warn("Other requests");
+      daoExplain.count(filters);
+      daoExplain.updateRank(transfer);
+
+
+      // Filter on rule and owner (not standard)
+      logger.warn("Not Standards");
+      final ArrayList<Filter> map = new ArrayList<Filter>();
+      map.add(new Filter(DBTransferDAO.ID_RULE_FIELD, "=", "rule"));
+      map.add(new Filter(DBTransferDAO.OWNER_REQUEST_FIELD, "=", "server1"));
+      daoExplain.find(map);
+      // Get All (not standard)
+      daoExplain.getAll();
+      // Delete All (not standard)
+      daoExplain.deleteAll();
+    } finally {
+      DAOFactory.closeDAO(daoSrc);
+      DAOFactory.closeDAO(daoExplain);
     }
-    resultSet.close();
-    dbRequest.close();
-    final String host = Configuration.configuration.getHostId();
-    // Standard requests
-    logger.warn("Standard Request");
-    daoExplain.exist(Long.parseLong(followId), "server1", "server2", "server1");
-
-    logger.warn("Standard Request");
-    daoExplain
-        .select(Long.parseLong(followId), "server1", "server2", "server1");
-
-    // Insert
-    logger.warn("Standard Request");
-    final Transfer transfer =
-        new Transfer("server2", "rule", 1, false, "file", "info", 3);
-    transfer.setRequester("dummy");
-    transfer.setOwnerRequest("dummy");
-    transfer.setStart(new Timestamp(1112242L));
-    transfer.setStop(new Timestamp(DateTime.now().getMillis()));
-    transfer.setTransferInfo("transfer info");
-    daoExplain.insert(transfer);
-
-    // Update
-    logger.warn("Standard Request");
-    daoExplain.update(
-        new Transfer(0L, "rule", 1, "test", "testOrig", "testInfo", true, 42,
-                     true, "server1", "server1", "server2", "transferInfo",
-                     Transfer.TASKSTEP.ERRORTASK,
-                     Transfer.TASKSTEP.TRANSFERTASK, 27, ErrorCode.CompleteOk,
-                     ErrorCode.Unknown, 64, new Timestamp(1122242L),
-                     new Timestamp(1123242L), UpdatedInfo.TOSUBMIT));
-
-    // Delete
-    logger.warn("Standard Request");
-    daoExplain.delete(
-        new Transfer(0L, "", 1, "", "", "", false, 0, false, "server1",
-                     "server1", "server2", "", Transfer.TASKSTEP.NOTASK,
-                     Transfer.TASKSTEP.NOTASK, 0, ErrorCode.Unknown,
-                     ErrorCode.Unknown, 0, null, null));
-
-    // FollowId
-    logger.warn("Follow Id: {}", followId);
-    List<Filter> filters = new ArrayList<Filter>(1);
-    filters.add(getFollowIdFilter(followId));
-    daoExplain.find(filters, 100);
-    // Basic example
-    daoExplain.find(filters, DBTransferDAO.TRANSFER_START_FIELD, true, 100);
-    List<Transfer> list = daoSrc.find(filters);
-    for (Transfer transfer1 : list) {
-      logger.warn("{}", JsonHandler.prettyPrint(transfer1));
-    }
-    // FollowId
-    logger.warn("Follow Id with Owner: {}", followId);
-    filters = new ArrayList<Filter>(2);
-    filters.add(getFollowIdFilter(followId));
-    filters.add(getOwnerFilter());
-    daoExplain.find(filters, 100);
-    daoExplain.find(filters, 100, 10);
-    // Basic example
-    daoExplain.find(filters, DBTransferDAO.TRANSFER_START_FIELD, true, 100);
-    list = daoSrc.find(filters);
-    for (Transfer transfer1 : list) {
-      logger.warn("{}", JsonHandler.prettyPrint(transfer1));
-    }
-    // Web
-    logger.warn("Web");
-    filters = new ArrayList<Filter>(2);
-    filters.add(DbTaskRunner.getOwnerFilter());
-    filters.add(new Filter(DBTransferDAO.STEP_STATUS_FIELD, "=",
-                           ErrorCode.Running.getCode()));
-    daoExplain.find(filters, DBTransferDAO.TRANSFER_START_FIELD, false, 100);
-    filters = new ArrayList<Filter>(2);
-    filters.add(
-        new Filter(UPDATED_INFO_FIELD, "=", UpdatedInfo.INTERRUPTED.ordinal()));
-    filters.add(DbTaskRunner.getOwnerFilter());
-    daoExplain.find(filters, DBTransferDAO.TRANSFER_START_FIELD, false, 100);
-    filters = new ArrayList<Filter>(3);
-    filters.add(new Filter(DBTransferDAO.UPDATED_INFO_FIELD, "=",
-                           UpdatedInfo.INTERRUPTED.ordinal()));
-    filters.add(DbTaskRunner.getOwnerFilter());
-    filters.add(new Filter(DBTransferDAO.TRANSFER_START_FIELD, "<=",
-                           new Timestamp(System.currentTimeMillis())));
-    daoExplain.find(filters, DBTransferDAO.TRANSFER_START_FIELD, false, 100);
-    filters = new ArrayList<Filter>(3);
-    filters.add(new Filter(GLOBAL_STEP_FIELD, "=",
-                           Transfer.TASKSTEP.ERRORTASK.ordinal()));
-    filters.add(DbTaskRunner.getOwnerFilter());
-    filters.add(new Filter(DBTransferDAO.TRANSFER_START_FIELD, "<=",
-                           new Timestamp(System.currentTimeMillis())));
-    daoExplain.find(filters, DBTransferDAO.TRANSFER_START_FIELD, false, 100);
-    filters = new ArrayList<Filter>(2);
-    filters.add(new Filter(GLOBAL_STEP_FIELD, "=",
-                           Transfer.TASKSTEP.ERRORTASK.ordinal()));
-    filters.add(DbTaskRunner.getOwnerFilter());
-    daoExplain.find(filters, DBTransferDAO.TRANSFER_START_FIELD, false, 100);
-
-    // Commander
-    logger.warn("Commander");
-    filters = new ArrayList<Filter>(3);
-    filters.add(DbTaskRunner.getOwnerFilter());
-    filters.add(new Filter(DBTransferDAO.TRANSFER_START_FIELD, "<=",
-                           new Timestamp(System.currentTimeMillis())));
-    filters.add(new Filter(DBTransferDAO.UPDATED_INFO_FIELD, "=",
-                           org.waarp.openr66.pojo.UpdatedInfo
-                               .fromLegacy(AbstractDbData.UpdatedInfo.DONE)
-                               .ordinal()));
-    daoExplain.find(filters, 100);
-    daoExplain.find(filters, DBTransferDAO.TRANSFER_START_FIELD, true, 100);
-
-    // Commander, Web Export, Log Purge
-    logger.warn("Commander, Web Export, Log Purge");
-    filters = new ArrayList<Filter>();
-    filters.add(DbTaskRunner.getOwnerFilter());
-    filters.add(new Filter(DBTransferDAO.UPDATED_INFO_FIELD, "<>",
-                           AbstractDbData.UpdatedInfo.DONE.ordinal()));
-    filters.add(new Filter(DBTransferDAO.UPDATED_INFO_FIELD, ">",
-                           AbstractDbData.UpdatedInfo.UNKNOWN.ordinal()));
-    filters.add(new Filter(DBTransferDAO.GLOBAL_LAST_STEP_FIELD, "=",
-                           Transfer.TASKSTEP.ALLDONETASK.ordinal()));
-    filters.add(new Filter(DBTransferDAO.STEP_STATUS_FIELD, ">",
-                           ErrorCode.CompleteOk.getCode()));
-    daoExplain.find(filters);
-
-    // Log Purge
-    logger.warn("Log Purge");
-    DbSession admin = DbConstantR66.admin.getSession();
-    Timestamp start = new Timestamp(1);
-    Timestamp stop = new Timestamp(DateTime.now().getMillis());
-    DbPreparedStatement preparedStatement = DbTaskRunner
-        .getFilterPrepareStatement(admin, 100, true, "" + Long.MIN_VALUE, "2",
-                                   start, stop, "rule", host, false, false,
-                                   false, false, true);//1
-    Object[] args = { start, stop, Long.MIN_VALUE, 10000L };
-    daoExplain.explain(
-        DBTransferDAOExplain.replaceArgs(preparedStatement.toString(), args));
-    preparedStatement = DbTaskRunner
-        .getFilterPrepareStatement(admin, 100, true, "" + Long.MIN_VALUE, "2",
-                                   start, stop, "rule", host, false, false,
-                                   true, false, false);//1
-    daoExplain.explain(
-        DBTransferDAOExplain.replaceArgs(preparedStatement.toString(), args));
-    preparedStatement = DbTaskRunner
-        .getFilterPrepareStatement(admin, 100, true, null, null, start, stop,
-                                   null, null, true, false, false, false,
-                                   false);//2
-    args = new Object[] { start, stop };
-    daoExplain.explain(
-        DBTransferDAOExplain.replaceArgs(preparedStatement.toString(), args));
-    preparedStatement = DbTaskRunner
-        .getFilterPrepareStatement(admin, 100, true, null, null, start, stop,
-                                   null, null, false, true, true, true,
-                                   false);//2
-    args = new Object[] { start, stop };
-    daoExplain.explain(
-        DBTransferDAOExplain.replaceArgs(preparedStatement.toString(), args));
-    preparedStatement = DbTaskRunner
-        .getFilterPrepareStatement(admin, 100, true, null, null, null, null,
-                                   null, null, false, false, false, false,
-                                   true);//2
-    daoExplain.explain(preparedStatement.toString());
-
-    // Log export
-    logger.warn("Web Log");
-    preparedStatement = DbTaskRunner.getLogPrepareStatement(admin, start, stop);
-    args = new Object[] { start, stop };
-    daoExplain.explain(
-        DBTransferDAOExplain.replaceArgs(preparedStatement.toString(), args));
-    // Log purge
-    String request =
-        "DELETE FROM " + table + " WHERE " + " " + Columns.OWNERREQ + " = '" +
-        Configuration.configuration.getHostId() + "' " + " AND " + "(" +
-        Columns.UPDATEDINFO + " = " +
-        AbstractDbData.UpdatedInfo.DONE.ordinal() + " OR " +
-        Columns.GLOBALLASTSTEP + " = " + TASKSTEP.ALLDONETASK.ordinal() + ") ";
-    daoExplain.explain(request);
-    // Log purge & Web
-    request =
-        "DELETE FROM " + table + " WHERE " + " " + Columns.OWNERREQ + " = '" +
-        Configuration.configuration.getHostId() + "' " + " AND " + "(" +
-        Columns.UPDATEDINFO + " = " +
-        AbstractDbData.UpdatedInfo.DONE.ordinal() + " OR " +
-        Columns.GLOBALLASTSTEP + " = " + TASKSTEP.ALLDONETASK.ordinal() + ") " +
-        " AND " + Columns.STARTTRANS.name() + " >= ? AND " +
-        Columns.STOPTRANS.name() + " <= ? ";
-    args = new Object[] { start, stop };
-    daoExplain.explain(DBTransferDAOExplain.replaceArgs(request, args));
-
-    // Monitoring and SNMP
-    logger.warn("Monitoring & SNMP");
-    preparedStatement = DbTaskRunner.getCountInfoPrepareStatement(admin);
-    args = new Object[] { start, UpdatedInfo.TOSUBMIT.ordinal() };
-    daoExplain.explain(
-        DBTransferDAOExplain.replaceArgs(preparedStatement.toString(), args));
-    preparedStatement =
-        DbTaskRunner.getCountStepPrepareStatement(admin, TASKSTEP.ALLDONETASK);
-    args = new Object[] { start, TASKSTEP.ALLDONETASK.ordinal() };
-    daoExplain.explain(
-        DBTransferDAOExplain.replaceArgs(preparedStatement.toString(), args));
-    preparedStatement = DbTaskRunner.getCountStatusPrepareStatement(admin);
-    args = new Object[] { start, ErrorCode.CompleteOk.getCode() };
-    daoExplain.explain(
-        DBTransferDAOExplain.replaceArgs(preparedStatement.toString(), args));
-    preparedStatement = DbTaskRunner
-        .getCountStatusRunningPrepareStatement(admin, ErrorCode.CompleteOk);
-    args = new Object[] { start };
-    daoExplain.explain(
-        DBTransferDAOExplain.replaceArgs(preparedStatement.toString(), args));
-    preparedStatement =
-        DbTaskRunner.getCountInOutErrorPrepareStatement(admin, true);
-    args = new Object[] { start };
-    daoExplain.explain(
-        DBTransferDAOExplain.replaceArgs(preparedStatement.toString(), args));
-    preparedStatement =
-        DbTaskRunner.getCountInOutRunningPrepareStatement(admin, true, false);
-    args = new Object[] { start };
-    daoExplain.explain(
-        DBTransferDAOExplain.replaceArgs(preparedStatement.toString(), args));
-
-    // Startup
-    logger.warn("Startup");
-    request = "UPDATE RUNNER SET " + Columns.UPDATEDINFO.name() + '=' +
-              AbstractDbData.UpdatedInfo.TOSUBMIT.ordinal() + " WHERE " + " " +
-              Columns.OWNERREQ + " = '" +
-              Configuration.configuration.getHostId() + "' " + " AND (" +
-              Columns.UPDATEDINFO.name() + " = " +
-              AbstractDbData.UpdatedInfo.RUNNING.ordinal() + " OR " +
-              Columns.UPDATEDINFO.name() + " = " +
-              AbstractDbData.UpdatedInfo.INTERRUPTED.ordinal() + ")";
-    daoExplain.explain(request);
-
-    // Monitor JSON Push API
-    logger.warn("Monitor Push API");
-    DateTime now = new DateTime();
-    Timestamp timestamp = new Timestamp(now.getMillis());
-    TransferConverter.Order order = TransferConverter.Order.ascId;
-    filters = new ArrayList<Filter>(3);
-    filters.add(DbTaskRunner.getOwnerFilter());
-    filters
-        .add(new Filter(TRANSFER_STOP_FIELD, Filter.BETWEEN, start, timestamp));
-    daoExplain.find(filters, order.column, order.ascend);
-
-    // Other request
-    logger.warn("Other requests");
-    daoExplain.count(filters);
-    daoExplain.updateRank(transfer);
-
-
-    // Filter on rule and owner (not standard)
-    logger.warn("Not Standards");
-    final ArrayList<Filter> map = new ArrayList<Filter>();
-    map.add(new Filter(DBTransferDAO.ID_RULE_FIELD, "=", "rule"));
-    map.add(new Filter(DBTransferDAO.OWNER_REQUEST_FIELD, "=", "server1"));
-    daoExplain.find(map);
-    // Get All (not standard)
-    daoExplain.getAll();
-    // Delete All (not standard)
-    daoExplain.deleteAll();
   }
 
 }

@@ -178,7 +178,7 @@ public abstract class AbstractTransfer implements Runnable {
       dbRule = new DbRule(transferArgs.getRulename());
     } catch (final WaarpDatabaseException e) {
       logger.error("Cannot get Rule: " + transferArgs.getRulename() + ": {}",
-                   e.getMessage());
+                   e.getMessage(), e);
       future.setResult(
           new R66Result(new OpenR66DatabaseGlobalException(e), null, true,
                         ErrorCode.Internal, null));
@@ -218,7 +218,7 @@ public abstract class AbstractTransfer implements Runnable {
         File file = new File(transferArgs.getFilename());
         // Change dir
         try {
-          final R66Session session = new R66Session();
+          final R66Session session = new R66Session(false);
           session.getAuth().specialNoSessionAuth(false,
                                                  Configuration.configuration
                                                      .getHostId());
@@ -464,7 +464,7 @@ public abstract class AbstractTransfer implements Runnable {
   public List<String> getLocalFiles(final DbRule dbrule,
                                     final String[] localfilenames) {
     final List<String> files = new ArrayList<String>();
-    final R66Session session = new R66Session();
+    final R66Session session = new R66Session(false);
     session.getAuth().specialNoSessionAuth(false, Configuration.configuration
         .getHostId());
     final R66Dir dir = new R66Dir(session);

@@ -132,7 +132,7 @@ public abstract class AbstractExecJavaTask implements R66Runnable {
                                                 ErrorPacket.FORWARDCLOSECODE);
       try {
         ChannelUtils
-            .writeAbstractLocalPacket(localChannelReference, error, true);
+            .writeAbstractLocalPacket(localChannelReference, error, false);
       } catch (final OpenR66ProtocolPacketException ignored) {
         // nothing
       }

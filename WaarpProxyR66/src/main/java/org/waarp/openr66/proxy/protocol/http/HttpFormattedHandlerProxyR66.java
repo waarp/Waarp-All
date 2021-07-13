@@ -101,7 +101,7 @@ public class HttpFormattedHandlerProxyR66 extends HttpFormattedHandler {
     }
   }
 
-  final R66Session authentHttp = new R66Session();
+  final R66Session authentHttp = new R66Session(false);
 
   private String readFileHeaderInternal(final String filename) {
     final String value;

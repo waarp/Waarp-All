@@ -526,17 +526,26 @@ public class NetworkServerHandler
       }
       if (networkPacket != null) {
         final NetworkPacket finalNP = networkPacket;
-        channel.eventLoop().submit(new Runnable() {
-          @Override
-          public void run() {
-            channel.writeAndFlush(finalNP).awaitUninterruptibly();
-            finalNP.clear();
-          }
-        });
+        channel.eventLoop().submit(new finalNPWrite(channel, finalNP));
       }
     }
   }
 
+  private static class finalNPWrite implements Runnable {
+    private final Channel channel;
+    private final NetworkPacket finalNP;
+
+    private finalNPWrite(final Channel channel, final NetworkPacket finalNP) {
+      this.channel = channel;
+      this.finalNP = finalNP;
+    }
+
+    @Override
+    public void run() {
+      channel.writeAndFlush(finalNP).awaitUninterruptibly();
+      finalNP.clear();
+    }
+  }
   /**
    * @return the dbSession
    */

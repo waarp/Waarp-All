@@ -137,7 +137,7 @@ public abstract class TestAbstract extends TestAbstractMinimal {
     logger.warn("Send {}", informationPacket);
     ChannelUtils
         .writeAbstractLocalPacket(localChannelReference, informationPacket,
-                                  true);
+                                  false);
     if (informationPacket instanceof KeepAlivePacket ||
         informationPacket instanceof NoOpPacket) {
       // do no await
@@ -294,8 +294,7 @@ public abstract class TestAbstract extends TestAbstractMinimal {
         "-auth", new File(dir, "OpenR66-authent-A.xml").getAbsolutePath(),
         "-limit", new File(dir, "limitConfiga.xml").getAbsolutePath()
     };
-    Processes
-        .executeJvm(project, homeDir, ServerInitDatabase.class, args, false);
+    Processes.executeJvm(project, ServerInitDatabase.class, args, false);
   }
 
   /**
@@ -421,9 +420,7 @@ public abstract class TestAbstract extends TestAbstractMinimal {
     } catch (final DAOConnectionException e) {
       throw new WaarpDatabaseException(e);
     } finally {
-      if (transferAccess != null) {
-        transferAccess.close();
-      }
+      DAOFactory.closeDAO(transferAccess);
     }
   }
 
@@ -439,9 +436,7 @@ public abstract class TestAbstract extends TestAbstractMinimal {
     } catch (final DAOConnectionException e) {
       throw new WaarpDatabaseException(e);
     } finally {
-      if (transferAccess != null) {
-        transferAccess.close();
-      }
+      DAOFactory.closeDAO(transferAccess);
     }
   }
 

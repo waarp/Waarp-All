@@ -128,7 +128,7 @@ public class TransferActions extends ServerActions {
       packet.setCode(code.code);
       session.newState(ERROR);
       ChannelUtils
-          .writeAbstractLocalPacket(localChannelReference, packet, true);
+          .writeAbstractLocalPacket(localChannelReference, packet, false);
     } else {
       session.newState(ERROR);
       final ErrorPacket error = new ErrorPacket(
@@ -136,7 +136,8 @@ public class TransferActions extends ServerActions {
           (e1 != null? e1.getMessage() : "Unknown Error") + " for " + packet +
           " since " + code.getMesg(), code.getCode(),
           ErrorPacket.FORWARDCLOSECODE);
-      ChannelUtils.writeAbstractLocalPacket(localChannelReference, error, true);
+      ChannelUtils
+          .writeAbstractLocalPacket(localChannelReference, error, false);
     }
     session.setStatus(47);
     ChannelCloseTimer.closeFutureTransaction(this);
@@ -215,20 +216,25 @@ public class TransferActions extends ServerActions {
     // Receiver can specify a rank different from database
     setRankAtStartupFromRequest(packet, runner);
     runner.setBlocksize(packet.getBlocksize());
-    try {
-      runner.update();
-    } catch (final WaarpDatabaseException ignored) {
-      // Ignore
-    }
     logger
         .debug("Filesize: {}:{}", packet.getOriginalSize(), runner.isSender());
     logger.debug("I am {} acting as sender {} while packet said {} and " +
                  "runner said {} and session said {} but will changed",
                  Configuration.configuration.getHostId(), isRetrieve,
                  packet.isRetrieve(), runner.isSender(), session.isSender());
-    session.setCompressionEnabled(session.isCompressionEnabled() && AbstractTask
-        .isCompressionRequested(runner.getFileInformation()));
+    logger.debug(
+        "COMPRESSION was {} and could become {} while remote " + "host said {}",
+        session.isCompressionEnabled(), AbstractTask
+            .isCompressionRequested(runner.getFileInformation(), session),
+        localChannelReference.getPartner());
+    session.setCompressionEnabled(AbstractTask.isCompressionRequested(
+        runner.getFileInformation(), session));
     runner.setBlockCompression(session.isCompressionEnabled());
+    try {
+      runner.update();
+    } catch (final WaarpDatabaseException ignored) {
+      // Ignore
+    }
     boolean shouldInformBack = false;
     try {
       session.setRunner(runner);
@@ -439,7 +445,7 @@ public class TransferActions extends ServerActions {
       packet.validate();
       session.newState(REQUESTD);
       ChannelUtils
-          .writeAbstractLocalPacket(localChannelReference, packet, true);
+          .writeAbstractLocalPacket(localChannelReference, packet, false);
     } else {
       session.newState(REQUESTD);
       // requester => might be a client
@@ -747,7 +753,7 @@ public class TransferActions extends ServerActions {
       final JsonCommandPacket validPacket =
           new JsonCommandPacket(request, LocalPacketFactory.REQUESTPACKET);
       ChannelUtils
-          .writeAbstractLocalPacket(localChannelReference, validPacket, true);
+          .writeAbstractLocalPacket(localChannelReference, validPacket, false);
     } else {
       final String infoTransfer = runner.getFileInformation();
       final ValidPacket validPacket;
@@ -767,7 +773,7 @@ public class TransferActions extends ServerActions {
                                       LocalPacketFactory.REQUESTPACKET);
       }
       ChannelUtils
-          .writeAbstractLocalPacket(localChannelReference, validPacket, true);
+          .writeAbstractLocalPacket(localChannelReference, validPacket, false);
     }
   }
 
@@ -796,7 +802,7 @@ public class TransferActions extends ServerActions {
     }
     final ErrorPacket error =
         new ErrorPacket(message, code.getCode(), ErrorPacket.FORWARDCLOSECODE);
-    ChannelUtils.writeAbstractLocalPacket(localChannelReference, error, true);
+    ChannelUtils.writeAbstractLocalPacket(localChannelReference, error, false);
     session.setStatus(status);
     ChannelCloseTimer.closeFutureTransaction(this);
   }
@@ -1085,7 +1091,7 @@ public class TransferActions extends ServerActions {
       packet.validate();
       try {
         ChannelUtils
-            .writeAbstractLocalPacket(localChannelReference, packet, true);
+            .writeAbstractLocalPacket(localChannelReference, packet, false);
       } catch (final OpenR66ProtocolPacketException e) {
         // ignore
       }
@@ -1128,7 +1134,7 @@ public class TransferActions extends ServerActions {
             ErrorCode.MD5Error.getCode(), ErrorPacket.FORWARDCLOSECODE);
         try {
           ChannelUtils
-              .writeAbstractLocalPacket(localChannelReference, error, true);
+              .writeAbstractLocalPacket(localChannelReference, error, false);
         } catch (final OpenR66ProtocolPacketException ignored) {
           // nothing
         }
@@ -1187,7 +1193,7 @@ public class TransferActions extends ServerActions {
             ErrorPacket.FORWARDCLOSECODE);
         try {
           ChannelUtils
-              .writeAbstractLocalPacket(localChannelReference, error, true);
+              .writeAbstractLocalPacket(localChannelReference, error, false);
         } catch (final OpenR66ProtocolPacketException ignored) {
           // nothing
         }
@@ -1216,7 +1222,8 @@ public class TransferActions extends ServerActions {
                               ErrorPacket.FORWARDCLOSECODE);
     }
     try {
-      ChannelUtils.writeAbstractLocalPacket(localChannelReference, error, true);
+      ChannelUtils
+          .writeAbstractLocalPacket(localChannelReference, error, false);
     } catch (final OpenR66ProtocolPacketException ignored) {
       // nothing
     }
@@ -1299,7 +1306,7 @@ public class TransferActions extends ServerActions {
       session.newState(ENDREQUESTR);
       try {
         ChannelUtils
-            .writeAbstractLocalPacket(localChannelReference, packet, true);
+            .writeAbstractLocalPacket(localChannelReference, packet, false);
       } catch (final OpenR66ProtocolPacketException ignored) {
         // nothing
       }
@@ -1338,7 +1345,7 @@ public class TransferActions extends ServerActions {
           runner.getErrorInfo().getCode(), ErrorPacket.FORWARDCLOSECODE);
       try {
         ChannelUtils
-            .writeAbstractLocalPacket(localChannelReference, error, true);
+            .writeAbstractLocalPacket(localChannelReference, error, false);
       } catch (final OpenR66ProtocolPacketException ignored) {
         // nothing
       }
@@ -1406,7 +1413,7 @@ public class TransferActions extends ServerActions {
                             ErrorPacket.FORWARDCLOSECODE);
         try {
           ChannelUtils
-              .writeAbstractLocalPacket(localChannelReference, error, true);
+              .writeAbstractLocalPacket(localChannelReference, error, false);
         } catch (final OpenR66ProtocolPacketException ignored) {
           // nothing
         }

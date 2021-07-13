@@ -294,8 +294,7 @@ public class OutputFormat extends JsonHandler {
       case CSV:
         try {
           final Map<String, Object> map = mapper
-              .readValue(inString, new TypeReference<Map<String, Object>>() {
-              });
+              .readValue(inString, JsonHandler.typeReferenceMapStringObject);
           final StringBuilder builderKeys = new StringBuilder();
           final StringBuilder builderValues = new StringBuilder();
           boolean next = false;
@@ -347,8 +346,7 @@ public class OutputFormat extends JsonHandler {
       case XML:
         try {
           final Map<String, Object> map = mapper
-              .readValue(inString, new TypeReference<Map<String, Object>>() {
-              });
+              .readValue(inString, JsonHandler.typeReferenceMapStringObject);
           final StringBuilder builder = new StringBuilder("<xml>");
           for (final Entry<String, Object> entry : map.entrySet()) {
             String value = entry.getValue().toString();

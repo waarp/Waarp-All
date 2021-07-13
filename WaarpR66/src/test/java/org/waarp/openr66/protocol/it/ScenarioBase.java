@@ -117,7 +117,7 @@ public abstract class ScenarioBase extends TestAbstract {
     createBaseR66Directory(r3, "/tmp/R66/scenario_1_2_3/R3");
     setUp3DbBeforeClass();
     Configuration.configuration.setTimeoutCon(100);
-    Processes.setJvmArgsDefault("-Xms2048m -Xmx2048m ");
+    Processes.setMemoryAccordingToFreeMemory(SERVER1_IN_JUNIT? 3 : 4);
     if (!SERVER1_IN_JUNIT) {
       r66Pid1 = startServer(configFile.getAbsolutePath());
     }
@@ -266,8 +266,7 @@ public abstract class ScenarioBase extends TestAbstract {
         file.getAbsolutePath(), "-initdb", "-dir", dir2.getAbsolutePath(),
         "-auth", fileAuth.getAbsolutePath()
     };
-    Processes
-        .executeJvm(project, homeDir, ServerInitDatabase.class, args, false);
+    Processes.executeJvm(project, ServerInitDatabase.class, args, false);
     Configuration.configuration.setTimeoutCon(100);
     // For debug only ServerInitDatabase.main(args);
   }
@@ -286,7 +285,7 @@ public abstract class ScenarioBase extends TestAbstract {
       };
       // global ant project settings
       project = Processes.getProject(homeDir);
-      Processes.executeJvm(project, homeDir, R66Server.class, argsServer, true);
+      Processes.executeJvm(project, R66Server.class, argsServer, true);
       int pid = Processes
           .getPidOfRunnerCommandLinux("java", R66Server.class.getName(), PIDS);
       PIDS.add(pid);
@@ -582,11 +581,11 @@ public abstract class ScenarioBase extends TestAbstract {
   private void waitForAllDone(DbTaskRunner runner) {
     while (true) {
       try {
-        DbTaskRunner checkedRunner = DbTaskRunner.reloadFromDatabase(runner);
-        if (checkedRunner.isAllDone()) {
+        runner.select();
+        if (runner.isAllDone()) {
           logger.warn("DbTaskRunner done");
           return;
-        } else if (checkedRunner.isInError()) {
+        } else if (runner.isInError()) {
           logger.error("DbTaskRunner in error");
           fail("DbTaskRunner in error");
           return;

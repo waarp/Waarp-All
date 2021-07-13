@@ -278,7 +278,7 @@ public abstract class ConnectionActions {
                             ErrorCode.ConnectionImpossible.getCode(),
                             ErrorPacket.FORWARDCLOSECODE);
         ChannelUtils
-            .writeAbstractLocalPacket(localChannelReference, error, true);
+            .writeAbstractLocalPacket(localChannelReference, error, false);
         session.setStatus(40);
         return;
       }
@@ -336,7 +336,7 @@ public abstract class ConnectionActions {
     final ErrorPacket error =
         new ErrorPacket(e1.getMessage(), ErrorCode.BadAuthent.getCode(),
                         ErrorPacket.FORWARDCLOSECODE);
-    ChannelUtils.writeAbstractLocalPacket(localChannelReference, error, true);
+    ChannelUtils.writeAbstractLocalPacket(localChannelReference, error, false);
     localChannelReference.validateConnection(false, result);
     final Channel networkchannel = localChannelReference.getNetworkChannel();
     final boolean valid = NetworkTransaction
@@ -383,7 +383,8 @@ public abstract class ConnectionActions {
                                                 ErrorCode.ConnectionImpossible
                                                     .getCode(),
                                                 ErrorPacket.FORWARDCLOSECODE);
-      ChannelUtils.writeAbstractLocalPacket(localChannelReference, error, true);
+      ChannelUtils
+          .writeAbstractLocalPacket(localChannelReference, error, false);
       localChannelReference.validateConnection(false, result);
       ChannelCloseTimer.closeFutureTransaction(this);
       session.setStatus(43);
@@ -408,7 +409,8 @@ public abstract class ConnectionActions {
                                                 ErrorCode.ConnectionImpossible
                                                     .getCode(),
                                                 ErrorPacket.FORWARDCLOSECODE);
-      ChannelUtils.writeAbstractLocalPacket(localChannelReference, error, true);
+      ChannelUtils
+          .writeAbstractLocalPacket(localChannelReference, error, false);
       localChannelReference.validateConnection(false, result);
       ChannelCloseTimer.closeFutureTransaction(this);
       session.setStatus(43);
@@ -493,7 +495,7 @@ public abstract class ConnectionActions {
       // only requested
       packet.validate(session.getAuth().isSsl());
       ChannelUtils
-          .writeAbstractLocalPacket(localChannelReference, packet, true);
+          .writeAbstractLocalPacket(localChannelReference, packet, false);
       session.setStatus(98);
     }
     logger.debug("Partner: {} from {}", localChannelReference.getPartner(),

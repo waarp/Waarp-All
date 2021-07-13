@@ -112,13 +112,19 @@ public class R66File extends FilesystemBasedFileImpl {
     try {
       long length = length();
       toRead = (length - getPosition());
-      if (!isReady || toRead <= 0) {
+      if (!isReady) {
+        logger
+            .error("File is not ready to be retrieved: Filename {} isReady {}",
+                   getBasename(), isReady);
+        errorMesg = "File is not ready to be retrieved: " + "Filename " +
+                    getBasename() + " isReady " + isReady;
+      } else if (toRead < 0) {
         logger.error(
-            "File is not ready to be retrieved or nothing to read: Filename {} isReady {} initialLength {} position {}",
-            getBasename(), isReady, length, getPosition());
-        errorMesg = "File is not ready to be retrieved or nothing to read: " +
-                    "Filename " + getBasename() + " isReady " + isReady + " " +
-                    "initialLength " + length + " position " + getPosition();
+            "File is not ready to be read: Filename {} initialLength {} position {}",
+            getBasename(), length, getPosition());
+        errorMesg =
+            "File is not ready to be read: " + "Filename " + getBasename() +
+            " initialLength " + length + " position " + getPosition();
       }
     } catch (CommandAbstractException e) {
       logger.warn(e.getMessage());
@@ -378,7 +384,7 @@ public class R66File extends FilesystemBasedFileImpl {
   public boolean exists() throws CommandAbstractException {
     if (isExternal) {
       final File file = new File(currentFile);
-      return file.exists();
+      return exists(file);
     }
     return super.exists();
   }
@@ -485,7 +491,7 @@ public class R66File extends FilesystemBasedFileImpl {
   public boolean isDirectory() throws CommandAbstractException {
     if (isExternal) {
       final File dir = new File(currentFile);
-      return dir.isDirectory();
+      return isDirectory(dir);
     }
     return super.isDirectory();
   }
@@ -494,7 +500,7 @@ public class R66File extends FilesystemBasedFileImpl {
   public boolean isFile() throws CommandAbstractException {
     if (isExternal) {
       final File file = new File(currentFile);
-      return file.isFile();
+      return isFile(file);
     }
     return super.isFile();
   }

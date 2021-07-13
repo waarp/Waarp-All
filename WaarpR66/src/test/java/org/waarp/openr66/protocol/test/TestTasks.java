@@ -107,7 +107,7 @@ public class TestTasks {
     final long size = file.length();
     final String argRule = out + "/#DATE#_%s_%s_" + filename;
     final String argTransfer = "basic information";
-    final R66Session session = new R66Session();
+    final R66Session session = new R66Session(false);
     final DbRule rule =
         new DbRule("idRule", (String) null, TRANSFERMODE.SENDMODE.ordinal(),
                    out, null, null, in, null, null, null, null, null, null);
@@ -464,11 +464,11 @@ public class TestTasks {
   private static void waitForAllDone(DbTaskRunner runner) {
     while (true) {
       try {
-        DbTaskRunner checkedRunner = DbTaskRunner.reloadFromDatabase(runner);
-        if (checkedRunner.isAllDone()) {
+        runner.select();
+        if (runner.isAllDone()) {
           SysErrLogger.FAKE_LOGGER.sysout("DbTaskRunner done");
           return;
-        } else if (checkedRunner.isInError()) {
+        } else if (runner.isInError()) {
           SysErrLogger.FAKE_LOGGER.syserr("DbTaskRunner in error");
           return;
         }

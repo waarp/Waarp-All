@@ -113,8 +113,8 @@ public class DbHostAuth extends AbstractDbDataDao<Host> {
   }
 
   @Override
-  protected AbstractDAO<Host> getDao() throws DAOConnectionException {
-    return DAOFactory.getInstance().getHostDAO();
+  protected AbstractDAO<Host> getDao(final boolean isCacheable) throws DAOConnectionException {
+    return DAOFactory.getInstance().getHostDAO(isCacheable);
   }
 
   @Override
@@ -284,7 +284,7 @@ public class DbHostAuth extends AbstractDbDataDao<Host> {
     }
     HostDAO hostAccess = null;
     try {
-      hostAccess = DAOFactory.getInstance().getHostDAO();
+      hostAccess = DAOFactory.getInstance().getHostDAO(true);
       pojo = hostAccess.select(hostid);
     } catch (final DAOConnectionException e) {
       throw new WaarpDatabaseException(e);
@@ -307,7 +307,7 @@ public class DbHostAuth extends AbstractDbDataDao<Host> {
     final List<DbHostAuth> res = new ArrayList<DbHostAuth>();
     List<Host> hosts;
     try {
-      hostAccess = DAOFactory.getInstance().getHostDAO();
+      hostAccess = DAOFactory.getInstance().getHostDAO(false);
       hosts = hostAccess.getAll();
       hostAccess.deleteAll();
     } catch (final DAOConnectionException e) {
@@ -345,7 +345,7 @@ public class DbHostAuth extends AbstractDbDataDao<Host> {
     final List<DbHostAuth> res = new ArrayList<DbHostAuth>();
     List<Host> hosts;
     try {
-      hostAccess = DAOFactory.getInstance().getHostDAO();
+      hostAccess = DAOFactory.getInstance().getHostDAO(false);
       hosts = hostAccess.getAll();
     } catch (final DAOConnectionException e) {
       throw new WaarpDatabaseNoConnectionException(e);
@@ -374,7 +374,7 @@ public class DbHostAuth extends AbstractDbDataDao<Host> {
     final DbHostAuth dbHostAuth = new DbHostAuth();
     AbstractDAO<Host> hostDAO = null;
     try {
-      hostDAO = dbHostAuth.getDao();
+      hostDAO = dbHostAuth.getDao(false);
       dbHostAuth.pojo = ((StatementExecutor<Host>) hostDAO)
           .getFromResultSet(preparedStatement.getResultSet());
       return dbHostAuth;
@@ -397,7 +397,7 @@ public class DbHostAuth extends AbstractDbDataDao<Host> {
     HostDAO hostAccess = null;
     List<Host> hosts;
     try {
-      hostAccess = DAOFactory.getInstance().getHostDAO();
+      hostAccess = DAOFactory.getInstance().getHostDAO(false);
       hosts = hostAccess.find(filters);
     } catch (final DAOConnectionException e) {
       throw new WaarpDatabaseNoConnectionException(e);
@@ -821,7 +821,7 @@ public class DbHostAuth extends AbstractDbDataDao<Host> {
 
     HostDAO hostAccess = null;
     try {
-      hostAccess = DAOFactory.getInstance().getHostDAO();
+      hostAccess = DAOFactory.getInstance().getHostDAO(false);
       return hostAccess.count(filters) > 0;
     } catch (final DAOConnectionException e) {
       logger.error("DAO Access error", e);

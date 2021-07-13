@@ -21,6 +21,7 @@
 package org.waarp.common.utility;
 
 import com.google.common.collect.ImmutableList;
+import com.sun.management.OperatingSystemMXBean;
 import jnr.constants.platform.Errno;
 import jnr.posix.POSIX;
 import jnr.posix.POSIXFactory;
@@ -304,6 +305,17 @@ public final class Processes {
     return exist.get();
   }
 
+  public static void setMemoryAccordingToFreeMemory(final int nbProcess) {
+    OperatingSystemMXBean osmxb =
+        (OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
+    final int freePhysicalMemorySize =
+        (int) (osmxb.getFreePhysicalMemorySize() / (1024*1024*1024));
+    final int maxMemory = freePhysicalMemorySize / nbProcess;
+    final int realMemory = maxMemory > 0? maxMemory:1;
+    setJvmArgsDefault("-Xms"+maxMemory+"g -Xmx"+maxMemory+"g ");
+    System.err.println("Will propose "+maxMemory);
+  }
+
   public static void setJvmArgsDefault(String jvmArgsDefault1) {
     jvmArgsDefault = jvmArgsDefault1;
   }
@@ -391,8 +403,8 @@ public final class Processes {
     project.fireBuildFinished(null);
   }
 
-  public static int executeJvm(Project project, File homeDir, Class<?> zclass,
-                               String[] args, boolean longTerm) {
+  public static int executeJvm(Project project, Class<?> zclass, String[] args,
+                               boolean longTerm) {
     int pid = 99999999;
     try {
       // initialize an java task
@@ -436,6 +448,68 @@ public final class Processes {
       final String classpath = System.getProperty("java.class.path");
       final Path classPath = javaTask.createClasspath();
       classPath.setPath(classpath);
+      javaTask.setClasspath(classPath);
+
+      javaTask.init();
+      final int ret = javaTask.executeJava();
+      if (longTerm) {
+        pid = getPidOfRunnerCommandLinux("java", zclass.getName());
+      }
+      SysErrLogger.FAKE_LOGGER.syserr(
+          zclass.getName() + ' ' + builder + " return code: " + ret + " pid: " +
+          pid);
+    } catch (final BuildException e) {
+      SysErrLogger.FAKE_LOGGER.syserr("While java task", e);
+    }
+    return pid;
+  }
+
+  public static int executeJvmSpecificClasspath(Project project,
+                                                File classPathFile,
+                                                Class<?> zclass, String[] args,
+                                                boolean longTerm) {
+    int pid = 99999999;
+    try {
+      // initialize an java task
+      final Java javaTask = new Java();
+      javaTask.setNewenvironment(false);
+      javaTask.setTaskName(zclass.getSimpleName());
+      javaTask.setProject(project);
+      javaTask.setFork(true);
+      javaTask.setCloneVm(true);
+      javaTask.setSpawn(longTerm);
+      javaTask.setFailonerror(true);
+      javaTask.setClassname(zclass.getName());
+
+      // add some vm args
+      final Argument jvmArgs = javaTask.createJvmarg();
+      final ClassLoader classLoader = Processes.class.getClassLoader();
+      URL url = classLoader.getResource("logback-test.xml");
+      String logbackConf = "";
+      if (url != null) {
+        logbackConf = " -Dlogback.configurationFile=" + url.getFile();
+      }
+      if (jvmArgsDefault != null) {
+        if (jvmArgsDefault.contains("-Xmx")) {
+          jvmArgs.setLine(jvmArgsDefault + logbackConf);
+        } else {
+          jvmArgs
+              .setLine("-Xms1024m -Xmx1024m " + jvmArgsDefault + logbackConf);
+        }
+      } else {
+        jvmArgs.setLine("-Xms1024m -Xmx1024m " + logbackConf);
+      }
+      // added some args for to class to launch
+      final Argument taskArgs = javaTask.createArg();
+      final StringBuilder builder = new StringBuilder();
+      for (final String string : args) {
+        builder.append(' ').append(string);
+      }
+      taskArgs.setLine(builder.toString());
+
+      // set the class path
+      final Path classPath = javaTask.createClasspath();
+      classPath.setPath(classPathFile.getAbsolutePath());
       javaTask.setClasspath(classPath);
 
       javaTask.init();

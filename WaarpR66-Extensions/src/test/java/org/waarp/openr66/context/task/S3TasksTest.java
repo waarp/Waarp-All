@@ -47,6 +47,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 
 import static org.junit.Assert.*;
@@ -175,7 +176,7 @@ public class S3TasksTest {
           " rest of info");
       final DbTaskRunner runner = new DbTaskRunner(transfer);
       runner.insert();
-      final R66Session session = new R66Session();
+      final R66Session session = new R66Session(false);
       final LocalChannelReference lcr = new LocalChannelReference();
       lcr.setSendThroughMode(true);
       session.setNoSessionRunner(runner, lcr);
@@ -186,7 +187,8 @@ public class S3TasksTest {
       assertTrue(task.isSuccess());
       assertTrue(test.canRead());
       assertTrue(lcr.isSendThroughMode());
-      Map<String, Object> map = runner.getTransferMap();
+      Map<String, Object> map =
+          new HashMap<String, Object>(runner.getTransferMap());
 
       // Second GET
       taskName = S3TaskType.S3GET.name();
@@ -207,7 +209,8 @@ public class S3TasksTest {
       assertTrue(test.canRead());
       assertFalse(lcr.isSendThroughMode());
       assertEquals(runner.getFilename(), testDest.getAbsolutePath());
-      Map<String, Object> map2 = runner.getTransferMap();
+      Map<String, Object> map2 =
+          new HashMap<String, Object>(runner.getTransferMap());
       assertEquals(map.size() + 2, map2.size());
       testDest.delete();
 
@@ -245,7 +248,7 @@ public class S3TasksTest {
       assertTrue(task.isSuccess());
       assertFalse(test.canRead());
       assertTrue(lcr.isSendThroughMode());
-      map = runner.getTransferMap();
+      map = new HashMap<String, Object>(runner.getTransferMap());
 
       // Fifth GET DELETE
       taskName = S3TaskType.S3GETDELETE.name();
@@ -266,7 +269,7 @@ public class S3TasksTest {
       assertFalse(test.canRead());
       assertFalse(lcr.isSendThroughMode());
       assertEquals(runner.getFilename(), testDest2.getAbsolutePath());
-      map2 = runner.getTransferMap();
+      map2 = new HashMap<String, Object>(runner.getTransferMap());
       logger.warn("{} {}", map, map2);
       assertEquals(1, map2.size());
       testDest2.delete();
