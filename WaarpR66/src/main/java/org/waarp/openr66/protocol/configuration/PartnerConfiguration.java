@@ -93,7 +93,7 @@ public class PartnerConfiguration {
   public PartnerConfiguration(final String id, final String json) {
     this.id = id;
     JsonHandler.setValue(root, FIELDS.HOSTID, id);
-    final int pos = json == null? -1 : json.lastIndexOf('{');
+    final int pos = json == null? -1 : json.indexOf('{');
     if (pos > 1) {
       version = json.substring(0, pos - 1);
     } else {
@@ -136,7 +136,6 @@ public class PartnerConfiguration {
     boolean comp = false;
     if (isVersion2GEQVersion1(R66Versions.V3_1_0.getVersion(), version)) {
       r66 = R66Versions.V3_1_0.getVersion();
-      comp = true;
     }
     JsonHandler.setValue(root, FIELDS.R66VERSION, r66);
     JsonHandler.setValue(root, FIELDS.COMPRESSION, comp);
@@ -156,7 +155,7 @@ public class PartnerConfiguration {
     compression = root.get(FIELDS.COMPRESSION.name).asBoolean();
     r66Version = root.get(FIELDS.R66VERSION.name).asText();
     separator = root.get(FIELDS.SEPARATOR.name).asText();
-    logger.debug("Info on HostId: {}", root);
+    logger.info("Info on HostId: {}", root);
   }
 
   /**
@@ -284,7 +283,7 @@ public class PartnerConfiguration {
    */
   @Override
   public String toString() {
-    return getVersion() + '.' + JsonHandler.writeAsString(root);
+    return version + '.' + JsonHandler.writeAsString(root);
   }
 
   /**

@@ -107,9 +107,7 @@ public abstract class S3TestAbstract extends S3TestAbstractMinimal {
     } catch (final DAOConnectionException e) {
       throw new WaarpDatabaseException(e);
     } finally {
-      if (transferAccess != null) {
-        transferAccess.close();
-      }
+      DAOFactory.closeDAO(transferAccess);
     }
   }
 
@@ -125,9 +123,7 @@ public abstract class S3TestAbstract extends S3TestAbstractMinimal {
     } catch (final DAOConnectionException e) {
       throw new WaarpDatabaseException(e);
     } finally {
-      if (transferAccess != null) {
-        transferAccess.close();
-      }
+      DAOFactory.closeDAO(transferAccess);
     }
   }
 

@@ -23,6 +23,7 @@ import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
+import org.waarp.common.utility.Version;
 import org.waarp.common.utility.WaarpShutdownHook;
 import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.openr66.configuration.FileBasedConfiguration;
@@ -56,7 +57,8 @@ public class R66Server {
         logger.warn(Messages.getString("R66Server.ServerStart") +
                     Configuration.configuration.getHostId() + " : "
                     //$NON-NLS-1$
-                    + Configuration.configuration);
+                    + Configuration.configuration + " Version: " +
+                    Version.fullIdentifier());
         SysErrLogger.FAKE_LOGGER.sysout(
             Messages.getString("R66Server.ServerStart") +
             Configuration.configuration.getHostId()); //$NON-NLS-1$

@@ -151,7 +151,7 @@ public class RetrieveRunner extends Thread {
         try {
           ChannelUtils
               .writeAbstractLocalPacket(localChannelReference, validPacket,
-                                        true);
+                                        false);
           requestValidDone = true;
         } catch (final OpenR66ProtocolPacketException ignored) {
           // nothing
@@ -214,7 +214,7 @@ public class RetrieveRunner extends Thread {
                             ErrorPacket.FORWARDCLOSECODE);
         try {
           ChannelUtils
-              .writeAbstractLocalPacket(localChannelReference, error, true);
+              .writeAbstractLocalPacket(localChannelReference, error, false);
         } catch (final OpenR66ProtocolPacketException ignored) {
           // ignore
         }
@@ -239,7 +239,7 @@ public class RetrieveRunner extends Thread {
         try {
           ChannelUtils
               .writeAbstractLocalPacket(localChannelReference, validPacket,
-                                        true);
+                                        false);
         } catch (final OpenR66ProtocolPacketException ignored) {
           // nothing
         }
@@ -279,7 +279,8 @@ public class RetrieveRunner extends Thread {
         new ErrorPacket("Transfer in error", ErrorCode.TransferError.getCode(),
                         ErrorPacket.FORWARDCLOSECODE);
     try {
-      ChannelUtils.writeAbstractLocalPacket(localChannelReference, error, true);
+      ChannelUtils
+          .writeAbstractLocalPacket(localChannelReference, error, false);
     } catch (final OpenR66ProtocolPacketException ignored) {
       // ignore
     }

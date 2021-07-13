@@ -189,7 +189,7 @@ public class Message implements Runnable {
     localChannelReference.sessionNewState(R66FiniteDualStates.TEST);
     try {
       ChannelUtils
-          .writeAbstractLocalPacket(localChannelReference, testPacket, true);
+          .writeAbstractLocalPacket(localChannelReference, testPacket, false);
     } catch (final OpenR66ProtocolPacketException e) {
       future.setResult(null);
       future.setFailure(e);

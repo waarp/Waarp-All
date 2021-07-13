@@ -77,6 +77,9 @@ public class FileMonitor {
   protected static final long MINIMAL_DELAY = 100;
   protected static final long DEFAULT_DELAY = 1000;
   protected static final long DEFAULT_CHECK_DELAY = 300000; // 5 minutes
+  private static final TypeReference<HashMap<String, FileItem>> typeReference =
+      new TypeReference<HashMap<String, FileItem>>() {
+      };
 
   protected WaarpFuture future;
   protected WaarpFuture internalfuture;
@@ -346,10 +349,8 @@ public class FileMonitor {
     }
     synchronized (directories) {
       try {
-        final HashMap<String, FileItem> newHashMap = JsonHandler.mapper
-            .readValue(statusFile,
-                       new TypeReference<HashMap<String, FileItem>>() {
-                       });
+        final HashMap<String, FileItem> newHashMap =
+            JsonHandler.mapper.readValue(statusFile, typeReference);
         fileItems.putAll(newHashMap);
         initialized = true;
       } catch (final JsonParseException ignored) {

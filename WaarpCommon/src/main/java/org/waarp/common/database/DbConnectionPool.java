@@ -237,7 +237,7 @@ public class DbConnectionPool {
       semaphore = new Semaphore(maxConnections, true);
     }
     recycledConnections = new ArrayDeque<Con>();
-    poolConnectionEventListener = new PoolConnectionEventListener();
+    poolConnectionEventListener = new PoolConnectionEventListener(this);
   }
 
   public synchronized void resetPoolDataSource(
@@ -425,19 +425,26 @@ public class DbConnectionPool {
     }
   }
 
-  private class PoolConnectionEventListener implements ConnectionEventListener {
+  private static class PoolConnectionEventListener
+      implements ConnectionEventListener {
+    private final DbConnectionPool pool;
+
+    private PoolConnectionEventListener(final DbConnectionPool pool) {
+      this.pool = pool;
+    }
+
     @Override
     public void connectionClosed(final ConnectionEvent event) {
       final PooledConnection pconn = (PooledConnection) event.getSource();
       pconn.removeConnectionEventListener(this);
-      recycleConnection(pconn);
+      pool.recycleConnection(pconn);
     }
 
     @Override
     public void connectionErrorOccurred(final ConnectionEvent event) {
       final PooledConnection pconn = (PooledConnection) event.getSource();
       pconn.removeConnectionEventListener(this);
-      disposeConnection(pconn);
+      pool.disposeConnection(pconn);
     }
   }
 

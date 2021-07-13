@@ -105,7 +105,7 @@ public class HostIdHandler extends AbstractRestDbHandler {
     checkSanity(id);
     HostDAO hostDAO = null;
     try {
-      hostDAO = DAO_FACTORY.getHostDAO();
+      hostDAO = DAO_FACTORY.getHostDAO(true);
       final Host host = hostDAO.select(id);
       if (host == null) {
         responder.sendStatus(NOT_FOUND);
@@ -142,7 +142,7 @@ public class HostIdHandler extends AbstractRestDbHandler {
     checkSanity(id);
     HostDAO hostDAO = null;
     try {
-      hostDAO = DAO_FACTORY.getHostDAO();
+      hostDAO = DAO_FACTORY.getHostDAO(false);
       final Host oldHost = hostDAO.select(id);
 
       if (oldHost == null) {
@@ -190,7 +190,7 @@ public class HostIdHandler extends AbstractRestDbHandler {
     checkSanity(id);
     HostDAO hostDAO = null;
     try {
-      hostDAO = DAO_FACTORY.getHostDAO();
+      hostDAO = DAO_FACTORY.getHostDAO(false);
       final Host host = hostDAO.select(id);
       if (host == null) {
         responder.sendStatus(NOT_FOUND);

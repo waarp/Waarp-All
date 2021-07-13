@@ -245,8 +245,7 @@ public abstract class CommonUtil {
         r66Resources.getAbsolutePath(), "-auth", fileAuth.getAbsolutePath(),
         "-limit", fileLimit.getAbsolutePath()
     };
-    Processes.executeJvm(project, projectHome, ServerInitDatabase.class, args,
-                         false);
+    Processes.executeJvm(project, ServerInitDatabase.class, args, false);
   }
 
   public static void deleteBase() {
@@ -285,9 +284,8 @@ public abstract class CommonUtil {
           };
           // global ant project settings
           project = Processes.getProject(projectHome);
-          r66pid = Processes
-              .executeJvm(project, projectHome, R66Server.class, argsServer,
-                          true);
+          r66pid =
+              Processes.executeJvm(project, R66Server.class, argsServer, true);
           logger.warn("Start Done");
         } else {
           System.err
@@ -366,9 +364,7 @@ public abstract class CommonUtil {
     } catch (final DAOConnectionException e) {
       throw new WaarpDatabaseException(e);
     } finally {
-      if (transferAccess != null) {
-        transferAccess.close();
-      }
+      DAOFactory.closeDAO(transferAccess);
     }
   }
 

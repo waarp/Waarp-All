@@ -211,7 +211,7 @@ public final class HostConfigConverter {
     ArrayNode array;
     BusinessDAO businessDAO = null;
     try {
-      businessDAO = DAO_FACTORY.getBusinessDAO();
+      businessDAO = DAO_FACTORY.getBusinessDAO(true);
       final Business config = businessDAO.select(serverName());
       array = getRolesArray(config);
     } catch (final DAOConnectionException e) {

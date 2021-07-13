@@ -63,12 +63,6 @@ public interface CompressorCodec {
                final int maxOutputLength) throws MalformedInputException;
 
   /**
-   * @return the decompressed byte array
-   */
-  byte[] decompress(byte[] input, final int length)
-      throws MalformedInputException;
-
-  /**
    * Compress the file input to the file output
    *
    * @param input
@@ -79,6 +73,12 @@ public interface CompressorCodec {
    * @throws MalformedInputException
    */
   long compress(final File input, final File output)
+      throws MalformedInputException;
+
+  /**
+   * @return the decompressed byte array
+   */
+  byte[] decompress(byte[] input, final int length)
       throws MalformedInputException;
 
   /**

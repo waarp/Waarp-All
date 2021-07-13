@@ -102,7 +102,7 @@ public class ExecOutputTask extends AbstractExecTask {
     }
 
     final PrepareCommandExec prepareCommandExec =
-        new PrepareCommandExec(finalname, false, waitForValidation).invoke();
+        new PrepareCommandExec(this, finalname, false, waitForValidation).invoke();
     if (prepareCommandExec.isError()) {
       return;
     }
@@ -121,7 +121,7 @@ public class ExecOutputTask extends AbstractExecTask {
     allLineReader.setDaemon(true);
     Configuration.configuration.getExecutorService().execute(allLineReader);
     final ExecuteCommand executeCommand =
-        new ExecuteCommand(commandLine, defaultExecutor, inputStream,
+        new ExecuteCommand(this, commandLine, defaultExecutor, inputStream,
                            outputStream, pumpStreamHandler, allLineReader)
             .invoke();
     if (executeCommand.isError()) {

@@ -287,16 +287,23 @@ public abstract class AbstractTask implements Runnable {
 
   /**
    * @param arg
+   * @param session
    *
    * @return True if the argument contains #COMPRESS# and if the current host
    *     allow compression
    */
-  public static boolean isCompressionRequested(final String arg) {
+  public static boolean isCompressionRequested(final String arg,
+                                               final R66Session session) {
     logger.debug("isCompEnabled {} {}",
                  Configuration.configuration.isCompressionAvailable(),
                  arg.contains(COMPRESS));
-    return Configuration.configuration.isCompressionAvailable() &&
-           arg.contains(COMPRESS);
+    if (session == null) {
+      return Configuration.configuration.isCompressionAvailable() &&
+             arg.contains(COMPRESS);
+    } else {
+      return Configuration.configuration.isCompressionAvailable() &&
+             session.isCompressionEnabled() && arg.contains(COMPRESS);
+    }
   }
 
   /**

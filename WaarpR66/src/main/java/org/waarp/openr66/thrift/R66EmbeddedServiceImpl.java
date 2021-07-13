@@ -417,7 +417,7 @@ public class R66EmbeddedServiceImpl implements R66Service.Iface {
       list.add("Not enough arguments");
       return list;
     }
-    final R66Session session = new R66Session();
+    final R66Session session = new R66Session(false);
     session.getAuth().specialNoSessionAuth(false, Configuration.configuration
         .getHostId());
     final DbRule rule;

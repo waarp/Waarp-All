@@ -99,7 +99,7 @@ public class SubmitTransfer extends AbstractTransfer {
       } catch (final WaarpDatabaseException e) {
         logger.info("Cannot prepare task");
         final R66Result result = new R66Result(
-            new OpenR66DatabaseGlobalException("Cannot prepare Task"), null,
+            new OpenR66DatabaseGlobalException("Cannot prepare Task", e), null,
             true, ErrorCode.Internal, taskRunner);
         future.setResult(result);
         future.setFailure(result.getException());

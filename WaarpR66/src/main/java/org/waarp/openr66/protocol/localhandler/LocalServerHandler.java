@@ -144,7 +144,8 @@ public final class LocalServerHandler {
             ErrorCode.ConnectionImpossible.getCode(),
             ErrorPacket.FORWARDCLOSECODE);
         ChannelUtils
-            .writeAbstractLocalPacket(localChannelReference, errorPacket, true);
+            .writeAbstractLocalPacket(localChannelReference, errorPacket,
+                                      false);
         if (Configuration.configuration.getR66Mib() != null) {
           Configuration.configuration.getR66Mib()
                                      .notifyWarning("No LocalChannelReference",
@@ -261,7 +262,7 @@ public final class LocalServerHandler {
               "Unimplemented Mesg: " + packet.getClass().getName(),
               ErrorCode.Unimplemented.getCode(), ErrorPacket.FORWARDCLOSECODE);
           ChannelUtils.writeAbstractLocalPacket(
-              serverHandler.getLocalChannelReference(), errorPacket, true);
+              serverHandler.getLocalChannelReference(), errorPacket, false);
           packet.clear();
           break;
         }
@@ -318,7 +319,7 @@ public final class LocalServerHandler {
                          .validateRequest(resulttest);
             try {
               ChannelUtils.writeAbstractLocalPacket(
-                  serverHandler.getLocalChannelReference(), valid, true);
+                  serverHandler.getLocalChannelReference(), valid, false);
             } catch (final OpenR66ProtocolPacketException ignored) {
               // ignore
             }
@@ -366,7 +367,7 @@ public final class LocalServerHandler {
                               ErrorCode.Unimplemented.getCode(),
                               ErrorPacket.FORWARDCLOSECODE);
           ChannelUtils.writeAbstractLocalPacket(
-              serverHandler.getLocalChannelReference(), errorPacket, true);
+              serverHandler.getLocalChannelReference(), errorPacket, false);
           packet.clear();
         }
       }
@@ -505,7 +506,7 @@ public final class LocalServerHandler {
           try {
             if (serverHandler.getLocalChannelReference() != null) {
               ChannelUtils.writeAbstractLocalPacket(
-                  serverHandler.getLocalChannelReference(), errorPacket, true);
+                  serverHandler.getLocalChannelReference(), errorPacket, false);
             }
           } catch (final OpenR66ProtocolPacketException e1) {
             // should not be

@@ -295,7 +295,7 @@ public abstract class SendThroughClient extends AbstractTransfer {
         try {
           ChannelUtils
               .writeAbstractLocalPacket(localChannelReference, validPacket,
-                                        true);
+                                        false);
         } catch (final OpenR66ProtocolPacketException ignored) {
           // nothing
         }
@@ -343,7 +343,7 @@ public abstract class SendThroughClient extends AbstractTransfer {
                                                   ErrorPacket.FORWARDCLOSECODE);
         try {
           ChannelUtils
-              .writeAbstractLocalPacket(localChannelReference, error, true);
+              .writeAbstractLocalPacket(localChannelReference, error, false);
         } catch (final OpenR66ProtocolPacketException ignored) {
           // nothing
         }

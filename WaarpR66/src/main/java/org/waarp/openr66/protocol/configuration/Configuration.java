@@ -1363,7 +1363,6 @@ public class Configuration {
                   readGlobalLimit);
     }
     setServerGlobalReadLimit(readGlobalLimit);
-    setServerGlobalReadLimit(readGlobalLimit);
     setServerGlobalWriteLimit(writeGlobalLimit);
     setServerChannelReadLimit(readSessionLimit);
     setServerChannelWriteLimit(writeSessionLimit);

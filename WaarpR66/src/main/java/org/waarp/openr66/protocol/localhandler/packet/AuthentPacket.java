@@ -240,7 +240,7 @@ public class AuthentPacket extends AbstractLocalPacket {
                                                                 hostId));
     }
     version = Configuration.configuration.getVersions().get(hostId).toString();
-    logger.debug("DEBUG validate version {}", version);
+    logger.debug("Validate version {}", version);
     clear();
   }
 }

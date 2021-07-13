@@ -103,7 +103,7 @@ public class LimitsHandler extends AbstractRestDbHandler {
                         final HttpResponder responder) {
     LimitDAO limitDAO = null;
     try {
-      limitDAO = DAO_FACTORY.getLimitDAO();
+      limitDAO = DAO_FACTORY.getLimitDAO(true);
       final String host = serverName();
       if (limitDAO.exist(host)) {
         final Limit limits = limitDAO.select(host);
@@ -139,7 +139,7 @@ public class LimitsHandler extends AbstractRestDbHandler {
                                final HttpResponder responder) {
     LimitDAO limitDAO = null;
     try {
-      limitDAO = DAO_FACTORY.getLimitDAO();
+      limitDAO = DAO_FACTORY.getLimitDAO(false);
 
       if (!limitDAO.exist(serverName())) {
         final ObjectNode requestObject = JsonUtils.deserializeRequest(request);
@@ -181,7 +181,7 @@ public class LimitsHandler extends AbstractRestDbHandler {
                            final HttpResponder responder) {
     LimitDAO limitDAO = null;
     try {
-      limitDAO = DAO_FACTORY.getLimitDAO();
+      limitDAO = DAO_FACTORY.getLimitDAO(false);
 
       if (!limitDAO.exist(serverName())) {
         responder.sendStatus(NOT_FOUND);
@@ -231,7 +231,7 @@ public class LimitsHandler extends AbstractRestDbHandler {
                            final HttpResponder responder) {
     LimitDAO limitDAO = null;
     try {
-      limitDAO = DAO_FACTORY.getLimitDAO();
+      limitDAO = DAO_FACTORY.getLimitDAO(false);
 
       if (limitDAO.exist(serverName())) {
         limitDAO.delete(limitDAO.select(serverName()));

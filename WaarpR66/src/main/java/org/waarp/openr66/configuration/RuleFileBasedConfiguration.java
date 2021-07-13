@@ -153,7 +153,7 @@ public final class RuleFileBasedConfiguration {
     if (daoFactory instanceof XMLDAOFactory) {
       RuleDAO ruleDAO = null;
       try {
-        ruleDAO = daoFactory.getRuleDAO();
+        ruleDAO = daoFactory.getRuleDAO(false);
         if (ruleDAO instanceof XMLRuleDAO) {
           final XMLRuleDAO xmlRuleDAO = (XMLRuleDAO) ruleDAO;
           // To allow loading into cache all Rules

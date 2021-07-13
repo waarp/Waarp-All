@@ -77,7 +77,7 @@ public class ExecTask extends AbstractExecTask {
     }
 
     final PrepareCommandExec prepareCommandExec =
-        new PrepareCommandExec(finalname, true, waitForValidation).invoke();
+        new PrepareCommandExec(this, finalname, true, waitForValidation).invoke();
     if (prepareCommandExec.isError()) {
       return;
     }
@@ -97,7 +97,7 @@ public class ExecTask extends AbstractExecTask {
     }
 
     final ExecuteCommand executeCommand =
-        new ExecuteCommand(commandLine, defaultExecutor, inputStream,
+        new ExecuteCommand(this, commandLine, defaultExecutor, inputStream,
                            outputStream, pumpStreamHandler, null).invoke();
     if (executeCommand.isError()) {
       return;

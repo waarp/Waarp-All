@@ -494,8 +494,17 @@ public class Commander implements CommanderInterface {
           }
           continue;
         }
-        internalRunner.submitTaskRunner(taskRunner);
-        totalRuns++;
+        // last check: number can have raised up since Commander checks
+        if (i > (tasks.length - 10) && internalRunner.nbInternalRunner() >=
+                                       Configuration.configuration
+                                           .getRunnerThread()) {
+          break;
+        }
+        if (internalRunner.submitTaskRunner(taskRunner)) {
+          totalRuns++;
+        } else {
+          break;
+        }
       }
     }
   }

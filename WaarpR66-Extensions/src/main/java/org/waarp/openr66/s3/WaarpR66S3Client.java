@@ -72,6 +72,24 @@ public class WaarpR66S3Client {
   public static final String BUCKET_OR_SOURCE_CANNOT_BE_NULL_OR_EMPTY =
       "Bucket or Source cannot be null or empty";
 
+  private static final Function<Result<Item>, String> function =
+      new Function<Result<Item>, String>() {
+        @Override
+        public @Nullable String apply(@Nullable final Result<Item> itemResult) {
+          try {
+            if (itemResult != null) {
+              final Item item = itemResult.get();
+              if (item != null) {
+                return item.objectName();
+              }
+            }
+            return null;
+          } catch (final MinioException | InvalidKeyException | IOException | NoSuchAlgorithmException e) {
+            logger.error(e.getMessage());
+            return null;
+          }
+        }
+      };
   private final MinioClient minioClient;
 
   /**
@@ -389,24 +407,7 @@ public class WaarpR66S3Client {
       final ListObjectsArgs args = builder.build();
       final Iterable<Result<Item>> iterable = minioClient.listObjects(args);
       return Iterators
-          .transform(iterable.iterator(), new Function<Result<Item>, String>() {
-            @Override
-            public @Nullable String apply(
-                @Nullable final Result<Item> itemResult) {
-              try {
-                if (itemResult != null) {
-                  final Item item = itemResult.get();
-                  if (item != null) {
-                    return item.objectName();
-                  }
-                }
-                return null;
-              } catch (final MinioException | InvalidKeyException | IOException | NoSuchAlgorithmException e) {
-                logger.error(e.getMessage());
-                return null;
-              }
-            }
-          });
+          .transform(iterable.iterator(), function);
     } catch (final Exception e) {
       logger.error(e.getMessage());
       throw new OpenR66ProtocolNetworkException(S_3_ISSUE + e.getMessage(), e);

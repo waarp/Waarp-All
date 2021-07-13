@@ -142,7 +142,7 @@ public class NetworkClientOnlyOneCompressionTest extends TestAbstract {
       };
       // global ant project settings
       project = Processes.getProject(homeDir);
-      Processes.executeJvm(project, homeDir, R66Server.class, argsServer, true);
+      Processes.executeJvm(project, R66Server.class, argsServer, true);
       int pid = Processes
           .getPidOfRunnerCommandLinux("java", R66Server.class.getName(), PIDS);
       PIDS.add(pid);
@@ -229,9 +229,8 @@ public class NetworkClientOnlyOneCompressionTest extends TestAbstract {
       return true;
     }
     try {
-      final DbTaskRunner taskRunner1 =
-          DbTaskRunner.reloadFromDatabase(taskRunner);
-      return SHOULD_COMPRESS == taskRunner1.isBlockCompression();
+      taskRunner.select();
+      return SHOULD_COMPRESS == taskRunner.isBlockCompression();
     } catch (final WaarpDatabaseException e) {
       logger.error(e.getMessage());
       return true;
@@ -243,9 +242,8 @@ public class NetworkClientOnlyOneCompressionTest extends TestAbstract {
       return;
     }
     try {
-      final DbTaskRunner taskRunner1 =
-          DbTaskRunner.reloadFromDatabase(taskRunner);
-      assertEquals(SHOULD_COMPRESS, taskRunner1.isBlockCompression());
+      taskRunner.select();
+      assertEquals(SHOULD_COMPRESS, taskRunner.isBlockCompression());
     } catch (final WaarpDatabaseException e) {
       fail(e.getMessage());
     }
@@ -834,16 +832,16 @@ public class NetworkClientOnlyOneCompressionTest extends TestAbstract {
   private void waitForAllDone(DbTaskRunner runner) {
     while (true) {
       try {
-        DbTaskRunner checkedRunner = DbTaskRunner.reloadFromDatabase(runner);
-        if (checkedRunner.isAllDone()) {
+        runner.select();
+        if (runner.isAllDone()) {
           logger.info("DbTaskRunner done");
-          if (!isCheckCompressionOk(checkedRunner)) {
+          if (!isCheckCompressionOk(runner)) {
             logger.error("DbTaskRunner in error for compression");
             fail("Compression shall be " + SHOULD_COMPRESS + " but is " +
-                 checkedRunner.isBlockCompression());
+                 runner.isBlockCompression());
           }
           return;
-        } else if (checkedRunner.isInError()) {
+        } else if (runner.isInError()) {
           logger.error("DbTaskRunner in error");
           return;
         }
@@ -859,37 +857,6 @@ public class NetworkClientOnlyOneCompressionTest extends TestAbstract {
   }
 
   @Test
-  public void test5_DirectTransferWrong() throws Exception {
-    final File totest = generateOutFile("/tmp/R66/out/testTask.txt", 10);
-    final R66Future future = new R66Future(true);
-    logger.warn("Start Test of DirectTransfer");
-    final long time1 = System.currentTimeMillis();
-    final TestTransferNoDb transaction =
-        new TestTransferNoDb(future, "hostfake", "testTask.txt", "rule3",
-                             "Test SendDirect Small #COMPRESS#", true, 8192,
-                             DbConstantR66.ILLEGALVALUE, networkTransaction);
-    transaction.run();
-    int success = 0;
-    int error = 0;
-    future.awaitOrInterruptible();
-    if (future.getRunner() != null) {
-      dbTaskRunners.add(future.getRunner());
-    }
-    if (future.isSuccess()) {
-      success++;
-    } else {
-      error++;
-    }
-    final long time2 = System.currentTimeMillis();
-    logger.warn("Success: " + success + " Error: " + error + " NB/s: " +
-                success * 1000 / (time2 - time1));
-    Thread.sleep(200);
-    totest.delete();
-    assertEquals("Success should be 0", 0, success);
-    assertEquals("Errors should be 1", 1, error);
-  }
-
-  @Test
   public void test5_DirectTransferWrongExecOutput() throws Exception {
     File commandLine = new File("/tmp/R66/conf/bin/wrong-exec.sh");
     if (!commandLine.setExecutable(true)) {
@@ -902,37 +869,6 @@ public class NetworkClientOnlyOneCompressionTest extends TestAbstract {
     final long time1 = System.currentTimeMillis();
     final TestTransferNoDb transaction =
         new TestTransferNoDb(future, "hostb", "testTask.txt", "rulewrongexec",
-                             "Test SendDirect Small #COMPRESS#", true, 8192,
-                             DbConstantR66.ILLEGALVALUE, networkTransaction);
-    transaction.run();
-    int success = 0;
-    int error = 0;
-    future.awaitOrInterruptible();
-    if (future.getRunner() != null) {
-      dbTaskRunners.add(future.getRunner());
-    }
-    if (future.isSuccess()) {
-      success++;
-    } else {
-      error++;
-    }
-    final long time2 = System.currentTimeMillis();
-    logger.warn("Success: " + success + " Error: " + error + " NB/s: " +
-                success * 1000 / (time2 - time1));
-    Thread.sleep(200);
-    totest.delete();
-    assertEquals("Success should be 0", 0, success);
-    assertEquals("Errors should be 1", 1, error);
-  }
-
-  @Test
-  public void test5_DirectTransferWrongHost() throws Exception {
-    final File totest = generateOutFile("/tmp/R66/out/testTask.txt", 10);
-    final R66Future future = new R66Future(true);
-    logger.warn("Start Test of DirectTransfer");
-    final long time1 = System.currentTimeMillis();
-    final TestTransferNoDb transaction =
-        new TestTransferNoDb(future, "hostunknowns", "testTask.txt", "rule3",
                              "Test SendDirect Small #COMPRESS#", true, 8192,
                              DbConstantR66.ILLEGALVALUE, networkTransaction);
     transaction.run();
@@ -1167,60 +1103,6 @@ public class NetworkClientOnlyOneCompressionTest extends TestAbstract {
     logger.warn("Start Test of Spooled Ignored Changed File Transfer");
     SpooledThread spooledThread = new SpooledThread();
     spooledThread.ignoreAlreadyUsed = true;
-    spooledThread.submit = true;
-    test_Spooled(spooledThread, 2);
-    assertEquals(2, spooledThread.spooledDirectoryTransfer.getSent());
-    assertEquals(0, spooledThread.spooledDirectoryTransfer.getError());
-  }
-
-  @Test
-  public void test70_SpooledWrongHost()
-      throws IOException, InterruptedException {
-    logger.warn("Start Test of Spooled Retry Transfer");
-    SpooledThread spooledThread = new SpooledThread();
-    spooledThread.ignoreAlreadyUsed = false;
-    spooledThread.submit = false;
-    spooledThread.host = "hostfake";
-    // spooledThread.waarpHost = null;
-    test_Spooled(spooledThread, 1);
-    assertEquals(0, spooledThread.spooledDirectoryTransfer.getSent());
-    assertTrue(3 <= spooledThread.spooledDirectoryTransfer.getError());
-  }
-
-  @Test
-  public void test70_SpooledSubmitWrongHost()
-      throws IOException, InterruptedException {
-    logger.warn("Start Test of Spooled Retry Transfer");
-    SpooledThread spooledThread = new SpooledThread();
-    spooledThread.ignoreAlreadyUsed = false;
-    spooledThread.host = "hostb";
-    spooledThread.submit = true;
-    test_Spooled(spooledThread, 2);
-    assertEquals(3, spooledThread.spooledDirectoryTransfer.getSent());
-    assertEquals(0, spooledThread.spooledDirectoryTransfer.getError());
-  }
-
-  @Test
-  public void test70_SpooledWrongHostIgnore()
-      throws IOException, InterruptedException {
-    logger.warn("Start Test of Spooled Ignored Changed File Transfer");
-    SpooledThread spooledThread = new SpooledThread();
-    spooledThread.ignoreAlreadyUsed = true;
-    spooledThread.host = "hostfake";
-    spooledThread.submit = false;
-    //spooledThread.waarpHost = null;
-    test_Spooled(spooledThread, 1);
-    assertEquals(0, spooledThread.spooledDirectoryTransfer.getSent());
-    assertTrue(3 <= spooledThread.spooledDirectoryTransfer.getError());
-  }
-
-  @Test
-  public void test70_SpooledSubmitWrongHostIgnore()
-      throws IOException, InterruptedException {
-    logger.warn("Start Test of Spooled Ignored Changed File Transfer");
-    SpooledThread spooledThread = new SpooledThread();
-    spooledThread.ignoreAlreadyUsed = true;
-    spooledThread.host = "hostb";
     spooledThread.submit = true;
     test_Spooled(spooledThread, 2);
     assertEquals(2, spooledThread.spooledDirectoryTransfer.getSent());

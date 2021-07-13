@@ -176,11 +176,11 @@ public abstract class HttpMonitoringAbstract extends TestAbstract {
   private void waitForAllDone(DbTaskRunner runner) {
     while (true) {
       try {
-        DbTaskRunner checkedRunner = DbTaskRunner.reloadFromDatabase(runner);
-        if (checkedRunner.isAllDone()) {
+        runner.select();
+        if (runner.isAllDone()) {
           logger.warn("DbTaskRunner done");
           return;
-        } else if (checkedRunner.isInError()) {
+        } else if (runner.isInError()) {
           logger.error("DbTaskRunner in error");
           return;
         }
@@ -426,8 +426,8 @@ public abstract class HttpMonitoringAbstract extends TestAbstract {
       final String[] argsServer = {
           file.getAbsolutePath()
       };
-      int pid = Processes
-          .executeJvm(project, homeDir, R66Server.class, argsServer, true);
+      int pid =
+          Processes.executeJvm(project, R66Server.class, argsServer, true);
       Thread.sleep(1000);
       if (!Processes.exists(pid)) {
         logger.warn("Process {} should be running", pid);

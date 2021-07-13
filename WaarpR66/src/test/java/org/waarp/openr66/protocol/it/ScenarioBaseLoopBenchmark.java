@@ -111,7 +111,7 @@ public abstract class ScenarioBaseLoopBenchmark extends TestAbstract {
     setUp3DbBeforeClass();
     Configuration.configuration.setTimeoutCon(30000);
     if (SystemPropertyUtil.get(IT_LONG_TEST, false)) {
-      Processes.setJvmArgsDefault("-Xms4096m -Xmx4096m ");
+      Processes.setMemoryAccordingToFreeMemory(SERVER1_IN_JUNIT? 2 : 3);
     } else {
       Processes.setJvmArgsDefault("-Xms1024m -Xmx1024m ");
     }
@@ -273,8 +273,7 @@ public abstract class ScenarioBaseLoopBenchmark extends TestAbstract {
         file.getAbsolutePath(), "-initdb", "-dir", dir2.getAbsolutePath(),
         "-auth", fileAuth.getAbsolutePath()
     };
-    Processes
-        .executeJvm(project, homeDir, ServerInitDatabase.class, args, false);
+    Processes.executeJvm(project, ServerInitDatabase.class, args, false);
     Configuration.configuration.setTimeoutCon(30000);
     // For debug only ServerInitDatabase.main(args);
   }
@@ -293,7 +292,7 @@ public abstract class ScenarioBaseLoopBenchmark extends TestAbstract {
       };
       // global ant project settings
       project = Processes.getProject(homeDir);
-      Processes.executeJvm(project, homeDir, R66Server.class, argsServer, true);
+      Processes.executeJvm(project, R66Server.class, argsServer, true);
       int pid = Processes
           .getPidOfRunnerCommandLinux("java", R66Server.class.getName(), PIDS);
       PIDS.add(pid);
@@ -312,7 +311,7 @@ public abstract class ScenarioBaseLoopBenchmark extends TestAbstract {
   @AfterClass
   public static void tearDownAfterClass() throws Exception {
     CloseableHttpClient httpClient = null;
-    int max = SystemPropertyUtil.get(IT_LONG_TEST, false)? 8000 : 500;
+    int max = SystemPropertyUtil.get(IT_LONG_TEST, false)? 10000 : 500;
     int totalTransfers = max;
     int nb = 0;
     int every10sec = 10;
@@ -321,7 +320,7 @@ public abstract class ScenarioBaseLoopBenchmark extends TestAbstract {
       httpClient = HttpClientBuilder.create().setConnectionManagerShared(true)
                                     .disableAutomaticRetries().build();
       final HttpGet request =
-          new HttpGet("http://127.0.0.1:8098/v2/transfers?countOrder=true");
+          new HttpGet("http://127.0.0.1:8088/v2/transfers?countOrder=true");
       CloseableHttpResponse response = null;
       try {
         response = httpClient.execute(request);
@@ -500,6 +499,33 @@ public abstract class ScenarioBaseLoopBenchmark extends TestAbstract {
     logger.warn("Start {} {}", Processes.getCurrentMethodName(), NUMBER_FILES);
     int factor = initBenchmark();
     String serverName = "server2";
+    String ruleName = "loop";
+    long timestart = System.currentTimeMillis();
+    runLoopInit(ruleName, serverName, factor);
+    long timestop = System.currentTimeMillis();
+    logger.warn("Direct {}, Recv {}, LimitBandwidth {} " +
+                "({} seconds,  {} MBPS vs {} " +
+                "and {}) of size {} with block size {}", true, false,
+                NUMBER_FILES, (timestop - timestart) / 1000,
+                NUMBER_FILES * (factor + (NUMBER_FILES / 2)) / 1000.0 /
+                (timestop - timestart),
+                Configuration.configuration.getServerGlobalReadLimit() /
+                1000000.0,
+                Configuration.configuration.getServerChannelReadLimit() /
+                1000000.0, (factor + (NUMBER_FILES / 2)), BLOCK_SIZE);
+    checkMemory();
+    logger.warn("End {}", Processes.getCurrentMethodName());
+  }
+
+  @Test
+  public void test03_LoopBenchmarkSendSelfSyncNoLimit()
+      throws IOException, Reply550Exception {
+    logger.warn("Start {} {}", Processes.getCurrentMethodName(), NUMBER_FILES);
+    for (int pid : PIDS) {
+      Processes.kill(pid, true);
+    }
+    int factor = initBenchmark();
+    String serverName = "server1";
     String ruleName = "loop";
     long timestart = System.currentTimeMillis();
     runLoopInit(ruleName, serverName, factor);

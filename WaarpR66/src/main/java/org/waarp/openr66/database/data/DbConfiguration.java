@@ -76,8 +76,8 @@ public class DbConfiguration extends AbstractDbDataDao<Limit> {
   }
 
   @Override
-  protected AbstractDAO<Limit> getDao() throws DAOConnectionException {
-    return DAOFactory.getInstance().getLimitDAO();
+  protected AbstractDAO<Limit> getDao(final boolean isCacheable) throws DAOConnectionException {
+    return DAOFactory.getInstance().getLimitDAO(isCacheable);
   }
 
   @Override
@@ -164,7 +164,7 @@ public class DbConfiguration extends AbstractDbDataDao<Limit> {
   public DbConfiguration(final String hostid) throws WaarpDatabaseException {
     LimitDAO limitAccess = null;
     try {
-      limitAccess = DAOFactory.getInstance().getLimitDAO();
+      limitAccess = DAOFactory.getInstance().getLimitDAO(true);
       pojo = limitAccess.select(hostid);
     } catch (final DAOConnectionException e) {
       throw new WaarpDatabaseException(e);
@@ -233,7 +233,7 @@ public class DbConfiguration extends AbstractDbDataDao<Limit> {
     LimitDAO limitAccess = null;
     List<Limit> limits;
     try {
-      limitAccess = DAOFactory.getInstance().getLimitDAO();
+      limitAccess = DAOFactory.getInstance().getLimitDAO(false);
       limits = limitAccess.find(filters);
     } catch (final DAOConnectionException e) {
       throw new WaarpDatabaseNoConnectionException(e);
@@ -307,7 +307,7 @@ public class DbConfiguration extends AbstractDbDataDao<Limit> {
     final DbConfiguration dbConfiguration = new DbConfiguration();
     AbstractDAO<Limit> limitDAO = null;
     try {
-      limitDAO = dbConfiguration.getDao();
+      limitDAO = dbConfiguration.getDao(false);
       dbConfiguration.pojo = ((StatementExecutor<Limit>) limitDAO)
           .getFromResultSet(statement.getResultSet());
       return dbConfiguration;

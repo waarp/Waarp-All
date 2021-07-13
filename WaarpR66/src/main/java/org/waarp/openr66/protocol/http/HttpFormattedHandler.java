@@ -155,7 +155,7 @@ public class HttpFormattedHandler
   public static final int LIMITROW = 60; // better if it can be divided by 4
   private static final String I18NEXT = "i18next";
 
-  private final R66Session authentHttp = new R66Session();
+  private final R66Session authentHttp = new R66Session(false);
 
   protected String lang = Messages.getSlocale();
 

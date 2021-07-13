@@ -87,28 +87,28 @@ public class DbXmlDAOTest extends DBAllDAOTest {
     }
 
     @Override
-    public BusinessDAO getBusinessDAO() throws DAOConnectionException {
+    public BusinessDAO getBusinessDAO(final boolean isCacheable) throws DAOConnectionException {
       return new XMLBusinessDAO();
     }
 
     @Override
-    public HostDAO getHostDAO() throws DAOConnectionException {
+    public HostDAO getHostDAO(final boolean isCacheable) throws DAOConnectionException {
       return new XMLHostDAO();
     }
 
     @Override
-    public LimitDAO getLimitDAO() throws DAOConnectionException {
+    public LimitDAO getLimitDAO(final boolean isCacheable) throws DAOConnectionException {
       return new XMLLimitDAO();
     }
 
     @Override
-    public MultipleMonitorDAO getMultipleMonitorDAO()
+    public MultipleMonitorDAO getMultipleMonitorDAO(final boolean isCacheable)
         throws DAOConnectionException {
       return null;
     }
 
     @Override
-    public RuleDAO getRuleDAO() throws DAOConnectionException {
+    public RuleDAO getRuleDAO(final boolean isCacheable) throws DAOConnectionException {
       return new XMLRuleDAO();
     }
 

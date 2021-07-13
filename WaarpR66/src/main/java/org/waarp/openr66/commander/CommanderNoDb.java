@@ -174,13 +174,19 @@ public class CommanderNoDb implements CommanderInterface {
             taskRunner.update();
             continue;
           }
-          taskRunner.changeUpdatedInfo(UpdatedInfo.RUNNING);
-          taskRunner.update();
-          internalRunner.submitTaskRunner(taskRunner);
-          try {
-            Thread.sleep(Configuration.RETRYINMS);
-          } catch (final InterruptedException e) {//NOSONAR
-            SysErrLogger.FAKE_LOGGER.ignoreLog(e);
+          // last check: number can have raised up since Commander checks
+          if (internalRunner.nbInternalRunner() >=
+              Configuration.configuration.getRunnerThread()) {
+            break;
+          }
+          if (internalRunner.submitTaskRunner(taskRunner)) {
+            try {
+              Thread.sleep(Configuration.RETRYINMS);
+            } catch (final InterruptedException e) {//NOSONAR
+              SysErrLogger.FAKE_LOGGER.ignoreLog(e);
+            }
+          } else {
+            break;
           }
         }
         if (WaarpShutdownHook.isShutdownStarting()) {

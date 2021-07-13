@@ -51,7 +51,7 @@ public class HttpSessionAbstract implements HttpSession {
   protected final HttpAuthent authent;
 
   public HttpSessionAbstract(final HttpAuthent authent) {
-    this.session = new R66Session();
+    this.session = new R66Session(false);
     this.authent = authent;
   }
 
@@ -151,8 +151,7 @@ public class HttpSessionAbstract implements HttpSession {
         transfer.setId(identifier);
         runner = new DbTaskRunner(transfer);
         runner.insert();
-        runner = new DbTaskRunner(identifier, runner.getRequester(),
-                                  runner.getRequested());
+        runner.select();
         runner.setSender(!uploadMode);
         logger.debug("{} {} {}", identifier, user, requested);
       } catch (final WaarpDatabaseException ex) {
@@ -165,13 +164,7 @@ public class HttpSessionAbstract implements HttpSession {
     }
     runner.setOriginalFilename(filename);
     runner.setFilename(filename);
-    try {
-      if (runner.restart(false)) {
-        runner.saveStatus();
-      }
-    } catch (final OpenR66RunnerErrorException ignored) {
-      // nothing
-    }
+    runner.restart(false);
     try {
       session.setRunner(runner);
       session.setFileBeforePreRunner();
@@ -246,7 +239,6 @@ public class HttpSessionAbstract implements HttpSession {
         runner.setPreTask();
         runner.saveStatus();
         runner.run();
-        runner.saveStatus();
         session.setFileAfterPreRunner(true);
       }
     } catch (final OpenR66RunnerErrorException e) {

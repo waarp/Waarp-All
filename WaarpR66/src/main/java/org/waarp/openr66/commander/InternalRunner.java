@@ -19,6 +19,8 @@
  */
 package org.waarp.openr66.commander;
 
+import org.waarp.common.database.data.AbstractDbData.UpdatedInfo;
+import org.waarp.common.database.exception.WaarpDatabaseException;
 import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
 import org.waarp.common.database.exception.WaarpDatabaseSqlException;
 import org.waarp.common.logging.WaarpLogger;
@@ -106,27 +108,31 @@ public class InternalRunner {
    * Submit a task
    *
    * @param taskRunner
+   *
+   * @return True if launched, False if not since exceeding capacity
    */
-  public void submitTaskRunner(final DbTaskRunner taskRunner) {
+  public boolean submitTaskRunner(final DbTaskRunner taskRunner) {
     if (isRunning || !Configuration.configuration.isShutdown()) {
-      // last check: number can have raised up since Commander checks
-      if (threadPoolExecutor.getActiveCount() <
-          Configuration.configuration.getRunnerThread()) {
-        logger.debug("Will run {}", taskRunner);
-        final ClientRunner runner =
-            new ClientRunner(networkTransaction, taskRunner, null);
-        if (taskRunner.isSendThrough() && (taskRunner.isRescheduledTransfer() ||
-                                           taskRunner.isPreTaskStarting())) {
-          runner.setSendThroughMode();
-          taskRunner.checkThroughMode();
-        }
-        // create the client, connect and run
-        threadPoolExecutor.execute(runner);
-      } else {
-        // too many current active threads
-        logger.debug("Task rescheduled {}", taskRunner);
+      logger.debug("Will run {}", taskRunner);
+      final ClientRunner runner =
+          new ClientRunner(networkTransaction, taskRunner, null);
+      if (taskRunner.isSendThrough() && (taskRunner.isRescheduledTransfer() ||
+                                         taskRunner.isPreTaskStarting())) {
+        runner.setSendThroughMode();
+        taskRunner.checkThroughMode();
       }
+      try {
+        taskRunner.changeUpdatedInfo(UpdatedInfo.RUNNING);
+        taskRunner.update();
+      } catch (final WaarpDatabaseException e) {
+        logger.error("Error in Commander: {}", e.getMessage());
+        return false;
+      }
+      // create the client, connect and run
+      threadPoolExecutor.execute(runner);
+      return true;
     }
+    return false;
   }
 
   /**
