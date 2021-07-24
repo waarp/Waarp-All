@@ -218,7 +218,7 @@ public abstract class AbstractExecutor {
     }
 
     @Override
-    public boolean isValidOperation(final boolean isStore) {
+    public final boolean isValidOperation(final boolean isStore) {
       if (isStore && isPstorRefused()) {
         logger.info("STORe like operations REFUSED");
         return false;
@@ -230,7 +230,7 @@ public abstract class AbstractExecutor {
     }
 
     @Override
-    public String getRetrType() {
+    public final String getRetrType() {
       switch (pretrType) {
         case T_REFUSED:
           return REFUSED;
@@ -246,7 +246,7 @@ public abstract class AbstractExecutor {
     }
 
     @Override
-    public String getStorType() {
+    public final String getStorType() {
       switch (pstorType) {
         case T_REFUSED:
           return REFUSED;
@@ -264,56 +264,56 @@ public abstract class AbstractExecutor {
     /**
      * @return the pretrRefused
      */
-    public boolean isPretrRefused() {
+    public final boolean isPretrRefused() {
       return pretrRefused;
     }
 
     /**
      * @param pretrRefused the pretrRefused to set
      */
-    public void setPretrRefused(final boolean pretrRefused) {
+    public final void setPretrRefused(final boolean pretrRefused) {
       this.pretrRefused = pretrRefused;
     }
 
     /**
      * @return the pretrDelay
      */
-    public long getPretrDelay() {
+    public final long getPretrDelay() {
       return pretrDelay;
     }
 
     /**
      * @param pretrDelay the pretrDelay to set
      */
-    public void setPretrDelay(final long pretrDelay) {
+    public final void setPretrDelay(final long pretrDelay) {
       this.pretrDelay = pretrDelay;
     }
 
     /**
      * @return the pstorRefused
      */
-    public boolean isPstorRefused() {
+    public final boolean isPstorRefused() {
       return pstorRefused;
     }
 
     /**
      * @param pstorRefused the pstorRefused to set
      */
-    public void setPstorRefused(final boolean pstorRefused) {
+    public final void setPstorRefused(final boolean pstorRefused) {
       this.pstorRefused = pstorRefused;
     }
 
     /**
      * @return the pstorDelay
      */
-    public long getPstorDelay() {
+    public final long getPstorDelay() {
       return pstorDelay;
     }
 
     /**
      * @param pstorDelay the pstorDelay to set
      */
-    public void setPstorDelay(final long pstorDelay) {
+    public final void setPstorDelay(final long pstorDelay) {
       this.pstorDelay = pstorDelay;
     }
   }

@@ -126,7 +126,7 @@ public final class LongUuid {
    *
    * @return raw byte array of UUID
    */
-  public byte[] getBytes() {
+  public final byte[] getBytes() {
     return Arrays.copyOf(uuid, UUIDSIZE);
   }
 
@@ -135,7 +135,7 @@ public final class LongUuid {
    *
    * @return id of process that generated the UUID
    */
-  public int getProcessId() {
+  public final int getProcessId() {
     return (uuid[0] & 0xFF) << 8 | uuid[1] & 0xFF;
   }
 
@@ -144,7 +144,7 @@ public final class LongUuid {
    *
    * @return millisecond UTC timestamp from generation of the UUID
    */
-  public long getTimestamp() {
+  public final long getTimestamp() {
     long time;
     time = ((long) uuid[2] & 0xFF) << 28;
     time |= ((long) uuid[3] & 0xFF) << 20;
@@ -154,7 +154,7 @@ public final class LongUuid {
   }
 
   @Override
-  public boolean equals(final Object o) {
+  public final boolean equals(final Object o) {
     if (!(o instanceof LongUuid)) {
       return false;
     }
@@ -162,14 +162,14 @@ public final class LongUuid {
   }
 
   @Override
-  public int hashCode() {
+  public final int hashCode() {
     return Arrays.hashCode(uuid);
   }
 
   /**
    * @return the equivalent UUID as long
    */
-  public long getLong() {
+  public final long getLong() {
     long value = ((long) uuid[0] & 0xFF) << 56;
     value |= ((long) uuid[1] & 0xFF) << 48;
     value |= ((long) uuid[2] & 0xFF) << 40;

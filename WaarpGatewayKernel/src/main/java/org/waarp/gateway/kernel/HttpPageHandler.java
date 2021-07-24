@@ -54,7 +54,7 @@ public class HttpPageHandler {
    *
    * @return an HttpPage according to the error code (400, 404, 500, ...)
    */
-  public HttpPage getHttpPage(final int code) {
+  public final HttpPage getHttpPage(final int code) {
     final String scode = Integer.toString(code);
     return getHashmap().get(scode);
   }
@@ -68,8 +68,8 @@ public class HttpPageHandler {
    *
    * @throws HttpIncorrectRequestException
    */
-  public HttpPage getHttpPage(final String uri, final String method,
-                              final HttpSession session)
+  public final HttpPage getHttpPage(final String uri, final String method,
+                                    final HttpSession session)
       throws HttpIncorrectRequestException {
     HttpPage page = getHashmap().get(uri);
     if (page == null) {
@@ -139,7 +139,7 @@ public class HttpPageHandler {
   /**
    * @return the hashmap
    */
-  public Map<String, HttpPage> getHashmap() {
+  public final Map<String, HttpPage> getHashmap() {
     return hashmap;
   }
 

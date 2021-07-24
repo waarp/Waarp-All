@@ -51,19 +51,19 @@ public abstract class WaarpGauge32 extends Gauge32 {
   }
 
   @Override
-  public long getValue() {
+  public final long getValue() {
     setInternalValue();
     return super.getValue();
   }
 
   @Override
-  public Object clone() {
+  public final Object clone() {
     setInternalValue();
     return super.clone();
   }
 
   @Override
-  public boolean isDynamic() {
+  public final boolean isDynamic() {
     return true;
   }
 

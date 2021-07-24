@@ -85,42 +85,42 @@ public class DBHostDAO extends StatementExecutor<Host> implements HostDAO {
   }
 
   @Override
-  protected boolean isCachedEnable() {
+  protected final boolean isCachedEnable() {
     return Configuration.configuration.getMultipleMonitors() <= 1;
   }
 
   @Override
-  protected SynchronizedLruCache<String, Host> getCache() {
+  protected final SynchronizedLruCache<String, Host> getCache() {
     return reentrantConcurrentHashMap;
   }
 
   @Override
-  protected String getId(final Host e1) {
+  protected final String getId(final Host e1) {
     return e1.getHostid();
   }
 
   @Override
-  protected String getSelectRequest() {
+  protected final String getSelectRequest() {
     return SQL_SELECT;
   }
 
   @Override
-  protected String getGetAllRequest() {
+  protected final String getGetAllRequest() {
     return SQL_GET_ALL;
   }
 
   @Override
-  protected String getCountRequest() {
+  protected final String getCountRequest() {
     return SQL_COUNT_ALL;
   }
 
   @Override
-  protected String getExistRequest() {
+  protected final String getExistRequest() {
     return SQL_EXIST;
   }
 
   @Override
-  protected Object[] getInsertValues(final Host host)
+  protected final Object[] getInsertValues(final Host host)
       throws WaarpDatabaseSqlException {
     host.checkValues();
     return new Object[] {
@@ -131,12 +131,12 @@ public class DBHostDAO extends StatementExecutor<Host> implements HostDAO {
   }
 
   @Override
-  protected String getInsertRequest() {
+  protected final String getInsertRequest() {
     return SQL_INSERT;
   }
 
   @Override
-  protected Object[] getUpdateValues(final Host host)
+  protected final Object[] getUpdateValues(final Host host)
       throws WaarpDatabaseSqlException {
     host.checkValues();
     return new Object[] {
@@ -147,22 +147,22 @@ public class DBHostDAO extends StatementExecutor<Host> implements HostDAO {
   }
 
   @Override
-  protected String getUpdateRequest() {
+  protected final String getUpdateRequest() {
     return SQL_UPDATE;
   }
 
   @Override
-  protected String getDeleteRequest() {
+  protected final String getDeleteRequest() {
     return SQL_DELETE;
   }
 
   @Override
-  protected String getDeleteAllRequest() {
+  protected final String getDeleteAllRequest() {
     return SQL_DELETE_ALL;
   }
 
   @Override
-  public Host getFromResultSet(final ResultSet set) throws SQLException {
+  public final Host getFromResultSet(final ResultSet set) throws SQLException {
     try {
       return new Host(set.getString(HOSTID_FIELD), set.getString(ADDRESS_FIELD),
                       set.getInt(PORT_FIELD), set.getBytes(HOSTKEY_FIELD),
@@ -172,8 +172,13 @@ public class DBHostDAO extends StatementExecutor<Host> implements HostDAO {
                       set.getBoolean(ADMINROLE_FIELD),
                       set.getBoolean(IS_ACTIVE_FIELD),
                       UpdatedInfo.valueOf(set.getInt(UPDATED_INFO_FIELD)));
-    } catch (WaarpDatabaseSqlException e) {
+    } catch (final WaarpDatabaseSqlException e) {
       throw new SQLException(e);
     }
+  }
+
+  @Override
+  protected final boolean isDbTransfer() {
+    return false;
   }
 }

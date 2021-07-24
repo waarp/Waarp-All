@@ -79,11 +79,11 @@ public class ChModTask extends AbstractTask {
   }
 
   @Override
-  public void run() {
+  public final void run() {
     String finalname = argRule;
-    finalname = AbstractDir
-        .normalizePath(getReplacedValue(finalname, BLANK.split(argTransfer)))
-        .trim().toLowerCase();
+    finalname = AbstractDir.normalizePath(
+                               getReplacedValue(finalname, BLANK.split(argTransfer))).trim()
+                           .toLowerCase();
     logger.info("ChMod with arg {} from {}", finalname, session);
     final File file = session.getFile().getTrueFile();
     boolean user;

@@ -54,16 +54,18 @@ public class DbModelH2R66 extends DbModelH2 {
   }
 
   @Override
-  public void createTables(final DbSession session)
+  public final void createTables(final DbSession session)
       throws WaarpDatabaseNoConnectionException {
     // Create tables: configuration, hosts, rules, runner, cptrunner
     final String createTableH2 = "CREATE TABLE IF NOT EXISTS ";
     final String primaryKey = " PRIMARY KEY ";
     final String notNull = " NOT NULL ";
-    final DbRequest request = DbModelFactoryR66
-        .subCreateTableMariaDbMySQLH2PostgreSQL(dbTypeResolver, session,
-                                                createTableH2, primaryKey,
-                                                notNull);
+    final DbRequest request =
+        DbModelFactoryR66.subCreateTableMariaDbMySQLH2PostgreSQL(dbTypeResolver,
+                                                                 session,
+                                                                 createTableH2,
+                                                                 primaryKey,
+                                                                 notNull);
     if (request == null) {
       return;
     }
@@ -105,14 +107,14 @@ public class DbModelH2R66 extends DbModelH2 {
   }
 
   @Override
-  public boolean upgradeDb(final DbSession session, final String version)
+  public final boolean upgradeDb(final DbSession session, final String version)
       throws WaarpDatabaseNoConnectionException {
-    if (PartnerConfiguration
-        .isVersion2GEQVersion1(R66Versions.V3_1_0.getVersion(), version)) {
+    if (PartnerConfiguration.isVersion2GEQVersion1(
+        R66Versions.V3_1_0.getVersion(), version)) {
       return true;
     }
-    if (PartnerConfiguration
-        .isVersion2GEQVersion1(version, R66Versions.V2_4_13.getVersion())) {
+    if (PartnerConfiguration.isVersion2GEQVersion1(version,
+                                                   R66Versions.V2_4_13.getVersion())) {
       SysErrLogger.FAKE_LOGGER.sysout(
           version + " to " + R66Versions.V2_4_13.getVersion() + "? " + true);
       final String createTableH2 = "CREATE TABLE IF NOT EXISTS ";
@@ -130,7 +132,7 @@ public class DbModelH2R66 extends DbModelH2 {
               .append(notNull).append(", ");
       }
       action.append(chcolumns[chcolumns.length - 1].name()).append(
-          DBType.getType(DbHostConfiguration.dbTypes[chcolumns.length - 1]))
+                DBType.getType(DbHostConfiguration.dbTypes[chcolumns.length - 1]))
             .append(primaryKey).append(')');
       SysErrLogger.FAKE_LOGGER.sysout(action);
       final DbRequest request = new DbRequest(session);
@@ -143,15 +145,15 @@ public class DbModelH2R66 extends DbModelH2 {
         request.close();
       }
     }
-    if (PartnerConfiguration
-        .isVersion2GEQVersion1(version, R66Versions.V2_4_17.getVersion())) {
+    if (PartnerConfiguration.isVersion2GEQVersion1(version,
+                                                   R66Versions.V2_4_17.getVersion())) {
       SysErrLogger.FAKE_LOGGER.sysout(
           version + " to " + R66Versions.V2_4_17.getVersion() + "? " + true);
       final String command =
           "ALTER TABLE " + DbTaskRunner.table + " ADD COLUMN IF NOT EXISTS " +
           DbTaskRunner.Columns.TRANSFERINFO.name() + ' ' + DBType.getType(
-              DbTaskRunner.dbTypes[DbTaskRunner.Columns.TRANSFERINFO
-                  .ordinal()]) + " NOT NULL DEFAULT '{}' " + " AFTER " +
+              DbTaskRunner.dbTypes[DbTaskRunner.Columns.TRANSFERINFO.ordinal()]) +
+          " NOT NULL DEFAULT '{}' " + " AFTER " +
           DbTaskRunner.Columns.FILEINFO.name();
       final DbRequest request = new DbRequest(session);
       try {
@@ -164,8 +166,8 @@ public class DbModelH2R66 extends DbModelH2 {
         request.close();
       }
     }
-    if (PartnerConfiguration
-        .isVersion2GEQVersion1(version, R66Versions.V2_4_23.getVersion())) {
+    if (PartnerConfiguration.isVersion2GEQVersion1(version,
+                                                   R66Versions.V2_4_23.getVersion())) {
       SysErrLogger.FAKE_LOGGER.sysout(
           version + " to " + R66Versions.V2_4_23.getVersion() + "? " + true);
       String command =
@@ -201,15 +203,15 @@ public class DbModelH2R66 extends DbModelH2 {
         request.close();
       }
     }
-    if (PartnerConfiguration
-        .isVersion2GTVersion1(version, R66Versions.V2_4_25.getVersion())) {
+    if (PartnerConfiguration.isVersion2GTVersion1(version,
+                                                  R66Versions.V2_4_25.getVersion())) {
       SysErrLogger.FAKE_LOGGER.sysout(
           version + " to " + R66Versions.V2_4_25.getVersion() + "? " + true);
       String command = "ALTER TABLE " + DbTaskRunner.table + " ALTER COLUMN " +
-                       DbTaskRunner.Columns.FILENAME.name() + ' ' + DBType
-                           .getType(
-                               DbTaskRunner.dbTypes[DbTaskRunner.Columns.FILENAME
-                                   .ordinal()]) + " NOT NULL ";
+                       DbTaskRunner.Columns.FILENAME.name() + ' ' +
+                       DBType.getType(
+                           DbTaskRunner.dbTypes[DbTaskRunner.Columns.FILENAME.ordinal()]) +
+                       " NOT NULL ";
       DbRequest request = new DbRequest(session);
       try {
         SysErrLogger.FAKE_LOGGER.sysout("Command: " + command);
@@ -235,15 +237,14 @@ public class DbModelH2R66 extends DbModelH2 {
         request.close();
       }
     }
-    if (PartnerConfiguration
-        .isVersion2GTVersion1(version, R66Versions.V3_0_4.getVersion())) {
+    if (PartnerConfiguration.isVersion2GTVersion1(version,
+                                                  R66Versions.V3_0_4.getVersion())) {
       SysErrLogger.FAKE_LOGGER.sysout(
           version + " to " + R66Versions.V3_0_4.getVersion() + "? " + true);
       final DbRequest request = new DbRequest(session);
       // Change Type for all Tables
-      DbModelFactoryR66
-          .upgradeTable30(dbTypeResolver, request, " ALTER COLUMN ", " ",
-                          " NOT NULL ");
+      DbModelFactoryR66.upgradeTable30(dbTypeResolver, request,
+                                       " ALTER COLUMN ", " ", " NOT NULL ");
       try {
         final String command = "DROP INDEX IF EXISTS IDX_RUNNER ";
         try {
@@ -267,11 +268,11 @@ public class DbModelH2R66 extends DbModelH2 {
   }
 
   @Override
-  public boolean needUpgradeDb(final DbSession session, final String version,
-                               final boolean tryFix)
+  public final boolean needUpgradeDb(final DbSession session,
+                                     final String version, final boolean tryFix)
       throws WaarpDatabaseNoConnectionException {
-    return DbModelFactoryR66
-        .needUpgradeDbAllDb(dbTypeResolver, session, version);
+    return DbModelFactoryR66.needUpgradeDbAllDb(dbTypeResolver, session,
+                                                version);
   }
 
 }

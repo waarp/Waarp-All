@@ -70,13 +70,13 @@ public class BlockRequestPacket extends AbstractLocalPacket {
   }
 
   @Override
-  public boolean hasGlobalBuffer() {
+  public final boolean hasGlobalBuffer() {
     return true;
   }
 
   @Override
-  public void createAllBuffers(final LocalChannelReference lcr,
-                               final int networkHeader) {
+  public final void createAllBuffers(final LocalChannelReference lcr,
+                                     final int networkHeader) {
     end = Unpooled.EMPTY_BUFFER;
     middle = Unpooled.EMPTY_BUFFER;
     final int globalSize = networkHeader + LOCAL_HEADER_SIZE + 1 + key.length;
@@ -88,26 +88,26 @@ public class BlockRequestPacket extends AbstractLocalPacket {
   }
 
   @Override
-  public String toString() {
+  public final String toString() {
     return "BlockRequestPacket: " + block;
   }
 
   @Override
-  public byte getType() {
+  public final byte getType() {
     return LocalPacketFactory.BLOCKREQUESTPACKET;
   }
 
   /**
    * @return True if the request is to block new requests, else false
    */
-  public boolean getBlock() {
+  public final boolean getBlock() {
     return block;
   }
 
   /**
    * @return the key
    */
-  public byte[] getKey() {
+  public final byte[] getKey() {
     return key;
   }
 }

@@ -77,7 +77,7 @@ public class LocalTransaction {
     // EMpty
   }
 
-  public String hashStatus() {
+  public final String hashStatus() {
     return "LocalTransaction: [localChannelHashMap: " +
            localChannelHashMap.size() + " localChannelHashMapIdBased: " +
            localChannelHashMapIdBased.size() + "] ";
@@ -94,8 +94,8 @@ public class LocalTransaction {
    *
    * @throws OpenR66ProtocolSystemException
    */
-  public LocalChannelReference getClient(final Integer remoteId,
-                                         final Integer localId)
+  public final LocalChannelReference getClient(final Integer remoteId,
+                                               final Integer localId)
       throws OpenR66ProtocolSystemException {
     final LocalChannelReference localChannelReference = getFromId(localId);
     if (localChannelReference != null) {
@@ -121,7 +121,7 @@ public class LocalTransaction {
    * @throws OpenR66ProtocolRemoteShutdownException
    * @throws OpenR66ProtocolNoConnectionException
    */
-  public LocalChannelReference createNewClient(
+  public final LocalChannelReference createNewClient(
       final NetworkChannelReference networkChannelReference,
       final Integer remoteId, final R66Future futureRequest,
       final boolean fromSsl) throws OpenR66ProtocolRemoteShutdownException,
@@ -134,8 +134,8 @@ public class LocalTransaction {
     final LocalChannelReference localChannelReference =
         new LocalChannelReference(networkChannelReference, remoteId,
                                   futureRequest);
-    localChannelHashMap
-        .put(localChannelReference.getLocalId(), localChannelReference);
+    localChannelHashMap.put(localChannelReference.getLocalId(),
+                            localChannelReference);
     logger.debug("Db connection done and Create LocalChannel entry: {}",
                  localChannelReference);
     // Now simulate sending first a Startup message
@@ -154,7 +154,7 @@ public class LocalTransaction {
    *
    * @return the LocalChannelReference
    */
-  public LocalChannelReference getFromId(final Integer id) {
+  public final LocalChannelReference getFromId(final Integer id) {
     return localChannelHashMap.get(id);
   }
 
@@ -163,7 +163,8 @@ public class LocalTransaction {
    *
    * @param localChannelReference
    */
-  protected void remove(final LocalChannelReference localChannelReference) {
+  protected final void remove(
+      final LocalChannelReference localChannelReference) {
     logger.debug("DEBUG remove: {}", localChannelReference.getLocalId());
     localChannelHashMap.remove(localChannelReference.getLocalId());
     if (localChannelReference.getRequestId() != null) {
@@ -179,8 +180,8 @@ public class LocalTransaction {
    * @param runner
    * @param lcr
    */
-  public void setFromId(final DbTaskRunner runner,
-                        final LocalChannelReference lcr) {
+  public final void setFromId(final DbTaskRunner runner,
+                              final LocalChannelReference lcr) {
     final String key = runner.getKey();
     lcr.setRequestId(key);
     localChannelHashMapIdBased.put(key, lcr);
@@ -191,7 +192,7 @@ public class LocalTransaction {
    *
    * @return the LocalChannelReference
    */
-  public LocalChannelReference getFromRequest(final String key) {
+  public final LocalChannelReference getFromRequest(final String key) {
     return localChannelHashMapIdBased.get(key);
   }
 
@@ -200,7 +201,7 @@ public class LocalTransaction {
    *
    * @return True if the LocalChannelReference exists
    */
-  public boolean contained(final String key) {
+  public final boolean contained(final String key) {
     return localChannelHashMapIdBased.containsKey(key);
   }
 
@@ -209,21 +210,21 @@ public class LocalTransaction {
    *
    * @return True if the LocalChannelReference exists
    */
-  public boolean contained(final int id) {
+  public final boolean contained(final int id) {
     return localChannelHashMap.containsKey(id);
   }
 
   /**
    * @return the number of active local channels
    */
-  public int getNumberLocalChannel() {
+  public final int getNumberLocalChannel() {
     return localChannelHashMap.size();
   }
 
   /**
    * Debug function (while shutdown for instance)
    */
-  public void debugPrintActiveLocalChannels() {
+  public final void debugPrintActiveLocalChannels() {
     final Collection<LocalChannelReference> collection =
         localChannelHashMap.values();
     for (final LocalChannelReference localChannelReference : collection) {
@@ -237,7 +238,7 @@ public class LocalTransaction {
   /**
    * Informs all remote client that the server is shutting down
    */
-  public void shutdownLocalChannels() {
+  public final void shutdownLocalChannels() {
     logger.warn(
         "Will inform LocalChannels of Shutdown: " + localChannelHashMap.size());
     final Collection<LocalChannelReference> collection =
@@ -314,7 +315,7 @@ public class LocalTransaction {
   /**
    * Close All Local Channels
    */
-  public void closeAll() {
+  public final void closeAll() {
     logger.debug("close All Local Channels");
     final Collection<LocalChannelReference> collection =
         localChannelHashMap.values();

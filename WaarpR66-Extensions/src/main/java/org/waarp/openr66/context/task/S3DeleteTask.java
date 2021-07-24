@@ -83,7 +83,7 @@ public class S3DeleteTask extends S3AbstractTask {
   }
 
   @Override
-  public S3TaskType getS3TaskType() {
+  public final S3TaskType getS3TaskType() {
     return taskType;
   }
 }

@@ -74,13 +74,12 @@ public class LocalExecSslServerInitializer extends LocalExecServerInitializer {
     final ChannelPipeline pipeline = ch.pipeline();
 
     // Add SSL as first element in the pipeline
-    final SslHandler sslhandler = waarpSslContextFactory
-        .createHandlerServer(waarpSslContextFactory.needClientAuthentication(),
-                             ch);
+    final SslHandler sslhandler = waarpSslContextFactory.createHandlerServer(
+        waarpSslContextFactory.needClientAuthentication(), ch);
     pipeline.addLast("ssl", sslhandler);
     // Add the text line codec combination first,
-    pipeline.addLast("framer", new DelimiterBasedFrameDecoder(8192, Delimiters
-        .lineDelimiter()));
+    pipeline.addLast("framer", new DelimiterBasedFrameDecoder(8192,
+                                                              Delimiters.lineDelimiter()));
     pipeline.addLast(eventExecutorGroup, "decoder", new StringDecoder());
     pipeline.addLast(eventExecutorGroup, "encoder", new StringEncoder());
 

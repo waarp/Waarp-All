@@ -44,18 +44,18 @@ public class AbstractServlet extends HttpServlet {
   protected Class<HttpAuthent> authentClass;
 
   @Override
-  public void destroy() {
+  public final void destroy() {
     ChannelUtils.exit();
     super.destroy();
   }
 
   @Override
-  public void init(final ServletConfig config) throws ServletException {
+  public final void init(final ServletConfig config) throws ServletException {
     final String r66Config = config.getInitParameter(R_66_CONFIG);
     logger.warn("Parameter Init: {}", r66Config);
     File file = new File(r66Config);
-    logger
-        .debug("Parameter Init: {} {}?", file.getAbsolutePath(), file.exists());
+    logger.debug("Parameter Init: {} {}?", file.getAbsolutePath(),
+                 file.exists());
     if (!file.exists()) {
       final ClassLoader classLoader = AbstractServlet.class.getClassLoader();
       final URL url = classLoader.getResource(r66Config);

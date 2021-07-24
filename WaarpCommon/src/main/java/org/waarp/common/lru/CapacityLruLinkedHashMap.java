@@ -57,7 +57,7 @@ class CapacityLruLinkedHashMap<K, V> extends LinkedHashMap<K, V> {
   }
 
   @Override
-  protected boolean removeEldestEntry(final Map.Entry<K, V> eldest) {
+  protected final boolean removeEldestEntry(final Map.Entry<K, V> eldest) {
     return size() > capacity;
   }
 
@@ -66,7 +66,7 @@ class CapacityLruLinkedHashMap<K, V> extends LinkedHashMap<K, V> {
    *
    * @return
    */
-  public int getCapacity() {
+  public final int getCapacity() {
     return capacity;
   }
 

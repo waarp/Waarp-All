@@ -95,8 +95,8 @@ public class RequestInformation implements Runnable {
       logger.error(infoArgs);
       return false;
     }
-    if (!FileBasedConfiguration
-        .setClientConfigurationFromXml(Configuration.configuration, args[0])) {
+    if (!FileBasedConfiguration.setClientConfigurationFromXml(
+        Configuration.configuration, args[0])) {
       logger.error(
           Messages.getString("Configuration.NeedCorrectConfig")); //$NON-NLS-1$
       return false;
@@ -215,8 +215,9 @@ public class RequestInformation implements Runnable {
     final SocketAddress socketAddress = host.getSocketAddress();
     final boolean isSSL = host.isSsl();
 
-    final LocalChannelReference localChannelReference = networkTransaction
-        .createConnectionWithRetry(socketAddress, isSSL, future);
+    final LocalChannelReference localChannelReference =
+        networkTransaction.createConnectionWithRetry(socketAddress, isSSL,
+                                                     future);
     if (localChannelReference == null) {
       logger.error(Messages.getString("AdminR66OperationsGui.188") +
                    requested); //$NON-NLS-1$
@@ -228,8 +229,8 @@ public class RequestInformation implements Runnable {
     }
     localChannelReference.sessionNewState(R66FiniteDualStates.INFORMATION);
     try {
-      ChannelUtils
-          .writeAbstractLocalPacket(localChannelReference, request, false);
+      ChannelUtils.writeAbstractLocalPacket(localChannelReference, request,
+                                            false);
     } catch (final OpenR66ProtocolPacketException e) {
       logger.error(Messages.getString("RequestInformation.20")); //$NON-NLS-1$
       final R66Result result =
@@ -245,8 +246,8 @@ public class RequestInformation implements Runnable {
    * @param args
    */
   public static void main(final String[] args) {
-    WaarpLoggerFactory
-        .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));
+    WaarpLoggerFactory.setDefaultFactoryIfNotSame(
+        new WaarpSlf4JLoggerFactory(null));
     if (logger == null) {
       logger = WaarpLoggerFactory.getLogger(RequestInformation.class);
     }
@@ -285,8 +286,8 @@ public class RequestInformation implements Runnable {
         final R66Result r66result = result.getResult();
         final ValidPacket info = (ValidPacket) r66result.getOther();
         outputFormat.setValue(FIELDS.status.name(), 0);
-        outputFormat.setValue(FIELDS.statusTxt.name(), Messages
-            .getString("RequestInformation.Success")); //$NON-NLS-1$
+        outputFormat.setValue(FIELDS.statusTxt.name(), Messages.getString(
+            "RequestInformation.Success")); //$NON-NLS-1$
         outputFormat.setValue(FIELDS.remote.name(), srequested);
         if (requestInformation.code != REQUEST_CHECK) {
           outputFormat.setValue("nb", Integer.parseInt(info.getSmiddle()));
@@ -317,11 +318,11 @@ public class RequestInformation implements Runnable {
       } else {
         value = 2;
         outputFormat.setValue(FIELDS.status.name(), 2);
-        outputFormat.setValue(FIELDS.statusTxt.name(), Messages
-            .getString("RequestInformation.Failure")); //$NON-NLS-1$
+        outputFormat.setValue(FIELDS.statusTxt.name(), Messages.getString(
+            "RequestInformation.Failure")); //$NON-NLS-1$
         outputFormat.setValue(FIELDS.remote.name(), srequested);
-        outputFormat
-            .setValue(FIELDS.error.name(), result.getResult().toString());
+        outputFormat.setValue(FIELDS.error.name(),
+                              result.getResult().toString());
         logger.error(outputFormat.loggerOut());
         if (!OutputFormat.isQuiet()) {
           outputFormat.sysout();

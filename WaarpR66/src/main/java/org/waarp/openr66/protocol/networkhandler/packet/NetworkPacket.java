@@ -84,32 +84,32 @@ public class NetworkPacket {
   /**
    * @return the buffer
    */
-  public ByteBuf getBuffer() {
+  public final ByteBuf getBuffer() {
     return buffer;
   }
 
   /**
    * @return the remoteId
    */
-  public int getRemoteId() {
+  public final int getRemoteId() {
     return remoteId;
   }
 
   /**
    * @return the localId
    */
-  public int getLocalId() {
+  public final int getLocalId() {
     return localId;
   }
 
   /**
    * @return the code
    */
-  public byte getCode() {
+  public final byte getCode() {
     return code;
   }
 
-  public void writeNetworkHeader(final ByteBuf buf, final int capacity) {
+  public final void writeNetworkHeader(final ByteBuf buf, final int capacity) {
     buf.writerIndex(0);
     buf.writeInt(capacity + NETWORK_HEADER_SIZE - 4);
     buf.writeInt(remoteId);
@@ -126,8 +126,8 @@ public class NetworkPacket {
       buffer.writerIndex(buffer.capacity());
       return buffer;
     }
-    final ByteBuf buf = ByteBufAllocator.DEFAULT
-        .ioBuffer(NETWORK_HEADER_SIZE, NETWORK_HEADER_SIZE);
+    final ByteBuf buf = ByteBufAllocator.DEFAULT.ioBuffer(NETWORK_HEADER_SIZE,
+                                                          NETWORK_HEADER_SIZE);
     writeNetworkHeader(buf, buffer.capacity());
     buffer = ByteBufAllocator.DEFAULT.compositeDirectBuffer(2)
                                      .addComponents(buf, buffer);
@@ -144,7 +144,7 @@ public class NetworkPacket {
                         WaarpStringUtils.UTF8) : "")) : "no buffer");
   }
 
-  public void clear() {
+  public final void clear() {
     if (WaarpNettyUtil.release(buffer)) {
       buffer = null;
     }

@@ -36,7 +36,7 @@ public class EPRT extends AbstractCommand {
       WaarpLoggerFactory.getInstance(EPRT.class);
 
   @Override
-  public void exec() throws Reply522Exception {
+  public final void exec() throws Reply522Exception {
     // First Check if any argument
     if (!hasArg()) {
       final InetSocketAddress inetSocketAddress =
@@ -44,8 +44,9 @@ public class EPRT extends AbstractCommand {
       logger.debug("Active connect to {}", inetSocketAddress);
       getSession().getDataConn().setActive(inetSocketAddress);
       getSession().setReplyCode(ReplyCode.REPLY_200_COMMAND_OKAY,
-                                "EPRT command successful on (" + FtpChannelUtils
-                                    .get2428Address(inetSocketAddress) + ')');
+                                "EPRT command successful on (" +
+                                FtpChannelUtils.get2428Address(
+                                    inetSocketAddress) + ')');
       return;
     }
     // Check if Inet Address is OK
@@ -61,7 +62,8 @@ public class EPRT extends AbstractCommand {
     logger.debug("Active connect to {}", inetSocketAddress);
     getSession().getDataConn().setActive(inetSocketAddress);
     getSession().setReplyCode(ReplyCode.REPLY_200_COMMAND_OKAY,
-                              "EPRT command successful on (" + FtpChannelUtils
-                                  .get2428Address(inetSocketAddress) + ')');
+                              "EPRT command successful on (" +
+                              FtpChannelUtils.get2428Address(
+                                  inetSocketAddress) + ')');
   }
 }

@@ -38,61 +38,61 @@ public class RestartTransferJsonPacket extends JsonPacket {
   /**
    * @return the requester
    */
-  public String getRequester() {
+  public final String getRequester() {
     return requester;
   }
 
   /**
    * @param requester the requester to set
    */
-  public void setRequester(final String requester) {
+  public final void setRequester(final String requester) {
     this.requester = requester;
   }
 
   /**
    * @return the requested
    */
-  public String getRequested() {
+  public final String getRequested() {
     return requested;
   }
 
   /**
    * @param requested the requested to set
    */
-  public void setRequested(final String requested) {
+  public final void setRequested(final String requested) {
     this.requested = requested;
   }
 
   /**
    * @return the specialid
    */
-  public long getSpecialid() {
+  public final long getSpecialid() {
     return specialid;
   }
 
   /**
    * @param specialid the specialid to set
    */
-  public void setSpecialid(final long specialid) {
+  public final void setSpecialid(final long specialid) {
     this.specialid = specialid;
   }
 
   /**
    * @return the restarttime
    */
-  public Date getRestarttime() {
+  public final Date getRestarttime() {
     return restarttime;
   }
 
   /**
    * @param restarttime the restarttime to set
    */
-  public void setRestarttime(final Date restarttime) {
+  public final void setRestarttime(final Date restarttime) {
     this.restarttime = restarttime;
   }
 
   @Override
-  public void setRequestUserPacket() {
+  public final void setRequestUserPacket() {
     setRequestUserPacket(LocalPacketFactory.VALIDPACKET);
   }
 }

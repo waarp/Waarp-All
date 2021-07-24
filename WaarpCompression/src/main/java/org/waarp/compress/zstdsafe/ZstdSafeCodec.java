@@ -70,12 +70,12 @@ public class ZstdSafeCodec implements CompressorCodec {
   }
 
   @Override
-  public int maxCompressedLength(final int uncompressedSize) {
+  public final int maxCompressedLength(final int uncompressedSize) {
     return maxCompressedSize(uncompressedSize);
   }
 
   @Override
-  public byte[] compress(final byte[] input, final int length) {
+  public final byte[] compress(final byte[] input, final int length) {
     try {
       final int len = maxCompressedLength(length);
       final byte[] temp = new byte[len];
@@ -87,19 +87,19 @@ public class ZstdSafeCodec implements CompressorCodec {
   }
 
   @Override
-  public int compress(final byte[] input, final int inputLength,
-                      final byte[] output, final int maxOutputLength) {
+  public final int compress(final byte[] input, final int inputLength,
+                            final byte[] output, final int maxOutputLength) {
     try {
-      return ZstdFrameCompressor
-          .compress(input, 0, inputLength, output, 0, maxOutputLength,
-                    CompressionParameters.DEFAULT_COMPRESSION_LEVEL);
+      return ZstdFrameCompressor.compress(input, 0, inputLength, output, 0,
+                                          maxOutputLength,
+                                          CompressionParameters.DEFAULT_COMPRESSION_LEVEL);
     } catch (final Exception e) {
       throw new MalformedInputException(e);
     }
   }
 
   @Override
-  public byte[] decompress(final byte[] input, final int length)
+  public final byte[] decompress(final byte[] input, final int length)
       throws MalformedInputException {
     try {
       final int finalLen =
@@ -113,7 +113,7 @@ public class ZstdSafeCodec implements CompressorCodec {
   }
 
   @Override
-  public long compress(final File input, final File output)
+  public final long compress(final File input, final File output)
       throws MalformedInputException {
     InputStream inputStream = null;
     OutputStream outputStream = null;
@@ -140,19 +140,19 @@ public class ZstdSafeCodec implements CompressorCodec {
   }
 
   @Override
-  public int decompress(final byte[] input, final int inputLength,
-                        final byte[] output, final int maxOutputLength)
+  public final int decompress(final byte[] input, final int inputLength,
+                              final byte[] output, final int maxOutputLength)
       throws MalformedInputException {
     try {
-      return decompressor
-          .decompress(input, 0, inputLength, output, 0, maxOutputLength);
+      return decompressor.decompress(input, 0, inputLength, output, 0,
+                                     maxOutputLength);
     } catch (final Exception e) {
       throw new MalformedInputException(e);
     }
   }
 
   @Override
-  public long decompress(final File input, final File output)
+  public final long decompress(final File input, final File output)
       throws MalformedInputException {
     InputStream inputStream = null;
     OutputStream outputStream = null;
@@ -178,7 +178,7 @@ public class ZstdSafeCodec implements CompressorCodec {
   }
 
   @Override
-  public int getDecompressedSize(final byte[] input, final int length) {
+  public final int getDecompressedSize(final byte[] input, final int length) {
     return ZstdFrameDecompressor.getDecompressedSize(input, 0, input.length);
   }
 }

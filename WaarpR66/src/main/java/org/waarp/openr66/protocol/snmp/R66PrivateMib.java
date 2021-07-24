@@ -68,7 +68,8 @@ public class R66PrivateMib extends WaarpPrivateMib {
   }
 
   @Override
-  protected void agentRegisterWaarpMib() throws DuplicateRegistrationException {
+  protected final void agentRegisterWaarpMib()
+      throws DuplicateRegistrationException {
     logger.debug("registerGGMib");
     // register Static info
     rowInfo = new WaarpMORow(this, rootOIDWaarpInfo, WaarpDefinition,
@@ -121,7 +122,8 @@ public class R66PrivateMib extends WaarpPrivateMib {
    * @param message
    * @param message2
    */
-  public void notifyStartStop(final String message, final String message2) {
+  public final void notifyStartStop(final String message,
+                                    final String message2) {
     if (!TrapLevel.StartStop.isLevelValid(agent.getTrapLevel())) {
       return;
     }
@@ -134,7 +136,7 @@ public class R66PrivateMib extends WaarpPrivateMib {
    * @param message
    * @param message2
    */
-  public void notifyError(final String message, final String message2) {
+  public final void notifyError(final String message, final String message2) {
     if (!TrapLevel.Alert.isLevelValid(agent.getTrapLevel())) {
       return;
     }
@@ -147,7 +149,8 @@ public class R66PrivateMib extends WaarpPrivateMib {
    * @param message
    * @param message2
    */
-  public void notifyOverloaded(final String message, final String message2) {
+  public final void notifyOverloaded(final String message,
+                                     final String message2) {
     if (!TrapLevel.Warning.isLevelValid(agent.getTrapLevel())) {
       return;
     }
@@ -160,7 +163,7 @@ public class R66PrivateMib extends WaarpPrivateMib {
    * @param message
    * @param message2
    */
-  public void notifyWarning(final String message, final String message2) {
+  public final void notifyWarning(final String message, final String message2) {
     if (!TrapLevel.Warning.isLevelValid(agent.getTrapLevel())) {
       return;
     }
@@ -173,8 +176,8 @@ public class R66PrivateMib extends WaarpPrivateMib {
    * @param message
    * @param runner
    */
-  public void notifyInternalTask(final String message,
-                                 final DbTaskRunner runner) {
+  public final void notifyInternalTask(final String message,
+                                       final DbTaskRunner runner) {
     try {
       long delay =
           (runner.getStart().getTime() - agent.getUptimeSystemTime()) / 10;
@@ -182,146 +185,109 @@ public class R66PrivateMib extends WaarpPrivateMib {
         delay = 0;
       }
       agent.getNotificationOriginator().notify(new OctetString("public"),
-                                               NotificationElements.InfoTask
-                                                   .getOID(rootOIDWaarpNotif),
+                                               NotificationElements.InfoTask.getOID(
+                                                   rootOIDWaarpNotif),
                                                new VariableBinding[] {
                                                    new VariableBinding(
-                                                       NotificationElements.InfoTask
-                                                           .getOID(
-                                                               rootOIDWaarpNotif,
-                                                               1),
-                                                       new OctetString(
-                                                           NotificationElements.InfoTask
-                                                               .name())),
+                                                       NotificationElements.InfoTask.getOID(
+                                                           rootOIDWaarpNotif,
+                                                           1), new OctetString(
+                                                       NotificationElements.InfoTask.name())),
                                                    new VariableBinding(
-                                                       NotificationElements.InfoTask
-                                                           .getOID(
-                                                               rootOIDWaarpNotif,
-                                                               1),
-                                                       new OctetString(
-                                                           message)),
+                                                       NotificationElements.InfoTask.getOID(
+                                                           rootOIDWaarpNotif,
+                                                           1), new OctetString(
+                                                       message)),
                                                    // Start of Task
                                                    new VariableBinding(
-                                                       NotificationElements.InfoTask
-                                                           .getOID(
-                                                               rootOIDWaarpNotif,
-                                                               NotificationTasks.globalStepInfo
-                                                                   .getOID()),
-                                                       new Gauge32(runner
-                                                                       .getGloballaststep())),
+                                                       NotificationElements.InfoTask.getOID(
+                                                           rootOIDWaarpNotif,
+                                                           NotificationTasks.globalStepInfo.getOID()),
+                                                       new Gauge32(
+                                                           runner.getGloballaststep())),
                                                    new VariableBinding(
-                                                       NotificationElements.InfoTask
-                                                           .getOID(
-                                                               rootOIDWaarpNotif,
-                                                               NotificationTasks.stepInfo
-                                                                   .getOID()),
+                                                       NotificationElements.InfoTask.getOID(
+                                                           rootOIDWaarpNotif,
+                                                           NotificationTasks.stepInfo.getOID()),
                                                        new Gauge32(
                                                            runner.getStep() +
                                                            1)),
                                                    new VariableBinding(
-                                                       NotificationElements.InfoTask
-                                                           .getOID(
-                                                               rootOIDWaarpNotif,
-                                                               NotificationTasks.rankFileInfo
-                                                                   .getOID()),
+                                                       NotificationElements.InfoTask.getOID(
+                                                           rootOIDWaarpNotif,
+                                                           NotificationTasks.rankFileInfo.getOID()),
                                                        new Gauge32(
                                                            runner.getRank())),
                                                    new VariableBinding(
-                                                       NotificationElements.InfoTask
-                                                           .getOID(
-                                                               rootOIDWaarpNotif,
-                                                               NotificationTasks.stepStatusInfo
-                                                                   .getOID()),
+                                                       NotificationElements.InfoTask.getOID(
+                                                           rootOIDWaarpNotif,
+                                                           NotificationTasks.stepStatusInfo.getOID()),
                                                        new OctetString(
                                                            runner.getStatus()
                                                                  .getMesg())),
                                                    new VariableBinding(
-                                                       NotificationElements.InfoTask
-                                                           .getOID(
-                                                               rootOIDWaarpNotif,
-                                                               NotificationTasks.filenameInfo
-                                                                   .getOID()),
-                                                       new OctetString(runner
-                                                                           .getFilename())),
+                                                       NotificationElements.InfoTask.getOID(
+                                                           rootOIDWaarpNotif,
+                                                           NotificationTasks.filenameInfo.getOID()),
+                                                       new OctetString(
+                                                           runner.getFilename())),
                                                    new VariableBinding(
-                                                       NotificationElements.InfoTask
-                                                           .getOID(
-                                                               rootOIDWaarpNotif,
-                                                               NotificationTasks.originalNameInfo
-                                                                   .getOID()),
-                                                       new OctetString(runner
-                                                                           .getOriginalFilename())),
+                                                       NotificationElements.InfoTask.getOID(
+                                                           rootOIDWaarpNotif,
+                                                           NotificationTasks.originalNameInfo.getOID()),
+                                                       new OctetString(
+                                                           runner.getOriginalFilename())),
                                                    new VariableBinding(
-                                                       NotificationElements.InfoTask
-                                                           .getOID(
-                                                               rootOIDWaarpNotif,
-                                                               NotificationTasks.idRuleInfo
-                                                                   .getOID()),
+                                                       NotificationElements.InfoTask.getOID(
+                                                           rootOIDWaarpNotif,
+                                                           NotificationTasks.idRuleInfo.getOID()),
                                                        new OctetString(
                                                            runner.getRuleId())),
                                                    new VariableBinding(
-                                                       NotificationElements.InfoTask
-                                                           .getOID(
-                                                               rootOIDWaarpNotif,
-                                                               NotificationTasks.modeTransInfo
-                                                                   .getOID()),
+                                                       NotificationElements.InfoTask.getOID(
+                                                           rootOIDWaarpNotif,
+                                                           NotificationTasks.modeTransInfo.getOID()),
                                                        new OctetString(
-                                                           TRANSFERMODE
-                                                               .values()[runner
-                                                               .getMode()]
-                                                               .name())),
+                                                           TRANSFERMODE.values()[runner.getMode()].name())),
                                                    new VariableBinding(
-                                                       NotificationElements.InfoTask
-                                                           .getOID(
-                                                               rootOIDWaarpNotif,
-                                                               NotificationTasks.retrieveModeInfo
-                                                                   .getOID()),
+                                                       NotificationElements.InfoTask.getOID(
+                                                           rootOIDWaarpNotif,
+                                                           NotificationTasks.retrieveModeInfo.getOID()),
                                                        new OctetString(
                                                            runner.isSender()?
                                                                "Sender" :
                                                                "Receiver")),
                                                    new VariableBinding(
-                                                       NotificationElements.InfoTask
-                                                           .getOID(
-                                                               rootOIDWaarpNotif,
-                                                               NotificationTasks.startTransInfo
-                                                                   .getOID()),
+                                                       NotificationElements.InfoTask.getOID(
+                                                           rootOIDWaarpNotif,
+                                                           NotificationTasks.startTransInfo.getOID()),
                                                        new TimeTicks(delay)),
                                                    new VariableBinding(
-                                                       NotificationElements.InfoTask
-                                                           .getOID(
-                                                               rootOIDWaarpNotif,
-                                                               NotificationTasks.infoStatusInfo
-                                                                   .getOID()),
+                                                       NotificationElements.InfoTask.getOID(
+                                                           rootOIDWaarpNotif,
+                                                           NotificationTasks.infoStatusInfo.getOID()),
                                                        new OctetString(
                                                            runner.getErrorInfo()
                                                                  .getMesg())),
                                                    new VariableBinding(
-                                                       NotificationElements.InfoTask
-                                                           .getOID(
-                                                               rootOIDWaarpNotif,
-                                                               NotificationTasks.requesterInfo
-                                                                   .getOID()),
-                                                       new OctetString(runner
-                                                                           .getRequester())),
+                                                       NotificationElements.InfoTask.getOID(
+                                                           rootOIDWaarpNotif,
+                                                           NotificationTasks.requesterInfo.getOID()),
+                                                       new OctetString(
+                                                           runner.getRequester())),
                                                    new VariableBinding(
-                                                       NotificationElements.InfoTask
-                                                           .getOID(
-                                                               rootOIDWaarpNotif,
-                                                               NotificationTasks.requestedInfo
-                                                                   .getOID()),
-                                                       new OctetString(runner
-                                                                           .getRequested())),
+                                                       NotificationElements.InfoTask.getOID(
+                                                           rootOIDWaarpNotif,
+                                                           NotificationTasks.requestedInfo.getOID()),
+                                                       new OctetString(
+                                                           runner.getRequested())),
                                                    new VariableBinding(
-                                                       NotificationElements.InfoTask
-                                                           .getOID(
-                                                               rootOIDWaarpNotif,
-                                                               NotificationTasks.specialIdInfo
-                                                                   .getOID()),
-                                                       new OctetString(String
-                                                                           .valueOf(
-                                                                               runner
-                                                                                   .getSpecialId()))),
+                                                       NotificationElements.InfoTask.getOID(
+                                                           rootOIDWaarpNotif,
+                                                           NotificationTasks.specialIdInfo.getOID()),
+                                                       new OctetString(
+                                                           String.valueOf(
+                                                               runner.getSpecialId()))),
                                                    // End of Task
                                                    new VariableBinding(
                                                        SnmpConstants.sysDescr,
@@ -351,7 +317,8 @@ public class R66PrivateMib extends WaarpPrivateMib {
    * @param message
    * @param runner
    */
-  public void notifyInfoTask(final String message, final DbTaskRunner runner) {
+  public final void notifyInfoTask(final String message,
+                                   final DbTaskRunner runner) {
     if (!TrapLevel.All.isLevelValid(agent.getTrapLevel())) {
       return;
     }
@@ -369,7 +336,8 @@ public class R66PrivateMib extends WaarpPrivateMib {
    * @param message
    * @param runner
    */
-  public void notifyTask(final String message, final DbTaskRunner runner) {
+  public final void notifyTask(final String message,
+                               final DbTaskRunner runner) {
     if (!TrapLevel.AllEvents.isLevelValid(agent.getTrapLevel())) {
       return;
     }
@@ -387,8 +355,8 @@ public class R66PrivateMib extends WaarpPrivateMib {
    * @param message
    * @param message2
    */
-  private void notify(final NotificationElements element, final String message,
-                      final String message2) {
+  private final void notify(final NotificationElements element,
+                            final String message, final String message2) {
     try {
       if (logger.isDebugEnabled()) {
         logger.debug("Notify: {}:{}:{}", element, message, message2);
@@ -419,12 +387,12 @@ public class R66PrivateMib extends WaarpPrivateMib {
   }
 
   @Override
-  public void updateServices(final WaarpMOScalar scalar) {
+  public final void updateServices(final WaarpMOScalar scalar) {
     // nothing
   }
 
   @Override
-  public void updateServices(final MOScope range) {
+  public final void updateServices(final MOScope range) {
     // nothing
   }
 

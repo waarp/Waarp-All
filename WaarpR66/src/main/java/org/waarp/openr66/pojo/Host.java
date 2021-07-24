@@ -127,98 +127,98 @@ public class Host {
   }
 
   @JsonIgnore
-  public void checkValues() throws WaarpDatabaseSqlException {
+  public final void checkValues() throws WaarpDatabaseSqlException {
     validateLength(hostkey);
     validateLength(Types.NVARCHAR, address, hostid);
   }
 
-  public String getHostid() {
+  public final String getHostid() {
     return hostid;
   }
 
-  public void setHostid(final String hostid) {
+  public final void setHostid(final String hostid) {
     this.hostid = hostid;
   }
 
-  public String getAddress() {
+  public final String getAddress() {
     return address;
   }
 
-  public void setAddress(final String address) {
+  public final void setAddress(final String address) {
     this.address = address;
   }
 
-  public int getPort() {
+  public final int getPort() {
     return port;
   }
 
-  public void setPort(final int port) {
+  public final void setPort(final int port) {
     this.port = port;
   }
 
-  public byte[] getHostkey() {
+  public final byte[] getHostkey() {
     return hostkey;
   }
 
   @XmlElement(name = XML_AUTHENTICATION_KEY)
   @JsonIgnore
-  public String getKey() {
+  public final String getKey() {
     return new String(hostkey, WaarpStringUtils.UTF8);
   }
 
-  public void setKey(final String key) {
+  public final void setKey(final String key) {
     hostkey = key.getBytes(WaarpStringUtils.UTF8);
   }
 
-  public void setHostkey(final byte[] hostkey) {
+  public final void setHostkey(final byte[] hostkey) {
     this.hostkey = hostkey;
   }
 
-  public boolean isSSL() {
+  public final boolean isSSL() {
     return ssl;
   }
 
-  public void setSSL(final boolean ssl) {
+  public final void setSSL(final boolean ssl) {
     this.ssl = ssl;
   }
 
-  public boolean isClient() {
+  public final boolean isClient() {
     return client;
   }
 
-  public void setClient(final boolean client) {
+  public final void setClient(final boolean client) {
     this.client = client;
   }
 
-  public boolean isAdmin() {
+  public final boolean isAdmin() {
     return admin;
   }
 
-  public void setAdmin(final boolean admin) {
+  public final void setAdmin(final boolean admin) {
     this.admin = admin;
   }
 
-  public boolean isProxified() {
+  public final boolean isProxified() {
     return proxified;
   }
 
-  public void setProxified(final boolean proxified) {
+  public final void setProxified(final boolean proxified) {
     this.proxified = proxified;
   }
 
-  public boolean isActive() {
+  public final boolean isActive() {
     return active;
   }
 
-  public void setActive(final boolean active) {
+  public final void setActive(final boolean active) {
     this.active = active;
   }
 
-  public UpdatedInfo getUpdatedInfo() {
+  public final UpdatedInfo getUpdatedInfo() {
     return updatedInfo;
   }
 
-  public void setUpdatedInfo(final UpdatedInfo info) {
+  public final void setUpdatedInfo(final UpdatedInfo info) {
     updatedInfo = info;
   }
 }

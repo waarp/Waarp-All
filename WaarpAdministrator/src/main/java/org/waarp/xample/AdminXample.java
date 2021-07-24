@@ -92,13 +92,13 @@ public class AdminXample extends XAmple {
       if (lfClassName != null) {
         UIManager.setLookAndFeel(lfClassName);
       } else {
-        UIManager
-            .setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
+        UIManager.setLookAndFeel(
+            UIManager.getCrossPlatformLookAndFeelClassName());
       }
     } catch (final Exception ex) {
       try {
-        UIManager
-            .setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
+        UIManager.setLookAndFeel(
+            UIManager.getCrossPlatformLookAndFeelClassName());
       } catch (final Exception ex1) {
         SysErrLogger.FAKE_LOGGER.syserr(ex1);
       }

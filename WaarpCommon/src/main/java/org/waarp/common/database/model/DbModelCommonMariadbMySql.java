@@ -185,13 +185,13 @@ public abstract class DbModelCommonMariadbMySql extends DbModelAbstract {
   }
 
   @Override
-  protected String validConnectionString() {
+  protected final String validConnectionString() {
     return "select 1 from dual";
   }
 
   @Override
-  public String limitRequest(final String allfields, final String request,
-                             final int nb) {
+  public final String limitRequest(final String allfields, final String request,
+                                   final int nb) {
     if (nb == 0) {
       return request;
     }

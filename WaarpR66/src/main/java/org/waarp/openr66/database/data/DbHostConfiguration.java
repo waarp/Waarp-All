@@ -180,22 +180,23 @@ public class DbHostConfiguration extends AbstractDbDataDao<Business> {
       Columns.UPDATEDINFO.name() + ',' + Columns.HOSTID.name();
 
   @Override
-  protected void initObject() {
+  protected final void initObject() {
     //nothing
   }
 
   @Override
-  protected String getTable() {
+  protected final String getTable() {
     return table;
   }
 
   @Override
-  protected AbstractDAO<Business> getDao(final boolean isCacheable) throws DAOConnectionException {
+  protected final AbstractDAO<Business> getDao(final boolean isCacheable)
+      throws DAOConnectionException {
     return DAOFactory.getInstance().getBusinessDAO(isCacheable);
   }
 
   @Override
-  protected String getPrimaryKey() {
+  protected final String getPrimaryKey() {
     if (pojo != null) {
       return pojo.getHostid();
     }
@@ -203,7 +204,7 @@ public class DbHostConfiguration extends AbstractDbDataDao<Business> {
   }
 
   @Override
-  protected String getPrimaryField() {
+  protected final String getPrimaryField() {
     return Columns.HOSTID.name();
   }
 
@@ -270,28 +271,28 @@ public class DbHostConfiguration extends AbstractDbDataDao<Business> {
   }
 
   @Override
-  protected void checkValues() throws WaarpDatabaseSqlException {
+  protected final void checkValues() throws WaarpDatabaseSqlException {
     pojo.checkValues();
   }
 
   /**
    * @return the hostid
    */
-  public String getHostid() {
+  public final String getHostid() {
     return pojo.getHostid();
   }
 
   /**
    * @return the business
    */
-  public String getBusiness() {
+  public final String getBusiness() {
     return pojo.getBusiness();
   }
 
   /**
    * @param business the business to set
    */
-  public void setBusiness(final String business) {
+  public final void setBusiness(final String business) {
     this.pojo.setBusiness(business == null? "" : business);
     int len;
     do {
@@ -309,14 +310,14 @@ public class DbHostConfiguration extends AbstractDbDataDao<Business> {
   /**
    * @return the roles
    */
-  public String getRoles() {
+  public final String getRoles() {
     return pojo.getRoles();
   }
 
   /**
    * @param roles the roles to set
    */
-  public void setRoles(final String roles) {
+  public final void setRoles(final String roles) {
     pojo.setRoles(roles == null? "" : roles);
     int len;
     do {
@@ -333,14 +334,14 @@ public class DbHostConfiguration extends AbstractDbDataDao<Business> {
   /**
    * @return the aliases
    */
-  public String getAliases() {
+  public final String getAliases() {
     return pojo.getAliases();
   }
 
   /**
    * @param aliases the aliases to set
    */
-  public void setAliases(final String aliases) {
+  public final void setAliases(final String aliases) {
     pojo.setAliases(aliases == null? "" : aliases);
     int len;
     do {
@@ -450,14 +451,14 @@ public class DbHostConfiguration extends AbstractDbDataDao<Business> {
   /**
    * @return the others
    */
-  public String getOthers() {
+  public final String getOthers() {
     return pojo.getOthers();
   }
 
   /**
    * @param others the others to set
    */
-  public void setOthers(final String others) {
+  public final void setOthers(final String others) {
     pojo.setOthers(others == null? "" : others);
     int len;
     do {
@@ -470,7 +471,7 @@ public class DbHostConfiguration extends AbstractDbDataDao<Business> {
   /**
    * @return the element for the content of the other part
    */
-  public Element getOtherElement() {
+  public final Element getOtherElement() {
     if (ParametersChecker.isNotEmpty(pojo.getOthers())) {
       final Document document;
       try {
@@ -487,12 +488,12 @@ public class DbHostConfiguration extends AbstractDbDataDao<Business> {
   /**
    * @param element the element to set as XML string to other part
    */
-  public void setOtherElement(final Element element) {
+  public final void setOtherElement(final Element element) {
     setOthers(element.asXML());
   }
 
   @Override
-  protected void setFromJson(final String field, final JsonNode value) {
+  protected final void setFromJson(final String field, final JsonNode value) {
     if (value == null) {
       return;
     }
@@ -568,8 +569,9 @@ public class DbHostConfiguration extends AbstractDbDataDao<Business> {
     AbstractDAO<Business> businessDAO = null;
     try {
       businessDAO = dbHostConfiguration.getDao(false);
-      dbHostConfiguration.pojo = ((StatementExecutor<Business>) businessDAO)
-          .getFromResultSet(preparedStatement.getResultSet());
+      dbHostConfiguration.pojo =
+          ((StatementExecutor<Business>) businessDAO).getFromResultSet(
+              preparedStatement.getResultSet());
       return dbHostConfiguration;
     } catch (final SQLException e) {
       DbSession.error(e);
@@ -637,8 +639,7 @@ public class DbHostConfiguration extends AbstractDbDataDao<Business> {
     final String request = "SELECT " + selectAllFields + " FROM " + table;
     String condition = null;
     if (ParametersChecker.isNotEmpty(hostid)) {
-      condition =
-          " WHERE " + Columns.HOSTID.name() + " LIKE '%" + hostid + "%' ";
+      condition = " WHERE " + Columns.HOSTID.name() + " = '" + hostid + "' ";
     }
     if (ParametersChecker.isNotEmpty(business)) {
       if (condition != null) {
@@ -686,7 +687,7 @@ public class DbHostConfiguration extends AbstractDbDataDao<Business> {
   }
 
   @Override
-  public void changeUpdatedInfo(final UpdatedInfo info) {
+  public final void changeUpdatedInfo(final UpdatedInfo info) {
     isSaved = false;
     pojo.setUpdatedInfo(org.waarp.openr66.pojo.UpdatedInfo.fromLegacy(info));
   }
@@ -694,14 +695,14 @@ public class DbHostConfiguration extends AbstractDbDataDao<Business> {
   /**
    * Update configuration according to new values
    */
-  public void updateConfiguration() {
+  public final void updateConfiguration() {
     updateHostConfiguration(Configuration.configuration, this);
   }
 
   /**
    * @return True if this Configuration refers to the current host
    */
-  public boolean isOwnConfiguration() {
+  public final boolean isOwnConfiguration() {
     return pojo.getHostid().equals(Configuration.configuration.getHostId());
   }
 
@@ -761,9 +762,9 @@ public class DbHostConfiguration extends AbstractDbDataDao<Business> {
    *
    * @return True if updated
    */
-  public boolean updateBusiness(final Configuration config,
-                                final String newbusiness,
-                                final boolean purged) {
+  public final boolean updateBusiness(final Configuration config,
+                                      final String newbusiness,
+                                      final boolean purged) {
     final HashSet<String> set = new HashSet<String>();
     if (!updateSet(newbusiness, XML_BUSINESS + '/' + XML_BUSINESSID, set)) {
       return false;
@@ -779,8 +780,8 @@ public class DbHostConfiguration extends AbstractDbDataDao<Business> {
     }
     config.getBusinessWhiteSet().addAll(set);
     if (ParametersChecker.isNotEmpty(newbusiness) || purged) {
-      final Document document = DocumentHelper
-          .createDocument(DocumentHelper.createElement(XML_BUSINESS));
+      final Document document = DocumentHelper.createDocument(
+          DocumentHelper.createElement(XML_BUSINESS));
       final Element root = document.getRootElement();
       for (final String sval : set) {
         root.addElement(XML_BUSINESSID).setText(sval);
@@ -804,11 +805,11 @@ public class DbHostConfiguration extends AbstractDbDataDao<Business> {
    *
    * @param configuration
    */
-  public void updateFromConfiguration(final Configuration configuration) {
+  public final void updateFromConfiguration(final Configuration configuration) {
     // Business
     if (!configuration.getBusinessWhiteSet().isEmpty()) {
-      final Document document = DocumentHelper
-          .createDocument(DocumentHelper.createElement(XML_BUSINESS));
+      final Document document = DocumentHelper.createDocument(
+          DocumentHelper.createElement(XML_BUSINESS));
       final Element root = document.getRootElement();
       for (final String sval : configuration.getBusinessWhiteSet()) {
         root.addElement(XML_BUSINESSID).setText(sval);
@@ -821,11 +822,11 @@ public class DbHostConfiguration extends AbstractDbDataDao<Business> {
     }
     // Aliases
     if (!configuration.getAliases().isEmpty()) {
-      final Document document = DocumentHelper
-          .createDocument(DocumentHelper.createElement(XML_ALIASES));
+      final Document document = DocumentHelper.createDocument(
+          DocumentHelper.createElement(XML_ALIASES));
       final Element root = document.getRootElement();
-      for (final Entry<String, String[]> entry : configuration
-          .getReverseAliases().entrySet()) {
+      for (final Entry<String, String[]> entry : configuration.getReverseAliases()
+                                                              .entrySet()) {
         final Element elt = root.addElement(XML_ALIAS);
         elt.addElement(XML_REALID).setText(entry.getKey());
         StringBuilder cumul = null;
@@ -849,8 +850,8 @@ public class DbHostConfiguration extends AbstractDbDataDao<Business> {
 
     // Role
     if (!configuration.getRoles().isEmpty()) {
-      final Document document = DocumentHelper
-          .createDocument(DocumentHelper.createElement(XML_ROLES));
+      final Document document = DocumentHelper.createDocument(
+          DocumentHelper.createElement(XML_ROLES));
       final Element root = document.getRootElement();
       for (final Entry<String, RoleDefault> entry : configuration.getRoles()
                                                                  .entrySet()) {
@@ -975,8 +976,9 @@ public class DbHostConfiguration extends AbstractDbDataDao<Business> {
    *
    * @return True if updated
    */
-  public boolean updateAlias(final Configuration config, final String newalias,
-                             final boolean purged) {
+  public final boolean updateAlias(final Configuration config,
+                                   final String newalias,
+                                   final boolean purged) {
     final HashMap<String, HashSet<String>> map =
         new HashMap<String, HashSet<String>>();
     if (!updateMap(newalias, XML_ALIASES + '/' + XML_ALIAS, XML_REALID,
@@ -995,8 +997,8 @@ public class DbHostConfiguration extends AbstractDbDataDao<Business> {
       }
     }
     if (ParametersChecker.isNotEmpty(newalias) || purged) {
-      final Document document = DocumentHelper
-          .createDocument(DocumentHelper.createElement(XML_ALIASES));
+      final Document document = DocumentHelper.createDocument(
+          DocumentHelper.createElement(XML_ALIASES));
       final Element root = document.getRootElement();
       for (final Entry<String, HashSet<String>> entry : map.entrySet()) {
         final Element elt = root.addElement(XML_ALIAS);
@@ -1067,8 +1069,9 @@ public class DbHostConfiguration extends AbstractDbDataDao<Business> {
    *
    * @return True if ok
    */
-  public boolean updateRoles(final Configuration config, final String newroles,
-                             final boolean purged) {
+  public final boolean updateRoles(final Configuration config,
+                                   final String newroles,
+                                   final boolean purged) {
     final HashMap<String, HashSet<String>> map =
         new HashMap<String, HashSet<String>>();
     if (!updateMap(newroles, XML_ROLES + '/' + XML_ROLE, XML_ROLEID,
@@ -1086,8 +1089,8 @@ public class DbHostConfiguration extends AbstractDbDataDao<Business> {
       }
     }
     if (ParametersChecker.isNotEmpty(newroles) || purged) {
-      final Document document = DocumentHelper
-          .createDocument(DocumentHelper.createElement(XML_ROLES));
+      final Document document = DocumentHelper.createDocument(
+          DocumentHelper.createElement(XML_ROLES));
       final Element root = document.getRootElement();
       for (final Entry<String, HashSet<String>> entry : map.entrySet()) {
         final RoleDefault newrole = new RoleDefault();
@@ -1183,7 +1186,7 @@ public class DbHostConfiguration extends AbstractDbDataDao<Business> {
     return "1.1.0";
   }
 
-  public boolean isSeeAllId(final String id) {
+  public final boolean isSeeAllId(final String id) {
     final Element others = getOtherElement();
     if (others != null) {
       final Element seeallids =
@@ -1232,9 +1235,9 @@ public class DbHostConfiguration extends AbstractDbDataDao<Business> {
       final Element eversion =
           (Element) others.selectSingleNode(OtherFields.version.name());
       if (eversion != null) {
-        String currentVersion = eversion.getText();
-        if (PartnerConfiguration
-            .isVersion2GTVersion1(currentVersion, version)) {
+        final String currentVersion = eversion.getText();
+        if (PartnerConfiguration.isVersion2GTVersion1(currentVersion,
+                                                      version)) {
           eversion.setText(version);
         } else {
           return currentVersion;
@@ -1259,17 +1262,17 @@ public class DbHostConfiguration extends AbstractDbDataDao<Business> {
   /**
    * @return the last DateTime for Monitoring
    */
-  public DateTime getLastDateTimeMonitoring() {
-    Element others = getOtherElement();
+  public final DateTime getLastDateTimeMonitoring() {
+    final Element others = getOtherElement();
     if (others != null) {
-      final Element lastMonitoringDT = (Element) others
-          .selectSingleNode(OtherFields.lastMonitoringDateTime.name());
+      final Element lastMonitoringDT = (Element) others.selectSingleNode(
+          OtherFields.lastMonitoringDateTime.name());
       if (lastMonitoringDT != null) {
-        String dateTime = lastMonitoringDT.getText();
+        final String dateTime = lastMonitoringDT.getText();
         if (ParametersChecker.isNotEmpty(dateTime)) {
           try {
             return DateTime.parse(lastMonitoringDT.getText());
-          } catch (Exception ignored) {
+          } catch (final Exception ignored) {
             return null;
           }
         }
@@ -1283,11 +1286,11 @@ public class DbHostConfiguration extends AbstractDbDataDao<Business> {
    *
    * @param lastDateTime
    */
-  public void updateLastDateTimeMonitoring(final DateTime lastDateTime) {
+  public final void updateLastDateTimeMonitoring(final DateTime lastDateTime) {
     Element others = getOtherElement();
     if (others != null) {
-      final Element lastMonitoringDT = (Element) others
-          .selectSingleNode(OtherFields.lastMonitoringDateTime.name());
+      final Element lastMonitoringDT = (Element) others.selectSingleNode(
+          OtherFields.lastMonitoringDateTime.name());
       if (lastMonitoringDT != null) {
         lastMonitoringDT.setText(lastDateTime.toString());
       } else {

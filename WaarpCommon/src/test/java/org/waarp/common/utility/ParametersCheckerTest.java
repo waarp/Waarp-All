@@ -147,8 +147,8 @@ public class ParametersCheckerTest {
     } catch (final IllegalArgumentException e) { // NOSONAR
     }
     try {
-      ParametersChecker
-          .checkParameterDefault("test message", "notNull", "notnull");
+      ParametersChecker.checkParameterDefault("test message", "notNull",
+                                              "notnull");
       ParametersChecker.checkParameterDefault("test message", "notnull");
     } catch (final IllegalArgumentException e) { // NOSONAR
       fail("SHOULD_NOT_RAIZED_ILLEGAL_ARGUMENT_EXCEPTION");
@@ -183,8 +183,8 @@ public class ParametersCheckerTest {
       fail("SHOULD_NOT_RAIZED_ILLEGAL_ARGUMENT_EXCEPTION");
     }
     try {
-      ParametersChecker
-          .checkParameterNullOnly("test message", "notNull", "notnull");
+      ParametersChecker.checkParameterNullOnly("test message", "notNull",
+                                               "notnull");
       ParametersChecker.checkParameterNullOnly("test message", "notnull");
     } catch (final IllegalArgumentException e) { // NOSONAR
       fail("SHOULD_NOT_RAIZED_ILLEGAL_ARGUMENT_EXCEPTION");

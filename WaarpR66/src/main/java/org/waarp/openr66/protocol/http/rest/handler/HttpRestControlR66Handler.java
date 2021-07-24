@@ -75,13 +75,14 @@ public class HttpRestControlR66Handler extends HttpRestAbstractR66Handler {
   }
 
   @Override
-  public void endParsingRequest(final HttpRestHandler handler,
-                                final RestArgument arguments,
-                                final RestArgument result, final Object body)
+  public final void endParsingRequest(final HttpRestHandler handler,
+                                      final RestArgument arguments,
+                                      final RestArgument result,
+                                      final Object body)
       throws HttpIncorrectRequestException, HttpInvalidAuthenticationException {
     try {
       HttpRestV1Utils.checkSanity(arguments);
-    } catch (InvalidArgumentException e) {
+    } catch (final InvalidArgumentException e) {
       throw new HttpIncorrectRequestException("Issue on values", e);
     }
     logger.debug("debug: {} ### {}", arguments, result);
@@ -108,13 +109,14 @@ public class HttpRestControlR66Handler extends HttpRestAbstractR66Handler {
           result.setCommand(ACTIONS_TYPE.GetTransferInformation.name());
           final ValidPacket validPacket;
           if (node.isIdRequest()) {
-            validPacket = serverHandler
-                .informationRequest(node.getId(), node.isTo(),
-                                    node.getRulename(), true);
+            validPacket =
+                serverHandler.informationRequest(node.getId(), node.isTo(),
+                                                 node.getRulename(), true);
           } else {
-            validPacket = serverHandler
-                .informationFile(node.getRequest(), node.getRulename(),
-                                 node.getFilename(), true);
+            validPacket = serverHandler.informationFile(node.getRequest(),
+                                                        node.getRulename(),
+                                                        node.getFilename(),
+                                                        true);
           }
           if (validPacket != null) {
             final ObjectNode resp =
@@ -136,9 +138,11 @@ public class HttpRestControlR66Handler extends HttpRestAbstractR66Handler {
                  method == METHOD.PUT) {//
         result.setCommand(ACTIONS_TYPE.RestartTransfer.name());
         final RestartTransferJsonPacket node = (RestartTransferJsonPacket) json;
-        final R66Result r66result = serverHandler
-            .requestRestart(node.getRequested(), node.getRequester(),
-                            node.getSpecialid(), node.getRestarttime());
+        final R66Result r66result =
+            serverHandler.requestRestart(node.getRequested(),
+                                         node.getRequester(),
+                                         node.getSpecialid(),
+                                         node.getRestarttime());
         if (serverHandler.isCodeValid(r66result.getCode())) {
           result.setDetail("Restart Transfer done");
           setOk(handler, result, node, HttpResponseStatus.OK);
@@ -159,8 +163,9 @@ public class HttpRestControlR66Handler extends HttpRestAbstractR66Handler {
           final String reqd = node.getRequested();
           final String reqr = node.getRequester();
           final long id = node.getSpecialid();
-          resulttest = serverHandler
-              .stopOrCancel(node.getRequestUserPacket(), reqd, reqr, id);
+          resulttest =
+              serverHandler.stopOrCancel(node.getRequestUserPacket(), reqd,
+                                         reqr, id);
           result.setDetail(resulttest.getCode().getMesg());
           setOk(handler, result, node, HttpResponseStatus.OK);
         }
@@ -189,7 +194,7 @@ public class HttpRestControlR66Handler extends HttpRestAbstractR66Handler {
   }
 
   @Override
-  protected ArrayNode getDetailedAllow() {
+  protected final ArrayNode getDetailedAllow() {
     final ArrayNode node = JsonHandler.createArrayNode();
 
     if (methods.contains(METHOD.GET)) {
@@ -206,8 +211,7 @@ public class HttpRestControlR66Handler extends HttpRestAbstractR66Handler {
       final ObjectNode node2;
       try {
         node2 = RestArgument.fillDetailedAllow(METHOD.GET, path,
-                                               ACTIONS_TYPE.GetTransferInformation
-                                                   .name(),
+                                               ACTIONS_TYPE.GetTransferInformation.name(),
                                                node3.createObjectNode(), node1);
         node.add(node2);
       } catch (final OpenR66ProtocolPacketException ignored) {
@@ -224,10 +228,10 @@ public class HttpRestControlR66Handler extends HttpRestAbstractR66Handler {
       ArrayNode node1 = JsonHandler.createArrayNode();
       try {
         node1.add(node4.createObjectNode());
-        final ObjectNode node2 = RestArgument
-            .fillDetailedAllow(METHOD.PUT, path,
-                               ACTIONS_TYPE.RestartTransfer.name(),
-                               node4.createObjectNode(), node1);
+        final ObjectNode node2 =
+            RestArgument.fillDetailedAllow(METHOD.PUT, path,
+                                           ACTIONS_TYPE.RestartTransfer.name(),
+                                           node4.createObjectNode(), node1);
         node.add(node2);
       } catch (final OpenR66ProtocolPacketException ignored) {
         // ignore
@@ -240,10 +244,10 @@ public class HttpRestControlR66Handler extends HttpRestAbstractR66Handler {
       node1 = JsonHandler.createArrayNode();
       try {
         node1.add(node5.createObjectNode());
-        final ObjectNode node2 = RestArgument
-            .fillDetailedAllow(METHOD.PUT, path,
-                               ACTIONS_TYPE.StopOrCancelTransfer.name(),
-                               node5.createObjectNode(), node1);
+        final ObjectNode node2 =
+            RestArgument.fillDetailedAllow(METHOD.PUT, path,
+                                           ACTIONS_TYPE.StopOrCancelTransfer.name(),
+                                           node5.createObjectNode(), node1);
         node.add(node2);
       } catch (final OpenR66ProtocolPacketException ignored) {
         // ignore
@@ -261,19 +265,19 @@ public class HttpRestControlR66Handler extends HttpRestAbstractR66Handler {
       final ArrayNode node1 = JsonHandler.createArrayNode();
       try {
         node1.add(node6.createObjectNode());
-        final ObjectNode node2 = RestArgument
-            .fillDetailedAllow(METHOD.POST, path,
-                               ACTIONS_TYPE.CreateTransfer.name(),
-                               node6.createObjectNode(), node1);
+        final ObjectNode node2 =
+            RestArgument.fillDetailedAllow(METHOD.POST, path,
+                                           ACTIONS_TYPE.CreateTransfer.name(),
+                                           node6.createObjectNode(), node1);
         node.add(node2);
       } catch (final OpenR66ProtocolPacketException ignored) {
         // ignore
       }
     }
 
-    final ObjectNode node2 = RestArgument
-        .fillDetailedAllow(METHOD.OPTIONS, path, COMMAND_TYPE.OPTIONS.name(),
-                           null, null);
+    final ObjectNode node2 =
+        RestArgument.fillDetailedAllow(METHOD.OPTIONS, path,
+                                       COMMAND_TYPE.OPTIONS.name(), null, null);
     node.add(node2);
 
     return node;

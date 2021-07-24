@@ -83,12 +83,12 @@ public class FtpSessionReference {
     /**
      * @return True if the P2Paddress is valid
      */
-    public boolean isValid() {
+    public final boolean isValid() {
       return ipOnly != null && fullIp != null;
     }
 
     @Override
-    public boolean equals(final Object o) {
+    public final boolean equals(final Object o) {
       if (o == null) {
         return false;
       }
@@ -103,7 +103,7 @@ public class FtpSessionReference {
     }
 
     @Override
-    public int hashCode() {
+    public final int hashCode() {
       return fullIp.hashCode() + ipOnly.hashCode();
     }
 
@@ -129,9 +129,9 @@ public class FtpSessionReference {
    * @param fullIp
    * @param session
    */
-  public void setNewFtpSession(final InetAddress ipOnly,
-                               final InetSocketAddress fullIp,
-                               final FtpSession session) {
+  public final void setNewFtpSession(final InetAddress ipOnly,
+                                     final InetSocketAddress fullIp,
+                                     final FtpSession session) {
     final P2PAddress pAddress = new P2PAddress(ipOnly, fullIp);
     if (!pAddress.isValid()) {
       logger.error(
@@ -148,15 +148,15 @@ public class FtpSessionReference {
    *
    * @return the FtpSession if it exists associated to this channel
    */
-  public FtpSession getActiveFtpSession(final Channel channel,
-                                        final boolean remove) {
+  public final FtpSession getActiveFtpSession(final Channel channel,
+                                              final boolean remove) {
     // First check Active connection
     final P2PAddress pAddress = new P2PAddress(
         ((InetSocketAddress) channel.localAddress()).getAddress(),
         (InetSocketAddress) channel.remoteAddress());
     if (!pAddress.isValid()) {
-      logger.error("Couple invalid in getActiveFtpSession: " + channel +
-                   channel.localAddress() + channel.remoteAddress());
+      logger.info("Couple invalid in getActiveFtpSession: " + channel +
+                  channel.localAddress() + channel.remoteAddress());
       return null;
     }
     if (remove) {
@@ -173,8 +173,8 @@ public class FtpSessionReference {
    *
    * @return the FtpSession if it exists associated to this channel
    */
-  public FtpSession getPassiveFtpSession(final Channel channel,
-                                         final boolean remove) {
+  public final FtpSession getPassiveFtpSession(final Channel channel,
+                                               final boolean remove) {
     // First check passive connection
     final P2PAddress pAddress = new P2PAddress(channel);
     if (!pAddress.isValid()) {
@@ -194,12 +194,12 @@ public class FtpSessionReference {
    * @param ipOnly
    * @param fullIp
    */
-  public void delFtpSession(final InetAddress ipOnly,
-                            final InetSocketAddress fullIp) {
+  public final void delFtpSession(final InetAddress ipOnly,
+                                  final InetSocketAddress fullIp) {
     final P2PAddress pAddress = new P2PAddress(ipOnly, fullIp);
     if (!pAddress.isValid()) {
-      logger
-          .error("Couple invalid in delFtpSession: " + ipOnly + " : " + fullIp);
+      logger.error(
+          "Couple invalid in delFtpSession: " + ipOnly + " : " + fullIp);
       return;
     }
     hashMap.remove(pAddress);
@@ -214,8 +214,8 @@ public class FtpSessionReference {
    *
    * @return True if already presents
    */
-  public boolean contains(final InetAddress ipOnly,
-                          final InetSocketAddress fullIp) {
+  public final boolean contains(final InetAddress ipOnly,
+                                final InetSocketAddress fullIp) {
     final P2PAddress pAddress = new P2PAddress(ipOnly, fullIp);
     if (!pAddress.isValid()) {
       logger.error("Couple invalid in contains: " + ipOnly + " : " + fullIp);
@@ -227,7 +227,7 @@ public class FtpSessionReference {
   /**
    * @return the number of active sessions
    */
-  public int sessionsNumber() {
+  public final int sessionsNumber() {
     return hashMap.size();
   }
 }

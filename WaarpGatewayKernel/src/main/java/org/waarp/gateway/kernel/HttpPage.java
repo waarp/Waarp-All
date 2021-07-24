@@ -120,7 +120,7 @@ public class HttpPage {
     try {
       factory =
           (HttpBusinessFactory) WaarpSystemUtil.newInstance(classname);//NOSONAR
-    } catch (InvocationTargetException e) {
+    } catch (final InvocationTargetException e) {
       throw new InstantiationException(e.getMessage());
     }
     setHttpBusinessFactory(factory);//NOSONAR
@@ -145,11 +145,12 @@ public class HttpPage {
       }
       linkedHashMap.put(field.getFieldname(), newfield);
     }
-    return getHttpBusinessFactory()
-        .getNewHttpBusinessRequest(remoteAddress, linkedHashMap, this);
+    return getHttpBusinessFactory().getNewHttpBusinessRequest(remoteAddress,
+                                                              linkedHashMap,
+                                                              this);
   }
 
-  public String getPageValue(final String value) {
+  public final String getPageValue(final String value) {
     if (getFileform() != null && value != null) {
       try {
         return WaarpStringUtils.readFileException(getFileform() + value);
@@ -167,7 +168,7 @@ public class HttpPage {
    *
    * @throws HttpIncorrectRequestException
    */
-  public String getHtmlPage(final AbstractHttpBusinessRequest reference)
+  public final String getHtmlPage(final AbstractHttpBusinessRequest reference)
       throws HttpIncorrectRequestException {
     if (reference == null) {
       return "<HTML><HEADER/>ERROR</HTML>";
@@ -341,9 +342,9 @@ public class HttpPage {
    *
    * @throws HttpIncorrectRequestException
    */
-  public void setValue(final AbstractHttpBusinessRequest reference,
-                       final String fieldname, final String value,
-                       final FieldPosition position)
+  public final void setValue(final AbstractHttpBusinessRequest reference,
+                             final String fieldname, final String value,
+                             final FieldPosition position)
       throws HttpIncorrectRequestException {
     if (reference == null) {
       return;
@@ -377,8 +378,9 @@ public class HttpPage {
    *
    * @throws HttpIncorrectRequestException
    */
-  public void setValue(final AbstractHttpBusinessRequest reference,
-                       final String fieldname, final FileUpload fileUpload)
+  public final void setValue(final AbstractHttpBusinessRequest reference,
+                             final String fieldname,
+                             final FileUpload fileUpload)
       throws HttpIncorrectRequestException {
     final Map<String, AbstractHttpField> requestFields =
         reference.getMapHttpFields();
@@ -396,7 +398,8 @@ public class HttpPage {
    *
    * @return True if the request is fully valid
    */
-  public boolean isRequestValid(final AbstractHttpBusinessRequest reference) {
+  public final boolean isRequestValid(
+      final AbstractHttpBusinessRequest reference) {
     if (reference == null) {
       return true;
     }
@@ -419,7 +422,7 @@ public class HttpPage {
    *
    * @return the fields list from the current AbstractHttpBusinessRequest
    */
-  public Map<String, AbstractHttpField> getFieldsForRequest(
+  public final Map<String, AbstractHttpField> getFieldsForRequest(
       final AbstractHttpBusinessRequest reference) {
     if (reference == null) {
       return SingletonUtils.singletonMap();
@@ -435,8 +438,8 @@ public class HttpPage {
    *
    * @return the String value
    */
-  public String getValue(final AbstractHttpBusinessRequest reference,
-                         final String fieldname) {
+  public final String getValue(final AbstractHttpBusinessRequest reference,
+                               final String fieldname) {
     final AbstractHttpField field = reference.getMapHttpFields().get(fieldname);
     if (field != null) {
       return field.fieldvalue;
@@ -452,8 +455,8 @@ public class HttpPage {
    *
    * @return the FileUpload value
    */
-  public FileUpload getFileUpload(final AbstractHttpBusinessRequest reference,
-                                  final String fieldname) {
+  public final FileUpload getFileUpload(
+      final AbstractHttpBusinessRequest reference, final String fieldname) {
     final AbstractHttpField field = reference.getMapHttpFields().get(fieldname);
     if (field != null) {
       return field.fileUpload;
@@ -469,15 +472,15 @@ public class HttpPage {
    *
    * @return the AbstractHttpField value
    */
-  public AbstractHttpField getField(final AbstractHttpBusinessRequest reference,
-                                    final String fieldname) {
+  public final AbstractHttpField getField(
+      final AbstractHttpBusinessRequest reference, final String fieldname) {
     return reference.getMapHttpFields().get(fieldname);
   }
 
   /**
    * @return the pagename
    */
-  public String getPagename() {
+  public final String getPagename() {
     return pagename;
   }
 
@@ -491,7 +494,7 @@ public class HttpPage {
   /**
    * @return the fileform
    */
-  public String getFileform() {
+  public final String getFileform() {
     return fileform;
   }
 
@@ -505,7 +508,7 @@ public class HttpPage {
   /**
    * @return the header
    */
-  public String getHeader() {
+  public final String getHeader() {
     return header;
   }
 
@@ -519,7 +522,7 @@ public class HttpPage {
   /**
    * @return the footer
    */
-  public String getFooter() {
+  public final String getFooter() {
     return footer;
   }
 
@@ -533,7 +536,7 @@ public class HttpPage {
   /**
    * @return the beginform
    */
-  public String getBeginform() {
+  public final String getBeginform() {
     return beginform;
   }
 
@@ -547,7 +550,7 @@ public class HttpPage {
   /**
    * @return the endform
    */
-  public String getEndform() {
+  public final String getEndform() {
     return endform;
   }
 
@@ -561,7 +564,7 @@ public class HttpPage {
   /**
    * @return the nextinform
    */
-  public String getNextinform() {
+  public final String getNextinform() {
     return nextinform;
   }
 
@@ -575,7 +578,7 @@ public class HttpPage {
   /**
    * @return the uri
    */
-  public String getUri() {
+  public final String getUri() {
     return uri;
   }
 
@@ -589,7 +592,7 @@ public class HttpPage {
   /**
    * @return the pagerole
    */
-  public PageRole getPagerole() {
+  public final PageRole getPagerole() {
     return pagerole;
   }
 
@@ -603,7 +606,7 @@ public class HttpPage {
   /**
    * @return the errorpage
    */
-  public String getErrorpage() {
+  public final String getErrorpage() {
     return errorpage;
   }
 
@@ -617,7 +620,7 @@ public class HttpPage {
   /**
    * @return the classname
    */
-  public String getClassname() {
+  public final String getClassname() {
     return classname;
   }
 
@@ -631,7 +634,7 @@ public class HttpPage {
   /**
    * @return the fields
    */
-  public Map<String, AbstractHttpField> getFields() {
+  public final Map<String, AbstractHttpField> getFields() {
     return fields;
   }
 
@@ -645,7 +648,7 @@ public class HttpPage {
   /**
    * @return the httpBusinessFactory
    */
-  public HttpBusinessFactory getHttpBusinessFactory() {
+  public final HttpBusinessFactory getHttpBusinessFactory() {
     return httpBusinessFactory;
   }
 

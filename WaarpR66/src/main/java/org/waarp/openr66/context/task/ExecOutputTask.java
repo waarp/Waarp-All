@@ -102,7 +102,8 @@ public class ExecOutputTask extends AbstractExecTask {
     }
 
     final PrepareCommandExec prepareCommandExec =
-        new PrepareCommandExec(this, finalname, false, waitForValidation).invoke();
+        new PrepareCommandExec(this, finalname, false,
+                               waitForValidation).invoke();
     if (prepareCommandExec.isError()) {
       return;
     }
@@ -116,14 +117,14 @@ public class ExecOutputTask extends AbstractExecTask {
     final ExecuteWatchdog watchdog = prepareCommandExec.getWatchdog();
 
     final AllLineReader allLineReader = new AllLineReader(inputStream);
-    allLineReader
-        .setName("LastLineReader" + session.getRunner().getSpecialId());
+    allLineReader.setName(
+        "LastLineReader" + session.getRunner().getSpecialId());
     allLineReader.setDaemon(true);
     Configuration.configuration.getExecutorService().execute(allLineReader);
     final ExecuteCommand executeCommand =
         new ExecuteCommand(this, commandLine, defaultExecutor, inputStream,
-                           outputStream, pumpStreamHandler, allLineReader)
-            .invoke();
+                           outputStream, pumpStreamHandler,
+                           allLineReader).invoke();
     if (executeCommand.isError()) {
       return;
     }
@@ -156,8 +157,8 @@ public class ExecOutputTask extends AbstractExecTask {
           new R66Result(session, true, ErrorCode.Warning, session.getRunner());
       result.setOther(newName);
       futureCompletion.setResult(result);
-      logger
-          .warn("Exec in warning with " + commandLine + " returns " + newname);
+      logger.warn(
+          "Exec in warning with " + commandLine + " returns " + newname);
       session.getRunner().setErrorExecutionStatus(ErrorCode.Warning);
       futureCompletion.setSuccess();
     } else {
@@ -195,8 +196,9 @@ public class ExecOutputTask extends AbstractExecTask {
   }
 
   @Override
-  void finalizeFromError(final Runnable threadReader, final int status,
-                         final CommandLine commandLine, final Exception e) {
+  final void finalizeFromError(final Runnable threadReader, final int status,
+                               final CommandLine commandLine,
+                               final Exception e) {
     final String result =
         ((AllLineReader) threadReader).getLastLine().toString();
     logger.error("Status: " + status + " Exec in error with " + commandLine +

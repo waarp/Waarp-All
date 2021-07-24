@@ -219,8 +219,8 @@ class FiniteStateEntropy {
       state2 = table.begin(UnsafeUtil.UNSAFE.getByte(inputBase, input));
 
       input--;
-      state1 = table
-          .encode(stream, state1, UnsafeUtil.UNSAFE.getByte(inputBase, input));
+      state1 = table.encode(stream, state1,
+                            UnsafeUtil.UNSAFE.getByte(inputBase, input));
 
       stream.flush();
     } else {
@@ -236,12 +236,12 @@ class FiniteStateEntropy {
 
     if ((inputSize & 2) != 0) {  /* test bit 2 */
       input--;
-      state2 = table
-          .encode(stream, state2, UnsafeUtil.UNSAFE.getByte(inputBase, input));
+      state2 = table.encode(stream, state2,
+                            UnsafeUtil.UNSAFE.getByte(inputBase, input));
 
       input--;
-      state1 = table
-          .encode(stream, state1, UnsafeUtil.UNSAFE.getByte(inputBase, input));
+      state1 = table.encode(stream, state1,
+                            UnsafeUtil.UNSAFE.getByte(inputBase, input));
 
       stream.flush();
     }
@@ -249,20 +249,20 @@ class FiniteStateEntropy {
     // 2 or 4 encoding per loop
     while (input > inputAddress) {
       input--;
-      state2 = table
-          .encode(stream, state2, UnsafeUtil.UNSAFE.getByte(inputBase, input));
+      state2 = table.encode(stream, state2,
+                            UnsafeUtil.UNSAFE.getByte(inputBase, input));
 
       input--;
-      state1 = table
-          .encode(stream, state1, UnsafeUtil.UNSAFE.getByte(inputBase, input));
+      state1 = table.encode(stream, state1,
+                            UnsafeUtil.UNSAFE.getByte(inputBase, input));
 
       input--;
-      state2 = table
-          .encode(stream, state2, UnsafeUtil.UNSAFE.getByte(inputBase, input));
+      state2 = table.encode(stream, state2,
+                            UnsafeUtil.UNSAFE.getByte(inputBase, input));
 
       input--;
-      state1 = table
-          .encode(stream, state1, UnsafeUtil.UNSAFE.getByte(inputBase, input));
+      state1 = table.encode(stream, state1,
+                            UnsafeUtil.UNSAFE.getByte(inputBase, input));
 
       stream.flush();
     }

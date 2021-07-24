@@ -77,6 +77,10 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
    * Current file if any
    */
   protected String currentFile;
+  /**
+   * Current Real File if any
+   */
+  protected File currentRealFile = null;
 
   /**
    * Is this file in append mode
@@ -116,10 +120,10 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
     this.dir = dir;
     currentFile = path;
     isAppend = append;
-    final File file = getFileFromPath(path);
+    currentRealFile = getFileFromPath(path);
     if (append) {
       try {
-        setPosition(file.length());
+        setPosition(currentRealFile.length());
       } catch (final IOException e) {
         // not ready
         return;
@@ -148,15 +152,17 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
     auth = (FilesystemBasedAuthImpl) session.getAuth();
     this.dir = dir;
     currentFile = path;
+    currentRealFile = null;
     isReady = true;
     isAppend = false;
     position = 0;
   }
 
   @Override
-  public void clear() throws CommandAbstractException {
+  public final void clear() throws CommandAbstractException {
     super.clear();
     currentFile = null;
+    currentRealFile = null;
     isAppend = false;
   }
 
@@ -166,7 +172,7 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
   }
 
   @Override
-  public DirInterface getDir() {
+  public final DirInterface getDir() {
     return dir;
   }
 
@@ -179,7 +185,7 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
    *
    * @throws CommandAbstractException
    */
-  protected File getFileFromPath(final String path)
+  protected final File getFileFromPath(final String path)
       throws CommandAbstractException {
     final String newdir = getDir().validatePath(path);
     if (dir.isAbsolute(newdir)) {
@@ -198,9 +204,9 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
    *
    * @return the relative path
    */
-  protected String getRelativePath(final File file) {
-    return auth
-        .getRelativePath(AbstractDir.normalizePath(file.getAbsolutePath()));
+  protected final String getRelativePath(final File file) {
+    return auth.getRelativePath(
+        AbstractDir.normalizePath(file.getAbsolutePath()));
   }
 
   /**
@@ -217,7 +223,7 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
       }
       try {
         Thread.sleep(10);
-      } catch (InterruptedException ignored) { //NOSONAR
+      } catch (final InterruptedException ignored) { //NOSONAR
         SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
       }
     }
@@ -227,8 +233,10 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
   @Override
   public boolean isDirectory() throws CommandAbstractException {
     checkIdentify();
-    final File dir1 = getFileFromPath(currentFile);
-    return isDirectory(dir1);
+    if (currentRealFile == null) {
+      currentRealFile = getFileFromPath(currentFile);
+    }
+    return isDirectory(currentRealFile);
   }
 
   /**
@@ -245,7 +253,7 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
       }
       try {
         Thread.sleep(10);
-      } catch (InterruptedException ignored) { //NOSONAR
+      } catch (final InterruptedException ignored) { //NOSONAR
         SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
       }
     }
@@ -255,11 +263,14 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
   @Override
   public boolean isFile() throws CommandAbstractException {
     checkIdentify();
-    return isFile(getFileFromPath(currentFile));
+    if (currentRealFile == null) {
+      currentRealFile = getFileFromPath(currentFile);
+    }
+    return isFile(currentRealFile);
   }
 
   @Override
-  public String getFile() throws CommandAbstractException {
+  public final String getFile() throws CommandAbstractException {
     checkIdentify();
     return currentFile;
   }
@@ -284,9 +295,9 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
   }
 
   @Override
-  public boolean abortFile() throws CommandAbstractException {
-    if (isInWriting() && ((FilesystemBasedFileParameterImpl) getSession()
-        .getFileParameter()).deleteOnAbort) {
+  public final boolean abortFile() throws CommandAbstractException {
+    if (isInWriting() &&
+        ((FilesystemBasedFileParameterImpl) getSession().getFileParameter()).deleteOnAbort) {
       delete();
     }
     closeFile();
@@ -302,11 +313,14 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
     if (!exists()) {
       return -1;
     }
-    return getFileFromPath(currentFile).length();
+    if (currentRealFile == null) {
+      currentRealFile = getFileFromPath(currentFile);
+    }
+    return currentRealFile.length();
   }
 
   @Override
-  public boolean isInReading() {
+  public final boolean isInReading() {
     if (!isReady) {
       return false;
     }
@@ -314,7 +328,7 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
   }
 
   @Override
-  public boolean isInWriting() {
+  public final boolean isInWriting() {
     if (!isReady) {
       return false;
     }
@@ -335,7 +349,7 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
       }
       try {
         Thread.sleep(10);
-      } catch (InterruptedException ignored) { //NOSONAR
+      } catch (final InterruptedException ignored) { //NOSONAR
         SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
       }
     }
@@ -348,7 +362,10 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
     if (!isReady) {
       return false;
     }
-    return canRead(getFileFromPath(currentFile));
+    if (currentRealFile == null) {
+      currentRealFile = getFileFromPath(currentFile);
+    }
+    return canRead(currentRealFile);
   }
 
   @Override
@@ -357,11 +374,13 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
     if (!isReady) {
       return false;
     }
-    final File file = getFileFromPath(currentFile);
-    if (file.exists()) {
-      return file.canWrite();
+    if (currentRealFile == null) {
+      currentRealFile = getFileFromPath(currentFile);
     }
-    return file.getParentFile().canWrite();
+    if (currentRealFile.exists()) {
+      return currentRealFile.canWrite();
+    }
+    return currentRealFile.getParentFile().canWrite();
   }
 
   /**
@@ -378,7 +397,7 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
       }
       try {
         Thread.sleep(10);
-      } catch (InterruptedException ignored) { //NOSONAR
+      } catch (final InterruptedException ignored) { //NOSONAR
         SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
       }
     }
@@ -391,7 +410,10 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
     if (!isReady) {
       return false;
     }
-    return exists(getFileFromPath(currentFile));
+    if (currentRealFile == null) {
+      currentRealFile = getFileFromPath(currentFile);
+    }
+    return exists(currentRealFile);
   }
 
   @Override
@@ -404,7 +426,10 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
       return true;
     }
     closeFile();
-    return getFileFromPath(currentFile).delete();
+    if (currentRealFile == null) {
+      currentRealFile = getFileFromPath(currentFile);
+    }
+    return currentRealFile.delete();
   }
 
   @Override
@@ -414,38 +439,41 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
       logger.warn("File not ready: {}", this);
       return false;
     }
-    final File file = getFileFromPath(currentFile);
-    if (canRead(file)) {
+    if (currentRealFile == null) {
+      currentRealFile = getFileFromPath(currentFile);
+    }
+    if (canRead(currentRealFile)) {
       final File newFile = getFileFromPath(path);
       if (newFile.exists()) {
         logger.warn("Target file already exists: " + newFile.getAbsolutePath());
         return false;
       }
-      if (newFile.getAbsolutePath().equals(file.getAbsolutePath())) {
+      if (newFile.getAbsolutePath().equals(currentRealFile.getAbsolutePath())) {
         // already in the right position
         isReady = true;
         return true;
       }
       if (newFile.getParentFile().canWrite()) {
-        if (!file.renameTo(newFile)) {
-          FileUtils.copy(file, newFile, true, false);
+        if (!currentRealFile.renameTo(newFile)) {
+          FileUtils.copy(currentRealFile, newFile, true, false);
         }
         currentFile = getRelativePath(newFile);
+        currentRealFile = newFile;
         isReady = true;
-        logger
-            .debug("File renamed to: {} and real position: {}", this, newFile);
+        logger.debug("File renamed to: {} and real position: {}", this,
+                     newFile);
         return true;
       } else {
-        logger.warn("Cannot write file: {} from {}", newFile, file);
+        logger.warn("Cannot write file: {} from {}", newFile, currentFile);
         return false;
       }
     }
-    logger.warn("Cannot read file: {}", file);
+    logger.warn("Cannot read file: {}", currentFile);
     return false;
   }
 
   @Override
-  public DataBlock readDataBlock()
+  public final DataBlock readDataBlock()
       throws FileTransferException, FileEndOfTransferException {
     if (isReady) {
       return getByteBlock(getSession().getBlockSize());
@@ -454,7 +482,7 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
   }
 
   @Override
-  public DataBlock readDataBlock(final byte[] bufferGiven)
+  public final DataBlock readDataBlock(final byte[] bufferGiven)
       throws FileTransferException, FileEndOfTransferException {
     if (isReady) {
       return getByteBlock(bufferGiven);
@@ -463,7 +491,7 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
   }
 
   @Override
-  public void writeDataBlock(final DataBlock dataBlock)
+  public final void writeDataBlock(final DataBlock dataBlock)
       throws FileTransferException {
     if (isReady) {
       if (dataBlock.isEOF()) {
@@ -486,7 +514,7 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
    *
    * @return the position
    */
-  public long getPosition() {
+  public final long getPosition() {
     return position;
   }
 
@@ -498,7 +526,7 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
    * @throws IOException
    */
   @Override
-  public void setPosition(final long position) throws IOException {
+  public final void setPosition(final long position) throws IOException {
     if (this.position != position) {
       this.position = position;
       if (fileInputStream != null) {
@@ -688,16 +716,17 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
     if (!isReady) {
       return null;
     }
-    final File trueFile;
     try {
-      trueFile = getFileFromPath(currentFile);
+      if (currentRealFile == null) {
+        currentRealFile = getFileFromPath(currentFile);
+      }
     } catch (final CommandAbstractException e1) {
       return null;
     }
     @SuppressWarnings("resource")
     FileInputStream fileInputStreamTemp = null;
     try {
-      fileInputStreamTemp = new FileInputStream(trueFile);//NOSONAR
+      fileInputStreamTemp = new FileInputStream(currentRealFile);//NOSONAR
       if (position != 0) {
         final long read = fileInputStreamTemp.skip(position);
         if (read != position) {
@@ -726,15 +755,16 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
     if (!isReady) {
       return null;
     }
-    final File trueFile;
     try {
-      trueFile = getFileFromPath(currentFile);
+      if (currentRealFile == null) {
+        currentRealFile = getFileFromPath(currentFile);
+      }
     } catch (final CommandAbstractException e1) {
       return null;
     }
     final RandomAccessFile raf;
     try {
-      raf = new RandomAccessFile(trueFile, "rw");//NOSONAR
+      raf = new RandomAccessFile(currentRealFile, "rw");//NOSONAR
       raf.seek(position);
     } catch (final FileNotFoundException e) {
       logger.error("File not found in getRandomFile: {}", e.getMessage());
@@ -759,14 +789,15 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
     if (!isReady) {
       return null;
     }
-    final File trueFile;
     try {
-      trueFile = getFileFromPath(currentFile);
+      if (currentRealFile == null) {
+        currentRealFile = getFileFromPath(currentFile);
+      }
     } catch (final CommandAbstractException e1) {
       return null;
     }
     if (position > 0) {
-      if (trueFile.length() < position) {
+      if (currentRealFile.length() < position) {
         logger.error(
             "Cannot Change position in getFileOutputStream: file is smaller than required position");
         return null;
@@ -780,11 +811,13 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
                      e.getMessage());
         return null;
       }
-      logger.debug("New size: {}:{}", trueFile.length(), position);
+      if (logger.isDebugEnabled()) {
+        logger.debug("New size: {}:{}", currentRealFile.length(), position);
+      }
     }
     final FileOutputStream fos;
     try {
-      fos = new FileOutputStream(trueFile, append);
+      fos = new FileOutputStream(currentRealFile, append);
     } catch (final FileNotFoundException e) {
       logger.error("File not found in getRandomFile: {}", e.getMessage());
       return null;

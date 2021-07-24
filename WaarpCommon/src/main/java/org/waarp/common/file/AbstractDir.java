@@ -86,7 +86,7 @@ public abstract class AbstractDir implements DirInterface {
    *
    * @return The corresponding Root file
    */
-  protected File getCorrespondingRoot(final File file) {
+  protected final File getCorrespondingRoot(final File file) {
     if (ISUNIX) {
       return new File("/");
     }
@@ -148,12 +148,12 @@ public abstract class AbstractDir implements DirInterface {
    * @return the SessionInterface
    */
   @Override
-  public SessionInterface getSession() {
+  public final SessionInterface getSession() {
     return session;
   }
 
   @Override
-  public String validatePath(final String path)
+  public final String validatePath(final String path)
       throws CommandAbstractException {
     String extDir;
     if (isAbsolute(path)) {
@@ -183,7 +183,7 @@ public abstract class AbstractDir implements DirInterface {
    * @return True if the given Path is an absolute one under Windows System or
    *     should be an absolute one on Unix
    */
-  public boolean isAbsolute(final String path) {
+  public final boolean isAbsolute(final String path) {
     File file = new File(path);
     if (!ISUNIX) {
       return file.isAbsolute();
@@ -203,7 +203,7 @@ public abstract class AbstractDir implements DirInterface {
    *
    * @throws CommandAbstractException
    */
-  protected String consolidatePath(final String path)
+  protected final String consolidatePath(final String path)
       throws CommandAbstractException {
     if (ParametersChecker.isEmpty(path)) {
       throw new Reply501Exception("Path must not be empty");
@@ -226,7 +226,7 @@ public abstract class AbstractDir implements DirInterface {
    *
    * @return the canonicalPath
    */
-  protected String getCanonicalPath(final File dir) {
+  protected final String getCanonicalPath(final File dir) {
     if (ISUNIX) {
       // resolve it without getting symbolic links
       final StringBuilder builder = new StringBuilder();
@@ -284,7 +284,7 @@ public abstract class AbstractDir implements DirInterface {
    *
    * @throws CommandAbstractException
    */
-  protected String validatePath(final File dir)
+  protected final String validatePath(final File dir)
       throws CommandAbstractException {
     String extDir;
     extDir = normalizePath(getCanonicalPath(dir));
@@ -298,7 +298,7 @@ public abstract class AbstractDir implements DirInterface {
   }
 
   @Override
-  public boolean isPathInCurrentDir(final String path) {
+  public final boolean isPathInCurrentDir(final String path) {
     final String extDir;
     if (isAbsolute(path)) {
       extDir = path;
@@ -326,7 +326,7 @@ public abstract class AbstractDir implements DirInterface {
    *
    * @throws CommandAbstractException
    */
-  protected boolean isPathInCurrentDir(final File dir) {
+  protected final boolean isPathInCurrentDir(final File dir) {
     String extDir;
     extDir = normalizePath(getCanonicalPath(dir));
     // Get the relative business path
@@ -360,12 +360,12 @@ public abstract class AbstractDir implements DirInterface {
       throws CommandAbstractException;
 
   @Override
-  public String getPwd() {
+  public final String getPwd() {
     return currentDir;
   }
 
   @Override
-  public boolean changeParentDirectory() throws CommandAbstractException {
+  public final boolean changeParentDirectory() throws CommandAbstractException {
     return changeDirectory("..");
   }
 
@@ -384,24 +384,24 @@ public abstract class AbstractDir implements DirInterface {
   }
 
   @Override
-  public void checkIdentify() throws Reply530Exception {
+  public final void checkIdentify() throws Reply530Exception {
     if (!getSession().getAuth().isIdentified()) {
       throw new Reply530Exception("User not authentified");
     }
   }
 
   @Override
-  public void clear() {
+  public final void clear() {
     currentDir = null;
   }
 
   @Override
-  public void initAfterIdentification() {
+  public final void initAfterIdentification() {
     currentDir = getSession().getAuth().getBusinessPath();
   }
 
   @Override
-  public OptsMLSxInterface getOptsMLSx() {
+  public final OptsMLSxInterface getOptsMLSx() {
     return optsMLSx;
   }
 

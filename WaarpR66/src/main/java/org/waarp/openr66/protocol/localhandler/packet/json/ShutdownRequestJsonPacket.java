@@ -31,19 +31,19 @@ public class ShutdownRequestJsonPacket extends JsonPacket {
   /**
    * @return the rank
    */
-  public int getRank() {
+  public final int getRank() {
     return rank;
   }
 
   /**
    * @param rank the rank to set
    */
-  public void setRank(final int rank) {
+  public final void setRank(final int rank) {
     this.rank = rank;
   }
 
   @Override
-  public void setRequestUserPacket() {
+  public final void setRequestUserPacket() {
     setRequestUserPacket(LocalPacketFactory.SHUTDOWNPACKET);
   }
 }

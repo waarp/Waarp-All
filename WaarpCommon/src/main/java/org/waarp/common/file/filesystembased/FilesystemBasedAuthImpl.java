@@ -76,7 +76,7 @@ public abstract class FilesystemBasedAuthImpl implements AuthInterface {
    * @return the session
    */
   @Override
-  public SessionInterface getSession() {
+  public final SessionInterface getSession() {
     return session;
   }
 
@@ -112,7 +112,7 @@ public abstract class FilesystemBasedAuthImpl implements AuthInterface {
    *     authentication
    */
   @Override
-  public NextCommandReply setUser(final String user)
+  public final NextCommandReply setUser(final String user)
       throws Reply421Exception, Reply530Exception {
     final NextCommandReply next = setBusinessUser(user);
     this.user = user;
@@ -127,7 +127,7 @@ public abstract class FilesystemBasedAuthImpl implements AuthInterface {
    * @return the user
    */
   @Override
-  public String getUser() {
+  public final String getUser() {
     return user;
   }
 
@@ -163,7 +163,7 @@ public abstract class FilesystemBasedAuthImpl implements AuthInterface {
    *     authentication
    */
   @Override
-  public NextCommandReply setPassword(final String password)
+  public final NextCommandReply setPassword(final String password)
       throws Reply421Exception, Reply530Exception {
     final NextCommandReply next = setBusinessPassword(password);
     this.password = password;
@@ -179,7 +179,7 @@ public abstract class FilesystemBasedAuthImpl implements AuthInterface {
    *
    * @param isIdentified
    */
-  protected void setIsIdentified(final boolean isIdentified) {
+  protected final void setIsIdentified(final boolean isIdentified) {
     this.isIdentified = isIdentified;
   }
 
@@ -195,7 +195,7 @@ public abstract class FilesystemBasedAuthImpl implements AuthInterface {
    * @return True if the user has a positive login, else False
    */
   @Override
-  public boolean isIdentified() {
+  public final boolean isIdentified() {
     return isIdentified;
   }
 
@@ -225,7 +225,7 @@ public abstract class FilesystemBasedAuthImpl implements AuthInterface {
   }
 
   @Override
-  public String getBusinessPath() {
+  public final String getBusinessPath() {
     return rootFromAuth;
   }
 
@@ -254,12 +254,12 @@ public abstract class FilesystemBasedAuthImpl implements AuthInterface {
    *
    * @return the full path as a String
    */
-  public String getAbsolutePath(final String path) {
+  public final String getAbsolutePath(final String path) {
     if (ParametersChecker.isEmpty(path)) {
       return getBaseDirectory();
     }
-    return AbstractDir
-        .normalizePath(getBaseDirectory() + DirInterface.SEPARATOR + path);
+    return AbstractDir.normalizePath(
+        getBaseDirectory() + DirInterface.SEPARATOR + path);
   }
 
   /**
@@ -270,10 +270,10 @@ public abstract class FilesystemBasedAuthImpl implements AuthInterface {
    * @return the relative path from a file
    */
   @Override
-  public String getRelativePath(final String file) {
+  public final String getRelativePath(final String file) {
     // Work around Windows path '\'
     return DOUBLE_SLASH.matcher(
-        file.replaceFirst(AbstractDir.normalizePath(getBaseDirectory()), ""))
+                           file.replaceFirst(AbstractDir.normalizePath(getBaseDirectory()), ""))
                        .replaceAll("/");
   }
 }

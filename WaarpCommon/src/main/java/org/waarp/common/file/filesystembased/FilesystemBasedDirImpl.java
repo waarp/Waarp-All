@@ -139,7 +139,7 @@ public abstract class FilesystemBasedDirImpl extends AbstractDir {
    * @throws CommandAbstractException
    */
   @Override
-  protected List<String> wildcardFiles(final String pathWithWildcard)
+  protected final List<String> wildcardFiles(final String pathWithWildcard)
       throws CommandAbstractException {
     final List<String> resultPaths = new ArrayList<String>();
     // First check if pathWithWildcard contains wildcards
@@ -224,14 +224,15 @@ public abstract class FilesystemBasedDirImpl extends AbstractDir {
    *
    * @throws CommandAbstractException
    */
-  protected File getFileFromPath(final String path)
+  protected final File getFileFromPath(final String path)
       throws CommandAbstractException {
     final String newdir = validatePath(path);
     if (isAbsolute(newdir)) {
       return new File(newdir);
     }
-    final String truedir = ((FilesystemBasedAuthImpl) getSession().getAuth())
-        .getAbsolutePath(newdir);
+    final String truedir =
+        ((FilesystemBasedAuthImpl) getSession().getAuth()).getAbsolutePath(
+            newdir);
     return new File(truedir);
   }
 
@@ -244,7 +245,7 @@ public abstract class FilesystemBasedDirImpl extends AbstractDir {
    *
    * @throws CommandAbstractException
    */
-  protected File getTrueFile(final String path)
+  protected final File getTrueFile(final String path)
       throws CommandAbstractException {
     checkIdentify();
     final String newpath = consolidatePath(path);
@@ -269,13 +270,13 @@ public abstract class FilesystemBasedDirImpl extends AbstractDir {
    *
    * @return the relative path
    */
-  protected String getRelativePath(final File file) {
+  protected final String getRelativePath(final File file) {
     return getSession().getAuth()
                        .getRelativePath(normalizePath(file.getAbsolutePath()));
   }
 
   @Override
-  public boolean changeDirectory(final String path)
+  public final boolean changeDirectory(final String path)
       throws CommandAbstractException {
     checkIdentify();
     final String newpath = consolidatePath(path);
@@ -295,7 +296,7 @@ public abstract class FilesystemBasedDirImpl extends AbstractDir {
   }
 
   @Override
-  public boolean changeDirectoryNotChecked(final String path)
+  public final boolean changeDirectoryNotChecked(final String path)
       throws CommandAbstractException {
     checkIdentify();
     final String newpath = consolidatePath(path);
@@ -312,7 +313,8 @@ public abstract class FilesystemBasedDirImpl extends AbstractDir {
   }
 
   @Override
-  public String mkdir(final String directory) throws CommandAbstractException {
+  public final String mkdir(final String directory)
+      throws CommandAbstractException {
     checkIdentify();
     final String newdirectory = consolidatePath(directory);
     final File dir = new File(newdirectory);
@@ -332,7 +334,8 @@ public abstract class FilesystemBasedDirImpl extends AbstractDir {
   }
 
   @Override
-  public String rmdir(final String directory) throws CommandAbstractException {
+  public final String rmdir(final String directory)
+      throws CommandAbstractException {
     checkIdentify();
     final String newdirectory = consolidatePath(directory);
     final List<String> paths = wildcardFiles(normalizePath(newdirectory));
@@ -350,7 +353,7 @@ public abstract class FilesystemBasedDirImpl extends AbstractDir {
   }
 
   @Override
-  public boolean isDirectory(final String path)
+  public final boolean isDirectory(final String path)
       throws CommandAbstractException {
     checkIdentify();
     final File dir = getFileFromPath(path);
@@ -358,13 +361,14 @@ public abstract class FilesystemBasedDirImpl extends AbstractDir {
   }
 
   @Override
-  public boolean isFile(final String path) throws CommandAbstractException {
+  public final boolean isFile(final String path)
+      throws CommandAbstractException {
     checkIdentify();
     return getFileFromPath(path).isFile();
   }
 
   @Override
-  public String getModificationTime(final String path)
+  public final String getModificationTime(final String path)
       throws CommandAbstractException {
     checkIdentify();
     final File file = getFileFromPath(path);
@@ -381,7 +385,7 @@ public abstract class FilesystemBasedDirImpl extends AbstractDir {
    *
    * @return the Modification time as a String YYYYMMDDHHMMSS.sss
    */
-  protected String getModificationTime(final File file) {
+  protected final String getModificationTime(final File file) {
     final long mstime = file.lastModified();
     final Calendar calendar = Calendar.getInstance();
     calendar.setTimeInMillis(mstime);
@@ -425,7 +429,8 @@ public abstract class FilesystemBasedDirImpl extends AbstractDir {
   }
 
   @Override
-  public List<String> list(final String path) throws CommandAbstractException {
+  public final List<String> list(final String path)
+      throws CommandAbstractException {
     checkIdentify();
     // First get all base directories
     String newpath = path;
@@ -467,7 +472,7 @@ public abstract class FilesystemBasedDirImpl extends AbstractDir {
   }
 
   @Override
-  public List<String> listFull(final String path, final boolean lsFormat)
+  public final List<String> listFull(final String path, final boolean lsFormat)
       throws CommandAbstractException {
     checkIdentify();
     boolean listAllFiles = false;
@@ -525,7 +530,7 @@ public abstract class FilesystemBasedDirImpl extends AbstractDir {
   }
 
   @Override
-  public String fileFull(final String path, final boolean lsFormat)
+  public final String fileFull(final String path, final boolean lsFormat)
       throws CommandAbstractException {
     checkIdentify();
     final String newpath = consolidatePath(path);
@@ -550,7 +555,7 @@ public abstract class FilesystemBasedDirImpl extends AbstractDir {
    *
    * @return True if Full Time, False is Default (as in 'ls' command)
    */
-  protected boolean isFullTime() {
+  protected final boolean isFullTime() {
     return false;
   }
 
@@ -559,7 +564,7 @@ public abstract class FilesystemBasedDirImpl extends AbstractDir {
    *
    * @return the ls format information
    */
-  protected String lsInfo(final File file) {
+  protected final String lsInfo(final File file) {
     // Unix FileInterface type,permissions,hard
     // link(?),owner(?),group(?),size,date
     // and filename
@@ -595,8 +600,10 @@ public abstract class FilesystemBasedDirImpl extends AbstractDir {
     } else {
       fmt = "MMM dd HH:mm";
     }
-    final SimpleDateFormat dateFormat = (SimpleDateFormat) DateFormat
-        .getDateTimeInstance(DateFormat.LONG, DateFormat.LONG, Locale.ENGLISH);
+    final SimpleDateFormat dateFormat =
+        (SimpleDateFormat) DateFormat.getDateTimeInstance(DateFormat.LONG,
+                                                          DateFormat.LONG,
+                                                          Locale.ENGLISH);
     dateFormat.applyPattern(fmt);
     builder.append(dateFormat.format(new Date(lastmod)))// date
            .append('\t').append(file.getName());
@@ -608,7 +615,7 @@ public abstract class FilesystemBasedDirImpl extends AbstractDir {
    *
    * @return the MLSx information: ' Fact=facts;...; filename'
    */
-  protected String mlsxInfo(final File file) {
+  protected final String mlsxInfo(final File file) {
     // don't have create, unique, lang, media-type, charset
     final StringBuilder builder = new StringBuilder(" ");
     if (getOptsMLSx().getOptsSize() == 1) {
@@ -671,7 +678,7 @@ public abstract class FilesystemBasedDirImpl extends AbstractDir {
   }
 
   @Override
-  public long getFreeSpace() throws CommandAbstractException {
+  public final long getFreeSpace() throws CommandAbstractException {
     checkIdentify();
     final File directory = getFileFromPath(currentDir);
     if (filesystemBasedFtpDirJdk != null) {
@@ -697,26 +704,26 @@ public abstract class FilesystemBasedDirImpl extends AbstractDir {
   }
 
   @Override
-  public boolean canRead() throws CommandAbstractException {
+  public final boolean canRead() throws CommandAbstractException {
     checkIdentify();
     return getFileFromPath(currentDir).canRead();
   }
 
   @Override
-  public boolean canWrite() throws CommandAbstractException {
+  public final boolean canWrite() throws CommandAbstractException {
     checkIdentify();
     final File file = getFileFromPath(currentDir);
     return file.canWrite();
   }
 
   @Override
-  public boolean exists() throws CommandAbstractException {
+  public final boolean exists() throws CommandAbstractException {
     checkIdentify();
     return getFileFromPath(currentDir).exists();
   }
 
   @Override
-  public long getCRC(final String path) throws CommandAbstractException {
+  public final long getCRC(final String path) throws CommandAbstractException {
     final File file = getTrueFile(path);
     FileInputStream fis = null;
     CheckedInputStream cis = null;
@@ -742,17 +749,19 @@ public abstract class FilesystemBasedDirImpl extends AbstractDir {
   }
 
   @Override
-  public byte[] getMD5(final String path) throws CommandAbstractException {
+  public final byte[] getMD5(final String path)
+      throws CommandAbstractException {
     return getDigest(path, DigestAlgo.MD5.name());
   }
 
   @Override
-  public byte[] getSHA1(final String path) throws CommandAbstractException {
+  public final byte[] getSHA1(final String path)
+      throws CommandAbstractException {
     return getDigest(path, DigestAlgo.SHA1.name());
   }
 
   @Override
-  public byte[] getDigest(final String path, final String algo)
+  public final byte[] getDigest(final String path, final String algo)
       throws CommandAbstractException {
     final DigestAlgo digestAlgo;
     try {
@@ -762,8 +771,9 @@ public abstract class FilesystemBasedDirImpl extends AbstractDir {
     }
     final File file = getTrueFile(path);
     try {
-      return FilesystemBasedDigest
-          .getHash(file, FilesystemBasedFileParameterImpl.useNio, digestAlgo);
+      return FilesystemBasedDigest.getHash(file,
+                                           FilesystemBasedFileParameterImpl.useNio,
+                                           digestAlgo);
     } catch (final IOException e1) {
       throw new Reply550Exception(ERROR_WHILE_READING_FILE + path);
     }

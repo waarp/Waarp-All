@@ -111,7 +111,7 @@ class FtpDataStructureCodec
   /**
    * @param structure the structure to set
    */
-  public void setStructure(final TransferStructure structure) {
+  public final void setStructure(final TransferStructure structure) {
     this.structure = structure;
   }
 

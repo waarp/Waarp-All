@@ -263,8 +263,8 @@ public final class RuleFileBasedConfiguration {
   public static String[] getHostIds(final XmlValue value) {
     String[] idsArray = STRING_0_LENGTH;
     if (value == null || value.getList() == null || value.getList().isEmpty()) {
-      logger
-          .debug("Unable to find the Hostid for Rule, setting to the default");
+      logger.debug(
+          "Unable to find the Hostid for Rule, setting to the default");
     } else {
       @SuppressWarnings("unchecked")
       final List<String> ids = (List<String>) value.getList();

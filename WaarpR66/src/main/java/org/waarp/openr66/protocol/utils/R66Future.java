@@ -51,19 +51,19 @@ public class R66Future extends WaarpFuture {
   /**
    * @return the result
    */
-  public R66Result getResult() {
+  public final R66Result getResult() {
     return result;
   }
 
   /**
    * @param result the result to set
    */
-  public void setResult(final R66Result result) {
+  public final void setResult(final R66Result result) {
     this.result = result;
   }
 
   @Override
-  public String toString() {
+  public final String toString() {
     return "Future: " + isDone() + ' ' + isSuccess() + ' ' +
            (getCause() != null? getCause().getMessage() : "no cause") + ' ' +
            (result != null? result.toString() : "no result");
@@ -72,28 +72,28 @@ public class R66Future extends WaarpFuture {
   /**
    * @return the runner
    */
-  public DbTaskRunner getRunner() {
+  public final DbTaskRunner getRunner() {
     return runner;
   }
 
   /**
    * @param runner the runner to set
    */
-  public void setRunner(final DbTaskRunner runner) {
+  public final void setRunner(final DbTaskRunner runner) {
     this.runner = runner;
   }
 
   /**
    * @return the filesize
    */
-  public long getFilesize() {
+  public final long getFilesize() {
     return filesize;
   }
 
   /**
    * @param filesize the filesize to set
    */
-  public void setFilesize(final long filesize) {
+  public final void setFilesize(final long filesize) {
     this.filesize = filesize;
   }
 }

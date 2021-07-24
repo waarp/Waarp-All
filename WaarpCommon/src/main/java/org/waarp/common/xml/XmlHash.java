@@ -61,11 +61,11 @@ public class XmlHash {
     }
   }
 
-  public XmlValue get(final String name) {
+  public final XmlValue get(final String name) {
     return hashtable.get(name);
   }
 
-  public XmlValue put(final XmlValue value) {
+  public final XmlValue put(final XmlValue value) {
     if (value.isMultiple()) {
       return hashtable.put(value.getName(), value);
     } else if (value.isSubXml()) {
@@ -83,43 +83,43 @@ public class XmlHash {
     }
   }
 
-  public int size() {
+  public final int size() {
     return hashtable.size();
   }
 
-  public boolean isEmpty() {
+  public final boolean isEmpty() {
     return hashtable.isEmpty();
   }
 
-  public Enumeration<String> keys() {
+  public final Enumeration<String> keys() {
     return hashtable.keys();
   }
 
-  public Enumeration<XmlValue> elements() {
+  public final Enumeration<XmlValue> elements() {
     return hashtable.elements();
   }
 
-  public boolean contains(final XmlValue value) {
+  public final boolean contains(final XmlValue value) {
     return hashtable.contains(value);
   }
 
-  public boolean containsValue(final XmlValue value) {
+  public final boolean containsValue(final XmlValue value) {
     return hashtable.containsValue(value);
   }
 
-  public boolean containsKey(final String key) {
+  public final boolean containsKey(final String key) {
     return hashtable.containsKey(key);
   }
 
-  public XmlValue remove(final String key) {
+  public final XmlValue remove(final String key) {
     return hashtable.remove(key);
   }
 
-  public void clear() {
+  public final void clear() {
     hashtable.clear();
   }
 
-  public Set<String> keySet() {
+  public final Set<String> keySet() {
     return hashtable.keySet();
   }
 

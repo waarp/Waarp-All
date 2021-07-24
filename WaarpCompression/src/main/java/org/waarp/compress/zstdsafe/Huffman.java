@@ -96,8 +96,9 @@ class Huffman {
       input += reader.readFseTable(fseTable, inputBase, input, inputLimit,
                                    FiniteStateEntropy.MAX_SYMBOL,
                                    MAX_FSE_TABLE_LOG);
-      outputSize = FiniteStateEntropy
-          .decompress(fseTable, inputBase, input, inputLimit, weights);
+      outputSize =
+          FiniteStateEntropy.decompress(fseTable, inputBase, input, inputLimit,
+                                        weights);
     }
 
     int totalWeight = 0;

@@ -55,14 +55,14 @@ public class ExecTask extends AbstractExecTask {
   }
 
   @Override
-  public void run() {
+  public final void run() {
     /*
      * First apply all replacements and format to argRule from context and argTransfer. Will call exec (from first
      * element of resulting string) with arguments as the following value from the replacements. Return 0 if OK,
      * else 1 for a warning else as an error. No change should be done in the FILENAME
      */
-    logger
-        .debug("Exec with " + argRule + ':' + argTransfer + " and {}", session);
+    logger.debug("Exec with " + argRule + ':' + argTransfer + " and {}",
+                 session);
     final String finalname = applyTransferSubstitutions(argRule);
 
     // Check if the execution will be done through LocalExec daemon
@@ -77,7 +77,8 @@ public class ExecTask extends AbstractExecTask {
     }
 
     final PrepareCommandExec prepareCommandExec =
-        new PrepareCommandExec(this, finalname, true, waitForValidation).invoke();
+        new PrepareCommandExec(this, finalname, true,
+                               waitForValidation).invoke();
     if (prepareCommandExec.isError()) {
       return;
     }
@@ -129,8 +130,9 @@ public class ExecTask extends AbstractExecTask {
   }
 
   @Override
-  void finalizeFromError(final Runnable threadReader, final int status,
-                         final CommandLine commandLine, final Exception e) {
+  final void finalizeFromError(final Runnable threadReader, final int status,
+                               final CommandLine commandLine,
+                               final Exception e) {
     logger.error("Status: " + status + " Exec in error with " + commandLine +
                  " returns " + e.getMessage());
     if (waitForValidation) {

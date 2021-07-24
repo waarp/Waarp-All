@@ -117,8 +117,8 @@ public class ScenarioLoopBenchmarkMonitoringElasticsearchPostGreSqlIT
     httpHosts = new HttpHost[] {
         HttpHost.create(elasticsearchContainer.getHttpHostAddress())
     };
-    Configuration.configuration
-        .scheduleWithFixedDelay(monitorExporterTransfers, 1, TimeUnit.SECONDS);
+    Configuration.configuration.scheduleWithFixedDelay(monitorExporterTransfers,
+                                                       1, TimeUnit.SECONDS);
     ResourceLeakDetector.setLevel(Level.PARANOID);
   }
 

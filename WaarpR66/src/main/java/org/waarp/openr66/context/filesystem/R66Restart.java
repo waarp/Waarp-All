@@ -37,7 +37,7 @@ public class R66Restart extends FilesystemBasedRestartImpl {
   }
 
   @Override
-  public boolean restartMarker(final String marker)
+  public final boolean restartMarker(final String marker)
       throws CommandAbstractException {
     final long newposition;
     try {
@@ -56,7 +56,7 @@ public class R66Restart extends FilesystemBasedRestartImpl {
    *
    * @return True if OK
    */
-  public boolean restartMarker(final long newposition) {
+  public final boolean restartMarker(final long newposition) {
     position = newposition;
     setSet(true);
     return true;

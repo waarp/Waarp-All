@@ -170,7 +170,7 @@ public class MonitorExporterTransfers extends Thread implements Closeable {
                                   final EventLoopGroup group) {
     try {
       ParametersChecker.checkSanityString(remoteBaseUrl, endpoint);
-    } catch (InvalidArgumentException e) {
+    } catch (final InvalidArgumentException e) {
       throw new IllegalArgumentException(e);
     }
     if (ParametersChecker.isEmpty(remoteBaseUrl)) {
@@ -191,8 +191,8 @@ public class MonitorExporterTransfers extends Thread implements Closeable {
       logger.error(e.getMessage());
     }
     if (temp == null) {
-      DbHostConfiguration
-          .getLastDateTimeMonitoring(Configuration.configuration.getHostId());
+      DbHostConfiguration.getLastDateTimeMonitoring(
+          Configuration.configuration.getHostId());
       try {
         temp = new DbHostConfiguration(Configuration.configuration.getHostId());
       } catch (final WaarpDatabaseException e) {//NOSONAR
@@ -251,7 +251,7 @@ public class MonitorExporterTransfers extends Thread implements Closeable {
                                   final boolean compression) {
     try {
       ParametersChecker.checkSanityString(remoteBaseUrl, index);
-    } catch (InvalidArgumentException e) {
+    } catch (final InvalidArgumentException e) {
       throw new IllegalArgumentException(e);
     }
     if (ParametersChecker.isEmpty(remoteBaseUrl, index)) {
@@ -296,8 +296,8 @@ public class MonitorExporterTransfers extends Thread implements Closeable {
       logger.error(e.getMessage());
     }
     if (temp == null) {
-      DbHostConfiguration
-          .getLastDateTimeMonitoring(Configuration.configuration.getHostId());
+      DbHostConfiguration.getLastDateTimeMonitoring(
+          Configuration.configuration.getHostId());
       try {
         temp = new DbHostConfiguration(Configuration.configuration.getHostId());
       } catch (final WaarpDatabaseException e) {//NOSONAR
@@ -317,7 +317,7 @@ public class MonitorExporterTransfers extends Thread implements Closeable {
     final Timestamp timestamp = new Timestamp(now.getMillis());
     logger.info("Start from {} to {}", lastDateTime, now);
     final TransferConverter.Order order = TransferConverter.Order.ascId;
-    final List<Filter> filters = new ArrayList<Filter>(3);
+    final List<Filter> filters = new ArrayList<Filter>(2);
     filters.add(DbTaskRunner.getOwnerFilter());
     if (lastTimestamp != null) {
       filters.add(new Filter(TRANSFER_STOP_FIELD, Filter.BETWEEN, lastTimestamp,
@@ -395,9 +395,9 @@ public class MonitorExporterTransfers extends Thread implements Closeable {
     logger.debug("Create Json {}", size);
     transferList.clear();
     if (asApiRest) {
-      if (httpMonitoringExporterClient
-          .post(monitoredTransfers, lastDateTime, now,
-                Configuration.configuration.getHostId())) {
+      if (httpMonitoringExporterClient.post(monitoredTransfers, lastDateTime,
+                                            now,
+                                            Configuration.configuration.getHostId())) {
         logger.info("Transferred from {} to {} = {}", lastDateTime, now, size);
         lastDateTime = now;
         lastTimestamp = timestamp;
@@ -406,9 +406,9 @@ public class MonitorExporterTransfers extends Thread implements Closeable {
         logger.error("Not Transferred from {} to {} = {}", lastDateTime, now,
                      size);
       }
-    } else if (elasticsearchMonitoringExporterClient
-        .post(monitoredTransfers, lastDateTime, now,
-              Configuration.configuration.getHostId())) {
+    } else if (elasticsearchMonitoringExporterClient.post(monitoredTransfers,
+                                                          lastDateTime, now,
+                                                          Configuration.configuration.getHostId())) {
       logger.info("ES Transferred from {} to {} = {}", lastDateTime, now, size);
       lastDateTime = now;
       lastTimestamp = timestamp;

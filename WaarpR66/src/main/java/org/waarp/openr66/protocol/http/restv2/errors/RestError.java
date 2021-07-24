@@ -80,7 +80,7 @@ public class RestError implements Serializable {
    *
    * @return the serialized RestError object
    */
-  public ObjectNode makeNode(final Locale lang) {
+  public final ObjectNode makeNode(final Locale lang) {
     final ResourceBundle bundle =
         ResourceBundle.getBundle("restmessages", lang);
     final String message =

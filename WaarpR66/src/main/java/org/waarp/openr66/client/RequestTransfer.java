@@ -112,8 +112,8 @@ public class RequestTransfer implements Runnable {
       logger.error(infoArgs);
       return false;
     }
-    if (!FileBasedConfiguration
-        .setClientConfigurationFromXml(Configuration.configuration, args[0])) {
+    if (!FileBasedConfiguration.setClientConfigurationFromXml(
+        Configuration.configuration, args[0])) {
       logger.error(
           Messages.getString("Configuration.NeedCorrectConfig")); //$NON-NLS-1$
       return false;
@@ -124,9 +124,9 @@ public class RequestTransfer implements Runnable {
         try {
           sspecialId = Long.parseLong(args[i]);
         } catch (final NumberFormatException e) {
-          logger
-              .error(Messages.getString("RequestTransfer.1") + args[i] + ": {}",
-                     e.getMessage()); //$NON-NLS-1$
+          logger.error(
+              Messages.getString("RequestTransfer.1") + args[i] + ": {}",
+              e.getMessage()); //$NON-NLS-1$
           return false;
         }
       } else if ("-to".equalsIgnoreCase(args[i])) {
@@ -299,8 +299,8 @@ public class RequestTransfer implements Runnable {
               return;
             }
           } catch (final OpenR66ProtocolBusinessException e1) {
-            logger
-                .error(Messages.getString("RequestTransfer.18")); //$NON-NLS-1$
+            logger.error(
+                Messages.getString("RequestTransfer.18")); //$NON-NLS-1$
             future.setResult(
                 new R66Result(new OpenR66DatabaseGlobalException(e1), null,
                               true, ErrorCode.Internal, null));
@@ -339,9 +339,9 @@ public class RequestTransfer implements Runnable {
                 future.setSuccess();
                 break;
               case TransferOk:
-                logger
-                    .info("Transfer cancel requested but already finished: {}",
-                          runner);
+                logger.info(
+                    "Transfer cancel requested but already finished: {}",
+                    runner);
                 future.setSuccess();
                 break;
               default:
@@ -395,8 +395,8 @@ public class RequestTransfer implements Runnable {
               future.setSuccess();
               break;
             case PreProcessingOk:
-              logger
-                  .info("Transfer restart requested and restarted: {}", runner);
+              logger.info("Transfer restart requested and restarted: {}",
+                          runner);
               future.setSuccess();
               break;
             case CompleteOk:
@@ -568,13 +568,13 @@ public class RequestTransfer implements Runnable {
       }
     }
     localChannelReference.sessionNewState(R66FiniteDualStates.VALIDOTHER);
-    if (AbstractTransfer
-        .sendValidPacket(host, localChannelReference, packet, future)) {
+    if (AbstractTransfer.sendValidPacket(host, localChannelReference, packet,
+                                         future)) {
       return ErrorCode.Internal;
     }
 
-    logger
-        .info("Request done with " + (future.isSuccess()? "success" : "error"));
+    logger.info(
+        "Request done with " + (future.isSuccess()? "success" : "error"));
     final R66Result result = future.getResult();
     if (result != null) {
       return result.getCode();
@@ -618,13 +618,13 @@ public class RequestTransfer implements Runnable {
                                code);
     }
     localChannelReference.sessionNewState(R66FiniteDualStates.VALIDOTHER);
-    if (!AbstractTransfer
-        .sendValidPacket(host, localChannelReference, packet, future)) {
+    if (!AbstractTransfer.sendValidPacket(host, localChannelReference, packet,
+                                          future)) {
       return ErrorCode.Internal;
     }
 
-    logger
-        .info("Request done with " + (future.isSuccess()? "success" : "error"));
+    logger.info(
+        "Request done with " + (future.isSuccess()? "success" : "error"));
     final R66Result result = future.getResult();
     if (result != null) {
       return result.getCode();
@@ -636,8 +636,8 @@ public class RequestTransfer implements Runnable {
    * @param args
    */
   public static void main(final String[] args) {
-    WaarpLoggerFactory
-        .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));
+    WaarpLoggerFactory.setDefaultFactoryIfNotSame(
+        new WaarpSlf4JLoggerFactory(null));
     if (logger == null) {
       logger = WaarpLoggerFactory.getLogger(RequestTransfer.class);
     }
@@ -680,8 +680,8 @@ public class RequestTransfer implements Runnable {
         value = 0;
         // Only request
         outputFormat.setValue(FIELDS.status.name(), value);
-        outputFormat.setValue(FIELDS.statusTxt.name(), Messages
-            .getString("RequestTransfer.83")); //$NON-NLS-1$
+        outputFormat.setValue(FIELDS.statusTxt.name(), Messages.getString(
+            "RequestTransfer.83")); //$NON-NLS-1$
         outputFormat.setValue(FIELDS.remote.name(), rhost);
         if (result.isDone()) {
           outputFormat.setValueString(result.getRunner().getJson());
@@ -714,8 +714,8 @@ public class RequestTransfer implements Runnable {
       case QueryStillRunning:
         value = 0;
         outputFormat.setValue(FIELDS.status.name(), value);
-        outputFormat.setValue(FIELDS.statusTxt.name(), Messages
-            .getString("RequestTransfer.76")); //$NON-NLS-1$
+        outputFormat.setValue(FIELDS.statusTxt.name(), Messages.getString(
+            "RequestTransfer.76")); //$NON-NLS-1$
         outputFormat.setValue(FIELDS.remote.name(), rhost);
         outputFormat.setValueString(result.getRunner().getJson());
         logger.warn(outputFormat.loggerOut());
@@ -726,8 +726,8 @@ public class RequestTransfer implements Runnable {
       case Running:
         value = 0;
         outputFormat.setValue(FIELDS.status.name(), value);
-        outputFormat.setValue(FIELDS.statusTxt.name(), Messages
-            .getString("RequestTransfer.77")); //$NON-NLS-1$
+        outputFormat.setValue(FIELDS.statusTxt.name(), Messages.getString(
+            "RequestTransfer.77")); //$NON-NLS-1$
         outputFormat.setValue(FIELDS.remote.name(), rhost);
         outputFormat.setValueString(result.getRunner().getJson());
         logger.warn(outputFormat.loggerOut());
@@ -738,8 +738,8 @@ public class RequestTransfer implements Runnable {
       case PreProcessingOk:
         value = 0;
         outputFormat.setValue(FIELDS.status.name(), value);
-        outputFormat.setValue(FIELDS.statusTxt.name(), Messages
-            .getString("RequestTransfer.78")); //$NON-NLS-1$
+        outputFormat.setValue(FIELDS.statusTxt.name(), Messages.getString(
+            "RequestTransfer.78")); //$NON-NLS-1$
         outputFormat.setValue(FIELDS.remote.name(), rhost);
         outputFormat.setValueString(result.getRunner().getJson());
         if (requestTransfer.normalInfoAsWarn) {
@@ -754,8 +754,8 @@ public class RequestTransfer implements Runnable {
       case CompleteOk:
         value = 4;
         outputFormat.setValue(FIELDS.status.name(), value);
-        outputFormat.setValue(FIELDS.statusTxt.name(), Messages
-            .getString("RequestTransfer.79")); //$NON-NLS-1$
+        outputFormat.setValue(FIELDS.statusTxt.name(), Messages.getString(
+            "RequestTransfer.79")); //$NON-NLS-1$
         outputFormat.setValue(FIELDS.remote.name(), rhost);
         outputFormat.setValueString(result.getRunner().getJson());
         logger.warn(outputFormat.loggerOut());
@@ -766,8 +766,8 @@ public class RequestTransfer implements Runnable {
       case RemoteError:
         value = 5;
         outputFormat.setValue(FIELDS.status.name(), value);
-        outputFormat.setValue(FIELDS.statusTxt.name(), Messages
-            .getString("RequestTransfer.80")); //$NON-NLS-1$
+        outputFormat.setValue(FIELDS.statusTxt.name(), Messages.getString(
+            "RequestTransfer.80")); //$NON-NLS-1$
         outputFormat.setValue(FIELDS.remote.name(), rhost);
         outputFormat.setValueString(result.getRunner().getJson());
         logger.warn(outputFormat.loggerOut());
@@ -778,8 +778,8 @@ public class RequestTransfer implements Runnable {
       case PassThroughMode:
         value = 6;
         outputFormat.setValue(FIELDS.status.name(), value);
-        outputFormat.setValue(FIELDS.statusTxt.name(), Messages
-            .getString("RequestTransfer.81")); //$NON-NLS-1$
+        outputFormat.setValue(FIELDS.statusTxt.name(), Messages.getString(
+            "RequestTransfer.81")); //$NON-NLS-1$
         outputFormat.setValue(FIELDS.remote.name(), rhost);
         outputFormat.setValueString(result.getRunner().getJson());
         logger.warn(outputFormat.loggerOut());
@@ -790,13 +790,13 @@ public class RequestTransfer implements Runnable {
       default:
         value = 3;
         outputFormat.setValue(FIELDS.status.name(), value);
-        outputFormat.setValue(FIELDS.statusTxt.name(), Messages
-            .getString("RequestTransfer.82")); //$NON-NLS-1$
+        outputFormat.setValue(FIELDS.statusTxt.name(), Messages.getString(
+            "RequestTransfer.82")); //$NON-NLS-1$
         outputFormat.setValue(FIELDS.remote.name(), rhost);
         outputFormat.setValueString(result.getRunner().getJson());
         if (result.getCause() != null) {
-          outputFormat
-              .setValue(FIELDS.error.name(), result.getCause().getMessage());
+          outputFormat.setValue(FIELDS.error.name(),
+                                result.getCause().getMessage());
         }
         logger.warn(outputFormat.loggerOut());
         if (!OutputFormat.isQuiet()) {
@@ -816,8 +816,8 @@ public class RequestTransfer implements Runnable {
       case CompleteOk:
         value = 0;
         outputFormat.setValue(FIELDS.status.name(), value);
-        outputFormat.setValue(FIELDS.statusTxt.name(), Messages
-            .getString("RequestTransfer.73")); //$NON-NLS-1$
+        outputFormat.setValue(FIELDS.statusTxt.name(), Messages.getString(
+            "RequestTransfer.73")); //$NON-NLS-1$
         outputFormat.setValue(FIELDS.remote.name(), rhost);
         outputFormat.setValueString(result.getRunner().getJson());
         if (requestTransfer.normalInfoAsWarn) {
@@ -832,8 +832,8 @@ public class RequestTransfer implements Runnable {
       case TransferOk:
         value = 0;
         outputFormat.setValue(FIELDS.status.name(), value);
-        outputFormat.setValue(FIELDS.statusTxt.name(), Messages
-            .getString("RequestTransfer.74")); //$NON-NLS-1$
+        outputFormat.setValue(FIELDS.statusTxt.name(), Messages.getString(
+            "RequestTransfer.74")); //$NON-NLS-1$
         outputFormat.setValue(FIELDS.remote.name(), rhost);
         outputFormat.setValueString(result.getRunner().getJson());
         logger.warn(outputFormat.loggerOut());
@@ -844,13 +844,13 @@ public class RequestTransfer implements Runnable {
       default:
         value = 3;
         outputFormat.setValue(FIELDS.status.name(), value);
-        outputFormat.setValue(FIELDS.statusTxt.name(), Messages
-            .getString("RequestTransfer.75")); //$NON-NLS-1$
+        outputFormat.setValue(FIELDS.statusTxt.name(), Messages.getString(
+            "RequestTransfer.75")); //$NON-NLS-1$
         outputFormat.setValue(FIELDS.remote.name(), rhost);
         outputFormat.setValueString(result.getRunner().getJson());
         if (result.getCause() != null) {
-          outputFormat
-              .setValue(FIELDS.error.name(), result.getCause().getMessage());
+          outputFormat.setValue(FIELDS.error.name(),
+                                result.getCause().getMessage());
         }
         logger.warn(outputFormat.loggerOut());
         if (!OutputFormat.isQuiet()) {
@@ -869,8 +869,8 @@ public class RequestTransfer implements Runnable {
     if (result.isSuccess()) {
       value = 0;
       outputFormat.setValue(FIELDS.status.name(), value);
-      outputFormat.setValue(FIELDS.statusTxt.name(), Messages
-          .getString("RequestTransfer.21")); //$NON-NLS-1$
+      outputFormat.setValue(FIELDS.statusTxt.name(), Messages.getString(
+          "RequestTransfer.21")); //$NON-NLS-1$
       outputFormat.setValue(FIELDS.remote.name(), rhost);
       outputFormat.setValueString(result.getRunner().getJson());
       if (requestTransfer.normalInfoAsWarn) {
@@ -886,8 +886,8 @@ public class RequestTransfer implements Runnable {
         case CompleteOk:
           value = 0;
           outputFormat.setValue(FIELDS.status.name(), value);
-          outputFormat.setValue(FIELDS.statusTxt.name(), Messages
-              .getString("RequestTransfer.70")); //$NON-NLS-1$
+          outputFormat.setValue(FIELDS.statusTxt.name(), Messages.getString(
+              "RequestTransfer.70")); //$NON-NLS-1$
           outputFormat.setValue(FIELDS.remote.name(), rhost);
           outputFormat.setValueString(result.getRunner().getJson());
           logger.warn(outputFormat.loggerOut());
@@ -898,8 +898,8 @@ public class RequestTransfer implements Runnable {
         case TransferOk:
           value = 3;
           outputFormat.setValue(FIELDS.status.name(), value);
-          outputFormat.setValue(FIELDS.statusTxt.name(), Messages
-              .getString("RequestTransfer.71")); //$NON-NLS-1$
+          outputFormat.setValue(FIELDS.statusTxt.name(), Messages.getString(
+              "RequestTransfer.71")); //$NON-NLS-1$
           outputFormat.setValue(FIELDS.remote.name(), rhost);
           outputFormat.setValueString(result.getRunner().getJson());
           logger.warn(outputFormat.loggerOut());
@@ -910,13 +910,13 @@ public class RequestTransfer implements Runnable {
         default:
           value = 4;
           outputFormat.setValue(FIELDS.status.name(), value);
-          outputFormat.setValue(FIELDS.statusTxt.name(), Messages
-              .getString("RequestTransfer.72")); //$NON-NLS-1$
+          outputFormat.setValue(FIELDS.statusTxt.name(), Messages.getString(
+              "RequestTransfer.72")); //$NON-NLS-1$
           outputFormat.setValue(FIELDS.remote.name(), rhost);
           outputFormat.setValueString(result.getRunner().getJson());
           if (result.getCause() != null) {
-            outputFormat
-                .setValue(FIELDS.error.name(), result.getCause().getMessage());
+            outputFormat.setValue(FIELDS.error.name(),
+                                  result.getCause().getMessage());
           }
           logger.error(outputFormat.loggerOut());
           if (!OutputFormat.isQuiet()) {

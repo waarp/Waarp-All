@@ -65,7 +65,7 @@ public class LocalExecClientHandler
    * @param delay
    * @param command
    */
-  public void initExecClient(final long delay, final String command) {
+  public final void initExecClient(final long delay, final String command) {
     result = new LocalExecResult(LocalExecDefaultResult.NoStatus);
     back = new StringBuilder();
     firstMessage = true;
@@ -81,8 +81,8 @@ public class LocalExecClientHandler
       WaarpNettyUtil.awaitOrInterrupted(
           channel.writeAndFlush(this.delay + " " + this.command + '\n'));
     } else {
-      WaarpNettyUtil
-          .awaitOrInterrupted(channel.writeAndFlush(this.command + '\n'));
+      WaarpNettyUtil.awaitOrInterrupted(
+          channel.writeAndFlush(this.command + '\n'));
     }
   }
 
@@ -142,7 +142,7 @@ public class LocalExecClientHandler
    *
    * @return The LocalExecResult
    */
-  public LocalExecResult waitFor(final long delay) {
+  public final LocalExecResult waitFor(final long delay) {
     if (delay <= 0) {
       future.awaitOrInterruptible();
     } else {
@@ -155,7 +155,7 @@ public class LocalExecClientHandler
   /**
    * Action to do before close
    */
-  public void actionBeforeClose(final Channel channel) {
+  public final void actionBeforeClose(final Channel channel) {
     // here nothing to do
   }
 
@@ -170,8 +170,8 @@ public class LocalExecClientHandler
         result.setStatus(Integer.parseInt(mesg.substring(0, pos)));
       } catch (final NumberFormatException e1) {
         // Error
-        logger
-            .debug(command + ':' + "Bad Transmission: " + mesg + "\n\t" + back);
+        logger.debug(
+            command + ':' + "Bad Transmission: " + mesg + "\n\t" + back);
         result.set(LocalExecDefaultResult.BadTransmition);
         back.append(mesg);
         actionBeforeClose(ctx.channel());
@@ -206,8 +206,8 @@ public class LocalExecClientHandler
       firstMessage = false;
       result.set(LocalExecDefaultResult.BadTransmition);
       result.setException((Exception) cause);
-      back = new StringBuilder("Error in LocalExec: ")
-          .append(result.getException().getMessage()).append('\n');
+      back = new StringBuilder("Error in LocalExec: ").append(
+          result.getException().getMessage()).append('\n');
     } else {
       back.append("\nERROR while receiving answer: ");
       result.setException((Exception) cause);

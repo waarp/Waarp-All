@@ -148,8 +148,7 @@ public class LogExtendedExport implements Runnable {
     this.ruleDownload = ruleDownload;
     this.tryimport = ruleDownload != null && tryimport && !host.getHostid()
                                                                .equals(
-                                                                   Configuration.configuration
-                                                                       .getHostId()) &&
+                                                                   Configuration.configuration.getHostId()) &&
                      !host.getHostid()
                           .equals(Configuration.configuration.getHostSslId());
   }
@@ -253,8 +252,8 @@ public class LogExtendedExport implements Runnable {
           final DirectTransfer transfer =
               new DirectTransfer(futuretemp, host.getHostid(), fileExported,
                                  ruleToExport, "Get Exported Logs from " +
-                                               Configuration.configuration
-                                                   .getHostId(), false,
+                                               Configuration.configuration.getHostId(),
+                                 false,
                                  Configuration.configuration.getBlockSize(),
                                  ILLEGALVALUE, networkTransaction);
           transfer.run();
@@ -319,8 +318,8 @@ public class LogExtendedExport implements Runnable {
       logger.error(INFO_ARGS);
       return false;
     }
-    if (!FileBasedConfiguration
-        .setClientConfigurationFromXml(Configuration.configuration, args[0])) {
+    if (!FileBasedConfiguration.setClientConfigurationFromXml(
+        Configuration.configuration, args[0])) {
       logger.error(INFO_ARGS);
       return false;
     }
@@ -389,8 +388,8 @@ public class LogExtendedExport implements Runnable {
   }
 
   public static void main(final String[] args) {
-    WaarpLoggerFactory
-        .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));
+    WaarpLoggerFactory.setDefaultFactoryIfNotSame(
+        new WaarpSlf4JLoggerFactory(null));
     if (logger == null) {
       logger = WaarpLoggerFactory.getLogger(LogExtendedExport.class);
     }

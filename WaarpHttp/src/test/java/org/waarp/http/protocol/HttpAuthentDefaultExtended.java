@@ -23,11 +23,11 @@ package org.waarp.http.protocol;
 import org.waarp.http.protocol.servlet.HttpAuthentDefault;
 
 public class HttpAuthentDefaultExtended extends HttpAuthentDefault {
-  public void setUser(String user) {
+  public final void setUser(String user) {
     this.user = user;
   }
 
-  public void setKey(byte[] key) {
+  public final void setKey(byte[] key) {
     this.key = key;
   }
 }

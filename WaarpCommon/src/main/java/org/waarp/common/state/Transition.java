@@ -40,28 +40,28 @@ public class Transition<E extends Enum<E>> {
   /**
    * @return the state
    */
-  public E getState() {
+  public final E getState() {
     return state;
   }
 
   /**
    * @param state the state to set
    */
-  public void setState(final E state) {
+  public final void setState(final E state) {
     this.state = state;
   }
 
   /**
    * @return the set
    */
-  public EnumSet<E> getSet() {
+  public final EnumSet<E> getSet() {
     return set;
   }
 
   /**
    * @param set the set to set
    */
-  public void setSet(final EnumSet<E> set) {
+  public final void setSet(final EnumSet<E> set) {
     this.set = set;
   }
 }

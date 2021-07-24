@@ -78,8 +78,7 @@ public class NetworkSslServerInitializer
 
     pipeline.addLast(NetworkServerInitializer.TIMEOUT,
                      new IdleStateHandler(true, 0, 0,
-                                          Configuration.configuration
-                                              .getTimeoutCon(),
+                                          Configuration.configuration.getTimeoutCon(),
                                           TimeUnit.MILLISECONDS));
 
     // Global limitation
@@ -94,10 +93,8 @@ public class NetworkSslServerInitializer
     // Per channel limitation
     pipeline.addLast(NetworkServerInitializer.LIMITCHANNEL,
                      new ChannelTrafficShapingHandler(
-                         Configuration.configuration
-                             .getServerChannelWriteLimit(),
-                         Configuration.configuration
-                             .getServerChannelReadLimit(),
+                         Configuration.configuration.getServerChannelWriteLimit(),
+                         Configuration.configuration.getServerChannelReadLimit(),
                          Configuration.configuration.getDelayLimit(),
                          Configuration.configuration.getTimeoutCon()));
 

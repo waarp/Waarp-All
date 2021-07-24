@@ -120,6 +120,12 @@ public final class R66SystemProperties {
    */
   public static final String OPENR66_CACHE_TIMELIMIT =
       "openr66.cache.timelimit";
+  /**
+   * Test only: apply a NoOpRecvThroughHandler to each recv operation
+   * if rule is RecvThrough
+   */
+  public static final String OPENR66_JUNIT_RECV_THROUGH =
+      "openr66.junit.recvthrough";
 
   private R66SystemProperties() {
   }

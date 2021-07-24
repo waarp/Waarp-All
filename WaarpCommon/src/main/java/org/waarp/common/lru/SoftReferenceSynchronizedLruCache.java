@@ -43,8 +43,8 @@ public class SoftReferenceSynchronizedLruCache<K, V>
   }
 
   @Override
-  protected InterfaceLruCacheEntry<V> createEntry(final V value,
-                                                  final long ttl) {
+  protected final InterfaceLruCacheEntry<V> createEntry(final V value,
+                                                        final long ttl) {
     return new SoftReferenceCacheEntry<V>(value, ttl);
   }
 }

@@ -60,13 +60,13 @@ public class StartupPacket extends AbstractLocalPacket {
   }
 
   @Override
-  public boolean hasGlobalBuffer() {
+  public final boolean hasGlobalBuffer() {
     return true;
   }
 
   @Override
-  public void createAllBuffers(final LocalChannelReference lcr,
-                               final int networkHeader) {
+  public final void createAllBuffers(final LocalChannelReference lcr,
+                                     final int networkHeader) {
     final int headerSize = 4;
     final int middleSize = 1;
     final int endSize = 0;
@@ -83,23 +83,23 @@ public class StartupPacket extends AbstractLocalPacket {
   }
 
   @Override
-  public String toString() {
+  public final String toString() {
     return "StartupPacket: " + localId;
   }
 
   @Override
-  public byte getType() {
+  public final byte getType() {
     return LocalPacketFactory.STARTUPPACKET;
   }
 
   /**
    * @return the localId
    */
-  public Integer getLocalId() {
+  public final Integer getLocalId() {
     return localId;
   }
 
-  public boolean isFromSsl() {
+  public final boolean isFromSsl() {
     return fromSsl;
   }
 

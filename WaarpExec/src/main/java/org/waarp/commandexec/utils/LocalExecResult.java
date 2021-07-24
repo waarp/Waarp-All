@@ -58,7 +58,7 @@ public class LocalExecResult {
    *
    * @param localExecResult
    */
-  public void set(final LocalExecResult localExecResult) {
+  public final void set(final LocalExecResult localExecResult) {
     setSuccess(localExecResult.isSuccess());
     setStatus(localExecResult.getStatus());
     setException(localExecResult.getException());
@@ -75,56 +75,56 @@ public class LocalExecResult {
   /**
    * @return the status
    */
-  public int getStatus() {
+  public final int getStatus() {
     return status;
   }
 
   /**
    * @param status the status to set
    */
-  public void setStatus(final int status) {
+  public final void setStatus(final int status) {
     this.status = status;
   }
 
   /**
    * @return the isSuccess
    */
-  public boolean isSuccess() {
+  public final boolean isSuccess() {
     return isSuccess;
   }
 
   /**
    * @param isSuccess the isSuccess to set
    */
-  public void setSuccess(final boolean isSuccess) {
+  public final void setSuccess(final boolean isSuccess) {
     this.isSuccess = isSuccess;
   }
 
   /**
    * @return the exception
    */
-  public Exception getException() {
+  public final Exception getException() {
     return exception;
   }
 
   /**
    * @param exception the exception to set
    */
-  public void setException(final Exception exception) {
+  public final void setException(final Exception exception) {
     this.exception = exception;
   }
 
   /**
    * @return the result
    */
-  public String getResult() {
+  public final String getResult() {
     return result;
   }
 
   /**
    * @param result the result to set
    */
-  public void setResult(final String result) {
+  public final void setResult(final String result) {
     this.result = result;
   }
 

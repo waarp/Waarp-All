@@ -52,12 +52,12 @@ public abstract class DbModelPostgresql extends DbModelAbstract {
       extends DbModelAbstract.DbTypeResolver {
 
     @Override
-    public String getType(final int sqlType) {
+    public final String getType(final int sqlType) {
       return DBType.getType(sqlType);
     }
 
     @Override
-    public DbType getDbType() {
+    public final DbType getDbType() {
       return type;
     }
   }
@@ -69,7 +69,7 @@ public abstract class DbModelPostgresql extends DbModelAbstract {
   protected Boolean useIsValid;
 
   @Override
-  public DbType getDbType() {
+  public final DbType getDbType() {
     return type;
   }
 
@@ -211,13 +211,13 @@ public abstract class DbModelPostgresql extends DbModelAbstract {
   }
 
   @Override
-  protected String validConnectionString() {
+  protected final String validConnectionString() {
     return "select 1";
   }
 
   @Override
-  public String limitRequest(final String allfields, final String request,
-                             final int nb) {
+  public final String limitRequest(final String allfields, final String request,
+                                   final int nb) {
     if (nb == 0) {
       return request;
     }

@@ -124,8 +124,8 @@ public class UploadServletTest extends TestAbstract {
     WebAppContext webAppContext = new WebAppContext();
     webAppContext.setDescriptor(
         new File(testDir, "webapp/WEB-INF/web.xml").getAbsolutePath());
-    webAppContext
-        .setResourceBase(new File(testDir, "webapp").getAbsolutePath());
+    webAppContext.setResourceBase(
+        new File(testDir, "webapp").getAbsolutePath());
     webAppContext.setContextPath("/WaarpHttp");
     webAppContext.setParentLoaderPriority(true);
 
@@ -286,9 +286,8 @@ public class UploadServletTest extends TestAbstract {
     }
 
     // POST
-    HttpURLConnection http =
-        (HttpURLConnection) new URL(getRequest + tokenUri.toString())
-            .openConnection();
+    HttpURLConnection http = (HttpURLConnection) new URL(
+        getRequest + tokenUri.toString()).openConnection();
     http.setRequestMethod("POST");
     http.setRequestProperty("User-Agent", USER_AGENT);
     http.setRequestProperty("Accept-Charset", WaarpStringUtils.UTF_8);
@@ -316,8 +315,8 @@ public class UploadServletTest extends TestAbstract {
     http.setRequestProperty("Connection", "Keep-Alive");
     http.setRequestProperty("Cache-Control", "no-cache");
     http.setRequestProperty("Content-Type", "application/octet-stream");
-    http.setRequestProperty("Content-Length", Integer
-        .toString(filecontent.getBytes(WaarpStringUtils.UTF8).length));
+    http.setRequestProperty("Content-Length", Integer.toString(
+        filecontent.getBytes(WaarpStringUtils.UTF8).length));
     DataOutputStream request = new DataOutputStream(http.getOutputStream());
     request.write(filecontent.getBytes(WaarpStringUtils.UTF8));
     request.flush();
@@ -346,9 +345,8 @@ public class UploadServletTest extends TestAbstract {
       }
       tokenUri.append(entry.getKey()).append('=').append(entry.getValue());
     }
-    HttpURLConnection http =
-        (HttpURLConnection) new URL(getRequest + tokenUri.toString())
-            .openConnection();
+    HttpURLConnection http = (HttpURLConnection) new URL(
+        getRequest + tokenUri.toString()).openConnection();
     http.setRequestMethod("GET");
     http.setRequestProperty("User-Agent", USER_AGENT);
     http.setRequestProperty("Accept-Charset", WaarpStringUtils.UTF_8);
@@ -364,8 +362,8 @@ public class UploadServletTest extends TestAbstract {
     http.disconnect();
 
     // POST
-    http = (HttpURLConnection) new URL(getRequest + tokenUri.toString())
-        .openConnection();
+    http = (HttpURLConnection) new URL(
+        getRequest + tokenUri.toString()).openConnection();
     http.setRequestMethod("POST");
     http.setRequestProperty("User-Agent", USER_AGENT);
     http.setRequestProperty("Accept-Charset", WaarpStringUtils.UTF_8);
@@ -409,9 +407,8 @@ public class UploadServletTest extends TestAbstract {
       }
       tokenUri.append(entry.getKey()).append('=').append(entry.getValue());
     }
-    HttpURLConnection http =
-        (HttpURLConnection) new URL(getRequest + tokenUri.toString())
-            .openConnection();
+    HttpURLConnection http = (HttpURLConnection) new URL(
+        getRequest + tokenUri.toString()).openConnection();
     http.setRequestMethod("GET");
     http.setRequestProperty("User-Agent", USER_AGENT);
     http.setRequestProperty("Accept-Charset", WaarpStringUtils.UTF_8);
@@ -427,8 +424,8 @@ public class UploadServletTest extends TestAbstract {
     http.disconnect();
 
     // POST
-    http = (HttpURLConnection) new URL(getRequest + tokenUri.toString())
-        .openConnection();
+    http = (HttpURLConnection) new URL(
+        getRequest + tokenUri.toString()).openConnection();
     http.setRequestMethod("POST");
     http.setRequestProperty("User-Agent", USER_AGENT);
     http.setRequestProperty("Accept-Charset", WaarpStringUtils.UTF_8);
@@ -472,9 +469,8 @@ public class UploadServletTest extends TestAbstract {
       }
       tokenUri.append(entry.getKey()).append('=').append(entry.getValue());
     }
-    HttpURLConnection http =
-        (HttpURLConnection) new URL(getRequest + tokenUri.toString())
-            .openConnection();
+    HttpURLConnection http = (HttpURLConnection) new URL(
+        getRequest + tokenUri.toString()).openConnection();
     http.setRequestMethod("GET");
     http.setRequestProperty("User-Agent", USER_AGENT);
     http.setRequestProperty("Accept-Charset", WaarpStringUtils.UTF_8);
@@ -490,8 +486,8 @@ public class UploadServletTest extends TestAbstract {
     http.disconnect();
 
     // POST
-    http = (HttpURLConnection) new URL(getRequest + tokenUri.toString())
-        .openConnection();
+    http = (HttpURLConnection) new URL(
+        getRequest + tokenUri.toString()).openConnection();
     http.setRequestMethod("POST");
     http.setRequestProperty("User-Agent", USER_AGENT);
     http.setRequestProperty("Accept-Charset", WaarpStringUtils.UTF_8);
@@ -537,9 +533,8 @@ public class UploadServletTest extends TestAbstract {
       }
       tokenUri.append(entry.getKey()).append('=').append(entry.getValue());
     }
-    HttpURLConnection http =
-        (HttpURLConnection) new URL(getRequest + tokenUri.toString())
-            .openConnection();
+    HttpURLConnection http = (HttpURLConnection) new URL(
+        getRequest + tokenUri.toString()).openConnection();
     http.setRequestMethod("GET");
     http.setRequestProperty("User-Agent", USER_AGENT);
     http.setRequestProperty("Accept-Charset", WaarpStringUtils.UTF_8);
@@ -555,8 +550,8 @@ public class UploadServletTest extends TestAbstract {
     http.disconnect();
 
     // POST 1/2
-    http = (HttpURLConnection) new URL(getRequest + tokenUri.toString())
-        .openConnection();
+    http = (HttpURLConnection) new URL(
+        getRequest + tokenUri.toString()).openConnection();
     http.setRequestMethod("POST");
     http.setRequestProperty("User-Agent", USER_AGENT);
     http.setRequestProperty("Accept-Charset", WaarpStringUtils.UTF_8);
@@ -580,8 +575,8 @@ public class UploadServletTest extends TestAbstract {
 
     ByteArrayInputStream stream =
         new ByteArrayInputStream(content.getBytes(WaarpStringUtils.UTF8));
-    String sha = FilesystemBasedDigest
-        .getHex(FilesystemBasedDigest.getHash(stream, DigestAlgo.SHA256));
+    String sha = FilesystemBasedDigest.getHex(
+        FilesystemBasedDigest.getHash(stream, DigestAlgo.SHA256));
     stream.close();
     map.put("resumableIdentifier", "abcdabacffff");
     map.put("sha256", sha);
@@ -592,8 +587,8 @@ public class UploadServletTest extends TestAbstract {
       }
       tokenUri.append(entry.getKey()).append('=').append(entry.getValue());
     }
-    http = (HttpURLConnection) new URL(getRequest + tokenUri.toString())
-        .openConnection();
+    http = (HttpURLConnection) new URL(
+        getRequest + tokenUri.toString()).openConnection();
     http.setRequestMethod("POST");
     http.setRequestProperty("User-Agent", USER_AGENT);
     http.setRequestProperty("Accept-Charset", WaarpStringUtils.UTF_8);
@@ -633,9 +628,8 @@ public class UploadServletTest extends TestAbstract {
       }
       tokenUri.append(entry.getKey()).append('=').append(entry.getValue());
     }
-    HttpURLConnection http =
-        (HttpURLConnection) new URL(getRequest + tokenUri.toString())
-            .openConnection();
+    HttpURLConnection http = (HttpURLConnection) new URL(
+        getRequest + tokenUri.toString()).openConnection();
     http.setRequestMethod("GET");
     http.setRequestProperty("User-Agent", USER_AGENT);
     http.setRequestProperty("Accept-Charset", WaarpStringUtils.UTF_8);
@@ -651,8 +645,8 @@ public class UploadServletTest extends TestAbstract {
     http.disconnect();
 
     // POST 1/2
-    http = (HttpURLConnection) new URL(getRequest + tokenUri.toString())
-        .openConnection();
+    http = (HttpURLConnection) new URL(
+        getRequest + tokenUri.toString()).openConnection();
     http.setRequestMethod("POST");
     http.setRequestProperty("User-Agent", USER_AGENT);
     http.setRequestProperty("Accept-Charset", WaarpStringUtils.UTF_8);
@@ -675,8 +669,8 @@ public class UploadServletTest extends TestAbstract {
     http.disconnect();
 
     // GET 1/2
-    http = (HttpURLConnection) new URL(getRequest + tokenUri.toString())
-        .openConnection();
+    http = (HttpURLConnection) new URL(
+        getRequest + tokenUri.toString()).openConnection();
     http.setRequestMethod("GET");
     http.setRequestProperty("User-Agent", USER_AGENT);
     http.setRequestProperty("Accept-Charset", WaarpStringUtils.UTF_8);
@@ -692,8 +686,8 @@ public class UploadServletTest extends TestAbstract {
     http.disconnect();
 
     // POST 1/2 bis
-    http = (HttpURLConnection) new URL(getRequest + tokenUri.toString())
-        .openConnection();
+    http = (HttpURLConnection) new URL(
+        getRequest + tokenUri.toString()).openConnection();
     http.setRequestMethod("POST");
     http.setRequestProperty("User-Agent", USER_AGENT);
     http.setRequestProperty("Accept-Charset", WaarpStringUtils.UTF_8);
@@ -719,8 +713,8 @@ public class UploadServletTest extends TestAbstract {
       }
       tokenUri.append(entry.getKey()).append('=').append(entry.getValue());
     }
-    http = (HttpURLConnection) new URL(getRequest + tokenUri.toString())
-        .openConnection();
+    http = (HttpURLConnection) new URL(
+        getRequest + tokenUri.toString()).openConnection();
     http.setRequestMethod("POST");
     http.setRequestProperty("User-Agent", USER_AGENT);
     http.setRequestProperty("Accept-Charset", WaarpStringUtils.UTF_8);
@@ -771,9 +765,9 @@ public class UploadServletTest extends TestAbstract {
     };
     String valueText = byteSource.asCharSource(WaarpStringUtils.UTF8).read();
     logger.debug("GET {}", valueText);
-    MatcherAssert
-        .assertThat("Response Code", response.getStatusLine().getStatusCode(),
-                    is(HttpStatus.NOT_FOUND_404));
+    MatcherAssert.assertThat("Response Code",
+                             response.getStatusLine().getStatusCode(),
+                             is(HttpStatus.NOT_FOUND_404));
 
     // POST 1/2
     StringBuilder builder = new StringBuilder(1024);
@@ -802,9 +796,9 @@ public class UploadServletTest extends TestAbstract {
     };
     valueText = byteSource.asCharSource(WaarpStringUtils.UTF8).read();
     logger.debug("POST {}", valueText);
-    MatcherAssert
-        .assertThat("Response Code", response2.getStatusLine().getStatusCode(),
-                    is(HttpStatus.CREATED_201));
+    MatcherAssert.assertThat("Response Code",
+                             response2.getStatusLine().getStatusCode(),
+                             is(HttpStatus.CREATED_201));
 
     // GET 1/2
     final HttpResponse response3 = client.execute(get);
@@ -816,9 +810,9 @@ public class UploadServletTest extends TestAbstract {
     };
     valueText = byteSource.asCharSource(WaarpStringUtils.UTF8).read();
     logger.debug("GET {}", valueText);
-    MatcherAssert
-        .assertThat("Response Code", response3.getStatusLine().getStatusCode(),
-                    is(HttpStatus.OK_200));
+    MatcherAssert.assertThat("Response Code",
+                             response3.getStatusLine().getStatusCode(),
+                             is(HttpStatus.OK_200));
 
     // POST 1/2 bis
     MultipartEntityBuilder entityBuilder2 = MultipartEntityBuilder.create();
@@ -838,9 +832,9 @@ public class UploadServletTest extends TestAbstract {
     };
     valueText = byteSource.asCharSource(WaarpStringUtils.UTF8).read();
     logger.debug("POST {}", valueText);
-    MatcherAssert
-        .assertThat("Response Code", response4.getStatusLine().getStatusCode(),
-                    is(HttpStatus.BAD_REQUEST_400));
+    MatcherAssert.assertThat("Response Code",
+                             response4.getStatusLine().getStatusCode(),
+                             is(HttpStatus.BAD_REQUEST_400));
 
     // POST 1/2 ter
     post = new HttpPost(postRequest);
@@ -854,9 +848,9 @@ public class UploadServletTest extends TestAbstract {
     };
     valueText = byteSource.asCharSource(WaarpStringUtils.UTF8).read();
     logger.debug("POST {}", valueText);
-    MatcherAssert
-        .assertThat("Response Code", response5.getStatusLine().getStatusCode(),
-                    is(HttpStatus.INTERNAL_SERVER_ERROR_500));
+    MatcherAssert.assertThat("Response Code",
+                             response5.getStatusLine().getStatusCode(),
+                             is(HttpStatus.INTERNAL_SERVER_ERROR_500));
 
     // POST 2/2
     map.put("resumableChunkNumber", "2");
@@ -882,9 +876,9 @@ public class UploadServletTest extends TestAbstract {
     valueText = byteSource.asCharSource(WaarpStringUtils.UTF8).read();
     logger.debug("POST {}", valueText);
     assertEquals("All finished.", valueText);
-    MatcherAssert
-        .assertThat("Response Code", response6.getStatusLine().getStatusCode(),
-                    is(HttpStatus.OK_200));
+    MatcherAssert.assertThat("Response Code",
+                             response6.getStatusLine().getStatusCode(),
+                             is(HttpStatus.OK_200));
     client.close();
   }
 

@@ -42,7 +42,7 @@ class AllLineReader extends Thread {
   }
 
   @Override
-  public void run() {
+  public final void run() {
     String line;
     try {
       while ((line = reader.readLine()) != null) {
@@ -62,7 +62,7 @@ class AllLineReader extends Thread {
   /**
    * @return the lastLine
    */
-  public StringBuilder getLastLine() {
+  public final StringBuilder getLastLine() {
     return lastLine;
   }
 

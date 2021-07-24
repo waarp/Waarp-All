@@ -218,8 +218,8 @@ public class FileBasedConfiguration {
         final XmlValue value = hashConfig.get(XML_AUTHENTIFICATION_FILE);
         if (value != null && !value.isEmpty()) {
           final String fileauthent = value.getString();
-          return AuthenticationFileBasedConfiguration
-              .loadAuthentication(config, fileauthent);
+          return AuthenticationFileBasedConfiguration.loadAuthentication(config,
+                                                                         fileauthent);
         } else {
           logger.warn(
               Messages.getString(FILE_BASED_CONFIGURATION_NOT_FOUND_CONFIG) +
@@ -235,7 +235,8 @@ public class FileBasedConfiguration {
   }
 
   private static boolean loadPushMonitorParam(final Configuration config) {
-    XmlHash hashConfig = new XmlHash(hashRootConfig.get(XML_PUSH_MONITOR));
+    final XmlHash hashConfig =
+        new XmlHash(hashRootConfig.get(XML_PUSH_MONITOR));
     try {
       XmlValue value;
       // Common part API REST and Elasticsearch
@@ -247,7 +248,7 @@ public class FileBasedConfiguration {
           logger.error("Bad Push Monitor URL: {}", e.getMessage());
           return false;
         }
-        String url = value.getString();
+        final String url = value.getString();
         // Default value
         int delay = 1000;
         value = hashConfig.get(XML_PUSH_MONITOR_DELAY);
@@ -336,8 +337,8 @@ public class FileBasedConfiguration {
             try {
               ParametersChecker.checkSanityString(value.getString());
             } catch (final InvalidArgumentException e) {
-              logger
-                  .error("Bad Push Monitor Basic Authent: {}", e.getMessage());
+              logger.error("Bad Push Monitor Basic Authent: {}",
+                           e.getMessage());
               return false;
             }
             basicAuthent = value.getString();
@@ -403,10 +404,10 @@ public class FileBasedConfiguration {
             }
             compression = value.getBoolean();
           }
-          if (config
-              .setMonitorExporterTransfers(url, username, pwd, token, apikey,
-                                           prefix, index, intervalIncluded,
-                                           longAsString, compression, delay)) {
+          if (config.setMonitorExporterTransfers(url, username, pwd, token,
+                                                 apikey, prefix, index,
+                                                 intervalIncluded, longAsString,
+                                                 compression, delay)) {
             logger.error("Elasticsearch Factory not available");
             return false;
           }
@@ -516,8 +517,8 @@ public class FileBasedConfiguration {
         }
         try {
           config.setR66BusinessFactory(
-              (R66BusinessFactoryInterface) WaarpSystemUtil
-                  .newInstance(value.getString()));//NOSONAR
+              (R66BusinessFactoryInterface) WaarpSystemUtil.newInstance(
+                  value.getString()));//NOSONAR
         } catch (final Exception e) {
           logger.error("Bad Business Factory class: {}", e.getMessage());
           return false;
@@ -738,8 +739,8 @@ public class FileBasedConfiguration {
         }
         try {
           config.setR66BusinessFactory(
-              (R66BusinessFactoryInterface) WaarpSystemUtil
-                  .newInstance(value.getString()));//NOSONAR
+              (R66BusinessFactoryInterface) WaarpSystemUtil.newInstance(
+                  value.getString()));//NOSONAR
         } catch (final Exception e) {
           logger.error("Bad Business Factory class: {}", e.getMessage());
           return false;
@@ -798,7 +799,7 @@ public class FileBasedConfiguration {
   }
 
   private static boolean loadExtendTaskFactory(final Configuration config) {
-    XmlHash hashConfig =
+    final XmlHash hashConfig =
         new XmlHash(hashRootConfig.get(XML_EXTEND_TASK_FACTORY));
     try {
       final XmlValue xfactories = hashConfig.get(XML_EXTENDED_TASK_FACTORIES);
@@ -810,7 +811,7 @@ public class FileBasedConfiguration {
           try {
             WaarpSystemUtil.newInstance(extendedFactory);
             logger.warn("Added ExtendedTaskFactory: {}", extendedFactory);
-          } catch (Exception e) {
+          } catch (final Exception e) {
             logger.error(Messages.getString(
                 "ServerInitDatabase.ExtendedTaskFactory.error") +
                          extendedFactory + " = " + e.getMessage());
@@ -840,8 +841,8 @@ public class FileBasedConfiguration {
       return true;
     }
     try {
-      config
-          .setBaseDirectory(AbstractDir.normalizePath(file.getCanonicalPath()));
+      config.setBaseDirectory(
+          AbstractDir.normalizePath(file.getCanonicalPath()));
     } catch (final IOException e1) {
       logger.error(Messages.getString(FILE_BASED_CONFIGURATION_NO_SET_CONFIG) +
                    "Home"); //$NON-NLS-1$
@@ -955,9 +956,9 @@ public class FileBasedConfiguration {
         config.setLocalDigest(value.getBoolean());
       }
       value = hashConfig.get(XML_COMPRESSION);
-      logger.debug("Compression {} {}", value != null && !value.isEmpty(),
-                   value != null && !value.isEmpty()? value.getBoolean() :
-                       false);
+      logger.info("Compression {} {}", value != null && !value.isEmpty(),
+                  value != null && !value.isEmpty()? value.getBoolean() :
+                      false);
       if (value != null && !value.isEmpty()) {
         config.setCompressionAvailable(value.getBoolean());
       }
@@ -1317,8 +1318,7 @@ public class FileBasedConfiguration {
     try {
       final XmlValue valueRest = hashConfig.get(XML_REST);
       if (valueRest != null && valueRest.getList() != null) {
-        for (final XmlValue[] xml : (Iterable<XmlValue[]>) valueRest
-            .getList()) {
+        for (final XmlValue[] xml : (Iterable<XmlValue[]>) valueRest.getList()) {
           final RestConfiguration config = new RestConfiguration();
           final XmlHash subHash = new XmlHash(xml);
           XmlValue value = subHash.get(XML_SERVER_REST_PORT);
@@ -1394,10 +1394,9 @@ public class FileBasedConfiguration {
             final XmlValue valueMethod = subHash.get(XML_REST_METHOD);
             if (valueMethod != null && valueMethod.getList() != null) {
               boolean found = false;
-              config
-                  .setResthandlersCrud(new byte[RESTHANDLERS.values().length]);
-              for (final XmlValue[] xmlmethod : (Iterable<XmlValue[]>) valueMethod
-                  .getList()) {
+              config.setResthandlersCrud(
+                  new byte[RESTHANDLERS.values().length]);
+              for (final XmlValue[] xmlmethod : (Iterable<XmlValue[]>) valueMethod.getList()) {
                 final XmlHash subHashMethod = new XmlHash(xmlmethod);
                 value = subHashMethod.get(XML_REST_METHOD_NAME);
                 final String name;
@@ -1612,8 +1611,9 @@ public class FileBasedConfiguration {
           return false;
         }
         try {
-          admin = DbModelFactoryR66
-              .initialize(dbdriver, dbserver, dbuser, dbpasswd, true);
+          admin =
+              DbModelFactoryR66.initialize(dbdriver, dbserver, dbuser, dbpasswd,
+                                           true);
           // New way of initializing database services
           try {
             ConnectionFactory.initialize(dbserver, dbuser, dbpasswd);
@@ -1627,8 +1627,9 @@ public class FileBasedConfiguration {
           DAOFactory.initialize(ConnectionFactory.getInstance());
 
           if (config.getMultipleMonitors() > 1) {
-            noCommitAdmin = DbModelFactoryR66
-                .initialize(dbdriver, dbserver, dbuser, dbpasswd, true);
+            noCommitAdmin =
+                DbModelFactoryR66.initialize(dbdriver, dbserver, dbuser,
+                                             dbpasswd, true);
             Configuration.setNbDbSession(Configuration.getNbDbSession() + 1);
             noCommitAdmin.getSession().setAutoCommit(false);
           } else {
@@ -1664,9 +1665,9 @@ public class FileBasedConfiguration {
             try {
               request.select("SELECT * FROM " + DbConfiguration.table);
             } catch (final WaarpDatabaseSqlException e) {
-              logger
-                  .warn(Messages.getString("Database.DbNotInitiated") + " : {}",
-                        e.getMessage()); //$NON-NLS-1$
+              logger.warn(
+                  Messages.getString("Database.DbNotInitiated") + " : {}",
+                  e.getMessage()); //$NON-NLS-1$
               return true;
             } finally {
               request.close();
@@ -2026,19 +2027,16 @@ public class FileBasedConfiguration {
    */
   public static boolean setConfigurationServerMinimalFromXml(
       final Configuration config, final String filename) {
-    if (!SystemPropertyUtil
-        .get(R66SystemProperties.OPENR66_STARTUP_DATABASE_CHECK, "")
-        .isEmpty()) {
+    if (!SystemPropertyUtil.get(
+        R66SystemProperties.OPENR66_STARTUP_DATABASE_CHECK, "").isEmpty()) {
       logger.warn(IS_DEPRECATED_IN_SYSTEM_PROPERTIES_USE_INSTEAD,
                   R66SystemProperties.OPENR66_STARTUP_DATABASE_CHECK,
                   R66SystemProperties.OPENR66_STARTUP_DATABASE_AUTOUPGRADE);
-      autoupgrade = SystemPropertyUtil
-          .getBoolean(R66SystemProperties.OPENR66_STARTUP_DATABASE_CHECK,
-                      false);
+      autoupgrade = SystemPropertyUtil.getBoolean(
+          R66SystemProperties.OPENR66_STARTUP_DATABASE_CHECK, false);
     } else {
-      autoupgrade = SystemPropertyUtil
-          .getBoolean(R66SystemProperties.OPENR66_STARTUP_DATABASE_AUTOUPGRADE,
-                      false);
+      autoupgrade = SystemPropertyUtil.getBoolean(
+          R66SystemProperties.OPENR66_STARTUP_DATABASE_AUTOUPGRADE, false);
     }
 
     final Document document;
@@ -2110,19 +2108,16 @@ public class FileBasedConfiguration {
    */
   public static boolean setConfigurationServerShutdownFromXml(
       final Configuration config, final String filename) {
-    if (!SystemPropertyUtil
-        .get(R66SystemProperties.OPENR66_STARTUP_DATABASE_CHECK, "")
-        .isEmpty()) {
+    if (!SystemPropertyUtil.get(
+        R66SystemProperties.OPENR66_STARTUP_DATABASE_CHECK, "").isEmpty()) {
       logger.warn(IS_DEPRECATED_IN_SYSTEM_PROPERTIES_USE_INSTEAD,
                   R66SystemProperties.OPENR66_STARTUP_DATABASE_CHECK,
                   R66SystemProperties.OPENR66_STARTUP_DATABASE_AUTOUPGRADE);
-      autoupgrade = SystemPropertyUtil
-          .getBoolean(R66SystemProperties.OPENR66_STARTUP_DATABASE_CHECK,
-                      false);
+      autoupgrade = SystemPropertyUtil.getBoolean(
+          R66SystemProperties.OPENR66_STARTUP_DATABASE_CHECK, false);
     } else {
-      autoupgrade = SystemPropertyUtil
-          .getBoolean(R66SystemProperties.OPENR66_STARTUP_DATABASE_AUTOUPGRADE,
-                      false);
+      autoupgrade = SystemPropertyUtil.getBoolean(
+          R66SystemProperties.OPENR66_STARTUP_DATABASE_AUTOUPGRADE, false);
     }
 
     final Document document;
@@ -2312,19 +2307,16 @@ public class FileBasedConfiguration {
    */
   public static boolean setClientConfigurationFromXml(
       final Configuration config, final String filename) {
-    if (!SystemPropertyUtil
-        .get(R66SystemProperties.OPENR66_STARTUP_DATABASE_CHECK, "")
-        .isEmpty()) {
+    if (!SystemPropertyUtil.get(
+        R66SystemProperties.OPENR66_STARTUP_DATABASE_CHECK, "").isEmpty()) {
       logger.warn(IS_DEPRECATED_IN_SYSTEM_PROPERTIES_USE_INSTEAD,
                   R66SystemProperties.OPENR66_STARTUP_DATABASE_CHECK,
                   R66SystemProperties.OPENR66_STARTUP_DATABASE_AUTOUPGRADE);
-      autoupgrade = SystemPropertyUtil
-          .getBoolean(R66SystemProperties.OPENR66_STARTUP_DATABASE_CHECK,
-                      false);
+      autoupgrade = SystemPropertyUtil.getBoolean(
+          R66SystemProperties.OPENR66_STARTUP_DATABASE_CHECK, false);
     } else {
-      autoupgrade = SystemPropertyUtil
-          .getBoolean(R66SystemProperties.OPENR66_STARTUP_DATABASE_AUTOUPGRADE,
-                      false);
+      autoupgrade = SystemPropertyUtil.getBoolean(
+          R66SystemProperties.OPENR66_STARTUP_DATABASE_AUTOUPGRADE, false);
     }
 
     final Document document;
@@ -2418,19 +2410,16 @@ public class FileBasedConfiguration {
    */
   public static boolean setSubmitClientConfigurationFromXml(
       final Configuration config, final String filename) {
-    if (!SystemPropertyUtil
-        .get(R66SystemProperties.OPENR66_STARTUP_DATABASE_CHECK, "")
-        .isEmpty()) {
+    if (!SystemPropertyUtil.get(
+        R66SystemProperties.OPENR66_STARTUP_DATABASE_CHECK, "").isEmpty()) {
       logger.warn(IS_DEPRECATED_IN_SYSTEM_PROPERTIES_USE_INSTEAD,
                   R66SystemProperties.OPENR66_STARTUP_DATABASE_CHECK,
                   R66SystemProperties.OPENR66_STARTUP_DATABASE_AUTOUPGRADE);
-      autoupgrade = SystemPropertyUtil
-          .getBoolean(R66SystemProperties.OPENR66_STARTUP_DATABASE_CHECK,
-                      false);
+      autoupgrade = SystemPropertyUtil.getBoolean(
+          R66SystemProperties.OPENR66_STARTUP_DATABASE_CHECK, false);
     } else {
-      autoupgrade = SystemPropertyUtil
-          .getBoolean(R66SystemProperties.OPENR66_STARTUP_DATABASE_AUTOUPGRADE,
-                      false);
+      autoupgrade = SystemPropertyUtil.getBoolean(
+          R66SystemProperties.OPENR66_STARTUP_DATABASE_AUTOUPGRADE, false);
     }
 
     final Document document;

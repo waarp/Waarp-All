@@ -79,7 +79,7 @@ public class WaarpZstdCodec {
   /**
    * @return the current Compressor Codec implementation
    */
-  public CompressorCodec getCompressorCodec() {
+  public final CompressorCodec getCompressorCodec() {
     return codec;
   }
 
@@ -102,7 +102,7 @@ public class WaarpZstdCodec {
    *
    * @throws MalformedInputException
    */
-  public long compress(final File input, final File output)
+  public final long compress(final File input, final File output)
       throws MalformedInputException {
     InputStream inputStream = null;
     OutputStream outputStream = null;
@@ -126,9 +126,9 @@ public class WaarpZstdCodec {
         // Need to store in front the various position of block
         final byte[] bufferCompression =
             new byte[getMaxCompressedSize(buffer.length)];
-        final int length = codec
-            .compress(buffer, buffer.length, bufferCompression,
-                      bufferCompression.length);
+        final int length =
+            codec.compress(buffer, buffer.length, bufferCompression,
+                           bufferCompression.length);
         outputStream.write(bufferCompression, 0, length);
       }
       outputStream.flush();
@@ -153,7 +153,7 @@ public class WaarpZstdCodec {
    *
    * @throws MalformedInputException
    */
-  public long decompress(final File input, final File output)
+  public final long decompress(final File input, final File output)
       throws MalformedInputException {
     InputStream inputStream = null;
     OutputStream outputStream = null;
@@ -175,10 +175,11 @@ public class WaarpZstdCodec {
         final byte[] sourceArray = ByteStreams.toByteArray(inputStream);
         outputStream = new FileOutputStream(output);
         // Need to store in front the various position of block
-        buffer = new byte[codec
-            .getDecompressedSize(sourceArray, sourceArray.length)];
-        final int length = codec
-            .decompress(sourceArray, sourceArray.length, buffer, buffer.length);
+        buffer = new byte[codec.getDecompressedSize(sourceArray,
+                                                    sourceArray.length)];
+        final int length =
+            codec.decompress(sourceArray, sourceArray.length, buffer,
+                             buffer.length);
         outputStream.write(buffer, 0, length);
       }
       outputStream.flush();

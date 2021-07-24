@@ -67,10 +67,10 @@ public class HttpRestTest {
     Channel channel =
         client.getChannel(HttpRestTestHandler.HOST, HttpRestTestHandler.PORT);
     SysErrLogger.FAKE_LOGGER.sysout("OPTIONS");
-    RestFuture future = client
-        .sendQuery(channel, HttpMethod.OPTIONS, HttpRestTestHandler.HOST,
-                   DbTransferLogDataModelRestMethodHandler.BASEURI, null, null,
-                   null);
+    RestFuture future =
+        client.sendQuery(channel, HttpMethod.OPTIONS, HttpRestTestHandler.HOST,
+                         DbTransferLogDataModelRestMethodHandler.BASEURI, null,
+                         null, null);
     assertTrue(future.awaitOrInterruptible());
     Assert.assertFalse(future.isSuccess());
 
@@ -78,10 +78,10 @@ public class HttpRestTest {
                   "'USERID':'userid', 'FILENAME':'filename', " +
                   "'INFOSTATUS':'0'}";
     SysErrLogger.FAKE_LOGGER.sysout("POST");
-    future = client
-        .sendQuery(channel, HttpMethod.POST, HttpRestTestHandler.HOST,
-                   DbTransferLogDataModelRestMethodHandler.BASEURI, null, null,
-                   json);
+    future =
+        client.sendQuery(channel, HttpMethod.POST, HttpRestTestHandler.HOST,
+                         DbTransferLogDataModelRestMethodHandler.BASEURI, null,
+                         null, json);
     assertTrue(future.awaitOrInterruptible());
     Assert.assertFalse(future.isSuccess());
     SysErrLogger.FAKE_LOGGER.sysout("GET");
@@ -97,32 +97,31 @@ public class HttpRestTest {
     assertTrue(future.awaitOrInterruptible());
     Assert.assertFalse(future.isSuccess());
     SysErrLogger.FAKE_LOGGER.sysout("PATCH");
-    future = client
-        .sendQuery(channel, HttpMethod.PATCH, HttpRestTestHandler.HOST,
-                   DbTransferLogDataModelRestMethodHandler.BASEURI, null, null,
-                   json);
+    future =
+        client.sendQuery(channel, HttpMethod.PATCH, HttpRestTestHandler.HOST,
+                         DbTransferLogDataModelRestMethodHandler.BASEURI, null,
+                         null, json);
     assertTrue(future.awaitOrInterruptible());
     Assert.assertFalse(future.isSuccess());
     SysErrLogger.FAKE_LOGGER.sysout("TRACE");
-    future = client
-        .sendQuery(channel, HttpMethod.TRACE, HttpRestTestHandler.HOST,
-                   DbTransferLogDataModelRestMethodHandler.BASEURI, null, null,
-                   json);
+    future =
+        client.sendQuery(channel, HttpMethod.TRACE, HttpRestTestHandler.HOST,
+                         DbTransferLogDataModelRestMethodHandler.BASEURI, null,
+                         null, json);
     assertTrue(future.awaitOrInterruptible());
     Assert.assertFalse(future.isSuccess());
     SysErrLogger.FAKE_LOGGER.sysout("DELETE");
-    future = client
-        .sendQuery(channel, HttpMethod.DELETE, HttpRestTestHandler.HOST,
-                   DbTransferLogDataModelRestMethodHandler.BASEURI + "/id",
-                   null, null, json);
+    future =
+        client.sendQuery(channel, HttpMethod.DELETE, HttpRestTestHandler.HOST,
+                         DbTransferLogDataModelRestMethodHandler.BASEURI +
+                         "/id", null, null, json);
     assertTrue(future.awaitOrInterruptible());
     Assert.assertFalse(future.isSuccess());
 
     // Wrong query
     SysErrLogger.FAKE_LOGGER.sysout("GET ROOT");
-    future = client
-        .sendQuery(channel, HttpMethod.GET, HttpRestTestHandler.HOST, null,
-                   null, null, json);
+    future = client.sendQuery(channel, HttpMethod.GET, HttpRestTestHandler.HOST,
+                              null, null, null, json);
     assertTrue(future.awaitOrInterruptible());
     Assert.assertFalse(future.isSuccess());
     channel.close();

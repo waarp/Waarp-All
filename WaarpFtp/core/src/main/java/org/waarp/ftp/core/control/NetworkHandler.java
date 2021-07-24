@@ -48,6 +48,7 @@ import org.waarp.ftp.core.session.FtpSession;
 import org.waarp.ftp.core.utils.FtpChannelUtils;
 
 import java.io.IOException;
+import java.net.BindException;
 import java.net.ConnectException;
 import java.nio.channels.ClosedChannelException;
 import java.util.concurrent.RejectedExecutionException;
@@ -100,21 +101,21 @@ public class NetworkHandler extends SimpleChannelInboundHandler<String> {
   /**
    * @return the businessHandler
    */
-  public BusinessHandler getBusinessHandler() {
+  public final BusinessHandler getBusinessHandler() {
     return businessHandler;
   }
 
   /**
    * @return the session
    */
-  public FtpSession getFtpSession() {
+  public final FtpSession getFtpSession() {
     return session;
   }
 
   /**
    * @return the Control Channel
    */
-  public Channel getControlChannel() {
+  public final Channel getControlChannel() {
     return controlChannel;
   }
 
@@ -242,12 +243,16 @@ public class NetworkHandler extends SimpleChannelInboundHandler<String> {
         // nothing
       }
       return;
+    } else if (cause instanceof BindException) {
+      final BindException e2 = (BindException) cause;
+      logger.warn("Connection aborted since {} with Channel {}",
+                  e2.getMessage(), channel);
+      logger.warn("", cause);
     } else if (cause instanceof IOException) {
       final IOException e2 = (IOException) cause;
-      logger
-          .warn("Connection aborted since {} with Channel {}", e2.getMessage(),
-                channel);
-      logger.warn(cause);
+      logger.warn("Connection aborted since {} with Channel {}",
+                  e2.getMessage(), channel);
+      logger.warn("", cause);
     } else if (cause instanceof RejectedExecutionException) {
       logger.debug("Rejected execution (shutdown) from {}", channel);
       return;
@@ -355,7 +360,7 @@ public class NetworkHandler extends SimpleChannelInboundHandler<String> {
    *
    * @return the ChannelFuture associated with the write
    */
-  public ChannelFuture writeIntermediateAnswer(
+  public final ChannelFuture writeIntermediateAnswer(
       final ChannelHandlerContext ctx) {
     logger.debug("Answer: {}", session.getAnswer());
     return ctx.writeAndFlush(session.getAnswer());
@@ -367,7 +372,7 @@ public class NetworkHandler extends SimpleChannelInboundHandler<String> {
    *
    * @return the ChannelFuture associated with the write
    */
-  public ChannelFuture writeIntermediateAnswer() {
+  public final ChannelFuture writeIntermediateAnswer() {
     return writeIntermediateAnswer(ctx);
   }
 
@@ -430,15 +435,15 @@ public class NetworkHandler extends SimpleChannelInboundHandler<String> {
         } else {
           logger.debug("Add Explicitely SSL support to Command");
           // add the SSL support
-          sslHandler = FtpsInitializer.waarpSslContextFactory
-              .createHandlerServer(FtpsInitializer.waarpSslContextFactory
-                                       .needClientAuthentication(), false,
-                                   ctx.channel());
+          sslHandler =
+              FtpsInitializer.waarpSslContextFactory.createHandlerServer(
+                  FtpsInitializer.waarpSslContextFactory.needClientAuthentication(),
+                  false, ctx.channel());
           session.prepareSsl();
           WaarpSslUtility.addSslHandler(future, ctx.pipeline(), sslHandler,
                                         new GenericFutureListener<Future<? super Channel>>() {
                                           @Override
-                                          public void operationComplete(
+                                          public final void operationComplete(
                                               final Future<? super Channel> future) {
                                             if (!future.isSuccess()) {
                                               final String error2 =

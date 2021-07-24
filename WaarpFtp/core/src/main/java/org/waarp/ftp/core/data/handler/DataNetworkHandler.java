@@ -129,14 +129,14 @@ public class DataNetworkHandler extends SimpleChannelInboundHandler<DataBlock> {
   /**
    * @return the session
    */
-  public FtpSession getFtpSession() {
+  public final FtpSession getFtpSession() {
     return session;
   }
 
   /**
    * @return the NetworkHandler associated with the control connection
    */
-  public NetworkHandler getNetworkHandler() {
+  public final NetworkHandler getNetworkHandler() {
     return session.getBusinessHandler().getNetworkHandler();
   }
 
@@ -179,22 +179,12 @@ public class DataNetworkHandler extends SimpleChannelInboundHandler<DataBlock> {
     super.channelInactive(ctx);
   }
 
-  protected void setSession(final Channel channel) {
+  protected final void setSession(final Channel channel) {
     // First get the ftpSession from inetaddresses
-    for (int i = 0; i < FtpInternalConfiguration.RETRYNB; i++) {
-      session = configuration.getFtpSession(channel, isActive);
-      if (session == null) {
-        logger.debug("Session not found at try " + i);
-        try {
-          Thread.sleep(FtpInternalConfiguration.RETRYINMS);
-        } catch (final InterruptedException e1) {//NOSONAR
-          SysErrLogger.FAKE_LOGGER.ignoreLog(e1);
-          break;
-        }
-      } else {
-        break;
-      }
+    if (session != null) {
+      return;
     }
+    session = configuration.getFtpSession(channel, isActive);
     if (session == null) {
       // Not found !!!
       logger.error("Session not found!");
@@ -216,8 +206,8 @@ public class DataNetworkHandler extends SimpleChannelInboundHandler<DataBlock> {
     }
     logger.debug("Data Channel opened as {}", channel);
     if (session == null) {
-      logger
-          .warn("DataChannel immediately closed since no session is assigned");
+      logger.warn(
+          "DataChannel immediately closed since no session is assigned");
       WaarpSslUtility.closingSslChannel(ctx.channel());
       return;
     }
@@ -246,7 +236,7 @@ public class DataNetworkHandler extends SimpleChannelInboundHandler<DataBlock> {
     if (isStillAlive()) {
       try {
         setCorrectCodec();
-      } catch (FtpNoConnectionException e) {
+      } catch (final FtpNoConnectionException e) {
         logger.error(e.getMessage());
       }
       unlockModeCodec();
@@ -265,7 +255,7 @@ public class DataNetworkHandler extends SimpleChannelInboundHandler<DataBlock> {
    * Set the CODEC according to the mode. Must be called after each call of
    * MODE, STRU or TYPE
    */
-  public void setCorrectCodec() throws FtpNoConnectionException {
+  public final void setCorrectCodec() throws FtpNoConnectionException {
     if (channelPipeline == null) {
       logger.error("No channelPipeline defined while session is ", session);
       throw new FtpNoConnectionException("No Data socket opened");
@@ -275,8 +265,8 @@ public class DataNetworkHandler extends SimpleChannelInboundHandler<DataBlock> {
     final FtpDataTypeCodec typeCodec =
         (FtpDataTypeCodec) channelPipeline.get(FtpDataInitializer.CODEC_TYPE);
     final FtpDataStructureCodec structureCodec =
-        (FtpDataStructureCodec) channelPipeline
-            .get(FtpDataInitializer.CODEC_STRUCTURE);
+        (FtpDataStructureCodec) channelPipeline.get(
+            FtpDataInitializer.CODEC_STRUCTURE);
     if (modeCodec == null || typeCodec == null || structureCodec == null) {
       return;
     }
@@ -291,7 +281,7 @@ public class DataNetworkHandler extends SimpleChannelInboundHandler<DataBlock> {
   /**
    * Unlock the Mode Codec from openConnection of {@link FtpTransferControl}
    */
-  public void unlockModeCodec() {
+  public final void unlockModeCodec() {
     final FtpDataModeCodec modeCodec =
         (FtpDataModeCodec) channelPipeline.get(FtpDataInitializer.CODEC_MODE);
     modeCodec.setCodecReady();
@@ -373,8 +363,8 @@ public class DataNetworkHandler extends SimpleChannelInboundHandler<DataBlock> {
    * Act as needed according to the receive DataBlock message
    */
   @Override
-  public synchronized void channelRead0(final ChannelHandlerContext ctx,
-                                        final DataBlock dataBlock) {
+  public void channelRead0(final ChannelHandlerContext ctx,
+                           final DataBlock dataBlock) {
     if (ftpTransfer == null) {
       for (int i = 0; i < 20; i++) {
         try {
@@ -385,7 +375,7 @@ public class DataNetworkHandler extends SimpleChannelInboundHandler<DataBlock> {
           }
         } catch (final FtpNoTransferException e) {
           try {
-            wait(WaarpNettyUtil.SIMPLE_DELAY_MS);
+            Thread.sleep(WaarpNettyUtil.SIMPLE_DELAY_MS);
           } catch (final InterruptedException e1) {//NOSONAR
             SysErrLogger.FAKE_LOGGER.ignoreLog(e1);
             break;
@@ -426,7 +416,7 @@ public class DataNetworkHandler extends SimpleChannelInboundHandler<DataBlock> {
    *
    * @return True if the message is correctly written
    */
-  public boolean writeMessage(final String message) {
+  public final boolean writeMessage(final String message) {
     final DataBlock dataBlock = new DataBlock();
     dataBlock.setEOF(true);
     dataBlock.setBlock(message.getBytes(WaarpStringUtils.UTF8));

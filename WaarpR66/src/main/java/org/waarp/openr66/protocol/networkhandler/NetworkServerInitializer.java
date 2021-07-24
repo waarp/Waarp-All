@@ -62,8 +62,7 @@ public class NetworkServerInitializer
     logger.debug("Create IdleStateHandler with {} ms",
                  Configuration.configuration.getTimeoutCon());
     pipeline.addLast(TIMEOUT, new IdleStateHandler(true, 0, 0,
-                                                   Configuration.configuration
-                                                       .getTimeoutCon(),
+                                                   Configuration.configuration.getTimeoutCon(),
                                                    TimeUnit.MILLISECONDS));
     // Global limitation
     final GlobalTrafficShapingHandler handler =
@@ -81,8 +80,7 @@ public class NetworkServerInitializer
         Configuration.configuration.getDelayLimit(),
         Configuration.configuration.getTimeoutCon()));
     pipeline.addLast(NETWORK_CODEC, new NetworkPacketCodec());
-    pipeline
-        .addLast(Configuration.configuration.getHandlerGroup(), NETWORK_HANDLER,
-                 new NetworkServerHandler());
+    pipeline.addLast(Configuration.configuration.getHandlerGroup(),
+                     NETWORK_HANDLER, new NetworkServerHandler());
   }
 }

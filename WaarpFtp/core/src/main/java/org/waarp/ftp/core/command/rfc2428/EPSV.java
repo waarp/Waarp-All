@@ -42,7 +42,7 @@ public class EPSV extends AbstractCommand {
       WaarpLoggerFactory.getLogger(EPSV.class);
 
   @Override
-  public void exec() throws Reply425Exception {
+  public final void exec() throws Reply425Exception {
     // No Check if any argument
     // Take a new port: 3 attempts
     boolean isInit = false;

@@ -42,7 +42,7 @@ public class WaarpSlf4JLogger extends AbstractWaarpLogger {
   }
 
   @Override
-  public void setLevel(final WaarpLogLevel level) {
+  public final void setLevel(final WaarpLogLevel level) {
     switch (level) {
       case TRACE:
         logger.setLevel(Level.TRACE);
@@ -66,197 +66,202 @@ public class WaarpSlf4JLogger extends AbstractWaarpLogger {
   }
 
   @Override
-  public boolean isTraceEnabled() {
+  public final boolean isTraceEnabled() {
     return logger.isTraceEnabled();
   }
 
   @Override
-  public void junit(final int callee, final String msg) {
+  public final void junit(final int callee, final String msg) {
     logger.warn(getLoggerMethodAndLineCallee(callee + 1) + msg);
   }
 
   @Override
-  public void trace(final String msg) {
+  public final void trace(final String msg) {
     if (logger.isTraceEnabled()) {
       logger.trace(getLoggerMethodAndLine() + msg);
     }
   }
 
   @Override
-  public void trace(final String format, final Object arg) {
+  public final void trace(final String format, final Object arg) {
     if (logger.isTraceEnabled()) {
       logger.trace(getLoggerMethodAndLine() + format, arg);
     }
   }
 
   @Override
-  public void trace(final String format, final Object argA, final Object argB) {
+  public final void trace(final String format, final Object argA,
+                          final Object argB) {
     if (logger.isTraceEnabled()) {
       logger.trace(getLoggerMethodAndLine() + format, argA, argB);
     }
   }
 
   @Override
-  public void trace(final String format, final Object... argArray) {
+  public final void trace(final String format, final Object... argArray) {
     if (logger.isTraceEnabled()) {
       logger.trace(getLoggerMethodAndLine() + format, argArray);
     }
   }
 
   @Override
-  public void trace(final String msg, final Throwable t) {
+  public final void trace(final String msg, final Throwable t) {
     if (logger.isTraceEnabled()) {
       logger.trace(getLoggerMethodAndLine() + msg, t);
     }
   }
 
   @Override
-  public boolean isDebugEnabled() {
+  public final boolean isDebugEnabled() {
     return logger.isDebugEnabled();
   }
 
   @Override
-  public void debug(final String msg) {
+  public final void debug(final String msg) {
     if (logger.isDebugEnabled()) {
       logger.debug(getLoggerMethodAndLine() + msg);
     }
   }
 
   @Override
-  public void debug(final String format, final Object arg) {
+  public final void debug(final String format, final Object arg) {
     if (logger.isDebugEnabled()) {
       logger.debug(getLoggerMethodAndLine() + format, arg);
     }
   }
 
   @Override
-  public void debug(final String format, final Object argA, final Object argB) {
+  public final void debug(final String format, final Object argA,
+                          final Object argB) {
     if (logger.isDebugEnabled()) {
       logger.debug(getLoggerMethodAndLine() + format, argA, argB);
     }
   }
 
   @Override
-  public void debug(final String format, final Object... argArray) {
+  public final void debug(final String format, final Object... argArray) {
     if (logger.isDebugEnabled()) {
       logger.debug(getLoggerMethodAndLine() + format, argArray);
     }
   }
 
   @Override
-  public void debug(final String msg, final Throwable t) {
+  public final void debug(final String msg, final Throwable t) {
     if (logger.isDebugEnabled()) {
       logger.debug(getLoggerMethodAndLine() + msg, t);
     }
   }
 
   @Override
-  public boolean isInfoEnabled() {
+  public final boolean isInfoEnabled() {
     return logger.isInfoEnabled();
   }
 
   @Override
-  public void info(final String msg) {
+  public final void info(final String msg) {
     if (logger.isInfoEnabled()) {
       logger.info(getLoggerMethodAndLine() + msg);
     }
   }
 
   @Override
-  public void info(final String format, final Object arg) {
+  public final void info(final String format, final Object arg) {
     if (logger.isInfoEnabled()) {
       logger.info(getLoggerMethodAndLine() + format, arg);
     }
   }
 
   @Override
-  public void info(final String format, final Object argA, final Object argB) {
+  public final void info(final String format, final Object argA,
+                         final Object argB) {
     if (logger.isInfoEnabled()) {
       logger.info(getLoggerMethodAndLine() + format, argA, argB);
     }
   }
 
   @Override
-  public void info(final String format, final Object... argArray) {
+  public final void info(final String format, final Object... argArray) {
     if (logger.isInfoEnabled()) {
       logger.info(getLoggerMethodAndLine() + format, argArray);
     }
   }
 
   @Override
-  public void info(final String msg, final Throwable t) {
+  public final void info(final String msg, final Throwable t) {
     if (logger.isInfoEnabled()) {
       logger.info(getLoggerMethodAndLine() + msg, t);
     }
   }
 
   @Override
-  public boolean isWarnEnabled() {
+  public final boolean isWarnEnabled() {
     return logger.isWarnEnabled();
   }
 
   @Override
-  public void warn(final String msg) {
+  public final void warn(final String msg) {
     if (logger.isWarnEnabled()) {
       logger.warn(getLoggerMethodAndLine() + msg);
     }
   }
 
   @Override
-  public void warn(final String format, final Object arg) {
+  public final void warn(final String format, final Object arg) {
     if (logger.isWarnEnabled()) {
       logger.warn(getLoggerMethodAndLine() + format, arg);
     }
   }
 
   @Override
-  public void warn(final String format, final Object... argArray) {
+  public final void warn(final String format, final Object... argArray) {
     if (logger.isWarnEnabled()) {
       logger.warn(getLoggerMethodAndLine() + format, argArray);
     }
   }
 
   @Override
-  public void warn(final String format, final Object argA, final Object argB) {
+  public final void warn(final String format, final Object argA,
+                         final Object argB) {
     if (logger.isWarnEnabled()) {
       logger.warn(getLoggerMethodAndLine() + format, argA, argB);
     }
   }
 
   @Override
-  public void warn(final String msg, final Throwable t) {
+  public final void warn(final String msg, final Throwable t) {
     if (logger.isWarnEnabled()) {
       logger.warn(getLoggerMethodAndLine() + msg, t);
     }
   }
 
   @Override
-  public boolean isErrorEnabled() {
+  public final boolean isErrorEnabled() {
     return logger.isErrorEnabled();
   }
 
   @Override
-  public void error(final String msg) {
+  public final void error(final String msg) {
     logger.error(getLoggerMethodAndLine() + msg);
   }
 
   @Override
-  public void error(final String format, final Object arg) {
+  public final void error(final String format, final Object arg) {
     logger.error(getLoggerMethodAndLine() + format, arg);
   }
 
   @Override
-  public void error(final String format, final Object argA, final Object argB) {
+  public final void error(final String format, final Object argA,
+                          final Object argB) {
     logger.error(getLoggerMethodAndLine() + format, argA, argB);
   }
 
   @Override
-  public void error(final String format, final Object... argArray) {
+  public final void error(final String format, final Object... argArray) {
     logger.error(getLoggerMethodAndLine() + format, argArray);
   }
 
   @Override
-  public void error(final String msg, final Throwable t) {
+  public final void error(final String msg, final Throwable t) {
     logger.error(getLoggerMethodAndLine() + msg, t);
   }
 }

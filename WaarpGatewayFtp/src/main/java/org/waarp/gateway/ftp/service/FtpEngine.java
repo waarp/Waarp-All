@@ -46,7 +46,7 @@ public class FtpEngine extends EngineAbstract {
   public static final String R66CONFIGFILE = "org.waarp.r66.config.file";
 
   @Override
-  public void run() {
+  public final void run() {
     final String ftpfile = SystemPropertyUtil.get(CONFIGFILE);
     final String r66file = SystemPropertyUtil.get(R66CONFIGFILE);
     if (ftpfile == null) {
@@ -74,19 +74,19 @@ public class FtpEngine extends EngineAbstract {
   }
 
   @Override
-  public void shutdown() {
+  public final void shutdown() {
     exit(FileBasedConfiguration.fileBasedConfiguration);
     closeFuture.setSuccess();
     logger.info("Service stopped");
   }
 
   @Override
-  public boolean isShutdown() {
+  public final boolean isShutdown() {
     return closeFuture.isDone();
   }
 
   @Override
-  public boolean waitShutdown() {
+  public final boolean waitShutdown() {
     closeFuture.awaitOrInterruptible();
     return closeFuture.isSuccess();
   }

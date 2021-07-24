@@ -39,7 +39,7 @@ public class ConnectionCommand extends AbstractCommand {
   }
 
   @Override
-  public void exec() {
+  public final void exec() {
     // Nothing to do except 220
     getSession().setReplyCode(ReplyCode.REPLY_220_SERVICE_READY, null);
   }

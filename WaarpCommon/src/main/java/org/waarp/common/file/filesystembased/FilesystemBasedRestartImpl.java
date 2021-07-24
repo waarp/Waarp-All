@@ -41,7 +41,7 @@ public abstract class FilesystemBasedRestartImpl extends Restart {
   }
 
   @Override
-  public long getPosition() throws NoRestartException {
+  public final long getPosition() throws NoRestartException {
     if (isSet()) {
       setSet(false);
       return position;
@@ -50,7 +50,7 @@ public abstract class FilesystemBasedRestartImpl extends Restart {
   }
 
   @Override
-  public int getMaxSize(int nextBlock) {
+  public final int getMaxSize(int nextBlock) {
     if (limit > 0) {
       if (nextBlock > limit) {
         nextBlock = limit;
@@ -65,7 +65,7 @@ public abstract class FilesystemBasedRestartImpl extends Restart {
   }
 
   @Override
-  public void setSet(final boolean isSet) {
+  public final void setSet(final boolean isSet) {
     super.setSet(isSet);
     limit = -1;
   }

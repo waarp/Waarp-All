@@ -80,49 +80,49 @@ public class XmlDecl {
    *
    * @return the field name
    */
-  public String getName() {
+  public final String getName() {
     return name;
   }
 
   /**
    * @return the class type
    */
-  public Class<?> getClassType() {
+  public final Class<?> getClassType() {
     return type.getClassType();
   }
 
   /**
    * @return the internal type
    */
-  public XmlType getType() {
+  public final XmlType getType() {
     return type;
   }
 
   /**
    * @return the xmlPath
    */
-  public String getXmlPath() {
+  public final String getXmlPath() {
     return xmlPath;
   }
 
   /**
    * @return True if this Decl is a subXml
    */
-  public boolean isSubXml() {
+  public final boolean isSubXml() {
     return subXml != null;
   }
 
   /**
    * @return the subXml
    */
-  public XmlDecl[] getSubXml() {
+  public final XmlDecl[] getSubXml() {
     return subXml;
   }
 
   /**
    * @return the subXml size
    */
-  public int getSubXmlSize() {
+  public final int getSubXmlSize() {
     if (subXml == null) {
       return 0;
     }
@@ -132,7 +132,7 @@ public class XmlDecl {
   /**
    * @return the isMultiple
    */
-  public boolean isMultiple() {
+  public final boolean isMultiple() {
     return isMultiple;
   }
 
@@ -143,7 +143,7 @@ public class XmlDecl {
    *
    * @return True if compatible
    */
-  public boolean isCompatible(final XmlDecl xmlDecl) {
+  public final boolean isCompatible(final XmlDecl xmlDecl) {
     if ((isMultiple && xmlDecl.isMultiple ||
          !isMultiple && !xmlDecl.isMultiple) &&
         (isSubXml() && xmlDecl.isSubXml() ||

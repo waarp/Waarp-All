@@ -98,8 +98,8 @@ public class HostConfigHandler extends AbstractRestDbHandler {
   @GET
   @Consumes(WILDCARD)
   @RequiredRole(READONLY)
-  public void getConfig(final HttpRequest request,
-                        final HttpResponder responder) {
+  public final void getConfig(final HttpRequest request,
+                              final HttpResponder responder) {
     BusinessDAO businessDAO = null;
     try {
       businessDAO = DAO_FACTORY.getBusinessDAO(true);
@@ -136,8 +136,8 @@ public class HostConfigHandler extends AbstractRestDbHandler {
   @POST
   @Consumes(APPLICATION_FORM_URLENCODED)
   @RequiredRole(CONFIGADMIN)
-  public void initializeConfig(final HttpRequest request,
-                               final HttpResponder responder) {
+  public final void initializeConfig(final HttpRequest request,
+                                     final HttpResponder responder) {
     BusinessDAO businessDAO = null;
     try {
       businessDAO = DAO_FACTORY.getBusinessDAO(false);
@@ -174,8 +174,8 @@ public class HostConfigHandler extends AbstractRestDbHandler {
   @PUT
   @Consumes(APPLICATION_JSON)
   @RequiredRole(CONFIGADMIN)
-  public void updateConfig(final HttpRequest request,
-                           final HttpResponder responder) {
+  public final void updateConfig(final HttpRequest request,
+                                 final HttpResponder responder) {
     BusinessDAO businessDAO = null;
 
     try {
@@ -215,8 +215,8 @@ public class HostConfigHandler extends AbstractRestDbHandler {
   @DELETE
   @Consumes(WILDCARD)
   @RequiredRole(CONFIGADMIN)
-  public void deleteConfig(final HttpRequest request,
-                           final HttpResponder responder) {
+  public final void deleteConfig(final HttpRequest request,
+                                 final HttpResponder responder) {
     BusinessDAO businessDAO = null;
     try {
       businessDAO = DAO_FACTORY.getBusinessDAO(false);
@@ -247,8 +247,8 @@ public class HostConfigHandler extends AbstractRestDbHandler {
   @OPTIONS
   @Consumes(WILDCARD)
   @RequiredRole(NOACCESS)
-  public void options(final HttpRequest request,
-                      final HttpResponder responder) {
+  public final void options(final HttpRequest request,
+                            final HttpResponder responder) {
     responder.sendStatus(OK, OPTIONS_HEADERS);
   }
 }

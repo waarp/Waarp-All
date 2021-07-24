@@ -80,12 +80,12 @@ public class Transfer {
       return map.get(taskStep);
     }
 
-    public DbTaskRunner.TASKSTEP toLegacy() {
+    public final DbTaskRunner.TASKSTEP toLegacy() {
       return DbTaskRunner.TASKSTEP.valueOf(name());
     }
 
     @JsonValue
-    public int getTaskNo() {
+    public final int getTaskNo() {
       return taskNo;
     }
   }
@@ -185,21 +185,21 @@ public class Transfer {
 
   @XmlElement(name = TRANSFER_START_FIELD)
   @JsonIgnore
-  public long getXmlStart() {
+  public final long getXmlStart() {
     return start.getTime();
   }
 
-  public void setXmlStart(final long xml) {
+  public final void setXmlStart(final long xml) {
     start = new Timestamp(xml);
   }
 
   @XmlElement(name = TRANSFER_STOP_FIELD)
   @JsonIgnore
-  public long getXmlStop() {
+  public final long getXmlStop() {
     return stop.getTime();
   }
 
-  public void setXmlStop(final long xml) {
+  public final void setXmlStop(final long xml) {
     stop = new Timestamp(xml);
   }
 
@@ -359,185 +359,185 @@ public class Transfer {
   }
 
   @JsonIgnore
-  public void checkValues() throws WaarpDatabaseSqlException {
+  public final void checkValues() throws WaarpDatabaseSqlException {
     validateLength(Types.NVARCHAR, rule, ownerRequest, requested, requester);
     validateLength(Types.VARCHAR, filename, originalName, fileInfo,
                    transferInfo);
   }
 
-  public long getId() {
+  public final long getId() {
     return id;
   }
 
-  public void setId(final long id) {
+  public final void setId(final long id) {
     this.id = id;
   }
 
-  public boolean getRetrieveMode() {
+  public final boolean getRetrieveMode() {
     return retrieveMode;
   }
 
-  public void setRetrieveMode(final boolean retrieveMode) {
+  public final void setRetrieveMode(final boolean retrieveMode) {
     this.retrieveMode = retrieveMode;
   }
 
-  public String getRule() {
+  public final String getRule() {
     return rule;
   }
 
-  public void setRule(final String rule) {
+  public final void setRule(final String rule) {
     this.rule = rule;
   }
 
-  public int getTransferMode() {
+  public final int getTransferMode() {
     return transferMode;
   }
 
-  public void setTransferMode(final int mode) {
+  public final void setTransferMode(final int mode) {
     transferMode = mode;
   }
 
-  public String getFilename() {
+  public final String getFilename() {
     return filename;
   }
 
-  public void setFilename(final String filename) {
+  public final void setFilename(final String filename) {
     this.filename = filename;
   }
 
-  public String getOriginalName() {
+  public final String getOriginalName() {
     return originalName;
   }
 
-  public void setOriginalName(final String originalName) {
+  public final void setOriginalName(final String originalName) {
     this.originalName = originalName;
   }
 
-  public String getFileInfo() {
+  public final String getFileInfo() {
     return fileInfo;
   }
 
-  public void setFileInfo(final String fileInfo) {
+  public final void setFileInfo(final String fileInfo) {
     this.fileInfo = fileInfo;
   }
 
-  public boolean getIsMoved() {
+  public final boolean getIsMoved() {
     return isMoved;
   }
 
-  public void setIsMoved(final boolean isMoved) {
+  public final void setIsMoved(final boolean isMoved) {
     this.isMoved = isMoved;
   }
 
-  public int getBlockSize() {
+  public final int getBlockSize() {
     return blockSize;
   }
 
-  public void setBlockSize(final int blockSize) {
+  public final void setBlockSize(final int blockSize) {
     this.blockSize = blockSize;
   }
 
-  public String getOwnerRequest() {
+  public final String getOwnerRequest() {
     return ownerRequest;
   }
 
-  public void setOwnerRequest(final String ownerRequest) {
+  public final void setOwnerRequest(final String ownerRequest) {
     this.ownerRequest = ownerRequest;
   }
 
-  public String getRequester() {
+  public final String getRequester() {
     return requester;
   }
 
-  public void setRequester(final String requester) {
+  public final void setRequester(final String requester) {
     this.requester = requester;
   }
 
-  public String getRequested() {
+  public final String getRequested() {
     return requested;
   }
 
-  public void setRequested(final String requested) {
+  public final void setRequested(final String requested) {
     this.requested = requested;
   }
 
-  public String getTransferInfo() {
+  public final String getTransferInfo() {
     return transferInfo;
   }
 
-  public void setTransferInfo(final String transferInfo) {
+  public final void setTransferInfo(final String transferInfo) {
     this.transferInfo = transferInfo;
   }
 
-  public TASKSTEP getGlobalStep() {
+  public final TASKSTEP getGlobalStep() {
     return globalStep;
   }
 
-  public void setGlobalStep(final TASKSTEP globalStep) {
+  public final void setGlobalStep(final TASKSTEP globalStep) {
     this.globalStep = globalStep;
   }
 
-  public TASKSTEP getLastGlobalStep() {
+  public final TASKSTEP getLastGlobalStep() {
     return lastGlobalStep;
   }
 
-  public void setLastGlobalStep(final TASKSTEP lastGlobalStep) {
+  public final void setLastGlobalStep(final TASKSTEP lastGlobalStep) {
     this.lastGlobalStep = lastGlobalStep;
   }
 
-  public int getStep() {
+  public final int getStep() {
     return step;
   }
 
-  public void setStep(final int step) {
+  public final void setStep(final int step) {
     this.step = step;
   }
 
-  public ErrorCode getStepStatus() {
+  public final ErrorCode getStepStatus() {
     return stepStatus;
   }
 
-  public void setStepStatus(final ErrorCode stepStatus) {
+  public final void setStepStatus(final ErrorCode stepStatus) {
     this.stepStatus = stepStatus;
   }
 
-  public ErrorCode getInfoStatus() {
+  public final ErrorCode getInfoStatus() {
     return infoStatus;
   }
 
-  public void setInfoStatus(final ErrorCode infoStatus) {
+  public final void setInfoStatus(final ErrorCode infoStatus) {
     this.infoStatus = infoStatus;
   }
 
-  public int getRank() {
+  public final int getRank() {
     return rank;
   }
 
-  public void setRank(final int rank) {
+  public final void setRank(final int rank) {
     this.rank = rank;
   }
 
-  public Timestamp getStart() {
+  public final Timestamp getStart() {
     return start;
   }
 
-  public void setStart(final Timestamp start) {
+  public final void setStart(final Timestamp start) {
     this.start = start;
   }
 
-  public Timestamp getStop() {
+  public final Timestamp getStop() {
     return stop;
   }
 
-  public void setStop(final Timestamp stop) {
+  public final void setStop(final Timestamp stop) {
     this.stop = stop;
   }
 
-  public UpdatedInfo getUpdatedInfo() {
+  public final UpdatedInfo getUpdatedInfo() {
     return updatedInfo;
   }
 
-  public void setUpdatedInfo(final UpdatedInfo info) {
+  public final void setUpdatedInfo(final UpdatedInfo info) {
     updatedInfo = info;
   }
 }

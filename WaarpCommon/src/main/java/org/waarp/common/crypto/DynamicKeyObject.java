@@ -141,22 +141,22 @@ public class DynamicKeyObject extends KeyObject {
   }
 
   @Override
-  public String getAlgorithm() {
+  public final String getAlgorithm() {
     return algo;
   }
 
   @Override
-  public String getInstance() {
+  public final String getInstance() {
     return instance;
   }
 
   @Override
-  public int getKeySize() {
+  public final int getKeySize() {
     return keySize;
   }
 
   @Override
-  public String getFileExtension() {
+  public final String getFileExtension() {
     return extension;
   }
 

@@ -61,8 +61,8 @@ public class ServerShutdown {
    */
   public static void main(final String[] args)
       throws OpenR66ProtocolPacketException {
-    WaarpLoggerFactory
-        .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));
+    WaarpLoggerFactory.setDefaultFactoryIfNotSame(
+        new WaarpSlf4JLoggerFactory(null));
     final WaarpLogger logger =
         WaarpLoggerFactory.getLogger(ServerShutdown.class);
     if (args.length < 1) {
@@ -70,9 +70,8 @@ public class ServerShutdown {
       WaarpSystemUtil.systemExit(1);
       return;
     }
-    if (!FileBasedConfiguration
-        .setConfigurationServerShutdownFromXml(Configuration.configuration,
-                                               args[0])) {
+    if (!FileBasedConfiguration.setConfigurationServerShutdownFromXml(
+        Configuration.configuration, args[0])) {
       logger.error(INFO_ARGS);
       if (admin != null) {
         admin.close();
@@ -120,8 +119,8 @@ public class ServerShutdown {
       return;
     }
     final byte[] key;
-    key = FilesystemBasedDigest
-        .passwdCrypt(Configuration.configuration.getServerAdminKey());
+    key = FilesystemBasedDigest.passwdCrypt(
+        Configuration.configuration.getServerAdminKey());
     final AbstractLocalPacket packet;
     if (isblock || isunblock) {
       packet = new BlockRequestPacket(isblock, key);
@@ -143,8 +142,9 @@ public class ServerShutdown {
     Configuration.configuration.pipelineInit();
     final NetworkTransaction networkTransaction = new NetworkTransaction();
     LocalChannelReference localChannelReference = null;
-    localChannelReference = networkTransaction
-        .createConnectionWithRetry(socketServerAddress, useSsl, null);
+    localChannelReference =
+        networkTransaction.createConnectionWithRetry(socketServerAddress,
+                                                     useSsl, null);
     if (localChannelReference == null) {
       logger.error("Cannot connect to " + host.getHostid());
       networkTransaction.closeAll();

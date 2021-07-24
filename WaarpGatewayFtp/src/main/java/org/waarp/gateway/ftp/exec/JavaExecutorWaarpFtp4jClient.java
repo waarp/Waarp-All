@@ -108,7 +108,7 @@ public class JavaExecutorWaarpFtp4jClient implements GatewayRunnable {
    * (get,put,append) <br> [-post extraCommand2 with ',' as separator of arguments]" <br>
    **/
   @Override
-  public void run() {
+  public final void run() {
     logger.info("FtpTransfer with {} arguments", args.length);
     final FtpArgs ftpArgs;
     try {
@@ -144,7 +144,7 @@ public class JavaExecutorWaarpFtp4jClient implements GatewayRunnable {
         ftpClient.makeDir(ftpArgs.getCwd());
         try {
           Thread.sleep(FtpInternalConfiguration.RETRYINMS);
-        } catch (InterruptedException e) {// NOSONAR
+        } catch (final InterruptedException e) {// NOSONAR
           // Ignore
         }
         if (!ftpClient.changeDir(ftpArgs.getCwd())) {
@@ -178,8 +178,9 @@ public class JavaExecutorWaarpFtp4jClient implements GatewayRunnable {
         // now check locally
         String hash;
         try {
-          hash = FilesystemBasedDigest.getHex(FilesystemBasedDigest.getHash(
-              new File(ftpArgs.getFilepath()), false, ftpArgs.getDigest()));
+          hash = FilesystemBasedDigest.getHex(
+              FilesystemBasedDigest.getHash(new File(ftpArgs.getFilepath()),
+                                            false, ftpArgs.getDigest()));
         } catch (final IOException e) {
           hash = null;
         }
@@ -204,9 +205,9 @@ public class JavaExecutorWaarpFtp4jClient implements GatewayRunnable {
   }
 
   @Override
-  public void setArgs(final boolean waitForValidation,
-                      final boolean useLocalExec, final int delay,
-                      final String[] args) {
+  public final void setArgs(final boolean waitForValidation,
+                            final boolean useLocalExec, final int delay,
+                            final String[] args) {
     this.waitForValidation = waitForValidation;
     this.useLocalExec = useLocalExec;
     this.delay = delay;
@@ -214,7 +215,7 @@ public class JavaExecutorWaarpFtp4jClient implements GatewayRunnable {
   }
 
   @Override
-  public int getFinalStatus() {
+  public final int getFinalStatus() {
     return status;
   }
 

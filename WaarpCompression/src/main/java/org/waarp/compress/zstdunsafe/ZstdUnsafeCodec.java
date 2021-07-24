@@ -56,14 +56,15 @@ public class ZstdUnsafeCodec implements CompressorCodec {
       new ZstdFrameDecompressor();
 
   @Override
-  public int getDecompressedSize(final byte[] input, final int length) {
+  public final int getDecompressedSize(final byte[] input, final int length) {
     final long baseAddress = ARRAY_BYTE_BASE_OFFSET;
-    return (int) ZstdFrameDecompressor
-        .getDecompressedSize(input, baseAddress, baseAddress + length);
+    return (int) ZstdFrameDecompressor.getDecompressedSize(input, baseAddress,
+                                                           baseAddress +
+                                                           length);
   }
 
   @Override
-  public int maxCompressedLength(final int uncompressedSize) {
+  public final int maxCompressedLength(final int uncompressedSize) {
     long result = (long) uncompressedSize + (uncompressedSize >>> 8);
     if (uncompressedSize < MAX_BLOCK_SIZE) {
       result += (MAX_BLOCK_SIZE - uncompressedSize) >>> 11;
@@ -72,7 +73,7 @@ public class ZstdUnsafeCodec implements CompressorCodec {
   }
 
   @Override
-  public byte[] compress(final byte[] input, final int length) {
+  public final byte[] compress(final byte[] input, final int length) {
     try {
       final int len = maxCompressedLength(length);
       final byte[] temp = new byte[len];
@@ -84,22 +85,23 @@ public class ZstdUnsafeCodec implements CompressorCodec {
   }
 
   @Override
-  public int compress(final byte[] input, final int inputLength,
-                      final byte[] output, final int maxOutputLength) {
+  public final int compress(final byte[] input, final int inputLength,
+                            final byte[] output, final int maxOutputLength) {
     try {
       final long inputAddress = ARRAY_BYTE_BASE_OFFSET;
       final long outputAddress = ARRAY_BYTE_BASE_OFFSET;
-      return ZstdFrameCompressor
-          .compress(input, inputAddress, inputAddress + inputLength, output,
-                    outputAddress, outputAddress + maxOutputLength,
-                    CompressionParameters.DEFAULT_COMPRESSION_LEVEL);
+      return ZstdFrameCompressor.compress(input, inputAddress,
+                                          inputAddress + inputLength, output,
+                                          outputAddress,
+                                          outputAddress + maxOutputLength,
+                                          CompressionParameters.DEFAULT_COMPRESSION_LEVEL);
     } catch (final Exception e) {
       throw new MalformedInputException(e);
     }
   }
 
   @Override
-  public byte[] decompress(final byte[] input, final int length)
+  public final byte[] decompress(final byte[] input, final int length)
       throws MalformedInputException {
     try {
       final int finalLen = getDecompressedSize(input, length);
@@ -112,7 +114,7 @@ public class ZstdUnsafeCodec implements CompressorCodec {
   }
 
   @Override
-  public long compress(final File input, final File output)
+  public final long compress(final File input, final File output)
       throws MalformedInputException {
     InputStream inputStream = null;
     OutputStream outputStream = null;
@@ -139,8 +141,8 @@ public class ZstdUnsafeCodec implements CompressorCodec {
   }
 
   @Override
-  public int decompress(final byte[] input, final int inputLength,
-                        final byte[] output, final int maxOutputLength)
+  public final int decompress(final byte[] input, final int inputLength,
+                              final byte[] output, final int maxOutputLength)
       throws MalformedInputException {
     try {
       final long inputAddress = ARRAY_BYTE_BASE_OFFSET;
@@ -148,16 +150,15 @@ public class ZstdUnsafeCodec implements CompressorCodec {
       final long outputAddress = ARRAY_BYTE_BASE_OFFSET;
       final long outputLimit = outputAddress + maxOutputLength;
 
-      return decompressor
-          .decompress(input, inputAddress, inputLimit, output, outputAddress,
-                      outputLimit);
+      return decompressor.decompress(input, inputAddress, inputLimit, output,
+                                     outputAddress, outputLimit);
     } catch (final Exception e) {
       throw new MalformedInputException(e);
     }
   }
 
   @Override
-  public long decompress(final File input, final File output)
+  public final long decompress(final File input, final File output)
       throws MalformedInputException {
     InputStream inputStream = null;
     OutputStream outputStream = null;

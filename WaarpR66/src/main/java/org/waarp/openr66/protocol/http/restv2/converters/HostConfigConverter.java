@@ -106,7 +106,7 @@ public final class HostConfigConverter {
       emptyBusiness = new Business(serverName(), "", "<roles></roles>",
                                    "<aliases></aliases>",
                                    "<root><version></version></root>");
-    } catch (WaarpDatabaseSqlException e) {
+    } catch (final WaarpDatabaseSqlException e) {
       SysErrLogger.FAKE_LOGGER.syserr(e);
     }
 
@@ -147,8 +147,8 @@ public final class HostConfigConverter {
             if (businessName.isTextual()) {
               businessList.business.add(businessName.asText());
             } else {
-              errors
-                  .add(ILLEGAL_FIELD_VALUE(BUSINESS, businessName.toString()));
+              errors.add(
+                  ILLEGAL_FIELD_VALUE(BUSINESS, businessName.toString()));
             }
           }
           oldBusiness.setBusiness(XmlUtils.objectToXml(businessList));

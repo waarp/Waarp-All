@@ -62,8 +62,8 @@ public class LocalExecSslClientHandler extends LocalExecClientHandler {
       firstMessage = false;
       result.set(LocalExecDefaultResult.BadTransmition);
       result.setException((Exception) cause);
-      back = new StringBuilder("Error in LocalExec: ")
-          .append(result.getException().getMessage()).append('\n');
+      back = new StringBuilder("Error in LocalExec: ").append(
+          result.getException().getMessage()).append('\n');
     } else {
       if (cause instanceof SSLException) {
         // ignore ?

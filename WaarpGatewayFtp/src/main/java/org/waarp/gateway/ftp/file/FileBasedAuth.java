@@ -69,7 +69,7 @@ public class FileBasedAuth extends FilesystemBasedFtpAuth
   }
 
   @Override
-  protected void businessClean() {
+  protected final void businessClean() {
     currentAuth = null;
   }
 
@@ -86,11 +86,11 @@ public class FileBasedAuth extends FilesystemBasedFtpAuth
    *     authentication
    */
   @Override
-  protected NextCommandReply setBusinessUser(final String user)
+  protected final NextCommandReply setBusinessUser(final String user)
       throws Reply530Exception {
     final SimpleAuth auth =
-        ((FileBasedConfiguration) ((FtpSession) getSession())
-            .getConfiguration()).getSimpleAuth(user);
+        ((FileBasedConfiguration) ((FtpSession) getSession()).getConfiguration()).getSimpleAuth(
+            user);
     if (auth == null) {
       setIsIdentified(false);
       currentAuth = null;
@@ -119,7 +119,7 @@ public class FileBasedAuth extends FilesystemBasedFtpAuth
    *     authentication
    */
   @Override
-  protected NextCommandReply setBusinessPassword(final String password)
+  protected final NextCommandReply setBusinessPassword(final String password)
       throws Reply530Exception {
     if (currentAuth == null) {
       setIsIdentified(false);
@@ -151,7 +151,7 @@ public class FileBasedAuth extends FilesystemBasedFtpAuth
    *     authentication
    */
   @Override
-  protected NextCommandReply setBusinessAccount(final String account)
+  protected final NextCommandReply setBusinessAccount(final String account)
       throws Reply530Exception {
     if (currentAuth == null) {
       throw new Reply530Exception("ACCT needs a USER first");
@@ -166,7 +166,7 @@ public class FileBasedAuth extends FilesystemBasedFtpAuth
   }
 
   @Override
-  public boolean isBusinessPathValid(final String newPath) {
+  public final boolean isBusinessPathValid(final String newPath) {
     if (newPath == null) {
       return false;
     }
@@ -174,7 +174,7 @@ public class FileBasedAuth extends FilesystemBasedFtpAuth
   }
 
   @Override
-  protected String setBusinessRootFromAuth() throws Reply421Exception {
+  protected final String setBusinessRootFromAuth() throws Reply421Exception {
     final String path;
     if (account == null) {
       path = DirInterface.SEPARATOR + user;
@@ -190,7 +190,7 @@ public class FileBasedAuth extends FilesystemBasedFtpAuth
   }
 
   @Override
-  public boolean isAdmin() {
+  public final boolean isAdmin() {
     if (currentAuth == null) {
       return false;
     }
@@ -202,7 +202,7 @@ public class FileBasedAuth extends FilesystemBasedFtpAuth
    *
    * @param hostid
    */
-  public void specialNoSessionAuth(final String hostid) {
+  public final void specialNoSessionAuth(final String hostid) {
     isIdentified = true;
     final SimpleAuth auth =
         new SimpleAuth(hostid, hostid, null, null, 0, null, 0);
@@ -210,10 +210,9 @@ public class FileBasedAuth extends FilesystemBasedFtpAuth
     setIsIdentified(true);
     user = auth.getUser();
     account = auth.getUser();
-    ((FtpSession) getSession())
-        .setSpecialInit(this, new FileBasedDir((FtpSession) getSession()),
-                        new FilesystemBasedFtpRestart(
-                            (FtpSession) getSession()));
+    ((FtpSession) getSession()).setSpecialInit(this, new FileBasedDir(
+        (FtpSession) getSession()), new FilesystemBasedFtpRestart(
+        (FtpSession) getSession()));
     try {
       setBusinessRootFromAuth();
     } catch (final Reply421Exception ignored) {
@@ -226,14 +225,14 @@ public class FileBasedAuth extends FilesystemBasedFtpAuth
   /**
    * @return the specialId
    */
-  public long getSpecialId() {
+  public final long getSpecialId() {
     return specialId;
   }
 
   /**
    * @param specialId the specialId to set
    */
-  public void setSpecialId(final long specialId) {
+  public final void setSpecialId(final long specialId) {
     this.specialId = specialId;
   }
 
@@ -241,7 +240,7 @@ public class FileBasedAuth extends FilesystemBasedFtpAuth
    * @return the associated Command Executor
    */
   @Override
-  public CommandExecutor getCommandExecutor() {
+  public final CommandExecutor getCommandExecutor() {
     return currentAuth.getCommandExecutor();
   }
 }

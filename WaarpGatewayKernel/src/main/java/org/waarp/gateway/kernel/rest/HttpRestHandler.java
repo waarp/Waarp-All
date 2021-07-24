@@ -267,13 +267,14 @@ public abstract class HttpRestHandler
     }
 
     @Override
-    public void operationComplete(final ChannelFuture future) {
+    public final void operationComplete(final ChannelFuture future) {
       handler.clean();
     }
   }
 
   @Override
-  public void channelActive(final ChannelHandlerContext ctx) throws Exception {
+  public final void channelActive(final ChannelHandlerContext ctx)
+      throws Exception {
     if (group != null) {
       group.add(ctx.channel());
     }
@@ -285,7 +286,7 @@ public abstract class HttpRestHandler
    * <p>
    * Override if needed
    */
-  protected void clean() {
+  protected final void clean() {
     if (arguments != null) {
       arguments.clean();
       arguments = null;
@@ -312,7 +313,7 @@ public abstract class HttpRestHandler
    * <p>
    * Override if needed
    */
-  protected void initialize() {
+  protected final void initialize() {
     // clean previous FileUpload if Any
     clean();
     status = HttpResponseStatus.OK;
@@ -326,7 +327,7 @@ public abstract class HttpRestHandler
    * @return the DbSession associated with the current request (might be Admin
    *     dbSession if none)
    */
-  public DbSession getDbSession() {
+  public final DbSession getDbSession() {
     return dbSession == null? DbConstantGateway.admin.getSession() : dbSession;
   }
 
@@ -349,7 +350,7 @@ public abstract class HttpRestHandler
    *
    * @param httpResponse
    */
-  protected void setCookies(final FullHttpResponse httpResponse) {
+  protected final void setCookies(final FullHttpResponse httpResponse) {
     if (response == null) {
       return;
     }
@@ -359,9 +360,9 @@ public abstract class HttpRestHandler
       while (iter.hasNext()) {
         final Entry<String, JsonNode> entry = iter.next();
         httpResponse.headers().add(HttpHeaderNames.SET_COOKIE,
-                                   ServerCookieEncoder.LAX
-                                       .encode(entry.getKey(),
-                                               entry.getValue().asText()));
+                                   ServerCookieEncoder.LAX.encode(
+                                       entry.getKey(),
+                                       entry.getValue().asText()));
       }
     }
   }
@@ -375,7 +376,7 @@ public abstract class HttpRestHandler
    * @throws HttpMethodNotAllowedRequestException
    * @throws HttpForbiddenRequestException
    */
-  protected RestMethodHandler getHandler()
+  protected final RestMethodHandler getHandler()
       throws HttpMethodNotAllowedRequestException,
              HttpForbiddenRequestException {
     final METHOD method = arguments.getMethod();
@@ -542,7 +543,7 @@ public abstract class HttpRestHandler
    *
    * @throws HttpIncorrectRequestException
    */
-  protected void createDecoder() throws HttpIncorrectRequestException {
+  protected final void createDecoder() throws HttpIncorrectRequestException {
     final HttpMethod method = request.method();
     if (!method.equals(HttpMethod.HEAD)) {
       // in order decoder allows to parse
@@ -566,7 +567,7 @@ public abstract class HttpRestHandler
    *
    * @throws HttpIncorrectRequestException
    */
-  protected void readAllHttpData() throws HttpIncorrectRequestException {
+  protected final void readAllHttpData() throws HttpIncorrectRequestException {
     final List<InterfaceHttpData> datas;
     try {
       datas = decoder.getBodyHttpDatas();
@@ -588,7 +589,7 @@ public abstract class HttpRestHandler
    *
    * @throws HttpIncorrectRequestException
    */
-  protected void readHttpData(final InterfaceHttpData data)
+  protected final void readHttpData(final InterfaceHttpData data)
       throws HttpIncorrectRequestException {
     if (data.getHttpDataType() == HttpDataType.Attribute) {
       final ObjectNode body = arguments.getBody();
@@ -618,7 +619,7 @@ public abstract class HttpRestHandler
    *
    * @param ctx
    */
-  protected void forceClosing(final ChannelHandlerContext ctx) {
+  protected final void forceClosing(final ChannelHandlerContext ctx) {
     if (status == HttpResponseStatus.OK) {
       status = HttpResponseStatus.INTERNAL_SERVER_ERROR;
     }
@@ -643,7 +644,7 @@ public abstract class HttpRestHandler
    * @return the Http Response according to the status and the content if not
    *     null (setting the CONTENT_LENGTH)
    */
-  public FullHttpResponse getResponse(final ByteBuf content) {
+  public final FullHttpResponse getResponse(final ByteBuf content) {
     // Decide whether to close the connection or not.
     if (request == null) {
       final FullHttpResponse httpResponse;
@@ -699,8 +700,8 @@ public abstract class HttpRestHandler
    * @throws HttpInvalidAuthenticationException
    * @throws HttpNotFoundRequestException
    */
-  protected void bodyChunk(final ChannelHandlerContext ctx,
-                           final HttpContent chunk)
+  protected final void bodyChunk(final ChannelHandlerContext ctx,
+                                 final HttpContent chunk)
       throws HttpIncorrectRequestException, HttpInvalidAuthenticationException,
              HttpNotFoundRequestException {
     // New chunk is received: only for Post!
@@ -737,13 +738,13 @@ public abstract class HttpRestHandler
     }
   }
 
-  protected void finalizeSend(final ChannelHandlerContext ctx) {
+  protected final void finalizeSend(final ChannelHandlerContext ctx) {
     final ChannelFuture future;
     if (arguments.getMethod() == METHOD.OPTIONS) {
       future = handler.sendOptionsResponse(this, ctx, response, status);
     } else {
-      future = handler
-          .sendResponse(this, ctx, arguments, response, jsonObject, status);
+      future = handler.sendResponse(this, ctx, arguments, response, jsonObject,
+                                    status);
     }
     if (future != null) {
       future.addListener(WaarpSslUtility.SSLCLOSE);
@@ -759,7 +760,7 @@ public abstract class HttpRestHandler
    *
    * @throws HttpIncorrectRequestException
    */
-  protected Object getBodyJsonArgs(final ByteBuf data)
+  protected final Object getBodyJsonArgs(final ByteBuf data)
       throws HttpIncorrectRequestException {
     if (data == null || data.readableBytes() == 0) {
       return null;
@@ -772,7 +773,7 @@ public abstract class HttpRestHandler
    *
    * @throws HttpIncorrectRequestException
    */
-  protected void readHttpDataChunkByChunk()
+  protected final void readHttpDataChunkByChunk()
       throws HttpIncorrectRequestException {
     try {
       while (decoder.hasNext()) {
@@ -788,8 +789,8 @@ public abstract class HttpRestHandler
   }
 
   @Override
-  public void exceptionCaught(final ChannelHandlerContext ctx,
-                              final Throwable cause) {
+  public final void exceptionCaught(final ChannelHandlerContext ctx,
+                                    final Throwable cause) {
     if (ctx.channel().isActive()) {
       if (cause != null && cause.getMessage() != null) {
         logger.warn("Exception {}", cause.getMessage());
@@ -825,35 +826,35 @@ public abstract class HttpRestHandler
   /**
    * @return the status
    */
-  public HttpResponseStatus getStatus() {
+  public final HttpResponseStatus getStatus() {
     return status;
   }
 
   /**
    * @param status the status to set
    */
-  public void setStatus(final HttpResponseStatus status) {
+  public final void setStatus(final HttpResponseStatus status) {
     this.status = status;
   }
 
   /**
    * @return the request
    */
-  public HttpRequest getRequest() {
+  public final HttpRequest getRequest() {
     return request;
   }
 
   /**
    * @return the willClose
    */
-  public boolean isWillClose() {
+  public final boolean isWillClose() {
     return willClose;
   }
 
   /**
    * @param willClose the willClose to set
    */
-  public void setWillClose(final boolean willClose) {
+  public final void setWillClose(final boolean willClose) {
     this.willClose = willClose;
   }
 }

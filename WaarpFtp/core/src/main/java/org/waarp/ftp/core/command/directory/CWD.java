@@ -38,7 +38,7 @@ public class CWD extends AbstractCommand {
       WaarpLoggerFactory.getLogger(CWD.class);
 
   @Override
-  public void exec() throws CommandAbstractException {
+  public final void exec() throws CommandAbstractException {
     final FtpDir current = getSession().getDir();
     if (current == null) {
       logger.warn("not identidied");
@@ -53,8 +53,8 @@ public class CWD extends AbstractCommand {
                                 '"' + current.getPwd() +
                                 "\" is the new current directory");
     } else {
-      getSession()
-          .setReplyCode(ReplyCode.REPLY_550_REQUESTED_ACTION_NOT_TAKEN, null);
+      getSession().setReplyCode(ReplyCode.REPLY_550_REQUESTED_ACTION_NOT_TAKEN,
+                                null);
     }
   }
 

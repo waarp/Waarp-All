@@ -47,7 +47,7 @@ public class AUTH extends AbstractCommand {
       WaarpLoggerFactory.getLogger(AUTH.class);
 
   @Override
-  public void exec() throws CommandAbstractException {
+  public final void exec() throws CommandAbstractException {
     if (!getSession().getConfiguration().getFtpInternalConfiguration()
                      .isAcceptAuthProt()) {
       throw new Reply534Exception("AUTH SSL / TLS not supported");
@@ -67,17 +67,15 @@ public class AUTH extends AbstractCommand {
       logger.debug("Start TLS");
       getSession().rein();
       getSession().setNextCommand(this);
-      getSession()
-          .setReplyCode(ReplyCode.REPLY_234_SECURITY_DATA_EXCHANGE_COMPLETE,
-                        null);
+      getSession().setReplyCode(
+          ReplyCode.REPLY_234_SECURITY_DATA_EXCHANGE_COMPLETE, null);
     } else if ("SSL".equalsIgnoreCase(types[0])) {
       // Both Command and Data will have SSL
       logger.debug("Start SSL");
       getSession().rein();
       getSession().setNextCommand(this);
-      getSession()
-          .setReplyCode(ReplyCode.REPLY_234_SECURITY_DATA_EXCHANGE_COMPLETE,
-                        null);
+      getSession().setReplyCode(
+          ReplyCode.REPLY_234_SECURITY_DATA_EXCHANGE_COMPLETE, null);
       getSession().setDataSsl(true);
     } else {
       throw new Reply504Exception("Unknown Parameter: " + types[0]);

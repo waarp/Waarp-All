@@ -83,35 +83,35 @@ public class ProxyEntry {
   /**
    * @return the localSocketAddress
    */
-  public SocketAddress getLocalSocketAddress() {
+  public final SocketAddress getLocalSocketAddress() {
     return localSocketAddress;
   }
 
   /**
    * @return the localIsSsl
    */
-  public boolean isLocalSsl() {
+  public final boolean isLocalSsl() {
     return localIsSsl;
   }
 
   /**
    * @return the remoteSocketAddress
    */
-  public SocketAddress getRemoteSocketAddress() {
+  public final SocketAddress getRemoteSocketAddress() {
     return remoteSocketAddress;
   }
 
   /**
    * @return the name
    */
-  public String getName() {
+  public final String getName() {
     return name;
   }
 
   /**
    * @return the isSsl
    */
-  public boolean isRemoteSsl() {
+  public final boolean isRemoteSsl() {
     return remoteIsSsl;
   }
 

@@ -108,54 +108,62 @@ public abstract class DAOFactory {
   /**
    * Return a BusinessDAO
    *
+   * @param isCacheable
+   *
    * @return a ready to use BusinessDAO
    *
    * @throws DAOConnectionException if cannot create the DAO
-   * @param isCacheable
    */
-  public abstract BusinessDAO getBusinessDAO(final boolean isCacheable) throws DAOConnectionException;
+  public abstract BusinessDAO getBusinessDAO(final boolean isCacheable)
+      throws DAOConnectionException;
 
   /**
    * Return a HostDAO
    *
+   * @param isCacheable
+   *
    * @return a ready to use HostDAO
    *
    * @throws DAOConnectionException if cannot create the DAO
-   * @param isCacheable
    */
-  public abstract HostDAO getHostDAO(final boolean isCacheable) throws DAOConnectionException;
+  public abstract HostDAO getHostDAO(final boolean isCacheable)
+      throws DAOConnectionException;
 
   /**
    * Return a LimitDAO
    *
+   * @param isCacheable
+   *
    * @return a ready to use LimitDAO
    *
    * @throws DAOConnectionException if cannot create the DAO
-   * @param isCacheable
    */
-  public abstract LimitDAO getLimitDAO(final boolean isCacheable) throws DAOConnectionException;
+  public abstract LimitDAO getLimitDAO(final boolean isCacheable)
+      throws DAOConnectionException;
 
   /**
    * Return a MultipleMonitorDAO
    *
+   * @param isCacheable
+   *
    * @return a ready to use MultipleMonitorDAO
    *
    * @throws DAOConnectionException if cannot create the DAO
-   * @param isCacheable
    */
   public abstract MultipleMonitorDAO getMultipleMonitorDAO(
-      final boolean isCacheable)
-      throws DAOConnectionException;
+      final boolean isCacheable) throws DAOConnectionException;
 
   /**
    * Return a RuleDAO
    *
+   * @param isCacheable
+   *
    * @return a ready to use RuleDAO
    *
    * @throws DAOConnectionException if cannot create the DAO
-   * @param isCacheable
    */
-  public abstract RuleDAO getRuleDAO(final boolean isCacheable) throws DAOConnectionException;
+  public abstract RuleDAO getRuleDAO(final boolean isCacheable)
+      throws DAOConnectionException;
 
   /**
    * Return a TransferDAO

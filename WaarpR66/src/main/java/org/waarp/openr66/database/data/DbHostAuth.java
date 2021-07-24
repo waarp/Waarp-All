@@ -103,22 +103,23 @@ public class DbHostAuth extends AbstractDbDataDao<Host> {
   };
 
   @Override
-  protected void initObject() {
+  protected final void initObject() {
     //nothing
   }
 
   @Override
-  protected String getTable() {
+  protected final String getTable() {
     return table;
   }
 
   @Override
-  protected AbstractDAO<Host> getDao(final boolean isCacheable) throws DAOConnectionException {
+  protected final AbstractDAO<Host> getDao(final boolean isCacheable)
+      throws DAOConnectionException {
     return DAOFactory.getInstance().getHostDAO(isCacheable);
   }
 
   @Override
-  protected String getPrimaryKey() {
+  protected final String getPrimaryKey() {
     if (pojo != null) {
       return pojo.getHostid();
     }
@@ -126,7 +127,7 @@ public class DbHostAuth extends AbstractDbDataDao<Host> {
   }
 
   @Override
-  protected String getPrimaryField() {
+  protected final String getPrimaryField() {
     return Columns.HOSTID.name();
   }
 
@@ -178,12 +179,13 @@ public class DbHostAuth extends AbstractDbDataDao<Host> {
   }
 
   @Override
-  protected void checkValues() throws WaarpDatabaseSqlException {
+  protected final void checkValues() throws WaarpDatabaseSqlException {
     pojo.checkValues();
   }
 
   @Override
-  public void setFromJson(final ObjectNode node, final boolean ignorePrimaryKey)
+  public final void setFromJson(final ObjectNode node,
+                                final boolean ignorePrimaryKey)
       throws WaarpDatabaseSqlException {
     super.setFromJson(node, ignorePrimaryKey);
     if (pojo.getHostkey() == null || pojo.getHostkey().length == 0 ||
@@ -221,7 +223,7 @@ public class DbHostAuth extends AbstractDbDataDao<Host> {
   }
 
   @Override
-  protected void setFromJson(final String field, final JsonNode value) {
+  protected final void setFromJson(final String field, final JsonNode value) {
     if (value == null) {
       return;
     }
@@ -240,7 +242,7 @@ public class DbHostAuth extends AbstractDbDataDao<Host> {
               final byte[] key =
                   Base64Variants.getDefaultVariant().decode(value.asText());
               pojo.setHostkey(key);
-            } catch (IllegalArgumentException e) {
+            } catch (final IllegalArgumentException e) {
               logger.warn("HostKey not in Base64 from Jackson: {}",
                           e.getMessage());
               pojo.setHostkey(value.asText().getBytes(WaarpStringUtils.UTF8));
@@ -375,8 +377,8 @@ public class DbHostAuth extends AbstractDbDataDao<Host> {
     AbstractDAO<Host> hostDAO = null;
     try {
       hostDAO = dbHostAuth.getDao(false);
-      dbHostAuth.pojo = ((StatementExecutor<Host>) hostDAO)
-          .getFromResultSet(preparedStatement.getResultSet());
+      dbHostAuth.pojo = ((StatementExecutor<Host>) hostDAO).getFromResultSet(
+          preparedStatement.getResultSet());
       return dbHostAuth;
     } catch (final SQLException e) {
       DbSession.error(e);
@@ -392,8 +394,8 @@ public class DbHostAuth extends AbstractDbDataDao<Host> {
       throws WaarpDatabaseNoConnectionException {
     final List<Filter> filters = new ArrayList<Filter>(1);
     filters.add(new Filter(DBHostDAO.UPDATED_INFO_FIELD, "=",
-                           org.waarp.openr66.pojo.UpdatedInfo
-                               .fromLegacy(UpdatedInfo.TOSUBMIT).ordinal()));
+                           org.waarp.openr66.pojo.UpdatedInfo.fromLegacy(
+                               UpdatedInfo.TOSUBMIT).ordinal()));
     HostDAO hostAccess = null;
     List<Host> hosts;
     try {
@@ -435,7 +437,7 @@ public class DbHostAuth extends AbstractDbDataDao<Host> {
         "SELECT " + selectAllFields + " FROM " + table + " WHERE ";
     String condition = null;
     if (ParametersChecker.isNotEmpty(host)) {
-      condition = Columns.HOSTID.name() + " LIKE '%" + host + "%' ";
+      condition = Columns.HOSTID.name() + " = '" + host + "' ";
     }
     if (ParametersChecker.isNotEmpty(addr)) {
       if (condition != null) {
@@ -443,7 +445,7 @@ public class DbHostAuth extends AbstractDbDataDao<Host> {
       } else {
         condition = "";
       }
-      condition += Columns.ADDRESS.name() + " LIKE '%" + addr + "%' ";
+      condition += Columns.ADDRESS.name() + " = '" + addr + "' ";
     }
     if (condition != null) {
       condition += " AND ";
@@ -482,7 +484,7 @@ public class DbHostAuth extends AbstractDbDataDao<Host> {
     final String request = "SELECT " + selectAllFields + " FROM " + table;
     String condition = null;
     if (ParametersChecker.isNotEmpty(host)) {
-      condition = Columns.HOSTID.name() + " LIKE '%" + host + "%' ";
+      condition = Columns.HOSTID.name() + " = '" + host + "' ";
     }
     if (ParametersChecker.isNotEmpty(addr)) {
       if (condition != null) {
@@ -490,7 +492,7 @@ public class DbHostAuth extends AbstractDbDataDao<Host> {
       } else {
         condition = "";
       }
-      condition += Columns.ADDRESS.name() + " LIKE '%" + addr + "%' ";
+      condition += Columns.ADDRESS.name() + " = '" + addr + "' ";
     }
     if (condition != null) {
       condition = " WHERE " + condition;
@@ -503,7 +505,7 @@ public class DbHostAuth extends AbstractDbDataDao<Host> {
   }
 
   @Override
-  public void changeUpdatedInfo(final UpdatedInfo info) {
+  public final void changeUpdatedInfo(final UpdatedInfo info) {
     isSaved = false;
     pojo.setUpdatedInfo(org.waarp.openr66.pojo.UpdatedInfo.fromLegacy(info));
   }
@@ -511,14 +513,14 @@ public class DbHostAuth extends AbstractDbDataDao<Host> {
   /**
    * @return the isActive
    */
-  public boolean isActive() {
+  public final boolean isActive() {
     return pojo.isActive();
   }
 
   /**
    * @param isActive the isActive to set
    */
-  public void setActive(final boolean isActive) {
+  public final void setActive(final boolean isActive) {
     isSaved = false;
     pojo.setActive(isActive);
   }
@@ -526,14 +528,14 @@ public class DbHostAuth extends AbstractDbDataDao<Host> {
   /**
    * @return the isProxified
    */
-  public boolean isProxified() {
+  public final boolean isProxified() {
     return pojo.isProxified();
   }
 
   /**
    * @param isProxified the isProxified to set
    */
-  public void setProxified(final boolean isProxified) {
+  public final void setProxified(final boolean isProxified) {
     isSaved = false;
     pojo.setProxified(isProxified);
   }
@@ -545,7 +547,7 @@ public class DbHostAuth extends AbstractDbDataDao<Host> {
    *
    * @return True if the key is valid (or any key is valid)
    */
-  public boolean isKeyValid(final byte[] newkey) {
+  public final boolean isKeyValid(final byte[] newkey) {
     // It is valid to not have a key
     // Check before if any key is passed or if account is active
     if (pojo.getHostkey() == null) {
@@ -569,7 +571,7 @@ public class DbHostAuth extends AbstractDbDataDao<Host> {
   /**
    * @return the hostkey
    */
-  public byte[] getHostkey() {
+  public final byte[] getHostkey() {
     if (pojo.getHostkey() == null) {
       return null;
     }
@@ -585,7 +587,7 @@ public class DbHostAuth extends AbstractDbDataDao<Host> {
   /**
    * @return the adminrole
    */
-  public boolean isAdminrole() {
+  public final boolean isAdminrole() {
     return pojo.isAdmin();
   }
 
@@ -594,7 +596,7 @@ public class DbHostAuth extends AbstractDbDataDao<Host> {
    *
    * @return True if the address is a client address (0.0.0.0) or isClient
    */
-  public boolean isClient() {
+  public final boolean isClient() {
     return pojo.isClient() || isNoAddress();
   }
 
@@ -604,7 +606,7 @@ public class DbHostAuth extends AbstractDbDataDao<Host> {
    * @return True if the address is a client address (0.0.0.0) or if the port
    *     is < 0
    */
-  public boolean isNoAddress() {
+  public final boolean isNoAddress() {
     return pojo.getAddress().equals(DEFAULT_CLIENT_ADDRESS) ||
            pojo.getPort() < 0;
   }
@@ -616,7 +618,8 @@ public class DbHostAuth extends AbstractDbDataDao<Host> {
    *     and
    *     therefore cannot be checked
    */
-  public SocketAddress getSocketAddress() throws IllegalArgumentException {
+  public final SocketAddress getSocketAddress()
+      throws IllegalArgumentException {
     if (isNoAddress()) {
       throw new IllegalArgumentException("Not a server");
     }
@@ -626,28 +629,28 @@ public class DbHostAuth extends AbstractDbDataDao<Host> {
   /**
    * @return True if this Host ref is with SSL support
    */
-  public boolean isSsl() {
+  public final boolean isSsl() {
     return pojo.isSSL();
   }
 
   /**
    * @return the hostid
    */
-  public String getHostid() {
+  public final String getHostid() {
     return pojo.getHostid();
   }
 
   /**
    * @return the address
    */
-  public String getAddress() {
+  public final String getAddress() {
     return pojo.getAddress();
   }
 
   /**
    * @return the port
    */
-  public int getPort() {
+  public final int getPort() {
     return pojo.getPort();
   }
 
@@ -691,7 +694,7 @@ public class DbHostAuth extends AbstractDbDataDao<Host> {
   }
 
   @Override
-  public String toString() {
+  public final String toString() {
     return "HostAuth: " + getHostid() + " address: " + getAddress() + ':' +
            getPort() + " isSSL: " + isSsl() + " admin: " + isAdminrole() +
            " isClient: " + isClient() + " isActive: " + isActive() +
@@ -742,16 +745,16 @@ public class DbHostAuth extends AbstractDbDataDao<Host> {
     }
     int nb;
     try {
-      nb = NetworkTransaction
-          .nbAttachedConnection(getSocketAddress(), getHostid());
+      nb = NetworkTransaction.nbAttachedConnection(getSocketAddress(),
+                                                   getHostid());
     } catch (final Exception e) {
       nb = -1;
     }
     node.put("Connection", nb);
     node.put("Version", COMMA.matcher(BACKSLASH.matcher(getVersion(getHostid()))
-                                               .replaceAll(Matcher
-                                                               .quoteReplacement(
-                                                                   "")))
+                                               .replaceAll(
+                                                   Matcher.quoteReplacement(
+                                                       "")))
                              .replaceAll(Matcher.quoteReplacement(", ")));
     return node;
   }
@@ -759,7 +762,7 @@ public class DbHostAuth extends AbstractDbDataDao<Host> {
   /**
    * @return the Json string for this
    */
-  public String getJsonAsString() {
+  public final String getJsonAsString() {
     final ObjectNode node = getInternalJson();
     return JsonHandler.writeAsString(node);
   }
@@ -774,13 +777,14 @@ public class DbHostAuth extends AbstractDbDataDao<Host> {
    * @return the runner in Html format specified by body by replacing all
    *     instance of fields
    */
-  public String toSpecializedHtml(final R66Session session, final String body,
-                                  final boolean crypted) {
+  public final String toSpecializedHtml(final R66Session session,
+                                        final String body,
+                                        final boolean crypted) {
     final StringBuilder builder = new StringBuilder(body);
     WaarpStringUtils.replace(builder, "XXXHOSTXXX", getHostid());
     WaarpStringUtils.replace(builder, "XXXADDRXXX", getAddress());
-    WaarpStringUtils
-        .replace(builder, "XXXPORTXXX", Integer.toString(getPort()));
+    WaarpStringUtils.replace(builder, "XXXPORTXXX",
+                             Integer.toString(getPort()));
     if (crypted) {
       WaarpStringUtils.replace(builder, "XXXKEYXXX",
                                new String(getHostkey(), WaarpStringUtils.UTF8));
@@ -802,13 +806,13 @@ public class DbHostAuth extends AbstractDbDataDao<Host> {
                                   .replaceAll(Matcher.quoteReplacement(", ")));
     int nb;
     try {
-      nb = NetworkTransaction
-          .nbAttachedConnection(getSocketAddress(), getHostid());
+      nb = NetworkTransaction.nbAttachedConnection(getSocketAddress(),
+                                                   getHostid());
     } catch (final Exception e) {
       nb = -1;
     }
-    WaarpStringUtils
-        .replace(builder, "XXXCONNXXX", nb > 0? "(" + nb + " Connected) " : "");
+    WaarpStringUtils.replace(builder, "XXXCONNXXX",
+                             nb > 0? "(" + nb + " Connected) " : "");
     return builder.toString();
   }
 

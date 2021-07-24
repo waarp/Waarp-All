@@ -46,7 +46,7 @@ public abstract class AbstractLruCache<K, V>
   }
 
   @Override
-  public boolean contains(final K key) {
+  public final boolean contains(final K key) {
     // can't use contains because of expiration policy
     final V value = get(key);
 
@@ -74,12 +74,12 @@ public abstract class AbstractLruCache<K, V>
   }
 
   @Override
-  public V get(final K key, final Callable<V> callback) throws Exception {
+  public final V get(final K key, final Callable<V> callback) throws Exception {
     return get(key, callback, ttl);
   }
 
   @Override
-  public V get(final K key, final Callable<V> callback, final long ttl)
+  public final V get(final K key, final Callable<V> callback, final long ttl)
       throws Exception {
     V value = get(key);
 
@@ -93,12 +93,12 @@ public abstract class AbstractLruCache<K, V>
   }
 
   @Override
-  public long getTtl() {
+  public final long getTtl() {
     return ttl;
   }
 
   @Override
-  public void setNewTtl(final long ttl) {
+  public final void setNewTtl(final long ttl) {
     if (ttl <= 0) {
       throw new IllegalArgumentException("ttl must be positive");
     }
@@ -115,7 +115,7 @@ public abstract class AbstractLruCache<K, V>
   protected abstract InterfaceLruCacheEntry<V> getEntry(K key);
 
   @Override
-  public void updateTtl(final K key) {
+  public final void updateTtl(final K key) {
     final InterfaceLruCacheEntry<V> cacheEntry = getEntry(key);
     if (cacheEntry != null) {
       cacheEntry.resetTime(ttl);
@@ -131,7 +131,7 @@ public abstract class AbstractLruCache<K, V>
    *
    * @return Value
    */
-  protected V getValue(final K key) {
+  protected final V getValue(final K key) {
     V value = null;
 
     final InterfaceLruCacheEntry<V> cacheEntry = getEntry(key);
@@ -149,12 +149,12 @@ public abstract class AbstractLruCache<K, V>
   }
 
   @Override
-  public boolean isEmpty() {
+  public final boolean isEmpty() {
     return size() == 0;
   }
 
   @Override
-  public void put(final K key, final V value) {
+  public final void put(final K key, final V value) {
     put(key, value, ttl);
   }
 

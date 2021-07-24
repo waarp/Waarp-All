@@ -36,8 +36,8 @@ public class DataTimeOutListener implements FTPDataTransferListener {
   /**
    * Internal Logger
    */
-  private static final WaarpLogger logger = WaarpLoggerFactory
-      .getLogger(org.waarp.ftp.client.DataTimeOutListener.class);
+  private static final WaarpLogger logger = WaarpLoggerFactory.getLogger(
+      org.waarp.ftp.client.DataTimeOutListener.class);
 
   private final FTPClient client;
   private final Timer timer;
@@ -59,15 +59,15 @@ public class DataTimeOutListener implements FTPDataTransferListener {
   private void renewTask() {
     final TimerTask task = new TimerTask() {
       @Override
-      public void run() {
+      public final void run() {
         if (finished) {
           return;
         }
         final long now = System.currentTimeMillis();
         if (now - last - timeout > 0) {
           try {
-            logger
-                .warn("Timeout during file transfer: " + command + ' ' + file);
+            logger.warn(
+                "Timeout during file transfer: " + command + ' ' + file);
             client.abortCurrentDataTransfer(true);
           } catch (final IOException ignored) {
           } catch (final FTPIllegalReplyException ignored) {
@@ -81,32 +81,32 @@ public class DataTimeOutListener implements FTPDataTransferListener {
   }
 
   @Override
-  public void started() {
+  public final void started() {
     renewTask();
     last = System.currentTimeMillis();
   }
 
   @Override
-  public void transferred(int length) {
+  public final void transferred(int length) {
     last = System.currentTimeMillis();
   }
 
   @Override
-  public void completed() {
+  public final void completed() {
     finished = true;
     last = System.currentTimeMillis();
     timer.cancel();
   }
 
   @Override
-  public void aborted() {
+  public final void aborted() {
     finished = true;
     last = System.currentTimeMillis();
     timer.cancel();
   }
 
   @Override
-  public void failed() {
+  public final void failed() {
     finished = true;
     last = System.currentTimeMillis();
     timer.cancel();

@@ -79,7 +79,7 @@ public final class ThreadLocalRandom extends Random {
   private static final ThreadLocal<ThreadLocalRandom> localRandom =//NOSONAR
       new ThreadLocal<ThreadLocalRandom>() {
         @Override
-        protected ThreadLocalRandom initialValue() {
+        protected final ThreadLocalRandom initialValue() {
           return new ThreadLocalRandom();
         }
       };//NOSONAR
@@ -100,7 +100,7 @@ public final class ThreadLocalRandom extends Random {
    * @throws UnsupportedOperationException always
    */
   @Override
-  public void setSeed(final long seed) {//NOSONAR
+  public final void setSeed(final long seed) {//NOSONAR
     // We rely on the fact that the superclass no-arg constructor
     // invokes setSeed exactly once to initialize.
     if (initialized) {
@@ -111,7 +111,7 @@ public final class ThreadLocalRandom extends Random {
   }
 
   @Override
-  protected int next(final int bits) {
+  protected final int next(final int bits) {
     rnd = rnd * MULTIPLIER + ADDEND & MASK;
     return (int) (rnd >>> 48 - bits);
   }

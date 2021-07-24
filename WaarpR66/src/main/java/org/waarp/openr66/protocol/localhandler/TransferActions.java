@@ -29,6 +29,7 @@ import org.waarp.common.file.DataBlock;
 import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.openr66.commander.ClientRunner;
 import org.waarp.openr66.context.ErrorCode;
 import org.waarp.openr66.context.R66Result;
 import org.waarp.openr66.context.task.AbstractTask;
@@ -107,8 +108,8 @@ public class TransferActions extends ServerActions {
                  e1 != null? e1.getMessage() : "no exception",
                  runner != null? runner.toShortString() : "no runner");
     logger.debug("DEBUG Full stack", e1);
-    localChannelReference
-        .invalidateRequest(new R66Result(e1, session, true, code, null));
+    localChannelReference.invalidateRequest(
+        new R66Result(e1, session, true, code, null));
 
     if (packet.isToValidate()) {
       // / answer with a wrong request since runner is not set on remote host
@@ -127,8 +128,8 @@ public class TransferActions extends ServerActions {
       packet.validate();
       packet.setCode(code.code);
       session.newState(ERROR);
-      ChannelUtils
-          .writeAbstractLocalPacket(localChannelReference, packet, false);
+      ChannelUtils.writeAbstractLocalPacket(localChannelReference, packet,
+                                            false);
     } else {
       session.newState(ERROR);
       final ErrorPacket error = new ErrorPacket(
@@ -136,8 +137,8 @@ public class TransferActions extends ServerActions {
           (e1 != null? e1.getMessage() : "Unknown Error") + " for " + packet +
           " since " + code.getMesg(), code.getCode(),
           ErrorPacket.FORWARDCLOSECODE);
-      ChannelUtils
-          .writeAbstractLocalPacket(localChannelReference, error, false);
+      ChannelUtils.writeAbstractLocalPacket(localChannelReference, error,
+                                            false);
     }
     session.setStatus(47);
     ChannelCloseTimer.closeFutureTransaction(this);
@@ -153,7 +154,7 @@ public class TransferActions extends ServerActions {
    * @throws OpenR66ProtocolSystemException
    * @throws OpenR66RunnerErrorException
    */
-  public void request(RequestPacket packet)
+  public final void request(RequestPacket packet)
       throws OpenR66ProtocolPacketException, OpenR66RunnerErrorException,
              OpenR66ProtocolSystemException, OpenR66ProtocolBusinessException {
     session.setStatus(99);
@@ -173,8 +174,8 @@ public class TransferActions extends ServerActions {
     try {
       rule = new DbRule(packet.getRulename());
     } catch (final WaarpDatabaseException e) {
-      logger
-          .info("Rule is unknown: {} {}", packet.getRulename(), e.getMessage());
+      logger.info("Rule is unknown: {} {}", packet.getRulename(),
+                  e.getMessage());
       session.setStatus(49);
       endInitRequestInError(ErrorCode.QueryRemotelyUnknown, null,
                             new OpenR66ProtocolBusinessException(
@@ -216,19 +217,21 @@ public class TransferActions extends ServerActions {
     // Receiver can specify a rank different from database
     setRankAtStartupFromRequest(packet, runner);
     runner.setBlocksize(packet.getBlocksize());
-    logger
-        .debug("Filesize: {}:{}", packet.getOriginalSize(), runner.isSender());
+    logger.debug("Filesize: {}:{}", packet.getOriginalSize(),
+                 runner.isSender());
     logger.debug("I am {} acting as sender {} while packet said {} and " +
                  "runner said {} and session said {} but will changed",
                  Configuration.configuration.getHostId(), isRetrieve,
                  packet.isRetrieve(), runner.isSender(), session.isSender());
     logger.debug(
         "COMPRESSION was {} and could become {} while remote " + "host said {}",
-        session.isCompressionEnabled(), AbstractTask
-            .isCompressionRequested(runner.getFileInformation(), session),
+        session.isCompressionEnabled(),
+        AbstractTask.isCompressionRequested(runner.getFileInformation(),
+                                            session),
         localChannelReference.getPartner());
-    session.setCompressionEnabled(AbstractTask.isCompressionRequested(
-        runner.getFileInformation(), session));
+    session.setCompressionEnabled(
+        AbstractTask.isCompressionRequested(runner.getFileInformation(),
+                                            session));
     runner.setBlockCompression(session.isCompressionEnabled());
     try {
       runner.update();
@@ -382,8 +385,8 @@ public class TransferActions extends ServerActions {
                                       final DbTaskRunner runner,
                                       boolean shouldInformBack)
       throws OpenR66ProtocolPacketException {
-    logger
-        .debug("Filesize: {}:{}", packet.getOriginalSize(), runner.isSender());
+    logger.debug("Filesize: {}:{}", packet.getOriginalSize(),
+                 runner.isSender());
     if (!shouldInformBack) {
       shouldInformBack =
           !packet.getTransferInformation().equals(runner.getFileInformation());
@@ -444,8 +447,8 @@ public class TransferActions extends ServerActions {
       }
       packet.validate();
       session.newState(REQUESTD);
-      ChannelUtils
-          .writeAbstractLocalPacket(localChannelReference, packet, false);
+      ChannelUtils.writeAbstractLocalPacket(localChannelReference, packet,
+                                            false);
     } else {
       session.newState(REQUESTD);
       // requester => might be a client
@@ -474,7 +477,7 @@ public class TransferActions extends ServerActions {
         NetworkTransaction.runRetrieve(session);
         try {
           Thread.sleep(Configuration.RETRYINMS);
-        } catch (InterruptedException ignore) { //NOSONAR
+        } catch (final InterruptedException ignore) { //NOSONAR
           SysErrLogger.FAKE_LOGGER.ignoreLog(ignore);
         }
       }
@@ -688,8 +691,8 @@ public class TransferActions extends ServerActions {
       // Reception of request from requester host
       try {
         runner = new DbTaskRunner(session, rule, isRetrieve, packet);
-        logger
-            .debug(RUNNER_BEFORE_ANY_ACTION, runner.shallIgnoreSave(), runner);
+        logger.debug(RUNNER_BEFORE_ANY_ACTION, runner.shallIgnoreSave(),
+                     runner);
       } catch (final WaarpDatabaseException e1) {
         session.setStatus(33);
         endInitRequestInError(ErrorCode.QueryRemotelyUnknown, null,
@@ -713,14 +716,14 @@ public class TransferActions extends ServerActions {
           Configuration.configuration.getConstraintLimitHandler().lastAlert);
     }
     logger.warn(Messages.getString("LocalServerHandler.8") //$NON-NLS-1$
-                + packet.getRulename() + " while " + Configuration.configuration
-                    .getConstraintLimitHandler().lastAlert + " from " +
-                session.getAuth());
+                + packet.getRulename() + " while " +
+                Configuration.configuration.getConstraintLimitHandler().lastAlert +
+                " from " + session.getAuth());
     session.setStatus(100);
     endInitRequestInError(ErrorCode.ServerOverloaded, null,
                           new OpenR66ProtocolNotYetConnectionException(
-                              "Limit exceeded " + Configuration.configuration
-                                  .getConstraintLimitHandler().lastAlert),
+                              "Limit exceeded " +
+                              Configuration.configuration.getConstraintLimitHandler().lastAlert),
                           packet);
     session.setStatus(100);
   }
@@ -752,8 +755,8 @@ public class TransferActions extends ServerActions {
       }
       final JsonCommandPacket validPacket =
           new JsonCommandPacket(request, LocalPacketFactory.REQUESTPACKET);
-      ChannelUtils
-          .writeAbstractLocalPacket(localChannelReference, validPacket, false);
+      ChannelUtils.writeAbstractLocalPacket(localChannelReference, validPacket,
+                                            false);
     } else {
       final String infoTransfer = runner.getFileInformation();
       final ValidPacket validPacket;
@@ -772,8 +775,8 @@ public class TransferActions extends ServerActions {
                                             packet.getOriginalSize(),
                                       LocalPacketFactory.REQUESTPACKET);
       }
-      ChannelUtils
-          .writeAbstractLocalPacket(localChannelReference, validPacket, false);
+      ChannelUtils.writeAbstractLocalPacket(localChannelReference, validPacket,
+                                            false);
     }
   }
 
@@ -816,7 +819,7 @@ public class TransferActions extends ServerActions {
    * @throws OpenR66ProtocolBusinessException
    * @throws OpenR66ProtocolPacketException
    */
-  public void data(final DataPacket packet)
+  public final void data(final DataPacket packet)
       throws OpenR66ProtocolNotAuthenticatedException,
              OpenR66ProtocolBusinessException, OpenR66ProtocolPacketException {
     if (!session.isAuthenticated()) {
@@ -918,8 +921,8 @@ public class TransferActions extends ServerActions {
                        "usual algo"));
       if (Configuration.configuration.isGlobalDigest()) {
         // Cumulate all three digests
-        if (!packet
-            .isKeyValid(session.getDigestBlock(), globalDigest, localDigest)) {
+        if (!packet.isKeyValid(session.getDigestBlock(), globalDigest,
+                               localDigest)) {
           // Wrong packet
           logger.error(Messages.getString("LocalServerHandler.17"), packet,
                        //$NON-NLS-1$
@@ -934,8 +937,8 @@ public class TransferActions extends ServerActions {
           return;
         }
         // Only Packet digest and maybe localDigest
-      } else if (!packet
-          .isKeyValid(session.getDigestBlock(), null, localDigest)) {
+      } else if (!packet.isKeyValid(session.getDigestBlock(), null,
+                                    localDigest)) {
         // Wrong packet
         logger.error(Messages.getString("LocalServerHandler.17"), packet,
                      //$NON-NLS-1$
@@ -953,7 +956,8 @@ public class TransferActions extends ServerActions {
       FileUtils.computeGlobalHash(globalDigest, localDigest, packet.getData(),
                                   packet.getLengthPacket());
     }
-    if (session.getRunner().isRecvThrough() &&
+    if ((session.getRunner().isRecvThrough() ||
+         ClientRunner.isRecvHandlerJunit()) &&
         localChannelReference.isRecvThroughMode()) {
       try {
         localChannelReference.getRecvThroughHandler()
@@ -1045,7 +1049,7 @@ public class TransferActions extends ServerActions {
    *
    * @throws OpenR66ProtocolNotAuthenticatedException
    */
-  public void endTransfer(final EndTransferPacket packet)
+  public final void endTransfer(final EndTransferPacket packet)
       throws OpenR66ProtocolNotAuthenticatedException {
     if (!session.isAuthenticated()) {
       throw new OpenR66ProtocolNotAuthenticatedException(
@@ -1090,8 +1094,8 @@ public class TransferActions extends ServerActions {
       // Now can send validation
       packet.validate();
       try {
-        ChannelUtils
-            .writeAbstractLocalPacket(localChannelReference, packet, false);
+        ChannelUtils.writeAbstractLocalPacket(localChannelReference, packet,
+                                              false);
       } catch (final OpenR66ProtocolPacketException e) {
         // ignore
       }
@@ -1133,8 +1137,8 @@ public class TransferActions extends ServerActions {
             localChannelReference.getPartner().getDigestAlgo().algoName + ')',
             ErrorCode.MD5Error.getCode(), ErrorPacket.FORWARDCLOSECODE);
         try {
-          ChannelUtils
-              .writeAbstractLocalPacket(localChannelReference, error, false);
+          ChannelUtils.writeAbstractLocalPacket(localChannelReference, error,
+                                                false);
         } catch (final OpenR66ProtocolPacketException ignored) {
           // nothing
         }
@@ -1171,9 +1175,10 @@ public class TransferActions extends ServerActions {
       if (!session.getRunner().isRecvThrough() &&
           session.getFile().length() != originalSize ||
           session.getFile().length() == 0) {
-        String sizesDiffer = ": size differs from " + originalSize + " to " +
-                             session.getFile().length() + " at rank " +
-                             session.getRunner().getRank();
+        final String sizesDiffer =
+            ": size differs from " + originalSize + " to " +
+            session.getFile().length() + " at rank " +
+            session.getRunner().getRank();
         final R66Result result = new R66Result(new OpenR66RunnerErrorException(
             Messages.getString("LocalServerHandler.18") + sizesDiffer),//$NON
                                                // -NLS-1$
@@ -1192,8 +1197,8 @@ public class TransferActions extends ServerActions {
             sizesDiffer, ErrorCode.TransferError.getCode(),
             ErrorPacket.FORWARDCLOSECODE);
         try {
-          ChannelUtils
-              .writeAbstractLocalPacket(localChannelReference, error, false);
+          ChannelUtils.writeAbstractLocalPacket(localChannelReference, error,
+                                                false);
         } catch (final OpenR66ProtocolPacketException ignored) {
           // nothing
         }
@@ -1222,8 +1227,8 @@ public class TransferActions extends ServerActions {
                               ErrorPacket.FORWARDCLOSECODE);
     }
     try {
-      ChannelUtils
-          .writeAbstractLocalPacket(localChannelReference, error, false);
+      ChannelUtils.writeAbstractLocalPacket(localChannelReference, error,
+                                            false);
     } catch (final OpenR66ProtocolPacketException ignored) {
       // nothing
     }
@@ -1233,8 +1238,8 @@ public class TransferActions extends ServerActions {
 
   private boolean endTransferR() {
     // Finish with post Operation
-    R66Result result = new R66Result(session, false, ErrorCode.TransferOk,
-                                     session.getRunner());
+    final R66Result result = new R66Result(session, false, ErrorCode.TransferOk,
+                                           session.getRunner());
     try {
       session.setFinalizeTransfer(true, result);
     } catch (final OpenR66RunnerErrorException e) {
@@ -1256,7 +1261,7 @@ public class TransferActions extends ServerActions {
    * @throws OpenR66ProtocolSystemException
    * @throws OpenR66ProtocolNotAuthenticatedException
    */
-  public void endRequest(final EndRequestPacket packet) {
+  public final void endRequest(final EndRequestPacket packet) {
     // Validate the last post action on a transfer from receiver remote host
     logger.info("Valid Request {} Packet {}", localChannelReference, packet);
     final DbTaskRunner runner = session.getRunner();
@@ -1305,8 +1310,8 @@ public class TransferActions extends ServerActions {
       }
       session.newState(ENDREQUESTR);
       try {
-        ChannelUtils
-            .writeAbstractLocalPacket(localChannelReference, packet, false);
+        ChannelUtils.writeAbstractLocalPacket(localChannelReference, packet,
+                                              false);
       } catch (final OpenR66ProtocolPacketException ignored) {
         // nothing
       }
@@ -1328,7 +1333,7 @@ public class TransferActions extends ServerActions {
    *
    * @throws OpenR66RunnerErrorException
    */
-  public void requestChangeFileInfo(final String newFileInfo)
+  public final void requestChangeFileInfo(final String newFileInfo)
       throws OpenR66RunnerErrorException {
     final DbTaskRunner runner = session.getRunner();
     logger.debug("NewFileInfo {}", newFileInfo);
@@ -1344,8 +1349,8 @@ public class TransferActions extends ServerActions {
           "File changing information in error: " + e.getMessage(),
           runner.getErrorInfo().getCode(), ErrorPacket.FORWARDCLOSECODE);
       try {
-        ChannelUtils
-            .writeAbstractLocalPacket(localChannelReference, error, false);
+        ChannelUtils.writeAbstractLocalPacket(localChannelReference, error,
+                                              false);
       } catch (final OpenR66ProtocolPacketException ignored) {
         // nothing
       }
@@ -1375,8 +1380,8 @@ public class TransferActions extends ServerActions {
    *
    * @throws OpenR66RunnerErrorException
    */
-  public void requestChangeNameSize(final String newfilename,
-                                    final long newSize)
+  public final void requestChangeNameSize(final String newfilename,
+                                          final long newSize)
       throws OpenR66RunnerErrorException {
     session.newState(VALID);
     final DbTaskRunner runner = session.getRunner();
@@ -1412,15 +1417,14 @@ public class TransferActions extends ServerActions {
                             runner.getErrorInfo().getCode(),
                             ErrorPacket.FORWARDCLOSECODE);
         try {
-          ChannelUtils
-              .writeAbstractLocalPacket(localChannelReference, error, false);
+          ChannelUtils.writeAbstractLocalPacket(localChannelReference, error,
+                                                false);
         } catch (final OpenR66ProtocolPacketException ignored) {
           // nothing
         }
         try {
           session.setFinalizeTransfer(false, new R66Result(e, session, true,
-                                                           runner
-                                                               .getErrorInfo(),
+                                                           runner.getErrorInfo(),
                                                            runner));
         } catch (final OpenR66RunnerErrorException e1) {
           localChannelReference.invalidateRequest(
@@ -1462,9 +1466,8 @@ public class TransferActions extends ServerActions {
                 "File length is not compatible with Rule or capacity",
                 code.getCode(), ErrorPacket.FORWARDCLOSECODE);
             try {
-              ChannelUtils
-                  .writeAbstractLocalPacket(localChannelReference, errorPacket,
-                                            true);
+              ChannelUtils.writeAbstractLocalPacket(localChannelReference,
+                                                    errorPacket, true);
             } catch (final OpenR66ProtocolPacketException ignored) {
               // nothing
             }

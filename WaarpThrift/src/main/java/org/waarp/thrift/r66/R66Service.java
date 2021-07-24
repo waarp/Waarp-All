@@ -126,12 +126,13 @@ public class R66Service {
       }
 
       @Override
-      public Client getClient(final TProtocol prot) {
+      public final Client getClient(final TProtocol prot) {
         return new Client(prot);
       }
 
       @Override
-      public Client getClient(final TProtocol iprot, final TProtocol oprot) {
+      public final Client getClient(final TProtocol iprot,
+                                    final TProtocol oprot) {
         return new Client(iprot, oprot);
       }
     }
@@ -145,20 +146,20 @@ public class R66Service {
     }
 
     @Override
-    public R66Result transferRequestQuery(final R66Request request)
+    public final R66Result transferRequestQuery(final R66Request request)
         throws TException {
       send_transferRequestQuery(request);
       return recv_transferRequestQuery();
     }
 
-    public void send_transferRequestQuery(final R66Request request)
+    public final void send_transferRequestQuery(final R66Request request)
         throws TException {
       final transferRequestQuery_args args = new transferRequestQuery_args();
       args.setRequest(request);
       sendBase(TRANSFER_REQUEST_QUERY, args);
     }
 
-    public R66Result recv_transferRequestQuery() throws TException {
+    public final R66Result recv_transferRequestQuery() throws TException {
       final transferRequestQuery_result result =
           new transferRequestQuery_result();
       receiveBase(result, TRANSFER_REQUEST_QUERY);
@@ -170,20 +171,20 @@ public class R66Service {
     }
 
     @Override
-    public R66Result infoTransferQuery(final R66Request request)
+    public final R66Result infoTransferQuery(final R66Request request)
         throws TException {
       send_infoTransferQuery(request);
       return recv_infoTransferQuery();
     }
 
-    public void send_infoTransferQuery(final R66Request request)
+    public final void send_infoTransferQuery(final R66Request request)
         throws TException {
       final infoTransferQuery_args args = new infoTransferQuery_args();
       args.setRequest(request);
       sendBase(INFO_TRANSFER_QUERY, args);
     }
 
-    public R66Result recv_infoTransferQuery() throws TException {
+    public final R66Result recv_infoTransferQuery() throws TException {
       final infoTransferQuery_result result = new infoTransferQuery_result();
       receiveBase(result, INFO_TRANSFER_QUERY);
       if (result.isSetSuccess()) {
@@ -194,14 +195,16 @@ public class R66Service {
     }
 
     @Override
-    public boolean isStillRunning(final String fromuid, final String touid,
-                                  final long tid) throws TException {
+    public final boolean isStillRunning(final String fromuid,
+                                        final String touid, final long tid)
+        throws TException {
       send_isStillRunning(fromuid, touid, tid);
       return recv_isStillRunning();
     }
 
-    public void send_isStillRunning(final String fromuid, final String touid,
-                                    final long tid) throws TException {
+    public final void send_isStillRunning(final String fromuid,
+                                          final String touid, final long tid)
+        throws TException {
       final isStillRunning_args args = new isStillRunning_args();
       args.setFromuid(fromuid);
       args.setTouid(touid);
@@ -209,7 +212,7 @@ public class R66Service {
       sendBase(IS_STILL_RUNNING, args);
     }
 
-    public boolean recv_isStillRunning() throws TException {
+    public final boolean recv_isStillRunning() throws TException {
       final isStillRunning_result result = new isStillRunning_result();
       receiveBase(result, IS_STILL_RUNNING);
       if (result.isSetSuccess()) {
@@ -220,19 +223,20 @@ public class R66Service {
     }
 
     @Override
-    public List<String> infoListQuery(final R66Request request)
+    public final List<String> infoListQuery(final R66Request request)
         throws TException {
       send_infoListQuery(request);
       return recv_infoListQuery();
     }
 
-    public void send_infoListQuery(final R66Request request) throws TException {
+    public final void send_infoListQuery(final R66Request request)
+        throws TException {
       final infoListQuery_args args = new infoListQuery_args();
       args.setRequest(request);
       sendBase(INFO_LIST_QUERY, args);
     }
 
-    public List<String> recv_infoListQuery() throws TException {
+    public final List<String> recv_infoListQuery() throws TException {
       final infoListQuery_result result = new infoListQuery_result();
       receiveBase(result, INFO_LIST_QUERY);
       if (result.isSetSuccess()) {
@@ -256,7 +260,8 @@ public class R66Service {
       }
 
       @Override
-      public AsyncClient getAsyncClient(final TNonblockingTransport transport) {
+      public final AsyncClient getAsyncClient(
+          final TNonblockingTransport transport) {
         return new AsyncClient(protocolFactory, clientManager, transport);
       }
     }
@@ -268,8 +273,8 @@ public class R66Service {
     }
 
     @Override
-    public void transferRequestQuery(final R66Request request,
-                                     final AsyncMethodCallback<transferRequestQuery_call> resultHandler)
+    public final void transferRequestQuery(final R66Request request,
+                                           final AsyncMethodCallback<transferRequestQuery_call> resultHandler)
         throws TException {
       checkReady();
       final transferRequestQuery_call transferRequestQueryCall =
@@ -296,7 +301,7 @@ public class R66Service {
       }
 
       @Override
-      public void write_args(final TProtocol prot) throws TException {
+      public final void write_args(final TProtocol prot) throws TException {
         prot.writeMessageBegin(
             new TMessage("transferRequestQuery", TMessageType.CALL, 0));
         final transferRequestQuery_args args = new transferRequestQuery_args();
@@ -305,7 +310,7 @@ public class R66Service {
         prot.writeMessageEnd();
       }
 
-      public R66Result getResult() throws TException {
+      public final R66Result getResult() throws TException {
         if (getState() != State.RESPONSE_READ) {
           throw new IllegalStateException(METHOD_CALL_NOT_FINISHED);
         }
@@ -318,8 +323,8 @@ public class R66Service {
     }
 
     @Override
-    public void infoTransferQuery(final R66Request request,
-                                  final AsyncMethodCallback<infoTransferQuery_call> resultHandler)
+    public final void infoTransferQuery(final R66Request request,
+                                        final AsyncMethodCallback<infoTransferQuery_call> resultHandler)
         throws TException {
       checkReady();
       final infoTransferQuery_call infoTransferQueryCall =
@@ -345,7 +350,7 @@ public class R66Service {
       }
 
       @Override
-      public void write_args(final TProtocol prot) throws TException {
+      public final void write_args(final TProtocol prot) throws TException {
         prot.writeMessageBegin(
             new TMessage(INFO_TRANSFER_QUERY, TMessageType.CALL, 0));
         final infoTransferQuery_args args = new infoTransferQuery_args();
@@ -354,7 +359,7 @@ public class R66Service {
         prot.writeMessageEnd();
       }
 
-      public R66Result getResult() throws TException {
+      public final R66Result getResult() throws TException {
         if (getState() != State.RESPONSE_READ) {
           throw new IllegalStateException("Method call not finished!");
         }
@@ -367,9 +372,9 @@ public class R66Service {
     }
 
     @Override
-    public void isStillRunning(final String fromuid, final String touid,
-                               final long tid,
-                               final AsyncMethodCallback<isStillRunning_call> resultHandler)
+    public final void isStillRunning(final String fromuid, final String touid,
+                                     final long tid,
+                                     final AsyncMethodCallback<isStillRunning_call> resultHandler)
         throws TException {
       checkReady();
       final isStillRunning_call isStillRunningCall =
@@ -399,7 +404,7 @@ public class R66Service {
       }
 
       @Override
-      public void write_args(final TProtocol prot) throws TException {
+      public final void write_args(final TProtocol prot) throws TException {
         prot.writeMessageBegin(
             new TMessage("isStillRunning", TMessageType.CALL, 0));
         final isStillRunning_args args = new isStillRunning_args();
@@ -410,7 +415,7 @@ public class R66Service {
         prot.writeMessageEnd();
       }
 
-      public boolean getResult() throws TException {
+      public final boolean getResult() throws TException {
         if (getState() != State.RESPONSE_READ) {
           throw new IllegalStateException("Method call not finished!");
         }
@@ -423,8 +428,8 @@ public class R66Service {
     }
 
     @Override
-    public void infoListQuery(final R66Request request,
-                              final AsyncMethodCallback<infoListQuery_call> resultHandler)
+    public final void infoListQuery(final R66Request request,
+                                    final AsyncMethodCallback<infoListQuery_call> resultHandler)
         throws TException {
       checkReady();
       final infoListQuery_call infoListQueryCall =
@@ -449,7 +454,7 @@ public class R66Service {
       }
 
       @Override
-      public void write_args(final TProtocol prot) throws TException {
+      public final void write_args(final TProtocol prot) throws TException {
         prot.writeMessageBegin(
             new TMessage("infoListQuery", TMessageType.CALL, 0));
         final infoListQuery_args args = new infoListQuery_args();
@@ -458,7 +463,7 @@ public class R66Service {
         prot.writeMessageEnd();
       }
 
-      public List<String> getResult() throws TException {
+      public final List<String> getResult() throws TException {
         if (getState() != State.RESPONSE_READ) {
           throw new IllegalStateException("Method call not finished!");
         }
@@ -504,18 +509,18 @@ public class R66Service {
       }
 
       @Override
-      public transferRequestQuery_args getEmptyArgsInstance() {
+      public final transferRequestQuery_args getEmptyArgsInstance() {
         return new transferRequestQuery_args();
       }
 
       @Override
-      protected boolean isOneway() {
+      protected final boolean isOneway() {
         return false;
       }
 
       @Override
-      public transferRequestQuery_result getResult(final I iface,
-                                                   final transferRequestQuery_args args)
+      public final transferRequestQuery_result getResult(final I iface,
+                                                         final transferRequestQuery_args args)
           throws TException {
         final transferRequestQuery_result result =
             new transferRequestQuery_result();
@@ -531,18 +536,18 @@ public class R66Service {
       }
 
       @Override
-      public infoTransferQuery_args getEmptyArgsInstance() {
+      public final infoTransferQuery_args getEmptyArgsInstance() {
         return new infoTransferQuery_args();
       }
 
       @Override
-      protected boolean isOneway() {
+      protected final boolean isOneway() {
         return false;
       }
 
       @Override
-      public infoTransferQuery_result getResult(final I iface,
-                                                final infoTransferQuery_args args)
+      public final infoTransferQuery_result getResult(final I iface,
+                                                      final infoTransferQuery_args args)
           throws TException {
         final infoTransferQuery_result result = new infoTransferQuery_result();
         result.success = iface.infoTransferQuery(args.request);
@@ -557,18 +562,18 @@ public class R66Service {
       }
 
       @Override
-      public isStillRunning_args getEmptyArgsInstance() {
+      public final isStillRunning_args getEmptyArgsInstance() {
         return new isStillRunning_args();
       }
 
       @Override
-      protected boolean isOneway() {
+      protected final boolean isOneway() {
         return false;
       }
 
       @Override
-      public isStillRunning_result getResult(final I iface,
-                                             final isStillRunning_args args)
+      public final isStillRunning_result getResult(final I iface,
+                                                   final isStillRunning_args args)
           throws TException {
         final isStillRunning_result result = new isStillRunning_result();
         result.success =
@@ -585,18 +590,18 @@ public class R66Service {
       }
 
       @Override
-      public infoListQuery_args getEmptyArgsInstance() {
+      public final infoListQuery_args getEmptyArgsInstance() {
         return new infoListQuery_args();
       }
 
       @Override
-      protected boolean isOneway() {
+      protected final boolean isOneway() {
         return false;
       }
 
       @Override
-      public infoListQuery_result getResult(final I iface,
-                                            final infoListQuery_args args)
+      public final infoListQuery_result getResult(final I iface,
+                                                  final infoListQuery_args args)
           throws TException {
         final infoListQuery_result result = new infoListQuery_result();
         result.success = iface.infoListQuery(args.request);
@@ -636,7 +641,8 @@ public class R66Service {
     private R66Request request; // required
 
     @Override
-    public transferRequestQuery_args clone() throws CloneNotSupportedException {
+    public final transferRequestQuery_args clone()
+        throws CloneNotSupportedException {
       return (transferRequestQuery_args) super.clone();
     }
 
@@ -701,12 +707,12 @@ public class R66Service {
       }
 
       @Override
-      public short getThriftFieldId() {
+      public final short getThriftFieldId() {
         return thriftId;
       }
 
       @Override
-      public String getFieldName() {
+      public final String getFieldName() {
         return fieldName;
       }
     }
@@ -722,8 +728,8 @@ public class R66Service {
                                    new StructMetaData(TType.STRUCT,
                                                       R66Request.class)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
-      FieldMetaData
-          .addStructMetaDataMap(transferRequestQuery_args.class, metaDataMap);
+      FieldMetaData.addStructMetaDataMap(transferRequestQuery_args.class,
+                                         metaDataMap);
     }
 
     public transferRequestQuery_args() {
@@ -744,25 +750,26 @@ public class R66Service {
     }
 
     @Override
-    public transferRequestQuery_args deepCopy() {
+    public final transferRequestQuery_args deepCopy() {
       return new transferRequestQuery_args(this);
     }
 
     @Override
-    public void clear() {
+    public final void clear() {
       request = null;
     }
 
-    public R66Request getRequest() {
+    public final R66Request getRequest() {
       return request;
     }
 
-    public transferRequestQuery_args setRequest(final R66Request request) {
+    public final transferRequestQuery_args setRequest(
+        final R66Request request) {
       this.request = request;
       return this;
     }
 
-    public void unsetRequest() {
+    public final void unsetRequest() {
       request = null;
     }
 
@@ -770,18 +777,18 @@ public class R66Service {
      * Returns true if field request is set (has been assigned a value) and
      * false otherwise
      */
-    public boolean isSetRequest() {
+    public final boolean isSetRequest() {
       return request != null;
     }
 
-    public void setRequestIsSet(final boolean value) {
+    public final void setRequestIsSet(final boolean value) {
       if (!value) {
         request = null;
       }
     }
 
     @Override
-    public void setFieldValue(final _Fields field, final Object value) {
+    public final void setFieldValue(final _Fields field, final Object value) {
       if (field == _Fields.REQUEST) {
         if (value == null) {
           unsetRequest();
@@ -792,7 +799,7 @@ public class R66Service {
     }
 
     @Override
-    public Object getFieldValue(final _Fields field) {
+    public final Object getFieldValue(final _Fields field) {
       if (field == _Fields.REQUEST) {
         return getRequest();
       }
@@ -805,7 +812,7 @@ public class R66Service {
      * a value) and false otherwise
      */
     @Override
-    public boolean isSet(final _Fields field) {
+    public final boolean isSet(final _Fields field) {
       if (field == null) {
         throw new IllegalArgumentException();
       }
@@ -817,7 +824,7 @@ public class R66Service {
     }
 
     @Override
-    public boolean equals(final Object that) {
+    public final boolean equals(final Object that) {
       if (that == null) {
         return false;
       }
@@ -827,7 +834,7 @@ public class R66Service {
       return false;
     }
 
-    public boolean equals(final transferRequestQuery_args that) {
+    public final boolean equals(final transferRequestQuery_args that) {
       if (that == null) {
         return false;
       }
@@ -845,12 +852,12 @@ public class R66Service {
     }
 
     @Override
-    public int hashCode() {
+    public final int hashCode() {
       return 0;
     }
 
     @Override
-    public int compareTo(final transferRequestQuery_args other) {
+    public final int compareTo(final transferRequestQuery_args other) {
       if (!getClass().equals(other.getClass())) {
         return getClass().getName().compareTo(other.getClass().getName());
       }
@@ -870,22 +877,22 @@ public class R66Service {
     }
 
     @Override
-    public _Fields fieldForId(final int fieldId) {
+    public final _Fields fieldForId(final int fieldId) {
       return _Fields.findByThriftId(fieldId);
     }
 
     @Override
-    public void read(final TProtocol iprot) throws TException {
+    public final void read(final TProtocol iprot) throws TException {
       schemes.get(iprot.getScheme()).getScheme().read(iprot, this);
     }
 
     @Override
-    public void write(final TProtocol oprot) throws TException {
+    public final void write(final TProtocol oprot) throws TException {
       schemes.get(oprot.getScheme()).getScheme().write(oprot, this);
     }
 
     @Override
-    public String toString() {
+    public final String toString() {
       final StringBuilder sb = new StringBuilder("transferRequestQuery_args(");
       sb.append(REQUEST2);
       if (request == null) {
@@ -897,7 +904,7 @@ public class R66Service {
       return sb.toString();
     }
 
-    public void validate() throws TException {
+    public final void validate() throws TException {
       // check for required fields
       // check for sub-struct validity
       if (request != null) {
@@ -925,7 +932,7 @@ public class R66Service {
     private static class transferRequestQuery_argsStandardSchemeFactory
         implements SchemeFactory {
       @Override
-      public transferRequestQuery_argsStandardScheme getScheme() {
+      public final transferRequestQuery_argsStandardScheme getScheme() {
         return new transferRequestQuery_argsStandardScheme();
       }
     }
@@ -934,8 +941,8 @@ public class R66Service {
         extends StandardScheme<transferRequestQuery_args> {
 
       @Override
-      public void read(final TProtocol iprot,
-                       final transferRequestQuery_args struct)
+      public final void read(final TProtocol iprot,
+                             final transferRequestQuery_args struct)
           throws TException {
         TField schemeField;
         iprot.readStructBegin();
@@ -965,8 +972,8 @@ public class R66Service {
       }
 
       @Override
-      public void write(final TProtocol oprot,
-                        final transferRequestQuery_args struct)
+      public final void write(final TProtocol oprot,
+                              final transferRequestQuery_args struct)
           throws TException {
         struct.validate();
 
@@ -985,7 +992,7 @@ public class R66Service {
     private static class transferRequestQuery_argsTupleSchemeFactory
         implements SchemeFactory {
       @Override
-      public transferRequestQuery_argsTupleScheme getScheme() {
+      public final transferRequestQuery_argsTupleScheme getScheme() {
         return new transferRequestQuery_argsTupleScheme();
       }
     }
@@ -994,8 +1001,8 @@ public class R66Service {
         extends TupleScheme<transferRequestQuery_args> {
 
       @Override
-      public void write(final TProtocol prot,
-                        final transferRequestQuery_args struct)
+      public final void write(final TProtocol prot,
+                              final transferRequestQuery_args struct)
           throws TException {
         final TTupleProtocol oprot = (TTupleProtocol) prot;
         final BitSet optionals = new BitSet();
@@ -1009,8 +1016,8 @@ public class R66Service {
       }
 
       @Override
-      public void read(final TProtocol prot,
-                       final transferRequestQuery_args struct)
+      public final void read(final TProtocol prot,
+                             final transferRequestQuery_args struct)
           throws TException {
         final TTupleProtocol iprot = (TTupleProtocol) prot;
         final BitSet incoming = iprot.readBitSet(1);
@@ -1054,7 +1061,7 @@ public class R66Service {
     private R66Result success; // required
 
     @Override
-    public transferRequestQuery_result clone()
+    public final transferRequestQuery_result clone()
         throws CloneNotSupportedException {
       return (transferRequestQuery_result) super.clone();
     }
@@ -1119,12 +1126,12 @@ public class R66Service {
       }
 
       @Override
-      public short getThriftFieldId() {
+      public final short getThriftFieldId() {
         return thriftId;
       }
 
       @Override
-      public String getFieldName() {
+      public final String getFieldName() {
         return fieldName;
       }
     }
@@ -1140,8 +1147,8 @@ public class R66Service {
                                    new StructMetaData(TType.STRUCT,
                                                       R66Result.class)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
-      FieldMetaData
-          .addStructMetaDataMap(transferRequestQuery_result.class, metaDataMap);
+      FieldMetaData.addStructMetaDataMap(transferRequestQuery_result.class,
+                                         metaDataMap);
     }
 
     public transferRequestQuery_result() {
@@ -1163,25 +1170,26 @@ public class R66Service {
     }
 
     @Override
-    public transferRequestQuery_result deepCopy() {
+    public final transferRequestQuery_result deepCopy() {
       return new transferRequestQuery_result(this);
     }
 
     @Override
-    public void clear() {
+    public final void clear() {
       success = null;
     }
 
-    public R66Result getSuccess() {
+    public final R66Result getSuccess() {
       return success;
     }
 
-    public transferRequestQuery_result setSuccess(final R66Result success) {
+    public final transferRequestQuery_result setSuccess(
+        final R66Result success) {
       this.success = success;
       return this;
     }
 
-    public void unsetSuccess() {
+    public final void unsetSuccess() {
       success = null;
     }
 
@@ -1189,18 +1197,18 @@ public class R66Service {
      * Returns true if field success is set (has been assigned a value) and
      * false otherwise
      */
-    public boolean isSetSuccess() {
+    public final boolean isSetSuccess() {
       return success != null;
     }
 
-    public void setSuccessIsSet(final boolean value) {
+    public final void setSuccessIsSet(final boolean value) {
       if (!value) {
         success = null;
       }
     }
 
     @Override
-    public void setFieldValue(final _Fields field, final Object value) {
+    public final void setFieldValue(final _Fields field, final Object value) {
       if (field == _Fields.SUCCESS) {
         if (value == null) {
           unsetSuccess();
@@ -1211,7 +1219,7 @@ public class R66Service {
     }
 
     @Override
-    public Object getFieldValue(final _Fields field) {
+    public final Object getFieldValue(final _Fields field) {
       if (field == _Fields.SUCCESS) {
         return getSuccess();
       }
@@ -1224,7 +1232,7 @@ public class R66Service {
      * a value) and false otherwise
      */
     @Override
-    public boolean isSet(final _Fields field) {
+    public final boolean isSet(final _Fields field) {
       if (field == null) {
         throw new IllegalArgumentException();
       }
@@ -1236,7 +1244,7 @@ public class R66Service {
     }
 
     @Override
-    public boolean equals(final Object that) {
+    public final boolean equals(final Object that) {
       if (that == null) {
         return false;
       }
@@ -1246,7 +1254,7 @@ public class R66Service {
       return false;
     }
 
-    public boolean equals(final transferRequestQuery_result that) {
+    public final boolean equals(final transferRequestQuery_result that) {
       if (that == null) {
         return false;
       }
@@ -1264,12 +1272,12 @@ public class R66Service {
     }
 
     @Override
-    public int hashCode() {
+    public final int hashCode() {
       return 0;
     }
 
     @Override
-    public int compareTo(final transferRequestQuery_result other) {
+    public final int compareTo(final transferRequestQuery_result other) {
       if (!getClass().equals(other.getClass())) {
         return getClass().getName().compareTo(other.getClass().getName());
       }
@@ -1289,22 +1297,22 @@ public class R66Service {
     }
 
     @Override
-    public _Fields fieldForId(final int fieldId) {
+    public final _Fields fieldForId(final int fieldId) {
       return _Fields.findByThriftId(fieldId);
     }
 
     @Override
-    public void read(final TProtocol iprot) throws TException {
+    public final void read(final TProtocol iprot) throws TException {
       schemes.get(iprot.getScheme()).getScheme().read(iprot, this);
     }
 
     @Override
-    public void write(final TProtocol oprot) throws TException {
+    public final void write(final TProtocol oprot) throws TException {
       schemes.get(oprot.getScheme()).getScheme().write(oprot, this);
     }
 
     @Override
-    public String toString() {
+    public final String toString() {
       final StringBuilder sb =
           new StringBuilder("transferRequestQuery_result(");
       sb.append(SUCCESS2);
@@ -1317,7 +1325,7 @@ public class R66Service {
       return sb.toString();
     }
 
-    public void validate() throws TException {
+    public final void validate() throws TException {
       // check for required fields
       // check for sub-struct validity
       if (success != null) {
@@ -1345,7 +1353,7 @@ public class R66Service {
     private static class transferRequestQuery_resultStandardSchemeFactory
         implements SchemeFactory {
       @Override
-      public transferRequestQuery_resultStandardScheme getScheme() {
+      public final transferRequestQuery_resultStandardScheme getScheme() {
         return new transferRequestQuery_resultStandardScheme();
       }
     }
@@ -1354,8 +1362,8 @@ public class R66Service {
         extends StandardScheme<transferRequestQuery_result> {
 
       @Override
-      public void read(final TProtocol iprot,
-                       final transferRequestQuery_result struct)
+      public final void read(final TProtocol iprot,
+                             final transferRequestQuery_result struct)
           throws TException {
         TField schemeField;
         iprot.readStructBegin();
@@ -1385,8 +1393,8 @@ public class R66Service {
       }
 
       @Override
-      public void write(final TProtocol oprot,
-                        final transferRequestQuery_result struct)
+      public final void write(final TProtocol oprot,
+                              final transferRequestQuery_result struct)
           throws TException {
         struct.validate();
 
@@ -1405,7 +1413,7 @@ public class R66Service {
     private static class transferRequestQuery_resultTupleSchemeFactory
         implements SchemeFactory {
       @Override
-      public transferRequestQuery_resultTupleScheme getScheme() {
+      public final transferRequestQuery_resultTupleScheme getScheme() {
         return new transferRequestQuery_resultTupleScheme();
       }
     }
@@ -1414,8 +1422,8 @@ public class R66Service {
         extends TupleScheme<transferRequestQuery_result> {
 
       @Override
-      public void write(final TProtocol prot,
-                        final transferRequestQuery_result struct)
+      public final void write(final TProtocol prot,
+                              final transferRequestQuery_result struct)
           throws TException {
         final TTupleProtocol oprot = (TTupleProtocol) prot;
         final BitSet optionals = new BitSet();
@@ -1429,8 +1437,8 @@ public class R66Service {
       }
 
       @Override
-      public void read(final TProtocol prot,
-                       final transferRequestQuery_result struct)
+      public final void read(final TProtocol prot,
+                             final transferRequestQuery_result struct)
           throws TException {
         final TTupleProtocol iprot = (TTupleProtocol) prot;
         final BitSet incoming = iprot.readBitSet(1);
@@ -1471,7 +1479,8 @@ public class R66Service {
     private R66Request request; // required
 
     @Override
-    public infoTransferQuery_args clone() throws CloneNotSupportedException {
+    public final infoTransferQuery_args clone()
+        throws CloneNotSupportedException {
       return (infoTransferQuery_args) super.clone();
     }
 
@@ -1535,12 +1544,12 @@ public class R66Service {
       }
 
       @Override
-      public short getThriftFieldId() {
+      public final short getThriftFieldId() {
         return thriftId;
       }
 
       @Override
-      public String getFieldName() {
+      public final String getFieldName() {
         return fieldName;
       }
     }
@@ -1556,8 +1565,8 @@ public class R66Service {
                                    new StructMetaData(TType.STRUCT,
                                                       R66Request.class)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
-      FieldMetaData
-          .addStructMetaDataMap(infoTransferQuery_args.class, metaDataMap);
+      FieldMetaData.addStructMetaDataMap(infoTransferQuery_args.class,
+                                         metaDataMap);
     }
 
     public infoTransferQuery_args() {
@@ -1578,25 +1587,25 @@ public class R66Service {
     }
 
     @Override
-    public infoTransferQuery_args deepCopy() {
+    public final infoTransferQuery_args deepCopy() {
       return new infoTransferQuery_args(this);
     }
 
     @Override
-    public void clear() {
+    public final void clear() {
       request = null;
     }
 
-    public R66Request getRequest() {
+    public final R66Request getRequest() {
       return request;
     }
 
-    public infoTransferQuery_args setRequest(final R66Request request) {
+    public final infoTransferQuery_args setRequest(final R66Request request) {
       this.request = request;
       return this;
     }
 
-    public void unsetRequest() {
+    public final void unsetRequest() {
       request = null;
     }
 
@@ -1604,18 +1613,18 @@ public class R66Service {
      * Returns true if field request is set (has been assigned a value) and
      * false otherwise
      */
-    public boolean isSetRequest() {
+    public final boolean isSetRequest() {
       return request != null;
     }
 
-    public void setRequestIsSet(final boolean value) {
+    public final void setRequestIsSet(final boolean value) {
       if (!value) {
         request = null;
       }
     }
 
     @Override
-    public void setFieldValue(final _Fields field, final Object value) {
+    public final void setFieldValue(final _Fields field, final Object value) {
       if (field == _Fields.REQUEST) {
         if (value == null) {
           unsetRequest();
@@ -1626,7 +1635,7 @@ public class R66Service {
     }
 
     @Override
-    public Object getFieldValue(final _Fields field) {
+    public final Object getFieldValue(final _Fields field) {
       if (field == _Fields.REQUEST) {
         return getRequest();
       }
@@ -1639,7 +1648,7 @@ public class R66Service {
      * a value) and false otherwise
      */
     @Override
-    public boolean isSet(final _Fields field) {
+    public final boolean isSet(final _Fields field) {
       if (field == null) {
         throw new IllegalArgumentException();
       }
@@ -1651,7 +1660,7 @@ public class R66Service {
     }
 
     @Override
-    public boolean equals(final Object that) {
+    public final boolean equals(final Object that) {
       if (that == null) {
         return false;
       }
@@ -1661,7 +1670,7 @@ public class R66Service {
       return false;
     }
 
-    public boolean equals(final infoTransferQuery_args that) {
+    public final boolean equals(final infoTransferQuery_args that) {
       if (that == null) {
         return false;
       }
@@ -1679,12 +1688,12 @@ public class R66Service {
     }
 
     @Override
-    public int hashCode() {
+    public final int hashCode() {
       return 0;
     }
 
     @Override
-    public int compareTo(final infoTransferQuery_args other) {
+    public final int compareTo(final infoTransferQuery_args other) {
       if (!getClass().equals(other.getClass())) {
         return getClass().getName().compareTo(other.getClass().getName());
       }
@@ -1704,22 +1713,22 @@ public class R66Service {
     }
 
     @Override
-    public _Fields fieldForId(final int fieldId) {
+    public final _Fields fieldForId(final int fieldId) {
       return _Fields.findByThriftId(fieldId);
     }
 
     @Override
-    public void read(final TProtocol iprot) throws TException {
+    public final void read(final TProtocol iprot) throws TException {
       schemes.get(iprot.getScheme()).getScheme().read(iprot, this);
     }
 
     @Override
-    public void write(final TProtocol oprot) throws TException {
+    public final void write(final TProtocol oprot) throws TException {
       schemes.get(oprot.getScheme()).getScheme().write(oprot, this);
     }
 
     @Override
-    public String toString() {
+    public final String toString() {
       final StringBuilder sb = new StringBuilder("infoTransferQuery_args(");
       sb.append("request:");
       if (request == null) {
@@ -1731,7 +1740,7 @@ public class R66Service {
       return sb.toString();
     }
 
-    public void validate() throws TException {
+    public final void validate() throws TException {
       // check for required fields
       // check for sub-struct validity
       if (request != null) {
@@ -1759,7 +1768,7 @@ public class R66Service {
     private static class infoTransferQuery_argsStandardSchemeFactory
         implements SchemeFactory {
       @Override
-      public infoTransferQuery_argsStandardScheme getScheme() {
+      public final infoTransferQuery_argsStandardScheme getScheme() {
         return new infoTransferQuery_argsStandardScheme();
       }
     }
@@ -1768,8 +1777,9 @@ public class R66Service {
         extends StandardScheme<infoTransferQuery_args> {
 
       @Override
-      public void read(final TProtocol iprot,
-                       final infoTransferQuery_args struct) throws TException {
+      public final void read(final TProtocol iprot,
+                             final infoTransferQuery_args struct)
+          throws TException {
         TField schemeField;
         iprot.readStructBegin();
         while (true) {
@@ -1798,8 +1808,9 @@ public class R66Service {
       }
 
       @Override
-      public void write(final TProtocol oprot,
-                        final infoTransferQuery_args struct) throws TException {
+      public final void write(final TProtocol oprot,
+                              final infoTransferQuery_args struct)
+          throws TException {
         struct.validate();
 
         oprot.writeStructBegin(STRUCT_DESC);
@@ -1817,7 +1828,7 @@ public class R66Service {
     private static class infoTransferQuery_argsTupleSchemeFactory
         implements SchemeFactory {
       @Override
-      public infoTransferQuery_argsTupleScheme getScheme() {
+      public final infoTransferQuery_argsTupleScheme getScheme() {
         return new infoTransferQuery_argsTupleScheme();
       }
     }
@@ -1826,8 +1837,9 @@ public class R66Service {
         extends TupleScheme<infoTransferQuery_args> {
 
       @Override
-      public void write(final TProtocol prot,
-                        final infoTransferQuery_args struct) throws TException {
+      public final void write(final TProtocol prot,
+                              final infoTransferQuery_args struct)
+          throws TException {
         final TTupleProtocol oprot = (TTupleProtocol) prot;
         final BitSet optionals = new BitSet();
         if (struct.isSetRequest()) {
@@ -1840,8 +1852,9 @@ public class R66Service {
       }
 
       @Override
-      public void read(final TProtocol prot,
-                       final infoTransferQuery_args struct) throws TException {
+      public final void read(final TProtocol prot,
+                             final infoTransferQuery_args struct)
+          throws TException {
         final TTupleProtocol iprot = (TTupleProtocol) prot;
         final BitSet incoming = iprot.readBitSet(1);
         if (incoming.get(0)) {
@@ -1940,12 +1953,12 @@ public class R66Service {
       }
 
       @Override
-      public short getThriftFieldId() {
+      public final short getThriftFieldId() {
         return thriftId;
       }
 
       @Override
-      public String getFieldName() {
+      public final String getFieldName() {
         return fieldName;
       }
     }
@@ -1961,8 +1974,8 @@ public class R66Service {
                                    new StructMetaData(TType.STRUCT,
                                                       R66Result.class)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
-      FieldMetaData
-          .addStructMetaDataMap(infoTransferQuery_result.class, metaDataMap);
+      FieldMetaData.addStructMetaDataMap(infoTransferQuery_result.class,
+                                         metaDataMap);
     }
 
     public infoTransferQuery_result() {
@@ -1983,25 +1996,25 @@ public class R66Service {
     }
 
     @Override
-    public infoTransferQuery_result deepCopy() {
+    public final infoTransferQuery_result deepCopy() {
       return new infoTransferQuery_result(this);
     }
 
     @Override
-    public void clear() {
+    public final void clear() {
       success = null;
     }
 
-    public R66Result getSuccess() {
+    public final R66Result getSuccess() {
       return success;
     }
 
-    public infoTransferQuery_result setSuccess(final R66Result success) {
+    public final infoTransferQuery_result setSuccess(final R66Result success) {
       this.success = success;
       return this;
     }
 
-    public void unsetSuccess() {
+    public final void unsetSuccess() {
       success = null;
     }
 
@@ -2009,18 +2022,18 @@ public class R66Service {
      * Returns true if field success is set (has been assigned a value) and
      * false otherwise
      */
-    public boolean isSetSuccess() {
+    public final boolean isSetSuccess() {
       return success != null;
     }
 
-    public void setSuccessIsSet(final boolean value) {
+    public final void setSuccessIsSet(final boolean value) {
       if (!value) {
         success = null;
       }
     }
 
     @Override
-    public void setFieldValue(final _Fields field, final Object value) {
+    public final void setFieldValue(final _Fields field, final Object value) {
       if (field == _Fields.SUCCESS) {
         if (value == null) {
           unsetSuccess();
@@ -2031,7 +2044,7 @@ public class R66Service {
     }
 
     @Override
-    public Object getFieldValue(final _Fields field) {
+    public final Object getFieldValue(final _Fields field) {
       if (field == _Fields.SUCCESS) {
         return getSuccess();
       }
@@ -2044,7 +2057,7 @@ public class R66Service {
      * a value) and false otherwise
      */
     @Override
-    public boolean isSet(final _Fields field) {
+    public final boolean isSet(final _Fields field) {
       if (field == null) {
         throw new IllegalArgumentException();
       }
@@ -2056,7 +2069,7 @@ public class R66Service {
     }
 
     @Override
-    public boolean equals(final Object that) {
+    public final boolean equals(final Object that) {
       if (that == null) {
         return false;
       }
@@ -2066,7 +2079,7 @@ public class R66Service {
       return false;
     }
 
-    public boolean equals(final infoTransferQuery_result that) {
+    public final boolean equals(final infoTransferQuery_result that) {
       if (that == null) {
         return false;
       }
@@ -2084,12 +2097,12 @@ public class R66Service {
     }
 
     @Override
-    public int hashCode() {
+    public final int hashCode() {
       return 0;
     }
 
     @Override
-    public int compareTo(final infoTransferQuery_result other) {
+    public final int compareTo(final infoTransferQuery_result other) {
       if (!getClass().equals(other.getClass())) {
         return getClass().getName().compareTo(other.getClass().getName());
       }
@@ -2109,22 +2122,22 @@ public class R66Service {
     }
 
     @Override
-    public _Fields fieldForId(final int fieldId) {
+    public final _Fields fieldForId(final int fieldId) {
       return _Fields.findByThriftId(fieldId);
     }
 
     @Override
-    public void read(final TProtocol iprot) throws TException {
+    public final void read(final TProtocol iprot) throws TException {
       schemes.get(iprot.getScheme()).getScheme().read(iprot, this);
     }
 
     @Override
-    public void write(final TProtocol oprot) throws TException {
+    public final void write(final TProtocol oprot) throws TException {
       schemes.get(oprot.getScheme()).getScheme().write(oprot, this);
     }
 
     @Override
-    public String toString() {
+    public final String toString() {
       final StringBuilder sb = new StringBuilder("infoTransferQuery_result(");
       sb.append("success:");
       if (success == null) {
@@ -2136,7 +2149,7 @@ public class R66Service {
       return sb.toString();
     }
 
-    public void validate() throws TException {
+    public final void validate() throws TException {
       // check for required fields
       // check for sub-struct validity
       if (success != null) {
@@ -2164,7 +2177,7 @@ public class R66Service {
     private static class infoTransferQuery_resultStandardSchemeFactory
         implements SchemeFactory {
       @Override
-      public infoTransferQuery_resultStandardScheme getScheme() {
+      public final infoTransferQuery_resultStandardScheme getScheme() {
         return new infoTransferQuery_resultStandardScheme();
       }
     }
@@ -2173,8 +2186,8 @@ public class R66Service {
         extends StandardScheme<infoTransferQuery_result> {
 
       @Override
-      public void read(final TProtocol iprot,
-                       final infoTransferQuery_result struct)
+      public final void read(final TProtocol iprot,
+                             final infoTransferQuery_result struct)
           throws TException {
         TField schemeField;
         iprot.readStructBegin();
@@ -2204,8 +2217,8 @@ public class R66Service {
       }
 
       @Override
-      public void write(final TProtocol oprot,
-                        final infoTransferQuery_result struct)
+      public final void write(final TProtocol oprot,
+                              final infoTransferQuery_result struct)
           throws TException {
         struct.validate();
 
@@ -2224,7 +2237,7 @@ public class R66Service {
     private static class infoTransferQuery_resultTupleSchemeFactory
         implements SchemeFactory {
       @Override
-      public infoTransferQuery_resultTupleScheme getScheme() {
+      public final infoTransferQuery_resultTupleScheme getScheme() {
         return new infoTransferQuery_resultTupleScheme();
       }
     }
@@ -2233,8 +2246,8 @@ public class R66Service {
         extends TupleScheme<infoTransferQuery_result> {
 
       @Override
-      public void write(final TProtocol prot,
-                        final infoTransferQuery_result struct)
+      public final void write(final TProtocol prot,
+                              final infoTransferQuery_result struct)
           throws TException {
         final TTupleProtocol oprot = (TTupleProtocol) prot;
         final BitSet optionals = new BitSet();
@@ -2248,8 +2261,8 @@ public class R66Service {
       }
 
       @Override
-      public void read(final TProtocol prot,
-                       final infoTransferQuery_result struct)
+      public final void read(final TProtocol prot,
+                             final infoTransferQuery_result struct)
           throws TException {
         final TTupleProtocol iprot = (TTupleProtocol) prot;
         final BitSet incoming = iprot.readBitSet(1);
@@ -2291,8 +2304,8 @@ public class R66Service {
     static {
       schemes.put(StandardScheme.class,
                   new isStillRunning_argsStandardSchemeFactory());
-      schemes
-          .put(TupleScheme.class, new isStillRunning_argsTupleSchemeFactory());
+      schemes.put(TupleScheme.class,
+                  new isStillRunning_argsTupleSchemeFactory());
     }
 
     private String fromuid; // required
@@ -2300,7 +2313,7 @@ public class R66Service {
     private long tid; // required
 
     @Override
-    public isStillRunning_args clone() throws CloneNotSupportedException {
+    public final isStillRunning_args clone() throws CloneNotSupportedException {
       return (isStillRunning_args) super.clone();
     }
 
@@ -2371,12 +2384,12 @@ public class R66Service {
       }
 
       @Override
-      public short getThriftFieldId() {
+      public final short getThriftFieldId() {
         return thriftId;
       }
 
       @Override
-      public String getFieldName() {
+      public final String getFieldName() {
         return fieldName;
       }
     }
@@ -2399,8 +2412,8 @@ public class R66Service {
                  new FieldMetaData("tid", TFieldRequirementType.DEFAULT,
                                    new FieldValueMetaData(TType.I64)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
-      FieldMetaData
-          .addStructMetaDataMap(isStillRunning_args.class, metaDataMap);
+      FieldMetaData.addStructMetaDataMap(isStillRunning_args.class,
+                                         metaDataMap);
     }
 
     public isStillRunning_args() {
@@ -2430,28 +2443,28 @@ public class R66Service {
     }
 
     @Override
-    public isStillRunning_args deepCopy() {
+    public final isStillRunning_args deepCopy() {
       return new isStillRunning_args(this);
     }
 
     @Override
-    public void clear() {
+    public final void clear() {
       fromuid = null;
       touid = null;
       setTidIsSet(false);
       tid = 0;
     }
 
-    public String getFromuid() {
+    public final String getFromuid() {
       return fromuid;
     }
 
-    public isStillRunning_args setFromuid(final String fromuid) {
+    public final isStillRunning_args setFromuid(final String fromuid) {
       this.fromuid = fromuid;
       return this;
     }
 
-    public void unsetFromuid() {
+    public final void unsetFromuid() {
       fromuid = null;
     }
 
@@ -2459,26 +2472,26 @@ public class R66Service {
      * Returns true if field fromuid is set (has been assigned a value) and
      * false otherwise
      */
-    public boolean isSetFromuid() {
+    public final boolean isSetFromuid() {
       return fromuid != null;
     }
 
-    public void setFromuidIsSet(final boolean value) {
+    public final void setFromuidIsSet(final boolean value) {
       if (!value) {
         fromuid = null;
       }
     }
 
-    public String getTouid() {
+    public final String getTouid() {
       return touid;
     }
 
-    public isStillRunning_args setTouid(final String touid) {
+    public final isStillRunning_args setTouid(final String touid) {
       this.touid = touid;
       return this;
     }
 
-    public void unsetTouid() {
+    public final void unsetTouid() {
       touid = null;
     }
 
@@ -2487,27 +2500,27 @@ public class R66Service {
      * false
      * otherwise
      */
-    public boolean isSetTouid() {
+    public final boolean isSetTouid() {
       return touid != null;
     }
 
-    public void setTouidIsSet(final boolean value) {
+    public final void setTouidIsSet(final boolean value) {
       if (!value) {
         touid = null;
       }
     }
 
-    public long getTid() {
+    public final long getTid() {
       return tid;
     }
 
-    public isStillRunning_args setTid(final long tid) {
+    public final isStillRunning_args setTid(final long tid) {
       this.tid = tid;
       setTidIsSet(true);
       return this;
     }
 
-    public void unsetTid() {
+    public final void unsetTid() {
       issetBitfield = EncodingUtils.clearBit(issetBitfield, TID_ISSET_ID);
     }
 
@@ -2516,16 +2529,16 @@ public class R66Service {
      * false
      * otherwise
      */
-    public boolean isSetTid() {
+    public final boolean isSetTid() {
       return EncodingUtils.testBit(issetBitfield, TID_ISSET_ID);
     }
 
-    public void setTidIsSet(final boolean value) {
+    public final void setTidIsSet(final boolean value) {
       issetBitfield = EncodingUtils.setBit(issetBitfield, TID_ISSET_ID, value);
     }
 
     @Override
-    public void setFieldValue(final _Fields field, final Object value) {
+    public final void setFieldValue(final _Fields field, final Object value) {
       switch (field) {
         case FROMUID:
           if (value == null) {
@@ -2555,7 +2568,7 @@ public class R66Service {
     }
 
     @Override
-    public Object getFieldValue(final _Fields field) {
+    public final Object getFieldValue(final _Fields field) {
       switch (field) {
         case FROMUID:
           return getFromuid();
@@ -2576,7 +2589,7 @@ public class R66Service {
      * a value) and false otherwise
      */
     @Override
-    public boolean isSet(final _Fields field) {
+    public final boolean isSet(final _Fields field) {
       if (field == null) {
         throw new IllegalArgumentException();
       }
@@ -2593,7 +2606,7 @@ public class R66Service {
     }
 
     @Override
-    public boolean equals(final Object that) {
+    public final boolean equals(final Object that) {
       if (that == null) {
         return false;
       }
@@ -2603,7 +2616,7 @@ public class R66Service {
       return false;
     }
 
-    public boolean equals(final isStillRunning_args that) {
+    public final boolean equals(final isStillRunning_args that) {
       if (that == null) {
         return false;
       }
@@ -2634,12 +2647,12 @@ public class R66Service {
     }
 
     @Override
-    public int hashCode() {
+    public final int hashCode() {
       return 0;
     }
 
     @Override
-    public int compareTo(final isStillRunning_args other) {
+    public final int compareTo(final isStillRunning_args other) {
       if (!getClass().equals(other.getClass())) {
         return getClass().getName().compareTo(other.getClass().getName());
       }
@@ -2680,22 +2693,22 @@ public class R66Service {
     }
 
     @Override
-    public _Fields fieldForId(final int fieldId) {
+    public final _Fields fieldForId(final int fieldId) {
       return _Fields.findByThriftId(fieldId);
     }
 
     @Override
-    public void read(final TProtocol iprot) throws TException {
+    public final void read(final TProtocol iprot) throws TException {
       schemes.get(iprot.getScheme()).getScheme().read(iprot, this);
     }
 
     @Override
-    public void write(final TProtocol oprot) throws TException {
+    public final void write(final TProtocol oprot) throws TException {
       schemes.get(oprot.getScheme()).getScheme().write(oprot, this);
     }
 
     @Override
-    public String toString() {
+    public final String toString() {
       final StringBuilder sb = new StringBuilder("isStillRunning_args(");
 
       sb.append("fromuid:");
@@ -2717,7 +2730,7 @@ public class R66Service {
       return sb.toString();
     }
 
-    public void validate() throws TException {
+    public final void validate() throws TException {
       // check for required fields
       // check for sub-struct validity
     }
@@ -2745,7 +2758,7 @@ public class R66Service {
     private static class isStillRunning_argsStandardSchemeFactory
         implements SchemeFactory {
       @Override
-      public isStillRunning_argsStandardScheme getScheme() {
+      public final isStillRunning_argsStandardScheme getScheme() {
         return new isStillRunning_argsStandardScheme();
       }
     }
@@ -2754,7 +2767,8 @@ public class R66Service {
         extends StandardScheme<isStillRunning_args> {
 
       @Override
-      public void read(final TProtocol iprot, final isStillRunning_args struct)
+      public final void read(final TProtocol iprot,
+                             final isStillRunning_args struct)
           throws TException {
         TField schemeField;
         iprot.readStructBegin();
@@ -2801,7 +2815,8 @@ public class R66Service {
       }
 
       @Override
-      public void write(final TProtocol oprot, final isStillRunning_args struct)
+      public final void write(final TProtocol oprot,
+                              final isStillRunning_args struct)
           throws TException {
         struct.validate();
 
@@ -2828,7 +2843,7 @@ public class R66Service {
     private static class isStillRunning_argsTupleSchemeFactory
         implements SchemeFactory {
       @Override
-      public isStillRunning_argsTupleScheme getScheme() {
+      public final isStillRunning_argsTupleScheme getScheme() {
         return new isStillRunning_argsTupleScheme();
       }
     }
@@ -2837,7 +2852,8 @@ public class R66Service {
         extends TupleScheme<isStillRunning_args> {
 
       @Override
-      public void write(final TProtocol prot, final isStillRunning_args struct)
+      public final void write(final TProtocol prot,
+                              final isStillRunning_args struct)
           throws TException {
         final TTupleProtocol oprot = (TTupleProtocol) prot;
         final BitSet optionals = new BitSet();
@@ -2863,7 +2879,8 @@ public class R66Service {
       }
 
       @Override
-      public void read(final TProtocol prot, final isStillRunning_args struct)
+      public final void read(final TProtocol prot,
+                             final isStillRunning_args struct)
           throws TException {
         final TTupleProtocol iprot = (TTupleProtocol) prot;
         final BitSet incoming = iprot.readBitSet(3);
@@ -2911,7 +2928,8 @@ public class R66Service {
     private boolean success; // required
 
     @Override
-    public isStillRunning_result clone() throws CloneNotSupportedException {
+    public final isStillRunning_result clone()
+        throws CloneNotSupportedException {
       return (isStillRunning_result) super.clone();
     }
 
@@ -2975,12 +2993,12 @@ public class R66Service {
       }
 
       @Override
-      public short getThriftFieldId() {
+      public final short getThriftFieldId() {
         return thriftId;
       }
 
       @Override
-      public String getFieldName() {
+      public final String getFieldName() {
         return fieldName;
       }
     }
@@ -2997,8 +3015,8 @@ public class R66Service {
                  new FieldMetaData("success", TFieldRequirementType.DEFAULT,
                                    new FieldValueMetaData(TType.BOOL)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
-      FieldMetaData
-          .addStructMetaDataMap(isStillRunning_result.class, metaDataMap);
+      FieldMetaData.addStructMetaDataMap(isStillRunning_result.class,
+                                         metaDataMap);
     }
 
     public isStillRunning_result() {
@@ -3019,27 +3037,27 @@ public class R66Service {
     }
 
     @Override
-    public isStillRunning_result deepCopy() {
+    public final isStillRunning_result deepCopy() {
       return new isStillRunning_result(this);
     }
 
     @Override
-    public void clear() {
+    public final void clear() {
       setSuccessIsSet(false);
       success = false;
     }
 
-    public boolean isSuccess() {
+    public final boolean isSuccess() {
       return success;
     }
 
-    public isStillRunning_result setSuccess(final boolean success) {
+    public final isStillRunning_result setSuccess(final boolean success) {
       this.success = success;
       setSuccessIsSet(true);
       return this;
     }
 
-    public void unsetSuccess() {
+    public final void unsetSuccess() {
       issetBitfield = EncodingUtils.clearBit(issetBitfield, SUCCESS_ISSET_ID);
     }
 
@@ -3047,17 +3065,17 @@ public class R66Service {
      * Returns true if field success is set (has been assigned a value) and
      * false otherwise
      */
-    public boolean isSetSuccess() {
+    public final boolean isSetSuccess() {
       return EncodingUtils.testBit(issetBitfield, SUCCESS_ISSET_ID);
     }
 
-    public void setSuccessIsSet(final boolean value) {
+    public final void setSuccessIsSet(final boolean value) {
       issetBitfield =
           EncodingUtils.setBit(issetBitfield, SUCCESS_ISSET_ID, value);
     }
 
     @Override
-    public void setFieldValue(final _Fields field, final Object value) {
+    public final void setFieldValue(final _Fields field, final Object value) {
       if (field == _Fields.SUCCESS) {
         if (value == null) {
           unsetSuccess();
@@ -3068,7 +3086,7 @@ public class R66Service {
     }
 
     @Override
-    public Object getFieldValue(final _Fields field) {
+    public final Object getFieldValue(final _Fields field) {
       if (field == _Fields.SUCCESS) {
         return Boolean.valueOf(isSuccess());
       }
@@ -3081,7 +3099,7 @@ public class R66Service {
      * a value) and false otherwise
      */
     @Override
-    public boolean isSet(final _Fields field) {
+    public final boolean isSet(final _Fields field) {
       if (field == null) {
         throw new IllegalArgumentException();
       }
@@ -3093,7 +3111,7 @@ public class R66Service {
     }
 
     @Override
-    public boolean equals(final Object that) {
+    public final boolean equals(final Object that) {
       if (that == null) {
         return false;
       }
@@ -3103,7 +3121,7 @@ public class R66Service {
       return false;
     }
 
-    public boolean equals(final isStillRunning_result that) {
+    public final boolean equals(final isStillRunning_result that) {
       if (that == null) {
         return false;
       }
@@ -3111,12 +3129,12 @@ public class R66Service {
     }
 
     @Override
-    public int hashCode() {
+    public final int hashCode() {
       return 0;
     }
 
     @Override
-    public int compareTo(final isStillRunning_result other) {
+    public final int compareTo(final isStillRunning_result other) {
       if (!getClass().equals(other.getClass())) {
         return getClass().getName().compareTo(other.getClass().getName());
       }
@@ -3136,29 +3154,29 @@ public class R66Service {
     }
 
     @Override
-    public _Fields fieldForId(final int fieldId) {
+    public final _Fields fieldForId(final int fieldId) {
       return _Fields.findByThriftId(fieldId);
     }
 
     @Override
-    public void read(final TProtocol iprot) throws TException {
+    public final void read(final TProtocol iprot) throws TException {
       schemes.get(iprot.getScheme()).getScheme().read(iprot, this);
     }
 
     @Override
-    public void write(final TProtocol oprot) throws TException {
+    public final void write(final TProtocol oprot) throws TException {
       schemes.get(oprot.getScheme()).getScheme().write(oprot, this);
     }
 
     @Override
-    public String toString() {
+    public final String toString() {
       final StringBuilder sb = new StringBuilder("isStillRunning_result(");
       sb.append("success:").append(success);
       sb.append(')');
       return sb.toString();
     }
 
-    public void validate() throws TException {
+    public final void validate() throws TException {
       // check for required fields
       // check for sub-struct validity
     }
@@ -3186,7 +3204,7 @@ public class R66Service {
     private static class isStillRunning_resultStandardSchemeFactory
         implements SchemeFactory {
       @Override
-      public isStillRunning_resultStandardScheme getScheme() {
+      public final isStillRunning_resultStandardScheme getScheme() {
         return new isStillRunning_resultStandardScheme();
       }
     }
@@ -3195,8 +3213,9 @@ public class R66Service {
         extends StandardScheme<isStillRunning_result> {
 
       @Override
-      public void read(final TProtocol iprot,
-                       final isStillRunning_result struct) throws TException {
+      public final void read(final TProtocol iprot,
+                             final isStillRunning_result struct)
+          throws TException {
         TField schemeField;
         iprot.readStructBegin();
         while (true) {
@@ -3224,8 +3243,9 @@ public class R66Service {
       }
 
       @Override
-      public void write(final TProtocol oprot,
-                        final isStillRunning_result struct) throws TException {
+      public final void write(final TProtocol oprot,
+                              final isStillRunning_result struct)
+          throws TException {
         struct.validate();
 
         oprot.writeStructBegin(STRUCT_DESC);
@@ -3243,7 +3263,7 @@ public class R66Service {
     private static class isStillRunning_resultTupleSchemeFactory
         implements SchemeFactory {
       @Override
-      public isStillRunning_resultTupleScheme getScheme() {
+      public final isStillRunning_resultTupleScheme getScheme() {
         return new isStillRunning_resultTupleScheme();
       }
     }
@@ -3252,8 +3272,9 @@ public class R66Service {
         extends TupleScheme<isStillRunning_result> {
 
       @Override
-      public void write(final TProtocol prot,
-                        final isStillRunning_result struct) throws TException {
+      public final void write(final TProtocol prot,
+                              final isStillRunning_result struct)
+          throws TException {
         final TTupleProtocol oprot = (TTupleProtocol) prot;
         final BitSet optionals = new BitSet();
         if (struct.isSetSuccess()) {
@@ -3266,7 +3287,8 @@ public class R66Service {
       }
 
       @Override
-      public void read(final TProtocol prot, final isStillRunning_result struct)
+      public final void read(final TProtocol prot,
+                             final isStillRunning_result struct)
           throws TException {
         final TTupleProtocol iprot = (TTupleProtocol) prot;
         final BitSet incoming = iprot.readBitSet(1);
@@ -3299,14 +3321,14 @@ public class R66Service {
     static {
       schemes.put(StandardScheme.class,
                   new infoListQuery_argsStandardSchemeFactory());
-      schemes
-          .put(TupleScheme.class, new infoListQuery_argsTupleSchemeFactory());
+      schemes.put(TupleScheme.class,
+                  new infoListQuery_argsTupleSchemeFactory());
     }
 
     private R66Request request; // required
 
     @Override
-    public infoListQuery_args clone() throws CloneNotSupportedException {
+    public final infoListQuery_args clone() throws CloneNotSupportedException {
       return (infoListQuery_args) super.clone();
     }
 
@@ -3370,12 +3392,12 @@ public class R66Service {
       }
 
       @Override
-      public short getThriftFieldId() {
+      public final short getThriftFieldId() {
         return thriftId;
       }
 
       @Override
-      public String getFieldName() {
+      public final String getFieldName() {
         return fieldName;
       }
     }
@@ -3412,25 +3434,25 @@ public class R66Service {
     }
 
     @Override
-    public infoListQuery_args deepCopy() {
+    public final infoListQuery_args deepCopy() {
       return new infoListQuery_args(this);
     }
 
     @Override
-    public void clear() {
+    public final void clear() {
       request = null;
     }
 
-    public R66Request getRequest() {
+    public final R66Request getRequest() {
       return request;
     }
 
-    public infoListQuery_args setRequest(final R66Request request) {
+    public final infoListQuery_args setRequest(final R66Request request) {
       this.request = request;
       return this;
     }
 
-    public void unsetRequest() {
+    public final void unsetRequest() {
       request = null;
     }
 
@@ -3438,18 +3460,18 @@ public class R66Service {
      * Returns true if field request is set (has been assigned a value) and
      * false otherwise
      */
-    public boolean isSetRequest() {
+    public final boolean isSetRequest() {
       return request != null;
     }
 
-    public void setRequestIsSet(final boolean value) {
+    public final void setRequestIsSet(final boolean value) {
       if (!value) {
         request = null;
       }
     }
 
     @Override
-    public void setFieldValue(final _Fields field, final Object value) {
+    public final void setFieldValue(final _Fields field, final Object value) {
       if (field == _Fields.REQUEST) {
         if (value == null) {
           unsetRequest();
@@ -3460,7 +3482,7 @@ public class R66Service {
     }
 
     @Override
-    public Object getFieldValue(final _Fields field) {
+    public final Object getFieldValue(final _Fields field) {
       if (field == _Fields.REQUEST) {
         return getRequest();
       }
@@ -3473,7 +3495,7 @@ public class R66Service {
      * a value) and false otherwise
      */
     @Override
-    public boolean isSet(final _Fields field) {
+    public final boolean isSet(final _Fields field) {
       if (field == null) {
         throw new IllegalArgumentException();
       }
@@ -3485,7 +3507,7 @@ public class R66Service {
     }
 
     @Override
-    public boolean equals(final Object that) {
+    public final boolean equals(final Object that) {
       if (that == null) {
         return false;
       }
@@ -3495,7 +3517,7 @@ public class R66Service {
       return false;
     }
 
-    public boolean equals(final infoListQuery_args that) {
+    public final boolean equals(final infoListQuery_args that) {
       if (that == null) {
         return false;
       }
@@ -3513,12 +3535,12 @@ public class R66Service {
     }
 
     @Override
-    public int hashCode() {
+    public final int hashCode() {
       return 0;
     }
 
     @Override
-    public int compareTo(final infoListQuery_args other) {
+    public final int compareTo(final infoListQuery_args other) {
       if (!getClass().equals(other.getClass())) {
         return getClass().getName().compareTo(other.getClass().getName());
       }
@@ -3538,22 +3560,22 @@ public class R66Service {
     }
 
     @Override
-    public _Fields fieldForId(final int fieldId) {
+    public final _Fields fieldForId(final int fieldId) {
       return _Fields.findByThriftId(fieldId);
     }
 
     @Override
-    public void read(final TProtocol iprot) throws TException {
+    public final void read(final TProtocol iprot) throws TException {
       schemes.get(iprot.getScheme()).getScheme().read(iprot, this);
     }
 
     @Override
-    public void write(final TProtocol oprot) throws TException {
+    public final void write(final TProtocol oprot) throws TException {
       schemes.get(oprot.getScheme()).getScheme().write(oprot, this);
     }
 
     @Override
-    public String toString() {
+    public final String toString() {
       final StringBuilder sb = new StringBuilder("infoListQuery_args(");
       sb.append("request:");
       if (request == null) {
@@ -3565,7 +3587,7 @@ public class R66Service {
       return sb.toString();
     }
 
-    public void validate() throws TException {
+    public final void validate() throws TException {
       // check for required fields
       // check for sub-struct validity
       if (request != null) {
@@ -3593,7 +3615,7 @@ public class R66Service {
     private static class infoListQuery_argsStandardSchemeFactory
         implements SchemeFactory {
       @Override
-      public infoListQuery_argsStandardScheme getScheme() {
+      public final infoListQuery_argsStandardScheme getScheme() {
         return new infoListQuery_argsStandardScheme();
       }
     }
@@ -3602,7 +3624,8 @@ public class R66Service {
         extends StandardScheme<infoListQuery_args> {
 
       @Override
-      public void read(final TProtocol iprot, final infoListQuery_args struct)
+      public final void read(final TProtocol iprot,
+                             final infoListQuery_args struct)
           throws TException {
         TField schemeField;
         iprot.readStructBegin();
@@ -3632,7 +3655,8 @@ public class R66Service {
       }
 
       @Override
-      public void write(final TProtocol oprot, final infoListQuery_args struct)
+      public final void write(final TProtocol oprot,
+                              final infoListQuery_args struct)
           throws TException {
         struct.validate();
 
@@ -3651,7 +3675,7 @@ public class R66Service {
     private static class infoListQuery_argsTupleSchemeFactory
         implements SchemeFactory {
       @Override
-      public infoListQuery_argsTupleScheme getScheme() {
+      public final infoListQuery_argsTupleScheme getScheme() {
         return new infoListQuery_argsTupleScheme();
       }
     }
@@ -3660,7 +3684,8 @@ public class R66Service {
         extends TupleScheme<infoListQuery_args> {
 
       @Override
-      public void write(final TProtocol prot, final infoListQuery_args struct)
+      public final void write(final TProtocol prot,
+                              final infoListQuery_args struct)
           throws TException {
         final TTupleProtocol oprot = (TTupleProtocol) prot;
         final BitSet optionals = new BitSet();
@@ -3674,7 +3699,8 @@ public class R66Service {
       }
 
       @Override
-      public void read(final TProtocol prot, final infoListQuery_args struct)
+      public final void read(final TProtocol prot,
+                             final infoListQuery_args struct)
           throws TException {
         final TTupleProtocol iprot = (TTupleProtocol) prot;
         final BitSet incoming = iprot.readBitSet(1);
@@ -3708,14 +3734,15 @@ public class R66Service {
     static {
       schemes.put(StandardScheme.class,
                   new infoListQuery_resultStandardSchemeFactory());
-      schemes
-          .put(TupleScheme.class, new infoListQuery_resultTupleSchemeFactory());
+      schemes.put(TupleScheme.class,
+                  new infoListQuery_resultTupleSchemeFactory());
     }
 
     private List<String> success; // required
 
     @Override
-    public infoListQuery_result clone() throws CloneNotSupportedException {
+    public final infoListQuery_result clone()
+        throws CloneNotSupportedException {
       return (infoListQuery_result) super.clone();
     }
 
@@ -3779,12 +3806,12 @@ public class R66Service {
       }
 
       @Override
-      public short getThriftFieldId() {
+      public final short getThriftFieldId() {
         return thriftId;
       }
 
       @Override
-      public String getFieldName() {
+      public final String getFieldName() {
         return fieldName;
       }
     }
@@ -3801,8 +3828,8 @@ public class R66Service {
                                                     new FieldValueMetaData(
                                                         TType.STRING))));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
-      FieldMetaData
-          .addStructMetaDataMap(infoListQuery_result.class, metaDataMap);
+      FieldMetaData.addStructMetaDataMap(infoListQuery_result.class,
+                                         metaDataMap);
     }
 
     public infoListQuery_result() {
@@ -3823,40 +3850,40 @@ public class R66Service {
     }
 
     @Override
-    public infoListQuery_result deepCopy() {
+    public final infoListQuery_result deepCopy() {
       return new infoListQuery_result(this);
     }
 
     @Override
-    public void clear() {
+    public final void clear() {
       success = null;
     }
 
-    public int getSuccessSize() {
+    public final int getSuccessSize() {
       return success == null? 0 : success.size();
     }
 
-    public Iterator<String> getSuccessIterator() {
+    public final Iterator<String> getSuccessIterator() {
       return success == null? null : success.iterator();
     }
 
-    public void addToSuccess(final String elem) {
+    public final void addToSuccess(final String elem) {
       if (success == null) {
         success = new ArrayList<String>();
       }
       success.add(elem);
     }
 
-    public List<String> getSuccess() {
+    public final List<String> getSuccess() {
       return success;
     }
 
-    public infoListQuery_result setSuccess(final List<String> success) {
+    public final infoListQuery_result setSuccess(final List<String> success) {
       this.success = success;
       return this;
     }
 
-    public void unsetSuccess() {
+    public final void unsetSuccess() {
       success = null;
     }
 
@@ -3864,18 +3891,18 @@ public class R66Service {
      * Returns true if field success is set (has been assigned a value) and
      * false otherwise
      */
-    public boolean isSetSuccess() {
+    public final boolean isSetSuccess() {
       return success != null;
     }
 
-    public void setSuccessIsSet(final boolean value) {
+    public final void setSuccessIsSet(final boolean value) {
       if (!value) {
         success = null;
       }
     }
 
     @Override
-    public void setFieldValue(final _Fields field, final Object value) {
+    public final void setFieldValue(final _Fields field, final Object value) {
       if (field == _Fields.SUCCESS) {
         if (value == null) {
           unsetSuccess();
@@ -3886,7 +3913,7 @@ public class R66Service {
     }
 
     @Override
-    public Object getFieldValue(final _Fields field) {
+    public final Object getFieldValue(final _Fields field) {
       if (field == _Fields.SUCCESS) {
         return getSuccess();
       }
@@ -3899,7 +3926,7 @@ public class R66Service {
      * a value) and false otherwise
      */
     @Override
-    public boolean isSet(final _Fields field) {
+    public final boolean isSet(final _Fields field) {
       if (field == null) {
         throw new IllegalArgumentException();
       }
@@ -3911,7 +3938,7 @@ public class R66Service {
     }
 
     @Override
-    public boolean equals(final Object that) {
+    public final boolean equals(final Object that) {
       if (that == null) {
         return false;
       }
@@ -3921,7 +3948,7 @@ public class R66Service {
       return false;
     }
 
-    public boolean equals(final infoListQuery_result that) {
+    public final boolean equals(final infoListQuery_result that) {
       if (that == null) {
         return false;
       }
@@ -3939,12 +3966,12 @@ public class R66Service {
     }
 
     @Override
-    public int hashCode() {
+    public final int hashCode() {
       return 0;
     }
 
     @Override
-    public int compareTo(final infoListQuery_result other) {
+    public final int compareTo(final infoListQuery_result other) {
       if (!getClass().equals(other.getClass())) {
         return getClass().getName().compareTo(other.getClass().getName());
       }
@@ -3964,22 +3991,22 @@ public class R66Service {
     }
 
     @Override
-    public _Fields fieldForId(final int fieldId) {
+    public final _Fields fieldForId(final int fieldId) {
       return _Fields.findByThriftId(fieldId);
     }
 
     @Override
-    public void read(final TProtocol iprot) throws TException {
+    public final void read(final TProtocol iprot) throws TException {
       schemes.get(iprot.getScheme()).getScheme().read(iprot, this);
     }
 
     @Override
-    public void write(final TProtocol oprot) throws TException {
+    public final void write(final TProtocol oprot) throws TException {
       schemes.get(oprot.getScheme()).getScheme().write(oprot, this);
     }
 
     @Override
-    public String toString() {
+    public final String toString() {
       final StringBuilder sb = new StringBuilder("infoListQuery_result(");
       sb.append("success:");
       if (success == null) {
@@ -3991,7 +4018,7 @@ public class R66Service {
       return sb.toString();
     }
 
-    public void validate() throws TException {
+    public final void validate() throws TException {
       // check for required fields
       // check for sub-struct validity
     }
@@ -4016,7 +4043,7 @@ public class R66Service {
     private static class infoListQuery_resultStandardSchemeFactory
         implements SchemeFactory {
       @Override
-      public infoListQuery_resultStandardScheme getScheme() {
+      public final infoListQuery_resultStandardScheme getScheme() {
         return new infoListQuery_resultStandardScheme();
       }
     }
@@ -4025,7 +4052,8 @@ public class R66Service {
         extends StandardScheme<infoListQuery_result> {
 
       @Override
-      public void read(final TProtocol iprot, final infoListQuery_result struct)
+      public final void read(final TProtocol iprot,
+                             final infoListQuery_result struct)
           throws TException {
         TField schemeField;
         iprot.readStructBegin();
@@ -4063,16 +4091,17 @@ public class R66Service {
       }
 
       @Override
-      public void write(final TProtocol oprot,
-                        final infoListQuery_result struct) throws TException {
+      public final void write(final TProtocol oprot,
+                              final infoListQuery_result struct)
+          throws TException {
         struct.validate();
 
         oprot.writeStructBegin(STRUCT_DESC);
         if (struct.success != null) {
           oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
           {
-            oprot
-                .writeListBegin(new TList(TType.STRING, struct.success.size()));
+            oprot.writeListBegin(
+                new TList(TType.STRING, struct.success.size()));
             for (final String _iter3 : struct.success) {
               oprot.writeString(_iter3);
             }
@@ -4089,7 +4118,7 @@ public class R66Service {
     private static class infoListQuery_resultTupleSchemeFactory
         implements SchemeFactory {
       @Override
-      public infoListQuery_resultTupleScheme getScheme() {
+      public final infoListQuery_resultTupleScheme getScheme() {
         return new infoListQuery_resultTupleScheme();
       }
     }
@@ -4098,7 +4127,8 @@ public class R66Service {
         extends TupleScheme<infoListQuery_result> {
 
       @Override
-      public void write(final TProtocol prot, final infoListQuery_result struct)
+      public final void write(final TProtocol prot,
+                              final infoListQuery_result struct)
           throws TException {
         final TTupleProtocol oprot = (TTupleProtocol) prot;
         final BitSet optionals = new BitSet();
@@ -4117,7 +4147,8 @@ public class R66Service {
       }
 
       @Override
-      public void read(final TProtocol prot, final infoListQuery_result struct)
+      public final void read(final TProtocol prot,
+                             final infoListQuery_result struct)
           throws TException {
         final TTupleProtocol iprot = (TTupleProtocol) prot;
         final BitSet incoming = iprot.readBitSet(1);

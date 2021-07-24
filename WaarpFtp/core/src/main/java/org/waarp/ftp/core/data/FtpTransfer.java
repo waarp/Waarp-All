@@ -91,7 +91,7 @@ public class FtpTransfer {
   /**
    * @return the command
    */
-  public FtpCommandCode getCommand() {
+  public final FtpCommandCode getCommand() {
     return command;
   }
 
@@ -100,7 +100,7 @@ public class FtpTransfer {
    *
    * @throws FtpNoFileException
    */
-  public FtpFile getFtpFile() throws FtpNoFileException {
+  public final FtpFile getFtpFile() throws FtpNoFileException {
     if (currentFile == null) {
       throw new FtpNoFileException("No file associated with the transfer");
     }
@@ -110,28 +110,28 @@ public class FtpTransfer {
   /**
    * @return the Info
    */
-  public List<String> getInfo() {
+  public final List<String> getInfo() {
     return info;
   }
 
   /**
    * @return the path
    */
-  public String getPath() {
+  public final String getPath() {
     return path;
   }
 
   /**
    * @return the status
    */
-  public boolean getStatus() {
+  public final boolean getStatus() {
     return status;
   }
 
   /**
    * @param status
    */
-  public void setStatus(final boolean status) {
+  public final void setStatus(final boolean status) {
     if (!status && logger.isDebugEnabled()) {
       logger.debug("Status false", new Exception("Trace only exception"));
     }

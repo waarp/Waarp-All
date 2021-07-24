@@ -236,8 +236,8 @@ public class R66EmbeddedServiceImpl implements R66Service.Iface {
     } catch (final WaarpDatabaseException ignored) {
       // nothing
     }
-    logger
-        .warn("Cannot accomplished action on task: " + id + ' ' + code.name());
+    logger.warn(
+        "Cannot accomplished action on task: " + id + ' ' + code.name());
     return -1;
   }
 
@@ -293,10 +293,9 @@ public class R66EmbeddedServiceImpl implements R66Service.Iface {
     // validLimit on requested side
     if (Configuration.configuration.getConstraintLimitHandler()
                                    .checkConstraints()) {
-      logger
-          .warn("Limit exceeded {} while asking to relaunch a task " + request,
-                Configuration.configuration
-                    .getConstraintLimitHandler().lastAlert);
+      logger.warn(
+          "Limit exceeded {} while asking to relaunch a task " + request,
+          Configuration.configuration.getConstraintLimitHandler().lastAlert);
       return new R66Result(request.getMode(), ErrorCode.ServerOverloaded,
                            "Limit exceeded while asking to relaunch a task");
     }
@@ -384,8 +383,8 @@ public class R66EmbeddedServiceImpl implements R66Service.Iface {
   }
 
   @Override
-  public boolean isStillRunning(final String fromuid, final String touid,
-                                final long tid) throws TException {
+  public final boolean isStillRunning(final String fromuid, final String touid,
+                                      final long tid) throws TException {
     // now check if enough arguments are provided
     if (fromuid == null || touid == null || tid == ILLEGALVALUE) {
       // error
@@ -400,7 +399,7 @@ public class R66EmbeddedServiceImpl implements R66Service.Iface {
   }
 
   @Override
-  public List<String> infoListQuery(final R66Request request)
+  public final List<String> infoListQuery(final R66Request request)
       throws TException {
     List<String> list = new ArrayList<String>();
     final RequestMode mode = request.getMode();
@@ -418,8 +417,8 @@ public class R66EmbeddedServiceImpl implements R66Service.Iface {
       return list;
     }
     final R66Session session = new R66Session(false);
-    session.getAuth().specialNoSessionAuth(false, Configuration.configuration
-        .getHostId());
+    session.getAuth().specialNoSessionAuth(false,
+                                           Configuration.configuration.getHostId());
     final DbRule rule;
     try {
       rule = new DbRule(request.getRule());

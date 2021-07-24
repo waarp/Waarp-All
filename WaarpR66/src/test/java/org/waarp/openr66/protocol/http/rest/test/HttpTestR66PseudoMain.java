@@ -65,8 +65,8 @@ public class HttpTestR66PseudoMain {
    * @throws Exception
    */
   public static void main(String[] args) throws Exception {
-    WaarpLoggerFactory
-        .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));
+    WaarpLoggerFactory.setDefaultFactoryIfNotSame(
+        new WaarpSlf4JLoggerFactory(null));
     ResourceLeakDetector.setLevel(Level.PARANOID);
     final WaarpLogger logger =
         WaarpLoggerFactory.getLogger(HttpTestR66PseudoMain.class);

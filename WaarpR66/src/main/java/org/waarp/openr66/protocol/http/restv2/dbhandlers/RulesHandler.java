@@ -106,18 +106,18 @@ public class RulesHandler extends AbstractRestDbHandler {
   @GET
   @Consumes(APPLICATION_FORM_URLENCODED)
   @RequiredRole(ROLE.READONLY)
-  public void filterRules(final HttpRequest request,
-                          final HttpResponder responder,
-                          @QueryParam(LIMIT) @DefaultValue("20")
-                          final String limitStr,
-                          @QueryParam(OFFSET) @DefaultValue("0")
-                          final String offsetStr,
-                          @QueryParam(ORDER) @DefaultValue("ascName")
-                          final String orderStr,
-                          @QueryParam(MODE_TRANS) @DefaultValue("")
-                          final String modeTransStr,
-                          @QueryParam(COUNT_ORDER) @DefaultValue("")
-                          final String countOrder) {
+  public final void filterRules(final HttpRequest request,
+                                final HttpResponder responder,
+                                @QueryParam(LIMIT) @DefaultValue("20")
+                                final String limitStr,
+                                @QueryParam(OFFSET) @DefaultValue("0")
+                                final String offsetStr,
+                                @QueryParam(ORDER) @DefaultValue("ascName")
+                                final String orderStr,
+                                @QueryParam(MODE_TRANS) @DefaultValue("")
+                                final String modeTransStr,
+                                @QueryParam(COUNT_ORDER) @DefaultValue("")
+                                final String countOrder) {
     checkSanity(limitStr, offsetStr, orderStr, modeTransStr, countOrder);
     final List<RestError> errors = new ArrayList<RestError>();
 
@@ -218,8 +218,8 @@ public class RulesHandler extends AbstractRestDbHandler {
   @POST
   @Consumes(APPLICATION_JSON)
   @RequiredRole(ROLE.RULE)
-  public void addRule(final HttpRequest request,
-                      final HttpResponder responder) {
+  public final void addRule(final HttpRequest request,
+                            final HttpResponder responder) {
     final ObjectNode requestObject = deserializeRequest(request);
     checkSanity(requestObject);
     final Rule rule = nodeToNewRule(requestObject);
@@ -261,8 +261,8 @@ public class RulesHandler extends AbstractRestDbHandler {
   @OPTIONS
   @Consumes(WILDCARD)
   @RequiredRole(ROLE.NOACCESS)
-  public void options(final HttpRequest request,
-                      final HttpResponder responder) {
+  public final void options(final HttpRequest request,
+                            final HttpResponder responder) {
     responder.sendStatus(OK, OPTIONS_HEADERS);
   }
 }

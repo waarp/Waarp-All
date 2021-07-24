@@ -79,37 +79,38 @@ public abstract class HttpRestAbstractR66Handler extends RestMethodHandler {
   }
 
   @Override
-  public void checkHandlerSessionCorrectness(final HttpRestHandler handler,
-                                             final RestArgument arguments,
-                                             final RestArgument result)
-      throws HttpForbiddenRequestException {
+  public final void checkHandlerSessionCorrectness(
+      final HttpRestHandler handler, final RestArgument arguments,
+      final RestArgument result) throws HttpForbiddenRequestException {
     try {
       HttpRestV1Utils.checkSanity(arguments);
-    } catch (InvalidArgumentException e) {
+    } catch (final InvalidArgumentException e) {
       throw new HttpForbiddenRequestException("Issue on values", e);
     }
     logger.debug("debug");
   }
 
   @Override
-  public void getFileUpload(final HttpRestHandler handler,
-                            final FileUpload data, final RestArgument arguments,
-                            final RestArgument result) {
+  public final void getFileUpload(final HttpRestHandler handler,
+                                  final FileUpload data,
+                                  final RestArgument arguments,
+                                  final RestArgument result) {
     // should not be
     logger.debug("debug: {}:{}", data.getName(), data.getHttpDataType().name());
   }
 
-  protected void setError(final HttpRestHandler handler,
-                          final RestArgument result,
-                          final HttpResponseStatus code) {
+  protected final void setError(final HttpRestHandler handler,
+                                final RestArgument result,
+                                final HttpResponseStatus code) {
     handler.setStatus(HttpResponseStatus.BAD_REQUEST);
     handler.setWillClose(false);
     result.setResult(code);
   }
 
-  protected void setError(final HttpRestHandler handler,
-                          final RestArgument result, final JsonPacket packet,
-                          final HttpResponseStatus code) {
+  protected final void setError(final HttpRestHandler handler,
+                                final RestArgument result,
+                                final JsonPacket packet,
+                                final HttpResponseStatus code) {
     handler.setStatus(HttpResponseStatus.BAD_REQUEST);
     result.setResult(code);
     if (packet != null) {
@@ -121,8 +122,9 @@ public abstract class HttpRestAbstractR66Handler extends RestMethodHandler {
     }
   }
 
-  protected void setOk(final HttpRestHandler handler, final RestArgument result,
-                       final JsonPacket packet, final HttpResponseStatus code) {
+  protected final void setOk(final HttpRestHandler handler,
+                             final RestArgument result, final JsonPacket packet,
+                             final HttpResponseStatus code) {
     handler.setStatus(HttpResponseStatus.OK);
     result.setResult(code);
     if (packet != null) {
@@ -146,12 +148,12 @@ public abstract class HttpRestAbstractR66Handler extends RestMethodHandler {
   }
 
   @Override
-  public ChannelFuture sendResponse(final HttpRestHandler handler,
-                                    final ChannelHandlerContext ctx,
-                                    final RestArgument arguments,
-                                    final RestArgument result,
-                                    final Object body,
-                                    final HttpResponseStatus status) {
+  public final ChannelFuture sendResponse(final HttpRestHandler handler,
+                                          final ChannelHandlerContext ctx,
+                                          final RestArgument arguments,
+                                          final RestArgument result,
+                                          final Object body,
+                                          final HttpResponseStatus status) {
     final String answer = result.toString();
     final ByteBuf buffer =
         Unpooled.wrappedBuffer(answer.getBytes(WaarpStringUtils.UTF8));
@@ -173,15 +175,16 @@ public abstract class HttpRestAbstractR66Handler extends RestMethodHandler {
   }
 
   @Override
-  public Object getBody(final HttpRestHandler handler, final ByteBuf body,
-                        final RestArgument arguments, final RestArgument result)
+  public final Object getBody(final HttpRestHandler handler, final ByteBuf body,
+                              final RestArgument arguments,
+                              final RestArgument result)
       throws HttpIncorrectRequestException {
     final JsonPacket packet;
     try {
       final String json = body.toString(WaarpStringUtils.UTF8);
       try {
         ParametersChecker.checkSanityString(json);
-      } catch (InvalidArgumentException e) {
+      } catch (final InvalidArgumentException e) {
         throw new HttpIncorrectRequestException("Issue on values", e);
       }
       packet = JsonPacket.createFromBuffer(json);

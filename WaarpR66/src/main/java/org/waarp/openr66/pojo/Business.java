@@ -78,56 +78,56 @@ public class Business {
   }
 
   @JsonIgnore
-  public void checkValues() throws WaarpDatabaseSqlException {
+  public final void checkValues() throws WaarpDatabaseSqlException {
     validateLength(Types.LONGVARCHAR, business, roles, aliases, others);
     validateLength(Types.NVARCHAR, hostid);
   }
 
-  public String getHostid() {
+  public final String getHostid() {
     return hostid;
   }
 
-  public void setHostid(final String hostid) {
+  public final void setHostid(final String hostid) {
     this.hostid = hostid;
   }
 
-  public String getBusiness() {
+  public final String getBusiness() {
     return business;
   }
 
-  public void setBusiness(final String business) {
+  public final void setBusiness(final String business) {
     this.business = business;
   }
 
-  public String getRoles() {
+  public final String getRoles() {
     return roles;
   }
 
-  public void setRoles(final String roles) {
+  public final void setRoles(final String roles) {
     this.roles = roles;
   }
 
-  public String getAliases() {
+  public final String getAliases() {
     return aliases;
   }
 
-  public void setAliases(final String aliases) {
+  public final void setAliases(final String aliases) {
     this.aliases = aliases;
   }
 
-  public String getOthers() {
+  public final String getOthers() {
     return others;
   }
 
-  public void setOthers(final String others) {
+  public final void setOthers(final String others) {
     this.others = others;
   }
 
-  public UpdatedInfo getUpdatedInfo() {
+  public final UpdatedInfo getUpdatedInfo() {
     return updatedInfo;
   }
 
-  public void setUpdatedInfo(final UpdatedInfo info) {
+  public final void setUpdatedInfo(final UpdatedInfo info) {
     updatedInfo = info;
   }
 }

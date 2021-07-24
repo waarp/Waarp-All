@@ -125,7 +125,7 @@ public class TransferArgs {
   public static final String DELAY_ARG = "-" + DELAY;
   private static final Option DELAY_OPTION =
       Option.builder(DELAY).required(false).hasArg(true).desc(
-          "Specify the delay time as an epoch time or '+' a delay in ms")
+                "Specify the delay time as an epoch time or '+' a delay in ms")
             .build();
 
   private static final String LOGWARN = "logWarn";
@@ -320,8 +320,7 @@ public class TransferArgs {
           transferArgs1.getRemoteHost())) {
         transferArgs1.setRemoteHost(Configuration.configuration.getAliases()
                                                                .get(
-                                                                   transferArgs1
-                                                                       .getRemoteHost()));
+                                                                   transferArgs1.getRemoteHost()));
       }
     }
     if (cmd.hasOption(FILE)) {
@@ -389,8 +388,7 @@ public class TransferArgs {
                transferArgs1.getRemoteHost() != null) {
       try {
         final DbTaskRunner runner = new DbTaskRunner(transferArgs1.getId(),
-                                                     transferArgs1
-                                                         .getRemoteHost());
+                                                     transferArgs1.getRemoteHost());
         transferArgs1.setRulename(runner.getRuleId());
         transferArgs1.setFilename(runner.getOriginalFilename());
         return transferArgs1;
@@ -607,101 +605,102 @@ public class TransferArgs {
     // Empty
   }
 
-  public String getFilename() {
+  public final String getFilename() {
     return filename;
   }
 
-  public TransferArgs setFilename(final String filename) {
+  public final TransferArgs setFilename(final String filename) {
     this.filename = filename;
     return this;
   }
 
-  public String getRulename() {
+  public final String getRulename() {
     return rulename;
   }
 
-  public TransferArgs setRulename(final String rulename) {
+  public final TransferArgs setRulename(final String rulename) {
     this.rulename = rulename;
     return this;
   }
 
-  public String getTransferInfo() {
+  public final String getTransferInfo() {
     return transferInfo;
   }
 
-  public TransferArgs setTransferInfo(final String transferInfo) {
+  public final TransferArgs setTransferInfo(final String transferInfo) {
     this.transferInfo = transferInfo;
     return this;
   }
 
-  public boolean isMD5() {
+  public final boolean isMD5() {
     return isMD5;
   }
 
-  public TransferArgs setMD5(final boolean md5) {
+  public final TransferArgs setMD5(final boolean md5) {
     isMD5 = md5;
     return this;
   }
 
-  public String getRemoteHost() {
+  public final String getRemoteHost() {
     return remoteHost;
   }
 
-  public TransferArgs setRemoteHost(final String remoteHost) {
+  public final TransferArgs setRemoteHost(final String remoteHost) {
     this.remoteHost = remoteHost;
     return this;
   }
 
-  public int getBlockSize() {
+  public final int getBlockSize() {
     return blocksize;
   }
 
-  public TransferArgs setBlockSize(final int blocksize) {
+  public final TransferArgs setBlockSize(final int blocksize) {
     this.blocksize = blocksize;
     return this;
   }
 
-  public long getId() {
+  public final long getId() {
     return id;
   }
 
-  public TransferArgs setId(final long id) {
+  public final TransferArgs setId(final long id) {
     this.id = id;
     return this;
   }
 
-  public Timestamp getStartTime() {
+  public final Timestamp getStartTime() {
     return startTime;
   }
 
-  public TransferArgs setStartTime(final Timestamp startTime) {
+  public final TransferArgs setStartTime(final Timestamp startTime) {
     this.startTime = startTime;
     return this;
   }
 
-  public String getFollowId() {
+  public final String getFollowId() {
     return followId;
   }
 
-  public TransferArgs setFollowId(final String followId) {
+  public final TransferArgs setFollowId(final String followId) {
     this.followId = followId;
     return this;
   }
 
-  public boolean isNormalInfoAsWarn() {
+  public final boolean isNormalInfoAsWarn() {
     return normalInfoAsWarn;
   }
 
-  public TransferArgs setNormalInfoAsWarn(final boolean normalInfoAsWarn) {
+  public final TransferArgs setNormalInfoAsWarn(
+      final boolean normalInfoAsWarn) {
     this.normalInfoAsWarn = normalInfoAsWarn;
     return this;
   }
 
-  public boolean isNolog() {
+  public final boolean isNolog() {
     return nolog;
   }
 
-  public TransferArgs setNolog(final boolean nolog) {
+  public final TransferArgs setNolog(final boolean nolog) {
     this.nolog = nolog;
     return this;
   }

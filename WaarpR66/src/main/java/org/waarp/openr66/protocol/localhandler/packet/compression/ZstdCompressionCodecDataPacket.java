@@ -40,7 +40,8 @@ public class ZstdCompressionCodecDataPacket {
   /**
    * @param dataPacket the DataPacket to compress in place
    */
-  public void compress(final DataPacket dataPacket, final R66Session session)
+  public final void compress(final DataPacket dataPacket,
+                             final R66Session session)
       throws OpenR66ProtocolPacketException {
     final byte[] data = dataPacket.getData();
     final int originalSize = dataPacket.getLengthPacket();
@@ -73,7 +74,8 @@ public class ZstdCompressionCodecDataPacket {
   /**
    * @param dataPacket the DataPacket to uncompress in place
    */
-  public void uncompress(final DataPacket dataPacket, final R66Session session)
+  public final void uncompress(final DataPacket dataPacket,
+                               final R66Session session)
       throws OpenR66ProtocolPacketException {
     final byte[] data = dataPacket.getData();
     final int originalSize = dataPacket.getLengthPacket();

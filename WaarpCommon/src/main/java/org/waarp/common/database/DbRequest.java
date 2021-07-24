@@ -113,7 +113,7 @@ public class DbRequest {
    * @throws WaarpDatabaseSqlException
    * @throws WaarpDatabaseNoConnectionException
    */
-  public void select(final String select)
+  public final void select(final String select)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
     close();
     stmt = createStatement();
@@ -144,7 +144,7 @@ public class DbRequest {
    * @throws WaarpDatabaseSqlException
    * @throws WaarpDatabaseNoConnectionException
    */
-  public void select(final String select, final int timeout)
+  public final void select(final String select, final int timeout)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
     close();
     stmt = createStatement();
@@ -182,7 +182,7 @@ public class DbRequest {
    * @throws WaarpDatabaseSqlException
    * @throws WaarpDatabaseNoConnectionException
    */
-  public int query(final String query)
+  public final int query(final String query)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
     close();
     stmt = createStatement();
@@ -201,7 +201,7 @@ public class DbRequest {
   /**
    * Finished a Request (ready for a new one)
    */
-  public void close() {
+  public final void close() {
     // it is a good idea to release
     // resources in a finally{} block
     // in reverse-order of their creation
@@ -233,7 +233,7 @@ public class DbRequest {
    *
    * @throws WaarpDatabaseNoDataException
    */
-  public long getLastId() throws WaarpDatabaseNoDataException {
+  public final long getLastId() throws WaarpDatabaseNoDataException {
     ResultSet rstmp = null;
     long result = DbConstant.ILLEGALVALUE;
     try {
@@ -265,7 +265,7 @@ public class DbRequest {
    * @throws WaarpDatabaseNoConnectionException
    * @throws WaarpDatabaseSqlException
    */
-  public boolean getNext()
+  public final boolean getNext()
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
     if (rs == null) {
       logger.error("SQL ResultSet is Null into getNext");
@@ -292,7 +292,8 @@ public class DbRequest {
    *
    * @throws WaarpDatabaseNoConnectionException
    */
-  public ResultSet getResultSet() throws WaarpDatabaseNoConnectionException {
+  public final ResultSet getResultSet()
+      throws WaarpDatabaseNoConnectionException {
     if (rs == null) {
       throw new WaarpDatabaseNoConnectionException(
           "SQL ResultSet is Null into getResultSet");

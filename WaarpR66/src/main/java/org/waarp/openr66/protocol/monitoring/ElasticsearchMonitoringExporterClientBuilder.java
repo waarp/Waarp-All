@@ -54,11 +54,12 @@ public class ElasticsearchMonitoringExporterClientBuilder {
   static {
     // Try to load ElasticsearchFactory if class exists
     try {
-      Class elasticsearchFactoryClass =
+      final Class elasticsearchFactoryClass =
           Class.forName(ELASTICSEARCH_CLIENT_FACTORY_IMPL);
-      factory = (ElasticsearchMonitoringExporterClientFactory) WaarpSystemUtil
-          .newInstance(elasticsearchFactoryClass);
-    } catch (Exception ignore) {
+      factory =
+          (ElasticsearchMonitoringExporterClientFactory) WaarpSystemUtil.newInstance(
+              elasticsearchFactoryClass);
+    } catch (final Exception ignore) {
       // Not found and ignore
       SysErrLogger.FAKE_LOGGER.ignoreLog(ignore);
     }

@@ -133,7 +133,7 @@ public abstract class AbstractFtpClient {
   }
 
   @Before
-  public void clean() throws InterruptedException {
+  public final void clean() throws InterruptedException {
     File file = new File("/tmp/GGFTP");
     FileUtils.forceDeleteRecursiveDir(file);
     file = new File("/tmp/GGFTP/fredo/a");
@@ -237,9 +237,9 @@ public abstract class AbstractFtpClient {
 
     logger.warn(
         localFilename + ' ' + numberThread + ' ' + numberIteration + ' ' +
-        type + " Real: " + (date2 - date1) + " OK: " + numberOK.get() +
-        " KO: " + FtpClientTest.numberOK.get() + " Trf/s: " +
-        FtpClientTest.numberOK.get() * 1000 / (date2 - date1));
+        type + " Real: " + (date2 - date1) + " OK: " +
+        FtpClientTest.numberOK.get() + " KO: " + FtpClientTest.numberKO.get() +
+        " Trf/s: " + FtpClientTest.numberOK.get() * 1000 / (date2 - date1));
     assertEquals("No KO", 0, FtpClientTest.numberKO.get());
   }
 

@@ -36,11 +36,10 @@ public class UnknownCommand extends AbstractCommand {
       WaarpLoggerFactory.getLogger(UnknownCommand.class);
 
   @Override
-  public void exec() throws Reply500Exception {
-    getSession()
-        .setReplyCode(ReplyCode.REPLY_500_SYNTAX_ERROR_COMMAND_UNRECOGNIZED,
-                      "Unknown Command: " + getCommand() + " with argument: " +
-                      getArg());
+  public final void exec() throws Reply500Exception {
+    getSession().setReplyCode(
+        ReplyCode.REPLY_500_SYNTAX_ERROR_COMMAND_UNRECOGNIZED,
+        "Unknown Command: " + getCommand() + " with argument: " + getArg());
     logger.warn(getSession().getAnswer());
     invalidCurrentCommand();
     throw new Reply500Exception(getSession().getReplyCode().getMesg());

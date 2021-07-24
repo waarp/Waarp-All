@@ -56,7 +56,7 @@ public class AddUuidJavaTask extends AbstractExecJavaTask {
       Pattern.compile(S_UUID, Pattern.LITERAL);
 
   @Override
-  public void run() {
+  public final void run() {
     logger.debug("{}", this);
     final GUID uuid = new GUID();
     final String[] args = BLANK.split(fullarg);

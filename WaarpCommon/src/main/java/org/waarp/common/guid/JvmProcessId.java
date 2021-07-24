@@ -283,8 +283,8 @@ public final class JvmProcessId {
           runtimeMxBeanType.getDeclaredMethod("getName", emptyClasses);
       value = (String) getName.invoke(bean, emptyObjects);
     } catch (final Exception e) {
-      SysErrLogger.FAKE_LOGGER
-          .syserr("Unable to get PID, try another way: " + e.getMessage());
+      SysErrLogger.FAKE_LOGGER.syserr(
+          "Unable to get PID, try another way: " + e.getMessage());
 
       try {
         // Invoke android.os.Process.myPid()
@@ -293,8 +293,8 @@ public final class JvmProcessId {
         final Method myPid = processType.getMethod("myPid", emptyClasses);
         value = myPid.invoke(null, emptyObjects).toString();
       } catch (final Exception e2) {
-        SysErrLogger.FAKE_LOGGER
-            .syserr("Unable to get PID: " + e2.getMessage());
+        SysErrLogger.FAKE_LOGGER.syserr(
+            "Unable to get PID: " + e2.getMessage());
         value = "";
       }
     }

@@ -222,10 +222,9 @@ class ZstdFrameDecompressor {
 
         final int checksum = UNSAFE.getInt(inputBase, input);
         if (checksum != (int) hash) {
-          throw new MalformedInputException(input, String
-              .format("Bad checksum. Expected: %s, actual: %s",
-                      Integer.toHexString(checksum),
-                      Integer.toHexString((int) hash)));
+          throw new MalformedInputException(input, String.format(
+              "Bad checksum. Expected: %s, actual: %s",
+              Integer.toHexString(checksum), Integer.toHexString((int) hash)));
         }
 
         input += SIZE_OF_INT;
@@ -961,8 +960,8 @@ class ZstdFrameDecompressor {
       literalsAddress = ARRAY_BYTE_BASE_OFFSET;
       literalsLimit = ARRAY_BYTE_BASE_OFFSET + literalSize;
 
-      UNSAFE
-          .copyMemory(inputBase, input, literals, literalsAddress, literalSize);
+      UNSAFE.copyMemory(inputBase, input, literals, literalsAddress,
+                        literalSize);
       Arrays.fill(literals, literalSize, literalSize + SIZE_OF_LONG, (byte) 0);
     } else {
       literalsBase = inputBase;
@@ -1073,8 +1072,8 @@ class ZstdFrameDecompressor {
                                           "Data encoded in unsupported ZSTD v0.7 format");
       }
       throw new MalformedInputException(inputAddress, "Invalid magic prefix: " +
-                                                      Integer
-                                                          .toHexString(magic));
+                                                      Integer.toHexString(
+                                                          magic));
     }
 
     return SIZE_OF_INT;

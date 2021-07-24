@@ -135,7 +135,7 @@ public abstract class AbstractHttpField implements Cloneable {
   /**
    * Clean method
    */
-  public void clean() {
+  public final void clean() {
     setFieldname(null);
     setFieldinfo(null);
     fieldvalue = null;
@@ -149,7 +149,7 @@ public abstract class AbstractHttpField implements Cloneable {
   /**
    * @return the fieldname
    */
-  public String getFieldname() {
+  public final String getFieldname() {
     return fieldname;
   }
 
@@ -163,7 +163,7 @@ public abstract class AbstractHttpField implements Cloneable {
   /**
    * @return the fieldtype
    */
-  public FieldRole getFieldtype() {
+  public final FieldRole getFieldtype() {
     return fieldtype;
   }
 
@@ -177,7 +177,7 @@ public abstract class AbstractHttpField implements Cloneable {
   /**
    * @return the fieldinfo
    */
-  public String getFieldinfo() {
+  public final String getFieldinfo() {
     return fieldinfo;
   }
 
@@ -191,21 +191,21 @@ public abstract class AbstractHttpField implements Cloneable {
   /**
    * @return the fieldvisibility
    */
-  public boolean isFieldvisibility() {
+  public final boolean isFieldvisibility() {
     return fieldvisibility;
   }
 
   /**
    * @param fieldvisibility the fieldvisibility to set
    */
-  public void setFieldvisibility(final boolean fieldvisibility) {
+  public final void setFieldvisibility(final boolean fieldvisibility) {
     this.fieldvisibility = fieldvisibility;
   }
 
   /**
    * @return the fieldmandatory
    */
-  public boolean isFieldmandatory() {
+  public final boolean isFieldmandatory() {
     return fieldmandatory;
   }
 
@@ -219,7 +219,7 @@ public abstract class AbstractHttpField implements Cloneable {
   /**
    * @return the fieldcookieset
    */
-  public boolean isFieldcookieset() {
+  public final boolean isFieldcookieset() {
     return fieldcookieset;
   }
 
@@ -233,7 +233,7 @@ public abstract class AbstractHttpField implements Cloneable {
   /**
    * @return the fieldtovalidate
    */
-  public boolean isFieldtovalidate() {
+  public final boolean isFieldtovalidate() {
     return fieldtovalidate;
   }
 
@@ -247,7 +247,7 @@ public abstract class AbstractHttpField implements Cloneable {
   /**
    * @return the fieldposition
    */
-  public FieldPosition getFieldposition() {
+  public final FieldPosition getFieldposition() {
     return fieldposition;
   }
 
@@ -261,7 +261,7 @@ public abstract class AbstractHttpField implements Cloneable {
   /**
    * @return the fieldrank
    */
-  public int getFieldrank() {
+  public final int getFieldrank() {
     return fieldrank;
   }
 
@@ -275,7 +275,7 @@ public abstract class AbstractHttpField implements Cloneable {
   /**
    * @return the present
    */
-  public boolean isPresent() {
+  public final boolean isPresent() {
     return present;
   }
 
@@ -289,7 +289,7 @@ public abstract class AbstractHttpField implements Cloneable {
   /**
    * @return the fileUpload
    */
-  public FileUpload getFileUpload() {
+  public final FileUpload getFileUpload() {
     return fileUpload;
   }
 }

@@ -48,21 +48,20 @@ public class LogImport {
    * @param args
    */
   public static void main(final String[] args) {
-    WaarpLoggerFactory
-        .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));
+    WaarpLoggerFactory.setDefaultFactoryIfNotSame(
+        new WaarpSlf4JLoggerFactory(null));
     if (logger == null) {
       logger = WaarpLoggerFactory.getLogger(LogImport.class);
     }
     if (args.length < 2) {
-      SysErrLogger.FAKE_LOGGER
-          .syserr("Need configuration file and the logfile to import");
+      SysErrLogger.FAKE_LOGGER.syserr(
+          "Need configuration file and the logfile to import");
       WaarpSystemUtil.systemExit(1);
       return;
     }
     try {
-      if (!FileBasedConfiguration
-          .setConfigurationServerMinimalFromXml(Configuration.configuration,
-                                                args[0])) {
+      if (!FileBasedConfiguration.setConfigurationServerMinimalFromXml(
+          Configuration.configuration, args[0])) {
         logger.error("Needs a correct configuration file as first argument");
         if (admin != null) {
           admin.close();

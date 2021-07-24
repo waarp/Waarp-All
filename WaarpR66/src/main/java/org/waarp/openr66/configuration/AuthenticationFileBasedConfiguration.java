@@ -72,8 +72,8 @@ public class AuthenticationFileBasedConfiguration {
     try {
       document = XmlUtil.getNewSaxReader().read(filename);
     } catch (final DocumentException e) {
-      logger
-          .error("Unable to read the XML Authentication file: " + filename, e);
+      logger.error("Unable to read the XML Authentication file: " + filename,
+                   e);
       return false;
     }
     if (document == null) {
@@ -108,8 +108,8 @@ public class AuthenticationFileBasedConfiguration {
             try {
               byteKeys = config.getCryptoKey().decryptHexInBytes(skey);
             } catch (final Exception e) {
-              logger
-                  .error(CANNOT_READ_KEY_FOR_HOST_ID + refHostId + ':' + skey);
+              logger.error(
+                  CANNOT_READ_KEY_FOR_HOST_ID + refHostId + ':' + skey);
               continue;
             }
           } else {

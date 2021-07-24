@@ -133,8 +133,8 @@ public class FtpDataAsyncConn {
   public FtpDataAsyncConn(final FtpSession session) {
     this.session = session;
     dataChannel = null;
-    remoteAddress = FtpChannelUtils
-        .getRemoteInetSocketAddress(this.session.getControlChannel());
+    remoteAddress = FtpChannelUtils.getRemoteInetSocketAddress(
+        this.session.getControlChannel());
     remotePort = remoteAddress.getPort();
     setDefaultLocalPort();
     resetLocalAddress();
@@ -149,7 +149,7 @@ public class FtpDataAsyncConn {
    * @return True if the given channel is the same as the one currently
    *     registered
    */
-  public boolean checkCorrectChannel(final Channel channel) {
+  public final boolean checkCorrectChannel(final Channel channel) {
     if (dataChannel == null || channel == null) {
       return false;
     }
@@ -187,21 +187,21 @@ public class FtpDataAsyncConn {
   /**
    * @return the local address
    */
-  public InetSocketAddress getLocalAddress() {
+  public final InetSocketAddress getLocalAddress() {
     return localAddress;
   }
 
   /**
    * @return the remote address
    */
-  public InetSocketAddress getRemoteAddress() {
+  public final InetSocketAddress getRemoteAddress() {
     return remoteAddress;
   }
 
   /**
    * @return the remotePort
    */
-  public int getRemotePort() {
+  public final int getRemotePort() {
     return remotePort;
   }
 
@@ -239,7 +239,7 @@ public class FtpDataAsyncConn {
    * port
    * should have been set)
    */
-  public void setPassive() {
+  public final void setPassive() {
     unbindPassive();
     resetLocalAddress();
     passiveMode.set(true);
@@ -250,7 +250,7 @@ public class FtpDataAsyncConn {
   /**
    * @return the passiveMode
    */
-  public boolean isPassiveMode() {
+  public final boolean isPassiveMode() {
     return passiveMode.get();
   }
 
@@ -258,7 +258,7 @@ public class FtpDataAsyncConn {
    * @return True if the connection is bind (active = connected, passive = not
    *     necessarily connected)
    */
-  public boolean isBind() {
+  public final boolean isBind() {
     return isBind.get();
   }
 
@@ -340,7 +340,7 @@ public class FtpDataAsyncConn {
    *     (Stream or Block) + (Ascii or
    *     Image)
    */
-  public boolean isFileStreamBlockAsciiImage() {
+  public final boolean isFileStreamBlockAsciiImage() {
     return transferStructure == TransferStructure.FILE &&
            (transferMode == TransferMode.STREAM ||
             transferMode == TransferMode.BLOCK) &&
@@ -351,7 +351,7 @@ public class FtpDataAsyncConn {
   /**
    * @return True if the current mode for data connection is Stream
    */
-  public boolean isStreamFile() {
+  public final boolean isStreamFile() {
     return transferMode == TransferMode.STREAM &&
            transferStructure == TransferStructure.FILE;
   }
@@ -397,7 +397,7 @@ public class FtpDataAsyncConn {
    *
    * @throws Reply425Exception
    */
-  public boolean initPassiveConnection() throws Reply425Exception {
+  public final boolean initPassiveConnection() throws Reply425Exception {
     unbindPassive();
     if (passiveMode.get()) {
       // Connection is enable but the client will do the real connection
@@ -417,7 +417,7 @@ public class FtpDataAsyncConn {
    *
    * @throws FtpNoConnectionException
    */
-  public Channel getCurrentDataChannel() throws FtpNoConnectionException {
+  public final Channel getCurrentDataChannel() throws FtpNoConnectionException {
     if (dataChannel == null) {
       throw new FtpNoConnectionException("No Data Connection active");
     }
@@ -457,16 +457,16 @@ public class FtpDataAsyncConn {
   /**
    * @return The current status in String of the different parameters
    */
-  public String getStatus() {
-    final StringBuilder builder = new StringBuilder("Data connection: ")
-        .append(isActive()? "connected " : "not connected ")
-        .append(isBind()? "bind " : "not bind ")
-        .append(isPassiveMode()? "passive mode" : "active mode").append('\n')
-        .append("Mode: ").append(transferMode.name()).append(" localPort: ")
-        .append(getLocalPort()).append(" remotePort: ").append(getRemotePort())
-        .append('\n').append("Structure: ").append(transferStructure.name())
-        .append('\n').append("Type: ").append(transferType.name()).append(' ')
-        .append(transferSubType.name());
+  public final String getStatus() {
+    final StringBuilder builder = new StringBuilder("Data connection: ").append(
+        isActive()? "connected " : "not connected ").append(
+        isBind()? "bind " : "not bind ").append(
+        isPassiveMode()? "passive mode" : "active mode").append('\n').append(
+        "Mode: ").append(transferMode.name()).append(" localPort: ").append(
+        getLocalPort()).append(" remotePort: ").append(getRemotePort()).append(
+        '\n').append("Structure: ").append(transferStructure.name()).append(
+        '\n').append("Type: ").append(transferType.name()).append(' ').append(
+        transferSubType.name());
     return builder.toString();
   }
 
@@ -481,7 +481,7 @@ public class FtpDataAsyncConn {
   /**
    * @return the FtpTransferControl
    */
-  public FtpTransferControl getFtpTransferControl() {
+  public final FtpTransferControl getFtpTransferControl() {
     return transferControl;
   }
 

@@ -439,8 +439,7 @@ public class XMLTransferDAO implements TransferDAO {
               if (child.getNodeName().equals(ID_FIELD) && child.getTextContent()
                                                                .equals(
                                                                    Long.toString(
-                                                                       transfer
-                                                                           .getId()))) {
+                                                                       transfer.getId()))) {
                 found++;
               } else if (child.getNodeName().equals(OWNER_REQUEST_FIELD) &&
                          child.getTextContent()
@@ -551,10 +550,12 @@ public class XMLTransferDAO implements TransferDAO {
         XMLUtils.createNode(doc, REQUESTED_FIELD, transfer.getRequested()));
     res.appendChild(
         XMLUtils.createNode(doc, ID_RULE_FIELD, transfer.getRule()));
-    res.appendChild(XMLUtils.createNode(doc, RETRIEVE_MODE_FIELD, Boolean
-        .toString(transfer.getRetrieveMode())));
-    res.appendChild(XMLUtils.createNode(doc, TRANSFER_MODE_FIELD, Integer
-        .toString(transfer.getTransferMode())));
+    res.appendChild(XMLUtils.createNode(doc, RETRIEVE_MODE_FIELD,
+                                        Boolean.toString(
+                                            transfer.getRetrieveMode())));
+    res.appendChild(XMLUtils.createNode(doc, TRANSFER_MODE_FIELD,
+                                        Integer.toString(
+                                            transfer.getTransferMode())));
     res.appendChild(
         XMLUtils.createNode(doc, FILENAME_FIELD, transfer.getRequested()));
     res.appendChild(
@@ -565,14 +566,18 @@ public class XMLTransferDAO implements TransferDAO {
         XMLUtils.createNode(doc, FILE_INFO_FIELD, transfer.getFileInfo()));
     res.appendChild(XMLUtils.createNode(doc, TRANSFER_INFO_FIELD,
                                         transfer.getTransferInfo()));
-    res.appendChild(XMLUtils.createNode(doc, IS_MOVED_FIELD, Boolean
-        .toString(transfer.getIsMoved())));
-    res.appendChild(XMLUtils.createNode(doc, BLOCK_SIZE_FIELD, Integer
-        .toString(transfer.getBlockSize())));
-    res.appendChild(XMLUtils.createNode(doc, GLOBAL_STEP_FIELD, Integer
-        .toString(transfer.getGlobalStep().ordinal())));
-    res.appendChild(XMLUtils.createNode(doc, GLOBAL_LAST_STEP_FIELD, Integer
-        .toString(transfer.getLastGlobalStep().ordinal())));
+    res.appendChild(XMLUtils.createNode(doc, IS_MOVED_FIELD, Boolean.toString(
+        transfer.getIsMoved())));
+    res.appendChild(XMLUtils.createNode(doc, BLOCK_SIZE_FIELD, Integer.toString(
+        transfer.getBlockSize())));
+    res.appendChild(XMLUtils.createNode(doc, GLOBAL_STEP_FIELD,
+                                        Integer.toString(
+                                            transfer.getGlobalStep()
+                                                    .ordinal())));
+    res.appendChild(XMLUtils.createNode(doc, GLOBAL_LAST_STEP_FIELD,
+                                        Integer.toString(
+                                            transfer.getLastGlobalStep()
+                                                    .ordinal())));
     res.appendChild(XMLUtils.createNode(doc, STEP_FIELD,
                                         Integer.toString(transfer.getStep())));
     res.appendChild(XMLUtils.createNode(doc, RANK_FIELD,

@@ -54,7 +54,7 @@ public class RuleTask {
     this.delay = delay;
   }
 
-  public String getXML() {
+  public final String getXML() {
     String res = "<task>";
     res = res + "<type>" + type + "</type>";
     res = res + "<path>" + path + "</path>";
@@ -63,31 +63,31 @@ public class RuleTask {
   }
 
   @Override
-  public String toString() {
+  public final String toString() {
     return getXML();
   }
 
-  public String getType() {
+  public final String getType() {
     return type;
   }
 
-  public void setType(final String type) {
+  public final void setType(final String type) {
     this.type = type;
   }
 
-  public String getPath() {
+  public final String getPath() {
     return path;
   }
 
-  public void setPath(final String path) {
+  public final void setPath(final String path) {
     this.path = path;
   }
 
-  public int getDelay() {
+  public final int getDelay() {
     return delay;
   }
 
-  public void setDelay(final int delay) {
+  public final void setDelay(final int delay) {
     this.delay = delay;
   }
 }

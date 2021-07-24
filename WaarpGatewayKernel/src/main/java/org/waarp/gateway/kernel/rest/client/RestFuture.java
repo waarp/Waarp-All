@@ -43,25 +43,25 @@ public class RestFuture extends WaarpFuture {
     super(cancellable);
   }
 
-  public void setRestArgument(final RestArgument arg) {
+  public final void setRestArgument(final RestArgument arg) {
     result = arg;
   }
 
-  public RestArgument getRestArgument() {
+  public final RestArgument getRestArgument() {
     return result;
   }
 
   /**
    * @return the otherObject
    */
-  public Object getOtherObject() {
+  public final Object getOtherObject() {
     return otherObject;
   }
 
   /**
    * @param otherObject the otherObject to set
    */
-  public void setOtherObject(final Object otherObject) {
+  public final void setOtherObject(final Object otherObject) {
     this.otherObject = otherObject;
   }
 

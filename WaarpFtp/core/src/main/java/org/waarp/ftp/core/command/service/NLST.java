@@ -29,7 +29,7 @@ import java.util.List;
  */
 public class NLST extends AbstractCommand {
   @Override
-  public void exec() throws CommandAbstractException {
+  public final void exec() throws CommandAbstractException {
     final String path;
     final List<String> files;
     if (!hasArg()) {

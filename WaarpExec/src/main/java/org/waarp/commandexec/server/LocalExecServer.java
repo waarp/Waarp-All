@@ -57,8 +57,8 @@ public class LocalExecServer {
    * @throws Exception
    */
   public static void main(final String[] args) throws Exception {
-    WaarpLoggerFactory
-        .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));
+    WaarpLoggerFactory.setDefaultFactoryIfNotSame(
+        new WaarpSlf4JLoggerFactory(null));
     int port = 9999;
     final InetAddress addr;
     long delay = LocalExecDefaultResult.MAXWAITPROCESS;
@@ -75,8 +75,8 @@ public class LocalExecServer {
     // Configure the server.
     try {
       final ServerBootstrap bootstrap = new ServerBootstrap();
-      WaarpNettyUtil
-          .setServerBootstrap(bootstrap, workerGroup, workerGroup, 30000);
+      WaarpNettyUtil.setServerBootstrap(bootstrap, workerGroup, workerGroup,
+                                        30000);
 
       // Configure the pipeline factory.
       bootstrap.childHandler(new LocalExecServerInitializer(delay, executor));

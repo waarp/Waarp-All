@@ -28,7 +28,7 @@ import org.waarp.ftp.core.data.handler.DataBusinessHandler;
  */
 public class FileSystemBasedDataBusinessHandler extends DataBusinessHandler {
   @Override
-  protected void cleanSession() {
+  protected final void cleanSession() {
     // nothing
   }
 

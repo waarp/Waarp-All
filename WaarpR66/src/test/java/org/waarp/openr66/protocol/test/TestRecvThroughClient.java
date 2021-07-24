@@ -24,14 +24,13 @@ import io.netty.util.ResourceLeakDetector.Level;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
 import org.waarp.common.utility.WaarpSystemUtil;
+import org.waarp.openr66.client.NoOpRecvThroughHandler;
 import org.waarp.openr66.client.RecvThroughClient;
-import org.waarp.openr66.client.RecvThroughHandler;
 import org.waarp.openr66.client.TransferArgs;
 import org.waarp.openr66.context.ErrorCode;
 import org.waarp.openr66.context.R66Result;
 import org.waarp.openr66.database.DbConstantR66;
 import org.waarp.openr66.protocol.configuration.Configuration;
-import org.waarp.openr66.protocol.exception.OpenR66ProtocolBusinessException;
 import org.waarp.openr66.protocol.networkhandler.NetworkTransaction;
 import org.waarp.openr66.protocol.utils.R66Future;
 
@@ -49,7 +48,7 @@ public class TestRecvThroughClient extends RecvThroughClient {
    * @param blocksize
    * @param networkTransaction
    */
-  public TestRecvThroughClient(R66Future future, TestRecvThroughHandler handler,
+  public TestRecvThroughClient(R66Future future, NoOpRecvThroughHandler handler,
                                String remoteHost, String filename,
                                String rulename, String fileinfo, boolean isMD5,
                                int blocksize,
@@ -65,11 +64,11 @@ public class TestRecvThroughClient extends RecvThroughClient {
    * @param args
    */
   public static void main(String[] args) {
-    WaarpLoggerFactory
-        .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));
+    WaarpLoggerFactory.setDefaultFactoryIfNotSame(
+        new WaarpSlf4JLoggerFactory(null));
     ResourceLeakDetector.setLevel(Level.PARANOID);
     if (logger == null) {
-      logger = WaarpLoggerFactory.getLogger(TestRecvThroughHandler.class);
+      logger = WaarpLoggerFactory.getLogger(NoOpRecvThroughHandler.class);
     }
     if (!getParams(args, false)) {
       logger.error("Wrong initialization");
@@ -83,7 +82,7 @@ public class TestRecvThroughClient extends RecvThroughClient {
     final NetworkTransaction networkTransaction = new NetworkTransaction();
     try {
       final R66Future future = new R66Future(true);
-      final TestRecvThroughHandler handler = new TestRecvThroughHandler();
+      final NoOpRecvThroughHandler handler = new NoOpRecvThroughHandler();
       final TestRecvThroughClient transaction =
           new TestRecvThroughClient(future, handler, rhost, localFilename, rule,
                                     transferInfo, ismd5, block,
@@ -134,16 +133,6 @@ public class TestRecvThroughClient extends RecvThroughClient {
       }
     } finally {
       networkTransaction.closeAll();
-    }
-
-  }
-
-  public static class TestRecvThroughHandler extends RecvThroughHandler {
-    @Override
-    public void writeBytes(final byte[] buffer, final int length)
-        throws OpenR66ProtocolBusinessException {
-      // one should use the array for its own goal
-      // logger.debug("Write {}", array.length);
     }
 
   }

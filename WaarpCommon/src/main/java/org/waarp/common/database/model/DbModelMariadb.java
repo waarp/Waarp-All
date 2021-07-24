@@ -49,22 +49,22 @@ public abstract class DbModelMariadb extends DbModelCommonMariadbMySql {
       extends DbModelAbstract.DbTypeResolver {
 
     @Override
-    public String getType(final int sqlType) {
+    public final String getType(final int sqlType) {
       return DBType.getType(sqlType);
     }
 
     @Override
-    public String getCreateTable() {
+    public final String getCreateTable() {
       return "CREATE TABLE IF NOT EXISTS ";
     }
 
     @Override
-    public String getCreateIndex() {
+    public final String getCreateIndex() {
       return "CREATE INDEX IF NOT EXISTS ";
     }
 
     @Override
-    public DbType getDbType() {
+    public final DbType getDbType() {
       return type;
     }
   }
@@ -77,7 +77,7 @@ public abstract class DbModelMariadb extends DbModelCommonMariadbMySql {
   protected DbConnectionPool pool;
 
   @Override
-  public DbType getDbType() {
+  public final DbType getDbType() {
     return type;
   }
 
@@ -161,8 +161,10 @@ public abstract class DbModelMariadb extends DbModelCommonMariadbMySql {
   }
 
   @Override
-  public Connection getDbConnection(final String server, final String user,
-                                    final String passwd) throws SQLException {
+  public final Connection getDbConnection(final String server,
+                                          final String user,
+                                          final String passwd)
+      throws SQLException {
     synchronized (this) {
       if (pool != null) {
         try {

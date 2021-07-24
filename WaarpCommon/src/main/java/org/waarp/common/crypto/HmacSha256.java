@@ -56,44 +56,44 @@ public class HmacSha256 extends KeyObject {
   public static final String EXTENSION = "hs2";
 
   @Override
-  public String getAlgorithm() {
+  public final String getAlgorithm() {
     return ALGO;
   }
 
   @Override
-  public String getInstance() {
+  public final String getInstance() {
     return INSTANCE;
   }
 
   @Override
-  public int getKeySize() {
+  public final int getKeySize() {
     return KEY_SIZE;
   }
 
   @Override
-  public String getFileExtension() {
+  public final String getFileExtension() {
     return EXTENSION;
   }
 
   @Override
-  public Cipher toCrypt() {
+  public final Cipher toCrypt() {
     throw new IllegalArgumentException(CANNOT_BE_USED_FOR_HMAC_SHA256);
   }
 
   @Override
-  public byte[] crypt(final byte[] plaintext) throws Exception {
+  public final byte[] crypt(final byte[] plaintext) throws Exception {
     final Mac mac = Mac.getInstance(ALGO);
     mac.init(secretKey);
     return mac.doFinal(plaintext);
   }
 
   @Override
-  public Cipher toDecrypt() {
+  public final Cipher toDecrypt() {
     throw new IllegalArgumentException(CANNOT_BE_USED_FOR_HMAC_SHA256);
   }
 
   @Override
-  public byte[] decrypt(final byte[] ciphertext) throws Exception {
+  public final byte[] decrypt(final byte[] ciphertext) throws Exception {
     throw new IllegalArgumentException(CANNOT_BE_USED_FOR_HMAC_SHA256);
   }
 
@@ -122,7 +122,7 @@ public class HmacSha256 extends KeyObject {
       SysErrLogger.FAKE_LOGGER.syserr(ERROR + e.getMessage());
       return;
     }
-    SysErrLogger.FAKE_LOGGER
-        .sysout("New HmacSha256 key file is generated: " + args[0]);
+    SysErrLogger.FAKE_LOGGER.sysout(
+        "New HmacSha256 key file is generated: " + args[0]);
   }
 }

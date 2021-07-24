@@ -24,56 +24,57 @@ import java.util.concurrent.TimeUnit;
 /**
  * Future completed
  */
-public abstract class WaarpCompletedFuture extends WaarpFuture {
+public abstract class WaarpCompletedFuture implements WaarpFutureInterface {
   /**
    *
    */
   protected WaarpCompletedFuture() {
-    super(false);
+    // Empty
   }
 
   @Override
-  public boolean awaitOrInterruptible() {
+  public final boolean awaitOrInterruptible() {
     return !Thread.interrupted();
   }
 
   @Override
-  public boolean awaitOrInterruptible(final long timeoutMilliseconds) {
+  public final boolean awaitOrInterruptible(final long timeoutMilliseconds) {
     return !Thread.interrupted();
   }
 
   @Override
-  public boolean awaitOrInterruptible(final long timeout, final TimeUnit unit) {
+  public final boolean awaitOrInterruptible(final long timeout,
+                                            final TimeUnit unit) {
     return !Thread.interrupted();
   }
 
   @Override
-  public void reset() {
+  public final void reset() {
     // nothing
   }
 
   @Override
-  public boolean isDone() {
+  public final boolean isDone() {
     return true;
   }
 
   @Override
-  public boolean setFailure(final Throwable cause) {
+  public final boolean setFailure(final Throwable cause) {
     return false;
   }
 
   @Override
-  public boolean setSuccess() {
+  public final boolean setSuccess() {
     return false;
   }
 
   @Override
-  public boolean cancel() {
+  public final boolean cancel() {
     return false;
   }
 
   @Override
-  public boolean isCancelled() {
+  public final boolean isCancelled() {
     return false;
   }
 }

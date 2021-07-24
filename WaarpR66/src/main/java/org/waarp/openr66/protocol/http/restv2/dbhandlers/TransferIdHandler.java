@@ -110,9 +110,9 @@ public class TransferIdHandler extends AbstractRestDbHandler {
   @GET
   @Consumes(WILDCARD)
   @RequiredRole(READONLY)
-  public void getTransfer(final HttpRequest request,
-                          final HttpResponder responder,
-                          @PathParam(URI_ID) final String uri)
+  public final void getTransfer(final HttpRequest request,
+                                final HttpResponder responder,
+                                @PathParam(URI_ID) final String uri)
       throws UnsupportedEncodingException {
     checkSanity(uri);
     final String key = URLDecoder.decode(uri, UTF8_CHARSET.name());
@@ -129,12 +129,13 @@ public class TransferIdHandler extends AbstractRestDbHandler {
     try {
       final long transID = Long.parseLong(id);
       transferDAO = DAO_FACTORY.getTransferDAO();
-      if (!transferDAO
-          .exist(transID, serverName(requested), requested, serverName())) {
+      if (!transferDAO.exist(transID, serverName(requested), requested,
+                             serverName())) {
         responder.sendStatus(NOT_FOUND);
       } else {
-        final Transfer transfer = transferDAO
-            .select(transID, serverName(requested), requested, serverName());
+        final Transfer transfer =
+            transferDAO.select(transID, serverName(requested), requested,
+                               serverName());
         final ObjectNode response = TransferConverter.transferToNode(transfer);
         final String responseText = JsonUtils.nodeToString(response);
         responder.sendJson(OK, responseText);
@@ -167,9 +168,9 @@ public class TransferIdHandler extends AbstractRestDbHandler {
   @PUT
   @Consumes(WILDCARD)
   @RequiredRole(SYSTEM)
-  public void restartTransfer(final HttpRequest request,
-                              final HttpResponder responder,
-                              @PathParam(URI_ID) final String uri)
+  public final void restartTransfer(final HttpRequest request,
+                                    final HttpResponder responder,
+                                    @PathParam(URI_ID) final String uri)
       throws UnsupportedEncodingException {
     checkSanity(uri);
     final String key = URLDecoder.decode(uri, WaarpStringUtils.UTF_8);
@@ -186,12 +187,13 @@ public class TransferIdHandler extends AbstractRestDbHandler {
     try {
       final long transID = Long.parseLong(id);
       transferDAO = DAO_FACTORY.getTransferDAO();
-      if (!transferDAO
-          .exist(transID, serverName(requested), requested, serverName())) {
+      if (!transferDAO.exist(transID, serverName(requested), requested,
+                             serverName())) {
         responder.sendStatus(NOT_FOUND);
       } else {
-        final Transfer transfer = transferDAO
-            .select(transID, serverName(requested), requested, serverName());
+        final Transfer transfer =
+            transferDAO.select(transID, serverName(requested), requested,
+                               serverName());
         final ServerActions actions = new ServerActions();
         actions.newSession();
         actions.stopTransfer(transfer);
@@ -231,9 +233,9 @@ public class TransferIdHandler extends AbstractRestDbHandler {
   @PUT
   @Consumes(WILDCARD)
   @RequiredRole(SYSTEM)
-  public void stopTransfer(final HttpRequest request,
-                           final HttpResponder responder,
-                           @PathParam(URI_ID) final String uri)
+  public final void stopTransfer(final HttpRequest request,
+                                 final HttpResponder responder,
+                                 @PathParam(URI_ID) final String uri)
       throws UnsupportedEncodingException {
     checkSanity(uri);
     final String key = URLDecoder.decode(uri, WaarpStringUtils.UTF8.name());
@@ -250,12 +252,13 @@ public class TransferIdHandler extends AbstractRestDbHandler {
     try {
       final long transID = Long.parseLong(id);
       transferDAO = DAO_FACTORY.getTransferDAO();
-      if (!transferDAO
-          .exist(transID, serverName(requested), requested, serverName())) {
+      if (!transferDAO.exist(transID, serverName(requested), requested,
+                             serverName())) {
         responder.sendStatus(NOT_FOUND);
       } else {
-        final Transfer transfer = transferDAO
-            .select(transID, serverName(requested), requested, serverName());
+        final Transfer transfer =
+            transferDAO.select(transID, serverName(requested), requested,
+                               serverName());
         final ServerActions actions = new ServerActions();
         actions.newSession();
         actions.stopTransfer(transfer);
@@ -293,9 +296,9 @@ public class TransferIdHandler extends AbstractRestDbHandler {
   @PUT
   @Consumes(WILDCARD)
   @RequiredRole(SYSTEM)
-  public void cancelTransfer(final HttpRequest request,
-                             final HttpResponder responder,
-                             @PathParam(URI_ID) final String uri)
+  public final void cancelTransfer(final HttpRequest request,
+                                   final HttpResponder responder,
+                                   @PathParam(URI_ID) final String uri)
       throws UnsupportedEncodingException {
     checkSanity(uri);
     final String key = URLDecoder.decode(uri, WaarpStringUtils.UTF8.name());
@@ -312,12 +315,13 @@ public class TransferIdHandler extends AbstractRestDbHandler {
     try {
       final long transID = Long.parseLong(id);
       transferDAO = DAO_FACTORY.getTransferDAO();
-      if (!transferDAO
-          .exist(transID, serverName(requested), requested, serverName())) {
+      if (!transferDAO.exist(transID, serverName(requested), requested,
+                             serverName())) {
         responder.sendStatus(NOT_FOUND);
       } else {
-        final Transfer transfer = transferDAO
-            .select(transID, serverName(requested), requested, serverName());
+        final Transfer transfer =
+            transferDAO.select(transID, serverName(requested), requested,
+                               serverName());
         final ServerActions actions = new ServerActions();
         actions.newSession();
         actions.cancelTransfer(transfer);
@@ -356,9 +360,9 @@ public class TransferIdHandler extends AbstractRestDbHandler {
   @DELETE
   @Consumes(WILDCARD)
   @RequiredRole(SYSTEM)
-  public void deleteTransfer(final HttpRequest request,
-                             final HttpResponder responder,
-                             @PathParam(URI_ID) final String uri)
+  public final void deleteTransfer(final HttpRequest request,
+                                   final HttpResponder responder,
+                                   @PathParam(URI_ID) final String uri)
       throws UnsupportedEncodingException {
     checkSanity(uri);
     final String key = URLDecoder.decode(uri, UTF8_CHARSET.name());
@@ -374,12 +378,13 @@ public class TransferIdHandler extends AbstractRestDbHandler {
     try {
       final long transID = Long.parseLong(id);
       transferDAO = DAO_FACTORY.getTransferDAO();
-      if (!transferDAO
-          .exist(transID, serverName(requested), requested, serverName())) {
+      if (!transferDAO.exist(transID, serverName(requested), requested,
+                             serverName())) {
         responder.sendStatus(NOT_FOUND);
       } else {
-        final Transfer transfer = transferDAO
-            .select(transID, serverName(requested), requested, serverName());
+        final Transfer transfer =
+            transferDAO.select(transID, serverName(requested), requested,
+                               serverName());
         if (transfer.getGlobalStep() == TASKSTEP.NOTASK &&
             transfer.getLastGlobalStep() == TASKSTEP.NOTASK) {
           responder.sendStatus(NOT_FOUND);
@@ -415,8 +420,9 @@ public class TransferIdHandler extends AbstractRestDbHandler {
   @OPTIONS
   @Consumes(WILDCARD)
   @RequiredRole(NOACCESS)
-  public void options(final HttpRequest request, final HttpResponder responder,
-                      @PathParam(URI_ID) final String uri) {
+  public final void options(final HttpRequest request,
+                            final HttpResponder responder,
+                            @PathParam(URI_ID) final String uri) {
     checkSanity(uri);
     responder.sendStatus(OK, OPTIONS_HEADERS);
   }
@@ -425,10 +431,10 @@ public class TransferIdHandler extends AbstractRestDbHandler {
   @OPTIONS
   @Consumes(WILDCARD)
   @RequiredRole(NOACCESS)
-  public void subOptions(final HttpRequest request,
-                         final HttpResponder responder,
-                         @PathParam(URI_ID) final String uri,
-                         @PathParam("ep") final String ep) {
+  public final void subOptions(final HttpRequest request,
+                               final HttpResponder responder,
+                               @PathParam(URI_ID) final String uri,
+                               @PathParam("ep") final String ep) {
     checkSanity(uri, ep);
     final HttpHeaders allow = new DefaultHttpHeaders();
     final List<HttpMethod> methods = new ArrayList<HttpMethod>();

@@ -33,7 +33,7 @@ public class HmacSha1Manager extends KeyManager {
   }
 
   @Override
-  public KeyObject createKeyObject() {
+  public final KeyObject createKeyObject() {
     return new HmacSha1();
   }
 }

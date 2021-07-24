@@ -61,13 +61,14 @@ public class HttpRestBandwidthR66Handler extends HttpRestAbstractR66Handler {
   }
 
   @Override
-  public void endParsingRequest(final HttpRestHandler handler,
-                                final RestArgument arguments,
-                                final RestArgument result, final Object body)
+  public final void endParsingRequest(final HttpRestHandler handler,
+                                      final RestArgument arguments,
+                                      final RestArgument result,
+                                      final Object body)
       throws HttpInvalidAuthenticationException {
     try {
       HttpRestV1Utils.checkSanity(arguments);
-    } catch (InvalidArgumentException e) {
+    } catch (final InvalidArgumentException e) {
       throw new HttpInvalidAuthenticationException("Issue on values", e);
     }
     logger.debug("debug: {} ### {}", arguments, result);
@@ -122,9 +123,10 @@ public class HttpRestBandwidthR66Handler extends HttpRestAbstractR66Handler {
         result.setCommand(ACTIONS_TYPE.GetBandwidth.name());
       }
       // request of current values or set new values
-      lresult = serverHandler
-          .bandwidth(setter, node.getWriteglobal(), node.getReadglobal(),
-                     node.getWritesession(), node.getReadsession());
+      lresult = serverHandler.bandwidth(setter, node.getWriteglobal(),
+                                        node.getReadglobal(),
+                                        node.getWritesession(),
+                                        node.getReadsession());
       // Now answer
       node.setWriteglobal(lresult[0]);
       node.setReadglobal(lresult[1]);
@@ -137,7 +139,7 @@ public class HttpRestBandwidthR66Handler extends HttpRestAbstractR66Handler {
   }
 
   @Override
-  protected ArrayNode getDetailedAllow() {
+  protected final ArrayNode getDetailedAllow() {
     final ArrayNode node = JsonHandler.createArrayNode();
 
     final BandwidthJsonPacket node3 = new BandwidthJsonPacket();
@@ -168,9 +170,9 @@ public class HttpRestBandwidthR66Handler extends HttpRestAbstractR66Handler {
         // ignore
       }
     }
-    node2 = RestArgument
-        .fillDetailedAllow(METHOD.OPTIONS, path, COMMAND_TYPE.OPTIONS.name(),
-                           null, null);
+    node2 = RestArgument.fillDetailedAllow(METHOD.OPTIONS, path,
+                                           COMMAND_TYPE.OPTIONS.name(), null,
+                                           null);
     node.add(node2);
 
     return node;

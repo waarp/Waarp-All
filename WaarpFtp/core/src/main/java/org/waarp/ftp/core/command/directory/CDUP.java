@@ -30,7 +30,7 @@ import org.waarp.ftp.core.file.FtpDir;
  */
 public class CDUP extends AbstractCommand {
   @Override
-  public void exec() throws CommandAbstractException {
+  public final void exec() throws CommandAbstractException {
     final FtpDir current = getSession().getDir();
     if (current == null) {
       throw new Reply530Exception("Not authentificated");
@@ -40,8 +40,8 @@ public class CDUP extends AbstractCommand {
                                 '"' + current.getPwd() +
                                 "\" is the new current directory");
     } else {
-      getSession()
-          .setReplyCode(ReplyCode.REPLY_550_REQUESTED_ACTION_NOT_TAKEN, null);
+      getSession().setReplyCode(ReplyCode.REPLY_550_REQUESTED_ACTION_NOT_TAKEN,
+                                null);
     }
   }
 

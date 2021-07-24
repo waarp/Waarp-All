@@ -203,7 +203,7 @@ public class RestArgument {
   /**
    * Clean all internal values
    */
-  public void clean() {
+  public final void clean() {
     arguments.removeAll();
   }
 
@@ -212,7 +212,7 @@ public class RestArgument {
    *
    * @param request
    */
-  public void setRequest(final HttpRequest request) {
+  public final void setRequest(final HttpRequest request) {
     arguments.put(REST_ROOT_FIELD.ARG_HASBODY.field,
                   request instanceof FullHttpRequest &&
                   ((FullHttpRequest) request).content() !=
@@ -319,7 +319,7 @@ public class RestArgument {
    *
    * @param source
    */
-  public void setFromArgument(final RestArgument source) {
+  public final void setFromArgument(final RestArgument source) {
     if (source.arguments.has(REST_ROOT_FIELD.ARG_X_AUTH_USER.field)) {
       arguments.put(REST_ROOT_FIELD.ARG_X_AUTH_USER.field,
                     source.arguments.get(REST_ROOT_FIELD.ARG_X_AUTH_USER.field)
@@ -359,14 +359,14 @@ public class RestArgument {
   /**
    * @return the full Path of the URI
    */
-  public String getUri() {
+  public final String getUri() {
     return arguments.path(REST_ROOT_FIELD.ARG_PATH.field).asText();
   }
 
   /**
    * @return the base Path of the URI (first item between '/')
    */
-  public String getBaseUri() {
+  public final String getBaseUri() {
     return arguments.path(REST_ROOT_FIELD.ARG_BASEPATH.field).asText();
   }
 
@@ -374,15 +374,15 @@ public class RestArgument {
    * @return An iterator of JsonNode, which values can be retrieved by
    *     item.asText()
    */
-  public Iterator<JsonNode> getSubUri() {
+  public final Iterator<JsonNode> getSubUri() {
     return arguments.path(REST_ROOT_FIELD.ARGS_SUBPATH.field).elements();
   }
 
-  public int getSubUriSize() {
+  public final int getSubUriSize() {
     return arguments.path(REST_ROOT_FIELD.ARGS_SUBPATH.field).size();
   }
 
-  public void addSubUriToUriArgs(final String name, final int rank) {
+  public final void addSubUriToUriArgs(final String name, final int rank) {
     final ObjectNode node = getUriArgs();
     final JsonNode elt =
         arguments.path(REST_ROOT_FIELD.ARGS_SUBPATH.field).get(rank);
@@ -391,11 +391,11 @@ public class RestArgument {
     }
   }
 
-  public void addIdToUriArgs() {
+  public final void addIdToUriArgs() {
     addSubUriToUriArgs(REST_FIELD.JSON_ID.field, 0);
   }
 
-  public JsonNode getId() {
+  public final JsonNode getId() {
     return getUriArgs().path(REST_FIELD.JSON_ID.field);
   }
 
@@ -403,27 +403,27 @@ public class RestArgument {
     return node.path(REST_FIELD.JSON_ID.field);
   }
 
-  public long getLimitFromUri() {
+  public final long getLimitFromUri() {
     return getUriArgs().path(DATAMODEL.JSON_LIMIT.field).asLong(100);
   }
 
-  public String getXAuthKey() {
+  public final String getXAuthKey() {
     return arguments.path(REST_ROOT_FIELD.ARG_X_AUTH_KEY.field).asText();
   }
 
-  public String getXAuthUser() {
+  public final String getXAuthUser() {
     return arguments.path(REST_ROOT_FIELD.ARG_X_AUTH_USER.field).asText();
   }
 
-  public String getXAuthTimestamp() {
+  public final String getXAuthTimestamp() {
     return arguments.path(REST_ROOT_FIELD.ARG_X_AUTH_TIMESTAMP.field).asText();
   }
 
-  public void setXAuthRole(final RoleDefault role) {
+  public final void setXAuthRole(final RoleDefault role) {
     arguments.put(REST_ROOT_FIELD.ARG_X_AUTH_ROLE.field, role.getRoleAsByte());
   }
 
-  public ROLE getXAuthRole() {
+  public final ROLE getXAuthRole() {
     final byte role =
         (byte) arguments.get(REST_ROOT_FIELD.ARG_X_AUTH_ROLE.field).asInt();
     return ROLE.fromByte(role);
@@ -432,7 +432,7 @@ public class RestArgument {
   /**
    * @return The ObjectNode containing all couples key/value
    */
-  public ObjectNode getUriArgs() {
+  public final ObjectNode getUriArgs() {
     JsonNode node = arguments.path(REST_GROUP.ARGS_URI.group);
     if (node == null || node.isMissingNode()) {
       node = arguments.putObject(REST_GROUP.ARGS_URI.group);
@@ -443,7 +443,7 @@ public class RestArgument {
   /**
    * @return the method or null
    */
-  public METHOD getMethod() {
+  public final METHOD getMethod() {
     final String text =
         arguments.path(REST_ROOT_FIELD.ARG_METHOD.field).asText();
     if (ParametersChecker.isEmpty(text)) {
@@ -461,7 +461,7 @@ public class RestArgument {
    *
    * @throws HttpIncorrectRequestException
    */
-  public void setHeaderArgs(final List<Entry<String, String>> list) {
+  public final void setHeaderArgs(final List<Entry<String, String>> list) {
     ObjectNode node = (ObjectNode) arguments.get(REST_GROUP.ARGS_HEADER.group);
     if (node == null || node.isMissingNode()) {
       node = arguments.putObject(REST_GROUP.ARGS_HEADER.group);
@@ -472,17 +472,17 @@ public class RestArgument {
         final String key = entry.getKey();
         if (!key.equals(HttpHeaderNames.COOKIE.toString())) {
           if (key.equalsIgnoreCase(REST_ROOT_FIELD.ARG_X_AUTH_KEY.field)) {
-            arguments
-                .put(REST_ROOT_FIELD.ARG_X_AUTH_KEY.field, entry.getValue());
+            arguments.put(REST_ROOT_FIELD.ARG_X_AUTH_KEY.field,
+                          entry.getValue());
             continue;
           }
           if (key.equalsIgnoreCase(REST_ROOT_FIELD.ARG_X_AUTH_USER.field)) {
-            arguments
-                .put(REST_ROOT_FIELD.ARG_X_AUTH_USER.field, entry.getValue());
+            arguments.put(REST_ROOT_FIELD.ARG_X_AUTH_USER.field,
+                          entry.getValue());
             continue;
           }
-          if (key
-              .equalsIgnoreCase(REST_ROOT_FIELD.ARG_X_AUTH_TIMESTAMP.field)) {
+          if (key.equalsIgnoreCase(
+              REST_ROOT_FIELD.ARG_X_AUTH_TIMESTAMP.field)) {
             arguments.put(REST_ROOT_FIELD.ARG_X_AUTH_TIMESTAMP.field,
                           entry.getValue());
             continue;
@@ -501,7 +501,7 @@ public class RestArgument {
    *
    * @throws HttpIncorrectRequestException
    */
-  public void setHeaderArgs(
+  public final void setHeaderArgs(
       final Iterator<Entry<CharSequence, CharSequence>> iterator) {
     ObjectNode node = (ObjectNode) arguments.get(REST_GROUP.ARGS_HEADER.group);
     if (node == null || node.isMissingNode()) {
@@ -523,8 +523,8 @@ public class RestArgument {
                           entry.getValue().toString());
             continue;
           }
-          if (key
-              .equalsIgnoreCase(REST_ROOT_FIELD.ARG_X_AUTH_TIMESTAMP.field)) {
+          if (key.equalsIgnoreCase(
+              REST_ROOT_FIELD.ARG_X_AUTH_TIMESTAMP.field)) {
             arguments.put(REST_ROOT_FIELD.ARG_X_AUTH_TIMESTAMP.field,
                           entry.getValue().toString());
             continue;
@@ -541,7 +541,7 @@ public class RestArgument {
   /**
    * @return The ObjectNode containing all couples key/value
    */
-  public ObjectNode getHeaderArgs() {
+  public final ObjectNode getHeaderArgs() {
     JsonNode node = arguments.path(REST_GROUP.ARGS_HEADER.group);
     if (node == null || node.isMissingNode()) {
       node = arguments.putObject(REST_GROUP.ARGS_HEADER.group);
@@ -552,7 +552,7 @@ public class RestArgument {
   /**
    * set method From URI
    */
-  public void methodFromUri() {
+  public final void methodFromUri() {
     final JsonNode node = arguments.path(REST_GROUP.ARGS_URI.group)
                                    .path(REST_ROOT_FIELD.ARG_METHOD.field);
     if (!node.isMissingNode()) {
@@ -564,7 +564,7 @@ public class RestArgument {
   /**
    * set method From Header
    */
-  public void methodFromHeader() {
+  public final void methodFromHeader() {
     final JsonNode node = arguments.path(REST_GROUP.ARGS_HEADER.group)
                                    .path(REST_ROOT_FIELD.ARG_METHOD.field);
     if (!node.isMissingNode()) {
@@ -576,7 +576,7 @@ public class RestArgument {
   /**
    * set values from Cookies into arguments.path(ARGS_COOKIE)
    */
-  public void setCookieArgs(final String cookieString) {
+  public final void setCookieArgs(final String cookieString) {
     final Set<Cookie> cookies;
     if (cookieString == null) {
       cookies = Collections.emptySet();
@@ -600,7 +600,7 @@ public class RestArgument {
   /**
    * @return The ObjectNode containing all couples key/value
    */
-  public ObjectNode getCookieArgs() {
+  public final ObjectNode getCookieArgs() {
     JsonNode node = arguments.path(REST_GROUP.ARGS_COOKIE.group);
     if (node == null || node.isMissingNode()) {
       node = arguments.putObject(REST_GROUP.ARGS_COOKIE.group);
@@ -611,7 +611,7 @@ public class RestArgument {
   /**
    * @return The ObjectNode containing all couples key/value
    */
-  public ObjectNode getBody() {
+  public final ObjectNode getBody() {
     JsonNode node = arguments.path(REST_GROUP.ARGS_BODY.group);
     if (node == null || node.isMissingNode()) {
       node = arguments.putObject(REST_GROUP.ARGS_BODY.group);
@@ -622,7 +622,7 @@ public class RestArgument {
   /**
    * @return The ObjectNode containing all couples key/value
    */
-  public ObjectNode getAnswer() {
+  public final ObjectNode getAnswer() {
     JsonNode node = arguments.path(REST_GROUP.ARGS_ANSWER.group);
     if (node == null || node.isMissingNode()) {
       node = arguments.putObject(REST_GROUP.ARGS_ANSWER.group);
@@ -630,46 +630,46 @@ public class RestArgument {
     return (ObjectNode) node;
   }
 
-  public void addAnswer(final ObjectNode node) {
+  public final void addAnswer(final ObjectNode node) {
     getAnswer().setAll(node);
   }
 
-  public void setResult(final HttpResponseStatus status) {
-    arguments
-        .put(REST_ROOT_FIELD.JSON_STATUSMESSAGE.field, status.reasonPhrase());
+  public final void setResult(final HttpResponseStatus status) {
+    arguments.put(REST_ROOT_FIELD.JSON_STATUSMESSAGE.field,
+                  status.reasonPhrase());
     arguments.put(REST_ROOT_FIELD.JSON_STATUSCODE.field, status.code());
   }
 
   /**
    * @return the Http Status code
    */
-  public int getStatusCode() {
+  public final int getStatusCode() {
     return arguments.path(REST_ROOT_FIELD.JSON_STATUSCODE.field).asInt();
   }
 
   /**
    * @return the Http Status message according to the Http Status code
    */
-  public String getStatusMessage() {
+  public final String getStatusMessage() {
     return arguments.path(REST_ROOT_FIELD.JSON_STATUSMESSAGE.field).asText();
   }
 
-  public void setDetail(final String detail) {
+  public final void setDetail(final String detail) {
     arguments.put(REST_ROOT_FIELD.JSON_DETAIL.field, detail);
   }
 
   /**
    * @return the detail information on error (mainly)
    */
-  public String getDetail() {
+  public final String getDetail() {
     return arguments.path(REST_ROOT_FIELD.JSON_DETAIL.field).asText();
   }
 
-  public void setCommand(final COMMAND_TYPE command) {
+  public final void setCommand(final COMMAND_TYPE command) {
     arguments.put(REST_ROOT_FIELD.JSON_COMMAND.field, command.name());
   }
 
-  public void setCommand(final String cmd) {
+  public final void setCommand(final String cmd) {
     arguments.put(REST_ROOT_FIELD.JSON_COMMAND.field, cmd);
   }
 
@@ -677,7 +677,7 @@ public class RestArgument {
    * @return the COMMAND field, to be transformed either into COMMAND_TYPE or
    *     ACTIONS_TYPE
    */
-  public String getCommandField() {
+  public final String getCommandField() {
     return arguments.path(REST_ROOT_FIELD.JSON_COMMAND.field).asText();
   }
 
@@ -685,7 +685,7 @@ public class RestArgument {
    * @return the COMMAND_TYPE but might be null if not found or if of
    *     ACTIONS_TYPE
    */
-  public COMMAND_TYPE getCommand() {
+  public final COMMAND_TYPE getCommand() {
     final String cmd =
         arguments.path(REST_ROOT_FIELD.JSON_COMMAND.field).asText();
     if (ParametersChecker.isNotEmpty(cmd)) {
@@ -702,7 +702,7 @@ public class RestArgument {
   /**
    * @param filter the filter used in multi get
    */
-  public void addFilter(ObjectNode filter) {
+  public final void addFilter(ObjectNode filter) {
     if (filter == null) {
       filter = JsonHandler.createObjectNode();
     }
@@ -712,14 +712,14 @@ public class RestArgument {
   /**
    * @return the filter used in multi get
    */
-  public ObjectNode getFilter() {
+  public final ObjectNode getFilter() {
     return (ObjectNode) getAnswer().path(DATAMODEL.JSON_FILTER.field);
   }
 
   /**
    * @return the array of results (in DataModel multi get)
    */
-  public ArrayNode getResults() {
+  public final ArrayNode getResults() {
     JsonNode node = getAnswer().path(DATAMODEL.JSON_RESULTS.field);
     if (node == null || node.isMissingNode()) {
       node = getAnswer().putArray(DATAMODEL.JSON_RESULTS.field);
@@ -731,7 +731,7 @@ public class RestArgument {
    * @param result added to the array of results (in DataModel multi
    *     get)
    */
-  public void addResult(final ObjectNode result) {
+  public final void addResult(final ObjectNode result) {
     getResults().add(result);
   }
 
@@ -739,7 +739,7 @@ public class RestArgument {
    * @param count added to answer if > 0
    * @param limit added to answer
    */
-  public void addCountLimit(final long count, final long limit) {
+  public final void addCountLimit(final long count, final long limit) {
     final ObjectNode node = getAnswer();
     if (count >= 0) {
       node.put(DATAMODEL.JSON_COUNT.field, count);
@@ -750,11 +750,11 @@ public class RestArgument {
   /**
    * @return the count of element (-1 if not found)
    */
-  public long getCount() {
+  public final long getCount() {
     return getAnswer().path(DATAMODEL.JSON_COUNT.field).asLong(-1);
   }
 
-  public long getLimit() {
+  public final long getLimit() {
     return getAnswer().path(DATAMODEL.JSON_LIMIT.field).asLong(100);
   }
 
@@ -765,8 +765,8 @@ public class RestArgument {
    * @param path
    * @param detailedAllow
    */
-  public void addOptions(final String allow, final String path,
-                         final ArrayNode detailedAllow) {
+  public final void addOptions(final String allow, final String path,
+                               final ArrayNode detailedAllow) {
     final ObjectNode node = getAnswer();
     node.put(HttpHeaderNames.ALLOW.toString(), allow);
     node.put(REST_FIELD.X_ALLOW_URIS.field, path);
@@ -775,15 +775,15 @@ public class RestArgument {
     }
   }
 
-  public String getAllowOption() {
+  public final String getAllowOption() {
     return getAnswer().path(HttpHeaderNames.ALLOW.toString()).asText();
   }
 
-  public String getAllowUrisOption() {
+  public final String getAllowUrisOption() {
     return getAnswer().path(REST_FIELD.X_ALLOW_URIS.field).asText();
   }
 
-  public ArrayNode getDetailedAllowOption() {
+  public final ArrayNode getDetailedAllowOption() {
     final JsonNode node = getAnswer().path(REST_FIELD.X_DETAILED_ALLOW.field);
     if (node.isMissingNode()) {
       return JsonHandler.createArrayNode();
@@ -848,7 +848,7 @@ public class RestArgument {
    *
    * @throws HttpInvalidAuthenticationException
    */
-  public void checkTime(final long maxInterval)
+  public final void checkTime(final long maxInterval)
       throws HttpInvalidAuthenticationException {
     final DateTime dateTime = new DateTime();
     final String date = getXAuthTimestamp();
@@ -889,8 +889,9 @@ public class RestArgument {
    * @throws HttpInvalidAuthenticationException if the authentication
    *     failed
    */
-  public void checkBaseAuthent(final HmacSha256 hmacSha256,
-                               final String extraKey, final long maxInterval)
+  public final void checkBaseAuthent(final HmacSha256 hmacSha256,
+                                     final String extraKey,
+                                     final long maxInterval)
       throws HttpInvalidAuthenticationException {
     final TreeMap<String, String> treeMap = new TreeMap<String, String>();
     final String argPath = getUri();
@@ -926,8 +927,8 @@ public class RestArgument {
     if (received == null) {
       final String date = getXAuthTimestamp();
       received = DateTime.parse(date);
-      treeMap
-          .put(REST_ROOT_FIELD.ARG_X_AUTH_TIMESTAMP.field.toLowerCase(), date);
+      treeMap.put(REST_ROOT_FIELD.ARG_X_AUTH_TIMESTAMP.field.toLowerCase(),
+                  date);
     }
     final String user = getXAuthUser();
     if (ParametersChecker.isNotEmpty(user)) {
@@ -997,7 +998,7 @@ public class RestArgument {
     return JsonHandler.writeAsString(arguments);
   }
 
-  public String prettyPrint() {
+  public final String prettyPrint() {
     return JsonHandler.prettyPrint(arguments);
   }
 

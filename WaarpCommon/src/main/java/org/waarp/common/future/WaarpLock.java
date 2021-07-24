@@ -57,7 +57,7 @@ public class WaarpLock extends ReentrantLock {
    * @param timeout
    * @param timeUnit
    */
-  public void lock(final long timeout, final TimeUnit timeUnit) {
+  public final void lock(final long timeout, final TimeUnit timeUnit) {
     try {
       tryLock(timeout, timeUnit);
     } catch (final InterruptedException e) {//NOSONAR
@@ -66,7 +66,7 @@ public class WaarpLock extends ReentrantLock {
   }
 
   @Override
-  public void unlock() {
+  public final void unlock() {
     try {
       super.unlock();
     } catch (final IllegalMonitorStateException ignored) {//NOSONAR

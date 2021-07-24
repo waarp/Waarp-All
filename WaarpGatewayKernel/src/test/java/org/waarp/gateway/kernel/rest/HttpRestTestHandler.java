@@ -80,8 +80,8 @@ public class HttpRestTestHandler extends HttpRestHandler {
     synchronized (defaultConfiguration) {
       if (defaultConfiguration.restHashMap.isEmpty()) {
         defaultConfiguration.setRestAuthenticated(false);
-        defaultConfiguration
-            .setResthandlersCrud(new byte[RESTHANDLERS.values().length]);
+        defaultConfiguration.setResthandlersCrud(
+            new byte[RESTHANDLERS.values().length]);
         Arrays.fill(defaultConfiguration.getResthandlersCrud(), (byte) 0x0F);
         final METHOD[] methods = METHOD.values();
         defaultConfiguration.restHashMap.put(RESTHANDLERS.DbTransferLog.uri,
@@ -117,8 +117,7 @@ public class HttpRestTestHandler extends HttpRestHandler {
   public static void instantiateHandlers(RestConfiguration restConfiguration) {
     defaultHandlers();
     final byte check =
-        restConfiguration.getResthandlersCrud()[RESTHANDLERS.DbTransferLog
-            .ordinal()];
+        restConfiguration.getResthandlersCrud()[RESTHANDLERS.DbTransferLog.ordinal()];
     if (check != 0) {
       final METHOD[] methods = getMethods(check);
       restConfiguration.restHashMap.put(RESTHANDLERS.DbTransferLog.uri,
@@ -149,8 +148,8 @@ public class HttpRestTestHandler extends HttpRestHandler {
     final EventLoopGroup workerGroup = new NioEventLoopGroup();
     // Configure the server.
     final ServerBootstrap httpBootstrap = new ServerBootstrap();
-    WaarpNettyUtil
-        .setServerBootstrap(httpBootstrap, workerGroup, workerGroup, 30000);
+    WaarpNettyUtil.setServerBootstrap(httpBootstrap, workerGroup, workerGroup,
+                                      30000);
 
     // Configure the pipeline factory.
     httpBootstrap.childHandler(new HttpRestInitializer(restConfiguration));
@@ -162,8 +161,8 @@ public class HttpRestTestHandler extends HttpRestHandler {
           new InetSocketAddress(restConfiguration.getRestAddress(),
                                 restConfiguration.getRestPort()));
     } else {
-      future = httpBootstrap
-          .bind(new InetSocketAddress(restConfiguration.getRestPort()));
+      future = httpBootstrap.bind(
+          new InetSocketAddress(restConfiguration.getRestPort()));
     }
     try {
       future.await();

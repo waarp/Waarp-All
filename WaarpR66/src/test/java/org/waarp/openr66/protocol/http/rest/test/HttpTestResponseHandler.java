@@ -199,8 +199,8 @@ public class HttpTestResponseHandler extends HttpRestR66ClientResponseHandler {
         final InformationJsonPacket node =
             new InformationJsonPacket(recv.getSpecialId(), false,
                                       recv.getRequested());
-        HttpTestRestR66Client
-            .action(channel, HttpMethod.GET, RESTHANDLERS.Control.uri, node);
+        HttpTestRestR66Client.action(channel, HttpMethod.GET,
+                                     RESTHANDLERS.Control.uri, node);
         newMessage = true;
         break;
       }
@@ -231,8 +231,8 @@ public class HttpTestResponseHandler extends HttpRestR66ClientResponseHandler {
             answer.path(DbTaskRunner.Columns.REQUESTER.name()).asText());
         node.setSpecialid(
             answer.path(DbTaskRunner.Columns.SPECIALID.name()).asLong());
-        HttpTestRestR66Client
-            .action(channel, HttpMethod.PUT, RESTHANDLERS.Control.uri, node);
+        HttpTestRestR66Client.action(channel, HttpMethod.PUT,
+                                     RESTHANDLERS.Control.uri, node);
         newMessage = true;
         break;
       }
@@ -252,9 +252,9 @@ public class HttpTestResponseHandler extends HttpRestR66ClientResponseHandler {
           return newMessage;
         }
         try {
-          HttpTestRestR66Client
-              .deleteData(channel, recv.getRequested(), recv.getRequester(),
-                          recv.getSpecialid());
+          HttpTestRestR66Client.deleteData(channel, recv.getRequested(),
+                                           recv.getRequester(),
+                                           recv.getSpecialid());
         } catch (final HttpInvalidAuthenticationException e) {
           e.printStackTrace();
         }
@@ -272,8 +272,8 @@ public class HttpTestResponseHandler extends HttpRestR66ClientResponseHandler {
           return newMessage;
         }
         recv.setSetter(false);
-        HttpTestRestR66Client
-            .action(channel, HttpMethod.GET, RESTHANDLERS.Bandwidth.uri, recv);
+        HttpTestRestR66Client.action(channel, HttpMethod.GET,
+                                     RESTHANDLERS.Bandwidth.uri, recv);
         newMessage = true;
         break;
       }
@@ -295,8 +295,8 @@ public class HttpTestResponseHandler extends HttpRestR66ClientResponseHandler {
         node.setRequested(recv.getRequested());
         node.setRequester(recv.getRequester());
         node.setSpecialid(recv.getSpecialid());
-        HttpTestRestR66Client
-            .action(channel, HttpMethod.PUT, RESTHANDLERS.Control.uri, node);
+        HttpTestRestR66Client.action(channel, HttpMethod.PUT,
+                                     RESTHANDLERS.Control.uri, node);
         newMessage = true;
         break;
       }

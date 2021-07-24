@@ -72,7 +72,7 @@ public abstract class AbstractExecTask extends AbstractTask {
    *
    * @param line the command to process as a string
    */
-  protected CommandLine buildCommandLine(final String line) {
+  protected final CommandLine buildCommandLine(final String line) {
     if (line.contains(NOWAIT)) {
       waitForValidation = false;
     }
@@ -103,7 +103,7 @@ public abstract class AbstractExecTask extends AbstractTask {
   /**
    * For External command execution
    */
-static class PrepareCommandExec {
+  static class PrepareCommandExec {
     private final AbstractExecTask abstractTask;
     private final boolean noOutput;
     private final boolean waitForValidation;
@@ -116,7 +116,8 @@ static class PrepareCommandExec {
     private PumpStreamHandler pumpStreamHandler;
     private ExecuteWatchdog watchdog;
 
-    PrepareCommandExec(final AbstractExecTask abstractTask, final String finalname, final boolean noOutput,
+    PrepareCommandExec(final AbstractExecTask abstractTask,
+                       final String finalname, final boolean noOutput,
                        final boolean waitForValidation) {
       this.abstractTask = abstractTask;
       this.finalname = finalname;
@@ -124,35 +125,35 @@ static class PrepareCommandExec {
       this.waitForValidation = waitForValidation;
     }
 
-    boolean isError() {
+    final boolean isError() {
       return myResult;
     }
 
-    public CommandLine getCommandLine() {
+    public final CommandLine getCommandLine() {
       return commandLine;
     }
 
-    public DefaultExecutor getDefaultExecutor() {
+    public final DefaultExecutor getDefaultExecutor() {
       return defaultExecutor;
     }
 
-    public PipedInputStream getInputStream() {
+    public final PipedInputStream getInputStream() {
       return inputStream;
     }
 
-    public PipedOutputStream getOutputStream() {
+    public final PipedOutputStream getOutputStream() {
       return outputStream;
     }
 
-    public PumpStreamHandler getPumpStreamHandler() {
+    public final PumpStreamHandler getPumpStreamHandler() {
       return pumpStreamHandler;
     }
 
-    public ExecuteWatchdog getWatchdog() {
+    public final ExecuteWatchdog getWatchdog() {
       return watchdog;
     }
 
-    public PrepareCommandExec invoke() {
+    public final PrepareCommandExec invoke() {
       commandLine = abstractTask.buildCommandLine(finalname);
       if (commandLine == null) {
         myResult = true;
@@ -205,7 +206,8 @@ static class PrepareCommandExec {
     private boolean myResult;
     private int status;
 
-    ExecuteCommand(final AbstractExecTask abstractExecTask, final CommandLine commandLine,
+    ExecuteCommand(final AbstractExecTask abstractExecTask,
+                   final CommandLine commandLine,
                    final DefaultExecutor defaultExecutor,
                    final PipedInputStream inputStream,
                    final PipedOutputStream outputStream,
@@ -220,15 +222,15 @@ static class PrepareCommandExec {
       this.thread = thread;
     }
 
-    boolean isError() {
+    final boolean isError() {
       return myResult;
     }
 
-    public int getStatus() {
+    public final int getStatus() {
       return status;
     }
 
-    public ExecuteCommand invoke() {
+    public final ExecuteCommand invoke() {
       status = -1;
       try {
         status = defaultExecutor.execute(commandLine);//NOSONAR

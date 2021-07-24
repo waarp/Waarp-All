@@ -79,6 +79,8 @@ public class ClientRunner extends Thread {
   private static final ConcurrentHashMap<String, Integer>
       taskRunnerRetryHashMap = new ConcurrentHashMap<String, Integer>();
 
+  private static RecvThroughHandler staticRecvHandlerJunit = null;
+
   public static ConcurrentLinkedQueue<ClientRunner> activeRunners;
 
   private final NetworkTransaction networkTransaction;
@@ -87,7 +89,7 @@ public class ClientRunner extends Thread {
 
   private final R66Future futureRequest;
 
-  private RecvThroughHandler handler;
+  private RecvThroughHandler handler = null;
 
   private boolean isSendThroughMode;
 
@@ -96,6 +98,14 @@ public class ClientRunner extends Thread {
   private final String nameTask;
 
   private boolean limitRetryConnection = true;
+
+  public static void setRecvHandlerJunit(final RecvThroughHandler handler) {
+    staticRecvHandlerJunit = handler;
+  }
+
+  public static boolean isRecvHandlerJunit() {
+    return staticRecvHandlerJunit != null;
+  }
 
   public ClientRunner(final NetworkTransaction networkTransaction,
                       final DbTaskRunner taskRunner,
@@ -106,6 +116,9 @@ public class ClientRunner extends Thread {
     setDaemon(true);
     nameTask = "Client_Runner_" + taskRunner.getKey();
     setName(nameTask);
+    if (staticRecvHandlerJunit != null) {
+      this.handler = staticRecvHandlerJunit;
+    }
   }
 
   public static String hashStatus() {
@@ -119,21 +132,21 @@ public class ClientRunner extends Thread {
   /**
    * @return the networkTransaction
    */
-  public NetworkTransaction getNetworkTransaction() {
+  public final NetworkTransaction getNetworkTransaction() {
     return networkTransaction;
   }
 
   /**
    * @return the taskRunner
    */
-  public DbTaskRunner getTaskRunner() {
+  public final DbTaskRunner getTaskRunner() {
     return taskRunner;
   }
 
   /**
    * @return the localChannelReference
    */
-  public LocalChannelReference getLocalChannelReference() {
+  public final LocalChannelReference getLocalChannelReference() {
     return localChannelReference;
   }
 
@@ -161,8 +174,8 @@ public class ClientRunner extends Thread {
           session.setReady(true);
           final boolean ssl = Configuration.configuration.isUseSSL();
           session.getAuth().specialNoSessionAuth(ssl,
-                                                 Configuration.configuration
-                                                     .getHostId(ssl));
+                                                 Configuration.configuration.getHostId(
+                                                     ssl));
           final DbTaskRunner reloaded =
               new DbTaskRunner(session, taskRunner.getRule(),
                                taskRunner.getSpecialId(),
@@ -177,9 +190,9 @@ public class ClientRunner extends Thread {
             // File does no more exist => error
             reloaded.changeUpdatedInfo(UpdatedInfo.INERROR);
             reloaded.setErrorExecutionStatus(ErrorCode.FileNotFound);
-            logger
-                .error("Runner Error: {} {}", ErrorCode.FileNotFound.getMesg(),
-                       taskRunner.toShortString());
+            logger.error("Runner Error: {} {}",
+                         ErrorCode.FileNotFound.getMesg(),
+                         taskRunner.toShortString());
             reloaded.setErrorTask();
             reloaded.update();
             return;
@@ -237,9 +250,9 @@ public class ClientRunner extends Thread {
       } catch (final OpenR66ProtocolNoConnectionException e) {
         logger.error("No connection Error {}", e.getMessage());
         if (localChannelReference != null) {
-          localChannelReference
-              .setErrorMessage(ErrorCode.ConnectionImpossible.getMesg(),
-                               ErrorCode.ConnectionImpossible);
+          localChannelReference.setErrorMessage(
+              ErrorCode.ConnectionImpossible.getMesg(),
+              ErrorCode.ConnectionImpossible);
         }
         taskRunner.setErrorTask();
         try {
@@ -302,8 +315,8 @@ public class ClientRunner extends Thread {
    *
    * @return True if the task was run less than limit, else False
    */
-  public boolean incrementTaskRunnerTry(final DbTaskRunner runner,
-                                        final int limit) {
+  public final boolean incrementTaskRunnerTry(final DbTaskRunner runner,
+                                              final int limit) {
     if (!isLimitRetryConnection()) {
       return true;
     }
@@ -336,7 +349,7 @@ public class ClientRunner extends Thread {
    * @throws OpenR66ProtocolPacketException
    * @throws OpenR66ProtocolNotYetConnectionException
    */
-  public R66Future runTransfer()
+  public final R66Future runTransfer()
       throws OpenR66RunnerErrorException, OpenR66ProtocolNoConnectionException,
              OpenR66ProtocolPacketException,
              OpenR66ProtocolNotYetConnectionException {
@@ -370,8 +383,8 @@ public class ClientRunner extends Thread {
    * @throws OpenR66ProtocolPacketException
    * @throws OpenR66ProtocolNotYetConnectionException
    */
-  public R66Future tryAgainTransferOnOverloaded(final boolean retry,
-                                                final LocalChannelReference localChannelReference)
+  public final R66Future tryAgainTransferOnOverloaded(final boolean retry,
+                                                      final LocalChannelReference localChannelReference)
       throws OpenR66RunnerErrorException, OpenR66ProtocolNoConnectionException,
              OpenR66ProtocolPacketException,
              OpenR66ProtocolNotYetConnectionException {
@@ -420,7 +433,7 @@ public class ClientRunner extends Thread {
    *
    * @return The R66Future of the transfer operation
    */
-  public R66Future finishTransfer(
+  public final R66Future finishTransfer(
       final LocalChannelReference localChannelReference) {
     if (this.localChannelReference == null) {
       this.localChannelReference = localChannelReference;
@@ -476,8 +489,8 @@ public class ClientRunner extends Thread {
         logger.warn("WARN QueryAlreadyFinished:     " + transfer + "     " +
                     taskRunner.toShortString());
         try {
-          TransferUtils
-              .finalizeTaskWithNoSession(taskRunner, localChannelReference);
+          TransferUtils.finalizeTaskWithNoSession(taskRunner,
+                                                  localChannelReference);
         } catch (final OpenR66RunnerErrorException e) {
           taskRunner.changeUpdatedInfo(UpdatedInfo.INERROR);
           taskRunner.forceSaveStatus();
@@ -507,7 +520,7 @@ public class ClientRunner extends Thread {
    * @throws OpenR66ProtocolPacketException
    * @throws OpenR66ProtocolNotYetConnectionException
    */
-  public LocalChannelReference initRequest()
+  public final LocalChannelReference initRequest()
       throws OpenR66ProtocolNoConnectionException,
              OpenR66ProtocolPacketException,
              OpenR66ProtocolNotYetConnectionException {
@@ -561,10 +574,9 @@ public class ClientRunner extends Thread {
 
     final LocalChannelReference localChannelReferenceTemp;
     try {
-      localChannelReferenceTemp = networkTransaction
-          .createConnectionWithRetryWithAuthenticationException(socketAddress,
-                                                                isSSL,
-                                                                futureRequest);
+      localChannelReferenceTemp =
+          networkTransaction.createConnectionWithRetryWithAuthenticationException(
+              socketAddress, isSSL, futureRequest);
     } catch (final OpenR66ProtocolNotAuthenticatedException e1) {
       changeUpdatedInfo(UpdatedInfo.INERROR, ErrorCode.BadAuthent, true);
       taskRunner.setLocalChannelReference(new LocalChannelReference());
@@ -621,9 +633,8 @@ public class ClientRunner extends Thread {
       localChannelReferenceTemp.setClientRunner(this);
       localChannelReferenceTemp.sessionNewState(R66FiniteDualStates.REQUESTR);
       try {
-        ChannelUtils
-            .writeAbstractLocalPacket(localChannelReferenceTemp, request,
-                                      false);
+        ChannelUtils.writeAbstractLocalPacket(localChannelReferenceTemp,
+                                              request, false);
       } catch (final OpenR66ProtocolPacketException e) {
         // propose to redo
         logger.warn("Cannot transfer request to " + host);
@@ -638,9 +649,9 @@ public class ClientRunner extends Thread {
     // possible the rank
     if (!taskRunner.isSender() &&
         taskRunner.getGloballaststep() == TASKSTEP.TRANSFERTASK.ordinal()) {
-      logger
-          .debug("Requester is not Sender so decrease if possible the rank {}",
-                 taskRunner);
+      logger.debug(
+          "Requester is not Sender so decrease if possible the rank {}",
+          taskRunner);
       taskRunner.restartRank();
       taskRunner.forceSaveStatus();
       logger.info("Requester is not Sender so new rank is {} {}",
@@ -653,8 +664,8 @@ public class ClientRunner extends Thread {
     logger.debug("Will send request {} {}", request, localChannelReferenceTemp);
     localChannelReferenceTemp.sessionNewState(R66FiniteDualStates.REQUESTR);
     try {
-      ChannelUtils
-          .writeAbstractLocalPacket(localChannelReferenceTemp, request, false);
+      ChannelUtils.writeAbstractLocalPacket(localChannelReferenceTemp, request,
+                                            false);
     } catch (final OpenR66ProtocolPacketException e) {
       // propose to redo
       logger.warn("Cannot transfer request to " + host);
@@ -662,9 +673,8 @@ public class ClientRunner extends Thread {
       localChannelReferenceTemp.close();
       throw e;
     }
-    logger
-        .debug("Wait for request to {} {} {}", host, localChannelReferenceTemp,
-               request);
+    logger.debug("Wait for request to {} {} {}", host,
+                 localChannelReferenceTemp, request);
     return localChannelReferenceTemp;
   }
 
@@ -673,8 +683,9 @@ public class ClientRunner extends Thread {
    *
    * @param info
    */
-  public void changeUpdatedInfo(final AbstractDbData.UpdatedInfo info,
-                                final ErrorCode code, final boolean force) {
+  public final void changeUpdatedInfo(final AbstractDbData.UpdatedInfo info,
+                                      final ErrorCode code,
+                                      final boolean force) {
     taskRunner.changeUpdatedInfo(info);
     taskRunner.setErrorExecutionStatus(code);
     if (force) {
@@ -691,23 +702,24 @@ public class ClientRunner extends Thread {
   /**
    * @param handler the handler to set
    */
-  public void setRecvThroughHandler(final RecvThroughHandler handler) {
+  public final void setRecvThroughHandler(final RecvThroughHandler handler) {
     this.handler = handler;
   }
 
-  public void setSendThroughMode() {
+  public final void setSendThroughMode() {
     isSendThroughMode = true;
   }
 
-  public boolean getSendThroughMode() {
+  public final boolean getSendThroughMode() {
     return isSendThroughMode;
   }
 
-  public boolean isLimitRetryConnection() {
+  public final boolean isLimitRetryConnection() {
     return limitRetryConnection;
   }
 
-  public void setLimitRetryConnection(final boolean limitRetryConnection) {
+  public final void setLimitRetryConnection(
+      final boolean limitRetryConnection) {
     this.limitRetryConnection = limitRetryConnection;
   }
 }

@@ -133,7 +133,7 @@ public class PartnerConfiguration {
     } else {
       changeFileInfoEnabled = false;
     }
-    boolean comp = false;
+    final boolean comp = false;
     if (isVersion2GEQVersion1(R66Versions.V3_1_0.getVersion(), version)) {
       r66 = R66Versions.V3_1_0.getVersion();
     }
@@ -191,35 +191,35 @@ public class PartnerConfiguration {
   /**
    * @return the associated HostId
    */
-  public String getId() {
+  public final String getId() {
     return id;
   }
 
   /**
    * @return the version for this Host
    */
-  public String getVersion() {
+  public final String getVersion() {
     return version;
   }
 
   /**
    * @return the R66Version for this Host
    */
-  public String getR66Version() {
+  public final String getR66Version() {
     return r66Version;
   }
 
   /**
    * @return True if compression is supported
    */
-  public boolean isCompression() {
+  public final boolean isCompression() {
     return compression;
   }
 
   /**
    * @return True if this Host returns FileSize
    */
-  public boolean useFileSize() {
+  public final boolean useFileSize() {
     return root.path(FIELDS.FILESIZE.name)
                .asBoolean((Boolean) FIELDS.FILESIZE.defaultValue);
   }
@@ -227,7 +227,7 @@ public class PartnerConfiguration {
   /**
    * @return True if this Host returns a final hash
    */
-  public boolean useFinalHash() {
+  public final boolean useFinalHash() {
     return root.path(FIELDS.FINALHASH.name)
                .asBoolean((Boolean) FIELDS.FINALHASH.defaultValue);
   }
@@ -235,7 +235,7 @@ public class PartnerConfiguration {
   /**
    * @return DigestAlgo if this Host returns Digest Algo used
    */
-  public DigestAlgo getDigestAlgo() {
+  public final DigestAlgo getDigestAlgo() {
     return digestAlgo;
   }
 
@@ -252,7 +252,7 @@ public class PartnerConfiguration {
   /**
    * @return True if this Host is proxified
    */
-  public boolean isProxified() {
+  public final boolean isProxified() {
     return root.path(FIELDS.PROXIFIED.name)
                .asBoolean((Boolean) FIELDS.PROXIFIED.defaultValue);
   }
@@ -260,21 +260,21 @@ public class PartnerConfiguration {
   /**
    * @return the separator for this Host
    */
-  public String getSeperator() {
+  public final String getSeperator() {
     return separator;
   }
 
   /**
    * @return the useJson
    */
-  public boolean useJson() {
+  public final boolean useJson() {
     return useJson;
   }
 
   /**
    * @return the changeFileInfoEnabled
    */
-  public boolean changeFileInfoEnabled() {
+  public final boolean changeFileInfoEnabled() {
     return changeFileInfoEnabled;
   }
 
@@ -282,7 +282,7 @@ public class PartnerConfiguration {
    * @return the String representation as version.json
    */
   @Override
-  public String toString() {
+  public final String toString() {
     return version + '.' + JsonHandler.writeAsString(root);
   }
 
@@ -406,9 +406,7 @@ public class PartnerConfiguration {
                    Configuration.configuration.getVersions().containsKey(host)?
                        Configuration.configuration.getVersions().get(host)
                                                   .useJson() : "no:" +
-                                                               ((Map<String, PartnerConfiguration>) Configuration.configuration
-                                                                   .getVersions())
-                                                                   .keySet());
+                                                               ((Map<String, PartnerConfiguration>) Configuration.configuration.getVersions()).keySet());
     }
     return Configuration.configuration.getVersions().containsKey(host) &&
            Configuration.configuration.getVersions().get(host).useJson();

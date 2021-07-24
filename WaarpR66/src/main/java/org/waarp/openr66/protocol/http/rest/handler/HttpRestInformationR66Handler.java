@@ -65,13 +65,14 @@ public class HttpRestInformationR66Handler extends HttpRestAbstractR66Handler {
   }
 
   @Override
-  public void endParsingRequest(final HttpRestHandler handler,
-                                final RestArgument arguments,
-                                final RestArgument result, final Object body)
+  public final void endParsingRequest(final HttpRestHandler handler,
+                                      final RestArgument arguments,
+                                      final RestArgument result,
+                                      final Object body)
       throws HttpIncorrectRequestException, HttpInvalidAuthenticationException {
     try {
       HttpRestV1Utils.checkSanity(arguments);
-    } catch (InvalidArgumentException e) {
+    } catch (final InvalidArgumentException e) {
       throw new HttpIncorrectRequestException("Issue on values", e);
     }
     logger.debug("debug: {} ### {}", arguments, result);
@@ -100,13 +101,13 @@ public class HttpRestInformationR66Handler extends HttpRestAbstractR66Handler {
         }
         final ValidPacket validPacket;
         if (node.isIdRequest()) {
-          validPacket = serverHandler
-              .informationRequest(node.getId(), node.isTo(), node.getRulename(),
-                                  true);
+          validPacket =
+              serverHandler.informationRequest(node.getId(), node.isTo(),
+                                               node.getRulename(), true);
         } else {
-          validPacket = serverHandler
-              .informationFile(node.getRequest(), node.getRulename(),
-                               node.getFilename(), true);
+          validPacket = serverHandler.informationFile(node.getRequest(),
+                                                      node.getRulename(),
+                                                      node.getFilename(), true);
         }
         if (validPacket != null) {
           // will not use default setOk
@@ -143,7 +144,7 @@ public class HttpRestInformationR66Handler extends HttpRestAbstractR66Handler {
   }
 
   @Override
-  protected ArrayNode getDetailedAllow() {
+  protected final ArrayNode getDetailedAllow() {
     final ArrayNode node = JsonHandler.createArrayNode();
 
     if (methods.contains(METHOD.GET)) {
@@ -156,8 +157,7 @@ public class HttpRestInformationR66Handler extends HttpRestAbstractR66Handler {
       ArrayNode node1 = JsonHandler.createArrayNode().add("path");
       try {
         node2 = RestArgument.fillDetailedAllow(METHOD.GET, path,
-                                               ACTIONS_TYPE.GetInformation
-                                                   .name(),
+                                               ACTIONS_TYPE.GetInformation.name(),
                                                node3.createObjectNode(), node1);
         node.add(node2);
       } catch (final OpenR66ProtocolPacketException ignored) {
@@ -175,8 +175,7 @@ public class HttpRestInformationR66Handler extends HttpRestAbstractR66Handler {
       node1.add(node1b);
       try {
         node2 = RestArgument.fillDetailedAllow(METHOD.GET, path,
-                                               ACTIONS_TYPE.GetInformation
-                                                   .name(),
+                                               ACTIONS_TYPE.GetInformation.name(),
                                                node3.createObjectNode(), node1);
         node.add(node2);
       } catch (final OpenR66ProtocolPacketException ignored) {
@@ -184,9 +183,9 @@ public class HttpRestInformationR66Handler extends HttpRestAbstractR66Handler {
       }
     }
 
-    final ObjectNode node2 = RestArgument
-        .fillDetailedAllow(METHOD.OPTIONS, path, COMMAND_TYPE.OPTIONS.name(),
-                           null, null);
+    final ObjectNode node2 =
+        RestArgument.fillDetailedAllow(METHOD.OPTIONS, path,
+                                       COMMAND_TYPE.OPTIONS.name(), null, null);
     node.add(node2);
 
     return node;

@@ -46,17 +46,17 @@ public class MariaDBProperties implements DbProperties {
   }
 
   @Override
-  public String getDriverName() {
+  public final String getDriverName() {
     return DRIVER_NAME;
   }
 
   @Override
-  public String getValidationQuery() {
+  public final String getValidationQuery() {
     return VALIDATION_QUERY;
   }
 
   @Override
-  public int getMaximumConnections(final Connection connection)
+  public final int getMaximumConnections(final Connection connection)
       throws SQLException {
     Statement stm = null;
     ResultSet rs = null;

@@ -51,7 +51,7 @@ public class FileBasedFile extends FilesystemBasedFtpFile {
    *
    * @return the File associated with the current FtpFile operation
    */
-  public File getTrueFile() {
+  public final File getTrueFile() {
     try {
       return getFileFromPath(getFile());
     } catch (final CommandAbstractException e) {

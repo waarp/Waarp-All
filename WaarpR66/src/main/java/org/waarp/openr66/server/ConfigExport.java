@@ -185,8 +185,8 @@ public class ConfigExport implements Runnable {
       logger.error(INFO_ARGS);
       return false;
     }
-    if (!FileBasedConfiguration
-        .setClientConfigurationFromXml(Configuration.configuration, args[0])) {
+    if (!FileBasedConfiguration.setClientConfigurationFromXml(
+        Configuration.configuration, args[0])) {
       logger.error(INFO_ARGS);
       return false;
     }
@@ -214,8 +214,8 @@ public class ConfigExport implements Runnable {
   }
 
   public static void main(final String[] args) {
-    WaarpLoggerFactory
-        .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));
+    WaarpLoggerFactory.setDefaultFactoryIfNotSame(
+        new WaarpSlf4JLoggerFactory(null));
     if (logger == null) {
       logger = WaarpLoggerFactory.getLogger(ConfigExport.class);
     }
@@ -265,8 +265,8 @@ public class ConfigExport implements Runnable {
               ((ValidPacket) result.getOther()).getSheader() : "no file";
         }
         if (result.getCode() == ErrorCode.Warning) {
-          logger
-              .warn("WARNED on files:     " + message + "     delay: " + delay);
+          logger.warn(
+              "WARNED on files:     " + message + "     delay: " + delay);
         } else {
           logger.warn(
               "SUCCESS on Final files:     " + message + "     delay: " +

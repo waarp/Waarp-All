@@ -29,7 +29,7 @@ import org.waarp.ftp.core.command.AbstractCommand;
  */
 public class REST extends AbstractCommand {
   @Override
-  public void exec() throws CommandAbstractException {
+  public final void exec() throws CommandAbstractException {
     if (!hasArg()) {
       invalidCurrentCommand();
       throw new Reply501Exception("Need a Marker as argument");

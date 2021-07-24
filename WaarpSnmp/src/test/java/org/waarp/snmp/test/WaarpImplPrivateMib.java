@@ -110,7 +110,8 @@ public class WaarpImplPrivateMib extends WaarpPrivateMib {
   }
 
   @Override
-  protected void agentRegisterWaarpMib() throws DuplicateRegistrationException {
+  protected final void agentRegisterWaarpMib()
+      throws DuplicateRegistrationException {
     defaultAgentRegisterWaarpMib();
   }
 
@@ -129,39 +130,30 @@ public class WaarpImplPrivateMib extends WaarpPrivateMib {
         "Notify: " + NotificationElements.InfoTask + ':' + message + ':' +
         number);
     agent.getNotificationOriginator().notify(new OctetString("public"),
-                                             NotificationElements.InfoTask
-                                                 .getOID(rootOIDWaarpNotif),
+                                             NotificationElements.InfoTask.getOID(
+                                                 rootOIDWaarpNotif),
                                              new VariableBinding[] {
                                                  new VariableBinding(
-                                                     NotificationElements.InfoTask
-                                                         .getOID(
-                                                             rootOIDWaarpNotif,
-                                                             NotificationTasks.stepStatusInfo
-                                                                 .getOID()),
+                                                     NotificationElements.InfoTask.getOID(
+                                                         rootOIDWaarpNotif,
+                                                         NotificationTasks.stepStatusInfo.getOID()),
                                                      new OctetString(message)),
                                                  new VariableBinding(
-                                                     NotificationElements.InfoTask
-                                                         .getOID(
-                                                             rootOIDWaarpNotif,
-                                                             NotificationTasks.filenameInfo
-                                                                 .getOID()),
+                                                     NotificationElements.InfoTask.getOID(
+                                                         rootOIDWaarpNotif,
+                                                         NotificationTasks.filenameInfo.getOID()),
                                                      new OctetString(message2)),
                                                  new VariableBinding(
-                                                     NotificationElements.InfoTask
-                                                         .getOID(
-                                                             rootOIDWaarpNotif,
-                                                             NotificationTasks.specialIdInfo
-                                                                 .getOID()),
+                                                     NotificationElements.InfoTask.getOID(
+                                                         rootOIDWaarpNotif,
+                                                         NotificationTasks.specialIdInfo.getOID()),
                                                      new Counter64(number)),
                                                  new VariableBinding(
-                                                     NotificationElements.InfoTask
-                                                         .getOID(
-                                                             rootOIDWaarpNotif,
-                                                             NotificationTasks.idRuleInfo
-                                                                 .getOID()),
+                                                     NotificationElements.InfoTask.getOID(
+                                                         rootOIDWaarpNotif,
+                                                         NotificationTasks.idRuleInfo.getOID()),
                                                      new OctetString(
-                                                         NotificationElements.InfoTask
-                                                             .name()))
+                                                         NotificationElements.InfoTask.name()))
                                              });
   }
 
@@ -180,35 +172,26 @@ public class WaarpImplPrivateMib extends WaarpPrivateMib {
         "Notify: " + NotificationElements.TrapError + ':' + message + ':' +
         number);
     agent.getNotificationOriginator().notify(new OctetString("public"),
-                                             NotificationElements.TrapError
-                                                 .getOID(rootOIDWaarpNotif),
+                                             NotificationElements.TrapError.getOID(
+                                                 rootOIDWaarpNotif),
                                              new VariableBinding[] {
                                                  new VariableBinding(
-                                                     NotificationElements.TrapError
-                                                         .getOID(
-                                                             rootOIDWaarpNotif,
-                                                             1),
+                                                     NotificationElements.TrapError.getOID(
+                                                         rootOIDWaarpNotif, 1),
                                                      new OctetString(message)),
                                                  new VariableBinding(
-                                                     NotificationElements.TrapError
-                                                         .getOID(
-                                                             rootOIDWaarpNotif,
-                                                             1),
+                                                     NotificationElements.TrapError.getOID(
+                                                         rootOIDWaarpNotif, 1),
                                                      new OctetString(message2)),
                                                  new VariableBinding(
-                                                     NotificationElements.TrapError
-                                                         .getOID(
-                                                             rootOIDWaarpNotif,
-                                                             1),
+                                                     NotificationElements.TrapError.getOID(
+                                                         rootOIDWaarpNotif, 1),
                                                      new Counter64(number)),
                                                  new VariableBinding(
-                                                     NotificationElements.TrapError
-                                                         .getOID(
-                                                             rootOIDWaarpNotif,
-                                                             1),
+                                                     NotificationElements.TrapError.getOID(
+                                                         rootOIDWaarpNotif, 1),
                                                      new OctetString(
-                                                         NotificationElements.TrapError
-                                                             .name()))
+                                                         NotificationElements.TrapError.name()))
                                              });
   }
 }

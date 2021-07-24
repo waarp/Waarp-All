@@ -76,9 +76,9 @@ public class WaarpMORow implements MOGroup {
       final OID oid = new OID(ref, add);
       // the value is null at the creation, meaning values have to be
       // setup once just after
-      getRow()[i] = WaarpMOFactory
-          .create(oid, null, entry.smiConstantsType, entry.access, this,
-                  mibLevel, i);
+      getRow()[i] =
+          WaarpMOFactory.create(oid, null, entry.smiConstantsType, entry.access,
+                                this, mibLevel, i);
     }
   }
 
@@ -90,7 +90,7 @@ public class WaarpMORow implements MOGroup {
    *
    * @throws IllegalArgumentException
    */
-  public void setValue(final int index, final Object value)
+  public final void setValue(final int index, final Object value)
       throws IllegalArgumentException {
     if (index >= getRow().length) {
       throw new IllegalArgumentException("Index exceed Row size");
@@ -100,7 +100,8 @@ public class WaarpMORow implements MOGroup {
   }
 
   @Override
-  public void registerMOs(final MOServer server, final OctetString context)
+  public final void registerMOs(final MOServer server,
+                                final OctetString context)
       throws DuplicateRegistrationException {
     for (int i = 0; i < getRow().length; i++) {
       final WaarpMOScalar scalar = getRow()[i];
@@ -109,7 +110,8 @@ public class WaarpMORow implements MOGroup {
   }
 
   @Override
-  public void unregisterMOs(final MOServer server, final OctetString context) {
+  public final void unregisterMOs(final MOServer server,
+                                  final OctetString context) {
     for (int i = 0; i < getRow().length; i++) {
       final WaarpMOScalar scalar = getRow()[i];
       server.unregister(scalar, context);
@@ -119,14 +121,14 @@ public class WaarpMORow implements MOGroup {
   /**
    * @return the row
    */
-  public WaarpMOScalar[] getRow() {
+  public final WaarpMOScalar[] getRow() {
     return row;
   }
 
   /**
    * @param row the row to set
    */
-  void setRow(final WaarpMOScalar[] row) {
+  final void setRow(final WaarpMOScalar[] row) {
     this.row = row;
   }
 }

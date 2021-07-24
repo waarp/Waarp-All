@@ -47,15 +47,15 @@ public class HttpAuthentDefault implements HttpAuthent {
   }
 
   @Override
-  public void initializeAuthent(final Map<String, String> arguments) {
+  public final void initializeAuthent(final Map<String, String> arguments) {
     user = arguments.get(FIELD_USER);
     final String skey = arguments.get(FIELD_KEY);
     key = org.waarp.common.digest.FilesystemBasedDigest.getFromHex(skey);
   }
 
   @Override
-  public void checkAuthent(final HttpSession httpSession,
-                           final R66Session session)
+  public final void checkAuthent(final HttpSession httpSession,
+                                 final R66Session session)
       throws IllegalArgumentException {
     try {
       session.getAuth().connection(user, key, false);
@@ -67,13 +67,13 @@ public class HttpAuthentDefault implements HttpAuthent {
   }
 
   @Override
-  public String getUserId() {
+  public final String getUserId() {
     return user;
   }
 
   @Override
-  public void finalizeTransfer(final HttpSession httpSession,
-                               final R66Session session)
+  public final void finalizeTransfer(final HttpSession httpSession,
+                                     final R66Session session)
       throws IllegalArgumentException {
     // Do nothing
   }

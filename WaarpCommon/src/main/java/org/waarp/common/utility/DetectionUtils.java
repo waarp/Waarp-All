@@ -106,8 +106,8 @@ public final class DetectionUtils {
     }
 
     try {
-      Class
-          .forName("java.util.ArrayDeque", false, Queue.class.getClassLoader());
+      Class.forName("java.util.ArrayDeque", false,
+                    Queue.class.getClassLoader());
       return 6;
     } catch (final Exception e) {
       // Ignore

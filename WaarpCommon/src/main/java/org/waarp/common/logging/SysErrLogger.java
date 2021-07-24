@@ -40,7 +40,7 @@ public final class SysErrLogger {
    *
    * @param throwable to log ignore
    */
-  public void ignoreLog(final Throwable throwable) {// NOSONAR
+  public final void ignoreLog(final Throwable throwable) {// NOSONAR
     // Nothing to do
   }
 
@@ -49,7 +49,7 @@ public final class SysErrLogger {
    * <p>
    * Used only in classes where WaarpLogger is not allowed
    */
-  public void sysout() {
+  public final void sysout() {
     System.out.println(); // NOSONAR
   }
 
@@ -60,7 +60,7 @@ public final class SysErrLogger {
    *
    * @param message to write for no error log
    */
-  public void sysout(final Object message) {
+  public final void sysout(final Object message) {
     System.out.println(message); // NOSONAR
   }
 
@@ -70,7 +70,7 @@ public final class SysErrLogger {
    * @param format
    * @param args
    */
-  public void sysoutFormat(final String format, final Object... args) {
+  public final void sysoutFormat(final String format, final Object... args) {
     System.out.format(format, args); // NOSONAR
   }
 
@@ -81,7 +81,7 @@ public final class SysErrLogger {
    *
    * @param message to write for error
    */
-  public void syserrNoLn(final Object message) {
+  public final void syserrNoLn(final Object message) {
     System.err.print("ERROR " + message); // NOSONAR
   }
 
@@ -92,7 +92,7 @@ public final class SysErrLogger {
    *
    * @param message to write for error
    */
-  public void syserr(final Object message) {
+  public final void syserr(final Object message) {
     System.err.println("ERROR " + message); // NOSONAR
   }
 
@@ -101,7 +101,7 @@ public final class SysErrLogger {
    * <p>
    * Used only in classes where WaarpLogger is not allowed
    */
-  public void syserr() {
+  public final void syserr() {
     new RuntimeException("ERROR Stacktrace").printStackTrace(); // NOSONAR
   }
 
@@ -113,7 +113,7 @@ public final class SysErrLogger {
    * @param message to write for error
    * @param e throw to write as error
    */
-  public void syserr(final String message, final Throwable e) {
+  public final void syserr(final String message, final Throwable e) {
     System.err.print("ERROR " + message + ": "); // NOSONAR
     e.printStackTrace(); // NOSONAR
   }
@@ -125,7 +125,7 @@ public final class SysErrLogger {
    *
    * @param e throw to write as error
    */
-  public void syserr(final Throwable e) {
+  public final void syserr(final Throwable e) {
     System.err.print("ERROR: "); // NOSONAR
     e.printStackTrace(); // NOSONAR
   }

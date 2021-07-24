@@ -56,7 +56,7 @@ public class WaarpJdkLoggerFactory extends WaarpLoggerFactory {
   }
 
   @Override
-  protected void seLevelSpecific(final WaarpLogLevel level) {
+  protected final void seLevelSpecific(final WaarpLogLevel level) {
     final Logger logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
     switch (level) {
       case TRACE:
@@ -81,7 +81,7 @@ public class WaarpJdkLoggerFactory extends WaarpLoggerFactory {
   }
 
   @Override
-  protected WaarpLogLevel getLevelSpecific() {
+  protected final WaarpLogLevel getLevelSpecific() {
     final Logger logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
     if (logger.isLoggable(Level.FINEST)) {
       return WaarpLogLevel.TRACE;

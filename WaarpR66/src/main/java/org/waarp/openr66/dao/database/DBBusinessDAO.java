@@ -77,42 +77,42 @@ public class DBBusinessDAO extends StatementExecutor<Business>
   }
 
   @Override
-  protected boolean isCachedEnable() {
+  protected final boolean isCachedEnable() {
     return Configuration.configuration.getMultipleMonitors() <= 1;
   }
 
   @Override
-  protected SynchronizedLruCache<String, Business> getCache() {
+  protected final SynchronizedLruCache<String, Business> getCache() {
     return reentrantConcurrentHashMap;
   }
 
   @Override
-  protected String getId(final Business e1) {
+  protected final String getId(final Business e1) {
     return e1.getHostid();
   }
 
   @Override
-  protected String getSelectRequest() {
+  protected final String getSelectRequest() {
     return SQL_SELECT;
   }
 
   @Override
-  protected String getGetAllRequest() {
+  protected final String getGetAllRequest() {
     return SQL_GET_ALL;
   }
 
   @Override
-  protected String getCountRequest() {
+  protected final String getCountRequest() {
     return SQL_COUNT_ALL;
   }
 
   @Override
-  protected String getExistRequest() {
+  protected final String getExistRequest() {
     return SQL_EXIST;
   }
 
   @Override
-  protected Object[] getInsertValues(final Business business)
+  protected final Object[] getInsertValues(final Business business)
       throws WaarpDatabaseSqlException {
     business.checkValues();
     return new Object[] {
@@ -123,12 +123,12 @@ public class DBBusinessDAO extends StatementExecutor<Business>
   }
 
   @Override
-  protected String getInsertRequest() {
+  protected final String getInsertRequest() {
     return SQL_INSERT;
   }
 
   @Override
-  protected Object[] getUpdateValues(final Business business)
+  protected final Object[] getUpdateValues(final Business business)
       throws WaarpDatabaseSqlException {
     business.checkValues();
     return new Object[] {
@@ -139,22 +139,23 @@ public class DBBusinessDAO extends StatementExecutor<Business>
   }
 
   @Override
-  protected String getUpdateRequest() {
+  protected final String getUpdateRequest() {
     return SQL_UPDATE;
   }
 
   @Override
-  protected String getDeleteRequest() {
+  protected final String getDeleteRequest() {
     return SQL_DELETE;
   }
 
   @Override
-  protected String getDeleteAllRequest() {
+  protected final String getDeleteAllRequest() {
     return SQL_DELETE_ALL;
   }
 
   @Override
-  public Business getFromResultSet(final ResultSet set) throws SQLException {
+  public final Business getFromResultSet(final ResultSet set)
+      throws SQLException {
     try {
       return new Business(set.getString(HOSTID_FIELD),
                           set.getString(BUSINESS_FIELD),
@@ -162,8 +163,13 @@ public class DBBusinessDAO extends StatementExecutor<Business>
                           set.getString(ALIASES_FIELD),
                           set.getString(OTHERS_FIELD),
                           UpdatedInfo.valueOf(set.getInt(UPDATED_INFO_FIELD)));
-    } catch (WaarpDatabaseSqlException e) {
+    } catch (final WaarpDatabaseSqlException e) {
       throw new SQLException(e);
     }
+  }
+
+  @Override
+  protected final boolean isDbTransfer() {
+    return false;
   }
 }

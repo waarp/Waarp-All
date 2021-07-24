@@ -59,10 +59,10 @@ public class ValidFilePathTask extends AbstractTask {
   }
 
   @Override
-  public void run() {
+  public final void run() {
     String finalname = argRule;
-    finalname = AbstractDir
-        .normalizePath(getReplacedValue(finalname, BLANK.split(argTransfer)));
+    finalname = AbstractDir.normalizePath(
+        getReplacedValue(finalname, BLANK.split(argTransfer)));
     logger.info("Test Valid Path with {} from {}", finalname, session);
     final File from = session.getFile().getTrueFile();
     final String curpath = AbstractDir.normalizePath(from.getAbsolutePath());
@@ -70,8 +70,8 @@ public class ValidFilePathTask extends AbstractTask {
     for (final String base : paths) {
       if (curpath.startsWith(base)) {
         if (delay > 0) {
-          logger
-              .info("Validate File {} from {} and {}", curpath, base, session);
+          logger.info("Validate File {} from {} and {}", curpath, base,
+                      session);
         }
         futureCompletion.setSuccess();
         return;
@@ -80,8 +80,8 @@ public class ValidFilePathTask extends AbstractTask {
     if (delay > 0) {
       logger.error("Unvalidate File: " + curpath + "     " + session);
     }
-    futureCompletion
-        .setFailure(new OpenR66RunnerException("File not Validated"));
+    futureCompletion.setFailure(
+        new OpenR66RunnerException("File not Validated"));
   }
 
 }

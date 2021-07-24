@@ -121,11 +121,11 @@ public class HttpDownloadSession extends HttpSessionAbstract {
     this.filesize = 0;
   }
 
-  public boolean isFinished() {
+  public final boolean isFinished() {
     return runner != null && runner.isFinished();
   }
 
-  public boolean isTransmitting() {
+  public final boolean isTransmitting() {
     return runner != null &&
            runner.getUpdatedInfo().equals(UpdatedInfo.RUNNING) &&
            this.filesize == 0;
@@ -193,28 +193,28 @@ public class HttpDownloadSession extends HttpSessionAbstract {
   /**
    * @return the final name for download
    */
-  public String getFinalName() {
+  public final String getFinalName() {
     return finalFilename;
   }
 
   /**
    * @return the original file size
    */
-  public long getFileSize() {
+  public final long getFileSize() {
     return filesize;
   }
 
   /**
    * @return the identifier
    */
-  public String getIdentifier() {
+  public final String getIdentifier() {
     return identifier;
   }
 
   /**
    * @return the corresponding Hash (SHA 256) or null if not possible
    */
-  public String getHash() {
+  public final String getHash() {
     final File file = session.getFile().getTrueFile();
     final byte[] bin;
     try {
@@ -236,14 +236,15 @@ public class HttpDownloadSession extends HttpSessionAbstract {
   /**
    * @return the previously hash if computed, else null
    */
-  public String getComputedHadh() {
+  public final String getComputedHadh() {
     final String hash = (String) session.getRunner().getFromTransferMap(HASH);
     logger.debug("Found {}", hash);
     return hash;
   }
 
   @Override
-  public void error(final Exception e, final R66BusinessInterface business)
+  public final void error(final Exception e,
+                          final R66BusinessInterface business)
       throws IllegalArgumentException {
     logger.error(e.getMessage());
     if (business != null) {
@@ -262,7 +263,7 @@ public class HttpDownloadSession extends HttpSessionAbstract {
    *
    * @throws IOException
    */
-  public boolean tryWrite(final OutputStream stream) throws IOException {
+  public final boolean tryWrite(final OutputStream stream) throws IOException {
     if (!session.isAuthenticated() || !session.isReady()) {
       logger.error("Not authenticated or not Ready");
       return false;
@@ -313,7 +314,7 @@ public class HttpDownloadSession extends HttpSessionAbstract {
   /**
    * Finalize the current download
    */
-  public void downloadFinished() {
+  public final void downloadFinished() {
     if (session.getState() == CLOSEDCHANNEL) {
       return;
     }

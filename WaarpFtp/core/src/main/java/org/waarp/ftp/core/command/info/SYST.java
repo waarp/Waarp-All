@@ -27,9 +27,9 @@ import org.waarp.ftp.core.command.AbstractCommand;
  */
 public class SYST extends AbstractCommand {
   @Override
-  public void exec() {
-    getSession()
-        .setReplyCode(ReplyCode.REPLY_215_NAME_SYSTEM_TYPE, "UNIX Type: L8");
+  public final void exec() {
+    getSession().setReplyCode(ReplyCode.REPLY_215_NAME_SYSTEM_TYPE,
+                              "UNIX Type: L8");
   }
 
 }

@@ -75,7 +75,7 @@ public class XMLRuleDAO implements RuleDAO {
   }
 
   @Override
-  public void close() {
+  public final void close() {
     // ignore
   }
 
@@ -97,17 +97,17 @@ public class XMLRuleDAO implements RuleDAO {
   }
 
   @Override
-  public void delete(final Rule rule) {
+  public final void delete(final Rule rule) {
     dbR66RuleHashMap.remove(rule.getName());
   }
 
   @Override
-  public void deleteAll() {
+  public final void deleteAll() {
     dbR66RuleHashMap.clear();
   }
 
   @Override
-  public List<Rule> getAll() throws DAOConnectionException {
+  public final List<Rule> getAll() throws DAOConnectionException {
     final List<Rule> res = new ArrayList<Rule>();
 
     final File[] files = getRuleFiles();
@@ -137,6 +137,8 @@ public class XMLRuleDAO implements RuleDAO {
         throw new DAOConnectionException(e);
       } catch (final IOException e) {
         throw new DAOConnectionException(e);
+      } catch (final Exception e) {
+        throw new DAOConnectionException(e);
       }
     }
     return res;
@@ -148,7 +150,8 @@ public class XMLRuleDAO implements RuleDAO {
    * @return count only if filters is empty or null
    */
   @Override
-  public long count(final List<Filter> fitlers) throws DAOConnectionException {
+  public final long count(final List<Filter> fitlers)
+      throws DAOConnectionException {
     if (fitlers == null || fitlers.isEmpty()) {
       return dbR66RuleHashMap.size();
     }
@@ -156,23 +159,23 @@ public class XMLRuleDAO implements RuleDAO {
   }
 
   @Override
-  public boolean exist(final String rulename) {
+  public final boolean exist(final String rulename) {
     return dbR66RuleHashMap.containsKey(rulename);
   }
 
   @Override
-  public List<Rule> find(final List<Filter> fitlers)
+  public final List<Rule> find(final List<Filter> fitlers)
       throws DAOConnectionException {
     throw new DAOConnectionException("Operation not supported on XML DAO");
   }
 
   @Override
-  public void insert(final Rule rule) {
+  public final void insert(final Rule rule) {
     dbR66RuleHashMap.put(rule.getName(), rule);
   }
 
   @Override
-  public Rule select(final String rulename)
+  public final Rule select(final String rulename)
       throws DAOConnectionException, DAONoDataException {
     if (exist(rulename)) {
       return dbR66RuleHashMap.get(rulename);
@@ -181,7 +184,7 @@ public class XMLRuleDAO implements RuleDAO {
   }
 
   @Override
-  public void update(final Rule rule) {
+  public final void update(final Rule rule) {
     dbR66RuleHashMap.put(rule.getName(), rule);
   }
 
@@ -269,14 +272,14 @@ public class XMLRuleDAO implements RuleDAO {
               try {
                 tmpDelay = Integer.parseInt(
                     XmlUtil.getExtraTrimed(nodeList.item(0).getTextContent()));
-              } catch (NumberFormatException ignored) {
+              } catch (final NumberFormatException ignored) {
                 // ignore
               }
               delay = tmpDelay;
             } else {
               delay = 0;
             }
-            RuleTask ruleTask = new RuleTask(type, path, delay);
+            final RuleTask ruleTask = new RuleTask(type, path, delay);
             logger.debug("Task {}", ruleTask);
             res.add(ruleTask);
           }

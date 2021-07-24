@@ -89,7 +89,7 @@ public class DataBlock {
    * @deprecated method, prefer getByteBlock()
    */
   @Deprecated
-  public ByteBuf getBlock() {
+  public final ByteBuf getBlock() {
     if (blockBuf == null) {
       blockBuf = Unpooled.wrappedBuffer(block);
       offsetBuf = 0;
@@ -100,14 +100,14 @@ public class DataBlock {
   /**
    * @return the block
    */
-  public byte[] getByteBlock() {
+  public final byte[] getByteBlock() {
     return block;
   }
 
   /**
    * @return the offset of the ByteBlock
    */
-  public int getOffset() {
+  public final int getOffset() {
     return offsetBuf;
   }
 
@@ -116,7 +116,7 @@ public class DataBlock {
    *
    * @param offset
    */
-  public void addOffset(final int offset) {
+  public final void addOffset(final int offset) {
     offsetBuf += offset;
   }
 
@@ -125,7 +125,7 @@ public class DataBlock {
    *
    * @param block the block to set
    */
-  public void setBlock(final ByteBuf block) {
+  public final void setBlock(final ByteBuf block) {
     if (isRESTART) {
       this.block = null;
       markers = new int[6];
@@ -151,7 +151,7 @@ public class DataBlock {
    *
    * @param block the block to set
    */
-  public void setBlock(final byte[] block) {
+  public final void setBlock(final byte[] block) {
     setBlock(block, block != null? block.length : 0);
   }
 
@@ -161,7 +161,7 @@ public class DataBlock {
    * @param block the block to set
    * @param size the real size to set
    */
-  public void setBlock(final byte[] block, final int size) {
+  public final void setBlock(final byte[] block, final int size) {
     if (isRESTART) {
       this.block = null;
       markers = new int[6];
@@ -187,14 +187,14 @@ public class DataBlock {
   /**
    * @return the byteCount
    */
-  public int getByteCount() {
+  public final int getByteCount() {
     return byteCount - offsetBuf;
   }
 
   /**
    * @param byteCount the byteCount to set
    */
-  public void setByteCount(final int byteCount) {
+  public final void setByteCount(final int byteCount) {
     this.byteCount = byteCount;
   }
 
@@ -202,35 +202,35 @@ public class DataBlock {
    * @param upper upper byte of the 2 bytes length
    * @param lower lower byte of the 2 bytes length
    */
-  public void setByteCount(final byte upper, final byte lower) {
+  public final void setByteCount(final byte upper, final byte lower) {
     byteCount = upper << 8 | (lower & 0xFF);
   }
 
   /**
    * @return the Upper byte of the byte count
    */
-  public byte getByteCountUpper() {
+  public final byte getByteCountUpper() {
     return (byte) (byteCount >> 8 & 0xFF);
   }
 
   /**
    * @return the Lower byte of the byte count
    */
-  public byte getByteCountLower() {
+  public final byte getByteCountLower() {
     return (byte) (byteCount & 0xFF);
   }
 
   /**
    * @return the descriptor
    */
-  public byte getDescriptor() {
+  public final byte getDescriptor() {
     return (byte) (descriptor & 0xFF);
   }
 
   /**
    * @param descriptor the descriptor to set
    */
-  public void setDescriptor(final int descriptor) {
+  public final void setDescriptor(final int descriptor) {
     this.descriptor = descriptor & 0xFF;
     isEOF = (this.descriptor & EOF) != 0;
     isEOR = (this.descriptor & EOR) != 0;
@@ -241,14 +241,14 @@ public class DataBlock {
   /**
    * @return the isEOF
    */
-  public boolean isEOF() {
+  public final boolean isEOF() {
     return isEOF;
   }
 
   /**
    * @param isEOF the isEOF to set
    */
-  public void setEOF(final boolean isEOF) {
+  public final void setEOF(final boolean isEOF) {
     this.isEOF = isEOF;
     descriptor |= EOF;
   }
@@ -256,14 +256,14 @@ public class DataBlock {
   /**
    * @return the isEOR
    */
-  public boolean isEOR() {
+  public final boolean isEOR() {
     return isEOR;
   }
 
   /**
    * @param isEOR the isEOR to set
    */
-  public void setEOR(final boolean isEOR) {
+  public final void setEOR(final boolean isEOR) {
     this.isEOR = isEOR;
     descriptor |= EOR;
   }
@@ -271,14 +271,14 @@ public class DataBlock {
   /**
    * @return the isERROR
    */
-  public boolean isERROR() {
+  public final boolean isERROR() {
     return isERROR;
   }
 
   /**
    * @param isERROR the isERROR to set
    */
-  public void setERROR(final boolean isERROR) {
+  public final void setERROR(final boolean isERROR) {
     this.isERROR = isERROR;
     descriptor |= ERROR;
   }
@@ -286,14 +286,14 @@ public class DataBlock {
   /**
    * @return the isRESTART
    */
-  public boolean isRESTART() {
+  public final boolean isRESTART() {
     return isRESTART;
   }
 
   /**
    * @param isRESTART the isRESTART to set
    */
-  public void setRESTART(final boolean isRESTART) {
+  public final void setRESTART(final boolean isRESTART) {
     this.isRESTART = isRESTART;
     descriptor |= RESTART;
   }
@@ -301,14 +301,14 @@ public class DataBlock {
   /**
    * @return the markers
    */
-  public int[] getMarkers() {
+  public final int[] getMarkers() {
     return markers;
   }
 
   /**
    * @return the 6 bytes representation of the markers
    */
-  public byte[] getByteMarkers() {
+  public final byte[] getByteMarkers() {
     final byte[] bmarkers = new byte[6];
     if (markers == null) {
       for (int i = 0; i < 6; i++) {
@@ -327,7 +327,7 @@ public class DataBlock {
    *
    * @param markers the markers to set
    */
-  public void setMarkers(final int[] markers) {
+  public final void setMarkers(final int[] markers) {
     this.markers = markers;
     byteCount = 6;
   }
@@ -335,7 +335,7 @@ public class DataBlock {
   /**
    * Clear the object
    */
-  public void clear() {
+  public final void clear() {
     if (blockBuf != null) {
       blockBuf.release();
       blockBuf = null;
@@ -355,7 +355,7 @@ public class DataBlock {
    *
    * @return True if this Block is cleared
    */
-  public boolean isCleared() {
+  public final boolean isCleared() {
     return byteCount == -1;
   }
 

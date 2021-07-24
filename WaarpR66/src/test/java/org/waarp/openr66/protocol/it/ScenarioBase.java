@@ -41,6 +41,7 @@ import org.waarp.common.utility.SystemPropertyUtil;
 import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.openr66.client.MultipleSubmitTransfer;
+import org.waarp.openr66.client.NoOpRecvThroughHandler;
 import org.waarp.openr66.client.SubmitTransfer;
 import org.waarp.openr66.commander.InternalRunner;
 import org.waarp.openr66.database.DbConstantR66;
@@ -48,7 +49,6 @@ import org.waarp.openr66.database.data.DbTaskRunner;
 import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.junit.TestAbstract;
 import org.waarp.openr66.protocol.test.TestRecvThroughClient;
-import org.waarp.openr66.protocol.test.TestRecvThroughClient.TestRecvThroughHandler;
 import org.waarp.openr66.protocol.utils.R66Future;
 import org.waarp.openr66.server.R66Server;
 import org.waarp.openr66.server.ServerInitDatabase;
@@ -143,8 +143,8 @@ public abstract class ScenarioBase extends TestAbstract {
     File file =
         new File(classLoader.getResource(RESOURCES_SERVER_1_XML).getFile());
     if (!file.exists()) {
-      SysErrLogger.FAKE_LOGGER
-          .syserr("Cannot find in  " + file.getAbsolutePath());
+      SysErrLogger.FAKE_LOGGER.syserr(
+          "Cannot find in  " + file.getAbsolutePath());
       fail("Cannot find " + file.getAbsolutePath());
     }
     String content = WaarpStringUtils.readFile(file.getAbsolutePath());
@@ -159,8 +159,8 @@ public abstract class ScenarioBase extends TestAbstract {
     } else if (driver.equalsIgnoreCase("oracle.jdbc.OracleDriver")) {
       target = "oracle";
       jdbcUrl = "jdbc:oracle:thin:@//localhost:1521/test";
-      SysErrLogger.FAKE_LOGGER
-          .syserr(jdbcUrl + " while should be something like " + jdbcUrl);
+      SysErrLogger.FAKE_LOGGER.syserr(
+          jdbcUrl + " while should be something like " + jdbcUrl);
       throw new UnsupportedOperationException(
           "Unsupported Test for Oracle since wrong JDBC driver");
     } else if (driver.equalsIgnoreCase("org.postgresql.Driver")) {
@@ -226,8 +226,8 @@ public abstract class ScenarioBase extends TestAbstract {
         configFile = new File(dirResources, fileconf);
       }
     } catch (UnsupportedOperationException e) {
-      SysErrLogger.FAKE_LOGGER
-          .syserr("Database not supported by this test Start Stop R66", e);
+      SysErrLogger.FAKE_LOGGER.syserr(
+          "Database not supported by this test Start Stop R66", e);
       Assume.assumeNoException(e);
       return;
     }
@@ -286,8 +286,9 @@ public abstract class ScenarioBase extends TestAbstract {
       // global ant project settings
       project = Processes.getProject(homeDir);
       Processes.executeJvm(project, R66Server.class, argsServer, true);
-      int pid = Processes
-          .getPidOfRunnerCommandLinux("java", R66Server.class.getName(), PIDS);
+      int pid = Processes.getPidOfRunnerCommandLinux("java",
+                                                     R66Server.class.getName(),
+                                                     PIDS);
       PIDS.add(pid);
       logger.warn("Start Done: {}", pid);
       return pid;
@@ -424,7 +425,7 @@ public abstract class ScenarioBase extends TestAbstract {
     ArrayList<R66Future> futures = new ArrayList<R66Future>(NUMBER_FILES);
     ExecutorService executorService =
         Executors.newFixedThreadPool(NUMBER_FILES);
-    final TestRecvThroughHandler handler = new TestRecvThroughHandler();
+    final NoOpRecvThroughHandler handler = new NoOpRecvThroughHandler();
     long timestart = System.currentTimeMillis();
     for (int i = 0; i < NUMBER_FILES; i++) {
       final R66Future future = new R66Future(true);

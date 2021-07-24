@@ -90,15 +90,15 @@ class FormattingTuple {
     return trimmed;
   }
 
-  public String getMessage() {
+  public final String getMessage() {
     return message;
   }
 
-  public Object[] getArgArray() {
+  public final Object[] getArgArray() {
     return argArray;
   }
 
-  public Throwable getThrowable() {
+  public final Throwable getThrowable() {
     return throwable;
   }
 }

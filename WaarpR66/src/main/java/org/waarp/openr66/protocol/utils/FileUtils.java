@@ -91,9 +91,8 @@ public final class FileUtils {
           // no test on file since it does not really exist
           logger.debug("File is in through mode: {}", file);
         } else if (!file.canRead()) {
-          logger
-              .debug("File {} cannot be read, so try external from " + filename,
-                     file);
+          logger.debug(
+              "File {} cannot be read, so try external from " + filename, file);
           // file is not under normal base directory, so is external
           // File should already exist but cannot use special code ('*?')
           final R66File file2 =
@@ -157,7 +156,7 @@ public final class FileUtils {
    */
   public static void computeGlobalHash(final FilesystemBasedDigest digestGlobal,
                                        final FilesystemBasedDigest digestLocal,
-                                       final byte[] buffer, int size) {
+                                       final byte[] buffer, final int size) {
     if (buffer == null || size == 0) {
       return;
     }

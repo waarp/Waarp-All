@@ -42,71 +42,73 @@ public class EmptyDbModel implements DbModel {
   }
 
   @Override
-  public Connection getDbConnection(final String server, final String user,
-                                    final String passwd) throws SQLException {
+  public final Connection getDbConnection(final String server,
+                                          final String user,
+                                          final String passwd)
+      throws SQLException {
     return null;
   }
 
   @Override
-  public void releaseResources() {
+  public final void releaseResources() {
     // nothing
   }
 
   @Override
-  public int currentNumberOfPooledConnections() {
+  public final int currentNumberOfPooledConnections() {
     return 0;
   }
 
   @Override
-  public DbType getDbType() {
+  public final DbType getDbType() {
     return DbType.none;
   }
 
   @Override
-  public DbTypeResolver getDbTypeResolver() {
+  public final DbTypeResolver getDbTypeResolver() {
     return null;
   }
 
   @Override
-  public void createTables(final DbSession session)
+  public final void createTables(final DbSession session)
       throws WaarpDatabaseNoConnectionException {
     // nothing
   }
 
   @Override
-  public void resetSequence(final DbSession session, final long newvalue)
+  public final void resetSequence(final DbSession session, final long newvalue)
       throws WaarpDatabaseNoConnectionException {
     // nothing
   }
 
   @Override
-  public long nextSequence(final DbSession dbSession)
+  public final long nextSequence(final DbSession dbSession)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException,
              WaarpDatabaseNoDataException {
     return DbConstant.ILLEGALVALUE;
   }
 
   @Override
-  public void validConnection(final DbSession dbSession)
+  public final void validConnection(final DbSession dbSession)
       throws WaarpDatabaseNoConnectionException {
     // nothing
   }
 
   @Override
-  public String limitRequest(final String allfields, final String request,
-                             final int limit) {
+  public final String limitRequest(final String allfields, final String request,
+                                   final int limit) {
     return null;
   }
 
   @Override
-  public boolean upgradeDb(final DbSession session, final String version)
+  public final boolean upgradeDb(final DbSession session, final String version)
       throws WaarpDatabaseNoConnectionException {
     return true;
   }
 
   @Override
-  public boolean needUpgradeDb(final DbSession session, final String version,
-                               final boolean tryFix)
+  public final boolean needUpgradeDb(final DbSession session,
+                                     final String version, final boolean tryFix)
       throws WaarpDatabaseNoConnectionException {
     return false;
   }

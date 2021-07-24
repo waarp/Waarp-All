@@ -214,70 +214,70 @@ public class DbValue {
     setColumn(name);
   }
 
-  public void setValue(final String value) {
+  public final void setValue(final String value) {
     this.value = value;
   }
 
-  public void setValue(final boolean value) {
+  public final void setValue(final boolean value) {
     this.value = value;
   }
 
-  public void setValue(final byte value) {
+  public final void setValue(final byte value) {
     this.value = value;
   }
 
-  public void setValue(final short value) {
+  public final void setValue(final short value) {
     this.value = value;
   }
 
-  public void setValue(final int value) {
+  public final void setValue(final int value) {
     this.value = value;
   }
 
-  public void setValue(final long value) {
+  public final void setValue(final long value) {
     this.value = value;
   }
 
-  public void setValue(final float value) {
+  public final void setValue(final float value) {
     this.value = value;
   }
 
-  public void setValue(final double value) {
+  public final void setValue(final double value) {
     this.value = value;
   }
 
-  public void setValue(final byte[] value) {
+  public final void setValue(final byte[] value) {
     this.value = value;
   }
 
-  public void setValue(final Date value) {
+  public final void setValue(final Date value) {
     this.value = value;
   }
 
-  public void setValue(final Timestamp value) {
+  public final void setValue(final Timestamp value) {
     this.value = value;
   }
 
-  public void setValue(final java.util.Date value) {
+  public final void setValue(final java.util.Date value) {
     this.value = new Timestamp(value.getTime());
   }
 
-  public void setValue(final Reader value) {
+  public final void setValue(final Reader value) {
     this.value = value;
   }
 
-  public void setValue(final InputStream value) {
+  public final void setValue(final InputStream value) {
     this.value = value;
   }
 
-  public void setValue(final Object value) {
+  public final void setValue(final Object value) {
     this.value = value;
   }
 
   /**
    * @return the type in full string format
    */
-  public String getType() {
+  public final String getType() {
     switch (type) {
       case Types.VARCHAR:
         return "VARCHAR";
@@ -314,7 +314,7 @@ public class DbValue {
     }
   }
 
-  public Object getValue() throws IllegalAccessError {
+  public final Object getValue() throws IllegalAccessError {
     switch (type) {
       case Types.VARCHAR:
       case Types.NVARCHAR:
@@ -337,7 +337,7 @@ public class DbValue {
     }
   }
 
-  public String getValueAsString() throws WaarpDatabaseSqlException {
+  public final String getValueAsString() throws WaarpDatabaseSqlException {
     switch (type) {
       case Types.VARCHAR:
       case Types.NVARCHAR:
@@ -405,7 +405,7 @@ public class DbValue {
     return sBuilder.toString();
   }
 
-  public void setValueFromString(final String svalue)
+  public final void setValueFromString(final String svalue)
       throws WaarpDatabaseSqlException {
     switch (type) {
       case Types.VARCHAR:
@@ -500,7 +500,7 @@ public class DbValue {
   /**
    * @return the column
    */
-  public String getColumn() {
+  public final String getColumn() {
     return column;
   }
 

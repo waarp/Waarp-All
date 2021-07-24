@@ -60,8 +60,9 @@ public class NetworkSslServerInitializerProxy
     }
     pipeline.addLast(SSL_HANDLER, sslHandler);
 
-    pipeline.addLast(TIMEOUT, new IdleStateHandler(true, 0, 0, configuration
-        .getTimeoutCon(), TimeUnit.MILLISECONDS));
+    pipeline.addLast(TIMEOUT, new IdleStateHandler(true, 0, 0,
+                                                   configuration.getTimeoutCon(),
+                                                   TimeUnit.MILLISECONDS));
     final GlobalTrafficShapingHandler handler =
         configuration.getGlobalTrafficShapingHandler();
     if (handler != null) {

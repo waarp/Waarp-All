@@ -50,7 +50,7 @@ public class DeleteTask extends AbstractTask {
   }
 
   @Override
-  public void run() {
+  public final void run() {
     logger.info("Delete file from session {}", session);
     try {
       if (!session.getFile().delete()) {

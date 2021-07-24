@@ -71,13 +71,13 @@ public abstract class CommandAbstractException extends Exception {
    *
    */
   @Override
-  public String toString() {
+  public final String toString() {
     return "Code: " + code.name() + " Mesg: " +
            (message != null? message : "no specific message");
   }
 
   @Override
-  public String getMessage() {
+  public final String getMessage() {
     return toString();
   }
 }

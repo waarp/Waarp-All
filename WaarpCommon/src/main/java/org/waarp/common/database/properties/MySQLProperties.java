@@ -45,7 +45,7 @@ public class MySQLProperties implements DbProperties {
       try {
         Class.forName(MYSQL_DRIVER_JRE8);
         driver = MYSQL_DRIVER_JRE8;
-      } catch (Exception e) {
+      } catch (final Exception e) {
         driver = MYSQL_DRIVER_JRE6;
       } finally {
         driverName = driver;

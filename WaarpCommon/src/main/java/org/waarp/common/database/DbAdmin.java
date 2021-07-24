@@ -108,14 +108,14 @@ public class DbAdmin {
   /**
    * @param session the session to set
    */
-  public void setSession(final DbSession session) {
+  public final void setSession(final DbSession session) {
     this.session = session;
   }
 
   /**
    * @return True if the connection is ReadOnly
    */
-  public boolean isReadOnly() {
+  public final boolean isReadOnly() {
     return isReadOnly;
   }
 
@@ -124,7 +124,8 @@ public class DbAdmin {
    *
    * @throws WaarpDatabaseNoConnectionException
    */
-  public void validConnection() throws WaarpDatabaseNoConnectionException {
+  public final void validConnection()
+      throws WaarpDatabaseNoConnectionException {
     try {
       dbModel.validConnection(getSession());
     } catch (final WaarpDatabaseNoConnectionException e) {
@@ -277,7 +278,7 @@ public class DbAdmin {
    * the constructor
    * DbAdmin(Connection, boolean).
    */
-  public void close() {
+  public final void close() {
     if (getSession() != null) {
       getSession().endUseConnection(); // default since this is the top
       // connection
@@ -292,7 +293,7 @@ public class DbAdmin {
    * @throws WaarpDatabaseNoConnectionException
    * @throws WaarpDatabaseSqlException
    */
-  public void commit()
+  public final void commit()
       throws WaarpDatabaseSqlException, WaarpDatabaseNoConnectionException {
     if (getSession() != null) {
       getSession().commit();
@@ -302,35 +303,35 @@ public class DbAdmin {
   /**
    * @return the server
    */
-  public String getServer() {
+  public final String getServer() {
     return server;
   }
 
   /**
    * @return the user
    */
-  public String getUser() {
+  public final String getUser() {
     return user;
   }
 
   /**
    * @return the passwd
    */
-  public String getPasswd() {
+  public final String getPasswd() {
     return passwd;
   }
 
   /**
    * @return the associated dbModel
    */
-  public DbModel getDbModel() {
+  public final DbModel getDbModel() {
     return dbModel;
   }
 
   /**
    * @return the typeDriver
    */
-  public DbType getTypeDriver() {
+  public final DbType getTypeDriver() {
     return typeDriver;
   }
 
@@ -437,7 +438,7 @@ public class DbAdmin {
    * @return True if this driver allows Thread Shared Connexion (concurrency
    *     usage)
    */
-  public boolean isCompatibleWithThreadSharedConnexion() {
+  public final boolean isCompatibleWithThreadSharedConnexion() {
     return typeDriver != DbType.MariaDB && typeDriver != DbType.MySQL &&
            typeDriver != DbType.Oracle && typeDriver != DbType.none;
   }

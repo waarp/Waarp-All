@@ -23,7 +23,9 @@ package org.waarp.openr66.dao;
 public class Filter {
   public static final String LIKE = "LIKE";
   public static final String BETWEEN = "BETWEEN";
+  public static final String IS_NOT_NULL = "IS NOT NULL";
   public static final String IN = "IN";
+  private static final byte B_NONE = 'n';
   private static final byte B_SINGLE = 's';
   private static final byte B_MULTIPLE = 'm';
   public final String key;
@@ -36,8 +38,11 @@ public class Filter {
                 final Object... values) {
     this.key = key;
     this.operand = operand;
-    nbArgs = values.length;
-    if (nbArgs == 1) {
+    nbArgs = values == null? 0 : values.length;
+    if (nbArgs == 0) {
+      this.value = null;
+      specialOperand = B_NONE;
+    } else if (nbArgs == 1) {
       this.value = values[0];
       specialOperand = B_SINGLE;
     } else {
@@ -47,10 +52,10 @@ public class Filter {
   }
 
   /**
-   * @return the number of values for the operand (0 for 1, 1 for 2 or (n-1)
-   *     for n)
+   * @return the number of values for the operand (-1 for 0, 0 for 1, 1 for 2
+   *     or (n-1) for n)
    */
-  public int nbAdditionnalParams() {
+  public final int nbAdditionnalParams() {
     return nbArgs - 1;
   }
 
@@ -61,8 +66,10 @@ public class Filter {
    *
    * @return the associated value
    */
-  public Object append(final StringBuilder builder) {
-    if (nbArgs == 1) {
+  public final Object append(final StringBuilder builder) {
+    if (nbArgs == 0) {
+      builder.append(key).append(' ').append(operand).append(" ");
+    } else if (nbArgs == 1) {
       builder.append(key).append(' ').append(operand).append(" ? ");
     } else {
       if (BETWEEN.equalsIgnoreCase(operand)) {

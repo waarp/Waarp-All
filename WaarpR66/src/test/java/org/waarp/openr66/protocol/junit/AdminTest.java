@@ -834,7 +834,7 @@ public class AdminTest extends TestAbstract {
             .click();
       // 24 | click | css=#AutoNumber1 tr:nth-child(4) input:nth-child(1) |
       driver.findElement(
-          By.cssSelector("#AutoNumber1 tr:nth-child(4) input:nth-child(1)"))
+                By.cssSelector("#AutoNumber1 tr:nth-child(4) input:nth-child(1)"))
             .click();
       // 25 | click | linkText=SYSTEM |
       driver.findElement(By.linkText("SYSTEM")).click();

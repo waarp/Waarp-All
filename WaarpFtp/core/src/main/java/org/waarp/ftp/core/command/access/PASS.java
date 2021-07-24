@@ -30,7 +30,7 @@ import org.waarp.ftp.core.command.AbstractCommand;
  */
 public class PASS extends AbstractCommand {
   @Override
-  public void exec()
+  public final void exec()
       throws Reply421Exception, Reply501Exception, Reply530Exception {
     if (!hasArg()) {
       invalidCurrentCommand();

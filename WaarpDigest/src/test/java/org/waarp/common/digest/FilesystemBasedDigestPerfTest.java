@@ -101,8 +101,8 @@ public class FilesystemBasedDigestPerfTest {
                      FilesystemBasedDigest.digestEquals(hex2, bmd52));
         }
         end = System.currentTimeMillis();
-        System.out
-            .println("Byte Fast Algo: " + algo + " Time: " + (end - start));
+        System.out.println(
+            "Byte Fast Algo: " + algo + " Time: " + (end - start));
         start = System.currentTimeMillis();
         for (int i = 0; i < COUNT; i++) {
           buf.readerIndex(0);
@@ -114,8 +114,8 @@ public class FilesystemBasedDigestPerfTest {
                      FilesystemBasedDigest.digestEquals(hex3, bmd53));
         }
         end = System.currentTimeMillis();
-        System.out
-            .println("Buf Fast Algo: " + algo + " Time: " + (end - start));
+        System.out.println(
+            "Buf Fast Algo: " + algo + " Time: " + (end - start));
       }
       FilesystemBasedDigest.setUseFastMd5(false);
       FilesystemBasedDigest digest = new FilesystemBasedDigest(DigestAlgo.MD5);
@@ -133,8 +133,8 @@ public class FilesystemBasedDigestPerfTest {
                    FilesystemBasedDigest.digestEquals(hex, bmd5));
       }
       long end = System.currentTimeMillis();
-      System.out
-          .println("Byte Algo: " + DigestAlgo.MD5 + " Time: " + (end - start));
+      System.out.println(
+          "Byte Algo: " + DigestAlgo.MD5 + " Time: " + (end - start));
       MessageDigest digest2 = MessageDigest.getInstance("MD5", "SUN");
       digest2.update(TESTPHRASEBYTES, 0, TESTPHRASEBYTES.length);
       byte[] bmd52 = digest2.digest();

@@ -52,8 +52,8 @@ public class FtpClientTest extends AbstractFtpClientTest {
    * @param args
    */
   public static void main(String[] args) {
-    WaarpLoggerFactory
-        .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));
+    WaarpLoggerFactory.setDefaultFactoryIfNotSame(
+        new WaarpSlf4JLoggerFactory(null));
     ResourceLeakDetector.setLevel(Level.PARANOID);
     System.setProperty("javax.net.debug", "false");
 

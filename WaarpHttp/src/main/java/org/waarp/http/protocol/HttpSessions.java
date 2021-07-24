@@ -74,7 +74,7 @@ public class HttpSessions {
    *
    * @return True if contained
    */
-  protected boolean contains(final HttpResumableInfo resumableInfo) {
+  protected final boolean contains(final HttpResumableInfo resumableInfo) {
     return sessions.containsKey(resumableInfo.getIdentifier());
   }
 
@@ -85,7 +85,7 @@ public class HttpSessions {
    *
    * @return True if found
    */
-  public boolean removeSession(final HttpResumableInfo resumableInfo) {
+  public final boolean removeSession(final HttpResumableInfo resumableInfo) {
     return sessions.remove(resumableInfo.getIdentifier()) != null;
   }
 
@@ -96,7 +96,8 @@ public class HttpSessions {
    *
    * @return True if found
    */
-  public boolean removeSession(final HttpResumableSession resumableSession) {
+  public final boolean removeSession(
+      final HttpResumableSession resumableSession) {
     return sessions.remove(
         resumableSession.getHttpResumableInfo().getIdentifier()) != null;
   }

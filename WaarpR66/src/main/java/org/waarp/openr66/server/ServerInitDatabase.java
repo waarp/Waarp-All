@@ -115,8 +115,8 @@ public class ServerInitDatabase {
    *     limit_configuration]
    */
   public static void main(final String[] args) {
-    WaarpLoggerFactory
-        .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));
+    WaarpLoggerFactory.setDefaultFactoryIfNotSame(
+        new WaarpSlf4JLoggerFactory(null));
     if (logger == null) {
       logger = WaarpLoggerFactory.getLogger(ServerInitDatabase.class);
     }
@@ -130,11 +130,10 @@ public class ServerInitDatabase {
     }
 
     try {
-      if (!FileBasedConfiguration
-          .setConfigurationInitDatabase(Configuration.configuration, args[0],
-                                        database)) {
-        System.err
-            .format(Messages.getString("Configuration.NeedCorrectConfig"));
+      if (!FileBasedConfiguration.setConfigurationInitDatabase(
+          Configuration.configuration, args[0], database)) {
+        System.err.format(
+            Messages.getString("Configuration.NeedCorrectConfig"));
         SysErrLogger.FAKE_LOGGER.syserr();
         WaarpSystemUtil.systemExit(2);
         return;
@@ -145,17 +144,17 @@ public class ServerInitDatabase {
             Messages.getString("ServerInitDatabase.Create.Start"));
         SysErrLogger.FAKE_LOGGER.sysout();
         initdb();
-        SysErrLogger.FAKE_LOGGER
-            .sysoutFormat(Messages.getString("ServerInitDatabase.Create.Done"));
+        SysErrLogger.FAKE_LOGGER.sysoutFormat(
+            Messages.getString("ServerInitDatabase.Create.Done"));
         SysErrLogger.FAKE_LOGGER.sysout();
       }
       if (sextendedFactoryClassList != null) {
         // Load extended Factory for Task Type
-        String[] extendedFactories = sextendedFactoryClassList.split(",");
-        for (String extendedFactory : extendedFactories) {
+        final String[] extendedFactories = sextendedFactoryClassList.split(",");
+        for (final String extendedFactory : extendedFactories) {
           try {
             WaarpSystemUtil.newInstance(extendedFactory);
-          } catch (Exception e) {
+          } catch (final Exception e) {
             SysErrLogger.FAKE_LOGGER.sysoutFormat(Messages.getString(
                 "ServerInitDatabase.ExtendedTaskFactory.error") +
                                                   e.getMessage());
@@ -182,9 +181,8 @@ public class ServerInitDatabase {
       }
       // Try to load some element directly into database from first
       // configuration file
-      FileBasedConfiguration
-          .setConfigurationServerFromXml(Configuration.configuration, args[0],
-                                         false);
+      FileBasedConfiguration.setConfigurationServerFromXml(
+          Configuration.configuration, args[0], false);
       if (sdirconfig != null) {
         // load Rules
         SysErrLogger.FAKE_LOGGER.sysoutFormat(
@@ -213,38 +211,36 @@ public class ServerInitDatabase {
       }
       if (shostauth != null) {
         // Load Host Authentications
-        System.out
-            .format(Messages.getString("ServerInitDatabase.LoadAuth.Start"),
-                    shostauth);
+        System.out.format(
+            Messages.getString("ServerInitDatabase.LoadAuth.Start"), shostauth);
         SysErrLogger.FAKE_LOGGER.sysout();
         if (!loadHostAuth(shostauth)) {
-          System.err
-              .format(Messages.getString("ServerInitDatabase.LoadAuth.Failed"));
+          System.err.format(
+              Messages.getString("ServerInitDatabase.LoadAuth.Failed"));
           SysErrLogger.FAKE_LOGGER.syserr();
           WaarpSystemUtil.systemExit(1);
           return;
         }
-        System.out
-            .format(Messages.getString("ServerInitDatabase.LoadAuth.Done"));
+        System.out.format(
+            Messages.getString("ServerInitDatabase.LoadAuth.Done"));
         SysErrLogger.FAKE_LOGGER.sysout();
       }
       if (slimitconfig != null) {
         // Load configuration
-        System.out
-            .format(Messages.getString("ServerInitDatabase.LoadLimit.Start"),
-                    slimitconfig);
+        System.out.format(
+            Messages.getString("ServerInitDatabase.LoadLimit.Start"),
+            slimitconfig);
         SysErrLogger.FAKE_LOGGER.sysout();
-        if (!FileBasedConfiguration
-            .setConfigurationLoadLimitFromXml(Configuration.configuration,
-                                              slimitconfig)) {
+        if (!FileBasedConfiguration.setConfigurationLoadLimitFromXml(
+            Configuration.configuration, slimitconfig)) {
           System.err.format(
               Messages.getString("ServerInitDatabase.LoadLimit.Failed"));
           SysErrLogger.FAKE_LOGGER.syserr();
           WaarpSystemUtil.systemExit(1);
           return;
         }
-        System.out
-            .format(Messages.getString("ServerInitDatabase.LoadLimit.Done"));
+        System.out.format(
+            Messages.getString("ServerInitDatabase.LoadLimit.Done"));
         SysErrLogger.FAKE_LOGGER.sysout();
       }
       if (sbusiness != null || salias != null || sroles != null) {
@@ -278,13 +274,13 @@ public class ServerInitDatabase {
           hostConfiguration.insert();
         }
       }
-      SysErrLogger.FAKE_LOGGER
-          .sysout(Messages.getString("ServerInitDatabase.LoadDone"));
+      SysErrLogger.FAKE_LOGGER.sysout(
+          Messages.getString("ServerInitDatabase.LoadDone"));
       SysErrLogger.FAKE_LOGGER.sysout();
       WaarpSystemUtil.systemExit(0);
     } catch (final WaarpDatabaseException e) {
-      SysErrLogger.FAKE_LOGGER
-          .syserr(Messages.getString("ServerInitDatabase.ErrDatabase"));
+      SysErrLogger.FAKE_LOGGER.syserr(
+          Messages.getString("ServerInitDatabase.ErrDatabase"));
       SysErrLogger.FAKE_LOGGER.syserr();
       WaarpSystemUtil.systemExit(3);
     } finally {
@@ -326,8 +322,8 @@ public class ServerInitDatabase {
     // Update tables: runner
     boolean uptodate = true;
     // Check if the database is up to date
-    final String version = DbHostConfiguration
-        .getVersionDb(Configuration.configuration.getHostId());
+    final String version = DbHostConfiguration.getVersionDb(
+        Configuration.configuration.getHostId());
     try {
       if (version != null) {
         uptodate = admin.getSession().getAdmin().getDbModel()
@@ -345,8 +341,8 @@ public class ServerInitDatabase {
             "ServerInitDatabase.SchemaUptodate")); //$NON-NLS-1$
       }
     } catch (final WaarpDatabaseNoConnectionException e) {
-      logger
-          .error(Messages.getString("Database.CannotConnect"), e); //$NON-NLS-1$
+      logger.error(Messages.getString("Database.CannotConnect"),
+                   e); //$NON-NLS-1$
       return false;
     }
     return !uptodate;
@@ -364,7 +360,7 @@ public class ServerInitDatabase {
   }
 
   public static boolean loadHostAuth(final String filename) {
-    return AuthenticationFileBasedConfiguration
-        .loadAuthentication(Configuration.configuration, filename);
+    return AuthenticationFileBasedConfiguration.loadAuthentication(
+        Configuration.configuration, filename);
   }
 }

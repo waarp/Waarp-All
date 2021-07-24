@@ -78,7 +78,7 @@ public class DbConnectionPool {
     }
 
     @Override
-    public boolean equals(final Object o) {
+    public final boolean equals(final Object o) {
       if (this == o) {
         return true;
       }
@@ -92,7 +92,7 @@ public class DbConnectionPool {
     }
 
     @Override
-    public int hashCode() {
+    public final int hashCode() {
       return pooledCon.hashCode();
     }
   }
@@ -248,21 +248,21 @@ public class DbConnectionPool {
   /**
    * @return the max number of connections
    */
-  public int getMaxConnections() {
+  public final int getMaxConnections() {
     return maxConnections;
   }
 
   /**
    * @return the Login Timeout in second
    */
-  public long getLoginTimeout() {
+  public final long getLoginTimeout() {
     return timeout;
   }
 
   /**
    * @return the Force Close Timeout in ms
    */
-  public long getTimeoutForceClose() {
+  public final long getTimeoutForceClose() {
     return TIME_OUT_FORCE_CLOSE;
   }
 
@@ -434,14 +434,14 @@ public class DbConnectionPool {
     }
 
     @Override
-    public void connectionClosed(final ConnectionEvent event) {
+    public final void connectionClosed(final ConnectionEvent event) {
       final PooledConnection pconn = (PooledConnection) event.getSource();
       pconn.removeConnectionEventListener(this);
       pool.recycleConnection(pconn);
     }
 
     @Override
-    public void connectionErrorOccurred(final ConnectionEvent event) {
+    public final void connectionErrorOccurred(final ConnectionEvent event) {
       final PooledConnection pconn = (PooledConnection) event.getSource();
       pconn.removeConnectionEventListener(this);
       pool.disposeConnection(pconn);

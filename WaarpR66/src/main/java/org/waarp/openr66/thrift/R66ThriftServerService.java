@@ -54,7 +54,7 @@ public class R66ThriftServerService implements Runnable {
     this.port = port;
   }
 
-  public boolean awaitInitialization() {
+  public final boolean awaitInitialization() {
     if (serviceReady != null) {
       serviceReady.awaitOrInterruptible();
       return serviceReady.isSuccess();
@@ -90,14 +90,14 @@ public class R66ThriftServerService implements Runnable {
       serviceReady.setSuccess();
       server.serve();
     } catch (final TTransportException e) {
-      logger
-          .error("An error occurs during initialization of Thrift support", e);
+      logger.error("An error occurs during initialization of Thrift support",
+                   e);
       serviceReady.setFailure(e);
       releaseResources();
     }
   }
 
-  public void releaseResources() {
+  public final void releaseResources() {
     if (server != null) {
       logger.debug("Stop Thrift Server");
       server.stop();

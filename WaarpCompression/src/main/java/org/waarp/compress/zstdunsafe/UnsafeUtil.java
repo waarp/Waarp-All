@@ -43,7 +43,7 @@ import java.nio.ByteOrder;
 import static java.lang.String.*;
 
 public final class UnsafeUtil {
-  private static boolean initialized = false;
+  private static boolean initialized;
   public static final Unsafe UNSAFE;
   private static final Field ADDRESS_ACCESSOR;
 
@@ -58,7 +58,7 @@ public final class UnsafeUtil {
       tempUnsafe = initUnsafe();
       tempField = initAccessor();
       initialized = true;
-    } catch (Exception e) {
+    } catch (final Exception e) {
       initialized = false;
     }
     UNSAFE = tempUnsafe;

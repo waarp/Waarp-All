@@ -191,21 +191,22 @@ public class R66Session implements SessionInterface {
   /**
    * @return extendedProtocol
    */
-  public boolean getExtendedProtocol() {
+  public final boolean getExtendedProtocol() {
     return extendedProtocol;
   }
 
   /**
    * @return the businessObject
    */
-  public R66BusinessInterface getBusinessObject() {
+  public final R66BusinessInterface getBusinessObject() {
     return businessObject;
   }
 
   /**
    * @param businessObject the businessObject to set
    */
-  public void setBusinessObject(final R66BusinessInterface businessObject) {
+  public final void setBusinessObject(
+      final R66BusinessInterface businessObject) {
     this.businessObject = businessObject;
   }
 
@@ -216,17 +217,17 @@ public class R66Session implements SessionInterface {
    *
    * @throws IllegalFiniteStateException if the new status if not ok
    */
-  public void newState(final R66FiniteDualStates desiredstate) {
+  public final void newState(final R66FiniteDualStates desiredstate) {
     try {
       state.setCurrent(desiredstate);
     } catch (final IllegalFiniteStateException e) {
-      logger
-          .warn("Should not changed of State: {} {}", this, e.getMessage(), e);
+      logger.warn("Should not changed of State: {} {}", this, e.getMessage(),
+                  e);
       state.setDryCurrent(desiredstate);
     }
   }
 
-  public void setErrorState() {
+  public final void setErrorState() {
     try {
       state.setCurrent(R66FiniteDualStates.ERROR);
     } catch (final IllegalFiniteStateException e) {
@@ -237,7 +238,7 @@ public class R66Session implements SessionInterface {
   /**
    * @return the current state in the finite state machine
    */
-  public R66FiniteDualStates getState() {
+  public final R66FiniteDualStates getState() {
     return state.getCurrent();
   }
 
@@ -246,7 +247,7 @@ public class R66Session implements SessionInterface {
    *
    * @param stat
    */
-  public void setStatus(final int stat) {
+  public final void setStatus(final int stat) {
     if (logger.isDebugEnabled()) {
       final StackTraceElement elt = Thread.currentThread().getStackTrace()[2];
       status =
@@ -257,7 +258,7 @@ public class R66Session implements SessionInterface {
   }
 
   @Override
-  public void clear() {
+  public final void clear() {
     partialClear();
     if (dir != null) {
       dir.clear();
@@ -278,7 +279,7 @@ public class R66Session implements SessionInterface {
     }
   }
 
-  public void partialClear() {
+  public final void partialClear() {
     // First check if a transfer was on going
     if (runner != null && !runner.isFinished() && !runner.continueTransfer()) {
       if (localChannelReference != null) {
@@ -322,19 +323,19 @@ public class R66Session implements SessionInterface {
   }
 
   @Override
-  public R66Auth getAuth() {
+  public final R66Auth getAuth() {
     return auth;
   }
 
   @Override
-  public int getBlockSize() {
+  public final int getBlockSize() {
     return blockSize;
   }
 
   /**
    * @param blocksize the blocksize to set
    */
-  public void setBlockSize(final int blocksize) {
+  public final void setBlockSize(final int blocksize) {
     blockSize = blocksize;
     compressionMaxSize = WaarpZstdCodec.getMaxCompressedSize(blockSize);
   }
@@ -359,7 +360,7 @@ public class R66Session implements SessionInterface {
    *
    * @return the reusable buffer for sending per Session
    */
-  public byte[] getReusableBuffer(final int length) {
+  public final byte[] getReusableBuffer(final int length) {
     reusableBuffer = getBuffer(reusableBuffer, length);
     return reusableBuffer.get();
   }
@@ -369,7 +370,7 @@ public class R66Session implements SessionInterface {
    *
    * @return the reusable buffer for received DataPacket per Session
    */
-  public byte[] getReusableDataPacketBuffer(final int length) {
+  public final byte[] getReusableDataPacketBuffer(final int length) {
     reusableDataPacketBuffer = getBuffer(reusableDataPacketBuffer, length);
     return reusableDataPacketBuffer.get();
   }
@@ -379,31 +380,36 @@ public class R66Session implements SessionInterface {
    *
    * @return the possible reusable compression buffer per Session
    */
-  public byte[] getSessionReusableCompressionBuffer(final int length) {
+  public final byte[] getSessionReusableCompressionBuffer(final int length) {
     reusableCompressionBuffer = getBuffer(reusableCompressionBuffer,
-                                          WaarpZstdCodec
-                                              .getMaxCompressedSize(length));
+                                          WaarpZstdCodec.getMaxCompressedSize(
+                                              length));
     return reusableCompressionBuffer.get();
   }
 
   /**
    * @return True if compression is enabled in this session
    */
-  public boolean isCompressionEnabled() {
+  public final boolean isCompressionEnabled() {
     return isCompressionEnabled;
   }
 
   /**
    * @param compressionEnabled True if compression is enabled in this session
    */
-  public void setCompressionEnabled(final boolean compressionEnabled) {
+  public final void setCompressionEnabled(final boolean compressionEnabled) {
     logger.debug("Compression enabled? {} => {}", isCompressionEnabled,
                  compressionEnabled);
     isCompressionEnabled = compressionEnabled;
-    if (isCompressionEnabled) {
+    if (isCompressionEnabled && reusableCompressionBuffer == null) {
       synchronized (logger) {
         reusableCompressionBuffer = reusableCompressionBufferStatic;
         reusableCompressionBufferStatic = null;
+      }
+    } else if (!isCompressionEnabled && reusableCompressionBuffer != null) {
+      synchronized (logger) {
+        reusableDataPacketBufferStatic = reusableCompressionBuffer;
+        reusableCompressionBuffer = null;
       }
     }
   }
@@ -411,14 +417,14 @@ public class R66Session implements SessionInterface {
   /**
    * @return the current max compression size according to block size
    */
-  public int getCompressionMaxSize() {
+  public final int getCompressionMaxSize() {
     return compressionMaxSize;
   }
 
   /**
    * Initialize per block digest
    */
-  public void initializeDigest() {
+  public final void initializeDigest() {
     if (digestBlock == null && RequestPacket.isMD5Mode(getRunner().getMode())) {
       try {
         digestBlock = new FilesystemBasedDigest(
@@ -432,29 +438,29 @@ public class R66Session implements SessionInterface {
   /**
    * @return the digest used per block
    */
-  public FilesystemBasedDigest getDigestBlock() {
+  public final FilesystemBasedDigest getDigestBlock() {
     return digestBlock;
   }
 
   @Override
-  public R66Dir getDir() {
+  public final R66Dir getDir() {
     return dir;
   }
 
   @Override
-  public FilesystemBasedFileParameterImpl getFileParameter() {
+  public final FilesystemBasedFileParameterImpl getFileParameter() {
     return Configuration.getFileParameter();
   }
 
   @Override
-  public R66Restart getRestart() {
+  public final R66Restart getRestart() {
     return restart;
   }
 
   /**
    * @return True if the connection is currently authenticated
    */
-  public boolean isAuthenticated() {
+  public final boolean isAuthenticated() {
     if (auth == null) {
       return false;
     }
@@ -464,28 +470,28 @@ public class R66Session implements SessionInterface {
   /**
    * @return True if the Channel is ready to accept transfer
    */
-  public boolean isReady() {
+  public final boolean isReady() {
     return isReady;
   }
 
   /**
    * @param isReady the isReady for transfer to set
    */
-  public void setReady(final boolean isReady) {
+  public final void setReady(final boolean isReady) {
     this.isReady = isReady;
   }
 
   /**
    * @return the runner
    */
-  public DbTaskRunner getRunner() {
+  public final DbTaskRunner getRunner() {
     return runner;
   }
 
   /**
    * @param localChannelReference the localChannelReference to set
    */
-  public void setLocalChannelReference(
+  public final void setLocalChannelReference(
       final LocalChannelReference localChannelReference) {
     this.localChannelReference = localChannelReference;
     this.localChannelReference.setSession(this);
@@ -500,21 +506,21 @@ public class R66Session implements SessionInterface {
   /**
    * @return the remote SocketAddress
    */
-  public SocketAddress getRemoteAddress() {
+  public final SocketAddress getRemoteAddress() {
     return raddress;
   }
 
   /**
    * @return the local SocketAddress
    */
-  public SocketAddress getLocalAddress() {
+  public final SocketAddress getLocalAddress() {
     return laddress;
   }
 
   /**
    * @return the localChannelReference
    */
-  public LocalChannelReference getLocalChannelReference() {
+  public final LocalChannelReference getLocalChannelReference() {
     return localChannelReference;
   }
 
@@ -524,8 +530,8 @@ public class R66Session implements SessionInterface {
    * @param runner
    * @param localChannelReference
    */
-  public void setNoSessionRunner(final DbTaskRunner runner,
-                                 final LocalChannelReference localChannelReference) {
+  public final void setNoSessionRunner(final DbTaskRunner runner,
+                                       final LocalChannelReference localChannelReference) {
     this.runner = runner;
     // Warning: the file is not correctly setup
     auth.specialNoSessionAuth(false, Configuration.configuration.getHostId());
@@ -541,9 +547,8 @@ public class R66Session implements SessionInterface {
       } else {
         this.localChannelReference = new LocalChannelReference();
       }
-      this.localChannelReference
-          .setErrorMessage(this.runner.getErrorInfo().getMesg(),
-                           this.runner.getErrorInfo());
+      this.localChannelReference.setErrorMessage(
+          this.runner.getErrorInfo().getMesg(), this.runner.getErrorInfo());
     }
     runner.setLocalChannelReference(this.localChannelReference);
     this.localChannelReference.setSession(this);
@@ -554,7 +559,8 @@ public class R66Session implements SessionInterface {
    *
    * @throws OpenR66RunnerErrorException
    */
-  public void setFileBeforePreRunner() throws OpenR66RunnerErrorException {
+  public final void setFileBeforePreRunner()
+      throws OpenR66RunnerErrorException {
     // check first if the next step is the PRE task from beginning
     try {
       file = FileUtils.getFile(logger, this, runner.getOriginalFilename(),
@@ -596,7 +602,7 @@ public class R66Session implements SessionInterface {
    *     file
    *     cannot be created
    */
-  public void setFileAfterPreRunnerReceiver(final boolean createFile)
+  public final void setFileAfterPreRunnerReceiver(final boolean createFile)
       throws OpenR66RunnerErrorException, CommandAbstractException {
     if (businessObject != null) {
       businessObject.checkAtChangeFilename(this);
@@ -675,7 +681,7 @@ public class R66Session implements SessionInterface {
    *     file
    *     cannot be created
    */
-  public void setFileAfterPreRunner(final boolean createFile)
+  public final void setFileAfterPreRunner(final boolean createFile)
       throws OpenR66RunnerErrorException, CommandAbstractException {
     if (businessObject != null) {
       businessObject.checkAtChangeFilename(this);
@@ -793,7 +799,8 @@ public class R66Session implements SessionInterface {
    * @param runner
    * @param code
    */
-  public void setBadRunner(final DbTaskRunner runner, final ErrorCode code) {
+  public final void setBadRunner(final DbTaskRunner runner,
+                                 final ErrorCode code) {
     this.runner = runner;
     if (code == ErrorCode.QueryAlreadyFinished) {
       if (this.runner.isSender()) {
@@ -834,7 +841,7 @@ public class R66Session implements SessionInterface {
    *
    * @throws OpenR66RunnerErrorException
    */
-  public void setRunner(final DbTaskRunner runner)
+  public final void setRunner(final DbTaskRunner runner)
       throws OpenR66RunnerErrorException {
     this.runner = runner;
     if (localChannelReference != null) {
@@ -892,7 +899,7 @@ public class R66Session implements SessionInterface {
    *
    * @throws OpenR66RunnerErrorException
    */
-  public void startup(final boolean checkNotExternal)
+  public final void startup(final boolean checkNotExternal)
       throws OpenR66RunnerErrorException {
     setRestartMarker();
     logger.debug("GlobalLastStep: {} vs {}:{}", runner.getGloballaststep(),
@@ -1088,7 +1095,7 @@ public class R66Session implements SessionInterface {
    *
    * @throws OpenR66RunnerErrorException
    */
-  public void renameReceiverFile(final String newFilename)
+  public final void renameReceiverFile(final String newFilename)
       throws OpenR66RunnerErrorException {
     if (runner == null) {
       return;
@@ -1125,8 +1132,8 @@ public class R66Session implements SessionInterface {
    * @throws OpenR66RunnerErrorException
    * @throws OpenR66ProtocolSystemException
    */
-  public void setFinalizeTransfer(final boolean status,
-                                  final R66Result finalValue)
+  public final void setFinalizeTransfer(final boolean status,
+                                        final R66Result finalValue)
       throws OpenR66RunnerErrorException, OpenR66ProtocolSystemException {
     logger.debug("{}:{}:{}", status, finalValue, runner);
     if (runner == null) {
@@ -1211,8 +1218,8 @@ public class R66Session implements SessionInterface {
       logger.info("Pre task in error (or even before) : {}",
                   runnerErrorException.getMessage());
       if (Configuration.configuration.isExecuteErrorBeforeTransferAllowed()) {
-        runner
-            .finalizeTransfer(localChannelReference, file, finalValue, status);
+        runner.finalizeTransfer(localChannelReference, file, finalValue,
+                                status);
       }
       localChannelReference.invalidateRequest(finalValue);
       throw runnerErrorException;
@@ -1244,7 +1251,7 @@ public class R66Session implements SessionInterface {
    * @throws OpenR66RunnerErrorException
    * @throws OpenR66ProtocolSystemException
    */
-  public void tryFinalizeRequest(final R66Result errorValue)
+  public final void tryFinalizeRequest(final R66Result errorValue)
       throws OpenR66RunnerErrorException, OpenR66ProtocolSystemException {
     if (getLocalChannelReference() == null) {
       return;
@@ -1298,20 +1305,20 @@ public class R66Session implements SessionInterface {
   /**
    * @return the file
    */
-  public R66File getFile() {
+  public final R66File getFile() {
     return file;
   }
 
   /**
    * @return True if the number of Error is still acceptable
    */
-  public boolean addError() {
+  public final boolean addError() {
     final int value = numOfError.incrementAndGet();
     return value < Configuration.RETRYNB;
   }
 
   @Override
-  public String toString() {
+  public final String toString() {
     return "Session: FS[" + state.getCurrent() + "] " + status + "  " +
            (auth != null? auth.toString() : "no Auth") + "     " +
            (dir != null? dir.toString() : "no Dir") + "     " +
@@ -1320,14 +1327,14 @@ public class R66Session implements SessionInterface {
   }
 
   @Override
-  public String getUniqueExtension() {
+  public final String getUniqueExtension() {
     return Configuration.EXT_R66;
   }
 
   /**
    * @return the dirsFromSession
    */
-  public HashMap<String, R66Dir> getDirsFromSession() {
+  public final HashMap<String, R66Dir> getDirsFromSession() {
     return dirsFromSession;
   }
 
@@ -1335,7 +1342,7 @@ public class R66Session implements SessionInterface {
    * @return True if according to session, it is the sender side (to byPass
    *     send to itself issue)
    */
-  public boolean isSender() {
+  public final boolean isSender() {
     return isSender;
   }
 }

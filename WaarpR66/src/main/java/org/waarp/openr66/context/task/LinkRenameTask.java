@@ -56,7 +56,7 @@ public class LinkRenameTask extends AbstractTask {
   }
 
   @Override
-  public void run() {
+  public final void run() {
     String finalname = argRule;
     finalname = getReplacedValue(finalname, COMPILE.split(argTransfer));
     logger.info("Move and Rename to {} with {}:{} and {}", finalname, argRule,

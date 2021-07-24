@@ -72,13 +72,13 @@ public class ConnectionErrorPacket extends AbstractLocalPacket {
   }
 
   @Override
-  public boolean hasGlobalBuffer() {
+  public final boolean hasGlobalBuffer() {
     return true;
   }
 
   @Override
-  public void createAllBuffers(final LocalChannelReference lcr,
-                               final int networkHeader) {
+  public final void createAllBuffers(final LocalChannelReference lcr,
+                                     final int networkHeader) {
     end = Unpooled.EMPTY_BUFFER;
     final byte[] sheaderByte =
         sheader != null? sheader.getBytes(WaarpStringUtils.UTF8) : EMPTY_ARRAY;
@@ -102,26 +102,26 @@ public class ConnectionErrorPacket extends AbstractLocalPacket {
   }
 
   @Override
-  public String toString() {
+  public final String toString() {
     return "ConnectionErrorPacket: " + sheader + ':' + smiddle;
   }
 
   @Override
-  public byte getType() {
+  public final byte getType() {
     return LocalPacketFactory.CONNECTERRORPACKET;
   }
 
   /**
    * @return the sheader
    */
-  public String getSheader() {
+  public final String getSheader() {
     return sheader;
   }
 
   /**
    * @return the smiddle
    */
-  public String getSmiddle() {
+  public final String getSmiddle() {
     return smiddle;
   }
 }

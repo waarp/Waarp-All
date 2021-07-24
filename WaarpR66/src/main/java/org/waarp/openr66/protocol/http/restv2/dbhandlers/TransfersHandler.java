@@ -127,30 +127,30 @@ public class TransfersHandler extends AbstractRestDbHandler {
   @GET
   @Consumes(APPLICATION_FORM_URLENCODED)
   @RequiredRole(ROLE.READONLY)
-  public void filterTransfer(final HttpRequest request,
-                             final HttpResponder responder,
-                             @QueryParam(LIMIT) @DefaultValue("20")
-                             final String limitStr,
-                             @QueryParam(OFFSET) @DefaultValue("0")
-                             final String offsetStr,
-                             @QueryParam(ORDER) @DefaultValue("ascId")
-                             final String orderStr,
-                             @QueryParam(RULE_ID) @DefaultValue("")
-                             final String ruleID,
-                             @QueryParam(PARTNER) @DefaultValue("")
-                             final String partner,
-                             @QueryParam(STATUS) @DefaultValue("")
-                             final String statusStr,
-                             @QueryParam(FILENAME) @DefaultValue("")
-                             final String filename,
-                             @QueryParam(START_TRANS) @DefaultValue("")
-                             final String startTrans,
-                             @QueryParam(STOP_TRANS) @DefaultValue("")
-                             final String stopTrans,
-                             @QueryParam(FOLLOW_ID) @DefaultValue("")
-                             final String followId,
-                             @QueryParam(COUNT_ORDER) @DefaultValue("")
-                             final String countOrder) {
+  public final void filterTransfer(final HttpRequest request,
+                                   final HttpResponder responder,
+                                   @QueryParam(LIMIT) @DefaultValue("20")
+                                   final String limitStr,
+                                   @QueryParam(OFFSET) @DefaultValue("0")
+                                   final String offsetStr,
+                                   @QueryParam(ORDER) @DefaultValue("ascId")
+                                   final String orderStr,
+                                   @QueryParam(RULE_ID) @DefaultValue("")
+                                   final String ruleID,
+                                   @QueryParam(PARTNER) @DefaultValue("")
+                                   final String partner,
+                                   @QueryParam(STATUS) @DefaultValue("")
+                                   final String statusStr,
+                                   @QueryParam(FILENAME) @DefaultValue("")
+                                   final String filename,
+                                   @QueryParam(START_TRANS) @DefaultValue("")
+                                   final String startTrans,
+                                   @QueryParam(STOP_TRANS) @DefaultValue("")
+                                   final String stopTrans,
+                                   @QueryParam(FOLLOW_ID) @DefaultValue("")
+                                   final String followId,
+                                   @QueryParam(COUNT_ORDER) @DefaultValue("")
+                                   final String countOrder) {
     checkSanity(limitStr, offsetStr, orderStr, ruleID, partner, statusStr,
                 filename, startTrans, stopTrans, followId, countOrder);
     final ArrayList<RestError> errors = new ArrayList<RestError>();
@@ -251,8 +251,9 @@ public class TransfersHandler extends AbstractRestDbHandler {
       List<Transfer> transferList;
       try {
         transferDAO = DAO_FACTORY.getTransferDAO();
-        transferList = transferDAO
-            .find(filters, order.column, order.ascend, limit, offset);
+        transferList =
+            transferDAO.find(filters, order.column, order.ascend, limit,
+                             offset);
       } catch (final DAOConnectionException e) {
         throw new InternalServerErrorException(e);
       } finally {
@@ -281,8 +282,8 @@ public class TransfersHandler extends AbstractRestDbHandler {
   @POST
   @Consumes(APPLICATION_JSON)
   @RequiredRole(ROLE.TRANSFER)
-  public void createTransfer(final HttpRequest request,
-                             final HttpResponder responder) {
+  public final void createTransfer(final HttpRequest request,
+                                   final HttpResponder responder) {
     final ObjectNode requestObject = JsonUtils.deserializeRequest(request);
     checkSanity(requestObject);
     final Transfer transfer =
@@ -321,8 +322,8 @@ public class TransfersHandler extends AbstractRestDbHandler {
   @OPTIONS
   @Consumes(WILDCARD)
   @RequiredRole(ROLE.NOACCESS)
-  public void options(final HttpRequest request,
-                      final HttpResponder responder) {
+  public final void options(final HttpRequest request,
+                            final HttpResponder responder) {
     responder.sendStatus(OK, OPTIONS_HEADERS);
   }
 }

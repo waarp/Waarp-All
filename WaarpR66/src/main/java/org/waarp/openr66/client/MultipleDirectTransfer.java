@@ -103,8 +103,8 @@ public class MultipleDirectTransfer extends DirectTransfer {
         for (String filename : files) {
           filename = filename.trim();
           if (!filename.isEmpty()) {
-            logger
-                .info("Launch transfer to " + host + " with file " + filename);
+            logger.info(
+                "Launch transfer to " + host + " with file " + filename);
             final long time1 = System.currentTimeMillis();
             final R66Future future = new R66Future(true);
             final DirectTransfer transaction =
@@ -181,16 +181,16 @@ public class MultipleDirectTransfer extends DirectTransfer {
                            networkTransaction);
     transaction.transferArgs.setFollowId(transferArgs.getFollowId());
     transaction.normalInfoAsWarn = normalInfoAsWarn;
-    logger
-        .debug("rhost: {}:{}", host, transaction.transferArgs.getRemoteHost());
+    logger.debug("rhost: {}:{}", host,
+                 transaction.transferArgs.getRemoteHost());
     transaction.run();
     future.awaitOrInterruptible();
     return transaction;
   }
 
   public static void main(final String[] args) {
-    WaarpLoggerFactory
-        .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));
+    WaarpLoggerFactory.setDefaultFactoryIfNotSame(
+        new WaarpSlf4JLoggerFactory(null));
     if (logger == null) {
       logger = WaarpLoggerFactory.getLogger(MultipleDirectTransfer.class);
     }
@@ -226,8 +226,9 @@ public class MultipleDirectTransfer extends DirectTransfer {
           new OutputFormat(MultipleDirectTransfer.class.getSimpleName(), args);
       if (future.isSuccess()) {
         outputFormat.setValue(FIELDS.status.name(), 0);
-        outputFormat.setValue(FIELDS.statusTxt.name(), "Multiple " + Messages
-            .getString(TRANSFER_STATUS) +
+        outputFormat.setValue(FIELDS.statusTxt.name(), "Multiple " +
+                                                       Messages.getString(
+                                                           TRANSFER_STATUS) +
                                                        Messages.getString(
                                                            "RequestInformation.Success")); //$NON-NLS-1$
         outputFormat.setValue(FIELDS.remote.name(), rhost);
@@ -240,16 +241,16 @@ public class MultipleDirectTransfer extends DirectTransfer {
         }
         if (!OutputFormat.isQuiet()) {
           outputFormat.sysout();
-          for (final OutputFormat result : multipleDirectTransfer
-              .getResults()) {
+          for (final OutputFormat result : multipleDirectTransfer.getResults()) {
             SysErrLogger.FAKE_LOGGER.sysout();
             result.sysout();
           }
         }
       } else {
         outputFormat.setValue(FIELDS.status.name(), 2);
-        outputFormat.setValue(FIELDS.statusTxt.name(), "Multiple " + Messages
-            .getString(TRANSFER_STATUS) +
+        outputFormat.setValue(FIELDS.statusTxt.name(), "Multiple " +
+                                                       Messages.getString(
+                                                           TRANSFER_STATUS) +
                                                        Messages.getString(
                                                            "RequestInformation.Failure")); //$NON-NLS-1$
         outputFormat.setValue(FIELDS.remote.name(), rhost);
@@ -259,8 +260,7 @@ public class MultipleDirectTransfer extends DirectTransfer {
         logger.error(outputFormat.loggerOut());
         if (!OutputFormat.isQuiet()) {
           outputFormat.sysout();
-          for (final OutputFormat result : multipleDirectTransfer
-              .getResults()) {
+          for (final OutputFormat result : multipleDirectTransfer.getResults()) {
             SysErrLogger.FAKE_LOGGER.sysout();
             result.sysout();
           }
@@ -284,7 +284,7 @@ public class MultipleDirectTransfer extends DirectTransfer {
   /**
    * @return the errorMultiple
    */
-  public int getErrorMultiple() {
+  public final int getErrorMultiple() {
     return errorMultiple;
   }
 
@@ -298,7 +298,7 @@ public class MultipleDirectTransfer extends DirectTransfer {
   /**
    * @return the doneMultiple
    */
-  public int getDoneMultiple() {
+  public final int getDoneMultiple() {
     return doneMultiple;
   }
 
@@ -312,7 +312,7 @@ public class MultipleDirectTransfer extends DirectTransfer {
   /**
    * @return the results
    */
-  public List<OutputFormat> getResults() {
+  public final List<OutputFormat> getResults() {
     return results;
   }
 }

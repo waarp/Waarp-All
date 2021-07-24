@@ -131,10 +131,10 @@ public class ChangeBandwidthLimits implements Runnable {
                                 LocalPacketFactory.BANDWIDTHPACKET);
       }
     }
-    AbstractTransfer
-        .sendValidPacket(host, localChannelReference, valid, future);
-    logger
-        .info("Request done with " + (future.isSuccess()? "success" : "error"));
+    AbstractTransfer.sendValidPacket(host, localChannelReference, valid,
+                                     future);
+    logger.info(
+        "Request done with " + (future.isSuccess()? "success" : "error"));
   }
 
   protected static long swriteGlobalLimit = -1;
@@ -151,8 +151,8 @@ public class ChangeBandwidthLimits implements Runnable {
       logger.error(INFO_ARGS);
       return false;
     }
-    if (!FileBasedConfiguration
-        .setClientConfigurationFromXml(Configuration.configuration, args[0])) {
+    if (!FileBasedConfiguration.setClientConfigurationFromXml(
+        Configuration.configuration, args[0])) {
       logger.error(INFO_ARGS);
       return false;
     }
@@ -187,8 +187,8 @@ public class ChangeBandwidthLimits implements Runnable {
   }
 
   public static void main(final String[] args) {
-    WaarpLoggerFactory
-        .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));
+    WaarpLoggerFactory.setDefaultFactoryIfNotSame(
+        new WaarpSlf4JLoggerFactory(null));
     if (logger == null) {
       logger = WaarpLoggerFactory.getLogger(ChangeBandwidthLimits.class);
     }

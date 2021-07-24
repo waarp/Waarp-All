@@ -27,11 +27,11 @@ import org.waarp.ftp.core.command.AbstractCommand;
  */
 public class QUIT extends AbstractCommand {
   @Override
-  public void exec() {
+  public final void exec() {
     getSession().rein();
     getSession().setNextCommand(this);
-    getSession()
-        .setReplyCode(ReplyCode.REPLY_221_CLOSING_CONTROL_CONNECTION, null);
+    getSession().setReplyCode(ReplyCode.REPLY_221_CLOSING_CONTROL_CONNECTION,
+                              null);
   }
 
 }

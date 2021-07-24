@@ -44,25 +44,26 @@ public class ClientNetworkChannels {
     this.hostId = hostId;
   }
 
-  public void add(final NetworkChannelReference networkChannelReference) {
+  public final void add(final NetworkChannelReference networkChannelReference) {
     networkChannelReferences.add(networkChannelReference);
     networkChannelReference.clientNetworkChannels = this;
     networkChannelReference.setHostId(hostId);
   }
 
-  public void remove(final NetworkChannelReference networkChannelReference) {
+  public final void remove(
+      final NetworkChannelReference networkChannelReference) {
     networkChannelReferences.remove(networkChannelReference);
   }
 
-  public boolean isEmpty() {
+  public final boolean isEmpty() {
     return networkChannelReferences.isEmpty();
   }
 
-  public int size() {
+  public final int size() {
     return networkChannelReferences.size();
   }
 
-  public boolean shutdownAllNetworkChannels() {
+  public final boolean shutdownAllNetworkChannels() {
     boolean status = false;
     for (final NetworkChannelReference networkChannelReference : networkChannelReferences) {
       NetworkTransaction.shuttingDownNetworkChannel(networkChannelReference);
@@ -72,7 +73,7 @@ public class ClientNetworkChannels {
     return status;
   }
 
-  public String getHostId() {
+  public final String getHostId() {
     return hostId;
   }
 }

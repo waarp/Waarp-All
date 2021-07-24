@@ -43,8 +43,8 @@ public class R66Proxy {
    * @param args
    */
   public static void main(final String[] args) {
-    WaarpLoggerFactory
-        .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));
+    WaarpLoggerFactory.setDefaultFactoryIfNotSame(
+        new WaarpSlf4JLoggerFactory(null));
     logger = WaarpLoggerFactory.getLogger(R66Proxy.class);
     if (args.length < 1) {
       logger.error("Needs the configuration file as first argument");
@@ -53,11 +53,11 @@ public class R66Proxy {
     configuration = new ConfigurationProxyR66();
     if (initialize(args[0])) {
       logger.warn("Proxy OpenR66 starts for " + configuration.getHostId());
-      SysErrLogger.FAKE_LOGGER
-          .syserr("Proxy OpenR66 starts for " + configuration.getHostId());
+      SysErrLogger.FAKE_LOGGER.syserr(
+          "Proxy OpenR66 starts for " + configuration.getHostId());
     } else {
-      logger
-          .error("Cannot start Proxy OpenR66 for " + configuration.getHostId());
+      logger.error(
+          "Cannot start Proxy OpenR66 for " + configuration.getHostId());
       SysErrLogger.FAKE_LOGGER.syserr(
           "Cannot start Proxy OpenR66 for " + configuration.getHostId());
       WaarpSystemUtil.systemExit(1);
@@ -68,8 +68,8 @@ public class R66Proxy {
     if (logger == null) {
       logger = WaarpLoggerFactory.getLogger(R66Proxy.class);
     }
-    if (!FileBasedConfiguration
-        .setConfigurationProxyFromXml(configuration, config)) {
+    if (!FileBasedConfiguration.setConfigurationProxyFromXml(configuration,
+                                                             config)) {
       logger.error("Needs a correct configuration file as first argument");
       return false;
     }

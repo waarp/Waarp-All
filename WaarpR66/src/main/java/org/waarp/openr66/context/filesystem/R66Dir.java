@@ -50,7 +50,7 @@ public class R66Dir extends FilesystemBasedDirImpl {
   }
 
   @Override
-  public R66File newFile(final String path, final boolean append)
+  public final R66File newFile(final String path, final boolean append)
       throws CommandAbstractException {
     return new R66File((R66Session) getSession(), this, path, append);
   }
@@ -79,8 +79,8 @@ public class R66Dir extends FilesystemBasedDirImpl {
     if (basename.length() >
         Configuration.configuration.getMaxfilenamelength() - 55) {
       basename = basename.substring(basename.length() -
-                                    Configuration.configuration
-                                        .getMaxfilenamelength() + 55);
+                                    Configuration.configuration.getMaxfilenamelength() +
+                                    55);
     }
     try {
       file =
@@ -125,8 +125,8 @@ public class R66Dir extends FilesystemBasedDirImpl {
    *
    * @throws CommandAbstractException
    */
-  protected List<String> wildcardFilesNoCheck(final String pathWithWildcard)
-      throws CommandAbstractException {
+  protected final List<String> wildcardFilesNoCheck(
+      final String pathWithWildcard) throws CommandAbstractException {
     final List<String> resultPaths = new ArrayList<String>();
     // First check if pathWithWildcard contains wildcards
     if (!(pathWithWildcard.contains("*") || pathWithWildcard.contains("?") ||
@@ -199,7 +199,7 @@ public class R66Dir extends FilesystemBasedDirImpl {
    *
    * @throws CommandAbstractException
    */
-  public R66File setFileNoCheck(final String path)
+  public final R66File setFileNoCheck(final String path)
       throws CommandAbstractException {
     checkIdentify();
     final String newpath = consolidatePath(path);
@@ -218,7 +218,7 @@ public class R66Dir extends FilesystemBasedDirImpl {
    *
    * @return the full path associated with the current Dir
    */
-  public String getFullPath() {
+  public final String getFullPath() {
     if (session.getAuth() == null) {
       return currentDir;
     }

@@ -100,7 +100,7 @@ public class FtpDataModeCodec extends ByteToMessageCodec<DataBlock> {
   /**
    * Is the underlying DataNetworkHandler ready to receive block
    */
-  private AtomicBoolean isReady = new AtomicBoolean(false);
+  private final AtomicBoolean isReady = new AtomicBoolean(false);
 
   /**
    * Blocking step between DataNetworkHandler and this Codec in order to wait
@@ -123,12 +123,12 @@ public class FtpDataModeCodec extends ByteToMessageCodec<DataBlock> {
    * Inform the Codec that DataNetworkHandler is ready (called from
    * DataNetworkHandler after setCorrectCodec).
    */
-  public void setCodecReady() {
+  public final void setCodecReady() {
     codecLocked.setSuccess();
   }
 
-  protected DataBlock decodeRecordStandard(final ByteBuf buf,
-                                           final int length) {
+  protected final DataBlock decodeRecordStandard(final ByteBuf buf,
+                                                 final int length) {
     final ByteBuf newbuf = ByteBufAllocator.DEFAULT.buffer(length, length);
     if (lastbyte == 0xFF) {
       if (readByteForDataBlock(buf, newbuf)) {
@@ -171,7 +171,7 @@ public class FtpDataModeCodec extends ByteToMessageCodec<DataBlock> {
     }
   }
 
-  protected DataBlock decodeRecord(final ByteBuf buf, final int length) {
+  protected final DataBlock decodeRecord(final ByteBuf buf, final int length) {
     final FtpSeekAheadData sad;
     try {
       sad = new FtpSeekAheadData(buf);
@@ -227,10 +227,10 @@ public class FtpDataModeCodec extends ByteToMessageCodec<DataBlock> {
     // First test if the connection is fully ready (block might be
     // transferred by client before connection is ready)
     if (!isReady.get()) {
-      if (!codecLocked
-          .awaitOrInterruptible(FtpInternalConfiguration.RETRYINMS)) {
-        throw new InvalidArgumentException(
-            "Codec not unlocked while should be");
+      if (!codecLocked.awaitOrInterruptible(
+          FtpInternalConfiguration.RETRYINMS)) {
+        Thread.sleep(FtpInternalConfiguration.RETRYINMS);
+        setCodecReady();
       }
       isReady.set(true);
     }
@@ -308,7 +308,8 @@ public class FtpDataModeCodec extends ByteToMessageCodec<DataBlock> {
     throw new InvalidArgumentException("Mode unimplemented: " + mode.name());
   }
 
-  protected ByteBuf encodeRecord(final DataBlock msg, final byte[] buffer) {
+  protected final ByteBuf encodeRecord(final DataBlock msg,
+                                       final byte[] buffer) {
     final int size = msg.getByteCount();
     final ByteBuf newbuf = ByteBufAllocator.DEFAULT.ioBuffer(size);
     int newbyte;
@@ -349,7 +350,7 @@ public class FtpDataModeCodec extends ByteToMessageCodec<DataBlock> {
    *
    * @throws InvalidArgumentException
    */
-  protected ByteBuf encode(final DataBlock msg)
+  protected final ByteBuf encode(final DataBlock msg)
       throws InvalidArgumentException {
     if (msg.isCleared()) {
       return null;
@@ -431,28 +432,28 @@ public class FtpDataModeCodec extends ByteToMessageCodec<DataBlock> {
   /**
    * @return the mode
    */
-  public TransferMode getMode() {
+  public final TransferMode getMode() {
     return mode;
   }
 
   /**
    * @param mode the mode to set
    */
-  public void setMode(final TransferMode mode) {
+  public final void setMode(final TransferMode mode) {
     this.mode = mode;
   }
 
   /**
    * @return the structure
    */
-  public TransferStructure getStructure() {
+  public final TransferStructure getStructure() {
     return structure;
   }
 
   /**
    * @param structure the structure to set
    */
-  public void setStructure(final TransferStructure structure) {
+  public final void setStructure(final TransferStructure structure) {
     this.structure = structure;
   }
 
@@ -463,10 +464,10 @@ public class FtpDataModeCodec extends ByteToMessageCodec<DataBlock> {
     // transfered
     // by client before connection is ready)
     if (!isReady.get()) {
-      if (!codecLocked
-          .awaitOrInterruptible(FtpInternalConfiguration.RETRYINMS)) {
-        throw new InvalidArgumentException(
-            "Codec not unlocked while should be");
+      if (!codecLocked.awaitOrInterruptible(
+          FtpInternalConfiguration.RETRYINMS)) {
+        Thread.sleep(FtpInternalConfiguration.RETRYINMS);
+        setCodecReady();
       }
       isReady.set(true);
     }

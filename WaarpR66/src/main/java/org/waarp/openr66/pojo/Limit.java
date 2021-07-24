@@ -89,63 +89,63 @@ public class Limit {
   }
 
   @JsonIgnore
-  public void checkValues() throws WaarpDatabaseSqlException {
+  public final void checkValues() throws WaarpDatabaseSqlException {
     validateLength(Types.NVARCHAR, hostid);
   }
 
-  public String getHostid() {
+  public final String getHostid() {
     return hostid;
   }
 
-  public void setHostid(final String hostid) {
+  public final void setHostid(final String hostid) {
     this.hostid = hostid;
   }
 
-  public long getReadGlobalLimit() {
+  public final long getReadGlobalLimit() {
     return readGlobalLimit;
   }
 
-  public void setReadGlobalLimit(final long readGlobalLimit) {
+  public final void setReadGlobalLimit(final long readGlobalLimit) {
     this.readGlobalLimit = readGlobalLimit;
   }
 
-  public long getWriteGlobalLimit() {
+  public final long getWriteGlobalLimit() {
     return writeGlobalLimit;
   }
 
-  public void setWriteGlobalLimit(final long writeGlobalLimit) {
+  public final void setWriteGlobalLimit(final long writeGlobalLimit) {
     this.writeGlobalLimit = writeGlobalLimit;
   }
 
-  public long getReadSessionLimit() {
+  public final long getReadSessionLimit() {
     return readSessionLimit;
   }
 
-  public void setReadSessionLimit(final long readSessionLimit) {
+  public final void setReadSessionLimit(final long readSessionLimit) {
     this.readSessionLimit = readSessionLimit;
   }
 
-  public long getWriteSessionLimit() {
+  public final long getWriteSessionLimit() {
     return writeSessionLimit;
   }
 
-  public void setWriteSessionLimit(final long writeSessionLimit) {
+  public final void setWriteSessionLimit(final long writeSessionLimit) {
     this.writeSessionLimit = writeSessionLimit;
   }
 
-  public long getDelayLimit() {
+  public final long getDelayLimit() {
     return delayLimit;
   }
 
-  public void setDelayLimit(final long delayLimit) {
+  public final void setDelayLimit(final long delayLimit) {
     this.delayLimit = delayLimit;
   }
 
-  public UpdatedInfo getUpdatedInfo() {
+  public final UpdatedInfo getUpdatedInfo() {
     return updatedInfo;
   }
 
-  public void setUpdatedInfo(final UpdatedInfo info) {
+  public final void setUpdatedInfo(final UpdatedInfo info) {
     updatedInfo = info;
   }
 }

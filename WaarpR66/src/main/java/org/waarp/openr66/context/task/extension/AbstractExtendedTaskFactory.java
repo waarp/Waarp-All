@@ -49,7 +49,7 @@ public abstract class AbstractExtendedTaskFactory {
    * @param s3TaskNames the Set of Command names that will be associated with
    *     this TaskFactory
    */
-  public void create(final Set<String> s3TaskNames) {
+  public final void create(final Set<String> s3TaskNames) {
     TaskType.addExtendedTaskFactory(s3TaskNames, this);
   }
 

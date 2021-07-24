@@ -81,13 +81,13 @@ public class BusinessRequestPacket extends AbstractLocalPacket {
   }
 
   @Override
-  public boolean hasGlobalBuffer() {
+  public final boolean hasGlobalBuffer() {
     return true;
   }
 
   @Override
-  public void createAllBuffers(final LocalChannelReference lcr,
-                               final int networkHeader) {
+  public final void createAllBuffers(final LocalChannelReference lcr,
+                                     final int networkHeader) {
     final byte[] headerBytes = sheader.getBytes(WaarpStringUtils.UTF8);
     final int headerSize = headerBytes.length;
     final int middleSize = 4;
@@ -108,26 +108,26 @@ public class BusinessRequestPacket extends AbstractLocalPacket {
   }
 
   @Override
-  public byte getType() {
+  public final byte getType() {
     return LocalPacketFactory.BUSINESSREQUESTPACKET;
   }
 
   @Override
-  public String toString() {
+  public final String toString() {
     return "BusinessRequestPacket: " + sheader + ':' + delay + ':' + way;
   }
 
   /**
    * @return True if this packet is to be validated
    */
-  public boolean isToValidate() {
+  public final boolean isToValidate() {
     return way == ASKVALIDATE;
   }
 
   /**
    * Validate the request
    */
-  public void validate() {
+  public final void validate() {
     way = ANSWERVALIDATE;
     clear();
   }
@@ -135,7 +135,7 @@ public class BusinessRequestPacket extends AbstractLocalPacket {
   /**
    * Invalidate the request
    */
-  public void invalidate() {
+  public final void invalidate() {
     way = ANSWERINVALIDATE;
     clear();
   }
@@ -143,21 +143,21 @@ public class BusinessRequestPacket extends AbstractLocalPacket {
   /**
    * @return the sheader
    */
-  public String getSheader() {
+  public final String getSheader() {
     return sheader;
   }
 
   /**
    * @return the delay
    */
-  public int getDelay() {
+  public final int getDelay() {
     return delay;
   }
 
   /**
    * @param delay the delay to set
    */
-  public void setDelay(final int delay) {
+  public final void setDelay(final int delay) {
     this.delay = delay;
     WaarpNettyUtil.release(middle);
     middle = null;

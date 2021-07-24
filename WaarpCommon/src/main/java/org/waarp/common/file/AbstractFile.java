@@ -42,7 +42,7 @@ public abstract class AbstractFile implements FileInterface {
   }
 
   @Override
-  public void checkIdentify() throws Reply530Exception {
+  public final void checkIdentify() throws Reply530Exception {
     if (!getSession().getAuth().isIdentified()) {
       throw new Reply530Exception("User not authentified");
     }
@@ -71,7 +71,7 @@ public abstract class AbstractFile implements FileInterface {
   }
 
   @Override
-  public boolean retrieve() throws CommandAbstractException {
+  public final boolean retrieve() throws CommandAbstractException {
     checkIdentify();
     if (isReady) {
       restartMarker(getSession().getRestart());
@@ -81,7 +81,7 @@ public abstract class AbstractFile implements FileInterface {
   }
 
   @Override
-  public boolean store() throws CommandAbstractException {
+  public final boolean store() throws CommandAbstractException {
     checkIdentify();
     if (isReady) {
       restartMarker(getSession().getRestart());

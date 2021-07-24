@@ -225,17 +225,17 @@ public abstract class WaarpPrivateMib implements WaarpInterfaceMib {
   }
 
   @Override
-  public void setAgent(final WaarpSnmpAgent agent) {
+  public final void setAgent(final WaarpSnmpAgent agent) {
     this.agent = agent;
   }
 
   @Override
-  public OID getBaseOidStartOrShutdown() {
+  public final OID getBaseOidStartOrShutdown() {
     return rootOIDWaarpNotifStartOrShutdown;
   }
 
   @Override
-  public SNMPv2MIB getSNMPv2MIB() {
+  public final SNMPv2MIB getSNMPv2MIB() {
     return snmpv2;
   }
 
@@ -245,7 +245,8 @@ public abstract class WaarpPrivateMib implements WaarpInterfaceMib {
    *
    * @throws DuplicateRegistrationException
    */
-  protected void agentRegisterSystem() throws DuplicateRegistrationException {
+  protected final void agentRegisterSystem()
+      throws DuplicateRegistrationException {
     // Since BaseAgent registers some mibs by default we need to unregister
     // one before we register our own sysDescr. Normally you would
     // override that method and register the mibs that you need
@@ -275,7 +276,7 @@ public abstract class WaarpPrivateMib implements WaarpInterfaceMib {
    *
    * @throws DuplicateRegistrationException
    */
-  protected void defaultAgentRegisterWaarpMib()
+  protected final void defaultAgentRegisterWaarpMib()
       throws DuplicateRegistrationException {
     // register Static info
     rowInfo = new WaarpMORow(this, rootOIDWaarpInfo, WaarpDefinition,
@@ -322,7 +323,7 @@ public abstract class WaarpPrivateMib implements WaarpInterfaceMib {
   /**
    * Unregister this MIB
    */
-  protected void agentUnregisterMibs() {
+  protected final void agentUnregisterMibs() {
     logger.debug("UnRegisterWaarp");
     rowInfo.unregisterMOs(agent.getServer(), agent.getDefaultContext());
     rowGlobal.unregisterMOs(agent.getServer(), agent.getDefaultContext());
@@ -331,14 +332,16 @@ public abstract class WaarpPrivateMib implements WaarpInterfaceMib {
   }
 
   @Override
-  public void registerMOs(final MOServer server, final OctetString context)
+  public final void registerMOs(final MOServer server,
+                                final OctetString context)
       throws DuplicateRegistrationException {
     agentRegisterSystem();
     agentRegisterWaarpMib();
   }
 
   @Override
-  public void unregisterMOs(final MOServer server, final OctetString context) {
+  public final void unregisterMOs(final MOServer server,
+                                  final OctetString context) {
     agentUnregisterMibs();
   }
 
@@ -347,7 +350,7 @@ public abstract class WaarpPrivateMib implements WaarpInterfaceMib {
    *
    * @param status
    */
-  public void changeStatus(final OperStatus status) {
+  public final void changeStatus(final OperStatus status) {
     final WaarpMOScalar statusScalar =
         rowGlobal.getRow()[WaarpGlobalValuesIndex.applOperStatus.ordinal()];
     final Integer32 var = (Integer32) statusScalar.getValue();
@@ -382,11 +385,11 @@ public abstract class WaarpPrivateMib implements WaarpInterfaceMib {
       this.oid = new int[] { oid };
     }
 
-    public OID getOID(final OID oidBase) {
+    public final OID getOID(final OID oidBase) {
       return new OID(oidBase.getValue(), oid);
     }
 
-    public OID getOID(final OID oidBase, final int rank) {
+    public final OID getOID(final OID oidBase, final int rank) {
       final int[] ids = { oid[0], rank };
       return new OID(oidBase.getValue(), ids);
     }
@@ -400,7 +403,7 @@ public abstract class WaarpPrivateMib implements WaarpInterfaceMib {
     originalNameInfo, idRuleInfo, modeTransInfo, retrieveModeInfo,
     startTransInfo, infoStatusInfo, requesterInfo, requestedInfo, specialIdInfo;
 
-    public int getOID() {
+    public final int getOID() {
       return ordinal() + 1;
     }
   }
@@ -412,7 +415,7 @@ public abstract class WaarpPrivateMib implements WaarpInterfaceMib {
     applName, applServerName, applVersion, applDescription, applURL,
     applApplicationProtocol;
 
-    public int getOID() {
+    public final int getOID() {
       return ordinal() + 1;
     }
   }
@@ -455,7 +458,7 @@ public abstract class WaarpPrivateMib implements WaarpInterfaceMib {
     nbStepAllTransfer, memoryTotal, memoryFree, memoryUsed, nbThreads,
     nbNetworkConnection;
 
-    public int getOID() {
+    public final int getOID() {
       return ordinal() + 1;
     }
   }
@@ -555,7 +558,7 @@ public abstract class WaarpPrivateMib implements WaarpInterfaceMib {
     nbPreProcessingOkStep, nbTransferOkStep, nbPostProcessingOkStep,
     nbCompleteOkStep;
 
-    public int getOID() {
+    public final int getOID() {
       return ordinal() + 1;
     }
   }
@@ -619,7 +622,7 @@ public abstract class WaarpPrivateMib implements WaarpInterfaceMib {
     nbStatusRemoteError, nbStatusStopped, nbStatusCanceled,
     nbStatusFileNotFound, nbStatusUnknown;
 
-    public int getOID() {
+    public final int getOID() {
       return ordinal() + 1;
     }
   }

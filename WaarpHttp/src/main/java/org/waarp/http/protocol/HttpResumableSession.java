@@ -96,7 +96,7 @@ public class HttpResumableSession extends HttpSessionAbstract {
                                        final String comment,
                                        final R66BusinessInterface business) {
     final long uuid = UUID.nameUUIDFromBytes(
-        httpResumableInfo.getIdentifier().getBytes(WaarpStringUtils.UTF8))
+                              httpResumableInfo.getIdentifier().getBytes(WaarpStringUtils.UTF8))
                           .getMostSignificantBits();
     return getDbTaskRunner(user, httpResumableInfo.getFilename(), rulename,
                            uuid, comment, httpResumableInfo.getChunkSize(),
@@ -120,8 +120,8 @@ public class HttpResumableSession extends HttpSessionAbstract {
    *
    * @throws IOException
    */
-  public boolean tryWrite(final HttpResumableInfo resumableInfo,
-                          final InputStream stream) throws IOException {
+  public final boolean tryWrite(final HttpResumableInfo resumableInfo,
+                                final InputStream stream) throws IOException {
     if (!session.isAuthenticated() || !session.isReady()) {
       logger.error("Not authenticated or not Ready");
       return false;
@@ -147,7 +147,7 @@ public class HttpResumableSession extends HttpSessionAbstract {
    *
    * @return true if ok
    */
-  public boolean valid(final HttpResumableInfo resumableInfo) {
+  public final boolean valid(final HttpResumableInfo resumableInfo) {
     return (resumableInfo.getChunkSize() > 0 &&
             resumableInfo.getTotalSize() > 0 &&
             resumableInfo.getChunkNumber() > 0 &&
@@ -198,7 +198,7 @@ public class HttpResumableSession extends HttpSessionAbstract {
    *
    * @return True if contained
    */
-  public boolean contains(final HttpResumableInfo resumableInfo) {
+  public final boolean contains(final HttpResumableInfo resumableInfo) {
     final HttpResumableChunkNumber chunkNumber =
         new HttpResumableChunkNumber(resumableInfo.getChunkNumber());
     return uploadedChunks.contains(chunkNumber);
@@ -211,7 +211,7 @@ public class HttpResumableSession extends HttpSessionAbstract {
    *
    * @return True if finished
    */
-  public boolean checkIfUploadFinished(final String sha256) {
+  public final boolean checkIfUploadFinished(final String sha256) {
     logger.debug("Write until now: {} for {}", size,
                  httpResumableInfo.getTotalSize());
     //check if upload finished

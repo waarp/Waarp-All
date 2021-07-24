@@ -33,7 +33,7 @@ public class AesManager extends KeyManager {
   }
 
   @Override
-  public KeyObject createKeyObject() {
+  public final KeyObject createKeyObject() {
     return new Aes();
   }
 }

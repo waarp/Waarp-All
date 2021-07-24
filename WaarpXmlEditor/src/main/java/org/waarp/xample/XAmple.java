@@ -286,13 +286,13 @@ public class XAmple extends JFrame
       if (lfClassName != null) {
         UIManager.setLookAndFeel(lfClassName);
       } else {
-        UIManager
-            .setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
+        UIManager.setLookAndFeel(
+            UIManager.getCrossPlatformLookAndFeelClassName());
       }
     } catch (final Exception ex) {
       try {
-        UIManager
-            .setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
+        UIManager.setLookAndFeel(
+            UIManager.getCrossPlatformLookAndFeelClassName());
       } catch (final Exception ex1) {
         SysErrLogger.FAKE_LOGGER.syserr(ex1);
       }
@@ -512,9 +512,9 @@ public class XAmple extends JFrame
       btnOpenXML.setItems(null);
       dblView.showErrorMessage("Error: " + ex);
       setSchemaEnabled(false);
-      JOptionPane
-          .showMessageDialog(this, "Can't load the XML Configuration Schema",
-                             "Error", JOptionPane.ERROR_MESSAGE);
+      JOptionPane.showMessageDialog(this,
+                                    "Can't load the XML Configuration Schema",
+                                    "Error", JOptionPane.ERROR_MESSAGE);
       setTitle("XAmple");
       return false;
     }
@@ -557,9 +557,9 @@ public class XAmple extends JFrame
       // dblView.clear()
       setXMLEnabled(false);
       dblView.showErrorMessage("Error: " + ex.getMessage());
-      JOptionPane
-          .showMessageDialog(this, "Can't load the XML Configuration Document",
-                             "Error", JOptionPane.ERROR_MESSAGE);
+      JOptionPane.showMessageDialog(this,
+                                    "Can't load the XML Configuration Document",
+                                    "Error", JOptionPane.ERROR_MESSAGE);
       showXSDTitle();
       return false;
     }
@@ -697,9 +697,9 @@ public class XAmple extends JFrame
       SysErrLogger.FAKE_LOGGER.syserr(ex);
       setXMLEnabled(false);
       dblView.showErrorMessage("Error: " + ex.getMessage());
-      JOptionPane
-          .showMessageDialog(this, "Can't open new XML Configuration Document",
-                             "Error", JOptionPane.ERROR_MESSAGE);
+      JOptionPane.showMessageDialog(this,
+                                    "Can't open new XML Configuration Document",
+                                    "Error", JOptionPane.ERROR_MESSAGE);
     }
     showXSDTitle();
   }

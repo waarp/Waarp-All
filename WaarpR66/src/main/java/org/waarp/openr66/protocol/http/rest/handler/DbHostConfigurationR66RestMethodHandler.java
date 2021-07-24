@@ -77,14 +77,14 @@ public class DbHostConfigurationR66RestMethodHandler
   }
 
   @Override
-  protected DbHostConfiguration getItem(final HttpRestHandler handler,
-                                        final RestArgument arguments,
-                                        final RestArgument result,
-                                        final Object body)
+  protected final DbHostConfiguration getItem(final HttpRestHandler handler,
+                                              final RestArgument arguments,
+                                              final RestArgument result,
+                                              final Object body)
       throws HttpNotFoundRequestException {
     try {
       HttpRestV1Utils.checkSanity(arguments);
-    } catch (InvalidArgumentException e) {
+    } catch (final InvalidArgumentException e) {
       throw new HttpNotFoundRequestException("Issue on values", e);
     }
     final ObjectNode arg = arguments.getUriArgs().deepCopy();
@@ -106,14 +106,14 @@ public class DbHostConfigurationR66RestMethodHandler
   }
 
   @Override
-  protected DbHostConfiguration createItem(final HttpRestHandler handler,
-                                           final RestArgument arguments,
-                                           final RestArgument result,
-                                           final Object body)
+  protected final DbHostConfiguration createItem(final HttpRestHandler handler,
+                                                 final RestArgument arguments,
+                                                 final RestArgument result,
+                                                 final Object body)
       throws HttpIncorrectRequestException {
     try {
       HttpRestV1Utils.checkSanity(arguments);
-    } catch (InvalidArgumentException e) {
+    } catch (final InvalidArgumentException e) {
       throw new HttpIncorrectRequestException("Issue on values", e);
     }
     final ObjectNode arg = arguments.getUriArgs().deepCopy();
@@ -127,13 +127,13 @@ public class DbHostConfigurationR66RestMethodHandler
   }
 
   @Override
-  protected DbPreparedStatement getPreparedStatement(
+  protected final DbPreparedStatement getPreparedStatement(
       final HttpRestHandler handler, final RestArgument arguments,
       final RestArgument result, final Object body)
       throws HttpIncorrectRequestException {
     try {
       HttpRestV1Utils.checkSanity(arguments);
-    } catch (InvalidArgumentException e) {
+    } catch (final InvalidArgumentException e) {
       throw new HttpIncorrectRequestException("Issue on values", e);
     }
     final ObjectNode arg = arguments.getUriArgs().deepCopy();
@@ -159,9 +159,9 @@ public class DbHostConfigurationR66RestMethodHandler
       other = null;
     }
     try {
-      return DbHostConfiguration
-          .getFilterPrepareStament(handler.getDbSession(), hostid, business,
-                                   role, alias, other);
+      return DbHostConfiguration.getFilterPrepareStament(handler.getDbSession(),
+                                                         hostid, business, role,
+                                                         alias, other);
     } catch (final WaarpDatabaseNoConnectionException e) {
       throw new HttpIncorrectRequestException(
           "Issue while reading from database", e);
@@ -172,7 +172,7 @@ public class DbHostConfigurationR66RestMethodHandler
   }
 
   @Override
-  protected DbHostConfiguration getItemPreparedStatement(
+  protected final DbHostConfiguration getItemPreparedStatement(
       final DbPreparedStatement statement)
       throws HttpIncorrectRequestException, HttpNotFoundRequestException {
     try {
@@ -187,43 +187,43 @@ public class DbHostConfigurationR66RestMethodHandler
   }
 
   @Override
-  protected ArrayNode getDetailedAllow() {
+  protected final ArrayNode getDetailedAllow() {
     final ArrayNode node = JsonHandler.createArrayNode();
 
     final ObjectNode node1 = JsonHandler.createObjectNode();
     node1.put(AbstractDbData.JSON_MODEL,
               DbHostConfiguration.class.getSimpleName());
-    for (final DbHostConfiguration.Columns column : DbHostConfiguration.Columns
-        .values()) {
+    for (final DbHostConfiguration.Columns column : DbHostConfiguration.Columns.values()) {
       node1.put(column.name(), DbHostConfiguration.dbTypes[column.ordinal()]);
     }
 
     ObjectNode node2;
     ObjectNode node3;
     if (methods.contains(METHOD.GET)) {
-      node2 = RestArgument
-          .fillDetailedAllow(METHOD.GET, path + "/id", COMMAND_TYPE.GET.name(),
-                             JsonHandler.createObjectNode().put(
-                                 DbHostConfiguration.Columns.HOSTID.name(),
-                                 HOST_ID_AS_VARCHAR_IN_URI_AS + path + "/id"),
-                             node1);
+      node2 = RestArgument.fillDetailedAllow(METHOD.GET, path + "/id",
+                                             COMMAND_TYPE.GET.name(),
+                                             JsonHandler.createObjectNode().put(
+                                                 DbHostConfiguration.Columns.HOSTID.name(),
+                                                 HOST_ID_AS_VARCHAR_IN_URI_AS +
+                                                 path + "/id"), node1);
       node.add(node2);
 
       node3 = JsonHandler.createObjectNode();
       for (final FILTER_ARGS arg : FILTER_ARGS.values()) {
         node3.put(arg.name(), arg.type);
       }
-      node2 = RestArgument
-          .fillDetailedAllow(METHOD.GET, path, COMMAND_TYPE.MULTIGET.name(),
-                             node3, JsonHandler.createArrayNode().add(node1));
+      node2 = RestArgument.fillDetailedAllow(METHOD.GET, path,
+                                             COMMAND_TYPE.MULTIGET.name(),
+                                             node3,
+                                             JsonHandler.createArrayNode()
+                                                        .add(node1));
       node.add(node2);
     }
     if (methods.contains(METHOD.PUT)) {
       node3 = JsonHandler.createObjectNode();
       node3.put(DbHostConfiguration.Columns.HOSTID.name(),
                 HOST_ID_AS_VARCHAR_IN_URI_AS + path + "/id");
-      for (final DbHostConfiguration.Columns column : DbHostConfiguration.Columns
-          .values()) {
+      for (final DbHostConfiguration.Columns column : DbHostConfiguration.Columns.values()) {
         if (column.name().equalsIgnoreCase(
             DbHostConfiguration.Columns.HOSTID.name())) {
           continue;
@@ -246,52 +246,51 @@ public class DbHostConfigurationR66RestMethodHandler
     }
     if (methods.contains(METHOD.POST)) {
       node3 = JsonHandler.createObjectNode();
-      for (final DbHostConfiguration.Columns column : DbHostConfiguration.Columns
-          .values()) {
+      for (final DbHostConfiguration.Columns column : DbHostConfiguration.Columns.values()) {
         node3.put(column.name(), DbHostConfiguration.dbTypes[column.ordinal()]);
       }
-      node2 = RestArgument
-          .fillDetailedAllow(METHOD.POST, path, COMMAND_TYPE.CREATE.name(),
-                             node3, node1);
+      node2 = RestArgument.fillDetailedAllow(METHOD.POST, path,
+                                             COMMAND_TYPE.CREATE.name(), node3,
+                                             node1);
       node.add(node2);
     }
-    node2 = RestArgument
-        .fillDetailedAllow(METHOD.OPTIONS, path, COMMAND_TYPE.OPTIONS.name(),
-                           null, null);
+    node2 = RestArgument.fillDetailedAllow(METHOD.OPTIONS, path,
+                                           COMMAND_TYPE.OPTIONS.name(), null,
+                                           null);
     node.add(node2);
 
     return node;
   }
 
   @Override
-  public String getPrimaryPropertyName() {
+  public final String getPrimaryPropertyName() {
     return Columns.HOSTID.name();
   }
 
   @Override
-  protected void put(final HttpRestHandler handler,
-                     final RestArgument arguments, final RestArgument result,
-                     final Object body)
+  protected final void put(final HttpRestHandler handler,
+                           final RestArgument arguments,
+                           final RestArgument result, final Object body)
       throws HttpIncorrectRequestException, HttpInvalidAuthenticationException,
              HttpNotFoundRequestException {
     super.put(handler, arguments, result, body);
     // according to what is updated and if concerned
     final DbHostConfiguration item = getItem(handler, arguments, result, body);
     if (item.getHostid().equals(Configuration.configuration.getHostId())) {
-      DbHostConfiguration
-          .updateHostConfiguration(Configuration.configuration, item);
+      DbHostConfiguration.updateHostConfiguration(Configuration.configuration,
+                                                  item);
     }
   }
 
   @Override
-  protected void checkAuthorization(final HttpRestHandler handler,
-                                    final RestArgument arguments,
-                                    final RestArgument result,
-                                    final METHOD method)
+  protected final void checkAuthorization(final HttpRestHandler handler,
+                                          final RestArgument arguments,
+                                          final RestArgument result,
+                                          final METHOD method)
       throws HttpForbiddenRequestException {
     try {
       HttpRestV1Utils.checkSanity(arguments);
-    } catch (InvalidArgumentException e) {
+    } catch (final InvalidArgumentException e) {
       throw new HttpForbiddenRequestException("Issue on values", e);
     }
     final HttpRestR66Handler r66handler = (HttpRestR66Handler) handler;

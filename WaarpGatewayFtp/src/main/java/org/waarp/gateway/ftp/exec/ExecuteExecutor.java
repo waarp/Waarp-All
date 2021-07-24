@@ -88,7 +88,7 @@ public class ExecuteExecutor extends AbstractExecutor {
   }
 
   @Override
-  public void run() throws Reply421Exception {
+  public final void run() throws Reply421Exception {
     // Check if the execution will be done through LocalExec daemon
     if (AbstractExecutor.useLocalExec) {
       final LocalExecClient localExecClient = new LocalExecClient();
@@ -170,8 +170,8 @@ public class ExecuteExecutor extends AbstractExecutor {
       } catch (final IOException ignored) {
         // nothing
       }
-      logger
-          .error(EXCEPTION + e.getMessage() + EXEC_IN_ERROR_WITH + commandLine);
+      logger.error(
+          EXCEPTION + e.getMessage() + EXEC_IN_ERROR_WITH + commandLine);
       throw new Reply421Exception(CANNOT_EXECUTE_PRE_COMMAND);
     }
     try {

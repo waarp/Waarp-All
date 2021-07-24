@@ -41,13 +41,13 @@ import org.waarp.common.utility.Processes;
 import org.waarp.common.utility.SystemPropertyUtil;
 import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.common.utility.WaarpSystemUtil;
+import org.waarp.openr66.client.NoOpRecvThroughHandler;
 import org.waarp.openr66.client.SubmitTransfer;
 import org.waarp.openr66.database.DbConstantR66;
 import org.waarp.openr66.database.data.DbTaskRunner;
 import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.junit.TestAbstract;
 import org.waarp.openr66.protocol.test.TestRecvThroughClient;
-import org.waarp.openr66.protocol.test.TestRecvThroughClient.TestRecvThroughHandler;
 import org.waarp.openr66.protocol.test.TestTransferNoDb;
 import org.waarp.openr66.protocol.utils.R66Future;
 import org.waarp.openr66.server.R66Server;
@@ -90,6 +90,7 @@ public abstract class ScenarioBaseBigFile extends TestAbstract {
   private static int r66Pid2 = 999999;
   public static boolean SERVER1_IN_JUNIT = true;
   private static final String TMP_CONFIG_XML = "/tmp/config.xml";
+  private static final int MAX_COUNT = 5;
   private static File configFile = null;
   private long usedMemory;
 
@@ -145,8 +146,8 @@ public abstract class ScenarioBaseBigFile extends TestAbstract {
     File file =
         new File(classLoader.getResource(RESOURCES_SERVER_1_XML).getFile());
     if (!file.exists()) {
-      SysErrLogger.FAKE_LOGGER
-          .syserr("Cannot find in  " + file.getAbsolutePath());
+      SysErrLogger.FAKE_LOGGER.syserr(
+          "Cannot find in  " + file.getAbsolutePath());
       fail("Cannot find " + file.getAbsolutePath());
     }
     String content = WaarpStringUtils.readFile(file.getAbsolutePath());
@@ -161,8 +162,8 @@ public abstract class ScenarioBaseBigFile extends TestAbstract {
     } else if (driver.equalsIgnoreCase("oracle.jdbc.OracleDriver")) {
       target = "oracle";
       jdbcUrl = "jdbc:oracle:thin:@//localhost:1521/test";
-      SysErrLogger.FAKE_LOGGER
-          .syserr(jdbcUrl + " while should be something like " + jdbcUrl);
+      SysErrLogger.FAKE_LOGGER.syserr(
+          jdbcUrl + " while should be something like " + jdbcUrl);
       throw new UnsupportedOperationException(
           "Unsupported Test for Oracle since wrong JDBC driver");
     } else if (driver.equalsIgnoreCase("org.postgresql.Driver")) {
@@ -233,8 +234,8 @@ public abstract class ScenarioBaseBigFile extends TestAbstract {
         configFile = new File(dirResources, fileconf);
       }
     } catch (UnsupportedOperationException e) {
-      SysErrLogger.FAKE_LOGGER
-          .syserr("Database not supported by this test Start Stop R66", e);
+      SysErrLogger.FAKE_LOGGER.syserr(
+          "Database not supported by this test Start Stop R66", e);
       Assume.assumeNoException(e);
       return;
     }
@@ -294,8 +295,9 @@ public abstract class ScenarioBaseBigFile extends TestAbstract {
       // global ant project settings
       project = Processes.getProject(homeDir);
       Processes.executeJvm(project, R66Server.class, argsServer, true);
-      int pid = Processes
-          .getPidOfRunnerCommandLinux("java", R66Server.class.getName(), PIDS);
+      int pid = Processes.getPidOfRunnerCommandLinux("java",
+                                                     R66Server.class.getName(),
+                                                     PIDS);
       PIDS.add(pid);
       logger.warn("Start Done: {}", pid);
       return pid;
@@ -359,9 +361,9 @@ public abstract class ScenarioBaseBigFile extends TestAbstract {
     }
     Assume.assumeNotNull(networkTransaction);
     if (limit) {
-      Configuration.configuration
-          .changeNetworkLimit(BANDWIDTH * 2, BANDWIDTH * 2, BANDWIDTH,
-                              BANDWIDTH, 1000);
+      Configuration.configuration.changeNetworkLimit(BANDWIDTH * 2,
+                                                     BANDWIDTH * 2, BANDWIDTH,
+                                                     BANDWIDTH, 1000);
     } else {
       Configuration.configuration.changeNetworkLimit(0, 0, 0, 0, 100000);
     }
@@ -378,7 +380,7 @@ public abstract class ScenarioBaseBigFile extends TestAbstract {
     final R66Future future = new R66Future(true);
     if (direct) {
       if (recv) {
-        final TestRecvThroughHandler handler = new TestRecvThroughHandler();
+        final NoOpRecvThroughHandler handler = new NoOpRecvThroughHandler();
         final TestRecvThroughClient transaction =
             new TestRecvThroughClient(future, handler, serverName, "hello",
                                       "recvthrough", "Test Big RecvThrough",
@@ -430,6 +432,8 @@ public abstract class ScenarioBaseBigFile extends TestAbstract {
   @Test
   public void test01_BigRecvSync() throws IOException, InterruptedException {
     checkBigIt();
+    Assume.assumeTrue("If the Long term tests are not activated",
+                      !SystemPropertyUtil.get(IT_LONG_TEST, true));
     logger.warn("Start {} {}", Processes.getCurrentMethodName(), NUMBER_FILES);
     testBigTransfer(true, "server2", true, true);
     logger.warn("End {}", Processes.getCurrentMethodName());
@@ -438,6 +442,8 @@ public abstract class ScenarioBaseBigFile extends TestAbstract {
   @Test
   public void test02_BigSendSync() throws IOException, InterruptedException {
     checkBigIt();
+    Assume.assumeTrue("If the Long term tests are not activated",
+                      !SystemPropertyUtil.get(IT_LONG_TEST, true));
     logger.warn("Start {} {}", Processes.getCurrentMethodName(), NUMBER_FILES);
     testBigTransfer(true, "server2", true, false);
     logger.warn("End {}", Processes.getCurrentMethodName());
@@ -445,7 +451,10 @@ public abstract class ScenarioBaseBigFile extends TestAbstract {
 
   @Test
   public void test03_BigRecvSubmit() throws IOException, InterruptedException {
+    checkNotOnlyClient();
     checkBigIt();
+    Assume.assumeTrue("If the Long term tests are not activated",
+                      !SystemPropertyUtil.get(IT_LONG_TEST, true));
     logger.warn("Start {} {}", Processes.getCurrentMethodName(), NUMBER_FILES);
     testBigTransfer(true, "server2", false, true);
     logger.warn("End {}", Processes.getCurrentMethodName());
@@ -453,7 +462,10 @@ public abstract class ScenarioBaseBigFile extends TestAbstract {
 
   @Test
   public void test04_BigSendSubmit() throws IOException, InterruptedException {
+    checkNotOnlyClient();
     checkBigIt();
+    Assume.assumeTrue("If the Long term tests are not activated",
+                      !SystemPropertyUtil.get(IT_LONG_TEST, true));
     logger.warn("Start {} {}", Processes.getCurrentMethodName(), NUMBER_FILES);
     testBigTransfer(true, "server2", false, false);
     logger.warn("End {}", Processes.getCurrentMethodName());
@@ -462,6 +474,8 @@ public abstract class ScenarioBaseBigFile extends TestAbstract {
   @Test
   public void test05_BigRecvSyncSsl() throws IOException, InterruptedException {
     checkBigIt();
+    Assume.assumeTrue("If the Long term tests are not activated",
+                      !SystemPropertyUtil.get(IT_LONG_TEST, true));
     logger.warn("Start {} {}", Processes.getCurrentMethodName(), NUMBER_FILES);
     testBigTransfer(true, "server2-ssl", true, true);
     logger.warn("End {}", Processes.getCurrentMethodName());
@@ -470,6 +484,8 @@ public abstract class ScenarioBaseBigFile extends TestAbstract {
   @Test
   public void test06_BigSendSyncSsl() throws IOException, InterruptedException {
     checkBigIt();
+    Assume.assumeTrue("If the Long term tests are not activated",
+                      !SystemPropertyUtil.get(IT_LONG_TEST, true));
     logger.warn("Start {} {}", Processes.getCurrentMethodName(), NUMBER_FILES);
     testBigTransfer(true, "server2-ssl", true, false);
     logger.warn("End {}", Processes.getCurrentMethodName());
@@ -478,7 +494,10 @@ public abstract class ScenarioBaseBigFile extends TestAbstract {
   @Test
   public void test07_BigRecvSubmitSsl()
       throws IOException, InterruptedException {
+    checkNotOnlyClient();
     checkBigIt();
+    Assume.assumeTrue("If the Long term tests are not activated",
+                      !SystemPropertyUtil.get(IT_LONG_TEST, true));
     logger.warn("Start {} {}", Processes.getCurrentMethodName(), NUMBER_FILES);
     testBigTransfer(true, "server2-ssl", false, true);
     logger.warn("End {}", Processes.getCurrentMethodName());
@@ -487,7 +506,10 @@ public abstract class ScenarioBaseBigFile extends TestAbstract {
   @Test
   public void test08_BigSendSubmitSsl()
       throws IOException, InterruptedException {
+    checkNotOnlyClient();
     checkBigIt();
+    Assume.assumeTrue("If the Long term tests are not activated",
+                      !SystemPropertyUtil.get(IT_LONG_TEST, true));
     logger.warn("Start {} {}", Processes.getCurrentMethodName(), NUMBER_FILES);
     testBigTransfer(true, "server2-ssl", false, false);
     logger.warn("End {}", Processes.getCurrentMethodName());
@@ -498,7 +520,11 @@ public abstract class ScenarioBaseBigFile extends TestAbstract {
   public void test01_BigRecvSyncNoLimitSelf()
       throws IOException, InterruptedException {
     logger.warn("Start {} {}", Processes.getCurrentMethodName(), NUMBER_FILES);
-    testBigTransfer(false, "server1", true, true);
+    final int count =
+        SystemPropertyUtil.get(IT_LONG_TEST, false)? MAX_COUNT : 1;
+    for (int i = 0; i < count; i++) {
+      testBigTransfer(false, "server1", true, true);
+    }
     logger.warn("End {}", Processes.getCurrentMethodName());
   }
 
@@ -506,7 +532,11 @@ public abstract class ScenarioBaseBigFile extends TestAbstract {
   public void test02_BigSendSyncNoLimitSelf()
       throws IOException, InterruptedException {
     logger.warn("Start {} {}", Processes.getCurrentMethodName(), NUMBER_FILES);
-    testBigTransfer(false, "server1", true, false);
+    final int count =
+        SystemPropertyUtil.get(IT_LONG_TEST, false)? MAX_COUNT : 1;
+    for (int i = 0; i < count; i++) {
+      testBigTransfer(false, "server1", true, false);
+    }
     logger.warn("End {}", Processes.getCurrentMethodName());
   }
 
@@ -514,7 +544,11 @@ public abstract class ScenarioBaseBigFile extends TestAbstract {
   public void test01_BigRecvSyncNoLimit()
       throws IOException, InterruptedException {
     logger.warn("Start {} {}", Processes.getCurrentMethodName(), NUMBER_FILES);
-    testBigTransfer(false, "server2", true, true);
+    final int count =
+        SystemPropertyUtil.get(IT_LONG_TEST, false)? MAX_COUNT : 1;
+    for (int i = 0; i < count; i++) {
+      testBigTransfer(false, "server2", true, true);
+    }
     logger.warn("End {}", Processes.getCurrentMethodName());
   }
 
@@ -522,7 +556,11 @@ public abstract class ScenarioBaseBigFile extends TestAbstract {
   public void test02_BigSendSyncNoLimit()
       throws IOException, InterruptedException {
     logger.warn("Start {} {}", Processes.getCurrentMethodName(), NUMBER_FILES);
-    testBigTransfer(false, "server2", true, false);
+    final int count =
+        SystemPropertyUtil.get(IT_LONG_TEST, false)? MAX_COUNT : 1;
+    for (int i = 0; i < count; i++) {
+      testBigTransfer(false, "server2", true, false);
+    }
     logger.warn("End {}", Processes.getCurrentMethodName());
   }
 
@@ -547,6 +585,7 @@ public abstract class ScenarioBaseBigFile extends TestAbstract {
   @Test
   public void test03_BigRecvSubmitNoLimitSelf()
       throws IOException, InterruptedException {
+    checkNotOnlyClient();
     logger.warn("Start {} {}", Processes.getCurrentMethodName(), NUMBER_FILES);
     testBigTransfer(false, "server1", false, true);
     logger.warn("End {}", Processes.getCurrentMethodName());
@@ -565,7 +604,11 @@ public abstract class ScenarioBaseBigFile extends TestAbstract {
   public void test05_BigRecvSyncSslNoLimit()
       throws IOException, InterruptedException {
     logger.warn("Start {} {}", Processes.getCurrentMethodName(), NUMBER_FILES);
-    testBigTransfer(false, "server2-ssl", true, true);
+    final int count =
+        SystemPropertyUtil.get(IT_LONG_TEST, false)? MAX_COUNT : 1;
+    for (int i = 0; i < count; i++) {
+      testBigTransfer(false, "server2-ssl", true, true);
+    }
     logger.warn("End {}", Processes.getCurrentMethodName());
   }
 
@@ -573,7 +616,23 @@ public abstract class ScenarioBaseBigFile extends TestAbstract {
   public void test06_BigSendSyncSslNoLimit()
       throws IOException, InterruptedException {
     logger.warn("Start {} {}", Processes.getCurrentMethodName(), NUMBER_FILES);
-    testBigTransfer(false, "server2-ssl", true, false);
+    final int count =
+        SystemPropertyUtil.get(IT_LONG_TEST, false)? MAX_COUNT : 1;
+    for (int i = 0; i < count; i++) {
+      testBigTransfer(false, "server2-ssl", true, false);
+    }
+    logger.warn("End {}", Processes.getCurrentMethodName());
+  }
+
+  @Test
+  public void test06_BigSendSyncSslNoLimitSelf()
+      throws IOException, InterruptedException {
+    logger.warn("Start {} {}", Processes.getCurrentMethodName(), NUMBER_FILES);
+    final int count =
+        SystemPropertyUtil.get(IT_LONG_TEST, false)? MAX_COUNT : 1;
+    for (int i = 0; i < count; i++) {
+      testBigTransfer(false, "server1-ssl", true, false);
+    }
     logger.warn("End {}", Processes.getCurrentMethodName());
   }
 

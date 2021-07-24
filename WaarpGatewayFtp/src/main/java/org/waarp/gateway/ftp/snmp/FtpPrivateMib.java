@@ -201,7 +201,8 @@ public class FtpPrivateMib implements WaarpInterfaceMib {
    *
    * @throws DuplicateRegistrationException
    */
-  protected void agentRegisterSystem() throws DuplicateRegistrationException {
+  protected final void agentRegisterSystem()
+      throws DuplicateRegistrationException {
     // Since BaseAgent registers some mibs by default we need to unregister
     // one before we register our own sysDescr. Normally you would
     // override that method and register the mibs that you need
@@ -232,7 +233,8 @@ public class FtpPrivateMib implements WaarpInterfaceMib {
    *
    * @throws DuplicateRegistrationException
    */
-  protected void agentRegisterWaarpMib() throws DuplicateRegistrationException {
+  protected final void agentRegisterWaarpMib()
+      throws DuplicateRegistrationException {
     logger.debug("registerGGMib");
     // register Static info
     rowInfo = new WaarpMORow(this, rootOIDWaarpInfo, WaarpDefinition,
@@ -284,7 +286,7 @@ public class FtpPrivateMib implements WaarpInterfaceMib {
   /**
    * Unregister this MIB
    */
-  protected void agentUnregisterMibs() {
+  protected final void agentUnregisterMibs() {
     logger.debug("UnRegisterWaarp");
     rowInfo.unregisterMOs(agent.getServer(), agent.getDefaultContext());
     rowGlobal.unregisterMOs(agent.getServer(), agent.getDefaultContext());
@@ -293,41 +295,41 @@ public class FtpPrivateMib implements WaarpInterfaceMib {
   }
 
   @Override
-  public void registerMOs(final MOServer moServer,
-                          final OctetString octetString)
+  public final void registerMOs(final MOServer moServer,
+                                final OctetString octetString)
       throws DuplicateRegistrationException {
     agentRegisterSystem();
     agentRegisterWaarpMib();
   }
 
   @Override
-  public void unregisterMOs(final MOServer moServer,
-                            final OctetString octetString) {
+  public final void unregisterMOs(final MOServer moServer,
+                                  final OctetString octetString) {
     agentUnregisterMibs();
   }
 
   @Override
-  public void setAgent(final WaarpSnmpAgent agent) {
+  public final void setAgent(final WaarpSnmpAgent agent) {
     this.agent = agent;
   }
 
   @Override
-  public OID getBaseOidStartOrShutdown() {
+  public final OID getBaseOidStartOrShutdown() {
     return rootOIDWaarpNotifStartOrShutdown;
   }
 
   @Override
-  public SNMPv2MIB getSNMPv2MIB() {
+  public final SNMPv2MIB getSNMPv2MIB() {
     return snmpv2;
   }
 
   @Override
-  public void updateServices(final WaarpMOScalar scalar) {
+  public final void updateServices(final WaarpMOScalar scalar) {
     // Nothing
   }
 
   @Override
-  public void updateServices(final MOScope range) {
+  public final void updateServices(final MOScope range) {
     // Nothing
   }
 
@@ -336,7 +338,7 @@ public class FtpPrivateMib implements WaarpInterfaceMib {
    *
    * @param status
    */
-  public void changeStatus(final OperStatus status) {
+  public final void changeStatus(final OperStatus status) {
     final WaarpMOScalar statusScalar =
         rowGlobal.getRow()[WaarpGlobalValuesIndex.applOperStatus.ordinal()];
     final Integer32 var = (Integer32) statusScalar.getValue();
@@ -355,7 +357,8 @@ public class FtpPrivateMib implements WaarpInterfaceMib {
    * @param message
    * @param message2
    */
-  public void notifyStartStop(final String message, final String message2) {
+  public final void notifyStartStop(final String message,
+                                    final String message2) {
     if (!TrapLevel.StartStop.isLevelValid(agent.getTrapLevel())) {
       return;
     }
@@ -368,7 +371,7 @@ public class FtpPrivateMib implements WaarpInterfaceMib {
    * @param message
    * @param message2
    */
-  public void notifyError(final String message, final String message2) {
+  public final void notifyError(final String message, final String message2) {
     if (!TrapLevel.Alert.isLevelValid(agent.getTrapLevel())) {
       return;
     }
@@ -381,7 +384,8 @@ public class FtpPrivateMib implements WaarpInterfaceMib {
    * @param message
    * @param message2
    */
-  public void notifyOverloaded(final String message, final String message2) {
+  public final void notifyOverloaded(final String message,
+                                     final String message2) {
     if (!TrapLevel.Warning.isLevelValid(agent.getTrapLevel())) {
       return;
     }
@@ -394,7 +398,7 @@ public class FtpPrivateMib implements WaarpInterfaceMib {
    * @param message
    * @param message2
    */
-  public void notifyWarning(final String message, final String message2) {
+  public final void notifyWarning(final String message, final String message2) {
     if (!TrapLevel.Warning.isLevelValid(agent.getTrapLevel())) {
       return;
     }
@@ -408,7 +412,8 @@ public class FtpPrivateMib implements WaarpInterfaceMib {
    * @param message
    * @param runner
    */
-  public void notifyInfoTask(final String message, final DbTransferLog runner) {
+  public final void notifyInfoTask(final String message,
+                                   final DbTransferLog runner) {
     if (!TrapLevel.All.isLevelValid(agent.getTrapLevel())) {
       return;
     }
@@ -423,82 +428,62 @@ public class FtpPrivateMib implements WaarpInterfaceMib {
       delay = 0;
     }
     agent.getNotificationOriginator().notify(new OctetString("public"),
-                                             NotificationElements.InfoTask
-                                                 .getOID(rootOIDWaarpNotif),
+                                             NotificationElements.InfoTask.getOID(
+                                                 rootOIDWaarpNotif),
                                              new VariableBinding[] {
                                                  new VariableBinding(
-                                                     NotificationElements.InfoTask
-                                                         .getOID(
-                                                             rootOIDWaarpNotif,
-                                                             1),
+                                                     NotificationElements.InfoTask.getOID(
+                                                         rootOIDWaarpNotif, 1),
                                                      new OctetString(
-                                                         NotificationElements.InfoTask
-                                                             .name())),
+                                                         NotificationElements.InfoTask.name())),
                                                  new VariableBinding(
-                                                     NotificationElements.InfoTask
-                                                         .getOID(
-                                                             rootOIDWaarpNotif,
-                                                             1),
+                                                     NotificationElements.InfoTask.getOID(
+                                                         rootOIDWaarpNotif, 1),
                                                      new OctetString(message)),
                                                  // Start of Task
                                                  new VariableBinding(
-                                                     NotificationElements.InfoTask
-                                                         .getOID(
-                                                             rootOIDWaarpNotif,
-                                                             NotificationTasks.filenameInfo
-                                                                 .getOID()),
+                                                     NotificationElements.InfoTask.getOID(
+                                                         rootOIDWaarpNotif,
+                                                         NotificationTasks.filenameInfo.getOID()),
                                                      new OctetString(
                                                          runner.getFilename())),
                                                  new VariableBinding(
-                                                     NotificationElements.InfoTask
-                                                         .getOID(
-                                                             rootOIDWaarpNotif,
-                                                             NotificationTasks.modeTransInfo
-                                                                 .getOID()),
+                                                     NotificationElements.InfoTask.getOID(
+                                                         rootOIDWaarpNotif,
+                                                         NotificationTasks.modeTransInfo.getOID()),
                                                      new OctetString(
                                                          runner.getMode())),
                                                  new VariableBinding(
-                                                     NotificationElements.InfoTask
-                                                         .getOID(
-                                                             rootOIDWaarpNotif,
-                                                             NotificationTasks.startTransInfo
-                                                                 .getOID()),
+                                                     NotificationElements.InfoTask.getOID(
+                                                         rootOIDWaarpNotif,
+                                                         NotificationTasks.startTransInfo.getOID()),
                                                      new TimeTicks(delay)),
                                                  new VariableBinding(
-                                                     NotificationElements.InfoTask
-                                                         .getOID(
-                                                             rootOIDWaarpNotif,
-                                                             NotificationTasks.infoStatusInfo
-                                                                 .getOID()),
+                                                     NotificationElements.InfoTask.getOID(
+                                                         rootOIDWaarpNotif,
+                                                         NotificationTasks.infoStatusInfo.getOID()),
                                                      new OctetString(
                                                          runner.getErrorInfo()
                                                                .getMesg())),
                                                  new VariableBinding(
-                                                     NotificationElements.InfoTask
-                                                         .getOID(
-                                                             rootOIDWaarpNotif,
-                                                             NotificationTasks.userIdInfo
-                                                                 .getOID()),
+                                                     NotificationElements.InfoTask.getOID(
+                                                         rootOIDWaarpNotif,
+                                                         NotificationTasks.userIdInfo.getOID()),
                                                      new OctetString(
                                                          runner.getUser())),
                                                  new VariableBinding(
-                                                     NotificationElements.InfoTask
-                                                         .getOID(
-                                                             rootOIDWaarpNotif,
-                                                             NotificationTasks.accountId
-                                                                 .getOID()),
+                                                     NotificationElements.InfoTask.getOID(
+                                                         rootOIDWaarpNotif,
+                                                         NotificationTasks.accountId.getOID()),
                                                      new OctetString(
                                                          runner.getAccount())),
                                                  new VariableBinding(
-                                                     NotificationElements.InfoTask
-                                                         .getOID(
-                                                             rootOIDWaarpNotif,
-                                                             NotificationTasks.specialIdInfo
-                                                                 .getOID()),
-                                                     new OctetString(String
-                                                                         .valueOf(
-                                                                             runner
-                                                                                 .getSpecialId()))),
+                                                     NotificationElements.InfoTask.getOID(
+                                                         rootOIDWaarpNotif,
+                                                         NotificationTasks.specialIdInfo.getOID()),
+                                                     new OctetString(
+                                                         String.valueOf(
+                                                             runner.getSpecialId()))),
                                                  // End of Task
                                                  new VariableBinding(
                                                      SnmpConstants.sysDescr,
@@ -574,11 +559,11 @@ public class FtpPrivateMib implements WaarpInterfaceMib {
       this.oid = new int[] { oid };
     }
 
-    public OID getOID(final OID oidBase) {
+    public final OID getOID(final OID oidBase) {
       return new OID(oidBase.getValue(), oid);
     }
 
-    public OID getOID(final OID oidBase, final int rank) {
+    public final OID getOID(final OID oidBase, final int rank) {
       final int[] ids = { oid[0], rank };
       return new OID(oidBase.getValue(), ids);
     }
@@ -591,7 +576,7 @@ public class FtpPrivateMib implements WaarpInterfaceMib {
     filenameInfo, modeTransInfo, startTransInfo, infoStatusInfo, userIdInfo,
     accountId, specialIdInfo;
 
-    public int getOID() {
+    public final int getOID() {
       return ordinal() + 1;
     }
   }
@@ -603,7 +588,7 @@ public class FtpPrivateMib implements WaarpInterfaceMib {
     applName, applServerName, applVersion, applDescription, applURL,
     applApplicationProtocol;
 
-    public int getOID() {
+    public final int getOID() {
       return ordinal() + 1;
     }
   }
@@ -628,7 +613,7 @@ public class FtpPrivateMib implements WaarpInterfaceMib {
     nbAllTransfer, memoryTotal, memoryFree, memoryUsed, nbThreads,
     nbNetworkConnection;
 
-    public int getOID() {
+    public final int getOID() {
       return ordinal() + 1;
     }
   }
@@ -676,7 +661,7 @@ public class FtpPrivateMib implements WaarpInterfaceMib {
       this.code = code;
     }
 
-    public int getOID() {
+    public final int getOID() {
       return ordinal() + 1;
     }
   }
@@ -803,7 +788,7 @@ public class FtpPrivateMib implements WaarpInterfaceMib {
       this.code = code;
     }
 
-    public int getOID() {
+    public final int getOID() {
       return ordinal() + 1;
     }
   }

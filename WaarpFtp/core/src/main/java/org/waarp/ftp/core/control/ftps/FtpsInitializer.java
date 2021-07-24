@@ -57,9 +57,8 @@ public class FtpsInitializer extends FtpInitializer {
   public void initChannel(final SocketChannel ch) throws Exception {
     final ChannelPipeline pipeline = ch.pipeline();
     // Server: no renegotiation still, but possible clientAuthent
-    final SslHandler handler = waarpSslContextFactory
-        .createHandlerServer(waarpSslContextFactory.needClientAuthentication(),
-                             ch);
+    final SslHandler handler = waarpSslContextFactory.createHandlerServer(
+        waarpSslContextFactory.needClientAuthentication(), ch);
     pipeline.addLast("SSL", handler);
     // Add the text line codec combination first,
     pipeline.addLast("framer", new DelimiterBasedFrameDecoder(8192, delimiter));

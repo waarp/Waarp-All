@@ -75,8 +75,8 @@ public class LocalExecServerInitializer
     final ChannelPipeline pipeline = ch.pipeline();
 
     // Add the text line codec combination first,
-    pipeline.addLast("framer", new DelimiterBasedFrameDecoder(8192, Delimiters
-        .lineDelimiter()));
+    pipeline.addLast("framer", new DelimiterBasedFrameDecoder(8192,
+                                                              Delimiters.lineDelimiter()));
     pipeline.addLast(eventExecutorGroup, "decoder", new StringDecoder());
     pipeline.addLast(eventExecutorGroup, "encoder", new StringEncoder());
 
@@ -91,14 +91,14 @@ public class LocalExecServerInitializer
    *
    * @param channel
    */
-  public void addChannel(final Channel channel) {
+  public final void addChannel(final Channel channel) {
     channelGroup.add(channel);
   }
 
   /**
    * Release internal resources
    */
-  public void releaseResources() {
+  public final void releaseResources() {
     channelGroup.close();
   }
 }

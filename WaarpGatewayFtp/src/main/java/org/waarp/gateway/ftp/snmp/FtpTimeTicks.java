@@ -46,13 +46,13 @@ class FtpTimeTicks extends WaarpTimeTicks {
   }
 
   @Override
-  protected void setInternalValue() {
+  protected final void setInternalValue() {
     FileBasedConfiguration.fileBasedConfiguration.getMonitoring()
                                                  .run(type, entry);
   }
 
   @Override
-  protected void setInternalValue(final long value) {
+  protected final void setInternalValue(final long value) {
     setValue(value);
   }
 }

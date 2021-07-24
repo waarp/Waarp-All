@@ -156,8 +156,8 @@ class DoubleFastBlockCompressor implements BlockCompressor {
               while (input > anchor &&
                      nextOffsetMatchAddress > windowBaseAddress &&
                      UnsafeUtil.UNSAFE.getByte(inputBase, input - 1) ==
-                     UnsafeUtil.UNSAFE
-                         .getByte(inputBase, nextOffsetMatchAddress - 1)) {
+                     UnsafeUtil.UNSAFE.getByte(inputBase,
+                                               nextOffsetMatchAddress - 1)) {
                 input--;
                 nextOffsetMatchAddress--;
                 matchLength++;
@@ -171,8 +171,8 @@ class DoubleFastBlockCompressor implements BlockCompressor {
               offset = (int) (input - shortMatchAddress);
               while (input > anchor && shortMatchAddress > windowBaseAddress &&
                      UnsafeUtil.UNSAFE.getByte(inputBase, input - 1) ==
-                     UnsafeUtil.UNSAFE
-                         .getByte(inputBase, shortMatchAddress - 1)) {
+                     UnsafeUtil.UNSAFE.getByte(inputBase,
+                                               shortMatchAddress - 1)) {
                 input--;
                 shortMatchAddress--;
                 matchLength++;

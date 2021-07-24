@@ -925,8 +925,8 @@ public class IcapClientTest {
     }
     in.close();
     in = new ByteArrayInputStream(
-        ("123456789012345" + IcapClient.ICAP_TERMINATOR)
-            .getBytes(WaarpStringUtils.UTF8));
+        ("123456789012345" + IcapClient.ICAP_TERMINATOR).getBytes(
+            WaarpStringUtils.UTF8));
     try {
       String readed = icapClient.getHeaderIcapForTest(in);
       assertEquals(19, readed.length());
@@ -936,8 +936,8 @@ public class IcapClientTest {
     }
     in.close();
     in = new ByteArrayInputStream(
-        ("123456789012345" + IcapClient.HTTP_TERMINATOR)
-            .getBytes(WaarpStringUtils.UTF8));
+        ("123456789012345" + IcapClient.HTTP_TERMINATOR).getBytes(
+            WaarpStringUtils.UTF8));
     try {
       String readed = icapClient.getHeaderHttpForTest(in);
       assertEquals(20, readed.length());
@@ -947,8 +947,8 @@ public class IcapClientTest {
     }
     in.close();
     in = new ByteArrayInputStream(
-        ("123456789012345" + IcapClient.ICAP_TERMINATOR)
-            .getBytes(WaarpStringUtils.UTF8));
+        ("123456789012345" + IcapClient.ICAP_TERMINATOR).getBytes(
+            WaarpStringUtils.UTF8));
     try {
       String readed = icapClient.getHeaderHttpForTest(in);
       assertTrue(

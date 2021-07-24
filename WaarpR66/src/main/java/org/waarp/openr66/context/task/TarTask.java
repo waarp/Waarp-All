@@ -53,8 +53,8 @@ public class TarTask extends AbstractTask {
 
   @Override
   public void run() {
-    logger
-        .info("TAR with {}:{}:{} and {}", argRule, argTransfer, delay, session);
+    logger.info("TAR with {}:{}:{} and {}", argRule, argTransfer, delay,
+                session);
     String finalname = argRule;
     finalname = getReplacedValue(finalname, argTransfer == null? null :
         argTransfer.split(" "));
@@ -95,8 +95,8 @@ public class TarTask extends AbstractTask {
       logger.error(
           "Tar error with " + argRule + ':' + argTransfer + ':' + delay +
           " and " + session);
-      futureCompletion
-          .setFailure(new OpenR66ProtocolSystemException("Tar error"));
+      futureCompletion.setFailure(
+          new OpenR66ProtocolSystemException("Tar error"));
       return;
     }
     futureCompletion.setSuccess();

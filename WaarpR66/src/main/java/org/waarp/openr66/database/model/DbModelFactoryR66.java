@@ -38,6 +38,7 @@ import org.waarp.openr66.database.data.DbHostConfiguration;
 import org.waarp.openr66.database.data.DbMultipleMonitor;
 import org.waarp.openr66.database.data.DbRule;
 import org.waarp.openr66.database.data.DbTaskRunner;
+import org.waarp.openr66.database.data.DbTaskRunner.Columns;
 import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.configuration.PartnerConfiguration;
 import org.waarp.openr66.protocol.utils.R66Versions;
@@ -100,14 +101,14 @@ public class DbModelFactoryR66 extends DbModelFactory {
   static boolean needUpgradeDbAllDb(final DbTypeResolver dbTypeResolver,
                                     final DbSession session, String version)
       throws WaarpDatabaseNoConnectionException {
-    if (PartnerConfiguration
-        .isVersion2GEQVersion1(R66Versions.V3_1_0.getVersion(), version)) {
+    if (PartnerConfiguration.isVersion2GEQVersion1(
+        R66Versions.V3_1_0.getVersion(), version)) {
       return false;
     }
     // Check if the database is up to date
     DbRequest request = null;
-    if (PartnerConfiguration
-        .isVersion2GEQVersion1(version, R66Versions.V2_4_13.getVersion())) {
+    if (PartnerConfiguration.isVersion2GEQVersion1(version,
+                                                   R66Versions.V2_4_13.getVersion())) {
       try {
         request = new DbRequest(session);
         request.select(
@@ -116,9 +117,9 @@ public class DbModelFactoryR66 extends DbModelFactory {
             DbHostConfiguration.Columns.HOSTID + " = '" +
             Configuration.configuration.getHostId() + '\'');
         request.close();
-        version = DbHostConfiguration
-            .updateVersionDb(Configuration.configuration.getHostId(),
-                             R66Versions.V2_4_13.getVersion());
+        version = DbHostConfiguration.updateVersionDb(
+            Configuration.configuration.getHostId(),
+            R66Versions.V2_4_13.getVersion());
       } catch (final WaarpDatabaseSqlException e) {
         return !session.getAdmin().getDbModel().upgradeDb(session, version);
       } finally {
@@ -128,8 +129,8 @@ public class DbModelFactoryR66 extends DbModelFactory {
       }
     }
     request = null;
-    if (PartnerConfiguration
-        .isVersion2GEQVersion1(version, R66Versions.V2_4_17.getVersion())) {
+    if (PartnerConfiguration.isVersion2GEQVersion1(version,
+                                                   R66Versions.V2_4_17.getVersion())) {
       try {
         request = new DbRequest(session);
         request.select(
@@ -137,9 +138,9 @@ public class DbModelFactoryR66 extends DbModelFactory {
             DbTaskRunner.table + " where " + DbTaskRunner.Columns.SPECIALID +
             " = " + ILLEGALVALUE);
         request.close();
-        version = DbHostConfiguration
-            .updateVersionDb(Configuration.configuration.getHostId(),
-                             R66Versions.V2_4_17.getVersion());
+        version = DbHostConfiguration.updateVersionDb(
+            Configuration.configuration.getHostId(),
+            R66Versions.V2_4_17.getVersion());
       } catch (final WaarpDatabaseSqlException e) {
         return !session.getAdmin().getDbModel().upgradeDb(session, version);
       } finally {
@@ -149,17 +150,17 @@ public class DbModelFactoryR66 extends DbModelFactory {
       }
     }
     request = null;
-    if (PartnerConfiguration
-        .isVersion2GEQVersion1(version, R66Versions.V2_4_23.getVersion())) {
+    if (PartnerConfiguration.isVersion2GEQVersion1(version,
+                                                   R66Versions.V2_4_23.getVersion())) {
       try {
         request = new DbRequest(session);
         request.select(
             "select " + DbHostAuth.Columns.ISACTIVE.name() + " from " +
             DbHostAuth.table + " where " + DbHostAuth.Columns.PORT + " = " + 0);
         request.close();
-        version = DbHostConfiguration
-            .updateVersionDb(Configuration.configuration.getHostId(),
-                             R66Versions.V2_4_23.getVersion());
+        version = DbHostConfiguration.updateVersionDb(
+            Configuration.configuration.getHostId(),
+            R66Versions.V2_4_23.getVersion());
       } catch (final WaarpDatabaseSqlException e) {
         return !session.getAdmin().getDbModel().upgradeDb(session, version);
       } finally {
@@ -168,32 +169,32 @@ public class DbModelFactoryR66 extends DbModelFactory {
         }
       }
     }
-    if (PartnerConfiguration
-        .isVersion2GTVersion1(version, R66Versions.V2_4_25.getVersion())) {
+    if (PartnerConfiguration.isVersion2GTVersion1(version,
+                                                  R66Versions.V2_4_25.getVersion())) {
       if (session.getAdmin().getDbModel().upgradeDb(session, version)) {
-        version = DbHostConfiguration
-            .updateVersionDb(Configuration.configuration.getHostId(),
-                             R66Versions.V2_4_25.getVersion());
+        version = DbHostConfiguration.updateVersionDb(
+            Configuration.configuration.getHostId(),
+            R66Versions.V2_4_25.getVersion());
       } else {
         return true;
       }
     }
-    if (PartnerConfiguration
-        .isVersion2GTVersion1(version, R66Versions.V3_0_4.getVersion())) {
+    if (PartnerConfiguration.isVersion2GTVersion1(version,
+                                                  R66Versions.V3_0_4.getVersion())) {
       if (session.getAdmin().getDbModel().upgradeDb(session, version)) {
-        version = DbHostConfiguration
-            .updateVersionDb(Configuration.configuration.getHostId(),
-                             R66Versions.V3_0_4.getVersion());
+        version = DbHostConfiguration.updateVersionDb(
+            Configuration.configuration.getHostId(),
+            R66Versions.V3_0_4.getVersion());
       } else {
         return true;
       }
     }
-    if (PartnerConfiguration
-        .isVersion2GTVersion1(version, R66Versions.V3_1_0.getVersion())) {
+    if (PartnerConfiguration.isVersion2GTVersion1(version,
+                                                  R66Versions.V3_1_0.getVersion())) {
       if (session.getAdmin().getDbModel().upgradeDb(session, version)) {
-        DbHostConfiguration
-            .updateVersionDb(Configuration.configuration.getHostId(),
-                             R66Versions.V3_1_0.getVersion());
+        DbHostConfiguration.updateVersionDb(
+            Configuration.configuration.getHostId(),
+            R66Versions.V3_1_0.getVersion());
       } else {
         return true;
       }
@@ -216,7 +217,7 @@ public class DbModelFactoryR66 extends DbModelFactory {
             .append(notNull).append(", ");
     }
     action.append(mcolumns[mcolumns.length - 1].name()).append(
-        dbTypeResolver.getType(DbMultipleMonitor.dbTypes[mcolumns.length - 1]))
+              dbTypeResolver.getType(DbMultipleMonitor.dbTypes[mcolumns.length - 1]))
           .append(primaryKey).append(')');
     SysErrLogger.FAKE_LOGGER.sysout(action);
     if (executeRequestAction(session, action)) {
@@ -242,7 +243,7 @@ public class DbModelFactoryR66 extends DbModelFactory {
             .append(notNull).append(", ");
     }
     action.append(ccolumns[ccolumns.length - 1].name()).append(
-        dbTypeResolver.getType(DbConfiguration.dbTypes[ccolumns.length - 1]))
+              dbTypeResolver.getType(DbConfiguration.dbTypes[ccolumns.length - 1]))
           .append(primaryKey).append(')');
     SysErrLogger.FAKE_LOGGER.sysout(action);
     if (executeRequestAction(session, action)) {
@@ -258,11 +259,9 @@ public class DbModelFactoryR66 extends DbModelFactory {
             .append(dbTypeResolver.getType(DbHostConfiguration.dbTypes[i]))
             .append(notNull).append(", ");
     }
-    action.append(chcolumns[chcolumns.length - 1].name()).append(dbTypeResolver
-                                                                     .getType(
-                                                                         DbHostConfiguration.dbTypes[
-                                                                             chcolumns.length -
-                                                                             1]))
+    action.append(chcolumns[chcolumns.length - 1].name()).append(
+              dbTypeResolver.getType(
+                  DbHostConfiguration.dbTypes[chcolumns.length - 1]))
           .append(primaryKey).append(')');
     SysErrLogger.FAKE_LOGGER.sysout(action);
     if (executeRequestAction(session, action)) {
@@ -278,7 +277,7 @@ public class DbModelFactoryR66 extends DbModelFactory {
             .append(notNull).append(", ");
     }
     action.append(hcolumns[hcolumns.length - 1].name()).append(
-        dbTypeResolver.getType(DbHostAuth.dbTypes[hcolumns.length - 1]))
+              dbTypeResolver.getType(DbHostAuth.dbTypes[hcolumns.length - 1]))
           .append(primaryKey).append(')');
     SysErrLogger.FAKE_LOGGER.sysout(action);
     if (executeRequestAction(session, action)) {
@@ -340,7 +339,7 @@ public class DbModelFactoryR66 extends DbModelFactory {
   static boolean upgradeTable30(final DbTypeResolver dbTypeResolver,
                                 final DbRequest request, final String modify,
                                 final String type, final String notNull) {
-    String alter = "ALTER TABLE ";
+    final String alter = "ALTER TABLE ";
     try {
       SysErrLogger.FAKE_LOGGER.sysout("Start Schema Upgrading Types for: " +
                                       dbTypeResolver.getDbType().name());
@@ -407,7 +406,7 @@ public class DbModelFactoryR66 extends DbModelFactory {
         }
       }
       return true;
-    } catch (Exception e) {
+    } catch (final Exception e) {
       logger.warn("Error during update tables {}", e.getMessage());
     }
     return false;
@@ -527,6 +526,30 @@ public class DbModelFactoryR66 extends DbModelFactory {
         // XXX FIX no return
       }
     }
+    try {
+      if (dbTypeResolver.getDbType() == DbType.PostGreSQL) {
+        String saction = "CREATE EXTENSION IF NOT EXISTS pg_trgm";
+        SysErrLogger.FAKE_LOGGER.sysout(saction);
+        request.query(saction);
+        saction = createIndex + " GIST_FOLLOWID_IDX ON " + DbTaskRunner.table +
+                  " USING gist (" + Columns.TRANSFERINFO.name() +
+                  " gist_trgm_ops)";
+        SysErrLogger.FAKE_LOGGER.sysout(saction);
+        request.query(saction);
+      } else {
+        String saction =
+            createIndex + " FOLLOWID_IDX ON " + DbTaskRunner.table + " (" +
+            Columns.TRANSFERINFO.name() + ", " + Columns.OWNERREQ.name() + ")";
+        SysErrLogger.FAKE_LOGGER.sysout(saction);
+        request.query(saction);
+      }
+    } catch (final WaarpDatabaseNoConnectionException e) {
+      SysErrLogger.FAKE_LOGGER.ignoreLog(e);
+      return false;
+    } catch (final WaarpDatabaseSqlException e) {
+      SysErrLogger.FAKE_LOGGER.ignoreLog(e);
+      // XXX FIX no return
+    }
     return true;
   }
 
@@ -598,12 +621,12 @@ public class DbModelFactoryR66 extends DbModelFactory {
                                        final DbSession session,
                                        final String version)
       throws WaarpDatabaseNoConnectionException {
-    if (PartnerConfiguration
-        .isVersion2GEQVersion1(R66Versions.V3_1_0.getVersion(), version)) {
+    if (PartnerConfiguration.isVersion2GEQVersion1(
+        R66Versions.V3_1_0.getVersion(), version)) {
       return true;
     }
-    if (PartnerConfiguration
-        .isVersion2GEQVersion1(version, R66Versions.V2_4_13.getVersion())) {
+    if (PartnerConfiguration.isVersion2GEQVersion1(version,
+                                                   R66Versions.V2_4_13.getVersion())) {
       SysErrLogger.FAKE_LOGGER.sysout(
           version + " to " + R66Versions.V2_4_13.getVersion() + "? " + true);
       final String createTableH2 = "CREATE TABLE IF NOT EXISTS ";
@@ -621,16 +644,16 @@ public class DbModelFactoryR66 extends DbModelFactory {
               .append(notNull).append(", ");
       }
       action.append(chcolumns[chcolumns.length - 1].name()).append(
-          dbTypeResolver
-              .getType(DbHostConfiguration.dbTypes[chcolumns.length - 1]))
+                dbTypeResolver.getType(
+                    DbHostConfiguration.dbTypes[chcolumns.length - 1]))
             .append(primaryKey).append(')');
       SysErrLogger.FAKE_LOGGER.sysout(action);
       if (executeRequestAction(session, action)) {
         return false;
       }
     }
-    if (PartnerConfiguration
-        .isVersion2GEQVersion1(version, R66Versions.V2_4_17.getVersion())) {
+    if (PartnerConfiguration.isVersion2GEQVersion1(version,
+                                                   R66Versions.V2_4_17.getVersion())) {
       SysErrLogger.FAKE_LOGGER.sysout(
           version + " to " + R66Versions.V2_4_17.getVersion() + "? " + true);
       final DbRequest request = new DbRequest(session);
@@ -638,8 +661,7 @@ public class DbModelFactoryR66 extends DbModelFactory {
         final String command = ALTER_TABLE + DbTaskRunner.table + ADD_COLUMN +
                                DbTaskRunner.Columns.TRANSFERINFO.name() + ' ' +
                                dbTypeResolver.getType(
-                                   DbTaskRunner.dbTypes[DbTaskRunner.Columns.TRANSFERINFO
-                                       .ordinal()]);
+                                   DbTaskRunner.dbTypes[DbTaskRunner.Columns.TRANSFERINFO.ordinal()]);
         request.query(command);
       } catch (final WaarpDatabaseSqlException e) {
         SysErrLogger.FAKE_LOGGER.ignoreLog(e);
@@ -648,8 +670,8 @@ public class DbModelFactoryR66 extends DbModelFactory {
         request.close();
       }
     }
-    if (PartnerConfiguration
-        .isVersion2GEQVersion1(version, R66Versions.V2_4_23.getVersion())) {
+    if (PartnerConfiguration.isVersion2GEQVersion1(version,
+                                                   R66Versions.V2_4_23.getVersion())) {
       SysErrLogger.FAKE_LOGGER.sysout(
           version + " to " + R66Versions.V2_4_23.getVersion() + "? " + true);
       final DbRequest request = new DbRequest(session);
@@ -657,8 +679,7 @@ public class DbModelFactoryR66 extends DbModelFactory {
         String command = ALTER_TABLE + DbHostAuth.table + ADD_COLUMN +
                          DbHostAuth.Columns.ISACTIVE.name() + ' ' +
                          dbTypeResolver.getType(
-                             DbHostAuth.dbTypes[DbHostAuth.Columns.ISACTIVE
-                                 .ordinal()]);
+                             DbHostAuth.dbTypes[DbHostAuth.Columns.ISACTIVE.ordinal()]);
         request.query(command);
         command = "UPDATE " + DbHostAuth.table + " SET " +
                   DbHostAuth.Columns.ISACTIVE.name() + " = " + true;
@@ -673,8 +694,7 @@ public class DbModelFactoryR66 extends DbModelFactory {
         String command = ALTER_TABLE + DbHostAuth.table + ADD_COLUMN +
                          DbHostAuth.Columns.ISPROXIFIED.name() + ' ' +
                          dbTypeResolver.getType(
-                             DbHostAuth.dbTypes[DbHostAuth.Columns.ISPROXIFIED
-                                 .ordinal()]);
+                             DbHostAuth.dbTypes[DbHostAuth.Columns.ISPROXIFIED.ordinal()]);
         request.query(command);
         command = "UPDATE " + DbHostAuth.table + " SET " +
                   DbHostAuth.Columns.ISPROXIFIED.name() + " = " + false;
@@ -686,29 +706,29 @@ public class DbModelFactoryR66 extends DbModelFactory {
         request.close();
       }
     }
-    if (PartnerConfiguration
-        .isVersion2GTVersion1(version, R66Versions.V2_4_25.getVersion())) {
+    if (PartnerConfiguration.isVersion2GTVersion1(version,
+                                                  R66Versions.V2_4_25.getVersion())) {
       SysErrLogger.FAKE_LOGGER.sysout(
           version + " to " + R66Versions.V2_4_25.getVersion() + "? " + true);
       String command = ALTER_TABLE + DbTaskRunner.table + " MODIFY " +
                        DbTaskRunner.Columns.FILENAME.name() + ' ' +
                        dbTypeResolver.getType(
-                           DbTaskRunner.dbTypes[DbTaskRunner.Columns.FILENAME
-                               .ordinal()]) + " NOT NULL ";
+                           DbTaskRunner.dbTypes[DbTaskRunner.Columns.FILENAME.ordinal()]) +
+                       " NOT NULL ";
       if (executeRequestAction(session, command)) {
         return false;
       }
       command = ALTER_TABLE + DbTaskRunner.table + " MODIFY " +
-                DbTaskRunner.Columns.ORIGINALNAME.name() + ' ' + dbTypeResolver
-                    .getType(
-                        DbTaskRunner.dbTypes[DbTaskRunner.Columns.ORIGINALNAME
-                            .ordinal()]) + " NOT NULL ";
+                DbTaskRunner.Columns.ORIGINALNAME.name() + ' ' +
+                dbTypeResolver.getType(
+                    DbTaskRunner.dbTypes[DbTaskRunner.Columns.ORIGINALNAME.ordinal()]) +
+                " NOT NULL ";
       if (executeRequestAction(session, command)) {
         return false;
       }
     }
-    if (PartnerConfiguration
-        .isVersion2GTVersion1(version, R66Versions.V3_0_4.getVersion())) {
+    if (PartnerConfiguration.isVersion2GTVersion1(version,
+                                                  R66Versions.V3_0_4.getVersion())) {
       SysErrLogger.FAKE_LOGGER.sysout(
           version + " to " + R66Versions.V3_0_4.getVersion() + "? " + true);
       final DbRequest request = new DbRequest(session);

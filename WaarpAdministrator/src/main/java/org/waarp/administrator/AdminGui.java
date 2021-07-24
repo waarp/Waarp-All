@@ -91,23 +91,23 @@ public class AdminGui {
   protected static boolean getParams(String[] args) {
     ParametersChecker.checkParameter(ParametersChecker.DEFAULT_ERROR, args);
     if (args.length < 1) {
-      logger
-          .error(Messages.getString("Configuration.NeedConfig")); //$NON-NLS-1$
+      logger.error(
+          Messages.getString("Configuration.NeedConfig")); //$NON-NLS-1$
       final JFileChooser chooser = new JFileChooser();
       final int returnvval = chooser.showOpenDialog(null);
       if (returnvval == JFileChooser.APPROVE_OPTION) {
         final File file = chooser.getSelectedFile();
         args = new String[] { file.getAbsolutePath() };
       } else {
-        JOptionPane.showMessageDialog(null, Messages
-            .getString("Configuration.NeedConfig")); //$NON-NLS-1$
+        JOptionPane.showMessageDialog(null, Messages.getString(
+            "Configuration.NeedConfig")); //$NON-NLS-1$
         return false;
       }
     }
-    if (!FileBasedConfiguration
-        .setClientConfigurationFromXml(Configuration.configuration, args[0])) {
-      logger
-          .error(Messages.getString("Configuration.NeedConfig")); //$NON-NLS-1$
+    if (!FileBasedConfiguration.setClientConfigurationFromXml(
+        Configuration.configuration, args[0])) {
+      logger.error(
+          Messages.getString("Configuration.NeedConfig")); //$NON-NLS-1$
       return false;
     }
     Configuration.configuration.pipelineInit();
@@ -119,15 +119,15 @@ public class AdminGui {
    * Launch the application.
    */
   public static void main(final String[] args) {
-    WaarpLoggerFactory
-        .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));
+    WaarpLoggerFactory.setDefaultFactoryIfNotSame(
+        new WaarpSlf4JLoggerFactory(null));
     if (logger == null) {
       logger = WaarpLoggerFactory.getLogger(AdminGui.class);
     }
     if (!getParams(args)) {
       logger.error(Messages.getString("Configuration.WrongInit")); //$NON-NLS-1$
-      JOptionPane.showMessageDialog(null, Messages
-                                        .getString("Configuration.WrongInit"), //$NON-NLS-1$
+      JOptionPane.showMessageDialog(null, Messages.getString(
+                                        "Configuration.WrongInit"), //$NON-NLS-1$
                                     "Attention", JOptionPane.WARNING_MESSAGE);
       if (admin != null) {
         admin.close();
@@ -293,8 +293,8 @@ public class AdminGui {
         quit();
       }
     });
-    frmWaarpRCentral
-        .setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+    frmWaarpRCentral.setDefaultCloseOperation(
+        WindowConstants.DO_NOTHING_ON_CLOSE);
 
     btnQuit = new JButton("QUIT");
     btnQuit.addActionListener(new ActionListener() {
@@ -316,8 +316,8 @@ public class AdminGui {
               AdminR66OperationsGui.setWindow(null);
             }
             try {
-              AdminR66OperationsGui
-                  .setWindow(new AdminR66OperationsGui(frmWaarpRCentral));
+              AdminR66OperationsGui.setWindow(
+                  new AdminR66OperationsGui(frmWaarpRCentral));
               AdminR66OperationsGui.getWindow().setVisible(true);
             } catch (final Exception e) {
               SysErrLogger.FAKE_LOGGER.syserr(e);

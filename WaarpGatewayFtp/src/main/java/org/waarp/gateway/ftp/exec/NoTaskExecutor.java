@@ -39,7 +39,7 @@ public class NoTaskExecutor extends AbstractExecutor {
   }
 
   @Override
-  public void run() {
+  public final void run() {
     futureCompletion.setSuccess();
   }
 }

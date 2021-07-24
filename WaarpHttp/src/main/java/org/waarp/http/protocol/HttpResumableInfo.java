@@ -50,21 +50,21 @@ public class HttpResumableInfo {
     this.relativePath = relativePath;
     this.totalChunks =
         (int) Math.ceil(((double) totalSize) / ((double) chunkSize));
-    logger
-        .debug("{} {} {} {} {}", totalSize, chunkSize, (totalSize) / chunkSize,
-               (int) Math.ceil(((double) totalSize) / ((double) chunkSize)),
-               totalChunks);
+    logger.debug("{} {} {} {} {}", totalSize, chunkSize,
+                 (totalSize) / chunkSize,
+                 (int) Math.ceil(((double) totalSize) / ((double) chunkSize)),
+                 totalChunks);
   }
 
   /**
    * The original file name (since a bug in Firefox results in the file name
    * not being transmitted in chunk multipart posts).
    */
-  public String getFilename() {
+  public final String getFilename() {
     return filename;
   }
 
-  public HttpResumableInfo setFilename(final String filename) {
+  public final HttpResumableInfo setFilename(final String filename) {
     this.filename = filename;
     return this;
   }
@@ -73,11 +73,11 @@ public class HttpResumableInfo {
    * The file's relative path when selecting a directory (defaults to file
    * name in all browsers except Chrome).
    */
-  public String getRelativePath() {
+  public final String getRelativePath() {
     return relativePath;
   }
 
-  public HttpResumableInfo setRelativePath(final String relativePath) {
+  public final HttpResumableInfo setRelativePath(final String relativePath) {
     this.relativePath = relativePath;
     return this;
   }
@@ -89,7 +89,7 @@ public class HttpResumableInfo {
    *     total number of chunks, identifier and current chunk vs max chunk
    *     number)
    */
-  public boolean isCompatible(final HttpResumableInfo resumableInfo) {
+  public final boolean isCompatible(final HttpResumableInfo resumableInfo) {
     return resumableInfo.getChunkSize() == getChunkSize() &&
            resumableInfo.getTotalSize() == getTotalSize() &&
            resumableInfo.getIdentifier().equals(getIdentifier()) &&
@@ -103,11 +103,11 @@ public class HttpResumableInfo {
    * data received in the HTTP might be higher than resumableChunkSize for
    * the last chunk for a file. Max being 2^31, preferably 2^20 (1 MB)
    */
-  public int getChunkSize() {
+  public final int getChunkSize() {
     return chunkSize;
   }
 
-  public HttpResumableInfo setChunkSize(final int chunkSize) {
+  public final HttpResumableInfo setChunkSize(final int chunkSize) {
     this.chunkSize = chunkSize;
     return this;
   }
@@ -116,11 +116,11 @@ public class HttpResumableInfo {
    * The total file size. Max being theoretically 2^63, but in practice being
    * resumableChunkSize x resumableTotalChunks, therefore 2^20 x 2^31 = 2^51
    */
-  public long getTotalSize() {
+  public final long getTotalSize() {
     return totalSize;
   }
 
-  public HttpResumableInfo setTotalSize(final long totalSize) {
+  public final HttpResumableInfo setTotalSize(final long totalSize) {
     this.totalSize = totalSize;
     return this;
   }
@@ -128,14 +128,14 @@ public class HttpResumableInfo {
   /**
    * A unique identifier for the file contained in the request.
    */
-  public String getIdentifier() {
+  public final String getIdentifier() {
     return identifier;
   }
 
   /**
    * The total number of chunks. Max being 2^31
    */
-  public int getTotalChunks() {
+  public final int getTotalChunks() {
     return totalChunks;
   }
 
@@ -143,21 +143,21 @@ public class HttpResumableInfo {
    * The index of the chunk in the current upload. First chunk is 1 (no
    * base-0 counting here). Max being 2^31
    */
-  public int getChunkNumber() {
+  public final int getChunkNumber() {
     return chunkNumber;
   }
 
-  public HttpResumableInfo setChunkNumber(final int chunkNumber) {
+  public final HttpResumableInfo setChunkNumber(final int chunkNumber) {
     this.chunkNumber = chunkNumber;
     return this;
   }
 
-  public HttpResumableInfo setTotalChunks(final int totalChunks) {
+  public final HttpResumableInfo setTotalChunks(final int totalChunks) {
     this.totalChunks = totalChunks;
     return this;
   }
 
-  public HttpResumableInfo setIdentifier(final String identifier) {
+  public final HttpResumableInfo setIdentifier(final String identifier) {
     this.identifier = identifier;
     return this;
   }

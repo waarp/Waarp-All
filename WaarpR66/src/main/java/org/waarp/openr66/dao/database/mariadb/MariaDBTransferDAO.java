@@ -41,7 +41,7 @@ public class MariaDBTransferDAO extends DBTransferDAO {
   }
 
   @Override
-  protected long getNextId() throws DAOConnectionException {
+  protected final long getNextId() throws DAOConnectionException {
     PreparedStatement ps = null;
     PreparedStatement ps2 = null;
     ResultSet rs = null;

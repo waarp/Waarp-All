@@ -156,9 +156,9 @@ public class DbTransferLogDataModelRestMethodHandler
       infostatus = null;
     }
     try {
-      return DbTransferLog
-          .getFilterPrepareStament(handler.getDbSession(), modetrans, accountid,
-                                   userid, filename, infostatus);
+      return DbTransferLog.getFilterPrepareStament(handler.getDbSession(),
+                                                   modetrans, accountid, userid,
+                                                   filename, infostatus);
     } catch (final WaarpDatabaseNoConnectionException e) {
       throw new HttpIncorrectRequestException(
           "Issue while reading from database", e);
@@ -202,21 +202,23 @@ public class DbTransferLogDataModelRestMethodHandler
 
     ObjectNode node2, node3;
     if (methods.contains(METHOD.GET)) {
-      node2 = RestArgument
-          .fillDetailedAllow(METHOD.GET, path + "/id", COMMAND_TYPE.GET.name(),
-                             JsonHandler.createObjectNode().put(
-                                 DbTransferLog.Columns.SPECIALID.name(),
-                                 "SPECIALID as Long in URI as " + path + "/id"),
-                             node1);
+      node2 = RestArgument.fillDetailedAllow(METHOD.GET, path + "/id",
+                                             COMMAND_TYPE.GET.name(),
+                                             JsonHandler.createObjectNode().put(
+                                                 DbTransferLog.Columns.SPECIALID.name(),
+                                                 "SPECIALID as Long in URI as " +
+                                                 path + "/id"), node1);
       node.add(node2);
 
       node3 = JsonHandler.createObjectNode();
       for (final FILTER_ARGS arg : FILTER_ARGS.values()) {
         node3.put(arg.name(), arg.type);
       }
-      node2 = RestArgument
-          .fillDetailedAllow(METHOD.GET, path, COMMAND_TYPE.MULTIGET.name(),
-                             node3, JsonHandler.createArrayNode().add(node1));
+      node2 = RestArgument.fillDetailedAllow(METHOD.GET, path,
+                                             COMMAND_TYPE.MULTIGET.name(),
+                                             node3,
+                                             JsonHandler.createArrayNode()
+                                                        .add(node1));
       node.add(node2);
     }
     if (methods.contains(METHOD.PUT)) {
@@ -249,14 +251,14 @@ public class DbTransferLogDataModelRestMethodHandler
       for (final DbValue dbValue : values) {
         node3.put(dbValue.getColumn(), dbValue.getType());
       }
-      node2 = RestArgument
-          .fillDetailedAllow(METHOD.POST, path, COMMAND_TYPE.CREATE.name(),
-                             node3, node1);
+      node2 = RestArgument.fillDetailedAllow(METHOD.POST, path,
+                                             COMMAND_TYPE.CREATE.name(), node3,
+                                             node1);
       node.add(node2);
     }
-    node2 = RestArgument
-        .fillDetailedAllow(METHOD.OPTIONS, path, COMMAND_TYPE.OPTIONS.name(),
-                           null, null);
+    node2 = RestArgument.fillDetailedAllow(METHOD.OPTIONS, path,
+                                           COMMAND_TYPE.OPTIONS.name(), null,
+                                           null);
     node.add(node2);
 
     return node;

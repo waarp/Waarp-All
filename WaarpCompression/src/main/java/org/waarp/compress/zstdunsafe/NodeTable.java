@@ -36,10 +36,10 @@ package org.waarp.compress.zstdunsafe;
 import java.util.Arrays;
 
 class NodeTable {
-  int[] count;
-  short[] parents;
-  int[] symbols;
-  byte[] numberOfBits;
+  final int[] count;
+  final short[] parents;
+  final int[] symbols;
+  final byte[] numberOfBits;
 
   public NodeTable(final int size) {
     count = new int[size];

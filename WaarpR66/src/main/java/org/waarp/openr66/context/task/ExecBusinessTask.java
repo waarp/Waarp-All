@@ -39,7 +39,7 @@ public class ExecBusinessTask extends AbstractExecJavaTask {
       WaarpLoggerFactory.getLogger(ExecBusinessTask.class);
 
   @Override
-  public void run() {
+  public final void run() {
     if (callFromBusiness) {
       // Business Request to validate?
       String validate = "Validated";
@@ -51,15 +51,16 @@ public class ExecBusinessTask extends AbstractExecJavaTask {
         String argRule;
         try {
           newdelay = Integer.parseInt(args[args.length - 1]);
-          argRule = fullarg
-              .substring(fullarg.indexOf(' ') + 1, fullarg.lastIndexOf(' '));
+          argRule = fullarg.substring(fullarg.indexOf(' ') + 1,
+                                      fullarg.lastIndexOf(' '));
         } catch (final NumberFormatException e) {
           newdelay = 0;
           argRule = fullarg.substring(fullarg.indexOf(' ') + 1);
         }
         try {
-          final AbstractTask task = TaskType
-              .getTaskFromIdForBusiness(operation, argRule, newdelay, session);
+          final AbstractTask task =
+              TaskType.getTaskFromIdForBusiness(operation, argRule, newdelay,
+                                                session);
           if (task != null) {
             task.run();
             task.getFutureCompletion().awaitOrInterruptible();

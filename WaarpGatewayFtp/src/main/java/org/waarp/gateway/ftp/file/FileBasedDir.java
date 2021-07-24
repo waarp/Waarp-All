@@ -37,7 +37,7 @@ public class FileBasedDir extends FilesystemBasedFtpDir {
   }
 
   @Override
-  public FtpFile newFile(final String path, final boolean append)
+  public final FtpFile newFile(final String path, final boolean append)
       throws CommandAbstractException {
     return new FileBasedFile((FtpSession) getSession(), this, path, append);
   }

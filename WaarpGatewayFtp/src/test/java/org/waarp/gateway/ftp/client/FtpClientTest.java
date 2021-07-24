@@ -211,8 +211,8 @@ public class FtpClientTest {
                                    FileSystemBasedDataBusinessHandler.class,
                                    new FilesystemBasedFileParameterImpl());
     try {
-      if (!configuration
-          .setConfigurationServerFromXml(file.getAbsolutePath())) {
+      if (!configuration.setConfigurationServerFromXml(
+          file.getAbsolutePath())) {
         System.err.println("Bad main configuration");
         Assert.fail("Bad main configuration");
       }
@@ -359,11 +359,11 @@ public class FtpClientTest {
     desiredCapabilities.setCapability(
         PhantomJSDriverService.PHANTOMJS_EXECUTABLE_PATH_PROPERTY,
         System.getProperty("phantomjs.binary.path"));
-    desiredCapabilities
-        .setCapability(CapabilityType.ELEMENT_SCROLL_BEHAVIOR, true);
+    desiredCapabilities.setCapability(CapabilityType.ELEMENT_SCROLL_BEHAVIOR,
+                                      true);
     desiredCapabilities.setCapability(CapabilityType.TAKES_SCREENSHOT, false);
-    desiredCapabilities
-        .setCapability(CapabilityType.ENABLE_PROFILING_CAPABILITY, false);
+    desiredCapabilities.setCapability(
+        CapabilityType.ENABLE_PROFILING_CAPABILITY, false);
     LoggingPreferences logPrefs = new LoggingPreferences();
     logPrefs.enable(LogType.BROWSER, java.util.logging.Level.OFF);
     logPrefs.enable(LogType.CLIENT, java.util.logging.Level.OFF);
@@ -373,9 +373,9 @@ public class FtpClientTest {
     logPrefs.enable(LogType.SERVER, java.util.logging.Level.OFF);
     desiredCapabilities.setCapability(CapabilityType.LOGGING_PREFS, logPrefs);
     desiredCapabilities.setCapability(CapabilityType.HAS_NATIVE_EVENTS, true);
-    desiredCapabilities
-        .setCapability(PhantomJSDriverService.PHANTOMJS_GHOSTDRIVER_CLI_ARGS,
-                       "--webdriver-loglevel=NONE");
+    desiredCapabilities.setCapability(
+        PhantomJSDriverService.PHANTOMJS_GHOSTDRIVER_CLI_ARGS,
+        "--webdriver-loglevel=NONE");
 
     desiredCapabilities.setJavascriptEnabled(true);
 
@@ -383,8 +383,8 @@ public class FtpClientTest {
     cliArgs.add("--web-security=true");
     cliArgs.add("--ignore-ssl-errors=true");
     cliArgs.add("--webdriver-loglevel=NONE");
-    desiredCapabilities
-        .setCapability(PhantomJSDriverService.PHANTOMJS_CLI_ARGS, cliArgs);
+    desiredCapabilities.setCapability(PhantomJSDriverService.PHANTOMJS_CLI_ARGS,
+                                      cliArgs);
 
     PhantomJSDriver phantomJSDriver = new PhantomJSDriver(desiredCapabilities);
     phantomJSDriver.setLogLevel(java.util.logging.Level.OFF);

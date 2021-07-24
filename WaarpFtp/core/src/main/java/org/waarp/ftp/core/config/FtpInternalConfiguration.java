@@ -146,9 +146,10 @@ public class FtpInternalConfiguration {
   /**
    * Scheduler for TrafficCounter
    */
-  private final ScheduledExecutorService executorService = Executors
-      .newScheduledThreadPool(2,
-                              new WaarpThreadFactory("TimerTrafficFtp", false));
+  private final ScheduledExecutorService executorService =
+      Executors.newScheduledThreadPool(2,
+                                       new WaarpThreadFactory("TimerTrafficFtp",
+                                                              false));
 
   /**
    * Global TrafficCounter (set from global configuration)
@@ -244,7 +245,7 @@ public class FtpInternalConfiguration {
    *
    * @throws FtpNoConnectionException
    */
-  public void serverStartup() throws FtpNoConnectionException {
+  public final void serverStartup() throws FtpNoConnectionException {
     logger.debug("Start groups");
     // Command
     commandChannelGroup =
@@ -258,10 +259,11 @@ public class FtpInternalConfiguration {
     logger.debug("Start data connections");
     // Passive Data Connections
     passiveBootstrap = new ServerBootstrap();
-    WaarpNettyUtil
-        .setServerBootstrap(passiveBootstrap, execDataServer, execDataWorker,
-                            (int) configuration.getTimeoutCon(),
-                            configuration.getBlocksize() + 1024, true);
+    WaarpNettyUtil.setServerBootstrap(passiveBootstrap, execDataServer,
+                                      execDataWorker,
+                                      (int) configuration.getTimeoutCon(),
+                                      configuration.getBlocksize() + 1024,
+                                      true);
     if (usingNativeSsl) {
       passiveBootstrap.childHandler(
           new FtpsDataInitializer(configuration.dataBusinessHandler,
@@ -348,20 +350,18 @@ public class FtpInternalConfiguration {
     WaarpShutdownHook.addShutdownHook();
     // Factory for TrafficShapingHandler
     globalTrafficShapingHandler =
-        new FtpGlobalTrafficShapingHandler(executorService, configuration
-            .getServerGlobalWriteLimit(), configuration
-                                               .getServerGlobalReadLimit(),
-                                           configuration
-                                               .getServerChannelWriteLimit(),
-                                           configuration
-                                               .getServerChannelReadLimit(),
+        new FtpGlobalTrafficShapingHandler(executorService,
+                                           configuration.getServerGlobalWriteLimit(),
+                                           configuration.getServerGlobalReadLimit(),
+                                           configuration.getServerChannelWriteLimit(),
+                                           configuration.getServerChannelReadLimit(),
                                            configuration.getDelayLimit());
   }
 
   /**
    * @return an ExecutorService
    */
-  public ExecutorService getWorker() {
+  public final ExecutorService getWorker() {
     return execWorker;
   }
 
@@ -372,9 +372,9 @@ public class FtpInternalConfiguration {
    * @param fullIp
    * @param session
    */
-  public void setNewFtpSession(final InetAddress ipOnly,
-                               final InetSocketAddress fullIp,
-                               final FtpSession session) {
+  public final void setNewFtpSession(final InetAddress ipOnly,
+                                     final InetSocketAddress fullIp,
+                                     final FtpSession session) {
     ftpSessionReference.setNewFtpSession(ipOnly, fullIp, session);
   }
 
@@ -386,8 +386,9 @@ public class FtpInternalConfiguration {
    *
    * @return the FtpSession if it exists associated to this channel
    */
-  public FtpSession getFtpSession(final Channel channel, final boolean active,
-                                  final boolean remove) {
+  public final FtpSession getFtpSession(final Channel channel,
+                                        final boolean active,
+                                        final boolean remove) {
     if (active) {
       return ftpSessionReference.getActiveFtpSession(channel, remove);
     } else {
@@ -401,8 +402,8 @@ public class FtpInternalConfiguration {
    * @param ipOnly
    * @param fullIp
    */
-  public void delFtpSession(final InetAddress ipOnly,
-                            final InetSocketAddress fullIp) {
+  public final void delFtpSession(final InetAddress ipOnly,
+                                  final InetSocketAddress fullIp) {
     ftpSessionReference.delFtpSession(ipOnly, fullIp);
   }
 
@@ -414,15 +415,15 @@ public class FtpInternalConfiguration {
    *
    * @return True if the couple is present
    */
-  public boolean hasFtpSession(final InetAddress ipOnly,
-                               final InetSocketAddress fullIp) {
+  public final boolean hasFtpSession(final InetAddress ipOnly,
+                                     final InetSocketAddress fullIp) {
     return ftpSessionReference.contains(ipOnly, fullIp);
   }
 
   /**
    * @return the number of Active Sessions
    */
-  public int getNumberSessions() {
+  public final int getNumberSessions() {
     return ftpSessionReference.sessionsNumber();
   }
 
@@ -434,8 +435,8 @@ public class FtpInternalConfiguration {
    *
    * @throws Reply425Exception in case the channel cannot be opened
    */
-  public void bindPassive(final InetSocketAddress address, final boolean ssl)
-      throws Reply425Exception {
+  public final void bindPassive(final InetSocketAddress address,
+                                final boolean ssl) throws Reply425Exception {
     configuration.bindLock();
     try {
       BindAddress bindAddress = hashBindPassiveDataConn.get(address);
@@ -485,14 +486,14 @@ public class FtpInternalConfiguration {
    *
    * @param address
    */
-  public void unbindPassive(final InetSocketAddress address) {
+  public final void unbindPassive(final InetSocketAddress address) {
     configuration.bindLock();
     try {
       final BindAddress bindAddress = hashBindPassiveDataConn.get(address);
       if (bindAddress != null) {
         bindAddress.nbBind.getAndDecrement();
-        logger
-            .debug("Bind number to {} left is {}", address, bindAddress.nbBind);
+        logger.debug("Bind number to {} left is {}", address,
+                     bindAddress.nbBind);
         if (bindAddress.nbBind.get() == 0) {
           WaarpSslUtility.closingSslChannel(bindAddress.parent);
           hashBindPassiveDataConn.remove(address);
@@ -508,7 +509,7 @@ public class FtpInternalConfiguration {
   /**
    * @return the number of Binded Passive Connections
    */
-  public int getNbBindedPassive() {
+  public final int getNbBindedPassive() {
     return hashBindPassiveDataConn.size();
   }
 
@@ -517,7 +518,7 @@ public class FtpInternalConfiguration {
    *
    * @return the Command Event Executor
    */
-  public EventExecutorGroup getExecutor() {
+  public final EventExecutorGroup getExecutor() {
     return execCommandEvent;
   }
 
@@ -526,7 +527,7 @@ public class FtpInternalConfiguration {
    *
    * @return the Data Event Executor
    */
-  public EventExecutorGroup getDataExecutor() {
+  public final EventExecutorGroup getDataExecutor() {
     return execDataEvent;
   }
 
@@ -535,7 +536,7 @@ public class FtpInternalConfiguration {
    *
    * @return the ActiveBootstrap
    */
-  public Bootstrap getActiveBootstrap(final boolean ssl) {
+  public final Bootstrap getActiveBootstrap(final boolean ssl) {
     if (ssl) {
       return activeSslBootstrap;
     } else {
@@ -546,28 +547,28 @@ public class FtpInternalConfiguration {
   /**
    * @return the commandChannelGroup
    */
-  public ChannelGroup getCommandChannelGroup() {
+  public final ChannelGroup getCommandChannelGroup() {
     return commandChannelGroup;
   }
 
   /**
    * @return the dataChannelGroup
    */
-  public ChannelGroup getDataChannelGroup() {
+  public final ChannelGroup getDataChannelGroup() {
     return dataChannelGroup;
   }
 
   /**
    * @return The TrafficCounterFactory
    */
-  public FtpGlobalTrafficShapingHandler getGlobalTrafficShapingHandler() {
+  public final FtpGlobalTrafficShapingHandler getGlobalTrafficShapingHandler() {
     return globalTrafficShapingHandler;
   }
 
   /**
    * @return a new ChannelTrafficShapingHandler
    */
-  public ChannelTrafficShapingHandler newChannelTrafficShapingHandler() {
+  public final ChannelTrafficShapingHandler newChannelTrafficShapingHandler() {
     if (configuration.getServerChannelWriteLimit() == 0 &&
         configuration.getServerChannelReadLimit() == 0) {
       return null;
@@ -581,7 +582,7 @@ public class FtpInternalConfiguration {
         configuration.getDelayLimit());
   }
 
-  public void releaseResources() {
+  public final void releaseResources() {
     WaarpSslUtility.forceCloseAllSslChannels();
     execWorker.shutdownGracefully();
     execDataWorker.shutdownGracefully();
@@ -593,28 +594,28 @@ public class FtpInternalConfiguration {
     executorService.shutdown();
   }
 
-  public boolean isAcceptAuthProt() {
+  public final boolean isAcceptAuthProt() {
     return acceptAuthProt;
   }
 
   /**
    * @return the usingNativeSsl
    */
-  public boolean isUsingNativeSsl() {
+  public final boolean isUsingNativeSsl() {
     return usingNativeSsl;
   }
 
   /**
    * @param usingNativeSsl the usingNativeSsl to set
    */
-  public void setUsingNativeSsl(final boolean usingNativeSsl) {
+  public final void setUsingNativeSsl(final boolean usingNativeSsl) {
     this.usingNativeSsl = usingNativeSsl;
   }
 
   /**
    * @param acceptAuthProt the acceptAuthProt to set
    */
-  public void setAcceptAuthProt(final boolean acceptAuthProt) {
+  public final void setAcceptAuthProt(final boolean acceptAuthProt) {
     this.acceptAuthProt = acceptAuthProt;
   }
 

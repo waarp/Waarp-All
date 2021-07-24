@@ -45,7 +45,7 @@ public class WaarpSlf4JLoggerFactory extends WaarpLoggerFactory {
   }
 
   @Override
-  protected void seLevelSpecific(final WaarpLogLevel level) {
+  protected final void seLevelSpecific(final WaarpLogLevel level) {
     final Logger logger = (Logger) LoggerFactory.getLogger(ROOT);
     switch (level) {
       case TRACE:
@@ -69,7 +69,7 @@ public class WaarpSlf4JLoggerFactory extends WaarpLoggerFactory {
   }
 
   @Override
-  public WaarpLogger newInstance(final String name) {
+  public final WaarpLogger newInstance(final String name) {
     final Logger logger = (Logger) LoggerFactory.getLogger(name);
     return new WaarpSlf4JLogger(logger);
   }
@@ -85,7 +85,7 @@ public class WaarpSlf4JLoggerFactory extends WaarpLoggerFactory {
     try {
       System.setErr(new PrintStream(new OutputStream() {
         @Override
-        public void write(final int b) {
+        public final void write(final int b) {
           buf.append((char) b);
         }
       }, true, "US-ASCII"));
@@ -107,7 +107,7 @@ public class WaarpSlf4JLoggerFactory extends WaarpLoggerFactory {
   }
 
   @Override
-  protected WaarpLogLevel getLevelSpecific() {
+  protected final WaarpLogLevel getLevelSpecific() {
     final Logger logger = (Logger) LoggerFactory.getLogger(ROOT);
     if (logger.isTraceEnabled()) {
       return WaarpLogLevel.TRACE;

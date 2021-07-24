@@ -115,8 +115,8 @@ public class FtpPrivateMibTest {
                                    FileSystemBasedDataBusinessHandler.class,
                                    new FilesystemBasedFileParameterImpl());
     try {
-      if (!configuration
-          .setConfigurationServerFromXml(file.getAbsolutePath())) {
+      if (!configuration.setConfigurationServerFromXml(
+          file.getAbsolutePath())) {
         logger.error("Bad main configuration");
         fail("Bad main configuration");
       }
@@ -218,8 +218,8 @@ public class FtpPrivateMibTest {
     client = new WaarpSimpleSnmpClient("udp:127.0.0.1/2001", 1162);
     // Create a monitor
     DbConstant.admin = new DbAdmin();
-    FileBasedConfiguration.fileBasedConfiguration
-        .setMonitoring(new FtpMonitoring(null));
+    FileBasedConfiguration.fileBasedConfiguration.setMonitoring(
+        new FtpMonitoring(null));
     // Create a Mib
     test = new FtpPrivateMib(
         FileBasedConfiguration.fileBasedConfiguration.getServerPort());
@@ -227,8 +227,8 @@ public class FtpPrivateMibTest {
     WaarpMOFactory.setFactory(new FtpVariableFactory());
     // Create the agent associated with the monitor and Mib
     agent = new WaarpSnmpAgent(new File(file),
-                               FileBasedConfiguration.fileBasedConfiguration
-                                   .getMonitoring(), test);
+                               FileBasedConfiguration.fileBasedConfiguration.getMonitoring(),
+                               test);
     FileBasedConfiguration.fileBasedConfiguration.setAgentSnmp(agent);
     agent.start();
   }

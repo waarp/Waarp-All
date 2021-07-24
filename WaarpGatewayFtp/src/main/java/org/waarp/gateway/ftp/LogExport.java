@@ -136,8 +136,8 @@ public class LogExport {
       try {
         destinationWriter = new FileWriter(destinationPath);
       } catch (final IOException e) {
-        SysErrLogger.FAKE_LOGGER
-            .syserr("Cannot open out file " + destinationPath);
+        SysErrLogger.FAKE_LOGGER.syserr(
+            "Cannot open out file " + destinationPath);
         return false;
       }
     }
@@ -166,8 +166,8 @@ public class LogExport {
         i++;
         if (i >= args.length ||
             args[i].charAt(0) == '-' && args[i].length() > 1) {
-          SysErrLogger.FAKE_LOGGER
-              .syserr("Error: -out needs a value.\n\n" + USAGE);
+          SysErrLogger.FAKE_LOGGER.syserr(
+              "Error: -out needs a value.\n\n" + USAGE);
           return false;
         }
         destinationPath = args[i].trim();
@@ -175,8 +175,8 @@ public class LogExport {
         i++;
         if (i >= args.length ||
             args[i].charAt(0) == '-' && args[i].length() > 1) {
-          SysErrLogger.FAKE_LOGGER
-              .syserr("Error: -start needs a value.\n\n" + USAGE);
+          SysErrLogger.FAKE_LOGGER.syserr(
+              "Error: -start needs a value.\n\n" + USAGE);
           return false;
         }
         start = WaarpStringUtils.fixDate(args[i]);
@@ -184,8 +184,8 @@ public class LogExport {
         i++;
         if (i >= args.length ||
             args[i].charAt(0) == '-' && args[i].length() > 1) {
-          SysErrLogger.FAKE_LOGGER
-              .syserr("Error: -stop needs a value.\n\n" + USAGE);
+          SysErrLogger.FAKE_LOGGER.syserr(
+              "Error: -stop needs a value.\n\n" + USAGE);
           return false;
         }
         stop = WaarpStringUtils.fixDate(args[i]);
@@ -207,9 +207,8 @@ public class LogExport {
 
     final DbPreparedStatement preparedStatement;
     try {
-      preparedStatement = DbTransferLog
-          .getLogPrepareStament(DbConstantFtp.gatewayAdmin.getSession(), start,
-                                stop, status);
+      preparedStatement = DbTransferLog.getLogPrepareStament(
+          DbConstantFtp.gatewayAdmin.getSession(), start, stop, status);
 
     } catch (final WaarpDatabaseNoConnectionException e) {
       return "An error occured while connecting to the database: " +
@@ -219,8 +218,8 @@ public class LogExport {
       return "An error occured with the database: " + e.getMessage();
     }
 
-    return DbTransferLog
-        .saveDbTransferLogFile(preparedStatement, destinationWriter, purge);
+    return DbTransferLog.saveDbTransferLogFile(preparedStatement,
+                                               destinationWriter, purge);
   }
 
   /**

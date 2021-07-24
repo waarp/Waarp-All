@@ -53,7 +53,7 @@ public class WaarpMOScalar extends MOScalar<Variable> {
    * @see MOScalar#get(SubRequest)
    */
   @Override
-  public void get(final SubRequest request) {
+  public final void get(final SubRequest request) {
     row.mib.updateServices(this);
     super.get(request);
   }
@@ -66,7 +66,7 @@ public class WaarpMOScalar extends MOScalar<Variable> {
    * @see MOScalar#find(MOScope)
    */
   @Override
-  public OID find(final MOScope range) {
+  public final OID find(final MOScope range) {
     row.mib.updateServices(range);
     return super.find(range);
   }

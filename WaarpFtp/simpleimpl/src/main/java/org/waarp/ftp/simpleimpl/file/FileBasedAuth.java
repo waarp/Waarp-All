@@ -59,7 +59,7 @@ public class FileBasedAuth extends FilesystemBasedFtpAuth {
   }
 
   @Override
-  protected void businessClean() {
+  protected final void businessClean() {
     currentAuth = null;
   }
 
@@ -76,11 +76,11 @@ public class FileBasedAuth extends FilesystemBasedFtpAuth {
    *     authentication
    */
   @Override
-  protected NextCommandReply setBusinessUser(final String user)
+  protected final NextCommandReply setBusinessUser(final String user)
       throws Reply530Exception {
     final SimpleAuth auth =
-        ((FileBasedConfiguration) ((FtpSession) getSession())
-            .getConfiguration()).getSimpleAuth(user);
+        ((FileBasedConfiguration) ((FtpSession) getSession()).getConfiguration()).getSimpleAuth(
+            user);
     if (auth == null) {
       setIsIdentified(false);
       currentAuth = null;
@@ -110,7 +110,7 @@ public class FileBasedAuth extends FilesystemBasedFtpAuth {
    *     authentication
    */
   @Override
-  protected NextCommandReply setBusinessPassword(final String password)
+  protected final NextCommandReply setBusinessPassword(final String password)
       throws Reply421Exception, Reply530Exception {
     if (currentAuth == null) {
       setIsIdentified(false);
@@ -150,7 +150,7 @@ public class FileBasedAuth extends FilesystemBasedFtpAuth {
    *     authentication
    */
   @Override
-  protected NextCommandReply setBusinessAccount(final String account)
+  protected final NextCommandReply setBusinessAccount(final String account)
       throws Reply530Exception {
     if (currentAuth == null) {
       throw new Reply530Exception("ACCT needs a USER first");
@@ -166,7 +166,7 @@ public class FileBasedAuth extends FilesystemBasedFtpAuth {
   }
 
   @Override
-  public boolean isBusinessPathValid(final String newPath) {
+  public final boolean isBusinessPathValid(final String newPath) {
     if (newPath == null) {
       return false;
     }
@@ -174,7 +174,7 @@ public class FileBasedAuth extends FilesystemBasedFtpAuth {
   }
 
   @Override
-  protected String setBusinessRootFromAuth() throws Reply421Exception {
+  protected final String setBusinessRootFromAuth() throws Reply421Exception {
     final String path;
     if (account == null) {
       path = DirInterface.SEPARATOR + user;
@@ -190,7 +190,7 @@ public class FileBasedAuth extends FilesystemBasedFtpAuth {
   }
 
   @Override
-  public boolean isAdmin() {
+  public final boolean isAdmin() {
     return currentAuth.isAdmin();
   }
 }

@@ -31,7 +31,7 @@ import org.waarp.ftp.core.command.AbstractCommand;
 public class CCC extends AbstractCommand {
 
   @Override
-  public void exec() throws CommandAbstractException {
+  public final void exec() throws CommandAbstractException {
     if (!getSession().getConfiguration().getFtpInternalConfiguration()
                      .isAcceptAuthProt()) {
       throw new Reply534Exception("CCC not supported");

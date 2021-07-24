@@ -125,10 +125,10 @@ public class R66PreparedTransferExecutor extends AbstractExecutor {
   }
 
   @Override
-  public void run() throws CommandAbstractException {
+  public final void run() throws CommandAbstractException {
     if (transferArgs == null) {
-      logger
-          .error("Mandatory argument is missing: -to  -rule  -file or -to -id");
+      logger.error(
+          "Mandatory argument is missing: -to  -rule  -file or -to -id");
       throw new Reply421Exception(
           "Mandatory argument is missing: -to  -rule  -file or -to -id");
     }

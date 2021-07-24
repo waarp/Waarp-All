@@ -43,173 +43,173 @@ public class LogJsonPacket extends JsonPacket {
   /**
    * @return the purge
    */
-  public boolean isPurge() {
+  public final boolean isPurge() {
     return purge;
   }
 
   /**
    * @param purge the purge to set
    */
-  public void setPurge(final boolean purge) {
+  public final void setPurge(final boolean purge) {
     this.purge = purge;
   }
 
   /**
    * @return the clean
    */
-  public boolean isClean() {
+  public final boolean isClean() {
     return clean;
   }
 
   /**
    * @param clean the clean to set
    */
-  public void setClean(final boolean clean) {
+  public final void setClean(final boolean clean) {
     this.clean = clean;
   }
 
   /**
    * @return the statuspending
    */
-  public boolean isStatuspending() {
+  public final boolean isStatuspending() {
     return statuspending;
   }
 
   /**
    * @param statuspending the statuspending to set
    */
-  public void setStatuspending(final boolean statuspending) {
+  public final void setStatuspending(final boolean statuspending) {
     this.statuspending = statuspending;
   }
 
   /**
    * @return the statustransfer
    */
-  public boolean isStatustransfer() {
+  public final boolean isStatustransfer() {
     return statustransfer;
   }
 
   /**
    * @param statustransfer the statustransfer to set
    */
-  public void setStatustransfer(final boolean statustransfer) {
+  public final void setStatustransfer(final boolean statustransfer) {
     this.statustransfer = statustransfer;
   }
 
   /**
    * @return the statusdone
    */
-  public boolean isStatusdone() {
+  public final boolean isStatusdone() {
     return statusdone;
   }
 
   /**
    * @param statusdone the statusdone to set
    */
-  public void setStatusdone(final boolean statusdone) {
+  public final void setStatusdone(final boolean statusdone) {
     this.statusdone = statusdone;
   }
 
   /**
    * @return the statuserror
    */
-  public boolean isStatuserror() {
+  public final boolean isStatuserror() {
     return statuserror;
   }
 
   /**
    * @param statuserror the statuserror to set
    */
-  public void setStatuserror(final boolean statuserror) {
+  public final void setStatuserror(final boolean statuserror) {
     this.statuserror = statuserror;
   }
 
   /**
    * @return the rule
    */
-  public String getRule() {
+  public final String getRule() {
     return rule;
   }
 
   /**
    * @param rule the rule to set
    */
-  public void setRule(final String rule) {
+  public final void setRule(final String rule) {
     this.rule = rule;
   }
 
   /**
    * @return the request
    */
-  public String getRequest() {
+  public final String getRequest() {
     return request;
   }
 
   /**
    * @param request the request to set
    */
-  public void setRequest(final String request) {
+  public final void setRequest(final String request) {
     this.request = request;
   }
 
   /**
    * @return the start
    */
-  public Date getStart() {
+  public final Date getStart() {
     return start;
   }
 
   /**
    * @param start the start to set
    */
-  public void setStart(final Date start) {
+  public final void setStart(final Date start) {
     this.start = start;
   }
 
   /**
    * @return the stop
    */
-  public Date getStop() {
+  public final Date getStop() {
     return stop;
   }
 
   /**
    * @param stop the stop to set
    */
-  public void setStop(final Date stop) {
+  public final void setStop(final Date stop) {
     this.stop = stop;
   }
 
   /**
    * @return the startid
    */
-  public String getStartid() {
+  public final String getStartid() {
     return startid;
   }
 
   /**
    * @param startid the startid to set
    */
-  public void setStartid(final String startid) {
+  public final void setStartid(final String startid) {
     this.startid = startid;
   }
 
   /**
    * @return the stopid
    */
-  public String getStopid() {
+  public final String getStopid() {
     return stopid;
   }
 
   /**
    * @param stopid the stopid to set
    */
-  public void setStopid(final String stopid) {
+  public final void setStopid(final String stopid) {
     this.stopid = stopid;
   }
 
   @Override
-  public void fromJson(final JsonPacket other) {
+  public final void fromJson(final JsonPacket other) {
     super.fromJson(other);
     if (other instanceof LogJsonPacket) {
       final LogJsonPacket other2 = (LogJsonPacket) other;

@@ -32,7 +32,7 @@ public class FilesystemBasedDirJdk5 extends FilesystemBasedDirJdkAbstract {
    * @return True if the file is executable
    */
   @Override
-  public boolean canExecute(final File file) {
+  public final boolean canExecute(final File file) {
     return false;
   }
 
@@ -42,7 +42,7 @@ public class FilesystemBasedDirJdk5 extends FilesystemBasedDirJdkAbstract {
    * @return the free space of the given Directory
    */
   @Override
-  public long getFreeSpace(final File directory) {
+  public final long getFreeSpace(final File directory) {
     if (FilesystemBasedDirJdkAbstract.ueApacheCommonsIo) {
       return FilesystemBasedCommonsIo.freeSpace(directory.getAbsolutePath());
     }

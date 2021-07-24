@@ -27,7 +27,7 @@ import org.waarp.ftp.core.command.AbstractCommand;
  */
 public class HELP extends AbstractCommand {
   @Override
-  public void exec() {
+  public final void exec() {
     getSession().setReplyCode(ReplyCode.REPLY_214_HELP_MESSAGE,
                               getSession().getBusinessHandler()
                                           .getHelpMessage(getArg()));

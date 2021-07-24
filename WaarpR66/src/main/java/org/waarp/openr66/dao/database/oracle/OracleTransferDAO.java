@@ -37,7 +37,7 @@ public class OracleTransferDAO extends DBTransferDAO {
   }
 
   @Override
-  protected long getNextId() throws DAOConnectionException {
+  protected final long getNextId() throws DAOConnectionException {
     PreparedStatement ps = null;
     ResultSet rs = null;
     try {

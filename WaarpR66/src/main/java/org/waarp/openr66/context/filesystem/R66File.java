@@ -102,7 +102,7 @@ public class R66File extends FilesystemBasedFileImpl {
    * @throws OpenR66RunnerErrorException
    * @throws OpenR66ProtocolSystemException
    */
-  public void retrieveBlocking(final AtomicBoolean running)
+  public final void retrieveBlocking(final AtomicBoolean running)
       throws OpenR66RunnerErrorException, OpenR66ProtocolSystemException {
     boolean retrieveDone = false;
     String errorMesg = "";
@@ -110,12 +110,12 @@ public class R66File extends FilesystemBasedFileImpl {
     logger.debug("File to retrieve: {}", this);
     long toRead = 0;
     try {
-      long length = length();
+      final long length = length();
       toRead = (length - getPosition());
       if (!isReady) {
-        logger
-            .error("File is not ready to be retrieved: Filename {} isReady {}",
-                   getBasename(), isReady);
+        logger.error(
+            "File is not ready to be retrieved: Filename {} isReady {}",
+            getBasename(), isReady);
         errorMesg = "File is not ready to be retrieved: " + "Filename " +
                     getBasename() + " isReady " + isReady;
       } else if (toRead < 0) {
@@ -126,7 +126,7 @@ public class R66File extends FilesystemBasedFileImpl {
             "File is not ready to be read: " + "Filename " + getBasename() +
             " initialLength " + length + " position " + getPosition();
       }
-    } catch (CommandAbstractException e) {
+    } catch (final CommandAbstractException e) {
       logger.warn(e.getMessage());
     }
     final LocalChannelReference localChannelReference =
@@ -182,13 +182,13 @@ public class R66File extends FilesystemBasedFileImpl {
       ChannelFuture future2;
       if (running.get() && !Thread.interrupted()) {
         if (Configuration.configuration.isGlobalDigest()) {
-          future1 = RetrieveRunner
-              .writeWhenPossible(block, localChannelReference, digestGlobal,
-                                 digestBlock);
+          future1 =
+              RetrieveRunner.writeWhenPossible(block, localChannelReference,
+                                               digestGlobal, digestBlock);
         } else {
-          future1 = RetrieveRunner
-              .writeWhenPossible(block, localChannelReference, null,
-                                 digestBlock);
+          future1 =
+              RetrieveRunner.writeWhenPossible(block, localChannelReference,
+                                               null, digestBlock);
         }
       }
       // While not last block
@@ -219,13 +219,13 @@ public class R66File extends FilesystemBasedFileImpl {
           return;
         }
         if (Configuration.configuration.isGlobalDigest()) {
-          future2 = RetrieveRunner
-              .writeWhenPossible(block, localChannelReference, digestGlobal,
-                                 digestBlock);
+          future2 =
+              RetrieveRunner.writeWhenPossible(block, localChannelReference,
+                                               digestGlobal, digestBlock);
         } else {
-          future2 = RetrieveRunner
-              .writeWhenPossible(block, localChannelReference, null,
-                                 digestBlock);
+          future2 =
+              RetrieveRunner.writeWhenPossible(block, localChannelReference,
+                                               null, digestBlock);
         }
         future1 = future2;
       }
@@ -261,7 +261,7 @@ public class R66File extends FilesystemBasedFileImpl {
       }
       try {
         closeFile();
-      } catch (CommandAbstractException ignore) {
+      } catch (final CommandAbstractException ignore) {
         SysErrLogger.FAKE_LOGGER.ignoreLog(ignore);
       }
       if (retrieveDone) {
@@ -280,8 +280,7 @@ public class R66File extends FilesystemBasedFileImpl {
           getSession().setFinalizeTransfer(false,
                                            new R66Result(e, getSession(), false,
                                                          ErrorCode.Internal,
-                                                         getSession()
-                                                             .getRunner()));
+                                                         getSession().getRunner()));
         }
       } else {
         // An error occurs!
@@ -299,12 +298,18 @@ public class R66File extends FilesystemBasedFileImpl {
    *
    * @return the File associated with the current FileInterface operation
    */
-  public File getTrueFile() {
+  public final File getTrueFile() {
     if (isExternal) {
-      return new File(currentFile);
+      if (currentRealFile == null) {
+        currentRealFile = new File(currentFile);
+      }
+      return currentRealFile;
     }
     try {
-      return getFileFromPath(getFile());
+      if (currentRealFile == null) {
+        currentRealFile = getFileFromPath(getFile());
+      }
+      return currentRealFile;
     } catch (final CommandAbstractException e) {
       logger.warn("Exception while getting file: " + this + " : {}",
                   e.getMessage());
@@ -315,8 +320,9 @@ public class R66File extends FilesystemBasedFileImpl {
   /**
    * @return the basename of the current file
    */
-  public String getBasename() {
-    return getBasename(currentFile);
+  public final String getBasename() {
+    getTrueFile();
+    return currentRealFile.getName();
   }
 
   /**
@@ -337,60 +343,69 @@ public class R66File extends FilesystemBasedFileImpl {
   }
 
   @Override
-  public R66Session getSession() {
+  public final R66Session getSession() {
     return (R66Session) session;
   }
 
   @Override
-  public boolean canRead() throws CommandAbstractException {
+  public final boolean canRead() throws CommandAbstractException {
     if (isExternal) {
-      final File file = new File(currentFile);
-      logger.debug("Final File: {} CanRead: {}", file, file.canRead());
-      return canRead(file);
+      if (currentRealFile == null) {
+        currentRealFile = new File(currentFile);
+      }
+      logger.debug("Final File: {} CanRead: {}", currentRealFile,
+                   currentRealFile.canRead());
+      return canRead(currentRealFile);
     }
     return super.canRead();
   }
 
   @Override
-  public boolean canWrite() throws CommandAbstractException {
+  public final boolean canWrite() throws CommandAbstractException {
     if (isExternal) {
-      final File file = new File(currentFile);
-      if (file.exists()) {
-        return file.canWrite();
+      if (currentRealFile == null) {
+        currentRealFile = new File(currentFile);
       }
-      return file.getParentFile().canWrite();
+      if (currentRealFile.exists()) {
+        return currentRealFile.canWrite();
+      }
+      return currentRealFile.getParentFile().canWrite();
     }
     return super.canWrite();
   }
 
   @Override
-  public boolean delete() throws CommandAbstractException {
+  public final boolean delete() throws CommandAbstractException {
     if (isExternal) {
-      final File file = new File(currentFile);
+      if (currentRealFile == null) {
+        currentRealFile = new File(currentFile);
+      }
       checkIdentify();
       if (!isReady) {
         return false;
       }
-      if (!file.exists()) {
+      if (!currentRealFile.exists()) {
         return true;
       }
       closeFile();
-      return file.delete();
+      return currentRealFile.delete();
     }
     return super.delete();
   }
 
   @Override
-  public boolean exists() throws CommandAbstractException {
+  public final boolean exists() throws CommandAbstractException {
     if (isExternal) {
-      final File file = new File(currentFile);
-      return exists(file);
+      if (currentRealFile == null) {
+        currentRealFile = new File(currentFile);
+      }
+      return exists(currentRealFile);
     }
     return super.exists();
   }
 
   @Override
-  protected FileInputStream getFileInputStream() {
+  protected final FileInputStream getFileInputStream() {
     if (!isExternal) {
       return super.getFileInputStream();
     }
@@ -421,7 +436,7 @@ public class R66File extends FilesystemBasedFileImpl {
   }
 
   @Override
-  protected RandomAccessFile getRandomFile() {
+  protected final RandomAccessFile getRandomFile() {
     if (!isExternal) {
       return super.getRandomFile();
     }
@@ -453,7 +468,7 @@ public class R66File extends FilesystemBasedFileImpl {
    * @return the FileOutputStream (OUT)
    */
   @Override
-  protected FileOutputStream getFileOutputStream(final boolean append) {
+  protected final FileOutputStream getFileOutputStream(final boolean append) {
     if (!isExternal) {
       return super.getFileOutputStream(append);
     }
@@ -488,29 +503,35 @@ public class R66File extends FilesystemBasedFileImpl {
   }
 
   @Override
-  public boolean isDirectory() throws CommandAbstractException {
+  public final boolean isDirectory() throws CommandAbstractException {
     if (isExternal) {
-      final File dir = new File(currentFile);
-      return isDirectory(dir);
+      if (currentRealFile == null) {
+        currentRealFile = new File(currentFile);
+      }
+      return isDirectory(currentRealFile);
     }
     return super.isDirectory();
   }
 
   @Override
-  public boolean isFile() throws CommandAbstractException {
+  public final boolean isFile() throws CommandAbstractException {
     if (isExternal) {
-      final File file = new File(currentFile);
-      return isFile(file);
+      if (currentRealFile == null) {
+        currentRealFile = new File(currentFile);
+      }
+      return isFile(currentRealFile);
     }
     return super.isFile();
   }
 
   @Override
-  public long length() throws CommandAbstractException {
+  public final long length() throws CommandAbstractException {
     if (isExternal) {
-      final File file = new File(currentFile);
-      if (canRead(file)) {
-        return file.length();
+      if (currentRealFile == null) {
+        currentRealFile = new File(currentFile);
+      }
+      if (canRead(currentRealFile)) {
+        return currentRealFile.length();
       } else {
         return -1;
       }
@@ -518,7 +539,7 @@ public class R66File extends FilesystemBasedFileImpl {
     return super.length();
   }
 
-  protected String getFullInDir() {
+  protected final String getFullInDir() {
     final DbTaskRunner runner = getSession().getRunner();
     if (runner != null) {
       final R66Dir dir = new R66Dir(getSession());
@@ -533,7 +554,8 @@ public class R66File extends FilesystemBasedFileImpl {
   }
 
   @Override
-  public boolean renameTo(final String path) throws CommandAbstractException {
+  public final boolean renameTo(final String path)
+      throws CommandAbstractException {
     if (!isExternal) {
       return super.renameTo(path);
     }
@@ -567,10 +589,11 @@ public class R66File extends FilesystemBasedFileImpl {
           return false;
         }
         currentFile = getRelativePath(newFile);
+        currentRealFile = newFile;
         isExternal = false;
         isReady = true;
-        logger
-            .debug("File renamed to: {} and real position: {}", this, newFile);
+        logger.debug("File renamed to: {} and real position: {}", this,
+                     newFile);
         return true;
       }
     }
@@ -598,7 +621,7 @@ public class R66File extends FilesystemBasedFileImpl {
    *
    * @throws CommandAbstractException
    */
-  public boolean renameTo(final String path, final boolean external)
+  public final boolean renameTo(final String path, final boolean external)
       throws CommandAbstractException {
     if (!external) {
       return renameTo(path);
@@ -632,6 +655,7 @@ public class R66File extends FilesystemBasedFileImpl {
           return false;
         }
         currentFile = AbstractDir.normalizePath(newFile.getAbsolutePath());
+        currentRealFile = newFile;
         isExternal = true;
         isReady = true;
         return true;
@@ -651,16 +675,18 @@ public class R66File extends FilesystemBasedFileImpl {
    *
    * @throws CommandAbstractException
    */
-  public void replaceFilename(final String filename, final boolean isExternal)
+  public final void replaceFilename(final String filename,
+                                    final boolean isExternal)
       throws CommandAbstractException {
     closeFile();
     currentFile = filename;
+    currentRealFile = null;
     this.isExternal = isExternal;
     isReady = true;
   }
 
   @Override
-  public boolean closeFile() throws CommandAbstractException {
+  public final boolean closeFile() throws CommandAbstractException {
     final boolean status = super.closeFile();
     // FORCE re-open file
     isReady = true;
@@ -670,7 +696,7 @@ public class R66File extends FilesystemBasedFileImpl {
   /**
    * @return True if this file is outside OpenR66 Base directory
    */
-  public boolean isExternal() {
+  public final boolean isExternal() {
     return isExternal;
   }
 

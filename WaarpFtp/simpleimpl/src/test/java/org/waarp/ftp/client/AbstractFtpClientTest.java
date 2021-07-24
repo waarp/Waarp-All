@@ -86,14 +86,14 @@ public abstract class AbstractFtpClientTest {
       }
       logger.warn("Feature commands");
       SysErrLogger.FAKE_LOGGER.sysout("SITE: " + client.featureEnabled("SITE"));
-      SysErrLogger.FAKE_LOGGER
-          .sysout("SITE CRC: " + client.featureEnabled("SITE XCRC"));
+      SysErrLogger.FAKE_LOGGER.sysout(
+          "SITE CRC: " + client.featureEnabled("SITE XCRC"));
       SysErrLogger.FAKE_LOGGER.sysout("CRC: " + client.featureEnabled("XCRC"));
       SysErrLogger.FAKE_LOGGER.sysout("MD5: " + client.featureEnabled("XMD5"));
-      SysErrLogger.FAKE_LOGGER
-          .sysout("DIGEST: " + client.featureEnabled("XDIGEST"));
-      SysErrLogger.FAKE_LOGGER
-          .sysout("SHA1: " + client.featureEnabled("XSHA1"));
+      SysErrLogger.FAKE_LOGGER.sysout(
+          "DIGEST: " + client.featureEnabled("XDIGEST"));
+      SysErrLogger.FAKE_LOGGER.sysout(
+          "SHA1: " + client.featureEnabled("XSHA1"));
     } finally {
       logger.warn("Logout");
       client.logout();

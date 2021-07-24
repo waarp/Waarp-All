@@ -46,14 +46,14 @@ public class WaarpChannelFuture extends WaarpFuture {
   /**
    * @return the channel as result
    */
-  public Channel channel() {
+  public final Channel channel() {
     return channel;
   }
 
   /**
    * @param channel the channel to set
    */
-  public void setChannel(final Channel channel) {
+  public final void setChannel(final Channel channel) {
     this.channel = channel;
   }
 

@@ -55,7 +55,7 @@ public class DbModelMysqlKernel extends DbModelMysql {
   private final ReentrantLock lock = new ReentrantLock();
 
   @Override
-  public void createTables(final DbSession session)
+  public final void createTables(final DbSession session)
       throws WaarpDatabaseNoConnectionException {
     createTableMonitoring(session);
   }
@@ -151,7 +151,7 @@ public class DbModelMysqlKernel extends DbModelMysql {
   }
 
   @Override
-  public void resetSequence(final DbSession session, final long newvalue)
+  public final void resetSequence(final DbSession session, final long newvalue)
       throws WaarpDatabaseNoConnectionException {
     resetSequenceMonitoring(session, newvalue);
   }
@@ -241,13 +241,15 @@ public class DbModelMysqlKernel extends DbModelMysql {
   }
 
   @Override
-  public boolean upgradeDb(final DbSession session, final String version) {
+  public final boolean upgradeDb(final DbSession session,
+                                 final String version) {
     return false;
   }
 
   @Override
-  public boolean needUpgradeDb(final DbSession session, final String version,
-                               final boolean tryFix) {
+  public final boolean needUpgradeDb(final DbSession session,
+                                     final String version,
+                                     final boolean tryFix) {
     return false;
   }
 }

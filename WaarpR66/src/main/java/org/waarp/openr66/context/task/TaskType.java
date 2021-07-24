@@ -71,9 +71,10 @@ public enum TaskType {
    * @param associatedTaskNames if a previously TASK name was already set, it is replaced by the new Factory, including standard TASK_TYPE
    * @param extendedTaskFactory the Factory to use to create the associated Task with its name
    */
-  public static void addExtendedTaskFactory(Set<String> associatedTaskNames,
-                                            AbstractExtendedTaskFactory extendedTaskFactory) {
-    for (String associatedName : associatedTaskNames) {
+  public static void addExtendedTaskFactory(
+      final Set<String> associatedTaskNames,
+      final AbstractExtendedTaskFactory extendedTaskFactory) {
+    for (final String associatedName : associatedTaskNames) {
       logger.debug("Add {} with {}", associatedName,
                    extendedTaskFactory.getName());
       extendedTaskTypeMap.put(associatedName, extendedTaskFactory);
@@ -86,9 +87,9 @@ public enum TaskType {
   static {
     // Try to load S3 Tasks if S3TaskFactory exists
     try {
-      Class s3TaskFactoryClass = Class.forName(S_3_TASK_FACTORY);
+      final Class s3TaskFactoryClass = Class.forName(S_3_TASK_FACTORY);
       WaarpSystemUtil.newInstance(s3TaskFactoryClass);
-    } catch (Exception ignore) {
+    } catch (final Exception ignore) {
       // Not found and ignore
       SysErrLogger.FAKE_LOGGER.ignoreLog(ignore);
     }
@@ -108,7 +109,7 @@ public enum TaskType {
    *
    * @return True if this task is known
    */
-  public static boolean isValidTask(String task) {
+  public static boolean isValidTask(final String task) {
     try {
       TaskType.valueOf(task);
       return true;
@@ -254,7 +255,7 @@ public enum TaskType {
                                            final R66Session session)
       throws OpenR66RunnerErrorException {
     // EXTENDED first
-    AbstractExtendedTaskFactory factory = extendedTaskTypeMap.get(name);
+    final AbstractExtendedTaskFactory factory = extendedTaskTypeMap.get(name);
     if (factory != null) {
       return factory.getTaskFromId(name, argRule, delay, session);
     }
@@ -289,7 +290,7 @@ public enum TaskType {
                                                       final R66Session session)
       throws OpenR66RunnerErrorException {
     // EXTENDED first
-    AbstractExtendedTaskFactory factory = extendedTaskTypeMap.get(name);
+    final AbstractExtendedTaskFactory factory = extendedTaskTypeMap.get(name);
     if (factory != null) {
       return factory.getTaskFromIdForBusiness(name, argRule, delay, session);
     }

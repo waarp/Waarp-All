@@ -635,7 +635,7 @@ public class IcapScanFile {
   /**
    * @return the file path
    */
-  public String getFilePath() {
+  public final String getFilePath() {
     return filepath;
   }
 
@@ -644,7 +644,7 @@ public class IcapScanFile {
    *
    * @return This
    */
-  public IcapScanFile setFilePath(final String filePath) {
+  public final IcapScanFile setFilePath(final String filePath) {
     this.filepath = filePath;
     return this;
   }
@@ -652,7 +652,7 @@ public class IcapScanFile {
   /**
    * @return the server IP
    */
-  public String getServerIP() {
+  public final String getServerIP() {
     return serverIP;
   }
 
@@ -661,7 +661,7 @@ public class IcapScanFile {
    *
    * @return This
    */
-  public IcapScanFile setServerIP(final String serverIP) {
+  public final IcapScanFile setServerIP(final String serverIP) {
     this.serverIP = serverIP;
     return this;
   }
@@ -669,56 +669,56 @@ public class IcapScanFile {
   /**
    * @return the Icap Model if any (null if none)
    */
-  public IcapModel getIcapModel() {
+  public final IcapModel getIcapModel() {
     return icapModel;
   }
 
   /**
    * @return the path to move in error or null
    */
-  public String getPathMoveError() {
+  public final String getPathMoveError() {
     return pathMoveError;
   }
 
   /**
    * @return True if the file will be deleted in error
    */
-  public boolean isDeleteOnError() {
+  public final boolean isDeleteOnError() {
     return deleteOnError;
   }
 
   /**
    * @return True if the send on error option is set
    */
-  public boolean isSendOnError() {
+  public final boolean isSendOnError() {
     return sendOnError;
   }
 
   /**
    * @return True if a network error option is set to ignore such
    */
-  public boolean isIgnoreNetworkError() {
+  public final boolean isIgnoreNetworkError() {
     return ignoreNetworkError;
   }
 
   /**
    * @return True if a too big file error option is set to ignore such
    */
-  public boolean isIgnoreTooBigFileError() {
+  public final boolean isIgnoreTooBigFileError() {
     return ignoreTooBigFileError;
   }
 
   /**
    * @return the Logger Level desired during ICAP operation or null if none
    */
-  public WaarpLogLevel getLogLevel() {
+  public final WaarpLogLevel getLogLevel() {
     return logLevel;
   }
 
   /**
    * @return the Map of key from ICAP if any (null if none)
    */
-  public Map<String, String> getResult() {
+  public final Map<String, String> getResult() {
     return result;
   }
 
@@ -757,8 +757,8 @@ public class IcapScanFile {
    * @param args to get parameters from
    */
   public static void main(final String[] args) {
-    WaarpLoggerFactory
-        .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));
+    WaarpLoggerFactory.setDefaultFactoryIfNotSame(
+        new WaarpSlf4JLoggerFactory(null));
     System.exit(scanFile(args));
   }
 
@@ -833,8 +833,8 @@ public class IcapScanFile {
     if (args == null || args.length == 0) {
       throw new IllegalArgumentException(ARGUMENTS_CANNOT_BE_EMPTY_OR_NULL);
     }
-    WaarpLoggerFactory
-        .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));
+    WaarpLoggerFactory.setDefaultFactoryIfNotSame(
+        new WaarpSlf4JLoggerFactory(null));
     final IcapScanFile icapScanFile;
     try {
       icapScanFile = getIcapScanFileArgs(args);
@@ -879,7 +879,7 @@ public class IcapScanFile {
    * @throws IOException if the file is infected and a post error action is
    *     in error
    */
-  public int scanFile() throws IcapException, IOException {
+  public final int scanFile() throws IcapException, IOException {
     final WaarpLogLevel waarpLogLevel = getLogLevel();
     WaarpLogLevel oldLevel = null;
     try {

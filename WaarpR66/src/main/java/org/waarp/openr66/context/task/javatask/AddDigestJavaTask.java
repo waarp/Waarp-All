@@ -60,7 +60,7 @@ public class AddDigestJavaTask extends AbstractExecJavaTask {
       Pattern.compile(S_DIGEST, Pattern.LITERAL);
 
   @Override
-  public void run() {
+  public final void run() {
     logger.debug("{}", this);
     final String[] args = BLANK.split(fullarg);
     final String fileInfo;
@@ -93,8 +93,9 @@ public class AddDigestJavaTask extends AbstractExecJavaTask {
     }
     final String key;
     try {
-      key = FilesystemBasedDigest.getHex(FilesystemBasedDigest.getHash(
-          session.getFile().getTrueFile(), true, digest));
+      key = FilesystemBasedDigest.getHex(
+          FilesystemBasedDigest.getHash(session.getFile().getTrueFile(), true,
+                                        digest));
     } catch (final IOException e1) {
       logger.error("Digest not correctly computed: " + algo + ": {}",
                    e1.getMessage());

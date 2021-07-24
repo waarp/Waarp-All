@@ -248,8 +248,8 @@ public abstract class HttpMonitoringAbstract extends TestAbstract {
     final File totestBig =
         generateOutFile("/tmp/R66/out/testTaskBig.txt", size);
 
-    Configuration.configuration
-        .changeNetworkLimit(bandwidth, bandwidth, bandwidth, bandwidth, 1000);
+    Configuration.configuration.changeNetworkLimit(bandwidth, bandwidth,
+                                                   bandwidth, bandwidth, 1000);
 
     final R66Future future = new R66Future(true);
     final long time1 = System.currentTimeMillis();
@@ -278,8 +278,8 @@ public abstract class HttpMonitoringAbstract extends TestAbstract {
     final File totestBig =
         generateOutFile("/tmp/R66/out/testTaskBig.txt", size);
 
-    Configuration.configuration
-        .changeNetworkLimit(bandwidth, bandwidth, bandwidth, bandwidth, 1000);
+    Configuration.configuration.changeNetworkLimit(bandwidth, bandwidth,
+                                                   bandwidth, bandwidth, 1000);
 
     final R66Future future = new R66Future(true);
     final long time1 = System.currentTimeMillis();
@@ -336,8 +336,8 @@ public abstract class HttpMonitoringAbstract extends TestAbstract {
     stop.delete();
     File all = new File(SpooledThread.SPOOLED_ROOT);
     FileUtils.forceDeleteRecursiveDir(all);
-    logger
-        .warn("Launched {}", spooledThread.spooledDirectoryTransfer.getSent());
+    logger.warn("Launched {}",
+                spooledThread.spooledDirectoryTransfer.getSent());
     logger.warn("Error {}", spooledThread.spooledDirectoryTransfer.getError());
     numberTransfer += 3;
   }

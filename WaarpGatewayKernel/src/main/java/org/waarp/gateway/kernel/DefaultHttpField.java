@@ -53,7 +53,7 @@ public class DefaultHttpField extends AbstractHttpField {
   }
 
   @Override
-  public String getHtmlFormField(final HttpPage page)
+  public final String getHtmlFormField(final HttpPage page)
       throws HttpIncorrectRequestException {
     final StringBuilder builder = new StringBuilder();
     switch (getFieldtype()) {
@@ -170,7 +170,7 @@ public class DefaultHttpField extends AbstractHttpField {
   }
 
   @Override
-  public String getHtmlTabField(final HttpPage page) {
+  public final String getHtmlTabField(final HttpPage page) {
     final StringBuilder builder =
         new StringBuilder().append(getFieldinfo()).append("</TD><TD>");
     if (fieldvalue != null) {
@@ -180,7 +180,7 @@ public class DefaultHttpField extends AbstractHttpField {
   }
 
   @Override
-  public DefaultHttpField clone() {
+  public final DefaultHttpField clone() {
     return new DefaultHttpField(getFieldname(), getFieldtype(), getFieldinfo(),
                                 fieldvalue, isFieldvisibility(),
                                 isFieldmandatory(), isFieldcookieset(),
@@ -189,7 +189,7 @@ public class DefaultHttpField extends AbstractHttpField {
   }
 
   @Override
-  public void setStringValue(final String value)
+  public final void setStringValue(final String value)
       throws HttpIncorrectRequestException {
     switch (getFieldtype()) {
       case BUSINESS_INPUT_CHECKBOX:
@@ -227,7 +227,7 @@ public class DefaultHttpField extends AbstractHttpField {
   }
 
   @Override
-  public void setFileUpload(final FileUpload fileUpload)
+  public final void setFileUpload(final FileUpload fileUpload)
       throws HttpIncorrectRequestException {
     if (getFieldtype() == FieldRole.BUSINESS_INPUT_FILE) {
       if (isPresent()) {

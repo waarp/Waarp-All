@@ -60,12 +60,12 @@ public abstract class AbstractWaarpLogger implements WaarpLogger, Serializable {
   }
 
   @Override
-  public String name() {
+  public final String name() {
     return name;
   }
 
   @Override
-  public boolean isEnabled(final WaarpLogLevel level) {
+  public final boolean isEnabled(final WaarpLogLevel level) {
     switch (level) {
       case TRACE:
         return isTraceEnabled();
@@ -83,33 +83,33 @@ public abstract class AbstractWaarpLogger implements WaarpLogger, Serializable {
   }
 
   @Override
-  public void trace(final Throwable t) {
+  public final void trace(final Throwable t) {
     trace(EXCEPTION_MESSAGE, t);
   }
 
   @Override
-  public void debug(final Throwable t) {
+  public final void debug(final Throwable t) {
     debug(EXCEPTION_MESSAGE, t);
   }
 
   @Override
-  public void info(final Throwable t) {
+  public final void info(final Throwable t) {
     info(EXCEPTION_MESSAGE, t);
   }
 
   @Override
-  public void warn(final Throwable t) {
+  public final void warn(final Throwable t) {
     warn(EXCEPTION_MESSAGE, t);
   }
 
   @Override
-  public void error(final Throwable t) {
+  public final void error(final Throwable t) {
     error(EXCEPTION_MESSAGE, t);
   }
 
   @Override
-  public void log(final WaarpLogLevel level, final String msg,
-                  final Throwable cause) {
+  public final void log(final WaarpLogLevel level, final String msg,
+                        final Throwable cause) {
     switch (level) {
       case TRACE:
         trace(msg, cause);
@@ -131,7 +131,7 @@ public abstract class AbstractWaarpLogger implements WaarpLogger, Serializable {
   }
 
   @Override
-  public void log(final WaarpLogLevel level, final Throwable cause) {
+  public final void log(final WaarpLogLevel level, final Throwable cause) {
     switch (level) {
       case TRACE:
         trace(cause);
@@ -153,7 +153,7 @@ public abstract class AbstractWaarpLogger implements WaarpLogger, Serializable {
   }
 
   @Override
-  public void log(final WaarpLogLevel level, final String msg) {
+  public final void log(final WaarpLogLevel level, final String msg) {
     switch (level) {
       case TRACE:
         trace(msg);
@@ -175,8 +175,8 @@ public abstract class AbstractWaarpLogger implements WaarpLogger, Serializable {
   }
 
   @Override
-  public void log(final WaarpLogLevel level, final String format,
-                  final Object arg) {
+  public final void log(final WaarpLogLevel level, final String format,
+                        final Object arg) {
     switch (level) {
       case TRACE:
         trace(format, arg);
@@ -198,8 +198,8 @@ public abstract class AbstractWaarpLogger implements WaarpLogger, Serializable {
   }
 
   @Override
-  public void log(final WaarpLogLevel level, final String format,
-                  final Object argA, final Object argB) {
+  public final void log(final WaarpLogLevel level, final String format,
+                        final Object argA, final Object argB) {
     switch (level) {
       case TRACE:
         trace(format, argA, argB);
@@ -221,8 +221,8 @@ public abstract class AbstractWaarpLogger implements WaarpLogger, Serializable {
   }
 
   @Override
-  public void log(final WaarpLogLevel level, final String format,
-                  final Object... arguments) {
+  public final void log(final WaarpLogLevel level, final String format,
+                        final Object... arguments) {
     switch (level) {
       case TRACE:
         trace(format, arguments);
@@ -243,7 +243,7 @@ public abstract class AbstractWaarpLogger implements WaarpLogger, Serializable {
     }
   }
 
-  protected Object readResolve() {
+  protected final Object readResolve() {
     return WaarpLoggerFactory.getInstance(name());
   }
 
@@ -336,7 +336,7 @@ public abstract class AbstractWaarpLogger implements WaarpLogger, Serializable {
    *
    * @return "MethodName(FileName:LineNumber)"
    */
-  public static String getLoggerMethodAndLineCallee(int deep) {
+  public static String getLoggerMethodAndLineCallee(final int deep) {
     final StackTraceElement elt =
         Thread.currentThread().getStackTrace()[LOGLEVEL + deep];
     return getMethodAndLine(elt);

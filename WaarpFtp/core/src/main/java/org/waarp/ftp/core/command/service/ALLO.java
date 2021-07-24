@@ -31,7 +31,7 @@ import org.waarp.ftp.core.command.AbstractCommand;
  */
 public class ALLO extends AbstractCommand {
   @Override
-  public void exec() throws CommandAbstractException {
+  public final void exec() throws CommandAbstractException {
     // First Check if any argument
     if (!hasArg()) {
       throw new Reply501Exception("Need a size as argument");
@@ -48,8 +48,8 @@ public class ALLO extends AbstractCommand {
       throw new Reply452Exception("Not enough space left");
     }
     if (free == -1) {
-      getSession()
-          .setReplyCode(ReplyCode.REPLY_202_COMMAND_NOT_IMPLEMENTED, null);
+      getSession().setReplyCode(ReplyCode.REPLY_202_COMMAND_NOT_IMPLEMENTED,
+                                null);
     } else {
       getSession().setReplyCode(ReplyCode.REPLY_200_COMMAND_OKAY,
                                 "ALLO OK: " + free + " bytes available");

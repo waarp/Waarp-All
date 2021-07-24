@@ -46,9 +46,9 @@ public class HttpRestV1Utils {
    */
   public static void checkSanity(final ObjectNode objectNode)
       throws InvalidArgumentException {
-    Iterator<Entry<String, JsonNode>> iterator = objectNode.fields();
+    final Iterator<Entry<String, JsonNode>> iterator = objectNode.fields();
     while (iterator.hasNext()) {
-      Entry<String, JsonNode> next = iterator.next();
+      final Entry<String, JsonNode> next = iterator.next();
       ParametersChecker.checkSanityString(next.getValue().asText());
     }
   }

@@ -52,7 +52,7 @@ public class ScenarioDualServerMultipleFilesBenchmarkPostGreSqlIT
       (PostgreSQLContainer) new PostgreSQLContainer().withCommand(
           "postgres -c fsync=false -c synchronous_commit=off -c " +
           "full_page_writes=false -c wal_level=minimal -c " +
-          "max_wal_senders=0").withTmpFs(TMPFSMAP);
+          "max_wal_senders=0 -c enable_seqscan=off").withTmpFs(TMPFSMAP);
 
   public JdbcDatabaseContainer getJDC() {
     return db;

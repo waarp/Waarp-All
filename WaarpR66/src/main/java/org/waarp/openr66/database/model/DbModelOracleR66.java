@@ -60,7 +60,7 @@ public class DbModelOracleR66 extends DbModelOracle {
   }
 
   @Override
-  public void createTables(final DbSession session)
+  public final void createTables(final DbSession session)
       throws WaarpDatabaseNoConnectionException {
     // Create tables: configuration, hosts, rules, runner, cptrunner
     final String createTableH2 = "CREATE TABLE ";
@@ -80,7 +80,7 @@ public class DbModelOracleR66 extends DbModelOracle {
             .append(notNull).append(", ");
     }
     action.append(mcolumns[mcolumns.length - 1].name()).append(
-        DBType.getType(DbMultipleMonitor.dbTypes[mcolumns.length - 1]))
+              DBType.getType(DbMultipleMonitor.dbTypes[mcolumns.length - 1]))
           .append(notNull).append(',');
     action.append(constraint + " multimonit_pk " + primaryKey + '(')
           .append(mcolumns[mcolumns.length - 1].name()).append("))");
@@ -145,7 +145,7 @@ public class DbModelOracleR66 extends DbModelOracle {
             .append(notNull).append(", ");
     }
     action.append(chcolumns[chcolumns.length - 1].name()).append(
-        DBType.getType(DbHostConfiguration.dbTypes[chcolumns.length - 1]))
+              DBType.getType(DbHostConfiguration.dbTypes[chcolumns.length - 1]))
           .append(notNull).append(',');
     action.append(constraint + " hostconf_pk " + primaryKey + '(')
           .append(chcolumns[chcolumns.length - 1].name()).append("))");
@@ -274,14 +274,14 @@ public class DbModelOracleR66 extends DbModelOracle {
   }
 
   @Override
-  public boolean upgradeDb(final DbSession session, final String version)
+  public final boolean upgradeDb(final DbSession session, final String version)
       throws WaarpDatabaseNoConnectionException {
-    if (PartnerConfiguration
-        .isVersion2GEQVersion1(R66Versions.V3_1_0.getVersion(), version)) {
+    if (PartnerConfiguration.isVersion2GEQVersion1(
+        R66Versions.V3_1_0.getVersion(), version)) {
       return true;
     }
-    if (PartnerConfiguration
-        .isVersion2GEQVersion1(version, R66Versions.V2_4_13.getVersion())) {
+    if (PartnerConfiguration.isVersion2GEQVersion1(version,
+                                                   R66Versions.V2_4_13.getVersion())) {
       SysErrLogger.FAKE_LOGGER.sysout(
           version + " to " + R66Versions.V2_4_13.getVersion() + "? " + true);
       final String createTableH2 = "CREATE TABLE ";
@@ -300,7 +300,7 @@ public class DbModelOracleR66 extends DbModelOracle {
               .append(notNull).append(", ");
       }
       action.append(chcolumns[chcolumns.length - 1].name()).append(
-          DBType.getType(DbHostConfiguration.dbTypes[chcolumns.length - 1]))
+                DBType.getType(DbHostConfiguration.dbTypes[chcolumns.length - 1]))
             .append(notNull).append(',');
       action.append(constraint + " hostconf_pk " + primaryKey + '(')
             .append(chcolumns[chcolumns.length - 1].name()).append("))");
@@ -315,15 +315,15 @@ public class DbModelOracleR66 extends DbModelOracle {
         request.close();
       }
     }
-    if (PartnerConfiguration
-        .isVersion2GEQVersion1(version, R66Versions.V2_4_17.getVersion())) {
+    if (PartnerConfiguration.isVersion2GEQVersion1(version,
+                                                   R66Versions.V2_4_17.getVersion())) {
       SysErrLogger.FAKE_LOGGER.sysout(
           version + " to " + R66Versions.V2_4_17.getVersion() + "? " + true);
       final String command = "ALTER TABLE " + DbTaskRunner.table + " ADD ( " +
                              DbTaskRunner.Columns.TRANSFERINFO.name() + ' ' +
                              DBType.getType(
-                                 DbTaskRunner.dbTypes[DbTaskRunner.Columns.TRANSFERINFO
-                                     .ordinal()]) + " DEFAULT '{}' NOT NULL ) ";
+                                 DbTaskRunner.dbTypes[DbTaskRunner.Columns.TRANSFERINFO.ordinal()]) +
+                             " DEFAULT '{}' NOT NULL ) ";
       final DbRequest request = new DbRequest(session);
       try {
         request.query(command);
@@ -334,16 +334,15 @@ public class DbModelOracleR66 extends DbModelOracle {
         request.close();
       }
     }
-    if (PartnerConfiguration
-        .isVersion2GEQVersion1(version, R66Versions.V2_4_23.getVersion())) {
+    if (PartnerConfiguration.isVersion2GEQVersion1(version,
+                                                   R66Versions.V2_4_23.getVersion())) {
       SysErrLogger.FAKE_LOGGER.sysout(
           version + " to " + R66Versions.V2_4_23.getVersion() + "? " + true);
       String command = "ALTER TABLE " + DbHostAuth.table + " ADD ( " +
-                       DbHostAuth.Columns.ISACTIVE.name() + ' ' + DBType
-                           .getType(
-                               DbHostAuth.dbTypes[DbHostAuth.Columns.ISACTIVE
-                                   .ordinal()]) + " DEFAULT " + true +
-                       " NOT NULL ) ";
+                       DbHostAuth.Columns.ISACTIVE.name() + ' ' +
+                       DBType.getType(
+                           DbHostAuth.dbTypes[DbHostAuth.Columns.ISACTIVE.ordinal()]) +
+                       " DEFAULT " + true + " NOT NULL ) ";
       DbRequest request = new DbRequest(session);
       try {
         request.query(command);
@@ -367,8 +366,8 @@ public class DbModelOracleR66 extends DbModelOracle {
         request.close();
       }
     }
-    if (PartnerConfiguration
-        .isVersion2GTVersion1(version, R66Versions.V2_4_25.getVersion())) {
+    if (PartnerConfiguration.isVersion2GTVersion1(version,
+                                                  R66Versions.V2_4_25.getVersion())) {
       SysErrLogger.FAKE_LOGGER.sysout(
           version + " to " + R66Versions.V2_4_25.getVersion() + "? " + true);
       final String command =
@@ -376,8 +375,9 @@ public class DbModelOracleR66 extends DbModelOracle {
           DbTaskRunner.Columns.FILENAME.name() + ' ' + DBType.getType(
               DbTaskRunner.dbTypes[DbTaskRunner.Columns.FILENAME.ordinal()]) +
           " NOT NULL, " + DbTaskRunner.Columns.ORIGINALNAME.name() + ' ' +
-          DBType.getType(DbTaskRunner.dbTypes[DbTaskRunner.Columns.ORIGINALNAME
-              .ordinal()]) + " NOT NULL )";
+          DBType.getType(
+              DbTaskRunner.dbTypes[DbTaskRunner.Columns.ORIGINALNAME.ordinal()]) +
+          " NOT NULL )";
       final DbRequest request = new DbRequest(session);
       try {
         SysErrLogger.FAKE_LOGGER.sysout("Command: " + command);
@@ -389,14 +389,14 @@ public class DbModelOracleR66 extends DbModelOracle {
         request.close();
       }
     }
-    if (PartnerConfiguration
-        .isVersion2GTVersion1(version, R66Versions.V3_0_4.getVersion())) {
+    if (PartnerConfiguration.isVersion2GTVersion1(version,
+                                                  R66Versions.V3_0_4.getVersion())) {
       SysErrLogger.FAKE_LOGGER.sysout(
           version + " to " + R66Versions.V3_0_4.getVersion() + "? " + true);
       final DbRequest request = new DbRequest(session);
       // Change Type for all Tables
-      DbModelFactoryR66
-          .upgradeTable30(dbTypeResolver, request, " MODIFY ", " ", " ");
+      DbModelFactoryR66.upgradeTable30(dbTypeResolver, request, " MODIFY ", " ",
+                                       " ");
       try {
         final String command = "DROP INDEX IF EXISTS IDX_RUNNER ";
         try {
@@ -420,12 +420,12 @@ public class DbModelOracleR66 extends DbModelOracle {
   }
 
   @Override
-  public boolean needUpgradeDb(final DbSession session, final String version,
-                               final boolean tryFix)
+  public final boolean needUpgradeDb(final DbSession session,
+                                     final String version, final boolean tryFix)
       throws WaarpDatabaseNoConnectionException {
     // Check if the database is up to date
-    return DbModelFactoryR66
-        .needUpgradeDbAllDb(dbTypeResolver, session, version);
+    return DbModelFactoryR66.needUpgradeDbAllDb(dbTypeResolver, session,
+                                                version);
   }
 
 }

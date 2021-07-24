@@ -106,9 +106,9 @@ public class S3GetTask extends S3AbstractTask {
     final WaarpR66S3Client s3Client =
         new WaarpR66S3Client(taskUtil.getAccessKey(), taskUtil.getSecretKey(),
                              taskUtil.getUrl());
-    Map<String, String> map = s3Client
-        .getFile(taskUtil.getBucketName(), taskUtil.getSourceName(),
-                 taskUtil.getFile(), taskUtil.getGetTag());
+    Map<String, String> map =
+        s3Client.getFile(taskUtil.getBucketName(), taskUtil.getSourceName(),
+                         taskUtil.getFile(), taskUtil.getGetTag());
     final File file = taskUtil.getFile();
     final String filePath = file.getAbsolutePath();
     if (!file.canRead()) {
@@ -138,7 +138,7 @@ public class S3GetTask extends S3AbstractTask {
       }
     }
 
-    RenameTask renameTask = new RenameTask(filePath, 0, "", session);
+    final RenameTask renameTask = new RenameTask(filePath, 0, "", session);
     renameTask.run();
     if (renameTask.futureCompletion.isSuccess()) {
       final LocalChannelReference lcr = session.getLocalChannelReference();

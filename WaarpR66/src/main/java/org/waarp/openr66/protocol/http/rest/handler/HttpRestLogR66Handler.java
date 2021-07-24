@@ -66,13 +66,14 @@ public class HttpRestLogR66Handler extends HttpRestAbstractR66Handler {
   }
 
   @Override
-  public void endParsingRequest(final HttpRestHandler handler,
-                                final RestArgument arguments,
-                                final RestArgument result, final Object body)
+  public final void endParsingRequest(final HttpRestHandler handler,
+                                      final RestArgument arguments,
+                                      final RestArgument result,
+                                      final Object body)
       throws HttpIncorrectRequestException, HttpInvalidAuthenticationException {
     try {
       HttpRestV1Utils.checkSanity(arguments);
-    } catch (InvalidArgumentException e) {
+    } catch (final InvalidArgumentException e) {
       throw new HttpIncorrectRequestException("Issue on values", e);
     }
     logger.debug("debug: {} ### {}", arguments, result);
@@ -108,9 +109,10 @@ public class HttpRestLogR66Handler extends HttpRestAbstractR66Handler {
         final boolean transfer = node.isStatustransfer();
         final boolean done = node.isStatusdone();
         final boolean error = node.isStatuserror();
-        final String[] sresult = serverHandler
-            .logPurge(purge, clean, start, stop, startid, stopid, rule, request,
-                      pending, transfer, done, error, purge);
+        final String[] sresult =
+            serverHandler.logPurge(purge, clean, start, stop, startid, stopid,
+                                   rule, request, pending, transfer, done,
+                                   error, purge);
         final LogResponseJsonPacket newjson = new LogResponseJsonPacket();
         newjson.fromJson(node);
         // Now answer
@@ -132,7 +134,7 @@ public class HttpRestLogR66Handler extends HttpRestAbstractR66Handler {
   }
 
   @Override
-  protected ArrayNode getDetailedAllow() {
+  protected final ArrayNode getDetailedAllow() {
     final ArrayNode node = JsonHandler.createArrayNode();
 
     if (methods.contains(METHOD.GET)) {
@@ -152,18 +154,18 @@ public class HttpRestLogR66Handler extends HttpRestAbstractR66Handler {
       final ArrayNode node1 = JsonHandler.createArrayNode();
       try {
         node1.add(resp.createObjectNode());
-        node2 = RestArgument
-            .fillDetailedAllow(METHOD.GET, path, ACTIONS_TYPE.GetLog.name(),
-                               node3.createObjectNode(), node1);
+        node2 = RestArgument.fillDetailedAllow(METHOD.GET, path,
+                                               ACTIONS_TYPE.GetLog.name(),
+                                               node3.createObjectNode(), node1);
         node.add(node2);
       } catch (final OpenR66ProtocolPacketException ignored) {
         // ignore
       }
     }
 
-    final ObjectNode node2 = RestArgument
-        .fillDetailedAllow(METHOD.OPTIONS, path, COMMAND_TYPE.OPTIONS.name(),
-                           null, null);
+    final ObjectNode node2 =
+        RestArgument.fillDetailedAllow(METHOD.OPTIONS, path,
+                                       COMMAND_TYPE.OPTIONS.name(), null, null);
     node.add(node2);
 
     return node;

@@ -230,11 +230,10 @@ public class SpooledDirectoryTransfer implements Runnable {
       logger.error(Messages.getString("Transfer.18") + ": {}",
                    e1.getMessage()); //$NON-NLS-1$
       future.setFailure(e1);
-      if (Configuration.configuration
-              .getShutdownConfiguration().serviceFuture != null) {
-        Configuration.configuration.getShutdownConfiguration().serviceFuture
-            .setFailure(new Exception(
-                Messages.getString("Transfer.18") + e1.getMessage()));
+      if (Configuration.configuration.getShutdownConfiguration().serviceFuture !=
+          null) {
+        Configuration.configuration.getShutdownConfiguration().serviceFuture.setFailure(
+            new Exception(Messages.getString("Transfer.18") + e1.getMessage()));
       }
       return;
     }
@@ -242,11 +241,10 @@ public class SpooledDirectoryTransfer implements Runnable {
       logger.error(
           Messages.getString("SpooledDirectoryTransfer.5")); //$NON-NLS-1$
       future.cancel();
-      if (Configuration.configuration
-              .getShutdownConfiguration().serviceFuture != null) {
-        Configuration.configuration.getShutdownConfiguration().serviceFuture
-            .setFailure(new Exception(
-                Messages.getString("SpooledDirectoryTransfer.5")));
+      if (Configuration.configuration.getShutdownConfiguration().serviceFuture !=
+          null) {
+        Configuration.configuration.getShutdownConfiguration().serviceFuture.setFailure(
+            new Exception(Messages.getString("SpooledDirectoryTransfer.5")));
       }
       return;
     }
@@ -255,11 +253,10 @@ public class SpooledDirectoryTransfer implements Runnable {
       logger.error(
           Messages.getString("SpooledDirectoryTransfer.6")); //$NON-NLS-1$
       future.cancel();
-      if (Configuration.configuration
-              .getShutdownConfiguration().serviceFuture != null) {
-        Configuration.configuration.getShutdownConfiguration().serviceFuture
-            .setFailure(new Exception(
-                Messages.getString("SpooledDirectoryTransfer.6")));
+      if (Configuration.configuration.getShutdownConfiguration().serviceFuture !=
+          null) {
+        Configuration.configuration.getShutdownConfiguration().serviceFuture.setFailure(
+            new Exception(Messages.getString("SpooledDirectoryTransfer.6")));
       }
       return;
     }
@@ -268,22 +265,20 @@ public class SpooledDirectoryTransfer implements Runnable {
       logger.error(
           Messages.getString("SpooledDirectoryTransfer.7")); //$NON-NLS-1$
       future.cancel();
-      if (Configuration.configuration
-              .getShutdownConfiguration().serviceFuture != null) {
-        Configuration.configuration.getShutdownConfiguration().serviceFuture
-            .setFailure(new Exception(
-                Messages.getString("SpooledDirectoryTransfer.7")));
+      if (Configuration.configuration.getShutdownConfiguration().serviceFuture !=
+          null) {
+        Configuration.configuration.getShutdownConfiguration().serviceFuture.setFailure(
+            new Exception(Messages.getString("SpooledDirectoryTransfer.7")));
       }
       return;
     } else if (stop.exists()) {
-      logger
-          .warn(Messages.getString("SpooledDirectoryTransfer.8")); //$NON-NLS-1$
+      logger.warn(
+          Messages.getString("SpooledDirectoryTransfer.8")); //$NON-NLS-1$
       future.setSuccess();
-      if (Configuration.configuration
-              .getShutdownConfiguration().serviceFuture != null) {
-        Configuration.configuration.getShutdownConfiguration().serviceFuture
-            .setFailure(new Exception(
-                Messages.getString("SpooledDirectoryTransfer.8")));
+      if (Configuration.configuration.getShutdownConfiguration().serviceFuture !=
+          null) {
+        Configuration.configuration.getShutdownConfiguration().serviceFuture.setFailure(
+            new Exception(Messages.getString("SpooledDirectoryTransfer.8")));
       }
       return;
     }
@@ -293,11 +288,10 @@ public class SpooledDirectoryTransfer implements Runnable {
         logger.error(Messages.getString("SpooledDirectoryTransfer.9") + " : " +
                      dir); //$NON-NLS-1$
         future.cancel();
-        if (Configuration.configuration
-                .getShutdownConfiguration().serviceFuture != null) {
-          Configuration.configuration.getShutdownConfiguration().serviceFuture
-              .setFailure(new Exception(
-                  Messages.getString("SpooledDirectoryTransfer.9")));
+        if (Configuration.configuration.getShutdownConfiguration().serviceFuture !=
+            null) {
+          Configuration.configuration.getShutdownConfiguration().serviceFuture.setFailure(
+              new Exception(Messages.getString("SpooledDirectoryTransfer.9")));
         }
         return;
       }
@@ -316,12 +310,11 @@ public class SpooledDirectoryTransfer implements Runnable {
       logger.error(
           Messages.getString("Configuration.WrongInit") + " : already running");
       future.cancel();
-      if (Configuration.configuration
-              .getShutdownConfiguration().serviceFuture != null) {
-        Configuration.configuration.getShutdownConfiguration().serviceFuture
-            .setFailure(new Exception(
-                Messages.getString("Configuration.WrongInit") +
-                " : already running"));
+      if (Configuration.configuration.getShutdownConfiguration().serviceFuture !=
+          null) {
+        Configuration.configuration.getShutdownConfiguration().serviceFuture.setFailure(
+            new Exception(Messages.getString("Configuration.WrongInit") +
+                          " : already running"));
       }
       return;
     }
@@ -331,7 +324,7 @@ public class SpooledDirectoryTransfer implements Runnable {
           new FileMonitorCommandFactory() {
 
             @Override
-            public FileMonitorCommandRunnableFuture create(
+            public final FileMonitorCommandRunnableFuture create(
                 final FileItem fileItem) {
               final SpooledRunner runner = new SpooledRunner(fileItem);
               runner.setMonitor(monitor);
@@ -362,8 +355,7 @@ public class SpooledDirectoryTransfer implements Runnable {
     future.setSuccess();
     if (Configuration.configuration.getShutdownConfiguration().serviceFuture !=
         null) {
-      Configuration.configuration.getShutdownConfiguration().serviceFuture
-          .setSuccess();
+      Configuration.configuration.getShutdownConfiguration().serviceFuture.setSuccess();
     }
   }
 
@@ -499,8 +491,8 @@ public class SpooledDirectoryTransfer implements Runnable {
           host = host.trim();
           if (!host.isEmpty()) {
             final String filename = fileItem.file.getAbsolutePath();
-            logger
-                .info("Launch transfer to " + host + " with file " + filename);
+            logger.info(
+                "Launch transfer to " + host + " with file " + filename);
             R66Future r66Future = new R66Future(true);
             final String text;
             if (submit) {
@@ -810,159 +802,159 @@ public class SpooledDirectoryTransfer implements Runnable {
     private boolean logWarn = true;
     private boolean ignoreAlreadyUsed = false;
 
-    public String getName() {
+    public final String getName() {
       return name;
     }
 
-    public void setName(final String name) {
+    public final void setName(final String name) {
       this.name = name;
     }
 
-    public List<String> getRemoteHosts() {
+    public final List<String> getRemoteHosts() {
       return remoteHosts;
     }
 
-    public List<String> getLocalDirectory() {
+    public final List<String> getLocalDirectory() {
       return localDirectory;
     }
 
-    public String getRule() {
+    public final String getRule() {
       return rule;
     }
 
-    public void setRule(final String rule) {
+    public final void setRule(final String rule) {
       this.rule = rule;
     }
 
-    public String getFileInfo() {
+    public final String getFileInfo() {
       return fileInfo;
     }
 
-    public void setFileInfo(final String fileInfo) {
+    public final void setFileInfo(final String fileInfo) {
       this.fileInfo = fileInfo;
     }
 
-    public boolean isMd5() {
+    public final boolean isMd5() {
       return isMd5;
     }
 
-    public void setMd5(final boolean md5) {
+    public final void setMd5(final boolean md5) {
       this.isMd5 = md5;
     }
 
-    public int getBlock() {
+    public final int getBlock() {
       return block;
     }
 
-    public void setBlock(final int block) {
+    public final void setBlock(final int block) {
       this.block = block;
     }
 
-    public String getStatusFile() {
+    public final String getStatusFile() {
       return statusFile;
     }
 
-    public void setStatusFile(final String statusFile) {
+    public final void setStatusFile(final String statusFile) {
       this.statusFile = statusFile;
     }
 
-    public String getStopFile() {
+    public final String getStopFile() {
       return stopFile;
     }
 
-    public void setStopFile(final String stopFile) {
+    public final void setStopFile(final String stopFile) {
       this.stopFile = stopFile;
     }
 
-    public String getRegex() {
+    public final String getRegex() {
       return regex;
     }
 
-    public void setRegex(final String regex) {
+    public final void setRegex(final String regex) {
       this.regex = regex;
     }
 
-    public long getElapsed() {
+    public final long getElapsed() {
       return elapsed;
     }
 
-    public void setElapsed(final long elapsed) {
+    public final void setElapsed(final long elapsed) {
       this.elapsed = elapsed;
     }
 
-    public long getElapsedWaarp() {
+    public final long getElapsedWaarp() {
       return elapsedWaarp;
     }
 
-    public void setElapsedWaarp(final long elapsedWaarp) {
+    public final void setElapsedWaarp(final long elapsedWaarp) {
       this.elapsedWaarp = elapsedWaarp;
     }
 
-    public boolean isToSubmit() {
+    public final boolean isToSubmit() {
       return toSubmit;
     }
 
-    public void setToSubmit(final boolean toSubmit) {
+    public final void setToSubmit(final boolean toSubmit) {
       this.toSubmit = toSubmit;
     }
 
-    public boolean isNoLog() {
+    public final boolean isNoLog() {
       return noLog;
     }
 
-    public void setNoLog(final boolean noLog) {
+    public final void setNoLog(final boolean noLog) {
       this.noLog = noLog;
     }
 
-    public boolean isRecursive() {
+    public final boolean isRecursive() {
       return recursive;
     }
 
-    public void setRecursive(final boolean recursive) {
+    public final void setRecursive(final boolean recursive) {
       this.recursive = recursive;
     }
 
-    public List<String> getWaarpHosts() {
+    public final List<String> getWaarpHosts() {
       return waarpHosts;
     }
 
-    public boolean isParallel() {
+    public final boolean isParallel() {
       return isParallel;
     }
 
-    public void setParallel(final boolean parallel) {
+    public final void setParallel(final boolean parallel) {
       this.isParallel = parallel;
     }
 
-    public int getLimitParallel() {
+    public final int getLimitParallel() {
       return limitParallel;
     }
 
-    public void setLimitParallel(final int limitParallel) {
+    public final void setLimitParallel(final int limitParallel) {
       this.limitParallel = limitParallel;
     }
 
-    public long getMinimalSize() {
+    public final long getMinimalSize() {
       return minimalSize;
     }
 
-    public void setMinimalSize(final long minimalSize) {
+    public final void setMinimalSize(final long minimalSize) {
       this.minimalSize = minimalSize;
     }
 
-    public boolean isLogWarn() {
+    public final boolean isLogWarn() {
       return logWarn;
     }
 
-    public void setLogWarn(final boolean logWarn) {
+    public final void setLogWarn(final boolean logWarn) {
       this.logWarn = logWarn;
     }
 
-    public boolean isIgnoreAlreadyUsed() {
+    public final boolean isIgnoreAlreadyUsed() {
       return ignoreAlreadyUsed;
     }
 
-    public void setIgnoreAlreadyUsed(final boolean ignoreAlreadyUsed) {
+    public final void setIgnoreAlreadyUsed(final boolean ignoreAlreadyUsed) {
       this.ignoreAlreadyUsed = ignoreAlreadyUsed;
     }
   }
@@ -1197,8 +1189,8 @@ public class SpooledDirectoryTransfer implements Runnable {
       logger.error(infoArgs);
       return false;
     }
-    if (!FileBasedConfiguration
-        .setClientConfigurationFromXml(Configuration.configuration, args[0])) {
+    if (!FileBasedConfiguration.setClientConfigurationFromXml(
+        Configuration.configuration, args[0])) {
       logger.error(
           Messages.getString("Configuration.NeedCorrectConfig")); //$NON-NLS-1$
       return false;
@@ -1308,8 +1300,8 @@ public class SpooledDirectoryTransfer implements Runnable {
           }
         }
       } catch (final NumberFormatException e) {
-        logger
-            .error(Messages.getString("AbstractTransfer.20") + i); //$NON-NLS-1$
+        logger.error(
+            Messages.getString("AbstractTransfer.20") + i); //$NON-NLS-1$
         return false;
       }
       if (arg.getFileInfo() == null) {
@@ -1334,8 +1326,8 @@ public class SpooledDirectoryTransfer implements Runnable {
   }
 
   public static void main(final String[] args) {
-    WaarpLoggerFactory
-        .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));
+    WaarpLoggerFactory.setDefaultFactoryIfNotSame(
+        new WaarpSlf4JLoggerFactory(null));
     if (logger == null) {
       logger = WaarpLoggerFactory.getLogger(SpooledDirectoryTransfer.class);
     }
@@ -1388,9 +1380,9 @@ public class SpooledDirectoryTransfer implements Runnable {
       executorService.shutdown();
       Configuration.configuration.launchStatistics();
       if (normalStart) {
-        while (!executorService
-            .awaitTermination(Configuration.configuration.getTimeoutCon(),
-                              TimeUnit.MILLISECONDS)) {
+        while (!executorService.awaitTermination(
+            Configuration.configuration.getTimeoutCon(),
+            TimeUnit.MILLISECONDS)) {
           Thread.sleep(Configuration.configuration.getTimeoutCon());
         }
         for (final SpooledDirectoryTransfer spooledDirectoryTransfer : list) {
@@ -1418,7 +1410,7 @@ public class SpooledDirectoryTransfer implements Runnable {
   /**
    * @return the sent
    */
-  public long getSent() {
+  public final long getSent() {
     return sent;
   }
 
@@ -1432,7 +1424,7 @@ public class SpooledDirectoryTransfer implements Runnable {
   /**
    * @return the error
    */
-  public long getError() {
+  public final long getError() {
     return error;
   }
 

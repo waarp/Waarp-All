@@ -85,22 +85,22 @@ public class RoleDefault {
       }
     }
 
-    public boolean isContained(final byte value) {
+    public final boolean isContained(final byte value) {
       if (this == NOACCESS) {
         return value == NOACCESS.brole;
       }
       return (value & brole) == brole;
     }
 
-    public boolean isContained(final ROLE role) {
+    public final boolean isContained(final ROLE role) {
       return isContained(role.brole);
     }
 
-    public boolean contains(final ROLE role) {
+    public final boolean contains(final ROLE role) {
       return role.isContained(this);
     }
 
-    public byte getAsByte() {
+    public final byte getAsByte() {
       return brole;
     }
 
@@ -119,7 +119,7 @@ public class RoleDefault {
     private static final ROLE[] FULLADMIN_A =
         new ROLE[] { READONLY, TRANSFER, RULE, LIMIT, SYSTEM, LOGCONTROL };
 
-    public ROLE[] getComposingRoles() {
+    public final ROLE[] getComposingRoles() {
       switch (brole) {
         case 1:
           return READONLY_A;
@@ -202,7 +202,7 @@ public class RoleDefault {
     this.role = role.brole;
   }
 
-  public byte getRoleAsByte() {
+  public final byte getRoleAsByte() {
     return role;
   }
 
@@ -211,62 +211,62 @@ public class RoleDefault {
     return ROLE.toString(role);
   }
 
-  public RoleDefault addRole(final ROLE newrole) {
+  public final RoleDefault addRole(final ROLE newrole) {
     role |= newrole.brole;
     return this;
   }
 
-  public RoleDefault setRole(final ROLE newrole) {
+  public final RoleDefault setRole(final ROLE newrole) {
     role = newrole.brole;
     return this;
   }
 
-  public RoleDefault setRoleDefault(final RoleDefault newrole) {
+  public final RoleDefault setRoleDefault(final RoleDefault newrole) {
     role = newrole.role;
     return this;
   }
 
-  public void clear() {
+  public final void clear() {
     role = ROLE.NOACCESS.brole;
   }
 
-  public boolean isContaining(final ROLE otherrole) {
+  public final boolean isContaining(final ROLE otherrole) {
     return otherrole.isContained(role);
   }
 
-  public boolean hasNoAccess() {
+  public final boolean hasNoAccess() {
     return role == ROLE.NOACCESS.brole;
   }
 
-  public boolean hasReadOnly() {
+  public final boolean hasReadOnly() {
     return ROLE.READONLY.isContained(role);
   }
 
-  public boolean hasTransfer() {
+  public final boolean hasTransfer() {
     return ROLE.TRANSFER.isContained(role);
   }
 
-  public boolean hasRule() {
+  public final boolean hasRule() {
     return ROLE.RULE.isContained(role);
   }
 
-  public boolean hasHost() {
+  public final boolean hasHost() {
     return ROLE.HOST.isContained(role);
   }
 
-  public boolean hasLimit() {
+  public final boolean hasLimit() {
     return ROLE.LIMIT.isContained(role);
   }
 
-  public boolean hasSystem() {
+  public final boolean hasSystem() {
     return ROLE.SYSTEM.isContained(role);
   }
 
-  public boolean hasUnused() {
+  public final boolean hasUnused() {
     return ROLE.UNUSED.isContained(role);
   }
 
-  public boolean hasLogControl() {
+  public final boolean hasLogControl() {
     return ROLE.LOGCONTROL.isContained(role);
   }
 

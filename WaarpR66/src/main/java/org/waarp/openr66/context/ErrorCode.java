@@ -179,15 +179,15 @@ public enum ErrorCode {
   }
 
   @JsonValue
-  public String getJsonRepr() {
+  public final String getJsonRepr() {
     return code + "  ";
   }
 
-  public String getCode() {
+  public final String getCode() {
     return String.valueOf(code);
   }
 
-  public String getMesg() {
+  public final String getMesg() {
     return Messages.getString("ErrorCode." + code);
   }
 

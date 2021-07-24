@@ -33,7 +33,7 @@ import org.waarp.ftp.core.command.FtpCommandCode;
 public class PROT extends AbstractCommand {
 
   @Override
-  public void exec() throws CommandAbstractException {
+  public final void exec() throws CommandAbstractException {
     if (!getSession().isSslReady()) {
       // Not in SSL
       throw new Reply503Exception("Session not using SSL / TLS");

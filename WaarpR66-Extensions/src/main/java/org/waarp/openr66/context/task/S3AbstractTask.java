@@ -54,7 +54,7 @@ public abstract class S3AbstractTask extends AbstractTask {
     super(type, delay, argRule, argTransfer, session);
   }
 
-  public boolean getParams() {
+  public final boolean getParams() {
     logger.info("Transfer with {}:{} and {}", argRule, argTransfer, session);
     try {
       String finalname = applyTransferSubstitutions(argRule);
@@ -72,7 +72,8 @@ public abstract class S3AbstractTask extends AbstractTask {
     }
   }
 
-  protected void finalizeInError(final Exception e, final String message) {
+  protected final void finalizeInError(final Exception e,
+                                       final String message) {
     logger.error("{} {}: {}", getS3TaskType().name(), message, e.getMessage());
     futureCompletion.setFailure(
         new OpenR66RunnerErrorException(getS3TaskType() + " " + message, e));

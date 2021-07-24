@@ -85,8 +85,9 @@ public class AbstractDirTest {
     assertEquals("UNC uri (win)", "//server/share/test.dat",
                  AbstractDir.pathFromURI("file:////server/share/test.dat"));
 
-    assertEquals("url to decode", "//server/share/béah @;tré", AbstractDir
-        .pathFromURI("file:////server/share/b%C3%A9ah%20%40%3Btr%C3%A9"));
+    assertEquals("url to decode", "//server/share/béah @;tré",
+                 AbstractDir.pathFromURI(
+                     "file:////server/share/b%C3%A9ah%20%40%3Btr%C3%A9"));
     assertEquals("filename with percent sign", "/tmp/100% accuracy.txt",
                  AbstractDir.pathFromURI("file:///tmp/100% accuracy.txt"));
   }

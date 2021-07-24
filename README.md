@@ -27,7 +27,7 @@ The following applications are deprecated and won't be maintained anymore:
 
 ## Features
 
-* Supports Java 6, 8 and 11 in different Jars
+* Supports Java 6, 8 and 11 in different Jars (JRE 11 is compatible up to JRE 16)
 * Supports multiple databases: Postgresql (recommended), MySQL, MariaDB,  Oracle DB, H2
 * Unlimited number of transfers
 * Unlimited number of connections
@@ -50,10 +50,11 @@ The following applications are deprecated and won't be maintained anymore:
 
 ### Build from source
 
-Just clone the project and use Maven version 3.6.3 minimum to build it.
+Just clone the project and use Maven version 3.6.3 minimum to build it (3.8.x for
+JRE > 11).
 
 *Even though Java 6 is supported at runtime, Java 8 or 11 is required to build the
-project*
+project (JDK 11 can be replaced by a newer version, tested until 16 but with maven 3.8.x)*
 
 ```sh
 git clone https://github.com/waarp/Waarp-All.git
@@ -61,7 +62,7 @@ cd Waarp-All
 mvn -P jre11 package
 ```
 
-You can use a JDK 11 with `jre11` profile, and a JDK 8 with `jre8` or `jre6` profiles.
+You can use a JDK 11 (or higher) with `jre11` profile, and a JDK 8 with `jre8` or `jre6` profiles.
 
 `mvn -P jre11 package` also runs the full test suite, which takes quite some time (for more
 information about setting up your environment to run the tests, see below).
@@ -123,6 +124,8 @@ pip install -r requirement.txt
 # Build the doc. After that, it will be available in the directory build/html
 make html
 ```
+
+Note that documentations are built in final module named `WaarpPackaging` and `WaarpPackaging6`.
 
 ## Support
 

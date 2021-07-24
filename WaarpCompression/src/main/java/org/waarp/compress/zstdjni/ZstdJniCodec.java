@@ -40,12 +40,12 @@ import java.util.Arrays;
 public class ZstdJniCodec implements CompressorCodec {
 
   @Override
-  public int maxCompressedLength(final int uncompressedSize) {
+  public final int maxCompressedLength(final int uncompressedSize) {
     return (int) Zstd.compressBound(uncompressedSize);
   }
 
   @Override
-  public byte[] compress(final byte[] input, final int length)
+  public final byte[] compress(final byte[] input, final int length)
       throws MalformedInputException {
     try {
       final int maxDstSize = maxCompressedLength(length);
@@ -58,19 +58,18 @@ public class ZstdJniCodec implements CompressorCodec {
   }
 
   @Override
-  public int compress(final byte[] input, final int inputLength,
-                      final byte[] output, final int maxOutputLength) {
+  public final int compress(final byte[] input, final int inputLength,
+                            final byte[] output, final int maxOutputLength) {
     try {
-      return (int) Zstd
-          .compressByteArray(output, 0, maxOutputLength, input, 0, inputLength,
-                             3);
+      return (int) Zstd.compressByteArray(output, 0, maxOutputLength, input, 0,
+                                          inputLength, 3);
     } catch (final Exception e) {
       throw new MalformedInputException(e);
     }
   }
 
   @Override
-  public long compress(final File input, final File output)
+  public final long compress(final File input, final File output)
       throws MalformedInputException {
     InputStream inputStream = null;
     OutputStream outputStream = null;
@@ -81,9 +80,10 @@ public class ZstdJniCodec implements CompressorCodec {
       outputStream = new FileOutputStream(output);
       final byte[] bufferCompression =
           new byte[maxCompressedLength(buffer.length)];
-      final int length = (int) Zstd
-          .compressByteArray(bufferCompression, 0, bufferCompression.length,
-                             buffer, 0, buffer.length, 3);
+      final int length = (int) Zstd.compressByteArray(bufferCompression, 0,
+                                                      bufferCompression.length,
+                                                      buffer, 0, buffer.length,
+                                                      3);
       outputStream.write(bufferCompression, 0, length);
       outputStream.flush();
       FileUtils.close(outputStream);
@@ -98,7 +98,7 @@ public class ZstdJniCodec implements CompressorCodec {
   }
 
   @Override
-  public byte[] decompress(final byte[] compressed, final int length)
+  public final byte[] decompress(final byte[] compressed, final int length)
       throws MalformedInputException {
     try {
       final int len = getDecompressedSize(compressed, length);
@@ -116,19 +116,18 @@ public class ZstdJniCodec implements CompressorCodec {
   }
 
   @Override
-  public int decompress(final byte[] input, final int inputLength,
-                        final byte[] output, final int maxOutputLength) {
+  public final int decompress(final byte[] input, final int inputLength,
+                              final byte[] output, final int maxOutputLength) {
     try {
-      return (int) Zstd
-          .decompressByteArray(output, 0, maxOutputLength, input, 0,
-                               inputLength);
+      return (int) Zstd.decompressByteArray(output, 0, maxOutputLength, input,
+                                            0, inputLength);
     } catch (final Exception e) {
       throw new MalformedInputException(e);
     }
   }
 
   @Override
-  public long decompress(final File input, final File output)
+  public final long decompress(final File input, final File output)
       throws MalformedInputException {
     InputStream inputStream = null;
     OutputStream outputStream = null;
@@ -148,7 +147,8 @@ public class ZstdJniCodec implements CompressorCodec {
   }
 
   @Override
-  public int getDecompressedSize(final byte[] compressed, final int length) {
+  public final int getDecompressedSize(final byte[] compressed,
+                                       final int length) {
     return (int) Zstd.decompressedSize(compressed, 0, length);
   }
 

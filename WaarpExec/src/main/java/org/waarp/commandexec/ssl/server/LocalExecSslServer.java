@@ -64,8 +64,8 @@ public class LocalExecSslServer {
    * @throws Exception
    */
   public static void main(final String[] args) throws Exception {
-    WaarpLoggerFactory
-        .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));
+    WaarpLoggerFactory.setDefaultFactoryIfNotSame(
+        new WaarpSlf4JLoggerFactory(null));
     int port = 9999;
     InetAddress addr;
     long delay = LocalExecDefaultResult.MAXWAITPROCESS;
@@ -101,8 +101,8 @@ public class LocalExecSslServer {
     // Configure the server.
     try {
       final ServerBootstrap bootstrap = new ServerBootstrap();
-      WaarpNettyUtil
-          .setServerBootstrap(bootstrap, workerGroup, workerGroup, 30000);
+      WaarpNettyUtil.setServerBootstrap(bootstrap, workerGroup, workerGroup,
+                                        30000);
 
       // Load the KeyStore (No certificates)
       final WaarpSecureKeyStore WaarpSecureKeyStoreNew =
@@ -110,8 +110,8 @@ public class LocalExecSslServer {
                                   keyPassword);
       if (trustStoreFilename != null) {
         // Include certificates
-        WaarpSecureKeyStoreNew
-            .initTrustStore(trustStoreFilename, trustStorePasswd, true);
+        WaarpSecureKeyStoreNew.initTrustStore(trustStoreFilename,
+                                              trustStorePasswd, true);
       } else {
         WaarpSecureKeyStoreNew.initEmptyTrustStore();
       }

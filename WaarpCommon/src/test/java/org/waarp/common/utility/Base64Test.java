@@ -76,8 +76,8 @@ public class Base64Test {
 
     src2 = Base64.encodeBytesToBytes(s.getBytes());
     assertArrayEquals("Should be equals", sencoded.getBytes(), src2);
-    src2 = Base64
-        .encodeBytesToBytes(s.getBytes(), 0, s.getBytes().length, Base64.GZIP);
+    src2 = Base64.encodeBytesToBytes(s.getBytes(), 0, s.getBytes().length,
+                                     Base64.GZIP);
     final String sencoded2 = new String(src2);
     assertArrayEquals("Should be equals", sencoded2.getBytes(), src2);
 

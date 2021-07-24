@@ -95,7 +95,7 @@ public abstract class WaarpShutdownHook extends Thread {
   /**
    * @return the current ShutdownConfiguration
    */
-  public ShutdownConfiguration getShutdownConfiguration() {
+  public final ShutdownConfiguration getShutdownConfiguration() {
     return shutdownConfiguration;
   }
 
@@ -321,7 +321,7 @@ public abstract class WaarpShutdownHook extends Thread {
   /**
    * Extra call to ensure exit after long delay
    */
-  public void launchFinalExit() {
+  public final void launchFinalExit() {
     if (WaarpSystemUtil.isJunit()) {
       return;
     }
@@ -404,8 +404,8 @@ public abstract class WaarpShutdownHook extends Thread {
         }
       }
       // Already stopped
-      SysErrLogger.FAKE_LOGGER
-          .syserr("Halt System now - services already stopped -");
+      SysErrLogger.FAKE_LOGGER.syserr(
+          "Halt System now - services already stopped -");
       //FBGEXIT DetectionUtils.SystemExit(0)
       return;
     }

@@ -251,8 +251,8 @@ public class TestSendThroughForward extends SendThroughClient {
         block.setBlock(buffer, length);
       }
       try {
-        if (!WaarpNettyUtil
-            .awaitOrInterrupted(client.writeWhenPossible(block))) {
+        if (!WaarpNettyUtil.awaitOrInterrupted(
+            client.writeWhenPossible(block))) {
           client.transferInError(
               new OpenR66ProtocolSystemException("Write impossible"));
         }

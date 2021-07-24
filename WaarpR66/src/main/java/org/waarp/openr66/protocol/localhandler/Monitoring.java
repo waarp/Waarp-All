@@ -196,7 +196,7 @@ public class Monitoring implements WaarpInterfaceMonitor {
    * releaseResources
    */
   @Override
-  public void initialize() {
+  public final void initialize() {
     if (dbSession == null || dbSession.isDisActive()) {
       logger.warn("Cannot Initialize monitoring");
       return;
@@ -206,14 +206,18 @@ public class Monitoring implements WaarpInterfaceMonitor {
       // Overall status including past, future and current transfers
       countInfo = DbTaskRunner.getCountInfoPrepareStatement(dbSession);
       // Count of Active/All In/Out transfers
-      countInActiveTransfer = DbTaskRunner
-          .getCountInOutRunningPrepareStatement(dbSession, true, true);
-      countOutActiveTransfer = DbTaskRunner
-          .getCountInOutRunningPrepareStatement(dbSession, false, true);
-      countInTotalTransfer = DbTaskRunner
-          .getCountInOutRunningPrepareStatement(dbSession, true, false);
-      countOutTotalTransfer = DbTaskRunner
-          .getCountInOutRunningPrepareStatement(dbSession, false, false);
+      countInActiveTransfer =
+          DbTaskRunner.getCountInOutRunningPrepareStatement(dbSession, true,
+                                                            true);
+      countOutActiveTransfer =
+          DbTaskRunner.getCountInOutRunningPrepareStatement(dbSession, false,
+                                                            true);
+      countInTotalTransfer =
+          DbTaskRunner.getCountInOutRunningPrepareStatement(dbSession, true,
+                                                            false);
+      countOutTotalTransfer =
+          DbTaskRunner.getCountInOutRunningPrepareStatement(dbSession, false,
+                                                            false);
 
       countInErrorTransfer =
           DbTaskRunner.getCountInOutErrorPrepareStatement(dbSession, true);
@@ -225,36 +229,38 @@ public class Monitoring implements WaarpInterfaceMonitor {
           DbTaskRunner.getCountStepPrepareStatement(dbSession, null);
       countStepNotask =
           DbTaskRunner.getCountStepPrepareStatement(dbSession, TASKSTEP.NOTASK);
-      countStepPretask = DbTaskRunner
-          .getCountStepPrepareStatement(dbSession, TASKSTEP.PRETASK);
-      countStepTransfer = DbTaskRunner
-          .getCountStepPrepareStatement(dbSession, TASKSTEP.TRANSFERTASK);
-      countStepPosttask = DbTaskRunner
-          .getCountStepPrepareStatement(dbSession, TASKSTEP.POSTTASK);
-      countStepAllDone = DbTaskRunner
-          .getCountStepPrepareStatement(dbSession, TASKSTEP.ALLDONETASK);
-      countStepError = DbTaskRunner
-          .getCountStepPrepareStatement(dbSession, TASKSTEP.ERRORTASK);
+      countStepPretask = DbTaskRunner.getCountStepPrepareStatement(dbSession,
+                                                                   TASKSTEP.PRETASK);
+      countStepTransfer = DbTaskRunner.getCountStepPrepareStatement(dbSession,
+                                                                    TASKSTEP.TRANSFERTASK);
+      countStepPosttask = DbTaskRunner.getCountStepPrepareStatement(dbSession,
+                                                                    TASKSTEP.POSTTASK);
+      countStepAllDone = DbTaskRunner.getCountStepPrepareStatement(dbSession,
+                                                                   TASKSTEP.ALLDONETASK);
+      countStepError = DbTaskRunner.getCountStepPrepareStatement(dbSession,
+                                                                 TASKSTEP.ERRORTASK);
 
       // First on Running Transfers only
       countAllRunningStep =
           DbTaskRunner.getCountStatusRunningPrepareStatement(dbSession, null);
-      countRunningStep = DbTaskRunner
-          .getCountStatusRunningPrepareStatement(dbSession, ErrorCode.Running);
-      countInitOkStep = DbTaskRunner
-          .getCountStatusRunningPrepareStatement(dbSession, ErrorCode.InitOk);
-      countPreProcessingOkStep = DbTaskRunner
-          .getCountStatusRunningPrepareStatement(dbSession,
-                                                 ErrorCode.PreProcessingOk);
-      countTransferOkStep = DbTaskRunner
-          .getCountStatusRunningPrepareStatement(dbSession,
-                                                 ErrorCode.TransferOk);
-      countPostProcessingOkStep = DbTaskRunner
-          .getCountStatusRunningPrepareStatement(dbSession,
-                                                 ErrorCode.PostProcessingOk);
-      countCompleteOkStep = DbTaskRunner
-          .getCountStatusRunningPrepareStatement(dbSession,
-                                                 ErrorCode.CompleteOk);
+      countRunningStep =
+          DbTaskRunner.getCountStatusRunningPrepareStatement(dbSession,
+                                                             ErrorCode.Running);
+      countInitOkStep =
+          DbTaskRunner.getCountStatusRunningPrepareStatement(dbSession,
+                                                             ErrorCode.InitOk);
+      countPreProcessingOkStep =
+          DbTaskRunner.getCountStatusRunningPrepareStatement(dbSession,
+                                                             ErrorCode.PreProcessingOk);
+      countTransferOkStep =
+          DbTaskRunner.getCountStatusRunningPrepareStatement(dbSession,
+                                                             ErrorCode.TransferOk);
+      countPostProcessingOkStep =
+          DbTaskRunner.getCountStatusRunningPrepareStatement(dbSession,
+                                                             ErrorCode.PostProcessingOk);
+      countCompleteOkStep =
+          DbTaskRunner.getCountStatusRunningPrepareStatement(dbSession,
+                                                             ErrorCode.CompleteOk);
 
       // Error Status on all transfers
       countStatus = DbTaskRunner.getCountStatusPrepareStatement(dbSession);
@@ -269,7 +275,7 @@ public class Monitoring implements WaarpInterfaceMonitor {
    * Release all Db Requests
    */
   @Override
-  public void releaseResources() {
+  public final void releaseResources() {
     if (dbSession == null || dbSession.isDisActive()) {
       return;
     }
@@ -319,21 +325,21 @@ public class Monitoring implements WaarpInterfaceMonitor {
   /**
    * @return the last Time in ms of the execution
    */
-  public long lastRunTimeMs() {
+  public final long lastRunTimeMs() {
     return lastTry;
   }
 
   /**
    * Default execution of testing with default pastLimit
    */
-  public void run() {
+  public final void run() {
     run(-1, false);
   }
 
   /**
    * @param nbSecond as specific PastLimit
    */
-  public void run(final long nbSecond) {
+  public final void run(final long nbSecond) {
     run(nbSecond, false);
   }
 
@@ -342,7 +348,7 @@ public class Monitoring implements WaarpInterfaceMonitor {
    *
    * @param detail as to get detailed information
    */
-  public void run(final boolean detail) {
+  public final void run(final boolean detail) {
     run(-1, detail);
   }
 
@@ -363,7 +369,7 @@ public class Monitoring implements WaarpInterfaceMonitor {
    * @param nbSecond as specific PastLimit
    * @param detail as to get detailed information
    */
-  public void run(final long nbSecond, final boolean detail) {
+  public final void run(final long nbSecond, final boolean detail) {
     synchronized (trafficCounter) {
       long limitDate = System.currentTimeMillis();
       final long nbMs;
@@ -424,55 +430,57 @@ public class Monitoring implements WaarpInterfaceMonitor {
         // Update value
         try {
           // Overall status including past, future and current transfers
-          nbCountInfoUnknown = DbTaskRunner
-              .getResultCountPrepareStatement(countInfo, UpdatedInfo.UNKNOWN,
-                                              limitDate);
-          nbCountInfoNotUpdated = DbTaskRunner
-              .getResultCountPrepareStatement(countInfo, UpdatedInfo.NOTUPDATED,
-                                              limitDate);
-          nbCountInfoInterrupted = DbTaskRunner
-              .getResultCountPrepareStatement(countInfo,
-                                              UpdatedInfo.INTERRUPTED,
-                                              limitDate);
-          nbCountInfoToSubmit = DbTaskRunner
-              .getResultCountPrepareStatement(countInfo, UpdatedInfo.TOSUBMIT,
-                                              limitDate);
-          nbCountInfoError = DbTaskRunner
-              .getResultCountPrepareStatement(countInfo, UpdatedInfo.INERROR,
-                                              limitDate);
-          nbCountInfoRunning = DbTaskRunner
-              .getResultCountPrepareStatement(countInfo, UpdatedInfo.RUNNING,
-                                              limitDate);
-          nbCountInfoDone = DbTaskRunner
-              .getResultCountPrepareStatement(countInfo, UpdatedInfo.DONE,
-                                              limitDate);
+          nbCountInfoUnknown =
+              DbTaskRunner.getResultCountPrepareStatement(countInfo,
+                                                          UpdatedInfo.UNKNOWN,
+                                                          limitDate);
+          nbCountInfoNotUpdated =
+              DbTaskRunner.getResultCountPrepareStatement(countInfo,
+                                                          UpdatedInfo.NOTUPDATED,
+                                                          limitDate);
+          nbCountInfoInterrupted =
+              DbTaskRunner.getResultCountPrepareStatement(countInfo,
+                                                          UpdatedInfo.INTERRUPTED,
+                                                          limitDate);
+          nbCountInfoToSubmit =
+              DbTaskRunner.getResultCountPrepareStatement(countInfo,
+                                                          UpdatedInfo.TOSUBMIT,
+                                                          limitDate);
+          nbCountInfoError =
+              DbTaskRunner.getResultCountPrepareStatement(countInfo,
+                                                          UpdatedInfo.INERROR,
+                                                          limitDate);
+          nbCountInfoRunning =
+              DbTaskRunner.getResultCountPrepareStatement(countInfo,
+                                                          UpdatedInfo.RUNNING,
+                                                          limitDate);
+          nbCountInfoDone =
+              DbTaskRunner.getResultCountPrepareStatement(countInfo,
+                                                          UpdatedInfo.DONE,
+                                                          limitDate);
 
           // Current situation of all transfers, running or not
-          DbTaskRunner
-              .finishSelectOrCountPrepareStatement(countInActiveTransfer,
-                                                   limitDate);
-          nbInActiveTransfer = DbTaskRunner
-              .getResultCountPrepareStatement(countInActiveTransfer);
-          DbTaskRunner
-              .finishSelectOrCountPrepareStatement(countOutActiveTransfer,
-                                                   limitDate);
-          nbOutActiveTransfer = DbTaskRunner
-              .getResultCountPrepareStatement(countOutActiveTransfer);
+          DbTaskRunner.finishSelectOrCountPrepareStatement(
+              countInActiveTransfer, limitDate);
+          nbInActiveTransfer = DbTaskRunner.getResultCountPrepareStatement(
+              countInActiveTransfer);
+          DbTaskRunner.finishSelectOrCountPrepareStatement(
+              countOutActiveTransfer, limitDate);
+          nbOutActiveTransfer = DbTaskRunner.getResultCountPrepareStatement(
+              countOutActiveTransfer);
           DbTaskRunner.finishSelectOrCountPrepareStatement(countInTotalTransfer,
                                                            limitDate);
           nbInTotalTransfer =
               DbTaskRunner.getResultCountPrepareStatement(countInTotalTransfer);
-          DbTaskRunner
-              .finishSelectOrCountPrepareStatement(countOutTotalTransfer,
-                                                   limitDate);
-          nbOutTotalTransfer = DbTaskRunner
-              .getResultCountPrepareStatement(countOutTotalTransfer);
+          DbTaskRunner.finishSelectOrCountPrepareStatement(
+              countOutTotalTransfer, limitDate);
+          nbOutTotalTransfer = DbTaskRunner.getResultCountPrepareStatement(
+              countOutTotalTransfer);
 
-          DbTaskRunner
-              .finishSelectOrCountPrepareStatement(countOutErrorTransfer,
-                                                   limitDate);
-          nbOutErrorTransfer = DbTaskRunner
-              .getResultCountPrepareStatement(countOutErrorTransfer);
+          DbTaskRunner.finishSelectOrCountPrepareStatement(
+              countOutErrorTransfer, limitDate);
+          nbOutErrorTransfer = DbTaskRunner.getResultCountPrepareStatement(
+              countOutErrorTransfer);
           DbTaskRunner.finishSelectOrCountPrepareStatement(countInErrorTransfer,
                                                            limitDate);
           nbInErrorTransfer =
@@ -482,12 +490,12 @@ public class Monitoring implements WaarpInterfaceMonitor {
                                                            limitDate);
           nbCountStepAllTransfer =
               DbTaskRunner.getResultCountPrepareStatement(countStepAllTransfer);
-          DbTaskRunner
-              .finishSelectOrCountPrepareStatement(countStepNotask, limitDate);
+          DbTaskRunner.finishSelectOrCountPrepareStatement(countStepNotask,
+                                                           limitDate);
           nbCountStepNotask =
               DbTaskRunner.getResultCountPrepareStatement(countStepNotask);
-          DbTaskRunner
-              .finishSelectOrCountPrepareStatement(countStepPretask, limitDate);
+          DbTaskRunner.finishSelectOrCountPrepareStatement(countStepPretask,
+                                                           limitDate);
           nbCountStepPretask =
               DbTaskRunner.getResultCountPrepareStatement(countStepPretask);
           DbTaskRunner.finishSelectOrCountPrepareStatement(countStepTransfer,
@@ -498,12 +506,12 @@ public class Monitoring implements WaarpInterfaceMonitor {
                                                            limitDate);
           nbCountStepPosttask =
               DbTaskRunner.getResultCountPrepareStatement(countStepPosttask);
-          DbTaskRunner
-              .finishSelectOrCountPrepareStatement(countStepAllDone, limitDate);
+          DbTaskRunner.finishSelectOrCountPrepareStatement(countStepAllDone,
+                                                           limitDate);
           nbCountStepAllDone =
               DbTaskRunner.getResultCountPrepareStatement(countStepAllDone);
-          DbTaskRunner
-              .finishSelectOrCountPrepareStatement(countStepError, limitDate);
+          DbTaskRunner.finishSelectOrCountPrepareStatement(countStepError,
+                                                           limitDate);
           nbCountStepError =
               DbTaskRunner.getResultCountPrepareStatement(countStepError);
 
@@ -522,118 +530,122 @@ public class Monitoring implements WaarpInterfaceMonitor {
                                                              limitDate);
             nbCountInitOkStep =
                 DbTaskRunner.getResultCountPrepareStatement(countInitOkStep);
-            DbTaskRunner
-                .finishSelectOrCountPrepareStatement(countPreProcessingOkStep,
-                                                     limitDate);
-            nbCountPreProcessingOkStep = DbTaskRunner
-                .getResultCountPrepareStatement(countPreProcessingOkStep);
-            DbTaskRunner
-                .finishSelectOrCountPrepareStatement(countTransferOkStep,
-                                                     limitDate);
-            nbCountTransferOkStep = DbTaskRunner
-                .getResultCountPrepareStatement(countTransferOkStep);
-            DbTaskRunner
-                .finishSelectOrCountPrepareStatement(countPostProcessingOkStep,
-                                                     limitDate);
-            nbCountPostProcessingOkStep = DbTaskRunner
-                .getResultCountPrepareStatement(countPostProcessingOkStep);
-            DbTaskRunner
-                .finishSelectOrCountPrepareStatement(countCompleteOkStep,
-                                                     limitDate);
-            nbCountCompleteOkStep = DbTaskRunner
-                .getResultCountPrepareStatement(countCompleteOkStep);
+            DbTaskRunner.finishSelectOrCountPrepareStatement(
+                countPreProcessingOkStep, limitDate);
+            nbCountPreProcessingOkStep =
+                DbTaskRunner.getResultCountPrepareStatement(
+                    countPreProcessingOkStep);
+            DbTaskRunner.finishSelectOrCountPrepareStatement(
+                countTransferOkStep, limitDate);
+            nbCountTransferOkStep = DbTaskRunner.getResultCountPrepareStatement(
+                countTransferOkStep);
+            DbTaskRunner.finishSelectOrCountPrepareStatement(
+                countPostProcessingOkStep, limitDate);
+            nbCountPostProcessingOkStep =
+                DbTaskRunner.getResultCountPrepareStatement(
+                    countPostProcessingOkStep);
+            DbTaskRunner.finishSelectOrCountPrepareStatement(
+                countCompleteOkStep, limitDate);
+            nbCountCompleteOkStep = DbTaskRunner.getResultCountPrepareStatement(
+                countCompleteOkStep);
 
             // Error Status on all transfers
-            nbCountStatusConnectionImpossible = DbTaskRunner
-                .getResultCountPrepareStatement(countStatus,
-                                                ErrorCode.ConnectionImpossible,
-                                                limitDate);
-            nbCountStatusServerOverloaded = DbTaskRunner
-                .getResultCountPrepareStatement(countStatus,
-                                                ErrorCode.ServerOverloaded,
-                                                limitDate);
-            nbCountStatusBadAuthent = DbTaskRunner
-                .getResultCountPrepareStatement(countStatus,
-                                                ErrorCode.BadAuthent,
-                                                limitDate);
-            nbCountStatusExternalOp = DbTaskRunner
-                .getResultCountPrepareStatement(countStatus,
-                                                ErrorCode.ExternalOp,
-                                                limitDate);
-            nbCountStatusTransferError = DbTaskRunner
-                .getResultCountPrepareStatement(countStatus,
-                                                ErrorCode.TransferError,
-                                                limitDate);
-            nbCountStatusMD5Error = DbTaskRunner
-                .getResultCountPrepareStatement(countStatus, ErrorCode.MD5Error,
-                                                limitDate);
-            nbCountStatusDisconnection = DbTaskRunner
-                .getResultCountPrepareStatement(countStatus,
-                                                ErrorCode.Disconnection,
-                                                limitDate);
-            nbCountStatusFinalOp = DbTaskRunner
-                .getResultCountPrepareStatement(countStatus, ErrorCode.FinalOp,
-                                                limitDate);
-            nbCountStatusUnimplemented = DbTaskRunner
-                .getResultCountPrepareStatement(countStatus,
-                                                ErrorCode.Unimplemented,
-                                                limitDate);
-            nbCountStatusInternal = DbTaskRunner
-                .getResultCountPrepareStatement(countStatus, ErrorCode.Internal,
-                                                limitDate);
-            nbCountStatusWarning = DbTaskRunner
-                .getResultCountPrepareStatement(countStatus, ErrorCode.Warning,
-                                                limitDate);
-            nbCountStatusQueryAlreadyFinished = DbTaskRunner
-                .getResultCountPrepareStatement(countStatus,
-                                                ErrorCode.QueryAlreadyFinished,
-                                                limitDate);
-            nbCountStatusQueryStillRunning = DbTaskRunner
-                .getResultCountPrepareStatement(countStatus,
-                                                ErrorCode.QueryStillRunning,
-                                                limitDate);
-            nbCountStatusNotKnownHost = DbTaskRunner
-                .getResultCountPrepareStatement(countStatus,
-                                                ErrorCode.NotKnownHost,
-                                                limitDate);
-            nbCountStatusQueryRemotelyUnknown = DbTaskRunner
-                .getResultCountPrepareStatement(countStatus,
-                                                ErrorCode.QueryRemotelyUnknown,
-                                                limitDate);
-            nbCountStatusCommandNotFound = DbTaskRunner
-                .getResultCountPrepareStatement(countStatus,
-                                                ErrorCode.CommandNotFound,
-                                                limitDate);
-            nbCountStatusPassThroughMode = DbTaskRunner
-                .getResultCountPrepareStatement(countStatus,
-                                                ErrorCode.PassThroughMode,
-                                                limitDate);
-            nbCountStatusRemoteShutdown = DbTaskRunner
-                .getResultCountPrepareStatement(countStatus,
-                                                ErrorCode.RemoteShutdown,
-                                                limitDate);
-            nbCountStatusShutdown = DbTaskRunner
-                .getResultCountPrepareStatement(countStatus, ErrorCode.Shutdown,
-                                                limitDate);
-            nbCountStatusRemoteError = DbTaskRunner
-                .getResultCountPrepareStatement(countStatus,
-                                                ErrorCode.RemoteError,
-                                                limitDate);
-            nbCountStatusStopped = DbTaskRunner
-                .getResultCountPrepareStatement(countStatus,
-                                                ErrorCode.StoppedTransfer,
-                                                limitDate);
-            nbCountStatusCanceled = DbTaskRunner
-                .getResultCountPrepareStatement(countStatus,
-                                                ErrorCode.CanceledTransfer,
-                                                limitDate);
-            nbCountStatusFileNotFound = DbTaskRunner
-                .getResultCountPrepareStatement(countStatus,
-                                                ErrorCode.FileNotFound,
-                                                limitDate);
-            nbCountStatusUnknown = DbTaskRunner
-                .getResultCountPrepareStatement(countStatus, ErrorCode.Unknown,
-                                                limitDate);
+            nbCountStatusConnectionImpossible =
+                DbTaskRunner.getResultCountPrepareStatement(countStatus,
+                                                            ErrorCode.ConnectionImpossible,
+                                                            limitDate);
+            nbCountStatusServerOverloaded =
+                DbTaskRunner.getResultCountPrepareStatement(countStatus,
+                                                            ErrorCode.ServerOverloaded,
+                                                            limitDate);
+            nbCountStatusBadAuthent =
+                DbTaskRunner.getResultCountPrepareStatement(countStatus,
+                                                            ErrorCode.BadAuthent,
+                                                            limitDate);
+            nbCountStatusExternalOp =
+                DbTaskRunner.getResultCountPrepareStatement(countStatus,
+                                                            ErrorCode.ExternalOp,
+                                                            limitDate);
+            nbCountStatusTransferError =
+                DbTaskRunner.getResultCountPrepareStatement(countStatus,
+                                                            ErrorCode.TransferError,
+                                                            limitDate);
+            nbCountStatusMD5Error =
+                DbTaskRunner.getResultCountPrepareStatement(countStatus,
+                                                            ErrorCode.MD5Error,
+                                                            limitDate);
+            nbCountStatusDisconnection =
+                DbTaskRunner.getResultCountPrepareStatement(countStatus,
+                                                            ErrorCode.Disconnection,
+                                                            limitDate);
+            nbCountStatusFinalOp =
+                DbTaskRunner.getResultCountPrepareStatement(countStatus,
+                                                            ErrorCode.FinalOp,
+                                                            limitDate);
+            nbCountStatusUnimplemented =
+                DbTaskRunner.getResultCountPrepareStatement(countStatus,
+                                                            ErrorCode.Unimplemented,
+                                                            limitDate);
+            nbCountStatusInternal =
+                DbTaskRunner.getResultCountPrepareStatement(countStatus,
+                                                            ErrorCode.Internal,
+                                                            limitDate);
+            nbCountStatusWarning =
+                DbTaskRunner.getResultCountPrepareStatement(countStatus,
+                                                            ErrorCode.Warning,
+                                                            limitDate);
+            nbCountStatusQueryAlreadyFinished =
+                DbTaskRunner.getResultCountPrepareStatement(countStatus,
+                                                            ErrorCode.QueryAlreadyFinished,
+                                                            limitDate);
+            nbCountStatusQueryStillRunning =
+                DbTaskRunner.getResultCountPrepareStatement(countStatus,
+                                                            ErrorCode.QueryStillRunning,
+                                                            limitDate);
+            nbCountStatusNotKnownHost =
+                DbTaskRunner.getResultCountPrepareStatement(countStatus,
+                                                            ErrorCode.NotKnownHost,
+                                                            limitDate);
+            nbCountStatusQueryRemotelyUnknown =
+                DbTaskRunner.getResultCountPrepareStatement(countStatus,
+                                                            ErrorCode.QueryRemotelyUnknown,
+                                                            limitDate);
+            nbCountStatusCommandNotFound =
+                DbTaskRunner.getResultCountPrepareStatement(countStatus,
+                                                            ErrorCode.CommandNotFound,
+                                                            limitDate);
+            nbCountStatusPassThroughMode =
+                DbTaskRunner.getResultCountPrepareStatement(countStatus,
+                                                            ErrorCode.PassThroughMode,
+                                                            limitDate);
+            nbCountStatusRemoteShutdown =
+                DbTaskRunner.getResultCountPrepareStatement(countStatus,
+                                                            ErrorCode.RemoteShutdown,
+                                                            limitDate);
+            nbCountStatusShutdown =
+                DbTaskRunner.getResultCountPrepareStatement(countStatus,
+                                                            ErrorCode.Shutdown,
+                                                            limitDate);
+            nbCountStatusRemoteError =
+                DbTaskRunner.getResultCountPrepareStatement(countStatus,
+                                                            ErrorCode.RemoteError,
+                                                            limitDate);
+            nbCountStatusStopped =
+                DbTaskRunner.getResultCountPrepareStatement(countStatus,
+                                                            ErrorCode.StoppedTransfer,
+                                                            limitDate);
+            nbCountStatusCanceled =
+                DbTaskRunner.getResultCountPrepareStatement(countStatus,
+                                                            ErrorCode.CanceledTransfer,
+                                                            limitDate);
+            nbCountStatusFileNotFound =
+                DbTaskRunner.getResultCountPrepareStatement(countStatus,
+                                                            ErrorCode.FileNotFound,
+                                                            limitDate);
+            nbCountStatusUnknown =
+                DbTaskRunner.getResultCountPrepareStatement(countStatus,
+                                                            ErrorCode.Unknown,
+                                                            limitDate);
           }
         } catch (final WaarpDatabaseNoConnectionException ignored) {
           // ignore
@@ -649,7 +661,7 @@ public class Monitoring implements WaarpInterfaceMonitor {
    *
    * @return The XML representation of the current status
    */
-  public String exportXml(final boolean detail) {
+  public final String exportXml(final boolean detail) {
     final StringBuilder builder = new StringBuilder("<STATUS>")
         // Global Informations
         .append("<HostID>").append(Configuration.configuration.getHostId())
@@ -764,7 +776,7 @@ public class Monitoring implements WaarpInterfaceMonitor {
    *
    * @return The Json representation of the current status
    */
-  public String exportJson(final boolean detail) {
+  public final String exportJson(final boolean detail) {
     return JsonHandler.prettyPrint(exportAsJson(detail));
   }
 
@@ -773,7 +785,7 @@ public class Monitoring implements WaarpInterfaceMonitor {
    *
    * @return The Json representation of the current status
    */
-  public ObjectNode exportAsJson(final boolean detail) {
+  public final ObjectNode exportAsJson(final boolean detail) {
     ObjectNode node = JsonHandler.createObjectNode();
     node = node.putObject("STATUS");
     // Global Informations
@@ -859,7 +871,7 @@ public class Monitoring implements WaarpInterfaceMonitor {
   }
 
   @Override
-  public void setAgent(final WaarpSnmpAgent agent) {
+  public final void setAgent(final WaarpSnmpAgent agent) {
     this.agent = agent;
     lastInActiveTransfer = this.agent.getUptimeSystemTime();
     lastOutActiveTransfer = this.agent.getUptimeSystemTime();
@@ -871,7 +883,7 @@ public class Monitoring implements WaarpInterfaceMonitor {
    * @param type
    * @param entry
    */
-  public void run(final int type, final int entry) {
+  public final void run(final int type, final int entry) {
     final long nbMs =
         Configuration.configuration.getAgentSnmp().getUptime() + 100;
     final MibLevel level = MibLevel.values()[type];
@@ -904,7 +916,7 @@ public class Monitoring implements WaarpInterfaceMonitor {
    * @param rank
    * @param value
    */
-  protected void updateGlobalValue(final int rank, final long value) {
+  protected final void updateGlobalValue(final int rank, final long value) {
     ((R66PrivateMib) agent.getMib()).rowGlobal.setValue(rank, value);
   }
 
@@ -914,7 +926,7 @@ public class Monitoring implements WaarpInterfaceMonitor {
    * @param rank
    * @param value
    */
-  protected void updateDetailedValue(final int rank, final long value) {
+  protected final void updateDetailedValue(final int rank, final long value) {
     ((R66PrivateMib) agent.getMib()).rowDetailed.setValue(rank, value);
   }
 
@@ -924,7 +936,7 @@ public class Monitoring implements WaarpInterfaceMonitor {
    * @param rank
    * @param value
    */
-  protected void updateErrorValue(final int rank, final long value) {
+  protected final void updateErrorValue(final int rank, final long value) {
     ((R66PrivateMib) agent.getMib()).rowError.setValue(rank, value);
   }
 
@@ -934,7 +946,8 @@ public class Monitoring implements WaarpInterfaceMonitor {
    * @param nbMs
    * @param entry
    */
-  protected void run(final long nbMs, final WaarpGlobalValuesIndex entry) {
+  protected final void run(final long nbMs,
+                           final WaarpGlobalValuesIndex entry) {
     synchronized (trafficCounter) {
       long val;
       final long limitDate = System.currentTimeMillis() - nbMs;
@@ -1037,35 +1050,31 @@ public class Monitoring implements WaarpInterfaceMonitor {
           case applOperStatus:
             return;
           case applInboundAssociations:
-            DbTaskRunner
-                .finishSelectOrCountPrepareStatement(countInActiveTransfer,
-                                                     limitDate);
-            nbInActiveTransfer = DbTaskRunner
-                .getResultCountPrepareStatement(countInActiveTransfer);
+            DbTaskRunner.finishSelectOrCountPrepareStatement(
+                countInActiveTransfer, limitDate);
+            nbInActiveTransfer = DbTaskRunner.getResultCountPrepareStatement(
+                countInActiveTransfer);
             updateGlobalValue(entry.ordinal(), nbInActiveTransfer);
             return;
           case applOutboundAssociations:
-            DbTaskRunner
-                .finishSelectOrCountPrepareStatement(countOutActiveTransfer,
-                                                     limitDate);
-            nbOutActiveTransfer = DbTaskRunner
-                .getResultCountPrepareStatement(countOutActiveTransfer);
+            DbTaskRunner.finishSelectOrCountPrepareStatement(
+                countOutActiveTransfer, limitDate);
+            nbOutActiveTransfer = DbTaskRunner.getResultCountPrepareStatement(
+                countOutActiveTransfer);
             updateGlobalValue(entry.ordinal(), nbOutActiveTransfer);
             return;
           case applAccumInboundAssociations:
-            DbTaskRunner
-                .finishSelectOrCountPrepareStatement(countInTotalTransfer,
-                                                     limitDate);
-            nbInTotalTransfer = DbTaskRunner
-                .getResultCountPrepareStatement(countInTotalTransfer);
+            DbTaskRunner.finishSelectOrCountPrepareStatement(
+                countInTotalTransfer, limitDate);
+            nbInTotalTransfer = DbTaskRunner.getResultCountPrepareStatement(
+                countInTotalTransfer);
             updateGlobalValue(entry.ordinal(), nbInTotalTransfer);
             return;
           case applAccumOutboundAssociations:
-            DbTaskRunner
-                .finishSelectOrCountPrepareStatement(countOutTotalTransfer,
-                                                     limitDate);
-            nbOutTotalTransfer = DbTaskRunner
-                .getResultCountPrepareStatement(countOutTotalTransfer);
+            DbTaskRunner.finishSelectOrCountPrepareStatement(
+                countOutTotalTransfer, limitDate);
+            nbOutTotalTransfer = DbTaskRunner.getResultCountPrepareStatement(
+                countOutTotalTransfer);
             updateGlobalValue(entry.ordinal(), nbOutTotalTransfer);
             return;
           case applLastInboundActivity:
@@ -1083,19 +1092,17 @@ public class Monitoring implements WaarpInterfaceMonitor {
             updateGlobalValue(entry.ordinal(), val);
             return;
           case applRejectedInboundAssociations:
-            DbTaskRunner
-                .finishSelectOrCountPrepareStatement(countInErrorTransfer,
-                                                     limitDate);
-            nbInErrorTransfer = DbTaskRunner
-                .getResultCountPrepareStatement(countInErrorTransfer);
+            DbTaskRunner.finishSelectOrCountPrepareStatement(
+                countInErrorTransfer, limitDate);
+            nbInErrorTransfer = DbTaskRunner.getResultCountPrepareStatement(
+                countInErrorTransfer);
             updateGlobalValue(entry.ordinal(), nbInErrorTransfer);
             return;
           case applFailedOutboundAssociations:
-            DbTaskRunner
-                .finishSelectOrCountPrepareStatement(countOutErrorTransfer,
-                                                     limitDate);
-            nbOutErrorTransfer = DbTaskRunner
-                .getResultCountPrepareStatement(countOutErrorTransfer);
+            DbTaskRunner.finishSelectOrCountPrepareStatement(
+                countOutErrorTransfer, limitDate);
+            nbOutErrorTransfer = DbTaskRunner.getResultCountPrepareStatement(
+                countOutErrorTransfer);
             updateGlobalValue(entry.ordinal(), nbOutErrorTransfer);
             return;
           case applInboundBandwidthKBS:
@@ -1107,55 +1114,60 @@ public class Monitoring implements WaarpInterfaceMonitor {
             updateGlobalValue(entry.ordinal(), val);
             return;
           case nbInfoUnknown:
-            nbCountInfoUnknown = DbTaskRunner
-                .getResultCountPrepareStatement(countInfo, UpdatedInfo.UNKNOWN,
-                                                limitDate);
+            nbCountInfoUnknown =
+                DbTaskRunner.getResultCountPrepareStatement(countInfo,
+                                                            UpdatedInfo.UNKNOWN,
+                                                            limitDate);
             updateGlobalValue(entry.ordinal(), nbCountInfoUnknown);
             return;
           case nbInfoNotUpdated:
-            nbCountInfoNotUpdated = DbTaskRunner
-                .getResultCountPrepareStatement(countInfo,
-                                                UpdatedInfo.NOTUPDATED,
-                                                limitDate);
+            nbCountInfoNotUpdated =
+                DbTaskRunner.getResultCountPrepareStatement(countInfo,
+                                                            UpdatedInfo.NOTUPDATED,
+                                                            limitDate);
             updateGlobalValue(entry.ordinal(), nbCountInfoNotUpdated);
             return;
           case nbInfoInterrupted:
-            nbCountInfoInterrupted = DbTaskRunner
-                .getResultCountPrepareStatement(countInfo,
-                                                UpdatedInfo.INTERRUPTED,
-                                                limitDate);
+            nbCountInfoInterrupted =
+                DbTaskRunner.getResultCountPrepareStatement(countInfo,
+                                                            UpdatedInfo.INTERRUPTED,
+                                                            limitDate);
             updateGlobalValue(entry.ordinal(), nbCountInfoInterrupted);
             return;
           case nbInfoToSubmit:
-            nbCountInfoToSubmit = DbTaskRunner
-                .getResultCountPrepareStatement(countInfo, UpdatedInfo.TOSUBMIT,
-                                                limitDate);
+            nbCountInfoToSubmit =
+                DbTaskRunner.getResultCountPrepareStatement(countInfo,
+                                                            UpdatedInfo.TOSUBMIT,
+                                                            limitDate);
             updateGlobalValue(entry.ordinal(), nbCountInfoToSubmit);
             return;
           case nbInfoError:
-            nbCountInfoError = DbTaskRunner
-                .getResultCountPrepareStatement(countInfo, UpdatedInfo.INERROR,
-                                                limitDate);
+            nbCountInfoError =
+                DbTaskRunner.getResultCountPrepareStatement(countInfo,
+                                                            UpdatedInfo.INERROR,
+                                                            limitDate);
             updateGlobalValue(entry.ordinal(), nbCountInfoError);
             return;
           case nbInfoRunning:
-            nbCountInfoRunning = DbTaskRunner
-                .getResultCountPrepareStatement(countInfo, UpdatedInfo.RUNNING,
-                                                limitDate);
+            nbCountInfoRunning =
+                DbTaskRunner.getResultCountPrepareStatement(countInfo,
+                                                            UpdatedInfo.RUNNING,
+                                                            limitDate);
             updateGlobalValue(entry.ordinal(), nbCountInfoRunning);
             return;
           case nbInfoDone:
-            nbCountInfoDone = DbTaskRunner
-                .getResultCountPrepareStatement(countInfo, UpdatedInfo.DONE,
-                                                limitDate);
+            nbCountInfoDone =
+                DbTaskRunner.getResultCountPrepareStatement(countInfo,
+                                                            UpdatedInfo.DONE,
+                                                            limitDate);
             updateGlobalValue(entry.ordinal(), nbCountInfoDone);
             return;
           case nbStepAllTransfer:
-            DbTaskRunner
-                .finishSelectOrCountPrepareStatement(countStepAllTransfer,
-                                                     limitDate);
-            nbCountStepAllTransfer = DbTaskRunner
-                .getResultCountPrepareStatement(countStepAllTransfer);
+            DbTaskRunner.finishSelectOrCountPrepareStatement(
+                countStepAllTransfer, limitDate);
+            nbCountStepAllTransfer =
+                DbTaskRunner.getResultCountPrepareStatement(
+                    countStepAllTransfer);
             updateGlobalValue(entry.ordinal(), nbCountStepAllTransfer);
             return;
           case nbThreads:
@@ -1180,7 +1192,8 @@ public class Monitoring implements WaarpInterfaceMonitor {
    * @param nbMs
    * @param entry
    */
-  protected void run(final long nbMs, final WaarpDetailedValuesIndex entry) {
+  protected final void run(final long nbMs,
+                           final WaarpDetailedValuesIndex entry) {
     synchronized (trafficCounter) {
       final long limitDate = System.currentTimeMillis() - nbMs;
       if (dbSession == null || dbSession.isDisActive()) {
@@ -1269,18 +1282,17 @@ public class Monitoring implements WaarpInterfaceMonitor {
             updateDetailedValue(entry.ordinal(), nbCountStepAllDone);
             return;
           case nbStepError:
-            DbTaskRunner
-                .finishSelectOrCountPrepareStatement(countStepError, limitDate);
+            DbTaskRunner.finishSelectOrCountPrepareStatement(countStepError,
+                                                             limitDate);
             nbCountStepError =
                 DbTaskRunner.getResultCountPrepareStatement(countStepError);
             updateDetailedValue(entry.ordinal(), nbCountStepError);
             return;
           case nbAllRunningStep:
-            DbTaskRunner
-                .finishSelectOrCountPrepareStatement(countAllRunningStep,
-                                                     limitDate);
-            nbCountAllRunningStep = DbTaskRunner
-                .getResultCountPrepareStatement(countAllRunningStep);
+            DbTaskRunner.finishSelectOrCountPrepareStatement(
+                countAllRunningStep, limitDate);
+            nbCountAllRunningStep = DbTaskRunner.getResultCountPrepareStatement(
+                countAllRunningStep);
             updateDetailedValue(entry.ordinal(), nbCountAllRunningStep);
             return;
           case nbRunningStep:
@@ -1298,48 +1310,46 @@ public class Monitoring implements WaarpInterfaceMonitor {
             updateDetailedValue(entry.ordinal(), nbCountInitOkStep);
             return;
           case nbPreProcessingOkStep:
-            DbTaskRunner
-                .finishSelectOrCountPrepareStatement(countPreProcessingOkStep,
-                                                     limitDate);
-            nbCountPreProcessingOkStep = DbTaskRunner
-                .getResultCountPrepareStatement(countPreProcessingOkStep);
+            DbTaskRunner.finishSelectOrCountPrepareStatement(
+                countPreProcessingOkStep, limitDate);
+            nbCountPreProcessingOkStep =
+                DbTaskRunner.getResultCountPrepareStatement(
+                    countPreProcessingOkStep);
             updateDetailedValue(entry.ordinal(), nbCountPreProcessingOkStep);
             return;
           case nbTransferOkStep:
-            DbTaskRunner
-                .finishSelectOrCountPrepareStatement(countTransferOkStep,
-                                                     limitDate);
-            nbCountTransferOkStep = DbTaskRunner
-                .getResultCountPrepareStatement(countTransferOkStep);
+            DbTaskRunner.finishSelectOrCountPrepareStatement(
+                countTransferOkStep, limitDate);
+            nbCountTransferOkStep = DbTaskRunner.getResultCountPrepareStatement(
+                countTransferOkStep);
             updateDetailedValue(entry.ordinal(), nbCountTransferOkStep);
             return;
           case nbPostProcessingOkStep:
-            DbTaskRunner
-                .finishSelectOrCountPrepareStatement(countPostProcessingOkStep,
-                                                     limitDate);
-            nbCountPostProcessingOkStep = DbTaskRunner
-                .getResultCountPrepareStatement(countPostProcessingOkStep);
+            DbTaskRunner.finishSelectOrCountPrepareStatement(
+                countPostProcessingOkStep, limitDate);
+            nbCountPostProcessingOkStep =
+                DbTaskRunner.getResultCountPrepareStatement(
+                    countPostProcessingOkStep);
             updateDetailedValue(entry.ordinal(), nbCountPostProcessingOkStep);
             return;
           case nbCompleteOkStep:
-            DbTaskRunner
-                .finishSelectOrCountPrepareStatement(countCompleteOkStep,
-                                                     limitDate);
-            nbCountCompleteOkStep = DbTaskRunner
-                .getResultCountPrepareStatement(countCompleteOkStep);
+            DbTaskRunner.finishSelectOrCountPrepareStatement(
+                countCompleteOkStep, limitDate);
+            nbCountCompleteOkStep = DbTaskRunner.getResultCountPrepareStatement(
+                countCompleteOkStep);
             updateDetailedValue(entry.ordinal(), nbCountCompleteOkStep);
         }
       } catch (final WaarpDatabaseNoConnectionException e) {
-        logger
-            .info("Database No Connection Error: Cannot execute Monitoring", e);
+        logger.info("Database No Connection Error: Cannot execute Monitoring",
+                    e);
         try {
           dbSession.getAdmin().getDbModel().validConnection(dbSession);
         } catch (final WaarpDatabaseNoConnectionException ignored) {
           // ignore
         }
       } catch (final WaarpDatabaseSqlException e) {
-        logger
-            .info("Database No Connection Error: Cannot execute Monitoring", e);
+        logger.info("Database No Connection Error: Cannot execute Monitoring",
+                    e);
         try {
           dbSession.getAdmin().getDbModel().validConnection(dbSession);
         } catch (final WaarpDatabaseNoConnectionException ignored) {
@@ -1355,7 +1365,7 @@ public class Monitoring implements WaarpInterfaceMonitor {
    * @param nbMs
    * @param entry
    */
-  protected void run(final long nbMs, final WaarpErrorValuesIndex entry) {
+  protected final void run(final long nbMs, final WaarpErrorValuesIndex entry) {
     synchronized (trafficCounter) {
       final long limitDate = System.currentTimeMillis() - nbMs;
       if (dbSession == null || dbSession.isDisActive()) {
@@ -1364,162 +1374,171 @@ public class Monitoring implements WaarpInterfaceMonitor {
       // Error
       switch (entry) {
         case nbStatusConnectionImpossible:
-          nbCountStatusConnectionImpossible = DbTaskRunner
-              .getResultCountPrepareStatement(countStatus,
-                                              ErrorCode.ConnectionImpossible,
-                                              limitDate);
+          nbCountStatusConnectionImpossible =
+              DbTaskRunner.getResultCountPrepareStatement(countStatus,
+                                                          ErrorCode.ConnectionImpossible,
+                                                          limitDate);
           updateErrorValue(entry.ordinal(), nbCountStatusConnectionImpossible);
           return;
         case nbStatusServerOverloaded:
-          nbCountStatusServerOverloaded = DbTaskRunner
-              .getResultCountPrepareStatement(countStatus,
-                                              ErrorCode.ServerOverloaded,
-                                              limitDate);
+          nbCountStatusServerOverloaded =
+              DbTaskRunner.getResultCountPrepareStatement(countStatus,
+                                                          ErrorCode.ServerOverloaded,
+                                                          limitDate);
           updateErrorValue(entry.ordinal(), nbCountStatusServerOverloaded);
           return;
         case nbStatusBadAuthent:
-          nbCountStatusBadAuthent = DbTaskRunner
-              .getResultCountPrepareStatement(countStatus, ErrorCode.BadAuthent,
-                                              limitDate);
+          nbCountStatusBadAuthent =
+              DbTaskRunner.getResultCountPrepareStatement(countStatus,
+                                                          ErrorCode.BadAuthent,
+                                                          limitDate);
           updateErrorValue(entry.ordinal(), nbCountStatusBadAuthent);
           return;
         case nbStatusExternalOp:
-          nbCountStatusExternalOp = DbTaskRunner
-              .getResultCountPrepareStatement(countStatus, ErrorCode.ExternalOp,
-                                              limitDate);
+          nbCountStatusExternalOp =
+              DbTaskRunner.getResultCountPrepareStatement(countStatus,
+                                                          ErrorCode.ExternalOp,
+                                                          limitDate);
           updateErrorValue(entry.ordinal(), nbCountStatusExternalOp);
           return;
         case nbStatusTransferError:
-          nbCountStatusTransferError = DbTaskRunner
-              .getResultCountPrepareStatement(countStatus,
-                                              ErrorCode.TransferError,
-                                              limitDate);
+          nbCountStatusTransferError =
+              DbTaskRunner.getResultCountPrepareStatement(countStatus,
+                                                          ErrorCode.TransferError,
+                                                          limitDate);
           updateErrorValue(entry.ordinal(), nbCountStatusTransferError);
           return;
         case nbStatusMD5Error:
-          nbCountStatusMD5Error = DbTaskRunner
-              .getResultCountPrepareStatement(countStatus, ErrorCode.MD5Error,
-                                              limitDate);
+          nbCountStatusMD5Error =
+              DbTaskRunner.getResultCountPrepareStatement(countStatus,
+                                                          ErrorCode.MD5Error,
+                                                          limitDate);
           updateErrorValue(entry.ordinal(), nbCountStatusMD5Error);
           return;
         case nbStatusDisconnection:
-          nbCountStatusDisconnection = DbTaskRunner
-              .getResultCountPrepareStatement(countStatus,
-                                              ErrorCode.Disconnection,
-                                              limitDate);
+          nbCountStatusDisconnection =
+              DbTaskRunner.getResultCountPrepareStatement(countStatus,
+                                                          ErrorCode.Disconnection,
+                                                          limitDate);
           updateErrorValue(entry.ordinal(), nbCountStatusDisconnection);
           return;
         case nbStatusFinalOp:
-          nbCountStatusFinalOp = DbTaskRunner
-              .getResultCountPrepareStatement(countStatus, ErrorCode.FinalOp,
-                                              limitDate);
+          nbCountStatusFinalOp =
+              DbTaskRunner.getResultCountPrepareStatement(countStatus,
+                                                          ErrorCode.FinalOp,
+                                                          limitDate);
           updateErrorValue(entry.ordinal(), nbCountStatusFinalOp);
           return;
         case nbStatusUnimplemented:
-          nbCountStatusUnimplemented = DbTaskRunner
-              .getResultCountPrepareStatement(countStatus,
-                                              ErrorCode.Unimplemented,
-                                              limitDate);
+          nbCountStatusUnimplemented =
+              DbTaskRunner.getResultCountPrepareStatement(countStatus,
+                                                          ErrorCode.Unimplemented,
+                                                          limitDate);
           updateErrorValue(entry.ordinal(), nbCountStatusUnimplemented);
           return;
         case nbStatusInternal:
-          nbCountStatusInternal = DbTaskRunner
-              .getResultCountPrepareStatement(countStatus, ErrorCode.Internal,
-                                              limitDate);
+          nbCountStatusInternal =
+              DbTaskRunner.getResultCountPrepareStatement(countStatus,
+                                                          ErrorCode.Internal,
+                                                          limitDate);
           updateErrorValue(entry.ordinal(), nbCountStatusInternal);
           return;
         case nbStatusWarning:
-          nbCountStatusWarning = DbTaskRunner
-              .getResultCountPrepareStatement(countStatus, ErrorCode.Warning,
-                                              limitDate);
+          nbCountStatusWarning =
+              DbTaskRunner.getResultCountPrepareStatement(countStatus,
+                                                          ErrorCode.Warning,
+                                                          limitDate);
           updateErrorValue(entry.ordinal(), nbCountStatusWarning);
           return;
         case nbStatusQueryAlreadyFinished:
-          nbCountStatusQueryAlreadyFinished = DbTaskRunner
-              .getResultCountPrepareStatement(countStatus,
-                                              ErrorCode.QueryAlreadyFinished,
-                                              limitDate);
+          nbCountStatusQueryAlreadyFinished =
+              DbTaskRunner.getResultCountPrepareStatement(countStatus,
+                                                          ErrorCode.QueryAlreadyFinished,
+                                                          limitDate);
           updateErrorValue(entry.ordinal(), nbCountStatusQueryAlreadyFinished);
           return;
         case nbStatusQueryStillRunning:
-          nbCountStatusQueryStillRunning = DbTaskRunner
-              .getResultCountPrepareStatement(countStatus,
-                                              ErrorCode.QueryStillRunning,
-                                              limitDate);
+          nbCountStatusQueryStillRunning =
+              DbTaskRunner.getResultCountPrepareStatement(countStatus,
+                                                          ErrorCode.QueryStillRunning,
+                                                          limitDate);
           updateErrorValue(entry.ordinal(), nbCountStatusQueryStillRunning);
           return;
         case nbStatusNotKnownHost:
-          nbCountStatusNotKnownHost = DbTaskRunner
-              .getResultCountPrepareStatement(countStatus,
-                                              ErrorCode.NotKnownHost,
-                                              limitDate);
+          nbCountStatusNotKnownHost =
+              DbTaskRunner.getResultCountPrepareStatement(countStatus,
+                                                          ErrorCode.NotKnownHost,
+                                                          limitDate);
           updateErrorValue(entry.ordinal(), nbCountStatusNotKnownHost);
           return;
         case nbStatusQueryRemotelyUnknown:
-          nbCountStatusQueryRemotelyUnknown = DbTaskRunner
-              .getResultCountPrepareStatement(countStatus,
-                                              ErrorCode.QueryRemotelyUnknown,
-                                              limitDate);
+          nbCountStatusQueryRemotelyUnknown =
+              DbTaskRunner.getResultCountPrepareStatement(countStatus,
+                                                          ErrorCode.QueryRemotelyUnknown,
+                                                          limitDate);
           updateErrorValue(entry.ordinal(), nbCountStatusQueryRemotelyUnknown);
           return;
         case nbStatusCommandNotFound:
-          nbCountStatusCommandNotFound = DbTaskRunner
-              .getResultCountPrepareStatement(countStatus,
-                                              ErrorCode.CommandNotFound,
-                                              limitDate);
+          nbCountStatusCommandNotFound =
+              DbTaskRunner.getResultCountPrepareStatement(countStatus,
+                                                          ErrorCode.CommandNotFound,
+                                                          limitDate);
           updateErrorValue(entry.ordinal(), nbCountStatusCommandNotFound);
           return;
         case nbStatusPassThroughMode:
-          nbCountStatusPassThroughMode = DbTaskRunner
-              .getResultCountPrepareStatement(countStatus,
-                                              ErrorCode.PassThroughMode,
-                                              limitDate);
+          nbCountStatusPassThroughMode =
+              DbTaskRunner.getResultCountPrepareStatement(countStatus,
+                                                          ErrorCode.PassThroughMode,
+                                                          limitDate);
           updateErrorValue(entry.ordinal(), nbCountStatusPassThroughMode);
           return;
         case nbStatusRemoteShutdown:
-          nbCountStatusRemoteShutdown = DbTaskRunner
-              .getResultCountPrepareStatement(countStatus,
-                                              ErrorCode.RemoteShutdown,
-                                              limitDate);
+          nbCountStatusRemoteShutdown =
+              DbTaskRunner.getResultCountPrepareStatement(countStatus,
+                                                          ErrorCode.RemoteShutdown,
+                                                          limitDate);
           updateErrorValue(entry.ordinal(), nbCountStatusRemoteShutdown);
           return;
         case nbStatusShutdown:
-          nbCountStatusShutdown = DbTaskRunner
-              .getResultCountPrepareStatement(countStatus, ErrorCode.Shutdown,
-                                              limitDate);
+          nbCountStatusShutdown =
+              DbTaskRunner.getResultCountPrepareStatement(countStatus,
+                                                          ErrorCode.Shutdown,
+                                                          limitDate);
           updateErrorValue(entry.ordinal(), nbCountStatusShutdown);
           return;
         case nbStatusRemoteError:
-          nbCountStatusRemoteError = DbTaskRunner
-              .getResultCountPrepareStatement(countStatus,
-                                              ErrorCode.RemoteError, limitDate);
+          nbCountStatusRemoteError =
+              DbTaskRunner.getResultCountPrepareStatement(countStatus,
+                                                          ErrorCode.RemoteError,
+                                                          limitDate);
           updateErrorValue(entry.ordinal(), nbCountStatusRemoteError);
           return;
         case nbStatusStopped:
-          nbCountStatusStopped = DbTaskRunner
-              .getResultCountPrepareStatement(countStatus,
-                                              ErrorCode.StoppedTransfer,
-                                              limitDate);
+          nbCountStatusStopped =
+              DbTaskRunner.getResultCountPrepareStatement(countStatus,
+                                                          ErrorCode.StoppedTransfer,
+                                                          limitDate);
           updateErrorValue(entry.ordinal(), nbCountStatusStopped);
           return;
         case nbStatusCanceled:
-          nbCountStatusCanceled = DbTaskRunner
-              .getResultCountPrepareStatement(countStatus,
-                                              ErrorCode.CanceledTransfer,
-                                              limitDate);
+          nbCountStatusCanceled =
+              DbTaskRunner.getResultCountPrepareStatement(countStatus,
+                                                          ErrorCode.CanceledTransfer,
+                                                          limitDate);
           updateErrorValue(entry.ordinal(), nbCountStatusCanceled);
           return;
         case nbStatusFileNotFound:
-          nbCountStatusFileNotFound = DbTaskRunner
-              .getResultCountPrepareStatement(countStatus,
-                                              ErrorCode.FileNotFound,
-                                              limitDate);
+          nbCountStatusFileNotFound =
+              DbTaskRunner.getResultCountPrepareStatement(countStatus,
+                                                          ErrorCode.FileNotFound,
+                                                          limitDate);
           updateErrorValue(entry.ordinal(), nbCountStatusFileNotFound);
           return;
         case nbStatusUnknown:
-          nbCountStatusUnknown = DbTaskRunner
-              .getResultCountPrepareStatement(countStatus, ErrorCode.Unknown,
-                                              limitDate);
+          nbCountStatusUnknown =
+              DbTaskRunner.getResultCountPrepareStatement(countStatus,
+                                                          ErrorCode.Unknown,
+                                                          limitDate);
           updateErrorValue(entry.ordinal(), nbCountStatusUnknown);
       }
     }

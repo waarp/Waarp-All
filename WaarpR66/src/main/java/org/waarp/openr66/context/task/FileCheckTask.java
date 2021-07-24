@@ -123,8 +123,8 @@ public class FileCheckTask extends AbstractTask {
                 result = true; // ??
                 break;
             }
-            logger
-                .debug("DEBUG: {} {} {}", supposelength, arg.name(), tocompare);
+            logger.debug("DEBUG: {} {} {}", supposelength, arg.name(),
+                         tocompare);
             if (!result) {
               // error so stop
               logger.error(
@@ -141,8 +141,8 @@ public class FileCheckTask extends AbstractTask {
             // ignore and continue
           }
         }
-      } else if (commands[current]
-          .equalsIgnoreCase(FC_COMMAND.DFCHECK.name())) {
+      } else if (commands[current].equalsIgnoreCase(
+          FC_COMMAND.DFCHECK.name())) {
         current++;
         long freesize = runner.freespace(session, true);
         if (freesize > 0 && supposelength > freesize) {

@@ -33,47 +33,47 @@ public class RequestJsonPacket extends JsonPacket {
   /**
    * @return the filename
    */
-  public String getFilename() {
+  public final String getFilename() {
     return filename;
   }
 
   /**
    * @param filename the filename to set
    */
-  public void setFilename(final String filename) {
+  public final void setFilename(final String filename) {
     this.filename = filename;
   }
 
   /**
    * @return the filesize
    */
-  public long getFilesize() {
+  public final long getFilesize() {
     return filesize;
   }
 
   /**
    * @param filesize the filesize to set
    */
-  public void setFilesize(final long filesize) {
+  public final void setFilesize(final long filesize) {
     this.filesize = filesize;
   }
 
   /**
    * @return the fileInfo
    */
-  public String getFileInfo() {
+  public final String getFileInfo() {
     return fileInfo;
   }
 
   /**
    * @param fileInfo the fileInfo to set
    */
-  public void setFileInfo(final String fileInfo) {
+  public final void setFileInfo(final String fileInfo) {
     this.fileInfo = fileInfo;
   }
 
   @Override
-  public void setRequestUserPacket() {
+  public final void setRequestUserPacket() {
     setRequestUserPacket(LocalPacketFactory.REQUESTPACKET);
   }
 }

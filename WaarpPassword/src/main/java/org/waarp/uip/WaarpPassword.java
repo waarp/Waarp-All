@@ -102,10 +102,10 @@ public class WaarpPassword {
         waarpPassword.savePasswordFile();
       }
       if (clearPasswordView) {
-        SysErrLogger.FAKE_LOGGER
-            .sysout("ClearPwd: " + waarpPassword.getClearPassword());
-        SysErrLogger.FAKE_LOGGER
-            .sysout("CryptedPwd: " + waarpPassword.getCryptedPassword());
+        SysErrLogger.FAKE_LOGGER.sysout(
+            "ClearPwd: " + waarpPassword.getClearPassword());
+        SysErrLogger.FAKE_LOGGER.sysout(
+            "CryptedPwd: " + waarpPassword.getCryptedPassword());
       }
     }
   }
@@ -182,8 +182,8 @@ public class WaarpPassword {
         if (i < args.length) {
           cpwd = args[i];
         } else {
-          SysErrLogger.FAKE_LOGGER
-              .syserr("-cpwd needs a crypted password as argument");
+          SysErrLogger.FAKE_LOGGER.syserr(
+              "-cpwd needs a crypted password as argument");
           return false;
         }
       } else if ("-clear".equalsIgnoreCase(args[i])) {
@@ -194,8 +194,8 @@ public class WaarpPassword {
       }
     }
     if (ki == null && ko == null) {
-      SysErrLogger.FAKE_LOGGER
-          .syserr("You must specify one of ki or ko options");
+      SysErrLogger.FAKE_LOGGER.syserr(
+          "You must specify one of ki or ko options");
       return false;
     }
     if (ki == null) {
@@ -267,7 +267,7 @@ public class WaarpPassword {
    *
    * @throws Exception
    */
-  public void createNewKey() throws Exception {
+  public final void createNewKey() throws Exception {
     try {
       currentKey.generateKey();
     } catch (final Exception e) {
@@ -283,7 +283,7 @@ public class WaarpPassword {
    *
    * @throws CryptoException
    */
-  public void loadKey(final File file) throws CryptoException {
+  public final void loadKey(final File file) throws CryptoException {
     keyFile = file;
     try {
       currentKey.setSecretKey(file);
@@ -297,7 +297,7 @@ public class WaarpPassword {
    *
    * @throws CryptoException
    */
-  public void saveKey(final File file) throws CryptoException {
+  public final void saveKey(final File file) throws CryptoException {
     if (file != null) {
       keyFile = file;
     }
@@ -311,14 +311,14 @@ public class WaarpPassword {
   /**
    * @return True if the associated key is ready
    */
-  public boolean keyReady() {
+  public final boolean keyReady() {
     return currentKey.keyReady();
   }
 
   /**
    * @return The File associated with the current Key
    */
-  public File getKeyFile() {
+  public final File getKeyFile() {
     return keyFile;
   }
 
@@ -329,7 +329,7 @@ public class WaarpPassword {
    *
    * @throws Exception
    */
-  public void setClearPassword(final String passwd) throws Exception {
+  public final void setClearPassword(final String passwd) throws Exception {
     clearPassword = passwd;
     cryptedPassword = currentKey.cryptToHex(clearPassword);
   }
@@ -337,7 +337,7 @@ public class WaarpPassword {
   /**
    * @return the passwordFile
    */
-  public File getPasswordFile() {
+  public final File getPasswordFile() {
     return passwordFile;
   }
 
@@ -346,7 +346,7 @@ public class WaarpPassword {
    *
    * @throws IOException
    */
-  public void setPasswordFile(final File passwordFile) {
+  public final void setPasswordFile(final File passwordFile) {
     this.passwordFile = passwordFile;
   }
 
@@ -355,7 +355,7 @@ public class WaarpPassword {
    *
    * @throws IOException
    */
-  public void savePasswordFile() throws IOException {
+  public final void savePasswordFile() throws IOException {
     final FileOutputStream outputStream = new FileOutputStream(passwordFile);
     try {
       outputStream.write(cryptedPassword.getBytes(WaarpStringUtils.UTF8));
@@ -369,7 +369,7 @@ public class WaarpPassword {
    *
    * @throws Exception
    */
-  public void loadPasswordFile() throws Exception {
+  public final void loadPasswordFile() throws Exception {
     if (passwordFile.canRead()) {
       final int len = (int) passwordFile.length();
       final byte[] key = new byte[len];
@@ -395,7 +395,7 @@ public class WaarpPassword {
   /**
    * @return the cryptedPassword
    */
-  public String getCryptedPassword() {
+  public final String getCryptedPassword() {
     return cryptedPassword;
   }
 
@@ -404,7 +404,7 @@ public class WaarpPassword {
    *
    * @throws Exception
    */
-  public void setCryptedPassword(final String cryptedPassword)
+  public final void setCryptedPassword(final String cryptedPassword)
       throws Exception {
     this.cryptedPassword = cryptedPassword;
     clearPassword = currentKey.decryptHexInString(cryptedPassword);
@@ -413,7 +413,7 @@ public class WaarpPassword {
   /**
    * @return the clearPassword
    */
-  public String getClearPassword() {
+  public final String getClearPassword() {
     return clearPassword;
   }
 

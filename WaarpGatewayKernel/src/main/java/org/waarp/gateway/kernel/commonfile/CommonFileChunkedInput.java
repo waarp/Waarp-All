@@ -58,12 +58,13 @@ public class CommonFileChunkedInput implements ChunkedInput<ByteBuf> {
   }
 
   @Override
-  public ByteBuf readChunk(final ChannelHandlerContext ctx) throws Exception {
+  public final ByteBuf readChunk(final ChannelHandlerContext ctx)
+      throws Exception {
     return readChunk(ByteBufAllocator.DEFAULT);
   }
 
   @Override
-  public long length() {
+  public final long length() {
     try {
       return document.length();
     } catch (final CommandAbstractException e) {
@@ -72,17 +73,17 @@ public class CommonFileChunkedInput implements ChunkedInput<ByteBuf> {
   }
 
   @Override
-  public long progress() {
+  public final long progress() {
     return offset;
   }
 
   @Override
-  public boolean isEndOfInput() {
+  public final boolean isEndOfInput() {
     return lastChunkAlready;
   }
 
   @Override
-  public void close() throws HttpIncorrectRetrieveException {
+  public final void close() throws HttpIncorrectRetrieveException {
     try {
       if (document.isInReading()) {
         document.abortFile();
@@ -94,7 +95,7 @@ public class CommonFileChunkedInput implements ChunkedInput<ByteBuf> {
   }
 
   @Override
-  public ByteBuf readChunk(final ByteBufAllocator byteBufAllocator)
+  public final ByteBuf readChunk(final ByteBufAllocator byteBufAllocator)
       throws Exception {
     // Document
     final DataBlock block;

@@ -51,7 +51,7 @@ public class SpooledServiceLauncher extends ServiceLauncher {
   }
 
   @Override
-  protected EngineAbstract getNewEngineAbstract() {
+  protected final EngineAbstract getNewEngineAbstract() {
     return new SpooledEngine();
   }
 

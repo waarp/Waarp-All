@@ -93,8 +93,8 @@ public class FXApplet extends JApplet {
 
   static {
     try {
-      UIManager
-          .setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
+      UIManager.setLookAndFeel(
+          UIManager.getCrossPlatformLookAndFeelClassName());
     } catch (final Exception ignore) {
       // nothing
     }

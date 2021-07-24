@@ -101,29 +101,30 @@ public final class LocalPacketFactory {
     final byte packetType = buf.readByte();
     switch (packetType) {
       case AUTHENTPACKET:
-        return AuthentPacket
-            .createFromBuffer(headerLength, middleLength, endLength, buf);
+        return AuthentPacket.createFromBuffer(headerLength, middleLength,
+                                              endLength, buf);
       case STARTUPPACKET:
-        return StartupPacket
-            .createFromBuffer(headerLength, middleLength, endLength, buf);
+        return StartupPacket.createFromBuffer(headerLength, middleLength,
+                                              endLength, buf);
       case DATAPACKET:
-        return DataPacket
-            .createFromBuffer(headerLength, middleLength, endLength, buf);
+        return DataPacket.createFromBuffer(headerLength, middleLength,
+                                           endLength, buf);
       case VALIDPACKET:
-        return ValidPacket
-            .createFromBuffer(headerLength, middleLength, endLength, buf);
+        return ValidPacket.createFromBuffer(headerLength, middleLength,
+                                            endLength, buf);
       case ERRORPACKET:
-        return ErrorPacket
-            .createFromBuffer(headerLength, middleLength, endLength, buf);
+        return ErrorPacket.createFromBuffer(headerLength, middleLength,
+                                            endLength, buf);
       case CONNECTERRORPACKET:
-        return ConnectionErrorPacket
-            .createFromBuffer(headerLength, middleLength, endLength, buf);
+        return ConnectionErrorPacket.createFromBuffer(headerLength,
+                                                      middleLength, endLength,
+                                                      buf);
       case REQUESTPACKET:
-        return RequestPacket
-            .createFromBuffer(headerLength, middleLength, endLength, buf);
+        return RequestPacket.createFromBuffer(headerLength, middleLength,
+                                              endLength, buf);
       case SHUTDOWNPACKET:
-        return ShutdownPacket
-            .createFromBuffer(headerLength, middleLength, endLength, buf);
+        return ShutdownPacket.createFromBuffer(headerLength, middleLength,
+                                               endLength, buf);
       case STOPPACKET:
       case CANCELPACKET:
       case REQUESTUSERPACKET:
@@ -135,32 +136,33 @@ public final class LocalPacketFactory {
         throw new OpenR66ProtocolPacketException(
             "Unimplemented Packet Type received: " + packetType);
       case TESTPACKET:
-        return TestPacket
-            .createFromBuffer(headerLength, middleLength, endLength, buf);
+        return TestPacket.createFromBuffer(headerLength, middleLength,
+                                           endLength, buf);
       case ENDTRANSFERPACKET:
-        return EndTransferPacket
-            .createFromBuffer(headerLength, middleLength, endLength, buf);
+        return EndTransferPacket.createFromBuffer(headerLength, middleLength,
+                                                  endLength, buf);
       case INFORMATIONPACKET:
-        return InformationPacket
-            .createFromBuffer(headerLength, middleLength, endLength, buf);
+        return InformationPacket.createFromBuffer(headerLength, middleLength,
+                                                  endLength, buf);
       case ENDREQUESTPACKET:
-        return EndRequestPacket
-            .createFromBuffer(headerLength, middleLength, endLength, buf);
+        return EndRequestPacket.createFromBuffer(headerLength, middleLength,
+                                                 endLength, buf);
       case KEEPALIVEPACKET:
-        return KeepAlivePacket
-            .createFromBuffer(headerLength, middleLength, endLength, buf);
+        return KeepAlivePacket.createFromBuffer(headerLength, middleLength,
+                                                endLength, buf);
       case BUSINESSREQUESTPACKET:
-        return BusinessRequestPacket
-            .createFromBuffer(headerLength, middleLength, endLength, buf);
+        return BusinessRequestPacket.createFromBuffer(headerLength,
+                                                      middleLength, endLength,
+                                                      buf);
       case NOOPPACKET:
-        return NoOpPacket
-            .createFromBuffer(headerLength, middleLength, endLength, buf);
+        return NoOpPacket.createFromBuffer(headerLength, middleLength,
+                                           endLength, buf);
       case BLOCKREQUESTPACKET:
-        return BlockRequestPacket
-            .createFromBuffer(headerLength, middleLength, endLength, buf);
+        return BlockRequestPacket.createFromBuffer(headerLength, middleLength,
+                                                   endLength, buf);
       case JSONREQUESTPACKET:
-        return JsonCommandPacket
-            .createFromBuffer(headerLength, middleLength, endLength, buf);
+        return JsonCommandPacket.createFromBuffer(headerLength, middleLength,
+                                                  endLength, buf);
       default:
         throw new OpenR66ProtocolPacketException(
             "Unvalid Packet Type received: " + packetType);

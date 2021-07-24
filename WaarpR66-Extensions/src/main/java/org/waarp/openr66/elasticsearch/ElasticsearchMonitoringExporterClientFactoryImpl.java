@@ -27,7 +27,7 @@ import org.waarp.openr66.protocol.monitoring.ElasticsearchMonitoringExporterClie
 public class ElasticsearchMonitoringExporterClientFactoryImpl
     implements ElasticsearchMonitoringExporterClientFactory {
   @Override
-  public ElasticsearchMonitoringExporterClient createElasticsearchClient(
+  public final ElasticsearchMonitoringExporterClient createElasticsearchClient(
       final String username, final String pwd, final String token,
       final String apiKey, final String prefix, final String index,
       final boolean compression, final HttpHost... httpHosts) {

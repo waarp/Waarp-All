@@ -56,7 +56,7 @@ public enum R66Versions {
     version = name().substring(1).replace('_', '.');
   }
 
-  public String getVersion() {
+  public final String getVersion() {
     return version;
   }
 }

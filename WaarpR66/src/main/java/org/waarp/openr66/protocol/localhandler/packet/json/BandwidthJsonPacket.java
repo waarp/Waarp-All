@@ -35,75 +35,75 @@ public class BandwidthJsonPacket extends JsonPacket {
   /**
    * @return the setter
    */
-  public boolean isSetter() {
+  public final boolean isSetter() {
     return setter;
   }
 
   /**
    * @param setter the setter to set
    */
-  public void setSetter(final boolean setter) {
+  public final void setSetter(final boolean setter) {
     this.setter = setter;
   }
 
   /**
    * @return the writeglobal
    */
-  public long getWriteglobal() {
+  public final long getWriteglobal() {
     return writeglobal;
   }
 
   /**
    * @param writeglobal the writeglobal to set
    */
-  public void setWriteglobal(final long writeglobal) {
+  public final void setWriteglobal(final long writeglobal) {
     this.writeglobal = writeglobal;
   }
 
   /**
    * @return the readglobal
    */
-  public long getReadglobal() {
+  public final long getReadglobal() {
     return readglobal;
   }
 
   /**
    * @param readglobal the readglobal to set
    */
-  public void setReadglobal(final long readglobal) {
+  public final void setReadglobal(final long readglobal) {
     this.readglobal = readglobal;
   }
 
   /**
    * @return the writesession
    */
-  public long getWritesession() {
+  public final long getWritesession() {
     return writesession;
   }
 
   /**
    * @param writesession the writesession to set
    */
-  public void setWritesession(final long writesession) {
+  public final void setWritesession(final long writesession) {
     this.writesession = writesession;
   }
 
   /**
    * @return the readsession
    */
-  public long getReadsession() {
+  public final long getReadsession() {
     return readsession;
   }
 
   /**
    * @param readsession the readsession to set
    */
-  public void setReadsession(final long readsession) {
+  public final void setReadsession(final long readsession) {
     this.readsession = readsession;
   }
 
   @Override
-  public void fromJson(final JsonPacket other) {
+  public final void fromJson(final JsonPacket other) {
     super.fromJson(other);
     if (other instanceof BandwidthJsonPacket) {
       final BandwidthJsonPacket other2 = (BandwidthJsonPacket) other;
@@ -116,7 +116,7 @@ public class BandwidthJsonPacket extends JsonPacket {
   }
 
   @Override
-  public void setRequestUserPacket() {
+  public final void setRequestUserPacket() {
     setRequestUserPacket(LocalPacketFactory.BANDWIDTHPACKET);
   }
 

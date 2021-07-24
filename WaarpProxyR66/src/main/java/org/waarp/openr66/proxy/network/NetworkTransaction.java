@@ -59,16 +59,15 @@ public class NetworkTransaction {
 
   public NetworkTransaction() {
     networkChannelGroup = new DefaultChannelGroup("NetworkChannels",
-                                                  configuration
-                                                      .getSubTaskGroup()
-                                                      .next());
+                                                  configuration.getSubTaskGroup()
+                                                               .next());
     final NetworkServerInitializerProxy networkServerInitializerProxy =
         new NetworkServerInitializerProxy(false);
     clientBootstrap = new Bootstrap();
-    WaarpNettyUtil
-        .setBootstrap(clientBootstrap, configuration.getNetworkWorkerGroup(),
-                      (int) configuration.getTimeoutCon(),
-                      configuration.getBlockSize() + 64, false);
+    WaarpNettyUtil.setBootstrap(clientBootstrap,
+                                configuration.getNetworkWorkerGroup(),
+                                (int) configuration.getTimeoutCon(),
+                                configuration.getBlockSize() + 64, false);
     clientBootstrap.handler(networkServerInitializerProxy);
     clientSslBootstrap = new Bootstrap();
     if (configuration.isUseSSL() && configuration.getHostSslId() != null) {
@@ -96,8 +95,8 @@ public class NetworkTransaction {
    *
    * @return the Channel
    */
-  public Channel createConnectionWithRetry(final SocketAddress socketAddress,
-                                           final boolean isSSL) {
+  public final Channel createConnectionWithRetry(
+      final SocketAddress socketAddress, final boolean isSSL) {
     Channel channel = null;
     OpenR66Exception lastException = null;
     for (int i = 0; i < RETRYNB; i++) {
@@ -258,7 +257,7 @@ public class NetworkTransaction {
   /**
    * Close all Network Transaction
    */
-  public void closeAll() {
+  public final void closeAll() {
     logger.debug("Proxy close All Network Channels");
     try {
       Thread.sleep(RETRYINMS * 2);
@@ -285,7 +284,7 @@ public class NetworkTransaction {
   /**
    * @return The number of Network Channels
    */
-  public int getNumberClients() {
+  public final int getNumberClients() {
     return networkChannelGroup.size();
   }
 }

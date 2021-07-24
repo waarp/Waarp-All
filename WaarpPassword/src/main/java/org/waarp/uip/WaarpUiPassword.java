@@ -254,8 +254,8 @@ public class WaarpUiPassword extends JFrame {
                   } catch (final Exception e) {
                     SysErrLogger.FAKE_LOGGER.syserr(e);
                   }
-                  jTextFieldCryptedPassword
-                      .setText(waarpPassword.getCryptedPassword());
+                  jTextFieldCryptedPassword.setText(
+                      waarpPassword.getCryptedPassword());
                   passwordModified = true;
                 }
               }
@@ -272,8 +272,8 @@ public class WaarpUiPassword extends JFrame {
                   } catch (final Exception e) {
                     SysErrLogger.FAKE_LOGGER.syserr(e);
                   }
-                  jTextFieldCryptedPassword
-                      .setText(waarpPassword.getCryptedPassword());
+                  jTextFieldCryptedPassword.setText(
+                      waarpPassword.getCryptedPassword());
                   passwordModified = true;
                 }
               }
@@ -293,8 +293,8 @@ public class WaarpUiPassword extends JFrame {
                   SysErrLogger.FAKE_LOGGER.syserr(e1);
                 }
                 setUncryptedPassword(waarpPassword.getClearPassword());
-                jTextFieldCryptedPassword
-                    .setText(waarpPassword.getCryptedPassword());
+                jTextFieldCryptedPassword.setText(
+                    waarpPassword.getCryptedPassword());
                 passwordModified = true;
               }
             }
@@ -303,19 +303,19 @@ public class WaarpUiPassword extends JFrame {
         if (WaarpPassword.clearPasswordView) {
           jPanel1Layout.setHorizontalGroup(
               jPanel1Layout.createSequentialGroup().addContainerGap().addGroup(
-                  jPanel1Layout.createParallelGroup().addGroup(
-                      jPanel1Layout.createSequentialGroup()
-                                   .addComponent(jTextFieldPasswordFile,
-                                                 GroupLayout.PREFERRED_SIZE,
-                                                 340,
-                                                 GroupLayout.PREFERRED_SIZE)
-                                   .addGap(0, 0, Short.MAX_VALUE))
-                               .addComponent(jPasswordFieldTxt,
-                                             GroupLayout.Alignment.LEADING, 0,
-                                             341, Short.MAX_VALUE)
-                               .addComponent(jTextFieldCryptedPassword,
-                                             GroupLayout.Alignment.LEADING, 0,
-                                             338, Short.MAX_VALUE))
+                               jPanel1Layout.createParallelGroup().addGroup(
+                                                jPanel1Layout.createSequentialGroup()
+                                                             .addComponent(jTextFieldPasswordFile,
+                                                                           GroupLayout.PREFERRED_SIZE,
+                                                                           340,
+                                                                           GroupLayout.PREFERRED_SIZE)
+                                                             .addGap(0, 0, Short.MAX_VALUE))
+                                            .addComponent(jPasswordFieldTxt,
+                                                          GroupLayout.Alignment.LEADING, 0,
+                                                          341, Short.MAX_VALUE)
+                                            .addComponent(jTextFieldCryptedPassword,
+                                                          GroupLayout.Alignment.LEADING, 0,
+                                                          338, Short.MAX_VALUE))
                            .addContainerGap());
           jPanel1Layout.setVerticalGroup(
               jPanel1Layout.createSequentialGroup().addContainerGap()
@@ -335,19 +335,19 @@ public class WaarpUiPassword extends JFrame {
         } else {
           jPanel1Layout.setHorizontalGroup(
               jPanel1Layout.createSequentialGroup().addContainerGap().addGroup(
-                  jPanel1Layout.createParallelGroup().addGroup(
-                      jPanel1Layout.createSequentialGroup()
-                                   .addComponent(jTextFieldPasswordFile,
-                                                 GroupLayout.PREFERRED_SIZE,
-                                                 340,
-                                                 GroupLayout.PREFERRED_SIZE)
-                                   .addGap(0, 0, Short.MAX_VALUE))
-                               .addComponent(jPasswordField,
-                                             GroupLayout.Alignment.LEADING, 0,
-                                             341, Short.MAX_VALUE)
-                               .addComponent(jTextFieldCryptedPassword,
-                                             GroupLayout.Alignment.LEADING, 0,
-                                             338, Short.MAX_VALUE))
+                               jPanel1Layout.createParallelGroup().addGroup(
+                                                jPanel1Layout.createSequentialGroup()
+                                                             .addComponent(jTextFieldPasswordFile,
+                                                                           GroupLayout.PREFERRED_SIZE,
+                                                                           340,
+                                                                           GroupLayout.PREFERRED_SIZE)
+                                                             .addGap(0, 0, Short.MAX_VALUE))
+                                            .addComponent(jPasswordField,
+                                                          GroupLayout.Alignment.LEADING, 0,
+                                                          341, Short.MAX_VALUE)
+                                            .addComponent(jTextFieldCryptedPassword,
+                                                          GroupLayout.Alignment.LEADING, 0,
+                                                          338, Short.MAX_VALUE))
                            .addContainerGap());
           jPanel1Layout.setVerticalGroup(
               jPanel1Layout.createSequentialGroup().addContainerGap()
@@ -648,8 +648,8 @@ public class WaarpUiPassword extends JFrame {
               SysErrLogger.FAKE_LOGGER.syserr(e);
             }
             setUncryptedPassword(waarpPassword.getClearPassword());
-            jTextFieldCryptedPassword
-                .setText(waarpPassword.getCryptedPassword());
+            jTextFieldCryptedPassword.setText(
+                waarpPassword.getCryptedPassword());
             passwordModified = false;
           }
         }
@@ -727,16 +727,18 @@ public class WaarpUiPassword extends JFrame {
                                                           Short.MAX_VALUE)
                                                       .addGroup(
                                                           GroupLayout.Alignment.LEADING,
-                                                          jDialogHelpLayout
-                                                              .createSequentialGroup()
-                                                              .addGap(254)
-                                                              .addComponent(
-                                                                  getJButtonHelp(),
-                                                                  GroupLayout.PREFERRED_SIZE,
-                                                                  111,
-                                                                  GroupLayout.PREFERRED_SIZE)
-                                                              .addGap(0, 239,
-                                                                      Short.MAX_VALUE)))
+                                                          jDialogHelpLayout.createSequentialGroup()
+                                                                           .addGap(
+                                                                               254)
+                                                                           .addComponent(
+                                                                               getJButtonHelp(),
+                                                                               GroupLayout.PREFERRED_SIZE,
+                                                                               111,
+                                                                               GroupLayout.PREFERRED_SIZE)
+                                                                           .addGap(
+                                                                               0,
+                                                                               239,
+                                                                               Short.MAX_VALUE)))
                            .addContainerGap(23, 23));
       jDialogHelpLayout.setVerticalGroup(
           jDialogHelpLayout.createSequentialGroup().addContainerGap()

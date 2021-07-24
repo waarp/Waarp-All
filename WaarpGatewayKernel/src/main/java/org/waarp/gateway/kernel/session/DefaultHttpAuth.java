@@ -64,75 +64,75 @@ public class DefaultHttpAuth implements HttpAuthInterface {
   }
 
   @Override
-  public SessionInterface getSession() {
+  public final SessionInterface getSession() {
     return session;
   }
 
   @Override
-  public NextCommandReply setUser(final String user) {
+  public final NextCommandReply setUser(final String user) {
     this.user = user;
     return null;
   }
 
   @Override
-  public String getUser() {
+  public final String getUser() {
     return user;
   }
 
   @Override
-  public NextCommandReply setPassword(final String password) {
+  public final NextCommandReply setPassword(final String password) {
     this.password = password;
     return null;
   }
 
   @Override
-  public boolean isIdentified() {
+  public final boolean isIdentified() {
     return isIdentified;
   }
 
   @Override
-  public boolean isAdmin() {
+  public final boolean isAdmin() {
     return false;
   }
 
   @Override
-  public boolean isBusinessPathValid(final String newPath) {
+  public final boolean isBusinessPathValid(final String newPath) {
     return true;
   }
 
   @Override
-  public String getBusinessPath() {
+  public final String getBusinessPath() {
     return "";
   }
 
   @Override
-  public String getBaseDirectory() {
+  public final String getBaseDirectory() {
     return "/";
   }
 
   @Override
-  public String getRelativePath(final String file) {
+  public final String getRelativePath(final String file) {
     return file;
   }
 
   @Override
-  public void clear() {
+  public final void clear() {
     // nothing
   }
 
   @Override
-  public String getAccount() {
+  public final String getAccount() {
     return account;
   }
 
   @Override
-  public NextCommandReply setAccount(final String account) {
+  public final NextCommandReply setAccount(final String account) {
     this.account = account;
     return null;
   }
 
   @Override
-  public CommandExecutorInterface getCommandExecutor() {
+  public final CommandExecutorInterface getCommandExecutor() {
     // TO DO Auto-generated method stub
     return null;
   }

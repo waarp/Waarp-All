@@ -64,8 +64,8 @@ public final class StringUtils {
    * @throws IllegalArgumentException if bytesString is null or empty
    */
   public static byte[] getBytesFromArraysToString(final String bytesString) {
-    ParametersChecker
-        .checkParameter("Should not be null or empty", bytesString);
+    ParametersChecker.checkParameter("Should not be null or empty",
+                                     bytesString);
     final String[] strings =
         bytesString.replace("[", "").replace("]", "").split(", ");
     final byte[] result = new byte[strings.length];

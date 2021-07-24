@@ -69,7 +69,7 @@ public class FtpChannelTrafficShapingHandler
   }
 
   @Override
-  protected long calculateSize(final Object msg) {
+  protected final long calculateSize(final Object msg) {
     if (msg instanceof DataBlock) {
       return ((DataBlock) msg).getByteCount();
     }

@@ -47,32 +47,34 @@ public class DbModelH2Ftp extends DbModelH2 {
   }
 
   @Override
-  public void createTables(final DbSession session)
+  public final void createTables(final DbSession session)
       throws WaarpDatabaseNoConnectionException {
     DbModelH2Kernel.createTableMonitoring(session);
   }
 
   @Override
-  public void resetSequence(final DbSession session, final long newvalue)
+  public final void resetSequence(final DbSession session, final long newvalue)
       throws WaarpDatabaseNoConnectionException {
     DbModelFactoryGateway.resetSequenceMonitoring(session, newvalue);
   }
 
   @Override
-  public long nextSequence(final DbSession dbSession)
+  public final long nextSequence(final DbSession dbSession)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException,
              WaarpDatabaseNoDataException {
     return DbModelFactoryGateway.nextSequenceMonitoring(dbSession);
   }
 
   @Override
-  public boolean upgradeDb(final DbSession session, final String version) {
+  public final boolean upgradeDb(final DbSession session,
+                                 final String version) {
     return true;
   }
 
   @Override
-  public boolean needUpgradeDb(final DbSession session, final String version,
-                               final boolean tryFix) {
+  public final boolean needUpgradeDb(final DbSession session,
+                                     final String version,
+                                     final boolean tryFix) {
     return false;
   }
 

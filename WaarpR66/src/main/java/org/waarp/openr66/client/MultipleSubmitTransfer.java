@@ -171,8 +171,8 @@ public class MultipleSubmitTransfer extends SubmitTransfer {
    *     blocksize if different than default
    */
   public static void main(final String[] args) {
-    WaarpLoggerFactory
-        .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));
+    WaarpLoggerFactory.setDefaultFactoryIfNotSame(
+        new WaarpSlf4JLoggerFactory(null));
     if (logger == null) {
       logger = WaarpLoggerFactory.getLogger(MultipleSubmitTransfer.class);
     }
@@ -213,8 +213,9 @@ public class MultipleSubmitTransfer extends SubmitTransfer {
           "Unique " + MultipleSubmitTransfer.class.getSimpleName(), args);
       if (future.isSuccess()) {
         outputFormat.setValue(FIELDS.status.name(), 0);
-        outputFormat.setValue(FIELDS.statusTxt.name(), "Multiple " + Messages
-            .getString("SubmitTransfer.3") +
+        outputFormat.setValue(FIELDS.statusTxt.name(), "Multiple " +
+                                                       Messages.getString(
+                                                           "SubmitTransfer.3") +
                                                        Messages.getString(
                                                            "RequestInformation.Success")); //$NON-NLS-1$
         outputFormat.setValue(FIELDS.remote.name(), rhost);
@@ -239,8 +240,9 @@ public class MultipleSubmitTransfer extends SubmitTransfer {
         WaarpSystemUtil.systemExit(0);
       } else {
         outputFormat.setValue(FIELDS.status.name(), 2);
-        outputFormat.setValue(FIELDS.statusTxt.name(), "Multiple " + Messages
-            .getString("SubmitTransfer.14") +
+        outputFormat.setValue(FIELDS.statusTxt.name(), "Multiple " +
+                                                       Messages.getString(
+                                                           "SubmitTransfer.14") +
                                                        Messages.getString(
                                                            "RequestInformation.Failure")); //$NON-NLS-1$
         outputFormat.setValue(FIELDS.remote.name(), rhost);

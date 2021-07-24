@@ -98,7 +98,7 @@ public class NetworkServerHandler
     }
   }
 
-  public void setBridge(final ProxyBridge bridge) {
+  public final void setBridge(final ProxyBridge bridge) {
     this.bridge = bridge;
     if (this.bridge != null) {
       proxyChannel = bridge.getSource().getNetworkChannel();
@@ -112,11 +112,11 @@ public class NetworkServerHandler
   /**
    * @return the networkChannel
    */
-  public Channel getNetworkChannel() {
+  public final Channel getNetworkChannel() {
     return networkChannel;
   }
 
-  public void close() {
+  public final void close() {
     WaarpSslUtility.closingSslChannel(networkChannel);
   }
 
@@ -204,7 +204,7 @@ public class NetworkServerHandler
     }
   }
 
-  public void resetKeepAlive() {
+  public final void resetKeepAlive() {
     keepAlivedSent.set(0);
   }
 
@@ -232,8 +232,8 @@ public class NetworkServerHandler
         resetKeepAlive();
         try {
           final KeepAlivePacket keepAlivePacket =
-              (KeepAlivePacket) LocalPacketCodec
-                  .decodeNetworkPacket(msg.getBuffer());
+              (KeepAlivePacket) LocalPacketCodec.decodeNetworkPacket(
+                  msg.getBuffer());
           if (keepAlivePacket.isToValidate()) {
             keepAlivePacket.validate();
             final NetworkPacket response =
@@ -283,8 +283,9 @@ public class NetworkServerHandler
       ChannelCloseTimer.closeFutureChannel(channel);
       return;
     }
-    final OpenR66Exception exception = OpenR66ExceptionTrappedFactory
-        .getExceptionFromTrappedException(channel, cause);
+    final OpenR66Exception exception =
+        OpenR66ExceptionTrappedFactory.getExceptionFromTrappedException(channel,
+                                                                        cause);
     if (exception != null) {
       if (exception instanceof OpenR66ProtocolBusinessNoWriteBackException) {
         logger.debug("Will close NETWORK channel");
@@ -322,8 +323,9 @@ public class NetworkServerHandler
    * @param localId
    * @param error
    */
-  void writeError(final Channel channel, final Integer remoteId,
-                  final Integer localId, final AbstractLocalPacket error) {
+  final void writeError(final Channel channel, final Integer remoteId,
+                        final Integer localId,
+                        final AbstractLocalPacket error) {
     if (channel.isActive()) {
       NetworkPacket networkPacket = null;
       logger.info("Proxy Error to send {}", error);
@@ -336,7 +338,7 @@ public class NetworkServerHandler
         final NetworkPacket finalNP = networkPacket;
         channel.eventLoop().submit(new Runnable() {
           @Override
-          public void run() {
+          public final void run() {
             channel.writeAndFlush(finalNP).awaitUninterruptibly();
             finalNP.clear();
           }
@@ -348,7 +350,7 @@ public class NetworkServerHandler
   /**
    * @return True if this Handler is for SSL
    */
-  public boolean isSsl() {
+  public final boolean isSsl() {
     return isSSL;
   }
 }

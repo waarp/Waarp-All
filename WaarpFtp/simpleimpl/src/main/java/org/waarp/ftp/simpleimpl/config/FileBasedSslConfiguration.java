@@ -178,8 +178,9 @@ public class FileBasedSslConfiguration {
         useClientAuthent = value.getBoolean();
       }
       try {
-        FtpsInitializer.waarpSecureKeyStore
-            .initTrustStore(keypath, keystorepass, useClientAuthent);
+        FtpsInitializer.waarpSecureKeyStore.initTrustStore(keypath,
+                                                           keystorepass,
+                                                           useClientAuthent);
       } catch (final CryptoException e) {
         logger.error("Bad TrustKeyStore construction");
         return false;

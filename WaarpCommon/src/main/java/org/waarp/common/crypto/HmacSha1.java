@@ -50,44 +50,44 @@ public class HmacSha1 extends KeyObject {
   public static final String EXTENSION = "hs1";
 
   @Override
-  public String getAlgorithm() {
+  public final String getAlgorithm() {
     return ALGO;
   }
 
   @Override
-  public String getInstance() {
+  public final String getInstance() {
     return INSTANCE;
   }
 
   @Override
-  public int getKeySize() {
+  public final int getKeySize() {
     return KEY_SIZE;
   }
 
   @Override
-  public String getFileExtension() {
+  public final String getFileExtension() {
     return EXTENSION;
   }
 
   @Override
-  public Cipher toCrypt() {
+  public final Cipher toCrypt() {
     throw new IllegalArgumentException(CANNOT_BE_USED_FOR_HMAC_SHA1);
   }
 
   @Override
-  public byte[] crypt(final byte[] plaintext) throws Exception {
+  public final byte[] crypt(final byte[] plaintext) throws Exception {
     final Mac mac = Mac.getInstance(ALGO);
     mac.init(secretKey);
     return mac.doFinal(plaintext);
   }
 
   @Override
-  public Cipher toDecrypt() {
+  public final Cipher toDecrypt() {
     throw new IllegalArgumentException(CANNOT_BE_USED_FOR_HMAC_SHA1);
   }
 
   @Override
-  public byte[] decrypt(final byte[] ciphertext) throws Exception {
+  public final byte[] decrypt(final byte[] ciphertext) throws Exception {
     throw new IllegalArgumentException(CANNOT_BE_USED_FOR_HMAC_SHA1);
   }
 

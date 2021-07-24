@@ -177,9 +177,10 @@ public class WaarpSecureKeyStore {
    *
    * @throws CryptoException
    */
-  public void initKeyStore(final String keystoreFilename,
-                           final String keystorePasswd,
-                           final String keyPasswordNew) throws CryptoException {
+  public final void initKeyStore(final String keystoreFilename,
+                                 final String keystorePasswd,
+                                 final String keyPasswordNew)
+      throws CryptoException {
     keyStoreFilename = keystoreFilename;
     keyStorePasswd = keystorePasswd;
     keyPassword = keyPasswordNew;
@@ -219,10 +220,10 @@ public class WaarpSecureKeyStore {
    *
    * @throws CryptoException
    */
-  void initKeyManagerFactory() throws CryptoException {
+  final void initKeyManagerFactory() throws CryptoException {
     try {
-      keyManagerFactory = KeyManagerFactory
-          .getInstance(KeyManagerFactory.getDefaultAlgorithm());
+      keyManagerFactory = KeyManagerFactory.getInstance(
+          KeyManagerFactory.getDefaultAlgorithm());
     } catch (final NoSuchAlgorithmException e) {
       logger.error(CANNOT_CREATE_KEY_MANAGER_FACTORY_INSTANCE, e);
       throw new CryptoException(CANNOT_CREATE_KEY_MANAGER_FACTORY_INSTANCE, e);
@@ -248,7 +249,7 @@ public class WaarpSecureKeyStore {
    *
    * @return True if entry is deleted
    */
-  public boolean deleteKeyFromKeyStore(final String alias) {
+  public final boolean deleteKeyFromKeyStore(final String alias) {
     try {
       keyStore.deleteEntry(alias);
     } catch (final KeyStoreException e) {
@@ -267,8 +268,8 @@ public class WaarpSecureKeyStore {
    *
    * @return True if entry is added
    */
-  public boolean setKeytoKeyStore(final String alias, final Key key,
-                                  final Certificate[] chain) {
+  public final boolean setKeytoKeyStore(final String alias, final Key key,
+                                        final Certificate[] chain) {
     try {
       keyStore.setKeyEntry(alias, key, getCertificatePassword(), chain);
     } catch (final KeyStoreException e) {
@@ -285,7 +286,7 @@ public class WaarpSecureKeyStore {
    *
    * @return True if keyStore is saved to file
    */
-  public boolean saveKeyStore(final String filename) {
+  public final boolean saveKeyStore(final String filename) {
     FileOutputStream fos = null;
     try {
       fos = new FileOutputStream(filename);
@@ -324,9 +325,9 @@ public class WaarpSecureKeyStore {
    *
    * @throws CryptoException
    */
-  public void initTrustStore(final String truststoreFilename,
-                             final String truststorePasswd,
-                             final boolean needClientAuthent)
+  public final void initTrustStore(final String truststoreFilename,
+                                   final String truststorePasswd,
+                                   final boolean needClientAuthent)
       throws CryptoException {
     trustStorePasswd = truststorePasswd;
     try {
@@ -363,8 +364,8 @@ public class WaarpSecureKeyStore {
     checkExpiryDate(keyTrustStore);
     final TrustManagerFactory trustManagerFactory;
     try {
-      trustManagerFactory = TrustManagerFactory
-          .getInstance(KeyManagerFactory.getDefaultAlgorithm());
+      trustManagerFactory = TrustManagerFactory.getInstance(
+          KeyManagerFactory.getDefaultAlgorithm());
     } catch (final NoSuchAlgorithmException e1) {
       logger.error(CANNOT_CREATE_TRUST_MANAGER_FACTORY_INSTANCE, e1);
       throw new CryptoException(CANNOT_CREATE_TRUST_MANAGER_FACTORY_INSTANCE,
@@ -393,7 +394,7 @@ public class WaarpSecureKeyStore {
    *
    * @return True if correctly initialized empty
    */
-  public boolean initEmptyTrustStore() {
+  public final boolean initEmptyTrustStore() {
     trustStorePasswd = "secret";//NOSONAR
     try {
       keyTrustStore = KeyStore.getInstance("JKS");
@@ -428,7 +429,7 @@ public class WaarpSecureKeyStore {
    *
    * @return True if entry is deleted
    */
-  public boolean deleteKeyFromTrustStore(final String alias) {
+  public final boolean deleteKeyFromTrustStore(final String alias) {
     try {
       keyStore.deleteEntry(alias);
     } catch (final KeyStoreException e) {
@@ -446,8 +447,8 @@ public class WaarpSecureKeyStore {
    *
    * @return True if entry is added
    */
-  public boolean setKeytoTrustStore(final String alias,
-                                    final Certificate cert) {
+  public final boolean setKeytoTrustStore(final String alias,
+                                          final Certificate cert) {
     try {
       keyStore.setCertificateEntry(alias, cert);
     } catch (final KeyStoreException e) {
@@ -464,7 +465,7 @@ public class WaarpSecureKeyStore {
    *
    * @return True if keyTrustStore is saved to file
    */
-  public boolean saveTrustStore(final String filename) {
+  public final boolean saveTrustStore(final String filename) {
     FileOutputStream fos = null;
     try {
       fos = new FileOutputStream(filename);
@@ -516,7 +517,7 @@ public class WaarpSecureKeyStore {
   /**
    * @return the certificate Password
    */
-  public char[] getCertificatePassword() {
+  public final char[] getCertificatePassword() {
     if (keyPassword != null) {
       return keyPassword.toCharArray();
     }
@@ -526,7 +527,7 @@ public class WaarpSecureKeyStore {
   /**
    * @return the KeyStore Password
    */
-  public char[] getKeyStorePassword() {
+  public final char[] getKeyStorePassword() {
     if (keyStorePasswd != null) {
       return keyStorePasswd.toCharArray();
     }
@@ -536,7 +537,7 @@ public class WaarpSecureKeyStore {
   /**
    * @return the KeyTrustStore Password
    */
-  public char[] getKeyTrustStorePassword() {
+  public final char[] getKeyTrustStorePassword() {
     if (trustStorePasswd != null) {
       return trustStorePasswd.toCharArray();
     }
@@ -546,35 +547,35 @@ public class WaarpSecureKeyStore {
   /**
    * @return the KeyStore Filename
    */
-  public String getKeyStoreFilename() {
+  public final String getKeyStoreFilename() {
     return keyStoreFilename;
   }
 
   /**
    * @return the secureTrustManagerFactory
    */
-  public WaarpSecureTrustManagerFactory getSecureTrustManagerFactory() {
+  public final WaarpSecureTrustManagerFactory getSecureTrustManagerFactory() {
     return secureTrustManagerFactory;
   }
 
   /**
    * @return the keyManagerFactory
    */
-  public KeyManagerFactory getKeyManagerFactory() {
+  public final KeyManagerFactory getKeyManagerFactory() {
     return keyManagerFactory;
   }
 
   /**
    * @return the KeyStore
    */
-  public KeyStore getKeyStore() {
+  public final KeyStore getKeyStore() {
     return keyStore;
   }
 
   /**
    * @return the Trust KeyStore
    */
-  public KeyStore getKeyTrustStore() {
+  public final KeyStore getKeyTrustStore() {
     return keyTrustStore;
   }
 
@@ -604,9 +605,8 @@ public class WaarpSecureKeyStore {
                        alias, dateTime);
           valid = false;
         } else {
-          logger
-              .debug("Certificate {} has an expiry date over today: {}", alias,
-                     dateTime);
+          logger.debug("Certificate {} has an expiry date over today: {}",
+                       alias, dateTime);
         }
       } catch (final KeyStoreException e) {//NOSONAR
         logger.warn("Cannot get Expiry Date: {}", e.getMessage());

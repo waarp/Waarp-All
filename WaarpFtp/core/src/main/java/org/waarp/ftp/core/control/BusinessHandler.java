@@ -59,7 +59,7 @@ public abstract class BusinessHandler {
    *
    * @param networkHandler the networkHandler to set
    */
-  public void setNetworkHandler(final NetworkHandler networkHandler) {
+  public final void setNetworkHandler(final NetworkHandler networkHandler) {
     this.networkHandler = networkHandler;
     session = this.networkHandler.getFtpSession();
   }
@@ -67,7 +67,7 @@ public abstract class BusinessHandler {
   /**
    * @return the networkHandler
    */
-  public NetworkHandler getNetworkHandler() {
+  public final NetworkHandler getNetworkHandler() {
     return networkHandler;
   }
 
@@ -76,7 +76,7 @@ public abstract class BusinessHandler {
   /**
    * @return the ftpSession
    */
-  public FtpSession getFtpSession() {
+  public final FtpSession getFtpSession() {
     return session;
   }
 
@@ -113,7 +113,7 @@ public abstract class BusinessHandler {
    */
   public abstract String getFeatMessage();
 
-  protected String getSslFeatMessage() {
+  protected final String getSslFeatMessage() {
     return "AUTH TLS\nAUTH SSL\nCCC\nPROT P\nPROT C";
   }
 
@@ -122,7 +122,7 @@ public abstract class BusinessHandler {
    *     surrounding by "Extensions
    *     supported:\n" and "\nEnd"
    */
-  protected String getDefaultFeatMessage() {
+  protected final String getDefaultFeatMessage() {
     final StringBuilder builder = new StringBuilder();
     builder.append(FtpCommandCode.MDTM.name()).append('\n')
            .append(FtpCommandCode.MLSD.name())
@@ -144,7 +144,7 @@ public abstract class BusinessHandler {
            .append(FILENAME).append('\n').append(FtpCommandCode.XSHA1.name())
            .append(' ').append(FILENAME).append('\n')
            .append(FtpCommandCode.XDIGEST.name()).append(' ').append(
-        "Digest_algo_among(CRC32,ADLER32,MD5,MD2,SHA-1,SHA-256,SHA-384,SHA-512)")
+               "Digest_algo_among(CRC32,ADLER32,MD5,MD2,SHA-1,SHA-256,SHA-384,SHA-512)")
            .append(' ').append(FILENAME).append('\n')
            .append(FtpCommandCode.SITE.name()).append(' ')
            .append(FtpCommandCode.XCRC.name())
@@ -157,7 +157,7 @@ public abstract class BusinessHandler {
            // .append(" \"filename\"")
            .append('\n').append(FtpCommandCode.SITE.name()).append(' ')
            .append(FtpCommandCode.XDIGEST.name()).append(' ').append(
-        "Digest_algo_among(CRC32,ADLER32,MD5,MD2,SHA-1,SHA-256,SHA-384,SHA-512)")
+               "Digest_algo_among(CRC32,ADLER32,MD5,MD2,SHA-1,SHA-256,SHA-384,SHA-512)")
            // .append(" \"filename\"")
            .append('\n').append("LAN EN*").append('\n')
            .append(FtpCommandCode.REST.name()).append(" STREAM\n");
@@ -193,7 +193,7 @@ public abstract class BusinessHandler {
    * @return the string to return to the client for the FEAT command for the
    *     MLSx argument
    */
-  protected String getMLSxOptsMessage(final String[] args) {
+  protected final String getMLSxOptsMessage(final String[] args) {
     String[] properties = PROPERTIES_0_LENGTH;
     if (args.length >= 2) {
       properties = args[1].split(";");
@@ -238,7 +238,7 @@ public abstract class BusinessHandler {
   /**
    * Clean the BusinessHandler.
    */
-  public void clear() {
+  public final void clear() {
     cleanSession();
   }
 

@@ -149,11 +149,11 @@ public abstract class AbstractTransfer implements Runnable {
       logger = WaarpLoggerFactory.getLogger(AbstractTransfer.class);
     }
     try {
-      ChannelUtils
-          .writeAbstractLocalPacket(localChannelReference, packet, true);
+      ChannelUtils.writeAbstractLocalPacket(localChannelReference, packet,
+                                            true);
     } catch (final OpenR66ProtocolPacketException e) {
-      RequestTransfer.logger
-          .error(Messages.getString("RequestTransfer.63") + host); //$NON-NLS-1$
+      RequestTransfer.logger.error(
+          Messages.getString("RequestTransfer.63") + host); //$NON-NLS-1$
       localChannelReference.close();
       RequestTransfer.logger.debug("Bad Protocol", e);
       future.setResult(
@@ -172,7 +172,7 @@ public abstract class AbstractTransfer implements Runnable {
    *
    * @return null if an error occurs or a DbTaskRunner
    */
-  protected DbTaskRunner initRequest() {
+  protected final DbTaskRunner initRequest() {
     final DbRule dbRule;
     try {
       dbRule = new DbRule(transferArgs.getRulename());
@@ -220,12 +220,11 @@ public abstract class AbstractTransfer implements Runnable {
         try {
           final R66Session session = new R66Session(false);
           session.getAuth().specialNoSessionAuth(false,
-                                                 Configuration.configuration
-                                                     .getHostId());
+                                                 Configuration.configuration.getHostId());
           session.getDir().changeDirectory(dbRule.getSendPath());
-          final R66File filer66 = FileUtils
-              .getFile(logger, session, transferArgs.getFilename(), true, true,
-                       false, null);
+          final R66File filer66 =
+              FileUtils.getFile(logger, session, transferArgs.getFilename(),
+                                true, true, false, null);
           file = filer66.getTrueFile();
         } catch (final CommandAbstractException ignored) {
           SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
@@ -290,7 +289,7 @@ public abstract class AbstractTransfer implements Runnable {
   protected static boolean snormalInfoAsWarn = true;
   protected static String sFollowId;
 
-  protected static void clear() {
+  protected final static void clear() {
     rhost = null;
     localFilename = null;
     rule = null;
@@ -323,15 +322,14 @@ public abstract class AbstractTransfer implements Runnable {
       return false;
     }
     if (submitOnly) {
-      if (!FileBasedConfiguration
-          .setSubmitClientConfigurationFromXml(Configuration.configuration,
-                                               args[0])) {
+      if (!FileBasedConfiguration.setSubmitClientConfigurationFromXml(
+          Configuration.configuration, args[0])) {
         logger.error(Messages.getString(
             "Configuration.NeedCorrectConfig")); //$NON-NLS-1$
         return false;
       }
-    } else if (!FileBasedConfiguration
-        .setClientConfigurationFromXml(Configuration.configuration, args[0])) {
+    } else if (!FileBasedConfiguration.setClientConfigurationFromXml(
+        Configuration.configuration, args[0])) {
       logger.error(
           Messages.getString("Configuration.NeedCorrectConfig")); //$NON-NLS-1$
       return false;
@@ -400,9 +398,9 @@ public abstract class AbstractTransfer implements Runnable {
    * @param runner
    * @param taskRunner
    */
-  protected void finalizeInErrorTransferRequest(final ClientRunner runner,
-                                                final DbTaskRunner taskRunner,
-                                                final ErrorCode code) {
+  protected final void finalizeInErrorTransferRequest(final ClientRunner runner,
+                                                      final DbTaskRunner taskRunner,
+                                                      final ErrorCode code) {
     if (runner.getLocalChannelReference() != null) {
       runner.getLocalChannelReference().setErrorMessage(code.getMesg(), code);
     }
@@ -415,13 +413,13 @@ public abstract class AbstractTransfer implements Runnable {
     }
   }
 
-  public void setNormalInfoAsWarn(final boolean normalInfoAsWarn1) {
+  public final void setNormalInfoAsWarn(final boolean normalInfoAsWarn1) {
     normalInfoAsWarn = normalInfoAsWarn1;
   }
 
-  public List<String> getRemoteFiles(final String[] localfilenames,
-                                     final String requested,
-                                     final NetworkTransaction networkTransaction) {
+  public final List<String> getRemoteFiles(final String[] localfilenames,
+                                           final String requested,
+                                           final NetworkTransaction networkTransaction) {
     final List<String> files = new ArrayList<String>();
     for (final String filenameNew : localfilenames) {
       if (!(filenameNew.contains("*") || filenameNew.contains("?") ||
@@ -430,9 +428,8 @@ public abstract class AbstractTransfer implements Runnable {
       } else {
         // remote query
         final R66Future futureInfo = new R66Future(true);
-        logger
-            .info("{} {} to {}", Messages.getString("Transfer.3"), filenameNew,
-                  requested); //$NON-NLS-1$
+        logger.info("{} {} to {}", Messages.getString("Transfer.3"),
+                    filenameNew, requested); //$NON-NLS-1$
         final RequestInformation info =
             new RequestInformation(futureInfo, requested,
                                    transferArgs.getRulename(), filenameNew,
@@ -461,12 +458,12 @@ public abstract class AbstractTransfer implements Runnable {
     return files;
   }
 
-  public List<String> getLocalFiles(final DbRule dbrule,
-                                    final String[] localfilenames) {
+  public final List<String> getLocalFiles(final DbRule dbrule,
+                                          final String[] localfilenames) {
     final List<String> files = new ArrayList<String>();
     final R66Session session = new R66Session(false);
-    session.getAuth().specialNoSessionAuth(false, Configuration.configuration
-        .getHostId());
+    session.getAuth().specialNoSessionAuth(false,
+                                           Configuration.configuration.getHostId());
     final R66Dir dir = new R66Dir(session);
     try {
       dir.changeDirectory(dbrule.getSendPath());
@@ -481,8 +478,8 @@ public abstract class AbstractTransfer implements Runnable {
           files.add(filenameNew);
         } else {
           // local: must check
-          logger
-              .info("Local Ask for {} from {}", filenameNew, dir.getFullPath());
+          logger.info("Local Ask for {} from {}", filenameNew,
+                      dir.getFullPath());
           final List<String> list;
           try {
             list = dir.list(filenameNew);
@@ -529,8 +526,9 @@ public abstract class AbstractTransfer implements Runnable {
     }
     final boolean isSSL = host.isSsl();
 
-    final LocalChannelReference localChannelReference = networkTransaction
-        .createConnectionWithRetry(socketAddress, isSSL, future);
+    final LocalChannelReference localChannelReference =
+        networkTransaction.createConnectionWithRetry(socketAddress, isSSL,
+                                                     future);
     if (localChannelReference == null) {
       logger.debug("Cannot connect to {}", host);
       future.setResult(new R66Result(new OpenR66ProtocolNoConnectionException(
@@ -553,15 +551,15 @@ public abstract class AbstractTransfer implements Runnable {
     if (result.getRunner().getErrorInfo() == ErrorCode.Warning) {
       outputFormat.setValue(FIELDS.status.name(), 1);
       outputFormat.setValue(FIELDS.statusTxt.name(),
-                            Messages.getString("Transfer.Status") + Messages
-                                .getString(
-                                    "RequestInformation.Warned")); //$NON-NLS-1$
+                            Messages.getString("Transfer.Status") +
+                            Messages.getString(
+                                "RequestInformation.Warned")); //$NON-NLS-1$
     } else {
       outputFormat.setValue(FIELDS.status.name(), 2);
       outputFormat.setValue(FIELDS.statusTxt.name(),
-                            Messages.getString("Transfer.Status") + Messages
-                                .getString(
-                                    "RequestInformation.Failure")); //$NON-NLS-1$
+                            Messages.getString("Transfer.Status") +
+                            Messages.getString(
+                                "RequestInformation.Failure")); //$NON-NLS-1$
     }
     final String mesg = future.getCause() != null//NOSONAR
         ? future.getCause().getMessage() : "";
@@ -571,8 +569,8 @@ public abstract class AbstractTransfer implements Runnable {
       logger.error(outputFormat.loggerOut() + " : {}" + mesg);
     }
     if (future.getCause() != null) {
-      outputFormat
-          .setValue(FIELDS.error.name(), future.getCause().getMessage());
+      outputFormat.setValue(FIELDS.error.name(),
+                            future.getCause().getMessage());
     }
   }
 
@@ -582,8 +580,8 @@ public abstract class AbstractTransfer implements Runnable {
       logger = WaarpLoggerFactory.getLogger(AbstractTransfer.class);
     }
     outputFormat.setValue(FIELDS.status.name(), 2);
-    outputFormat.setValue(FIELDS.statusTxt.name(), Messages
-        .getString("Transfer.FailedNoId")); //$NON-NLS-1$
+    outputFormat.setValue(FIELDS.statusTxt.name(), Messages.getString(
+        "Transfer.FailedNoId")); //$NON-NLS-1$
     outputFormat.setValue(FIELDS.remote.name(), rhost);
     logger.error(outputFormat.loggerOut(), future.getCause());
     outputFormat.setValue(FIELDS.error.name(), future.getCause().getMessage());
@@ -598,15 +596,15 @@ public abstract class AbstractTransfer implements Runnable {
     if (result.getRunner().getErrorInfo() == ErrorCode.Warning) {
       outputFormat.setValue(FIELDS.status.name(), 1);
       outputFormat.setValue(FIELDS.statusTxt.name(),
-                            Messages.getString("Transfer.Status") + Messages
-                                .getString(
-                                    "RequestInformation.Warned")); //$NON-NLS-1$
+                            Messages.getString("Transfer.Status") +
+                            Messages.getString(
+                                "RequestInformation.Warned")); //$NON-NLS-1$
     } else {
       outputFormat.setValue(FIELDS.status.name(), 0);
       outputFormat.setValue(FIELDS.statusTxt.name(),
-                            Messages.getString("Transfer.Status") + Messages
-                                .getString(
-                                    "RequestInformation.Success")); //$NON-NLS-1$
+                            Messages.getString("Transfer.Status") +
+                            Messages.getString(
+                                "RequestInformation.Success")); //$NON-NLS-1$
     }
     partialOutputFormat(result.getRunner(), outputFormat);
     outputFormat.setValue("filefinal", result.getFile() != null?
@@ -622,19 +620,19 @@ public abstract class AbstractTransfer implements Runnable {
     outputFormat.setValue(FIELDS.remote.name(), rhost);
     outputFormat.setValue(FIELDS.ruleid.name(), runner.getRuleId());
     outputFormat.setValueString(runner.getJson());
-    outputFormat
-        .setValue(FIELDS.statusCode.name(), runner.getErrorInfo().getCode());
+    outputFormat.setValue(FIELDS.statusCode.name(),
+                          runner.getErrorInfo().getCode());
     outputFormat.setValue(FIELDS.specialid.name(), runner.getSpecialId());
     outputFormat.setValue(FIELDS.finalPath.name(), runner.getFilename());
     outputFormat.setValue(FIELDS.requested.name(), runner.getRequested());
     outputFormat.setValue(FIELDS.requester.name(), runner.getRequester());
-    outputFormat
-        .setValue(FIELDS.fileInformation.name(), runner.getFileInformation());
-    outputFormat
-        .setValue(FIELDS.transferInformation.name(), runner.getTransferInfo());
+    outputFormat.setValue(FIELDS.fileInformation.name(),
+                          runner.getFileInformation());
+    outputFormat.setValue(FIELDS.transferInformation.name(),
+                          runner.getTransferInfo());
     outputFormat.setValue(FIELDS.originalSize.name(), runner.getOriginalSize());
-    outputFormat
-        .setValue(FIELDS.originalPath.name(), runner.getOriginalFilename());
+    outputFormat.setValue(FIELDS.originalPath.name(),
+                          runner.getOriginalFilename());
   }
 
   public static void prepareSubmitKoOutputFormat(final R66Future future,
@@ -646,21 +644,21 @@ public abstract class AbstractTransfer implements Runnable {
     outputFormat.setValue(FIELDS.status.name(), 2);
     if (runner == null) {
       outputFormat.setValue(FIELDS.statusTxt.name(),
-                            Messages.getString("SubmitTransfer.3") + Messages
-                                .getString(
-                                    "Transfer.FailedNoId")); //$NON-NLS-1$
+                            Messages.getString("SubmitTransfer.3") +
+                            Messages.getString(
+                                "Transfer.FailedNoId")); //$NON-NLS-1$
       outputFormat.setValue(FIELDS.remote.name(), rhost);
     } else {
       outputFormat.setValue(FIELDS.statusTxt.name(),
-                            Messages.getString("SubmitTransfer.3") + Messages
-                                .getString(
-                                    "RequestInformation.Failure")); //$NON-NLS-1$
+                            Messages.getString("SubmitTransfer.3") +
+                            Messages.getString(
+                                "RequestInformation.Failure")); //$NON-NLS-1$
       partialOutputFormat(runner, outputFormat);
     }
     logger.error(outputFormat.loggerOut(), future.getCause());
     if (future.getCause() != null) {
-      outputFormat
-          .setValue(FIELDS.error.name(), future.getCause().getMessage());
+      outputFormat.setValue(FIELDS.error.name(),
+                            future.getCause().getMessage());
     }
   }
 
@@ -671,9 +669,9 @@ public abstract class AbstractTransfer implements Runnable {
     }
     outputFormat.setValue(FIELDS.status.name(), 0);
     outputFormat.setValue(FIELDS.statusTxt.name(),
-                          Messages.getString("SubmitTransfer.3") + Messages
-                              .getString(
-                                  "RequestInformation.Success")); //$NON-NLS-1$
+                          Messages.getString("SubmitTransfer.3") +
+                          Messages.getString(
+                              "RequestInformation.Success")); //$NON-NLS-1$
     partialOutputFormat(runner, outputFormat);
   }
 

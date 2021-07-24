@@ -127,7 +127,7 @@ public abstract class HttpRequestHandler
    * <p>
    * Override if needed
    */
-  protected void clean() {
+  protected final void clean() {
     if (businessRequest != null) {
       businessRequest.cleanRequest();
       businessRequest = null;
@@ -161,7 +161,7 @@ public abstract class HttpRequestHandler
    *
    * @throws HttpIncorrectRequestException
    */
-  protected void getUriArgs() throws HttpIncorrectRequestException {
+  protected final void getUriArgs() throws HttpIncorrectRequestException {
     final QueryStringDecoder decoderQuery =
         new QueryStringDecoder(request.uri());
     final Map<String, List<String>> uriAttributes = decoderQuery.parameters();
@@ -189,7 +189,7 @@ public abstract class HttpRequestHandler
    *
    * @throws HttpIncorrectRequestException
    */
-  protected void getHeaderArgs() throws HttpIncorrectRequestException {
+  protected final void getHeaderArgs() throws HttpIncorrectRequestException {
     final Set<String> headerNames = request.headers().names();
     for (final String name : headerNames) {
       final List<String> values = request.headers().getAll((CharSequence) name);
@@ -222,7 +222,7 @@ public abstract class HttpRequestHandler
    *
    * @throws HttpIncorrectRequestException
    */
-  protected void getCookieArgs() throws HttpIncorrectRequestException {
+  protected final void getCookieArgs() throws HttpIncorrectRequestException {
     final Set<Cookie> cookies;
     final String value = request.headers().get(HttpHeaderNames.COOKIE);
     if (value == null) {
@@ -285,9 +285,9 @@ public abstract class HttpRequestHandler
           if (method == HttpMethod.GET) {
             logger.debug("simple get: {}", request.uri());
             // send content (image for instance)
-            HttpWriteCacheEnable
-                .writeFile(request, ctx, baseStaticPath + uriRequest,
-                           cookieSession);
+            HttpWriteCacheEnable.writeFile(request, ctx,
+                                           baseStaticPath + uriRequest,
+                                           cookieSession);
             // end of task
           } else {
             // real error => 404
@@ -300,9 +300,8 @@ public abstract class HttpRequestHandler
         session.setCurrentCommand(httpPage.getPagerole());
         final DbSession dbSession = DbConstantGateway.admin != null?
             DbConstantGateway.admin.getSession() : null;
-        WaarpActionLogger
-            .logCreate(dbSession, "Request received: " + httpPage.getPagename(),
-                       session);
+        WaarpActionLogger.logCreate(dbSession, "Request received: " +
+                                               httpPage.getPagename(), session);
         if (httpPageTemp.getPagerole() == PageRole.ERROR) {
           status = HttpResponseStatus.BAD_REQUEST;
           error(ctx);
@@ -311,9 +310,10 @@ public abstract class HttpRequestHandler
           businessRequest = httpPage.newRequest(ctx.channel().remoteAddress());
           willClose = true;
           writeSimplePage(ctx);
-          WaarpActionLogger
-              .logErrorAction(DbConstantGateway.admin.getSession(), session,
-                              "Error: " + httpPage.getPagename(), status);
+          WaarpActionLogger.logErrorAction(DbConstantGateway.admin.getSession(),
+                                           session,
+                                           "Error: " + httpPage.getPagename(),
+                                           status);
           return;
           // end of task
         }
@@ -370,8 +370,8 @@ public abstract class HttpRequestHandler
    *
    * @throws HttpIncorrectRequestException
    */
-  protected void prepareError(final ChannelHandlerContext ctx,
-                              final String message)
+  protected final void prepareError(final ChannelHandlerContext ctx,
+                                    final String message)
       throws HttpIncorrectRequestException {
     logger.debug("Debug {}", message);
     if (!setErrorPage(ctx)) {
@@ -389,7 +389,7 @@ public abstract class HttpRequestHandler
    *
    * @return True if initialized
    */
-  protected boolean setErrorPage(final ChannelHandlerContext ctx) {
+  protected final boolean setErrorPage(final ChannelHandlerContext ctx) {
     httpPage = httpPageHandler.getHttpPage(status.code());
     if (httpPage == null) {
       return false;
@@ -403,15 +403,14 @@ public abstract class HttpRequestHandler
    *
    * @param ctx
    */
-  protected void writeErrorPage(final ChannelHandlerContext ctx) {
+  protected final void writeErrorPage(final ChannelHandlerContext ctx) {
     final DbSession dbSession =
         DbConstantGateway.admin != null? DbConstantGateway.admin.getSession() :
             null;
     WaarpActionLogger.logErrorAction(dbSession, session, "Error: " +
                                                          (httpPage == null?
                                                              "no page" :
-                                                             httpPage
-                                                                 .getPagename()),
+                                                             httpPage.getPagename()),
                                      status);
     error(ctx);
     clean();
@@ -434,7 +433,7 @@ public abstract class HttpRequestHandler
    *
    * @param ctx
    */
-  protected void forceClosing(final ChannelHandlerContext ctx) {
+  protected final void forceClosing(final ChannelHandlerContext ctx) {
     if (status == HttpResponseStatus.OK) {
       status = HttpResponseStatus.INTERNAL_SERVER_ERROR;
     }
@@ -450,9 +449,10 @@ public abstract class HttpRequestHandler
       logger.debug("Will close");
       future.addListener(WaarpSslUtility.SSLCLOSE);
     }
-    WaarpActionLogger
-        .logErrorAction(DbConstantGateway.admin.getSession(), session,
-                        "Error: " + httpPage.getPagename(), status);
+    WaarpActionLogger.logErrorAction(DbConstantGateway.admin.getSession(),
+                                     session,
+                                     "Error: " + httpPage.getPagename(),
+                                     status);
   }
 
   /**
@@ -462,7 +462,7 @@ public abstract class HttpRequestHandler
    *
    * @throws HttpIncorrectRequestException
    */
-  protected void writeSimplePage(final ChannelHandlerContext ctx)
+  protected final void writeSimplePage(final ChannelHandlerContext ctx)
       throws HttpIncorrectRequestException {
     logger.debug("HttpPage: {} businessRequest: {}",
                  httpPage != null? httpPage.getPagename() : "no page",
@@ -470,9 +470,8 @@ public abstract class HttpRequestHandler
                      "no BR");
     if (httpPage != null && httpPage.getPagerole() == PageRole.ERROR) {
       try {
-        httpPage
-            .setValue(businessRequest, AbstractHttpField.ERRORINFO, errorMesg,
-                      FieldPosition.BODY);
+        httpPage.setValue(businessRequest, AbstractHttpField.ERRORINFO,
+                          errorMesg, FieldPosition.BODY);
       } catch (final HttpIncorrectRequestException e) {
         // ignore
       }
@@ -524,17 +523,16 @@ public abstract class HttpRequestHandler
    * @param response
    * @param cookieNames
    */
-  protected void addBusinessCookie(final FullHttpResponse response,
-                                   final Set<String> cookieNames) {
+  protected final void addBusinessCookie(final FullHttpResponse response,
+                                         final Set<String> cookieNames) {
     if (httpPage != null) {
-      for (final AbstractHttpField field : httpPage
-          .getFieldsForRequest(businessRequest).values()) {
+      for (final AbstractHttpField field : httpPage.getFieldsForRequest(
+          businessRequest).values()) {
         if (field.isFieldcookieset() &&
             !cookieNames.contains(field.getFieldname())) {
           response.headers().add(HttpHeaderNames.SET_COOKIE,
-                                 ServerCookieEncoder.LAX
-                                     .encode(field.getFieldname(),
-                                             field.fieldvalue));
+                                 ServerCookieEncoder.LAX.encode(
+                                     field.getFieldname(), field.fieldvalue));
         }
       }
     }
@@ -545,7 +543,7 @@ public abstract class HttpRequestHandler
    *
    * @param response
    */
-  protected void setCookieEncoder(final FullHttpResponse response) {
+  protected final void setCookieEncoder(final FullHttpResponse response) {
     final Set<Cookie> cookies;
     final String value = request.headers().get(HttpHeaderNames.COOKIE);
     if (value == null) {
@@ -569,8 +567,9 @@ public abstract class HttpRequestHandler
       }
     }
     if (!foundCookieSession) {
-      response.headers().add(HttpHeaderNames.SET_COOKIE, ServerCookieEncoder.LAX
-          .encode(cookieSession, session.getCookieSession()));
+      response.headers().add(HttpHeaderNames.SET_COOKIE,
+                             ServerCookieEncoder.LAX.encode(cookieSession,
+                                                            session.getCookieSession()));
       cookiesName.add(cookieSession);
     }
     addBusinessCookie(response, cookiesName);
@@ -582,7 +581,7 @@ public abstract class HttpRequestHandler
    *
    * @return the Http Response according to the status
    */
-  protected FullHttpResponse getResponse(final ByteBuf buf) {
+  protected final FullHttpResponse getResponse(final ByteBuf buf) {
     // Decide whether to close the connection or not.
     final FullHttpResponse response;
     if (request == null) {
@@ -599,9 +598,9 @@ public abstract class HttpRequestHandler
       return response;
     }
     boolean keepAlive = HttpUtil.isKeepAlive(request);
-    willClose |= status != HttpResponseStatus.OK || HttpHeaderValues.CLOSE
-        .contentEqualsIgnoreCase(
-            request.headers().get(HttpHeaderNames.CONNECTION)) ||
+    willClose |= status != HttpResponseStatus.OK ||
+                 HttpHeaderValues.CLOSE.contentEqualsIgnoreCase(
+                     request.headers().get(HttpHeaderNames.CONNECTION)) ||
                  request.protocolVersion().equals(HttpVersion.HTTP_1_0) &&
                  !keepAlive;
     if (willClose) {
@@ -646,7 +645,7 @@ public abstract class HttpRequestHandler
    *
    * @throws HttpIncorrectRequestException
    */
-  protected void finalData(final ChannelHandlerContext ctx)
+  protected final void finalData(final ChannelHandlerContext ctx)
       throws HttpIncorrectRequestException {
     try {
       businessValidRequestAfterAllDataReceived(ctx);
@@ -678,9 +677,8 @@ public abstract class HttpRequestHandler
           break;
         case POSTUPLOAD:
           finalPostUpload(ctx);
-          WaarpActionLogger
-              .logAction(dbSession, session, "PostUpload OK", status,
-                         UpdatedInfo.DONE);
+          WaarpActionLogger.logAction(dbSession, session, "PostUpload OK",
+                                      status, UpdatedInfo.DONE);
           break;
         case PUT:
           finalPut(ctx);
@@ -767,7 +765,7 @@ public abstract class HttpRequestHandler
    *
    * @param ctx
    */
-  protected void getFile(final ChannelHandlerContext ctx)
+  protected final void getFile(final ChannelHandlerContext ctx)
       throws HttpIncorrectRequestException {
     finalData(ctx);
   }
@@ -777,7 +775,7 @@ public abstract class HttpRequestHandler
    *
    * @param ctx
    */
-  protected void delete(final ChannelHandlerContext ctx)
+  protected final void delete(final ChannelHandlerContext ctx)
       throws HttpIncorrectRequestException {
     finalData(ctx);
     writeSimplePage(ctx);
@@ -791,7 +789,7 @@ public abstract class HttpRequestHandler
    *
    * @throws HttpIncorrectRequestException
    */
-  protected void post(final ChannelHandlerContext ctx)
+  protected final void post(final ChannelHandlerContext ctx)
       throws HttpIncorrectRequestException {
     try {
       decoder =
@@ -823,8 +821,8 @@ public abstract class HttpRequestHandler
    *
    * @throws HttpIncorrectRequestException
    */
-  protected void postChunk(final ChannelHandlerContext ctx,
-                           final HttpContent chunk)
+  protected final void postChunk(final ChannelHandlerContext ctx,
+                                 final HttpContent chunk)
       throws HttpIncorrectRequestException {
     // New chunk is received: only for Post!
     if (decoder == null) {
@@ -881,7 +879,7 @@ public abstract class HttpRequestHandler
    *
    * @throws HttpIncorrectRequestException
    */
-  protected void readHttpDataAllReceive(final ChannelHandlerContext ctx)
+  protected final void readHttpDataAllReceive(final ChannelHandlerContext ctx)
       throws HttpIncorrectRequestException {
     final List<InterfaceHttpData> datas;
     try {
@@ -904,7 +902,7 @@ public abstract class HttpRequestHandler
    *
    * @throws HttpIncorrectRequestException
    */
-  protected void readHttpDataChunkByChunk(final ChannelHandlerContext ctx)
+  protected final void readHttpDataChunkByChunk(final ChannelHandlerContext ctx)
       throws HttpIncorrectRequestException {
     try {
       while (decoder.hasNext()) {
@@ -927,8 +925,8 @@ public abstract class HttpRequestHandler
    *
    * @throws HttpIncorrectRequestException
    */
-  protected void readHttpData(final InterfaceHttpData data,
-                              final ChannelHandlerContext ctx)
+  protected final void readHttpData(final InterfaceHttpData data,
+                                    final ChannelHandlerContext ctx)
       throws HttpIncorrectRequestException {
     if (data.getHttpDataType() == HttpDataType.Attribute) {
       final Attribute attribute = (Attribute) data;
@@ -970,7 +968,7 @@ public abstract class HttpRequestHandler
    *
    * @return the new session cookie value
    */
-  protected String getNewCookieSession() {
+  protected final String getNewCookieSession() {
     return "Waarp" + Long.toHexString(random.nextLong());
   }
 
@@ -979,7 +977,8 @@ public abstract class HttpRequestHandler
    *
    * @param ctx
    */
-  protected void createNewSessionAtConnection(final ChannelHandlerContext ctx) {
+  protected final void createNewSessionAtConnection(
+      final ChannelHandlerContext ctx) {
     session = new HttpSession();
     session.setHttpAuth(new DefaultHttpAuth(session));
     session.setCookieSession(getNewCookieSession());

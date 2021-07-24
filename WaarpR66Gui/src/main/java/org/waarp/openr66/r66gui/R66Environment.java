@@ -74,17 +74,17 @@ public class R66Environment {
   }
 
   public void initialize(final String[] args) {
-    WaarpLoggerFactory
-        .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));
+    WaarpLoggerFactory.setDefaultFactoryIfNotSame(
+        new WaarpSlf4JLoggerFactory(null));
     initLog();
     if (args.length < 1) {
-      SysErrLogger.FAKE_LOGGER
-          .syserr(Messages.getString("Configuration.WrongInit")); //$NON
+      SysErrLogger.FAKE_LOGGER.syserr(
+          Messages.getString("Configuration.WrongInit")); //$NON
       // -NLS-1$
       System.exit(2);//NOSONAR
     }
-    if (!FileBasedConfiguration
-        .setClientConfigurationFromXml(Configuration.configuration, args[0])) {
+    if (!FileBasedConfiguration.setClientConfigurationFromXml(
+        Configuration.configuration, args[0])) {
       logger.error(Messages.getString("Configuration.WrongInit")); //$NON-NLS-1$
       if (admin != null) {
         admin.close();

@@ -41,7 +41,7 @@ public class FilesystemBasedFtpRestart extends FilesystemBasedRestartImpl {
   }
 
   @Override
-  public boolean restartMarker(final String marker)
+  public final boolean restartMarker(final String marker)
       throws CommandAbstractException {
     final FtpDataAsyncConn dataConn = ((FtpSession) getSession()).getDataConn();
     if (dataConn.getStructure() == TransferStructure.FILE &&

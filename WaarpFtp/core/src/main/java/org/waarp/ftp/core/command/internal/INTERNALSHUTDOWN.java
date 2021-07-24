@@ -55,7 +55,7 @@ public class INTERNALSHUTDOWN extends AbstractCommand {
     }
 
     @Override
-    public void operationComplete(final ChannelFuture arg0) {
+    public final void operationComplete(final ChannelFuture arg0) {
       WaarpSslUtility.closingSslChannel(arg0.channel());
       FtpChannelUtils.teminateServer(configuration);
     }
@@ -63,7 +63,7 @@ public class INTERNALSHUTDOWN extends AbstractCommand {
   }
 
   @Override
-  public void exec() throws Reply501Exception, Reply500Exception {
+  public final void exec() throws Reply501Exception, Reply500Exception {
     if (!getSession().getAuth().isAdmin()) {
       // not admin
       throw new Reply500Exception("Command Not Allowed");
@@ -73,8 +73,8 @@ public class INTERNALSHUTDOWN extends AbstractCommand {
     }
     final String password = getArg();
     if (logger.isDebugEnabled()) {
-      logger
-          .debug("{} {}", password, getConfiguration().checkPassword(password));
+      logger.debug("{} {}", password,
+                   getConfiguration().checkPassword(password));
     }
     if (!getConfiguration().checkPassword(password)) {
       throw new Reply501Exception("Shutdown Need a correct password");

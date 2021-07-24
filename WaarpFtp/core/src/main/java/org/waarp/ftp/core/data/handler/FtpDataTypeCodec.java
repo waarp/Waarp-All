@@ -144,8 +144,8 @@ class FtpDataTypeCodec extends MessageToMessageCodec<DataBlock, DataBlock> {
    * @param type the type to set
    * @param subType the subType to set
    */
-  public void setFullType(final TransferType type,
-                          final TransferSubType subType) {
+  public final void setFullType(final TransferType type,
+                                final TransferSubType subType) {
     this.type = type;
     this.subType = subType;
   }
@@ -153,7 +153,7 @@ class FtpDataTypeCodec extends MessageToMessageCodec<DataBlock, DataBlock> {
   /**
    * @return the type
    */
-  public TransferType getType() {
+  public final TransferType getType() {
     return type;
   }
 
@@ -194,7 +194,7 @@ class FtpDataTypeCodec extends MessageToMessageCodec<DataBlock, DataBlock> {
    *
    * @return the byteBuf
    */
-  protected byte[] decode(final byte[] byteBuf) {
+  protected final byte[] decode(final byte[] byteBuf) {
     return new String(byteBuf, type.charset).getBytes(charsetName);
   }
 
@@ -222,7 +222,7 @@ class FtpDataTypeCodec extends MessageToMessageCodec<DataBlock, DataBlock> {
    *
    * @return the encoded buffer
    */
-  protected byte[] encode(final byte[] byteBuf) {
+  protected final byte[] encode(final byte[] byteBuf) {
     return new String(byteBuf, charsetName).getBytes(type.charset);
   }
 }

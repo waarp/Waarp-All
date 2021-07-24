@@ -101,9 +101,9 @@ public class IcapTask extends AbstractTask {
   }
 
   @Override
-  public void run() {
-    logger
-        .info("ICAP with " + argRule + ':' + argTransfer + " and {}", session);
+  public final void run() {
+    logger.info("ICAP with " + argRule + ':' + argTransfer + " and {}",
+                session);
     String finalname = applyTransferSubstitutions(argRule);
     finalname = finalname.replaceAll("#([A-Z]+)#", "\\${$1}");
     final CommandLine commandLine = new CommandLine("dummy");
@@ -139,8 +139,8 @@ public class IcapTask extends AbstractTask {
         logger.error(
             "ICAP Network error with " + argRule + ':' + argTransfer + ':' +
             delay + " and " + session);
-        futureCompletion
-            .setFailure(new OpenR66RunnerErrorException("ICAP Network error"));
+        futureCompletion.setFailure(
+            new OpenR66RunnerErrorException("ICAP Network error"));
         return;
       case IcapScanFile.STATUS_KO_SCAN:
         if (finalizeIcapOnError(args)) {
@@ -150,22 +150,22 @@ public class IcapTask extends AbstractTask {
         logger.error(
             "ICAP KO error with " + argRule + ':' + argTransfer + ':' + delay +
             " and " + session);
-        futureCompletion
-            .setFailure(new OpenR66RunnerErrorException("ICAP KO error"));
+        futureCompletion.setFailure(
+            new OpenR66RunnerErrorException("ICAP KO error"));
         return;
       case IcapScanFile.STATUS_KO_SCAN_POST_ACTION_ERROR:
         logger.error(
             "ICAP KO post error with " + argRule + ':' + argTransfer + ':' +
             delay + " and " + session);
-        futureCompletion
-            .setFailure(new OpenR66RunnerErrorException("ICAP KO post error"));
+        futureCompletion.setFailure(
+            new OpenR66RunnerErrorException("ICAP KO post error"));
         return;
       default:
         logger.error(
             "ICAP Unknown error with " + argRule + ':' + argTransfer + ':' +
             delay + " and " + session);
-        futureCompletion
-            .setFailure(new OpenR66RunnerErrorException("ICAP Unknown error"));
+        futureCompletion.setFailure(
+            new OpenR66RunnerErrorException("ICAP Unknown error"));
     }
   }
 
@@ -191,8 +191,8 @@ public class IcapTask extends AbstractTask {
             transferTask.run();
             transferTask.futureCompletion.awaitOrInterruptible();
             if (transferTask.futureCompletion.isSuccess()) {
-              futureCompletion
-                  .setResult(transferTask.futureCompletion.getResult());
+              futureCompletion.setResult(
+                  transferTask.futureCompletion.getResult());
               logger.info(
                   "ICAP ended in KO on file but resend as requested is OK for {}",
                   session.getFile().getTrueFile().getAbsolutePath());

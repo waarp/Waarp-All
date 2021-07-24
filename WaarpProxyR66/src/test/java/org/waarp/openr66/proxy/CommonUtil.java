@@ -186,8 +186,8 @@ public abstract class CommonUtil {
       }
       System.out.println(" Done");
     } else {
-      System.err
-          .println("Cannot find serverInit file: " + file.getAbsolutePath());
+      System.err.println(
+          "Cannot find serverInit file: " + file.getAbsolutePath());
       fail("Cannot find serverInit file");
     }
   }
@@ -252,7 +252,7 @@ public abstract class CommonUtil {
     final File tmp = new File("/tmp");
     final File[] files = tmp.listFiles(new FileFilter() {
       @Override
-      public boolean accept(File file) {
+      public final boolean accept(File file) {
         return file.getName().startsWith("openr66");
       }
     });
@@ -288,14 +288,14 @@ public abstract class CommonUtil {
               Processes.executeJvm(project, R66Server.class, argsServer, true);
           logger.warn("Start Done");
         } else {
-          System.err
-              .println("Cannot find server file: " + file2.getAbsolutePath());
+          System.err.println(
+              "Cannot find server file: " + file2.getAbsolutePath());
           fail("Cannot find server file");
         }
       }
     } else {
-      System.err
-          .println("Cannot find serverInit file: " + file.getAbsolutePath());
+      System.err.println(
+          "Cannot find serverInit file: " + file.getAbsolutePath());
       fail("Cannot find serverInit file");
     }
   }
@@ -321,7 +321,7 @@ public abstract class CommonUtil {
     Thread.sleep(500);
     final File[] list = new File("/tmp").listFiles(new FileFilter() {
       @Override
-      public boolean accept(File file) {
+      public final boolean accept(File file) {
         return file.getName().startsWith("openr66");
       }
     });
@@ -341,10 +341,9 @@ public abstract class CommonUtil {
     if (clientConfigFile.isFile()) {
       System.err.println(
           "Find serverInit file: " + clientConfigFile.getAbsolutePath());
-      if (!FileBasedConfiguration
-          .setClientConfigurationFromXml(Configuration.configuration,
-                                         new File(r66Resources, clientConfig)
-                                             .getAbsolutePath())) {
+      if (!FileBasedConfiguration.setClientConfigurationFromXml(
+          Configuration.configuration,
+          new File(r66Resources, clientConfig).getAbsolutePath())) {
         logger.error("Needs a correct configuration file as first argument");
         return;
       }
@@ -378,9 +377,8 @@ public abstract class CommonUtil {
     final File config = new File(resources, CONFIG_PROXY_XML);
     assertTrue("ConfigurationProxyR66 file for Proxy must exist",
                config.isFile());
-    if (!org.waarp.openr66.proxy.configuration.FileBasedConfiguration
-        .setConfigurationProxyFromXml(Configuration.configuration,
-                                      config.getAbsolutePath())) {
+    if (!org.waarp.openr66.proxy.configuration.FileBasedConfiguration.setConfigurationProxyFromXml(
+        Configuration.configuration, config.getAbsolutePath())) {
       logger.error("Needs a correct configuration file as first argument");
       fail("Needs a correct configuration file as first argument");
     }
@@ -469,11 +467,11 @@ public abstract class CommonUtil {
     desiredCapabilities.setCapability(
         PhantomJSDriverService.PHANTOMJS_EXECUTABLE_PATH_PROPERTY,
         System.getProperty("phantomjs.binary.path"));
-    desiredCapabilities
-        .setCapability(CapabilityType.ELEMENT_SCROLL_BEHAVIOR, true);
+    desiredCapabilities.setCapability(CapabilityType.ELEMENT_SCROLL_BEHAVIOR,
+                                      true);
     desiredCapabilities.setCapability(CapabilityType.TAKES_SCREENSHOT, false);
-    desiredCapabilities
-        .setCapability(CapabilityType.ENABLE_PROFILING_CAPABILITY, false);
+    desiredCapabilities.setCapability(
+        CapabilityType.ENABLE_PROFILING_CAPABILITY, false);
     LoggingPreferences logPrefs = new LoggingPreferences();
     logPrefs.enable(LogType.BROWSER, java.util.logging.Level.OFF);
     logPrefs.enable(LogType.CLIENT, java.util.logging.Level.OFF);
@@ -483,9 +481,9 @@ public abstract class CommonUtil {
     logPrefs.enable(LogType.SERVER, java.util.logging.Level.OFF);
     desiredCapabilities.setCapability(CapabilityType.LOGGING_PREFS, logPrefs);
     desiredCapabilities.setCapability(CapabilityType.HAS_NATIVE_EVENTS, true);
-    desiredCapabilities
-        .setCapability(PhantomJSDriverService.PHANTOMJS_GHOSTDRIVER_CLI_ARGS,
-                       "--webdriver-loglevel=NONE");
+    desiredCapabilities.setCapability(
+        PhantomJSDriverService.PHANTOMJS_GHOSTDRIVER_CLI_ARGS,
+        "--webdriver-loglevel=NONE");
 
     desiredCapabilities.setJavascriptEnabled(true);
 
@@ -493,8 +491,8 @@ public abstract class CommonUtil {
     cliArgs.add("--web-security=true");
     cliArgs.add("--ignore-ssl-errors=true");
     cliArgs.add("--webdriver-loglevel=NONE");
-    desiredCapabilities
-        .setCapability(PhantomJSDriverService.PHANTOMJS_CLI_ARGS, cliArgs);
+    desiredCapabilities.setCapability(PhantomJSDriverService.PHANTOMJS_CLI_ARGS,
+                                      cliArgs);
 
     PhantomJSDriver phantomJSDriver = new PhantomJSDriver(desiredCapabilities);
     phantomJSDriver.setLogLevel(java.util.logging.Level.OFF);

@@ -134,7 +134,7 @@ public class XmlValue {
   /**
    * @return the decl
    */
-  public XmlDecl getDecl() {
+  public final XmlDecl getDecl() {
     return decl;
   }
 
@@ -143,35 +143,35 @@ public class XmlValue {
    *
    * @return the field name
    */
-  public String getName() {
+  public final String getName() {
     return decl.getName();
   }
 
   /**
    * @return the type
    */
-  public Class<?> getClassType() {
+  public final Class<?> getClassType() {
     return decl.getClassType();
   }
 
   /**
    * @return the type
    */
-  public XmlType getType() {
+  public final XmlType getType() {
     return decl.getType();
   }
 
   /**
    * @return the xmlPath
    */
-  public String getXmlPath() {
+  public final String getXmlPath() {
     return decl.getXmlPath();
   }
 
   /**
    * @return True if this Value is a subXml
    */
-  public boolean isSubXml() {
+  public final boolean isSubXml() {
     return decl.isSubXml();
   }
 
@@ -180,14 +180,14 @@ public class XmlValue {
    *     singleton
    *     or Multiple)
    */
-  public XmlValue[] getSubXml() {
+  public final XmlValue[] getSubXml() {
     return subXml;
   }
 
   /**
    * @return True if the Value are list of values
    */
-  public boolean isMultiple() {
+  public final boolean isMultiple() {
     return decl.isMultiple();
   }
 
@@ -196,7 +196,7 @@ public class XmlValue {
    *     singleton
    *     or SubXml)
    */
-  public List<?> getList() {
+  public final List<?> getList() {
     return values;
   }
 
@@ -210,53 +210,53 @@ public class XmlValue {
    * @throws InvalidArgumentException
    */
   @SuppressWarnings("unchecked")
-  public void addFromString(final String valueOrig)
+  public final void addFromString(final String valueOrig)
       throws InvalidObjectException, InvalidArgumentException {
     final String valueNew = XmlUtil.getExtraTrimed(valueOrig);
     switch (getType()) {
       case BOOLEAN:
-        ((Collection<Boolean>) values)
-            .add((Boolean) convert(getClassType(), valueNew));
+        ((Collection<Boolean>) values).add(
+            (Boolean) convert(getClassType(), valueNew));
         break;
       case INTEGER:
-        ((Collection<Integer>) values)
-            .add((Integer) convert(getClassType(), valueNew));
+        ((Collection<Integer>) values).add(
+            (Integer) convert(getClassType(), valueNew));
         break;
       case FLOAT:
-        ((Collection<Float>) values)
-            .add((Float) convert(getClassType(), valueNew));
+        ((Collection<Float>) values).add(
+            (Float) convert(getClassType(), valueNew));
         break;
       case CHARACTER:
-        ((Collection<Character>) values)
-            .add((Character) convert(getClassType(), valueNew));
+        ((Collection<Character>) values).add(
+            (Character) convert(getClassType(), valueNew));
         break;
       case BYTE:
-        ((Collection<Byte>) values)
-            .add((Byte) convert(getClassType(), valueNew));
+        ((Collection<Byte>) values).add(
+            (Byte) convert(getClassType(), valueNew));
         break;
       case LONG:
-        ((Collection<Long>) values)
-            .add((Long) convert(getClassType(), valueNew));
+        ((Collection<Long>) values).add(
+            (Long) convert(getClassType(), valueNew));
         break;
       case DOUBLE:
-        ((Collection<Double>) values)
-            .add((Double) convert(getClassType(), valueNew));
+        ((Collection<Double>) values).add(
+            (Double) convert(getClassType(), valueNew));
         break;
       case SHORT:
-        ((Collection<Short>) values)
-            .add((Short) convert(getClassType(), valueNew));
+        ((Collection<Short>) values).add(
+            (Short) convert(getClassType(), valueNew));
         break;
       case SQLDATE:
-        ((Collection<Date>) values)
-            .add((Date) convert(getClassType(), valueNew));
+        ((Collection<Date>) values).add(
+            (Date) convert(getClassType(), valueNew));
         break;
       case TIMESTAMP:
-        ((Collection<Timestamp>) values)
-            .add((Timestamp) convert(getClassType(), valueNew));
+        ((Collection<Timestamp>) values).add(
+            (Timestamp) convert(getClassType(), valueNew));
         break;
       case STRING:
-        ((Collection<String>) values)
-            .add((String) convert(getClassType(), valueNew));
+        ((Collection<String>) values).add(
+            (String) convert(getClassType(), valueNew));
         break;
       case XVAL:
         throw new InvalidObjectException(
@@ -275,7 +275,7 @@ public class XmlValue {
    * @throws InvalidObjectException
    */
   @SuppressWarnings("unchecked")
-  public void addValue(final Object value) throws InvalidObjectException {
+  public final void addValue(final Object value) throws InvalidObjectException {
     if (getType().isNativelyCompatible(value)) {
       switch (getType()) {
         case BOOLEAN:
@@ -306,16 +306,16 @@ public class XmlValue {
           if (Date.class.isAssignableFrom(value.getClass())) {
             ((Collection<Date>) values).add((Date) value);
           } else if (java.util.Date.class.isAssignableFrom(value.getClass())) {
-            ((Collection<Date>) values)
-                .add(new Date(((java.util.Date) value).getTime()));
+            ((Collection<Date>) values).add(
+                new Date(((java.util.Date) value).getTime()));
           }
           break;
         case TIMESTAMP:
           ((Collection<Timestamp>) values).add((Timestamp) value);
           break;
         case STRING:
-          ((Collection<String>) values)
-              .add(XmlUtil.getExtraTrimed((String) value));
+          ((Collection<String>) values).add(
+              XmlUtil.getExtraTrimed((String) value));
           break;
         case XVAL:
           ((Collection<XmlValue[]>) values).add((XmlValue[]) value);
@@ -335,7 +335,7 @@ public class XmlValue {
   /**
    * @return the value as Object (might be null if multiple)
    */
-  public Object getValue() {
+  public final Object getValue() {
     return value;
   }
 
@@ -393,7 +393,7 @@ public class XmlValue {
    *
    * @throws InvalidObjectException
    */
-  public Object getCloneValue() throws InvalidObjectException {
+  public final Object getCloneValue() throws InvalidObjectException {
     if (getType() == XmlType.EMPTY) {
       return new XmlValue(decl);
     }
@@ -403,7 +403,7 @@ public class XmlValue {
   /**
    * @return the value as a string
    */
-  public String getString() {
+  public final String getString() {
     if (getType().isString()) {
       return XmlUtil.getExtraTrimed((String) value);
     }
@@ -414,7 +414,7 @@ public class XmlValue {
   /**
    * @return the value as an integer
    */
-  public int getInteger() {
+  public final int getInteger() {
     if (getType().isInteger()) {
       return (Integer) value;
     }
@@ -425,7 +425,7 @@ public class XmlValue {
   /**
    * @return the value as a boolean
    */
-  public boolean getBoolean() {
+  public final boolean getBoolean() {
     if (getType().isBoolean()) {
       return (Boolean) value;
     }
@@ -436,7 +436,7 @@ public class XmlValue {
   /**
    * @return the value as a long
    */
-  public long getLong() {
+  public final long getLong() {
     if (getType().isLong()) {
       return (Long) value;
     }
@@ -447,7 +447,7 @@ public class XmlValue {
   /**
    * @return the value as a float
    */
-  public float getFloat() {
+  public final float getFloat() {
     if (getType().isFloat()) {
       return (Float) value;
     }
@@ -458,7 +458,7 @@ public class XmlValue {
   /**
    * @return the value as a float
    */
-  public char getCharacter() {
+  public final char getCharacter() {
     if (getType().isCharacter()) {
       return (Character) value;
     }
@@ -470,7 +470,7 @@ public class XmlValue {
   /**
    * @return the value as a float
    */
-  public byte getByte() {
+  public final byte getByte() {
     if (getType().isByte()) {
       return (Byte) value;
     }
@@ -481,7 +481,7 @@ public class XmlValue {
   /**
    * @return the value as a float
    */
-  public double getDouble() {
+  public final double getDouble() {
     if (getType().isDouble()) {
       return (Double) value;
     }
@@ -492,7 +492,7 @@ public class XmlValue {
   /**
    * @return the value as a float
    */
-  public short getShort() {
+  public final short getShort() {
     if (getType().isShort()) {
       return (Short) value;
     }
@@ -503,7 +503,7 @@ public class XmlValue {
   /**
    * @return the value as a float
    */
-  public Date getDate() {
+  public final Date getDate() {
     if (getType().isDate()) {
       return (Date) value;
     }
@@ -514,7 +514,7 @@ public class XmlValue {
   /**
    * @return the value as a float
    */
-  public Timestamp getTimestamp() {
+  public final Timestamp getTimestamp() {
     if (getType().isTimestamp()) {
       return (Timestamp) value;
     }
@@ -530,7 +530,7 @@ public class XmlValue {
    *
    * @throws InvalidArgumentException
    */
-  public void setFromString(final String value)
+  public final void setFromString(final String value)
       throws InvalidArgumentException {
     this.value = convert(getClassType(), XmlUtil.getExtraTrimed(value));
   }
@@ -542,7 +542,7 @@ public class XmlValue {
    *
    * @return True if the Value is Empty
    */
-  public boolean isEmpty() {
+  public final boolean isEmpty() {
     if (isSubXml()) {
       if (isMultiple()) {
         return values.isEmpty();
@@ -562,7 +562,7 @@ public class XmlValue {
    *
    * @return the value in String format
    */
-  public String getIntoString() {
+  public final String getIntoString() {
     if (!isMultiple() && !isSubXml()) {
       if (value != null) {
         return value.toString();
@@ -582,7 +582,7 @@ public class XmlValue {
    * @throws NumberFormatException
    */
   @SuppressWarnings("unchecked")
-  public void setValue(final Object value) throws InvalidObjectException {
+  public final void setValue(final Object value) throws InvalidObjectException {
     if (getType().isNativelyCompatible(value)) {
       switch (getType()) {
         case BOOLEAN:
@@ -731,10 +731,9 @@ public class XmlValue {
               CAN_NOT_CONVERT_VALUE + value + TO_TYPE + type);
         }
         final Timestamp ts = new Timestamp(WaarpStringUtils.getTimestampFormat()
-                                                           .parse(value
-                                                                      .substring(
-                                                                          0,
-                                                                          dotIndex))
+                                                           .parse(
+                                                               value.substring(
+                                                                   0, dotIndex))
                                                            .getTime());
         final int nanos =
             Integer.parseInt(value.substring(dotIndex + 1, spaceIndex));
@@ -768,7 +767,7 @@ public class XmlValue {
             subXml != null? "subXml" : "no value") + ' ' + decl;
   }
 
-  public String toFullString() {
+  public final String toFullString() {
     final StringBuilder detail = new StringBuilder("Val: " + (isMultiple()?
         values.size() + " elements" : value != null? value.toString() :
         subXml != null? "subXml" : "no value") + ' ' + decl);

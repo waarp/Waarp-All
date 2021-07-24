@@ -863,14 +863,17 @@ public class IcapScanFileTest {
         "Options-TTL", "-string204", "600", "-key200", "Options-TTL",
         "-string200", "600", "-stringHttp", "WaarpFakeIcap"
     };
-    assertEquals(IcapScanFile.STATUS_OK, IcapScanFile
-        .scanFile(IcapModel.DEFAULT_MODEL.getDefaultArgs(), fullArgs));
-    assertEquals(IcapScanFile.STATUS_OK, IcapScanFile
-        .scanFile(IcapModel.ICAP_AVSCAN.getDefaultArgs(), fullArgs));
-    assertEquals(IcapScanFile.STATUS_OK, IcapScanFile
-        .scanFile(IcapModel.ICAP_CLAMAV.getDefaultArgs(), fullArgs));
-    assertEquals(IcapScanFile.STATUS_OK, IcapScanFile
-        .scanFile(IcapModel.ICAP_VIRUS_SCAN.getDefaultArgs(), fullArgs));
+    assertEquals(IcapScanFile.STATUS_OK,
+                 IcapScanFile.scanFile(IcapModel.DEFAULT_MODEL.getDefaultArgs(),
+                                       fullArgs));
+    assertEquals(IcapScanFile.STATUS_OK,
+                 IcapScanFile.scanFile(IcapModel.ICAP_AVSCAN.getDefaultArgs(),
+                                       fullArgs));
+    assertEquals(IcapScanFile.STATUS_OK,
+                 IcapScanFile.scanFile(IcapModel.ICAP_CLAMAV.getDefaultArgs(),
+                                       fullArgs));
+    assertEquals(IcapScanFile.STATUS_OK, IcapScanFile.scanFile(
+        IcapModel.ICAP_VIRUS_SCAN.getDefaultArgs(), fullArgs));
     // With Model name
     fullArgs = new String[] {
         IcapScanFile.MODEL_ARG, "DEFAULT_MODEL", IcapScanFile.FILE_ARG,

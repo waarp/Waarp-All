@@ -88,7 +88,7 @@ public class LogResponseJsonPacket extends LogJsonPacket {
   }
 
   @Override
-  public void setRequestUserPacket() {
+  public final void setRequestUserPacket() {
     setRequestUserPacket(LocalPacketFactory.LOGPACKET);
   }
 }

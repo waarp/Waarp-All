@@ -115,7 +115,7 @@ public abstract class AbstractLocalPacket {
    *
    * @throws OpenR66ProtocolPacketException
    */
-  public ByteBuf getLocalPacket(final LocalChannelReference lcr)
+  public final ByteBuf getLocalPacket(final LocalChannelReference lcr)
       throws OpenR66ProtocolPacketException {
     return getLocalPacketForNetworkPacket(lcr, null);
   }
@@ -127,8 +127,8 @@ public abstract class AbstractLocalPacket {
    *
    * @throws OpenR66ProtocolPacketException
    */
-  public ByteBuf getLocalPacketForNetworkPacket(final LocalChannelReference lcr,
-                                                final NetworkPacket packet)
+  public final ByteBuf getLocalPacketForNetworkPacket(
+      final LocalChannelReference lcr, final NetworkPacket packet)
       throws OpenR66ProtocolPacketException {
     final ByteBuf buf;
     final int globalHeader;
@@ -207,7 +207,7 @@ public abstract class AbstractLocalPacket {
     }
   }
 
-  public void retain() {
+  public final void retain() {
     if (global != null) {
       global.retain();
     }

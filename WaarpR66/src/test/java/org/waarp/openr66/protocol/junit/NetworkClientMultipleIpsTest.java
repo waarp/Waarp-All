@@ -37,6 +37,7 @@ import org.waarp.common.utility.Processes;
 import org.waarp.common.utility.TestWatcherJunit4;
 import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.common.utility.WaarpSystemUtil;
+import org.waarp.openr66.client.NoOpRecvThroughHandler;
 import org.waarp.openr66.client.SubmitTransfer;
 import org.waarp.openr66.client.TransferArgs;
 import org.waarp.openr66.context.ErrorCode;
@@ -51,7 +52,6 @@ import org.waarp.openr66.protocol.localhandler.packet.JsonCommandPacket;
 import org.waarp.openr66.protocol.localhandler.packet.LocalPacketFactory;
 import org.waarp.openr66.protocol.localhandler.packet.json.ShutdownOrBlockJsonPacket;
 import org.waarp.openr66.protocol.test.TestRecvThroughClient;
-import org.waarp.openr66.protocol.test.TestRecvThroughClient.TestRecvThroughHandler;
 import org.waarp.openr66.protocol.test.TestSendThroughClient;
 import org.waarp.openr66.protocol.test.TestTransferNoDb;
 import org.waarp.openr66.protocol.utils.R66Future;
@@ -207,7 +207,7 @@ public class NetworkClientMultipleIpsTest extends TestAbstract {
       Thread.sleep(20);
     } catch (InterruptedException e) {
     }
-    final TestRecvThroughHandler handler = new TestRecvThroughHandler();
+    final NoOpRecvThroughHandler handler = new NoOpRecvThroughHandler();
     R66Future future = new R66Future(true);
     TestRecvThroughClient transaction =
         new TestRecvThroughClient(future, handler, "hostas", "testTask.txt",

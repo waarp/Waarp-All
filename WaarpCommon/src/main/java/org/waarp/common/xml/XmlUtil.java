@@ -63,23 +63,20 @@ public final class XmlUtil {
   public static SAXReader getNewSaxReader() {
     final SAXReader saxReader = new SAXReader();
     try {
-      saxReader
-          .setFeature("http://apache.org/xml/features/disallow-doctype-decl",
-                      true);
+      saxReader.setFeature(
+          "http://apache.org/xml/features/disallow-doctype-decl", true);
       saxReader.setFeature(
           "http://apache.org/xml/features/nonvalidating/load-dtd-grammar",
           false);
       saxReader.setFeature(
           "http://apache.org/xml/features/nonvalidating/load-external-dtd",
           false);
-      saxReader
-          .setFeature("http://xml.org/sax/features/resolve-dtd-uris", false);
-      saxReader
-          .setFeature("http://xml.org/sax/features/external-general-entities",
-                      false);
-      saxReader
-          .setFeature("http://xml.org/sax/features/external-parameter-entities",
-                      false);
+      saxReader.setFeature("http://xml.org/sax/features/resolve-dtd-uris",
+                           false);
+      saxReader.setFeature(
+          "http://xml.org/sax/features/external-general-entities", false);
+      saxReader.setFeature(
+          "http://xml.org/sax/features/external-parameter-entities", false);
       saxReader.setFeature(
           "http://apache.org/xml/features/validation/id-idref-checking", false);
     } catch (final SAXException e) {

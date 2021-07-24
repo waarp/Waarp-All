@@ -73,7 +73,7 @@ public class SimpleAuth {
    *
    * @return True if the password is valid (or any password is valid)
    */
-  public boolean isPasswordValid(final String newpassword) {
+  public final boolean isPasswordValid(final String newpassword) {
     if (password == null) {
       return true;
     }
@@ -90,7 +90,7 @@ public class SimpleAuth {
    *
    * @return True if the account is valid (or any account is valid)
    */
-  public boolean isAccountValid(final String account) {
+  public final boolean isAccountValid(final String account) {
     if (accounts == null) {
       logger.debug("No account needed");
       return true;
@@ -112,21 +112,21 @@ public class SimpleAuth {
   /**
    * @param isAdmin True if the user should be an administrator
    */
-  public void setAdmin(final boolean isAdmin) {
+  public final void setAdmin(final boolean isAdmin) {
     this.isAdmin = isAdmin;
   }
 
   /**
    * @return the isAdmin
    */
-  public boolean isAdmin() {
+  public final boolean isAdmin() {
     return isAdmin;
   }
 
   /**
    * @return the user
    */
-  public String getUser() {
+  public final String getUser() {
     return user;
   }
 }
