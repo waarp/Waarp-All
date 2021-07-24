@@ -91,11 +91,10 @@ public class TestTasks {
           "Need config inDirectory outDirectory filename (in inDirectory)");
       return;
     }
-    if (!FileBasedConfiguration
-        .setSubmitClientConfigurationFromXml(Configuration.configuration,
-                                             args[0])) {
-      System.err
-          .println("Needs a correct configuration file as first argument");
+    if (!FileBasedConfiguration.setSubmitClientConfigurationFromXml(
+        Configuration.configuration, args[0])) {
+      System.err.println(
+          "Needs a correct configuration file as first argument");
       return;
     }
     final String in = args[1];
@@ -152,8 +151,8 @@ public class TestTasks {
     final ChModTask chModTask = new ChModTask("u=rw", 1, argTransfer, session);
     chModTask.run();
     chModTask.getFutureCompletion().awaitOrInterruptible();
-    System.out
-        .println("ChModTask: " + chModTask.getFutureCompletion().isSuccess());
+    System.out.println(
+        "ChModTask: " + chModTask.getFutureCompletion().isSuccess());
     assertTrue("ChModTask should be OK",
                chModTask.getFutureCompletion().isSuccess());
 
@@ -161,8 +160,8 @@ public class TestTasks {
     final SnmpTask snmpTask = new SnmpTask(argRule, 0, argTransfer, session);
     snmpTask.run();
     snmpTask.getFutureCompletion().awaitOrInterruptible();
-    System.out
-        .println("SnmpTask: " + snmpTask.getFutureCompletion().isSuccess());
+    System.out.println(
+        "SnmpTask: " + snmpTask.getFutureCompletion().isSuccess());
     assertTrue("SnmpTask should be OK",
                snmpTask.getFutureCompletion().isSuccess());
 
@@ -183,9 +182,9 @@ public class TestTasks {
     // ADDDIGEST
     final AddDigestJavaTask addDigestJavaTask = new AddDigestJavaTask();
     String arg = "-digest SHA512 -format -##DIGEST##";
-    addDigestJavaTask
-        .setArgs(session, true, false, 0, AddDigestJavaTask.class.getName(),
-                 arg, false, false);
+    addDigestJavaTask.setArgs(session, true, false, 0,
+                              AddDigestJavaTask.class.getName(), arg, false,
+                              false);
     addDigestJavaTask.run();
     System.out.println(
         "ADDDIGEST: " + addDigestJavaTask.getFinalStatus() + ":" +
@@ -196,9 +195,8 @@ public class TestTasks {
     // UUID
     final AddUuidJavaTask addUuidJavaTask = new AddUuidJavaTask();
     arg = "-format -##UUID##";
-    addUuidJavaTask
-        .setArgs(session, true, false, 0, AddUuidJavaTask.class.getName(), arg,
-                 false, false);
+    addUuidJavaTask.setArgs(session, true, false, 0,
+                            AddUuidJavaTask.class.getName(), arg, false, false);
     addUuidJavaTask.run();
     System.out.println("ADDUUID: " + addUuidJavaTask.getFinalStatus() + ":" +
                        session.getRunner().getFileInformation());
@@ -296,8 +294,8 @@ public class TestTasks {
         new CompressTask(out + "/move.zstd", 0, argTransfer, session);
     compressTask.run();
     compressTask.getFutureCompletion().awaitOrInterruptible();
-    System.out
-        .println("COMPRESS: " + compressTask.getFutureCompletion().isSuccess());
+    System.out.println(
+        "COMPRESS: " + compressTask.getFutureCompletion().isSuccess());
     assertTrue("COMPRESS should be OK",
                compressTask.getFutureCompletion().isSuccess());
     final CompressTask decompressTask =
@@ -369,8 +367,8 @@ public class TestTasks {
         new RenameTask(out + "/file_rename2", 0, argTransfer, session);
     renameTask.run();
     renameTask.getFutureCompletion().awaitOrInterruptible();
-    System.out
-        .println("RenameTask: " + renameTask.getFutureCompletion().isSuccess());
+    System.out.println(
+        "RenameTask: " + renameTask.getFutureCompletion().isSuccess());
     assertTrue("RenameTask should be OK",
                renameTask.getFutureCompletion().isSuccess());
 
@@ -397,8 +395,8 @@ public class TestTasks {
                          argTransfer, session);
     transferTask.run();
     transferTask.getFutureCompletion().awaitOrInterruptible();
-    System.out
-        .println("TRANSFER: " + transferTask.getFutureCompletion().isSuccess());
+    System.out.println(
+        "TRANSFER: " + transferTask.getFutureCompletion().isSuccess());
     assertTrue("TRANSFER should be OK",
                transferTask.getFutureCompletion().isSuccess());
     waitForAllDone(transferTask.getFutureCompletion().getResult().getRunner());
@@ -444,8 +442,8 @@ public class TestTasks {
         new DeleteTask(out + "/move", 0, argTransfer, session);
     deleteTask.run();
     deleteTask.getFutureCompletion().awaitOrInterruptible();
-    System.out
-        .println("DELETE: " + deleteTask.getFutureCompletion().isSuccess());
+    System.out.println(
+        "DELETE: " + deleteTask.getFutureCompletion().isSuccess());
     assertTrue("DELETE should be OK",
                deleteTask.getFutureCompletion().isSuccess());
 

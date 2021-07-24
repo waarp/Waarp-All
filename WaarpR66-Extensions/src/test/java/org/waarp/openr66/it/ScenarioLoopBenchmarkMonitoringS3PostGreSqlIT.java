@@ -91,8 +91,7 @@ public class ScenarioLoopBenchmarkMonitoringS3PostGreSqlIT
       monitorExporterTransfers =
           new MonitorExporterTransfers("http://localhost:" + port, "/", null,
                                        null, null, true, true, true,
-                                       Configuration.configuration
-                                           .getHttpWorkerGroup());
+                                       Configuration.configuration.getHttpWorkerGroup());
 
     } else {
       // Start Fake Server HTTP REST
@@ -101,11 +100,10 @@ public class ScenarioLoopBenchmarkMonitoringS3PostGreSqlIT
       monitorExporterTransfers =
           new MonitorExporterTransfers("http://localhost:" + port, "/", null,
                                        null, null, true, true, false,
-                                       Configuration.configuration
-                                           .getHttpWorkerGroup());
+                                       Configuration.configuration.getHttpWorkerGroup());
     }
-    Configuration.configuration
-        .scheduleWithFixedDelay(monitorExporterTransfers, 1, TimeUnit.SECONDS);
+    Configuration.configuration.scheduleWithFixedDelay(monitorExporterTransfers,
+                                                       1, TimeUnit.SECONDS);
     ResourceLeakDetector.setLevel(Level.PARANOID);
     container = new MinioContainer(
         new MinioContainer.CredentialsProvider(ACCESS_KEY, SECRET_KEY));

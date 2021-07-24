@@ -104,13 +104,13 @@ public class JsonCommandPacket extends AbstractLocalPacket {
   }
 
   @Override
-  public boolean hasGlobalBuffer() {
+  public final boolean hasGlobalBuffer() {
     return true;
   }
 
   @Override
-  public void createAllBuffers(final LocalChannelReference lcr,
-                               final int networkHeader) {
+  public final void createAllBuffers(final LocalChannelReference lcr,
+                                     final int networkHeader) {
     final byte[] headerBytes =
         request != null? request.getBytes(WaarpStringUtils.UTF8) : EMPTY_ARRAY;
     final int headerSize = headerBytes.length;
@@ -137,19 +137,19 @@ public class JsonCommandPacket extends AbstractLocalPacket {
   }
 
   @Override
-  public String toString() {
+  public final String toString() {
     return "JsonCommandPacket: " + request + ':' + result + ':' + send;
   }
 
   @Override
-  public byte getType() {
+  public final byte getType() {
     return LocalPacketFactory.JSONREQUESTPACKET;
   }
 
   /**
    * @return the JsonPacket from request
    */
-  public JsonPacket getJsonRequest() {
+  public final JsonPacket getJsonRequest() {
     try {
       return JsonPacket.createFromBuffer(request);
     } catch (final JsonParseException e) {
@@ -164,7 +164,7 @@ public class JsonCommandPacket extends AbstractLocalPacket {
   /**
    * @param result
    */
-  public void setResult(final String result) {
+  public final void setResult(final String result) {
     this.result = result;
     middle = null;
   }
@@ -172,21 +172,21 @@ public class JsonCommandPacket extends AbstractLocalPacket {
   /**
    * @return the request
    */
-  public String getRequest() {
+  public final String getRequest() {
     return request;
   }
 
   /**
    * @return the result
    */
-  public String getResult() {
+  public final String getResult() {
     return result;
   }
 
   /**
    * @return the type
    */
-  public byte getTypeValid() {
+  public final byte getTypeValid() {
     return send;
   }
 

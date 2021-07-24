@@ -1117,8 +1117,8 @@ public class FileBasedConfiguration extends FtpConfiguration {
     if (value != null && !value.isEmpty()) {
       storedelay = (value.getLong() / 10) * 10;
     }
-    AbstractExecutor
-        .initializeExecutor(retrieve, retrievedelay, store, storedelay);
+    AbstractExecutor.initializeExecutor(retrieve, retrievedelay, store,
+                                        storedelay);
     return true;
   }
 
@@ -1160,8 +1160,9 @@ public class FileBasedConfiguration extends FtpConfiguration {
         return false;
       }
       try {
-        DbConstantFtp.gatewayAdmin = DbModelFactoryFtp
-            .initialize(dbdriver, dbserver, dbuser, dbpasswd, true);
+        DbConstantFtp.gatewayAdmin =
+            DbModelFactoryFtp.initialize(dbdriver, dbserver, dbuser, dbpasswd,
+                                         true);
         org.waarp.common.database.DbConstant.admin = DbConstantFtp.gatewayAdmin;
       } catch (final WaarpDatabaseNoConnectionException e2) {
         logger.error("Unable to Connect to DB", e2);
@@ -1171,7 +1172,7 @@ public class FileBasedConfiguration extends FtpConfiguration {
     return true;
   }
 
-  protected boolean loadSsl() {
+  protected final boolean loadSsl() {
     // StoreKey for Server
     XmlValue value = hashConfig.get(XML_PATH_KEYPATH);
     if (value == null || value.isEmpty()) {
@@ -1241,8 +1242,9 @@ public class FileBasedConfiguration extends FtpConfiguration {
         useClientAuthent = value.getBoolean();
       }
       try {
-        FtpsInitializer.waarpSecureKeyStore
-            .initTrustStore(keypath, keystorepass, useClientAuthent);
+        FtpsInitializer.waarpSecureKeyStore.initTrustStore(keypath,
+                                                           keystorepass,
+                                                           useClientAuthent);
       } catch (final CryptoException e) {
         logger.error("Bad TrustKeyStore construction");
         return false;
@@ -1284,7 +1286,7 @@ public class FileBasedConfiguration extends FtpConfiguration {
    *
    * @return True if OK
    */
-  public boolean setConfigurationServerFromXml(final String filename) {
+  public final boolean setConfigurationServerFromXml(final String filename) {
     final Document document;
     // Open config file
     try {
@@ -1349,7 +1351,7 @@ public class FileBasedConfiguration extends FtpConfiguration {
   /**
    * Configure HTTPS
    */
-  public void configureHttps() {
+  public final void configureHttps() {
     logger.debug("Start HTTPS");
     // Now start the HTTPS support
     // Configure the server.
@@ -1385,7 +1387,7 @@ public class FileBasedConfiguration extends FtpConfiguration {
   /**
    * Configure ConstraintLimitHandler
    */
-  public void configureConstraint() {
+  public final void configureConstraint() {
     logger.debug("Configure constraints");
     getConstraintLimitHandler().setHandler(
         getFtpInternalConfiguration().getGlobalTrafficShapingHandler());
@@ -1394,7 +1396,7 @@ public class FileBasedConfiguration extends FtpConfiguration {
   /**
    * Configure LocalExec
    */
-  public void configureLExec() {
+  public final void configureLExec() {
     if (isUseLocalExec()) {
       logger.debug("Start LExec");
       LocalExecClient.initialize(getClientThread(), getMaxGlobalMemory());
@@ -1406,7 +1408,7 @@ public class FileBasedConfiguration extends FtpConfiguration {
    *
    * @throws FtpNoConnectionException
    */
-  public void configureSnmp() throws FtpNoConnectionException {
+  public final void configureSnmp() throws FtpNoConnectionException {
     logger.debug("Start SNMP");
     setMonitoring(new FtpMonitoring(null));
     if (getSnmpConfig() != null) {
@@ -1432,7 +1434,7 @@ public class FileBasedConfiguration extends FtpConfiguration {
   /**
    * @param serverkey the SERVERADMINKEY to set
    */
-  public void setSERVERKEY(final byte[] serverkey) {
+  public final void setSERVERKEY(final byte[] serverkey) {
     serverAdminKey = serverkey;
   }
 
@@ -1444,12 +1446,12 @@ public class FileBasedConfiguration extends FtpConfiguration {
    * @return True if the password is OK
    */
   @Override
-  public boolean checkPassword(final String password) {
+  public final boolean checkPassword(final String password) {
     if (password == null) {
       return false;
     }
-    return Arrays
-        .equals(serverAdminKey, password.getBytes(WaarpStringUtils.UTF8));
+    return Arrays.equals(serverAdminKey,
+                         password.getBytes(WaarpStringUtils.UTF8));
   }
 
   /**
@@ -1464,7 +1466,8 @@ public class FileBasedConfiguration extends FtpConfiguration {
    * @return True if OK
    */
   @SuppressWarnings("unchecked")
-  public boolean initializeAuthent(final String filename, final boolean purge) {
+  public final boolean initializeAuthent(final String filename,
+                                         final boolean purge) {
     logger.debug("Load authent");
     final Document document;
     try {
@@ -1546,8 +1549,8 @@ public class FileBasedConfiguration extends FtpConfiguration {
         // load key from file
         final File key = new File(value.getString());
         if (!key.canRead()) {
-          logger
-              .error("Cannot read key for user " + user + ':' + key.getName());
+          logger.error(
+              "Cannot read key for user " + user + ':' + key.getName());
           continue;
         }
         try {
@@ -1599,7 +1602,7 @@ public class FileBasedConfiguration extends FtpConfiguration {
    *
    * @return True if successful
    */
-  public boolean saveAuthenticationFile(final String filename) {
+  public final boolean saveAuthenticationFile(final String filename) {
     final Document document = XmlUtil.createEmptyDocument();
     final XmlValue[] roots = new XmlValue[1];
     final XmlValue root = new XmlValue(authentElements[0]);
@@ -1655,7 +1658,7 @@ public class FileBasedConfiguration extends FtpConfiguration {
    *
    * @return the SimpleAuth if any for this user
    */
-  public SimpleAuth getSimpleAuth(final String user) {
+  public final SimpleAuth getSimpleAuth(final String user) {
     return authentications.get(user);
   }
 
@@ -1665,7 +1668,7 @@ public class FileBasedConfiguration extends FtpConfiguration {
    * @return the Html String containing the table of all Authentication
    *     entries
    */
-  public String getHtmlAuth(final String format) {
+  public final String getHtmlAuth(final String format) {
     final String result;
     final StringBuilder builder = new StringBuilder();
     /*
@@ -1714,7 +1717,7 @@ public class FileBasedConfiguration extends FtpConfiguration {
    *
    * @return the Html String containing the table of all Transfer entries
    */
-  public String getHtmlTransfer(final String format, final int limit) {
+  public final String getHtmlTransfer(final String format, final int limit) {
     final String result;
     final StringBuilder builder = new StringBuilder();
     /*
@@ -1724,9 +1727,8 @@ public class FileBasedConfiguration extends FtpConfiguration {
     DbPreparedStatement preparedStatement = null;
     try {
       try {
-        preparedStatement = DbTransferLog
-            .getStatusPrepareStament(DbConstantFtp.gatewayAdmin.getSession(),
-                                     null, limit);
+        preparedStatement = DbTransferLog.getStatusPrepareStament(
+            DbConstantFtp.gatewayAdmin.getSession(), null, limit);
         preparedStatement.executeQuery();
       } catch (final WaarpDatabaseNoConnectionException e) {
         return "";
@@ -1768,7 +1770,7 @@ public class FileBasedConfiguration extends FtpConfiguration {
    * @see FtpConfiguration#getNextRangePort()
    */
   @Override
-  public int getNextRangePort() {
+  public final int getNextRangePort() {
     try {
       return ((CircularIntValue) getProperty(RANGE_PORT)).getNext();
     } catch (final FtpUnknownFieldException e) {
@@ -1787,14 +1789,14 @@ public class FileBasedConfiguration extends FtpConfiguration {
   /**
    * @return the httpPipelineExecutor
    */
-  public EventExecutorGroup getHttpPipelineExecutor() {
+  public final EventExecutorGroup getHttpPipelineExecutor() {
     return httpExecutor;
   }
 
   /**
    * @return the httpChannelGroup
    */
-  public ChannelGroup getHttpChannelGroup() {
+  public final ChannelGroup getHttpChannelGroup() {
     return httpChannelGroup;
   }
 
@@ -1813,7 +1815,7 @@ public class FileBasedConfiguration extends FtpConfiguration {
     }
 
     @Override
-    public void operationComplete(final ChannelGroupFuture future) {
+    public final void operationComplete(final ChannelGroupFuture future) {
       if (executorWorker != null) {
         executorWorker.shutdownGracefully();
       }
@@ -1822,7 +1824,7 @@ public class FileBasedConfiguration extends FtpConfiguration {
   }
 
   @Override
-  public void releaseResources() {
+  public final void releaseResources() {
     logger.debug("Release resources");
     super.releaseResources();
     if (httpChannelGroup != null) {
@@ -1853,7 +1855,7 @@ public class FileBasedConfiguration extends FtpConfiguration {
   }
 
   @Override
-  public void inShutdownProcess() {
+  public final void inShutdownProcess() {
     if (getFtpMib() != null) {
       getFtpMib().notifyStartStop("Shutdown in progress for " + getHostId(),
                                   "Gives extra seconds: " + getTimeoutCon());
@@ -1863,112 +1865,112 @@ public class FileBasedConfiguration extends FtpConfiguration {
   /**
    * @return the authenticationFile
    */
-  public String getAuthenticationFile() {
+  public final String getAuthenticationFile() {
     return authenticationFile;
   }
 
   /**
    * @param authenticationFile the authenticationFile to set
    */
-  public void setAuthenticationFile(final String authenticationFile) {
+  public final void setAuthenticationFile(final String authenticationFile) {
     this.authenticationFile = authenticationFile;
   }
 
   /**
    * @return the httpBasePath
    */
-  public String getHttpBasePath() {
+  public final String getHttpBasePath() {
     return httpBasePath;
   }
 
   /**
    * @param httpBasePath the httpBasePath to set
    */
-  public void setHttpBasePath(final String httpBasePath) {
+  public final void setHttpBasePath(final String httpBasePath) {
     this.httpBasePath = httpBasePath;
   }
 
   /**
    * @return the useHttpCompression
    */
-  public boolean isUseHttpCompression() {
+  public final boolean isUseHttpCompression() {
     return useHttpCompression;
   }
 
   /**
    * @param useHttpCompression the useHttpCompression to set
    */
-  public void setUseHttpCompression(final boolean useHttpCompression) {
+  public final void setUseHttpCompression(final boolean useHttpCompression) {
     this.useHttpCompression = useHttpCompression;
   }
 
   /**
    * @return the useLocalExec
    */
-  public boolean isUseLocalExec() {
+  public final boolean isUseLocalExec() {
     return useLocalExec;
   }
 
   /**
    * @param useLocalExec the useLocalExec to set
    */
-  public void setUseLocalExec(final boolean useLocalExec) {
+  public final void setUseLocalExec(final boolean useLocalExec) {
     this.useLocalExec = useLocalExec;
   }
 
   /**
    * @return the cryptoKey
    */
-  public Des getCryptoKey() {
+  public final Des getCryptoKey() {
     return cryptoKey;
   }
 
   /**
    * @param cryptoKey the cryptoKey to set
    */
-  public void setCryptoKey(final Des cryptoKey) {
+  public final void setCryptoKey(final Des cryptoKey) {
     this.cryptoKey = cryptoKey;
   }
 
   /**
    * @return the hostId
    */
-  public String getHostId() {
+  public final String getHostId() {
     return hostId;
   }
 
   /**
    * @param hostId the hostId to set
    */
-  public void setHostId(final String hostId) {
+  public final void setHostId(final String hostId) {
     this.hostId = hostId;
   }
 
   /**
    * @return the adminName
    */
-  public String getAdminName() {
+  public final String getAdminName() {
     return adminName;
   }
 
   /**
    * @param adminName the adminName to set
    */
-  public void setAdminName(final String adminName) {
+  public final void setAdminName(final String adminName) {
     this.adminName = adminName;
   }
 
   /**
    * @return the constraintLimitHandler
    */
-  public FtpConstraintLimitHandler getConstraintLimitHandler() {
+  public final FtpConstraintLimitHandler getConstraintLimitHandler() {
     return constraintLimitHandler;
   }
 
   /**
    * @param constraintLimitHandler the constraintLimitHandler to set
    */
-  public void setConstraintLimitHandler(
+  public final void setConstraintLimitHandler(
       final FtpConstraintLimitHandler constraintLimitHandler) {
     this.constraintLimitHandler = constraintLimitHandler;
   }
@@ -1976,56 +1978,56 @@ public class FileBasedConfiguration extends FtpConfiguration {
   /**
    * @return the snmpConfig
    */
-  public String getSnmpConfig() {
+  public final String getSnmpConfig() {
     return snmpConfig;
   }
 
   /**
    * @param snmpConfig the snmpConfig to set
    */
-  public void setSnmpConfig(final String snmpConfig) {
+  public final void setSnmpConfig(final String snmpConfig) {
     this.snmpConfig = snmpConfig;
   }
 
   /**
    * @return the agentSnmp
    */
-  public WaarpSnmpAgent getAgentSnmp() {
+  public final WaarpSnmpAgent getAgentSnmp() {
     return agentSnmp;
   }
 
   /**
    * @param agentSnmp the agentSnmp to set
    */
-  public void setAgentSnmp(final WaarpSnmpAgent agentSnmp) {
+  public final void setAgentSnmp(final WaarpSnmpAgent agentSnmp) {
     this.agentSnmp = agentSnmp;
   }
 
   /**
    * @return the ftpMib
    */
-  public FtpPrivateMib getFtpMib() {
+  public final FtpPrivateMib getFtpMib() {
     return ftpMib;
   }
 
   /**
    * @param ftpMib the ftpMib to set
    */
-  public void setFtpMib(final FtpPrivateMib ftpMib) {
+  public final void setFtpMib(final FtpPrivateMib ftpMib) {
     this.ftpMib = ftpMib;
   }
 
   /**
    * @return the monitoring
    */
-  public FtpMonitoring getMonitoring() {
+  public final FtpMonitoring getMonitoring() {
     return monitoring;
   }
 
   /**
    * @param monitoring the monitoring to set
    */
-  public void setMonitoring(final FtpMonitoring monitoring) {
+  public final void setMonitoring(final FtpMonitoring monitoring) {
     this.monitoring = monitoring;
   }
 }

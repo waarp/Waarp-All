@@ -113,13 +113,13 @@ public final class CharsetsUtil {
             "<html><body><table border=1><tr><th>Name</th><th>CanEncode</th><th>IANA Registered</th><th>Aliases</th></tr>");
         break;
       case 1:
-        SysErrLogger.FAKE_LOGGER
-            .sysout("Name\tCanEncode\tIANA Registered\tAliases");
+        SysErrLogger.FAKE_LOGGER.sysout(
+            "Name\tCanEncode\tIANA Registered\tAliases");
         break;
       case 2:
       default:
-        SysErrLogger.FAKE_LOGGER
-            .sysout("Name,CanEncode,IANA Registered,Aliases");
+        SysErrLogger.FAKE_LOGGER.sysout(
+            "Name,CanEncode,IANA Registered,Aliases");
         break;
     }
     for (final Entry<String, Charset> entry : set) {

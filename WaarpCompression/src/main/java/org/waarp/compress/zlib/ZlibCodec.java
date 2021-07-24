@@ -39,12 +39,12 @@ import java.util.zip.InflaterOutputStream;
 public class ZlibCodec implements CompressorCodec {
 
   @Override
-  public int maxCompressedLength(final int uncompressedSize) {
+  public final int maxCompressedLength(final int uncompressedSize) {
     return uncompressedSize;
   }
 
   @Override
-  public byte[] compress(final byte[] input, final int inputLength) {
+  public final byte[] compress(final byte[] input, final int inputLength) {
     ByteArrayOutputStream bos = null;
     DeflaterOutputStream out = null;
     try {
@@ -63,8 +63,8 @@ public class ZlibCodec implements CompressorCodec {
   }
 
   @Override
-  public int compress(final byte[] input, final int inputLength,
-                      final byte[] output, final int maxOutputLength)
+  public final int compress(final byte[] input, final int inputLength,
+                            final byte[] output, final int maxOutputLength)
       throws MalformedInputException {
     try {
       final byte[] bytes = compress(input, inputLength);
@@ -76,7 +76,7 @@ public class ZlibCodec implements CompressorCodec {
   }
 
   @Override
-  public long compress(final File input, final File output)
+  public final long compress(final File input, final File output)
       throws MalformedInputException {
     InputStream inputStream = null;
     OutputStream outputStream = null;
@@ -98,7 +98,7 @@ public class ZlibCodec implements CompressorCodec {
   }
 
   @Override
-  public byte[] decompress(final byte[] compressed, final int length)
+  public final byte[] decompress(final byte[] compressed, final int length)
       throws MalformedInputException {
     ByteArrayOutputStream bos = null;
     InflaterOutputStream out = null;
@@ -118,8 +118,8 @@ public class ZlibCodec implements CompressorCodec {
   }
 
   @Override
-  public int decompress(final byte[] input, final int inputLength,
-                        final byte[] output, final int maxOutputLength)
+  public final int decompress(final byte[] input, final int inputLength,
+                              final byte[] output, final int maxOutputLength)
       throws MalformedInputException {
     try {
       final byte[] bytes = decompress(input, inputLength);
@@ -131,7 +131,7 @@ public class ZlibCodec implements CompressorCodec {
   }
 
   @Override
-  public long decompress(final File input, final File output)
+  public final long decompress(final File input, final File output)
       throws MalformedInputException {
     InputStream inputStream = null;
     OutputStream outputStream = null;
@@ -153,7 +153,8 @@ public class ZlibCodec implements CompressorCodec {
   }
 
   @Override
-  public int getDecompressedSize(final byte[] compressed, final int length) {
+  public final int getDecompressedSize(final byte[] compressed,
+                                       final int length) {
     return 0;
   }
 

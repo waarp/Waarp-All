@@ -142,9 +142,9 @@ public class ConfigImport implements Runnable {
    * @param aliasid
    * @param roleid
    */
-  public void setSpecialIds(final long hostid, final long ruleid,
-                            final long businessid, final long aliasid,
-                            final long roleid) {
+  public final void setSpecialIds(final long hostid, final long ruleid,
+                                  final long businessid, final long aliasid,
+                                  final long roleid) {
     this.hostid = hostid;
     this.ruleid = ruleid;
     this.businessid = businessid;
@@ -152,7 +152,7 @@ public class ConfigImport implements Runnable {
     this.roleid = roleid;
   }
 
-  public void setHost(final DbHostAuth host) {
+  public final void setHost(final DbHostAuth host) {
     dbhost = host;
   }
 
@@ -198,8 +198,8 @@ public class ConfigImport implements Runnable {
                               (rulePurge? "1 " : "0 ") + rule,
                               LocalPacketFactory.CONFIMPORTPACKET);
     }
-    AbstractTransfer
-        .sendValidPacket(dbhost, localChannelReference, valid, future);
+    AbstractTransfer.sendValidPacket(dbhost, localChannelReference, valid,
+                                     future);
     logger.debug("Request done with {}",
                  (future.isSuccess()? "success" : "error"));
   }
@@ -229,8 +229,8 @@ public class ConfigImport implements Runnable {
       logger.error(INFO_ARGS);
       return false;
     }
-    if (!FileBasedConfiguration
-        .setClientConfigurationFromXml(Configuration.configuration, args[0])) {
+    if (!FileBasedConfiguration.setClientConfigurationFromXml(
+        Configuration.configuration, args[0])) {
       logger.error(INFO_ARGS);
       return false;
     }
@@ -334,8 +334,8 @@ public class ConfigImport implements Runnable {
   }
 
   public static void main(final String[] args) {
-    WaarpLoggerFactory
-        .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));
+    WaarpLoggerFactory.setDefaultFactoryIfNotSame(
+        new WaarpSlf4JLoggerFactory(null));
     if (logger == null) {
       logger = WaarpLoggerFactory.getLogger(ConfigImport.class);
     }

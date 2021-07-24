@@ -36,89 +36,89 @@ public class BusinessRequestJsonPacket extends JsonPacket {
   /**
    * @return the isValidated
    */
-  public boolean isValidated() {
+  public final boolean isValidated() {
     return isValidated;
   }
 
   /**
    * @param isValidated the isValidated to set
    */
-  public void setValidated(final boolean isValidated) {
+  public final void setValidated(final boolean isValidated) {
     this.isValidated = isValidated;
   }
 
   /**
    * @return the isToApplied
    */
-  public boolean isToApplied() {
+  public final boolean isToApplied() {
     return isToApplied;
   }
 
   /**
    * @param isToApplied the isToApplied to set
    */
-  public void setToApplied(final boolean isToApplied) {
+  public final void setToApplied(final boolean isToApplied) {
     this.isToApplied = isToApplied;
   }
 
   /**
    * @return the className
    */
-  public String getClassName() {
+  public final String getClassName() {
     return className;
   }
 
   /**
    * @param className the className to set
    */
-  public void setClassName(final String className) {
+  public final void setClassName(final String className) {
     this.className = className;
   }
 
   /**
    * @return the arguments
    */
-  public String getArguments() {
+  public final String getArguments() {
     return arguments;
   }
 
   /**
    * @param arguments the arguments to set
    */
-  public void setArguments(final String arguments) {
+  public final void setArguments(final String arguments) {
     this.arguments = arguments;
   }
 
   /**
    * @return the extraArguments
    */
-  public String getExtraArguments() {
+  public final String getExtraArguments() {
     return extraArguments;
   }
 
   /**
    * @param extraArguments the extraArguments to set
    */
-  public void setExtraArguments(final String extraArguments) {
+  public final void setExtraArguments(final String extraArguments) {
     this.extraArguments = extraArguments;
   }
 
   /**
    * @return the delay
    */
-  public int getDelay() {
+  public final int getDelay() {
     return delay;
   }
 
   /**
    * @param delay the delay to set
    */
-  public void setDelay(final int delay) {
+  public final void setDelay(final int delay) {
     this.delay = delay;
   }
 
   @Override
-  public void setRequestUserPacket() {
+  public final void setRequestUserPacket() {
     setRequestUserPacket(LocalPacketFactory.BUSINESSREQUESTPACKET);
   }
 }

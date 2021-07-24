@@ -261,7 +261,7 @@ public class DbDataModel extends AbstractDbData {
   }
 
   @Override
-  public boolean exist() throws WaarpDatabaseException {
+  public final boolean exist() throws WaarpDatabaseException {
     if (dbSession == null) {
       return dbR66ConfigurationHashMap.containsKey(hostid);
     }
@@ -281,7 +281,7 @@ public class DbDataModel extends AbstractDbData {
   }
 
   @Override
-  public void select() throws WaarpDatabaseException {
+  public final void select() throws WaarpDatabaseException {
     if (dbSession == null) {
       final DbDataModel conf = dbR66ConfigurationHashMap.get(hostid);
       if (conf == null) {
@@ -318,7 +318,7 @@ public class DbDataModel extends AbstractDbData {
   }
 
   @Override
-  public void update() throws WaarpDatabaseException {
+  public final void update() throws WaarpDatabaseException {
     if (isSaved) {
       return;
     }

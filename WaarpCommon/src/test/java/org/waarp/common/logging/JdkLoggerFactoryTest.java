@@ -38,20 +38,15 @@ public class JdkLoggerFactoryTest {
         new WaarpJdkLoggerFactory(null).newInstance("foo");
     assertTrue(logger instanceof WaarpJdkLogger);
     assertEquals("foo", logger.name());
-    assertEquals(WaarpLogLevel.DEBUG,
-                 new WaarpJdkLoggerFactory(WaarpLogLevel.DEBUG)
-                     .getLevelSpecific());
-    assertEquals(WaarpLogLevel.ERROR,
-                 new WaarpJdkLoggerFactory(WaarpLogLevel.ERROR)
-                     .getLevelSpecific());
-    assertEquals(WaarpLogLevel.INFO,
-                 new WaarpJdkLoggerFactory(WaarpLogLevel.INFO)
-                     .getLevelSpecific());
-    assertEquals(WaarpLogLevel.TRACE,
-                 new WaarpJdkLoggerFactory(WaarpLogLevel.TRACE)
-                     .getLevelSpecific());
-    assertEquals(WaarpLogLevel.WARN,
-                 new WaarpJdkLoggerFactory(WaarpLogLevel.WARN)
-                     .getLevelSpecific());
+    assertEquals(WaarpLogLevel.DEBUG, new WaarpJdkLoggerFactory(
+        WaarpLogLevel.DEBUG).getLevelSpecific());
+    assertEquals(WaarpLogLevel.ERROR, new WaarpJdkLoggerFactory(
+        WaarpLogLevel.ERROR).getLevelSpecific());
+    assertEquals(WaarpLogLevel.INFO, new WaarpJdkLoggerFactory(
+        WaarpLogLevel.INFO).getLevelSpecific());
+    assertEquals(WaarpLogLevel.TRACE, new WaarpJdkLoggerFactory(
+        WaarpLogLevel.TRACE).getLevelSpecific());
+    assertEquals(WaarpLogLevel.WARN, new WaarpJdkLoggerFactory(
+        WaarpLogLevel.WARN).getLevelSpecific());
   }
 }

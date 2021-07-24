@@ -73,8 +73,8 @@ public class WaarpX509TrustManager implements X509TrustManager {
   }
 
   @Override
-  public void checkClientTrusted(final X509Certificate[] arg0,
-                                 final String arg1)
+  public final void checkClientTrusted(final X509Certificate[] arg0,
+                                       final String arg1)
       throws CertificateException {
     if (defaultX509TrustManager == null) {
       return; // valid
@@ -83,8 +83,8 @@ public class WaarpX509TrustManager implements X509TrustManager {
   }
 
   @Override
-  public void checkServerTrusted(final X509Certificate[] arg0,
-                                 final String arg1)
+  public final void checkServerTrusted(final X509Certificate[] arg0,
+                                       final String arg1)
       throws CertificateException {
     if (defaultX509TrustManager == null) {
       return; // valid
@@ -93,7 +93,7 @@ public class WaarpX509TrustManager implements X509TrustManager {
   }
 
   @Override
-  public X509Certificate[] getAcceptedIssuers() {
+  public final X509Certificate[] getAcceptedIssuers() {
     if (defaultX509TrustManager == null) {
       return X_509_CERTIFICATES_0_LENGTH; // none valid
     }

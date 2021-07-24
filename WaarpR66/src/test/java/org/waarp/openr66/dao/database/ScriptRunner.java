@@ -69,9 +69,9 @@ public class ScriptRunner {
    * regex to detect delimiter. ignores spaces, allows delimiter in comment,
    * allows an equals-sign
    */
-  public static final Pattern delimP = Pattern
-      .compile("^\\s*(--)?\\s*delimiter\\s*=?\\s*([^\\s]+)+\\s*.*$",
-               Pattern.CASE_INSENSITIVE);
+  public static final Pattern delimP =
+      Pattern.compile("^\\s*(--)?\\s*delimiter\\s*=?\\s*([^\\s]+)+\\s*.*$",
+                      Pattern.CASE_INSENSITIVE);
   private static final String DEFAULT_DELIMITER = ";";
   private final Connection connection;
 
@@ -103,8 +103,8 @@ public class ScriptRunner {
         logWriter = new PrintWriter(new FileWriter(logFile, false));
       }
     } catch (final IOException e) {
-      SysErrLogger.FAKE_LOGGER
-          .syserr("Unable to access or create the db_create log");
+      SysErrLogger.FAKE_LOGGER.syserr(
+          "Unable to access or create the db_create log");
     }
     try {
       if (errorLogFile.exists()) {
@@ -113,8 +113,8 @@ public class ScriptRunner {
         errorLogWriter = new PrintWriter(new FileWriter(errorLogFile, false));
       }
     } catch (final IOException e) {
-      SysErrLogger.FAKE_LOGGER
-          .syserr("Unable to access or create the db_create error log");
+      SysErrLogger.FAKE_LOGGER.syserr(
+          "Unable to access or create the db_create error log");
     }
     final String timeStamp =
         new SimpleDateFormat("dd/mm/yyyy HH:mm:ss").format(new Date());
@@ -254,9 +254,9 @@ public class ScriptRunner {
     try {
       hasResults = statement.execute(command.toString());
     } catch (final SQLException e) {
-      final String errText = String
-          .format("Error executing '%s' (line %d): %s", command,
-                  lineReader.getLineNumber(), e.getMessage());
+      final String errText =
+          String.format("Error executing '%s' (line %d): %s", command,
+                        lineReader.getLineNumber(), e.getMessage());
       printlnError(errText);
       SysErrLogger.FAKE_LOGGER.syserr(errText);
       if (stopOnError) {

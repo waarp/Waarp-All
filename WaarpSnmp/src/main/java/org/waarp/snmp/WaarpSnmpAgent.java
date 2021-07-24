@@ -155,28 +155,28 @@ public class WaarpSnmpAgent extends BaseAgent {
   /**
    * @return the monitor
    */
-  public WaarpInterfaceMonitor getMonitor() {
+  public final WaarpInterfaceMonitor getMonitor() {
     return monitor;
   }
 
   /**
    * @return the mib
    */
-  public WaarpInterfaceMib getMib() {
+  public final WaarpInterfaceMib getMib() {
     return mib;
   }
 
   /**
    * @return the uptime in ms
    */
-  public long getUptime() {
+  public final long getUptime() {
     return getSnmpv2MIB().getUpTime().toMilliseconds();
   }
 
   /**
    * @return the uptime but in System time in ms
    */
-  public long getUptimeSystemTime() {
+  public final long getUptimeSystemTime() {
     return systemTimeStart;
   }
 
@@ -184,7 +184,7 @@ public class WaarpSnmpAgent extends BaseAgent {
    * Register additional managed objects at the agent's server.
    */
   @Override
-  protected void registerManagedObjects() {
+  protected final void registerManagedObjects() {
     logger.debug("Registers");
     try {
       getMib().registerMOs(server, null);
@@ -197,7 +197,7 @@ public class WaarpSnmpAgent extends BaseAgent {
    * Unregister the basic MIB modules from the agent's MOServer.
    */
   @Override
-  protected void unregisterManagedObjects() {
+  protected final void unregisterManagedObjects() {
     logger.debug("Unregisters");
     getMib().unregisterMOs(server, null);
   }
@@ -205,7 +205,7 @@ public class WaarpSnmpAgent extends BaseAgent {
   /**
    * @param moGroup
    */
-  public void unregisterManagedObject(final MOGroup moGroup) {
+  public final void unregisterManagedObject(final MOGroup moGroup) {
     logger.debug("Unregister {}", moGroup);
     moGroup.unregisterMOs(server, getContext(moGroup));
   }
@@ -215,7 +215,7 @@ public class WaarpSnmpAgent extends BaseAgent {
    * V3
    */
   @Override
-  protected void addUsmUser(final USM usm) {
+  protected final void addUsmUser(final USM usm) {
     for (final UsmUser userlist : listUsmUser) {
       logger.debug("User: {}", userlist);
       usm.addUser(userlist.getSecurityName(), usm.getLocalEngineID(), userlist);
@@ -230,8 +230,8 @@ public class WaarpSnmpAgent extends BaseAgent {
    * Adds initial notification targets and filters.
    */
   @Override
-  protected void addNotificationTargets(final SnmpTargetMIB targetMIB,
-                                        final SnmpNotificationMIB notificationMIB) {
+  protected final void addNotificationTargets(final SnmpTargetMIB targetMIB,
+                                              final SnmpNotificationMIB notificationMIB) {
     targetMIB.addDefaultTDomains();
 
     for (final TargetElement element : listTargetElements) {
@@ -281,7 +281,7 @@ public class WaarpSnmpAgent extends BaseAgent {
    * http://www.faqs.org/rfcs/rfc2575.html
    */
   @Override
-  protected void addViews(final VacmMIB vacm) {
+  protected final void addViews(final VacmMIB vacm) {
     vacm.addGroup(SecurityModel.SECURITY_MODEL_SNMPv1,
                   new OctetString("cpublic"), new OctetString("v1v2group"),
                   StorageType.nonVolatile);
@@ -356,7 +356,7 @@ public class WaarpSnmpAgent extends BaseAgent {
    * We only configure one, "public".
    */
   @Override
-  protected void addCommunities(final SnmpCommunityMIB communityMIB) {
+  protected final void addCommunities(final SnmpCommunityMIB communityMIB) {
     final Variable[] com2sec = {
         new OctetString("public"), // community name
         new OctetString("cpublic"), // security name
@@ -368,10 +368,8 @@ public class WaarpSnmpAgent extends BaseAgent {
     };
     final SnmpCommunityEntryRow row = communityMIB.getSnmpCommunityEntry()
                                                   .createRow(new OctetString(
-                                                                 "public2public")
-                                                                 .toSubIndex(
-                                                                     true),
-                                                             com2sec);
+                                                      "public2public").toSubIndex(
+                                                      true), com2sec);
     communityMIB.getSnmpCommunityEntry().addRow(row);
     if (isFilterAccessEnabled) {
       snmpCommunityMIB.setSourceAddressFiltering(true);
@@ -379,7 +377,7 @@ public class WaarpSnmpAgent extends BaseAgent {
   }
 
   @Override
-  protected void initTransportMappings() throws IOException {
+  protected final void initTransportMappings() throws IOException {
     final TransportMapping<?>[] testMappings =
         new TransportMapping[address.length];
     int nb = 0;
@@ -415,7 +413,7 @@ public class WaarpSnmpAgent extends BaseAgent {
    *
    * @throws IOException
    */
-  public void start() throws IOException {
+  public final void start() throws IOException {
     logger.debug("WaarpSnmpAgent starting: {} 1 on {}", address[0],
                  address.length);
     try {
@@ -434,52 +432,62 @@ public class WaarpSnmpAgent extends BaseAgent {
   }
 
   @Override
-  protected void sendColdStartNotification() {
+  protected final void sendColdStartNotification() {
     logger.debug("ColdStartNotification: {}",
                  getMib().getBaseOidStartOrShutdown());
     final SNMPv2MIB snmpv2 = getMib().getSNMPv2MIB();
-    notificationOriginator
-        .notify(new OctetString("public"), SnmpConstants.coldStart,
-                new VariableBinding[] {
-                    new VariableBinding(getMib().getBaseOidStartOrShutdown(),
-                                        new OctetString("Startup Service")),
-                    new VariableBinding(SnmpConstants.sysDescr,
-                                        snmpv2.getDescr()),
-                    new VariableBinding(SnmpConstants.sysObjectID,
-                                        snmpv2.getObjectID()),
-                    new VariableBinding(SnmpConstants.sysContact,
-                                        snmpv2.getContact()),
-                    new VariableBinding(SnmpConstants.sysName,
-                                        snmpv2.getName()),
-                    new VariableBinding(SnmpConstants.sysLocation,
-                                        snmpv2.getLocation())
-                });
+    notificationOriginator.notify(new OctetString("public"),
+                                  SnmpConstants.coldStart,
+                                  new VariableBinding[] {
+                                      new VariableBinding(
+                                          getMib().getBaseOidStartOrShutdown(),
+                                          new OctetString("Startup Service")),
+                                      new VariableBinding(
+                                          SnmpConstants.sysDescr,
+                                          snmpv2.getDescr()),
+                                      new VariableBinding(
+                                          SnmpConstants.sysObjectID,
+                                          snmpv2.getObjectID()),
+                                      new VariableBinding(
+                                          SnmpConstants.sysContact,
+                                          snmpv2.getContact()),
+                                      new VariableBinding(SnmpConstants.sysName,
+                                                          snmpv2.getName()),
+                                      new VariableBinding(
+                                          SnmpConstants.sysLocation,
+                                          snmpv2.getLocation())
+                                  });
   }
 
   /**
    * Send a Notification just before Shutdown the SNMP service.
    */
-  protected void sendShutdownNotification() {
+  protected final void sendShutdownNotification() {
     if (getMib() == null || notificationOriginator == null) {
       return;
     }
     final SNMPv2MIB snmpv2 = getMib().getSNMPv2MIB();
-    notificationOriginator
-        .notify(new OctetString("public"), SnmpConstants.linkDown,
-                new VariableBinding[] {
-                    new VariableBinding(getMib().getBaseOidStartOrShutdown(),
-                                        new OctetString("Shutdown Service")),
-                    new VariableBinding(SnmpConstants.sysDescr,
-                                        snmpv2.getDescr()),
-                    new VariableBinding(SnmpConstants.sysObjectID,
-                                        snmpv2.getObjectID()),
-                    new VariableBinding(SnmpConstants.sysContact,
-                                        snmpv2.getContact()),
-                    new VariableBinding(SnmpConstants.sysName,
-                                        snmpv2.getName()),
-                    new VariableBinding(SnmpConstants.sysLocation,
-                                        snmpv2.getLocation())
-                });
+    notificationOriginator.notify(new OctetString("public"),
+                                  SnmpConstants.linkDown,
+                                  new VariableBinding[] {
+                                      new VariableBinding(
+                                          getMib().getBaseOidStartOrShutdown(),
+                                          new OctetString("Shutdown Service")),
+                                      new VariableBinding(
+                                          SnmpConstants.sysDescr,
+                                          snmpv2.getDescr()),
+                                      new VariableBinding(
+                                          SnmpConstants.sysObjectID,
+                                          snmpv2.getObjectID()),
+                                      new VariableBinding(
+                                          SnmpConstants.sysContact,
+                                          snmpv2.getContact()),
+                                      new VariableBinding(SnmpConstants.sysName,
+                                                          snmpv2.getName()),
+                                      new VariableBinding(
+                                          SnmpConstants.sysLocation,
+                                          snmpv2.getLocation())
+                                  });
     try {
       Thread.sleep(100);
     } catch (final InterruptedException e) {//NOSONAR
@@ -488,7 +496,7 @@ public class WaarpSnmpAgent extends BaseAgent {
   }
 
   @Override
-  public void stop() {
+  public final void stop() {
     logger.info("Stopping SNMP support");
     if (TrapLevel.StartStop.isLevelValid(getTrapLevel())) {
       sendShutdownNotification();
@@ -512,14 +520,14 @@ public class WaarpSnmpAgent extends BaseAgent {
   /**
    * @return the trapLevel
    */
-  public int getTrapLevel() {
+  public final int getTrapLevel() {
     return trapLevel;
   }
 
   /**
    * @param trapLevel the trapLevel to set
    */
-  public void setTrapLevel(final int trapLevel) {
+  public final void setTrapLevel(final int trapLevel) {
     this.trapLevel = trapLevel;
   }
 

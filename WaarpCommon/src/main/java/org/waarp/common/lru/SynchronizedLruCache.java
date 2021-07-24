@@ -92,12 +92,12 @@ public class SynchronizedLruCache<K, V> extends AbstractLruCache<K, V> {
   }
 
   @Override
-  public int getCapacity() {
+  public final int getCapacity() {
     return cacheMap.getCapacity();
   }
 
   @Override
-  protected InterfaceLruCacheEntry<V> getEntry(final K key) {
+  protected final InterfaceLruCacheEntry<V> getEntry(final K key) {
     return cacheMap.get(key);
   }
 
@@ -112,7 +112,8 @@ public class SynchronizedLruCache<K, V> extends AbstractLruCache<K, V> {
   }
 
   @Override
-  protected void putEntry(final K key, final InterfaceLruCacheEntry<V> entry) {
+  protected final void putEntry(final K key,
+                                final InterfaceLruCacheEntry<V> entry) {
     cacheMap.put(key, entry);
   }
 
@@ -126,7 +127,7 @@ public class SynchronizedLruCache<K, V> extends AbstractLruCache<K, V> {
   }
 
   @Override
-  public Collection<V> values() {
+  public final Collection<V> values() {
     final Collection<InterfaceLruCacheEntry<V>> cacheEntry = cacheMap.values();
     final List<V> list = new ArrayList<V>(cacheEntry.size());
     for (final InterfaceLruCacheEntry<V> entry : cacheEntry) {

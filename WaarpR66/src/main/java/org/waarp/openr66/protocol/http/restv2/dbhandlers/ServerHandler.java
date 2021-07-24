@@ -188,10 +188,10 @@ public class ServerHandler extends AbstractRestDbHandler {
   @GET
   @Consumes(WILDCARD)
   @RequiredRole(READONLY)
-  public void getStatus(final HttpRequest request,
-                        final HttpResponder responder,
-                        @QueryParam(PERIOD) @DefaultValue("P1DT0H0M0S")
-                        final String periodStr) {
+  public final void getStatus(final HttpRequest request,
+                              final HttpResponder responder,
+                              @QueryParam(PERIOD) @DefaultValue("P1DT0H0M0S")
+                              final String periodStr) {
     checkSanity(periodStr);
     try {
       final Period period = Period.parse(periodStr);
@@ -218,8 +218,8 @@ public class ServerHandler extends AbstractRestDbHandler {
   @OPTIONS
   @Consumes(WILDCARD)
   @RequiredRole(NOACCESS)
-  public void status_options(final HttpRequest request,
-                             final HttpResponder responder) {
+  public final void status_options(final HttpRequest request,
+                                   final HttpResponder responder) {
     final HttpHeaders allow = new DefaultHttpHeaders();
     final List<HttpMethod> options = new ArrayList<HttpMethod>();
     options.add(HttpMethod.GET);
@@ -240,8 +240,8 @@ public class ServerHandler extends AbstractRestDbHandler {
   @PUT
   @Consumes(WILDCARD)
   @RequiredRole(FULLADMIN)
-  public void deactivate(final HttpRequest request,
-                         final HttpResponder responder) {
+  public final void deactivate(final HttpRequest request,
+                               final HttpResponder responder) {
     HostDAO hostDAO = null;
     try {
       hostDAO = DAO_FACTORY.getHostDAO(false);
@@ -272,8 +272,8 @@ public class ServerHandler extends AbstractRestDbHandler {
   @PUT
   @Consumes(WILDCARD)
   @RequiredRole(FULLADMIN)
-  public void shutdown(final HttpRequest request,
-                       final HttpResponder responder) {
+  public final void shutdown(final HttpRequest request,
+                             final HttpResponder responder) {
     WaarpShutdownHook.setRestart(false);
     ChannelUtils.startShutdown();
     responder.sendStatus(NO_CONTENT);
@@ -292,8 +292,8 @@ public class ServerHandler extends AbstractRestDbHandler {
   @OPTIONS
   @Consumes(WILDCARD)
   @RequiredRole(NOACCESS)
-  public void shutdown_options(final HttpRequest request,
-                               final HttpResponder responder) {
+  public final void shutdown_options(final HttpRequest request,
+                                     final HttpResponder responder) {
     final HttpHeaders allow = new DefaultHttpHeaders();
     final List<HttpMethod> options = new ArrayList<HttpMethod>();
     options.add(HttpMethod.PUT);
@@ -313,8 +313,8 @@ public class ServerHandler extends AbstractRestDbHandler {
   @PUT
   @Consumes(WILDCARD)
   @RequiredRole(FULLADMIN)
-  public void restart(final HttpRequest request,
-                      final HttpResponder responder) {
+  public final void restart(final HttpRequest request,
+                            final HttpResponder responder) {
     WaarpShutdownHook.setRestart(true);
     ChannelUtils.startShutdown();
     responder.sendStatus(NO_CONTENT);
@@ -341,23 +341,26 @@ public class ServerHandler extends AbstractRestDbHandler {
   @GET
   @Consumes(APPLICATION_FORM_URLENCODED)
   @RequiredRole(LOGCONTROL)
-  public void getLogs(final HttpRequest request, final HttpResponder responder,
-                      @QueryParam(PURGE) @DefaultValue("false")
-                      final String purgeStr,
-                      @QueryParam(CLEAN) @DefaultValue("false")
-                      final String cleanStr,
-                      @QueryParam(STATUS) @DefaultValue("")
-                      final String statusStr,
-                      @QueryParam(RULE_NAME) @DefaultValue("")
-                      final String rule,
-                      @QueryParam(START) @DefaultValue("") final String start,
-                      @QueryParam(STOP) @DefaultValue("") final String stop,
-                      @QueryParam(START_ID) @DefaultValue("")
-                      final String startID,
-                      @QueryParam(STOP_ID) @DefaultValue("")
-                      final String stopID,
-                      @QueryParam(REQUESTED) @DefaultValue("")
-                      final String requester) {
+  public final void getLogs(final HttpRequest request,
+                            final HttpResponder responder,
+                            @QueryParam(PURGE) @DefaultValue("false")
+                            final String purgeStr,
+                            @QueryParam(CLEAN) @DefaultValue("false")
+                            final String cleanStr,
+                            @QueryParam(STATUS) @DefaultValue("")
+                            final String statusStr,
+                            @QueryParam(RULE_NAME) @DefaultValue("")
+                            final String rule,
+                            @QueryParam(START) @DefaultValue("")
+                            final String start,
+                            @QueryParam(STOP) @DefaultValue("")
+                            final String stop,
+                            @QueryParam(START_ID) @DefaultValue("")
+                            final String startID,
+                            @QueryParam(STOP_ID) @DefaultValue("")
+                            final String stopID,
+                            @QueryParam(REQUESTED) @DefaultValue("")
+                            final String requester) {
     checkSanity(purgeStr, cleanStr, statusStr, rule, start, stop, startID,
                 stopID, requester);
     final List<RestError> errors = new ArrayList<RestError>();
@@ -510,18 +513,17 @@ public class ServerHandler extends AbstractRestDbHandler {
   @GET
   @Consumes(APPLICATION_FORM_URLENCODED)
   @RequiredRole(CONFIGADMIN)
-  public void getConfig(final HttpRequest request,
-                        final HttpResponder responder,
-                        @QueryParam(EXPORT_HOSTS) @DefaultValue("false")
-                        final String hostStr,
-                        @QueryParam(EXPORT_RULES) @DefaultValue("false")
-                        final String ruleStr,
-                        @QueryParam(EXPORT_BUSINESS) @DefaultValue("false")
-                        final String businessStr,
-                        @QueryParam(EXPORT_ALIASES) @DefaultValue("false")
-                        final String aliasStr,
-                        @QueryParam(EXPORT_ROLES) @DefaultValue("false")
-                        final String roleStr) {
+  public final void getConfig(final HttpRequest request,
+                              final HttpResponder responder,
+                              @QueryParam(EXPORT_HOSTS) @DefaultValue("false")
+                              final String hostStr,
+                              @QueryParam(EXPORT_RULES) @DefaultValue("false")
+                              final String ruleStr, @QueryParam(EXPORT_BUSINESS)
+                              @DefaultValue("false") final String businessStr,
+                              @QueryParam(EXPORT_ALIASES) @DefaultValue("false")
+                              final String aliasStr,
+                              @QueryParam(EXPORT_ROLES) @DefaultValue("false")
+                              final String roleStr) {
     checkSanity(hostStr, ruleStr, businessStr, aliasStr, roleStr);
     final List<RestError> errors = new ArrayList<RestError>();
 
@@ -662,28 +664,28 @@ public class ServerHandler extends AbstractRestDbHandler {
   @PUT
   @Consumes(APPLICATION_FORM_URLENCODED)
   @RequiredRole(CONFIGADMIN)
-  public void setConfig(final HttpRequest request,
-                        final HttpResponder responder,
-                        @QueryParam(PURGE_HOST) @DefaultValue("false")
-                        final String purgeHostStr,
-                        @QueryParam(PURGE_RULE) @DefaultValue("false")
-                        final String purgeRuleStr,
-                        @QueryParam(PURGE_BUSINESS) @DefaultValue("false")
-                        final String purgeBusinessStr,
-                        @QueryParam(PURGE_ALIASES) @DefaultValue("false")
-                        final String purgeAliasStr,
-                        @QueryParam(PURGE_ROLES) @DefaultValue("false")
-                        final String purgeRoleStr,
-                        @QueryParam(HOST_FILE) @DefaultValue("")
-                        final String hostFile,
-                        @QueryParam(RULE_FILE) @DefaultValue("")
-                        final String ruleFile,
-                        @QueryParam(BUSINESS_FILE) @DefaultValue("")
-                        final String businessFile,
-                        @QueryParam(ALIAS_FILE) @DefaultValue("")
-                        final String aliasFile,
-                        @QueryParam(ROLE_FILE) @DefaultValue("")
-                        final String roleFile) {
+  public final void setConfig(final HttpRequest request,
+                              final HttpResponder responder,
+                              @QueryParam(PURGE_HOST) @DefaultValue("false")
+                              final String purgeHostStr,
+                              @QueryParam(PURGE_RULE) @DefaultValue("false")
+                              final String purgeRuleStr,
+                              @QueryParam(PURGE_BUSINESS) @DefaultValue("false")
+                              final String purgeBusinessStr,
+                              @QueryParam(PURGE_ALIASES) @DefaultValue("false")
+                              final String purgeAliasStr,
+                              @QueryParam(PURGE_ROLES) @DefaultValue("false")
+                              final String purgeRoleStr,
+                              @QueryParam(HOST_FILE) @DefaultValue("")
+                              final String hostFile,
+                              @QueryParam(RULE_FILE) @DefaultValue("")
+                              final String ruleFile,
+                              @QueryParam(BUSINESS_FILE) @DefaultValue("")
+                              final String businessFile,
+                              @QueryParam(ALIAS_FILE) @DefaultValue("")
+                              final String aliasFile,
+                              @QueryParam(ROLE_FILE) @DefaultValue("")
+                              final String roleFile) {
     checkSanity(purgeHostStr, purgeRuleStr, purgeBusinessStr, purgeAliasStr,
                 purgeRoleStr, hostFile, ruleFile, businessFile, aliasFile,
                 ruleFile);
@@ -825,8 +827,8 @@ public class ServerHandler extends AbstractRestDbHandler {
   @OPTIONS
   @Consumes(WILDCARD)
   @RequiredRole(NOACCESS)
-  public void options(final HttpRequest request,
-                      final HttpResponder responder) {
+  public final void options(final HttpRequest request,
+                            final HttpResponder responder) {
     final HttpHeaders allow = new DefaultHttpHeaders();
     allow.add(ALLOW, HttpMethod.OPTIONS);
     responder.sendStatus(OK, allow);
@@ -845,9 +847,9 @@ public class ServerHandler extends AbstractRestDbHandler {
   @OPTIONS
   @Consumes(WILDCARD)
   @RequiredRole(NOACCESS)
-  public void command_options(final HttpRequest request,
-                              final HttpResponder responder,
-                              @PathParam("ep") final String ep) {
+  public final void command_options(final HttpRequest request,
+                                    final HttpResponder responder,
+                                    @PathParam("ep") final String ep) {
     checkSanity(ep);
     final HttpHeaders allow = new DefaultHttpHeaders();
     final List<HttpMethod> options = new ArrayList<HttpMethod>();

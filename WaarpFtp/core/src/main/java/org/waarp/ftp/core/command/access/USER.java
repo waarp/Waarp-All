@@ -30,7 +30,7 @@ import org.waarp.ftp.core.command.AbstractCommand;
  */
 public class USER extends AbstractCommand {
   @Override
-  public void exec()
+  public final void exec()
       throws Reply501Exception, Reply421Exception, Reply530Exception {
     if (!hasArg()) {
       getSession().reinitFtpAuth();

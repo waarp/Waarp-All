@@ -49,30 +49,30 @@ public abstract class StatementExecutor<E> implements AbstractDAO<E> {
       "SELECT COUNT(*) AS total FROM ";
   protected Connection connection;
 
+  protected abstract boolean isDbTransfer();
+
   public abstract E getFromResultSet(ResultSet set)
       throws SQLException, DAOConnectionException;
 
-  protected boolean isCachedEnable() {
-    return false;
-  }
+  protected abstract boolean isCachedEnable();
 
   protected SynchronizedLruCache<String, E> getCache() {
     return null;
   }
 
-  protected void clearCache() {
+  protected final void clearCache() {
     if (isCachedEnable()) {
       getCache().clear();
     }
   }
 
-  protected void addToCache(final String key, final E elt) {
+  protected final void addToCache(final String key, final E elt) {
     if (isCachedEnable()) {
       getCache().put(key, elt);
     }
   }
 
-  protected E getFromCache(final String key) {
+  protected final E getFromCache(final String key) {
     if (isCachedEnable()) {
       final E value = getCache().get(key);
       if (value != null) {
@@ -83,13 +83,13 @@ public abstract class StatementExecutor<E> implements AbstractDAO<E> {
     return null;
   }
 
-  protected void removeFromCache(final String key) {
+  protected final void removeFromCache(final String key) {
     if (isCachedEnable()) {
       getCache().remove(key);
     }
   }
 
-  protected boolean isInCache(final String key) {
+  protected final boolean isInCache(final String key) {
     if (isCachedEnable()) {
       return getCache().contains(key);
     }
@@ -100,8 +100,9 @@ public abstract class StatementExecutor<E> implements AbstractDAO<E> {
     connection = con;
   }
 
-  protected void setParameters(final PreparedStatement stm,
-                               final Object... values) throws SQLException {
+  protected final void setParameters(final PreparedStatement stm,
+                                     final Object... values)
+      throws SQLException {
     if (values == null) {
       return;
     }
@@ -110,7 +111,7 @@ public abstract class StatementExecutor<E> implements AbstractDAO<E> {
     }
   }
 
-  void executeUpdate(final PreparedStatement stm) throws SQLException {
+  final void executeUpdate(final PreparedStatement stm) throws SQLException {
     final int res;
     res = stm.executeUpdate();
     if (res < 1) {
@@ -122,17 +123,17 @@ public abstract class StatementExecutor<E> implements AbstractDAO<E> {
     }
   }
 
-  protected void executeAction(final PreparedStatement stm)
+  protected final void executeAction(final PreparedStatement stm)
       throws SQLException {
     stm.executeUpdate();
   }
 
-  protected ResultSet executeQuery(final PreparedStatement stm)
+  protected final ResultSet executeQuery(final PreparedStatement stm)
       throws SQLException {
     return stm.executeQuery();
   }
 
-  protected void closeStatement(final Statement stm) {
+  protected final void closeStatement(final Statement stm) {
     if (stm == null) {
       return;
     }
@@ -144,7 +145,7 @@ public abstract class StatementExecutor<E> implements AbstractDAO<E> {
     }
   }
 
-  protected void closeResultSet(final ResultSet rs) {
+  protected final void closeResultSet(final ResultSet rs) {
     if (rs == null) {
       return;
     }
@@ -156,7 +157,7 @@ public abstract class StatementExecutor<E> implements AbstractDAO<E> {
     }
   }
 
-  public void close() {
+  public final void close() {
     try {
       connection.close();
     } catch (final SQLException e) {
@@ -213,7 +214,7 @@ public abstract class StatementExecutor<E> implements AbstractDAO<E> {
   }
 
   @Override
-  public void deleteAll() throws DAOConnectionException {
+  public final void deleteAll() throws DAOConnectionException {
     clearCache();
     PreparedStatement stm = null;
     try {
@@ -227,7 +228,7 @@ public abstract class StatementExecutor<E> implements AbstractDAO<E> {
   }
 
   @Override
-  public List<E> getAll() throws DAOConnectionException {
+  public final List<E> getAll() throws DAOConnectionException {
     final ArrayList<E> es = new ArrayList<E>();
     PreparedStatement stm = null;
     ResultSet res = null;
@@ -246,7 +247,8 @@ public abstract class StatementExecutor<E> implements AbstractDAO<E> {
     return es;
   }
 
-  String prepareFindQuery(final List<Filter> filters, final Object[] params) {
+  final String prepareFindQuery(final List<Filter> filters,
+                                final Object[] params) {
     final StringBuilder query = new StringBuilder(getGetAllRequest());
     if (filters.isEmpty()) {
       return query.toString();
@@ -254,27 +256,29 @@ public abstract class StatementExecutor<E> implements AbstractDAO<E> {
     query.append(WHERE);
     String prefix = "";
     int i = 0;
-    for (Filter filter : filters) {
+    for (final Filter filter : filters) {
       query.append(prefix);
       if (filter.nbAdditionnalParams() > 0) {
         final Object[] objects = (Object[]) filter.append(query);
         for (final Object o : objects) {
           params[i++] = o;
         }
-      } else {
+      } else if (filter.nbAdditionnalParams() == 0) {
         params[i] = filter.append(query);
         i++;
+      } else {
+        filter.append(query);
       }
       prefix = " AND ";
     }
     return query.toString();
   }
 
-  Object[] prepareFindParams(final List<Filter> filters) {
+  final Object[] prepareFindParams(final List<Filter> filters) {
     Object[] params = null;
     if (filters != null) {
       int len = filters.size();
-      for (Filter filter : filters) {
+      for (final Filter filter : filters) {
         len += filter.nbAdditionnalParams();
       }
       params = new Object[len];
@@ -283,7 +287,7 @@ public abstract class StatementExecutor<E> implements AbstractDAO<E> {
   }
 
   @Override
-  public List<E> find(final List<Filter> filters)
+  public final List<E> find(final List<Filter> filters)
       throws DAOConnectionException {
     final ArrayList<E> es = new ArrayList<E>();
     // Create the SQL query
@@ -309,7 +313,8 @@ public abstract class StatementExecutor<E> implements AbstractDAO<E> {
     return es;
   }
 
-  String prepareCountQuery(final List<Filter> filters, final Object[] params) {
+  final String prepareCountQuery(final List<Filter> filters,
+                                 final Object[] params) {
     final StringBuilder query = new StringBuilder(getCountRequest());
     if (filters.isEmpty()) {
       return query.toString();
@@ -317,16 +322,18 @@ public abstract class StatementExecutor<E> implements AbstractDAO<E> {
     query.append(WHERE);
     String prefix = "";
     int i = 0;
-    for (Filter filter : filters) {
+    for (final Filter filter : filters) {
       query.append(prefix);
       if (filter.nbAdditionnalParams() > 0) {
         final Object[] objects = (Object[]) filter.append(query);
         for (final Object o : objects) {
           params[i++] = o;
         }
-      } else {
+      } else if (filter.nbAdditionnalParams() == 0) {
         params[i] = filter.append(query);
         i++;
+      } else {
+        filter.append(query);
       }
       prefix = " AND ";
     }
@@ -334,7 +341,8 @@ public abstract class StatementExecutor<E> implements AbstractDAO<E> {
   }
 
   @Override
-  public long count(final List<Filter> filters) throws DAOConnectionException {
+  public final long count(final List<Filter> filters)
+      throws DAOConnectionException {
     // Create the SQL query
     final Object[] params = prepareFindParams(filters);
     final StringBuilder query =
@@ -363,7 +371,10 @@ public abstract class StatementExecutor<E> implements AbstractDAO<E> {
   }
 
   @Override
-  public boolean exist(final String id) throws DAOConnectionException {
+  public final boolean exist(final String id) throws DAOConnectionException {
+    if (isDbTransfer()) {
+      throw new UnsupportedOperationException();
+    }
     if (isInCache(id)) {
       return true;
     }
@@ -390,8 +401,11 @@ public abstract class StatementExecutor<E> implements AbstractDAO<E> {
   }
 
   @Override
-  public E select(final String id)
+  public final E select(final String id)
       throws DAOConnectionException, DAONoDataException {
+    if (isDbTransfer()) {
+      throw new UnsupportedOperationException();
+    }
     if (isCachedEnable()) {
       final E found = getFromCache(id);
       if (found != null) {
@@ -435,7 +449,7 @@ public abstract class StatementExecutor<E> implements AbstractDAO<E> {
     final Object[] params;
     try {
       params = getInsertValues(e1);
-    } catch (WaarpDatabaseSqlException e) {
+    } catch (final WaarpDatabaseSqlException e) {
       throw new DAOConnectionException(e);
     }
 
@@ -452,7 +466,7 @@ public abstract class StatementExecutor<E> implements AbstractDAO<E> {
   }
 
   @Override
-  public void update(final E e1)
+  public final void update(final E e1)
       throws DAOConnectionException, DAONoDataException {
     if (isCachedEnable()) {
       // Need to check since all does not accept getId
@@ -461,7 +475,7 @@ public abstract class StatementExecutor<E> implements AbstractDAO<E> {
     final Object[] params;
     try {
       params = getUpdateValues(e1);
-    } catch (WaarpDatabaseSqlException e) {
+    } catch (final WaarpDatabaseSqlException e) {
       throw new DAOConnectionException(e);
     }
 

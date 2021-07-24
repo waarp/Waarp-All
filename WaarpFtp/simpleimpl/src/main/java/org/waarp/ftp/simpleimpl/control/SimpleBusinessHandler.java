@@ -95,22 +95,22 @@ public class SimpleBusinessHandler extends BusinessHandler {
   }
 
   @Override
-  public FileBasedAuth getBusinessNewAuth() {
+  public final FileBasedAuth getBusinessNewAuth() {
     return new FileBasedAuth(getFtpSession());
   }
 
   @Override
-  public FileBasedDir getBusinessNewDir() {
+  public final FileBasedDir getBusinessNewDir() {
     return new FileBasedDir(getFtpSession());
   }
 
   @Override
-  public FilesystemBasedFtpRestart getBusinessNewRestart() {
+  public final FilesystemBasedFtpRestart getBusinessNewRestart() {
     return new FilesystemBasedFtpRestart(getFtpSession());
   }
 
   @Override
-  public String getHelpMessage(final String arg) {
+  public final String getHelpMessage(final String arg) {
     return "This FTP server is only intend as a Gateway.\n" +
            "This FTP server refers to RFC 959, 775, 2389, 2428, 3659, 4217 " +
            "and supports XDIGEST, XCRC, XMD5 and XSHA1 commands.\n" +
@@ -122,7 +122,7 @@ public class SimpleBusinessHandler extends BusinessHandler {
   }
 
   @Override
-  public String getFeatMessage() {
+  public final String getFeatMessage() {
     final StringBuilder builder =
         new StringBuilder("Extensions supported:").append('\n').append(
             getDefaultFeatMessage());
@@ -135,7 +135,7 @@ public class SimpleBusinessHandler extends BusinessHandler {
   }
 
   @Override
-  public String getOptsMessage(final String[] args)
+  public final String getOptsMessage(final String[] args)
       throws CommandAbstractException {
     if (args.length > 0) {
       if (args[0].equalsIgnoreCase(FtpCommandCode.MLST.name()) ||
@@ -154,7 +154,7 @@ public class SimpleBusinessHandler extends BusinessHandler {
   }
 
   @Override
-  public void afterTransferDoneBeforeAnswer(final FtpTransfer transfer)
+  public final void afterTransferDoneBeforeAnswer(final FtpTransfer transfer)
       throws CommandAbstractException {
     if (transfer.getCommand() == FtpCommandCode.APPE) {
       logger.info(GBBH_TRANSFER + "{} {}", transfer.getCommand(),

@@ -80,8 +80,8 @@ public class CommanderNoDb implements CommanderInterface {
       final File directory = new File(
           Configuration.configuration.getBaseDirectory() +
           Configuration.configuration.getArchivePath());
-      final File[] files = FileUtils
-          .getFiles(directory, new ExtensionFilter(DbTaskRunner.XMLEXTENSION));
+      final File[] files = FileUtils.getFiles(directory, new ExtensionFilter(
+          DbTaskRunner.XMLEXTENSION));
       for (final File file : files) {
         final String shortname = file.getName();
         final String[] info = COMPILE_.split(shortname);
@@ -120,7 +120,7 @@ public class CommanderNoDb implements CommanderInterface {
    * Finalize internal data
    */
   @Override
-  public void finalizeCommander() {
+  public final void finalizeCommander() {
     // no since it will be reloaded
     // todoList.clear()
   }

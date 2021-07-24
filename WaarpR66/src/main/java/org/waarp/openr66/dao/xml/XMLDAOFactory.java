@@ -46,7 +46,8 @@ public class XMLDAOFactory extends DAOFactory {
   }
 
   @Override
-  public LimitDAO getLimitDAO(final boolean isCacheable) throws DAOConnectionException {
+  public LimitDAO getLimitDAO(final boolean isCacheable)
+      throws DAOConnectionException {
     return new XMLLimitDAO();
   }
 

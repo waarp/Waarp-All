@@ -105,8 +105,8 @@ public class ServerExample implements Runnable {
          * serverTransport) .processor(processor));
          */
         server = new TNonblockingServer(new TNonblockingServer.Args(
-            (TNonblockingServerTransport) serverTransport)
-                                            .processor(processor));
+            (TNonblockingServerTransport) serverTransport).processor(
+            processor));
       }
       System.out.println("Starting server on port " + PORT);
       lock.unlock();

@@ -77,9 +77,8 @@ public abstract class AbstractFtpClientWithApache extends AbstractFtpClient {
                                     boolean mode) {
     final String smode = mode? "passive" : "active";
     logger.info(" transfer {} store ", smode);
-    if (!client
-        .transferFile(localFilename.getAbsolutePath(), localFilename.getName(),
-                      true)) {
+    if (!client.transferFile(localFilename.getAbsolutePath(),
+                             localFilename.getName(), true)) {
       logger.error("Cant store file {} mode ", smode);
       FtpClientTest.numberKO.incrementAndGet();
       return;
@@ -93,9 +92,8 @@ public abstract class AbstractFtpClientWithApache extends AbstractFtpClient {
     } else {
       FtpClientTest.numberOK.incrementAndGet();
     }
-    if (!client
-        .transferFile(localFilename.getAbsolutePath(), localFilename.getName(),
-                      true)) {
+    if (!client.transferFile(localFilename.getAbsolutePath(),
+                             localFilename.getName(), true)) {
       logger.error("Cant store file {} mode ", smode);
       FtpClientTest.numberKO.incrementAndGet();
       return;

@@ -29,7 +29,7 @@ import java.util.List;
  */
 public class LIST extends AbstractCommand {
   @Override
-  public void exec() throws CommandAbstractException {
+  public final void exec() throws CommandAbstractException {
     final String path;
     if (!hasArg()) {
       path = getSession().getDir().getPwd();

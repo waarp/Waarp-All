@@ -48,8 +48,8 @@ public class SimpleGatewayFtpServer {
           " <config-file>");
       return;
     }
-    WaarpLoggerFactory
-        .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));
+    WaarpLoggerFactory.setDefaultFactoryIfNotSame(
+        new WaarpSlf4JLoggerFactory(null));
     /*
      * Internal Logger
      */

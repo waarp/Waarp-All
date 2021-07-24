@@ -20,7 +20,7 @@ public class WaarpSystemUtil {
    *
    * @param value
    */
-  public static void systemExit(int value) {
+  public static void systemExit(final int value) {
     if (isJunit()) {
       return;
     }
@@ -43,9 +43,9 @@ public class WaarpSystemUtil {
     WaarpLoggerFactory.getLogger("io.netty").setLevel(WaarpLogLevel.NONE);
     WaarpLoggerFactory.getLogger("io.netty.channel.AbstractChannel")
                       .setLevel(WaarpLogLevel.NONE);
-    WaarpLoggerFactory
-        .getLogger("io.netty.util.concurrent.AbstractEventExecutor")
-        .setLevel(WaarpLogLevel.NONE);
+    WaarpLoggerFactory.getLogger(
+                          "io.netty.util.concurrent.AbstractEventExecutor")
+                      .setLevel(WaarpLogLevel.NONE);
   }
 
   /**
@@ -55,11 +55,11 @@ public class WaarpSystemUtil {
    *
    * @throws InvocationTargetException
    */
-  public static Object newInstance(Class classz)
+  public static Object newInstance(final Class classz)
       throws InvocationTargetException {
     try {
       return classz.getDeclaredConstructor(EMPTY_CLASS_ARRAY).newInstance();
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw new InvocationTargetException(e);
     }
   }
@@ -71,11 +71,11 @@ public class WaarpSystemUtil {
    *
    * @throws InvocationTargetException
    */
-  public static Object newInstance(String className)
+  public static Object newInstance(final String className)
       throws InvocationTargetException {
     try {
       return newInstance(Class.forName(className));
-    } catch (Exception e) {
+    } catch (final Exception e) {
       if (e instanceof InvocationTargetException) {
         throw (InvocationTargetException) e;
       }

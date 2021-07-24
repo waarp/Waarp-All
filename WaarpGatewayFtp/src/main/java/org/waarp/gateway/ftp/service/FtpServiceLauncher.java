@@ -51,7 +51,7 @@ public class FtpServiceLauncher extends ServiceLauncher {
   }
 
   @Override
-  protected EngineAbstract getNewEngineAbstract() {
+  protected final EngineAbstract getNewEngineAbstract() {
     return new FtpEngine();
   }
 

@@ -117,8 +117,8 @@ public abstract class ProgressBarTransfer extends AbstractTransfer {
                                        ErrorCode.ServerOverloaded, true);
           }
           // redo if possible
-          if (runner
-              .incrementTaskRunnerTry(taskRunner, Configuration.RETRYNB)) {
+          if (runner.incrementTaskRunnerTry(taskRunner,
+                                            Configuration.RETRYNB)) {
             try {
               Thread.sleep(
                   Configuration.configuration.getConstraintLimitHandler()

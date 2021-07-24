@@ -129,22 +129,23 @@ public class DbRule extends AbstractDbDataDao<Rule> {
       Columns.UPDATEDINFO.name() + ',' + Columns.IDRULE.name();
 
   @Override
-  protected void initObject() {
+  protected final void initObject() {
     // Nothing
   }
 
   @Override
-  protected String getTable() {
+  protected final String getTable() {
     return table;
   }
 
   @Override
-  protected AbstractDAO<Rule> getDao(final boolean isCacheable) throws DAOConnectionException {
+  protected final AbstractDAO<Rule> getDao(final boolean isCacheable)
+      throws DAOConnectionException {
     return DAOFactory.getInstance().getRuleDAO(isCacheable);
   }
 
   @Override
-  protected String getPrimaryKey() {
+  protected final String getPrimaryKey() {
     if (pojo != null) {
       return pojo.getName();
     }
@@ -152,7 +153,7 @@ public class DbRule extends AbstractDbDataDao<Rule> {
   }
 
   @Override
-  protected String getPrimaryField() {
+  protected final String getPrimaryField() {
     return Columns.IDRULE.name();
   }
 
@@ -295,19 +296,20 @@ public class DbRule extends AbstractDbDataDao<Rule> {
   }
 
   @Override
-  protected void checkValues() throws WaarpDatabaseSqlException {
+  protected final void checkValues() throws WaarpDatabaseSqlException {
     pojo.checkValues();
   }
 
   @Override
-  public void setFromJson(final ObjectNode node, final boolean ignorePrimaryKey)
+  public final void setFromJson(final ObjectNode node,
+                                final boolean ignorePrimaryKey)
       throws WaarpDatabaseSqlException {
     super.setFromJson(node, ignorePrimaryKey);
     checkPath();
   }
 
   @Override
-  protected void setFromJson(final String field, final JsonNode value) {
+  protected final void setFromJson(final String field, final JsonNode value) {
     if (value == null) {
       return;
     }
@@ -376,7 +378,7 @@ public class DbRule extends AbstractDbDataDao<Rule> {
    * @throws WaarpDatabaseException
    */
   @Override
-  public void delete() throws WaarpDatabaseException {
+  public final void delete() throws WaarpDatabaseException {
     AbstractDAO<Transfer> transferDAO = null;
     try {
       transferDAO = DAOFactory.getInstance().getTransferDAO();
@@ -473,8 +475,8 @@ public class DbRule extends AbstractDbDataDao<Rule> {
     AbstractDAO<Rule> ruleDAO = null;
     try {
       ruleDAO = dbRule.getDao(false);
-      dbRule.pojo = ((StatementExecutor<Rule>) ruleDAO)
-          .getFromResultSet(preparedStatement.getResultSet());
+      dbRule.pojo = ((StatementExecutor<Rule>) ruleDAO).getFromResultSet(
+          preparedStatement.getResultSet());
       return dbRule;
     } catch (final SQLException e) {
       DbSession.error(e);
@@ -495,8 +497,8 @@ public class DbRule extends AbstractDbDataDao<Rule> {
       throws WaarpDatabaseNoConnectionException {
     final List<Filter> filters = new ArrayList<Filter>(1);
     filters.add(new Filter(DBRuleDAO.UPDATED_INFO_FIELD, "=",
-                           org.waarp.openr66.pojo.UpdatedInfo
-                               .fromLegacy(UpdatedInfo.TOSUBMIT).ordinal()));
+                           org.waarp.openr66.pojo.UpdatedInfo.fromLegacy(
+                               UpdatedInfo.TOSUBMIT).ordinal()));
     RuleDAO ruleAccess = null;
     List<Rule> rules;
     try {
@@ -517,7 +519,7 @@ public class DbRule extends AbstractDbDataDao<Rule> {
   }
 
   @Override
-  public void changeUpdatedInfo(final UpdatedInfo info) {
+  public final void changeUpdatedInfo(final UpdatedInfo info) {
     isSaved = false;
     pojo.setUpdatedInfo(org.waarp.openr66.pojo.UpdatedInfo.fromLegacy(info));
   }
@@ -591,7 +593,7 @@ public class DbRule extends AbstractDbDataDao<Rule> {
    *
    * @return the full String path
    */
-  public String setRecvPath(final String filename) {
+  public final String setRecvPath(final String filename) {
     if (ParametersChecker.isNotEmpty(pojo.getRecvPath())) {
       return pojo.getRecvPath() + DirInterface.SEPARATOR + filename;
     }
@@ -606,7 +608,7 @@ public class DbRule extends AbstractDbDataDao<Rule> {
    *
    * @return the full String path
    */
-  public String setSendPath(final String filename) {
+  public final String setSendPath(final String filename) {
     if (pojo.getSendPath() != null) {
       final File file = new File(filename);
       final String basename = file.getName();
@@ -623,7 +625,7 @@ public class DbRule extends AbstractDbDataDao<Rule> {
    *
    * @return the full String path
    */
-  public String setArchivePath(final String filename) {
+  public final String setArchivePath(final String filename) {
     if (pojo.getArchivePath() != null) {
       return pojo.getArchivePath() + DirInterface.SEPARATOR + filename;
     }
@@ -638,7 +640,7 @@ public class DbRule extends AbstractDbDataDao<Rule> {
    *
    * @return the full String path
    */
-  public String setWorkingPath(final String filename) {
+  public final String setWorkingPath(final String filename) {
     if (pojo.getWorkPath() != null) {
       return pojo.getWorkPath() + DirInterface.SEPARATOR + filename +
              Configuration.EXT_R66;
@@ -654,7 +656,7 @@ public class DbRule extends AbstractDbDataDao<Rule> {
    *
    * @return True if allow, else False
    */
-  public boolean checkHostAllow(final String hostId) {
+  public final boolean checkHostAllow(final String hostId) {
     if (getIdsArray() == null || getIdsArray().length == 0) {
       return true; // always true in this case
     }
@@ -669,14 +671,14 @@ public class DbRule extends AbstractDbDataDao<Rule> {
   /**
    * @return True if this rule is adapted for SENDMODE
    */
-  public boolean isSendMode() {
+  public final boolean isSendMode() {
     return !RequestPacket.isRecvMode(getMode());
   }
 
   /**
    * @return True if this rule is adapted for RECVMODE
    */
-  public boolean isRecvMode() {
+  public final boolean isRecvMode() {
     return RequestPacket.isRecvMode(getMode());
   }
 
@@ -688,7 +690,7 @@ public class DbRule extends AbstractDbDataDao<Rule> {
    * @see Object#toString()
    */
   @Override
-  public String toString() {
+  public final String toString() {
     return "Rule Name:" + getIdRule() + " IDS:" + pojo.getXMLHostids() +
            " MODETRANS: " + RequestPacket.TRANSFERMODE.values()[getMode()] +
            " RECV:" + getRecvPath() + " SEND:" + getSendPath() + " ARCHIVE:" +
@@ -707,7 +709,7 @@ public class DbRule extends AbstractDbDataDao<Rule> {
    *
    * @return a string that prints (debug) the tasks to execute
    */
-  public String printTasks(final boolean isSender, final TASKSTEP step) {
+  public final String printTasks(final boolean isSender, final TASKSTEP step) {
     if (isSender) {
       switch (step) {
         case PRETASK:
@@ -740,7 +742,7 @@ public class DbRule extends AbstractDbDataDao<Rule> {
    *
    * @see Object#toString()
    */
-  public String toShortString() {
+  public final String toShortString() {
     return "Rule Name:" + getIdRule() + " MODETRANS: " +
            RequestPacket.TRANSFERMODE.values()[getMode()];
   }
@@ -763,7 +765,7 @@ public class DbRule extends AbstractDbDataDao<Rule> {
     final String request = "SELECT " + selectAllFields + " FROM " + table;
     String condition = null;
     if (ParametersChecker.isNotEmpty(rule)) {
-      condition = " WHERE " + Columns.IDRULE.name() + " LIKE '%" + rule + "%' ";
+      condition = " WHERE " + Columns.IDRULE.name() + " = '" + rule + "' ";
     }
     if (mode >= 0) {
       if (condition != null) {
@@ -818,8 +820,8 @@ public class DbRule extends AbstractDbDataDao<Rule> {
       preparedStatement.realClose();
     }
     // \n is not correctly parsed within HTML so put double \\n in fine
-    return WaarpStringUtils
-        .cleanJsonForHtml(JsonHandler.writeAsString(arrayNode));
+    return WaarpStringUtils.cleanJsonForHtml(
+        JsonHandler.writeAsString(arrayNode));
   }
 
   private ObjectNode getInternalJson() {
@@ -863,7 +865,7 @@ public class DbRule extends AbstractDbDataDao<Rule> {
   /**
    * @return the Json string for this
    */
-  public String getJsonAsString() {
+  public final String getJsonAsString() {
     final ObjectNode node = getInternalJson();
     return WaarpStringUtils.cleanJsonForHtml(JsonHandler.writeAsString(node));
   }
@@ -875,7 +877,8 @@ public class DbRule extends AbstractDbDataDao<Rule> {
    * @return the runner in Html format specified by body by replacing all
    *     instance of fields
    */
-  public String toSpecializedHtml(final R66Session session, final String body) {
+  public final String toSpecializedHtml(final R66Session session,
+                                        final String body) {
     final StringBuilder builder = new StringBuilder(body);
     WaarpStringUtils.replace(builder, "XXXRULEXXX", getIdRule());
     WaarpStringUtils.replace(builder, "XXXIDSXXX",
@@ -938,7 +941,7 @@ public class DbRule extends AbstractDbDataDao<Rule> {
   /**
    * @return the recvPath
    */
-  public String getRecvPath() {
+  public final String getRecvPath() {
     if (ParametersChecker.isEmpty(getRuleRecvPath())) {
       return Configuration.configuration.getInPath();
     }
@@ -948,7 +951,7 @@ public class DbRule extends AbstractDbDataDao<Rule> {
   /**
    * @return the sendPath
    */
-  public String getSendPath() {
+  public final String getSendPath() {
     if (ParametersChecker.isEmpty(getRuleSendPath())) {
       return Configuration.configuration.getOutPath();
     }
@@ -958,7 +961,7 @@ public class DbRule extends AbstractDbDataDao<Rule> {
   /**
    * @return the archivePath
    */
-  public String getArchivePath() {
+  public final String getArchivePath() {
     if (ParametersChecker.isEmpty(getRuleArchivePath())) {
       return Configuration.configuration.getArchivePath();
     }
@@ -968,7 +971,7 @@ public class DbRule extends AbstractDbDataDao<Rule> {
   /**
    * @return the workPath
    */
-  public String getWorkPath() {
+  public final String getWorkPath() {
     if (ParametersChecker.isEmpty(getRuleWorkPath())) {
       return Configuration.configuration.getWorkingPath();
     }
@@ -978,91 +981,91 @@ public class DbRule extends AbstractDbDataDao<Rule> {
   /**
    * @return the Rule recvPath
    */
-  public String getRuleRecvPath() {
+  public final String getRuleRecvPath() {
     return pojo.getRecvPath();
   }
 
   /**
    * @return the Rule sendPath
    */
-  public String getRuleSendPath() {
+  public final String getRuleSendPath() {
     return pojo.getSendPath();
   }
 
   /**
    * @return the Rule archivePath
    */
-  public String getRuleArchivePath() {
+  public final String getRuleArchivePath() {
     return pojo.getArchivePath();
   }
 
   /**
    * @return the Rule workPath
    */
-  public String getRuleWorkPath() {
+  public final String getRuleWorkPath() {
     return pojo.getWorkPath();
   }
 
   /**
    * @return the idRule
    */
-  public String getIdRule() {
+  public final String getIdRule() {
     return pojo.getName();
   }
 
   /**
    * @return the mode
    */
-  public int getMode() {
+  public final int getMode() {
     return pojo.getMode();
   }
 
   /**
    * @return the idsArray
    */
-  public String[] getIdsArray() {
+  public final String[] getIdsArray() {
     return pojo.getHostids().toArray(STRING_0_LENGTH);
   }
 
   /**
    * @return the rpreTasksArray
    */
-  public String[][] getRpreTasksArray() {
+  public final String[][] getRpreTasksArray() {
     return toLegacyTasks(pojo.getRPreTasks());
   }
 
   /**
    * @return the rpostTasksArray
    */
-  public String[][] getRpostTasksArray() {
+  public final String[][] getRpostTasksArray() {
     return toLegacyTasks(pojo.getRPostTasks());
   }
 
   /**
    * @return the rerrorTasksArray
    */
-  public String[][] getRerrorTasksArray() {
+  public final String[][] getRerrorTasksArray() {
     return toLegacyTasks(pojo.getRErrorTasks());
   }
 
   /**
    * @return the spreTasksArray
    */
-  public String[][] getSpreTasksArray() {
+  public final String[][] getSpreTasksArray() {
     return toLegacyTasks(pojo.getSPreTasks());
   }
 
   /**
    * @return the spostTasksArray
    */
-  public String[][] getSpostTasksArray() {
+  public final String[][] getSpostTasksArray() {
     return toLegacyTasks(pojo.getSPostTasks());
   }
 
   /**
    * @return the serrorTasksArray
    */
-  public String[][] getSerrorTasksArray() {
+  public final String[][] getSerrorTasksArray() {
     return toLegacyTasks(pojo.getSErrorTasks());
   }
 

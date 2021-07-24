@@ -70,13 +70,14 @@ public class HttpRestServerR66Handler extends HttpRestAbstractR66Handler {
   }
 
   @Override
-  public void endParsingRequest(final HttpRestHandler handler,
-                                final RestArgument arguments,
-                                final RestArgument result, final Object body)
+  public final void endParsingRequest(final HttpRestHandler handler,
+                                      final RestArgument arguments,
+                                      final RestArgument result,
+                                      final Object body)
       throws HttpIncorrectRequestException, HttpInvalidAuthenticationException {
     try {
       HttpRestV1Utils.checkSanity(arguments);
-    } catch (InvalidArgumentException e) {
+    } catch (final InvalidArgumentException e) {
       throw new HttpIncorrectRequestException("Issue on values", e);
     }
     logger.debug("debug: {} ### {}", arguments, result);
@@ -145,7 +146,7 @@ public class HttpRestServerR66Handler extends HttpRestAbstractR66Handler {
   }
 
   @Override
-  protected ArrayNode getDetailedAllow() {
+  protected final ArrayNode getDetailedAllow() {
     final ArrayNode node = JsonHandler.createArrayNode();
 
     if (methods.contains(METHOD.PUT)) {
@@ -157,8 +158,7 @@ public class HttpRestServerR66Handler extends HttpRestAbstractR66Handler {
       try {
         node1.add(node3.createObjectNode());
         node2 = RestArgument.fillDetailedAllow(METHOD.PUT, path,
-                                               ACTIONS_TYPE.ShutdownOrBlock
-                                                   .name(),
+                                               ACTIONS_TYPE.ShutdownOrBlock.name(),
                                                node3.createObjectNode(), node1);
         node.add(node2);
       } catch (final OpenR66ProtocolPacketException ignored) {
@@ -168,15 +168,15 @@ public class HttpRestServerR66Handler extends HttpRestAbstractR66Handler {
     if (methods.contains(METHOD.GET)) {
       final ArrayNode node1 = JsonHandler.createArrayNode();
       node1.add(Configuration.configuration.getMonitoring().exportAsJson(true));
-      final ObjectNode node2 = RestArgument
-          .fillDetailedAllow(METHOD.GET, path, ACTIONS_TYPE.GetStatus.name(),
-                             null, node1);
+      final ObjectNode node2 = RestArgument.fillDetailedAllow(METHOD.GET, path,
+                                                              ACTIONS_TYPE.GetStatus.name(),
+                                                              null, node1);
       node.add(node2);
     }
 
-    final ObjectNode node2 = RestArgument
-        .fillDetailedAllow(METHOD.OPTIONS, path, COMMAND_TYPE.OPTIONS.name(),
-                           null, null);
+    final ObjectNode node2 =
+        RestArgument.fillDetailedAllow(METHOD.OPTIONS, path,
+                                       COMMAND_TYPE.OPTIONS.name(), null, null);
     node.add(node2);
 
     return node;

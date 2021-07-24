@@ -41,159 +41,159 @@ public class ConfigImportResponseJsonPacket extends ConfigImportJsonPacket {
   /**
    * @return the command
    */
-  public byte getCommand() {
+  public final byte getCommand() {
     return command;
   }
 
   /**
    * @param command the command to set
    */
-  public void setCommand(final byte command) {
+  public final void setCommand(final byte command) {
     this.command = command;
   }
 
   /**
    * @return the purgedhost
    */
-  public boolean isPurgedhost() {
+  public final boolean isPurgedhost() {
     return purgedhost;
   }
 
   /**
    * @param purgedhost the purgedhost to set
    */
-  public void setPurgedhost(final boolean purgedhost) {
+  public final void setPurgedhost(final boolean purgedhost) {
     this.purgedhost = purgedhost;
   }
 
   /**
    * @return the purgedrule
    */
-  public boolean isPurgedrule() {
+  public final boolean isPurgedrule() {
     return purgedrule;
   }
 
   /**
    * @param purgedrule the purgedrule to set
    */
-  public void setPurgedrule(final boolean purgedrule) {
+  public final void setPurgedrule(final boolean purgedrule) {
     this.purgedrule = purgedrule;
   }
 
   /**
    * @return the purgedbusiness
    */
-  public boolean isPurgedbusiness() {
+  public final boolean isPurgedbusiness() {
     return purgedbusiness;
   }
 
   /**
    * @param purgedbusiness the purgedbusiness to set
    */
-  public void setPurgedbusiness(final boolean purgedbusiness) {
+  public final void setPurgedbusiness(final boolean purgedbusiness) {
     this.purgedbusiness = purgedbusiness;
   }
 
   /**
    * @return the purgedalias
    */
-  public boolean isPurgedalias() {
+  public final boolean isPurgedalias() {
     return purgedalias;
   }
 
   /**
    * @param purgedalias the purgedalias to set
    */
-  public void setPurgedalias(final boolean purgedalias) {
+  public final void setPurgedalias(final boolean purgedalias) {
     this.purgedalias = purgedalias;
   }
 
   /**
    * @return the purgedroles
    */
-  public boolean isPurgedroles() {
+  public final boolean isPurgedroles() {
     return purgedroles;
   }
 
   /**
    * @param purgedroles the purgedroles to set
    */
-  public void setPurgedroles(final boolean purgedroles) {
+  public final void setPurgedroles(final boolean purgedroles) {
     this.purgedroles = purgedroles;
   }
 
   /**
    * @return the importedhost
    */
-  public boolean isImportedhost() {
+  public final boolean isImportedhost() {
     return importedhost;
   }
 
   /**
    * @param importedhost the importedhost to set
    */
-  public void setImportedhost(final boolean importedhost) {
+  public final void setImportedhost(final boolean importedhost) {
     this.importedhost = importedhost;
   }
 
   /**
    * @return the importedrule
    */
-  public boolean isImportedrule() {
+  public final boolean isImportedrule() {
     return importedrule;
   }
 
   /**
    * @param importedrule the importedrule to set
    */
-  public void setImportedrule(final boolean importedrule) {
+  public final void setImportedrule(final boolean importedrule) {
     this.importedrule = importedrule;
   }
 
   /**
    * @return the importedbusiness
    */
-  public boolean isImportedbusiness() {
+  public final boolean isImportedbusiness() {
     return importedbusiness;
   }
 
   /**
    * @param importedbusiness the importedbusiness to set
    */
-  public void setImportedbusiness(final boolean importedbusiness) {
+  public final void setImportedbusiness(final boolean importedbusiness) {
     this.importedbusiness = importedbusiness;
   }
 
   /**
    * @return the importedalias
    */
-  public boolean isImportedalias() {
+  public final boolean isImportedalias() {
     return importedalias;
   }
 
   /**
    * @param importedalias the importedalias to set
    */
-  public void setImportedalias(final boolean importedalias) {
+  public final void setImportedalias(final boolean importedalias) {
     this.importedalias = importedalias;
   }
 
   /**
    * @return the importedroles
    */
-  public boolean isImportedroles() {
+  public final boolean isImportedroles() {
     return importedroles;
   }
 
   /**
    * @param importedroles the importedroles to set
    */
-  public void setImportedroles(final boolean importedroles) {
+  public final void setImportedroles(final boolean importedroles) {
     this.importedroles = importedroles;
   }
 
   @Override
-  public void setRequestUserPacket() {
+  public final void setRequestUserPacket() {
     setRequestUserPacket(LocalPacketFactory.CONFIMPORTPACKET);
   }
 }

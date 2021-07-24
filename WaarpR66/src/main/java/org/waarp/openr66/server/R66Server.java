@@ -43,12 +43,12 @@ public class R66Server {
    * @param args as first argument the configuration file
    */
   public static void main(final String[] args) {
-    WaarpLoggerFactory
-        .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));
+    WaarpLoggerFactory.setDefaultFactoryIfNotSame(
+        new WaarpSlf4JLoggerFactory(null));
     logger = WaarpLoggerFactory.getLogger(R66Server.class);
     if (args.length < 1) {
-      logger
-          .error(Messages.getString("Configuration.NeedConfig")); //$NON-NLS-1$
+      logger.error(
+          Messages.getString("Configuration.NeedConfig")); //$NON-NLS-1$
       return;
     }
     try {
@@ -79,9 +79,8 @@ public class R66Server {
     if (logger == null) {
       logger = WaarpLoggerFactory.getLogger(R66Server.class);
     }
-    if (!FileBasedConfiguration
-        .setConfigurationServerFromXml(Configuration.configuration, config,
-                                       true)) {
+    if (!FileBasedConfiguration.setConfigurationServerFromXml(
+        Configuration.configuration, config, true)) {
       logger.error(
           Messages.getString("Configuration.NeedCorrectConfig")); //$NON-NLS-1$
       return false;

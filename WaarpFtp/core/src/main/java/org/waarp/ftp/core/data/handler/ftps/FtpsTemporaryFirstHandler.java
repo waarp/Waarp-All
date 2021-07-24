@@ -63,7 +63,7 @@ class FtpsTemporaryFirstHandler extends ChannelDuplexHandler {
     super.channelRegistered(ctx);
   }
 
-  protected void setSession(final Channel channel) {
+  protected final void setSession(final Channel channel) {
     // First get the ftpSession from inetaddresses
     for (int i = 0; i < FtpInternalConfiguration.RETRYNB; i++) {
       session = configuration.getFtpSessionNoRemove(channel, active);
@@ -107,8 +107,8 @@ class FtpsTemporaryFirstHandler extends ChannelDuplexHandler {
     }
     // Server: no renegotiation still, but possible clientAuthent
     // Mode is always as SSL Server mode.
-    final SslHandler sslHandler = FtpsInitializer.waarpSslContextFactory
-        .createHandlerServer(
+    final SslHandler sslHandler =
+        FtpsInitializer.waarpSslContextFactory.createHandlerServer(
             FtpsInitializer.waarpSslContextFactory.needClientAuthentication(),
             ctx.channel());
     WaarpSslUtility.addSslOpenedChannel(channel);
@@ -118,7 +118,7 @@ class FtpsTemporaryFirstHandler extends ChannelDuplexHandler {
     WaarpSslUtility.addSslHandler(null, ctx.pipeline(), sslHandler,
                                   new GenericFutureListener<Future<? super Channel>>() {
                                     @Override
-                                    public void operationComplete(
+                                    public final void operationComplete(
                                         final Future<? super Channel> future) {
                                       try {
                                         logger.debug("Handshake: {}:{}",

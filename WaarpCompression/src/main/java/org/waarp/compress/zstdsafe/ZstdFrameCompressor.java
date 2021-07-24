@@ -177,8 +177,8 @@ class ZstdFrameCompressor {
                                    final int outputAddress,
                                    final int outputLimit,
                                    final CompressionParameters parameters) {
-    final int windowSize = 1 << parameters
-        .getWindowLog(); // TODO: store window size in parameters directly?
+    final int windowSize = 1 <<
+                           parameters.getWindowLog(); // TODO: store window size in parameters directly?
     int blockSize = Math.min(MAX_BLOCK_SIZE, windowSize);
 
     int outputSize = outputLimit - outputAddress;
@@ -260,8 +260,8 @@ class ZstdFrameCompressor {
     final int lastLiteralsAddress = inputAddress + inputSize - lastLiteralsSize;
 
     // append [lastLiteralsAddress .. lastLiteralsSize] to sequenceStore literals buffer
-    context.sequenceStore
-        .appendLiterals(inputBase, lastLiteralsAddress, lastLiteralsSize);
+    context.sequenceStore.appendLiterals(inputBase, lastLiteralsAddress,
+                                         lastLiteralsSize);
 
     // convert length/offsets into codes
     context.sequenceStore.generateCodes();
@@ -276,10 +276,12 @@ class ZstdFrameCompressor {
                        context.sequenceStore.literalsLength);
     output += compressedLiteralsSize;
 
-    final int compressedSequencesSize = SequenceEncoder
-        .compressSequences(outputBase, output, outputLimit - output,
-                           context.sequenceStore, parameters.getStrategy(),
-                           context.sequenceEncodingContext);
+    final int compressedSequencesSize =
+        SequenceEncoder.compressSequences(outputBase, output,
+                                          outputLimit - output,
+                                          context.sequenceStore,
+                                          parameters.getStrategy(),
+                                          context.sequenceEncodingContext);
 
     final int compressedSize = compressedLiteralsSize + compressedSequencesSize;
     if (compressedSize == 0) {
@@ -354,13 +356,15 @@ class ZstdFrameCompressor {
     } else {
       final HuffmanCompressionTable newTable = context.borrowTemporaryTable();
 
-      newTable.initialize(counts, maxSymbol, HuffmanCompressionTable
-                              .optimalNumberOfBits(MAX_HUFFMAN_TABLE_LOG, literalsSize, maxSymbol),
+      newTable.initialize(counts, maxSymbol,
+                          HuffmanCompressionTable.optimalNumberOfBits(
+                              MAX_HUFFMAN_TABLE_LOG, literalsSize, maxSymbol),
                           context.getCompressionTableWorkspace());
 
-      serializedTableSize = newTable
-          .write(outputBase, outputAddress + headerSize,
-                 outputSize - headerSize, context.getTableWriterWorkspace());
+      serializedTableSize =
+          newTable.write(outputBase, outputAddress + headerSize,
+                         outputSize - headerSize,
+                         context.getTableWriterWorkspace());
 
       // Check if using previous huffman table is beneficial
       if (canReuse && previousTable.estimateCompressedSize(counts, maxSymbol) <=

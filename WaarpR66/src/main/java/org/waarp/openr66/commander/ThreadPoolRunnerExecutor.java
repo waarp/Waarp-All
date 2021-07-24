@@ -47,8 +47,8 @@ public class ThreadPoolRunnerExecutor extends ThreadPoolExecutor {
       implements RejectedExecutionHandler {
 
     @Override
-    public void rejectedExecution(final Runnable arg0,
-                                  final ThreadPoolExecutor arg1) {
+    public final void rejectedExecution(final Runnable arg0,
+                                        final ThreadPoolExecutor arg1) {
       if (arg0 instanceof ClientRunner) {
         final ClientRunner runner = (ClientRunner) arg0;
         runner.changeUpdatedInfo(AbstractDbData.UpdatedInfo.INERROR,

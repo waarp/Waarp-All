@@ -158,8 +158,8 @@ public class FtpArgs {
         ftpArgs.setAcct(cmd.getOptionValue("account"));
       }
       if (cmd.hasOption("mode")) {
-        ftpArgs
-            .setPassive("passive".equalsIgnoreCase(cmd.getOptionValue("mode")));
+        ftpArgs.setPassive(
+            "passive".equalsIgnoreCase(cmd.getOptionValue("mode")));
       }
       if (cmd.hasOption("ssl")) {
         final String ssl = cmd.getOptionValue("ssl");
@@ -228,146 +228,146 @@ public class FtpArgs {
     return ftpArgs;
   }
 
-  public String getFilepath() {
+  public final String getFilepath() {
     return filepath;
   }
 
-  public FtpArgs setFilepath(final String filepath) {
+  public final FtpArgs setFilepath(final String filepath) {
     this.filepath = filepath;
     return this;
   }
 
-  public String getFilename() {
+  public final String getFilename() {
     return filename;
   }
 
-  public FtpArgs setFilename(final String filename) {
+  public final FtpArgs setFilename(final String filename) {
     this.filename = filename;
     return this;
   }
 
-  public String getRequested() {
+  public final String getRequested() {
     return requested;
   }
 
-  public FtpArgs setRequested(final String requested) {
+  public final FtpArgs setRequested(final String requested) {
     this.requested = requested;
     return this;
   }
 
-  public int getPort() {
+  public final int getPort() {
     return port;
   }
 
-  public FtpArgs setPort(final int port) {
+  public final FtpArgs setPort(final int port) {
     this.port = port;
     return this;
   }
 
-  public String getUser() {
+  public final String getUser() {
     return user;
   }
 
-  public FtpArgs setUser(final String user) {
+  public final FtpArgs setUser(final String user) {
     this.user = user;
     return this;
   }
 
-  public String getPwd() {
+  public final String getPwd() {
     return pwd;
   }
 
-  public FtpArgs setPwd(final String pwd) {
+  public final FtpArgs setPwd(final String pwd) {
     this.pwd = pwd;
     return this;
   }
 
-  public String getAcct() {
+  public final String getAcct() {
     return acct;
   }
 
-  public FtpArgs setAcct(final String acct) {
+  public final FtpArgs setAcct(final String acct) {
     this.acct = acct;
     return this;
   }
 
-  public boolean isPassive() {
+  public final boolean isPassive() {
     return isPassive;
   }
 
-  public FtpArgs setPassive(final boolean passive) {
+  public final FtpArgs setPassive(final boolean passive) {
     isPassive = passive;
     return this;
   }
 
-  public int getSsl() {
+  public final int getSsl() {
     return ssl;
   }
 
-  public FtpArgs setSsl(final int ssl) {
+  public final FtpArgs setSsl(final int ssl) {
     this.ssl = ssl;
     return this;
   }
 
-  public String getCwd() {
+  public final String getCwd() {
     return cwd;
   }
 
-  public FtpArgs setCwd(final String cwd) {
+  public final FtpArgs setCwd(final String cwd) {
     this.cwd = cwd;
     return this;
   }
 
-  public DigestAlgo getDigest() {
+  public final DigestAlgo getDigest() {
     return digest;
   }
 
-  public FtpArgs setDigest(final DigestAlgo digest) {
+  public final FtpArgs setDigest(final DigestAlgo digest) {
     this.digest = digest;
     return this;
   }
 
-  public String getDigestCommand() {
+  public final String getDigestCommand() {
     return digestCommand;
   }
 
-  public FtpArgs setDigestCommand(final String digestCommand) {
+  public final FtpArgs setDigestCommand(final String digestCommand) {
     this.digestCommand = digestCommand;
     return this;
   }
 
-  public String getCommand() {
+  public final String getCommand() {
     return command;
   }
 
-  public FtpArgs setCommand(final String command) {
+  public final FtpArgs setCommand(final String command) {
     this.command = command;
     return this;
   }
 
-  public int getCodeCommand() {
+  public final int getCodeCommand() {
     return codeCommand;
   }
 
-  public FtpArgs setCodeCommand(final int codeCommand) {
+  public final FtpArgs setCodeCommand(final int codeCommand) {
     this.codeCommand = codeCommand;
     return this;
   }
 
-  public String getPreArgs() {
+  public final String getPreArgs() {
     return preArgs;
   }
 
-  public FtpArgs setPreArgs(final String preArgs) {
+  public final FtpArgs setPreArgs(final String preArgs) {
     this.preArgs = preArgs;
     return this;
   }
 
-  public String getPostArgs() {
+  public final String getPostArgs() {
     return postArgs;
   }
 
-  public FtpArgs setPostArgs(final String postArgs) {
+  public final FtpArgs setPostArgs(final String postArgs) {
     this.postArgs = postArgs;
     return this;
   }

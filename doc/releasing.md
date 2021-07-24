@@ -7,7 +7,7 @@ Les outils suivants sont nécessaires. Des variantes peuvent être utilisées :
 - Java 1.8 (les tests requièrent java 1.8, même si les modules sont compilés en
   Java 1.6), Java 1.11 pour créer la version `jre11` (attention, pour les
   versions `jre6` et `jre8`, JRE8 est nécessaire)
-- Maven 3.6.3
+- Maven 3.6.3 (3.8.x pour des JDK > 11, testé jusqu'à JDK 16, en remplacement de la JDK 11)
 - Docker (19 par exemple) (optionnel)
 - PGP, Sphinx pour signer les packages et générer la documentation
 - Artifactory (ou équivalent) pour pré-publier les jar (via Docker sur le PC :
@@ -157,6 +157,8 @@ A la racine du projet `Waarp-All` :
   - `mvn -P jreX clean install`
     - Ceci vérifiera l’ensemble des modules selon les tests Junits et les tests
       IT en mode « simplifiés » (raccourcis).
+    - Si vous ne voulez pas générer la documentation à chaque fois, vous pouvez exclure
+      les packages concernés en ajoutant à la commande`-pl '!WaarpPackaging,!WaarpPackaging6'`
     - Si un module plante, à partir de votre IDE, vous pouvez relancer les
       tests concernés et corriger ou faire pour un module unique :
       `mvn -P jreX install -f nom_du_module` (où `nom_du_module` est par exemple
@@ -224,7 +226,7 @@ préalablement exécutés avec succès. *(pas besoin de générer pour JRE8 ou J
 
 SonarQube doit être actif durant cette étape.
 
-- `mvn -P jreX -pl '!WaarpR66Gui,!WaarpAdministrator,!WaarpXmlEditor' sonar:sonar`
+- `mvn -P jreX -pl '!WaarpR66Gui,!WaarpAdministrator,!WaarpXmlEditor,!WaarpPackaging,!WaarpPackaging6' sonar:sonar`
 - Il est possible et recommandé ensuite de constater les résultats sur
   l’interface Web de SonarQube.
 - Si nécessaire, apportez encore des corrections pour des failles de sécurité
@@ -251,7 +253,7 @@ préalables pour entre les JRE 6, 8 et 11.*
 dans un répertoire externe afin de les conserver.**
 
 En exécutant la commande
-`mvn -P jreX install -DskipTests -rf WaarpPackaging`, cela permet :
+`mvn -P jreX install -DskipTests`, cela permet :
 
 - De générer la documentation au format HTML et au format PDF
 - De packager l'ensemble Waarp R66 et Waarp Gateway FTP en un seul package sous différentes formes

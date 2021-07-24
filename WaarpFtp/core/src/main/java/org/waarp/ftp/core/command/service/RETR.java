@@ -36,7 +36,7 @@ public class RETR extends AbstractCommand {
       WaarpLoggerFactory.getInstance(RETR.class);
 
   @Override
-  public void exec() throws CommandAbstractException {
+  public final void exec() throws CommandAbstractException {
     if (!hasArg()) {
       invalidCurrentCommand();
       throw new Reply501Exception("Need a pathname as argument");

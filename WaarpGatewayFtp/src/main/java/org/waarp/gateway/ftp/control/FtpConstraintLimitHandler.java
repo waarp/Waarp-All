@@ -128,21 +128,19 @@ public class FtpConstraintLimitHandler extends WaarpConstraintLimitHandler {
   }
 
   @Override
-  protected int getNumberLocalChannel() {
-    return FileBasedConfiguration.fileBasedConfiguration
-        .getFtpInternalConfiguration().getNumberSessions();
+  protected final int getNumberLocalChannel() {
+    return FileBasedConfiguration.fileBasedConfiguration.getFtpInternalConfiguration()
+                                                        .getNumberSessions();
   }
 
   @Override
-  protected long getReadLimit() {
-    return FileBasedConfiguration.fileBasedConfiguration
-        .getServerGlobalReadLimit();
+  protected final long getReadLimit() {
+    return FileBasedConfiguration.fileBasedConfiguration.getServerGlobalReadLimit();
   }
 
   @Override
-  protected long getWriteLimit() {
-    return FileBasedConfiguration.fileBasedConfiguration
-        .getServerGlobalWriteLimit();
+  protected final long getWriteLimit() {
+    return FileBasedConfiguration.fileBasedConfiguration.getServerGlobalWriteLimit();
   }
 
 }

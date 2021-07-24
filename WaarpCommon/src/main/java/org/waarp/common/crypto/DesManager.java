@@ -26,7 +26,7 @@ public class DesManager extends KeyManager {
   public static final DesManager desManager = new DesManager();
 
   @Override
-  public KeyObject createKeyObject() {
+  public final KeyObject createKeyObject() {
     return new Des();
   }
 }

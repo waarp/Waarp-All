@@ -139,8 +139,8 @@ public class FileUtilsPerfTest {
           byteBuf.flip();
           int write = fileChannelOut.write(byteBuf);
           if (read != write) {
-            SysErrLogger.FAKE_LOGGER
-                .syserr("Not same size " + read + " != " + write);
+            SysErrLogger.FAKE_LOGGER.syserr(
+                "Not same size " + read + " != " + write);
           }
           size -= read;
           position += read;
@@ -149,8 +149,8 @@ public class FileUtilsPerfTest {
         fileChannelOut.force(false);
         fileChannelOut.close();
         stop = System.currentTimeMillis();
-        SysErrLogger.FAKE_LOGGER
-            .sysout("Copy FC Buffer Time: " + (stop - start));
+        SysErrLogger.FAKE_LOGGER.sysout(
+            "Copy FC Buffer Time: " + (stop - start));
         assertEquals(file1.length(), file2.length());
         assertEquals(SIZE_FROM_BUF * FileUtils.ZERO_COPY_CHUNK_SIZE, position);
         file2.delete();

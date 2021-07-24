@@ -267,7 +267,7 @@ public class GUID implements Comparable<GUID> {
    * @return the Base32 representation (default of toString)
    */
   @JsonIgnore
-  public String toBase32() {
+  public final String toBase32() {
     return BaseXx.getBase32(bguid);
   }
 
@@ -275,7 +275,7 @@ public class GUID implements Comparable<GUID> {
    * @return the Base64 representation (default of toString)
    */
   @JsonIgnore
-  public String toBase64() {
+  public final String toBase64() {
     return BaseXx.getBase64UrlWithoutPadding(bguid);
   }
 
@@ -283,7 +283,7 @@ public class GUID implements Comparable<GUID> {
    * @return the Hexadecimal representation
    */
   @JsonIgnore
-  public String toHex() {
+  public final String toHex() {
     return BaseXx.getBase16(bguid);
   }
 
@@ -291,7 +291,7 @@ public class GUID implements Comparable<GUID> {
    * @return the Ark representation of this GUID
    */
   @JsonIgnore
-  public String toArk() {
+  public final String toArk() {
     return new StringBuilder(ARK).append(getTenantId()).append('/')
                                  .append(toArkName()).toString();
   }
@@ -300,7 +300,7 @@ public class GUID implements Comparable<GUID> {
    * @return the String representation of this GUID
    */
   @JsonGetter("id")
-  public String getId() {
+  public final String getId() {
     return toString();
   }
 
@@ -499,18 +499,18 @@ public class GUID implements Comparable<GUID> {
    * @return raw byte array of GUID
    */
   @JsonIgnore
-  public byte[] getBytes() {
+  public final byte[] getBytes() {
     return Arrays.copyOf(bguid, bguid.length);
   }
 
   @Override
   @JsonIgnore
-  public int hashCode() {
+  public final int hashCode() {
     return Arrays.hashCode(bguid);
   }
 
   @Override
-  public boolean equals(final Object o) {
+  public final boolean equals(final Object o) {
     if (!(o instanceof GUID)) {
       return false;
     }
@@ -518,7 +518,7 @@ public class GUID implements Comparable<GUID> {
   }
 
   @Override
-  public int compareTo(final GUID guid) {
+  public final int compareTo(final GUID guid) {
     final int id = getTenantId();
     final int id2 = guid.getTenantId();
     if (id != id2) {

@@ -52,8 +52,8 @@ public final class BaseXx {
    * @throws IllegalArgumentException if argument is not compatible
    */
   public static String getBase16(final byte[] bytes) {
-    ParametersChecker
-        .checkParameter(ARGUMENT_NULL_NOT_ALLOWED, bytes, NOT_NULL);
+    ParametersChecker.checkParameter(ARGUMENT_NULL_NOT_ALLOWED, bytes,
+                                     NOT_NULL);
     return BASE16.encode(bytes);
   }
 
@@ -65,8 +65,8 @@ public final class BaseXx {
    * @throws IllegalArgumentException if argument is not compatible
    */
   public static String getBase32(final byte[] bytes) {
-    ParametersChecker
-        .checkParameter(ARGUMENT_NULL_NOT_ALLOWED, bytes, NOT_NULL);
+    ParametersChecker.checkParameter(ARGUMENT_NULL_NOT_ALLOWED, bytes,
+                                     NOT_NULL);
     return BASE32.encode(bytes);
   }
 
@@ -78,8 +78,8 @@ public final class BaseXx {
    * @throws IllegalArgumentException if argument is not compatible
    */
   public static String getBase64UrlWithoutPadding(final byte[] bytes) {
-    ParametersChecker
-        .checkParameter(ARGUMENT_NULL_NOT_ALLOWED, bytes, NOT_NULL);
+    ParametersChecker.checkParameter(ARGUMENT_NULL_NOT_ALLOWED, bytes,
+                                     NOT_NULL);
     return BASE64_URL_WITHOUT_PADDING.encode(bytes);
   }
 
@@ -91,8 +91,8 @@ public final class BaseXx {
    * @throws IllegalArgumentException if argument is not compatible
    */
   public static String getBase64UrlWithPadding(final byte[] bytes) {
-    ParametersChecker
-        .checkParameter(ARGUMENT_NULL_NOT_ALLOWED, bytes, NOT_NULL);
+    ParametersChecker.checkParameter(ARGUMENT_NULL_NOT_ALLOWED, bytes,
+                                     NOT_NULL);
     return BASE64_URL_WITH_PADDING.encode(bytes);
   }
 
@@ -104,8 +104,8 @@ public final class BaseXx {
    * @throws IllegalArgumentException if argument is not compatible
    */
   public static String getBase64(final byte[] bytes) {
-    ParametersChecker
-        .checkParameter(ARGUMENT_NULL_NOT_ALLOWED, bytes, NOT_NULL);
+    ParametersChecker.checkParameter(ARGUMENT_NULL_NOT_ALLOWED, bytes,
+                                     NOT_NULL);
     return BASE64.encode(bytes);
   }
 

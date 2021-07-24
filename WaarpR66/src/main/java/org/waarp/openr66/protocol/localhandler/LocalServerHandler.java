@@ -143,9 +143,8 @@ public final class LocalServerHandler {
             "No LocalChannelReference at " + packet.getClass().getName(),
             ErrorCode.ConnectionImpossible.getCode(),
             ErrorPacket.FORWARDCLOSECODE);
-        ChannelUtils
-            .writeAbstractLocalPacket(localChannelReference, errorPacket,
-                                      false);
+        ChannelUtils.writeAbstractLocalPacket(localChannelReference,
+                                              errorPacket, false);
         if (Configuration.configuration.getR66Mib() != null) {
           Configuration.configuration.getR66Mib()
                                      .notifyWarning("No LocalChannelReference",
@@ -171,8 +170,8 @@ public final class LocalServerHandler {
                          ((DataPacket) packet).getPacketRank(),
                          serverHandler.getSession().getRunner().getRank());
           }
-          ((DataPacket) packet)
-              .createByteBufFromRecv(serverHandler.getSession());
+          ((DataPacket) packet).createByteBufFromRecv(
+              serverHandler.getSession());
           logger.debug("DATA RANK: {} : {} for {} bytes",
                        ((DataPacket) packet).getPacketRank(),
                        serverHandler.getSession().getRunner().getRank(),
@@ -386,8 +385,8 @@ public final class LocalServerHandler {
       ChannelCloseTimer.closeFutureTransaction(serverHandler);
       return;
     }
-    final OpenR66Exception exception = OpenR66ExceptionTrappedFactory
-        .getExceptionFromTrappedException(
+    final OpenR66Exception exception =
+        OpenR66ExceptionTrappedFactory.getExceptionFromTrappedException(
             serverHandler.getLocalChannelReference() != null?
                 serverHandler.getLocalChannelReference().getNetworkChannel() :
                 null, cause);

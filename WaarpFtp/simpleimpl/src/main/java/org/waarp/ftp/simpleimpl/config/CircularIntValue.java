@@ -25,7 +25,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Circular Value used by passive connections to find the next valid port to
  * propose to the client.
  */
-class CircularIntValue {
+final class CircularIntValue {
   private final Object syncObject = new Object();
   /**
    * Min value
@@ -59,7 +59,7 @@ class CircularIntValue {
    *
    * @return the next value
    */
-  public int getNext() {
+  public final int getNext() {
     synchronized (syncObject) {
       if (!current.compareAndSet(max, min)) {
         current.incrementAndGet();

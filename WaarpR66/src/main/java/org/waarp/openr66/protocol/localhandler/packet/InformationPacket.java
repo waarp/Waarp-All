@@ -91,13 +91,13 @@ public class InformationPacket extends AbstractLocalPacket {
   }
 
   @Override
-  public boolean hasGlobalBuffer() {
+  public final boolean hasGlobalBuffer() {
     return true;
   }
 
   @Override
-  public void createAllBuffers(final LocalChannelReference lcr,
-                               final int networkHeader)
+  public final void createAllBuffers(final LocalChannelReference lcr,
+                                     final int networkHeader)
       throws OpenR66ProtocolPacketException {
     if (rulename == null) {
       throw new OpenR66ProtocolPacketException(NOT_ENOUGH_DATA);
@@ -126,12 +126,12 @@ public class InformationPacket extends AbstractLocalPacket {
   }
 
   @Override
-  public byte getType() {
+  public final byte getType() {
     return LocalPacketFactory.INFORMATIONPACKET;
   }
 
   @Override
-  public String toString() {
+  public final String toString() {
     return "InformationPacket: " + requestedInfo + ' ' + rulename + ' ' +
            filename;
   }
@@ -139,21 +139,21 @@ public class InformationPacket extends AbstractLocalPacket {
   /**
    * @return the requestId
    */
-  public byte getRequest() {
+  public final byte getRequest() {
     return requestedInfo;
   }
 
   /**
    * @return the rulename
    */
-  public String getRulename() {
+  public final String getRulename() {
     return rulename;
   }
 
   /**
    * @return the filename
    */
-  public String getFilename() {
+  public final String getFilename() {
     if (filename != null) {
       return filename;
     } else {

@@ -34,7 +34,7 @@ import java.util.List;
  */
 public class STAT extends AbstractCommand {
   @Override
-  public void exec() throws CommandAbstractException {
+  public final void exec() throws CommandAbstractException {
     final String path;
     String message;
     message = "STATUS information\nNo FtpFile currently in transfer\n";
@@ -64,8 +64,8 @@ public class STAT extends AbstractCommand {
                  " Binded: " + getConfiguration().getFtpInternalConfiguration()
                                                  .getNbBindedPassive();
       message += "\nEnd of Status";
-      getSession()
-          .setReplyCode(ReplyCode.REPLY_211_SYSTEM_STATUS_REPLY, message);
+      getSession().setReplyCode(ReplyCode.REPLY_211_SYSTEM_STATUS_REPLY,
+                                message);
     } else {
       // List of files from path
       path = getArg();

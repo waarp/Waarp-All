@@ -163,9 +163,10 @@ class FseTableReader {
       }
     }
 
-    final int position = FseCompressionTable
-        .spreadSymbols(normalizedCounters, maxSymbol, tableSize, highThreshold,
-                       table.symbol);
+    final int position =
+        FseCompressionTable.spreadSymbols(normalizedCounters, maxSymbol,
+                                          tableSize, highThreshold,
+                                          table.symbol);
 
     // position must reach all cells once, otherwise normalizedCounter is incorrect
     Util.verify(position == 0, input, "Input is corrupted");

@@ -131,8 +131,9 @@ public abstract class TestAbstract extends TestAbstractMinimal {
     logger.warn("Start connection for Extra commands {} \n\t{}",
                 informationPacket.getClass().getSimpleName(),
                 informationPacket);
-    final LocalChannelReference localChannelReference = networkTransaction
-        .createConnectionWithRetry(socketServerAddress, isSsl, future);
+    final LocalChannelReference localChannelReference =
+        networkTransaction.createConnectionWithRetry(socketServerAddress, isSsl,
+                                                     future);
     if (localChannelReference == null) {
       if (state != R66FiniteDualStates.SHUTDOWN) {
         fail("Connection not OK");
@@ -142,9 +143,8 @@ public abstract class TestAbstract extends TestAbstractMinimal {
     }
     localChannelReference.sessionNewState(state);
     logger.warn("Send {}", informationPacket);
-    ChannelUtils
-        .writeAbstractLocalPacket(localChannelReference, informationPacket,
-                                  false);
+    ChannelUtils.writeAbstractLocalPacket(localChannelReference,
+                                          informationPacket, false);
     if (informationPacket instanceof KeepAlivePacket ||
         informationPacket instanceof NoOpPacket) {
       // do no await
@@ -236,13 +236,13 @@ public abstract class TestAbstract extends TestAbstractMinimal {
           R66Server.main(new String[] { file2.getAbsolutePath() });
           logger.warn("Start Done");
         } else {
-          System.err
-              .println("Cannot find server file: " + file2.getAbsolutePath());
+          System.err.println(
+              "Cannot find server file: " + file2.getAbsolutePath());
         }
       }
     } else {
-      System.err
-          .println("Cannot find serverInit file: " + file.getAbsolutePath());
+      System.err.println(
+          "Cannot find serverInit file: " + file.getAbsolutePath());
     }
   }
 
@@ -263,9 +263,8 @@ public abstract class TestAbstract extends TestAbstractMinimal {
     if (clientConfigFile.isFile()) {
       System.err.println(
           "Find serverInit file: " + clientConfigFile.getAbsolutePath());
-      if (!FileBasedConfiguration
-          .setClientConfigurationFromXml(Configuration.configuration,
-                                         clientConfigFile.getAbsolutePath())) {
+      if (!FileBasedConfiguration.setClientConfigurationFromXml(
+          Configuration.configuration, clientConfigFile.getAbsolutePath())) {
         logger.error("Needs a correct configuration file as first argument");
         return;
       }
@@ -315,9 +314,9 @@ public abstract class TestAbstract extends TestAbstractMinimal {
   @Before
   public void setUp() throws Exception {
     Configuration.configuration.setTimeoutCon(10000);
-    Configuration.configuration
-        .changeNetworkLimit(1000000000, 1000000000, 1000000000, 1000000000,
-                            1000);
+    Configuration.configuration.changeNetworkLimit(1000000000, 1000000000,
+                                                   1000000000, 1000000000,
+                                                   1000);
   }
 
   @After

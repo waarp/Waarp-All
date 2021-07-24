@@ -50,9 +50,9 @@ public class MoveTask extends AbstractTask {
   }
 
   @Override
-  public void run() {
-    logger
-        .info("Move with " + argRule + ':' + argTransfer + " and {}", session);
+  public final void run() {
+    logger.info("Move with " + argRule + ':' + argTransfer + " and {}",
+                session);
     String directory = argRule;
     directory = getReplacedValue(directory, BLANK.split(argTransfer)).trim()
                                                                      .replace(

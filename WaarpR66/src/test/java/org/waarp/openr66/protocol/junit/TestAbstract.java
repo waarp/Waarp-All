@@ -124,8 +124,9 @@ public abstract class TestAbstract extends TestAbstractMinimal {
     logger.warn("Start connection for Extra commands {} \n\t{}",
                 informationPacket.getClass().getSimpleName(),
                 informationPacket);
-    final LocalChannelReference localChannelReference = networkTransaction
-        .createConnectionWithRetry(socketServerAddress, isSsl, future);
+    final LocalChannelReference localChannelReference =
+        networkTransaction.createConnectionWithRetry(socketServerAddress, isSsl,
+                                                     future);
     if (localChannelReference == null) {
       if (state != R66FiniteDualStates.SHUTDOWN) {
         fail("Connection not OK");
@@ -135,9 +136,8 @@ public abstract class TestAbstract extends TestAbstractMinimal {
     }
     localChannelReference.sessionNewState(state);
     logger.warn("Send {}", informationPacket);
-    ChannelUtils
-        .writeAbstractLocalPacket(localChannelReference, informationPacket,
-                                  false);
+    ChannelUtils.writeAbstractLocalPacket(localChannelReference,
+                                          informationPacket, false);
     if (informationPacket instanceof KeepAlivePacket ||
         informationPacket instanceof NoOpPacket) {
       // do no await
@@ -235,11 +235,11 @@ public abstract class TestAbstract extends TestAbstractMinimal {
     desiredCapabilities.setCapability(
         PhantomJSDriverService.PHANTOMJS_EXECUTABLE_PATH_PROPERTY,
         System.getProperty("phantomjs.binary.path"));
-    desiredCapabilities
-        .setCapability(CapabilityType.ELEMENT_SCROLL_BEHAVIOR, true);
+    desiredCapabilities.setCapability(CapabilityType.ELEMENT_SCROLL_BEHAVIOR,
+                                      true);
     desiredCapabilities.setCapability(CapabilityType.TAKES_SCREENSHOT, false);
-    desiredCapabilities
-        .setCapability(CapabilityType.ENABLE_PROFILING_CAPABILITY, false);
+    desiredCapabilities.setCapability(
+        CapabilityType.ENABLE_PROFILING_CAPABILITY, false);
     LoggingPreferences logPrefs = new LoggingPreferences();
     logPrefs.enable(LogType.BROWSER, Level.OFF);
     logPrefs.enable(LogType.CLIENT, Level.OFF);
@@ -249,17 +249,17 @@ public abstract class TestAbstract extends TestAbstractMinimal {
     logPrefs.enable(LogType.SERVER, Level.OFF);
     desiredCapabilities.setCapability(CapabilityType.LOGGING_PREFS, logPrefs);
     desiredCapabilities.setCapability(CapabilityType.HAS_NATIVE_EVENTS, true);
-    desiredCapabilities
-        .setCapability(PhantomJSDriverService.PHANTOMJS_GHOSTDRIVER_CLI_ARGS,
-                       "--webdriver-loglevel=NONE");
+    desiredCapabilities.setCapability(
+        PhantomJSDriverService.PHANTOMJS_GHOSTDRIVER_CLI_ARGS,
+        "--webdriver-loglevel=NONE");
     desiredCapabilities.setJavascriptEnabled(true);
 
     ArrayList<String> cliArgs = new ArrayList<String>();
     cliArgs.add("--web-security=true");
     cliArgs.add("--ignore-ssl-errors=true");
     cliArgs.add("--webdriver-loglevel=NONE");
-    desiredCapabilities
-        .setCapability(PhantomJSDriverService.PHANTOMJS_CLI_ARGS, cliArgs);
+    desiredCapabilities.setCapability(PhantomJSDriverService.PHANTOMJS_CLI_ARGS,
+                                      cliArgs);
 
     PhantomJSDriver phantomJSDriver = new PhantomJSDriver(desiredCapabilities);
     phantomJSDriver.setLogLevel(Level.OFF);
@@ -396,11 +396,10 @@ public abstract class TestAbstract extends TestAbstractMinimal {
     }
     logger.warn("Will try to load {}", clientConfigFile);
     if (clientConfigFile.isFile()) {
-      logger
-          .debug("Find serverInit file: " + clientConfigFile.getAbsolutePath());
-      if (!FileBasedConfiguration
-          .setClientConfigurationFromXml(Configuration.configuration,
-                                         clientConfigFile.getAbsolutePath())) {
+      logger.debug(
+          "Find serverInit file: " + clientConfigFile.getAbsolutePath());
+      if (!FileBasedConfiguration.setClientConfigurationFromXml(
+          Configuration.configuration, clientConfigFile.getAbsolutePath())) {
         logger.error("Needs a correct configuration file as first argument");
         return;
       }
@@ -451,9 +450,9 @@ public abstract class TestAbstract extends TestAbstractMinimal {
   @Before
   public void setUp() throws Exception {
     Configuration.configuration.setTimeoutCon(10000);
-    Configuration.configuration
-        .changeNetworkLimit(1000000000, 1000000000, 1000000000, 1000000000,
-                            1000);
+    Configuration.configuration.changeNetworkLimit(1000000000, 1000000000,
+                                                   1000000000, 1000000000,
+                                                   1000);
   }
 
   @After

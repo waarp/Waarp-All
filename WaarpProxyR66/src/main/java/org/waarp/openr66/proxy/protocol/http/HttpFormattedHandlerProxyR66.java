@@ -85,19 +85,20 @@ public class HttpFormattedHandlerProxyR66 extends HttpFormattedHandler {
      *
      * @return the content of the unique file
      */
-    public String readFileUnique(final HttpFormattedHandlerProxyR66 handler) {
+    public final String readFileUnique(
+        final HttpFormattedHandlerProxyR66 handler) {
       return handler.readFileHeaderInternal(
           configuration.getHttpBasePath() + MONITOR + header);
     }
 
-    public String readHeader(final HttpFormattedHandlerProxyR66 handler) {
+    public final String readHeader(final HttpFormattedHandlerProxyR66 handler) {
       return handler.readFileHeaderInternal(
           configuration.getHttpBasePath() + MONITOR + header);
     }
 
-    public String readEnd() {
-      return WaarpStringUtils
-          .readFile(configuration.getHttpBasePath() + MONITOR + end);
+    public final String readEnd() {
+      return WaarpStringUtils.readFile(
+          configuration.getHttpBasePath() + MONITOR + end);
     }
   }
 
@@ -151,9 +152,9 @@ public class HttpFormattedHandlerProxyR66 extends HttpFormattedHandler {
     logger.debug("Msg: {}", uriRequest);
     if (uriRequest.contains("gre/") || uriRequest.contains("img/") ||
         uriRequest.contains("res/") || uriRequest.contains("favicon.ico")) {
-      HttpWriteCacheEnable
-          .writeFile(request, ctx, configuration.getHttpBasePath() + uriRequest,
-                     "XYZR66NOSESSION");
+      HttpWriteCacheEnable.writeFile(request, ctx,
+                                     configuration.getHttpBasePath() +
+                                     uriRequest, "XYZR66NOSESSION");
       return;
     }
     char cval = 'z';
@@ -200,8 +201,9 @@ public class HttpFormattedHandlerProxyR66 extends HttpFormattedHandler {
   @Override
   public void exceptionCaught(final ChannelHandlerContext ctx,
                               final Throwable cause) {
-    final OpenR66Exception exception = OpenR66ExceptionTrappedFactory
-        .getExceptionFromTrappedException(ctx.channel(), cause);
+    final OpenR66Exception exception =
+        OpenR66ExceptionTrappedFactory.getExceptionFromTrappedException(
+            ctx.channel(), cause);
     if (exception != null) {
       if (!(exception instanceof OpenR66ProtocolBusinessNoWriteBackException)) {
         if (cause instanceof IOException) {

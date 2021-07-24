@@ -75,11 +75,30 @@ class FrameHeader {
 
   @Override
   public String toString() {
-    return new StringBuilder(FrameHeader.class.getSimpleName() + "[")
-        .append("headerSize=").append(headerSize).append(", ")
-        .append("windowSize=").append(windowSize).append(", ")
-        .append("contentSize=").append(contentSize).append(", ")
-        .append("dictionaryId=").append(dictionaryId).append(", ")
-        .append("hasChecksum=").append(hasChecksum).append("]").toString();
+    return new StringBuilder(FrameHeader.class.getSimpleName() + "[").append(
+                                                                         "headerSize=").append(headerSize).append(", ").append("windowSize=")
+                                                                     .append(
+                                                                         windowSize)
+                                                                     .append(
+                                                                         ", ")
+                                                                     .append(
+                                                                         "contentSize=")
+                                                                     .append(
+                                                                         contentSize)
+                                                                     .append(
+                                                                         ", ")
+                                                                     .append(
+                                                                         "dictionaryId=")
+                                                                     .append(
+                                                                         dictionaryId)
+                                                                     .append(
+                                                                         ", ")
+                                                                     .append(
+                                                                         "hasChecksum=")
+                                                                     .append(
+                                                                         hasChecksum)
+                                                                     .append(
+                                                                         "]")
+                                                                     .toString();
   }
 }

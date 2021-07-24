@@ -118,8 +118,8 @@ public class FtpDataInitializer extends ChannelInitializer<SocketChannel> {
         dataBusinessHandler.getDeclaredConstructor().newInstance();
     final DataNetworkHandler newNetworkHandler =
         new DataNetworkHandler(configuration, newbusiness, isActive);
-    pipeline
-        .addLast(configuration.getFtpInternalConfiguration().getDataExecutor(),
-                 HANDLER, newNetworkHandler);
+    pipeline.addLast(
+        configuration.getFtpInternalConfiguration().getDataExecutor(), HANDLER,
+        newNetworkHandler);
   }
 }

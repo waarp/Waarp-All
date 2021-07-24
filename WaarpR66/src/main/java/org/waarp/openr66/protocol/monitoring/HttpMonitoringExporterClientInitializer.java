@@ -39,7 +39,7 @@ public class HttpMonitoringExporterClientInitializer
 
   @Override
   protected void initChannel(final SocketChannel ch) throws Exception {
-    ChannelPipeline pipeline = ch.pipeline();
+    final ChannelPipeline pipeline = ch.pipeline();
 
     if (sslCtx != null) {
       pipeline.addLast("ssl", sslCtx.newHandler(ch.alloc()));

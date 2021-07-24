@@ -182,8 +182,8 @@ public class FileBasedConfiguration {
   private static boolean loadServerParam(final Configuration config) {
     XmlHash hashConfigSub = new XmlHash(hashConfig.get(XML_SERVER));
     try {
-      return org.waarp.openr66.configuration.FileBasedConfiguration
-          .loadServerConfig(config, hashConfigSub);
+      return org.waarp.openr66.configuration.FileBasedConfiguration.loadServerConfig(
+          config, hashConfigSub);
     } finally {
       hashConfigSub.clear();
       hashConfigSub = null;

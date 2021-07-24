@@ -62,22 +62,22 @@ public abstract class DbModelMysql extends DbModelCommonMariadbMySql {
       extends DbModelAbstract.DbTypeResolver {
 
     @Override
-    public String getType(final int sqlType) {
+    public final String getType(final int sqlType) {
       return DBType.getType(sqlType);
     }
 
     @Override
-    public String getCreateTable() {
+    public final String getCreateTable() {
       return "CREATE TABLE IF NOT EXISTS ";
     }
 
     @Override
-    public String getCreateIndex() {
+    public final String getCreateIndex() {
       return "CREATE INDEX ";
     }
 
     @Override
-    public DbType getDbType() {
+    public final DbType getDbType() {
       return type;
     }
   }
@@ -90,7 +90,7 @@ public abstract class DbModelMysql extends DbModelCommonMariadbMySql {
   protected DbConnectionPool pool;
 
   @Override
-  public DbType getDbType() {
+  public final DbType getDbType() {
     return type;
   }
 
@@ -108,15 +108,15 @@ public abstract class DbModelMysql extends DbModelCommonMariadbMySql {
         Class.forName(MYSQL_DRIVER_JRE8);
         mysqlConnectionPoolDataSourceClass =
             Class.forName(MYSQL_CONNECTION_POOL_DATA_SOURCE_JRE8);
-      } catch (Exception e) {
+      } catch (final Exception e) {
         try {
           mysqlConnectionPoolDataSourceClass =
               Class.forName(MYSQL_CONNECTION_POOL_DATA_SOURCE_JRE6);
-        } catch (ClassNotFoundException classNotFoundException) {
+        } catch (final ClassNotFoundException classNotFoundException) {
           try {
             mysqlConnectionPoolDataSourceClass =
                 Class.forName(MYSQL_CONNECTION_POOL_DATA_SOURCE_JRE8);
-          } catch (ClassNotFoundException e2) {
+          } catch (final ClassNotFoundException e2) {
             logger.error(CANNOT_INITIALIZE_MYSQL_CONNECTION_POOL_DATA_SOURCE);
             throw new WaarpDatabaseNoConnectionException(
                 CANNOT_INITIALIZE_MYSQL_CONNECTION_POOL_DATA_SOURCE, e);
@@ -127,7 +127,7 @@ public abstract class DbModelMysql extends DbModelCommonMariadbMySql {
       try {
         mysqlConnectionPoolDataSourceClass =
             Class.forName(MYSQL_CONNECTION_POOL_DATA_SOURCE_JRE6);
-      } catch (ClassNotFoundException e) {
+      } catch (final ClassNotFoundException e) {
         logger.error(CANNOT_INITIALIZE_MYSQL_CONNECTION_POOL_DATA_SOURCE);
         throw new WaarpDatabaseNoConnectionException(
             CANNOT_INITIALIZE_MYSQL_CONNECTION_POOL_DATA_SOURCE, e);
@@ -135,16 +135,16 @@ public abstract class DbModelMysql extends DbModelCommonMariadbMySql {
     }
     try {
       final ConnectionPoolDataSource cpds =
-          (ConnectionPoolDataSource) WaarpSystemUtil
-              .newInstance(mysqlConnectionPoolDataSourceClass);
-      Method method = mysqlConnectionPoolDataSourceClass
-          .getMethod("setUrl", dbServer.getClass());
+          (ConnectionPoolDataSource) WaarpSystemUtil.newInstance(
+              mysqlConnectionPoolDataSourceClass);
+      Method method = mysqlConnectionPoolDataSourceClass.getMethod("setUrl",
+                                                                   dbServer.getClass());
       method.invoke(cpds, dbServer);
-      method = mysqlConnectionPoolDataSourceClass
-          .getMethod("setUser", dbUser.getClass());
+      method = mysqlConnectionPoolDataSourceClass.getMethod("setUser",
+                                                            dbUser.getClass());
       method.invoke(cpds, dbUser);
-      method = mysqlConnectionPoolDataSourceClass
-          .getMethod("setPassword", dbPwd.getClass());
+      method = mysqlConnectionPoolDataSourceClass.getMethod("setPassword",
+                                                            dbPwd.getClass());
       method.invoke(cpds, dbPwd);
       return cpds;
     } catch (final Exception e) {
@@ -223,7 +223,7 @@ public abstract class DbModelMysql extends DbModelCommonMariadbMySql {
   }
 
   @Override
-  public void releaseResources() {
+  public final void releaseResources() {
     if (pool != null) {
       try {
         pool.dispose();
@@ -243,8 +243,10 @@ public abstract class DbModelMysql extends DbModelCommonMariadbMySql {
   }
 
   @Override
-  public Connection getDbConnection(final String server, final String user,
-                                    final String passwd) throws SQLException {
+  public final Connection getDbConnection(final String server,
+                                          final String user,
+                                          final String passwd)
+      throws SQLException {
     synchronized (this) {
       if (pool != null) {
         try {

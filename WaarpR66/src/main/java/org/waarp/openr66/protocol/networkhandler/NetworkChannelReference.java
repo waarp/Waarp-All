@@ -120,11 +120,11 @@ public class NetworkChannelReference {
     this.isSSL = isSSL;
   }
 
-  public boolean isSSL() {
+  public final boolean isSSL() {
     return isSSL;
   }
 
-  public void add(final LocalChannelReference localChannel)
+  public final void add(final LocalChannelReference localChannel)
       throws OpenR66ProtocolRemoteShutdownException {
     // lock is of no use since caller is itself in locked situation for the very same lock
     if (isShuttingDown) {
@@ -138,7 +138,7 @@ public class NetworkChannelReference {
   /**
    * To set the last time used
    */
-  public void use() {
+  public final void use() {
     if (!isShuttingDown) {
       lastTimeUsed = System.currentTimeMillis();
     }
@@ -149,7 +149,7 @@ public class NetworkChannelReference {
    *
    * @return True if last time used is set
    */
-  public boolean useIfUsed() {
+  public final boolean useIfUsed() {
     if (!isShuttingDown && !localChannelReferences.isEmpty()) {
       lastTimeUsed = System.currentTimeMillis();
       return true;
@@ -162,7 +162,7 @@ public class NetworkChannelReference {
    *
    * @param localChannel
    */
-  public void closeAndRemove(final LocalChannelReference localChannel) {
+  public final void closeAndRemove(final LocalChannelReference localChannel) {
     if (!localChannel.getFutureRequest().isDone()) {
       localChannel.close();
     }
@@ -174,7 +174,7 @@ public class NetworkChannelReference {
    *
    * @param localChannel
    */
-  public void remove(final LocalChannelReference localChannel) {
+  public final void remove(final LocalChannelReference localChannel) {
     localChannelReferences.remove(localChannel);
     // Do not since it prevents shutdown: lastTimeUsed = System.currentTimeMillis()
   }
@@ -182,7 +182,7 @@ public class NetworkChannelReference {
   /**
    * Shutdown All Local Channels associated with this NCR
    */
-  public void shutdownAllLocalChannels() {
+  public final void shutdownAllLocalChannels() {
     lock.lock(Configuration.WAITFORNETOP, TimeUnit.MILLISECONDS);
     try {
       logger.info("Will shutdown all local channels");
@@ -240,7 +240,7 @@ public class NetworkChannelReference {
    *
    * @return True if the localChannelReference is the only one still active or there is no more LCR
    */
-  public boolean isLastLocalChannelActive(
+  public final boolean isLastLocalChannelActive(
       final LocalChannelReference localChannelReference) {
     final boolean someActive = isSomeLocalChannelsActive();
     return
@@ -252,7 +252,7 @@ public class NetworkChannelReference {
   /**
    * @return -1 if not allowed, 0 if allowed, else time in ms before ready to recheck
    */
-  public long shutdownAllowed() {
+  public final long shutdownAllowed() {
     lock.lock(Configuration.WAITFORNETOP, TimeUnit.MILLISECONDS);
     try {
       logger.debug("NC count: {}", this);
@@ -261,7 +261,7 @@ public class NetworkChannelReference {
         for (int i = 0; i < RETRYNB; i++) {
           try {
             Thread.sleep(RETRYINMS);
-          } catch (InterruptedException e) { // NOSONAR
+          } catch (final InterruptedException e) { // NOSONAR
             SysErrLogger.FAKE_LOGGER.ignoreLog(e);
           }
           if (nbLocalChannels() != 0) {
@@ -293,22 +293,22 @@ public class NetworkChannelReference {
     }
   }
 
-  public void lockNetwork() {
+  public final void lockNetwork() {
     lock.lock(Configuration.WAITFORNETOP, TimeUnit.MILLISECONDS);
   }
 
-  public void unlockNetwork() {
+  public final void unlockNetwork() {
     lock.unlock();
   }
 
-  public int nbLocalChannels() {
+  public final int nbLocalChannels() {
     return localChannelReferences.size();
   }
 
   /**
    * @return True if at least one LocalChannel is not yet finished (OK or Error)
    */
-  public boolean isSomeLocalChannelsActive() {
+  public final boolean isSomeLocalChannelsActive() {
     lock.lock(Configuration.WAITFORNETOP, TimeUnit.MILLISECONDS);
     try {
       for (final LocalChannelReference localChannelReference : localChannelReferences) {
@@ -328,13 +328,13 @@ public class NetworkChannelReference {
   }
 
   @Override
-  public String toString() {
+  public final String toString() {
     return "NC: " + hostId + ':' + (channel != null && channel.isActive()) +
            ' ' + networkAddress + " Count: " + localChannelReferences.size();
   }
 
   @Override
-  public boolean equals(final Object obj) {
+  public final boolean equals(final Object obj) {
     if (obj instanceof NetworkChannelReference) {
       final NetworkChannelReference obj2 = (NetworkChannelReference) obj;
       if (obj2.channel == null || channel == null) {
@@ -346,7 +346,7 @@ public class NetworkChannelReference {
   }
 
   @Override
-  public int hashCode() {
+  public final int hashCode() {
     if (channel == null) {
       return Integer.MIN_VALUE;
     }
@@ -356,7 +356,7 @@ public class NetworkChannelReference {
   /**
    * @return the hashcode for the global remote networkaddress
    */
-  public int getSocketHashCode() {
+  public final int getSocketHashCode() {
     return networkAddress.hashCode();
   }
 
@@ -365,7 +365,7 @@ public class NetworkChannelReference {
    *
    * @return the hashcode for the address
    */
-  public int getAddressHashCode() {
+  public final int getAddressHashCode() {
     return hostAddress.hashCode();
   }
 
@@ -379,42 +379,42 @@ public class NetworkChannelReference {
    * @return <= 0 if OK, else > 0 (should send a KeepAlive or wait that time
    *     in ms)
    */
-  public long checkLastTime(final long delay) {
+  public final long checkLastTime(final long delay) {
     return lastTimeUsed + delay - System.currentTimeMillis();
   }
 
   /**
    * @return the isShuttingDown
    */
-  public boolean isShuttingDown() {
+  public final boolean isShuttingDown() {
     return isShuttingDown;
   }
 
   /**
    * @return the channel
    */
-  public Channel channel() {
+  public final Channel channel() {
     return channel;
   }
 
   /**
    * @return the hostId
    */
-  public String getHostId() {
+  public final String getHostId() {
     return hostId;
   }
 
   /**
    * @param hostId the hostId to set
    */
-  public void setHostId(final String hostId) {
+  public final void setHostId(final String hostId) {
     this.hostId = hostId;
   }
 
   /**
    * @return the lastTimeUsed
    */
-  public long getLastTimeUsed() {
+  public final long getLastTimeUsed() {
     return lastTimeUsed;
   }
 

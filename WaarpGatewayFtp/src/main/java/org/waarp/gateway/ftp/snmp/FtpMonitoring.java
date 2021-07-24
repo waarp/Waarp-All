@@ -58,9 +58,9 @@ public class FtpMonitoring implements WaarpInterfaceMonitor {
   // Internal data
   private final DbSession dbSession;
   private final TrafficCounter trafficCounter =
-      FileBasedConfiguration.fileBasedConfiguration
-          .getFtpInternalConfiguration().getGlobalTrafficShapingHandler()
-          .trafficCounter();
+      FileBasedConfiguration.fileBasedConfiguration.getFtpInternalConfiguration()
+                                                   .getGlobalTrafficShapingHandler()
+                                                   .trafficCounter();
 
   public long nbCountInfoUnknown;
   public long nbCountInfoNotUpdated;
@@ -124,27 +124,31 @@ public class FtpMonitoring implements WaarpInterfaceMonitor {
   }
 
   @Override
-  public void setAgent(final WaarpSnmpAgent agent) {
+  public final void setAgent(final WaarpSnmpAgent agent) {
     this.agent = agent;
     lastInActiveTransfer = this.agent.getUptimeSystemTime();
     lastOutActiveTransfer = this.agent.getUptimeSystemTime();
   }
 
   @Override
-  public void initialize() {
+  public final void initialize() {
     logger.debug("Initialize monitoring");
     try {
       // Overall status including past, future and current transfers
       countInfo = DbTransferLog.getCountInfoPrepareStatement(dbSession);
       // Count of Active/All In/Out transfers
-      countInActiveTransfer = DbTransferLog
-          .getCountInOutRunningPrepareStatement(dbSession, true, true);
-      countOutActiveTransfer = DbTransferLog
-          .getCountInOutRunningPrepareStatement(dbSession, false, true);
-      countInTotalTransfer = DbTransferLog
-          .getCountInOutRunningPrepareStatement(dbSession, true, false);
-      countOutTotalTransfer = DbTransferLog
-          .getCountInOutRunningPrepareStatement(dbSession, false, false);
+      countInActiveTransfer =
+          DbTransferLog.getCountInOutRunningPrepareStatement(dbSession, true,
+                                                             true);
+      countOutActiveTransfer =
+          DbTransferLog.getCountInOutRunningPrepareStatement(dbSession, false,
+                                                             true);
+      countInTotalTransfer =
+          DbTransferLog.getCountInOutRunningPrepareStatement(dbSession, true,
+                                                             false);
+      countOutTotalTransfer =
+          DbTransferLog.getCountInOutRunningPrepareStatement(dbSession, false,
+                                                             false);
 
       countInErrorTransfer =
           DbTransferLog.getCountInOutErrorPrepareStatement(dbSession, true);
@@ -160,7 +164,7 @@ public class FtpMonitoring implements WaarpInterfaceMonitor {
   }
 
   @Override
-  public void releaseResources() {
+  public final void releaseResources() {
     try {
       logger.debug("Release monitoring");
       // Overall status including past, future and current transfers
@@ -182,15 +186,14 @@ public class FtpMonitoring implements WaarpInterfaceMonitor {
   }
 
   private static final int REF421 =
-      ReplyCode.REPLY_421_SERVICE_NOT_AVAILABLE_CLOSING_CONTROL_CONNECTION
-          .ordinal();
+      ReplyCode.REPLY_421_SERVICE_NOT_AVAILABLE_CLOSING_CONTROL_CONNECTION.ordinal();
 
   /**
    * Update the reply code counter for other operations than a transfer
    *
    * @param code
    */
-  public void updateCodeNoTransfer(final ReplyCode code) {
+  public final void updateCodeNoTransfer(final ReplyCode code) {
     int i = code.ordinal();
     if (i >= REF421) {
       i -= REF421;
@@ -203,14 +206,14 @@ public class FtpMonitoring implements WaarpInterfaceMonitor {
   /**
    * Update the last InBound connection time
    */
-  public void updateLastInBound() {
+  public final void updateLastInBound() {
     lastInActiveTransfer = System.currentTimeMillis();
   }
 
   /**
    * Update the last OutBound connection time
    */
-  public void updateLastOutBand() {
+  public final void updateLastOutBand() {
     lastOutActiveTransfer = System.currentTimeMillis();
   }
 
@@ -220,7 +223,7 @@ public class FtpMonitoring implements WaarpInterfaceMonitor {
    * @param type
    * @param entry
    */
-  public void run(final int type, final int entry) {
+  public final void run(final int type, final int entry) {
     final long nbMs =
         FileBasedConfiguration.fileBasedConfiguration.getAgentSnmp()
                                                      .getUptime() + 100;
@@ -252,7 +255,7 @@ public class FtpMonitoring implements WaarpInterfaceMonitor {
    * @param rank
    * @param value
    */
-  protected void updateGlobalValue(final int rank, final long value) {
+  protected final void updateGlobalValue(final int rank, final long value) {
     ((FtpPrivateMib) agent.getMib()).rowGlobal.setValue(rank, value);
   }
 
@@ -262,7 +265,7 @@ public class FtpMonitoring implements WaarpInterfaceMonitor {
    * @param rank
    * @param value
    */
-  protected void updateDetailedValue(final int rank, final long value) {
+  protected final void updateDetailedValue(final int rank, final long value) {
     ((FtpPrivateMib) agent.getMib()).rowDetailed.setValue(rank, value);
   }
 
@@ -272,7 +275,7 @@ public class FtpMonitoring implements WaarpInterfaceMonitor {
    * @param rank
    * @param value
    */
-  protected void updateErrorValue(final int rank, final long value) {
+  protected final void updateErrorValue(final int rank, final long value) {
     ((FtpPrivateMib) agent.getMib()).rowError.setValue(rank, value);
   }
 
@@ -282,7 +285,8 @@ public class FtpMonitoring implements WaarpInterfaceMonitor {
    * @param nbMs
    * @param entry
    */
-  protected void run(final long nbMs, final WaarpGlobalValuesIndex entry) {
+  protected final void run(final long nbMs,
+                           final WaarpGlobalValuesIndex entry) {
     synchronized (trafficCounter) {
       long val;
       final long limitDate = System.currentTimeMillis() - nbMs;
@@ -297,35 +301,31 @@ public class FtpMonitoring implements WaarpInterfaceMonitor {
           case memoryUsed:
             return;
           case applInboundAssociations:
-            DbTransferLog
-                .finishSelectOrCountPrepareStatement(countInActiveTransfer,
-                                                     limitDate);
-            nbInActiveTransfer = DbTransferLog
-                .getResultCountPrepareStatement(countInActiveTransfer);
+            DbTransferLog.finishSelectOrCountPrepareStatement(
+                countInActiveTransfer, limitDate);
+            nbInActiveTransfer = DbTransferLog.getResultCountPrepareStatement(
+                countInActiveTransfer);
             updateGlobalValue(entry.ordinal(), nbInActiveTransfer);
             return;
           case applOutboundAssociations:
-            DbTransferLog
-                .finishSelectOrCountPrepareStatement(countOutActiveTransfer,
-                                                     limitDate);
-            nbOutActiveTransfer = DbTransferLog
-                .getResultCountPrepareStatement(countOutActiveTransfer);
+            DbTransferLog.finishSelectOrCountPrepareStatement(
+                countOutActiveTransfer, limitDate);
+            nbOutActiveTransfer = DbTransferLog.getResultCountPrepareStatement(
+                countOutActiveTransfer);
             updateGlobalValue(entry.ordinal(), nbOutActiveTransfer);
             return;
           case applAccumInboundAssociations:
-            DbTransferLog
-                .finishSelectOrCountPrepareStatement(countInTotalTransfer,
-                                                     limitDate);
-            nbInTotalTransfer = DbTransferLog
-                .getResultCountPrepareStatement(countInTotalTransfer);
+            DbTransferLog.finishSelectOrCountPrepareStatement(
+                countInTotalTransfer, limitDate);
+            nbInTotalTransfer = DbTransferLog.getResultCountPrepareStatement(
+                countInTotalTransfer);
             updateGlobalValue(entry.ordinal(), nbInTotalTransfer);
             return;
           case applAccumOutboundAssociations:
-            DbTransferLog
-                .finishSelectOrCountPrepareStatement(countOutTotalTransfer,
-                                                     limitDate);
-            nbOutTotalTransfer = DbTransferLog
-                .getResultCountPrepareStatement(countOutTotalTransfer);
+            DbTransferLog.finishSelectOrCountPrepareStatement(
+                countOutTotalTransfer, limitDate);
+            nbOutTotalTransfer = DbTransferLog.getResultCountPrepareStatement(
+                countOutTotalTransfer);
             updateGlobalValue(entry.ordinal(), nbOutTotalTransfer);
             return;
           case applLastInboundActivity:
@@ -343,19 +343,17 @@ public class FtpMonitoring implements WaarpInterfaceMonitor {
             updateGlobalValue(entry.ordinal(), val);
             return;
           case applRejectedInboundAssociations:
-            DbTransferLog
-                .finishSelectOrCountPrepareStatement(countInErrorTransfer,
-                                                     limitDate);
-            nbInErrorTransfer = DbTransferLog
-                .getResultCountPrepareStatement(countInErrorTransfer);
+            DbTransferLog.finishSelectOrCountPrepareStatement(
+                countInErrorTransfer, limitDate);
+            nbInErrorTransfer = DbTransferLog.getResultCountPrepareStatement(
+                countInErrorTransfer);
             updateGlobalValue(entry.ordinal(), nbInErrorTransfer);
             return;
           case applFailedOutboundAssociations:
-            DbTransferLog
-                .finishSelectOrCountPrepareStatement(countOutErrorTransfer,
-                                                     limitDate);
-            nbOutErrorTransfer = DbTransferLog
-                .getResultCountPrepareStatement(countOutErrorTransfer);
+            DbTransferLog.finishSelectOrCountPrepareStatement(
+                countOutErrorTransfer, limitDate);
+            nbOutErrorTransfer = DbTransferLog.getResultCountPrepareStatement(
+                countOutErrorTransfer);
             updateGlobalValue(entry.ordinal(), nbOutErrorTransfer);
             return;
           case applInboundBandwidthKBS:
@@ -367,47 +365,52 @@ public class FtpMonitoring implements WaarpInterfaceMonitor {
             updateGlobalValue(entry.ordinal(), val);
             return;
           case nbInfoUnknown:
-            nbCountInfoUnknown = DbTransferLog
-                .getResultCountPrepareStatement(countInfo, UpdatedInfo.UNKNOWN,
-                                                limitDate);
+            nbCountInfoUnknown =
+                DbTransferLog.getResultCountPrepareStatement(countInfo,
+                                                             UpdatedInfo.UNKNOWN,
+                                                             limitDate);
             updateGlobalValue(entry.ordinal(), nbCountInfoUnknown);
             return;
           case nbInfoNotUpdated:
-            nbCountInfoNotUpdated = DbTransferLog
-                .getResultCountPrepareStatement(countInfo,
-                                                UpdatedInfo.NOTUPDATED,
-                                                limitDate);
+            nbCountInfoNotUpdated =
+                DbTransferLog.getResultCountPrepareStatement(countInfo,
+                                                             UpdatedInfo.NOTUPDATED,
+                                                             limitDate);
             updateGlobalValue(entry.ordinal(), nbCountInfoNotUpdated);
             return;
           case nbInfoInterrupted:
-            nbCountInfoInterrupted = DbTransferLog
-                .getResultCountPrepareStatement(countInfo,
-                                                UpdatedInfo.INTERRUPTED,
-                                                limitDate);
+            nbCountInfoInterrupted =
+                DbTransferLog.getResultCountPrepareStatement(countInfo,
+                                                             UpdatedInfo.INTERRUPTED,
+                                                             limitDate);
             updateGlobalValue(entry.ordinal(), nbCountInfoInterrupted);
             return;
           case nbInfoToSubmit:
-            nbCountInfoToSubmit = DbTransferLog
-                .getResultCountPrepareStatement(countInfo, UpdatedInfo.TOSUBMIT,
-                                                limitDate);
+            nbCountInfoToSubmit =
+                DbTransferLog.getResultCountPrepareStatement(countInfo,
+                                                             UpdatedInfo.TOSUBMIT,
+                                                             limitDate);
             updateGlobalValue(entry.ordinal(), nbCountInfoToSubmit);
             return;
           case nbInfoError:
-            nbCountInfoError = DbTransferLog
-                .getResultCountPrepareStatement(countInfo, UpdatedInfo.INERROR,
-                                                limitDate);
+            nbCountInfoError =
+                DbTransferLog.getResultCountPrepareStatement(countInfo,
+                                                             UpdatedInfo.INERROR,
+                                                             limitDate);
             updateGlobalValue(entry.ordinal(), nbCountInfoError);
             return;
           case nbInfoRunning:
-            nbCountInfoRunning = DbTransferLog
-                .getResultCountPrepareStatement(countInfo, UpdatedInfo.RUNNING,
-                                                limitDate);
+            nbCountInfoRunning =
+                DbTransferLog.getResultCountPrepareStatement(countInfo,
+                                                             UpdatedInfo.RUNNING,
+                                                             limitDate);
             updateGlobalValue(entry.ordinal(), nbCountInfoRunning);
             return;
           case nbInfoDone:
-            nbCountInfoDone = DbTransferLog
-                .getResultCountPrepareStatement(countInfo, UpdatedInfo.DONE,
-                                                limitDate);
+            nbCountInfoDone =
+                DbTransferLog.getResultCountPrepareStatement(countInfo,
+                                                             UpdatedInfo.DONE,
+                                                             limitDate);
             updateGlobalValue(entry.ordinal(), nbCountInfoDone);
             return;
           case nbAllTransfer:
@@ -422,8 +425,9 @@ public class FtpMonitoring implements WaarpInterfaceMonitor {
             updateGlobalValue(entry.ordinal(), nbThread);
             return;
           case nbNetworkConnection:
-            nbNetworkConnection = FileBasedConfiguration.fileBasedConfiguration
-                .getFtpInternalConfiguration().getNumberSessions();
+            nbNetworkConnection =
+                FileBasedConfiguration.fileBasedConfiguration.getFtpInternalConfiguration()
+                                                             .getNumberSessions();
             updateGlobalValue(entry.ordinal(), nbNetworkConnection);
         }
       } catch (final WaarpDatabaseNoConnectionException ignored) {
@@ -440,12 +444,14 @@ public class FtpMonitoring implements WaarpInterfaceMonitor {
    * @param nbMs
    * @param entry
    */
-  protected void run(final long nbMs, final WaarpDetailedValuesIndex entry) {
+  protected final void run(final long nbMs,
+                           final WaarpDetailedValuesIndex entry) {
     synchronized (trafficCounter) {
       final long limitDate = System.currentTimeMillis() - nbMs;
       // Detailed
-      final long value = DbTransferLog
-          .getResultCountPrepareStatement(countStatus, entry.code, limitDate);
+      final long value =
+          DbTransferLog.getResultCountPrepareStatement(countStatus, entry.code,
+                                                       limitDate);
       updateDetailedValue(entry.ordinal(),
                           value + replyInfoNotransfers[entry.ordinal()]);
     }
@@ -457,12 +463,13 @@ public class FtpMonitoring implements WaarpInterfaceMonitor {
    * @param nbMs
    * @param entry
    */
-  protected void run(final long nbMs, final WaarpErrorValuesIndex entry) {
+  protected final void run(final long nbMs, final WaarpErrorValuesIndex entry) {
     synchronized (trafficCounter) {
       final long limitDate = System.currentTimeMillis() - nbMs;
       // Error
-      final long value = DbTransferLog
-          .getResultCountPrepareStatement(countStatus, entry.code, limitDate);
+      final long value =
+          DbTransferLog.getResultCountPrepareStatement(countStatus, entry.code,
+                                                       limitDate);
       updateErrorValue(entry.ordinal(),
                        value + replyErrorNotransfers[entry.ordinal()]);
     }

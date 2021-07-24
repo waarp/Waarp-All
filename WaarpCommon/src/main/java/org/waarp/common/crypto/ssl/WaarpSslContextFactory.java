@@ -142,14 +142,14 @@ public class WaarpSslContextFactory {
   /**
    * @return the Server Context
    */
-  public SslContext getServerContext() {
+  public final SslContext getServerContext() {
     return serverContext;
   }
 
   /**
    * @return the Client Context
    */
-  public SslContext getClientContext() {
+  public final SslContext getClientContext() {
     return clientContext;
   }
 
@@ -164,8 +164,8 @@ public class WaarpSslContextFactory {
    *
    * @return the sslhandler
    */
-  public SslHandler createHandlerServer(final boolean needClientAuth,
-                                        final Channel channel) {
+  public final SslHandler createHandlerServer(final boolean needClientAuth,
+                                              final Channel channel) {
     logger.debug(HAS_TRUST_MANAGER_IS_SERVER_MODE, needClientAuth, true);
     channel.config().setAutoRead(true);
     final SslHandler sslHandler =
@@ -185,9 +185,9 @@ public class WaarpSslContextFactory {
    *
    * @return the sslhandler
    */
-  public SslHandler createHandlerServer(final boolean needClientAuth,
-                                        boolean startTls,
-                                        final Channel channel) {
+  public final SslHandler createHandlerServer(final boolean needClientAuth,
+                                              final boolean startTls,
+                                              final Channel channel) {
     logger.debug(HAS_TRUST_MANAGER_IS_SERVER_MODE, needClientAuth, true);
     channel.config().setAutoRead(true);
     final SslHandler sslHandler;
@@ -208,7 +208,7 @@ public class WaarpSslContextFactory {
    *
    * @return the sslhandler
    */
-  public SslHandler createHandlerClient(final SocketChannel channel) {
+  public final SslHandler createHandlerClient(final SocketChannel channel) {
     logger.debug(HAS_TRUST_MANAGER_IS_SERVER_MODE, false, false);
     channel.config().setAutoRead(true);
     final InetSocketAddress socketAddress = channel.remoteAddress();
@@ -216,9 +216,9 @@ public class WaarpSslContextFactory {
     if (socketAddress != null) {
       logger.debug("socket {} {}", socketAddress.getHostName(),
                    socketAddress.getPort());
-      sslHandler = getClientContext()
-          .newHandler(channel.alloc(), socketAddress.getHostName(),
-                      socketAddress.getPort());
+      sslHandler = getClientContext().newHandler(channel.alloc(),
+                                                 socketAddress.getHostName(),
+                                                 socketAddress.getPort());
     } else {
       sslHandler = getClientContext().newHandler(channel.alloc());
     }
@@ -229,7 +229,7 @@ public class WaarpSslContextFactory {
   /**
    * @return True if the associated KeyStore has a TrustStore
    */
-  public boolean needClientAuthentication() {
+  public final boolean needClientAuthentication() {
     return needClientAuthentication;
   }
 }

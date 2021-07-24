@@ -176,9 +176,8 @@ class DoubleFastBlockCompressor implements BlockCompressor {
         offset2 = offset1;
         offset1 = offset;
 
-        output
-            .storeSequence(inputBase, anchor, input - anchor, offset + REP_MOVE,
-                           matchLength - MIN_MATCH);
+        output.storeSequence(inputBase, anchor, input - anchor,
+                             offset + REP_MOVE, matchLength - MIN_MATCH);
       }
 
       input += matchLength;

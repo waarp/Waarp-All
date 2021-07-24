@@ -47,84 +47,84 @@ public class ConfigImportJsonPacket extends JsonPacket {
   /**
    * @return the purgehost
    */
-  public boolean isPurgehost() {
+  public final boolean isPurgehost() {
     return purgehost;
   }
 
   /**
    * @param purgehost the purgehost to set
    */
-  public void setPurgehost(final boolean purgehost) {
+  public final void setPurgehost(final boolean purgehost) {
     this.purgehost = purgehost;
   }
 
   /**
    * @return the purgerule
    */
-  public boolean isPurgerule() {
+  public final boolean isPurgerule() {
     return purgerule;
   }
 
   /**
    * @param purgerule the purgerule to set
    */
-  public void setPurgerule(final boolean purgerule) {
+  public final void setPurgerule(final boolean purgerule) {
     this.purgerule = purgerule;
   }
 
   /**
    * @return the purgebusiness
    */
-  public boolean isPurgebusiness() {
+  public final boolean isPurgebusiness() {
     return purgebusiness;
   }
 
   /**
    * @param purgebusiness the purgebusiness to set
    */
-  public void setPurgebusiness(final boolean purgebusiness) {
+  public final void setPurgebusiness(final boolean purgebusiness) {
     this.purgebusiness = purgebusiness;
   }
 
   /**
    * @return the purgealias
    */
-  public boolean isPurgealias() {
+  public final boolean isPurgealias() {
     return purgealias;
   }
 
   /**
    * @param purgealias the purgealias to set
    */
-  public void setPurgealias(final boolean purgealias) {
+  public final void setPurgealias(final boolean purgealias) {
     this.purgealias = purgealias;
   }
 
   /**
    * @return the purgeroles
    */
-  public boolean isPurgeroles() {
+  public final boolean isPurgeroles() {
     return purgeroles;
   }
 
   /**
    * @param purgeroles the purgeroles to set
    */
-  public void setPurgeroles(final boolean purgeroles) {
+  public final void setPurgeroles(final boolean purgeroles) {
     this.purgeroles = purgeroles;
   }
 
   /**
    * @return the host
    */
-  public String getHost() {
+  public final String getHost() {
     return host;
   }
 
   /**
    * @param host the host to set
    */
-  public void setHost(final String host) {
+  public final void setHost(final String host) {
     this.host = host;
   }
 
@@ -138,124 +138,124 @@ public class ConfigImportJsonPacket extends JsonPacket {
   /**
    * @param rule the rule to set
    */
-  public void setRule(final String rule) {
+  public final void setRule(final String rule) {
     this.rule = rule;
   }
 
   /**
    * @return the business
    */
-  public String getBusiness() {
+  public final String getBusiness() {
     return business;
   }
 
   /**
    * @param business the business to set
    */
-  public void setBusiness(final String business) {
+  public final void setBusiness(final String business) {
     this.business = business;
   }
 
   /**
    * @return the alias
    */
-  public String getAlias() {
+  public final String getAlias() {
     return alias;
   }
 
   /**
    * @param alias the alias to set
    */
-  public void setAlias(final String alias) {
+  public final void setAlias(final String alias) {
     this.alias = alias;
   }
 
   /**
    * @return the roles
    */
-  public String getRoles() {
+  public final String getRoles() {
     return roles;
   }
 
   /**
    * @param roles the roles to set
    */
-  public void setRoles(final String roles) {
+  public final void setRoles(final String roles) {
     this.roles = roles;
   }
 
   /**
    * @return the hostid
    */
-  public long getHostid() {
+  public final long getHostid() {
     return hostid;
   }
 
   /**
    * @param hostid the hostid to set
    */
-  public void setHostid(final long hostid) {
+  public final void setHostid(final long hostid) {
     this.hostid = hostid;
   }
 
   /**
    * @return the ruleid
    */
-  public long getRuleid() {
+  public final long getRuleid() {
     return ruleid;
   }
 
   /**
    * @param ruleid the ruleid to set
    */
-  public void setRuleid(final long ruleid) {
+  public final void setRuleid(final long ruleid) {
     this.ruleid = ruleid;
   }
 
   /**
    * @return the businessid
    */
-  public long getBusinessid() {
+  public final long getBusinessid() {
     return businessid;
   }
 
   /**
    * @param businessid the businessid to set
    */
-  public void setBusinessid(final long businessid) {
+  public final void setBusinessid(final long businessid) {
     this.businessid = businessid;
   }
 
   /**
    * @return the aliasid
    */
-  public long getAliasid() {
+  public final long getAliasid() {
     return aliasid;
   }
 
   /**
    * @param aliasid the aliasid to set
    */
-  public void setAliasid(final long aliasid) {
+  public final void setAliasid(final long aliasid) {
     this.aliasid = aliasid;
   }
 
   /**
    * @return the rolesid
    */
-  public long getRolesid() {
+  public final long getRolesid() {
     return rolesid;
   }
 
   /**
    * @param rolesid the rolesid to set
    */
-  public void setRolesid(final long rolesid) {
+  public final void setRolesid(final long rolesid) {
     this.rolesid = rolesid;
   }
 
   @Override
-  public void fromJson(final JsonPacket other) {
+  public final void fromJson(final JsonPacket other) {
     super.fromJson(other);
     if (other instanceof ConfigImportJsonPacket) {
       final ConfigImportJsonPacket other2 = (ConfigImportJsonPacket) other;

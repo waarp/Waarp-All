@@ -114,7 +114,7 @@ public final class IntegerUuid {
    *
    * @return raw byte array of UUID
    */
-  public byte[] getBytes() {
+  public final byte[] getBytes() {
     return Arrays.copyOf(uuid, UUIDSIZE);
   }
 
@@ -123,7 +123,7 @@ public final class IntegerUuid {
    *
    * @return millisecond UTC timestamp from generation of the UUID
    */
-  public long getTimestamp() {
+  public final long getTimestamp() {
     long time;
     time = ((long) uuid[0] & 0xFF) << 24;
     time |= ((long) uuid[2] & 0xFF) << 16;
@@ -133,7 +133,7 @@ public final class IntegerUuid {
   }
 
   @Override
-  public boolean equals(final Object o) {
+  public final boolean equals(final Object o) {
     if (!(o instanceof IntegerUuid)) {
       return false;
     }
@@ -141,14 +141,14 @@ public final class IntegerUuid {
   }
 
   @Override
-  public int hashCode() {
+  public final int hashCode() {
     return Arrays.hashCode(uuid);
   }
 
   /**
    * @return the equivalent UUID as int
    */
-  public int getInt() {
+  public final int getInt() {
     int value = ((int) uuid[0] & 0xFF) << 24;
     value |= ((long) uuid[1] & 0xFF) << 16;
     value |= ((long) uuid[2] & 0xFF) << 8;

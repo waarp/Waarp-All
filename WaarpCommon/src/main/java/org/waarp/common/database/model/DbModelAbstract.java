@@ -130,7 +130,7 @@ public abstract class DbModelAbstract implements DbModel {
    *
    * @param dbSession
    */
-  protected void closeInternalConnection(final DbSession dbSession) {
+  protected final void closeInternalConnection(final DbSession dbSession) {
     try {
       if (dbSession.getConn() != null) {
         dbSession.getConn().close();
@@ -145,7 +145,7 @@ public abstract class DbModelAbstract implements DbModel {
   }
 
   @Override
-  public void validConnection(final DbSession dbSession)
+  public final void validConnection(final DbSession dbSession)
       throws WaarpDatabaseNoConnectionException {
     // try to limit the number of check!
     synchronized (this) {
@@ -208,7 +208,7 @@ public abstract class DbModelAbstract implements DbModel {
     return false;
   }
 
-  protected void validConnectionSelect(final DbSession dbSession)
+  protected final void validConnectionSelect(final DbSession dbSession)
       throws WaarpDatabaseNoConnectionException {
     // try to limit the number of check!
     synchronized (this) {

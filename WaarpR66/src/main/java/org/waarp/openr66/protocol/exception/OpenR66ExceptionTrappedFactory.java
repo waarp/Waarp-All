@@ -150,9 +150,8 @@ public final class OpenR66ExceptionTrappedFactory {
           "SSL Connection aborted", e2);
     } else if (throwable instanceof IOException) {
       final IOException e2 = (IOException) throwable;
-      logger
-          .debug("Connection aborted since {} with Channel {}", e2.getMessage(),
-                 channel);
+      logger.debug("Connection aborted since {} with Channel {}",
+                   e2.getMessage(), channel);
       if (channel.isActive()) {
         return new OpenR66ProtocolSystemException(
             "Connection aborted due to " + e2.getMessage(), e2);
@@ -163,9 +162,8 @@ public final class OpenR66ExceptionTrappedFactory {
     } else if (throwable instanceof RejectedExecutionException) {
       final RejectedExecutionException e2 =
           (RejectedExecutionException) throwable;
-      logger
-          .debug("Connection aborted since {} with Channel {}", e2.getMessage(),
-                 channel);
+      logger.debug("Connection aborted since {} with Channel {}",
+                   e2.getMessage(), channel);
       if (channel.isActive()) {
         return new OpenR66ProtocolSystemException("Execution aborted", e2);
       } else {

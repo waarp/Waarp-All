@@ -77,25 +77,23 @@ public class InternalRunner {
         TimeUnit.MILLISECONDS, workQueue,
         new WaarpThreadFactory("ClientRunner"), new RejectedExecutionHandler() {
       @Override
-      public void rejectedExecution(final Runnable runnable,
-                                    final ThreadPoolExecutor threadPoolExecutor) {
+      public final void rejectedExecution(final Runnable runnable,
+                                          final ThreadPoolExecutor threadPoolExecutor) {
         logger.debug("Task rescheduled");
       }
     });
     scheduledFuture = scheduledExecutorService.scheduleWithFixedDelay(commander,
-                                                                      Configuration.configuration
-                                                                          .getDelayCommander(),
-                                                                      Configuration.configuration
-                                                                          .getDelayCommander(),
+                                                                      Configuration.configuration.getDelayCommander(),
+                                                                      Configuration.configuration.getDelayCommander(),
                                                                       TimeUnit.MILLISECONDS);
     networkTransaction = new NetworkTransaction();
   }
 
-  public NetworkTransaction getNetworkTransaction() {
+  public final NetworkTransaction getNetworkTransaction() {
     return networkTransaction;
   }
 
-  public int allowedToSubmit() {
+  public final int allowedToSubmit() {
     final int active = threadPoolExecutor.getActiveCount();
     if ((isRunning || !Configuration.configuration.isShutdown()) &&
         (active < Configuration.configuration.getRunnerThread())) {
@@ -111,7 +109,7 @@ public class InternalRunner {
    *
    * @return True if launched, False if not since exceeding capacity
    */
-  public boolean submitTaskRunner(final DbTaskRunner taskRunner) {
+  public final boolean submitTaskRunner(final DbTaskRunner taskRunner) {
     if (isRunning || !Configuration.configuration.isShutdown()) {
       logger.debug("Will run {}", taskRunner);
       final ClientRunner runner =
@@ -138,7 +136,7 @@ public class InternalRunner {
   /**
    * First step while shutting down the service
    */
-  public void prepareStopInternalRunner() {
+  public final void prepareStopInternalRunner() {
     isRunning = false;
     scheduledFuture.cancel(false);
     if (commander != null) {
@@ -152,7 +150,7 @@ public class InternalRunner {
    * This should be called when the server is shutting down, after stopping
    * active requests if possible.
    */
-  public void stopInternalRunner() {
+  public final void stopInternalRunner() {
     isRunning = false;
     logger.info("Stopping Commander and Runner Tasks");
     scheduledFuture.cancel(true);
@@ -164,11 +162,11 @@ public class InternalRunner {
     networkTransaction.closeAll(false);
   }
 
-  public int nbInternalRunner() {
+  public final int nbInternalRunner() {
     return threadPoolExecutor.getActiveCount();
   }
 
-  public void reloadInternalRunner()
+  public final void reloadInternalRunner()
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
     scheduledFuture.cancel(false);
     if (commander != null) {
@@ -177,10 +175,8 @@ public class InternalRunner {
     commander = new Commander(this);
     scheduledFuture = scheduledExecutorService.scheduleWithFixedDelay(commander,
                                                                       2 *
-                                                                      Configuration.configuration
-                                                                          .getDelayCommander(),
-                                                                      Configuration.configuration
-                                                                          .getDelayCommander(),
+                                                                      Configuration.configuration.getDelayCommander(),
+                                                                      Configuration.configuration.getDelayCommander(),
                                                                       TimeUnit.MILLISECONDS);
   }
 }

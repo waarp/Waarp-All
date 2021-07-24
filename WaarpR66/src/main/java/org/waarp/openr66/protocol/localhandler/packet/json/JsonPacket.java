@@ -42,7 +42,8 @@ public class JsonPacket {
    *
    * @throws OpenR66ProtocolPacketException
    */
-  public ObjectNode createObjectNode() throws OpenR66ProtocolPacketException {
+  public final ObjectNode createObjectNode()
+      throws OpenR66ProtocolPacketException {
     try {
       final String value = JsonHandler.mapper.writeValueAsString(this);
       return (ObjectNode) JsonHandler.mapper.readTree(value);
@@ -59,14 +60,14 @@ public class JsonPacket {
   /**
    * @return the requestUserPacket
    */
-  public byte getRequestUserPacket() {
+  public final byte getRequestUserPacket() {
     return requestUserPacket;
   }
 
   /**
    * @param requestUserPacket the requestUserPacket to set
    */
-  public void setRequestUserPacket(final byte requestUserPacket) {
+  public final void setRequestUserPacket(final byte requestUserPacket) {
     this.requestUserPacket = requestUserPacket;
   }
 
@@ -80,19 +81,19 @@ public class JsonPacket {
   /**
    * @return the comment
    */
-  public String getComment() {
+  public final String getComment() {
     return comment;
   }
 
   /**
    * @param comment the comment to set
    */
-  public void setComment(final String comment) {
+  public final void setComment(final String comment) {
     this.comment = comment;
   }
 
   @Override
-  public String toString() {
+  public final String toString() {
     return JsonHandler.writeAsString(this);
   }
 

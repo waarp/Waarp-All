@@ -41,10 +41,10 @@ public class PORT extends AbstractCommand {
       WaarpLoggerFactory.getLogger(PORT.class);
 
   @Override
-  public void exec() throws Reply501Exception {
+  public final void exec() throws Reply501Exception {
     // Check if Active mode is OK
-    if (((FtpConfiguration) (FtpConfiguration.ftpConfiguration))
-            .getActivePassiveMode() < 0) {
+    if (((FtpConfiguration) (FtpConfiguration.ftpConfiguration)).getActivePassiveMode() <
+        0) {
       // Passive only
       throw new Reply501Exception("Active mode not allowed");
     }

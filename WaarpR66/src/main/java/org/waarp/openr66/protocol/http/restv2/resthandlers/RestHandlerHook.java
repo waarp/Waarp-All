@@ -115,9 +115,9 @@ public class RestHandlerHook implements HandlerHook {
    *     a response must be sent immediately.
    */
   @Override
-  public boolean preCall(final HttpRequest request,
-                         final HttpResponder responder,
-                         final HandlerInfo handlerInfo) {
+  public final boolean preCall(final HttpRequest request,
+                               final HttpResponder responder,
+                               final HandlerInfo handlerInfo) {
 
     try {
       final AbstractRestDbHandler handler = getHandler(handlerInfo);
@@ -289,7 +289,7 @@ public class RestHandlerHook implements HandlerHook {
    * @throws NotAllowedException if the user making the request does
    *     not exist
    */
-  protected String checkCredentials(final HttpRequest request) {
+  protected final String checkCredentials(final HttpRequest request) {
 
     final String authorization = request.headers().get(AUTHORIZATION);
 
@@ -335,8 +335,8 @@ public class RestHandlerHook implements HandlerHook {
         throw new InternalServerErrorException(
             "An error occurred when encrypting the password", e);
       }
-      if (!Arrays
-          .equals(host.getHostkey(), key.getBytes(WaarpStringUtils.UTF8))) {
+      if (!Arrays.equals(host.getHostkey(),
+                         key.getBytes(WaarpStringUtils.UTF8))) {
         throw new NotAllowedException("Invalid password.");
       }
 
@@ -387,9 +387,10 @@ public class RestHandlerHook implements HandlerHook {
     throw new NotAllowedException("Missing credentials.");
   }
 
-  protected void validateHMACCredentials(final Host host, final String authDate,
-                                         final String authUser,
-                                         final String authKey)
+  protected final void validateHMACCredentials(final Host host,
+                                               final String authDate,
+                                               final String authUser,
+                                               final String authKey)
       throws InternalServerErrorException {
     final String pswd;
     try {
@@ -422,7 +423,8 @@ public class RestHandlerHook implements HandlerHook {
    * @return {@code true} if the user is authorized to make the request,
    *     {@code false} otherwise.
    */
-  protected boolean checkAuthorization(final String user, final Method method) {
+  protected final boolean checkAuthorization(final String user,
+                                             final Method method) {
     try {
       final DbHostAuth hostAuth = new DbHostAuth(user);
       if (hostAuth.isAdminrole()) {
@@ -468,9 +470,9 @@ public class RestHandlerHook implements HandlerHook {
    *     request was sent
    */
   @Override
-  public void postCall(final HttpRequest httpRequest,
-                       final HttpResponseStatus httpResponseStatus,
-                       final HandlerInfo handlerInfo) {
+  public final void postCall(final HttpRequest httpRequest,
+                             final HttpResponseStatus httpResponseStatus,
+                             final HandlerInfo handlerInfo) {
     // ignore
   }
 

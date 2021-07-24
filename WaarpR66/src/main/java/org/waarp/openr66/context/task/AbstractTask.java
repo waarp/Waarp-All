@@ -266,14 +266,14 @@ public abstract class AbstractTask implements Runnable {
   /**
    * @return the TaskType of this AbstractTask
    */
-  public TaskType getType() {
+  public final TaskType getType() {
     return type;
   }
 
   /**
    * @return True if the operation is in success status
    */
-  public boolean isSuccess() {
+  public final boolean isSuccess() {
     futureCompletion.awaitOrInterruptible();
     return futureCompletion.isSuccess();
   }
@@ -281,7 +281,7 @@ public abstract class AbstractTask implements Runnable {
   /**
    * @return the R66Future of completion
    */
-  public R66Future getFutureCompletion() {
+  public final R66Future getFutureCompletion() {
     return futureCompletion;
   }
 
@@ -319,8 +319,8 @@ public abstract class AbstractTask implements Runnable {
    *
    * @return The string with replaced values from context and second argument
    */
-  protected String getReplacedValue(final String arg,
-                                    final Object[] argFormat) {
+  protected final String getReplacedValue(final String arg,
+                                          final Object[] argFormat) {
     final StringBuilder builder = new StringBuilder(arg);
     // check NOWAIT and LOCALEXEC and COMPRESS
     if (arg.contains(NOWAIT)) {
@@ -363,7 +363,7 @@ public abstract class AbstractTask implements Runnable {
    *
    * @return the line after substitutions
    */
-  protected String applyTransferSubstitutions(final String line) {
+  protected final String applyTransferSubstitutions(final String line) {
     final Object[] argFormat = BLANK.split(argTransfer);
     if (argFormat != null && argFormat.length > 0) {
       try {
@@ -380,8 +380,8 @@ public abstract class AbstractTask implements Runnable {
     if (session.getLocalChannelReference() == null) {
       WaarpStringUtils.replaceAll(builder, ERRORMSG, "NoError");
       WaarpStringUtils.replaceAll(builder, ERRORCODE, "-");
-      WaarpStringUtils
-          .replaceAll(builder, ERRORSTRCODE, ErrorCode.Unknown.name());
+      WaarpStringUtils.replaceAll(builder, ERRORSTRCODE,
+                                  ErrorCode.Unknown.name());
     } else {
       try {
         WaarpStringUtils.replaceAll(builder, ERRORMSG,
@@ -402,8 +402,8 @@ public abstract class AbstractTask implements Runnable {
                                     session.getLocalChannelReference()
                                            .getCurrentCode().name());
       } catch (final NullPointerException e) {
-        WaarpStringUtils
-            .replaceAll(builder, ERRORSTRCODE, ErrorCode.Unknown.name());
+        WaarpStringUtils.replaceAll(builder, ERRORSTRCODE,
+                                    ErrorCode.Unknown.name());
       }
     }
   }
@@ -502,12 +502,12 @@ public abstract class AbstractTask implements Runnable {
 
   private void substituteHost(final StringBuilder builder) {
     if (session.getAuth() != null) {
-      WaarpStringUtils
-          .replaceAll(builder, REMOTEHOST, session.getAuth().getUser());
+      WaarpStringUtils.replaceAll(builder, REMOTEHOST,
+                                  session.getAuth().getUser());
       try {
         WaarpStringUtils.replaceAll(builder, LOCALHOST,
-                                    Configuration.configuration
-                                        .getHostId(session.getAuth().isSsl()));
+                                    Configuration.configuration.getHostId(
+                                        session.getAuth().isSsl()));
       } catch (final OpenR66ProtocolNoSslException e) {
         // replace by standard name
         WaarpStringUtils.replaceAll(builder, LOCALHOST,
@@ -536,10 +536,11 @@ public abstract class AbstractTask implements Runnable {
   private DbTaskRunner substituteRunner(final StringBuilder builder) {
     final DbTaskRunner runner = session.getRunner();
     if (runner != null) {
-      WaarpStringUtils
-          .replaceAll(builder, ORIGINALFULLPATH, runner.getOriginalFilename());
-      WaarpStringUtils.replaceAll(builder, ORIGINALFILENAME, R66File
-          .getBasename(runner.getOriginalFilename()));
+      WaarpStringUtils.replaceAll(builder, ORIGINALFULLPATH,
+                                  runner.getOriginalFilename());
+      WaarpStringUtils.replaceAll(builder, ORIGINALFILENAME,
+                                  R66File.getBasename(
+                                      runner.getOriginalFilename()));
       WaarpStringUtils.replaceAll(builder, RULE, runner.getRuleId());
       WaarpStringUtils.replaceAll(builder, TRANSFERID,
                                   Long.toString(runner.getSpecialId()));
@@ -562,12 +563,13 @@ public abstract class AbstractTask implements Runnable {
       trueFile = session.getFile().getTrueFile();
     }
     if (trueFile != null) {
-      WaarpStringUtils
-          .replaceAll(builder, TRUEFULLPATH, trueFile.getAbsolutePath());
-      WaarpStringUtils.replaceAll(builder, TRUEFILENAME, R66Dir
-          .getFinalUniqueFilename(session.getFile()));
-      WaarpStringUtils
-          .replaceAll(builder, FILESIZE, Long.toString(trueFile.length()));
+      WaarpStringUtils.replaceAll(builder, TRUEFULLPATH,
+                                  trueFile.getAbsolutePath());
+      WaarpStringUtils.replaceAll(builder, TRUEFILENAME,
+                                  R66Dir.getFinalUniqueFilename(
+                                      session.getFile()));
+      WaarpStringUtils.replaceAll(builder, FILESIZE,
+                                  Long.toString(trueFile.length()));
     } else {
       WaarpStringUtils.replaceAll(builder, TRUEFULLPATH, "nofile");
       WaarpStringUtils.replaceAll(builder, TRUEFILENAME, "nofile");
@@ -581,7 +583,7 @@ public abstract class AbstractTask implements Runnable {
    * Generates a substitution map as expected by Apache Commons Exec
    * CommandLine
    */
-  protected Map<String, Object> getSubstitutionMap() {
+  protected final Map<String, Object> getSubstitutionMap() {
     final Map<String, Object> rv = new HashMap<String, Object>();
     rv.put(
         COMPILE_HASH.matcher(NOWAIT).replaceAll(Matcher.quoteReplacement("")),

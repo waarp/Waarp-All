@@ -22,8 +22,8 @@ package org.waarp.common.utility;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.PooledByteBufAllocator;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.WriteBufferWaterMark;
@@ -152,8 +152,8 @@ public final class WaarpNettyUtil {
     bootstrap.childOption(ChannelOption.SO_SNDBUF, so_buf);
     bootstrap.childOption(ChannelOption.WRITE_BUFFER_WATER_MARK,
                           new WriteBufferWaterMark(lowWaterMark, maxBufSize));
-    bootstrap
-        .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
+    bootstrap.childOption(ChannelOption.ALLOCATOR,
+                          PooledByteBufAllocator.DEFAULT);
     if (!autoRead) {
       bootstrap.childOption(ChannelOption.AUTO_READ, false);
     }
@@ -235,9 +235,8 @@ public final class WaarpNettyUtil {
    */
   public static void releaseCompletely(final ByteBuf byteBuf) {
     if (byteBuf != null && byteBuf.refCnt() != 0) {
-      while (!byteBuf.release()) {
-        // Nothing
-      }
+      final int refCnt = byteBuf.refCnt();
+      byteBuf.release(refCnt);
     }
   }
 
@@ -259,21 +258,13 @@ public final class WaarpNettyUtil {
   }
 
   /**
-   * Replace the arrays with one Pooled ByteBuf (not wrapped)
+   * Use the best approach
    *
    * @param arrays
    *
-   * @return the ByteBuf from pool
+   * @return the ByteBuf corresponding to byte arrays
    */
-  public static ByteBuf wrappedBuffer(byte[]... arrays) {
-    int size = 0;
-    for (byte[] array : arrays) {
-      size += array.length;
-    }
-    final ByteBuf finalByteBuf = ByteBufAllocator.DEFAULT.ioBuffer(size);
-    for (byte[] array : arrays) {
-      finalByteBuf.writeBytes(array);
-    }
-    return finalByteBuf;
+  public static ByteBuf wrappedBuffer(final byte[]... arrays) {
+    return Unpooled.wrappedBuffer(arrays);
   }
 }

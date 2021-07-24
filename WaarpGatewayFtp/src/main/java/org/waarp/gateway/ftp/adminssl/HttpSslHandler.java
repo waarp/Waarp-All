@@ -146,25 +146,25 @@ public class HttpSslHandler
      *
      * @return the content of the unique file
      */
-    public String readFileUnique() {
+    public final String readFileUnique() {
       return WaarpStringUtils.readFile(
           FileBasedConfiguration.fileBasedConfiguration.getHttpBasePath() +
           header);
     }
 
-    public String readHeader() {
+    public final String readHeader() {
       return WaarpStringUtils.readFile(
           FileBasedConfiguration.fileBasedConfiguration.getHttpBasePath() +
           header);
     }
 
-    public String readBody() {
+    public final String readBody() {
       return WaarpStringUtils.readFile(
           FileBasedConfiguration.fileBasedConfiguration.getHttpBasePath() +
           body);
     }
 
-    public String readEnd() {
+    public final String readEnd() {
       return WaarpStringUtils.readFile(
           FileBasedConfiguration.fileBasedConfiguration.getHttpBasePath() +
           end);
@@ -192,28 +192,25 @@ public class HttpSslHandler
     final String index = REQUEST.index.readFileUnique();
     final StringBuilder builder = new StringBuilder(index);
     WaarpStringUtils.replace(builder, "XXXLOCALXXX",
-                             FileBasedConfiguration.fileBasedConfiguration
-                                 .getFtpInternalConfiguration()
-                                 .getNumberSessions() + " " +
-                             Thread.activeCount());
+                             FileBasedConfiguration.fileBasedConfiguration.getFtpInternalConfiguration()
+                                                                          .getNumberSessions() +
+                             " " + Thread.activeCount());
     final TrafficCounter trafficCounter =
-        FileBasedConfiguration.fileBasedConfiguration
-            .getFtpInternalConfiguration().getGlobalTrafficShapingHandler()
-            .trafficCounter();
-    WaarpStringUtils.replace(builder, "XXXBANDWIDTHXXX", "IN:" + trafficCounter
-                                                                     .lastReadThroughput() /
-                                                                 131072 +
+        FileBasedConfiguration.fileBasedConfiguration.getFtpInternalConfiguration()
+                                                     .getGlobalTrafficShapingHandler()
+                                                     .trafficCounter();
+    WaarpStringUtils.replace(builder, "XXXBANDWIDTHXXX", "IN:" +
+                                                         trafficCounter.lastReadThroughput() /
+                                                         131072 +
                                                          "Mbits&nbsp;<br>&nbsp;OUT:" +
-                                                         trafficCounter
-                                                             .lastWriteThroughput() /
+                                                         trafficCounter.lastWriteThroughput() /
                                                          131072 + "Mbits");
     WaarpStringUtils.replaceAll(builder, "XXXHOSTIDXXX",
-                                FileBasedConfiguration.fileBasedConfiguration
-                                    .getHostId());
-    WaarpStringUtils
-        .replaceAll(builder, "XXXADMINXXX", "Administrator Connected");
-    WaarpStringUtils
-        .replace(builder, "XXXVERSIONXXX", Version.fullIdentifier());
+                                FileBasedConfiguration.fileBasedConfiguration.getHostId());
+    WaarpStringUtils.replaceAll(builder, "XXXADMINXXX",
+                                "Administrator Connected");
+    WaarpStringUtils.replace(builder, "XXXVERSIONXXX",
+                             Version.fullIdentifier());
     return builder.toString();
   }
 
@@ -229,14 +226,12 @@ public class HttpSslHandler
   private String system() {
     getParams();
     final FtpConstraintLimitHandler handler =
-        FileBasedConfiguration.fileBasedConfiguration
-            .getConstraintLimitHandler();
+        FileBasedConfiguration.fileBasedConfiguration.getConstraintLimitHandler();
     if (params == null) {
       final String system = REQUEST.System.readFileUnique();
       final StringBuilder builder = new StringBuilder(system);
       WaarpStringUtils.replace(builder, "XXXXCHANNELLIMITRXXX", Long.toString(
-          FileBasedConfiguration.fileBasedConfiguration
-              .getServerGlobalReadLimit()));
+          FileBasedConfiguration.fileBasedConfiguration.getServerGlobalReadLimit()));
       WaarpStringUtils.replace(builder, "XXXXCPULXXX",
                                Double.toString(handler.getCpuLimit()));
       WaarpStringUtils.replace(builder, "XXXXCONLXXX",
@@ -263,13 +258,13 @@ public class HttpSslHandler
           return error;
         } else if ("Validate".equalsIgnoreCase(act)) {
           String bglobalr = getTrimValue("BGLOBR");
-          long lglobal = FileBasedConfiguration.fileBasedConfiguration
-              .getServerGlobalReadLimit();
+          long lglobal =
+              FileBasedConfiguration.fileBasedConfiguration.getServerGlobalReadLimit();
           if (bglobalr != null) {
             lglobal = Long.parseLong(bglobalr);
           }
-          FileBasedConfiguration.fileBasedConfiguration
-              .changeNetworkLimit(lglobal, lglobal);
+          FileBasedConfiguration.fileBasedConfiguration.changeNetworkLimit(
+              lglobal, lglobal);
           bglobalr = getTrimValue("CPUL");
           double dcpu = handler.getCpuLimit();
           if (bglobalr != null) {
@@ -289,8 +284,7 @@ public class HttpSslHandler
     final String system = REQUEST.System.readFileUnique();
     final StringBuilder builder = new StringBuilder(system);
     WaarpStringUtils.replace(builder, "XXXXCHANNELLIMITRXXX", Long.toString(
-        FileBasedConfiguration.fileBasedConfiguration
-            .getServerGlobalReadLimit()));
+        FileBasedConfiguration.fileBasedConfiguration.getServerGlobalReadLimit()));
     WaarpStringUtils.replace(builder, "XXXXCPULXXX",
                              Double.toString(handler.getCpuLimit()));
     WaarpStringUtils.replace(builder, "XXXXCONLXXX",
@@ -311,12 +305,12 @@ public class HttpSslHandler
       final CommandExecutor exec = AbstractExecutor.getCommandExecutor();
       WaarpStringUtils.replace(builder, "XXXSTCXXX",
                                exec.getStorType() + ' ' + exec.pstorCMD);
-      WaarpStringUtils
-          .replace(builder, "XXXSTDXXX", Long.toString(exec.getPstorDelay()));
+      WaarpStringUtils.replace(builder, "XXXSTDXXX",
+                               Long.toString(exec.getPstorDelay()));
       WaarpStringUtils.replace(builder, "XXXRTCXXX",
                                exec.getRetrType() + ' ' + exec.pretrCMD);
-      WaarpStringUtils
-          .replace(builder, "XXXRTDXXX", Long.toString(exec.getPretrDelay()));
+      WaarpStringUtils.replace(builder, "XXXRTDXXX",
+                               Long.toString(exec.getPretrDelay()));
       WaarpStringUtils.replace(builder, XXXRESULTXXX, "");
       return builder.toString();
     }
@@ -359,12 +353,12 @@ public class HttpSslHandler
     final CommandExecutor exec = AbstractExecutor.getCommandExecutor();
     WaarpStringUtils.replace(builder, "XXXSTCXXX",
                              exec.getStorType() + ' ' + exec.pstorCMD);
-    WaarpStringUtils
-        .replace(builder, "XXXSTDXXX", Long.toString(exec.getPstorDelay()));
+    WaarpStringUtils.replace(builder, "XXXSTDXXX",
+                             Long.toString(exec.getPstorDelay()));
     WaarpStringUtils.replace(builder, "XXXRTCXXX",
                              exec.getRetrType() + ' ' + exec.pretrCMD);
-    WaarpStringUtils
-        .replace(builder, "XXXRTDXXX", Long.toString(exec.getPretrDelay()));
+    WaarpStringUtils.replace(builder, "XXXRTDXXX",
+                             Long.toString(exec.getPretrDelay()));
     if (extraInformation != null) {
       WaarpStringUtils.replace(builder, XXXRESULTXXX, extraInformation);
     } else {
@@ -380,8 +374,8 @@ public class HttpSslHandler
     String body = REQUEST.Transfer.readBody();
     if (params == null) {
       end = end.replace(XXXRESULTXXX, "");
-      body = FileBasedConfiguration.fileBasedConfiguration
-          .getHtmlTransfer(body, LIMITROW);
+      body = FileBasedConfiguration.fileBasedConfiguration.getHtmlTransfer(body,
+                                                                           LIMITROW);
       return head + body + end;
     }
     String message = "";
@@ -424,8 +418,8 @@ public class HttpSslHandler
                 config.getAdminName() + DirInterface.SEPARATOR +
                 config.getHostId() + "_logs_" + System.currentTimeMillis() +
                 ".xml";
-            message = DbTransferLog
-                .saveDbTransferLogFile(preparedStatement, filename);
+            message = DbTransferLog.saveDbTransferLogFile(preparedStatement,
+                                                          filename);
           } finally {
             preparedStatement.realClose();
           }
@@ -455,8 +449,8 @@ public class HttpSslHandler
       end = end.replace(XXXRESULTXXX, message);
     }
     end = end.replace(XXXRESULTXXX, "");
-    body = FileBasedConfiguration.fileBasedConfiguration
-        .getHtmlTransfer(body, LIMITROW);
+    body = FileBasedConfiguration.fileBasedConfiguration.getHtmlTransfer(body,
+                                                                         LIMITROW);
     return head + body + end;
   }
 
@@ -497,8 +491,8 @@ public class HttpSslHandler
           } else {
             message += "Initialization of Authentication OK from " + file;
             if (replace) {
-              if (!config
-                  .saveAuthenticationFile(config.getAuthenticationFile())) {
+              if (!config.saveAuthenticationFile(
+                  config.getAuthenticationFile())) {
                 message += " but cannot replace server authenticationFile";
               } else {
                 message += " and replacement done";
@@ -549,7 +543,7 @@ public class HttpSslHandler
     }
   }
 
-  protected void closeConnection() {
+  protected final void closeConnection() {
     if (dbSession != null &&
         dbSession != DbConstantFtp.gatewayAdmin.getSession()) {
       DbAdmin.decHttpSession();
@@ -607,13 +601,14 @@ public class HttpSslHandler
       }
       if (!getMenu && name != null) {
         logger.debug("Name={} vs {} Pass={} vs {}", name, name.equals(
-            FileBasedConfiguration.fileBasedConfiguration.getAdminName()),
-                     password, FileBasedConfiguration.fileBasedConfiguration
-                         .checkPassword(password));
+                         FileBasedConfiguration.fileBasedConfiguration.getAdminName()),
+                     password,
+                     FileBasedConfiguration.fileBasedConfiguration.checkPassword(
+                         password));
         if (name.equals(
             FileBasedConfiguration.fileBasedConfiguration.getAdminName()) &&
-            FileBasedConfiguration.fileBasedConfiguration
-                .checkPassword(password)) {
+            FileBasedConfiguration.fileBasedConfiguration.checkPassword(
+                password)) {
           authentHttp.specialNoSessionAuth(
               FileBasedConfiguration.fileBasedConfiguration.getHostId());
         } else {
@@ -636,8 +631,7 @@ public class HttpSslHandler
       responseContent.append(index);
       clearSession();
       admin = new DefaultCookie(FTPSESSIONString,
-                                FileBasedConfiguration.fileBasedConfiguration
-                                    .getHostId() +
+                                FileBasedConfiguration.fileBasedConfiguration.getHostId() +
                                 Long.toHexString(RANDOM.nextLong()));
       sessions.put(admin.value(), authentHttp);
       logger.debug("CreateSession: {}}:{}", uriRequest, admin);
@@ -655,9 +649,8 @@ public class HttpSslHandler
     if (uriRequest.contains("gre/") || uriRequest.contains("img/") ||
         uriRequest.contains("res/")) {
       HttpWriteCacheEnable.writeFile(request, ctx,
-                                     FileBasedConfiguration.fileBasedConfiguration
-                                         .getHttpBasePath() + uriRequest,
-                                     FTPSESSIONString);
+                                     FileBasedConfiguration.fileBasedConfiguration.getHttpBasePath() +
+                                     uriRequest, FTPSESSIONString);
       return;
     }
     checkSession();
@@ -776,8 +769,8 @@ public class HttpSslHandler
    */
   private void writeResponse(final ChannelHandlerContext ctx) {
     // Convert the response content to a ByteBuf.
-    final ByteBuf buf = Unpooled
-        .copiedBuffer(responseContent.toString(), WaarpStringUtils.UTF8);
+    final ByteBuf buf = Unpooled.copiedBuffer(responseContent.toString(),
+                                              WaarpStringUtils.UTF8);
     responseContent.setLength(0);
 
     // Decide whether to close the connection or not.
@@ -813,8 +806,8 @@ public class HttpSslHandler
       future.addListener(WaarpSslUtility.SSLCLOSE);
     }
     if (shutdown) {
-      FtpChannelUtils
-          .teminateServer(FileBasedConfiguration.fileBasedConfiguration);
+      FtpChannelUtils.teminateServer(
+          FileBasedConfiguration.fileBasedConfiguration);
       if (!close) {
         future.addListener(WaarpSslUtility.SSLCLOSE);
       }
@@ -832,8 +825,10 @@ public class HttpSslHandler
     responseContent.setLength(0);
     responseContent.append(error(status.toString()));
     final FullHttpResponse response =
-        new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, status, Unpooled
-            .copiedBuffer(responseContent.toString(), WaarpStringUtils.UTF8));
+        new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, status,
+                                    Unpooled.copiedBuffer(
+                                        responseContent.toString(),
+                                        WaarpStringUtils.UTF8));
     response.headers().add(HttpHeaderNames.CONTENT_LENGTH,
                            response.content().readableBytes());
     response.headers().set(HttpHeaderNames.CONTENT_TYPE, "text/html");

@@ -52,9 +52,9 @@ public class ZipTask extends AbstractTask {
   }
 
   @Override
-  public void run() {
-    logger
-        .info("ZIP with {}:{}:{} and {}", argRule, argTransfer, delay, session);
+  public final void run() {
+    logger.info("ZIP with {}:{}:{} and {}", argRule, argTransfer, delay,
+                session);
     String finalname = argRule;
     finalname = getReplacedValue(finalname, BLANK.split(argTransfer));
     boolean zip;
@@ -95,8 +95,8 @@ public class ZipTask extends AbstractTask {
       logger.error(
           "Zip error with " + argRule + ':' + argTransfer + ':' + delay +
           " and " + session);
-      futureCompletion
-          .setFailure(new OpenR66ProtocolSystemException("Zip error"));
+      futureCompletion.setFailure(
+          new OpenR66ProtocolSystemException("Zip error"));
       return;
     }
     futureCompletion.setSuccess();

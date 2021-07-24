@@ -59,7 +59,7 @@ class CircularIntValue {
    *
    * @return the next value
    */
-  public int getNext() {
+  public final int getNext() {
     synchronized (syncObject) {
       if (!current.compareAndSet(max, min)) {
         current.incrementAndGet();

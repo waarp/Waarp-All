@@ -81,10 +81,9 @@ public abstract class DataModelRestMethodHandler<E extends AbstractDbData>
    * DELETE iff name/id and allowed
    */
   @Override
-  public void checkHandlerSessionCorrectness(final HttpRestHandler handler,
-                                             final RestArgument arguments,
-                                             final RestArgument result)
-      throws HttpForbiddenRequestException {
+  public final void checkHandlerSessionCorrectness(
+      final HttpRestHandler handler, final RestArgument arguments,
+      final RestArgument result) throws HttpForbiddenRequestException {
     final METHOD method = arguments.getMethod();
     if (!isMethodIncluded(method)) {
       logger.warn("NotAllowed: " + method + ':' + arguments.getUri() + ':' +
@@ -123,16 +122,18 @@ public abstract class DataModelRestMethodHandler<E extends AbstractDbData>
   }
 
   @Override
-  public void getFileUpload(final HttpRestHandler handler,
-                            final FileUpload data, final RestArgument arguments,
-                            final RestArgument result)
+  public final void getFileUpload(final HttpRestHandler handler,
+                                  final FileUpload data,
+                                  final RestArgument arguments,
+                                  final RestArgument result)
       throws HttpIncorrectRequestException {
     throw new HttpIncorrectRequestException("File Upload not allowed");
   }
 
   @Override
-  public Object getBody(final HttpRestHandler handler, final ByteBuf body,
-                        final RestArgument arguments, final RestArgument result)
+  public final Object getBody(final HttpRestHandler handler, final ByteBuf body,
+                              final RestArgument arguments,
+                              final RestArgument result)
       throws HttpIncorrectRequestException {
     // get the Json equivalent of the Body
     ObjectNode node = null;
@@ -152,9 +153,10 @@ public abstract class DataModelRestMethodHandler<E extends AbstractDbData>
   }
 
   @Override
-  public void endParsingRequest(final HttpRestHandler handler,
-                                final RestArgument arguments,
-                                final RestArgument result, final Object body)
+  public final void endParsingRequest(final HttpRestHandler handler,
+                                      final RestArgument arguments,
+                                      final RestArgument result,
+                                      final Object body)
       throws HttpIncorrectRequestException, HttpInvalidAuthenticationException,
              HttpNotFoundRequestException {
     final METHOD method = arguments.getMethod();
@@ -263,8 +265,8 @@ public abstract class DataModelRestMethodHandler<E extends AbstractDbData>
    */
   public abstract String getPrimaryPropertyName();
 
-  protected void setOk(final HttpRestHandler handler,
-                       final RestArgument result) {
+  protected final void setOk(final HttpRestHandler handler,
+                             final RestArgument result) {
     handler.setStatus(HttpResponseStatus.OK);
     result.setResult(HttpResponseStatus.OK);
   }
@@ -281,9 +283,9 @@ public abstract class DataModelRestMethodHandler<E extends AbstractDbData>
    * @throws HttpInvalidAuthenticationException
    * @throws HttpNotFoundRequestException
    */
-  protected void getAll(final HttpRestHandler handler,
-                        final RestArgument arguments, final RestArgument result,
-                        final Object body)
+  protected final void getAll(final HttpRestHandler handler,
+                              final RestArgument arguments,
+                              final RestArgument result, final Object body)
       throws HttpIncorrectRequestException, HttpInvalidAuthenticationException,
              HttpNotFoundRequestException {
     final long limit = arguments.getLimitFromUri();
@@ -331,9 +333,9 @@ public abstract class DataModelRestMethodHandler<E extends AbstractDbData>
    * @throws HttpInvalidAuthenticationException
    * @throws HttpNotFoundRequestException
    */
-  protected void getOne(final HttpRestHandler handler,
-                        final RestArgument arguments, final RestArgument result,
-                        final Object body)
+  protected final void getOne(final HttpRestHandler handler,
+                              final RestArgument arguments,
+                              final RestArgument result, final Object body)
       throws HttpIncorrectRequestException, HttpInvalidAuthenticationException,
              HttpNotFoundRequestException {
     final E item = getItem(handler, arguments, result, body);
@@ -389,9 +391,9 @@ public abstract class DataModelRestMethodHandler<E extends AbstractDbData>
    * @throws HttpIncorrectRequestException
    * @throws HttpInvalidAuthenticationException
    */
-  protected void post(final HttpRestHandler handler,
-                      final RestArgument arguments, final RestArgument result,
-                      final Object body)
+  protected final void post(final HttpRestHandler handler,
+                            final RestArgument arguments,
+                            final RestArgument result, final Object body)
       throws HttpIncorrectRequestException, HttpInvalidAuthenticationException {
     final E item = createItem(handler, arguments, result, body);
     item.changeUpdatedInfo(UpdatedInfo.TOSUBMIT);
@@ -426,9 +428,9 @@ public abstract class DataModelRestMethodHandler<E extends AbstractDbData>
    * @throws HttpInvalidAuthenticationException
    * @throws HttpNotFoundRequestException
    */
-  protected void delete(final HttpRestHandler handler,
-                        final RestArgument arguments, final RestArgument result,
-                        final Object body)
+  protected final void delete(final HttpRestHandler handler,
+                              final RestArgument arguments,
+                              final RestArgument result, final Object body)
       throws HttpIncorrectRequestException, HttpInvalidAuthenticationException,
              HttpNotFoundRequestException {
     final E item = getItem(handler, arguments, result, body);
@@ -444,12 +446,12 @@ public abstract class DataModelRestMethodHandler<E extends AbstractDbData>
   }
 
   @Override
-  public ChannelFuture sendResponse(final HttpRestHandler handler,
-                                    final ChannelHandlerContext ctx,
-                                    final RestArgument arguments,
-                                    final RestArgument result,
-                                    final Object body,
-                                    final HttpResponseStatus status) {
+  public final ChannelFuture sendResponse(final HttpRestHandler handler,
+                                          final ChannelHandlerContext ctx,
+                                          final RestArgument arguments,
+                                          final RestArgument result,
+                                          final Object body,
+                                          final HttpResponseStatus status) {
     final String answer = result.toString();
     final ByteBuf buffer =
         Unpooled.wrappedBuffer(answer.getBytes(WaarpStringUtils.UTF8));
@@ -462,8 +464,8 @@ public abstract class DataModelRestMethodHandler<E extends AbstractDbData>
     logger.debug("Will write: {}", body);
     final ChannelFuture future = ctx.writeAndFlush(response);
     if (handler.isWillClose()) {
-      SysErrLogger.FAKE_LOGGER
-          .syserr("Will close session in DataModelRestMethodHandler");
+      SysErrLogger.FAKE_LOGGER.syserr(
+          "Will close session in DataModelRestMethodHandler");
       return future;
     }
     return null;

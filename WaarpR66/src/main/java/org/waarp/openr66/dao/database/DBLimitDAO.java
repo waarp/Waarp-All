@@ -73,32 +73,37 @@ public class DBLimitDAO extends StatementExecutor<Limit> implements LimitDAO {
   }
 
   @Override
-  protected String getId(final Limit e1) {
+  protected final boolean isCachedEnable() {
+    return false;
+  }
+
+  @Override
+  protected final String getId(final Limit e1) {
     return e1.getHostid();
   }
 
   @Override
-  protected String getSelectRequest() {
+  protected final String getSelectRequest() {
     return SQL_SELECT;
   }
 
   @Override
-  protected String getGetAllRequest() {
+  protected final String getGetAllRequest() {
     return SQL_GET_ALL;
   }
 
   @Override
-  protected String getCountRequest() {
+  protected final String getCountRequest() {
     return SQL_COUNT_ALL;
   }
 
   @Override
-  protected String getExistRequest() {
+  protected final String getExistRequest() {
     return SQL_EXIST;
   }
 
   @Override
-  protected Object[] getInsertValues(final Limit limit) {
+  protected final Object[] getInsertValues(final Limit limit) {
     return new Object[] {
         limit.getHostid(), limit.getReadGlobalLimit(),
         limit.getWriteGlobalLimit(), limit.getReadSessionLimit(),
@@ -108,12 +113,12 @@ public class DBLimitDAO extends StatementExecutor<Limit> implements LimitDAO {
   }
 
   @Override
-  protected String getInsertRequest() {
+  protected final String getInsertRequest() {
     return SQL_INSERT;
   }
 
   @Override
-  protected Object[] getUpdateValues(final Limit limit) {
+  protected final Object[] getUpdateValues(final Limit limit) {
     return new Object[] {
         limit.getHostid(), limit.getReadGlobalLimit(),
         limit.getWriteGlobalLimit(), limit.getReadSessionLimit(),
@@ -123,22 +128,22 @@ public class DBLimitDAO extends StatementExecutor<Limit> implements LimitDAO {
   }
 
   @Override
-  protected String getUpdateRequest() {
+  protected final String getUpdateRequest() {
     return SQL_UPDATE;
   }
 
   @Override
-  protected String getDeleteRequest() {
+  protected final String getDeleteRequest() {
     return SQL_DELETE;
   }
 
   @Override
-  protected String getDeleteAllRequest() {
+  protected final String getDeleteAllRequest() {
     return SQL_DELETE_ALL;
   }
 
   @Override
-  public Limit getFromResultSet(final ResultSet set) throws SQLException {
+  public final Limit getFromResultSet(final ResultSet set) throws SQLException {
     try {
       return new Limit(set.getString(HOSTID_FIELD),
                        set.getLong(DELAY_LIMIT_FIELD),
@@ -147,8 +152,13 @@ public class DBLimitDAO extends StatementExecutor<Limit> implements LimitDAO {
                        set.getLong(READ_SESSION_LIMIT_FIELD),
                        set.getLong(WRITE_SESSION_LIMIT_FIELD),
                        UpdatedInfo.valueOf(set.getInt(UPDATED_INFO_FIELD)));
-    } catch (WaarpDatabaseSqlException e) {
+    } catch (final WaarpDatabaseSqlException e) {
       throw new SQLException(e);
     }
+  }
+
+  @Override
+  protected final boolean isDbTransfer() {
+    return false;
   }
 }

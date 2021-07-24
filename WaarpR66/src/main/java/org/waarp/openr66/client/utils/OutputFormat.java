@@ -107,18 +107,18 @@ public class OutputFormat extends JsonHandler {
    *
    * @param format
    */
-  public void setFormat(final OUTPUTFORMAT format) {
+  public final void setFormat(final OUTPUTFORMAT format) {
     this.format = format;
   }
 
-  public OUTPUTFORMAT getFormat() {
+  public final OUTPUTFORMAT getFormat() {
     return format;
   }
 
   /**
    * @param values
    */
-  public void setValue(final Map<String, Object> values) {
+  public final void setValue(final Map<String, Object> values) {
     final String json = writeAsString(values);
     final ObjectNode temp = getFromString(json);
     node.setAll(temp);
@@ -127,7 +127,7 @@ public class OutputFormat extends JsonHandler {
   /**
    * @param values
    */
-  public void setValueString(final Map<String, String> values) {
+  public final void setValueString(final Map<String, String> values) {
     final String json = writeAsString(values);
     final ObjectNode temp = getFromString(json);
     node.setAll(temp);
@@ -136,7 +136,7 @@ public class OutputFormat extends JsonHandler {
   /**
    * @param node
    */
-  public void setValueString(final ObjectNode node) {
+  public final void setValueString(final ObjectNode node) {
     node.setAll(node);
   }
 
@@ -144,7 +144,7 @@ public class OutputFormat extends JsonHandler {
    * @param field
    * @param value
    */
-  public void setValue(final String field, final boolean value) {
+  public final void setValue(final String field, final boolean value) {
     setValue(node, field, value);
   }
 
@@ -235,7 +235,7 @@ public class OutputFormat extends JsonHandler {
   /**
    * Helper for sysOut
    */
-  public void sysout() {
+  public final void sysout() {
     if (format != OUTPUTFORMAT.QUIET) {
       System.out.println(getContext());//NOSONAR
       System.out.println(toString(format));//NOSONAR
@@ -252,12 +252,12 @@ public class OutputFormat extends JsonHandler {
    *
    * @return the String to print in logger
    */
-  public String loggerOut() {
+  public final String loggerOut() {
     return getContext() + " => " + toString(OUTPUTFORMAT.JSON);
   }
 
   @Override
-  public String toString() {
+  public final String toString() {
     return toString(format);
   }
 
@@ -288,13 +288,13 @@ public class OutputFormat extends JsonHandler {
    *
    * @return the String representation
    */
-  public String toString(final OUTPUTFORMAT format) {
+  public final String toString(final OUTPUTFORMAT format) {
     final String inString = writeAsString(node);
     switch (format) {
       case CSV:
         try {
-          final Map<String, Object> map = mapper
-              .readValue(inString, JsonHandler.typeReferenceMapStringObject);
+          final Map<String, Object> map = mapper.readValue(inString,
+                                                           JsonHandler.typeReferenceMapStringObject);
           final StringBuilder builderKeys = new StringBuilder();
           final StringBuilder builderValues = new StringBuilder();
           boolean next = false;
@@ -320,9 +320,9 @@ public class OutputFormat extends JsonHandler {
         }
       case PROPERTY:
         try {
-          final Map<String, Object> map = mapper
-              .readValue(inString, new TypeReference<Map<String, Object>>() {
-              });
+          final Map<String, Object> map = mapper.readValue(inString,
+                                                           new TypeReference<Map<String, Object>>() {
+                                                           });
           final StringBuilder builder = new StringBuilder();
           boolean next = false;
           for (final Entry<String, Object> entry : map.entrySet()) {
@@ -345,8 +345,8 @@ public class OutputFormat extends JsonHandler {
         }
       case XML:
         try {
-          final Map<String, Object> map = mapper
-              .readValue(inString, JsonHandler.typeReferenceMapStringObject);
+          final Map<String, Object> map = mapper.readValue(inString,
+                                                           JsonHandler.typeReferenceMapStringObject);
           final StringBuilder builder = new StringBuilder("<xml>");
           for (final Entry<String, Object> entry : map.entrySet()) {
             String value = entry.getValue().toString();

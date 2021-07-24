@@ -174,44 +174,37 @@ public final class RestServiceInitializer {
         NettyHttpService.builder("R66_RESTv2").setPort(config.getRestPort())
                         .setHost(config.getRestAddress())
                         .setExecThreadPoolSize(20).setHttpChunkLimit(
-            Configuration.configuration.getMaxGlobalMemory())
+                            Configuration.configuration.getMaxGlobalMemory())
                         .setChannelConfig(ChannelOption.SO_REUSEADDR, true)
                         .setChildChannelConfig(ChannelOption.TCP_NODELAY, false)
                         .setChildChannelConfig(ChannelOption.SO_REUSEADDR, true)
-                        .setHttpHandlers(handlers).setHandlerHooks(Collections
-                                                                       .singleton(
-                                                                           new RestHandlerHook(
-                                                                               config
-                                                                                   .isRestAuthenticated(),
-                                                                               config
-                                                                                   .getHmacSha256(),
-                                                                               config
-                                                                                   .getRestTimeLimit())))
+                        .setHttpHandlers(handlers).setHandlerHooks(
+                            Collections.singleton(
+                                new RestHandlerHook(config.isRestAuthenticated(),
+                                                    config.getHmacSha256(),
+                                                    config.getRestTimeLimit())))
                         .setExceptionHandler(new RestExceptionHandler())
                         .setExecThreadKeepAliveSeconds(-1L)
                         .setChannelPipelineModifier(
                             new ChannelPipelineModifier() {
                               @Override
-                              public void modify(
+                              public final void modify(
                                   final ChannelPipeline channelPipeline) {
                                 channelPipeline.addBefore(ROUTER, "aggregator",
                                                           new HttpObjectAggregator(
-                                                              Configuration.configuration
-                                                                  .getMaxGlobalMemory()));
+                                                              Configuration.configuration.getMaxGlobalMemory()));
                                 channelPipeline.addBefore(ROUTER,
                                                           RestVersionHandler.HANDLER_NAME,
                                                           new RestVersionHandler(
                                                               config));
-                                channelPipeline
-                                    .addBefore(RestVersionHandler.HANDLER_NAME,
-                                               "cors",
-                                               new CorsHandler(corsConfig()));
+                                channelPipeline.addBefore(
+                                    RestVersionHandler.HANDLER_NAME, "cors",
+                                    new CorsHandler(corsConfig()));
                                 if (config.isRestAuthenticated() &&
                                     config.isRestSignature()) {
                                   channelPipeline.addAfter(ROUTER, "signature",
                                                            new RestSignatureHandler(
-                                                               config
-                                                                   .getHmacSha256()));
+                                                               config.getHmacSha256()));
                                 }
 
                                 // Removes the HTTP compressor which causes problems

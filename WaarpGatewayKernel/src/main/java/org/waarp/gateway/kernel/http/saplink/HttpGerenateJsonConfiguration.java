@@ -34,8 +34,8 @@ public final class HttpGerenateJsonConfiguration {
    */
   public static void main(final String[] args) {
     if (args.length < 1) {
-      SysErrLogger.FAKE_LOGGER
-          .syserr("Not enough argument: filepath for output");
+      SysErrLogger.FAKE_LOGGER.syserr(
+          "Not enough argument: filepath for output");
       System.exit(1);//NOSONAR
     }
     final HttpPageHandler httpPageHandler =

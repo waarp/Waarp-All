@@ -68,13 +68,14 @@ public class HttpRestBusinessR66Handler extends HttpRestAbstractR66Handler {
   }
 
   @Override
-  public void endParsingRequest(final HttpRestHandler handler,
-                                final RestArgument arguments,
-                                final RestArgument result, final Object body)
+  public final void endParsingRequest(final HttpRestHandler handler,
+                                      final RestArgument arguments,
+                                      final RestArgument result,
+                                      final Object body)
       throws HttpIncorrectRequestException, HttpInvalidAuthenticationException {
     try {
       HttpRestV1Utils.checkSanity(arguments);
-    } catch (InvalidArgumentException e) {
+    } catch (final InvalidArgumentException e) {
       throw new HttpIncorrectRequestException("Issue on values", e);
     }
     logger.debug("debug: {} ### {}", arguments, result);
@@ -98,10 +99,12 @@ public class HttpRestBusinessR66Handler extends HttpRestAbstractR66Handler {
       if (json instanceof BusinessRequestJsonPacket) {//
         result.setCommand(ACTIONS_TYPE.ExecuteBusiness.name());
         final BusinessRequestJsonPacket node = (BusinessRequestJsonPacket) json;
-        final R66Future future = serverHandler
-            .businessRequest(node.isToApplied(), node.getClassName(),
-                             node.getArguments(), node.getExtraArguments(),
-                             node.getDelay());
+        final R66Future future =
+            serverHandler.businessRequest(node.isToApplied(),
+                                          node.getClassName(),
+                                          node.getArguments(),
+                                          node.getExtraArguments(),
+                                          node.getDelay());
         if (future != null && !future.isSuccess()) {
           R66Result r66result = future.getResult();
           if (r66result == null) {
@@ -145,7 +148,7 @@ public class HttpRestBusinessR66Handler extends HttpRestAbstractR66Handler {
   }
 
   @Override
-  protected ArrayNode getDetailedAllow() {
+  protected final ArrayNode getDetailedAllow() {
     final ArrayNode node = JsonHandler.createArrayNode();
 
     if (methods.contains(METHOD.GET)) {
@@ -160,17 +163,16 @@ public class HttpRestBusinessR66Handler extends HttpRestAbstractR66Handler {
       try {
         node1.add(node3.createObjectNode());
         node2 = RestArgument.fillDetailedAllow(METHOD.GET, path,
-                                               ACTIONS_TYPE.ExecuteBusiness
-                                                   .name(),
+                                               ACTIONS_TYPE.ExecuteBusiness.name(),
                                                node3.createObjectNode(), node1);
         node.add(node2);
       } catch (final OpenR66ProtocolPacketException ignored) {
         // ignore
       }
     }
-    final ObjectNode node2 = RestArgument
-        .fillDetailedAllow(METHOD.OPTIONS, path, COMMAND_TYPE.OPTIONS.name(),
-                           null, null);
+    final ObjectNode node2 =
+        RestArgument.fillDetailedAllow(METHOD.OPTIONS, path,
+                                       COMMAND_TYPE.OPTIONS.name(), null, null);
     node.add(node2);
 
     return node;

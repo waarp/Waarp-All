@@ -67,12 +67,12 @@ public abstract class FilesystemBasedFtpFile extends FilesystemBasedFileImpl
   }
 
   @Override
-  public long length() throws CommandAbstractException {
+  public final long length() throws CommandAbstractException {
     long length = super.length();
     if (((FtpSession) getSession()).getDataConn()
                                    .isFileStreamBlockAsciiImage()) {
-      final long block = (long) Math
-          .ceil((double) length / (double) getSession().getBlockSize());
+      final long block = (long) Math.ceil(
+          (double) length / (double) getSession().getBlockSize());
       length += (block + 3) * 3;
     }
     return length;
@@ -83,7 +83,7 @@ public abstract class FilesystemBasedFtpFile extends FilesystemBasedFileImpl
    * directly)
    */
   @Override
-  public void trueRetrieve() {
+  public final void trueRetrieve() {
     retrieveLock.lock();
     try {
       if (!isReady) {

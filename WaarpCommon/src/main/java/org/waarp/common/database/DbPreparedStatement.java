@@ -205,7 +205,7 @@ public class DbPreparedStatement {
    * @throws WaarpDatabaseNoConnectionException
    * @throws WaarpDatabaseSqlException
    */
-  public void createPrepareStatement(final String requestarg)
+  public final void createPrepareStatement(final String requestarg)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
     if (requestarg == null) {
       logger.error(PREPARED_STATEMENT_NO_REQUEST);
@@ -254,7 +254,7 @@ public class DbPreparedStatement {
    * @throws WaarpDatabaseSqlException
    * @throws WaarpDatabaseNoConnectionException
    */
-  public void recreatePreparedStatement()
+  public final void recreatePreparedStatement()
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
     createPrepareStatement(request);
   }
@@ -265,7 +265,7 @@ public class DbPreparedStatement {
    * @throws WaarpDatabaseNoConnectionException
    * @throws WaarpDatabaseSqlException
    */
-  public void executeQuery()
+  public final void executeQuery()
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
     if (preparedStatement == null) {
       logger.error("executeQuery no request");
@@ -302,7 +302,7 @@ public class DbPreparedStatement {
    * @throws WaarpDatabaseNoConnectionException
    * @throws WaarpDatabaseSqlException
    */
-  public int executeUpdate()
+  public final int executeUpdate()
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
     if (preparedStatement == null) {
       logger.error("executeUpdate no request");
@@ -335,7 +335,7 @@ public class DbPreparedStatement {
   /**
    * Close the resultSet if any
    */
-  public void close() {
+  public final void close() {
     if (rs != null) {
       try {
         rs.close();
@@ -349,7 +349,7 @@ public class DbPreparedStatement {
   /**
    * Really close the preparedStatement and the resultSet if any
    */
-  public void realClose() {
+  public final void realClose() {
     close();
     if (preparedStatement != null) {
       if (ls.isDisActive()) {
@@ -373,7 +373,7 @@ public class DbPreparedStatement {
    * @throws WaarpDatabaseNoConnectionException
    * @throws WaarpDatabaseSqlException
    */
-  public boolean getNext()
+  public final boolean getNext()
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
     if (rs == null) {
       logger.error("SQL ResultSet is Null into getNext");
@@ -403,7 +403,8 @@ public class DbPreparedStatement {
    *
    * @throws WaarpDatabaseNoConnectionException
    */
-  public ResultSet getResultSet() throws WaarpDatabaseNoConnectionException {
+  public final ResultSet getResultSet()
+      throws WaarpDatabaseNoConnectionException {
     if (rs == null) {
       throw new WaarpDatabaseNoConnectionException(
           "SQL ResultSet is Null into getResultSet");
@@ -417,7 +418,7 @@ public class DbPreparedStatement {
    *
    * @throws WaarpDatabaseNoConnectionException
    */
-  public PreparedStatement getPreparedStatement()
+  public final PreparedStatement getPreparedStatement()
       throws WaarpDatabaseNoConnectionException {
     if (preparedStatement == null) {
       throw new WaarpDatabaseNoConnectionException(
@@ -429,14 +430,14 @@ public class DbPreparedStatement {
   /**
    * @return the dbSession
    */
-  public DbSession getDbSession() {
+  public final DbSession getDbSession() {
     return ls;
   }
 
   /**
    * @return the isReady
    */
-  public boolean isReady() {
+  public final boolean isReady() {
     return isReady;
   }
 

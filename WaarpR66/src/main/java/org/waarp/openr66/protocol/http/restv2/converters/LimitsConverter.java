@@ -86,7 +86,7 @@ public final class LimitsConverter {
     Limit emptyLimits = null;
     try {
       emptyLimits = new Limit(serverName(), 0, 0, 0, 0, 0);
-    } catch (WaarpDatabaseSqlException e) {
+    } catch (final WaarpDatabaseSqlException e) {
       SysErrLogger.FAKE_LOGGER.syserr(e);
     }
     return nodeToUpdatedLimit(object, emptyLimits);

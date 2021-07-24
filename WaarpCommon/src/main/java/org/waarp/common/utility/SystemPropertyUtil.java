@@ -68,6 +68,10 @@ public final class SystemPropertyUtil {
 
   private static final Properties PROPS = new Properties();
   private static final String INVALID_PROPERTY = "Invalid property ";
+  public static final String JAVAX_XML_TRANSFORM_TRANSFORMER_FACTORY =
+      "javax.xml.transform.TransformerFactory";
+  public static final String NET_SF_SAXON_TRANSFORMER_FACTORY_IMPL =
+      "net.sf.saxon.TransformerFactoryImpl";
   private static Platform mOs;
 
   // Retrieve all system properties at once so that there's no need to deal with
@@ -109,8 +113,8 @@ public final class SystemPropertyUtil {
           PROPS.putAll(newProps);
         }
         SysErrLogger.FAKE_LOGGER.sysout(IO_NETTY_ALLOCATOR_TYPE + ":" +
-                                        io.netty.util.internal.SystemPropertyUtil
-                                            .get(IO_NETTY_ALLOCATOR_TYPE));
+                                        io.netty.util.internal.SystemPropertyUtil.get(
+                                            IO_NETTY_ALLOCATOR_TYPE));
       } catch (final Throwable ignored) {//NOSONAR
         SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
       }
@@ -125,8 +129,8 @@ public final class SystemPropertyUtil {
           PROPS.putAll(newProps);
         }
         SysErrLogger.FAKE_LOGGER.sysout(IO_NETTY_NOPREFERDIRECT + ":" +
-                                        io.netty.util.internal.SystemPropertyUtil
-                                            .get(IO_NETTY_NOPREFERDIRECT));
+                                        io.netty.util.internal.SystemPropertyUtil.get(
+                                            IO_NETTY_NOPREFERDIRECT));
       } catch (final Throwable ignored) {//NOSONAR
         SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
       }
@@ -141,19 +145,34 @@ public final class SystemPropertyUtil {
           PROPS.putAll(newProps);
         }
         SysErrLogger.FAKE_LOGGER.sysout(IO_NETTY_MAXDIRECTMEMORY + ":" +
-                                        io.netty.util.internal.SystemPropertyUtil
-                                            .get(IO_NETTY_MAXDIRECTMEMORY));
+                                        io.netty.util.internal.SystemPropertyUtil.get(
+                                            IO_NETTY_MAXDIRECTMEMORY));
       } catch (final Throwable ignored) {//NOSONAR
         SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
       }
+    }
+    try {
+      System.setProperty(JAVAX_XML_TRANSFORM_TRANSFORMER_FACTORY,
+                         NET_SF_SAXON_TRANSFORMER_FACTORY_IMPL);
+      synchronized (PROPS) {
+        PROPS.clear();
+        PROPS.putAll(newProps);
+      }
+    } catch (final Throwable ignored) {//NOSONAR
+      SysErrLogger.FAKE_LOGGER.ignoreLog(ignored);
     }
     if (!contains(FILE_ENCODING) ||
         !WaarpStringUtils.UTF_8.equalsIgnoreCase(get(FILE_ENCODING))) {
       try {
         System.setProperty(FILE_ENCODING, WaarpStringUtils.UTF_8);
-        final Field charset = Charset.class.getDeclaredField("defaultCharset");
-        charset.setAccessible(true); //NOSONAR
-        charset.set(null, null); //NOSONAR
+        try {
+          final Field charset =
+              Charset.class.getDeclaredField("defaultCharset");
+          charset.setAccessible(true); //NOSONAR
+          charset.set(null, null); //NOSONAR
+        } catch (final Throwable e) {//NOSONAR
+          SysErrLogger.FAKE_LOGGER.ignoreLog(e);
+        }
         synchronized (PROPS) {
           PROPS.clear();
           PROPS.putAll(newProps);
@@ -164,8 +183,8 @@ public final class SystemPropertyUtil {
         SysErrLogger.FAKE_LOGGER.syserr(
             "Issue while trying to set UTF-8 as default file encoding: use -Dfile.encoding=UTF-8 as java command argument: " +
             e1.getMessage());
-        SysErrLogger.FAKE_LOGGER
-            .syserr("Currently file.encoding is: " + get(FILE_ENCODING));
+        SysErrLogger.FAKE_LOGGER.syserr(
+            "Currently file.encoding is: " + get(FILE_ENCODING));
       }
     }
   }

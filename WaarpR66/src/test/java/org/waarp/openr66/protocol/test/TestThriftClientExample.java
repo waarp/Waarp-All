@@ -91,9 +91,9 @@ public class TestThriftClientExample {
       System.out.println("Delay: " + (endQu - startQu) + " : " +
                          (tries * 1000) / (endQu - startQu));
 
-      System.out.println("Exist: " + client
-          .isStillRunning(request.getFromuid(), request.getDestuid(),
-                          request.getTid()));
+      System.out.println("Exist: " + client.isStillRunning(request.getFromuid(),
+                                                           request.getDestuid(),
+                                                           request.getTid()));
 
       request.setMode(RequestMode.INFOFILE);
       request.setAction(Action.Mlsx);

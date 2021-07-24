@@ -66,7 +66,7 @@ public final class WaarpSslUtility {
       new ChannelFutureListener() {
 
         @Override
-        public void operationComplete(final ChannelFuture future) {
+        public final void operationComplete(final ChannelFuture future) {
           if (future.channel().isActive()) {
             future.channel().eventLoop()
                   .submit(new SslThread(future.channel()));
@@ -109,7 +109,7 @@ public final class WaarpSslUtility {
     } else {
       future.addListener(new GenericFutureListener() {
         @Override
-        public void operationComplete(final Future future) {
+        public final void operationComplete(final Future future) {
           logger.debug("Add SslHandler: {}", pipeline.channel());
           pipeline.channel().config().setAutoRead(true);
           pipeline.addFirst("SSL", sslHandler);
@@ -196,8 +196,8 @@ public final class WaarpSslUtility {
   public static ChannelFuture closingSslChannel(final Channel channel) {
     if (channel.isActive()) {
       removingSslHandler(null, channel, true);
-      logger
-          .debug("Close the channel and returns the ChannelFuture: " + channel);
+      logger.debug(
+          "Close the channel and returns the ChannelFuture: " + channel);
       return channel.closeFuture();
     }
     if (channel.closeFuture().isDone()) {
@@ -228,7 +228,7 @@ public final class WaarpSslUtility {
         if (future != null) {
           future.addListener(new GenericFutureListener() {
             @Override
-            public void operationComplete(final Future future) {
+            public final void operationComplete(final Future future) {
               waitForSslClose(channel, sslHandler, close);
             }
           });
@@ -252,7 +252,7 @@ public final class WaarpSslUtility {
       sslHandler.closeOutbound()
                 .addListener(new GenericFutureListener<Future<? super Void>>() {
                   @Override
-                  public void operationComplete(
+                  public final void operationComplete(
                       final Future<? super Void> future) {
                     logger.debug("Ssl closed: {}", channel);
                     channel.pipeline().remove(sslHandler);

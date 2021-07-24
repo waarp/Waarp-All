@@ -34,10 +34,10 @@ public class HttpServerExample {
 
   public HttpServerExample(int port) {
     final ServerBootstrap httpBootstrap = new ServerBootstrap();
-    WaarpNettyUtil.setServerBootstrap(httpBootstrap, Configuration.configuration
-                                          .getHttpWorkerGroup(), Configuration.configuration.getHttpWorkerGroup(),
-                                      (int) Configuration.configuration
-                                          .getTimeoutCon());
+    WaarpNettyUtil.setServerBootstrap(httpBootstrap,
+                                      Configuration.configuration.getHttpWorkerGroup(),
+                                      Configuration.configuration.getHttpWorkerGroup(),
+                                      (int) Configuration.configuration.getTimeoutCon());
     httpBootstrap.childHandler(new HttpServerExampleInitializer());
     // Bind and start to accept incoming connections.
     final ChannelFuture future;

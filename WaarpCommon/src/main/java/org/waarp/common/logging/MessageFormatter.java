@@ -296,8 +296,8 @@ final class MessageFormatter {
 
   static boolean isEscapedDelimeter(final String messagePattern,
                                     final int delimeterStartIndex) {
-    ParametersChecker
-        .checkParameterNullOnly("Must not be null", messagePattern);
+    ParametersChecker.checkParameterNullOnly("Must not be null",
+                                             messagePattern);
     if (delimeterStartIndex == 0) {
       return false;
     }
@@ -306,8 +306,8 @@ final class MessageFormatter {
 
   static boolean isDoubleEscaped(final String messagePattern,
                                  final int delimeterStartIndex) {
-    ParametersChecker
-        .checkParameterNullOnly("Must not be null", messagePattern);
+    ParametersChecker.checkParameterNullOnly("Must not be null",
+                                             messagePattern);
     return delimeterStartIndex >= 2 &&
            delimeterStartIndex - 2 > messagePattern.length() &&
            messagePattern.charAt(delimeterStartIndex - 2) == ESCAPE_CHAR;

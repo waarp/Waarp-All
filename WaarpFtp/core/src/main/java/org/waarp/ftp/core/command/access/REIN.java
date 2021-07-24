@@ -29,7 +29,7 @@ import org.waarp.ftp.core.command.FtpCommandCode;
 public class REIN extends AbstractCommand {
 
   @Override
-  public void exec() {
+  public final void exec() {
     // reset to default
     getSession().rein();
     setExtraNextCommand(FtpCommandCode.USER);

@@ -102,7 +102,7 @@ public class FilesystemBasedDigest {
    *
    * @throws NoSuchAlgorithmException
    */
-  public void initialize() throws NoSuchAlgorithmException {
+  public final void initialize() throws NoSuchAlgorithmException {
     if (algo == DigestAlgo.MD5 && isUseFastMd5()) {
       md5 = new MD5();
       return;
@@ -141,13 +141,13 @@ public class FilesystemBasedDigest {
    *
    * @throws NoSuchAlgorithmException
    */
-  public void initialize(final DigestAlgo algo)
+  public final void initialize(final DigestAlgo algo)
       throws NoSuchAlgorithmException {
     this.algo = algo;
     initialize();
   }
 
-  public DigestAlgo getAlgo() {
+  public final DigestAlgo getAlgo() {
     return algo;
   }
 
@@ -158,7 +158,8 @@ public class FilesystemBasedDigest {
    * @param offset
    * @param length
    */
-  public void Update(final byte[] bytes, final int offset, final int length) {
+  public final void Update(final byte[] bytes, final int offset,
+                           final int length) {
     if (md5 != null) {
       md5.Update(bytes, offset, length);
       return;
@@ -217,7 +218,7 @@ public class FilesystemBasedDigest {
   /**
    * Update the digest with new buffer
    */
-  public void Update(final ByteBuf buffer) {
+  public final void Update(final ByteBuf buffer) {
     final byte[] bytes = getBytes(buffer);
     final int start = getOffset(buffer);
     final int length = buffer.readableBytes();
@@ -227,14 +228,14 @@ public class FilesystemBasedDigest {
   /**
    * Update the digest with new buffer
    */
-  public void Update(final byte[] buffer) {
+  public final void Update(final byte[] buffer) {
     Update(buffer, 0, buffer.length);
   }
 
   /**
    * @return the digest in array of bytes
    */
-  public byte[] Final() {
+  public final byte[] Final() {
     if (md5 != null) {
       return md5.Final();
     }
@@ -295,14 +296,14 @@ public class FilesystemBasedDigest {
     /**
      * @return the length in bytes of one Digest
      */
-    public int getByteSize() {
+    public final int getByteSize() {
       return byteSize;
     }
 
     /**
      * @return the length in Hex form of one Digest
      */
-    public int getHexSize() {
+    public final int getHexSize() {
       return byteSize * 2;
     }
 

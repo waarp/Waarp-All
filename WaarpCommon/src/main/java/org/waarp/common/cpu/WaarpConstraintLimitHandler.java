@@ -436,8 +436,8 @@ public abstract class WaarpConstraintLimitHandler implements Runnable {
       }
       logger.debug("Activate Throttle bandwidth according to CPU usage");
       executor = new ScheduledThreadPoolExecutor(1);
-      executor
-          .scheduleWithFixedDelay(this, delay, delay, TimeUnit.MILLISECONDS);
+      executor.scheduleWithFixedDelay(this, delay, delay,
+                                      TimeUnit.MILLISECONDS);
     } else {
       if (executor != null) {
         executor.shutdownNow();

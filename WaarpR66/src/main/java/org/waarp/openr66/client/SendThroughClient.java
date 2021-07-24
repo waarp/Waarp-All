@@ -265,8 +265,7 @@ public abstract class SendThroughClient extends AbstractTransfer {
           localChannelReference.getSession().setFinalizeTransfer(false,
                                                                  new R66Result(
                                                                      e,
-                                                                     localChannelReference
-                                                                         .getSession(),
+                                                                     localChannelReference.getSession(),
                                                                      false,
                                                                      ErrorCode.Internal,
                                                                      taskRunner));
@@ -293,9 +292,8 @@ public abstract class SendThroughClient extends AbstractTransfer {
           validPacket.setOptional(session.getBusinessObject().getInfo(session));
         }
         try {
-          ChannelUtils
-              .writeAbstractLocalPacket(localChannelReference, validPacket,
-                                        false);
+          ChannelUtils.writeAbstractLocalPacket(localChannelReference,
+                                                validPacket, false);
         } catch (final OpenR66ProtocolPacketException ignored) {
           // nothing
         }
@@ -338,12 +336,11 @@ public abstract class SendThroughClient extends AbstractTransfer {
         logger.error("Transfer in error", e);
         localChannelReference.sessionNewState(R66FiniteDualStates.ERROR);
         final ErrorPacket error = new ErrorPacket("Transfer in error",
-                                                  ErrorCode.TransferError
-                                                      .getCode(),
+                                                  ErrorCode.TransferError.getCode(),
                                                   ErrorPacket.FORWARDCLOSECODE);
         try {
-          ChannelUtils
-              .writeAbstractLocalPacket(localChannelReference, error, false);
+          ChannelUtils.writeAbstractLocalPacket(localChannelReference, error,
+                                                false);
         } catch (final OpenR66ProtocolPacketException ignored) {
           // nothing
         }
@@ -364,8 +361,8 @@ public abstract class SendThroughClient extends AbstractTransfer {
    */
   public ChannelFuture writeWhenPossible(final DataBlock block)
       throws OpenR66ProtocolPacketException {
-    return RetrieveRunner
-        .writeWhenPossible(block, localChannelReference, null, null);
+    return RetrieveRunner.writeWhenPossible(block, localChannelReference, null,
+                                            null);
   }
 
   /**

@@ -116,8 +116,8 @@ class SequenceEncoder {
 
     // literal lengths
     final int[] counts = workspace.counts;
-    Histogram
-        .count(sequences.literalLengthCodes, sequenceCount, workspace.counts);
+    Histogram.count(sequences.literalLengthCodes, sequenceCount,
+                    workspace.counts);
     maxSymbol = Histogram.findMaxSymbol(counts, MAX_LITERALS_LENGTH_SYMBOL);
     largestCount = Histogram.findLargestCount(counts, maxSymbol);
 
@@ -189,8 +189,8 @@ class SequenceEncoder {
     }
 
     // match lengths
-    Histogram
-        .count(sequences.matchLengthCodes, sequenceCount, workspace.counts);
+    Histogram.count(sequences.matchLengthCodes, sequenceCount,
+                    workspace.counts);
     maxSymbol = Histogram.findMaxSymbol(counts, MAX_MATCH_LENGTH_SYMBOL);
     largestCount = Histogram.findLargestCount(counts, maxSymbol);
 
@@ -254,15 +254,15 @@ class SequenceEncoder {
       sequenceCount--;
     }
 
-    FiniteStateEntropy
-        .normalizeCounts(normalizedCounts, tableLog, counts, sequenceCount,
-                         maxSymbol);
+    FiniteStateEntropy.normalizeCounts(normalizedCounts, tableLog, counts,
+                                       sequenceCount, maxSymbol);
     table.initialize(normalizedCounts, maxSymbol, tableLog);
 
-    return FiniteStateEntropy
-        .writeNormalizedCounts(outputBase, output, (int) (outputLimit - output),
-                               normalizedCounts, maxSymbol,
-                               tableLog); // TODO: pass outputLimit directly
+    return FiniteStateEntropy.writeNormalizedCounts(outputBase, output,
+                                                    (int) (outputLimit -
+                                                           output),
+                                                    normalizedCounts, maxSymbol,
+                                                    tableLog); // TODO: pass outputLimit directly
   }
 
   private static int encodeSequences(final Object outputBase, final long output,
@@ -308,10 +308,12 @@ class SequenceEncoder {
         // (7)
         offsetState =
             offsetsTable.encode(blockStream, offsetState, offsetCode); // 15
-        matchLengthState = matchLengthTable
-            .encode(blockStream, matchLengthState, matchLengthCode); // 24
-        literalLengthState = literalLengthTable
-            .encode(blockStream, literalLengthState, literalLengthCode); // 33
+        matchLengthState =
+            matchLengthTable.encode(blockStream, matchLengthState,
+                                    matchLengthCode); // 24
+        literalLengthState =
+            literalLengthTable.encode(blockStream, literalLengthState,
+                                      literalLengthCode); // 33
 
         if (((int) offsetCode + matchLengthBits + literalLengthBits >= 64 - 7 -
                                                                        (LITERAL_LENGTH_TABLE_LOG +
@@ -362,8 +364,8 @@ class SequenceEncoder {
       return SEQUENCE_ENCODING_RLE;
     }
 
-    if (strategy.ordinal() < CompressionParameters.Strategy.LAZY
-        .ordinal()) { // TODO: more robust check. Maybe encapsulate in strategy objects
+    if (strategy.ordinal() <
+        CompressionParameters.Strategy.LAZY.ordinal()) { // TODO: more robust check. Maybe encapsulate in strategy objects
       if (isDefaultTableAllowed) {
         final int factor =
             10 - strategy.ordinal(); // TODO more robust. Move it to strategy

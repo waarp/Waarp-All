@@ -62,7 +62,8 @@ public abstract class AbstractDbDataDao<E> extends AbstractDbData {
 
   protected abstract void checkValues() throws WaarpDatabaseSqlException;
 
-  protected abstract AbstractDAO<E> getDao(final boolean isCacheable) throws DAOConnectionException;
+  protected abstract AbstractDAO<E> getDao(final boolean isCacheable)
+      throws DAOConnectionException;
 
   protected abstract String getPrimaryKey();
 
@@ -189,7 +190,7 @@ public abstract class AbstractDbDataDao<E> extends AbstractDbData {
    * @return the PoJo as Json
    */
   @Override
-  public String asJson() {
+  public final String asJson() {
     final ObjectNode node = getJson();
     return JsonHandler.writeAsString(node);
   }

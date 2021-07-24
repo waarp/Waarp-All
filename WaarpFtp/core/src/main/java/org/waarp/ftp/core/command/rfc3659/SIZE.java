@@ -31,7 +31,7 @@ import org.waarp.ftp.core.file.FtpFile;
  */
 public class SIZE extends AbstractCommand {
   @Override
-  public void exec() throws CommandAbstractException {
+  public final void exec() throws CommandAbstractException {
     // First Check if any argument
     if (!hasArg()) {
       throw new Reply501Exception("Need a path as argument");
@@ -42,8 +42,8 @@ public class SIZE extends AbstractCommand {
     }
     final FtpFile file = getSession().getDir().setFile(arg, false);
     final long length = file.length();
-    getSession()
-        .setReplyCode(ReplyCode.REPLY_213_FILE_STATUS, String.valueOf(length));
+    getSession().setReplyCode(ReplyCode.REPLY_213_FILE_STATUS,
+                              String.valueOf(length));
   }
 
 }

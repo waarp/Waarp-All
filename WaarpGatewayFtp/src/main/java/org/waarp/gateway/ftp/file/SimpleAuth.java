@@ -115,7 +115,7 @@ public class SimpleAuth {
    *
    * @return True if the password is valid (or any password is valid)
    */
-  public boolean isPasswordValid(final String newpassword) {
+  public final boolean isPasswordValid(final String newpassword) {
     if (getPassword() == null) {
       return true;
     }
@@ -132,7 +132,7 @@ public class SimpleAuth {
    *
    * @return True if the account is valid (or any account is valid)
    */
-  public boolean isAccountValid(final String account) {
+  public final boolean isAccountValid(final String account) {
     if (getAccounts() == null) {
       logger.debug("No account needed");
       return true;
@@ -154,14 +154,14 @@ public class SimpleAuth {
   /**
    * @param isAdmin True if the user should be an administrator
    */
-  public void setAdmin(final boolean isAdmin) {
+  public final void setAdmin(final boolean isAdmin) {
     this.isAdmin = isAdmin;
   }
 
   /**
    * @return the user
    */
-  public String getUser() {
+  public final String getUser() {
     return user;
   }
 
@@ -175,7 +175,7 @@ public class SimpleAuth {
   /**
    * @return the password
    */
-  public String getPassword() {
+  public final String getPassword() {
     return password;
   }
 
@@ -189,7 +189,7 @@ public class SimpleAuth {
   /**
    * @return the accounts
    */
-  public String[] getAccounts() {
+  public final String[] getAccounts() {
     return accounts;
   }
 
@@ -203,14 +203,14 @@ public class SimpleAuth {
   /**
    * @return the isAdmin
    */
-  public boolean isAdmin() {
+  public final boolean isAdmin() {
     return isAdmin;
   }
 
   /**
    * @return the storCmd
    */
-  public String getStorCmd() {
+  public final String getStorCmd() {
     return storCmd;
   }
 
@@ -224,7 +224,7 @@ public class SimpleAuth {
   /**
    * @return the storDelay
    */
-  public long getStorDelay() {
+  public final long getStorDelay() {
     return storDelay;
   }
 
@@ -238,7 +238,7 @@ public class SimpleAuth {
   /**
    * @return the retrCmd
    */
-  public String getRetrCmd() {
+  public final String getRetrCmd() {
     return retrCmd;
   }
 
@@ -252,7 +252,7 @@ public class SimpleAuth {
   /**
    * @return the retrDelay
    */
-  public long getRetrDelay() {
+  public final long getRetrDelay() {
     return retrDelay;
   }
 
@@ -266,7 +266,7 @@ public class SimpleAuth {
   /**
    * @return the commandExecutor
    */
-  public CommandExecutor getCommandExecutor() {
+  public final CommandExecutor getCommandExecutor() {
     return commandExecutor;
   }
 

@@ -51,6 +51,7 @@ import org.waarp.common.utility.Processes;
 import org.waarp.common.utility.SystemPropertyUtil;
 import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.common.utility.WaarpSystemUtil;
+import org.waarp.openr66.client.NoOpRecvThroughHandler;
 import org.waarp.openr66.client.SubmitTransfer;
 import org.waarp.openr66.client.TransferArgs;
 import org.waarp.openr66.database.DbConstantR66;
@@ -58,7 +59,6 @@ import org.waarp.openr66.database.data.DbTaskRunner;
 import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.junit.TestAbstract;
 import org.waarp.openr66.protocol.test.TestRecvThroughClient;
-import org.waarp.openr66.protocol.test.TestRecvThroughClient.TestRecvThroughHandler;
 import org.waarp.openr66.protocol.test.TestTransferNoDb;
 import org.waarp.openr66.protocol.utils.R66Future;
 import org.waarp.openr66.server.R66Server;
@@ -101,6 +101,8 @@ public abstract class ScenarioBaseLoop extends TestAbstract {
   public static boolean SERVER1_IN_JUNIT = true;
   private static final String TMP_CONFIG_XML = "/tmp/config.xml";
   private static File configFile = null;
+  private static final NoOpRecvThroughHandler handler =
+      new NoOpRecvThroughHandler();
   private long usedMemory;
 
   public static void setUpBeforeClass() throws Exception {
@@ -129,7 +131,7 @@ public abstract class ScenarioBaseLoop extends TestAbstract {
     } else if ("-Xmx4096m".equalsIgnoreCase(xmx)) {
       Processes.setJvmArgsDefault("-Xms4096m -Xmx4096m ");
     } else {
-      Processes.setMemoryAccordingToFreeMemory(SERVER1_IN_JUNIT? 2 : 3);
+      Processes.setMemoryAccordingToFreeMemory(SERVER1_IN_JUNIT? 2 : 2);
     }
     if (!SERVER1_IN_JUNIT) {
       r66Pid1 = startServer(configFile.getAbsolutePath());
@@ -159,8 +161,8 @@ public abstract class ScenarioBaseLoop extends TestAbstract {
     File file =
         new File(classLoader.getResource(RESOURCES_SERVER_1_XML).getFile());
     if (!file.exists()) {
-      SysErrLogger.FAKE_LOGGER
-          .syserr("Cannot find in  " + file.getAbsolutePath());
+      SysErrLogger.FAKE_LOGGER.syserr(
+          "Cannot find in  " + file.getAbsolutePath());
       fail("Cannot find " + file.getAbsolutePath());
     }
     String content = WaarpStringUtils.readFile(file.getAbsolutePath());
@@ -175,8 +177,8 @@ public abstract class ScenarioBaseLoop extends TestAbstract {
     } else if (driver.equalsIgnoreCase("oracle.jdbc.OracleDriver")) {
       target = "oracle";
       jdbcUrl = "jdbc:oracle:thin:@//localhost:1521/test";
-      SysErrLogger.FAKE_LOGGER
-          .syserr(jdbcUrl + " while should be something like " + jdbcUrl);
+      SysErrLogger.FAKE_LOGGER.syserr(
+          jdbcUrl + " while should be something like " + jdbcUrl);
       throw new UnsupportedOperationException(
           "Unsupported Test for Oracle since wrong JDBC driver");
     } else if (driver.equalsIgnoreCase("org.postgresql.Driver")) {
@@ -247,8 +249,8 @@ public abstract class ScenarioBaseLoop extends TestAbstract {
         configFile = new File(dirResources, fileconf);
       }
     } catch (UnsupportedOperationException e) {
-      SysErrLogger.FAKE_LOGGER
-          .syserr("Database not supported by this test Start Stop R66", e);
+      SysErrLogger.FAKE_LOGGER.syserr(
+          "Database not supported by this test Start Stop R66", e);
       Assume.assumeNoException(e);
       return;
     }
@@ -308,8 +310,9 @@ public abstract class ScenarioBaseLoop extends TestAbstract {
       // global ant project settings
       project = Processes.getProject(homeDir);
       Processes.executeJvm(project, R66Server.class, argsServer, true);
-      int pid = Processes
-          .getPidOfRunnerCommandLinux("java", R66Server.class.getName(), PIDS);
+      int pid = Processes.getPidOfRunnerCommandLinux("java",
+                                                     R66Server.class.getName(),
+                                                     PIDS);
       PIDS.add(pid);
       logger.warn("Start Done: {}", pid);
       return pid;
@@ -372,8 +375,8 @@ public abstract class ScenarioBaseLoop extends TestAbstract {
         try {
           response = httpClient.execute(request);
           if (400 <= response.getStatusLine().getStatusCode()) {
-            logger
-                .warn("Bad Code {}", response.getStatusLine().getStatusCode());
+            logger.warn("Bad Code {}",
+                        response.getStatusLine().getStatusCode());
           }
           String content = EntityUtils.toString(response.getEntity());
           ObjectNode node = JsonHandler.getFromString(content);
@@ -447,9 +450,9 @@ public abstract class ScenarioBaseLoop extends TestAbstract {
     }
     Assume.assumeNotNull(networkTransaction);
     if (limit) {
-      Configuration.configuration
-          .changeNetworkLimit(BANDWIDTH * 2, BANDWIDTH * 2, BANDWIDTH,
-                              BANDWIDTH, 1000);
+      Configuration.configuration.changeNetworkLimit(BANDWIDTH * 2,
+                                                     BANDWIDTH * 2, BANDWIDTH,
+                                                     BANDWIDTH, 1000);
     } else {
       Configuration.configuration.changeNetworkLimit(0, 0, 0, 0, 1000);
     }
@@ -465,7 +468,6 @@ public abstract class ScenarioBaseLoop extends TestAbstract {
     final R66Future future = new R66Future(true);
     if (direct) {
       if (recv) {
-        final TestRecvThroughHandler handler = new TestRecvThroughHandler();
         final TestRecvThroughClient transaction =
             new TestRecvThroughClient(future, handler, serverName,
                                       "hello" + size, "recvthrough",

@@ -87,8 +87,8 @@ public class SpooledEngine extends EngineAbstract {
             }
           }
         }
-        if (!SpooledDirectoryTransfer
-            .initialize(array.toArray(STRING_0_LENGTH), false)) {
+        if (!SpooledDirectoryTransfer.initialize(array.toArray(STRING_0_LENGTH),
+                                                 false)) {
           throw new Exception("Initialization in error");
         }
       } finally {
@@ -104,18 +104,17 @@ public class SpooledEngine extends EngineAbstract {
   }
 
   @Override
-  public void shutdown() {
+  public final void shutdown() {
     WaarpShutdownHook.shutdownWillStart();
     logger.info("Shutdown");
     for (final SpooledDirectoryTransfer spooled : SpooledDirectoryTransfer.list) {
       spooled.stop();
     }
-    Configuration.configuration
-        .setTimeoutCon(Configuration.configuration.getTimeoutCon() / 10);
+    Configuration.configuration.setTimeoutCon(
+        Configuration.configuration.getTimeoutCon() / 10);
     try {
-      while (!SpooledDirectoryTransfer.executorService
-          .awaitTermination(Configuration.configuration.getTimeoutCon(),
-                            TimeUnit.MILLISECONDS)) {
+      while (!SpooledDirectoryTransfer.executorService.awaitTermination(
+          Configuration.configuration.getTimeoutCon(), TimeUnit.MILLISECONDS)) {
         Thread.sleep(Configuration.configuration.getTimeoutCon());
       }
     } catch (final InterruptedException e) {//NOSONAR
@@ -125,8 +124,8 @@ public class SpooledEngine extends EngineAbstract {
       logger.warn(Messages.getString("SpooledDirectoryTransfer.58") +
                   spooledDirectoryTransfer.name + ": " +
                   spooledDirectoryTransfer.getSent() + " success, " +
-                  spooledDirectoryTransfer.getError() + Messages
-                      .getString("SpooledDirectoryTransfer.60")); //$NON-NLS-1$
+                  spooledDirectoryTransfer.getError() + Messages.getString(
+          "SpooledDirectoryTransfer.60")); //$NON-NLS-1$
     }
     SpooledDirectoryTransfer.list.clear();
     logger.info("Shutdown network");
@@ -138,12 +137,12 @@ public class SpooledEngine extends EngineAbstract {
   }
 
   @Override
-  public boolean isShutdown() {
+  public final boolean isShutdown() {
     return closeFuture.isDone();
   }
 
   @Override
-  public boolean waitShutdown() {
+  public final boolean waitShutdown() {
     closeFuture.awaitOrInterruptible();
     logger.info("Shutdown on going: {}", closeFuture.isSuccess());
     return closeFuture.isSuccess();

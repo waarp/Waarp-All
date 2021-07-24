@@ -92,11 +92,11 @@ public class S3TaskArgs {
             .desc("Specify the File to operate on").build();
   private static final Option OPTION_GET_TAGS =
       Option.builder(ARG_GET_TAGS).required(false).hasArg(true).desc(
-          "Specify the Tags to retrieve: * or comma separated list without space")
+                "Specify the Tags to retrieve: * or comma separated list without space")
             .build();
   private static final Option OPTION_SET_TAGS =
       Option.builder(ARG_SET_TAGS).required(false).hasArg(true).desc(
-          "Specify the Tags to set: key1:value1,key2:value2 comma separated list without space")
+                "Specify the Tags to set: key1:value1,key2:value2 comma separated list without space")
             .build();
 
   private static final Options S3_GET_OPTIONS =
@@ -254,9 +254,8 @@ public class S3TaskArgs {
                     final String targetName, final File file,
                     final Set<String> getTags,
                     final Map<String, String> setTags) {
-    ParametersChecker
-        .checkParameter(EMPTY_STRING_NOT_ALLOWED, accessKey, secretKey,
-                        bucketName);
+    ParametersChecker.checkParameter(EMPTY_STRING_NOT_ALLOWED, accessKey,
+                                     secretKey, bucketName);
     if ((type == S3TaskFactory.S3TaskType.S3GET ||
          type == S3TaskFactory.S3TaskType.S3GETDELETE ||
          type == S3TaskFactory.S3TaskType.S3DELETE) &&
@@ -280,43 +279,43 @@ public class S3TaskArgs {
     this.getTag = getTags != null;
   }
 
-  public URL getUrl() {
+  public final URL getUrl() {
     return url;
   }
 
-  public String getAccessKey() {
+  public final String getAccessKey() {
     return accessKey;
   }
 
-  public String getSecretKey() {
+  public final String getSecretKey() {
     return secretKey;
   }
 
-  public String getBucketName() {
+  public final String getBucketName() {
     return bucketName;
   }
 
-  public String getSourceName() {
+  public final String getSourceName() {
     return sourceName;
   }
 
-  public String getTargetName() {
+  public final String getTargetName() {
     return targetName;
   }
 
-  public File getFile() {
+  public final File getFile() {
     return file;
   }
 
-  public Set<String> getGetTags() {
+  public final Set<String> getGetTags() {
     return getTags;
   }
 
-  public boolean getGetTag() {
+  public final boolean getGetTag() {
     return getTag;
   }
 
-  public Map<String, String> getSetTags() {
+  public final Map<String, String> getSetTags() {
     return setTags;
   }
 }

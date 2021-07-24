@@ -101,14 +101,14 @@ public class SpooledHandler extends AbstractRestDbHandler {
   @GET
   @Consumes(APPLICATION_FORM_URLENCODED)
   @RequiredRole(ROLE.READONLY)
-  public void filterTransfer(final HttpRequest request,
-                             final HttpResponder responder,
-                             @QueryParam("name") @DefaultValue("")
-                             final String nameStr,
-                             @QueryParam(STATUS) @DefaultValue("")
-                             final String statusStr,
-                             @QueryParam(COUNT_ORDER) @DefaultValue("")
-                             final String countOrder) {
+  public final void filterTransfer(final HttpRequest request,
+                                   final HttpResponder responder,
+                                   @QueryParam("name") @DefaultValue("")
+                                   final String nameStr,
+                                   @QueryParam(STATUS) @DefaultValue("")
+                                   final String statusStr,
+                                   @QueryParam(COUNT_ORDER) @DefaultValue("")
+                                   final String countOrder) {
     checkSanity(nameStr, statusStr, countOrder);
     boolean count = false;
     try {
@@ -175,8 +175,8 @@ public class SpooledHandler extends AbstractRestDbHandler {
   @OPTIONS
   @Consumes(WILDCARD)
   @RequiredRole(ROLE.NOACCESS)
-  public void options(final HttpRequest request,
-                      final HttpResponder responder) {
+  public final void options(final HttpRequest request,
+                            final HttpResponder responder) {
     responder.sendStatus(OK, OPTIONS_HEADERS);
   }
 }

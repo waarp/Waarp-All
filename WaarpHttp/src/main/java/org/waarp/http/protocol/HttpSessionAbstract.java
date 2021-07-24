@@ -111,14 +111,14 @@ public class HttpSessionAbstract implements HttpSession {
    *
    * @throws IllegalArgumentException
    */
-  protected DbTaskRunner getDbTaskRunner(final String user,
-                                         final String filename,
-                                         final String rulename,
-                                         final long identifier,
-                                         final String comment,
-                                         final int chunkSize,
-                                         final R66BusinessInterface business,
-                                         final boolean uploadMode)
+  protected final DbTaskRunner getDbTaskRunner(final String user,
+                                               final String filename,
+                                               final String rulename,
+                                               final long identifier,
+                                               final String comment,
+                                               final int chunkSize,
+                                               final R66BusinessInterface business,
+                                               final boolean uploadMode)
       throws IllegalArgumentException {
     session.newState(REQUESTR);
     session.setBlockSize(chunkSize);
@@ -222,8 +222,8 @@ public class HttpSessionAbstract implements HttpSession {
    *
    * @throws IllegalArgumentException
    */
-  protected void preTasks(final R66BusinessInterface business,
-                          final DbTaskRunner runner)
+  protected final void preTasks(final R66BusinessInterface business,
+                                final DbTaskRunner runner)
       throws IllegalArgumentException {
     runner.reset();
     runner.changeUpdatedInfo(UpdatedInfo.RUNNING);
@@ -259,7 +259,7 @@ public class HttpSessionAbstract implements HttpSession {
    *
    * @param runner
    */
-  protected void startTransfer(final DbTaskRunner runner) {
+  protected final void startTransfer(final DbTaskRunner runner) {
     runner.setTransferTask(0);
     try {
       runner.saveStatus();
@@ -271,7 +271,7 @@ public class HttpSessionAbstract implements HttpSession {
   /**
    * Run post tasks on finished transfer
    */
-  protected void runPostTask() {
+  protected final void runPostTask() {
     final DbTaskRunner runner = session.getRunner();
     runner.setPostTask();
     try {
@@ -297,7 +297,7 @@ public class HttpSessionAbstract implements HttpSession {
   /**
    * @return the current DbTaskRunner if any (null if not)
    */
-  public DbTaskRunner getDbTaskRunner() {
+  public final DbTaskRunner getDbTaskRunner() {
     return session.getRunner();
   }
 }

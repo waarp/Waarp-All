@@ -53,6 +53,7 @@ import org.waarp.icap.server.IcapServerHandler;
 import org.waarp.openr66.client.Message;
 import org.waarp.openr66.client.MultipleDirectTransfer;
 import org.waarp.openr66.client.MultipleSubmitTransfer;
+import org.waarp.openr66.client.NoOpRecvThroughHandler;
 import org.waarp.openr66.client.SpooledDirectoryTransfer;
 import org.waarp.openr66.client.SpooledDirectoryTransfer.Arguments;
 import org.waarp.openr66.client.SubmitTransfer;
@@ -83,7 +84,6 @@ import org.waarp.openr66.protocol.localhandler.packet.json.StopOrCancelJsonPacke
 import org.waarp.openr66.protocol.test.TestBusinessRequest;
 import org.waarp.openr66.protocol.test.TestProgressBarTransfer;
 import org.waarp.openr66.protocol.test.TestRecvThroughClient;
-import org.waarp.openr66.protocol.test.TestRecvThroughClient.TestRecvThroughHandler;
 import org.waarp.openr66.protocol.test.TestSendThroughClient;
 import org.waarp.openr66.protocol.test.TestTasks;
 import org.waarp.openr66.protocol.test.TestTransaction;
@@ -143,8 +143,9 @@ public class NetworkClientOnlyOneCompressionTest extends TestAbstract {
       // global ant project settings
       project = Processes.getProject(homeDir);
       Processes.executeJvm(project, R66Server.class, argsServer, true);
-      int pid = Processes
-          .getPidOfRunnerCommandLinux("java", R66Server.class.getName(), PIDS);
+      int pid = Processes.getPidOfRunnerCommandLinux("java",
+                                                     R66Server.class.getName(),
+                                                     PIDS);
       PIDS.add(pid);
       logger.warn("Start Done: {}", pid);
       return pid;
@@ -330,7 +331,7 @@ public class NetworkClientOnlyOneCompressionTest extends TestAbstract {
       Thread.sleep(20);
     } catch (InterruptedException e) {
     }
-    final TestRecvThroughHandler handler = new TestRecvThroughHandler();
+    final NoOpRecvThroughHandler handler = new NoOpRecvThroughHandler();
     R66Future future = new R66Future(true);
     TestRecvThroughClient transaction =
         new TestRecvThroughClient(future, handler, "hostb", "testTask.txt",
@@ -467,7 +468,7 @@ public class NetworkClientOnlyOneCompressionTest extends TestAbstract {
     ArrayList<R66Future> futures = new ArrayList<R66Future>(NUMBER_FILES);
     ExecutorService executorService =
         Executors.newFixedThreadPool(NUMBER_FILES);
-    final TestRecvThroughHandler handler = new TestRecvThroughHandler();
+    final NoOpRecvThroughHandler handler = new NoOpRecvThroughHandler();
     long timestart = System.currentTimeMillis();
     for (int i = 0; i < NUMBER_FILES; i++) {
       final R66Future future = new R66Future(true);
@@ -489,10 +490,10 @@ public class NetworkClientOnlyOneCompressionTest extends TestAbstract {
       checkCompression(future.getRunner());
     }
     long timestop = System.currentTimeMillis();
-    logger
-        .warn("RecvThrough {} files from R2" + " ({} seconds,  {} per seconds)",
-              NUMBER_FILES, (timestop - timestart) / 1000,
-              NUMBER_FILES * 1000 / (timestop - timestart));
+    logger.warn(
+        "RecvThrough {} files from R2" + " ({} seconds,  {} per seconds)",
+        NUMBER_FILES, (timestop - timestart) / 1000,
+        NUMBER_FILES * 1000 / (timestop - timestart));
   }
 
   @Test
@@ -561,8 +562,8 @@ public class NetworkClientOnlyOneCompressionTest extends TestAbstract {
     if (totest.length() == to.length()) {
       success++;
     } else {
-      logger
-          .error("File sizes differs: {} vs {}", totest.length(), to.length());
+      logger.error("File sizes differs: {} vs {}", totest.length(),
+                   to.length());
       error++;
     }
     final long time2 = System.currentTimeMillis();
@@ -791,8 +792,8 @@ public class NetworkClientOnlyOneCompressionTest extends TestAbstract {
       submitTransfer.run();
       logger.warn("Waiting second submit transfer");
       future2.awaitOrInterruptible();
-      logger
-          .warn("End wait for second submit transfer {}", future2.isSuccess());
+      logger.warn("End wait for second submit transfer {}",
+                  future2.isSuccess());
       if (future2.isSuccess()) {
         success++;
       } else {
@@ -973,8 +974,8 @@ public class NetworkClientOnlyOneCompressionTest extends TestAbstract {
     final File totestBig =
         generateOutFile("/tmp/R66/out/testTaskBig.txt", size);
 
-    Configuration.configuration
-        .changeNetworkLimit(bandwidth, bandwidth, bandwidth, bandwidth, 1000);
+    Configuration.configuration.changeNetworkLimit(bandwidth, bandwidth,
+                                                   bandwidth, bandwidth, 1000);
 
     final R66Future future = new R66Future(true);
     final long time1 = System.currentTimeMillis();
@@ -1002,8 +1003,8 @@ public class NetworkClientOnlyOneCompressionTest extends TestAbstract {
     final File totestBig =
         generateOutFile("/tmp/R66/out/testTaskBig.txt", size);
 
-    Configuration.configuration
-        .changeNetworkLimit(bandwidth, bandwidth, bandwidth, bandwidth, 1000);
+    Configuration.configuration.changeNetworkLimit(bandwidth, bandwidth,
+                                                   bandwidth, bandwidth, 1000);
 
     final R66Future future = new R66Future(true);
     final long time1 = System.currentTimeMillis();
@@ -1059,8 +1060,8 @@ public class NetworkClientOnlyOneCompressionTest extends TestAbstract {
     stop.delete();
     File all = new File(SpooledThread.SPOOLED_ROOT);
     FileUtils.forceDeleteRecursiveDir(all);
-    logger
-        .warn("Launched {}", spooledThread.spooledDirectoryTransfer.getSent());
+    logger.warn("Launched {}",
+                spooledThread.spooledDirectoryTransfer.getSent());
     logger.warn("Error {}", spooledThread.spooledDirectoryTransfer.getError());
   }
 

@@ -51,7 +51,7 @@ public abstract class FilesystemBasedFtpAuth extends FilesystemBasedAuthImpl
    * @return the account
    */
   @Override
-  public String getAccount() {
+  public final String getAccount() {
     return account;
   }
 
@@ -92,7 +92,7 @@ public abstract class FilesystemBasedFtpAuth extends FilesystemBasedAuthImpl
    * @throws Reply502Exception
    */
   @Override
-  public NextCommandReply setAccount(final String account)
+  public final NextCommandReply setAccount(final String account)
       throws Reply421Exception, Reply530Exception, Reply502Exception {
     final NextCommandReply next = setBusinessAccount(account);
     this.account = account;
@@ -113,7 +113,7 @@ public abstract class FilesystemBasedFtpAuth extends FilesystemBasedAuthImpl
    * @throws Reply421Exception if the business root is not available
    */
   @Override
-  protected void setRootFromAuth() throws Reply421Exception {
+  protected final void setRootFromAuth() throws Reply421Exception {
     rootFromAuth = setBusinessRootFromAuth();
     if (rootFromAuth == null) {
       if (account == null) {
@@ -129,13 +129,13 @@ public abstract class FilesystemBasedFtpAuth extends FilesystemBasedAuthImpl
    * Clean object
    */
   @Override
-  public void clear() {
+  public final void clear() {
     super.clear();
     account = null;
   }
 
   @Override
-  public String getBaseDirectory() {
+  public final String getBaseDirectory() {
     return ((FtpSession) getSession()).getConfiguration().getBaseDirectory();
   }
 }

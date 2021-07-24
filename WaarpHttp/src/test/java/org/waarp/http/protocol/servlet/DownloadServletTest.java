@@ -110,8 +110,8 @@ public class DownloadServletTest extends TestAbstract {
     WebAppContext webAppContext = new WebAppContext();
     webAppContext.setDescriptor(
         new File(testDir, "webapp/WEB-INF/web.xml").getAbsolutePath());
-    webAppContext
-        .setResourceBase(new File(testDir, "webapp").getAbsolutePath());
+    webAppContext.setResourceBase(
+        new File(testDir, "webapp").getAbsolutePath());
     webAppContext.setContextPath("/WaarpHttp");
     webAppContext.setParentLoaderPriority(true);
 
@@ -276,9 +276,8 @@ public class DownloadServletTest extends TestAbstract {
       }
       tokenUri.append(entry.getKey()).append('=').append(entry.getValue());
     }
-    HttpURLConnection http =
-        (HttpURLConnection) new URL(getRequest + tokenUri.toString())
-            .openConnection();
+    HttpURLConnection http = (HttpURLConnection) new URL(
+        getRequest + tokenUri.toString()).openConnection();
     http.setRequestMethod("GET");
     http.setRequestProperty("User-Agent", USER_AGENT);
     http.setRequestProperty("Accept-Charset", WaarpStringUtils.UTF_8);
@@ -319,9 +318,8 @@ public class DownloadServletTest extends TestAbstract {
       }
       tokenUri.append(entry.getKey()).append('=').append(entry.getValue());
     }
-    HttpURLConnection http =
-        (HttpURLConnection) new URL(getRequest + tokenUri.toString())
-            .openConnection();
+    HttpURLConnection http = (HttpURLConnection) new URL(
+        getRequest + tokenUri.toString()).openConnection();
     http.setRequestMethod("GET");
     http.setRequestProperty("User-Agent", USER_AGENT);
     http.setRequestProperty("Accept-Charset", WaarpStringUtils.UTF_8);
@@ -337,8 +335,8 @@ public class DownloadServletTest extends TestAbstract {
     String hash = http.getHeaderField(DownloadServlet.X_HASH_SHA_256);
     http.disconnect();
     byte[] bin = FilesystemBasedDigest.getHash(file, false, DigestAlgo.SHA256);
-    MatcherAssert
-        .assertThat("Hash Code", hash, is(FilesystemBasedDigest.getHex(bin)));
+    MatcherAssert.assertThat("Hash Code", hash,
+                             is(FilesystemBasedDigest.getHex(bin)));
     file.delete();
   }
 
@@ -367,9 +365,8 @@ public class DownloadServletTest extends TestAbstract {
       }
       tokenUri.append(entry.getKey()).append('=').append(entry.getValue());
     }
-    HttpURLConnection http =
-        (HttpURLConnection) new URL(getRequest + tokenUri.toString())
-            .openConnection();
+    HttpURLConnection http = (HttpURLConnection) new URL(
+        getRequest + tokenUri.toString()).openConnection();
     http.setRequestMethod("HEAD");
     http.setRequestProperty("User-Agent", USER_AGENT);
     http.setRequestProperty("Accept-Charset", WaarpStringUtils.UTF_8);
@@ -382,8 +379,8 @@ public class DownloadServletTest extends TestAbstract {
     MatcherAssert.assertThat("Response Code", http.getResponseCode(),
                              is(HttpStatus.NOT_FOUND_404));
     // Test GET
-    http = (HttpURLConnection) new URL(getRequest + tokenUri.toString())
-        .openConnection();
+    http = (HttpURLConnection) new URL(
+        getRequest + tokenUri.toString()).openConnection();
     http.setRequestMethod("GET");
     http.setRequestProperty("User-Agent", USER_AGENT);
     http.setRequestProperty("Accept-Charset", WaarpStringUtils.UTF_8);
@@ -399,13 +396,13 @@ public class DownloadServletTest extends TestAbstract {
     String hash = http.getHeaderField(DownloadServlet.X_HASH_SHA_256);
     http.disconnect();
     byte[] bin = FilesystemBasedDigest.getHash(file, false, DigestAlgo.SHA256);
-    MatcherAssert
-        .assertThat("Hash Code", hash, is(FilesystemBasedDigest.getHex(bin)));
+    MatcherAssert.assertThat("Hash Code", hash,
+                             is(FilesystemBasedDigest.getHex(bin)));
     file.delete();
 
     // Test HEAD 2
-    http = (HttpURLConnection) new URL(getRequest + tokenUri.toString())
-        .openConnection();
+    http = (HttpURLConnection) new URL(
+        getRequest + tokenUri.toString()).openConnection();
     http.setRequestMethod("HEAD");
     http.setRequestProperty("User-Agent", USER_AGENT);
     http.setRequestProperty("Accept-Charset", WaarpStringUtils.UTF_8);
@@ -443,9 +440,8 @@ public class DownloadServletTest extends TestAbstract {
       }
       tokenUri.append(entry.getKey()).append('=').append(entry.getValue());
     }
-    HttpURLConnection http =
-        (HttpURLConnection) new URL(getRequest + tokenUri.toString())
-            .openConnection();
+    HttpURLConnection http = (HttpURLConnection) new URL(
+        getRequest + tokenUri.toString()).openConnection();
     http.setRequestMethod("POST");
     http.setRequestProperty("User-Agent", USER_AGENT);
     http.setRequestProperty("Accept-Charset", WaarpStringUtils.UTF_8);
@@ -461,8 +457,8 @@ public class DownloadServletTest extends TestAbstract {
     String hash = http.getHeaderField(DownloadServlet.X_HASH_SHA_256);
     http.disconnect();
     byte[] bin = FilesystemBasedDigest.getHash(file, false, DigestAlgo.SHA256);
-    MatcherAssert
-        .assertThat("Hash Code", hash, is(FilesystemBasedDigest.getHex(bin)));
+    MatcherAssert.assertThat("Hash Code", hash,
+                             is(FilesystemBasedDigest.getHex(bin)));
     file.delete();
   }
 

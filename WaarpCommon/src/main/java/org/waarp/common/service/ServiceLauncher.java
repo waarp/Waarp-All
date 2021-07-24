@@ -66,8 +66,8 @@ public abstract class ServiceLauncher implements Daemon {
       logger = WaarpLoggerFactory.getLogger(ServiceLauncher.class);
     }
     if (executor == null) {
-      executor = Executors
-          .newSingleThreadExecutor(new WaarpThreadFactory("ServiceLauncher"));
+      executor = Executors.newSingleThreadExecutor(
+          new WaarpThreadFactory("ServiceLauncher"));
     }
     engineLauncherInstance = this;
     if (engine == null) {
@@ -76,8 +76,8 @@ public abstract class ServiceLauncher implements Daemon {
   }
 
   protected static void initStatic() {
-    WaarpLoggerFactory
-        .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));
+    WaarpLoggerFactory.setDefaultFactoryIfNotSame(
+        new WaarpSlf4JLoggerFactory(null));
     if (logger == null) {
       logger = WaarpLoggerFactory.getLogger(ServiceLauncher.class);
     }

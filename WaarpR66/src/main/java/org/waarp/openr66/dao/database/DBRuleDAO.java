@@ -113,42 +113,42 @@ public class DBRuleDAO extends StatementExecutor<Rule> implements RuleDAO {
   }
 
   @Override
-  protected boolean isCachedEnable() {
+  protected final boolean isCachedEnable() {
     return Configuration.configuration.getMultipleMonitors() <= 1;
   }
 
   @Override
-  protected SynchronizedLruCache<String, Rule> getCache() {
+  protected final SynchronizedLruCache<String, Rule> getCache() {
     return reentrantConcurrentHashMap;
   }
 
   @Override
-  protected String getId(final Rule e1) {
+  protected final String getId(final Rule e1) {
     return e1.getName();
   }
 
   @Override
-  protected String getSelectRequest() {
+  protected final String getSelectRequest() {
     return SQL_SELECT;
   }
 
   @Override
-  protected String getGetAllRequest() {
+  protected final String getGetAllRequest() {
     return SQL_GET_ALL;
   }
 
   @Override
-  protected String getCountRequest() {
+  protected final String getCountRequest() {
     return SQL_COUNT_ALL;
   }
 
   @Override
-  protected String getExistRequest() {
+  protected final String getExistRequest() {
     return SQL_EXIST;
   }
 
   @Override
-  protected Object[] getInsertValues(final Rule rule) {
+  protected final Object[] getInsertValues(final Rule rule) {
     return new Object[] {
         rule.getName(), rule.getXMLHostids(), rule.getMode(),
         rule.getRecvPath(), rule.getSendPath(), rule.getArchivePath(),
@@ -160,12 +160,12 @@ public class DBRuleDAO extends StatementExecutor<Rule> implements RuleDAO {
   }
 
   @Override
-  protected String getInsertRequest() {
+  protected final String getInsertRequest() {
     return SQL_INSERT;
   }
 
   @Override
-  protected Object[] getUpdateValues(final Rule rule) {
+  protected final Object[] getUpdateValues(final Rule rule) {
     return new Object[] {
         rule.getName(), rule.getXMLHostids(), rule.getMode(),
         rule.getRecvPath(), rule.getSendPath(), rule.getArchivePath(),
@@ -177,22 +177,22 @@ public class DBRuleDAO extends StatementExecutor<Rule> implements RuleDAO {
   }
 
   @Override
-  protected String getUpdateRequest() {
+  protected final String getUpdateRequest() {
     return SQL_UPDATE;
   }
 
   @Override
-  protected String getDeleteRequest() {
+  protected final String getDeleteRequest() {
     return SQL_DELETE;
   }
 
   @Override
-  protected String getDeleteAllRequest() {
+  protected final String getDeleteAllRequest() {
     return SQL_DELETE_ALL;
   }
 
   @Override
-  public Rule getFromResultSet(final ResultSet set)
+  public final Rule getFromResultSet(final ResultSet set)
       throws SQLException, DAOConnectionException {
     try {
       return new Rule(set.getString(ID_FIELD), set.getInt(MODE_TRANS_FIELD),
@@ -208,7 +208,7 @@ public class DBRuleDAO extends StatementExecutor<Rule> implements RuleDAO {
                       retrieveTasks(set.getString(S_POST_TASKS_FIELD)),
                       retrieveTasks(set.getString(S_ERROR_TASKS_FIELD)),
                       UpdatedInfo.valueOf(set.getInt(UPDATED_INFO_FIELD)));
-    } catch (WaarpDatabaseSqlException e) {
+    } catch (final WaarpDatabaseSqlException e) {
       throw new SQLException(e);
     }
   }
@@ -269,5 +269,10 @@ public class DBRuleDAO extends StatementExecutor<Rule> implements RuleDAO {
       }
     }
     return res;
+  }
+
+  @Override
+  protected final boolean isDbTransfer() {
+    return false;
   }
 }

@@ -58,39 +58,39 @@ public class MultipleMonitor {
   }
 
   @JsonIgnore
-  public void checkValues() throws WaarpDatabaseSqlException {
+  public final void checkValues() throws WaarpDatabaseSqlException {
     validateLength(Types.NVARCHAR, hostid);
   }
 
-  public String getHostid() {
+  public final String getHostid() {
     return hostid;
   }
 
-  public void setHostid(final String hostid) {
+  public final void setHostid(final String hostid) {
     this.hostid = hostid;
   }
 
-  public int getCountConfig() {
+  public final int getCountConfig() {
     return countConfig;
   }
 
-  public void setCountConfig(final int countConfig) {
+  public final void setCountConfig(final int countConfig) {
     this.countConfig = countConfig;
   }
 
-  public int getCountHost() {
+  public final int getCountHost() {
     return countHost;
   }
 
-  public void setCountHost(final int countHost) {
+  public final void setCountHost(final int countHost) {
     this.countHost = countHost;
   }
 
-  public int getCountRule() {
+  public final int getCountRule() {
     return countRule;
   }
 
-  public void setCountRule(final int countRule) {
+  public final void setCountRule(final int countRule) {
     this.countRule = countRule;
   }
 }

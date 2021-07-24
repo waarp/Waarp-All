@@ -91,7 +91,7 @@ public class TransferTask extends AbstractTask {
   }
 
   @Override
-  public void run() {
+  public final void run() {
     logger.info("Transfer with {}}:{} and {}", argRule, argTransfer, session);
     String finalname = applyTransferSubstitutions(argRule);
 

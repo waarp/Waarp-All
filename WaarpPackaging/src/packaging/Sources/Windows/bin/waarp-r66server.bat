@@ -6,11 +6,14 @@ SET BINDIR=%~dp0
 for %%a in ("%BINDIR:~0,-1%") DO SET "R66HOME=%%~dpa"
 cd /d "%R66HOME%"
 
+SET "_args=%*"
+
 :: Get Waarp R66 instance called
 SET R66_TYPE=server
 if exist "etc\conf.d\%1\%R66_TYPE%.xml" (
 SET R66_INST=%1
-    shift
+    SHIFT
+    SET "_args=%_args:* =%"
 )
 
 :: set memory settings
@@ -26,11 +29,9 @@ IF NOT DEFINED CONFDIR SET CONFDIR=etc
 IF NOT DEFINED SERVERCONF SET SERVERCONF=%CONFDIR%\server.xml
 IF NOT DEFINED AUTHENTCONF SET AUTHENTCONF=%CONFDIR%\authent.xml
 IF NOT DEFINED RULESDIR SET RULESDIR=%CONFDIR%
-SET "_args=%*"
 
 SET ACTION=%1
 SHIFT
-SET "_args=%_args:* =%"
 SET "_args=%_args:* =%"
 
 IF "%ACTION%"=="start" (
@@ -82,8 +83,9 @@ EXIT /B %ERRORLEVEL%
 :r66_start
     ECHO "Starting Waarp R66 Server... "
     %JAVARUNSERVER% org.waarp.openr66.server.R66Server %SERVERCONF%
+    SET RETOUR=%ERRORLEVEL%
     ECHO "done"
-    EXIT /B %ERRORLEVEL%
+    EXIT /B %RETOUR%
 
 
 :r66_install

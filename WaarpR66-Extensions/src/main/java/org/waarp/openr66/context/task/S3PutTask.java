@@ -89,9 +89,8 @@ public class S3PutTask extends S3AbstractTask {
         new WaarpR66S3Client(taskUtil.getAccessKey(), taskUtil.getSecretKey(),
                              taskUtil.getUrl());
     final File file = session.getFile().getTrueFile();
-    s3Client
-        .createFile(taskUtil.getBucketName(), taskUtil.getTargetName(), file,
-                    taskUtil.getSetTags());
+    s3Client.createFile(taskUtil.getBucketName(), taskUtil.getTargetName(),
+                        file, taskUtil.getSetTags());
     logger.debug("PUT {} to {}", file.getAbsolutePath(),
                  taskUtil.getTargetName());
   }

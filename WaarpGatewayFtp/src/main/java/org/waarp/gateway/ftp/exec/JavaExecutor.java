@@ -60,7 +60,7 @@ public class JavaExecutor extends AbstractExecutor {
   }
 
   @Override
-  public void run() throws CommandAbstractException {
+  public final void run() throws CommandAbstractException {
     final String className = args[0];
     try {
       ParametersChecker.checkSanityString(className);
@@ -86,8 +86,8 @@ public class JavaExecutor extends AbstractExecutor {
       runnable.run();
       status = runnable.getFinalStatus();
     } else {
-      final ExecutorService executorService = Executors
-          .newSingleThreadExecutor(new WaarpThreadFactory("JavaExecutor"));
+      final ExecutorService executorService = Executors.newSingleThreadExecutor(
+          new WaarpThreadFactory("JavaExecutor"));
       executorService.execute(runnable);
       try {
         Thread.yield();

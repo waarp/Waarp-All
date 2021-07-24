@@ -86,8 +86,8 @@ public final class TransferUtils {
         if (taskRunner.restart(true)) {
           taskRunner.forceSaveStatus();
           finalResult.setCode(ErrorCode.PreProcessingOk);
-          finalResult
-              .setOther(Messages.getString("TransferUtils.1")); //$NON-NLS-1$
+          finalResult.setOther(
+              Messages.getString("TransferUtils.1")); //$NON-NLS-1$
         } else {
           if (taskRunner.isRequestOnRequested() &&
               taskRunner.getGloballaststep() < TASKSTEP.POSTTASK.ordinal()) {
@@ -110,9 +110,9 @@ public final class TransferUtils {
                   new RequestTransfer(result, taskRunner.getSpecialId(),
                                       taskRunner.getRequested(),
                                       taskRunner.getRequester(), false, false,
-                                      true, Configuration.configuration
-                                          .getInternalRunner()
-                                          .getNetworkTransaction());
+                                      true,
+                                      Configuration.configuration.getInternalRunner()
+                                                                 .getNetworkTransaction());
               requestTransfer.run();
               result.awaitOrInterruptible();
               if (!result.isDone()) {
@@ -162,8 +162,8 @@ public final class TransferUtils {
             }
           } else {
             finalResult.setCode(ErrorCode.CompleteOk);
-            finalResult
-                .setOther(Messages.getString("TransferUtils.11")); //$NON-NLS-1$
+            finalResult.setOther(
+                Messages.getString("TransferUtils.11")); //$NON-NLS-1$
             taskRunner.setPostTask();
             finalizeTaskWithNoSession(taskRunner, null);
             taskRunner.setErrorExecutionStatus(ErrorCode.QueryAlreadyFinished);
@@ -172,8 +172,8 @@ public final class TransferUtils {
         }
       } catch (final OpenR66RunnerErrorException e) {
         finalResult.setCode(ErrorCode.PreProcessingOk);
-        finalResult
-            .setOther(Messages.getString("TransferUtils.1")); //$NON-NLS-1$
+        finalResult.setOther(
+            Messages.getString("TransferUtils.1")); //$NON-NLS-1$
       }
     }
     return finalResult;
@@ -238,8 +238,8 @@ public final class TransferUtils {
     finalValue.setRunner(taskRunner);
     taskRunner.finishTransferTask(ErrorCode.TransferOk);
     try {
-      taskRunner
-          .finalizeTransfer(localChannelReference, file, finalValue, true);
+      taskRunner.finalizeTransfer(localChannelReference, file, finalValue,
+                                  true);
     } catch (final OpenR66ProtocolSystemException e) {
       logger.error(Messages.getString("TransferUtils.29"),
                    taskRunner.toShortString()); //$NON-NLS-1$
@@ -296,17 +296,15 @@ public final class TransferUtils {
     taskRunner.setErrorExecutionStatus(result);
     if (map != null) {
       if (map instanceof Map) {
-        ((Map<String, String>) map)
-            .put(taskRunner.getKey(), taskRunner.getJsonAsString());
+        ((Map<String, String>) map).put(taskRunner.getKey(),
+                                        taskRunner.getJsonAsString());
       } else if (map instanceof StringBuilder) {
         ((StringBuilder) map).append(taskRunner.toSpecializedHtml(session, body,
                                                                   lcr != null?
-                                                                      Messages
-                                                                          .getString(
-                                                                              "HttpSslHandler.Active") :
-                                                                      Messages
-                                                                          .getString(
-                                                                              "HttpSslHandler.NotActive")));
+                                                                      Messages.getString(
+                                                                          "HttpSslHandler.Active") :
+                                                                      Messages.getString(
+                                                                          "HttpSslHandler.NotActive")));
       }
     }
     taskRunner.setErrorExecutionStatus(last);
@@ -377,10 +375,11 @@ public final class TransferUtils {
     }
     DbPreparedStatement preparedStatement = null;
     try {
-      preparedStatement = DbTaskRunner
-          .getFilterPrepareStatement(dbSession, limit, true, startid, stopid,
-                                     tstart, tstop, rule, req, pending,
-                                     transfer, error, false, false, host);
+      preparedStatement =
+          DbTaskRunner.getFilterPrepareStatement(dbSession, limit, true,
+                                                 startid, stopid, tstart, tstop,
+                                                 rule, req, pending, transfer,
+                                                 error, false, false, host);
       preparedStatement.executeQuery();
       while (preparedStatement.getNext()) {
         final DbTaskRunner taskRunner =
@@ -446,20 +445,18 @@ public final class TransferUtils {
     }
     if (map != null) {
       if (map instanceof Map) {
-        ((Map<String, String>) map)
-            .put(taskRunner.getKey(), taskRunner.getJsonAsString());
+        ((Map<String, String>) map).put(taskRunner.getKey(),
+                                        taskRunner.getJsonAsString());
       } else if (map instanceof StringBuilder) {
         final LocalChannelReference lcr =
             Configuration.configuration.getLocalTransaction()
                                        .getFromRequest(taskRunner.getKey());
         ((StringBuilder) map).append(taskRunner.toSpecializedHtml(session, body,
                                                                   lcr != null?
-                                                                      Messages
-                                                                          .getString(
-                                                                              "HttpSslHandler.Active") :
-                                                                      Messages
-                                                                          .getString(
-                                                                              "HttpSslHandler.NotActive")));
+                                                                      Messages.getString(
+                                                                          "HttpSslHandler.Active") :
+                                                                      Messages.getString(
+                                                                          "HttpSslHandler.NotActive")));
       }
     }
   }
@@ -515,10 +512,11 @@ public final class TransferUtils {
     }
     DbPreparedStatement preparedStatement = null;
     try {
-      preparedStatement = DbTaskRunner
-          .getFilterPrepareStatement(dbSession, limit, true, startid, stopid,
-                                     tstart, tstop, rule, req, pending,
-                                     transfer, error, false, false, host);
+      preparedStatement =
+          DbTaskRunner.getFilterPrepareStatement(dbSession, limit, true,
+                                                 startid, stopid, tstart, tstop,
+                                                 rule, req, pending, transfer,
+                                                 error, false, false, host);
       preparedStatement.executeQuery();
       while (preparedStatement.getNext()) {
         final DbTaskRunner taskRunner =

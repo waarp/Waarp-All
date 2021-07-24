@@ -87,13 +87,14 @@ public class DbTaskRunnerR66RestMethodHandler
   }
 
   @Override
-  protected DbTaskRunner getItem(final HttpRestHandler handler,
-                                 final RestArgument arguments,
-                                 final RestArgument result, final Object body)
+  protected final DbTaskRunner getItem(final HttpRestHandler handler,
+                                       final RestArgument arguments,
+                                       final RestArgument result,
+                                       final Object body)
       throws HttpNotFoundRequestException {
     try {
       HttpRestV1Utils.checkSanity(arguments);
-    } catch (InvalidArgumentException e) {
+    } catch (final InvalidArgumentException e) {
       throw new HttpNotFoundRequestException("Issue on values", e);
     }
     final ObjectNode arg = arguments.getUriArgs().deepCopy();
@@ -121,14 +122,14 @@ public class DbTaskRunnerR66RestMethodHandler
   }
 
   @Override
-  protected DbTaskRunner createItem(final HttpRestHandler handler,
-                                    final RestArgument arguments,
-                                    final RestArgument result,
-                                    final Object body)
+  protected final DbTaskRunner createItem(final HttpRestHandler handler,
+                                          final RestArgument arguments,
+                                          final RestArgument result,
+                                          final Object body)
       throws HttpIncorrectRequestException {
     try {
       HttpRestV1Utils.checkSanity(arguments);
-    } catch (InvalidArgumentException e) {
+    } catch (final InvalidArgumentException e) {
       throw new HttpIncorrectRequestException("Issue on values", e);
     }
     final ObjectNode arg = arguments.getUriArgs().deepCopy();
@@ -142,13 +143,13 @@ public class DbTaskRunnerR66RestMethodHandler
   }
 
   @Override
-  protected DbPreparedStatement getPreparedStatement(
+  protected final DbPreparedStatement getPreparedStatement(
       final HttpRestHandler handler, final RestArgument arguments,
       final RestArgument result, final Object body)
       throws HttpIncorrectRequestException {
     try {
       HttpRestV1Utils.checkSanity(arguments);
-    } catch (InvalidArgumentException e) {
+    } catch (final InvalidArgumentException e) {
       throw new HttpIncorrectRequestException("Issue on values", e);
     }
     final ObjectNode arg = arguments.getUriArgs().deepCopy();
@@ -212,11 +213,12 @@ public class DbTaskRunnerR66RestMethodHandler
       stop = new Timestamp(val);
     }
     try {
-      return DbTaskRunner
-          .getFilterPrepareStatement(handler.getDbSession(), limit,
-                                     orderBySpecialId, startid, stopid, start,
-                                     stop, rule, req, pending, transfer, error,
-                                     done, all, owner);
+      return DbTaskRunner.getFilterPrepareStatement(handler.getDbSession(),
+                                                    limit, orderBySpecialId,
+                                                    startid, stopid, start,
+                                                    stop, rule, req, pending,
+                                                    transfer, error, done, all,
+                                                    owner);
     } catch (final WaarpDatabaseNoConnectionException e) {
       throw new HttpIncorrectRequestException(
           "Issue while reading from database", e);
@@ -227,7 +229,7 @@ public class DbTaskRunnerR66RestMethodHandler
   }
 
   @Override
-  protected DbTaskRunner getItemPreparedStatement(
+  protected final DbTaskRunner getItemPreparedStatement(
       final DbPreparedStatement statement)
       throws HttpIncorrectRequestException, HttpNotFoundRequestException {
     try {
@@ -242,7 +244,7 @@ public class DbTaskRunnerR66RestMethodHandler
   }
 
   @Override
-  protected ArrayNode getDetailedAllow() {
+  protected final ArrayNode getDetailedAllow() {
     final ArrayNode node = JsonHandler.createArrayNode();
 
     final ObjectNode node1 = JsonHandler.createObjectNode();
@@ -262,9 +264,9 @@ public class DbTaskRunnerR66RestMethodHandler
                 PARTNER_AS_REQUESTED_AS_VARCHAR);
       node3.put(DbTaskRunner.Columns.OWNERREQ.name(),
                 OWNER_OF_THIS_REQUEST_OPTIONAL_AS_VARCHAR);
-      node2 = RestArgument
-          .fillDetailedAllow(METHOD.GET, path + "/id", COMMAND_TYPE.GET.name(),
-                             node3, node1);
+      node2 = RestArgument.fillDetailedAllow(METHOD.GET, path + "/id",
+                                             COMMAND_TYPE.GET.name(), node3,
+                                             node1);
       node.add(node2);
 
       node3 = JsonHandler.createObjectNode();
@@ -273,9 +275,11 @@ public class DbTaskRunnerR66RestMethodHandler
       }
       node3.put(DbTaskRunner.Columns.OWNERREQ.name(),
                 OWNER_OF_THIS_REQUEST_OPTIONAL_AS_VARCHAR);
-      node2 = RestArgument
-          .fillDetailedAllow(METHOD.GET, path, COMMAND_TYPE.MULTIGET.name(),
-                             node3, JsonHandler.createArrayNode().add(node1));
+      node2 = RestArgument.fillDetailedAllow(METHOD.GET, path,
+                                             COMMAND_TYPE.MULTIGET.name(),
+                                             node3,
+                                             JsonHandler.createArrayNode()
+                                                        .add(node1));
       node.add(node2);
     }
     if (methods.contains(METHOD.PUT)) {
@@ -320,33 +324,33 @@ public class DbTaskRunnerR66RestMethodHandler
       for (final DbTaskRunner.Columns column : DbTaskRunner.Columns.values()) {
         node3.put(column.name(), DbTaskRunner.dbTypes[column.ordinal()]);
       }
-      node2 = RestArgument
-          .fillDetailedAllow(METHOD.POST, path, COMMAND_TYPE.CREATE.name(),
-                             node3, node1);
+      node2 = RestArgument.fillDetailedAllow(METHOD.POST, path,
+                                             COMMAND_TYPE.CREATE.name(), node3,
+                                             node1);
       node.add(node2);
     }
-    node2 = RestArgument
-        .fillDetailedAllow(METHOD.OPTIONS, path, COMMAND_TYPE.OPTIONS.name(),
-                           null, null);
+    node2 = RestArgument.fillDetailedAllow(METHOD.OPTIONS, path,
+                                           COMMAND_TYPE.OPTIONS.name(), null,
+                                           null);
     node.add(node2);
 
     return node;
   }
 
   @Override
-  public String getPrimaryPropertyName() {
+  public final String getPrimaryPropertyName() {
     return Columns.SPECIALID.name();
   }
 
   @Override
-  protected void checkAuthorization(final HttpRestHandler handler,
-                                    final RestArgument arguments,
-                                    final RestArgument result,
-                                    final METHOD method)
+  protected final void checkAuthorization(final HttpRestHandler handler,
+                                          final RestArgument arguments,
+                                          final RestArgument result,
+                                          final METHOD method)
       throws HttpForbiddenRequestException {
     try {
       HttpRestV1Utils.checkSanity(arguments);
-    } catch (InvalidArgumentException e) {
+    } catch (final InvalidArgumentException e) {
       throw new HttpForbiddenRequestException("Issue on values", e);
     }
     final HttpRestR66Handler r66handler = (HttpRestR66Handler) handler;

@@ -456,8 +456,9 @@ public class TransferArgsTest extends TestAbstract {
         TransferArgs.BLOCK_ARG, "1000", TransferArgs.INFO_ARG, "no_information",
         FOLLOWARGJSON, "1234}"
     };
-    transferArgs = TransferArgs
-        .getParamsInternal(0, argsCompleteWithFollowIncluded, false);
+    transferArgs =
+        TransferArgs.getParamsInternal(0, argsCompleteWithFollowIncluded,
+                                       false);
     assertNotNull(transferArgs);
     assertEquals("hosta", transferArgs.getRemoteHost());
     assertEquals("testTaskBig.txt", transferArgs.getFilename());
@@ -470,8 +471,8 @@ public class TransferArgsTest extends TestAbstract {
     assertEquals(ILLEGALVALUE, transferArgs.getId());
     assertTrue(transferArgs.getFollowId().isEmpty());
     assertNotEquals("1234", transferArgs.getFollowId());
-    TransferArgs
-        .getAllInfo(transferArgs, 0, argsCompleteWithFollowIncluded, null);
+    TransferArgs.getAllInfo(transferArgs, 0, argsCompleteWithFollowIncluded,
+                            null);
     logger.warn(transferArgs.getTransferInfo());
     assertEquals("1234", transferArgs.getFollowId());
     assertTrue(transferArgs.getTransferInfo().startsWith("no_information {"));
@@ -483,8 +484,9 @@ public class TransferArgsTest extends TestAbstract {
         TransferArgs.BLOCK_ARG, "1000", TransferArgs.INFO_ARG, "no_information",
         FOLLOWARGJSON, "1234} {'key': 'value'} test after"
     };
-    transferArgs = TransferArgs
-        .getParamsInternal(0, argsCompleteWithFollowIncludedAndMore, false);
+    transferArgs =
+        TransferArgs.getParamsInternal(0, argsCompleteWithFollowIncludedAndMore,
+                                       false);
     assertNotNull(transferArgs);
     assertEquals("hosta", transferArgs.getRemoteHost());
     assertEquals("testTaskBig.txt", transferArgs.getFilename());
@@ -497,9 +499,8 @@ public class TransferArgsTest extends TestAbstract {
     assertEquals(ILLEGALVALUE, transferArgs.getId());
     assertTrue(transferArgs.getFollowId().isEmpty());
     assertNotEquals("1234", transferArgs.getFollowId());
-    TransferArgs
-        .getAllInfo(transferArgs, 0, argsCompleteWithFollowIncludedAndMore,
-                    null);
+    TransferArgs.getAllInfo(transferArgs, 0,
+                            argsCompleteWithFollowIncludedAndMore, null);
     logger.warn(transferArgs.getTransferInfo());
     String compare = "no_information " + FOLLOWARGJSON + " 1234}" +
                      " {'key': 'value'} test after";

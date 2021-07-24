@@ -1525,7 +1525,8 @@ public final class Base64 {
       else {
         ois = new ObjectInputStream(bais) {
           @Override
-          public Class<?> resolveClass(final ObjectStreamClass streamClass)
+          public final Class<?> resolveClass(
+              final ObjectStreamClass streamClass)
               throws IOException, ClassNotFoundException {
             final Class<?> c =
                 Class.forName(streamClass.getName(), false, loader);//NOSONAR
@@ -1866,7 +1867,7 @@ public final class Base64 {
      * @since 1.3
      */
     @Override
-    public int read() throws IOException {
+    public final int read() throws IOException {
 
       // Do we need to get data?
       if (position < 0) {
@@ -1977,7 +1978,7 @@ public final class Base64 {
      * @since 1.3
      */
     @Override
-    public int read(final byte[] dest, final int off, final int len)
+    public final int read(final byte[] dest, final int off, final int len)
         throws IOException {
       int i;
       int b;
@@ -2083,7 +2084,7 @@ public final class Base64 {
      * @since 1.3
      */
     @Override
-    public void write(final int theByte) throws IOException {
+    public final void write(final int theByte) throws IOException {
       // Encoding suspended?
       if (suspendEncoding) {
         out.write(theByte);
@@ -2136,7 +2137,7 @@ public final class Base64 {
      * @since 1.3
      */
     @Override
-    public void write(final byte[] theBytes, final int off, final int len)
+    public final void write(final byte[] theBytes, final int off, final int len)
         throws IOException {
       // Encoding suspended?
       if (suspendEncoding) {
@@ -2156,7 +2157,7 @@ public final class Base64 {
      *
      * @throws IOException if there's an error.
      */
-    public void flushBase64() throws IOException {
+    public final void flushBase64() throws IOException {
       if (position > 0) {
         if (encode) {
           out.write(encode3to4(b4, buffer, position, options));
@@ -2175,7 +2176,7 @@ public final class Base64 {
      * @since 1.3
      */
     @Override
-    public void close() throws IOException {
+    public final void close() throws IOException {
       // 1. Ensure that pending characters are written
       flushBase64();
 
@@ -2195,7 +2196,7 @@ public final class Base64 {
      * @throws IOException if there's an error flushing
      * @since 1.5.1
      */
-    public void suspendEncoding() throws IOException {
+    public final void suspendEncoding() throws IOException {
       flushBase64();
       suspendEncoding = true;
     } // end suspendEncoding
@@ -2207,7 +2208,7 @@ public final class Base64 {
      *
      * @since 1.5.1
      */
-    public void resumeEncoding() {
+    public final void resumeEncoding() {
       suspendEncoding = false;
     } // end resumeEncoding
 

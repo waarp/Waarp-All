@@ -69,8 +69,8 @@ import static org.waarp.openr66.protocol.monitoring.MonitorExporterTransfers.*;
  */
 public class ElasticsearchMonitoringExporterClientImpl
     implements ElasticsearchMonitoringExporterClient {
-  private static final WaarpLogger logger = WaarpLoggerFactory
-      .getLogger(ElasticsearchMonitoringExporterClientImpl.class);
+  private static final WaarpLogger logger = WaarpLoggerFactory.getLogger(
+      ElasticsearchMonitoringExporterClientImpl.class);
 
   protected final String index;
   protected final RestClientBuilder builder;
@@ -113,7 +113,7 @@ public class ElasticsearchMonitoringExporterClientImpl
     if (ParametersChecker.isNotEmpty(apiKey, token)) {
       headerLen = 2;
     }
-    Header[] defaultHeaders = new Header[headerLen];
+    final Header[] defaultHeaders = new Header[headerLen];
     headerLen = 0;
     if (ParametersChecker.isNotEmpty(token)) {
       defaultHeaders[headerLen] =
@@ -128,23 +128,24 @@ public class ElasticsearchMonitoringExporterClientImpl
       builder.setDefaultHeaders(defaultHeaders);
     }
     boolean tls = false;
-    for (HttpHost httpHost : httpHosts) {
+    for (final HttpHost httpHost : httpHosts) {
       tls |= httpHost.getSchemeName().equalsIgnoreCase("https");
     }
     final SSLContext sslContext;
     if (tls) {
       try {
-        SSLContextBuilder sslBuilder = SSLContexts.custom().loadKeyMaterial(
-            NetworkSslServerInitializer.getWaarpSecureKeyStore().getKeyStore(),
-            NetworkSslServerInitializer.getWaarpSecureKeyStore()
-                                       .getKeyStorePassword())
-                                                  .loadTrustMaterial(
-                                                      NetworkSslServerInitializer
-                                                          .getWaarpSecureKeyStore()
-                                                          .getKeyTrustStore(),
-                                                      null);
+        final SSLContextBuilder sslBuilder = SSLContexts.custom()
+                                                        .loadKeyMaterial(
+                                                            NetworkSslServerInitializer.getWaarpSecureKeyStore()
+                                                                                       .getKeyStore(),
+                                                            NetworkSslServerInitializer.getWaarpSecureKeyStore()
+                                                                                       .getKeyStorePassword())
+                                                        .loadTrustMaterial(
+                                                            NetworkSslServerInitializer.getWaarpSecureKeyStore()
+                                                                                       .getKeyTrustStore(),
+                                                            null);
         sslContext = sslBuilder.build();
-      } catch (NoSuchAlgorithmException | KeyStoreException | UnrecoverableKeyException | KeyManagementException e) {
+      } catch (final NoSuchAlgorithmException | KeyStoreException | UnrecoverableKeyException | KeyManagementException e) {
         logger.error(e.getMessage());
         throw new IllegalArgumentException(e);
       }
@@ -160,14 +161,13 @@ public class ElasticsearchMonitoringExporterClientImpl
       builder.setHttpClientConfigCallback(new HttpClientConfigCallback() {
         @Override
         public HttpAsyncClientBuilder customizeHttpClient(
-            HttpAsyncClientBuilder httpClientBuilder) {
+            final HttpAsyncClientBuilder httpClientBuilder) {
           if (sslContext != null) {
-            return httpClientBuilder
-                .setDefaultCredentialsProvider(credentialsProvider)
-                .setSSLContext(sslContext);
+            return httpClientBuilder.setDefaultCredentialsProvider(
+                credentialsProvider).setSSLContext(sslContext);
           } else {
-            return httpClientBuilder
-                .setDefaultCredentialsProvider(credentialsProvider);
+            return httpClientBuilder.setDefaultCredentialsProvider(
+                credentialsProvider);
           }
         }
       });
@@ -179,8 +179,9 @@ public class ElasticsearchMonitoringExporterClientImpl
   }
 
   @Override
-  public boolean post(final ObjectNode monitoredTransfers, final DateTime start,
-                      final DateTime stop, final String serverId) {
+  public final boolean post(final ObjectNode monitoredTransfers,
+                            final DateTime start, final DateTime stop,
+                            final String serverId) {
     if (client == null) {
       client = new RestHighLevelClient(builder);
     }
@@ -204,24 +205,24 @@ public class ElasticsearchMonitoringExporterClientImpl
       final ObjectNode node = (ObjectNode) iterator.next();
       final IndexRequest indexRequest =
           new IndexRequest().id(node.get(UNIQUE_ID).asText());
-      indexRequest
-          .source(JsonUtils.nodeToString(node).getBytes(StandardCharsets.UTF_8),
-                  XContentType.JSON);
+      indexRequest.source(
+          JsonUtils.nodeToString(node).getBytes(StandardCharsets.UTF_8),
+          XContentType.JSON);
       bulkRequest.add(indexRequest);
     }
-    BulkResponse bulkResponse;
+    final BulkResponse bulkResponse;
     try {
       bulkResponse = client.bulk(bulkRequest, RequestOptions.DEFAULT);
-    } catch (IOException e) {
+    } catch (final IOException e) {
       logger.error(e.getMessage());
       return false;
     }
     logger.debug("ES failure? {} {}", bulkResponse.hasFailures(),
                  bulkResponse.status().getStatus());
     if (logger.isDebugEnabled() && bulkResponse.hasFailures()) {
-      Iterator<BulkItemResponse> iterator1 = bulkResponse.iterator();
+      final Iterator<BulkItemResponse> iterator1 = bulkResponse.iterator();
       while (iterator1.hasNext()) {
-        BulkItemResponse response = iterator1.next();
+        final BulkItemResponse response = iterator1.next();
         logger.debug("ES item: {}", response.getFailureMessage());
       }
     }
@@ -229,10 +230,10 @@ public class ElasticsearchMonitoringExporterClientImpl
   }
 
   @Override
-  public void close() {
+  public final void close() {
     try {
       client.close();
-    } catch (IOException e) {
+    } catch (final IOException e) {
       SysErrLogger.FAKE_LOGGER.ignoreLog(e);
     }
     client = null;

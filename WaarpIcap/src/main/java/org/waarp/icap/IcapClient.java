@@ -180,7 +180,7 @@ public class IcapClient implements Closeable {
    * @throws IcapException if an issue occurs during the connection or
    *     response (the connection is already closed)
    */
-  public IcapClient connect() throws IcapException {
+  public final IcapClient connect() throws IcapException {
     if (finalResult != null) {
       finalResult.clear();
       finalResult = null;
@@ -188,8 +188,8 @@ public class IcapClient implements Closeable {
     if (client != null) {
       close();
     }
-    logger
-        .debug("Try connect to {}:{} service {}", serverIP, port, icapService);
+    logger.debug("Try connect to {}:{} service {}", serverIP, port,
+                 icapService);
     try {
       // Initialize connection
       client = new Socket(serverIP, port);
@@ -261,16 +261,15 @@ public class IcapClient implements Closeable {
       }
     } else {
       close();
-      logger
-          .error("Could not get options from server {}:{} service {}", serverIP,
-                 port, icapService);
+      logger.error("Could not get options from server {}:{} service {}",
+                   serverIP, port, icapService);
       throw new IcapException("Could not get options from server",
                               IcapError.ICAP_SERVER_MISSING_INFO);
     }
   }
 
   @Override
-  public void close() {
+  public final void close() {
     if (client != null) {
       try {
         client.close();
@@ -312,7 +311,7 @@ public class IcapClient implements Closeable {
    * @throws IcapException if an error occurs (network, file reading,
    *     bad headers)
    */
-  public boolean scanFile(final String filename) throws IcapException {
+  public final boolean scanFile(final String filename) throws IcapException {
     if (ParametersChecker.isEmpty(filename)) {
       throw new IllegalArgumentException("Filename must not be empty");
     }
@@ -370,8 +369,8 @@ public class IcapClient implements Closeable {
       try {
         inputStream = new FileInputStream(file);
       } catch (final FileNotFoundException e) {
-        logger
-            .error("Could not find file {} since {}", filename, e.getMessage());
+        logger.error("Could not find file {} since {}", filename,
+                     e.getMessage());
         throw new IcapException("File cannot be found: " + filename, e,
                                 IcapError.ICAP_ARGUMENT_ERROR);
       }
@@ -393,28 +392,28 @@ public class IcapClient implements Closeable {
   /**
    * @return the Server IP
    */
-  public String getServerIP() {
+  public final String getServerIP() {
     return serverIP;
   }
 
   /**
    * @return the port
    */
-  public int getPort() {
+  public final int getPort() {
     return port;
   }
 
   /**
    * @return the ICAP service
    */
-  public String getIcapService() {
+  public final String getIcapService() {
     return icapService;
   }
 
   /**
    * @return the current Preview size
    */
-  public int getPreviewSize() {
+  public final int getPreviewSize() {
     return stdPreviewSize;
   }
 
@@ -423,7 +422,7 @@ public class IcapClient implements Closeable {
    *
    * @return This
    */
-  public IcapClient setPreviewSize(final int previewSize) {
+  public final IcapClient setPreviewSize(final int previewSize) {
     if (previewSize < 0) {
       logger.error(INCOMPATIBLE_ARGUMENT);
       throw new IllegalArgumentException("Preview cannot be 0 or positive");
@@ -435,7 +434,7 @@ public class IcapClient implements Closeable {
   /**
    * @return the current Receive length
    */
-  public int getReceiveLength() {
+  public final int getReceiveLength() {
     return receiveLength;
   }
 
@@ -444,7 +443,7 @@ public class IcapClient implements Closeable {
    *
    * @return This
    */
-  public IcapClient setReceiveLength(final int receiveLength) {
+  public final IcapClient setReceiveLength(final int receiveLength) {
     if (receiveLength < MINIMAL_SIZE) {
       logger.error(INCOMPATIBLE_ARGUMENT);
       throw new IllegalArgumentException(
@@ -457,7 +456,7 @@ public class IcapClient implements Closeable {
   /**
    * @return the current Send length
    */
-  public int getSendLength() {
+  public final int getSendLength() {
     return sendLength;
   }
 
@@ -466,7 +465,7 @@ public class IcapClient implements Closeable {
    *
    * @return This
    */
-  public IcapClient setSendLength(final int sendLength) {
+  public final IcapClient setSendLength(final int sendLength) {
     if (sendLength < MINIMAL_SIZE) {
       logger.error(INCOMPATIBLE_ARGUMENT);
       throw new IllegalArgumentException(
@@ -479,7 +478,7 @@ public class IcapClient implements Closeable {
   /**
    * @return the current max file size (default being Integer.MAX_VALUE)
    */
-  public long getMaxSize() {
+  public final long getMaxSize() {
     return maxSize;
   }
 
@@ -488,7 +487,7 @@ public class IcapClient implements Closeable {
    *
    * @return This
    */
-  public IcapClient setMaxSize(final long maxSize) {
+  public final IcapClient setMaxSize(final long maxSize) {
     if (maxSize < MINIMAL_SIZE) {
       logger.error(INCOMPATIBLE_ARGUMENT);
       throw new IllegalArgumentException(
@@ -501,7 +500,7 @@ public class IcapClient implements Closeable {
   /**
    * @return the current time out for connection
    */
-  public long getTimeout() {
+  public final long getTimeout() {
     return timeout;
   }
 
@@ -510,7 +509,7 @@ public class IcapClient implements Closeable {
    *
    * @return This
    */
-  public IcapClient setTimeout(final int timeout) {
+  public final IcapClient setTimeout(final int timeout) {
     this.timeout = timeout;
     return this;
   }
@@ -519,7 +518,7 @@ public class IcapClient implements Closeable {
    * @return the current key in ICAP headers to find with 200 status in PREVIEW
    *     (or null if none)
    */
-  public String getKeyIcapPreview() {
+  public final String getKeyIcapPreview() {
     return keyIcapPreview;
   }
 
@@ -529,7 +528,7 @@ public class IcapClient implements Closeable {
    *
    * @return This
    */
-  public IcapClient setKeyIcapPreview(final String keyIcapPreview) {
+  public final IcapClient setKeyIcapPreview(final String keyIcapPreview) {
     if (ParametersChecker.isEmpty(keyIcapPreview)) {
       this.keyIcapPreview = null;
     } else {
@@ -542,7 +541,7 @@ public class IcapClient implements Closeable {
    * @return the current subString to find in key ICAP header with 200 status
    *     in PREVIEW (or null if none)
    */
-  public String getSubStringFromKeyIcapPreview() {
+  public final String getSubStringFromKeyIcapPreview() {
     return subStringFromKeyIcapPreview;
   }
 
@@ -552,7 +551,7 @@ public class IcapClient implements Closeable {
    *
    * @return This
    */
-  public IcapClient setSubStringFromKeyIcapPreview(
+  public final IcapClient setSubStringFromKeyIcapPreview(
       final String subStringFromKeyIcapPreview) {
     if (ParametersChecker.isEmpty(subStringFromKeyIcapPreview)) {
       this.subStringFromKeyIcapPreview = null;
@@ -566,7 +565,7 @@ public class IcapClient implements Closeable {
    * @return the current subString to find in Http with 200 status
    *     (or null if none)
    */
-  public String getSubstringHttpStatus200() {
+  public final String getSubstringHttpStatus200() {
     return substringHttpStatus200;
   }
 
@@ -576,7 +575,7 @@ public class IcapClient implements Closeable {
    *
    * @return This
    */
-  public IcapClient setSubstringHttpStatus200(
+  public final IcapClient setSubstringHttpStatus200(
       final String substringHttpStatus200) {
     if (ParametersChecker.isEmpty(substringHttpStatus200)) {
       this.substringHttpStatus200 = null;
@@ -590,7 +589,7 @@ public class IcapClient implements Closeable {
    * @return the current key in ICAP headers to find with 200 status
    *     (or null if none)
    */
-  public String getKeyIcap200() {
+  public final String getKeyIcap200() {
     return keyIcap200;
   }
 
@@ -600,7 +599,7 @@ public class IcapClient implements Closeable {
    *
    * @return This
    */
-  public IcapClient setKeyIcap200(final String keyIcap200) {
+  public final IcapClient setKeyIcap200(final String keyIcap200) {
     if (ParametersChecker.isEmpty(keyIcap200)) {
       this.keyIcap200 = null;
     } else {
@@ -613,7 +612,7 @@ public class IcapClient implements Closeable {
    * @return the current subString to find in key ICAP header with 200 status
    *     (or null if none)
    */
-  public String getSubStringFromKeyIcap200() {
+  public final String getSubStringFromKeyIcap200() {
     return subStringFromKeyIcap200;
   }
 
@@ -623,7 +622,7 @@ public class IcapClient implements Closeable {
    *
    * @return This
    */
-  public IcapClient setSubStringFromKeyIcap200(
+  public final IcapClient setSubStringFromKeyIcap200(
       final String subStringFromKeyIcap200) {
     if (ParametersChecker.isEmpty(subStringFromKeyIcap200)) {
       this.subStringFromKeyIcap200 = null;
@@ -637,7 +636,7 @@ public class IcapClient implements Closeable {
    * @return the current key in ICAP headers to find with 204 status
    *     (or null if none)
    */
-  public String getKeyIcap204() {
+  public final String getKeyIcap204() {
     return keyIcap204;
   }
 
@@ -647,7 +646,7 @@ public class IcapClient implements Closeable {
    *
    * @return This
    */
-  public IcapClient setKeyIcap204(final String keyIcap204) {
+  public final IcapClient setKeyIcap204(final String keyIcap204) {
     if (ParametersChecker.isEmpty(keyIcap204)) {
       this.keyIcap204 = null;
     } else {
@@ -660,7 +659,7 @@ public class IcapClient implements Closeable {
    * @return the current subString to find in key ICAP header with 204 status
    *     (or null if none)
    */
-  public String getSubStringFromKeyIcap204() {
+  public final String getSubStringFromKeyIcap204() {
     return subStringFromKeyIcap204;
   }
 
@@ -670,7 +669,7 @@ public class IcapClient implements Closeable {
    *
    * @return This
    */
-  public IcapClient setSubStringFromKeyIcap204(
+  public final IcapClient setSubStringFromKeyIcap204(
       final String subStringFromKeyIcap204) {
     if (ParametersChecker.isEmpty(subStringFromKeyIcap204)) {
       this.subStringFromKeyIcap204 = null;
@@ -683,7 +682,7 @@ public class IcapClient implements Closeable {
   /**
    * @return the current map of result (null if none)
    */
-  public Map<String, String> getFinalResult() {
+  public final Map<String, String> getFinalResult() {
     return finalResult;
   }
 
@@ -695,7 +694,7 @@ public class IcapClient implements Closeable {
    *
    * @throws IcapException if an error occurs (network, bad headers)
    */
-  private String getOptions() throws IcapException {
+  private final String getOptions() throws IcapException {
     // Send OPTIONS header and receive response
     // Sending
     final StringBuilder builder = new StringBuilder();
@@ -787,9 +786,9 @@ public class IcapClient implements Closeable {
     final String resHeader;
     final StringBuilder builder = new StringBuilder(GET_REQUEST);
     try {
-      builder
-          .append(URLEncoder.encode(originalFilename, WaarpStringUtils.UTF_8))
-          .append(" HTTP/1.1").append(TERMINATOR);
+      builder.append(
+                 URLEncoder.encode(originalFilename, WaarpStringUtils.UTF_8))
+             .append(" HTTP/1.1").append(TERMINATOR);
       builder.append(HOST_HEADER).append(serverIP).append(":").append(port)
              .append(ICAP_TERMINATOR);
       resHeader = builder.toString();
@@ -984,8 +983,8 @@ public class IcapClient implements Closeable {
    *
    * @throws IcapException if an error while reading the file occurs
    */
-  int readChunk(final InputStream fileInputStream, final byte[] buffer,
-                final int length) throws IcapException {
+  final int readChunk(final InputStream fileInputStream, final byte[] buffer,
+                      final int length) throws IcapException {
     if (buffer.length < length) {
       logger.error("Buffer is too small {} for reading file per {}",
                    buffer.length, length);
@@ -1019,7 +1018,7 @@ public class IcapClient implements Closeable {
    *
    * @throws IcapException for network errors
    */
-  String getHeaderHttp() throws IcapException {
+  final String getHeaderHttp() throws IcapException {
     final byte[] buffer = new byte[receiveLength];
     try {
       return getHeader(HTTP_TERMINATOR, buffer);
@@ -1048,7 +1047,7 @@ public class IcapClient implements Closeable {
    * @throws IcapException if the terminator is not found or the buffer is
    *     too small
    */
-  String getHeaderIcap() throws IcapException {
+  final String getHeaderIcap() throws IcapException {
     final byte[] buffer = new byte[receiveLength];
     return getHeader(ICAP_TERMINATOR, buffer);
   }

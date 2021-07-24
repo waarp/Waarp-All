@@ -67,8 +67,8 @@ public class FtpsDataInitializer extends FtpDataInitializer {
         configuration.getFtpInternalConfiguration()
                      .newChannelTrafficShapingHandler();
     if (limitChannel != null) {
-      pipeline
-          .addLast(FtpDataInitializer.CODEC_LIMIT + "CHANNEL", limitChannel);
+      pipeline.addLast(FtpDataInitializer.CODEC_LIMIT + "CHANNEL",
+                       limitChannel);
     }
     pipeline.addLast(FtpDataInitializer.CODEC_TYPE, ftpDataTypeCodec);
     pipeline.addLast(FtpDataInitializer.CODEC_STRUCTURE, ftpDataStructureCodec);
@@ -77,8 +77,8 @@ public class FtpsDataInitializer extends FtpDataInitializer {
         dataBusinessHandler.getDeclaredConstructor().newInstance();
     final DataNetworkHandler newNetworkHandler =
         new DataNetworkHandler(configuration, newbusiness, isActive);
-    pipeline
-        .addLast(configuration.getFtpInternalConfiguration().getDataExecutor(),
-                 FtpDataInitializer.HANDLER, newNetworkHandler);
+    pipeline.addLast(
+        configuration.getFtpInternalConfiguration().getDataExecutor(),
+        FtpDataInitializer.HANDLER, newNetworkHandler);
   }
 }

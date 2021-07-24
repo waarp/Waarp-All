@@ -78,7 +78,7 @@ public enum UpdatedInfo {
     return map.get(updatedInfo);
   }
 
-  public boolean equals(final AbstractDbData.UpdatedInfo legacy) {
+  public final boolean equals(final AbstractDbData.UpdatedInfo legacy) {
     return ordinal() == legacy.ordinal();
   }
 
@@ -86,12 +86,12 @@ public enum UpdatedInfo {
     return valueOf(info.name());
   }
 
-  public AbstractDbData.UpdatedInfo getLegacy() {
+  public final AbstractDbData.UpdatedInfo getLegacy() {
     return AbstractDbData.UpdatedInfo.valueOf(name());
   }
 
   @JsonValue
-  public int getID() {
+  public final int getID() {
     return id;
   }
 }

@@ -75,7 +75,8 @@ public class WaarpR66S3Client {
   private static final Function<Result<Item>, String> function =
       new Function<Result<Item>, String>() {
         @Override
-        public @Nullable String apply(@Nullable final Result<Item> itemResult) {
+        public final @Nullable String apply(
+            @Nullable final Result<Item> itemResult) {
           try {
             if (itemResult != null) {
               final Item item = itemResult.get();
@@ -101,9 +102,8 @@ public class WaarpR66S3Client {
    */
   public WaarpR66S3Client(final String accessKey, final String secretKey,
                           final URL endPointS3) {
-    ParametersChecker
-        .checkParameter("Parameters cannot be null or empty", accessKey,
-                        secretKey, endPointS3);
+    ParametersChecker.checkParameter("Parameters cannot be null or empty",
+                                     accessKey, secretKey, endPointS3);
     // Create a minioClient with the MinIO server playground, its access key and secret key.
     minioClient = MinioClient.builder().endpoint(endPointS3)
                              .credentials(accessKey, secretKey).build();
@@ -121,12 +121,12 @@ public class WaarpR66S3Client {
    *
    * @throws OpenR66ProtocolNetworkException
    */
-  public String createFile(final String bucketName, final String targetName,
-                           final File file, final Map<String, String> tags)
+  public final String createFile(final String bucketName,
+                                 final String targetName, final File file,
+                                 final Map<String, String> tags)
       throws OpenR66ProtocolNetworkException {
-    ParametersChecker
-        .checkParameter(BUCKET_OR_TARGET_CANNOT_BE_NULL_OR_EMPTY, bucketName,
-                        targetName);
+    ParametersChecker.checkParameter(BUCKET_OR_TARGET_CANNOT_BE_NULL_OR_EMPTY,
+                                     bucketName, targetName);
     ParametersChecker.checkParameter("File cannot be null", file);
     if (!file.canRead()) {
       throw new IllegalArgumentException(
@@ -136,12 +136,12 @@ public class WaarpR66S3Client {
     boolean error = false;
     try {
       // Make bucketName bucket if not exist.
-      final boolean found = minioClient
-          .bucketExists(BucketExistsArgs.builder().bucket(bucketName).build());
+      final boolean found = minioClient.bucketExists(
+          BucketExistsArgs.builder().bucket(bucketName).build());
       if (!found) {
         // Make a new bucket
-        minioClient
-            .makeBucket(MakeBucketArgs.builder().bucket(bucketName).build());
+        minioClient.makeBucket(
+            MakeBucketArgs.builder().bucket(bucketName).build());
       } else {
         logger.info("Bucket {} already exists.", bucketName);
       }
@@ -187,12 +187,11 @@ public class WaarpR66S3Client {
    *
    * @throws OpenR66ProtocolNetworkException
    */
-  public void setTags(final String bucketName, final String targetName,
-                      final Map<String, String> tags)
+  public final void setTags(final String bucketName, final String targetName,
+                            final Map<String, String> tags)
       throws OpenR66ProtocolNetworkException {
-    ParametersChecker
-        .checkParameter(BUCKET_OR_TARGET_CANNOT_BE_NULL_OR_EMPTY, bucketName,
-                        targetName);
+    ParametersChecker.checkParameter(BUCKET_OR_TARGET_CANNOT_BE_NULL_OR_EMPTY,
+                                     bucketName, targetName);
     try {
       if (tags != null && !tags.isEmpty()) {
         minioClient.setObjectTags(
@@ -215,12 +214,11 @@ public class WaarpR66S3Client {
    *
    * @throws OpenR66ProtocolNetworkException
    */
-  public ZonedDateTime getObjectRetention(final String bucketName,
-                                          final String sourceName)
+  public final ZonedDateTime getObjectRetention(final String bucketName,
+                                                final String sourceName)
       throws OpenR66ProtocolNetworkException {
-    ParametersChecker
-        .checkParameter(BUCKET_OR_TARGET_CANNOT_BE_NULL_OR_EMPTY, bucketName,
-                        sourceName);
+    ParametersChecker.checkParameter(BUCKET_OR_TARGET_CANNOT_BE_NULL_OR_EMPTY,
+                                     bucketName, sourceName);
     try {
       final Retention retention = minioClient.getObjectRetention(
           GetObjectRetentionArgs.builder().bucket(bucketName).object(bucketName)
@@ -241,15 +239,14 @@ public class WaarpR66S3Client {
    *
    * @throws OpenR66ProtocolNetworkException
    */
-  public void bypassObjectRetention(final String bucketName,
-                                    final String targetName,
-                                    final ZonedDateTime retentionUntil)
+  public final void bypassObjectRetention(final String bucketName,
+                                          final String targetName,
+                                          final ZonedDateTime retentionUntil)
       throws OpenR66ProtocolNetworkException {
-    ParametersChecker
-        .checkParameter(BUCKET_OR_TARGET_CANNOT_BE_NULL_OR_EMPTY, bucketName,
-                        targetName);
-    ParametersChecker
-        .checkParameter("Retention cannot be null", retentionUntil);
+    ParametersChecker.checkParameter(BUCKET_OR_TARGET_CANNOT_BE_NULL_OR_EMPTY,
+                                     bucketName, targetName);
+    ParametersChecker.checkParameter("Retention cannot be null",
+                                     retentionUntil);
     if (retentionUntil.isBefore(ZonedDateTime.now())) {
       logger.warn("Retention Date Time is before now");
       throw new IllegalArgumentException("Retention Date Time is before now");
@@ -280,13 +277,13 @@ public class WaarpR66S3Client {
    *
    * @throws OpenR66ProtocolNetworkException
    */
-  public Map<String, String> getFile(final String bucketName,
-                                     final String sourceName, final File file,
-                                     final boolean getTags)
+  public final Map<String, String> getFile(final String bucketName,
+                                           final String sourceName,
+                                           final File file,
+                                           final boolean getTags)
       throws OpenR66ProtocolNetworkException {
-    ParametersChecker
-        .checkParameter(BUCKET_OR_SOURCE_CANNOT_BE_NULL_OR_EMPTY, bucketName,
-                        sourceName);
+    ParametersChecker.checkParameter(BUCKET_OR_SOURCE_CANNOT_BE_NULL_OR_EMPTY,
+                                     bucketName, sourceName);
     ParametersChecker.checkParameter("File cannot be null", file);
     boolean downloaded = false;
     boolean error = false;
@@ -332,12 +329,11 @@ public class WaarpR66S3Client {
    *
    * @throws OpenR66ProtocolNetworkException
    */
-  public Map<String, String> getTags(final String bucketName,
-                                     final String sourceName)
+  public final Map<String, String> getTags(final String bucketName,
+                                           final String sourceName)
       throws OpenR66ProtocolNetworkException {
-    ParametersChecker
-        .checkParameter(BUCKET_OR_SOURCE_CANNOT_BE_NULL_OR_EMPTY, bucketName,
-                        sourceName);
+    ParametersChecker.checkParameter(BUCKET_OR_SOURCE_CANNOT_BE_NULL_OR_EMPTY,
+                                     bucketName, sourceName);
     try {
       final Tags tags = minioClient.getObjectTags(
           GetObjectTagsArgs.builder().bucket(bucketName).object(sourceName)
@@ -358,11 +354,10 @@ public class WaarpR66S3Client {
    *
    * @throws OpenR66ProtocolNetworkException
    */
-  public void deleteFile(final String bucketName, final String sourceName)
+  public final void deleteFile(final String bucketName, final String sourceName)
       throws OpenR66ProtocolNetworkException {
-    ParametersChecker
-        .checkParameter(BUCKET_OR_SOURCE_CANNOT_BE_NULL_OR_EMPTY, bucketName,
-                        sourceName);
+    ParametersChecker.checkParameter(BUCKET_OR_SOURCE_CANNOT_BE_NULL_OR_EMPTY,
+                                     bucketName, sourceName);
     try {
       // Remove object.
       minioClient.removeObject(
@@ -387,13 +382,13 @@ public class WaarpR66S3Client {
    *
    * @throws OpenR66ProtocolNetworkException
    */
-  public Iterator<String> listObjectsFromBucket(final String bucketName,
-                                                final String optionalNameStartWith,
-                                                final boolean recursively,
-                                                final int limit)
+  public final Iterator<String> listObjectsFromBucket(final String bucketName,
+                                                      final String optionalNameStartWith,
+                                                      final boolean recursively,
+                                                      final int limit)
       throws OpenR66ProtocolNetworkException {
-    ParametersChecker
-        .checkParameter("Bucket cannot be null or empty", bucketName);
+    ParametersChecker.checkParameter("Bucket cannot be null or empty",
+                                     bucketName);
     try {
       // List recursively
       final ListObjectsArgs.Builder builder =
@@ -406,8 +401,7 @@ public class WaarpR66S3Client {
       }
       final ListObjectsArgs args = builder.build();
       final Iterable<Result<Item>> iterable = minioClient.listObjects(args);
-      return Iterators
-          .transform(iterable.iterator(), function);
+      return Iterators.transform(iterable.iterator(), function);
     } catch (final Exception e) {
       logger.error(e.getMessage());
       throw new OpenR66ProtocolNetworkException(S_3_ISSUE + e.getMessage(), e);

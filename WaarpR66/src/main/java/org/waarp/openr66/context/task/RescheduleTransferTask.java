@@ -159,7 +159,7 @@ public class RescheduleTransferTask extends AbstractTask {
   }
 
   @Override
-  public void run() {
+  public final void run() {
     logger.info("Reschedule with {}:{} and {}", argRule, argTransfer, session);
     runner = session.getRunner();
     if (runner == null) {
@@ -193,8 +193,8 @@ public class RescheduleTransferTask extends AbstractTask {
       final R66Result result =
           new R66Result(session, false, ErrorCode.Warning, runner);
       futureCompletion.setResult(result);
-      logger
-          .warn("Not enough argument in Reschedule: " + runner.toShortString());
+      logger.warn(
+          "Not enough argument in Reschedule: " + runner.toShortString());
       futureCompletion.setSuccess();
       return;
     }
@@ -254,7 +254,7 @@ public class RescheduleTransferTask extends AbstractTask {
     futureCompletion.setSuccess();
   }
 
-  protected void resetInformation(final int value) {
+  protected final void resetInformation(final int value) {
     final Map<String, Object> root = runner.getTransferMap();
     root.put(CPTLIMIT, value);
     try {
@@ -268,7 +268,7 @@ public class RescheduleTransferTask extends AbstractTask {
     runner.setTransferMap(root);
   }
 
-  protected boolean validateArgs(final String[] args) {
+  protected final boolean validateArgs(final String[] args) {
     boolean validCode = false;
     for (int i = 0; i < args.length; i++) {
       if ("-delay".equalsIgnoreCase(args[i])) {
@@ -351,9 +351,8 @@ public class RescheduleTransferTask extends AbstractTask {
         } else {
           stop = Calendar.getInstance();
         }
-        logger
-            .debug("Dates before check: Not between {} and {}", start.getTime(),
-                   stop.getTime());
+        logger.debug("Dates before check: Not between {} and {}",
+                     start.getTime(), stop.getTime());
         // Check that start < stop
         if (start.compareTo(stop) > 0) {
           // no so add 24H to stop
@@ -364,9 +363,8 @@ public class RescheduleTransferTask extends AbstractTask {
           start.add(Calendar.DAY_OF_MONTH, 1);
           stop.add(Calendar.DAY_OF_MONTH, 1);
         }
-        logger
-            .debug("Dates after check: Not between {} and {}", start.getTime(),
-                   stop.getTime());
+        logger.debug("Dates after check: Not between {} and {}",
+                     start.getTime(), stop.getTime());
         if (!startModified) {
           if (newDate.compareTo(stop) < 0) {
             logger.debug("newDate: {} Should not be between {} and {}",

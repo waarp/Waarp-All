@@ -384,14 +384,14 @@ public enum ReplyCode {
   /**
    * @return the code
    */
-  public int getCode() {
+  public final int getCode() {
     return code;
   }
 
   /**
    * @return the mesg
    */
-  public String getMesg() {
+  public final String getMesg() {
     return mesg;
   }
 

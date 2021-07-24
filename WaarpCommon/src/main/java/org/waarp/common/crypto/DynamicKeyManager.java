@@ -56,13 +56,13 @@ public class DynamicKeyManager extends KeyManager {
   }
 
   @Override
-  public KeyObject createKeyObject() {
+  public final KeyObject createKeyObject() {
     throw new InstantiationError(
         "DynamicKeyManager does not implement this function");
   }
 
   @Override
-  public List<String> initFromList(final List<String> keys) {
+  public final List<String> initFromList(final List<String> keys) {
     final LinkedList<String> wrong = new LinkedList<String>();
     for (final String filename : keys) {
       final File file = new File(filename);
@@ -173,7 +173,7 @@ public class DynamicKeyManager extends KeyManager {
   }
 
   @Override
-  public void saveToFiles() throws CryptoException, IOException {
+  public final void saveToFiles() throws CryptoException, IOException {
     final Enumeration<String> names = keysConcurrentHashMap.keys();
     while (names.hasMoreElements()) {
       final String name = names.nextElement();

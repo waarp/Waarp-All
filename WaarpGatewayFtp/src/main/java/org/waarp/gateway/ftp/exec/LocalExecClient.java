@@ -66,8 +66,7 @@ public class LocalExecClient {
     // Configure the client.
     bootstrapLocalExec = new Bootstrap();
     WaarpNettyUtil.setBootstrap(bootstrapLocalExec, localPipelineExecutor,
-                                (int) Configuration.configuration
-                                    .getTimeoutCon());
+                                (int) Configuration.configuration.getTimeoutCon());
     // Configure the pipeline factory.
     localExecClientInitializer = new LocalExecClientInitializer();
     bootstrapLocalExec.handler(localExecClientInitializer);
@@ -92,7 +91,7 @@ public class LocalExecClient {
     // nothing
   }
 
-  public LocalExecResult getLocalExecResult() {
+  public final LocalExecResult getLocalExecResult() {
     return result;
   }
 
@@ -106,8 +105,8 @@ public class LocalExecClient {
    * @param delay
    * @param futureCompletion
    */
-  public void runOneCommand(final String command, final long delay,
-                            final WaarpFuture futureCompletion) {
+  public final void runOneCommand(final String command, final long delay,
+                                  final WaarpFuture futureCompletion) {
     // Initialize the command context
     final LocalExecClientHandler clientHandler =
         (LocalExecClientHandler) channel.pipeline().last();
@@ -135,7 +134,7 @@ public class LocalExecClient {
   /**
    * Connect to the Server
    */
-  public boolean connect() {
+  public final boolean connect() {
     // Start the connection attempt.
     final ChannelFuture future = bootstrapLocalExec.connect(getAddress());
 
@@ -155,11 +154,11 @@ public class LocalExecClient {
   /**
    * Disconnect from the server
    */
-  public void disconnect() {
+  public final void disconnect() {
     // Close the connection. Make sure the close operation ends because
     // all I/O operations are asynchronous in Netty.
-    WaarpNettyUtil
-        .awaitOrInterrupted(WaarpSslUtility.closingSslChannel(channel));
+    WaarpNettyUtil.awaitOrInterrupted(
+        WaarpSslUtility.closingSslChannel(channel));
   }
 
   /**

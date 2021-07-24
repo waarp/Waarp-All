@@ -98,13 +98,14 @@ public class S3TaskFactory extends AbstractExtendedTaskFactory {
   }
 
   @Override
-  public String getName() {
+  public final String getName() {
     return S3TaskFactory.class.getSimpleName();
   }
 
   @Override
-  public AbstractTask getTaskFromId(final String name, final String argRule,
-                                    final int delay, final R66Session session)
+  public final AbstractTask getTaskFromId(final String name,
+                                          final String argRule, final int delay,
+                                          final R66Session session)
       throws OpenR66RunnerErrorException {
     final S3TaskType type;
     try {
@@ -120,10 +121,10 @@ public class S3TaskFactory extends AbstractExtendedTaskFactory {
   }
 
   @Override
-  public AbstractTask getTaskFromIdForBusiness(final String name,
-                                               final String argRule,
-                                               final int delay,
-                                               final R66Session session)
+  public final AbstractTask getTaskFromIdForBusiness(final String name,
+                                                     final String argRule,
+                                                     final int delay,
+                                                     final R66Session session)
       throws OpenR66RunnerErrorException {
     final S3TaskType type;
     try {

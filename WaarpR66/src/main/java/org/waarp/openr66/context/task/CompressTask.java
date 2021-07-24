@@ -74,7 +74,7 @@ public class CompressTask extends AbstractTask {
     logger.debug("From {} {} to {} {} using {}", from, from.canRead(), to,
                  to.canRead(), (delay == 1? "Decompress" : "Compress"));
     try {
-      WaarpZstdCodec zstdCodec = new WaarpZstdCodec();
+      final WaarpZstdCodec zstdCodec = new WaarpZstdCodec();
       if (delay == 1) {
         zstdCodec.decompress(from, to);
       } else {
@@ -92,7 +92,7 @@ public class CompressTask extends AbstractTask {
     }
     try {
       session.getFile().replaceFilename(finalname, true);
-    } catch (CommandAbstractException e) {
+    } catch (final CommandAbstractException e) {
       logger.error(
           "Replace with Compressed file as " + finalname + " with " + argRule +
           ':' + argTransfer + " and " + session + ": {}", e.getMessage());

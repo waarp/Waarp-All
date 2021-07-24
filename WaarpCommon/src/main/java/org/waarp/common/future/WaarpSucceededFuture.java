@@ -35,7 +35,12 @@ public class WaarpSucceededFuture extends WaarpCompletedFuture {
   }
 
   @Override
-  public WaarpFuture rethrowIfFailed() {
+  public final boolean isFailed() {
+    return false;
+  }
+
+  @Override
+  public final WaarpFutureInterface rethrowIfFailed() {
     return this;
   }
 }

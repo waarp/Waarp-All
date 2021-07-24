@@ -40,11 +40,11 @@ import org.waarp.common.utility.Processes;
 import org.waarp.common.utility.SystemPropertyUtil;
 import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.common.utility.WaarpSystemUtil;
-import org.waarp.openr66.database.DbConstantR66;
+import org.waarp.openr66.client.NoOpRecvThroughHandler;
 import org.waarp.openr66.database.data.DbTaskRunner;
 import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.junit.TestAbstract;
-import org.waarp.openr66.protocol.test.TestTransferNoDb;
+import org.waarp.openr66.protocol.test.TestRecvThroughClient;
 import org.waarp.openr66.protocol.utils.R66Future;
 import org.waarp.openr66.server.R66Server;
 import org.waarp.openr66.server.ServerInitDatabase;
@@ -55,8 +55,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CompletionService;
+import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import static org.junit.Assert.*;
 import static org.waarp.openr66.protocol.it.ScenarioBase.*;
@@ -97,6 +100,8 @@ public abstract class ScenarioBaseBenchmarkDualServerMultipleFiles
   private static final String TMP_CONFIG_XML = "/tmp/config.xml";
   private static File configFile1 = null;
   private static File configFile2 = null;
+  private static final NoOpRecvThroughHandler handler =
+      new NoOpRecvThroughHandler();
   private long usedMemory;
 
   public static void setUpBeforeClass() throws Exception {
@@ -122,7 +127,7 @@ public abstract class ScenarioBaseBenchmarkDualServerMultipleFiles
     } else if ("-Xmx2048m".equalsIgnoreCase(xmx)) {
       Processes.setJvmArgsDefault("-Xms2048m -Xmx2048m ");
     } else {
-      Processes.setMemoryAccordingToFreeMemory(SERVER1_IN_JUNIT? 3 : 4);
+      Processes.setMemoryAccordingToFreeMemory(SERVER1_IN_JUNIT? 2 : 3);
     }
     if (!SERVER1_IN_JUNIT) {
       r66Pid1 = startServer(configFile1.getAbsolutePath());
@@ -154,8 +159,8 @@ public abstract class ScenarioBaseBenchmarkDualServerMultipleFiles
     File file =
         new File(classLoader.getResource(RESOURCES_SERVER_1_XML).getFile());
     if (!file.exists()) {
-      SysErrLogger.FAKE_LOGGER
-          .syserr("Cannot find in  " + file.getAbsolutePath());
+      SysErrLogger.FAKE_LOGGER.syserr(
+          "Cannot find in  " + file.getAbsolutePath());
       fail("Cannot find " + file.getAbsolutePath());
     }
     String content = WaarpStringUtils.readFile(file.getAbsolutePath());
@@ -170,8 +175,8 @@ public abstract class ScenarioBaseBenchmarkDualServerMultipleFiles
     } else if (driver.equalsIgnoreCase("oracle.jdbc.OracleDriver")) {
       target = "oracle";
       jdbcUrl = "jdbc:oracle:thin:@//localhost:1521/test";
-      SysErrLogger.FAKE_LOGGER
-          .syserr(jdbcUrl + " while should be something like " + jdbcUrl);
+      SysErrLogger.FAKE_LOGGER.syserr(
+          jdbcUrl + " while should be something like " + jdbcUrl);
       throw new UnsupportedOperationException(
           "Unsupported Test for Oracle since wrong JDBC driver");
     } else if (driver.equalsIgnoreCase("org.postgresql.Driver")) {
@@ -226,8 +231,8 @@ public abstract class ScenarioBaseBenchmarkDualServerMultipleFiles
     File file =
         new File(classLoader.getResource(RESOURCES_SERVER_2_XML).getFile());
     if (!file.exists()) {
-      SysErrLogger.FAKE_LOGGER
-          .syserr("Cannot find in  " + file.getAbsolutePath());
+      SysErrLogger.FAKE_LOGGER.syserr(
+          "Cannot find in  " + file.getAbsolutePath());
       fail("Cannot find " + file.getAbsolutePath());
     }
     String content = WaarpStringUtils.readFile(file.getAbsolutePath());
@@ -242,8 +247,8 @@ public abstract class ScenarioBaseBenchmarkDualServerMultipleFiles
     } else if (driver.equalsIgnoreCase("oracle.jdbc.OracleDriver")) {
       target = "oracle";
       jdbcUrl = "jdbc:oracle:thin:@//localhost:1521/test";
-      SysErrLogger.FAKE_LOGGER
-          .syserr(jdbcUrl + " while should be something like " + jdbcUrl);
+      SysErrLogger.FAKE_LOGGER.syserr(
+          jdbcUrl + " while should be something like " + jdbcUrl);
       throw new UnsupportedOperationException(
           "Unsupported Test for Oracle since wrong JDBC driver");
     } else if (driver.equalsIgnoreCase("org.postgresql.Driver")) {
@@ -315,8 +320,8 @@ public abstract class ScenarioBaseBenchmarkDualServerMultipleFiles
         configFile1 = new File(dirResources, fileconf);
       }
     } catch (UnsupportedOperationException e) {
-      SysErrLogger.FAKE_LOGGER
-          .syserr("Database not supported by this test Start Stop R66", e);
+      SysErrLogger.FAKE_LOGGER.syserr(
+          "Database not supported by this test Start Stop R66", e);
       Assume.assumeNoException(e);
       return;
     }
@@ -339,8 +344,8 @@ public abstract class ScenarioBaseBenchmarkDualServerMultipleFiles
         configFile2 = new File(dirResources, fileconf);
       }
     } catch (UnsupportedOperationException e) {
-      SysErrLogger.FAKE_LOGGER
-          .syserr("Database not supported by this test Start Stop R66", e);
+      SysErrLogger.FAKE_LOGGER.syserr(
+          "Database not supported by this test Start Stop R66", e);
       Assume.assumeNoException(e);
       return;
     }
@@ -398,8 +403,9 @@ public abstract class ScenarioBaseBenchmarkDualServerMultipleFiles
       // global ant project settings
       project = Processes.getProject(homeDir);
       Processes.executeJvm(project, R66Server.class, argsServer, true);
-      int pid = Processes
-          .getPidOfRunnerCommandLinux("java", R66Server.class.getName(), PIDS);
+      int pid = Processes.getPidOfRunnerCommandLinux("java",
+                                                     R66Server.class.getName(),
+                                                     PIDS);
       PIDS.add(pid);
       logger.warn("Start Done: {}", pid);
       return pid;
@@ -447,20 +453,20 @@ public abstract class ScenarioBaseBenchmarkDualServerMultipleFiles
     Configuration.configuration.changeNetworkLimit(0, 0, 0, 0, 1000);
     File baseDir = new File("/tmp/R66/scenario_multiple_servers/R1/out/");
     for (int i = 0; i < NUMBER_FILES; i++) {
-      int size = 10000 + ratio * i;
+      int size = ratio * i;
       File fileOut = new File(baseDir, "hello" + size);
       generateOutFile(fileOut.getAbsolutePath(), size);
     }
     return ratio;
   }
 
-  private static class SendThread implements Callable<Boolean> {
+  private static class RecvThread implements Callable<Boolean> {
     private final int size;
     private final int rank;
     private final boolean tls;
     private final R66Future[] futures;
 
-    SendThread(int size, int rank, R66Future[] futures, boolean tls) {
+    RecvThread(int size, int rank, R66Future[] futures, boolean tls) {
       this.size = size;
       this.rank = rank;
       this.futures = futures;
@@ -471,39 +477,57 @@ public abstract class ScenarioBaseBenchmarkDualServerMultipleFiles
     public Boolean call() throws Exception {
       final R66Future future = new R66Future(true);
       futures[rank] = future;
-      final TestTransferNoDb transaction;
+      final TestRecvThroughClient transaction;
       if (rank % 2 == 0) {
-        transaction =
-            new TestTransferNoDb(future, tls? "server2-ssl" : "server2",
-                                 "hello" + size, "sendany", "Test Send " + size,
-                                 true, BLOCK_SIZE, DbConstantR66.ILLEGALVALUE,
-                                 networkTransaction);
+        transaction = new TestRecvThroughClient(future, handler,
+                                                tls? "server2-ssl" : "server2",
+                                                "hello" + size, "sendany",
+                                                "Test Send " + size +
+                                                " #COMPRESS#", true, BLOCK_SIZE,
+                                                networkTransaction);
       } else {
-        transaction =
-            new TestTransferNoDb(future, tls? "server1-ssl" : "server1",
-                                 "hello" + size, "sendany", "Test Send " + size,
-                                 true, BLOCK_SIZE, DbConstantR66.ILLEGALVALUE,
-                                 networkTransaction);
+        transaction = new TestRecvThroughClient(future, handler,
+                                                tls? "server1-ssl" : "server1",
+                                                "hello" + size, "sendany",
+                                                "Test Send " + size +
+                                                " #COMPRESS#", true, BLOCK_SIZE,
+                                                networkTransaction);
       }
       transaction.setNormalInfoAsWarn(false);
       transaction.run();
-      return Boolean.TRUE;
+      future.awaitOrInterruptible();
+      return future.isSuccess();
     }
   }
 
-  private long directSendThread(R66Future[] futures, boolean tls, int ratio,
+  private long directRecvThread(R66Future[] futures, boolean tls, int ratio,
                                 int factor) throws Exception {
     ExecutorService executorService =
         Executors.newFixedThreadPool(NUMBER_FILES);
-    List<SendThread> sendThreads = new ArrayList<>(NUMBER_FILES);
+    CompletionService<Boolean> completionService =
+        new ExecutorCompletionService<Boolean>(executorService);
     for (int i = 0; i < NUMBER_FILES; i++) {
-      int size = 10000 + ratio * i;
-      sendThreads.add(new SendThread(size, i * factor, futures, tls));
+      int size = ratio * i;
+      completionService.submit(new RecvThread(size, i * factor, futures, tls));
     }
     long timestart = System.currentTimeMillis();
-    executorService.invokeAll(sendThreads);
-    checkFinal(futures, factor);
+    int end = 0;
+    while (end < NUMBER_FILES) {
+      Future<Boolean> future = completionService.take();
+      try {
+        if (future.get()) {
+          end++;
+        } else {
+          fail("Recv issue");
+          break;
+        }
+      } catch (final Exception e) {
+        fail("Issue " + e.getMessage());
+        break;
+      }
+    }
     long timestop = System.currentTimeMillis();
+    assertEquals(NUMBER_FILES, end);
     executorService.shutdown();
     return timestop - timestart;
   }
@@ -518,7 +542,7 @@ public abstract class ScenarioBaseBenchmarkDualServerMultipleFiles
   }
 
   @Test
-  public void test01_SendTlsSyncNoLimit() throws Exception {
+  public void test01_RecvTlsSyncNoLimit() throws Exception {
     if (SystemPropertyUtil.get(IT_LONG_TEST, false)) {
       NUMBER_FILES = IT_NUMBER_FILES;
     } else {
@@ -535,24 +559,29 @@ public abstract class ScenarioBaseBenchmarkDualServerMultipleFiles
 
     R66Future[] futures = new R66Future[NUMBER_FILES];
 
-    long time = directSendThread(futures, true, ratio, 1);
+    NUMBER_FILES = IT_NUMBER_FILES / 2;
+    logger.warn("WarmUp {} {}", Processes.getCurrentMethodName(), NUMBER_FILES);
+    directRecvThread(futures, true, ratio, 1);
+    NUMBER_FILES = IT_NUMBER_FILES;
+    logger.warn("Start {} {}", Processes.getCurrentMethodName(), NUMBER_FILES);
+    long time = directRecvThread(futures, true, ratio, 1);
     logger.warn("Direct {}, Recv {}, LimitBandwidth {} " +
                 "({} seconds,  {} nb/s, {} MBPS vs {} " +
                 "and {}) of size {} with block size {}", true, false,
                 NUMBER_FILES, (time) / 1000,
                 NUMBER_FILES * 1000.0 / (1.0 * time),
-                NUMBER_FILES * 260 * 1024 / 1000.0 / (time),
+                NUMBER_FILES * 250 * 1024 / 1000.0 / (time),
                 Configuration.configuration.getServerGlobalReadLimit() /
                 1000000.0,
                 Configuration.configuration.getServerChannelReadLimit() /
-                1000000.0, NUMBER_FILES * 260 * 1024, BLOCK_SIZE);
+                1000000.0, NUMBER_FILES * 250 * 1024, BLOCK_SIZE);
     checkMemory();
     logger.warn("End {}", Processes.getCurrentMethodName());
   }
 
 
   @Test
-  public void test02_SendSyncNoLimit() throws Exception {
+  public void test02_RecvSyncNoLimit() throws Exception {
     if (SystemPropertyUtil.get(IT_LONG_TEST, false)) {
       NUMBER_FILES = IT_NUMBER_FILES;
     } else {
@@ -568,7 +597,12 @@ public abstract class ScenarioBaseBenchmarkDualServerMultipleFiles
     logger.warn("End of file creations");
 
     R66Future[] futures = new R66Future[NUMBER_FILES];
-    long time = directSendThread(futures, false, ratio, 1);
+    NUMBER_FILES = IT_NUMBER_FILES / 2;
+    logger.warn("WarmUp {} {}", Processes.getCurrentMethodName(), NUMBER_FILES);
+    directRecvThread(futures, false, ratio, 1);
+    NUMBER_FILES = IT_NUMBER_FILES;
+    logger.warn("Start {} {}", Processes.getCurrentMethodName(), NUMBER_FILES);
+    long time = directRecvThread(futures, false, ratio, 1);
     logger.warn("Direct {}, Recv {}, LimitBandwidth {} " +
                 "({} seconds,  {} nb/s, {} MBPS vs {} " +
                 "and {}) of size {} with block size {}", true, false,
@@ -584,7 +618,7 @@ public abstract class ScenarioBaseBenchmarkDualServerMultipleFiles
   }
 
   @Test
-  public void test03_SendSyncNoLimitMono() throws Exception {
+  public void test03_RecvSyncNoLimitMono() throws Exception {
     if (SystemPropertyUtil.get(IT_LONG_TEST, false)) {
       NUMBER_FILES = IT_NUMBER_FILES;
     } else {
@@ -600,7 +634,49 @@ public abstract class ScenarioBaseBenchmarkDualServerMultipleFiles
     logger.warn("End of file creations");
 
     R66Future[] futures = new R66Future[NUMBER_FILES * 2];
-    long time = directSendThread(futures, false, ratio, 2);
+    NUMBER_FILES = IT_NUMBER_FILES / 2;
+    logger.warn("WarmUp {} {}", Processes.getCurrentMethodName(), NUMBER_FILES);
+    directRecvThread(futures, false, ratio, 2);
+    NUMBER_FILES = IT_NUMBER_FILES;
+    logger.warn("Start {} {}", Processes.getCurrentMethodName(), NUMBER_FILES);
+    long time = directRecvThread(futures, false, ratio, 2);
+    logger.warn("Direct {}, Recv {}, LimitBandwidth {} " +
+                "({} seconds,  {} nb/s, {} MBPS vs {} " +
+                "and {}) of size {} with block size {}", true, false,
+                NUMBER_FILES, (time) / 1000,
+                NUMBER_FILES * 1000.0 / (1.0 * time),
+                NUMBER_FILES * 260 * 1024 / 1000.0 / (time),
+                Configuration.configuration.getServerGlobalReadLimit() /
+                1000000.0,
+                Configuration.configuration.getServerChannelReadLimit() /
+                1000000.0, NUMBER_FILES * 260 * 1024, BLOCK_SIZE);
+    checkMemory();
+    logger.warn("End {}", Processes.getCurrentMethodName());
+  }
+
+  @Test
+  public void test03_RecvSyncTlsNoLimitMono() throws Exception {
+    if (SystemPropertyUtil.get(IT_LONG_TEST, false)) {
+      NUMBER_FILES = IT_NUMBER_FILES;
+    } else {
+      NUMBER_FILES = -1;
+      logger.warn("Test disabled without IT_LONG_TEST");
+      Assume.assumeTrue("If the Long term tests are allowed",
+                        SystemPropertyUtil.get(IT_LONG_TEST, false));
+      return;
+    }
+    logger.warn("Start {} {}", Processes.getCurrentMethodName(), NUMBER_FILES);
+
+    int ratio = initFiles();
+    logger.warn("End of file creations");
+
+    R66Future[] futures = new R66Future[NUMBER_FILES * 2];
+    NUMBER_FILES = IT_NUMBER_FILES / 2;
+    logger.warn("WarmUp {} {}", Processes.getCurrentMethodName(), NUMBER_FILES);
+    directRecvThread(futures, true, ratio, 2);
+    NUMBER_FILES = IT_NUMBER_FILES;
+    logger.warn("Start {} {}", Processes.getCurrentMethodName(), NUMBER_FILES);
+    long time = directRecvThread(futures, true, ratio, 2);
     logger.warn("Direct {}, Recv {}, LimitBandwidth {} " +
                 "({} seconds,  {} nb/s, {} MBPS vs {} " +
                 "and {}) of size {} with block size {}", true, false,

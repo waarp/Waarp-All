@@ -81,7 +81,8 @@ public class MachineState<E extends Enum<E>> {
    *
    * @return the previous association if any
    */
-  public EnumSet<E> addNewAssociation(final E state, final EnumSet<E> set) {
+  public final EnumSet<E> addNewAssociation(final E state,
+                                            final EnumSet<E> set) {
     return statemap.put(state, set);
   }
 
@@ -94,7 +95,7 @@ public class MachineState<E extends Enum<E>> {
    *
    * @return the previous association if any
    */
-  public EnumSet<E> addNewAssociation(final Transition<E> elt) {
+  public final EnumSet<E> addNewAssociation(final Transition<E> elt) {
     return statemap.put(elt.getState(), elt.getSet());
   }
 
@@ -105,7 +106,7 @@ public class MachineState<E extends Enum<E>> {
    *
    * @return the previous association if any
    */
-  public EnumSet<E> removeAssociation(final E state) {
+  public final EnumSet<E> removeAssociation(final E state) {
     return statemap.remove(state);
   }
 
@@ -114,7 +115,7 @@ public class MachineState<E extends Enum<E>> {
    *
    * @return the current State
    */
-  public E getCurrent() {
+  public final E getCurrent() {
     return currentState;
   }
 
@@ -127,10 +128,11 @@ public class MachineState<E extends Enum<E>> {
    *
    * @throws IllegalFiniteStateException if the state is not allowed
    */
-  public E setCurrent(final E desiredState) throws IllegalFiniteStateException {
+  public final E setCurrent(final E desiredState)
+      throws IllegalFiniteStateException {
     if (!isReachable(desiredState)) {
-      logger
-          .debug("State {} not reachable from: {}", desiredState, currentState);
+      logger.debug("State {} not reachable from: {}", desiredState,
+                   currentState);
       throw new IllegalFiniteStateException(
           desiredState + " not allowed from " + currentState);
     }
@@ -144,7 +146,7 @@ public class MachineState<E extends Enum<E>> {
    *
    * @return the requested state, even if it was not reachable
    */
-  public E setDryCurrent(final E desiredState) {
+  public final E setDryCurrent(final E desiredState) {
     return setAsFinal(desiredState);
   }
 
@@ -182,7 +184,7 @@ public class MachineState<E extends Enum<E>> {
   /**
    * Release the Machine State
    */
-  public void release() {
+  public final void release() {
     currentState = null;
     statemap = null;
   }

@@ -88,7 +88,7 @@ public class ChannelCloseTimer implements TimerTask {
     }
   }
 
-  public void setDbSession(final DbSession dbSession) {
+  public final void setDbSession(final DbSession dbSession) {
     noConcurrencyDbSession = dbSession;
   }
 

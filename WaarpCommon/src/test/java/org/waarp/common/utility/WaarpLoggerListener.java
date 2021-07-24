@@ -118,8 +118,8 @@ public class WaarpLoggerListener implements BuildListener {
 
       if (Project.MSG_VERBOSE <= msgOutputLevel ||
           !(error instanceof BuildException)) {
-        message
-            .append(org.apache.tools.ant.util.StringUtils.getStackTrace(error));
+        message.append(
+            org.apache.tools.ant.util.StringUtils.getStackTrace(error));
       } else {
         message.append(error).append(lSep);
       }

@@ -66,32 +66,38 @@ public class DBMultipleMonitorDAO extends StatementExecutor<MultipleMonitor>
   }
 
   @Override
-  protected String getId(final MultipleMonitor e1) {
+  protected final boolean isCachedEnable() {
+    return false;
+  }
+
+  @Override
+  protected final String getId(final MultipleMonitor e1) {
     return e1.getHostid();
   }
 
   @Override
-  protected String getSelectRequest() {
+  protected final String getSelectRequest() {
     return SQL_SELECT;
   }
 
   @Override
-  protected String getGetAllRequest() {
+  protected final String getGetAllRequest() {
     return SQL_GET_ALL;
   }
 
   @Override
-  protected String getCountRequest() {
+  protected final String getCountRequest() {
     return SQL_COUNT_ALL;
   }
 
   @Override
-  protected String getExistRequest() {
+  protected final String getExistRequest() {
     return SQL_EXIST;
   }
 
   @Override
-  protected Object[] getInsertValues(final MultipleMonitor multipleMonitor) {
+  protected final Object[] getInsertValues(
+      final MultipleMonitor multipleMonitor) {
     return new Object[] {
         multipleMonitor.getHostid(), multipleMonitor.getCountConfig(),
         multipleMonitor.getCountHost(), multipleMonitor.getCountRule()
@@ -99,12 +105,13 @@ public class DBMultipleMonitorDAO extends StatementExecutor<MultipleMonitor>
   }
 
   @Override
-  protected String getInsertRequest() {
+  protected final String getInsertRequest() {
     return SQL_INSERT;
   }
 
   @Override
-  protected Object[] getUpdateValues(final MultipleMonitor multipleMonitor) {
+  protected final Object[] getUpdateValues(
+      final MultipleMonitor multipleMonitor) {
     return new Object[] {
         multipleMonitor.getHostid(), multipleMonitor.getCountConfig(),
         multipleMonitor.getCountHost(), multipleMonitor.getCountRule(),
@@ -113,30 +120,35 @@ public class DBMultipleMonitorDAO extends StatementExecutor<MultipleMonitor>
   }
 
   @Override
-  protected String getUpdateRequest() {
+  protected final String getUpdateRequest() {
     return SQL_UPDATE;
   }
 
   @Override
-  protected String getDeleteRequest() {
+  protected final String getDeleteRequest() {
     return SQL_DELETE;
   }
 
   @Override
-  protected String getDeleteAllRequest() {
+  protected final String getDeleteAllRequest() {
     return SQL_DELETE_ALL;
   }
 
   @Override
-  public MultipleMonitor getFromResultSet(final ResultSet set)
+  public final MultipleMonitor getFromResultSet(final ResultSet set)
       throws SQLException {
     try {
       return new MultipleMonitor(set.getString(HOSTID_FIELD),
                                  set.getInt(COUNT_CONFIG_FIELD),
                                  set.getInt(COUNT_HOST_FIELD),
                                  set.getInt(COUNT_RULE_FIELD));
-    } catch (WaarpDatabaseSqlException e) {
+    } catch (final WaarpDatabaseSqlException e) {
       throw new SQLException(e);
     }
+  }
+
+  @Override
+  protected final boolean isDbTransfer() {
+    return false;
   }
 }

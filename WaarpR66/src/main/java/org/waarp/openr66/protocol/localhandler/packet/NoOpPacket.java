@@ -50,13 +50,13 @@ public class NoOpPacket extends AbstractLocalPacket {
   }
 
   @Override
-  public boolean hasGlobalBuffer() {
+  public final boolean hasGlobalBuffer() {
     return true;
   }
 
   @Override
-  public void createAllBuffers(final LocalChannelReference lcr,
-                               final int networkHeader) {
+  public final void createAllBuffers(final LocalChannelReference lcr,
+                                     final int networkHeader) {
     final int globalSize = networkHeader + LOCAL_HEADER_SIZE;
     global = ByteBufAllocator.DEFAULT.ioBuffer(globalSize, globalSize);
     end = Unpooled.EMPTY_BUFFER;
@@ -65,12 +65,12 @@ public class NoOpPacket extends AbstractLocalPacket {
   }
 
   @Override
-  public byte getType() {
+  public final byte getType() {
     return LocalPacketFactory.NOOPPACKET;
   }
 
   @Override
-  public String toString() {
+  public final String toString() {
     return "NoOpPacket";
   }
 

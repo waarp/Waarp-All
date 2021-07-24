@@ -47,7 +47,7 @@ public class RegexFileFilter implements FileFilter {
   }
 
   @Override
-  public boolean accept(final File pathname) {
+  public final boolean accept(final File pathname) {
     if (pathname.isFile()) {
       if (pattern != null) {
         return pattern.matcher(pathname.getPath()).find() &&

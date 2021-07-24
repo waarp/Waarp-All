@@ -118,35 +118,36 @@ public class DataPacket extends AbstractLocalPacket {
    * @param data
    * @param length
    */
-  public void updateFromCompressionCodec(final byte[] data, final int length) {
+  public final void updateFromCompressionCodec(final byte[] data,
+                                               final int length) {
     this.data = data;
     lengthPacket = length;
   }
 
   @Override
-  public boolean hasGlobalBuffer() {
+  public final boolean hasGlobalBuffer() {
     return false;
   }
 
   @Override
-  public void createAllBuffers(final LocalChannelReference lcr,
-                               final int networkHeader) {
+  public final void createAllBuffers(final LocalChannelReference lcr,
+                                     final int networkHeader) {
     throw new IllegalStateException("Should not be called");
   }
 
   @Override
-  public void createEnd(final LocalChannelReference lcr) {
+  public final void createEnd(final LocalChannelReference lcr) {
     end = WaarpNettyUtil.wrappedBuffer(key);
   }
 
   @Override
-  public void createHeader(final LocalChannelReference lcr) {
+  public final void createHeader(final LocalChannelReference lcr) {
     header = ByteBufAllocator.DEFAULT.ioBuffer(4, 4);
     header.writeInt(packetRank);
   }
 
   @Override
-  public void createMiddle(final LocalChannelReference lcr) {
+  public final void createMiddle(final LocalChannelReference lcr) {
     if (dataRecv != null) {
       middle = dataRecv;
     } else {
@@ -156,26 +157,26 @@ public class DataPacket extends AbstractLocalPacket {
   }
 
   @Override
-  public byte getType() {
+  public final byte getType() {
     return LocalPacketFactory.DATAPACKET;
   }
 
   @Override
-  public String toString() {
+  public final String toString() {
     return "DataPacket: " + packetRank + ':' + lengthPacket;
   }
 
   /**
    * @return the packetRank
    */
-  public int getPacketRank() {
+  public final int getPacketRank() {
     return packetRank;
   }
 
   /**
    * @return the lengthPacket
    */
-  public int getLengthPacket() {
+  public final int getLengthPacket() {
     return lengthPacket;
   }
 
@@ -184,7 +185,7 @@ public class DataPacket extends AbstractLocalPacket {
    *
    * @param session to allow to get reusable buffer
    */
-  public void createByteBufFromRecv(final R66Session session) {
+  public final void createByteBufFromRecv(final R66Session session) {
     // Get reusable buffer and set internal content to byte Array
     if (data == null) {
       final byte[] buffer = session.getReusableDataPacketBuffer(lengthPacket);
@@ -198,31 +199,31 @@ public class DataPacket extends AbstractLocalPacket {
   /**
    * @return the data
    */
-  public byte[] getData() {
-    ParametersChecker
-        .checkParameter("Data is not setup correctly", data, logger);
+  public final byte[] getData() {
+    ParametersChecker.checkParameter("Data is not setup correctly", data,
+                                     logger);
     return data;
   }
 
   /**
    * @return the key
    */
-  public byte[] getKey() {
+  public final byte[] getKey() {
     return key;
   }
 
   /**
    * @return True if the Hashed key is valid (or no key is set)
    */
-  public boolean isKeyValid(final FilesystemBasedDigest digestBlock,
-                            final FilesystemBasedDigest digestGlobal,
-                            final FilesystemBasedDigest digestLocal) {
-    ParametersChecker
-        .checkParameter("Data is not setup correctly", data, logger);
+  public final boolean isKeyValid(final FilesystemBasedDigest digestBlock,
+                                  final FilesystemBasedDigest digestGlobal,
+                                  final FilesystemBasedDigest digestLocal) {
+    ParametersChecker.checkParameter("Data is not setup correctly", data,
+                                     logger);
     if (key == null || key.length == 0) {
       if (digestGlobal != null || digestLocal != null) {
-        FileUtils
-            .computeGlobalHash(digestGlobal, digestLocal, data, lengthPacket);
+        FileUtils.computeGlobalHash(digestGlobal, digestLocal, data,
+                                    lengthPacket);
       }
       logger.error("Should received a Digest but don't");
       return false;
@@ -246,7 +247,7 @@ public class DataPacket extends AbstractLocalPacket {
   }
 
   @Override
-  public void clear() {
+  public final void clear() {
     super.clear();
     WaarpNettyUtil.release(dataRecv);
     dataRecv = null;

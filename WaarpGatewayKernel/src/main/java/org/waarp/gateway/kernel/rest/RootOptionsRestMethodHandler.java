@@ -42,47 +42,49 @@ public class RootOptionsRestMethodHandler extends RestMethodHandler {
   }
 
   @Override
-  public void checkHandlerSessionCorrectness(final HttpRestHandler handler,
-                                             final RestArgument arguments,
-                                             final RestArgument result) {
+  public final void checkHandlerSessionCorrectness(
+      final HttpRestHandler handler, final RestArgument arguments,
+      final RestArgument result) {
     // nothing
   }
 
   @Override
-  public void getFileUpload(final HttpRestHandler handler,
-                            final FileUpload data, final RestArgument arguments,
-                            final RestArgument result) {
+  public final void getFileUpload(final HttpRestHandler handler,
+                                  final FileUpload data,
+                                  final RestArgument arguments,
+                                  final RestArgument result) {
     // nothing
   }
 
   @Override
-  public Object getBody(final HttpRestHandler handler, final ByteBuf body,
-                        final RestArgument arguments,
-                        final RestArgument result) {
+  public final Object getBody(final HttpRestHandler handler, final ByteBuf body,
+                              final RestArgument arguments,
+                              final RestArgument result) {
     return null;
   }
 
   @Override
-  public void endParsingRequest(final HttpRestHandler handler,
-                                final RestArgument arguments,
-                                final RestArgument result, final Object body) {
+  public final void endParsingRequest(final HttpRestHandler handler,
+                                      final RestArgument arguments,
+                                      final RestArgument result,
+                                      final Object body) {
     // nothing
   }
 
   @Override
-  public ChannelFuture sendResponse(final HttpRestHandler handler,
-                                    final ChannelHandlerContext ctx,
-                                    final RestArgument arguments,
-                                    final RestArgument result,
-                                    final Object body,
-                                    final HttpResponseStatus status) {
+  public final ChannelFuture sendResponse(final HttpRestHandler handler,
+                                          final ChannelHandlerContext ctx,
+                                          final RestArgument arguments,
+                                          final RestArgument result,
+                                          final Object body,
+                                          final HttpResponseStatus status) {
     return sendOptionsResponse(handler, ctx, result, status);
   }
 
   @Override
-  public void optionsCommand(final HttpRestHandler handler,
-                             final RestArgument arguments,
-                             final RestArgument result) {
+  public final void optionsCommand(final HttpRestHandler handler,
+                                   final RestArgument arguments,
+                                   final RestArgument result) {
     result.setCommand(COMMAND_TYPE.OPTIONS);
     final METHOD[] realmethods = METHOD.values();
     final boolean[] allMethods = new boolean[realmethods.length];
@@ -124,7 +126,7 @@ public class RootOptionsRestMethodHandler extends RestMethodHandler {
   }
 
   @Override
-  protected ArrayNode getDetailedAllow() {
+  protected final ArrayNode getDetailedAllow() {
     final ArrayNode node = JsonHandler.createArrayNode();
 
     final ObjectNode node2 = node.addObject().putObject(METHOD.OPTIONS.name());

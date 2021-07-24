@@ -69,196 +69,196 @@ public class TransferRequestJsonPacket extends JsonPacket {
   /**
    * @return the isAdditionalDelay
    */
-  public boolean isAdditionalDelay() {
+  public final boolean isAdditionalDelay() {
     return isAdditionalDelay;
   }
 
   /**
    * @param isAdditionalDelay the isAdditionalDelay to set
    */
-  public void setAdditionalDelay(final boolean isAdditionalDelay) {
+  public final void setAdditionalDelay(final boolean isAdditionalDelay) {
     this.isAdditionalDelay = isAdditionalDelay;
   }
 
   /**
    * @return the delay
    */
-  public long getDelay() {
+  public final long getDelay() {
     return delay;
   }
 
   /**
    * @param delay the delay to set
    */
-  public void setDelay(final long delay) {
+  public final void setDelay(final long delay) {
     this.delay = delay;
   }
 
   /**
    * @return the start
    */
-  public Date getStart() {
+  public final Date getStart() {
     return start;
   }
 
   /**
    * @param start the start to set
    */
-  public void setStart(final Date start) {
+  public final void setStart(final Date start) {
     this.start = start;
   }
 
   /**
    * @return the requested
    */
-  public String getRequested() {
+  public final String getRequested() {
     return requested;
   }
 
   /**
    * @param requested the requested to set
    */
-  public void setRequested(final String requested) {
+  public final void setRequested(final String requested) {
     this.requested = requested;
   }
 
   /**
    * @return the rulename
    */
-  public String getRulename() {
+  public final String getRulename() {
     return rulename;
   }
 
   /**
    * @param rulename the rulename to set
    */
-  public void setRulename(final String rulename) {
+  public final void setRulename(final String rulename) {
     this.rulename = rulename;
   }
 
   /**
    * @return the mode
    */
-  public int getMode() {
+  public final int getMode() {
     return mode;
   }
 
   /**
    * @param mode the mode to set
    */
-  public void setMode(final int mode) {
+  public final void setMode(final int mode) {
     this.mode = mode;
   }
 
   /**
    * @return the filename
    */
-  public String getFilename() {
+  public final String getFilename() {
     return filename;
   }
 
   /**
    * @param filename the filename to set
    */
-  public void setFilename(final String filename) {
+  public final void setFilename(final String filename) {
     this.filename = filename;
   }
 
   /**
    * @return the blocksize
    */
-  public int getBlocksize() {
+  public final int getBlocksize() {
     return blocksize;
   }
 
   /**
    * @param blocksize the blocksize to set
    */
-  public void setBlocksize(final int blocksize) {
+  public final void setBlocksize(final int blocksize) {
     this.blocksize = blocksize;
   }
 
   /**
    * @return the rank
    */
-  public int getRank() {
+  public final int getRank() {
     return rank;
   }
 
   /**
    * @param rank the rank to set
    */
-  public void setRank(final int rank) {
+  public final void setRank(final int rank) {
     this.rank = rank;
   }
 
   /**
    * @return the specialId
    */
-  public long getSpecialId() {
+  public final long getSpecialId() {
     return specialId;
   }
 
   /**
    * @param specialId the specialId to set
    */
-  public void setSpecialId(final long specialId) {
+  public final void setSpecialId(final long specialId) {
     this.specialId = specialId;
   }
 
   /**
    * @return the validate
    */
-  public byte getValidate() {
+  public final byte getValidate() {
     return validate;
   }
 
   /**
    * @return True if is to validate
    */
-  public boolean isToValidate() {
+  public final boolean isToValidate() {
     return validate == REQVALIDATE;
   }
 
   /**
    * @param validate the validate to set
    */
-  public void setValidate(final byte validate) {
+  public final void setValidate(final byte validate) {
     this.validate = validate;
   }
 
   /**
    * Validate the request
    */
-  public void validate() {
+  public final void validate() {
     validate = REQANSWERVALIDATE;
   }
 
   /**
    * @return the originalSize
    */
-  public long getOriginalSize() {
+  public final long getOriginalSize() {
     return originalSize;
   }
 
   /**
    * @param originalSize the originalSize to set
    */
-  public void setOriginalSize(final long originalSize) {
+  public final void setOriginalSize(final long originalSize) {
     this.originalSize = originalSize;
   }
 
   /**
    * @return the fileInformation
    */
-  public String getFileInformation() {
+  public final String getFileInformation() {
     return fileInformation;
   }
 
   /**
    * @param fileInformation the fileInformation to set
    */
-  public void setFileInformation(String fileInformation) {
+  public final void setFileInformation(String fileInformation) {
     if (fileInformation == null) {
       fileInformation = "";
     }
@@ -268,14 +268,14 @@ public class TransferRequestJsonPacket extends JsonPacket {
   /**
    * @return the separator
    */
-  public String getSeparator() {
+  public final String getSeparator() {
     return separator;
   }
 
   /**
    * @param separator the separator to set
    */
-  public void setSeparator(final String separator) {
+  public final void setSeparator(final String separator) {
     this.separator = separator;
   }
 
@@ -285,7 +285,7 @@ public class TransferRequestJsonPacket extends JsonPacket {
    * @param runner
    */
   @JsonIgnore
-  public void setFromDbTaskRunner(final DbTaskRunner runner) {
+  public final void setFromDbTaskRunner(final DbTaskRunner runner) {
     blocksize = runner.getBlocksize();
     rank = runner.getRank();
     specialId = runner.getSpecialId();
@@ -293,7 +293,7 @@ public class TransferRequestJsonPacket extends JsonPacket {
   }
 
   @Override
-  public void setRequestUserPacket() {
+  public final void setRequestUserPacket() {
     setRequestUserPacket(LocalPacketFactory.REQUESTPACKET);
   }
 }

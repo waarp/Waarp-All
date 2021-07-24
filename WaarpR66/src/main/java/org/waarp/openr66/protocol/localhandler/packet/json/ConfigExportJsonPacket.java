@@ -35,75 +35,75 @@ public class ConfigExportJsonPacket extends JsonPacket {
   /**
    * @return the host
    */
-  public boolean isHost() {
+  public final boolean isHost() {
     return host;
   }
 
   /**
    * @param host the host to set
    */
-  public void setHost(final boolean host) {
+  public final void setHost(final boolean host) {
     this.host = host;
   }
 
   /**
    * @return the rule
    */
-  public boolean isRule() {
+  public final boolean isRule() {
     return rule;
   }
 
   /**
    * @param rule the rule to set
    */
-  public void setRule(final boolean rule) {
+  public final void setRule(final boolean rule) {
     this.rule = rule;
   }
 
   /**
    * @return the business
    */
-  public boolean isBusiness() {
+  public final boolean isBusiness() {
     return business;
   }
 
   /**
    * @param business the business to set
    */
-  public void setBusiness(final boolean business) {
+  public final void setBusiness(final boolean business) {
     this.business = business;
   }
 
   /**
    * @return the alias
    */
-  public boolean isAlias() {
+  public final boolean isAlias() {
     return alias;
   }
 
   /**
    * @param alias the alias to set
    */
-  public void setAlias(final boolean alias) {
+  public final void setAlias(final boolean alias) {
     this.alias = alias;
   }
 
   /**
    * @return the roles
    */
-  public boolean isRoles() {
+  public final boolean isRoles() {
     return roles;
   }
 
   /**
    * @param roles the roles to set
    */
-  public void setRoles(final boolean roles) {
+  public final void setRoles(final boolean roles) {
     this.roles = roles;
   }
 
   @Override
-  public void fromJson(final JsonPacket other) {
+  public final void fromJson(final JsonPacket other) {
     super.fromJson(other);
     if (other instanceof ConfigExportJsonPacket) {
       final ConfigExportJsonPacket other2 = (ConfigExportJsonPacket) other;

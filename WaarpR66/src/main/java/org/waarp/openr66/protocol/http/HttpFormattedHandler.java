@@ -131,17 +131,17 @@ public class HttpFormattedHandler
      *
      * @return the content of the unique file
      */
-    public String readFileUnique(final HttpFormattedHandler handler) {
+    public final String readFileUnique(final HttpFormattedHandler handler) {
       return handler.readFileHeader(
           Configuration.configuration.getHttpBasePath() + MONITOR + header);
     }
 
-    public String readHeader(final HttpFormattedHandler handler) {
+    public final String readHeader(final HttpFormattedHandler handler) {
       return handler.readFileHeader(
           Configuration.configuration.getHttpBasePath() + MONITOR + header);
     }
 
-    public String readEnd() {
+    public final String readEnd() {
       return WaarpStringUtils.readFile(
           Configuration.configuration.getHttpBasePath() + MONITOR + end);
     }
@@ -189,9 +189,9 @@ public class HttpFormattedHandler
     WaarpStringUtils.replace(builder, REPLACEMENT.XXXDATEXXX.toString(),
                              new Date().toString());
     WaarpStringUtils.replace(builder, REPLACEMENT.XXXLOCACTIVEXXX.toString(),
-                             Integer.toString(Configuration.configuration
-                                                  .getLocalTransaction()
-                                                  .getNumberLocalChannel()));
+                             Integer.toString(
+                                 Configuration.configuration.getLocalTransaction()
+                                                            .getNumberLocalChannel()));
     WaarpStringUtils.replace(builder, REPLACEMENT.XXXNETACTIVEXXX.toString(),
                              Integer.toString(DbAdmin.getNbConnection()));
     WaarpStringUtils.replace(builder, REPLACEMENT.XXXHOSTIDXXX.toString(),
@@ -209,7 +209,7 @@ public class HttpFormattedHandler
     return builder.toString();
   }
 
-  protected String getTrimValue(final String varname) {
+  protected final String getTrimValue(final String varname) {
     String value;
     try {
       value = params.get(varname).get(0).trim();
@@ -236,9 +236,8 @@ public class HttpFormattedHandler
     if (uriRequest.contains("gre/") || uriRequest.contains("img/") ||
         uriRequest.contains("res/") || uriRequest.contains("favicon.ico")) {
       HttpWriteCacheEnable.writeFile(httpRequest, ctx,
-                                     Configuration.configuration
-                                         .getHttpBasePath() + uriRequest,
-                                     "XYZR66NOSESSION");
+                                     Configuration.configuration.getHttpBasePath() +
+                                     uriRequest, "XYZR66NOSESSION");
       return;
     }
 
@@ -401,10 +400,10 @@ public class HttpFormattedHandler
    */
   private void addRunners(final List<Transfer> transfers, final String type,
                           final int nb) {
-    responseContent
-        .append("<style>td{font-size: 8pt;}</style><table border=\"2\">")
-        .append("<tr><td>").append(type).append("</td>")
-        .append(DbTaskRunner.headerHtml()).append("</tr>\r\n");
+    responseContent.append(
+                       "<style>td{font-size: 8pt;}</style><table border=\"2\">")
+                   .append("<tr><td>").append(type).append("</td>")
+                   .append(DbTaskRunner.headerHtml()).append("</tr>\r\n");
 
     int i = 0;
     for (final Transfer transfer : transfers) {
@@ -446,8 +445,9 @@ public class HttpFormattedHandler
       filters.add(new Filter(DBTransferDAO.STEP_STATUS_FIELD, "=",
                              ErrorCode.Running.getCode()));
       filters.add(DbTaskRunner.getOwnerFilter());
-      transfers = transferAccess
-          .find(filters, DBTransferDAO.TRANSFER_START_FIELD, false, nb);
+      transfers =
+          transferAccess.find(filters, DBTransferDAO.TRANSFER_START_FIELD,
+                              false, nb);
       addRunners(transfers, ErrorCode.Running.getMesg(), nb);
 
       transfers.clear();
@@ -458,8 +458,9 @@ public class HttpFormattedHandler
       filters.add(DbTaskRunner.getOwnerFilter());
       filters.add(new Filter(DBTransferDAO.TRANSFER_START_FIELD, "<",
                              new Timestamp(System.currentTimeMillis())));
-      transfers = transferAccess
-          .find(filters, DBTransferDAO.TRANSFER_START_FIELD, false, nb);
+      transfers =
+          transferAccess.find(filters, DBTransferDAO.TRANSFER_START_FIELD,
+                              false, nb);
       addRunners(transfers, UpdatedInfo.INTERRUPTED.name(), nb);
 
       transfers.clear();
@@ -470,8 +471,9 @@ public class HttpFormattedHandler
       filters.add(DbTaskRunner.getOwnerFilter());
       filters.add(new Filter(DBTransferDAO.TRANSFER_START_FIELD, "<",
                              new Timestamp(System.currentTimeMillis())));
-      transfers = transferAccess
-          .find(filters, DBTransferDAO.TRANSFER_START_FIELD, false, nb);
+      transfers =
+          transferAccess.find(filters, DBTransferDAO.TRANSFER_START_FIELD,
+                              false, nb);
       addRunners(transfers, UpdatedInfo.TOSUBMIT.name(), nb);
 
       transfers.clear();
@@ -480,8 +482,9 @@ public class HttpFormattedHandler
       filters.add(new Filter(DBTransferDAO.STEP_STATUS_FIELD, "=",
                              ErrorCode.InitOk.getCode()));
       filters.add(DbTaskRunner.getOwnerFilter());
-      transfers = transferAccess
-          .find(filters, DBTransferDAO.TRANSFER_START_FIELD, false, nb);
+      transfers =
+          transferAccess.find(filters, DBTransferDAO.TRANSFER_START_FIELD,
+                              false, nb);
       addRunners(transfers, ErrorCode.InitOk.getMesg(), nb);
 
       transfers.clear();
@@ -490,8 +493,9 @@ public class HttpFormattedHandler
       filters.add(new Filter(DBTransferDAO.STEP_STATUS_FIELD, "=",
                              ErrorCode.PreProcessingOk.getCode()));
       filters.add(DbTaskRunner.getOwnerFilter());
-      transfers = transferAccess
-          .find(filters, DBTransferDAO.TRANSFER_START_FIELD, false, nb);
+      transfers =
+          transferAccess.find(filters, DBTransferDAO.TRANSFER_START_FIELD,
+                              false, nb);
       addRunners(transfers, ErrorCode.PreProcessingOk.getMesg(), nb);
 
       transfers.clear();
@@ -500,8 +504,9 @@ public class HttpFormattedHandler
       filters.add(new Filter(DBTransferDAO.STEP_STATUS_FIELD, "=",
                              ErrorCode.TransferOk.getCode()));
       filters.add(DbTaskRunner.getOwnerFilter());
-      transfers = transferAccess
-          .find(filters, DBTransferDAO.TRANSFER_START_FIELD, false, nb);
+      transfers =
+          transferAccess.find(filters, DBTransferDAO.TRANSFER_START_FIELD,
+                              false, nb);
       addRunners(transfers, ErrorCode.TransferOk.getMesg(), nb);
 
       transfers.clear();
@@ -510,8 +515,9 @@ public class HttpFormattedHandler
       filters.add(new Filter(DBTransferDAO.STEP_STATUS_FIELD, "=",
                              ErrorCode.PostProcessingOk.getCode()));
       filters.add(DbTaskRunner.getOwnerFilter());
-      transfers = transferAccess
-          .find(filters, DBTransferDAO.TRANSFER_START_FIELD, false, nb);
+      transfers =
+          transferAccess.find(filters, DBTransferDAO.TRANSFER_START_FIELD,
+                              false, nb);
       addRunners(transfers, ErrorCode.PostProcessingOk.getMesg(), nb);
     } catch (final DAOConnectionException e) {
       logger.warn(OPEN_R66_WEB_ERROR, e.getMessage());
@@ -542,8 +548,9 @@ public class HttpFormattedHandler
       filters.add(DbTaskRunner.getOwnerFilter());
       filters.add(new Filter(DBTransferDAO.TRANSFER_START_FIELD, "<",
                              new Timestamp(System.currentTimeMillis())));
-      transfers = transferAccess
-          .find(filters, DBTransferDAO.TRANSFER_START_FIELD, false, nb / 2);
+      transfers =
+          transferAccess.find(filters, DBTransferDAO.TRANSFER_START_FIELD,
+                              false, nb / 2);
       addRunners(transfers, UpdatedInfo.INERROR.name(), nb / 2);
 
       transfers.clear();
@@ -554,8 +561,9 @@ public class HttpFormattedHandler
       filters.add(DbTaskRunner.getOwnerFilter());
       filters.add(new Filter(DBTransferDAO.TRANSFER_START_FIELD, "<",
                              new Timestamp(System.currentTimeMillis())));
-      transfers = transferAccess
-          .find(filters, DBTransferDAO.TRANSFER_START_FIELD, false, nb / 2);
+      transfers =
+          transferAccess.find(filters, DBTransferDAO.TRANSFER_START_FIELD,
+                              false, nb / 2);
       addRunners(transfers, UpdatedInfo.INTERRUPTED.name(), nb / 2);
 
       transfers.clear();
@@ -566,8 +574,9 @@ public class HttpFormattedHandler
       filters.add(DbTaskRunner.getOwnerFilter());
       filters.add(new Filter(DBTransferDAO.TRANSFER_START_FIELD, "<",
                              new Timestamp(System.currentTimeMillis())));
-      transfers = transferAccess
-          .find(filters, DBTransferDAO.TRANSFER_START_FIELD, false, nb / 4);
+      transfers =
+          transferAccess.find(filters, DBTransferDAO.TRANSFER_START_FIELD,
+                              false, nb / 4);
       addRunners(transfers, TASKSTEP.ERRORTASK.name(), nb / 4);
     } catch (final DAOConnectionException e) {
       logger.warn(OPEN_R66_WEB_ERROR, e.getMessage());
@@ -598,8 +607,9 @@ public class HttpFormattedHandler
                              ErrorCode.CompleteOk.getCode()));
       filters.add(DbTaskRunner.getOwnerFilter());
 
-      transfers = transferAccess
-          .find(filters, DBTransferDAO.TRANSFER_START_FIELD, false, nb);
+      transfers =
+          transferAccess.find(filters, DBTransferDAO.TRANSFER_START_FIELD,
+                              false, nb);
       addRunners(transfers, "ALL RUNNERS: " + nb, nb);
     } catch (final DAOConnectionException e) {
       logger.warn(OPEN_R66_WEB_ERROR, e.getMessage());
@@ -628,8 +638,9 @@ public class HttpFormattedHandler
       final List<Filter> filters = new ArrayList<Filter>();
       filters.add(DbTaskRunner.getOwnerFilter());
 
-      transfers = transferAccess
-          .find(filters, DBTransferDAO.TRANSFER_START_FIELD, false, nb);
+      transfers =
+          transferAccess.find(filters, DBTransferDAO.TRANSFER_START_FIELD,
+                              false, nb);
       addRunners(transfers, "ALL RUNNERS: " + nb, nb);
     } catch (final DAOConnectionException e) {
       logger.warn(OPEN_R66_WEB_ERROR, e.getMessage());
@@ -660,8 +671,9 @@ public class HttpFormattedHandler
                              UpdatedInfo.INERROR.ordinal()));
       filters.add(DbTaskRunner.getOwnerFilter());
 
-      transfers = transferAccess
-          .find(filters, DBTransferDAO.TRANSFER_START_FIELD, false, 1);
+      transfers =
+          transferAccess.find(filters, DBTransferDAO.TRANSFER_START_FIELD,
+                              false, 1);
       if (!transfers.isEmpty()) {
         responseContent.append("<p>Some Transfers are in ERROR</p><br>");
         status = HttpResponseStatus.INTERNAL_SERVER_ERROR;
@@ -674,8 +686,9 @@ public class HttpFormattedHandler
                              UpdatedInfo.INTERRUPTED.ordinal()));
       filters.add(DbTaskRunner.getOwnerFilter());
 
-      transfers = transferAccess
-          .find(filters, DBTransferDAO.TRANSFER_START_FIELD, false, 1);
+      transfers =
+          transferAccess.find(filters, DBTransferDAO.TRANSFER_START_FIELD,
+                              false, 1);
       if (!transfers.isEmpty()) {
         responseContent.append("<p>Some Transfers are INTERRUPTED</p><br>");
         status = HttpResponseStatus.INTERNAL_SERVER_ERROR;
@@ -688,8 +701,9 @@ public class HttpFormattedHandler
                              Transfer.TASKSTEP.ERRORTASK.ordinal()));
       filters.add(DbTaskRunner.getOwnerFilter());
 
-      transfers = transferAccess
-          .find(filters, DBTransferDAO.TRANSFER_START_FIELD, false, 1);
+      transfers =
+          transferAccess.find(filters, DBTransferDAO.TRANSFER_START_FIELD,
+                              false, 1);
       if (!transfers.isEmpty()) {
         responseContent.append("<p>Some Transfers are in ERRORTASK</p><br>");
         status = HttpResponseStatus.INTERNAL_SERVER_ERROR;
@@ -713,11 +727,11 @@ public class HttpFormattedHandler
    * @param ctx
    * @param nb
    */
-  protected void statusxml(final ChannelHandlerContext ctx, final long nb,
-                           final boolean detail) {
+  protected final void statusxml(final ChannelHandlerContext ctx, final long nb,
+                                 final boolean detail) {
     Configuration.configuration.getMonitoring().run(nb, detail);
-    responseContent
-        .append(Configuration.configuration.getMonitoring().exportXml(detail));
+    responseContent.append(
+        Configuration.configuration.getMonitoring().exportXml(detail));
   }
 
   /**
@@ -726,18 +740,18 @@ public class HttpFormattedHandler
    * @param ctx
    * @param nb
    */
-  protected void statusjson(final ChannelHandlerContext ctx, final long nb,
-                            final boolean detail) {
+  protected final void statusjson(final ChannelHandlerContext ctx,
+                                  final long nb, final boolean detail) {
     Configuration.configuration.getMonitoring().run(nb, detail);
-    responseContent
-        .append(Configuration.configuration.getMonitoring().exportJson(detail));
+    responseContent.append(
+        Configuration.configuration.getMonitoring().exportJson(detail));
   }
 
   private void spooled(final boolean detail, final String name,
                        final int istatus) {
     responseContent.append(REQUEST.status.readHeader(this)).append(
-        "<p><table border='0' cellpadding='0' cellspacing='0' >").append(
-        "<tr style='background-image:url(gre/gresm.png);background-repeat:repeat-x;background-position:left top;'><td class='col_MenuHaut'>")
+                       "<p><table border='0' cellpadding='0' cellspacing='0' >").append(
+                       "<tr style='background-image:url(gre/gresm.png);background-repeat:repeat-x;background-position:left top;'><td class='col_MenuHaut'>")
                    .append(
                        "<a data-i18n='menu2.sous-menu4a' href='Spooled.html' style='display:block;width:100%;height:100%;line-height:15px;'>")
                    .append(
@@ -778,14 +792,14 @@ public class HttpFormattedHandler
       if (istatus != 0) {
         uri += "&status=" + istatus;
       }
-      responseContent
-          .append(SpooledInformTask.buildSpooledUniqueTable(uri, name));
+      responseContent.append(
+          SpooledInformTask.buildSpooledUniqueTable(uri, name));
     } else {
       if (istatus != 0) {
         uri += "&status=" + istatus;
       }
-      responseContent
-          .append(SpooledInformTask.buildSpooledTable(detail, istatus, uri));
+      responseContent.append(
+          SpooledInformTask.buildSpooledTable(detail, istatus, uri));
     }
     responseContent.append(REQUEST.status.readEnd());
   }
@@ -795,10 +809,10 @@ public class HttpFormattedHandler
    *
    * @param ctx
    */
-  protected void writeResponse(final ChannelHandlerContext ctx) {
+  protected final void writeResponse(final ChannelHandlerContext ctx) {
     // Convert the response content to a ByteBuf.
-    final ByteBuf buf = Unpooled
-        .copiedBuffer(responseContent.toString(), WaarpStringUtils.UTF8);
+    final ByteBuf buf = Unpooled.copiedBuffer(responseContent.toString(),
+                                              WaarpStringUtils.UTF8);
     responseContent.setLength(0);
     // Decide whether to close the connection or not.
     final boolean keepAlive = HttpUtil.isKeepAlive(request);
@@ -872,14 +886,14 @@ public class HttpFormattedHandler
    * @param ctx
    * @param status
    */
-  protected void sendError(final ChannelHandlerContext ctx,
-                           final HttpResponseStatus status) {
+  protected final void sendError(final ChannelHandlerContext ctx,
+                                 final HttpResponseStatus status) {
     responseContent.setLength(0);
     responseContent.append(REQUEST.error.readHeader(this))
                    .append("OpenR66 Web Failure: ").append(status)
                    .append(REQUEST.error.readEnd());
-    final ByteBuf buf = Unpooled
-        .copiedBuffer(responseContent.toString(), WaarpStringUtils.UTF8);
+    final ByteBuf buf = Unpooled.copiedBuffer(responseContent.toString(),
+                                              WaarpStringUtils.UTF8);
     final FullHttpResponse response =
         new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, status, buf);
     response.headers().add(HttpHeaderNames.CONTENT_LENGTH,
@@ -893,8 +907,9 @@ public class HttpFormattedHandler
   @Override
   public void exceptionCaught(final ChannelHandlerContext ctx,
                               final Throwable cause) {
-    final OpenR66Exception exception = OpenR66ExceptionTrappedFactory
-        .getExceptionFromTrappedException(ctx.channel(), cause);
+    final OpenR66Exception exception =
+        OpenR66ExceptionTrappedFactory.getExceptionFromTrappedException(
+            ctx.channel(), cause);
     if (exception != null) {
       if (!(exception instanceof OpenR66ProtocolBusinessNoWriteBackException)) {
         if (cause instanceof IOException) {
@@ -920,8 +935,7 @@ public class HttpFormattedHandler
   public void channelActive(final ChannelHandlerContext ctx) throws Exception {
     logger.debug("Connected");
     getAuthentHttp().getAuth().specialNoSessionAuth(false,
-                                                    Configuration.configuration
-                                                        .getHostId());
+                                                    Configuration.configuration.getHostId());
     super.channelActive(ctx);
     final ChannelGroup group =
         Configuration.configuration.getHttpChannelGroup();

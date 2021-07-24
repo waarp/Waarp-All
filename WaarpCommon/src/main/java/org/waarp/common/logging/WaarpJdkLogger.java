@@ -75,7 +75,7 @@ public class WaarpJdkLogger extends AbstractWaarpLogger {
   }
 
   @Override
-  public void setLevel(final WaarpLogLevel level) {
+  public final void setLevel(final WaarpLogLevel level) {
     switch (level) {
       case TRACE:
         logger.setLevel(Level.FINEST);
@@ -104,12 +104,12 @@ public class WaarpJdkLogger extends AbstractWaarpLogger {
    * @return True if this Logger is enabled for level FINEST, false otherwise.
    */
   @Override
-  public boolean isTraceEnabled() {
+  public final boolean isTraceEnabled() {
     return logger.isLoggable(Level.FINEST);
   }
 
   @Override
-  public void junit(final int callee, final String msg) {
+  public final void junit(final int callee, final String msg) {
     logger.warning(msg);
   }
 
@@ -119,7 +119,7 @@ public class WaarpJdkLogger extends AbstractWaarpLogger {
    * @param msg - the message object to be logged
    */
   @Override
-  public void trace(final String msg) {
+  public final void trace(final String msg) {
     if (logger.isLoggable(Level.FINEST)) {
       log(SELF, Level.FINEST, msg, null);
     }
@@ -138,7 +138,7 @@ public class WaarpJdkLogger extends AbstractWaarpLogger {
    * @param arg the argument
    */
   @Override
-  public void trace(final String format, final Object arg) {
+  public final void trace(final String format, final Object arg) {
     if (logger.isLoggable(Level.FINEST)) {
       final FormattingTuple ft = MessageFormatter.format(format, arg);
       log(SELF, Level.FINEST, ft.getMessage(), ft.getThrowable());
@@ -159,7 +159,8 @@ public class WaarpJdkLogger extends AbstractWaarpLogger {
    * @param argB the second argument
    */
   @Override
-  public void trace(final String format, final Object argA, final Object argB) {
+  public final void trace(final String format, final Object argA,
+                          final Object argB) {
     if (logger.isLoggable(Level.FINEST)) {
       final FormattingTuple ft = MessageFormatter.format(format, argA, argB);
       log(SELF, Level.FINEST, ft.getMessage(), ft.getThrowable());
@@ -179,7 +180,7 @@ public class WaarpJdkLogger extends AbstractWaarpLogger {
    * @param argArray an array of arguments
    */
   @Override
-  public void trace(final String format, final Object... argArray) {
+  public final void trace(final String format, final Object... argArray) {
     if (logger.isLoggable(Level.FINEST)) {
       final FormattingTuple ft = MessageFormatter.arrayFormat(format, argArray);
       log(SELF, Level.FINEST, ft.getMessage(), ft.getThrowable());
@@ -194,7 +195,7 @@ public class WaarpJdkLogger extends AbstractWaarpLogger {
    * @param t the exception (throwable) to log
    */
   @Override
-  public void trace(final String msg, final Throwable t) {
+  public final void trace(final String msg, final Throwable t) {
     if (logger.isLoggable(Level.FINEST)) {
       log(SELF, Level.FINEST, msg, t);
     }
@@ -206,7 +207,7 @@ public class WaarpJdkLogger extends AbstractWaarpLogger {
    * @return True if this Logger is enabled for level FINE, false otherwise.
    */
   @Override
-  public boolean isDebugEnabled() {
+  public final boolean isDebugEnabled() {
     return logger.isLoggable(Level.FINE);
   }
 
@@ -216,7 +217,7 @@ public class WaarpJdkLogger extends AbstractWaarpLogger {
    * @param msg - the message object to be logged
    */
   @Override
-  public void debug(final String msg) {
+  public final void debug(final String msg) {
     if (logger.isLoggable(Level.FINE)) {
       log(SELF, Level.FINE, msg, null);
     }
@@ -235,7 +236,7 @@ public class WaarpJdkLogger extends AbstractWaarpLogger {
    * @param arg the argument
    */
   @Override
-  public void debug(final String format, final Object arg) {
+  public final void debug(final String format, final Object arg) {
     if (logger.isLoggable(Level.FINE)) {
       final FormattingTuple ft = MessageFormatter.format(format, arg);
       log(SELF, Level.FINE, ft.getMessage(), ft.getThrowable());
@@ -256,7 +257,8 @@ public class WaarpJdkLogger extends AbstractWaarpLogger {
    * @param argB the second argument
    */
   @Override
-  public void debug(final String format, final Object argA, final Object argB) {
+  public final void debug(final String format, final Object argA,
+                          final Object argB) {
     if (logger.isLoggable(Level.FINE)) {
       final FormattingTuple ft = MessageFormatter.format(format, argA, argB);
       log(SELF, Level.FINE, ft.getMessage(), ft.getThrowable());
@@ -276,7 +278,7 @@ public class WaarpJdkLogger extends AbstractWaarpLogger {
    * @param argArray an array of arguments
    */
   @Override
-  public void debug(final String format, final Object... argArray) {
+  public final void debug(final String format, final Object... argArray) {
     if (logger.isLoggable(Level.FINE)) {
       final FormattingTuple ft = MessageFormatter.arrayFormat(format, argArray);
       log(SELF, Level.FINE, ft.getMessage(), ft.getThrowable());
@@ -290,7 +292,7 @@ public class WaarpJdkLogger extends AbstractWaarpLogger {
    * @param t the exception (throwable) to log
    */
   @Override
-  public void debug(final String msg, final Throwable t) {
+  public final void debug(final String msg, final Throwable t) {
     if (logger.isLoggable(Level.FINE)) {
       log(SELF, Level.FINE, msg, t);
     }
@@ -303,7 +305,7 @@ public class WaarpJdkLogger extends AbstractWaarpLogger {
    *     otherwise.
    */
   @Override
-  public boolean isInfoEnabled() {
+  public final boolean isInfoEnabled() {
     return logger.isLoggable(Level.INFO);
   }
 
@@ -313,7 +315,7 @@ public class WaarpJdkLogger extends AbstractWaarpLogger {
    * @param msg - the message object to be logged
    */
   @Override
-  public void info(final String msg) {
+  public final void info(final String msg) {
     if (logger.isLoggable(Level.INFO)) {
       log(SELF, Level.INFO, msg, null);
     }
@@ -332,7 +334,7 @@ public class WaarpJdkLogger extends AbstractWaarpLogger {
    * @param arg the argument
    */
   @Override
-  public void info(final String format, final Object arg) {
+  public final void info(final String format, final Object arg) {
     if (logger.isLoggable(Level.INFO)) {
       final FormattingTuple ft = MessageFormatter.format(format, arg);
       log(SELF, Level.INFO, ft.getMessage(), ft.getThrowable());
@@ -353,7 +355,8 @@ public class WaarpJdkLogger extends AbstractWaarpLogger {
    * @param argB the second argument
    */
   @Override
-  public void info(final String format, final Object argA, final Object argB) {
+  public final void info(final String format, final Object argA,
+                         final Object argB) {
     if (logger.isLoggable(Level.INFO)) {
       final FormattingTuple ft = MessageFormatter.format(format, argA, argB);
       log(SELF, Level.INFO, ft.getMessage(), ft.getThrowable());
@@ -373,7 +376,7 @@ public class WaarpJdkLogger extends AbstractWaarpLogger {
    * @param argArray an array of arguments
    */
   @Override
-  public void info(final String format, final Object... argArray) {
+  public final void info(final String format, final Object... argArray) {
     if (logger.isLoggable(Level.INFO)) {
       final FormattingTuple ft = MessageFormatter.arrayFormat(format, argArray);
       log(SELF, Level.INFO, ft.getMessage(), ft.getThrowable());
@@ -388,7 +391,7 @@ public class WaarpJdkLogger extends AbstractWaarpLogger {
    * @param t the exception (throwable) to log
    */
   @Override
-  public void info(final String msg, final Throwable t) {
+  public final void info(final String msg, final Throwable t) {
     if (logger.isLoggable(Level.INFO)) {
       log(SELF, Level.INFO, msg, t);
     }
@@ -401,7 +404,7 @@ public class WaarpJdkLogger extends AbstractWaarpLogger {
    *     otherwise.
    */
   @Override
-  public boolean isWarnEnabled() {
+  public final boolean isWarnEnabled() {
     return logger.isLoggable(Level.WARNING);
   }
 
@@ -411,7 +414,7 @@ public class WaarpJdkLogger extends AbstractWaarpLogger {
    * @param msg - the message object to be logged
    */
   @Override
-  public void warn(final String msg) {
+  public final void warn(final String msg) {
     if (logger.isLoggable(Level.WARNING)) {
       log(SELF, Level.WARNING, msg, null);
     }
@@ -430,7 +433,7 @@ public class WaarpJdkLogger extends AbstractWaarpLogger {
    * @param arg the argument
    */
   @Override
-  public void warn(final String format, final Object arg) {
+  public final void warn(final String format, final Object arg) {
     if (logger.isLoggable(Level.WARNING)) {
       final FormattingTuple ft = MessageFormatter.format(format, arg);
       log(SELF, Level.WARNING, ft.getMessage(), ft.getThrowable());
@@ -451,7 +454,8 @@ public class WaarpJdkLogger extends AbstractWaarpLogger {
    * @param argB the second argument
    */
   @Override
-  public void warn(final String format, final Object argA, final Object argB) {
+  public final void warn(final String format, final Object argA,
+                         final Object argB) {
     if (logger.isLoggable(Level.WARNING)) {
       final FormattingTuple ft = MessageFormatter.format(format, argA, argB);
       log(SELF, Level.WARNING, ft.getMessage(), ft.getThrowable());
@@ -471,7 +475,7 @@ public class WaarpJdkLogger extends AbstractWaarpLogger {
    * @param argArray an array of arguments
    */
   @Override
-  public void warn(final String format, final Object... argArray) {
+  public final void warn(final String format, final Object... argArray) {
     if (logger.isLoggable(Level.WARNING)) {
       final FormattingTuple ft = MessageFormatter.arrayFormat(format, argArray);
       log(SELF, Level.WARNING, ft.getMessage(), ft.getThrowable());
@@ -486,7 +490,7 @@ public class WaarpJdkLogger extends AbstractWaarpLogger {
    * @param t the exception (throwable) to log
    */
   @Override
-  public void warn(final String msg, final Throwable t) {
+  public final void warn(final String msg, final Throwable t) {
     if (logger.isLoggable(Level.WARNING)) {
       log(SELF, Level.WARNING, msg, t);
     }
@@ -498,7 +502,7 @@ public class WaarpJdkLogger extends AbstractWaarpLogger {
    * @return True if this Logger is enabled for level SEVERE, false otherwise.
    */
   @Override
-  public boolean isErrorEnabled() {
+  public final boolean isErrorEnabled() {
     return logger.isLoggable(Level.SEVERE);
   }
 
@@ -508,7 +512,7 @@ public class WaarpJdkLogger extends AbstractWaarpLogger {
    * @param msg - the message object to be logged
    */
   @Override
-  public void error(final String msg) {
+  public final void error(final String msg) {
     if (logger.isLoggable(Level.SEVERE)) {
       log(SELF, Level.SEVERE, msg, null);
     }
@@ -527,7 +531,7 @@ public class WaarpJdkLogger extends AbstractWaarpLogger {
    * @param arg the argument
    */
   @Override
-  public void error(final String format, final Object arg) {
+  public final void error(final String format, final Object arg) {
     if (logger.isLoggable(Level.SEVERE)) {
       final FormattingTuple ft = MessageFormatter.format(format, arg);
       log(SELF, Level.SEVERE, ft.getMessage(), ft.getThrowable());
@@ -548,7 +552,8 @@ public class WaarpJdkLogger extends AbstractWaarpLogger {
    * @param argB the second argument
    */
   @Override
-  public void error(final String format, final Object argA, final Object argB) {
+  public final void error(final String format, final Object argA,
+                          final Object argB) {
     if (logger.isLoggable(Level.SEVERE)) {
       final FormattingTuple ft = MessageFormatter.format(format, argA, argB);
       log(SELF, Level.SEVERE, ft.getMessage(), ft.getThrowable());
@@ -568,7 +573,7 @@ public class WaarpJdkLogger extends AbstractWaarpLogger {
    * @param arguments an array of arguments
    */
   @Override
-  public void error(final String format, final Object... arguments) {
+  public final void error(final String format, final Object... arguments) {
     if (logger.isLoggable(Level.SEVERE)) {
       final FormattingTuple ft =
           MessageFormatter.arrayFormat(format, arguments);
@@ -584,7 +589,7 @@ public class WaarpJdkLogger extends AbstractWaarpLogger {
    * @param t the exception (throwable) to log
    */
   @Override
-  public void error(final String msg, final Throwable t) {
+  public final void error(final String msg, final Throwable t) {
     if (logger.isLoggable(Level.SEVERE)) {
       log(SELF, Level.SEVERE, msg, t);
     }

@@ -113,20 +113,20 @@ public class CompressorSafeTest {
     final byte[] buffer = new byte[ZstdFrameCompressor.MAX_FRAME_HEADER_SIZE];
     final int address = 0;
 
-    ZstdFrameCompressor
-        .writeFrameHeader(buffer, address, address + buffer.length, 2000, 1023);
+    ZstdFrameCompressor.writeFrameHeader(buffer, address,
+                                         address + buffer.length, 2000, 1023);
   }
 
   @Test
   public void testWindowSizePrecision() {
     exceptionRule.expect(IllegalArgumentException.class);
-    exceptionRule
-        .expectMessage("Window size of magnitude 2^10 must be multiple of 128");
+    exceptionRule.expectMessage(
+        "Window size of magnitude 2^10 must be multiple of 128");
     final byte[] buffer = new byte[ZstdFrameCompressor.MAX_FRAME_HEADER_SIZE];
     final int address = 0;
 
-    ZstdFrameCompressor
-        .writeFrameHeader(buffer, address, address + buffer.length, 2000, 1025);
+    ZstdFrameCompressor.writeFrameHeader(buffer, address,
+                                         address + buffer.length, 2000, 1025);
   }
 
   private void verifyFrameHeader(final int inputSize, final int windowSize,
@@ -134,14 +134,17 @@ public class CompressorSafeTest {
     final byte[] buffer = new byte[ZstdFrameCompressor.MAX_FRAME_HEADER_SIZE];
     final int address = 0;
 
-    final int size = ZstdFrameCompressor
-        .writeFrameHeader(buffer, address, address + buffer.length, inputSize,
-                          windowSize);
+    final int size = ZstdFrameCompressor.writeFrameHeader(buffer, address,
+                                                          address +
+                                                          buffer.length,
+                                                          inputSize,
+                                                          windowSize);
 
     assertEquals(size, expected.headerSize);
 
-    final FrameHeader actual = ZstdFrameDecompressor
-        .readFrameHeader(buffer, address, address + buffer.length);
+    final FrameHeader actual =
+        ZstdFrameDecompressor.readFrameHeader(buffer, address,
+                                              address + buffer.length);
     assertEquals(actual, expected);
   }
 }

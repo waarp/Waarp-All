@@ -49,7 +49,7 @@ public class MoveRenameTask extends AbstractTask {
   }
 
   @Override
-  public void run() {
+  public final void run() {
     String finalname = argRule;
     finalname = getReplacedValue(finalname, BLANK.split(argTransfer)).trim()
                                                                      .replace(

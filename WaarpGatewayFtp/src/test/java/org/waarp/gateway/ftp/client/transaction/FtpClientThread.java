@@ -23,6 +23,7 @@ package org.waarp.gateway.ftp.client.transaction;
 import org.waarp.common.digest.FilesystemBasedDigest.DigestAlgo;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.SystemPropertyUtil;
 import org.waarp.gateway.ftp.client.FtpClientTest;
 
 import java.io.File;
@@ -273,33 +274,35 @@ public class FtpClientThread implements Runnable {
         logger.warn("{} end mode active {}/s", id,
                     numberIteration * 2 * 1000 / (endTransfer - modeChange));
       }
-      String[] results = client.executeSiteCommand("XCRC " + remoteFilename);
-      for (final String string : results) {
-        logger.warn("XCRC: {}", string);
-      }
-      results = client.executeSiteCommand("XMD5 " + remoteFilename);
-      for (final String string : results) {
-        logger.warn("XCRC: {}", string);
-      }
-      results = client.executeSiteCommand("XSHA1 " + remoteFilename);
-      for (final String string : results) {
-        logger.warn("XCRC: {}", string);
-      }
-      for (DigestAlgo algo : DigestAlgo.values()) {
-        results = client.executeSiteCommand(
-            "XDIGEST " + algo.algoName + " " + remoteFilename);
+      if (!SystemPropertyUtil.get("IT_LONG_TEST", false)) {
+        String[] results = client.executeSiteCommand("XCRC " + remoteFilename);
         for (final String string : results) {
-          logger.warn("XDIGEST {}: {}", algo.algoName, string);
+          logger.warn("XCRC: {}", string);
         }
-        results = client.executeSiteCommand(
-            "XDIGEST " + algo.name() + " " + remoteFilename);
+        results = client.executeSiteCommand("XMD5 " + remoteFilename);
         for (final String string : results) {
-          logger.warn("XDIGEST {}: {}", algo.name(), string);
+          logger.warn("XCRC: {}", string);
         }
-      }
-      results = client.listFiles();
-      for (final String string : results) {
-        logger.warn("LIST: {}", string);
+        results = client.executeSiteCommand("XSHA1 " + remoteFilename);
+        for (final String string : results) {
+          logger.warn("XCRC: {}", string);
+        }
+        for (DigestAlgo algo : DigestAlgo.values()) {
+          results = client.executeSiteCommand(
+              "XDIGEST " + algo.algoName + " " + remoteFilename);
+          for (final String string : results) {
+            logger.warn("XDIGEST {}: {}", algo.algoName, string);
+          }
+          results = client.executeSiteCommand(
+              "XDIGEST " + algo.name() + " " + remoteFilename);
+          for (final String string : results) {
+            logger.warn("XDIGEST {}: {}", algo.name(), string);
+          }
+        }
+        results = client.listFiles();
+        for (final String string : results) {
+          logger.warn("LIST: {}", string);
+        }
       }
     } finally {
       logger.warn(id + " disconnect {}:{}", FtpClientTest.numberOK.get(),

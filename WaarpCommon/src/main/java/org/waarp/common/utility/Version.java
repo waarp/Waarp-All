@@ -35,7 +35,7 @@ public class Version {
     try {
       properties.load(Version.class.getClassLoader()
                                    .getResourceAsStream("project.properties"));
-    } catch (IOException ignore) {//NOSONAR
+    } catch (final IOException ignore) {//NOSONAR
       SysErrLogger.FAKE_LOGGER.ignoreLog(ignore);
     }
     VERSION = properties.getProperty("version");

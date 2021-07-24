@@ -108,12 +108,12 @@ public abstract class SpooledITAbstract extends TestAbstract {
           "-auth", new File(dir, "OpenR66-authent-A.xml").getAbsolutePath(),
           "-limit", new File(dir, "limitConfiga.xml").getAbsolutePath()
       };
-      Processes
-          .executeJvm(project, ServerInitDatabase.class, argsServer, false);
+      Processes.executeJvm(project, ServerInitDatabase.class, argsServer,
+                           false);
       logger.warn("Init Done");
     } else {
-      System.err
-          .println("Cannot find serverInit file: " + file.getAbsolutePath());
+      System.err.println(
+          "Cannot find serverInit file: " + file.getAbsolutePath());
     }
   }
 
@@ -132,8 +132,9 @@ public abstract class SpooledITAbstract extends TestAbstract {
       // global ant project settings
       project = Processes.getProject(homeDir);
       Processes.executeJvm(project, R66Server.class, argsServer, true);
-      int pid = Processes
-          .getPidOfRunnerCommandLinux("java", R66Server.class.getName(), PIDS);
+      int pid = Processes.getPidOfRunnerCommandLinux("java",
+                                                     R66Server.class.getName(),
+                                                     PIDS);
       PIDS.add(pid);
       logger.warn("Start Done: {}", pid);
       Thread.sleep(1000);
@@ -191,8 +192,8 @@ public abstract class SpooledITAbstract extends TestAbstract {
     stop.delete();
     File all = new File(SpooledThread.SPOOLED_ROOT);
     FileUtils.forceDeleteRecursiveDir(all);
-    logger
-        .warn("Launched {}", spooledThread.spooledDirectoryTransfer.getSent());
+    logger.warn("Launched {}",
+                spooledThread.spooledDirectoryTransfer.getSent());
     logger.warn("Error {}", spooledThread.spooledDirectoryTransfer.getError());
   }
 

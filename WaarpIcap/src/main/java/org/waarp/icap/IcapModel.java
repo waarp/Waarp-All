@@ -58,7 +58,7 @@ public enum IcapModel {
   /**
    * @return the associated default parameters
    */
-  public String[] getDefaultArgs() {
+  public final String[] getDefaultArgs() {
     return defaultArgs;
   }
 }

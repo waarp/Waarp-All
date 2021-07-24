@@ -102,11 +102,11 @@ public enum IcapError {
     this.message = message;
   }
 
-  public int getCode() {
+  public final int getCode() {
     return code;
   }
 
-  public String getMessage() {
+  public final String getMessage() {
     return message;
   }
 }

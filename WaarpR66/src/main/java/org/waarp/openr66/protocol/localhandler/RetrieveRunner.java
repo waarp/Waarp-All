@@ -86,7 +86,7 @@ public class RetrieveRunner extends Thread {
   /**
    * Try to stop the runner
    */
-  public void stopRunner() {
+  public final void stopRunner() {
     running.set(false);
   }
 
@@ -149,9 +149,8 @@ public class RetrieveRunner extends Thread {
           validPacket.setOptional(session.getBusinessObject().getInfo(session));
         }
         try {
-          ChannelUtils
-              .writeAbstractLocalPacket(localChannelReference, validPacket,
-                                        false);
+          ChannelUtils.writeAbstractLocalPacket(localChannelReference,
+                                                validPacket, false);
           requestValidDone = true;
         } catch (final OpenR66ProtocolPacketException ignored) {
           // nothing
@@ -213,8 +212,8 @@ public class RetrieveRunner extends Thread {
                                                  .getCode(),
                             ErrorPacket.FORWARDCLOSECODE);
         try {
-          ChannelUtils
-              .writeAbstractLocalPacket(localChannelReference, error, false);
+          ChannelUtils.writeAbstractLocalPacket(localChannelReference, error,
+                                                false);
         } catch (final OpenR66ProtocolPacketException ignored) {
           // ignore
         }
@@ -237,9 +236,8 @@ public class RetrieveRunner extends Thread {
           validPacket.setOptional(session.getBusinessObject().getInfo(session));
         }
         try {
-          ChannelUtils
-              .writeAbstractLocalPacket(localChannelReference, validPacket,
-                                        false);
+          ChannelUtils.writeAbstractLocalPacket(localChannelReference,
+                                                validPacket, false);
         } catch (final OpenR66ProtocolPacketException ignored) {
           // nothing
         }
@@ -279,8 +277,8 @@ public class RetrieveRunner extends Thread {
         new ErrorPacket("Transfer in error", ErrorCode.TransferError.getCode(),
                         ErrorPacket.FORWARDCLOSECODE);
     try {
-      ChannelUtils
-          .writeAbstractLocalPacket(localChannelReference, error, false);
+      ChannelUtils.writeAbstractLocalPacket(localChannelReference, error,
+                                            false);
     } catch (final OpenR66ProtocolPacketException ignored) {
       // ignore
     }
@@ -306,12 +304,11 @@ public class RetrieveRunner extends Thread {
                                                 final FilesystemBasedDigest digestGlobal,
                                                 final FilesystemBasedDigest digestBlock)
       throws OpenR66ProtocolPacketException {
-    return ChannelUtils
-        .writeBackDataBlock(localChannelReference, digestGlobal, block,
-                            digestBlock);
+    return ChannelUtils.writeBackDataBlock(localChannelReference, digestGlobal,
+                                           block, digestBlock);
   }
 
-  public int getLocalId() {
+  public final int getLocalId() {
     return localChannelReference.getLocalId();
   }
 
@@ -319,7 +316,7 @@ public class RetrieveRunner extends Thread {
   /**
    * When submit RetrieveRunner cannot be done since Executor is already stopped
    */
-  public void notStartRunner() {
+  public final void notStartRunner() {
     transferInError(
         new OpenR66RunnerErrorException("Cannot Start Runner: " + session));
     stopRunner();

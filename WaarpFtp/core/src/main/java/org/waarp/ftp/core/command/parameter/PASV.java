@@ -44,10 +44,10 @@ public class PASV extends AbstractCommand {
       WaarpLoggerFactory.getLogger(PASV.class);
 
   @Override
-  public void exec() throws Reply425Exception, Reply501Exception {
+  public final void exec() throws Reply425Exception, Reply501Exception {
     // Check if Passive mode is OK
-    if (((FtpConfiguration) (FtpConfiguration.ftpConfiguration))
-            .getActivePassiveMode() > 0) {
+    if (((FtpConfiguration) (FtpConfiguration.ftpConfiguration)).getActivePassiveMode() >
+        0) {
       // Active only
       throw new Reply501Exception("Passive mode not allowed");
     }
@@ -107,8 +107,8 @@ public class PASV extends AbstractCommand {
     // prepare the validation of the next connection
     getSession().getDataConn().getFtpTransferControl()
                 .resetWaitForOpenedDataChannel();
-    getSession()
-        .setReplyCode(ReplyCode.REPLY_227_ENTERING_PASSIVE_MODE, slocal);
+    getSession().setReplyCode(ReplyCode.REPLY_227_ENTERING_PASSIVE_MODE,
+                              slocal);
     logger.info("PASV: answer ready on {}", slocal);
   }
 

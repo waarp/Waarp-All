@@ -189,7 +189,7 @@ public class LocalExecServerHandler
    *
    * @param newdelay
    */
-  public void setNewDelay(final long newdelay) {
+  public final void setNewDelay(final long newdelay) {
     delay = newdelay;
   }
 

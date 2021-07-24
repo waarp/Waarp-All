@@ -190,7 +190,7 @@ public class FileBasedConfiguration extends FtpConfiguration {
    *
    * @return True if OK
    */
-  public boolean setConfigurationFromXml(final String filename) {
+  public final boolean setConfigurationFromXml(final String filename) {
     Document document;
     // Open config file
     try {
@@ -287,8 +287,8 @@ public class FileBasedConfiguration extends FtpConfiguration {
     }
     node = document.selectSingleNode(XML_USEFASTMD5);
     if (node != null) {
-      FilesystemBasedDigest
-          .setUseFastMd5(Integer.parseInt(node.getText()) == 1);
+      FilesystemBasedDigest.setUseFastMd5(
+          Integer.parseInt(node.getText()) == 1);
     } else {
       FilesystemBasedDigest.setUseFastMd5(false);
     }
@@ -327,8 +327,8 @@ public class FileBasedConfiguration extends FtpConfiguration {
       return false;
     }
     if (document == null) {
-      logger
-          .error("Unable to read the XML Authentication file: " + fileauthent);
+      logger.error(
+          "Unable to read the XML Authentication file: " + fileauthent);
       return false;
     }
     final List<Node> list = document.selectNodes(XML_AUTHENTIFICATION_BASED);
@@ -374,7 +374,7 @@ public class FileBasedConfiguration extends FtpConfiguration {
    *
    * @return the SimpleAuth if any for this user
    */
-  public SimpleAuth getSimpleAuth(final String user) {
+  public final SimpleAuth getSimpleAuth(final String user) {
     return authentications.get(user);
   }
 
@@ -382,7 +382,7 @@ public class FileBasedConfiguration extends FtpConfiguration {
    * @see FtpConfiguration#getNextRangePort()
    */
   @Override
-  public int getNextRangePort() {
+  public final int getNextRangePort() {
     return rangePort.getNext();
   }
 
@@ -395,7 +395,7 @@ public class FileBasedConfiguration extends FtpConfiguration {
   }
 
   @Override
-  public void inShutdownProcess() {
+  public final void inShutdownProcess() {
     // nothing to do
   }
 }

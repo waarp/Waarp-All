@@ -113,8 +113,8 @@ public class HttpRestClientHelper {
                 HttpHeaderValues.GZIP + "," + HttpHeaderValues.DEFLATE);
     headers.set(HttpHeaderNames.ACCEPT_CHARSET, "utf-8;q=0.7,*;q=0.7");
     headers.set(HttpHeaderNames.ACCEPT_LANGUAGE, "fr,en");
-    headers
-        .set(HttpHeaderNames.USER_AGENT, "Netty Simple Http Rest Client side");
+    headers.set(HttpHeaderNames.USER_AGENT,
+                "Netty Simple Http Rest Client side");
     headers.set(HttpHeaderNames.ACCEPT,
                 "text/html,text/plain,application/xhtml+xml,application/xml,application/json;q=0.9,*/*;q=0.8");
     // connection will not close but needed
@@ -133,7 +133,7 @@ public class HttpRestClientHelper {
    *
    * @return the channel if connected or Null if not
    */
-  public Channel getChannel(final String host, final int port) {
+  public final Channel getChannel(final String host, final int port) {
     // Start the connection attempt.
     final ChannelFuture future =
         bootstrap.connect(new InetSocketAddress(host, port));
@@ -171,12 +171,13 @@ public class HttpRestClientHelper {
    *
    * @return the RestFuture associated with this request
    */
-  public RestFuture sendQuery(final HmacSha256 hmacSha256,
-                              final Channel channel, final HttpMethod method,
-                              final String host, final String addedUri,
-                              final String user, final String pwd,
-                              final Map<String, String> uriArgs,
-                              final String json) {
+  public final RestFuture sendQuery(final HmacSha256 hmacSha256,
+                                    final Channel channel,
+                                    final HttpMethod method, final String host,
+                                    final String addedUri, final String user,
+                                    final String pwd,
+                                    final Map<String, String> uriArgs,
+                                    final String json) {
     // Prepare the HTTP request.
     logger.debug("Prepare request: {}:{}:{}", method, addedUri, json);
     final RestFuture future =
@@ -268,11 +269,11 @@ public class HttpRestClientHelper {
    *
    * @return the RestFuture associated with this request
    */
-  public RestFuture sendQuery(final Channel channel, final HttpMethod method,
-                              final String host, final String addedUri,
-                              final String user,
-                              final Map<String, String> uriArgs,
-                              final String json) {
+  public final RestFuture sendQuery(final Channel channel,
+                                    final HttpMethod method, final String host,
+                                    final String addedUri, final String user,
+                                    final Map<String, String> uriArgs,
+                                    final String json) {
     // Prepare the HTTP request.
     logger.debug("Prepare request: {}:{}:{}", method, addedUri, json);
     final RestFuture future =
@@ -335,7 +336,7 @@ public class HttpRestClientHelper {
   /**
    * Finalize the HttpRestClientHelper
    */
-  public void closeAll() {
+  public final void closeAll() {
     bootstrap.config().group().shutdownGracefully();
   }
 
@@ -344,8 +345,8 @@ public class HttpRestClientHelper {
    *     sign=path|nosign [json])
    */
   public static void main(final String[] args) {
-    WaarpLoggerFactory
-        .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));
+    WaarpLoggerFactory.setDefaultFactoryIfNotSame(
+        new WaarpSlf4JLoggerFactory(null));
     logger = WaarpLoggerFactory.getLogger(HttpRestClientHelper.class);
     if (args.length < 5) {
       logger.error(
@@ -400,9 +401,9 @@ public class HttpRestClientHelper {
     }
     final RestFuture future;
     if (sign) {
-      future = client
-          .sendQuery(hmacSha256, channel, method, host, null, user, pwd, null,
-                     json);
+      future =
+          client.sendQuery(hmacSha256, channel, method, host, null, user, pwd,
+                           null, json);
     } else {
       future = client.sendQuery(channel, method, host, null, user, null, json);
     }

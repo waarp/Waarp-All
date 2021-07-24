@@ -40,7 +40,7 @@ import org.waarp.ftp.core.command.internal.IncorrectCommand;
 public class SITE extends AbstractCommand {
 
   @Override
-  public void exec() throws CommandAbstractException {
+  public final void exec() throws CommandAbstractException {
     if (!hasArg()) {
       invalidCurrentCommand();
       throw new Reply501Exception("Need a command at least as argument");

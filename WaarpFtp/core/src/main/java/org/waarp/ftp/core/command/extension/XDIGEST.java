@@ -32,7 +32,7 @@ import org.waarp.ftp.core.command.AbstractCommand;
  */
 public class XDIGEST extends AbstractCommand {
   @Override
-  public void exec() throws CommandAbstractException {
+  public final void exec() throws CommandAbstractException {
     if (!hasArg()) {
       invalidCurrentCommand();
       throw new Reply501Exception(
@@ -43,8 +43,8 @@ public class XDIGEST extends AbstractCommand {
       throw new Reply501Exception(
           "Need an algorihm and a pathname as argument");
     }
-    final String crc = FilesystemBasedDigest
-        .getHex(getSession().getDir().getDigest(args[1], args[0]));
+    final String crc = FilesystemBasedDigest.getHex(
+        getSession().getDir().getDigest(args[1], args[0]));
     getSession().setReplyCode(ReplyCode.REPLY_250_REQUESTED_FILE_ACTION_OKAY,
                               crc + " \"" + args[1] + "\" " + args[0]);
   }

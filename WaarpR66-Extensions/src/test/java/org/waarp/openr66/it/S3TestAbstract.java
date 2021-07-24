@@ -85,9 +85,8 @@ public abstract class S3TestAbstract extends S3TestAbstractMinimal {
     if (clientConfigFile.isFile()) {
       System.err.println(
           "Find serverInit file: " + clientConfigFile.getAbsolutePath());
-      if (!FileBasedConfiguration
-          .setClientConfigurationFromXml(Configuration.configuration,
-                                         clientConfigFile.getAbsolutePath())) {
+      if (!FileBasedConfiguration.setClientConfigurationFromXml(
+          Configuration.configuration, clientConfigFile.getAbsolutePath())) {
         logger.error("Needs a correct configuration file as first argument");
         return;
       }
@@ -137,9 +136,9 @@ public abstract class S3TestAbstract extends S3TestAbstractMinimal {
   @Before
   public void setUp() throws Exception {
     Configuration.configuration.setTimeoutCon(10000);
-    Configuration.configuration
-        .changeNetworkLimit(1000000000, 1000000000, 1000000000, 1000000000,
-                            1000);
+    Configuration.configuration.changeNetworkLimit(1000000000, 1000000000,
+                                                   1000000000, 1000000000,
+                                                   1000);
   }
 
   @After

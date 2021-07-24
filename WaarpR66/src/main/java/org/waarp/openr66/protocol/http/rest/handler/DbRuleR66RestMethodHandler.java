@@ -73,13 +73,13 @@ public class DbRuleR66RestMethodHandler
   }
 
   @Override
-  protected DbRule getItem(final HttpRestHandler handler,
-                           final RestArgument arguments,
-                           final RestArgument result, final Object body)
+  protected final DbRule getItem(final HttpRestHandler handler,
+                                 final RestArgument arguments,
+                                 final RestArgument result, final Object body)
       throws HttpNotFoundRequestException {
     try {
       HttpRestV1Utils.checkSanity(arguments);
-    } catch (InvalidArgumentException e) {
+    } catch (final InvalidArgumentException e) {
       throw new HttpNotFoundRequestException("Issue on values", e);
     }
     final ObjectNode arg = arguments.getUriArgs().deepCopy();
@@ -101,13 +101,14 @@ public class DbRuleR66RestMethodHandler
   }
 
   @Override
-  protected DbRule createItem(final HttpRestHandler handler,
-                              final RestArgument arguments,
-                              final RestArgument result, final Object body)
+  protected final DbRule createItem(final HttpRestHandler handler,
+                                    final RestArgument arguments,
+                                    final RestArgument result,
+                                    final Object body)
       throws HttpIncorrectRequestException {
     try {
       HttpRestV1Utils.checkSanity(arguments);
-    } catch (InvalidArgumentException e) {
+    } catch (final InvalidArgumentException e) {
       throw new HttpIncorrectRequestException("Issue on values", e);
     }
     final ObjectNode arg = arguments.getUriArgs().deepCopy();
@@ -121,13 +122,13 @@ public class DbRuleR66RestMethodHandler
   }
 
   @Override
-  protected DbPreparedStatement getPreparedStatement(
+  protected final DbPreparedStatement getPreparedStatement(
       final HttpRestHandler handler, final RestArgument arguments,
       final RestArgument result, final Object body)
       throws HttpIncorrectRequestException {
     try {
       HttpRestV1Utils.checkSanity(arguments);
-    } catch (InvalidArgumentException e) {
+    } catch (final InvalidArgumentException e) {
       throw new HttpIncorrectRequestException("Issue on values", e);
     }
     final ObjectNode arg = arguments.getUriArgs().deepCopy();
@@ -149,7 +150,8 @@ public class DbRuleR66RestMethodHandler
   }
 
   @Override
-  protected DbRule getItemPreparedStatement(final DbPreparedStatement statement)
+  protected final DbRule getItemPreparedStatement(
+      final DbPreparedStatement statement)
       throws HttpIncorrectRequestException, HttpNotFoundRequestException {
     try {
       return DbRule.getFromStatement(statement);
@@ -163,7 +165,7 @@ public class DbRuleR66RestMethodHandler
   }
 
   @Override
-  protected ArrayNode getDetailedAllow() {
+  protected final ArrayNode getDetailedAllow() {
     final ArrayNode node = JsonHandler.createArrayNode();
 
     final ObjectNode node1 = JsonHandler.createObjectNode();
@@ -175,21 +177,23 @@ public class DbRuleR66RestMethodHandler
     ObjectNode node2;
     ObjectNode node3;
     if (methods.contains(METHOD.GET)) {
-      node2 = RestArgument
-          .fillDetailedAllow(METHOD.GET, path + "/id", COMMAND_TYPE.GET.name(),
-                             JsonHandler.createObjectNode()
-                                        .put(DbRule.Columns.IDRULE.name(),
-                                             RULE_ID_IN_URI_AS_VARCHAR_AS +
-                                             path + "/id"), node1);
+      node2 = RestArgument.fillDetailedAllow(METHOD.GET, path + "/id",
+                                             COMMAND_TYPE.GET.name(),
+                                             JsonHandler.createObjectNode().put(
+                                                 DbRule.Columns.IDRULE.name(),
+                                                 RULE_ID_IN_URI_AS_VARCHAR_AS +
+                                                 path + "/id"), node1);
       node.add(node2);
 
       node3 = JsonHandler.createObjectNode();
       for (final FILTER_ARGS arg : FILTER_ARGS.values()) {
         node3.put(arg.name(), arg.type);
       }
-      node2 = RestArgument
-          .fillDetailedAllow(METHOD.GET, path, COMMAND_TYPE.MULTIGET.name(),
-                             node3, JsonHandler.createArrayNode().add(node1));
+      node2 = RestArgument.fillDetailedAllow(METHOD.GET, path,
+                                             COMMAND_TYPE.MULTIGET.name(),
+                                             node3,
+                                             JsonHandler.createArrayNode()
+                                                        .add(node1));
       node.add(node2);
     }
     if (methods.contains(METHOD.PUT)) {
@@ -221,33 +225,33 @@ public class DbRuleR66RestMethodHandler
       for (final DbRule.Columns column : DbRule.Columns.values()) {
         node3.put(column.name(), DbRule.dbTypes[column.ordinal()]);
       }
-      node2 = RestArgument
-          .fillDetailedAllow(METHOD.POST, path, COMMAND_TYPE.CREATE.name(),
-                             node3, node1);
+      node2 = RestArgument.fillDetailedAllow(METHOD.POST, path,
+                                             COMMAND_TYPE.CREATE.name(), node3,
+                                             node1);
       node.add(node2);
     }
-    node2 = RestArgument
-        .fillDetailedAllow(METHOD.OPTIONS, path, COMMAND_TYPE.OPTIONS.name(),
-                           null, null);
+    node2 = RestArgument.fillDetailedAllow(METHOD.OPTIONS, path,
+                                           COMMAND_TYPE.OPTIONS.name(), null,
+                                           null);
     node.add(node2);
 
     return node;
   }
 
   @Override
-  public String getPrimaryPropertyName() {
+  public final String getPrimaryPropertyName() {
     return Columns.IDRULE.name();
   }
 
   @Override
-  protected void checkAuthorization(final HttpRestHandler handler,
-                                    final RestArgument arguments,
-                                    final RestArgument result,
-                                    final METHOD method)
+  protected final void checkAuthorization(final HttpRestHandler handler,
+                                          final RestArgument arguments,
+                                          final RestArgument result,
+                                          final METHOD method)
       throws HttpForbiddenRequestException {
     try {
       HttpRestV1Utils.checkSanity(arguments);
-    } catch (InvalidArgumentException e) {
+    } catch (final InvalidArgumentException e) {
       throw new HttpForbiddenRequestException("Issue on values", e);
     }
     final HttpRestR66Handler r66handler = (HttpRestR66Handler) handler;

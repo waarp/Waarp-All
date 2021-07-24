@@ -68,8 +68,8 @@ public class ServerInitDatabase {
    *     limit_configuration]
    */
   public static void main(final String[] args) {
-    WaarpLoggerFactory
-        .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));
+    WaarpLoggerFactory.setDefaultFactoryIfNotSame(
+        new WaarpSlf4JLoggerFactory(null));
     if (logger == null) {
       logger = WaarpLoggerFactory.getLogger(ServerInitDatabase.class);
     }

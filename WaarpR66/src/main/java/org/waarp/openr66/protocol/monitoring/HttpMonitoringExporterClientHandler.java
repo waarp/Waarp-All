@@ -45,9 +45,9 @@ public class HttpMonitoringExporterClientHandler
   protected void channelRead0(final ChannelHandlerContext ctx,
                               final HttpObject msg) throws Exception {
     if (msg instanceof HttpResponse) {
-      HttpResponse response = (HttpResponse) msg;
+      final HttpResponse response = (HttpResponse) msg;
 
-      HttpResponseStatus status = response.status();
+      final HttpResponseStatus status = response.status();
 
       httpMonitoringExporterClient.setStatus(
           response.status().code() == 200 || response.status().code() == 201);
@@ -59,7 +59,8 @@ public class HttpMonitoringExporterClientHandler
   }
 
   @Override
-  public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
+  public void exceptionCaught(final ChannelHandlerContext ctx,
+                              final Throwable cause) {
     logger.error(cause);
     httpMonitoringExporterClient.setStatus(false);
     ctx.channel().close();

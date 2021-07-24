@@ -53,21 +53,21 @@ public class HttpSession implements SessionInterface {
   /**
    * @return the method
    */
-  public HttpMethod getMethod() {
+  public final HttpMethod getMethod() {
     return method;
   }
 
   /**
    * @param method the method to set
    */
-  public void setMethod(final HttpMethod method) {
+  public final void setMethod(final HttpMethod method) {
     this.method = method;
   }
 
   /**
    * @param httpAuth the httpAuth to set
    */
-  public void setHttpAuth(final HttpAuthInterface httpAuth) {
+  public final void setHttpAuth(final HttpAuthInterface httpAuth) {
     this.httpAuth = httpAuth;
     dir = new CommonDirImpl(this, new FilesystemBasedOptsMLSxImpl());
     try {
@@ -79,95 +79,95 @@ public class HttpSession implements SessionInterface {
   }
 
   @Override
-  public HttpAuthInterface getAuth() {
+  public final HttpAuthInterface getAuth() {
     return httpAuth;
   }
 
   @Override
-  public void clear() {
+  public final void clear() {
     if (httpAuth != null) {
       httpAuth.clear();
     }
   }
 
   @Override
-  public int getBlockSize() {
+  public final int getBlockSize() {
     return 8192; // HttpChunk size
   }
 
   @Override
-  public FileParameterInterface getFileParameter() {
+  public final FileParameterInterface getFileParameter() {
     return FilesystemBasedFileParameterImpl.fileParameterInterface;
   }
 
   @Override
-  public Restart getRestart() {
+  public final Restart getRestart() {
     return null;
   }
 
   @Override
-  public String getUniqueExtension() {
+  public final String getUniqueExtension() {
     return ".postu";
   }
 
   /**
    * @return the logid
    */
-  public long getLogid() {
+  public final long getLogid() {
     return logid;
   }
 
   /**
    * @param logid the logid to set
    */
-  public void setLogid(final long logid) {
+  public final void setLogid(final long logid) {
     this.logid = logid;
   }
 
   @Override
-  public DirInterface getDir() {
+  public final DirInterface getDir() {
     return dir;
   }
 
   /**
    * @return the currentCommand
    */
-  public PageRole getCurrentCommand() {
+  public final PageRole getCurrentCommand() {
     return currentCommand;
   }
 
   /**
    * @param currentCommand the currentCommand to set
    */
-  public void setCurrentCommand(final PageRole currentCommand) {
+  public final void setCurrentCommand(final PageRole currentCommand) {
     this.currentCommand = currentCommand;
   }
 
   /**
    * @return the cookieSession
    */
-  public String getCookieSession() {
+  public final String getCookieSession() {
     return cookieSession;
   }
 
   /**
    * @param cookieSession the cookieSession to set
    */
-  public void setCookieSession(final String cookieSession) {
+  public final void setCookieSession(final String cookieSession) {
     this.cookieSession = cookieSession;
   }
 
   /**
    * @return the filename
    */
-  public String getFilename() {
+  public final String getFilename() {
     return filename;
   }
 
   /**
    * @param filename the filename to set
    */
-  public void setFilename(final String filename) {
+  public final void setFilename(final String filename) {
     this.filename = filename;
   }
 

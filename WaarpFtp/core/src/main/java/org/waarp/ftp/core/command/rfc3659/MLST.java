@@ -28,7 +28,7 @@ import org.waarp.ftp.core.command.AbstractCommand;
  */
 public class MLST extends AbstractCommand {
   @Override
-  public void exec() throws CommandAbstractException {
+  public final void exec() throws CommandAbstractException {
     // First Check if any argument
     final String path;
     if (!hasArg()) {
@@ -37,8 +37,8 @@ public class MLST extends AbstractCommand {
       path = getArg();
     }
     final String message = getSession().getDir().fileFull(path, false);
-    getSession()
-        .setReplyCode(ReplyCode.REPLY_226_CLOSING_DATA_CONNECTION, message);
+    getSession().setReplyCode(ReplyCode.REPLY_226_CLOSING_DATA_CONNECTION,
+                              message);
   }
 
 }

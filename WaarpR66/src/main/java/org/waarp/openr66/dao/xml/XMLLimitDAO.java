@@ -94,7 +94,7 @@ public class XMLLimitDAO implements LimitDAO {
   @Override
   public Limit select(final String hostid)
       throws DAOConnectionException, DAONoDataException {
-    Limit limit = dbR66ConfigurationHashMap.get(hostid);
+    final Limit limit = dbR66ConfigurationHashMap.get(hostid);
     if (limit != null) {
       return limit;
     }

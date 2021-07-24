@@ -28,7 +28,7 @@ import org.waarp.ftp.core.command.AbstractCommand;
  */
 public class OPTS extends AbstractCommand {
   @Override
-  public void exec() throws CommandAbstractException {
+  public final void exec() throws CommandAbstractException {
     final String message =
         getSession().getBusinessHandler().getOptsMessage(getArgs());
     getSession().setReplyCode(ReplyCode.REPLY_214_HELP_MESSAGE, message);

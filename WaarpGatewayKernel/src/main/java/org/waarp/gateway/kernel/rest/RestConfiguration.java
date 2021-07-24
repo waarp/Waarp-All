@@ -41,7 +41,7 @@ public class RestConfiguration {
       this.mask = (byte) mask;
     }
 
-    public boolean isValid(final byte tocheck) {
+    public final boolean isValid(final byte tocheck) {
       return (tocheck & mask) != 0;
     }
   }
@@ -93,7 +93,7 @@ public class RestConfiguration {
    *
    * @param authentKey
    */
-  public void initializeKey(final String authentKey) {
+  public final void initializeKey(final String authentKey) {
     setHmacSha256(new HmacSha256());
     getHmacSha256().setSecretKey(authentKey.getBytes(WaarpStringUtils.UTF8));
   }
@@ -106,7 +106,7 @@ public class RestConfiguration {
    * @throws CryptoException
    * @throws IOException
    */
-  public void initializeKey(final File authentKey)
+  public final void initializeKey(final File authentKey)
       throws CryptoException, IOException {
     setHmacSha256(new HmacSha256());
     getHmacSha256().setSecretKey(authentKey);
@@ -134,112 +134,112 @@ public class RestConfiguration {
   /**
    * @return the restAddress
    */
-  public String getRestAddress() {
+  public final String getRestAddress() {
     return restAddress;
   }
 
   /**
    * @param restAddress the restAddress to set
    */
-  public void setRestAddress(final String restAddress) {
+  public final void setRestAddress(final String restAddress) {
     this.restAddress = restAddress;
   }
 
   /**
    * @return the restPort
    */
-  public int getRestPort() {
+  public final int getRestPort() {
     return restPort;
   }
 
   /**
    * @param restPort the restPort to set
    */
-  public void setRestPort(final int restPort) {
+  public final void setRestPort(final int restPort) {
     this.restPort = restPort;
   }
 
   /**
    * @return the restSsl
    */
-  public boolean isRestSsl() {
+  public final boolean isRestSsl() {
     return restSsl;
   }
 
   /**
    * @param restSsl the restSsl to set
    */
-  public void setRestSsl(final boolean restSsl) {
+  public final void setRestSsl(final boolean restSsl) {
     this.restSsl = restSsl;
   }
 
   /**
    * @return the restTimeLimit
    */
-  public long getRestTimeLimit() {
+  public final long getRestTimeLimit() {
     return restTimeLimit;
   }
 
   /**
    * @param restTimeLimit the restTimeLimit to set
    */
-  public void setRestTimeLimit(final long restTimeLimit) {
+  public final void setRestTimeLimit(final long restTimeLimit) {
     this.restTimeLimit = restTimeLimit;
   }
 
   /**
    * @return the restAuthenticated
    */
-  public boolean isRestAuthenticated() {
+  public final boolean isRestAuthenticated() {
     return restAuthenticated;
   }
 
   /**
    * @param restAuthenticated the restAuthenticated to set
    */
-  public void setRestAuthenticated(final boolean restAuthenticated) {
+  public final void setRestAuthenticated(final boolean restAuthenticated) {
     this.restAuthenticated = restAuthenticated;
   }
 
   /**
    * @return the restSignature
    */
-  public boolean isRestSignature() {
+  public final boolean isRestSignature() {
     return restSignature;
   }
 
   /**
    * @param restSignature the restSignature to set
    */
-  public void setRestSignature(final boolean restSignature) {
+  public final void setRestSignature(final boolean restSignature) {
     this.restSignature = restSignature;
   }
 
   /**
    * @return the hmacSha256
    */
-  public HmacSha256 getHmacSha256() {
+  public final HmacSha256 getHmacSha256() {
     return hmacSha256;
   }
 
   /**
    * @param hmacSha256 the hmacSha256 to set
    */
-  public void setHmacSha256(final HmacSha256 hmacSha256) {
+  public final void setHmacSha256(final HmacSha256 hmacSha256) {
     this.hmacSha256 = hmacSha256;
   }
 
   /**
    * @return the resthandlersCrud
    */
-  public byte[] getResthandlersCrud() {
+  public final byte[] getResthandlersCrud() {
     return resthandlersCrud;
   }
 
   /**
    * @param resthandlersCrud the resthandlersCrud to set
    */
-  public void setResthandlersCrud(final byte[] resthandlersCrud) {
+  public final void setResthandlersCrud(final byte[] resthandlersCrud) {
     this.resthandlersCrud = resthandlersCrud;
   }
 }

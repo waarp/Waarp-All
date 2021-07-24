@@ -59,9 +59,8 @@ public class TestExecJavaTask extends AbstractExecJavaTask {
           logger.info("Continue: {}", rank);
           if (session.getLocalChannelReference() != null) {
             try {
-              ChannelUtils
-                  .writeAbstractLocalPacket(session.getLocalChannelReference(),
-                                            packet, true);
+              ChannelUtils.writeAbstractLocalPacket(
+                  session.getLocalChannelReference(), packet, true);
             } catch (final OpenR66ProtocolPacketException ignored) {
               // nothing
             }

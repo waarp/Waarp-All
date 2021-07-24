@@ -75,8 +75,8 @@ public class FileConvert extends Thread {
    * @param args
    */
   public static void main(final String[] args) {
-    WaarpLoggerFactory
-        .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));
+    WaarpLoggerFactory.setDefaultFactoryIfNotSame(
+        new WaarpSlf4JLoggerFactory(null));
     if (logger == null) {
       logger = WaarpLoggerFactory.getLogger(FileConvert.class);
     }
@@ -87,13 +87,13 @@ public class FileConvert extends Thread {
     boolean recursive = false;
     File tmpDir = null;
     for (int i = 0; i < args.length; i++) {
-      if (Pattern
-          .compile("^-(u|-unix2dos|-unixtodos)$", Pattern.CASE_INSENSITIVE)
-          .matcher(args[i]).matches()) {
+      if (Pattern.compile("^-(u|-unix2dos|-unixtodos)$",
+                          Pattern.CASE_INSENSITIVE).matcher(args[i])
+                 .matches()) {
         unix2dos = true;
-      } else if (Pattern
-          .compile("^-(d|-dos2unix|-dostounix)$", Pattern.CASE_INSENSITIVE)
-          .matcher(args[i]).matches()) {
+      } else if (Pattern.compile("^-(d|-dos2unix|-dostounix)$",
+                                 Pattern.CASE_INSENSITIVE).matcher(args[i])
+                        .matches()) {
         dos2unix = true;
       } else if (Pattern.compile("^-(r|-recursive)$", Pattern.CASE_INSENSITIVE)
                         .matcher(args[i]).matches()) {
@@ -168,7 +168,7 @@ public class FileConvert extends Thread {
    *
    * @return True if OK
    */
-  public boolean convert(final File input, final boolean unix2dos) {
+  public final boolean convert(final File input, final boolean unix2dos) {
     if (unix2dos) {
       logger.info("unix2Dos conversion of '{}'... ", input);
     } else {

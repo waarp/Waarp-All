@@ -25,7 +25,7 @@ package org.waarp.common.cpu;
 class CpuManagementNoInfo implements CpuManagementInterface {
 
   @Override
-  public double getLoadAverage() {
+  public final double getLoadAverage() {
     return 0;
   }
 

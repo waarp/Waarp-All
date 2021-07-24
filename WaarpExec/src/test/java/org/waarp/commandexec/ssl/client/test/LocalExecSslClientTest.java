@@ -155,13 +155,13 @@ public class LocalExecSslClientTest extends Thread {
         new File(classLoader.getResource(trustStoreFilename).getFile());
     assertTrue("File2 Should exists", file2.exists());
     final String trustStorePasswd = "testcert";
-    waarpSecureKeyStore
-        .initTrustStore(file2.getAbsolutePath(), trustStorePasswd, true);
+    waarpSecureKeyStore.initTrustStore(file2.getAbsolutePath(),
+                                       trustStorePasswd, true);
 
     // configure the server
     final ServerBootstrap bootstrapServer = new ServerBootstrap();
-    WaarpNettyUtil
-        .setServerBootstrap(bootstrapServer, workerGroup, workerGroup, 1000);
+    WaarpNettyUtil.setServerBootstrap(bootstrapServer, workerGroup, workerGroup,
+                                      1000);
 
     // Configure the pipeline factory.
     final WaarpSslContextFactory waarpSslContextFactoryServer =
@@ -177,8 +177,8 @@ public class LocalExecSslClientTest extends Thread {
         bootstrapServer.bind(new InetSocketAddress(addr, port));
 
     // Finalize client configuration
-    waarpSecureKeyStoreClient
-        .initTrustStore(file2.getAbsolutePath(), trustStorePasswd, false);
+    waarpSecureKeyStoreClient.initTrustStore(file2.getAbsolutePath(),
+                                             trustStorePasswd, false);
     final WaarpSslContextFactory waarpSslContextFactoryClient =
         new WaarpSslContextFactory(waarpSecureKeyStoreClient);
 

@@ -46,32 +46,34 @@ public class DbModelOracleFtp extends DbModelOracle {
   }
 
   @Override
-  public void createTables(final DbSession session)
+  public final void createTables(final DbSession session)
       throws WaarpDatabaseNoConnectionException {
     DbModelOracleKernel.createTableMonitoring(session);
   }
 
   @Override
-  public void resetSequence(final DbSession session, final long newvalue)
+  public final void resetSequence(final DbSession session, final long newvalue)
       throws WaarpDatabaseNoConnectionException {
     DbModelOracleKernel.resetSequenceMonitoring(session, newvalue);
   }
 
   @Override
-  public long nextSequence(final DbSession dbSession)
+  public final long nextSequence(final DbSession dbSession)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException,
              WaarpDatabaseNoDataException {
     return DbModelOracleKernel.nextSequenceMonitoring(dbSession);
   }
 
   @Override
-  public boolean upgradeDb(final DbSession session, final String version) {
+  public final boolean upgradeDb(final DbSession session,
+                                 final String version) {
     return true;
   }
 
   @Override
-  public boolean needUpgradeDb(final DbSession session, final String version,
-                               final boolean tryFix) {
+  public final boolean needUpgradeDb(final DbSession session,
+                                     final String version,
+                                     final boolean tryFix) {
     return false;
   }
 }

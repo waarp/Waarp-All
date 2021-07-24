@@ -68,7 +68,7 @@ public class R66Engine extends EngineAbstract {
   }
 
   @Override
-  public void shutdown() {
+  public final void shutdown() {
     logger.warn("Shutdown");
     ChannelUtils.startShutdown();
     closeFuture.setSuccess();
@@ -76,12 +76,12 @@ public class R66Engine extends EngineAbstract {
   }
 
   @Override
-  public boolean isShutdown() {
+  public final boolean isShutdown() {
     return closeFuture.isDone();
   }
 
   @Override
-  public boolean waitShutdown() {
+  public final boolean waitShutdown() {
     closeFuture.awaitOrInterruptible();
     logger.info("Shutdown on going: {}", closeFuture.isSuccess());
     return closeFuture.isSuccess();

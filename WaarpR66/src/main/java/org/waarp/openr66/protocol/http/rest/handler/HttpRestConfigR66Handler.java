@@ -67,13 +67,14 @@ public class HttpRestConfigR66Handler extends HttpRestAbstractR66Handler {
   }
 
   @Override
-  public void endParsingRequest(final HttpRestHandler handler,
-                                final RestArgument arguments,
-                                final RestArgument result, final Object body)
+  public final void endParsingRequest(final HttpRestHandler handler,
+                                      final RestArgument arguments,
+                                      final RestArgument result,
+                                      final Object body)
       throws HttpIncorrectRequestException, HttpInvalidAuthenticationException {
     try {
       HttpRestV1Utils.checkSanity(arguments);
-    } catch (InvalidArgumentException e) {
+    } catch (final InvalidArgumentException e) {
       throw new HttpIncorrectRequestException("Issue on values", e);
     }
     logger.debug("debug: {} ### {}", arguments, result);
@@ -148,7 +149,7 @@ public class HttpRestConfigR66Handler extends HttpRestAbstractR66Handler {
   }
 
   @Override
-  protected ArrayNode getDetailedAllow() {
+  protected final ArrayNode getDetailedAllow() {
     final ArrayNode node = JsonHandler.createArrayNode();
 
     if (methods.contains(METHOD.GET)) {
@@ -198,19 +199,19 @@ public class HttpRestConfigR66Handler extends HttpRestAbstractR66Handler {
       final ArrayNode node1 = JsonHandler.createArrayNode();
       try {
         node1.add(resp2.createObjectNode());
-        final ObjectNode node2 = RestArgument
-            .fillDetailedAllow(METHOD.PUT, path,
-                               ACTIONS_TYPE.ImportConfig.name(),
-                               node4.createObjectNode(), node1);
+        final ObjectNode node2 =
+            RestArgument.fillDetailedAllow(METHOD.PUT, path,
+                                           ACTIONS_TYPE.ImportConfig.name(),
+                                           node4.createObjectNode(), node1);
         node.add(node2);
       } catch (final OpenR66ProtocolPacketException ignored) {
         // ignore
       }
     }
 
-    final ObjectNode node2 = RestArgument
-        .fillDetailedAllow(METHOD.OPTIONS, path, COMMAND_TYPE.OPTIONS.name(),
-                           null, null);
+    final ObjectNode node2 =
+        RestArgument.fillDetailedAllow(METHOD.OPTIONS, path,
+                                       COMMAND_TYPE.OPTIONS.name(), null, null);
     node.add(node2);
 
     return node;

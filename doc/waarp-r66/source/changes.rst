@@ -69,6 +69,8 @@ Nouvelles fonctionnalités
     ``#COMPRESS#`` ou partenaire n'ayant pas activé cette option), ou n'être utilisée
     que ponctuellement.
 
+- Compatibilité JRE 16 vérifiée (base JRE11)
+- Benchmarks multi-usages et multi-versions (voir chapitre Configuration Avancée)
 
 Correctifs
 ----------
@@ -78,16 +80,19 @@ Correctifs
 - Accroissement de la limite de RUNLIMIT à 50000, maintient du défaut à 1000
 - Benchmark sur multiple serveurs Waarp en mode cluster
 - Benchmark avec le Monitoring
+- Benchmark avec le stockage S3
 - Fixe l'usage de Netty Native OpenSSL ou BoringSsl (performances TLS)
 - Fixe Waarp R66Proxy
 - Fixe les configurations des bases de données, notamment les index et les tailles
 - Fixe les vérifications API REST (V1 et V2) (sanity)
 - Fixe la transformation Json <-> DbHostAuth
 - Fixes de bug liés à la lecture XML des règles, de la gestion de client sans base
-- Fixes des bugs de stabilités FTP
+- Usage de Saxon pour le standard XML
+- Fixes des bugs de stabilités FTP (serveur et clients)
 - Benchmark sur Serveur FTP et Gateway FTP (avec H2 et PostgreSQL)
 - Amélioration des Types SQL, index et requêtes SQL (R66 principalement)
 - Fixe de la gestion des transferts à soi-même
+- Ajout d'un test de non régression avec la 3.5.2 qui sert de référence
 - Amélioration du code et de la gestion mémoire et de la documentation
 - Mise à jour des dépendances, JAR et javascript
 

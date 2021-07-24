@@ -156,8 +156,8 @@ public class FFileDialog extends JDialog
     masks = list;
     fileChooser.resetChoosableFileFilters();
     for (int i = 0; i < masks.size(); i++) {
-      fileChooser
-          .addChoosableFileFilter(new FileExtFilter((String) masks.get(i)));
+      fileChooser.addChoosableFileFilter(
+          new FileExtFilter((String) masks.get(i)));
     }
   }
 

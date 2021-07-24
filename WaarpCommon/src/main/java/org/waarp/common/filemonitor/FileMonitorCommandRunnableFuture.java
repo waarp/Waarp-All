@@ -40,7 +40,7 @@ public abstract class FileMonitorCommandRunnableFuture implements Runnable {
   protected FileMonitorCommandRunnableFuture() {
   }
 
-  public void setMonitor(final FileMonitor monitor) {
+  public final void setMonitor(final FileMonitor monitor) {
     this.monitor = monitor;
   }
 
@@ -51,7 +51,7 @@ public abstract class FileMonitorCommandRunnableFuture implements Runnable {
     setFileItem(fileItem);
   }
 
-  public void setFileItem(final FileItem fileItem) {
+  public final void setFileItem(final FileItem fileItem) {
     this.fileItem = fileItem;
   }
 
@@ -74,7 +74,7 @@ public abstract class FileMonitorCommandRunnableFuture implements Runnable {
    *
    * @param ignoreAlreadyUsed
    */
-  protected void checkReuse(final boolean ignoreAlreadyUsed) {
+  protected final void checkReuse(final boolean ignoreAlreadyUsed) {
     if (!ignoreAlreadyUsed && fileItem.used &&
         fileItem.specialId != ILLEGALVALUE &&
         fileItem.status == Status.RESTART) {
@@ -82,12 +82,12 @@ public abstract class FileMonitorCommandRunnableFuture implements Runnable {
     }
   }
 
-  protected boolean isReuse() {
+  protected final boolean isReuse() {
     return fileItem.status == Status.RESTART && !fileItem.used &&
            fileItem.specialId != ILLEGALVALUE;
   }
 
-  protected boolean isIgnored(final boolean ignoreAlreadyUsed) {
+  protected final boolean isIgnored(final boolean ignoreAlreadyUsed) {
     return !ignoreAlreadyUsed && fileItem.used;
   }
 
@@ -103,7 +103,7 @@ public abstract class FileMonitorCommandRunnableFuture implements Runnable {
     return fileItem.status == Status.VALID || fileItem.status == Status.RESTART;
   }
 
-  protected void setValid(final FileItem fileItem) {
+  protected final void setValid(final FileItem fileItem) {
     fileItem.specialId = ILLEGALVALUE;
     fileItem.used = false;
     fileItem.status = Status.VALID;
@@ -116,7 +116,8 @@ public abstract class FileMonitorCommandRunnableFuture implements Runnable {
    * @param status
    * @param specialId the specialId associated with the task
    */
-  protected void finalizeValidFile(final boolean status, final long specialId) {
+  protected final void finalizeValidFile(final boolean status,
+                                         final long specialId) {
     if (getMonitor() != null) {
       final Date date = new Date();
       if (date.after(getMonitor().nextDay)) {
@@ -148,7 +149,7 @@ public abstract class FileMonitorCommandRunnableFuture implements Runnable {
     }
   }
 
-  public void cancel() {
+  public final void cancel() {
     if (currentThread != null) {
       currentThread.interrupt();
     }
@@ -157,14 +158,14 @@ public abstract class FileMonitorCommandRunnableFuture implements Runnable {
   /**
    * @return the fileItem
    */
-  public FileItem getFileItem() {
+  public final FileItem getFileItem() {
     return fileItem;
   }
 
   /**
    * @return the monitor
    */
-  public FileMonitor getMonitor() {
+  public final FileMonitor getMonitor() {
     return monitor;
   }
 }

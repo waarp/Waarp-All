@@ -90,7 +90,7 @@ public class R66Result {
   }
 
   @Override
-  public String toString() {
+  public final String toString() {
     return (getException() != null? "Exception: " + getException() : "") +
            (getFile() != null? getFile().toString() : " no file") + "     " +
            (getRunner() != null? getRunner().toShortString() : " no runner") +
@@ -100,7 +100,7 @@ public class R66Result {
   /**
    * @return the associated message with this Result
    */
-  public String getMessage() {
+  public final String getMessage() {
     if (getException() != null) {
       return getException().getMessage();
     } else {
@@ -111,84 +111,84 @@ public class R66Result {
   /**
    * @return the exception
    */
-  public OpenR66Exception getException() {
+  public final OpenR66Exception getException() {
     return exception;
   }
 
   /**
    * @param exception the exception to set
    */
-  public void setException(final OpenR66Exception exception) {
+  public final void setException(final OpenR66Exception exception) {
     this.exception = exception;
   }
 
   /**
    * @return the file
    */
-  public R66File getFile() {
+  public final R66File getFile() {
     return file;
   }
 
   /**
    * @param file the file to set
    */
-  public void setFile(final R66File file) {
+  public final void setFile(final R66File file) {
     this.file = file;
   }
 
   /**
    * @return the runner
    */
-  public DbTaskRunner getRunner() {
+  public final DbTaskRunner getRunner() {
     return runner;
   }
 
   /**
    * @param runner the runner to set
    */
-  public void setRunner(final DbTaskRunner runner) {
+  public final void setRunner(final DbTaskRunner runner) {
     this.runner = runner;
   }
 
   /**
    * @return the isAnswered
    */
-  public boolean isAnswered() {
+  public final boolean isAnswered() {
     return isAnswered;
   }
 
   /**
    * @param isAnswered the isAnswered to set
    */
-  public void setAnswered(final boolean isAnswered) {
+  public final void setAnswered(final boolean isAnswered) {
     this.isAnswered = isAnswered;
   }
 
   /**
    * @return the code
    */
-  public ErrorCode getCode() {
+  public final ErrorCode getCode() {
     return code;
   }
 
   /**
    * @param code the code to set
    */
-  public void setCode(final ErrorCode code) {
+  public final void setCode(final ErrorCode code) {
     this.code = code;
   }
 
   /**
    * @return the other
    */
-  public Object getOther() {
+  public final Object getOther() {
     return other;
   }
 
   /**
    * @param other the other to set
    */
-  public void setOther(final Object other) {
+  public final void setOther(final Object other) {
     this.other = other;
   }
 }

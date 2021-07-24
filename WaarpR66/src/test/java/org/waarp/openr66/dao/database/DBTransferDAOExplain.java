@@ -118,31 +118,32 @@ public class DBTransferDAOExplain extends DBTransferDAO {
     this.dbTransferDAO = dbTransferDAO;
   }
 
-  @Override
-  public void updateRank(final Transfer e1) {
+  public void updateRankExplain(final Transfer e1) {
     explainP1(replaceArgs(getUpdateLimitedRankRequest(),
                           getUpdateLimitedRankValues(e1)));
   }
 
-  @Override
-  public void delete(final Transfer transfer)
+  public final void updateRankUpdatedInfoStepStatusStopExplain(
+      final Transfer e1) throws DAOConnectionException, DAONoDataException {
+    explainP1(replaceArgs(getUpdateRankUpdatedInfoStepStatusStopRequest(),
+                          getUpdateRankUpdatedInfoStepStatusStopValues(e1)));
+  }
+
+  public void deleteExplain(final Transfer transfer)
       throws DAOConnectionException, DAONoDataException {
     explainP1(replaceArgs(getDeleteRequest(), getPrimaryKeyValues(transfer)));
   }
 
-  @Override
-  public void deleteAll() {
+  public void deleteAllExplain() {
     explainP1(getDeleteAllRequest());
   }
 
-  @Override
-  public List<Transfer> getAll() throws DAOConnectionException {
+  public List<Transfer> getAllExplain() throws DAOConnectionException {
     explainP1(getGetAllRequest());
     return null;
   }
 
-  @Override
-  public List<Transfer> find(final List<Filter> filters)
+  public List<Transfer> findExplain(final List<Filter> filters)
       throws DAOConnectionException {
     // Create the SQL query
     final StringBuilder query = new StringBuilder(getGetAllRequest());
@@ -165,9 +166,11 @@ public class DBTransferDAOExplain extends DBTransferDAO {
         for (final Object o : objects) {
           params[i++] = o;
         }
-      } else {
+      } else if (filter.nbAdditionnalParams() == 0) {
         params[i] = filter.append(query);
         i++;
+      } else {
+        filter.append(query);
       }
       prefix = " AND ";
     }
@@ -175,8 +178,7 @@ public class DBTransferDAOExplain extends DBTransferDAO {
     return null;
   }
 
-  @Override
-  public List<Transfer> find(final List<Filter> filters, final int limit)
+  public List<Transfer> findExplain(final List<Filter> filters, final int limit)
       throws DAOConnectionException {
     // Create the SQL query
     final Object[] params = prepareFindParams(filters);
@@ -190,9 +192,9 @@ public class DBTransferDAOExplain extends DBTransferDAO {
     return null;
   }
 
-  @Override
-  public List<Transfer> find(final List<Filter> filters, final int limit,
-                             final int offset) throws DAOConnectionException {
+  public List<Transfer> findExplain(final List<Filter> filters, final int limit,
+                                    final int offset)
+      throws DAOConnectionException {
     // Create the SQL query
     final Object[] params = prepareFindParams(filters);
     final StringBuilder query =
@@ -209,9 +211,8 @@ public class DBTransferDAOExplain extends DBTransferDAO {
     return null;
   }
 
-  @Override
-  public List<Transfer> find(final List<Filter> filters, final String column,
-                             final boolean ascend)
+  public List<Transfer> findExplain(final List<Filter> filters,
+                                    final String column, final boolean ascend)
       throws DAOConnectionException {
     // Create the SQL query
     final Object[] params = prepareFindParams(filters);
@@ -228,9 +229,9 @@ public class DBTransferDAOExplain extends DBTransferDAO {
     return null;
   }
 
-  @Override
-  public List<Transfer> find(final List<Filter> filters, final String column,
-                             final boolean ascend, final int limit)
+  public List<Transfer> findExplain(final List<Filter> filters,
+                                    final String column, final boolean ascend,
+                                    final int limit)
       throws DAOConnectionException {
     // Create the SQL query
     final Object[] params = prepareFindParams(filters);
@@ -251,10 +252,10 @@ public class DBTransferDAOExplain extends DBTransferDAO {
     return null;
   }
 
-  @Override
-  public List<Transfer> find(final List<Filter> filters, final String column,
-                             final boolean ascend, final int limit,
-                             final int offset) throws DAOConnectionException {
+  public List<Transfer> findExplain(final List<Filter> filters,
+                                    final String column, final boolean ascend,
+                                    final int limit, final int offset)
+      throws DAOConnectionException {
     // Create the SQL query
     final Object[] params = prepareFindParams(filters);
     final StringBuilder query =
@@ -276,8 +277,8 @@ public class DBTransferDAOExplain extends DBTransferDAO {
     return null;
   }
 
-  @Override
-  public long count(final List<Filter> filters) throws DAOConnectionException {
+  public long countExplain(final List<Filter> filters)
+      throws DAOConnectionException {
     // Create the SQL query
     final Object[] params = prepareFindParams(filters);
     final StringBuilder query =
@@ -286,9 +287,8 @@ public class DBTransferDAOExplain extends DBTransferDAO {
     return 0;
   }
 
-  @Override
-  public boolean exist(final long id, final String requester,
-                       final String requested, final String owner)
+  public boolean existExplain(final long id, final String requester,
+                              final String requested, final String owner)
       throws DAOConnectionException {
     explainP1(replaceArgs(getExistRequest(),
                           getPrimaryKeyValues(id, owner, requester,
@@ -296,9 +296,9 @@ public class DBTransferDAOExplain extends DBTransferDAO {
     return true;
   }
 
-  @Override
-  public Transfer select(final long id, final String requester,
-                         final String requested, final String owner)
+  public final Transfer selectExplain(final long id, final String requester,
+                                      final String requested,
+                                      final String owner)
       throws DAOConnectionException, DAONoDataException {
     explainP1(replaceArgs(getSelectRequest(),
                           getPrimaryKeyValues(id, owner, requester,
@@ -306,19 +306,17 @@ public class DBTransferDAOExplain extends DBTransferDAO {
     return null;
   }
 
-  @Override
-  protected long getNextId() throws DAOConnectionException {
+  protected final long getNextId() throws DAOConnectionException {
     return dbTransferDAO.getNextId();
   }
 
-  @Override
-  public void insert(final Transfer transfer) throws DAOConnectionException {
+  public final void insertExplain(final Transfer transfer)
+      throws DAOConnectionException {
     Object[] params = getInsertValues(transfer);
     explainP1(replaceArgs(getInsertRequest(), params));
   }
 
-  @Override
-  public void update(final Transfer e1)
+  public final void updateExplain(final Transfer e1)
       throws DAOConnectionException, DAONoDataException {
     Object[] params = getUpdateValues(e1);
     explainP1(replaceArgs(getUpdateRequest(), params));

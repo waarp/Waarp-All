@@ -50,10 +50,9 @@ public class ProxyBridge {
     this.source = source;
   }
 
-  public void initializeProxy() {
-    final Channel proxy = transaction
-        .createConnectionWithRetry(proxyEntry.getRemoteSocketAddress(),
-                                   proxyEntry.isRemoteSsl());
+  public final void initializeProxy() {
+    final Channel proxy = transaction.createConnectionWithRetry(
+        proxyEntry.getRemoteSocketAddress(), proxyEntry.isRemoteSsl());
     if (proxy == null) {
       // Can't connect ?
       futureRemoteConnected.cancel();
@@ -63,11 +62,11 @@ public class ProxyBridge {
     proxified.setBridge(this);
   }
 
-  public void remoteConnected() {
+  public final void remoteConnected() {
     futureRemoteConnected.setSuccess();
   }
 
-  public boolean waitForRemoteConnection() {
+  public final boolean waitForRemoteConnection() {
     futureRemoteConnected.awaitOrInterruptible(configuration.getTimeoutCon());
     if (!futureRemoteConnected.isSuccess()) {
       futureRemoteConnected.cancel();
@@ -79,21 +78,21 @@ public class ProxyBridge {
   /**
    * @return the proxyEntry
    */
-  public ProxyEntry getProxyEntry() {
+  public final ProxyEntry getProxyEntry() {
     return proxyEntry;
   }
 
   /**
    * @return the source
    */
-  public NetworkServerHandler getSource() {
+  public final NetworkServerHandler getSource() {
     return source;
   }
 
   /**
    * @return the proxified
    */
-  public NetworkServerHandler getProxified() {
+  public final NetworkServerHandler getProxified() {
     return proxified;
   }
 }

@@ -38,7 +38,7 @@ public class IncorrectCommand extends AbstractCommand {
       WaarpLoggerFactory.getLogger(IncorrectCommand.class);
 
   @Override
-  public void exec() throws Reply503Exception {
+  public final void exec() throws Reply503Exception {
     getSession().setReplyCode(ReplyCode.REPLY_503_BAD_SEQUENCE_OF_COMMANDS,
                               "Bas sequence of commands: " + getCommand() +
                               " following " +

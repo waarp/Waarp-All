@@ -123,7 +123,7 @@ public abstract class KeyManager {
    * @param name
    * @param keyObject
    */
-  public void setKey(final String name, final KeyObject keyObject) {
+  public final void setKey(final String name, final KeyObject keyObject) {
     keysConcurrentHashMap.put(name, keyObject);
   }
 
@@ -132,7 +132,7 @@ public abstract class KeyManager {
    *
    * @return the key associated to the given name
    */
-  public KeyObject getKey(final String name) {
+  public final KeyObject getKey(final String name) {
     return keysConcurrentHashMap.get(name);
   }
 
@@ -146,7 +146,7 @@ public abstract class KeyManager {
    *
    * @throws Exception
    */
-  public String crypt(final String keyName, final String toBeCrypted)
+  public final String crypt(final String keyName, final String toBeCrypted)
       throws Exception {
     final KeyObject keyObject = getKey(keyName);
     if (keyObject == null) {
@@ -166,7 +166,7 @@ public abstract class KeyManager {
    *
    * @throws Exception
    */
-  public String decrypt(final String keyName, final String toBeDecrypted)
+  public final String decrypt(final String keyName, final String toBeDecrypted)
       throws Exception {
     final KeyObject keyObject = getKey(keyName);
     if (keyObject == null) {

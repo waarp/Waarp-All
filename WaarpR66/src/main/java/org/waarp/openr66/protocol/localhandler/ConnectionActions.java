@@ -94,7 +94,7 @@ public abstract class ConnectionActions {
    */
   protected FilesystemBasedDigest localDigest;
 
-  void businessError() {
+  final void businessError() {
     if (session.getBusinessObject() != null) {
       session.getBusinessObject().checkAtError(session);
     }
@@ -103,21 +103,21 @@ public abstract class ConnectionActions {
   /**
    * @return the session
    */
-  public R66Session getSession() {
+  public final R66Session getSession() {
     return session;
   }
 
   /**
    * @return the localChannelReference
    */
-  public LocalChannelReference getLocalChannelReference() {
+  public final LocalChannelReference getLocalChannelReference() {
     return localChannelReference;
   }
 
   /**
    * Operations to ensure that channel closing is done correctly
    */
-  public void channelClosed() {
+  public final void channelClosed() {
     if (session.getState() == CLOSEDCHANNEL) {
       return;
     }
@@ -196,8 +196,8 @@ public abstract class ConnectionActions {
             localChannelReference);
         session.setStatus(52);
       } else {
-        logger
-            .debug("Local Server Channel Closed but no LocalChannelReference");
+        logger.debug(
+            "Local Server Channel Closed but no LocalChannelReference");
       }
       // Now if runner is not yet finished, finish it by force
       if (mustFinalize && localChannelReference != null &&
@@ -235,7 +235,7 @@ public abstract class ConnectionActions {
   /**
    * Create a new Session at startup of the channel
    */
-  public void newSession() {
+  public final void newSession() {
     session = new R66Session();
     session.setStatus(60);
     session.setBusinessObject(
@@ -243,7 +243,7 @@ public abstract class ConnectionActions {
                                    .getBusinessInterface(session));
   }
 
-  protected void setLocalChannelReference(
+  protected final void setLocalChannelReference(
       final LocalChannelReference localChannelReference) {
     if (localChannelReference != null) {
       this.localChannelReference = localChannelReference;
@@ -260,7 +260,7 @@ public abstract class ConnectionActions {
    *
    * @throws OpenR66ProtocolPacketException
    */
-  public void startup(final StartupPacket packet)
+  public final void startup(final StartupPacket packet)
       throws OpenR66ProtocolPacketException {
     packet.clear();
     if (localChannelReference == null) {
@@ -277,8 +277,8 @@ public abstract class ConnectionActions {
             new ErrorPacket("Connection refused by business logic",
                             ErrorCode.ConnectionImpossible.getCode(),
                             ErrorPacket.FORWARDCLOSECODE);
-        ChannelUtils
-            .writeAbstractLocalPacket(localChannelReference, error, false);
+        ChannelUtils.writeAbstractLocalPacket(localChannelReference, error,
+                                              false);
         session.setStatus(40);
         return;
       }
@@ -339,8 +339,8 @@ public abstract class ConnectionActions {
     ChannelUtils.writeAbstractLocalPacket(localChannelReference, error, false);
     localChannelReference.validateConnection(false, result);
     final Channel networkchannel = localChannelReference.getNetworkChannel();
-    final boolean valid = NetworkTransaction
-        .shuttingDownNetworkChannelBlackList(
+    final boolean valid =
+        NetworkTransaction.shuttingDownNetworkChannelBlackList(
             localChannelReference.getNetworkChannelObject());
     logger.warn(
         "Closing and blacklisting NetworkChannelReference since LocalChannel is not authenticated: " +
@@ -357,15 +357,15 @@ public abstract class ConnectionActions {
    *
    * @throws OpenR66ProtocolPacketException
    */
-  public void authent(final AuthentPacket packet, final boolean isSsl)
+  public final void authent(final AuthentPacket packet, final boolean isSsl)
       throws OpenR66ProtocolPacketException {
     logger.debug("AUTHENT {}", packet);
     if (packet.isToValidate()) {
       session.newState(AUTHENTR);
     }
 
-    logger
-        .debug("LocalChannelReference null? {}", localChannelReference == null);
+    logger.debug("LocalChannelReference null? {}",
+                 localChannelReference == null);
     if (localChannelReference.getDbSession() != null) {
       localChannelReference.getDbSession().useConnection();
     }
@@ -380,11 +380,10 @@ public abstract class ConnectionActions {
           true, ErrorCode.ConnectionImpossible, null);
       localChannelReference.invalidateRequest(result);
       final ErrorPacket error = new ErrorPacket("Service unavailable",
-                                                ErrorCode.ConnectionImpossible
-                                                    .getCode(),
+                                                ErrorCode.ConnectionImpossible.getCode(),
                                                 ErrorPacket.FORWARDCLOSECODE);
-      ChannelUtils
-          .writeAbstractLocalPacket(localChannelReference, error, false);
+      ChannelUtils.writeAbstractLocalPacket(localChannelReference, error,
+                                            false);
       localChannelReference.validateConnection(false, result);
       ChannelCloseTimer.closeFutureTransaction(this);
       session.setStatus(43);
@@ -406,11 +405,10 @@ public abstract class ConnectionActions {
           session, true, ErrorCode.ConnectionImpossible, null);
       localChannelReference.invalidateRequest(result);
       final ErrorPacket error = new ErrorPacket("Service unavailable",
-                                                ErrorCode.ConnectionImpossible
-                                                    .getCode(),
+                                                ErrorCode.ConnectionImpossible.getCode(),
                                                 ErrorPacket.FORWARDCLOSECODE);
-      ChannelUtils
-          .writeAbstractLocalPacket(localChannelReference, error, false);
+      ChannelUtils.writeAbstractLocalPacket(localChannelReference, error,
+                                            false);
       localChannelReference.validateConnection(false, result);
       ChannelCloseTimer.closeFutureTransaction(this);
       session.setStatus(43);
@@ -488,14 +486,13 @@ public abstract class ConnectionActions {
                  localChannelReference != null? localChannelReference :
                      "no LocalChannelReference");
     session.setStatus(44);
-    NetworkTransaction
-        .addClient(localChannelReference.getNetworkChannelObject(),
-                   packet.getHostId());
+    NetworkTransaction.addClient(
+        localChannelReference.getNetworkChannelObject(), packet.getHostId());
     if (packet.isToValidate()) {
       // only requested
       packet.validate(session.getAuth().isSsl());
-      ChannelUtils
-          .writeAbstractLocalPacket(localChannelReference, packet, false);
+      ChannelUtils.writeAbstractLocalPacket(localChannelReference, packet,
+                                            false);
       session.setStatus(98);
     }
     logger.debug("Partner: {} from {}", localChannelReference.getPartner(),
@@ -507,7 +504,7 @@ public abstract class ConnectionActions {
    *
    * @param packet
    */
-  public void connectionError(final ConnectionErrorPacket packet) {
+  public final void connectionError(final ConnectionErrorPacket packet) {
     // do something according to the error
     logger.error(localChannelReference.getRequestId() + ": " + packet);
     ErrorCode code = ErrorCode.ConnectionImpossible;
@@ -533,7 +530,7 @@ public abstract class ConnectionActions {
    * @throws OpenR66ProtocolSystemException
    * @throws OpenR66ProtocolBusinessException
    */
-  public void errorMesg(final ErrorPacket packet)
+  public final void errorMesg(final ErrorPacket packet)
       throws OpenR66RunnerErrorException, OpenR66ProtocolSystemException,
              OpenR66ProtocolBusinessException {
     // do something according to the error
@@ -563,10 +560,9 @@ public abstract class ConnectionActions {
       // now try to inform other
       session.setFinalizeTransfer(false, result);
       try {
-        ChannelUtils
-            .writeAbstractLocalPacket(localChannelReference, packet, false)
-            .addListener(
-                new RunnerChannelFutureListener(localChannelReference, result));
+        ChannelUtils.writeAbstractLocalPacket(localChannelReference, packet,
+                                              false).addListener(
+            new RunnerChannelFutureListener(localChannelReference, result));
       } catch (final OpenR66ProtocolPacketException ignored) {
         // ignore
       }
@@ -590,10 +586,9 @@ public abstract class ConnectionActions {
       // now try to inform other
       session.setFinalizeTransfer(false, result);
       try {
-        ChannelUtils
-            .writeAbstractLocalPacket(localChannelReference, packet, false)
-            .addListener(
-                new RunnerChannelFutureListener(localChannelReference, result));
+        ChannelUtils.writeAbstractLocalPacket(localChannelReference, packet,
+                                              false).addListener(
+            new RunnerChannelFutureListener(localChannelReference, result));
       } catch (final OpenR66ProtocolPacketException ignored) {
         // ignore
       }
@@ -667,10 +662,10 @@ public abstract class ConnectionActions {
     }
 
     @Override
-    public void operationComplete(final ChannelFuture future) {
+    public final void operationComplete(final ChannelFuture future) {
       localChannelReference.invalidateRequest(result);
-      ChannelCloseTimer
-          .closeFutureTransaction(localChannelReference.getServerHandler());
+      ChannelCloseTimer.closeFutureTransaction(
+          localChannelReference.getServerHandler());
     }
 
   }

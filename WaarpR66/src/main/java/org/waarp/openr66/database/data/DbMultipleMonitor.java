@@ -57,23 +57,23 @@ public class DbMultipleMonitor extends AbstractDbDataDao<MultipleMonitor> {
       Columns.COUNTRULE.name() + ',' + Columns.HOSTID.name();
 
   @Override
-  protected void initObject() {
+  protected final void initObject() {
     // Nothing
   }
 
   @Override
-  protected String getTable() {
+  protected final String getTable() {
     return table;
   }
 
   @Override
-  protected AbstractDAO<MultipleMonitor> getDao(final boolean isCacheable)
+  protected final AbstractDAO<MultipleMonitor> getDao(final boolean isCacheable)
       throws DAOConnectionException {
     return DAOFactory.getInstance().getMultipleMonitorDAO(isCacheable);
   }
 
   @Override
-  protected String getPrimaryKey() {
+  protected final String getPrimaryKey() {
     if (pojo != null) {
       return pojo.getHostid();
     }
@@ -81,7 +81,7 @@ public class DbMultipleMonitor extends AbstractDbDataDao<MultipleMonitor> {
   }
 
   @Override
-  protected String getPrimaryField() {
+  protected final String getPrimaryField() {
     return Columns.HOSTID.name();
   }
 
@@ -117,12 +117,12 @@ public class DbMultipleMonitor extends AbstractDbDataDao<MultipleMonitor> {
   }
 
   @Override
-  protected void checkValues() throws WaarpDatabaseSqlException {
+  protected final void checkValues() throws WaarpDatabaseSqlException {
     pojo.checkValues();
   }
 
   @Override
-  protected void setFromJson(final String field, final JsonNode value) {
+  protected final void setFromJson(final String field, final JsonNode value) {
     if (value == null) {
       return;
     }
@@ -170,8 +170,9 @@ public class DbMultipleMonitor extends AbstractDbDataDao<MultipleMonitor> {
     AbstractDAO<MultipleMonitor> multipleDAO = null;
     try {
       multipleDAO = dbMm.getDao(false);
-      dbMm.pojo = ((StatementExecutor<MultipleMonitor>) multipleDAO)
-          .getFromResultSet(preparedStatement.getResultSet());
+      dbMm.pojo =
+          ((StatementExecutor<MultipleMonitor>) multipleDAO).getFromResultSet(
+              preparedStatement.getResultSet());
       return dbMm;
     } catch (final SQLException e) {
       DbSession.error(e);
@@ -214,7 +215,7 @@ public class DbMultipleMonitor extends AbstractDbDataDao<MultipleMonitor> {
    *
    * @return True if this is the last update
    */
-  public boolean checkUpdateConfig() {
+  public final boolean checkUpdateConfig() {
     if (getCountConfig() <= 0) {
       setCountConfig(Configuration.configuration.getMultipleMonitors());
       setCountConfig(getCountConfig() - 1);
@@ -231,7 +232,7 @@ public class DbMultipleMonitor extends AbstractDbDataDao<MultipleMonitor> {
    *
    * @return True if this is the last update
    */
-  public boolean checkUpdateHost() {
+  public final boolean checkUpdateHost() {
     if (getCountHost() <= 0) {
       setCountHost(Configuration.configuration.getMultipleMonitors());
       setCountHost(getCountHost() - 1);
@@ -248,7 +249,7 @@ public class DbMultipleMonitor extends AbstractDbDataDao<MultipleMonitor> {
    *
    * @return True if this is the last update
    */
-  public boolean checkUpdateRule() {
+  public final boolean checkUpdateRule() {
     if (getCountRule() <= 0) {
       setCountRule(Configuration.configuration.getMultipleMonitors());
       setCountRule(getCountRule() - 1);
@@ -261,7 +262,7 @@ public class DbMultipleMonitor extends AbstractDbDataDao<MultipleMonitor> {
   }
 
   @Override
-  public void changeUpdatedInfo(final UpdatedInfo info) {
+  public final void changeUpdatedInfo(final UpdatedInfo info) {
     // ignore
   }
 
@@ -269,7 +270,7 @@ public class DbMultipleMonitor extends AbstractDbDataDao<MultipleMonitor> {
    * return the String representation
    */
   @Override
-  public String toString() {
+  public final String toString() {
     return "DbMM " + getCountConfig() + ':' + getCountHost() + ':' +
            getCountRule();
   }
@@ -277,7 +278,7 @@ public class DbMultipleMonitor extends AbstractDbDataDao<MultipleMonitor> {
   /**
    * @return the countConfig
    */
-  public int getCountConfig() {
+  public final int getCountConfig() {
     return pojo.getCountConfig();
   }
 
@@ -292,7 +293,7 @@ public class DbMultipleMonitor extends AbstractDbDataDao<MultipleMonitor> {
   /**
    * @return the countHost
    */
-  public int getCountHost() {
+  public final int getCountHost() {
     return pojo.getCountHost();
   }
 
@@ -307,7 +308,7 @@ public class DbMultipleMonitor extends AbstractDbDataDao<MultipleMonitor> {
   /**
    * @return the countRule
    */
-  public int getCountRule() {
+  public final int getCountRule() {
     return pojo.getCountRule();
   }
 

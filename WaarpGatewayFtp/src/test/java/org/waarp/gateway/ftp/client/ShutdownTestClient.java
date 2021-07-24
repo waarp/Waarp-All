@@ -28,8 +28,8 @@ public class ShutdownTestClient {
                                    FileSystemBasedDataBusinessHandler.class,
                                    new FilesystemBasedFileParameterImpl());
     try {
-      if (!configuration
-          .setConfigurationServerFromXml(file.getAbsolutePath())) {
+      if (!configuration.setConfigurationServerFromXml(
+          file.getAbsolutePath())) {
         System.err.println("Bad main configuration");
         System.exit(1);
       }

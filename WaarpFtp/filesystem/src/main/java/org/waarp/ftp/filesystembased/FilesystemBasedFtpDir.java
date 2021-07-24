@@ -39,12 +39,12 @@ public abstract class FilesystemBasedFtpDir extends FilesystemBasedDirImpl
   }
 
   @Override
-  public FtpFile setUniqueFile() throws CommandAbstractException {
+  public final FtpFile setUniqueFile() throws CommandAbstractException {
     return (FtpFile) super.setUniqueFile();
   }
 
   @Override
-  public FtpFile setFile(final String path, final boolean append)
+  public final FtpFile setFile(final String path, final boolean append)
       throws CommandAbstractException {
     return (FtpFile) super.setFile(path, append);
   }

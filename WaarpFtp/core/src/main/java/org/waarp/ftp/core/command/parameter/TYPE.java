@@ -32,7 +32,7 @@ import org.waarp.ftp.core.command.FtpArgumentCode.TransferSubType;
  */
 public class TYPE extends AbstractCommand {
   @Override
-  public void exec() throws Reply501Exception, Reply504Exception {
+  public final void exec() throws Reply501Exception, Reply504Exception {
     // First Check if any argument
     if (!hasArg()) {
       getSession().getDataConn().setType(FtpArgumentCode.TransferType.ASCII);

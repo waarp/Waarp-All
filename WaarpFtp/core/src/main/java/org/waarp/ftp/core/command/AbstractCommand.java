@@ -65,9 +65,9 @@ public abstract class AbstractCommand implements CommandInterface {
   private FtpCommandCode extraNextCommand;
 
   @Override
-  public void setArgs(final SessionInterface session, final String command,
-                      final String arg,
-                      @SuppressWarnings("rawtypes") final Enum code) {
+  public final void setArgs(final SessionInterface session,
+                            final String command, final String arg,
+                            @SuppressWarnings("rawtypes") final Enum code) {
     this.session = (FtpSession) session;
     this.command = command;
     this.arg = arg;
@@ -75,7 +75,7 @@ public abstract class AbstractCommand implements CommandInterface {
   }
 
   @Override
-  public void setExtraNextCommand(
+  public final void setExtraNextCommand(
       @SuppressWarnings("rawtypes") final Enum extraNextCommand) {
     if (extraNextCommand != FtpCommandCode.NOOP) {
       this.extraNextCommand = (FtpCommandCode) extraNextCommand;
@@ -85,7 +85,8 @@ public abstract class AbstractCommand implements CommandInterface {
   }
 
   @Override
-  public boolean isNextCommandValid(final CommandInterface newCommandArg) {
+  public final boolean isNextCommandValid(
+      final CommandInterface newCommandArg) {
     final AbstractCommand newCommand = (AbstractCommand) newCommandArg;
     final Class<? extends AbstractCommand> newClass = newCommand.getClass();
     // Special commands: QUIT ABORT STAT NOP
@@ -121,27 +122,27 @@ public abstract class AbstractCommand implements CommandInterface {
   }
 
   @Override
-  public Object getObject() {
+  public final Object getObject() {
     return object;
   }
 
   @Override
-  public void setObject(final Object object) {
+  public final void setObject(final Object object) {
     this.object = object;
   }
 
   @Override
-  public String getArg() {
+  public final String getArg() {
     return arg;
   }
 
   @Override
-  public String[] getArgs() {
+  public final String[] getArgs() {
     return COMPILE_BLANK.split(arg);
   }
 
   @Override
-  public int getValue(final String argx) throws InvalidArgumentException {
+  public final int getValue(final String argx) throws InvalidArgumentException {
     final int i;
     try {
       i = Integer.parseInt(argx);
@@ -152,12 +153,12 @@ public abstract class AbstractCommand implements CommandInterface {
   }
 
   @Override
-  public String getCommand() {
+  public final String getCommand() {
     return command;
   }
 
   @Override
-  public boolean hasArg() {
+  public final boolean hasArg() {
     return arg != null && arg.length() != 0;
   }
 
@@ -165,7 +166,7 @@ public abstract class AbstractCommand implements CommandInterface {
    * @return the current FtpSession
    */
   @Override
-  public FtpSession getSession() {
+  public final FtpSession getSession() {
     return session;
   }
 
@@ -174,12 +175,12 @@ public abstract class AbstractCommand implements CommandInterface {
   /**
    * @return The current configuration object
    */
-  public FtpConfiguration getConfiguration() {
+  public final FtpConfiguration getConfiguration() {
     return session.getConfiguration();
   }
 
   @Override
-  public void invalidCurrentCommand() {
+  public final void invalidCurrentCommand() {
     session.getRestart().setSet(false);
     session.setPreviousAsCurrentCommand();
   }
@@ -188,7 +189,7 @@ public abstract class AbstractCommand implements CommandInterface {
    * @return The FtpCommandCode associated with this command
    */
   @Override
-  public FtpCommandCode getCode() {
+  public final FtpCommandCode getCode() {
     return code;
   }
 }

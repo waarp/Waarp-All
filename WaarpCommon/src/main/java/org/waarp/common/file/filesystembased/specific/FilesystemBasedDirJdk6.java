@@ -31,7 +31,7 @@ public class FilesystemBasedDirJdk6 extends FilesystemBasedDirJdkAbstract {
    * @return True if the file is executable
    */
   @Override
-  public boolean canExecute(final File file) {
+  public final boolean canExecute(final File file) {
     return file.canExecute();
   }
 
@@ -41,7 +41,7 @@ public class FilesystemBasedDirJdk6 extends FilesystemBasedDirJdkAbstract {
    * @return the free space of the given Directory
    */
   @Override
-  public long getFreeSpace(final File directory) {
+  public final long getFreeSpace(final File directory) {
     try {
       return directory.getFreeSpace();
     } catch (final Exception e) {

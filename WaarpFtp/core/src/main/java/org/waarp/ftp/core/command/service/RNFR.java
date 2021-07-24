@@ -31,7 +31,7 @@ import org.waarp.ftp.core.file.FtpFile;
  */
 public class RNFR extends AbstractCommand {
   @Override
-  public void exec() throws CommandAbstractException {
+  public final void exec() throws CommandAbstractException {
     if (!hasArg()) {
       invalidCurrentCommand();
       throw new Reply501Exception("Need a pathname as argument");

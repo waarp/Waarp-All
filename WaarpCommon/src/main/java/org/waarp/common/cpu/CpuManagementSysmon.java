@@ -50,7 +50,7 @@ class CpuManagementSysmon implements CpuManagementInterface {
    * @return the load average
    */
   @Override
-  public double getLoadAverage() {
+  public final double getLoadAverage() {
     final long newTime = System.currentTimeMillis();
     final CpuTimes cpuTimes = sysMon.cpuTimes();
     final double rate = cpuTimes.getCpuUsage(cpuTimesOld);

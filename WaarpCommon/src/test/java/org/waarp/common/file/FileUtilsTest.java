@@ -114,7 +114,7 @@ public class FileUtilsTest {
     assertTrue(FileUtils.uncompressedBz2File(file, to) > 0);
     assertTrue(to.canRead());
     to.setExecutable(true);
-    SysErrLogger.FAKE_LOGGER
-        .sysout(to.getAbsolutePath() + " => " + to.length());
+    SysErrLogger.FAKE_LOGGER.sysout(
+        to.getAbsolutePath() + " => " + to.length());
   }
 }

@@ -125,42 +125,42 @@ public class Rule {
   @XmlElementDecl(name = XRPRETASKS)
   @XmlElement(name = XRPRETASKS)
   @JsonIgnore
-  public Tasks get_rPreTasks() {
+  public final Tasks get_rPreTasks() {
     return new Tasks(rPreTasks);
   }
 
   @XmlElementDecl(name = XRPOSTTASKS)
   @XmlElement(name = XRPOSTTASKS)
   @JsonIgnore
-  public Tasks get_rPostTasks() {
+  public final Tasks get_rPostTasks() {
     return new Tasks(rPostTasks);
   }
 
   @XmlElementDecl(name = XRERRORTASKS)
   @XmlElement(name = XRERRORTASKS)
   @JsonIgnore
-  public Tasks get_rErrorTasks() {
+  public final Tasks get_rErrorTasks() {
     return new Tasks(rErrorTasks);
   }
 
   @XmlElementDecl(name = XSPRETASKS)
   @XmlElement(name = XSPRETASKS)
   @JsonIgnore
-  public Tasks get_sPreTasks() {
+  public final Tasks get_sPreTasks() {
     return new Tasks(sPreTasks);
   }
 
   @XmlElementDecl(name = XSPOSTTASKS)
   @XmlElement(name = XSPOSTTASKS)
   @JsonIgnore
-  public Tasks get_sPostTasks() {
+  public final Tasks get_sPostTasks() {
     return new Tasks(sPostTasks);
   }
 
   @XmlElementDecl(name = XSERRORTASKS)
   @XmlElement(name = XSERRORTASKS)
   @JsonIgnore
-  public Tasks get_sErrorTasks() {
+  public final Tasks get_sErrorTasks() {
     return new Tasks(sErrorTasks);
   }
 
@@ -221,7 +221,7 @@ public class Rule {
   }
 
   @JsonIgnore
-  public void checkValues() throws WaarpDatabaseSqlException {
+  public final void checkValues() throws WaarpDatabaseSqlException {
     validateLength(Types.NVARCHAR, name);
     validateLength(Types.VARCHAR, recvPath, sendPath, archivePath, workPath);
     validateLength(Types.LONGVARCHAR, getXMLHostids(), getXMLRErrorTasks(),
@@ -229,12 +229,12 @@ public class Rule {
                    getXMLSPreTasks(), getXMLSPostTasks());
   }
 
-  public boolean isAuthorized(final String hostid) {
+  public final boolean isAuthorized(final String hostid) {
     return hostids.contains(hostid);
   }
 
   @JsonProperty("HOSTIDS")
-  public String getXMLHostids() {
+  public final String getXMLHostids() {
     final StringBuilder res = new StringBuilder("<hostids>");
     for (final String hostid : hostids) {
       res.append("<hostid>").append(hostid).append("</hostid>");
@@ -243,32 +243,32 @@ public class Rule {
   }
 
   @JsonProperty("RPRETASKS")
-  public String getXMLRPreTasks() {
+  public final String getXMLRPreTasks() {
     return getXMLTasks(rPreTasks);
   }
 
   @JsonProperty("RPOSTTASKS")
-  public String getXMLRPostTasks() {
+  public final String getXMLRPostTasks() {
     return getXMLTasks(rPostTasks);
   }
 
   @JsonProperty("RERRORTASKS")
-  public String getXMLRErrorTasks() {
+  public final String getXMLRErrorTasks() {
     return getXMLTasks(rErrorTasks);
   }
 
   @JsonProperty("SPRETASKS")
-  public String getXMLSPreTasks() {
+  public final String getXMLSPreTasks() {
     return getXMLTasks(sPreTasks);
   }
 
   @JsonProperty("SPOSTTASKS")
-  public String getXMLSPostTasks() {
+  public final String getXMLSPostTasks() {
     return getXMLTasks(sPostTasks);
   }
 
   @JsonProperty("SERRORTASKS")
-  public String getXMLSErrorTasks() {
+  public final String getXMLSErrorTasks() {
     return getXMLTasks(sErrorTasks);
   }
 
@@ -280,27 +280,27 @@ public class Rule {
     return res.append("</tasks>").toString();
   }
 
-  public String getName() {
+  public final String getName() {
     return name;
   }
 
-  public void setName(final String name) {
+  public final void setName(final String name) {
     this.name = name;
   }
 
-  public int getMode() {
+  public final int getMode() {
     return mode;
   }
 
-  public void setMode(final int mode) {
+  public final void setMode(final int mode) {
     this.mode = mode;
   }
 
-  public List<String> getHostids() {
+  public final List<String> getHostids() {
     return hostids;
   }
 
-  public void setHostids(final List<String> hostids) {
+  public final void setHostids(final List<String> hostids) {
     this.hostids = hostids;
   }
 
@@ -311,97 +311,97 @@ public class Rule {
     return path.replace("//", "/").replaceAll("[\\\\]+", "\\\\");
   }
 
-  public String getRecvPath() {
+  public final String getRecvPath() {
     return recvPath;
   }
 
-  public void setRecvPath(final String recvPath) {
+  public final void setRecvPath(final String recvPath) {
     this.recvPath = checkPath(recvPath);
   }
 
-  public String getSendPath() {
+  public final String getSendPath() {
     return sendPath;
   }
 
-  public void setSendPath(final String sendPath) {
+  public final void setSendPath(final String sendPath) {
     this.sendPath = checkPath(sendPath);
   }
 
-  public String getArchivePath() {
+  public final String getArchivePath() {
     return archivePath;
   }
 
-  public void setArchivePath(final String archivePath) {
+  public final void setArchivePath(final String archivePath) {
     this.archivePath = checkPath(archivePath);
   }
 
-  public String getWorkPath() {
+  public final String getWorkPath() {
     return workPath;
   }
 
-  public void setWorkPath(final String workPath) {
+  public final void setWorkPath(final String workPath) {
     this.workPath = checkPath(workPath);
   }
 
   @JsonIgnore
-  public List<RuleTask> getRPreTasks() {
+  public final List<RuleTask> getRPreTasks() {
     return rPreTasks;
   }
 
-  public void setRPreTasks(final List<RuleTask> rPreTasks) {
+  public final void setRPreTasks(final List<RuleTask> rPreTasks) {
     this.rPreTasks = rPreTasks;
   }
 
   @JsonIgnore
-  public List<RuleTask> getRPostTasks() {
+  public final List<RuleTask> getRPostTasks() {
     return rPostTasks;
   }
 
-  public void setRPostTasks(final List<RuleTask> rPostTasks) {
+  public final void setRPostTasks(final List<RuleTask> rPostTasks) {
     this.rPostTasks = rPostTasks;
   }
 
   @JsonIgnore
-  public List<RuleTask> getRErrorTasks() {
+  public final List<RuleTask> getRErrorTasks() {
     return rErrorTasks;
   }
 
-  public void setRErrorTasks(final List<RuleTask> rErrorTasks) {
+  public final void setRErrorTasks(final List<RuleTask> rErrorTasks) {
     this.rErrorTasks = rErrorTasks;
   }
 
   @JsonIgnore
-  public List<RuleTask> getSPreTasks() {
+  public final List<RuleTask> getSPreTasks() {
     return sPreTasks;
   }
 
-  public void setSPreTasks(final List<RuleTask> sPreTasks) {
+  public final void setSPreTasks(final List<RuleTask> sPreTasks) {
     this.sPreTasks = sPreTasks;
   }
 
   @JsonIgnore
-  public List<RuleTask> getSPostTasks() {
+  public final List<RuleTask> getSPostTasks() {
     return sPostTasks;
   }
 
-  public void setSPostTasks(final List<RuleTask> sPostTasks) {
+  public final void setSPostTasks(final List<RuleTask> sPostTasks) {
     this.sPostTasks = sPostTasks;
   }
 
   @JsonIgnore
-  public List<RuleTask> getSErrorTasks() {
+  public final List<RuleTask> getSErrorTasks() {
     return sErrorTasks;
   }
 
-  public void setSErrorTasks(final List<RuleTask> sErrorTasks) {
+  public final void setSErrorTasks(final List<RuleTask> sErrorTasks) {
     this.sErrorTasks = sErrorTasks;
   }
 
-  public UpdatedInfo getUpdatedInfo() {
+  public final UpdatedInfo getUpdatedInfo() {
     return updatedInfo;
   }
 
-  public void setUpdatedInfo(final UpdatedInfo info) {
+  public final void setUpdatedInfo(final UpdatedInfo info) {
     updatedInfo = info;
   }
 }

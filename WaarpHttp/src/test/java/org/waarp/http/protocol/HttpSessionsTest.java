@@ -100,15 +100,17 @@ public class HttpSessionsTest {
         new HttpResumableSession(resumableInfo, "rule", "comment", authent);
     HttpSessions sessions = HttpSessions.getInstance();
     assertFalse(sessions.contains(resumableInfo));
-    HttpSessionAbstract session2 = sessions
-        .getOrCreateResumableSession(resumableInfo, "rule", "comment", authent);
+    HttpSessionAbstract session2 =
+        sessions.getOrCreateResumableSession(resumableInfo, "rule", "comment",
+                                             authent);
     assertTrue(sessions.contains(resumableInfo));
     assertFalse(session == session2);
     assertTrue(sessions.removeSession(resumableInfo));
     assertFalse(sessions.removeSession(resumableInfo));
 
-    HttpResumableSession session3 = sessions
-        .getOrCreateResumableSession(resumableInfo, "rule", "comment", authent);
+    HttpResumableSession session3 =
+        sessions.getOrCreateResumableSession(resumableInfo, "rule", "comment",
+                                             authent);
     assertTrue(sessions.contains(resumableInfo));
     assertFalse(session == session2);
     assertFalse(session3 == session2);

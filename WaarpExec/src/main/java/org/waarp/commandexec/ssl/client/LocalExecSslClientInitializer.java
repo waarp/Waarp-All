@@ -52,8 +52,8 @@ public class LocalExecSslClientInitializer extends LocalExecClientInitializer {
         waarpSslContextFactory.createHandlerClient(ch);
     pipeline.addLast("ssl", sslhandler);
     // Add the text line codec combination first,
-    pipeline.addLast("framer", new DelimiterBasedFrameDecoder(8192, Delimiters
-        .lineDelimiter()));
+    pipeline.addLast("framer", new DelimiterBasedFrameDecoder(8192,
+                                                              Delimiters.lineDelimiter()));
     pipeline.addLast("decoder", new StringDecoder(WaarpStringUtils.UTF8));
     pipeline.addLast("encoder", new StringEncoder(WaarpStringUtils.UTF8));
 

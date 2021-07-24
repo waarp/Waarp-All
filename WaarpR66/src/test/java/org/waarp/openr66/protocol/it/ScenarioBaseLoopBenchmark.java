@@ -143,8 +143,8 @@ public abstract class ScenarioBaseLoopBenchmark extends TestAbstract {
     File file =
         new File(classLoader.getResource(RESOURCES_SERVER_1_XML).getFile());
     if (!file.exists()) {
-      SysErrLogger.FAKE_LOGGER
-          .syserr("Cannot find in  " + file.getAbsolutePath());
+      SysErrLogger.FAKE_LOGGER.syserr(
+          "Cannot find in  " + file.getAbsolutePath());
       fail("Cannot find " + file.getAbsolutePath());
     }
     String content = WaarpStringUtils.readFile(file.getAbsolutePath());
@@ -159,8 +159,8 @@ public abstract class ScenarioBaseLoopBenchmark extends TestAbstract {
     } else if (driver.equalsIgnoreCase("oracle.jdbc.OracleDriver")) {
       target = "oracle";
       jdbcUrl = "jdbc:oracle:thin:@//localhost:1521/test";
-      SysErrLogger.FAKE_LOGGER
-          .syserr(jdbcUrl + " while should be something like " + jdbcUrl);
+      SysErrLogger.FAKE_LOGGER.syserr(
+          jdbcUrl + " while should be something like " + jdbcUrl);
       throw new UnsupportedOperationException(
           "Unsupported Test for Oracle since wrong JDBC driver");
     } else if (driver.equalsIgnoreCase("org.postgresql.Driver")) {
@@ -232,8 +232,8 @@ public abstract class ScenarioBaseLoopBenchmark extends TestAbstract {
         configFile = new File(dirResources, fileconf);
       }
     } catch (UnsupportedOperationException e) {
-      SysErrLogger.FAKE_LOGGER
-          .syserr("Database not supported by this test Start Stop R66", e);
+      SysErrLogger.FAKE_LOGGER.syserr(
+          "Database not supported by this test Start Stop R66", e);
       Assume.assumeNoException(e);
       return;
     }
@@ -293,8 +293,9 @@ public abstract class ScenarioBaseLoopBenchmark extends TestAbstract {
       // global ant project settings
       project = Processes.getProject(homeDir);
       Processes.executeJvm(project, R66Server.class, argsServer, true);
-      int pid = Processes
-          .getPidOfRunnerCommandLinux("java", R66Server.class.getName(), PIDS);
+      int pid = Processes.getPidOfRunnerCommandLinux("java",
+                                                     R66Server.class.getName(),
+                                                     PIDS);
       PIDS.add(pid);
       logger.warn("Start Done: {}", pid);
       return pid;
@@ -407,7 +408,9 @@ public abstract class ScenarioBaseLoopBenchmark extends TestAbstract {
 
   @After
   public void tearDown() throws Exception {
-    Thread.sleep(100);
+    int cores = Runtime.getRuntime().availableProcessors();
+    int itMax = cores > 4? 10000 : 74000;
+    Thread.sleep(SystemPropertyUtil.get(IT_LONG_TEST, false)? itMax : 100);
   }
 
   private void checkMemory() {

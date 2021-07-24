@@ -47,7 +47,7 @@ public class AUTHUPDATE extends AbstractCommand {
       WaarpLoggerFactory.getLogger(AUTHUPDATE.class);
 
   @Override
-  public void exec() throws CommandAbstractException {
+  public final void exec() throws CommandAbstractException {
     if (!getSession().getAuth().isAdmin()) {
       // not admin
       throw new Reply500Exception("Command Not Allowed");
@@ -70,8 +70,8 @@ public class AUTHUPDATE extends AbstractCommand {
         }
       }
       if (filename == null) {
-        filename = ((FileBasedConfiguration) getConfiguration())
-            .getAuthenticationFile();
+        filename =
+            ((FileBasedConfiguration) getConfiguration()).getAuthenticationFile();
       }
       final File file = new File(filename);
       if (!file.canRead()) {
@@ -79,13 +79,13 @@ public class AUTHUPDATE extends AbstractCommand {
             "Filename given as parameter is not found: " + filename);
       }
     }
-    if (!((FileBasedConfiguration) getConfiguration())
-        .initializeAuthent(filename, purge)) {
+    if (!((FileBasedConfiguration) getConfiguration()).initializeAuthent(
+        filename, purge)) {
       throw new Reply501Exception("Filename given as parameter is not correct");
     }
-    if (write && !((FileBasedConfiguration) getConfiguration())
-        .saveAuthenticationFile(((FileBasedConfiguration) getConfiguration())
-                                    .getAuthenticationFile())) {
+    if (write &&
+        !((FileBasedConfiguration) getConfiguration()).saveAuthenticationFile(
+            ((FileBasedConfiguration) getConfiguration()).getAuthenticationFile())) {
       throw new Reply501Exception(
           "Update is done but Write operation is not correct");
     }

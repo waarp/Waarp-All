@@ -80,49 +80,49 @@ public final class SingletonUtils {
   /**
    * Empty InputStream
    */
-  private static class NullInputStream extends InputStream {
+  private static final class NullInputStream extends InputStream {
     @Override
-    public int read() {
+    public final int read() {
       return -1;
     }
 
     @Override
-    public int available() {
+    public final int available() {
       return 0;
     }
 
     @Override
-    public void close() {
+    public final void close() {
       // Empty
     }
 
     @Override
-    public void mark(final int arg0) {//NOSONAR
+    public final void mark(final int arg0) {//NOSONAR
       // Empty
     }
 
     @Override
-    public boolean markSupported() {
+    public final boolean markSupported() {
       return true;
     }
 
     @Override
-    public int read(final byte[] arg0, final int arg1, final int arg2) {
+    public final int read(final byte[] arg0, final int arg1, final int arg2) {
       return -1;
     }
 
     @Override
-    public int read(final byte[] arg0) {
+    public final int read(final byte[] arg0) {
       return -1;
     }
 
     @Override
-    public void reset() {//NOSONAR
+    public final void reset() {//NOSONAR
       // Empty
     }
 
     @Override
-    public long skip(final long arg0) {
+    public final long skip(final long arg0) {
       return 0;
     }
   }
@@ -139,29 +139,29 @@ public final class SingletonUtils {
   /**
    * OutputStream discarding all writed elements
    */
-  private static class VoidOutputStream extends OutputStream {
+  private static final class VoidOutputStream extends OutputStream {
     @Override
-    public void close() {
+    public final void close() {
       // Empty
     }
 
     @Override
-    public void flush() {
+    public final void flush() {
       // Empty
     }
 
     @Override
-    public void write(final byte[] arg0, final int arg1, final int arg2) {
+    public final void write(final byte[] arg0, final int arg1, final int arg2) {
       // Empty
     }
 
     @Override
-    public void write(final byte[] arg0) {
+    public final void write(final byte[] arg0) {
       // Empty
     }
 
     @Override
-    public void write(final int arg0) {
+    public final void write(final int arg0) {
       // Empty
     }
   }

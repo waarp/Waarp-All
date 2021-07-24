@@ -39,7 +39,7 @@ public class FtpShutdownHook extends WaarpShutdownHook {
   }
 
   @Override
-  protected void exitService() {
+  protected final void exitService() {
     FtpChannelUtils.exit(configuration);
   }
 

@@ -43,9 +43,8 @@ public class DbH2DAOTest extends DBAllDAOTest {
 
   @Override
   public Connection getConnection() throws SQLException {
-    return DriverManager
-        .getConnection("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1", "openr66",
-                       "openr66");
+    return DriverManager.getConnection("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1",
+                                       "openr66", "openr66");
   }
 
   @Override

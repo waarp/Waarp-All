@@ -50,22 +50,22 @@ public class Des extends KeyObject {
   public static final String EXTENSION = "des";
 
   @Override
-  public String getAlgorithm() {
+  public final String getAlgorithm() {
     return ALGO;
   }
 
   @Override
-  public String getInstance() {
+  public final String getInstance() {
     return INSTANCE;
   }
 
   @Override
-  public int getKeySize() {
+  public final int getKeySize() {
     return KEY_SIZE;
   }
 
   @Override
-  public String getFileExtension() {
+  public final String getFileExtension() {
     return EXTENSION;
   }
 }

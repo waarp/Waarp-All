@@ -27,7 +27,7 @@ import org.waarp.ftp.core.command.AbstractCommand;
  */
 public class FEAT extends AbstractCommand {
   @Override
-  public void exec() {
+  public final void exec() {
     getSession().setReplyCode(ReplyCode.REPLY_211_SYSTEM_STATUS_REPLY,
                               getSession().getBusinessHandler()
                                           .getFeatMessage());

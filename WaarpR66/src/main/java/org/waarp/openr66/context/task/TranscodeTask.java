@@ -80,7 +80,7 @@ public class TranscodeTask extends AbstractTask {
   }
 
   @Override
-  public void run() {
+  public final void run() {
     final boolean success;
     final DbTaskRunner runner = session.getRunner();
     String arg = argRule;
@@ -168,9 +168,9 @@ public class TranscodeTask extends AbstractTask {
     } else {
       finalname = from.getAbsolutePath() + ".transcode";
     }
-    success = CharsetsUtil
-        .transcode(from.getAbsolutePath(), fromCharset, finalname, toCharset,
-                   Configuration.BUFFERSIZEDEFAULT);
+    success =
+        CharsetsUtil.transcode(from.getAbsolutePath(), fromCharset, finalname,
+                               toCharset, Configuration.BUFFERSIZEDEFAULT);
     if (success && (dos2unix || unix2dos)) {
       // now convert it
       // only 1 of Dos2Unix/Unix2Dos

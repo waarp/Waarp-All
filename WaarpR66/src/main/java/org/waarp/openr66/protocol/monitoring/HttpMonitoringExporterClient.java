@@ -157,11 +157,10 @@ public class HttpMonitoringExporterClient implements Closeable {
     // Configure the client.
     bootstrap = new Bootstrap();
     WaarpNettyUtil.setBootstrap(bootstrap, group,
-                                (int) Configuration.configuration
-                                    .getTimeoutCon(),
+                                (int) Configuration.configuration.getTimeoutCon(),
                                 configuration.getBlockSize() + 64, true);
-    bootstrap
-        .handler(new HttpMonitoringExporterClientInitializer(sslCtx, this));
+    bootstrap.handler(
+        new HttpMonitoringExporterClientInitializer(sslCtx, this));
   }
 
   /**
@@ -172,8 +171,9 @@ public class HttpMonitoringExporterClient implements Closeable {
    *
    * @return True if the POST succeeded
    */
-  public boolean post(final ObjectNode monitoredTransfers, final DateTime start,
-                      final DateTime stop, final String serverId) {
+  public final boolean post(final ObjectNode monitoredTransfers,
+                            final DateTime start, final DateTime stop,
+                            final String serverId) {
     logger.debug("Start Post from {} to {} as {}", start, stop, serverId);
     if (keepConnection && remoteRestChannel != null &&
         !remoteRestChannel.isActive()) {
@@ -185,7 +185,7 @@ public class HttpMonitoringExporterClient implements Closeable {
           bootstrap.connect(SocketUtils.socketAddress(host, port));
       try {
         remoteRestChannel = future.sync().channel();
-      } catch (InterruptedException e) {//NOSONAR
+      } catch (final InterruptedException e) {//NOSONAR
         logger.error(e);
         return false;
       }
@@ -198,7 +198,7 @@ public class HttpMonitoringExporterClient implements Closeable {
     try {
       bbody = body.getBytes(WaarpStringUtils.UTF_8);
       length = body.length();
-    } catch (UnsupportedEncodingException e) {
+    } catch (final UnsupportedEncodingException e) {
       logger.error(e.getMessage());
       return false;
     }
@@ -223,8 +223,8 @@ public class HttpMonitoringExporterClient implements Closeable {
                 start == null? "" : start.toString());
     headers.set(MonitorExporterTransfers.HEADER_WAARP_STOP, stop.toString());
     headers.set(HttpHeaderNames.CONTENT_LENGTH, length);
-    headers
-        .set(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.APPLICATION_JSON);
+    headers.set(HttpHeaderNames.CONTENT_TYPE,
+                HttpHeaderValues.APPLICATION_JSON);
     final HttpRequest request =
         new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST,
                                finalUri.toASCIIString(), headers);
@@ -244,7 +244,7 @@ public class HttpMonitoringExporterClient implements Closeable {
         logger.debug("Wait for Close connection");
         remoteRestChannel.closeFuture().sync();
         remoteRestChannel = null;
-      } catch (InterruptedException e) {//NOSONAR
+      } catch (final InterruptedException e) {//NOSONAR
         logger.error(e);
         // ignore
       }
@@ -256,11 +256,11 @@ public class HttpMonitoringExporterClient implements Closeable {
     return result;
   }
 
-  public boolean isKeepConnection() {
+  public final boolean isKeepConnection() {
     return keepConnection;
   }
 
-  public void setStatus(final boolean ok) {
+  public final void setStatus(final boolean ok) {
     if (ok) {
       futurePost.setSuccess();
     } else {
@@ -269,7 +269,7 @@ public class HttpMonitoringExporterClient implements Closeable {
   }
 
   @Override
-  public void close() throws IOException {
+  public final void close() throws IOException {
     if (remoteRestChannel != null && !remoteRestChannel.isActive()) {
       remoteRestChannel.close();
       remoteRestChannel = null;

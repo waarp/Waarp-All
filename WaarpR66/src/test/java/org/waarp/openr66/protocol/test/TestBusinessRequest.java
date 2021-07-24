@@ -65,8 +65,8 @@ public class TestBusinessRequest extends AbstractBusinessRequest {
       logger.error("Needs at least the configuration file as first argument");
       return;
     }
-    if (!FileBasedConfiguration
-        .setClientConfigurationFromXml(Configuration.configuration, args[0])) {
+    if (!FileBasedConfiguration.setClientConfigurationFromXml(
+        Configuration.configuration, args[0])) {
       logger.error("Needs a correct configuration file as first argument");
       return;
     }

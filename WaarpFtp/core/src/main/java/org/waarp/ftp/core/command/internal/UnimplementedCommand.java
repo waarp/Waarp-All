@@ -36,7 +36,7 @@ public abstract class UnimplementedCommand extends AbstractCommand {
       WaarpLoggerFactory.getLogger(UnimplementedCommand.class);
 
   @Override
-  public void exec() throws Reply502Exception {
+  public final void exec() throws Reply502Exception {
     getSession().setReplyCode(ReplyCode.REPLY_502_COMMAND_NOT_IMPLEMENTED,
                               "Unimplemented Command: " + getCommand() +
                               " with argument: " + getArg());

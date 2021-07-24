@@ -69,7 +69,7 @@ public class ExecMoveTask extends AbstractExecTask {
   }
 
   @Override
-  public void run() {
+  public final void run() {
     /*
      * First apply all replacements and format to argRule from context and argTransfer. Will call exec (from first
      * element of resulting string) with arguments as the following value from the replacements. Return 0 if OK,
@@ -95,7 +95,8 @@ public class ExecMoveTask extends AbstractExecTask {
     }
 
     final PrepareCommandExec prepareCommandExec =
-        new PrepareCommandExec(this, finalname, false, waitForValidation).invoke();
+        new PrepareCommandExec(this, finalname, false,
+                               waitForValidation).invoke();
     if (prepareCommandExec.isError()) {
       return;
     }
@@ -108,14 +109,14 @@ public class ExecMoveTask extends AbstractExecTask {
         prepareCommandExec.getPumpStreamHandler();
     final ExecuteWatchdog watchdog = prepareCommandExec.getWatchdog();
     final LastLineReader lastLineReader = new LastLineReader(inputStream);
-    lastLineReader
-        .setName("LastLineReader" + session.getRunner().getSpecialId());
+    lastLineReader.setName(
+        "LastLineReader" + session.getRunner().getSpecialId());
     lastLineReader.setDaemon(true);
     Configuration.configuration.getExecutorService().execute(lastLineReader);
     final ExecuteCommand executeCommand =
         new ExecuteCommand(this, commandLine, defaultExecutor, inputStream,
-                           outputStream, pumpStreamHandler, lastLineReader)
-            .invoke();
+                           outputStream, pumpStreamHandler,
+                           lastLineReader).invoke();
     if (executeCommand.isError()) {
       return;
     }
@@ -153,8 +154,8 @@ public class ExecMoveTask extends AbstractExecTask {
       // now test if the previous file was deleted (should be)
       final File file = new File(newname);
       if (!file.exists()) {
-        logger
-            .warn("New file does not exist at the end of the exec: " + newname);
+        logger.warn(
+            "New file does not exist at the end of the exec: " + newname);
       }
       // now replace the file with the new one
       try {
@@ -172,8 +173,8 @@ public class ExecMoveTask extends AbstractExecTask {
       futureCompletion.setSuccess();
       logger.info("Exec OK with {} returns {}", commandLine, newname);
     } else if (status == 1) {
-      logger
-          .warn("Exec in warning with " + commandLine + " returns " + newname);
+      logger.warn(
+          "Exec in warning with " + commandLine + " returns " + newname);
       session.getRunner().setErrorExecutionStatus(ErrorCode.Warning);
       final R66Result result =
           new R66Result(session, true, ErrorCode.Warning, session.getRunner());

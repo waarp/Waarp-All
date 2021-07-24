@@ -121,19 +121,20 @@ public class HostsHandler extends AbstractRestDbHandler {
   @GET
   @Consumes(APPLICATION_FORM_URLENCODED)
   @RequiredRole(ROLE.READONLY)
-  public void filterHosts(final HttpRequest request,
-                          final HttpResponder responder,
-                          @QueryParam(LIMIT) @DefaultValue("20")
-                          final String limit_str,
-                          @QueryParam(OFFSET) @DefaultValue("0")
-                          final String offset_str,
-                          @QueryParam(ORDER) @DefaultValue("ascId")
-                          final String order_str,
-                          @QueryParam(ADDRESS) final String address,
-                          @QueryParam(IS_SSL) final String isSSL_str,
-                          @QueryParam(IS_ACTIVE) final String isActive_str,
-                          @QueryParam(COUNT_ORDER) @DefaultValue("")
-                          final String countOrder) {
+  public final void filterHosts(final HttpRequest request,
+                                final HttpResponder responder,
+                                @QueryParam(LIMIT) @DefaultValue("20")
+                                final String limit_str,
+                                @QueryParam(OFFSET) @DefaultValue("0")
+                                final String offset_str,
+                                @QueryParam(ORDER) @DefaultValue("ascId")
+                                final String order_str,
+                                @QueryParam(ADDRESS) final String address,
+                                @QueryParam(IS_SSL) final String isSSL_str,
+                                @QueryParam(IS_ACTIVE)
+                                final String isActive_str,
+                                @QueryParam(COUNT_ORDER) @DefaultValue("")
+                                final String countOrder) {
     checkSanity(limit_str, offset_str, order_str, address, isActive_str,
                 isActive_str, countOrder);
     final List<RestError> errors = new ArrayList<RestError>();
@@ -253,8 +254,8 @@ public class HostsHandler extends AbstractRestDbHandler {
   @POST
   @Consumes(APPLICATION_JSON)
   @RequiredRole(ROLE.HOST)
-  public void addHost(final HttpRequest request,
-                      final HttpResponder responder) {
+  public final void addHost(final HttpRequest request,
+                            final HttpResponder responder) {
     final ObjectNode requestObject = JsonUtils.deserializeRequest(request);
     checkSanity(requestObject);
     final Host host = HostConverter.nodeToNewHost(requestObject);
@@ -296,8 +297,8 @@ public class HostsHandler extends AbstractRestDbHandler {
   @OPTIONS
   @Consumes(WILDCARD)
   @RequiredRole(ROLE.NOACCESS)
-  public void options(final HttpRequest request,
-                      final HttpResponder responder) {
+  public final void options(final HttpRequest request,
+                            final HttpResponder responder) {
     responder.sendStatus(OK, OPTIONS_HEADERS);
   }
 }

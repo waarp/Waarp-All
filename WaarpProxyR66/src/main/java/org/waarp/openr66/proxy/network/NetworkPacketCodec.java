@@ -66,7 +66,7 @@ public class NetworkPacketCodec extends ByteToMessageCodec<NetworkPacket> {
     final int index = buf.readerIndex();
     final ByteBuf buffer = buf.retainedSlice(index, length - 9);
     buf.skipBytes(length - 9);
-    NetworkPacket networkPacket =
+    final NetworkPacket networkPacket =
         new NetworkPacket(localId, remoteId, code, buffer);
     if (code == LocalPacketFactory.KEEPALIVEPACKET) {
       final KeepAlivePacket keepAlivePacket =

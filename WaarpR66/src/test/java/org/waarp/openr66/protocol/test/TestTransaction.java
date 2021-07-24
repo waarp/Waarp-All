@@ -80,8 +80,8 @@ public class TestTransaction implements Runnable {
       logger.error("Needs at least the configuration file as first argument");
       return;
     }
-    if (!FileBasedConfiguration
-        .setClientConfigurationFromXml(Configuration.configuration, args[0])) {
+    if (!FileBasedConfiguration.setClientConfigurationFromXml(
+        Configuration.configuration, args[0])) {
       logger.error("Needs a correct configuration file as first argument");
       return;
     }
@@ -131,8 +131,9 @@ public class TestTransaction implements Runnable {
 
   @Override
   public void run() {
-    final LocalChannelReference localChannelReference = networkTransaction
-        .createConnectionWithRetry(socketAddress, false, future);
+    final LocalChannelReference localChannelReference =
+        networkTransaction.createConnectionWithRetry(socketAddress, false,
+                                                     future);
     if (localChannelReference == null) {
       logger.error("Cannot connect: ", future.getCause());
       future.setResult(null);
@@ -141,8 +142,8 @@ public class TestTransaction implements Runnable {
     }
     localChannelReference.sessionNewState(R66FiniteDualStates.TEST);
     try {
-      ChannelUtils
-          .writeAbstractLocalPacket(localChannelReference, testPacket, true);
+      ChannelUtils.writeAbstractLocalPacket(localChannelReference, testPacket,
+                                            true);
     } catch (final OpenR66ProtocolPacketException e) {
       future.setResult(null);
       future.setFailure(e);

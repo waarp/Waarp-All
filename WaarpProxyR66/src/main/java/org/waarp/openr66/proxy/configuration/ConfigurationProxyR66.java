@@ -59,7 +59,7 @@ public class ConfigurationProxyR66 extends Configuration {
   }
 
   @Override
-  public void computeNbThreads() {
+  public final void computeNbThreads() {
     final int nb = Runtime.getRuntime().availableProcessors() + 1;
     setServerThread(nb);
     setClientThread(getServerThread() + 1);
@@ -67,7 +67,7 @@ public class ConfigurationProxyR66 extends Configuration {
   }
 
   @Override
-  public void serverStartup() {
+  public final void serverStartup() {
     setServer(true);
     getShutdownConfiguration().timeout = getTimeoutCon();
     WaarpShutdownHook.addShutdownHook();
@@ -90,7 +90,7 @@ public class ConfigurationProxyR66 extends Configuration {
   }
 
   @Override
-  public void r66Startup() {
+  public final void r66Startup() {
     logger.debug("Start R66: {}", getHostSslId());
     // add into configuration
     getConstraintLimitHandler().setServer(true);
@@ -99,10 +99,9 @@ public class ConfigurationProxyR66 extends Configuration {
         new DefaultChannelGroup("OpenR66", subTaskGroup.next());
     if (isUseNOSSL()) {
       serverBootstrap = new ServerBootstrap();
-      WaarpNettyUtil
-          .setServerBootstrap(serverBootstrap, serverGroup, workerGroup,
-                              (int) getTimeoutCon(), getBlockSize() + 64,
-                              false);
+      WaarpNettyUtil.setServerBootstrap(serverBootstrap, serverGroup,
+                                        workerGroup, (int) getTimeoutCon(),
+                                        getBlockSize() + 64, false);
       networkServerInitializer = new NetworkServerInitializerProxy(true);
       serverBootstrap.childHandler(networkServerInitializer);
       // FIXME take into account multiple address
@@ -133,18 +132,17 @@ public class ConfigurationProxyR66 extends Configuration {
 
     if (isUseSSL() && getHostSslId() != null) {
       serverSslBootstrap = new ServerBootstrap();
-      WaarpNettyUtil
-          .setServerBootstrap(serverSslBootstrap, serverGroup, workerGroup,
-                              (int) getTimeoutCon(), getBlockSize() + 64,
-                              false);
+      WaarpNettyUtil.setServerBootstrap(serverSslBootstrap, serverGroup,
+                                        workerGroup, (int) getTimeoutCon(),
+                                        getBlockSize() + 64, false);
       networkSslServerInitializer = new NetworkSslServerInitializerProxy(false);
       serverSslBootstrap.childHandler(networkSslServerInitializer);
       // FIXME take into account multiple address
       final List<ChannelFuture> futures = new ArrayList<ChannelFuture>();
       for (final ProxyEntry entry : ProxyEntry.proxyEntries.values()) {
         if (entry.isLocalSsl()) {
-          logger
-              .debug("Future SslActivation: " + entry.getLocalSocketAddress());
+          logger.debug(
+              "Future SslActivation: " + entry.getLocalSocketAddress());
           futures.add(serverSslBootstrap.bind(entry.getLocalSocketAddress()));
         }
       }
@@ -173,7 +171,7 @@ public class ConfigurationProxyR66 extends Configuration {
   }
 
   @Override
-  public void startHttpSupport() {
+  public final void startHttpSupport() {
     // Now start the HTTP support
     logger.info(
         Messages.getString("Configuration.HTTPStart") + getServerHttpport() +
@@ -184,9 +182,8 @@ public class ConfigurationProxyR66 extends Configuration {
     if (getServerHttpport() > 0) {
       // Configure the server.
       httpBootstrap = new ServerBootstrap();
-      WaarpNettyUtil
-          .setServerBootstrap(httpBootstrap, httpWorkerGroup, httpWorkerGroup,
-                              (int) getTimeoutCon());
+      WaarpNettyUtil.setServerBootstrap(httpBootstrap, httpWorkerGroup,
+                                        httpWorkerGroup, (int) getTimeoutCon());
       // Set up the event pipeline factory.
       httpBootstrap.childHandler(new HttpInitializer(isUseHttpCompression()));
       // Bind and start to accept incoming connections.
@@ -202,11 +199,10 @@ public class ConfigurationProxyR66 extends Configuration {
       // Configure the server.
       httpsBootstrap = new ServerBootstrap();
       // Set up the event pipeline factory.
-      WaarpNettyUtil
-          .setServerBootstrap(httpsBootstrap, httpWorkerGroup, httpWorkerGroup,
-                              (int) getTimeoutCon());
-      httpsBootstrap
-          .childHandler(new HttpSslInitializer(isUseHttpCompression()));
+      WaarpNettyUtil.setServerBootstrap(httpsBootstrap, httpWorkerGroup,
+                                        httpWorkerGroup, (int) getTimeoutCon());
+      httpsBootstrap.childHandler(
+          new HttpSslInitializer(isUseHttpCompression()));
       // Bind and start to accept incoming connections.
       final ChannelFuture future =
           httpsBootstrap.bind(new InetSocketAddress(getServerHttpsPort()))
@@ -218,7 +214,7 @@ public class ConfigurationProxyR66 extends Configuration {
   }
 
   @Override
-  public void serverStop() {
+  public final void serverStop() {
     super.serverStop();
     ProxyBridge.transaction.closeAll();
   }

@@ -92,8 +92,8 @@ public class AuthentPacket extends AbstractLocalPacket {
     // end part
     final Integer newId = buf.readInt();
     final byte valid = buf.readByte();
-    String version = R66Versions.V2_4_12
-        .getVersion(); // first base reference where it is unacceptable
+    String version =
+        R66Versions.V2_4_12.getVersion(); // first base reference where it is unacceptable
     if (endLength > 5) {
       // version
       final byte[] bversion = new byte[endLength - 5];
@@ -146,13 +146,13 @@ public class AuthentPacket extends AbstractLocalPacket {
   }
 
   @Override
-  public boolean hasGlobalBuffer() {
+  public final boolean hasGlobalBuffer() {
     return true;
   }
 
   @Override
-  public void createAllBuffers(final LocalChannelReference lcr,
-                               final int networkHeader)
+  public final void createAllBuffers(final LocalChannelReference lcr,
+                                     final int networkHeader)
       throws OpenR66ProtocolPacketException {
     if (hostId == null || key == null) {
       throw new OpenR66ProtocolPacketException(NOT_ENOUGH_DATA);
@@ -182,12 +182,12 @@ public class AuthentPacket extends AbstractLocalPacket {
   }
 
   @Override
-  public byte getType() {
+  public final byte getType() {
     return LocalPacketFactory.AUTHENTPACKET;
   }
 
   @Override
-  public String toString() {
+  public final String toString() {
     return "AuthentPacket: " + hostId + ' ' + localId + ' ' + way + ' ' +
            version;
   }
@@ -195,35 +195,35 @@ public class AuthentPacket extends AbstractLocalPacket {
   /**
    * @return the hostId
    */
-  public String getHostId() {
+  public final String getHostId() {
     return hostId;
   }
 
   /**
    * @return the key
    */
-  public byte[] getKey() {
+  public final byte[] getKey() {
     return key;
   }
 
   /**
    * @return the localId
    */
-  public Integer getLocalId() {
+  public final Integer getLocalId() {
     return localId;
   }
 
   /**
    * @return True if this packet is to be validated
    */
-  public boolean isToValidate() {
+  public final boolean isToValidate() {
     return way == ASKVALIDATE;
   }
 
   /**
    * Validate the connection
    */
-  public void validate(final boolean isSSL) {
+  public final void validate(final boolean isSSL) {
     way = ANSWERVALIDATE;
     DbHostAuth auth = isSSL? Configuration.configuration.getHostSslAuth() :
         Configuration.configuration.getHostAuth();

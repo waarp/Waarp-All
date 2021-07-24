@@ -177,7 +177,7 @@ public final class TransferConverter {
     try {
       defaultTransfer =
           new Transfer(null, null, -1, false, null, null, ZERO_COPY_CHUNK_SIZE);
-    } catch (WaarpDatabaseSqlException e) {
+    } catch (final WaarpDatabaseSqlException e) {
       SysErrLogger.FAKE_LOGGER.syserr(e);
       throw new IllegalArgumentException(e);
     }

@@ -162,7 +162,7 @@ public class R66Result
   private String stop; // optional
 
   @Override
-  public R66Result clone() throws CloneNotSupportedException {
+  public final R66Result clone() throws CloneNotSupportedException {
     return (R66Result) super.clone();
   }
 
@@ -285,12 +285,12 @@ public class R66Result
     }
 
     @Override
-    public short getThriftFieldId() {
+    public final short getThriftFieldId() {
       return thriftId;
     }
 
     @Override
-    public String getFieldName() {
+    public final String getFieldName() {
       return fieldName;
     }
   }
@@ -440,12 +440,12 @@ public class R66Result
   }
 
   @Override
-  public R66Result deepCopy() {
+  public final R66Result deepCopy() {
     return new R66Result(this);
   }
 
   @Override
-  public void clear() {
+  public final void clear() {
     mode = null;
     fromuid = null;
     destuid = null;
@@ -480,19 +480,19 @@ public class R66Result
   /**
    * @see RequestMode
    */
-  public RequestMode getMode() {
+  public final RequestMode getMode() {
     return mode;
   }
 
   /**
    * @see RequestMode
    */
-  public R66Result setMode(final RequestMode mode) {
+  public final R66Result setMode(final RequestMode mode) {
     this.mode = mode;
     return this;
   }
 
-  public void unsetMode() {
+  public final void unsetMode() {
     mode = null;
   }
 
@@ -500,26 +500,26 @@ public class R66Result
    * Returns true if field mode is set (has been assigned a value) and false
    * otherwise
    */
-  public boolean isSetMode() {
+  public final boolean isSetMode() {
     return mode != null;
   }
 
-  public void setModeIsSet(final boolean value) {
+  public final void setModeIsSet(final boolean value) {
     if (!value) {
       mode = null;
     }
   }
 
-  public String getFromuid() {
+  public final String getFromuid() {
     return fromuid;
   }
 
-  public R66Result setFromuid(final String fromuid) {
+  public final R66Result setFromuid(final String fromuid) {
     this.fromuid = fromuid;
     return this;
   }
 
-  public void unsetFromuid() {
+  public final void unsetFromuid() {
     fromuid = null;
   }
 
@@ -528,26 +528,26 @@ public class R66Result
    * false
    * otherwise
    */
-  public boolean isSetFromuid() {
+  public final boolean isSetFromuid() {
     return fromuid != null;
   }
 
-  public void setFromuidIsSet(final boolean value) {
+  public final void setFromuidIsSet(final boolean value) {
     if (!value) {
       fromuid = null;
     }
   }
 
-  public String getDestuid() {
+  public final String getDestuid() {
     return destuid;
   }
 
-  public R66Result setDestuid(final String destuid) {
+  public final R66Result setDestuid(final String destuid) {
     this.destuid = destuid;
     return this;
   }
 
-  public void unsetDestuid() {
+  public final void unsetDestuid() {
     destuid = null;
   }
 
@@ -556,26 +556,26 @@ public class R66Result
    * false
    * otherwise
    */
-  public boolean isSetDestuid() {
+  public final boolean isSetDestuid() {
     return destuid != null;
   }
 
-  public void setDestuidIsSet(final boolean value) {
+  public final void setDestuidIsSet(final boolean value) {
     if (!value) {
       destuid = null;
     }
   }
 
-  public String getFile() {
+  public final String getFile() {
     return file;
   }
 
-  public R66Result setFile(final String file) {
+  public final R66Result setFile(final String file) {
     this.file = file;
     return this;
   }
 
-  public void unsetFile() {
+  public final void unsetFile() {
     file = null;
   }
 
@@ -583,26 +583,26 @@ public class R66Result
    * Returns true if field file is set (has been assigned a value) and false
    * otherwise
    */
-  public boolean isSetFile() {
+  public final boolean isSetFile() {
     return file != null;
   }
 
-  public void setFileIsSet(final boolean value) {
+  public final void setFileIsSet(final boolean value) {
     if (!value) {
       file = null;
     }
   }
 
-  public String getRule() {
+  public final String getRule() {
     return rule;
   }
 
-  public R66Result setRule(final String rule) {
+  public final R66Result setRule(final String rule) {
     this.rule = rule;
     return this;
   }
 
-  public void unsetRule() {
+  public final void unsetRule() {
     rule = null;
   }
 
@@ -610,27 +610,27 @@ public class R66Result
    * Returns true if field rule is set (has been assigned a value) and false
    * otherwise
    */
-  public boolean isSetRule() {
+  public final boolean isSetRule() {
     return rule != null;
   }
 
-  public void setRuleIsSet(final boolean value) {
+  public final void setRuleIsSet(final boolean value) {
     if (!value) {
       rule = null;
     }
   }
 
-  public long getTid() {
+  public final long getTid() {
     return tid;
   }
 
-  public R66Result setTid(final long tid) {
+  public final R66Result setTid(final long tid) {
     this.tid = tid;
     setTidIsSet(true);
     return this;
   }
 
-  public void unsetTid() {
+  public final void unsetTid() {
     issetBitfield = EncodingUtils.clearBit(issetBitfield, TID_ISSET_ID);
   }
 
@@ -638,30 +638,30 @@ public class R66Result
    * Returns true if field tid is set (has been assigned a value) and false
    * otherwise
    */
-  public boolean isSetTid() {
+  public final boolean isSetTid() {
     return EncodingUtils.testBit(issetBitfield, TID_ISSET_ID);
   }
 
-  public void setTidIsSet(final boolean value) {
+  public final void setTidIsSet(final boolean value) {
     issetBitfield = EncodingUtils.setBit(issetBitfield, TID_ISSET_ID, value);
   }
 
   /**
    * @see Action
    */
-  public Action getAction() {
+  public final Action getAction() {
     return action;
   }
 
   /**
    * @see Action
    */
-  public R66Result setAction(final Action action) {
+  public final R66Result setAction(final Action action) {
     this.action = action;
     return this;
   }
 
-  public void unsetAction() {
+  public final void unsetAction() {
     action = null;
   }
 
@@ -669,11 +669,11 @@ public class R66Result
    * Returns true if field action is set (has been assigned a value) and false
    * otherwise
    */
-  public boolean isSetAction() {
+  public final boolean isSetAction() {
     return action != null;
   }
 
-  public void setActionIsSet(final boolean value) {
+  public final void setActionIsSet(final boolean value) {
     if (!value) {
       action = null;
     }
@@ -682,19 +682,19 @@ public class R66Result
   /**
    * @see ErrorCode
    */
-  public ErrorCode getCode() {
+  public final ErrorCode getCode() {
     return code;
   }
 
   /**
    * @see ErrorCode
    */
-  public R66Result setCode(final ErrorCode code) {
+  public final R66Result setCode(final ErrorCode code) {
     this.code = code;
     return this;
   }
 
-  public void unsetCode() {
+  public final void unsetCode() {
     code = null;
   }
 
@@ -702,26 +702,26 @@ public class R66Result
    * Returns true if field code is set (has been assigned a value) and false
    * otherwise
    */
-  public boolean isSetCode() {
+  public final boolean isSetCode() {
     return code != null;
   }
 
-  public void setCodeIsSet(final boolean value) {
+  public final void setCodeIsSet(final boolean value) {
     if (!value) {
       code = null;
     }
   }
 
-  public String getResultinfo() {
+  public final String getResultinfo() {
     return resultinfo;
   }
 
-  public R66Result setResultinfo(final String resultinfo) {
+  public final R66Result setResultinfo(final String resultinfo) {
     this.resultinfo = resultinfo;
     return this;
   }
 
-  public void unsetResultinfo() {
+  public final void unsetResultinfo() {
     resultinfo = null;
   }
 
@@ -729,27 +729,27 @@ public class R66Result
    * Returns true if field resultinfo is set (has been assigned a value) and
    * false otherwise
    */
-  public boolean isSetResultinfo() {
+  public final boolean isSetResultinfo() {
     return resultinfo != null;
   }
 
-  public void setResultinfoIsSet(final boolean value) {
+  public final void setResultinfoIsSet(final boolean value) {
     if (!value) {
       resultinfo = null;
     }
   }
 
-  public int getGlobalstep() {
+  public final int getGlobalstep() {
     return globalstep;
   }
 
-  public R66Result setGlobalstep(final int globalstep) {
+  public final R66Result setGlobalstep(final int globalstep) {
     this.globalstep = globalstep;
     setGlobalstepIsSet(true);
     return this;
   }
 
-  public void unsetGlobalstep() {
+  public final void unsetGlobalstep() {
     issetBitfield = EncodingUtils.clearBit(issetBitfield, GLOBALSTEP_ISSET_ID);
   }
 
@@ -757,26 +757,26 @@ public class R66Result
    * Returns true if field globalstep is set (has been assigned a value) and
    * false otherwise
    */
-  public boolean isSetGlobalstep() {
+  public final boolean isSetGlobalstep() {
     return EncodingUtils.testBit(issetBitfield, GLOBALSTEP_ISSET_ID);
   }
 
-  public void setGlobalstepIsSet(final boolean value) {
+  public final void setGlobalstepIsSet(final boolean value) {
     issetBitfield =
         EncodingUtils.setBit(issetBitfield, GLOBALSTEP_ISSET_ID, value);
   }
 
-  public int getGloballaststep() {
+  public final int getGloballaststep() {
     return globallaststep;
   }
 
-  public R66Result setGloballaststep(final int globallaststep) {
+  public final R66Result setGloballaststep(final int globallaststep) {
     this.globallaststep = globallaststep;
     setGloballaststepIsSet(true);
     return this;
   }
 
-  public void unsetGloballaststep() {
+  public final void unsetGloballaststep() {
     issetBitfield =
         EncodingUtils.clearBit(issetBitfield, GLOBALLASTSTEP_ISSET_ID);
   }
@@ -786,26 +786,26 @@ public class R66Result
    * and
    * false otherwise
    */
-  public boolean isSetGloballaststep() {
+  public final boolean isSetGloballaststep() {
     return EncodingUtils.testBit(issetBitfield, GLOBALLASTSTEP_ISSET_ID);
   }
 
-  public void setGloballaststepIsSet(final boolean value) {
+  public final void setGloballaststepIsSet(final boolean value) {
     issetBitfield =
         EncodingUtils.setBit(issetBitfield, GLOBALLASTSTEP_ISSET_ID, value);
   }
 
-  public int getStep() {
+  public final int getStep() {
     return step;
   }
 
-  public R66Result setStep(final int step) {
+  public final R66Result setStep(final int step) {
     this.step = step;
     setStepIsSet(true);
     return this;
   }
 
-  public void unsetStep() {
+  public final void unsetStep() {
     issetBitfield = EncodingUtils.clearBit(issetBitfield, STEP_ISSET_ID);
   }
 
@@ -813,25 +813,25 @@ public class R66Result
    * Returns true if field step is set (has been assigned a value) and false
    * otherwise
    */
-  public boolean isSetStep() {
+  public final boolean isSetStep() {
     return EncodingUtils.testBit(issetBitfield, STEP_ISSET_ID);
   }
 
-  public void setStepIsSet(final boolean value) {
+  public final void setStepIsSet(final boolean value) {
     issetBitfield = EncodingUtils.setBit(issetBitfield, STEP_ISSET_ID, value);
   }
 
-  public int getRank() {
+  public final int getRank() {
     return rank;
   }
 
-  public R66Result setRank(final int rank) {
+  public final R66Result setRank(final int rank) {
     this.rank = rank;
     setRankIsSet(true);
     return this;
   }
 
-  public void unsetRank() {
+  public final void unsetRank() {
     issetBitfield = EncodingUtils.clearBit(issetBitfield, RANK_ISSET_ID);
   }
 
@@ -839,25 +839,25 @@ public class R66Result
    * Returns true if field rank is set (has been assigned a value) and false
    * otherwise
    */
-  public boolean isSetRank() {
+  public final boolean isSetRank() {
     return EncodingUtils.testBit(issetBitfield, RANK_ISSET_ID);
   }
 
-  public void setRankIsSet(final boolean value) {
+  public final void setRankIsSet(final boolean value) {
     issetBitfield = EncodingUtils.setBit(issetBitfield, RANK_ISSET_ID, value);
   }
 
-  public boolean isRetrievemode() {
+  public final boolean isRetrievemode() {
     return retrievemode;
   }
 
-  public R66Result setRetrievemode(final boolean retrievemode) {
+  public final R66Result setRetrievemode(final boolean retrievemode) {
     this.retrievemode = retrievemode;
     setRetrievemodeIsSet(true);
     return this;
   }
 
-  public void unsetRetrievemode() {
+  public final void unsetRetrievemode() {
     issetBitfield =
         EncodingUtils.clearBit(issetBitfield, RETRIEVEMODE_ISSET_ID);
   }
@@ -866,26 +866,26 @@ public class R66Result
    * Returns true if field retrievemode is set (has been assigned a value) and
    * false otherwise
    */
-  public boolean isSetRetrievemode() {
+  public final boolean isSetRetrievemode() {
     return EncodingUtils.testBit(issetBitfield, RETRIEVEMODE_ISSET_ID);
   }
 
-  public void setRetrievemodeIsSet(final boolean value) {
+  public final void setRetrievemodeIsSet(final boolean value) {
     issetBitfield =
         EncodingUtils.setBit(issetBitfield, RETRIEVEMODE_ISSET_ID, value);
   }
 
-  public boolean isIsmoved() {
+  public final boolean isIsmoved() {
     return ismoved;
   }
 
-  public R66Result setIsmoved(final boolean ismoved) {
+  public final R66Result setIsmoved(final boolean ismoved) {
     this.ismoved = ismoved;
     setIsmovedIsSet(true);
     return this;
   }
 
-  public void unsetIsmoved() {
+  public final void unsetIsmoved() {
     issetBitfield = EncodingUtils.clearBit(issetBitfield, ISMOVED_ISSET_ID);
   }
 
@@ -894,25 +894,25 @@ public class R66Result
    * false
    * otherwise
    */
-  public boolean isSetIsmoved() {
+  public final boolean isSetIsmoved() {
     return EncodingUtils.testBit(issetBitfield, ISMOVED_ISSET_ID);
   }
 
-  public void setIsmovedIsSet(final boolean value) {
+  public final void setIsmovedIsSet(final boolean value) {
     issetBitfield =
         EncodingUtils.setBit(issetBitfield, ISMOVED_ISSET_ID, value);
   }
 
-  public String getOriginalfilename() {
+  public final String getOriginalfilename() {
     return originalfilename;
   }
 
-  public R66Result setOriginalfilename(final String originalfilename) {
+  public final R66Result setOriginalfilename(final String originalfilename) {
     this.originalfilename = originalfilename;
     return this;
   }
 
-  public void unsetOriginalfilename() {
+  public final void unsetOriginalfilename() {
     originalfilename = null;
   }
 
@@ -920,27 +920,27 @@ public class R66Result
    * Returns true if field originalfilename is set (has been assigned a value)
    * and false otherwise
    */
-  public boolean isSetOriginalfilename() {
+  public final boolean isSetOriginalfilename() {
     return originalfilename != null;
   }
 
-  public void setOriginalfilenameIsSet(final boolean value) {
+  public final void setOriginalfilenameIsSet(final boolean value) {
     if (!value) {
       originalfilename = null;
     }
   }
 
-  public int getBlocksize() {
+  public final int getBlocksize() {
     return blocksize;
   }
 
-  public R66Result setBlocksize(final int blocksize) {
+  public final R66Result setBlocksize(final int blocksize) {
     this.blocksize = blocksize;
     setBlocksizeIsSet(true);
     return this;
   }
 
-  public void unsetBlocksize() {
+  public final void unsetBlocksize() {
     issetBitfield = EncodingUtils.clearBit(issetBitfield, BLOCKSIZE_ISSET_ID);
   }
 
@@ -948,26 +948,26 @@ public class R66Result
    * Returns true if field blocksize is set (has been assigned a value) and
    * false otherwise
    */
-  public boolean isSetBlocksize() {
+  public final boolean isSetBlocksize() {
     return EncodingUtils.testBit(issetBitfield, BLOCKSIZE_ISSET_ID);
   }
 
-  public void setBlocksizeIsSet(final boolean value) {
+  public final void setBlocksizeIsSet(final boolean value) {
     issetBitfield =
         EncodingUtils.setBit(issetBitfield, BLOCKSIZE_ISSET_ID, value);
   }
 
-  public int getModetransfer() {
+  public final int getModetransfer() {
     return modetransfer;
   }
 
-  public R66Result setModetransfer(final int modetransfer) {
+  public final R66Result setModetransfer(final int modetransfer) {
     this.modetransfer = modetransfer;
     setModetransferIsSet(true);
     return this;
   }
 
-  public void unsetModetransfer() {
+  public final void unsetModetransfer() {
     issetBitfield =
         EncodingUtils.clearBit(issetBitfield, MODETRANSFER_ISSET_ID);
   }
@@ -976,25 +976,25 @@ public class R66Result
    * Returns true if field modetransfer is set (has been assigned a value) and
    * false otherwise
    */
-  public boolean isSetModetransfer() {
+  public final boolean isSetModetransfer() {
     return EncodingUtils.testBit(issetBitfield, MODETRANSFER_ISSET_ID);
   }
 
-  public void setModetransferIsSet(final boolean value) {
+  public final void setModetransferIsSet(final boolean value) {
     issetBitfield =
         EncodingUtils.setBit(issetBitfield, MODETRANSFER_ISSET_ID, value);
   }
 
-  public String getStart() {
+  public final String getStart() {
     return start;
   }
 
-  public R66Result setStart(final String start) {
+  public final R66Result setStart(final String start) {
     this.start = start;
     return this;
   }
 
-  public void unsetStart() {
+  public final void unsetStart() {
     start = null;
   }
 
@@ -1002,26 +1002,26 @@ public class R66Result
    * Returns true if field start is set (has been assigned a value) and false
    * otherwise
    */
-  public boolean isSetStart() {
+  public final boolean isSetStart() {
     return start != null;
   }
 
-  public void setStartIsSet(final boolean value) {
+  public final void setStartIsSet(final boolean value) {
     if (!value) {
       start = null;
     }
   }
 
-  public String getStop() {
+  public final String getStop() {
     return stop;
   }
 
-  public R66Result setStop(final String stop) {
+  public final R66Result setStop(final String stop) {
     this.stop = stop;
     return this;
   }
 
-  public void unsetStop() {
+  public final void unsetStop() {
     stop = null;
   }
 
@@ -1029,18 +1029,18 @@ public class R66Result
    * Returns true if field stop is set (has been assigned a value) and false
    * otherwise
    */
-  public boolean isSetStop() {
+  public final boolean isSetStop() {
     return stop != null;
   }
 
-  public void setStopIsSet(final boolean value) {
+  public final void setStopIsSet(final boolean value) {
     if (!value) {
       stop = null;
     }
   }
 
   @Override
-  public void setFieldValue(final _Fields field, final Object value) {
+  public final void setFieldValue(final _Fields field, final Object value) {
     switch (field) {
       case MODE:
         if (value == null) {
@@ -1206,7 +1206,7 @@ public class R66Result
   }
 
   @Override
-  public Object getFieldValue(final _Fields field) {
+  public final Object getFieldValue(final _Fields field) {
     switch (field) {
       case MODE:
         return getMode();
@@ -1278,7 +1278,7 @@ public class R66Result
    * value) and false otherwise
    */
   @Override
-  public boolean isSet(final _Fields field) {
+  public final boolean isSet(final _Fields field) {
     if (field == null) {
       throw new IllegalArgumentException();
     }
@@ -1329,7 +1329,7 @@ public class R66Result
   }
 
   @Override
-  public boolean equals(final Object that) {
+  public final boolean equals(final Object that) {
     if (that == null) {
       return false;
     }
@@ -1339,7 +1339,7 @@ public class R66Result
     return false;
   }
 
-  public boolean equals(final R66Result that) {
+  public final boolean equals(final R66Result that) {
     if (that == null) {
       return false;
     }
@@ -1566,12 +1566,12 @@ public class R66Result
   }
 
   @Override
-  public int hashCode() {
+  public final int hashCode() {
     return 0;
   }
 
   @Override
-  public int compareTo(final R66Result other) {
+  public final int compareTo(final R66Result other) {
     if (!getClass().equals(other.getClass())) {
       return getClass().getName().compareTo(other.getClass().getName());
     }
@@ -1794,22 +1794,22 @@ public class R66Result
   }
 
   @Override
-  public _Fields fieldForId(final int fieldId) {
+  public final _Fields fieldForId(final int fieldId) {
     return _Fields.findByThriftId(fieldId);
   }
 
   @Override
-  public void read(final TProtocol iprot) throws TException {
+  public final void read(final TProtocol iprot) throws TException {
     schemes.get(iprot.getScheme()).getScheme().read(iprot, this);
   }
 
   @Override
-  public void write(final TProtocol oprot) throws TException {
+  public final void write(final TProtocol oprot) throws TException {
     schemes.get(oprot.getScheme()).getScheme().write(oprot, this);
   }
 
   @Override
-  public String toString() {
+  public final String toString() {
     final StringBuilder sb = new StringBuilder("R66Result(");
 
     sb.append("mode:");
@@ -1944,7 +1944,7 @@ public class R66Result
     return sb.toString();
   }
 
-  public void validate() throws TException {
+  public final void validate() throws TException {
     // check for required fields
     if (mode == null) {
       throw new TProtocolException(
@@ -1961,7 +1961,8 @@ public class R66Result
     // check for sub-struct validity
   }
 
-  private void writeObject(final ObjectOutputStream out) throws IOException {
+  private final void writeObject(final ObjectOutputStream out)
+      throws IOException {
     try {
       write(new TCompactProtocol(new TIOStreamTransport(out)));
     } catch (final TException te) {
@@ -1969,7 +1970,7 @@ public class R66Result
     }
   }
 
-  private void readObject(final ObjectInputStream in)
+  private final void readObject(final ObjectInputStream in)
       throws IOException, ClassNotFoundException {
     try {
       // it doesn't seem like you should have to do this, but java serialization is wacky, and
@@ -1983,7 +1984,7 @@ public class R66Result
 
   private static class R66ResultStandardSchemeFactory implements SchemeFactory {
     @Override
-    public R66ResultStandardScheme getScheme() {
+    public final R66ResultStandardScheme getScheme() {
       return new R66ResultStandardScheme();
     }
   }
@@ -1992,7 +1993,7 @@ public class R66Result
       extends StandardScheme<R66Result> {
 
     @Override
-    public void read(final TProtocol iprot, final R66Result struct)
+    public final void read(final TProtocol iprot, final R66Result struct)
         throws TException {
       TField schemeField;
       iprot.readStructBegin();
@@ -2175,7 +2176,7 @@ public class R66Result
     }
 
     @Override
-    public void write(final TProtocol oprot, final R66Result struct)
+    public final void write(final TProtocol oprot, final R66Result struct)
         throws TException {
       struct.validate();
 
@@ -2288,7 +2289,7 @@ public class R66Result
 
   private static class R66ResultTupleSchemeFactory implements SchemeFactory {
     @Override
-    public R66ResultTupleScheme getScheme() {
+    public final R66ResultTupleScheme getScheme() {
       return new R66ResultTupleScheme();
     }
   }
@@ -2296,7 +2297,7 @@ public class R66Result
   private static class R66ResultTupleScheme extends TupleScheme<R66Result> {
 
     @Override
-    public void write(final TProtocol prot, final R66Result struct)
+    public final void write(final TProtocol prot, final R66Result struct)
         throws TException {
       final TTupleProtocol oprot = (TTupleProtocol) prot;
       oprot.writeI32(struct.mode.getValue());
@@ -2409,7 +2410,7 @@ public class R66Result
     }
 
     @Override
-    public void read(final TProtocol prot, final R66Result struct)
+    public final void read(final TProtocol prot, final R66Result struct)
         throws TException {
       final TTupleProtocol iprot = (TTupleProtocol) prot;
       struct.mode = RequestMode.findByValue(iprot.readI32());

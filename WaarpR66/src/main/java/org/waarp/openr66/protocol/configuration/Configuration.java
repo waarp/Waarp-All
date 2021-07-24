@@ -54,6 +54,7 @@ import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.common.utility.WaarpThreadFactory;
 import org.waarp.gateway.kernel.rest.HttpRestHandler;
 import org.waarp.gateway.kernel.rest.RestConfiguration;
+import org.waarp.openr66.client.NoOpRecvThroughHandler;
 import org.waarp.openr66.commander.ClientRunner;
 import org.waarp.openr66.commander.Commander;
 import org.waarp.openr66.commander.InternalRunner;
@@ -681,48 +682,45 @@ public class Configuration {
     }
     setExecuteErrorBeforeTransferAllowed(SystemPropertyUtil.getBoolean(
         R66SystemProperties.OPENR66_EXECUTEBEFORETRANSFERRED, true));
-    final boolean useSpaceSeparator = SystemPropertyUtil
-        .getBoolean(R66SystemProperties.OPENR66_USESPACESEPARATOR, false);
+    final boolean useSpaceSeparator = SystemPropertyUtil.getBoolean(
+        R66SystemProperties.OPENR66_USESPACESEPARATOR, false);
     if (useSpaceSeparator) {
-      PartnerConfiguration
-          .setSEPARATOR_FIELD(PartnerConfiguration.BLANK_SEPARATOR_FIELD);
+      PartnerConfiguration.setSEPARATOR_FIELD(
+          PartnerConfiguration.BLANK_SEPARATOR_FIELD);
     }
     setHostProxyfied(SystemPropertyUtil.getBoolean(
         R66SystemProperties.OPENR66_ISHOSTPROXYFIED, false));
     setWarnOnStartup(SystemPropertyUtil.getBoolean(
         R66SystemProperties.OPENR66_STARTUP_WARNING, true));
 
-    if (!SystemPropertyUtil
-        .get(R66SystemProperties.OPENR66_STARTUP_DATABASE_CHECK, "")
-        .isEmpty()) {
+    if (!SystemPropertyUtil.get(
+        R66SystemProperties.OPENR66_STARTUP_DATABASE_CHECK, "").isEmpty()) {
       logger.warn("{} is deprecated in system properties use {} instead",
                   R66SystemProperties.OPENR66_STARTUP_DATABASE_CHECK,
                   R66SystemProperties.OPENR66_STARTUP_DATABASE_AUTOUPGRADE);
-      FileBasedConfiguration.autoupgrade = SystemPropertyUtil
-          .getBoolean(R66SystemProperties.OPENR66_STARTUP_DATABASE_CHECK,
-                      false);
+      FileBasedConfiguration.autoupgrade = SystemPropertyUtil.getBoolean(
+          R66SystemProperties.OPENR66_STARTUP_DATABASE_CHECK, false);
     } else {
-      FileBasedConfiguration.autoupgrade = SystemPropertyUtil
-          .getBoolean(R66SystemProperties.OPENR66_STARTUP_DATABASE_AUTOUPGRADE,
-                      false);
+      FileBasedConfiguration.autoupgrade = SystemPropertyUtil.getBoolean(
+          R66SystemProperties.OPENR66_STARTUP_DATABASE_AUTOUPGRADE, false);
     }
 
-    setChrootChecked(SystemPropertyUtil
-                         .getBoolean(R66SystemProperties.OPENR66_CHROOT_CHECKED,
-                                     true));
+    setChrootChecked(SystemPropertyUtil.getBoolean(
+        R66SystemProperties.OPENR66_CHROOT_CHECKED, true));
     setBlacklistBadAuthent(SystemPropertyUtil.getBoolean(
         R66SystemProperties.OPENR66_BLACKLIST_BADAUTHENT, !isHostProxyfied()));
     setMaxfilenamelength(SystemPropertyUtil.getInt(
         R66SystemProperties.OPENR66_FILENAME_MAXLENGTH, 255));
     setTimeStat(
         SystemPropertyUtil.getInt(R66SystemProperties.OPENR66_TRACE_STATS, 0));
-    setLimitCache(SystemPropertyUtil
-                      .getInt(R66SystemProperties.OPENR66_CACHE_LIMIT, 20000));
+    setLimitCache(
+        SystemPropertyUtil.getInt(R66SystemProperties.OPENR66_CACHE_LIMIT,
+                                  20000));
     if (getLimitCache() <= 100) {
       setLimitCache(100);
     }
-    setTimeLimitCache(SystemPropertyUtil
-                          .getLong(R66SystemProperties.OPENR66_CACHE_TIMELIMIT,
+    setTimeLimitCache(
+        SystemPropertyUtil.getLong(R66SystemProperties.OPENR66_CACHE_TIMELIMIT,
                                    180000));
     if (getTimeLimitCache() < 1000) {
       setTimeLimitCache(1000);
@@ -751,7 +749,7 @@ public class Configuration {
   }
 
   @Override
-  public String toString() {
+  public final String toString() {
     StringBuilder rest = null;
     for (final RestConfiguration config : getRestConfigurations()) {
       if (rest == null) {
@@ -791,7 +789,7 @@ public class Configuration {
   /**
    * Configure the pipeline for client (to be called only once)
    */
-  public void pipelineInit() {
+  public final void pipelineInit() {
     if (isConfigured()) {
       return;
     }
@@ -809,8 +807,8 @@ public class Configuration {
         new RejectedExecutionHandler() {
 
           @Override
-          public void rejectedExecution(final Runnable r,
-                                        final ThreadPoolExecutor executor) {
+          public final void rejectedExecution(final Runnable r,
+                                              final ThreadPoolExecutor executor) {
             if (r instanceof RetrieveRunner) {
               final RetrieveRunner retrieveRunner = (RetrieveRunner) r;
               logger.info("Try to reschedule RetrieveRunner: {}",
@@ -840,8 +838,8 @@ public class Configuration {
                                      new WaarpThreadFactory("RetrieveRunner"),
                                      rejectedExecutionHandler);
     localTransaction = new LocalTransaction();
-    WaarpLoggerFactory
-        .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));
+    WaarpLoggerFactory.setDefaultFactoryIfNotSame(
+        new WaarpSlf4JLoggerFactory(null));
     if (isWarnOnStartup()) {
       logger.warn("Server Thread: " + getServerThread() + " Client Thread: " +
                   getClientThread() + " Runner Thread: " + getRunnerThread());
@@ -857,15 +855,15 @@ public class Configuration {
     setConfigured(true);
   }
 
-  public void setConfigured(final boolean configured) {
+  public final void setConfigured(final boolean configured) {
     this.configured = configured;
   }
 
-  public boolean isConfigured() {
+  public final boolean isConfigured() {
     return configured;
   }
 
-  public void serverPipelineInit() {
+  public final void serverPipelineInit() {
     httpWorkerGroup = new NioEventLoopGroup(getServerThread() * 10,
                                             new WaarpThreadFactory(
                                                 "HttpWorker"));
@@ -896,6 +894,11 @@ public class Configuration {
       WaarpSystemUtil.systemExit(-1);
       return;
     }
+    if (SystemPropertyUtil.getBoolean(
+        R66SystemProperties.OPENR66_JUNIT_RECV_THROUGH, false)) {
+      logger.warn("DEBUG PERF MODE using RECV THROUGH");
+      ClientRunner.setRecvHandlerJunit(new NoOpRecvThroughHandler());
+    }
     pipelineInit();
     serverPipelineInit();
     r66Startup();
@@ -911,7 +914,7 @@ public class Configuration {
   /**
    * Used to log statistics information regularly
    */
-  public void launchStatistics() {
+  public final void launchStatistics() {
     if (getTimeStat() > 0) {
       timerStatistic.scheduleAtFixedRate(new UsageStatistic(), 1000,
                                          getTimeStat() * 1000L);
@@ -967,10 +970,9 @@ public class Configuration {
         new DefaultChannelGroup("OpenR66Connected", subTaskGroup.next());
     if (isUseNOSSL()) {
       serverBootstrap = new ServerBootstrap();
-      WaarpNettyUtil
-          .setServerBootstrap(serverBootstrap, serverGroup, workerGroup,
-                              (int) getTimeoutCon(), getBlockSize() + 64,
-                              false);
+      WaarpNettyUtil.setServerBootstrap(serverBootstrap, serverGroup,
+                                        workerGroup, (int) getTimeoutCon(),
+                                        getBlockSize() + 64, false);
       networkServerInitializer = new NetworkServerInitializer(true);
       serverBootstrap.childHandler(networkServerInitializer);
       final String[] serverIps = getServerIpsAddresses();
@@ -984,10 +986,9 @@ public class Configuration {
 
     if (isUseSSL() && getHostSslId() != null) {
       serverSslBootstrap = new ServerBootstrap();
-      WaarpNettyUtil
-          .setServerBootstrap(serverSslBootstrap, serverGroup, workerGroup,
-                              (int) getTimeoutCon(), getBlockSize() + 64,
-                              false);
+      WaarpNettyUtil.setServerBootstrap(serverSslBootstrap, serverGroup,
+                                        workerGroup, (int) getTimeoutCon(),
+                                        getBlockSize() + 64, false);
       networkSslServerInitializer = new NetworkSslServerInitializer(false);
       serverSslBootstrap.childHandler(networkSslServerInitializer);
       final String[] serverIps = getServerSslAddresses();
@@ -1026,9 +1027,8 @@ public class Configuration {
     if (getServerHttpport() > 0) {
       // Configure the server.
       httpBootstrap = new ServerBootstrap();
-      WaarpNettyUtil
-          .setServerBootstrap(httpBootstrap, httpWorkerGroup, httpWorkerGroup,
-                              (int) getTimeoutCon());
+      WaarpNettyUtil.setServerBootstrap(httpBootstrap, httpWorkerGroup,
+                                        httpWorkerGroup, (int) getTimeoutCon());
       // Set up the event pipeline factory.
       httpBootstrap.childHandler(new HttpInitializer(isUseHttpCompression()));
       // Bind and start to accept incoming connections.
@@ -1042,12 +1042,11 @@ public class Configuration {
       // Configure the server.
       httpsBootstrap = new ServerBootstrap();
       // Set up the event pipeline factory.
-      WaarpNettyUtil
-          .setServerBootstrap(httpsBootstrap, httpWorkerGroup, httpWorkerGroup,
-                              (int) getTimeoutCon());
+      WaarpNettyUtil.setServerBootstrap(httpsBootstrap, httpWorkerGroup,
+                                        httpWorkerGroup, (int) getTimeoutCon());
       if (getHttpModel() == 0) {
-        httpsBootstrap
-            .childHandler(new HttpSslInitializer(isUseHttpCompression()));
+        httpsBootstrap.childHandler(
+            new HttpSslInitializer(isUseHttpCompression()));
       } else {
         // Default
         httpsBootstrap.childHandler(
@@ -1059,9 +1058,9 @@ public class Configuration {
     }
   }
 
-  public void startRestSupport() {
-    HttpRestHandler
-        .initialize(getBaseDirectory() + '/' + getWorkingPath() + "/httptemp");
+  public final void startRestSupport() {
+    HttpRestHandler.initialize(
+        getBaseDirectory() + '/' + getWorkingPath() + "/httptemp");
     for (final RestConfiguration config : getRestConfigurations()) {
       RestServiceInitializer.initRestService(config);
       // REST V1 is included within V2
@@ -1072,7 +1071,7 @@ public class Configuration {
     }
   }
 
-  public void startMonitoring() throws WaarpDatabaseSqlException {
+  public final void startMonitoring() throws WaarpDatabaseSqlException {
     setMonitoring(new Monitoring(getPastLimit(), getMinimalDelay(), null));
     setNbDbSession(getNbDbSession() + 1);
     if (getSnmpConfig() != null) {
@@ -1096,11 +1095,11 @@ public class Configuration {
     }
   }
 
-  public void startJunitRestSupport(final RestConfiguration config) {
+  public final void startJunitRestSupport(final RestConfiguration config) {
     HttpRestR66Handler.initializeService(config);
   }
 
-  public InternalRunner getInternalRunner() {
+  public final InternalRunner getInternalRunner() {
     return internalRunner;
   }
 
@@ -1109,7 +1108,7 @@ public class Configuration {
    * <p>
    * To be called early before other stuff will be closed
    */
-  public void prepareServerStop() {
+  public final void prepareServerStop() {
     if (getThriftService() != null) {
       getThriftService().releaseResources();
     }
@@ -1121,7 +1120,7 @@ public class Configuration {
   /**
    * Unbind network connectors
    */
-  public void unbindServer() {
+  public final void unbindServer() {
     if (bindNoSSL != null) {
       bindNoSSL.close();
       bindNoSSL = null;
@@ -1132,7 +1131,7 @@ public class Configuration {
     }
   }
 
-  public void shutdownGracefully() {
+  public final void shutdownGracefully() {
     if (workerGroup != null && !workerGroup.isShuttingDown()) {
       workerGroup.shutdownGracefully();
     }
@@ -1152,8 +1151,8 @@ public class Configuration {
 
       retrieveRunnerGroup.shutdown();
       try {
-        if (!retrieveRunnerGroup
-            .awaitTermination(getTimeoutCon() / 2, TimeUnit.MILLISECONDS)) {
+        if (!retrieveRunnerGroup.awaitTermination(getTimeoutCon() / 2,
+                                                  TimeUnit.MILLISECONDS)) {
           retrieveRunnerGroup.shutdownNow();
         }
       } catch (final InterruptedException e) {//NOSONAR
@@ -1164,7 +1163,7 @@ public class Configuration {
     }
   }
 
-  public void shutdownQuickly() {
+  public final void shutdownQuickly() {
     if (workerGroup != null && !workerGroup.isShuttingDown()) {
       workerGroup.shutdownGracefully(10, 10, TimeUnit.MILLISECONDS);
     }
@@ -1203,7 +1202,7 @@ public class Configuration {
     if (monitorExporterTransfers != null) {
       try {
         monitorExporterTransfers.close();
-      } catch (IOException e) {
+      } catch (final IOException e) {
         SysErrLogger.FAKE_LOGGER.ignoreLog(e);
       }
       monitorExporterTransfers = null;
@@ -1230,7 +1229,7 @@ public class Configuration {
   /**
    * To be called after all other stuff are closed for Client
    */
-  public void clientStop() {
+  public final void clientStop() {
     clientStop(true);
   }
 
@@ -1241,7 +1240,7 @@ public class Configuration {
    *     the
    *     end of the process
    */
-  public void clientStop(final boolean shutdownQuickly) {
+  public final void clientStop(final boolean shutdownQuickly) {
     WaarpSslUtility.forceCloseAllSslChannels();
     if (!configuration.isServer()) {
       WaarpSystemUtil.stopLogger(false);
@@ -1275,7 +1274,7 @@ public class Configuration {
    *
    * @return True if reloaded, else in error
    */
-  public boolean reloadCommanderDelay() {
+  public final boolean reloadCommanderDelay() {
     if (internalRunner != null) {
       try {
         internalRunner.reloadInternalRunner();
@@ -1296,8 +1295,8 @@ public class Configuration {
    * @param delay
    * @param unit
    */
-  public void launchInFixedDelay(final Thread thread, final long delay,
-                                 final TimeUnit unit) {
+  public final void launchInFixedDelay(final Thread thread, final long delay,
+                                       final TimeUnit unit) {
     scheduledExecutorService.schedule(thread, delay, unit);
   }
 
@@ -1308,12 +1307,13 @@ public class Configuration {
    * @param delay
    * @param unit
    */
-  public void scheduleWithFixedDelay(final Thread thread, final long delay,
-                                     final TimeUnit unit) {
+  public final void scheduleWithFixedDelay(final Thread thread,
+                                           final long delay,
+                                           final TimeUnit unit) {
     scheduledExecutorService.scheduleWithFixedDelay(thread, delay, delay, unit);
   }
 
-  public void setupLimitHandler() {
+  public final void setupLimitHandler() {
     if (globalTrafficShapingHandler != null) {
       return;
     }
@@ -1335,9 +1335,11 @@ public class Configuration {
    * @param readSessionLimit
    * @param delayLimit
    */
-  public void changeNetworkLimit(long writeGlobalLimit, long readGlobalLimit,
-                                 long writeSessionLimit, long readSessionLimit,
-                                 final long delayLimit) {
+  public final void changeNetworkLimit(long writeGlobalLimit,
+                                       long readGlobalLimit,
+                                       long writeSessionLimit,
+                                       long readSessionLimit,
+                                       final long delayLimit) {
     if (writeGlobalLimit <= 0) {
       writeGlobalLimit = 0;
     }
@@ -1368,8 +1370,8 @@ public class Configuration {
     setServerChannelWriteLimit(writeSessionLimit);
     setDelayLimit(delayLimit);
     if (globalTrafficShapingHandler != null) {
-      globalTrafficShapingHandler
-          .configure(writeGlobalLimit, readGlobalLimit, delayLimit);
+      globalTrafficShapingHandler.configure(writeGlobalLimit, readGlobalLimit,
+                                            delayLimit);
       logger.info(Messages.getString("Configuration.BandwidthChange"),
                   globalTrafficShapingHandler);
     }
@@ -1400,85 +1402,85 @@ public class Configuration {
   /**
    * @return an executorService to be used for any thread
    */
-  public ExecutorService getExecutorService() {
+  public final ExecutorService getExecutorService() {
     return execOtherWorker;
   }
 
-  public Timer getTimerClose() {
+  public final Timer getTimerClose() {
     return timerCloseOperations;
   }
 
-  public boolean isTimerCloseReady() {
+  public final boolean isTimerCloseReady() {
     return !timerCloseClosed.get();
   }
 
   /**
    * @return the globalTrafficShapingHandler
    */
-  public GlobalTrafficShapingHandler getGlobalTrafficShapingHandler() {
+  public final GlobalTrafficShapingHandler getGlobalTrafficShapingHandler() {
     return globalTrafficShapingHandler;
   }
 
   /**
    * @return the serverChannelGroup
    */
-  public ChannelGroup getServerChannelGroup() {
+  public final ChannelGroup getServerChannelGroup() {
     return serverChannelGroup;
   }
 
   /**
    * @return the server connected channels group
    */
-  public ChannelGroup getServerConnectedChannelGroup() {
+  public final ChannelGroup getServerConnectedChannelGroup() {
     return serverConnectedChannelGroup;
   }
 
   /**
    * @return the httpChannelGroup
    */
-  public ChannelGroup getHttpChannelGroup() {
+  public final ChannelGroup getHttpChannelGroup() {
     return httpChannelGroup;
   }
 
   /**
    * @return the serverPipelineExecutor
    */
-  public EventLoopGroup getNetworkWorkerGroup() {
+  public final EventLoopGroup getNetworkWorkerGroup() {
     return workerGroup;
   }
 
   /**
    * @return the retrieveRunnerGroup
    */
-  public ThreadPoolRunnerExecutor getRetrieveRunnerGroup() {
+  public final ThreadPoolRunnerExecutor getRetrieveRunnerGroup() {
     return retrieveRunnerGroup;
   }
 
   /**
    * @return the serverPipelineExecutor
    */
-  public EventLoopGroup getHandlerGroup() {
+  public final EventLoopGroup getHandlerGroup() {
     return handlerGroup;
   }
 
   /**
    * @return the subTaskGroup
    */
-  public EventLoopGroup getSubTaskGroup() {
+  public final EventLoopGroup getSubTaskGroup() {
     return subTaskGroup;
   }
 
   /**
    * @return the httpWorkerGroup
    */
-  public EventLoopGroup getHttpWorkerGroup() {
+  public final EventLoopGroup getHttpWorkerGroup() {
     return httpWorkerGroup;
   }
 
   /**
    * @return the localTransaction
    */
-  public LocalTransaction getLocalTransaction() {
+  public final LocalTransaction getLocalTransaction() {
     return localTransaction;
   }
 
@@ -1492,7 +1494,7 @@ public class Configuration {
   /**
    * @return the SERVERADMINKEY
    */
-  public byte[] getServerAdminKey() {
+  public final byte[] getServerAdminKey() {
     return serverAdminKey;
   }
 
@@ -1503,7 +1505,7 @@ public class Configuration {
    *
    * @return True if the key is valid (or any key is valid)
    */
-  public boolean isKeyValid(final byte[] newkey) {
+  public final boolean isKeyValid(final byte[] newkey) {
     if (newkey == null) {
       return false;
     }
@@ -1513,7 +1515,7 @@ public class Configuration {
   /**
    * @param serverkey the SERVERADMINKEY to set
    */
-  public void setSERVERKEY(final byte[] serverkey) {
+  public final void setSERVERKEY(final byte[] serverkey) {
     serverAdminKey = serverkey;
   }
 
@@ -1524,7 +1526,7 @@ public class Configuration {
    *
    * @throws OpenR66ProtocolNoSslException
    */
-  public String getHostId(final boolean isSSL)
+  public final String getHostId(final boolean isSSL)
       throws OpenR66ProtocolNoSslException {
     if (isSSL) {
       if (getHostSslId() == null) {
@@ -1544,7 +1546,7 @@ public class Configuration {
    *
    * @throws WaarpDatabaseException
    */
-  public String getHostId(final String remoteHost)
+  public final String getHostId(final String remoteHost)
       throws WaarpDatabaseException {
     final DbHostAuth dbHostAuth = new DbHostAuth(remoteHost);
     try {
@@ -1638,98 +1640,98 @@ public class Configuration {
   /**
    * @return the r66BusinessFactory
    */
-  public R66BusinessFactoryInterface getR66BusinessFactory() {
+  public final R66BusinessFactoryInterface getR66BusinessFactory() {
     return r66BusinessFactory;
   }
 
   /**
    * @return the extendedProtocol
    */
-  public boolean isExtendedProtocol() {
+  public final boolean isExtendedProtocol() {
     return extendedProtocol;
   }
 
   /**
    * @param extendedProtocol the extendedProtocol to set
    */
-  public void setExtendedProtocol(final boolean extendedProtocol) {
+  public final void setExtendedProtocol(final boolean extendedProtocol) {
     this.extendedProtocol = extendedProtocol;
   }
 
   /**
    * @return the globalDigest
    */
-  public boolean isGlobalDigest() {
+  public final boolean isGlobalDigest() {
     return globalDigest;
   }
 
   /**
    * @param globalDigest the globalDigest to set
    */
-  public void setGlobalDigest(final boolean globalDigest) {
+  public final void setGlobalDigest(final boolean globalDigest) {
     this.globalDigest = globalDigest;
   }
 
   /**
    * @return the localDigest
    */
-  public boolean isLocalDigest() {
+  public final boolean isLocalDigest() {
     return localDigest;
   }
 
   /**
    * @param localDigest the localDigest to set
    */
-  public void setLocalDigest(final boolean localDigest) {
+  public final void setLocalDigest(final boolean localDigest) {
     this.localDigest = localDigest;
   }
 
   /**
    * @return the businessWhiteSet
    */
-  public Set<String> getBusinessWhiteSet() {
+  public final Set<String> getBusinessWhiteSet() {
     return businessWhiteSet;
   }
 
   /**
    * @return the roles
    */
-  public Map<String, RoleDefault> getRoles() {
+  public final Map<String, RoleDefault> getRoles() {
     return roles;
   }
 
   /**
    * @return the aliases
    */
-  public Map<String, String> getAliases() {
+  public final Map<String, String> getAliases() {
     return aliases;
   }
 
   /**
    * @return the reverseAliases
    */
-  public Map<String, String[]> getReverseAliases() {
+  public final Map<String, String[]> getReverseAliases() {
     return reverseAliases;
   }
 
   /**
    * @return the versions
    */
-  public ConcurrentMap<String, PartnerConfiguration> getVersions() {
+  public final ConcurrentMap<String, PartnerConfiguration> getVersions() {
     return versions;
   }
 
   /**
    * @return the hOST_ID
    */
-  public String getHostId() {
+  public final String getHostId() {
     return hostId;
   }
 
   /**
    * @param hostID the hOST_ID to set
    */
-  public void setHostId(final String hostID) {
+  public final void setHostId(final String hostID) {
     hostId = hostID;
     WaarpLoggerFactory.setLocalName(hostId);
   }
@@ -1737,106 +1739,106 @@ public class Configuration {
   /**
    * @return the hOST_SSLID
    */
-  public String getHostSslId() {
+  public final String getHostSslId() {
     return hostSslId;
   }
 
   /**
    * @param hostSSLID the hOST_SSLID to set
    */
-  public void setHostSslId(final String hostSSLID) {
+  public final void setHostSslId(final String hostSSLID) {
     hostSslId = hostSSLID;
   }
 
   /**
    * @return the aDMINNAME
    */
-  public String getAdminName() {
+  public final String getAdminName() {
     return adminName;
   }
 
   /**
    * @param aDMINNAME the aDMINNAME to set
    */
-  public void setAdminName(final String aDMINNAME) {
+  public final void setAdminName(final String aDMINNAME) {
     adminName = aDMINNAME;
   }
 
   /**
    * @return the serverKeyFile
    */
-  public String getServerKeyFile() {
+  public final String getServerKeyFile() {
     return serverKeyFile;
   }
 
   /**
    * @param serverKeyFile the serverKeyFile to set
    */
-  public void setServerKeyFile(final String serverKeyFile) {
+  public final void setServerKeyFile(final String serverKeyFile) {
     this.serverKeyFile = serverKeyFile;
   }
 
   /**
    * @return the hOST_AUTH
    */
-  public DbHostAuth getHostAuth() {
+  public final DbHostAuth getHostAuth() {
     return hostAuth;
   }
 
   /**
    * @param hostAUTH the hOST_AUTH to set
    */
-  public void setHostAuth(final DbHostAuth hostAUTH) {
+  public final void setHostAuth(final DbHostAuth hostAUTH) {
     hostAuth = hostAUTH;
   }
 
   /**
    * @return the hOST_SSLAUTH
    */
-  public DbHostAuth getHostSslAuth() {
+  public final DbHostAuth getHostSslAuth() {
     return hostSslAuth;
   }
 
   /**
    * @param hostSSLAUTH the hOST_SSLAUTH to set
    */
-  public void setHostSslAuth(final DbHostAuth hostSSLAUTH) {
+  public final void setHostSslAuth(final DbHostAuth hostSSLAUTH) {
     hostSslAuth = hostSSLAUTH;
   }
 
-  public String getAuthFile() {
+  public final String getAuthFile() {
     return authFile;
   }
 
-  public void setAuthFile(final String file) {
+  public final void setAuthFile(final String file) {
     authFile = file;
   }
 
   /**
    * @return the sERVER_THREAD
    */
-  public int getServerThread() {
+  public final int getServerThread() {
     return serverThread;
   }
 
   /**
    * @param serverTHREAD the sERVER_THREAD to set
    */
-  public void setServerThread(final int serverTHREAD) {
+  public final void setServerThread(final int serverTHREAD) {
     serverThread = serverTHREAD;
   }
 
   /**
    * @return the cLIENT_THREAD
    */
-  public int getClientThread() {
+  public final int getClientThread() {
     return clientThread;
   }
 
   /**
    * @param clientTHREAD the cLIENT_THREAD to set
    */
-  public void setClientThread(final int clientTHREAD) {
+  public final void setClientThread(final int clientTHREAD) {
     if (clientTHREAD > Commander.LIMIT_MAX_SUBMIT) {
       clientThread = Commander.LIMIT_MAX_SUBMIT;
     } else {
@@ -1847,497 +1849,501 @@ public class Configuration {
   /**
    * @return the dEFAULT_SESSION_LIMIT
    */
-  public long getDEFAULT_SESSION_LIMIT() {
+  public final long getDEFAULT_SESSION_LIMIT() {
     return DEFAULT_SESSION_LIMIT;
   }
 
   /**
    * @return the dEFAULT_GLOBAL_LIMIT
    */
-  public long getDEFAULT_GLOBAL_LIMIT() {
+  public final long getDEFAULT_GLOBAL_LIMIT() {
     return DEFAULT_GLOBAL_LIMIT;
   }
 
   /**
    * @return the sERVER_PORT
    */
-  public int getServerPort() {
+  public final int getServerPort() {
     return serverPort;
   }
 
   /**
    * @param serverPORT the sERVER_PORT to set
    */
-  public void setServerPort(final int serverPORT) {
+  public final void setServerPort(final int serverPORT) {
     serverPort = serverPORT;
   }
 
   /**
    * @return the sERVER_SSLPORT
    */
-  public int getServerSslPort() {
+  public final int getServerSslPort() {
     return serverSslPort;
   }
 
   /**
    * @param serverSSLPORT the sERVER_SSLPORT to set
    */
-  public void setServerSslPort(final int serverSSLPORT) {
+  public final void setServerSslPort(final int serverSSLPORT) {
     serverSslPort = serverSSLPORT;
   }
 
   /**
    * @return the sERVER_HTTPPORT
    */
-  public int getServerHttpport() {
+  public final int getServerHttpport() {
     return serverHttpport;
   }
 
   /**
    * @param serverHTTPPORT the sERVER_HTTPPORT to set
    */
-  public void setServerHttpport(final int serverHTTPPORT) {
+  public final void setServerHttpport(final int serverHTTPPORT) {
     serverHttpport = serverHTTPPORT;
   }
 
   /**
    * @return the sERVER_HTTPSPORT
    */
-  public int getServerHttpsPort() {
+  public final int getServerHttpsPort() {
     return serverHttpsPort;
   }
 
   /**
    * @param serverHTTPSPORT the sERVER_HTTPSPORT to set
    */
-  public void setServerHttpsPort(final int serverHTTPSPORT) {
+  public final void setServerHttpsPort(final int serverHTTPSPORT) {
     serverHttpsPort = serverHTTPSPORT;
   }
 
   /**
    * @return the sERVER_Addresses
    */
-  public String[] getServerIpsAddresses() {
+  public final String[] getServerIpsAddresses() {
     return serverAddresses;
   }
 
   /**
    * @param serverAddresses the sERVER_Addresses to set
    */
-  public void setServerAddresses(final String[] serverAddresses) {
+  public final void setServerAddresses(final String[] serverAddresses) {
     this.serverAddresses = serverAddresses;
   }
 
   /**
    * @return the sERVER_SSLAddresses
    */
-  public String[] getServerSslAddresses() {
+  public final String[] getServerSslAddresses() {
     return serverSslAddresses;
   }
 
   /**
    * @param serverSSLAddresses the sERVER_SSLIAddresses to set
    */
-  public void setServerSslAddresses(final String[] serverSSLAddresses) {
+  public final void setServerSslAddresses(final String[] serverSSLAddresses) {
     serverSslAddresses = serverSSLAddresses;
   }
 
   /**
    * @return the sERVER_HTTPAddresses
    */
-  public String[] getServerHttpAddresses() {
+  public final String[] getServerHttpAddresses() {
     return serverHttpAddresses;
   }
 
   /**
    * @param serverHTTPAddresses the sERVER_HTTPAddresses to set
    */
-  public void setServerHttpAddresses(final String[] serverHTTPAddresses) {
+  public final void setServerHttpAddresses(final String[] serverHTTPAddresses) {
     serverHttpAddresses = serverHTTPAddresses;
   }
 
   /**
    * @return the sERVER_HTTPSAddresses
    */
-  public String[] getServerHttpsAddresses() {
+  public final String[] getServerHttpsAddresses() {
     return serverHttpsAddresses;
   }
 
   /**
    * @param serverHTTPSAddresses the sERVER_HTTPSAddresses to set
    */
-  public void setServerHttpsAddresses(final String[] serverHTTPSAddresses) {
+  public final void setServerHttpsAddresses(
+      final String[] serverHTTPSAddresses) {
     serverHttpsAddresses = serverHTTPSAddresses;
   }
 
   /**
    * @return the tIMEOUTCON
    */
-  public long getTimeoutCon() {
+  public final long getTimeoutCon() {
     return timeoutCon;
   }
 
   /**
    * @param timeoutCON the timeoutCON to set
    */
-  public void setTimeoutCon(final long timeoutCON) {
+  public final void setTimeoutCon(final long timeoutCON) {
     timeoutCon = timeoutCON;
   }
 
   /**
    * @return the bLOCKSIZE
    */
-  public int getBlockSize() {
+  public final int getBlockSize() {
     return blockSize;
   }
 
   /**
    * @param blockSIZE the bLOCKSIZE to set
    */
-  public void setBlockSize(final int blockSIZE) {
+  public final void setBlockSize(final int blockSIZE) {
     blockSize = blockSIZE;
   }
 
   /**
    * @return the maxGlobalMemory
    */
-  public int getMaxGlobalMemory() {
+  public final int getMaxGlobalMemory() {
     return maxGlobalMemory;
   }
 
   /**
    * @param maxGlobalMemory the maxGlobalMemory to set
    */
-  public void setMaxGlobalMemory(final int maxGlobalMemory) {
+  public final void setMaxGlobalMemory(final int maxGlobalMemory) {
     this.maxGlobalMemory = maxGlobalMemory;
   }
 
   /**
    * @return the restConfigurations
    */
-  public List<RestConfiguration> getRestConfigurations() {
+  public final List<RestConfiguration> getRestConfigurations() {
     return restConfigurations;
   }
 
   /**
    * @return the baseDirectory
    */
-  public String getBaseDirectory() {
+  public final String getBaseDirectory() {
     return baseDirectory;
   }
 
   /**
    * @param baseDirectory the baseDirectory to set
    */
-  public void setBaseDirectory(final String baseDirectory) {
+  public final void setBaseDirectory(final String baseDirectory) {
     this.baseDirectory = baseDirectory;
   }
 
   /**
    * @return the inPath
    */
-  public String getInPath() {
+  public final String getInPath() {
     return inPath;
   }
 
   /**
    * @param inPath the inPath to set
    */
-  public void setInPath(final String inPath) {
+  public final void setInPath(final String inPath) {
     this.inPath = inPath;
   }
 
   /**
    * @return the outPath
    */
-  public String getOutPath() {
+  public final String getOutPath() {
     return outPath;
   }
 
   /**
    * @param outPath the outPath to set
    */
-  public void setOutPath(final String outPath) {
+  public final void setOutPath(final String outPath) {
     this.outPath = outPath;
   }
 
   /**
    * @return the archivePath
    */
-  public String getArchivePath() {
+  public final String getArchivePath() {
     return archivePath;
   }
 
   /**
    * @param archivePath the archivePath to set
    */
-  public void setArchivePath(final String archivePath) {
+  public final void setArchivePath(final String archivePath) {
     this.archivePath = archivePath;
   }
 
   /**
    * @return the workingPath
    */
-  public String getWorkingPath() {
+  public final String getWorkingPath() {
     return workingPath;
   }
 
   /**
    * @param workingPath the workingPath to set
    */
-  public void setWorkingPath(final String workingPath) {
+  public final void setWorkingPath(final String workingPath) {
     this.workingPath = workingPath;
   }
 
   /**
    * @return the configPath
    */
-  public String getConfigPath() {
+  public final String getConfigPath() {
     return configPath;
   }
 
   /**
    * @param configPath the configPath to set
    */
-  public void setConfigPath(final String configPath) {
+  public final void setConfigPath(final String configPath) {
     this.configPath = configPath;
   }
 
   /**
    * @return the httpBasePath
    */
-  public String getHttpBasePath() {
+  public final String getHttpBasePath() {
     return httpBasePath;
   }
 
   /**
    * @param httpBasePath the httpBasePath to set
    */
-  public void setHttpBasePath(final String httpBasePath) {
+  public final void setHttpBasePath(final String httpBasePath) {
     this.httpBasePath = httpBasePath;
   }
 
   /**
    * @return the httpModel
    */
-  public int getHttpModel() {
+  public final int getHttpModel() {
     return httpModel;
   }
 
   /**
    * @param httpModel the httpModel to set
    */
-  public void setHttpModel(final int httpModel) {
+  public final void setHttpModel(final int httpModel) {
     this.httpModel = httpModel;
   }
 
   /**
    * @return the isShutdown
    */
-  public boolean isShutdown() {
+  public final boolean isShutdown() {
     return isShutdown;
   }
 
   /**
    * @param isShutdown the isShutdown to set
    */
-  public void setShutdown(final boolean isShutdown) {
+  public final void setShutdown(final boolean isShutdown) {
     this.isShutdown = isShutdown;
   }
 
   /**
    * @return the serverGlobalWriteLimit
    */
-  public long getServerGlobalWriteLimit() {
+  public final long getServerGlobalWriteLimit() {
     return serverGlobalWriteLimit;
   }
 
   /**
    * @param serverGlobalWriteLimit the serverGlobalWriteLimit to set
    */
-  public void setServerGlobalWriteLimit(final long serverGlobalWriteLimit) {
+  public final void setServerGlobalWriteLimit(
+      final long serverGlobalWriteLimit) {
     this.serverGlobalWriteLimit = serverGlobalWriteLimit;
   }
 
   /**
    * @return the serverGlobalReadLimit
    */
-  public long getServerGlobalReadLimit() {
+  public final long getServerGlobalReadLimit() {
     return serverGlobalReadLimit;
   }
 
   /**
    * @param serverGlobalReadLimit the serverGlobalReadLimit to set
    */
-  public void setServerGlobalReadLimit(final long serverGlobalReadLimit) {
+  public final void setServerGlobalReadLimit(final long serverGlobalReadLimit) {
     this.serverGlobalReadLimit = serverGlobalReadLimit;
   }
 
   /**
    * @return the serverChannelWriteLimit
    */
-  public long getServerChannelWriteLimit() {
+  public final long getServerChannelWriteLimit() {
     return serverChannelWriteLimit;
   }
 
   /**
    * @param serverChannelWriteLimit the serverChannelWriteLimit to set
    */
-  public void setServerChannelWriteLimit(final long serverChannelWriteLimit) {
+  public final void setServerChannelWriteLimit(
+      final long serverChannelWriteLimit) {
     this.serverChannelWriteLimit = serverChannelWriteLimit;
   }
 
   /**
    * @return the serverChannelReadLimit
    */
-  public long getServerChannelReadLimit() {
+  public final long getServerChannelReadLimit() {
     return serverChannelReadLimit;
   }
 
   /**
    * @param serverChannelReadLimit the serverChannelReadLimit to set
    */
-  public void setServerChannelReadLimit(final long serverChannelReadLimit) {
+  public final void setServerChannelReadLimit(
+      final long serverChannelReadLimit) {
     this.serverChannelReadLimit = serverChannelReadLimit;
   }
 
   /**
    * @return the delayLimit
    */
-  public long getDelayLimit() {
+  public final long getDelayLimit() {
     return delayLimit;
   }
 
   /**
    * @param delayLimit the delayLimit to set
    */
-  public void setDelayLimit(final long delayLimit) {
+  public final void setDelayLimit(final long delayLimit) {
     this.delayLimit = delayLimit;
   }
 
   /**
    * @return the useSSL
    */
-  public boolean isUseSSL() {
+  public final boolean isUseSSL() {
     return useSSL;
   }
 
   /**
    * @param useSSL the useSSL to set
    */
-  public void setUseSSL(final boolean useSSL) {
+  public final void setUseSSL(final boolean useSSL) {
     this.useSSL = useSSL;
   }
 
   /**
    * @return the useNOSSL
    */
-  public boolean isUseNOSSL() {
+  public final boolean isUseNOSSL() {
     return useNOSSL;
   }
 
   /**
    * @param useNOSSL the useNOSSL to set
    */
-  public void setUseNOSSL(final boolean useNOSSL) {
+  public final void setUseNOSSL(final boolean useNOSSL) {
     this.useNOSSL = useNOSSL;
   }
 
   /**
    * @return the digest
    */
-  public FilesystemBasedDigest.DigestAlgo getDigest() {
+  public final FilesystemBasedDigest.DigestAlgo getDigest() {
     return digest;
   }
 
   /**
    * @param digest the digest to set
    */
-  public void setDigest(final FilesystemBasedDigest.DigestAlgo digest) {
+  public final void setDigest(final FilesystemBasedDigest.DigestAlgo digest) {
     this.digest = digest;
   }
 
   /**
    * @return the useHttpCompression
    */
-  public boolean isUseHttpCompression() {
+  public final boolean isUseHttpCompression() {
     return useHttpCompression;
   }
 
   /**
    * @param useHttpCompression the useHttpCompression to set
    */
-  public void setUseHttpCompression(final boolean useHttpCompression) {
+  public final void setUseHttpCompression(final boolean useHttpCompression) {
     this.useHttpCompression = useHttpCompression;
   }
 
   /**
    * @return the cryptoKey
    */
-  public Des getCryptoKey() {
+  public final Des getCryptoKey() {
     return cryptoKey;
   }
 
   /**
    * @param cryptoKey the cryptoKey to set
    */
-  public void setCryptoKey(final Des cryptoKey) {
+  public final void setCryptoKey(final Des cryptoKey) {
     this.cryptoKey = cryptoKey;
   }
 
   /**
    * @return the cryptoFile
    */
-  public String getCryptoFile() {
+  public final String getCryptoFile() {
     return cryptoFile;
   }
 
   /**
    * @param cryptoFile the cryptoFile to set
    */
-  public void setCryptoFile(final String cryptoFile) {
+  public final void setCryptoFile(final String cryptoFile) {
     this.cryptoFile = cryptoFile;
   }
 
   /**
    * @return the useLocalExec
    */
-  public boolean isUseLocalExec() {
+  public final boolean isUseLocalExec() {
     return useLocalExec;
   }
 
   /**
    * @param useLocalExec the useLocalExec to set
    */
-  public void setUseLocalExec(final boolean useLocalExec) {
+  public final void setUseLocalExec(final boolean useLocalExec) {
     this.useLocalExec = useLocalExec;
   }
 
   /**
    * @return the isServer
    */
-  public boolean isServer() {
+  public final boolean isServer() {
     return isServer;
   }
 
   /**
    * @param isServer the isServer to set
    */
-  protected void setServer(final boolean isServer) {
+  protected final void setServer(final boolean isServer) {
     this.isServer = isServer;
   }
 
   /**
    * @return the rUNNER_THREAD
    */
-  public int getRunnerThread() {
+  public final int getRunnerThread() {
     return runnerThread;
   }
 
   /**
    * @param runnerTHREAD the rUNNER_THREAD to set
    */
-  public void setRunnerThread(final int runnerTHREAD) {
+  public final void setRunnerThread(final int runnerTHREAD) {
     if (runnerTHREAD > Commander.LIMIT_MAX_SUBMIT) {
       logger.warn("RunnerThread at {} will be limited to default maximum {}",
                   runnerTHREAD, Commander.LIMIT_MAX_SUBMIT);
@@ -2350,42 +2356,42 @@ public class Configuration {
   /**
    * @return the delayCommander
    */
-  public long getDelayCommander() {
+  public final long getDelayCommander() {
     return delayCommander;
   }
 
   /**
    * @param delayCommander the delayCommander to set
    */
-  public void setDelayCommander(final long delayCommander) {
+  public final void setDelayCommander(final long delayCommander) {
     this.delayCommander = delayCommander;
   }
 
   /**
    * @return the delayRetry
    */
-  public long getDelayRetry() {
+  public final long getDelayRetry() {
     return delayRetry;
   }
 
   /**
    * @param delayRetry the delayRetry to set
    */
-  public void setDelayRetry(final long delayRetry) {
+  public final void setDelayRetry(final long delayRetry) {
     this.delayRetry = delayRetry;
   }
 
   /**
    * @return the constraintLimitHandler
    */
-  public R66ConstraintLimitHandler getConstraintLimitHandler() {
+  public final R66ConstraintLimitHandler getConstraintLimitHandler() {
     return constraintLimitHandler;
   }
 
   /**
    * @param constraintLimitHandler the constraintLimitHandler to set
    */
-  public void setConstraintLimitHandler(
+  public final void setConstraintLimitHandler(
       final R66ConstraintLimitHandler constraintLimitHandler) {
     this.constraintLimitHandler = constraintLimitHandler;
   }
@@ -2393,140 +2399,141 @@ public class Configuration {
   /**
    * @return the checkRemoteAddress
    */
-  public boolean isCheckRemoteAddress() {
+  public final boolean isCheckRemoteAddress() {
     return checkRemoteAddress;
   }
 
   /**
    * @param checkRemoteAddress the checkRemoteAddress to set
    */
-  public void setCheckRemoteAddress(final boolean checkRemoteAddress) {
+  public final void setCheckRemoteAddress(final boolean checkRemoteAddress) {
     this.checkRemoteAddress = checkRemoteAddress;
   }
 
   /**
    * @return the checkClientAddress
    */
-  public boolean isCheckClientAddress() {
+  public final boolean isCheckClientAddress() {
     return checkClientAddress;
   }
 
   /**
    * @param checkClientAddress the checkClientAddress to set
    */
-  public void setCheckClientAddress(final boolean checkClientAddress) {
+  public final void setCheckClientAddress(final boolean checkClientAddress) {
     this.checkClientAddress = checkClientAddress;
   }
 
   /**
    * @return the saveTaskRunnerWithNoDb
    */
-  public boolean isSaveTaskRunnerWithNoDb() {
+  public final boolean isSaveTaskRunnerWithNoDb() {
     return saveTaskRunnerWithNoDb;
   }
 
   /**
    * @param saveTaskRunnerWithNoDb the saveTaskRunnerWithNoDb to set
    */
-  public void setSaveTaskRunnerWithNoDb(final boolean saveTaskRunnerWithNoDb) {
+  public final void setSaveTaskRunnerWithNoDb(
+      final boolean saveTaskRunnerWithNoDb) {
     this.saveTaskRunnerWithNoDb = saveTaskRunnerWithNoDb;
   }
 
   /**
    * @return the multipleMonitors
    */
-  public int getMultipleMonitors() {
+  public final int getMultipleMonitors() {
     return multipleMonitors;
   }
 
   /**
    * @param multipleMonitors the multipleMonitors to set
    */
-  public void setMultipleMonitors(final int multipleMonitors) {
+  public final void setMultipleMonitors(final int multipleMonitors) {
     this.multipleMonitors = multipleMonitors;
   }
 
   /**
    * @return the monitoring
    */
-  public Monitoring getMonitoring() {
+  public final Monitoring getMonitoring() {
     return monitoring;
   }
 
   /**
    * @param monitoring the monitoring to set
    */
-  public void setMonitoring(final Monitoring monitoring) {
+  public final void setMonitoring(final Monitoring monitoring) {
     this.monitoring = monitoring;
   }
 
   /**
    * @return the pastLimit
    */
-  public long getPastLimit() {
+  public final long getPastLimit() {
     return pastLimit;
   }
 
   /**
    * @param pastLimit the pastLimit to set
    */
-  public void setPastLimit(final long pastLimit) {
+  public final void setPastLimit(final long pastLimit) {
     this.pastLimit = pastLimit;
   }
 
   /**
    * @return the minimalDelay
    */
-  public long getMinimalDelay() {
+  public final long getMinimalDelay() {
     return minimalDelay;
   }
 
   /**
    * @param minimalDelay the minimalDelay to set
    */
-  public void setMinimalDelay(final long minimalDelay) {
+  public final void setMinimalDelay(final long minimalDelay) {
     this.minimalDelay = minimalDelay;
   }
 
   /**
    * @return the snmpConfig
    */
-  public String getSnmpConfig() {
+  public final String getSnmpConfig() {
     return snmpConfig;
   }
 
   /**
    * @param snmpConfig the snmpConfig to set
    */
-  public void setSnmpConfig(final String snmpConfig) {
+  public final void setSnmpConfig(final String snmpConfig) {
     this.snmpConfig = snmpConfig;
   }
 
   /**
    * @return the agentSnmp
    */
-  public WaarpSnmpAgent getAgentSnmp() {
+  public final WaarpSnmpAgent getAgentSnmp() {
     return agentSnmp;
   }
 
   /**
    * @param agentSnmp the agentSnmp to set
    */
-  public void setAgentSnmp(final WaarpSnmpAgent agentSnmp) {
+  public final void setAgentSnmp(final WaarpSnmpAgent agentSnmp) {
     this.agentSnmp = agentSnmp;
   }
 
   /**
    * @return the r66Mib
    */
-  public R66PrivateMib getR66Mib() {
+  public final R66PrivateMib getR66Mib() {
     return r66Mib;
   }
 
   /**
    * @param r66Mib the r66Mib to set
    */
-  public void setR66Mib(final R66PrivateMib r66Mib) {
+  public final void setR66Mib(final R66PrivateMib r66Mib) {
     this.r66Mib = r66Mib;
   }
 
@@ -2563,35 +2570,36 @@ public class Configuration {
   /**
    * @return the thriftService
    */
-  public R66ThriftServerService getThriftService() {
+  public final R66ThriftServerService getThriftService() {
     return thriftService;
   }
 
   /**
    * @param thriftService the thriftService to set
    */
-  public void setThriftService(final R66ThriftServerService thriftService) {
+  public final void setThriftService(
+      final R66ThriftServerService thriftService) {
     this.thriftService = thriftService;
   }
 
   /**
    * @return the thriftport
    */
-  public int getThriftport() {
+  public final int getThriftport() {
     return thriftport;
   }
 
   /**
    * @param thriftport the thriftport to set
    */
-  public void setThriftport(final int thriftport) {
+  public final void setThriftport(final int thriftport) {
     this.thriftport = thriftport;
   }
 
   /**
    * @return the isExecuteErrorBeforeTransferAllowed
    */
-  public boolean isExecuteErrorBeforeTransferAllowed() {
+  public final boolean isExecuteErrorBeforeTransferAllowed() {
     return isExecuteErrorBeforeTransferAllowed;
   }
 
@@ -2600,7 +2608,7 @@ public class Configuration {
    *     isExecuteErrorBeforeTransferAllowed
    *     to set
    */
-  public void setExecuteErrorBeforeTransferAllowed(
+  public final void setExecuteErrorBeforeTransferAllowed(
       final boolean isExecuteErrorBeforeTransferAllowed) {
     this.isExecuteErrorBeforeTransferAllowed =
         isExecuteErrorBeforeTransferAllowed;
@@ -2609,119 +2617,119 @@ public class Configuration {
   /**
    * @return the shutdownConfiguration
    */
-  public ShutdownConfiguration getShutdownConfiguration() {
+  public final ShutdownConfiguration getShutdownConfiguration() {
     return shutdownConfiguration;
   }
 
   /**
    * @return the isHostProxyfied
    */
-  public boolean isHostProxyfied() {
+  public final boolean isHostProxyfied() {
     return isHostProxyfied;
   }
 
   /**
    * @param isHostProxyfied the isHostProxyfied to set
    */
-  public void setHostProxyfied(final boolean isHostProxyfied) {
+  public final void setHostProxyfied(final boolean isHostProxyfied) {
     this.isHostProxyfied = isHostProxyfied;
   }
 
   /**
    * @return the warnOnStartup
    */
-  public boolean isWarnOnStartup() {
+  public final boolean isWarnOnStartup() {
     return warnOnStartup;
   }
 
   /**
    * @param warnOnStartup the warnOnStartup to set
    */
-  public void setWarnOnStartup(final boolean warnOnStartup) {
+  public final void setWarnOnStartup(final boolean warnOnStartup) {
     this.warnOnStartup = warnOnStartup;
   }
 
   /**
    * @return the chrootChecked
    */
-  public boolean isChrootChecked() {
+  public final boolean isChrootChecked() {
     return chrootChecked;
   }
 
   /**
    * @param chrootChecked the chrootChecked to set
    */
-  public void setChrootChecked(final boolean chrootChecked) {
+  public final void setChrootChecked(final boolean chrootChecked) {
     this.chrootChecked = chrootChecked;
   }
 
   /**
    * @return the blacklistBadAuthent
    */
-  public boolean isBlacklistBadAuthent() {
+  public final boolean isBlacklistBadAuthent() {
     return blacklistBadAuthent;
   }
 
   /**
    * @param blacklistBadAuthent the blacklistBadAuthent to set
    */
-  public void setBlacklistBadAuthent(final boolean blacklistBadAuthent) {
+  public final void setBlacklistBadAuthent(final boolean blacklistBadAuthent) {
     this.blacklistBadAuthent = blacklistBadAuthent;
   }
 
   /**
    * @return the maxfilenamelength
    */
-  public int getMaxfilenamelength() {
+  public final int getMaxfilenamelength() {
     return maxfilenamelength;
   }
 
   /**
    * @param maxfilenamelength the maxfilenamelength to set
    */
-  public void setMaxfilenamelength(final int maxfilenamelength) {
+  public final void setMaxfilenamelength(final int maxfilenamelength) {
     this.maxfilenamelength = maxfilenamelength;
   }
 
   /**
    * @return the timeStat
    */
-  public int getTimeStat() {
+  public final int getTimeStat() {
     return timeStat;
   }
 
   /**
    * @param timeStat the timeStat to set
    */
-  public void setTimeStat(final int timeStat) {
+  public final void setTimeStat(final int timeStat) {
     this.timeStat = timeStat;
   }
 
   /**
    * @return the limitCache
    */
-  public int getLimitCache() {
+  public final int getLimitCache() {
     return limitCache;
   }
 
   /**
    * @param limitCache the limitCache to set
    */
-  public void setLimitCache(final int limitCache) {
+  public final void setLimitCache(final int limitCache) {
     this.limitCache = limitCache;
   }
 
   /**
    * @return the timeLimitCache
    */
-  public long getTimeLimitCache() {
+  public final long getTimeLimitCache() {
     return timeLimitCache;
   }
 
   /**
    * @param timeLimitCache the timeLimitCache to set
    */
-  public void setTimeLimitCache(final long timeLimitCache) {
+  public final void setTimeLimitCache(final long timeLimitCache) {
     this.timeLimitCache = timeLimitCache;
   }
 
@@ -2742,15 +2750,15 @@ public class Configuration {
    * @param monitorTransformLongAsString True to transform Long as String (ELK)
    * @param delay delay between 2 exports
    */
-  public void setMonitorExporterTransfers(final String url,
-                                          final String basicAuthent,
-                                          final String token,
-                                          final String apiKey,
-                                          final String endpoint,
-                                          final int delay,
-                                          final boolean keepConnection,
-                                          final boolean monitorIntervalIncluded,
-                                          final boolean monitorTransformLongAsString) {
+  public final void setMonitorExporterTransfers(final String url,
+                                                final String basicAuthent,
+                                                final String token,
+                                                final String apiKey,
+                                                final String endpoint,
+                                                final int delay,
+                                                final boolean keepConnection,
+                                                final boolean monitorIntervalIncluded,
+                                                final boolean monitorTransformLongAsString) {
     this.monitorExporterDelay = delay;
     this.monitorExporterUrl = url;
     this.monitorExporterEndPoint = endpoint;
@@ -2766,14 +2774,15 @@ public class Configuration {
   /**
    * @return True if the compression is available
    */
-  public boolean isCompressionAvailable() {
+  public final boolean isCompressionAvailable() {
     return compressionAvailable;
   }
 
   /**
    * @param compressionAvailable
    */
-  public void setCompressionAvailable(final boolean compressionAvailable) {
+  public final void setCompressionAvailable(
+      final boolean compressionAvailable) {
     this.compressionAvailable = compressionAvailable;
   }
 
@@ -2801,17 +2810,17 @@ public class Configuration {
    *
    * @return True if the Elasticsearch factory is available
    */
-  public boolean setMonitorExporterTransfers(final String remoteBaseUrl,
-                                             final String username,
-                                             final String pwd,
-                                             final String token,
-                                             final String apiKey,
-                                             final String prefix,
-                                             final String index,
-                                             final boolean intervalMonitoringIncluded,
-                                             final boolean transformLongAsString,
-                                             final boolean compression,
-                                             final int delay) {
+  public final boolean setMonitorExporterTransfers(final String remoteBaseUrl,
+                                                   final String username,
+                                                   final String pwd,
+                                                   final String token,
+                                                   final String apiKey,
+                                                   final String prefix,
+                                                   final String index,
+                                                   final boolean intervalMonitoringIncluded,
+                                                   final boolean transformLongAsString,
+                                                   final boolean compression,
+                                                   final int delay) {
     this.monitorExporterDelay = delay;
     this.monitorExporterUrl = remoteBaseUrl;
     this.monitorIntervalIncluded = intervalMonitoringIncluded;
@@ -2826,7 +2835,7 @@ public class Configuration {
     isMonitorExporterApiRest = false;
     try {
       ElasticsearchMonitoringExporterClientBuilder.getFactory();
-    } catch (Exception e) {
+    } catch (final Exception e) {
       logger.error("Elasticsearch for MonitorExpoerter is not available in " +
                    "the classpath: {}", e.getMessage());
       return false;
@@ -2837,7 +2846,7 @@ public class Configuration {
   /**
    * Start the Monitor Exporter Transfers (through REST API)
    */
-  public void startMonitorExporterTransfers() {
+  public final void startMonitorExporterTransfers() {
     if (monitorExporterUrl != null && monitorExporterEndPoint != null &&
         monitorExporterDelay > 500) {
       if (isMonitorExporterApiRest) {
@@ -2867,7 +2876,7 @@ public class Configuration {
   /**
    * @param r66BusinessFactory the r66BusinessFactory to set
    */
-  public void setR66BusinessFactory(
+  public final void setR66BusinessFactory(
       final R66BusinessFactoryInterface r66BusinessFactory) {
     this.r66BusinessFactory = r66BusinessFactory;
   }

@@ -85,8 +85,8 @@ public class WaarpR66S3ClientTest {
     try (final MinioContainer container = new MinioContainer(
         new MinioContainer.CredentialsProvider(ACCESS_KEY, SECRET_KEY))) {
       container.start();
-      logger
-          .warn("{} with {} : {}", container.getURL(), ACCESS_KEY, SECRET_KEY);
+      logger.warn("{} with {} : {}", container.getURL(), ACCESS_KEY,
+                  SECRET_KEY);
       waarpR66S3Client =
           new WaarpR66S3Client(ACCESS_KEY, SECRET_KEY, container.getURL());
       final File test = createTestFile();

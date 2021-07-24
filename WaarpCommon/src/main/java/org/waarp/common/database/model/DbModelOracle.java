@@ -56,12 +56,12 @@ public abstract class DbModelOracle extends DbModelAbstract {
       extends DbModelAbstract.DbTypeResolver {
 
     @Override
-    public String getType(final int sqlType) {
+    public final String getType(final int sqlType) {
       return DBType.getType(sqlType);
     }
 
     @Override
-    public DbType getDbType() {
+    public final DbType getDbType() {
       return type;
     }
   }
@@ -74,7 +74,7 @@ public abstract class DbModelOracle extends DbModelAbstract {
   protected DbConnectionPool pool;
 
   @Override
-  public DbType getDbType() {
+  public final DbType getDbType() {
     return type;
   }
 
@@ -164,7 +164,7 @@ public abstract class DbModelOracle extends DbModelAbstract {
   }
 
   @Override
-  public void releaseResources() {
+  public final void releaseResources() {
     if (pool != null) {
       try {
         pool.dispose();
@@ -176,7 +176,7 @@ public abstract class DbModelOracle extends DbModelAbstract {
   }
 
   @Override
-  public int currentNumberOfPooledConnections() {
+  public final int currentNumberOfPooledConnections() {
     if (pool != null) {
       return pool.getActiveConnections();
     }
@@ -184,8 +184,10 @@ public abstract class DbModelOracle extends DbModelAbstract {
   }
 
   @Override
-  public Connection getDbConnection(final String server, final String user,
-                                    final String passwd) throws SQLException {
+  public final Connection getDbConnection(final String server,
+                                          final String user,
+                                          final String passwd)
+      throws SQLException {
     if (pool == null) {
       return super.getDbConnection(server, user, passwd);
     }
@@ -318,13 +320,13 @@ public abstract class DbModelOracle extends DbModelAbstract {
   }
 
   @Override
-  protected String validConnectionString() {
+  protected final String validConnectionString() {
     return "select 1 from dual";
   }
 
   @Override
-  public String limitRequest(final String allfields, final String request,
-                             final int nb) {
+  public final String limitRequest(final String allfields, final String request,
+                                   final int nb) {
     if (nb == 0) {
       return request;
     }

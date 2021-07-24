@@ -99,9 +99,9 @@ public class JdkLoggerTest {
     assertEquals("global", jdkLogger0.name());
     logger0 = Logger.getGlobal();
     jdkLogger0 = new WaarpJdkLogger(logger0);
-    jdkLogger0
-        .error("k'n(W*WnB(ip7/: ", "sun.reflect.GeneratedMethodAccessor11",
-               "k'n(W*WnB(ip7/: ");
+    jdkLogger0.error("k'n(W*WnB(ip7/: ",
+                     "sun.reflect.GeneratedMethodAccessor11",
+                     "k'n(W*WnB(ip7/: ");
     assertEquals("global", jdkLogger0.name());
     logger0 = Logger.getGlobal();
     jdkLogger0 = new WaarpJdkLogger(logger0);
@@ -251,8 +251,8 @@ public class JdkLoggerTest {
 
   @Test
   public void testIsInfoEnabled() {
-    WaarpLoggerFactory
-        .setDefaultFactory(new WaarpJdkLoggerFactory(WaarpLogLevel.INFO));
+    WaarpLoggerFactory.setDefaultFactory(
+        new WaarpJdkLoggerFactory(WaarpLogLevel.INFO));
     final WaarpLogger logger = WaarpLoggerFactory.getInstance("foo3");
     assertTrue(logger.isInfoEnabled());
     buf.setLength(0);
@@ -268,8 +268,8 @@ public class JdkLoggerTest {
 
   @Test
   public void testIsWarnEnabled() {
-    WaarpLoggerFactory
-        .setDefaultFactory(new WaarpJdkLoggerFactory(WaarpLogLevel.WARN));
+    WaarpLoggerFactory.setDefaultFactory(
+        new WaarpJdkLoggerFactory(WaarpLogLevel.WARN));
     final WaarpLogger logger = WaarpLoggerFactory.getInstance("foo4");
     assertTrue(logger.isWarnEnabled());
     buf.setLength(0);
@@ -285,8 +285,8 @@ public class JdkLoggerTest {
 
   @Test
   public void testIsErrorEnabled() {
-    WaarpLoggerFactory
-        .setDefaultFactory(new WaarpJdkLoggerFactory(WaarpLogLevel.ERROR));
+    WaarpLoggerFactory.setDefaultFactory(
+        new WaarpJdkLoggerFactory(WaarpLogLevel.ERROR));
     final WaarpLogger logger = WaarpLoggerFactory.getInstance("foo5");
     assertTrue(logger.isErrorEnabled());
     buf.setLength(0);

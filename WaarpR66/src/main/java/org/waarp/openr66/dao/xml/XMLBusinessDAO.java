@@ -94,7 +94,7 @@ public class XMLBusinessDAO implements BusinessDAO {
   @Override
   public Business select(final String hostid)
       throws DAOConnectionException, DAONoDataException {
-    Business business = dbR66BusinessHashMap.get(hostid);
+    final Business business = dbR66BusinessHashMap.get(hostid);
     if (business != null) {
       return business;
     }

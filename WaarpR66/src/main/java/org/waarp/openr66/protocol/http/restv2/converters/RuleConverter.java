@@ -69,7 +69,7 @@ public final class RuleConverter {
      */
     ascName(new Comparator<Rule>() {
       @Override
-      public int compare(final Rule t1, final Rule t2) {
+      public final int compare(final Rule t1, final Rule t2) {
         return t1.getName().compareTo(t2.getName());
       }
     }),
@@ -78,7 +78,7 @@ public final class RuleConverter {
      */
     descName(new Comparator<Rule>() {
       @Override
-      public int compare(final Rule t1, final Rule t2) {
+      public final int compare(final Rule t1, final Rule t2) {
         return -t1.getName().compareTo(t2.getName());//NOSONAR
       }
     });
@@ -207,7 +207,7 @@ public final class RuleConverter {
                            new ArrayList<RuleTask>(), new ArrayList<RuleTask>(),
                            new ArrayList<RuleTask>(),
                            new ArrayList<RuleTask>());
-    } catch (WaarpDatabaseSqlException e) {
+    } catch (final WaarpDatabaseSqlException e) {
       SysErrLogger.FAKE_LOGGER.syserr(e);
     }
 
@@ -247,8 +247,8 @@ public final class RuleConverter {
             errors.add(FIELD_NOT_ALLOWED(RULE_NAME));
           }
         } else {
-          errors.add(ILLEGAL_FIELD_VALUE(RULE_NAME, XmlUtil
-              .getExtraTrimed(value.toString())));
+          errors.add(ILLEGAL_FIELD_VALUE(RULE_NAME, XmlUtil.getExtraTrimed(
+              value.toString())));
         }
       } else if (name.equalsIgnoreCase(HOST_IDS)) {
         if (value.isArray()) {
@@ -259,14 +259,14 @@ public final class RuleConverter {
             if (element.isTextual()) {
               hosts.add(XmlUtil.getExtraTrimed(element.asText()));
             } else {
-              errors.add(ILLEGAL_FIELD_VALUE(HOST_IDS, XmlUtil
-                  .getExtraTrimed(value.toString())));
+              errors.add(ILLEGAL_FIELD_VALUE(HOST_IDS, XmlUtil.getExtraTrimed(
+                  value.toString())));
             }
           }
           oldRule.setHostids(hosts);
         } else {
-          errors.add(ILLEGAL_FIELD_VALUE(HOST_IDS, XmlUtil
-              .getExtraTrimed(value.toString())));
+          errors.add(ILLEGAL_FIELD_VALUE(HOST_IDS, XmlUtil.getExtraTrimed(
+              value.toString())));
         }
       } else if (name.equalsIgnoreCase(MODE_TRANS)) {
         if (value.isTextual()) {
@@ -275,82 +275,82 @@ public final class RuleConverter {
                 ModeTrans.valueOf(XmlUtil.getExtraTrimed(value.asText()));
             oldRule.setMode(modeTrans.code);
           } catch (final IllegalArgumentException e) {
-            errors.add(ILLEGAL_FIELD_VALUE(MODE_TRANS, XmlUtil
-                .getExtraTrimed(value.toString())));
+            errors.add(ILLEGAL_FIELD_VALUE(MODE_TRANS, XmlUtil.getExtraTrimed(
+                value.toString())));
           }
         } else {
-          errors.add(ILLEGAL_FIELD_VALUE(MODE_TRANS, XmlUtil
-              .getExtraTrimed(value.toString())));
+          errors.add(ILLEGAL_FIELD_VALUE(MODE_TRANS, XmlUtil.getExtraTrimed(
+              value.toString())));
         }
       } else if (name.equalsIgnoreCase(RECV_PATH)) {
         if (value.isTextual()) {
           oldRule.setRecvPath(XmlUtil.getExtraTrimed(value.asText()));
         } else {
-          errors.add(ILLEGAL_FIELD_VALUE(RECV_PATH, XmlUtil
-              .getExtraTrimed(value.toString())));
+          errors.add(ILLEGAL_FIELD_VALUE(RECV_PATH, XmlUtil.getExtraTrimed(
+              value.toString())));
         }
       } else if (name.equalsIgnoreCase(SEND_PATH)) {
         if (value.isTextual()) {
           oldRule.setSendPath(XmlUtil.getExtraTrimed(value.asText()));
         } else {
-          errors.add(ILLEGAL_FIELD_VALUE(SEND_PATH, XmlUtil
-              .getExtraTrimed(value.toString())));
+          errors.add(ILLEGAL_FIELD_VALUE(SEND_PATH, XmlUtil.getExtraTrimed(
+              value.toString())));
         }
       } else if (name.equalsIgnoreCase(ARCHIVE_PATH)) {
         if (value.isTextual()) {
           oldRule.setArchivePath(XmlUtil.getExtraTrimed(value.asText()));
         } else {
-          errors.add(ILLEGAL_FIELD_VALUE(ARCHIVE_PATH, XmlUtil
-              .getExtraTrimed(value.toString())));
+          errors.add(ILLEGAL_FIELD_VALUE(ARCHIVE_PATH, XmlUtil.getExtraTrimed(
+              value.toString())));
         }
       } else if (name.equalsIgnoreCase(WORK_PATH)) {
         if (value.isTextual()) {
           oldRule.setWorkPath(XmlUtil.getExtraTrimed(value.asText()));
         } else {
-          errors.add(ILLEGAL_FIELD_VALUE(WORK_PATH, XmlUtil
-              .getExtraTrimed(value.toString())));
+          errors.add(ILLEGAL_FIELD_VALUE(WORK_PATH, XmlUtil.getExtraTrimed(
+              value.toString())));
         }
       } else if (name.equalsIgnoreCase(R_PRE_TASKS)) {
         if (value.isArray()) {
           oldRule.setRPreTasks(parseTasks((ArrayNode) value, R_PRE_TASKS));
         } else {
-          errors.add(ILLEGAL_FIELD_VALUE(R_PRE_TASKS, XmlUtil
-              .getExtraTrimed(value.toString())));
+          errors.add(ILLEGAL_FIELD_VALUE(R_PRE_TASKS, XmlUtil.getExtraTrimed(
+              value.toString())));
         }
       } else if (name.equalsIgnoreCase(R_POST_TASKS)) {
         if (value.isArray()) {
           oldRule.setRPostTasks(parseTasks((ArrayNode) value, R_POST_TASKS));
         } else {
-          errors.add(ILLEGAL_FIELD_VALUE(R_POST_TASKS, XmlUtil
-              .getExtraTrimed(value.toString())));
+          errors.add(ILLEGAL_FIELD_VALUE(R_POST_TASKS, XmlUtil.getExtraTrimed(
+              value.toString())));
         }
       } else if (name.equalsIgnoreCase(R_ERROR_TASKS)) {
         if (value.isArray()) {
           oldRule.setRErrorTasks(parseTasks((ArrayNode) value, R_ERROR_TASKS));
         } else {
-          errors.add(ILLEGAL_FIELD_VALUE(R_ERROR_TASKS, XmlUtil
-              .getExtraTrimed(value.toString())));
+          errors.add(ILLEGAL_FIELD_VALUE(R_ERROR_TASKS, XmlUtil.getExtraTrimed(
+              value.toString())));
         }
       } else if (name.equalsIgnoreCase(S_PRE_TASKS)) {
         if (value.isArray()) {
           oldRule.setSPreTasks(parseTasks((ArrayNode) value, S_PRE_TASKS));
         } else {
-          errors.add(ILLEGAL_FIELD_VALUE(S_PRE_TASKS, XmlUtil
-              .getExtraTrimed(value.toString())));
+          errors.add(ILLEGAL_FIELD_VALUE(S_PRE_TASKS, XmlUtil.getExtraTrimed(
+              value.toString())));
         }
       } else if (name.equalsIgnoreCase(S_POST_TASKS)) {
         if (value.isArray()) {
           oldRule.setSPostTasks(parseTasks((ArrayNode) value, S_POST_TASKS));
         } else {
-          errors.add(ILLEGAL_FIELD_VALUE(S_POST_TASKS, XmlUtil
-              .getExtraTrimed(value.toString())));
+          errors.add(ILLEGAL_FIELD_VALUE(S_POST_TASKS, XmlUtil.getExtraTrimed(
+              value.toString())));
         }
       } else if (name.equalsIgnoreCase(S_ERROR_TASKS)) {
         if (value.isArray()) {
           oldRule.setSErrorTasks(parseTasks((ArrayNode) value, S_ERROR_TASKS));
         } else {
-          errors.add(ILLEGAL_FIELD_VALUE(S_ERROR_TASKS, XmlUtil
-              .getExtraTrimed(value.toString())));
+          errors.add(ILLEGAL_FIELD_VALUE(S_ERROR_TASKS, XmlUtil.getExtraTrimed(
+              value.toString())));
         }
       } else {
         errors.add(UNKNOWN_FIELD(name));
@@ -454,29 +454,30 @@ public final class RuleConverter {
 
           if (name.equalsIgnoreCase(TASK_TYPE)) {
             if (value.isTextual()) {
-              String taskType = XmlUtil.getExtraTrimed(value.asText());
+              final String taskType = XmlUtil.getExtraTrimed(value.asText());
               if (TaskType.isValidTask(taskType)) {
                 task.setType(taskType);
               } else {
                 errors.add(ILLEGAL_FIELD_VALUE(TASK_TYPE, taskType));
               }
             } else {
-              errors.add(ILLEGAL_FIELD_VALUE(TASK_TYPE, XmlUtil
-                  .getExtraTrimed(value.toString())));
+              errors.add(ILLEGAL_FIELD_VALUE(TASK_TYPE, XmlUtil.getExtraTrimed(
+                  value.toString())));
             }
           } else if (name.equalsIgnoreCase(TASK_ARGUMENTS)) {
             if (value.isTextual()) {
               task.setPath(XmlUtil.getExtraTrimed(value.asText()));
             } else {
-              errors.add(ILLEGAL_FIELD_VALUE(TASK_ARGUMENTS, XmlUtil
-                  .getExtraTrimed(value.toString())));
+              errors.add(ILLEGAL_FIELD_VALUE(TASK_ARGUMENTS,
+                                             XmlUtil.getExtraTrimed(
+                                                 value.toString())));
             }
           } else if (name.equalsIgnoreCase(TASK_DELAY)) {
             if (value.canConvertToInt() && value.asInt() >= 0) {
               task.setDelay(value.asInt());
             } else {
-              errors.add(ILLEGAL_FIELD_VALUE(TASK_DELAY, XmlUtil
-                  .getExtraTrimed(value.toString())));
+              errors.add(ILLEGAL_FIELD_VALUE(TASK_DELAY, XmlUtil.getExtraTrimed(
+                  value.toString())));
             }
           } else {
             errors.add(UNKNOWN_FIELD(name));
@@ -488,8 +489,8 @@ public final class RuleConverter {
           result.add(task);
         }
       } else {
-        errors.add(ILLEGAL_FIELD_VALUE(fieldName, XmlUtil
-            .getExtraTrimed(element.toString())));
+        errors.add(ILLEGAL_FIELD_VALUE(fieldName, XmlUtil.getExtraTrimed(
+            element.toString())));
       }
     }
 

@@ -265,7 +265,7 @@ public class ChannelUtils extends Thread {
     if (nsh != null) {
       nsh.resetKeepAlive();
     }
-    NetworkChannelReference ncr =
+    final NetworkChannelReference ncr =
         localChannelReference.getNetworkChannelObject();
     if (ncr != null) {
       ncr.use();
@@ -287,10 +287,9 @@ public class ChannelUtils extends Thread {
     }
     // First try to StopAll
     if (admin != null) {
-      TransferUtils
-          .stopSelectedTransfers(admin.getSession(), 0, null, null, null, null,
-                                 null, null, null, null, null, true, true,
-                                 true);
+      TransferUtils.stopSelectedTransfers(admin.getSession(), 0, null, null,
+                                          null, null, null, null, null, null,
+                                          null, true, true, true);
     }
     Configuration.configuration.setShutdown(true);
     Configuration.configuration.prepareServerStop();
@@ -340,8 +339,8 @@ public class ChannelUtils extends Thread {
     logger.info("Exit Shutdown Db Connection");
     DbAdmin.closeAllConnection();
     logger.warn(Messages.getString("ChannelUtils.15")); //$NON-NLS-1$
-    SysErrLogger.FAKE_LOGGER
-        .syserr(Messages.getString("ChannelUtils.15")); //$NON-NLS-1$
+    SysErrLogger.FAKE_LOGGER.syserr(
+        Messages.getString("ChannelUtils.15")); //$NON-NLS-1$
     WaarpSystemUtil.stopLogger(false);
   }
 

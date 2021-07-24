@@ -93,9 +93,9 @@ public class DbModelFactory {
    *
    * @return True if present
    */
-  public static boolean containsDbType(DbType... types) {
-    for (DbModel dbModel : dbModels) {
-      for (DbType dbType : types) {
+  public static boolean containsDbType(final DbType... types) {
+    for (final DbModel dbModel : dbModels) {
+      for (final DbType dbType : types) {
         if (dbModel.getDbType() == dbType) {
           return true;
         }

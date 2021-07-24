@@ -46,7 +46,7 @@ public abstract class AbstractHttpBusinessRequest {
    * @return the Map<String, AbstractHttpField> associated with the
    *     current request
    */
-  public Map<String, AbstractHttpField> getMapHttpFields() {
+  public final Map<String, AbstractHttpField> getMapHttpFields() {
     return fields;
   }
 
@@ -122,7 +122,7 @@ public abstract class AbstractHttpBusinessRequest {
   /**
    * Used at the end of the request to release the resources
    */
-  public void cleanRequest() {
+  public final void cleanRequest() {
     for (final AbstractHttpField field : fields.values()) {
       field.clean();
     }

@@ -141,8 +141,8 @@ public class HttpRestR66Client extends HttpRestClientHelper {
       if (ParametersChecker.isNotEmpty(model)) {
         final RESTHANDLERS dbdata = RESTHANDLERS.valueOf(model);
         final DataModelRestMethodHandler<?> handler =
-            (DataModelRestMethodHandler<?>) HttpRestHandler.defaultConfiguration.restHashMap
-                .get(dbdata.uri);
+            (DataModelRestMethodHandler<?>) HttpRestHandler.defaultConfiguration.restHashMap.get(
+                dbdata.uri);
         return handler.getPrimaryPropertyName();
       }
     } catch (final Exception ignored) {
@@ -169,8 +169,8 @@ public class HttpRestR66Client extends HttpRestClientHelper {
         if (ParametersChecker.isNotEmpty(model)) {
           final RESTHANDLERS rmodel = RESTHANDLERS.valueOf(model);
           try {
-            return (AbstractDbData) rmodel.clasz
-                .getConstructor(ObjectNode.class).newInstance(node);
+            return (AbstractDbData) rmodel.clasz.getConstructor(
+                ObjectNode.class).newInstance(node);
           } catch (final Exception e) {
             throw new HttpIncorrectRequestException(e);
           }

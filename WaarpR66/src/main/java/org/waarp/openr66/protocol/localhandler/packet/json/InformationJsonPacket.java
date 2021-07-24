@@ -76,7 +76,7 @@ public class InformationJsonPacket extends JsonPacket {
   /**
    * @return the isIdRequest
    */
-  public boolean isIdRequest() {
+  public final boolean isIdRequest() {
     return isIdRequest;
   }
 
@@ -85,21 +85,21 @@ public class InformationJsonPacket extends JsonPacket {
    *     else
    *     for File listing
    */
-  public void setIdRequest(final boolean isIdRequest) {
+  public final void setIdRequest(final boolean isIdRequest) {
     this.isIdRequest = isIdRequest;
   }
 
   /**
    * @return the id
    */
-  public long getId() {
+  public final long getId() {
     return id;
   }
 
   /**
    * @param id the id to set
    */
-  public void setId(final long id) {
+  public final void setId(final long id) {
     this.id = id;
   }
 
@@ -107,35 +107,35 @@ public class InformationJsonPacket extends JsonPacket {
    * @return the isTo for Transfer, determine the way of the transfer as
    *     requester/requested (isTo true/false)
    */
-  public boolean isTo() {
+  public final boolean isTo() {
     return isTo;
   }
 
   /**
    * @param isTo the isTo to set
    */
-  public void setTo(final boolean isTo) {
+  public final void setTo(final boolean isTo) {
     this.isTo = isTo;
   }
 
   /**
    * @return the request
    */
-  public byte getRequest() {
+  public final byte getRequest() {
     return request;
   }
 
   /**
    * @param request the request to set
    */
-  public void setRequest(final byte request) {
+  public final void setRequest(final byte request) {
     this.request = request;
   }
 
   /**
    * @return the rulename
    */
-  public String getRulename() {
+  public final String getRulename() {
     return rulename;
   }
 
@@ -143,26 +143,26 @@ public class InformationJsonPacket extends JsonPacket {
    * @param rulename the rulename to set (if Transfer and Json
    *     requester/requested (isTo true/false))
    */
-  public void setRulename(final String rulename) {
+  public final void setRulename(final String rulename) {
     this.rulename = rulename;
   }
 
   /**
    * @return the filename
    */
-  public String getFilename() {
+  public final String getFilename() {
     return filename;
   }
 
   /**
    * @param filename the filename to set
    */
-  public void setFilename(final String filename) {
+  public final void setFilename(final String filename) {
     this.filename = filename;
   }
 
   @Override
-  public void setRequestUserPacket() {
+  public final void setRequestUserPacket() {
     setRequestUserPacket(LocalPacketFactory.INFORMATIONPACKET);
   }
 }

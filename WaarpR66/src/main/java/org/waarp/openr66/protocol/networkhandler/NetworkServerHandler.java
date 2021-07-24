@@ -220,11 +220,9 @@ public class NetworkServerHandler
       return;
     }
     if (evt instanceof IdleStateEvent) {
-      if (networkChannelReference != null && networkChannelReference
-                                                 .checkLastTime(
-                                                     Configuration.configuration
-                                                         .getTimeoutCon() *
-                                                     2) <= 0) {
+      if (networkChannelReference != null &&
+          networkChannelReference.checkLastTime(
+              Configuration.configuration.getTimeoutCon() * 2) <= 0) {
         resetKeepAlive();
         return;
       }
@@ -273,7 +271,7 @@ public class NetworkServerHandler
     }
   }
 
-  public void resetKeepAlive() {
+  public final void resetKeepAlive() {
     keepAlivedSent.set(0);
     if (networkChannelReference != null) {
       networkChannelReference.useIfUsed();
@@ -306,7 +304,7 @@ public class NetworkServerHandler
                   "Tentative of connection failed ({}) but still some connection" +
                   " are there so not closing the server channel immediately: {}",
                   LocalPacketCodec.decodeNetworkPacket(msg.getBuffer()), nb);
-            } catch (OpenR66ProtocolPacketException ignore) {
+            } catch (final OpenR66ProtocolPacketException ignore) {
               logger.warn(
                   "Tentative of connection failed but still some connection" +
                   " are there so not closing the server channel immediately: {}",
@@ -327,8 +325,8 @@ public class NetworkServerHandler
       } else if (msg.getCode() == LocalPacketFactory.KEEPALIVEPACKET) {
         try {
           final KeepAlivePacket keepAlivePacket =
-              (KeepAlivePacket) LocalPacketCodec
-                  .decodeNetworkPacket(msg.getBuffer());
+              (KeepAlivePacket) LocalPacketCodec.decodeNetworkPacket(
+                  msg.getBuffer());
           if (keepAlivePacket.isToValidate()) {
             keepAlivePacket.validate();
             final NetworkPacket response =
@@ -350,9 +348,9 @@ public class NetworkServerHandler
       networkChannelReference.use();
       final LocalChannelReference localChannelReference;
       if (msg.getLocalId() == ChannelUtils.NOCHANNEL) {
-        localChannelReference = NetworkTransaction
-            .createConnectionFromNetworkChannelStartup(networkChannelReference,
-                                                       msg, isSSL);
+        localChannelReference =
+            NetworkTransaction.createConnectionFromNetworkChannelStartup(
+                networkChannelReference, msg, isSSL);
       } else {
         if (msg.getCode() == LocalPacketFactory.ENDREQUESTPACKET) {
           // Coming from remote
@@ -408,9 +406,8 @@ public class NetworkServerHandler
             if (remoteAddress == null) {
               remoteAddress = channel.remoteAddress();
             }
-            if (NetworkTransaction
-                    .isShuttingdownNetworkChannel(remoteAddress) ||
-                WaarpShutdownHook.isShutdownStarting()) {
+            if (NetworkTransaction.isShuttingdownNetworkChannel(
+                remoteAddress) || WaarpShutdownHook.isShutdownStarting()) {
               // ignore
               msg.clear();
               return;
@@ -430,8 +427,8 @@ public class NetworkServerHandler
       // check if not already in shutdown or closed
       if (NetworkTransaction.isShuttingdownNetworkChannel(remoteAddress) ||
           WaarpShutdownHook.isShutdownStarting()) {
-        logger
-            .debug("Cannot use LocalChannel since already in shutdown: " + msg);
+        logger.debug(
+            "Cannot use LocalChannel since already in shutdown: " + msg);
         // ignore
         msg.clear();
         return;
@@ -468,8 +465,9 @@ public class NetworkServerHandler
       ChannelCloseTimer.closeFutureChannel(channel);
       return;
     }
-    final OpenR66Exception exception = OpenR66ExceptionTrappedFactory
-        .getExceptionFromTrappedException(channel, cause);
+    final OpenR66Exception exception =
+        OpenR66ExceptionTrappedFactory.getExceptionFromTrappedException(channel,
+                                                                        cause);
     if (exception != null) {
       if (exception instanceof OpenR66ProtocolBusinessNoWriteBackException) {
         if (networkChannelReference != null &&
@@ -546,17 +544,18 @@ public class NetworkServerHandler
       finalNP.clear();
     }
   }
+
   /**
    * @return the dbSession
    */
-  public DbSession getDbSession() {
+  public final DbSession getDbSession() {
     return dbSession;
   }
 
   /**
    * @return True if this Handler is for SSL
    */
-  public boolean isSsl() {
+  public final boolean isSsl() {
     return isSSL;
   }
 }

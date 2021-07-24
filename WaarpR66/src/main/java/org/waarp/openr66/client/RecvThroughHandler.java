@@ -47,7 +47,7 @@ public abstract class RecvThroughHandler {
    *
    * @return the array of bytes
    */
-  protected byte[] getBytes(final ByteBuf buffer) {
+  protected final byte[] getBytes(final ByteBuf buffer) {
     final byte[] dst = new byte[buffer.readableBytes()];
     buffer.readBytes(dst, 0, dst.length);
     return dst;

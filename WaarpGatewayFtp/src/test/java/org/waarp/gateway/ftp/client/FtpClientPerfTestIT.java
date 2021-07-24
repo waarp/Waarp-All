@@ -112,8 +112,8 @@ public class FtpClientPerfTestIT {
                                    FileSystemBasedDataBusinessHandler.class,
                                    new FilesystemBasedFileParameterImpl());
     try {
-      if (!configuration
-          .setConfigurationServerFromXml(file.getAbsolutePath())) {
+      if (!configuration.setConfigurationServerFromXml(
+          file.getAbsolutePath())) {
         System.err.println("Bad main configuration");
         Assert.fail("Bad main configuration");
       }
@@ -321,10 +321,9 @@ public class FtpClientPerfTestIT {
       client.disconnect();
     }
     long stop = System.currentTimeMillis();
-    logger
-        .warn("Do Transfer {} at {}/s {} passive {}/s active/s", numberOK.get(),
-              numberOK.get() * 1000.0 / (stop - start),
-              (c2 - c1) * 1000.0 / (t2 - t1), (c3 - c2) * 1000.0 / (t3 - t2));
+    logger.warn("Do Transfer {} at {}/s {} passive {}/s active/s",
+                numberOK.get(), numberOK.get() * 1000.0 / (stop - start),
+                (c2 - c1) * 1000.0 / (t2 - t1), (c3 - c2) * 1000.0 / (t3 - t2));
     assertEquals("No KO", 0, numberKO.get());
   }
 
@@ -332,9 +331,8 @@ public class FtpClientPerfTestIT {
                                    File localFilename, boolean mode) {
     final String smode = mode? "passive" : "active";
     logger.info(" transfer {} store ", smode);
-    if (!client
-        .transferFile(localFilename.getAbsolutePath(), localFilename.getName(),
-                      1)) {
+    if (!client.transferFile(localFilename.getAbsolutePath(),
+                             localFilename.getName(), 1)) {
       logger.warn("Cant store file {} mode ", smode);
       numberKO.incrementAndGet();
       return;
@@ -348,9 +346,8 @@ public class FtpClientPerfTestIT {
     } else {
       numberOK.incrementAndGet();
     }
-    if (!client
-        .transferFile(localFilename.getAbsolutePath(), localFilename.getName(),
-                      1)) {
+    if (!client.transferFile(localFilename.getAbsolutePath(),
+                             localFilename.getName(), 1)) {
       logger.warn("Cant store file {} mode ", smode);
       numberKO.incrementAndGet();
       return;

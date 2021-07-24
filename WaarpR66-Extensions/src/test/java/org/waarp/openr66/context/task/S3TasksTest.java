@@ -159,8 +159,8 @@ public class S3TasksTest {
     try (final MinioContainer container = new MinioContainer(
         new MinioContainer.CredentialsProvider(ACCESS_KEY, SECRET_KEY))) {
       container.start();
-      logger
-          .warn("{} with {} : {}", container.getURL(), ACCESS_KEY, SECRET_KEY);
+      logger.warn("{} with {} : {}", container.getURL(), ACCESS_KEY,
+                  SECRET_KEY);
       final File test = createTestFile();
 
       // First PUT

@@ -57,7 +57,7 @@ class SoftReferenceCacheEntry<V> implements InterfaceLruCacheEntry<V> {
    * @return value if entry is valid
    */
   @Override
-  public V getValue() {
+  public final V getValue() {
     V value = null;
 
     // check expiration time
@@ -69,12 +69,12 @@ class SoftReferenceCacheEntry<V> implements InterfaceLruCacheEntry<V> {
   }
 
   @Override
-  public boolean isStillValid(final long timeRef) {
+  public final boolean isStillValid(final long timeRef) {
     return timeRef <= expirationTime;
   }
 
   @Override
-  public boolean resetTime(final long ttl) {
+  public final boolean resetTime(final long ttl) {
     expirationTime = System.currentTimeMillis() + ttl;
     return true;
   }

@@ -49,8 +49,8 @@ public class SimpleGatewaySslFtpServer {
           " <config-file> <ssl-config-file> SSL|AUTH");
       return;
     }
-    WaarpLoggerFactory
-        .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));
+    WaarpLoggerFactory.setDefaultFactoryIfNotSame(
+        new WaarpSlf4JLoggerFactory(null));
     /*
      * Internal Logger
      */
@@ -66,8 +66,8 @@ public class SimpleGatewaySslFtpServer {
       SysErrLogger.FAKE_LOGGER.syserr("Bad configuration");
       return;
     }
-    if (!FileBasedSslConfiguration
-        .setConfigurationServerFromXml(configuration, args[1])) {
+    if (!FileBasedSslConfiguration.setConfigurationServerFromXml(configuration,
+                                                                 args[1])) {
       SysErrLogger.FAKE_LOGGER.syserr("Bad Ssl configuration");
       return;
     }

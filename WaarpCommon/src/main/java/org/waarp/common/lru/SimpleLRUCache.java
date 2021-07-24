@@ -41,7 +41,7 @@ public class SimpleLRUCache<K, V> extends LinkedHashMap<K, V> {
   }
 
   @Override
-  protected boolean removeEldestEntry(final Entry<K, V> entry) {
+  protected final boolean removeEldestEntry(final Entry<K, V> entry) {
     return size() > capacity;
   }
 }

@@ -33,7 +33,7 @@ public class BlowfishManager extends KeyManager {
   }
 
   @Override
-  public KeyObject createKeyObject() {
+  public final KeyObject createKeyObject() {
     return new Blowfish();
   }
 }

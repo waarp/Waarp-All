@@ -116,19 +116,20 @@ public class HttpDeleteSession extends HttpSessionAbstract {
   /**
    * @return the File
    */
-  public File getFile() {
+  public final File getFile() {
     return file;
   }
 
   /**
    * @return the identifier
    */
-  public String getIdentifier() {
+  public final String getIdentifier() {
     return identifier;
   }
 
   @Override
-  public void error(final Exception e, final R66BusinessInterface business)
+  public final void error(final Exception e,
+                          final R66BusinessInterface business)
       throws IllegalArgumentException {
     logger.error(e.getMessage());
     if (business != null) {

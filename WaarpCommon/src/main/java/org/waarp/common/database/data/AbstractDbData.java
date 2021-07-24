@@ -267,7 +267,7 @@ public abstract class AbstractDbData {
     }
   }
 
-  public DbValue[] getAllFields() {
+  public final DbValue[] getAllFields() {
     return allFields;
   }
 
@@ -527,8 +527,8 @@ public abstract class AbstractDbData {
    * @throws WaarpDatabaseNoConnectionException
    * @throws WaarpDatabaseSqlException
    */
-  protected void setValues(final DbPreparedStatement preparedStatement,
-                           final DbValue[] values)
+  protected final void setValues(final DbPreparedStatement preparedStatement,
+                                 final DbValue[] values)
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
     final PreparedStatement ps = preparedStatement.getPreparedStatement();
     for (int i = 0; i < values.length; i++) {

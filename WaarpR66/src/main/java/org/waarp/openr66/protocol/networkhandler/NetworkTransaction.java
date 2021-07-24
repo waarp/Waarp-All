@@ -145,18 +145,18 @@ public class NetworkTransaction {
 
   public NetworkTransaction() {
     networkChannelGroup = new DefaultChannelGroup("NetworkChannels",
-                                                  Configuration.configuration
-                                                      .getSubTaskGroup()
-                                                      .next());
+                                                  Configuration.configuration.getSubTaskGroup()
+                                                                             .next());
     Configuration.configuration.setupLimitHandler();
     clientBootstrap = new Bootstrap();
     if (Configuration.configuration.isUseNOSSL() &&
         Configuration.configuration.getHostId() != null) {
       final NetworkServerInitializer networkServerInitializer =
           new NetworkServerInitializer(false);
-      WaarpNettyUtil.setBootstrap(clientBootstrap, Configuration.configuration
-          .getNetworkWorkerGroup(), (int) Configuration.configuration
-          .getTimeoutCon(), configuration.getBlockSize() + 64, false);
+      WaarpNettyUtil.setBootstrap(clientBootstrap,
+                                  Configuration.configuration.getNetworkWorkerGroup(),
+                                  (int) Configuration.configuration.getTimeoutCon(),
+                                  configuration.getBlockSize() + 64, false);
       clientBootstrap.handler(networkServerInitializer);
     }
     clientSslBootstrap = new Bootstrap();
@@ -165,10 +165,8 @@ public class NetworkTransaction {
       final NetworkSslServerInitializer networkSslServerInitializer =
           new NetworkSslServerInitializer(true);
       WaarpNettyUtil.setBootstrap(clientSslBootstrap,
-                                  Configuration.configuration
-                                      .getNetworkWorkerGroup(),
-                                  (int) Configuration.configuration
-                                      .getTimeoutCon(),
+                                  Configuration.configuration.getNetworkWorkerGroup(),
+                                  (int) Configuration.configuration.getTimeoutCon(),
                                   configuration.getBlockSize() + 64, false);
       clientSslBootstrap.handler(networkSslServerInitializer);
     } else {
@@ -183,23 +181,21 @@ public class NetworkTransaction {
   public static String hashStatus() {
     final StringBuilder partial =
         new StringBuilder("NetworkTransaction: [InShutdown: ");
-    partial
-        .append(networkChannelShutdownOnSocketAddressConcurrentHashMap.size())
-        .append(" Blacklisted: ").append(
-        networkChannelBlacklistedOnInetSocketAddressConcurrentHashMap.size())
-        .append("\n RetrieveRunner: ")
-        .append(retrieveRunnerConcurrentHashMap.size())
-        .append(" ClientNetworkChannels: ")
-        .append(clientNetworkChannelsPerHostId.size());
+    partial.append(
+               networkChannelShutdownOnSocketAddressConcurrentHashMap.size())
+           .append(" Blacklisted: ").append(
+               networkChannelBlacklistedOnInetSocketAddressConcurrentHashMap.size())
+           .append("\n RetrieveRunner: ")
+           .append(retrieveRunnerConcurrentHashMap.size())
+           .append(" ClientNetworkChannels: ")
+           .append(clientNetworkChannelsPerHostId.size());
     int nb = 0;
-    for (final ClientNetworkChannels clientNetworkChannels : clientNetworkChannelsPerHostId
-        .values()) {
+    for (final ClientNetworkChannels clientNetworkChannels : clientNetworkChannelsPerHostId.values()) {
       nb += clientNetworkChannels.size();
     }
     partial.append(" Sum of ClientNetworkChannels NetworkClients: ").append(nb);
     nb = 0;
-    for (final NetworkChannelReference ncr : networkChannelOnSocketAddressConcurrentHashMap
-        .values()) {
+    for (final NetworkChannelReference ncr : networkChannelOnSocketAddressConcurrentHashMap.values()) {
       nb += ncr.nbLocalChannels();
       partial.append("\n NetworkChannels: ").append(ncr.toString());
     }
@@ -214,7 +210,8 @@ public class NetworkTransaction {
 
   private static WaarpLock getLockNCR(final SocketAddress sa) {
     final int key = sa.hashCode();
-    final WaarpLock value = reentrantLockOnSocketAddressConcurrentHashMap.get(key);
+    final WaarpLock value =
+        reentrantLockOnSocketAddressConcurrentHashMap.get(key);
     if (value != null) {
       reentrantLockOnSocketAddressConcurrentHashMap.updateTtl(key);
     }
@@ -226,14 +223,14 @@ public class NetworkTransaction {
   }
 
   private static void addNCR(final NetworkChannelReference ncr) {
-    networkChannelOnSocketAddressConcurrentHashMap
-        .put(ncr.getSocketHashCode(), ncr);
+    networkChannelOnSocketAddressConcurrentHashMap.put(ncr.getSocketHashCode(),
+                                                       ncr);
   }
 
   private static NetworkChannelReference removeNCR(
       final NetworkChannelReference ncr) {
-    return networkChannelOnSocketAddressConcurrentHashMap
-        .remove(ncr.getSocketHashCode());
+    return networkChannelOnSocketAddressConcurrentHashMap.remove(
+        ncr.getSocketHashCode());
   }
 
   private static NetworkChannelReference getNCR(final SocketAddress sa) {
@@ -241,58 +238,58 @@ public class NetworkTransaction {
   }
 
   private static boolean containsNCR(final SocketAddress address) {
-    return networkChannelOnSocketAddressConcurrentHashMap
-        .containsKey(address.hashCode());
+    return networkChannelOnSocketAddressConcurrentHashMap.containsKey(
+        address.hashCode());
   }
 
   private static void addShutdownNCR(final NetworkChannelReference ncr) {
-    networkChannelShutdownOnSocketAddressConcurrentHashMap
-        .put(ncr.getSocketHashCode(), ncr);
+    networkChannelShutdownOnSocketAddressConcurrentHashMap.put(
+        ncr.getSocketHashCode(), ncr);
   }
 
   private static NetworkChannelReference removeShutdownNCR(
       final NetworkChannelReference ncr) {
-    return networkChannelShutdownOnSocketAddressConcurrentHashMap
-        .remove(ncr.getSocketHashCode());
+    return networkChannelShutdownOnSocketAddressConcurrentHashMap.remove(
+        ncr.getSocketHashCode());
   }
 
   private static boolean containsShutdownNCR(
       final NetworkChannelReference ncr) {
-    return networkChannelShutdownOnSocketAddressConcurrentHashMap
-        .containsKey(ncr.getSocketHashCode());
+    return networkChannelShutdownOnSocketAddressConcurrentHashMap.containsKey(
+        ncr.getSocketHashCode());
   }
 
   private static boolean containsShutdownNCR(final SocketAddress sa) {
-    return networkChannelShutdownOnSocketAddressConcurrentHashMap
-        .containsKey(sa.hashCode());
+    return networkChannelShutdownOnSocketAddressConcurrentHashMap.containsKey(
+        sa.hashCode());
   }
 
   private static NetworkChannelReference getShutdownNCR(
       final SocketAddress sa) {
-    return networkChannelShutdownOnSocketAddressConcurrentHashMap
-        .get(sa.hashCode());
+    return networkChannelShutdownOnSocketAddressConcurrentHashMap.get(
+        sa.hashCode());
   }
 
   private static void addBlacklistNCR(final NetworkChannelReference ncr) {
-    networkChannelBlacklistedOnInetSocketAddressConcurrentHashMap
-        .put(ncr.getAddressHashCode(), ncr);
+    networkChannelBlacklistedOnInetSocketAddressConcurrentHashMap.put(
+        ncr.getAddressHashCode(), ncr);
   }
 
   private static NetworkChannelReference removeBlacklistNCR(
       final NetworkChannelReference ncr) {
-    return networkChannelBlacklistedOnInetSocketAddressConcurrentHashMap
-        .remove(ncr.getAddressHashCode());
+    return networkChannelBlacklistedOnInetSocketAddressConcurrentHashMap.remove(
+        ncr.getAddressHashCode());
   }
 
   private static boolean containsBlacklistNCR(
       final NetworkChannelReference ncr) {
-    return networkChannelBlacklistedOnInetSocketAddressConcurrentHashMap
-        .containsKey(ncr.getAddressHashCode());
+    return networkChannelBlacklistedOnInetSocketAddressConcurrentHashMap.containsKey(
+        ncr.getAddressHashCode());
   }
 
   private static boolean containsBlacklistNCR(final SocketAddress address) {
-    return networkChannelBlacklistedOnInetSocketAddressConcurrentHashMap
-        .containsKey(address.hashCode());
+    return networkChannelBlacklistedOnInetSocketAddressConcurrentHashMap.containsKey(
+        address.hashCode());
   }
 
   private static NetworkChannelReference getBlacklistNCR(
@@ -302,8 +299,8 @@ public class NetworkTransaction {
       return null;
     }
 
-    return networkChannelBlacklistedOnInetSocketAddressConcurrentHashMap
-        .get(address.getHostAddress().hashCode());
+    return networkChannelBlacklistedOnInetSocketAddressConcurrentHashMap.get(
+        address.getHostAddress().hashCode());
   }
 
   private static WaarpLock getChannelLock(final SocketAddress socketAddress) {
@@ -344,7 +341,7 @@ public class NetworkTransaction {
    *
    * @return the LocalChannelReference
    */
-  public LocalChannelReference createConnectionWithRetry(
+  public final LocalChannelReference createConnectionWithRetry(
       final SocketAddress socketAddress, final boolean isSSL,
       final R66Future futureRequest) {
     try {
@@ -368,7 +365,7 @@ public class NetworkTransaction {
    *
    * @throws OpenR66ProtocolNotAuthenticatedException
    */
-  public LocalChannelReference createConnectionWithRetryWithAuthenticationException(
+  public final LocalChannelReference createConnectionWithRetryWithAuthenticationException(
       final SocketAddress socketAddress, final boolean isSSL,
       final R66Future futureRequest)
       throws OpenR66ProtocolNotAuthenticatedException {
@@ -548,8 +545,7 @@ public class NetworkTransaction {
               "Cannot connect to remote server due to a channel exception");
         }
         WaarpNettyUtil.awaitOrInterrupted(channelFuture,
-                                          Configuration.configuration
-                                              .getTimeoutCon());
+                                          Configuration.configuration.getTimeoutCon());
         if (channelFuture.isSuccess()) {
           final Channel channel = channelFuture.channel();
           if (isSSL &&
@@ -655,8 +651,8 @@ public class NetworkTransaction {
               Configuration.configuration.getHostAuth();
       authent = new AuthentPacket(Configuration.configuration.getHostId(
           localChannelReference.getNetworkServerHandler().isSsl()),
-                                  FilesystemBasedDigest
-                                      .passwdCrypt(auth.getHostkey()),
+                                  FilesystemBasedDigest.passwdCrypt(
+                                      auth.getHostkey()),
                                   localChannelReference.getLocalId());
     } catch (final OpenR66ProtocolNoSslException e1) {
       final R66Result finalValue = new R66Result(
@@ -669,8 +665,8 @@ public class NetworkTransaction {
         final ConnectionErrorPacket error = new ConnectionErrorPacket(
             "Cannot connect to localChannel since SSL is not supported", null);
         try {
-          ChannelUtils
-              .writeAbstractLocalPacket(localChannelReference, error, false);
+          ChannelUtils.writeAbstractLocalPacket(localChannelReference, error,
+                                                false);
         } catch (final OpenR66ProtocolPacketException ignored) {
           // nothing
         }
@@ -682,8 +678,8 @@ public class NetworkTransaction {
     logger.debug("Will send request of connection validation");
     localChannelReference.sessionNewState(AUTHENTR);
     try {
-      ChannelUtils
-          .writeAbstractLocalPacket(localChannelReference, authent, false);
+      ChannelUtils.writeAbstractLocalPacket(localChannelReference, authent,
+                                            false);
     } catch (final OpenR66ProtocolPacketException e) {
       final R66Result finalValue = new R66Result(
           new OpenR66ProtocolSystemException("Wrong Authent Protocol", e),
@@ -696,8 +692,8 @@ public class NetworkTransaction {
             "Cannot connect to localChannel since Authent Protocol is invalid",
             null);
         try {
-          ChannelUtils
-              .writeAbstractLocalPacket(localChannelReference, error, false);
+          ChannelUtils.writeAbstractLocalPacket(localChannelReference, error,
+                                                false);
         } catch (final OpenR66ProtocolPacketException ignored) {
           // nothing
         }
@@ -722,8 +718,8 @@ public class NetworkTransaction {
         final ConnectionErrorPacket error = new ConnectionErrorPacket(
             "Cannot connect to localChannel with Out of Time", null);
         try {
-          ChannelUtils
-              .writeAbstractLocalPacket(localChannelReference, error, false);
+          ChannelUtils.writeAbstractLocalPacket(localChannelReference, error,
+                                                false);
         } catch (final OpenR66ProtocolPacketException ignored) {
           // nothing
         }
@@ -809,8 +805,7 @@ public class NetworkTransaction {
               new R66ShutdownNetworkChannelTimerTask(networkChannelReference,
                                                      false);
           Configuration.configuration.getTimerClose().newTimeout(timerTask,
-                                                                 Configuration.configuration
-                                                                     .getTimeoutCon(),
+                                                                 Configuration.configuration.getTimeoutCon(),
                                                                  TimeUnit.MILLISECONDS);
         } catch (final OpenR66RunnerErrorException e) {
           // ignore
@@ -848,8 +843,7 @@ public class NetworkTransaction {
               new R66ShutdownNetworkChannelTimerTask(networkChannelReference,
                                                      false);
           Configuration.configuration.getTimerClose().newTimeout(timerTask,
-                                                                 Configuration.configuration
-                                                                     .getTimeoutCon(),
+                                                                 Configuration.configuration.getTimeoutCon(),
                                                                  TimeUnit.MILLISECONDS);
         } catch (final OpenR66RunnerErrorException e) {
           // ignore
@@ -892,8 +886,7 @@ public class NetworkTransaction {
             new R66ShutdownNetworkChannelTimerTask(networkChannelReference,
                                                    true);
         Configuration.configuration.getTimerClose().newTimeout(timerTask,
-                                                               Configuration.configuration
-                                                                   .getTimeoutCon() *
+                                                               Configuration.configuration.getTimeoutCon() *
                                                                5,
                                                                TimeUnit.MILLISECONDS);
       } catch (final OpenR66RunnerErrorException e) {
@@ -1083,7 +1076,7 @@ public class NetworkTransaction {
 
     @Override
     public void run(final Timeout timeout) {
-      long time = networkChannelReference.shutdownAllowed();
+      final long time = networkChannelReference.shutdownAllowed();
       if (time > 0) {
         Configuration.configuration.getTimerClose().newTimeout(this, time,
                                                                TimeUnit.MILLISECONDS);
@@ -1108,8 +1101,8 @@ public class NetworkTransaction {
   public static int checkClosingNetworkChannel(
       final NetworkChannelReference networkChannelReference,
       final LocalChannelReference localChannelReference) {
-    networkChannelReference.lock
-        .lock(Configuration.WAITFORNETOP, TimeUnit.MILLISECONDS);
+    networkChannelReference.lock.lock(Configuration.WAITFORNETOP,
+                                      TimeUnit.MILLISECONDS);
     try {
       logger.debug("Close con: {}", networkChannelReference);
       if (localChannelReference != null) {
@@ -1122,8 +1115,7 @@ public class NetworkTransaction {
         try {
           cfc = new CloseFutureChannel(networkChannelReference);
           Configuration.configuration.getTimerClose().newTimeout(cfc,
-                                                                 Configuration.configuration
-                                                                     .getTimeoutCon() *
+                                                                 Configuration.configuration.getTimeoutCon() *
                                                                  2,
                                                                  TimeUnit.MILLISECONDS);
         } catch (final OpenR66RunnerErrorException ignored) {
@@ -1154,12 +1146,11 @@ public class NetworkTransaction {
                                          final String host) {
     if (logger.isDebugEnabled()) {
       logger.debug("nbAttachedConnection: {}:{}",
-                   networkChannelOnSocketAddressConcurrentHashMap
-                       .containsKey(address.hashCode()),
-                   getNumberClients(host));
+                   networkChannelOnSocketAddressConcurrentHashMap.containsKey(
+                       address.hashCode()), getNumberClients(host));
     }
-    return (networkChannelOnSocketAddressConcurrentHashMap
-        .containsKey(address.hashCode())? 1 : 0) + getNumberClients(host);
+    return (networkChannelOnSocketAddressConcurrentHashMap.containsKey(
+        address.hashCode())? 1 : 0) + getNumberClients(host);
   }
 
   /**
@@ -1179,8 +1170,8 @@ public class NetworkTransaction {
     try {
       final NetworkChannelReference networkChannelReference =
           getRemoteChannel(address);
-      logger
-          .debug("IS IN SHUTDOWN: {}", networkChannelReference.isShuttingDown);
+      logger.debug("IS IN SHUTDOWN: {}",
+                   networkChannelReference.isShuttingDown);
       return !networkChannelReference.isShuttingDown;
     } catch (final OpenR66ProtocolRemoteShutdownException e) {
       logger.debug("ALREADY IN SHUTDOWN");
@@ -1327,8 +1318,8 @@ public class NetworkTransaction {
    */
   public static void runRetrieve(final R66Session session) {
     final RetrieveRunner retrieveRunner = new RetrieveRunner(session);
-    retrieveRunnerConcurrentHashMap
-        .put(session.getLocalChannelReference().getLocalId(), retrieveRunner);
+    retrieveRunnerConcurrentHashMap.put(
+        session.getLocalChannelReference().getLocalId(), retrieveRunner);
     Configuration.configuration.getRetrieveRunnerGroup()
                                .execute(retrieveRunner);
   }
@@ -1340,8 +1331,9 @@ public class NetworkTransaction {
    */
   public static void stopRetrieve(
       final LocalChannelReference localChannelReference) {
-    final RetrieveRunner retrieveRunner = retrieveRunnerConcurrentHashMap
-        .remove(localChannelReference.getLocalId());
+    final RetrieveRunner retrieveRunner =
+        retrieveRunnerConcurrentHashMap.remove(
+            localChannelReference.getLocalId());
     if (retrieveRunner != null) {
       retrieveRunner.stopRunner();
     }
@@ -1360,14 +1352,14 @@ public class NetworkTransaction {
   /**
    * Close all Network Ttransaction
    */
-  public void closeAll() {
+  public final void closeAll() {
     closeAll(true);
   }
 
   /**
    * Close all Network Ttransaction
    */
-  public void closeAll(final boolean quickShutdown) {
+  public final void closeAll(final boolean quickShutdown) {
     logger.debug("close All Network Channels");
     if (!Configuration.configuration.isServer()) {
       if (shutdownHook != null) {

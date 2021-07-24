@@ -115,22 +115,22 @@ public abstract class AbstractRestDbHandler extends AbstractHttpHandler {
     }
   }
 
-  protected void checkSanity(final String... strings) {
+  protected final void checkSanity(final String... strings) {
     try {
       ParametersChecker.checkSanityString(strings);
-    } catch (InvalidArgumentException e) {
-      List<RestError> errors = new ArrayList<RestError>(1);
+    } catch (final InvalidArgumentException e) {
+      final List<RestError> errors = new ArrayList<RestError>(1);
       errors.add(ILLEGAL_FIELD_VALUE("argument", "Content Not Allowed"));
       throw new RestErrorException(errors);
     }
   }
 
-  protected void checkSanity(final ObjectNode objectNode) {
+  protected final void checkSanity(final ObjectNode objectNode) {
     try {
-      ParametersChecker
-          .checkSanityString(JsonHandler.writeAsString(objectNode));
-    } catch (InvalidArgumentException e) {
-      List<RestError> errors = new ArrayList<RestError>(1);
+      ParametersChecker.checkSanityString(
+          JsonHandler.writeAsString(objectNode));
+    } catch (final InvalidArgumentException e) {
+      final List<RestError> errors = new ArrayList<RestError>(1);
       errors.add(ILLEGAL_FIELD_VALUE("argument", "Content Not Allowed"));
       throw new RestErrorException(errors);
     }

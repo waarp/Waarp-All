@@ -33,7 +33,7 @@ import org.waarp.ftp.core.file.FtpFile;
  */
 public class RNTO extends AbstractCommand {
   @Override
-  public void exec() throws CommandAbstractException {
+  public final void exec() throws CommandAbstractException {
     if (!hasArg()) {
       invalidCurrentCommand();
       throw new Reply501Exception("Need a pathname as argument");
@@ -51,10 +51,9 @@ public class RNTO extends AbstractCommand {
     if (file != null) {
       final String previousName = file.getFile();
       if (file.renameTo(filename)) {
-        getSession()
-            .setReplyCode(ReplyCode.REPLY_250_REQUESTED_FILE_ACTION_OKAY,
-                          '"' + filename + "\" as new file name for \"" +
-                          previousName + '"');
+        getSession().setReplyCode(
+            ReplyCode.REPLY_250_REQUESTED_FILE_ACTION_OKAY,
+            '"' + filename + "\" as new file name for \"" + previousName + '"');
         return;
       }
     }

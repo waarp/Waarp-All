@@ -54,13 +54,13 @@ public class ExampleImplGauge32 extends WaarpGauge32 {
   }
 
   @Override
-  protected void setInternalValue() {
+  protected final void setInternalValue() {
     _internalValue++;
     setValue(_internalValue);
   }
 
   @Override
-  protected void setInternalValue(long value) {
+  protected final void setInternalValue(long value) {
     _internalValue = value;
     setValue(_internalValue);
   }

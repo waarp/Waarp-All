@@ -31,12 +31,12 @@ public class HttpResumableChunkNumber {
   }
 
   @Override
-  public int hashCode() {
+  public final int hashCode() {
     return number;
   }
 
   @Override
-  public boolean equals(final Object obj) {
+  public final boolean equals(final Object obj) {
     return obj instanceof HttpResumableChunkNumber &&
            ((HttpResumableChunkNumber) obj).number == this.number;
   }

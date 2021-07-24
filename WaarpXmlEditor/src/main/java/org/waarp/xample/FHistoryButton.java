@@ -229,8 +229,8 @@ public class FHistoryButton extends JComponent
       if (popupMenu.isShowing()) {
         b = true;
       } else {
-        popupMenu
-            .show(FHistoryButton.this, 0, FHistoryButton.this.getSize().height);
+        popupMenu.show(FHistoryButton.this, 0,
+                       FHistoryButton.this.getSize().height);
       }
     }
 

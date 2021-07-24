@@ -36,89 +36,89 @@ public class ConfigExportResponseJsonPacket extends ConfigExportJsonPacket {
   /**
    * @return the command
    */
-  public byte getCommand() {
+  public final byte getCommand() {
     return command;
   }
 
   /**
    * @param command the command to set
    */
-  public void setCommand(final byte command) {
+  public final void setCommand(final byte command) {
     this.command = command;
   }
 
   /**
    * @return the filehost
    */
-  public String getFilehost() {
+  public final String getFilehost() {
     return filehost;
   }
 
   /**
    * @param filehost the filehost to set
    */
-  public void setFilehost(final String filehost) {
+  public final void setFilehost(final String filehost) {
     this.filehost = filehost;
   }
 
   /**
    * @return the filerule
    */
-  public String getFilerule() {
+  public final String getFilerule() {
     return filerule;
   }
 
   /**
    * @param filerule the filerule to set
    */
-  public void setFilerule(final String filerule) {
+  public final void setFilerule(final String filerule) {
     this.filerule = filerule;
   }
 
   /**
    * @return the filebusiness
    */
-  public String getFilebusiness() {
+  public final String getFilebusiness() {
     return filebusiness;
   }
 
   /**
    * @param filebusiness the filebusiness to set
    */
-  public void setFilebusiness(final String filebusiness) {
+  public final void setFilebusiness(final String filebusiness) {
     this.filebusiness = filebusiness;
   }
 
   /**
    * @return the filealias
    */
-  public String getFilealias() {
+  public final String getFilealias() {
     return filealias;
   }
 
   /**
    * @param filealias the filealias to set
    */
-  public void setFilealias(final String filealias) {
+  public final void setFilealias(final String filealias) {
     this.filealias = filealias;
   }
 
   /**
    * @return the fileroles
    */
-  public String getFileroles() {
+  public final String getFileroles() {
     return fileroles;
   }
 
   /**
    * @param fileroles the fileroles to set
    */
-  public void setFileroles(final String fileroles) {
+  public final void setFileroles(final String fileroles) {
     this.fileroles = fileroles;
   }
 
   @Override
-  public void setRequestUserPacket() {
+  public final void setRequestUserPacket() {
     setRequestUserPacket(LocalPacketFactory.CONFEXPORTPACKET);
   }
 }

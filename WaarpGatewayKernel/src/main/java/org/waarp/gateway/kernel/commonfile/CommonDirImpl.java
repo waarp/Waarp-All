@@ -39,7 +39,7 @@ public class CommonDirImpl extends FilesystemBasedDirImpl {
   }
 
   @Override
-  public FileInterface newFile(final String path, final boolean append) {
+  public final FileInterface newFile(final String path, final boolean append) {
     return new CommonFileImpl(session, this, path);
   }
 

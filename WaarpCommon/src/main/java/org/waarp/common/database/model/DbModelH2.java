@@ -54,22 +54,22 @@ public abstract class DbModelH2 extends DbModelAbstract {
       extends DbModelAbstract.DbTypeResolver {
 
     @Override
-    public String getType(final int sqlType) {
+    public final String getType(final int sqlType) {
       return DBType.getType(sqlType);
     }
 
     @Override
-    public String getCreateTable() {
+    public final String getCreateTable() {
       return "CREATE TABLE IF NOT EXISTS ";
     }
 
     @Override
-    public String getCreateIndex() {
+    public final String getCreateIndex() {
       return "CREATE INDEX IF NOT EXISTS ";
     }
 
     @Override
-    public DbType getDbType() {
+    public final DbType getDbType() {
       return type;
     }
   }
@@ -81,7 +81,7 @@ public abstract class DbModelH2 extends DbModelAbstract {
   protected JdbcConnectionPool pool;
 
   @Override
-  public DbType getDbType() {
+  public final DbType getDbType() {
     return type;
   }
 
@@ -101,9 +101,8 @@ public abstract class DbModelH2 extends DbModelAbstract {
     pool = JdbcConnectionPool.create(dbserver, dbuser, dbpasswd);
     pool.setMaxConnections(DbConstant.MAXCONNECTION);
     pool.setLoginTimeout(DbConstant.DELAYMAXCONNECTION);
-    logger
-        .info("Some info: MaxConn: {} LogTimeout: {}", pool.getMaxConnections(),
-              pool.getLoginTimeout());
+    logger.info("Some info: MaxConn: {} LogTimeout: {}",
+                pool.getMaxConnections(), pool.getLoginTimeout());
   }
 
   /**
@@ -129,7 +128,7 @@ public abstract class DbModelH2 extends DbModelAbstract {
   }
 
   @Override
-  public void releaseResources() {
+  public final void releaseResources() {
     if (pool != null) {
       pool.dispose();
     }
@@ -145,8 +144,10 @@ public abstract class DbModelH2 extends DbModelAbstract {
   }
 
   @Override
-  public Connection getDbConnection(final String server, final String user,
-                                    final String passwd) throws SQLException {
+  public final Connection getDbConnection(final String server,
+                                          final String user,
+                                          final String passwd)
+      throws SQLException {
     synchronized (this) {
       if (pool != null) {
         try {
@@ -275,13 +276,13 @@ public abstract class DbModelH2 extends DbModelAbstract {
   }
 
   @Override
-  protected String validConnectionString() {
+  protected final String validConnectionString() {
     return "select 1";
   }
 
   @Override
-  public String limitRequest(final String allfields, final String request,
-                             final int nb) {
+  public final String limitRequest(final String allfields, final String request,
+                                   final int nb) {
     if (nb == 0) {
       return request;
     }

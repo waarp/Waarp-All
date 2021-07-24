@@ -49,8 +49,8 @@ public class ServerExportConfiguration {
    *     export
    */
   public static void main(final String[] args) {
-    WaarpLoggerFactory
-        .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));
+    WaarpLoggerFactory.setDefaultFactoryIfNotSame(
+        new WaarpSlf4JLoggerFactory(null));
     if (logger == null) {
       logger = WaarpLoggerFactory.getLogger(ServerExportConfiguration.class);
     }
@@ -62,9 +62,8 @@ public class ServerExportConfiguration {
       return;
     }
     try {
-      if (!FileBasedConfiguration
-          .setConfigurationServerMinimalFromXml(Configuration.configuration,
-                                                args[0])) {
+      if (!FileBasedConfiguration.setConfigurationServerMinimalFromXml(
+          Configuration.configuration, args[0])) {
         logger.error("Needs a correct configuration file as first argument");
         if (admin != null) {
           admin.close();
@@ -79,9 +78,9 @@ public class ServerExportConfiguration {
       if (!dir.isDirectory()) {
         dir.mkdirs();//NOSONAR
       }
-      final String[] filenames = ServerActions
-          .staticConfigExport(dir.getAbsolutePath(), true, true, true, true,
-                              true);
+      final String[] filenames =
+          ServerActions.staticConfigExport(dir.getAbsolutePath(), true, true,
+                                           true, true, true);
       for (final String string : filenames) {
         if (string != null) {
           logger.info("Export: {}", string);

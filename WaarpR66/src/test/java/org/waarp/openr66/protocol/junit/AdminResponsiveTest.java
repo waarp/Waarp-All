@@ -375,8 +375,8 @@ public class AdminResponsiveTest extends TestAbstract {
       // 18 | click | css=.btn-primary:nth-child(1) |
       findElement(By.cssSelector(".btn-primary:nth-child(1)")).click();
       // 19 | click | css=.odd:nth-child(1) > td:nth-child(1) |
-      findElement(By.cssSelector(".odd:nth-child(1) > td:nth-child(1)"))
-          .click();
+      findElement(
+          By.cssSelector(".odd:nth-child(1) > td:nth-child(1)")).click();
       // 20 | click | css=.btn:nth-child(2) > span |
       findElement(By.cssSelector(".btn:nth-child(2) > span")).click();
       // 21 | click | id=update-button |
@@ -425,8 +425,8 @@ public class AdminResponsiveTest extends TestAbstract {
       // 4 | click | linkText=HOSTS |
       get("https://127.0.0.1:8867/Hosts.html");
       // 5 | click | css=.odd:nth-child(3) > td:nth-child(11) |
-      findElement(By.cssSelector(".odd:nth-child(3) > td:nth-child(11)"))
-          .click();
+      findElement(
+          By.cssSelector(".odd:nth-child(3) > td:nth-child(11)")).click();
       // 6 | click | css=.selected > td:nth-child(11) |
       findElement(By.cssSelector(".selected > td:nth-child(11)")).click();
       String page = getPageSource();
@@ -453,8 +453,8 @@ public class AdminResponsiveTest extends TestAbstract {
       // 14 | type | id=newitem3 | mytest
       findElement(By.id("newitem3")).sendKeys("mytest");
       // 15 | click | css=tr:nth-child(4) > td:nth-child(4) > .btn |
-      findElement(By.cssSelector("tr:nth-child(4) > td:nth-child(4) > .btn"))
-          .click();
+      findElement(
+          By.cssSelector("tr:nth-child(4) > td:nth-child(4) > .btn")).click();
       // 16 | mouseOver | css=tr:nth-child(4) > td:nth-child(4) > .btn |
       {
         WebElement element = findElement(
@@ -480,8 +480,8 @@ public class AdminResponsiveTest extends TestAbstract {
       get("https://127.0.0.1:8867/Hosts.html");
       //findElement(By.linkText("HOSTS")).click();
       // 22 | click | css=.odd:nth-child(3) > td:nth-child(11) |
-      findElement(By.cssSelector(".odd:nth-child(3) > td:nth-child(11)"))
-          .click();
+      findElement(
+          By.cssSelector(".odd:nth-child(3) > td:nth-child(11)")).click();
       page = getPageSource();
       assertTrue(page.contains("(ReverseAlias: mytest )"));
 
@@ -506,8 +506,8 @@ public class AdminResponsiveTest extends TestAbstract {
       get("https://127.0.0.1:8867/Hosts.html");
       //findElement(By.linkText("HOSTS")).click();
       // 31 | click | css=.odd:nth-child(3) > td:nth-child(11) |
-      findElement(By.cssSelector(".odd:nth-child(3) > td:nth-child(11)"))
-          .click();
+      findElement(
+          By.cssSelector(".odd:nth-child(3) > td:nth-child(11)")).click();
       page = getPageSource();
       assertTrue(page.contains(
           "(Role: [ READONLY TRANSFER RULE LOGCONTROL PARTNER ])"));
@@ -568,17 +568,15 @@ public class AdminResponsiveTest extends TestAbstract {
       // 6 | click | linkText=SYSTEM |
       get("https://127.0.0.1:8867/System.html");
       // 7 | click | css=.form-group:nth-child(1) > input:nth-child(5) |
-      findElement(
-          By.cssSelector(".form-group:nth-child(1) > input:nth-child(5)"))
-          .click();
+      findElement(By.cssSelector(
+          ".form-group:nth-child(1) > input:nth-child(5)")).click();
       // 8 | click | css=.btn-info |
       findElement(By.cssSelector(".btn-info")).click();
       String page = getPageSource();
       assertTrue(page.contains("New language is: Web: fr OpenR66: en"));
       // 9 | click | css=.form-group:nth-child(2) > input:nth-child(5) |
-      findElement(
-          By.cssSelector(".form-group:nth-child(2) > input:nth-child(5)"))
-          .click();
+      findElement(By.cssSelector(
+          ".form-group:nth-child(2) > input:nth-child(5)")).click();
       // 10 | click | css=.btn-info |
       findElement(By.cssSelector(".btn-info")).click();
       page = getPageSource();
@@ -663,15 +661,15 @@ public class AdminResponsiveTest extends TestAbstract {
       // 36 | click | name=loglevel |
       findElement(By.id("logdebug")).click();
       // 37 | click | css=.form-group:nth-child(3) > .btn-warning |
-      findElement(By.cssSelector(".form-group:nth-child(3) > .btn-warning"))
-          .click();
+      findElement(
+          By.cssSelector(".form-group:nth-child(3) > .btn-warning")).click();
       page = getPageSource();
       assertTrue(page.contains("New language is: DEBUG"));
       // 38 | click | css=input:nth-child(6) |
       findElement(By.id("logwarn")).click();
       // 39 | click | css=.form-group:nth-child(3) > .btn-warning |
-      findElement(By.cssSelector(".form-group:nth-child(3) > .btn-warning"))
-          .click();
+      findElement(
+          By.cssSelector(".form-group:nth-child(3) > .btn-warning")).click();
       page = getPageSource();
       assertTrue(page.contains("New language is: WARN"));
       // 41 | click | css=.btn-primary:nth-child(4) |
@@ -791,8 +789,8 @@ public class AdminResponsiveTest extends TestAbstract {
       findElement(By.cssSelector("#rh_myModal .modal-body > .btn")).click();
       // 40 | mouseOver | css=#rh_myModal .modal-body > .btn |
       {
-        WebElement element = driver
-            .findElement(By.cssSelector("#rh_myModal .modal-body > .btn"));
+        WebElement element = driver.findElement(
+            By.cssSelector("#rh_myModal .modal-body > .btn"));
         Thread.sleep(WAIT);
         Actions builder = new Actions(driver);
         builder.moveToElement(element).perform();
@@ -818,8 +816,8 @@ public class AdminResponsiveTest extends TestAbstract {
       // 44 | click | css=#rid5 > option:nth-child(7) |
       findElement(By.cssSelector("#rid5 > option:nth-child(7)")).click();
       // 45 | click | css=tr:nth-child(6) .multiselect-selected-text |
-      findElement(By.cssSelector("tr:nth-child(6) .multiselect-selected-text"))
-          .click();
+      findElement(
+          By.cssSelector("tr:nth-child(6) .multiselect-selected-text")).click();
       // 46 | click | css=.open li:nth-child(2) .checkbox |
       findElement(By.cssSelector(".open li:nth-child(2) .checkbox")).click();
       // 47 | click | css=.open li:nth-child(3) .checkbox |

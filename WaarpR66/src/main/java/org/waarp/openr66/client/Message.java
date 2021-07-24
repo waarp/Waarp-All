@@ -88,8 +88,8 @@ public class Message implements Runnable {
       logger.error(infoArgs);
       return false;
     }
-    if (!FileBasedConfiguration
-        .setClientConfigurationFromXml(Configuration.configuration, args[0])) {
+    if (!FileBasedConfiguration.setClientConfigurationFromXml(
+        Configuration.configuration, args[0])) {
       logger.error(
           Messages.getString("Configuration.NeedCorrectConfig")); //$NON-NLS-1$
       return false;
@@ -174,8 +174,9 @@ public class Message implements Runnable {
     SocketAddress socketAddress = host.getSocketAddress();
     final boolean isSSL = host.isSsl();
     final LocalChannelReference localChannelReference;
-    localChannelReference = networkTransaction
-        .createConnectionWithRetry(socketAddress, isSSL, future);
+    localChannelReference =
+        networkTransaction.createConnectionWithRetry(socketAddress, isSSL,
+                                                     future);
     socketAddress = null;
     if (localChannelReference == null) {
       logger.info("{} {}", Messages.getString("AdminR66OperationsGui.188"),
@@ -188,8 +189,8 @@ public class Message implements Runnable {
     }
     localChannelReference.sessionNewState(R66FiniteDualStates.TEST);
     try {
-      ChannelUtils
-          .writeAbstractLocalPacket(localChannelReference, testPacket, false);
+      ChannelUtils.writeAbstractLocalPacket(localChannelReference, testPacket,
+                                            false);
     } catch (final OpenR66ProtocolPacketException e) {
       future.setResult(null);
       future.setFailure(e);
@@ -198,8 +199,8 @@ public class Message implements Runnable {
   }
 
   public static void main(final String[] args) {
-    WaarpLoggerFactory
-        .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));
+    WaarpLoggerFactory.setDefaultFactoryIfNotSame(
+        new WaarpSlf4JLoggerFactory(null));
     if (logger == null) {
       logger = WaarpLoggerFactory.getLogger(Message.class);
     }

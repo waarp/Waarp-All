@@ -444,27 +444,28 @@ final class HuffmanCompressionTable {
 
     final short[] normalizedCounts = workspace.normalizedCounts;
 
-    final int tableLog = FiniteStateEntropy
-        .optimalTableLog(MAX_FSE_TABLE_LOG, weightsLength, maxSymbol);
-    FiniteStateEntropy
-        .normalizeCounts(normalizedCounts, tableLog, counts, weightsLength,
-                         maxSymbol);
+    final int tableLog =
+        FiniteStateEntropy.optimalTableLog(MAX_FSE_TABLE_LOG, weightsLength,
+                                           maxSymbol);
+    FiniteStateEntropy.normalizeCounts(normalizedCounts, tableLog, counts,
+                                       weightsLength, maxSymbol);
 
     int output = outputAddress;
     final int outputLimit = outputAddress + outputSize;
 
     // Write table description header
-    final int headerSize = FiniteStateEntropy
-        .writeNormalizedCounts(outputBase, output, outputSize, normalizedCounts,
-                               maxSymbol, tableLog);
+    final int headerSize =
+        FiniteStateEntropy.writeNormalizedCounts(outputBase, output, outputSize,
+                                                 normalizedCounts, maxSymbol,
+                                                 tableLog);
     output += headerSize;
 
     // Compress
     final FseCompressionTable compressionTable = workspace.fseTable;
     compressionTable.initialize(normalizedCounts, maxSymbol, tableLog);
-    final int compressedSize = FiniteStateEntropy
-        .compress(outputBase, output, outputLimit - output, weights,
-                  weightsLength, compressionTable);
+    final int compressedSize =
+        FiniteStateEntropy.compress(outputBase, output, outputLimit - output,
+                                    weights, weightsLength, compressionTable);
     if (compressedSize == 0) {
       return 0;
     }

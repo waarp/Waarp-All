@@ -68,19 +68,19 @@ public class R66Auth extends FilesystemBasedAuthImpl {
   }
 
   @Override
-  protected void businessClean() {
+  protected final void businessClean() {
     currentAuth = null;
     isAdmin = false;
     role.clear();
   }
 
   @Override
-  public String getBaseDirectory() {
+  public final String getBaseDirectory() {
     return Configuration.configuration.getBaseDirectory();
   }
 
   @Override
-  protected NextCommandReply setBusinessPassword(final String arg0)
+  protected final NextCommandReply setBusinessPassword(final String arg0)
       throws Reply421Exception {
     throw new Reply421Exception("Command not valid");
   }
@@ -94,8 +94,8 @@ public class R66Auth extends FilesystemBasedAuthImpl {
    * @throws Reply530Exception if the authentication is wrong
    * @throws Reply421Exception If the service is not available
    */
-  public boolean connection(final String hostId, final byte[] arg0,
-                            final boolean isSsl)
+  public final boolean connection(final String hostId, final byte[] arg0,
+                                  final boolean isSsl)
       throws Reply530Exception, Reply421Exception {
     final DbHostAuth auth;
     try {
@@ -162,7 +162,7 @@ public class R66Auth extends FilesystemBasedAuthImpl {
    * @throws Reply421Exception if the business root is not available
    */
   @Override
-  protected void setRootFromAuth() throws Reply421Exception {
+  protected final void setRootFromAuth() throws Reply421Exception {
     rootFromAuth = setBusinessRootFromAuth();
     if (rootFromAuth == null) {
       rootFromAuth = DirInterface.SEPARATOR;
@@ -170,7 +170,7 @@ public class R66Auth extends FilesystemBasedAuthImpl {
   }
 
   @Override
-  protected String setBusinessRootFromAuth() throws Reply421Exception {
+  protected final String setBusinessRootFromAuth() throws Reply421Exception {
     final String path = null;
     final String fullpath = getAbsolutePath(null);
     final File file = new File(fullpath);
@@ -181,13 +181,13 @@ public class R66Auth extends FilesystemBasedAuthImpl {
   }
 
   @Override
-  protected NextCommandReply setBusinessUser(final String arg0)
+  protected final NextCommandReply setBusinessUser(final String arg0)
       throws Reply421Exception {
     throw new Reply421Exception("Command not valid");
   }
 
   @Override
-  public boolean isAdmin() {
+  public final boolean isAdmin() {
     return isAdmin;
   }
 
@@ -196,7 +196,7 @@ public class R66Auth extends FilesystemBasedAuthImpl {
    *
    * @return True if the current role contains the specified role to check
    */
-  public boolean isValidRole(final ROLE roleCheck) {
+  public final boolean isValidRole(final ROLE roleCheck) {
     final ROLE[] roles = roleCheck.getComposingRoles();
     for (final ROLE role1 : roles) {
       if (!role.isContaining(role1)) {
@@ -209,12 +209,12 @@ public class R66Auth extends FilesystemBasedAuthImpl {
   /**
    * @return True if the associated host is using SSL
    */
-  public boolean isSsl() {
+  public final boolean isSsl() {
     return currentAuth.isSsl();
   }
 
   @Override
-  public boolean isBusinessPathValid(final String newPath) {
+  public final boolean isBusinessPathValid(final String newPath) {
     return newPath != null;
   }
 
@@ -250,7 +250,8 @@ public class R66Auth extends FilesystemBasedAuthImpl {
    * @param isSSL
    * @param hostid
    */
-  public void specialNoSessionAuth(final boolean isSSL, final String hostid) {
+  public final void specialNoSessionAuth(final boolean isSSL,
+                                         final String hostid) {
     isIdentified = true;
     DbHostAuth auth = null;
     try {
@@ -262,7 +263,7 @@ public class R66Auth extends FilesystemBasedAuthImpl {
       try {
         auth =
             new DbHostAuth(hostid, "127.0.0.1", 6666, isSSL, null, true, false);
-      } catch (WaarpDatabaseSqlException e) {
+      } catch (final WaarpDatabaseSqlException e) {
         SysErrLogger.FAKE_LOGGER.syserr(e);
       }
     }
@@ -296,7 +297,7 @@ public class R66Auth extends FilesystemBasedAuthImpl {
    * @throws Reply530Exception if the authentication is wrong
    * @throws Reply421Exception If the service is not available
    */
-  public boolean connectionHttps(final String hostId, final byte[] arg0)
+  public final boolean connectionHttps(final String hostId, final byte[] arg0)
       throws Reply530Exception, Reply421Exception {
     final DbHostAuth auth = getServerAuth(hostId);
     if (auth == null) {
@@ -341,7 +342,7 @@ public class R66Auth extends FilesystemBasedAuthImpl {
   /**
    * @return a copy of the Role of the current authenticated partner
    */
-  public RoleDefault getRole() {
+  public final RoleDefault getRole() {
     return new RoleDefault().setRoleDefault(role);
   }
 }

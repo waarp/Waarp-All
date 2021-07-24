@@ -32,11 +32,11 @@ public class WaarpUptime extends TimeTicks {
   private static final long serialVersionUID = -6737574100905398690L;
   protected transient final SysUpTime type;
 
-  protected void setInternalValue() {
+  protected final void setInternalValue() {
     setValue(type.get().getValue());
   }
 
-  protected void setInternalValue(final long value) {
+  protected final void setInternalValue(final long value) {
     setValue(type.get().getValue());
   }
 
@@ -49,13 +49,13 @@ public class WaarpUptime extends TimeTicks {
   }
 
   @Override
-  public Object clone() {
+  public final Object clone() {
     setInternalValue();
     return super.clone();
   }
 
   @Override
-  public long getValue() {
+  public final long getValue() {
     setInternalValue();
     return super.getValue();
   }

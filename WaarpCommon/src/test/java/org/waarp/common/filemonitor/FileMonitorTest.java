@@ -348,7 +348,8 @@ public class FileMonitorTest {
     final FileMonitorCommandRunnableFuture commandValidFile =
         new FileMonitorCommandRunnableFuture() {
           @Override
-          protected boolean checkFileItemBusiness(final FileItem fileItem) {
+          protected final boolean checkFileItemBusiness(
+              final FileItem fileItem) {
             if (super.checkFileItemBusiness(fileItem)) {
               return true;
             }

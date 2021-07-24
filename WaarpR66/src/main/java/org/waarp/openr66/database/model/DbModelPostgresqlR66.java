@@ -77,22 +77,24 @@ public class DbModelPostgresqlR66 extends DbModelPostgresql {
   }
 
   @Override
-  public void createTables(final DbSession session)
+  public final void createTables(final DbSession session)
       throws WaarpDatabaseNoConnectionException {
     // Create tables: configuration, hosts, rules, runner, cptrunner
     final String createTableH2 = "CREATE TABLE IF NOT EXISTS ";
     final String primaryKey = " PRIMARY KEY ";
     final String notNull = " NOT NULL ";
-    DbRequest request = DbModelFactoryR66
-        .subCreateTableMariaDbMySQLH2PostgreSQL(dbTypeResolver, session,
-                                                createTableH2, primaryKey,
-                                                notNull);
+    final DbRequest request =
+        DbModelFactoryR66.subCreateTableMariaDbMySQLH2PostgreSQL(dbTypeResolver,
+                                                                 session,
+                                                                 createTableH2,
+                                                                 primaryKey,
+                                                                 notNull);
     if (request == null) {
       return;
     }
     try {
       // cptrunner
-      StringBuilder action = new StringBuilder(
+      final StringBuilder action = new StringBuilder(
           "CREATE SEQUENCE IF NOT EXISTS " + DbTaskRunner.fieldseq +
           " MINVALUE " + (ILLEGALVALUE + 1) + " START WITH " +
           (ILLEGALVALUE + 1));
@@ -116,10 +118,10 @@ public class DbModelPostgresqlR66 extends DbModelPostgresql {
 
 
   @Override
-  public boolean upgradeDb(final DbSession session, final String version)
+  public final boolean upgradeDb(final DbSession session, final String version)
       throws WaarpDatabaseNoConnectionException {
-    if (PartnerConfiguration
-        .isVersion2GEQVersion1(R66Versions.V3_1_0.getVersion(), version)) {
+    if (PartnerConfiguration.isVersion2GEQVersion1(
+        R66Versions.V3_1_0.getVersion(), version)) {
       return true;
     }
     String ifExists = "";
@@ -129,11 +131,11 @@ public class DbModelPostgresqlR66 extends DbModelPostgresql {
       ifExists = " IF EXISTS ";
       ifNotExists = " IF NOT EXISTS ";
     }
-    if (PartnerConfiguration
-        .isVersion2GEQVersion1(version, R66Versions.V2_4_13.getVersion())) {
+    if (PartnerConfiguration.isVersion2GEQVersion1(version,
+                                                   R66Versions.V2_4_13.getVersion())) {
       SysErrLogger.FAKE_LOGGER.sysout(
           version + " to " + R66Versions.V2_4_13.getVersion() + "? " + true);
-      String createTableH2 = "CREATE TABLE " + ifNotExists;
+      final String createTableH2 = "CREATE TABLE " + ifNotExists;
       final String primaryKey = " PRIMARY KEY ";
       final String notNull = " NOT NULL ";
 
@@ -148,7 +150,7 @@ public class DbModelPostgresqlR66 extends DbModelPostgresql {
               .append(notNull).append(", ");
       }
       action.append(chcolumns[chcolumns.length - 1].name()).append(
-          DBType.getType(DbHostConfiguration.dbTypes[chcolumns.length - 1]))
+                DBType.getType(DbHostConfiguration.dbTypes[chcolumns.length - 1]))
             .append(primaryKey).append(')');
       SysErrLogger.FAKE_LOGGER.sysout(action);
       final DbRequest request = new DbRequest(session);
@@ -161,15 +163,16 @@ public class DbModelPostgresqlR66 extends DbModelPostgresql {
         request.close();
       }
     }
-    if (PartnerConfiguration
-        .isVersion2GEQVersion1(version, R66Versions.V2_4_17.getVersion())) {
+    if (PartnerConfiguration.isVersion2GEQVersion1(version,
+                                                   R66Versions.V2_4_17.getVersion())) {
       SysErrLogger.FAKE_LOGGER.sysout(
           version + " to " + R66Versions.V2_4_17.getVersion() + "? " + true);
       final String command =
           "DO $$ BEGIN " + "ALTER TABLE " + DbTaskRunner.table +
           " ADD COLUMN " + DbTaskRunner.Columns.TRANSFERINFO.name() + ' ' +
-          DBType.getType(DbTaskRunner.dbTypes[DbTaskRunner.Columns.TRANSFERINFO
-              .ordinal()]) + " DEFAULT '{}' NOT NULL; " +
+          DBType.getType(
+              DbTaskRunner.dbTypes[DbTaskRunner.Columns.TRANSFERINFO.ordinal()]) +
+          " DEFAULT '{}' NOT NULL; " +
           "EXCEPTION WHEN duplicate_column THEN END $$";
       final DbRequest request = new DbRequest(session);
       try {
@@ -181,8 +184,8 @@ public class DbModelPostgresqlR66 extends DbModelPostgresql {
         request.close();
       }
     }
-    if (PartnerConfiguration
-        .isVersion2GEQVersion1(version, R66Versions.V2_4_23.getVersion())) {
+    if (PartnerConfiguration.isVersion2GEQVersion1(version,
+                                                   R66Versions.V2_4_23.getVersion())) {
       SysErrLogger.FAKE_LOGGER.sysout(
           version + " to " + R66Versions.V2_4_23.getVersion() + "? " + true);
       String command =
@@ -216,8 +219,8 @@ public class DbModelPostgresqlR66 extends DbModelPostgresql {
         request.close();
       }
     }
-    if (PartnerConfiguration
-        .isVersion2GTVersion1(version, R66Versions.V2_4_25.getVersion())) {
+    if (PartnerConfiguration.isVersion2GTVersion1(version,
+                                                  R66Versions.V2_4_25.getVersion())) {
       SysErrLogger.FAKE_LOGGER.sysout(
           version + " to " + R66Versions.V2_4_25.getVersion() + "? " + true);
       final String command =
@@ -227,9 +230,9 @@ public class DbModelPostgresqlR66 extends DbModelPostgresql {
           ',' + " ALTER COLUMN " + DbTaskRunner.Columns.FILENAME.name() +
           " SET NOT NULL, " + " ALTER COLUMN " +
           DbTaskRunner.Columns.ORIGINALNAME.name() + " TYPE " + DBType.getType(
-              DbTaskRunner.dbTypes[DbTaskRunner.Columns.ORIGINALNAME
-                  .ordinal()]) + ',' + " ALTER COLUMN " +
-          DbTaskRunner.Columns.FILENAME.name() + " SET NOT NULL ";
+              DbTaskRunner.dbTypes[DbTaskRunner.Columns.ORIGINALNAME.ordinal()]) +
+          ',' + " ALTER COLUMN " + DbTaskRunner.Columns.FILENAME.name() +
+          " SET NOT NULL ";
       final DbRequest request = new DbRequest(session);
       try {
         SysErrLogger.FAKE_LOGGER.sysout("Command: " + command);
@@ -241,15 +244,14 @@ public class DbModelPostgresqlR66 extends DbModelPostgresql {
         request.close();
       }
     }
-    if (PartnerConfiguration
-        .isVersion2GTVersion1(version, R66Versions.V3_0_4.getVersion())) {
+    if (PartnerConfiguration.isVersion2GTVersion1(version,
+                                                  R66Versions.V3_0_4.getVersion())) {
       SysErrLogger.FAKE_LOGGER.sysout(
           version + " to " + R66Versions.V3_0_4.getVersion() + "? " + true);
       final DbRequest request = new DbRequest(session);
       // Change Type for all Tables
-      DbModelFactoryR66
-          .upgradeTable30(dbTypeResolver, request, " ALTER COLUMN ", " TYPE ",
-                          " ");
+      DbModelFactoryR66.upgradeTable30(dbTypeResolver, request,
+                                       " ALTER COLUMN ", " TYPE ", " ");
       try {
         final String command = "DROP INDEX " + ifExists + " IDX_RUNNER ";
         try {
@@ -274,12 +276,12 @@ public class DbModelPostgresqlR66 extends DbModelPostgresql {
 
 
   @Override
-  public boolean needUpgradeDb(final DbSession session, final String version,
-                               final boolean tryFix)
+  public final boolean needUpgradeDb(final DbSession session,
+                                     final String version, final boolean tryFix)
       throws WaarpDatabaseNoConnectionException {
     // Check if the database is up to date
-    return DbModelFactoryR66
-        .needUpgradeDbAllDb(dbTypeResolver, session, version);
+    return DbModelFactoryR66.needUpgradeDbAllDb(dbTypeResolver, session,
+                                                version);
   }
 
 }

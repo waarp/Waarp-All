@@ -85,7 +85,7 @@ public abstract class RestMethodHandler {
     restConfiguration = config;
   }
 
-  protected void setMethods(final METHOD... method) {
+  protected final void setMethods(final METHOD... method) {
     Collections.addAll(methods, method);
   }
 
@@ -95,8 +95,8 @@ public abstract class RestMethodHandler {
    * @param selectedMethods the selected Methods among available
    * @param validMethod the validMethod for this handler
    */
-  protected void setIntersectionMethods(final METHOD[] selectedMethods,
-                                        final METHOD... validMethod) {
+  protected final void setIntersectionMethods(final METHOD[] selectedMethods,
+                                              final METHOD... validMethod) {
     final Set<METHOD> set = new HashSet<METHOD>();
     Collections.addAll(set, validMethod);
     final Set<METHOD> set2 = new HashSet<METHOD>();
@@ -106,11 +106,11 @@ public abstract class RestMethodHandler {
     setMethods(methodsToSet);
   }
 
-  public String getName() {
+  public final String getName() {
     return name;
   }
 
-  public String getPath() {
+  public final String getPath() {
     return path;
   }
 
@@ -119,7 +119,7 @@ public abstract class RestMethodHandler {
    *
    * @return True if the Method is valid for this Handler
    */
-  public boolean isMethodIncluded(final METHOD method) {
+  public final boolean isMethodIncluded(final METHOD method) {
     return methods.contains(method);
   }
 
@@ -244,10 +244,9 @@ public abstract class RestMethodHandler {
                                              RestArgument result, Object body,
                                              HttpResponseStatus status);
 
-  protected ChannelFuture sendOptionsResponse(final HttpRestHandler handler,
-                                              final ChannelHandlerContext ctx,
-                                              final RestArgument result,
-                                              final HttpResponseStatus status) {
+  protected final ChannelFuture sendOptionsResponse(
+      final HttpRestHandler handler, final ChannelHandlerContext ctx,
+      final RestArgument result, final HttpResponseStatus status) {
     final String list = result.getAllowOption();
     final String answer = result.toString();
     final ByteBuf buffer =
@@ -262,8 +261,8 @@ public abstract class RestMethodHandler {
     logger.debug("Msg ready");
     final ChannelFuture future = ctx.writeAndFlush(response);
     if (handler.isWillClose()) {
-      SysErrLogger.FAKE_LOGGER
-          .sysout("Will close session in RestMethodHandler");
+      SysErrLogger.FAKE_LOGGER.sysout(
+          "Will close session in RestMethodHandler");
       return future;
     }
     return null;
@@ -308,7 +307,7 @@ public abstract class RestMethodHandler {
   /**
    * @return the isBodyJson
    */
-  public boolean isBodyJsonDecoded() {
+  public final boolean isBodyJsonDecoded() {
     return isBodyJsonDecode;
   }
 }

@@ -80,9 +80,9 @@ public class HttpSslHandlerProxyR66 extends HttpSslHandler {
      *
      * @return the content of the unique file
      */
-    public String readFileUnique(final HttpSslHandlerProxyR66 handler) {
-      return handler
-          .readFileHeaderInternal(configuration.getHttpBasePath() + header);
+    public final String readFileUnique(final HttpSslHandlerProxyR66 handler) {
+      return handler.readFileHeaderInternal(
+          configuration.getHttpBasePath() + header);
     }
   }
 
@@ -147,22 +147,26 @@ public class HttpSslHandlerProxyR66 extends HttpSslHandler {
    * @param builder
    */
   private void replaceStringSystem(final StringBuilder builder) {
-    WaarpStringUtils
-        .replace(builder, REPLACEMENT.XXXXSESSIONLIMITWXXX.toString(),
-                 Long.toString(configuration.getServerChannelWriteLimit()));
-    WaarpStringUtils
-        .replace(builder, REPLACEMENT.XXXXSESSIONLIMITRXXX.toString(),
-                 Long.toString(configuration.getServerChannelReadLimit()));
+    WaarpStringUtils.replace(builder,
+                             REPLACEMENT.XXXXSESSIONLIMITWXXX.toString(),
+                             Long.toString(
+                                 configuration.getServerChannelWriteLimit()));
+    WaarpStringUtils.replace(builder,
+                             REPLACEMENT.XXXXSESSIONLIMITRXXX.toString(),
+                             Long.toString(
+                                 configuration.getServerChannelReadLimit()));
     WaarpStringUtils.replace(builder, REPLACEMENT.XXXXDELAYCOMMDXXX.toString(),
                              Long.toString(configuration.getDelayCommander()));
     WaarpStringUtils.replace(builder, REPLACEMENT.XXXXDELAYRETRYXXX.toString(),
                              Long.toString(configuration.getDelayRetry()));
-    WaarpStringUtils
-        .replace(builder, REPLACEMENT.XXXXCHANNELLIMITWXXX.toString(),
-                 Long.toString(configuration.getServerGlobalWriteLimit()));
-    WaarpStringUtils
-        .replace(builder, REPLACEMENT.XXXXCHANNELLIMITRXXX.toString(),
-                 Long.toString(configuration.getServerGlobalReadLimit()));
+    WaarpStringUtils.replace(builder,
+                             REPLACEMENT.XXXXCHANNELLIMITWXXX.toString(),
+                             Long.toString(
+                                 configuration.getServerGlobalWriteLimit()));
+    WaarpStringUtils.replace(builder,
+                             REPLACEMENT.XXXXCHANNELLIMITRXXX.toString(),
+                             Long.toString(
+                                 configuration.getServerGlobalReadLimit()));
     WaarpStringUtils.replace(builder, "XXXBLOCKXXX",
                              configuration.isShutdown()? CHECKED2 : "");
     switch (WaarpLoggerFactory.getLogLevel()) {
@@ -239,8 +243,8 @@ public class HttpSslHandlerProxyR66 extends HttpSslHandler {
         } else if ("Disconnect".equalsIgnoreCase(act)) {
           String logon = logon();
           logon = logon.replaceAll(REPLACEMENT.XXXERRORMESGXXX.toString(),
-                                   Messages
-                                       .getString("HttpSslHandler.DisActive"));
+                                   Messages.getString(
+                                       "HttpSslHandler.DisActive"));
           newSession = true;
           clearSession();
           forceClose = true;
@@ -268,8 +272,9 @@ public class HttpSslHandlerProxyR66 extends HttpSslHandler {
           } else {
             error = error(Messages.getString("HttpSslHandler.39")
                           //$NON-NLS-1$
-                          + configuration.getTimeoutCon() * 2 / 1000 + Messages
-                              .getString("HttpSslHandler.40")); //$NON-NLS-1$
+                          + configuration.getTimeoutCon() * 2 / 1000 +
+                          Messages.getString(
+                              "HttpSslHandler.40")); //$NON-NLS-1$
           }
           error = error.replace("XXXRELOADHTTPXXX",
                                 "HTTP-EQUIV=\"refresh\" CONTENT=\"" +
@@ -305,9 +310,9 @@ public class HttpSslHandlerProxyR66 extends HttpSslHandler {
             if (bglobalw != null) {
               lglobalw = (Long.parseLong(bglobalw) / 10) * 10;
             }
-            configuration
-                .changeNetworkLimit(lglobalw, lglobalr, lsessionw, lsessionr,
-                                    configuration.getDelayLimit());
+            configuration.changeNetworkLimit(lglobalw, lglobalr, lsessionw,
+                                             lsessionr,
+                                             configuration.getDelayLimit());
             final String dcomm = getTrimValue("DCOM");
             if (dcomm != null) {
               configuration.setDelayCommander(Long.parseLong(dcomm));
@@ -359,7 +364,7 @@ public class HttpSslHandlerProxyR66 extends HttpSslHandler {
   }
 
   @Override
-  protected void clearSession() {
+  protected final void clearSession() {
     if (admin != null) {
       final R66Session lsession = sessions.remove(admin.value());
       admin = null;
@@ -384,8 +389,8 @@ public class HttpSslHandlerProxyR66 extends HttpSslHandler {
       if (params == null) {
         String logon = logon();
         logon = logon.replaceAll(REPLACEMENT.XXXERRORMESGXXX.toString(),
-                                 Messages
-                                     .getString("HttpSslHandler.EmptyLogin"));
+                                 Messages.getString(
+                                     "HttpSslHandler.EmptyLogin"));
         responseContent.append(logon);
         clearSession();
         writeResponse(ctx);
@@ -428,13 +433,13 @@ public class HttpSslHandlerProxyR66 extends HttpSslHandler {
       if (!getMenu && name != null) {
         if (logger.isDebugEnabled()) {
           logger.debug("Name={} vs {} Passwd vs ", name,
-                       name.equals(configuration.getAdminName()), Arrays
-                           .equals(password.getBytes(WaarpStringUtils.UTF8),
-                                   configuration.getServerAdminKey()));
+                       name.equals(configuration.getAdminName()),
+                       Arrays.equals(password.getBytes(WaarpStringUtils.UTF8),
+                                     configuration.getServerAdminKey()));
         }
-        if (name.equals(configuration.getAdminName()) && Arrays
-            .equals(password.getBytes(WaarpStringUtils.UTF8),
-                    configuration.getServerAdminKey())) {
+        if (name.equals(configuration.getAdminName()) &&
+            Arrays.equals(password.getBytes(WaarpStringUtils.UTF8),
+                          configuration.getServerAdminKey())) {
           authentHttp.getAuth()
                      .specialNoSessionAuth(true, configuration.getHostId());
           authentHttp.setStatus(70);
@@ -480,9 +485,10 @@ public class HttpSslHandlerProxyR66 extends HttpSslHandler {
     logger.debug("Msg: {}", uriRequest);
     if (uriRequest.contains("gre/") || uriRequest.contains("img/") ||
         uriRequest.contains("res/") || uriRequest.contains("favicon.ico")) {
-      HttpWriteCacheEnable
-          .writeFile(request, ctx, configuration.getHttpBasePath() + uriRequest,
-                     R66SESSION + configuration.getHostId());
+      HttpWriteCacheEnable.writeFile(request, ctx,
+                                     configuration.getHttpBasePath() +
+                                     uriRequest,
+                                     R66SESSION + configuration.getHostId());
       ctx.flush();
       return;
     }

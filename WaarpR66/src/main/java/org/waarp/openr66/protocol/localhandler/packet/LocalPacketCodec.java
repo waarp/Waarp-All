@@ -48,8 +48,8 @@ public class LocalPacketCodec {
       return null;
     }
     // createPacketFromByteBuf read the buffer
-    return LocalPacketFactory
-        .createPacketFromByteBuf(length - 8, middleLength, endLength, buf);
+    return LocalPacketFactory.createPacketFromByteBuf(length - 8, middleLength,
+                                                      endLength, buf);
   }
 
 }

@@ -66,7 +66,7 @@ public abstract class AbstractExecJavaTask implements R66Runnable {
    *
    * @return True if feedback is done
    */
-  public boolean validate(final BusinessRequestPacket packet) {
+  public final boolean validate(final BusinessRequestPacket packet) {
     status = 0;
     packet.validate();
     if (callFromBusiness) {
@@ -77,8 +77,8 @@ public abstract class AbstractExecJavaTask implements R66Runnable {
             new R66Result(session, true, ErrorCode.CompleteOk, null);
         localChannelReference.validateRequest(result);
         try {
-          ChannelUtils
-              .writeAbstractLocalPacket(localChannelReference, packet, true);
+          ChannelUtils.writeAbstractLocalPacket(localChannelReference, packet,
+                                                true);
         } catch (final OpenR66ProtocolPacketException ignored) {
           // nothing
         }
@@ -95,7 +95,7 @@ public abstract class AbstractExecJavaTask implements R66Runnable {
    *
    * @param object special object to get back
    */
-  public void finalValidate(final Object object) {
+  public final void finalValidate(final Object object) {
     status = 0;
     if (callFromBusiness) {
       final LocalChannelReference localChannelReference =
@@ -115,7 +115,7 @@ public abstract class AbstractExecJavaTask implements R66Runnable {
   /**
    * To be used if abnormal usage is made of one Java Method
    */
-  public void invalid() {
+  public final void invalid() {
     status = 2;
     if (!callFromBusiness) {
       return;
@@ -131,8 +131,8 @@ public abstract class AbstractExecJavaTask implements R66Runnable {
                                                 ErrorCode.ExternalOp.getCode(),
                                                 ErrorPacket.FORWARDCLOSECODE);
       try {
-        ChannelUtils
-            .writeAbstractLocalPacket(localChannelReference, error, false);
+        ChannelUtils.writeAbstractLocalPacket(localChannelReference, error,
+                                              false);
       } catch (final OpenR66ProtocolPacketException ignored) {
         // nothing
       }
@@ -156,11 +156,12 @@ public abstract class AbstractExecJavaTask implements R66Runnable {
   }
 
   @Override
-  public void setArgs(final R66Session session, final boolean waitForValidation,
-                      final boolean useLocalExec, final int delay,
-                      final String classname, final String arg,
-                      final boolean callFromBusiness,
-                      final boolean isToValidate) {
+  public final void setArgs(final R66Session session,
+                            final boolean waitForValidation,
+                            final boolean useLocalExec, final int delay,
+                            final String classname, final String arg,
+                            final boolean callFromBusiness,
+                            final boolean isToValidate) {
     this.session = session;
     this.waitForValidation = waitForValidation;
     this.useLocalExec = useLocalExec;
@@ -172,12 +173,12 @@ public abstract class AbstractExecJavaTask implements R66Runnable {
   }
 
   @Override
-  public int getFinalStatus() {
+  public final int getFinalStatus() {
     return status;
   }
 
   @Override
-  public String toString() {
+  public final String toString() {
     if (status == -1 || finalInformation == null) {
       return getClass().getSimpleName() + ": [" + fullarg + ']';
     } else {

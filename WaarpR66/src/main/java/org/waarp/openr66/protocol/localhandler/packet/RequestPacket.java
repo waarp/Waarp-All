@@ -353,26 +353,26 @@ public class RequestPacket extends AbstractLocalPacket {
   }
 
   @Override
-  public boolean hasGlobalBuffer() {
+  public final boolean hasGlobalBuffer() {
     return false;
   }
 
   @Override
-  public void createAllBuffers(final LocalChannelReference lcr,
-                               final int networkHeader) {
+  public final void createAllBuffers(final LocalChannelReference lcr,
+                                     final int networkHeader) {
     throw new IllegalStateException("Should not be called");
   }
 
   @Override
-  public void createEnd(final LocalChannelReference lcr) {
+  public final void createEnd(final LocalChannelReference lcr) {
     if (transferInformation != null) {
-      end = WaarpNettyUtil
-          .wrappedBuffer(transferInformation.getBytes(WaarpStringUtils.UTF8));
+      end = WaarpNettyUtil.wrappedBuffer(
+          transferInformation.getBytes(WaarpStringUtils.UTF8));
     }
   }
 
   @Override
-  public void createHeader(final LocalChannelReference lcr)
+  public final void createHeader(final LocalChannelReference lcr)
       throws OpenR66ProtocolPacketException {
     if (rulename == null || mode <= 0) {
       throw new OpenR66ProtocolPacketException(NOT_ENOUGH_DATA);
@@ -385,17 +385,17 @@ public class RequestPacket extends AbstractLocalPacket {
       header = WaarpNettyUtil.wrappedBuffer(
           JsonHandler.writeAsString(node).getBytes(WaarpStringUtils.UTF8));
     } else {
-      header = WaarpNettyUtil
-          .wrappedBuffer(rulename.getBytes(WaarpStringUtils.UTF8),
-                         PartnerConfiguration.BLANK_SEPARATOR_FIELD
-                             .getBytes(WaarpStringUtils.UTF8),
-                         Integer.toString(mode)
-                                .getBytes(WaarpStringUtils.UTF8));
+      header =
+          WaarpNettyUtil.wrappedBuffer(rulename.getBytes(WaarpStringUtils.UTF8),
+                                       PartnerConfiguration.BLANK_SEPARATOR_FIELD.getBytes(
+                                           WaarpStringUtils.UTF8),
+                                       Integer.toString(mode)
+                                              .getBytes(WaarpStringUtils.UTF8));
     }
   }
 
   @Override
-  public void createMiddle(final LocalChannelReference lcr)
+  public final void createMiddle(final LocalChannelReference lcr)
       throws OpenR66ProtocolPacketException {
     if (filename == null) {
       throw new OpenR66ProtocolPacketException(NOT_ENOUGH_DATA);
@@ -417,32 +417,38 @@ public class RequestPacket extends AbstractLocalPacket {
                                                        .getBytes(
                                                            WaarpStringUtils.UTF8));
     } else {
-      middle = WaarpNettyUtil
-          .wrappedBuffer(away, filename.getBytes(WaarpStringUtils.UTF8),
-                         separator.getBytes(WaarpStringUtils.UTF8),
-                         Integer.toString(blocksize)
-                                .getBytes(WaarpStringUtils.UTF8),
-                         separator.getBytes(WaarpStringUtils.UTF8),
-                         Integer.toString(rank).getBytes(WaarpStringUtils.UTF8),
-                         separator.getBytes(WaarpStringUtils.UTF8),
-                         Long.toString(specialId)
-                             .getBytes(WaarpStringUtils.UTF8),
-                         separator.getBytes(WaarpStringUtils.UTF8),
-                         Character.toString(code)
-                                  .getBytes(WaarpStringUtils.UTF8),
-                         separator.getBytes(WaarpStringUtils.UTF8),
-                         Long.toString(originalSize)
-                             .getBytes(WaarpStringUtils.UTF8));
+      middle = WaarpNettyUtil.wrappedBuffer(away, filename.getBytes(
+                                                WaarpStringUtils.UTF8), separator.getBytes(WaarpStringUtils.UTF8),
+                                            Integer.toString(blocksize)
+                                                   .getBytes(
+                                                       WaarpStringUtils.UTF8),
+                                            separator.getBytes(
+                                                WaarpStringUtils.UTF8),
+                                            Integer.toString(rank).getBytes(
+                                                WaarpStringUtils.UTF8),
+                                            separator.getBytes(
+                                                WaarpStringUtils.UTF8),
+                                            Long.toString(specialId).getBytes(
+                                                WaarpStringUtils.UTF8),
+                                            separator.getBytes(
+                                                WaarpStringUtils.UTF8),
+                                            Character.toString(code).getBytes(
+                                                WaarpStringUtils.UTF8),
+                                            separator.getBytes(
+                                                WaarpStringUtils.UTF8),
+                                            Long.toString(originalSize)
+                                                .getBytes(
+                                                    WaarpStringUtils.UTF8));
     }
   }
 
   @Override
-  public byte getType() {
+  public final byte getType() {
     return LocalPacketFactory.REQUESTPACKET;
   }
 
   @Override
-  public String toString() {
+  public final String toString() {
     return "RequestPacket: " + specialId + " : " + rulename + " : " + mode +
            " :  " + filename + " : " + transferInformation + " : " + blocksize +
            " : " + rank + " : " + way + " : " + code + " : " + originalSize +
@@ -452,98 +458,98 @@ public class RequestPacket extends AbstractLocalPacket {
   /**
    * @return the rulename
    */
-  public String getRulename() {
+  public final String getRulename() {
     return rulename;
   }
 
   /**
    * @return the filename
    */
-  public String getFilename() {
+  public final String getFilename() {
     return filename;
   }
 
   /**
    * @return the mode
    */
-  public int getMode() {
+  public final int getMode() {
     return mode;
   }
 
   /**
    * @return True if this packet concerns a Retrieve operation
    */
-  public boolean isRetrieve() {
+  public final boolean isRetrieve() {
     return isRecvMode(mode);
   }
 
   /**
-   * @return the fileInformation
+   * @return the fifinal Information
    */
-  public String getTransferInformation() {
+  public final String getTransferInformation() {
     return transferInformation;
   }
 
   /**
    * @return the blocksize
    */
-  public int getBlocksize() {
+  public final int getBlocksize() {
     return blocksize;
   }
 
   /**
    * @return the rank
    */
-  public int getRank() {
+  public final int getRank() {
     return rank;
   }
 
   /**
    * @param rank the rank to set
    */
-  public void setRank(final int rank) {
+  public final void setRank(final int rank) {
     this.rank = rank;
   }
 
   /**
    * @return the originalSize
    */
-  public long getOriginalSize() {
+  public final long getOriginalSize() {
     return originalSize;
   }
 
   /**
    * @param originalSize the originalSize to set
    */
-  public void setOriginalSize(final long originalSize) {
+  public final void setOriginalSize(final long originalSize) {
     this.originalSize = originalSize;
   }
 
   /**
    * @param specialId the specialId to set
    */
-  public void setSpecialId(final long specialId) {
+  public final void setSpecialId(final long specialId) {
     this.specialId = specialId;
   }
 
   /**
    * @return the specialId
    */
-  public long getSpecialId() {
+  public final long getSpecialId() {
     return specialId;
   }
 
   /**
    * @return True if this packet is to be validated
    */
-  public boolean isToValidate() {
+  public final boolean isToValidate() {
     return way == REQVALIDATE;
   }
 
   /**
    * Validate the request
    */
-  public void validate() {
+  public final void validate() {
     way = REQANSWERVALIDATE;
     middle = null;
   }
@@ -558,22 +564,22 @@ public class RequestPacket extends AbstractLocalPacket {
   /**
    * @return the code
    */
-  public char getCode() {
+  public final char getCode() {
     return code;
   }
 
   /**
    * @param code the code to set
    */
-  public void setCode(final char code) {
+  public final void setCode(final char code) {
     this.code = code;
   }
 
-  public long getLimit() {
+  public final long getLimit() {
     return limit;
   }
 
-  public void setLimit(final long limit) {
+  public final void setLimit(final long limit) {
     this.limit = limit;
   }
 }

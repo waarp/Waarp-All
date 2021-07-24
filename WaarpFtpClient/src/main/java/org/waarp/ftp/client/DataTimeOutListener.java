@@ -66,8 +66,8 @@ public class DataTimeOutListener implements FTPDataTransferListener {
         final long now = System.currentTimeMillis();
         if (now - last - timeout > 0) {
           try {
-            logger
-                .warn("Timeout during file transfer: " + command + ' ' + file);
+            logger.warn(
+                "Timeout during file transfer: " + command + ' ' + file);
             client.abortCurrentDataTransfer(true);
           } catch (final IOException ignored) {
             // nothing

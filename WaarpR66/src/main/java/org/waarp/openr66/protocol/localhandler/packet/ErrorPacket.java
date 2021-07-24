@@ -89,13 +89,13 @@ public class ErrorPacket extends AbstractLocalPacket {
   }
 
   @Override
-  public boolean hasGlobalBuffer() {
+  public final boolean hasGlobalBuffer() {
     return true;
   }
 
   @Override
-  public void createAllBuffers(final LocalChannelReference lcr,
-                               final int networkHeader) {
+  public final void createAllBuffers(final LocalChannelReference lcr,
+                                     final int networkHeader) {
     final byte[] headerBytes =
         sheader != null? sheader.getBytes(WaarpStringUtils.UTF8) : EMPTY_ARRAY;
     final int headerSize = headerBytes.length;
@@ -122,33 +122,33 @@ public class ErrorPacket extends AbstractLocalPacket {
   }
 
   @Override
-  public String toString() {
+  public final String toString() {
     return "ErrorPacket:(" + code + ':' + smiddle + ") " + sheader;
   }
 
   @Override
-  public byte getType() {
+  public final byte getType() {
     return LocalPacketFactory.ERRORPACKET;
   }
 
   /**
    * @return the sheader
    */
-  public String getSheader() {
+  public final String getSheader() {
     return sheader;
   }
 
   /**
    * @return the smiddle
    */
-  public String getSmiddle() {
+  public final String getSmiddle() {
     return smiddle;
   }
 
   /**
    * @return the code
    */
-  public int getCode() {
+  public final int getCode() {
     return code;
   }
 

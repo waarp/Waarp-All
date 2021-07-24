@@ -203,7 +203,7 @@ public class LocalChannelReference {
   /**
    * Close the localChannelReference
    */
-  public void close() {
+  public final void close() {
     LocalServerHandler.channelInactive(serverHandler);
     if (networkChannelRef != null) {
       networkChannelRef.remove(this);
@@ -218,56 +218,56 @@ public class LocalChannelReference {
   /**
    * @return the networkChannelRef
    */
-  public Channel getNetworkChannel() {
+  public final Channel getNetworkChannel() {
     return networkChannelRef.channel();
   }
 
   /**
    * @return the id
    */
-  public Integer getLocalId() {
+  public final Integer getLocalId() {
     return localId;
   }
 
   /**
    * @return the remoteId
    */
-  public Integer getRemoteId() {
+  public final Integer getRemoteId() {
     return remoteId;
   }
 
   /**
    * @return the ChannelTrafficShapingHandler
    */
-  public ChannelTrafficShapingHandler getChannelTrafficShapingHandler() {
+  public final ChannelTrafficShapingHandler getChannelTrafficShapingHandler() {
     return cts;
   }
 
   /**
    * @return the networkChannelObject
    */
-  public NetworkChannelReference getNetworkChannelObject() {
+  public final NetworkChannelReference getNetworkChannelObject() {
     return networkChannelRef;
   }
 
   /**
    * @return the networkServerHandler
    */
-  public NetworkServerHandler getNetworkServerHandler() {
+  public final NetworkServerHandler getNetworkServerHandler() {
     return networkServerHandler;
   }
 
   /**
    * @return the serverHandler
    */
-  public TransferActions getServerHandler() {
+  public final TransferActions getServerHandler() {
     return serverHandler;
   }
 
   /**
    * @return the actual dbSession
    */
-  public DbSession getDbSession() {
+  public final DbSession getDbSession() {
     if (networkServerHandler != null) {
       return networkServerHandler.getDbSession();
     }
@@ -278,35 +278,36 @@ public class LocalChannelReference {
   /**
    * @param remoteId the remoteId to set
    */
-  public void setRemoteId(final Integer remoteId) {
+  public final void setRemoteId(final Integer remoteId) {
     this.remoteId = remoteId;
   }
 
   /**
    * @return the session
    */
-  public R66Session getSession() {
+  public final R66Session getSession() {
     return session;
   }
 
   /**
    * @param session the session to set
    */
-  public void setSession(final R66Session session) {
+  public final void setSession(final R66Session session) {
     this.session = session;
   }
 
   /**
    * @return the current errorMessage
    */
-  public String getErrorMessage() {
+  public final String getErrorMessage() {
     return errorMessage;
   }
 
   /**
    * @param errorMessage the errorMessage to set
    */
-  public void setErrorMessage(final String errorMessage, final ErrorCode code) {
+  public final void setErrorMessage(final String errorMessage,
+                                    final ErrorCode code) {
     this.errorMessage = errorMessage;
     this.code = code;
   }
@@ -314,7 +315,7 @@ public class LocalChannelReference {
   /**
    * @return the code
    */
-  public ErrorCode getCurrentCode() {
+  public final ErrorCode getCurrentCode() {
     return code;
   }
 
@@ -323,7 +324,7 @@ public class LocalChannelReference {
    *
    * @param validate
    */
-  public void validateStartup(final boolean validate) {
+  public final void validateStartup(final boolean validate) {
     if (futureStartup.isDone()) {
       return;
     }
@@ -337,7 +338,7 @@ public class LocalChannelReference {
   /**
    * @return the futureValidateStartup
    */
-  public R66Future getFutureValidateStartup() {
+  public final R66Future getFutureValidateStartup() {
     if (!futureStartup.awaitOrInterruptible()) {
       validateStartup(false);
       return futureStartup;
@@ -348,7 +349,7 @@ public class LocalChannelReference {
   /**
    * @return True if the connection is validated (in OK or KO status)
    */
-  public boolean isConnectionValidate() {
+  public final boolean isConnectionValidate() {
     return futureConnection.isDone();
   }
 
@@ -357,8 +358,8 @@ public class LocalChannelReference {
    *
    * @param validate
    */
-  public void validateConnection(final boolean validate,
-                                 final R66Result result) {
+  public final void validateConnection(final boolean validate,
+                                       final R66Result result) {
     if (futureConnection.isDone()) {
       logger.debug("LocalChannelReference already validated: {}",
                    futureConnection.isSuccess());
@@ -378,7 +379,7 @@ public class LocalChannelReference {
   /**
    * @return the futureValidateConnection
    */
-  public R66Future getFutureValidateConnection() {
+  public final R66Future getFutureValidateConnection() {
     final R66Result result;
     final Channel channel = networkChannelRef.channel();
     if (channel != null && channel.isActive()) {
@@ -414,7 +415,7 @@ public class LocalChannelReference {
    *
    * @param finalValue
    */
-  public void validateEndTransfer(final R66Result finalValue) {
+  public final void validateEndTransfer(final R66Result finalValue) {
     if (!futureEndTransfer.isDone()) {
       futureEndTransfer.setResult(finalValue);
       futureEndTransfer.setSuccess();
@@ -430,7 +431,7 @@ public class LocalChannelReference {
   /**
    * @return the futureEndTransfer
    */
-  public R66Future getFutureEndTransfer() {
+  public final R66Future getFutureEndTransfer() {
     return futureEndTransfer;
   }
 
@@ -439,7 +440,7 @@ public class LocalChannelReference {
    *
    * @throws OpenR66Exception
    */
-  public void waitReadyForSendThrough() throws OpenR66Exception {
+  public final void waitReadyForSendThrough() throws OpenR66Exception {
     logger.debug("Wait for End of Prepare Transfer");
     futureEndTransfer.awaitOrInterruptible();
     if (futureEndTransfer.isSuccess()) {
@@ -460,14 +461,14 @@ public class LocalChannelReference {
   /**
    * @return the futureValidRequest
    */
-  public R66Future getFutureValidRequest() {
+  public final R66Future getFutureValidRequest() {
     return futureValidRequest;
   }
 
   /**
    * @return the futureRequest
    */
-  public R66Future getFutureRequest() {
+  public final R66Future getFutureRequest() {
     return futureRequest;
   }
 
@@ -476,7 +477,7 @@ public class LocalChannelReference {
    *
    * @param finalvalue
    */
-  public void invalidateRequest(final R66Result finalvalue) {
+  public final void invalidateRequest(final R66Result finalvalue) {
     R66Result finalValue = finalvalue;
     if (finalValue == null) {
       finalValue =
@@ -557,7 +558,7 @@ public class LocalChannelReference {
    *
    * @param finalValue
    */
-  public void validateRequest(final R66Result finalValue) {
+  public final void validateRequest(final R66Result finalValue) {
     setErrorMessage("NoError", null);
     if (!futureEndTransfer.isDone()) {
       logger.debug("Will validate EndTransfer");
@@ -595,7 +596,7 @@ public class LocalChannelReference {
     return res;
   }
 
-  public void setChannelLimit(final boolean isSender, final long limit) {
+  public final void setChannelLimit(final boolean isSender, final long limit) {
     final ChannelTrafficShapingHandler limitHandler =
         (ChannelTrafficShapingHandler) networkChannelRef.channel().pipeline()
                                                         .get(
@@ -609,7 +610,7 @@ public class LocalChannelReference {
     }
   }
 
-  public long getChannelLimit(final boolean isSender) {
+  public final long getChannelLimit(final boolean isSender) {
     final long global;
     final long channel;
     if (isSender) {
@@ -623,7 +624,7 @@ public class LocalChannelReference {
   }
 
   @Override
-  public String toString() {
+  public final String toString() {
     return "LCR: L: " + localId + " R: " + remoteId + " Startup[" +
            futureStartup + "] Conn[" + futureConnection +
            "] ValidRequestRequest[" + futureValidRequest + "] EndTransfer[" +
@@ -635,21 +636,21 @@ public class LocalChannelReference {
   /**
    * @return the recvThroughHandler
    */
-  public RecvThroughHandler getRecvThroughHandler() {
+  public final RecvThroughHandler getRecvThroughHandler() {
     return recvThroughHandler;
   }
 
   /**
    * @return True if in RecvThrough Mode
    */
-  public boolean isRecvThroughMode() {
+  public final boolean isRecvThroughMode() {
     return recvThroughHandler != null;
   }
 
   /**
    * @param recvThroughHandler the recvThroughHandler to set
    */
-  public void setRecvThroughHandler(
+  public final void setRecvThroughHandler(
       final RecvThroughHandler recvThroughHandler) {
     this.recvThroughHandler = recvThroughHandler;
   }
@@ -657,28 +658,28 @@ public class LocalChannelReference {
   /**
    * @return True if in SendThrough Mode
    */
-  public boolean isSendThroughMode() {
+  public final boolean isSendThroughMode() {
     return isSendThroughMode;
   }
 
   /**
    * @param isSendThroughMode the isSendThroughMode to set
    */
-  public void setSendThroughMode(final boolean isSendThroughMode) {
+  public final void setSendThroughMode(final boolean isSendThroughMode) {
     this.isSendThroughMode = isSendThroughMode;
   }
 
   /**
    * @return the clientRunner
    */
-  public ClientRunner getClientRunner() {
+  public final ClientRunner getClientRunner() {
     return clientRunner;
   }
 
   /**
    * @param clientRunner the clientRunner to set
    */
-  public void setClientRunner(final ClientRunner clientRunner) {
+  public final void setClientRunner(final ClientRunner clientRunner) {
     this.clientRunner = clientRunner;
   }
 
@@ -687,7 +688,7 @@ public class LocalChannelReference {
    *
    * @param desiredState
    */
-  public void sessionNewState(final R66FiniteDualStates desiredState) {
+  public final void sessionNewState(final R66FiniteDualStates desiredState) {
     if (session != null) {
       session.newState(desiredState);
     }
@@ -696,7 +697,7 @@ public class LocalChannelReference {
   /**
    * @return the current state or TEST if no session exists
    */
-  public R66FiniteDualStates getSessionState() {
+  public final R66FiniteDualStates getSessionState() {
     if (session != null) {
       return session.getState();
     }
@@ -706,7 +707,7 @@ public class LocalChannelReference {
   /**
    * @return the hashComputeDuringTransfer
    */
-  public String getHashComputeDuringTransfer() {
+  public final String getHashComputeDuringTransfer() {
     return hashComputeDuringTransfer;
   }
 
@@ -714,30 +715,30 @@ public class LocalChannelReference {
    * @param hashComputeDuringTransfer the hashComputeDuringTransfer to
    *     set
    */
-  public void setHashComputeDuringTransfer(
+  public final void setHashComputeDuringTransfer(
       final String hashComputeDuringTransfer) {
     this.hashComputeDuringTransfer = hashComputeDuringTransfer;
   }
 
-  public void setPartialHash() {
+  public final void setPartialHash() {
     partialHash = true;
   }
 
-  public boolean isPartialHash() {
+  public final boolean isPartialHash() {
     return partialHash;
   }
 
   /**
    * @return the partner
    */
-  public PartnerConfiguration getPartner() {
+  public final PartnerConfiguration getPartner() {
     return partner;
   }
 
   /**
    * @param hostId the partner to set
    */
-  public void setPartner(final String hostId) {
+  public final void setPartner(final String hostId) {
     logger.debug("host: {}", hostId);
     partner = Configuration.configuration.getVersions().get(hostId);
     if (partner == null) {
@@ -750,14 +751,14 @@ public class LocalChannelReference {
   /**
    * @return the requestId
    */
-  public String getRequestId() {
+  public final String getRequestId() {
     return requestId;
   }
 
   /**
    * @param requestId the requestId to set
    */
-  public void setRequestId(final String requestId) {
+  public final void setRequestId(final String requestId) {
     this.requestId = requestId;
   }
 

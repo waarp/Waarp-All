@@ -68,43 +68,43 @@ public class WaarpSecureTrustManagerFactory extends TrustManagerFactorySpi {
   /**
    * @return True if this TrustManager really check authentication
    */
-  public boolean hasTrustStore() {
+  public final boolean hasTrustStore() {
     return hasTrustStore;
   }
 
   /**
    * @return True if this TrustManager really check authentication
    */
-  public boolean needAuthentication() {
+  public final boolean needAuthentication() {
     return needAuthentication;
   }
 
   /**
    * @return the list of TrustManagers
    */
-  public X509Certificate[] getX509Certificates() {
+  public final X509Certificate[] getX509Certificates() {
     return ((WaarpX509TrustManager) trustManager[0]).getAcceptedIssuers();
   }
 
   /**
    * @return The TrustManager arrays
    */
-  public TrustManager[] getTrustManagers() {
+  public final TrustManager[] getTrustManagers() {
     return trustManager.clone();
   }
 
   @Override
-  protected TrustManager[] engineGetTrustManagers() {
+  protected final TrustManager[] engineGetTrustManagers() {
     return getTrustManagers();
   }
 
   @Override
-  protected void engineInit(final KeyStore arg0) {
+  protected final void engineInit(final KeyStore arg0) {
     // Unused
   }
 
   @Override
-  protected void engineInit(final ManagerFactoryParameters arg0) {
+  protected final void engineInit(final ManagerFactoryParameters arg0) {
     // Unused
   }
 

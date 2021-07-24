@@ -76,8 +76,8 @@ public class ClientExampleTest implements Runnable {
 
   public void test_Client(boolean clientAsync, boolean serverAsync)
       throws InterruptedException {
-    System.out
-        .println("Start Client: " + clientAsync + " Server: " + serverAsync);
+    System.out.println(
+        "Start Client: " + clientAsync + " Server: " + serverAsync);
     isBlocking = clientAsync;
     isBlockingServer = serverAsync;
     initServer();
@@ -174,9 +174,10 @@ public class ClientExampleTest implements Runnable {
         result = client.infoTransferQuery(request);
         System.out.println("RESULT2: " + result);
 
-        System.out.println("Exist: " + client
-            .isStillRunning(request.getFromuid(), request.getDestuid(),
-                            request.getTid()));
+        System.out.println("Exist: " +
+                           client.isStillRunning(request.getFromuid(),
+                                                 request.getDestuid(),
+                                                 request.getTid()));
 
         request.setAction(Action.Exist);
         result = client.infoTransferQuery(request);
@@ -258,8 +259,8 @@ public class ClientExampleTest implements Runnable {
 
   public void test_AsyncClient(boolean clientAsync, boolean serverAsync)
       throws InterruptedException {
-    System.out
-        .println("Start Client: " + clientAsync + " Server: " + serverAsync);
+    System.out.println(
+        "Start Client: " + clientAsync + " Server: " + serverAsync);
     isBlocking = clientAsync;
     isBlockingServer = serverAsync;
     initServer();
@@ -274,8 +275,8 @@ public class ClientExampleTest implements Runnable {
         final TAsyncClientManager manager = new TAsyncClientManager();
         final TBinaryProtocol.Factory factory = new Factory();
         final R66Service.AsyncClient client =
-            new R66Service.AsyncClient.Factory(manager, factory)
-                .getAsyncClient((TNonblockingSocket) transport);
+            new R66Service.AsyncClient.Factory(manager, factory).getAsyncClient(
+                (TNonblockingSocket) transport);
         final R66Request request = new R66Request(RequestMode.SYNCTRANSFER);
         request.setFromuid("myclient");
         request.setDestuid("mypartner");

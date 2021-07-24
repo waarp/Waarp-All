@@ -50,7 +50,7 @@ public class WaarpThreadFactory implements ThreadFactory {
   }
 
   @Override
-  public Thread newThread(final Runnable arg0) {
+  public final Thread newThread(final Runnable arg0) {
     final Thread thread =
         new Thread(arg0, globalName + counter.incrementAndGet());
     thread.setDaemon(isDaemon);

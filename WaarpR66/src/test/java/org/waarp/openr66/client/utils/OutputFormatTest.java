@@ -60,9 +60,9 @@ public class OutputFormatTest {
     Map<String, String> mapString = new HashMap<String, String>();
     mapString.put("KEY3", "VALUE3");
     outputFormat.setValueString(mapString);
-    assertTrue(outputFormat
-                   .exist("INT", "LONG", "BOOLEAN", "DOUBLE", "STRING", "KEY1",
-                          "KEYOBJ2", "KEY3"));
+    assertTrue(
+        outputFormat.exist("INT", "LONG", "BOOLEAN", "DOUBLE", "STRING", "KEY1",
+                           "KEYOBJ2", "KEY3"));
     assertEquals("[FakeCommand]  => {\"command\":\"FakeCommand\"," +
                  "\"args\":\"FakeArg1 FakeArg2 \",\"INT\":12345," +
                  "\"LONG\":1234567890123456789,\"BOOLEAN\":true,\"DOUBLE\":123.45," +
@@ -169,9 +169,9 @@ public class OutputFormatTest {
     Map<String, String> mapString = new HashMap<String, String>();
     mapString.put("KEY3", "VALUE3");
     outputFormat.setValueString(mapString);
-    assertTrue(outputFormat
-                   .exist("INT", "LONG", "BOOLEAN", "DOUBLE", "STRING", "KEY1",
-                          "KEYOBJ2", "KEY3"));
+    assertTrue(
+        outputFormat.exist("INT", "LONG", "BOOLEAN", "DOUBLE", "STRING", "KEY1",
+                           "KEYOBJ2", "KEY3"));
     assertEquals("[FakeCommand]  => {\"command\":\"FakeCommand\"," +
                  "\"args\":\"FakeArg1 FakeArg2 \",\"INT\":12345," +
                  "\"LONG\":1234567890123456789,\"BOOLEAN\":true,\"DOUBLE\":123.45," +
@@ -273,9 +273,9 @@ public class OutputFormatTest {
     Map<String, String> mapString = new HashMap<String, String>();
     mapString.put("KEY3", "VALUE3");
     outputFormat.setValueString(mapString);
-    assertTrue(outputFormat
-                   .exist("INT", "LONG", "BOOLEAN", "DOUBLE", "STRING", "KEY1",
-                          "KEYOBJ2", "KEY3"));
+    assertTrue(
+        outputFormat.exist("INT", "LONG", "BOOLEAN", "DOUBLE", "STRING", "KEY1",
+                           "KEYOBJ2", "KEY3"));
     assertEquals("[FakeCommand]  => {\"command\":\"FakeCommand\"," +
                  "\"args\":\"FakeArg1 FakeArg2 \",\"INT\":12345," +
                  "\"LONG\":1234567890123456789,\"BOOLEAN\":true,\"DOUBLE\":123.45," +
@@ -383,9 +383,9 @@ public class OutputFormatTest {
     Map<String, String> mapString = new HashMap<String, String>();
     mapString.put("KEY3", "VALUE3");
     outputFormat.setValueString(mapString);
-    assertTrue(outputFormat
-                   .exist("INT", "LONG", "BOOLEAN", "DOUBLE", "STRING", "KEY1",
-                          "KEYOBJ2", "KEY3"));
+    assertTrue(
+        outputFormat.exist("INT", "LONG", "BOOLEAN", "DOUBLE", "STRING", "KEY1",
+                           "KEYOBJ2", "KEY3"));
     assertEquals("[FakeCommand]  => {\"command\":\"FakeCommand\"," +
                  "\"args\":\"FakeArg1 FakeArg2 \",\"INT\":12345," +
                  "\"LONG\":1234567890123456789,\"BOOLEAN\":true,\"DOUBLE\":123.45," +

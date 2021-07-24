@@ -30,14 +30,14 @@ import static java.util.concurrent.TimeUnit.*;
  * Completely inspired from the excellent ChannelFuture of Netty, but without
  * any channel inside.
  */
-public class WaarpFuture {
+public class WaarpFuture implements WaarpFutureInterface {
   private static final Throwable CANCELLED = new Throwable();
 
   private final boolean cancellable;
 
   private volatile boolean done;
 
-  private volatile Throwable cause;
+  private Throwable cause;
 
   private int waiters;
 
@@ -66,7 +66,8 @@ public class WaarpFuture {
    *
    * @return True if the future is complete
    */
-  public boolean isDone() {
+  @Override
+  public final boolean isDone() {
     return done;
   }
 
@@ -76,7 +77,8 @@ public class WaarpFuture {
    *
    * @return True if the future is successful
    */
-  public boolean isSuccess() {
+  @Override
+  public final boolean isSuccess() {
     return done && cause == null;
   }
 
@@ -86,8 +88,9 @@ public class WaarpFuture {
    *
    * @return True if the future is done but unsuccessful
    */
-  public boolean isFailed() {
-    return cause != null;
+  @Override
+  public final boolean isFailed() {
+    return done && cause != null;
   }
 
   /**
@@ -97,7 +100,8 @@ public class WaarpFuture {
    *     future
    *     is not completed yet.
    */
-  public Throwable getCause() {
+  @Override
+  public final Throwable getCause() {
     if (cause != CANCELLED) {
       return cause;
     }
@@ -110,15 +114,17 @@ public class WaarpFuture {
    *
    * @return True if the future was canceled
    */
-  public boolean isCancelled() {
-    return cause == CANCELLED;
+  @Override
+  public final boolean isCancelled() {
+    return done && cause == CANCELLED;
   }
 
   /**
    * Rethrows the exception that caused this future fail if this future is
    * complete and failed.
    */
-  public WaarpFuture rethrowIfFailed() throws Exception {
+  @Override
+  public final WaarpFuture rethrowIfFailed() throws Exception {
     if (!isDone()) {
       return this;
     }
@@ -142,7 +148,8 @@ public class WaarpFuture {
   /**
    * @return True if the Future is done or False if interrupted
    */
-  public boolean awaitOrInterruptible() {
+  @Override
+  public final boolean awaitOrInterruptible() {
     while (!Thread.interrupted()) {
       if (awaitOrInterruptible(1, SECONDS)) {
         return true;
@@ -156,7 +163,8 @@ public class WaarpFuture {
    *
    * @return True if the Future is done or False if interrupted
    */
-  public boolean awaitOrInterruptible(final long timeoutMilliseconds) {
+  @Override
+  public final boolean awaitOrInterruptible(final long timeoutMilliseconds) {
     return awaitOrInterruptible(MILLISECONDS.toNanos(timeoutMilliseconds),
                                 false);
   }
@@ -167,7 +175,9 @@ public class WaarpFuture {
    *
    * @return True if the Future is done or False if interrupted
    */
-  public boolean awaitOrInterruptible(final long timeout, final TimeUnit unit) {
+  @Override
+  public final boolean awaitOrInterruptible(final long timeout,
+                                            final TimeUnit unit) {
     return awaitOrInterruptible(unit.toNanos(timeout), false);
   }
 
@@ -249,7 +259,8 @@ public class WaarpFuture {
    *     because this future is already marked as either a success or a
    *     failure.
    */
-  public boolean setSuccess() {
+  @Override
+  public final boolean setSuccess() {
     synchronized (this) {
       // Allow only once.
       if (done) {
@@ -274,7 +285,8 @@ public class WaarpFuture {
    *     because this future is already marked as either a success or a
    *     failure.
    */
-  public boolean setFailure(final Throwable cause) {
+  @Override
+  public final boolean setFailure(final Throwable cause) {
     synchronized (this) {
       // Allow only once.
       if (done) {
@@ -299,7 +311,8 @@ public class WaarpFuture {
    *     false} if the operation can't
    *     be canceled or is already completed.
    */
-  public boolean cancel() {
+  @Override
+  public final boolean cancel() {
     if (!cancellable) {
       return false;
     }
@@ -321,7 +334,8 @@ public class WaarpFuture {
   /**
    * Experimental: try to re-enable the future
    */
-  public void reset() {
+  @Override
+  public final void reset() {
     synchronized (this) {
       done = false;
       cause = null;

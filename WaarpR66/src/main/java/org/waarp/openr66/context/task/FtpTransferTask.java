@@ -107,7 +107,7 @@ public class FtpTransferTask extends AbstractTask {
    **/
 
   @Override
-  public void run() {
+  public final void run() {
     logger.info("FtpTransfer with {}:{} and {}", argRule, argTransfer, session);
     if (argRule == null) {
       logger.error(
@@ -124,8 +124,8 @@ public class FtpTransferTask extends AbstractTask {
         finalname = String.format(finalname, (Object[]) argFormat);
       } catch (final Exception e) {
         // ignored error since bad argument in static rule info
-        logger
-            .error("Bad format in Rule: {" + finalname + "} " + e.getMessage());
+        logger.error(
+            "Bad format in Rule: {" + finalname + "} " + e.getMessage());
       }
     }
     final String[] args = BLANK.split(finalname);
@@ -176,7 +176,7 @@ public class FtpTransferTask extends AbstractTask {
         ftpClient.makeDir(ftpArgs.getCwd());
         try {
           Thread.sleep(Configuration.RETRYINMS);
-        } catch (InterruptedException e) {// NOSONAR
+        } catch (final InterruptedException e) {// NOSONAR
           // Ignore
         }
         if (!ftpClient.changeDir(ftpArgs.getCwd())) {
@@ -224,8 +224,9 @@ public class FtpTransferTask extends AbstractTask {
         // now check locally
         String hash;
         try {
-          hash = FilesystemBasedDigest.getHex(FilesystemBasedDigest.getHash(
-              new File(ftpArgs.getFilepath()), false, ftpArgs.getDigest()));
+          hash = FilesystemBasedDigest.getHex(
+              FilesystemBasedDigest.getHash(new File(ftpArgs.getFilepath()),
+                                            false, ftpArgs.getDigest()));
         } catch (final IOException e) {
           hash = null;
         }

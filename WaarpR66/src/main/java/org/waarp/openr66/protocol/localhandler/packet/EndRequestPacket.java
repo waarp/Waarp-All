@@ -107,13 +107,13 @@ public class EndRequestPacket extends AbstractLocalPacket {
   }
 
   @Override
-  public boolean hasGlobalBuffer() {
+  public final boolean hasGlobalBuffer() {
     return true;
   }
 
   @Override
-  public void createAllBuffers(final LocalChannelReference lcr,
-                               final int networkHeader) {
+  public final void createAllBuffers(final LocalChannelReference lcr,
+                                     final int networkHeader) {
     final int headerSize = 4;
     final int middleSize = 1;
     final byte[] endBytes =
@@ -137,12 +137,12 @@ public class EndRequestPacket extends AbstractLocalPacket {
   }
 
   @Override
-  public byte getType() {
+  public final byte getType() {
     return LocalPacketFactory.ENDREQUESTPACKET;
   }
 
   @Override
-  public String toString() {
+  public final String toString() {
     return "EndRequestPacket: " + code + ' ' + way +
            (optional != null? ' ' + optional : "");
   }
@@ -150,21 +150,21 @@ public class EndRequestPacket extends AbstractLocalPacket {
   /**
    * @return the code
    */
-  public int getCode() {
+  public final int getCode() {
     return code;
   }
 
   /**
    * @return True if this packet is to be validated
    */
-  public boolean isToValidate() {
+  public final boolean isToValidate() {
     return way == ASKVALIDATE;
   }
 
   /**
    * Validate the connection
    */
-  public void validate() {
+  public final void validate() {
     way = ANSWERVALIDATE;
     clear();
   }
@@ -172,14 +172,14 @@ public class EndRequestPacket extends AbstractLocalPacket {
   /**
    * @return the optional
    */
-  public String getOptional() {
+  public final String getOptional() {
     return optional;
   }
 
   /**
    * @param optional the optional to set
    */
-  public void setOptional(final String optional) {
+  public final void setOptional(final String optional) {
     this.optional = optional;
   }
 

@@ -45,8 +45,8 @@ public class FtpServer {
 
   public static void startFtpServer(String config, String sslconfig,
                                     boolean useSsl, boolean useNative) {
-    WaarpLoggerFactory
-        .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));
+    WaarpLoggerFactory.setDefaultFactoryIfNotSame(
+        new WaarpSlf4JLoggerFactory(null));
     if (logger == null) {
       logger = WaarpLoggerFactory.getLogger(FtpServer.class);
     }
@@ -68,8 +68,8 @@ public class FtpServer {
       }
       configuration.setTimeoutCon(1000);
       if (useSsl) {
-        if (!FileBasedSslConfiguration
-            .setConfigurationServerFromXml(configuration, sslconfig)) {
+        if (!FileBasedSslConfiguration.setConfigurationServerFromXml(
+            configuration, sslconfig)) {
           SysErrLogger.FAKE_LOGGER.syserr("Bad Ssl configuration");
           return;
         }

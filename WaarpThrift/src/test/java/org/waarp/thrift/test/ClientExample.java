@@ -81,9 +81,9 @@ public class ClientExample implements Runnable {
       result = client.infoTransferQuery(request);
       System.out.println("RESULT2: " + result);
 
-      System.out.println("Exist: " + client
-          .isStillRunning(request.getFromuid(), request.getDestuid(),
-                          request.getTid()));
+      System.out.println("Exist: " + client.isStillRunning(request.getFromuid(),
+                                                           request.getDestuid(),
+                                                           request.getTid()));
 
       request.setMode(RequestMode.INFOFILE);
       request.setAction(Action.List);

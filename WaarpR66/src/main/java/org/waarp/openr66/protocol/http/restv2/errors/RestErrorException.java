@@ -73,7 +73,7 @@ public class RestErrorException extends RuntimeException {
    *
    * @return the serialized list of errors.
    */
-  public ObjectNode makeNode(final Locale lang) {
+  public final ObjectNode makeNode(final Locale lang) {
     final ArrayNode errorsArray = JsonHandler.createArrayNode();
     for (final RestError error : errors) {
       errorsArray.add(error.makeNode(lang));

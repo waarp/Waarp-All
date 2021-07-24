@@ -75,13 +75,13 @@ public class KeepAlivePacket extends AbstractLocalPacket {
   }
 
   @Override
-  public boolean hasGlobalBuffer() {
+  public final boolean hasGlobalBuffer() {
     return true;
   }
 
   @Override
-  public void createAllBuffers(final LocalChannelReference lcr,
-                               final int networkHeader) {
+  public final void createAllBuffers(final LocalChannelReference lcr,
+                                     final int networkHeader) {
     final int globalSize = networkHeader + LOCAL_HEADER_SIZE + 1;
     final int offset = networkHeader + LOCAL_HEADER_SIZE;
     global = ByteBufAllocator.DEFAULT.ioBuffer(globalSize, globalSize);
@@ -92,26 +92,26 @@ public class KeepAlivePacket extends AbstractLocalPacket {
   }
 
   @Override
-  public byte getType() {
+  public final byte getType() {
     return LocalPacketFactory.KEEPALIVEPACKET;
   }
 
   @Override
-  public String toString() {
+  public final String toString() {
     return "KeepAlivePacket: " + way;
   }
 
   /**
    * @return True if this packet is to be validated
    */
-  public boolean isToValidate() {
+  public final boolean isToValidate() {
     return way == ASKVALIDATE;
   }
 
   /**
    * Validate the connection
    */
-  public void validate() {
+  public final void validate() {
     way = ANSWERVALIDATE;
     clear();
   }

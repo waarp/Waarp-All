@@ -53,7 +53,7 @@ public abstract class Restart {
   /**
    * @return the isSet
    */
-  protected boolean isSet() {
+  protected final boolean isSet() {
     return isSet;
   }
 
@@ -67,7 +67,7 @@ public abstract class Restart {
   /**
    * @return the session
    */
-  protected SessionInterface getSession() {
+  protected final SessionInterface getSession() {
     return session;
   }
 

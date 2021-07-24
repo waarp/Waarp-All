@@ -50,7 +50,7 @@ public class MalformedInputException extends RuntimeException {
     this.offset = 0;
   }
 
-  public long getOffset() {
+  public final long getOffset() {
     return offset;
   }
 }

@@ -95,8 +95,9 @@ class Huffman {
       input += reader.readFseTable(fseTable, inputBase, input, inputLimit,
                                    FiniteStateEntropy.MAX_SYMBOL,
                                    MAX_FSE_TABLE_LOG);
-      outputSize = FiniteStateEntropy
-          .decompress(fseTable, inputBase, input, inputLimit, weights);
+      outputSize =
+          FiniteStateEntropy.decompress(fseTable, inputBase, input, inputLimit,
+                                        weights);
     }
 
     int totalWeight = 0;
@@ -209,11 +210,11 @@ class Huffman {
         inputAddress + 3 * SIZE_OF_SHORT; // for the shorts we read below
     final long start2 =
         start1 + (UnsafeUtil.UNSAFE.getShort(inputBase, inputAddress) & 0xFFFF);
-    final long start3 = start2 + (UnsafeUtil.UNSAFE
-                                      .getShort(inputBase, inputAddress + 2) &
+    final long start3 = start2 + (UnsafeUtil.UNSAFE.getShort(inputBase,
+                                                             inputAddress + 2) &
                                   0xFFFF);
-    final long start4 = start3 + (UnsafeUtil.UNSAFE
-                                      .getShort(inputBase, inputAddress + 4) &
+    final long start4 = start3 + (UnsafeUtil.UNSAFE.getShort(inputBase,
+                                                             inputAddress + 4) &
                                   0xFFFF);
 
     BitInputStream.Initializer initializer =

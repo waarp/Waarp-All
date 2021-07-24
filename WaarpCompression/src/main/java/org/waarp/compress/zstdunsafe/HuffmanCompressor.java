@@ -75,8 +75,8 @@ class HuffmanCompressor {
     if (compressedSize == 0) {
       return 0;
     }
-    UnsafeUtil.UNSAFE
-        .putShort(outputBase, outputAddress, (short) compressedSize);
+    UnsafeUtil.UNSAFE.putShort(outputBase, outputAddress,
+                               (short) compressedSize);
     output += compressedSize;
     input += segmentSize;
 
@@ -99,9 +99,9 @@ class HuffmanCompressor {
     if (compressedSize == 0) {
       return 0;
     }
-    UnsafeUtil.UNSAFE
-        .putShort(outputBase, outputAddress + SIZE_OF_SHORT + SIZE_OF_SHORT,
-                  (short) compressedSize);
+    UnsafeUtil.UNSAFE.putShort(outputBase,
+                               outputAddress + SIZE_OF_SHORT + SIZE_OF_SHORT,
+                               (short) compressedSize);
     output += compressedSize;
     input += segmentSize;
 

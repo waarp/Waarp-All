@@ -53,7 +53,7 @@ public enum XmlType {
    *
    * @return True if the Object is natively compatible with the internal Type
    */
-  public boolean isNativelyCompatible(final Object value) {
+  public final boolean isNativelyCompatible(final Object value) {
     final Class<?> type = value.getClass();
     switch (this) {
       case BOOLEAN:
@@ -90,23 +90,23 @@ public enum XmlType {
     }
   }
 
-  public boolean isBoolean() {
+  public final boolean isBoolean() {
     return this == BOOLEAN;
   }
 
-  public boolean isInteger() {
+  public final boolean isInteger() {
     return this == INTEGER;
   }
 
-  public boolean isFloat() {
+  public final boolean isFloat() {
     return this == FLOAT;
   }
 
-  public boolean isCharacter() {
+  public final boolean isCharacter() {
     return this == CHARACTER;
   }
 
-  public boolean isByte() {
+  public final boolean isByte() {
     return this == BYTE;
   }
 
@@ -114,31 +114,31 @@ public enum XmlType {
     return this == LONG;
   }
 
-  public boolean isDouble() {
+  public final boolean isDouble() {
     return this == DOUBLE;
   }
 
-  public boolean isShort() {
+  public final boolean isShort() {
     return this == SHORT;
   }
 
-  public boolean isDate() {
+  public final boolean isDate() {
     return this == SQLDATE;
   }
 
-  public boolean isTimestamp() {
+  public final boolean isTimestamp() {
     return this == TIMESTAMP;
   }
 
-  public boolean isString() {
+  public final boolean isString() {
     return this == STRING;
   }
 
-  public boolean isXmlValue() {
+  public final boolean isXmlValue() {
     return this == XVAL;
   }
 
-  public boolean isEmpty() {
+  public final boolean isEmpty() {
     return this == EMPTY;
   }
 }

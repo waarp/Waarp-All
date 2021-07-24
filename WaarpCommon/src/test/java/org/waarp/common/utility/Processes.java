@@ -101,8 +101,8 @@ public final class Processes {
 
   public static int getPidOfRunnerCommandLinux(String filterByRunner,
                                                String filterByCommand) {
-    List<String> args = Arrays
-        .asList(("ps -C " + filterByRunner + " -e -o pid,args=").split(" +"));
+    List<String> args = Arrays.asList(
+        ("ps -C " + filterByRunner + " -e -o pid,args=").split(" +"));
     // Example output:
     // 22245 /opt/libreoffice5.4/program/soffice.bin --headless
     // 22250 [soffice.bin] <defunct>
@@ -147,8 +147,8 @@ public final class Processes {
   public static int getPidOfRunnerCommandLinux(String filterByRunner,
                                                String filterByCommand,
                                                List<Integer> previousPids) {
-    List<String> args = Arrays
-        .asList(("ps -C " + filterByRunner + " -e -o pid,args=").split(" +"));
+    List<String> args = Arrays.asList(
+        ("ps -C " + filterByRunner + " -e -o pid,args=").split(" +"));
     // Example output:
     // 22245 /opt/libreoffice5.4/program/soffice.bin --headless
     // 22250 [soffice.bin] <defunct>
@@ -203,8 +203,9 @@ public final class Processes {
 
   public static void kill(int pid, boolean graceful) {
     if (System.getProperty("os.name").startsWith("Windows")) {
-      List<String> args = ImmutableList
-          .of("taskkill", graceful? "/t" : "/f", "/pid", Integer.toString(pid));
+      List<String> args =
+          ImmutableList.of("taskkill", graceful? "/t" : "/f", "/pid",
+                           Integer.toString(pid));
       try {
         Process process = new ProcessBuilder(args).start();
         BufferedReader br = null;
@@ -242,8 +243,8 @@ public final class Processes {
 
   static int killLinux(int pid, int signal) {
     if (pid < 100) {
-      SysErrLogger.FAKE_LOGGER
-          .syserr("Should never try to kill process with pid < 100");
+      SysErrLogger.FAKE_LOGGER.syserr(
+          "Should never try to kill process with pid < 100");
       throw new RuntimeException(
           "Should never try to kill process with pid < 100");
     }
@@ -309,11 +310,11 @@ public final class Processes {
     OperatingSystemMXBean osmxb =
         (OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
     final int freePhysicalMemorySize =
-        (int) (osmxb.getFreePhysicalMemorySize() / (1024*1024*1024));
+        (int) (osmxb.getFreePhysicalMemorySize() / (1024 * 1024 * 1024));
     final int maxMemory = freePhysicalMemorySize / nbProcess;
-    final int realMemory = maxMemory > 0? maxMemory:1;
-    setJvmArgsDefault("-Xms"+maxMemory+"g -Xmx"+maxMemory+"g ");
-    System.err.println("Will propose "+maxMemory);
+    final int realMemory = maxMemory > 0? maxMemory : 2;
+    setJvmArgsDefault("-Xms" + realMemory + "g -Xmx" + realMemory + "g ");
+    System.err.println("Will propose " + realMemory);
   }
 
   public static void setJvmArgsDefault(String jvmArgsDefault1) {
@@ -430,8 +431,8 @@ public final class Processes {
         if (jvmArgsDefault.contains("-Xmx")) {
           jvmArgs.setLine(jvmArgsDefault + logbackConf);
         } else {
-          jvmArgs
-              .setLine("-Xms1024m -Xmx1024m " + jvmArgsDefault + logbackConf);
+          jvmArgs.setLine(
+              "-Xms1024m -Xmx1024m " + jvmArgsDefault + logbackConf);
         }
       } else {
         jvmArgs.setLine("-Xms1024m -Xmx1024m " + logbackConf);
@@ -493,8 +494,8 @@ public final class Processes {
         if (jvmArgsDefault.contains("-Xmx")) {
           jvmArgs.setLine(jvmArgsDefault + logbackConf);
         } else {
-          jvmArgs
-              .setLine("-Xms1024m -Xmx1024m " + jvmArgsDefault + logbackConf);
+          jvmArgs.setLine(
+              "-Xms1024m -Xmx1024m " + jvmArgsDefault + logbackConf);
         }
       } else {
         jvmArgs.setLine("-Xms1024m -Xmx1024m " + logbackConf);

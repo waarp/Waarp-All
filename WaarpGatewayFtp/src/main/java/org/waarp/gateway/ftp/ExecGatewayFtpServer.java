@@ -59,8 +59,8 @@ public class ExecGatewayFtpServer {
           " <config-file> [<r66config-file>]");
       return;
     }
-    WaarpLoggerFactory
-        .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));
+    WaarpLoggerFactory.setDefaultFactoryIfNotSame(
+        new WaarpSlf4JLoggerFactory(null));
     logger = WaarpLoggerFactory.getLogger(ExecGatewayFtpServer.class);
     initialize(args[0], args.length > 1? args[1] : null);
   }
@@ -89,16 +89,15 @@ public class ExecGatewayFtpServer {
     if (AbstractExecutor.useDatabase) {
       // Use R66 module
       if (r66file != null) {
-        if (!org.waarp.openr66.configuration.FileBasedConfiguration
-            .setSubmitClientConfigurationFromXml(Configuration.configuration,
-                                                 r66file)) {
+        if (!org.waarp.openr66.configuration.FileBasedConfiguration.setSubmitClientConfigurationFromXml(
+            Configuration.configuration, r66file)) {
           SysErrLogger.FAKE_LOGGER.syserr("Bad R66 configuration");
           return false;
         }
       } else {
         // Cannot get R66 functional
-        SysErrLogger.FAKE_LOGGER
-            .syserr("No R66PrepareTransfer configuration file");
+        SysErrLogger.FAKE_LOGGER.syserr(
+            "No R66PrepareTransfer configuration file");
       }
     } else {
       SysErrLogger.FAKE_LOGGER.syserr("No R66PrepareTransfer support");
@@ -118,8 +117,8 @@ public class ExecGatewayFtpServer {
     try {
       configuration.configureSnmp();
     } catch (final FtpNoConnectionException e) {
-      SysErrLogger.FAKE_LOGGER
-          .syserr("Cannot start SNMP support: " + e.getMessage());
+      SysErrLogger.FAKE_LOGGER.syserr(
+          "Cannot start SNMP support: " + e.getMessage());
     }
     logger.warn("FTP started " +
                 (configuration.getFtpInternalConfiguration().isUsingNativeSsl()?

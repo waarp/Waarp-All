@@ -83,7 +83,7 @@ public class ExecBusinessHandler extends BusinessHandler {
   private boolean internalDb;
 
   @Override
-  public void afterTransferDoneBeforeAnswer(final FtpTransfer transfer)
+  public final void afterTransferDoneBeforeAnswer(final FtpTransfer transfer)
       throws CommandAbstractException {
     // if Admin, do nothing
     if (getFtpSession() == null || getFtpSession().getAuth() == null) {
@@ -104,9 +104,9 @@ public class ExecBusinessHandler extends BusinessHandler {
       // Do nothing
       final String message = "Transfer done with code: " +
                              getFtpSession().getReplyCode().getMesg();
-      WaarpActionLogger
-          .logErrorAction(dbFtpSession, specialId, transfer, message,
-                          getFtpSession().getReplyCode(), this);
+      WaarpActionLogger.logErrorAction(dbFtpSession, specialId, transfer,
+                                       message, getFtpSession().getReplyCode(),
+                                       this);
       return;
     }
     // if STOR like: get file (can be STOU) and execute external action
@@ -115,9 +115,10 @@ public class ExecBusinessHandler extends BusinessHandler {
     switch (code) {
       case RETR:
         // nothing to do since All done
-        WaarpActionLogger
-            .logAction(dbFtpSession, specialId, "Retrieve executed: OK", this,
-                       getFtpSession().getReplyCode(), UpdatedInfo.RUNNING);
+        WaarpActionLogger.logAction(dbFtpSession, specialId,
+                                    "Retrieve executed: OK", this,
+                                    getFtpSession().getReplyCode(),
+                                    UpdatedInfo.RUNNING);
         break;
       case APPE:
       case STOR:
@@ -139,9 +140,8 @@ public class ExecBusinessHandler extends BusinessHandler {
               transfer.getPath();
           final CommandAbstractException exc = new Reply421Exception(
               POST_EXECUTION_IN_ERROR_FOR_TRANSFER_SINCE_NO_FILE_FOUND);
-          WaarpActionLogger
-              .logErrorAction(dbFtpSession, specialId, transfer, message,
-                              exc.code, this);
+          WaarpActionLogger.logErrorAction(dbFtpSession, specialId, transfer,
+                                           message, exc.code, this);
           throw exc;
         }
         try {
@@ -173,9 +173,8 @@ public class ExecBusinessHandler extends BusinessHandler {
                 transfer.getPath();
             final CommandAbstractException exc = new Reply421Exception(
                 TRANSFER_DONE_BUT_FORCE_DISCONNECTION_SINCE_AN_ERROR_OCCURS_ON_POST_OPERATION);
-            WaarpActionLogger
-                .logErrorAction(dbFtpSession, specialId, transfer, message,
-                                exc.code, this);
+            WaarpActionLogger.logErrorAction(dbFtpSession, specialId, transfer,
+                                             message, exc.code, this);
             throw exc;
           }
         } catch (final CommandAbstractException e1) {
@@ -186,23 +185,23 @@ public class ExecBusinessHandler extends BusinessHandler {
               transfer.getPath();
           final CommandAbstractException exc = new Reply421Exception(
               TRANSFER_DONE_BUT_FORCE_DISCONNECTION_SINCE_AN_ERROR_OCCURS_ON_POST_OPERATION);
-          WaarpActionLogger
-              .logErrorAction(dbFtpSession, specialId, transfer, message,
-                              exc.code, this);
+          WaarpActionLogger.logErrorAction(dbFtpSession, specialId, transfer,
+                                           message, exc.code, this);
           throw exc;
         }
         args[4] = transfer.getCommand().toString();
         args[5] = Long.toString(specialId);
-        final AbstractExecutor executor = AbstractExecutor
-            .createAbstractExecutor(auth, args, true, futureCompletion);
+        final AbstractExecutor executor =
+            AbstractExecutor.createAbstractExecutor(auth, args, true,
+                                                    futureCompletion);
         executor.run();
         futureCompletion.awaitOrInterruptible();
         if (futureCompletion.isSuccess()) {
           // All done
-          WaarpActionLogger
-              .logAction(dbFtpSession, specialId, "Post-Command executed: OK",
-                         this, getFtpSession().getReplyCode(),
-                         UpdatedInfo.RUNNING);
+          WaarpActionLogger.logAction(dbFtpSession, specialId,
+                                      "Post-Command executed: OK", this,
+                                      getFtpSession().getReplyCode(),
+                                      UpdatedInfo.RUNNING);
         } else {
           // File cannot be sent
           final String message =
@@ -213,9 +212,8 @@ public class ExecBusinessHandler extends BusinessHandler {
                   "Internal error of PostExecution");
           final CommandAbstractException exc = new Reply421Exception(
               TRANSFER_DONE_BUT_FORCE_DISCONNECTION_SINCE_AN_ERROR_OCCURS_ON_POST_OPERATION);
-          WaarpActionLogger
-              .logErrorAction(dbFtpSession, specialId, transfer, message,
-                              exc.code, this);
+          WaarpActionLogger.logErrorAction(dbFtpSession, specialId, transfer,
+                                           message, exc.code, this);
           throw exc;
         }
         break;
@@ -225,19 +223,19 @@ public class ExecBusinessHandler extends BusinessHandler {
   }
 
   @Override
-  public void afterRunCommandKo(final CommandAbstractException e) {
+  public final void afterRunCommandKo(final CommandAbstractException e) {
     final String message =
         "ExecHandler: KO: " + getFtpSession() + ' ' + e.getMessage();
     final long specialId =
         ((FileBasedAuth) getFtpSession().getAuth()).getSpecialId();
-    WaarpActionLogger
-        .logErrorAction(dbFtpSession, specialId, null, message, e.code, this);
-    ((FileBasedAuth) getFtpSession().getAuth())
-        .setSpecialId(org.waarp.common.database.DbConstant.ILLEGALVALUE);
+    WaarpActionLogger.logErrorAction(dbFtpSession, specialId, null, message,
+                                     e.code, this);
+    ((FileBasedAuth) getFtpSession().getAuth()).setSpecialId(
+        org.waarp.common.database.DbConstant.ILLEGALVALUE);
   }
 
   @Override
-  public void afterRunCommandOk() {
+  public final void afterRunCommandOk() {
     if (!(getFtpSession().getCurrentCommand() instanceof QUIT) &&
         dbR66Session != null) {
       final long specialId =
@@ -246,13 +244,13 @@ public class ExecBusinessHandler extends BusinessHandler {
                                   "Transfer Command fully executed: OK", this,
                                   getFtpSession().getReplyCode(),
                                   UpdatedInfo.DONE);
-      ((FileBasedAuth) getFtpSession().getAuth())
-          .setSpecialId(org.waarp.common.database.DbConstant.ILLEGALVALUE);
+      ((FileBasedAuth) getFtpSession().getAuth()).setSpecialId(
+          org.waarp.common.database.DbConstant.ILLEGALVALUE);
     }
   }
 
   @Override
-  public void beforeRunCommand() throws CommandAbstractException {
+  public final void beforeRunCommand() throws CommandAbstractException {
     long specialId = org.waarp.common.database.DbConstant.ILLEGALVALUE;
     // if Admin, do nothing
     if (getFtpSession() == null || getFtpSession().getAuth() == null) {
@@ -265,29 +263,27 @@ public class ExecBusinessHandler extends BusinessHandler {
     }
     // Test limits
     final FtpConstraintLimitHandler constraints =
-        ((FileBasedConfiguration) getFtpSession().getConfiguration())
-            .getConstraintLimitHandler();
+        ((FileBasedConfiguration) getFtpSession().getConfiguration()).getConstraintLimitHandler();
     if (constraints != null) {
       if (!auth.isIdentified()) {
         // ignore test since it can be an Admin connection
       } else if (auth.isAdmin()) {
         // ignore test since it is an Admin connection (always valid)
-      } else if (!FtpCommandCode
-          .isSpecialCommand(getFtpSession().getCurrentCommand().getCode())) {
+      } else if (!FtpCommandCode.isSpecialCommand(
+          getFtpSession().getCurrentCommand().getCode())) {
         // Authenticated, not Admin and not Special Command
         if (constraints.checkConstraintsSleep(1)) {
           if (constraints.checkConstraints()) {
             // Really overload so refuse the command
-            logger
-                .info("Server overloaded. {} Try later... \n" + getFtpSession(),
-                      constraints.lastAlert);
+            logger.info(
+                "Server overloaded. {} Try later... \n" + getFtpSession(),
+                constraints.lastAlert);
             if (FileBasedConfiguration.fileBasedConfiguration.getFtpMib() !=
                 null) {
               FileBasedConfiguration.fileBasedConfiguration.getFtpMib()
                                                            .notifyOverloaded(
                                                                "Server overloaded",
-                                                               getFtpSession()
-                                                                   .toString());
+                                                               getFtpSession().toString());
             }
             throw new Reply451Exception("Server overloaded. Try later...");
           }
@@ -305,9 +301,10 @@ public class ExecBusinessHandler extends BusinessHandler {
           throw new Reply504Exception("STORe like operations are not allowed");
         }
         // create entry in log
-        specialId = WaarpActionLogger
-            .logCreate(dbFtpSession, "PrepareTransfer: OK",
-                       getFtpSession().getCurrentCommand().getArg(), this);
+        specialId =
+            WaarpActionLogger.logCreate(dbFtpSession, "PrepareTransfer: OK",
+                                        getFtpSession().getCurrentCommand()
+                                                       .getArg(), this);
         auth.setSpecialId(specialId);
         // nothing to do now
         break;
@@ -318,9 +315,10 @@ public class ExecBusinessHandler extends BusinessHandler {
               "RETRieve like operations are not allowed");
         }
         // create entry in log
-        specialId = WaarpActionLogger
-            .logCreate(dbFtpSession, "PrepareTransfer: OK",
-                       getFtpSession().getCurrentCommand().getArg(), this);
+        specialId =
+            WaarpActionLogger.logCreate(dbFtpSession, "PrepareTransfer: OK",
+                                        getFtpSession().getCurrentCommand()
+                                                       .getArg(), this);
         auth.setSpecialId(specialId);
         // execute the external retrieve command before the execution of RETR
         final WaarpFuture futureCompletion = new WaarpFuture(true);
@@ -333,8 +331,9 @@ public class ExecBusinessHandler extends BusinessHandler {
         args[3] = file.getFile();
         args[4] = code.toString();
         args[5] = Long.toString(specialId);
-        final AbstractExecutor executor = AbstractExecutor
-            .createAbstractExecutor(auth, args, false, futureCompletion);
+        final AbstractExecutor executor =
+            AbstractExecutor.createAbstractExecutor(auth, args, false,
+                                                    futureCompletion);
         executor.run();
         futureCompletion.awaitOrInterruptible();
         if (futureCompletion.isSuccess()) {
@@ -349,10 +348,10 @@ public class ExecBusinessHandler extends BusinessHandler {
             throw new Reply421Exception(
                 "File downloaded but not ready to be retrieved");
           }
-          WaarpActionLogger
-              .logAction(dbFtpSession, specialId, "Pre-Command executed: OK",
-                         this, getFtpSession().getReplyCode(),
-                         UpdatedInfo.RUNNING);
+          WaarpActionLogger.logAction(dbFtpSession, specialId,
+                                      "Pre-Command executed: OK", this,
+                                      getFtpSession().getReplyCode(),
+                                      UpdatedInfo.RUNNING);
         } else {
           // File cannot be retrieved
           logger.error("PreExecution in Error for Transfer since " +
@@ -370,12 +369,12 @@ public class ExecBusinessHandler extends BusinessHandler {
   }
 
   @Override
-  protected void cleanSession() {
+  protected final void cleanSession() {
     // Nothing
   }
 
   @Override
-  public void exceptionLocalCaught(final Throwable cause) {
+  public final void exceptionLocalCaught(final Throwable cause) {
     if (FileBasedConfiguration.fileBasedConfiguration.getFtpMib() != null) {
       final String mesg;
       if (cause != null && cause.getMessage() != null) {
@@ -394,14 +393,13 @@ public class ExecBusinessHandler extends BusinessHandler {
       if (getFtpSession() != null) {
         FileBasedConfiguration.fileBasedConfiguration.getMonitoring()
                                                      .updateCodeNoTransfer(
-                                                         getFtpSession()
-                                                             .getReplyCode());
+                                                         getFtpSession().getReplyCode());
       }
     }
   }
 
   @Override
-  public void executeChannelClosed() {
+  public final void executeChannelClosed() {
     if (AbstractExecutor.useDatabase && !internalDb && dbR66Session != null) {
       dbR66Session.disconnect();
       dbR66Session = null;
@@ -413,7 +411,7 @@ public class ExecBusinessHandler extends BusinessHandler {
   }
 
   @Override
-  public void executeChannelConnected(final Channel channel) {
+  public final void executeChannelConnected(final Channel channel) {
     if (AbstractExecutor.useDatabase) {
       if (org.waarp.common.database.DbConstant.admin != null) {
         try {
@@ -421,8 +419,9 @@ public class ExecBusinessHandler extends BusinessHandler {
               new DbSession(org.waarp.common.database.DbConstant.admin, false);
         } catch (final WaarpDatabaseNoConnectionException e1) {
           logger.warn("Database not ready due to {}", e1.getMessage());
-          final QUIT command = (QUIT) FtpCommandCode
-              .getFromLine(getFtpSession(), FtpCommandCode.QUIT.name());
+          final QUIT command =
+              (QUIT) FtpCommandCode.getFromLine(getFtpSession(),
+                                                FtpCommandCode.QUIT.name());
           getFtpSession().setNextCommand(command);
           dbR66Session = null;
           internalDb = true;
@@ -434,8 +433,8 @@ public class ExecBusinessHandler extends BusinessHandler {
         dbFtpSession = new DbSession(DbConstantFtp.gatewayAdmin, false);
       } catch (final WaarpDatabaseNoConnectionException e1) {
         logger.warn("Database not ready due to {}", e1.getMessage());
-        final QUIT command = (QUIT) FtpCommandCode
-            .getFromLine(getFtpSession(), FtpCommandCode.QUIT.name());
+        final QUIT command = (QUIT) FtpCommandCode.getFromLine(getFtpSession(),
+                                                               FtpCommandCode.QUIT.name());
         getFtpSession().setNextCommand(command);
         dbFtpSession = null;
       }
@@ -443,22 +442,22 @@ public class ExecBusinessHandler extends BusinessHandler {
   }
 
   @Override
-  public FileBasedAuth getBusinessNewAuth() {
+  public final FileBasedAuth getBusinessNewAuth() {
     return new FileBasedAuth(getFtpSession());
   }
 
   @Override
-  public FileBasedDir getBusinessNewDir() {
+  public final FileBasedDir getBusinessNewDir() {
     return new FileBasedDir(getFtpSession());
   }
 
   @Override
-  public FilesystemBasedFtpRestart getBusinessNewRestart() {
+  public final FilesystemBasedFtpRestart getBusinessNewRestart() {
     return new FilesystemBasedFtpRestart(getFtpSession());
   }
 
   @Override
-  public String getHelpMessage(final String arg) {
+  public final String getHelpMessage(final String arg) {
     return
         "This FTP server is only intend as a Gateway. RETRieve actions may be unallowed.\n" +
         "This FTP server refers to RFC 959, 775, 2389, 2428, 3659 and " +
@@ -470,7 +469,7 @@ public class ExecBusinessHandler extends BusinessHandler {
   }
 
   @Override
-  public String getFeatMessage() {
+  public final String getFeatMessage() {
     final StringBuilder builder =
         new StringBuilder("Extensions supported:").append('\n').append(
             getDefaultFeatMessage());
@@ -484,7 +483,7 @@ public class ExecBusinessHandler extends BusinessHandler {
   }
 
   @Override
-  public String getOptsMessage(final String[] args)
+  public final String getOptsMessage(final String[] args)
       throws CommandAbstractException {
     if (args.length > 0) {
       if (args[0].equalsIgnoreCase(FtpCommandCode.MLST.name()) ||
@@ -497,8 +496,8 @@ public class ExecBusinessHandler extends BusinessHandler {
   }
 
   @Override
-  public AbstractCommand getSpecializedSiteCommand(final FtpSession session,
-                                                   final String line) {
+  public final AbstractCommand getSpecializedSiteCommand(
+      final FtpSession session, final String line) {
     if (getFtpSession() == null || getFtpSession().getAuth() == null) {
       return null;
     }

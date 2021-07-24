@@ -106,8 +106,8 @@ public class Commander implements CommanderInterface {
       throws WaarpDatabaseNoConnectionException, WaarpDatabaseSqlException {
     try {
       if (Configuration.configuration.getMultipleMonitors() > 1) {
-        preparedStatementLock = DbMultipleMonitor
-            .getUpdatedPrepareStament(noCommitAdmin.getSession());
+        preparedStatementLock = DbMultipleMonitor.getUpdatedPrepareStament(
+            noCommitAdmin.getSession());
       } else {
         preparedStatementLock = null;
       }
@@ -133,7 +133,7 @@ public class Commander implements CommanderInterface {
    * Finalize internal data
    */
   @Override
-  public void finalizeCommander() {
+  public final void finalizeCommander() {
     if (preparedStatementLock != null) {
       try {
         noCommitAdmin.getSession().commit();
@@ -326,8 +326,8 @@ public class Commander implements CommanderInterface {
       if (multipleMonitor != null) {
         // update the configuration in HA mode
         if (multipleMonitor.checkUpdateConfig()) {
-          configuration
-              .changeUpdatedInfo(AbstractDbData.UpdatedInfo.NOTUPDATED);
+          configuration.changeUpdatedInfo(
+              AbstractDbData.UpdatedInfo.NOTUPDATED);
           configuration.update();
           logger.debug(CONFIG, multipleMonitor);
         } else {
@@ -360,8 +360,8 @@ public class Commander implements CommanderInterface {
       if (multipleMonitor != null) {
         // update the configuration in HA mode
         if (multipleMonitor.checkUpdateConfig()) {
-          configuration
-              .changeUpdatedInfo(AbstractDbData.UpdatedInfo.NOTUPDATED);
+          configuration.changeUpdatedInfo(
+              AbstractDbData.UpdatedInfo.NOTUPDATED);
           configuration.update();
           logger.debug(CONFIG, multipleMonitor);
         } else {
@@ -459,9 +459,9 @@ public class Commander implements CommanderInterface {
         Math.min(Configuration.configuration.getRunnerThread(),
                  internalRunner.allowedToSubmit());
     if (maxRunnable > 0) {
-      final DbTaskRunner[] tasks = DbTaskRunner
-          .getSelectFromInfoPrepareStatement(UpdatedInfo.TOSUBMIT, true,
-                                             maxRunnable);
+      final DbTaskRunner[] tasks =
+          DbTaskRunner.getSelectFromInfoPrepareStatement(UpdatedInfo.TOSUBMIT,
+                                                         true, maxRunnable);
       logger.info("TaskRunner to launch: {} (launched: {}, active: {}) {}",
                   tasks.length, totalRuns, internalRunner.nbInternalRunner(),
                   NetworkTransaction.hashStatus());
@@ -496,8 +496,7 @@ public class Commander implements CommanderInterface {
         }
         // last check: number can have raised up since Commander checks
         if (i > (tasks.length - 10) && internalRunner.nbInternalRunner() >=
-                                       Configuration.configuration
-                                           .getRunnerThread()) {
+                                       Configuration.configuration.getRunnerThread()) {
           break;
         }
         if (internalRunner.submitTaskRunner(taskRunner)) {

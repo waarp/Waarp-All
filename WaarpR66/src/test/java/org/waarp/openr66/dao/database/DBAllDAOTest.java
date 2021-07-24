@@ -113,7 +113,8 @@ public abstract class DBAllDAOTest extends TestAbstract {
   class DAOFactoryTest extends DAOFactory {
 
     @Override
-    public BusinessDAO getBusinessDAO(final boolean isCacheable) throws DAOConnectionException {
+    public BusinessDAO getBusinessDAO(final boolean isCacheable)
+        throws DAOConnectionException {
       try {
         return new DBBusinessDAO(getConnection());
       } catch (final SQLException e) {
@@ -124,7 +125,8 @@ public abstract class DBAllDAOTest extends TestAbstract {
     }
 
     @Override
-    public HostDAO getHostDAO(final boolean isCacheable) throws DAOConnectionException {
+    public HostDAO getHostDAO(final boolean isCacheable)
+        throws DAOConnectionException {
       try {
         return new DBHostDAO(getConnection());
       } catch (final SQLException e) {
@@ -135,7 +137,8 @@ public abstract class DBAllDAOTest extends TestAbstract {
     }
 
     @Override
-    public LimitDAO getLimitDAO(final boolean isCacheable) throws DAOConnectionException {
+    public LimitDAO getLimitDAO(final boolean isCacheable)
+        throws DAOConnectionException {
       try {
         return new DBLimitDAO(getConnection());
       } catch (final SQLException e) {
@@ -158,7 +161,8 @@ public abstract class DBAllDAOTest extends TestAbstract {
     }
 
     @Override
-    public RuleDAO getRuleDAO(final boolean isCacheable) throws DAOConnectionException {
+    public RuleDAO getRuleDAO(final boolean isCacheable)
+        throws DAOConnectionException {
       try {
         return new DBRuleDAO(getConnection());
       } catch (final SQLException e) {
@@ -232,8 +236,8 @@ public abstract class DBAllDAOTest extends TestAbstract {
     File file = new File(
         classLoader.getResource("Linux/config/config-XXDb.xml").getFile());
     if (!file.exists()) {
-      SysErrLogger.FAKE_LOGGER
-          .syserr("Cannot find in  " + file.getAbsolutePath());
+      SysErrLogger.FAKE_LOGGER.syserr(
+          "Cannot find in  " + file.getAbsolutePath());
       fail("Cannot find " + file.getAbsolutePath());
     }
     String content = WaarpStringUtils.readFile(file.getAbsolutePath());
@@ -248,8 +252,8 @@ public abstract class DBAllDAOTest extends TestAbstract {
     } else if (driver.equalsIgnoreCase("oracle.jdbc.OracleDriver")) {
       target = "oracle";
       String shouldJdbcUrl = "jdbc:oracle:thin:@//localhost:1521/test";
-      SysErrLogger.FAKE_LOGGER
-          .syserr(jdbcUrl + " while should be something like " + shouldJdbcUrl);
+      SysErrLogger.FAKE_LOGGER.syserr(
+          jdbcUrl + " while should be something like " + shouldJdbcUrl);
       throw new UnsupportedOperationException(
           "Unsupported Test for Oracle since wrong JDBC driver");
     } else if (driver.equalsIgnoreCase("org.postgresql.Driver")) {
@@ -887,7 +891,8 @@ public abstract class DBAllDAOTest extends TestAbstract {
   @Test
   public void test04_DeleteAllMultipleMonitor() {
     try {
-      final MultipleMonitorDAO dao = getDaoFactory().getMultipleMonitorDAO(false);
+      final MultipleMonitorDAO dao =
+          getDaoFactory().getMultipleMonitorDAO(false);
       if (dao == null) {
         // ignore since XML
         return;
@@ -904,7 +909,8 @@ public abstract class DBAllDAOTest extends TestAbstract {
   @Test
   public void test04_DeleteMultipleMonitor() {
     try {
-      final MultipleMonitorDAO dao = getDaoFactory().getMultipleMonitorDAO(false);
+      final MultipleMonitorDAO dao =
+          getDaoFactory().getMultipleMonitorDAO(false);
       if (dao == null) {
         // ignore since XML
         return;
@@ -921,7 +927,8 @@ public abstract class DBAllDAOTest extends TestAbstract {
   @Test
   public void test04_GetAllMultipleMonitor() {
     try {
-      final MultipleMonitorDAO dao = getDaoFactory().getMultipleMonitorDAO(false);
+      final MultipleMonitorDAO dao =
+          getDaoFactory().getMultipleMonitorDAO(false);
       if (dao == null) {
         // ignore since XML
         return;
@@ -936,7 +943,8 @@ public abstract class DBAllDAOTest extends TestAbstract {
   @Test
   public void test04_SelectMultipleMonitor() {
     try {
-      final MultipleMonitorDAO dao = getDaoFactory().getMultipleMonitorDAO(true);
+      final MultipleMonitorDAO dao =
+          getDaoFactory().getMultipleMonitorDAO(true);
       if (dao == null) {
         // ignore since XML
         return;
@@ -962,7 +970,8 @@ public abstract class DBAllDAOTest extends TestAbstract {
   @Test
   public void test04_ExistMultipleMonitor() {
     try {
-      final MultipleMonitorDAO dao = getDaoFactory().getMultipleMonitorDAO(true);
+      final MultipleMonitorDAO dao =
+          getDaoFactory().getMultipleMonitorDAO(true);
       if (dao == null) {
         // ignore since XML
         return;
@@ -978,7 +987,8 @@ public abstract class DBAllDAOTest extends TestAbstract {
   @Test
   public void test04_InsertMultipleMonitor() {
     try {
-      final MultipleMonitorDAO dao = getDaoFactory().getMultipleMonitorDAO(false);
+      final MultipleMonitorDAO dao =
+          getDaoFactory().getMultipleMonitorDAO(false);
       if (dao == null) {
         // ignore since XML
         return;
@@ -1006,7 +1016,8 @@ public abstract class DBAllDAOTest extends TestAbstract {
   @Test
   public void test04_UpdateMultipleMonitor() {
     try {
-      final MultipleMonitorDAO dao = getDaoFactory().getMultipleMonitorDAO(false);
+      final MultipleMonitorDAO dao =
+          getDaoFactory().getMultipleMonitorDAO(false);
       if (dao == null) {
         // ignore since XML
         return;
@@ -1031,7 +1042,8 @@ public abstract class DBAllDAOTest extends TestAbstract {
     final ArrayList<Filter> map = new ArrayList<Filter>();
     map.add(new Filter(DBMultipleMonitorDAO.COUNT_CONFIG_FIELD, "=", 0));
     try {
-      final MultipleMonitorDAO dao = getDaoFactory().getMultipleMonitorDAO(false);
+      final MultipleMonitorDAO dao =
+          getDaoFactory().getMultipleMonitorDAO(false);
       if (dao == null) {
         // ignore since XML
         return;

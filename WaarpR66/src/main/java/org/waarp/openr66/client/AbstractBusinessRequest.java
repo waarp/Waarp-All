@@ -116,8 +116,9 @@ public abstract class AbstractBusinessRequest implements Runnable {
       throw e2;
     }
     final boolean isSSL = host.isSsl();
-    localChannelReference = networkTransaction
-        .createConnectionWithRetry(socketServerAddress, isSSL, future);
+    localChannelReference =
+        networkTransaction.createConnectionWithRetry(socketServerAddress, isSSL,
+                                                     future);
     if (localChannelReference == null) {
       future.setResult(null);
       final OpenR66ProtocolNoConnectionException e =
@@ -132,9 +133,8 @@ public abstract class AbstractBusinessRequest implements Runnable {
 
   public void sendRequest() {
     try {
-      ChannelUtils
-          .writeAbstractLocalPacket(localChannelReference, businessPacket,
-                                    true);
+      ChannelUtils.writeAbstractLocalPacket(localChannelReference,
+                                            businessPacket, true);
     } catch (final OpenR66ProtocolPacketException e) {
       future.setResult(null);
       future.setFailure(e);
@@ -149,8 +149,8 @@ public abstract class AbstractBusinessRequest implements Runnable {
    * @param args
    */
   public static void main(final String[] args) {
-    WaarpLoggerFactory
-        .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));
+    WaarpLoggerFactory.setDefaultFactoryIfNotSame(
+        new WaarpSlf4JLoggerFactory(null));
     if (logger == null) {
       logger = WaarpLoggerFactory.getLogger(AbstractBusinessRequest.class);
     }
@@ -216,8 +216,8 @@ public abstract class AbstractBusinessRequest implements Runnable {
       logger.error(INFO_ARGS);
       return false;
     }
-    if (!FileBasedConfiguration
-        .setClientConfigurationFromXml(Configuration.configuration, args[0])) {
+    if (!FileBasedConfiguration.setClientConfigurationFromXml(
+        Configuration.configuration, args[0])) {
       logger.error(
           Messages.getString("Configuration.NeedCorrectConfig")); //$NON-NLS-1$
       return false;

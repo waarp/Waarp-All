@@ -95,7 +95,8 @@ public class FtpSession implements SessionInterface {
   /**
    * Is the current command finished
    */
-  private AtomicBoolean isCurrentCommandFinished = new AtomicBoolean(true);
+  private final AtomicBoolean isCurrentCommandFinished =
+      new AtomicBoolean(true);
 
   /**
    * Associated Reply Code
@@ -120,7 +121,7 @@ public class FtpSession implements SessionInterface {
   /**
    * Is the current session using SSL on Control
    */
-  private AtomicBoolean isSsl = new AtomicBoolean(false);
+  private final AtomicBoolean isSsl = new AtomicBoolean(false);
   /**
    * Is the current session will using SSL on Control
    */
@@ -128,7 +129,7 @@ public class FtpSession implements SessionInterface {
   /**
    * WIll all data be using SSL
    */
-  private AtomicBoolean isDataSsl = new AtomicBoolean(false);
+  private final AtomicBoolean isDataSsl = new AtomicBoolean(false);
 
   /**
    * Constructor
@@ -145,7 +146,7 @@ public class FtpSession implements SessionInterface {
   /**
    * @return the businessHandler
    */
-  public BusinessHandler getBusinessHandler() {
+  public final BusinessHandler getBusinessHandler() {
     return businessHandler;
   }
 
@@ -154,29 +155,29 @@ public class FtpSession implements SessionInterface {
    *
    * @return the configuration
    */
-  public FtpConfiguration getConfiguration() {
+  public final FtpConfiguration getConfiguration() {
     return configuration;
   }
 
   @Override
-  public FtpDir getDir() {
+  public final FtpDir getDir() {
     return ftpDir;
   }
 
   /**
    * @return the Data Connection
    */
-  public FtpDataAsyncConn getDataConn() {
+  public final FtpDataAsyncConn getDataConn() {
     return dataConn;
   }
 
   @Override
-  public FtpAuth getAuth() {
+  public final FtpAuth getAuth() {
     return ftpAuth;
   }
 
   @Override
-  public Restart getRestart() {
+  public final Restart getRestart() {
     return restart;
   }
 
@@ -199,8 +200,8 @@ public class FtpSession implements SessionInterface {
    * @param dir
    * @param restart
    */
-  public void setSpecialInit(final FtpAuth auth, final FtpDir dir,
-                             final Restart restart) {
+  public final void setSpecialInit(final FtpAuth auth, final FtpDir dir,
+                                   final Restart restart) {
     ftpAuth = auth;
     ftpDir = dir;
     this.restart = restart;
@@ -209,14 +210,14 @@ public class FtpSession implements SessionInterface {
   /**
    * @return the Control channel
    */
-  public Channel getControlChannel() {
+  public final Channel getControlChannel() {
     return getNetworkHandler().getControlChannel();
   }
 
   /**
    * @return The network handler associated with control
    */
-  public NetworkHandler getNetworkHandler() {
+  public final NetworkHandler getNetworkHandler() {
     if (businessHandler != null) {
       return businessHandler.getNetworkHandler();
     }
@@ -228,7 +229,7 @@ public class FtpSession implements SessionInterface {
    *
    * @param command
    */
-  public void setNextCommand(final CommandInterface command) {
+  public final void setNextCommand(final CommandInterface command) {
     previousCommand = currentCommand;
     currentCommand = (AbstractCommand) command;
     isCurrentCommandFinished.set(false);
@@ -237,14 +238,14 @@ public class FtpSession implements SessionInterface {
   /**
    * @return the currentCommand
    */
-  public AbstractCommand getCurrentCommand() {
+  public final AbstractCommand getCurrentCommand() {
     return currentCommand;
   }
 
   /**
    * @return the previousCommand
    */
-  public AbstractCommand getPreviousCommand() {
+  public final AbstractCommand getPreviousCommand() {
     return previousCommand;
   }
 
@@ -254,7 +255,7 @@ public class FtpSession implements SessionInterface {
    * sequence of commands or unknown
    * command)
    */
-  public void setPreviousAsCurrentCommand() {
+  public final void setPreviousAsCurrentCommand() {
     currentCommand = previousCommand;
     isCurrentCommandFinished.set(true);
   }
@@ -264,21 +265,21 @@ public class FtpSession implements SessionInterface {
    *     a
    *     new one)
    */
-  public boolean isCurrentCommandFinished() {
+  public final boolean isCurrentCommandFinished() {
     return isCurrentCommandFinished.get();
   }
 
   /**
    * Set the Current Command as finished
    */
-  public void setCurrentCommandFinished() {
+  public final void setCurrentCommandFinished() {
     isCurrentCommandFinished.set(true);
   }
 
   /**
    * @return the answer
    */
-  public String getAnswer() {
+  public final String getAnswer() {
     if (answer == null) {
       if (replyCode == null) {
         answer = ReplyCode.REPLY_000_SPECIAL_NOSTATUS.getMesg();
@@ -293,7 +294,8 @@ public class FtpSession implements SessionInterface {
    * @param replyCode the replyCode to set
    * @param answer
    */
-  public void setReplyCode(final ReplyCode replyCode, final String answer) {
+  public final void setReplyCode(final ReplyCode replyCode,
+                                 final String answer) {
     this.replyCode = replyCode;
     if (answer != null) {
       this.answer = ReplyCode.getFinalMsg(replyCode.getCode(), answer);
@@ -305,7 +307,7 @@ public class FtpSession implements SessionInterface {
   /**
    * @param exception
    */
-  public void setReplyCode(final CommandAbstractException exception) {
+  public final void setReplyCode(final CommandAbstractException exception) {
     setReplyCode(exception.code, exception.message);
   }
 
@@ -314,7 +316,7 @@ public class FtpSession implements SessionInterface {
    *
    * @param answer
    */
-  public void setExitErrorCode(final String answer) {
+  public final void setExitErrorCode(final String answer) {
     setReplyCode(
         ReplyCode.REPLY_421_SERVICE_NOT_AVAILABLE_CLOSING_CONTROL_CONNECTION,
         answer);
@@ -325,19 +327,19 @@ public class FtpSession implements SessionInterface {
    *
    * @param answer
    */
-  public void setExitNormalCode(final String answer) {
+  public final void setExitNormalCode(final String answer) {
     setReplyCode(ReplyCode.REPLY_221_CLOSING_CONTROL_CONNECTION, answer);
   }
 
   /**
    * @return the replyCode
    */
-  public ReplyCode getReplyCode() {
+  public final ReplyCode getReplyCode() {
     return replyCode;
   }
 
   @Override
-  public void clear() {
+  public final void clear() {
     if (dataConn != null) {
       dataConn.clear();
     }
@@ -356,7 +358,7 @@ public class FtpSession implements SessionInterface {
   /**
    * @return True if the Control is ready to accept command
    */
-  public boolean isReady() {
+  public final boolean isReady() {
     isReady.awaitOrInterruptible();
     return isReady.isSuccess();
   }
@@ -364,7 +366,7 @@ public class FtpSession implements SessionInterface {
   /**
    * @param isReady the isReady to set
    */
-  public void setReady(final boolean isReady) {
+  public final void setReady(final boolean isReady) {
     if (isReady) {
       this.isReady.setSuccess();
     } else {
@@ -413,12 +415,12 @@ public class FtpSession implements SessionInterface {
   }
 
   @Override
-  public int getBlockSize() {
+  public final int getBlockSize() {
     return restart.getMaxSize(configuration.getBlocksize());
   }
 
   @Override
-  public FileParameterInterface getFileParameter() {
+  public final FileParameterInterface getFileParameter() {
     return configuration.getFileParameter();
   }
 
@@ -435,7 +437,7 @@ public class FtpSession implements SessionInterface {
   /**
    * Reinitialize the authentication to the connection step
    */
-  public void reinitFtpAuth() {
+  public final void reinitFtpAuth() {
     final AbstractCommand connectioncommand = new ConnectionCommand(this);
     setNextCommand(connectioncommand);
     getAuth().clear();
@@ -446,7 +448,7 @@ public class FtpSession implements SessionInterface {
   /**
    * Reinitialize all connection parameters, including authentification
    */
-  public void rein() {
+  public final void rein() {
     // reset to default
     if (getDataConn().isPassiveMode()) {
       // Previous mode was Passive so remove the current configuration
@@ -467,21 +469,21 @@ public class FtpSession implements SessionInterface {
    *
    * @throws Reply425Exception if the connection cannot be opened
    */
-  public void openDataConnection() throws Reply425Exception {
+  public final void openDataConnection() throws Reply425Exception {
     getDataConn().getFtpTransferControl().openDataConnection();
     getNetworkHandler().writeIntermediateAnswer();
   }
 
   @Override
-  public String getUniqueExtension() {
+  public final String getUniqueExtension() {
     return configuration.getUniqueExtension();
   }
 
-  public boolean isSsl() {
+  public final boolean isSsl() {
     return isSsl.get();
   }
 
-  public void setSsl(final boolean isSsl) {
+  public final void setSsl(final boolean isSsl) {
     this.isSsl.set(isSsl);
     if (waitForSsl != null) {
       if (isSsl) {
@@ -496,7 +498,7 @@ public class FtpSession implements SessionInterface {
     waitForSsl = new WaarpFuture(true);
   }
 
-  public boolean isSslReady() {
+  public final boolean isSslReady() {
     if (waitForSsl != null) {
       for (int i = 0; i < 20; i++) {
         if (waitForSsl.awaitOrInterruptible(100)) {
@@ -510,11 +512,11 @@ public class FtpSession implements SessionInterface {
     return isSsl.get();
   }
 
-  public boolean isDataSsl() {
+  public final boolean isDataSsl() {
     return isDataSsl.get();
   }
 
-  public void setDataSsl(final boolean isDataSsl) {
+  public final void setDataSsl(final boolean isDataSsl) {
     this.isDataSsl.set(isDataSsl);
   }
 

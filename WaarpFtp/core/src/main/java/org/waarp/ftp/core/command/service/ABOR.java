@@ -28,7 +28,7 @@ import org.waarp.ftp.core.exception.FtpNoTransferException;
  */
 public class ABOR extends AbstractCommand {
   @Override
-  public void exec() {
+  public final void exec() {
     // First check if the data connection is opened
     if (getSession().getDataConn().isActive()) {
       // Now check if the data connection is currently used
@@ -37,16 +37,16 @@ public class ABOR extends AbstractCommand {
                     .getExecutingFtpTransfer();
       } catch (final FtpNoTransferException e) {
         getSession().getDataConn().getFtpTransferControl().clear();
-        getSession()
-            .setReplyCode(ReplyCode.REPLY_226_CLOSING_DATA_CONNECTION, null);
+        getSession().setReplyCode(ReplyCode.REPLY_226_CLOSING_DATA_CONNECTION,
+                                  null);
         return;
       }
       getSession().getDataConn().getFtpTransferControl()
                   .setTransferAbortedFromInternal(false);
       return;
     }
-    getSession()
-        .setReplyCode(ReplyCode.REPLY_226_CLOSING_DATA_CONNECTION, null);
+    getSession().setReplyCode(ReplyCode.REPLY_226_CLOSING_DATA_CONNECTION,
+                              null);
   }
 
 }

@@ -87,17 +87,20 @@ public class DbXmlDAOTest extends DBAllDAOTest {
     }
 
     @Override
-    public BusinessDAO getBusinessDAO(final boolean isCacheable) throws DAOConnectionException {
+    public BusinessDAO getBusinessDAO(final boolean isCacheable)
+        throws DAOConnectionException {
       return new XMLBusinessDAO();
     }
 
     @Override
-    public HostDAO getHostDAO(final boolean isCacheable) throws DAOConnectionException {
+    public HostDAO getHostDAO(final boolean isCacheable)
+        throws DAOConnectionException {
       return new XMLHostDAO();
     }
 
     @Override
-    public LimitDAO getLimitDAO(final boolean isCacheable) throws DAOConnectionException {
+    public LimitDAO getLimitDAO(final boolean isCacheable)
+        throws DAOConnectionException {
       return new XMLLimitDAO();
     }
 
@@ -108,7 +111,8 @@ public class DbXmlDAOTest extends DBAllDAOTest {
     }
 
     @Override
-    public RuleDAO getRuleDAO(final boolean isCacheable) throws DAOConnectionException {
+    public RuleDAO getRuleDAO(final boolean isCacheable)
+        throws DAOConnectionException {
       return new XMLRuleDAO();
     }
 
@@ -163,36 +167,32 @@ public class DbXmlDAOTest extends DBAllDAOTest {
       final XMLHostDAO dao = new XMLHostDAO();
       dao.deleteAll();
       dao.insert(new Host("server1", "127.0.0.1", 6666,
-                          "303465626439323336346235616136306332396630346461353132616361346265303639646336633661383432653235"
-                              .getBytes(WaarpStringUtils.UTF8), true, true,
-                          true, false, false, UpdatedInfo.valueOf(3)));
+                          "303465626439323336346235616136306332396630346461353132616361346265303639646336633661383432653235".getBytes(
+                              WaarpStringUtils.UTF8), true, true, true, false,
+                          false, UpdatedInfo.valueOf(3)));
       dao.insert(new Host("server1-ssl", "127.0.0.1", 6666,
-                          "303465626439323336346235616136306332396630346461353132616361346265303639646336633661383432653235"
-                              .getBytes(WaarpStringUtils.UTF8), true, false,
-                          false, false, true, UpdatedInfo.valueOf(0)));
+                          "303465626439323336346235616136306332396630346461353132616361346265303639646336633661383432653235".getBytes(
+                              WaarpStringUtils.UTF8), true, false, false, false,
+                          true, UpdatedInfo.valueOf(0)));
       dao.insert(new Host("server2", "127.0.0.1", 6666,
-                          "303465626439323336346235616136306332396630346461353132616361346265303639646336633661383432653235"
-                              .getBytes(WaarpStringUtils.UTF8), false, false,
-                          false, false, true, UpdatedInfo.valueOf(0)));
+                          "303465626439323336346235616136306332396630346461353132616361346265303639646336633661383432653235".getBytes(
+                              WaarpStringUtils.UTF8), false, false, false,
+                          false, true, UpdatedInfo.valueOf(0)));
     }
 
     {
       final XMLRuleDAO dao = new XMLRuleDAO();
       dao.deleteAll();
-      dao.insert(new org.waarp.openr66.pojo.Rule("default", 1, SingletonUtils
-          .<String>singletonList(), "/in", "/out", "/arch", "/work",
-                                                 SingletonUtils
-                                                     .<RuleTask>singletonList(),
-                                                 SingletonUtils
-                                                     .<RuleTask>singletonList(),
-                                                 SingletonUtils
-                                                     .<RuleTask>singletonList(),
-                                                 SingletonUtils
-                                                     .<RuleTask>singletonList(),
-                                                 SingletonUtils
-                                                     .<RuleTask>singletonList(),
-                                                 SingletonUtils
-                                                     .<RuleTask>singletonList(),
+      dao.insert(new org.waarp.openr66.pojo.Rule("default", 1,
+                                                 SingletonUtils.<String>singletonList(),
+                                                 "/in", "/out", "/arch",
+                                                 "/work",
+                                                 SingletonUtils.<RuleTask>singletonList(),
+                                                 SingletonUtils.<RuleTask>singletonList(),
+                                                 SingletonUtils.<RuleTask>singletonList(),
+                                                 SingletonUtils.<RuleTask>singletonList(),
+                                                 SingletonUtils.<RuleTask>singletonList(),
+                                                 SingletonUtils.<RuleTask>singletonList(),
                                                  UpdatedInfo.UNKNOWN));
       List<String> hosts = new ArrayList<String>();
       hosts.add("blabla");
@@ -209,28 +209,22 @@ public class DbXmlDAOTest extends DBAllDAOTest {
       ruleTasks3.add(new RuleTask("test", "aa", 1));
       dao.insert(
           new org.waarp.openr66.pojo.Rule("dummy", 1, hosts, "/in", "/out",
-                                          "/arch", "/work", SingletonUtils
-                                              .<RuleTask>singletonList(),
+                                          "/arch", "/work",
+                                          SingletonUtils.<RuleTask>singletonList(),
                                           ruleTasks, ruleTasks2, ruleTasks3,
-                                          SingletonUtils
-                                              .<RuleTask>singletonList(),
-                                          SingletonUtils
-                                              .<RuleTask>singletonList(),
+                                          SingletonUtils.<RuleTask>singletonList(),
+                                          SingletonUtils.<RuleTask>singletonList(),
                                           UpdatedInfo.UNKNOWN));
-      dao.insert(new org.waarp.openr66.pojo.Rule("dummy2", 3, SingletonUtils
-          .<String>singletonList(), "/in", "/out", "/arch", "/work",
-                                                 SingletonUtils
-                                                     .<RuleTask>singletonList(),
-                                                 SingletonUtils
-                                                     .<RuleTask>singletonList(),
-                                                 SingletonUtils
-                                                     .<RuleTask>singletonList(),
-                                                 SingletonUtils
-                                                     .<RuleTask>singletonList(),
-                                                 SingletonUtils
-                                                     .<RuleTask>singletonList(),
-                                                 SingletonUtils
-                                                     .<RuleTask>singletonList(),
+      dao.insert(new org.waarp.openr66.pojo.Rule("dummy2", 3,
+                                                 SingletonUtils.<String>singletonList(),
+                                                 "/in", "/out", "/arch",
+                                                 "/work",
+                                                 SingletonUtils.<RuleTask>singletonList(),
+                                                 SingletonUtils.<RuleTask>singletonList(),
+                                                 SingletonUtils.<RuleTask>singletonList(),
+                                                 SingletonUtils.<RuleTask>singletonList(),
+                                                 SingletonUtils.<RuleTask>singletonList(),
+                                                 SingletonUtils.<RuleTask>singletonList(),
                                                  UpdatedInfo.UNKNOWN));
     }
 

@@ -54,14 +54,14 @@ public class DownloadServlet extends AbstractServlet {
   public static final String X_HASH_SHA_256 = "X-Hash-Sha-256";
 
   @Override
-  protected void doPost(final HttpServletRequest request,
-                        final HttpServletResponse response) {
+  protected final void doPost(final HttpServletRequest request,
+                              final HttpServletResponse response) {
     doGet(request, response);
   }
 
   @Override
-  protected void doHead(final HttpServletRequest request,
-                        final HttpServletResponse response) {
+  protected final void doHead(final HttpServletRequest request,
+                              final HttpServletResponse response) {
     final Map<String, String> arguments = new HashMap<String, String>();
     final Enumeration<String> names = request.getParameterNames();
     while (names.hasMoreElements()) {
@@ -89,15 +89,15 @@ public class DownloadServlet extends AbstractServlet {
         response.setHeader(X_HASH_SHA_256, session.getComputedHadh());
         response.setStatus(200);
       }
-    } catch (ServletException e) {
+    } catch (final ServletException e) {
       logger.error(e.getMessage());
       response.setStatus(400);
     }
   }
 
   @Override
-  protected void doGet(final HttpServletRequest request,
-                       final HttpServletResponse response) {
+  protected final void doGet(final HttpServletRequest request,
+                             final HttpServletResponse response) {
     final ExecutorService executor = Executors.newSingleThreadExecutor();
     try {
       final Map<String, String> arguments = new HashMap<String, String>();
@@ -114,7 +114,7 @@ public class DownloadServlet extends AbstractServlet {
         logger.debug("SESSION: {}", session);
         final Callable<String> hashCompute = new Callable<String>() {
           @Override
-          public String call() {
+          public final String call() {
             return session.getHash();
           }
         };
@@ -133,8 +133,8 @@ public class DownloadServlet extends AbstractServlet {
         cookie.setHttpOnly(true);
         cookie.setSecure(true);
         response.addCookie(cookie);
-        response
-            .setHeader("Content-Length", Long.toString(session.getFileSize()));
+        response.setHeader("Content-Length",
+                           Long.toString(session.getFileSize()));
         String hash = null;
         try {
           hash = future.get();
@@ -160,7 +160,7 @@ public class DownloadServlet extends AbstractServlet {
           logger.error("Error: {} {}", session, e.getMessage());
           response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         }
-      } catch (ServletException e) {
+      } catch (final ServletException e) {
         logger.error(e.getMessage());
         response.setStatus(400);
       }
@@ -206,7 +206,7 @@ public class DownloadServlet extends AbstractServlet {
     } catch (final IllegalArgumentException e) {
       throw new ServletException(
           INVALID_REQUEST_PARAMS + ": " + e.getMessage());
-    } catch (InvocationTargetException e) {
+    } catch (final InvocationTargetException e) {
       throw new ServletException(
           INVALID_REQUEST_PARAMS + ": " + e.getMessage());
     }

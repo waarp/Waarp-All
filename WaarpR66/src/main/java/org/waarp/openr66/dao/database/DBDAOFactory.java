@@ -187,7 +187,7 @@ public class DBDAOFactory extends DAOFactory {
   static class FakeConnection implements Connection {
     private final ConnectionFactory connectionFactory;
 
-    public FakeConnection(ConnectionFactory connectionFactory) {
+    public FakeConnection(final ConnectionFactory connectionFactory) {
       this.connectionFactory = connectionFactory;
     }
 

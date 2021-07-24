@@ -69,8 +69,8 @@ public class UploadServlet extends AbstractServlet {
 
 
   @Override
-  protected void doPost(final HttpServletRequest request,
-                        final HttpServletResponse response)
+  protected final void doPost(final HttpServletRequest request,
+                              final HttpServletResponse response)
       throws ServletException {
     // Check that we have a file upload request
     final boolean isMultipart =
@@ -99,7 +99,7 @@ public class UploadServlet extends AbstractServlet {
               final InputStream finalInputStream = part.getInputStream();
               final ByteSource byteSource = new ByteSource() {
                 @Override
-                public InputStream openStream() {
+                public final InputStream openStream() {
                   return finalInputStream;
                 }
               };
@@ -142,7 +142,7 @@ public class UploadServlet extends AbstractServlet {
     logger.debug("RECV: {}", resumableInfo);
     try {
       session = getResumableSession(arguments, resumableInfo);//NOSONAR
-    } catch (ServletException e) {
+    } catch (final ServletException e) {
       logger.error(e.getMessage());
       response.setStatus(400);
       return;
@@ -181,7 +181,7 @@ public class UploadServlet extends AbstractServlet {
           logger.debug(ignore);
         }
       }
-    } catch (IllegalArgumentException e) {
+    } catch (final IllegalArgumentException e) {
       throw new ServletException(e);
     }
   }
@@ -237,9 +237,9 @@ public class UploadServlet extends AbstractServlet {
       final HttpAuthent authent =
           (HttpAuthent) WaarpSystemUtil.newInstance(authentClass);
       authent.initializeAuthent(arguments);
-      final HttpResumableSession session = sessions
-          .getOrCreateResumableSession(resumableInfo, rulename, comment,
-                                       authent);
+      final HttpResumableSession session =
+          sessions.getOrCreateResumableSession(resumableInfo, rulename, comment,
+                                               authent);
       if (!session.valid(resumableInfo)) {
         sessions.removeSession(resumableInfo);
         throw new ServletException(INVALID_REQUEST_PARAMS);
@@ -248,15 +248,15 @@ public class UploadServlet extends AbstractServlet {
     } catch (final IllegalArgumentException e) {
       throw new ServletException(
           INVALID_REQUEST_PARAMS + ": " + e.getMessage());
-    } catch (InvocationTargetException e) {
+    } catch (final InvocationTargetException e) {
       throw new ServletException(
           INVALID_REQUEST_PARAMS + ": " + e.getMessage());
     }
   }
 
   @Override
-  protected void doGet(final HttpServletRequest request,
-                       final HttpServletResponse response)
+  protected final void doGet(final HttpServletRequest request,
+                             final HttpServletResponse response)
       throws ServletException {
     final Map<String, String> arguments = new HashMap<String, String>();
     final Enumeration<String> names = request.getParameterNames();
@@ -269,7 +269,7 @@ public class UploadServlet extends AbstractServlet {
     final HttpResumableSession session;
     try {
       session = getResumableSession(arguments, resumableInfo);//NOSONAR
-    } catch (ServletException e) {
+    } catch (final ServletException e) {
       logger.error(e.getMessage());
       response.setStatus(400);
       return;

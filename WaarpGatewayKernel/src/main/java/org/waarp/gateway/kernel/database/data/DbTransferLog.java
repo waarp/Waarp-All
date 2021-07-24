@@ -202,7 +202,7 @@ public class DbTransferLog extends AbstractDbData {
   }
 
   @Override
-  protected void initObject() {
+  protected final void initObject() {
     primaryKey = new DbValue[] {
         new DbValue(user, Columns.USERID.name()),
         new DbValue(account, Columns.ACCOUNTID.name()),
@@ -230,27 +230,27 @@ public class DbTransferLog extends AbstractDbData {
   }
 
   @Override
-  protected String getSelectAllFields() {
+  protected final String getSelectAllFields() {
     return selectAllFields;
   }
 
   @Override
-  protected String getTable() {
+  protected final String getTable() {
     return table;
   }
 
   @Override
-  protected String getInsertAllValues() {
+  protected final String getInsertAllValues() {
     return insertAllValues;
   }
 
   @Override
-  protected String getUpdateAllFields() {
+  protected final String getUpdateAllFields() {
     return updateAllFields;
   }
 
   @Override
-  protected void setToArray() throws WaarpDatabaseSqlException {
+  protected final void setToArray() throws WaarpDatabaseSqlException {
     // FILENAME, MODETRANS,
     // STARTTRANS, STOPTRANS, TRANSINFO
     // INFOSTATUS, UPDATEDINFO
@@ -272,13 +272,13 @@ public class DbTransferLog extends AbstractDbData {
   }
 
   @Override
-  protected void setFromArray() {
+  protected final void setFromArray() {
     filename = (String) allFields[Columns.FILENAME.ordinal()].getValue();
     mode = (String) allFields[Columns.MODETRANS.ordinal()].getValue();
     start = (Timestamp) allFields[Columns.STARTTRANS.ordinal()].getValue();
     stop = (Timestamp) allFields[Columns.STOPTRANS.ordinal()].getValue();
-    infostatus = HttpResponseStatus
-        .valueOf((Integer) allFields[Columns.INFOSTATUS.ordinal()].getValue());
+    infostatus = HttpResponseStatus.valueOf(
+        (Integer) allFields[Columns.INFOSTATUS.ordinal()].getValue());
     infotransf = (String) allFields[Columns.TRANSINFO.ordinal()].getValue();
     updatedInfo = (Integer) allFields[Columns.UPDATEDINFO.ordinal()].getValue();
     user = (String) allFields[Columns.USERID.ordinal()].getValue();
@@ -291,7 +291,7 @@ public class DbTransferLog extends AbstractDbData {
    * @return The Where condition on Primary Key
    */
   @Override
-  protected String getWherePrimaryKey() {
+  protected final String getWherePrimaryKey() {
     return primaryKey[0].getColumn() + " = ? AND " + primaryKey[1].getColumn() +
            " = ? AND " + primaryKey[2].getColumn() + " = ? AND " +
            primaryKey[3].getColumn() + " = ? ";
@@ -301,7 +301,7 @@ public class DbTransferLog extends AbstractDbData {
    * Set the primary Key as current value
    */
   @Override
-  protected void setPrimaryKey() {
+  protected final void setPrimaryKey() {
     primaryKey[0].setValue(user);
     primaryKey[1].setValue(account);
     primaryKey[2].setValue(hostid);
@@ -341,7 +341,7 @@ public class DbTransferLog extends AbstractDbData {
   }
 
   @Override
-  public void delete() throws WaarpDatabaseException {
+  public final void delete() throws WaarpDatabaseException {
     if (dbSession == null) {
       removeNoDbSpecialId();
       return;
@@ -350,7 +350,7 @@ public class DbTransferLog extends AbstractDbData {
   }
 
   @Override
-  public void insert() throws WaarpDatabaseException {
+  public final void insert() throws WaarpDatabaseException {
     if (isSaved) {
       return;
     }
@@ -376,7 +376,7 @@ public class DbTransferLog extends AbstractDbData {
    *
    * @throws WaarpDatabaseException
    */
-  public void create() throws WaarpDatabaseException {
+  public final void create() throws WaarpDatabaseException {
     if (isSaved) {
       return;
     }
@@ -883,7 +883,7 @@ public class DbTransferLog extends AbstractDbData {
   }
 
   @Override
-  public void changeUpdatedInfo(final UpdatedInfo info) {
+  public final void changeUpdatedInfo(final UpdatedInfo info) {
     updatedInfo = info.ordinal();
     allFields[Columns.UPDATEDINFO.ordinal()].setValue(updatedInfo);
     isSaved = false;
@@ -894,7 +894,7 @@ public class DbTransferLog extends AbstractDbData {
    *
    * @param code
    */
-  public void setReplyCodeExecutionStatus(final HttpResponseStatus code) {
+  public final void setReplyCodeExecutionStatus(final HttpResponseStatus code) {
     if (infostatus != code) {
       infostatus = code;
       allFields[Columns.INFOSTATUS.ordinal()].setValue(infostatus.code());
@@ -905,21 +905,21 @@ public class DbTransferLog extends AbstractDbData {
   /**
    * @return The current UpdatedInfo value
    */
-  public UpdatedInfo getUpdatedInfo() {
+  public final UpdatedInfo getUpdatedInfo() {
     return UpdatedInfo.values()[updatedInfo];
   }
 
   /**
    * @return the HttpResponseStatus code associated with the Updated Info
    */
-  public HttpResponseStatus getErrorInfo() {
+  public final HttpResponseStatus getErrorInfo() {
     return infostatus;
   }
 
   /**
    * @param filename the filename to set
    */
-  public void setFilename(final String filename) {
+  public final void setFilename(final String filename) {
     if (this.filename == null || !this.filename.equals(filename)) {
       this.filename = filename;
       allFields[Columns.FILENAME.ordinal()].setValue(this.filename);
@@ -930,63 +930,63 @@ public class DbTransferLog extends AbstractDbData {
   /**
    * @return the isSender
    */
-  public boolean isSender() {
+  public final boolean isSender() {
     return isSender;
   }
 
   /**
    * @return the filename
    */
-  public String getFilename() {
+  public final String getFilename() {
     return filename;
   }
 
   /**
    * @return the specialId
    */
-  public long getSpecialId() {
+  public final long getSpecialId() {
     return specialId;
   }
 
   /**
    * @return the infotransf
    */
-  public String getInfotransf() {
+  public final String getInfotransf() {
     return infotransf;
   }
 
   /**
    * @param infotransf the infotransf to set
    */
-  public void setInfotransf(final String infotransf) {
+  public final void setInfotransf(final String infotransf) {
     this.infotransf = infotransf;
   }
 
   /**
    * @return the user
    */
-  public String getUser() {
+  public final String getUser() {
     return user;
   }
 
   /**
    * @return the account
    */
-  public String getAccount() {
+  public final String getAccount() {
     return account;
   }
 
   /**
    * @param stop the stop to set
    */
-  public void setStop(final Timestamp stop) {
+  public final void setStop(final Timestamp stop) {
     this.stop = stop;
   }
 
   /**
    * @return the mode
    */
-  public String getMode() {
+  public final String getMode() {
     return mode;
   }
 
@@ -995,14 +995,14 @@ public class DbTransferLog extends AbstractDbData {
    *
    * @throws WaarpDatabaseException
    */
-  public void saveStatus() throws WaarpDatabaseException {
+  public final void saveStatus() throws WaarpDatabaseException {
     update();
   }
 
   /**
    * Clear the runner
    */
-  public void clear() {
+  public final void clear() {
     // nothing
   }
 
@@ -1018,14 +1018,14 @@ public class DbTransferLog extends AbstractDbData {
   /**
    * @return the start
    */
-  public Timestamp getStart() {
+  public final Timestamp getStart() {
     return start;
   }
 
   /**
    * @return the stop
    */
-  public Timestamp getStop() {
+  public final Timestamp getStop() {
     return stop;
   }
 
@@ -1101,7 +1101,7 @@ public class DbTransferLog extends AbstractDbData {
    *
    * @return The message for the HTTPS interface
    */
-  public String saveDbTransferLog(final String filename) {
+  public final String saveDbTransferLog(final String filename) {
     final Document document = XmlUtil.createEmptyDocument();
     final XmlValue[] roots = new XmlValue[1];
     final XmlValue root = new XmlValue(logsElements[0]);

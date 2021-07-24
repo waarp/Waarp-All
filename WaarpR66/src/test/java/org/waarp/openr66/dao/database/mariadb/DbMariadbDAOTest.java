@@ -57,8 +57,8 @@ public class DbMariadbDAOTest extends DBAllDAOTest {
 
   @Override
   public Connection getConnection() throws SQLException {
-    return DriverManager
-        .getConnection(db.getJdbcUrl(), db.getUsername(), db.getPassword());
+    return DriverManager.getConnection(db.getJdbcUrl(), db.getUsername(),
+                                       db.getPassword());
   }
 
   @Override

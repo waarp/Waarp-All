@@ -56,8 +56,8 @@ public class BusinessRequest extends AbstractBusinessRequest {
   }
 
   public static void main(final String[] args) {
-    WaarpLoggerFactory
-        .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));
+    WaarpLoggerFactory.setDefaultFactoryIfNotSame(
+        new WaarpSlf4JLoggerFactory(null));
     if (logger == null) {
       logger = WaarpLoggerFactory.getLogger(BusinessRequest.class);
     }
@@ -97,9 +97,9 @@ public class BusinessRequest extends AbstractBusinessRequest {
     if (future.isSuccess()) {
       outputFormat.setValue(FIELDS.status.name(), 0);
       outputFormat.setValue(FIELDS.statusTxt.name(),
-                            Messages.getString("BusinessRequest.6") + Messages
-                                .getString(
-                                    "RequestInformation.Success")); //$NON-NLS-1$
+                            Messages.getString("BusinessRequest.6") +
+                            Messages.getString(
+                                "RequestInformation.Success")); //$NON-NLS-1$
       outputFormat.setValue(FIELDS.remote.name(), rhost);
       outputFormat.setValue("delay", delay);
       if (logger.isInfoEnabled()) {
@@ -111,9 +111,9 @@ public class BusinessRequest extends AbstractBusinessRequest {
     } else {
       outputFormat.setValue(FIELDS.status.name(), 2);
       outputFormat.setValue(FIELDS.statusTxt.name(),
-                            Messages.getString("BusinessRequest.6") + Messages
-                                .getString(
-                                    "RequestInformation.Failure")); //$NON-NLS-1$
+                            Messages.getString("BusinessRequest.6") +
+                            Messages.getString(
+                                "RequestInformation.Failure")); //$NON-NLS-1$
       outputFormat.setValue(FIELDS.remote.name(), rhost);
       outputFormat.setValue("delay", delay);
       logger.error(outputFormat.loggerOut(), future.getCause());

@@ -32,7 +32,7 @@ import org.waarp.ftp.core.file.FtpFile;
  */
 public class DELE extends AbstractCommand {
   @Override
-  public void exec() throws CommandAbstractException {
+  public final void exec() throws CommandAbstractException {
     if (!hasArg()) {
       invalidCurrentCommand();
       throw new Reply501Exception("Need a pathname as argument");
@@ -41,9 +41,9 @@ public class DELE extends AbstractCommand {
     final FtpFile file = getSession().getDir().setFile(filename, false);
     if (file != null) {
       if (file.delete()) {
-        getSession()
-            .setReplyCode(ReplyCode.REPLY_250_REQUESTED_FILE_ACTION_OKAY,
-                          '"' + file.getFile() + "\" FtpFile is deleted");
+        getSession().setReplyCode(
+            ReplyCode.REPLY_250_REQUESTED_FILE_ACTION_OKAY,
+            '"' + file.getFile() + "\" FtpFile is deleted");
         return;
       }
       throw new Reply450Exception("Delete operation not allowed");

@@ -64,7 +64,7 @@ public class UnzeroedFileTask extends AbstractTask {
   }
 
   @Override
-  public void run() {
+  public final void run() {
     final File currentFile = session.getFile().getTrueFile();
     final String toWrite = ParametersChecker.isEmpty(argRule)? " " : argRule;
     final String curpath =
@@ -84,8 +84,8 @@ public class UnzeroedFileTask extends AbstractTask {
         futureCompletion.setSuccess();
       } catch (final IOException e) {
         logger.error("Cannot unzeroed File: " + curpath + " from " + session);
-        futureCompletion
-            .setFailure(new OpenR66RunnerException("File not Unzeroed"));
+        futureCompletion.setFailure(
+            new OpenR66RunnerException("File not Unzeroed"));
       } finally {
         FileUtils.close(out);
       }

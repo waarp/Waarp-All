@@ -34,7 +34,7 @@ public class ExtensionFilter implements FilenameFilter {
   }
 
   @Override
-  public boolean accept(final File file, final String s) {
+  public final boolean accept(final File file, final String s) {
     return s.endsWith(filter);
   }
 

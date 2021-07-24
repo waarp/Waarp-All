@@ -77,8 +77,10 @@ public class FilesystemBasedDigestTest {
                      FilesystemBasedDigest.digestEquals(hex3, bmd53));
           assertTrue(algo + " Through ByteBuf vs Direct Not Equals",
                      FilesystemBasedDigest.digestEquals(bmd53, bmd5));
-          assertTrue(algo + " FromHex Not Equals", FilesystemBasedDigest
-              .digestEquals(bmd53, FilesystemBasedDigest.getFromHex(hex3)));
+          assertTrue(algo + " FromHex Not Equals",
+                     FilesystemBasedDigest.digestEquals(bmd53,
+                                                        FilesystemBasedDigest.getFromHex(
+                                                            hex3)));
         }
         final long end = System.currentTimeMillis();
         System.out.println(

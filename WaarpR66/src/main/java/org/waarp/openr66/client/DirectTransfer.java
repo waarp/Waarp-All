@@ -153,8 +153,8 @@ public class DirectTransfer extends AbstractTransfer {
   }
 
   public static void main(final String[] args) {
-    WaarpLoggerFactory
-        .setDefaultFactoryIfNotSame(new WaarpSlf4JLoggerFactory(null));
+    WaarpLoggerFactory.setDefaultFactoryIfNotSame(
+        new WaarpSlf4JLoggerFactory(null));
     if (logger == null) {
       logger = WaarpLoggerFactory.getLogger(DirectTransfer.class);
     }
@@ -242,8 +242,8 @@ public class DirectTransfer extends AbstractTransfer {
     } catch (final Throwable e) {
       logger.error("Exception", e);
     } finally {
-      logger
-          .debug("finish transfer: {}:{}", future.isDone(), future.isSuccess());
+      logger.debug("finish transfer: {}:{}", future.isDone(),
+                   future.isSuccess());
       if (!WaarpSystemUtil.isJunit()) {
         networkTransaction.closeAll();
         // In case something wrong append

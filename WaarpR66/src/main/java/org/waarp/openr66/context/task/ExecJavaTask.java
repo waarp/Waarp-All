@@ -63,12 +63,12 @@ public class ExecJavaTask extends AbstractTask {
    *
    * @param businessRequest
    */
-  public void setBusinessRequest(final boolean businessRequest) {
+  public final void setBusinessRequest(final boolean businessRequest) {
     this.businessRequest = businessRequest;
   }
 
   @Override
-  public void run() {
+  public final void run() {
     if (argRule == null) {
       logger.error(
           "ExecJava cannot be done with " + argRule + ':' + argTransfer +
@@ -122,16 +122,15 @@ public class ExecJavaTask extends AbstractTask {
     }
     if (businessRequest) {
       final boolean istovalidate = Boolean.parseBoolean(args[args.length - 1]);
-      runnable
-          .setArgs(session, waitForValidation, useLocalExec, delay, className,
-                   finalname.substring(finalname.indexOf(' ') + 1,
-                                       finalname.lastIndexOf(' ')),
-                   businessRequest, istovalidate);
+      runnable.setArgs(session, waitForValidation, useLocalExec, delay,
+                       className,
+                       finalname.substring(finalname.indexOf(' ') + 1,
+                                           finalname.lastIndexOf(' ')),
+                       businessRequest, istovalidate);
     } else {
-      runnable
-          .setArgs(session, waitForValidation, useLocalExec, delay, className,
-                   finalname.substring(className.length() + 1), businessRequest,
-                   false);
+      runnable.setArgs(session, waitForValidation, useLocalExec, delay,
+                       className, finalname.substring(className.length() + 1),
+                       businessRequest, false);
     }
     logger.debug("{} {}", className, runnable.getClass().getName());
     if (!waitForValidation) {
@@ -144,16 +143,16 @@ public class ExecJavaTask extends AbstractTask {
       runnable.run();
       status = runnable.getFinalStatus();
     } else {
-      final ExecutorService executorService = Executors
-          .newSingleThreadExecutor(new WaarpThreadFactory("JavaExecutor"));
+      final ExecutorService executorService = Executors.newSingleThreadExecutor(
+          new WaarpThreadFactory("JavaExecutor"));
       executorService.execute(runnable);
       try {
         Thread.yield();
         executorService.shutdown();
         if (waitForValidation) {
           if (delay > 100) {
-            if (!executorService
-                .awaitTermination(delay, TimeUnit.MILLISECONDS)) {
+            if (!executorService.awaitTermination(delay,
+                                                  TimeUnit.MILLISECONDS)) {
               executorService.shutdownNow();
               logger.error("Exec is in Time Out");
               status = -1;

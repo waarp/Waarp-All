@@ -75,13 +75,13 @@ public class ValidPacket extends AbstractLocalPacket {
   }
 
   @Override
-  public boolean hasGlobalBuffer() {
+  public final boolean hasGlobalBuffer() {
     return true;
   }
 
   @Override
-  public void createAllBuffers(final LocalChannelReference lcr,
-                               final int networkHeader) {
+  public final void createAllBuffers(final LocalChannelReference lcr,
+                                     final int networkHeader) {
     final byte[] headerBytes =
         sheader != null? sheader.getBytes(WaarpStringUtils.UTF8) : EMPTY_ARRAY;
     final int headerSize = headerBytes.length;
@@ -104,33 +104,33 @@ public class ValidPacket extends AbstractLocalPacket {
   }
 
   @Override
-  public String toString() {
+  public final String toString() {
     return "ValidPacket: " + sheader + ':' + smiddle + ':' + send;
   }
 
   @Override
-  public byte getType() {
+  public final byte getType() {
     return LocalPacketFactory.VALIDPACKET;
   }
 
   /**
    * @return the sheader
    */
-  public String getSheader() {
+  public final String getSheader() {
     return sheader;
   }
 
   /**
    * @return the smiddle
    */
-  public String getSmiddle() {
+  public final String getSmiddle() {
     return smiddle;
   }
 
   /**
    * @param smiddle
    */
-  public void setSmiddle(final String smiddle) {
+  public final void setSmiddle(final String smiddle) {
     this.smiddle = smiddle;
     middle = null;
   }
@@ -138,7 +138,7 @@ public class ValidPacket extends AbstractLocalPacket {
   /**
    * @return the type
    */
-  public byte getTypeValid() {
+  public final byte getTypeValid() {
     return send;
   }
 

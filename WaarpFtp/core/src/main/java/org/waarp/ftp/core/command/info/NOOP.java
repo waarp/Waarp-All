@@ -41,7 +41,7 @@ public class NOOP extends AbstractCommand {
   }
 
   @Override
-  public void exec() {
+  public final void exec() {
     getSession().setReplyCode(ReplyCode.REPLY_200_COMMAND_OKAY, null);
   }
 

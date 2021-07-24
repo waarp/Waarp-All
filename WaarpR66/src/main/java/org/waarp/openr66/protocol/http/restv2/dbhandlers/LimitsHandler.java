@@ -99,8 +99,8 @@ public class LimitsHandler extends AbstractRestDbHandler {
   @GET
   @Consumes(WILDCARD)
   @RequiredRole(LIMIT)
-  public void getLimits(final HttpRequest request,
-                        final HttpResponder responder) {
+  public final void getLimits(final HttpRequest request,
+                              final HttpResponder responder) {
     LimitDAO limitDAO = null;
     try {
       limitDAO = DAO_FACTORY.getLimitDAO(true);
@@ -135,8 +135,8 @@ public class LimitsHandler extends AbstractRestDbHandler {
   @POST
   @Consumes(APPLICATION_JSON)
   @RequiredRole(READONLY)
-  public void initializeLimits(final HttpRequest request,
-                               final HttpResponder responder) {
+  public final void initializeLimits(final HttpRequest request,
+                                     final HttpResponder responder) {
     LimitDAO limitDAO = null;
     try {
       limitDAO = DAO_FACTORY.getLimitDAO(false);
@@ -177,8 +177,8 @@ public class LimitsHandler extends AbstractRestDbHandler {
   @PUT
   @Consumes(APPLICATION_JSON)
   @RequiredRole(LIMIT)
-  public void updateLimits(final HttpRequest request,
-                           final HttpResponder responder) {
+  public final void updateLimits(final HttpRequest request,
+                                 final HttpResponder responder) {
     LimitDAO limitDAO = null;
     try {
       limitDAO = DAO_FACTORY.getLimitDAO(false);
@@ -227,8 +227,8 @@ public class LimitsHandler extends AbstractRestDbHandler {
   @DELETE
   @Consumes(WILDCARD)
   @RequiredRole(LIMIT)
-  public void deleteLimits(final HttpRequest request,
-                           final HttpResponder responder) {
+  public final void deleteLimits(final HttpRequest request,
+                                 final HttpResponder responder) {
     LimitDAO limitDAO = null;
     try {
       limitDAO = DAO_FACTORY.getLimitDAO(false);
@@ -261,8 +261,8 @@ public class LimitsHandler extends AbstractRestDbHandler {
   @OPTIONS
   @Consumes(WILDCARD)
   @RequiredRole(NOACCESS)
-  public void options(final HttpRequest request,
-                      final HttpResponder responder) {
+  public final void options(final HttpRequest request,
+                            final HttpResponder responder) {
     responder.sendStatus(OK, OPTIONS_HEADERS);
   }
 }

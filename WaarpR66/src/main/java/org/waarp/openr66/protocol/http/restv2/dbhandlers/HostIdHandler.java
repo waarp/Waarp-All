@@ -100,8 +100,9 @@ public class HostIdHandler extends AbstractRestDbHandler {
   @GET
   @Consumes(WILDCARD)
   @RequiredRole(READONLY)
-  public void getHost(final HttpRequest request, final HttpResponder responder,
-                      @PathParam(URI_ID) final String id) {
+  public final void getHost(final HttpRequest request,
+                            final HttpResponder responder,
+                            @PathParam(URI_ID) final String id) {
     checkSanity(id);
     HostDAO hostDAO = null;
     try {
@@ -136,9 +137,9 @@ public class HostIdHandler extends AbstractRestDbHandler {
   @PUT
   @Consumes(APPLICATION_JSON)
   @RequiredRole(HOST)
-  public void updateHost(final HttpRequest request,
-                         final HttpResponder responder,
-                         @PathParam(URI_ID) final String id) {
+  public final void updateHost(final HttpRequest request,
+                               final HttpResponder responder,
+                               @PathParam(URI_ID) final String id) {
     checkSanity(id);
     HostDAO hostDAO = null;
     try {
@@ -184,9 +185,9 @@ public class HostIdHandler extends AbstractRestDbHandler {
   @DELETE
   @Consumes(WILDCARD)
   @RequiredRole(HOST)
-  public void deleteHost(final HttpRequest request,
-                         final HttpResponder responder,
-                         @PathParam(URI_ID) final String id) {
+  public final void deleteHost(final HttpRequest request,
+                               final HttpResponder responder,
+                               @PathParam(URI_ID) final String id) {
     checkSanity(id);
     HostDAO hostDAO = null;
     try {
@@ -244,8 +245,9 @@ public class HostIdHandler extends AbstractRestDbHandler {
   @OPTIONS
   @Consumes(WILDCARD)
   @RequiredRole(NOACCESS)
-  public void options(final HttpRequest request, final HttpResponder responder,
-                      @PathParam(URI_ID) final String id) {
+  public final void options(final HttpRequest request,
+                            final HttpResponder responder,
+                            @PathParam(URI_ID) final String id) {
     checkSanity(id);
     responder.sendStatus(OK, OPTIONS_HEADERS);
   }

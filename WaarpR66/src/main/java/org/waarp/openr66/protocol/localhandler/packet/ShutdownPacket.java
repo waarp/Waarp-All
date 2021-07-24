@@ -80,13 +80,13 @@ public class ShutdownPacket extends AbstractLocalPacket {
   }
 
   @Override
-  public boolean hasGlobalBuffer() {
+  public final boolean hasGlobalBuffer() {
     return true;
   }
 
   @Override
-  public void createAllBuffers(final LocalChannelReference lcr,
-                               final int networkHeader) {
+  public final void createAllBuffers(final LocalChannelReference lcr,
+                                     final int networkHeader) {
     end = Unpooled.EMPTY_BUFFER;
     final int sizeKey = key != null? key.length : 0;
     final int sizeMiddle = restart != 0? 1 : 0;
@@ -110,23 +110,23 @@ public class ShutdownPacket extends AbstractLocalPacket {
   }
 
   @Override
-  public String toString() {
+  public final String toString() {
     return "ShutdownPacket" + (restart != 0? " and restart" : "");
   }
 
   @Override
-  public byte getType() {
+  public final byte getType() {
     return LocalPacketFactory.SHUTDOWNPACKET;
   }
 
   /**
    * @return the key
    */
-  public byte[] getKey() {
+  public final byte[] getKey() {
     return key;
   }
 
-  public boolean isRestart() {
+  public final boolean isRestart() {
     return restart != 0;
   }
 }

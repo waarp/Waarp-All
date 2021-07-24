@@ -128,8 +128,8 @@ public class FtpClientPerfTestPostgreIT {
     File file =
         new File(classLoader.getResource("Gg-FTP-postgre.xml").getFile());
     if (!file.exists()) {
-      SysErrLogger.FAKE_LOGGER
-          .syserr("Cannot find in  " + file.getAbsolutePath());
+      SysErrLogger.FAKE_LOGGER.syserr(
+          "Cannot find in  " + file.getAbsolutePath());
       fail("Cannot find " + file.getAbsolutePath());
     }
     String content = WaarpStringUtils.readFile(file.getAbsolutePath());
@@ -144,8 +144,8 @@ public class FtpClientPerfTestPostgreIT {
     } else if (driver.equalsIgnoreCase("oracle.jdbc.OracleDriver")) {
       target = "oracle";
       jdbcUrl = "jdbc:oracle:thin:@//localhost:1521/test";
-      SysErrLogger.FAKE_LOGGER
-          .syserr(jdbcUrl + " while should be something like " + jdbcUrl);
+      SysErrLogger.FAKE_LOGGER.syserr(
+          jdbcUrl + " while should be something like " + jdbcUrl);
       throw new UnsupportedOperationException(
           "Unsupported Test for Oracle since wrong JDBC driver");
     } else if (driver.equalsIgnoreCase("org.postgresql.Driver")) {
@@ -191,8 +191,8 @@ public class FtpClientPerfTestPostgreIT {
                                    FileSystemBasedDataBusinessHandler.class,
                                    new FilesystemBasedFileParameterImpl());
     try {
-      if (!configuration
-          .setConfigurationServerFromXml(fileTo.getAbsolutePath())) {
+      if (!configuration.setConfigurationServerFromXml(
+          fileTo.getAbsolutePath())) {
         System.err.println("Bad main configuration");
         Assert.fail("Bad main configuration");
       }
@@ -400,10 +400,9 @@ public class FtpClientPerfTestPostgreIT {
       client.disconnect();
     }
     long stop = System.currentTimeMillis();
-    logger
-        .warn("Do Transfer {} at {}/s {} passive {}/s active/s", numberOK.get(),
-              numberOK.get() * 1000.0 / (stop - start),
-              (c2 - c1) * 1000.0 / (t2 - t1), (c3 - c2) * 1000.0 / (t3 - t2));
+    logger.warn("Do Transfer {} at {}/s {} passive {}/s active/s",
+                numberOK.get(), numberOK.get() * 1000.0 / (stop - start),
+                (c2 - c1) * 1000.0 / (t2 - t1), (c3 - c2) * 1000.0 / (t3 - t2));
     assertEquals("No KO", 0, numberKO.get());
   }
 
@@ -411,9 +410,8 @@ public class FtpClientPerfTestPostgreIT {
                                    File localFilename, boolean mode) {
     final String smode = mode? "passive" : "active";
     logger.info(" transfer {} store ", smode);
-    if (!client
-        .transferFile(localFilename.getAbsolutePath(), localFilename.getName(),
-                      1)) {
+    if (!client.transferFile(localFilename.getAbsolutePath(),
+                             localFilename.getName(), 1)) {
       logger.warn("Cant store file {} mode ", smode);
       numberKO.incrementAndGet();
       return;
@@ -427,9 +425,8 @@ public class FtpClientPerfTestPostgreIT {
     } else {
       numberOK.incrementAndGet();
     }
-    if (!client
-        .transferFile(localFilename.getAbsolutePath(), localFilename.getName(),
-                      1)) {
+    if (!client.transferFile(localFilename.getAbsolutePath(),
+                             localFilename.getName(), 1)) {
       logger.warn("Cant store file {} mode ", smode);
       numberKO.incrementAndGet();
       return;

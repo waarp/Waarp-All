@@ -49,7 +49,12 @@ public class WaarpFailedFuture extends WaarpCompletedFuture {
   }
 
   @Override
-  public WaarpFuture rethrowIfFailed() throws Exception {
+  public final boolean isFailed() {
+    return true;
+  }
+
+  @Override
+  public final WaarpFuture rethrowIfFailed() throws Exception {
     if (cause instanceof Exception) {
       throw (Exception) cause;
     }

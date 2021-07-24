@@ -71,17 +71,18 @@ public class DbConfiguration extends AbstractDbDataDao<Limit> {
   };
 
   @Override
-  protected String getTable() {
+  protected final String getTable() {
     return table;
   }
 
   @Override
-  protected AbstractDAO<Limit> getDao(final boolean isCacheable) throws DAOConnectionException {
+  protected final AbstractDAO<Limit> getDao(final boolean isCacheable)
+      throws DAOConnectionException {
     return DAOFactory.getInstance().getLimitDAO(isCacheable);
   }
 
   @Override
-  protected String getPrimaryKey() {
+  protected final String getPrimaryKey() {
     if (pojo != null) {
       return pojo.getHostid();
     }
@@ -89,7 +90,7 @@ public class DbConfiguration extends AbstractDbDataDao<Limit> {
   }
 
   @Override
-  protected String getPrimaryField() {
+  protected final String getPrimaryField() {
     return Columns.HOSTID.name();
   }
 
@@ -134,7 +135,7 @@ public class DbConfiguration extends AbstractDbDataDao<Limit> {
   }
 
   @Override
-  protected void checkValues() throws WaarpDatabaseSqlException {
+  protected final void checkValues() throws WaarpDatabaseSqlException {
     pojo.checkValues();
   }
 
@@ -147,7 +148,8 @@ public class DbConfiguration extends AbstractDbDataDao<Limit> {
    * @throws WaarpDatabaseSqlException
    */
   @Override
-  public void setFromJson(final ObjectNode node, final boolean ignorePrimaryKey)
+  public final void setFromJson(final ObjectNode node,
+                                final boolean ignorePrimaryKey)
       throws WaarpDatabaseSqlException {
     super.setFromJson(node, ignorePrimaryKey);
     if (ParametersChecker.isEmpty(pojo.getHostid())) {
@@ -183,7 +185,7 @@ public class DbConfiguration extends AbstractDbDataDao<Limit> {
   }
 
   @Override
-  protected void setFromJson(final String field, final JsonNode value) {
+  protected final void setFromJson(final String field, final JsonNode value) {
     if (value == null) {
       return;
     }
@@ -269,8 +271,7 @@ public class DbConfiguration extends AbstractDbDataDao<Limit> {
     final String request = "SELECT " + selectAllFields + " FROM " + table;
     String condition = null;
     if (ParametersChecker.isNotEmpty(hostid)) {
-      condition =
-          " WHERE " + Columns.HOSTID.name() + " LIKE '%" + hostid + "%' ";
+      condition = " WHERE " + Columns.HOSTID.name() + " = '" + hostid + "' ";
     }
     if (limitBandwith >= 0) {
       if (condition == null) {
@@ -308,8 +309,9 @@ public class DbConfiguration extends AbstractDbDataDao<Limit> {
     AbstractDAO<Limit> limitDAO = null;
     try {
       limitDAO = dbConfiguration.getDao(false);
-      dbConfiguration.pojo = ((StatementExecutor<Limit>) limitDAO)
-          .getFromResultSet(statement.getResultSet());
+      dbConfiguration.pojo =
+          ((StatementExecutor<Limit>) limitDAO).getFromResultSet(
+              statement.getResultSet());
       return dbConfiguration;
     } catch (final SQLException e) {
       DbSession.error(e);
@@ -322,7 +324,7 @@ public class DbConfiguration extends AbstractDbDataDao<Limit> {
   }
 
   @Override
-  public void changeUpdatedInfo(final UpdatedInfo info) {
+  public final void changeUpdatedInfo(final UpdatedInfo info) {
     isSaved = false;
     pojo.setUpdatedInfo(org.waarp.openr66.pojo.UpdatedInfo.fromLegacy(info));
   }
@@ -330,7 +332,7 @@ public class DbConfiguration extends AbstractDbDataDao<Limit> {
   /**
    * Update configuration according to new value of limits
    */
-  public void updateConfiguration() {
+  public final void updateConfiguration() {
     Configuration.configuration.changeNetworkLimit(pojo.getWriteGlobalLimit(),
                                                    pojo.getReadGlobalLimit(),
                                                    pojo.getWriteSessionLimit(),
@@ -341,7 +343,7 @@ public class DbConfiguration extends AbstractDbDataDao<Limit> {
   /**
    * @return True if this Configuration refers to the current host
    */
-  public boolean isOwnConfiguration() {
+  public final boolean isOwnConfiguration() {
     return pojo.getHostid().equals(Configuration.configuration.getHostId());
   }
 
