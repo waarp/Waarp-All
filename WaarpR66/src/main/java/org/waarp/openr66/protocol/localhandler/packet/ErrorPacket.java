@@ -94,8 +94,8 @@ public class ErrorPacket extends AbstractLocalPacket {
   }
 
   @Override
-  public final void createAllBuffers(final LocalChannelReference lcr,
-                                     final int networkHeader) {
+  public final synchronized void createAllBuffers(
+      final LocalChannelReference lcr, final int networkHeader) {
     final byte[] headerBytes =
         sheader != null? sheader.getBytes(WaarpStringUtils.UTF8) : EMPTY_ARRAY;
     final int headerSize = headerBytes.length;

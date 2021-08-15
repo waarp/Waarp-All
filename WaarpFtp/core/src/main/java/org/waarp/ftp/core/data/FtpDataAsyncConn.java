@@ -20,15 +20,19 @@
 package org.waarp.ftp.core.data;
 
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
 import org.waarp.common.command.exception.Reply425Exception;
 import org.waarp.common.crypto.ssl.WaarpSslUtility;
+import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.WaarpNettyUtil;
 import org.waarp.ftp.core.command.FtpArgumentCode;
 import org.waarp.ftp.core.command.FtpArgumentCode.TransferMode;
 import org.waarp.ftp.core.command.FtpArgumentCode.TransferStructure;
 import org.waarp.ftp.core.command.FtpArgumentCode.TransferType;
 import org.waarp.ftp.core.config.FtpConfiguration;
+import org.waarp.ftp.core.config.FtpInternalConfiguration;
 import org.waarp.ftp.core.data.handler.DataNetworkHandler;
 import org.waarp.ftp.core.exception.FtpNoConnectionException;
 import org.waarp.ftp.core.session.FtpSession;
@@ -159,8 +163,8 @@ public class FtpDataAsyncConn {
   /**
    * Clear the Data Connection
    */
-  public synchronized void clear() {
-    unbindPassive();
+  public final synchronized void clear() {
+    unbindData();
     transferControl.clear();
     passiveMode.set(false);
     remotePort = -1;
@@ -168,11 +172,10 @@ public class FtpDataAsyncConn {
   }
 
   /**
-   * Set the local port to the default (20)
+   * Set the local port to the default (0 meaning any available)
    */
   private void setDefaultLocalPort() {
-    setLocalPort(session.getConfiguration().getServerPort() - 1);
-    // Default L-1
+    setLocalPort(0);
   }
 
   /**
@@ -180,7 +183,7 @@ public class FtpDataAsyncConn {
    *
    * @param localPort
    */
-  public synchronized void setLocalPort(final int localPort) {
+  public final synchronized void setLocalPort(final int localPort) {
     this.localPort = localPort;
   }
 
@@ -208,7 +211,7 @@ public class FtpDataAsyncConn {
   /**
    * @return the localPort
    */
-  public synchronized int getLocalPort() {
+  public final synchronized int getLocalPort() {
     return localPort;
   }
 
@@ -223,8 +226,8 @@ public class FtpDataAsyncConn {
    *
    * @param address remote address
    */
-  public synchronized void setActive(final InetSocketAddress address) {
-    unbindPassive();
+  public final synchronized void setActive(final InetSocketAddress address) {
+    unbindData();
     setDefaultLocalPort();
     resetLocalAddress();
     remoteAddress = address;
@@ -240,7 +243,7 @@ public class FtpDataAsyncConn {
    * should have been set)
    */
   public final void setPassive() {
-    unbindPassive();
+    unbindData();
     resetLocalAddress();
     passiveMode.set(true);
     isBind.set(false);
@@ -267,21 +270,21 @@ public class FtpDataAsyncConn {
    *
    * @return True if the dataChannel is connected
    */
-  public synchronized boolean isActive() {
+  public final synchronized boolean isActive() {
     return dataChannel != null && dataChannel.isActive();
   }
 
   /**
    * @return the transferMode
    */
-  public synchronized FtpArgumentCode.TransferMode getMode() {
+  public final synchronized FtpArgumentCode.TransferMode getMode() {
     return transferMode;
   }
 
   /**
    * @param transferMode the transferMode to set
    */
-  public synchronized void setMode(
+  public final synchronized void setMode(
       final FtpArgumentCode.TransferMode transferMode) {
     this.transferMode = transferMode;
     setCorrectCodec();
@@ -290,14 +293,14 @@ public class FtpDataAsyncConn {
   /**
    * @return the transferStructure
    */
-  public synchronized FtpArgumentCode.TransferStructure getStructure() {
+  public final synchronized FtpArgumentCode.TransferStructure getStructure() {
     return transferStructure;
   }
 
   /**
    * @param transferStructure the transferStructure to set
    */
-  public synchronized void setStructure(
+  public final synchronized void setStructure(
       final FtpArgumentCode.TransferStructure transferStructure) {
     this.transferStructure = transferStructure;
     setCorrectCodec();
@@ -306,14 +309,14 @@ public class FtpDataAsyncConn {
   /**
    * @return the transferSubType
    */
-  public synchronized FtpArgumentCode.TransferSubType getSubType() {
+  public final synchronized FtpArgumentCode.TransferSubType getSubType() {
     return transferSubType;
   }
 
   /**
    * @param transferSubType the transferSubType to set
    */
-  public synchronized void setSubType(
+  public final synchronized void setSubType(
       final FtpArgumentCode.TransferSubType transferSubType) {
     this.transferSubType = transferSubType;
     setCorrectCodec();
@@ -322,14 +325,14 @@ public class FtpDataAsyncConn {
   /**
    * @return the transferType
    */
-  public synchronized FtpArgumentCode.TransferType getType() {
+  public final synchronized FtpArgumentCode.TransferType getType() {
     return transferType;
   }
 
   /**
    * @param transferType the transferType to set
    */
-  public synchronized void setType(
+  public final synchronized void setType(
       final FtpArgumentCode.TransferType transferType) {
     this.transferType = transferType;
     setCorrectCodec();
@@ -343,6 +346,7 @@ public class FtpDataAsyncConn {
   public final boolean isFileStreamBlockAsciiImage() {
     return transferStructure == TransferStructure.FILE &&
            (transferMode == TransferMode.STREAM ||
+            transferMode == TransferMode.ZLIB ||
             transferMode == TransferMode.BLOCK) &&
            (transferType == TransferType.ASCII ||
             transferType == TransferType.IMAGE);
@@ -352,7 +356,8 @@ public class FtpDataAsyncConn {
    * @return True if the current mode for data connection is Stream
    */
   public final boolean isStreamFile() {
-    return transferMode == TransferMode.STREAM &&
+    return (transferMode == TransferMode.STREAM ||
+            transferMode == TransferMode.ZLIB) &&
            transferStructure == TransferStructure.FILE;
   }
 
@@ -369,22 +374,39 @@ public class FtpDataAsyncConn {
   }
 
   /**
-   * Unbind passive connection when close the Data Channel (from
-   * channelInactive())
+   * Unbind connection when close the Data Channel
    */
-  public synchronized void unbindPassive() {
-    if (isBind.get() && passiveMode.get()) {
-      isBind.set(false);
-      final InetSocketAddress local = getLocalAddress();
-      if (dataChannel != null && dataChannel.isActive()) {
-        WaarpSslUtility.closingSslChannel(dataChannel);
+  public final synchronized void unbindData() {
+    if (isBind.get()) {
+      if (passiveMode.get()) {
+        isBind.set(false);
+        final InetSocketAddress local = getLocalAddress();
+        ChannelFuture future = null;
+        if (dataChannel != null && dataChannel.isActive()) {
+          future = WaarpSslUtility.closingSslChannel(dataChannel);
+        }
+        session.getConfiguration().getFtpInternalConfiguration()
+               .unbindPassive(local);
+        // Previous mode was Passive so remove the current configuration if
+        // any
+        final InetAddress remote = remoteAddress.getAddress();
+        session.getConfiguration().delFtpSession(remote, local);
+        // prepare the validation of the next connection
+        getFtpTransferControl().resetWaitForOpenedDataChannel();
+        if (future != null) {
+          future.awaitUninterruptibly(FtpConfiguration.getDataTimeoutCon());
+        }
+      } else {
+        isBind.set(false);
+        ChannelFuture future = null;
+        if (dataChannel != null && dataChannel.isActive()) {
+          future = WaarpSslUtility.closingSslChannel(dataChannel);
+        }
+        getFtpTransferControl().resetWaitForOpenedDataChannel();
+        if (future != null) {
+          future.awaitUninterruptibly(FtpConfiguration.getDataTimeoutCon());
+        }
       }
-      session.getConfiguration().getFtpInternalConfiguration()
-             .unbindPassive(local);
-      // Previous mode was Passive so remove the current configuration if
-      // any
-      final InetAddress remote = remoteAddress.getAddress();
-      session.getConfiguration().delFtpSession(remote, local);
     }
     dataChannel = null;
     dataNetworkHandler = null;
@@ -398,7 +420,7 @@ public class FtpDataAsyncConn {
    * @throws Reply425Exception
    */
   public final boolean initPassiveConnection() throws Reply425Exception {
-    unbindPassive();
+    unbindData();
     if (passiveMode.get()) {
       // Connection is enable but the client will do the real connection
       session.getConfiguration().getFtpInternalConfiguration()
@@ -429,7 +451,7 @@ public class FtpDataAsyncConn {
    *
    * @throws FtpNoConnectionException
    */
-  public synchronized DataNetworkHandler getDataNetworkHandler()
+  public final synchronized DataNetworkHandler getDataNetworkHandler()
       throws FtpNoConnectionException {
     if (dataNetworkHandler == null) {
       throw new FtpNoConnectionException("No Data Connection active");
@@ -440,7 +462,7 @@ public class FtpDataAsyncConn {
   /**
    * @param dataNetworkHandler the {@link DataNetworkHandler} to set
    */
-  public synchronized void setDataNetworkHandler(
+  public final synchronized void setDataNetworkHandler(
       final DataNetworkHandler dataNetworkHandler) {
     this.dataNetworkHandler = dataNetworkHandler;
   }
@@ -451,7 +473,21 @@ public class FtpDataAsyncConn {
    * @return a new Passive Port
    */
   public static int getNewPassivePort(final FtpConfiguration configuration) {
-    return configuration.getNextRangePort();
+    synchronized (FtpConfiguration.ftpConfiguration) {
+      int port = -1;
+      for (int i = 0; i < 1000; i++) {
+        port = configuration.getNextRangePort();
+        if (port > 0 && WaarpNettyUtil.availablePort(port)) {
+          return port;
+        }
+        try {
+          Thread.sleep(FtpInternalConfiguration.RETRYINMS);// NOSONAR
+        } catch (final InterruptedException e) {// NOSONAR
+          SysErrLogger.FAKE_LOGGER.ignoreLog(e);
+        }
+      }
+      return -1;
+    }
   }
 
   /**
@@ -492,8 +528,8 @@ public class FtpDataAsyncConn {
    *
    * @throws Reply425Exception
    */
-  public synchronized void setNewOpenedDataChannel(final Channel dataChannel)
-      throws Reply425Exception {
+  public final synchronized void setNewOpenedDataChannel(
+      final Channel dataChannel) throws Reply425Exception {
     this.dataChannel = dataChannel;
     if (dataChannel == null) {
       final String curmode;

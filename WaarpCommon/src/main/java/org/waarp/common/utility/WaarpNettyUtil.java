@@ -29,8 +29,13 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.WriteBufferWaterMark;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.util.IllegalReferenceCountException;
 import io.netty.util.concurrent.Future;
 import org.waarp.common.logging.SysErrLogger;
+
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.ServerSocket;
 
 /**
  * Utility class for Netty usage
@@ -160,6 +165,58 @@ public final class WaarpNettyUtil {
   }
 
   /**
+   * Checks to see if a specific port is available.
+   *
+   * @param port the port to check for availability
+   */
+  public static boolean availablePort(final int port) {
+    ServerSocket ss = null;
+    try {
+      ss = new ServerSocket(port); // NOSONAR
+      ss.setReuseAddress(true);
+      return true;
+    } catch (final IOException e) {
+      SysErrLogger.FAKE_LOGGER.ignoreLog(e);
+    } finally {
+      if (ss != null) {
+        try {
+          ss.close();
+        } catch (final Exception e) {
+          SysErrLogger.FAKE_LOGGER.ignoreLog(e);
+        }
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Checks to see if a specific port is available.
+   *
+   * @param port the port to check for availability
+   * @param localAddress the associated localAddress to use
+   */
+  public static boolean availablePort(final int port,
+                                      final InetAddress localAddress) {
+    ServerSocket ss = null;
+    try {
+      ss = new ServerSocket(port, 0, localAddress); // NOSONAR
+      ss.setReuseAddress(true);
+      return true;
+    } catch (final IOException e) {
+      SysErrLogger.FAKE_LOGGER.ignoreLog(e);
+    } finally {
+      if (ss != null) {
+        try {
+          ss.close();
+        } catch (final Exception e) {
+          SysErrLogger.FAKE_LOGGER.ignoreLog(e);
+        }
+      }
+    }
+    return false;
+  }
+
+  /**
    * @param future
    *
    * @return True if await done, else interruption occurs
@@ -225,7 +282,12 @@ public final class WaarpNettyUtil {
     if (byteBuf == null || byteBuf.refCnt() <= 0) {
       return true;
     }
-    return byteBuf.release();
+    try {
+      return byteBuf.release();
+    } catch (final IllegalReferenceCountException e) {
+      SysErrLogger.FAKE_LOGGER.ignoreLog(e);
+      return true;
+    }
   }
 
   /**
@@ -236,7 +298,26 @@ public final class WaarpNettyUtil {
   public static void releaseCompletely(final ByteBuf byteBuf) {
     if (byteBuf != null && byteBuf.refCnt() != 0) {
       final int refCnt = byteBuf.refCnt();
-      byteBuf.release(refCnt);
+      try {
+        byteBuf.release(refCnt);
+      } catch (final IllegalReferenceCountException e) {
+        SysErrLogger.FAKE_LOGGER.ignoreLog(e);
+      }
+    }
+  }
+
+  /**
+   * Retain this ByteBuf
+   *
+   * @param byteBuf
+   */
+  public static void retain(final ByteBuf byteBuf) {
+    if (byteBuf != null) {
+      try {
+        byteBuf.retain();
+      } catch (final IllegalReferenceCountException e) {
+        SysErrLogger.FAKE_LOGGER.ignoreLog(e);
+      }
     }
   }
 

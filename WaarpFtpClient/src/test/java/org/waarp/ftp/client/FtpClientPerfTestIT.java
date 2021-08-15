@@ -160,7 +160,7 @@ public class FtpClientPerfTestIT {
         new WaarpSlf4JLoggerFactory(WaarpLogLevel.WARN));
     SSL_MODE = 0;
     if (SystemPropertyUtil.get(IT_LONG_TEST, false)) {
-      NUMBER = 200;
+      NUMBER = 400;
       SLEEP = 0;
       ResourceLeakDetector.setLevel(Level.SIMPLE);
     } else {

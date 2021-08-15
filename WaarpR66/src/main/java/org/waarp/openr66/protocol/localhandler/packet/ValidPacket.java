@@ -80,8 +80,8 @@ public class ValidPacket extends AbstractLocalPacket {
   }
 
   @Override
-  public final void createAllBuffers(final LocalChannelReference lcr,
-                                     final int networkHeader) {
+  public final synchronized void createAllBuffers(
+      final LocalChannelReference lcr, final int networkHeader) {
     final byte[] headerBytes =
         sheader != null? sheader.getBytes(WaarpStringUtils.UTF8) : EMPTY_ARRAY;
     final int headerSize = headerBytes.length;
@@ -123,14 +123,14 @@ public class ValidPacket extends AbstractLocalPacket {
   /**
    * @return the smiddle
    */
-  public final String getSmiddle() {
+  public final synchronized String getSmiddle() {
     return smiddle;
   }
 
   /**
    * @param smiddle
    */
-  public final void setSmiddle(final String smiddle) {
+  public final synchronized void setSmiddle(final String smiddle) {
     this.smiddle = smiddle;
     middle = null;
   }

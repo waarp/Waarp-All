@@ -19,6 +19,7 @@
  */
 package org.waarp.openr66.protocol.test;
 
+import io.netty.channel.ChannelFuture;
 import org.waarp.common.database.DbSession;
 import org.waarp.common.database.data.AbstractDbData.UpdatedInfo;
 import org.waarp.common.database.exception.WaarpDatabaseException;
@@ -251,8 +252,8 @@ public class TestSendThroughForward extends SendThroughClient {
         block.setBlock(buffer, length);
       }
       try {
-        if (!WaarpNettyUtil.awaitOrInterrupted(
-            client.writeWhenPossible(block))) {
+        final ChannelFuture future = client.writeWhenPossible(block);
+        if (!WaarpNettyUtil.awaitOrInterrupted(future) || !future.isSuccess()) {
           client.transferInError(
               new OpenR66ProtocolSystemException("Write impossible"));
         }

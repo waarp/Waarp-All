@@ -122,8 +122,8 @@ public class EndTransferPacket extends AbstractLocalPacket {
   }
 
   @Override
-  public final void createAllBuffers(final LocalChannelReference lcr,
-                                     final int networkHeader) {
+  public final synchronized void createAllBuffers(
+      final LocalChannelReference lcr, final int networkHeader) {
     final int headerSize = 1;
     final int middleSize = 1;
     final byte[] endBytes =

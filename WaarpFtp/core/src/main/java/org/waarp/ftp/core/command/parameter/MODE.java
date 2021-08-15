@@ -25,6 +25,7 @@ import org.waarp.common.command.exception.Reply504Exception;
 import org.waarp.common.exception.InvalidArgumentException;
 import org.waarp.ftp.core.command.AbstractCommand;
 import org.waarp.ftp.core.command.FtpArgumentCode;
+import org.waarp.ftp.core.command.FtpArgumentCode.TransferMode;
 
 /**
  * MODE command
@@ -51,6 +52,8 @@ public class MODE extends AbstractCommand {
       getSession().getDataConn().setMode(FtpArgumentCode.TransferMode.BLOCK);
     } else if (transferMode == FtpArgumentCode.TransferMode.STREAM) {
       getSession().getDataConn().setMode(FtpArgumentCode.TransferMode.STREAM);
+    } else if (transferMode == TransferMode.ZLIB) {
+      getSession().getDataConn().setMode(FtpArgumentCode.TransferMode.ZLIB);
     } else {
       throw new Reply504Exception(
           "Mode not implemented: " + transferMode.name());

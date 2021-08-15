@@ -136,18 +136,18 @@ public class DataPacket extends AbstractLocalPacket {
   }
 
   @Override
-  public final void createEnd(final LocalChannelReference lcr) {
+  public final synchronized void createEnd(final LocalChannelReference lcr) {
     end = WaarpNettyUtil.wrappedBuffer(key);
   }
 
   @Override
-  public final void createHeader(final LocalChannelReference lcr) {
+  public final synchronized void createHeader(final LocalChannelReference lcr) {
     header = ByteBufAllocator.DEFAULT.ioBuffer(4, 4);
     header.writeInt(packetRank);
   }
 
   @Override
-  public final void createMiddle(final LocalChannelReference lcr) {
+  public final synchronized void createMiddle(final LocalChannelReference lcr) {
     if (dataRecv != null) {
       middle = dataRecv;
     } else {
@@ -185,13 +185,14 @@ public class DataPacket extends AbstractLocalPacket {
    *
    * @param session to allow to get reusable buffer
    */
-  public final void createByteBufFromRecv(final R66Session session) {
+  public final synchronized void createByteBufFromRecv(
+      final R66Session session) {
     // Get reusable buffer and set internal content to byte Array
     if (data == null) {
       final byte[] buffer = session.getReusableDataPacketBuffer(lengthPacket);
       dataRecv.getBytes(dataRecv.readerIndex(), buffer, 0, lengthPacket);
       data = buffer;
-      dataRecv.release();
+      WaarpNettyUtil.release(dataRecv);
       dataRecv = null;
     }
   }
@@ -247,7 +248,7 @@ public class DataPacket extends AbstractLocalPacket {
   }
 
   @Override
-  public final void clear() {
+  public final synchronized void clear() {
     super.clear();
     WaarpNettyUtil.release(dataRecv);
     dataRecv = null;

@@ -62,6 +62,24 @@ cd Waarp-All
 mvn -P jre11 package
 ```
 
+If you want to build unofficial RPM/DEV/TGZ/ZIP and documentation, you can do as the following,
+ensuring you have already cloned and install using `pip` the repo for Sphinx template for Waarp
+`code.waarp.fr:2222/waarp/sphinx-template.git` with the following packages for Sphinx:
+
+- sphinx
+- sphinx-autobuild
+- sphinxcontrib-httpdomain
+  - Possibly fix the current version 1.6 to 1.7
+    - `sphinxcontrib/httpdomain.py`
+      - line 766
+      - `+ app.add_domain(HTTPDomain)`
+- sphinxcontrib-openapi
+- sphinx.ext.todo
+
+```sh
+mvn -P jre11,release package
+```
+
 You can use a JDK 11 (or higher) with `jre11` profile, and a JDK 8 with `jre8` or `jre6` profiles.
 
 `mvn -P jre11 package` also runs the full test suite, which takes quite some time (for more

@@ -409,7 +409,16 @@ public class ClientRunner extends Thread {
         Thread.sleep(Configuration.configuration.getConstraintLimitHandler()
                                                 .getSleepTime());
       } catch (final InterruptedException e) {//NOSONAR
-        SysErrLogger.FAKE_LOGGER.ignoreLog(e);
+        if (localChannelReference == null) {
+          taskRunner.setLocalChannelReference(new LocalChannelReference());
+        }
+        taskRunner.getLocalChannelReference()
+                  .setErrorMessage(ErrorCode.ConnectionImpossible.getMesg(),
+                                   ErrorCode.ConnectionImpossible);
+        taskRunner.setErrorTask();
+        taskRunner.run();
+        throw new OpenR66ProtocolNoConnectionException(
+            "End of retry on ServerOverloaded due to interruption");
       }
       return runTransfer();
     } else {

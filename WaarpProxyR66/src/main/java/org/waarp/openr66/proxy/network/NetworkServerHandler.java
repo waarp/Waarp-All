@@ -158,7 +158,7 @@ public class NetworkServerHandler
                     " proxyChannelId: " + proxyChannel.id());
       } else {
         clientFuture.awaitOrInterruptible(configuration.getTimeoutCon());
-        if (bridge == null || !clientFuture.isDone()) {
+        if (bridge == null || !clientFuture.isSuccess()) {
           exceptionCaught(ctx, new OpenR66ProtocolNoConnectionException(
               "Proxy Cannot connect to remote Server: connection aborted"));
           logger.error("No connection for proxy: " + localAddress);

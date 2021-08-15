@@ -26,12 +26,15 @@ import io.netty.handler.codec.ByteToMessageCodec;
 import org.waarp.common.exception.InvalidArgumentException;
 import org.waarp.common.file.DataBlock;
 import org.waarp.common.future.WaarpFuture;
+import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.utility.WaarpNettyUtil;
+import org.waarp.compress.zlib.ZlibCodec;
 import org.waarp.ftp.core.command.FtpArgumentCode.TransferMode;
 import org.waarp.ftp.core.command.FtpArgumentCode.TransferStructure;
 import org.waarp.ftp.core.config.FtpInternalConfiguration;
 import org.waarp.ftp.core.data.handler.FtpSeekAheadData.SeekAheadNoBackArrayException;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -96,6 +99,11 @@ public class FtpDataModeCodec extends ByteToMessageCodec<DataBlock> {
    * Last byte for STREAM+RECORD
    */
   private int lastbyte;
+
+  /**
+   * if in Z mode
+   */
+  private ZlibCodec zlibCodec = new ZlibCodec();
 
   /**
    * Is the underlying DataNetworkHandler ready to receive block
@@ -221,19 +229,32 @@ public class FtpDataModeCodec extends ByteToMessageCodec<DataBlock> {
     }
   }
 
+  private void checkCodecUnlocked() throws InterruptedException {
+    if (!isReady.get()) {
+      for (int i = 0; i < FtpInternalConfiguration.RETRYNB; i++) {
+        if (!codecLocked.awaitOrInterruptible(
+            FtpInternalConfiguration.RETRYINMS)) {
+          Thread.sleep(FtpInternalConfiguration.RETRYINMS);
+        } else {
+          break;
+        }
+      }
+      if (!codecLocked.awaitOrInterruptible(
+          FtpInternalConfiguration.RETRYINMS)) {
+        Thread.sleep(FtpInternalConfiguration.RETRYINMS);
+        // Force Codec Ready
+        setCodecReady();
+      }
+      isReady.set(true);
+    }
+  }
+
   @Override
   protected void decode(final ChannelHandlerContext ctx, final ByteBuf buf,
                         final List<Object> out) throws Exception {
     // First test if the connection is fully ready (block might be
     // transferred by client before connection is ready)
-    if (!isReady.get()) {
-      if (!codecLocked.awaitOrInterruptible(
-          FtpInternalConfiguration.RETRYINMS)) {
-        Thread.sleep(FtpInternalConfiguration.RETRYINMS);
-        setCodecReady();
-      }
-      isReady.set(true);
-    }
+    checkCodecUnlocked();
     if (buf.readableBytes() == 0) {
       return;
     }
@@ -243,7 +264,7 @@ public class FtpDataModeCodec extends ByteToMessageCodec<DataBlock> {
       if (structure != TransferStructure.RECORD) {
         final ByteBuf newbuf = buf.slice();
         buf.readerIndex(buf.readableBytes());
-        newbuf.retain();
+        WaarpNettyUtil.retain(newbuf);
         dataBlock.setBlock(newbuf);
         out.add(dataBlock);
         return;
@@ -303,9 +324,34 @@ public class FtpDataModeCodec extends ByteToMessageCodec<DataBlock> {
       // Successfully decoded a frame. Return the decoded frame.
       out.add(returnDataBlock);
       return;
+    } else if (mode == TransferMode.ZLIB) {
+      dataBlock = new DataBlock();
+      if (structure != TransferStructure.RECORD) {
+        zlibCodec.writeForDecompression(buf);
+        dataBlock.setBlock(zlibCodec.readCodec());
+        out.add(dataBlock);
+        return;
+      }
+      // Except if RECORD Structure!
+      throw new InvalidArgumentException(
+          "Mode unimplemented: " + mode.name() + " with " + structure.name());
     }
     // Type unimplemented
     throw new InvalidArgumentException("Mode unimplemented: " + mode.name());
+  }
+
+  @Override
+  protected void decodeLast(final ChannelHandlerContext ctx, final ByteBuf in,
+                            final List<Object> out) throws Exception {
+    if (mode == TransferMode.ZLIB) {
+      final byte[] bytes = zlibCodec.finishCodec();
+      if (bytes != null && bytes.length != 0) {
+        dataBlock = new DataBlock();
+        dataBlock.setBlock(bytes);
+        dataBlock.setEOF(true);
+        out.add(dataBlock);
+      }
+    }
   }
 
   protected final ByteBuf encodeRecord(final DataBlock msg,
@@ -424,9 +470,31 @@ public class FtpDataModeCodec extends ByteToMessageCodec<DataBlock> {
       msg.clear();
       // return the last block
       return newbuf;
+    } else if (mode == TransferMode.ZLIB) {
+      // If record structure, special attention
+      if (structure == TransferStructure.RECORD) {
+        throw new InvalidArgumentException(
+            "Mode unimplemented: " + mode.name() + " with " + structure.name());
+      }
+      final boolean last = msg.isEOF();
+      msg.clear();
+      try {
+        zlibCodec.writeForCompression(bytes);
+      } catch (final IOException e) {
+        throw new InvalidArgumentException(e.getMessage());
+      }
+      if (last) {
+        try {
+          return WaarpNettyUtil.wrappedBuffer(zlibCodec.finishCodec());
+        } catch (final IOException e) {
+          throw new InvalidArgumentException(e.getMessage());
+        }
+      }
+      return WaarpNettyUtil.wrappedBuffer(zlibCodec.readCodec());
+    } else {
+      // Mode unimplemented
+      throw new InvalidArgumentException("Mode unimplemented: " + mode.name());
     }
-    // Mode unimplemented
-    throw new InvalidArgumentException("Mode unimplemented: " + mode.name());
   }
 
   /**
@@ -441,6 +509,11 @@ public class FtpDataModeCodec extends ByteToMessageCodec<DataBlock> {
    */
   public final void setMode(final TransferMode mode) {
     this.mode = mode;
+    try {
+      zlibCodec.finishCodec();
+    } catch (final IOException e) {
+      SysErrLogger.FAKE_LOGGER.ignoreLog(e);
+    }
   }
 
   /**
@@ -461,21 +534,13 @@ public class FtpDataModeCodec extends ByteToMessageCodec<DataBlock> {
   protected void encode(final ChannelHandlerContext ctx, final DataBlock msg,
                         final ByteBuf out) throws Exception {
     // First test if the connection is fully ready (block might be
-    // transfered
-    // by client before connection is ready)
-    if (!isReady.get()) {
-      if (!codecLocked.awaitOrInterruptible(
-          FtpInternalConfiguration.RETRYINMS)) {
-        Thread.sleep(FtpInternalConfiguration.RETRYINMS);
-        setCodecReady();
-      }
-      isReady.set(true);
-    }
+    // transferred by client before connection is ready)
+    checkCodecUnlocked();
     ByteBuf next = encode(msg);
     // Could be splitten in several block
     while (next != null) {
       out.writeBytes(next);
-      next.release();
+      WaarpNettyUtil.release(next);
       next = encode(msg);
     }
   }

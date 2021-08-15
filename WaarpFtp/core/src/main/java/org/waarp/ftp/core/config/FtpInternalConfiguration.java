@@ -382,18 +382,11 @@ public class FtpInternalConfiguration {
    * Return and remove the FtpSession
    *
    * @param channel
-   * @param active
    *
    * @return the FtpSession if it exists associated to this channel
    */
-  public final FtpSession getFtpSession(final Channel channel,
-                                        final boolean active,
-                                        final boolean remove) {
-    if (active) {
-      return ftpSessionReference.getActiveFtpSession(channel, remove);
-    } else {
-      return ftpSessionReference.getPassiveFtpSession(channel, remove);
-    }
+  public final FtpSession getFtpSession(final Channel channel) {
+    return ftpSessionReference.getPassiveFtpSession(channel);
   }
 
   /**
@@ -408,23 +401,19 @@ public class FtpInternalConfiguration {
   }
 
   /**
-   * Test if the couple of addresses is already in the context
-   *
-   * @param ipOnly
-   * @param fullIp
-   *
-   * @return True if the couple is present
-   */
-  public final boolean hasFtpSession(final InetAddress ipOnly,
-                                     final InetSocketAddress fullIp) {
-    return ftpSessionReference.contains(ipOnly, fullIp);
-  }
-
-  /**
    * @return the number of Active Sessions
    */
   public final int getNumberSessions() {
     return ftpSessionReference.sessionsNumber();
+  }
+
+  /**
+   * @param channel
+   *
+   * @return the FtpSession if found
+   */
+  public final FtpSession findPassiveFtpSession(final Channel channel) {
+    return ftpSessionReference.findPassive(channel);
   }
 
   /**
@@ -495,8 +484,10 @@ public class FtpInternalConfiguration {
         logger.debug("Bind number to {} left is {}", address,
                      bindAddress.nbBind);
         if (bindAddress.nbBind.get() == 0) {
-          WaarpSslUtility.closingSslChannel(bindAddress.parent);
+          final ChannelFuture future =
+              WaarpSslUtility.closingSslChannel(bindAddress.parent);
           hashBindPassiveDataConn.remove(address);
+          future.awaitUninterruptibly();
         }
       } else {
         logger.warn("No Bind to {}", address);

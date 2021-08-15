@@ -364,7 +364,7 @@ public class RequestPacket extends AbstractLocalPacket {
   }
 
   @Override
-  public final void createEnd(final LocalChannelReference lcr) {
+  public final synchronized void createEnd(final LocalChannelReference lcr) {
     if (transferInformation != null) {
       end = WaarpNettyUtil.wrappedBuffer(
           transferInformation.getBytes(WaarpStringUtils.UTF8));
@@ -372,7 +372,7 @@ public class RequestPacket extends AbstractLocalPacket {
   }
 
   @Override
-  public final void createHeader(final LocalChannelReference lcr)
+  public final synchronized void createHeader(final LocalChannelReference lcr)
       throws OpenR66ProtocolPacketException {
     if (rulename == null || mode <= 0) {
       throw new OpenR66ProtocolPacketException(NOT_ENOUGH_DATA);
@@ -395,7 +395,7 @@ public class RequestPacket extends AbstractLocalPacket {
   }
 
   @Override
-  public final void createMiddle(final LocalChannelReference lcr)
+  public final synchronized void createMiddle(final LocalChannelReference lcr)
       throws OpenR66ProtocolPacketException {
     if (filename == null) {
       throw new OpenR66ProtocolPacketException(NOT_ENOUGH_DATA);
@@ -549,7 +549,7 @@ public class RequestPacket extends AbstractLocalPacket {
   /**
    * Validate the request
    */
-  public final void validate() {
+  public final synchronized void validate() {
     way = REQANSWERVALIDATE;
     middle = null;
   }

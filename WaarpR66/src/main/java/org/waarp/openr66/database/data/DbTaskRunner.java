@@ -1340,8 +1340,8 @@ public class DbTaskRunner extends AbstractDbDataDao<Transfer> {
       }
       hasCondition = true;
       scondition.append("( ");
-      List<Integer> upds = new ArrayList<>();
-      List<Integer> gss = new ArrayList<>();
+      List<Integer> upds = new ArrayList<Integer>();
+      List<Integer> gss = new ArrayList<Integer>();
       boolean hasone = false;
       if (pending) {
         upds.add(UpdatedInfo.TOSUBMIT.ordinal());

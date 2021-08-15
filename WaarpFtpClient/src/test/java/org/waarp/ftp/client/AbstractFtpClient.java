@@ -34,6 +34,7 @@ import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
 import org.waarp.common.utility.FileTestUtils;
+import org.waarp.common.utility.SystemPropertyUtil;
 import org.waarp.common.utility.Version;
 import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.ftp.FtpServer;
@@ -48,6 +49,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static org.junit.Assert.*;
+import static org.waarp.ftp.client.FtpClientPerfTestIT.*;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public abstract class AbstractFtpClient {
@@ -73,6 +75,8 @@ public abstract class AbstractFtpClient {
                              SSL_MODE != 0, SSL_MODE < 0);
     final File localFilename = new File("/tmp/ftpfile.bin");
     FileTestUtils.createTestFile(localFilename, 100);
+    final File localFilename2 = new File("/tmp/ftpfileZ.bin");
+    FileTestUtils.createTestFile(localFilename2, 1000000);
     logger.warn("Will start server");
     try {
       Thread.sleep(500);
@@ -118,7 +122,8 @@ public abstract class AbstractFtpClient {
     FtpServer.stopFtpServer();
     final File file = new File("/tmp/GGFTP");
     FileUtils.forceDeleteRecursiveDir(file);
-
+    FileUtils.delete(new File("/tmp/ftpfile.bin"));
+    FileUtils.delete(new File("/tmp/ftpfileZ.bin"));
     try {
       Thread.sleep(1000);
     } catch (final InterruptedException ignored) {//NOSONAR
@@ -153,11 +158,122 @@ public abstract class AbstractFtpClient {
 
   @Test
   public void test1_Ftp4JSimple() throws IOException {
-    numberKO.set(0);
-    numberOK.set(0);
+    FtpClientTest.numberKO.set(0);
+    FtpClientTest.numberOK.set(0);
     final File localFilename = new File("/tmp/ftpfile.bin");
+    final int nbThread = SystemPropertyUtil.get(IT_LONG_TEST, false)? 10 : 1;
+    final int nbPerThread = SystemPropertyUtil.get(IT_LONG_TEST, false)? 20 : 1;
+    final int delay = SystemPropertyUtil.get(IT_LONG_TEST, false)? 0 : DELAY;
     testFtp4J("127.0.0.1", port, "fred", "fred2", "a", SSL_MODE,
-              localFilename.getAbsolutePath(), 0, DELAY, true, 1, 1);
+              localFilename.getAbsolutePath(), 0, delay, true, nbThread,
+              nbPerThread);
+  }
+
+  @Test
+  public void test0_0Ftp4JZ() throws IOException {
+    FtpClientTest.numberKO.set(0);
+    FtpClientTest.numberOK.set(0);
+    final File localFilename = new File("/tmp/ftpfileZ.bin");
+    final Ftp4JClientTransactionTest client =
+        new Ftp4JClientTransactionTest("127.0.0.1", port, "fred", "fred2", "a",
+                                       SSL_MODE);
+    client.setReportActiveExternalIPAddress("127.0.0.1");
+    logger.warn("First connexion");
+    if (!client.connect()) {
+      logger.error("Can't connect");
+      if (AbstractFtpClient.versionJavaCompatible()) {
+        numberKO.incrementAndGet();
+      }
+      Assert.assertEquals("No KO", 0, numberKO.get());
+      return;
+    }
+    try {
+      logger.warn("Try Mode Z");
+      client.compressionMode(true);
+      String remoteFilename = localFilename.getName();
+      logger.warn("Try Store Mode Z");
+      if (!client.transferFile(localFilename.getAbsolutePath(), remoteFilename,
+                               true)) {
+        logger.warn("Cant Z store file active mode " + 0);
+        FtpClientTest.numberKO.incrementAndGet();
+        return;
+      } else {
+        FtpClientTest.numberOK.incrementAndGet();
+      }
+      try {
+        Thread.sleep(10);
+      } catch (InterruptedException e) {
+        // Ignore
+      }
+      assertEquals(0, FtpClientTest.numberKO.get());
+      logger.warn("Try Retrieve Mode Z");
+      client.compressionMode(true);
+      if (!client.transferFile(null, remoteFilename, false)) {
+        logger.warn("Cant Z retrieve file active mode " + 0);
+        FtpClientTest.numberKO.incrementAndGet();
+      } else {
+        FtpClientTest.numberOK.incrementAndGet();
+      }
+    } finally {
+      client.compressionMode(false);
+      logger.warn("Logout");
+      client.logout();
+    }
+    assertEquals(0, FtpClientTest.numberKO.get());
+  }
+
+  @Test
+  public void test0_0FtpApacheZ() throws IOException {
+    FtpClientTest.numberKO.set(0);
+    FtpClientTest.numberOK.set(0);
+    final File localFilename = new File("/tmp/ftpfileZ.bin");
+    final WaarpFtpClient client =
+        new WaarpFtpClient("127.0.0.1", port, "fred", "fred2", "a", false,
+                           SSL_MODE, 30000, 30000, false);
+    client.setReportActiveExternalIPAddress("127.0.0.1");
+    logger.warn("First connexion");
+    if (!client.connect()) {
+      logger.error("Can't connect");
+      if (AbstractFtpClient.versionJavaCompatible()) {
+        numberKO.incrementAndGet();
+      }
+      Assert.assertEquals("No KO", 0, numberKO.get());
+      return;
+    }
+    try {
+      logger.warn("Try Mode Z");
+      client.compressionMode(true);
+      String remoteFilename = localFilename.getName();
+      logger.warn("Try Store Mode Z");
+      if (!client.transferFile(localFilename.getAbsolutePath(), remoteFilename,
+                               1)) {
+        logger.warn("Cant Z store file active mode " + 0);
+        FtpClientTest.numberKO.incrementAndGet();
+        return;
+      } else {
+        FtpClientTest.numberOK.incrementAndGet();
+      }
+      try {
+        Thread.sleep(10);
+      } catch (InterruptedException e) {
+        // Ignore
+      }
+      assertEquals(0, FtpClientTest.numberKO.get());
+      logger.warn("Try Retrieve Mode Z");
+      client.compressionMode(true);
+      if (!client.transferFile(localFilename.getAbsolutePath(), remoteFilename,
+                               -1)) {
+        logger.warn("Cant Z retrieve file active mode " + 0);
+        FtpClientTest.numberKO.incrementAndGet();
+      } else {
+        FtpClientTest.numberOK.incrementAndGet();
+      }
+    } finally {
+      client.compressionMode(false);
+      logger.warn("Logout");
+      client.logout();
+    }
+    assertEquals(0, FtpClientTest.numberKO.get());
   }
 
   public void testFtp4J(String server, int port, String username, String passwd,
@@ -168,7 +284,8 @@ public abstract class AbstractFtpClient {
     final Ftp4JClientTransactionTest client =
         new Ftp4JClientTransactionTest(server, port, username, passwd, account,
                                        isSSL);
-
+    client.setReportActiveExternalIPAddress("127.0.0.1");
+    client.setActiveDataTransferPortRange(57000, 63000);
     logger.warn("First connexion");
     if (!client.connect()) {
       logger.error("Can't connect");
@@ -219,21 +336,17 @@ public abstract class AbstractFtpClient {
     executorService.shutdown();
     long date2 = 0;
     try {
-      if (!executorService.awaitTermination(12000, TimeUnit.SECONDS)) {
-        date2 = System.currentTimeMillis() - 120000 * 60;
+      if (!executorService.awaitTermination(120000, TimeUnit.MILLISECONDS)) {
         executorService.shutdownNow();
         if (!executorService.awaitTermination(60, TimeUnit.SECONDS)) {
           logger.error("Really not shutdown normally");
         }
-      } else {
-        date2 = System.currentTimeMillis();
       }
     } catch (final InterruptedException e) {//NOSONAR
       e.printStackTrace();
       executorService.shutdownNow();
-      date2 = System.currentTimeMillis();
-      // Thread.currentThread().interrupt();
     }
+    date2 = System.currentTimeMillis();
 
     logger.warn(
         localFilename + ' ' + numberThread + ' ' + numberIteration + ' ' +

@@ -102,7 +102,7 @@ public class R66File extends FilesystemBasedFileImpl {
    * @throws OpenR66RunnerErrorException
    * @throws OpenR66ProtocolSystemException
    */
-  public final void retrieveBlocking(final AtomicBoolean running)
+  public final synchronized void retrieveBlocking(final AtomicBoolean running)
       throws OpenR66RunnerErrorException, OpenR66ProtocolSystemException {
     boolean retrieveDone = false;
     String errorMesg = "";
@@ -476,6 +476,10 @@ public class R66File extends FilesystemBasedFileImpl {
       return null;
     }
     final File trueFile = getTrueFile();
+    if (trueFile == null) {
+      logger.error("File is unknown so cannot get OutputStream");
+      return null;
+    }
     if (getPosition() > 0) {
       if (trueFile.length() < getPosition()) {
         logger.error(
@@ -483,6 +487,10 @@ public class R66File extends FilesystemBasedFileImpl {
         return null;
       }
       final RandomAccessFile raf = getRandomFile();
+      if (raf == null) {
+        logger.error("File is unknown so cannot get OutputStream");
+        return null;
+      }
       try {
         raf.setLength(getPosition());
         org.waarp.common.file.FileUtils.close(raf);
@@ -565,7 +573,7 @@ public class R66File extends FilesystemBasedFileImpl {
       return false;
     }
     final File file = getTrueFile();
-    if (canRead(file)) {
+    if (file != null && canRead(file)) {
       File newFile = getFileFromPath(path);
       File parentFile = newFile.getParentFile();
       if (parentFile == null) {
@@ -631,7 +639,7 @@ public class R66File extends FilesystemBasedFileImpl {
       return false;
     }
     final File file = getTrueFile();
-    if (canRead(file)) {
+    if (file != null && canRead(file)) {
       File newFile = new File(path);
       File parentFile = newFile.getParentFile();
       if (parentFile == null) {
@@ -686,7 +694,8 @@ public class R66File extends FilesystemBasedFileImpl {
   }
 
   @Override
-  public final boolean closeFile() throws CommandAbstractException {
+  public final synchronized boolean closeFile()
+      throws CommandAbstractException {
     final boolean status = super.closeFile();
     // FORCE re-open file
     isReady = true;

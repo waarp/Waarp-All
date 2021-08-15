@@ -53,6 +53,7 @@ import org.waarp.common.crypto.ssl.WaarpSslUtility;
 import org.waarp.common.json.JsonHandler;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.WaarpNettyUtil;
 import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.gateway.kernel.exception.HttpIncorrectRequestException;
 import org.waarp.gateway.kernel.exception.HttpInvalidAuthenticationException;
@@ -88,7 +89,7 @@ public abstract class HttpRestR66ClientResponseHandler
       throws HttpIncorrectRequestException {
     final ByteBuf content = response.content();
     if (content != null && content.isReadable()) {
-      content.retain();
+      WaarpNettyUtil.retain(content);
       if (cumulativeBody != null) {
         cumulativeBody = Unpooled.wrappedBuffer(cumulativeBody, content);
       } else {
@@ -392,7 +393,7 @@ public abstract class HttpRestR66ClientResponseHandler
       if (chunk instanceof LastHttpContent) {
         final ByteBuf content = chunk.content();
         if (content != null && content.isReadable()) {
-          content.retain();
+          WaarpNettyUtil.retain(content);
           if (cumulativeBody != null) {
             cumulativeBody = Unpooled.wrappedBuffer(cumulativeBody, content);
           } else {
@@ -410,14 +411,14 @@ public abstract class HttpRestR66ClientResponseHandler
             logger.warn("Error" + " : {}", e2.getMessage());
             throw new HttpIncorrectRequestException(e2);
           }
-          cumulativeBody.release();
+          WaarpNettyUtil.release(cumulativeBody);
           cumulativeBody = null;
         }
         actionFromResponse(ctx.channel());
       } else {
         final ByteBuf content = chunk.content();
         if (content != null && content.isReadable()) {
-          content.retain();
+          WaarpNettyUtil.retain(content);
           if (cumulativeBody != null) {
             cumulativeBody = Unpooled.wrappedBuffer(cumulativeBody, content);
           } else {

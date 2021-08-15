@@ -122,7 +122,8 @@ public class DbSession {
     } catch (final SQLException ex) {
       setDisActive(true);
       // handle any errors
-      logger.error(CANNOT_CREATE_CONNECTION);
+      logger.error(CANNOT_CREATE_CONNECTION + " while already having {}",
+                   DbAdmin.getNbConnection());
       error(ex);
       if (getConn() != null) {
         try {
@@ -223,7 +224,8 @@ public class DbSession {
         getConn().setAutoCommit(autoCommit);
       } catch (final SQLException e) {
         // handle any errors
-        logger.error(CANNOT_CREATE_CONNECTION);
+        logger.error(CANNOT_CREATE_CONNECTION + " while already having {}",
+                     DbAdmin.getNbConnection());
         error(e);
         if (getConn() != null) {
           try {

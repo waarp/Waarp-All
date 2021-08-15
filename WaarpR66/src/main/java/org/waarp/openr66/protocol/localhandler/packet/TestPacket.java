@@ -68,8 +68,8 @@ public class TestPacket extends AbstractLocalPacket {
   }
 
   @Override
-  public final void createAllBuffers(final LocalChannelReference lcr,
-                                     final int networkHeader) {
+  public final synchronized void createAllBuffers(
+      final LocalChannelReference lcr, final int networkHeader) {
     final byte[] headerBytes =
         sheader != null? sheader.getBytes(WaarpStringUtils.UTF8) : EMPTY_ARRAY;
     final int headerSize = headerBytes.length;
@@ -104,7 +104,7 @@ public class TestPacket extends AbstractLocalPacket {
     return "TestPacket: " + sheader + ':' + smiddle + ':' + code;
   }
 
-  public final void update() {
+  public final synchronized void update() {
     code++;
     end = null;
   }

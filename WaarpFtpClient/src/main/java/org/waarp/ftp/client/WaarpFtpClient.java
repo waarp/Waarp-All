@@ -38,6 +38,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.net.UnknownHostException;
 
 /**
  * FTP Client using Apache Commons net FTP client (not working using FTPS or
@@ -62,6 +63,7 @@ public class WaarpFtpClient implements WaarpFtpClientInterface {
   protected final FTPClient ftpClient;
   protected String result;
   protected String directory = null;
+  protected String ipAddress = null;
 
   /**
    * WARNING: SSL mode (FTPS and FTPSE) are not working due to a bug in Apache
@@ -117,6 +119,7 @@ public class WaarpFtpClient implements WaarpFtpClientInterface {
     } else {
       ftpClient = new FTPClient();
     }
+    ftpClient.setBufferSize(1024 * 1024);
     if (controlTimeout > 0) {
       ftpClient.setControlKeepAliveTimeout(controlTimeout / 1000);
       ftpClient.setControlKeepAliveReplyTimeout(controlTimeout);
@@ -132,6 +135,23 @@ public class WaarpFtpClient implements WaarpFtpClientInterface {
   }
 
   @Override
+  public void setReportActiveExternalIPAddress(final String ipAddress) {
+    this.ipAddress = ipAddress;
+    if (this.ipAddress != null) {
+      try {
+        ftpClient.setReportActiveExternalIPAddress(ipAddress);
+      } catch (final UnknownHostException e) {
+        logger.error("Cannot set Ip Address since {}", e.getMessage());
+      }
+    }
+  }
+
+  @Override
+  public void setActiveDataTransferPortRange(final int from, final int to) {
+    ftpClient.setActivePortRange(from, to);
+  }
+
+  @Override
   public final String getResult() {
     return result;
   }
@@ -142,6 +162,9 @@ public class WaarpFtpClient implements WaarpFtpClientInterface {
     connect();
     if (directory != null) {
       changeDir(directory);
+    }
+    if (ipAddress != null) {
+      setReportActiveExternalIPAddress(ipAddress);
     }
   }
 
@@ -353,6 +376,11 @@ public class WaarpFtpClient implements WaarpFtpClientInterface {
       ftpClient.enterLocalActiveMode();
     }
     waitAfterDataCommand();
+  }
+
+  @Override
+  public void compressionMode(final boolean compression) {
+    logger.warn("Z Compression not supported by Apache mode");
   }
 
   @Override

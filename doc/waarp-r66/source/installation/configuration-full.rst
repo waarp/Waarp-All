@@ -323,51 +323,51 @@ Les benchmarks suivants ont été réalisés sur un seul serveur à chaque fois,
 Modèle           TLS            NoTLS        Accélération Description
 ================ ============== ============ ============ ========================
 Loop 2 coeurs    100/s          104/s        Référence    2 Serveurs en ping pong pour une taille moyenne de 250 Ko
-Loop 2 coeurs    95/s           100/s        %            2 Serveurs en ping pong pour une taille moyenne de 250 Ko et Monitoring en mode PUSH REST
-Loop 4 coeurs    127/s          133/s        %            2 Serveurs en ping pong pour une taille moyenne de 250 Ko
-Loop 4 coeurs    125/s          125/s        %            2 Serveurs en ping pong pour une taille moyenne de 250 Ko et Monitoring en mode PUSH REST
+Loop 2 coeurs    95/s           100/s        -4%          2 Serveurs en ping pong pour une taille moyenne de 250 Ko et Monitoring en mode PUSH REST
+Loop 4 coeurs    127/s          133/s        27%          2 Serveurs en ping pong pour une taille moyenne de 250 Ko
+Loop 4 coeurs    125/s          125/s        25%          2 Serveurs en ping pong pour une taille moyenne de 250 Ko et Monitoring en mode PUSH REST
 Cluster 2 coeurs 70/s           72/s         Référence    Mode Cluster avec 1 seul serveur pour une taille moyenne de 250 Ko
-Cluster 2 coeurs 83/s           87/s         %            Mode Cluster avec 2 serveurs pour une taille moyenne de 250 Ko
-Cluster 4 coeurs 89/s           91/s         %            Mode Cluster avec 1 seul serveur pour une taille moyenne de 250 Ko
-Cluster 4 coeurs 191/s          192/s        %            Mode Cluster avec 2 serveurs pour une taille moyenne de 250 Ko
+Cluster 2 coeurs 83/s           87/s         21%          Mode Cluster avec 2 serveurs pour une taille moyenne de 250 Ko
+Cluster 4 coeurs 89/s           91/s         27%          Mode Cluster avec 1 seul serveur pour une taille moyenne de 250 Ko
+Cluster 4 coeurs 191/s          192/s        167%         Mode Cluster avec 2 serveurs pour une taille moyenne de 250 Ko
 Gros Fichier 2c  152 MB/s       181 MB/s     Référence    Transfert d'un fichier de 500 Mo
-Gros Fichier 4c  250 MB/s       296 MB/s     %            Transfert d'un fichier de 500 Mo
+Gros Fichier 4c  250 MB/s       296 MB/s     64%          Transfert d'un fichier de 500 Mo
 ================ ============== ============ ============ ========================
 
 L'évolution selon les versions depuis la 3.0 jusqu'à la dernière version.
 
-============================== ======== === ============ ==== =========
+============================== ======== === ============ ==== ==========================
 Contexte                       Nb vCore TLS Transferts/s CPU  Gain
-============================== ======== === ============ ==== =========
+============================== ======== === ============ ==== ==========================
 V3.0 Loop 2 Serveurs           4        Oui 30/s         100% Référence
-V3.2 Loop 2 Serveurs           4        Oui 60/s         100% 200%
-V3.5.2 Loop 2 Serveurs         4        Oui 71/s         100%
-V3.6.0 Loop 2 Serveurs         4        Oui 100/s        90%
-V3.6.0 Loop 2 Serveurs Compres 4        Oui 99/s         80%
-V3.6.0 Loop 2 Serveurs         8        Oui 127/s        30%
-V3.6.0 Loop 2 Serveurs Compres 8        Oui 127/s        35%
+V3.2 Loop 2 Serveurs           4        Oui 60/s         100% 100%
+V3.5.2 Loop 2 Serveurs         4        Oui 71/s         100% 137%
+V3.6.0 Loop 2 Serveurs         4        Oui 100/s        90%  233%
+V3.6.0 Loop 2 Serveurs Compres 4        Oui 99/s         80%  230%
+V3.6.0 Loop 2 Serveurs         8        Oui 127/s        30%  323%
+V3.6.0 Loop 2 Serveurs Compres 8        Oui 127/s        35%  323%
 V3.6.0 Loop 2 Serveurs         4        Non 104/s        80%  Référence
-V3.6.0 Loop 2 Serveurs Compres 4        Non 103/s        75%
-V3.6.0 Loop 2 Serveurs         8        Non 133/s        30%
-V3.6.0 Loop 2 Serveurs Compres 8        Non 127/s        35%
-V3.6.0 Loop 2 Serveurs Monitor 4        Oui 95/s         90%
-V3.6.0 Loop 2 Serveurs Monitor 8        Oui 125/s        45%
-V3.6.0 Loop 2 Serveurs Monitor 4        Non 100/s        85%
-V3.6.0 Loop 2 Serveurs Monitor 8        Non 125/s        40%
+V3.6.0 Loop 2 Serveurs Compres 4        Non 103/s        75%  -1%
+V3.6.0 Loop 2 Serveurs         8        Non 133/s        30%  28%
+V3.6.0 Loop 2 Serveurs Compres 8        Non 127/s        35%  22%
+V3.6.0 Loop 2 Serveurs Monitor 4        Oui 95/s         90%  -8%
+V3.6.0 Loop 2 Serveurs Monitor 8        Oui 125/s        45%  20%
+V3.6.0 Loop 2 Serveurs Monitor 4        Non 100/s        85%  -4%
+V3.6.0 Loop 2 Serveurs Monitor 8        Non 125/s        40%  20%
 V3.6.0 Cluster 1 Serveurs      4        Oui 70/s         80%  Référence
-V3.6.0 Cluster 2 Serveurs      4        Oui 83/s         100%
-V3.6.0 Cluster 1 Serveurs      8        Oui 89/s         30%
-V3.6.0 Cluster 2 Serveurs      8        Oui 191/s        60%
+V3.6.0 Cluster 2 Serveurs      4        Oui 83/s         100% 19% (-17% vs mono serveur)
+V3.6.0 Cluster 1 Serveurs      8        Oui 89/s         30%  27%
+V3.6.0 Cluster 2 Serveurs      8        Oui 191/s        60%  173% (51% vs mono serveur)
 V3.6.0 Cluster 1 Serveurs      4        Non 72/s         80%  Référence
-V3.6.0 Cluster 2 Serveurs      4        Non 87/s         100%
-V3.6.0 Cluster 1 Serveurs      8        Non 91/s         30%
-V3.6.0 Cluster 2 Serveurs      8        Non 192/s        60%
-============================== ======== === ============ ==== =========
+V3.6.0 Cluster 2 Serveurs      4        Non 87/s         100% 21% (-16% vs mono serveur)
+V3.6.0 Cluster 1 Serveurs      8        Non 91/s         30%  26%
+V3.6.0 Cluster 2 Serveurs      8        Non 192/s        60%  167% (44% vs mono serveur)
+============================== ======== === ============ ==== ==========================
 
 
-Il ressort de ces benchmarks qu'il est important d'avoir au moins 4 core (threads)
+Il ressort de ces benchmarks qu'il est important d'avoir au moins 4 core (8 threads)
 dédiés par serveur Waarp R66 pour être optimal. En terme de mémoire,
-4 GB étaient alloués à chaque instance.
+4 GB étaient alloués à chaque instance, si possible 8 GB.
 
 *Benchmarks Waarp Gateway FTP et Waarp FTP Server*
 
@@ -376,27 +376,36 @@ Il s'agit de benchmarks orientés FTP (Serveur ou Gateway).
 ===================== ============== ============ ============ ========================
 Modèle                Active         Passive      Accélération Description
 ===================== ============== ============ ============ ========================
-FTP Natif 2 core      102/s          85/s         Référence    Petits transferts séquentiels avec reconnexion
-FTP Natif 4 core      118/s          77/s         +22%         Petits transferts séquentiels avec reconnexion
-GW FTP 2 core         101/s          85/s         -12%         Petits transferts séquentiels avec reconnexion
-GW FTP 4 core         113/s          77/s         +0%          Petits transferts séquentiels avec reconnexion
-GW FTP 4 core Postgre 113/s          77/s         +0%          Petits transferts séquentiels avec reconnexion
+FTP Natif 2 core      102/s          68/s         Référence    Petits transferts séquentiels avec reconnexion
+FTP Natif 4 core      118/s          77/s         16%          Petits transferts séquentiels avec reconnexion
+GW FTP 2 core         101/s          67/s         -1%          Petits transferts séquentiels avec reconnexion
+GW FTP 4 core         113/s          77/s         11%          Petits transferts séquentiels avec reconnexion
+GW FTP 4 core Postgre 113/s          77/s         11%          Petits transferts séquentiels avec reconnexion
 ===================== ============== ============ ============ ========================
 
 
 ===================== =========================== ============ ========================
 Modèle                 Mixte Active / Passive     Accélération Description
 ===================== =========================== ============ ========================
-FTP 10 clients 4C     1056/s                      +25%         10 clients avec transferts concurrents
-FTP 50 clients 4C     3233/s                      +76%         50 clients avec transferts concurrents
-FTP 100 clients 4c    4200/s                      Référence    100 clients avec transferts concurrents
-GW FTP 10 clients 4C  383/s                       +12%         250 clients avec transferts concurrents
-GW FTP 50 clients 4C  1234/s                      +24%         500 clients avec transferts concurrents
-GW FTP 100 clients 4c 1350/s                      Référence    100 clients avec transferts concurrents
+FTP 10 clients 2c     488/s                       Référence    10 clients avec transferts concurrents
+FTP 50 clients 2c     1102/s                      Référence    50 clients avec transferts concurrents
+FTP 100 clients 2c    1158/s                      Référence    100 clients avec transferts concurrents
+FTP 10 clients 4C     1056/s                      116%         10 clients avec transferts concurrents
+FTP 50 clients 4C     3233/s                      193%         50 clients avec transferts concurrents
+FTP 100 clients 4c    4200/s                      263%         100 clients avec transferts concurrents
+GW FTP 10 clients 2C  234/s                       Référence    10 clients avec transferts concurrents
+GW FTP 50 clients 2C  260/s                       Référence    50 clients avec transferts concurrents
+GW FTP 100 clients 2c 244/s                       Référence    100 clients avec transferts concurrents
+GW FTP 10 clients 2C  224/s                       -4%          10 clients avec transferts concurrents avec PostGreSQL
+GW FTP 50 clients 2C  260/s                       0%           50 clients avec transferts concurrents avec PostGreSQL
+GW FTP 100 clients 2c 244/s                       0%           100 clients avec transferts concurrents avec PostGreSQL
+GW FTP 10 clients 4C  383/s                       64%          10 clients avec transferts concurrents
+GW FTP 50 clients 4C  1234/s                      375%         50 clients avec transferts concurrents
+GW FTP 100 clients 4c 1350/s                      453%         100 clients avec transferts concurrents
 ===================== =========================== ============ ========================
 
 
-Il ressort de ces benchmarks qu'il est important d'avoir au moins 2 core (threads)
+Il ressort de ces benchmarks qu'il est important d'avoir au moins 4 core (8 threads)
 dédiés par serveur Waarp Gateway FTP pour être optimal. En terme de mémoire,
 4 GB étaient alloués à chaque instance.
 

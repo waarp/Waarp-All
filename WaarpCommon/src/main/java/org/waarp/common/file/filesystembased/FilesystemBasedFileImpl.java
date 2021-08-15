@@ -276,7 +276,7 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
   }
 
   @Override
-  public boolean closeFile() throws CommandAbstractException {
+  public synchronized boolean closeFile() throws CommandAbstractException {
     if (fileInputStream != null) {
       FileUtils.close(fileInputStream);
       fileInputStream = null;
@@ -295,7 +295,8 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
   }
 
   @Override
-  public final boolean abortFile() throws CommandAbstractException {
+  public final synchronized boolean abortFile()
+      throws CommandAbstractException {
     if (isInWriting() &&
         ((FilesystemBasedFileParameterImpl) getSession().getFileParameter()).deleteOnAbort) {
       delete();
@@ -320,7 +321,7 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
   }
 
   @Override
-  public final boolean isInReading() {
+  public final synchronized boolean isInReading() {
     if (!isReady) {
       return false;
     }
@@ -328,7 +329,7 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
   }
 
   @Override
-  public final boolean isInWriting() {
+  public final synchronized boolean isInWriting() {
     if (!isReady) {
       return false;
     }
@@ -473,7 +474,7 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
   }
 
   @Override
-  public final DataBlock readDataBlock()
+  public final synchronized DataBlock readDataBlock()
       throws FileTransferException, FileEndOfTransferException {
     if (isReady) {
       return getByteBlock(getSession().getBlockSize());
@@ -482,7 +483,7 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
   }
 
   @Override
-  public final DataBlock readDataBlock(final byte[] bufferGiven)
+  public final synchronized DataBlock readDataBlock(final byte[] bufferGiven)
       throws FileTransferException, FileEndOfTransferException {
     if (isReady) {
       return getByteBlock(bufferGiven);
@@ -491,7 +492,7 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
   }
 
   @Override
-  public final void writeDataBlock(final DataBlock dataBlock)
+  public final synchronized void writeDataBlock(final DataBlock dataBlock)
       throws FileTransferException {
     if (isReady) {
       if (dataBlock.isEOF()) {
@@ -514,7 +515,7 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
    *
    * @return the position
    */
-  public final long getPosition() {
+  public final synchronized long getPosition() {
     return position;
   }
 
@@ -526,7 +527,8 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
    * @throws IOException
    */
   @Override
-  public final void setPosition(final long position) throws IOException {
+  public final synchronized void setPosition(final long position)
+      throws IOException {
     if (this.position != position) {
       this.position = position;
       if (fileInputStream != null) {
@@ -556,8 +558,9 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
    *
    * @throws FileTransferException
    */
-  private void writeBlock(final byte[] buffer, final int offset,
-                          final int length) throws FileTransferException {
+  private synchronized void writeBlock(final byte[] buffer, final int offset,
+                                       final int length)
+      throws FileTransferException {
     if (length > 0 && !isReady) {
       throw new FileTransferException(NO_FILE_IS_READY);
     }
@@ -597,8 +600,9 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
    *
    * @throws FileTransferException
    */
-  private void writeBlockEnd(final byte[] buffer, final int offset,
-                             final int length) throws FileTransferException {
+  private synchronized void writeBlockEnd(final byte[] buffer, final int offset,
+                                          final int length)
+      throws FileTransferException {
     writeBlock(buffer, offset, length);
     try {
       closeFile();
@@ -629,7 +633,7 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
    * @throws FileTransferException
    * @throws FileEndOfTransferException
    */
-  private DataBlock getByteBlock(final int sizeblock)
+  private synchronized DataBlock getByteBlock(final int sizeblock)
       throws FileTransferException, FileEndOfTransferException {
     if (!isReady) {
       throw new FileTransferException(NO_FILE_IS_READY);
@@ -656,7 +660,7 @@ public abstract class FilesystemBasedFileImpl extends AbstractFile {
    * @throws FileTransferException
    * @throws FileEndOfTransferException
    */
-  private DataBlock getByteBlock(final byte[] bufferGiven)
+  private synchronized DataBlock getByteBlock(final byte[] bufferGiven)
       throws FileTransferException, FileEndOfTransferException {
     if (!isReady) {
       throw new FileTransferException(NO_FILE_IS_READY);

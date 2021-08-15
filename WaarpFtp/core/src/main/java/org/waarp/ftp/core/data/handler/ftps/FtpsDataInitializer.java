@@ -21,10 +21,13 @@ package org.waarp.ftp.core.data.handler.ftps;
 
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
+import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.traffic.ChannelTrafficShapingHandler;
+import org.waarp.common.crypto.ssl.WaarpSslUtility;
 import org.waarp.ftp.core.command.FtpArgumentCode.TransferMode;
 import org.waarp.ftp.core.command.FtpArgumentCode.TransferStructure;
 import org.waarp.ftp.core.config.FtpConfiguration;
+import org.waarp.ftp.core.control.ftps.FtpsInitializer;
 import org.waarp.ftp.core.data.handler.DataBusinessHandler;
 import org.waarp.ftp.core.data.handler.DataNetworkHandler;
 import org.waarp.ftp.core.data.handler.FtpDataInitializer;
@@ -54,8 +57,13 @@ public class FtpsDataInitializer extends FtpDataInitializer {
   @Override
   public void initChannel(final SocketChannel ch) throws Exception {
     final ChannelPipeline pipeline = ch.pipeline();
-    // SSL will be added in this handler during channelActive
-    pipeline.addLast(new FtpsTemporaryFirstHandler(configuration, isActive));
+    // Add SSL as first element in the pipeline
+    final SslHandler sslHandler =
+        FtpsInitializer.waarpSslContextFactory.createHandlerServer(
+            FtpsInitializer.waarpSslContextFactory.needClientAuthentication(),
+            ch);
+    WaarpSslUtility.addSslOpenedChannel(ch);
+    pipeline.addLast("ssl", sslHandler);
     // Add default codec but they will change during the channelActive
     pipeline.addLast(FtpDataInitializer.CODEC_MODE,
                      new FtpDataModeCodec(TransferMode.STREAM,

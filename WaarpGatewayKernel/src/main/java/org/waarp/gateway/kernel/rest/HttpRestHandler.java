@@ -60,6 +60,7 @@ import org.waarp.common.exception.CryptoException;
 import org.waarp.common.json.JsonHandler;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.WaarpNettyUtil;
 import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.gateway.kernel.database.DbConstantGateway;
 import org.waarp.gateway.kernel.exception.HttpForbiddenRequestException;
@@ -729,7 +730,7 @@ public abstract class HttpRestHandler
     if (chunk instanceof LastHttpContent) {
       if (handler.isBodyJsonDecoded()) {
         jsonObject = getBodyJsonArgs(cumulativeBody);
-        cumulativeBody.release();
+        WaarpNettyUtil.release(cumulativeBody);
         cumulativeBody = null;
       }
       response.setFromArgument(arguments);

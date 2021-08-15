@@ -301,6 +301,10 @@ public class FileBasedConfiguration extends FtpConfiguration {
    */
   private static final String XML_TIMEOUTCON = "timeoutcon";
   /**
+   * Nb of milliseconds after data connection is in timeout
+   */
+  private static final String XML_DATA_TIMEOUTCON = "datatimeoutcon";
+  /**
    * Size by default of block size for receive/sending files. Should be a
    * multiple of 8192 (maximum = 64K due to
    * block limitation to 2 bytes)
@@ -383,6 +387,7 @@ public class FileBasedConfiguration extends FtpConfiguration {
       new XmlDecl(XmlType.LONG, XML_CSTRT_LIMITLOWBANDWIDTH),
       new XmlDecl(XmlType.LONG, XML_CSTRT_DELAYTHROTTLE),
       new XmlDecl(XmlType.LONG, XML_TIMEOUTCON),
+      new XmlDecl(XmlType.LONG, XML_DATA_TIMEOUTCON),
       new XmlDecl(XmlType.BOOLEAN, XML_USENIO),
       new XmlDecl(XmlType.BOOLEAN, XML_USEFASTMD5),
       new XmlDecl(XmlType.STRING, XML_FASTMD5),
@@ -967,6 +972,17 @@ public class FileBasedConfiguration extends FtpConfiguration {
     value = hashConfig.get(XML_TIMEOUTCON);
     if (value != null && !value.isEmpty()) {
       setTimeoutCon((value.getLong() / 10) * 10);
+      value = hashConfig.get(XML_DATA_TIMEOUTCON);
+      if (value != null && !value.isEmpty()) {
+        setDataTimeoutCon((value.getLong() / 10) * 10);
+      } else {
+        setDataTimeoutCon(getTimeoutCon());
+      }
+    } else {
+      value = hashConfig.get(XML_DATA_TIMEOUTCON);
+      if (value != null && !value.isEmpty()) {
+        setDataTimeoutCon((value.getLong() / 10) * 10);
+      }
     }
     if (highcpuLimit > 0) {
       setConstraintLimitHandler(

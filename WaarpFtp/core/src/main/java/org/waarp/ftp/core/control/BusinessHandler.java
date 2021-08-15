@@ -124,7 +124,8 @@ public abstract class BusinessHandler {
    */
   protected final String getDefaultFeatMessage() {
     final StringBuilder builder = new StringBuilder();
-    builder.append(FtpCommandCode.MDTM.name()).append('\n')
+    builder.append(FtpCommandCode.MODE.name()).append(" Z\n")
+           .append(FtpCommandCode.MDTM.name()).append('\n')
            .append(FtpCommandCode.MLSD.name())
            .append(getFtpSession().getDir().getOptsMLSx().getFeat())
            .append('\n').append(FtpCommandCode.MLST.name())

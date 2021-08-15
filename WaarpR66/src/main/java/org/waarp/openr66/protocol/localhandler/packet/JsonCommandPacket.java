@@ -109,8 +109,8 @@ public class JsonCommandPacket extends AbstractLocalPacket {
   }
 
   @Override
-  public final void createAllBuffers(final LocalChannelReference lcr,
-                                     final int networkHeader) {
+  public final synchronized void createAllBuffers(
+      final LocalChannelReference lcr, final int networkHeader) {
     final byte[] headerBytes =
         request != null? request.getBytes(WaarpStringUtils.UTF8) : EMPTY_ARRAY;
     final int headerSize = headerBytes.length;

@@ -21,6 +21,7 @@ package org.waarp.common.file;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import org.waarp.common.utility.WaarpNettyUtil;
 
 /**
  * Main object implementing Data Block whaveter the mode, type, structure used.
@@ -139,11 +140,11 @@ public class DataBlock {
     this.block = new byte[byteCount];
     offsetBuf = 0;
     if (blockBuf != null) {
-      blockBuf.release();
+      WaarpNettyUtil.release(blockBuf);
       blockBuf = null;
     }
     block.readBytes(this.block);
-    block.release();
+    WaarpNettyUtil.release(block);
   }
 
   /**
@@ -165,8 +166,14 @@ public class DataBlock {
     if (isRESTART) {
       this.block = null;
       markers = new int[6];
-      for (int i = 0; i < 6; i++) {
-        markers[i] = block[i];
+      if (block == null) {
+        for (int i = 0; i < 6; i++) {
+          markers[i] = 0;
+        }
+      } else {
+        for (int i = 0; i < 6; i++) {
+          markers[i] = block[i];
+        }
       }
       byteCount = 6;
       return;
@@ -178,7 +185,7 @@ public class DataBlock {
       byteCount = size;
     }
     if (blockBuf != null) {
-      blockBuf.release();
+      WaarpNettyUtil.release(blockBuf);
       blockBuf = null;
     }
     offsetBuf = 0;
@@ -337,7 +344,7 @@ public class DataBlock {
    */
   public final void clear() {
     if (blockBuf != null) {
-      blockBuf.release();
+      WaarpNettyUtil.release(blockBuf);
       blockBuf = null;
     }
     block = null;

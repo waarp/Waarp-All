@@ -20,6 +20,7 @@
 
 package org.waarp.compress.zlib;
 
+import io.netty.buffer.ByteBuf;
 import org.waarp.common.file.FileUtils;
 import org.waarp.compress.CompressorCodec;
 import org.waarp.compress.MalformedInputException;
@@ -28,6 +29,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.zip.DeflaterOutputStream;
@@ -158,4 +160,128 @@ public class ZlibCodec implements CompressorCodec {
     return 0;
   }
 
+  private ByteArrayOutputStream byteArrayOutputStream = null;
+  private DeflaterOutputStream deflaterOutputStream = null;
+  private InflaterOutputStream inflaterOutputStream = null;
+  private static final byte[] EMPTY_BYTES = {};
+
+  /**
+   * Allow to specify a block size for CoDec
+   *
+   * @param defaultBlockSize
+   */
+  public void initializeCodecForStream(final int defaultBlockSize) {
+    byteArrayOutputStream = new ByteArrayOutputStream(defaultBlockSize);
+  }
+
+  /**
+   * Write an uncompressed data for compression
+   *
+   * @param uncompressed
+   *
+   * @throws IOException
+   */
+  public synchronized void writeForCompression(final byte[] uncompressed)
+      throws IOException {
+    if (byteArrayOutputStream == null) {
+      byteArrayOutputStream = new ByteArrayOutputStream(1024 * 1024);
+    }
+    if (deflaterOutputStream == null) {
+      deflaterOutputStream = new DeflaterOutputStream(byteArrayOutputStream);
+    }
+    deflaterOutputStream.write(uncompressed);
+    deflaterOutputStream.flush();
+  }
+
+  /**
+   * Write an uncompressed data for compression
+   *
+   * @param uncompressed
+   *
+   * @throws IOException
+   */
+  public void writeForCompression(final ByteBuf uncompressed)
+      throws IOException {
+    final byte[] buffer = new byte[uncompressed.readableBytes()];
+    uncompressed.readBytes(buffer);
+    writeForCompression(buffer);
+  }
+
+  /**
+   * Write a compressed data for decompression
+   *
+   * @param compressed
+   *
+   * @throws IOException
+   */
+  public synchronized void writeForDecompression(final byte[] compressed)
+      throws IOException {
+    if (byteArrayOutputStream == null) {
+      byteArrayOutputStream = new ByteArrayOutputStream(1024 * 1024);
+    }
+    if (inflaterOutputStream == null) {
+      inflaterOutputStream = new InflaterOutputStream(byteArrayOutputStream);
+    }
+    inflaterOutputStream.write(compressed);
+    inflaterOutputStream.flush();
+  }
+
+  /**
+   * Write a compressed data for decompression
+   *
+   * @param compressed
+   *
+   * @throws IOException
+   */
+  public synchronized void writeForDecompression(final ByteBuf compressed)
+      throws IOException {
+    final byte[] buffer = new byte[compressed.readableBytes()];
+    compressed.readBytes(buffer);
+    writeForDecompression(buffer);
+  }
+
+  /**
+   * @return the current available block byte array (releasing it immediately)
+   */
+  public synchronized byte[] readCodec() {
+    if (deflaterOutputStream == null && inflaterOutputStream == null) {
+      return EMPTY_BYTES;
+    }
+    if (byteArrayOutputStream == null) {
+      return EMPTY_BYTES;
+    }
+    final byte[] bytes = byteArrayOutputStream.toByteArray();
+    byteArrayOutputStream.reset();
+    return bytes;
+  }
+
+  /**
+   * Finish the CoDec operation. The Codec is ready to be reused.<br>
+   * <br>
+   * <b>Important: calling this method is mandatory to prevent OOME</b>
+   *
+   * @return the final block byte array
+   *
+   * @throws IOException
+   */
+  public synchronized byte[] finishCodec() throws IOException {
+    if (deflaterOutputStream != null) {
+      deflaterOutputStream.flush();
+      deflaterOutputStream.finish();
+      deflaterOutputStream.close();
+      deflaterOutputStream = null;
+    } else if (inflaterOutputStream != null) {
+      inflaterOutputStream.flush();
+      inflaterOutputStream.finish();
+      inflaterOutputStream.close();
+      inflaterOutputStream = null;
+    }
+    if (byteArrayOutputStream != null) {
+      final byte[] bytes = byteArrayOutputStream.toByteArray();
+      byteArrayOutputStream.close();
+      byteArrayOutputStream = null;
+      return bytes;
+    }
+    return EMPTY_BYTES;
+  }
 }

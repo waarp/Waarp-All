@@ -33,6 +33,7 @@ import org.waarp.common.file.FileUtils;
 import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.SystemPropertyUtil;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
@@ -168,9 +169,30 @@ public class WaarpFtp4jClient implements WaarpFtpClientInterface {
       }
     });
     final FTPConnector connector = ftpClient.getConnector();
-    connector.setCloseTimeout(timeout);
-    connector.setReadTimeout(timeout);
+    int timeoutDefault = timeout > 0? timeout / 1000 : 30;
+    connector.setCloseTimeout(timeoutDefault);
+    connector.setReadTimeout(timeoutDefault);
+    connector.setConnectionTimeout(timeoutDefault);
     connector.setUseSuggestedAddressForDataConnections(true);
+  }
+
+  @Override
+  public void setReportActiveExternalIPAddress(final String ipAddress) {
+    if (ipAddress != null) {
+      SystemPropertyUtil.set("ftp4j.activeDataTransfer.hostAddress", ipAddress);
+    } else {
+      SystemPropertyUtil.clear("ftp4j.activeDataTransfer.hostAddress");
+    }
+  }
+
+  @Override
+  public void setActiveDataTransferPortRange(final int from, final int to) {
+    if (from <= 0 || to <= 0) {
+      SystemPropertyUtil.clear("ftp4j.activeDataTransfer.portRange");
+    } else {
+      SystemPropertyUtil.set("ftp4j.activeDataTransfer.portRange",
+                             from + "-" + to);
+    }
   }
 
   @Override
@@ -358,6 +380,26 @@ public class WaarpFtp4jClient implements WaarpFtpClientInterface {
   }
 
   @Override
+  public void compressionMode(final boolean compression) {
+    if (compression) {
+      if (ftpClient.isCompressionSupported()) {
+        try {
+          ftpClient.setType(FTPClient.TYPE_BINARY);
+        } catch (final IllegalArgumentException e1) {
+          result = SET_BINARY_IN_ERROR;
+          logger.error(result + ": {}", e1.getMessage());
+        }
+        ftpClient.setCompressionEnabled(true);
+      } else {
+        logger.warn("Z Compression not supported by Server");
+        ftpClient.setCompressionEnabled(false);
+      }
+    } else {
+      ftpClient.setCompressionEnabled(false);
+    }
+  }
+
+  @Override
   public final boolean store(final String local, final String remote) {
     return transferFile(local, remote, 1);
   }
@@ -449,10 +491,7 @@ public class WaarpFtp4jClient implements WaarpFtpClientInterface {
     result = CANNOT_FINALIZE_STORE_LIKE_OPERATION;
     logger.debug("Will STOR to: {}", remote);
     try {
-      if (!internalTransferFile(local, remote, getStoreOrAppend)) {
-        reconnect();
-        return internalTransferFile(local, remote, getStoreOrAppend);
-      }
+      internalTransferFile(local, remote, getStoreOrAppend);
       return true;
     } catch (final Exception e) {
       try {
@@ -502,7 +541,7 @@ public class WaarpFtp4jClient implements WaarpFtpClientInterface {
       } catch (final Exception e1) {
         SysErrLogger.FAKE_LOGGER.ignoreLog(e1);
       }
-      logger.error(result + ": {}", e.getMessage());
+      logger.error(result + ": {}", e.getMessage(), e);
       return false;
     } finally {
       waitAfterDataCommand();

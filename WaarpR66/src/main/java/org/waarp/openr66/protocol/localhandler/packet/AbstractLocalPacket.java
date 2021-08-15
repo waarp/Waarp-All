@@ -22,6 +22,7 @@ package org.waarp.openr66.protocol.localhandler.packet;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.Unpooled;
+import io.netty.util.IllegalReferenceCountException;
 import org.waarp.common.utility.WaarpNettyUtil;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolPacketException;
 import org.waarp.openr66.protocol.localhandler.LocalChannelReference;
@@ -127,46 +128,51 @@ public abstract class AbstractLocalPacket {
    *
    * @throws OpenR66ProtocolPacketException
    */
-  public final ByteBuf getLocalPacketForNetworkPacket(
+  public final synchronized ByteBuf getLocalPacketForNetworkPacket(
       final LocalChannelReference lcr, final NetworkPacket packet)
       throws OpenR66ProtocolPacketException {
-    final ByteBuf buf;
-    final int globalHeader;
-    if (packet != null) {
-      globalHeader = NETWORK_HEADER_SIZE;
-    } else {
-      globalHeader = 0;
-    }
-    if (hasGlobalBuffer()) {
-      if (global == null) {
-        createAllBuffers(lcr, globalHeader);
+    try {
+      final ByteBuf buf;
+      final int globalHeader;
+      if (packet != null) {
+        globalHeader = NETWORK_HEADER_SIZE;
       } else {
-        global.readerIndex(0);
-        global.writerIndex(0);
+        globalHeader = 0;
       }
-      buf = global;
-    } else {
-      // 3 header lengths+type
-      buf = ByteBufAllocator.DEFAULT.ioBuffer(globalHeader + LOCAL_HEADER_SIZE,
+      if (hasGlobalBuffer()) {
+        if (global == null) {
+          createAllBuffers(lcr, globalHeader);
+        } else {
+          global.readerIndex(0);
+          global.writerIndex(0);
+        }
+        buf = global;
+      } else {
+        // 3 header lengths+type
+        buf =
+            ByteBufAllocator.DEFAULT.ioBuffer(globalHeader + LOCAL_HEADER_SIZE,
                                               globalHeader + LOCAL_HEADER_SIZE);
-      if (header == null) {
-        createHeader(lcr);
+        if (header == null) {
+          createHeader(lcr);
+        }
+        if (middle == null) {
+          createMiddle(lcr);
+        }
+        if (end == null) {
+          createEnd(lcr);
+        }
       }
-      if (middle == null) {
-        createMiddle(lcr);
+      if (packet != null) {
+        final int capacity =
+            LOCAL_HEADER_SIZE + (header != null? header.capacity() : 0) +
+            (middle != null? middle.capacity() : 0) +
+            (end != null? end.capacity() : 0);
+        packet.writeNetworkHeader(buf, capacity);
       }
-      if (end == null) {
-        createEnd(lcr);
-      }
+      return getByteBuf(buf);
+    } catch (final IllegalReferenceCountException e) {
+      throw new OpenR66ProtocolPacketException(e);
     }
-    if (packet != null) {
-      final int capacity =
-          LOCAL_HEADER_SIZE + (header != null? header.capacity() : 0) +
-          (middle != null? middle.capacity() : 0) +
-          (end != null? end.capacity() : 0);
-      packet.writeNetworkHeader(buf, capacity);
-    }
-    return getByteBuf(buf);
   }
 
   private ByteBuf getByteBuf(final ByteBuf buf) {
@@ -189,7 +195,7 @@ public abstract class AbstractLocalPacket {
                                                   newEnd);
   }
 
-  public void clear() {
+  public synchronized void clear() {
     if (WaarpNettyUtil.release(global)) {
       global = null;
     }
@@ -207,21 +213,13 @@ public abstract class AbstractLocalPacket {
     }
   }
 
-  public final void retain() {
-    if (global != null) {
-      global.retain();
-    }
+  public final synchronized void retain() {
+    WaarpNettyUtil.retain(global);
     if (hasGlobalBuffer()) {
       return;
     }
-    if (header != null) {
-      header.retain();
-    }
-    if (middle != null) {
-      middle.retain();
-    }
-    if (end != null) {
-      end.retain();
-    }
+    WaarpNettyUtil.retain(header);
+    WaarpNettyUtil.retain(middle);
+    WaarpNettyUtil.retain(end);
   }
 }

@@ -201,6 +201,7 @@ public class FtpClientThread implements Runnable {
               Thread.sleep(delay);
             } catch (InterruptedException e) {
               // Ignore
+              break;
             }
           }
           System.out.println();
@@ -226,6 +227,7 @@ public class FtpClientThread implements Runnable {
               Thread.sleep(delay);
             } catch (InterruptedException e) {
               // Ignore
+              break;
             }
           }
           System.out.println();
@@ -251,6 +253,7 @@ public class FtpClientThread implements Runnable {
               Thread.sleep(delay);
             } catch (InterruptedException e) {
               // Ignore
+              break;
             }
           }
           System.out.println();
@@ -275,6 +278,7 @@ public class FtpClientThread implements Runnable {
               Thread.sleep(delay);
             } catch (InterruptedException e) {
               // Ignore
+              break;
             }
           }
           System.out.println();
@@ -300,6 +304,7 @@ public class FtpClientThread implements Runnable {
               Thread.sleep(delay);
             } catch (InterruptedException e) {
               // Ignore
+              break;
             }
           }
           System.out.println();
@@ -325,6 +330,7 @@ public class FtpClientThread implements Runnable {
               Thread.sleep(delay);
             } catch (InterruptedException e) {
               // Ignore
+              break;
             }
           }
           System.out.println();
