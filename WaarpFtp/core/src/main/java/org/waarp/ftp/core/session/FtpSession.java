@@ -185,7 +185,7 @@ public class FtpSession implements SessionInterface {
    * This function is called when the Command Channel is connected (from
    * channelConnected of the NetworkHandler)
    */
-  public synchronized void setControlConnected() {
+  public final synchronized void setControlConnected() {
     dataConn = new FtpDataAsyncConn(this);
     // AuthInterface must be done before FtpFile
     ftpAuth = businessHandler.getBusinessNewAuth();
@@ -211,7 +211,11 @@ public class FtpSession implements SessionInterface {
    * @return the Control channel
    */
   public final Channel getControlChannel() {
-    return getNetworkHandler().getControlChannel();
+    final NetworkHandler networkHandler = getNetworkHandler();
+    if (networkHandler != null) {
+      return networkHandler.getControlChannel();
+    }
+    return null;
   }
 
   /**
@@ -376,42 +380,44 @@ public class FtpSession implements SessionInterface {
 
   @Override
   public String toString() {
-    String mesg = "FtpSession: ";
+    final StringBuilder builder = new StringBuilder("FtpSession: ");
     if (ftpAuth != null) {
-      mesg += "User: " + ftpAuth.getUser() + '/' + ftpAuth.getAccount() + ' ';
+      builder.append("User: ").append(ftpAuth.getUser()).append('/')
+             .append(ftpAuth.getAccount()).append(' ');
     }
     if (previousCommand != null) {
-      mesg += "PRVCMD: " + previousCommand.getCommand() + ' ' +
-              previousCommand.getArg() + ' ';
+      builder.append("PRVCMD: ").append(previousCommand.getCommand())
+             .append(' ').append(previousCommand.getArg()).append(' ');
     }
     if (currentCommand != null) {
-      mesg += "CMD: " + currentCommand.getCommand() + ' ' +
-              currentCommand.getArg() + ' ';
+      builder.append("CMD: ").append(currentCommand.getCommand()).append(' ')
+             .append(currentCommand.getArg()).append(' ');
     }
     if (replyCode != null) {
-      mesg += "Reply: " + (answer != null? answer : replyCode.getMesg()) + ' ';
+      builder.append("Reply: ")
+             .append(answer != null? answer : replyCode.getMesg()).append(' ');
     }
     if (dataConn != null) {
-      mesg += dataConn.toString();
+      builder.append(dataConn);
     }
     if (ftpDir != null) {
       try {
-        mesg += " PWD: " + ftpDir.getPwd();
+        builder.append(" PWD: ").append(ftpDir.getPwd());
       } catch (final CommandAbstractException ignored) {
         // nothing
       }
     }
     if (getControlChannel() != null) {
-      mesg += " Control: " + getControlChannel();
+      builder.append(" Control: ").append(getControlChannel());
     }
     try {
       if (getDataConn().getCurrentDataChannel() != null) {
-        mesg += " Data: " + getDataConn().getCurrentDataChannel();
+        builder.append(" Data: ").append(getDataConn().getCurrentDataChannel());
       }
     } catch (final FtpNoConnectionException ignored) {
       // nothing
     }
-    return mesg + '\n';
+    return builder.append('\n').toString();
   }
 
   @Override
@@ -450,12 +456,11 @@ public class FtpSession implements SessionInterface {
    */
   public final void rein() {
     // reset to default
-    if (getDataConn().isPassiveMode()) {
-      // Previous mode was Passive so remove the current configuration
-      final InetSocketAddress local = getDataConn().getLocalAddress();
-      final InetAddress remote = getDataConn().getRemoteAddress().getAddress();
-      getConfiguration().delFtpSession(remote, local);
-    }
+    // Previous mode could be Passive so remove the current configuration
+    final InetSocketAddress local = getDataConn().getLocalAddress();
+    final InetAddress remote = getDataConn().getRemoteAddress().getAddress();
+    getConfiguration().delFtpSession(remote, local);
+    getDataConn().unbindData();
     getDataConn().setMode(FtpArgumentCode.TransferMode.STREAM);
     getDataConn().setStructure(FtpArgumentCode.TransferStructure.FILE);
     getDataConn().setType(FtpArgumentCode.TransferType.ASCII);
@@ -471,7 +476,10 @@ public class FtpSession implements SessionInterface {
    */
   public final void openDataConnection() throws Reply425Exception {
     getDataConn().getFtpTransferControl().openDataConnection();
-    getNetworkHandler().writeIntermediateAnswer();
+    final NetworkHandler networkHandler = getNetworkHandler();
+    if (networkHandler != null) {
+      networkHandler.writeIntermediateAnswer();
+    }
   }
 
   @Override

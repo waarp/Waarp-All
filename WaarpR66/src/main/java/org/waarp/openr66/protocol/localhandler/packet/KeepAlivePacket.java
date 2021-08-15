@@ -80,8 +80,8 @@ public class KeepAlivePacket extends AbstractLocalPacket {
   }
 
   @Override
-  public final void createAllBuffers(final LocalChannelReference lcr,
-                                     final int networkHeader) {
+  public final synchronized void createAllBuffers(
+      final LocalChannelReference lcr, final int networkHeader) {
     final int globalSize = networkHeader + LOCAL_HEADER_SIZE + 1;
     final int offset = networkHeader + LOCAL_HEADER_SIZE;
     global = ByteBufAllocator.DEFAULT.ioBuffer(globalSize, globalSize);

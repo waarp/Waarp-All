@@ -26,6 +26,7 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestWatcher;
@@ -40,9 +41,15 @@ import org.openqa.selenium.phantomjs.PhantomJSDriver;
 import org.openqa.selenium.phantomjs.PhantomJSDriverService;
 import org.openqa.selenium.remote.CapabilityType;
 import org.openqa.selenium.remote.DesiredCapabilities;
+import org.testcontainers.containers.JdbcDatabaseContainer;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.waarp.common.database.DbRequest;
 import org.waarp.common.database.exception.WaarpDatabaseNoConnectionException;
+import org.waarp.common.database.exception.WaarpDatabaseSqlException;
+import org.waarp.common.database.model.DbModelMysql;
 import org.waarp.common.file.FileUtils;
 import org.waarp.common.file.filesystembased.FilesystemBasedFileParameterImpl;
+import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogLevel;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
@@ -50,6 +57,7 @@ import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
 import org.waarp.common.utility.FileTestUtils;
 import org.waarp.common.utility.SystemPropertyUtil;
 import org.waarp.common.utility.TestWatcherJunit4;
+import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.gateway.ftp.ExecGatewayFtpServer;
 import org.waarp.gateway.ftp.ServerInitDatabase;
@@ -62,11 +70,15 @@ import org.waarp.gateway.ftp.database.DbConstantFtp;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
 
 import static junit.framework.TestCase.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -76,12 +88,30 @@ import static org.junit.Assert.fail;
  * Simple test example using predefined scenario (Note: this uses the configuration example for user shutdown
  * command)
  */
-public class FtpClientTest {
+public class FtpClientPostgreTest {
   @Rule(order = Integer.MIN_VALUE)
   public TestWatcher watchman = new TestWatcherJunit4();
+  protected static final Map<String, String> TMPFSMAP =
+      new HashMap<String, String>();
 
-  public static AtomicLong numberOK = new AtomicLong(0);
-  public static AtomicLong numberKO = new AtomicLong(0);
+  static {
+    TMPFSMAP.clear();
+    TMPFSMAP.put("/tmp/postgresql/data", "rw");
+  }
+
+  @ClassRule
+  public static PostgreSQLContainer db =
+      (PostgreSQLContainer) new PostgreSQLContainer().withCommand(
+          "postgres -c fsync=false -c synchronous_commit=off -c " +
+          "full_page_writes=false -c wal_level=minimal -c " +
+          "max_wal_senders=0 -c max_connections=1000 ").withTmpFs(TMPFSMAP);
+
+  static FtpClientPostgreTest scenario = new FtpClientPostgreTest();
+
+  public JdbcDatabaseContainer getJDC() {
+    return db;
+  }
+
   /**
    * If defined using -DIT_LONG_TEST=true then will execute long term tests
    */
@@ -100,7 +130,7 @@ public class FtpClientTest {
    * Internal Logger
    */
   protected static WaarpLogger logger =
-      WaarpLoggerFactory.getLogger(FtpClientTest.class);
+      WaarpLoggerFactory.getLogger(FtpClientPostgreTest.class);
 
 
   public void testFtp4J(String server, int port, String username, String passwd,
@@ -118,7 +148,7 @@ public class FtpClientTest {
     if (!client.connect()) {
       logger.error("Can't connect");
       FtpClientTest.numberKO.incrementAndGet();
-      assertEquals("No KO", 0, numberKO.get());
+      assertEquals("No KO", 0, FtpClientTest.numberKO.get());
       return;
     }
     try {
@@ -162,7 +192,7 @@ public class FtpClientTest {
     try {
       if (!executorService.awaitTermination(120000, TimeUnit.MILLISECONDS)) {
         executorService.shutdownNow();
-        if (!executorService.awaitTermination(120, TimeUnit.SECONDS)) {
+        if (!executorService.awaitTermination(60, TimeUnit.SECONDS)) {
           System.err.println("Really not shutdown normally");
         }
       }
@@ -174,10 +204,10 @@ public class FtpClientTest {
 
     logger.warn(
         localFilename + ' ' + numberThread + ' ' + numberIteration + ' ' +
-        type + " Real: " + (date2 - date1) + " OK: " + numberOK.get() +
-        " KO: " + numberKO.get() + " Trf/s: " +
-        numberOK.get() * 1000 / (date2 - date1));
-    assertEquals("No KO", 0, numberKO.get());
+        type + " Real: " + (date2 - date1) + " OK: " +
+        FtpClientTest.numberOK.get() + " KO: " + FtpClientTest.numberKO.get() +
+        " Trf/s: " + FtpClientTest.numberOK.get() * 1000 / (date2 - date1));
+    assertEquals("No KO", 0, FtpClientTest.numberKO.get());
   }
 
   @BeforeClass
@@ -192,8 +222,57 @@ public class FtpClientTest {
     FileUtils.forceDeleteRecursiveDir(home);
     final File localFilename = new File("/tmp/ftpfile.bin");
     FileTestUtils.createTestFile(localFilename, 100);
-    final ClassLoader classLoader = FtpClientTest.class.getClassLoader();
-    File file = new File(classLoader.getResource("Gg-FTP.xml").getFile());
+    final ClassLoader classLoader = FtpClientPostgreTest.class.getClassLoader();
+    // Adapt config file to Database
+    File file =
+        new File(classLoader.getResource("Gg-FTP-postgre.xml").getFile());
+    if (!file.exists()) {
+      SysErrLogger.FAKE_LOGGER.syserr(
+          "Cannot find in  " + file.getAbsolutePath());
+      fail("Cannot find " + file.getAbsolutePath());
+    }
+    String content = WaarpStringUtils.readFile(file.getAbsolutePath());
+    SysErrLogger.FAKE_LOGGER.sysout(scenario.getJDC().getJdbcUrl());
+    String driver = scenario.getJDC().getDriverClassName();
+    String target = "notfound";
+    String jdbcUrl = scenario.getJDC().getJdbcUrl();
+    if (driver.equalsIgnoreCase("org.mariadb.jdbc.Driver")) {
+      target = "mariadb";
+    } else if (driver.equalsIgnoreCase("org.h2.Driver")) {
+      target = "h2";
+    } else if (driver.equalsIgnoreCase("oracle.jdbc.OracleDriver")) {
+      target = "oracle";
+      jdbcUrl = "jdbc:oracle:thin:@//localhost:1521/test";
+      SysErrLogger.FAKE_LOGGER.syserr(
+          jdbcUrl + " while should be something like " + jdbcUrl);
+      throw new UnsupportedOperationException(
+          "Unsupported Test for Oracle since wrong JDBC driver");
+    } else if (driver.equalsIgnoreCase("org.postgresql.Driver")) {
+      target = "postgresql";
+    } else if (DbModelMysql.MYSQL_DRIVER_JRE6.equalsIgnoreCase(driver) ||
+               DbModelMysql.MYSQL_DRIVER_JRE8.equalsIgnoreCase(driver)) {
+      target = "mysql";
+    } else {
+      SysErrLogger.FAKE_LOGGER.syserr("Cannot find driver for " + driver);
+    }
+    content = content.replace("XXXJDBCXXX", jdbcUrl);
+    content = content.replace("XXXDRIVERXXX", target);
+    SysErrLogger.FAKE_LOGGER.sysout(scenario.getJDC().getDriverClassName());
+    SysErrLogger.FAKE_LOGGER.sysout(target);
+    File fileTo = new File("/tmp/gg-ftp-db.xml");
+    fileTo.getParentFile().mkdirs();
+    FileWriter writer = null;
+    try {
+      writer = new FileWriter(fileTo);
+      writer.write(content);
+      writer.flush();
+    } catch (IOException e) {
+      e.printStackTrace();
+    } finally {
+      if (writer != null) {
+        FileUtils.close(writer);
+      }
+    }
     if (file.exists()) {
       driverType = DriverType.PHANTOMJS;
       initiateWebDriver(file.getParentFile());
@@ -215,7 +294,7 @@ public class FtpClientTest {
                                    new FilesystemBasedFileParameterImpl());
     try {
       if (!configuration.setConfigurationServerFromXml(
-          file.getAbsolutePath())) {
+          fileTo.getAbsolutePath())) {
         System.err.println("Bad main configuration");
         Assert.fail("Bad main configuration");
       }
@@ -235,7 +314,7 @@ public class FtpClientTest {
     logger.warn("Will start server");
     key = configuration.getCryptoKey().decryptHexInString("c5f4876737cf351a");
 
-    ExecGatewayFtpServer.main(new String[] { file.getAbsolutePath() });
+    ExecGatewayFtpServer.main(new String[] { fileTo.getAbsolutePath() });
     try {
       Thread.sleep(500);
     } catch (InterruptedException e) {
@@ -307,12 +386,21 @@ public class FtpClientTest {
   }
 
   @Test
-  public void testFtp4JSimple() throws InterruptedException {
-    numberKO.set(0);
-    numberOK.set(0);
+  public void testFtp4JSimple()
+      throws InterruptedException, WaarpDatabaseNoConnectionException,
+             WaarpDatabaseSqlException, SQLException {
+    FtpClientTest.numberKO.set(0);
+    FtpClientTest.numberOK.set(0);
+
+    DbRequest request = new DbRequest(DbConstantFtp.gatewayAdmin.getSession());
+    request.select("SELECT current_setting('max_connections')");
+    request.getNext();
+    logger.warn("MaxConnection: {}", request.getResultSet().getString(1));
+    request.close();
+
     final File localFilename = new File("/tmp/ftpfile.bin");
     final int nbThread = SystemPropertyUtil.get(IT_LONG_TEST, false)? 10 : 1;
-    final int nbPerThread = SystemPropertyUtil.get(IT_LONG_TEST, false)? 10 : 1;
+    final int nbPerThread = SystemPropertyUtil.get(IT_LONG_TEST, false)? 30 : 1;
     final int delay = SystemPropertyUtil.get(IT_LONG_TEST, false)? 0 : DELAY;
     testFtp4J("127.0.0.1", 2021, "fred", key, "a", 0,
               localFilename.getAbsolutePath(), 0, delay, true, nbThread,

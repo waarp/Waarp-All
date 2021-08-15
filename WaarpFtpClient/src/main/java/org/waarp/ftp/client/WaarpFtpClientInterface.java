@@ -42,6 +42,18 @@ public interface WaarpFtpClientInterface {
   String NOOP_ERROR = "NoOp error";
 
   /**
+   * @param ipAddress the external IP address to report in EPRT/PORT commands
+   *     in active mode.
+   */
+  void setReportActiveExternalIPAddress(String ipAddress);
+
+  /**
+   * @param from the first port to used
+   * @param to the last port to used
+   */
+  void setActiveDataTransferPortRange(int from, int to);
+
+  /**
    * @return the result associated with the last command if any error
    */
   String getResult();
@@ -96,6 +108,14 @@ public interface WaarpFtpClientInterface {
    * @param passive
    */
   void changeMode(boolean passive);
+
+  /**
+   * Change to ZLIB compression (true) or inactive (false) mode.
+   * Only if supported.
+   *
+   * @param compression
+   */
+  void compressionMode(boolean compression);
 
   /**
    * Store File

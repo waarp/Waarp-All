@@ -7,7 +7,7 @@ Les outils suivants sont nécessaires. Des variantes peuvent être utilisées :
 - Java 1.8 (les tests requièrent java 1.8, même si les modules sont compilés en
   Java 1.6), Java 1.11 pour créer la version `jre11` (attention, pour les
   versions `jre6` et `jre8`, JRE8 est nécessaire)
-- Maven 3.6.3 (3.8.x pour des JDK > 11, testé jusqu'à JDK 16, en remplacement de la JDK 11)
+- Maven 3.6.3 (3.8.x pour des JDK > 11, testé jusqu'à la JDK 16, en remplacement de la JDK 11)
 - Docker (19 par exemple) (optionnel)
 - PGP, Sphinx pour signer les packages et générer la documentation
 - Artifactory (ou équivalent) pour pré-publier les jar (via Docker sur le PC :
@@ -250,10 +250,11 @@ DEB, RPM, TAR.GZ, ZIP, HTML et GITHUB.
 préalables pour entre les JRE 6, 8 et 11.*
 
 **A la fin des étapes pour jre6, 8 et 11, copier le contenu de `WaarpPackaging` et `WaarpPackaging6`
-dans un répertoire externe afin de les conserver.**
+dans un répertoire externe afin de les conserver. Vous pouvez préciser l'option 
+`-DtargetDirectory=/targetDir` afin que les fichiers y soient copiés lors du build.**
 
 En exécutant la commande
-`mvn -P jreX install -DskipTests`, cela permet :
+`mvn -P jreX,release install -DskipTests` (ou `mvn -P jreX,release install -DskipTests -DtargetDirectory=/targetDir`), cela permet :
 
 - De générer la documentation au format HTML et au format PDF
 - De packager l'ensemble Waarp R66 et Waarp Gateway FTP en un seul package sous différentes formes
@@ -304,7 +305,7 @@ suivante :
 Grâce à Artifactory (ou équivalent), qui doit être actif durant cette étape,
 via Maven, il est possible de pré-publier les Jar dans un dépôt local maven :
 
-- `mvn -P release,jreX clean deploy -DskipTests`
+- `mvn -P release,jreX clean deploy -DskipTests -DtargetDirectory=/targetDir`
 
 Si vous disposez de Java 11, vous pouvez donc publier la version :
 - Java 11 avec `jre11`
@@ -323,6 +324,7 @@ Une fois publiés dans le dépôt Maven local, il faut suivre la procédure pour
 recopier le résultat dans le dépôt GITHUB correspondant. Pour Artifactory :
 
 - Une fois connecté comme administrateur
+- Ajouter les JAR additionnels issus des modules `WaarpPackaging` et `WaarpPackaging6`
 - Déclencher la réindexation du dépôt `libs-release-local` (menu système)
 - Déclencher l’export du dépôt `libs-release-local` en ayant pris soin de
   cocher les cases « create .m2 compatible export » et « Exclude Metadata »

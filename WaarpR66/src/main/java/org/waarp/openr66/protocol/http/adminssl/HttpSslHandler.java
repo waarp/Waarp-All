@@ -1813,14 +1813,16 @@ public class HttpSslHandler
    */
   final void replaceStringSystem(final DbHostConfiguration config,
                                  final StringBuilder builder) {
-    WaarpStringUtils.replace(builder, REPLACEMENT.XXXXBUSINESSXXX.toString(),
-                             config.getBusiness());
-    WaarpStringUtils.replace(builder, REPLACEMENT.XXXXROLESXXX.toString(),
-                             config.getRoles());
-    WaarpStringUtils.replace(builder, REPLACEMENT.XXXXALIASESXXX.toString(),
-                             config.getAliases());
-    WaarpStringUtils.replace(builder, REPLACEMENT.XXXXOTHERXXX.toString(),
-                             config.getOthers());
+    if (config != null) {
+      WaarpStringUtils.replace(builder, REPLACEMENT.XXXXBUSINESSXXX.toString(),
+                               config.getBusiness());
+      WaarpStringUtils.replace(builder, REPLACEMENT.XXXXROLESXXX.toString(),
+                               config.getRoles());
+      WaarpStringUtils.replace(builder, REPLACEMENT.XXXXALIASESXXX.toString(),
+                               config.getAliases());
+      WaarpStringUtils.replace(builder, REPLACEMENT.XXXXOTHERXXX.toString(),
+                               config.getOthers());
+    }
     WaarpStringUtils.replace(builder,
                              REPLACEMENT.XXXXSESSIONLIMITWXXX.toString(),
                              Long.toString(

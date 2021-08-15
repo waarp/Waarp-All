@@ -247,12 +247,12 @@ public class NetworkHandler extends SimpleChannelInboundHandler<String> {
       final BindException e2 = (BindException) cause;
       logger.warn("Connection aborted since {} with Channel {}",
                   e2.getMessage(), channel);
-      logger.warn("", cause);
+      logger.debug("DEBUG", cause);
     } else if (cause instanceof IOException) {
       final IOException e2 = (IOException) cause;
       logger.warn("Connection aborted since {} with Channel {}",
                   e2.getMessage(), channel);
-      logger.warn("", cause);
+      logger.debug("DEBUG", cause);
     } else if (cause instanceof RejectedExecutionException) {
       logger.debug("Rejected execution (shutdown) from {}", channel);
       return;

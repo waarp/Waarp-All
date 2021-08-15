@@ -275,7 +275,7 @@ public abstract class StatementExecutor<E> implements AbstractDAO<E> {
   }
 
   final Object[] prepareFindParams(final List<Filter> filters) {
-    Object[] params = null;
+    Object[] params = new Object[0];
     if (filters != null) {
       int len = filters.size();
       for (final Filter filter : filters) {

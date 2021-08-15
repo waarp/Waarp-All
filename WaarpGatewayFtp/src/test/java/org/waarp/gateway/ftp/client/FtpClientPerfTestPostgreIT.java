@@ -87,7 +87,7 @@ public class FtpClientPerfTestPostgreIT {
       (PostgreSQLContainer) new PostgreSQLContainer().withCommand(
           "postgres -c fsync=false -c synchronous_commit=off -c " +
           "full_page_writes=false -c wal_level=minimal -c " +
-          "max_wal_senders=0").withTmpFs(TMPFSMAP);
+          "max_wal_senders=0 ").withTmpFs(TMPFSMAP);
 
   public JdbcDatabaseContainer getJDC() {
     return db;
@@ -212,6 +212,7 @@ public class FtpClientPerfTestPostgreIT {
     logger.warn("Will start server");
     key = configuration.getCryptoKey().decryptHexInString("c5f4876737cf351a");
 
+    Thread.sleep(500);
     ExecGatewayFtpServer.main(new String[] { fileTo.getAbsolutePath() });
     try {
       Thread.sleep(500);

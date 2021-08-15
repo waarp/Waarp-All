@@ -23,6 +23,7 @@ package org.waarp.ftp.client.transaction;
 import org.waarp.common.digest.FilesystemBasedDigest.DigestAlgo;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.SystemPropertyUtil;
 import org.waarp.ftp.client.AbstractFtpClient;
 import org.waarp.ftp.client.FtpClientTest;
 
@@ -120,7 +121,9 @@ public class FtpClientThread implements Runnable {
       logger.info(id + " change type");
       client.changeFileType(true);
       if (type <= 0) {
-        logger.warn(id + " change mode passive");
+        if (id.length() <= 2) {
+          logger.warn(id + " change mode passive");
+        }
         client.changeMode(true);
         try {
           Thread.sleep(delay);
@@ -142,6 +145,7 @@ public class FtpClientThread implements Runnable {
               Thread.sleep(delay);
             } catch (InterruptedException e) {
               // Ignore
+              break;
             }
           }
           System.out.println();
@@ -168,6 +172,7 @@ public class FtpClientThread implements Runnable {
               Thread.sleep(delay);
             } catch (InterruptedException e) {
               // Ignore
+              break;
             }
           }
 
@@ -199,6 +204,7 @@ public class FtpClientThread implements Runnable {
               Thread.sleep(delay);
             } catch (InterruptedException e) {
               // Ignore
+              break;
             }
           }
           System.out.println();
@@ -207,7 +213,9 @@ public class FtpClientThread implements Runnable {
         Thread.yield();
       }
       if (type >= 0) {
-        logger.warn(id + " change mode active");
+        if (id.length() <= 2) {
+          logger.warn(id + " change mode active");
+        }
         client.changeMode(false);
         try {
           Thread.sleep(delay);
@@ -229,6 +237,7 @@ public class FtpClientThread implements Runnable {
               Thread.sleep(delay);
             } catch (InterruptedException e) {
               // Ignore
+              break;
             }
           }
           System.out.println();
@@ -257,6 +266,7 @@ public class FtpClientThread implements Runnable {
               Thread.sleep(delay);
             } catch (InterruptedException e) {
               // Ignore
+              break;
             }
           }
           System.out.println();
@@ -287,42 +297,47 @@ public class FtpClientThread implements Runnable {
               Thread.sleep(delay);
             } catch (InterruptedException e) {
               // Ignore
+              break;
             }
           }
           System.out.println();
         }
       }
-      String[] results = client.executeSiteCommand("XCRC " + remoteFilename);
-      for (final String string : results) {
-        logger.info("XCRC: {}", string);
-      }
-      results = client.executeSiteCommand("XMD5 " + remoteFilename);
-      for (final String string : results) {
-        logger.info("XCRC: {}", string);
-      }
-      results = client.executeSiteCommand("XSHA1 " + remoteFilename);
-      for (final String string : results) {
-        logger.info("XCRC: {}", string);
-      }
-      for (DigestAlgo algo : DigestAlgo.values()) {
-        results = client.executeSiteCommand(
-            "XDIGEST " + algo.algoName + " " + remoteFilename);
+      if (!SystemPropertyUtil.get("IT_LONG_TEST", false)) {
+        String[] results = client.executeSiteCommand("XCRC " + remoteFilename);
         for (final String string : results) {
-          logger.info("XDIGEST {}: {}", algo.algoName, string);
+          logger.info("XCRC: {}", string);
         }
-        results = client.executeSiteCommand(
-            "XDIGEST " + algo.name() + " " + remoteFilename);
+        results = client.executeSiteCommand("XMD5 " + remoteFilename);
         for (final String string : results) {
-          logger.info("XDIGEST {}: {}", algo.name(), string);
+          logger.info("XCRC: {}", string);
         }
-      }
-      results = client.listFiles();
-      for (final String string : results) {
-        logger.info("LIST: {}", string);
+        results = client.executeSiteCommand("XSHA1 " + remoteFilename);
+        for (final String string : results) {
+          logger.info("XCRC: {}", string);
+        }
+        for (DigestAlgo algo : DigestAlgo.values()) {
+          results = client.executeSiteCommand(
+              "XDIGEST " + algo.algoName + " " + remoteFilename);
+          for (final String string : results) {
+            logger.info("XDIGEST {}: {}", algo.algoName, string);
+          }
+          results = client.executeSiteCommand(
+              "XDIGEST " + algo.name() + " " + remoteFilename);
+          for (final String string : results) {
+            logger.info("XDIGEST {}: {}", algo.name(), string);
+          }
+        }
+        results = client.listFiles();
+        for (final String string : results) {
+          logger.info("LIST: {}", string);
+        }
       }
     } finally {
-      logger.warn(id + " disconnect {}:{}", FtpClientTest.numberOK.get(),
-                  FtpClientTest.numberKO.get());
+      if (id.length() <= 2) {
+        logger.warn(id + " disconnect {}:{}", FtpClientTest.numberOK.get(),
+                    FtpClientTest.numberKO.get());
+      }
       client.logout();
       logger.info(id + " end disconnect");
     }

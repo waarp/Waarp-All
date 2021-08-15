@@ -78,7 +78,7 @@ class FtpTransferExecutor implements Runnable {
     try {
       runNextCommand();
     } catch (final InterruptedException e) {//NOSONAR
-      logger.error("Executor Interrupted {}", e.getMessage());
+      logger.error("Executor Interrupted: {}", e.getMessage(), e);
     }
   }
 
@@ -125,7 +125,7 @@ class FtpTransferExecutor implements Runnable {
         executeTransfer.getFtpFile().trueRetrieve();
       } catch (final FtpNoFileException e) {
         // an error occurs
-        logger.info(e);
+        logger.error(e);
         session.getDataConn().getFtpTransferControl().setEndOfTransfer();
       }
       logger.debug("wait for end of command");

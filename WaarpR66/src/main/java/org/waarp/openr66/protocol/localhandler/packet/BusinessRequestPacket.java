@@ -86,8 +86,8 @@ public class BusinessRequestPacket extends AbstractLocalPacket {
   }
 
   @Override
-  public final void createAllBuffers(final LocalChannelReference lcr,
-                                     final int networkHeader) {
+  public final synchronized void createAllBuffers(
+      final LocalChannelReference lcr, final int networkHeader) {
     final byte[] headerBytes = sheader.getBytes(WaarpStringUtils.UTF8);
     final int headerSize = headerBytes.length;
     final int middleSize = 4;
@@ -104,7 +104,7 @@ public class BusinessRequestPacket extends AbstractLocalPacket {
     offset += middleSize;
     end = WaarpNettyUtil.slice(global, offset, endSize);
     end.writeByte(way);
-    global.retain();
+    WaarpNettyUtil.retain(global);
   }
 
   @Override

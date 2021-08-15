@@ -283,6 +283,7 @@ public abstract class AbstractExecTask extends AbstractTask {
           }
         } catch (final InterruptedException e) {//NOSONAR
           SysErrLogger.FAKE_LOGGER.ignoreLog(e);
+          FileUtils.close(inputStream);
           Thread.currentThread().interrupt();
         }
       }

@@ -85,8 +85,8 @@ public class ShutdownPacket extends AbstractLocalPacket {
   }
 
   @Override
-  public final void createAllBuffers(final LocalChannelReference lcr,
-                                     final int networkHeader) {
+  public final synchronized void createAllBuffers(
+      final LocalChannelReference lcr, final int networkHeader) {
     end = Unpooled.EMPTY_BUFFER;
     final int sizeKey = key != null? key.length : 0;
     final int sizeMiddle = restart != 0? 1 : 0;

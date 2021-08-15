@@ -51,7 +51,7 @@
     <final.jar>Waarp-All-${project.version}-jre6-jar-with-dependencies.jar
     </final.jar>
     <finalpath.jar>
-      ${project.build.directory}/${final.jar}
+      ${targetDirectory}/${final.jar}
     </finalpath.jar>
   </properties>
 
@@ -184,7 +184,7 @@
             <configuration>
               <target>
                 <tar longfile="gnu"
-                     destfile="${project.build.directory}/${package.name}.linux.tar.gz"
+                     destfile="${targetDirectory}/${package.name}.linux.tar.gz"
                      compression="gzip">
                   <tarfileset
                     dir="${project.build.directory}"
@@ -282,7 +282,7 @@
             <configuration>
               <target>
                 <zip
-                  destfile="${project.build.directory}/${package.name}.windows.zip">
+                  destfile="${targetDirectory}/${package.name}.windows.zip">
                   <zipfileset
                     dir="${project.build.directory}"
                     fullpath="C:/${unix.name}/lib/${final.jar}">
@@ -338,7 +338,13 @@
               <target>
                 <copy
                   file="${project.build.directory}/rpm/waarp-all/RPMS/noarch/waarp-all-${project.version}-1.noarch.rpm"
-                  tofile="${project.build.directory}/${package.name}_1.noarch.rpm"/>
+                  tofile="${targetDirectory}/${package.name}_1.noarch.rpm"/>
+                <copy
+                  file="${root.directory}/target/buildDoc/latex/Waarpr66.pdf"
+                  tofile="${targetDirectory}/Waarpr66.pdf"/>
+                <copydir
+                  src="${root.directory}/target/buildDoc/html"
+                  dest="${targetDirectory}/html"/>
               </target>
             </configuration>
           </execution>
@@ -384,7 +390,7 @@
         <artifactId>jdeb</artifactId>
         <groupId>org.vafer</groupId>
         <configuration>
-          <deb>${project.build.directory}/${package.name}.deb</deb>
+          <deb>${targetDirectory}/${package.name}.deb</deb>
           <snapshotExpand>true</snapshotExpand>
           <snapshotEnv>USER</snapshotEnv>
           <skip>false</skip>

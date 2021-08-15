@@ -51,7 +51,7 @@
     <final.jar>Waarp-All-${project.version}-jar-with-dependencies.jar
     </final.jar>
     <finalpath.jar>
-      ${project.build.directory}/${final.jar}
+      ${targetDirectory}/${final.jar}
     </finalpath.jar>
   </properties>
 
@@ -192,7 +192,7 @@
             <configuration>
               <target>
                 <tar longfile="gnu"
-                     destfile="${project.build.directory}/${package.name}.linux.tar.gz"
+                     destfile="${targetDirectory}/${package.name}.linux.tar.gz"
                      compression="gzip">
                   <tarfileset
                     dir="${project.build.directory}"
@@ -290,7 +290,7 @@
             <configuration>
               <target>
                 <zip
-                  destfile="${project.build.directory}/${package.name}.windows.zip">
+                  destfile="${targetDirectory}/${package.name}.windows.zip">
                   <zipfileset
                     dir="${project.build.directory}"
                     fullpath="C:/${unix.name}/lib/${final.jar}">
@@ -336,7 +336,7 @@
             </configuration>
           </execution>
           <execution>
-            <id>CopyDeb</id>
+            <id>CopyRpm</id>
             <phase>install</phase>
             <inherited>false</inherited>
             <goals>
@@ -346,7 +346,7 @@
               <target>
                 <copy
                   file="${project.build.directory}/rpm/waarp-all/RPMS/noarch/waarp-all-${project.version}_1.noarch.rpm"
-                  tofile="${project.build.directory}/waarp-all-${project.version}_1.noarch.rpm"/>
+                  tofile="${targetDirectory}/waarp-all-${project.version}_1.noarch.rpm"/>
               </target>
             </configuration>
           </execution>
@@ -392,7 +392,7 @@
         <artifactId>jdeb</artifactId>
         <groupId>org.vafer</groupId>
         <configuration>
-          <deb>${project.build.directory}/${package.name}.deb</deb>
+          <deb>${targetDirectory}/${package.name}.deb</deb>
           <snapshotExpand>true</snapshotExpand>
           <snapshotEnv>USER</snapshotEnv>
           <skip>false</skip>

@@ -120,8 +120,15 @@ public class FtpClientThread implements Runnable {
       client.changeFileType(true);
       if (type <= 0) {
         long modeChange = System.currentTimeMillis();
-        logger.warn("{} change mode passive {}", id, (modeChange - start));
+        if (id.length() <= 2) {
+          logger.warn("{} change mode passive {}", id, (modeChange - start));
+        }
         client.changeMode(true);
+        try {
+          Thread.sleep(delay);
+        } catch (InterruptedException e) {
+          // Ignore
+        }
         if (type <= -10) {
           for (int i = 0; i < numberIteration; i++) {
             logger.info(id + " transfer passive store " + i);
@@ -137,6 +144,7 @@ public class FtpClientThread implements Runnable {
               Thread.sleep(delay);
             } catch (InterruptedException e) {
               // Ignore
+              break;
             }
           }
         } else {
@@ -148,6 +156,7 @@ public class FtpClientThread implements Runnable {
               return;
             } else {
               FtpClientTest.numberOK.incrementAndGet();
+              System.out.print('.');
             }
             if (!client.deleteFile(remoteFilename)) {
               logger.warn(" Cant delete file passive mode " + id);
@@ -161,6 +170,7 @@ public class FtpClientThread implements Runnable {
               Thread.sleep(delay);
             } catch (InterruptedException e) {
               // Ignore
+              break;
             }
           }
           if (!client.transferFile(localFilename, remoteFilename, true)) {
@@ -171,7 +181,12 @@ public class FtpClientThread implements Runnable {
             System.out.print('.');
             FtpClientTest.numberOK.incrementAndGet();
           }
-          Thread.yield();
+          try {
+            Thread.sleep(delay);
+          } catch (InterruptedException e) {
+            // Ignore
+          }
+          System.out.println();
           for (int i = 0; i < numberIteration; i++) {
             logger.info(id + " transfer passive retr " + i);
             if (!client.transferFile(null, remoteFilename, false)) {
@@ -186,19 +201,29 @@ public class FtpClientThread implements Runnable {
               Thread.sleep(delay);
             } catch (InterruptedException e) {
               // Ignore
+              break;
             }
           }
         }
         System.out.println();
         long endTransfer = System.currentTimeMillis();
-        logger.warn("{} end mode passive {}/s", id,
-                    numberIteration * 2 * 1000 / (endTransfer - modeChange));
+        if (id.length() <= 2) {
+          logger.warn("{} end mode passive {}/s", id,
+                      numberIteration * 2 * 1000 / (endTransfer - modeChange));
+        }
         Thread.yield();
       }
       if (type >= 0) {
         long modeChange = System.currentTimeMillis();
-        logger.warn("{} change mode active {}", id, (modeChange - start));
+        if (id.length() <= 2) {
+          logger.warn("{} change mode active {}", id, (modeChange - start));
+        }
         client.changeMode(false);
+        try {
+          Thread.sleep(delay);
+        } catch (InterruptedException e) {
+          // Ignore
+        }
         if (type >= 10) {
           for (int i = 0; i < numberIteration; i++) {
             logger.info(id + " transfer active store " + i);
@@ -214,8 +239,10 @@ public class FtpClientThread implements Runnable {
               Thread.sleep(delay);
             } catch (InterruptedException e) {
               // Ignore
+              break;
             }
           }
+          System.out.println();
           Thread.yield();
         } else {
           for (int i = 0; i < numberIteration; i++) {
@@ -240,8 +267,10 @@ public class FtpClientThread implements Runnable {
               Thread.sleep(delay);
             } catch (InterruptedException e) {
               // Ignore
+              break;
             }
           }
+          System.out.println();
           if (!client.transferFile(localFilename, remoteFilename, true)) {
             logger.warn("Cant store file active mode " + id);
             FtpClientTest.numberKO.incrementAndGet();
@@ -250,7 +279,11 @@ public class FtpClientThread implements Runnable {
             System.out.print('.');
             FtpClientTest.numberOK.incrementAndGet();
           }
-          Thread.yield();
+          try {
+            Thread.sleep(delay);
+          } catch (InterruptedException e) {
+            // Ignore
+          }
           for (int i = 0; i < numberIteration; i++) {
             logger.info(id + " transfer active retr " + i);
             if (!client.transferFile(null, remoteFilename, false)) {
@@ -265,14 +298,17 @@ public class FtpClientThread implements Runnable {
               Thread.sleep(delay);
             } catch (InterruptedException e) {
               // Ignore
+              break;
             }
           }
         }
         System.out.println();
 
         long endTransfer = System.currentTimeMillis();
-        logger.warn("{} end mode active {}/s", id,
-                    numberIteration * 2 * 1000 / (endTransfer - modeChange));
+        if (id.length() <= 2) {
+          logger.warn("{} end mode active {}/s", id,
+                      numberIteration * 2 * 1000 / (endTransfer - modeChange));
+        }
       }
       if (!SystemPropertyUtil.get("IT_LONG_TEST", false)) {
         String[] results = client.executeSiteCommand("XCRC " + remoteFilename);
@@ -305,8 +341,10 @@ public class FtpClientThread implements Runnable {
         }
       }
     } finally {
-      logger.warn(id + " disconnect {}:{}", FtpClientTest.numberOK.get(),
-                  FtpClientTest.numberKO.get());
+      if (id.length() <= 2) {
+        logger.warn(id + " disconnect {}:{}", FtpClientTest.numberOK.get(),
+                    FtpClientTest.numberKO.get());
+      }
       client.logout();
       logger.info(id + " end disconnect");
     }

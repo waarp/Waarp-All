@@ -21,6 +21,7 @@ package org.waarp.ftp.core.config;
 
 import io.netty.channel.Channel;
 import io.netty.handler.traffic.GlobalChannelTrafficShapingHandler;
+import io.netty.util.AttributeKey;
 import org.waarp.common.file.FileParameterInterface;
 import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
@@ -42,6 +43,9 @@ import java.util.concurrent.locks.ReentrantLock;
  * Abstract class for configuration
  */
 public abstract class FtpConfiguration {
+  public static final String FTP_SESSION_ATTRIBUTE_KEY_NAME = "FtpSession";
+  public static final AttributeKey<FtpSession> FTP_SESSION_ATTRIBUTE_KEY =
+      AttributeKey.newInstance(FTP_SESSION_ATTRIBUTE_KEY_NAME);
   private static final String STOU = ".stou";
   private static final String PROPERTY_HAS_NO_VALUE = "Property has no value: ";
   /**
@@ -543,34 +547,50 @@ public abstract class FtpConfiguration {
                                         final boolean active) {
     FtpSession session = null;
     for (int i = 0; i < FtpInternalConfiguration.RETRYNB * 2; i++) {
-      session = internalConfiguration.getFtpSession(channel, active, false);
-      if (session == null) {
-        logger.debug("Session not found at try " + i);
+      if (active) {
+        session = channel.attr(FTP_SESSION_ATTRIBUTE_KEY).get();
+        if (session != null) {
+          return session;
+        }
         try {
           Thread.sleep(FtpInternalConfiguration.RETRYINMS * 10);
         } catch (final InterruptedException e1) {//NOSONAR
           SysErrLogger.FAKE_LOGGER.ignoreLog(e1);
-          break;
         }
       } else {
-        internalConfiguration.getFtpSession(channel, active, true);
-        break;
+        session = internalConfiguration.getFtpSession(channel);
+        if (session == null) {
+          logger.debug("Session not found at try " + i);
+          try {
+            Thread.sleep(FtpInternalConfiguration.RETRYINMS * 10);
+          } catch (final InterruptedException e1) {//NOSONAR
+            SysErrLogger.FAKE_LOGGER.ignoreLog(e1);
+          }
+        } else {
+          return session;
+        }
       }
     }
+    if (session == null) {
+      if (active) {
+        session = channel.attr(FTP_SESSION_ATTRIBUTE_KEY).get();
+        if (session != null) {
+          return session;
+        }
+      } else {
+        // Last try using all current sessions
+        session = internalConfiguration.findPassiveFtpSession(channel);
+        if (session != null) {
+          logger.debug("Found from port Passive? {}", channel.localAddress());
+          return session;
+        }
+      }
+    }
+    if (session == null) {
+      logger.error("Could not find {} session for {}",
+                   active? "Active" : "Passive", channel);
+    }
     return session;
-  }
-
-  /**
-   * Return the FtpSession
-   *
-   * @param channel
-   * @param active
-   *
-   * @return the FtpSession if it exists associated to this channel
-   */
-  public final FtpSession getFtpSessionNoRemove(final Channel channel,
-                                                final boolean active) {
-    return internalConfiguration.getFtpSession(channel, active, false);
   }
 
   /**
@@ -582,19 +602,6 @@ public abstract class FtpConfiguration {
   public final void delFtpSession(final InetAddress ipOnly,
                                   final InetSocketAddress fullIp) {
     internalConfiguration.delFtpSession(ipOnly, fullIp);
-  }
-
-  /**
-   * Test if the couple of addresses is already in the context
-   *
-   * @param ipOnly
-   * @param fullIp
-   *
-   * @return True if the couple is present
-   */
-  public final boolean hasFtpSession(final InetAddress ipOnly,
-                                     final InetSocketAddress fullIp) {
-    return internalConfiguration.hasFtpSession(ipOnly, fullIp);
   }
 
   /**

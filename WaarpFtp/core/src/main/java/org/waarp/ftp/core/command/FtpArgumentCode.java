@@ -148,7 +148,12 @@ public class FtpArgumentCode {
     /**
      * Compressed TransferMode
      */
-    COMPRESSED('C');
+    COMPRESSED('C'),
+    /**
+     * Standard ZLIB compression
+     */
+    ZLIB('Z');
+
     /**
      * TransferMode
      */
@@ -263,6 +268,9 @@ public class FtpArgumentCode {
       case 'C':
       case 'c':
         return TransferMode.COMPRESSED;
+      case 'Z':
+      case 'z':
+        return TransferMode.ZLIB;
       case 'S':
       case 's':
         return TransferMode.STREAM;

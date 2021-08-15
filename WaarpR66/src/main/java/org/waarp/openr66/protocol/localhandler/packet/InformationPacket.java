@@ -96,8 +96,8 @@ public class InformationPacket extends AbstractLocalPacket {
   }
 
   @Override
-  public final void createAllBuffers(final LocalChannelReference lcr,
-                                     final int networkHeader)
+  public final synchronized void createAllBuffers(
+      final LocalChannelReference lcr, final int networkHeader)
       throws OpenR66ProtocolPacketException {
     if (rulename == null) {
       throw new OpenR66ProtocolPacketException(NOT_ENOUGH_DATA);

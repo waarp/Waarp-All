@@ -96,6 +96,17 @@ public abstract class FilesystemBasedFtpFile extends FilesystemBasedFileImpl
       } catch (final InterruptedException e) {//NOSONAR
         // bad thing
         logger.warn("DataNetworkHandler was not ready", e);
+        if (isInReading()) {
+          logger.error("Should not be", e);
+          ((FtpSession) session).getDataConn().getFtpTransferControl()
+                                .setTransferAbortedFromInternal(true);
+        }
+        logger.debug(
+            "Possible call while channel was on going to be closed once transfer was done",
+            e);
+        closeFile();
+        ((FtpSession) session).getDataConn().getFtpTransferControl()
+                              .setPreEndOfTransfer();
         return;
       }
       final Channel channel;
@@ -172,11 +183,13 @@ public abstract class FilesystemBasedFtpFile extends FilesystemBasedFileImpl
           ((FtpSession) session).getDataConn().getFtpTransferControl()
                                 .setPreEndOfTransfer();
         } else {
-          throw new FileTransferException("Write is not successful");
+          throw new FileTransferException("LAST Write is not successful",
+                                          future.cause());
         }
       }
     } catch (final FileTransferException e) {
       // An error occurs!
+      logger.error("File Transfer Exception: {}", e.getMessage(), e);
       ((FtpSession) session).getDataConn().getFtpTransferControl()
                             .setTransferAbortedFromInternal(true);
     } catch (final CommandAbstractException e) {

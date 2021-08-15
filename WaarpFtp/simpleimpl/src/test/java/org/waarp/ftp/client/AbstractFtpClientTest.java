@@ -115,6 +115,7 @@ public abstract class AbstractFtpClientTest {
             Thread.sleep(newdel);
           }
         } catch (final InterruptedException ignored) {//NOSONAR
+          break;
         }
       } else {
         Thread.yield();
@@ -128,8 +129,8 @@ public abstract class AbstractFtpClientTest {
     executorService.shutdown();
     long date2 = 0;
     try {
-      if (!executorService.awaitTermination(12000, TimeUnit.SECONDS)) {
-        date2 = System.currentTimeMillis() - 120000 * 60;
+      if (!executorService.awaitTermination(120, TimeUnit.SECONDS)) {
+        date2 = System.currentTimeMillis() - 120000;
         executorService.shutdownNow();
         if (!executorService.awaitTermination(60, TimeUnit.SECONDS)) {
           SysErrLogger.FAKE_LOGGER.syserr("Really not shutdown normally");

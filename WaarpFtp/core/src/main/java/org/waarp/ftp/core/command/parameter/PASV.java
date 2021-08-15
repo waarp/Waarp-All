@@ -57,19 +57,19 @@ public class PASV extends AbstractCommand {
     }
     // Take a new port: 3 attempts
     boolean isInit = false;
+    if (getSession().getDataConn().isPassiveMode()) {
+      // Previous mode was Passive so remove the current configuration
+      final InetSocketAddress local =
+          getSession().getDataConn().getLocalAddress();
+      final InetAddress remote =
+          getSession().getDataConn().getRemoteAddress().getAddress();
+      getConfiguration().delFtpSession(remote, local);
+    }
     for (int i = 1; i <= FtpInternalConfiguration.RETRYNB; i++) {
       final int newport =
           FtpDataAsyncConn.getNewPassivePort(getConfiguration());
       if (newport == -1) {
         throw new Reply425Exception("No port available");
-      }
-      if (getSession().getDataConn().isPassiveMode()) {
-        // Previous mode was Passive so remove the current configuration
-        final InetSocketAddress local =
-            getSession().getDataConn().getLocalAddress();
-        final InetAddress remote =
-            getSession().getDataConn().getRemoteAddress().getAddress();
-        getConfiguration().delFtpSession(remote, local);
       }
       logger.info("PASV: set Passive Port {}", newport);
       getSession().getDataConn().setLocalPort(newport);

@@ -36,6 +36,7 @@ import io.netty.handler.codec.http.cookie.Cookie;
 import io.netty.handler.codec.http.cookie.ServerCookieDecoder;
 import io.netty.handler.codec.http.cookie.ServerCookieEncoder;
 import org.waarp.common.logging.SysErrLogger;
+import org.waarp.common.utility.WaarpNettyUtil;
 
 import javax.activation.MimetypesFileTypeMap;
 import java.io.File;
@@ -157,11 +158,11 @@ public final class HttpWriteCacheEnable {
       inputStream = new FileInputStream(file);
       byteBuf.writeBytes(inputStream, fileLength);
     } catch (final FileNotFoundException e) {
-      byteBuf.release();
+      WaarpNettyUtil.release(byteBuf);
       sendError(request, ctx, cookieNameToRemove, keepAlive);
       return;
     } catch (final IOException e) {
-      byteBuf.release();
+      WaarpNettyUtil.release(byteBuf);
       sendError(request, ctx, cookieNameToRemove, keepAlive);
       return;
     }

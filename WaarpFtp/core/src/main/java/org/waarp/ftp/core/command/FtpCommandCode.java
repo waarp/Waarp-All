@@ -19,7 +19,6 @@
  */
 package org.waarp.ftp.core.command;
 
-import org.waarp.common.utility.WaarpSystemUtil;
 import org.waarp.ftp.core.command.internal.ConnectionCommand;
 import org.waarp.ftp.core.command.internal.IncorrectCommand;
 import org.waarp.ftp.core.command.internal.UnimplementedCommand;
@@ -1412,17 +1411,140 @@ public enum FtpCommandCode {
     } catch (final IllegalArgumentException e) {
       ftpCommandCode = Unknown;
     }
-    AbstractCommand abstractCommand;
-    try {
-      abstractCommand =
-          (AbstractCommand) WaarpSystemUtil.newInstance(ftpCommandCode.command);
-    } catch (final Exception e) {
-      abstractCommand = new UnknownCommand();
+    final AbstractCommand abstractCommand =
+        getAbstractCommand(ftpCommandCode, session);
+    if (abstractCommand instanceof UnknownCommand) {
       abstractCommand.setArgs(session, COMMAND, arg, Unknown);
-      return abstractCommand;
+    } else {
+      abstractCommand.setArgs(session, COMMAND, arg, ftpCommandCode);
     }
-    abstractCommand.setArgs(session, COMMAND, arg, ftpCommandCode);
     return abstractCommand;
+  }
+
+  private static AbstractCommand getAbstractCommand(final FtpCommandCode code,
+                                                    final FtpSession session) {
+    switch (code) {
+      case Connection:
+        return new ConnectionCommand(session);
+      case USER:
+        return new org.waarp.ftp.core.command.access.USER();
+      case PASS:
+        return new org.waarp.ftp.core.command.access.PASS();
+      case ACCT:
+        return new org.waarp.ftp.core.command.access.ACCT();
+      case CWD:
+        return new org.waarp.ftp.core.command.directory.CWD();
+      case CDUP:
+        return new org.waarp.ftp.core.command.directory.CDUP();
+      case SMNT:
+        return new org.waarp.ftp.core.command.directory.SMNT();
+      case REIN:
+        return new org.waarp.ftp.core.command.access.REIN();
+      case QUIT:
+        return new org.waarp.ftp.core.command.access.QUIT();
+      case PORT:
+        return new org.waarp.ftp.core.command.parameter.PORT();
+      case PASV:
+        return new org.waarp.ftp.core.command.parameter.PASV();
+      case TYPE:
+        return new org.waarp.ftp.core.command.parameter.TYPE();
+      case STRU:
+        return new org.waarp.ftp.core.command.parameter.STRU();
+      case MODE:
+        return new org.waarp.ftp.core.command.parameter.MODE();
+      case RETR:
+        return new org.waarp.ftp.core.command.service.RETR();
+      case STOR:
+        return new org.waarp.ftp.core.command.service.STOR();
+      case STOU:
+        return new org.waarp.ftp.core.command.service.STOU();
+      case APPE:
+        return new org.waarp.ftp.core.command.service.APPE();
+      case ALLO:
+        return new org.waarp.ftp.core.command.service.ALLO();
+      case REST:
+        return new org.waarp.ftp.core.command.service.REST();
+      case RNFR:
+        return new org.waarp.ftp.core.command.service.RNFR();
+      case RNTO:
+        return new org.waarp.ftp.core.command.service.RNTO();
+      case ABOR:
+        return new org.waarp.ftp.core.command.service.ABOR();
+      case DELE:
+        return new org.waarp.ftp.core.command.service.DELE();
+      case RMD:
+        return new org.waarp.ftp.core.command.service.RMD();
+      case MKD:
+        return new org.waarp.ftp.core.command.service.MKD();
+      case PWD:
+        return new org.waarp.ftp.core.command.service.PWD();
+      case LIST:
+        return new org.waarp.ftp.core.command.service.LIST();
+      case NLST:
+        return new org.waarp.ftp.core.command.service.NLST();
+      case SITE:
+        return new org.waarp.ftp.core.command.info.SITE();
+      case SYST:
+        return new org.waarp.ftp.core.command.info.SYST();
+      case STAT:
+        return new org.waarp.ftp.core.command.info.STAT();
+      case HELP:
+        return new org.waarp.ftp.core.command.info.HELP();
+      case NOOP:
+        return new org.waarp.ftp.core.command.info.NOOP();
+      case XCWD:
+        return new org.waarp.ftp.core.command.rfc775.XCWD();
+      case XCUP:
+        return new org.waarp.ftp.core.command.rfc775.XCUP();
+      case XRMD:
+        return new org.waarp.ftp.core.command.rfc775.XRMD();
+      case XMKD:
+        return new org.waarp.ftp.core.command.rfc775.XMKD();
+      case XPWD:
+        return new org.waarp.ftp.core.command.rfc775.XPWD();
+      case MDTM:
+        return new org.waarp.ftp.core.command.rfc3659.MDTM();
+      case SIZE:
+        return new org.waarp.ftp.core.command.rfc3659.SIZE();
+      case MLSD:
+        return new org.waarp.ftp.core.command.rfc3659.MLSD();
+      case MLST:
+        return new org.waarp.ftp.core.command.rfc3659.MLST();
+      case FEAT:
+        return new org.waarp.ftp.core.command.rfc2389.FEAT();
+      case OPTS:
+        return new org.waarp.ftp.core.command.rfc2389.OPTS();
+      case EPRT:
+        return new org.waarp.ftp.core.command.rfc2428.EPRT();
+      case EPSV:
+        return new org.waarp.ftp.core.command.rfc2428.EPSV();
+      case XCRC:
+        return new org.waarp.ftp.core.command.extension.XCRC();
+      case XMD5:
+        return new org.waarp.ftp.core.command.extension.XMD5();
+      case XSHA1:
+        return new org.waarp.ftp.core.command.extension.XSHA1();
+      case XDIGEST:
+        return new org.waarp.ftp.core.command.extension.XDIGEST();
+      case IncorrectSequence:
+        return new IncorrectCommand();
+      case INTERNALSHUTDOWN:
+        return new org.waarp.ftp.core.command.internal.INTERNALSHUTDOWN();
+      case LIMITBANDWIDTH:
+        return new org.waarp.ftp.core.command.internal.LIMITBANDWIDTH();
+      case AUTH:
+        return new org.waarp.ftp.core.command.rfc4217.AUTH();
+      case CCC:
+        return new org.waarp.ftp.core.command.rfc4217.CCC();
+      case PROT:
+        return new org.waarp.ftp.core.command.rfc4217.PROT();
+      case PBSZ:
+        return new org.waarp.ftp.core.command.rfc4217.PBSZ();
+      case Unknown:
+      case Unimplemented:
+      default:
+        return new UnknownCommand();
+    }
   }
 
   /**

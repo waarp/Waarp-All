@@ -20,12 +20,17 @@
 package org.waarp.ftp.core.session;
 
 import io.netty.channel.Channel;
+import org.waarp.common.logging.SysErrLogger;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.ftp.core.utils.FtpChannelUtils;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Enumeration;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -44,6 +49,20 @@ public class FtpSessionReference {
   private static final WaarpLogger logger =
       WaarpLoggerFactory.getLogger(FtpSessionReference.class);
 
+  private static final byte[] LOOPBACK = { 0, 0, 0, 0 };
+  private static final byte[] LOOPBACK2 = { 127, 0, 0, 1 };
+  private static final InetAddress LOOPBACK_ADDRESS;
+
+  static {
+    InetAddress address = null;
+    try {
+      address = InetAddress.getByAddress(LOOPBACK2);
+    } catch (final UnknownHostException e) {
+      SysErrLogger.FAKE_LOGGER.ignoreLog(e);
+    }
+    LOOPBACK_ADDRESS = address;
+  }
+
   /**
    * Index of FtpSession References
    */
@@ -58,14 +77,26 @@ public class FtpSessionReference {
      */
     public final InetSocketAddress fullIp;
 
+    public final long creationTime = System.currentTimeMillis();
+
     /**
      * Constructor from Channel
      *
      * @param channel
      */
     public P2PAddress(final Channel channel) {
-      ipOnly = FtpChannelUtils.getRemoteInetAddress(channel);
-      fullIp = (InetSocketAddress) channel.localAddress();
+      InetAddress ip = FtpChannelUtils.getRemoteInetAddress(channel);
+      if (isLoopback(ip)) {
+        ipOnly = LOOPBACK_ADDRESS;
+      } else {
+        ipOnly = ip;
+      }
+      InetSocketAddress isa = (InetSocketAddress) channel.localAddress();
+      if (isLoopback(isa.getAddress())) {
+        fullIp = new InetSocketAddress(LOOPBACK_ADDRESS, isa.getPort());
+      } else {
+        fullIp = isa;
+      }
     }
 
     /**
@@ -76,14 +107,23 @@ public class FtpSessionReference {
      */
     public P2PAddress(final InetAddress address,
                       final InetSocketAddress inetSocketAddress) {
-      ipOnly = address;
-      fullIp = inetSocketAddress;
+      if (isLoopback(address)) {
+        ipOnly = LOOPBACK_ADDRESS;
+      } else {
+        ipOnly = address;
+      }
+      if (isLoopback(inetSocketAddress.getAddress())) {
+        fullIp = new InetSocketAddress(LOOPBACK_ADDRESS,
+                                       inetSocketAddress.getPort());
+      } else {
+        fullIp = inetSocketAddress;
+      }
     }
 
     /**
      * @return True if the P2Paddress is valid
      */
-    public final boolean isValid() {
+    private final boolean isValid() {
       return ipOnly != null && fullIp != null;
     }
 
@@ -95,8 +135,16 @@ public class FtpSessionReference {
       if (o instanceof P2PAddress) {
         final P2PAddress p2paddress = (P2PAddress) o;
         if (p2paddress.isValid() && isValid()) {
-          return p2paddress.fullIp.equals(fullIp) &&
-                 p2paddress.ipOnly.equals(ipOnly);
+          boolean equal = p2paddress.fullIp.equals(fullIp) &&
+                          p2paddress.ipOnly.equals(ipOnly);
+          if (!equal) {
+            boolean sameIp =
+                p2paddress.fullIp.getAddress().equals(fullIp.getAddress()) ||
+                (isLoopback(fullIp.getAddress()) &&
+                 isLoopback(p2paddress.fullIp.getAddress()));
+            equal = sameIp && p2paddress.fullIp.getPort() == fullIp.getPort();
+          }
+          return equal;
         }
       }
       return false;
@@ -107,6 +155,16 @@ public class FtpSessionReference {
       return fullIp.hashCode() + ipOnly.hashCode();
     }
 
+    @Override
+    public String toString() {
+      return ipOnly.toString() + "-" + fullIp.toString();
+    }
+  }
+
+  private static boolean isLoopback(final InetAddress inetAddress) {
+    return Arrays.equals(inetAddress.getAddress(), LOOPBACK2) ||
+           Arrays.equals(inetAddress.getAddress(), LOOPBACK) ||
+           inetAddress.isAnyLocalAddress() || inetAddress.isLoopbackAddress();
   }
 
   /**
@@ -122,6 +180,23 @@ public class FtpSessionReference {
     // nothing
   }
 
+  private void cleanFtpSession() {
+    // 10 minutes ago
+    final long nowInPast = System.currentTimeMillis() - 10 * 60 * 1000;
+    ArrayList<P2PAddress> list = new ArrayList<P2PAddress>();
+    Enumeration<P2PAddress> enumeration = hashMap.keys();
+    while (enumeration.hasMoreElements()) {
+      final P2PAddress entry = enumeration.nextElement();
+      if (entry.creationTime < nowInPast) {
+        list.add(entry);
+      }
+    }
+    for (P2PAddress pAddress : list) {
+      hashMap.remove(pAddress);
+    }
+    list.clear();
+  }
+
   /**
    * Add a session from a couple of addresses
    *
@@ -132,6 +207,7 @@ public class FtpSessionReference {
   public final void setNewFtpSession(final InetAddress ipOnly,
                                      final InetSocketAddress fullIp,
                                      final FtpSession session) {
+    cleanFtpSession();
     final P2PAddress pAddress = new P2PAddress(ipOnly, fullIp);
     if (!pAddress.isValid()) {
       logger.error(
@@ -148,44 +224,62 @@ public class FtpSessionReference {
    *
    * @return the FtpSession if it exists associated to this channel
    */
-  public final FtpSession getActiveFtpSession(final Channel channel,
-                                              final boolean remove) {
-    // First check Active connection
-    final P2PAddress pAddress = new P2PAddress(
-        ((InetSocketAddress) channel.localAddress()).getAddress(),
-        (InetSocketAddress) channel.remoteAddress());
-    if (!pAddress.isValid()) {
-      logger.info("Couple invalid in getActiveFtpSession: " + channel +
-                  channel.localAddress() + channel.remoteAddress());
-      return null;
-    }
-    if (remove) {
-      return hashMap.remove(pAddress);
-    } else {
-      return hashMap.get(pAddress);
-    }
-  }
-
-  /**
-   * Return and remove the FtpSession
-   *
-   * @param channel
-   *
-   * @return the FtpSession if it exists associated to this channel
-   */
-  public final FtpSession getPassiveFtpSession(final Channel channel,
-                                               final boolean remove) {
+  public final FtpSession getPassiveFtpSession(final Channel channel) {
+    cleanFtpSession();
     // First check passive connection
     final P2PAddress pAddress = new P2PAddress(channel);
     if (!pAddress.isValid()) {
       logger.error("Couple invalid in getPassiveFtpSession: " + channel);
       return null;
     }
-    if (remove) {
-      return hashMap.remove(pAddress);
-    } else {
-      return hashMap.get(pAddress);
+    return hashMap.remove(pAddress);
+  }
+
+  /**
+   * @param channel
+   *
+   * @return the associated removed Passive FtpSession or null if not found
+   */
+  public final FtpSession findPassive(final Channel channel) {
+    cleanFtpSession();
+    InetAddress remote =
+        ((InetSocketAddress) channel.remoteAddress()).getAddress();
+    if (isLoopback(remote)) {
+      remote = LOOPBACK_ADDRESS;
     }
+    final int port = ((InetSocketAddress) channel.localAddress()).getPort();
+    P2PAddress entry = null;
+    Enumeration<P2PAddress> enumeration = hashMap.keys();
+    while (enumeration.hasMoreElements()) {
+      entry = enumeration.nextElement();
+      if (entry.fullIp.getPort() == port && (entry.ipOnly.equals(remote) ||
+                                             Arrays.equals(
+                                                 entry.ipOnly.getAddress(),
+                                                 remote.getAddress()))) {
+        break;
+      }
+      entry = null;
+    }
+    if (entry != null) {
+      logger.debug("Found from port only: {}", entry);
+      return hashMap.remove(entry);
+    }
+    return null;
+  }
+
+  /**
+   * Remove one FtpSession if possible
+   *
+   * @param channel
+   */
+  public final void delFtpSession(final Channel channel) {
+    cleanFtpSession();
+    final P2PAddress pAddress;
+    pAddress = new P2PAddress(channel);
+    if (!pAddress.isValid()) {
+      return;
+    }
+    hashMap.remove(pAddress);
   }
 
   /**
@@ -196,6 +290,7 @@ public class FtpSessionReference {
    */
   public final void delFtpSession(final InetAddress ipOnly,
                                   final InetSocketAddress fullIp) {
+    cleanFtpSession();
     final P2PAddress pAddress = new P2PAddress(ipOnly, fullIp);
     if (!pAddress.isValid()) {
       logger.error(
@@ -206,28 +301,11 @@ public class FtpSessionReference {
   }
 
   /**
-   * Test if the couple of addresses is already in the hashmap (only for
-   * Active)
-   *
-   * @param ipOnly
-   * @param fullIp
-   *
-   * @return True if already presents
-   */
-  public final boolean contains(final InetAddress ipOnly,
-                                final InetSocketAddress fullIp) {
-    final P2PAddress pAddress = new P2PAddress(ipOnly, fullIp);
-    if (!pAddress.isValid()) {
-      logger.error("Couple invalid in contains: " + ipOnly + " : " + fullIp);
-      return false;
-    }
-    return hashMap.containsKey(pAddress);
-  }
-
-  /**
    * @return the number of active sessions
    */
   public final int sessionsNumber() {
+    cleanFtpSession();
     return hashMap.size();
   }
+
 }

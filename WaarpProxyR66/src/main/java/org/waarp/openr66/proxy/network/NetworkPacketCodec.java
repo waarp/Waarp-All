@@ -71,7 +71,7 @@ public class NetworkPacketCodec extends ByteToMessageCodec<NetworkPacket> {
     if (code == LocalPacketFactory.KEEPALIVEPACKET) {
       final KeepAlivePacket keepAlivePacket =
           (KeepAlivePacket) LocalPacketCodec.decodeNetworkPacket(buffer);
-      buffer.release();
+      WaarpNettyUtil.release(buffer);
       if (keepAlivePacket.isToValidate()) {
         keepAlivePacket.validate();
         final NetworkPacket response =
